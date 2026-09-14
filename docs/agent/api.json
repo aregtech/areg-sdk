@@ -125,7 +125,8 @@
     "rules": [
       {
         "applies_to": "method",
-        "transform": "snake_case",
+        "transform": "verbatim",
+        "note": "kept as written after the prefix, so a document writes it snake_case",
         "prefixed_by_kind": true,
         "example": {
           "document": "hello_service",
@@ -135,7 +136,8 @@
       },
       {
         "applies_to": "broadcast",
-        "transform": "snake_case",
+        "transform": "verbatim",
+        "note": "kept as written after the prefix, so a document writes it snake_case",
         "prefix": "broadcast_",
         "example": {
           "document": "reached_maximum",

@@ -14,11 +14,12 @@
 # judgement wearing an instrument's clothes. A moved total says something broke
 # and not what; a named finding says what.
 #
-# The instrument is static. It never builds, never runs the generator and never
-# calls a model, so it gives the same answer on any machine with no network.
-# Where a property can only be shown by running something, what is checked is
-# whether CI runs it, not whether it passes here: that is the property that
-# keeps the corpus true after this week.
+# The instrument never builds, never compiles and never calls a model, so it gives
+# the same answer on any machine with no network. Some cases do run the Python
+# tools: they lay out a temporary project and invoke the generator and the contract
+# checker on it. Where a property can only be shown by compiling or running an
+# application, what is checked is whether CI runs it, not whether it passes here:
+# that is the property that keeps the corpus true after this week.
 #
 # Three severities:
 #   FAIL  a rule that must hold does not. Exit code 1.
@@ -556,7 +557,20 @@ TOOLS = ['setup_project.py', 'gen_skeleton.py', 'fsml_layout.py', 'run_scenarios
 # consumer scaffold now writes, documented in 31-consumer.md with the state table
 # they belong to, and P-19 in AGENTS.md section 6. Both are rules an agent cannot
 # follow from the code alone.
-CORPUS_CEILING = 189024
+# Raised from 189024 by 416 bytes on 2026-09-14: 00-cheatsheet.md names the "steps"
+# a sequencing consumer declares, on the page a run searched for them and found
+# nothing, and the naming row now says a method name is kept as written after its
+# prefix, which codegen.jar does and three pages denied.
+# Raised from 189440 by 1024 bytes on 2026-09-14, after run 20260914b: the two pages
+# a run reads before it designs described "steps" as a fixed sequence and named
+# neither stay() nor go_to(), so a run whose scenario branched ruled the feature out
+# and hand-wrote the generated step machine -- 422 lines, and the largest single
+# request of that run. 01-runbook.md now says branching is included and names both,
+# and gives --example its length, because the same run capped it at head -300 of 370
+# and paid a request for the rest. 30-provider.md's unblock rule said skipping the
+# call is always a defect; it is not, and the run spent thought deciding that a
+# synchronous state machine trigger may answer directly.
+CORPUS_CEILING = 190464
 
 PAGE_CEILING = 8 * KB
 ENTRY_TARGET = 10 * KB
@@ -610,8 +624,14 @@ def read(*parts):
 
 
 def size(*parts):
+    """Bytes of a repository file with CRLF counted as LF, so a checkout's line
+    endings never move a budget verdict."""
     path = os.path.join(ROOT, *parts)
-    return os.path.getsize(path) if os.path.isfile(path) else 0
+    if not os.path.isfile(path):
+        return 0
+    with open(path, 'rb') as handle:
+        data = handle.read()
+    return len(data) - data.count(b'\r\n')
 
 
 def agent_pages():
@@ -2303,6 +2323,8 @@ def run():
     check_design_template(report)
     check_peer_loss_branch(report)
     check_generated_defects(report)
+    check_step_driver(report)
+    check_method_names(report)
     check_spec_semantics(report)
     check_app_shape(report)
     check_final_entry_rule(report)
@@ -3027,8 +3049,10 @@ def check_generated_defects(report):
         shutil.rmtree(holder, ignore_errors=True)
 
 
-def generate_application(tools, name='gen'):
+def generate_application(tools, name='gen', steps=None):
     """Lay out a project in the working directory and write the application into it.
+
+    Steps, when given, are declared on the first interface of the example design.
 
     Returns the path of the generated consumer source, or a sentence naming the step
     that stopped.
@@ -3040,8 +3064,13 @@ def generate_application(tools, name='gen'):
         return 'the scaffold no longer lays out a project'
     spec = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
                            '--example'], capture_output=True, text=True)
+    design = spec.stdout
+    if steps is not None:
+        parsed = json.loads(design)
+        parsed['interfaces'][0]['steps'] = steps
+        design = json.dumps(parsed, indent=2)
     with open('design.json', 'w', encoding='utf-8', newline='\n') as handle:
-        handle.write(spec.stdout)
+        handle.write(design)
     if subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
                        '--outdir', 'src/services', '--force', '--chained',
                        '--spec', 'design.json'],
@@ -3055,12 +3084,211 @@ def generate_application(tools, name='gen'):
             '--doc', docs[0], '--app', '--mode', 'ipc', '--force']
     if machines:
         made += ['--machine', machines[0]]
+    if steps is not None:
+        made += ['--spec', 'design.json']
     if subprocess.run(made, capture_output=True, text=True).returncode != 0:
         return 'gen_skeleton.py --app no longer writes an application'
     found = sorted(glob.glob(os.path.join('src', 'consumer', '*Consumer.cpp')))
     if not found:
         return 'no consumer source was written'
     return found[0]
+
+
+NAMING_SIML = """<?xml version="1.0" encoding="utf-8"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="Naming" Version="1.0.0" Category="Public"/>
+    <AttributeList>
+        <Attribute ID="2" Name="WaterLevel" DataType="uint32" Notify="OnChange"/>
+    </AttributeList>
+    <MethodList>
+        <Method ID="3" Name="InsertCoin" MethodType="Request" Response="InsertCoin"/>
+        <Method ID="4" Name="InsertCoin" MethodType="Response"/>
+        <Method ID="5" Name="LowWarning" MethodType="Broadcast"/>
+    </MethodList>
+</ServiceInterface>
+"""
+
+
+def check_method_names(report):
+    """The tools spell a generated method the way codegen.jar does.
+
+    codegen.jar keeps a request, response or broadcast name as written after its
+    prefix and turns only an attribute name into snake_case. A skeleton or a contract
+    check that snake-cases a method name writes overrides the base does not declare
+    and rejects the ones it does: one measured run paid 19 requests between the two.
+    """
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    try:
+        naming = json.loads(read('docs', 'agent', 'api.json'))['naming']['rules']
+    except (ValueError, KeyError, TypeError):
+        report.fail('method-names', 'docs/agent/api.json carries no naming rules')
+        return
+    transforms = dict((rule.get('applies_to'), rule.get('transform')) for rule in naming)
+    if transforms.get('method') != 'verbatim' or transforms.get('broadcast') != 'verbatim' \
+            or transforms.get('attribute') != 'snake_case':
+        report.fail('method-names', 'api.json says a method is {}, a broadcast {} and an '
+                                    'attribute {}; codegen.jar keeps the first two as '
+                                    'written and converts the third'
+                    .format(transforms.get('method'), transforms.get('broadcast'),
+                            transforms.get('attribute')))
+        return
+    holder = tempfile.mkdtemp()
+    try:
+        os.makedirs(os.path.join(holder, 'src', 'services'))
+        with open(os.path.join(holder, 'src', 'services', 'Naming.siml'), 'w',
+                  encoding='utf-8', newline='\n') as handle:
+            handle.write(NAMING_SIML)
+        made = subprocess.run([sys.executable, os.path.join(tools, 'gen_skeleton.py'),
+                               '--doc', 'src/services/Naming.siml', '--app', '--mode',
+                               'ipc', '--force', '--scenarios', 'none.json'],
+                              cwd=holder, capture_output=True, text=True)
+        sources = ''
+        for path in glob.glob(os.path.join(holder, 'src', '*', '*.[ch]pp')):
+            with open(path, encoding='utf-8') as handle:
+                sources += handle.read()
+        wanted = ('request_InsertCoin(', 'response_InsertCoin(', 'broadcast_LowWarning(',
+                  'notify_on_broadcast_LowWarning(', 'on_water_level_update(')
+        missing = [name for name in wanted if name not in sources]
+        if made.returncode != 0 or missing:
+            report.fail('method-names', 'gen_skeleton.py does not spell {} as codegen.jar '
+                                        'does{}'.format(', '.join(missing) or 'the names',
+                                                        (': ' + made.stderr[-160:])
+                                                        if made.returncode else ''))
+            return
+
+        def contract():
+            done = subprocess.run([sys.executable, os.path.join(tools, 'check_contract.py'),
+                                   '.', '--strict', '--allow-todo'],
+                                  cwd=holder, capture_output=True, text=True)
+            return done.stdout + done.stderr
+
+        clean = contract()
+        if 'ERROR' in clean:
+            report.fail('method-names', 'check_contract.py rejects the names codegen.jar '
+                                        'generates: ' + next(
+                                            line for line in clean.splitlines()
+                                            if 'ERROR' in line))
+            return
+        consumer = glob.glob(os.path.join(holder, 'src', 'consumer', '*Consumer.cpp'))[0]
+        with open(consumer, encoding='utf-8') as handle:
+            text = handle.read()
+        with open(consumer, 'w', encoding='utf-8', newline='\n') as handle:
+            handle.write(text.replace('mDeadline.stop_timer();',
+                                      'mDeadline.stop_timer();\n        '
+                                      'request_insert_coin();', 1))
+        if 'P-02' not in contract():
+            report.fail('method-names', 'check_contract.py accepts request_insert_coin '
+                                        'for a document request InsertCoin, which the base '
+                                        'does not declare')
+            return
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    report.ok('method-names', 'a method keeps its document spelling after its prefix in '
+                              'api.json, the skeleton and the contract check, and a '
+                              'snake-cased spelling of it is reported')
+
+
+STEP_SAMPLE = [{'name': 'open_gate', 'send': 'open', 'args': {'width': 3}},
+               {'name': 'settle', 'wait': 100},
+               {'name': 'close_gate', 'send': 'close'},
+               {'name': 'watch_width', 'await': 'Width'}]
+
+STEP_REFUSALS = [({'name': 'fly', 'send': 'fly'}, 'is not a request'),
+                 ({'name': 'open_gate', 'send': 'open'}, 'gives no value'),
+                 ({'name': 'both', 'await': 'Width', 'wait': 10}, 'does one of the two'),
+                 ({'name': 'done', 'wait': 10}, 'the driver declares itself'),
+                 ({'name': 'nothing', 'await': 'Nobody'}, 'no response, broadcast')]
+
+
+def check_step_driver(report):
+    """A declared step sequence becomes a driver, and no rule of the problem is generated.
+
+    Opt-in: a design without steps gets no driver. With steps, every request, wait and
+    exit code of the sequence is generated, a step that awaits something carries one
+    marker for its check and no code, the result passes the contract, and a step naming
+    what the service does not declare is refused before any document is written.
+    """
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    holder = tempfile.mkdtemp()
+    here = os.getcwd()
+    try:
+        os.chdir(holder)
+        made = generate_application(tools, 'plain')
+        if not os.path.isfile(made):
+            report.fail('step-driver', made)
+            return
+        with open(made[:-4] + '.hpp', encoding='utf-8') as handle:
+            if 'enum class Step' in handle.read():
+                report.fail('step-driver', 'a design with no steps got a step driver: the '
+                                           'driver is no longer opt-in')
+                return
+        os.chdir(here)
+        shutil.rmtree(holder, ignore_errors=True)
+        holder = tempfile.mkdtemp()
+        os.chdir(holder)
+        made = generate_application(tools, 'stepped', STEP_SAMPLE)
+        if not os.path.isfile(made):
+            report.fail('step-driver', made)
+            return
+        with open(made, encoding='utf-8') as handle:
+            source = handle.read()
+        for wanted, what in (('request_open(3);', 'the request with its argument'),
+                             ('request_close();', 'a request with no answer'),
+                             ('mHold.start_timer(100,', 'a timed wait'),
+                             ('quit_with(0);', 'the exit after the last step'),
+                             ('begin(Step::OpenGate);', 'the first step')):
+            if wanted not in source:
+                report.fail('step-driver', 'the driver does not write {}: "{}" is missing'
+                            .format(what, wanted))
+                return
+        checks = sorted(re.findall(r'TODO\(you\) (step_\w+):', source))
+        if checks != ['step_open_gate', 'step_watch_width']:
+            report.fail('step-driver', 'the steps that await something should carry one '
+                                       'marker each, step_open_gate and step_watch_width; '
+                                       'found {}'.format(checks or 'none'))
+            return
+        if 'TODO(you) response_open:' in source or \
+                'TODO(you) broadcast_gate_moved:' not in source:
+            report.fail('step-driver', 'an awaited answer still carries its generic marker, '
+                                       'or a broadcast no step awaits lost its own')
+            return
+        lines = source.splitlines()
+        for index, line in enumerate(lines):
+            if 'TODO(you) step_' in line and lines[index + 1].strip() != 'break;':
+                report.fail('step-driver', 'the generator wrote code into the check of a '
+                                           'step: "{}"'.format(lines[index + 1].strip()))
+                return
+        found = subprocess.run([sys.executable, os.path.join(tools, 'check_contract.py'),
+                                '.', '--strict', '--allow-todo'],
+                               capture_output=True, text=True)
+        if 'ERROR' in found.stdout + found.stderr:
+            report.fail('step-driver', 'the driver breaks the contract: ' + next(
+                line for line in (found.stdout + found.stderr).splitlines()
+                if 'ERROR' in line))
+            return
+        with open('design.json', encoding='utf-8') as handle:
+            design = json.load(handle)
+        for step, words in STEP_REFUSALS:
+            design['interfaces'][0]['steps'] = [step]
+            with open('bad.json', 'w', encoding='utf-8', newline='\n') as handle:
+                json.dump(design, handle)
+            done = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                                   '--spec', 'bad.json', '--outdir', 'refused'],
+                                  capture_output=True, text=True)
+            if done.returncode == 0 or words not in done.stderr or \
+                    os.path.isdir('refused'):
+                report.fail('step-driver', 'step {} is not refused before a document is '
+                                           'written with "{}": {}'
+                            .format(json.dumps(step), words,
+                                    (done.stderr or done.stdout).strip()[:160]))
+                return
+    finally:
+        os.chdir(here)
+        shutil.rmtree(holder, ignore_errors=True)
+    report.ok('step-driver', 'a declared step sequence generates its driver with one marker '
+                             'per check and no rule of its own, passes the contract, is '
+                             'opt-in, and {} malformed steps are refused'
+              .format(len(STEP_REFUSALS)))
 
 
 def check_peer_loss_branch(report):
@@ -3311,18 +3539,36 @@ def check_example_size(report):
     runbook = os.path.join(ROOT, 'docs', 'agent', '01-runbook.md')
     with open(runbook, encoding='utf-8') as handle:
         page = ' '.join(handle.read().split())
-    # The promise has to be attached to the command, not merely somewhere on the page.
+    # The promise has to be attached to the command, not merely somewhere on the page,
+    # and it has to carry the length: a run that is told only "short" caps the output
+    # at a guess of its own and pays a request for the remainder.
     promised = False
+    stated = None
     at = page.find('--example')
     while at >= 0:
-        if 'one call' in page[at:at + 200]:
+        near = page[at:at + 200]
+        if 'one call' in near:
             promised = True
+            found = re.search(r'(\d+) lines', near)
+            stated = int(found.group(1)) if found else None
             break
         at = page.find('--example', at + 1)
     if not promised:
         report.fail('example-size',
                     '01-runbook.md no longer says, where it names --example, that it '
                     'reads in one call, so nothing stops a run paging it')
+        return
+    if stated is None:
+        report.fail('example-size',
+                    '01-runbook.md says --example reads in one call but not how long it '
+                    'is. Run 20260914b capped it at head -300 of 370 and paid a second '
+                    'request for the rest; a length on the page is what stops that')
+        return
+    if stated != lines:
+        report.fail('example-size',
+                    '01-runbook.md says --example is {} lines and it is {}. A run that '
+                    'trusts the page truncates the spec; one that does not pages it'
+                    .format(stated, lines))
         return
     report.ok('example-size',
               'gen_docs.py --example is {} line(s) and {} bytes, and 01-runbook.md says '

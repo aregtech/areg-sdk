@@ -44,6 +44,10 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 FENCE_RE = re.compile(r'^```(bash|sh|shell|bat|cmd)\s*$')
 FENCE_END_RE = re.compile(r'^```\s*$')
+FENCE_ANY_RE = re.compile(r'^```\S*\s*$')
+# An unlabelled fence is read as shell when its first command starts with one of these.
+SHELL_HEADS = ('python3', 'python', 'cmake', 'ctest', 'bash', 'sh', 'git', 'java',
+               'start', 'cd', './', 'tools/', 'tools\\', 'build/', 'build\\')
 # A tool invocation written inline rather than fenced. Most of the routing tables --
 # CLAUDE.md section 4, AGENTS.md section 5 -- give their commands this way, and those
 # are the commands a reader actually pastes.
@@ -109,15 +113,20 @@ def blocks(path):
     began = 0
     for number, line in enumerate(lines, 1):
         if not inside:
-            if FENCE_RE.match(line):
+            if FENCE_RE.match(line) or (FENCE_END_RE.match(line) and
+                                        shell_block(lines, number)):
                 inside = True
                 pending = ''
+            elif FENCE_ANY_RE.match(line):
+                inside = None
             continue
         if FENCE_END_RE.match(line):
             if pending:
                 found.append((began, pending))
                 pending = ''
             inside = False
+            continue
+        if inside is None:
             continue
         text = line.strip()
         if not text or text.startswith('#') or text.startswith('::'):
@@ -132,7 +141,7 @@ def blocks(path):
 
     inside = False
     for number, line in enumerate(lines, 1):
-        if FENCE_RE.match(line) or (inside and FENCE_END_RE.match(line)):
+        if FENCE_ANY_RE.match(line):
             inside = not inside
             continue
         if inside or line.lstrip().startswith('#'):
@@ -140,6 +149,17 @@ def blocks(path):
         for command in INLINE_RE.findall(line):
             found.append((number, command.strip()))
     return sorted(found)
+
+
+def shell_block(lines, number):
+    """True when the unlabelled fence opening at this line number holds shell commands."""
+    for line in lines[number:]:
+        text = line.strip()
+        if FENCE_END_RE.match(text):
+            return False
+        if text and not text.startswith('#'):
+            return text.startswith(SHELL_HEADS)
+    return False
 
 
 # The top level directories a repository path can start with. A path outside them is
@@ -334,10 +354,11 @@ def main():
     for problem in problems:
         print(problem.rstrip())
     total = sum(counts.values())
-    print('{} command(s) in {} document(s): {} ran, {} flags checked against '
-          '--help, {} red, {} unresolved, {} not run here{}'
-          .format(total, len(documents), counts['RUN'], flagged, counts['RED'],
-                  counts['HOLE'], counts['SKIP'],
+    print('{} command(s) discovered in {} document(s): {} executed and passed, {} red, '
+          '{} unresolved, {} skipped (not run here; {} of them had their flags checked '
+          'against --help){}'
+          .format(total, len(documents), counts['RUN'], counts['RED'], counts['HOLE'],
+                  counts['SKIP'], flagged,
                   ', {} without a verdict'.format(counts['SLOW'])
                   if counts['SLOW'] else ''))
     return 1 if (counts['RED'] or counts['HOLE']) else 0

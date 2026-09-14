@@ -240,8 +240,9 @@ Codex keeps `result.jsonl` (including native usage events); Gemini keeps
 `meta.txt`, `prompt.txt`, `run.err`, fingerprints and the same acceptance probes.
 Copilot's report prints **AI credits (AIC)** from the top-level
 `totalNanoAiu / 1,000,000,000`, without adding the model/agent breakdowns again.
-Missing native metrics are unavailable, not zero; Copilot billing units are not
-converted to dollars.
+Missing native metrics are unavailable, not zero. The credits are converted once, at
+USD 0.01 per AIC, on a row that says so; a dollar figure the usage file already carries
+is printed as reported and nothing is converted. Premium requests are not converted.
 
 ### The options, one by one
 

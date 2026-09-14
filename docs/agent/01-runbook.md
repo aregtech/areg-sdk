@@ -79,15 +79,17 @@ every key present and empty, each section with a `#|` note on what its values ma
 Fill the values and keep the keys; no XML, `ID` or `To` is written by hand. A sample
 left as written is skipped and an empty value is absent, so delete only a section the
 task does not need. A key the generator does not read is refused by name.
-`gen_docs.py --example` prints a finished design of another application, short
-enough to read in one call.
+`gen_docs.py --example` prints a finished design of another application, 370 lines,
+short enough to read in one call: do not page it. A consumer that drives a
+scenario and exits lists it as `"steps"`, branching included: the generator
+writes the step machine, and each check may `stay()`, `go_to(Step::Name)` or
+`fail("why")`. Writing that machine by hand is the largest avoidable cost here.
 
 The spec holds `"datatypes"` (one `.dtml`, when two documents share a type),
 `"interfaces"` (a `.siml` each) and `"machines"` (a `.fsml` each). Everything is named:
 a state names its target state, a guard names an attribute, a parameter names its type,
-and the tool refuses a name that was never declared, in the message that says what was.
+and the tool refuses a name that was never declared.
 A large project splits the spec across files and passes each with its own `--spec`.
-
 
 - **A service contract, a `.siml`. Always.** The interface between the two programs.
 - **A state machine, a `.fsml`, only if** behaviour depends on what happened before
@@ -156,9 +158,6 @@ back.** `gen_skeleton.py --doc <document> --todos` reprints whichever are left.
 generated data type in a few hundred tokens and writes no file. Read that instead of
 opening a generated header. Never invent a method name on a generated base class: the
 names come from a fixed rule and the tool has applied it.
-
-Keep that shape for anything you add: a class in its own `.hpp` and `.cpp`, named after
-it, and the model files holding nothing but the model and `main()`.
 
 ## 6. Implement
 
@@ -246,7 +245,7 @@ Every request re-sends the whole conversation, so the bill is the number of requ
 multiplied by how much each one carries.
 
 **Never pour a log into the conversation.** It stays there for every later request.
-`build_project.py` already keeps its own output to a few lines. Everything else that
+Everything that
 can print hundreds -- `find`, `ls -R`, a raw compiler run -- is piped through `grep`
 or `head` before you ask for it.
 

@@ -4,6 +4,7 @@
     claude -p --output-format json ... > result.json
     python3 measure.py result.json
     python3 measure.py result.json --project .     # also count the sources written
+    python3 measure.py result.json --project . --sdk <areg-sdk>
 
 Prints cost, turns, wall time and token usage from the harness, then counts the
 tool calls from the session transcript. num_turns is assistant turns, not tool
@@ -16,8 +17,9 @@ on; any other shape has every number it holds printed under the key the file its
 used, so nothing is guessed and nothing is silently wrong.
 
 **Keep billing units explicit.** Claude reports USD; Copilot reports AI credits
-(AIC), or premium requests on legacy billing. Neither Copilot unit is converted
-to dollars by this tool.
+(AIC), or premium requests on legacy billing. AIC is converted at USD 0.01 per
+credit and printed as a conversion, beside the credits it came from; premium
+requests are not converted.
 """
 
 import collections
@@ -26,6 +28,13 @@ import glob
 import json
 import os
 import sys
+
+# What one GitHub Copilot AI credit costs.
+AIC_USD = Decimal("0.01")
+
+# A dollar figure a usage file may already carry. One found is printed as it is, and
+# the credits are not converted a second time.
+USD_KEYS = ("totalCostUsd", "totalCostUSD", "costUsd", "costUSD", "total_cost_usd")
 
 TARGETS = {"tempalarm": (50000, 20), "coffeemachine": (75000, 30)}
 SPELLINGS = {"tempalarm": ("temperature-alarm", "temperaturealarm"),
@@ -94,11 +103,9 @@ def report_copilot(result):
     The top-level totalNanoAiu is the session total in billionths of an AI credit.
     Nested model/agent totals are breakdowns, not additional charges.
 
-    TO CHECK, then either state the rate here or delete this note: GitHub prices an
-    AI credit at USD 0.01 for overage, so totalNanoAiu / 1e11 would be the dollar
-    figure. Nothing here converts, because the rate is a billing term rather than
-    something the usage file states, and a printed number nobody verified is worse
-    than a blank column. Verify against an invoice before using it to compare arms.
+    One AI credit is USD 0.01, so the dollar figure is totalNanoAiu / 1e11, converted
+    once from the top-level total. A dollar figure the file already carries is printed
+    as reported instead, and nothing is converted.
     """
     nano_aiu = result.get("totalNanoAiu")
     if nano_aiu is not None and (not isinstance(nano_aiu, int)
@@ -112,9 +119,17 @@ def report_copilot(result):
     if nano_aiu is not None:
         credits = format(Decimal(nano_aiu) / Decimal(1000000000), ",.9f").rstrip("0").rstrip(".")
         print("   %-28s %s" % ("AI credits (AIC)", credits))
+    reported = next((key for key in USD_KEYS if key in result), None)
+    if reported:
+        print("   %-28s %s   (as reported in %s, not converted)"
+              % ("cost (USD)", result[reported], reported))
+    elif nano_aiu is not None:
+        dollars = format(Decimal(nano_aiu) * AIC_USD / Decimal(1000000000), ",.4f")
+        print("   %-28s %s   (converted from AIC at USD %s per credit)"
+              % ("cost (USD)", dollars, AIC_USD))
     else:
         print("   %-28s %s" % ("AI credits (AIC)", "--   not reported in this usage file"))
-    print("   %-28s %s" % ("cost (USD)", "--   not reported; no conversion from AIC or premium requests"))
+        print("   %-28s %s" % ("cost (USD)", "--   not reported; premium requests are not converted"))
     if "totalPremiumRequestCost" in result:
         print("   %-28s %s" % ("premium requests (legacy)",
                                result["totalPremiumRequestCost"]))
@@ -125,21 +140,27 @@ def report_copilot(result):
 
     fields = ("inputTokens", "outputTokens", "cacheReadTokens",
               "cacheWriteTokens", "reasoningTokens")
-    totals = dict.fromkeys(fields, 0)
-    requests = 0
+    # A field no model reports is absent, not zero: a zero would read as a measurement.
+    totals = {}
+    requests = None
     for entry in models.values():
         usage = entry.get("usage") or {}
         for field in fields:
             if isinstance(usage.get(field), int):
-                totals[field] += usage[field]
+                totals[field] = totals.get(field, 0) + usage[field]
         count = (entry.get("requests") or {}).get("count")
         if isinstance(count, int):
-            requests += count
-    print("   %-28s %d" % ("API requests", requests))
-    fresh = totals["inputTokens"] + totals["outputTokens"]
-    print("   %-28s %s   (uncached in + out)" % ("tokens, fresh", format(fresh, ",")))
+            requests = (requests or 0) + count
+    absent = "--   not reported in this usage file"
+    print("   %-28s %s" % ("API requests", absent if requests is None else requests))
+    if "inputTokens" in totals and "outputTokens" in totals:
+        fresh = totals["inputTokens"] + totals["outputTokens"]
+        print("   %-28s %s   (uncached in + out)" % ("tokens, fresh", format(fresh, ",")))
+    else:
+        print("   %-28s %s" % ("tokens, fresh", absent))
     for field in fields:
-        print("   %-28s %s" % (field, format(totals[field], ",")))
+        print("   %-28s %s" % (field, format(totals[field], ",") if field in totals
+                                 else absent))
     print("   Reasoning is reported here directly; a Claude run has to infer it as")
     print("   output minus visible text.")
 
@@ -218,7 +239,34 @@ def tokens_of(usage):
     return sum(values) if values else None
 
 
-def report_sources(root):
+def generated_split(root, sdk):
+    """Lines of the project's sources the areg generator writes, and lines written by hand.
+
+    The count is analyze_run.py's, so the two tools never disagree. Returns None when
+    the project was not built from areg documents.
+    """
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import analyze_run
+    src = os.path.join(root, "src")
+    if not os.path.isdir(os.path.join(src, "services")):
+        return None
+    sources = {}
+    for base, folders, names in os.walk(src):
+        folders[:] = [f for f in folders if f not in ("build", "services", ".git")]
+        for name in names:
+            if name.endswith((".hpp", ".cpp", ".h", ".cc")):
+                path = os.path.join(base, name)
+                with open(path, encoding="utf-8", errors="ignore") as handle:
+                    sources[os.path.relpath(path, src)] = handle.read()
+    written = analyze_run.hand_written(src, sources, sdk)
+    if written is None:
+        return None
+    total = sum(len(text.splitlines()) for text in sources.values())
+    interface = sorted(glob.glob(os.path.join(src, "services", "*.siml")))[0]
+    return total - written, written, os.path.basename(interface)
+
+
+def report_sources(root, sdk=None):
     """What the run actually wrote, counted the same way for every framework."""
     if not os.path.isdir(root):
         print("== sources\n   no such directory: %s" % root)
@@ -230,13 +278,28 @@ def report_sources(root):
     if per_suffix:
         print("   %-28s %s" % ("by kind", ", ".join(
             "%s %d" % (suffix, n) for suffix, n in sorted(per_suffix.items()))))
-    print("   Build output and fetched packages are not counted. Generated sources")
-    print("   are not either, so this is what the run wrote by hand.")
+    print("   Build output, fetched packages and the code a build generates are not")
+    print("   counted. Sources a generator wrote into the project are, so this is not")
+    print("   what the run wrote by hand; the split below is.")
+    split = generated_split(root, sdk) if sdk else None
+    if split:
+        print("   %-28s %s" % ("lines the generator wrote", format(split[0], ",")))
+        print("   %-28s %s" % ("lines written by hand", format(split[1], ",")))
+        print("   Split by running gen_skeleton.py again on %s and the project's" % split[2])
+        print("   design.json: a line matching its output counts as generated.")
 
 
 def main():
     args = [a for a in sys.argv[1:]]
     project = None
+    sdk = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                       os.pardir, os.pardir))
+    if "--sdk" in args:
+        index = args.index("--sdk")
+        if index + 1 >= len(args):
+            sys.exit("--sdk needs a directory")
+        sdk = args[index + 1]
+        del args[index:index + 2]
     if "--project" in args:
         index = args.index("--project")
         if index + 1 >= len(args):
@@ -244,7 +307,7 @@ def main():
         project = args[index + 1]
         del args[index:index + 2]
     if len(args) != 1:
-        sys.exit("usage: measure.py <result.json> [--project <dir>]")
+        sys.exit("usage: measure.py <result.json> [--project <dir>] [--sdk <areg-sdk>]")
 
     result = load(args[0])
     if not isinstance(result, dict) or "session_id" not in result:
@@ -254,7 +317,7 @@ def main():
             code = report_foreign(args[0], result)
         if project:
             print("")
-            report_sources(project)
+            report_sources(project, sdk)
         return code
     usage = result.get("usage") or {}
     total = tokens_of(usage)
@@ -278,7 +341,7 @@ def main():
 
     if project:
         print("")
-        report_sources(project)
+        report_sources(project, sdk)
 
     print("\n== tool calls")
     path = transcript_of(result.get("session_id"))

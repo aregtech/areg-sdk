@@ -8,8 +8,9 @@ a few hundred tokens. This page carries what no tool writes.
 
 ## Generated names, from the document
 
-`<Name>` is `Overview/@Name`. Method and attribute names become `snake_case`; type,
-structure and constant names are kept as written.
+`<Name>` is `Overview/@Name`. Attribute names become `snake_case`; a method name is kept
+as written after its prefix, so write it `snake_case`. Type, structure and constant
+names are kept as written.
 
 | In the `.siml` | Provider | Consumer |
 |---|---|---|
@@ -23,6 +24,15 @@ Scalars pass by value; `String`, structures and containers as `const T &`. A con
 an enumeration, a structure and the service name keep the name the document gives them,
 reachable as `<Name>::Thing`. The authoritative table, with the transform each kind of
 name goes through, is `20-service-interface.md` section 3.
+
+## A consumer that drives a scenario
+
+List it as `"steps"` of its interface in `design.json`: each step sends a request,
+awaits a response, broadcast or attribute, or waits some milliseconds. The generator
+writes the sequence, and the worksheet has one `step_<name>` check per awaiting step,
+which may call `fail("why")`, `stay()` or `go_to(Step::Name)`, so a scenario that
+branches fits it too. `gen_docs.py --example`
+shows four steps.
 
 ## Timer and log
 

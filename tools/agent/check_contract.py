@@ -687,8 +687,10 @@ def expected_members(documents, problems):
                 'invalidate_%s' % base, 'on_%s_update' % base,
                 'notify_on_%s_update' % base,
             })
+        # A method keeps the document's spelling after its prefix; only attributes
+        # are turned to snake_case.
         for method in root.iter('Method'):
-            base = snake(method.get('Name', ''))
+            base = method.get('Name', '')
             kind = method.get('MethodType', '')
             if not base:
                 continue
@@ -1269,7 +1271,7 @@ def generated_calls(documents):
         except (ET.ParseError, OSError):
             continue
         for method in root.iter('Method'):
-            base = snake(method.get('Name', ''))
+            base = method.get('Name', '')
             prefix = METHOD_PREFIX.get(method.get('MethodType', ''))
             if not base or not prefix:
                 continue

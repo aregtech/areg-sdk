@@ -189,6 +189,10 @@ def hand_written(src, sources, sdk):
                "--mode", mode, "--force", "--scenarios", os.path.join(tmp, "none.json")]
         if fsml:
             cmd += ["--machine", "src/services/" + os.path.basename(fsml[0])]
+        # The steps a design declares are generated too, so they are not hand-written.
+        design = os.path.join(os.path.dirname(os.path.abspath(src)), "design.json")
+        if os.path.isfile(design):
+            cmd += ["--spec", design]
         if subprocess.run(cmd, cwd=tmp, capture_output=True).returncode:
             return None
         generated = {}
@@ -422,7 +426,8 @@ def main():
             tot["output_tokens"] * PRICE_OUT) / 1e6
     print("== %s" % run)
     print("   %-26s %s" % ("session", sid))
-    print("   %-26s %s" % ("sdk read", sdk))
+    areg_arm = (meta.get("framework") or "areg").strip() == "areg"
+    print("   %-26s %s" % ("sdk read" if areg_arm else "runner staged from", sdk))
     if meta.get("model") and meta.get("model") != "sonnet":
         print("   %-26s %s  (prices below are Sonnet 5's)" % ("model", meta.get("model")))
     print("   %-26s %d" % ("API requests", len(requests)))
@@ -455,11 +460,13 @@ def main():
     per_request = [(r["cr"] * PRICE_READ + r["cw"] * PRICE_WRITE + r["out"] * PRICE_OUT) / 1e6
                    for r in requests]
     print_events(requests, per_request)
-    print("\n== fallbacks to SDK internals: %d" % len(fallbacks))
+    print("\n== %s: %d" % ("fallbacks to SDK internals" if areg_arm
+                           else "reads of areg internals", len(fallbacks)))
     for i, nm, kind, what in fallbacks:
         print("   req %3d  %-6s %-16s %s" % (i, nm, kind, what))
-    print("\n== filesystem searches: %d   (each one is a path the corpus failed to resolve)"
-          % len(searches))
+    print("\n== filesystem searches: %d   (%s)"
+          % (len(searches), "each one is a path the corpus failed to resolve" if areg_arm
+             else "toolchain and package probes: this arm has no corpus"))
     for i, what in searches:
         print("   req %3d  %s" % (i, what))
 

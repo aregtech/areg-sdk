@@ -32,7 +32,12 @@ except ImportError:
     resource = None
 
 START_DELAY = 3.0
+# The deadline the task asks the application to respect.
 WAIT_LIMIT = 20.0
+# What a probe measures is the whole process: start, areg initialisation and
+# teardown all land inside it and none of them is waiting. Both the verdict and
+# the kill threshold allow this much on top, so an application that gives up at
+# the limit is not refused for the seconds it did not spend waiting.
 WAIT_MARGIN = 10.0
 LOSS_POINTS = (0.25, 0.5, 0.75)
 CPU_LIMIT = 0.5
@@ -164,9 +169,10 @@ def judge_no_peer(name, observed):
     if code == 0:
         return result('no-peer', False,
                       'exited 0 after {:.1f}s alone, with no peer to serve'.format(elapsed))
-    return result('no-peer', elapsed <= WAIT_LIMIT,
-                  'exited {} after {:.1f}s alone, limit {:.0f}s'
-                  .format(code, elapsed, WAIT_LIMIT))
+    return result('no-peer', elapsed <= limit,
+                  'exited {} after {:.1f}s alone, limit {:.0f}s and {:.0f}s allowed '
+                  'for start and teardown'
+                  .format(code, elapsed, WAIT_LIMIT, WAIT_MARGIN))
 
 
 def probe_no_peer(scenario, build_dirs):
@@ -278,8 +284,13 @@ def probe_sanitize(run_dir, work, scenario):
 # earns. The three marked "audit" each passed before the probe judged them.
 SELF_TEST_NO_PEER = (
     ('gave up inside the limit', {'exits': {'p': 1}, 'elapsed': 12.0}, True),
-    ('audit: gave up after the limit', {'exits': {'p': 1}, 'elapsed': 25.0}, False),
+    ('audit: gave up past the allowance', {'exits': {'p': 1}, 'elapsed': 35.0}, False),
     ('exactly at the limit', {'exits': {'p': 1}, 'elapsed': 20.0}, True),
+    ('the limit plus the start it did not spend waiting',
+     {'exits': {'p': 1}, 'elapsed': 20.4}, True),
+    ('exactly at the allowance', {'exits': {'p': 1}, 'elapsed': 30.0}, True),
+    ('audit: past the allowance by a whisker',
+     {'exits': {'p': 1}, 'elapsed': 30.1}, False),
     ('exited 0 with no peer', {'exits': {'p': 0}, 'elapsed': 5.0}, False),
     ('still waiting', {'verdict': 'timed out after 30s'}, False),
     ('never ran', {'exits': {}, 'verdict': 'binary not found: x'}, False),

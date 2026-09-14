@@ -51,6 +51,9 @@ ADVICE = {
     'scenarios': 'the application built, but a scenario did not pass. Each failure '
                  'names the process, what it was expected to print and what it '
                  'wrote. "--only <name>" iterates on one.',
+    'final': 'the final pass does not allow an open marker. A passing scenario says '
+             'nothing about the requirement behind one: no body was written for it. '
+             'Fill it, then run this again.',
     'build': 'the compiler refused a source. Ask for the errors alone, never the whole '
              'log: "cmake --build build 2>&1 | grep -E \'error\' | head -20". A '
              'provider that is abstract means the document gained a request the '
@@ -85,7 +88,9 @@ def run(step, command, cwd, kept=2):
         show(lines, 40)
         print('')
         print('FAILED at step "{}", exit {}.'.format(step, result.returncode))
-        print(ADVICE[step].format(tools=os.path.dirname(HERE)))
+        advice = ADVICE.get(step, '')
+        if advice:
+            print(advice.format(tools=os.path.dirname(HERE)))
         return False
     show(lines, kept)
     return True
@@ -309,6 +314,8 @@ def main():
                    '--app', '--mode', mode, '--force']
         if machine:
             command += ['--machine', machine]
+        for spec in specs:
+            command += ['--spec', spec]
         if not run('application', command, root, kept=200):
             return 1
     elif present == 1:
@@ -364,9 +371,6 @@ def main():
                        [PYTHON, os.path.join(HERE, 'check_contract.py'), '.',
                         '--strict'],
                        root, kept=1):
-                print('   This is the final pass, which does not allow an open marker.')
-                print('   A passing scenario says nothing about the requirement behind')
-                print('   one: no body was written for it. Fill it, then run this again.')
                 return 1
         print('')
         print('Every step passed, the scenarios included.')

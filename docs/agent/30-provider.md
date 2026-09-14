@@ -127,10 +127,12 @@ Both are `areg::StubBase` members, so a provider already has them.
 however many are waiting, and the session is invalid afterwards. Never keep proxy
 addresses to route an answer yourself.
 
-**Skipping `unblock_current_request()` is a silent defect.** With one client it works
-and looks correct; the second client is refused and nothing in the build says so. A
-worked example is `recipes/07-worker-events/`, and `examples/24_pubunblock` answers
-several clients from a timer.
+**Answer before returning, or unblock.** A handler that sends its response before it
+returns -- including one that runs a state machine trigger, which is synchronous --
+needs nothing. A handler that hands the work on and returns must unblock first, or
+the second client is refused and nothing in the build says so. Worked examples:
+`recipes/07-worker-events/`, and `examples/24_pubunblock` answers several clients
+from a timer.
 
 **Do not block inside a handler.** Handlers run on the component's dispatcher
 thread, one at a time. A sleep or a long loop inside one handler stops every

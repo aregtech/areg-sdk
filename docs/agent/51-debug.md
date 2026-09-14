@@ -134,7 +134,7 @@ the one you have not implemented, or whose signature does not match.
 
 | Cause | Fix |
 |---|---|
-| A request is not overridden | Implement it; the name is `request_` plus the document's name in `snake_case` |
+| A request is not overridden | Implement it; the name is `request_` plus the document's name as written |
 | The signature differs | Copy the parameter types from the note; do not guess |
 | The document changed and the code did not | Implement the new request, delete the removed one |
 

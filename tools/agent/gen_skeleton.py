@@ -43,6 +43,8 @@ def fail(message):
     sys.exit(1)
 
 
+# Only an attribute name is turned to snake_case by codegen.jar. A request, response
+# or broadcast name keeps its spelling after the prefix: InsertCoin is request_InsertCoin.
 def to_snake(name):
     """StringOnChange -> string_on_change; hello_service stays as it is."""
     text = re.sub(r'(.)([A-Z][a-z]+)', r'\1_\2', name)
@@ -124,6 +126,11 @@ def defined_names(text):
     members, helpers = [], []
     for line in text.splitlines():
         if ' final' in line or '= delete' in line or 'AREG_NOCOPY' in line:
+            continue
+        # A placeholder stands until its marker is filled, and the line that fills it
+        # declares the same name. Listing it as taken tells the reader not to write
+        # the one line that marker asks for.
+        if PLACEHOLDER_TAG.strip() in line:
             continue
         found = DECLARED.match(line)
         if found and found.group(1) not in members:
@@ -296,6 +303,13 @@ ORDER_NOTE = ['a response and an update travel independently, so either can',
               'update that may have been delivered already, or the wait never ends']
 
 
+STEPS_NOTE = ['a step_ section runs only while its step is current. fail("why") ends the',
+              'run with exit 1, stay() keeps the step for the next arrival, and',
+              'go_to(Step::Name) picks the next step. Doing none of them goes on to the',
+              'step listed next, and after the last one the run exits 0. A step with',
+              'nothing to check still takes one line: a // comment saying so']
+
+
 def section_notes(sections):
     """The warnings that belong to one section, keyed by its marker name.
 
@@ -308,6 +322,9 @@ def section_notes(sections):
     updates = [name for name, _, _, _, _ in sections if name.startswith('update_')]
     if answers and updates:
         notes[answers[0]] = ORDER_NOTE
+    checks = [name for name, _, _, _, _ in sections if name.startswith('step_')]
+    if checks:
+        notes[checks[0]] = STEPS_NOTE
     return notes
 
 
@@ -434,6 +451,8 @@ class Interface:
         self._read_included(root, path)
 
         self.requests = []
+        # The response each request is answered with, by request name.
+        self.response_of = {}
         self.responses = []
         self.broadcasts = []
         # A .fsml declares its methods in the same list, under two other kinds.
@@ -451,6 +470,8 @@ class Interface:
                 continue
             if kind == 'request':
                 self.requests.append(entry)
+                if method.get('Response'):
+                    self.response_of[method.get('Name')] = method.get('Response')
             elif kind == 'response':
                 self.responses.append(entry)
             elif kind == 'broadcast':
@@ -588,7 +609,7 @@ def provider_files(iface, class_name, include_root):
               'protected:']
     for name, params in iface.requests:
         header.append('    //!< Implements the {} request.'.format(name))
-        header.append('    void request_{}({}) final;'.format(to_snake(name), iface.signature(params)))
+        header.append('    void request_{}({}) final;'.format(name, iface.signature(params)))
     header += ['',
                'private:',
                '    inline {} & self()'.format(class_name),
@@ -621,7 +642,7 @@ def provider_files(iface, class_name, include_root):
 
     responses = {name for name, _ in iface.responses}
     for name, params in iface.requests:
-        source.append('void {}::request_{}({})'.format(class_name, to_snake(name), iface.signature(params)))
+        source.append('void {}::request_{}({})'.format(class_name, name, iface.signature(params)))
         source.append('{')
         source.append('    // TODO: implement the request.')
         if name in responses:
@@ -631,9 +652,9 @@ def provider_files(iface, class_name, include_root):
                 # is written out with its types for the implementation to fill.
                 source.append('    // Answer with:')
                 source.append('    // response_{}({});'.format(
-                    to_snake(name), iface.signature(answer).strip()))
+                    name, iface.signature(answer).strip()))
             else:
-                source.append('    response_{}();'.format(to_snake(name)))
+                source.append('    response_{}();'.format(name))
         source.append('}')
         source.append('')
     return '\n'.join(header), '\n'.join(source)
@@ -662,13 +683,13 @@ def consumer_files(iface, class_name, include_root):
               '    bool service_connected(areg::ServiceConnectionState status, areg::ProxyBase & proxy) final;']
     for name, params in iface.responses:
         header.append('    //!< Answer of the {} request.'.format(name))
-        header.append('    void response_{}({}) final;'.format(to_snake(name), iface.signature(params)))
+        header.append('    void response_{}({}) final;'.format(name, iface.signature(params)))
     for name, params in iface.requests:
         header.append('    //!< The {} request could not be executed.'.format(name))
-        header.append('    void request_{}_failed(areg::ResultType reason) final;'.format(to_snake(name)))
+        header.append('    void request_{}_failed(areg::ResultType reason) final;'.format(name))
     for name, params in iface.broadcasts:
         header.append('    //!< Broadcast {}.'.format(name))
-        header.append('    void broadcast_{}({}) final;'.format(to_snake(name), iface.signature(params)))
+        header.append('    void broadcast_{}({}) final;'.format(name, iface.signature(params)))
     for attr_name, type_name in iface.attributes:
         cpp, by_ref = iface.cpp_type(type_name)
         param = 'const {} & {}'.format(cpp, attr_name) if by_ref else '{} {}'.format(cpp, attr_name)
@@ -711,7 +732,7 @@ def consumer_files(iface, class_name, include_root):
     for attr_name, _ in iface.attributes:
         source.append('            notify_on_{}_update(true);'.format(to_snake(attr_name)))
     for name, _ in iface.broadcasts:
-        source.append('            notify_on_broadcast_{}(true);'.format(to_snake(name)))
+        source.append('            notify_on_broadcast_{}(true);'.format(name))
     source += ['            // TODO: send the first request here.',
                '        }',
                '    }',
@@ -721,13 +742,13 @@ def consumer_files(iface, class_name, include_root):
                '']
 
     for name, params in iface.responses:
-        source += ['void {}::response_{}({})'.format(class_name, to_snake(name), iface.signature(params)),
+        source += ['void {}::response_{}({})'.format(class_name, name, iface.signature(params)),
                    '{', '    // TODO: handle the answer.', '}', '']
     for name, _ in iface.requests:
-        source += ['void {}::request_{}_failed(areg::ResultType /*reason*/)'.format(class_name, to_snake(name)),
+        source += ['void {}::request_{}_failed(areg::ResultType /*reason*/)'.format(class_name, name),
                    '{', '    // TODO: retry when is_connected(), or report.', '}', '']
     for name, params in iface.broadcasts:
-        source += ['void {}::broadcast_{}({})'.format(class_name, to_snake(name), iface.signature(params)),
+        source += ['void {}::broadcast_{}({})'.format(class_name, name, iface.signature(params)),
                    '{', '    // TODO: handle the broadcast.', '}', '']
     for attr_name, type_name in iface.attributes:
         cpp, by_ref = iface.cpp_type(type_name)
@@ -914,15 +935,15 @@ def contract_lines(iface, document):
                .format(n=iface.name))
     for name, params in iface.requests:
         out.append('  provider overrides request_{}({}); consumer calls request_{}(...) '
-                   'to send it'.format(to_snake(name), iface.signature(params),
-                                       to_snake(name)))
+                   'to send it'.format(name, iface.signature(params),
+                                       name))
     for name, params in iface.responses:
         out.append('  provider calls response_{}({}); consumer overrides it'
-                   .format(to_snake(name), iface.signature(params)))
+                   .format(name, iface.signature(params)))
     for name, params in iface.broadcasts:
         out.append('  provider calls broadcast_{}({}); consumer subscribes with '
                    'notify_on_broadcast_{}(true)'
-                   .format(to_snake(name), iface.signature(params), to_snake(name)))
+                   .format(name, iface.signature(params), name))
     for name, kind in iface.attributes:
         spelled = to_snake(name)
         cpp = iface.cpp_type(kind)[0]
@@ -1016,10 +1037,11 @@ def provider_class(iface, cls, machine=None):
         lines.append('        , mFsm(static_cast<{}ActionHandler &>(self()))'.format(machine.name))
     lines.append('    {')
     if iface.attributes:
-        lines.append('        // An attribute is invalid until it is set once.')
+        lines.append(marker('initial_values', 'the value each attribute starts with; an '
+                            'attribute is invalid until it is set once'))
         for attr_name, type_name in iface.attributes:
-            lines.append('        set_{}({});'.format(to_snake(attr_name),
-                                                      default_expr(iface, type_name)))
+            lines.append(placeholder('        set_{}({});'.format(
+                to_snake(attr_name), default_expr(iface, type_name))))
     lines += ['    }', '', 'protected:']
 
     if machine:
@@ -1044,15 +1066,15 @@ def provider_class(iface, cls, machine=None):
             lines.append('    //   mFsm.{}({});'.format(
                 name, ', '.join(pname for pname, _ in params)))
     for name, params in iface.requests:
-        lines.append('    void request_{}({}) final'.format(to_snake(name),
+        lines.append('    void request_{}({}) final'.format(name,
                                                             iface.signature(params)))
         lines.append('    {')
-        lines.append(marker('request_' + to_snake(name),
+        lines.append(marker('request_' + name,
                             'the rule this request carries out'))
         if name in answered:
             args = ', '.join(default_expr(iface, t) for _, t in answered[name])
             lines.append(placeholder('        response_{}({});'
-                                     .format(to_snake(name), args)))
+                                     .format(name, args)))
         lines.append('    }')
         lines.append('')
 
@@ -1105,22 +1127,184 @@ def steps_scenario(iface):
     return len(iface.requests) > 1
 
 
-def consumer_class(iface, cls):
-    """The consumer component, subscribed and handling everything it subscribed to."""
-    stepped = steps_scenario(iface)
+def pascal(name):
+    """order_latte -> OrderLatte; OrderLatte stays as it is."""
+    return ''.join(part[:1].upper() + part[1:] for part in name.split('_') if part)
+
+
+def cpp_value(value):
+    """A value of design.json as the C++ text an argument is written with."""
+    if isinstance(value, bool):
+        return 'true' if value else 'false'
+    return str(value)
+
+
+def steps_of(specs, iface):
+    """The steps the specs declare for this service, resolved against its document.
+
+    Each is a dict: name, enum, send (a request or None), args (C++ text in parameter
+    order), awaits ((kind, name) or None) and wait (milliseconds, 0 for none).
+    """
+    import gen_docs
+    declared = []
+    for path in specs:
+        spec, _skipped = gen_docs.load_spec(path)
+        for entry in spec.get('interfaces') or []:
+            if isinstance(entry, dict) and entry.get('name') == iface.name:
+                declared = entry.get('steps') or []
+    requests = dict(iface.requests)
+    kinds = {}
+    for kind, entries in (('update', iface.attributes), ('broadcast', iface.broadcasts),
+                          ('response', iface.responses)):
+        for name, _ in entries:
+            kinds[name] = kind
+    steps = []
+    for step in declared:
+        name, send = step.get('name'), step.get('send')
+        where = 'step "{}"'.format(name)
+        if send is not None and send not in requests:
+            fail('{} sends "{}", which {} does not declare as a request'
+                 .format(where, send, iface.name))
+        args = step.get('args') or {}
+        values = []
+        for param, _ in requests.get(send, []):
+            if param not in args:
+                fail('{} gives no value for "{}" of request "{}"'.format(where, param, send))
+            values.append(cpp_value(args[param]))
+        target, wait = step.get('await'), step.get('wait') or 0
+        if target is None and send is not None and not wait:
+            target = iface.response_of.get(send)
+        elif target in iface.response_of:
+            target = iface.response_of[target]
+        if target is not None and target not in kinds:
+            fail('{} awaits "{}", which is no response, broadcast or attribute of {}'
+                 .format(where, target, iface.name))
+        steps.append({'name': name, 'enum': pascal(name), 'send': send, 'args': values,
+                      'awaits': (kinds[target], target) if target is not None else None,
+                      'wait': wait})
+    return steps
+
+
+STEP_CHECK = {'response': 'check this answer', 'broadcast': 'check this broadcast',
+              'update': 'check the new value'}
+
+
+def step_dispatch(steps, kind, name, indent):
+    """The check of every step waiting on this handler, then the end of that step."""
+    waiting = [step for step in steps if step['awaits'] == (kind, name)]
+    if not waiting:
+        return []
+    pad = ' ' * indent
+    lines = ['' if kind != 'response' else None, pad + 'switch (mStep)', pad + '{']
+    lines = [line for line in lines if line is not None]
+    for step in waiting:
+        lines += [pad + 'case Step::{}:'.format(step['enum']),
+                  marker('step_' + step['name'], STEP_CHECK[kind], indent + 4),
+                  pad + '    break;']
+    lines += [pad + 'default:', pad + '    return;', pad + '}', pad + 'complete();']
+    return lines
+
+
+def driver_lines(steps, holds):
+    """The helpers that run the steps: begin one, end one, stay in one, jump to one."""
+    lines = ['    //! Begins a step: sends its request or starts its wait. A step that',
+             '    //! waits for nothing ends at once.',
+             '    void begin(Step step)',
+             '    {',
+             '        mStep = step;',
+             '        mNext = step;',
+             '        mJumped = false;',
+             '        mHeld = false;',
+             '        progressed();',
+             '        switch (step)',
+             '        {']
+    for step in steps:
+        lines += ['        case Step::{}:'.format(step['enum']),
+                  '            std::cout << "step {}" << std::endl;'.format(step['name'])]
+        if step['send']:
+            lines.append('            request_{}({});'.format(step['send'],
+                                                          ', '.join(step['args'])))
+        if step['wait']:
+            lines += ['            mHold.stop_timer();',
+                      '            mHold.start_timer({}, static_cast<areg::DispatcherThread &>'
+                      '(master_thread()),'.format(step['wait']),
+                      '                              areg::TimerBase::ONE_TIME);']
+        elif step['awaits'] is None:
+            lines.append('            complete();')
+        lines.append('            break;')
+    lines += ['        case Step::Done:',
+              '            mDeadline.stop_timer();',
+              '            mPace.stop_timer();',
+              '            quit_with(0);',
+              '            break;',
+              '        default:',
+              '            break;',
+              '        }',
+              '    }',
+              '',
+              '    //! Ends the current step and begins the next, unless its check failed',
+              '    //! the run, called stay() or called go_to().',
+              '    void complete()',
+              '    {',
+              '        if (is_quitting() || mHeld)',
+              '        {',
+              '            mHeld = false;',
+              '            return;',
+              '        }',
+              '',
+              '        begin(mJumped ? mNext : static_cast<Step>(static_cast<uint32_t>(mStep) + 1));',
+              '    }',
+              '',
+              '    //! Keeps the current step for the next answer, broadcast or update.',
+              '    void stay()',
+              '    {   mHeld = true; }',
+              '',
+              '    //! Makes this the next step instead of the one listed after the current.',
+              '    void go_to(Step step)',
+              '    {   mNext = step; mJumped = true; }',
+              '',
+              '    Step  mStep{ Step::Start };   //!< The step the scenario is on.',
+              '    Step  mNext{ Step::Start };   //!< The step go_to() chose.',
+              '    bool  mJumped{ false };       //!< True once go_to() chose the next step.',
+              '    bool  mHeld{ false };         //!< True once stay() kept the step.',
+              '']
+    if holds:
+        lines += ['    areg::Timer  mHold;   //!< Ends a step that waits for a time.', '']
+    return lines
+
+
+def consumer_class(iface, cls, steps=()):
+    """The consumer component, subscribed and handling everything it subscribed to.
+
+    With steps it also carries the driver that runs them: the requests, their order and
+    the exit code are generated, and the check a step makes is a marker.
+    """
+    stepped = steps_scenario(iface) or bool(steps)
+    holds = any(step['wait'] for step in steps)
     pad = ' ' * (len(cls) + 13)
     lines = ['class {} final : public    areg::Component'.format(cls),
              '{}, protected {}ConsumerBase'.format(pad, iface.name),
              '{}, private   areg::TimerConsumer'.format(pad)]
     lines += ['{',
-              'public:',
-              '    {}(const areg::ComponentEntry & entry, areg::ComponentThread & owner)'.format(cls),
+              'public:']
+    if steps:
+        lines += ['    //! The steps of the scenario, in the order design.json lists them.',
+                  '    enum class Step : uint32_t',
+                  '    {',
+                  '        Start,']
+        lines += ['        {},'.format(step['enum']) for step in steps]
+        lines += ['        Done',
+                  '    };',
+                  '']
+    lines += ['    {}(const areg::ComponentEntry & entry, areg::ComponentThread & owner)'.format(cls),
               '        : areg::Component(entry, owner)',
               '        , {}ConsumerBase(entry.mDependencyServices[0].mRoleName, owner)'.format(iface.name),
               '        , areg::TimerConsumer()',
               '        , mDeadline(static_cast<areg::TimerConsumer &>(self()), "Deadline")']
     if stepped:
         lines.append('        , mPace(static_cast<areg::TimerConsumer &>(self()), "Pace")')
+    if holds:
+        lines.append('        , mHold(static_cast<areg::TimerConsumer &>(self()), "Hold")')
     lines += ['    { }',
               '',
               'protected:',
@@ -1146,29 +1330,41 @@ def consumer_class(iface, cls):
         for attr_name, _ in iface.attributes:
             lines.append('                notify_on_{}_update(true);'.format(to_snake(attr_name)))
         for name, _ in iface.broadcasts:
-            lines.append('                notify_on_broadcast_{}(true);'.format(to_snake(name)))
+            lines.append('                notify_on_broadcast_{}(true);'.format(name))
     # A generated application that waits forever is not one that runs as written.
     # The first request that carries a response completes a round trip, and the
     # response handler below quits, so the program starts and ends on its own.
-    answered_first = next((entry for entry in iface.requests
-                           if entry[0] in set(n for n, _ in iface.responses)), None)
-    if answered_first:
-        name, params = answered_first
-        args = ', '.join(default_expr(iface, type_name) for _, type_name in params)
-        lines.append(marker('first_request',
-                            'the first request of the scenario', 16))
-        lines.append(placeholder('                request_{}({});'
-                                 .format(to_snake(name), args)))
-    else:
-        lines.append(marker('first_request',
-                            'the first request of the scenario', 16))
-    if stepped:
+    if steps:
         lines += ['',
-                  '                // One step of the scenario per tick.',
+                  '                // The stall watchdog ticks from here; the steps begin once.',
                   '                mPace.stop_timer();',
                   '                mPace.start_timer({}, static_cast<areg::DispatcherThread &>'
                   '(master_thread()),'.format(STEP_INTERVAL_MS),
-                  '                                  areg::TimerBase::CONTINUOUSLY);']
+                  '                                  areg::TimerBase::CONTINUOUSLY);',
+                  '                if (mStep == Step::Start)',
+                  '                {',
+                  '                    begin(Step::{});'.format(steps[0]['enum']),
+                  '                }']
+    else:
+        answered_first = next((entry for entry in iface.requests
+                               if entry[0] in set(n for n, _ in iface.responses)), None)
+        if answered_first:
+            name, params = answered_first
+            args = ', '.join(default_expr(iface, type_name) for _, type_name in params)
+            lines.append(marker('first_request',
+                                'the first request of the scenario', 16))
+            lines.append(placeholder('                request_{}({});'
+                                     .format(name, args)))
+        else:
+            lines.append(marker('first_request',
+                                'the first request of the scenario', 16))
+        if stepped:
+            lines += ['',
+                      '                // One step of the scenario per tick.',
+                      '                mPace.stop_timer();',
+                      '                mPace.start_timer({}, static_cast<areg::DispatcherThread &>'
+                      '(master_thread()),'.format(STEP_INTERVAL_MS),
+                      '                                  areg::TimerBase::CONTINUOUSLY);']
     lines += ['            }',
               '            else if ((status == areg::ServiceConnectionState::Disconnected) ||',
               '                     (status == areg::ServiceConnectionState::ConnectionLost))',
@@ -1216,10 +1412,17 @@ def consumer_class(iface, cls):
               '            return;',
               '        }',
               '']
+    if holds:
+        lines += ['        if (&timer == &mHold)',
+                  '        {',
+                  '            complete();',
+                  '            return;',
+                  '        }',
+                  '']
     if stepped:
-        lines += [marker('next_step', 'the next request of the scenario'),
-                  '',
-                  '        if ((cStallTicks != 0) && (++mIdleTicks >= cStallTicks))',
+        if not steps:
+            lines += [marker('next_step', 'the next request of the scenario'), '']
+        lines += ['        if ((cStallTicks != 0) && (++mIdleTicks >= cStallTicks))',
                   '        {',
                   '            fail("the scenario stopped making progress");',
                   '        }']
@@ -1228,23 +1431,26 @@ def consumer_class(iface, cls):
 
     first = True
     for name, params in iface.responses:
-        lines.append('    void response_{}({}) final'.format(to_snake(name),
+        lines.append('    void response_{}({}) final'.format(name,
                                                              iface.signature(params)))
         lines.append('    {')
-        lines.append(marker('response_' + to_snake(name),
-                            'what this answer means for the scenario'))
-        if first:
+        # A step that awaits this answer checks it, so a second marker would be empty.
+        if not any(step['awaits'] == ('response', name) for step in steps):
+            lines.append(marker('response_' + name,
+                                'what this answer means for the scenario'))
+        if first and not steps:
             lines.append('        // placeholder(you): the scenario ends here until a '
                          'later step replaces it.')
             if stepped:
                 lines.append(placeholder('        mPace.stop_timer();'))
             lines.append(placeholder('        quit_with(0);'))
             first = False
+        lines += step_dispatch(steps, 'response', name, 8)
         lines.append('    }')
         lines.append('')
 
     for name, _ in iface.requests:
-        lines.append('    void request_{}_failed(areg::ResultType reason) final'.format(to_snake(name)))
+        lines.append('    void request_{}_failed(areg::ResultType reason) final'.format(name))
         lines += ['    {',
                   '        std::cerr << "request {} failed, reason " '
                   '<< static_cast<int>(reason) << std::endl;'.format(name)]
@@ -1255,12 +1461,14 @@ def consumer_class(iface, cls):
                   '']
 
     for name, params in iface.broadcasts:
-        lines.append('    void broadcast_{}({}) final'.format(to_snake(name),
+        lines.append('    void broadcast_{}({}) final'.format(name,
                                                               iface.signature(params)))
         lines += ['    {',
-                  marker('broadcast_' + to_snake(name),
-                         'what this broadcast means for the scenario'),
-                  '    }',
+                  marker('broadcast_' + name,
+                         'what this broadcast means in every step' if steps else
+                         'what this broadcast means for the scenario')]
+        lines += step_dispatch(steps, 'broadcast', name, 8)
+        lines += ['    }',
                   '']
 
     for attr_name, type_name in iface.attributes:
@@ -1272,8 +1480,9 @@ def consumer_class(iface, cls):
                   '        if (state == areg::DataState::DataIsOK)',
                   '        {',
                   marker('update_' + to_snake(attr_name),
-                         'the new value is ready to use', 12),
-                  '        }',
+                         'the new value is ready to use', 12)]
+        lines += step_dispatch(steps, 'update', attr_name, 12)
+        lines += ['        }',
                   '    }',
                   '']
     lines += ['private:',
@@ -1287,6 +1496,8 @@ def consumer_class(iface, cls):
               '        mDeadline.stop_timer();']
     if stepped:
         lines.append('        mPace.stop_timer();')
+    if holds:
+        lines.append('        mHold.stop_timer();')
     lines += ['        quit_with(1);',
               '    }',
               '',
@@ -1309,11 +1520,13 @@ def consumer_class(iface, cls):
               'has connected.',
               '',
               marker('connect_deadline',
-                     'seconds to wait for the provider to appear; 0 waits for ever',
+                     'the whole line, with the seconds to wait for the provider '
+                     'to appear; 0 waits for ever',
                      4),
               placeholder('    static constexpr uint32_t cConnectSeconds{ 0 };'),
               marker('reconnect_deadline',
-                     'seconds to wait for it to come back; 0 waits for ever', 4),
+                     'the whole line, with the seconds to wait for it to come '
+                     'back; 0 waits for ever', 4),
               placeholder('    static constexpr uint32_t cReconnectSeconds{ 0 };'),
               '']
     if stepped:
@@ -1325,11 +1538,16 @@ def consumer_class(iface, cls):
                   '    areg::Timer  mPace;   //!< Spaces the requests of the scenario.',
                   '',
                   marker('stall_ticks',
-                         'ticks of no progress that end the run; 0 leaves the '
-                         'watchdog off', 4),
+                         'the whole line, with the ticks of no progress that end '
+                         'the run; 0 leaves the '
+                         'watchdog off. A peer that goes away is already the '
+                         'reconnect deadline\'s to report, so keep this longer '
+                         'than that deadline or the two race and the message '
+                         'depends on which fires first', 4),
                   placeholder('    static constexpr uint32_t cStallTicks{ 0 };'),
                   '    uint32_t                  mIdleTicks{ 0 };',
                   '']
+    lines += driver_lines(steps, holds) if steps else []
     lines += ['    {}() = delete;'.format(cls),
               '    AREG_NOCOPY_NOMOVE({});'.format(cls),
               '};']
@@ -1559,7 +1777,7 @@ SCAFFOLD_MAINS = {'provider.cpp': 'provider/main.cpp',
                   'consumer.cpp': 'consumer/main.cpp'}
 
 
-def app_files(iface, mode, include_root, machine=None):
+def app_files(iface, mode, include_root, machine=None, steps=()):
     """The whole application: one .hpp and .cpp per component, and the model with main().
 
     Returns a list of (file name, text). The result compiles and runs as written;
@@ -1579,8 +1797,11 @@ def app_files(iface, mode, include_root, machine=None):
         provider_class(iface, provider_cls, machine), 'provider_state')]
     produced += [(CONSUMER_DIR[mode] + name, text) for name, text in component_files(
         consumer_cls, 'Consumer of the {} service.'.format(iface.name),
-        class_includes(iface) + TIMER_INCLUDES * steps_scenario(iface) + [''] + consumer_base,
-        consumer_class(iface, consumer_cls), 'consumer_state', QUIT_DECLARATION,
+        class_includes(iface) + TIMER_INCLUDES * (steps_scenario(iface) or bool(steps))
+        + [''] + consumer_base,
+        consumer_class(iface, consumer_cls, steps), 'consumer_state', QUIT_DECLARATION,
+        'the members and helpers your checks need, defined here; the step the scenario '
+        'is on is mStep already' if steps else
         'the members and helpers your rules need, defined here, and the one saying '
         'what step the scenario is on' if steps_scenario(iface) else
         'the members and helpers your rules need, defined here')]
@@ -1936,6 +2157,9 @@ def main():
                              'main.cpp, local one '
                              'main.cpp, each holding the model and main(). Match '
                              'setup_project.py')
+    parser.add_argument('--spec', action='append', default=[],
+                        help='with --app: a design.json. The "steps" it declares for '
+                             'this service become the consumer\'s driver')
     parser.add_argument('--scenarios', default='scenarios.json',
                         help='with --app: the scenario file to point at the '
                              'generated application. Left alone when it does not '
@@ -1990,7 +2214,8 @@ def main():
                 fail('the machine is named "{}", which is also the name of a generated '
                      'component. A .fsml name becomes a C++ namespace; rename the '
                      'machine.'.format(machine.name))
-        produced = app_files(iface, args.mode, include_root, machine)
+        produced = app_files(iface, args.mode, include_root, machine,
+                             steps_of(args.spec, iface))
         retained = [(file_name,
                      write(os.path.join(args.out, file_name), text, args.force))
                     for file_name, text in produced]

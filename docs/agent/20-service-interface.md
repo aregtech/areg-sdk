@@ -93,8 +93,8 @@ Provider class inherits `<Name>ProviderBase`. Consumer class inherits `<Name>Con
 
 | What | Transform | Example |
 |---|---|---|
-| Method name | to `snake_case`, with the prefix of its kind | `hello_service` -> `request_hello_service`, `response_hello_service` |
-| Broadcast name | to `snake_case`, prefix `broadcast_` | `reached_maximum` -> `broadcast_reached_maximum` |
+| Method name | kept as written after its kind's prefix; write `snake_case` | `hello_service` -> `request_hello_service`, `response_hello_service` |
+| Broadcast name | kept as written, prefix `broadcast_` | `reached_maximum` -> `broadcast_reached_maximum` |
 | Attribute name | to `snake_case` in every generated method | `StringOnChange` -> `set_string_on_change`, `on_string_on_change_update`, `string_on_change(state)` |
 | Data type, structure, constant name | kept exactly as written | `sConnectedClient` -> `HelloWorld::sConnectedClient` |
 | Parameter name | kept exactly as written | `StringOnChange` stays the parameter name in the handler |

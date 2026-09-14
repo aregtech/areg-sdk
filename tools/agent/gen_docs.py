@@ -35,6 +35,7 @@ import argparse
 import difflib
 import json
 import os
+import re
 import sys
 import xml.etree.ElementTree as ET
 
@@ -83,7 +84,7 @@ KEYS = {
     'datatypes': ('name', 'description', 'version', 'declare', 'includes'),
     'interface': ('name', 'category', 'description', 'version', 'types', 'attributes',
                   'requests', 'responses', 'broadcasts', 'constants', 'includes',
-                  'machine'),
+                  'machine', 'steps'),
     'machine': ('name', 'description', 'version', 'threading', 'types', 'attributes',
                 'constants', 'triggers', 'timers', 'events', 'actions', 'conditions',
                 'submachines', 'includes', 'initial', 'states'),
@@ -102,6 +103,7 @@ KEYS = {
     'state': ('name', 'kind', 'depth', 'description', 'entry', 'exit', 'transitions',
               'initial', 'final_event', 'states', 'submachine'),
     'transition': ('on', 'to', 'guard', 'set', 'do', 'description'),
+    'step': ('name', 'description', 'send', 'args', 'await', 'wait'),
 }
 TYPE_KEYS = {
     'Enumeration': ('name', 'kind', 'description', 'values', 'derives'),
@@ -119,7 +121,7 @@ SINGULAR = {'attributes': 'attribute', 'requests': 'request', 'responses': 'resp
             'params': 'parameter', 'answer': 'answer parameter', 'declare': 'type',
             'types': 'type', 'values': 'enumerator', 'fields': 'field', 'events': 'event',
             'timers': 'timer', 'triggers': 'trigger', 'actions': 'action',
-            'conditions': 'condition', 'submachines': 'submachine'}
+            'conditions': 'condition', 'submachines': 'submachine', 'steps': 'step'}
 
 
 # ----------------------------------------------------------------------------- shared
@@ -969,7 +971,8 @@ def check_shape(project):
         check_types(spec, 'types', where)
         for key, kind in (('attributes', 'service attribute'), ('requests', 'request'),
                           ('responses', 'method'), ('broadcasts', 'method'),
-                          ('constants', 'constant'), ('includes', 'include')):
+                          ('constants', 'constant'), ('includes', 'include'),
+                          ('steps', 'step')):
             check_list(spec, key, kind, where)
     for spec in project['machines']:
         if not isinstance(spec, dict):
@@ -1112,6 +1115,7 @@ def write_template(path):
             return 'work'
         if not (isinstance(raw, dict) and NOTE in raw and not settle(raw, [])):
             return 'work'
+    os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
     with open(path, 'w', encoding='utf-8', newline='\n') as handle:
         handle.write(render(TEMPLATE) + '\n')
     return 'wrote'
@@ -1217,6 +1221,69 @@ def cross_check(project):
                          .format(name, types[name][0], types[name][1], declared,
                                  entry['name']))
                 types[name] = (declared, entry['name'])
+
+
+# The driver declares these two steps itself, around the ones a spec lists.
+STEP_RESERVED = ('start', 'done')
+IDENTIFIER = re.compile(r'^[A-Za-z_]\w*$')
+
+
+def check_sequences(project):
+    """A consumer's steps name only what their service declares, in a shape one driver runs."""
+    for spec in project['interfaces']:
+        steps = spec.get('steps') if isinstance(spec, dict) else None
+        if not steps:
+            continue
+        where = 'the steps of "{}"'.format(spec.get('name', '?'))
+        if not isinstance(steps, list):
+            fail('{} are a list of step objects'.format(where))
+        requests = dict((entry.get('name'), entry) for entry in listed(spec, 'requests'))
+        awaited = set(entry.get('name') for key in ('responses', 'broadcasts', 'attributes')
+                      for entry in listed(spec, key))
+        awaited |= set(name for name, entry in requests.items()
+                       if 'answer' in entry or entry.get('response'))
+        seen = set()
+        for step in steps:
+            if not isinstance(step, dict):
+                fail('{} list {!r}, which is not a step object'.format(where, step))
+            name = step.get('name')
+            here = 'step "{}" of {}'.format(name, where)
+            if not isinstance(name, str) or not IDENTIFIER.match(name):
+                fail('{} has no name a C++ identifier can carry'.format(here))
+            key = name.replace('_', '').lower()
+            if key in STEP_RESERVED:
+                fail('{} takes a name the driver declares itself; name it after what it '
+                     'does'.format(here))
+            if key in seen:
+                fail('{} is named twice: a step name is unique, underscores and case '
+                     'aside'.format(here))
+            seen.add(key)
+            send, target, wait = step.get('send'), step.get('await'), step.get('wait') or 0
+            args = step.get('args') or {}
+            if send is not None and send not in requests:
+                fail('{} sends "{}", which is not a request of the service. Its requests: '
+                     '{}'.format(here, send, ', '.join(sorted(requests)) or 'none'))
+            if not isinstance(args, dict):
+                fail('{}: args is an object, {{"<parameter>": <C++ value>}}'.format(here))
+            params = [entry.get('name') for entry in listed(requests.get(send), 'params')]
+            for given in args:
+                if given not in params:
+                    fail('{} gives "{}", which request "{}" does not take. It takes: {}'
+                         .format(here, given, send, ', '.join(params) or 'nothing'))
+            for param in params:
+                if param not in args:
+                    fail('{} gives no value for parameter "{}" of request "{}"'
+                         .format(here, param, send))
+            if isinstance(wait, bool) or not isinstance(wait, int) or wait < 0:
+                fail('{}: wait is a number of milliseconds'.format(here))
+            if target is not None and wait:
+                fail('{} awaits "{}" and also waits {} ms. A step does one of the two: '
+                     'split it into two steps'.format(here, target, wait))
+            if target is not None and target not in awaited:
+                fail('{} awaits "{}", which is no response, broadcast or attribute of the '
+                     'service'.format(here, target))
+            if send is None and target is None and not wait:
+                fail('{} sends nothing, awaits nothing and waits for no time'.format(here))
 
 
 def attribute_reads(node, found):
@@ -1472,7 +1539,12 @@ EXAMPLE = {
             {"name": "close", "description": "Close the gate."}
         ],
         "broadcasts": [{"name": "gate_moved",
-                        "params": [{"name": "reading", "type": "GateTypes::Reading"}]}]
+                        "params": [{"name": "reading", "type": "GateTypes::Reading"}]}],
+        "steps": [{"name": "open_wide", "send": "open", "args": {"width": 1200}},
+                  {"name": "hold", "wait": 500},
+                  {"name": "close_gate", "send": "close"},
+                  {"name": "closed", "await": "Width",
+                   "description": "Its check calls stay() until Width is 0."}]
     }],
     "machines": [{
         "name": "Gate",
@@ -1566,7 +1638,9 @@ TEMPLATE = {
                "WideString BinaryBuffer DateTime, a type of types, or <datatypes name>::<Type>.",
                "notify: OnChange sends a value only when it differs from the one held; Always",
                "sends every set. A request with answer also declares its response, of the same",
-               "name; without answer it has none. A broadcast reaches every subscribed consumer."],
+               "name; without answer it has none. A broadcast reaches every subscribed consumer.",
+               "A request, response or broadcast name is kept as written after its prefix, so",
+               "write it snake_case: insert_coin is request_insert_coin. Attributes are converted."],
         "name": "", "category": "Public", "description": "",
         "types": [],
         "attributes": [{"name": "", "type": "", "notify": "OnChange", "description": ""}],
@@ -1575,7 +1649,18 @@ TEMPLATE = {
                       "answer": [{"name": "", "type": "", "description": ""}]}],
         "broadcasts": [{"name": "", "description": "",
                         "params": [{"name": "", "type": "", "description": ""}]}],
-        "constants": [{"name": "", "type": "", "value": "", "description": ""}]
+        "constants": [{"name": "", "type": "", "value": "", "description": ""}],
+        "steps": [{
+            NOTE: ["Only for a consumer that runs a fixed sequence and then exits; delete this",
+                   "list otherwise. The generator writes the sequencing, and each step that",
+                   "awaits something gets one marker for its check.",
+                   "send: a request, with args {parameter: C++ value}. await: a response, a",
+                   "broadcast or an attribute; a request with an answer awaits its response",
+                   "unless the step names another. wait: milliseconds, instead of await.",
+                   "Steps run in order and the run exits 0 after the last. A check calls fail(),",
+                   "stay() to wait for the next arrival, or go_to(Step::Name) for a loop."],
+            "name": "", "send": "", "args": {}, "await": "", "wait": 0, "description": ""
+        }]
     }],
     "machines": [{
         NOTE: ["A .fsml, only when behaviour depends on what happened before; delete this",
@@ -1673,6 +1758,7 @@ def main():
     project = merge(specs)
     check_shape(project)
     cross_check(project)
+    check_sequences(project)
     check_final_entry(project)
     # An include names a document the way the project root spells it, which is the
     # directory the documents are written to.
