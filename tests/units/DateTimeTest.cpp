@@ -311,3 +311,183 @@ TEST( DateTimeTest, test_format_iso8601 )
     areg::String::format_string( buf, 128, ",%03u", sysTime.stMillisecs );
     ASSERT_TRUE( timestamp.is_valid_position( timestamp.find_first( buf ) ) );
 }
+
+/**
+ * \brief   Tests system and process tick count getters.
+ **/
+TEST(DateTimeTest, test_time_tick)
+{
+    {
+        uint64_t startTicks = areg::DateTime::system_tick_count();
+        uint64_t endTicks = areg::DateTime::system_tick_count();
+        EXPECT_GT(startTicks, 0u);
+        EXPECT_GE(endTicks, startTicks);
+    }
+    {
+        uint64_t startTicks = areg::DateTime::process_tick_count();
+        uint64_t endTicks = areg::DateTime::process_tick_count();
+        EXPECT_GT(startTicks, 0u);
+        EXPECT_GE(endTicks, startTicks);
+
+    }
+
+}
+
+/**
+ * \brief   Tests DateTime validity state, time getters/setters.
+ *          And method is_valid()
+ **/
+TEST(DateTimeTest, test_time_validity)
+{
+    areg::DateTime date(areg::DateTime::now());
+    auto time = date.time();
+    auto timecast = static_cast<TIME64>(date);
+
+    EXPECT_EQ(time, timecast);
+
+    date.set_time(10000u);
+    auto timeNew = date.time();
+
+    EXPECT_NE(time, timeNew);
+    EXPECT_EQ(timeNew, 10000u);
+
+    EXPECT_TRUE(date.is_valid());
+
+    date.set_time(areg::DateTime::INVALID_TIME);
+    EXPECT_FALSE(date.is_valid());
+
+}
+
+/**
+ * \brief   Test converts Date to year, day , month
+ *          _decompose() private method test.
+ * */
+TEST(DateTimeTest, Date_converts_decompose_Test)
+{
+    constexpr TIME64 customTime = 1704112245500250u;
+    areg::DateTime date(areg::DateTime::now( ));
+    date.set_time(customTime);
+
+    auto month = date.month();
+    auto day   = date.day();
+    auto year  = date.year();
+
+    EXPECT_EQ(year, 2024u);
+    EXPECT_EQ(day, 1u);
+    EXPECT_EQ(month, 1u);
+
+}
+/**
+ * \brief   Tests chrono time function and time components
+ *          seconds() milliseconds() microseconds()
+ **/
+TEST(DateTimeTest, test_chrono_conversions_and_time_components)
+{
+        constexpr TIME64 customTime = 2345678u;
+
+        areg::DateTime date;
+        date.set_time(customTime);
+
+        std::chrono::microseconds chronoMicro = date;
+        std::chrono::milliseconds chronoMilli = date;
+        std::chrono::seconds chronoSec = date;
+
+        EXPECT_EQ(chronoMicro.count(), 2345678);
+        EXPECT_EQ(chronoMilli.count(), 2345);
+        EXPECT_EQ(chronoSec.count(), 2);
+
+        EXPECT_EQ(date.seconds(), 2u);
+        EXPECT_EQ(date.milliseconds(), 345u);
+        EXPECT_EQ(date.microseconds(), 678u);
+
+}
+
+/**
+ * \brief   Tests clock hours, minutes and seconds decomposition.
+ **/
+TEST(DateTimeTest, test_time_hours_components)
+{
+    constexpr TIME64 customTime = 1700000000654321u;
+    areg::DateTime date;
+    date.set_time(customTime);
+
+
+    auto hours   = date.hours();
+    auto minutes = date.minutes();
+    auto seconds =  date.seconds();
+
+    EXPECT_EQ(hours, 22u);
+    EXPECT_EQ(minutes, 13u);
+    EXPECT_EQ(seconds, 20u);
+
+}
+
+/**
+ * \brief   Tests day of year and day of week calendar values.
+ **/
+TEST(DateTimeTest, test_day_domponents)
+{
+    constexpr TIME64 customTime = 1704067200000000u;
+    areg::DateTime date;
+    date.set_time(customTime);
+
+    auto dayOY = date.day_of_year();
+    auto dayOW = date.day_of_week();
+
+    EXPECT_EQ(dayOY, 1u);
+    EXPECT_EQ(dayOW, 2u);
+}
+
+/**
+ * \brief   Tests date conversion to CalendarTime and struct tm structures.
+ **/
+TEST(DateTimeTest, test_date_fnction)
+{
+    constexpr TIME64 customTime = 1704112245500250u;
+    areg::CalendarTime cal;
+    areg::DateTime date;
+    date.set_time(customTime);
+
+    date.date_time(cal);
+
+    {
+        EXPECT_EQ(cal.stSecond, 45);
+        EXPECT_EQ(cal.stMinute, 30);
+        EXPECT_EQ(cal.stHour, 12);
+        EXPECT_EQ(cal.stDay, 1);
+        EXPECT_EQ(cal.stMonth, 1);
+        EXPECT_EQ(cal.stYear, 2024);
+        EXPECT_EQ(cal.stDayOfWeek, 2);
+        EXPECT_EQ(cal.stDayOfYear, 1);
+    }
+
+    {
+        areg::DateTime calToDate;
+        calToDate.set_date_time(cal);
+
+        EXPECT_EQ(static_cast<TIME64>(calToDate), customTime);
+    }
+
+    {
+        struct tm tmTime {};
+        date.date_time(tmTime);
+
+        EXPECT_EQ(tmTime.tm_sec, 45);
+        EXPECT_EQ(tmTime.tm_min, 30);
+        EXPECT_EQ(tmTime.tm_hour, 12);
+        EXPECT_EQ(tmTime.tm_mday, 1);
+        EXPECT_EQ(tmTime.tm_mon, 0);
+        EXPECT_EQ(tmTime.tm_year, 124);
+        EXPECT_EQ(tmTime.tm_wday, 1);
+        EXPECT_EQ(tmTime.tm_yday, 0);
+
+        areg::DateTime tmDate;
+        tmDate.set_date_time(tmTime);
+
+        // I'm setting the time to the nearest whole second.
+        constexpr TIME64 customTimeInSecs = (customTime / areg::SEC_TO_MICROSECS) * areg::SEC_TO_MICROSECS;
+        EXPECT_EQ(static_cast<TIME64>(tmDate), customTimeInSecs);
+
+    }
+
+}
