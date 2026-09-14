@@ -29,9 +29,9 @@ Full treatment with the ownership rules: `33-timers.md`.
 | Call | Signature | Header |
 |---|---|---|
 | constructor | `Timer(TimerConsumer & consumer, const String & timerName = String::empty_string(), uint32_t timeoutMs = areg::INVALID_TIMEOUT, int32_t maxQueued = Timer::IGNORE_TIMER_QUEUE, EventPriority prio = areg::DefaultPriority)` | `Timer.hpp:100` |
-| start on this thread | `bool start_timer(uint32_t timeoutInMs, uint32_t eventCount = TimerBase::CONTINUOUSLY)` | `Timer.hpp:119` |
-| start on a given thread | `bool start_timer(uint32_t timeoutInMs, DispatcherThread & whichThread, uint32_t eventCount = TimerBase::CONTINUOUSLY)` | `Timer.hpp:131` |
-| stop | `void stop_timer()` | `Timer.hpp:136` |
+| start on this thread | `bool start_timer(uint32_t timeoutInMs, uint32_t eventCount = TimerBase::CONTINUOUSLY)` | `Timer.hpp:120` |
+| start on a given thread | `bool start_timer(uint32_t timeoutInMs, DispatcherThread & whichThread, uint32_t eventCount = TimerBase::CONTINUOUSLY)` | `Timer.hpp:132` |
+| stop | `void stop_timer()` | `Timer.hpp:137` |
 | running? | `bool is_active() const noexcept` | `TimerBase.hpp:145` |
 
 Repetition constants, both on `areg::TimerBase`:
