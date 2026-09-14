@@ -217,6 +217,19 @@ def main():
     machine = args.machine
     if args.spec and (document is None or machine is None):
         interfaces, machines, _shared = documents_of(args.spec, args.outdir)
+        # The application this tool writes is one service and at most one machine.
+        # Picking the first of several silently builds a part of the project and
+        # calls it the project, so several are named and refused here instead.
+        for what, found, option in (('service', interfaces, '--doc'),
+                                    ('state machine', machines, '--machine')):
+            if len(found) > 1 and (args.doc if option == '--doc' else args.machine) is None:
+                fail('this project describes {} {}s: {}. build_project.py writes one '
+                     'application, of one service and at most one machine: name the one '
+                     'to build with {}, and write the others with gen_skeleton.py --app '
+                     'into their own directories. docs/agent/10-new-project.md has the '
+                     'shape.'.format(len(found), what,
+                                     ', '.join(os.path.basename(f) for f in found),
+                                     option))
         document = document or (interfaces[0] if interfaces else None)
         machine = machine or (machines[0] if machines else None)
     if document is None:
@@ -258,6 +271,9 @@ def main():
     else:
         print('== application: kept src/ as it is. --regenerate writes it again.')
 
+    # The scaffold pass allows an open marker: the generated files are promised to
+    # compile and run as written, and a marker is where a body goes. The final pass
+    # after the scenarios does not.
     if not args.no_check:
         if not run('contract',
                    [PYTHON, os.path.join(HERE, 'check_contract.py'), '.', '--strict',
@@ -294,6 +310,16 @@ def main():
                    [PYTHON, os.path.join(HERE, 'run_scenarios.py'),
                     '--build', os.path.join(args.build, 'bin')], root, kept=40):
             return 1
+        if not args.no_check:
+            print('')
+            if not run('final',
+                       [PYTHON, os.path.join(HERE, 'check_contract.py'), '.',
+                        '--strict'],
+                       root, kept=1):
+                print('   This is the final pass, which does not allow an open marker.')
+                print('   A passing scenario says nothing about the requirement behind')
+                print('   one: no body was written for it. Fill it, then run this again.')
+                return 1
         print('')
         print('Every step passed, the scenarios included.')
         return 0

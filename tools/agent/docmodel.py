@@ -30,14 +30,22 @@ def fail(message):
     raise SystemExit(2)
 
 
+def spell(value):
+    """A JSON value as a document spells it. XML and C++ both write true and false,
+    where Python writes True and False."""
+    if isinstance(value, bool):
+        return 'true' if value else 'false'
+    return str(value)
+
+
 def esc(value):
     """A value as an XML attribute carries it."""
-    return saxutils.escape(str(value), {'"': '&quot;'})
+    return saxutils.escape(spell(value), {'"': '&quot;'})
 
 
 def esc_text(value):
     """A value as element text carries it."""
-    return saxutils.escape(str(value))
+    return saxutils.escape(spell(value))
 
 
 class Writer:

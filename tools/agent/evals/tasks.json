@@ -122,7 +122,14 @@
         "client: found 14"
       ],
       "reference": "07-worker-events",
-      "teaches": "BEGIN_REGISTER_THREAD_EX with startWatchdog in setup(); areg.init as configuration an application ships"
+      "teaches": "BEGIN_REGISTER_THREAD_EX with startWatchdog in setup(); areg.init as configuration an application ships",
+      "declares": [
+        "BEGIN_REGISTER_THREAD_EX|add_thread\\s*\\([^)]+,",
+        "setup\\s*\\(([^,()]+,){4}"
+      ],
+      "produces": [
+        "**/logs/*.log"
+      ]
     },
     {
       "id": "11-observability",
@@ -136,7 +143,8 @@
         "background": [
           "provider"
         ],
-        "lead": "consumer"
+        "lead": "consumer",
+        "collects": 2
       },
       "reference": "08-observability",
       "teaches": "remote logging, logcollector on 8282 against mtrouter on 8181, and reading a .sqlog database; asserted end to end by tools/agent/check_observability.py"
@@ -146,10 +154,13 @@
       "prompt": "Build a one process application where the number of consumer components is decided when the application starts, not when it is compiled. One provider answers all of them; the application ends when the last one has its answer.",
       "expect": [
         "provider: hello, Consumer1",
-        "consumer: greeted 3"
+        "consumer: greeted 5"
       ],
       "reference": "10-runtime-model",
-      "teaches": "areg::Model, add_thread, add_component, add_supported_service, add_model_unique: the runtime model, and when the macros are not enough"
+      "teaches": "areg::Model, add_thread, add_component, add_supported_service, add_model_unique: the runtime model, and when the macros are not enough",
+      "args": [
+        "5"
+      ]
     },
     {
       "id": "13-from-an-example",

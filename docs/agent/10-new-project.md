@@ -30,6 +30,16 @@ project's own AGENTS.md and .gitignore.
 The rest of this page describes what it writes, for when a project has to be built
 by hand or an existing one has to be changed.
 
+**What the tools write, and what you compose.** `gen_docs.py` writes every document a
+design describes. `gen_skeleton.py --app` writes **one** application: one service, its
+provider and its consumer, and at most one machine folded into the provider, which is
+what `build_project.py` builds -- given several services it refuses rather than picking
+one. So a design of several is generated per service, each `--app` into its own
+directory, or one is named with `--doc` and `--machine`. Composition is yours: a
+component that provides one service and consumes another, two instances of one service,
+worker plumbing. `docs/agent/32-model.md` registers components; recipes `05`, `09` and
+`11` show the shapes.
+
 ---
 
 ## 1. Project layout

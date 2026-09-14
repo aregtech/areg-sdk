@@ -76,9 +76,12 @@ LITERAL_RE = re.compile(r'"((?:[^"\\]|\\.)*)"')
 OVERRIDE_RE = re.compile(
     r'\b(request_\w+|response_\w+|broadcast_\w+|on_\w+_update)\s*\('
     r'[^;]*\)\s*(?:const\s*)?(?:final|override)\b')
+# An out-of-line definition carries no override or final keyword: those stay in the
+# header. The generated application is written this way, so a rule that needs a
+# handler body finds it here or not at all.
 QUALIFIED_RE = re.compile(
     r'\b\w+::(request_\w+|response_\w+|broadcast_\w+|on_\w+_update|'
-    r'process_timer)\s*\(')
+    r'process_timer|service_connected)\s*\(')
 GENERATED_RE = re.compile(
     r'^(request_\w+|response_\w+|broadcast_\w+|on_\w+_update)$')
 # A generated member being called, rather than declared. The negative lookahead
@@ -98,7 +101,7 @@ BLOCKING_RE = re.compile(
     r'lock_until|wait_quit)\s*\(|'
     r'\bwhile\s*\(\s*true\s*\)|\bfor\s*\(\s*;\s*;\s*\)')
 NON_TERMINAL_RE = re.compile(r'\b(Disconnected|ConnectionLost|Failed)\b')
-QUIT_RE = re.compile(r'\b(signal_quit|unload_model|release)\s*\(')
+QUIT_RE = re.compile(r'\b(signal_quit|unload_model|release|quit_with)\s*\(')
 LEGACY_CONTAINER_RE = re.compile(r'\bTE(ArrayList|HashMap|LinkedList)\b')
 # The framework names that carried an NE, TE or IE prefix before areg was renamed.
 # The lists live in api.json so that the contract and this checker cannot drift

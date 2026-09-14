@@ -283,10 +283,28 @@ def fire_stops(pending, started, text):
                  or (isinstance(after, str) and re.search(after, text, re.MULTILINE)))
         if ready:
             entry['handle'].stopped_by_scenario = True
+            entry['fired_at'] = time.time() - started
             stop_handle(entry['handle'], entry['signal'])
         else:
             left.append(entry)
     return left
+
+
+def stops_missed(pending):
+    """Why the scenario proves nothing, when a stop it declared never fired.
+
+    A stop is the experiment the scenario exists to run. Cleanup terminates every
+    process whether it fired or not, so without this the scenario passes having
+    never injected the fault it names.
+    """
+    entry = pending[0]
+    after = entry['after']
+    if isinstance(after, (int, float)):
+        why = 'the run ended before {}s'.format(after)
+    else:
+        why = 'nothing matched {!r}'.format(after)
+    return ('the stop on {} never fired: {}, so the scenario did not test what it '
+            'declares'.format(entry['proc'], why))
 
 
 def run_scenario(scenario, build_dirs, verbose, quiet, observed=None):
@@ -328,6 +346,7 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None):
     ended = {}
     verdict = None
     reader = None
+    actions = []
     try:
         for index, spec in enumerate(procs):
             binary = find_binary(spec['binary'], build_dirs)
@@ -353,10 +372,11 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None):
 
         if verdict is None:
             _, lead = handles[lead_index]
-            pending = resolve_stops(scenario, handles, index_of)
-            if isinstance(pending, str):
-                verdict = pending
+            actions = resolve_stops(scenario, handles, index_of)
+            if isinstance(actions, str):
+                verdict, actions = actions, []
             else:
+                pending = list(actions)
                 reader = LeadReader(lead)
                 started = time.time()
                 deadline = started + timeout
@@ -375,6 +395,8 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None):
                     time.sleep(0.05)
                 reader.join(5)
                 outputs[lead_index] = reader.text()
+                if verdict is None and pending:
+                    verdict = stops_missed(pending)
     finally:
         # Every process that is still running is stopped, then drained, so its
         # output can be matched and no pipe is left open.
@@ -403,6 +425,10 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None):
                                    for index, (spec, _) in enumerate(handles))
         observed['elapsed'] = ended.get(lead_index)
         observed['verdict'] = verdict
+        observed['actions'] = [{'proc': entry['proc'], 'after': entry['after'],
+                                'signal': entry['signal'],
+                                'fired_at': entry.get('fired_at')}
+                               for entry in actions]
 
     def failed(detail):
         report_output(handles, outputs, quiet, full=verbose)
@@ -574,14 +600,36 @@ def self_test():
                        'expect': ['consumer: the provider was still there'],
                        'exit': 0}]}
         passed, name, detail = run_scenario(scenario, [root], False, True)
+        if not passed:
+            print('self-test FAILED: stdin: {}'.format(detail))
+            print('a process with no "stdin" key was handed end of input, so a console '
+                  'loop stops the service before it serves anything')
+            return 1
+
+        # A stop is the experiment a scenario runs. One that never fires must not
+        # leave a passing verdict behind: cleanup stops every process anyway.
+        unfired = dict(scenario, name='stop-that-never-fires',
+                       stop={'proc': 'provider', 'after': 'NEVER_PRINTED',
+                             'signal': 'kill'})
+        passed, _, detail = run_scenario(unfired, [root], False, True)
         if passed:
-            print('self-test ok: a process with no "stdin" key is not given end of '
-                  'input')
-            return 0
-        print('self-test FAILED: {}'.format(detail))
-        print('a process with no "stdin" key was handed end of input, so a console '
-              'loop stops the service before it serves anything')
-        return 1
+            print('self-test FAILED: a stop whose trigger never matched still passed')
+            print('the scenario declared a fault it never injected, and cleanup '
+                  'terminating the process was taken for the experiment')
+            return 1
+
+        fired = dict(scenario, name='stop-that-fires',
+                     stop={'proc': 'provider',
+                           'after': 'consumer: the provider was still there',
+                           'signal': 'kill'})
+        passed, _, detail = run_scenario(fired, [root], False, True)
+        if not passed:
+            print('self-test FAILED: a stop whose trigger matched did not pass: {}'
+                  .format(detail))
+            return 1
+
+        print('self-test ok: 3 case(s): end of input, an unfired stop, a fired stop')
+        return 0
     finally:
         shutil.rmtree(root, ignore_errors=True)
 
@@ -619,6 +667,11 @@ def main():
         fail('cannot read {}: {}'.format(args.file, error))
 
     scenarios = document.get('scenarios') or []
+    # An empty suite is not a passing suite: it is a project with nothing proven
+    # about it, and it used to exit 0 under the same words a full suite exits 0 with.
+    if not scenarios:
+        fail('no scenarios in {}: an empty suite proves nothing. Write one scenario '
+             'per requirement the task states.'.format(args.file))
     if args.only:
         scenarios = [s for s in scenarios if s.get('name') == args.only]
         if not scenarios:
