@@ -4,6 +4,10 @@ A provider is your class inheriting `areg::Component` and the generated
 `<Name>ProviderBase`. It implements every request and answers with a response.
 
 Complete, working provider for the `HelloService` document in `20-service-interface.md`:
+> `gen_skeleton.py --app` writes this class already, split the way the project is
+> laid out: the declaration in `<Class>.hpp` and the bodies in `<Class>.cpp`, both in
+> the process's own folder. The one block below is for reading, not for copying.
+
 
 ```cpp
 #include <iostream>
@@ -19,7 +23,7 @@ class ServiceProvider final : public    areg::Component
 public:
     ServiceProvider(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
         : areg::Component(entry, owner)
-        , HelloServiceProviderBase(static_cast<areg::Component &>(self()))
+        , HelloServiceProviderBase(static_cast<areg::Component &>(*this))
     { }
 
 protected:
@@ -48,14 +52,16 @@ through the model, and passes exactly these two arguments:
 ServiceProvider(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
 ```
 
-**The provider base takes the component itself.** The `self()` helper exists only
-because the base class needs a reference to a partially constructed object:
+**The provider base takes the component itself**, as `*this`:
 
 ```cpp
-, HelloServiceProviderBase(static_cast<areg::Component &>(self()))
+, HelloServiceProviderBase(static_cast<areg::Component &>(*this))
 ```
 
-Copy both lines as they are. There is no other correct form.
+Copy both lines as they are. **A base initialiser takes `*this`, never `self()`**: a
+member call made while a base is still being initialised is undefined behaviour, and
+a sanitizer reports it. `self()` belongs in a *member* initialiser -- a timer, a
+state machine -- which runs after every base.
 
 ---
 
@@ -87,8 +93,44 @@ void request_read_file(const areg::String & path) final
 }
 ```
 
-To answer later, store what you need and call the response from a timer or another
-event. The consumer waits; nothing blocks on the provider side.
+### Answering later
+
+To answer after the handler has returned, the request must first be **released**.
+
+**Only a request that declares a `Response` blocks**, and only until that response is
+sent: a second caller meanwhile is refused with `RequestBusy` and never reaches the
+handler. A request with no `Response` never blocks and may be called again at once, so
+it needs none of what follows.
+
+```cpp
+void request_read_file(const areg::String & path) final
+{
+    const areg::SessionID session{ unblock_current_request() };  // let the next client in
+    hand_to_worker(path, session);                               // returns at once
+}
+
+void on_worker_done(const areg::String & text, areg::SessionID session)
+{
+    if (prepare_response(session))      // false: that client is gone
+    {
+        response_read_file(text);
+    }
+}
+```
+
+`unblock_current_request()` returns the session that identifies this call; carry it
+with the work and give it back to `prepare_response()` before sending the answer.
+Both are `areg::StubBase` members, so a provider already has them.
+
+**The session names one caller, and it is spent once.** `response_read_file()` after
+`prepare_response(session)` reaches the client that opened that session and no other,
+however many are waiting, and the session is invalid afterwards. Never keep proxy
+addresses to route an answer yourself.
+
+**Skipping `unblock_current_request()` is a silent defect.** With one client it works
+and looks correct; the second client is refused and nothing in the build says so. A
+worked example is `recipes/07-worker-events/`, and `examples/24_pubunblock` answers
+several clients from a timer.
 
 **Do not block inside a handler.** Handlers run on the component's dispatcher
 thread, one at a time. A sleep or a long loop inside one handler stops every
@@ -107,7 +149,9 @@ set_service_provider_state(PubSub::RunState::Running);   // subscribers are noti
 ```
 
 Whether a subscriber hears about every `set_` or only about changes is decided in the
-document by `Notify="Always"` or `Notify="OnChange"`, not in this code.
+document by `Notify="Always"` or `Notify="OnChange"`, not in this code. Under
+`OnChange`, setting an attribute to the value it already holds notifies nobody, so an
+attribute a consumer waits on as an event wants `Always`.
 
 Set every attribute once during startup. Until it is set it is invalid, and a
 consumer that subscribes receives the state as invalid rather than a value.
@@ -135,7 +179,8 @@ the model. See `32-model.md`.
 
 - [ ] Every `request_` of the document is overridden and marked `final`.
 - [ ] The constructor takes `(const areg::ComponentEntry &, areg::ComponentThread &)`.
-- [ ] The provider base is constructed with `static_cast<areg::Component &>(self())`.
+- [ ] The provider base is constructed with `static_cast<areg::Component &>(*this)`,
+      not with `self()`.
 - [ ] No handler blocks, sleeps, or loops for a long time.
 - [ ] Every attribute is set at least once during startup.
 

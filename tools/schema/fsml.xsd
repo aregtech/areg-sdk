@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
     fsml.xsd - schema of the Lusan State Machine document format (.fsml),
-    FormatVersion 1.1.0. Checked against the Lusan readers and writers on 2026-08-11
+    FormatVersion 1.1.0, extended to 1.2.0 for the History pseudostate (2026-09-04).
+    Checked against the Lusan readers and writers on 2026-08-11
     (data/sm/*, data/common/*, common/XmlSM.hpp): every element and attribute below is one
     the editor writes or the reader accepts, and nothing else is.
 
@@ -15,6 +16,11 @@
       - every Kind="Start" pseudo-state rule (see tStateKind): no operations, nothing targets
         it, at least one outgoing transition, all guarded when there are two or more, exactly
         one unguarded at the root level
+      - every Kind="History" pseudo-state rule (see tStateKind): no operations, no
+        transitions, no nested StateList, at most one per level, refused at the root level
+        (errors 54 to 56, 58). A transition targeting it from outside its own level is the
+        one legal exception to "To targets a sibling" (error 7, widened); the same target
+        reached from inside its own level is refused instead as error 57
       - the transition Kind contract (see tTransitionKind): which of To and Stimulus is
         required and which is forbidden for each kind, and which kind of state may own it
       - Submachine XOR nested StateList; History/OnFinal only on composite states
@@ -113,17 +119,55 @@
             machine rests in the parent state with no child active, which is legal.
             The schema cannot express any of this: it is spec 6.2 rule 5, error 27 -- except that a
             Start owning an External or Internal transition is error 28 (see tTransitionKind).
+
+            "History" is likewise a PSEUDO-state, added in FormatVersion 1.2.0: a marker inside a
+            composite's own StateList saying that a transition targeting it, from outside that
+            level, resumes the level instead of descending its Start chain. It never becomes an
+            entry in the generated state enum and the machine never occupies it, so it carries NO
+            EntryList, ExitList, TransitionList or nested StateList, and it requires HistoryDepth
+            ("Shallow" or "Deep"). At most one per level; refused at the root level, since there is
+            no composite there to resume. A composite carrying both a Kind="History" child and its
+            own legacy History attribute is refused -- two spellings of one decision, disagreeing.
+            The schema cannot express any of this: errors 54 to 58 (see cState and RULE_TARGET_SIBLING).
         </xs:documentation></xs:annotation>
         <xs:restriction base="xs:string">
             <xs:enumeration value="Start"/>
             <xs:enumeration value="Normal"/>
             <xs:enumeration value="Final"/>
+            <xs:enumeration value="History"/>
         </xs:restriction>
     </xs:simpleType>
 
     <xs:simpleType name="tHistory">
+        <xs:annotation><xs:documentation>
+            The legacy per-composite history mode, State/@History: "every transition into this
+            composite resumes" (Shallow or Deep), unchanged since FormatVersion 1.1.0. Superseded
+            in expressive power by the Kind="History" pseudo-state (1.2.0), which can say "some
+            transitions resume, others start fresh" -- kept readable, never written by a document
+            that also carries the pseudo-state on the same composite (error 58).
+        </xs:documentation></xs:annotation>
         <xs:restriction base="xs:string">
             <xs:enumeration value="None"/>
+            <xs:enumeration value="Shallow"/>
+            <xs:enumeration value="Deep"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tHistoryDepth">
+        <xs:annotation><xs:documentation>
+            The depth a Kind="History" pseudo-state restores: Shallow re-activates the last active
+            direct substate, Deep restores the entire last active path to the leaf. Unlike tHistory
+            there is no "None" -- the pseudo-state's presence already says history is wanted; its
+            depth is never optional.
+
+            A restored state is ENTERED, not merely marked current: its EntryList runs again,
+            exactly as on a fresh entry, the composite's own entry actions first and the restored
+            substate's after them. A resumed sequence therefore re-announces where it is, and needs
+            no shadow copy of the current phase kept beside the machine. With nothing recorded, a
+            first entry or one after the machine was released without keeping the record, the level
+            descends its Kind="Start" chain instead.
+        </xs:documentation></xs:annotation>
+        <xs:restriction base="xs:string">
             <xs:enumeration value="Shallow"/>
             <xs:enumeration value="Deep"/>
         </xs:restriction>
@@ -194,7 +238,16 @@
     </xs:simpleType>
 
     <xs:simpleType name="tSource">
-        <xs:annotation><xs:documentation>Value source of an Argument or AttributeSet. Expression = verbatim C++ in an Expression child.</xs:documentation></xs:annotation>
+        <xs:annotation><xs:documentation>Value source of an Argument or AttributeSet. Expression = verbatim C++ in an Expression child.
+            Value = a verbatim C++ token, not text: it is pasted into the generated call exactly as written, so a
+            string literal must carry its own quotes and the XML attribute must escape them.
+            Every other source names a declared thing by its Name, in the Value attribute, and never by id:
+            Param = a Parameter of the Method the transition names in Stimulus, Attribute = a declared
+            Attribute, Constant = a declared Constant. Worked, where Method "open" declares
+            &lt;Parameter Name="width"&gt; and the transition carries Stimulus="open":
+            &lt;AttributeSet Attribute="Width" Source="Param" Value="width"/&gt; and
+            &lt;Argument Name="asked" Source="Param" Value="width"/&gt;. A Guard names the same parameter by
+            id instead, as &lt;Param id="8"/&gt;.</xs:documentation></xs:annotation>
         <xs:restriction base="xs:string">
             <xs:enumeration value="Value"/>
             <xs:enumeration value="Param"/>
@@ -556,10 +609,23 @@
         <xs:group ref="gGuardNode"/>
     </xs:complexType>
 
-    <!-- The transition guard. state="ok": Expr required; state="draft": Draft required, Expr
-         optional (the last-good tree). Rendered is a human-readable cache: written on save,
-         IGNORED on load (the tree is the truth).  -->
     <xs:complexType name="cGuard">
+        <xs:annotation><xs:documentation>
+            The transition guard: an expression tree, never text. It hangs on the Transition after
+            any Description and before any OperationList, and the transition is taken only when the
+            tree holds. A refused transition is not an error -- the trigger returns false, exactly
+            as it does for a state with no transition at all.
+
+            state="ok" is the only form the generator accepts, and Expr is required with it.
+            state="draft" means the guard is still unfinished, and the document is refused rather
+            than guessed at; Draft is required and Expr optional (the last-good tree). The older
+            flat ConditionList form is read as a draft and refused for the same reason.
+
+            Rendered is a human-readable cache: written on save, IGNORED on load, since the tree is
+            the truth. Attr, Const and Param are references bound by the target's numeric id and
+            never by its name; Lit is verbatim text, emitted as written. Attr names an
+            AttributeList entry, Const a ConstantList entry, and Param an argument of the stimulus.
+        </xs:documentation></xs:annotation>
         <xs:sequence>
             <xs:element name="Draft" type="xs:string" minOccurs="0"/>
             <xs:element name="Expr" type="cGuardExpr" minOccurs="0"/>
@@ -621,8 +687,40 @@
         <xs:attribute name="Name" type="tIdentifier" use="required"/>
         <xs:attribute name="Kind" type="tStateKind" use="required"/>
         <xs:attribute name="History" type="tHistory"/>
-        <xs:attribute name="Submachine" type="tIdentifier"/>
-        <xs:attribute name="OnFinal" type="tIdentifier"/>
+        <xs:attribute name="HistoryDepth" type="tHistoryDepth"/>
+        <xs:attribute name="Submachine" type="tIdentifier">
+            <xs:annotation><xs:documentation>
+                Hosts another .fsml document in this state instead of a nested StateList: a state
+                carries one or the other, never both. The value is the Alias of an IncludeList/Location
+                entry, and that entry's Version pins the imported document's Overview/@Version.
+
+                Entering the hosting state enters the imported machine through ITS OWN Kind="Start"
+                chain, and nothing calls the imported machine's triggers: an inner machine whose first
+                state waits for a trigger stops there, and the host never leaves the hosting state. Pair
+                Submachine with OnFinal to transition out when the inner machine reaches Final.
+            </xs:documentation></xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="OnFinal" type="tIdentifier">
+            <xs:annotation><xs:documentation>
+                Names an Event this composite sends TO ITSELF when its nested level reaches a
+                Kind="Final" substate. A transition on the composite carries that event out of the
+                subtree. Without OnFinal a finished level simply stops and nothing follows.
+
+                The self-event is QUEUED, so the nested Final is not where the work goes. Entering the
+                nested Final runs that Final's EntryList at once, with the machine still inside the
+                composite; only then is the event posted, and the transition out runs when the event is
+                dispatched. An operation placed on the nested Final therefore observes the state being
+                left, not the one being entered, and a request arriving in between meets a machine still
+                in the composite. Keep the nested Final empty: it exists to say the level is over. Every
+                operation that outlives the composite goes on the outer transition's OperationList, and
+                anything released as the composite is left goes in the composite's own ExitList. The
+                wrong placement is validation rule 108.
+
+                A Kind="Final" at the ROOT level is the other case: it ends the whole machine, nothing
+                transitions after it, and its EntryList is the only place an operation can go. Rule 108
+                does not apply there.
+            </xs:documentation></xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="cStateList">

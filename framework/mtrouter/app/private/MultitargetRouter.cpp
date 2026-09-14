@@ -83,23 +83,13 @@ MultitargetRouter & MultitargetRouter::instance()
     return _messageRouter;
 }
 
-#if AREG_EXTENDED
 void MultitargetRouter::print_status(const areg::String& status)
 {
-
     if (MultitargetRouter::instance().current_option() == areg::ext::ServiceOption::CMD_Console)
     {
-        areg::ext::Console& console{ areg::ext::Console::instance() };
-        areg::ext::Console::Coord curPos{ console.cursor_cur_position() };
         MultitargetRouter::_output_info(status);
-        console.set_cursor_cur_position(curPos);
     }
 }
-#else   // AREG_EXTENDED
-void MultitargetRouter::print_status(const areg::String& /* status */)
-{
-}
-#endif  // AREG_EXTENDED
 
 MultitargetRouter::MultitargetRouter()
     : ServiceApplicationBase( mServiceServer )
@@ -350,6 +340,10 @@ bool MultitargetRouter::_check_command(const areg::String& cmd)
         {
             console.output_msg( areg::ext::COORD_ERROR_MSG, areg::ext::FORMAT_MSG_ERROR.data( ), cmd.as_string( ) );
         }
+        else
+        {
+            console.clear_line( areg::ext::COORD_ERROR_MSG );
+        }
 
         console.clear_line( areg::ext::COORD_USER_INPUT );
         console.output_txt( areg::ext::COORD_USER_INPUT, areg::ext::FORMAT_WAIT_QUIT );
@@ -428,6 +422,7 @@ void MultitargetRouter::_output_info( const areg::String & info )
     console.output_txt( coord, areg::ext::MSG_SEPARATOR.data( ) );
     ++ coord.posY;
     console.output_str( coord, info );
+    console.refresh_screen( );
 
     console.unlock_console( );
 

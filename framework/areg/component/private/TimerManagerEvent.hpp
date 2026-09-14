@@ -105,6 +105,12 @@ public:
      **/
     inline TimerBase* timer() const;
 
+    /**
+     * \brief   Returns the timer handle captured when the event was created.
+     * \return  The handle used to look up the timer without dereferencing the queued pointer.
+     **/
+    inline TIMERHANDLE handle() const;
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -113,6 +119,8 @@ private:
      * \brief   The Timer object of Event Data
      **/
     TimerBase*      mTimer;
+    //!< The timer handle captured before the event is queued.
+    TIMERHANDLE     mHandle;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -133,28 +141,37 @@ AREG_DECLARE_EVENT(TimerManagerEventData, TimerManagerEvent, TimerManagerEventCo
 //////////////////////////////////////////////////////////////////////////
 inline TimerManagerEventData::TimerManagerEventData()
     : mTimer    ( nullptr   )
+    , mHandle   ( nullptr   )
 {
 }
 
 inline TimerManagerEventData::TimerManagerEventData(TimerBase* timer)
     : mTimer    ( timer     )
+    , mHandle   ( timer != nullptr ? timer->handle() : nullptr )
 {
 }
 
 inline TimerManagerEventData::TimerManagerEventData(const TimerManagerEventData& src)
     : mTimer    ( src.mTimer    )
+    , mHandle   ( src.mHandle   )
 {
 }
 
 inline TimerManagerEventData& TimerManagerEventData::operator = (const TimerManagerEventData& src)
 {
     mTimer    = src.mTimer;
+    mHandle   = src.mHandle;
     return (*this);
 }
 
 inline TimerBase* TimerManagerEventData::timer() const
 {
     return mTimer;
+}
+
+inline TIMERHANDLE TimerManagerEventData::handle() const
+{
+    return mHandle;
 }
 
 } // namespace areg

@@ -5,13 +5,24 @@
     </Overview>
     <MethodList>
         <Method ID="2" Name="open_gate" MethodType="Request">
-            <Description>Ask the gate to open. The gate closes itself later.</Description>
-        </Method>
-        <Method ID="3" Name="gate_changed" MethodType="Broadcast">
-            <Description>Sent every time the gate reaches a new position.</Description>
+            <Description>Ask the gate to open to a width. The gate closes itself later.</Description>
             <ParamList>
-                <Parameter ID="4" Name="isOpen" DataType="bool">
-                    <Description>True when the gate is open.</Description>
+                <Parameter ID="3" Name="width" DataType="uint32">
+                    <Description>The width asked for, in centimetres.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="4" Name="hold_gate" MethodType="Request">
+            <Description>Interrupt the cycle wherever it has got to.</Description>
+        </Method>
+        <Method ID="5" Name="resume_gate" MethodType="Request">
+            <Description>Continue the cycle from where it was interrupted.</Description>
+        </Method>
+        <Method ID="6" Name="gate_stage" MethodType="Broadcast">
+            <Description>Sent every time the gate reaches a new stage.</Description>
+            <ParamList>
+                <Parameter ID="7" Name="stage" DataType="String">
+                    <Description>The stage the gate has reached.</Description>
                 </Parameter>
             </ParamList>
         </Method>

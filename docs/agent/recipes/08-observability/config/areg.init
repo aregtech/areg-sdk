@@ -1,0 +1,30 @@
+# Two processes that log to logcollector instead of to their own consoles.
+# Read from the config/ subdirectory of each executable's folder.
+# The keys are explained in docs/agent/36-config.md and docs/agent/34-logging.md.
+config::*::version              = 2.0.0
+
+log::*::version                 = 2.0.0
+log::*::enable                  = true
+log::*::target                  = remote
+log::*::enable::remote          = true
+log::*::enable::debug           = false
+log::*::enable::file            = false
+log::*::remote::service         = logger
+
+# Everything off, then this application's own scopes on.
+log::*::scope::*                = NOTSET ;
+log::*::scope::obs_*            = DEBUG | SCOPE ;
+
+# Where logcollector listens. mtrouter is a different service on 8181.
+logger::*::service              = logcollector
+logger::*::connect              = tcpip
+logger::*::enable::tcpip        = true
+logger::*::address::tcpip       = localhost
+logger::*::port::tcpip          = 8282
+
+# Where mtrouter listens; the two processes reach each other through it.
+router::*::service              = mtrouter
+router::*::connect              = tcpip
+router::*::enable::tcpip        = true
+router::*::address::tcpip       = localhost
+router::*::port::tcpip          = 8181

@@ -145,7 +145,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 protected:
 /************************************************************************/
-// IETimerManagingEventConsumer overrides
+// TimerManagerBase overrides
 /************************************************************************/
 
     /**
@@ -197,7 +197,7 @@ private:
     bool _register_timer( Timer & timer, const DispatcherThread & whichThread );
 
     /**
-     * \brief   Unregisters and stops a timer, closing its system handle.
+     * \brief   Unregisters and disarms a timer while holding the resource lock.
      *
      * \param   timer       The timer object to unregister.
      **/
@@ -267,9 +267,9 @@ private:
     static bool _os_timer_start( Timer& timer );
 
     /**
-     * \brief   Stops a system timer and closes its handle.
+     * \brief   Disarms a system timer without closing its handle or waiting for callbacks.
      *
-     * \param   timerHandle     The handle of the waitable timer to stop and destroy.
+     * \param   timerHandle     The handle of the waitable timer to disarm.
      **/
     static void _os_timer_stop( TIMERHANDLE timerHandle );
 

@@ -106,23 +106,31 @@ framework/
   logcollector/       collects logs from running applications
   logobserver/        reads collected logs live
 
-examples/             32 complete applications, numbered by increasing complexity.
+examples/             complete applications, numbered by increasing complexity. They
+                      are optional: nothing in framework/ or tools/ needs them.
                       mtrouter is needed only where an example splits provider and
                       consumer into separate processes. The number does not say, and
                       neither does Category on its own: 01_minimalrpc is Public and
                       still runs in one process.
 docs/
   agent/              task pages written for agents; start here
-  wiki/               reference guides written for humans
-  AREG_CODING_STYLE.md        style of this repository, with rationale
-  AREG_AI_CODING_RULES.md     the same rules in compact normative form
+  wiki/               reference guides written for people. Large, and not on the
+                      agent path: open a page only when AGENTS.md named it
+  CODEGEN_CHANGE_REQUESTS.md
+                      what codegen.jar has to change and what it does not, written
+                      for whoever maintains it: two defects nothing in this
+                      repository can fix, one wrong diagnostic, two cosmetics, and
+                      the list of constructs verified working so no time is spent
+                      on them
 tools/
-  codegen.jar         the code generator
+  codegen.jar         the code generator, which also validates the document
   schema/*.xsd        grammar of the .siml, .dtml and .fsml documents
   schema/rules.xml    numbered validation rules the generator reports
   setup_project.py    creates a ready-to-build project (use this one)
-  setup-project.sh    the older interactive scaffolder; it prompts, so never
-                      run it unattended
+  setup-project.sh    the older interactive scaffolder, shell only, no Python;
+  setup-project.bat   same for Windows. Both prompt, so never run them unattended
+  codegenerate.sh     runs the generator outside CMake, no Python;
+  codegenerate.bat    same for Windows
 conf/
   cmake/              build configuration, compiler settings, helper functions
   exports/            installation templates, service unit files, package config
@@ -146,7 +154,7 @@ product/build/<compiler>/<os>-<bits>-<arch>-<config>-<libtype>/bin/
 ```
 
 The `AREG_OUTPUT_LAYOUT` option selects between them. A project created from a recipe
-or by `tools/setup_project.py` turns it off, which is what puts binaries in
+or by `tools/agent/setup_project.py` turns it off, which is what puts binaries in
 `build/bin/`.
 
 Common CMake options:
@@ -155,7 +163,7 @@ Common CMake options:
 |---|---|---|
 | `AREG_LIB_TYPE` | `shared` | `shared` or `static` |
 | `AREG_LOGGING` | `ON` | compile logging in |
-| `AREG_EXAMPLES` | `ON` | build the 32 examples; a project turns this off |
+| `AREG_EXAMPLES` | `ON` | build the examples; a project turns this off |
 | `AREG_TESTS` | `ON` | build unit tests (fetches Google Test); a project turns this off |
 
 Full list: `docs/wiki/02d-cmake-config.md`.
@@ -164,6 +172,5 @@ Full list: `docs/wiki/02d-cmake-config.md`.
 
 ## 5. Changing areg itself
 
-Not needed to build an application. The rules, the style and the platform layout are
-in `docs/AREG_AI_CODING_RULES.md` and `docs/AREG_CODING_STYLE.md`; platform specific
-sources live in `framework/<module>/private/{posix,win32}/`.
+Out of scope for this documentation set, and not needed to build an application.
+Nothing on the agent path describes it; start from `CONTRIBUTING.md`.

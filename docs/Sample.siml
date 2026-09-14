@@ -1,4 +1,16 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!--
+    A catalogue of every construct the format has, kept in the FIRST published dialect
+    (FormatVersion 1.0.0) on purpose: it is what a document written years ago looks like,
+    and the reader still has to accept it.
+
+    Do NOT copy this file when writing a new service interface. It uses spellings that
+    are accepted only for backward compatibility: Overview/@isRemote instead of @Category,
+    and lower-case Method/@MethodType. A new document is FormatVersion 1.1.0.
+
+    Write new documents from docs/agent/00-cheatsheet.md, or copy a recipe under
+    docs/agent/recipes/. Both are in the current dialect and are proven to generate.
+-->
 <ServiceInterface FormatVersion="1.0.0">
     <Overview ID="1" Name="Sample" Version="1.0.0" isRemote="true">
         <Description>This is an example of defining service interface.</Description>

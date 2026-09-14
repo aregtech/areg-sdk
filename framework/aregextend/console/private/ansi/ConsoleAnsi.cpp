@@ -183,27 +183,9 @@ void Console::_os_output_text(std::string_view text) const noexcept
 Console::Coord Console::_os_get_cursor_position() const noexcept
 {
     Lock lock(mLock);
-    constexpr int32_t _EOY{ static_cast<int32_t>(';') };
-    constexpr int32_t _EOX{ static_cast<int32_t>('R') };
-    constexpr int32_t _ZERO{ static_cast<int32_t>('0') };
-
-    Console::Coord result{ 0, 0 };
-    printf("\x1B[6n");
-    if ((getchar() == '\x1B') && (getchar() == '['))
-    {
-        int32_t ch;
-        while ((ch = getchar()) != _EOY)
-        {
-            result.posY = result.posY * 10 + (ch - _ZERO);
-        }
-
-        while ((ch = getchar()) != _EOX)
-        {
-            result.posX = result.posX * 10 + (ch - _ZERO);
-        }
-    }
-
-    return result;
+    // Returns the software tracked position. The terminal is not queried, stdin
+    // belongs to the thread that reads the user input.
+    return mSavedPos;
 }
 
 void Console::_os_set_cursor_cur_position(Console::Coord pos) const noexcept

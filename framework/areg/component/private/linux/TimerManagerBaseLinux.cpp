@@ -18,7 +18,6 @@
 #ifdef __linux__
 
 #include "areg/component/private/TimerManagerBase.hpp"
-#include "areg/component/private/posix/TimerPosix.hpp"
 #include "areg/component/ExitEvent.hpp"
 #include <sys/epoll.h>
 #include <sys/eventfd.h>
@@ -42,10 +41,20 @@ bool TimerManagerBase::post_event(Event& eventElem)
     return result;
 }
 
+void TimerManagerBase::_close_descriptors()
+{
+    if (mExitFd    >= 0) { ::close(mExitFd);    mExitFd    = -1; }
+    if (mCommandFd >= 0) { ::close(mCommandFd); mCommandFd = -1; }
+    if (mEpollFd   >= 0) { ::close(mEpollFd);   mEpollFd   = -1; }
+}
+
 bool TimerManagerBase::run_dispatcher()
 {
     static constexpr void * COMMAND_PTR { nullptr };                        // epoll data.ptr for mCommandFd
     void * const             EXIT_PTR   { reinterpret_cast<void*>(-1) };    // epoll data.ptr for mExitFd
+
+    // The descriptors the previous run opened are closed here, on this thread.
+    _close_descriptors();
 
     mEpollFd   = ::epoll_create1(EPOLL_CLOEXEC);
     mCommandFd = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
@@ -53,9 +62,7 @@ bool TimerManagerBase::run_dispatcher()
 
     if ((mEpollFd < 0) || (mCommandFd < 0) || (mExitFd < 0))
     {
-        if (mEpollFd   >= 0) { ::close(mEpollFd);   mEpollFd   = -1; }
-        if (mCommandFd >= 0) { ::close(mCommandFd); mCommandFd = -1; }
-        if (mExitFd    >= 0) { ::close(mExitFd);    mExitFd    = -1; }
+        _close_descriptors();
         return false;
     }
 
@@ -123,23 +130,13 @@ bool TimerManagerBase::run_dispatcher()
             }
             else
             {
-                TIMERHANDLE handle = reinterpret_cast<TIMERHANDLE>(ptr);
-                areg::os::TimerPosix* posixTimer = reinterpret_cast<areg::os::TimerPosix*>(handle);
-
-                uint64_t expirations { 0u };
-                [[maybe_unused]] ssize_t drained = ::read(posixTimer->timer_fd(), &expirations, sizeof(uint64_t));
-
-                _on_timerfd_expired(handle);
+                _on_timerfd_expired(reinterpret_cast<TIMERHANDLE>(ptr));
             }
         }
     }
 
     ready_for_events(false);
     remove_all_events();
-
-    ::close(mExitFd);    mExitFd    = -1;
-    ::close(mCommandFd); mCommandFd = -1;
-    ::close(mEpollFd);   mEpollFd   = -1;
 
     return true;
 }

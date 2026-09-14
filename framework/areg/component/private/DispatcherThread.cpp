@@ -237,14 +237,6 @@ DispatcherThread::DispatcherThread( areg::NullTag, const String & threadName ) n
 //////////////////////////////////////////////////////////////////////////
 // DispatcherThread class Methods
 //////////////////////////////////////////////////////////////////////////
-bool DispatcherThread::post_event( Event& /*eventElem*/ )
-{
-    ASSERT(false);  // <= this should not be called.
-    // You may want to call EventDispatcher::post_event() and/or filter events here
-
-    return true;
-}
-
 void DispatcherThread::trigger_exit()
 {
     LOG_SCOPE( areg_component_private_DispatcherThread, trigger_exit );

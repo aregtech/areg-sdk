@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="MonitorService" Version="1.0.0" Category="Private">
+        <Description>What the monitor tells an operator about the workers.</Description>
+    </Overview>
+    <MethodList>
+        <Method ID="2" Name="alarm" MethodType="Broadcast">
+            <Description>Sent when a worker stops working.</Description>
+            <ParamList>
+                <Parameter ID="3" Name="worker" DataType="String">
+                    <Description>The role name of the worker that stalled.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="4" Name="summary" MethodType="Request" Response="summary">
+            <Description>Asks how many workers are still working.</Description>
+        </Method>
+        <Method ID="5" Name="summary" MethodType="Response">
+            <ParamList>
+                <Parameter ID="6" Name="alive" DataType="uint32"/>
+                <Parameter ID="7" Name="total" DataType="uint32"/>
+            </ParamList>
+        </Method>
+    </MethodList>
+</ServiceInterface>

@@ -304,6 +304,29 @@ Commands available while Log Observer is running:
 | `--pause`     | `-p`  | Pause log observer            | `-p`                      |
 | `--quit`      | `-q`  | Quit application              | `-q`                      |
 | `--load`      | `-l`  | Load configuration file       | `-l=config.init`          |
+| `--console`   | `-c`  | Open the console after the command line options | `-c` |
+
+---
+
+### Commands on the Command Line
+
+The same commands are accepted on the command line. The Log Observer connects, waits
+for the Log Collector to report the connected applications and their scopes, runs the
+options in the order they are written, and exits:
+
+```bash
+./logobserver -n -q                                 # list the connected applications
+./logobserver -o "*::areg_base_NESocket=DEBUG" -q   # raise one scope in every application
+./logobserver -e 256 -n -q                          # query the scopes of instance 256
+```
+
+The output is written on the standard output as plain lines, so it can be piped. Add
+`-c` or `--console` to open the interactive console after the options have run instead
+of exiting. The wait for the data of the Log Collector is at most 15 seconds; the
+observer reports it when the data did not arrive.
+
+At the console prompt the connection is not automatic: type `-r` first, then `-n`. On
+the command line the connection is triggered by the observer itself.
 
 ---
 
@@ -319,6 +342,7 @@ Type '-q' or '--quit' to quit the application ...:
 
 Usage of Areg Log Observer console application :
 ---------------------------------------------------------------------------------------------
+-c, --console   : Run the console after the options. Usage: --console
 -e, --query     : Query the list of logging scopes. Usage: --query *, '*' can be a cookie ID.
 -f, --config    : Save current configuration.       Usage: --config
 -h, --help      : Display this message on console.  Usage: --help
@@ -329,6 +353,10 @@ Usage of Areg Log Observer console application :
 -q, --quit      : Stop and quit the log observer.   Usage: --quit
 -r, --restart   : Start / continue log observer.    Usage: --restart
 -x, --stop      : Stop log observer.                Usage: --stop
+---------------------------------------------------------------------------------------------
+The options are accepted on the console prompt and in the command line.
+In the command line the observer connects, waits for the data of the log collector,
+runs the options in the given order and exits, unless '--console' is specified.
 ---------------------------------------------------------------------------------------------
 ```
 

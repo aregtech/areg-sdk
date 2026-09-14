@@ -481,9 +481,9 @@ TEST(EventQueueTest, close_lanes_shuts_out_live_producers)
     // The guarantee the owner dispatcher needs: once close_lanes() returns, no producer
     // is inside the ring and none can get in, even under a live push storm.
     constexpr uint32_t PRODUCERS{ 4u };
+    constexpr uint32_t CLOSED_ATTEMPTS{ 64u };
 
     ReadyQueue               queue(64u, false, 50u);
-    std::atomic<bool>        stop { false };
     std::atomic<uint32_t>    ready{ 0u };
     std::atomic<uint32_t>    acceptedAfterClose{ 0u };
     std::atomic<bool>        closed{ false };
@@ -494,12 +494,18 @@ TEST(EventQueueTest, close_lanes_shuts_out_live_producers)
         producers.emplace_back([&]()
         {
             ready.fetch_add(1u, std::memory_order_release);
-            while (!stop.load(std::memory_order_acquire))
+            for (uint32_t attempts = 0u; attempts < CLOSED_ATTEMPTS; )
             {
+                // Only pushes begun after observing closure must be refused.
+                const bool beganClosed{ closed.load(std::memory_order_acquire) };
                 Event evt = makeEvent(1u);
                 const bool taken{ queue.push_event(evt) };
-                if (taken && closed.load(std::memory_order_acquire))
-                    acceptedAfterClose.fetch_add(1u, std::memory_order_relaxed);
+                if (beganClosed)
+                {
+                    ++attempts;
+                    if (taken)
+                        acceptedAfterClose.fetch_add(1u, std::memory_order_relaxed);
+                }
             }
         });
     }
@@ -514,9 +520,6 @@ TEST(EventQueueTest, close_lanes_shuts_out_live_producers)
     queue.close_lanes();
     closed.store(true, std::memory_order_release);
 
-    // Give the producers ample time to try again against the closed queue.
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
-
     EXPECT_TRUE(queue.is_closed());
     Event evt = makeEvent(2u);
     EXPECT_FALSE(queue.push_event(evt));
@@ -525,7 +528,6 @@ TEST(EventQueueTest, close_lanes_shuts_out_live_producers)
     Event high = makeEvent(3u, EventPriority::HighPrio);
     EXPECT_FALSE(queue.push_event(high));       // the priority lane is shut too
 
-    stop.store(true, std::memory_order_release);
     for (std::thread& t : producers)
         t.join();
 

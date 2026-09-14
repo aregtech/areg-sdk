@@ -20,16 +20,24 @@
 #include "areg/component/private/posix/TimerPosix.hpp"
 #include "areg/component/Timer.hpp"
 #include <sys/epoll.h>
+#include <unistd.h>
 
 namespace areg {
 
 void TimerManager::_on_timerfd_expired(TIMERHANDLE handle)
 {
+    // epoll batches may still contain handles that another thread has unregistered.
+    Lock resourceLock(mTimerResource.lockable());
+    Timer * timer = mTimerResource.find_resource_object(handle);
+    if (timer == nullptr)
+        return;
+
+    Lock timerLock(timer->mLock);
     areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(handle);
     ASSERT(posixTimer != nullptr);
-    Timer * timer = mTimerResource.find_resource_object(handle);
 
-    if ((timer != nullptr) && posixTimer->is_valid())
+    uint64_t expirations{ 0u };
+    if ((::read(posixTimer->timer_fd(), &expirations, sizeof(expirations)) == static_cast<ssize_t>(sizeof(expirations))) && posixTimer->is_valid())
     {
         const uint32_t highValue = static_cast<uint32_t>(posixTimer->mDueTime.tv_sec);
         const uint32_t lowValue  = static_cast<uint32_t>(posixTimer->mDueTime.tv_nsec);

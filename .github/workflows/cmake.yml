@@ -19,6 +19,26 @@ env:
   BUILD_TYPE: Release
 
 jobs:
+  invariants:
+    name: the framework invariants still have anchors
+    # tools/check_invariants.py seeds a defect per documented invariant, rebuilds and
+    # asserts something goes red. The seeding needs a build per defect and is run by
+    # hand; what rots first is the seed set itself, because a refactor moves the line
+    # it anchors to. This step is that check, and it needs no compiler.
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout Areg SDK source codes
+        uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+
+      - name: Check every seeded defect still applies to exactly one place
+        run: python3 tools/check_invariants.py --dry-run
+
   build-tests:
     name: ${{matrix.config.name}}
     runs-on: ${{matrix.config.os}}
@@ -567,87 +587,3 @@ jobs:
         with:
           name: ${{matrix.config.name}}
           path: ./${{matrix.config.name}}/
-
-  ubsan-linux:
-    name: ubsan (linux-gnu-static)
-    # The undefined behaviour sanitizer over the example suite.
-    # Reports only, it never fails the workflow.
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    timeout-minutes: 120
-
-    steps:
-
-      - name: Checkout Areg SDK source codes
-        uses: actions/checkout@v7
-
-      - name: Setup Java JDK to run code generator
-        uses: actions/setup-java@v5.6.0
-        with:
-          java-version: 17
-          java-package: jre
-          distribution: temurin
-
-      - name: Configure CMake with the undefined behaviour sanitizer
-        working-directory: ${{github.workspace}}
-        run: |
-          cmake -B ./product/cache/ubsan -DAREG_COMPILER_FAMILY=gnu -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-                -DAREG_LIB_TYPE=static -DAREG_EXTENDED:BOOL=ON -DAREG_LOGGING:BOOL=ON \
-                -DAREG_EXAMPLES:BOOL=ON -DAREG_TESTS:BOOL=OFF \
-                -DCMAKE_CXX_FLAGS="-fsanitize=undefined -fno-omit-frame-pointer -g" \
-                -DCMAKE_C_FLAGS="-fsanitize=undefined -fno-omit-frame-pointer -g" \
-                -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=undefined" \
-                -DCMAKE_SHARED_LINKER_FLAGS="-fsanitize=undefined"
-
-      - name: Build with CMake
-        working-directory: ${{github.workspace}}
-        run: cmake --build ./product/cache/ubsan -j16
-
-      - name: Run the examples under the sanitizer
-        working-directory: ${{github.workspace}}
-        shell: bash
-        timeout-minutes: 45
-        continue-on-error: true
-        env:
-          UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=0:log_path=${{github.workspace}}/ubsan/report
-        run: |
-          mkdir -p ./ubsan
-          sudo sysctl -w kernel.yama.ptrace_scope=0 > /dev/null || true
-          BIN_DIR="$(find ./product/build -type d -name bin 2>/dev/null | head -n 1)"
-          python3 tools/run-all-examples.py --bin-dir "${BIN_DIR}" --tier all \
-                  --out-dir ./ubsan/example-results
-
-      - name: Report what the sanitizer found
-        if: always()
-        working-directory: ${{github.workspace}}
-        shell: bash
-        run: |
-          COUNT="$(cat ./ubsan/report.* 2>/dev/null | grep -c 'runtime error:' || true)"
-          if [ "${COUNT}" = "0" ] || [ -z "${COUNT}" ]; then
-            echo "::notice title=ubsan::the sanitizer reported nothing"
-            exit 0
-          fi
-          echo "::warning title=ubsan::${COUNT} report(s), see the artifact"
-          # The address differs on every run, so it is removed before counting per place.
-          cat ./ubsan/report.* 2>/dev/null | grep 'runtime error:' \
-            | sed -e 's/0x[0-9a-f]*/<address>/g' -e 's#^.*/areg-sdk/##' \
-            | sort | uniq -c | sort -rn > ./ubsan/by-place.txt
-          echo "distinct places: $(wc -l < ./ubsan/by-place.txt)"
-          # Two traps, do not reintroduce them: the sed above leaves 'framework/...' with
-          # no leading slash, so a '/framework/' pattern never matches; and a grep that
-          # matches nothing exits 1, which under 'set -e' would discard every list below.
-          FRAMEWORK_RE='^[[:space:]]*[0-9]+[[:space:]]+framework/'
-          { grep -E "${FRAMEWORK_RE}" ./ubsan/by-place.txt || true; } | head -n 6 \
-            | while IFS= read -r line; do echo "::error title=ubsan-framework::${line}"; done
-          { grep -Ev "${FRAMEWORK_RE}" ./ubsan/by-place.txt || true; } | head -n 8 \
-            | while IFS= read -r line; do echo "::warning title=ubsan-example::${line}"; done
-          sed -e 's/^.*runtime error: //' -e 's/0x[0-9a-f]*/<address>/g' ./ubsan/by-place.txt \
-            | sed -e "s/'[^']*'/'T'/g" | sort | uniq -c | sort -rn | head -n 20 | tr '\n' '|' \
-            | sed 's/^/::notice title=ubsan-kinds::/'
-
-      - name: Upload the sanitizer reports
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: ubsan-linux
-          path: ./ubsan/

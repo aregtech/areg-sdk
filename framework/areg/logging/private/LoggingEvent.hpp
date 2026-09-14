@@ -142,8 +142,8 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
 /**
- * \brief   Declare LoggingEvent class, derived from EventTemplate object,
- *          and LoggingEventConsumer class, derived from TEEventConsumer object
+ * \brief   Declare LoggingEvent class, derived from areg::Event, and
+ *          LoggingEventConsumer class, derived from areg::EventConsumer.
  **/
 AREG_DECLARE_EVENT(LoggingEventData, LoggingEvent, LoggingEventConsumer)
 

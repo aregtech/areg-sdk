@@ -127,3 +127,41 @@ if (NOT "${AREG_DEPS_DIR}" STREQUAL "")
 else()
     set(AREG_DEPS_DIR "${FETCHCONTENT_BASE_DIR}")
 endif()
+
+# ---------------------------------------------------------------------------
+# The file an agent reads to find this SDK.
+#
+# A project can obtain areg as a clone, by FetchContent, or as an installed
+# package, and the headers land in a different place each time. Every one of
+# those paths includes this file, so this is the one producer: it writes the
+# resolved locations into the build tree, where an agent looks for one name.
+# ---------------------------------------------------------------------------
+if (EXISTS "${AREG_SDK_ROOT}/AGENTS.md")
+    set(AREG_AGENT_DIR "${AREG_SDK_ROOT}")
+elseif (EXISTS "${AREG_SHARE_DIR}/sdk/AGENTS.md")
+    set(AREG_AGENT_DIR "${AREG_SHARE_DIR}/sdk")
+else()
+    set(AREG_AGENT_DIR "")
+endif()
+
+if (DEFINED AREG_TOOL_CODEGEN AND NOT "${AREG_TOOL_CODEGEN}" STREQUAL "")
+    set(AREG_CODEGEN_PATH "${AREG_TOOL_CODEGEN}")
+else()
+    set(AREG_CODEGEN_PATH "${AREG_SDK_TOOLS}/codegen.jar")
+endif()
+
+if (EXISTS "${AREG_SDK_TOOLS}/schema")
+    set(AREG_SCHEMA_DIR "${AREG_SDK_TOOLS}/schema")
+else()
+    set(AREG_SCHEMA_DIR "${AREG_AGENT_DIR}/tools/schema")
+endif()
+
+file(WRITE "${CMAKE_BINARY_DIR}/areg-sdk.paths"
+"# Where the AREG SDK is, resolved for this build tree.\n\
+# Written by conf/cmake/setup.cmake on every configure. Do not edit or commit.\n\
+sdk_root   = ${AREG_SDK_ROOT}\n\
+headers    = ${AREG_FRAMEWORK}\n\
+agent_docs = ${AREG_AGENT_DIR}/docs/agent\n\
+agents_md  = ${AREG_AGENT_DIR}/AGENTS.md\n\
+codegen    = ${AREG_CODEGEN_PATH}\n\
+schema     = ${AREG_SCHEMA_DIR}\n")

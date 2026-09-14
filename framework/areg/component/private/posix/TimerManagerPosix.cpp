@@ -33,11 +33,16 @@ namespace areg {
 
 void TimerManager::_fire_expired(TIMERHANDLE handle)
 {
+    Lock resourceLock(mTimerResource.lockable());
     areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(handle);
     ASSERT(posixTimer != nullptr);
     Timer * timer = mTimerResource.find_resource_object(handle);
 
-    if ((timer != nullptr) && posixTimer->is_valid())
+    if (timer == nullptr)
+        return;
+
+    Lock timerLock(timer->mLock);
+    if (posixTimer->is_valid())
     {
         const timespec due{ posixTimer->due_time() };
         const uint32_t highValue = static_cast<uint32_t>(due.tv_sec);
