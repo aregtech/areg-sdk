@@ -680,6 +680,8 @@ def main():
     else:
         print('  design.json holds every key of a design, empty: fill it, then')
     print('  python3 {}/build_project.py --spec design.json'.format(tools))
+    print('    that first call compiles the framework too: give it a command timeout')
+    print('    of at least 15 minutes. Every later call takes seconds.')
     print('  python3 {}/run_scenarios.py'.format(tools))
     return 0
 

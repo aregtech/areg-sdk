@@ -125,6 +125,10 @@ included as `"src/<dir>/Name.hpp"` from anywhere in `src/`.
 
 ## 5. Documents, application and build -- one command
 
+**This call compiles the framework itself, so give it a command timeout of at least
+15 minutes.** A shorter one returns a timeout or moves the call to the background, and
+neither is a failure of the build.
+
 ```
 python3 <areg-sdk>/tools/agent/build_project.py --spec design.json
 ```
@@ -134,7 +138,7 @@ writes the application from them, checks the contract, configures and builds. It
 at the first failure and names the step, so nothing is hidden. Pass `--spec` once per
 spec file. `--regenerate` writes the application again and **discards what you have
 put in it**; without it a second run keeps `src/` and only rebuilds, so this is also
-the command for every later build.
+the command for every later build, which takes seconds.
 
 **A state machine is folded into the provider automatically** when the spec declares
 one: the action handler is a base, every action is declared, and there is no separate
