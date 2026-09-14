@@ -1,5 +1,8 @@
 # Implement a service consumer
 
+Reference for a hand-written consumer, and the sections `51-debug.md` cites. Not for
+filling a marker: `gen_skeleton.py --app` wrote the consumer.
+
 A consumer is your class inheriting `areg::Component` and the generated
 `<Name>ConsumerBase`. It calls requests and handles what comes back.
 
@@ -45,7 +48,7 @@ protected:
     void response_hello_service(bool success) final
     {
         std::cout << (success ? "greeted" : "failed") << std::endl;
-        areg::Application::signal_quit();
+        areg::Application::signal_quit();   // quit_with(code) where main() defines it
     }
 
     void request_hello_service_failed(areg::ResultType reason) final

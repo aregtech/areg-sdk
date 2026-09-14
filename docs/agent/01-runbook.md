@@ -79,7 +79,7 @@ every key present and empty, each section with a `#|` note on what its values ma
 Fill the values and keep the keys; no XML, `ID` or `To` is written by hand. A sample
 left as written is skipped and an empty value is absent, so delete only a section the
 task does not need. A key the generator does not read is refused by name.
-`gen_docs.py --example` prints a finished design of another application, 375 lines,
+`gen_docs.py --example` prints a finished design of another application, 171 lines,
 short enough to read in one call: do not page it. A consumer that drives a
 scenario and exits lists it as `"steps"`, branching included: the generator
 writes the step machine, and each check may `stay()`, `go_to(Step::Name)` or
@@ -186,7 +186,9 @@ marker line is gone by then. Never rewrite a whole file.
 
 `30-provider.md`, `31-consumer.md` and `32-model.md` describe the code the tool has
 already written. Do not open them to fill a marker, and do not open them while
-designing either: nothing in them changes what the spec should say.
+designing either: nothing in them changes what the spec should say. The one exception
+is a numbered section `51-debug.md` or `05-design.md` names -- open that section, not
+the page.
 
 `40-base-api.md` is the one page a body still needs: every body uses a string or a
 container and those names are not the ones training data carries. Read it before
@@ -272,8 +274,9 @@ not converge" is a useful result; a half-built application is not.
 - Never edit a generated file. The generate target is rewritten on every build;
   change the document instead.
 - Never diagnose a refused document from a schema. Read the
-  `file:line:col: error[<number>/<RULE_NAME>]` message and its `fix:` line, then
-  `python3 <areg-sdk>/tools/explain_rule.py <number>`. A schema says what an element
+  `error[<number>/<RULE_NAME>]` message, its `file:line:col:` prefix and its `fix:`
+  line where it carries them, then `python3 <areg-sdk>/tools/explain_rule.py <number>`,
+  which always has the rule and its fix. A schema says what an element
   may contain, never which rule refused it or why. Reading one for a spelling is
   section 4 and is expected.
 - Never run any other script under `<areg-sdk>/tools/`. The rest check the SDK's own

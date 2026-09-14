@@ -79,7 +79,8 @@ The generator validates a document before generating, so this is a defect in the
 `.siml`, `.fsml` or `.dtml` file and never in the build. Nothing is generated and the
 exit code is 1.
 
-Every finding names its rule and carries a `fix:` line, so read the message first:
+Every finding names its rule; most carry a `file:line:col:` prefix and a `fix:` line.
+`explain_rule.py <number>` always has both, so read the message first:
 
 ```
 src/services/BadService.siml:9:71: error[6/RULE_UNRESOLVED_TYPE]: a data type that resolves to nothing
@@ -144,7 +145,7 @@ the one you have not implemented, or whose signature does not match.
 
 | Cause | Fix |
 |---|---|
-| Nothing calls `areg::Application::signal_quit()` | Call it when the work is done |
+| Nothing ends the application | Call `quit_with(code)` when the work is done -- or `areg::Application::signal_quit()` in a program with no `quit_with()` |
 | The consumer is waiting for a provider that never appears | See "The consumer never connects" |
 | A handler is blocking | See below |
 

@@ -40,6 +40,7 @@ import copy
 import glob
 import json
 import os
+import datetime
 import re
 import subprocess
 import shutil
@@ -570,7 +571,16 @@ TOOLS = ['setup_project.py', 'gen_skeleton.py', 'fsml_layout.py', 'run_scenarios
 # and paid a request for the rest. 30-provider.md's unblock rule said skipping the
 # call is always a defect; it is not, and the run spent thought deciding that a
 # synchronous state machine trigger may answer directly.
-CORPUS_CEILING = 190464
+# Raised 190464 -> 194560 on 2026-09-14 for what the independent audit of that date
+# found missing or wrong. What the 4 KB bought: the corpus's only functional coverage
+# hole, synchronization, which no page named at all (42-runtime-api.md section 8, eight
+# verified citations); the condition on every page that prescribed signal_quit(), which
+# check_contract.py reports as P-18 in the only project shape the runbook produces; the
+# first line of 30/31/32 saying what those 21 KB are for, which nothing stated; and the
+# narrowing of the "do not open them" rule that four pointers in 51-debug.md and
+# 05-design.md contradicted. check_corpus.py's own prescribed-call rule now holds the
+# first of those, so the bytes cannot silently rot back.
+CORPUS_CEILING = 194560
 
 PAGE_CEILING = 8 * KB
 ENTRY_TARGET = 10 * KB
@@ -1052,6 +1062,44 @@ def defected_source(task):
             return None
         text = text.replace(edit['find'], edit['replace'], 1)
     return text
+
+
+def check_prescribed_calls(report):
+    """A page that names a prohibited call names its replacement on the same page.
+
+    A "Fix" column is read under pressure and taken literally. A page naming the call
+    api.json forbids, without naming the one it prescribes, sends the reader to a
+    finding of the very rule it is trying to help with. The pairing is api.json's, in
+    the "pages" key of a prohibition: it holds the name to look for and the name that
+    has to stand beside it.
+    """
+    raw = read('docs', 'agent', 'api.json')
+    if not raw:
+        report.fail('prescribed-call', 'docs/agent/api.json is missing')
+        return
+    paired = [(rule['id'], rule['pages']) for rule in json.loads(raw).get('prohibitions', [])
+              if isinstance(rule.get('pages'), dict)]
+    if not paired:
+        report.fail('prescribed-call', 'no prohibition in api.json pairs a forbidden '
+                    'call with its replacement, so no page can be checked against one')
+        return
+    checked = 0
+    for page in agent_pages():
+        text = read('docs', 'agent', page)
+        if not text:
+            continue
+        for rule, pages in paired:
+            names, requires = pages.get('names'), pages.get('requires')
+            if not names or not requires or names not in text:
+                continue
+            checked += 1
+            if requires not in text:
+                report.fail('prescribed-call',
+                            'docs/agent/{} names {}() and never {}(), which {} '
+                            'prescribes: a reader following this page is reported by '
+                            'that rule'.format(page, names, requires, rule))
+    report.ok('prescribed-call', '{} page(s) name a call api.json restricts, and each '
+              'names the replacement beside it'.format(checked))
 
 
 def check_grpc_isolation(report):
@@ -1814,6 +1862,61 @@ def page_budgets():
     return allowed
 
 
+# An exception granted once and never looked at again is the failure mode of every
+# waiver mechanism: the NOTE it prints on every run becomes furniture. Each entry of
+# .budgets carries the date it was last argued, and one this old is reported.
+REVIEW_DAYS = 120
+
+REVIEWED = re.compile(r'^\s*([\w.\-]+)\s*=.*#.*\breviewed\s+(\d{4}-\d{2}-\d{2})\b')
+
+
+def budget_reviews():
+    """When each recorded exception was last argued: {page: 'YYYY-MM-DD'}."""
+    dates = {}
+    for line in read('docs', 'agent', '.budgets').splitlines():
+        found = REVIEWED.match(line)
+        if found:
+            dates[found.group(1)] = found.group(2)
+    return dates
+
+
+def check_budget_review(report):
+    """Every recorded exception says when it was last argued, and how long ago.
+
+    The ratchet only turns one way while nothing asks whether an exception is still
+    earning its bytes. This does not judge the reason -- it reports the age, so a
+    waiver that has stopped being argued is visible next to the page it excuses.
+    """
+    allowed = page_budgets()
+    if not allowed:
+        report.ok('budget-review', 'no recorded exception to review')
+        return
+    dates = budget_reviews()
+    today = datetime.date.today()
+    stale = []
+    for page in sorted(allowed):
+        when = dates.get(page)
+        if when is None:
+            report.fail('budget-review', '.budgets excuses {} and does not say when '
+                        'that was last argued. Add "reviewed YYYY-MM-DD" to its reason'
+                        .format(page))
+            continue
+        try:
+            age = (today - datetime.date(*[int(part) for part in when.split('-')])).days
+        except ValueError:
+            report.fail('budget-review', '.budgets gives {} the review date "{}", '
+                        'which is not a date'.format(page, when))
+            continue
+        if age > REVIEW_DAYS:
+            stale.append((page, when, age))
+    for page, when, age in stale:
+        report.note('budget-review', '{} has held its exception unreviewed for {} '
+                    'day(s), since {}. Argue it again or shrink the page'
+                    .format(page, age, when))
+    report.ok('budget-review', '{} exception(s) recorded, {} reviewed within {} days'
+              .format(len(allowed), len(allowed) - len(stale), REVIEW_DAYS))
+
+
 def check_page_budget(report):
     pages = agent_pages()
     if not pages:
@@ -1857,6 +1960,15 @@ def check_page_budget(report):
     # a page has grown to put a fact at its point of use more than once.
     report.ok('budget', '{} of {} pages are within the {:.0f} KB ceiling'
               .format(len(pages) - len(over), len(pages), PAGE_CEILING / KB))
+
+    # One line the trend is read from. Five NOTEs about five pages say nothing about
+    # whether the exempted share of the corpus is growing; this does.
+    total = sum(size('docs', 'agent', p) for p in pages)
+    exempt = sum(bytes_ for _page, bytes_ in over)
+    report.note('budget', 'pages total {:.1f} KB, of which {:.1f} KB ({:.0f}%) sits in '
+                '{} page(s) over the ceiling'
+                .format(total / KB, exempt / KB,
+                        100.0 * exempt / total if total else 0, len(over)))
 
 
 def corpus_files():
@@ -2292,6 +2404,8 @@ def run():
     check_truth(report)
     check_verification(report)
     check_prohibitions(report)
+    check_prescribed_calls(report)
+    check_budget_review(report)
     check_reachable(report)
     check_includes(report)
     check_member_shapes(report)

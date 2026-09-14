@@ -519,7 +519,8 @@
     {
       "id": "P-18",
       "rule": "A component ends the application with quit_with(code), never with areg::Application::signal_quit(). main() returns the code quit_with() stored, so a source that calls signal_quit() past it exits 0 whatever went wrong.",
-      "detect": "a quit that skipped the quit_with(int) a project defines, in any source but the one defining it"
+      "detect": "a quit that skipped the quit_with(int) a project defines, in any source but the one defining it",
+      "pages": {"names": "signal_quit", "requires": "quit_with"}
     },
     {
       "id": "P-19",

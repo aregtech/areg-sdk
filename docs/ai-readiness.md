@@ -105,11 +105,13 @@ here rather than left to be discovered:
 |---|---|---|
 | `entry-toll` | `AGENTS.md` at or below 10 KB. Every agent pays this on every task, so it is the most expensive byte in the repository. | `NOTE` |
 | `entry-toll` | Over the allowed 11.5 KB is a failure. The page is over its target and everything stated at its point of use has come out of it; what remains is the routing table, the tool table and the section 6 rules `--audit-prohibitions` matches one by one. It may shrink freely and may not grow without a commit that says what the bytes bought. | `FAIL` |
-| `budget` | Every page in `docs/agent/` at or below 8 KB. | `FAIL` |
+| `budget` | Every page in `docs/agent/` at or below 8 KB. Also prints, as one `NOTE`, the corpus total and the share of it sitting in pages over the ceiling, so the trend is one line rather than one `NOTE` per waiver. | `FAIL` |
+| `budget-review` | Every exception in `docs/agent/.budgets` says when it was last argued, as `reviewed YYYY-MM-DD`, and one unreviewed for more than 120 days is reported. An exception granted once and never re-tested is how a waiver becomes furniture. | `FAIL` on a missing or malformed date, `NOTE` on a stale one |
+| `prescribed-call` | A page naming a call `api.json` restricts names the replacement on the same page. A "Fix" column is read under pressure and taken literally, so a page prescribing the call a rule forbids sends the reader into that rule's finding. The pairing is `api.json`'s, in a prohibition's `pages` key. | `FAIL` |
 | `budget` | A page deliberately larger is named in `docs/agent/.budgets` with its reason. Recorded, so the exception is argued rather than forgotten. | `NOTE` |
 | `budget` | An entry in `.budgets` naming a page that does not exist, or one already under the ceiling, is stale: it would quietly cover a page that grew into it later. | `FAIL` |
 | `budget` | A page within 1% of the ceiling is tuned to the rule, not written to it: the next one-word edit trips CI. | `NOTE` |
-| `corpus-toll` | The whole reading corpus -- `AGENTS.md`, the runbook and every page in `docs/agent/` -- at or below 186.0 KB. A page budget bounds one page and says nothing about how many pages there are; this bounds the set, so an addition is paid for by a removal. Raising `CORPUS_CEILING` is a deliberate edit, and the commit that raises it says what the bytes bought. | `FAIL` |
+| `corpus-toll` | The whole reading corpus -- `AGENTS.md`, the runbook and every page in `docs/agent/` -- at or below 190.0 KB. A page budget bounds one page and says nothing about how many pages there are; this bounds the set, so an addition is paid for by a removal. Raising `CORPUS_CEILING` is a deliberate edit, and the commit that raises it says what the bytes bought. | `FAIL` |
 | `duplication` | Under 2% of 12-word runs repeated across three or more pages. | `WARN` |
 | `generated` | The rule against editing generated code is stated on the entry path, and no recipe ships generated code to be read. | `FAIL` |
 

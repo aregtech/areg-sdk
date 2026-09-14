@@ -63,7 +63,9 @@ void process_timer(areg::Timer & timer) final;      // TimerConsumer.hpp:73
 | `release()` | `static void release()` | `Application.hpp:114` |
 
 Every argument of `setup()` has a default, so `setup()` alone is the normal call.
-Nothing ends the application until something calls `signal_quit()`.
+Nothing ends the application until something ends it. In a scaffolded project that is
+`quit_with(code)`, defined beside `main()`, which returns what it stored; `signal_quit()`
+past it is reported as P-18. A program with no `quit_with()` calls `signal_quit()`.
 
 ---
 
@@ -167,7 +169,34 @@ always the larger. Working project: `recipes/07-worker-events/`.
 
 ---
 
-## 8. Unique names
+## 8. Synchronization
+
+`#include "areg/base/SyncPrimitives.hpp"`
+
+**Read this row first.** Every handler of one component runs on that component's own
+thread, one at a time, so state a component owns alone needs no lock at all. Reach for
+one only where a worker thread you started shares state with a component, which is the
+shape `37-threads.md` and `recipes/07-worker-events/` teach.
+
+| Call | Signature | Header |
+|---|---|---|
+| `areg::Mutex` | `explicit Mutex(bool initLock = true)` | `SyncPrimitives.hpp:140` |
+| `lock()` | `bool lock(uint32_t timeout = areg::WAIT_INFINITE)` | `SyncPrimitives.hpp:154` |
+| `unlock()` | `bool unlock()` | `SyncPrimitives.hpp:161` |
+| `areg::Lock` | `explicit Lock(SyncObject & syncObj, bool autoLock = true)` | `SyncPrimitives.hpp:998` |
+| `areg::SyncEvent` | `explicit SyncEvent(bool initLock = true, bool autoReset = true)` | `SyncPrimitives.hpp:254` |
+| `set_signaled()` | `bool set_signaled() noexcept` | `SyncPrimitives.hpp:295` |
+| `reset()` | `bool reset() noexcept` | `SyncPrimitives.hpp:301` |
+| `areg::SpinLock` | `SpinLock()`, for a hold of a few instructions | `SyncPrimitives.hpp:657` |
+
+`areg::Lock` is the RAII scope lock: it takes any of the others and unlocks on the way
+out. `std::mutex` is not prohibited; the areg types are what the framework's own waits
+and timeouts are written against. Never wait on any of them inside a handler --
+`AGENTS.md` section 6 forbids blocking there.
+
+---
+
+## 9. Unique names
 
 `#include "areg/base/UtilityDefs.hpp"`
 

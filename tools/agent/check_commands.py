@@ -226,9 +226,12 @@ def advertised_flags(script):
 def unknown_flags(command):
     """The flags a documented command carries that its tool does not advertise."""
     words = command.split()
-    if not words or os.path.basename(words[0]).split('.')[0] not in ('python3', 'python'):
+    if not words:
         return None, []
-    scripts = [w for w in words[1:] if w.endswith('.py')]
+    # A script is checked however it is spelled: "python3 tools/x.py", "./tools/x.py"
+    # and "sudo python3 tools/x.py" all name the same flags. Requiring an interpreter
+    # in front left every directly-invoked script unchecked.
+    scripts = [w for w in words if w.endswith('.py')]
     if not scripts:
         return None, []
     script = substitute(scripts[0]).lstrip('./')
@@ -354,11 +357,14 @@ def main():
     for problem in problems:
         print(problem.rstrip())
     total = sum(counts.values())
-    print('{} command(s) discovered in {} document(s): {} executed and passed, {} red, '
-          '{} unresolved, {} skipped (not run here; {} of them had their flags checked '
-          'against --help){}'
-          .format(total, len(documents), counts['RUN'], counts['RED'], counts['HOLE'],
-                  counts['SKIP'], flagged,
+    # The headline says coverage before it says verdicts. "0 red" out of 60 discovered
+    # reads as sixty commands verified; it is a verdict on the five that ran.
+    covered = counts['RUN'] + counts['RED']
+    print('{} command(s) discovered in {} document(s): {}/{} executed ({}/{} of the '
+          'rest had their flags checked against --help), {} passed, {} red, '
+          '{} unresolved, {} not run here{}'
+          .format(total, len(documents), covered, total, flagged, counts['SKIP'],
+                  counts['RUN'], counts['RED'], counts['HOLE'], counts['SKIP'],
                   ', {} without a verdict'.format(counts['SLOW'])
                   if counts['SLOW'] else ''))
     return 1 if (counts['RED'] or counts['HOLE']) else 0

@@ -1794,7 +1794,10 @@ def main():
     args = parser.parse_args()
 
     if args.example:
-        print(json.dumps(EXAMPLE, indent=2))
+        # The same renderer the template uses: every value that fits stays on its
+        # line. The page tells the agent to read this in one call, and one value per
+        # line makes that call twice the size for nothing.
+        print(render(EXAMPLE))
         return 0
     if args.template:
         if write_template(args.template) == 'work':

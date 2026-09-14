@@ -1,5 +1,8 @@
 # Register components: the model
 
+Reference for a hand-written model, and the page `05-design.md` cites. Not for filling
+a marker: the scaffold wrote the model and `main()`.
+
 The model is a declarative block that says which components exist, which thread each
 one runs in, which services each provides, and which services each depends on. It is
 the only thing that changes when you move a component between threads or processes.
@@ -128,11 +131,15 @@ Only the model changes; the component classes never do.
 
 The five calls are the `main()` at the top of this page: `setup()` starts logging,
 routing and timers; `load_model()` creates the threads and components;
-`wait_quit()` blocks until any component calls `areg::Application::signal_quit()`;
+`wait_quit()` blocks until any component ends the application;
 `unload_model()` and `release()` undo the first two.
 
 `unload_model()` destroys the components, so `main()` cannot read a member of one to
 decide its exit code. Put the value in the application storage, which outlives both:
+
+This is what `quit_with(code)` is: a scaffolded project already has it beside `main()`,
+and there a component calls that and never `signal_quit()`, which `check_contract.py`
+reports as P-18. The mechanism, for a program that carries no `quit_with()`:
 
 ```cpp
 constexpr char const _result[]{ "result" };   // any unique name

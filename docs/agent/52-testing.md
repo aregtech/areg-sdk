@@ -60,8 +60,10 @@ arrived, not when `main` reaches the end.
 
 - Count the answers with a `std::atomic<int>`, and assert once the count is the number
   the test sent.
-- Call `areg::Application::signal_quit()` from that point. Without it the process waits
-  for ever and the test times out instead of failing.
+- End the application from that point. Without it the process waits for ever and the
+  test times out instead of failing. Where the file defines `quit_with()` -- every
+  scaffolded project -- that is the call, and `signal_quit()` there is reported as
+  P-18, because `main()` returns what `quit_with()` stored and nothing else.
 - Return a non-zero exit code when an assertion failed, so a harness that only reads
   the exit code still fails.
 

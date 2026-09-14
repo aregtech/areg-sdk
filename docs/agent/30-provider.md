@@ -1,5 +1,8 @@
 # Implement a service provider
 
+Reference for a hand-written provider, and the sections `51-debug.md` cites. Not for
+filling a marker: `gen_skeleton.py --app` wrote the provider.
+
 A provider is your class inheriting `areg::Component` and the generated
 `<Name>ProviderBase`. It implements every request and answers with a response.
 

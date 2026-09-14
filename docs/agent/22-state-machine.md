@@ -286,7 +286,9 @@ class GateProvider : ..., private GateFSM::FinalObserver
 };
 ```
 
-Register it with `mFsm.set_final_observer(this)`.
+Register it with `mFsm.set_final_observer(this)`. Where the project defines
+`quit_with()`, which every scaffolded one does, that is the call here instead:
+`signal_quit()` past it is reported as P-18.
 
 ## CMake
 

@@ -267,6 +267,12 @@ def load():
     return headers
 
 
+def declares(headers, name):
+    """True while some public header still declares this member name."""
+    return any(member == name
+               for header in headers for member, _owner, _sig, _doc in header.members)
+
+
 def answer_member(headers, name, full):
     """Every declaration of one member name, grouped by the class that owns it."""
     groups = {}
@@ -380,6 +386,21 @@ def answer_enum(headers, name):
     return False
 
 
+# The spellings agents write from memory, and what areg calls each one. These are the
+# names 40-base-api.md lists as the ones most often borrowed from std::string and
+# std::vector; check_contract.py reports each as B-08. A replacement is printed only
+# after the headers are asked whether it still exists.
+REPLACED_BY = {
+    'get_str': 'as_string',
+    'to_std_string': 'as_string',
+    'c_str': 'as_string',
+    'get_length': 'length',
+    'push_back': 'add',
+    'empty': 'is_empty',
+    'insert': 'insert_at',
+}
+
+
 def search(headers, word):
     """Every member, class and enumeration name holding a word."""
     needle = word.lower()
@@ -474,10 +495,17 @@ def main():
             print('"{}" is not a member, a class, an enumeration or a constant in the '
                   'public areg headers, and appears in no declaration they carry.'
                   .format(name))
+            instead = REPLACED_BY.get(name)
+            # A replacement is only offered while the headers still declare it. The
+            # map is a memory of what agents write, not a second source of truth.
+            if instead and declares(headers, instead):
+                print('It is a spelling borrowed from another library. areg calls it '
+                      '"{}": look that up.'.format(instead))
             print('Operators are reached through the type and are not members, so '
+                  'this says nothing about + or ==, and no name holds it either.'
+                  if not search(headers, name) else
+                  'Operators are reached through the type and are not members, so '
                   'this says nothing about + or ==.')
-            if not search(headers, name):
-                print('and no name holds it either.')
             missing += 1
     return 1 if missing else 0
 

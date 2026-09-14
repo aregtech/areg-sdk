@@ -1,6 +1,11 @@
 {
   "_comment": [
-    "The task bank for measuring how well an agent can build, and repair, an areg",
+    "Ids are stable and are never reused, so a gap is a task that was withdrawn, not",
+  "one that is missing. There is one gap: r18-size-zero-not-empty, which repaired",
+  "size() == 0 written for is_empty(). It went when its rule B-03 went from",
+  "docs/agent/api.json, so nothing is left unproven by its absence.",
+  "",
+  "The task bank for measuring how well an agent can build, and repair, an areg",
     "application from the documentation alone. Each task is a prompt a person could",
     "have typed. 'expect' is what the finished application must print; 'reference'",
     "names the recipe that is a known-good answer.",

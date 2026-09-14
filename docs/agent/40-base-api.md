@@ -136,7 +136,7 @@ collector keeps every reading it accepted and prints them by index.
 | Names generated from a `.siml` | `20-service-interface.md` section 3 |
 | Logging macros | `34-logging.md` |
 | Timers, the application, components, threads, time, files | `42-runtime-api.md` |
-| Synchronization primitives | `../../examples/10_sync/`, `../../examples/29_syncevent/` |
+| Synchronization primitives | `42-runtime-api.md` section 8 |
 | Anything else in the framework | The header. **Never a header under a `private/` folder.** |
 
 If a member you need is missing here, read the header rather than guessing the

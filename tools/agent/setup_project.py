@@ -195,9 +195,22 @@ def prohibition_bullets():
     for item in stated:
         rule = ' '.join(str(item.get('rule', '')).split())
         if rule:
-            bullets.append(textwrap.fill('- ' + as_markdown(rule), 88,
+            bullets.append(textwrap.fill('- ' + as_markdown(imperative(rule)), 88,
                                          subsequent_indent='  '))
     return '\n'.join(bullets) if bullets else None
+
+
+# This page is resident in every request of a run, so a rule costs its bytes once per
+# request. The sentence that states the rule prevents the mistake; the sentences that
+# explain the mechanism are what check_contract.py prints at the file and the line the
+# moment the rule is broken, which is where they are worth reading.
+SENTENCE_END = re.compile(r'(.+?[.!])(?:\s|$)')
+
+
+def imperative(rule):
+    """The sentence that states a rule, without the mechanism behind it."""
+    found = SENTENCE_END.match(rule)
+    return found.group(1) if found else rule
 
 
 # The file each harness reads on startup, and whether it needs one at all. A
@@ -346,13 +359,13 @@ src/CMakeLists.txt    names the documents and each executable's sources
 | Behaviour that depends on what happened before | `docs/agent/22-state-machine.md` (a `.fsml`) |
 | `areg::String` and the containers | `docs/agent/40-base-api.md` -- before the first line of C++ |
 | The signature of one framework name | `python3 {sdk}/tools/agent/api_help.py <name>` -- never a page, never a header |
-| Implement a provider, a consumer, or the model | nothing: `gen_skeleton.py --app` wrote all three. `docs/agent/30-provider.md`, `docs/agent/31-consumer.md` and `docs/agent/32-model.md` describe a program someone else wrote: do not open them to fill a marker, and do not open them to design one either |
+| Implement a provider, a consumer, or the model | nothing: `gen_skeleton.py --app` wrote all three. Open `docs/agent/30-provider.md`, `docs/agent/31-consumer.md` or `docs/agent/32-model.md` only at a numbered section `51-debug.md` or `05-design.md` names |
 | Periodic or delayed work | the consumer already owns a stepping timer; for a second timer `docs/agent/33-timers.md` |
 | A custom event between threads | `docs/agent/23-events.md` |
 | Worker threads, watchdogs, a run-time model | `docs/agent/37-threads.md` |
 | The application, components, time, files | `docs/agent/42-runtime-api.md` |
 | Log from application code | `docs/agent/34-logging.md` |
-| Start the pieces in the right order | nothing: `run_scenarios.py` does it, and `--app` wrote `scenarios.json`. It runs every scenario and names each one, so `--only` is for iterating on a failure, never for confirming a pass. `docs/agent/50-running.md` is its key reference, for `router`, `lead` and `stop`/`after`/`signal`, which `--app` does not write |
+| Start the pieces in the right order | nothing: `run_scenarios.py` does it and `--app` wrote `scenarios.json`. `--only` is for iterating on a failure, never for confirming a pass. `docs/agent/50-running.md` for `router`, `lead` and `stop`/`after`/`signal` |
 | Write a test | `docs/agent/52-testing.md` |
 | Work out why it does not work | `docs/agent/51-debug.md` |
 | **Anything this table does not cover** | `AGENTS.md` section 2 in the SDK -- it routes the full set. Never search the SDK by hand |
