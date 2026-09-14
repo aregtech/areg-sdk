@@ -18,7 +18,6 @@
 #ifdef __linux__
 
 #include "areg/component/private/TimerManagerBase.hpp"
-#include "areg/component/private/posix/TimerPosix.hpp"
 #include "areg/component/ExitEvent.hpp"
 #include <sys/epoll.h>
 #include <sys/eventfd.h>
@@ -131,13 +130,7 @@ bool TimerManagerBase::run_dispatcher()
             }
             else
             {
-                TIMERHANDLE handle = reinterpret_cast<TIMERHANDLE>(ptr);
-                areg::os::TimerPosix* posixTimer = reinterpret_cast<areg::os::TimerPosix*>(handle);
-
-                uint64_t expirations { 0u };
-                [[maybe_unused]] ssize_t drained = ::read(posixTimer->timer_fd(), &expirations, sizeof(uint64_t));
-
-                _on_timerfd_expired(handle);
+                _on_timerfd_expired(reinterpret_cast<TIMERHANDLE>(ptr));
             }
         }
     }

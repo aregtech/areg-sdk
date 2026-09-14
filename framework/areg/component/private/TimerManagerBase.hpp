@@ -141,7 +141,7 @@ private:
     /**
      * \brief   Called from the epoll loop when the timerfd associated with
      *          handle becomes readable (i.e., the timer has fired). Subclasses
-     *          implement this to look up the corresponding timer/watchdog object
+     *          look up the corresponding timer/watchdog object, drain its timerfd,
      *          and call the appropriate expired-timer handler.
      *
      * \param   handle  OS timer handle (pointer to TimerPosix object) that fired.
