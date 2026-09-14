@@ -34,6 +34,10 @@ which may call `fail("why")`, `stay()` or `go_to(Step::Name)`, so a scenario tha
 branches fits it too. `gen_docs.py --example`
 shows four steps.
 
+What such a consumer gives up after is `"driver"` of the same interface:
+`connect_seconds`, `reconnect_seconds` and `stall_ticks`, one tick a second, 0 for
+never. The generator declares them, so no marker asks for one.
+
 ## Timer and log
 
 ```cpp
@@ -80,8 +84,11 @@ Terminal, clean up and quit: `Rejected`, `Shutdown`.
 
 ## Tools
 
+The directory the session started in is the project root: scaffold into `.`, never
+into a directory of your own and never under your home.
+
 ```bash
-python3 <sdk>/tools/agent/setup_project.py --name app --root ~/app --mode local
+python3 <sdk>/tools/agent/setup_project.py --name app --root . --mode local
 python3 <sdk>/tools/agent/gen_docs.py --template design.json    # every key, empty: fill it
 python3 <sdk>/tools/agent/build_project.py --spec design.json   # documents, application,
                                                                # contract, configure, build

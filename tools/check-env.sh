@@ -78,5 +78,5 @@ if [ "$failed" -eq 1 ]; then
 fi
 
 echo "RESULT: ready to build."
-echo "  next: cmake -B build  &&  cmake --build build -j"
+echo "  next: cmake -B build  &&  cmake --build build -j8"
 exit 0

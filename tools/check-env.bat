@@ -69,6 +69,6 @@ if "%FAILED%"=="1" (
     endlocal & exit /b 1
 ) else (
     echo RESULT: ready to build.
-    echo   next: cmake -B build  ^&^&  cmake --build build -j
+    echo   next: cmake -B build  ^&^&  cmake --build build -j8
     endlocal & exit /b 0
 )

@@ -4,13 +4,17 @@ An AREG application lives outside the SDK repository and pulls the SDK in throug
 CMake. The fastest correct start is the setup script:
 
 ```bash
-python3 <areg-sdk>/tools/agent/setup_project.py --name myapp --root ~/myapp --mode local
-cd ~/myapp
+python3 <areg-sdk>/tools/agent/setup_project.py --name myapp --root . --mode local
 python3 <areg-sdk>/tools/agent/build_project.py
 ./build/bin/myapp.elf
 ```
 
-On Windows the same five commands are `python` instead of `python3` and
+The directory the session started in is the project root. Scaffold into `.`: do not
+create a directory for the project, do not `cd` anywhere, and do not move the work
+under your home directory. If that directory is inside the SDK, or already holds an
+unrelated project, stop and say so.
+
+On Windows the same three commands are `python` instead of `python3` and
 `build\bin\myapp.exe` instead of the last line. Needed before any of it: CMake 3.20+,
 a Java 17+ runtime and a C++17 compiler. Without Python, copy a recipe from
 `recipes/` by hand instead; they are ordinary project files.

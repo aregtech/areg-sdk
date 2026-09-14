@@ -79,11 +79,13 @@ every key present and empty, each section with a `#|` note on what its values ma
 Fill the values and keep the keys; no XML, `ID` or `To` is written by hand. A sample
 left as written is skipped and an empty value is absent, so delete only a section the
 task does not need. A key the generator does not read is refused by name.
-`gen_docs.py --example` prints a finished design of another application, 370 lines,
+`gen_docs.py --example` prints a finished design of another application, 375 lines,
 short enough to read in one call: do not page it. A consumer that drives a
 scenario and exits lists it as `"steps"`, branching included: the generator
 writes the step machine, and each check may `stay()`, `go_to(Step::Name)` or
 `fail("why")`. Writing that machine by hand is the largest avoidable cost here.
+What it gives up after is `"driver"` of the same interface, which the template's own
+note explains; the generator declares all three, so no marker asks for one.
 
 The spec holds `"datatypes"` (one `.dtml`, when two documents share a type),
 `"interfaces"` (a `.siml` each) and `"machines"` (a `.fsml` each). Everything is named:
@@ -174,13 +176,6 @@ python3 <areg-sdk>/tools/agent/fill_markers.py --bodies bodies.txt
 **That is the whole implementation, in two requests.** One edit per body and a full
 rewrite are the two most expensive shapes a run has.
 
-A line starting with `#|` is furniture of the worksheet and never reaches a source
-file. Everything else under a `== ` line is code: a comment in a body is a `// comment` line, and a
-`#` line that is not a preprocessor directive is refused before anything is written. A
-section left empty stays open, and the filler takes out the sections it applied -- so
-what is left in the file is what is left to do, and the same file is given back for a
-second pass.
-
 A line tagged `// placeholder(you)` stands only until the marker above it is filled --
 a default `response_`, a `return false;`. The filler takes it away with that marker; an
 edit by hand must replace it too, or the body runs and the placeholder runs after it.
@@ -207,7 +202,9 @@ python3 <areg-sdk>/tools/agent/api_help.py Timer --class
 **`scenarios.json` is in the worksheet too**, as its last sections: one regular
 expression per line, every one of which has to match. The generated `main()` prints
 nothing, so each line comes from a body written above it -- the proof and the code
-that produces it go into the same file, in the same request.
+that produces it go into the same file, in the same request. A body prints with
+`std::cout << ... << std::endl;`, and every `.cpp` the generator writes includes
+`<iostream>` already.
 
 ## 7. Build and run -- two commands
 

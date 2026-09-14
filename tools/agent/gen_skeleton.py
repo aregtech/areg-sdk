@@ -199,6 +199,9 @@ WORKSHEET_HEAD = """\
 #|
 #| A helper of your own is declared in the "*_state" section of a file and defined
 #| in any section of that same file. Nothing else has to be added by hand.
+#|
+#| A body prints with "std::cout << ... << std::endl;". Every .cpp of this project
+#| includes <iostream> already, so a section that prints adds no include.
 """
 
 def worksheet_sections(produced, out):
@@ -912,6 +915,10 @@ def contract_lines(iface, document):
     if document.lower().endswith('.fsml'):
         out.append('classes:   {n}FSM (the machine), {n}ActionHandler (implement this)'
                    .format(n=iface.name))
+        # A trigger and an attribute are reached through the machine object; an action
+        # and a condition are overrides on the component itself.
+        out.append('  the machine object is mFsm in a generated provider: a "call" '
+                   'below is mFsm.<name>(...)')
         # The generated names are the document's own, unchanged: a trigger keeps its
         # name, an action carries the action_ prefix, a condition carries none.
         for name, params in iface.triggers:
@@ -924,7 +931,7 @@ def contract_lines(iface, document):
                                                      iface.signature(params)))
         for name, kind in iface.attributes:
             spelled = to_snake(name)
-            out.append('  on the machine object: {}() / set_{}({})'
+            out.append('  call     {}() / set_{}({})'
                        .format(spelled, spelled, iface.attribute_setter(kind, True)))
         return out + type_lines(iface)
     if document.lower().endswith('.dtml'):
@@ -1139,6 +1146,18 @@ def cpp_value(value):
     return str(value)
 
 
+def driver_of(specs, iface):
+    """The driver settings the specs declare for this service, every key present."""
+    import gen_docs
+    settings = dict(gen_docs.DRIVER_DEFAULTS)
+    for path in specs:
+        spec, _skipped = gen_docs.load_spec(path)
+        for entry in spec.get('interfaces') or []:
+            if isinstance(entry, dict) and entry.get('name') == iface.name:
+                settings = gen_docs.driver_of(entry)
+    return settings
+
+
 def steps_of(specs, iface):
     """The steps the specs declare for this service, resolved against its document.
 
@@ -1273,12 +1292,15 @@ def driver_lines(steps, holds):
     return lines
 
 
-def consumer_class(iface, cls, steps=()):
+def consumer_class(iface, cls, steps=(), driver=None):
     """The consumer component, subscribed and handling everything it subscribed to.
 
     With steps it also carries the driver that runs them: the requests, their order and
-    the exit code are generated, and the check a step makes is a marker.
+    the exit code are generated, and the check a step makes is a marker. The deadlines
+    the driver gives up after come from the spec, so no marker asks for one.
     """
+    import gen_docs
+    driver = dict(gen_docs.DRIVER_DEFAULTS) if driver is None else driver
     stepped = steps_scenario(iface) or bool(steps)
     holds = any(step['wait'] for step in steps)
     pad = ' ' * (len(cls) + 13)
@@ -1519,15 +1541,12 @@ def consumer_class(iface, cls, steps=()):
               '    bool         mConnected{ false };   //!< True once the service '
               'has connected.',
               '',
-              marker('connect_deadline',
-                     'the whole line, with the seconds to wait for the provider '
-                     'to appear; 0 waits for ever',
-                     4),
-              placeholder('    static constexpr uint32_t cConnectSeconds{ 0 };'),
-              marker('reconnect_deadline',
-                     'the whole line, with the seconds to wait for it to come '
-                     'back; 0 waits for ever', 4),
-              placeholder('    static constexpr uint32_t cReconnectSeconds{ 0 };'),
+              '    //! Seconds to wait for the provider to appear. 0 waits for ever.',
+              '    static constexpr uint32_t cConnectSeconds{{ {} }};'
+              .format(driver['connect_seconds']),
+              '    //! Seconds to wait for it to come back. 0 waits for ever.',
+              '    static constexpr uint32_t cReconnectSeconds{{ {} }};'
+              .format(driver['reconnect_seconds']),
               '']
     if stepped:
         lines += [
@@ -1537,14 +1556,10 @@ def consumer_class(iface, cls, steps=()):
                   '',
                   '    areg::Timer  mPace;   //!< Spaces the requests of the scenario.',
                   '',
-                  marker('stall_ticks',
-                         'the whole line, with the ticks of no progress that end '
-                         'the run; 0 leaves the '
-                         'watchdog off. A peer that goes away is already the '
-                         'reconnect deadline\'s to report, so keep this longer '
-                         'than that deadline or the two race and the message '
-                         'depends on which fires first', 4),
-                  placeholder('    static constexpr uint32_t cStallTicks{ 0 };'),
+                  '    //! Ticks of no progress that end the run, one tick a second.',
+                  '    //! 0 leaves the watchdog off.',
+                  '    static constexpr uint32_t cStallTicks{{ {} }};'
+                  .format(driver['stall_ticks']),
                   '    uint32_t                  mIdleTicks{ 0 };',
                   '']
     lines += driver_lines(steps, holds) if steps else []
@@ -1777,7 +1792,7 @@ SCAFFOLD_MAINS = {'provider.cpp': 'provider/main.cpp',
                   'consumer.cpp': 'consumer/main.cpp'}
 
 
-def app_files(iface, mode, include_root, machine=None, steps=()):
+def app_files(iface, mode, include_root, machine=None, steps=(), driver=None):
     """The whole application: one .hpp and .cpp per component, and the model with main().
 
     Returns a list of (file name, text). The result compiles and runs as written;
@@ -1799,7 +1814,8 @@ def app_files(iface, mode, include_root, machine=None, steps=()):
         consumer_cls, 'Consumer of the {} service.'.format(iface.name),
         class_includes(iface) + TIMER_INCLUDES * (steps_scenario(iface) or bool(steps))
         + [''] + consumer_base,
-        consumer_class(iface, consumer_cls, steps), 'consumer_state', QUIT_DECLARATION,
+        consumer_class(iface, consumer_cls, steps, driver), 'consumer_state',
+        QUIT_DECLARATION,
         'the members and helpers your checks need, defined here; the step the scenario '
         'is on is mStep already' if steps else
         'the members and helpers your rules need, defined here, and the one saying '
@@ -2215,7 +2231,8 @@ def main():
                      'component. A .fsml name becomes a C++ namespace; rename the '
                      'machine.'.format(machine.name))
         produced = app_files(iface, args.mode, include_root, machine,
-                             steps_of(args.spec, iface))
+                             steps_of(args.spec, iface),
+                             driver_of(args.spec, iface))
         retained = [(file_name,
                      write(os.path.join(args.out, file_name), text, args.force))
                     for file_name, text in produced]

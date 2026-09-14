@@ -84,7 +84,8 @@ KEYS = {
     'datatypes': ('name', 'description', 'version', 'declare', 'includes'),
     'interface': ('name', 'category', 'description', 'version', 'types', 'attributes',
                   'requests', 'responses', 'broadcasts', 'constants', 'includes',
-                  'machine', 'steps'),
+                  'machine', 'steps', 'driver'),
+    'driver': ('connect_seconds', 'reconnect_seconds', 'stall_ticks'),
     'machine': ('name', 'description', 'version', 'threading', 'types', 'attributes',
                 'constants', 'triggers', 'timers', 'events', 'actions', 'conditions',
                 'submachines', 'includes', 'initial', 'states'),
@@ -969,6 +970,11 @@ def check_shape(project):
         where = 'the service interface "{}"'.format(spec.get('name', '?'))
         check_keys(spec, KEYS['interface'], where)
         check_types(spec, 'types', where)
+        # driver is one object, not a list, so check_list does not reach it. A key
+        # misspelled here would otherwise fall back to the default in silence.
+        if isinstance(spec.get('driver'), dict):
+            check_keys(spec['driver'], KEYS['driver'],
+                       'the driver of "{}"'.format(spec.get('name', '?')))
         for key, kind in (('attributes', 'service attribute'), ('requests', 'request'),
                           ('responses', 'method'), ('broadcasts', 'method'),
                           ('constants', 'constant'), ('includes', 'include'),
@@ -1226,6 +1232,47 @@ def cross_check(project):
 # The driver declares these two steps itself, around the ones a spec lists.
 STEP_RESERVED = ('start', 'done')
 IDENTIFIER = re.compile(r'^[A-Za-z_]\w*$')
+
+
+# One tick of a stepped consumer, in seconds. The driver's stall watchdog counts
+# these, so a tick count and a second are the same number here.
+DRIVER_TICK_SECONDS = 1
+
+DRIVER_DEFAULTS = {'connect_seconds': 10, 'reconnect_seconds': 10, 'stall_ticks': 0}
+
+
+def driver_of(spec):
+    """The driver settings of one interface, every key present."""
+    settings = dict(DRIVER_DEFAULTS)
+    given = spec.get('driver') if isinstance(spec, dict) else None
+    if isinstance(given, dict):
+        settings.update((key, value) for key, value in given.items() if key != NOTE)
+    return settings
+
+
+def check_drivers(project):
+    """A consumer's deadlines are whole seconds, and its watchdog outlives them."""
+    for spec in project['interfaces']:
+        given = spec.get('driver') if isinstance(spec, dict) else None
+        if given is None:
+            continue
+        where = 'the driver of "{}"'.format(spec.get('name', '?'))
+        if not isinstance(given, dict):
+            fail('{} is an object of {}'.format(where, ', '.join(sorted(DRIVER_DEFAULTS))))
+        settings = driver_of(spec)
+        for key in sorted(DRIVER_DEFAULTS):
+            value = settings[key]
+            if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+                fail('{} gives "{}" as {!r}. It is a whole number of {}, and 0 turns it '
+                     'off'.format(where, key, value,
+                                  'ticks' if key == 'stall_ticks' else 'seconds'))
+        stall = settings['stall_ticks'] * DRIVER_TICK_SECONDS
+        reconnect = settings['reconnect_seconds']
+        if stall and reconnect and stall <= reconnect:
+            fail('{} lets the stall watchdog fire before the reconnect deadline '
+                 '({} tick(s) against {} second(s)): a provider that goes away would be '
+                 'reported by whichever timer wins. Make stall_ticks longer than '
+                 'reconnect_seconds'.format(where, settings['stall_ticks'], reconnect))
 
 
 def check_sequences(project):
@@ -1540,6 +1587,7 @@ EXAMPLE = {
         ],
         "broadcasts": [{"name": "gate_moved",
                         "params": [{"name": "reading", "type": "GateTypes::Reading"}]}],
+        "driver": {"connect_seconds": 10, "reconnect_seconds": 10, "stall_ticks": 30},
         "steps": [{"name": "open_wide", "send": "open", "args": {"width": 1200}},
                   {"name": "hold", "wait": 500},
                   {"name": "close_gate", "send": "close"},
@@ -1650,6 +1698,16 @@ TEMPLATE = {
         "broadcasts": [{"name": "", "description": "",
                         "params": [{"name": "", "type": "", "description": ""}]}],
         "constants": [{"name": "", "type": "", "value": "", "description": ""}],
+        "driver": {
+            NOTE: ["What the generated consumer gives up after. These values are the",
+                   "defaults and are used as they stand; change a number, never a key.",
+                   "connect_seconds: how long to wait for the provider to appear.",
+                   "reconnect_seconds: how long to wait for it to come back.",
+                   "stall_ticks: ticks of no progress that end a stepped run, one tick a",
+                   "second. 0 turns any of the three off and waits for ever. A stall",
+                   "watchdog shorter than reconnect_seconds races it and is refused."],
+            "connect_seconds": 10, "reconnect_seconds": 10, "stall_ticks": 0
+        },
         "steps": [{
             NOTE: ["Only for a consumer that runs a fixed sequence and then exits; delete this",
                    "list otherwise. The generator writes the sequencing, and each step that",
@@ -1759,6 +1817,7 @@ def main():
     check_shape(project)
     cross_check(project)
     check_sequences(project)
+    check_drivers(project)
     check_final_entry(project)
     # An include names a document the way the project root spells it, which is the
     # directory the documents are written to.
