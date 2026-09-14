@@ -518,6 +518,11 @@
       "id": "P-18",
       "rule": "A component ends the application with quit_with(code), never with areg::Application::signal_quit(). main() returns the code quit_with() stored, so a source that calls signal_quit() past it exits 0 whatever went wrong.",
       "detect": "a quit that skipped the quit_with(int) a project defines, in any source but the one defining it"
+    },
+    {
+      "id": "P-19",
+      "rule": "A base initialiser takes *this, never self(). Calling self() while a base is still being initialised is undefined behaviour that a sanitizer reports, because the object is not of its own type yet. A member initialiser runs after every base, and self() is correct there.",
+      "detect": "self() passed to an initialiser of a class this project derives from"
     }
   ],
   "base_api_notes": [

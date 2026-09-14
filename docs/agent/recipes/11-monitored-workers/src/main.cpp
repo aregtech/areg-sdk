@@ -42,7 +42,7 @@ class Worker final  : public    areg::Component
 public:
     Worker(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
         : areg::Component(entry, owner)
-        , WorkerServiceProviderBase(static_cast<areg::Component &>(self()))
+        , WorkerServiceProviderBase(static_cast<areg::Component &>(*this))
         , areg::TimerConsumer()
         , mTimer(static_cast<areg::TimerConsumer &>(self()), "WorkerTimer")
     { }
@@ -108,7 +108,7 @@ class Monitor final : public    areg::Component
 public:
     Monitor(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
         : areg::Component(entry, owner)
-        , MonitorServiceProviderBase(static_cast<areg::Component &>(self()))
+        , MonitorServiceProviderBase(static_cast<areg::Component &>(*this))
     {
         for (const std::string_view & name : Workers)
         {

@@ -22,7 +22,7 @@ class TickProvider final    : public    areg::Component
 public:
     TickProvider(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
         : areg::Component(entry, owner)
-        , TickServiceProviderBase(static_cast<areg::Component &>(self()))
+        , TickServiceProviderBase(static_cast<areg::Component &>(*this))
         , areg::TimerConsumer()
         , mTimer(static_cast<areg::TimerConsumer &>(self()), "TickTimer")
         , mCount(0)

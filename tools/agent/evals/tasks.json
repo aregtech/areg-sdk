@@ -830,6 +830,33 @@
         "rule": "P-18"
       },
       "teaches": "a project that defines quit_with() has exactly one exit; signal_quit() called anywhere else throws the exit code away, and is also what a consumer tests to tell its own shutdown from a lost provider"
+    },
+    {
+      "id": "r32-self-in-base-initialiser",
+      "kind": "repair",
+      "prompt": "A sanitizer build of this provider reports \"member call on address ... which does not point to an object of type ServiceProvider\" at its constructor. The application still runs. Fix the constructor.",
+      "expect": [
+        "consumer: greeted"
+      ],
+      "reference": "02-ipc-two-processes",
+      "binaries": 2,
+      "run": {
+        "router": true,
+        "background": [
+          "provider"
+        ],
+        "lead": "consumer"
+      },
+      "defect": {
+        "file": "src/provider.cpp",
+        "find": "        , HelloServiceProviderBase(static_cast<areg::Component &>(*this))",
+        "replace": "        , HelloServiceProviderBase(static_cast<areg::Component &>(self()))"
+      },
+      "detect": {
+        "by": "check_contract",
+        "rule": "P-19"
+      },
+      "teaches": "a base initialiser runs before the object is of its own type, so it takes *this and never a member call"
     }
   ]
 }

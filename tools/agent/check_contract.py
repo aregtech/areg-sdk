@@ -232,6 +232,7 @@ CHECKS = [
     ('P-16', 'error',   'a timer told apart by name() compared to a literal'),
     ('P-17', 'error',   'a TODO(you) marker the scaffold left, still unfilled'),
     ('P-18', 'error',   'an exit code lost to a quit_with() the source skipped'),
+    ('P-19', 'error',   'self() passed to a base initialiser instead of *this'),
     ('B-01', 'advice',  'an areg::String passed to a printf style log macro'),
     ('B-02', 'advice',  'a range-for over an areg container'),
     ('B-04', 'advice',  'a container name or header with the obsolete TE prefix'),
@@ -429,6 +430,60 @@ def exit_body(sources, read):
                 continue
             return path, number, body_range(lines, number)
     return None
+
+
+# A class and the bases it derives from, and one entry of a constructor's
+# initialiser list.
+CLASS_BASES_RE = re.compile(r'\bclass\s+(\w+)\s*(?:final\s*)?:\s*([^{;]+)')
+BASE_NAME_RE = re.compile(r'(?:public|protected|private|virtual)?\s*'
+                          r'([A-Za-z_][\w:]*)')
+INITIALISER_RE = re.compile(r'^\s*[,:]\s*([A-Za-z_][\w:]*)\s*\(')
+SELF_CALL_RE = re.compile(r'\bself\s*\(\s*\)')
+
+
+def base_classes(sources, read):
+    """Every name some class in this project derives from."""
+    bases = set()
+    for path in sources:
+        text = read(path)
+        if text is None:
+            continue
+        for _derived, listed in CLASS_BASES_RE.findall(text):
+            for name in BASE_NAME_RE.findall(listed):
+                if name not in ('public', 'protected', 'private', 'virtual'):
+                    bases.add(name.split('::')[-1])
+    return bases
+
+
+def check_base_initialisers(sources, findings, read):
+    """P-19. self() in a base initialiser is a member call on an object that is
+    not one yet.
+
+    The bases are constructed before the object exists as its own type, so a
+    member call made from a base initialiser is undefined behaviour and a
+    sanitizer reports it. A member initialiser runs after every base, and self()
+    is correct there.
+    """
+    bases = base_classes(sources, read)
+    if not bases:
+        return
+    for path in sources:
+        text = read(path)
+        if text is None:
+            continue
+        for number, raw in enumerate(text.splitlines()):
+            line = strip_noise(raw)
+            hit = INITIALISER_RE.match(line)
+            if hit is None or not SELF_CALL_RE.search(line):
+                continue
+            if hit.group(1).split('::')[-1] not in bases:
+                continue
+            findings.append(Finding(
+                'P-19', 'error', path, number + 1,
+                'self() is a member call, and this is a base initialiser: the '
+                'object is not of its own type yet, which the standard leaves '
+                'undefined and a sanitizer reports. Pass *this: '
+                'static_cast<areg::Component &>(*this)'))
 
 
 def check_single_exit(sources, findings, read):
@@ -1673,6 +1728,7 @@ def main():
     check_generate_target(base, findings, read)
     check_state_machines(machines, findings, problems)
     check_single_exit(sources, findings, read)
+    check_base_initialisers(sources, findings, read)
     if not args.allow_todo:
         check_open_markers(sources, findings, read)
 

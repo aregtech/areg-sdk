@@ -35,7 +35,7 @@ class GateProvider final    : public    areg::Component
 public:
     GateProvider(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
         : areg::Component(entry, owner)
-        , GateServiceProviderBase(static_cast<areg::Component &>(self()))
+        , GateServiceProviderBase(static_cast<areg::Component &>(*this))
         , GateActionHandler()
         , GateFSM::FinalObserver()
         , mFsm(static_cast<GateActionHandler &>(self()))

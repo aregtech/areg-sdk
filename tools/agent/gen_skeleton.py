@@ -611,7 +611,7 @@ def provider_files(iface, class_name, include_root):
               '',
               '{}::{}(const areg::ComponentEntry & entry, areg::ComponentThread & owner)'.format(class_name, class_name),
               '    : areg::Component(entry, owner)',
-              '    , {}ProviderBase(static_cast<areg::Component &>(self()))'.format(iface.name),
+              '    , {}ProviderBase(static_cast<areg::Component &>(*this))'.format(iface.name),
               '{']
     if iface.attributes:
         source.append('    // An attribute is invalid until it is set once.')
@@ -1010,7 +1010,7 @@ def provider_class(iface, cls, machine=None):
               'public:',
               '    {}(const areg::ComponentEntry & entry, areg::ComponentThread & owner)'.format(cls),
               '        : areg::Component(entry, owner)',
-              '        , {}ProviderBase(static_cast<areg::Component &>(self()))'.format(iface.name)]
+              '        , {}ProviderBase(static_cast<areg::Component &>(*this))'.format(iface.name)]
     if machine:
         lines.append('        , {}ActionHandler()'.format(machine.name))
         lines.append('        , mFsm(static_cast<{}ActionHandler &>(self()))'.format(machine.name))
@@ -1110,20 +1110,26 @@ def consumer_class(iface, cls):
     stepped = steps_scenario(iface)
     pad = ' ' * (len(cls) + 13)
     lines = ['class {} final : public    areg::Component'.format(cls),
-             '{}, protected {}ConsumerBase'.format(pad, iface.name)]
-    if stepped:
-        lines.append('{}, private   areg::TimerConsumer'.format(pad))
+             '{}, protected {}ConsumerBase'.format(pad, iface.name),
+             '{}, private   areg::TimerConsumer'.format(pad)]
     lines += ['{',
               'public:',
               '    {}(const areg::ComponentEntry & entry, areg::ComponentThread & owner)'.format(cls),
               '        : areg::Component(entry, owner)',
-              '        , {}ConsumerBase(entry.mDependencyServices[0].mRoleName, owner)'.format(iface.name)]
+              '        , {}ConsumerBase(entry.mDependencyServices[0].mRoleName, owner)'.format(iface.name),
+              '        , areg::TimerConsumer()',
+              '        , mDeadline(static_cast<areg::TimerConsumer &>(self()), "Deadline")']
     if stepped:
-        lines += ['        , areg::TimerConsumer()',
-                  '        , mPace(static_cast<areg::TimerConsumer &>(self()), "Pace")']
+        lines.append('        , mPace(static_cast<areg::TimerConsumer &>(self()), "Pace")')
     lines += ['    { }',
               '',
               'protected:',
+              '    void startup_component(areg::ComponentThread & thread) final',
+              '    {',
+              '        areg::Component::startup_component(thread);',
+              '        arm_deadline(cConnectSeconds);',
+              '    }',
+              '',
               '    bool service_connected(areg::ServiceConnectionState status, areg::ProxyBase & proxy) final',
               '    {',
               '        bool result{ false };',
@@ -1131,7 +1137,9 @@ def consumer_class(iface, cls):
               '        {',
               '            result = true;',
               '            if (areg::is_service_connected(status))',
-              '            {']
+              '            {',
+              '                mDeadline.stop_timer();',
+              '                mConnected = true;']
     if iface.attributes or iface.broadcasts:
         lines.append('                // Subscriptions are made here, and again after '
                      'every reconnection.')
@@ -1166,11 +1174,12 @@ def consumer_class(iface, cls):
               '                     (status == areg::ServiceConnectionState::ConnectionLost))',
               '            {',
               '                // The provider went away. The framework reconnects and',
-              '                // calls this again, so nothing here quits.',
+              '                // calls this again; the reconnect deadline is the exit.',
               '                if (is_quitting() == false)',
               '                {',
               marker('peer_lost',
                      'what losing the provider means to this scenario', 20),
+              '                    arm_deadline(cReconnectSeconds);',
               '                }',
               '            }',
               '            else if ((status == areg::ServiceConnectionState::Rejected) ||',
@@ -1180,6 +1189,7 @@ def consumer_class(iface, cls):
               '                // from these.',
               marker('service_refused',
                      'what a refused or shut-down service means here', 16),
+              '                mDeadline.stop_timer();',
               '                std::cerr << "service is " << areg::as_string(status)',
               '                          << ", giving up" << std::endl;']
     if stepped:
@@ -1192,17 +1202,29 @@ def consumer_class(iface, cls):
               '    }',
               '']
 
+    # One process_timer serves every timer of this component, so the timer is told
+    # apart by address. A name compared to a literal is a different timer the moment
+    # one is renamed.
+    lines += ['    void process_timer(areg::Timer & timer) final',
+              '    {',
+              '        if (&timer == &mDeadline)',
+              '        {',
+              '            fail(mConnected ? "the provider did not come back within '
+              'the reconnect deadline"',
+              '                            : "no provider connected within the '
+              'connect deadline");',
+              '            return;',
+              '        }',
+              '']
     if stepped:
-        lines += ['    void process_timer(areg::Timer & timer) final',
-                  '    {',
-                  marker('next_step', 'the next request of the scenario'),
+        lines += [marker('next_step', 'the next request of the scenario'),
                   '',
                   '        if ((cStallTicks != 0) && (++mIdleTicks >= cStallTicks))',
                   '        {',
                   '            fail("the scenario stopped making progress");',
-                  '        }',
-                  '    }',
-                  '']
+                  '        }']
+    lines += ['    }',
+              '']
 
     first = True
     for name, params in iface.responses:
@@ -1258,15 +1280,44 @@ def consumer_class(iface, cls):
               '    inline {} & self()'.format(cls),
               '    {   return (*this); }',
               '']
+    lines += ['    //! Ends the scenario as a failure, naming what went wrong.',
+              '    void fail(const char * why)',
+              '    {',
+              '        std::cerr << "FAIL: " << why << std::endl;',
+              '        mDeadline.stop_timer();']
     if stepped:
-        lines += ['    //! Ends the scenario as a failure, naming what went wrong.',
-                  '    void fail(const char * why)',
-                  '    {',
-                  '        std::cerr << "FAIL: " << why << std::endl;',
-                  '        mPace.stop_timer();',
-                  '        quit_with(1);',
-                  '    }',
-                  '',
+        lines.append('        mPace.stop_timer();')
+    lines += ['        quit_with(1);',
+              '    }',
+              '',
+              '    //! Starts the deadline timer for this many seconds. 0 stops it and',
+              '    //! waits for ever.',
+              '    void arm_deadline(uint32_t seconds)',
+              '    {',
+              '        mDeadline.stop_timer();',
+              '        if (seconds != 0)',
+              '        {',
+              '            mDeadline.start_timer(seconds * 1000,',
+              '                                  static_cast<areg::DispatcherThread &>'
+              '(master_thread()),',
+              '                                  areg::TimerBase::ONE_TIME);',
+              '        }',
+              '    }',
+              '',
+              '    areg::Timer  mDeadline;   //!< Ends the run when no provider is there.',
+              '    bool         mConnected{ false };   //!< True once the service '
+              'has connected.',
+              '',
+              marker('connect_deadline',
+                     'seconds to wait for the provider to appear; 0 waits for ever',
+                     4),
+              placeholder('    static constexpr uint32_t cConnectSeconds{ 0 };'),
+              marker('reconnect_deadline',
+                     'seconds to wait for it to come back; 0 waits for ever', 4),
+              placeholder('    static constexpr uint32_t cReconnectSeconds{ 0 };'),
+              '']
+    if stepped:
+        lines += [
                   '    //! Restarts the stall watchdog. Call it wherever the scenario advances.',
                   '    void progressed()',
                   '    {   mIdleTicks = 0; }',

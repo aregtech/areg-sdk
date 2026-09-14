@@ -24,7 +24,7 @@ class MeterProvider final   : public    areg::Component
 public:
     MeterProvider(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
         : areg::Component(entry, owner)
-        , MeterServiceProviderBase(static_cast<areg::Component &>(self()))
+        , MeterServiceProviderBase(static_cast<areg::Component &>(*this))
     { }
 
 protected:
@@ -49,7 +49,7 @@ public:
     Collector(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
         : areg::Component(entry, owner)
         , MeterServiceConsumerBase(entry.mDependencyServices[0].mRoleName, owner)
-        , ReportServiceProviderBase(static_cast<areg::Component &>(self()))
+        , ReportServiceProviderBase(static_cast<areg::Component &>(*this))
     { }
 
 protected:

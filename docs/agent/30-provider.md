@@ -23,7 +23,7 @@ class ServiceProvider final : public    areg::Component
 public:
     ServiceProvider(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
         : areg::Component(entry, owner)
-        , HelloServiceProviderBase(static_cast<areg::Component &>(self()))
+        , HelloServiceProviderBase(static_cast<areg::Component &>(*this))
     { }
 
 protected:
@@ -52,14 +52,16 @@ through the model, and passes exactly these two arguments:
 ServiceProvider(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
 ```
 
-**The provider base takes the component itself.** The `self()` helper exists only
-because the base class needs a reference to a partially constructed object:
+**The provider base takes the component itself**, as `*this`:
 
 ```cpp
-, HelloServiceProviderBase(static_cast<areg::Component &>(self()))
+, HelloServiceProviderBase(static_cast<areg::Component &>(*this))
 ```
 
-Copy both lines as they are. There is no other correct form.
+Copy both lines as they are. **A base initialiser takes `*this`, never `self()`**: a
+member call made while a base is still being initialised is undefined behaviour, and
+a sanitizer reports it. `self()` belongs in a *member* initialiser -- a timer, a
+state machine -- which runs after every base.
 
 ---
 
@@ -177,7 +179,8 @@ the model. See `32-model.md`.
 
 - [ ] Every `request_` of the document is overridden and marked `final`.
 - [ ] The constructor takes `(const areg::ComponentEntry &, areg::ComponentThread &)`.
-- [ ] The provider base is constructed with `static_cast<areg::Component &>(self())`.
+- [ ] The provider base is constructed with `static_cast<areg::Component &>(*this)`,
+      not with `self()`.
 - [ ] No handler blocks, sleeps, or loops for a long time.
 - [ ] Every attribute is set at least once during startup.
 

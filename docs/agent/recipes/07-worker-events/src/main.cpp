@@ -116,7 +116,7 @@ class Scanner final : public    areg::Component
 public:
     Scanner(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
         : areg::Component(entry, owner)
-        , ScanServiceProviderBase(static_cast<areg::Component &>(self()))
+        , ScanServiceProviderBase(static_cast<areg::Component &>(*this))
         // The model stores the consumer name qualified by the role name, so take
         // it from the entry rather than repeating the literal.
         , mWorker(entry.mWorkerThreads[0].mConsumerName)

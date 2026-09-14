@@ -21,7 +21,7 @@ class MonitorProvider final : public    areg::Component
 public:
     MonitorProvider(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
         : areg::Component(entry, owner)
-        , MonitorProviderBase(static_cast<areg::Component &>(self()))
+        , MonitorProviderBase(static_cast<areg::Component &>(*this))
     {
         // An attribute is invalid until it is set once. Publish a value at startup.
         set_temperature(20u);

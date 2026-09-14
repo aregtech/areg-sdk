@@ -116,6 +116,17 @@ restart into a dead application.
 
 Starting a consumer before its provider is normal and supported. It waits.
 
+**Waiting for ever is the other half of it.** A service runs until it is stopped; a
+task with a deadline does not. Two constants the scaffold writes:
+
+| Constant | Armed | Cancelled |
+|---|---|---|
+| `cConnectSeconds` | at startup | the first `Connected` |
+| `cReconnectSeconds` | on `Disconnected` or `ConnectionLost` | the next `Connected` |
+
+`0` waits for ever, right for a service that must outlive its provider. Set the one
+your scenario needs: the consumer then reports `FAIL:` and exits non-zero.
+
 ---
 
 ## 4. What you may override and call

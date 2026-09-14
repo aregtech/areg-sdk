@@ -552,7 +552,11 @@ TOOLS = ['setup_project.py', 'gen_skeleton.py', 'fsml_layout.py', 'run_scenarios
 # that page from 31-consumer.md, which routing had taken off the build path -- a run
 # guessed the first of them and re-invented the exit-code global for want of the
 # second half of the same routing decision.
-CORPUS_CEILING = 188400
+# Raised from 188400 by 624 bytes on 2026-09-14: the two connection deadlines the
+# consumer scaffold now writes, documented in 31-consumer.md with the state table
+# they belong to, and P-19 in AGENTS.md section 6. Both are rules an agent cannot
+# follow from the code alone.
+CORPUS_CEILING = 189024
 
 PAGE_CEILING = 8 * KB
 ENTRY_TARGET = 10 * KB
