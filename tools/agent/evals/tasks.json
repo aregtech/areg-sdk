@@ -862,6 +862,46 @@
         "rule": "P-19"
       },
       "teaches": "a base initialiser runs before the object is of its own type, so it takes *this and never a member call"
+    },
+    {
+      "id": "r33-camelcase-unlisted-method",
+      "kind": "repair",
+      "prompt": "This was written from memory of an older areg and does not compile: the method it calls on the string has another name now. Find the current spelling.",
+      "expect": [
+        "provider: hello,",
+        "consumer: greeted"
+      ],
+      "reference": "01-local-single-process",
+      "defect": {
+        "file": "src/main.cpp",
+        "find": "        std::cout << \"provider: hello, \" << client << std::endl;",
+        "replace": "        std::cout << \"provider: hello, \" << client.getString() << std::endl;"
+      },
+      "detect": {
+        "by": "check_contract",
+        "rule": "B-08"
+      },
+      "teaches": "every framework method is snake_case, so a camelCase call on an areg object names nothing, whether or not it was ever renamed"
+    },
+    {
+      "id": "r34-direct-initialised-string",
+      "kind": "repair",
+      "prompt": "This was written from memory of another string class and does not compile: the copy of the client name calls a method areg::String does not have. Find the method that exists.",
+      "expect": [
+        "provider: hello,",
+        "consumer: greeted"
+      ],
+      "reference": "01-local-single-process",
+      "defect": {
+        "file": "src/main.cpp",
+        "find": "        std::cout << \"provider: hello, \" << client << std::endl;",
+        "replace": "        areg::String name(client);\n        std::cout << \"provider: hello, \" << name.c_str() << std::endl;"
+      },
+      "detect": {
+        "by": "check_contract",
+        "rule": "B-08"
+      },
+      "teaches": "an areg object declared with parentheses is still an areg object; std::string names such as c_str() do not exist on it"
     }
   ]
 }

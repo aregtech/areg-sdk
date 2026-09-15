@@ -158,20 +158,24 @@ FRAMEWORK_ENUMS = {}
 AREG_ENUMERATOR_RE = re.compile(
     r'\bareg::([A-Za-z_]\w*)::([A-Za-z_]\w*)\b(?!\s*[(<])')
 
-# B-08. A snake_case call on a variable. The variable has to be an areg one for the
-# rule to fire, so an application's own method is never reported.
-SNAKE_CALL_RE = re.compile(r'\b(\w+)\s*(?:\.|->)\s*([a-z][a-z0-9_]*)\s*\(')
+# B-08. A call on a variable, of any spelling that starts lower case. The variable has
+# to be an areg one for the rule to fire, so an application's own method is never
+# reported. Every framework member is snake_case, so a camelCase name is undeclared.
+SNAKE_CALL_RE = re.compile(r'\b(\w+)\s*(?:\.|->)\s*([a-z]\w*)\s*\(')
 
 # B-08. A declaration whose type is not an areg one. A name declared both ways in
 # one file is left alone: which type it holds on a line is beyond a line reader.
 OTHER_DECL_RE = re.compile(
     r'(?:^|[(,;])\s*(?:const\s+|static\s+|inline\s+)*([A-Za-z_]\w*(?:::\w+)*)\s*'
-    r'(?:<[^;{}]*>)?\s*(?:const\s*)?[&*]?\s+(\w+)\s*(?=[;={,):])')
+    r'(?:<[^;{}]*>)?\s*(?:const\s*)?[&*]?\s+(\w+)\s*(?=[;={,):(])')
 
 # A variable whose declared type is an areg one. Reused by B-01, B-07 and
-# B-08 so that all of them fire only on framework objects.
+# B-08 so that all of them fire only on framework objects. The type and the name are
+# apart by a space, a & or *, or a closing template bracket, so a call such as
+# areg::as_string(x) is never read as a declaration of direct initialisation.
 AREG_DECL_RE = re.compile(
-    r'\bareg::(\w+)\s*(?:<[^;{}]*>)?\s*(?:const\s*)?[&*]?\s*(\w+)\s*(?=[;={,)])')
+    r'\bareg::(\w+)(?:\s*<[^;{}]*>)?(?:\s*const\b)?(?:\s*[&*]\s*|\s+|(?<=>))(\w+)\s*'
+    r'(?=[;={,)(])')
 
 RANGE_FOR_RE = re.compile(r'\bfor\s*\([^;()]*[^:]:\s*(\w+)\s*\)')
 CONTAINER_ITER_RE = re.compile(r'\b(\w+)\s*(?:\.|->)\s*(?:c|r|cr)?(?:begin|end)\s*\(')
@@ -839,7 +843,7 @@ def check_file(path, lines, known, findings):
             for var, method in SNAKE_CALL_RE.findall(line):
                 if var not in areg_vars or var in shadowed:
                     continue
-                if method in FRAMEWORK_MEMBERS:
+                if method in FRAMEWORK_MEMBERS or method in LEGACY_ACCESSORS:
                     continue
                 findings.append(Finding(
                     'B-08', 'error', path, number + 1,

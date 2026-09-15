@@ -257,6 +257,19 @@ SHELL_FLAGS = ('-c', '-m', '-u')
 
 _advertised = {}
 
+# A terminal escape sequence. Python 3.14 colours --help even into a pipe when
+# FORCE_COLOR is set, and the "m" that ends each sequence hides the option after it.
+ANSI_ESCAPE = re.compile(r'\x1b\[[0-9;]*[A-Za-z]')
+
+
+def plain_env():
+    """This environment with colour output turned off."""
+    env = dict(os.environ)
+    env.pop('FORCE_COLOR', None)
+    env['NO_COLOR'] = '1'
+    env['PYTHON_COLORS'] = '0'
+    return env
+
 
 def advertised_flags(script):
     """The option strings a tool's own --help prints, or None if it has none.
@@ -271,10 +284,11 @@ def advertised_flags(script):
     if os.path.isfile(path):
         try:
             result = subprocess.run([sys.executable, path, '--help'], cwd=ROOT,
-                                    capture_output=True, text=True, timeout=60)
+                                    capture_output=True, text=True, timeout=60,
+                                    env=plain_env())
             if result.returncode == 0:
                 flags = set(re.findall(r'(?<![\w-])(--?[A-Za-z][-A-Za-z0-9_]*)',
-                                       result.stdout))
+                                       ANSI_ESCAPE.sub('', result.stdout)))
         except (OSError, subprocess.SubprocessError):
             flags = None
     _advertised[script] = flags

@@ -40,6 +40,8 @@ WAIT_LIMIT = 20.0
 # the limit is not refused for the seconds it did not spend waiting.
 WAIT_MARGIN = 10.0
 LOSS_POINTS = (0.25, 0.5, 0.75)
+# Lines of the lead's own output a failed loss point keeps as its evidence.
+LOSS_TAIL_LINES = 8
 CPU_LIMIT = 0.5
 SANITIZE_FLAGS = '-fsanitize=address,undefined -fno-omit-frame-pointer'
 SANITIZER_MARKS = ('ERROR: AddressSanitizer', 'runtime error:')
@@ -223,6 +225,10 @@ def probe_peer_loss(scenario, build_dirs, lead_time):
                                           lead['name'], observed)
         reached += 1 if hit else 0
         failures += 1 if bad else 0
+        if bad:
+            said = (observed.get('outputs') or {}).get(lead['name'], '').strip()
+            text += ' [last lines of {}: {}]'.format(
+                lead['name'], ' | '.join(said.splitlines()[-LOSS_TAIL_LINES:]) or 'none')
         points.append(text)
     if reached == 0:
         return result('peer-loss', None, 'not evaluated: no run reached the loss; '

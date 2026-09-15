@@ -80,7 +80,7 @@ every key present and empty, each section with a `#|` note on what its values ma
 Fill the values and keep the keys; no XML, `ID` or `To` is written by hand. A sample
 left as written is skipped and an empty value is absent, so delete only a section the
 task does not need. A key the generator does not read is refused by name.
-`gen_docs.py --example` prints a finished design of another application, 171 lines,
+`gen_docs.py --example` prints a finished design of another application, 170 lines,
 short enough to read in one call: do not page it. A consumer that drives a
 scenario and exits lists it as `"steps"`, branching included: the generator
 writes the step machine, and each check may `stay()`, `go_to(Step::Name)` or
@@ -213,17 +213,16 @@ that produces it go into the same file, in the same request. A body prints with
 `std::cout << ... << std::endl;`, and every `.cpp` the generator writes includes
 `<iostream>` already.
 
-## 7. Build and run -- two commands
+## 7. Build and run -- one command
 
 ```
-python3 <areg-sdk>/tools/agent/build_project.py --spec design.json
-python3 <areg-sdk>/tools/agent/run_scenarios.py --build build/bin
+python3 <areg-sdk>/tools/agent/build_project.py --spec design.json --run
 ```
 
-The first is section 5 again: it keeps the sources you have filled in, re-checks the
-contract -- which catches the mistakes that compile cleanly and fail later -- and
-builds. The second starts the router, then the provider, then the consumer, and checks
-the output. Exit 0 is a pass.
+Section 5 again -- it keeps your filled sources, re-checks the contract, which catches
+the mistakes that compile cleanly and fail later, and builds -- then it starts the
+router, the provider and the consumer and checks their output. Exit 0 is a pass. **Run
+it after every fix too**: a build and a run are one request.
 
 **Every acceptance item goes in `scenarios.json`, including the two that look like
 they need a terminal.** A console quit path is `"stdin": ["-q"]` on that process, leading a scenario of

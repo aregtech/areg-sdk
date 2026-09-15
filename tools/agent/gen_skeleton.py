@@ -319,6 +319,14 @@ UPDATE_NOTE = ['every update_ body runs inside the check the generated handler m
                '        <the body>']
 
 
+# Formatted with the pacing interval, which is declared further down.
+PACE_NOTE = ['this body runs once per pace tick, every {} ms, and only then. A request',
+             'that has to follow an answer or an update at once is sent from that',
+             'answer\'s or update\'s own body: a provider can finish a timed stage in',
+             'less than a tick. Call progressed() wherever the scenario advances, or',
+             'the stall watchdog ends the run after cStallTicks ticks']
+
+
 def section_notes(sections):
     """The warnings that belong to one section, keyed by its marker name.
 
@@ -336,6 +344,8 @@ def section_notes(sections):
     checks = [name for name, _, _, _, _ in sections if name.startswith('step_')]
     if checks:
         notes[checks[0]] = STEPS_NOTE
+    if any(name == 'next_step' for name, _, _, _, _ in sections):
+        notes['next_step'] = [line.format(STEP_INTERVAL_MS) for line in PACE_NOTE]
     return notes
 
 
@@ -1564,12 +1574,15 @@ def consumer_class(iface, cls, steps=(), driver=None):
                   '        }',
                   '']
     if stepped:
-        if not steps:
-            lines += [marker('next_step', 'the next request of the scenario'), '']
-        lines += ['        if ((cStallTicks != 0) && (++mIdleTicks >= cStallTicks))',
+        # The watchdog counts a pace tick before the author's code runs, so a return
+        # in that code never stops it counting.
+        lines += ['        if ((&timer == &mPace) && (cStallTicks != 0) && (++mIdleTicks >= cStallTicks))',
                   '        {',
                   '            fail("the scenario stopped making progress");',
+                  '            return;',
                   '        }']
+        if not steps:
+            lines += ['', marker('next_step', 'the next request of the scenario')]
     lines += ['    }',
               '']
 

@@ -636,7 +636,8 @@ def main():
     print('  python3 {}/build_project.py --spec design.json'.format(tools))
     print('    that first call compiles the framework too: give it a command timeout')
     print('    of at least 15 minutes. Every later call takes seconds.')
-    print('  python3 {}/run_scenarios.py'.format(tools))
+    print('  python3 {}/build_project.py --spec design.json --run'.format(tools))
+    print('    once the bodies are filled: builds and runs every scenario in one call.')
     return 0
 
 

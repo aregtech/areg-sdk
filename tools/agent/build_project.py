@@ -68,24 +68,26 @@ def fail(message):
 
 
 def show(lines, tail):
-    for line in lines[-tail:]:
+    """Prints the last `tail` lines, or all of them when tail is None."""
+    tail = len(lines) if tail is None else tail
+    for line in lines[len(lines) - tail:]:
         print('   ' + line)
     if len(lines) > tail:
         print('   ... {} earlier line(s) not shown'.format(len(lines) - tail))
 
 
-def run(step, command, cwd, kept=2):
+def run(step, command, cwd, kept=2, failed_kept=40):
     """One step of the chain, and whether it passed.
 
     A step that passed prints its last `kept` lines and nothing more: a build log
     that reaches the conversation is re-sent with every later request. A step that
-    failed prints what it said, and what to do about it.
+    failed prints its last `failed_kept` lines, and what to do about it.
     """
     print('== {}: {}'.format(step, ' '.join(command)))
     result = subprocess.run(command, cwd=cwd, capture_output=True, text=True)
     lines = ((result.stdout or '') + (result.stderr or '')).splitlines()
     if result.returncode != 0:
-        show(lines, 40)
+        show(lines, failed_kept)
         print('')
         print('FAILED at step "{}", exit {}.'.format(step, result.returncode))
         advice = ADVICE.get(step, '')
@@ -366,10 +368,12 @@ def main():
         # leaves the compiler with nothing to relink and the binary with its old
         # time, and the guard would then refuse the build it was given, every time,
         # with no command able to clear it.
+        # run_scenarios.py bounds each process's output itself, and a failure it
+        # reports is only readable whole: the FAIL line follows the output it explains.
         if not run('scenarios',
                    [PYTHON, os.path.join(HERE, 'run_scenarios.py'),
                     '--build', os.path.join(args.build, 'bin'), '--stale-ok'],
-                   root, kept=40):
+                   root, kept=40, failed_kept=None):
             return 1
         if not args.no_check:
             print('')

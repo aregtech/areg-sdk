@@ -32,7 +32,7 @@ awaits a response, broadcast or attribute, or waits some milliseconds. The gener
 writes the sequence, and the worksheet has one `step_<name>` check per awaiting step,
 which may call `fail("why")`, `stay()` or `go_to(Step::Name)`, so a scenario that
 branches fits it too. `gen_docs.py --example`
-shows four steps.
+shows three steps.
 
 What such a consumer gives up after is `"driver"` of the same interface:
 `connect_seconds`, `reconnect_seconds` and `stall_ticks`, one tick a second, 0 for
@@ -92,7 +92,8 @@ python3 <sdk>/tools/agent/setup_project.py --name app --root . --mode local
 python3 <sdk>/tools/agent/gen_docs.py --template design.json    # every key, empty: fill it
 python3 <sdk>/tools/agent/build_project.py --spec design.json   # documents, application,
                                                                # contract, configure, build
-python3 <sdk>/tools/agent/run_scenarios.py            # exit 0 means it works; file: 50-running.md
+python3 <sdk>/tools/agent/build_project.py --spec design.json --run  # and every scenario;
+                                                               # exit 0 means it works
 ```
 
 On Windows the interpreter is `python` and a binary is `build\bin\name.exe`; nothing

@@ -1358,15 +1358,39 @@ IDENTIFIER = re.compile(r'^[A-Za-z_]\w*$')
 # these, so a tick count and a second are the same number here.
 DRIVER_TICK_SECONDS = 1
 
-DRIVER_DEFAULTS = {'connect_seconds': 10, 'reconnect_seconds': 10, 'stall_ticks': 0}
+DRIVER_DEFAULTS = {'connect_seconds': 10, 'reconnect_seconds': 10, 'stall_ticks': 30}
+
+# Ticks a default stall watchdog outlasts the reconnect deadline and the longest
+# timed step by.
+STALL_MARGIN_TICKS = 10
+
+
+def whole(value):
+    """True for a whole number that is not a bool."""
+    return isinstance(value, int) and not isinstance(value, bool)
 
 
 def driver_of(spec):
-    """The driver settings of one interface, every key present."""
+    """The driver settings of one interface, every key present.
+
+    A stall watchdog the spec does not name outlasts the reconnect deadline and every
+    timed step, so the default never ends a run that is still making progress.
+    """
     settings = dict(DRIVER_DEFAULTS)
     given = spec.get('driver') if isinstance(spec, dict) else None
     if isinstance(given, dict):
         settings.update((key, value) for key, value in given.items() if key != NOTE)
+    if not (isinstance(given, dict) and 'stall_ticks' in given):
+        reconnect = settings['reconnect_seconds']
+        floor = [settings['stall_ticks']]
+        if whole(reconnect) and reconnect > 0:
+            floor.append(reconnect + STALL_MARGIN_TICKS)
+        steps = spec.get('steps') if isinstance(spec, dict) else None
+        for step in steps if isinstance(steps, list) else []:
+            wait = step.get('wait') if isinstance(step, dict) else None
+            if whole(wait) and wait > 0:
+                floor.append(-(-wait // (1000 * DRIVER_TICK_SECONDS)) + STALL_MARGIN_TICKS)
+        settings['stall_ticks'] = max(floor)
     return settings
 
 
@@ -1447,6 +1471,12 @@ def check_sequences(project):
             if target is not None and wait:
                 fail('{} awaits "{}" and also waits {} ms. A step does one of the two: '
                      'split it into two steps'.format(here, target, wait))
+            stall = driver_of(spec)['stall_ticks']
+            if whole(stall) and stall and wait >= stall * DRIVER_TICK_SECONDS * 1000:
+                fail('{} waits {} ms, and the stall watchdog of the driver ends the run after '
+                     '{} second(s) with no step begun. Make the driver\'s stall_ticks longer '
+                     'than the wait, or leave stall_ticks out and the generator makes it '
+                     'longer'.format(here, wait, stall))
             if target is not None and target not in awaited:
                 fail('{} awaits "{}", which is no response, broadcast or attribute of the '
                      'service'.format(here, target))
@@ -1572,6 +1602,32 @@ def otherwise_visible(interface):
         for entry in named_list(interface, key):
             offered.add(state_key(entry['name']))
     return offered
+
+
+def late_awaits(project):
+    """Steps that await an attribute a request of an earlier step may already have set.
+
+    An update is sent when a value is set. A step that sends nothing and awaits an
+    attribute begins after the earlier steps, so an update those steps caused has
+    already arrived and gone, and the step waits for one that is never sent.
+    Returns (interface, step, attribute, the earlier step that sent a request).
+    """
+    found = []
+    for interface in project.get('interfaces') or []:
+        steps = interface.get('steps') if isinstance(interface, dict) else None
+        if not isinstance(steps, list):
+            continue
+        attributes = set(entry.get('name') for entry in listed(interface, 'attributes'))
+        sender = None
+        for step in steps:
+            if not isinstance(step, dict):
+                continue
+            target = step.get('await')
+            if step.get('send') is None and target in attributes and sender is not None:
+                found.append((interface.get('name', '?'), step.get('name'), target, sender))
+            if step.get('send') is not None:
+                sender = step.get('name')
+    return found
 
 
 def state_mirrors(project, spec):
@@ -1711,8 +1767,7 @@ EXAMPLE = {
         "driver": {"connect_seconds": 10, "reconnect_seconds": 10, "stall_ticks": 30},
         "steps": [{"name": "open_wide", "send": "open", "args": {"width": 1200}},
                   {"name": "hold", "wait": 500},
-                  {"name": "close_gate", "send": "close"},
-                  {"name": "closed", "await": "Width",
+                  {"name": "close_gate", "send": "close", "await": "Width",
                    "description": "Its check calls stay() until Width is 0."}]
     }],
     "machines": [{
@@ -1825,9 +1880,10 @@ TEMPLATE = {
                    "connect_seconds: how long to wait for the provider to appear.",
                    "reconnect_seconds: how long to wait for it to come back.",
                    "stall_ticks: ticks of no progress that end a stepped run, one tick a",
-                   "second. 0 turns any of the three off and waits for ever. A stall",
-                   "watchdog shorter than or equal to reconnect_seconds races it and is refused."],
-            "connect_seconds": 10, "reconnect_seconds": 10, "stall_ticks": 0
+                   "second; left out, it is made longer than reconnect_seconds and every wait.",
+                   "0 turns any of the three off and waits for ever. A stall watchdog shorter",
+                   "than or equal to reconnect_seconds, or to a step's wait, is refused."],
+            "connect_seconds": 10, "reconnect_seconds": 10, "stall_ticks": 30
         },
         "steps": [{
             NOTE: ["Only for a consumer that runs a fixed sequence and then exits; delete this",
@@ -1992,6 +2048,12 @@ def main():
     if skipped:
         print('  note  {} sample entr{} of the template, left as written, skipped.'
               .format(skipped, 'y' if skipped == 1 else 'ies'))
+    for owner, step, attribute, sender in late_awaits(project):
+        print('  note  {}: step "{}" awaits attribute "{}" and sends nothing, after step '
+              '"{}" sent a request. An update that request caused can arrive before "{}" '
+              'begins, and then no other comes. Await "{}" on the step that sends the '
+              'request that sets it, or await that request\'s response.'
+              .format(owner, step, attribute, sender, step, attribute))
     for spec in project['machines']:
         for name in unread_attributes(spec):
             print('  note  {}: attribute "{}" is written and never read by a guard, a '
