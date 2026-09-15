@@ -20,6 +20,9 @@ import re
 import sys
 import xml.etree.ElementTree as ET
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import codegen_names  # noqa: E402
+
 # Predefined document types that map to a C++ type. Anything absent is a type
 # the document declares, and is resolved through the declaration.
 SCALARS = {
@@ -41,15 +44,6 @@ CLASS_HEADERS = {'areg::String': 'areg/base/String.hpp',
 def fail(message):
     sys.stderr.write('error: {}\n'.format(message))
     sys.exit(1)
-
-
-# Only an attribute name is turned to snake_case by codegen.jar. A request, response
-# or broadcast name keeps its spelling after the prefix: InsertCoin is request_InsertCoin.
-def to_snake(name):
-    """StringOnChange -> string_on_change; hello_service stays as it is."""
-    text = re.sub(r'(.)([A-Z][a-z]+)', r'\1_\2', name)
-    text = re.sub(r'([a-z0-9])([A-Z])', r'\1_\2', text)
-    return text.lower()
 
 
 # Every hole a generated file leaves carries its own name, so the line is unique in
@@ -318,6 +312,13 @@ STEPS_NOTE = ['a step_ section runs only while its step is current. fail("why") 
               'nothing to check still takes one line: a // comment saying so']
 
 
+UPDATE_NOTE = ['every update_ body runs inside the check the generated handler makes,',
+               'so the value is valid and no test of state is needed:',
+               '    if (state == areg::DataState::DataIsOK)',
+               '    {',
+               '        <the body>']
+
+
 def section_notes(sections):
     """The warnings that belong to one section, keyed by its marker name.
 
@@ -330,6 +331,8 @@ def section_notes(sections):
     updates = [name for name, _, _, _, _ in sections if name.startswith('update_')]
     if answers and updates:
         notes[answers[0]] = ORDER_NOTE
+    if updates:
+        notes[updates[0]] = UPDATE_NOTE
     checks = [name for name, _, _, _, _ in sections if name.startswith('step_')]
     if checks:
         notes[checks[0]] = STEPS_NOTE
@@ -466,6 +469,8 @@ class Interface:
     """The parts of a .siml document the components have to match."""
 
     def __init__(self, path):
+        self.path = path
+        self._generated = None
         try:
             root = ET.parse(path).getroot()
         except (ET.ParseError, OSError) as error:
@@ -640,6 +645,27 @@ class Interface:
     def call_args(self, params):
         return ', '.join(name for name, _ in params)
 
+    def generated(self):
+        """The names codegen.jar generated for this document."""
+        if self._generated is None:
+            try:
+                self._generated = codegen_names.names_of_one(self.path)
+            except codegen_names.CodegenError as error:
+                fail(str(error))
+        return self._generated
+
+    def spell(self, kind, name, role='call'):
+        """The C++ name codegen.jar gave one role of one element of this document."""
+        try:
+            return self.generated().name(kind, name, role)
+        except codegen_names.CodegenError as error:
+            fail(str(error))
+
+    def generated_params(self, kind, name, role='call'):
+        """The parameter list codegen.jar declared for that role, defaults removed."""
+        self.spell(kind, name, role)
+        return self.generated().params(kind, name, role)
+
 
 def provider_files(iface, class_name, include_root):
     header = ['/**',
@@ -662,7 +688,8 @@ def provider_files(iface, class_name, include_root):
               'protected:']
     for name, params in iface.requests:
         header.append('    //!< Implements the {} request.'.format(name))
-        header.append('    void request_{}({}) final;'.format(name, iface.signature(params)))
+        header.append('    void {}({}) final;'.format(iface.spell('request', name),
+                                                     iface.generated_params('request', name)))
     header += ['',
                'private:',
                '    inline {} & self()'.format(class_name),
@@ -690,12 +717,14 @@ def provider_files(iface, class_name, include_root):
     if iface.attributes:
         source.append('    // An attribute is invalid until it is set once.')
         for attr_name, type_name in iface.attributes:
-            source.append('    // set_{}( value );'.format(to_snake(attr_name)))
+            source.append('    // {}( value );'.format(
+                iface.spell('attribute', attr_name, 'set')))
     source += ['}', '']
 
     responses = {name for name, _ in iface.responses}
     for name, params in iface.requests:
-        source.append('void {}::request_{}({})'.format(class_name, name, iface.signature(params)))
+        source.append('void {}::{}({})'.format(class_name, iface.spell('request', name),
+                                               iface.generated_params('request', name)))
         source.append('{')
         source.append('    // TODO: implement the request.')
         if name in responses:
@@ -704,10 +733,11 @@ def provider_files(iface, class_name, include_root):
                 # The answer carries values this stub cannot invent, so the call
                 # is written out with its types for the implementation to fill.
                 source.append('    // Answer with:')
-                source.append('    // response_{}({});'.format(
-                    name, iface.signature(answer).strip()))
+                source.append('    // {}({});'.format(
+                    iface.spell('response', name),
+                    iface.generated_params('response', name).strip()))
             else:
-                source.append('    response_{}();'.format(name))
+                source.append('    {}();'.format(iface.spell('response', name)))
         source.append('}')
         source.append('')
     return '\n'.join(header), '\n'.join(source)
@@ -736,18 +766,22 @@ def consumer_files(iface, class_name, include_root):
               '    bool service_connected(areg::ServiceConnectionState status, areg::ProxyBase & proxy) final;']
     for name, params in iface.responses:
         header.append('    //!< Answer of the {} request.'.format(name))
-        header.append('    void response_{}({}) final;'.format(name, iface.signature(params)))
+        header.append('    void {}({}) final;'.format(iface.spell('response', name),
+                                                     iface.generated_params('response', name)))
     for name, params in iface.requests:
         header.append('    //!< The {} request could not be executed.'.format(name))
-        header.append('    void request_{}_failed(areg::ResultType reason) final;'.format(name))
+        header.append('    void {}({}) final;'.format(
+            iface.spell('request', name, 'failed'),
+            iface.generated_params('request', name, 'failed').strip()))
     for name, params in iface.broadcasts:
         header.append('    //!< Broadcast {}.'.format(name))
-        header.append('    void broadcast_{}({}) final;'.format(name, iface.signature(params)))
+        header.append('    void {}({}) final;'.format(iface.spell('broadcast', name),
+                                                     iface.generated_params('broadcast', name)))
     for attr_name, type_name in iface.attributes:
-        cpp, by_ref = iface.cpp_type(type_name)
-        param = 'const {} & {}'.format(cpp, attr_name) if by_ref else '{} {}'.format(cpp, attr_name)
         header.append('    //!< New value of the {} attribute.'.format(attr_name))
-        header.append('    void on_{}_update({}, areg::DataState state) final;'.format(to_snake(attr_name), param))
+        header.append('    void {}({}) final;'.format(
+            iface.spell('attribute', attr_name, 'on_update'),
+            iface.generated_params('attribute', attr_name, 'on_update').strip()))
     header += ['',
                'private:',
                '    {}() = delete;'.format(class_name),
@@ -783,9 +817,10 @@ def consumer_files(iface, class_name, include_root):
     if iface.attributes or iface.broadcasts:
         source.append('            // Subscriptions are made here, and again after every reconnection.')
     for attr_name, _ in iface.attributes:
-        source.append('            notify_on_{}_update(true);'.format(to_snake(attr_name)))
+        source.append('            {}(true);'.format(
+            iface.spell('attribute', attr_name, 'notify')))
     for name, _ in iface.broadcasts:
-        source.append('            notify_on_broadcast_{}(true);'.format(name))
+        source.append('            {}(true);'.format(iface.spell('broadcast', name, 'notify')))
     source += ['            // TODO: send the first request here.',
                '        }',
                '    }',
@@ -795,18 +830,21 @@ def consumer_files(iface, class_name, include_root):
                '']
 
     for name, params in iface.responses:
-        source += ['void {}::response_{}({})'.format(class_name, name, iface.signature(params)),
+        source += ['void {}::{}({})'.format(class_name, iface.spell('response', name),
+                                            iface.generated_params('response', name)),
                    '{', '    // TODO: handle the answer.', '}', '']
     for name, _ in iface.requests:
-        source += ['void {}::request_{}_failed(areg::ResultType /*reason*/)'.format(class_name, name),
+        source += ['void {}::{}(areg::ResultType /*reason*/)'.format(
+                       class_name, iface.spell('request', name, 'failed')),
                    '{', '    // TODO: retry when is_connected(), or report.', '}', '']
     for name, params in iface.broadcasts:
-        source += ['void {}::broadcast_{}({})'.format(class_name, name, iface.signature(params)),
+        source += ['void {}::{}({})'.format(class_name, iface.spell('broadcast', name),
+                                            iface.generated_params('broadcast', name)),
                    '{', '    // TODO: handle the broadcast.', '}', '']
     for attr_name, type_name in iface.attributes:
-        cpp, by_ref = iface.cpp_type(type_name)
-        param = 'const {} & {}'.format(cpp, attr_name) if by_ref else '{} {}'.format(cpp, attr_name)
-        source += ['void {}::on_{}_update({}, areg::DataState state)'.format(class_name, to_snake(attr_name), param),
+        source += ['void {}::{}({})'.format(
+                       class_name, iface.spell('attribute', attr_name, 'on_update'),
+                       iface.generated_params('attribute', attr_name, 'on_update').strip()),
                    '{',
                    '    if (state == areg::DataState::DataIsOK)',
                    '    {',
@@ -845,7 +883,8 @@ def machine_files(iface, class_name, include_root):
               '']
     for name, params in iface.actions:
         header.append('    //!< Runs the {} action of the machine.'.format(name))
-        header.append('    void action_{}({}) final;'.format(name, iface.signature(params)))
+        header.append('    void {}({}) final;'.format(iface.spell('action', name),
+                                                     iface.generated_params('action', name)))
     header += ['',
                'private:',
                '    inline {} & self()'.format(class_name),
@@ -888,14 +927,16 @@ def machine_files(iface, class_name, include_root):
               '}',
               '']
     for name, params in iface.actions:
-        source += ['void {}::action_{}({})'.format(class_name, name, iface.signature(params)),
+        source += ['void {}::{}({})'.format(class_name, iface.spell('action', name),
+                                            iface.generated_params('action', name)),
                    '{',
                    '    // TODO: perform the effect. Never raise a stimulus from here.',
                    '}',
                    '']
     if iface.triggers:
         source += ['// Stimulus the machine accepts, to be called from a request handler:',
-                   '//   ' + '  '.join('mFsm.{}();'.format(name) for name, _ in iface.triggers),
+                   '//   ' + '  '.join('mFsm.{}();'.format(iface.spell('trigger', name))
+                                       for name, _ in iface.triggers),
                    '']
 
     return '\n'.join(header), '\n'.join(source)
@@ -969,20 +1010,25 @@ def contract_lines(iface, document):
         # and a condition are overrides on the component itself.
         out.append('  the machine object is mFsm in a generated provider: a "call" '
                    'below is mFsm.<name>(...)')
-        # The generated names are the document's own, unchanged: a trigger keeps its
-        # name, an action carries the action_ prefix, a condition carries none.
+        # Every name below is read from what codegen.jar generated for the document.
         for name, params in iface.triggers:
-            out.append('  call     bool {}({})'.format(name, iface.signature(params)))
+            out.append('  call     bool {}({})'.format(iface.spell('trigger', name),
+                                                     iface.generated_params('trigger', name)))
         for name, params in iface.actions:
-            out.append('  override void action_{}({})'
-                       .format(name, iface.signature(params)))
+            out.append('  override void {}({})'
+                       .format(iface.spell('action', name),
+                               iface.generated_params('action', name)))
         for name, params, returns in iface.conditions:
-            out.append('  override {} {}({})'.format(iface.cpp_type(returns)[0], name,
-                                                     iface.signature(params)))
+            if not iface.generated().has('condition', name):
+                continue
+            out.append('  override {} {}({})'.format(
+                iface.generated().returns('condition', name), iface.spell('condition', name),
+                iface.generated_params('condition', name)))
         for name, kind in iface.attributes:
-            spelled = to_snake(name)
-            out.append('  call     {}() / set_{}({})'
-                       .format(spelled, spelled, iface.attribute_setter(kind, True)))
+            out.append('  call     {}() / {}({})'
+                       .format(iface.spell('attribute', name, 'get'),
+                               iface.spell('attribute', name, 'set'),
+                               iface.attribute_setter(kind, True)))
         return out + type_lines(iface)
     if document.lower().endswith('.dtml'):
         out.append('classes:   none. {} is the namespace the types below are spelled in'
@@ -991,23 +1037,29 @@ def contract_lines(iface, document):
     out.append('classes:   {n}Provider and {n}Consumer build on the generated {n} base'
                .format(n=iface.name))
     for name, params in iface.requests:
-        out.append('  provider overrides request_{}({}); consumer calls request_{}(...) '
-                   'to send it'.format(name, iface.signature(params),
-                                       name))
+        spelled = iface.spell('request', name)
+        out.append('  provider overrides {}({}); consumer calls {}(...) '
+                   'to send it'.format(spelled, iface.generated_params('request', name),
+                                       spelled))
     for name, params in iface.responses:
-        out.append('  provider calls response_{}({}); consumer overrides it'
-                   .format(name, iface.signature(params)))
+        out.append('  provider calls {}({}); consumer overrides it'
+                   .format(iface.spell('response', name),
+                           iface.generated_params('response', name)))
     for name, params in iface.broadcasts:
-        out.append('  provider calls broadcast_{}({}); consumer subscribes with '
-                   'notify_on_broadcast_{}(true)'
-                   .format(name, iface.signature(params), name))
+        out.append('  provider calls {}({}); consumer subscribes with '
+                   '{}(true)'
+                   .format(iface.spell('broadcast', name),
+                           iface.generated_params('broadcast', name),
+                           iface.spell('broadcast', name, 'notify')))
     for name, kind in iface.attributes:
-        spelled = to_snake(name)
+        spelled = iface.spell('attribute', name, 'get')
         cpp = iface.cpp_type(kind)[0]
         read = iface.passed_as(kind)
-        out.append('  provider calls set_{}({}); consumer subscribes with '
-                   'notify_on_{}_update(true)'
-                   .format(spelled, iface.attribute_setter(kind, False), spelled))
+        out.append('  provider calls {}({}); consumer subscribes with '
+                   '{}(true)'
+                   .format(iface.spell('attribute', name, 'set'),
+                           iface.attribute_setter(kind, False),
+                           iface.spell('attribute', name, 'notify')))
         # The last value is readable at any time, on both sides, and the two
         # readers do not have the same signature. Reading the generated header to
         # find that out is what this line replaces.
@@ -1068,9 +1120,14 @@ def default_expr(iface, type_name):
     return '{}{{}}'.format(iface.cpp_type(type_name)[0])
 
 
-# The headers a stepping timer needs, added only to the file that carries one.
+# The headers a class that declares a timer needs.
 TIMER_INCLUDES = ['#include "areg/component/Timer.hpp"',
                   '#include "areg/component/TimerConsumer.hpp"']
+
+
+def timer_includes(class_lines):
+    """TIMER_INCLUDES when the emitted class names an areg timer type, else nothing."""
+    return TIMER_INCLUDES if any('areg::Timer' in line for line in class_lines) else []
 
 def provider_class(iface, cls, machine=None):
     """The provider component, with every request answered.
@@ -1097,8 +1154,8 @@ def provider_class(iface, cls, machine=None):
         lines.append(marker('initial_values', 'the value each attribute starts with; an '
                             'attribute is invalid until it is set once'))
         for attr_name, type_name in iface.attributes:
-            lines.append(placeholder('        set_{}({});'.format(
-                to_snake(attr_name), default_expr(iface, type_name))))
+            lines.append(placeholder('        {}({});'.format(
+                iface.spell('attribute', attr_name, 'set'), default_expr(iface, type_name))))
     lines += ['    }', '', 'protected:']
 
     if machine:
@@ -1121,17 +1178,18 @@ def provider_class(iface, cls, machine=None):
                      'decides nothing:')
         for name, params in machine.triggers:
             lines.append('    //   mFsm.{}({});'.format(
-                name, ', '.join(pname for pname, _ in params)))
+                machine.spell('trigger', name), ', '.join(pname for pname, _ in params)))
     for name, params in iface.requests:
-        lines.append('    void request_{}({}) final'.format(name,
-                                                            iface.signature(params)))
+        spelled = iface.spell('request', name)
+        lines.append('    void {}({}) final'.format(spelled,
+                                                    iface.generated_params('request', name)))
         lines.append('    {')
-        lines.append(marker('request_' + name,
+        lines.append(marker(spelled,
                             'the rule this request carries out'))
         if name in answered:
             args = ', '.join(default_expr(iface, t) for _, t in answered[name])
-            lines.append(placeholder('        response_{}({});'
-                                     .format(name, args)))
+            lines.append(placeholder('        {}({});'
+                                     .format(iface.spell('response', name), args)))
         lines.append('    }')
         lines.append('')
 
@@ -1139,8 +1197,12 @@ def provider_class(iface, cls, machine=None):
         lines.append('    // Every condition a guard of the machine asks. Answer it and '
                      'change nothing.')
         for name, params, returns in machine.conditions:
-            lines.append('    {} {}({}) final'.format(machine.cpp_type(returns)[0], name,
-                                                      machine.signature(params)))
+            if not machine.generated().has('condition', name):
+                continue
+            lines.append('    {} {}({}) final'.format(
+                machine.generated().returns('condition', name),
+                machine.spell('condition', name),
+                machine.generated_params('condition', name)))
             lines += ['    {',
                       marker('condition_' + name,
                              'answer the question this guard asks'),
@@ -1153,10 +1215,11 @@ def provider_class(iface, cls, machine=None):
         lines.append('    // Every action the machine performs. Never raise a stimulus '
                      'from one.')
         for name, params in machine.actions:
-            lines.append('    void action_{}({}) final'.format(name,
-                                                               machine.signature(params)))
+            spelled = machine.spell('action', name)
+            lines.append('    void {}({}) final'.format(spelled,
+                                                        machine.generated_params('action', name)))
             lines += ['    {',
-                      marker('action_' + name, 'perform the effect'),
+                      marker(spelled, 'perform the effect'),
                       '    }',
                       '']
 
@@ -1248,7 +1311,9 @@ def steps_of(specs, iface):
         if target is not None and target not in kinds:
             fail('{} awaits "{}", which is no response, broadcast or attribute of {}'
                  .format(where, target, iface.name))
-        steps.append({'name': name, 'enum': pascal(name), 'send': send, 'args': values,
+        steps.append({'name': name, 'enum': pascal(name), 'send': send,
+                      'call': iface.spell('request', send) if send is not None else None,
+                      'args': values,
                       'awaits': (kinds[target], target) if target is not None else None,
                       'wait': wait})
     return steps
@@ -1291,8 +1356,8 @@ def driver_lines(steps, holds):
         lines += ['        case Step::{}:'.format(step['enum']),
                   '            std::cout << "step {}" << std::endl;'.format(step['name'])]
         if step['send']:
-            lines.append('            request_{}({});'.format(step['send'],
-                                                          ', '.join(step['args'])))
+            lines.append('            {}({});'.format(step['call'],
+                                                  ', '.join(step['args'])))
         if step['wait']:
             lines += ['            mHold.stop_timer();',
                       '            mHold.start_timer({}, static_cast<areg::DispatcherThread &>'
@@ -1400,9 +1465,11 @@ def consumer_class(iface, cls, steps=(), driver=None):
         lines.append('                // Subscriptions are made here, and again after '
                      'every reconnection.')
         for attr_name, _ in iface.attributes:
-            lines.append('                notify_on_{}_update(true);'.format(to_snake(attr_name)))
+            lines.append('                {}(true);'.format(
+                iface.spell('attribute', attr_name, 'notify')))
         for name, _ in iface.broadcasts:
-            lines.append('                notify_on_broadcast_{}(true);'.format(name))
+            lines.append('                {}(true);'.format(
+                iface.spell('broadcast', name, 'notify')))
     # A generated application that waits forever is not one that runs as written.
     # The first request that carries a response completes a round trip, and the
     # response handler below quits, so the program starts and ends on its own.
@@ -1420,16 +1487,14 @@ def consumer_class(iface, cls, steps=(), driver=None):
     else:
         answered_first = next((entry for entry in iface.requests
                                if entry[0] in set(n for n, _ in iface.responses)), None)
-        if answered_first:
-            name, params = answered_first
+        first_request = answered_first or (iface.requests[0] if iface.requests else None)
+        lines.append(marker('first_request',
+                            'the first request of the scenario', 16))
+        if first_request:
+            name, params = first_request
             args = ', '.join(default_expr(iface, type_name) for _, type_name in params)
-            lines.append(marker('first_request',
-                                'the first request of the scenario', 16))
-            lines.append(placeholder('                request_{}({});'
-                                     .format(name, args)))
-        else:
-            lines.append(marker('first_request',
-                                'the first request of the scenario', 16))
+            lines.append(placeholder('                {}({});'
+                                     .format(iface.spell('request', name), args)))
         if stepped:
             lines += ['',
                       '                // One step of the scenario per tick.',
@@ -1437,6 +1502,13 @@ def consumer_class(iface, cls, steps=(), driver=None):
                       '                mPace.start_timer({}, static_cast<areg::DispatcherThread &>'
                       '(master_thread()),'.format(STEP_INTERVAL_MS),
                       '                                  areg::TimerBase::CONTINUOUSLY);']
+        # Nothing answers the first request, and no attribute update arrives to end on.
+        if not answered_first and (iface.requests or not iface.attributes):
+            lines.append('                // placeholder(you): the scenario ends here until '
+                         'a later step replaces it.')
+            if stepped:
+                lines.append(placeholder('                mPace.stop_timer();'))
+            lines.append(placeholder('                quit_with(0);'))
     lines += ['            }',
               '            else if ((status == areg::ServiceConnectionState::Disconnected) ||',
               '                     (status == areg::ServiceConnectionState::ConnectionLost))',
@@ -1503,12 +1575,12 @@ def consumer_class(iface, cls, steps=(), driver=None):
 
     first = True
     for name, params in iface.responses:
-        lines.append('    void response_{}({}) final'.format(name,
-                                                             iface.signature(params)))
+        lines.append('    void {}({}) final'.format(iface.spell('response', name),
+                                                    iface.generated_params('response', name)))
         lines.append('    {')
         # A step that awaits this answer checks it, so a second marker would be empty.
         if not any(step['awaits'] == ('response', name) for step in steps):
-            lines.append(marker('response_' + name,
+            lines.append(marker(iface.spell('response', name),
                                 'what this answer means for the scenario'))
         if first and not steps:
             lines.append('        // placeholder(you): the scenario ends here until a '
@@ -1522,7 +1594,9 @@ def consumer_class(iface, cls, steps=(), driver=None):
         lines.append('')
 
     for name, _ in iface.requests:
-        lines.append('    void request_{}_failed(areg::ResultType reason) final'.format(name))
+        lines.append('    void {}({}) final'.format(
+            iface.spell('request', name, 'failed'),
+            iface.generated_params('request', name, 'failed').strip()))
         lines += ['    {',
                   '        std::cerr << "request {} failed, reason " '
                   '<< static_cast<int>(reason) << std::endl;'.format(name)]
@@ -1533,10 +1607,10 @@ def consumer_class(iface, cls, steps=(), driver=None):
                   '']
 
     for name, params in iface.broadcasts:
-        lines.append('    void broadcast_{}({}) final'.format(name,
-                                                              iface.signature(params)))
+        lines.append('    void {}({}) final'.format(iface.spell('broadcast', name),
+                                                    iface.generated_params('broadcast', name)))
         lines += ['    {',
-                  marker('broadcast_' + name,
+                  marker(iface.spell('broadcast', name),
                          'what this broadcast means in every step' if steps else
                          'what this broadcast means for the scenario')]
         lines += step_dispatch(steps, 'broadcast', name, 8)
@@ -1546,13 +1620,18 @@ def consumer_class(iface, cls, steps=(), driver=None):
     for attr_name, type_name in iface.attributes:
         # The base applies the parameter rule, so anything but a primitive arrives by
         # const reference. An override that disagrees is refused as not virtual.
-        lines.append('    void on_{}_update({} {}, areg::DataState state) final'
-                     .format(to_snake(attr_name), iface.passed_as(type_name), attr_name))
+        lines.append('    void {}({}) final'
+                     .format(iface.spell('attribute', attr_name, 'on_update'),
+                             iface.generated_params('attribute', attr_name,
+                                                    'on_update').strip()))
         lines += ['    {',
                   '        if (state == areg::DataState::DataIsOK)',
                   '        {',
-                  marker('update_' + to_snake(attr_name),
+                  marker('update_' + iface.spell('attribute', attr_name, 'get'),
                          'the new value is ready to use', 12)]
+        # With no request, the first update the provider's initial value sends ends it.
+        if not steps and not iface.requests and attr_name == iface.attributes[0][0]:
+            lines.append(placeholder('            quit_with(0);'))
         lines += step_dispatch(steps, 'update', attr_name, 12)
         lines += ['        }',
                   '    }',
@@ -1857,15 +1936,17 @@ def app_files(iface, mode, include_root, machine=None, steps=(), driver=None):
                           '#include "{}/{}FSM.hpp"'.format(include_root, machine.name)]
     consumer_base = ['#include "{}/{}ConsumerBase.hpp"'.format(include_root, iface.name)]
 
+    provider_lines = provider_class(iface, provider_cls, machine)
+    consumer_lines = consumer_class(iface, consumer_cls, steps, driver)
     produced = [(PROVIDER_DIR[mode] + name, text) for name, text in component_files(
         provider_cls, 'Provider of the {} service.'.format(iface.name),
-        class_includes(iface, machine) + [''] + provider_base,
-        provider_class(iface, provider_cls, machine), 'provider_state')]
+        class_includes(iface, machine) + timer_includes(provider_lines) + ['']
+        + provider_base,
+        provider_lines, 'provider_state')]
     produced += [(CONSUMER_DIR[mode] + name, text) for name, text in component_files(
         consumer_cls, 'Consumer of the {} service.'.format(iface.name),
-        class_includes(iface) + TIMER_INCLUDES * (steps_scenario(iface) or bool(steps))
-        + [''] + consumer_base,
-        consumer_class(iface, consumer_cls, steps, driver), 'consumer_state',
+        class_includes(iface) + timer_includes(consumer_lines) + [''] + consumer_base,
+        consumer_lines, 'consumer_state',
         QUIT_DECLARATION,
         'the members and helpers your checks need, defined here, or one // line saying '
         'none is needed; the step the scenario is on is mStep already' if steps else

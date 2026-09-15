@@ -61,10 +61,12 @@ def rule_number(name, band):
             return str(int(rule.get('Number')) + band)
     return None
 
-from docmodel import (CONTAINERS, PREDEFINED, TYPE_KINDS, Vocabulary, Writer, described,
-                      esc, esc_text, fail, named_list, reserve_params, spell, unique,
-                      write_constants, write_datatypes, write_includes, write_method,
-                      write_overview, write_params)
+import codegen_names  # noqa: E402
+from docmodel import (CONTAINERS, PREDEFINED, TYPE_KINDS,
+                      Vocabulary, Writer, described, esc, esc_text, fail, named_list,
+                      reserve_params, spell, unique, write_constants,
+                      write_datatypes, write_includes, write_method, write_overview,
+                      write_params)
 
 DTML_VERSION = '1.0.0'
 SIML_VERSION = '1.1.0'
@@ -122,7 +124,9 @@ SINGULAR = {'attributes': 'attribute', 'requests': 'request', 'responses': 'resp
             'params': 'parameter', 'answer': 'answer parameter', 'declare': 'type',
             'types': 'type', 'values': 'enumerator', 'fields': 'field', 'events': 'event',
             'timers': 'timer', 'triggers': 'trigger', 'actions': 'action',
-            'conditions': 'condition', 'submachines': 'submachine', 'steps': 'step'}
+            'conditions': 'condition', 'submachines': 'submachine', 'steps': 'step',
+            'states': 'state', 'interfaces': 'service interface', 'machines': 'state machine',
+            'datatypes': 'data type document'}
 
 
 # ----------------------------------------------------------------------------- shared
@@ -994,6 +998,110 @@ def check_shape(project):
         check_states(spec.get('states'), where)
 
 
+def entry_names(owner, key):
+    """The names one list of a spec declares, in order. An entry with no name is skipped."""
+    entries = owner.get(key) if isinstance(owner, dict) else None
+    if isinstance(entries, dict):
+        return [name for name in entries if isinstance(name, str) and name != NOTE]
+    names = []
+    for entry in entries if isinstance(entries, list) else []:
+        name = entry.get('name') if isinstance(entry, dict) else entry
+        if isinstance(name, str) and name:
+            names.append(name)
+    return names
+
+
+def check_names(owner, key, where):
+    """No two names of one list are one: each name of a document gets one ID."""
+    kind = SINGULAR.get(key, key)
+    seen = set()
+    for name in entry_names(owner, key):
+        if name in seen:
+            fail('two {}s of {} are named "{}". A name is unique among the {}s of one '
+                 'document'.format(kind, where, name, kind))
+        seen.add(name)
+
+
+def check_type_names(owner, key, where):
+    """The names of the types one document declares, their enumerators and fields."""
+    check_names(owner, key, where)
+    for entry in listed(owner, key):
+        here = 'type "{}" of {}'.format(entry.get('name', '?'), where)
+        check_names(entry, 'values', here)
+        check_names(entry, 'fields', here)
+
+
+def check_param_names(owner, key, where):
+    """The parameter names of every method in one list of a document."""
+    for entry in listed(owner, key):
+        here = '{} "{}" of {}'.format(SINGULAR.get(key, key), entry.get('name', '?'), where)
+        for inner in ('params', 'answer'):
+            check_names(entry, inner, here)
+
+
+def check_state_names(states, where):
+    for state in states if isinstance(states, list) else []:
+        if isinstance(state, dict):
+            check_names({'states': [state]}, 'states', where)
+            check_state_names(state.get('states'), where)
+
+
+def check_unique_names(project):
+    """No list of the design names two entries alike, before any document is built.
+    Whether a name compiles is codegen.jar's to say; check_codegen asks it."""
+    shared = project.get('datatypes')
+    if isinstance(shared, dict):
+        check_names({'datatypes': [shared]}, 'datatypes', 'the project')
+        check_type_names(shared, 'declare', 'the data type document "{}"'
+                         .format(shared.get('name', '?')))
+    check_names(project, 'interfaces', 'the project')
+    for spec in listed(project, 'interfaces'):
+        where = 'the service interface "{}"'.format(spec.get('name', '?'))
+        check_type_names(spec, 'types', where)
+        check_names(spec, 'attributes', where)
+        for key in ('requests', 'responses', 'broadcasts'):
+            check_names(spec, key, where)
+            check_param_names(spec, key, where)
+        check_names(spec, 'constants', where)
+    check_names(project, 'machines', 'the project')
+    for spec in listed(project, 'machines'):
+        where = 'the state machine "{}"'.format(spec.get('name', '?'))
+        check_type_names(spec, 'types', where)
+        check_names(spec, 'attributes', where)
+        for key in ('constants', 'timers', 'triggers', 'conditions', 'events', 'actions',
+                    'submachines'):
+            check_names(spec, key, where)
+        for key in ('triggers', 'events', 'actions', 'conditions'):
+            check_param_names(spec, key, where)
+        check_state_names(spec.get('states'), where)
+
+
+def check_codegen(documents, prefix):
+    """codegen.jar generates every document built from this design, before any is
+    written. What it refuses is reported in its own words: a name C++ cannot carry, a
+    keyword, two attributes with one accessor."""
+    import hashlib
+    import tempfile
+    digest = hashlib.sha1('\n'.join(name + '\n' + text for name, text in documents)
+                          .encode('utf-8')).hexdigest()
+    holder = os.path.join(tempfile.gettempdir(), 'areg-gen-docs', digest)
+    paths = []
+    for name, text in documents:
+        path = os.path.abspath(os.path.join(holder, prefix, name))
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, 'w', encoding='utf-8', newline='\n') as handle:
+            handle.write(text)
+        paths.append(path)
+    try:
+        report = codegen_names.refusal(paths, holder)
+    except codegen_names.CodegenError as error:
+        fail(str(error))
+    if report:
+        fail('codegen.jar refuses the documents this design describes. Each finding names '
+             'the element and the list it is in; rename it in the design:\n'
+             + report.replace(os.path.abspath(holder) + os.sep, ''))
+
+
 def without_notes(node):
     if isinstance(node, dict):
         return {key: without_notes(value) for key, value in node.items() if key != NOTE}
@@ -1311,8 +1419,9 @@ def check_sequences(project):
                 fail('{} has no name a C++ identifier can carry'.format(here))
             key = name.replace('_', '').lower()
             if key in STEP_RESERVED:
-                fail('{} takes a name the driver declares itself; name it after what it '
-                     'does'.format(here))
+                fail('{} takes a name the driver declares itself ({}, underscores and '
+                     'case aside); name it after what it does'
+                     .format(here, ', '.join(key.capitalize() for key in STEP_RESERVED)))
             if key in seen:
                 fail('{} is named twice: a step name is unique, underscores and case '
                      'aside'.format(here))
@@ -1846,6 +1955,7 @@ def main():
 
     project = merge(specs)
     check_shape(project)
+    check_unique_names(project)
     cross_check(project)
     check_sequences(project)
     check_drivers(project)
@@ -1856,6 +1966,7 @@ def main():
         args.outdir.replace(os.sep, '/').rstrip('/') + '/'
     documents = build_all(project, prefix)
     check_identities(documents)
+    check_codegen(documents, prefix)
 
     try:
         os.makedirs(args.outdir, exist_ok=True)

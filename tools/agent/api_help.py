@@ -478,11 +478,13 @@ def main():
                           'the declaration calls its own argument. Look up "{}" '
                           'instead.'
                           .format(name, path, member or owner or where))
+                    missing += 1
                 elif role == 'value':
                     print('"{}" appears in {} as a default argument of the '
                           'declaration below, so it is a value, not a call. Look it '
                           'up as a constant of the type it belongs to.'
                           .format(name, path))
+                    missing += 1
                 else:
                     print('"{}" is not indexed as a member, a class, an enumeration '
                           'or a constant. It appears in {}, in the declaration below, '

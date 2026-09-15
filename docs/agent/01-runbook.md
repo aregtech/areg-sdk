@@ -43,11 +43,12 @@ That writes a project that already builds and runs:
 |---|---|
 | `CMakeLists.txt` | finds or fetches areg -- do not rewrite it |
 | `src/CMakeLists.txt` | the three lines declaring the service and the two apps |
-| `src/services/*.siml` | a working example contract; you replace its contents |
-| `src/provider/main.cpp` | the provider's `main()`, beside its component |
-| `src/consumer/main.cpp` | the consumer's `main()`, beside its component |
+| `src/services/*.siml` | an example contract; you replace its contents |
+| `src/provider.cpp`, `src/consumer.cpp` | placeholders section 5 replaces |
+| `design.json` | your design, empty: section 3 fills it |
+| `areg-project.json` | the spec a later build reuses |
 | `scenarios.json` | what to run, and the output that proves it worked |
-| `run.sh` | starts the router and both applications |
+| `run.sh`, `run.bat` | starts the router and both applications |
 | `AGENTS.md` | **this project's own guide. Read it now. It is short.** |
 
 That `AGENTS.md` is the SDK's routing table narrowed to this project, with the exact

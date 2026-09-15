@@ -209,11 +209,21 @@ def wrap(text, label):
     return out
 
 
+# Rules gen_docs.py never breaks in a document it writes: it assigns every ID and
+# links every response itself.
+WRITTEN_BY_TOOL = {'RULE_DUPLICATE_ID', 'RULE_TWO_RESPONSES'}
+
+
 def show(band, rule, reported, document=None, at=None):
     print('{} -- {} ({})'.format(reported, rule['name'], band))
     print(wrap(rule['summary'], 'what: '))
     if rule['fix']:
         print(wrap(rule['fix'], 'fix:  '))
+    if rule['name'] in WRITTEN_BY_TOOL:
+        print(wrap('if gen_docs.py wrote the document, do not edit it. Two entries of '
+                   'one list in design.json share a name: rename one and generate '
+                   'again. If none do, the tool is at fault: stop and report it.',
+                   'note: '))
     print('    documents: {}   section: {}'.format(
         ', '.join(rule['documents']) or '-', rule['section'] or '-'))
     hint = SEE_ALSO.get(rule['name'])

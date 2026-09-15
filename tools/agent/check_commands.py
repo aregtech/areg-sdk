@@ -630,7 +630,8 @@ def main():
                 problems.append('{:<5} {:<28} {}\n      {}\n      {}'.format(
                     state, where, command, why, ''))
             elif args.verbose:
-                print('{:<5} {:<28} {}'.format(state, where, command))
+                label = 'FLAGS' if state == 'SKIP' and script and not bad else state
+                print('{:<5} {:<28} {}'.format(label, where, command))
 
     drop_sandbox()
     for problem in problems:

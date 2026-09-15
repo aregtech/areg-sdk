@@ -107,13 +107,6 @@ void ConsumerComponent::response_pong(uint64_t stamp)
     }
 }
 
-void ConsumerComponent::broadcast_service_stopping()
-{
-    mPingTimer.stop_timer();
-    mReportTimer.stop_timer();
-    areg::Application::signal_quit();
-}
-
 void ConsumerComponent::process_timer(areg::Timer& timer)
 {
     if (&timer == &mPingTimer)

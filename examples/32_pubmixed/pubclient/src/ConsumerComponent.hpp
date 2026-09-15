@@ -72,8 +72,6 @@ protected:
      **/
     void response_pong(uint64_t stamp) override;
 
-    void broadcast_service_stopping() override;
-
     void process_timer(areg::Timer& timer) override;
 
 //////////////////////////////////////////////////////////////////////////

@@ -2507,7 +2507,10 @@ def run():
     check_method_names(report)
     check_accessor_collision(report)
     check_spec_semantics(report)
+    check_codegen_name_rules(report)
     check_app_shape(report)
+    check_update_note(report)
+    check_scaffold_table(report)
     check_final_entry_rule(report)
     check_example_size(report)
     check_worksheet_order_note(report)
@@ -3067,6 +3070,18 @@ GENERATED_DEFECTS = (
     ('P-05', 'quitting where a lost provider arrives',
      '// TODO(you) peer_lost',
      'quit_with(1);   // TODO(you) peer_lost'),
+    ('B-08', 'a free function of namespace areg that no header declares',
+     '// Subscriptions are made here, and again after every reconnection.',
+     'bool valid = areg::is_data_valid(status);'),
+    ('B-08', 'a static member of an areg class that no header declares',
+     '// Subscriptions are made here, and again after every reconnection.',
+     'areg::String text = areg::String::fromInt(3);'),
+    ('B-02', 'a range-for with its body on the same line',
+     '// Subscriptions are made here, and again after every reconnection.',
+     'areg::ArrayList<int> seen; for (int each : seen) { (void)each; }'),
+    ('B-02', 'an iterator taken from an areg container',
+     '// Subscriptions are made here, and again after every reconnection.',
+     'areg::ArrayList<int> seen; auto first = seen.begin();'),
 )
 
 
@@ -3103,6 +3118,27 @@ SPEC_SEMANTICS = (
                          "do": [{"call": "act"}]}]},
                         {"name": "Done"}]}]},
      0, ['<Guard', '<Lit>false</Lit>', 'Value="false"'], ['False', 'True']),
+    ('two requests of one name',
+     {"interfaces": [{"name": "Twice", "requests": [{"name": "a", "answer": []},
+                                                    {"name": "a", "answer": []}]}]},
+     2, [], []),
+    ('two attributes one accessor',
+     {"interfaces": [{"name": "Case", "requests": [{"name": "a"}],
+                      "attributes": [{"name": "Count", "type": "uint32"},
+                                     {"name": "count", "type": "uint32"}]}]},
+     2, [], []),
+    ('two attributes one accessor, spelled with an underscore',
+     {"interfaces": [{"name": "Under", "requests": [{"name": "a"}],
+                      "attributes": [{"name": "my_Value", "type": "uint32"},
+                                     {"name": "my_value", "type": "uint32"}]}]},
+     2, [], []),
+    ('a keyword spelled as written',
+     {"interfaces": [{"name": "Word", "requests": [
+         {"name": "a", "params": [{"name": "class", "type": "uint32"}]}]}]},
+     2, [], []),
+    ('a keyword behind a prefix compiles',
+     {"interfaces": [{"name": "Prefixed", "requests": [{"name": "delete"}]}]},
+     0, ['Name="delete"'], []),
 )
 
 
@@ -3147,6 +3183,168 @@ def check_app_shape(report):
                                'it cannot write')
     finally:
         shutil.rmtree(holder, ignore_errors=True)
+
+
+UPDATE_GUARD = 'if (state == areg::DataState::DataIsOK)'
+
+
+def check_update_note(report):
+    """The worksheet quotes the check every update_ body already runs inside, and the
+    generated handler still makes that check."""
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    import gen_skeleton
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    holder = tempfile.mkdtemp()
+    here = os.getcwd()
+    try:
+        os.chdir(holder)
+        made = generate_application(tools, 'update')
+        if not os.path.isfile(made):
+            report.fail('update-note', made)
+            return
+        with open(made, encoding='utf-8') as handle:
+            source = handle.read()
+        with open(gen_skeleton.WORKSHEET, encoding='utf-8') as handle:
+            worksheet = handle.read()
+        if 'on_' not in source or UPDATE_GUARD not in source:
+            report.fail('update-note', 'the generated update handler no longer makes the '
+                                       'check "{}", so the worksheet note that quotes it '
+                                       'is false'.format(UPDATE_GUARD))
+            return
+        quoted = [line for line in worksheet.splitlines()
+                  if line.startswith('#|') and UPDATE_GUARD in line]
+        if '== update_' in worksheet and not quoted:
+            report.fail('update-note', 'the worksheet has update_ sections and does not '
+                                       'quote the check their bodies run inside, so an '
+                                       'agent writes its own and guesses a name for it')
+            return
+    finally:
+        os.chdir(here)
+        shutil.rmtree(holder, ignore_errors=True)
+    report.ok('update-note', 'the worksheet quotes the DataIsOK check every update_ body '
+                             'runs inside, and the handler makes it')
+
+
+def check_scaffold_table(report):
+    """The scaffold table of 01-runbook.md section 2 names every file setup_project.py
+    writes, and nothing it does not. A harness pointer file is named by its row."""
+    import fnmatch
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    import setup_project
+    section = read('docs', 'agent', '01-runbook.md').split('\n## 2.', 1)[-1] \
+        .split('\n## ', 1)[0]
+    named = []
+    for row in section.splitlines():
+        if row.startswith('| `'):
+            named += re.findall(r'`([^`]+)`', row.split('|')[1])
+    if not named:
+        report.fail('scaffold-table', '01-runbook.md section 2 carries no scaffold table')
+        return
+    holder = tempfile.mkdtemp()
+    try:
+        done = subprocess.run([sys.executable,
+                               os.path.join(ROOT, 'tools', 'agent', 'setup_project.py'),
+                               '--name', 'table', '--root', holder, '--mode', 'ipc',
+                               '--sdk-root', ROOT], capture_output=True, text=True)
+        if done.returncode != 0:
+            report.fail('scaffold-table', 'setup_project.py no longer lays out a project: '
+                        + (done.stderr or done.stdout).strip()[-160:])
+            return
+        written = []
+        for path, _dirs, files in os.walk(holder):
+            for name in files:
+                written.append(os.path.relpath(os.path.join(path, name), holder)
+                               .replace(os.sep, '/'))
+        pointers = set(name for name in setup_project.HARNESS_FILES.values() if name)
+        pointers.add('.gitignore')
+        absent = [pattern for pattern in named
+                  if not any(fnmatch.fnmatch(name, pattern) for name in written)]
+        unnamed = sorted(name for name in written if name not in pointers
+                         and not any(fnmatch.fnmatch(name, p) for p in named))
+        if absent or unnamed:
+            report.fail('scaffold-table', '01-runbook.md section 2 {}{}{}'.format(
+                'names what the scaffold does not write: ' + ', '.join(absent)
+                if absent else '', '; ' if absent and unnamed else '',
+                'does not name what it writes: ' + ', '.join(unnamed)
+                if unnamed else ''))
+            return
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    report.ok('scaffold-table', '01-runbook.md section 2 names the {} file(s) the scaffold '
+                                'writes, harness pointers aside'.format(len(named)))
+
+
+UNCOMPILABLE_NAMES_SIML = """<?xml version="1.0" encoding="utf-8"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="Word" Version="1.0.0" isRemote="true"/>
+    <AttributeList>
+        <Attribute ID="2" Name="Count" DataType="uint32" Notify="OnChange"/>
+        <Attribute ID="3" Name="count" DataType="uint32" Notify="OnChange"/>
+        <Attribute ID="4" Name="Class" DataType="uint32" Notify="OnChange"/>
+    </AttributeList>
+    <MethodList>
+        <Method ID="5" Name="send" MethodType="Request">
+            <ParamList>
+                <Parameter ID="6" Name="class" DataType="uint32"/>
+            </ParamList>
+        </Method>
+    </MethodList>
+</ServiceInterface>
+"""
+
+PREFIXED_KEYWORD_SIML = """<?xml version="1.0" encoding="utf-8"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="Prefixed" Version="1.0.0" isRemote="true"/>
+    <MethodList>
+        <Method ID="2" Name="delete" MethodType="Request"/>
+    </MethodList>
+</ServiceInterface>
+"""
+
+
+def check_codegen_name_rules(report):
+    """codegen.jar refuses a hand-written document whose names cannot compile.
+
+    Two attributes with one accessor are rule 4; an accessor that is a keyword and a
+    keyword spelled as written are rule 5. A keyword behind a request prefix generates.
+    """
+    jar = os.path.join(ROOT, 'tools', 'codegen.jar')
+    holder = tempfile.mkdtemp()
+    try:
+        os.makedirs(os.path.join(holder, 'src', 'services'))
+        outcome = {}
+        for name, text in (('Word.siml', UNCOMPILABLE_NAMES_SIML),
+                           ('Prefixed.siml', PREFIXED_KEYWORD_SIML)):
+            with open(os.path.join(holder, 'src', 'services', name), 'w',
+                      encoding='utf-8', newline='\n') as handle:
+                handle.write(text)
+            try:
+                done = subprocess.run(['java', '-jar', jar, '--root=' + holder,
+                                       '--doc=src/services/' + name, '--target=generated'],
+                                      cwd=holder, capture_output=True, text=True)
+            except OSError as problem:
+                report.fail('codegen-name-rules', 'java cannot be run: {}'.format(problem))
+                return
+            outcome[name] = (done.returncode, done.stdout + done.stderr)
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    code, text = outcome['Word.siml']
+    found = (text.count('error[4/RULE_DUPLICATE_NAME]'),
+             text.count('error[5/RULE_INVALID_IDENTIFIER]'))
+    if code == 0 or found[0] < 1 or found[1] < 2:
+        report.fail('codegen-name-rules', 'codegen.jar exited {} on Count/count, an '
+                                          'attribute Class and a parameter class, with {} '
+                                          'rule 4 and {} rule 5 finding(s); expected a '
+                                          'refusal with 1 and 2'.format(code, *found))
+        return
+    code, text = outcome['Prefixed.siml']
+    if code != 0:
+        report.fail('codegen-name-rules', 'codegen.jar refused a request named delete, '
+                                          'which is spelled behind its prefix: '
+                                          + text.strip()[-200:])
+        return
+    report.ok('codegen-name-rules', 'codegen.jar refuses names that cannot compile (rules 4 '
+                                    'and 5) and accepts a keyword behind a prefix')
 
 
 def check_spec_semantics(report):
@@ -3476,7 +3674,7 @@ STEP_SAMPLE = [{'name': 'open_gate', 'send': 'open', 'args': {'width': 3}},
 STEP_REFUSALS = [({'name': 'fly', 'send': 'fly'}, 'is not a request'),
                  ({'name': 'open_gate', 'send': 'open'}, 'gives no value'),
                  ({'name': 'both', 'await': 'Width', 'wait': 10}, 'does one of the two'),
-                 ({'name': 'done', 'wait': 10}, 'the driver declares itself'),
+                 ({'name': 'done', 'wait': 10}, 'the driver declares itself (Start, Done'),
                  ({'name': 'nothing', 'await': 'Nobody'}, 'no response, broadcast')]
 
 
@@ -3874,20 +4072,23 @@ def check_worksheet_order_note(report):
     def sections(names):
         return [(name, 'hint', 'src/consumer/C.cpp', 'C.cpp', '') for name in names]
 
-    both = gen_skeleton.section_notes(sections(['first_request', 'response_go',
-                                                'response_stop', 'update_level']))
+    def ordered(notes):
+        return [name for name, lines in notes.items() if lines == gen_skeleton.ORDER_NOTE]
+
+    both = ordered(gen_skeleton.section_notes(sections(['first_request', 'response_go',
+                                                        'response_stop', 'update_level'])))
     if 'response_go' not in both:
         report.fail('order-note',
                     'no note is attached to the first response body, so nothing on the '
                     'path a run reads says a response and an update can arrive in '
                     'either order')
         return
-    if 'response_stop' in both or 'update_level' in both:
+    if len(both) > 1:
         report.fail('order-note',
                     'the note repeats on every section: it is one fact and it is paid '
                     'for once per section it is written on')
         return
-    if gen_skeleton.section_notes(sections(['response_go'])):
+    if ordered(gen_skeleton.section_notes(sections(['response_go']))):
         report.fail('order-note',
                     'an interface with no attribute carries the note anyway, and there '
                     'is no update for a response to race with')

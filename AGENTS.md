@@ -61,7 +61,7 @@ Find your task, open that one file, and do not search the repository.
 | Read or query a `.sqlog` log database | `docs/agent/35-sqlog.md` |
 | Set the router address, ports, anything in `areg.init` | `docs/agent/36-config.md` |
 | Find the example showing a given facility | `docs/agent/41-examples.md` |
-| See a complete working application | `examples/03_helloservice/` -- it sleeps in a response handler; do not copy that |
+| See a complete working application | `examples/03_helloservice/` |
 
 `docs/wiki/` is written for people and is large: open a page there only when a row
 above names it. `examples/` is optional and may be absent: for a path into it, use

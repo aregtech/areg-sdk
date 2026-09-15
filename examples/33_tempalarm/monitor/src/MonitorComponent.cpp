@@ -24,7 +24,7 @@ namespace
 
 MonitorComponent::MonitorComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component           ( entry, owner )
-    , TempAlarmProviderBase     ( static_cast<areg::Component &>(self()) )
+    , TempAlarmProviderBase     ( static_cast<areg::Component &>(*this) )
     , areg::TimerConsumer       ( )
     , mTimer                    ( static_cast<areg::TimerConsumer &>(self()), "MonitorTimer" )
     , mIndex                    ( 0 )

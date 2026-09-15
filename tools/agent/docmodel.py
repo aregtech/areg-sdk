@@ -108,6 +108,8 @@ def unique(entries, what):
     return seen
 
 
+
+
 class Vocabulary:
     """Every type name a document may spell, and where each one came from."""
 

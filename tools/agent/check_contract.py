@@ -26,6 +26,8 @@ import xml.etree.ElementTree as ET
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
+sys.path.insert(0, HERE)
+import codegen_names  # noqa: E402
 DEFAULT_API = os.path.join(ROOT, 'docs', 'agent', 'api.json')
 
 # A nested Final carrying an operation is registered in the rule catalogue the generator and the editor
@@ -171,9 +173,14 @@ OTHER_DECL_RE = re.compile(
 AREG_DECL_RE = re.compile(
     r'\bareg::(\w+)\s*(?:<[^;{}]*>)?\s*(?:const\s*)?[&*]?\s*(\w+)\s*(?=[;={,)])')
 
-RANGE_FOR_RE = re.compile(r'\bfor\s*\(\s*[^;()]*\b(\w+)\s*\)\s*$')
+RANGE_FOR_RE = re.compile(r'\bfor\s*\([^;()]*[^:]:\s*(\w+)\s*\)')
+CONTAINER_ITER_RE = re.compile(r'\b(\w+)\s*(?:\.|->)\s*(?:c|r|cr)?(?:begin|end)\s*\(')
 AREG_CONTAINER_DECL_RE = re.compile(
     r'\bareg::(ArrayList|HashMap|LinkedList)\s*<[^;]*>\s*(?:&\s*)?(\w+)')
+
+# B-08. A call qualified by areg:: or by areg::<Class>::, whose name starts lower case.
+# A nested namespace such as areg::ext is not in the member inventory and never matches.
+AREG_QUALIFIED_CALL_RE = re.compile(r'\bareg::(?:[A-Z]\w*::)*([a-z_]\w*)\s*\(')
 
 # P-01. The generator stamps every file it writes. A stamped file inside the
 # application's own sources means the generate target has been copied out of, and
@@ -241,13 +248,6 @@ CHECKS = [
     ('B-07', 'advice',  'a camelCase accessor on an areg object'),
     ('B-08', 'error',   'a method the framework declares nowhere'),
 ]
-
-
-def snake(name):
-    """Turn a document name into the framework's snake_case spelling."""
-    out = re.sub(r'(.)([A-Z][a-z]+)', r'\1_\2', name)
-    out = re.sub(r'([a-z0-9])([A-Z])', r'\1_\2', out)
-    return out.replace('__', '_').lower()
 
 
 class Finding(object):
@@ -669,39 +669,26 @@ def check_state_machines(machines, findings, problems):
     return findings
 
 
-def expected_members(documents, problems):
-    """Every member name the given service documents can produce."""
-    names = set()
+def generated_names(documents, base, problems):
+    """{document: codegen_names.Names} of every service document codegen.jar generates."""
+    try:
+        return codegen_names.names_of(documents, base)
+    except codegen_names.CodegenError:
+        pass
+    generated = {}
     for doc in documents:
         try:
-            root = ET.parse(doc).getroot()
-        except (ET.ParseError, OSError) as err:
-            problems.append('%s: cannot be read: %s' % (doc, err))
-            continue
-        for attribute in root.iter('Attribute'):
-            base = snake(attribute.get('Name', ''))
-            if not base:
-                continue
-            names.update({
-                'set_%s' % base, '%s' % base, 'is_%s_valid' % base,
-                'invalidate_%s' % base, 'on_%s_update' % base,
-                'notify_on_%s_update' % base,
-            })
-        # A method keeps the document's spelling after its prefix; only attributes
-        # are turned to snake_case.
-        for method in root.iter('Method'):
-            base = method.get('Name', '')
-            kind = method.get('MethodType', '')
-            if not base:
-                continue
-            if kind == 'Request':
-                names.update({'request_%s' % base, 'request_%s_failed' % base})
-            elif kind == 'Response':
-                names.update({'response_%s' % base,
-                              'notify_on_response_%s' % base})
-            elif kind == 'Broadcast':
-                names.update({'broadcast_%s' % base,
-                              'notify_on_broadcast_%s' % base})
+            generated.update(codegen_names.names_of([doc], base))
+        except codegen_names.CodegenError as error:
+            problems.append(str(error))
+    return generated
+
+
+def expected_members(generated):
+    """Every member name the generated bases of the service documents declare."""
+    names = set()
+    for names_of_doc in generated.values():
+        names.update(names_of_doc.members())
     return names
 
 
@@ -861,6 +848,16 @@ def check_file(path, lines, known, findings):
                     'exist are in docs/agent/40-base-api.md'
                     % (var, areg_vars[var], method)))
                 break
+            else:
+                for method in AREG_QUALIFIED_CALL_RE.findall(line):
+                    if method in FRAMEWORK_MEMBERS or method in LEGACY_ACCESSORS:
+                        continue
+                    findings.append(Finding(
+                        'B-08', 'error', path, number + 1,
+                        'no public areg header declares %s(), in namespace areg or '
+                        'in any class of it; the name is remembered, not real. The '
+                        'names that exist are in docs/agent/40-base-api.md' % method))
+                    break
 
         if FRAMEWORK_ENUMS:
             for enum, enumerator in AREG_ENUMERATOR_RE.findall(line):
@@ -968,7 +965,8 @@ def check_file(path, lines, known, findings):
         for number, raw in enumerate(lines):
             line = strip_noise(raw).rstrip()
             match = RANGE_FOR_RE.search(line)
-            if match and ':' in line and match.group(1) in containers:
+            iterated = any(var in containers for var in CONTAINER_ITER_RE.findall(line))
+            if (match and match.group(1) in containers) or iterated:
                 findings.append(Finding(
                     'B-02', 'advice', path, number + 1,
                     'an areg container has no begin()/end(); iterate by index '
@@ -1259,61 +1257,29 @@ NOT_A_CALL = frozenset(('if', 'for', 'while', 'switch', 'return', 'sizeof', 'cat
 # Words that may stand before a call without making the line a declaration.
 CALL_PREFIX_WORDS = frozenset(('return', 'else', 'case', 'do', 'throw', 'new', 'delete',
                                'co_return', 'co_yield', 'not', 'and', 'or'))
-METHOD_PREFIX = {'Request': 'request_', 'Response': 'response_', 'Broadcast': 'broadcast_'}
-
-
-def generated_calls(documents):
+def generated_calls(generated):
     """Each document method by its bare name: (member, required args, all args)."""
     calls = {}
-    for doc in documents:
-        try:
-            root = ET.parse(doc).getroot()
-        except (ET.ParseError, OSError):
-            continue
-        for method in root.iter('Method'):
-            base = method.get('Name', '')
-            prefix = METHOD_PREFIX.get(method.get('MethodType', ''))
-            if not base or not prefix:
-                continue
-            params = list(method.iter('Parameter'))
-            required = len([p for p in params if p.get('Default') is None])
-            calls.setdefault(base, []).append((prefix + base, required, len(params)))
+    for names in generated.values():
+        for kind in ('request', 'response', 'broadcast'):
+            for base in names.entries(kind):
+                if not names.has(kind, base):
+                    continue
+                params = codegen_names.split_params(names.raw_params(kind, base))
+                required = len([param for param in params if '=' not in param])
+                calls.setdefault(base, []).append((names.name(kind, base), required,
+                                                   len(params)))
     return calls
 
 
-def generated_members(documents):
+def generated_members(generated):
     """Every member name the generated bases declare, spelled as they declare it.
 
     An attribute accessor carries no request_, response_ or broadcast_ prefix, so a
     request whose name collides with one -- a request set_level beside an attribute
     Level -- makes the accessor look like a method that dropped its prefix.
     """
-    members = set()
-    for doc in documents:
-        try:
-            root = ET.parse(doc).getroot()
-        except (ET.ParseError, OSError):
-            continue
-        for attribute in root.iter('Attribute'):
-            name = attribute.get('Name', '')
-            if not name:
-                continue
-            name = snake(name)
-            members.update((name, 'set_' + name, 'is_' + name + '_valid',
-                            'invalidate_' + name, 'on_' + name + '_update',
-                            'notify_on_' + name + '_update'))
-        for method in root.iter('Method'):
-            base = method.get('Name', '')
-            kind = method.get('MethodType', '')
-            prefix = METHOD_PREFIX.get(kind)
-            if not base or not prefix:
-                continue
-            members.add(prefix + base)
-            if kind == 'Request':
-                members.add(prefix + base + '_failed')
-            elif kind == 'Broadcast':
-                members.add('notify_on_' + prefix + base)
-    return members
+    return expected_members(generated)
 
 
 def declared_anywhere(texts, name):
@@ -1742,7 +1708,8 @@ def main():
     problems = []
     documents = collect_documents(base)
     machines = collect_documents(base, '.fsml')
-    known = expected_members(documents, problems)
+    generated = generated_names(documents, base, problems)
+    known = expected_members(generated)
     sources = collect_sources(base)
     if not sources:
         print('no C++ source found under %s' % base, file=sys.stderr)
@@ -1766,7 +1733,7 @@ def main():
     check_sources_declared(base, sources, findings, read)
     check_subscriptions(sources, findings, read)
     check_deferred_responses(sources, findings, read)
-    check_bare_calls(documents, sources, findings, read)
+    check_bare_calls(generated, sources, findings, read)
     check_timer_dispatch(sources, findings, read)
     check_generate_target(base, findings, read)
     check_state_machines(machines, findings, problems)

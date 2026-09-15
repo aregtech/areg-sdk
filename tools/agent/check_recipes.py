@@ -13,6 +13,7 @@
 # ===========================================================================
 import argparse
 import glob
+import json
 import os
 import shutil
 import subprocess
@@ -187,6 +188,107 @@ def check(recipe, work, lib, compiler, repeat=1):
     return True, (detail + ', {} runs'.format(repeat) if repeat > 1 else detail)
 
 
+# Designs gen_skeleton.py --app writes a whole application for, as (label, mode, spec,
+# runs). A spec of None is the example gen_docs.py prints. Only a local application
+# ends by itself, so only that one is run.
+APP_SHAPES = [
+    ('app: one request, no steps', 'local',
+     {'interfaces': [{'name': 'Sensor',
+                      'attributes': [{'name': 'Level', 'type': 'uint32'}],
+                      'requests': [{'name': 'read',
+                                    'answer': [{'name': 'value', 'type': 'uint32'}]}],
+                      'broadcasts': [{'name': 'alarm'}]}]}, True),
+    ('app: one request, no steps, ipc', 'ipc',
+     {'interfaces': [{'name': 'Sensor',
+                      'requests': [{'name': 'read'}]}]}, False),
+    ('app: attributes spelled with underscores', 'local',
+     {'interfaces': [{'name': 'Sensor',
+                      'requests': [{'name': 'read',
+                                    'answer': [{'name': 'value', 'type': 'uint32'}]}],
+                      'attributes': [{'name': 'my_Value', 'type': 'uint32'},
+                                     {'name': '_Private', 'type': 'uint32'}]}]}, True),
+    ('app: one request, no response', 'local',
+     {'interfaces': [{'name': 'Sensor', 'requests': [{'name': 'read'}]}]}, True),
+    ('app: attributes only', 'local',
+     {'interfaces': [{'name': 'Sensor',
+                      'attributes': [{'name': 'Level', 'type': 'uint32'}]}]}, True),
+    ('app: broadcasts only', 'local',
+     {'interfaces': [{'name': 'Sensor', 'broadcasts': [{'name': 'alarm'}]}]}, True),
+    ('app: example, steps and a machine', 'ipc', None, False),
+    ('app: example, an embedded condition', 'ipc', lambda example: embedded(example), False),
+]
+
+
+def embedded(example):
+    """The example design with its first condition written as an Embedded body."""
+    condition = example['machines'][0]['conditions'][0]
+    condition['implement'] = 'Embedded'
+    condition['body'] = 'return true;'
+    return example
+
+
+def check_app_shape(label, mode, spec, runs, work, lib, compiler, tools=None):
+    """Writes the application of one design the way build_project.py does, then builds
+    each of its programs and runs a local one. Returns (ok, detail)."""
+    tools = tools or os.path.join(SDK, 'tools', 'agent')
+    root = os.path.join(work, label.replace(':', '').replace(',', '').replace(' ', '-'))
+    os.makedirs(os.path.join(root, 'src', 'services'))
+    if spec is None or callable(spec):
+        printed = run([sys.executable, os.path.join(tools, 'gen_docs.py'), '--example'])
+        spec = json.loads(printed.stdout) if spec is None else spec(json.loads(printed.stdout))
+    with open(os.path.join(root, 'design.json'), 'w', encoding='utf-8', newline='\n') as handle:
+        json.dump(spec, handle)
+    steps = [[sys.executable, os.path.join(tools, 'gen_docs.py'), '--spec', 'design.json',
+              '--outdir', 'src/services', '--force', '--chained']]
+    for step in steps:
+        result = run(step, cwd=root)
+        if result.returncode != 0:
+            return False, 'gen_docs.py refused the design: ' + result.stderr[-300:]
+    services = sorted(glob.glob(os.path.join(root, 'src', 'services', '*.siml')))
+    machines = sorted(glob.glob(os.path.join(root, 'src', 'services', '*.fsml')))
+    command = [sys.executable, os.path.join(tools, 'gen_skeleton.py'),
+               '--doc', os.path.relpath(services[0], root), '--app', '--mode', mode,
+               '--force', '--spec', 'design.json']
+    if machines:
+        command += ['--machine', os.path.relpath(machines[0], root)]
+    result = run(command, cwd=root)
+    if result.returncode != 0:
+        return False, 'gen_skeleton.py --app failed: ' + result.stderr[-300:]
+    for document in services + machines:
+        result = run(['java', '-jar', os.path.join(SDK, 'tools', 'codegen.jar'),
+                      '--root=' + root, '--doc=' + os.path.relpath(document, root),
+                      '--target=generated'], cwd=root)
+        if result.returncode != 0:
+            return False, 'codegen.jar refused {}: {}'.format(
+                os.path.basename(document), (result.stderr or result.stdout)[-300:])
+    generated = glob.glob(os.path.join(root, 'generated', 'src', 'services', 'private',
+                                       '*.cpp'))
+    programs = [os.path.join(root, 'src')] if mode == 'local' else \
+        [os.path.join(root, 'src', 'provider'), os.path.join(root, 'src', 'consumer')]
+    binaries = []
+    for program in programs:
+        output = program + '.elf'
+        result = run([compiler, '-std=c++17', '-O0',
+                      '-I', os.path.join(SDK, 'framework'),
+                      '-I', os.path.join(root, 'generated')]
+                     + sorted(glob.glob(os.path.join(program, '*.cpp'))) + generated
+                     + ['-o', output, '-L', lib, '-lareg', '-Wl,-rpath,' + lib, '-pthread'])
+        if result.returncode != 0:
+            return False, 'the generated {} does not compile: {}'.format(
+                os.path.relpath(program, root), result.stderr[-400:])
+        binaries.append(output)
+    if not runs:
+        return True, 'built {} program(s) as written'.format(len(binaries))
+    try:
+        result = subprocess.run([binaries[0]], cwd=root, capture_output=True, text=True,
+                                timeout=60)
+    except subprocess.TimeoutExpired:
+        return False, 'built, and did not end within 60s'
+    if result.returncode != 0:
+        return False, 'built, and exited {}'.format(result.returncode)
+    return True, 'built and ran as written'
+
+
 def run_once(name, root, binaries, lib):
     if name in MULTIPROCESS:
         return run_multiprocess(root, binaries, MULTIPROCESS[name], lib)
@@ -236,6 +338,11 @@ def main():
             passed, detail = check(recipe, work, lib, args.compiler, args.repeat)
             print('{:5} {:32} {}'.format('PASS' if passed else 'FAIL',
                                          os.path.basename(recipe), detail))
+            failures += 0 if passed else 1
+        for label, mode, spec, runs in APP_SHAPES:
+            passed, detail = check_app_shape(label, mode, spec, runs, work, lib,
+                                             args.compiler)
+            print('{:5} {:32} {}'.format('PASS' if passed else 'FAIL', label, detail))
             failures += 0 if passed else 1
     finally:
         if not args.keep:

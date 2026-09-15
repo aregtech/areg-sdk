@@ -324,18 +324,22 @@ class OutputReader(object):
 
     def _pump(self):
         for line in iter(self._handle.stdout.readline, ''):
-            with self._lock:
-                self._spool.write(line)
-                self._lines.append(line)
-                self._size += len(line)
-                while self._size > TAIL_LIMIT and len(self._lines) > 1:
-                    self._size -= len(self._lines.pop(0))
-                    self._dropped += 1
+            self._take(line)
         for stream in (self._handle.stdout, self._spool):
             try:
                 stream.close()
             except (OSError, ValueError):
                 pass
+
+    def _take(self, line):
+        """Spools one line and keeps it in the tail."""
+        with self._lock:
+            self._spool.write(line)
+            self._lines.append(line)
+            self._size += len(line)
+            while self._size > TAIL_LIMIT and len(self._lines) > 1:
+                self._size -= len(self._lines.pop(0))
+                self._dropped += 1
 
     def text(self):
         with self._lock:
@@ -355,6 +359,14 @@ class OutputReader(object):
             self._spool.close()
         except (OSError, ValueError):
             pass
+
+
+class LaggingReader(OutputReader):
+    """An OutputReader that hands every line over late. The self-test uses it."""
+
+    def _take(self, line):
+        time.sleep(0.2)
+        OutputReader._take(self, line)
 
 
 def resolve_stops(scenario, handles, index_of):
@@ -410,7 +422,8 @@ def stops_missed(pending):
             'declares'.format(entry['proc'], why))
 
 
-def run_scenario(scenario, build_dirs, verbose, quiet, observed=None):
+def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_class=None):
+    reader_class = reader_class or OutputReader
     name = scenario.get('name', 'unnamed')
     timeout = float(scenario.get('timeout', 60))
     procs = scenario.get('procs') or []
@@ -454,7 +467,7 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None):
                                       text=True)
             launched[index] = time.time()
             handles.append((spec, handle))
-            readers[index] = OutputReader(
+            readers[index] = reader_class(
                 handle, os.path.join(spool, '{}-{}.log'.format(index, proc_name(spec))))
             if feed:
                 send_stdin(handle, feed)
@@ -478,6 +491,10 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None):
                             ended[index] = time.time() - launched[index]
                     if lead.poll() is not None:
                         ended.setdefault(lead_index, time.time() - launched[lead_index])
+                        # The lead's last lines can still be in its reader: drain it to
+                        # the end, then judge the stops on everything it printed.
+                        reader.join(5)
+                        pending = fire_stops(pending, started, reader.text())
                         break
                     if time.time() >= deadline:
                         lead.kill()
@@ -745,6 +762,14 @@ def self_test():
                   .format(detail))
             return 1
 
+        # The lead prints the trigger and exits before its reader hands the line over.
+        passed, _, detail = run_scenario(fired, [root], False, True,
+                                         reader_class=LaggingReader)
+        if not passed:
+            print('self-test FAILED: a stop triggered by the last line of a lead that '
+                  'has exited did not pass: {}'.format(detail))
+            return 1
+
         # A process that is not the lead has its own reader from the moment it
         # starts. Drained only at cleanup, it blocks in write() once the pipe is
         # full and never reaches the line below its own output.
@@ -767,8 +792,8 @@ def self_test():
                   'write(), so it never reached its own work')
             return 1
 
-        print('self-test ok: 4 case(s): end of input, an unfired stop, a fired stop, '
-              'output pressure')
+        print('self-test ok: 5 case(s): end of input, an unfired stop, a fired stop, '
+              'a stop on the last line of an exited lead, output pressure')
         return 0
     finally:
         shutil.rmtree(root, ignore_errors=True)
