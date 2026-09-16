@@ -430,6 +430,12 @@
             <Fix>The composite says the same thing twice. Keep the marker and remove the History attribute, or remove the marker and keep the attribute.</Fix>
             <Implemented Lusan="true" Codegen="true" CodegenName="RULE_HISTORY_CONFLICT"/>
         </Rule>
+
+        <Rule Number="59" Name="RULE_CONTAINER_KEY" Section="shared" Bands="error" Documents="dtml siml fsml">
+            <Summary>A HashMap or a Map whose key type cannot be a key. A HashMap finds a key by its hash and a Map keeps its keys ordered, so the key has to hash or to order. A primitive, an enumeration, `String` and `WideString` do both; `DateTime` orders and does not hash; `BinaryBuffer` and a container do neither; a structure does what every one of its fields does, and an empty structure does both. A type declared with Type="Imported" is the author's own C++ type and is not judged.</Summary>
+            <Fix>Change the key type, or change the structure field that stops it: a `BinaryBuffer`, a container, a field of a type declared Type="Imported", or a `DateTime` in the key of a HashMap. A key that has to carry a `DateTime` can be the key of a Map instead.</Fix>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_CONTAINER_KEY"/>
+        </Rule>
     </RuleList>
 
     <!--
