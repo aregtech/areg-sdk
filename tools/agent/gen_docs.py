@@ -1886,9 +1886,9 @@ TEMPLATE = {
             "connect_seconds": 10, "reconnect_seconds": 10, "stall_ticks": 30
         },
         "steps": [{
-            NOTE: ["Only for a consumer that runs a fixed sequence and then exits; delete this",
-                   "list otherwise. The generator writes the sequencing, and each step that",
-                   "awaits something gets one marker for its check.",
+            NOTE: ["For a consumer that drives a scenario and then exits, branching included;",
+                   "delete it only for one that stays up and reacts. The generator writes the",
+                   "sequencing, and each step that awaits something gets one marker for its check.",
                    "send: a request, with args {parameter: C++ value}. await: a response, a",
                    "broadcast or an attribute; a request with an answer awaits its response",
                    "unless the step names another. wait: milliseconds, instead of await.",
