@@ -60,11 +60,16 @@ FENCE_END_RE = re.compile(r'^```\s*$')
 FENCE_ANY_RE = re.compile(r'^```\S*\s*$')
 # An unlabelled fence is read as shell when its first command starts with one of these.
 SHELL_HEADS = ('python3', 'python', 'cmake', 'ctest', 'bash', 'sh', 'git', 'java',
-               'start', 'cd', './', 'tools/', 'tools\\', 'build/', 'build\\')
+               'start', 'cd', './', '../', 'tools/', 'tools\\', 'build/', 'build\\')
 # A tool invocation written inline rather than fenced. Most of the routing tables --
 # CLAUDE.md section 4, AGENTS.md section 5 -- give their commands this way, and those
 # are the commands a reader actually pastes.
-INLINE_RE = re.compile(r'`((?:python3?|tools/)[^`]*?\.(?:py|sh|bat)[^`]*)`')
+# A page under docs/agent/ writes a tool as ../../tools/agent/x.py, because that is
+# what resolves from where the page is. Matching only 'python3' and 'tools/' left every
+# command spelled that way discovered by nothing.
+INLINE_RE = re.compile(r'`((?:python3?|(?:\.\./)+tools/|tools/)[^`]*?\.(?:py|sh|bat)[^`]*)`')
+# The same spelling, wherever it appears in a command, so it can be resolved.
+RELATIVE_SCRIPT_RE = re.compile(r'(?:\.\./)+[\w./-]+\.(?:py|sh|bat)')
 PLACEHOLDER_RE = re.compile(r'<[a-z][a-z0-9 _.-]*>', re.IGNORECASE)
 # The one placeholder a checker can fill in for itself: the documents write the SDK
 # root as a placeholder because a reader's copy is elsewhere, and here it is the
@@ -280,16 +285,30 @@ def repository_paths(command):
         token = PLACEHOLDER_RE.sub('', token).lstrip('/')
         if token.startswith('./'):
             token = token[2:]
-        if token.startswith(TRACKED_TOPS):
+        # substitute() has already resolved a page-relative path against its own page.
+        # One that still climbs after that leaves the repository and names nothing here.
+        if token.startswith('../') and token.endswith(('.py', '.sh', '.bat')):
+            wanted.append(token)
+        elif token.startswith(TRACKED_TOPS):
             wanted.append(token)
     return wanted
 
 
-def substitute(command):
-    """The command with the SDK root placeholder replaced by the working directory."""
+def substitute(command, document=None):
+    """The command with the SDK root placeholder replaced by the working directory.
+
+    A path written relative to the page that carries it resolves nowhere from the
+    repository root, so it is rewritten against that page: the same command, spelled
+    from here. Without the document the command is returned as it was written.
+    """
     for placeholder in SDK_ROOT_PLACEHOLDERS:
         command = command.replace(placeholder + '/', '')
         command = command.replace(placeholder, '.')
+    if document:
+        base = os.path.dirname(document)
+        command = RELATIVE_SCRIPT_RE.sub(
+            lambda hit: os.path.normpath(os.path.join(base, hit.group(0)))
+            .replace(os.sep, '/'), command)
     return command
 
 
@@ -662,7 +681,7 @@ def main():
     problems = []
     for document in documents:
         for number, command in blocks(document):
-            command = substitute(command)
+            command = substitute(command, document)
             state, where, why = classify(command, args.deep)
             # A command this checker cannot run still names flags, and a flag the
             # tool stopped accepting is a dead instruction whether it runs or not.

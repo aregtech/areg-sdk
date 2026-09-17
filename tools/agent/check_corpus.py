@@ -2024,6 +2024,60 @@ def check_budget_review(report):
               .format(len(allowed), len(allowed) - len(stale), REVIEW_DAYS))
 
 
+# The pages every run opens before it has done anything: the entry document, the runbook
+# it routes to, and the project's own AGENTS.md that setup_project.py writes. .budgets
+# caps each page on its own and nothing caps the sum, which is what a run actually pays:
+# 36 059 B of documentation in run 20260915b, on top of the prompt.
+ENTRY_PAGES = ('AGENTS.md', 'docs/agent/01-runbook.md')
+# The generated file interpolates the SDK path, so its size moves with the checkout.
+# A fixed stand-in makes the measurement the same on every machine.
+ENTRY_SDK_ROOT = '/opt/areg-sdk'
+ENTRY_KEY = 'entry-path'
+
+
+def entry_path_bytes():
+    """The entry path in bytes, and what each part of it costs."""
+    import tempfile, shutil
+    parts = [(page, size(*page.split('/'))) for page in ENTRY_PAGES]
+    folder = tempfile.mkdtemp()
+    try:
+        sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+        import setup_project
+        setup_project.write_agents(folder, 'entrycheck', 'ipc', ENTRY_SDK_ROOT,
+                                   ['entrycheck'])
+        made = os.path.join(folder, 'AGENTS.md')
+        parts.append(("the project's own AGENTS.md", os.path.getsize(made)))
+    except Exception as why:                       # noqa: BLE001 -- reported, not raised
+        parts.append(('the project AGENTS.md could not be rendered: %s' % why, 0))
+    finally:
+        shutil.rmtree(folder, ignore_errors=True)
+    return parts
+
+
+def check_entry_path(report):
+    """The sum of the pages a run reads before it can start, against its recorded cap.
+
+    Every page here is inside its own .budgets exception and the total is still the
+    largest single thing a run buys. A per-page cap cannot see it: three pages each a
+    little under their own limit is a bigger entry path than one page over it.
+    """
+    allowed = page_budgets().get(ENTRY_KEY)
+    parts = entry_path_bytes()
+    total = sum(n for _, n in parts)
+    detail = ', '.join('%s %d' % (name.split('/')[-1], n) for name, n in parts)
+    if allowed is None:
+        report.fail(ENTRY_KEY, 'the entry path is {} B ({}) and docs/agent/.budgets '
+                    'records no "{} = <bytes>" cap for it'
+                    .format(total, detail, ENTRY_KEY))
+    elif total > allowed:
+        report.fail(ENTRY_KEY, 'the entry path is {} B, over its recorded {} B by {}. '
+                    'It is {}. Every run pays all of it before it does anything'
+                    .format(total, allowed, total - allowed, detail))
+    else:
+        report.ok(ENTRY_KEY, 'the entry path is {} B against {} B recorded ({})'
+                  .format(total, allowed, detail))
+
+
 def check_page_budget(report):
     pages = agent_pages()
     if not pages:
@@ -2049,8 +2103,11 @@ def check_page_budget(report):
                         .format(page, bytes_ / KB, PAGE_CEILING / KB))
 
     # An exception that names nothing, or excuses a page that needs no excuse, is
-    # a stale entry: it would quietly cover a page that grew into it later.
+    # a stale entry: it would quietly cover a page that grew into it later. The
+    # entry-path cap is not a page and is checked by check_entry_path instead.
     for page in sorted(allowed):
+        if page == ENTRY_KEY:
+            continue
         if page not in pages:
             report.fail('budget', '.budgets excuses {}, which does not exist'
                         .format(page))
@@ -2581,6 +2638,7 @@ def run():
     check_prohibitions(report)
     check_prescribed_calls(report)
     check_budget_review(report)
+    check_entry_path(report)
     check_reachable(report)
     check_includes(report)
     check_member_shapes(report)
