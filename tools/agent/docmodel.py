@@ -26,6 +26,10 @@ DEFAULT_OF = {'bool': 'false', 'char': '0', 'float': '0.0', 'double': '0.0'}
 
 
 def fail(message):
+    # Output already printed is flushed first: stdout is block-buffered into a
+    # pipe, so without this the error reaches the reader before the lines it is
+    # about.
+    sys.stdout.flush()
     sys.stderr.write('error: {}\n'.format(message))
     raise SystemExit(2)
 

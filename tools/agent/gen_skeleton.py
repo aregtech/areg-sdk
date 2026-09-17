@@ -42,6 +42,10 @@ CLASS_HEADERS = {'areg::String': 'areg/base/String.hpp',
 
 
 def fail(message):
+    # Output already printed is flushed first: stdout is block-buffered into a
+    # pipe, so without this the error reaches the reader before the lines it is
+    # about.
+    sys.stdout.flush()
     sys.stderr.write('error: {}\n'.format(message))
     sys.exit(1)
 

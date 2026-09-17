@@ -593,7 +593,14 @@ TOOLS = ['setup_project.py', 'gen_skeleton.py', 'fsml_layout.py', 'run_scenarios
 # reader to hand-edit a generated file came out, so the section grew 246 bytes net.
 # What the bytes replace: hunting a body in a generated file was 15 requests and 18%
 # of run 20260917c, against 246 bytes of residency worth about $0.002 a run.
-CORPUS_CEILING = 194816
+# Raised 194816 -> 194849 on 2026-09-17 for the design checkpoint routed at the end
+# of 01-runbook.md section 4, net of the fill_markers.py --dry-run preview deleted
+# from section 6. gen_docs.py --review answers, in one call that writes nothing,
+# both what the generator refuses and every note the design earns. Run
+# 20260917a-atm learnt the second half of that after a successful generation and
+# paid a --regenerate for it: 5 of 42 requests, $0.20 of a $2.13 run, against 295
+# bytes of residency.
+CORPUS_CEILING = 194849
 
 PAGE_CEILING = 8 * KB
 # The stop the exception mechanism did not have. An entry in .budgets raises the
@@ -2786,6 +2793,8 @@ def run():
     check_failure_names_the_error(report)
     check_names_carry_signatures(report)
     check_step_output_whole(report)
+    check_design_reviewable(report)
+    check_errors_follow_output(report)
     check_regeneration_report(report)
     check_regeneration_idempotent(report)
     check_marker_spelling(report)
@@ -4844,6 +4853,128 @@ def check_step_output_whole(report):
     report.ok('step-output',
               'a step prints its whole log when it is shorter than its allowance, '
               'and its last lines when it is longer')
+
+
+def check_design_reviewable(report):
+    """A design can be reviewed before it is built, and the review writes nothing.
+
+    Every note gen_docs.py prints is a design finding: an attribute no rule reads, a
+    state no consumer can see, which states answer each trigger. Printed only by a
+    generation, each of them costs a --regenerate to act on. Run 20260917a-atm read
+    "get_balance  Idle*" out of the trigger table after a successful build and spent
+    five of its forty-two requests redesigning from there.
+    """
+    tool = os.path.join(ROOT, 'tools', 'agent', 'gen_docs.py')
+    example = subprocess.run([sys.executable, tool, '--example'],
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                             universal_newlines=True)
+    if example.returncode != 0:
+        report.fail('design-review', 'gen_docs.py --example does not run')
+        return
+
+    def noted(text):
+        return [line for line in text.splitlines()
+                if line.startswith('  note  ') or line.startswith('        ')]
+
+    holder = tempfile.mkdtemp(prefix='areg-review-')
+    try:
+        spec = os.path.join(holder, 'design.json')
+        with open(spec, 'w', encoding='utf-8') as handle:
+            handle.write(example.stdout)
+        reviewed = subprocess.run([sys.executable, tool, '--spec', 'design.json',
+                                   '--review'], cwd=holder, stdout=subprocess.PIPE,
+                                  stderr=subprocess.STDOUT, universal_newlines=True)
+        if reviewed.returncode != 0:
+            report.fail('design-review',
+                        'gen_docs.py --spec design.json --review exits {} on the '
+                        'design --example prints:\n{}'
+                        .format(reviewed.returncode, reviewed.stdout[:600]))
+            return
+        left = sorted(os.listdir(holder))
+        if left != ['design.json']:
+            report.fail('design-review',
+                        'a review wrote {}. It is run on a design the agent is still '
+                        'editing, so it reads and reports and touches nothing'
+                        .format(', '.join(name for name in left
+                                          if name != 'design.json')))
+            return
+        written = subprocess.run([sys.executable, tool, '--spec', 'design.json',
+                                  '--outdir', os.path.join('src', 'services')],
+                                 cwd=holder, stdout=subprocess.PIPE,
+                                 stderr=subprocess.STDOUT, universal_newlines=True)
+        if written.returncode != 0:
+            report.fail('design-review', 'the same design does not generate: {}'
+                        .format(written.stdout[:600]))
+            return
+        if noted(reviewed.stdout) != noted(written.stdout):
+            report.fail('design-review',
+                        'a review and a generation of one design print different '
+                        'notes. A finding the build keeps to itself is one the agent '
+                        'meets after the documents exist, and acts on with a '
+                        '--regenerate')
+            return
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+
+    page = os.path.join(AGENT_DIR, '01-runbook.md')
+    with open(page, encoding='utf-8') as handle:
+        text = handle.read()
+    if '--review' not in text:
+        report.fail('design-review',
+                    '01-runbook.md never names gen_docs.py --review, so the golden '
+                    'path meets the design notes only after a generation')
+        return
+    if text.index('--review') > text.index('build_project.py --spec'):
+        report.fail('design-review',
+                    '01-runbook.md names gen_docs.py --review after '
+                    'build_project.py --spec. The checkpoint is worth a request only '
+                    'while the design is still one file to edit')
+        return
+    report.ok('design-review',
+              'a design is reviewed before it is built, the review writes nothing, '
+              'and it prints the notes the generation prints')
+
+
+def check_errors_follow_output(report):
+    """A tool flushes what it printed before it writes the error about it.
+
+    stdout is block-buffered into a pipe and stderr is not, and every documented call
+    is piped into head or tail. Without the flush the refusal arrives above the lines
+    it names, and the agent reads the two in the wrong order.
+    """
+    import ast
+    checked = 0
+    for name in sorted(os.listdir(os.path.join(ROOT, 'tools', 'agent'))):
+        if not name.endswith('.py'):
+            continue
+        path = os.path.join(ROOT, 'tools', 'agent', name)
+        with open(path, encoding='utf-8') as handle:
+            source = handle.read()
+        try:
+            tree = ast.parse(source)
+        except SyntaxError as failure:
+            report.fail('error-ordering', '{} does not parse: {}'.format(name, failure))
+            return
+        for node in tree.body:
+            if not isinstance(node, ast.FunctionDef) or node.name != 'fail':
+                continue
+            checked += 1
+            body = ast.dump(ast.Module(body=node.body, type_ignores=[]))
+            flush = body.find('flush')
+            writes = body.find("'stderr'")
+            if flush < 0 or (writes >= 0 and flush > writes):
+                report.fail('error-ordering',
+                            '{}: fail() writes to stderr without flushing stdout '
+                            'first. Piped into head, its error prints above the '
+                            'output it is about'.format(name))
+                return
+    if not checked:
+        report.fail('error-ordering', 'no fail() found in tools/agent: the rule '
+                                      'checks nothing')
+        return
+    report.ok('error-ordering',
+              '{} fail() implementation(s) flush stdout before the error, so a piped '
+              'run reads in order'.format(checked))
 
 
 def check_failure_names_the_error(report):

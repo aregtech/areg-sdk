@@ -122,6 +122,12 @@ document of the spec and every source it generates. A source you add yourself go
 its executable's `macro_declare_executable` line, relative to `src/`; a header is
 included as `"src/<dir>/Name.hpp"` from anywhere in `src/`.
 
+**Check the design before you build it.** A second, and it writes nothing: it prints what the generator would refuse and every note the design earns -- an attribute no rule of the machine reads, a state no consumer can see, which states answer each trigger. Answer all of it in one edit. After the build, each of these findings costs a regeneration instead.
+
+```
+python3 <areg-sdk>/tools/agent/gen_docs.py --spec design.json --review
+```
+
 ## 5. Documents, application and build -- one command
 
 **This call compiles the framework itself, so give it a command timeout of at least
@@ -172,12 +178,7 @@ project: one section per open marker, in file order, each naming the function it
 in, the names each generated class already carries, and the contract every body is
 written against. **No generated file has to be opened to write a body.** Read the
 worksheet and fill each `== <marker>` section. Section 7's command applies it before
-it compiles, so filling and building is one request; call the filler yourself only to
-see what it would write:
-
-```
-python3 <areg-sdk>/tools/agent/fill_markers.py --bodies bodies.txt --dry-run
-```
+it compiles, so filling and building is one request.
 
 **That is the whole implementation, in two requests.** One edit per body and a full
 rewrite are the two most expensive shapes a run has.

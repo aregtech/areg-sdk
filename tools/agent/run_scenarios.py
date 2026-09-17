@@ -75,6 +75,10 @@ SUFFIX = {'Windows': '.exe', 'Darwin': '.mac'}.get(platform.system(), '.elf')
 
 
 def fail(message, code=2):
+    # Output already printed is flushed first: stdout is block-buffered into a
+    # pipe, so without this the error reaches the reader before the lines it is
+    # about.
+    sys.stdout.flush()
     sys.stderr.write('error: {}\n'.format(message))
     sys.exit(code)
 

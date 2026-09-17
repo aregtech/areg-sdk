@@ -1980,82 +1980,8 @@ def unchanged(path, text):
         return False
 
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument('--spec', action='append', default=[],
-                        help='a JSON description; pass it once per spec file')
-    parser.add_argument('--outdir', help='the directory the documents are written to')
-    parser.add_argument('--example', action='store_true',
-                        help='print a whole spec to copy, and write nothing')
-    parser.add_argument('--template', metavar='PATH',
-                        help='write a spec with every key present and empty, each section '
-                             'with its note, to fill in. A file there that carries work is '
-                             'never replaced')
-    parser.add_argument('--force', action='store_true', help='overwrite existing documents')
-    parser.add_argument('--chained', action='store_true',
-                        help='run by build_project.py, which does the next steps itself: '
-                             'do not print them')
-    args = parser.parse_args()
-
-    if args.example:
-        # The same renderer the template uses: every value that fits stays on its
-        # line. The page tells the agent to read this in one call, and one value per
-        # line makes that call twice the size for nothing.
-        print(render(EXAMPLE))
-        return 0
-    if args.template:
-        if write_template(args.template) == 'work':
-            fail('{} already carries a design, and a template never replaces one. Fill '
-                 'that file, or name another path.'.format(args.template))
-        print('wrote {}: every key of a design, empty. Fill the values and keep the keys; '
-              'an entry left as written is skipped.'.format(args.template))
-        return 0
-    if not args.spec or not args.outdir:
-        parser.error('--spec and --outdir are both required, or --example, or --template')
-
-    specs = []
-    skipped = 0
-    for path in args.spec:
-        spec, count = load_spec(path)
-        specs.append((path, spec))
-        skipped += count
-
-    project = merge(specs)
-    check_shape(project)
-    check_unique_names(project)
-    cross_check(project)
-    check_sequences(project)
-    check_drivers(project)
-    check_final_entry(project)
-    # An include names a document the way the project root spells it, which is the
-    # directory the documents are written to.
-    prefix = '' if os.path.isabs(args.outdir) else \
-        args.outdir.replace(os.sep, '/').rstrip('/') + '/'
-    documents = build_all(project, prefix)
-    check_identities(documents)
-    check_codegen(documents, prefix)
-
-    try:
-        os.makedirs(args.outdir, exist_ok=True)
-    except OSError as problem:
-        fail('--outdir {} cannot be used as a directory: {}'
-             .format(args.outdir, problem.strerror or problem))
-    for name, text in documents:
-        target = os.path.join(args.outdir, name)
-        if os.path.exists(target) and not args.force:
-            fail('{} exists; pass --force to overwrite it'.format(target))
-    for name, text in documents:
-        target = os.path.join(args.outdir, name)
-        if unchanged(target, text):
-            print('unchanged {}'.format(target))
-            continue
-        try:
-            with open(target, 'w', encoding='utf-8') as handle:
-                handle.write(text)
-        except OSError as problem:
-            fail('{} cannot be written: {}'.format(target,
-                                                   problem.strerror or problem))
-        print('wrote {}'.format(target))
+def review(project, skipped):
+    """Prints every note a design earns. Writes nothing and reads nothing back."""
     if skipped:
         print('  note  {} sample entr{} of the template, left as written, skipped.'
               .format(skipped, 'y' if skipped == 1 else 'ies'))
@@ -2120,6 +2046,106 @@ def main():
                   'application, of one service and at most one machine: name the one '
                   'to build with {}, and write the others with gen_skeleton.py --app '
                   'into their own directories.'.format(len(found), what, option))
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument('--spec', action='append', default=[],
+                        help='a JSON description; pass it once per spec file')
+    parser.add_argument('--outdir', help='the directory the documents are written to')
+    parser.add_argument('--example', action='store_true',
+                        help='print a whole spec to copy, and write nothing')
+    parser.add_argument('--template', metavar='PATH',
+                        help='write a spec with every key present and empty, each section '
+                             'with its note, to fill in. A file there that carries work is '
+                             'never replaced')
+    parser.add_argument('--review', action='store_true',
+                        help='check the design and print every note it earns, writing '
+                             'nothing. Answers what a build would say about the design '
+                             'before any document, source or scenario file exists')
+    parser.add_argument('--force', action='store_true', help='overwrite existing documents')
+    parser.add_argument('--chained', action='store_true',
+                        help='run by build_project.py, which does the next steps itself: '
+                             'do not print them')
+    args = parser.parse_args()
+
+    if args.example:
+        # The same renderer the template uses: every value that fits stays on its
+        # line. The page tells the agent to read this in one call, and one value per
+        # line makes that call twice the size for nothing.
+        print(render(EXAMPLE))
+        return 0
+    if args.template:
+        if write_template(args.template) == 'work':
+            fail('{} already carries a design, and a template never replaces one. Fill '
+                 'that file, or name another path.'.format(args.template))
+        print('wrote {}: every key of a design, empty. Fill the values and keep the keys; '
+              'an entry left as written is skipped.'.format(args.template))
+        return 0
+    if not args.spec or not (args.outdir or args.review):
+        parser.error('--spec and --outdir are both required, or --example, '
+                     'or --template, or --review')
+    # An include names a document the way the project root spells it, so a review of a
+    # design not yet written reads it the way build_project.py will write it.
+    if not args.outdir:
+        args.outdir = os.path.join('src', 'services')
+
+    specs = []
+    skipped = 0
+    for path in args.spec:
+        spec, count = load_spec(path)
+        specs.append((path, spec))
+        skipped += count
+
+    project = merge(specs)
+    check_shape(project)
+    check_unique_names(project)
+    cross_check(project)
+    check_sequences(project)
+    check_drivers(project)
+    check_final_entry(project)
+    # An include names a document the way the project root spells it, which is the
+    # directory the documents are written to.
+    prefix = '' if os.path.isabs(args.outdir) else \
+        args.outdir.replace(os.sep, '/').rstrip('/') + '/'
+    documents = build_all(project, prefix)
+    check_identities(documents)
+
+    if args.review:
+        # Every note the build prints, at the point the design is still one file to
+        # edit: after the build each of them costs a regeneration. The notes come
+        # before the refusal so that one review answers everything the design is
+        # asked, and one edit can settle all of it.
+        review(project, skipped)
+        check_codegen(documents, prefix)
+        print('  reviewed {} document(s) of {} spec(s). Nothing was written. Build the '
+              'project with build_project.py --spec.'
+              .format(len(documents), len(specs)))
+        return 0
+
+    check_codegen(documents, prefix)
+
+    try:
+        os.makedirs(args.outdir, exist_ok=True)
+    except OSError as problem:
+        fail('--outdir {} cannot be used as a directory: {}'
+             .format(args.outdir, problem.strerror or problem))
+    for name, text in documents:
+        target = os.path.join(args.outdir, name)
+        if os.path.exists(target) and not args.force:
+            fail('{} exists; pass --force to overwrite it'.format(target))
+    for name, text in documents:
+        target = os.path.join(args.outdir, name)
+        if unchanged(target, text):
+            print('unchanged {}'.format(target))
+            continue
+        try:
+            with open(target, 'w', encoding='utf-8') as handle:
+                handle.write(text)
+        except OSError as problem:
+            fail('{} cannot be written: {}'.format(target,
+                                                   problem.strerror or problem))
+        print('wrote {}'.format(target))
+    review(project, skipped)
     if args.chained:
         print('  {} document(s).'.format(len(documents)))
     else:

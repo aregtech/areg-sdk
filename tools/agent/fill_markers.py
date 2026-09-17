@@ -54,6 +54,10 @@ SHOWN = 8
 
 
 def fail(message):
+    # Output already printed is flushed first: stdout is block-buffered into a
+    # pipe, so without this the error reaches the reader before the lines it is
+    # about.
+    sys.stdout.flush()
     sys.stderr.write('fill_markers: {}\n'.format(message))
     sys.exit(2)
 

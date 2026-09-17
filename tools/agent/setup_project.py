@@ -104,6 +104,10 @@ NAME_PATTERN = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')
 
 
 def fail(message, code=1):
+    # Output already printed is flushed first: stdout is block-buffered into a
+    # pipe, so without this the error reaches the reader before the lines it is
+    # about.
+    sys.stdout.flush()
     sys.stderr.write('error: {}\n'.format(message))
     sys.exit(code)
 
@@ -317,6 +321,7 @@ and empty, and every document of this project is generated from it. Fill its val
 and keep its keys, then:
 
 ```bash
+python3 {sdk}/tools/agent/gen_docs.py --spec design.json --review
 python3 {sdk}/tools/agent/build_project.py --spec design.json
 python3 {sdk}/tools/agent/build_project.py --run
 ```
@@ -324,15 +329,20 @@ python3 {sdk}/tools/agent/build_project.py --run
 The same on Windows, where the interpreter is `python`:
 
 ```bat
+python {sdk}/tools/agent/gen_docs.py --spec design.json --review
 python {sdk}/tools/agent/build_project.py --spec design.json
 python {sdk}/tools/agent/build_project.py --run
 ```
 
-The first call builds. **It compiles the framework too, so give it a command timeout
+The review writes nothing and takes a second: it prints what the generator would
+refuse and every note the design earns. Answer all of it in one edit, because after
+the build each of those findings costs a regeneration.
+
+The second call builds. **It compiles the framework too, so give it a command timeout
 of at least 15 minutes**; a shorter one is reported as a timeout and is not a failure
 of the build. `--run` rebuilds whatever changed and then runs every scenario in
 `scenarios.json`: it starts each process in the order that project needs, waits for
-the lines the scenario expects and stops every process it started. These two commands
+the lines the scenario expects and stops every process it started. These three commands
 are the whole route, on both systems, and nothing else here starts a process.
 
 **`--run` exiting 0 is what done means**, and the lines it prints are the evidence to
@@ -383,14 +393,13 @@ src/CMakeLists.txt    names the documents and each executable's sources
 
 ## Tools
 
-The two commands above are the whole path; `docs/agent/01-runbook.md` sections 3 to 7
+The three commands above are the whole path; `docs/agent/01-runbook.md` sections 3 to 7
 carry them step by step and nothing else has to be run by hand. These answer a
 question those two cannot, and **reaching for one before you have that question costs
 a turn**:
 
 | Ask | Only when |
 |---|---|
-| `python3 {sdk}/tools/agent/fill_markers.py --bodies bodies.txt` | every `TODO(you)` body is written into `bodies.txt`. One call applies them all; never rewrite a generated file |
 | `python3 {sdk}/tools/agent/gen_skeleton.py --doc <document> --contract` | you need the name a document generates -- a method, or a type a signature is written in. `--todos` lists the markers still open |
 | `python3 {sdk}/tools/agent/api_help.py <name>` | you need the signature of a **framework** name. Never grep the SDK for one |
 | `python3 {sdk}/tools/explain_rule.py <number> --at <Element>/@<Attribute>` | `gen_docs.py` refused a document and its `fix:` line was not enough |
