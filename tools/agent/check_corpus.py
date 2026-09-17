@@ -2785,6 +2785,7 @@ def run():
     check_worksheet_rewrite(report)
     check_failure_names_the_error(report)
     check_names_carry_signatures(report)
+    check_step_output_whole(report)
     check_regeneration_report(report)
     check_regeneration_idempotent(report)
     check_marker_spelling(report)
@@ -4797,6 +4798,52 @@ def check_regeneration_report(report):
             return
     report.ok('regeneration', 'a kept file reports its own content, and the worksheet '
               'is derived from the retained sources')
+
+
+def check_step_output_whole(report):
+    """A step shorter than its allowance prints all of it, not its last line.
+
+    The documents step carries the design notes -- a step that awaits an update its
+    own earlier request caused, a state an attribute cannot express. In run 20260917e
+    gen_docs.py printed 15 lines, the allowance was 16, and a negative start index
+    showed line 15 alone and warned about nothing. The agent rediscovered one of the
+    dropped notes by hand, over six requests.
+    """
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import build_project
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('step-output', 'build_project.py does not import: {}'
+                    .format(failure))
+        return
+
+    lines = ['line {}'.format(number) for number in range(1, 16)]
+    for allowance in (1, 8, 15, 16, 40, None):
+        printed = io.StringIO()
+        held = sys.stdout
+        sys.stdout = printed
+        try:
+            build_project.show(lines, allowance)
+        finally:
+            sys.stdout = held
+        shown = [row.strip() for row in printed.getvalue().splitlines()
+                 if not row.strip().startswith('...')]
+        wanted = len(lines) if allowance is None else min(allowance, len(lines))
+        if len(shown) != wanted:
+            report.fail('step-output',
+                        'a step of {} line(s) allowed {} printed {} of them. A log '
+                        'shorter than its allowance has to arrive whole: the notes '
+                        'that name a design defect are in it, and a request spent '
+                        'finding one again is billed for the whole conversation'
+                        .format(len(lines), allowance, len(shown)))
+            return
+        if shown[-1] != lines[-1]:
+            report.fail('step-output',
+                        'a step does not print its last line, which is its verdict')
+            return
+    report.ok('step-output',
+              'a step prints its whole log when it is shorter than its allowance, '
+              'and its last lines when it is longer')
 
 
 def check_failure_names_the_error(report):

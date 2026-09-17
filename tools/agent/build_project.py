@@ -72,9 +72,14 @@ def fail(message):
 
 
 def show(lines, tail):
-    """Prints the last `tail` lines, or all of them when tail is None."""
+    """Prints the last `tail` lines, or all of them when tail is None.
+
+    The start index is clamped: a negative one counts from the end, which showed a
+    log of 15 lines asked for 16 as its last line alone, and said nothing about the
+    14 it dropped.
+    """
     tail = len(lines) if tail is None else tail
-    for line in lines[len(lines) - tail:]:
+    for line in lines[max(0, len(lines) - tail):]:
         print('   ' + line)
     if len(lines) > tail:
         print('   ... {} earlier line(s) not shown'.format(len(lines) - tail))
