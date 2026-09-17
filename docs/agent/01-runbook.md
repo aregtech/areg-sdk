@@ -52,14 +52,13 @@ That writes a project that already builds and runs:
 | `AGENTS.md` | **this project's own guide. Read it now. It is short.** |
 
 That `AGENTS.md` is the SDK's routing table narrowed to this project, with the exact
-commands for it. Follow where it routes you and do not search the checkout for anything
-else.
+commands for it. Follow where it routes you.
 
 ## 3. Design
 
 From the task, decide the requests, responses, broadcasts, attributes and data types.
 If the routing table offers a design page, open it once, here, in the same request as
-`design.json` -- the scaffold wrote it, and it is where the design goes.
+`design.json`.
 
 **A provider reads its own attributes back.** An attribute gives the provider a getter
 as well as a setter, so state the service already carries needs no shadow member beside
@@ -81,10 +80,12 @@ Fill the values and keep the keys; no XML, `ID` or `To` is written by hand. A sa
 left as written is skipped and an empty value is absent, so delete only a section the
 task does not need. A key the generator does not read is refused by name.
 `gen_docs.py --example` prints a finished design of another application, 170 lines,
-short enough to read in one call: do not page it. A consumer that drives a
-scenario and exits lists it as `"steps"`, branching included: the generator
-writes the step machine, and each check may `stay()`, `go_to(Step::Name)` or
-`fail("why")`. Writing that machine by hand is the largest avoidable cost here.
+short enough to read in one call: do not page it. It is the shape, not the rules: read
+it once, then write into the `design.json` you already have. Replacing that file with
+the example throws away its `#|` notes, which are what the example leaves out.
+A consumer that drives a scenario and exits lists it as `"steps"`, branching included:
+the generator writes the step machine, and each check may `stay()`, `go_to(Step::Name)`
+or `fail("why")`. Writing that machine by hand is the largest avoidable cost here.
 What it gives up after is `"driver"` of the same interface, which the template's own
 note explains; the generator declares all three, so no marker asks for one.
 
@@ -103,10 +104,12 @@ A large project splits the spec across files and passes each with its own `--spe
   than one place, model it once as a nested sub-machine entered from each place,
   never as duplicated states.
 
-**If a document still needs something the spec cannot say**, ask the grammar, never
-read it. `<areg-sdk>/tools/schema_help.py` answers one name out of the schemas the
-generator validates against -- an element, an attribute (`State/@Kind`), a type
-(`tStateKind`) or a bare attribute name -- in a few lines:
+**Only after the generator refuses a document over a name.** Until then there is nothing
+to ask: you write `design.json`, and `gen_docs.py` writes every name in it. Then ask
+the grammar. `<areg-sdk>/tools/schema_help.py`
+answers one name out of the schemas the generator validates against -- an element, an
+attribute (`State/@Kind`), a type (`tStateKind`) or a bare attribute name -- in a few
+lines:
 
 ```
 python3 <areg-sdk>/tools/schema_help.py EventList --document fsml
@@ -115,9 +118,7 @@ python3 <areg-sdk>/tools/schema_help.py --list --document siml
 
 `--full` on a type name adds what its values mean and `--search <word>` finds a name.
 Never open `siml.xsd`, `dtml.xsd` or `fsml.xsd` themselves: 20 KB to 50 KB carried in
-context is re-sent on every turn for the rest of the task. What the grammar cannot tell
-you is meaning, and it is never the way to understand a refusal -- that is
-`explain_rule.py <number> --at <Element>/@<Attribute>`.
+context is re-sent on every turn for the rest of the task.
 
 `src/CMakeLists.txt` is not yours to edit for these: the command below names every
 document of the spec and every source it generates. A source you add yourself goes on
@@ -186,8 +187,8 @@ a default `response_`, a `return false;`. The filler takes it away with that mar
 edit by hand must replace it too, or the body runs and the placeholder runs after it.
 An untagged line under a marker is real code and stays.
 
-An edit by hand is still right for one body changed after a build or a scenario run -- the
-marker line is gone by then. Never rewrite a whole file.
+An edit by hand is still right for one body changed after a build or a scenario run --
+the marker line is gone by then.
 
 `30-provider.md`, `31-consumer.md` and `32-model.md` describe the code the tool has
 already written. Do not open them to fill a marker, and do not open them while
@@ -225,11 +226,11 @@ router, the provider and the consumer and checks their output. Exit 0 is a pass.
 it after every fix too**: a build and a run are one request.
 
 **Every acceptance item goes in `scenarios.json`, including the two that look like
-they need a terminal.** A console quit path is `"stdin": ["-q"]` on that process, leading a scenario of
-its own; the
-peer going away is a scenario-level `"stop"`. The generator prints both keys when it
-writes the file, so neither needs a page. One run then prints the line each
-expectation matched, and that output is the evidence for the report.
+they need a terminal.** A console quit path is `"stdin": ["-q"]` on that process,
+leading a scenario of its own; the peer going away is a scenario-level `"stop"`. The
+generator prints both keys when it writes the file, so neither needs a page. One run
+then prints the line each expectation matched, and that output is the evidence for the
+report.
 
 **Never start the processes by hand.** No `prog &`, no `sleep`, no `pkill`, no `ps`.
 It is slower, it is not repeatable, it leaves background processes behind, and a
@@ -248,9 +249,8 @@ Every request re-sends the whole conversation, so the bill is the number of requ
 multiplied by how much each one carries.
 
 **Never pour a log into the conversation.** It stays there for every later request.
-Everything that
-can print hundreds -- `find`, `ls -R`, a raw compiler run -- is piped through `grep`
-or `head` before you ask for it.
+Everything that can print hundreds -- `find`, `ls -R`, a raw compiler run -- is piped
+through `grep` or `head` before you ask for it.
 
 ## 8. Fix -- bounded, then stop
 
@@ -279,10 +279,10 @@ not converge" is a useful result; a half-built application is not.
   change the document instead.
 - Never diagnose a refused document from a schema. Read the
   `error[<number>/<RULE_NAME>]` message, its `file:line:col:` prefix and its `fix:`
-  line where it carries them, then `python3 <areg-sdk>/tools/explain_rule.py <number>`,
-  which always has the rule and its fix. A schema says what an element
-  may contain, never which rule refused it or why. Reading one for a spelling is
-  section 4 and is expected.
+  line where it carries them, then
+  `python3 <areg-sdk>/tools/explain_rule.py <number> --at <Element>/@<Attribute>`, which
+  always has the rule and its fix. A schema says what an element may contain, never
+  which rule refused it or why. Reading one for a spelling is section 4.
 - Never run any other script under `<areg-sdk>/tools/`. The rest check the SDK's own
   corpus, tell you nothing about your application, and cost a turn each.
 

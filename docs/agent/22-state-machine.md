@@ -314,10 +314,12 @@ imports others still needs only one call.
   and applies to both; a `Kind="History"` marker is what tells them apart.
 - Never give an `Internal` transition a `To`, and never leave one off an `External`.
 
-## The spelling, when this page does not have it
+## The spelling, after a refusal
 
-`schema_help.py` answers one name out of `../../tools/schema/fsml.xsd`. Ask it; never
-read the 50 KB schema.
+Only once `gen_docs.py` has refused a document over a name. You do not write a `.fsml`
+-- `gen_docs.py` writes it from `design.json` -- so before a refusal there is nothing
+here to ask about. After one, `schema_help.py` answers one name out of
+`../../tools/schema/fsml.xsd`. Ask it; never read the 50 KB schema.
 
 ```bash
 python3 <areg-sdk>/tools/schema_help.py State --document fsml

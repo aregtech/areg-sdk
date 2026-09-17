@@ -1775,7 +1775,7 @@ EXAMPLE = {
         ],
         "broadcasts": [{"name": "gate_moved",
                         "params": [{"name": "reading", "type": "GateTypes::Reading"}]}],
-        "driver": {"connect_seconds": 10, "reconnect_seconds": 10, "stall_ticks": 30},
+        "driver": {"connect_seconds": 10, "reconnect_seconds": 10},
         "steps": [{"name": "open_wide", "send": "open", "args": {"width": 1200}},
                   {"name": "hold", "wait": 500},
                   {"name": "close_gate", "send": "close", "await": "Width",
@@ -1890,11 +1890,11 @@ TEMPLATE = {
                    "defaults and are used as they stand; change a number, never a key.",
                    "connect_seconds: how long to wait for the provider to appear.",
                    "reconnect_seconds: how long to wait for it to come back.",
-                   "stall_ticks: ticks of no progress that end a stepped run, one tick a",
-                   "second; left out, it is made longer than reconnect_seconds and every wait.",
-                   "0 turns any of the three off and waits for ever. A stall watchdog shorter",
-                   "than or equal to reconnect_seconds, or to a step's wait, is refused."],
-            "connect_seconds": 10, "reconnect_seconds": 10, "stall_ticks": 30
+                   "0 turns either off and waits for ever.",
+                   "stall_ticks is left out on purpose: the generator makes it longer than",
+                   "reconnect_seconds and than every step's wait, one tick a second. Add it",
+                   "only to override that; shorter than either is refused."],
+            "connect_seconds": 10, "reconnect_seconds": 10
         },
         "steps": [{
             NOTE: ["For a consumer that drives a scenario and then exits, branching included;",

@@ -35,8 +35,8 @@ branches fits it too. `gen_docs.py --example`
 shows three steps.
 
 What such a consumer gives up after is `"driver"` of the same interface:
-`connect_seconds`, `reconnect_seconds` and `stall_ticks`, one tick a second, 0 for
-never. The generator declares them, so no marker asks for one.
+`connect_seconds` and `reconnect_seconds`, 0 for never; leave `stall_ticks` out and
+it is derived. The generator declares them, so no marker asks for one.
 
 ## Timer and log
 

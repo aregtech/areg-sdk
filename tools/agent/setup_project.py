@@ -394,7 +394,7 @@ a turn**:
 | `python3 {sdk}/tools/agent/gen_skeleton.py --doc <document> --contract` | you need the name a document generates -- a method, or a type a signature is written in. `--todos` lists the markers still open |
 | `python3 {sdk}/tools/agent/api_help.py <name>` | you need the signature of a **framework** name. Never grep the SDK for one |
 | `python3 {sdk}/tools/explain_rule.py <number> --at <Element>/@<Attribute>` | `gen_docs.py` refused a document and its `fix:` line was not enough |
-| `python3 {sdk}/tools/schema_help.py <name> --document fsml` | a document has to say something `design.json` has no key for. It answers one name out of the schema -- never read a `.xsd` |
+| `python3 {sdk}/tools/schema_help.py <name> --document fsml` | `gen_docs.py` refused a document over a name. Nothing before that: you write `design.json`, and the generator writes every element name in it |
 
 All take `--help`. On Windows the interpreter is `python`, not `python3`.
 

@@ -123,8 +123,10 @@ def is_fallback(name, inp, sdk):
         hits.append("conf/cmake")
     if re.search(r"(^|[\s/\"'])framework/", blob):
         hits.append("framework/")
-    # The benchmark directory is the prompt's own material, never a fallback.
-    if re.search(r"(^|[\s/\"'])examples/(?!ai-benchmark)", blob):
+    # The benchmark directory is the prompt's own material, never a fallback. It was
+    # examples/ai-prompts before b1510d2e, so both spellings are excluded or runs from
+    # either side of the rename cannot be compared.
+    if re.search(r"(^|[\s/\"'])examples/(?!ai-benchmark|ai-prompts)", blob):
         hits.append("examples/")
     if "docs/agent/recipes" in blob:
         hits.append("recipes/")
