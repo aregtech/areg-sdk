@@ -44,9 +44,11 @@ One cold agent run, measured, against a clean snapshot of this checkout.
                      Claude's --effort, Copilot's --reasoning-effort or Codex's
                      model_reasoning_effort. Gemini has no such setting and refuses it
                        (default: medium for Claude; the CLI default otherwise)
-  --attempts N       the build-and-fix and run-and-fix bound (default: 3). Any other
-                     number adds one rule to the prompt, the same for both arms.
-                     0 removes the bound, and is warned about: the spend is unbounded.
+  --attempts N       the build-and-fix and run-and-fix bound (default: 15, which is
+                     what every published run used; the runbook's own bound is 3).
+                     Any number other than the runbook's adds one rule to the prompt,
+                     the same for both arms. 0 removes the bound, and is warned about:
+                     the spend is unbounded.
   --debrief          append a diagnostic pass: what the run could not find. It costs
                      requests on purpose, so such a run is never compared with one
                      made without it.
@@ -231,7 +233,7 @@ main()
 {
     local FRAMEWORK="areg" TASK="examples/ai-benchmark/prompt-coffeemachine.md" WRAPPER=""
     local PROJECT="" MODE="ipc" AGENT="claude" MODEL="" EFFORT=""
-    local ATTEMPTS="3" DEBRIEF="" RECIPES="none" LABEL="" DRY="" ALLOW_INSTALLED=""
+    local ATTEMPTS="15" DEBRIEF="" RECIPES="none" LABEL="" DRY="" ALLOW_INSTALLED=""
     local VERIFY="probes" SDK_OPT="" GRPC_OPT="" WEB=""
 
     # A bare first word is the label. Anything starting with a dash is an option.

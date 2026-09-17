@@ -29,6 +29,12 @@ DOCS += [os.path.join('docs/agent', f)
 DOCS += [os.path.join('docs/agent/recipes', f)
          for f in sorted(os.listdir(os.path.join(ROOT, 'docs/agent/recipes')))
          if f.endswith('.md')]
+# The benchmark pages are read by a measured run like any other page, so a path one
+# of them names must resolve there too.
+if os.path.isdir(os.path.join(ROOT, 'examples/ai-benchmark')):
+    DOCS += [os.path.join('examples/ai-benchmark', f)
+             for f in sorted(os.listdir(os.path.join(ROOT, 'examples/ai-benchmark')))
+             if f.endswith('.md')]
 
 EXTENSIONS = 'md|hpp|cpp|siml|dtml|fsml|xsd|xml|jar|sh|bat|py|cmake|txt|init|json'
 
@@ -38,7 +44,8 @@ PATTERN = re.compile(r'`([A-Za-z0-9_./-]+\.(?:' + EXTENSIONS + r')|[A-Za-z0-9_./
 # Top level entries of this repository. A reference starting with one of them is
 # a path into the SDK and is resolved from the repository root.
 TOP_LEVEL = {'framework', 'examples', 'docs', 'tools', 'conf', 'tests', 'thirdparty',
-             'AGENTS.md', 'CODEBASE.md', 'README.md', 'CMakeLists.txt', 'areg.cmake'}
+             'AGENTS.md', 'CODEBASE.md', 'README.md', 'CONTRIBUTING.md',
+             'CMakeLists.txt', 'areg.cmake'}
 
 
 # examples/ is optional: it is not installed with the SDK and a clone may not

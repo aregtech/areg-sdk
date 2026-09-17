@@ -327,8 +327,11 @@ never sees them: `run-benchmark.sh` does not copy this file into the snapshot.
 | `cpu` | no busy-waiting | a normal run averages under 0.5 cores (where the platform reports child CPU time) |
 | `sanitize` (`--sanitize`) | no memory or undefined-behaviour defect -- not a checklist item | a rebuild under ASan and UBSan runs the normal scenario and one peer loss with no finding |
 
-The result is printed and written to `<run>/verify.json`. The sanitizer build goes to
-`<run>/verify-sanitize-build`, outside the project. A framework compiled from source is
+The result is printed and written to `<run>/verify.json`, or to
+`<run>/verify-sanitize.json` when `--sanitize` is given, so verifying a run twice keeps
+both artefacts instead of overwriting the first. Each file records the `--repeat` count
+and the time it ran, so a probe's evidence says what produced it. The sanitizer build
+goes to `<run>/verify-sanitize-build`, outside the project. A framework compiled from source is
 checked by the sanitizers along with the application; a framework linked as a prebuilt
 system package is not.
 

@@ -476,6 +476,11 @@ CI_GATES = [
     ('mutations',             'check_mutations.py'),
     ('observability',         'check_observability.py'),
     ('documented commands, deep', 'check_commands.py --deep'),
+    ('the five-step chain',   'build_project.py'),
+    ('a scenario actually run', 'run_scenarios.py --build'),
+    # The macOS job is here by this string and not by "macos-": cmake.yml already
+    # builds on macOS, so a runner name proves nothing about the agent tools.
+    ('the scenario runner self-test', 'run_scenarios.py --self-test'),
     ('non-Linux runner',      'windows-'),
 ]
 
@@ -1276,6 +1281,88 @@ def check_runner_parity(report):
                                .format(len(options(shell)), len(RUNNER_GUARDS)))
 
 
+def check_fix_bound(report):
+    """One number for the fix bound, in the four places that state it.
+
+    The runbook tells the agent a bound; the runners override it for a measured run
+    and must quote the runbook's own number when they do; their default is the bound
+    every published run used, and the baseline records what that was. Nothing else
+    connects the four, so they drift silently and a run comes out incomparable with
+    the series it is meant to extend.
+    """
+    if not os.path.isdir(os.path.join(ROOT, 'examples', 'ai-benchmark')):
+        report.note('fix-bound', 'examples/ai-benchmark/ is not installed')
+        return
+    runbook = read('docs', 'agent', '01-runbook.md')
+    documented = set(re.findall(r'at most \*\*(\d+) (?:build|run)-and-fix cycles\*\*', runbook))
+    if len(documented) != 1:
+        report.fail('fix-bound', 'docs/agent/01-runbook.md states {} bound(s) {}; '
+                    'section 8 gives one number for both cycle kinds'
+                    .format(len(documented), sorted(documented) or '(none found)'))
+        return
+    stated = documented.pop()
+
+    runners = {'run-benchmark.sh': read('examples', 'ai-benchmark', 'run-benchmark.sh'),
+               'run-benchmark.ps1': read('examples', 'ai-benchmark', 'run-benchmark.ps1')}
+    defaults = {}
+    for name, text in runners.items():
+        if not text:
+            report.fail('fix-bound', 'examples/ai-benchmark/{} is missing'.format(name))
+            return
+        # The number the runner treats as "no override needed", and the one its
+        # override rule tells the agent to read instead of.
+        quoted = set(re.findall(r'ATTEMPTS\}" != "(\d+)"', text))
+        quoted |= set(re.findall(r"\$Attempts -ne '(\d+)'", text))
+        quoted |= set(re.findall(r'at most (\d+) (?:build|run)-and-fix', text))
+        wrong = sorted(n for n in quoted if n != stated)
+        if wrong:
+            report.fail('fix-bound', 'docs/agent/01-runbook.md gives the agent a bound '
+                        'of {}, and examples/ai-benchmark/{} states {} where it means '
+                        'the runbook\'s number. A prompt that overrides the wrong '
+                        'number leaves the agent with two bounds'
+                        .format(stated, name, ', '.join(wrong)))
+            return
+        found = (re.findall(r'ATTEMPTS="(\d+)"', text)
+                 + re.findall(r"\$Attempts = '(\d+)'", text))
+        if len(found) != 1:
+            report.fail('fix-bound', 'examples/ai-benchmark/{} sets no single default '
+                        'for --attempts: found {}'.format(name, found or '(none)'))
+            return
+        defaults[name] = found[0]
+
+    if len(set(defaults.values())) != 1:
+        report.fail('fix-bound', 'the two runners default --attempts differently: {}'
+                    .format(', '.join('%s %s' % kv for kv in sorted(defaults.items()))))
+        return
+    default = sorted(set(defaults.values()))[0]
+
+    published = set()
+    for name in sorted(os.listdir(os.path.join(ROOT, 'examples', 'ai-benchmark'))):
+        if name.startswith('baseline-') and name.endswith('.md'):
+            published |= set(re.findall(r'\| fix bound \| (\d+) build-and-fix',
+                                        read('examples', 'ai-benchmark', name)))
+    if not published:
+        report.fail('fix-bound', 'no examples/ai-benchmark/baseline-*.md records the fix '
+                    'bound its run used, so the default of {} is checked against nothing'
+                    .format(default))
+        return
+    if published != {default}:
+        report.fail('fix-bound', 'the runners default --attempts to {} and the published '
+                    'baseline ran at {}. A run started with no flags does not reproduce '
+                    'the series it is compared with'
+                    .format(default, ', '.join(sorted(published))))
+        return
+
+    for name, text in runners.items():
+        if 'default: {}'.format(default) not in text:
+            report.fail('fix-bound', 'examples/ai-benchmark/{} defaults --attempts to {} '
+                        'and its --help does not say so'.format(name, default))
+            return
+    report.ok('fix-bound', 'the runbook bounds the agent at {}, both runners override '
+              'from {} and default to {}, and the published baseline ran at {}'
+              .format(stated, stated, default, default))
+
+
 def check_analyzer_keys(report):
     """Every request field analyze_run.py reads is a field it writes.
 
@@ -1862,6 +1949,9 @@ def stated_numbers():
         ('docs/ai-readiness.md',
          'Under {:.0f}% of 12-word runs'.format(DUPLICATION_TARGET * 100),
          'DUPLICATION_TARGET in this file'),
+        ('docs/ai-readiness.md',
+         '{} gates run on every change'.format(len(CI_GATES)),
+         'CI_GATES in this file'),
     ]
     return claims
 
@@ -2697,6 +2787,7 @@ def run():
     check_grpc_isolation(report)
     check_hidden_probes(report)
     check_runner_parity(report)
+    check_fix_bound(report)
     return report
 
 

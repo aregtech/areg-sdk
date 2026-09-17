@@ -5,8 +5,8 @@ measured run as for any other project. This page holds only what a measured run 
 to it, so every run is scored on the procedure a user's own agent follows.
 
 - **Never commit anything, never run a git command, and never write a ReadMe.**
-- **Never open the SDK's maintainer files**, `CONTRIBUTING.md` and `CLAUDE.md`. They
-  are for developing the framework itself and say nothing about building on it.
+- **Never open `CONTRIBUTING.md`**, the SDK's maintainer file. It is for developing
+  the framework itself and says nothing about building on it.
 - **The fix bound is the runbook's section 8**, unless the prompt names another
   number. Then that number replaces 3 wherever the runbook says 3, and nothing else
   about the bound changes.

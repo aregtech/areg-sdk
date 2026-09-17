@@ -405,9 +405,15 @@ def main():
         passed, len(scored),
         ', {} not evaluated: {}'.format(len(skipped), ', '.join(skipped))
         if skipped else ''))
-    with open(os.path.join(run_dir, 'verify.json'), 'w', encoding='utf-8') as handle:
+    # The sanitizer pass writes its own file. A run verified twice keeps both
+    # artefacts, and each one records the settings that produced it.
+    name = 'verify-sanitize.json' if args.sanitize else 'verify.json'
+    with open(os.path.join(run_dir, name), 'w', encoding='utf-8') as handle:
         json.dump({'scenario': scenario.get('name'), 'passed': passed,
-                   'scored': len(scored), 'skipped': skipped, 'results': results},
+                   'scored': len(scored), 'skipped': skipped,
+                   'repeat': args.repeat, 'sanitize': args.sanitize,
+                   'verified': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+                   'results': results},
                   handle, indent=2)
     return 0 if passed == len(scored) else 1
 

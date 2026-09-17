@@ -480,6 +480,7 @@ def run(command, where='root', budgets=(FIRST_BUDGET, SECOND_BUDGET)):
         if folder is None:
             return 'SKIP', why
         command = absolute_scripts(command)
+    command = resolvable_interpreter(command)
     for budget in budgets:
         try:
             result = subprocess.run(command, cwd=folder, shell=True,
@@ -631,6 +632,20 @@ def sandbox_for(command, where):
             return None, 'names {}, which the throw-away project does not carry'.format(
                 token)
     return folder, ''
+
+
+def resolvable_interpreter(command):
+    """The command with its leading interpreter replaced when the name has none.
+
+    Every page writes the POSIX spelling, and says beside it that Windows writes
+    "python". A shell that has neither on PATH cannot run the command at all, so the
+    interpreter running this checker stands in for it: the command being checked is
+    the script and its flags, never the name of the interpreter.
+    """
+    head, _, rest = command.partition(' ')
+    if head in ('python3', 'python') and shutil.which(head) is None:
+        return '"{}" {}'.format(sys.executable, rest)
+    return command
 
 
 def absolute_scripts(command):

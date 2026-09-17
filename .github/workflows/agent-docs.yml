@@ -238,10 +238,97 @@ jobs:
       - name: Grade the reference answers
         run: python3 tools/agent/run_evals.py --self-check --sdk-root .
 
+  chain:
+    name: the five-step chain, end to end
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v5.6.0
+        with:
+          java-version: 17
+          java-package: jre
+          distribution: temurin
+
+      # build_project.py is the command AGENTS.md and the runbook give every agent,
+      # and nothing executed it: check_commands.py reads its --help, while
+      # check_recipes.py and run_evals.py each carry their own copy of its chain,
+      # where a divergence from it cannot be seen. The design is the corpus's own
+      # --example, so this job has no fixture of its own to keep in step.
+      - name: Scaffold a project and give it the example design
+        run: |
+          python3 tools/agent/setup_project.py --name gatecheck \
+                  --root "${RUNNER_TEMP}/gatecheck" --mode ipc \
+                  --sdk-root "${GITHUB_WORKSPACE}"
+          python3 tools/agent/gen_docs.py --example > "${RUNNER_TEMP}/gatecheck/design.json"
+
+      # Documents, application, contract, configure, build: one call, as the runbook
+      # writes it. addStateMachine() reaches a compiler only here, and the state
+      # machine the example declares is generated from a .fsml this step writes.
+      - name: Run the chain
+        working-directory: ${{ runner.temp }}/gatecheck
+        env:
+          TOOLS: ${{ github.workspace }}/tools/agent
+        run: python3 $TOOLS/build_project.py --spec design.json
+
+      # The generator writes one scenario whole: the provider alone, fed "-q", exit 0.
+      # Every other scenario waits on a body a person writes, so this is the one that
+      # can be asserted here -- and it starts a real binary, which nothing else does.
+      - name: Run the scenario the generator writes whole
+        working-directory: ${{ runner.temp }}/gatecheck
+        env:
+          TOOLS: ${{ github.workspace }}/tools/agent
+        run: python3 $TOOLS/run_scenarios.py --build build/bin --only quit
+
+  macos:
+    name: the macOS branch of the tools
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+
+      # run_scenarios.py names a binary <name>.mac on Darwin and <name>.elf on every
+      # other POSIX system. That branch decides whether a scenario finds anything to
+      # start, and no job had ever taken it. The self-test writes its fixtures under
+      # the platform's own suffix, so it takes the branch for real.
+      - name: Check the scenario runner on its own fixtures
+        run: python3 tools/agent/run_scenarios.py --self-test
+
+      - name: Check documented paths and the checkers
+        run: |
+          python3 tools/agent/check_agent_docs.py
+          python3 tools/agent/check_mutations.py --static
+          python3 tools/agent/check_commands.py
+
+      # setup_project.py writes the same Darwin branch into the run.sh it plants for
+      # a multi-process project. Building one here would cost a second framework
+      # compile for one line, so the script is parsed rather than run, and the branch
+      # it takes is read out of it.
+      - name: Check project setup
+        run: |
+          python3 tools/agent/setup_project.py --name maccheck \
+                  --root "${RUNNER_TEMP}/maccheck" --mode ipc \
+                  --sdk-root "${GITHUB_WORKSPACE}"
+          python3 tools/agent/check_contract.py "${RUNNER_TEMP}/maccheck" --strict
+          bash -n "${RUNNER_TEMP}/maccheck/run.sh"
+          bash -c 'source <(grep "^case " "${RUNNER_TEMP}/maccheck/run.sh"); test "$SFX" = .mac'
+
   windows:
     name: the Windows column of the documented commands
     runs-on: windows-latest
-    timeout-minutes: 75
+    # Two framework builds now: the recipe's, and the scaffolded project's. Each is
+    # a full MSVC compile of areg, so the bound is the sum of them and not the one.
+    timeout-minutes: 110
     steps:
       - uses: actions/checkout@v7
 
@@ -269,6 +356,18 @@ jobs:
           python tools\agent\check_agent_docs.py
           python tools\agent\check_mutations.py --static
           python tools\agent\check_symbols.py
+
+      # run_scenarios.py carries a whole Windows branch: .bat fixtures instead of
+      # shell scripts, "set /p" for a read that blocks, "ping" where POSIX sleeps.
+      # It was written for this platform and had never run on it.
+      - name: Check the scenario runner on its own fixtures
+        run: python tools\agent\run_scenarios.py --self-test
+
+      # Every command the corpus gives, discovered, flag-checked and -- where it is
+      # safe -- run, in throw-away projects this scaffolds. Each page promises a
+      # Windows form of its commands; until now nothing read one here.
+      - name: Check the documented commands
+        run: python tools\agent\check_commands.py --deep
 
       - name: Check project setup
         run: |
@@ -305,3 +404,28 @@ jobs:
           $output = & $binary.FullName 2>&1 | Out-String
           Write-Host $output
           if ($output -notmatch 'consumer: greeted') { throw "the recipe ran and did not print what it promises" }
+
+      # The five-step chain, through the MSVC toolchain. The recipe above is written
+      # by hand; this is the path an agent actually takes -- a scaffold, a design,
+      # and one command that writes the documents, writes the application, checks it
+      # against the contract, configures and builds. The design is the corpus's own
+      # --example, so nothing here is a fixture to keep in step.
+      - name: Scaffold a project and give it the example design
+        run: |
+          python tools\agent\setup_project.py --name gatecheck --root "${{ runner.temp }}\gatecheck" --mode ipc --sdk-root "${{ github.workspace }}"
+          python tools\agent\gen_docs.py --example | Set-Content -Encoding ascii "${{ runner.temp }}\gatecheck\design.json"
+
+      - name: Run the chain
+        working-directory: ${{ runner.temp }}\gatecheck
+        env:
+          TOOLS: ${{ github.workspace }}\tools\agent
+        run: python $env:TOOLS\build_project.py --spec design.json
+
+      # Starts a real binary: the provider alone, fed "-q" on standard input, exit 0.
+      # It is the console quit path the generated main() carries, and the one scenario
+      # the generator writes complete.
+      - name: Run the scenario the generator writes whole
+        working-directory: ${{ runner.temp }}\gatecheck
+        env:
+          TOOLS: ${{ github.workspace }}\tools\agent
+        run: python $env:TOOLS\run_scenarios.py --build build\bin --only quit
