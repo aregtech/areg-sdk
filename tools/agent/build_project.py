@@ -2,9 +2,10 @@
 # ===========================================================================
 # Runs the mechanical chain of a project on areg, in one command:
 #
-#   documents  ->  application  ->  contract check  ->  configure  ->  build
+#   documents  ->  application  ->  worksheet  ->  contract check  ->  configure
+#   ->  build
 #
-# None of those five steps carries a decision, and each costs a request of its
+# None of those six steps carries a decision, and each costs a request of its
 # own. This runs them in order and stops at the first failure, naming the step,
 # the command it ran and what to do about it.
 #
@@ -12,8 +13,10 @@
 #   python3 tools/agent/build_project.py --spec design.json --regenerate
 #
 # The application is written once. A later run keeps the sources as they are and
-# only builds them, so filled-in TODO(you) markers are never overwritten;
-# --regenerate asks for them back, and discards what is in them.
+# only builds them, so filled-in markers are never overwritten; --regenerate asks
+# for them back, and discards what is in them that bodies.txt does not carry. The
+# worksheet step writes every body it does carry, so a body is changed there and
+# reaches the build in the same command.
 #
 # Exit code 0 when every step passed, 1 otherwise.
 # ===========================================================================
@@ -185,6 +188,24 @@ def app_present(root, document):
 MANIFEST = 'areg-project.json'
 
 
+def worksheet_has_code(path):
+    """True when the worksheet names a section and carries a line of code under one."""
+    try:
+        with open(path, encoding='utf-8') as handle:
+            lines = handle.read().splitlines()
+    except (IOError, OSError):
+        return False
+    named = False
+    for line in lines:
+        if line.startswith('#|'):
+            continue
+        if line.startswith('== '):
+            named = True
+        elif named and line.strip():
+            return True
+    return False
+
+
 def read_manifest(root):
     """The spec paths this project was last built from, as absolute paths."""
     path = os.path.join(root, MANIFEST)
@@ -224,6 +245,11 @@ def main():
     parser.add_argument('--mode', choices=['ipc', 'local'],
                         help='default: read from scenarios.json')
     parser.add_argument('--build', default='build', help='the build directory')
+    parser.add_argument('--bodies', default='bodies.txt',
+                        help='the worksheet applied before the build (default: '
+                             'bodies.txt)')
+    parser.add_argument('--no-fill', action='store_true',
+                        help='do not apply the worksheet before the build')
     parser.add_argument('--jobs', type=int, default=DEFAULT_JOBS,
                         help='parallel compile jobs (default: {})'
                              .format(DEFAULT_JOBS))
@@ -327,6 +353,17 @@ def main():
               'in it.')
     else:
         print('== application: kept src/ as it is. --regenerate writes it again.')
+
+    # The worksheet is the source of the bodies, so it is applied on every call: a
+    # section changed since the last one is written, and a --regenerate that reset the
+    # sources gets every body back. Filling the same body twice writes the same file.
+    worksheet = os.path.join(root, args.bodies)
+    if not args.no_fill and worksheet_has_code(worksheet):
+        if not run('worksheet',
+                   [PYTHON, os.path.join(HERE, 'fill_markers.py'),
+                    '--bodies', args.bodies],
+                   root, kept=3):
+            return 1
 
     # The scaffold pass allows an open marker: the generated files are promised to
     # compile and run as written, and a marker is where a body goes. The final pass

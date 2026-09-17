@@ -586,7 +586,14 @@ TOOLS = ['setup_project.py', 'gen_skeleton.py', 'fsml_layout.py', 'run_scenarios
 # narrowing of the "do not open them" rule that four pointers in 51-debug.md and
 # 05-design.md contradicted. check_corpus.py's own prescribed-call rule now holds the
 # first of those, so the bytes cannot silently rot back.
-CORPUS_CEILING = 194560
+# Raised 194560 -> 194816 on 2026-09-17 for the worksheet becoming the one place a
+# body is edited. 01-runbook.md section 6 now says that a body changed after a build
+# or a scenario run is changed in bodies.txt, that a failing check names the section
+# it is in, and that --regenerate restores every body; the paragraph sending the
+# reader to hand-edit a generated file came out, so the section grew 246 bytes net.
+# What the bytes replace: hunting a body in a generated file was 15 requests and 18%
+# of run 20260917c, against 246 bytes of residency worth about $0.002 a run.
+CORPUS_CEILING = 194816
 
 PAGE_CEILING = 8 * KB
 # The stop the exception mechanism did not have. An entry in .budgets raises the
@@ -2775,7 +2782,7 @@ def run():
     check_worksheet_order_note(report)
     check_empty_section_note(report)
     check_command_coverage(report)
-    check_worksheet_leftover(report)
+    check_worksheet_rewrite(report)
     check_regeneration_report(report)
     check_regeneration_idempotent(report)
     check_marker_spelling(report)
@@ -4063,11 +4070,20 @@ def check_step_driver(report):
             report.fail('step-driver', 'an awaited answer still carries its generic marker, '
                                        'or a broadcast no step awaits lost its own')
             return
+        # The check stands alone inside a braced region. Unbraced, a check that
+        # declares a local makes the compiler refuse every case label after it, and
+        # the error names those labels rather than the declaration.
         lines = source.splitlines()
         for index, line in enumerate(lines):
-            if 'TODO(you) step_' in line and lines[index + 1].strip() != 'break;':
-                report.fail('step-driver', 'the generator wrote code into the check of a '
-                                           'step: "{}"'.format(lines[index + 1].strip()))
+            if 'TODO(you) step_' not in line:
+                continue
+            around = [lines[index - 1].strip(), lines[index + 1].strip(),
+                      lines[index + 2].strip()]
+            if around != ['{', '}', 'break;']:
+                report.fail('step-driver',
+                            'the check of a step is not a braced region carrying the '
+                            'marker alone: the generator wrote {} around it'
+                            .format(' / '.join('"{}"'.format(text) for text in around)))
                 return
         found = subprocess.run([sys.executable, os.path.join(tools, 'check_contract.py'),
                                 '.', '--strict', '--allow-todo'],
@@ -4606,7 +4622,9 @@ def check_empty_section_note(report):
         for path in glob.glob(os.path.join('src', '*', '*.hpp')):
             with open(path, encoding='utf-8') as handle:
                 left += handle.read()
-        if 'provider_state' in left or 'consumer_state' in left:
+        # The anchors a filled body keeps also name the slot, so what says the marker
+        # is still open is the marker itself.
+        if 'TODO(you) provider_state' in left or 'TODO(you) consumer_state' in left:
             report.fail('empty-section', 'a "*_state" section closed by one // line '
                                          'leaves its marker open, so the convention the '
                                          'worksheet states does not work')
@@ -4779,87 +4797,116 @@ def check_regeneration_report(report):
               'is derived from the retained sources')
 
 
-def check_worksheet_leftover(report):
-    """What the filler leaves behind says which file each open marker is in.
+def check_worksheet_rewrite(report):
+    """A body the filler has written stays addressable by the same section.
 
-    A section survives a pass with the "#| ---- <file>" heading above it. The heading
-    carries no marker of its own, so a filler that emits it on the previous section's
-    verdict labels a surviving section with the wrong file and a second pass opens the
-    wrong source. Run 20260912g's leftover named the provider header for a marker in
-    the consumer body.
+    The worksheet is the only place a body is edited after a build, so a filled body
+    has to keep its name: the filler leaves an anchor pair around it, finds that pair
+    again, and rewrites the body between them and nothing else. Without this every
+    later fix is a hunt through a generated file, which cost 15 requests and 18% of
+    run 20260917c.
     """
     sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
     try:
         import fill_markers
     except Exception as failure:                    # noqa: BLE001 - reported, not raised
-        report.fail('leftover', 'fill_markers.py does not import: {}'.format(failure))
+        report.fail('worksheet-rewrite',
+                    'fill_markers.py does not import: {}'.format(failure))
         return
 
-    sheet = ('#| guidance the worksheet keeps\n'
-             '\n'
-             '#| ---- src/provider/Prov.hpp\n'
-             '== provider_state\n'
-             'int mX = 0;\n'
-             '\n'
-             '#| ---- src/consumer/Cons.cpp\n'
-             '#| a note that belongs to this file\n'
-             '== first_request\n'
-             'request_go();\n'
-             '\n'
-             '== connection_lost\n')
-
     holder = tempfile.mkdtemp()
-    path = os.path.join(holder, 'bodies.txt')
+    src = os.path.join(holder, 'src')
+    os.makedirs(src)
+    source = os.path.join(src, 'Cons.cpp')
+    filler = os.path.join(ROOT, 'tools', 'agent', 'fill_markers.py')
+    sheet = os.path.join(holder, 'bodies.txt')
 
-    def leftover(applied):
-        with open(path, 'w', encoding='utf-8', newline='\n') as handle:
-            handle.write(sheet)
-        fill_markers.consume(path, set(applied))
-        with open(path, encoding='utf-8') as handle:
-            return handle.read().splitlines()
+    def write(first):
+        with open(sheet, 'w', encoding='utf-8', newline='\n') as handle:
+            handle.write('#| guidance the worksheet keeps\n'
+                         '== step_one\n' + first + '\n'
+                         '== step_two\n'
+                         'second();\n')
+
+    def fill():
+        return subprocess.run([sys.executable, filler, '--bodies', sheet,
+                               '--src', src],
+                              cwd=holder, capture_output=True, text=True)
+
+    def text():
+        with open(source, encoding='utf-8') as handle:
+            return handle.read()
 
     try:
-        # The section that survives is labelled with its own file, not the one before it.
-        lines = leftover(['provider_state', 'first_request'])
-        headings = [line for line in lines if line.startswith('#| ----')]
-        if headings != ['#| ---- src/consumer/Cons.cpp']:
-            report.fail('leftover',
-                        'a marker left open in src/consumer/Cons.cpp is filed under {}: '
-                        'the heading follows the previous section\'s verdict, so a '
-                        'second pass opens the wrong file'
-                        .format(headings or 'no file at all'))
+        with open(source, 'w', encoding='utf-8', newline='\n') as handle:
+            handle.write('void f()\n{\n'
+                         '    // TODO(you) step_one: check this.\n'
+                         '    // TODO(you) step_two: check that.\n'
+                         '}\n')
+        write('first();')
+        done = fill()
+        if done.returncode != 0:
+            report.fail('worksheet-rewrite',
+                        'the first pass refused the worksheet: {}'
+                        .format((done.stderr or done.stdout).strip()[:200]))
             return
-        if '== connection_lost' not in lines:
-            report.fail('leftover', 'the section left open is not in the leftover at all')
-            return
-        if not any(line.startswith('#| guidance') for line in lines):
-            report.fail('leftover', "the worksheet's own guidance was taken out with "
-                                    'the sections, so a second pass has no instructions')
+        if 'first();' not in text():
+            report.fail('worksheet-rewrite', 'the first pass wrote no body')
             return
 
-        # Nothing left to do leaves no heading standing on its own.
-        lines = leftover(['provider_state', 'first_request', 'connection_lost'])
-        dangling = [line for line in lines if line.startswith('#| ----')]
-        if dangling:
-            report.fail('leftover',
-                        'every marker is filled and {} heading(s) are still in the '
-                        'worksheet, naming files with nothing left to do'
-                        .format(len(dangling)))
+        # The worksheet is the durable copy: a section applied is still there.
+        with open(sheet, encoding='utf-8') as handle:
+            kept = handle.read()
+        if '== step_one' not in kept or 'first();' not in kept:
+            report.fail('worksheet-rewrite',
+                        'the filler took an applied section out of the worksheet, so '
+                        'the body it wrote can no longer be changed from it')
             return
 
-        # A heading whose first section is filled still labels the ones under it.
-        lines = leftover(['first_request'])
-        headings = [line for line in lines if line.startswith('#| ----')]
-        if headings != ['#| ---- src/provider/Prov.hpp', '#| ---- src/consumer/Cons.cpp']:
-            report.fail('leftover',
-                        'a file with one section filled and one open is filed under {}'
-                        .format(headings))
+        # The anchors that make a written body addressable again.
+        if 'body(you) step_one' not in text() or 'end(you) step_one' not in text():
+            report.fail('worksheet-rewrite',
+                        'a filled body carries no body(you)/end(you) anchor, so the '
+                        'section that wrote it cannot find it again')
+            return
+
+        # A changed section rewrites that body where it stands, and nothing else.
+        write('rewritten();')
+        done = fill()
+        if done.returncode != 0:
+            report.fail('worksheet-rewrite',
+                        'the second pass refused a section whose body it had already '
+                        'written: {}'.format((done.stderr or done.stdout).strip()[:200]))
+            return
+        after = text()
+        if 'rewritten();' not in after:
+            report.fail('worksheet-rewrite',
+                        'a changed section did not rewrite the body it had written')
+            return
+        if 'first();' in after:
+            report.fail('worksheet-rewrite',
+                        'the rewritten body was added beside the old one rather than '
+                        'replacing it')
+            return
+        if after.count('body(you) step_one') != 1:
+            report.fail('worksheet-rewrite',
+                        'a rewrite left {} anchors for one body, so the next pass has '
+                        'no single place to write'
+                        .format(after.count('body(you) step_one')))
+            return
+
+        # Writing the same worksheet again writes the same file.
+        fill()
+        if text() != after:
+            report.fail('worksheet-rewrite',
+                        'filling the same worksheet twice changed the source, so the '
+                        'body grows or moves on every build')
             return
     finally:
         shutil.rmtree(holder, ignore_errors=True)
 
-    report.ok('leftover', 'the leftover worksheet names the file of every marker it '
-                          'still carries, and no heading outlives its sections')
+    report.ok('worksheet-rewrite', 'the worksheet keeps every body it writes, and a '
+              'changed section rewrites that body in place')
 
 
 def check_marker_spelling(report):
@@ -4990,14 +5037,14 @@ def check_worksheet_contract(report):
                  open(sheet, encoding='utf-8').read().splitlines()
                  if line.startswith('== ')]
         open_now = sorted(list(fill_markers.markers_of('src')) +
-                          list(fill_markers.expectations_of('scenarios.json')))
+                          list(fill_markers.expectations_of('scenarios.json')[1]))
         if sorted(named) != open_now:
             report.fail('worksheet', '{} names {} hole(s) and the project leaves {}: a '
                                      'hole with no section is one the run has to find '
                                      'for itself'
                         .format(sheet, len(named), len(open_now)))
             return
-        if not fill_markers.expectations_of('scenarios.json'):
+        if not fill_markers.expectations_of('scenarios.json')[1]:
             report.fail('worksheet', 'scenarios.json leaves no named expectation, so '
                                      'what a run has to print is decided in a file the '
                                      'worksheet does not reach')
@@ -5009,7 +5056,7 @@ def check_worksheet_contract(report):
         # An expectation is filled as a list of regular expressions, so no comma and
         # no quote of the scenario file's own syntax is ever the author's to write.
         expect = next(name for name in named
-                      if name in fill_markers.expectations_of('scenarios.json'))
+                      if name in fill_markers.expectations_of('scenarios.json')[1])
         with open('scenarios.json', encoding='utf-8') as handle:
             before_json = handle.read()
         with open(sheet, encoding='utf-8') as handle:
@@ -5057,7 +5104,7 @@ def check_worksheet_contract(report):
                                      'marker and its placeholder away')
             return
         if len(fill_markers.markers_of('src')) + \
-                len(fill_markers.expectations_of('scenarios.json')) != len(open_now):
+                len(fill_markers.expectations_of('scenarios.json')[1]) != len(open_now):
             report.fail('worksheet', 'a refused fill changed the project')
             return
 
@@ -5141,10 +5188,12 @@ def check_worksheet_contract(report):
         stays = [line[3:].strip() for line in
                  open(sheet, encoding='utf-8').read().splitlines()
                  if line.startswith('== ')]
-        if named[0] in stays or len(stays) != len(named) - 1:
-            report.fail('worksheet', 'the filler leaves the section it applied in {}, so '
-                                     'giving the file back names a filled marker'
-                        .format(sheet))
+        # The worksheet is the durable copy of every body, so an applied section
+        # stays: it is where that body is changed after a build or a scenario run.
+        if named[0] not in stays or len(stays) != len(named):
+            report.fail('worksheet', 'the filler took the section it applied out of {}, '
+                                     'so the body it wrote can only be changed by '
+                                     'hunting for it in a generated file'.format(sheet))
             return
     finally:
         os.chdir(here)
@@ -5152,7 +5201,8 @@ def check_worksheet_contract(report):
     report.ok('worksheet', 'the worksheet names every hole -- code and scenario '
                            'expectation -- and the function each body sits in, an '
                            'empty section leaves its hole alone, a "#" body is '
-                           'refused, and a filled section is taken out')
+                           'refused, and an applied section stays so its body can be '
+                           'rewritten from the same place')
 
 
 def check_placeholder_contract(report):

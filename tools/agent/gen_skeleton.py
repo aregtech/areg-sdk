@@ -190,11 +190,17 @@ WORKSHEET_HEAD = """\
 #| one marker at a time is {total} requests instead, and a request is billed for the
 #| whole conversation again.
 #|
+#| This file keeps every body it writes. A body already written stays addressable by
+#| the same section: change the section, run the command again, and that body alone
+#| is rewritten where it stands. A scenario that fails names the section its check is
+#| in, so the section to change is the one the failure printed, and no source file is
+#| opened to find it. build_project.py applies this file before every build, so one
+#| command carries a change from here through the build to the scenarios.
+#|
 #| No source file has to be opened to fill this in: every name a body may call is
 #| named below, every place a body belongs is a section below, and each section
-#| names the function it sits in. The filler takes each section it applies out of
-#| this file, so what is left here is what is left to do, and it reports the line
-#| every body landed on, so no file has to be opened afterwards either.
+#| names the function it sits in. The filler reports the line every body landed on,
+#| so no file has to be opened afterwards either.
 #|
 #| A helper of your own is declared in the "*_state" section of a file and defined
 #| in any section of that same file. Nothing else has to be added by hand.
@@ -1356,9 +1362,13 @@ def step_dispatch(steps, kind, name, indent):
     pad = ' ' * indent
     lines = ['' if kind != 'response' else None, pad + 'switch (mStep)', pad + '{']
     lines = [line for line in lines if line is not None]
+    # The check is braced: a case body that declares a local and is not braced
+    # makes the compiler reject every case label after it.
     for step in waiting:
         lines += [pad + 'case Step::{}:'.format(step['enum']),
-                  marker('step_' + step['name'], STEP_CHECK[kind], indent + 4),
+                  pad + '    {',
+                  marker('step_' + step['name'], STEP_CHECK[kind], indent + 8),
+                  pad + '    }',
                   pad + '    break;']
     lines += [pad + 'default:', pad + '    return;', pad + '}', pad + 'complete();']
     return lines
@@ -1668,11 +1678,30 @@ def consumer_class(iface, cls, steps=(), driver=None):
               '    inline {} & self()'.format(cls),
               '    {   return (*this); }',
               '']
-    lines += ['    //! Ends the scenario as a failure, naming what went wrong.',
+    if steps:
+        lines += ['    //! The worksheet section holding the check of the step the',
+                  '    //! scenario is on.',
+                  '    const char * step_slot()',
+                  '    {',
+                  '        switch (mStep)',
+                  '        {']
+        lines += ['        case Step::{}:  return "step_{}";'.format(step['enum'],
+                                                                    step['name'])
+                  for step in steps]
+        lines += ['        default:  return "no step";',
+                  '        }',
+                  '    }',
+                  '']
+    lines += ['    //! Ends the scenario as a failure, naming what went wrong and the',
+              '    //! step the scenario was on.',
               '    void fail(const char * why)',
-              '    {',
-              '        std::cerr << "FAIL: " << why << std::endl;',
-              '        mDeadline.stop_timer();']
+              '    {']
+    if steps:
+        lines += ['        std::cerr << "FAIL [" << step_slot() << "]: " << why',
+                  '                  << std::endl;']
+    else:
+        lines.append('        std::cerr << "FAIL: " << why << std::endl;')
+    lines += ['        mDeadline.stop_timer();']
     if stepped:
         lines.append('        mPace.stop_timer();')
     if holds:

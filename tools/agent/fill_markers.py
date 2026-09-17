@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Fill every TODO(you) marker of a project from one worksheet.
+"""Fill every TODO(you) marker of a project from one worksheet, and rewrite a body
+it has already filled.
 
     python3 fill_markers.py --bodies bodies.txt [--src src] [--dry-run]
 
@@ -31,6 +32,18 @@ import sys
 HEADER = re.compile(r'^==\s+([A-Za-z_][\w]*(?:\.[\w]+)?(?::[A-Za-z_][\w]*)?)\s*$')
 MARKER = re.compile(r'//\s*TODO\(you\)\s+([A-Za-z_][\w]*)\s*:\s*(.*?)\s*$')
 
+# A filled body keeps its name. These two lines stand where the marker stood, so the
+# same section of the worksheet addresses the body again after it is written.
+BODY_OPEN = re.compile(r'//\s*body\(you\)\s+([A-Za-z_][\w]*)\s*$')
+BODY_END = re.compile(r'//\s*end\(you\)\s+([A-Za-z_][\w]*)\s*$')
+
+
+def anchored(body, pad, slot):
+    """The body between the two lines that name it."""
+    return ([pad + '// body(you) {}'.format(slot)] + list(body) +
+            [pad + '// end(you) {}'.format(slot)])
+
+
 # A line gen_skeleton.py wrote only so the skeleton runs before its marker is filled.
 # It belongs to the marker above it, so filling that marker takes it away too. A line
 # after a marker that carries no tag is real code and is left alone.
@@ -48,10 +61,6 @@ def fail(message):
 # The worksheet's own furniture. No C++ line begins this way, so a body never loses
 # one, and a note the author writes in the style of these is caught below instead.
 NOTE = '#|'
-
-# The heading that says which file the sections below it belong to. It carries no
-# marker of its own, so it survives only while a section under it does.
-FILE_HEADING = re.compile(r'^#\|\s*----\s')
 
 # What a line of a body may be when it begins with a hash. Anything else there was
 # meant as a comment, and C++ has no such comment.
@@ -97,6 +106,11 @@ def read_bodies(path):
         seen[name] = number
     for name, body, number in sections:
         for offset, line in enumerate(body, 1):
+            if BODY_OPEN.search(line) or BODY_END.search(line):
+                fail('{} line {}: section "{}" carries "{}". Those two lines are how '
+                     'the filler finds this body again; it writes them itself and a '
+                     'body may not. Nothing was written'
+                     .format(path, number + offset, name, line.strip()[:48]))
             if line.lstrip().startswith('#') and not DIRECTIVE.match(line):
                 fail('{} line {}: section "{}" carries "{}", which is neither code nor '
                      'a "{}" note of this worksheet. A comment in a body is "//"; leave '
@@ -138,29 +152,71 @@ def markers_of(root):
     return found
 
 
+def bodies_of(root):
+    """Every body already written between its anchors: {name: [(path, index, line,
+    span), ...]}, in the shape markers_of() returns, so one is replaced like the other.
+
+    span is the number of lines after the opening anchor that the body occupies, the
+    closing anchor included, which is what the writer skips.
+    """
+    found = {}
+    if not os.path.isdir(root):
+        return found
+    for folder, dirs, files in os.walk(root):
+        dirs[:] = [d for d in dirs if d not in ('services', 'build')]
+        for name in sorted(files):
+            if not name.endswith(('.hpp', '.cpp')):
+                continue
+            path = os.path.join(folder, name)
+            with open(path, encoding='utf-8') as handle:
+                lines = handle.read().splitlines()
+            open_at = {}
+            for index, line in enumerate(lines):
+                hit = BODY_OPEN.search(line)
+                if hit:
+                    open_at[hit.group(1)] = (index, line)
+                    continue
+                hit = BODY_END.search(line)
+                if hit and hit.group(1) in open_at:
+                    start, text = open_at.pop(hit.group(1))
+                    found.setdefault(hit.group(1), []).append(
+                        (path, start, text, index - start))
+    return found
+
+
 def expectations_of(path):
-    """Every named "expect" hole of a scenario file: {name: (scenario, process)}.
+    """The "expect" holes of a scenario file, as ({name: (scenario, process)}, open).
+
+    The first names every process a section may write to, whether its hole is still
+    open or was filled by an earlier pass: the name of one is the scenario's and the
+    process's, so it stays the same once the hole itself is gone. The second is the
+    subset still carrying a hole, which is what is left to do.
 
     These are not lines of a source file. The body of such a section is a list of
     regular expressions, written into the JSON as one, so no comma and no quote of
     the file's own syntax is ever the author's to get right.
     """
-    found = {}
+    import gen_skeleton
+    found, still_open = {}, set()
     if not os.path.exists(path):
-        return found
+        return found, still_open
     try:
         with open(path, encoding='utf-8') as handle:
             document = json.load(handle)
         scenarios = document['scenarios']
     except (ValueError, OSError, KeyError, TypeError):
-        return found
+        return found, still_open
     for outer, scenario in enumerate(scenarios):
+        label = scenario.get('name', 'scenario')
         for inner, spec in enumerate(scenario.get('procs', [])):
             for entry in spec.get('expect', []):
                 hit = MARKER.search('// ' + entry)
                 if hit:
                     found[hit.group(1)] = (outer, inner)
-    return found
+                    still_open.add(hit.group(1))
+            if isinstance(spec, dict) and (spec.get('name') or spec.get('binary')):
+                found.setdefault(gen_skeleton.expect_slot(label, spec), (outer, inner))
+    return found, still_open
 
 
 def write_expectations(path, filled):
@@ -175,13 +231,15 @@ def write_expectations(path, filled):
 
 
 def resolve(name, markers, where):
-    """The one marker this section names, or a refusal that says how to say it."""
+    """The one marker or written body this section names, or a refusal that says how
+    to say it."""
     wanted, _, bare = name.rpartition(':')
     places = markers.get(bare or name)
     if not places:
         near = difflib.get_close_matches(bare or name, sorted(markers), 3, 0.6)
-        fail('{} names "{}", which is no open marker of this project -- it is spelt '
-             'differently, or it is filled already.{}'
+        fail('{} names "{}", which is neither an open marker of this project nor a '
+             'body it has written -- it is spelt differently, or the source it '
+             'belonged to was regenerated.{}'
              .format(where, name,
                      ' Did you mean: {}?'.format(', '.join(near)) if near else
                      ' gen_skeleton.py --todos lists every marker left.'))
@@ -241,33 +299,48 @@ def main():
         fail('{} carries no code: every section under a "== <marker>" line is empty, '
              'so there is nothing to fill'.format(args.bodies))
     markers = markers_of(args.src)
-    expectations = expectations_of(args.scenarios)
-    clash = sorted(set(markers) & set(expectations))
+    written = bodies_of(args.src)
+    # A marker and a body already written are addressed the same way, so a section
+    # applied once can be applied again after the body it wrote has been run.
+    addressable = dict((name, list(places)) for name, places in markers.items())
+    for name, places in written.items():
+        addressable.setdefault(name, []).extend(places)
+    expectations, open_expect = expectations_of(args.scenarios)
+    clash = sorted(set(addressable) & set(expectations))
     if clash:
         fail('"{}" names both a marker of {} and an expectation of {}. Rename the '
              'expectation'.format(clash[0], args.src, args.scenarios))
-    if not (markers or expectations):
-        fail('no TODO(you) marker is left in {} and no named expectation in {}. There '
-             'is nothing to fill'.format(args.src, args.scenarios))
+    if not (addressable or expectations):
+        fail('no TODO(you) marker and no body(you) body is left in {}, and no named '
+             'expectation in {}. There is nothing to fill'
+             .format(args.src, args.scenarios))
 
     # Resolve every section before writing any file, so a refusal leaves the tree
     # exactly as it was rather than half filled.
     planned = []
     claimed = {}
     expected = {}
+    replaced = []
     dropped = 0
     for name, body in sections:
         if name in expectations:
             expected[expectations[name]] = [text.strip() for text in body
                                             if text.strip()]
+            if name not in open_expect:
+                replaced.append(name)
             continue
-        path, index, line, extra = resolve(name, markers, args.bodies)
+        path, index, line, extra = resolve(name, addressable, args.bodies)
         if (path, index) in claimed:
             fail('{} fills the same marker twice, as "{}" and as "{}"'
                  .format(args.bodies, claimed[(path, index)], name))
         claimed[(path, index)] = name
-        dropped += extra
-        planned.append((path, index, extra, name, place(body, line)))
+        again = any(where[:2] == (path, index) for where in written.get(name, ()))
+        if again:
+            replaced.append(name)
+        else:
+            dropped += extra
+        planned.append((path, index, extra, name,
+                        anchored(place(body, line), indent_of(line), name)))
 
     if expected and not args.dry_run:
         write_expectations(args.scenarios, expected)
@@ -300,19 +373,27 @@ def main():
         if not args.dry_run:
             with open(path, 'w', encoding='utf-8') as handle:
                 handle.write('\n'.join(out) + '\n')
-        print('{} {}: {} marker(s) filled'
+        again = sum(1 for _, _, name in edits[path].values() if name in replaced)
+        print('{} {}: {}'
               .format('would fill' if args.dry_run else 'filled',
-                      path.replace(os.sep, '/'), len(edits[path])))
+                      path.replace(os.sep, '/'),
+                      ', '.join(part for part in
+                                ('{} marker(s) filled'.format(len(edits[path]) - again)
+                                 if len(edits[path]) - again else '',
+                                 '{} body(ies) rewritten'.format(again) if again else '')
+                                if part)))
         for number, name, count in landed:
             print('  {:<28} line {:<5} {} line(s)'.format(name, number, count))
 
     filled = set(claimed)
     left = [(name, path) for name, places in sorted(markers.items())
             for path, index, _, _ in places if (path, index) not in filled]
-    left += [(name, args.scenarios) for name in sorted(expectations)
+    left += [(name, args.scenarios) for name in sorted(open_expect)
              if expectations[name] not in expected]
-    print('{} of {} marker(s) filled{}'
-          .format(len(planned) + len(expected), len(planned) + len(expected) + len(left),
+    print('{} of {} marker(s) filled{}{}'
+          .format(len(planned) + len(expected) - len(replaced),
+                  len(planned) + len(expected) - len(replaced) + len(left),
+                  ', {} body(ies) rewritten'.format(len(replaced)) if replaced else '',
                   ', {} placeholder line(s) dropped with them'.format(dropped)
                   if dropped else ''))
     if args.dry_run:
@@ -321,14 +402,14 @@ def main():
         if len(left) > SHOWN:
             print('  and {} more'.format(len(left) - SHOWN))
         return 0
-    consume(args.bodies, set(name for name, _ in sections))
     if not left:
-        print('  {} is empty: every marker of this project is filled'
+        print('  every marker of this project is filled. {} keeps every body: change '
+              'a section and run this again to rewrite it'
               .format(args.bodies.replace(os.sep, '/')))
         return 0
     named = set(name for name, _ in sections) | set(blank)
     orphans = [entry for entry in left if entry[0] not in named]
-    print('  {} marker(s) still open; {} now carries a section for {} of them'
+    print('  {} marker(s) still open; {} carries a section for {} of them'
           .format(len(left), args.bodies.replace(os.sep, '/'), len(left) - len(orphans)))
     for name, path in orphans[:SHOWN]:
         print('  no section for: {} in {}'.format(name, path.replace(os.sep, '/')))
@@ -336,42 +417,6 @@ def main():
         print('  and {} more the worksheet does not name; gen_skeleton.py --todos '
               'lists them'.format(len(orphans) - SHOWN))
     return 0
-
-
-def consume(path, applied):
-    """Take the sections that were applied out of the worksheet.
-
-    What is left in the file is what is left to do, so the same file is given to
-    this tool again without a filled marker being named a second time. The notes
-    before the first section are kept: they are the worksheet's own guidance.
-
-    A "#| ---- <file>" heading is held back until a section under it survives, and
-    dropped when none does. Emitting it on the previous group's verdict labels the
-    surviving section with the wrong file.
-    """
-    with open(path, encoding='utf-8') as handle:
-        lines = handle.read().splitlines()
-    out, pending, keep = [], [], True
-    for line in lines:
-        if FILE_HEADING.match(line):
-            pending, keep = [line], None
-            continue
-        found = HEADER.match(line)
-        if found:
-            keep = found.group(1) not in applied
-            if keep and pending:
-                if out and out[-1].strip():
-                    out.append('')
-                out.extend(pending)
-                pending = []
-        if keep is None:
-            pending.append(line)
-        elif keep:
-            out.append(line)
-    text = '\n'.join(out).rstrip() + '\n'
-    with open(path, 'w', encoding='utf-8', newline='\n') as handle:
-        handle.write(text)
-
 
 
 if __name__ == '__main__':

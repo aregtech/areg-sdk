@@ -7,11 +7,8 @@ what the software must do; `<project>` is a C identifier naming the project; `<m
 adds attributes and broadcasts.
 
 On Windows: `python` for `python3`, `build\bin\x.exe` for `./build/bin/x.elf`,
-`start "" prog` for `prog &`. Nothing else differs.
-
-**Every `-j` carries the number 8**: `cmake --build build -j8`. It is right on every
-platform, `$(nproc)` is not, and a bare `-j` runs every job at once and swaps the
-machine. `build_project.py` passes it for you.
+`start "" prog` for `prog &`. Nothing else differs. `build_project.py` passes the
+`-j8` that `AGENTS.md` requires everywhere, so no command here carries one.
 
 ---
 
@@ -135,12 +132,13 @@ neither is a failure of the build.
 python3 <areg-sdk>/tools/agent/build_project.py --spec design.json
 ```
 
-Five steps with no decision in any of them: it writes the documents from the spec,
-writes the application from them, checks the contract, configures and builds. It stops
-at the first failure and names the step, so nothing is hidden. Pass `--spec` once per
-spec file. `--regenerate` writes the application again and **discards what you have
-put in it**; without it a second run keeps `src/` and only rebuilds, so this is also
-the command for every later build, which takes seconds.
+Six steps with no decision in any of them: it writes the documents from the spec,
+writes the application from them, applies `bodies.txt`, checks the contract -- which
+catches the mistakes that compile cleanly and fail later -- configures and builds. It
+stops at the first failure and names the step, so nothing is hidden. Pass `--spec`
+once per spec file. `--regenerate` writes the application again, **discarding what
+`bodies.txt` does not carry**; without it a second run keeps `src/` and only rebuilds,
+so this is also the command for every later build, which takes seconds.
 
 **A state machine is folded into the provider automatically** when the spec declares
 one: the action handler is a base, every action is declared, and there is no separate
@@ -173,22 +171,26 @@ names come from a fixed rule and the tool has applied it.
 project: one section per open marker, in file order, each naming the function it sits
 in, the names each generated class already carries, and the contract every body is
 written against. **No generated file has to be opened to write a body.** Read the
-worksheet, fill each `== <marker>` section, and apply the lot:
+worksheet and fill each `== <marker>` section. Section 7's command applies it before
+it compiles, so filling and building is one request; call the filler yourself only to
+see what it would write:
 
 ```
-python3 <areg-sdk>/tools/agent/fill_markers.py --bodies bodies.txt
+python3 <areg-sdk>/tools/agent/fill_markers.py --bodies bodies.txt --dry-run
 ```
 
 **That is the whole implementation, in two requests.** One edit per body and a full
 rewrite are the two most expensive shapes a run has.
 
 A line tagged `// placeholder(you)` stands only until the marker above it is filled --
-a default `response_`, a `return false;`. The filler takes it away with that marker; an
-edit by hand must replace it too, or the body runs and the placeholder runs after it.
-An untagged line under a marker is real code and stays.
+a default `response_`, a `return false;`. The filler takes it away with that marker. An
+untagged line under a marker is real code and stays.
 
-An edit by hand is still right for one body changed after a build or a scenario run --
-the marker line is gone by then.
+**A body changed after a build or a scenario run is changed in `bodies.txt` too.** The
+worksheet keeps every body it writes, so changing a section and running the build
+command rewrites that body where it stands, and `--regenerate` gets every body back.
+A failing check names its own section, so the section to change is the one the failure
+printed: the whole fix is one edit and one command, and no generated file is opened.
 
 `30-provider.md`, `31-consumer.md` and `32-model.md` describe the code the tool has
 already written. Do not open them to fill a marker, and do not open them while
@@ -220,10 +222,9 @@ that produces it go into the same file, in the same request. A body prints with
 python3 <areg-sdk>/tools/agent/build_project.py --spec design.json --run
 ```
 
-Section 5 again -- it keeps your filled sources, re-checks the contract, which catches
-the mistakes that compile cleanly and fail later, and builds -- then it starts the
-router, the provider and the consumer and checks their output. Exit 0 is a pass. **Run
-it after every fix too**: a build and a run are one request.
+The section 5 command with `--run`: it builds as it did there, then starts the router,
+the provider and the consumer and checks their output. Exit 0 is a pass. **Run it after
+every fix too** -- worksheet, build and run are one request.
 
 **Every acceptance item goes in `scenarios.json`, including the two that look like
 they need a terminal.** A console quit path is `"stdin": ["-q"]` on that process,
@@ -243,13 +244,9 @@ turns. The project's run.sh exists for a human watching it; a scenario is what y
 diagnostic printout comes back; `--only <name>` runs one scenario. Together they are
 the whole of ad-hoc debugging, and they leave nothing running.
 
-## 7a. The habit that halves the cost of the same work
-
-Every request re-sends the whole conversation, so the bill is the number of requests
-multiplied by how much each one carries.
-
-**Never pour a log into the conversation.** It stays there for every later request.
-Everything that can print hundreds -- `find`, `ls -R`, a raw compiler run -- is piped
+**Every request re-sends the whole conversation**, so the bill is the number of
+requests multiplied by how much each one carries. Never pour a log into it: anything
+that can print hundreds of lines -- `find`, `ls -R`, a raw compiler run -- is piped
 through `grep` or `head` before you ask for it.
 
 ## 8. Fix -- bounded, then stop
