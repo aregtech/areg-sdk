@@ -57,8 +57,9 @@ ADVICE = {
     'final': 'the final pass does not allow an open marker. A passing scenario says '
              'nothing about the requirement behind one: no body was written for it. '
              'Fill it, then run this again.',
-    'build': 'the compiler refused a source. Ask for the errors alone, never the whole '
-             'log: "cmake --build build 2>&1 | grep -E \'error\' | head -20". A '
+    'build': 'the compiler refused a source. The errors are above, each with the '
+             'line it is on: no second command is needed to see them. Fix the body '
+             'in the worksheet, not the generated file, and run this again. A '
              'provider that is abstract means the document gained a request the '
              'application has no handler for: add the handler, or --regenerate and '
              'fill the markers again.',
@@ -79,18 +80,80 @@ def show(lines, tail):
         print('   ... {} earlier line(s) not shown'.format(len(lines) - tail))
 
 
+# What a failure is worth printing: the line that names the defect. A build log ends
+# with the summary of the tool that gave up, so its last lines carry no diagnostic.
+DIAGNOSTIC = re.compile(
+    r'(^|[\s:])(error|fatal error|undefined reference|undefined symbol'
+    r'|multiple definition)\b'
+    r'|^Traceback \(most recent call last\)'
+    r'|^\s*error\[\d+/|^\w*(Error|Exception):|error C\d{4}|LNK\d{4}',
+    re.IGNORECASE)
+
+# A line that follows a diagnostic and belongs to it: the offending source, the caret,
+# a candidate, a note, a traceback frame.
+FOLLOWS = re.compile(r'^\s|^\s*\d+\s*\||note:|candidate|required from|in expansion of')
+
+# A line a tool prints when it gives up, which names no defect.
+GIVING_UP = re.compile(r'\*\*\*|^(g?make|ninja|cmake)(\[\d+\])?:|^Error\s*$'
+                       r'|recipe for target|Stop\.$', re.IGNORECASE)
+
+
+def diagnostics(lines, budget, context=6):
+    """The lines of a failed log that name the defect, or None if it names none.
+
+    Each match brings the lines under it that belong to it -- the source line, the
+    caret, the candidates -- so one finding arrives whole. Matches are taken from
+    the first, because a later error is usually a consequence of the first.
+    """
+    hits = [i for i, line in enumerate(lines)
+            if DIAGNOSTIC.search(line) and not GIVING_UP.search(line)]
+    if not hits:
+        return None
+    kept, last = [], -1
+    for i in hits:
+        if len(kept) >= budget:
+            break
+        end = i + 1
+        while (end < len(lines) and end - i <= context and FOLLOWS.search(lines[end])
+               and not DIAGNOSTIC.search(lines[end])):
+            end += 1
+        start = max(i, last + 1)
+        if start > last + 1 and last >= 0:
+            kept.append(None)
+        kept.extend(lines[start:end])
+        last = end - 1
+    return kept[:budget]
+
+
+def show_failure(lines, tail):
+    """Prints what a failed step said about the defect, and how much was left out."""
+    tail = len(lines) if tail is None else tail
+    picked = diagnostics(lines, tail)
+    if picked is None:
+        show(lines, tail)
+        return
+    for line in picked:
+        print('   ...' if line is None else '   ' + line)
+    shown = sum(1 for line in picked if line is not None)
+    if shown < len(lines):
+        print('   ... {} of {} log line(s) shown: the ones naming an error. '
+              'The whole log is the same command without this one.'
+              .format(shown, len(lines)))
+
+
 def run(step, command, cwd, kept=2, failed_kept=40):
     """One step of the chain, and whether it passed.
 
     A step that passed prints its last `kept` lines and nothing more: a build log
     that reaches the conversation is re-sent with every later request. A step that
-    failed prints its last `failed_kept` lines, and what to do about it.
+    failed prints the lines of its log that name an error, up to `failed_kept` of
+    them, and what to do about it.
     """
     print('== {}: {}'.format(step, ' '.join(command)))
     result = subprocess.run(command, cwd=cwd, capture_output=True, text=True)
     lines = ((result.stdout or '') + (result.stderr or '')).splitlines()
     if result.returncode != 0:
-        show(lines, failed_kept)
+        show_failure(lines, failed_kept)
         print('')
         print('FAILED at step "{}", exit {}.'.format(step, result.returncode))
         advice = ADVICE.get(step, '')

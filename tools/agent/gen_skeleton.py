@@ -115,7 +115,8 @@ def defined_names(text):
 
     An override is named by --contract and by the marker above its body. These are
     not: they are what the skeleton brought with it, and the only way to learn them
-    today is to open the file.
+    today is to open the file. A helper is listed with its parameters: a name given
+    without them is called with the wrong ones, and that costs a build.
     """
     members, helpers = [], []
     for line in text.splitlines():
@@ -131,8 +132,10 @@ def defined_names(text):
             members.append(found.group(1))
             continue
         found = HELPER.match(line)
-        if found and found.group(1) not in RESERVED and found.group(1) not in helpers:
-            helpers.append(found.group(1))
+        if found and found.group(1) not in RESERVED:
+            spelt = ' '.join(line.split()).rstrip('{;').strip()
+            if not any(h.endswith(spelt) or spelt in h for h in helpers):
+                helpers.append(spelt)
     return members, helpers
 
 
@@ -428,7 +431,7 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
             if members:
                 parts.append('members ' + ', '.join(members))
             if helpers:
-                parts.append('helpers ' + ', '.join(h + '()' for h in helpers))
+                parts.append('helpers ' + '; '.join(helpers))
             lines.append('#|   {}: {}'.format(cls, '; '.join(parts)))
         lines.append('#|')
     driven = driven_body(produced)
@@ -1056,8 +1059,9 @@ def contract_lines(iface, document):
                 iface.generated().returns('condition', name), iface.spell('condition', name),
                 iface.generated_params('condition', name)))
         for name, kind in iface.attributes:
-            out.append('  call     {}() / {}({})'
-                       .format(iface.spell('attribute', name, 'get'),
+            out.append('  call     {} {}() / void {}({})'
+                       .format(iface.cpp_type(kind)[0],
+                               iface.spell('attribute', name, 'get'),
                                iface.spell('attribute', name, 'set'),
                                iface.attribute_setter(kind, True)))
         return out + type_lines(iface)

@@ -2059,18 +2059,30 @@ def main():
     if skipped:
         print('  note  {} sample entr{} of the template, left as written, skipped.'
               .format(skipped, 'y' if skipped == 1 else 'ies'))
+    # One note per finding and one explanation for all of them: the same paragraph
+    # under every name is re-sent with every later request of the conversation.
+    late = {}
     for owner, step, attribute, sender in late_awaits(project):
-        print('  note  {}: step "{}" awaits attribute "{}" and sends nothing, after step '
-              '"{}" sent a request. An update that request caused can arrive before "{}" '
-              'begins, and then no other comes. Await "{}" on the step that sends the '
-              'request that sets it, or await that request\'s response.'
-              .format(owner, step, attribute, sender, step, attribute))
+        late.setdefault(owner, []).append('"{}" awaits "{}" after "{}"'
+                                          .format(step, attribute, sender))
+    for owner in sorted(late):
+        print('  note  {}: {}, and sends nothing itself.'
+              .format(owner, '; '.join(late[owner])))
+        print('        An update the earlier request caused can arrive before the '
+              'awaiting step begins, and then no other comes. Await the attribute on '
+              'the step that sends the request that sets it, or await that request\'s '
+              'response.')
+    unread = {}
     for spec in project['machines']:
         for name in unread_attributes(spec):
-            print('  note  {}: attribute "{}" is written and never read by a guard, a '
-                  'condition or an argument. Data no rule of the machine reads belongs '
-                  'to the component that computes it, not to the machine.'
-                  .format(spec.get('name', '?'), name))
+            unread.setdefault(spec.get('name', '?'), []).append(name)
+    for owner in sorted(unread):
+        print('  note  {}: attribute(s) {} written and never read by a guard, a '
+              'condition or an argument.'
+              .format(owner, ', '.join('"%s"' % n for n in unread[owner])))
+        print('        Data no rule of the machine reads belongs to the component '
+              'that computes it, not to the machine.')
+    for spec in project['machines']:
         for owner, attribute, notify, matched, missing in state_mirrors(project, spec):
             print('  note  {}: attribute "{}" of {} takes {} of this machine\'s state '
                   'names and has no value for: {}. A consumer cannot see the machine '

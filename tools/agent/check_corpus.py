@@ -2783,6 +2783,8 @@ def run():
     check_empty_section_note(report)
     check_command_coverage(report)
     check_worksheet_rewrite(report)
+    check_failure_names_the_error(report)
+    check_names_carry_signatures(report)
     check_regeneration_report(report)
     check_regeneration_idempotent(report)
     check_marker_spelling(report)
@@ -4795,6 +4797,111 @@ def check_regeneration_report(report):
             return
     report.ok('regeneration', 'a kept file reports its own content, and the worksheet '
               'is derived from the retained sources')
+
+
+def check_failure_names_the_error(report):
+    """A failed step prints the line that names the defect, not the log tail.
+
+    A compiler and a generator print the diagnostic in the middle and the summary of
+    the tool that gave up at the end, so a tail carries no error. Run 20260917d spent
+    three requests asking a second command for the errors the first one already had.
+    """
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import build_project
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('failure-errors',
+                    'build_project.py does not import: {}'.format(failure))
+        return
+
+    # A build log of the shape the compiler writes: one diagnostic with its candidates,
+    # then enough make noise to push it out of any tail.
+    log = ['[ 50%] Building CXX object x.cpp.o',
+           'src/consumer/C.cpp:120:9: error: no matching function for call to '
+           "'C::arm_deadline()'",
+           '  120 |         arm_deadline();',
+           '      |         ^~~~~~~~~~~~',
+           'src/consumer/C.hpp:88:10: note: candidate expects 1 argument, 0 provided']
+    log += ['gmake[2]: *** [build.make:76: x.cpp.o] Error 1'] * 12
+
+    picked = build_project.diagnostics(log, 40)
+    if picked is None:
+        report.fail('failure-errors',
+                    'build_project.diagnostics() found no error in a log that carries '
+                    'one. A failed step then prints its tail, which is the summary of '
+                    'the tool that gave up, and the agent spends a request asking for '
+                    'the errors again')
+        return
+    shown = '\n'.join(line for line in picked if line is not None)
+    if 'error: no matching function' not in shown:
+        report.fail('failure-errors',
+                    'a failed step does not print the line naming the error: {}'
+                    .format(shown[:120]))
+        return
+    if 'candidate expects' not in shown:
+        report.fail('failure-errors',
+                    'a failed step prints the error without the lines under it that '
+                    'say what to write instead')
+        return
+    if 'Error 1' in shown:
+        report.fail('failure-errors',
+                    'a failed step prints the summary of the tool that gave up, which '
+                    'names no defect and crowds out the ones that do')
+        return
+    # A log with no diagnostic at all still has to print something.
+    quiet = ['configuring', 'gmake: *** [Makefile:146: all] Error 2']
+    if build_project.diagnostics(quiet, 40) is not None:
+        report.fail('failure-errors',
+                    'a log whose only "error" lines are a tool giving up is reported '
+                    'as carrying a diagnostic; the fallback to the tail never runs')
+        return
+    report.ok('failure-errors',
+              'a failed step prints the lines naming the error and what belongs to '
+              'them, not the summary of the tool that gave up')
+
+
+def check_names_carry_signatures(report):
+    """A name the worksheet hands a body carries the parameters it takes.
+
+    Both build-and-fix cycles of run 20260917d were a call written from a bare name:
+    the worksheet listed "arm_deadline()" for a helper that takes a uint32_t. A name
+    without its parameters is a guess, and a guess is a compile, a read and an edit.
+    """
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_skeleton
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('name-signatures',
+                    'gen_skeleton.py does not import: {}'.format(failure))
+        return
+
+    header = ('class Cons\n'
+              '{\n'
+              '    uint32_t mIdle{ 0 };\n'
+              '    void arm_deadline(uint32_t seconds);\n'
+              '    inline Cons & self();\n'
+              '    void progressed();\n'
+              '};\n')
+    members, helpers = gen_skeleton.defined_names(header)
+    if 'mIdle' not in members:
+        report.fail('name-signatures',
+                    'the worksheet no longer lists the members the skeleton declares')
+        return
+    armed = [h for h in helpers if 'arm_deadline' in h]
+    if not armed:
+        report.fail('name-signatures',
+                    'the worksheet no longer lists the helpers the skeleton declares')
+        return
+    if 'uint32_t' not in armed[0]:
+        report.fail('name-signatures',
+                    'the worksheet names helper "{}" without the parameters it takes. '
+                    'A body then calls it with the wrong ones and the run pays a '
+                    'build, a read and an edit for a name it was already given'
+                    .format(armed[0]))
+        return
+    report.ok('name-signatures',
+              'the worksheet hands a body every name it may call with the parameters '
+              'that name takes')
 
 
 def check_worksheet_rewrite(report):
