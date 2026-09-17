@@ -34,8 +34,22 @@ import tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
-# Sonnet 5 list prices per million tokens: input, cache read, cache write (1 h), output.
-PRICE_IN, PRICE_READ, PRICE_WRITE, PRICE_OUT = 2.00, 0.20, 4.00, 10.00
+# Sonnet 5 list prices per million tokens. A cache write costs 2.50 at the 5-minute
+# TTL and 4.00 at the 1-hour one, and the harness picks the TTL, so two runs at
+# different tiers are 60% apart on that line for a reason no tree change explains.
+PRICE_IN, PRICE_READ, PRICE_OUT = 2.00, 0.20, 10.00
+PRICE_W5, PRICE_W1 = 2.50, 4.00
+
+
+def own_cost(r):
+    """What one request was billed: its reads, its writes at their own tier, its output."""
+    return (r["in"] * PRICE_IN + r["cr"] * PRICE_READ + r["w5"] * PRICE_W5 +
+            r["w1"] * PRICE_W1 + r["out"] * PRICE_OUT) / 1e6
+
+
+def write_price(r):
+    """The per-token cache-write price this request paid, the 1-hour one if it wrote nothing."""
+    return (r["w5"] * PRICE_W5 + r["w1"] * PRICE_W1) / r["cw"] if r["cw"] else PRICE_W1
 
 
 def rows(path):
@@ -44,6 +58,27 @@ def rows(path):
             yield json.loads(line)
         except ValueError:
             pass
+
+
+def tool_results(path):
+    """What each tool call printed, keyed by the call's block id.
+
+    A tool_result arrives in a later row than the tool_use it answers, so the
+    transcript is read once for them before the requests are walked.
+    """
+    found = {}
+    for e in rows(path):
+        m = e.get("message")
+        if not isinstance(m, dict) or e.get("type") != "user":
+            continue
+        for b in m.get("content") or []:
+            if not isinstance(b, dict) or b.get("type") != "tool_result":
+                continue
+            c = b.get("content")
+            if isinstance(c, list):
+                c = " ".join(x.get("text") or "" for x in c if isinstance(x, dict))
+            found[b.get("tool_use_id")] = c if isinstance(c, str) else ""
+    return found
 
 
 def meta_of(run):
@@ -220,6 +255,13 @@ def hand_written(src, sources, sdk):
 # two runs settle a change.
 BUILD_CALL = re.compile(r"build_project\.py|cmake\s+--build|\bmake\b")
 SCEN_CALL = re.compile(r"run_scenarios\.py")
+# build_project.py --run chains run_scenarios.py as its last step, and that is the
+# spelling the documentation gives, so a run that never types run_scenarios.py still
+# runs the scenarios. The step is reached only when every step before it passed, and
+# build_project.py prints its header before starting it, so the call's own output is
+# what says whether it ran.
+BUILD_RUN = re.compile(r"build_project\.py(?=.*\s--run\b)")
+SCEN_STEP = re.compile(r"^==\s*scenarios:", re.M)
 COUNTING = re.compile(r"\bwc\b|\bdu\b|--stat\b|\bcloc\b|stat\s+-c|\bfind\b.*-name.*\|",
                       re.I)
 # A counting command measures the run only when it targets the run's own source.
@@ -274,7 +316,7 @@ def events(requests):
     """
     spec = None
     for r in requests:
-        for nm, what in r["calls"]:
+        for nm, what, _ in r["calls"]:
             if nm == "Bash" and spec is None:
                 hit = re.search(r"--spec\s+(\S+)", what)
                 if hit:
@@ -284,7 +326,7 @@ def events(requests):
     edited_since_build = edited_since_scen = False
     last_change = -1
     for i, r in enumerate(requests):
-        for nm, what in r["calls"]:
+        for nm, what, result in r["calls"]:
             if nm in ("Edit", "Write", "NotebookEdit"):
                 base = os.path.basename(what)
                 if base.endswith((".cpp", ".hpp", ".h", ".json", ".txt", ".cmake")):
@@ -306,7 +348,11 @@ def events(requests):
                 builds.append(i)
                 edited_since_build = False
                 last_change = max(last_change, i)
-            if SCEN_CALL.search(what):
+            # No captured output means the transcript did not keep it. The command
+            # asked for the scenarios, so count it rather than lose it silently.
+            ran = SCEN_CALL.search(what) or (BUILD_RUN.search(what) and
+                                             (not result or SCEN_STEP.search(result)))
+            if ran:
                 if scenarios and edited_since_scen:
                     scen_fixes.append(i)
                 scenarios.append(i)
@@ -314,25 +360,46 @@ def events(requests):
                 last_change = max(last_change, i)
             if counts_own_source(what):
                 counters.append(i)
-    return [("build invocations", builds, ""),
-            ("build-and-fix cycles", build_fixes, "a source changed, then it rebuilt"),
-            ("scenario runs", scenarios, ""),
-            ("run-and-fix cycles", scen_fixes, "a source changed, then it ran again"),
-            ("spec re-edits after a build", respecs,
+    # A spec re-edit is not paid for by itself: the build that follows it is the
+    # regeneration it forced, and that request is part of the event's price.
+    regens = []
+    for i in respecs:
+        later = [b for b in builds if b > i]
+        if later and later[0] not in regens:
+            regens.append(later[0])
+    return [("build invocations", builds, [], ""),
+            ("build-and-fix cycles", build_fixes, [], "a source changed, then it rebuilt"),
+            ("scenario runs", scenarios, [], ""),
+            ("run-and-fix cycles", scen_fixes, [], "a source changed, then it ran again"),
+            ("spec re-edits after a build", respecs, regens,
              "the design was changed after it had been generated"),
-            ("self-measuring calls", counters, "wc, du, cloc: the run counting itself"),
+            ("self-measuring calls", counters, [], "wc, du, cloc: the run counting itself"),
             ("requests after the last change", list(range(last_change + 1, len(requests))),
-             "the self-reporting tail")]
+             [], "the self-reporting tail")]
 
 
-def print_events(requests, per_request):
+def print_events(requests, own, resident):
+    """Each event twice: what its own requests were billed, and what they left behind.
+
+    A request pays for its own reads, writes and output once. What it adds to the
+    conversation -- its output and the tool result it pulled in -- is then read back by
+    every later request, and that second term is the one no bill itemises.
+    """
     print("\n== events   (the base barely moves; these are what move the bill)")
-    for name, hits, note in events(requests):
-        cost = sum(per_request[i] for i in hits if i < len(per_request))
+    print("   %-30s %2s %8s %9s %9s  %s"
+          % ("", "n", "own", "resident", "total", "where"))
+    for name, hits, forced, note in events(requests):
+        paid = [i for i in hits + forced if i < len(own)]
+        o = sum(own[i] for i in paid)
+        res = sum(resident[i] for i in paid)
         where = ", ".join("r%d" % i for i in hits[:8]) + (" ..." if len(hits) > 8 else "")
-        print("   %-30s %2d  $%.3f  %s" % (name, len(hits), cost, where or "-"))
+        if forced:
+            where += "  forced %s" % ", ".join("r%d" % i for i in forced[:8])
+        print("   %-30s %2d %8s %9s %9s  %s"
+              % (name, len(hits), "$%.3f" % o, "$%.3f" % res, "$%.3f" % (o + res),
+                 where or "-"))
         if hits and note:
-            print("   %-30s     %s" % ("", note))
+            print("   %-30s %s" % ("", note))
 
 
 def main():
@@ -349,6 +416,7 @@ def main():
     tr = find_transcript(run, sid)
     if not tr:
         sys.exit("no transcript for %s" % (sid or run))
+    results = tool_results(tr)
     if not sid:
         sid = os.path.basename(tr)[:-6] + "  (result.json missing; found by path)"
 
@@ -386,7 +454,8 @@ def main():
             visible += len(json.dumps(inp))
             names.append(nm)
             calls.append((nm, str(inp.get("command") or inp.get("file_path")
-                                  or inp.get("pattern") or "")))
+                                  or inp.get("pattern") or ""),
+                          results.get(bid) or ""))
             if nm in ("Bash", "Glob"):
                 cmd = str(inp.get("command") or inp.get("pattern") or "")
                 hunt = [t for t in re.findall(r"\b(?:find|locate)\s+(\S+)", cmd)
@@ -405,12 +474,21 @@ def main():
             for k in ("input_tokens", "output_tokens", "cache_read_input_tokens",
                       "cache_creation_input_tokens"):
                 tot[k] += u.get(k) or 0
+            tier = u.get("cache_creation") or {}
+            w5 = tier.get("ephemeral_5m_input_tokens") or 0
+            w1 = tier.get("ephemeral_1h_input_tokens") or 0
+            if not (w5 or w1):
+                w1 = u.get("cache_creation_input_tokens") or 0
+            tot["w5"] += w5
+            tot["w1"] += w1
             requests.append({"id": mid, "ctx": ctx, "out": u.get("output_tokens") or 0,
                              "think": (u.get("output_tokens_details")
                                        or {}).get("thinking_tokens") or 0,
                              "tools": names, "calls": calls,
+                             "in": u.get("input_tokens") or 0,
                              "cr": u.get("cache_read_input_tokens") or 0,
-                             "cw": u.get("cache_creation_input_tokens") or 0})
+                             "cw": u.get("cache_creation_input_tokens") or 0,
+                             "w5": w5, "w1": w1})
         elif mid:
             for r in requests:
                 if r["id"] == mid:
@@ -421,9 +499,15 @@ def main():
         sys.exit("no assistant request in %s" % tr)
 
     fresh = tot["input_tokens"] + tot["output_tokens"]
-    cost = (tot["input_tokens"] * PRICE_IN + tot["cache_read_input_tokens"] * PRICE_READ +
-            tot["cache_creation_input_tokens"] * PRICE_WRITE +
-            tot["output_tokens"] * PRICE_OUT) / 1e6
+    base = (tot["input_tokens"] * PRICE_IN + tot["cache_read_input_tokens"] * PRICE_READ +
+            tot["output_tokens"] * PRICE_OUT)
+    # A summariser and any other model the harness used are billed too, and the
+    # transcript does not carry them. Without them the recomputed total falls short of
+    # the bill by a fraction of a cent and reads as a modelling error.
+    aside = sum(v.get("costUSD") or 0 for v in (result.get("modelUsage") or {}).values()
+                if "sonnet" not in str(v.get("canonicalModel") or ""))
+    cost = (base + tot["w5"] * PRICE_W5 + tot["w1"] * PRICE_W1) / 1e6 + aside
+    normal = (base + (tot["w5"] + tot["w1"]) * PRICE_W1) / 1e6 + aside
     print("== %s" % run)
     print("   %-26s %s" % ("session", sid))
     areg_arm = (meta.get("framework") or "areg").strip() == "areg"
@@ -445,21 +529,35 @@ def main():
               % ("  reasoning", format(tot["output_tokens"] - vis, ",")))
     print("   %-26s %s" % ("  uncached input", format(tot["input_tokens"], ",")))
     print("   %-26s %s" % ("cache reads", format(tot["cache_read_input_tokens"], ",")))
-    print("   %-26s %s" % ("cache writes", format(tot["cache_creation_input_tokens"], ",")))
+    split = ("   (%s @5m + %s @1h)" % (format(tot["w5"], ","), format(tot["w1"], ","))
+             if tot["w5"] and tot["w1"] else "")
+    print("   %-26s %s%s" % ("cache writes",
+                             format(tot["cache_creation_input_tokens"], ","), split))
     print("   %-26s %s" % ("peak context", format(max(r["ctx"] for r in requests), ",")))
-    print("   %-26s $%.4f  (harness $%.4f)" % ("cost, recomputed", cost,
+    print("   %-26s $%.4f  (harness $%.4f)" % ("cost, billed", cost,
                                                result.get("total_cost_usd") or 0))
+    if tot["w5"]:
+        print("   %-26s $%.4f  (+$%.4f, %d%% of writes at 5m: compare runs here)"
+              % ("cost, normalised @1h", normal, normal - cost,
+                 round(100.0 * tot["w5"] / max(tot["w5"] + tot["w1"], 1))))
     wall = (result.get("duration_ms") or 0) / 60000.0
     print("   %-26s %.1f min%s" % ("wall", wall or span_minutes(tr),
                                    "" if wall else "   (from transcript timestamps)"))
     print("   %-26s %s" % ("permission denials", result.get("permission_denials")))
-    print("   %-26s $%.4f" % ("cost per request", cost / len(requests)))
+    print("   %-26s $%.4f  (normalised)" % ("cost per request", normal / len(requests)))
     print("\n== tool calls by name")
     for n, c in tools.most_common():
         print("   %-26s %d" % (n, c))
-    per_request = [(r["cr"] * PRICE_READ + r["cw"] * PRICE_WRITE + r["out"] * PRICE_OUT) / 1e6
-                   for r in requests]
-    print_events(requests, per_request)
+    # What a request left in the conversation: its own output, plus the tool result it
+    # pulled in, which is the rest of the context growth before the next request. Both
+    # are read back by every later request, at PRICE_READ a token each time.
+    count = len(requests)
+    own = [own_cost(r) for r in requests]
+    added = [max(requests[i + 1]["ctx"] - requests[i]["ctx"] - requests[i]["out"], 0)
+             if i + 1 < count else 0 for i in range(count)]
+    resident = [(requests[i]["out"] + added[i]) * PRICE_READ * (count - 1 - i) / 1e6
+                for i in range(count)]
+    print_events(requests, own, resident)
     print("\n== %s: %d" % ("fallbacks to SDK internals" if areg_arm
                            else "reads of areg internals", len(fallbacks)))
     for i, nm, kind, what in fallbacks:
@@ -529,8 +627,10 @@ def main():
     spikes = sorted(enumerate(requests), key=lambda p: -p[1]["out"])[:2]
     print("\n== the reasoning spikes (the design and the implementation thought)")
     for i, r in sorted(spikes, key=lambda p: p[0]):
-        # A token written at r is billed as output, then read again by every later request.
-        price = r["out"] * (PRICE_OUT + PRICE_WRITE +
+        # A token written at r is billed as output, then as the cache write that admits
+        # it at the tier the next request paid, then read again by every later request.
+        w = write_price(requests[i + 1]) if i + 1 < len(requests) else 0.0
+        price = r["out"] * (PRICE_OUT + w +
                             PRICE_READ * max(len(requests) - i - 1, 0)) / 1e6
         print("   r%-4d %8s output  %8s thinking  %8s ctx  $%.3f fully priced"
               % (i, format(r["out"], ","), format(r["think"], ","),

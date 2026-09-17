@@ -345,6 +345,13 @@ Claude run; for other CLIs use the artifacts described above.
 each arm at least three times on one tree and compare medians; the quality rows
 (acceptance items, scenarios passing) are the ones that hold at one run.
 
+**Compare the normalised line, not the bill.** The harness picks the prompt-cache TTL,
+not the tree, and a cache write is $2.50 per MTok at the 5-minute tier against $4.00 at
+the 1-hour one -- $0.24 on a $2 run, flowing whichever way the harness chose that day.
+`analyze_run.py` prints `cost, billed`, which reconciles with `result.json` to the
+fourth decimal, and `cost, normalised @1h`, which is the one two runs can be held
+against each other. `cache writes` names the split when there is one.
+
 **Score the result yourself.** The agent's own count is a claim. Re-run its scenarios:
 
 ```bash
