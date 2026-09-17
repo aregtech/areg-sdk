@@ -126,9 +126,9 @@ tools/
   codegen.jar         the code generator, which also validates the document
   schema/*.xsd        grammar of the .siml, .dtml and .fsml documents
   schema/rules.xml    numbered validation rules the generator reports
-  setup_project.py    creates a ready-to-build project (use this one)
-  setup-project.sh    the older interactive scaffolder, shell only, no Python;
-  setup-project.bat   same for Windows. Both prompt, so never run them unattended
+  setup_project.py    creates a ready-to-build project and its agent files (use this one)
+  setup-project.sh    the same project without Python and without agent files;
+  setup-project.ps1   same for Windows, started by setup-project.bat
   codegenerate.sh     runs the generator outside CMake, no Python;
   codegenerate.bat    same for Windows
 conf/

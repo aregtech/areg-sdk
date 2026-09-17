@@ -75,11 +75,16 @@ Use the project setup tool to scaffold a new project:
 
 ```bash
 # Linux/macOS
-./tools/setup-project.sh
+sh ./tools/setup-project.sh --name myapp --mode local
 
 # Windows
-tools\setup-project.bat
+tools\setup-project.bat --name myapp --mode local
+
+# Any platform, with Python 3; also writes the files an AI coding agent works from
+python3 tools/agent/setup_project.py --name myapp --mode local
 ```
+
+Details: [Quick Project Setup](./wiki/02a-quick-project-setup.md).
 
 ### Working Example
 

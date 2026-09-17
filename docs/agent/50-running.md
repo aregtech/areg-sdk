@@ -18,8 +18,8 @@ What a project needs follows from the `--mode` it was set up with, and nothing e
 
 | `setup_project.py --mode` | Start, in this order |
 |---|---|
-| `local` | the application. Nothing else: no router, no collector |
-| `ipc`, `pubsub` | `mtrouter`, then the provider, then the consumer |
+| `local`, `pubsub` | the application. Nothing else: no router, no collector |
+| `ipc` | `mtrouter`, then the provider, then the consumer |
 
 Add `logcollector` to either only to gather the logs of several processes in one
 place; no application needs it to run.

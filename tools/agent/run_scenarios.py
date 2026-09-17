@@ -172,6 +172,23 @@ def stop_services(handles, timeout=10.0):
                 pass
 
 
+def tools_dir():
+    """The directory holding this tool, spelled for a command line."""
+    return os.path.dirname(os.path.abspath(__file__)).replace(chr(92), '/')
+
+
+def nothing_built(build_dirs):
+    """True when not one executable exists in any of the build directories."""
+    for directory in build_dirs:
+        if not os.path.isdir(directory):
+            continue
+        for entry in os.listdir(directory):
+            path = os.path.join(directory, entry)
+            if os.path.isfile(path) and os.access(path, os.X_OK):
+                return False
+    return True
+
+
 def find_binary(name, build_dirs):
     """Finds an executable by name, with or without the platform suffix."""
     for directory in build_dirs:
@@ -623,6 +640,22 @@ def report_status(handles, outputs, ended, lead_index, quiet):
         sys.stdout.write('      status  {:<20} {}, {}\n'.format(proc_name(spec), state, said))
 
 
+def asserts_nothing(scenario):
+    """True when no process of the scenario declares anything to check.
+
+    A scenario is the evidence that a requirement holds. One that declares no
+    "expect", no "reject" and no "exit" passes whatever the program prints, so a
+    suite of them exits 0 on a program that does nothing. An empty "expect" list
+    is the same thing written a second way.
+    """
+    for spec in scenario.get('procs') or []:
+        if spec.get('expect') or spec.get('reject'):
+            return False
+        if spec.get('exit') is not None:
+            return False
+    return True
+
+
 def lint_scenario(scenario):
     """Mistakes in a scenario that show up only as a hang, said before it runs."""
     procs = scenario.get('procs') or []
@@ -792,8 +825,26 @@ def self_test():
                   'write(), so it never reached its own work')
             return 1
 
-        print('self-test ok: 5 case(s): end of input, an unfired stop, a fired stop, '
-              'a stop on the last line of an exited lead, output pressure')
+        # A scenario that declares nothing to check passes whatever the program
+        # prints, so a suite of them reports success about an untested program.
+        vacuous = [{'name': 'no-keys', 'procs': [{'binary': consumer}]},
+                   {'name': 'empty-expect',
+                    'procs': [{'binary': consumer, 'expect': []}]},
+                   {'name': 'exit-null',
+                    'procs': [{'binary': consumer, 'exit': None}]}]
+        for scenario in vacuous:
+            if not asserts_nothing(scenario):
+                print('self-test FAILED: vacuity: {} was taken for an assertion'
+                      .format(scenario['name']))
+                return 1
+        if asserts_nothing({'name': 'real',
+                            'procs': [{'binary': consumer, 'exit': 0}]}):
+            print('self-test FAILED: vacuity: a declared exit code is an assertion')
+            return 1
+
+        print('self-test ok: 6 case(s): end of input, an unfired stop, a fired stop, '
+              'a stop on the last line of an exited lead, output pressure, '
+              'a scenario that asserts nothing')
         return 0
     finally:
         shutil.rmtree(root, ignore_errors=True)
@@ -847,7 +898,27 @@ def main():
             print(scenario.get('name', 'unnamed'))
         return 0
 
+    # The empty-suite refusal above, one level deeper: a suite of scenarios that
+    # assert nothing proves no more than no suite at all.
+    vacuous = [s.get('name', 'unnamed') for s in scenarios if asserts_nothing(s)]
+    if vacuous:
+        named = ', '.join('"{}"'.format(name) for name in vacuous)
+        fail('{} {} nothing: no "expect", "reject" or "exit" on any process, so {} '
+             'whatever the program prints. Give one process an "expect" naming a line '
+             'the requirement demands, or the "exit" it must end with.'
+             .format(named,
+                     'asserts' if len(vacuous) == 1 else 'assert',
+                     'it passes' if len(vacuous) == 1 else 'they pass'))
+
     build_dirs = args.build or [os.path.join('build', 'bin'), 'build']
+
+    # Nothing was built at all. Left to the runner this is reported one missing
+    # binary at a time, and no one of those lines names the build, so the reader
+    # is told what is absent and never what to do about it.
+    if nothing_built(build_dirs):
+        fail('nothing is built: no executable in {}. No scenario can run until the '
+             'project is built:\n  python3 {}/build_project.py'
+             .format(', '.join(build_dirs), tools_dir()))
 
     if not args.stale_ok:
         stale = stale_binaries(scenarios, build_dirs,
@@ -858,9 +929,7 @@ def main():
                     'error: {} is older than {} (edited {:.0f} min after the build)\n'
                     .format(os.path.basename(path), os.path.relpath(source), minutes))
             sys.stderr.write('build first, then run:\n')
-            sys.stderr.write('  python3 {}/build_project.py\n'
-                             .format(os.path.dirname(os.path.abspath(__file__))
-                                     .replace(chr(92), '/')))
+            sys.stderr.write('  python3 {}/build_project.py\n'.format(tools_dir()))
             sys.stderr.write('running the old program is what makes a fixed defect '
                              'look unfixed. --stale-ok runs it anyway.\n')
             return 2

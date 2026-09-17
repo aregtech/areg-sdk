@@ -485,7 +485,7 @@ TOOLS = ['setup_project.py', 'gen_skeleton.py', 'fsml_layout.py', 'run_scenarios
          'check_agent_docs.py', 'check_contract.py', 'explain_rule.py', 'run_evals.py',
          'schema_help.py',
          'check_recipes.py', 'check-env.sh', 'check-env.bat', 'codegenerate.sh',
-         'codegenerate.bat', 'setup-project.sh', 'setup-project.bat']
+         'codegenerate.bat', 'setup-project.sh', 'setup-project.bat', 'setup-project.ps1']
 
 # Every byte of the reading corpus is paid by the agent that opens it, and an addition
 # is only ever local while a run pays for the whole set. The ceiling is what stops the
@@ -1716,6 +1716,66 @@ def check_fetch_ref(report):
 
 
 # ---------------------------------------------------------------------------
+# Three scaffolders, one project
+#
+# setup-project.sh and setup-project.ps1 create a project without Python, and
+# setup_project.py creates it for an agent. The shell scripts copy the same
+# recipes with the same name tokens, so each has to name every mode, recipe and
+# token the Python tool names, and nothing else.
+# ---------------------------------------------------------------------------
+SCAFFOLD_SCRIPTS = [('tools', 'setup-project.sh'), ('tools', 'setup-project.ps1')]
+SCRIPT_FALLBACK_RE = re.compile(r'''(?:FALLBACK_TAG=|\$FallbackTag\s*=\s*)["']([^"']+)["']''')
+RECIPE_NAME_RE = re.compile(r'\b\d\d-[a-z0-9]+(?:-[a-z0-9]+)+\b')
+
+
+def scaffold_modes():
+    """The MODES table of setup_project.py, read without importing the tool."""
+    import ast
+    tree = ast.parse(read('tools', 'agent', 'setup_project.py'))
+    for node in tree.body:
+        if (isinstance(node, ast.Assign) and len(node.targets) == 1
+                and getattr(node.targets[0], 'id', None) == 'MODES'):
+            return ast.literal_eval(node.value)
+    return None
+
+
+def check_scaffold_parity(report):
+    modes = scaffold_modes()
+    if not modes:
+        report.fail('scaffold-parity', 'setup_project.py has no literal MODES table')
+        return
+    wanted = (json.loads(read('docs', 'agent', 'api.json') or '{}').get('sdk') or {}).get('fetch_ref')
+    recipes = {mode['recipe'] for mode in modes.values()}
+    held = 0
+    for parts in SCAFFOLD_SCRIPTS:
+        name = '/'.join(parts)
+        text = read(*parts)
+        if not text:
+            report.fail('scaffold-parity', '{} is absent'.format(name))
+            continue
+        for mode, spec in sorted(modes.items()):
+            if "'{}'".format(mode) not in text and '{})'.format(mode) not in text:
+                report.fail('scaffold-parity', '{} has no mode "{}"'.format(name, mode))
+            for old, new in spec['tokens']:
+                if not re.search(r'(?<![\w{{}}]){}(?![\w{{}}])'.format(re.escape('{}={}'.format(old, new))), text):
+                    report.fail('scaffold-parity', '{} does not rename {} to {} in mode "{}"'
+                                .format(name, old, new, mode))
+        named = set(RECIPE_NAME_RE.findall(text))
+        if named != recipes:
+            report.fail('scaffold-parity', '{} copies recipes {}; setup_project.py copies {}'
+                        .format(name, sorted(named), sorted(recipes)))
+        fallback = SCRIPT_FALLBACK_RE.search(text)
+        if not fallback or fallback.group(1) != wanted:
+            report.fail('scaffold-parity', '{} falls back to "{}"; api.json states '
+                        'sdk.fetch_ref is "{}"'.format(name, fallback.group(1) if fallback else None, wanted))
+        held += 1
+    if 'setup-project.ps1' not in read('tools', 'setup-project.bat'):
+        report.fail('scaffold-parity', 'tools/setup-project.bat does not run setup-project.ps1')
+    report.ok('scaffold-parity', '{} shell scaffolders name the {} modes of setup_project.py'
+              .format(held, len(modes)))
+
+
+# ---------------------------------------------------------------------------
 # The C++ spelling of a document data type
 #
 # An override signature needs the C++ type a .siml DataType becomes, and four of
@@ -2477,6 +2537,7 @@ def run():
     check_member_shapes(report)
     check_sdk_paths(report)
     check_fetch_ref(report)
+    check_scaffold_parity(report)
     check_data_types(report)
     check_stated_numbers(report)
     check_shipped_tools(report)
@@ -2907,9 +2968,25 @@ def check_state_mirrors(report):
     if gen_docs.state_mirrors(project(full), {'name': 'M', 'states': []}):
         report.fail('state-mirror', 'a machine with no state still prints a note')
         return
+    # An enum that names one state and misses the rest is the worst case the two
+    # pages describe, and it used to be the one case that drew nothing: the note
+    # fired only once two names already matched.
+    one = gen_docs.state_mirrors(project(['Idle', 'Elsewhere']), machine)
+    if len(one) != 1 or sorted(one[0][4]) != ['HELD', 'WORK_ONE', 'WORK_TWO']:
+        report.fail('state-mirror',
+                    'gen_docs.py reports {} for an enum naming one state of four: an '
+                    'attribute that mirrors a machine and can say only one of its '
+                    'states draws no note'.format(one))
+        return
+    if one[0][3] != 1:
+        report.fail('state-mirror',
+                    'the note no longer carries how many state names matched, so it '
+                    'cannot say that one name in common may be coincidence')
+        return
     report.ok('state-mirror',
-              'gen_docs.py names a machine state no attribute publishes, and is silent '
-              'on a final state, a history marker and a phase published elsewhere')
+              'gen_docs.py names a machine state no attribute publishes, down to a '
+              'single name in common, and is silent on a final state, a history '
+              'marker and a phase published elsewhere')
 
 
 def check_design_template(report):
@@ -3302,11 +3379,29 @@ PREFIXED_KEYWORD_SIML = """<?xml version="1.0" encoding="utf-8"?>
 """
 
 
+CONTAINER_KEY_DTML = """<?xml version="1.0" encoding="utf-8"?>
+<DataTypeDocument FormatVersion="1.0.0">
+    <Overview ID="1" Name="KeyRules" Version="1.0.0"/>
+    <DataTypeList>
+        <DataType ID="2" Name="Blob" Type="Structure"><FieldList><Field ID="3" Name="data" DataType="BinaryBuffer"><Value IsDefault="true"/></Field></FieldList></DataType>
+        <DataType ID="4" Name="Stamp" Type="Structure"><FieldList><Field ID="5" Name="id" DataType="uint32"><Value IsDefault="true">0</Value></Field><Field ID="6" Name="when" DataType="DateTime"><Value IsDefault="true"/></Field></FieldList></DataType>
+        <DataType ID="9" Name="Point" Type="Structure"><FieldList><Field ID="10" Name="x" DataType="uint32"><Value IsDefault="true">0</Value></Field></FieldList></DataType>
+        <DataType ID="20" Name="ByBlob" Type="Container"><Container>HashMap</Container><BaseTypeValue>uint32</BaseTypeValue><BaseTypeKey>Blob</BaseTypeKey></DataType>
+        <DataType ID="22" Name="SortedStamp" Type="Container"><Container>Map</Container><BaseTypeValue>uint32</BaseTypeValue><BaseTypeKey>Stamp</BaseTypeKey></DataType>
+        <DataType ID="25" Name="ByPoint" Type="Container"><Container>HashMap</Container><BaseTypeValue>uint32</BaseTypeValue><BaseTypeKey>Point</BaseTypeKey></DataType>
+    </DataTypeList>
+</DataTypeDocument>
+"""
+
+
 def check_codegen_name_rules(report):
     """codegen.jar refuses a hand-written document whose names cannot compile.
 
     Two attributes with one accessor are rule 4; an accessor that is a keyword and a
     keyword spelled as written are rule 5. A keyword behind a request prefix generates.
+    Rule 59 is the same question asked of a container key: a HashMap key has to hash
+    and a Map key has to order. A jar that carries no rule 59 generates a container
+    that does not compile, and exits 0.
     """
     jar = os.path.join(ROOT, 'tools', 'codegen.jar')
     holder = tempfile.mkdtemp()
@@ -3314,7 +3409,8 @@ def check_codegen_name_rules(report):
         os.makedirs(os.path.join(holder, 'src', 'services'))
         outcome = {}
         for name, text in (('Word.siml', UNCOMPILABLE_NAMES_SIML),
-                           ('Prefixed.siml', PREFIXED_KEYWORD_SIML)):
+                           ('Prefixed.siml', PREFIXED_KEYWORD_SIML),
+                           ('KeyRules.dtml', CONTAINER_KEY_DTML)):
             with open(os.path.join(holder, 'src', 'services', name), 'w',
                       encoding='utf-8', newline='\n') as handle:
                 handle.write(text)
@@ -3343,8 +3439,25 @@ def check_codegen_name_rules(report):
                                           'which is spelled behind its prefix: '
                                           + text.strip()[-200:])
         return
+    code, text = outcome['KeyRules.dtml']
+    keys = text.count('error[59/RULE_CONTAINER_KEY]')
+    if code == 0 or keys != 1:
+        report.fail('codegen-name-rules',
+                    'codegen.jar exited {} on a HashMap keyed by a structure holding a '
+                    'BinaryBuffer, with {} rule 59 finding(s); expected a refusal with '
+                    '1. A jar with no rule 59 writes a container that does not compile'
+                    .format(code, keys))
+        return
+    for legal in ('SortedStamp', 'ByPoint'):
+        if legal in text:
+            report.fail('codegen-name-rules',
+                        'codegen.jar reports the container {}, whose key can be a key: '
+                        'rule 59 fires on a document that has no defect'.format(legal))
+            return
     report.ok('codegen-name-rules', 'codegen.jar refuses names that cannot compile (rules 4 '
-                                    'and 5) and accepts a keyword behind a prefix')
+                                    'and 5) and a container key that cannot be one '
+                                    '(rule 59), and accepts a keyword behind a prefix '
+                                    'and a key that hashes or orders')
 
 
 def check_spec_semantics(report):

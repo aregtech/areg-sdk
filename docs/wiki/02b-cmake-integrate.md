@@ -97,14 +97,14 @@ java -version      # Should be 17+
 
 ## Integration Methods
 
-Three methods to integrate Areg SDK:
+Four methods to integrate Areg SDK:
 
 | Method                                             | Best For          | Complexity   | Build Time            |
 |----------------------------------------------------|-------------------|--------------|-----------------------|
 | [Project Setup Tool](./02a-quick-project-setup.md) | New projects      | Very Low     | 30 sec                |
-| [FetchContent](#method-1-fetchcontent)             | New projects      | Low          | First build: 3-8 min  |
-| [vcpkg](#method-2-vcpkg-package)                   | Existing projects | Medium       | Pre-built, instant    |
-| [Git Submodule](#method-3-git-submodule)           | Source control    | Medium       | First build: 3-8 min  |
+| [FetchContent](#method-2-fetchcontent)             | New projects      | Low          | First build: 3-8 min  |
+| [vcpkg](#method-3-vcpkg-package)                   | Existing projects | Medium       | Pre-built, instant    |
+| [Git Submodule](#method-4-git-submodule)           | Source control    | Medium       | First build: 3-8 min  |
 
 
 ### Method 1: Project Setup Tool (Fastest - 30 seconds)
@@ -112,12 +112,10 @@ Three methods to integrate Areg SDK:
 
 ```bash
 git clone https://github.com/aregtech/areg-sdk.git
-cd areg-sdk
-./tools/setup-project.sh
-# Follow prompts, then:
+sh areg-sdk/tools/setup-project.sh --name areg_hello --mode local
 cd areg_hello
 cmake -B ./build && cmake --build ./build
-./build/areg_hello
+# run areg_hello from ./build/bin/
 ```
 
 **See:** [Quick Project Setup Guide](./02a-quick-project-setup.md)
@@ -308,7 +306,7 @@ cmake --build ./build
 **Build time:** ~10 seconds (using pre-built binaries)
 
 > [!TIP]
-> For detailed vcpkg setup, see [Installing Areg SDK with vcpkg](./02e-cmake-vcpkg.md).
+> For detailed vcpkg setup, see [Installing Areg SDK with vcpkg](./01a-areg-package.md).
 
 <div align="right"><kbd><a href="#integration-methods">↑ Back to methods ↑</a></kbd></div>
 
@@ -729,7 +727,7 @@ option(AREG_EXAMPLES "Build examples" OFF)  # Too late
 
 **Integration Guides:**
 - [Project Setup Tool](./02a-quick-project-setup.md) - Create new project in 30 sec
-- [vcpkg Installation](./02e-cmake-vcpkg.md) - Detailed vcpkg setup
+- [vcpkg Installation](./01a-areg-package.md) - Detailed vcpkg setup
 - [CMake Configuration](./02d-cmake-config.md) - All configuration options
 - [CMake Functions](./02e-cmake-functions.md) - Helper functions reference
 - [CMake Build Guide](./01b-cmake-build.md) - Building from source

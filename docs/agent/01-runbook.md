@@ -3,7 +3,8 @@
 The procedure for building an application on this framework, start to finish. Four
 values run through it: `<areg-sdk>` is the SDK checkout, read only; the **task** is
 what the software must do; `<project>` is a C identifier naming the project; `<mode>` is
-`ipc` for two processes, `local` for one, `pubsub` for attributes and broadcasts.
+`local` for one process or `ipc` for two; `pubsub` is `local` whose interface
+adds attributes and broadcasts.
 
 On Windows: `python` for `python3`, `build\bin\x.exe` for `./build/bin/x.elf`,
 `start "" prog` for `prog &`. Nothing else differs.
@@ -71,7 +72,7 @@ work, every phase a peer must tell apart -- suspended and waiting phases include
 a value of the enum the peer subscribes to, or the peer cannot see that phase at all.
 Under the default `Notify="OnChange"` it is worse: a phase left and re-entered re-sets
 the value already held, and no update is sent, so a step waiting for one waits for ever.
-Decide it here too; `gen_docs.py` prints a note for a machine state no attribute names.
+Decide it here too; `gen_docs.py` notes a state an attribute that names others cannot say.
 
 ## 4. The documents
 

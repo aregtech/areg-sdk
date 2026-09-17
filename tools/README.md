@@ -34,7 +34,7 @@ The two places a developer might reach for Python have a Python-free equivalent:
 
 | Task | Without Python | With Python |
 |---|---|---|
-| create a project | `setup-project.sh` / `.bat` (prompts) | `agent/setup_project.py` (unattended) |
+| create a project | `setup-project.sh` / `.bat` / `.ps1` | `agent/setup_project.py`, which also writes the agent files |
 | generate from a document | `codegenerate.sh` / `.bat`, or `addServiceInterface()` in CMake | -- |
 | check the environment | `check-env.sh` / `.bat` | -- |
 
@@ -52,8 +52,9 @@ The two places a developer might reach for Python have a Python-free equivalent:
 | `explain_rule.py` | Python | Explains a generator validation finding, by number or `--search` | [2](#2-document-schemas-and-the-rule-registry) |
 | `check-env.sh` | -- | Reports whether CMake, Java and a compiler are present | [5](#5-project-setup-scripts-quick-start) |
 | `check-env.bat` | -- | The same check on Windows | [5](#5-project-setup-scripts-quick-start) |
-| `setup-project.sh` | -- | Creates a project by asking three questions; no interpreter | [5](#5-project-setup-scripts-quick-start) |
-| `setup-project.bat` | -- | The same on Windows | [5](#5-project-setup-scripts-quick-start) |
+| `setup-project.sh` | -- | Creates a ready-to-build project; no interpreter | [5](#5-project-setup-scripts-quick-start) |
+| `setup-project.ps1` | -- | The same on Windows, in PowerShell 5.1 or 7 | [5](#5-project-setup-scripts-quick-start) |
+| `setup-project.bat` | -- | Runs `setup-project.ps1` | [5](#5-project-setup-scripts-quick-start) |
 | `sanitize.sh` | -- | Builds and runs a target under a sanitizer or a profiler | [8](#8-sanitizers-and-profilers) |
 | `sanitizer/*.supp` | -- | Suppression files for LeakSanitizer and ThreadSanitizer | [8](#8-sanitizers-and-profilers) |
 | `run-all-examples.py` | Python | Runs the built examples as pass/fail scenarios | [9](#9-running-the-examples-as-a-test-suite) |
@@ -322,78 +323,44 @@ If your system has multiple processes:
 
 ## 5. Project Setup Scripts (Quick Start)
 
-Areg provides scripts to bootstrap a **working example project** in one step.
+Three tools create the same ready-to-build project. Each copies a recipe from
+`docs/agent/recipes/` and renames it after the project, so a new project starts from code
+the recipes already build and run. `check_corpus.py` fails if the three drift apart.
 
-### Available Scripts
-
-| Script | Needs | Use it when |
+| Script | Needs | Also writes |
 | --- | --- | --- |
-| `setup-project.sh` (Linux/macOS) | nothing | you are at a terminal; it asks three questions |
-| `setup-project.bat` (Windows) | nothing | the same, on Windows |
-| `agent/setup_project.py` | Python 3 | you are scripting it, in CI or from a coding agent |
-
-The shell and batch scripts need no interpreter beyond the shell you are already in,
-so they add no requirement to the C++ compiler, CMake and Java the SDK already asks
-for. They prompt, so they cannot run unattended.
-
-`agent/setup_project.py` takes its answers on the command line instead. It copies one
-of the recipes in `docs/agent/recipes/`, renames it, and writes an `AGENTS.md` into
-the new project.
+| `setup-project.sh` (Linux/macOS) | a POSIX shell | -- |
+| `setup-project.ps1` (Windows) | PowerShell 5.1 or 7; `setup-project.bat` runs it | -- |
+| `agent/setup_project.py` | Python 3 | `AGENTS.md`, `design.json`, `scenarios.json` and the startup file of each common coding agent |
 
 ```bash
-python3 tools/agent/setup_project.py --name myapp --root ~/myapp --mode local
+sh tools/setup-project.sh --name myapp --root ~/myapp --mode local
+tools\setup-project.bat --name myapp --root C:\dev\myapp --mode ipc --sdk-root C:\dev\areg-sdk
 python3 tools/agent/setup_project.py --name myapp --root ~/myapp --mode ipc --sdk-root /opt/areg-sdk
 ```
 
 | Option | Meaning |
 |---|---|
+| `--name` | Project name, a C identifier |
 | `--mode local` | One process, provider and consumer in two threads |
-| `--mode ipc` | Two processes; needs `mtrouter` |
+| `--mode ipc` | Two processes through `mtrouter`; also writes `run.sh` and `run.bat` |
 | `--mode pubsub` | Attributes and broadcasts in one process |
+| `--root` | Directory to create; defaults to `./<name>` |
 | `--sdk-root` | Build against a local SDK copy instead of fetching from GitHub |
 | `--tag` | The SDK tag to fetch |
-| `--force` | Overwrite an existing directory |
-| `--no-agents` | Do not write `AGENTS.md` |
+| `--force` | Scaffold into a directory that is not empty; nothing is deleted |
+| `--no-agents`, `--harness`, `--no-harness`, `--quiet` | `setup_project.py` only: which agent files to write |
 
+On a terminal, a missing name, mode or directory is asked for.
 
-### What the Script Does
+### Why Python for agentic coding
 
-* Prompts for **project name** (or uses default)
-
-* Prompts for **project root folder** (or uses default)
-
-* Creates project directories:
-
-  ```
-  src/
-  src/services/
-  ```
-
-* Generates:
-
-  * Top-level `CMakeLists.txt`
-  * `src/CMakeLists.txt`
-  * Example `src/services/HelloService.siml` Service Interface file
-  * Working `src/main.cpp` file with Service Provider and Service Consumer
-
-* Configures **Areg dependency automatically**
-
----
-
-### How to Run
-
-From the `tools/` directory:
-* Run on Linux/macOS:
-
-   ```bash
-   sh ./setup-project.sh
-   ```
-* Run on Windows:
-   ```bat
-   ./setup-project.bat
-   ```
-
-Follow the interactive prompts to set the project name and location.
+Python is not needed to build or run an Areg application. It is needed for agentic
+coding: the tools an agent works with are the Python scripts in `agent/`. They turn one
+`design.json` into the service documents, the C++ skeleton, the model and the test
+scenarios, check the contract before the build, and run the application to prove it.
+Without them an agent writes all of that by hand, which costs more requests, more tokens
+and more build-and-fix cycles. Details: [`AGENTS.md`](../AGENTS.md).
 
 ---
 
@@ -413,8 +380,8 @@ This produces a **fully functional Areg RPC example**.
 
 ## 7. Examples and Advanced Usage
 
-* **RPC (single process)**: Generated by setup scripts
-* **IPC (multi-process)**: See `examples/` folder in the Areg SDK root
+* **One process or two processes**: generated by the setup scripts, `--mode local`, `--mode ipc` or `--mode pubsub`
+* **More shapes**: `docs/agent/recipes/` and the `examples/` folder in the Areg SDK root
 * **Custom build flows**: Inspect `conf/cmake/` for advanced control
 
 ---

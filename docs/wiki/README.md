@@ -1,5 +1,5 @@
 <h1 align="center" style="display: block; font-size: 2.5em; font-weight: bold; margin-block-start: 1em; margin-block-end: 1em;">
-<a name="logo" href="https://www.areg.tech"><img align="center" src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/areg-sdk-1280x360px-logo.png" alt="Areg SDK Home" style="width:70%;height:70%"/></a>
+<a name="logo" href="https://www.areg.tech"><img align="center" src="../img/areg-sdk-logo.svg" alt="Areg SDK Home" width="640"/></a>
   <br /><br /><strong>Areg SDK Documentation</strong>
 </h1>
 

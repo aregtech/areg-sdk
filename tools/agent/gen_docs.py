@@ -1097,8 +1097,16 @@ def check_codegen(documents, prefix):
     except codegen_names.CodegenError as error:
         fail(str(error))
     if report:
-        fail('codegen.jar refuses the documents this design describes. Each finding names '
-             'the element and the list it is in; rename it in the design:\n'
+        fail('codegen.jar refuses the documents this design describes. Nothing was '
+             'written to --outdir: the documents were generated into a scratch '
+             'directory to check them, so a "files written" line below reports that '
+             'run and not your tree. Each finding names the element, the list it is '
+             'in and the rule it breaks. Correct what the finding points at -- a name, '
+             'a type, or the structure behind a type -- and generate again; '
+             'python3 {}/explain_rule.py <number> reads the rule out in full, with '
+             'its fix:\n'
+             .format(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                     .replace(chr(92), '/'))
              + report.replace(os.path.abspath(holder) + os.sep, ''))
 
 
@@ -1654,7 +1662,10 @@ def state_mirrors(project, spec):
             matched = [name for name, keys in states if says(keys, offered)]
             missing = [name for name, keys in states
                        if not says(keys, offered) and not says(keys, elsewhere)]
-            if len(matched) >= 2 and missing:
+            # One state name in common is already evidence that the enum mirrors
+            # this machine: a peer reads it to tell the phases apart. Below that
+            # nothing tells a mirror from an unrelated enumeration.
+            if len(matched) >= 1 and missing:
                 found.append((interface.get('name', '?'), attribute['name'],
                               (attribute.get('notify') or 'OnChange'),
                               len(matched), missing))
@@ -2067,6 +2078,9 @@ def main():
                   'state a peer must tell apart, or accept that the state is invisible.'
                   .format(spec.get('name', '?'), attribute, owner, matched,
                           ', '.join(missing)))
+            if matched == 1:
+                print('          One name in common can be coincidence: if this '
+                      'enumeration does not mirror the machine, nothing is wrong here.')
             if notify != 'Always':
                 print('          Notify="{}" makes it worse than invisible: leaving such '
                       'a state and re-entering the one it came from re-sets the value '
@@ -2085,6 +2099,16 @@ def main():
     if args.chained:
         print('  {} document(s).'.format(len(documents)))
     else:
+        # The documents are legitimate, so this is a note and not a refusal. It is
+        # said in the words build_project.py refuses with, several steps later.
+        for what, found, option in (('service', project.get('interfaces') or [], '--doc'),
+                                    ('state machine', project.get('machines') or [],
+                                     '--machine')):
+            if len(found) > 1:
+                print('  note  this design describes {} {}s. build_project.py writes one '
+                      'application, of one service and at most one machine: name the one '
+                      'to build with {}, and write the others with gen_skeleton.py --app '
+                      'into their own directories.'.format(len(found), what, option))
         print('  {} document(s). Generate the code with codegen.jar, then the application '
               'with gen_skeleton.py --app.'.format(len(documents)))
     return 0

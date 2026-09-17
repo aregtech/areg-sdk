@@ -95,6 +95,8 @@ MSBuild ./areg-sdk.sln
 | [30_publatency](./30_publatency/)      | 🚀 Multiprocessing | Latency Benchmark, RTT, OWT           | Measures full-stack IPC latency across payload sizes using ping-pong RTT and broadcast one-way tests. → [Benchmark results](../docs/wiki/08b-areg-sdk-performance-benchmarks.md) |
 | [31_loclatency](./31_loclatency/)      | 🧵 Multithreading  | Local Latency Benchmark, RTT, OWT     | Measures in-process latency for the same payload sizes: provider and consumer in one thread, and in two threads. Needs no router, runs unattended, and is the local counterpart of `30_publatency`. |
 | [32_pubmixed](./32_pubmixed/)          | 🚀 Multiprocessing | Mixed Traffic, Head-of-Line Latency   | Runs a bulk stream and small request/response on the **same** connection and measures what the bulk costs the small messages. Shows how `queue::capacity` bounds both memory and small-message latency. |
+| [33_tempalarm](./33_tempalarm/)        | 🚀 Multiprocessing | AI-built, Attributes, Broadcasts      | Built entirely by an AI agent: a temperature monitor publishes readings and raises a threshold alarm; an operator process subscribes and reacts. |
+| [34_coffeemachine](./34_coffeemachine/)| 🚀 Multiprocessing | AI-built, State Machine               | Built entirely by an AI agent: a coffee machine service driven by a generated state machine (`.fsml`), with a simulated user in a second process. |
 
 
 ---

@@ -1,199 +1,114 @@
 ﻿# Quick Project Setup with Areg SDK
 
-Create ready-to-build Areg SDK projects in 30 seconds using the interactive project setup tool.
+Create a ready-to-build Areg SDK project with one command, then build and run it.
 
 > [!TIP]
-> This is the fastest way to start with Areg SDK. For manual integration methods, see [CMake Integration Guide](./02b-cmake-integrate.md).
+> This is the fastest way to start with Areg SDK. To add Areg to a project you already have, see the [CMake Integration Guide](./02b-cmake-integrate.md).
 
 ---
 
 ## Table of Contents
 
 1. [Quick Start](#quick-start)
-2. [Tool Overview](#tool-overview)
-3. [Interactive Setup](#interactive-setup)
+2. [The Three Setup Tools](#the-three-setup-tools)
+3. [Options](#options)
 4. [Project Modes](#project-modes)
 5. [Generated Project Structure](#generated-project-structure)
 6. [Building and Running](#building-and-running)
-7. [Customizing Your Project](#customizing-your-project)
-8. [Troubleshooting](#troubleshooting)
+7. [Building with an AI Coding Agent](#building-with-an-ai-coding-agent)
+8. [Customizing Your Project](#customizing-your-project)
+9. [Troubleshooting](#troubleshooting)
 
 ---
 
 ## Quick Start
 
-### 30-Second Project Creation
+Run the command from the directory that contains your `areg-sdk` clone.
 
-**Linux/macOS:**
+**Linux / macOS:**
 ```bash
-cd areg-sdk
-./areg-sdk/tools/setup-project.sh
-# Answer 3 prompts (or press Enter for defaults)
+sh areg-sdk/tools/setup-project.sh --name areg_hello --mode local
 cd areg_hello
-cmake -B ./build
-cmake --build ./build
-./build/bin/areg_hello
+cmake -B build
+cmake --build build -j
+# run areg_hello from build/bin/
 ```
 
 **Windows:**
 ```powershell
-.\areg-sdk\tools\setup-project.bat
-# Answer 3 prompts (or press Enter for defaults)
+areg-sdk\tools\setup-project.bat --name areg_hello --mode local
 cd areg_hello
-cmake -B .\build
-cmake --build .\build
-.\build\bin\areg_hello.exe
+cmake -B build
+cmake --build build -j
+# run areg_hello from build\bin\
 ```
 
-**Expected output:**
-```
-Specify the name of your new project [default: areg_hello]: 
-Specify the root directory of your new project [default: ./areg_hello]: 
-Choose mode - (1) 'multiprocessing' or (2) 'multithreading' [default: 1]: 2
-
-Areg 2 project created at: ./areg_hello
-Build instructions:
-  cd ./areg_hello
-  cmake -B ./build
-  cmake --build ./build
+**With Python 3, on any platform:**
+```bash
+python3 areg-sdk/tools/agent/setup_project.py --name areg_hello --mode local
 ```
 
-**Running the application:**
+Run without options on a terminal and the tool asks for the project name, the mode and
+the directory, with a default for each.
+
+**Running the application prints:**
 ```
-'Hello Service!'
-Received response, end application
+provider: hello, ServiceConsumer
+consumer: greeted
 ```
 
-**Setup time:** ~30 seconds
+Executable names carry a platform suffix: `.elf` on Linux, `.mac` on macOS, `.exe` on Windows.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
-## Tool Overview
+## The Three Setup Tools
 
-### What It Does
+All three create the **same project**: the same sources, the same CMake files, the same
+modes. Each copies a working recipe from `docs/agent/recipes/` and renames it after your
+project, so a new project starts from code that the SDK's own checks build and run.
 
-The project setup tool creates a complete, ready-to-build Areg SDK project with:
+| Tool | Needs | Also writes |
+|------|-------|-------------|
+| `tools/setup-project.sh` | a POSIX shell (Linux, macOS, WSL, Git Bash) | -- |
+| `tools/setup-project.bat` | Windows; runs `setup-project.ps1` beside it | -- |
+| `tools/setup-project.ps1` | Windows PowerShell 5.1 or PowerShell 7 | -- |
+| `tools/agent/setup_project.py` | Python 3 | the files an AI coding agent works from: `AGENTS.md`, `design.json`, `scenarios.json` and the startup file of each common agent |
 
-- ✅ Configured CMakeLists.txt (automatically fetches Areg SDK)
-- ✅ Example service interface (HelloService.siml)
-- ✅ Provider implementation (service implementation)
-- ✅ Consumer implementation (service client)
-- ✅ Complete source files with working ORPC example
-- ✅ Build scripts
-
-### What It Generates
-
-**All projects include:**
-- Top-level `CMakeLists.txt` with Areg SDK integration
-- `src/services/HelloService.siml` - Service Interface document
-- `src/CMakeLists.txt` - Source build configuration
-- Source files - Provider and/or consumer implementation
-
-**Mode-specific files:**
-- **Multithreading:** `src/main.cpp` (single executable)
-- **Multiprocessing:** `src/provider.cpp` + `src/consumer.cpp` (two executables)
-
-### When to Use It
-
-**Use setup-project when:**
-- ✅ Starting a new Areg SDK project from scratch
-- ✅ Learning Areg SDK (provides working example)
-- ✅ Prototyping quickly
-- ✅ Need a reference project structure
-
-**Don't use when:**
-- ❌ Integrating into existing project (use [CMake Integration](./02b-cmake-integrate.md))
-- ❌ Need custom project structure
-- ❌ Building from Visual Studio (use [MSVC Integration](./02c-msvc-integrate.md))
+Use the shell script or the batch file when you write the code yourself. Use the Python
+tool when an AI coding agent writes it; see [Building with an AI Coding Agent](#building-with-an-ai-coding-agent).
 
 ### Prerequisites
 
-- **Git** - To clone Areg SDK repository
-- **CMake 3.20+** - Build system
-- **C++17 Compiler** - GCC, Clang, or MSVC
-- **Java 17+** - For code generation (automatic during build)
+- **CMake 3.20+**
+- **C++17 compiler**: GCC, Clang or MSVC
+- **Java 17+**: runs the code generator during the build
+- **Git**: fetches Areg SDK during the configure step, unless `--sdk-root` names a local copy
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
-## Interactive Setup
+## Options
 
-The tool asks three questions with sensible defaults.
+The three tools take the same options.
 
-### Prompt 1: Project Name
+| Option | Meaning | Default |
+|--------|---------|---------|
+| `--name NAME` | Project name, a C identifier. It becomes the directory, the CMake project and the executable names | asked on a terminal, otherwise required |
+| `--mode MODE` | `local`: one process, two threads. `ipc`: two processes. `pubsub`: attributes and broadcasts, one process | `local` |
+| `--root DIR` | Directory to create | `./NAME` |
+| `--sdk-root DIR` | Build against this local Areg SDK copy instead of fetching it from GitHub | fetch from GitHub |
+| `--tag TAG` | The Areg SDK git tag to fetch | the tag this SDK documents |
+| `--force` | Scaffold into a directory that is not empty. Files of the same name are overwritten; nothing is deleted | refuse |
 
-```
-Specify the name of your new project [default: areg_hello]:
-```
+`setup_project.py` has a few more options for the agent files: `--no-agents`,
+`--harness`, `--no-harness`, `--quiet`. Run it with `--help`.
 
-**Options:**
-- Press **Enter** - Use default name (`areg_hello`)
-- Type name - Use custom name (e.g., `my_service_app`)
-
-**Example:**
-```
-Specify the name of your new project [default: areg_hello]: my_messenger
-```
-
-**Used for:**
-- Directory name (if root not specified)
-- CMake project name
-- Executable name(s)
-
-### Prompt 2: Root Directory
-
-```
-Specify the root directory of your new project [default: ./areg_hello]:
-```
-
-**Options:**
-- Press **Enter** - Use `./[project_name]`
-- Type path - Use custom location (e.g., `~/projects/my_app`)
-
-**Example:**
-```
-Specify the root directory of your new project [default: ./my_messenger]: ~/dev/my_messenger
-```
-
-**Notes:**
-- Directory created if it doesn't exist
-- Relative or absolute paths supported
-- Parent directory must exist
-
-### Prompt 3: Project Mode
-
-```
-Choose mode - (1) 'multiprocessing' or (2) 'multithreading' [default: 1]:
-```
-
-**Options:**
-- **1** or **Enter** - Multiprocessing (two executables)
-- **2** - Multithreading (single executable)
-
-**Example:**
-```
-Choose mode - (1) 'multiprocessing' or (2) 'multithreading' [default: 1]: 2
-```
-
-**See:** [Project Modes](#project-modes) for detailed comparison.
-
-### Complete Example Session
-
+**Example: two processes, built against a local SDK copy:**
 ```bash
-$ ./areg-sdk/tools/setup-project.sh
-
-Specify the name of your new project [default: areg_hello]: chat_service
-Specify the root directory of your new project [default: ./chat_service]: 
-Choose mode - (1) 'multiprocessing' or (2) 'multithreading' [default: 1]: 2
-
-Areg 2 project created at: ./chat_service
-Build instructions:
-  cd chat_service
-  cmake -B ./build
-  cmake --build ./build
+sh areg-sdk/tools/setup-project.sh --name chat --mode ipc --root ~/dev/chat --sdk-root ./areg-sdk
 ```
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
@@ -202,72 +117,17 @@ Build instructions:
 
 ## Project Modes
 
-Choose between multithreading and multiprocessing based on your architecture.
+| Aspect                | `local`                     | `ipc`                                 | `pubsub`                            |
+| --------------------- | --------------------------- | ------------------------------------- | ----------------------------------- |
+| **Executables**       | 1                           | 2: `NAME_provider`, `NAME_consumer`   | 1                                   |
+| **Communication**     | in-process, between threads | between processes, through `mtrouter` | in-process, between threads         |
+| **Service shows**     | request and response        | request and response                  | attributes and broadcasts           |
+| **Service interface** | `Category="Private"`        | `Category="Public"`                   | `Category="Private"`                |
+| **Requires mtrouter** | No                          | Yes                                   | No                                  |
+| **Start script**      | --                          | `run.sh` and `run.bat`                | --                                  |
+| **Recipe**            | `01-local-single-process`   | `02-ipc-two-processes`                | `03-attributes-and-broadcast`       |
 
-### Mode Comparison
-
-| Aspect                | Multithreading (Mode 2) | Multiprocessing (Mode 1)           |
-| --------------------- | ----------------------- | ---------------------------------- |
-| **Executables**       | 1 (single process)      | 2 (provider + consumer)            |
-| **Communication**     | In-process (fast)       | Inter-process via `mtrouter`       |
-| **Threads**           | Multiple threads        | Each process can be multi-threaded |
-| **Deployment**        | Single binary           | Distributed binaries               |
-| **Use Cases**         | Desktop apps, embedded  | Microservices, distributed systems |
-| **Complexity**        | Lower                   | Higher                             |
-| **Requires mtrouter** | No                      | Yes (for IPC)                      |
-
----
-
-### Mode 1: Multiprocessing
-
-**Architecture:** Two separate executables communicating via Areg Message Router.
-
-```
-┌─────────────┐         ┌──────────┐         ┌─────────────┐
-│  Provider   │────────►│ mtrouter │◄────────│  Consumer   │
-│  Process    │         │ (Router) │         │  Process    │
-└─────────────┘         └──────────┘         └─────────────┘
-```
-
-**Generated executables:**
-- `[project_name]_provider` - Service implementation
-- `[project_name]_consumer` - Service client
-
-**Generated files:**
-- `src/provider.cpp` - ServiceProvider class
-- `src/consumer.cpp` - ServiceConsumer class
-- `src/CMakeLists.txt` - Builds both executables
-
-**When to use:**
-- Distributed systems
-- Microservices architecture
-- Services on different machines
-- Independent deployment of components
-- Scalable architectures
-
-**Example use cases:**
-- IoT gateway with remote sensors
-- Client-server applications
-- Multi-node systems
-- Service mesh architectures
-
-**Running:**
-```bash
-# Terminal 1 - Start provider
-./build/my_app_provider
-
-# Terminal 2 - Start consumer
-./build/my_app_consumer
-```
-
-> [!IMPORTANT]
-> For inter-process communication (IPC), `mtrouter` must be running. Start `mtrouter` before or after start provider and consumer processes. There is no starting order of processes. For network communication, configure `mtrouter` address in application configuration file (`areg.init`). By default, both processes communicate via `localhost`.
-
----
-
-### Mode 2: Multithreading
-
-**Architecture:** Single executable with provider and consumer in different threads.
+### `local`: one process
 
 ```
 ┌────────────────────────────┐
@@ -279,33 +139,29 @@ Choose between multithreading and multiprocessing based on your architecture.
 └────────────────────────────┘
 ```
 
-**Generated executable:**
-- `[project_name]` - Single application
+The provider and the consumer run in two threads of one executable. No `mtrouter`.
 
-**Generated files:**
-- `src/main.cpp` - ServiceProvider and ServiceConsumer classes
-- `src/CMakeLists.txt` - Builds single executable
+### `ipc`: two processes
 
-**When to use:**
-- Desktop applications
-- Embedded systems
-- Single-machine deployment
-- Learning Areg SDK
-- Quick prototyping
-
-**Example use cases:**
-- Desktop GUI with background services
-- Embedded device firmware
-- Test applications
-- Demo projects
-
-**Running:**
-```bash
-./build/my_app
+```
+┌─────────────┐         ┌──────────┐         ┌─────────────┐
+│  Provider   │────────►│ mtrouter │◄────────│  Consumer   │
+│  Process    │         │ (Router) │         │  Process    │
+└─────────────┘         └──────────┘         └─────────────┘
 ```
 
+The provider and the consumer are separate executables connected by `mtrouter`, on one
+machine or across a network.
+
+### `pubsub`: attributes and broadcasts
+
+One executable with a provider and a consumer thread, like `local`. The provider publishes
+attributes and broadcasts; the consumer subscribes to them and reacts to every update.
+
 > [!NOTE]
-> No `mtrouter` needed - all communication is in-process.
+> The component code of `local` and `ipc` is the same. What differs is the model in each
+> `main()`, which says which components run in which thread of which process, and the
+> interface category: an interface must be `Public` to be reached from another process.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -316,264 +172,154 @@ Choose between multithreading and multiprocessing based on your architecture.
 ### Directory Layout
 
 ```
-areg_hello/                          # Project root
-├── CMakeLists.txt                   # Top-level build configuration
-└── src/
-    ├── CMakeLists.txt               # Source build configuration
-    ├── services/
-    │   └── HelloService.siml        # Service interface definition
-    ├── main.cpp                     # (Mode 2) Single executable
-    ├── provider.cpp                 # (Mode 1) Provider executable
-    └── consumer.cpp                 # (Mode 1) Consumer executable
+areg_hello/
+├── CMakeLists.txt              # Areg SDK integration
+├── .gitignore
+├── src/
+│   ├── CMakeLists.txt          # generates the service code, declares the executables
+│   ├── services/
+│   │   └── HelloService.siml   # service interface
+│   ├── main.cpp                # local: provider, consumer and model
+│   ├── provider.cpp            # ipc: provider process
+│   └── consumer.cpp            # ipc: consumer process
+├── run.sh                      # ipc: starts mtrouter, provider, consumer
+└── run.bat                     # ipc: the same on Windows
 ```
-
----
 
 ### Top-Level CMakeLists.txt
 
-**Purpose:** Project configuration and Areg SDK integration
-
-**Key features:**
-1. **Package detection** - Tries to find installed Areg SDK
-2. **Automatic fetch** - Downloads from GitHub if not found
-3. **Configuration** - Disables examples/tests for faster builds
-4. **Integration** - Includes Areg CMake utilities
-
-**Generated content:**
+It uses an installed Areg SDK package when CMake finds one. Otherwise it fetches the SDK
+with `FetchContent`, or uses the local copy given with `--sdk-root`. The build output goes
+to `build/bin/`.
 
 ```cmake
-cmake_minimum_required(VERSION 3.20)
-
-set(PROJECT_NAME    "areg_hello")
-set(PROJECT_VERSION "1.0.0")
-project(${PROJECT_NAME} VERSION ${PROJECT_VERSION} LANGUAGES C CXX)
-
-# Try to find Areg SDK as installed package
 find_package(areg CONFIG)
 
+set(AREG_BUILD_DIR "${CMAKE_BINARY_DIR}")
+option(AREG_OUTPUT_LAYOUT "Areg build structure" OFF)
+
 if (NOT areg_FOUND)
-    # Areg SDK not found, fetch from GitHub
-    
-    # Configuration for faster builds
-    set(AREG_BUILD_DIR "${CMAKE_BINARY_DIR}")
-    set(AREG_DEPS_DIR   "${CMAKE_BINARY_DIR}/packages")
-    set(AREG_LIB_TYPE    shared)
-    
-    # Disable examples and tests
-    option(AREG_TESTS    "Build areg-sdk tests"    OFF)
-    option(AREG_EXAMPLES "Build areg-sdk examples" OFF)
+    set(AREG_DEPS_DIR  "${CMAKE_BINARY_DIR}/packages")
+    set(AREG_LIB_TYPE  shared)
+    option(AREG_TESTS         "Build areg-sdk tests"    OFF)
+    option(AREG_EXAMPLES      "Build areg-sdk examples" OFF)
     option(AREG_SYSTEM_GTEST  "Build GTest"             OFF)
-    option(AREG_OUTPUT_LAYOUT "Areg build structure"    OFF)
-    
-    # Fetch Areg SDK from GitHub
+
     include(FetchContent)
     set(FETCHCONTENT_BASE_DIR "${AREG_DEPS_DIR}")
-    
-    FetchContent_Declare(
-        areg
+    FetchContent_Declare(areg
         GIT_REPOSITORY https://github.com/aregtech/areg-sdk.git
-        GIT_TAG "master"
-    )
+        GIT_TAG "master")
     FetchContent_MakeAvailable(areg)
-    
-    set(AREG_SDK_ROOT        "${areg_SOURCE_DIR}")
+
+    set(AREG_SDK_ROOT         "${areg_SOURCE_DIR}")
     set(AREG_CMAKE_CONFIG_DIR "${AREG_SDK_ROOT}/conf/cmake")
-    set(AREG_CMAKE          "${AREG_SDK_ROOT}/areg.cmake")
-else()
-    # Areg SDK package found (via vcpkg or system install)
-    message(STATUS ">>> Found Areg package at '${areg_DIR}'")
+    set(AREG_CMAKE            "${AREG_SDK_ROOT}/areg.cmake")
 endif()
 
-# Include Areg CMake utilities
 include(${AREG_CMAKE})
 
-# Build sources
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 add_subdirectory(src)
 ```
 
-**Smart integration:**
-- Works with vcpkg-installed Areg SDK
-- Falls back to fetching from GitHub
-- Optimized for quick builds
-
----
+With `--sdk-root`, the `FetchContent_Declare` line becomes
+`FetchContent_Declare(areg SOURCE_DIR "/path/to/areg-sdk")`.
 
 ### HelloService.siml
 
-**Purpose:** Service interface definition in Service Interface Markup Language  
-**Location:** `src/services/HelloService.siml`  
-**Generated content:**
+One request with a `client` parameter and one response with a `success` flag:
 
 ```xml
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<ServiceInterface FormatVersion="1.1.0">
-    <Overview ID="1" Name="HelloService" Version="1.0.0" Category="Public">
-        <Description>The hello service minimal RPC application with request and response</Description>
-    </Overview>
-    <MethodList>
-        <Method ID="2" Name="hello_service" MethodType="Request" Response="hello_service">
-           <Description>The request to output Hello Service!</Description>
-        </Method>
-        <Method ID="4" Name="hello_service" MethodType="Response">
-           <Description>The response indicating success request has been executed.</Description>
-        </Method>
-    </MethodList>
-</ServiceInterface>
+<Method ID="2" Name="hello_service" MethodType="Request" Response="hello_service">
+    <ParamList><Parameter ID="51" Name="client" DataType="String"/></ParamList>
+</Method>
+<Method ID="4" Name="hello_service" MethodType="Response">
+    <ParamList><Parameter ID="52" Name="success" DataType="bool"/></ParamList>
+</Method>
 ```
 
-**Key elements:**
-- **Overview** - Service metadata (name, version, category)
-- **Request Method** - Client calls this method
-- **Response Method** - Server responds via this method
-
-**Code generation:**
-During build, `codegen.jar` processes this file to generate:
-- `HelloServiceProviderBase.hpp/cpp` - service provider-side implementation base
-- `HelloServiceConsumerBase.hpp/cpp` - service consumer convenience base
-- `HelloServiceProxy.hpp/cpp` - service consumer-side proxy
-- `HelloService.hpp` - Namespace and constants
+During the build, `codegen.jar` generates `HelloServiceProviderBase`,
+`HelloServiceConsumerBase`, the proxy and the constants from this file.
 
 > [!TIP]
 > Learn more about service interfaces: [Code Generator Guide](./06b-code-generator.md)
 
----
+### Provider
 
-### Source Files (Multithreading Mode)
-
-**File:** `src/main.cpp`  
-**Key components:**  
-**1. ServiceProvider class:**
 ```cpp
-class ServiceProvider final : public Component, protected HelloServiceProviderBase
+void request_hello_service(const areg::String & client) final
 {
-    void request_hello_service() override
-    {
-        std::cout << "'Hello Service!'" << std::endl;
-        response_hello_service();  // Send response
-    }
-};
+    std::cout << "provider: hello, " << client << std::endl;
+    response_hello_service(true);
+}
 ```
 
-**2. ServiceConsumer class:**
+### Consumer
+
 ```cpp
-class ServiceConsumer final : public Component, protected HelloServiceConsumerBase
+bool service_connected(areg::ServiceConnectionState status, areg::ProxyBase & proxy) final
 {
-    bool service_connected(areg::ServiceConnectionState status, ProxyBase& proxy) override
+    bool result{ false };
+    if (HelloServiceConsumerBase::service_connected(status, proxy))
     {
+        result = true;
         if (areg::is_service_connected(status))
-            request_hello_service();  // Call service
-        return true;
+        {
+            request_hello_service(role_name());
+        }
     }
-    
-    void response_hello_service() override
-    {
-        std::cout << "Received response, end application" << std::endl;
-        Application::signal_quit();  // Exit gracefully
-    }
-};
-```
 
-**3. Model registration:**
-```cpp
-BEGIN_MODEL("ServiceModel")
-    BEGIN_REGISTER_THREAD("Thread1")
-        BEGIN_REGISTER_COMPONENT("ServiceProvider", ServiceProvider)
-            REGISTER_IMPLEMENT_SERVICE(HelloService::ServiceName, HelloService::InterfaceVersion)
-        END_REGISTER_COMPONENT("ServiceProvider")
-    END_REGISTER_THREAD("Thread1")
-    
-    BEGIN_REGISTER_THREAD("Thread2")
-        BEGIN_REGISTER_COMPONENT("ServiceConsumer", ServiceConsumer)
-            REGISTER_DEPENDENCY("ServiceProvider")
-        END_REGISTER_COMPONENT("ServiceConsumer")
-    END_REGISTER_THREAD("Thread2")
-END_MODEL("ServiceModel")
-```
+    return result;
+}
 
-**4. Application entry point:**
-```cpp
-int main()
+void response_hello_service(bool success) final
 {
-    Application::setup();
-    Application::load_model("ServiceModel");
-    Application::wait_quit(areg::WAIT_INFINITE);
-    Application::release();
-    return 0;
+    std::cout << "consumer: " << (success ? "greeted" : "failed") << std::endl;
+    areg::Application::signal_quit();
 }
 ```
 
-**Model explanation:**
-- Two threads created (`Thread1`, `Thread2`)
-- Provider implements service in Thread1
-- Consumer depends on provider in Thread2
-- Automatic service discovery and connection
-
----
-
-### Source Files (Multiprocessing Mode)
-
-**Provider:** `src/provider.cpp`  
-**Key differences:**
-- Separate executable
-- Provider-only model
-- Calls `Application::signal_quit()` after response
+### Model (`local`)
 
 ```cpp
-void request_hello_service() override
-{
-    std::cout << "'Hello Service!'" << std::endl;
-    response_hello_service();
-    Application::signal_quit();  // Exit after handling
-}
-
-BEGIN_MODEL("ProviderModel")
-    BEGIN_REGISTER_THREAD("Thread1")
+BEGIN_MODEL(_modelName)
+    BEGIN_REGISTER_THREAD("ProviderThread")
         BEGIN_REGISTER_COMPONENT("ServiceProvider", ServiceProvider)
             REGISTER_IMPLEMENT_SERVICE(HelloService::ServiceName, HelloService::InterfaceVersion)
         END_REGISTER_COMPONENT("ServiceProvider")
-    END_REGISTER_THREAD("Thread1")
-END_MODEL("ProviderModel")
-```
+    END_REGISTER_THREAD("ProviderThread")
 
-**Consumer:** `src/consumer.cpp`  
-**Key differences:**
-- Separate executable
-- Consumer-only model
-- Declares dependency on "ServiceProvider" role
-
-```cpp
-BEGIN_MODEL("ConsumerModel")
-    BEGIN_REGISTER_THREAD("Thread1")
+    BEGIN_REGISTER_THREAD("ConsumerThread")
         BEGIN_REGISTER_COMPONENT("ServiceConsumer", ServiceConsumer)
             REGISTER_DEPENDENCY("ServiceProvider")
         END_REGISTER_COMPONENT("ServiceConsumer")
-    END_REGISTER_THREAD("Thread1")
-END_MODEL("ConsumerModel")
+    END_REGISTER_THREAD("ConsumerThread")
+END_MODEL(_modelName)
 ```
 
----
+In `ipc` mode, `provider.cpp` holds only the provider thread and `consumer.cpp` only the
+consumer thread. The consumer registers under a generated unique name, so several consumer
+processes can run at the same time.
 
 ### Source CMakeLists.txt
 
-**Multithreading mode:**
+**`local`:**
 ```cmake
-addServiceInterface(gen_areg_hello services/HelloService.siml)
+addServiceInterface(gen_areg_hello src/services/HelloService.siml)
 macro_declare_executable(areg_hello gen_areg_hello main.cpp)
 ```
 
-**Multiprocessing mode:**
+**`ipc`:**
 ```cmake
 addServiceInterface(gen_areg_hello src/services/HelloService.siml)
 macro_declare_executable(areg_hello_provider gen_areg_hello provider.cpp)
 macro_declare_executable(areg_hello_consumer gen_areg_hello consumer.cpp)
 ```
 
-**Functions used:**
-- `addServiceInterface` - Generates code from `.siml` file
-- `macro_declare_executable` - Creates executable with automatic Areg linkage
-
-> [!NOTE]
-> These are Areg SDK CMake helper functions. See [CMake Functions Reference](./02e-cmake-functions.md).
+`addServiceInterface` generates the code from the `.siml` file, and
+`macro_declare_executable` creates an executable linked with Areg. See the
+[CMake Functions Reference](./02e-cmake-functions.md).
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -581,113 +327,75 @@ macro_declare_executable(areg_hello_consumer gen_areg_hello consumer.cpp)
 
 ## Building and Running
 
-### Building Multithreading Project
+### Build
 
-**Step 1: Navigate to project**
 ```bash
 cd areg_hello
+cmake -B build
+cmake --build build -j
 ```
 
-**Step 2: Configure build**
+The first configure fetches Areg SDK, unless `--sdk-root` names a local copy, and the first
+build compiles the framework: a few minutes. A rebuild takes seconds.
+
+### Run a `local` project
+
+Run `areg_hello` from `build/bin/`. It prints:
+
+```
+provider: hello, ServiceConsumer
+consumer: greeted
+```
+
+and exits.
+
+### Run an `ipc` project
+
+The project carries a start script:
+
 ```bash
-cmake -B ./build
+./run.sh        # Linux / macOS
+run.bat         # Windows
 ```
 
-**Expected output (first time):**
-```
--- The C compiler identification is GNU 11.4.0
--- The CXX compiler identification is GNU 11.4.0
--- >>> Fetched Areg SDK from GitHub to /path/to/build/packages
--- >>> Location of 'areg.cmake' /path/to/build/packages/areg-src/areg.cmake
--- Configuring done
--- Generating done
--- Build files written to: /path/to/areg_hello/build
-```
+It starts `mtrouter`, waits until it listens, starts the provider, then the consumer,
+and stops the router and the provider when the consumer ends. The provider prints
+`provider: hello, ServiceConsumer...` and the consumer prints `consumer: greeted`.
 
-**Time:** 10-60 seconds (first time), 1-2 seconds (subsequent)
+To start the pieces by hand, run `mtrouter`, then `areg_hello_provider`, then
+`areg_hello_consumer`, each from `build/bin/`. For a network deployment, set the
+`mtrouter` address in the application configuration file; see
+[Areg SDK Multitarget Router (mtrouter)](./03a-mtrouter.md).
 
-**Step 3: Build**
-```bash
-cmake --build ./build -j20
-```
-
-**Expected output:**
-```
-[  5%] Generating gen_areg_hello
-[ 10%] Building CXX object src/CMakeFiles/areg_hello.dir/main.cpp.o
-[ 95%] Linking CXX executable areg_hello
-[100%] Built target areg_hello
-```
-**Time:** 3-8 minutes (first time with Areg SDK), 2-5 seconds (rebuild)
-
-**Step 4: Run**
-```bash
-./build/bin/areg_hello
-```
-
-**Expected output:**
-```
-'Hello Service!'
-Received response, end application
-```
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
-### Building Multiprocessing Project
+## Building with an AI Coding Agent
 
-**Build (same as multithreading):**
+Python 3 is **not** needed to build or run an Areg application. It **is** needed for
+effective agentic coding, because the tools an agent works with are Python scripts:
+
+| Tool | What it does for the agent |
+|------|----------------------------|
+| `setup_project.py` | writes `AGENTS.md`, which routes the agent to the one page its task needs, and the startup file of each common agent |
+| `build_project.py` | turns one `design.json` into the service documents, the C++ skeleton, the model and the test scenarios, then builds and runs them in one command |
+| `check_contract.py` | catches the defects that compile cleanly and fail silently, before the build |
+| `run_scenarios.py` | runs the application and exits 0 only when every scenario passes |
+
+Without these tools an agent writes the communication code, the model and the tests by
+hand, from memory. That means more requests, more build-and-fix cycles, more tokens and
+more defects. In a measured comparison, an agent using these tools wrote about 2.8x less
+C++ by hand and needed 3x fewer requests than an agent using gRPC:
+[AI benchmark](../../examples/ai-benchmark/baseline-2026-09-13.md).
+
+**Start an agent project:**
 ```bash
-cd areg_hello
-cmake -B ./build
-cmake --build ./build -j20
+python3 areg-sdk/tools/agent/setup_project.py --name myapp --mode ipc --sdk-root ./areg-sdk
 ```
 
-**Executables created:**
-- `./build/bin/areg_hello_provider`
-- `./build/bin/areg_hello_consumer`
-
-**Step 1: Start provider (Terminal 1)**
-```bash
-./build/bin/areg_hello_provider
-```
-
-**Step 2: Start consumer (Terminal 2)**
-```bash
-./build/bin/areg_hello_consumer
-```
-
-**Expected output:**
-
-**Terminal 1 (provider):**
-```
-'Hello Service!'
-(Process exits)
-```
-
-**Terminal 2 (consumer):**
-```
-'Good bye Service!'
-(Process exits)
-```
-
-> [!IMPORTANT]
-> For inter-process communication, both processes must be on the same machine or `mtrouter` must be configured for network communication.
-
----
-
-### Message Router Setup
-
-For **multiprocessing** projects, `mtrouter` is required for inter-process communication (IPC).  
-**Starting mtrouter:**
-```bash
-# From Areg SDK or areg_hello build
-./build/bin/mtrouter
-```
-
-Without `mtrouter`, multiprocessing applications will run as isolated multithreading applications - internal services work within each process, but public services cannot communicate across processes. For network communication across machines, configure mtrouter address in your application's configuration file. See [Areg SDK Multitarget Router (mtrouter)](./03a-mtrouter.md) for details.
-
-> [!NOTE]
-> Multithreading projects do not need `mtrouter` - all communication is in-process.
+Then open your coding agent in `myapp/` and describe the application. The agent finds
+`AGENTS.md` on its own. The full agent guide is [`AGENTS.md`](../../AGENTS.md) in the SDK.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -697,140 +405,69 @@ Without `mtrouter`, multiprocessing applications will run as isolated multithrea
 
 ### Modifying the Service Interface
 
-**Add a new method to HelloService.siml:**
+Add a method to `src/services/HelloService.siml`:
 
 ```xml
-<Method ID="6" Name="goodbye" MethodType="Request" Response="goodbye">
-    <Description>Say goodbye</Description>
-</Method>
-<Method ID="8" Name="goodbye" MethodType="Response">
-    <Description>Goodbye response</Description>
-</Method>
+<Method ID="6" Name="goodbye" MethodType="Request" Response="goodbye"/>
+<Method ID="8" Name="goodbye" MethodType="Response"/>
 ```
 
 > [!TIP]
-> You can use [`Lusan`](https://github.com/aregtech/areg-sdk-tools) to edit `.siml` files.  
-> See details in [Creating Service Interface Documents with Lusan](./06e-lusan-service-interface.md)
+> You can use [`Lusan`](https://github.com/aregtech/areg-sdk-tools) to edit `.siml` files.
+> See [Creating Service Interface Documents with Lusan](./06e-lusan-service-interface.md).
 
-**Implement in provider:**
+Implement it in the provider:
 
 ```cpp
-void request_hello_service() override
+void request_goodbye() final
 {
-    std::cout << "\'Hello Service!\'" << std::endl;
-    response_hello_service();
-}
-
-void request_goodbye() override
-{
-    std::cout << "\'Goodbye!\'" << std::endl;
+    std::cout << "provider: goodbye" << std::endl;
     response_goodbye();
 }
 ```
 
-**Call from consumer:**
+Call it from the consumer:
 
 ```cpp
-bool service_connected(areg::ServiceConnectionState status, ProxyBase& proxy) override
+void response_hello_service(bool success) final
 {
-    if (areg::is_service_connected(status))
-        request_hello_service();
-    return true;
+    request_goodbye();
 }
 
-void response_hello_service() override
+void response_goodbye() final
 {
-    request_goodbye();  // New method
-}
-
-void response_goodbye() override
-{
-    std::cout << "Received goodbye response" << std::endl;
-    Application::signal_quit();
+    std::cout << "consumer: goodbye received" << std::endl;
+    areg::Application::signal_quit();
 }
 ```
 
-**Rebuild:**
-```bash
-cmake --build ./build
-```
-
----
+Rebuild with `cmake --build build`. The generated base classes are regenerated from the
+changed document.
 
 ### Adding More Services
 
-**Create new service interface:**
-
-```bash
-# Create ChatService.siml in src/services/
-```
-
-**Update src/CMakeLists.txt:**
-
 ```cmake
-# Generate both services
-addServiceInterface(gen_hello services/HelloService.siml)
-addServiceInterface(gen_chat services/ChatService.siml)
+addServiceInterface(gen_areg_hello src/services/HelloService.siml)
+addServiceInterface(gen_areg_hello src/services/ChatService.siml)
 
-# Link both to executable
-macro_declare_executable(areg_hello gen_hello gen_chat main.cpp chat.cpp)
+macro_declare_executable(areg_hello gen_areg_hello main.cpp chat.cpp)
 ```
 
----
-
-### Changing Project Structure
-
-**Option 1: Multiple components**
-
-Organize by component:
-```
-src/
-├── hello/
-│   ├── HelloProvider.hpp
-│   ├── HelloProvider.cpp
-│   └── HelloConsumer.cpp
-├── chat/
-│   ├── ChatProvider.hpp
-│   ├── ChatProvider.cpp
-│   └── ChatConsumer.cpp
-└── main.cpp
-```
-
-**Option 2: Reusable library**
-
-Create a static library for reusable components. One static library may contains objects of several Servce Interfaces:
-```cmake
-# Create service library
-addServiceInterface(services_lib services/HelloService.siml)
-addServiceInterface(services_lib services/ChatService.siml)
-
-# Use in executable
-macro_declare_executable(areg_hello services_lib \
-    main.cpp                \
-    hello/HelloProvider.cpp \
-    hello/HelloConsumer.cpp \
-    chat/ChatProvider.cpp   \
-    chat/ChatConsumer.cpp
-    )
-```
-
----
+One generated library can hold the code of several service interfaces.
 
 ### Configuration Options
 
-**Modify top-level CMakeLists.txt:**
+Areg is configured when `FetchContent_MakeAvailable(areg)` runs, so its options go inside
+the `if (NOT areg_FOUND)` block of the top-level `CMakeLists.txt`, before that call:
 
-**Enable logging:**
 ```cmake
-set(AREG_LOGGING ON)
+    set(AREG_LIB_TYPE  static)    # instead of shared: link Areg statically
+    set(AREG_LOGGING   OFF)       # compile without logs; the default is ON
 ```
 
-**Use Areg static library, if needed:**
-```cmake
-set(AREG_LIB_TYPE static)
-```
+An installed Areg package was built with its own options, and these lines do not change it.
 
-**Complete options:** [CMake Configuration Guide](./02d-cmake-config.md)
+All options: [CMake Configuration Guide](./02d-cmake-config.md).
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -838,183 +475,59 @@ set(AREG_LIB_TYPE static)
 
 ## Troubleshooting
 
+### `error: ... exists and is not empty`
+
+The target directory already holds files. Choose another `--root`, or pass `--force` to
+write the project files over it; nothing else in the directory is touched.
+
+### `error: not found on PATH: cmake` or `git`
+
+Install the missing tool. `git` is needed only when the SDK is fetched; `--sdk-root`
+avoids it.
+
+*Ubuntu/Debian:* `sudo apt-get install cmake git`
+*macOS:* `brew install cmake git`
+*Windows:* [cmake.org](https://cmake.org/download/) and [git-scm.com](https://git-scm.com/)
+
 ### Script Permission Denied (Linux/macOS)
 
-**Problem:** `bash: ./setup-project.sh: Permission denied`  
-**Solution:**
+**Problem:** `Permission denied` when running `./areg-sdk/tools/setup-project.sh`
+**Solution:** run it through the shell: `sh areg-sdk/tools/setup-project.sh`
 
-```bash
-chmod +x ./tools/setup-project.sh
-./areg-sdk/tools/setup-project.sh
-```
+### Scripts Are Blocked (Windows)
 
----
-
-### Git Not Found
-
-**Problem:** Script fails with "git: command not found"  
-**Solution:**  
-
-*Ubuntu/Debian:*
-```bash
-sudo apt-get install git
-```
-
-*macOS:*
-```bash
-brew install git
-```
-
-*Windows:*  
-Download from [git-scm.com](https://git-scm.com/)
-
----
-
-### CMake Version Too Old
-
-**Problem:** `CMake 3.10 or higher is required.  You are running version 2.8.12`  
-**Solution:**
-
-*Ubuntu/Debian:*
-```bash
-sudo apt-get install cmake
-# Or from snap for latest
-sudo snap install cmake --classic
-```
-
-*macOS:*
-```bash
-brew install cmake
-```
-
-*Windows:*  
-Download from [cmake.org](https://cmake.org/download/)
-
----
+**Problem:** PowerShell refuses to run `setup-project.ps1`.
+**Solution:** use `setup-project.bat`, which starts it with the execution policy bypassed
+for that one run.
 
 ### Build Fails with "Java not found"
 
-**Problem:** Code generation fails during build.  
-**Solution:**  
-Install Java 17+:
+Code generation needs Java 17+.
 
-*Ubuntu/Debian:*
-```bash
-sudo apt-get install openjdk-17-jre
-```
+*Ubuntu/Debian:* `sudo apt-get install openjdk-17-jre`
+*macOS:* `brew install openjdk@17`
+*Windows:* [Adoptium](https://adoptium.net/)
 
-*macOS:*
-```bash
-brew install openjdk@17
-```
-
-*Windows:*  
-Download from [Adoptium](https://adoptium.net/)
-
-**Verify:**
-```bash
-java -version
-```
-
----
+Verify with `java -version`.
 
 ### FetchContent Download Fails
 
-**Problem:** Cannot download Areg SDK from GitHub.  
-**Solution:**
+The configure step cannot reach GitHub. Create the project against a local clone instead:
 
-*Check network:*
 ```bash
-ping github.com
+sh areg-sdk/tools/setup-project.sh --name areg_hello --sdk-root ./areg-sdk --force
 ```
 
-*Use local Areg SDK:*  
-Edit generated `CMakeLists.txt`:
-```cmake
-# Instead of FetchContent
-set(AREG_SDK_ROOT "/path/to/local/areg-sdk")
-add_subdirectory(${AREG_SDK_ROOT} areg)
-```
+### The Consumer Waits and Never Prints (`ipc`)
 
----
-
-### Consumer Cannot Connect (Multiprocessing)
-
-**Problem:** Consumer exits immediately without connecting.  
-**Cause:** Provider not running or wrong configuration.  
-**Solution:**
-
-*1. Start provider first:*
-```bash
-./build/my_app_provider
-```
-
-*2. Then start consumer:*
-```bash
-./build/my_app_consumer
-```
-
-*3. Check both are running:*
-```bash
-ps aux | grep my_app
-```
-
-*4. Check consumer is connected - in `mtrouter` console type `-n` or `--instances`:*
-```bash
-Type '-q' or '--quit' to quit the application ...: --instances
----------------------------------------------------------------------------------------------
-   Nr. |  Instance ID  |  Bitness  |  Name
----------------------------------------------------------------------------------------------
-    1. |          256  |    64     |  areg_hello_consumer.elf
----------------------------------------------------------------------------------------------
-Type '-q' or '--quit' to quit the application ...:
-```
-
----
-
-### Wrong Executable Built (Windows)
-
-**Problem:** Looking for `areg_hello.exe` but only `areg_hello_provider.exe` exists. 
-**Cause:** Built multiprocessing project but expected multithreading. 
-**Solution:**
-
-**Check mode in script output:**
-```
-Areg 1 project created...  # 1 = multiprocessing
-Areg 2 project created...  # 2 = multithreading
-```
-
-**Re-run with correct mode:**
-```powershell
-.\areg-sdk\tools\setup-project.bat
-# Choose mode 2 for single executable
-```
-
----
+The consumer connects through `mtrouter`. Use `run.sh` or `run.bat`, or start `mtrouter`
+before the processes. In the `mtrouter` console, `--instances` lists the connected
+processes.
 
 ### Compile Error: "Cannot find HelloServiceProviderBase.hpp"
 
-**Problem:** Build fails with missing generated headers.  
-**Cause:** Code generation step failed.  
-**Solution:**
-
-**1. Check Java installation:**
-```bash
-java -version  # Should be 17+
-```
-
-**2. Clean and rebuild:**
-```bash
-rm -rf build
-cmake -B ./build
-cmake --build ./build -j20
-```
-
-**3. Check build output for codegen errors:**
-Look for:
-```
-Generating gen_areg_hello
-```
+Code generation failed. Check `java -version` (17+), delete `build/`, configure and build
+again, and look for codegen errors in the build output.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -1022,35 +535,21 @@ Generating gen_areg_hello
 
 ## Next Steps
 
-### Learn More About Integration
-
-**Manual integration methods:**
-- [CMake Integration](./02b-cmake-integrate.md) - FetchContent, vcpkg, submodule
-- [Visual Studio Integration](./02c-msvc-integrate.md) - MSVC-specific setup
-
-**Configuration:**
-- [CMake Configuration Options](./02d-cmake-config.md) - All build options
-- [CMake Functions Reference](./02e-cmake-functions.md) - Helper functions
-- [Preprocessor Definitions](./02f-preprocessor-definitions.md) - Compile-time config
-
-### Develop Your Service
+**Integration:**
+- [CMake Integration](./02b-cmake-integrate.md): FetchContent, vcpkg, submodule
+- [Visual Studio Integration](./02c-msvc-integrate.md): MSVC-specific setup
+- [CMake Configuration Options](./02d-cmake-config.md) and [CMake Functions Reference](./02e-cmake-functions.md)
 
 **Service design:**
-- [Code Generator Guide](./06b-code-generator.md) - Generate from `.siml` files
-- [Service Interface Design](./06e-lusan-service-interface.md) - Visual design with Lusan
+- [Code Generator Guide](./06b-code-generator.md)
+- [Service Interface Design with Lusan](./06e-lusan-service-interface.md)
 
-**Testing and debugging:**
-- [Live Log Viewer](./06f-lusan-live-logging.md) - Real-time log monitoring
-- [Offline Log Viewer](./06g-lusan-offline-logging.md) - Post-mortem analysis
-
-### Explore Examples
-
-**Areg SDK Examples:**
-- [Examples Directory](../../examples/README.md) - Sample applications
-- [Areg SDK Demo](https://github.com/aregtech/areg-sdk-demo) - Integration examples
+**Examples:**
+- [Examples Directory](../../examples/README.md)
+- [Agent recipes](../agent/recipes/README.md): complete projects for more shapes, including attributes and broadcasts, timers and state machines
 
 **Help:**
-For questions, open a [discussion](https://github.com/aregtech/areg-sdk/discussions) or [issue](https://github.com/aregtech/areg-sdk/issues) on GitHub.
+Open a [discussion](https://github.com/aregtech/areg-sdk/discussions) or an [issue](https://github.com/aregtech/areg-sdk/issues) on GitHub.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 

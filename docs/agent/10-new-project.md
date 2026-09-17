@@ -26,7 +26,7 @@ project's own AGENTS.md and .gitignore.
 |---|---|
 | `--mode local` | One process; provider and consumer in two threads |
 | `--mode ipc` | Two processes; needs `mtrouter` and writes a `run.sh` |
-| `--mode pubsub` | Attributes and broadcasts in one process |
+| `--mode pubsub` | As `local`; its interface adds attributes and broadcasts beside requests |
 | `--sdk-root <path>` | Build against a local SDK copy instead of fetching from GitHub |
 | `--tag <tag>` | The SDK tag to fetch |
 | `--force` | Overwrite an existing directory |

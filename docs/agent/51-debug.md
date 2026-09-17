@@ -160,7 +160,7 @@ nobody. Nothing reports it: the documents generate, the code compiles, the run s
 | Cause | Fix |
 |---|---|
 | The value returned to the one it already held | Wait on the response that caused it, not on the update |
-| The phase waited for is no value of the attribute -- a `.fsml` state the enum does not name | Give the enum a value per phase a peer must tell apart. `gen_docs.py` notes the missing ones |
+| The phase waited for is no value of the attribute -- a `.fsml` state the enum does not name | Give the enum a value per phase a peer must tell apart. Once it names any of them `gen_docs.py` notes the rest |
 | The update crossed the response that started the wait | Test the value in the response handler before waiting |
 
 `Always` sends one on every `set_`, and is what an attribute waited on as an *event*

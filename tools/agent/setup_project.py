@@ -513,7 +513,7 @@ def write_run_script(root, name, binaries):
               'STARTED="$STARTED $!"',
               'sleep 1',
               '"$BIN/{}$SFX"'.format(binaries[1])]
-    with open(path, 'w', encoding='utf-8') as handle:
+    with open(path, 'w', encoding='utf-8', newline='\n') as handle:
         handle.write('\n'.join(lines) + '\n')
     os.chmod(path, os.stat(path).st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
@@ -525,7 +525,8 @@ def main():
     parser.add_argument('--root', help='directory to create; defaults to ./<name>')
     parser.add_argument('--mode', choices=sorted(MODES), default=None,
                         help='local: one process. ipc: two processes. '
-                             'pubsub: attributes and broadcasts.')
+                             'pubsub: local, whose interface also declares '
+                             'attributes and broadcasts.')
     parser.add_argument('--sdk-root', default=None,
                         help='use this local SDK copy instead of fetching from GitHub')
     parser.add_argument('--tag', default=DEFAULT_TAG,
