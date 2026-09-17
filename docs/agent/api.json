@@ -13,7 +13,7 @@
     "note": "2.0.0 is not tagged yet, so master is the only ref whose API matches these pages. The 2.0.0 rename removed the NE, TE and IE prefixes and moved everything public into namespace areg, so a project pinned to 1.5.0 or earlier compiles against none of the names written here."
   },
   "legacy_names": {
-    "description": "areg was renamed throughout. Names an agent may recall from training data no longer exist. Never write an areg name from memory; grep for it.",
+    "description": "areg was renamed throughout. Names an agent may recall from training data no longer exist. Never write an areg name from memory; python3 tools/agent/api_help.py <name> answers it, and --search <word> finds one. Never grep a header.",
     "removed_prefixes": [
       "NE",
       "TE",

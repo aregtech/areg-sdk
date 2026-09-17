@@ -2491,6 +2491,55 @@ def check_posix_only(report):
               .format(found, bad))
 
 
+# A framework name is answered by api_help.py, which reads the public headers and
+# prints the declaration and the header carrying it. A page that routes the lookup to
+# grep or to a header instead sends the agent into a 155 KB tree, and a curated page
+# read as exhaustive is how a name that does exist is reported as absent. The two
+# routes may be named only to forbid them.
+NAME_ROUTES = [
+    (re.compile(r'grep\s+(?:for|the|a)\b', re.I), 'grep'),
+    (re.compile(r'\b(?:read|open|consult)\s+the\s+headers?\b', re.I), 'the header'),
+    (re.compile(r'\|\s*The headers?\.'), 'a routing row whose target is the header'),
+]
+DENIAL = re.compile(r'\bnever\b|\bnot\b|\brather than\b|\binstead of\b', re.I)
+
+
+def clause_around(line, start, end):
+    """The clause a match sits in, so a denial elsewhere on the line does not count.
+
+    "Never write an areg name from memory; grep for it" carries a denial and a route,
+    and the denial governs only the clause it is in.
+    """
+    left = max([line.rfind(mark, 0, start) + len(mark)
+                for mark in ('. ', '; ', ' -- ', '|', ':')] + [0])
+    right = min([pos for pos in (line.find(mark, end)
+                                 for mark in ('. ', '; ', ' -- ', '|'))
+                 if pos != -1] + [len(line)])
+    return line[left:right]
+
+
+def check_name_lookup(report):
+    """No page routes a framework-name lookup to grep or to a header."""
+    pages = ['AGENTS.md', 'docs/agent/api.json'] + ['docs/agent/' + p
+                                                    for p in agent_pages()]
+    offenders = 0
+    for page in pages:
+        for number, line in enumerate(read(*page.split('/')).splitlines(), 1):
+            for pattern, what in NAME_ROUTES:
+                for found in pattern.finditer(line):
+                    clause = clause_around(line, found.start(), found.end())
+                    if DENIAL.search(clause):
+                        continue
+                    offenders += 1
+                    report.fail('name lookup',
+                                '{}:{} routes a name lookup to {}. api_help.py is the '
+                                'route; name grep or a header only to forbid it'
+                                .format(page, number, what))
+    if not offenders:
+        report.ok('name lookup', '{} pages route every name lookup to api_help.py'
+                  .format(len(pages)))
+
+
 def check_portability(report):
     attrs = read('.gitattributes')
     normalised = all(re.search(re.escape(pat) + r'\s+text\s+eol=lf', attrs)
@@ -2553,6 +2602,7 @@ def run():
     check_tools(report)
     check_observability(report)
     check_portability(report)
+    check_name_lookup(report)
     check_service_launch(report)
     check_project_routing(report)
     check_member_inventory(report)
@@ -3256,8 +3306,29 @@ def check_app_shape(report):
                 report.fail('app-shape',
                             'build_project.py refuses a project of one service')
                 return
+        # build_project.py refuses at the application step, which is after the
+        # documents are written. gen_docs.py says it at the documents step, one step
+        # earlier and before anything is on disk -- and it must say it with --chained,
+        # which is the only way build_project.py ever calls it. The refusal above
+        # carries the same words, so a check that reads the whole chain cannot tell
+        # the two apart and passes while the earlier one is dead.
+        docs = os.path.join(holder, 'note')
+        os.makedirs(docs, exist_ok=True)
+        spec = os.path.join(holder, 'two.json')
+        with open(spec, 'w', encoding='utf-8', newline='\n') as handle:
+            json.dump(two, handle)
+        done = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                               '--spec', spec, '--outdir', docs, '--force', '--chained'],
+                              capture_output=True, text=True)
+        if 'writes one application' not in done.stdout + done.stderr:
+            report.fail('app-shape',
+                        'gen_docs.py --chained does not name the one-service ceiling, '
+                        'so the golden path first hears it from build_project.py, a '
+                        'step later and after the documents are written')
+            return
         report.ok('app-shape', 'the application path builds one service and names what '
-                               'it cannot write')
+                               'it cannot write, at the documents step and again at the '
+                               'application step')
     finally:
         shutil.rmtree(holder, ignore_errors=True)
 
@@ -4167,13 +4238,15 @@ def check_example_size(report):
 
 
 def check_worksheet_order_note(report):
-    """The worksheet says a response and an update can arrive in either order.
+    """The worksheet says a response and an update are two independent deliveries.
 
     The fact is on 20-service-interface.md and 31-consumer.md, and AGENTS.md tells a
     run filling a marker not to open either. Run 20260913a opened neither, guessed an
     order, stalled for the whole watchdog and paid a run-and-fix cycle to find the
     worked example that page already carries. The worksheet is the one file every run
-    reads, so the fact is written beside the first response body.
+    reads, so the fact is written in its header: it is true of every body that waits,
+    and writing it under the first response body put it under whichever body came
+    first rather than the one the reader is filling.
     """
     sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
     try:
@@ -4188,24 +4261,25 @@ def check_worksheet_order_note(report):
     def ordered(notes):
         return [name for name, lines in notes.items() if lines == gen_skeleton.ORDER_NOTE]
 
-    both = ordered(gen_skeleton.section_notes(sections(['first_request', 'response_go',
-                                                        'response_stop', 'update_level'])))
-    if 'response_go' not in both:
+    full = sections(['first_request', 'response_go', 'response_stop', 'update_level'])
+    if gen_skeleton.header_notes(full) != gen_skeleton.ORDER_NOTE:
         report.fail('order-note',
-                    'no note is attached to the first response body, so nothing on the '
-                    'path a run reads says a response and an update can arrive in '
-                    'either order')
+                    'the worksheet header does not carry the note, so nothing a run '
+                    'reads before it starts filling says a response and an update are '
+                    'two deliveries that do not wait for each other')
         return
-    if len(both) > 1:
+    if ordered(gen_skeleton.section_notes(full)):
         report.fail('order-note',
-                    'the note repeats on every section: it is one fact and it is paid '
-                    'for once per section it is written on')
+                    'the note is on a section as well as the header: it is one fact '
+                    'and it is paid for once per place it is written')
         return
-    if ordered(gen_skeleton.section_notes(sections(['response_go']))):
-        report.fail('order-note',
-                    'an interface with no attribute carries the note anyway, and there '
-                    'is no update for a response to race with')
-        return
+    for only in (['response_go'], ['update_level']):
+        if gen_skeleton.header_notes(sections(only)):
+            report.fail('order-note',
+                        'a worksheet with only {} bodies carries the note anyway, and '
+                        'there is nothing for the other delivery to race with'
+                        .format(only[0].split('_')[0]))
+            return
 
     tools = os.path.join(ROOT, 'tools', 'agent')
     holder = tempfile.mkdtemp()
@@ -4248,6 +4322,15 @@ def check_worksheet_order_note(report):
                         'the order a response and an update arrive in, so the fact is '
                         'only on the pages a run filling markers is told not to open')
             return
+        first_section = next((n for n, line in enumerate(sheet.splitlines())
+                              if line.startswith('== ')), None)
+        note_at = next(n for n, line in enumerate(sheet.splitlines())
+                       if gen_skeleton.ORDER_NOTE[0] in line)
+        if first_section is None or note_at > first_section:
+            report.fail('order-note',
+                        'the note sits under a section rather than in the header, so a '
+                        'run filling a different section never reads it')
+            return
         # The worksheet names mPace, mDeadline and cStallTicks as taken and says
         # nothing about when they fire. One measured run opened four generated files
         # for that, at 10,141 tokens; the generated function that decides it is a
@@ -4267,9 +4350,9 @@ def check_worksheet_order_note(report):
         os.chdir(here)
         shutil.rmtree(holder, ignore_errors=True)
 
-    report.ok('order-note', 'the worksheet says a response and an update can arrive in '
-                            'either order, once, beside the first response body, and '
-                            'quotes the {}() that fires the timers it lists'
+    report.ok('order-note', 'the worksheet says a response and an update are two '
+                            'deliveries, once, in its header and before any section, '
+                            'and quotes the {}() that fires the timers it lists'
               .format(gen_skeleton.DRIVEN_BY))
 
 

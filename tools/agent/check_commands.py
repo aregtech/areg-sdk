@@ -209,6 +209,47 @@ def blocks(path):
     return sorted(found)
 
 
+# A fence with no language is the command on every platform, so it is read by an
+# agent on Windows too. A trailing backslash there is a POSIX line continuation that
+# neither cmd nor PowerShell joins, and a trailing caret is the mirror of it: each
+# hands one platform half a command. A tagged fence is exempt -- bash says POSIX, and
+# a bat fence ends a directory path in a backslash on purpose. An untagged fence that
+# holds no command is exempt too: an ASCII diagram points at a line with a caret.
+TAGGED_FENCE_RE = re.compile(r'^```(\S+)\s*$')
+POSIX_ONLY = '\\'
+WINDOWS_ONLY = '^'
+
+
+def continuations(path):
+    """Line continuations inside an untagged fence, as (line number, which, text)."""
+    found = []
+    with open(os.path.join(ROOT, path), encoding='utf-8', errors='replace') as handle:
+        lines = handle.read().splitlines()
+    tag = None
+    inside = False
+    for number, line in enumerate(lines, 1):
+        if FENCE_END_RE.match(line) and inside:
+            inside, tag = False, None
+            continue
+        marked = TAGGED_FENCE_RE.match(line)
+        if not inside and (marked or FENCE_END_RE.match(line)):
+            inside = True
+            # shell_block() is this file's own answer to "does this untagged fence
+            # hold commands", and blocks() reads the same fences by the same test.
+            tag = (marked.group(1) if marked
+                   else (None if shell_block(lines, number) else 'prose'))
+            continue
+        if not inside or tag is not None:
+            continue
+        text = line.rstrip()
+        if text.endswith(POSIX_ONLY):
+            found.append((number, 'a backslash, which cmd and PowerShell do not join',
+                          text.strip()))
+        elif text.endswith(WINDOWS_ONLY):
+            found.append((number, 'a caret, which no POSIX shell joins', text.strip()))
+    return found
+
+
 def shell_block(lines, number):
     """True when the unlabelled fence opening at this line number holds shell commands."""
     for line in lines[number:]:
@@ -648,6 +689,17 @@ def main():
                 print('{:<5} {:<28} {}'.format(label, where, command))
 
     drop_sandbox()
+
+    # Static, and it needs no sandbox: a command that cannot be typed on one of the
+    # platforms the page claims is broken whether or not this checker can run it.
+    split = 0
+    for document in documents:
+        for number, which, text in continuations(document):
+            split += 1
+            problems.append('SPLIT {}:{}\n      {}\n      an untagged fence continues '
+                            'a line with {}. Write it on one line, or tag the fence'
+                            .format(document, number, text, which))
+
     for problem in problems:
         print(problem.rstrip())
     total = sum(counts.values())
@@ -663,7 +715,9 @@ def main():
                   counts['RUN'], counts['RED'], counts['HOLE'], counts['SKIP'],
                   ', {} without a verdict'.format(counts['SLOW'])
                   if counts['SLOW'] else ''))
-    return 1 if (counts['RED'] or counts['HOLE']) else 0
+    print('{} untagged fenced line(s) continued in a way one platform cannot join.'
+          .format(split))
+    return 1 if (counts['RED'] or counts['HOLE'] or split) else 0
 
 
 if __name__ == '__main__':

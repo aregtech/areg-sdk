@@ -12,7 +12,9 @@
 # whether the result works: it configures, builds, runs and checks the output.
 #
 # --self-check grades the reference recipes instead, which is how the harness
-# itself is verified.
+# itself is verified. It is about twenty minutes: each distinct recipe is
+# configured and built from the SDK source, framework included. Give it a command
+# timeout to match, and read the verdicts as they are printed.
 #
 # Report a run with --tokens and --hops to record what it cost; the numbers are
 # printed back with the verdict and are not otherwise used.
@@ -30,6 +32,7 @@ import sys
 import tempfile
 import time
 
+import build_project  # noqa: E402
 import run_scenarios  # noqa: E402
 import service_ports  # noqa: E402
 
@@ -71,11 +74,13 @@ def build_config(build_dir, config):
     return []
 
 
-def build(project, sdk_root):
+def build(project, sdk_root, jobs=build_project.DEFAULT_JOBS):
     """Configures and builds the project the agent produced.
 
     FETCHCONTENT_SOURCE_DIR_AREG points the project's own FetchContent block at a
     local SDK, so a graded build needs no network and no edit to the project.
+    The job count is build_project.py's, so every tool in this directory builds the
+    same way on every machine.
     """
     configure = ['cmake', '-B', 'build', '-DCMAKE_BUILD_TYPE=Release']
     if sdk_root:
@@ -86,7 +91,7 @@ def build(project, sdk_root):
     if result.returncode != 0:
         return False, 'configure failed: ' + (result.stderr or result.stdout)[-400:]
 
-    command = ['cmake', '--build', 'build', '-j', str(os.cpu_count() or 2)]
+    command = ['cmake', '--build', 'build', '-j', str(jobs)]
     command += build_config(os.path.join(project, 'build'), 'Release')
     result = run(command, cwd=project)
     if result is None:
@@ -283,7 +288,19 @@ def run_processes(task, project, found):
             service_ports.stop([collector], [service_ports.COLLECTOR_PORT])
 
 
-def grade(task, source, sdk_root):
+def criteria_key(task):
+    """What makes two tasks the same graded build.
+
+    Several tasks answer to one recipe -- every repair task shares the recipe it is
+    the repair of -- so the same (recipe, criteria) pair is graded once.
+    """
+    return (task.get('reference'), tuple(task.get('expect') or []),
+            task.get('binaries', 1), json.dumps(task.get('run'), sort_keys=True),
+            tuple(task.get('args') or []), tuple(task.get('declares') or []),
+            tuple(task.get('produces') or []))
+
+
+def grade(task, source, sdk_root, jobs=build_project.DEFAULT_JOBS):
     """Grades a copy of the project, so nothing is built inside the original."""
     if not os.path.isdir(source):
         return False, 'no such directory: ' + source
@@ -291,10 +308,10 @@ def grade(task, source, sdk_root):
         project = os.path.join(work, os.path.basename(os.path.abspath(source)))
         shutil.copytree(source, project,
                         ignore=shutil.ignore_patterns('build', '.git'))
-        return _grade(task, project, sdk_root)
+        return _grade(task, project, sdk_root, jobs)
 
 
-def _grade(task, project, sdk_root):
+def _grade(task, project, sdk_root, jobs=build_project.DEFAULT_JOBS):
     if not os.path.isfile(os.path.join(project, 'CMakeLists.txt')):
         return False, 'no CMakeLists.txt in ' + project
 
@@ -304,7 +321,7 @@ def _grade(task, project, sdk_root):
     if not documents:
         return False, 'the project declares no service document'
 
-    ok, note = build(project, sdk_root)
+    ok, note = build(project, sdk_root, jobs)
     if not ok:
         return False, note
 
@@ -347,6 +364,9 @@ def main():
                         help='local SDK to build against (default: this repository)')
     parser.add_argument('--self-check', action='store_true',
                         help='grade the reference recipes instead, to verify the harness')
+    parser.add_argument('--jobs', type=int, default=build_project.DEFAULT_JOBS,
+                        help='parallel compile jobs (default: {})'
+                             .format(build_project.DEFAULT_JOBS))
     parser.add_argument('--tokens', type=int, help='tokens the agent spent, for the report')
     parser.add_argument('--hops', type=int, help='documents the agent opened, for the report')
     args = parser.parse_args()
@@ -359,27 +379,31 @@ def main():
         return 0
 
     if args.self_check:
-        # Several tasks answer to one recipe -- every repair task shares the recipe
-        # it is the repair of. Grading is a full configure and build, so the same
-        # (recipe, criteria) pair is graded once and the verdict reused.
         failures = 0
         seen = {}
+        keys = [criteria_key(task) for task in tasks if task.get('reference')]
+        # Every verdict is flushed as it is reached. A build takes about a minute and
+        # the bank is minutes of them, so a run that is interrupted -- a command
+        # timeout, a signal -- must still report what it graded; a buffered stdout
+        # loses all of it and the run is indistinguishable from a broken harness.
+        print('grading {} task(s) against {} recipe(s): {} distinct build(s) at -j {}, '
+              'about a minute each.'.format(len(tasks), len(set(k[0] for k in keys)),
+                                            len(set(keys)), args.jobs), flush=True)
         for task in tasks:
             reference = task.get('reference')
             if not reference:
-                print('SKIP  {:<22} no reference recipe'.format(task['id']))
+                print('SKIP  {:<22} no reference recipe'.format(task['id']), flush=True)
                 continue
-            key = (reference, tuple(task.get('expect') or []),
-                   task.get('binaries', 1), json.dumps(task.get('run'), sort_keys=True),
-                   tuple(task.get('args') or []), tuple(task.get('declares') or []),
-                   tuple(task.get('produces') or []))
+            key = criteria_key(task)
             if key in seen:
                 ok, note = seen[key]
                 note += ' (same criteria as {})'.format(key[0])
             else:
-                ok, note = grade(task, os.path.join(RECIPES, reference), args.sdk_root)
+                ok, note = grade(task, os.path.join(RECIPES, reference), args.sdk_root,
+                                 args.jobs)
                 seen[key] = (ok, note)
-            print('{}  {:<22} {}'.format('PASS' if ok else 'FAIL', task['id'], note))
+            print('{}  {:<22} {}'.format('PASS' if ok else 'FAIL', task['id'], note),
+                  flush=True)
             failures += 0 if ok else 1
         return 1 if failures else 0
 
@@ -391,7 +415,7 @@ def main():
         print('no such task: {}. Try --list.'.format(args.task), file=sys.stderr)
         return 1
 
-    ok, note = grade(task, args.dir, args.sdk_root)
+    ok, note = grade(task, args.dir, args.sdk_root, args.jobs)
     print('{}  {}  {}'.format('PASS' if ok else 'FAIL', task['id'], note))
     if args.tokens or args.hops:
         print('      cost: {} tokens, {} documents opened'.format(

@@ -21,6 +21,7 @@ of what the tool printed.
 | `no member named 'request_`, `no member named 'broadcast_`, `no member named 'set_` | the member name is invented, not derived | `20-service-interface.md` section 3 |
 | `marked 'override' but does not override`, or `marked 'final'` on a member | the signature or the name does not match the generated one | `20-service-interface.md` section 3 |
 | `no member named 'begin'`, or `'begin' was not declared`, on an areg container | areg containers have no iterators | `40-base-api.md` |
+| `no member named` a camelCase name (`getValue`, `toString`) on an areg type | 2.0.0 made every public name snake_case | `api_help.py <Type> --class` |
 | `undefined reference to \`areg::` | headers and library are different builds | "The build links against the wrong framework" below |
 | `undefined reference` to **your own** class or function, from a file that plainly defines it | the `.cpp` defining it is named on no `macro_declare_executable` line, so nothing compiled it | `10-new-project.md` section 3, and `check_contract.py` rule `P-15` |
 | `No such file or directory` for a `...Base.hpp` | the generator did not run, or the path is wrong | "The generated code does not match the document" below |
@@ -62,12 +63,9 @@ Take these in order. Each one costs less than the one after it.
 6. **Compare with something that works.** Copy the nearest `recipes/` recipe, confirm
    it runs, then move your document into it one piece at a time.
 
-## A working example is the cheapest reference
-
-Where the clone carries `../../examples/`, running one with the shape you are writing
-proves the environment is sound before you blame your own code:
-`run-all-examples.py --tier smoke` needs no router, `--tier ipc` needs `mtrouter`.
-Which example shows what: `41-examples.md`.
+**A working example is the cheapest reference.** Where the clone carries
+`../../examples/`, run one with your shape before blaming your own code;
+`41-examples.md` has the table and commands.
 
 Every command here has a Windows form: `python` for `python3`, `.exe` for `.elf`.
 

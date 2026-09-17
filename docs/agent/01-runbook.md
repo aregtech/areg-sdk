@@ -34,8 +34,7 @@ project, **stop and say so** rather than writing into it.
 ## 2. Scaffold, before you open a documentation page
 
 ```
-python3 <areg-sdk>/tools/agent/setup_project.py \
-        --name <project> --root . --mode <mode> --sdk-root <areg-sdk>
+python3 <areg-sdk>/tools/agent/setup_project.py --name <project> --root . --mode <mode> --sdk-root <areg-sdk>
 ```
 
 That writes a project that already builds and runs:

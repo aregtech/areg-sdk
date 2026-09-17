@@ -50,7 +50,7 @@ Find your task, open that one file, and do not search the repository.
 | Log from code; collect several processes' logs | `docs/agent/34-logging.md` |
 | Understand the seven core concepts | `CODEBASE.md` section 1 |
 | Data types: C++ spelling, struct, enum, `.dtml` | `docs/agent/21-data-types.md` |
-| Add a state machine | copy `docs/agent/recipes/06-state-machine/`, then `docs/agent/22-state-machine.md` |
+| Add a state machine | `docs/agent/22-state-machine.md` -- a `"machines"` block of `design.json`, never a recipe copied over a project you already have |
 | **Write any C++ that uses a string or a container** | `docs/agent/40-base-api.md` |
 | The signature of one framework name | `tools/agent/api_help.py <name>` -- not a page, not a header |
 | What a component knows about itself; the application, threads, timers, time, files | `docs/agent/42-runtime-api.md` |
@@ -61,7 +61,7 @@ Find your task, open that one file, and do not search the repository.
 | Read or query a `.sqlog` log database | `docs/agent/35-sqlog.md` |
 | Set the router address, ports, anything in `areg.init` | `docs/agent/36-config.md` |
 | Find the example showing a given facility | `docs/agent/41-examples.md` |
-| See a complete working application | `examples/03_helloservice/` |
+| See a complete working application | `docs/agent/recipes/02-ipc-two-processes/`, which is always present |
 
 `docs/wiki/` is written for people and is large: open a page there only when a row
 above names it. `examples/` is optional and may be absent: for a path into it, use
@@ -92,9 +92,10 @@ of at least 15 minutes**. Without Python, copy
 `CMakeLists.txt` files; `recipes/README.md` says which recipe shows what.
 
 **The generator validates before it generates.** A refused document writes nothing and
-exits 1, so the defect is in the document, never in the build. Every finding names its
-rule as `error[<number>/<RULE_NAME>]`, prefixed `file:line:col:` where the generator has
-the position and followed by a `fix:` line where it has the rule's fix. Read that, then
+exits 1, so the defect is in the document, never in the build. Every finding against a
+rule names it as `error[<number>/<RULE_NAME>]`, prefixed `file:line:col:` where the
+generator has the position and followed by a `fix:` line where it has the rule's fix.
+Read that, then
 `tools/explain_rule.py <number> --at <Element>/@<Attribute>`, which always prints both:
 the rule, its fix, and the values that attribute accepts. A spelling is `tools/schema_help.py <name>`. Never read
 `tools/schema/*.xsd`.

@@ -220,4 +220,4 @@ const areg::String _consumer(areg::generate_name("ServiceConsumer"));
 | `areg::String` and the containers | `40-base-api.md` |
 | Timer ownership and threading rules | `33-timers.md` |
 | Worker threads, watchdogs, a model built at run time | `37-threads.md` |
-| Anything else in the framework | The header. **Never a header under a `private/` folder.** |
+| Anything else in the framework | `../../tools/agent/api_help.py <name>`, and `--search <word>` when the name is what you are missing. **Never a header, and never `grep`.** |

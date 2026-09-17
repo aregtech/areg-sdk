@@ -137,10 +137,11 @@ collector keeps every reading it accepted and prints them by index.
 | Logging macros | `34-logging.md` |
 | Timers, the application, components, threads, time, files | `42-runtime-api.md` |
 | Synchronization primitives | `42-runtime-api.md` section 8 |
-| Anything else in the framework | The header. **Never a header under a `private/` folder.** |
+| Anything else in the framework | `../../tools/agent/api_help.py <name>`, and `--search <word>` when the name is what you are missing. **Never a header, and never `grep`.** |
 
-If a member you need is missing here, read the header rather than guessing the
-spelling from another language's conventions.
+**This table is what is used most, not everything that exists.** A member missing
+from it is usually there in the framework: ask `api_help.py` before concluding it is
+absent, and never guess the spelling from another language's conventions.
 
 **A name you remember is not a name that exists.** `get_str`, `to_std_string`,
 `get_length`, `push_back`, `empty`, `insert` and the rest of the shapes borrowed

@@ -300,9 +300,14 @@ def worksheet_pristine(path):
     return True
 
 
-ORDER_NOTE = ['a response and an update travel independently, so either can',
-              'arrive first. Test the value already held before waiting for an',
-              'update that may have been delivered already, or the wait never ends']
+# File-scope, not section-scope: it is true of every body that waits for anything,
+# and a reader meets it in whichever section their own wait is written in.
+ORDER_NOTE = ['A response and an update are two deliveries, not one. A response is',
+              'bound to its request and reaches only that caller. An update is bound',
+              'to the attribute and reaches every subscriber whenever the value is',
+              'set; it answers to no request, response or broadcast. Neither waits',
+              'for the other, so test the value already held before waiting for an',
+              'update that may have arrived already, or the wait never ends.']
 
 
 STEPS_NOTE = ['a step_ section runs only while its step is current. fail("why") ends the',
@@ -327,18 +332,23 @@ PACE_NOTE = ['this body runs once per pace tick, every {} ms, and only then. A r
              'the stall watchdog ends the run after cStallTicks ticks']
 
 
-def section_notes(sections):
-    """The warnings that belong to one section, keyed by its marker name.
+def header_notes(sections):
+    """The warnings that belong to the whole worksheet, in the order they are shown.
 
     A fact stated on a page the build path does not open is a fact a run pays to
-    rediscover. This one only applies where a consumer has both answers and
-    updates to wait on, which is where it is written.
+    rediscover, so it is written here. A fact about two bodies is written once at the
+    top and not under whichever of them happens to come first: the reader meets it
+    before any section, and it cannot land on the section they are not filling.
     """
-    notes = {}
     answers = [name for name, _, _, _, _ in sections if name.startswith('response_')]
     updates = [name for name, _, _, _, _ in sections if name.startswith('update_')]
-    if answers and updates:
-        notes[answers[0]] = ORDER_NOTE
+    return ORDER_NOTE if answers and updates else []
+
+
+def section_notes(sections):
+    """The warnings that belong to one section, keyed by its marker name."""
+    notes = {}
+    updates = [name for name, _, _, _, _ in sections if name.startswith('update_')]
     if updates:
         notes[updates[0]] = UPDATE_NOTE
     checks = [name for name, _, _, _, _ in sections if name.startswith('step_')]
@@ -431,6 +441,11 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
         for line in contract_lines(spec, doc):
             lines.append(('#| ' + line).rstrip())
     lines.append('#|')
+    heading = header_notes(sections)
+    for line in heading:
+        lines.append(('#| ' + line).rstrip())
+    if heading:
+        lines.append('#|')
 
     notes = section_notes(sections)
     current = None

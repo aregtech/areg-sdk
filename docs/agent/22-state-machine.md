@@ -62,8 +62,7 @@ and refuses a machine of that name; a class you add must not be named after a do
 the machine is generated whole:
 
 ```
-python3 <areg-sdk>/tools/agent/gen_skeleton.py --doc src/services/GateService.siml \
-        --machine src/services/Gate.fsml --app --mode ipc --force
+python3 <areg-sdk>/tools/agent/gen_skeleton.py --doc src/services/GateService.siml --machine src/services/Gate.fsml --app --mode ipc --force
 ```
 
 The action handler is a base of the provider, the machine is a member, `init_fsm` and

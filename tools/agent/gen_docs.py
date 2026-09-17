@@ -2096,19 +2096,21 @@ def main():
             for name, states in coverage:
                 print('          {}  {}'.format(name.ljust(width),
                                                 ', '.join(states) or 'NO STATE'))
+    # The documents are legitimate, so this is a note and not a refusal. It is said
+    # in the words build_project.py refuses with, several steps later, and it is said
+    # on both paths: build_project.py passes --chained, so a note only the bare call
+    # prints is a note the documented path never shows.
+    for what, found, option in (('service', project.get('interfaces') or [], '--doc'),
+                                ('state machine', project.get('machines') or [],
+                                 '--machine')):
+        if len(found) > 1:
+            print('  note  this design describes {} {}s. build_project.py writes one '
+                  'application, of one service and at most one machine: name the one '
+                  'to build with {}, and write the others with gen_skeleton.py --app '
+                  'into their own directories.'.format(len(found), what, option))
     if args.chained:
         print('  {} document(s).'.format(len(documents)))
     else:
-        # The documents are legitimate, so this is a note and not a refusal. It is
-        # said in the words build_project.py refuses with, several steps later.
-        for what, found, option in (('service', project.get('interfaces') or [], '--doc'),
-                                    ('state machine', project.get('machines') or [],
-                                     '--machine')):
-            if len(found) > 1:
-                print('  note  this design describes {} {}s. build_project.py writes one '
-                      'application, of one service and at most one machine: name the one '
-                      'to build with {}, and write the others with gen_skeleton.py --app '
-                      'into their own directories.'.format(len(found), what, option))
         print('  {} document(s). Generate the code with codegen.jar, then the application '
               'with gen_skeleton.py --app.'.format(len(documents)))
     return 0

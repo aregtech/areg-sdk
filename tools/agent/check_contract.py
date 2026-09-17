@@ -361,6 +361,36 @@ def is_build_tree(path):
     return os.path.isfile(os.path.join(path, 'CMakeCache.txt'))
 
 
+def project_root_of(path):
+    """The directory of the project one file belongs to, or None.
+
+    areg-project.json is what setup_project.py writes at the root and what
+    build_project.py reads, so it names the root exactly. A project made by hand has
+    none, and then the root is the outermost CMakeLists.txt in an unbroken chain above
+    the file -- unbroken, so a project inside a larger repository stops at its own root
+    and not at the repository's.
+    """
+    here = os.path.dirname(os.path.abspath(path))
+    while True:
+        if os.path.isfile(os.path.join(here, 'areg-project.json')):
+            return here
+        parent = os.path.dirname(here)
+        if parent == here:
+            break
+        here = parent
+
+    here = os.path.dirname(os.path.abspath(path))
+    while not os.path.isfile(os.path.join(here, 'CMakeLists.txt')):
+        parent = os.path.dirname(here)
+        if parent == here:
+            return None
+        here = parent
+    parent = os.path.dirname(here)
+    while os.path.isfile(os.path.join(parent, 'CMakeLists.txt')):
+        here, parent = parent, os.path.dirname(parent)
+    return here
+
+
 def collect_sources(base):
     found = []
     for path, dirs, files in os.walk(base):
@@ -1651,7 +1681,8 @@ def main():
     parser = argparse.ArgumentParser(
         description='Check application sources against docs/agent/api.json.')
     parser.add_argument('path', nargs='?', default='.',
-                        help='the project directory to check (default: .)')
+                        help='the project directory, or one file in it, to check '
+                             '(default: .)')
     parser.add_argument('--api', default=DEFAULT_API,
                         help='path to api.json (default: the SDK copy)')
     parser.add_argument('--strict', action='store_true',
@@ -1701,6 +1732,17 @@ def main():
         return 0
 
     base = os.path.abspath(args.path)
+    # A file is checked inside its project, not on its own: roles, declared sources,
+    # the generate target and the single exit are answered by the whole tree, and a
+    # file read alone reports every one of them as broken. The project is analysed
+    # whole and only this file's findings are printed.
+    only = None
+    if os.path.isfile(base):
+        only, base = base, project_root_of(base)
+        if base is None:
+            print('%s is in no project: no CMakeLists.txt in it or above it'
+                  % only, file=sys.stderr)
+            return 2
     if not os.path.isdir(base):
         print('not a directory: %s' % base, file=sys.stderr)
         return 2
@@ -1754,13 +1796,19 @@ def main():
         print('note: %s' % note)
 
     findings.sort(key=lambda f: (f.path, f.line, f.rule))
+    if only is not None:
+        findings = [f for f in findings
+                    if os.path.abspath(f.path) == only]
     for finding in findings:
         print(finding.render(base))
 
     errors = [f for f in findings if f.severity == 'error']
     advice = [f for f in findings if f.severity == 'advice']
-    print('%d file(s) and %d document(s) checked, %d error(s), %d advisory(ies)'
-          % (len(sources), len(documents) + len(machines), len(errors), len(advice)))
+    print('%d file(s) and %d document(s) checked%s, %d error(s), %d advisory(ies)'
+          % (len(sources), len(documents) + len(machines),
+             '' if only is None else ', reporting %s only'
+             % os.path.relpath(only, base).replace(os.sep, '/'),
+             len(errors), len(advice)))
     if not documents:
         print('note: no .siml document found, so P-02 was not checked')
 
