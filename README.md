@@ -1,178 +1,197 @@
 <div align="center">
-
-<h1 align="center" style="font-size:2.5em; font-weight:bold; margin:1em 0;">
   <a href="https://www.areg.tech">
-    <img 
-      src="./docs/img/areg-sdk-1280x360px-logo.png" 
-      alt="Areg SDK - C++ Middleware and Framework for RPC and IPC"
-      title="Areg SDK - Lightweight Cross-Platform C++ Framework and Middleware for RPC, IPC, and Distributed Systems"
-      style="width:100%;height:auto" 
-    />
+    <img src="./docs/img/areg-sdk-logo.svg" alt="Areg SDK" width="560"/>
   </a>
-</h1>
+
+**Distributed C++ services: one codebase for a thread, a process, or a network.**
+
+[![CMake build](https://github.com/aregtech/areg-sdk/actions/workflows/cmake.yml/badge.svg)](https://github.com/aregtech/areg-sdk/actions/workflows/cmake.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue?style=flat-square)](./LICENSE.txt)
+[![C++17](https://img.shields.io/badge/C%2B%2B-17-blue?style=flat-square)](#getting-started)
+[![Linux | macOS | Windows](https://img.shields.io/badge/OS-Linux%20%7C%20macOS%20%7C%20Windows-blue?style=flat-square)](#getting-started)
+
 </div>
 
-**High-throughput, service-oriented C++ middleware**  
-**From embedded systems to high-performance distributed applications**
+Most C++ projects don't fail on algorithms. They fail on **threads**, **IPC** and
+**brittle integration code**.
 
-[![Latest release](https://img.shields.io/github/v/release/aregtech/areg-sdk?label=Latest%20release&style=social)](https://github.com/aregtech/areg-sdk/releases/tag/v1.5.0)
-[![GitHub commits](https://img.shields.io/github/commits-since/aregtech/areg-sdk/v1.5.0.svg?style=social)](https://github.com/aregtech/areg-sdk/compare/v1.5.0...master)
-[![Stars](https://img.shields.io/github/stars/aregtech/areg-sdk?style=social)](https://github.com/aregtech/areg-sdk/stargazers)
-[![Wiki Pages](https://img.shields.io/badge/Areg%20Wiki%20Pages-Docs-brightgreen?style=social&logo=wikipedia)](./docs/wiki/README.md)
+Areg takes that work off your hands. Describe a service interface once: the code generator
+writes the proxies, the serialization and the dispatch, the framework runs each component in
+the thread the model gives it and finds services by name, and you write the logic.
 
----
+**~9.9 µs one-way latency (P50) and ~6.5 GB/s sustained throughput (8 GB/s peak)** over
+TCP loopback, with full service dispatch, on a laptop Core i7 running Linux.
+[Conditions and data](#performance)
 
-> **Building an application with AREG using an AI agent?** Start at
-> [`AGENTS.md`](./AGENTS.md). The task pages for agents are in
-> [`docs/agent/`](./docs/agent/), and complete copyable projects in
-> [`docs/agent/recipes/`](./docs/agent/recipes/).
+For C++ on devices, desktops and servers in trusted networks. Not for web services or
+public internet endpoints.
 
-## Project Status[![](./docs/img/pin.svg)](#project-status)
+**You write the logic.** The generated base classes deliver each call to the component's thread:
 
-<table class="no-border">
-  <tr>
-    <td><a href="https://github.com/aregtech/areg-sdk/actions/workflows/cmake.yml"><img src="https://github.com/aregtech/areg-sdk/actions/workflows/cmake.yml/badge.svg" alt="CMake build"/></a></td>
-    <td><a href="https://github.com/aregtech/areg-sdk/actions/workflows/msbuild.yml"><img src="https://github.com/aregtech/areg-sdk/actions/workflows/msbuild.yml/badge.svg" alt="MS Build"/></a></td>
-    <td><a href="https://github.com/aregtech/areg-sdk/actions/workflows/codeql-analysis.yml"><img src="https://github.com/aregtech/areg-sdk/actions/workflows/codeql-analysis.yml/badge.svg" alt="CodeQL"/></a></td>
-  </tr>
-  <tr>
-    <td><img src="https://img.shields.io/badge/Solution-C++17-blue.svg?style=flat&logo=c%2B%2B&logoColor=b0c0c0&labelColor=363D44" alt="C++ solution"/></td>
-    <td><img src="https://img.shields.io/badge/OS-Linux%20%7C%20macOS%20%7C%20Windows-blue?style=flat&logo=Linux&logoColor=b0c0c0&labelColor=363D44" alt="Operating systems"/></td>
-    <td><img src="https://img.shields.io/badge/CPU-x86%20%7C%20x86__64%20%7C%20arm32%20%7C%20arm64-blue?style=flat&logo=amd&logoColor=b0c0c0&labelColor=363D44" alt="CPU Architectures"/></td>
-  </tr>
-</table>
+```cpp
+// Provider thread: answer the request
+void ServiceProvider::request_hello_service(const areg::String & client)
+{
+    std::cout << "provider: hello, " << client << std::endl;
+    response_hello_service(true);
+}
 
----
+// Consumer thread: receive the answer, asynchronously
+void ServiceConsumer::response_hello_service(bool success)
+{
+    std::cout << "consumer: " << (success ? "greeted" : "failed") << std::endl;
+}
+```
 
-> Most C++ projects don't fail on algorithms. They fail on **threads**, **IPC**, and **brittle integration code**.  
-> Areg SDK eliminates that category of failure – and does it without sacrificing throughput.
+**You decide where it runs.** Here, two threads in one process:
 
----
+```cpp
+areg::Model model("HelloModel");
+model.add_thread("ProviderThread")
+     .add_component<ServiceProvider>("ServiceProvider")
+     .add_supported_service(HelloService::ServiceName, HelloService::InterfaceVersion);
+model.add_thread("ConsumerThread")
+     .add_component<ServiceConsumer>("ServiceConsumer")
+     .add_dependency_service("ServiceProvider");
+```
+
+For two processes the classes stay the same: the interface is marked `Public`, each
+process loads its part of the model, and `mtrouter` connects them.
+Full working code: [one process](./docs/agent/recipes/01-local-single-process/) ·
+[two processes](./docs/agent/recipes/02-ipc-two-processes/) ·
+[model in plain C++](./docs/agent/recipes/10-runtime-model/) · [How it works](#how-it-works)
+
+## Quick start[![](./docs/img/pin.svg)](#quick-start)
+
+```bash
+git clone https://github.com/aregtech/areg-sdk.git
+sh areg-sdk/tools/setup-project.sh --name myapp --root myapp --mode local --sdk-root areg-sdk
+cd myapp
+cmake -B build
+cmake --build build -j
+```
+
+On Windows without a POSIX shell, run `areg-sdk\tools\setup-project.bat` with the same options.
+
+Run `myapp` from `build/bin/` (the file name carries a platform suffix). It prints
+`provider: hello, ServiceConsumer` and `consumer: greeted`, then exits.
+
+Needs a C++17 compiler, CMake 3.20+ and Java 17+, which runs the code generator during the build.
+
+If Areg saves you work, a ⭐ helps other C++ developers find it.
+
+> 🤖 **Coding with an AI agent?** Areg ships a guide, generators and checkers for agents.
+> On the same task and checklist score, an agent that had never seen Areg used 25 requests
+> and wrote 449 lines of C++, against 77 requests and 1,257 lines on gRPC. [Agentic coding](#agentic-coding)
 
 ## Table of Contents
 
-- [Why Areg SDK](#why-areg-sdk)
-- [What You Get](#what-you-get)
-- [How It Works](#how-it-works)
-- [Performance](#performance)
-- [Areg SDK vs. Alternatives](#areg-sdk-vs-alternatives)
-- [Getting Started](#getting-started)
-- [Architecture](#architecture)
-- [Network Deployment Model](#network-deployment-model)
-- [Use Cases](#use-cases)
-- [Roadmap](#roadmap)
-- [Documentation](#documentation)
-- [License](#license)
-- [Community](#community)
+[Why Areg](#why-areg) · [How it works](#how-it-works) · [Agentic coding](#agentic-coding) ·
+[Performance](#performance) · [Areg vs. alternatives](#areg-vs-alternatives) ·
+[Getting started](#getting-started) · [Architecture](#architecture) ·
+[Network deployment](#network-deployment-model) · [Use cases](#use-cases) · [Tools](#tools) ·
+[Project status](#project-status) · [Roadmap](#roadmap) · [Documentation](#documentation) ·
+[License](#license) · [Community](#community)
 
 ---
 
-## Why Areg SDK[![](./docs/img/pin.svg)](#why-areg-sdk)
+## Why Areg[![](./docs/img/pin.svg)](#why-areg)
 
-### Ask yourself these questions:
-
-- Do threading and synchronization issues slow your development velocity?
-- Is your IPC integration fragile, hard to test, or hard to extend?
-- Does moving a component from in-process to out-of-process require rewriting its interface?
-- Do you lose hours debugging silent failures when a service restarts unexpectedly?
-- Is your distributed system difficult to monitor and diagnose in production?
-- Are you building a data-intensive pipeline where framework overhead must be near zero?
-
-**If you answered yes to three or more – Areg SDK is worth your time.**
-
-Areg SDK is a C++ service framework that automates threading, inter-process communication,
-service discovery, fault recovery, and message dispatch – across thread boundaries, process
-boundaries, and network boundaries – using a single consistent programming model.
-
-**The same service code runs:**
-- Multithreaded (components in the same process)
-- Multiprocessing (components on the same machine)
-- Multi-device (components across a network)
-
-**No code changes. Configuration only.**
-
-> [!NOTE]
-> **Best for:** C++ applications requiring reliable service communication, automated threading,
-> high-throughput IPC, or location-transparent services – from embedded edge devices
-> to high-performance distributed systems.
->
-> **Not for:** RTOS hard real-time targets (planned), web services, or non-C++ ecosystems.
+- **Less infrastructure code:** threading, IPC, service discovery and reconnection come
+  from the framework and the generator instead of being rebuilt in every project.
+  *([Estimated time savings](./docs/wiki/08d-areg-framework-rankings.md#10-development-time-savings-with-areg-sdk))*
+- **No locks in component code:** a component's calls run only in the thread that owns it;
+  raw bytes route to that thread before any deserialization.
+- **No startup-order logic:** services find each other by name, wherever they run, with
+  no retry loops.
+- **Recovery built in:** the watchdog restarts a stuck component thread; consumers are
+  notified when a service disappears and reconnect when it returns.
+- **Test before hardware exists:** register a simulation under the same service name and
+  the rest of the system never notices. No conditional compilation, no mock frameworks.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
-## What You Get[![](./docs/img/pin.svg)](#what-you-get)
+## How it works[![](./docs/img/pin.svg)](#how-it-works)
 
-**If you build C++ systems with threads, processes, or networked devices – embedded, edge, or enterprise – here is what changes when you use Areg SDK.**
+Areg implements **Object RPC (ORPC)**: components expose typed interfaces and communicate
+through generated proxies. Consumers refer to a service by **name**, not by address. The
+framework finds the provider in the same thread, another process or another machine, and
+delivers every call to the thread that owns the component.
 
-- **Weeks of infrastructure work removed:** threading, IPC, service discovery, and reconnection logic are generated and managed, not hand-built on every project. *([Development Time Savings](./docs/wiki/08d-areg-framework-rankings.md#10-development-time-savings-with-areg-sdk))*
-- **Race conditions structurally eliminated:** no shared state to lock, audit, or get wrong – raw bytes route to the owning thread before any deserialization.
-- **No startup-order or boot sequencing logic:** services find each other by name regardless of thread, process, or machine, with no manual retry loops.
-- **#1 TCP framework by latency and data rate:** full service dispatch included, not a stripped transport benchmark – ~9.9 µs one-way, 6.0–8.0 GB/s sustained to peak. *([rankings](./docs/wiki/08d-areg-framework-rankings.md), [raw latency data](./docs/wiki/areg-latency-benchmark-20260705.csv))*
-- **Automatic recovery:** failed components restart and dependent consumers reconnect with no operator intervention.
-- **One codebase, any scale:** the same code runs as threads, processes, or networked services; moving from prototype to production is a deployment change, not a rewrite.
-- **Test before hardware exists, deploy unchanged:** register a simulation under the same service name and the rest of the system never notices – no conditional compilation, no mock frameworks, zero code changes when real hardware arrives.
+The interface is a `.siml` document, designed in [Lusan](https://github.com/aregtech/areg-sdk-tools)
+or edited as XML. This is the request of the example above:
 
-<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
-
----
-
-## How It Works[![](./docs/img/pin.svg)](#how-it-works)
-
-Areg SDK implements **Object RPC (ORPC)** – a service model where components expose
-typed interfaces and communicate through generated proxies, regardless of where they run.
-Unlike gRPC or ZeroMQ, the same proxy code calls a thread, a process, or a networked
-device – the framework resolves the location at runtime with no API changes.
-
-```
-┌─────────────────────────────────────────────────────────┐
-│  Same code. Same interface. Different deployment.       │
-│                                                         │
-│  Thread A ──────────────── Thread B      (in-process)   │
-│  Process A ─── mtrouter ── Process B     (same machine) │
-│  Device A  ─── mtrouter ── Device B      (network)      │
-└─────────────────────────────────────────────────────────┘
+```xml
+<Method ID="2" Name="hello_service" MethodType="Request" Response="hello_service">
+    <ParamList><Parameter ID="51" Name="client" DataType="String"/></ParamList>
+</Method>
 ```
 
-Consumers reference services by **name**, not by network address or endpoint.
-The framework connects a consumer to the named service wherever it runs –
-whether in the same process, on the same machine, or on a remote node.
-
-**What the framework handles automatically:**
-- Thread lifecycle and synchronization
-- Service discovery and registration
-- Request and response routing and dispatching
-- Fault detection and watchdog restart
-- Connection management and reconnection
-
-**What you write:**
-- A service interface definition (`.siml` file) – designed visually with [`Lusan`](https://github.com/aregtech/areg-sdk-tools/) or edited as XML
-- Extend generated provider and consumer classes with business logic
-
-The code generator produces all RPC infrastructure – serialization, proxies, events, and service provider and consumer base classes. You fill in the logic.
-
-### Service Interface and Code Generation
-
-Full definitions of service interface, service, and consumer are in
-[Service Identity Model](#service-identity-model). The workflow from interface
-definition to running code:
-
-```
-MyService.siml  ──►  codegen.jar  ──►  MyServiceProviderBase.hpp
-  (design in Lusan)        │           MyServiceConsumerBase.hpp
-                           │           MyServiceProxy.hpp
-                           │           Serialization code
-                           |           Event objects
-```
-
-**CMake integration** – one line generates and links all infrastructure:
+One CMake line generates the serialization, proxies, events and the provider and consumer
+base classes, and links them:
 
 ```cmake
 addServiceInterface(MyServiceLib ./services/MyService.siml)
 ```
 
-For full details, see the [Service Interface Guide](./docs/wiki/06e-lusan-service-interface.md).
+| The framework handles | You write |
+|---|---|
+| thread lifecycle and message dispatch | the service interface |
+| service discovery and registration | the logic in the provider and consumer classes |
+| request, response and broadcast routing | the model: which component runs in which thread |
+| watchdog, connection loss and reconnection | |
+
+The model can be written in plain C++, as above, or with the `BEGIN_MODEL` macros the
+examples use. Details: [Service interface guide](./docs/wiki/06e-lusan-service-interface.md) ·
+[Code generator](./docs/wiki/06b-code-generator.md).
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
+
+---
+
+## Agentic coding[![](./docs/img/pin.svg)](#agentic-coding)
+
+Areg is written to be built on by coding agents that have never seen it. The agent reads
+a guide instead of guessing from memory, and tools write and check the code it would
+otherwise write by hand.
+
+```bash
+python3 areg-sdk/tools/agent/setup_project.py --name myapp --root myapp --mode local --sdk-root areg-sdk
+```
+
+This creates the same project as the [Quick start](#quick-start), plus
+[`AGENTS.md`](./AGENTS.md) and the startup file each common agent reads (Claude Code,
+Copilot, Cursor, Gemini, Windsurf, Aider, Cline, Continue; Codex reads `AGENTS.md`
+directly). On Windows, use `py` for `python3`. Open your agent in `myapp` and describe the
+application; a sample task: [coffee machine](./examples/ai-benchmark/prompt-coffeemachine.md).
+
+1. **Design.** The agent writes one `design.json`: services, data, state machine, the scenario to prove.
+2. **Generate.** The tools write the service documents, the C++ skeleton, the model and
+   the test scenarios. An invalid contract is refused with the rule it breaks.
+3. **Fill.** The agent writes only the method bodies the skeleton marks.
+4. **Prove.** `python3 <areg-sdk>/tools/agent/build_project.py --spec design.json --run`
+   checks the contract, builds, runs every scenario, and exits 0 only when every scenario passes.
+
+**Why Python.** Areg never needs Python to build or run. The agent tools do: they are the
+Python scripts that write, check and test the code instead of the agent. Without them an
+agent writes the plumbing by hand, which costs more tokens and more fix cycles.
+
+The agent is not trusted; it is checked, by the same tools that check a person. Task pages
+for agents are in [`docs/agent/`](./docs/agent/), with complete projects to copy in
+[`docs/agent/recipes/`](./docs/agent/recipes/).
+
+**We measured it.** Same task, same model (Claude Sonnet 5): one agent on Areg, which the
+model had never seen, and one on gRPC, which it was trained on. Both scored 15 of 15 on the
+checklist. The Areg agent used **25 requests against 77**, needed **1 build fix against 9**,
+wrote **449 lines of C++ by hand against 1,257**, and searched the filesystem 0 times
+against 4. Hidden probes neither agent saw scored gRPC 5 of 5 and Areg 4 of 5: the Areg
+client had no deadline for a server that never starts. Cost, one run each: $1.94 against
+$2.63. [Method, raw data and the scripts to repeat it](./examples/ai-benchmark/baseline-2026-09-13.md).
+
+Built by agents from the benchmark prompts, with only the Visual Studio project files added by hand:
+[33_tempalarm](./examples/33_tempalarm/) and [34_coffeemachine](./examples/34_coffeemachine/).
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -180,186 +199,128 @@ For full details, see the [Service Interface Guide](./docs/wiki/06e-lusan-servic
 
 ## Performance[![](./docs/img/pin.svg)](#performance)
 
-Measured on **mobile-class consumer hardware**, full stack active – data serialization, event dispatching, and multithreading. These are not raw socket numbers. Raw benchmark output is published alongside the full methodology for independent verification: [current latency dataset](./docs/wiki/areg-latency-benchmark-20260705.csv) (bare TTY) · [earlier round](./docs/wiki/areg-latency-benchmark-20260629.txt) (`gnome-terminal`).
+Measured on **mobile-class consumer hardware** with the full stack active:
+serialization, event dispatching and multithreading. These are not raw socket numbers.
+Raw output and methodology are published for independent verification:
+[current latency dataset](./docs/wiki/areg-latency-benchmark-20260705.csv) (bare TTY) ·
+[earlier round](./docs/wiki/areg-latency-benchmark-20260629.txt) (`gnome-terminal`).
 
-### Throughput – TCP `localhost`, 1:1, measured at `mtrouter`
+### Throughput: TCP `localhost`, 1:1, measured at `mtrouter`
 
-| Platform       | CPU Type         | ~3 MB, GB/s              | ~0.5 KB, msg/s            |
+| Platform       | CPU              | ~3 MB, GB/s              | ~0.5 KB, msg/s            |
 |----------------|------------------|--------------------------|---------------------------|
 | Linux Ubuntu ¹ | i7-13700H (DDR4) | ~6.5 sust. / ~8.0 peak   | ~2.0M sust. / ~2.5M peak  |
-| macOS native ² | M3 Pro (LPDDR5)  | ~6.5 sust. / –7.0 peak   | ~2.5M sust. / ~3.0M peak  |
-| Windows 11 ³   | i7-13700H (DDR4) | ~2.2 sust. / ~3.0 peak   | ~1.8M sust. / ~2.5M peak  |
-| WSL2 Ubuntu ⁴  | i7-13700H (DDR4) | ~4.0 sust. / –4.5 peak   | ~1.0M sust. / ~1.5M peak  |
+| macOS native ² | M3 Pro (LPDDR5)  | ~6.5 sust. / ~7.0 peak   | ~2.5M sust. / ~3.0M peak  |
+| Windows 11 ³   | i7-13700H (DDR4) | ~2.7                     | ~2.5M+                    |
 
-¹ Ubuntu 26.04, `Performance` power mode. Peak = best short-run measure; sustained = 5+ min run.  
-² No network tuning; M4 chip (separate supplementary test) reached up to 3.0M msg/s.  
-³ Stable dispatch is ~1.8M msg/s; above that, the dispatch thread becomes the bottleneck.  
-⁴ With [network tuning](./docs/wiki/07d-troubleshooting-network-tunning.md), up to ~5.0–5.6 GB/s.
+¹ Ubuntu 26.04, `Performance` power mode. Peak = best short run; sustained = 5+ min run.
+² No network tuning.
+³ Latest runs; sustained and peak are not reported separately.
 
-### Latency – TCP `localhost`, full stack, 204-byte messages
+### Latency: TCP `localhost`, full stack, 204-byte messages
 
-Timestamps span the full call path: before serialization (sender) to after deserialization and dispatch (receiver). OWT = one-way (2-hop). RTT = round-trip through `mtrouter` (4-hop). Linux figures are measured from a bare TTY session (no desktop GUI) with `mtrouter`, provider, and consumer each pinned to a dedicated CPU core via `taskset` – see the [raw data](./docs/wiki/areg-latency-benchmark-20260705.csv) and [methodology](./docs/wiki/08b-areg-sdk-performance-benchmarks.md#21-measurement-environment-terminal-restart-protocol-and-absolute-floor).
+Timestamps span the full call path, from before serialization at the sender to after
+dispatch at the receiver. OWT = one-way (2 hops). RTT = round trip through `mtrouter`
+(4 hops). Linux runs from a bare TTY with `mtrouter`, provider and consumer each pinned to
+a core ([methodology](./docs/wiki/08b-areg-sdk-performance-benchmarks.md#21-measurement-environment-terminal-restart-protocol-and-absolute-floor)).
 
-| Platform       | CPU               | OWT Min    | OWT P50     | RTT Min     | RTT P50     |
-|----------------|-------------------|------------|-------------|-------------|-------------|
-| Linux Ubuntu ¹ | i7-13700H (DDR4)  | **9.6 μs** | **~9.9 μs** | **19.1 μs** | **~19.6 μs** |
-| macOS M3 Pro   | Apple M3 (LPDDR5) | 21.6 μs    | 31.4 μs     | 46.0 μs     | 62.5 μs     |
-| Windows 11     | i7-13700H (DDR4)  | 32.5 μs    | 40.3 μs     | 64.0 μs     | 82.5 μs     |
+| Platform       | CPU               | OWT Min    | OWT P50     | RTT Min     | RTT P50      |
+|----------------|-------------------|------------|-------------|-------------|--------------|
+| Linux Ubuntu   | i7-13700H (DDR4)  | **9.6 µs** | **~9.9 µs** | **19.1 µs** | **~19.5 µs** |
+| macOS M3 Pro   | Apple M3 (LPDDR5) | 21.6 µs    | 31.4 µs     | 46.0 µs     | 62.5 µs      |
+| Windows 11     | i7-13700H (DDR4)  | 32.5 µs    | 40.3 µs     | 64.0 µs     | 82.5 µs      |
 
-¹ Ubuntu 26.04, `Performance` power mode, bare TTY, cores pinned via `taskset`. The single
-lowest sample observed to date is 9.14 μs (OWT) / 18.34 μs (RTT). A desktop `gnome-terminal`
-session reads ~0.9–1.4 μs higher; not pinning cores adds a further ~2–4 μs on top of either –
-still the fastest measured TCP framework in its class either way (see
-[framework rankings](./docs/wiki/08d-areg-framework-rankings.md)).
+Latency is payload-insensitive up to 4 KB: Min rises 1.0 µs across a 20× size increase.
+For context only (third-party, 2021, different hardware): gRPC C++ sequential RTT
+~116–167 µs over a Unix domain socket
+([MPI-HD, F. Werner](https://www.mpi-hd.mpg.de/personalhomes/fwerner/research/2021/09/grpc-for-ipc/)).
 
-For comparison: **gRPC C++ sequential RTT ~116–167 μs** over Unix domain socket – despite fewer hops and no service dispatch ([MPI-HD, F. Werner, 2021](https://www.mpi-hd.mpg.de/personalhomes/fwerner/research/2021/09/grpc-for-ipc/)). Latency is payload-insensitive up to 4 KB – Min rises only 1.0 μs across a 20× size increase; framework overhead dominates.
-
-**Real-world fit:** covers the software pipeline layer of scientific imaging (laser microscopy, X-ray, electron microscopy) and industrial machine vision on a standard laptop.
-
-📊 Measure your own hardware: [`23_pubdatarate`](./examples/23_pubdatarate/) (throughput) · [`30_publatency`](./examples/30_publatency/) (latency)  
-📈 Read [full data & methodology](./docs/wiki/08b-areg-sdk-performance-benchmarks.md) · [vs ZMQ/NanoMsg/NNG](./docs/wiki/08c-areg-vs-hitachi-benchmark.md) · [framework rankings](./docs/wiki/08d-areg-framework-rankings.md)
+📊 Measure your own hardware: [`23_pubdatarate`](./examples/23_pubdatarate/) (throughput) · [`30_publatency`](./examples/30_publatency/) (latency)
+📈 [Full data and methodology](./docs/wiki/08b-areg-sdk-performance-benchmarks.md) · [vs ZMQ/NanoMsg/NNG](./docs/wiki/08c-areg-vs-hitachi-benchmark.md) · [Framework rankings](./docs/wiki/08d-areg-framework-rankings.md)
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
-## Areg SDK vs. Alternatives[![](./docs/img/pin.svg)](#areg-sdk-vs-alternatives)
+## Areg vs. alternatives[![](./docs/img/pin.svg)](#areg-vs-alternatives)
 
-| Feature                   | Areg SDK                       | gRPC / DDS / ZeroMQ                                                                                                                                                                                                                                         |
-|---------------------------|--------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Setup Complexity**      | ✅ Automated, zero boilerplate | ⚠️ Manual configuration, [verbose setup](https://www.innoq.com/en/blog/2024/06/grpc/#whataresomechallengesofworkingwithgrpc)                                                                                                                               |
-| **Threading**             | ✅ Automated threading         | ⚠️ Manual threading and synchronization                                                                                                                                                                                                                    |
-| **Code Generation**       | ✅ Full ORPC automation        | ⚠️ [Stubs only](https://grpc.io/docs/what-is-grpc/introduction/#overview), manual dispatch                                                                                                                                                                 |
-| **Service Discovery**     | ✅ Name-based, automatic       | ✅ DDS: [native](https://opendds.readthedocs.io/en/latest-release/devguide/introduction_to_dds.html#discovery-matching-and-association), ⚠️ gRPC/ZeroMQ: [external](https://stackoverflow.com/questions/59398556/grpc-equivalent-of-wcf-service-discovery) |
-| **Fault Recovery**        | ✅ Watchdog auto-restart       | ✅ DDS: [QoS policies](https://opendds.readthedocs.io/en/latest-release/devguide/quality_of_service.html), ⚠️ gRPC/ZeroMQ: [manual](https://grpc.io/docs/guides/retry/)                                                                                    |
-| **Request-Reply**         | ✅ Native Object RPC           | ✅ gRPC: [RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#overview), ⚠️ DDS/ZeroMQ: [topic/pattern](https://zguide.zeromq.org/docs/chapter3/)                                                                                                        |
-| **Pub/Sub**               | ✅ Native Attributes           | ✅ DDS: [topics](https://opendds.readthedocs.io/en/latest-release/devguide/built_in_topics.html), ⚠️ gRPC/ZeroMQ: add-ons                                                                                                                                  |
-| **Location Transparency** | ✅ One API for threads and IPC | ⚠️ Different APIs for local vs. remote                                                                                                                                                                                                                      |
-| **Logging System**        | ✅ Distributed logs + viewer   | ⚠️ [Vendor-specific](https://community.rti.com/static/documentation/connext-dds/current/doc/manuals/addon_products/observability/telemetry_data/logs.html) or external tools                                                                               |
-| **Developer Speed**       | ✅ Faster via full automation  | ⚠️ Slower, more boilerplate                                                                                                                                                                                                                                 |
+| | Areg SDK | gRPC | DDS |
+|---|---|---|---|
+| **Service model** | requests, attributes, broadcasts | RPC from `.proto` | typed topics |
+| **Generated code** | proxies, base classes, dispatch | stubs, service bases | types, readers, writers |
+| **Threading** | calls run in the owning thread | yours to synchronize | yours to synchronize |
+| **Discovery** | by service name | DNS or xDS resolvers | built in |
+| **Thread, process, network** | same classes; the model decides | same stubs; you pick the channel | same API |
+| **Fault recovery** | watchdog restart, reconnect | retries, health checks | liveliness QoS |
+| **Logging and tracing** | distributed logs, viewer | OpenTelemetry plugin | vendor tools |
+| **AI coding agents** | guide, generators, checkers | none shipped | none shipped |
 
-🔹 **Key Differentiators:**
-- **Complete automation** – Not just transport, but threading, dispatch, and lifecycle
-- **True location transparency** – Same interface whether thread, process, or network
-- **Service Discovery** – automatically connects service consumers and providers by name, and routes messages
-- **Integrated stack** – Framework + Router + Tools + Logging in one cohesive SDK
-- **High-throughput transport** – Full service stack, not stripped-down benchmark conditions
+ZeroMQ, NanoMsg and NNG are messaging transports rather than service frameworks: see the
+[transport benchmark](./docs/wiki/08c-areg-vs-hitachi-benchmark.md).
+
+<sub>Sources: gRPC [name resolution](https://grpc.io/docs/guides/custom-name-resolution/) ·
+[in-process channel](https://grpc.github.io/grpc/cpp/classgrpc_1_1_server.html) ·
+[retry](https://grpc.io/docs/guides/retry/) · [health checking](https://grpc.io/docs/guides/health-checking/) ·
+[OpenTelemetry](https://grpc.io/docs/guides/opentelemetry-metrics/); DDS (OpenDDS)
+[discovery](https://opendds.readthedocs.io/en/latest-release/devguide/introduction_to_dds.html#discovery-matching-and-association) ·
+[QoS](https://opendds.readthedocs.io/en/latest-release/devguide/quality_of_service.html).</sub>
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
-## Getting Started[![](./docs/img/pin.svg)](#getting-started)
+## Getting started[![](./docs/img/pin.svg)](#getting-started)
 
 ### Requirements
 
-| Dependency   | Minimum                    | Notes                     |
-|--------------|----------------------------|---------------------------|
-| C++ compiler | C++17                      | GCC, Clang, MSVC          |
-| CMake        | 3.20+                      | MSVS solution included    |
-| Java Runtime | 17+                        | Code generator only       |
-| OS           | Windows 10+, Linux, macOS  | Cygwin, MinGW inclusive   |
-| Python 3     | *optional*                 | Convenience and AI-agent scripts only. Never needed to generate, build or run |
+| Dependency   | Minimum                   | Notes |
+|--------------|---------------------------|-------|
+| C++ compiler | C++17                     | GCC, Clang, MSVC |
+| CMake        | 3.20+                     | Visual Studio solution included |
+| Java runtime | 17+                       | runs the code generator during the build |
+| OS           | Windows 10+, Linux, macOS | Cygwin and MinGW included |
+| Python 3     | *for agentic coding*      | runs the AI-agent tools; never needed to generate, build or run |
 
-### Quick Build
+### Build the SDK and run an example
 
 ```bash
 git clone https://github.com/aregtech/areg-sdk.git
 cd areg-sdk
 cmake -B build
-cmake --build build -j20
+cmake --build build -j
 ```
 
-### Run Your First Example
+Binaries are written to `product/build/<compiler>/<os>-<bits>-<cpu>-release-shared/bin/`.
+Run `01_minimalrpc` from there: a consumer finds the provider in another thread, sends a
+`hello` request, the provider prints `'Hello Service!'` and the application exits.
+[`02_minimalipc`](./examples/02_minimalipc/) runs the same components in two processes
+through `mtrouter`. More: [Build with CMake](./docs/wiki/01b-cmake-build.md) ·
+[Visual Studio](./docs/wiki/01c-msvc-build.md) · [WSL](./docs/wiki/01d-wsl-build.md).
 
-**Example location after build:**
+### Start your own project
 
-```bash
-# Linux
-./product/build/gnu-g++/linux-64-x86_64-release-shared/bin/01_minimalrpc.elf
+The [Quick start](#quick-start) script takes three modes: `--mode local` is one process
+with two threads; `--mode ipc` is two processes through `mtrouter`, with a `run.sh` and
+`run.bat` that start them in order; `--mode pubsub` is a `local` project whose
+interface also declares attributes and broadcasts, which the consumer subscribes to.
+Those are interface elements rather than an application type: an `ipc` project may
+declare them just as well. Without `--sdk-root`, the project fetches Areg from
+GitHub at configure time.
 
-# macOS
-./product/build/llvm-clang++/macos-64-arm64-release-shared/bin/01_minimalrpc.mac
+Other ways in: [CMake integration](./docs/wiki/02b-cmake-integrate.md) for an existing
+project · `vcpkg install areg` ([vcpkg package](./docs/wiki/01a-areg-package.md#install-areg-sdk-package)) ·
+[all scaffolding options](./docs/wiki/02a-quick-project-setup.md).
 
-# Windows
-.\product\build\msvc-cl\windows-64-amd64-release-shared\bin\01_minimalrpc.exe
-```
+### Learning path
 
-**What happens:** The developer defines a **model** – a structured declaration of
-threads, components, and their provided or consumed services. A single call to
-`Application::load_model()` instantiates all threads, loads components, and starts
-services automatically. No manual thread creation or object management required.
-
-At runtime, the service consumer detects the provider, sends a `hello` request,
-the provider prints `'Hello Service!'` and triggers an application-quit event.
-`Application::unload_model()` then stops all services, exits threads, and notifies
-every consumer that services are no longer available – all handled by the framework.
-
-Models can be defined statically at compile time or constructed dynamically at
-runtime. Loading and unloading is always dynamic and safe.
-
-**Expected output:**
-```
-'Hello Service!'
-```
-
-The companion example `02_minimalipc` runs the **same** `ServiceComponent` and
-`ClientComponent` code in **separate processes** via `mtrouter`. Change only `areg.init`
-to point `mtrouter` at a remote machine and it becomes device-to-device communication.
-These two examples are the concrete proof of "same code – thread, process, network."
-
-### Start Your Own Project
-
-```bash
-git clone https://github.com/aregtech/areg-sdk.git
-cd areg-sdk
-cmake -B build -DAREG_EXAMPLES=OFF
-cmake --build build -j20
-```
-
-Then create the project. This asks three questions and needs nothing beyond the
-requirements above:
-
-```bash
-# Linux / macOS
-areg-sdk/tools/setup-project.sh
-```
-
-```powershell
-# Windows
-areg-sdk\tools\setup-project.bat
-```
-
-<details>
-<summary>Prefer to script it? There is a Python scaffolder</summary>
-
-`tools/agent/setup_project.py` does the same thing without prompting, which suits CI
-and AI coding agents. It needs Python 3, which the interactive scripts above do not,
-and which is not required to generate, build or run anything:
-
-```bash
-python3 areg-sdk/tools/agent/setup_project.py --name myapp --root ~/myapp --mode local
-```
-
-</details>
-
-After generation, build with:
-
-```bash
-cd <your_project>
-cmake -B build
-cmake --build build -j20
-```
-
-### Learning Path
-
-1. **[01_minimalrpc](examples/01_minimalrpc/)** – Multithreading: service provider and consumer in separate threads, one process, no `mtrouter`
-2. **[02_minimalipc](examples/02_minimalipc/)** – IPC: the same components from `01_minimalrpc` running in separate processes via `mtrouter`
-3. **[03_helloservice](examples/03_helloservice/)** – three projects showing one thread → separate threads → separate processes
-4. **[16_pubmesh](examples/16_pubmesh/)** – Service mesh: multiple local and public services discovering each other automatically
-5. **[23_pubdatarate](examples/23_pubdatarate/)** – Platform-dependent high-throughput benchmark: ~8.0 GB/s and ~2.5M+ msg/s on `localhost`
-6. **[30_publatency](examples/30_publatency/)** – Full-stack latency benchmark: RTT and OWT across payload sizes, all platforms
-7. **[More Examples](examples/README.md)** – Advanced patterns and features
+1. **[01_minimalrpc](./examples/01_minimalrpc/)**: multithreading. Provider and consumer in two threads, one process, no `mtrouter`.
+2. **[02_minimalipc](./examples/02_minimalipc/)**: IPC. The same components in two processes through `mtrouter`.
+3. **[03_helloservice](./examples/03_helloservice/)**: one thread, then separate threads, then separate processes.
+4. **[16_pubmesh](./examples/16_pubmesh/)**: a mesh of local and public services discovering each other.
+5. **[23_pubdatarate](./examples/23_pubdatarate/)** and **[30_publatency](./examples/30_publatency/)**: throughput and latency benchmarks on your hardware.
+6. **[33_tempalarm](./examples/33_tempalarm/)**: built by an AI agent. A monitor and an operator in two processes, attributes and broadcasts.
+7. **[34_coffeemachine](./examples/34_coffeemachine/)**: built by an AI agent. A service driven by a generated state machine, in two processes.
+8. **[All examples](./examples/README.md)**
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -367,240 +328,103 @@ cmake --build build -j20
 
 ## Architecture[![](./docs/img/pin.svg)](#architecture)
 
-### Component Model
+### Service identity
 
-Areg SDK uses an Object RPC (ORPC) model. Services expose interfaces; consumers communicate through generated proxies. The framework routes communication, whether the target is a thread, a process, or a remote device.
+| Concept               | Description | Example |
+|-----------------------|-------------|---------|
+| **Service interface** | the API contract: data types, requests, responses, broadcasts, constants, in a `.siml` file | `PrinterDevice` |
+| **Service**           | a named component instance implementing one or more interfaces | `HP-Lab1` (implements `ScannerDevice` and `PrinterDevice`), `Canon-Floor3` (implements `PrinterDevice`) |
+| **Consumer**          | declares which named service it depends on; notified when it appears or disappears | consumer of `HP-Lab1` |
 
-```
-┌──────────────────────────────────────────────────────────────────┐
-│  Service Interface (.siml)                                       │
-│       │                                                          │
-│       ├─ Code Generator ──► Provider Base  (implement logic)     │
-│       │                     Consumer Proxy (call methods)        │
-│       │                                                          │
-│       └─ Framework ────────► Service Registry                    │
-│                              Thread Manager                      │
-│                              Message Dispatcher                  │
-│                              Watchdog                            │
-└──────────────────────────────────────────────────────────────────┘
-```
+A consumer claims a service by name: "I need `HP-Lab1`." The framework connects them when
+that service becomes available anywhere on the network, and notifies the consumer at once.
+No polling, no manual connection management.
 
-### Service Identity Model
+### Location transparency
 
-A **service interface** is the API contract – data types, requests, responses, broadcasts,
-and constants defined in a `.siml` file. A **service** is a named component instance that
-implements one or more interfaces. The same interface can be implemented by many services
-playing different roles.
+The provider and consumer classes are the same in every deployment. What changes:
 
-| Concept               | Description                                                                      | Example                                                              |
-|-----------------------|----------------------------------------------------------------------------------|----------------------------------------------------------------------|
-| **Service Interface** | API contract – the typed communication definition                                | `PrinterDevice` interface                                            |
-| **Service**           | Named component instance implementing one or more interfaces                     | `HP-Lab1` (implements `ScannerDevice` and `PrinterDevice`), `Canon-Floor3` (implements `PrinterDevice`) |
-| **Consumer**          | Declares which named service it depends on; receives `connected` when it appears | Consumer of `HP-Lab1`                                          |
-
-A consumer claims a specific service by name – "I need `HP-Lab1`." The framework
-connects them when that named service becomes available anywhere on the network, and
-notifies the consumer immediately. No polling. No manual connection management.
-
-### Module Overview
-
-| Module         | Description                                                                                                               |
-|----------------|---------------------------------------------------------------------------------------------------------------------------|
-| `areg`         | Core framework: threading, IPC, ORPC, service model, communication                                                        |
-| `aregextend`   | Extended services: communication, SQLite wrapper, other small utilities                                                   |
-| `areglogger`   | Log Observer API and library                                                                                              |
-| `mtrouter`     | Multi-target message router: routes IPC and network traffic                                                               |
-| `logcollector` | Distributed log aggregation service, with optional SQLite recording of the collected logs                                 |
-| `logobserver`  | Log capture, storage (file + SQLite), scope control                                                                       |
-| `Lusan`        | GUI tool for service interface design, live log collection, and log analysis ([`Lusan` app](https://github.com/aregtech/areg-sdk-tools)) |
-
-<div align="center"><a href="./docs/img/lusan-service-if-general.png"><img src="./docs/img/lusan-service-if-general.png" alt="Lusan Service Interface Designer" style="width:80%;height:80%"/></a></div>
-
-### Location Transparency
-
-The same service operates identically at three deployment levels:
-
-| Deployment                    | Transport             | Code change required |
-|-------------------------------|-----------------------|----------------------|
-| Multithreaded (same process)  | Direct call           | None                 |
-| Multiprocessing (same machine)| TCP via `mtrouter`    | None                 |
-| Multi-device (network)        | TCP via `mtrouter`    | None                 |
-
-Components can be developed and tested in a single process, then deployed across
-machines with only configuration and build script changes.
+| Deployment                     | Transport          | What changes |
+|--------------------------------|--------------------|--------------|
+| Multithreaded (same process)   | direct dispatch    | only the model |
+| Multiprocessing (same machine) | TCP via `mtrouter` | the model per process; the interface is `Public` |
+| Multi-device (network)         | TCP via `mtrouter` | as above, plus the router address in the configuration |
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
-## Network Deployment Model[![](./docs/img/pin.svg)](#network-deployment-model)
+## Network deployment model[![](./docs/img/pin.svg)](#network-deployment-model)
 
-Areg SDK is designed for **controlled private networks** – deployments where nodes
-are known, the network is trusted, and communication patterns are defined at design
-time.
+Areg is designed for **controlled private networks**: nodes are known, the network is
+trusted, and communication patterns are defined at design time.
 
-<div align="center"><a href="./docs/img/mist-network.png"><img src="./docs/img/mist-network.png" alt="IoT Mist-to-Cloud network diagram" style="width:70%;height:70%"/></a></div>
+<div align="center"><a href="./docs/img/mist-network.png"><img src="./docs/img/mist-network.png" alt="IoT mist-to-cloud network diagram" width="70%"/></a></div>
 
-**Mist layer** – Device clusters: sensors, actuators, and controllers form a local
-service mesh, resolving each other by name automatically without a central broker.
+- **Mist layer:** sensors, actuators and controllers form a local service mesh and
+  resolve each other by name, with no central broker.
+- **Edge layer:** gateways aggregate mist data, run local inference or control logic, and
+  expose services to private infrastructure.
+- **Private infrastructure:** servers and workstations process edge data, coordinate
+  distributed workloads and host operator tools.
 
-**Edge layer** – Gateway nodes: aggregate data from mist clusters, run local
-inference or control logic, and expose services to private infrastructure.
-
-**Private infrastructure** – Servers and workstations: process edge data,
-coordinate distributed workloads, and host operator tools.
-
-The same service interfaces, generated code, and operational model work at every
-layer – a **vertically consistent architecture** from device cluster to data center.
+The same interfaces, generated code and operational model work at every layer.
 
 > [!NOTE]
-> Areg SDK is not designed for internet-facing communication – not a web server,
-> REST endpoint, or public MQTT broker. It operates in trusted, controlled
-> networks: industrial automation, scientific instrumentation, private distributed
-> computing. This is where it performs without compromise.
+> Areg is not for internet-facing communication: not a web server, REST endpoint or
+> public MQTT broker. It works in trusted networks: industrial automation, scientific
+> instrumentation, private distributed computing.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
-## Use Cases[![](./docs/img/pin.svg)](#use-cases)
+## Use cases[![](./docs/img/pin.svg)](#use-cases)
 
-The answer to **_"why Areg SDK and not something else"_** is different for each domain,
-but the underlying reason is always the same: Areg SDK combines **high-throughput transport**,
-**automated threading**, **location-transparent services**, and **built-in fault
-recovery** in a single cohesive stack – with only configuration changes required when
-moving between thread, process, and network deployment.
+| Domain | Why Areg |
+|---|---|
+| [Scientific and industrial imaging](./docs/USECASES.md#scientific-and-industrial-imaging-pipelines) | multi-megabyte frames at ~2.7 GB/s (Windows) to ~6.5 GB/s (Linux) full-stack IPC on a laptop CPU; pipeline stages move between threads, processes and machines |
+| [Device-as-a-service](./docs/USECASES.md#device-as-a-service-driverless-hardware) | a device exposes its functions as a named service; hosts call it through a generated proxy, with no kernel driver |
+| [Industrial automation and robotics](./docs/USECASES.md#industrial-automation-and-robotics) | watchdog restart, automatic re-registration and reconnection handle the faults that break hand-written IPC |
+| [Edge AI and inference](./docs/USECASES.md#edge-ai-and-inference-pipelines) | acquisition, preprocessing and inference change topology without touching their classes |
+| [Digital twins and monitoring](./docs/USECASES.md#digital-twins-and-real-time-monitoring) | one interface for the device and its twin; consumers cannot tell them apart |
+| [Simulation and hardware-in-the-loop](./docs/USECASES.md#simulation-and-hardware-in-the-loop-testing) | a simulation registered under the real service name; regression tests in CI before hardware exists |
+| [Distributed C++ applications](./docs/USECASES.md#distributed-c-applications) | ~2.0M–2.5M msg/s on one laptop replaces custom threading and IPC in backends |
 
-> 📖 For more use cases, diagrams, and patterns, see [USECASES.md](./docs/USECASES.md).
-
----
-
-### Scientific and Industrial Imaging Pipelines
-
-**Why Areg SDK:** Imaging pipelines – laser microscopy, X-ray, electron microscopy,
-machine vision – move continuous multi-megabyte frames between acquisition, processing,
-and storage processes. At **2.0–8.0 GB/s** full-stack IPC on a standard laptop CPU, Areg SDK
-covers the software transport layer for virtually every such pipeline without custom
-networking code or stripped-down benchmarks.
-
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/interface-centric.png"><img src="./docs/img/interface-centric.png" alt="Interface-centric communication diagram" style="width:50%;height:50%"/></a></div>
-
-**What this means in practice:** Replace custom shared-memory hacks and platform-specific
-IPC with typed, named service interfaces. Pipeline stages can be rearranged from threads
-to separate processes to separate machines with only configuration and build script changes.
+More patterns, diagrams and limits: [Use cases and benefits](./docs/USECASES.md).
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
-### Edge AI and Inference Pipelines
+## Tools[![](./docs/img/pin.svg)](#tools)
 
-**Why Areg SDK:** An edge AI pipeline – sensor acquisition → preprocessing → model
-inference → output / telemetry – requires fast IPC between stages that may run as
-threads, processes, or distributed nodes depending on hardware constraints. Areg SDK's
-location transparency means the pipeline topology can change without touching the
-inference or acquisition code.
+| Tool | What it does |
+|---|---|
+| `codegen.jar` | generates the service infrastructure from `.siml` and state machines from `.fsml` |
+| `mtrouter` | routes messages between processes and machines |
+| `logcollector` | collects logs from many processes, optionally recorded into SQLite |
+| `logobserver` | captures, stores and controls log scopes from the console |
+| [Lusan](https://github.com/aregtech/areg-sdk-tools) | GUI for designing service interfaces, live log collection and log analysis |
+| [`tools/agent/`](./tools/agent/) | scaffolding, generators, contract checker and scenario runner for AI agents and CI |
 
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-for-embedded-ai.png"><img src="./docs/img/areg-for-embedded-ai.png" alt="Modular AI pipeline architecture" style="width:40%;height:40%"/></a></div>
+<div align="center"><a href="./docs/img/lusan-service-if-general.png"><img src="./docs/img/lusan-service-if-general.png" alt="Lusan service interface designer" width="80%"/></a></div>
 
-**What this means in practice:** Develop and test the full pipeline in a single process.
-Deploy acquisition on a dedicated core process and inference on a GPU-attached process.
-Scale to distributed nodes. Only configuration and build script changes at each transition.
-
-<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
-
----
-
-### Device-as-a-Service (Driverless Hardware)
-
-**Why Areg SDK:** Kernel-mode driver development is months of specialized work, requires
-OS-specific expertise, and produces code that is dangerous to debug and expensive to
-maintain. Areg SDK enables a driverless architecture: the device application exposes its
-functionality as a named service. Any host application calls the device API through a
-generated proxy – no driver installation, no kernel-mode code, no special permissions.
-
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/driverless-solution.png"><img src="./docs/img/driverless-solution.png" alt="Service-enabled driverless device architecture" style="width:70%;height:70%"/></a></div>
-
-**What this means in practice:** External hardware (measurement instruments, industrial
-sensors, embedded controllers) registers as a named service via `mtrouter`. Host
-applications connect to that specific device by name – exactly as they would connect to
-any local service. Development time drops from months to days. The device is debuggable,
-testable, and upgradeable like any user-mode application.
+Libraries: `areg` (core framework), `aregextend` (extended services, SQLite wrapper,
+utilities), `areglogger` (log observer API).
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
-### Industrial Automation and Robotics (Industry 4.0)
+## Project status[![](./docs/img/pin.svg)](#project-status)
 
-**Why Areg SDK:** Industrial control systems fail in ways that are hard to predict and
-expensive to recover from manually. Areg SDK's built-in watchdog restart, automatic
-service re-registration, and fault-tolerant reconnection handle the failure cases that
-break hand-written IPC code. Components restart their threads and reconnect without
-operator intervention – and without changing a line of application logic.
-
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-services.png"><img src="./docs/img/areg-services.png" alt="Service types and message flow" style="width:70%;height:70%"/></a></div>
-
-**What this means in practice:** Sensor fusion nodes, PLC replacement controllers, and
-robot arm coordinators communicate through typed service interfaces. When a node's thread
-restarts after a fault, it re-registers and consumers reconnect automatically. No
-supervisory restart scripts, no manual reconnection logic.
-
-<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
-
----
-
-### Digital Twins and Real-Time Monitoring
-
-**Why Areg SDK:** A digital twin requires bidirectional real-time synchronization between
-a physical device and its software representation. Areg SDK's event-driven architecture
-delivers state changes from hardware to software and commands from software to hardware
-with no additional middleware layers. The same service interface defines both the physical
-device and its digital twin – providing an identical API whether connecting to real
-hardware or its virtual counterpart.
-
-**What this means in practice:** Replace polling loops and custom TCP protocols with
-pub/sub attribute broadcasting and request/reply RPC. The digital twin can mirror,
-simulate, or proxy the real device – all sharing the same service interface. Consumers
-require no code changes when switching between real hardware and its twin.
-
-<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
-
----
-
-### Simulation and Hardware-in-the-Loop Testing
-
-**Why Areg SDK:** Testing against real hardware is slow, expensive, and unavailable
-during early development. Because Areg SDK services are discovered by name, a simulated
-service registered under the same name is indistinguishable from the real hardware
-service. Swap the real hardware service for a simulation that registers under the same
-service name – the rest of the application never notices the difference. No test-specific
-code paths, no mocking frameworks, no conditional compilation.
-
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/software-layers.png"><img src="./docs/img/software-layers.png" alt="Software layer architecture with simulated Data Layer" style="width:70%;height:70%"/></a></div>
-
-**What this means in practice:** Develop and verify full application business logic before
-hardware exists. Run automated regression tests against simulated services in CI. Deploy
-to real hardware with zero application code changes.
-
-<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
-
----
-
-### Distributed C++ Backend Services
-
-**Why Areg SDK:** C++ backend systems – game servers, simulation engines, financial data
-processors, real-time analytics – typically build custom threading and IPC from scratch.
-Areg SDK replaces that infrastructure with a generated, typed service layer that handles
-thread safety, message dispatch, and inter-process routing automatically. With stable
-dispatch at 1.5M-2.5M msg/s on a single machine (platform-dependent, see
-[Performance](#performance)), the framework does not constrain throughput for any
-realistic backend workload.
-
-**What this means in practice:** Define service interfaces, generate the infrastructure,
-implement the logic. Services scale from in-process components to distributed nodes
-without architectural changes. The same watchdog and logging infrastructure that works
-in embedded deployments works in backend deployments.
+| | |
+|---|---|
+| **Build** | [![CMake build](https://github.com/aregtech/areg-sdk/actions/workflows/cmake.yml/badge.svg)](https://github.com/aregtech/areg-sdk/actions/workflows/cmake.yml) [![MS Build](https://github.com/aregtech/areg-sdk/actions/workflows/msbuild.yml/badge.svg)](https://github.com/aregtech/areg-sdk/actions/workflows/msbuild.yml) |
+| **Quality** | [![CodeQL](https://github.com/aregtech/areg-sdk/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/aregtech/areg-sdk/actions/workflows/codeql-analysis.yml) [![Sanitizers](https://github.com/aregtech/areg-sdk/actions/workflows/sanitizers.yml/badge.svg)](https://github.com/aregtech/areg-sdk/actions/workflows/sanitizers.yml) [![Agent docs](https://github.com/aregtech/areg-sdk/actions/workflows/agent-docs.yml/badge.svg)](https://github.com/aregtech/areg-sdk/actions/workflows/agent-docs.yml) |
+| **Release** | [![Latest release](https://img.shields.io/github/v/release/aregtech/areg-sdk?style=flat-square)](https://github.com/aregtech/areg-sdk/releases/latest) |
+| **Platforms** | Linux, macOS, Windows · x86, x86_64, arm32, arm64 · GCC, Clang, MSVC, MinGW, Cygwin |
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -608,14 +432,15 @@ in embedded deployments works in backend deployments.
 
 ## Roadmap[![](./docs/img/pin.svg)](#roadmap)
 
-**In progress (2026):**
-- RTOS platform support (FreeRTOS, Zephyr)
-- Python-based code generator (replaces Java dependency)
+**Next, after 2.0.0:**
+- RTOS platform support, starting with Zephyr
+
+**Planned:**
 - Shared memory transport (zero-copy for same-machine IPC)
 - Secure communication (optional TLS for `mtrouter` connections)
-- Extended networking protocols
 
-**Considering for community input:**
+**Open for community input:**
+- Extended networking protocols
 - Language bindings (Python, Rust)
 - Cloud-native deployment patterns
 - WebSocket transport
@@ -626,17 +451,17 @@ in embedded deployments works in backend deployments.
 
 ## Documentation[![](./docs/img/pin.svg)](#documentation)
 
-The wiki covers all deployment, integration, and development scenarios in depth:
-
-- **[Installation and Build](./docs/wiki/README.md#1-installation-and-build)** - Cross-platform builds, toolchains, CMake integration
-- **[Build Options and Integrations](./docs/wiki/README.md#2-build-options-and-integrations)** - FetchContent, packaging, embedding
-- **[Networking and Communication](./docs/wiki/README.md#3-networking-and-communication)** - Router setup, IPC, low-latency messaging
-- **[Logging and Monitoring](./docs/wiki/README.md#4-logging-and-monitoring)** - Distributed logging for debugging
-- **[Persistence](./docs/wiki/README.md#5-persistence)** - Local data storage
-- **[Development and Testing Tools](./docs/wiki/README.md#6-development-and-testing-tools)** - Code generator, Lusan, testing utilities
-- **[Troubleshooting](./docs/wiki/README.md#7-troubleshooting)** - Common issues and solutions
-- **[Examples and Tests](./docs/wiki/README.md#8-examples-and-tests)** - Sample projects catalog
-- **[HOWTO Guide](docs/HOWTO.md)** - Practical development tasks
+- **[Installation and build](./docs/wiki/README.md#-installation-and-build)**: cross-platform builds, toolchains, packages
+- **[Integration and configuration](./docs/wiki/README.md#-integration-and-configuration)**: CMake integration, FetchContent, build options
+- **[Networking and communication](./docs/wiki/README.md#-networking-and-communication)**: router setup, IPC, low-latency messaging
+- **[Logging and monitoring](./docs/wiki/README.md#-logging-and-monitoring)**: distributed logging for debugging
+- **[Persistence](./docs/wiki/README.md#-persistence)**: local data storage
+- **[Development tools](./docs/wiki/README.md#-development-tools)**: code generator, Lusan, testing utilities
+- **[Troubleshooting](./docs/wiki/README.md#-troubleshooting)**: common issues and solutions
+- **[Examples and demos](./docs/wiki/README.md#-examples-and-demos)**: sample projects catalog
+- **[Performance and benchmarks](./docs/wiki/README.md#-performance-and-benchmarks)**: methodology, datasets, rankings
+- **[HOWTO guide](./docs/HOWTO.md)**: practical development tasks
+- **[AI agent guide](./AGENTS.md)**: building an application with a coding agent
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -644,9 +469,11 @@ The wiki covers all deployment, integration, and development scenarios in depth:
 
 ## License[![](./docs/img/pin.svg)](#license)
 
-Areg SDK is released under the **[Apache License 2.0](LICENSE.txt)** – a permissive license suitable for both open-source and commercial use.
+Areg SDK is released under the **[Apache License 2.0](./LICENSE.txt)**, a permissive
+license for open-source and commercial use.
 
-**Commercial support:** Enterprise licensing, training, and dedicated support available. Visit **[areg.tech](https://www.areg.tech/)** or email **info[at]areg[dot]tech**.
+**Commercial support:** enterprise licensing, training and dedicated support. Visit
+**[areg.tech](https://www.areg.tech/)** or email **info[at]areg[dot]tech**.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -654,18 +481,10 @@ Areg SDK is released under the **[Apache License 2.0](LICENSE.txt)** – a permi
 
 ## Community[![](./docs/img/pin.svg)](#community)
 
+- [Issues](https://github.com/aregtech/areg-sdk/issues) · [Discussions](https://github.com/aregtech/areg-sdk/discussions) · [Contributing guide](./CONTRIBUTING.md) · [Wiki](./docs/wiki/README.md)
+- **Built something with Areg?** Open a discussion and tell us about it, and add the badge to your project:
+
 [![Use Areg SDK](https://img.shields.io/badge/uses-areg--sdk-blue)](https://github.com/aregtech/areg-sdk)
-
-Add this badge to your project if you use Areg SDK.
-
-**Contribute:**
-- [Issues](https://github.com/aregtech/areg-sdk/issues)
-- [Discussions](https://github.com/aregtech/areg-sdk/discussions)
-- [Contributing Guide](./CONTRIBUTING.md)
-- [Wiki](https://github.com/aregtech/areg-sdk/wiki)
-
-**Showcase your project:**
-If you build something with Areg SDK, open a discussion and tell us about it.
 
 ---
 
