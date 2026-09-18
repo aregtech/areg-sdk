@@ -32,12 +32,14 @@ awaits a response, broadcast or attribute, or waits some milliseconds. The gener
 writes the sequence, and the worksheet has one `step_<name>` check per awaiting step,
 which may call `fail("why")`, `stay()` or `go_to(Step::Name)`, so a scenario that
 branches fits it too. `gen_docs.py --example`
-shows three steps. An argument is written as the value reads -- text for a `String` is
-quoted by the generator, a number is a number -- and `"expr:<c++>"` passes C++ through.
+shows three steps. An argument is written as the value reads and the generator spells
+it in C++: it quotes a `String` and qualifies a field of an enumeration, so
+`"drink": "Latte"` is enough. `"expr:<c++>"` passes C++ through.
 
-A parameter whose legal values are a set lists them as its `"values"`: a step sending
-one outside it is refused before the build, rather than silently ignored by the
-provider while the step awaits an update nothing sends.
+A value the parameter cannot take is refused before the build, rather than silently
+ignored by the provider while the step awaits an update nothing sends: a name that
+enumeration has no field of, or, where the legal values are a set, one outside the
+`"values"` the parameter lists.
 
 What such a consumer gives up after is `"driver"` of the same interface:
 `connect_seconds` and `reconnect_seconds`, 0 for never; leave `stall_ticks` out and

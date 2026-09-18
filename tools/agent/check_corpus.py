@@ -2780,6 +2780,7 @@ def run():
     check_shipped_tools(report)
     check_example_type_placement(report)
     check_spec_value_prefixes(report)
+    check_step_enum_values(report)
     check_entry_toll(report)
     check_page_budget(report)
     check_corpus_toll(report)
@@ -2954,6 +2955,56 @@ def check_spec_value_prefixes(report):
         return
     report.ok('spec-prefixes',
               '"lit:" is the empty value; an empty param/attr/const/expr is refused')
+
+
+def check_step_enum_values(report):
+    """A step argument naming a field of an enumeration is qualified with its type.
+
+    A bare field name does not compile, and the generator used to write one and exit
+    0, so the design was answered by a C++ error naming the generated call site. One
+    measured run spent four requests qualifying them by hand.
+    """
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_skeleton
+    except Exception as failure:
+        report.fail('step-enums', 'gen_skeleton.py does not import: {}'.format(failure))
+        return
+
+    class Iface(object):
+        enum_fields = {'Drink': ['Espresso', 'Latte']}
+
+        def cpp_type(self, name):
+            return 'Shared::' + name, False
+
+    try:
+        spelt = gen_skeleton.cpp_value('Latte', 'Drink', Iface(), 'a test')
+    except TypeError as failure:
+        report.fail('step-enums',
+                    'cpp_value does not take the type and the document it is '
+                    'resolved against: {}'.format(failure))
+        return
+    if spelt != 'Shared::Drink::Latte':
+        report.fail('step-enums',
+                    'a field of an enumeration is written "{}", which no C++ scope '
+                    'declares'.format(spelt))
+        return
+    quiet, sys.stderr = sys.stderr, io.StringIO()
+    try:
+        gen_skeleton.cpp_value('Mocha', 'Drink', Iface(), 'a test')
+    except SystemExit:
+        pass
+    else:
+        sys.stderr = quiet
+        report.fail('step-enums',
+                    'a name the enumeration has no field of is accepted and written '
+                    'verbatim')
+        return
+    finally:
+        sys.stderr = quiet
+    report.ok('step-enums',
+              'a step argument names a field of an enumeration and the generator '
+              'qualifies it; an unknown field is refused')
 
 
 # The task prompts are the comparison itself: the same requirements scored

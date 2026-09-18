@@ -574,6 +574,13 @@ def write_worksheet(produced, out, iface, document, machine, machine_doc,
     return True
 
 
+def fields_of(declared):
+    """The field names of one enumeration declaration, in document order."""
+    return [entry.get('Name')
+            for entry in declared.findall('./FieldList/EnumEntry')
+            if entry.get('Name')]
+
+
 class Interface:
     """The parts of a .siml document the components have to match."""
 
@@ -599,6 +606,8 @@ class Interface:
         self.types = []
         # The same, for every document this one includes: (document, space, name, kind).
         self.imported_types = []
+        # The field names of every enumeration in reach, by every spelling of its type.
+        self.enum_fields = {}
         for declared in root.findall('./DataTypeList/DataType'):
             kind = (declared.get('Type') or '').lower()
             type_name = declared.get('Name')
@@ -608,6 +617,7 @@ class Interface:
             self.types.append((type_name, kind))
             if kind in ('enumeration', 'enumerate'):
                 self.by_value.add(type_name)
+                self.enum_fields[type_name] = fields_of(declared)
 
         self.constants = []
         for constant in root.findall('./ConstantList/Constant'):
@@ -699,6 +709,7 @@ class Interface:
                 self.imported.add(spelling)
                 if kind in ('enumeration', 'enumerate'):
                     self.by_value.add(spelling)
+                    self.enum_fields[spelling] = fields_of(declared)
 
     def cpp_type(self, type_name):
         """The C++ spelling of a document type, and how it is passed.
@@ -1366,12 +1377,13 @@ def pascal(name):
 TEXT_TYPES = ('String', 'WideString')
 
 
-def cpp_value(value, type_name=None):
+def cpp_value(value, type_name=None, iface=None, where=''):
     """A value of design.json as the C++ text an argument is written with.
 
     A design says what a value is, not how C++ spells it, so text given for a String
-    parameter is quoted here. Text that already carries its own quotes stands as it
-    is, and "expr:<c++>" passes anything through verbatim.
+    parameter is quoted here and a field of an enumeration is qualified with its type.
+    Text that already carries its own quotes stands as it is, and "expr:<c++>" passes
+    anything through verbatim.
     """
     if isinstance(value, bool):
         return 'true' if value else 'false'
@@ -1382,7 +1394,28 @@ def cpp_value(value, type_name=None):
         if len(text) > 1 and text.startswith('"') and text.endswith('"'):
             return text
         return '"{}"'.format(text.replace('\\', '\\\\').replace('"', '\\"'))
+    if iface is not None and type_name in iface.enum_fields:
+        return enum_value(text, type_name, iface, where)
     return text
+
+
+def enum_value(text, type_name, iface, where):
+    """One field of an enumeration as C++, from the field name or a qualified one.
+
+    A bare field name does not compile on its own and the compiler names the call
+    site, not the design that wrote it, so a name that is no field of this type is
+    refused here instead.
+    """
+    spelt = iface.cpp_type(type_name)[0]
+    fields = iface.enum_fields[type_name]
+    given = text.rsplit('::', 1)[-1]
+    if given not in fields:
+        fail('{} gives "{}" for a "{}", which has no such field. It has: {}'
+             .format(where or 'a step', text, type_name, ', '.join(fields) or 'none'))
+    if '::' in text and not text.endswith('{}::{}'.format(spelt, given)):
+        fail('{} gives "{}" for a "{}", which C++ spells "{}::{}"'
+             .format(where or 'a step', text, type_name, spelt, given))
+    return '{}::{}'.format(spelt, given)
 
 
 def driver_of(specs, iface):
@@ -1428,7 +1461,7 @@ def steps_of(specs, iface):
         for param, param_type in requests.get(send, []):
             if param not in args:
                 fail('{} gives no value for "{}" of request "{}"'.format(where, param, send))
-            values.append(cpp_value(args[param], param_type))
+            values.append(cpp_value(args[param], param_type, iface, where))
         target, wait = step.get('await'), step.get('wait') or 0
         if target is None and send is not None and not wait:
             target = iface.response_of.get(send)

@@ -1455,6 +1455,7 @@ def check_drivers(project):
 
 def check_sequences(project):
     """A consumer's steps name only what their service declares, in a shape one driver runs."""
+    enums = enum_values(project)
     for spec in project['interfaces']:
         steps = spec.get('steps') if isinstance(spec, dict) else None
         if not steps:
@@ -1511,6 +1512,16 @@ def check_sequences(project):
                          .format(here, send, entry.get('name'), json.dumps(given),
                                  entry.get('name'),
                                  ', '.join(json.dumps(one) for one in allowed)))
+                # The generator qualifies a field of an enumeration with its type, and
+                # a name that type has no field of becomes a C++ error naming the
+                # generated call site rather than the step that wrote it.
+                fields = enums.get(str(entry.get('type', '')).rsplit('::', 1)[-1])
+                if fields and isinstance(given, str) \
+                        and not given.startswith('expr:') \
+                        and given.rsplit('::', 1)[-1] not in fields:
+                    fail('{} sends {}({}={}), and "{}" has no such field. It has: {}'
+                         .format(here, send, entry.get('name'), json.dumps(given),
+                                 entry.get('type'), ', '.join(fields)))
             if isinstance(wait, bool) or not isinstance(wait, int) or wait < 0:
                 fail('{}: wait is a number of milliseconds'.format(here))
             if target is not None and wait:
