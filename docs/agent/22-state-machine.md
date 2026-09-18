@@ -73,7 +73,8 @@ machine that is never initialised accepts no stimulus and runs nothing.
 
 **The division of work.** A request handler converts the call into a stimulus and
 decides nothing. An action performs an effect and asks the machine nothing. Every
-decision lives in the document.
+decision lives in the document. An action does not know which trigger ran it, so two
+requests that answer differently each get their own action.
 
 ## Writing the document
 

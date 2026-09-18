@@ -321,7 +321,6 @@ and empty, and every document of this project is generated from it. Fill its val
 and keep its keys, then:
 
 ```bash
-python3 {sdk}/tools/agent/gen_docs.py --spec design.json --review
 python3 {sdk}/tools/agent/build_project.py --spec design.json
 python3 {sdk}/tools/agent/build_project.py --run
 ```
@@ -329,20 +328,16 @@ python3 {sdk}/tools/agent/build_project.py --run
 The same on Windows, where the interpreter is `python`:
 
 ```bat
-python {sdk}/tools/agent/gen_docs.py --spec design.json --review
 python {sdk}/tools/agent/build_project.py --spec design.json
 python {sdk}/tools/agent/build_project.py --run
 ```
 
-The review writes nothing and takes a second: it prints what the generator would
-refuse and every note the design earns. Answer all of it in one edit, because after
-the build each of those findings costs a regeneration.
-
-The second call builds. **It compiles the framework too, so give it a command timeout
+The first call builds, and checks the design before anything else: a refused design
+stops it within seconds. **It compiles the framework too, so give it a command timeout
 of at least 15 minutes**; a shorter one is reported as a timeout and is not a failure
 of the build. `--run` rebuilds whatever changed and then runs every scenario in
 `scenarios.json`: it starts each process in the order that project needs, waits for
-the lines the scenario expects and stops every process it started. These three commands
+the lines the scenario expects and stops every process it started. These two commands
 are the whole route, on both systems, and nothing else here starts a process.
 
 **`--run` exiting 0 is what done means**, and the lines it prints are the evidence to

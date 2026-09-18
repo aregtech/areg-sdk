@@ -496,9 +496,11 @@ def main():
         return 0
 
     print('')
-    print('Every step passed. Run the scenarios next, or pass --run to do both here:')
-    print('  python3 {} --build {}/bin'
-          .format(os.path.join(HERE, 'run_scenarios.py'), args.build))
+    print('Every step passed. Next, and after every fix, the same command with --run:')
+    print('it applies the worksheet, builds, runs the scenarios and the final check:')
+    print('  python3 {} {} --run'.format(
+        os.path.join(HERE, 'build_project.py'),
+        ' '.join('--spec ' + spec for spec in args.spec)).replace('  ', ' '))
     return 0
 
 

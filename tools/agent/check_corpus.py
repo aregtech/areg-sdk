@@ -2828,6 +2828,7 @@ def run():
     check_names_carry_signatures(report)
     check_step_output_whole(report)
     check_design_reviewable(report)
+    check_codegen_plain_error(report)
     check_errors_follow_output(report)
     check_regeneration_report(report)
     check_regeneration_idempotent(report)
@@ -5020,14 +5021,50 @@ def check_step_output_whole(report):
               'and its last lines when it is longer')
 
 
+def check_codegen_plain_error(report):
+    """A document codegen.jar reports an error for is refused, whatever its exit code.
+
+    It exits 0 on a parameter name given two types across the responses and broadcasts
+    of one interface, and says so only in a plain "error:" line.
+    """
+    tool = os.path.join(ROOT, 'tools', 'agent', 'gen_docs.py')
+    example = subprocess.run([sys.executable, tool, '--example'],
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                             universal_newlines=True)
+    if example.returncode != 0:
+        report.fail('codegen-plain-error', 'gen_docs.py --example does not run')
+        return
+    design = json.loads(example.stdout)
+    service = design['interfaces'][0]
+    service['requests'][0].setdefault('answer', []).append(
+        {'name': 'level', 'type': 'uint32'})
+    service['broadcasts'][0]['params'].append({'name': 'level', 'type': 'String'})
+    design['machines'] = []
+    holder = tempfile.mkdtemp(prefix='areg-plain-error-')
+    try:
+        with open(os.path.join(holder, 'design.json'), 'w', encoding='utf-8') as handle:
+            json.dump(design, handle)
+        reviewed = subprocess.run([sys.executable, tool, '--spec', 'design.json',
+                                   '--review'], cwd=holder, stdout=subprocess.PIPE,
+                                  stderr=subprocess.STDOUT, universal_newlines=True)
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    if reviewed.returncode == 0:
+        report.fail('codegen-plain-error',
+                    'a design giving "level" two types in one interface reviews clean: '
+                    'codegen.jar reported it with a plain "error:" line and exit 0, '
+                    'and the review read that as a pass')
+        return
+    report.ok('codegen-plain-error',
+              'a codegen error reported with exit 0 still refuses the design')
+
+
 def check_design_reviewable(report):
     """A design can be reviewed before it is built, and the review writes nothing.
 
     Every note gen_docs.py prints is a design finding: an attribute no rule reads, a
     state no consumer can see, which states answer each trigger. Printed only by a
-    generation, each of them costs a --regenerate to act on. Run 20260917a-atm read
-    "get_balance  Idle*" out of the trigger table after a successful build and spent
-    five of its forty-two requests redesigning from there.
+    generation, each of them costs a --regenerate to act on.
     """
     tool = os.path.join(ROOT, 'tools', 'agent', 'gen_docs.py')
     example = subprocess.run([sys.executable, tool, '--example'],
@@ -5081,23 +5118,8 @@ def check_design_reviewable(report):
     finally:
         shutil.rmtree(holder, ignore_errors=True)
 
-    page = os.path.join(AGENT_DIR, '01-runbook.md')
-    with open(page, encoding='utf-8') as handle:
-        text = handle.read()
-    if '--review' not in text:
-        report.fail('design-review',
-                    '01-runbook.md never names gen_docs.py --review, so the golden '
-                    'path meets the design notes only after a generation')
-        return
-    if text.index('--review') > text.index('build_project.py --spec'):
-        report.fail('design-review',
-                    '01-runbook.md names gen_docs.py --review after '
-                    'build_project.py --spec. The checkpoint is worth a request only '
-                    'while the design is still one file to edit')
-        return
     report.ok('design-review',
-              'a design is reviewed before it is built, the review writes nothing, '
-              'and it prints the notes the generation prints')
+              'a review writes nothing and prints the notes the generation prints')
 
 
 def check_errors_follow_output(report):

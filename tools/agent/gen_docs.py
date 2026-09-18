@@ -1960,6 +1960,7 @@ TEMPLATE = {
                "name; without answer it has none. A broadcast reaches every subscribed consumer.",
                "A request, response or broadcast name is kept as written after its prefix, so",
                "write it snake_case: insert_coin is request_insert_coin. Attributes are converted.",
+               "A parameter name used in several answers and broadcasts has one type in all.",
                "values: the legal values of a parameter, when they are a set and the type does",
                "not already say so. A step that sends one outside it is refused here rather",
                "than reaching a provider that ignores it and a step that then awaits for ever.",

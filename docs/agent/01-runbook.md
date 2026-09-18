@@ -121,12 +121,6 @@ document of the spec and every source it generates. A source you add yourself go
 its executable's `macro_declare_executable` line, relative to `src/`; a header is
 included as `"src/<dir>/Name.hpp"` from anywhere in `src/`.
 
-**Check the design before you build it.** A second, and it writes nothing: it prints what the generator would refuse and every note the design earns -- an attribute no rule of the machine reads, a state no consumer can see, which states answer each trigger. Answer all of it in one edit. After the build, each of these findings costs a regeneration instead.
-
-```
-python3 <areg-sdk>/tools/agent/gen_docs.py --spec design.json --review
-```
-
 ## 5. Documents, application and build -- one command
 
 **This call compiles the framework itself, so give it a command timeout of at least

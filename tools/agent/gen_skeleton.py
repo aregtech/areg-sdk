@@ -76,6 +76,8 @@ MARKER = re.compile(r'//\s*TODO\(you\)\s+([A-Za-z_][\w]*)\s*:\s*(.*?)\s*$')
 # the sections, their order and the names each body may call.
 FILLER = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                       'fill_markers.py').replace(os.sep, '/')
+BUILDER = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                       'build_project.py').replace(os.sep, '/')
 WORKSHEET = 'bodies.txt'
 
 
@@ -86,10 +88,12 @@ WORKSHEET_NOTE = (
     '  {total} hole(s) in {files} file(s). {path} is written beside this project:\n'
     '  one section for each, in order, with the function it sits in and every name\n'
     '  a body may call. It is {lines} line(s): read it whole, in one call, and do\n'
-    '  not page through it. Fill it, then give it to the filler in one command:\n'
+    '  not page through it. Fill it, then apply it, build and run the scenarios in\n'
+    '  one command:\n'
     '\n'
-    '    python3 {tool} --bodies {path}\n'
+    '    python3 {build} --spec design.json --run\n'
     '\n'
+    '  A project with no design.json applies it with python3 {tool} --bodies {path}.\n'
     '  A line tagged "// placeholder(you)" under a marker goes when that marker is\n'
     '  filled; a line with no tag is real code. gen_skeleton.py --todos lists the\n'
     '  markers left, each exactly as it stands in its file.')
@@ -206,7 +210,8 @@ def print_todos(produced, out, written, holes=0, scenarios=''):
             lines = sum(1 for _ in handle)
     except OSError:
         pass
-    print(WORKSHEET_NOTE.format(total=total, files=files, tool=FILLER, path=WORKSHEET,
+    print(WORKSHEET_NOTE.format(total=total, files=files, tool=FILLER, build=BUILDER,
+                                path=WORKSHEET,
                                 lines=lines))
 
 
@@ -218,9 +223,12 @@ def print_todos(produced, out, written, holes=0, scenarios=''):
 # ---------------------------------------------------------------------------
 WORKSHEET_HEAD = """\
 #| The worksheet of this project: one section per open marker, in file order.
-#| Under each "==" line write the code that replaces that marker, then run:
+#| Under each "==" line write the code that replaces that marker, then apply it,
+#| build and run the scenarios in one command:
 #|
-#|   python3 {tool} --bodies {path}
+#|   python3 {build} --spec design.json --run
+#|
+#| A project with no design.json applies it with python3 {tool} --bodies {path}.
 #|
 #| A line starting with "#|" is furniture of this file and never reaches a source.
 #| Everything else under a "==" line is code, copied as written: a comment in a
@@ -240,8 +248,7 @@ WORKSHEET_HEAD = """\
 #| the same section: change the section, run the command again, and that body alone
 #| is rewritten where it stands. A scenario that fails names the section its check is
 #| in, so the section to change is the one the failure printed, and no source file is
-#| opened to find it. build_project.py applies this file before every build, so one
-#| command carries a change from here through the build to the scenarios.
+#| opened to find it.
 #|
 #| No source file has to be opened to fill this in: every name a body may call is
 #| named below, every place a body belongs is a section below, and each section
@@ -504,7 +511,7 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
                 carried[file_name] = (os.path.basename(file_name)[:-4], members, helpers,
                                       helper_docs(text))
 
-    lines = [WORKSHEET_HEAD.format(tool=FILLER, path=WORKSHEET,
+    lines = [WORKSHEET_HEAD.format(tool=FILLER, build=BUILDER, path=WORKSHEET,
                                    total=len(sections) + len(holes))]
     if carried:
         lines.append('#| These names are taken already. Declaring one of them again in\n'
