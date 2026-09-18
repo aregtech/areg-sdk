@@ -1,10 +1,16 @@
-# Prompt: an ATM with PIN retries and card retention
+# Prompt: an ATM, as a declared state machine
 
 A task for an AI agent: what the software must do, not how to build it.
 
 This is the shape of any system that gates a sensitive action behind a retry-limited
 secret, and that sometimes has to ask for the same secret twice, for two different
 reasons, in the same session.
+
+**The behaviour required here is identical to the ATM task without a state machine.**
+The difference is how it is expressed: there, any structure that works; here, the
+session is a declared state machine. Both are scored against the same checklist, so
+the two runs answer one question -- what a declaration costs against what writing the
+same logic by hand costs.
 
 ---
 
@@ -52,15 +58,26 @@ check: it is refused and retried exactly as the PIN check at login is, including
 three-strikes card retention rule, and its attempt count starts fresh regardless of how
 many wrong attempts the login already used.
 
-**Structure -- the reason for this task.** The PIN check is one piece of logic
-used twice: at login, and again when re-entering the current PIN. Both uses
-behave identically -- same refusals, same remaining-attempt counts, same
-three-strikes retention -- and each use starts its own attempt counter. Write
-that behaviour once and enter it from both places; do not duplicate it.
+**Structure -- the reason for this task. The session is a state machine, declared.**
+Whatever it is written in, the session's behaviour is expressed as named states and
+named transitions between them, in one place, and the code that runs them is
+generated or driven from that declaration. It is not a set of conditionals spread
+through the request handlers, and it is not a `phase` field tested at the top of each
+one. What a state answers, and what it does not, is readable from the declaration
+alone.
 
-Write it as ordinary code -- handlers and the values the session keeps -- and do
-not declare or generate a state machine for the session. Reuse here means one
-piece of code entered twice.
+At minimum the declaration names: no card in the machine; a card in and a PIN being
+checked; logged in; the card retained. If the framework offers no way to declare a
+state machine, write one explicitly -- a state enumeration with a transition table
+that every input goes through -- and say in the report that you had to.
+
+**The PIN check is one piece of logic used twice**: at login, and again when
+re-entering the current PIN. Both uses behave identically -- same refusals, same
+remaining-attempt counts, same three-strikes retention -- and each use starts its own
+attempt counter. Declare that check **once**, as a nested state entered from both
+places, and let each entry start its own attempt counter. Two copies of the same
+states, or one copy with a flag saying which caller it is serving, are both the thing
+this task exists to avoid.
 
 **Stopping and timing out.** The ATM runs until it is stopped: it accepts `-q` or
 `--quit` typed at its console and exits cleanly. Neither program may wait
@@ -129,6 +146,12 @@ framework, against this list:
 - [ ] a retained card cannot be used again for the rest of the run
 - [ ] the login check and the PIN-change re-check run the same PIN-check logic,
       written once, each with its own attempt counter
+- [ ] the session's states and transitions are declared in one place, by name, and
+      the running code follows that declaration rather than restating it
+- [ ] the PIN check is one nested state entered from both places, not two copies and
+      not one copy steered by a flag
+- [ ] a request that arrives in a state that does not answer it is refused, and the
+      refusal names the reason -- no input is silently ignored
 - [ ] the ATM accepts `-q` / `--quit` at its console and exits cleanly
 - [ ] neither program waits more than 20 seconds for something that never arrives
 - [ ] if one side goes away mid-scenario, the other reports it and exits non-zero
@@ -143,11 +166,13 @@ framework, against this list:
 project. Nothing outside the project directory, nothing added to the framework's own
 build, and no IDE or editor project files.
 
-**The PIN check is written once** and entered from both places, each entry with its
-own attempt counter -- not two copies of the same logic.
+**The session's state machine is declared, not coded.** States, transitions, guards
+and the actions each transition runs are named in one declaration, and the code that
+executes them comes from it. The bodies you write are the actions themselves -- what
+happens on entering a state, what a guard answers -- and not the routing between them.
 
-**No state machine is declared or generated.** The session's behaviour is written by
-hand, in whatever structure the code needs.
+**The PIN check is one nested state**, entered from both places, each entry with its
+own attempt counter -- not two copies of the same states.
 
 **The contract between the two programs is declared once**, in whatever form the
 framework declares an interface, and the code that carries it over the connection is
@@ -183,6 +208,7 @@ already have is left out, not guessed.
 
 Then three sentences at most: what the documentation answered well, what you had to
 guess or discover the hard way, and which page you wish had said something it did not.
+Say whether declaring the machine saved you work or cost you work, and where.
 Say plainly wherever you had to search for an answer instead of being routed to one
 -- that is the finding this exercise is really after, and it is worth more than the
 table.

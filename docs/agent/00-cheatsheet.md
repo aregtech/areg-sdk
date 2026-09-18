@@ -32,7 +32,8 @@ awaits a response, broadcast or attribute, or waits some milliseconds. The gener
 writes the sequence, and the worksheet has one `step_<name>` check per awaiting step,
 which may call `fail("why")`, `stay()` or `go_to(Step::Name)`, so a scenario that
 branches fits it too. `gen_docs.py --example`
-shows three steps.
+shows three steps. An argument is written as the value reads -- text for a `String` is
+quoted by the generator, a number is a number -- and `"expr:<c++>"` passes C++ through.
 
 What such a consumer gives up after is `"driver"` of the same interface:
 `connect_seconds` and `reconnect_seconds`, 0 for never; leave `stall_ticks` out and

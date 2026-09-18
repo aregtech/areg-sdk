@@ -10,7 +10,7 @@ the same requirements, with the same agent, model and effort. The first measured
 [`baseline-2026-09-13.md`](baseline-2026-09-13.md).
 
 - [What is here](#what-is-here)
-- [The four task prompts](#the-four-task-prompts)
+- [The five task prompts](#the-five-task-prompts)
 - [The wrappers](#the-wrappers)
 - [Running with run-benchmark.sh](#running-with-run-benchmarksh)
 - [Running one by hand, with any agent](#running-one-by-hand-with-any-agent)
@@ -27,6 +27,7 @@ the same requirements, with the same agent, model and effort. The first measured
 | `prompt-tempalarm.md` | task: temperature monitor with a threshold alarm | nobody; it is the measuring instrument |
 | `prompt-coffeemachine.md` | task: coffee machine with a state machine | nobody |
 | `prompt-atm.md` | task: ATM with PIN retries and card retention | nobody |
+| `prompt-atm-fsm.md` | task: the same ATM, with the session declared as a state machine | nobody |
 | `prompt-printscan.md` | task: multifunction printer with print, scan and copy | nobody |
 | `areg-ai-prompt-template.txt` | the areg wrapper for any task | **you**, four values at the top, when running by hand |
 | `areg-coffeemachine-prompt.txt` | the areg wrapper for `prompt-coffeemachine.md` | as above |
@@ -42,19 +43,26 @@ the same requirements, with the same agent, model and effort. The first measured
 
 ---
 
-## The four task prompts
+## The five task prompts
 
 | Prompt | Builds | Demonstrates |
 |---|---|---|
 | `prompt-tempalarm.md` | a temperature monitor and a simulated operator, in two processes | the plain service shape: a request, a published value, and broadcasts -- no state machine |
 | `prompt-coffeemachine.md` | a coffee machine and a simulated user, in two processes | a state machine: nested states, guarded transitions, and resuming a sequence that was interrupted |
 | `prompt-atm.md` | an ATM and a simulated customer, in two processes | one retry-limited check reached from two places, each with its own attempt count |
+| `prompt-atm-fsm.md` | the same ATM, same checklist | what the same behaviour costs when it is a declared machine instead of hand-written control flow |
 | `prompt-printscan.md` | a multifunction device and a simulated operator, in two processes | two engines scheduled one job at a time, reused by a copy job, with faults reported the same way |
+
+`prompt-atm.md` and `prompt-atm-fsm.md` are **one pair**: the same requirements and the
+same checklist, asked for twice: once with the session written by hand, a declared
+state machine ruled out, and once with it declared. Run both and compare the cost
+against the hand-written body count -- the hand-written arm is cheaper to reach and
+larger to keep.
 
 Run the first two in that order. `prompt-tempalarm.md` is deliberately small and has no
 state machine, so what it costs is what the plain service path costs;
 `prompt-coffeemachine.md` adds the state machine on top of the same shape. Two points
-make a slope. The other two are larger tasks of the same kind.
+make a slope. The other three are larger tasks of the same kind.
 
 **Every task prompt names no framework and no operating system.** Each one holds the same
 sections, and nothing about how to build it:
@@ -278,10 +286,11 @@ not implied by an agent's zero exit.
 Run from the root of the checkout. The fix bound of 15 is what the published pair used.
 
 ```bash
-# The four prompts on areg
+# The five prompts on areg
 examples/ai-benchmark/run-benchmark.sh --task examples/ai-benchmark/prompt-tempalarm.md    --attempts 15
 examples/ai-benchmark/run-benchmark.sh --task examples/ai-benchmark/prompt-coffeemachine.md --attempts 15
 examples/ai-benchmark/run-benchmark.sh --task examples/ai-benchmark/prompt-atm.md          --attempts 15
+examples/ai-benchmark/run-benchmark.sh --task examples/ai-benchmark/prompt-atm-fsm.md      --attempts 15
 examples/ai-benchmark/run-benchmark.sh --task examples/ai-benchmark/prompt-printscan.md    --attempts 15
 
 # The coffee machine on gRPC, the comparison arm
@@ -489,7 +498,7 @@ Prompts that produce something worth reading are welcome.
 - **Keep the task free of framework, tool and operating-system vocabulary.** Say *"on
   resume the machine must continue from the stage it was interrupted in"*, not *"use a
   history state"*. Requirements, not mechanisms.
-- **Keep the five sections** listed under [The four task prompts](#the-four-task-prompts),
+- **Keep the five sections** listed under [The five task prompts](#the-five-task-prompts),
   and add the file to `TASK_PROMPTS` in `tools/agent/check_corpus.py`, which then checks
   it.
 - **Write an acceptance checklist someone could score without asking you what you meant**,

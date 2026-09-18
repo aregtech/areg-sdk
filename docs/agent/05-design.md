@@ -84,8 +84,7 @@ Start with a thread per component. Merge later, with a reason.
 Ask only when there is a reason to separate: independent lifetimes, isolation of a
 crash, different privileges, or different machines. Otherwise use one process.
 
-This is the choice with the highest cost, because it fixes the `Category` in every
-document it touches:
+It fixes the `Category` in every document it touches:
 
 | `Category` | Reach | Needs `mtrouter` |
 |---|---|---|
@@ -103,9 +102,11 @@ sequence that must not be skipped. A handler that starts with `if (mPhase == ...
 a state machine already, written where it cannot be read.
 
 No when each request is answered from the arguments and the stored data. Most
-services are in this group.
+services are.
 
-If yes: `22-state-machine.md`. The machine lives inside one component's provider and
+Answer it here, not in `22-state-machine.md`: that page is the format, not the
+decision. What the machine declares, the bodies do not carry -- give the machine up
+and the same logic is written by hand. It lives inside one component's provider and
 is not part of the contract; consumers see requests and broadcasts, never states.
 
 ## Write this table before any file

@@ -297,6 +297,8 @@ class Machine:
             fail('{} has no action, so it generates nothing to implement'.format(self.where))
 
         self.attribute_names = unique(self.attributes, self.where)
+        self.attribute_types = dict((a['name'], a.get('type'))
+                                    for a in self.attributes if isinstance(a, dict))
         self.constant_names = unique(self.constants, self.where)
         self.timer_names = unique(self.timers, self.where)
         self.event_names = unique(self.events, self.where)
@@ -332,11 +334,16 @@ class Machine:
                 self.event_names.add(name)
 
         self.params_of = {}
+        # The declared type of each of them, so a value written for a String is spelt
+        # as C++ spells one.
+        self.types_of = {}
         for kind, entries in (('Trigger', self.triggers), ('Event', self.events),
                               ('Action', self.actions), ('Condition', self.conditions)):
             for entry in entries:
-                self.params_of[(kind, entry['name'])] = \
-                    [p['name'] for p in named_list(entry, 'params', entry['name'])]
+                declared = named_list(entry, 'params', entry['name'])
+                self.params_of[(kind, entry['name'])] = [p['name'] for p in declared]
+                self.types_of[(kind, entry['name'])] = \
+                    dict((p['name'], p.get('type')) for p in declared)
 
     def stimulus_kind(self, name):
         if name in self.trigger_names:
@@ -382,18 +389,35 @@ def reserve_all(machine, writer, states):
         reserve_all(machine, writer, state.get('states') or [])
 
 
-def source_of(machine, value, stimulus, where):
+# The document types whose values are written in C++ as a quoted literal.
+TEXT_TYPES = ('String', 'WideString')
+
+
+def as_cpp_text(text, type_name):
+    """A literal value as C++ spells it for its declared type.
+
+    Text for a String is quoted here: a design says what a value is, not how C++
+    writes one, and an unquoted CARD-0001 reaches the compiler as a token.
+    """
+    if type_name not in TEXT_TYPES:
+        return text
+    if len(text) > 1 and text.startswith('"') and text.endswith('"'):
+        return text
+    return '"{}"'.format(text.replace(chr(92), chr(92) * 2).replace('"', chr(92) + '"'))
+
+
+def source_of(machine, value, stimulus, where, type_name=None):
     """How a written value reaches the generated code: a declared name or a literal.
 
     "param:x", "attr:X", "const:X", "expr:<c++>" and "lit:<text>" say it outright. A
-    bare name that was declared is that declaration; anything else is a verbatim C++
-    token, so a string literal carries its own quotes. A JSON true or false is the
-    C++ token of that name, not Python's spelling of it.
+    bare name that was declared is that declaration; anything else is a literal, and
+    a literal of a String parameter is quoted here. A JSON true or false is the C++
+    token of that name, not Python's spelling of it.
     """
     text = spell(value)
     prefix, sep, rest = text.partition(':')
     if prefix == 'lit' and sep:
-        return 'Value', rest
+        return 'Value', as_cpp_text(rest, type_name)
     if prefix in SOURCES and sep and not rest:
         fail('{} writes "{}:" with nothing after the colon. Name what it reads, or '
              'write "lit:" for an empty value.'.format(where, prefix))
@@ -413,12 +437,13 @@ def source_of(machine, value, stimulus, where):
         return 'Attribute', text
     if text in machine.constant_names:
         return 'Constant', text
-    return 'Value', text
+    return 'Value', as_cpp_text(text, type_name)
 
 
 def write_arguments(machine, writer, depth, owner_kind, owner, args, stimulus, where):
     """The ArgumentList an ActionCall or an EventSend carries."""
     declared = machine.params_of.get((owner_kind, owner), [])
+    types = machine.types_of.get((owner_kind, owner), {})
     if not args:
         return
     if not isinstance(args, dict):
@@ -429,7 +454,7 @@ def write_arguments(machine, writer, depth, owner_kind, owner, args, stimulus, w
                  .format(where, name, owner, ', '.join(declared) or 'none'))
     writer.add(depth, '<ArgumentList>')
     for name, value in args.items():
-        kind, text = source_of(machine, value, stimulus, where)
+        kind, text = source_of(machine, value, stimulus, where, types.get(name))
         head = '<Argument ID="{}" Name="{}" Source="{}"'.format(
             writer.ident(), esc(name), kind)
         if kind == 'Expression':
@@ -498,7 +523,8 @@ def write_operation(machine, writer, depth, step, stimulus, where):
 def write_assignment(machine, writer, depth, attribute, value, stimulus, where):
     if attribute not in machine.attribute_names:
         fail('{} assigns "{}", which is not in "attributes"'.format(where, attribute))
-    kind, text = source_of(machine, value, stimulus, where)
+    kind, text = source_of(machine, value, stimulus, where,
+                           machine.attribute_types.get(attribute))
     head = '<AttributeSet ID="{}" Attribute="{}" Source="{}"'.format(
         writer.ident(), esc(attribute), kind)
     if kind == 'Expression':
@@ -1771,15 +1797,19 @@ EXAMPLE = {
              "params": [{"name": "width", "type": "uint32"}],
              "answer": [{"name": "accepted", "type": "bool"},
                         {"name": "reason", "type": "String"}]},
-            {"name": "close", "description": "Close the gate."}
+            {"name": "close", "description": "Close the gate.",
+             "params": [{"name": "by", "type": "String"}]}
         ],
         "broadcasts": [{"name": "gate_moved",
                         "params": [{"name": "reading", "type": "GateTypes::Reading"}]}],
         "driver": {"connect_seconds": 10, "reconnect_seconds": 10},
         "steps": [{"name": "open_wide", "send": "open", "args": {"width": 1200}},
                   {"name": "hold", "wait": 500},
-                  {"name": "close_gate", "send": "close", "await": "Width",
-                   "description": "Its check calls stay() until Width is 0."}]
+                  {"name": "close_gate", "send": "close",
+                   "args": {"by": "night shift"}, "await": "Width",
+                   "description": "A String value is written as it reads: the "
+                                  "generator quotes it. Its check calls stay() "
+                                  "until Width is 0."}]
     }],
     "machines": [{
         "name": "Gate",

@@ -1291,11 +1291,27 @@ def pascal(name):
     return ''.join(part[:1].upper() + part[1:] for part in name.split('_') if part)
 
 
-def cpp_value(value):
-    """A value of design.json as the C++ text an argument is written with."""
+# The document types whose values are written in C++ as a quoted literal.
+TEXT_TYPES = ('String', 'WideString')
+
+
+def cpp_value(value, type_name=None):
+    """A value of design.json as the C++ text an argument is written with.
+
+    A design says what a value is, not how C++ spells it, so text given for a String
+    parameter is quoted here. Text that already carries its own quotes stands as it
+    is, and "expr:<c++>" passes anything through verbatim.
+    """
     if isinstance(value, bool):
         return 'true' if value else 'false'
-    return str(value)
+    text = str(value)
+    if text.startswith('expr:'):
+        return text[5:]
+    if type_name in TEXT_TYPES and isinstance(value, str):
+        if len(text) > 1 and text.startswith('"') and text.endswith('"'):
+            return text
+        return '"{}"'.format(text.replace('\\', '\\\\').replace('"', '\\"'))
+    return text
 
 
 def driver_of(specs, iface):
@@ -1338,10 +1354,10 @@ def steps_of(specs, iface):
                  .format(where, send, iface.name))
         args = step.get('args') or {}
         values = []
-        for param, _ in requests.get(send, []):
+        for param, param_type in requests.get(send, []):
             if param not in args:
                 fail('{} gives no value for "{}" of request "{}"'.format(where, param, send))
-            values.append(cpp_value(args[param]))
+            values.append(cpp_value(args[param], param_type))
         target, wait = step.get('await'), step.get('wait') or 0
         if target is None and send is not None and not wait:
             target = iface.response_of.get(send)

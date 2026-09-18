@@ -600,7 +600,14 @@ TOOLS = ['setup_project.py', 'gen_skeleton.py', 'fsml_layout.py', 'run_scenarios
 # 20260917a-atm learnt the second half of that after a successful generation and
 # paid a --regenerate for it: 5 of 42 requests, $0.20 of a $2.13 run, against 295
 # bytes of residency.
-CORPUS_CEILING = 194849
+# Raised 194849 -> 195103 on 2026-09-18 for the two facts run 20260917b-atm could
+# not look up: how a step argument is written (00-cheatsheet.md), and that the
+# machine decision is made in 05-design.md and not by reading the 18 KB format
+# page. The run grepped docs/agent/ for "args", got "No matches found", spent a
+# --help call and then a scenario failure and a --regenerate on it: about $0.19
+# of a $1.53 run, against 254 bytes of residency. It also read the format page
+# and then wrote no machine at all, $0.066.
+CORPUS_CEILING = 195103
 
 PAGE_CEILING = 8 * KB
 # The stop the exception mechanism did not have. An entry in .budgets raises the
@@ -2930,14 +2937,14 @@ def check_spec_value_prefixes(report):
               '"lit:" is the empty value; an empty param/attr/const/expr is refused')
 
 
-# The four task prompts are the comparison itself: the same requirements scored
+# The task prompts are the comparison itself: the same requirements scored
 # against gRPC, ZeroMQ, DDS or areg. A framework name, a tool name or a build command
 # in one of them makes the comparison meaningless, and it has cost measured money --
 # a superseded three-command verify chain in two of these files was obeyed by every
 # run, over the runbook that supersedes it, because the task file is read later and
 # is therefore nearer in context.
 TASK_PROMPTS = ('prompt-tempalarm.md', 'prompt-coffeemachine.md', 'prompt-atm.md',
-                'prompt-printscan.md')
+                'prompt-atm-fsm.md', 'prompt-printscan.md')
 
 # Spellings that can only come from one framework or one operating system.
 TASK_PROMPT_LEAKS = ('.siml', '.fsml', '.dtml', 'setup_project.py', 'gen_skeleton.py',
@@ -4020,7 +4027,7 @@ def check_accessor_collision(report):
 
 STEP_SAMPLE = [{'name': 'open_gate', 'send': 'open', 'args': {'width': 3}},
                {'name': 'settle', 'wait': 100},
-               {'name': 'close_gate', 'send': 'close'},
+               {'name': 'close_gate', 'send': 'close', 'args': {'by': 'night shift'}},
                {'name': 'watch_width', 'await': 'Width'}]
 
 STEP_REFUSALS = [({'name': 'fly', 'send': 'fly'}, 'is not a request'),
@@ -4063,7 +4070,9 @@ def check_step_driver(report):
         with open(made, encoding='utf-8') as handle:
             source = handle.read()
         for wanted, what in (('request_open(3);', 'the request with its argument'),
-                             ('request_close();', 'a request with no answer'),
+                             ('request_close("night shift");',
+                              'a request with no answer, and a String argument the '
+                              'design writes as plain text and C++ needs quoted'),
                              ('mHold.start_timer(100,', 'a timed wait'),
                              ('quit_with(0);', 'the exit after the last step'),
                              ('begin(Step::OpenGate);', 'the first step')):

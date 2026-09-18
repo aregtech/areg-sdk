@@ -854,6 +854,44 @@ def self_test():
         shutil.rmtree(root, ignore_errors=True)
 
 
+def newer_than_binaries(scenarios, build_dirs, root):
+    """The source files changed since the binaries the scenarios just ran were built.
+
+    A pass proves the binaries, not the tree. Without this the reader has to run the
+    build again to find out whether the two still agree, which is a second verdict
+    for the same question.
+    """
+    built = []
+    for scenario in scenarios:
+        for spec in scenario.get('procs') or []:
+            found = find_binary(spec.get('binary') or '', build_dirs)
+            if found:
+                try:
+                    built.append(os.path.getmtime(found))
+                except OSError:
+                    pass
+    if not built:
+        return []
+    oldest = min(built)
+    changed = []
+    for base, _dirs, names in os.walk(os.path.join(root, 'src')):
+        for name in names:
+            path = os.path.join(base, name)
+            try:
+                if os.path.getmtime(path) > oldest:
+                    changed.append(os.path.relpath(path, root).replace(os.sep, '/'))
+            except OSError:
+                pass
+    for name in ('bodies.txt', 'design.json'):
+        path = os.path.join(root, name)
+        try:
+            if os.path.exists(path) and os.path.getmtime(path) > oldest:
+                changed.append(name)
+        except OSError:
+            pass
+    return sorted(changed)
+
+
 def main():
     parser = argparse.ArgumentParser(
         description='Run application scenarios.',
@@ -962,6 +1000,19 @@ def main():
                           'results': results}, indent=2))
     else:
         print('{} passed, {} failed'.format(len(results) - len(failed), len(failed)))
+        if not failed and not still_open:
+            root = os.path.dirname(os.path.abspath(args.file)) or '.'
+            changed = newer_than_binaries(scenarios, build_dirs, root)
+            if changed:
+                print('{} file(s) changed since these binaries were built, so this run '
+                      'proves the last build and not the tree: {}{}. Build and run in '
+                      'one call with build_project.py --spec <design> --run.'
+                      .format(len(changed), ', '.join(changed[:3]),
+                              ', ...' if len(changed) > 3 else ''))
+            else:
+                print('Nothing has changed since these binaries were built, so this is '
+                      'the verdict: build_project.py --run would rebuild nothing and '
+                      'run the same scenarios.')
         if still_open:
             print('{} marker(s) still open, so this project is not finished:'
                   .format(len(still_open)))
