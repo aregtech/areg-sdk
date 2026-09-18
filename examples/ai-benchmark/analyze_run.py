@@ -93,6 +93,34 @@ def meta_of(run):
     return found
 
 
+def run_facts(result, requests, tot):
+    """Why the run stopped, whether it began on a warm cache, and the TTL it wrote at.
+
+    Two runs compare as prices only when all three agree.
+    """
+    stop = result.get("terminal_reason") or "unknown"
+    if result.get("api_error_status"):
+        stop += " %s" % result.get("api_error_status")
+    first = requests[0]["cr"]
+    start = ("warm, %s tokens read from an earlier run's cache" % format(first, ",")
+             if first else "cold")
+    if tot["w5"] and tot["w1"]:
+        ttl = "mixed, %d%% of writes at 5m" % round(
+            100.0 * tot["w5"] / (tot["w5"] + tot["w1"]))
+    else:
+        ttl = "5m" if tot["w5"] else "1h"
+    return {"stop": stop, "prefix": start, "ttl": ttl}
+
+
+def record(run, meta, facts):
+    """Appends the facts meta.txt does not hold yet."""
+    lines = ["%-8s %s\n" % (key, facts[key]) for key in ("stop", "prefix", "ttl")
+             if key not in meta]
+    if lines:
+        with open(os.path.join(run, "meta.txt"), "a", encoding="utf-8") as handle:
+            handle.writelines(lines)
+
+
 def sdk_of(run, given):
     if given:
         return os.path.abspath(given)
@@ -408,6 +436,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("run", nargs="?", default=".", help="the run directory")
     parser.add_argument("--sdk", help="the SDK the run read (default: meta.txt, then here)")
+    parser.add_argument("--record", action="store_true",
+                        help="also append stop, start and cache ttl to meta.txt")
     args = parser.parse_args()
     run = args.run
     sdk = sdk_of(run, args.sdk).rstrip("/")
@@ -510,8 +540,17 @@ def main():
                 if "sonnet" not in str(v.get("canonicalModel") or ""))
     cost = (base + tot["w5"] * PRICE_W5 + tot["w1"] * PRICE_W1) / 1e6 + aside
     normal = (base + (tot["w5"] + tot["w1"]) * PRICE_W1) / 1e6 + aside
+    facts = run_facts(result, requests, tot)
+    if args.record:
+        record(run, meta, facts)
     print("== %s" % run)
+    if facts["stop"] != "completed":
+        print("   INCOMPLETE: the run stopped on %s; its price is not a price point"
+              % facts["stop"])
     print("   %-26s %s" % ("session", sid))
+    print("   %-26s %s" % ("stop", facts["stop"]))
+    print("   %-26s %s" % ("cache at start", facts["prefix"]))
+    print("   %-26s %s" % ("cache ttl", facts["ttl"]))
     areg_arm = (meta.get("framework") or "areg").strip() == "areg"
     print("   %-26s %s" % ("sdk read" if areg_arm else "runner staged from", sdk))
     if meta.get("model") and meta.get("model") != "sonnet":

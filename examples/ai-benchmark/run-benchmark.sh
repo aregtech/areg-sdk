@@ -580,7 +580,7 @@ Be specific and short: a list, not prose."
     # A run that failed is the one most worth reading, and the analysis is what says
     # why. It runs whatever the exit code was, and it never changes that code.
     case "${AGENT}" in
-        claude)  python3 "${HERE}/analyze_run.py" "${RUN}" || true ;;
+        claude)  python3 "${HERE}/analyze_run.py" "${RUN}" --record || true ;;
         copilot) python3 "${HERE}/measure.py" "${RUN}/result.json" || true ;;
         *) echo "usage: native metrics in ${RESULT}; no cross-agent cost conversion" ;;
     esac

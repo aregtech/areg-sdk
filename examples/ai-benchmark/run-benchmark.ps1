@@ -732,7 +732,7 @@ Be specific and short: a list, not prose.
     # A run that failed is the one most worth reading, and the analysis is what says
     # why. It runs whatever the exit code was, and it never changes that code.
     switch ($Agent) {
-        'claude'  { Write-Output (Invoke-Python (Join-Path $HERE 'analyze_run.py') $Run) }
+        'claude'  { Write-Output (Invoke-Python (Join-Path $HERE 'analyze_run.py') $Run '--record') }
         'copilot' { Write-Output (Invoke-Python (Join-Path $HERE 'measure.py') (Join-Path $Run 'result.json')) }
         default   { Write-Output "usage: native metrics in $result; no cross-agent cost conversion" }
     }

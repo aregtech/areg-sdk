@@ -369,11 +369,20 @@ STEPS_NOTE = ['a step_ section runs only while its step is current. fail("why") 
               'nothing to check still takes one line: a // comment saying so']
 
 
-UPDATE_NOTE = ['every update_ body runs inside the check the generated handler makes,',
-               'so the value is valid and no test of state is needed:',
+UPDATE_NOTE = ['every update_ body runs before any step_ check of the same update, and',
+               'inside the check the generated handler makes, so the value is valid and',
+               'no test of state is needed:',
                '    if (state == areg::DataState::DataIsOK)',
                '    {',
                '        <the body>']
+
+
+PEER_LOST_NOTE = ['after this body the reconnect deadline starts: a provider not back within',
+                  'cReconnectSeconds ends the run through fail(), exit 1, so the body only',
+                  'reports the loss. A reconnect_seconds of 0 waits for ever instead']
+
+
+REFUSED_NOTE = ['after this body the run ends with quit_with(1)']
 
 
 # Formatted with the pacing interval, which is declared further down.
@@ -413,6 +422,11 @@ def section_notes(sections):
     checks = [name for name, _, _, _, _ in sections if name.startswith('step_')]
     if checks:
         notes[checks[0]] = STEPS_NOTE
+    names = [name for name, _, _, _, _ in sections]
+    if 'peer_lost' in names:
+        notes['peer_lost'] = PEER_LOST_NOTE
+    if 'service_refused' in names:
+        notes['service_refused'] = REFUSED_NOTE
     if any(name == 'next_step' for name, _, _, _, _ in sections):
         notes['next_step'] = [line.format(STEP_INTERVAL_MS) for line in PACE_NOTE]
     return notes
@@ -2129,7 +2143,7 @@ def component_files(cls, brief, includes, class_lines, state_slot, prelude=(),
     """The .hpp and the .cpp of one component, named after its class."""
     declaration, definitions = split_class(cls, class_lines)
     private = declaration.index('private:')
-    declaration.insert(private + 1, marker(state_slot, state_hint, 4))
+    declaration.insert(private + 1, marker(state_slot, 'private: ' + state_hint, 4))
     guard = cls.upper() + '_HPP'
     header = ['/**',
               ' * \\file    {}.hpp'.format(cls),

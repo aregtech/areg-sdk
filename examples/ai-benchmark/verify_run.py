@@ -128,10 +128,19 @@ def result(key, passed, evidence):
             'evidence': evidence}
 
 
+def progress(text):
+    """Overwrites one status line on a terminal; prints nothing anywhere else."""
+    if sys.stderr.isatty():
+        sys.stderr.write('\r   {:<76}'.format(text)[:80] + ('\r' if not text else ''))
+        sys.stderr.flush()
+
+
 def probe_repeat(scenario, build_dirs, count):
     """The normal scenario, count times. Returns (result, lead times, CPU loads)."""
     passes, leads, loads, first = 0, [], [], None
-    for _ in range(count):
+    for index in range(count):
+        progress('repeat: run {} of {}{}'.format(
+            index + 1, count, ', {:.0f}s each'.format(leads[-1]) if leads else ''))
         passed, detail, observed, wall, cpu = run(scenario, build_dirs)
         if not passed:
             first = first or detail
@@ -149,6 +158,7 @@ def probe_repeat(scenario, build_dirs, count):
 
 def probe_start_order(scenario, build_dirs):
     """The normal scenario with the lead started first and the rest after a delay."""
+    progress('start-order: the rest start {:.0f}s after the lead'.format(START_DELAY))
     procs, lead = processes(scenario)
     lead['delay'] = START_DELAY
     order = [lead] + [p for p in procs if p is not lead]
@@ -179,6 +189,7 @@ def judge_no_peer(name, observed):
 
 def probe_no_peer(scenario, build_dirs):
     """The lead alone: it has to give up, non-zero, within the stated limit."""
+    progress('no-peer: the lead runs alone')
     _, lead = processes(scenario, keep_checks=False)
     limit = WAIT_LIMIT + WAIT_MARGIN
     _, _, observed, _, _ = run(variant(scenario, 'no-peer', [lead], limit), build_dirs)
@@ -214,6 +225,7 @@ def probe_peer_loss(scenario, build_dirs, lead_time):
         return result('peer-loss', False, 'no passing normal run to time the loss against')
     points, failures, reached = [], 0, 0
     for fraction in LOSS_POINTS:
+        progress('peer-loss: the peer is killed at {:.0%} of a normal run'.format(fraction))
         procs, lead = processes(scenario, keep_checks=False)
         peer = next(p for p in procs if p is not lead)
         at = round(fraction * lead_time, 1)
@@ -382,6 +394,7 @@ def main():
     results = []
 
     def report(item):
+        progress('')
         state = {True: 'PASS', False: 'FAIL', None: 'SKIP'}[item['passed']]
         print('   {:5} {:12} {}'.format(state, item['probe'], item['requirement']))
         print('   {:5} {:12} {}'.format('', '', item['evidence']))
