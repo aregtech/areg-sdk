@@ -607,7 +607,15 @@ TOOLS = ['setup_project.py', 'gen_skeleton.py', 'fsml_layout.py', 'run_scenarios
 # --help call and then a scenario failure and a --regenerate on it: about $0.19
 # of a $1.53 run, against 254 bytes of residency. It also read the format page
 # and then wrote no machine at all, $0.066.
-CORPUS_CEILING = 195103
+# Raised 195103 -> 195701 on 2026-09-18 for two facts neither 20260918a run could
+# look up. 20260918a-atmfsm reasoned out that a scripted consumer on local IPC
+# finishes before a "stop" whose "after" matches partway through it, and fixed it
+# with a wait step: the remedy is now in 50-running.md, 400 bytes against 2 of 24
+# requests and $0.09 of a $1.60 run. The other 198 bytes are the "values" key in
+# 00-cheatsheet.md: 20260918a-coffeemachine sent insert_coin(120) where the six
+# legal coins were prose in a parameter description, and the provider ignored it
+# in silence -- 5 of 37 requests and $0.23 of a $2.31 run.
+CORPUS_CEILING = 195701
 
 PAGE_CEILING = 8 * KB
 # The stop the exception mechanism did not have. An entry in .budgets raises the
@@ -4025,7 +4033,7 @@ def check_accessor_collision(report):
                                     'still reported')
 
 
-STEP_SAMPLE = [{'name': 'open_gate', 'send': 'open', 'args': {'width': 3}},
+STEP_SAMPLE = [{'name': 'open_gate', 'send': 'open', 'args': {'width': 600}},
                {'name': 'settle', 'wait': 100},
                {'name': 'close_gate', 'send': 'close', 'args': {'by': 'night shift'}},
                {'name': 'watch_width', 'await': 'Width'}]
@@ -4034,7 +4042,9 @@ STEP_REFUSALS = [({'name': 'fly', 'send': 'fly'}, 'is not a request'),
                  ({'name': 'open_gate', 'send': 'open'}, 'gives no value'),
                  ({'name': 'both', 'await': 'Width', 'wait': 10}, 'does one of the two'),
                  ({'name': 'done', 'wait': 10}, 'the driver declares itself (Start, Done'),
-                 ({'name': 'nothing', 'await': 'Nobody'}, 'no response, broadcast')]
+                 ({'name': 'nothing', 'await': 'Nobody'}, 'no response, broadcast'),
+                 ({'name': 'odd_width', 'send': 'open', 'args': {'width': 3}},
+                  'takes only 600, 1200, 2000')]
 
 
 def check_step_driver(report):
@@ -4069,7 +4079,7 @@ def check_step_driver(report):
             return
         with open(made, encoding='utf-8') as handle:
             source = handle.read()
-        for wanted, what in (('request_open(3);', 'the request with its argument'),
+        for wanted, what in (('request_open(600);', 'the request with its argument'),
                              ('request_close("night shift");',
                               'a request with no answer, and a String argument the '
                               'design writes as plain text and C++ needs quoted'),
@@ -4490,8 +4500,13 @@ def check_worksheet_order_note(report):
             return
         docs = sorted(glob.glob(os.path.join('src', 'services', '*.siml')))
         machines = sorted(glob.glob(os.path.join('src', 'services', '*.fsml')))
+        # With --spec the steps are generated, and a step that waits gives the
+        # consumer its mHold branch. Without it the skeleton has no steps, its
+        # process_timer is six lines shorter, and the quoting below is measured
+        # against a consumer no real project has.
         made = [sys.executable, os.path.join(tools, 'gen_skeleton.py'),
-                '--doc', docs[0], '--app', '--mode', 'ipc', '--force']
+                '--doc', docs[0], '--app', '--mode', 'ipc', '--force',
+                '--spec', 'design.json', '--scenarios', 'scenarios.json']
         if machines:
             made += ['--machine', machines[0]]
         if subprocess.run(made, capture_output=True, text=True).returncode != 0:
@@ -4517,29 +4532,65 @@ def check_worksheet_order_note(report):
                         'the note sits under a section rather than in the header, so a '
                         'run filling a different section never reads it')
             return
-        # The worksheet names mPace, mDeadline and cStallTicks as taken and says
-        # nothing about when they fire. One measured run opened four generated files
-        # for that, at 10,141 tokens; the generated function that decides it is a
-        # dozen lines.
+        # The worksheet names mPace, cStallTicks, mStep and complete() as taken and
+        # says nothing about when they fire or when mStep moves. One measured run
+        # opened seven generated files for that; each function that decides it is a
+        # dozen lines. A limit that quietly drops one is the same as not quoting it.
         head = gen_skeleton.DRIVEN_HEAD.splitlines()[0]
-        quoted = sheet.split(head)[-1] if head in sheet else ''
-        body = [line for line in quoted.splitlines()[:gen_skeleton.DRIVEN_LIMIT + 2]
-                if line.startswith('#|   ')]
-        if head not in sheet or len(body) < 5:
+        if head not in sheet:
             report.fail('order-note',
-                        'the worksheet lists the timers a generated consumer owns and '
-                        'does not quote the {}() that fires them, so a body that has '
-                        'to know when they tick has to open a generated file'
-                        .format(gen_skeleton.DRIVEN_BY))
+                        'the worksheet lists the timers and the step helpers a '
+                        'generated consumer owns and quotes none of them, so a body '
+                        'that has to know when they run has to open a generated file')
             return
+        quoted = sheet.split(head)[-1]
+        for wanted, _ in gen_skeleton.DRIVEN_BY:
+            if '::{}('.format(wanted) not in quoted:
+                report.fail('order-note',
+                            'the worksheet does not quote the generated {}(), so a '
+                            'body that has to know what it does opens the generated '
+                            'file it is in. A body over the quoting limit is dropped '
+                            'without a word: raise DRIVEN_LIMIT, do not shorten the '
+                            'answer'.format(wanted))
+                return
+        # A signature with no behaviour behind it is a name, and a name is a guess.
+        for helper, said in (('void complete()', 'Ends the current step'),
+                             ('void stay()', 'Keeps the current step')):
+            spelt = [line for line in sheet.splitlines() if line.endswith(helper)]
+            if not spelt:
+                report.fail('order-note',
+                            'the worksheet no longer lists "{}" among the names a body '
+                            'may call'.format(helper))
+                return
+            if said not in sheet:
+                report.fail('order-note',
+                            'the worksheet lists "{}" and not what it does, so the '
+                            'header it was read from is opened for the one line that '
+                            'was already written there'.format(helper))
+                return
+        # A step that stalls names the step. What the step sent and waits for is what
+        # turns that into a cause, and both are known when the switch is written.
+        with open(os.path.join('src', 'consumer',
+                               'GateServiceConsumer.cpp'), encoding='utf-8') as handle:
+            consumer = handle.read()
+        for wanted, why in (
+                ('step_detail', 'a stalled run names the step and not what it awaits'),
+                ('dropped(', 'a message arriving on a step with no check for it is '
+                             'discarded with no trace, and the step that wanted it '
+                             'then waits for ever with nothing to read')):
+            if wanted not in consumer:
+                report.fail('order-note',
+                            'the generated consumer carries no {}: {}'
+                            .format(wanted, why))
+                return
     finally:
         os.chdir(here)
         shutil.rmtree(holder, ignore_errors=True)
 
     report.ok('order-note', 'the worksheet says a response and an update are two '
-                            'deliveries, once, in its header and before any section, '
-                            'and quotes the {}() that fires the timers it lists'
-              .format(gen_skeleton.DRIVEN_BY))
+                            'deliveries, once, before any section; quotes every '
+                            'generated body a name does not give away; says what each '
+                            'helper does; and a stall names what it waited for')
 
 
 def check_command_coverage(report):
@@ -5065,11 +5116,21 @@ def check_names_carry_signatures(report):
     header = ('class Cons\n'
               '{\n'
               '    uint32_t mIdle{ 0 };\n'
+              '    //! Starts the deadline timer for this many seconds.\n'
               '    void arm_deadline(uint32_t seconds);\n'
               '    inline Cons & self();\n'
               '    void progressed();\n'
               '};\n')
     members, helpers = gen_skeleton.defined_names(header)
+    # A signature with no behaviour behind it is a name, and a body that has to know
+    # what it does opens the generated file for a line the header already carries.
+    docs = gen_skeleton.helper_docs(header)
+    said = docs.get('void arm_deadline(uint32_t seconds)')
+    if not said or 'deadline timer' not in said:
+        report.fail('name-signatures',
+                    'the worksheet lists a helper without the line its header writes '
+                    'above it, so what that helper does is learnt by opening the file')
+        return
     if 'mIdle' not in members:
         report.fail('name-signatures',
                     'the worksheet no longer lists the members the skeleton declares')

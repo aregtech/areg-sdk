@@ -85,7 +85,8 @@ WORKSHEET = 'bodies.txt'
 WORKSHEET_NOTE = (
     '  {total} hole(s) in {files} file(s). {path} is written beside this project:\n'
     '  one section for each, in order, with the function it sits in and every name\n'
-    '  a body may call. Fill it, then give it to the filler in one command:\n'
+    '  a body may call. It is {lines} line(s): read it whole, in one call, and do\n'
+    '  not page through it. Fill it, then give it to the filler in one command:\n'
     '\n'
     '    python3 {tool} --bodies {path}\n'
     '\n'
@@ -143,6 +144,37 @@ def defined_names(text):
     return members, helpers
 
 
+# The comment a generated header writes above a helper it declares.
+DOC_LINE = re.compile(r'^\s*//!\s?(.*?)\s*$')
+
+
+def helper_docs(text):
+    """What each helper of this class does, by the signature the worksheet spells.
+
+    The header documents every helper it declares in one line. Listing the signature
+    and dropping that line leaves a name with no behaviour behind it, and a body that
+    has to know what it does opens the generated file to find out: one measured run
+    spent seven requests there. The line is already written; this carries it.
+    """
+    found = {}
+    pending = []
+    for line in text.splitlines():
+        doc = DOC_LINE.match(line)
+        if doc:
+            pending.append(doc.group(1))
+            continue
+        if not line.strip():
+            pending = []
+            continue
+        hit = HELPER.match(line)
+        if hit and hit.group(1) not in RESERVED and pending \
+                and ' final' not in line and '= delete' not in line:
+            spelt = ' '.join(line.split()).rstrip('{;').strip()
+            found.setdefault(spelt, ' '.join(pending))
+        pending = []
+    return found
+
+
 def print_todos(produced, out, written, holes=0, scenarios=''):
     """How many holes each generated file leaves, and where the worksheet is.
 
@@ -168,7 +200,14 @@ def print_todos(produced, out, written, holes=0, scenarios=''):
         return
     if written is False:
         print('  {} already carries work and was left as it is.'.format(WORKSHEET))
-    print(WORKSHEET_NOTE.format(total=total, files=files, tool=FILLER, path=WORKSHEET))
+    lines = 0
+    try:
+        with open(WORKSHEET, encoding='utf-8') as handle:
+            lines = sum(1 for _ in handle)
+    except OSError:
+        pass
+    print(WORKSHEET_NOTE.format(total=total, files=files, tool=FILLER, path=WORKSHEET,
+                                lines=lines))
 
 
 # ---------------------------------------------------------------------------
@@ -345,17 +384,24 @@ PACE_NOTE = ['this body runs once per pace tick, every {} ms, and only then. A r
              'the stall watchdog ends the run after cStallTicks ticks']
 
 
-def header_notes(sections):
+def header_notes(sections, awaited=()):
     """The warnings that belong to the whole worksheet, in the order they are shown.
 
     A fact stated on a page the build path does not open is a fact a run pays to
     rediscover, so it is written here. A fact about two bodies is written once at the
     top and not under whichever of them happens to come first: the reader meets it
     before any section, and it cannot land on the section they are not filling.
+
+    A step that awaits a response or an update carries its check in a "step_" section
+    rather than a "response_" or "update_" one, so the sections alone do not say that
+    both deliveries are in play. "awaited" is the kinds the steps wait on, and without
+    it a scenario -- the one shape where the race decides the order of the steps --
+    is the one worksheet the note is missing from.
     """
     answers = [name for name, _, _, _, _ in sections if name.startswith('response_')]
     updates = [name for name, _, _, _, _ in sections if name.startswith('update_')]
-    return ORDER_NOTE if answers and updates else []
+    return ORDER_NOTE if (answers or 'response' in awaited) \
+        and (updates or 'update' in awaited) else []
 
 
 def section_notes(sections):
@@ -372,46 +418,65 @@ def section_notes(sections):
     return notes
 
 
-# The one generated function whose behaviour no name gives away. A worksheet lists
-# mPace, mDeadline, cStallTicks and mIdleTicks as taken, and a body that has to know
-# when the pacing timer ticks or when the stall watchdog fires cannot read that out
-# of the names: one measured run opened four generated files for it. The body is a
-# dozen lines and it is the whole answer.
-DRIVEN_BY = 'process_timer'
-DRIVEN_LIMIT = 20
-DRIVEN_HEAD = ('#| When those timers fire, which no name above says. This is the\n'
-               '#| generated code, quoted so no file has to be opened for it:\n#|')
+# The generated functions whose behaviour no name gives away. A worksheet lists
+# mPace, cStallTicks, mStep and complete() as taken, and a body that has to know when
+# the stall watchdog fires, or when mStep moves, cannot read that out of the names:
+# one measured run opened seven generated files for it. These bodies are the answer.
+# "head" quotes down to the switch, whose cases are the sections of this worksheet.
+DRIVEN_BY = (('process_timer', 'all'), ('complete', 'all'), ('begin', 'head'))
+
+# A body longer than this is a generated switch, one case per step, and the worksheet
+# already carries a section per case. The limit only ever drops such a body: quoting
+# fewer lines than the reader needs is how this facility silently stopped applying to
+# any project with a timed step, whose process_timer runs one line past 20.
+DRIVEN_LIMIT = 32
+DRIVEN_HEAD = ('#| What these do, which no name above says. This is the generated\n'
+               '#| code, quoted so no file has to be opened for it:\n#|')
 
 
 def driven_body(produced):
-    """The generated process_timer of each component, as (class, lines)."""
+    """Each generated function of DRIVEN_BY, as (class, lines), in file order."""
     found = []
     for file_name, text in produced:
         if not file_name.endswith('.cpp'):
             continue
         lines = text.splitlines()
-        for index, line in enumerate(lines):
-            if '::' + DRIVEN_BY + '(' not in line or line.startswith(' '):
-                continue
-            end = index
-            while end < len(lines) and lines[end] != '}':
-                end += 1
-            body = lines[index:end + 1]
-            # A body that is nothing but its own marker teaches nothing. One that
-            # carries generated control flow is quoted whole, the marker included:
-            # where the author's own code goes relative to it is the other half of
-            # the answer.
-            real = [one for one in body[2:-1]
-                    if one.strip() and not MARKER.search(one)
-                    and PLACEHOLDER_TAG.strip() not in one]
-            if real and len(body) <= DRIVEN_LIMIT:
+        for wanted, keep in DRIVEN_BY:
+            body = one_driven(lines, wanted, keep)
+            if body:
                 found.append((os.path.basename(file_name)[:-4], body))
-            break
     return found
 
 
+def one_driven(lines, wanted, keep):
+    """One generated function of a .cpp, quoted whole or down to its switch."""
+    for index, line in enumerate(lines):
+        if '::' + wanted + '(' not in line or line.startswith(' '):
+            continue
+        end = index
+        while end < len(lines) and lines[end] != '}':
+            end += 1
+        body = lines[index:end + 1]
+        if keep == 'head':
+            cut = next((n for n, one in enumerate(body)
+                        if one.strip().startswith('switch')), None)
+            if cut is None:
+                return []
+            return body[:cut] + ['    // ... one case per step, each of them a '
+                                 'section of this worksheet.', '}']
+        # A body that is nothing but its own marker teaches nothing. One that
+        # carries generated control flow is quoted whole, the marker included:
+        # where the author's own code goes relative to it is the other half of
+        # the answer.
+        real = [one for one in body[2:-1]
+                if one.strip() and not MARKER.search(one)
+                and PLACEHOLDER_TAG.strip() not in one]
+        return body if real and len(body) <= DRIVEN_LIMIT else []
+    return []
+
+
 def worksheet_lines(produced, out, iface, document, machine, machine_doc,
-                    scenarios=None):
+                    scenarios=None, steps=()):
     """The whole worksheet, ready to write."""
     sections = worksheet_sections(produced, out)
     holes = scenario_holes(scenarios) if scenarios else []
@@ -422,21 +487,26 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
         if file_name.endswith('.hpp'):
             members, helpers = defined_names(text)
             if members or helpers:
-                carried[file_name] = (os.path.basename(file_name)[:-4], members, helpers)
+                carried[file_name] = (os.path.basename(file_name)[:-4], members, helpers,
+                                      helper_docs(text))
 
     lines = [WORKSHEET_HEAD.format(tool=FILLER, path=WORKSHEET,
                                    total=len(sections) + len(holes))]
     if carried:
         lines.append('#| These names are taken already. Declaring one of them again in\n'
                      '#| a section below shadows it, and the compiler points at the line\n'
-                     '#| that reads the wrong one, not at the declaration:\n#|')
-        for _, (cls, members, helpers) in sorted(carried.items()):
-            parts = []
+                     '#| that reads the wrong one, not at the declaration. A helper is\n'
+                     '#| listed with what it does, so a body calls it without reading\n'
+                     '#| the generated file it is declared in:\n#|')
+        for _, (cls, members, helpers, docs) in sorted(carried.items()):
+            lines.append('#|   {}'.format(cls))
             if members:
-                parts.append('members ' + ', '.join(members))
-            if helpers:
-                parts.append('helpers ' + '; '.join(helpers))
-            lines.append('#|   {}: {}'.format(cls, '; '.join(parts)))
+                lines.append('#|     members: ' + ', '.join(members))
+            for spelt in helpers:
+                lines.append('#|     {}'.format(spelt))
+                said = docs.get(spelt)
+                if said:
+                    lines.append('#|         {}'.format(said))
         lines.append('#|')
     driven = driven_body(produced)
     if driven:
@@ -454,7 +524,8 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
         for line in contract_lines(spec, doc):
             lines.append(('#| ' + line).rstrip())
     lines.append('#|')
-    heading = header_notes(sections)
+    heading = header_notes(sections, set(step['awaits'][0] for step in steps
+                                         if step['awaits']))
     for line in heading:
         lines.append(('#| ' + line).rstrip())
     if heading:
@@ -490,10 +561,10 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
 
 
 def write_worksheet(produced, out, iface, document, machine, machine_doc,
-                    scenarios=None):
+                    scenarios=None, steps=()):
     """Write the worksheet, unless one already carries work."""
     lines = worksheet_lines(produced, out, iface, document, machine, machine_doc,
-                            scenarios)
+                            scenarios, steps)
     if not lines:
         return None
     if os.path.exists(WORKSHEET) and not worksheet_pristine(WORKSHEET):
@@ -1378,6 +1449,24 @@ STEP_CHECK = {'response': 'check this answer', 'broadcast': 'check this broadcas
               'update': 'check the new value'}
 
 
+def step_detail(step):
+    """What one step sent and what it waits for, as a C++ string literal's contents.
+
+    A stall names the step it stopped on. The step alone does not say what the run
+    was waiting for, and reading that out of the design costs a request at the moment
+    the answer is needed most.
+    """
+    said = []
+    if step['send']:
+        said.append('sent {}({})'.format(step['call'], ', '.join(step['args'])))
+    if step['awaits']:
+        said.append('awaits {} {}'.format(*step['awaits']))
+    elif step['wait']:
+        said.append('waits {} ms'.format(step['wait']))
+    return ' and '.join(said).replace('\\', '\\\\').replace('"', '\\"') \
+        if said else 'waits for nothing'
+
+
 def step_dispatch(steps, kind, name, indent):
     """The check of every step waiting on this handler, then the end of that step."""
     waiting = [step for step in steps if step['awaits'] == (kind, name)]
@@ -1394,7 +1483,12 @@ def step_dispatch(steps, kind, name, indent):
                   marker('step_' + step['name'], STEP_CHECK[kind], indent + 8),
                   pad + '    }',
                   pad + '    break;']
-    lines += [pad + 'default:', pad + '    return;', pad + '}', pad + 'complete();']
+    # A message arriving on a step with no case for it is not an error: most steps
+    # ignore most messages. It is remembered rather than reported, because the step
+    # that did want it waits for ever and the stall report is where that is answered.
+    lines += [pad + 'default:',
+              pad + '    dropped("{} {}");'.format(kind, name),
+              pad + '    return;', pad + '}', pad + 'complete();']
     return lines
 
 
@@ -1627,7 +1721,9 @@ def consumer_class(iface, cls, steps=(), driver=None):
         # in that code never stops it counting.
         lines += ['        if ((&timer == &mPace) && (cStallTicks != 0) && (++mIdleTicks >= cStallTicks))',
                   '        {',
-                  '            fail("the scenario stopped making progress");',
+                  '            {};'.format('stalled()' if steps
+                                           else 'fail("the scenario stopped making '
+                                                'progress")'),
                   '            return;',
                   '        }']
         if not steps:
@@ -1715,6 +1811,60 @@ def consumer_class(iface, cls, steps=(), driver=None):
         lines += ['        default:  return "no step";',
                   '        }',
                   '    }',
+                  '']
+        lines += ['    //! What the step the scenario is on sent, and what it waits for.',
+                  '    const char * step_detail()',
+                  '    {',
+                  '        switch (mStep)',
+                  '        {']
+        lines += ['        case Step::{}:  return "{}";'.format(step['enum'],
+                                                                step_detail(step))
+                  for step in steps]
+        lines += ['        default:  return "waits for nothing";',
+                  '        }',
+                  '    }',
+                  '',
+                  '    //! Ends the scenario when no step has advanced, naming what the',
+                  '    //! step waits for and every message an earlier step discarded.',
+                  '    void stalled()',
+                  '    {',
+                  '        fail("the scenario stopped making progress");',
+                  '        std::cerr << "  " << step_slot() << " " << step_detail()',
+                  '                  << ". Nothing arrived." << std::endl;',
+                  '        for (uint32_t kept = 0; kept < mDroppedKept; ++ kept)',
+                  '        {',
+                  '            std::cerr << "  dropped: " << mDroppedWhat[kept]',
+                  '                      << " arrived on " << mDroppedStep[kept]',
+                  '                      << ", which has no check for it."',
+                  '                      << std::endl;',
+                  '        }',
+                  '        if (mDroppedCount > mDroppedKept)',
+                  '        {',
+                  '            std::cerr << "  dropped: and "',
+                  '                      << (mDroppedCount - mDroppedKept)',
+                  '                      << " more." << std::endl;',
+                  '        }',
+                  '    }',
+                  '',
+                  '    //! Remembers a message that arrived on a step with no check',
+                  '    //! for it. The stall report names them.',
+                  '    void dropped(const char * what)',
+                  '    {',
+                  '        if (mDroppedKept < cDroppedMost)',
+                  '        {',
+                  '            mDroppedWhat[mDroppedKept] = what;',
+                  '            mDroppedStep[mDroppedKept] = step_slot();',
+                  '            ++ mDroppedKept;',
+                  '        }',
+                  '        ++ mDroppedCount;',
+                  '    }',
+                  '',
+                  '    //! How many discarded messages the stall report names.',
+                  '    static constexpr uint32_t cDroppedMost{ 4 };',
+                  '    const char * mDroppedWhat[cDroppedMost]{};   //!< What each was.',
+                  '    const char * mDroppedStep[cDroppedMost]{};   //!< Where each was.',
+                  '    uint32_t     mDroppedKept{ 0 };    //!< How many are remembered.',
+                  '    uint32_t     mDroppedCount{ 0 };   //!< How many there were.',
                   '']
     lines += ['    //! Ends the scenario as a failure, naming what went wrong and the',
               '    //! step the scenario was on.',
@@ -2445,8 +2595,8 @@ def main():
                 fail('the machine is named "{}", which is also the name of a generated '
                      'component. A .fsml name becomes a C++ namespace; rename the '
                      'machine.'.format(machine.name))
-        produced = app_files(iface, args.mode, include_root, machine,
-                             steps_of(args.spec, iface),
+        steps = steps_of(args.spec, iface)
+        produced = app_files(iface, args.mode, include_root, machine, steps,
                              driver_of(args.spec, iface))
         retained = [(file_name,
                      write(os.path.join(args.out, file_name), text, args.force))
@@ -2471,7 +2621,7 @@ def main():
             print('  {}/CMakeLists.txt: {}'.format(args.out.replace('\\', '/'), change))
         update_scenarios(args.scenarios, args.mode, iface)
         written = write_worksheet(retained, args.out, iface, args.doc,
-                                  machine, args.machine, args.scenarios)
+                                  machine, args.machine, args.scenarios, steps)
         print_todos(retained, args.out, written,
                     len(scenario_holes(args.scenarios)), args.scenarios)
         print(APP_NOTE)

@@ -870,13 +870,17 @@
     </xs:complexType>
 
     <xs:complexType name="cLocation">
+        <xs:annotation><xs:documentation>One include: a C++ header the declared types need, a
+            data type document whose types this machine refers to as Space::Type, or another
+            state machine document that a State@Submachine runs. Name is the path as spelled
+            under a workspace root. Alias and Version are written only for a .fsml
+            entry.</xs:documentation></xs:annotation>
         <xs:all>
             <xs:element name="DeprecateHint" type="cDescription" minOccurs="0"/>
             <xs:element name="Description" type="cDescription" minOccurs="0"/>
         </xs:all>
         <xs:attribute name="ID" type="tId" use="required"/>
         <xs:attribute name="Name" type="xs:string" use="required"/>
-        <!-- Name is the include path, e.g. "common/FsmDefs.hpp"  -->
         <xs:attribute name="Alias" type="tIdentifier"/>
         <!-- Alias: written only for a .fsml entry; the name a State@Submachine uses  -->
         <xs:attribute name="Version" type="tVersion"/>

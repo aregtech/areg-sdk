@@ -35,6 +35,10 @@ branches fits it too. `gen_docs.py --example`
 shows three steps. An argument is written as the value reads -- text for a `String` is
 quoted by the generator, a number is a number -- and `"expr:<c++>"` passes C++ through.
 
+A parameter whose legal values are a set lists them as its `"values"`: a step sending
+one outside it is refused before the build, rather than silently ignored by the
+provider while the step awaits an update nothing sends.
+
 What such a consumer gives up after is `"driver"` of the same interface:
 `connect_seconds` and `reconnect_seconds`, 0 for never; leave `stall_ticks` out and
 it is derived. The generator declares them, so no marker asks for one.

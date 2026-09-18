@@ -439,8 +439,14 @@ def stops_missed(pending):
         why = 'the run ended before {}s'.format(after)
     else:
         why = 'nothing matched {!r}'.format(after)
+    # The lead outrunning the match is the common cause and the remedy is a step,
+    # not a sleep: a run that reaches for pkill or a shell sleep here has lost the
+    # scenario file as the one place the experiment is written down.
     return ('the stop on {} never fired: {}, so the scenario did not test what it '
-            'declares'.format(entry['proc'], why))
+            'declares. A lead that finishes its steps before the match is reached '
+            'outruns the stop: hold it there with a {{"name": "...", "wait": <ms>}} '
+            'step in design.json, right after the step whose output the stop matches'
+            .format(entry['proc'], why))
 
 
 def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_class=None):

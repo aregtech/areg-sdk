@@ -648,7 +648,34 @@ def main():
     print('    of at least 15 minutes. Every later call takes seconds.')
     print('  python3 {}/build_project.py --spec design.json --run'.format(tools))
     print('    once the bodies are filled: builds and runs every scenario in one call.')
+    print_scenarios(root)
     return 0
+
+
+def print_scenarios(root):
+    """The scenarios this scaffold wrote, by name, with the processes each starts.
+
+    A scenario is added by editing this file, and the names and process labels the
+    edit has to match are in it. Printing them here is what a run otherwise spends a
+    request reading back, every time, right before the edit.
+    """
+    try:
+        with open(os.path.join(root, 'scenarios.json'), encoding='utf-8') as handle:
+            scenarios = json.load(handle)['scenarios']
+    except (OSError, ValueError, KeyError, TypeError):
+        return
+    if not scenarios:
+        return
+    print('  scenarios.json already carries {}, and a new one is added by editing it:'
+          .format('one scenario' if len(scenarios) == 1
+                  else '{} scenarios'.format(len(scenarios))))
+    for scenario in scenarios:
+        labels = [spec.get('name') or spec.get('binary', '?')
+                  for spec in scenario.get('procs') or []]
+        print('    "{}": {} -- the last one leads and ends it'
+              .format(scenario.get('name', '?'), ', '.join(labels) or 'no process'))
+    print('    a peer going away is a scenario of its own, with "stop"; '
+          'docs/agent/50-running.md has its keys.')
 
 
 if __name__ == '__main__':

@@ -97,7 +97,7 @@ KEYS = {
     'machine attribute': ('name', 'type', 'value', 'description'),
     'request': ('name', 'description', 'params', 'answer', 'answer_description', 'response'),
     'method': ('name', 'description', 'params'),
-    'parameter': ('name', 'type', 'default', 'description'),
+    'parameter': ('name', 'type', 'default', 'description', 'values'),
     'constant': ('name', 'type', 'value', 'description'),
     'include': ('name', 'description', 'alias', 'version'),
     'timer': ('name', 'timeout', 'repeat', 'description'),
@@ -1500,6 +1500,17 @@ def check_sequences(project):
                 if param not in args:
                     fail('{} gives no value for parameter "{}" of request "{}"'
                          .format(here, param, send))
+            # A value outside the set its parameter declares reaches a provider with
+            # no case for it, which usually does nothing, and the step then awaits an
+            # update nothing sends. The run reads as a stall with no cause.
+            for entry in listed(requests.get(send), 'params'):
+                allowed = entry.get('values')
+                given = args.get(entry.get('name'))
+                if isinstance(allowed, list) and allowed and given not in allowed:
+                    fail('{} sends {}({}={}), and "{}" takes only {}'
+                         .format(here, send, entry.get('name'), json.dumps(given),
+                                 entry.get('name'),
+                                 ', '.join(json.dumps(one) for one in allowed)))
             if isinstance(wait, bool) or not isinstance(wait, int) or wait < 0:
                 fail('{}: wait is a number of milliseconds'.format(here))
             if target is not None and wait:
@@ -1638,26 +1649,28 @@ def otherwise_visible(interface):
     return offered
 
 
-def late_awaits(project):
-    """Steps that await an attribute a request of an earlier step may already have set.
+def late_awaits(project, key='attributes'):
+    """Steps that await a message a request of an earlier step may already have sent.
 
-    An update is sent when a value is set. A step that sends nothing and awaits an
-    attribute begins after the earlier steps, so an update those steps caused has
-    already arrived and gone, and the step waits for one that is never sent.
-    Returns (interface, step, attribute, the earlier step that sent a request).
+    A message is delivered once. A step that sends nothing and awaits one begins only
+    after the earlier steps completed, so a message those steps caused, arriving
+    before this step began, was delivered to a step with no check for it and dropped.
+    An attribute sends another update the next time it is set; a broadcast does not,
+    so the same shape ends the run rather than delaying it.
+    Returns (interface, step, message, the earlier step that sent a request).
     """
     found = []
     for interface in project.get('interfaces') or []:
         steps = interface.get('steps') if isinstance(interface, dict) else None
         if not isinstance(steps, list):
             continue
-        attributes = set(entry.get('name') for entry in listed(interface, 'attributes'))
+        targets = set(entry.get('name') for entry in listed(interface, key))
         sender = None
         for step in steps:
             if not isinstance(step, dict):
                 continue
             target = step.get('await')
-            if step.get('send') is None and target in attributes and sender is not None:
+            if step.get('send') is None and target in targets and sender is not None:
                 found.append((interface.get('name', '?'), step.get('name'), target, sender))
             if step.get('send') is not None:
                 sender = step.get('name')
@@ -1794,7 +1807,9 @@ EXAMPLE = {
         "constants": [{"name": "MaxWidth", "type": "uint32", "value": "2000"}],
         "requests": [
             {"name": "open", "description": "Open the gate to a width.",
-             "params": [{"name": "width", "type": "uint32"}],
+             "params": [{"name": "width", "type": "uint32",
+                         "description": "One of the widths the gate is built for.",
+                         "values": [600, 1200, 2000]}],
              "answer": [{"name": "accepted", "type": "bool"},
                         {"name": "reason", "type": "String"}]},
             {"name": "close", "description": "Close the gate.",
@@ -1905,12 +1920,16 @@ TEMPLATE = {
                "sends every set. A request with answer also declares its response, of the same",
                "name; without answer it has none. A broadcast reaches every subscribed consumer.",
                "A request, response or broadcast name is kept as written after its prefix, so",
-               "write it snake_case: insert_coin is request_insert_coin. Attributes are converted."],
+               "write it snake_case: insert_coin is request_insert_coin. Attributes are converted.",
+               "values: the legal values of a parameter, when they are a set and the type does",
+               "not already say so. A step that sends one outside it is refused here rather",
+               "than reaching a provider that ignores it and a step that then awaits for ever.",
+               "Leave it out for a parameter that takes any value of its type."],
         "name": "", "category": "Public", "description": "",
         "types": [],
         "attributes": [{"name": "", "type": "", "notify": "OnChange", "description": ""}],
         "requests": [{"name": "", "description": "",
-                      "params": [{"name": "", "type": "", "description": ""}],
+                      "params": [{"name": "", "type": "", "description": "", "values": []}],
                       "answer": [{"name": "", "type": "", "description": ""}]}],
         "broadcasts": [{"name": "", "description": "",
                         "params": [{"name": "", "type": "", "description": ""}]}],
@@ -2028,6 +2047,24 @@ def review(project, skipped):
               'awaiting step begins, and then no other comes. Await the attribute on '
               'the step that sends the request that sets it, or await that request\'s '
               'response.')
+    # The same shape on a broadcast, which is worse: an attribute sends another update
+    # the next time it is set, a broadcast never comes again. Whether it is a fault
+    # depends on something no design states -- where the provider sends it -- so this
+    # names the shape and the one question that settles it, once, for every row.
+    once = {}
+    for owner, step, message, sender in late_awaits(project, 'broadcasts'):
+        once.setdefault(owner, []).append('"{}" awaits broadcast "{}" after "{}"'
+                                          .format(step, message, sender))
+    for owner in sorted(once):
+        print('  note  {}: {}, and sends nothing itself.'
+              .format(owner, '; '.join(once[owner])))
+        print('        A broadcast is delivered once. Ask of each: does the provider '
+              'send it while handling that earlier request? Then it arrives before '
+              'this step begins, is dropped, and never comes again -- await it on the '
+              'step that sends the request instead. Does something timed separate '
+              'them, a timer or a state the machine sits in? Then the shape is '
+              'correct. A run that stalls here names the dropped message and the step '
+              'it arrived on.')
     unread = {}
     for spec in project['machines']:
         for name in unread_attributes(spec):

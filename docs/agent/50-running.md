@@ -210,6 +210,12 @@ absent for "as soon as it is running"; `"signal": "kill"` is an abrupt loss,
       "expect": ["service lost, waiting"], "reject": ["crash"] } ] }
 ```
 
+**A scripted consumer on local IPC finishes in well under a second**, so a `stop` whose
+`after` matches a line partway through the script is read only once the lead has
+exited, and nothing is stopped. The runner fails the scenario for it. The remedy is a
+step, never a sleep: a `{"name": "settle", "wait": 3000}` step in `design.json`, right
+after the step `after` matches.
+
 What to expect depends on what the consumer is for. A long-running one must survive
 it -- `Disconnected` and `ConnectionLost` reconnect on their own, so expect the line
 the reconnect path prints and no exit. A client that runs a fixed script and finishes
