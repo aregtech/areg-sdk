@@ -1660,32 +1660,60 @@ def otherwise_visible(interface):
     return offered
 
 
-def late_awaits(project, key='attributes'):
-    """Steps that await a message a request of an earlier step may already have sent.
+def step_holds(step, answered):
+    """What a step waits for before the next begins: a name, milliseconds, or None.
 
-    A message is delivered once. A step that sends nothing and awaits one begins only
-    after the earlier steps completed, so a message those steps caused, arriving
-    before this step began, was delivered to a step with no check for it and dropped.
-    An attribute sends another update the next time it is set; a broadcast does not,
-    so the same shape ends the run rather than delaying it.
-    Returns (interface, step, message, the earlier step that sent a request).
+    A step that sends a request with an answer and names nothing else waits for that
+    answer. A step that waits for nothing ends at once, in the same dispatch.
+    """
+    target, wait = step.get('await'), step.get('wait') or 0
+    if target is None and not wait and step.get('send') in answered:
+        return step.get('send')
+    return target if target is not None else (wait or None)
+
+
+def late_awaits(project, key='attributes'):
+    """Steps that await a message an earlier request may send while another step holds.
+
+    A message arriving while the current step waits for something else is dropped
+    there. A step that sends nothing and awaits one therefore misses what an earlier
+    request caused when a step between them held for something else. A step that
+    awaits the same message receives it, and a step that ends at once holds nothing.
+    Returns (interface, step, message, the holding step, what it holds for, and
+    whether that is the answer to its own request).
     """
     found = []
     for interface in project.get('interfaces') or []:
         steps = interface.get('steps') if isinstance(interface, dict) else None
         if not isinstance(steps, list):
             continue
+        steps = [step for step in steps if isinstance(step, dict)]
         targets = set(entry.get('name') for entry in listed(interface, key))
-        sender = None
-        for step in steps:
-            if not isinstance(step, dict):
-                continue
+        answered = set(entry.get('name') for entry in listed(interface, 'requests')
+                       if 'answer' in entry or entry.get('response'))
+        for index, step in enumerate(steps):
             target = step.get('await')
-            if step.get('send') is None and target in targets and sender is not None:
-                found.append((interface.get('name', '?'), step.get('name'), target, sender))
-            if step.get('send') is not None:
-                sender = step.get('name')
+            if step.get('send') is not None or target not in targets:
+                continue
+            holder = None
+            for earlier in reversed(steps[:index]):
+                held = step_holds(earlier, answered)
+                if held == target:
+                    break
+                if held is not None and holder is None:
+                    holder = (earlier.get('name'), held, held == earlier.get('send'))
+                if earlier.get('send') is not None and holder is not None:
+                    found.append((interface.get('name', '?'), step.get('name'), target)
+                                 + holder)
+                    break
     return found
+
+
+def holding(step, held, answer):
+    """How a note names what a holding step waits for."""
+    if isinstance(held, int):
+        return '"{}" waits {} ms'.format(step, held)
+    return '"{}" waits for {}"{}"'.format(step, 'the answer to ' if answer else '', held)
 
 
 def state_mirrors(project, spec):
@@ -2048,27 +2076,26 @@ def review(project, skipped):
     # One note per finding and one explanation for all of them: the same paragraph
     # under every name is re-sent with every later request of the conversation.
     late = {}
-    for owner, step, attribute, sender in late_awaits(project):
-        late.setdefault(owner, []).append('"{}" awaits "{}" after "{}"'
-                                          .format(step, attribute, sender))
+    for owner, step, attribute, *held in late_awaits(project):
+        late.setdefault(owner, []).append('"{}" awaits "{}" while {}'
+                                          .format(step, attribute, holding(*held)))
     for owner in sorted(late):
-        print('  note  {}: {}, and sends nothing itself.'
-              .format(owner, '; '.join(late[owner])))
-        print('        An update the earlier request caused can arrive before the '
-              'awaiting step begins, and then no other comes. Await the attribute on '
-              'the step that sends the request that sets it, or await that request\'s '
-              'response.')
+        print('  note  {}: {}.'.format(owner, '; '.join(late[owner])))
+        print('        An update arriving while another step waits is dropped there, and '
+              'the awaiting step sees the next one. That is correct when later updates '
+              'follow and its check stay()s until the value it wants. If the dropped '
+              'update can be the last one, the step that sends the request awaits the '
+              'attribute instead.')
     # The same shape on a broadcast, which is worse: an attribute sends another update
     # the next time it is set, a broadcast never comes again. Whether it is a fault
     # depends on something no design states -- where the provider sends it -- so this
     # names the shape and the one question that settles it, once, for every row.
     once = {}
-    for owner, step, message, sender in late_awaits(project, 'broadcasts'):
-        once.setdefault(owner, []).append('"{}" awaits broadcast "{}" after "{}"'
-                                          .format(step, message, sender))
+    for owner, step, message, *held in late_awaits(project, 'broadcasts'):
+        once.setdefault(owner, []).append('"{}" awaits broadcast "{}" while {}'
+                                          .format(step, message, holding(*held)))
     for owner in sorted(once):
-        print('  note  {}: {}, and sends nothing itself.'
-              .format(owner, '; '.join(once[owner])))
+        print('  note  {}: {}.'.format(owner, '; '.join(once[owner])))
         print('        A broadcast is delivered once. Ask of each: does the provider '
               'send it while handling that earlier request? Then it arrives before '
               'this step begins, is dropped, and never comes again -- await it on the '

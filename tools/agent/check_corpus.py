@@ -2163,12 +2163,18 @@ ENTRY_PAGES = ('AGENTS.md', 'docs/agent/01-runbook.md')
 # A fixed stand-in makes the measurement the same on every machine.
 ENTRY_SDK_ROOT = '/opt/areg-sdk'
 ENTRY_KEY = 'entry-path'
+# The runbook row that sends a run to the project's own AGENTS.md, which then joins
+# the entry path.
+ENTRY_PROJECT_READ = re.compile(r'^\| `AGENTS\.md` \|[^\n]*\bread\b', re.I | re.M)
 
 
 def entry_path_bytes():
     """The entry path in bytes, and what each part of it costs."""
     import tempfile, shutil
     parts = [(page, size(*page.split('/'))) for page in ENTRY_PAGES]
+    with open(os.path.join(ROOT, 'docs', 'agent', '01-runbook.md'), encoding='utf-8') as page:
+        if not ENTRY_PROJECT_READ.search(page.read()):
+            return parts
     folder = tempfile.mkdtemp()
     try:
         sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
@@ -2781,6 +2787,7 @@ def run():
     check_example_type_placement(report)
     check_spec_value_prefixes(report)
     check_step_enum_values(report)
+    check_late_awaits(report)
     check_entry_toll(report)
     check_page_budget(report)
     check_corpus_toll(report)
@@ -3005,6 +3012,42 @@ def check_step_enum_values(report):
     report.ok('step-enums',
               'a step argument names a field of an enumeration and the generator '
               'qualifies it; an unknown field is refused')
+
+
+def check_late_awaits(report):
+    """The late-await note fires only where a step can drop the awaited update.
+
+    A step that sends a request with an answer holds for that answer, and an update
+    arriving then is dropped. A step that awaits the attribute itself receives it.
+    """
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_docs
+    except Exception as failure:
+        report.fail('late-awaits', 'gen_docs.py does not import: {}'.format(failure))
+        return
+    cases = (
+        ('holds for its answer', [{'name': 'a', 'send': 'ask'},
+                                  {'name': 'b', 'await': 'X'}], 1),
+        ('awaits the update itself', [{'name': 'a', 'send': 'ask', 'await': 'X'},
+                                      {'name': 'b', 'await': 'X'}], 0),
+        ('ends at once', [{'name': 'a', 'send': 'fire'},
+                          {'name': 'b', 'await': 'X'}], 0),
+        ('a wait between', [{'name': 'a', 'send': 'fire'}, {'name': 'w', 'wait': 100},
+                            {'name': 'b', 'await': 'X'}], 1),
+    )
+    for label, steps, expected in cases:
+        project = {'interfaces': [{
+            'name': 'S', 'attributes': [{'name': 'X'}],
+            'requests': [{'name': 'ask', 'answer': [{'name': 'ok'}]}, {'name': 'fire'}],
+            'steps': steps}]}
+        found = len(gen_docs.late_awaits(project))
+        if found != expected:
+            report.fail('late-awaits', 'a step after one that {} gets {} late-await '
+                        'note(s), not {}'.format(label, found, expected))
+            return
+    report.ok('late-awaits', 'the late-await note fires where an update can be dropped, '
+              'and nowhere else')
 
 
 # The task prompts are the comparison itself: the same requirements scored

@@ -46,10 +46,9 @@ That writes a project that already builds and runs:
 | `areg-project.json` | the spec a later build reuses |
 | `scenarios.json` | what to run, and the output that proves it worked |
 | `run.sh`, `run.bat` | starts the router and both applications |
-| `AGENTS.md` | **this project's own guide. Read it now. It is short.** |
+| `AGENTS.md` | the guide of a later session that starts here |
 
-That `AGENTS.md` is the SDK's routing table narrowed to this project, with the exact
-commands for it. Follow where it routes you.
+It restates this page and the SDK's `AGENTS.md`; a run following this page skips it.
 
 ## 3. Design
 
