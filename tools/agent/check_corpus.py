@@ -402,9 +402,20 @@ def check_generator_catalogue(report):
             report.fail('catalogue', 'tools/schema/{} is missing, so a document is '
                         'checked against no schema at all'.format(name))
 
-    for name in sorted(jar_data_members()):
+    schema_files = ('siml.xsd', 'dtml.xsd', 'fsml.xsd', 'datatype.xml', 'rules.xml')
+
+    # Driven by what is beside the jar, not by what the jar happens to carry: a jar
+    # built by another route carries fewer members, and iterating over its members
+    # made the missing comparisons disappear rather than fail.
+    carried = jar_data_members()
+    for name in sorted(schema_files):
         beside = read_bytes('tools', 'schema', name)
         if beside is None:
+            continue
+        if name not in carried:
+            report.note('catalogue', 'codegen.jar carries no data/{}, so nothing '
+                        'compares tools/schema/{} against the copy the generator '
+                        'was built with'.format(name, name))
             continue
         if not same_document(beside, jar_member(name)):
             report.fail('catalogue', 'data/{} inside codegen.jar differs from '
