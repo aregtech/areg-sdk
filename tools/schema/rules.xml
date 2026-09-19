@@ -436,6 +436,12 @@
             <Fix>Change the key type, or change the structure field that stops it: a `BinaryBuffer`, a container, a field of a type declared Type="Imported", or a `DateTime` in the key of a HashMap. A key that has to carry a `DateTime` can be the key of a Map instead.</Fix>
             <Implemented Lusan="true" Codegen="true" CodegenName="RULE_CONTAINER_KEY"/>
         </Rule>
+
+        <Rule Number="60" Name="RULE_PARAM_TWO_TYPES" Section="shared" Bands="error" Documents="siml">
+            <Summary>A parameter name that a response and a broadcast of one service interface declare with two different types. The generated proxy keeps one member per parameter name for every answer and every broadcast, so the two cannot both be carried.</Summary>
+            <Fix>Answers and broadcasts of one interface share their parameter names. Give the two parameters the same type, or rename one of them.</Fix>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_PARAM_TWO_TYPES"/>
+        </Rule>
     </RuleList>
 
     <!--

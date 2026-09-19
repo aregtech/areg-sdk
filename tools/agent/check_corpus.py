@@ -2831,6 +2831,7 @@ def run():
     check_step_output_whole(report)
     check_design_reviewable(report)
     check_codegen_plain_error(report)
+    check_generated_prefix(report)
     check_answer_file(report)
     check_peer_lost_scenario(report)
     check_errors_follow_output(report)
@@ -5279,11 +5280,8 @@ def check_peer_lost_scenario(report):
 
 
 def check_codegen_plain_error(report):
-    """A document codegen.jar reports an error for is refused, whatever its exit code.
-
-    It exits 0 on a parameter name given two types across the responses and broadcasts
-    of one interface, and says so only in a plain "error:" line.
-    """
+    """A parameter name given two types across the responses and broadcasts of one
+    interface is refused by codegen.jar under its own rule, and the review says so."""
     tool = os.path.join(ROOT, 'tools', 'agent', 'gen_docs.py')
     example = subprocess.run([sys.executable, tool, '--example'],
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -5308,12 +5306,45 @@ def check_codegen_plain_error(report):
         shutil.rmtree(holder, ignore_errors=True)
     if reviewed.returncode == 0:
         report.fail('codegen-plain-error',
-                    'a design giving "level" two types in one interface reviews clean: '
-                    'codegen.jar reported it with a plain "error:" line and exit 0, '
-                    'and the review read that as a pass')
+                    'a design giving "level" two types in one interface reviews clean')
+        return
+    if 'error[60/' not in reviewed.stdout:
+        report.fail('codegen-plain-error',
+                    'a design giving "level" two types in one interface is refused, but not '
+                    'as codegen rule 60: ' + reviewed.stdout.strip().splitlines()[-1:][0]
+                    if reviewed.stdout.strip() else 'the review printed nothing')
         return
     report.ok('codegen-plain-error',
-              'a codegen error reported with exit 0 still refuses the design')
+              'a parameter name of two types is refused as codegen rule 60')
+
+
+def check_generated_prefix(report):
+    """A design name that starts with a prefix the generator adds is refused with the name
+    to write instead, before codegen.jar doubles it."""
+    tool = os.path.join(ROOT, 'tools', 'agent', 'gen_docs.py')
+    example = subprocess.run([sys.executable, tool, '--example'],
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                             universal_newlines=True)
+    if example.returncode != 0:
+        report.fail('generated-prefix', 'gen_docs.py --example does not run')
+        return
+    design = json.loads(example.stdout.replace('"open"', '"request_open"'))
+    holder = tempfile.mkdtemp(prefix='areg-generated-prefix-')
+    try:
+        with open(os.path.join(holder, 'design.json'), 'w', encoding='utf-8') as handle:
+            json.dump(design, handle)
+        reviewed = subprocess.run([sys.executable, tool, '--spec', 'design.json',
+                                   '--review'], cwd=holder, stdout=subprocess.PIPE,
+                                  stderr=subprocess.STDOUT, universal_newlines=True)
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    if reviewed.returncode == 0 or 'Name it "open"' not in reviewed.stdout:
+        report.fail('generated-prefix',
+                    'a request named "request_open" is not refused with the name to write; '
+                    'codegen.jar generates it as request_request_open()')
+        return
+    report.ok('generated-prefix',
+              'a request named "request_open" is refused with "open" as the name to write')
 
 
 def check_design_reviewable(report):

@@ -34,7 +34,7 @@ import xml.etree.ElementTree as ET
 HERE = os.path.dirname(os.path.abspath(__file__))
 JAR = os.path.join(os.path.dirname(HERE), 'codegen.jar')
 CACHE = os.path.join(tempfile.gettempdir(), 'areg-codegen-names')
-FORMAT = 4
+FORMAT = 5
 
 
 class CodegenError(Exception):
@@ -144,10 +144,7 @@ def refusal(documents, root):
     finally:
         shutil.rmtree(target, True)
     output = done.stdout + done.stderr
-    # codegen.jar exits 0 on some refusals, and those print a plain "error:" line.
-    counted = [int(n) for n in re.findall(r': (\d+) errors?,', output)]
-    if done.returncode != 0 or 'error[' in output or any(counted) \
-            or re.search(r'^error: ', output, re.M):
+    if done.returncode != 0 or 'error[' in output:
         lines = [line.rstrip() for line in output.splitlines() if line.strip()]
         return '\n'.join(lines[-24:])
     try:

@@ -186,6 +186,34 @@ def build_dtml(spec):
 
 # ------------------------------------------------------------------------------- siml
 
+# What codegen.jar writes in front of a name of each kind. A name that already starts
+# with one of these is written twice: request "request_get" becomes request_request_get().
+GENERATED_PREFIXES = {
+    'request': ('request_', 'response_', 'broadcast_'),
+    'response': ('request_', 'response_', 'broadcast_'),
+    'broadcast': ('request_', 'response_', 'broadcast_'),
+    'attribute': ('on_', 'notify_on_'),
+}
+GENERATED_SPELLING = {
+    'request': 'request_{}()',
+    'response': 'response_{}()',
+    'broadcast': 'broadcast_{}()',
+    'attribute': 'on_{}_update()',
+}
+
+
+def check_generated_prefixes(entries, kind, where):
+    """Refuses a name that starts with a prefix the generator adds to it."""
+    for entry in entries:
+        name = entry['name']
+        for prefix in GENERATED_PREFIXES[kind]:
+            if name.startswith(prefix) and len(name) > len(prefix):
+                fail('{} "{}" of {} starts with "{}", which the generator adds itself: it '
+                     'would be generated as {}. Name it "{}".'
+                     .format(kind, name, where, prefix,
+                             GENERATED_SPELLING[kind].format(name), name[len(prefix):]))
+
+
 def build_siml(spec, shared_space, shared_names, prefix=''):
     if not spec.get('name'):
         fail('every entry of "interfaces" needs a "name"')
@@ -204,6 +232,10 @@ def build_siml(spec, shared_space, shared_names, prefix=''):
     constants = named_list(spec, 'constants', where)
     unique(attributes, where)
     unique(broadcasts, where)
+    check_generated_prefixes(requests, 'request', where)
+    check_generated_prefixes(responses, 'response', where)
+    check_generated_prefixes(broadcasts, 'broadcast', where)
+    check_generated_prefixes(attributes, 'attribute', where)
 
     # A request that carries "answer" declares its response here, so the two names
     # cannot drift apart.

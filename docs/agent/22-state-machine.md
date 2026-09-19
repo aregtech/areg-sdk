@@ -197,12 +197,19 @@ Without `OnFinal` a finished level simply stops and nothing follows. The nested 
 the tool writes for the nested level is named after the composite, because the top
 level already has a `Start` and the two levels share one enumeration.
 
-**Keep the nested `Final` empty.** The self-event is queued, so an operation on the
-nested `Final` runs while the machine is still inside the composite, and a request
-arriving in between meets a machine that has not left it yet. Put the work on the
-transition out. The wrong placement is rule `108`, reported by `check_contract.py`
+**Keep the nested `Final` empty.** The self-event runs only after the step that reached
+the `Final` has settled, so an operation on the nested `Final` runs while the machine is
+still inside the composite. Put the work on the transition out. The wrong placement is rule `108`, reported by `check_contract.py`
 before the build and by the generator while generating; `explain_rule.py 108` gives the
 whole rule. Working project, both kinds in one document: `recipes/06-state-machine/`.
+
+### Events the machine sends itself; entering a nested state
+
+A `{"send": ...}` or `"final_event"` runs after the step that sent it has settled and
+before its trigger returns: the next trigger meets the state it led to, and on a
+`Shared` machine no other thread gets in between. To go from `A` straight to `B2`
+inside `B`, target `B`, send an event on that transition, and give `B`'s initial
+substate a transition on it to `B2`.
 
 ### Reusing a whole machine: `Submachine`
 
