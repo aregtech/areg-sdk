@@ -2787,6 +2787,8 @@ def run():
     check_example_type_placement(report)
     check_spec_value_prefixes(report)
     check_step_enum_values(report)
+    check_step_hold(report)
+    check_api_constructors(report)
     check_late_awaits(report)
     check_entry_toll(report)
     check_page_budget(report)
@@ -3015,6 +3017,71 @@ def check_step_enum_values(report):
     report.ok('step-enums',
               'a step argument names a field of an enumeration and the generator '
               'qualifies it; an unknown field is refused')
+
+
+def check_api_constructors(report):
+    """api_help.py lists every explicit constructor a public header declares.
+
+    A constructor it drops is answered as absent, and an agent told a class cannot
+    be built from its arguments stops trusting the page that shows it.
+    """
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import api_help
+    except Exception as failure:
+        report.fail('api-constructors', 'api_help.py does not import: {}'.format(failure))
+        return
+    missing, total = [], 0
+    for path in sorted(glob.glob(os.path.join(ROOT, 'framework', 'areg', '**', '*.hpp'),
+                                 recursive=True)):
+        if os.sep + 'private' + os.sep in path:
+            continue
+        with open(path, encoding='utf-8', errors='ignore') as handle:
+            names = set(re.findall(r'^\s+explicit\s+(\w+)\s*\(', handle.read(), re.M))
+        if not names:
+            continue
+        # By signature: a destructor is listed under the class name too.
+        listed = ' '.join(member[2] for member in api_help.Header(path, path).members)
+        total += len(names)
+        missing += ['{}({})'.format(name, os.path.relpath(path, ROOT))
+                    for name in sorted(names)
+                    if not re.search(r'\bexplicit\s+%s\s*\(' % name, listed)]
+    if missing:
+        report.fail('api-constructors',
+                    'api_help.py does not list {} explicit constructor(s): {}'
+                    .format(len(missing), ', '.join(missing[:5])))
+        return
+    report.ok('api-constructors',
+              'api_help.py lists the explicit constructors of all {} classes that '
+              'declare one'.format(total))
+
+
+def check_step_hold(report):
+    """A step check that returns early leaves no hold or jump behind it.
+
+    stay() and go_to() take effect in complete(), which a return skips. A handler that
+    does not clear them first lets the next arrival that passes the check be swallowed,
+    and the run stalls on a step whose check already passed.
+    """
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_skeleton
+    except Exception as failure:
+        report.fail('step-hold', 'gen_skeleton.py does not import: {}'.format(failure))
+        return
+    for kind in ('update', 'response', 'broadcast'):
+        step = {'awaits': (kind, 'X'), 'enum': 'Watch', 'name': 'Watch'}
+        lines = [line.strip() for line in gen_skeleton.step_dispatch([step], kind, 'X', 4)]
+        head = lines[:lines.index('switch (mStep)')] if 'switch (mStep)' in lines else []
+        if 'mHeld = false;' not in head or 'mJumped = false;' not in head:
+            report.fail('step-hold',
+                        'the {} handler does not clear mHeld and mJumped before its step '
+                        'switch, so "stay(); return;" swallows the next arrival'
+                        .format(kind))
+            return
+    report.ok('step-hold',
+              'every step handler clears a hold or jump an earlier check left by '
+              'returning')
 
 
 def check_late_awaits(report):
@@ -4056,6 +4123,15 @@ def check_method_names(report):
             report.fail('method-names', 'check_contract.py accepts request_insert_coin '
                                         'for a document request InsertCoin, which the base '
                                         'does not declare')
+            return
+        with open(consumer, 'w', encoding='utf-8', newline='\n') as handle:
+            handle.write(text.replace('mDeadline.stop_timer();',
+                                      'mDeadline.stop_timer();\n        '
+                                      'mFsm.request_balance();', 1))
+        if 'P-02' in contract():
+            report.fail('method-names', 'check_contract.py reports mFsm.request_balance(), '
+                                        'a call on another object, as a member no .siml '
+                                        'declares')
             return
     finally:
         shutil.rmtree(holder, ignore_errors=True)

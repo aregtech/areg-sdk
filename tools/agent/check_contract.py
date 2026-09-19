@@ -91,6 +91,9 @@ GENERATED_RE = re.compile(
 CALL_RE = re.compile(
     r'(?<![\w:])(request_\w+|response_\w+|broadcast_\w+|on_\w+_update)\s*\('
     r'(?![^;]*\)\s*(?:const\s*)?(?:final|override)\b)')
+# A call on another object: a machine's trigger, a helper's method. Only self()
+# and this reach the members the service documents generate.
+OBJECT_CALL_RE = re.compile(r'(?<!\bself\(\))(?<!\bthis)\s*(?:\.|->)\s*$')
 ROLE_RE = re.compile(r'BEGIN_REGISTER_COMPONENT\s*\(\s*"([^"]+)"')
 DEP_RE = re.compile(r'REGISTER_DEPENDENCY\s*\(\s*"([^"]+)"')
 MODEL_BEGIN_RE = re.compile(r'\bBEGIN_MODEL\s*\(')
@@ -933,7 +936,8 @@ def check_file(path, lines, known, findings):
                 # request that is not there. The compiler catches it, but only
                 # after a build, and the message names the base class rather
                 # than the document that is missing the declaration.
-                called = CALL_RE.search(line)
+                called = next((hit for hit in CALL_RE.finditer(line)
+                               if not OBJECT_CALL_RE.search(line[:hit.start()])), None)
                 if called and called.group(1) not in known:
                     findings.append(Finding(
                         'P-02', 'error', path, number + 1,

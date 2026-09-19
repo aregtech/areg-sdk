@@ -143,7 +143,8 @@ class Header(object):
         pending = None
         buffer = ''
         start = 0
-        for number, line in enumerate(text.splitlines()):
+        lines = text.splitlines()
+        for number, line in enumerate(lines):
             head = CLASS_HEAD.match(line)
             if head and '(' not in line.split(head.group(1))[0]:
                 pending = head.group(1)
@@ -154,6 +155,10 @@ class Header(object):
                 if buffer.count('(') <= buffer.count(')'):
                     statement = buffer.strip()
                     buffer = ''
+                    # A constructor whose initializer list starts on the next line.
+                    following = lines[number + 1].strip() if number + 1 < len(lines) else ''
+                    if following.startswith(':') and not following.startswith('::'):
+                        statement += ' {'
                     self._declaration(statement, owners, raw_lines, start)
             opened = line.count('{')
             closed = line.count('}')
@@ -174,7 +179,7 @@ class Header(object):
         if cut >= 0:
             statement = statement[:cut].strip()
         statement = statement.rstrip(';').strip()
-        if not statement or statement.startswith('#'):
+        if not statement or statement.startswith('#') or '##' in statement:
             return
         found = DECLARATION.match(statement)
         if not found:
@@ -189,7 +194,7 @@ class Header(object):
         # declared inside its class: neither is a declaration.
         if prefix.endswith(('.', '->', '::')):
             return
-        head = prefix.split()
+        head = [word for word in prefix.split() if word != 'explicit']
         if head and head[0] in NOT_A_NAME:
             return
         if BOILERPLATE.search(statement) or name.startswith('_'):
@@ -406,8 +411,11 @@ REPLACED_BY = {
 
 
 def search(headers, word):
-    """Every member, class and enumeration name holding a word."""
-    needle = word.lower()
+    """Every member, class and enumeration name holding a word.
+
+    "areg::Timer(" and "Timer::start_timer()" are searched as their last name.
+    """
+    needle = re.sub(r'\(.*$', '', word.strip()).split('::')[-1].strip().lower()
     members, classes, enums, constants = set(), set(), set(), set()
     for header in headers:
         for member, _, _, _ in header.members:

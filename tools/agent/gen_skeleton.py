@@ -387,8 +387,9 @@ ORDER_NOTE = ['A response and an update are two deliveries, not one. A response 
 STEPS_NOTE = ['a step_ section runs only while its step is current. fail("why") ends the',
               'run with exit 1, stay() keeps the step for the next arrival, and',
               'go_to(Step::Name) picks the next step. Doing none of them goes on to the',
-              'step listed next, and after the last one the run exits 0. A step with',
-              'nothing to check still takes one line: a // comment saying so']
+              'step listed next, and after the last one the run exits 0. A check that',
+              'returns keeps the step, as stay() does, whatever it called before. A',
+              'step with nothing to check still takes one line: a // comment saying so']
 
 
 UPDATE_NOTE = ['every update_ body runs before any step_ check of the same update, and',
@@ -1546,7 +1547,12 @@ def step_dispatch(steps, kind, name, indent):
     if not waiting:
         return []
     pad = ' ' * indent
-    lines = ['' if kind != 'response' else None, pad + 'switch (mStep)', pad + '{']
+    # A check that returns skips complete(), so a stay() or go_to() it made would
+    # otherwise outlive it and swallow the next arrival. Cleared first, a return
+    # keeps the step exactly as stay() does.
+    lines = ['' if kind != 'response' else None,
+             pad + 'mHeld = false;', pad + 'mJumped = false;',
+             pad + 'switch (mStep)', pad + '{']
     lines = [line for line in lines if line is not None]
     # The check is braced: a case body that declares a local and is not braced
     # makes the compiler reject every case label after it.
