@@ -421,6 +421,7 @@ def fire_stops(pending, started, text):
         if ready:
             entry['handle'].stopped_by_scenario = True
             entry['fired_at'] = time.time() - started
+            entry['fired_clock'] = time.time()
             stop_handle(entry['handle'], entry['signal'])
         else:
             left.append(entry)
@@ -453,6 +454,22 @@ def stops_missed(pending):
             'outruns the stop: hold it there with a {{"name": "...", "wait": <ms>}} '
             'step in design.json, right after the step whose output the stop matches'
             .format(entry['proc'], why))
+
+
+# A stop that fires less than this before the lead exits came too late to be the cause.
+LATE_STOP_SECONDS = 1.0
+
+
+def stop_too_late(entry, lead, gap):
+    """Why a stop that matched still tested nothing: the lead was done by then."""
+    when = 'only after {} had exited'.format(lead) if entry.get('late') or gap < 0 \
+        else '{:.0f} ms before {} exited'.format(gap * 1000, lead)
+    return ('. The stop on {} matched {!r} {}, so {} was lost when the lead needed '
+            'nothing more from it. Steps that only send and await finish in a '
+            'fraction of a second: name a line printed before a step that takes '
+            'time, or add a {{"name": "...", "wait": 300}} step in design.json right '
+            'after the step whose output the stop matches'
+            .format(entry['proc'], entry['after'], when, entry['proc']))
 
 
 def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_class=None):
@@ -527,7 +544,11 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
                         # The lead's last lines can still be in its reader: drain it to
                         # the end, then judge the stops on everything it printed.
                         reader.join(5)
+                        waiting = pending
                         pending = fire_stops(pending, started, reader.text())
+                        for entry in waiting:
+                            if entry not in pending:
+                                entry['late'] = True
                         break
                     if time.time() >= deadline:
                         lead.kill()
@@ -600,8 +621,15 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
                     pattern, found.group(0), label))
         wanted = spec.get('exit')
         if wanted is not None and handle.returncode != wanted:
-            return failed('{} exited {}, expected {}'.format(
-                label, handle.returncode, wanted))
+            late = []
+            if index == lead_index and lead_index in ended:
+                exited = launched[lead_index] + ended[lead_index]
+                late = [(entry, exited - entry['fired_clock']) for entry in actions
+                        if 'fired_clock' in entry
+                        and (entry.get('late') or exited - entry['fired_clock'] < LATE_STOP_SECONDS)]
+            return failed('{} exited {}, expected {}{}'.format(
+                label, handle.returncode, wanted, stop_too_late(late[0][0], label, late[0][1])
+                if late else ''))
 
     if verbose:
         report_output(handles, outputs, quiet, full=True)
@@ -861,9 +889,20 @@ def self_test():
             print('self-test FAILED: vacuity: a declared exit code is an assertion')
             return 1
 
-        print('self-test ok: 6 case(s): end of input, an unfired stop, a fired stop, '
-              'a stop on the last line of an exited lead, output pressure, '
-              'a scenario that asserts nothing')
+        # A stop that fires only after the lead exited injected its fault too late,
+        # and the exit the lead was held to has to say so.
+        too_late = dict(fired, name='stop-after-the-lead', procs=[
+            fired['procs'][0], dict(fired['procs'][1], exit=1)])
+        passed, _, detail = run_scenario(too_late, [root], False, True,
+                                         reader_class=LaggingReader)
+        if passed or 'the lead needed nothing more' not in detail:
+            print('self-test FAILED: a stop that fired after the lead exited was not '
+                  'named in the exit mismatch: {}'.format(detail))
+            return 1
+
+        print('self-test ok: 7 case(s): end of input, an unfired stop, a fired stop, '
+              'a stop on the last line of an exited lead, a stop too late for the lead, '
+              'output pressure, a scenario that asserts nothing')
         return 0
     finally:
         shutil.rmtree(root, ignore_errors=True)

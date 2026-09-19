@@ -1,5 +1,8 @@
 # Periodic and delayed work
 
+A generated provider declares its own in `design.json`, as `"timers"` of its interface:
+the generator writes the rest, and a `timer_<name>` worksheet section.
+
 A component that has to do something repeatedly, or after a delay, owns a
 `areg::Timer` and inherits `areg::TimerConsumer`. The timer fires on a dispatcher
 thread, so the callback obeys the same rule as every handler: it must not block.

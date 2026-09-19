@@ -95,7 +95,7 @@ NOTE_LINE = re.compile(r'^(\s*)note  (\S+)')
 
 
 def collapse_notes(lines, record):
-    """The lines with every design note an earlier call printed cut to one line.
+    """The lines with every design note an earlier call printed replaced by one count.
 
     A note is its "note" line and the more indented lines under it. The digests of
     the notes printed are kept in `record` for the next call.
@@ -105,7 +105,7 @@ def collapse_notes(lines, record):
             shown = set(handle.read().split())
     except OSError:
         shown = set()
-    kept, printed, index = [], [], 0
+    kept, printed, index, collapsed, where = [], [], 0, 0, None
     while index < len(lines):
         head = NOTE_LINE.match(lines[index])
         if not head:
@@ -120,11 +120,16 @@ def collapse_notes(lines, record):
         digest = hashlib.sha256(block.encode('utf-8')).hexdigest()[:16]
         printed.append(digest)
         if digest in shown:
-            kept.append('{}note  {} unchanged, as printed by an earlier call'
-                        .format(head.group(1), head.group(2).rstrip(':')))
+            if where is None:
+                where = (len(kept), head.group(1))
+                kept.append('')
+            collapsed += 1
         else:
             kept.extend(lines[index:end])
         index = end
+    if where is not None:
+        kept[where[0]] = '{}note  {} design note(s) unchanged since the last call, not repeated' \
+            .format(where[1], collapsed)
     try:
         os.makedirs(os.path.dirname(record), exist_ok=True)
         with open(record, 'w', encoding='utf-8') as handle:
@@ -201,8 +206,8 @@ def run(step, command, cwd, kept=2, failed_kept=40, notes=None):
     A step that passed prints its last `kept` lines and nothing more: a build log
     that reaches the conversation is re-sent with every later request. A step that
     failed prints the lines of its log that name an error, up to `failed_kept` of
-    them, and what to do about it. With `notes`, a design note printed by an
-    earlier call is cut to one line.
+    them, and what to do about it. With `notes`, the design notes printed by an
+    earlier call are replaced by one line that counts them.
     """
     print('== {}: {}'.format(step, ' '.join(command)))
     result = subprocess.run(command, cwd=cwd, capture_output=True, text=True)

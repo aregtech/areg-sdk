@@ -2834,6 +2834,8 @@ def run():
     check_generated_prefix(report)
     check_answer_file(report)
     check_peer_lost_scenario(report)
+    check_shared_request_action(report)
+    check_provider_timers(report)
     check_errors_follow_output(report)
     check_regeneration_report(report)
     check_regeneration_idempotent(report)
@@ -2928,8 +2930,9 @@ def check_member_inventory(report):
 def check_spec_value_prefixes(report):
     """A spec value prefix with nothing after the colon is a literal or a refusal.
 
-    "lit:" is the empty value. "param:", "attr:", "const:" and "expr:" name
-    something, so an empty one is refused. Before this was checked, they all fell
+    "lit:" is the empty value. "param:", "attr:", "const:", "raw:" and "expr:" name
+    something, so an empty one is refused. "raw:" and "expr:" are one prefix, in a
+    "set" value as in a guard. Before this was checked, they all fell
     through to the verbatim branch and the generated code carried the text "lit:"
     while every step exited 0.
     """
@@ -2953,7 +2956,7 @@ def check_spec_value_prefixes(report):
     refused = []
     quiet, sys.stderr = sys.stderr, io.StringIO()
     try:
-        for prefix in ('param', 'attr', 'const', 'expr'):
+        for prefix in ('param', 'attr', 'const', 'expr', 'raw'):
             try:
                 gen_docs.source_of(Machine(), prefix + ':', None, 'a test')
             except SystemExit:
@@ -2966,8 +2969,16 @@ def check_spec_value_prefixes(report):
                     '"{}:" with nothing after the colon is accepted and written '
                     'verbatim'.format('", "'.join(refused)))
         return
+    for prefix in ('raw', 'expr'):
+        kind, text = gen_docs.source_of(Machine(), prefix + ':mAttrTries + 1', None, 'a test')
+        if (kind, text) != ('Expression', 'mAttrTries + 1'):
+            report.fail('spec-prefixes',
+                        '"{}:<c++>" in a set value is written as {} "{}", not verbatim C++'
+                        .format(prefix, kind, text))
+            return
     report.ok('spec-prefixes',
-              '"lit:" is the empty value; an empty param/attr/const/expr is refused')
+              '"lit:" is the empty value; an empty param/attr/const/raw/expr is refused; '
+              'raw: and expr: are verbatim C++ in a set value')
 
 
 def check_step_enum_values(report):
@@ -5252,6 +5263,13 @@ def check_peer_lost_scenario(report):
                             'is no section of the worksheet, so it is written by '
                             'editing scenarios.json')
                 return
+            section = sheet.split('== ' + slot, 1)[1].split('\n== ', 1)[0]
+            if '"wait"' not in section or 'ms' not in section:
+                report.fail('peer-lost-scenario', 'the stop section does not say that '
+                            'a kill after the last step tests nothing, nor how a wait '
+                            'step holds the lead: run 20260919b-atmfsm paid a build '
+                            'and a run for it')
+                return
             for body, code in (('a\nb\n', 2), ('consumer: midway\n', 0)):
                 with open('bodies.txt', 'w', encoding='utf-8') as handle:
                     handle.write('== {}\n{}'.format(slot, body))
@@ -5276,7 +5294,128 @@ def check_peer_lost_scenario(report):
             shutil.rmtree(holder, ignore_errors=True)
     report.ok('peer-lost-scenario', 'a stepped two-process project gets a peer-lost '
               'scenario: the trigger is written when a wait step holds the consumer, '
-              'and is one worksheet section when none does')
+              'and is one worksheet section when none does, saying how to hold it')
+
+
+def check_provider_timers(report):
+    """A provider's own timer is declared in the design and filled in the worksheet.
+
+    With no key for it, runs 20260919b-printscan and 20260919b-tempalarm searched the
+    framework headers for includes and edited generated files by hand, 21-29% of each
+    run, and a regeneration would have deleted the edits.
+    """
+    tools = os.path.join(ROOT, 'tools', 'agent')
+
+    def with_timer(design):
+        design['interfaces'][0]['timers'] = [{'name': 'Heartbeat', 'timeout': 200,
+                                              'repeat': 0, 'start': True}]
+
+    holder = tempfile.mkdtemp()
+    here = os.getcwd()
+    try:
+        os.chdir(holder)
+        failed = lay_example_app(tools, with_timer)
+        if failed:
+            report.fail('provider-timers', failed)
+            return
+        sources = ''
+        for folder, _dirs, files in os.walk('src'):
+            for name in files:
+                if 'Provider.' in name:
+                    with open(os.path.join(folder, name), encoding='utf-8') as handle:
+                        sources += handle.read()
+        sheet = ''
+        if os.path.exists('worksheet.txt'):
+            with open('worksheet.txt', encoding='utf-8') as handle:
+                sheet = handle.read()
+        wanted = [('areg/component/TimerConsumer.hpp', sources),
+                  ('private   areg::TimerConsumer', sources),
+                  ('mHeartbeat(static_cast<areg::TimerConsumer &>(self()), "Heartbeat")',
+                   sources),
+                  ('if (&timer == &mHeartbeat)', sources),
+                  ('start_heartbeat();', sources),
+                  ('mHeartbeat.stop_timer();', sources),
+                  ('== timer_heartbeat', sheet),
+                  ('inline void start_heartbeat()', sheet)]
+        missing = [text for text, where in wanted if text not in where]
+        if missing:
+            report.fail('provider-timers', 'a timer the design gives the provider is not '
+                        'generated whole; missing: {}'.format('; '.join(missing)))
+            return
+        with open('design.json', encoding='utf-8') as handle:
+            design = json.load(handle)
+        design['interfaces'][0]['timers'][0]['timeout'] = 0
+        with open('bad.json', 'w', encoding='utf-8') as handle:
+            json.dump(design, handle)
+        done = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                               '--outdir', 'bad', '--force', '--spec', 'bad.json'],
+                              capture_output=True, text=True)
+        if done.returncode == 0:
+            report.fail('provider-timers', 'a provider timer with timeout 0 is accepted')
+            return
+    finally:
+        os.chdir(here)
+        shutil.rmtree(holder, ignore_errors=True)
+    report.ok('provider-timers', 'a provider timer in design.json becomes a member, '
+              'start and stop helpers, a process_timer branch and a worksheet section')
+
+
+def check_shared_request_action(report):
+    """An action shared by triggers that forward answered requests is named twice.
+
+    Its body cannot tell which request it answers. Run 20260919b-atmfsm found that out
+    writing the bodies, and paid a redesign, a regeneration and a second worksheet
+    read. The design note says it before generation; the worksheet section says where
+    the action runs.
+    """
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    sys.path.insert(0, tools)
+    import gen_docs
+    import gen_skeleton
+    example = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                              '--example'], capture_output=True, text=True)
+    try:
+        clean = json.loads(example.stdout)
+    except ValueError:
+        report.fail('shared-action', 'gen_docs.py --example prints no spec')
+        return
+    shared = json.loads(json.dumps(clean))
+    for request in shared['interfaces'][0]['requests']:
+        request.setdefault('answer', [{'name': 'done', 'type': 'bool'}])
+    machine = shared['machines'][0]
+    machine['states'][0]['transitions'] += [{'on': 'open', 'do': ['on_open']},
+                                            {'on': 'close', 'do': ['on_open']}]
+    if gen_docs.shared_request_actions(clean, clean['machines'][0]):
+        report.fail('shared-action', 'the example, whose actions each run on one '
+                    'trigger, is reported as sharing one')
+        return
+    found = gen_docs.shared_request_actions(shared, machine)
+    if [name for name, _ in found] != ['on_open']:
+        report.fail('shared-action', 'an action run on two answered request triggers '
+                    'is not named before generation: {}'.format(found))
+        return
+    holder = tempfile.mkdtemp()
+    try:
+        spec = os.path.join(holder, 'design.json')
+        with open(spec, 'w', encoding='utf-8') as handle:
+            json.dump(shared, handle)
+        done = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                               '--outdir', holder, '--force', '--spec', spec],
+                              capture_output=True, text=True)
+        document = os.path.join(holder, machine['name'] + '.fsml')
+        if not os.path.exists(document):
+            report.fail('shared-action', 'gen_docs.py wrote no machine: {}'.format(
+                (done.stderr or done.stdout).strip()[-300:]))
+            return
+        tail = gen_skeleton.runs_on(gen_skeleton.Interface(document), 'on_open')
+        if 'open in' not in tail or 'close in' not in tail:
+            report.fail('shared-action', 'the worksheet section of an action run on two '
+                        'triggers does not name them: {!r}'.format(tail))
+            return
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    report.ok('shared-action', 'an action run on two answered request triggers is a '
+              'design note, and its worksheet section names where it runs')
 
 
 def check_codegen_plain_error(report):

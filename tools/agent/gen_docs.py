@@ -75,7 +75,8 @@ FSML_VERSION = '1.2.0'
 CATEGORIES = ('Private', 'Public', 'Internet')
 STATE_KINDS = {'normal': 'Normal', 'final': 'Final', 'history': 'History'}
 GUARD_OPS = ('eq', 'ne', 'lt', 'le', 'gt', 'ge')
-SOURCES = {'param': 'Param', 'attr': 'Attribute', 'const': 'Constant', 'expr': 'Expression'}
+SOURCES = {'param': 'Param', 'attr': 'Attribute', 'const': 'Constant', 'expr': 'Expression',
+           'raw': 'Expression'}
 
 # The key of a note in a spec. The reader skips it wherever it appears.
 NOTE = '#|'
@@ -86,7 +87,7 @@ KEYS = {
     'datatypes': ('name', 'description', 'version', 'declare', 'includes'),
     'interface': ('name', 'category', 'description', 'version', 'types', 'attributes',
                   'requests', 'responses', 'broadcasts', 'constants', 'includes',
-                  'machine', 'steps', 'driver'),
+                  'machine', 'steps', 'driver', 'timers'),
     'driver': ('connect_seconds', 'reconnect_seconds', 'stall_ticks'),
     'machine': ('name', 'description', 'version', 'threading', 'types', 'attributes',
                 'constants', 'triggers', 'timers', 'events', 'actions', 'conditions',
@@ -101,6 +102,7 @@ KEYS = {
     'constant': ('name', 'type', 'value', 'description'),
     'include': ('name', 'description', 'alias', 'version'),
     'timer': ('name', 'timeout', 'repeat', 'description'),
+    'service timer': ('name', 'timeout', 'repeat', 'start', 'description'),
     'condition': ('name', 'description', 'params', 'implement', 'body', 'return'),
     'submachine': ('name', 'path', 'version', 'description'),
     'state': ('name', 'kind', 'depth', 'description', 'entry', 'exit', 'transitions',
@@ -441,9 +443,9 @@ def as_cpp_text(text, type_name):
 def source_of(machine, value, stimulus, where, type_name=None):
     """How a written value reaches the generated code: a declared name or a literal.
 
-    "param:x", "attr:X", "const:X", "expr:<c++>" and "lit:<text>" say it outright. A
-    bare name that was declared is that declaration; anything else is a literal, and
-    a literal of a String parameter is quoted here. A JSON true or false is the C++
+    "param:x", "attr:X", "const:X", "raw:<c++>" (or "expr:<c++>") and "lit:<text>" say
+    it outright. A bare name that was declared is that declaration; anything else is a
+    literal, and a literal of a String parameter is quoted here. A JSON true or false is the C++
     token of that name, not Python's spelling of it.
     """
     text = spell(value)
@@ -685,9 +687,9 @@ def write_guard_operand(machine, writer, depth, value, stimulus, where):
     """A leaf of the guard tree. A guard names a declaration by ID, never by name."""
     text = spell(value)
     prefix, _, rest = text.partition(':')
-    if prefix in ('raw', 'lambda') and rest:
+    if prefix in ('raw', 'expr', 'lambda') and rest:
         writer.add(depth, '<{0}><![CDATA[{1}]]></{0}>'
-                   .format('Raw' if prefix == 'raw' else 'Lambda', rest))
+                   .format('Lambda' if prefix == 'lambda' else 'Raw', rest))
         return
     kind, name = source_of(machine, value, stimulus, where)
     if kind == 'Attribute':
@@ -699,8 +701,6 @@ def write_guard_operand(machine, writer, depth, value, stimulus, where):
     elif kind == 'Param':
         writer.add(depth, '<Param id="{}" name="{}"/>'
                    .format(writer.of(('param', stimulus[0], stimulus[1], name)), esc(name)))
-    elif kind == 'Expression':
-        fail('{}: a guard writes verbatim C++ as "raw:<c++>", not "expr:"'.format(where))
     else:
         writer.add(depth, '<Lit>{}</Lit>'.format(esc_text(name)))
 
@@ -1040,7 +1040,7 @@ def check_shape(project):
         for key, kind in (('attributes', 'service attribute'), ('requests', 'request'),
                           ('responses', 'method'), ('broadcasts', 'method'),
                           ('constants', 'constant'), ('includes', 'include'),
-                          ('steps', 'step')):
+                          ('steps', 'step'), ('timers', 'service timer')):
             check_list(spec, key, kind, where)
     for spec in project['machines']:
         if not isinstance(spec, dict):
@@ -1485,6 +1485,37 @@ def check_drivers(project):
                  'reconnect_seconds'.format(where, settings['stall_ticks'], reconnect))
 
 
+def check_service_timers(project):
+    """A provider's own timers: unique names, a timeout in ms, a count, a start flag."""
+    for spec in project['interfaces']:
+        timers = spec.get('timers') if isinstance(spec, dict) else None
+        if not timers:
+            continue
+        where = 'the timers of "{}"'.format(spec.get('name', '?'))
+        if not isinstance(timers, list):
+            fail('{} are a list of timer objects'.format(where))
+        seen = set()
+        for entry in timers:
+            name = entry.get('name') if isinstance(entry, dict) else None
+            if not isinstance(name, str) or not IDENTIFIER.match(name):
+                fail('{}: a timer is {{"name": "<identifier>", "timeout": <ms>}}; got {!r}'
+                     .format(where, entry))
+            if name in seen:
+                fail('{} declare "{}" twice'.format(where, name))
+            seen.add(name)
+            here = 'timer "{}" of "{}"'.format(name, spec.get('name', '?'))
+            timeout, repeat = entry.get('timeout'), entry.get('repeat', 1)
+            if not whole(timeout) or timeout <= 0:
+                fail('{} gives timeout {!r}: a whole number of milliseconds above 0'
+                     .format(here, timeout))
+            if not whole(repeat) or repeat < 0:
+                fail('{} gives repeat {!r}: how many times it fires, 0 until stopped'
+                     .format(here, repeat))
+            if not isinstance(entry.get('start', False), bool):
+                fail('{} gives start {!r}: true starts it with the component'
+                     .format(here, entry.get('start')))
+
+
 def check_sequences(project):
     """A consumer's steps name only what their service declares, in a shape one driver runs."""
     enums = enum_values(project)
@@ -1549,7 +1580,7 @@ def check_sequences(project):
                 # generated call site rather than the step that wrote it.
                 fields = enums.get(str(entry.get('type', '')).rsplit('::', 1)[-1])
                 if fields and isinstance(given, str) \
-                        and not given.startswith('expr:') \
+                        and not given.startswith(('expr:', 'raw:')) \
                         and given.rsplit('::', 1)[-1] not in fields:
                     fail('{} sends {}({}={}), and "{}" has no such field. It has: {}'
                          .format(here, send, entry.get('name'), json.dumps(given),
@@ -1592,6 +1623,45 @@ def attribute_reads(node, found):
                 continue
             else:
                 attribute_reads(value, found)
+
+
+def shared_request_actions(project, spec):
+    """Actions run on two or more triggers that each forward a request with an answer.
+
+    An action has no parameter naming the stimulus that ran it, so its body cannot
+    tell which of those requests it is answering. A trigger forwards a request when
+    one name holds the other.
+    """
+    answered = [request.get('name') for entry in project.get('interfaces') or []
+                for request in entry.get('requests') or []
+                if request.get('name') and request.get('answer')]
+    if not answered:
+        return []
+
+    def forwards(trigger):
+        return any(name == trigger or name in trigger or trigger in name
+                   for name in answered)
+
+    runs = {}
+
+    def walk(states):
+        for state in states or []:
+            for move in state.get('transitions') or []:
+                on = move.get('on')
+                for step in move.get('do') or []:
+                    name = step if isinstance(step, str) else \
+                        step.get('call') if isinstance(step, dict) else None
+                    if isinstance(name, str) and on:
+                        runs.setdefault(name, [])
+                        if on not in runs[name]:
+                            runs[name].append(on)
+            walk(state.get('states'))
+
+    walk(spec.get('states'))
+    actions = set(entry.get('name') for entry in spec.get('actions') or []
+                  if isinstance(entry, dict))
+    return [(name, triggers) for name, triggers in runs.items()
+            if name in actions and len([on for on in triggers if forwards(on)]) > 1]
 
 
 def unread_attributes(spec):
@@ -2006,6 +2076,13 @@ TEMPLATE = {
         "broadcasts": [{"name": "", "description": "",
                         "params": [{"name": "", "type": "", "description": ""}]}],
         "constants": [{"name": "", "type": "", "value": "", "description": ""}],
+        "timers": [{
+            NOTE: ["Timers the provider owns, for periodic or delayed work it does itself;",
+                   "delete it when there is none. timeout: milliseconds. repeat: how many",
+                   "times it fires, 0 until stopped. start: true starts it with the component;",
+                   "otherwise a body calls start_<name>(). Each gets a timer_<name> section."],
+            "name": "", "timeout": 1000, "repeat": 0, "start": False, "description": ""
+        }],
         "driver": {
             NOTE: ["What the generated consumer gives up after. These values are the",
                    "defaults and are used as they stand; change a number, never a key.",
@@ -2053,7 +2130,7 @@ TEMPLATE = {
                    "guard holds is taken: the guarded ones first, the fallback last.",
                    "guard: [left, op, right] with op eq ne lt le gt ge; {call: condition, args:",
                    "{param: value}}; {all: [...]}, {any: [...]}, {not: ...}. An operand is a",
-                   "declared name, or param:x attr:X const:X lit:text, and raw:c++ in a guard.",
+                   "declared name, or param:x attr:X const:X lit:text raw:c++, as is a set value.",
                    "set: {Attribute: value}, applied before do. do, entry and exit list: action,",
                    "start Timer, stop Timer, send Event, or {call: action, args: {param: value}}.",
                    "kind: empty, final or history. A composite has its own initial and states;",
@@ -2147,6 +2224,14 @@ def review(project, skipped):
         print('        Data no rule of the machine reads belongs to the component '
               'that computes it, not to the machine.')
     for spec in project['machines']:
+        shared = shared_request_actions(project, spec)
+        if shared:
+            print('  note  {}: {}.'.format(spec.get('name', '?'), '; '.join(
+                'action "{}" runs on {}'.format(name, ', '.join(triggers))
+                for name, triggers in shared)))
+            print('        Each of these triggers forwards a request with its own '
+                  'response, and an action cannot tell which trigger ran it. Declare '
+                  'one action per trigger, or pass what differs as an argument.')
         for owner, attribute, notify, matched, missing in state_mirrors(project, spec):
             print('  note  {}: attribute "{}" of {} takes {} of this machine\'s state '
                   'names and has no value for: {}. A consumer cannot see the machine '
@@ -2240,6 +2325,7 @@ def main():
     cross_check(project)
     check_sequences(project)
     check_drivers(project)
+    check_service_timers(project)
     check_final_entry(project)
     # An include names a document the way the project root spells it, which is the
     # directory the documents are written to.

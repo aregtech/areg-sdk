@@ -97,7 +97,8 @@ Everything this page describes has a field: `"submachines"` and a state's
 `"final_event"`, `"conditions"` a guard calls, `"constants"`, and `{"send": "..."}` in
 `"do"`. A guard is `[left, "lt", right]`, or `{"all": [...]}`, `{"any": [...]}`,
 `{"not": ...}` nested as deep as it needs; each operand is a bare declared name, or
-`param:`/`attr:`/`const:`/`lit:`/`raw:` when it has to be spelled out.
+`param:`/`attr:`/`const:`/`lit:`/`raw:` when it has to be spelled out, as is a `"set"`
+value: `"raw:mAttrTries + 1"` counts.
 
 This page is what a machine *means*. The rest of it still applies -- the spec has a
 field for each of these -- and a document you were handed is read with the same rules.
@@ -275,11 +276,6 @@ error: the trigger returns `false`, exactly as it does for a state with no
 transition at all. Nest with
 `{"all": [...]}`, `{"any": [...]}` and `{"not": ...}`; call a declared `"conditions"`
 entry with `{"call": "is_ready"}`.
-
-An operand that is a bare declared name is that declaration -- an attribute, a
-constant, or a parameter of the stimulus -- and anything else is a literal. Force one
-with `attr:`, `const:`, `param:`, `lit:` or `raw:<c++>`. A refused guard is not an
-error -- the trigger returns `false`.
 
 ## Knowing when it finished
 

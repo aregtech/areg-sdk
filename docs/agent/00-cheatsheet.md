@@ -34,7 +34,7 @@ which may call `fail("why")`, `stay()` or `go_to(Step::Name)`, so a scenario tha
 branches fits it too. `gen_docs.py --example`
 shows three steps. An argument is written as the value reads and the generator spells
 it in C++: it quotes a `String` and qualifies a field of an enumeration, so
-`"drink": "Latte"` is enough. `"expr:<c++>"` passes C++ through.
+`"drink": "Latte"` is enough. `"raw:<c++>"` passes C++ through.
 
 A value the parameter cannot take is refused before the build, rather than silently
 ignored by the provider while the step awaits an update nothing sends: a name that

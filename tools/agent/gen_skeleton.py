@@ -58,6 +58,16 @@ def marker(slot, what, indent=8):
     return '{}// TODO(you) {}: {}.'.format(' ' * indent, slot, what)
 
 
+def runs_on(machine, action, most=4):
+    """Where an action runs, as the tail of its marker, or nothing for one place."""
+    places = machine.runs_on.get(action) or []
+    if len(set(place.split(' in ')[0] for place in places)) < 2:
+        return ''
+    shown = ', '.join(places[:most])
+    more = ' (+{} more)'.format(len(places) - most) if len(places) > most else ''
+    return '; it runs on {}{} and cannot tell which'.format(shown, more)
+
+
 # A line written only so the skeleton runs before any rule is filled in. It belongs to
 # the marker above it and goes when that marker is filled: fill_markers.py drops it,
 # and an Edit replaces it along with the marker line. Lines after a marker that carry
@@ -719,6 +729,16 @@ class Interface:
             elif kind == 'trigger':
                 self.triggers.append(entry)
 
+        # Where each action runs: "<stimulus> in <state>", one per transition.
+        self.runs_on = {}
+        for state in root.iter('State'):
+            for move in state.findall('./TransitionList/Transition'):
+                if not move.get('Stimulus'):
+                    continue
+                for call in move.iter('ActionCall'):
+                    where = '{} in {}'.format(move.get('Stimulus'), state.get('Name'))
+                    self.runs_on.setdefault(call.get('Action'), []).append(where)
+
         self.attributes = []
         for attribute in root.findall('./AttributeList/Attribute'):
             self.attributes.append((attribute.get('Name'), attribute.get('DataType')))
@@ -1311,18 +1331,22 @@ def timer_includes(class_lines):
     """TIMER_INCLUDES when the emitted class names an areg timer type, else nothing."""
     return TIMER_INCLUDES if any('areg::Timer' in line for line in class_lines) else []
 
-def provider_class(iface, cls, machine=None):
+def provider_class(iface, cls, machine=None, timers=()):
     """The provider component, with every request answered.
 
     Given a machine, the same component owns it: the action handler is a base, the
     machine is a member, and every action is declared here. A separate host component
-    is what the pair used to need, and merging them is what removes it.
+    is what the pair used to need, and merging them is what removes it. Given timers,
+    it is their consumer: each has a member, a start and a stop helper, and a section
+    in process_timer.
     """
     pad = ' ' * (len(cls) + 13)
     lines = ['class {} final : public    areg::Component'.format(cls),
              '{}, protected {}ProviderBase'.format(pad, iface.name)]
     if machine:
         lines.append('{}, protected {}ActionHandler'.format(pad, machine.name))
+    if timers:
+        lines.append('{}, private   areg::TimerConsumer'.format(pad))
     lines += ['{',
               'public:',
               '    {}(const areg::ComponentEntry & entry, areg::ComponentThread & owner)'.format(cls),
@@ -1331,6 +1355,11 @@ def provider_class(iface, cls, machine=None):
     if machine:
         lines.append('        , {}ActionHandler()'.format(machine.name))
         lines.append('        , mFsm(static_cast<{}ActionHandler &>(self()))'.format(machine.name))
+    if timers:
+        lines.append('        , areg::TimerConsumer()')
+        for timer in timers:
+            lines.append('        , {}(static_cast<areg::TimerConsumer &>(self()), "{}")'
+                         .format(timer['member'], timer['name']))
     lines.append('    {')
     if iface.attributes:
         lines.append(marker('initial_values', 'the value each attribute starts with; an '
@@ -1340,18 +1369,35 @@ def provider_class(iface, cls, machine=None):
                 iface.spell('attribute', attr_name, 'set'), default_expr(iface, type_name))))
     lines += ['    }', '', 'protected:']
 
-    if machine:
+    started = [timer for timer in timers if timer['autostart']]
+    if machine or started or timers:
         lines += ['    void startup_component(areg::ComponentThread & comThread) final',
                   '    {',
-                  '        areg::Component::startup_component(comThread);',
-                  '        mFsm.init_fsm(&comThread);',
-                  '    }',
+                  '        areg::Component::startup_component(comThread);']
+        if machine:
+            lines.append('        mFsm.init_fsm(&comThread);')
+        lines += ['        {}();'.format(timer['start']) for timer in started]
+        lines += ['    }',
                   '',
                   '    void shutdown_component(areg::ComponentThread & comThread) final',
-                  '    {',
-                  '        mFsm.release_fsm();',
-                  '        areg::Component::shutdown_component(comThread);',
+                  '    {']
+        lines += ['        {}.stop_timer();'.format(timer['member']) for timer in timers]
+        if machine:
+            lines.append('        mFsm.release_fsm();')
+        lines += ['        areg::Component::shutdown_component(comThread);',
                   '    }',
+                  '']
+    if timers:
+        lines += ['    void process_timer(areg::Timer & timer) final',
+                  '    {']
+        for index, timer in enumerate(timers):
+            lines += ['        {}if (&timer == &{})'.format('' if index == 0 else 'else ',
+                                                          timer['member']),
+                      '        {',
+                      marker(timer['slot'], 'what happens each time {} fires'
+                             .format(timer['name']), 12),
+                      '        }']
+        lines += ['    }',
                   '']
 
     answered = dict((name, params) for name, params in iface.responses)
@@ -1401,10 +1447,31 @@ def provider_class(iface, cls, machine=None):
             lines.append('    void {}({}) final'.format(spelled,
                                                         machine.generated_params('action', name)))
             lines += ['    {',
-                      marker(spelled, 'perform the effect'),
+                      marker(spelled, 'perform the effect' + runs_on(machine, name)),
                       '    }',
                       '']
 
+    for timer in timers:
+        every = 'every {} ms until stopped'.format(timer['timeout']) \
+            if timer['count'].endswith('CONTINUOUSLY') \
+            else 'once, {} ms after the call'.format(timer['timeout']) \
+            if timer['count'] == '1' \
+            else '{} times, every {} ms'.format(timer['count'], timer['timeout'])
+        lines += ['    //! Starts {} again from now: it fires {}.'.format(timer['name'], every),
+                  '    inline void {}()'.format(timer['start']),
+                  '    {',
+                  '        {}.stop_timer();'.format(timer['member']),
+                  '        {0}.start_timer({1}, static_cast<areg::DispatcherThread &>'
+                  '(master_thread()), {2});'.format(timer['member'], timer['timeout'],
+                                                    timer['count']),
+                  '    }',
+                  '',
+                  '    //! Stops {}; safe whether or not it runs.'.format(timer['name']),
+                  '    inline void {}()'.format(timer['stop']),
+                  '    {',
+                  '        {}.stop_timer();'.format(timer['member']),
+                  '    }',
+                  '']
     lines += ['private:',
               '    inline {} & self()'.format(cls),
               '    {   return (*this); }',
@@ -1412,6 +1479,10 @@ def provider_class(iface, cls, machine=None):
     if machine:
         lines += ['    {}FSM  mFsm;    //!< The state machine this component drives.'
                   .format(machine.name), '']
+    for timer in timers:
+        lines += ['    areg::Timer {};    //!< {}'.format(
+            timer['member'], timer['description'] or 'The timer "{}".'.format(timer['name'])),
+            '']
     lines += ['    {}() = delete;'.format(cls),
               '    AREG_NOCOPY_NOMOVE({});'.format(cls),
               '};']
@@ -1443,14 +1514,15 @@ def cpp_value(value, type_name=None, iface=None, where=''):
 
     A design says what a value is, not how C++ spells it, so text given for a String
     parameter is quoted here and a field of an enumeration is qualified with its type.
-    Text that already carries its own quotes stands as it is, and "expr:<c++>" passes
-    anything through verbatim.
+    Text that already carries its own quotes stands as it is, and "raw:<c++>" or
+    "expr:<c++>" passes anything through verbatim.
     """
     if isinstance(value, bool):
         return 'true' if value else 'false'
     text = str(value)
-    if text.startswith('expr:'):
-        return text[5:]
+    for prefix in ('raw:', 'expr:'):
+        if text.startswith(prefix):
+            return text[len(prefix):]
     if type_name in TEXT_TYPES and isinstance(value, str):
         if len(text) > 1 and text.startswith('"') and text.endswith('"'):
             return text
@@ -1489,6 +1561,38 @@ def driver_of(specs, iface):
             if isinstance(entry, dict) and entry.get('name') == iface.name:
                 settings = gen_docs.driver_of(entry)
     return settings
+
+
+def snake(name):
+    """A declared name as the snake_case a generated helper carries."""
+    return re.sub(r'(?<=[a-z0-9])([A-Z])', r'_\1', name).lower()
+
+
+def timers_of(specs, iface):
+    """The timers the specs give this service's provider, in declaration order.
+
+    Each is a dict: name, member, slot, start and stop (helper names), timeout (ms),
+    count (C++ text) and autostart.
+    """
+    import gen_docs
+    declared = []
+    for path in specs:
+        spec, _skipped = gen_docs.load_spec(path)
+        for entry in spec.get('interfaces') or []:
+            if isinstance(entry, dict) and entry.get('name') == iface.name:
+                declared = entry.get('timers') or []
+    timers = []
+    for entry in declared:
+        name, repeat = entry['name'], entry.get('repeat', 1)
+        timers.append({'name': name, 'member': 'm' + pascal(name),
+                       'slot': 'timer_' + snake(name),
+                       'start': 'start_' + snake(name), 'stop': 'stop_' + snake(name),
+                       'timeout': entry['timeout'],
+                       'count': 'areg::TimerBase::CONTINUOUSLY' if repeat == 0
+                       else str(repeat),
+                       'autostart': bool(entry.get('start')),
+                       'description': entry.get('description') or ''})
+    return timers
 
 
 def steps_of(specs, iface):
@@ -2256,7 +2360,7 @@ SCAFFOLD_MAINS = {'provider.cpp': 'provider/main.cpp',
                   'consumer.cpp': 'consumer/main.cpp'}
 
 
-def app_files(iface, mode, include_root, machine=None, steps=(), driver=None):
+def app_files(iface, mode, include_root, machine=None, steps=(), driver=None, timers=()):
     """The whole application: one .hpp and .cpp per component, and the model with main().
 
     Returns a list of (file name, text). The result compiles and runs as written;
@@ -2270,7 +2374,7 @@ def app_files(iface, mode, include_root, machine=None, steps=(), driver=None):
                           '#include "{}/{}FSM.hpp"'.format(include_root, machine.name)]
     consumer_base = ['#include "{}/{}ConsumerBase.hpp"'.format(include_root, iface.name)]
 
-    provider_lines = provider_class(iface, provider_cls, machine)
+    provider_lines = provider_class(iface, provider_cls, machine, timers)
     consumer_lines = consumer_class(iface, consumer_cls, steps, driver)
     produced = [(PROVIDER_DIR[mode] + name, text) for name, text in component_files(
         provider_cls, 'Provider of the {} service.'.format(iface.name),
@@ -2513,9 +2617,12 @@ def held_step(steps):
     return (later or held or [None])[0]
 STOP_TODO = 'TODO(you) {}: a line the lead prints while the provider serves it'
 STOP_HINT = ('one line "{lead}" prints in scenario "{scenario}", matched against the '
-             'output of "{lead}" only. "{target}" is killed when it appears, so pick '
-             'a line printed after the first answer and before the last step. A '
-             'regular expression, one line.')
+             'output of "{lead}" only. "{target}" is killed when it appears, and the '
+             'kill lands about 50 ms later: steps that only send and await finish '
+             'sooner than that. Pick a line printed after the first answer and before '
+             'a step that takes time, or add a {{"name": "...", "wait": 300}} step in '
+             'design.json right after the step that prints it. A regular expression, '
+             'one line.')
 
 
 def stop_slot(scenario):
@@ -2764,7 +2871,7 @@ def main():
                      'machine.'.format(machine.name))
         steps = steps_of(args.spec, iface)
         produced = app_files(iface, args.mode, include_root, machine, steps,
-                             driver_of(args.spec, iface))
+                             driver_of(args.spec, iface), timers_of(args.spec, iface))
         retained = [(file_name,
                      write(os.path.join(args.out, file_name), text, args.force))
                     for file_name, text in produced]
