@@ -63,8 +63,8 @@ Stop: {"proc": "provider", "after": "consumer: ready", "signal": "term"}
   A list of these runs them in order.
 
 The output of a failing process is printed with the verdict, and a passing
-scenario prints the line every expectation matched, so one run is the whole
-evidence. --quiet prints only the verdict.
+scenario prints the line every expectation matched and the last 150 lines of the
+lead's output, so one run is the whole evidence. --quiet prints only the verdict.
 
 Two acceptance items recur in nearly every task and both are keys here, so
 neither needs a shell: the console quit path is "stdin", and the peer going away
@@ -90,6 +90,7 @@ ROUTER_READY_SECONDS = 10.0
 # under this is the build itself and not an edit.
 STALE_TOLERANCE_SECONDS = 30.0
 OUTPUT_TAIL_LINES = 40
+PASS_TAIL_LINES = 150
 
 
 def is_listening(port, host='127.0.0.1'):
@@ -607,11 +608,14 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
     elif not quiet:
         for label, line in evidence:
             sys.stdout.write('      {:<20} {}\n'.format(label, line.strip()[:100]))
+        # The lead's own lines are the steps it took and what each check saw.
+        report_output([handles[lead_index]], {0: outputs.get(lead_index)}, quiet,
+                      tail=PASS_TAIL_LINES)
     shutil.rmtree(spool, ignore_errors=True)
     return True, name, 'ok'
 
 
-def report_output(handles, outputs, quiet, full=False):
+def report_output(handles, outputs, quiet, full=False, tail=OUTPUT_TAIL_LINES):
     """Print what every process said, so a failure needs no second run.
 
     Every process is printed, not only the one an expectation failed on: the output
@@ -625,9 +629,9 @@ def report_output(handles, outputs, quiet, full=False):
             continue
         lines = output.splitlines()
         head = '--- {} ---'.format(proc_name(spec))
-        if not full and len(lines) > OUTPUT_TAIL_LINES:
-            head += ' (last {} of {} lines)'.format(OUTPUT_TAIL_LINES, len(lines))
-            lines = lines[-OUTPUT_TAIL_LINES:]
+        if not full and len(lines) > tail:
+            head += ' (last {} of {} lines)'.format(tail, len(lines))
+            lines = lines[-tail:]
         sys.stdout.write(head + '\n' + '\n'.join(lines) + '\n')
 
 

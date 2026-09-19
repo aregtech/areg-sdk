@@ -22,6 +22,7 @@
 # ===========================================================================
 import argparse
 import glob
+import hashlib
 import json
 import os
 import re
@@ -254,6 +255,39 @@ def app_present(root, document):
     return len(found)
 
 
+APP_STAMP = '.app-design'
+
+
+def design_digest(specs):
+    """One digest of every spec's content, in order."""
+    digest = hashlib.sha256()
+    for spec in specs:
+        with open(spec, 'rb') as handle:
+            digest.update(handle.read())
+    return digest.hexdigest()
+
+
+def app_older_than(root, build, specs):
+    """True when the design changed after src/ was last generated from it.
+
+    The digest written by the last generation answers it. A build directory without
+    one falls back to the times: a spec newer than every application source.
+    """
+    if not specs:
+        return False
+    stamp = os.path.join(root, build, APP_STAMP)
+    if os.path.isfile(stamp):
+        with open(stamp, encoding='utf-8') as handle:
+            return handle.read().strip() != design_digest(specs)
+    newest = 0.0
+    for folder, dirs, files in os.walk(os.path.join(root, 'src')):
+        dirs[:] = [d for d in dirs if d not in ('services', 'build')]
+        for name in files:
+            if name.endswith(('.cpp', '.hpp', '.h', '.cc', '.cxx')):
+                newest = max(newest, os.path.getmtime(os.path.join(folder, name)))
+    return newest > 0 and max(os.path.getmtime(spec) for spec in specs) > newest
+
+
 # The project's own record of which files describe it. Without it a later call
 # has no way to know what --spec the first one was given, so it rebuilds the
 # application of the previous design and verifies the previous contract.
@@ -418,11 +452,22 @@ def main():
             command += ['--spec', spec]
         if not run('application', command, root, kept=200):
             return 1
+        if specs:
+            os.makedirs(os.path.join(root, args.build), exist_ok=True)
+            with open(os.path.join(root, args.build, APP_STAMP), 'w',
+                      encoding='utf-8') as handle:
+                handle.write(design_digest(specs) + '\n')
     elif present == 1:
         print('== application: src/ holds only part of the application of {}, so it is '
               'kept as it is.'.format(os.path.basename(document)))
         print('   --regenerate writes the whole application again and discards what is '
               'in it.')
+    elif app_older_than(root, args.build, specs):
+        print('== application: kept src/ as it is, but {} changed after src/ was generated from it.'
+              .format(', '.join(os.path.basename(spec) for spec in specs)))
+        print('   A request, action or step added since has no marker in it, and one')
+        print('   removed still has. --regenerate writes src/ again from the design and')
+        print('   bodies.txt puts every body back.')
     else:
         print('== application: kept src/ as it is. --regenerate writes it again.')
 
@@ -477,12 +522,12 @@ def main():
         # leaves the compiler with nothing to relink and the binary with its old
         # time, and the guard would then refuse the build it was given, every time,
         # with no command able to clear it.
-        # run_scenarios.py bounds each process's output itself, and a failure it
-        # reports is only readable whole: the FAIL line follows the output it explains.
+        # run_scenarios.py bounds each process's output itself. A failure is only
+        # readable whole, and a pass carries the lead's lines the report is written from.
         if not run('scenarios',
                    [PYTHON, os.path.join(HERE, 'run_scenarios.py'),
                     '--build', os.path.join(args.build, 'bin'), '--stale-ok'],
-                   root, kept=40, failed_kept=None):
+                   root, kept=None, failed_kept=None):
             return 1
         if not args.no_check:
             print('')
@@ -492,7 +537,8 @@ def main():
                        root, kept=1):
                 return 1
         print('')
-        print('Every step passed, the scenarios included.')
+        print('Every step passed, the scenarios included. The lines each scenario printed')
+        print('are above: report from them, since a second run prints the same lines.')
         return 0
 
     print('')
