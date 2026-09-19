@@ -59,7 +59,7 @@ ADVICE = {
              'Fill it, then run this again.',
     'build': 'the compiler refused a source. The errors are above, each with the '
              'line it is on: no second command is needed to see them. Fix the body '
-             'in the worksheet, not the generated file, and run this again. A '
+             'in bodies.txt, not the generated file, and run this again. A '
              'provider that is abstract means the document gained a request the '
              'application has no handler for: add the handler, or --regenerate and '
              'fill the markers again.',
@@ -318,10 +318,10 @@ def main():
                         help='default: read from scenarios.json')
     parser.add_argument('--build', default='build', help='the build directory')
     parser.add_argument('--bodies', default='bodies.txt',
-                        help='the worksheet applied before the build (default: '
+                        help='the bodies applied before the build (default: '
                              'bodies.txt)')
     parser.add_argument('--no-fill', action='store_true',
-                        help='do not apply the worksheet before the build')
+                        help='do not apply the bodies before the build')
     parser.add_argument('--jobs', type=int, default=DEFAULT_JOBS,
                         help='parallel compile jobs (default: {})'
                              .format(DEFAULT_JOBS))
@@ -426,7 +426,7 @@ def main():
     else:
         print('== application: kept src/ as it is. --regenerate writes it again.')
 
-    # The worksheet is the source of the bodies, so it is applied on every call: a
+    # bodies.txt is the source of the bodies, so it is applied on every call: a
     # section changed since the last one is written, and a --regenerate that reset the
     # sources gets every body back. Filling the same body twice writes the same file.
     worksheet = os.path.join(root, args.bodies)

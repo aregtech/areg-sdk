@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Fill every TODO(you) marker of a project from one worksheet, and rewrite a body
+"""Fill every TODO(you) marker of a project from one bodies file, and rewrite a body
 it has already filled.
 
     python3 fill_markers.py --bodies bodies.txt [--src src] [--dry-run]
 
-gen_skeleton.py writes the worksheet with a section per open marker. Under each
-"== <marker>" line goes the code that replaces that marker's line:
+gen_skeleton.py writes worksheet.txt with a section per open marker. The bodies file
+repeats the "== <marker>" line of each section it fills, with the code that
+replaces that marker's line under it:
 
     == provider_state
         uint32_t mCredit{ 0 };
@@ -83,6 +84,10 @@ def read_bodies(path):
         with open(path, encoding='utf-8') as handle:
             lines = handle.read().splitlines()
     except (IOError, OSError) as problem:
+        if not os.path.exists(path):
+            fail('{} does not exist. It is yours to write, in one call: a "== <marker>" '
+                 'line per section of worksheet.txt, each with its code under it'
+                 .format(path))
         fail('cannot read {}: {}'.format(path, problem))
     sections = []
     current = None
@@ -189,7 +194,10 @@ def bodies_of(root):
 
 
 def expectations_of(path):
-    """The "expect" holes of a scenario file, as ({name: (scenario, process)}, open).
+    """The holes of a scenario file, as ({name: (scenario, process)}, open).
+
+    A hole is a process's "expect" list, or a scenario's "stop" trigger, whose
+    process is None.
 
     The first names every process a section may write to, whether its hole is still
     open or was filled by an earlier pass: the name of one is the scenario's and the
@@ -220,15 +228,25 @@ def expectations_of(path):
                     still_open.add(hit.group(1))
             if isinstance(spec, dict) and (spec.get('name') or spec.get('binary')):
                 found.setdefault(gen_skeleton.expect_slot(label, spec), (outer, inner))
+        stop = scenario.get('stop')
+        if isinstance(stop, dict) and isinstance(stop.get('after'), str):
+            hit = MARKER.search('// ' + stop['after'])
+            if hit:
+                found[hit.group(1)] = (outer, None)
+                still_open.add(hit.group(1))
+            found.setdefault(gen_skeleton.stop_slot(label), (outer, None))
     return found, still_open
 
 
 def write_expectations(path, filled):
-    """Put each section's regular expressions in the process they belong to."""
+    """Put each section's regular expressions in the process or the stop they belong to."""
     with open(path, encoding='utf-8') as handle:
         document = json.load(handle)
     for (outer, inner), body in filled.items():
-        document['scenarios'][outer]['procs'][inner]['expect'] = body
+        if inner is None:
+            document['scenarios'][outer]['stop']['after'] = body[0]
+        else:
+            document['scenarios'][outer]['procs'][inner]['expect'] = body
     with open(path, 'w', encoding='utf-8', newline='\n') as handle:
         json.dump(document, handle, indent=2)
         handle.write('\n')
@@ -330,6 +348,10 @@ def main():
         if name in expectations:
             expected[expectations[name]] = [text.strip() for text in body
                                             if text.strip()]
+            if expectations[name][1] is None and len(expected[expectations[name]]) != 1:
+                fail('{}: section "{}" is the line that triggers a stop, so it takes '
+                     'exactly one regular expression, not {}. Nothing was written'
+                     .format(args.bodies, name, len(expected[expectations[name]])))
             if name not in open_expect:
                 replaced.append(name)
             continue
@@ -349,7 +371,7 @@ def main():
     if expected and not args.dry_run:
         write_expectations(args.scenarios, expected)
     if expected:
-        print('{} {}: {} process expectation(s) written'
+        print('{} {}: {} scenario hole(s) written'
               .format('would fill' if args.dry_run else 'filled',
                       args.scenarios.replace(os.sep, '/'), len(expected)))
 

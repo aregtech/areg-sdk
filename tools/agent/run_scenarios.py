@@ -435,6 +435,11 @@ def stops_missed(pending):
     """
     entry = pending[0]
     after = entry['after']
+    hole = re.match(r'TODO\(you\)\s+(\w+)', after) if isinstance(after, str) else None
+    if hole:
+        return ('the stop on {} never fired: its trigger is still the open section '
+                '"{}". Fill it in bodies.txt with one line the lead prints while {} '
+                'serves it'.format(entry['proc'], hole.group(1), entry['proc']))
     if isinstance(after, (int, float)):
         why = 'the run ended before {}s'.format(after)
     else:

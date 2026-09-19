@@ -2829,6 +2829,8 @@ def run():
     check_step_output_whole(report)
     check_design_reviewable(report)
     check_codegen_plain_error(report)
+    check_answer_file(report)
+    check_peer_lost_scenario(report)
     check_errors_follow_output(report)
     check_regeneration_report(report)
     check_regeneration_idempotent(report)
@@ -4618,10 +4620,10 @@ def check_worksheet_order_note(report):
         if subprocess.run(made, capture_output=True, text=True).returncode != 0:
             report.fail('order-note', 'gen_skeleton.py --app no longer writes a worksheet')
             return
-        if not os.path.exists('bodies.txt'):
+        if not os.path.exists(gen_skeleton.WORKSHEET):
             report.fail('order-note', 'no worksheet was written to carry the note')
             return
-        with open('bodies.txt', encoding='utf-8') as handle:
+        with open(gen_skeleton.WORKSHEET, encoding='utf-8') as handle:
             sheet = handle.read()
         if gen_skeleton.ORDER_NOTE[0] not in sheet:
             report.fail('order-note',
@@ -4781,7 +4783,7 @@ def check_empty_section_note(report):
                           capture_output=True, text=True).returncode != 0:
             report.fail('empty-section', 'gen_skeleton.py --app no longer writes a worksheet')
             return
-        with open('bodies.txt', encoding='utf-8') as handle:
+        with open('worksheet.txt', encoding='utf-8') as handle:
             sheet = handle.read()
         filled = []
         for line in sheet.splitlines():
@@ -5019,6 +5021,185 @@ def check_step_output_whole(report):
     report.ok('step-output',
               'a step prints its whole log when it is shorter than its allowance, '
               'and its last lines when it is longer')
+
+
+def lay_example_app(tools, edit=None):
+    """In the working directory: a scaffold, the example design and its application.
+
+    "edit" changes the example design, as a dict, before anything is generated.
+
+    Returns '' when every step ran, or what failed.
+    """
+    steps = [[os.path.join(tools, 'setup_project.py'), '--name', 'sheet', '--root', '.',
+              '--mode', 'ipc', '--sdk-root', ROOT]]
+    for command in steps:
+        done = subprocess.run([sys.executable] + command, capture_output=True, text=True)
+        if done.returncode != 0:
+            return 'the scaffold no longer lays out a project: ' + done.stderr.strip()[:200]
+    spec = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'), '--example'],
+                          capture_output=True, text=True)
+    design = json.loads(spec.stdout)
+    if edit:
+        edit(design)
+    with open('design.json', 'w', encoding='utf-8') as handle:
+        json.dump(design, handle, indent=2)
+    done = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'), '--outdir',
+                           'src/services', '--force', '--chained', '--spec', 'design.json'],
+                          capture_output=True, text=True)
+    if done.returncode != 0:
+        return 'the example no longer generates its documents: ' + done.stderr.strip()[:200]
+    docs = sorted(os.listdir(os.path.join('src', 'services')))
+    siml = next((d for d in docs if d.endswith('.siml')), None)
+    fsml = next((d for d in docs if d.endswith('.fsml')), None)
+    done = subprocess.run(
+        [sys.executable, os.path.join(tools, 'gen_skeleton.py'), '--doc',
+         'src/services/' + siml, '--app', '--mode', 'ipc', '--force', '--spec',
+         'design.json'] + (['--machine', 'src/services/' + fsml] if fsml else []),
+        capture_output=True, text=True)
+    if done.returncode != 0:
+        return 'the example no longer generates an application: ' + done.stderr.strip()[:200]
+    return ''
+
+
+def check_answer_file(report):
+    """The generator writes the worksheet and never the file the bodies go in.
+
+    A pre-written bodies file of empty sections is filled one Edit per section by
+    some runs: run 20260918b-atmfsm sent 42 of them in 42 requests, $1.38 of $2.99.
+    A file that does not exist yet can only be created whole.
+    """
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    sys.path.insert(0, tools)
+    import gen_skeleton
+    holder = tempfile.mkdtemp()
+    here = os.getcwd()
+    try:
+        os.chdir(holder)
+        failed = lay_example_app(tools)
+        if failed:
+            report.fail('answer-file', failed)
+            return
+        if not os.path.exists(gen_skeleton.WORKSHEET):
+            report.fail('answer-file', 'gen_skeleton.py --app writes no {}'
+                        .format(gen_skeleton.WORKSHEET))
+            return
+        if os.path.exists(gen_skeleton.BODIES):
+            report.fail('answer-file', 'gen_skeleton.py --app writes {} itself, so a run '
+                        'finds a file of empty sections and may fill it one Edit at a '
+                        'time'.format(gen_skeleton.BODIES))
+            return
+        with open(gen_skeleton.WORKSHEET, encoding='utf-8') as handle:
+            sheet = handle.read()
+        # An empty bodies file an older generator left is removed; one with work stays.
+        for content, kept in ((sheet, False), ('== provider_state\n// mine\n', True)):
+            with open(gen_skeleton.BODIES, 'w', encoding='utf-8') as handle:
+                handle.write(content)
+            machines = sorted(glob.glob('src/services/*.fsml'))
+            again = subprocess.run(
+                [sys.executable, os.path.join(tools, 'gen_skeleton.py'), '--doc',
+                 sorted(glob.glob('src/services/*.siml'))[0], '--app', '--mode', 'ipc',
+                 '--force', '--spec', 'design.json'] +
+                (['--machine', machines[0]] if machines else []),
+                capture_output=True, text=True)
+            if again.returncode != 0:
+                report.fail('answer-file', 'a regeneration failed: '
+                            + again.stderr.strip()[:200])
+                return
+            if os.path.exists(gen_skeleton.BODIES) != kept:
+                report.fail('answer-file', 'a regeneration {} a {} that {}'.format(
+                    'removed' if kept else 'kept', gen_skeleton.BODIES,
+                    'carries a body' if kept else 'holds only empty sections'))
+                return
+    finally:
+        os.chdir(here)
+        shutil.rmtree(holder, ignore_errors=True)
+    report.ok('answer-file', 'the generator writes {} and never {}: the bodies file '
+              'starts absent, so it is written whole'.format(gen_skeleton.WORKSHEET,
+                                                             gen_skeleton.BODIES))
+
+
+def check_peer_lost_scenario(report):
+    """A stepped two-process project gets a peer-lost scenario the run does not write.
+
+    Written by hand, it costs a page read and a scenario edit on every run, and run
+    20260918b-atmfsm matched its trigger against the wrong process and paid a build
+    and a run for it. A design with a wait step between two others gets the trigger
+    written; one without gets it as a single worksheet section.
+    """
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    sys.path.insert(0, tools)
+    import fill_markers
+
+    def no_wait(design):
+        for entry in design['interfaces']:
+            entry['steps'] = [step for step in entry.get('steps', [])
+                              if not step.get('wait')]
+
+    here = os.getcwd()
+    for edit in (None, no_wait):
+        holder = tempfile.mkdtemp()
+        try:
+            os.chdir(holder)
+            failed = lay_example_app(tools, edit)
+            if failed:
+                report.fail('peer-lost-scenario', failed)
+                return
+            with open('scenarios.json', encoding='utf-8') as handle:
+                scenarios = json.load(handle)['scenarios']
+            lost = [s for s in scenarios if isinstance(s.get('stop'), dict)]
+            if not lost:
+                report.fail('peer-lost-scenario', 'the example, two processes with '
+                            'steps, gets no scenario that takes the provider away')
+                return
+            lead = [p for p in lost[0]['procs'] if p.get('lead')]
+            if not lead or lead[0].get('exit') != 1 or \
+                    lost[0]['stop']['proc'] == lead[0].get('name'):
+                report.fail('peer-lost-scenario', 'the scenario does not stop the '
+                            'provider and expect exit 1 from the consumer leading it')
+                return
+            holes = fill_markers.expectations_of('scenarios.json')[1]
+            slot = next((h for h in holes if h.startswith('stop_')), None)
+            if edit is None:
+                if slot or not lost[0]['stop']['after'].startswith('^step '):
+                    report.fail('peer-lost-scenario', 'the example has a wait step '
+                                'between two others and its stop trigger is still left '
+                                'to the run: {}'.format(lost[0]['stop']['after']))
+                    return
+                continue
+            sheet = ''
+            if os.path.exists('worksheet.txt'):
+                with open('worksheet.txt', encoding='utf-8') as handle:
+                    sheet = handle.read()
+            if slot is None or '== ' + slot not in sheet:
+                report.fail('peer-lost-scenario', 'with no wait step the stop trigger '
+                            'is no section of the worksheet, so it is written by '
+                            'editing scenarios.json')
+                return
+            for body, code in (('a\nb\n', 2), ('consumer: midway\n', 0)):
+                with open('bodies.txt', 'w', encoding='utf-8') as handle:
+                    handle.write('== {}\n{}'.format(slot, body))
+                done = subprocess.run([sys.executable,
+                                       os.path.join(tools, 'fill_markers.py'),
+                                       '--bodies', 'bodies.txt'],
+                                      capture_output=True, text=True)
+                if done.returncode != code:
+                    report.fail('peer-lost-scenario', 'fill_markers.py exits {} on a '
+                                'stop section of {} line(s), expected {}'
+                                .format(done.returncode, body.count('\n'), code))
+                    return
+            with open('scenarios.json', encoding='utf-8') as handle:
+                after = [s['stop']['after'] for s in json.load(handle)['scenarios']
+                         if isinstance(s.get('stop'), dict)]
+            if after != ['consumer: midway']:
+                report.fail('peer-lost-scenario', 'the stop section did not become '
+                            'the trigger: {}'.format(after))
+                return
+        finally:
+            os.chdir(here)
+            shutil.rmtree(holder, ignore_errors=True)
+    report.ok('peer-lost-scenario', 'a stepped two-process project gets a peer-lost '
+              'scenario: the trigger is written when a wait step holds the consumer, '
+              'and is one worksheet section when none does')
 
 
 def check_codegen_plain_error(report):

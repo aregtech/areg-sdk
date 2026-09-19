@@ -18,6 +18,7 @@ import json
 import os
 import re
 import sys
+import textwrap
 import xml.etree.ElementTree as ET
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -71,14 +72,16 @@ def placeholder(line):
 
 MARKER = re.compile(r'//\s*TODO\(you\)\s+([A-Za-z_][\w]*)\s*:\s*(.*?)\s*$')
 
-# The tool that fills every marker of a project in one command, and the file it
-# reads. The generator writes that file already filled in as far as it can be:
-# the sections, their order and the names each body may call.
+# The tool that fills every marker of a project in one command, and the two files
+# around it. The worksheet is written by the generator: the sections, their order
+# and the names each body may call. The bodies file is written by the author and
+# is the one the filler reads; the generator never writes it.
 FILLER = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                       'fill_markers.py').replace(os.sep, '/')
 BUILDER = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                        'build_project.py').replace(os.sep, '/')
-WORKSHEET = 'bodies.txt'
+WORKSHEET = 'worksheet.txt'
+BODIES = 'bodies.txt'
 
 
 # Every marker of a project is filled in one command, from a file the generator
@@ -88,12 +91,13 @@ WORKSHEET_NOTE = (
     '  {total} hole(s) in {files} file(s). {path} is written beside this project:\n'
     '  one section for each, in order, with the function it sits in and every name\n'
     '  a body may call. It is {lines} line(s): read it whole, in one call, and do\n'
-    '  not page through it. Fill it, then apply it, build and run the scenarios in\n'
-    '  one command:\n'
+    '  not page through it. It is rewritten on every generation, so no body goes\n'
+    '  in it: write {bodies} in one call, each "== <marker>" line with its code under\n'
+    '  it. Then apply it, build and run the scenarios in one command:\n'
     '\n'
     '    python3 {build} --spec design.json --run\n'
     '\n'
-    '  A project with no design.json applies it with python3 {tool} --bodies {path}.\n'
+    '  A project with no design.json applies it with python3 {tool} --bodies {bodies}.\n'
     '  A line tagged "// placeholder(you)" under a marker goes when that marker is\n'
     '  filled; a line with no tag is real code. gen_skeleton.py --todos lists the\n'
     '  markers left, each exactly as it stands in its file.')
@@ -197,13 +201,11 @@ def print_todos(produced, out, written, holes=0, scenarios=''):
         total += len(found)
         files += 1
     if holes:
-        print('  {} leaves {} expectation(s)'.format(scenarios, holes))
+        print('  {} leaves {} hole(s)'.format(scenarios, holes))
     total += holes
     files += 1 if holes else 0
     if not total:
         return
-    if written is False:
-        print('  {} already carries work and was left as it is.'.format(WORKSHEET))
     lines = 0
     try:
         with open(WORKSHEET, encoding='utf-8') as handle:
@@ -211,8 +213,7 @@ def print_todos(produced, out, written, holes=0, scenarios=''):
     except OSError:
         pass
     print(WORKSHEET_NOTE.format(total=total, files=files, tool=FILLER, build=BUILDER,
-                                path=WORKSHEET,
-                                lines=lines))
+                                path=WORKSHEET, bodies=BODIES, lines=lines))
 
 
 # ---------------------------------------------------------------------------
@@ -223,28 +224,31 @@ def print_todos(produced, out, written, holes=0, scenarios=''):
 # ---------------------------------------------------------------------------
 WORKSHEET_HEAD = """\
 #| The worksheet of this project: one section per open marker, in file order.
-#| Under each "==" line write the code that replaces that marker, then apply it,
-#| build and run the scenarios in one command:
+#| The generator rewrites this file on every generation, so no body goes in it.
+#| The bodies go in {bodies}, a file of your own written in one call: for each
+#| section, its "==" line and under it the code that replaces that marker. Then
+#| apply it, build and run the scenarios in one command:
 #|
 #|   python3 {build} --spec design.json --run
 #|
-#| A project with no design.json applies it with python3 {tool} --bodies {path}.
+#| A project with no design.json applies it with python3 {tool} --bodies {bodies}.
 #|
-#| A line starting with "#|" is furniture of this file and never reaches a source.
-#| Everything else under a "==" line is code, copied as written: a comment in a
-#| body is "//", not "#". A section left with no code stays open and nothing is
-#| written for it, so one pass can fill what it knows and a later pass the rest.
+#| A line starting with "#|" never reaches a source, so a section copied from here
+#| with its notes still applies. Everything else under a "==" line is code, copied
+#| as written: a comment in a body is "//", not "#". A section left out, or left
+#| with no code, stays open and nothing is written for it, so one pass can fill
+#| what it knows and a later pass the rest.
 #|
 #| A section that needs nothing still takes one line: a "//" comment saying so
 #| closes it. This holds for every section, the "*_state" ones included. A marker
 #| left open is an error of the final contract check, after the build and the
 #| scenarios have already passed.
 #|
-#| Filling this file and running that command is two requests. Editing the sources
-#| one marker at a time is {total} requests instead, and a request is billed for the
+#| Writing {bodies} and running that command is two requests. Filling it one
+#| section at a time is {total} requests instead, and a request is billed for the
 #| whole conversation again.
 #|
-#| This file keeps every body it writes. A body already written stays addressable by
+#| {bodies} keeps every body it writes. A body already written stays addressable by
 #| the same section: change the section, run the command again, and that body alone
 #| is rewritten where it stands. A scenario that fails names the section its check is
 #| in, so the section to change is the one the failure printed, and no source file is
@@ -320,10 +324,11 @@ CARRIED = '()[]<>,&|=+-*/.?:"'
 
 
 def scenario_holes(path):
-    """Every unfilled expectation of a scenario file, as (marker, scenario, process).
+    """Every unfilled hole of a scenario file, as (marker, what the section asks).
 
-    A hole here is not code, so it is not a line of a source file, but it is a
-    decision the run has to make and the worksheet is where the decisions live.
+    A hole is an expectation or the trigger of a "stop". It is not code, so it is not
+    a line of a source file, but it is a decision the run has to make and the
+    worksheet is where the decisions live.
     """
     holes = []
     try:
@@ -333,13 +338,23 @@ def scenario_holes(path):
     except (ValueError, OSError, KeyError, TypeError):
         return holes
     for scenario in scenarios:
-        for spec in scenario.get('procs', []):
+        label = scenario.get('name', '')
+        procs = scenario.get('procs', [])
+        for spec in procs:
             for entry in spec.get('expect', []):
                 found = MARKER.search('// ' + entry) if entry.startswith('TODO(you)') \
                     else None
                 if found:
-                    holes.append((found.group(1), scenario.get('name', ''),
-                                  proc_label(spec)))
+                    holes.append((found.group(1), 'what "{}" must print in scenario '
+                                  '"{}".'.format(proc_label(spec), label)))
+        stop = scenario.get('stop')
+        after = stop.get('after') if isinstance(stop, dict) else None
+        found = MARKER.search('// ' + after) \
+            if isinstance(after, str) and after.startswith('TODO(you)') else None
+        if found and procs:
+            lead = next((spec for spec in procs if spec.get('lead')), procs[-1])
+            holes.append((found.group(1), STOP_HINT.format(
+                lead=proc_label(lead), scenario=label, target=stop.get('proc'))))
     return holes
 
 
@@ -511,7 +526,7 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
                 carried[file_name] = (os.path.basename(file_name)[:-4], members, helpers,
                                       helper_docs(text))
 
-    lines = [WORKSHEET_HEAD.format(tool=FILLER, build=BUILDER, path=WORKSHEET,
+    lines = [WORKSHEET_HEAD.format(tool=FILLER, build=BUILDER, bodies=BODIES,
                                    total=len(sections) + len(holes))]
     if carried:
         lines.append('#| These names are taken already. Declaring one of them again in\n'
@@ -573,25 +588,29 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
         lines.append('#| from a body above: the expectation and the code that satisfies')
         lines.append('#| it are written together, in this file, or the run proves')
         lines.append('#| nothing.')
-        for name, scenario, process in holes:
+        for name, hint in holes:
             lines.append('== {}'.format(name))
-            lines.append('#| what "{}" must print in scenario "{}".'
-                         .format(process, scenario))
+            for line in textwrap.wrap(hint, 77):
+                lines.append('#| {}'.format(line))
             lines.append('')
     return lines
 
 
 def write_worksheet(produced, out, iface, document, machine, machine_doc,
                     scenarios=None, steps=()):
-    """Write the worksheet, unless one already carries work."""
+    """Write the worksheet. It carries no work, so it is rewritten every time.
+
+    A bodies file holding only notes and empty sections is removed: it is the
+    worksheet an earlier generator wrote in its place, and it carries no work either.
+    """
     lines = worksheet_lines(produced, out, iface, document, machine, machine_doc,
                             scenarios, steps)
     if not lines:
         return None
-    if os.path.exists(WORKSHEET) and not worksheet_pristine(WORKSHEET):
-        return False
     with open(WORKSHEET, 'w', encoding='utf-8', newline='\n') as handle:
         handle.write('\n'.join(lines).rstrip() + '\n')
+    if os.path.exists(BODIES) and worksheet_pristine(BODIES):
+        os.remove(BODIES)
     return True
 
 
@@ -2443,6 +2462,36 @@ SCENARIO_TODO = ('TODO(you) {}: a line this process prints that proves one '
 # it holds no hole and passes as written.
 QUIT_SCENARIO = 'quit'
 
+# The scenario that proves the generated reconnect deadline: the provider is killed
+# while it serves the consumer, and the consumer exits 1. Its one hole is the line
+# that marks "while it serves", which only the author of the bodies knows.
+PEER_LOST_SCENARIO = 'peer-lost'
+
+# A wait at least this long holds the lead still long enough for the runner, which
+# polls every 50 ms, to kill the provider before the step after it begins.
+HOLD_MS_MIN = 250
+
+
+def held_step(steps):
+    """The wait step a peer loss can be timed against, or None.
+
+    It has a step after it, so the provider is still needed when it is killed, and a
+    later one is preferred over the first, so the provider has already served.
+    """
+    held = [step for step in steps[:-1] if step['wait'] >= HOLD_MS_MIN]
+    later = [step for step in held if step is not steps[0]]
+    return (later or held or [None])[0]
+STOP_TODO = 'TODO(you) {}: a line the lead prints while the provider serves it'
+STOP_HINT = ('one line "{lead}" prints in scenario "{scenario}", matched against the '
+             'output of "{lead}" only. "{target}" is killed when it appears, so pick '
+             'a line printed after the first answer and before the last step. A '
+             'regular expression, one line.')
+
+
+def stop_slot(scenario):
+    """The name of a scenario's stop trigger, as a marker."""
+    return 'stop_{}'.format(re.sub(r'\W+', '_', scenario).strip('_'))
+
 
 def proc_label(spec):
     return spec.get('name') or spec['binary']
@@ -2458,7 +2507,7 @@ def expect_slot(scenario, spec):
                                  re.sub(r'\W+', '_', proc_label(spec)).strip('_'))
 
 
-def update_scenarios(path, mode, iface):
+def update_scenarios(path, mode, iface, steps=(), reconnect=0):
     """Point scenarios.json at the application that was just generated.
 
     The binaries and the router come from the file setup_project.py wrote, because
@@ -2512,6 +2561,29 @@ def update_scenarios(path, mode, iface):
                                      'exit': 0}]})
         quit_written = True
 
+    # A consumer that steps through a scenario loses its provider part way through,
+    # and the generated reconnect deadline turns that into exit 1. With no deadline
+    # there is no exit to check, and with no steps there is no "part way".
+    lost_written = False
+    if mode == 'ipc' and len(procs) > 1 and len(steps) > 1 and reconnect \
+            and not any(s.get('name') == PEER_LOST_SCENARIO or 'stop' in s
+                        for s in scenarios):
+        lead = procs[-1]
+        held = held_step(list(steps))
+        trigger = '^step {}$'.format(re.escape(held['name'])) if held \
+            else STOP_TODO.format(stop_slot(PEER_LOST_SCENARIO))
+        scenarios.append({'name': PEER_LOST_SCENARIO,
+                          'timeout': scenarios[0]['timeout'] + reconnect,
+                          'router': scenarios[0].get('router', True),
+                          'stop': {'proc': proc_label(procs[0]),
+                                   'after': trigger,
+                                   'signal': 'kill'},
+                          'procs': [{'binary': spec['binary'], 'name': proc_label(spec)}
+                                    for spec in procs[:-1]] +
+                                   [{'binary': lead['binary'], 'name': proc_label(lead),
+                                     'lead': True, 'exit': 1}]})
+        lost_written = held['name'] if held else True
+
     with open(path, 'w', encoding='utf-8') as handle:
         json.dump(document, handle, indent=2)
         handle.write('\n')
@@ -2530,6 +2602,17 @@ def update_scenarios(path, mode, iface):
               .format(QUIT_SCENARIO))
         print('  proves the console quit path the generated main() already carries,')
         print('  and it needs nothing from you.')
+    if lost_written:
+        print('  A "{}" scenario was added: {} is killed while it serves, and {} has to'
+              .format(PEER_LOST_SCENARIO, proc_label(procs[0]), proc_label(procs[-1])))
+        if lost_written is True:
+            print('  exit 1 within reconnect_seconds. Its one hole, {}, is the line that'
+                  .format(stop_slot(PEER_LOST_SCENARIO)))
+            print('  starts the loss, and it is a section of the worksheet.')
+        else:
+            print('  exit 1 within reconnect_seconds. The loss starts with step "{}",'
+                  .format(lost_written))
+            print('  whose wait holds the consumer still, and it needs nothing from you.')
 
 
 APP_NOTE = (
@@ -2564,7 +2647,7 @@ def report_todos(out, mode):
         print('no TODO(you) marker is left in {}'.format(out))
     else:
         print(TODOS_NOTE.format(total=total, files=files, tool=FILLER,
-                                path=WORKSHEET))
+                                path=BODIES))
     return 0
 
 
@@ -2673,7 +2756,8 @@ def main():
                                app_sources(produced, args.mode), documents)
         for change in changed or []:
             print('  {}/CMakeLists.txt: {}'.format(args.out.replace('\\', '/'), change))
-        update_scenarios(args.scenarios, args.mode, iface)
+        update_scenarios(args.scenarios, args.mode, iface, steps,
+                         driver_of(args.spec, iface)['reconnect_seconds'])
         written = write_worksheet(retained, args.out, iface, args.doc,
                                   machine, args.machine, args.scenarios, steps)
         print_todos(retained, args.out, written,

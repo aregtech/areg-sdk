@@ -166,12 +166,12 @@ names come from a fixed rule and the tool has applied it.
 
 ## 6. Implement
 
-**The worksheet is already written.** `gen_skeleton.py` wrote `bodies.txt` beside the
-project: one section per open marker, in file order, each naming the function it sits
-in, the names each generated class already carries, and the contract every body is
-written against. **No generated file has to be opened to write a body.** Read the
-worksheet and fill each `== <marker>` section. Section 7's command applies it before
-it compiles, so filling and building is one request.
+**The worksheet is already written.** `gen_skeleton.py` wrote `worksheet.txt`: one
+section per open marker, in file order, each naming the function it sits in, the names
+each generated class already carries, and the contract every body is written against.
+**No generated file has to be opened to write a body.** Read it whole, then write
+`bodies.txt` in one call: each `== <marker>` line with the code under it. Section 7's
+command applies it before it compiles.
 
 **That is the whole implementation, in two requests.** One edit per body and a full
 rewrite are the two most expensive shapes a run has.
@@ -180,8 +180,8 @@ A line tagged `// placeholder(you)` stands only until the marker above it is fil
 a default `response_`, a `return false;`. The filler takes it away with that marker. An
 untagged line under a marker is real code and stays.
 
-**A body changed after a build or a scenario run is changed in `bodies.txt` too.** The
-worksheet keeps every body it writes, so changing a section and running the build
+**A body changed after a build or a scenario run is changed in `bodies.txt` too.** It
+keeps every body it writes, so changing a section and running the build
 command rewrites that body where it stands, and `--regenerate` gets every body back.
 A failing check names its own section, so the section to change is the one the failure
 printed: the whole fix is one edit and one command, and no generated file is opened.
@@ -223,7 +223,8 @@ every fix too** -- worksheet, build and run are one request.
 **Every acceptance item goes in `scenarios.json`, including the two that look like
 they need a terminal.** A console quit path is `"stdin": ["-q"]` on that process,
 leading a scenario of its own; the peer going away is a scenario-level `"stop"`. The
-generator prints both keys when it writes the file, so neither needs a page. One run
+generator writes both for a stepped two-process project; a trigger it cannot pick
+is a worksheet section. One run
 then prints the line each expectation matched, and that output is the evidence for the
 report.
 

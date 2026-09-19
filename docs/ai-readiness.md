@@ -121,6 +121,8 @@ here rather than left to be discovered:
 | `duplication` | Under 2% of 12-word runs repeated across three or more pages. | `WARN` |
 | `design-review` | `gen_docs.py --spec <design> --review` prints every refusal and every design note the generation prints, and writes nothing. | `FAIL` |
 | `codegen-plain-error` | A design `codegen.jar` reports an error for is refused, even when the jar exits 0 and says so only in a plain `error:` line. | `FAIL` |
+| `answer-file` | The generator writes `worksheet.txt` and never `bodies.txt`, so the bodies file starts absent and is written whole; an empty one an older generator left is removed, one with work is kept. | `FAIL` |
+| `peer-lost-scenario` | A stepped two-process project gets a `peer-lost` scenario: provider killed, consumer exit 1. The trigger is written when a wait step holds the consumer, and is one worksheet section otherwise. | `FAIL` |
 | `error-ordering` | Every `fail()` in `tools/agent/` flushes stdout before writing to stderr. Every documented call is piped into `head` or `tail`, where a block-buffered stdout puts the error above the lines it names. | `FAIL` |
 | `step-output` | A build step shorter than its line allowance prints all of it, and its last line is always the verdict. The documents step carries the design notes, and a negative slice once showed a 15-line log as its last line alone. | `FAIL` |
 | `failure-errors` | A failed step prints the lines that name the defect, not the tail of the log. A compiler and a generator put the diagnostic in the middle and the summary of whatever gave up at the end, so a tail carries no error and a second command is spent asking again. | `FAIL` |

@@ -540,7 +540,7 @@ def _fill_worksheet(base):
     The worksheet's own rule: a section that needs nothing is closed by one // line.
     Nothing here is compiled, so a comment is every body this checker has to write.
     """
-    sheet = os.path.join(base, 'bodies.txt')
+    sheet = os.path.join(base, 'worksheet.txt')
     if not os.path.isfile(sheet):
         return False
     with open(sheet, encoding='utf-8') as handle:
@@ -550,7 +550,8 @@ def _fill_worksheet(base):
         out.append(line)
         if line.startswith('== '):
             out.append('// checked by check_commands.py')
-    with open(sheet, 'w', encoding='utf-8', newline='\n') as handle:
+    with open(os.path.join(base, 'bodies.txt'), 'w', encoding='utf-8',
+              newline='\n') as handle:
         handle.write('\n'.join(out) + '\n')
     return True
 
