@@ -448,6 +448,13 @@ for. Do it last, after the report, and never let it change what you built:
 - **Every marker whose one-line hint was not enough**, and what it should have said.
 - **Anything you looked for and could not find** -- a signature, a rule, an example
   -- and where you looked first.
+- **Every file under the project's src/ or build/ you opened or searched**, with
+  the request, the question it was meant to answer, and whether worksheet.txt
+  already answered it.
+- **Every page you opened before the first build_project.py call**: what in the
+  task or in AGENTS.md made you open it then, rather than after generation.
+- **Every tool you ran to learn a syntax, a name or a signature**, and whether its
+  answer was enough or you had to look again elsewhere.
 
 Be specific and short: a list, not prose."
     fi

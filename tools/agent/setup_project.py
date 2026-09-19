@@ -643,11 +643,11 @@ def main():
     print('    of at least 15 minutes. Every later call takes seconds.')
     print('  python3 {}/build_project.py --spec design.json --run'.format(tools))
     print('    once the bodies are filled: builds and runs every scenario in one call.')
-    print_scenarios(root)
+    print_scenarios(root, mode)
     return 0
 
 
-def print_scenarios(root):
+def print_scenarios(root, mode):
     """The scenarios this scaffold wrote, by name, with the processes each starts.
 
     A scenario is added by editing this file, and the names and process labels the
@@ -669,8 +669,12 @@ def print_scenarios(root):
                   for spec in scenario.get('procs') or []]
         print('    "{}": {} -- the last one leads and ends it'
               .format(scenario.get('name', '?'), ', '.join(labels) or 'no process'))
-    print('    a peer going away is a scenario of its own, with "stop"; '
-          'docs/agent/50-running.md has its keys.')
+    if mode == 'ipc':
+        print('    build_project.py adds "quit" and, for a design with steps, "peer-lost" '
+              '(the provider killed mid-run): write neither, and open no page for them.')
+    else:
+        print('    a peer going away is a scenario of its own, with "stop"; '
+              'docs/agent/50-running.md has its keys.')
 
 
 if __name__ == '__main__':

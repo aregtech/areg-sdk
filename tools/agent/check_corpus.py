@@ -2836,6 +2836,7 @@ def run():
     check_peer_lost_scenario(report)
     check_shared_request_action(report)
     check_provider_timers(report)
+    check_scaffold_routing(report)
     check_errors_follow_output(report)
     check_regeneration_report(report)
     check_regeneration_idempotent(report)
@@ -5295,6 +5296,38 @@ def check_peer_lost_scenario(report):
     report.ok('peer-lost-scenario', 'a stepped two-process project gets a peer-lost '
               'scenario: the trigger is written when a wait step holds the consumer, '
               'and is one worksheet section when none does, saying how to hold it')
+
+
+def check_scaffold_routing(report):
+    """Before a design exists, nothing sends a run to a page the generator makes moot.
+
+    The ipc scaffold used to end on "docs/agent/50-running.md has its keys" for a peer
+    that goes away, and 3 of the 4 runs of 20260919 read that page before designing:
+    tempalarm said it was for the scenarios build_project.py writes itself. A lookup
+    of step syntax in schema_help.py answered "no such element" (tempalarm r4) and cost
+    a request to find gen_docs.py --example.
+    """
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    holder = tempfile.mkdtemp()
+    try:
+        done = subprocess.run([sys.executable, os.path.join(tools, 'setup_project.py'),
+                               '--name', 'route', '--root', holder, '--mode', 'ipc',
+                               '--sdk-root', ROOT], capture_output=True, text=True)
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    said = done.stdout + done.stderr
+    if '50-running.md' in said or '"peer-lost"' not in said:
+        report.fail('scaffold-route', 'the ipc scaffold routes to 50-running.md for a '
+                    'scenario build_project.py writes, or does not say it writes it')
+        return
+    done = subprocess.run([sys.executable, os.path.join(ROOT, 'tools', 'schema_help.py'),
+                           'Step', '--document', 'siml'], capture_output=True, text=True)
+    if 'gen_docs.py --example' not in done.stdout:
+        report.fail('scaffold-route', 'schema_help.py answers a design.json key such as '
+                    '"Step" with "no such element" and no pointer to gen_docs.py --example')
+        return
+    report.ok('scaffold-route', 'the ipc scaffold says which scenarios are generated, and '
+              'schema_help.py sends a design.json key to gen_docs.py --example')
 
 
 def check_provider_timers(report):

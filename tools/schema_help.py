@@ -568,6 +568,19 @@ def show_authoring(schemas, kind, full):
     return missing
 
 
+def spec_word(name):
+    """True for a key or a kind of design.json, which gen_docs.py reads, not a schema."""
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'agent'))
+    try:
+        import gen_docs
+    except Exception:
+        return False
+    words = set(gen_docs.KEYS) | set(gen_docs.SINGULAR) | set(gen_docs.SINGULAR.values())
+    for keys in gen_docs.KEYS.values():
+        words |= set(keys)
+    return name.lower() in words
+
+
 def main():
     parser = argparse.ArgumentParser(
         description='Answer what a .fsml, .siml or .dtml document may contain.')
@@ -608,6 +621,11 @@ def main():
     for wanted in args.names:
         if not answer(schemas, wanted, args.full):
             print('{} -- no such element, attribute or type'.format(wanted))
+            if spec_word(wanted):
+                print('    "{}" is a design.json key, not a document element: '
+                      'python3 {} --example prints a whole spec that uses it'
+                      .format(wanted, os.path.join(os.path.dirname(os.path.abspath(
+                          __file__)), 'agent', 'gen_docs.py')))
             for hint in near(schemas, wanted):
                 print('    did you mean: ' + hint)
             missing += 1

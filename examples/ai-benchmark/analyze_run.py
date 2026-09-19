@@ -408,6 +408,102 @@ def events(requests):
              [], "the self-reporting tail")]
 
 
+# Every run reads these first, so a read of one explains nothing.
+ENTRY_PAGES = ("AGENTS.md", "docs/agent/01-runbook.md")
+READS = re.compile(r"(^|[;&|(]\s*)(cat|head|tail|grep|egrep|rg|sed -n|less|awk|wc)\b")
+WRITES = re.compile(r"\bsed\s+-i|>\s*\S*src/|\btee\b")
+LOOKUP = re.compile(r"schema_help|api_help|gen_docs\.py\s+--example|gen_skeleton\.py.*--contract"
+                    r"|\bgrep\b|explain_rule")
+EMPTY = re.compile(r"no such|not found|no match|unknown|nothing matched|0 declaration",
+                   re.IGNORECASE)
+
+
+def generated_path(text, work):
+    """A path of the project the generator wrote, named in a file path or a command."""
+    found = re.search(r"(?:%s/)?((?:src|build/generate)/[\w./-]+)" % re.escape(work), text)
+    return found.group(1) if found else None
+
+
+def last_said(requests, index, back=3):
+    """The last line the agent wrote to the user at or before a request."""
+    for i in range(index, max(index - back, -1) - 1, -1):
+        lines = [l.strip() for t in requests[i]["said"] for l in t.splitlines() if l.strip()]
+        if lines:
+            return "r%d: %s" % (i, lines[-1][:110])
+    return "-"
+
+
+def previous_call(requests, index, position):
+    """The call made just before one call, as its tool and a short argument."""
+    flat = [(i, c) for i in range(index + 1) for c in requests[i]["calls"]]
+    spot = next((k for k, (i, c) in enumerate(flat) if i == index and k >= 0
+                 and c is requests[index]["calls"][position]), None)
+    if not spot:
+        return "-"
+    i, (nm, arg, _) = flat[spot - 1]
+    return "r%d %s %s" % (i, nm, " ".join(arg.split())[-70:])
+
+
+def evidence(requests, sdk, work):
+    """The calls whose reason a transcript does not carry, with what came just before.
+
+    Reasoning is stored empty, so the cause of a read is the line the agent wrote and
+    the call it made before it. Four questions: which generated sources were opened,
+    which generated files were edited by hand, which pages were read before the first
+    build, and which lookups answered nothing.
+    """
+    sources, edits, pages, empty, noted = [], [], [], [], []
+    notes = []
+    built = next((i for i, r in enumerate(requests)
+                  if any("build_project.py" in a for n, a, _ in r["calls"] if n == "Bash")),
+                 len(requests))
+    for i, r in enumerate(requests):
+        for k, (nm, arg, result) in enumerate(r["calls"]):
+            # Before the first build src/ holds the scaffold's placeholder, not output.
+            where = generated_path(arg, work) if i >= built else None
+            if nm in ("Edit", "Write", "MultiEdit", "NotebookEdit") and where:
+                edits.append((i, k, where))
+            elif nm == "Read" and where:
+                sources.append((i, k, where))
+            elif nm == "Bash" and where and "build_project.py" not in arg \
+                    and "gen_skeleton.py" not in arg:
+                if WRITES.search(arg):
+                    edits.append((i, k, where))
+                elif READS.search(arg):
+                    sources.append((i, k, where))
+            if nm in ("Edit", "Write") and arg.endswith("design.json") and notes:
+                noted.append((i, k, "; ".join(notes)[:110]))
+            if nm == "Bash" and ("build_project.py" in arg or "gen_docs.py" in arg):
+                notes = [" ".join(l.split())[5:65] for l in (result or "").splitlines()
+                         if l.strip().startswith("note ") and "unchanged" not in l]
+            elif nm not in ("Read",):
+                notes = []
+            page = arg[len(sdk) + 1:] if arg.startswith(sdk + "/") else ""
+            if nm == "Read" and page and i < built and page not in ENTRY_PAGES \
+                    and not page.startswith("examples/ai-benchmark/"):
+                pages.append((i, k, page))
+            if nm == "Bash" and LOOKUP.search(arg) and "build_project.py" not in arg:
+                text = (result or "").strip()
+                if len(text) < 200 and (not text or EMPTY.search(text)):
+                    empty.append((i, k, " ".join(arg.split())[-80:],
+                                  " ".join(text.split())[:100]))
+    print("\n== evidence: what came just before each call a transcript does not explain")
+    for title, found in (("generated sources opened", sources),
+                         ("generated files edited by hand", edits),
+                         ("pages past the entry path before the first build (r%d)"
+                          % built, pages),
+                         ("design edits right after a design note", noted)):
+        print("   %-44s %d" % (title, len(found)))
+        for i, k, what in found:
+            print("     r%-3d %s" % (i, what))
+            print("          said  %s" % last_said(requests, i))
+            print("          after %s" % previous_call(requests, i, k))
+    print("   %-44s %d" % ("lookups that answered nothing", len(empty)))
+    for i, k, what, text in empty:
+        print("     r%-3d %s" % (i, what))
+        print("          got   %s" % (text or "(nothing)"))
+
+
 def print_events(requests, own, resident):
     """Each event twice: what its own requests were billed, and what they left behind.
 
@@ -469,11 +565,13 @@ def main():
         u = m.get("usage") or {}
         names = []
         calls = []
+        said = []
         for b in m.get("content") or []:
             if not isinstance(b, dict):
                 continue
             if b.get("type") == "text":
                 visible += len(b.get("text") or "")
+                said.append(b.get("text") or "")
             if b.get("type") != "tool_use":
                 continue
             bid = b.get("id")
@@ -516,7 +614,7 @@ def main():
             requests.append({"id": mid, "ctx": ctx, "out": u.get("output_tokens") or 0,
                              "think": (u.get("output_tokens_details")
                                        or {}).get("thinking_tokens") or 0,
-                             "tools": names, "calls": calls,
+                             "tools": names, "calls": calls, "said": said,
                              "in": u.get("input_tokens") or 0,
                              "cr": u.get("cache_read_input_tokens") or 0,
                              "cw": u.get("cache_creation_input_tokens") or 0,
@@ -526,6 +624,7 @@ def main():
                 if r["id"] == mid:
                     r["tools"].extend(names)
                     r["calls"].extend(calls)
+                    r["said"].extend(said)
                     break
     if not requests:
         sys.exit("no assistant request in %s" % tr)
@@ -608,6 +707,8 @@ def main():
              else "toolchain and package probes: this arm has no corpus"))
     for i, what in searches:
         print("   req %3d  %s" % (i, what))
+    if areg_arm:
+        evidence(requests, sdk, os.path.join(runabs, "work"))
 
     print("\n== the report rows, so the run does not have to count itself")
     opened, seen_path = [], set()
