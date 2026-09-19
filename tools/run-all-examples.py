@@ -191,6 +191,10 @@ SCENARIOS = [
     # which is the failure this test exists to catch. Needs AREG_TESTS=ON to be built.
     {'name': 'timer_churn', 'tier': 'smoke', 'timeout': 240,
      'procs': [proc('areg-timer-churn-test', expect=[r'timer churn test passed'])]},
+    # Not an example either: internal events sent from startup_component and from foreign
+    # threads, the failure being a hang or a crash. Needs AREG_TESTS=ON to be built.
+    {'name': 'internal_events', 'tier': 'smoke', 'timeout': 150,
+     'procs': [proc('areg-internal-events-test', expect=[r'\bPASSED\b'])]},
 
     {'name': '01_minimalrpc', 'tier': 'smoke', 'procs': [proc('01_minimalrpc')]},
     {'name': '03_onethread', 'tier': 'smoke', 'procs': [proc('03_onethread')]},
