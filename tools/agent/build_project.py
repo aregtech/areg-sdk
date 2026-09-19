@@ -90,6 +90,50 @@ def show(lines, tail):
         print('   ... {} earlier line(s) not shown'.format(len(lines) - tail))
 
 
+NOTES_SHOWN = '.notes-shown'
+NOTE_LINE = re.compile(r'^(\s*)note  (\S+)')
+
+
+def collapse_notes(lines, record):
+    """The lines with every design note an earlier call printed cut to one line.
+
+    A note is its "note" line and the more indented lines under it. The digests of
+    the notes printed are kept in `record` for the next call.
+    """
+    try:
+        with open(record, encoding='utf-8') as handle:
+            shown = set(handle.read().split())
+    except OSError:
+        shown = set()
+    kept, printed, index = [], [], 0
+    while index < len(lines):
+        head = NOTE_LINE.match(lines[index])
+        if not head:
+            kept.append(lines[index])
+            index += 1
+            continue
+        end = index + 1
+        while end < len(lines) and lines[end].strip() and \
+                len(lines[end]) - len(lines[end].lstrip()) > len(head.group(1)):
+            end += 1
+        block = '\n'.join(lines[index:end])
+        digest = hashlib.sha256(block.encode('utf-8')).hexdigest()[:16]
+        printed.append(digest)
+        if digest in shown:
+            kept.append('{}note  {} unchanged, as printed by an earlier call'
+                        .format(head.group(1), head.group(2).rstrip(':')))
+        else:
+            kept.extend(lines[index:end])
+        index = end
+    try:
+        os.makedirs(os.path.dirname(record), exist_ok=True)
+        with open(record, 'w', encoding='utf-8') as handle:
+            handle.write('\n'.join(printed) + '\n')
+    except OSError:
+        pass
+    return kept
+
+
 # What a failure is worth printing: the line that names the defect. A build log ends
 # with the summary of the tool that gave up, so its last lines carry no diagnostic.
 DIAGNOSTIC = re.compile(
@@ -151,13 +195,14 @@ def show_failure(lines, tail):
               .format(shown, len(lines)))
 
 
-def run(step, command, cwd, kept=2, failed_kept=40):
+def run(step, command, cwd, kept=2, failed_kept=40, notes=None):
     """One step of the chain, and whether it passed.
 
     A step that passed prints its last `kept` lines and nothing more: a build log
     that reaches the conversation is re-sent with every later request. A step that
     failed prints the lines of its log that name an error, up to `failed_kept` of
-    them, and what to do about it.
+    them, and what to do about it. With `notes`, a design note printed by an
+    earlier call is cut to one line.
     """
     print('== {}: {}'.format(step, ' '.join(command)))
     result = subprocess.run(command, cwd=cwd, capture_output=True, text=True)
@@ -170,6 +215,8 @@ def run(step, command, cwd, kept=2, failed_kept=40):
         if advice:
             print(advice.format(tools=os.path.dirname(HERE)))
         return False
+    if notes:
+        lines = collapse_notes(lines, notes)
     show(lines, kept)
     return True
 
@@ -267,6 +314,37 @@ def design_digest(specs):
     return digest.hexdigest()
 
 
+def sources_digest(root):
+    """One digest of every application source under src/, by path and content."""
+    digest = hashlib.sha256()
+    source_root = os.path.join(root, 'src')
+    for folder, dirs, files in os.walk(source_root):
+        dirs[:] = sorted(d for d in dirs if d not in ('services', 'build'))
+        for name in sorted(files):
+            if name.endswith(('.cpp', '.hpp', '.h', '.cc', '.cxx')):
+                path = os.path.join(folder, name)
+                digest.update(os.path.relpath(path, source_root).encode('utf-8'))
+                with open(path, 'rb') as handle:
+                    digest.update(handle.read())
+    return digest.hexdigest()
+
+
+def read_stamp(root, build):
+    """The design digest and the sources digest of the last generation, or None."""
+    try:
+        with open(os.path.join(root, build, APP_STAMP), encoding='utf-8') as handle:
+            lines = handle.read().split()
+    except OSError:
+        return None, None
+    return (lines[0] if lines else None), (lines[1] if len(lines) > 1 else None)
+
+
+def app_untouched(root, build):
+    """True when src/ is exactly what the last generation wrote."""
+    _design, sources = read_stamp(root, build)
+    return sources is not None and sources == sources_digest(root)
+
+
 def app_older_than(root, build, specs):
     """True when the design changed after src/ was last generated from it.
 
@@ -275,10 +353,9 @@ def app_older_than(root, build, specs):
     """
     if not specs:
         return False
-    stamp = os.path.join(root, build, APP_STAMP)
-    if os.path.isfile(stamp):
-        with open(stamp, encoding='utf-8') as handle:
-            return handle.read().strip() != design_digest(specs)
+    design, _sources = read_stamp(root, build)
+    if design is not None:
+        return design != design_digest(specs)
     newest = 0.0
     for folder, dirs, files in os.walk(os.path.join(root, 'src')):
         dirs[:] = [d for d in dirs if d not in ('services', 'build')]
@@ -397,7 +474,8 @@ def main():
                    '--force', '--chained']
         for spec in specs:
             command += ['--spec', spec]
-        if not run('documents', command, root, kept=len(specs) * 8 + 8):
+        if not run('documents', command, root, kept=len(specs) * 8 + 8,
+                   notes=os.path.join(root, args.build, NOTES_SHOWN)):
             return 1
 
     document = args.doc
@@ -443,7 +521,12 @@ def main():
                   .format(path))
 
     present = app_present(root, document)
-    if args.regenerate or present == 0:
+    stale = present == 2 and app_older_than(root, args.build, specs)
+    untouched = stale and app_untouched(root, args.build)
+    if untouched and not args.regenerate:
+        print('== application: {} changed and src/ holds nothing of yours yet, so it '
+              'is written again.'.format(', '.join(os.path.basename(s) for s in specs)))
+    if args.regenerate or present == 0 or untouched:
         command = [PYTHON, os.path.join(HERE, 'gen_skeleton.py'), '--doc', document,
                    '--app', '--mode', mode, '--force']
         if machine:
@@ -456,13 +539,13 @@ def main():
             os.makedirs(os.path.join(root, args.build), exist_ok=True)
             with open(os.path.join(root, args.build, APP_STAMP), 'w',
                       encoding='utf-8') as handle:
-                handle.write(design_digest(specs) + '\n')
+                handle.write(design_digest(specs) + '\n' + sources_digest(root) + '\n')
     elif present == 1:
         print('== application: src/ holds only part of the application of {}, so it is '
               'kept as it is.'.format(os.path.basename(document)))
         print('   --regenerate writes the whole application again and discards what is '
               'in it.')
-    elif app_older_than(root, args.build, specs):
+    elif stale:
         print('== application: kept src/ as it is, but {} changed after src/ was generated from it.'
               .format(', '.join(os.path.basename(spec) for spec in specs)))
         print('   A request, action or step added since has no marker in it, and one')

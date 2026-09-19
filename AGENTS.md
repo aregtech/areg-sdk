@@ -57,7 +57,7 @@ Find your task, open that one file, and do not search the repository.
 | Integrate areg into an existing CMake project | `docs/wiki/02b-cmake-integrate.md` |
 | Work out why it does not work | `docs/agent/51-debug.md` |
 | Test the application, or a component on its own | copy `docs/agent/recipes/12-testing/`; `docs/agent/52-testing.md` |
-| A `scenarios.json` key `--app` did not write (`router`, `lead`, `stop`/`after`/`signal`); start `mtrouter` by hand | `docs/agent/50-running.md` -- `run_scenarios.py` starts the pieces itself |
+| A `scenarios.json` key `--app` did not write; `mtrouter` by hand. In ipc it writes the `-q` scenario, and peer loss for a design with steps | `docs/agent/50-running.md` |
 | Read or query a `.sqlog` log database | `docs/agent/35-sqlog.md` |
 | Set the router address, ports, anything in `areg.init` | `docs/agent/36-config.md` |
 | Find the example showing a given facility | `docs/agent/41-examples.md` |

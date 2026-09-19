@@ -103,6 +103,12 @@ WORKSHEET_NOTE = (
     '  markers left, each exactly as it stands in its file.')
 
 
+# The worksheet rewritten by a later generation.
+WORKSHEET_AGAIN = (
+    '  {total} hole(s) in {files} file(s). {path} is rewritten from this design,\n'
+    '  {lines} line(s); {bodies} applies to it as before.')
+
+
 # The same markers, listed by --todos after the worksheet has been consumed.
 TODOS_NOTE = (
     '  {total} marker(s) in {files} file(s). Write one section per marker -- a\n'
@@ -183,8 +189,10 @@ def helper_docs(text):
     return found
 
 
-def print_todos(produced, out, written, holes=0, scenarios=''):
+def print_todos(produced, out, written, holes=0, scenarios='', first=True):
     """How many holes each generated file leaves, and where the worksheet is.
+
+    The instructions come with the first worksheet only; a rewritten one gets a line.
 
     The lines themselves are not printed here. They are sections of the worksheet,
     which is read at the moment a body is written rather than recalled from the
@@ -212,6 +220,10 @@ def print_todos(produced, out, written, holes=0, scenarios=''):
             lines = sum(1 for _ in handle)
     except OSError:
         pass
+    if not first:
+        print(WORKSHEET_AGAIN.format(total=total, files=files, path=WORKSHEET,
+                                     bodies=BODIES, lines=lines))
+        return
     print(WORKSHEET_NOTE.format(total=total, files=files, tool=FILLER, build=BUILDER,
                                 path=WORKSHEET, bodies=BODIES, lines=lines))
 
@@ -544,6 +556,14 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
                 said = docs.get(spelt)
                 if said:
                     lines.append('#|         {}'.format(said))
+        lines.append('#|')
+    if steps:
+        lines.append('#| The steps of the scenario, in order. go_to() takes one of these\n'
+                     '#| names; a step with no step_ section below has nothing to check:\n#|')
+        width = max(len(step['enum']) for step in steps) + 6
+        for step in steps:
+            lines.append('#|   {:{}} {}'.format('Step::' + step['enum'], width,
+                                               step_said(step)))
         lines.append('#|')
     driven = driven_body(produced)
     if driven:
@@ -1523,13 +1543,8 @@ STEP_CHECK = {'response': 'check this answer', 'broadcast': 'check this broadcas
               'update': 'check the new value'}
 
 
-def step_detail(step):
-    """What one step sent and what it waits for, as a C++ string literal's contents.
-
-    A stall names the step it stopped on. The step alone does not say what the run
-    was waiting for, and reading that out of the design costs a request at the moment
-    the answer is needed most.
-    """
+def step_said(step):
+    """What one step sent and what it waits for, in plain words."""
     said = []
     if step['send']:
         said.append('sent {}({})'.format(step['call'], ', '.join(step['args'])))
@@ -1537,8 +1552,17 @@ def step_detail(step):
         said.append('awaits {} {}'.format(*step['awaits']))
     elif step['wait']:
         said.append('waits {} ms'.format(step['wait']))
-    return ' and '.join(said).replace('\\', '\\\\').replace('"', '\\"') \
-        if said else 'waits for nothing'
+    return ' and '.join(said) if said else 'waits for nothing'
+
+
+def step_detail(step):
+    """What one step sent and what it waits for, as a C++ string literal's contents.
+
+    A stall names the step it stopped on. The step alone does not say what the run
+    was waiting for, and reading that out of the design costs a request at the moment
+    the answer is needed most.
+    """
+    return step_said(step).replace('\\', '\\\\').replace('"', '\\"')
 
 
 def step_dispatch(steps, kind, name, indent):
@@ -2764,11 +2788,13 @@ def main():
             print('  {}/CMakeLists.txt: {}'.format(args.out.replace('\\', '/'), change))
         update_scenarios(args.scenarios, args.mode, iface, steps,
                          driver_of(args.spec, iface)['reconnect_seconds'])
+        first = not os.path.isfile(WORKSHEET)
         written = write_worksheet(retained, args.out, iface, args.doc,
                                   machine, args.machine, args.scenarios, steps)
         print_todos(retained, args.out, written,
-                    len(scenario_holes(args.scenarios)), args.scenarios)
-        print(APP_NOTE)
+                    len(scenario_holes(args.scenarios)), args.scenarios, first)
+        if first:
+            print(APP_NOTE)
         return 0
 
     # A state machine document produces one host component, not a pair.
