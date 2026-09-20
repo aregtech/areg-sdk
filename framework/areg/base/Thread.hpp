@@ -505,12 +505,12 @@ public:
 /************************************************************************/
 // Thread debugging function
 /************************************************************************/
-#ifdef _DEBUG
+#ifdef DEBUG
     /**
      * \brief   Dumps all created threads information to the output window. Valid only in debug builds.
      **/
     static void dump_threads();
-#endif // _DEBUG
+#endif // DEBUG
 
 //////////////////////////////////////////////////////////////////////////
 // Protected override operations
