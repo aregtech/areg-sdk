@@ -226,7 +226,7 @@ endif()
 
 # Set build configuration. Set "Debug" for debug build, and "Release" for release build.
 if (NOT DEFINED CMAKE_BUILD_TYPE OR "${CMAKE_BUILD_TYPE}" STREQUAL "")
-    set(CMAKE_BUILD_TYPE "Debug")
+    set(CMAKE_BUILD_TYPE "Release")
 endif()
 
 # Set the Areg binary library type to compile. Set "shared" if not "static"
