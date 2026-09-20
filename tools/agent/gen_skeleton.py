@@ -281,8 +281,10 @@ WORKSHEET_HEAD = """\
 #| names the function it sits in. The filler reports the line every body landed on,
 #| so no file has to be opened afterwards either.
 #|
-#| A helper of your own is declared in the "*_state" section of a file and defined
-#| in any section of that same file. Nothing else has to be added by hand.
+#| A helper of your own is declared and defined in the "*_state" section, which is
+#| the private block of that class's header. Every other section is code inside 
+#| an existing function body, so an out-of-line definition there does not compile. 
+#| Nothing else has to be added by hand.
 #|
 #| A body prints with "std::cout << ... << std::endl;". Every .cpp of this project
 #| includes <iostream> already, so a section that prints adds no include.
@@ -2618,11 +2620,12 @@ def held_step(steps):
 STOP_TODO = 'TODO(you) {}: a line the lead prints while the provider serves it'
 STOP_HINT = ('one line "{lead}" prints in scenario "{scenario}", matched against the '
              'output of "{lead}" only. "{target}" is killed when it appears, and the '
-             'kill lands about 50 ms later: steps that only send and await finish '
+             'kill lands about 50 ms later: a send that is answered at once finishes '
              'sooner than that. Pick a line printed after the first answer and before '
-             'a step that takes time, or add a {{"name": "...", "wait": 300}} step in '
-             'design.json right after the step that prints it. A regular expression, '
-             'one line.')
+             'something that takes time. A design with steps holds the lead still by '
+             'adding a {{"name": "...", "wait": 300}} step right after the step that '
+             'prints it; one without steps picks a line the lead prints while it is '
+             'still being served. A regular expression, one line.')
 
 
 def stop_slot(scenario):
@@ -2698,11 +2701,10 @@ def update_scenarios(path, mode, iface, steps=(), reconnect=0):
                                      'exit': 0}]})
         quit_written = True
 
-    # A consumer that steps through a scenario loses its provider part way through,
-    # and the generated reconnect deadline turns that into exit 1. With no deadline
-    # there is no exit to check, and with no steps there is no "part way".
+    # A consumer that loses its provider exits 1 through the generated reconnect
+    # deadline. With no deadline there is no exit to check.
     lost_written = False
-    if mode == 'ipc' and len(procs) > 1 and len(steps) > 1 and reconnect \
+    if mode == 'ipc' and len(procs) > 1 and reconnect \
             and not any(s.get('name') == PEER_LOST_SCENARIO or 'stop' in s
                         for s in scenarios):
         lead = procs[-1]
