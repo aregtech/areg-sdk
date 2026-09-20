@@ -132,6 +132,8 @@ endif()
 set(AREG_DEPS_DIR "${AREG_DEPS_DIR}" CACHE PATH "Directory holding the packages areg fetched" FORCE)
 
 # ---------------------------------------------------------------------------
+# AI Friendly files if the user applies agentic coding.
+#
 # The file an agent reads to find this SDK.
 #
 # A project can obtain areg as a clone, by FetchContent, or as an installed
