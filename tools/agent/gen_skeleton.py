@@ -416,6 +416,21 @@ STEPS_NOTE = ['a step_ section runs only while its step is current. fail("why") 
               'step with nothing to check still takes one line: a // comment saying so']
 
 
+# The same contract as STEPS_NOTE, short enough to repeat on every later step_
+# section. A worksheet states it once at the top and a run reads section nine.
+STEP_BRIEF = ['falling through the end of this body ends the step and starts the next.',
+              'stay() and return hold it, go_to(Step::Name) redirects, fail("why") stops']
+
+
+# A response no step awaits gets no step machinery at all, and the generated file is
+# where that was read until it was written here.
+ANSWER_NOTE = ['no step awaits this answer, so this body sits outside the step',
+               'sequence and nothing in it ends a step. complete() moves on only',
+               'when no stay() is outstanding: the first complete() after a stay()',
+               'clears it and returns. A step that has to react to this answer',
+               'awaits it in design.json, which puts its check in a step_ section']
+
+
 UPDATE_NOTE = ['an update_ body runs on every arrival, whatever step is current, and',
                'before the step_ check of the same update. That check runs only while',
                'its step is current; an arrival on any other step is dropped there.',
@@ -468,9 +483,20 @@ def section_notes(sections):
     updates = [name for name, _, _, _, _ in sections if name.startswith('update_')]
     if updates:
         notes[updates[0]] = UPDATE_NOTE
-    checks = [name for name, _, _, _, _ in sections if name.startswith('step_')]
+    # The brief goes on the first step_ section of each handler, not on all of them:
+    # the sections of one handler are read together.
+    checks = [(name, signature) for name, _, _, _, signature in sections
+              if name.startswith('step_')]
     if checks:
-        notes[checks[0]] = STEPS_NOTE
+        notes[checks[0][0]] = STEPS_NOTE
+    seen = set(signature for _, signature in checks[:1])
+    for name, signature in checks[1:]:
+        if signature not in seen:
+            seen.add(signature)
+            notes[name] = STEP_BRIEF
+    for name, _, _, _, _ in sections:
+        if name.startswith('response_'):
+            notes[name] = ANSWER_NOTE
     names = [name for name, _, _, _, _ in sections]
     if 'peer_lost' in names:
         notes['peer_lost'] = PEER_LOST_NOTE
@@ -623,6 +649,9 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
         lines.append('#| from a body above: the expectation and the code that satisfies')
         lines.append('#| it are written together, in this file, or the run proves')
         lines.append('#| nothing. A "//" line is a pattern here, not a comment.')
+        lines.append('#| The dialect is Python re, searched and not anchored, with')
+        lines.append('#| MULTILINE on: ^ and $ meet every line, and a plain substring')
+        lines.append('#| is a valid pattern. Escape . ( ) [ ] * + ? that mean themselves.')
         for name, hint in holes:
             lines.append('== {}'.format(name))
             for line in textwrap.wrap(hint, 77):

@@ -579,6 +579,11 @@ Be specific and short: a list, not prose."
         fi
     fi
 
+    # Which configuration the run actually built. CMAKE_BUILD_TYPE does not answer
+    # this, and a run compared across a different one measures the configuration.
+    echo "config   $( python3 "${HERE}/build_config.py" "${RUN}" 2>/dev/null \
+                      || echo unknown )" >> "${RUN}/meta.txt"
+
     echo
     if [ "${code}" -eq 0 ] && [ ! -s "${RESULT}" ]; then
         echo "run-benchmark: ${AGENT} returned no output; see ${RUN}/run.err" >&2

@@ -731,6 +731,12 @@ Be specific and short: a list, not prose.
         }
     }
 
+    # Which configuration the run actually built. CMAKE_BUILD_TYPE does not answer
+    # this, and a run compared across a different one measures the configuration.
+    $built = (Invoke-Python (Join-Path $HERE 'build_config.py') $Run)
+    if (-not $built) { $built = 'unknown' }
+    Add-Text $meta "config   $built`n"
+
     Write-Output ''
     if ($code -eq 0 -and (Get-Item -LiteralPath $result).Length -eq 0) {
         [Console]::Error.WriteLine("run-benchmark: $Agent returned no output; see $Run\run.err")

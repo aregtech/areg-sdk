@@ -26,6 +26,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 
@@ -73,13 +74,34 @@ ADVICE = {
 STALE_CACHE = re.compile(
     r'(?is)(generator|platform|toolset)[^\n]*\n?\s*does not match the .*used previously')
 
-# What clears it. The cache goes, the compiled objects stay: deleting the whole build
-# directory also works and compiles the framework again from source.
-STALE_ADVICE = ('The build directory was configured by another generator, platform or '
-                'toolset, and CMake keeps the first one in its cache. Delete '
-                '"{build}/CMakeCache.txt" and the "{build}/CMakeFiles" directory, then '
-                'run this again. Do not delete the whole "{build}" directory: that '
-                'compiles the framework from source again, minutes per attempt.')
+# What this step does about it. The cache goes, the compiled objects stay, so the
+# second attempt relinks instead of compiling the framework again.
+STALE_CLEARED = ('== configure: this build directory carried another generator, platform '
+                 'or toolset in its cache. Cleared "{build}/CMakeCache.txt" and '
+                 '"{build}/CMakeFiles", kept the compiled objects, and configured again. '
+                 'Nothing of yours changed and there is nothing to do about it.')
+
+# Printed only when the second attempt failed the same way.
+STALE_ADVICE = ('Clearing "{build}/CMakeCache.txt" and "{build}/CMakeFiles" did not '
+                'settle this. Delete the whole "{build}" directory and run this again: '
+                'it compiles the framework from source, minutes per attempt.')
+
+
+def heal_stale(root, build):
+    """Removes a build directory's CMake cache, keeping its compiled objects."""
+    where = os.path.join(root, build)
+    gone = False
+    cache = os.path.join(where, 'CMakeCache.txt')
+    if os.path.isfile(cache):
+        os.remove(cache)
+        gone = True
+    files = os.path.join(where, 'CMakeFiles')
+    if os.path.isdir(files):
+        shutil.rmtree(files, ignore_errors=True)
+        gone = True
+    if gone:
+        print(STALE_CLEARED.format(build=build.replace(os.sep, '/')))
+    return gone
 
 
 def fail(message):
@@ -215,7 +237,7 @@ def show_failure(lines, tail):
               .format(shown, len(lines)))
 
 
-def run(step, command, cwd, kept=2, failed_kept=40, notes=None, build=None):
+def run(step, command, cwd, kept=2, failed_kept=40, notes=None, build=None, heal=None):
     """One step of the chain, and whether it passed.
 
     A step that passed prints its last `kept` lines and nothing more: a build log
@@ -223,12 +245,15 @@ def run(step, command, cwd, kept=2, failed_kept=40, notes=None, build=None):
     failed prints the lines of its log that name an error, up to `failed_kept` of
     them, and what to do about it. With `notes`, the design notes printed by an
     earlier call are replaced by one line that counts them. With `build`, a failure
-    whose cause is a stale CMake cache in that directory says how to clear it.
+    whose cause is a stale CMake cache in that directory says how to clear it; with
+    `heal`, that cache is cleared here and the step runs once more instead.
     """
     print('== {}: {}'.format(step, ' '.join(command)))
     result = subprocess.run(command, cwd=cwd, capture_output=True, text=True)
     lines = ((result.stdout or '') + (result.stderr or '')).splitlines()
     if result.returncode != 0:
+        if heal and STALE_CACHE.search('\n'.join(lines)) and heal():
+            return run(step, command, cwd, kept, failed_kept, notes, build)
         show_failure(lines, failed_kept)
         print('')
         print('FAILED at step "{}", exit {}.'.format(step, result.returncode))
@@ -606,7 +631,7 @@ def main():
         print('   every step is incremental, so running this again continues from')
         print('   where it stopped. Nothing is lost and nothing is done twice.')
     if not run('configure', ['cmake', '-B', args.build], root, kept=3,
-               build=args.build):
+               build=args.build, heal=lambda: heal_stale(root, args.build)):
         return 1
     if not run('build',
                ['cmake', '--build', args.build, '-j', str(args.jobs)], root, kept=3):
