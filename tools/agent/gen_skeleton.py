@@ -1243,7 +1243,6 @@ def contract_lines(iface, document):
         out.append('  provider overrides {}({}); consumer calls {}(...) '
                    'to send it'.format(spelled, iface.generated_params('request', name),
                                        spelled))
-    out += request_failed_lines(iface)
     for name, params in iface.responses:
         out.append('  provider calls {}({}); consumer overrides it'
                    .format(iface.spell('response', name),
@@ -1270,27 +1269,6 @@ def contract_lines(iface, document):
                    'areg::DataState & state)'
                    .format(t=cpp, r=read, n=spelled))
     return out + type_lines(iface)
-
-
-def request_failed_lines(iface):
-    """The failure override the generator writes for every request, and its type.
-
-    The generated consumer carries a body for each of these already, so none is a
-    section of the worksheet. Naming them here is what keeps a reader from opening the
-    generated header to find out what they are.
-    """
-    if not iface.requests:
-        return []
-    spelt = [iface.spell('request', name, 'failed') for name, _ in iface.requests]
-    params = iface.generated_params('request', iface.requests[0][0], 'failed').strip()
-    out = ['  consumer already overrides {}, each taking ({});'
-           .format('one failure handler per request above' if len(spelt) > 3
-                   else ', '.join(spelt), params)]
-    if len(spelt) > 3:
-        out.append('    ' + ', '.join(spelt))
-    out.append('    each reports the failure and ends the run, so none of them is a '
-               'section below')
-    return out
 
 
 def print_contract(iface, document):
@@ -2640,12 +2618,11 @@ def held_step(steps):
 STOP_TODO = 'TODO(you) {}: a line the lead prints while the provider serves it'
 STOP_HINT = ('one line "{lead}" prints in scenario "{scenario}", matched against the '
              'output of "{lead}" only. "{target}" is killed when it appears, and the '
-             'kill lands about 50 ms later: a send that is answered at once finishes '
+             'kill lands about 50 ms later: steps that only send and await finish '
              'sooner than that. Pick a line printed after the first answer and before '
-             'something that takes time. A design with steps holds the lead still by '
-             'adding a {{"name": "...", "wait": 300}} step right after the step that '
-             'prints it; one without steps picks a line the lead prints while it is '
-             'still being served. A regular expression, one line.')
+             'a step that takes time, or add a {{"name": "...", "wait": 300}} step in '
+             'design.json right after the step that prints it. A regular expression, '
+             'one line.')
 
 
 def stop_slot(scenario):
@@ -2721,10 +2698,11 @@ def update_scenarios(path, mode, iface, steps=(), reconnect=0):
                                      'exit': 0}]})
         quit_written = True
 
-    # A consumer that loses its provider exits 1 through the generated reconnect
-    # deadline. With no deadline there is no exit to check.
+    # A consumer that steps through a scenario loses its provider part way through,
+    # and the generated reconnect deadline turns that into exit 1. With no deadline
+    # there is no exit to check, and with no steps there is no "part way".
     lost_written = False
-    if mode == 'ipc' and len(procs) > 1 and reconnect \
+    if mode == 'ipc' and len(procs) > 1 and len(steps) > 1 and reconnect \
             and not any(s.get('name') == PEER_LOST_SCENARIO or 'stop' in s
                         for s in scenarios):
         lead = procs[-1]

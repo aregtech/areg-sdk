@@ -670,8 +670,8 @@ def print_scenarios(root, mode):
         print('    "{}": {} -- the last one leads and ends it'
               .format(scenario.get('name', '?'), ', '.join(labels) or 'no process'))
     if mode == 'ipc':
-        print('    build_project.py adds "quit" and "peer-lost" (the provider killed '
-              'mid-run): write neither, and open no page for them.')
+        print('    build_project.py adds "quit" and, for a design with steps, "peer-lost" '
+              '(the provider killed mid-run): write neither, and open no page for them.')
     else:
         print('    a peer going away is a scenario of its own, with "stop"; '
               'docs/agent/50-running.md has its keys.')

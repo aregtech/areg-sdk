@@ -5208,14 +5208,12 @@ def check_answer_file(report):
 
 
 def check_peer_lost_scenario(report):
-    """Every two-process project gets a peer-lost scenario the run does not write.
+    """A stepped two-process project gets a peer-lost scenario the run does not write.
 
     Written by hand, it costs a page read and a scenario edit on every run, and run
     20260918b-atmfsm matched its trigger against the wrong process and paid a build
     and a run for it. A design with a wait step between two others gets the trigger
-    written; one without, and one that declares no steps at all, gets it as a single
-    worksheet section. Run 20260919d-coffeemachine declared no steps, got no scenario,
-    and read four generated sources looking for what to write.
+    written; one without gets it as a single worksheet section.
     """
     tools = os.path.join(ROOT, 'tools', 'agent')
     sys.path.insert(0, tools)
@@ -5226,12 +5224,8 @@ def check_peer_lost_scenario(report):
             entry['steps'] = [step for step in entry.get('steps', [])
                               if not step.get('wait')]
 
-    def no_steps(design):
-        for entry in design['interfaces']:
-            entry.pop('steps', None)
-
     here = os.getcwd()
-    for edit in (None, no_wait, no_steps):
+    for edit in (None, no_wait):
         holder = tempfile.mkdtemp()
         try:
             os.chdir(holder)
@@ -5243,10 +5237,8 @@ def check_peer_lost_scenario(report):
                 scenarios = json.load(handle)['scenarios']
             lost = [s for s in scenarios if isinstance(s.get('stop'), dict)]
             if not lost:
-                report.fail('peer-lost-scenario', 'the example, two processes and '
-                            '{} steps, gets no scenario that takes the provider away'
-                            .format('no' if edit is no_steps else 'unheld'
-                                    if edit is no_wait else 'held'))
+                report.fail('peer-lost-scenario', 'the example, two processes with '
+                            'steps, gets no scenario that takes the provider away')
                 return
             lead = [p for p in lost[0]['procs'] if p.get('lead')]
             if not lead or lead[0].get('exit') != 1 or \
@@ -5301,10 +5293,9 @@ def check_peer_lost_scenario(report):
         finally:
             os.chdir(here)
             shutil.rmtree(holder, ignore_errors=True)
-    report.ok('peer-lost-scenario', 'every two-process project gets a peer-lost '
-              'scenario, steps or none: the trigger is written when a wait step holds '
-              'the consumer, and is one worksheet section otherwise, saying how to '
-              'hold it')
+    report.ok('peer-lost-scenario', 'a stepped two-process project gets a peer-lost '
+              'scenario: the trigger is written when a wait step holds the consumer, '
+              'and is one worksheet section when none does, saying how to hold it')
 
 
 def check_scaffold_routing(report):

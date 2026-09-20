@@ -411,9 +411,6 @@ def events(requests):
 # Every run reads these first, so a read of one explains nothing.
 ENTRY_PAGES = ("AGENTS.md", "docs/agent/01-runbook.md")
 READS = re.compile(r"(^|[;&|(]\s*)(cat|head|tail|grep|egrep|rg|sed -n|less|awk|wc)\b")
-# A search of the generated sources, as opposed to a read of one. It is normally the
-# request before the read, and it names the symbol the corpus did not answer.
-SEARCHES = re.compile(r"(^|[;&|(]\s*)(grep|egrep|rg|ag|ack)\b")
 WRITES = re.compile(r"\bsed\s+-i|>\s*\S*src/|\btee\b")
 LOOKUP = re.compile(r"schema_help|api_help|gen_docs\.py\s+--example|gen_skeleton\.py.*--contract"
                     r"|\bgrep\b|explain_rule")
@@ -451,11 +448,11 @@ def evidence(requests, sdk, work):
     """The calls whose reason a transcript does not carry, with what came just before.
 
     Reasoning is stored empty, so the cause of a read is the line the agent wrote and
-    the call it made before it. Five questions: which generated sources were searched,
-    which were opened, which generated files were edited by hand, which pages were read
-    before the first build, and which lookups answered nothing.
+    the call it made before it. Four questions: which generated sources were opened,
+    which generated files were edited by hand, which pages were read before the first
+    build, and which lookups answered nothing.
     """
-    sources, edits, pages, empty, noted, searched = [], [], [], [], [], []
+    sources, edits, pages, empty, noted = [], [], [], [], []
     notes = []
     built = next((i for i, r in enumerate(requests)
                   if any("build_project.py" in a for n, a, _ in r["calls"] if n == "Bash")),
@@ -468,14 +465,10 @@ def evidence(requests, sdk, work):
                 edits.append((i, k, where))
             elif nm == "Read" and where:
                 sources.append((i, k, where))
-            elif nm in ("Grep", "Glob") and where:
-                searched.append((i, k, "%s   for %s" % (where, arg[-70:])))
             elif nm == "Bash" and where and "build_project.py" not in arg \
                     and "gen_skeleton.py" not in arg:
                 if WRITES.search(arg):
                     edits.append((i, k, where))
-                elif SEARCHES.search(arg):
-                    searched.append((i, k, "%s   for %s" % (where, arg[-70:])))
                 elif READS.search(arg):
                     sources.append((i, k, where))
             if nm in ("Edit", "Write") and arg.endswith("design.json") and notes:
@@ -495,8 +488,7 @@ def evidence(requests, sdk, work):
                     empty.append((i, k, " ".join(arg.split())[-80:],
                                   " ".join(text.split())[:100]))
     print("\n== evidence: what came just before each call a transcript does not explain")
-    for title, found in (("generated sources searched", searched),
-                         ("generated sources opened", sources),
+    for title, found in (("generated sources opened", sources),
                          ("generated files edited by hand", edits),
                          ("pages past the entry path before the first build (r%d)"
                           % built, pages),
@@ -591,15 +583,9 @@ def main():
             tools[nm] += 1
             visible += len(json.dumps(inp))
             names.append(nm)
-            if nm in ("Grep", "Glob"):
-                # A search carries where it looked and what it looked for in separate
-                # keys, and both are needed to say what the corpus failed to answer.
-                shown = " ".join(str(inp.get(key) or "") for key in
-                                 ("path", "glob", "pattern")).strip()
-            else:
-                shown = str(inp.get("command") or inp.get("file_path")
-                            or inp.get("pattern") or "")
-            calls.append((nm, shown, results.get(bid) or ""))
+            calls.append((nm, str(inp.get("command") or inp.get("file_path")
+                                  or inp.get("pattern") or ""),
+                          results.get(bid) or ""))
             if nm in ("Bash", "Glob"):
                 cmd = str(inp.get("command") or inp.get("pattern") or "")
                 hunt = [t for t in re.findall(r"\b(?:find|locate)\s+(\S+)", cmd)
