@@ -1601,12 +1601,16 @@ def timers_of(specs, iface):
 
 def awaitable(iface):
     """The names a step may await, as the document spells them, by kind."""
-    said = []
+    said, shown = [], set()
     for kind, entries in (('response', iface.responses), ('broadcast', iface.broadcasts),
                           ('attribute', iface.attributes)):
         names = [name for name, _ in entries]
         if names:
             said.append('{} {}'.format(kind, ', '.join(names)))
+            shown.update(names)
+    answered = [name for name in sorted(iface.response_of) if name not in shown]
+    if answered:
+        said.append('the answer of request {}'.format(', '.join(answered)))
     return '; '.join(said) if said else 'nothing: it declares none'
 
 

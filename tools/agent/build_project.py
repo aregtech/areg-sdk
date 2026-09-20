@@ -67,6 +67,21 @@ ADVICE = {
 }
 
 
+# A configure failure caused by the build directory rather than the project. CMake
+# writes the generator, the platform and the toolset into the cache and refuses a
+# second one.
+STALE_CACHE = re.compile(
+    r'(?is)(generator|platform|toolset)[^\n]*\n?\s*does not match the .*used previously')
+
+# What clears it. The cache goes, the compiled objects stay: deleting the whole build
+# directory also works and compiles the framework again from source.
+STALE_ADVICE = ('The build directory was configured by another generator, platform or '
+                'toolset, and CMake keeps the first one in its cache. Delete '
+                '"{build}/CMakeCache.txt" and the "{build}/CMakeFiles" directory, then '
+                'run this again. Do not delete the whole "{build}" directory: that '
+                'compiles the framework from source again, minutes per attempt.')
+
+
 def fail(message):
     # Output already printed is flushed first: stdout is block-buffered into a
     # pipe, so without this the error reaches the reader before the lines it is
@@ -200,14 +215,15 @@ def show_failure(lines, tail):
               .format(shown, len(lines)))
 
 
-def run(step, command, cwd, kept=2, failed_kept=40, notes=None):
+def run(step, command, cwd, kept=2, failed_kept=40, notes=None, build=None):
     """One step of the chain, and whether it passed.
 
     A step that passed prints its last `kept` lines and nothing more: a build log
     that reaches the conversation is re-sent with every later request. A step that
     failed prints the lines of its log that name an error, up to `failed_kept` of
     them, and what to do about it. With `notes`, the design notes printed by an
-    earlier call are replaced by one line that counts them.
+    earlier call are replaced by one line that counts them. With `build`, a failure
+    whose cause is a stale CMake cache in that directory says how to clear it.
     """
     print('== {}: {}'.format(step, ' '.join(command)))
     result = subprocess.run(command, cwd=cwd, capture_output=True, text=True)
@@ -219,6 +235,8 @@ def run(step, command, cwd, kept=2, failed_kept=40, notes=None):
         advice = ADVICE.get(step, '')
         if advice:
             print(advice.format(tools=os.path.dirname(HERE)))
+        if build and STALE_CACHE.search('\n'.join(lines)):
+            print(STALE_ADVICE.format(build=build.replace(os.sep, '/')))
         return False
     if notes:
         lines = collapse_notes(lines, notes)
@@ -587,7 +605,8 @@ def main():
         print('   A timeout here is the command timeout, not a failure of the build:')
         print('   every step is incremental, so running this again continues from')
         print('   where it stopped. Nothing is lost and nothing is done twice.')
-    if not run('configure', ['cmake', '-B', args.build], root, kept=3):
+    if not run('configure', ['cmake', '-B', args.build], root, kept=3,
+               build=args.build):
         return 1
     if not run('build',
                ['cmake', '--build', args.build, '-j', str(args.jobs)], root, kept=3):

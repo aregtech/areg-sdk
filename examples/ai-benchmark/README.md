@@ -357,12 +357,18 @@ Claude run; for other CLIs use the artifacts described above.
 each arm at least three times on one tree and compare medians; the quality rows
 (acceptance items, scenarios passing) are the ones that hold at one run.
 
-**Compare the normalised line, not the bill.** The harness picks the prompt-cache TTL,
-not the tree, and a cache write is $2.50 per MTok at the 5-minute tier against $4.00 at
-the 1-hour one -- $0.24 on a $2 run, flowing whichever way the harness chose that day.
-`analyze_run.py` prints `cost, billed`, which reconciles with `result.json` to the
-fourth decimal, and `cost, normalised @1h`, which is the one two runs can be held
-against each other. `cache writes` names the split when there is one.
+**Compare the normalised line, not the bill.** Two things move the bill without the
+tree moving. The harness picks the prompt-cache TTL, and a cache write is $2.50 per
+MTok at the 5-minute tier against $4.00 at the 1-hour one -- $0.24 on a $2 run. And a
+run started within an hour of an earlier one reads the static prefix -- the system
+prompt and the tool schemas, identical in every run -- from that run's cache at $0.20
+per MTok instead of writing it at $4.00, worth $0.07 on a 17,900-token prefix. The
+model is handed the same bytes either way, so the agent's behaviour is a cold start
+whichever line it lands on; only the price differs. `analyze_run.py` prints
+`cost, billed`, which reconciles with `result.json` to the fourth decimal, and
+`cost, cold @1h`, which puts both back and is the one two runs can be held against
+each other. `cache at start` says which happened; `cache writes` names the TTL split
+when there is one.
 
 **Score the result yourself.** The agent's own count is a claim. Re-run its scenarios:
 

@@ -638,7 +638,10 @@ def main():
     aside = sum(v.get("costUSD") or 0 for v in (result.get("modelUsage") or {}).values()
                 if "sonnet" not in str(v.get("canonicalModel") or ""))
     cost = (base + tot["w5"] * PRICE_W5 + tot["w1"] * PRICE_W1) / 1e6 + aside
-    normal = (base + (tot["w5"] + tot["w1"]) * PRICE_W1) / 1e6 + aside
+    # A run that began on a warm prefix was billed as a read what a cold start pays
+    # as a write. The difference is added back so warm and cold runs compare.
+    warm = requests[0]["cr"] * (PRICE_W1 - PRICE_READ) / 1e6
+    normal = (base + (tot["w5"] + tot["w1"]) * PRICE_W1) / 1e6 + aside + warm
     facts = run_facts(result, requests, tot)
     if args.record:
         record(run, meta, facts)
@@ -676,10 +679,15 @@ def main():
     print("   %-26s %s" % ("peak context", format(max(r["ctx"] for r in requests), ",")))
     print("   %-26s $%.4f  (harness $%.4f)" % ("cost, billed", cost,
                                                result.get("total_cost_usd") or 0))
-    if tot["w5"]:
-        print("   %-26s $%.4f  (+$%.4f, %d%% of writes at 5m: compare runs here)"
-              % ("cost, normalised @1h", normal, normal - cost,
-                 round(100.0 * tot["w5"] / max(tot["w5"] + tot["w1"], 1))))
+    if tot["w5"] or warm:
+        why = []
+        if tot["w5"]:
+            why.append("%d%% of writes at 5m" % round(
+                100.0 * tot["w5"] / max(tot["w5"] + tot["w1"], 1)))
+        if warm:
+            why.append("a warm prefix of %s tokens" % format(requests[0]["cr"], ","))
+        print("   %-26s $%.4f  (+$%.4f, %s: compare runs here)"
+              % ("cost, cold @1h", normal, normal - cost, "; ".join(why)))
     wall = (result.get("duration_ms") or 0) / 60000.0
     print("   %-26s %.1f min%s" % ("wall", wall or span_minutes(tr),
                                    "" if wall else "   (from transcript timestamps)"))
