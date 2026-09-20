@@ -3129,8 +3129,18 @@ def check_late_awaits(report):
             report.fail('late-awaits', 'a step after one that {} gets {} late-await '
                         'note(s), not {}'.format(label, found, expected))
             return
+    # The note names one remedy. A step held by a timer has no request to move the
+    # await onto, so the answer's remedy there sends a run to rewrite a correct design.
+    for label, held, wanted in (('an answer', 'ok', 'awaits the attribute instead'),
+                                ('a broadcast', 'fired', 'awaits the attribute instead'),
+                                ('a time', 300, 'comes before the wait')):
+        said = gen_docs.late_remedy(held)
+        if wanted not in said:
+            report.fail('late-awaits', 'a step held by {} is told "{}"'
+                        .format(label, said))
+            return
     report.ok('late-awaits', 'the late-await note fires where an update can be dropped, '
-              'and nowhere else')
+              'and nowhere else, and its remedy matches what the earlier step holds for')
 
 
 # The task prompts are the comparison itself: the same requirements scored

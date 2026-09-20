@@ -1827,6 +1827,18 @@ def late_awaits(project, key='attributes'):
     return found
 
 
+def late_remedy(held):
+    """What a late await is changed to, given what the earlier step holds for.
+
+    A step holding for an answer leaves the request's own step free to await the
+    attribute. A step holding for a time does not: the await goes ahead of it.
+    """
+    if isinstance(held, int):
+        return ('the awaiting step comes before the wait and its check stay()s until '
+                'the wait is over')
+    return 'the step that sends the request awaits the attribute instead'
+
+
 def holding(step, held, answer):
     """How a note names what a holding step waits for."""
     if isinstance(held, int):
@@ -2201,17 +2213,20 @@ def review(project, skipped):
               .format(skipped, 'y' if skipped == 1 else 'ies'))
     # One note per finding and one explanation for all of them: the same paragraph
     # under every name is re-sent with every later request of the conversation.
-    late = {}
+    late, remedy = {}, {}
     for owner, step, attribute, *held in late_awaits(project):
         late.setdefault(owner, []).append('"{}" awaits "{}" while {}'
                                           .format(step, attribute, holding(*held)))
+        remedy.setdefault(owner, set()).add(late_remedy(held[1]))
     for owner in sorted(late):
         print('  note  {}: {}.'.format(owner, '; '.join(late[owner])))
-        print('        An update arriving while another step waits is dropped there, and '
-              'the awaiting step sees the next one. That is correct when later updates '
-              'follow and its check stay()s until the value it wants. If the dropped '
-              'update can be the last one, the step that sends the request awaits the '
-              'attribute instead.')
+        print('        The document is written and this asks for no change on its own. '
+              'An update arriving while another step waits is dropped there, and the '
+              'awaiting step sees the next one, which is what the sequence wants '
+              'whenever later updates follow. Leave it as written unless the dropped '
+              'update can be the last one; if it can, {}. A run that stalls here names '
+              'the dropped update and the step it arrived on.'
+              .format('; '.join(sorted(remedy[owner]))))
     # The same shape on a broadcast, which is worse: an attribute sends another update
     # the next time it is set, a broadcast never comes again. Whether it is a fault
     # depends on something no design states -- where the provider sends it -- so this
