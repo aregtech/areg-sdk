@@ -1213,12 +1213,22 @@ def check_grpc_isolation(report):
                                 'must not exist inside the run')
     if 'run_scenarios.py' not in body:
         report.fail('grpc-arm', 'the gRPC arm stages no scenario runner')
-    if '! -name run_scenarios.py' not in body:
+    stray = re.search(r'stray="\$\(find .*?\)"', body, re.S)
+    if stray is None or 'run_scenarios.py' not in stray.group(0) \
+            or 'task.md' not in stray.group(0):
         report.fail('grpc-arm', 'the gRPC arm does not verify that it staged nothing '
-                                'but the scenario runner')
+                                'but the scenario runner and the task')
     else:
-        report.ok('grpc-arm', 'the gRPC arm stages only run_scenarios.py, and refuses '
-                              'to run if anything else is beside it')
+        report.ok('grpc-arm', 'the gRPC arm stages only run_scenarios.py and task.md, '
+                              'and refuses to run if anything else is beside it')
+    # The task is the one page the arm has, and the agent is given the snapshot and
+    # its own working directory. A task staged beside them is read by neither.
+    if '"${SNAP}/task.md"' not in body:
+        report.fail('grpc-arm', 'the gRPC arm does not stage the task inside the '
+                                'snapshot, so the agent cannot open it')
+    if re.search(r'TASK_RUN="\$\{RUN\}/task\.md"', text):
+        report.fail('grpc-arm', 'the gRPC prompt sends the agent to ${RUN}/task.md, '
+                                'which is outside every directory it is given')
 
     if 'grep -qi areg' not in body:
         report.fail('grpc-arm', 'the gRPC arm does not refuse a prompt or a task that '
@@ -4438,21 +4448,37 @@ def check_step_driver(report):
             report.fail('step-driver', 'an awaited answer still carries its generic marker, '
                                        'or a broadcast no step awaits lost its own')
             return
-        # The check stands alone inside a braced region. Unbraced, a check that
-        # declares a local makes the compiler refuse every case label after it, and
-        # the error names those labels rather than the declaration.
+        # The check stands alone inside a braced region, behind StepEnd. Unbraced, a
+        # check that declares a local makes the compiler refuse every case label after
+        # it, and the error names those labels rather than the declaration. Without
+        # StepEnd first, a check that returns skips complete(), and a go_to() it made
+        # is discarded: the run stalls with the answer already in hand.
         lines = source.splitlines()
         for index, line in enumerate(lines):
             if 'TODO(you) step_' not in line:
                 continue
-            around = [lines[index - 1].strip(), lines[index + 1].strip(),
-                      lines[index + 2].strip()]
-            if around != ['{', '}', 'break;']:
+            around = [lines[index - 2].strip(), lines[index - 1].strip(),
+                      lines[index + 1].strip(), lines[index + 2].strip()]
+            if around != ['{', 'StepEnd ending(*this);', '}', 'break;']:
                 report.fail('step-driver',
-                            'the check of a step is not a braced region carrying the '
-                            'marker alone: the generator wrote {} around it'
+                            'the check of a step is not a braced region carrying '
+                            'StepEnd and the marker alone: the generator wrote {} '
+                            'around it'
                             .format(' / '.join('"{}"'.format(text) for text in around)))
                 return
+        # StepEnd is what makes every exit from a check end the step. A destructor
+        # that stops calling complete() brings the discarded-go_to() stall back.
+        header = glob.glob(os.path.join('src', 'consumer', '*Consumer.hpp'))
+        guard = ''
+        if header:
+            with open(header[0], encoding='utf-8') as handle:
+                guard = handle.read()
+        if 'struct StepEnd' not in guard or not re.search(
+                r'~StepEnd\(void\)\s*\{[^}]*complete\(\);', guard, re.S):
+            report.fail('step-driver', 'the consumer has no StepEnd whose destructor '
+                                       'calls complete(): a check that returns after '
+                                       'go_to() would stall the run')
+            return
         found = subprocess.run([sys.executable, os.path.join(tools, 'check_contract.py'),
                                 '.', '--strict', '--allow-todo'],
                                capture_output=True, text=True)
