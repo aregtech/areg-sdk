@@ -471,17 +471,21 @@ function Main([string[]]$Arguments)
 
     $manifestPath = Join-Path $Run 'sdk-md5.txt'
     if ($Framework -eq 'grpc') {
-        # Only the scenario runner is staged: the areg corpus must not exist inside the run.
+        # Only the scenario runner and task are staged: the areg corpus must not exist inside the run.
         New-Item -ItemType Directory -Force -Path (Join-Path $Snap 'tools\agent') | Out-Null
         Copy-Item -LiteralPath (Join-Path $SDK 'tools\agent\run_scenarios.py') -Destination (Join-Path $Snap 'tools\agent\run_scenarios.py')
-        $copied = '1'
-        Invoke-Helper manifest $Snap $manifestPath 'tools/agent/run_scenarios.py' | Out-Null
-        $stray = @(Get-ChildItem -LiteralPath $Snap -Recurse -File | Where-Object { $_.Name -ne 'run_scenarios.py' } |
+        Copy-Item -LiteralPath $TaskAbs -Destination (Join-Path $Snap 'task.md')
+        $copied = '2'
+        Invoke-Helper manifest $Snap $manifestPath 'tools/agent/run_scenarios.py' 'task.md' | Out-Null
+        $allowed = @(
+            [IO.Path]::GetFullPath((Join-Path $Snap 'tools\agent\run_scenarios.py')),
+            [IO.Path]::GetFullPath((Join-Path $Snap 'task.md'))
+        )
+        $stray = @(Get-ChildItem -LiteralPath $Snap -Recurse -File |
+                   Where-Object { [IO.Path]::GetFullPath($_.FullName) -notin $allowed } |
                    Select-Object -First 5 | ForEach-Object { $_.FullName })
-        if ($stray.Count) { Stop-Run ("the gRPC arm staged more than the scenario runner:`n" + ($stray -join "`n")) }
-        # The task travels with the run.
-        Copy-Item -LiteralPath $TaskAbs -Destination (Join-Path $Run 'task.md')
-        if (Select-String -LiteralPath (Join-Path $Run 'task.md') -Pattern 'areg' -Quiet) {
+        if ($stray.Count) { Stop-Run ("the gRPC arm staged more than the scenario runner and task:`n" + ($stray -join "`n")) }
+        if (Select-String -LiteralPath (Join-Path $Snap 'task.md') -Pattern 'areg' -Quiet) {
             Stop-Run "$TaskAbs names areg; the gRPC arm must not be told of it"
         }
     }
@@ -503,8 +507,8 @@ function Main([string[]]$Arguments)
     $AddDir = $Snap
     $Rules = ''
     if ($Framework -eq 'grpc') {
-        $TaskRun = To-Slash (Join-Path $Run 'task.md')
-        $AddDir = Join-Path $Snap 'tools\agent'
+        # The task and runner share the isolated directory granted to the agent.
+        $TaskRun = To-Slash (Join-Path $Snap 'task.md')
         $Rules = @"
 - **You have gRPC and its public documentation. You do not have example source.**
   No .cpp, .hpp or .proto arrives by copy: every file in the project is written by

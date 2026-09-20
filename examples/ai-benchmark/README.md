@@ -203,8 +203,8 @@ equivalents across providers.
 **Every arm is given the snapshot and nothing else.** The agent's working directory
 is `work/`, and the only other directory it may read is `sdk/` -- never the run
 directory above them, which holds `meta.txt` and names the checkout the snapshot was
-taken from. The gRPC arm is given only `sdk/tools/agent/`, so it never meets the name
-areg at all.
+taken from. The gRPC snapshot contains only `task.md` and
+`tools/agent/run_scenarios.py`, so it never meets the name areg at all.
 
 **The web is on for gRPC and off for areg, and that is the fair setting, not an
 oversight.** What is held constant between the arms is not the list of tool flags; it
