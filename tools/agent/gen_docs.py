@@ -1965,14 +1965,7 @@ EXAMPLE = {
                    "args": {"by": "night shift"}, "await": "Width",
                    "description": "A String value is written as it reads: the "
                                   "generator quotes it. Its check calls stay() "
-                                  "until Width is 0. \"await\" names the update "
-                                  "a step waits for, never a value. While a step "
-                                  "waits, an update for anything else is dropped "
-                                  "there, so a later step that sends nothing and "
-                                  "awaits that one never sees it: await an update "
-                                  "in the step whose request causes it. The list "
-                                  "is linear, and a check loops back with "
-                                  "go_to(Step::Name)."}]
+                                  "until Width is 0."}]
     }],
     "machines": [{
         "name": "Gate",
