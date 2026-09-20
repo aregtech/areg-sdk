@@ -1516,6 +1516,21 @@ def check_service_timers(project):
                      .format(here, entry.get('start')))
 
 
+def awaitable(spec):
+    """What a step of this service may await, as design.json spells it, by kind."""
+    said = []
+    for key, kind in (('responses', 'response'), ('broadcasts', 'broadcast'),
+                      ('attributes', 'attribute')):
+        names = [entry.get('name') for entry in listed(spec, key)]
+        if names:
+            said.append('{} {}'.format(kind, ', '.join(names)))
+    answered = [entry.get('name') for entry in listed(spec, 'requests')
+                if 'answer' in entry or entry.get('response')]
+    if answered:
+        said.append('the answer of request {}'.format(', '.join(answered)))
+    return '; '.join(said) or 'nothing: the service declares none'
+
+
 def check_sequences(project):
     """A consumer's steps name only what their service declares, in a shape one driver runs."""
     enums = enum_values(project)
@@ -1598,7 +1613,8 @@ def check_sequences(project):
                      'longer'.format(here, wait, stall))
             if target is not None and target not in awaited:
                 fail('{} awaits "{}", which is no response, broadcast or attribute of the '
-                     'service'.format(here, target))
+                     'service. It awaits one of: {}'
+                     .format(here, target, awaitable(spec)))
             if send is None and target is None and not wait:
                 fail('{} sends nothing, awaits nothing and waits for no time'.format(here))
 

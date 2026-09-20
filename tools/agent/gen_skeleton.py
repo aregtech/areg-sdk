@@ -1599,6 +1599,17 @@ def timers_of(specs, iface):
     return timers
 
 
+def awaitable(iface):
+    """The names a step may await, as the document spells them, by kind."""
+    said = []
+    for kind, entries in (('response', iface.responses), ('broadcast', iface.broadcasts),
+                          ('attribute', iface.attributes)):
+        names = [name for name, _ in entries]
+        if names:
+            said.append('{} {}'.format(kind, ', '.join(names)))
+    return '; '.join(said) if said else 'nothing: it declares none'
+
+
 def steps_of(specs, iface):
     """The steps the specs declare for this service, resolved against its document.
 
@@ -1623,8 +1634,9 @@ def steps_of(specs, iface):
         name, send = step.get('name'), step.get('send')
         where = 'step "{}"'.format(name)
         if send is not None and send not in requests:
-            fail('{} sends "{}", which {} does not declare as a request'
-                 .format(where, send, iface.name))
+            fail('{} sends "{}", which {} does not declare as a request. It sends one '
+                 'of: {}'.format(where, send, iface.name,
+                                 ', '.join(requests) or 'nothing: it declares none'))
         args = step.get('args') or {}
         values = []
         for param, param_type in requests.get(send, []):
@@ -1637,8 +1649,9 @@ def steps_of(specs, iface):
         elif target in iface.response_of:
             target = iface.response_of[target]
         if target is not None and target not in kinds:
-            fail('{} awaits "{}", which is no response, broadcast or attribute of {}'
-                 .format(where, target, iface.name))
+            fail('{} awaits "{}", which is no response, broadcast or attribute of {}. '
+                 'It awaits one of: {}'
+                 .format(where, target, iface.name, awaitable(iface)))
         steps.append({'name': name, 'enum': pascal(name), 'send': send,
                       'call': iface.spell('request', send) if send is not None else None,
                       'args': values,
@@ -2593,8 +2606,8 @@ def update_cmake(path, sources=None, documents=None, prune=None):
 # What a process is expected to print, until the rule that prints it is written.
 # It is a regular expression that matches nothing, so a scenario left unfilled fails
 # and says which line is missing rather than passing on no evidence at all.
-SCENARIO_TODO = ('TODO(you) {}: a line this process prints that proves one '
-                 'requirement')
+SCENARIO_TODO = ('TODO(you) {}: one regular expression per line, each a line this '
+                 'process prints that proves a requirement')
 
 # The scenario that proves the generated console quit loop. It expects no output, so
 # it holds no hole and passes as written.
