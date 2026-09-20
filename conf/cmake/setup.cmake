@@ -128,6 +128,9 @@ else()
     set(AREG_DEPS_DIR "${FETCHCONTENT_BASE_DIR}")
 endif()
 
+# Records in the cache the directory the packages are really in.
+set(AREG_DEPS_DIR "${AREG_DEPS_DIR}" CACHE PATH "Directory holding the packages areg fetched" FORCE)
+
 # ---------------------------------------------------------------------------
 # The file an agent reads to find this SDK.
 #
