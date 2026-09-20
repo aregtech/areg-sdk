@@ -282,8 +282,8 @@ WORKSHEET_HEAD = """\
 #| so no file has to be opened afterwards either.
 #|
 #| A helper of your own is declared and defined in the "*_state" section, which is
-#| the private block of that class's header. Every other section is code inside 
-#| an existing function body, so an out-of-line definition there does not compile. 
+#| the private block of that class's header. Every other section is code inside
+#| an existing function body, so an out-of-line definition there does not compile.
 #| Nothing else has to be added by hand.
 #|
 #| A body prints with "std::cout << ... << std::endl;". Every .cpp of this project
@@ -416,9 +416,11 @@ STEPS_NOTE = ['a step_ section runs only while its step is current. fail("why") 
               'step with nothing to check still takes one line: a // comment saying so']
 
 
-UPDATE_NOTE = ['every update_ body runs before any step_ check of the same update, and',
-               'inside the check the generated handler makes, so the value is valid and',
-               'no test of state is needed:',
+UPDATE_NOTE = ['an update_ body runs on every arrival, whatever step is current, and',
+               'before the step_ check of the same update. That check runs only while',
+               'its step is current; an arrival on any other step is dropped there.',
+               'Both run inside the check the generated handler makes, so the value is',
+               'valid and no test of state is needed:',
                '    if (state == areg::DataState::DataIsOK)',
                '    {',
                '        <the body>']
@@ -620,7 +622,7 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
         lines.append('#| match. The generated main() prints nothing, so each line comes')
         lines.append('#| from a body above: the expectation and the code that satisfies')
         lines.append('#| it are written together, in this file, or the run proves')
-        lines.append('#| nothing.')
+        lines.append('#| nothing. A "//" line is a pattern here, not a comment.')
         for name, hint in holes:
             lines.append('== {}'.format(name))
             for line in textwrap.wrap(hint, 77):
