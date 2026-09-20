@@ -69,27 +69,65 @@ ADVICE = {
 
 
 # A configure failure caused by the build directory rather than the project. CMake
-# writes the generator, the platform and the toolset into the cache and refuses a
-# second one.
+# writes the generator, the platform, the toolset and its own path into the cache, and
+# refuses a second one: the first shape is a different toolchain, the second a build
+# directory that was moved or copied.
 STALE_CACHE = re.compile(
-    r'(?is)(generator|platform|toolset)[^\n]*\n?\s*does not match the .*used previously')
+    r'(generator|platform|toolset)[^\n]*\n?\s*does not match the .*used previously'
+    r'|CMakeCache\.txt[^\n]*is different than the directory[^\n]*'
+    r'where CMakeCache\.txt was created',
+    re.IGNORECASE | re.DOTALL)
 
 # What this step does about it. The cache goes, the compiled objects stay, so the
 # second attempt relinks instead of compiling the framework again.
-STALE_CLEARED = ('== configure: this build directory carried another generator, platform '
-                 'or toolset in its cache. Cleared "{build}/CMakeCache.txt" and '
-                 '"{build}/CMakeFiles", kept the compiled objects, and configured again. '
-                 'Nothing of yours changed and there is nothing to do about it.')
+STALE_CLEARED = ('== configure: {where} carried another generator, platform or toolset '
+                 'in its CMake cache. Cleared "{where}/CMakeCache.txt" and '
+                 '"{where}/CMakeFiles", kept every compiled object, and configured '
+                 'again. Nothing of yours changed and there is nothing to do about it.')
 
-# Printed only when the second attempt failed the same way.
-STALE_ADVICE = ('Clearing "{build}/CMakeCache.txt" and "{build}/CMakeFiles" did not '
-                'settle this. Delete the whole "{build}" directory and run this again: '
-                'it compiles the framework from source, minutes per attempt.')
+# Printed only once every cache has been cleared and the failure is still the same.
+STALE_ADVICE = ('Clearing the CMake cache of {tried} did not settle this. Delete the '
+                'whole "{build}" directory and run this again: it fetches the framework '
+                'and compiles it from source, minutes per attempt.')
+
+# Which cache the failure is about. FetchContent names the sub-build it could not
+# populate, so a healthy sub-build is not cleared for a failure of the build directory.
+# The word FetchContent alone is no good: ordinary configure output carries it.
+SUBBUILD_BLAMED = re.compile(r'CMake step for \S+ failed|[-\w]+-subbuild',
+                             re.IGNORECASE)
+
+# How deep under the build directory a FetchContent sub-build sits. areg puts its
+# packages in "<build>/packages", so "<build>/packages/areg-subbuild" is two down.
+SUBBUILD_DEPTH = 3
 
 
-def heal_stale(root, build):
-    """Removes a build directory's CMake cache, keeping its compiled objects."""
-    where = os.path.join(root, build)
+def subbuild_dirs(where):
+    """Every FetchContent sub-build under this build directory, nearest first.
+
+    A sub-build keeps its own CMakeCache.txt with its own generator, and that is the
+    cache a "does not match" from FetchContent is about. The build directory's cache
+    says nothing about where they are: FETCHCONTENT_BASE_DIR is cached with CMake's
+    own default while the project sets it as an ordinary variable, so the two disagree
+    and only the directories on disk are true.
+    """
+    found = []
+    for base, dirs, files in os.walk(where):
+        depth = base[len(where):].count(os.sep)
+        if depth >= SUBBUILD_DEPTH:
+            dirs[:] = []
+            continue
+        # A sub-build holds no compiled object of ours, so descending into one is
+        # walking the framework's build tree for nothing.
+        for name in list(dirs):
+            if name.endswith('-subbuild'):
+                dirs.remove(name)
+                if os.path.isfile(os.path.join(base, name, 'CMakeCache.txt')):
+                    found.append(os.path.join(base, name))
+    return sorted(found)
+
+
+def clear_cache(where):
+    """Removes one directory's CMake cache, keeping everything else in it."""
     gone = False
     cache = os.path.join(where, 'CMakeCache.txt')
     if os.path.isfile(cache):
@@ -99,9 +137,39 @@ def heal_stale(root, build):
     if os.path.isdir(files):
         shutil.rmtree(files, ignore_errors=True)
         gone = True
-    if gone:
-        print(STALE_CLEARED.format(build=build.replace(os.sep, '/')))
     return gone
+
+
+def stale_healer(root, build):
+    """Clears one CMake cache per call, the sub-builds before the build directory.
+
+    The two produce the same "does not match" text and only one of them is the cause,
+    so each is tried in turn rather than guessed at. The sub-builds come first: theirs
+    is the cache FetchContent reports, and clearing it alone leaves the build
+    directory configured and the framework compiled.
+    """
+    where = os.path.join(root, build)
+    every = subbuild_dirs(where) + [where]
+    cleared = set()
+
+    def named(tier):
+        return os.path.relpath(tier, root).replace(os.sep, '/')
+
+    def heal(said):
+        subbuilds = [tier for tier in every if tier != where]
+        order = subbuilds + [where] if SUBBUILD_BLAMED.search(said) \
+            else [where] + subbuilds
+        for tier in order:
+            if tier in cleared:
+                continue
+            cleared.add(tier)
+            if clear_cache(tier):
+                print(STALE_CLEARED.format(where=named(tier)))
+                return True
+        return False
+
+    heal.tried = ', '.join('"{}"'.format(named(tier)) for tier in every)
+    return heal
 
 
 def fail(message):
@@ -252,16 +320,18 @@ def run(step, command, cwd, kept=2, failed_kept=40, notes=None, build=None, heal
     result = subprocess.run(command, cwd=cwd, capture_output=True, text=True)
     lines = ((result.stdout or '') + (result.stderr or '')).splitlines()
     if result.returncode != 0:
-        if heal and STALE_CACHE.search('\n'.join(lines)) and heal():
-            return run(step, command, cwd, kept, failed_kept, notes, build)
+        said = '\n'.join(lines)
+        if heal and STALE_CACHE.search(said) and heal(said):
+            return run(step, command, cwd, kept, failed_kept, notes, build, heal)
         show_failure(lines, failed_kept)
         print('')
         print('FAILED at step "{}", exit {}.'.format(step, result.returncode))
         advice = ADVICE.get(step, '')
         if advice:
             print(advice.format(tools=os.path.dirname(HERE)))
-        if build and STALE_CACHE.search('\n'.join(lines)):
-            print(STALE_ADVICE.format(build=build.replace(os.sep, '/')))
+        if build and STALE_CACHE.search(said):
+            print(STALE_ADVICE.format(build=build.replace(os.sep, '/'),
+                                      tried=getattr(heal, 'tried', '"{}"'.format(build))))
         return False
     if notes:
         lines = collapse_notes(lines, notes)
@@ -631,7 +701,7 @@ def main():
         print('   every step is incremental, so running this again continues from')
         print('   where it stopped. Nothing is lost and nothing is done twice.')
     if not run('configure', ['cmake', '-B', args.build], root, kept=3,
-               build=args.build, heal=lambda: heal_stale(root, args.build)):
+               build=args.build, heal=stale_healer(root, args.build)):
         return 1
     if not run('build',
                ['cmake', '--build', args.build, '-j', str(args.jobs)], root, kept=3):
