@@ -2790,6 +2790,7 @@ def run():
     check_step_hold(report)
     check_api_constructors(report)
     check_late_awaits(report)
+    check_review_verdicts(report)
     check_entry_toll(report)
     check_page_budget(report)
     check_corpus_toll(report)
@@ -3095,6 +3096,135 @@ def check_step_hold(report):
     report.ok('step-hold',
               'every step handler clears a hold or jump an earlier check left by '
               'returning')
+
+
+# Every line a review prints says one of two things: the document is written and
+# nothing has to be done about this, or exactly what is wrong and what to change.
+# Nothing may be ambiguous between the two. A run that cannot tell them apart acts
+# on the advice: one did, rewrote a design that was already correct, regenerated,
+# and paid more than the whole difference between the two heads it was compared on.
+REVIEW_SETTLED = ('asks for no change', 'nothing is wrong here')
+
+# The openings a finding names its remedy with. A new note either settles itself
+# with one of the phrases above or adds its own imperative here.
+REVIEW_ACTION = ('Declare ', 'Give it ', 'take the attribute out', 'name the one ',
+                 'await it on the step')
+
+
+def review_blocks(said):
+    """A review's output as one block per finding: the headline and its explanation."""
+    found = []
+    for line in said.splitlines():
+        if line.startswith('  note  ') or line.startswith('  table '):
+            found.append([line])
+        elif line.startswith('        ') and found:
+            found[-1].append(line)
+    return [' '.join(block) for block in found]
+
+
+# One design per note class, each the smallest that earns it. A class that stops
+# firing is a hole in this check, so every case names what it must print.
+REVIEW_CASES = (
+    ('a skipped template entry', {'interfaces': [], 'machines': []}, 2, 'sample entr'),
+    ('a late await of an attribute', {'machines': [], 'interfaces': [{
+        'name': 'S', 'attributes': [{'name': 'X'}],
+        'requests': [{'name': 'ask', 'answer': [{'name': 'ok'}]}],
+        'steps': [{'name': 'a', 'send': 'ask'}, {'name': 'b', 'await': 'X'}]}]},
+     0, 'awaits "X"'),
+    ('a late await of a broadcast', {'machines': [], 'interfaces': [{
+        'name': 'S', 'broadcasts': [{'name': 'B'}],
+        'requests': [{'name': 'ask', 'answer': [{'name': 'ok'}]}],
+        'steps': [{'name': 'a', 'send': 'ask'}, {'name': 'b', 'await': 'B'}]}]},
+     0, 'awaits broadcast "B"'),
+    ('an attribute no rule reads', {'interfaces': [], 'machines': [{
+        'name': 'M', 'attributes': [{'name': 'Count', 'type': 'uint32'}],
+        'triggers': [{'name': 'go'}], 'initial': 'Idle',
+        'states': [{'name': 'Idle', 'transitions': [{'on': 'go', 'to': 'Busy'}]},
+                   {'name': 'Busy', 'transitions': []}]}]},
+     0, 'never read'),
+    ('one action on two forwarding triggers', {
+        'interfaces': [{'name': 'S',
+                        'requests': [{'name': 'open', 'answer': [{'name': 'ok'}]},
+                                     {'name': 'close', 'answer': [{'name': 'ok'}]}]}],
+        'machines': [{'name': 'M', 'triggers': [{'name': 'open'}, {'name': 'close'}],
+                      'actions': [{'name': 'forward'}], 'initial': 'Idle',
+                      'states': [{'name': 'Idle', 'transitions': [
+                          {'on': 'open', 'to': 'Busy', 'do': ['forward']},
+                          {'on': 'close', 'to': 'Busy', 'do': ['forward']}]},
+                                 {'name': 'Busy', 'transitions': []}]}]},
+     0, 'runs on open, close'),
+    ('an attribute that cannot say every state', {
+        'datatypes': {'declare': [{'name': 'Phase', 'kind': 'enum',
+                                   'values': [{'name': 'Idle'}, {'name': 'Busy'}]}]},
+        'interfaces': [{'name': 'S', 'attributes': [
+            {'name': 'phase', 'type': 'Phase', 'notify': 'OnChange'}]}],
+        'machines': [{'name': 'M', 'triggers': [{'name': 'go'}], 'initial': 'Idle',
+                      'states': [{'name': 'Idle',
+                                  'transitions': [{'on': 'go', 'to': 'Busy'}]},
+                                 {'name': 'Busy',
+                                  'transitions': [{'on': 'go', 'to': 'Halted'}]},
+                                 {'name': 'Halted', 'transitions': []}]}]},
+     0, 'has no value for'),
+    ('which states answer each trigger', {'interfaces': [], 'machines': [{
+        'name': 'M', 'triggers': [{'name': 'go'}], 'initial': 'Idle',
+        'states': [{'name': 'Idle', 'transitions': [{'on': 'go', 'to': 'Busy'}]},
+                   {'name': 'Busy', 'transitions': []}]}]},
+     0, 'which states answer each trigger'),
+    ('two services in one design',
+     {'interfaces': [{'name': 'A'}, {'name': 'B'}], 'machines': []},
+     0, 'describes 2 services'),
+)
+
+
+def check_review_verdicts(report):
+    """No note of a review is ambiguous about whether the design has to change.
+
+    A design that earns a note has usually shipped working software: across fifteen
+    measured runs fourteen earned at least one. A note that reads as a defect is
+    therefore paid for far more often than it is right.
+    """
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_docs
+    except Exception as failure:
+        report.fail('review-verdict', 'gen_docs.py does not import: {}'.format(failure))
+        return
+    for label, project, skipped, wanted in REVIEW_CASES:
+        held = io.StringIO()
+        stdout, sys.stdout = sys.stdout, held
+        try:
+            gen_docs.review(project, skipped)
+        except Exception as failure:
+            sys.stdout = stdout
+            report.fail('review-verdict', 'a review of {} raises {}'
+                        .format(label, failure))
+            return
+        finally:
+            sys.stdout = stdout
+        said = held.getvalue()
+        if wanted not in said:
+            report.fail('review-verdict', 'the note on {} no longer fires, so nothing '
+                        'here checks its wording'.format(label))
+            return
+        for block in review_blocks(said):
+            settled = any(phrase in block for phrase in REVIEW_SETTLED)
+            if not settled and not any(phrase in block for phrase in REVIEW_ACTION):
+                report.fail('review-verdict',
+                            'the note on {} says neither that the document is written '
+                            'nor what to change: "{}"'.format(label, block[:160]))
+                return
+            # A note that asks the reader a question leaves the design's fate to the
+            # answer, so it has to say what the other answer means. Without that, the
+            # question alone reads as a defect and the run rewrites the design.
+            if '?' in block and not settled:
+                report.fail('review-verdict',
+                            'the note on {} asks a question and never says that one '
+                            'answer leaves the document as written: "{}"'
+                            .format(label, block[:160]))
+                return
+    report.ok('review-verdict',
+              'every note of a review over {} design(s) says either that the document '
+              'is written or what to change'.format(len(REVIEW_CASES)))
 
 
 def check_late_awaits(report):
@@ -5555,7 +5685,8 @@ def check_design_reviewable(report):
 
     def noted(text):
         return [line for line in text.splitlines()
-                if line.startswith('  note  ') or line.startswith('        ')]
+                if line.startswith('  note  ') or line.startswith('  table ')
+                or line.startswith('        ')]
 
     holder = tempfile.mkdtemp(prefix='areg-review-')
     try:

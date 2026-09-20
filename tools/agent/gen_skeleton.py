@@ -431,6 +431,36 @@ ANSWER_NOTE = ['no step awaits this answer, so this body sits outside the step',
                'awaits it in design.json, which puts its check in a step_ section']
 
 
+# The section that is a header's private block. Two runs opened a generated header
+# to ask where a helper of their own may live; the preamble says it 130 lines above.
+STATE_NOTE = ["this section is the private block of that class's header: a helper of",
+              'your own is declared and defined here, and nowhere else. Every other',
+              'section is code inside an existing function body, where an out-of-line',
+              'definition does not compile. The names already taken are listed at the',
+              'top of this worksheet, and declaring one again shadows it']
+
+
+# Sends a section to the bodies quoted at the top rather than to the file they are
+# in. It goes on the first section of the file they came from.
+DRIVEN_POINTER = ('the generated {} of this file {} quoted whole at the top of this '
+                  'worksheet, under "What these do", so no source file is opened to '
+                  'see what surrounds a body')
+
+
+# The generated function every section of a consumer .cpp sits downstream of, too
+# long to quote and not covered by any section. A scenario with steps is entered
+# from it; a scenario without them sends its first request inside it.
+CONNECT_NOTE = ['service_connected() is generated and runs before any body below: it',
+                'subscribes to every broadcast and attribute the document declares,',
+                'starts the pace timer and enters the first step. It runs again on',
+                'every reconnection, and the step the scenario reached is kept']
+
+CONNECT_INSIDE = ['the rest of service_connected() is generated: every broadcast and',
+                  'attribute the document declares is subscribed to above this body,',
+                  'and the pace timer starts below it. It runs again on every',
+                  'reconnection, so this body sends the first request each time']
+
+
 UPDATE_NOTE = ['an update_ body runs on every arrival, whatever step is current, and',
                'before the step_ check of the same update. That check runs only while',
                'its step is current; an arrival on any other step is dropped there.',
@@ -477,8 +507,34 @@ def header_notes(sections, awaited=()):
         and (updates or 'update' in awaited) else []
 
 
-def section_notes(sections):
-    """The warnings that belong to one section, keyed by its marker name."""
+def spelt(names):
+    """A list of names as a sentence reads them."""
+    return names[0] if len(names) < 2 else \
+        ', '.join(names[:-1]) + ' and ' + names[-1]
+
+
+def connecting(produced):
+    """The .cpp files that carry a generated service_connected()."""
+    return set(file_name for file_name, body in produced
+               if file_name.endswith('.cpp') and '::service_connected(' in body)
+
+
+def first_sections(sections):
+    """The first section of each .cpp, keyed by the class the file is named after."""
+    first = {}
+    for name, _, _, file_name, _ in sections:
+        if file_name.endswith('.cpp'):
+            first.setdefault(os.path.basename(file_name)[:-4], (name, file_name))
+    return first
+
+
+def section_notes(sections, driven=(), connected=()):
+    """The warnings that belong to one section, keyed by its marker name.
+
+    "driven" is what driven_body() quoted and "connected" the files with a generated
+    service_connected(): both name a body no section covers, and the note that points
+    at it goes on the first section of its own file.
+    """
     notes = {}
     updates = [name for name, _, _, _, _ in sections if name.startswith('update_')]
     if updates:
@@ -497,6 +553,11 @@ def section_notes(sections):
     for name, _, _, _, _ in sections:
         if name.startswith('response_'):
             notes[name] = ANSWER_NOTE
+    # The only marker a header carries is its class's private block. Matching the
+    # name instead takes "update_machine_state" with it.
+    for name, _, _, file_name, _ in sections:
+        if file_name.endswith('.hpp'):
+            notes[name] = STATE_NOTE
     names = [name for name, _, _, _, _ in sections]
     if 'peer_lost' in names:
         notes['peer_lost'] = PEER_LOST_NOTE
@@ -504,6 +565,21 @@ def section_notes(sections):
         notes['service_refused'] = REFUSED_NOTE
     if any(name == 'next_step' for name, _, _, _, _ in sections):
         notes['next_step'] = [line.format(STEP_INTERVAL_MS) for line in PACE_NOTE]
+    # Last, and appended: the first section of a file carries whatever note that
+    # section earned on its own, and the pointer to the file's own generated bodies
+    # after it.
+    quoted = {}
+    for cls, wanted, _ in driven:
+        quoted.setdefault(cls, []).append(wanted + '()')
+    for cls, (name, file_name) in first_sections(sections).items():
+        said = []
+        if cls in quoted:
+            said += textwrap.wrap(DRIVEN_POINTER.format(
+                spelt(quoted[cls]), 'is' if len(quoted[cls]) < 2 else 'are'), 74)
+        if file_name in connected:
+            said += CONNECT_NOTE if checks else CONNECT_INSIDE
+        if said:
+            notes[name] = notes.get(name, []) + said
     return notes
 
 
@@ -524,7 +600,7 @@ DRIVEN_HEAD = ('#| What these do, which no name above says. This is the generate
 
 
 def driven_body(produced):
-    """Each generated function of DRIVEN_BY, as (class, lines), in file order."""
+    """Each generated function of DRIVEN_BY, as (class, name, lines), in file order."""
     found = []
     for file_name, text in produced:
         if not file_name.endswith('.cpp'):
@@ -533,7 +609,7 @@ def driven_body(produced):
         for wanted, keep in DRIVEN_BY:
             body = one_driven(lines, wanted, keep)
             if body:
-                found.append((os.path.basename(file_name)[:-4], body))
+                found.append((os.path.basename(file_name)[:-4], wanted, body))
     return found
 
 
@@ -608,7 +684,7 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
     driven = driven_body(produced)
     if driven:
         lines.append(DRIVEN_HEAD)
-        for cls, body in driven:
+        for cls, _, body in driven:
             for line in body:
                 lines.append(('#|   ' + line).rstrip())
             lines.append('#|')
@@ -628,7 +704,7 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
     if heading:
         lines.append('#|')
 
-    notes = section_notes(sections)
+    notes = section_notes(sections, driven, connecting(produced))
     current = None
     for name, hint, path, file_name, signature in sections:
         if path != current:

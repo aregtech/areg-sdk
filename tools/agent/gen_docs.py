@@ -2209,7 +2209,9 @@ def unchanged(path, text):
 def review(project, skipped):
     """Prints every note a design earns. Writes nothing and reads nothing back."""
     if skipped:
-        print('  note  {} sample entr{} of the template, left as written, skipped.'
+        print('  note  {} sample entr{} of the template, left as written, skipped. '
+              'The document is written and this asks for no change: an entry left as '
+              'the template spells it is not part of the design.'
               .format(skipped, 'y' if skipped == 1 else 'ies'))
     # One note per finding and one explanation for all of them: the same paragraph
     # under every name is re-sent with every later request of the conversation.
@@ -2237,13 +2239,14 @@ def review(project, skipped):
                                           .format(step, message, holding(*held)))
     for owner in sorted(once):
         print('  note  {}: {}.'.format(owner, '; '.join(once[owner])))
-        print('        A broadcast is delivered once. Ask of each: does the provider '
-              'send it while handling that earlier request? Then it arrives before '
-              'this step begins, is dropped, and never comes again -- await it on the '
-              'step that sends the request instead. Does something timed separate '
-              'them, a timer or a state the machine sits in? Then the shape is '
-              'correct. A run that stalls here names the dropped message and the step '
-              'it arrived on.')
+        print('        The document is written and one question settles each row: does '
+              'the provider send that broadcast while handling the earlier request? '
+              'If it does, the broadcast arrives before this step begins, is dropped, '
+              'and never comes again, because a broadcast is delivered once: await it '
+              'on the step that sends the request instead. If a timer or a state the '
+              'machine sits in separates them, the shape is correct and this asks for '
+              'no change. A run that stalls here names the dropped message and the '
+              'step it arrived on.')
     unread = {}
     for spec in project['machines']:
         for name in unread_attributes(spec):
@@ -2253,7 +2256,8 @@ def review(project, skipped):
               'condition or an argument.'
               .format(owner, ', '.join('"%s"' % n for n in unread[owner])))
         print('        Data no rule of the machine reads belongs to the component '
-              'that computes it, not to the machine.')
+              'that computes it, not to the machine: take the attribute out of the '
+              'machine, or leave it if a rule still to be written reads it.')
     for spec in project['machines']:
         shared = shared_request_actions(project, spec)
         if shared:
@@ -2277,12 +2281,14 @@ def review(project, skipped):
                 print('          Notify="{}" makes it worse than invisible: leaving such '
                       'a state and re-entering the one it came from re-sets the value '
                       'already held, which notifies nobody, so a consumer waiting for '
-                      'that update waits for ever.'.format(notify))
+                      'that update waits for ever. Declare the attribute '
+                      'Notify="Always".'.format(notify))
         coverage = trigger_coverage(spec)
         if coverage:
-            print('  note  {}: which states answer each trigger (* the initial state, '
-                  '+ also while inside it). A trigger called in a state not listed '
-                  'beside it does nothing, and nothing reports it.'
+            print('  table {}: which states answer each trigger (* the initial state, '
+                  '+ also while inside it). The document is written and this asks for '
+                  'no change: it is here to read, because a trigger called in a state '
+                  'not listed beside it does nothing and nothing reports it.'
                   .format(spec.get('name', '?')))
             width = max(len(name) for name, _ in coverage)
             for name, states in coverage:

@@ -196,14 +196,14 @@ def show(lines, tail):
 
 
 NOTES_SHOWN = '.notes-shown'
-NOTE_LINE = re.compile(r'^(\s*)note  (\S+)')
+NOTE_LINE = re.compile(r'^(\s*)(?:note  |table )(\S+)')
 
 
 def collapse_notes(lines, record):
     """The lines with every design note an earlier call printed replaced by one count.
 
-    A note is its "note" line and the more indented lines under it. The digests of
-    the notes printed are kept in `record` for the next call.
+    A note is its "note" or "table" line and the more indented lines under it. The
+    digests of the notes printed are kept in `record` for the next call.
     """
     try:
         with open(record, encoding='utf-8') as handle:
