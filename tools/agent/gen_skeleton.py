@@ -411,15 +411,17 @@ ORDER_NOTE = ['A response and an update are two deliveries, not one. A response 
 STEPS_NOTE = ['a step_ section runs only while its step is current. fail("why") ends the',
               'run with exit 1, stay() keeps the step for the next arrival, and',
               'go_to(Step::Name) picks the next step. Doing none of them goes on to the',
-              'step listed next, and after the last one the run exits 0. A check that',
-              'returns keeps the step, as stay() does, whatever it called before. A',
-              'step with nothing to check still takes one line: a // comment saying so']
+              'step listed next, and after the last one the run exits 0. Each of the',
+              'three takes effect when the body is left, so leaving early by return',
+              'changes nothing: what the body called last is what happens. A step with',
+              'nothing to check still takes one line: a // comment saying so']
 
 
 # The same contract as STEPS_NOTE, short enough to repeat on every later step_
 # section. A worksheet states it once at the top and a run reads section nine.
 STEP_BRIEF = ['falling through the end of this body ends the step and starts the next.',
-              'stay() and return hold it, go_to(Step::Name) redirects, fail("why") stops']
+              'stay() holds it, go_to(Step::Name) redirects, fail("why") stops, and an',
+              'early return keeps whichever of them the body already called']
 
 
 # A response no step awaits gets no step machinery at all, and the generated file is
@@ -1801,18 +1803,17 @@ def step_dispatch(steps, kind, name, indent):
     if not waiting:
         return []
     pad = ' ' * indent
-    # A check that returns skips complete(), so a stay() or go_to() it made would
-    # otherwise outlive it and swallow the next arrival. Cleared first, a return
-    # keeps the step exactly as stay() does.
     lines = ['' if kind != 'response' else None,
              pad + 'mHeld = false;', pad + 'mJumped = false;',
              pad + 'switch (mStep)', pad + '{']
     lines = [line for line in lines if line is not None]
     # The check is braced: a case body that declares a local and is not braced
-    # makes the compiler reject every case label after it.
+    # makes the compiler reject every case label after it. StepEnd is the first
+    # thing in that scope, so the step ends however the check leaves it.
     for step in waiting:
         lines += [pad + 'case Step::{}:'.format(step['enum']),
                   pad + '    {',
+                  pad + '        StepEnd ending(*this);',
                   marker('step_' + step['name'], STEP_CHECK[kind], indent + 8),
                   pad + '    }',
                   pad + '    break;']
@@ -1821,13 +1822,31 @@ def step_dispatch(steps, kind, name, indent):
     # that did want it waits for ever and the stall report is where that is answered.
     lines += [pad + 'default:',
               pad + '    dropped("{} {}");'.format(kind, name),
-              pad + '    return;', pad + '}', pad + 'complete();']
+              pad + '    break;', pad + '}']
     return lines
 
 
-def driver_lines(steps, holds):
+def driver_lines(steps, holds, cls):
     """The helpers that run the steps: begin one, end one, stay in one, jump to one."""
-    lines = ['    //! Begins a step: sends its request or starts its wait. A step that',
+    lines = ['    //! Ends the current step when a check body is left, by falling off',
+             '    //! its end, by return, or by break. stay(), go_to() and fail() all',
+             '    //! take effect in complete(), so every path reaches it.',
+             '    struct StepEnd',
+             '    {',
+             '        explicit StepEnd({} & owner)'.format(cls),
+             '            : mOwner(owner) {}',
+             '        ~StepEnd(void)',
+             '        {',
+             '            mOwner.mRan = true;',
+             '            mOwner.complete();',
+             '        }',
+             '        StepEnd(void) = delete;',
+             '        AREG_NOCOPY_NOMOVE(StepEnd);',
+             '    private:',
+             '        {} & mOwner;'.format(cls),
+             '    };',
+             '',
+             '    //! Begins a step: sends its request or starts its wait. A step that',
              '    //! waits for nothing ends at once.',
              '    void begin(Step step)',
              '    {',
@@ -1835,6 +1854,7 @@ def driver_lines(steps, holds):
              '        mNext = step;',
              '        mJumped = false;',
              '        mHeld = false;',
+             '        mRan = false;',
              '        progressed();',
              '        switch (step)',
              '        {']
@@ -1887,6 +1907,7 @@ def driver_lines(steps, holds):
               '    Step  mNext{ Step::Start };   //!< The step go_to() chose.',
               '    bool  mJumped{ false };       //!< True once go_to() chose the next step.',
               '    bool  mHeld{ false };         //!< True once stay() kept the step.',
+              '    bool  mRan{ false };          //!< True once a check of this step ran.',
               '']
     if holds:
         lines += ['    areg::Timer  mHold;   //!< Ends a step that waits for a time.', '']
@@ -2163,7 +2184,8 @@ def consumer_class(iface, cls, steps=(), driver=None):
                   '    {',
                   '        fail("the scenario stopped making progress");',
                   '        std::cerr << "  " << step_slot() << " " << step_detail()',
-                  '                  << ". Nothing arrived." << std::endl;',
+                  '                  << (mRan ? ". Its check ran and kept the step."',
+                  '                           : ". Nothing arrived.") << std::endl;',
                   '        for (uint32_t kept = 0; kept < mDroppedKept; ++ kept)',
                   '        {',
                   '            std::cerr << "  dropped: " << mDroppedWhat[kept]',
@@ -2255,7 +2277,7 @@ def consumer_class(iface, cls, steps=(), driver=None):
                   .format(driver['stall_ticks']),
                   '    uint32_t                  mIdleTicks{ 0 };',
                   '']
-    lines += driver_lines(steps, holds) if steps else []
+    lines += driver_lines(steps, holds, cls) if steps else []
     lines += ['    {}() = delete;'.format(cls),
               '    AREG_NOCOPY_NOMOVE({});'.format(cls),
               '};']
