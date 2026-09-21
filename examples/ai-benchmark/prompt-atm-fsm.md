@@ -179,7 +179,7 @@ framework declares an interface, and the code that carries it over the connectio
 generated from that declaration rather than written by hand. Never edit a generated
 file and never commit one.
 
-Do **not** write a `ReadMe.md`.
+Do **not** write a readme file.
 
 **Stop rule.** At most **3 build-and-fix cycles and 3 run-and-fix cycles**. If it has
 not converged after the third of either, stop and report what fails, the exact output,

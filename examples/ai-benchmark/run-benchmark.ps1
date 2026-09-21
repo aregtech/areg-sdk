@@ -192,6 +192,13 @@ function Resolve-Sdk([string]$Given)
     return $full
 }
 
+# The gRPC arm is a cold start against gRPC alone. These are the words that would
+# tell it otherwise: the SDK's name, its tools, its documents and its file types.
+# Nothing the agent can reach may carry one, the prompt and the paths included.
+$COLD_START_BAN = 'areg|AGENTS\.md|build_project|gen_skeleton|gen_docs|setup_project' +
+                  '|check_contract|check_corpus|run_evals|explain_rule|schema_help|api_help' +
+                  '|worksheet|bodies\.txt|design\.json|\.siml|\.fsml|\.dtml|docs/agent|runbook'
+
 # protoc and grpc_cpp_plugin, and the prefix its headers and libraries are under.
 function Resolve-Grpc([string]$Given)
 {
@@ -458,6 +465,17 @@ function Main([string[]]$Arguments)
     if (Test-Path -LiteralPath $Run) { Stop-Run "run directory already exists: $Run" }
     $Work = Join-Path $Run 'work'
     $Snap = Join-Path $Run 'sdk'
+    $Prov = $Run
+    if ($Framework -eq 'grpc') {
+        # The agent works in $Work and "ls .." reaches everything beside it. For a
+        # cold start that directory may show work\ and task\ and nothing else: the
+        # provenance files name the checkout the task came from, and the snapshot is
+        # a task, not an SDK, so it is not called one.
+        $Snap = Join-Path $Run 'task'
+        $Prov = Join-Path $Run 'provenance'
+        New-Item -ItemType Directory -Force -Path $Prov | Out-Null
+        Write-Text (Join-Path $Prov 'source.txt') "$SDK`n"
+    }
     New-Item -ItemType Directory -Force -Path $Work | Out-Null
 
     $script:HelperPath = Join-Path ([IO.Path]::GetTempPath()) ("run-benchmark-helper-$PID.py")
@@ -465,29 +483,32 @@ function Main([string[]]$Arguments)
 
     # What was measured: the revision, the uncommitted state, and the copy itself.
     $head = ((& git -C $SDK rev-parse HEAD) -join '').Trim()
-    Write-Text (Join-Path $Run 'sdk-head.txt') "$head`n"
+    $headName   = if ($Framework -eq 'grpc') { 'head.txt' }   else { 'sdk-head.txt' }
+    $beforeName = if ($Framework -eq 'grpc') { 'before.txt' } else { 'sdk-before.txt' }
+    $md5Name    = if ($Framework -eq 'grpc') { 'md5.txt' }    else { 'sdk-md5.txt' }
+    Write-Text (Join-Path $Prov $headName) "$head`n"
     $status = @(& git -C $SDK status --porcelain)
-    Write-Text (Join-Path $Run 'sdk-before.txt') ($(if ($status.Count) { ($status -join "`n") + "`n" } else { '' }))
+    Write-Text (Join-Path $Prov $beforeName) ($(if ($status.Count) { ($status -join "`n") + "`n" } else { '' }))
 
-    $manifestPath = Join-Path $Run 'sdk-md5.txt'
+    $manifestPath = Join-Path $Prov $md5Name
     if ($Framework -eq 'grpc') {
-        # Only the scenario runner and task are staged: the areg corpus must not exist inside the run.
-        New-Item -ItemType Directory -Force -Path (Join-Path $Snap 'tools\agent') | Out-Null
-        Copy-Item -LiteralPath (Join-Path $SDK 'tools\agent\run_scenarios.py') -Destination (Join-Path $Snap 'tools\agent\run_scenarios.py')
+        # The runner, the wording it speaks and the task. Nothing else: an agent
+        # cannot be asked not to read a file sitting next to its working directory.
+        New-Item -ItemType Directory -Force -Path $Snap | Out-Null
+        Copy-Item -LiteralPath (Join-Path $SDK 'tools\agent\run_scenarios.py') -Destination (Join-Path $Snap 'run_scenarios.py')
+        Copy-Item -LiteralPath (Join-Path $HERE 'grpc-scenario-dialect.py') -Destination (Join-Path $Snap 'scenario_dialect.py')
         Copy-Item -LiteralPath $TaskAbs -Destination (Join-Path $Snap 'task.md')
-        $copied = '2'
-        Invoke-Helper manifest $Snap $manifestPath 'tools/agent/run_scenarios.py' 'task.md' | Out-Null
+        $copied = '3'
+        Invoke-Helper manifest $Snap $manifestPath 'run_scenarios.py' 'scenario_dialect.py' 'task.md' | Out-Null
         $allowed = @(
-            [IO.Path]::GetFullPath((Join-Path $Snap 'tools\agent\run_scenarios.py')),
+            [IO.Path]::GetFullPath((Join-Path $Snap 'run_scenarios.py')),
+            [IO.Path]::GetFullPath((Join-Path $Snap 'scenario_dialect.py')),
             [IO.Path]::GetFullPath((Join-Path $Snap 'task.md'))
         )
         $stray = @(Get-ChildItem -LiteralPath $Snap -Recurse -File |
                    Where-Object { [IO.Path]::GetFullPath($_.FullName) -notin $allowed } |
                    Select-Object -First 5 | ForEach-Object { $_.FullName })
-        if ($stray.Count) { Stop-Run ("the gRPC arm staged more than the scenario runner and task:`n" + ($stray -join "`n")) }
-        if (Select-String -LiteralPath (Join-Path $Snap 'task.md') -Pattern 'areg' -Quiet) {
-            Stop-Run "$TaskAbs names areg; the gRPC arm must not be told of it"
-        }
+        if ($stray.Count) { Stop-Run ("the gRPC arm staged more than the scenario runner, its dialect and the task:`n" + ($stray -join "`n")) }
     }
     else {
         $copied = (Invoke-Helper snapshot $SDK $Snap).Trim()
@@ -505,6 +526,9 @@ function Main([string[]]$Arguments)
     }
 
     $AddDir = $Snap
+    # What the prompt may call the procedure. The gRPC arm has no runbook and may
+    # not be told that one exists anywhere.
+    $Guide = if ($Framework -eq 'grpc') { 'the task file' } else { 'the runbook' }
     $Rules = ''
     if ($Framework -eq 'grpc') {
         # The task and runner share the isolated directory granted to the agent.
@@ -551,7 +575,7 @@ function Main([string[]]$Arguments)
         $Rules += @"
 
 
-- **This task has no fix bound.** Wherever the runbook or this prompt says at most 3
+- **This task has no fix bound.** Wherever $Guide or this prompt says at most 3
   build-and-fix or run-and-fix cycles, there is no limit. Fix the cause, never the
   symptom, and never loosen what a scenario expects.
 "@
@@ -560,14 +584,43 @@ function Main([string[]]$Arguments)
         $Rules += @"
 
 
-- **The maximum fix bound for this task is $Attempts.** Wherever the runbook or this
+- **The maximum fix bound for this task is $Attempts.** Wherever $Guide or this
   prompt says at most 3 build-and-fix cycles or at most 3 run-and-fix cycles, read
   $Attempts. Everything else about the bound is unchanged: fix the cause, never the
   symptom, and never loosen what a scenario expects.
 "@
     }
 
-    if ($Debrief) {
+    if ($Debrief -and $Framework -eq 'grpc') {
+        # The same questions the other arm is asked, with every one that names a
+        # tool, a page or an artefact of the SDK removed: naming one would tell
+        # this arm the SDK exists.
+        $Rules += @"
+
+
+Additionally, for this run only -- a diagnostic pass the normal task does not ask
+for. Do it last, after the report, and never let it change what you built:
+
+- **Every document you opened or fetched, in order, with the request you opened it
+  at and why**, and what sent you to it.
+- **Every question you answered from your own training rather than from a document**,
+  and what you would have needed to read to answer it from documentation.
+- **Every place two sources said different things**, naming both, and which one
+  you followed.
+- **Anything you looked for and could not find** -- a signature, a rule, an example
+  -- and where you looked first.
+- **Every file under the project's own src/ or build/ you opened or searched**, with
+  the request, the question it was meant to answer, and whether your .proto or the
+  stubs generated from it already answered it.
+- **Everything you opened before the first build**: what in the task made you open
+  it then, rather than after the stubs were generated.
+- **Every command you ran to learn a syntax, a name or a signature**, and whether
+  its answer was enough or you had to look again elsewhere.
+
+Be specific and short: a list, not prose.
+"@
+    }
+    elseif ($Debrief) {
         $Rules += @"
 
 
@@ -608,13 +661,11 @@ Be specific and short: a list, not prose.
         $body = $body.TrimEnd("`n")
     }
     if (-not $body) { Stop-Run "$WrapperAbs has no '--- PROMPT BEGINS BELOW THIS LINE' marker" }
-    $body = $body.Replace('<areg-sdk>', $SnapF).Replace('<runner>', "$SnapF/tools/agent/run_scenarios.py")
+    $runnerPath = if ($Framework -eq 'grpc') { "$SnapF/run_scenarios.py" } else { "$SnapF/tools/agent/run_scenarios.py" }
+    $body = $body.Replace('<areg-sdk>', $SnapF).Replace('<runner>', $runnerPath)
     $body = $body.Replace('<task>', $TaskRun).Replace('<project>', $Project).Replace('<mode>', $Mode)
     $promptPath = Join-Path $Run 'prompt.txt'
     Write-Text $promptPath ("$body`n`n$Rules`n")
-    if ($Framework -eq 'grpc' -and (Select-String -LiteralPath $promptPath -Pattern 'areg' -Quiet)) {
-        Stop-Run "the gRPC prompt names areg; check $WrapperAbs, and that $HostDir does not"
-    }
 
     $meta = Join-Path $Run 'meta.txt'
     $modelLabel = if ($Model) { $Model } else { 'agent-default' }
@@ -626,13 +677,40 @@ Be specific and short: a list, not prose.
     # reach is their own sandbox's business, so the line records the intent, not a
     # guarantee, and says which it is.
     if ($Agent -cnotin 'claude', 'copilot') { $isolation = "$isolation; web $Web is not enforced for $Agent" }
+    # A cold start is a claim about everything the agent can reach, so check that
+    # and not one word in one file: the prompt it is given, every staged file, and
+    # the directory beside its own. A tool or a document of the SDK named in any of
+    # them has told the arm that the SDK exists.
+    $coldStartCheck = {
+        if ($Framework -ne 'grpc') { return }
+        $probe = @($promptPath, $meta) + @(Get-ChildItem -LiteralPath $Snap -Recurse -File |
+                                           ForEach-Object { $_.FullName })
+        $probe += (Join-Path $Run 'toolchain.txt')
+        $hits = @(Select-String -LiteralPath ($probe | Where-Object { Test-Path -LiteralPath $_ }) `
+                                -Pattern $COLD_START_BAN -AllMatches |
+                  Select-Object -First 5 |
+                  ForEach-Object { "$($_.Path):$($_.LineNumber): $($_.Line.Trim())" })
+        $hits += @(Get-ChildItem -LiteralPath $Run -Force | ForEach-Object { $_.Name } |
+                   Where-Object { $_ -match $COLD_START_BAN } |
+                   ForEach-Object { "beside the project: $_" })
+        if ($Run -match $COLD_START_BAN) { $hits += "the run directory itself: $Run" }
+        if ($hits.Count) {
+            Stop-Run ("the gRPC arm is not a cold start -- it names what it exists not to know:`n" +
+                      (($hits | Select-Object -First 8) -join "`n") +
+                      "`n  Nothing the agent can reach may carry these words. Check $WrapperAbs, the" +
+                      "`n  task file, and the directory the run was started in.")
+        }
+    }
+
     Write-Text $meta (@(
         "framework $Framework", "agent    $Agent", "model    $modelLabel", "effort   $effortLabel", "task     $TaskRun",
         "mode     $Mode", "recipes  $Recipes", "attempts $Attempts",
         "debrief  $(if ($Debrief) { '1' } else { 'no' })",
-        "source   $SDK", "sdk      $Snap", "files    $copied", "head     $head",
+        $(if ($Framework -eq 'grpc') { "staged   $Snap" } else { "source   $SDK"; "sdk      $Snap" }),
+        "files    $copied", "head     $head",
         "web      $Web", "isolation $isolation",
         "start    $(Get-Utc 'yyyy-MM-ddTHH:mm:ssZ')") -join "`n") + "`n"
+    & $coldStartCheck
 
     if ($Dry) {
         Write-Output "staged $Run ($copied files in the snapshot)"

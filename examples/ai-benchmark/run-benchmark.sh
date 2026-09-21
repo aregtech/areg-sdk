@@ -109,6 +109,11 @@ die() { echo "run-benchmark: $*" >&2; exit 2; }
 
 need() { [ $# -ge 2 ] || die "$1 needs a value"; }
 
+# The gRPC arm is a cold start against gRPC alone. These are the words that would
+# tell it otherwise: the SDK's name, its tools, its documents and its file types.
+# Nothing the agent can reach may carry one, the prompt and the paths included.
+COLD_START_BAN='areg|AGENTS\.md|build_project|gen_skeleton|gen_docs|setup_project|check_contract|check_corpus|run_evals|explain_rule|schema_help|api_help|worksheet|bodies\.txt|design\.json|\.siml|\.fsml|\.dtml|docs/agent|runbook'
+
 # A path is never searched for. It is given, inherited, found where this script sits,
 # or asked for: a guessed path measures a tree nobody chose. The answer lands in
 # ANSWER, because a die() inside $(...) would only end the subshell.
@@ -350,45 +355,63 @@ main()
     local RUN="${HOST}/$(date -u +%Y%m%d)${LABEL}-${suffix}"
     [ -e "${RUN}" ] && die "run directory already exists: ${RUN}"
     local WORK="${RUN}/work" SNAP="${RUN}/sdk"
+    local HEADF="${RUN}/sdk-head.txt" BEFOREF="${RUN}/sdk-before.txt" MD5F="${RUN}/sdk-md5.txt"
+    if [ "${FRAMEWORK}" = "grpc" ]; then
+        # The agent works in ${WORK} and "ls .." reaches everything beside it. For a
+        # cold start that directory may show work/ and task/ and nothing else: these
+        # three files name the checkout the task came from, and the snapshot is a
+        # task, not an SDK, so it is not called one.
+        SNAP="${RUN}/task"
+        mkdir -p "${RUN}/provenance"
+        HEADF="${RUN}/provenance/head.txt"
+        BEFOREF="${RUN}/provenance/before.txt"
+        MD5F="${RUN}/provenance/md5.txt"
+        echo "${SDK}" > "${RUN}/provenance/source.txt"
+    fi
     mkdir -p "${WORK}"
 
     # What was measured: the revision, the uncommitted state, and the copy itself.
-    git -C "${SDK}" rev-parse HEAD     > "${RUN}/sdk-head.txt"
-    git -C "${SDK}" status --porcelain > "${RUN}/sdk-before.txt"
+    git -C "${SDK}" rev-parse HEAD     > "${HEADF}"
+    git -C "${SDK}" status --porcelain > "${BEFOREF}"
     local copied
     if [ "${FRAMEWORK}" = "grpc" ]; then
         # The gRPC arm is a cold start against gRPC and its public documentation. The
         # areg corpus must not exist inside the run at all: an agent cannot be asked
         # not to read a file that is sitting next to its working directory. Only the
         # stdlib-only scenario runner and the task are staged.
-        mkdir -p "${SNAP}/tools/agent"
-        cp "${SDK}/tools/agent/run_scenarios.py" "${SNAP}/tools/agent/run_scenarios.py"
+        mkdir -p "${SNAP}"
+        cp "${SDK}/tools/agent/run_scenarios.py" "${SNAP}/run_scenarios.py"
+        # The runner names no framework. Its wording comes from the dialect beside
+        # it, and the arm is given the gRPC one, never this checkout's.
+        cp "${HERE}/grpc-scenario-dialect.py" "${SNAP}/scenario_dialect.py"
         cp "${TASK_ABS}" "${SNAP}/task.md"
-        copied=2
-        ( cd "${SNAP}" && md5sum tools/agent/run_scenarios.py task.md ) > "${RUN}/sdk-md5.txt"
+        copied=3
+        ( cd "${SNAP}" && md5sum run_scenarios.py scenario_dialect.py task.md ) > "${MD5F}"
         # The arm is only a cold start if the corpus is absent, so say so rather than
         # trust it: one stray page next to the working directory invalidates the run.
         local stray
         stray="$(find "${SNAP}" -type f \
-                    ! -path "${SNAP}/tools/agent/run_scenarios.py" \
+                    ! -path "${SNAP}/run_scenarios.py" \
+                    ! -path "${SNAP}/scenario_dialect.py" \
                     ! -path "${SNAP}/task.md" | head -5)"
-        [ -z "${stray}" ] || die "the gRPC arm staged more than the scenario runner and task:
+        [ -z "${stray}" ] || die "the gRPC arm staged more than the scenario runner, its dialect and the task:
 ${stray}"
-        if grep -qi areg "${SNAP}/task.md"; then
-            die "${TASK_ABS} names areg; the gRPC arm must not be told of it"
-        fi
     else
         copied="$(snapshot "${SDK}" "${SNAP}")"
         ( cd "${SNAP}" && md5sum AGENTS.md docs/agent/*.md docs/agent/*.json docs/agent/.budgets \
                                tools/agent/*.py tools/agent/evals/tasks.json \
                                conf/cmake/functions.cmake examples/ai-benchmark/*.md \
-                               examples/ai-benchmark/*.txt ) > "${RUN}/sdk-md5.txt"
+                               examples/ai-benchmark/*.txt ) > "${MD5F}"
     fi
 
     # A task inside the checkout is read from the snapshot; one outside it as given.
     local TASK_RUN="${TASK_ABS}"
     case "${TASK_ABS}" in "${SDK}/"*) TASK_RUN="${SNAP}/${TASK_ABS#"${SDK}/"}" ;; esac
 
+    # What the prompt may call the procedure. The gRPC arm has no runbook and may
+    # not be told that one exists anywhere.
+    local GUIDE="the runbook"
+    [ "${FRAMEWORK}" != "grpc" ] || GUIDE="the task file"
     local ADD_DIR="${SNAP}" RULES=""
     if [ "${FRAMEWORK}" = "grpc" ]; then
         # The task and runner share the isolated directory granted to the agent.
@@ -419,19 +442,45 @@ ${stray}"
     if [ "${ATTEMPTS}" = "0" ]; then
         RULES="${RULES}
 
-- **This task has no fix bound.** Wherever the runbook or this prompt says at most 3
+- **This task has no fix bound.** Wherever ${GUIDE} or this prompt says at most 3
   build-and-fix or run-and-fix cycles, there is no limit. Fix the cause, never the
   symptom, and never loosen what a scenario expects."
     elif [ "${ATTEMPTS}" != "3" ]; then
         RULES="${RULES}
 
-- **The maximum fix bound for this task is ${ATTEMPTS}.** Wherever the runbook or this
+- **The maximum fix bound for this task is ${ATTEMPTS}.** Wherever ${GUIDE} or this
   prompt says at most 3 build-and-fix cycles or at most 3 run-and-fix cycles, read
   ${ATTEMPTS}. Everything else about the bound is unchanged: fix the cause, never the
   symptom, and never loosen what a scenario expects."
     fi
 
-    if [ -n "${DEBRIEF}" ]; then
+    if [ -n "${DEBRIEF}" ] && [ "${FRAMEWORK}" = "grpc" ]; then
+        # The same five questions the other arm is asked, with every one that names
+        # a tool, a page or an artefact of the SDK removed: naming one would tell
+        # this arm the SDK exists.
+        RULES="${RULES}
+
+Additionally, for this run only -- a diagnostic pass the normal task does not ask
+for. Do it last, after the report, and never let it change what you built:
+
+- **Every document you opened or fetched, in order, with the request you opened it
+  at and why**, and what sent you to it.
+- **Every question you answered from your own training rather than from a document**,
+  and what you would have needed to read to answer it from documentation.
+- **Every place two sources said different things**, naming both, and which one
+  you followed.
+- **Anything you looked for and could not find** -- a signature, a rule, an example
+  -- and where you looked first.
+- **Every file under the project's own src/ or build/ you opened or searched**, with
+  the request, the question it was meant to answer, and whether your .proto or the
+  stubs generated from it already answered it.
+- **Everything you opened before the first build**: what in the task made you open
+  it then, rather than after the stubs were generated.
+- **Every command you ran to learn a syntax, a name or a signature**, and whether
+  its answer was enough or you had to look again elsewhere.
+
+Be specific and short: a list, not prose."
+    elif [ -n "${DEBRIEF}" ]; then
         RULES="${RULES}
 
 Additionally, for this run only -- a diagnostic pass the normal task does not ask
@@ -464,14 +513,13 @@ Be specific and short: a list, not prose."
              | tail -n +2 | sed '/./,$!d')"
     [ -n "${BODY}" ] || die "${WRAPPER_ABS} has no '--- PROMPT BEGINS BELOW THIS LINE' marker"
     BODY="${BODY//<areg-sdk>/${SNAP}}"
-    BODY="${BODY//<runner>/${SNAP}/tools/agent/run_scenarios.py}"
+    local RUNNER="${SNAP}/tools/agent/run_scenarios.py"
+    [ "${FRAMEWORK}" != "grpc" ] || RUNNER="${SNAP}/run_scenarios.py"
+    BODY="${BODY//<runner>/${RUNNER}}"
     BODY="${BODY//<task>/${TASK_RUN}}"
     BODY="${BODY//<project>/${PROJECT}}"
     BODY="${BODY//<mode>/${MODE}}"
     { printf '%s\n' "${BODY}"; printf '\n%s\n' "${RULES}"; } > "${RUN}/prompt.txt"
-    if [ "${FRAMEWORK}" = "grpc" ] && grep -qi areg "${RUN}/prompt.txt"; then
-        die "the gRPC prompt names areg; check ${WRAPPER_ABS}, and that ${HOST} does not"
-    fi
 
     local ISOLATION="snapshot; CLI user configuration may load (see README.md)"
     [ "${AGENT}" != "claude" ] || ISOLATION="snapshot, no skills, no MCP servers"
@@ -486,10 +534,29 @@ Be specific and short: a list, not prose."
       echo "model    ${MODEL:-agent-default}"; echo "effort   ${EFFORT:-agent-default}"
       echo "task     ${TASK_RUN}"; echo "mode     ${MODE}"; echo "recipes  ${RECIPES}"
       echo "attempts ${ATTEMPTS}"; echo "debrief  ${DEBRIEF:-no}"
-      echo "source   ${SDK}"; echo "sdk      ${SNAP}"; echo "files    ${copied}"
-      echo "head     $(cat "${RUN}/sdk-head.txt")"
+      if [ "${FRAMEWORK}" = "grpc" ]; then echo "staged   ${SNAP}"
+      else echo "source   ${SDK}"; echo "sdk      ${SNAP}"; fi
+      echo "files    ${copied}"
+      echo "head     $(cat "${HEADF}")"
       echo "web      ${WEB}"; echo "isolation ${ISOLATION}"
       date -u +"start    %Y-%m-%dT%H:%M:%SZ"; } > "${RUN}/meta.txt"
+
+    # A cold start is a claim about everything the agent can reach, so check that
+    # and not one word in one file: the prompt it is given, every staged file, and
+    # the directory beside its own. A tool or a document of the SDK named in any of
+    # them has told the arm that the SDK exists.
+    if [ "${FRAMEWORK}" = "grpc" ]; then
+        local leak
+        leak="$( { grep -rniE "${COLD_START_BAN}" "${RUN}/prompt.txt" "${SNAP}" \
+                        "${RUN}/meta.txt" "${RUN}/toolchain.txt" 2>/dev/null
+                   ls -A "${RUN}" | grep -iE "${COLD_START_BAN}" | sed 's|^|beside the project: |'
+                   printf '%s\n' "${RUN}" | grep -iE "${COLD_START_BAN}" \
+                        | sed 's|^|the run directory itself: |'; } | head -8 )"
+        [ -z "${leak}" ] || die "the gRPC arm is not a cold start -- it names what it exists not to know:
+${leak}
+  Nothing the agent can reach may carry these words. Check ${WRAPPER_ABS}, the task
+  file, and the directory the run was started in."
+    fi
 
     if [ -n "${DRY}" ]; then
         echo "staged ${RUN} (${copied} files in the snapshot)"
@@ -499,7 +566,7 @@ Be specific and short: a list, not prose."
     fi
 
     echo "run-benchmark: ${RUN}"
-    echo "run-benchmark: ${FRAMEWORK}, ${AGENT}, ${MODEL:-agent-default}, effort ${EFFORT:-agent-default}, attempts ${ATTEMPTS}, head $(cut -c1-8 "${RUN}/sdk-head.txt"), ${copied} files"
+    echo "run-benchmark: ${FRAMEWORK}, ${AGENT}, ${MODEL:-agent-default}, effort ${EFFORT:-agent-default}, attempts ${ATTEMPTS}, head $(cut -c1-8 "${HEADF}"), ${copied} files"
 
     cd "${WORK}"
     local code=0
@@ -562,9 +629,9 @@ Be specific and short: a list, not prose."
 
     # The manifest is taken before the run so a run that edited the corpus it is
     # measured against is caught rather than scored.
-    if [ -s "${RUN}/sdk-md5.txt" ]; then
+    if [ -s "${MD5F}" ]; then
         local changed
-        changed="$( cd "${SNAP}" && md5sum -c "${RUN}/sdk-md5.txt" 2>/dev/null \
+        changed="$( cd "${SNAP}" && md5sum -c "${MD5F}" 2>/dev/null \
                     | grep -v ': OK$' || true )"
         if [ -n "${changed}" ]; then
             echo "corpus:  CHANGED DURING THE RUN -- this measurement is not valid" >&2
@@ -572,7 +639,7 @@ Be specific and short: a list, not prose."
             echo "corpus   changed during the run" >> "${RUN}/meta.txt"
             if [ "${code}" -eq 0 ]; then code=3; fi
         else
-            echo "corpus:  unchanged, $(wc -l < "${RUN}/sdk-md5.txt") file(s) verified"
+            echo "corpus:  unchanged, $(wc -l < "${MD5F}") file(s) verified"
             echo "corpus   unchanged" >> "${RUN}/meta.txt"
         fi
     fi

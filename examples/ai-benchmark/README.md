@@ -103,7 +103,9 @@ own refuses to start, because the gRPC steps are written for one task.
 - **The areg wrappers** may name anything in the areg checkout. They name no operating
   system and no path outside the placeholders.
 - **The gRPC wrapper** names gRPC and protobuf only. It names no areg file, no areg
-  concept and no other arm, and `check_corpus.py` fails if it does. To measure another
+  concept and no other arm, and `check_corpus.py` fails if it does. The rule is
+  symmetric: the areg arm names no gRPC either, so neither prompt can send its agent
+  looking for the other framework's material. To measure another
   framework, copy it, rename it `<framework>-<key>-prompt.txt`, and rewrite its numbered
   steps for that framework's normal workflow.
 
@@ -143,8 +145,10 @@ own refuses to start, because the gRPC steps are written for one task.
    - areg: a snapshot of the checkout -- tracked files, and untracked files that are
      not ignored, as the working tree has them. Nothing local to the operator's
      machine (ignored notes, editor state) is copied.
-   - gRPC: only `tools/agent/run_scenarios.py`, and the task. The script refuses to start
-     if anything else is staged, or if the task or the prompt names areg.
+   - gRPC: only `run_scenarios.py`, the gRPC `scenario_dialect.py` beside it, and the
+     task, all three in `task/`. The script refuses to start if anything else is
+     staged, or if the prompt, any staged file, anything beside the project or the
+     run path itself carries an areg name.
 3. Builds `prompt.txt` from the wrapper, with the placeholders filled in, and records
    `meta.txt` and the fingerprints of the files the agent reads.
 4. Starts the selected CLI headless in the empty `work/` directory, passing
@@ -201,10 +205,23 @@ option rather than pretending to honor it. Effort levels are not calibrated
 equivalents across providers.
 
 **Every arm is given the snapshot and nothing else.** The agent's working directory
-is `work/`, and the only other directory it may read is `sdk/` -- never the run
-directory above them, which holds `meta.txt` and names the checkout the snapshot was
-taken from. The gRPC snapshot holds the task, copied in as `sdk/task.md`, and
-`tools/agent/run_scenarios.py`, so it never meets the name areg at all.
+is `work/`, and the only other directory it may read is the snapshot -- `sdk/` for
+areg, `task/` for gRPC.
+
+For the gRPC arm that is not left to convention, because `ls ..` from `work/` reaches
+whatever sits beside it. The provenance files that name the checkout are written to
+`provenance/` instead, `meta.txt` does not carry the `source` line, and the snapshot
+is called `task/` rather than `sdk/`. Before the agent starts, the script reads the
+prompt, every staged file, every name beside the project and the run path itself, and
+refuses to run if any of them carries an areg name, a tool of the corpus, or one of
+its file types. The arm is a cold start by check, not by intention.
+
+**The runner names no framework, and its dialect does.** `run_scenarios.py` prints
+remedies -- what to build with, where to fill an open section, how to hold a lead so a
+stop can match -- and those are the framework's own words. They live in
+`scenario_dialect.py` beside it: `tools/agent/scenario_dialect.py` for areg, and
+`grpc-scenario-dialect.py` staged as that name for gRPC. Each arm is told what to do
+in its own vocabulary and never learns that the other exists.
 
 **The web is on for gRPC and off for areg, and that is the fair setting, not an
 oversight.** What is held constant between the arms is not the list of tool flags; it
