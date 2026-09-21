@@ -295,4 +295,3 @@ else()
     macro_create_option(AREG_SYSTEM_GTEST     OFF "Use GTest installed package")
     macro_create_option(AREG_INSTALL           OFF "Enable installation")
 endif()
-
