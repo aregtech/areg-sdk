@@ -55,12 +55,12 @@
 #                           hunting a use-after-free, so the report is not buried in leaks.
 #     --jobs N              Parallel build jobs (default: nproc).
 #     --keep                Reuse an existing build dir (skip reconfigure).
+#     --                    Everything after is forwarded to the run binary.
 #
 #   Environment
 #     AREG_SANITIZE_COREDUMP=1  End a sanitizer report with abort() instead of _exit(),
 #                           so the kernel writes a core. Off by default: a core of an
 #                           instrumented process is large. Needs 'ulimit -c unlimited'.
-#     --                    Everything after is forwarded to the run binary.
 #
 #   Examples
 #     tools/sanitize.sh asan                         # build+run unit tests under ASan/LSan/UBSan

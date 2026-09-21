@@ -158,8 +158,7 @@ int32_t WaitablePosix::notify_any_waiters() noexcept
                 break;
             }
 
-            // The list is longer than the batch. Empties it here, still under the lock,
-            // because the array holds no more.
+            // Wakes a full batch under the lock.
             if (wakeCount == areg::MAXIMUM_WAITING_OBJECTS)
             {
                 for (int32_t i{ 0 }; i < wakeCount; ++i)

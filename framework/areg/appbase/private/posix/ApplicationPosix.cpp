@@ -165,10 +165,8 @@ namespace {
         struct sigaction action;
         areg::mem_zero(static_cast<void *>(&action), sizeof(action));
         action.sa_handler = handler;
-        // SA_RESTART keeps the disposition that signal() used to install: a syscall
-        // interrupted by the signal is restarted instead of failing with EINTR.
         action.sa_flags = SA_RESTART;
-        // Unqualified: macOS defines sigemptyset() as a macro, so '::' does not compile.
+        // Unqualified: sigemptyset() is a macro on macOS.
         sigemptyset(&action.sa_mask);
 
         return (::sigaction(signum, &action, &out_prev) == 0);

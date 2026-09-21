@@ -27,6 +27,7 @@
 #include <chrono>
 #if defined(__GLIBC__)
     #include <malloc.h>     // malloc_trim(): hand a drained backlog's pages back to the OS
+    #include <mutex>
 #endif  // __GLIBC__
 
 namespace
@@ -36,10 +37,12 @@ namespace
 
     //!< Returns freed heap pages to the OS.
     //!< glibc keeps a slow consumer's drained backlog mapped at the RSS high-water mark (per-arena retention);
-    //!< malloc_trim(0) releases it.
+    //!< malloc_trim(0) releases it. Calls from different threads are serialized.
     inline void _release_heap( void ) noexcept
     {
 #if defined(__GLIBC__)
+        static std::mutex _trimLock;
+        std::lock_guard<std::mutex> guard( _trimLock );
         ::malloc_trim( 0 );
 #endif  // __GLIBC__
     }
