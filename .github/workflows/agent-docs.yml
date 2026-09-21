@@ -47,6 +47,16 @@ jobs:
         with:
           python-version: '3.11'
 
+      # check_mutations.py derives the generated names by running the jar, and
+      # judges nothing that rests on them without it. No runner image is promised
+      # to carry a JDK, so the job installs its own.
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v5.6.0
+        with:
+          java-version: 17
+          java-package: jre
+          distribution: temurin
+
       # Every path named in the documentation must resolve, relative and repository
       # form alike. A broken one makes an agent fail its first tool call.
       - name: Check documented paths
@@ -296,6 +306,16 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: '3.11'
+
+      # check_mutations.py derives the generated names by running the jar, and
+      # judges nothing that rests on them without it. No runner image is promised
+      # to carry a JDK, so the job installs its own.
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v5.6.0
+        with:
+          java-version: 17
+          java-package: jre
+          distribution: temurin
 
       # run_scenarios.py names a binary <name>.mac on Darwin and <name>.elf on every
       # other POSIX system. That branch decides whether a scenario finds anything to
