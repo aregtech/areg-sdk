@@ -24,6 +24,7 @@ import argparse
 import glob
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -86,12 +87,31 @@ def apply_defect(root, defect):
     return None
 
 
+# One rendered finding: "<path>:<line>: <SEVERITY> <rule>: <text>".
+FINDING_RE = re.compile(r'^.*?:\d+: [A-Z]+ (\S+):')
+
+
+def rules_in(report):
+    """The rule ids a contract report names, one per finding line.
+
+    A rule id is as short as "3", and a report also carries file names, line
+    numbers and the absolute paths of the notes, so a plain substring test reports
+    a rule as firing wherever the temporary directory happens to hold that digit.
+    """
+    found = set()
+    for line in report.splitlines():
+        match = FINDING_RE.match(line)
+        if match:
+            found.add(match.group(1))
+    return found
+
+
 def by_contract(root, rule, clean_report):
-    if rule in clean_report:
+    if rule in rules_in(clean_report):
         return False, '{} already fires on the unbroken recipe, so it proves ' \
                       'nothing'.format(rule)
     report = contract(root)
-    if rule not in report:
+    if rule not in rules_in(report):
         return False, '{} did not fire on the broken copy'.format(rule)
     return True, '{} reported it'.format(rule)
 
@@ -219,6 +239,24 @@ def verify(task, work, lib, compiler, clean_reports):
 NEEDS_BUILD = ('compiler', 'runtime')
 
 
+def codegen_missing():
+    """Why codegen.jar cannot run here, or None when it can.
+
+    check_contract.py derives every generated name by running codegen.jar. Without
+    java it derives none, and the checks that rest on them report nothing: the
+    defects they are supposed to catch then read as rules that stopped firing.
+    """
+    try:
+        done = subprocess.run(['java', '-version'], capture_output=True, text=True)
+    except OSError as problem:
+        return 'java cannot be run: {}'.format(problem.strerror or problem)
+    if done.returncode != 0:
+        return 'java -version exits {}'.format(done.returncode)
+    if not os.path.isfile(os.path.join(SDK, 'tools', 'codegen.jar')):
+        return 'tools/codegen.jar is not in this tree'
+    return None
+
+
 def main():
     parser = argparse.ArgumentParser(
         description='Assert that every documented diagnostic still fires.')
@@ -249,6 +287,13 @@ def main():
     if not tasks:
         sys.stderr.write('error: the task bank holds no repair task\n')
         return 1
+
+    absent = codegen_missing()
+    if absent:
+        sys.stderr.write('error: {}. The generated names come only from '
+                         'codegen.jar, so the defects that rest on them cannot be '
+                         'judged here\n'.format(absent))
+        return 2
 
     work = tempfile.mkdtemp(prefix='areg-mutations-')
     clean_reports = {}

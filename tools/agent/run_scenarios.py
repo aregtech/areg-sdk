@@ -6,14 +6,15 @@
 # passes only when every process ended the way the scenario says and every
 # expected line appeared in the output.
 #
-#   python3 tools/agent/run_scenarios.py                      # reads ./scenarios.json
-#   python3 tools/agent/run_scenarios.py --file s.json --only smoke
-#   python3 tools/agent/run_scenarios.py --json               # machine readable
+#   python3 run_scenarios.py                                  # reads ./scenarios.json
+#   python3 run_scenarios.py --file s.json --only smoke
+#   python3 run_scenarios.py --json                           # machine readable
 #
 # The scenario file format is SCHEMA below, and "--help" prints it.
 # Exit code 0 when every scenario passed, 1 otherwise, 2 on a bad file.
 # ===========================================================================
 import argparse
+import importlib.util
 import json
 import os
 import platform
@@ -182,6 +183,12 @@ def tools_dir():
     return os.path.dirname(os.path.abspath(__file__)).replace(chr(92), '/')
 
 
+def build_advice():
+    """The command that builds this project, in its framework's own words."""
+    return '  ' + dialect('BUILD_COMMAND',
+                          'build the project, then run this again').format(tools=tools_dir())
+
+
 def nothing_built(build_dirs):
     """True when not one executable exists in any of the build directories."""
     for directory in build_dirs:
@@ -204,10 +211,37 @@ def find_binary(name, build_dirs):
     return None
 
 
+# Every remedy this tool prints names a file or a command, and those belong to the
+# framework the project is built with. scenario_dialect.py beside this file carries
+# them; with no such file the neutral wording below is used, so a project built with
+# any framework is told what to do in its own terms and never in another's.
+def _load_dialect():
+    """scenario_dialect.py beside this file, or None where there is none."""
+    here = os.path.dirname(os.path.abspath(__file__))
+    path = os.path.join(here, 'scenario_dialect.py')
+    if not os.path.isfile(path):
+        return None
+    spec = importlib.util.spec_from_file_location('scenario_dialect', path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+# Loaded by path, never by sys.path: a file of this name in the project being
+# measured would otherwise decide what the runner says.
+DIALECT = _load_dialect()
+
+
+def dialect(name, neutral):
+    """The framework's wording for one remedy, or the neutral one."""
+    return getattr(DIALECT, name, neutral) if DIALECT is not None else neutral
+
+
 # A binary older than the sources it was built from is the previous program. Its
 # failures read as logic or environment faults and cost a diagnosis every time, so
 # the run is refused before anything starts.
-SOURCE_SUFFIXES = ('.cpp', '.hpp', '.h', '.cc', '.cxx', '.siml', '.fsml', '.dtml')
+SOURCE_SUFFIXES = (('.cpp', '.hpp', '.h', '.cc', '.cxx')
+                   + tuple(dialect('SOURCE_SUFFIXES', ())))
 SOURCE_SKIP = {'build', '.git', '.vs', '.idea', '__pycache__'}
 
 
@@ -229,8 +263,8 @@ def newest_source(root):
     return newest, when
 
 
-# The marker gen_skeleton.py writes and fill_markers.py fills. The spelling is the
-# same in all three tools; check_corpus.py case "marker-spelling" holds them together.
+# An open section: a generator wrote it and nothing has replaced it yet. Every tool
+# that writes one or fills one spells it this way.
 TODO_MARKER_RE = re.compile(r'//\s*TODO\(you\)\s+([A-Za-z_][\w]*)\s*:')
 
 
@@ -440,8 +474,11 @@ def stops_missed(pending):
     hole = re.match(r'TODO\(you\)\s+(\w+)', after) if isinstance(after, str) else None
     if hole:
         return ('the stop on {} never fired: its trigger is still the open section '
-                '"{}". Fill it in bodies.txt with one line the lead prints while {} '
-                'serves it'.format(entry['proc'], hole.group(1), entry['proc']))
+                '"{}". {}'.format(
+                    entry['proc'], hole.group(1),
+                    dialect('FILL_HOLE',
+                            'Print one line from the code that serves it, while {proc} '
+                            'is serving').format(proc=entry['proc'])))
     if isinstance(after, (int, float)):
         why = 'the run ended before {}s'.format(after)
     else:
@@ -450,10 +487,12 @@ def stops_missed(pending):
     # not a sleep: a run that reaches for pkill or a shell sleep here has lost the
     # scenario file as the one place the experiment is written down.
     return ('the stop on {} never fired: {}, so the scenario did not test what it '
-            'declares. A lead that finishes its steps before the match is reached '
-            'outruns the stop: hold it there with a {{"name": "...", "wait": <ms>}} '
-            'step in design.json, right after the step whose output the stop matches'
-            .format(entry['proc'], why))
+            'declares. A lead that finishes before the match is reached outruns the '
+            'stop: {}'.format(
+                entry['proc'], why,
+                dialect('HOLD_THE_LEAD',
+                        'hold the lead there, so it is still running when the line '
+                        'the stop matches has been printed')))
 
 
 # A stop that fires less than this before the lead exits came too late to be the cause.
@@ -465,11 +504,13 @@ def stop_too_late(entry, lead, gap):
     when = 'only after {} had exited'.format(lead) if entry.get('late') or gap < 0 \
         else '{:.0f} ms before {} exited'.format(gap * 1000, lead)
     return ('. The stop on {} matched {!r} {}, so {} was lost when the lead needed '
-            'nothing more from it. Steps that only send and await finish in a '
-            'fraction of a second: name a line printed before a step that takes '
-            'time, or add a {{"name": "...", "wait": 300}} step in design.json right '
-            'after the step whose output the stop matches'
-            .format(entry['proc'], entry['after'], when, entry['proc']))
+            'nothing more from it. Work that only sends and awaits finishes in a '
+            'fraction of a second: name a line printed before something that takes '
+            'time, or {}'
+            .format(entry['proc'], entry['after'], when, entry['proc'],
+                    dialect('HOLD_THE_LEAD_LATE',
+                            'make the lead wait there, right after the output the '
+                            'stop matches')))
 
 
 def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_class=None):
@@ -497,7 +538,7 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
     ended = {}
     verdict = None
     readers = {}
-    spool = tempfile.mkdtemp(prefix='areg-scenario-')
+    spool = tempfile.mkdtemp(prefix='scenario-')
     actions = []
     try:
         for index, spec in enumerate(procs):
@@ -795,7 +836,7 @@ def self_test():
     peers time out against a process that exited normally and printed nothing.
     """
     import tempfile
-    root = tempfile.mkdtemp(prefix='areg-scenario-selftest-')
+    root = tempfile.mkdtemp(prefix='scenario-selftest-')
     try:
         provider, consumer = (name + SELF_TEST_SUFFIX
                               for name in ('selftestprov', 'selftestcons'))
@@ -936,7 +977,7 @@ def newer_than_binaries(scenarios, build_dirs, root):
                     changed.append(os.path.relpath(path, root).replace(os.sep, '/'))
             except OSError:
                 pass
-    for name in ('bodies.txt', 'design.json'):
+    for name in dialect('SPEC_FILES', ()):
         path = os.path.join(root, name)
         try:
             if os.path.exists(path) and os.path.getmtime(path) > oldest:
@@ -1013,8 +1054,8 @@ def main():
     # is told what is absent and never what to do about it.
     if nothing_built(build_dirs):
         fail('nothing is built: no executable in {}. No scenario can run until the '
-             'project is built:\n  python3 {}/build_project.py'
-             .format(', '.join(build_dirs), tools_dir()))
+             'project is built:\n{}'
+             .format(', '.join(build_dirs), build_advice()))
 
     if not args.stale_ok:
         stale = stale_binaries(scenarios, build_dirs,
@@ -1025,7 +1066,7 @@ def main():
                     'error: {} is older than {} (edited {:.0f} min after the build)\n'
                     .format(os.path.basename(path), os.path.relpath(source), minutes))
             sys.stderr.write('build first, then run:\n')
-            sys.stderr.write('  python3 {}/build_project.py\n'.format(tools_dir()))
+            sys.stderr.write('{}\n'.format(build_advice()))
             sys.stderr.write('running the old program is what makes a fixed defect '
                              'look unfixed. --stale-ok runs it anyway.\n')
             return 2
@@ -1059,14 +1100,19 @@ def main():
             changed = newer_than_binaries(scenarios, build_dirs, root)
             if changed:
                 print('{} file(s) changed since these binaries were built, so this run '
-                      'proves the last build and not the tree: {}{}. Build and run in '
-                      'one call with build_project.py --spec <design> --run.'
+                      'proves the last build and not the tree: {}{}. {}'
                       .format(len(changed), ', '.join(changed[:3]),
-                              ', ...' if len(changed) > 3 else ''))
+                              ', ...' if len(changed) > 3 else '',
+                              dialect('BUILD_AND_RUN',
+                                      'Build and run again in one call.')
+                              .format(tools=tools_dir())))
             else:
                 print('Nothing has changed since these binaries were built, so this is '
-                      'the verdict: build_project.py --run would rebuild nothing and '
-                      'run the same scenarios.')
+                      'the verdict: {}'
+                      .format(dialect('NOTHING_TO_REBUILD',
+                                      'another build would rebuild nothing and run '
+                                      'the same scenarios.')
+                              .format(tools=tools_dir())))
         if still_open:
             print('{} marker(s) still open, so this project is not finished:'
                   .format(len(still_open)))
@@ -1076,9 +1122,10 @@ def main():
             if len(still_open) > 8:
                 print('  and {} more'.format(len(still_open) - 8))
             print('A scenario passing says nothing about the requirement behind an open')
-            print('marker: no body was written for it. Fill it with')
-            print('fill_markers.py --bodies, or write it in place and delete the line.')
-            print('check_contract.py reports the same markers as P-17.')
+            print('marker: no body was written for it.')
+            print(dialect('FILL_MARKERS',
+                          'Write the code in place of the marker and delete its line.')
+                  .format(tools=tools_dir()))
         # A run without --only reports every scenario by name, so isolating one that
         # already passes tells the caller nothing it is not about to be told anyway.
         if args.only and not failed:

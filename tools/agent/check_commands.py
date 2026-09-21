@@ -162,6 +162,26 @@ UNSAFE_WORDS = ('cmake', 'ctest', 'make ', 'ninja', 'msbuild', 'git ', 'rm ', 'd
                 'mtrouter', 'logcollector', 'logobserver', 'sanitize.sh', '>', '&&')
 
 
+def without_comment(text):
+    """The command line with a trailing shell comment cut off.
+
+    A POSIX shell drops everything from an unquoted '#' that opens a word; cmd and
+    PowerShell hand it to the program, so the same documented line reaches argparse
+    as arguments on Windows and the command fails there and nowhere else. The cut is
+    made here so every platform runs the same text.
+    """
+    quote = None
+    for index, char in enumerate(text):
+        if quote is not None:
+            if char == quote:
+                quote = None
+        elif char in '"\'':
+            quote = char
+        elif char == '#' and (index == 0 or text[index - 1].isspace()):
+            return text[:index].rstrip()
+    return text
+
+
 def blocks(path):
     """Every fenced shell command of one document, as (line number, text).
 
@@ -191,7 +211,7 @@ def blocks(path):
             continue
         if inside is None:
             continue
-        text = line.strip()
+        text = without_comment(line.strip())
         if not text or text.startswith('#') or text.startswith('::'):
             continue
         if not pending:
@@ -210,7 +230,9 @@ def blocks(path):
         if inside or line.lstrip().startswith('#'):
             continue
         for command in INLINE_RE.findall(line):
-            found.append((number, command.strip()))
+            command = without_comment(command.strip())
+            if command:
+                found.append((number, command))
     return sorted(found)
 
 

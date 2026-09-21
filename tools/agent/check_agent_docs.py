@@ -55,6 +55,39 @@ HAS_EXAMPLES = os.path.isdir(os.path.join(ROOT, 'examples'))
 
 skipped = 0
 
+_listing = {}
+
+
+def resolves(path):
+    """True when the path exists and every segment is spelled as it is on disk.
+
+    os.path.exists() answers case insensitively on Windows, on macOS and on a
+    mounted NTFS volume. A reference that differs only in case therefore resolves
+    on the machine that wrote it and breaks on Linux, where CI reads it. Each
+    segment inside the repository is compared against the directory listing, so
+    the checker gives the same verdict everywhere.
+    """
+    if not os.path.exists(path):
+        return False
+    segments = []
+    current = os.path.abspath(path)
+    root = os.path.abspath(ROOT)
+    while current != root:
+        parent = os.path.dirname(current)
+        if parent == current:
+            return True
+        segments.append((parent, os.path.basename(current)))
+        current = parent
+    for parent, name in segments:
+        if parent not in _listing:
+            try:
+                _listing[parent] = set(os.listdir(parent))
+            except OSError:
+                return False
+        if name not in _listing[parent]:
+            return False
+    return True
+
 
 def is_ours(ref, here):
     """True when a relative reference names something this repository owns.
@@ -66,7 +99,7 @@ def is_ours(ref, here):
     if '/' not in ref:
         return ref.endswith('.md')
     head = ref.split('/')[0]
-    return head == '..' or head == '.' or os.path.exists(os.path.join(here, head))
+    return head == '..' or head == '.' or resolves(os.path.join(here, head))
 
 
 # Facts that are deliberately repeated so a page can end a task on its own. The
@@ -115,7 +148,7 @@ def check_planted_template():
     problems = []
     for match in PATTERN.finditer(text):
         ref = match.group(1)
-        if ref.startswith('docs/agent/') and not os.path.exists(os.path.join(ROOT, ref)):
+        if ref.startswith('docs/agent/') and not resolves(os.path.join(ROOT, ref)):
             problems.append('planted AGENTS.md: {}'.format(ref))
     if '<areg-sdk>' in text and ROOT in text:
         problems.append('planted AGENTS.md: mixes a resolved SDK path with the '
@@ -148,15 +181,15 @@ for doc in DOCS:
             if not is_ours(ref, here):
                 continue
             checked += 1
-            if not os.path.exists(os.path.normpath(os.path.join(here, ref))):
+            if not resolves(os.path.normpath(os.path.join(here, ref))):
                 failures.append('{}:{}: {}'.format(doc, line, ref))
             continue
 
         # A path into this repository, resolved from the root. The same spelling
         # may also name a file of the reader's project; accept either.
         checked += 1
-        if not (os.path.exists(os.path.join(ROOT, ref))
-                or os.path.exists(os.path.normpath(os.path.join(here, ref)))):
+        if not (resolves(os.path.join(ROOT, ref))
+                or resolves(os.path.normpath(os.path.join(here, ref)))):
             failures.append('{}:{}: {}'.format(doc, line, ref))
 
 failures += check_planted_template()

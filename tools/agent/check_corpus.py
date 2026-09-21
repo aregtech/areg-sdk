@@ -1214,13 +1214,14 @@ def check_grpc_isolation(report):
     if 'run_scenarios.py' not in body:
         report.fail('grpc-arm', 'the gRPC arm stages no scenario runner')
     stray = re.search(r'stray="\$\(find .*?\)"', body, re.S)
-    if stray is None or 'run_scenarios.py' not in stray.group(0) \
-            or 'task.md' not in stray.group(0):
+    staged = ('run_scenarios.py', 'scenario_dialect.py', 'task.md')
+    if stray is None or any(name not in stray.group(0) for name in staged):
         report.fail('grpc-arm', 'the gRPC arm does not verify that it staged nothing '
-                                'but the scenario runner and the task')
+                                'but the scenario runner, its dialect and the task')
     else:
-        report.ok('grpc-arm', 'the gRPC arm stages only run_scenarios.py and task.md, '
-                              'and refuses to run if anything else is beside it')
+        report.ok('grpc-arm', 'the gRPC arm stages only the runner, its gRPC dialect '
+                              'and the task, and refuses to run if anything else is '
+                              'beside it')
     # The task is the one page the arm has, and the agent is given the snapshot and
     # its own working directory. A task staged beside them is read by neither.
     if '"${SNAP}/task.md"' not in body:
@@ -1230,9 +1231,67 @@ def check_grpc_isolation(report):
         report.fail('grpc-arm', 'the gRPC prompt sends the agent to ${RUN}/task.md, '
                                 'which is outside every directory it is given')
 
-    if 'grep -qi areg' not in body:
-        report.fail('grpc-arm', 'the gRPC arm does not refuse a prompt or a task that '
-                                'names areg')
+    # One word in one file is not a cold start. The arm is only cold while nothing
+    # the agent can reach carries a name of this corpus, its paths included, so the
+    # ban list and the sweep that applies it are what the check holds in place.
+    ban = re.search(r"COLD_START_BAN='([^']*)'", text)
+    if ban is None:
+        report.fail('grpc-arm', 'run-benchmark.sh has no COLD_START_BAN, so nothing '
+                                'states which names the gRPC arm may not carry')
+        ban_re = None
+    else:
+        ban_re = ban.group(1)
+        missing = [word for word in ('areg', 'AGENTS', 'build_project', 'worksheet',
+                                     'design', 'siml', 'runbook')
+                   if word not in ban_re]
+        if missing:
+            report.fail('grpc-arm', 'COLD_START_BAN does not name {}: the gRPC arm '
+                                    'would be told of them'.format(', '.join(missing)))
+        sweep = re.search(r'grep -rniE "\$\{COLD_START_BAN\}"([^\n]*\n[^\n]*)', text)
+        if sweep is None or 'prompt.txt' not in sweep.group(0) \
+                or '${SNAP}' not in sweep.group(0):
+            report.fail('grpc-arm', 'nothing sweeps the prompt and every staged file '
+                                    'for the banned names before the agent starts')
+        else:
+            report.ok('grpc-arm', 'the prompt, every staged file and the run path are '
+                                  'swept for this corpus before the gRPC arm starts')
+
+    # The two arms are only comparable while neither is told the other exists. The
+    # runner is shared, so it names no framework and takes its wording from the
+    # dialect staged beside it.
+    runner = read('tools', 'agent', 'run_scenarios.py') or ''
+    named = [word for word in ('areg', 'AGENTS.md', 'build_project', 'gen_skeleton',
+                               'worksheet', 'bodies.txt', 'design.json', '.siml',
+                               'docs/agent', 'runbook')
+             if word.lower() in runner.lower()]
+    if named:
+        report.fail('grpc-arm', 'run_scenarios.py is shared by both arms and names '
+                                '{}: the gRPC arm reads the file it is told to '
+                                'use'.format(', '.join(named)))
+    if "spec_from_file_location('scenario_dialect'" not in runner \
+            or 'dirname(os.path.abspath(__file__))' not in runner:
+        report.fail('grpc-arm', 'run_scenarios.py does not load its wording from the '
+                                'dialect beside it: either it names one framework to '
+                                'both arms, or a file in the measured project decides '
+                                'what it says')
+    ours = read('tools', 'agent', 'scenario_dialect.py') or ''
+    theirs = read('examples', 'ai-benchmark', 'grpc-scenario-dialect.py') or ''
+    if not ours:
+        report.fail('grpc-arm', 'tools/agent/scenario_dialect.py is missing, so the '
+                                'areg arm gets the neutral wording and the two arms '
+                                'are no longer told the same amount')
+    elif re.search(r'grpc|protoc|protobuf|\.proto', ours, re.I):
+        report.fail('grpc-arm', 'the areg dialect names gRPC; the rule is symmetric '
+                                'and neither arm may name the other')
+    if not theirs:
+        report.fail('grpc-arm', 'examples/ai-benchmark/grpc-scenario-dialect.py is '
+                                'missing, so the gRPC arm has no wording of its own')
+    elif ban_re is not None and re.search(ban_re.replace('\\', '\\'), theirs, re.I):
+        report.fail('grpc-arm', 'the gRPC dialect carries a name of this corpus, and '
+                                'it is copied into the arm')
+    elif theirs:
+        report.ok('grpc-arm', 'each arm has a dialect naming its own framework and '
+                              'neither names the other')
     helped = subprocess.run([sys.executable, os.path.join(ROOT, 'tools', 'agent',
                                                           'run_scenarios.py'), '--help'],
                             cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
@@ -1296,8 +1355,8 @@ def check_hidden_probes(report):
 
 # Messages of the isolation guards both benchmark runners carry, word for word.
 RUNNER_GUARDS = ('the gRPC arm staged more than the scenario runner',
-                 'names areg; the gRPC arm must not be told of it',
-                 'the gRPC prompt names areg',
+                 'COLD_START_BAN',
+                 'is not a cold start -- it names what it exists not to know',
                  'examples/ai-benchmark/verify_run.py',
                  'is inside the checkout; a run must not write where it reads')
 
@@ -4478,6 +4537,24 @@ def check_step_driver(report):
             report.fail('step-driver', 'the consumer has no StepEnd whose destructor '
                                        'calls complete(): a check that returns after '
                                        'go_to() would stall the run')
+            return
+        # Ending the step twice is as wrong as never ending it, and it is silent:
+        # the step after the one a body chose is entered and its check never runs.
+        # The guard arms mEnding, complete() disarms it, the destructor obeys it.
+        source = glob.glob(os.path.join('src', 'consumer', '*Consumer.cpp'))
+        body = ''
+        if source:
+            with open(source[0], encoding='utf-8') as handle:
+                body = handle.read()
+        if not re.search(r'StepEnd\([^)]*\)\s*:\s*mOwner\(owner\)\s*\{\s*'
+                         r'mOwner\.mEnding = true;', guard, re.S) \
+                or not re.search(r'~StepEnd\(void\)\s*\{[^}]*if \(mOwner\.mEnding\)',
+                                 guard, re.S) \
+                or not re.search(r'::complete\(\)\s*\{\s*mEnding = false;',
+                                 guard + body, re.S):
+            report.fail('step-driver', 'StepEnd does not end the step at most once: a '
+                                       'body that calls complete() itself would advance '
+                                       'twice and silently skip the next check')
             return
         found = subprocess.run([sys.executable, os.path.join(tools, 'check_contract.py'),
                                 '.', '--strict', '--allow-todo'],
