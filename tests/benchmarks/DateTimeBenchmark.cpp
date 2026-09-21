@@ -140,3 +140,51 @@ void BM_DateTime_Compare(benchmark::State& state)
 }
 BENCHMARK(BM_DateTime_Compare);
 
+//!< Measures fetching the current system tick count.
+void BM_DateTime_TickCount(benchmark::State& state)
+{
+    areg::DateTime date;
+
+    for (auto _ : state)
+    {
+
+        uint64_t ticks = date.system_tick_count();
+        benchmark::DoNotOptimize(ticks);
+    }
+}
+BENCHMARK(BM_DateTime_TickCount);
+
+//!< Measures day-of-week calculation performance across a set of pre-generated dates.
+void BM_DateTime_DayOfWeek(benchmark::State& state)
+{
+    const std::vector<areg::DateTime> times{bench::make_times(1024u)};
+
+    for (auto _ : state)
+    {
+        for (auto time : times ) {
+            uint32_t dow = time.day_of_week();
+            benchmark::DoNotOptimize(dow);
+        }
+
+    }
+    state.SetItemsProcessed(state.iterations() * 1024);
+}
+BENCHMARK(BM_DateTime_DayOfWeek);
+
+//!< Measures microsecond component extraction performance across a set of pre-generated dates.
+void BM_DateTime_Microseconds(benchmark::State& state)
+{
+    std::vector<areg::DateTime> times {bench::make_times(1024u)};
+
+    for (auto _ : state)
+    {
+        for ( auto time : times) {
+             uint32_t micro = time.microseconds();
+            benchmark::DoNotOptimize(micro);
+        }
+
+    }
+    state.SetItemsProcessed(state.iterations() * 1024);
+}
+BENCHMARK(BM_DateTime_Microseconds);
+

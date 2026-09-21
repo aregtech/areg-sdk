@@ -27,10 +27,19 @@ if (AREG_BENCHMARKS)
     set(BENCHMARK_INSTALL_DOCS          OFF CACHE BOOL "Disable google_benchmark documentation"  FORCE)
     set(BENCHMARK_ENABLE_WERROR         OFF CACHE BOOL "Disable google_benchmark warning errors" FORCE)
 
-    FetchContent_Declare( google_benchmark
-                          GIT_REPOSITORY https://github.com/CodSpeedHQ/codspeed-cpp.git
-                          GIT_TAG        "v2.4.0"
-                          SOURCE_SUBDIR  google_benchmark)
+    option(CODSPEED_MODE "Enable CodSpeed instrumentation" OFF)
+
+    if (CODSPEED_MODE)
+        FetchContent_Declare( google_benchmark
+                GIT_REPOSITORY https://github.com/CodSpeedHQ/codspeed-cpp.git
+                GIT_TAG        "v2.4.0"
+                SOURCE_SUBDIR  google_benchmark)
+    else()
+        FetchContent_Declare( google_benchmark
+                GIT_REPOSITORY https://github.com/google/benchmark.git
+                GIT_TAG        "v1.8.3")
+    endif()
+
 
     # Always build the benchmark library as a static library.
     set(_areg_saved_build_shared_libs ${BUILD_SHARED_LIBS})
