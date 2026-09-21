@@ -201,8 +201,13 @@ def _digest(path):
 
 
 def _relative(path, root):
-    """A path under root spelled from root; any other path as it is."""
-    path = os.path.abspath(path)
+    """A path under root spelled from root; any other path as it is.
+
+    The symbolic links of both are resolved first, as codegen.jar reports the
+    resolved path of every input it read.
+    """
+    path = os.path.realpath(path)
+    root = os.path.realpath(root)
     try:
         inside = os.path.commonpath([root, path]) == root
     except ValueError:
@@ -275,7 +280,8 @@ def _generate(documents, root):
 
 
 def _key(path):
-    return os.path.normcase(os.path.normpath(os.path.abspath(path)))
+    """One spelling of a path, with every symbolic link resolved."""
+    return os.path.normcase(os.path.normpath(os.path.realpath(path)))
 
 
 def _manifests(out):

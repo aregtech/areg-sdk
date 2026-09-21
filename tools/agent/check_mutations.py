@@ -106,13 +106,23 @@ def rules_in(report):
     return found
 
 
+def notes_in(report):
+    """What the contract checker says it could not check, one line per note."""
+    return [line.strip() for line in report.splitlines()
+            if line.startswith('note: ')]
+
+
 def by_contract(root, rule, clean_report):
     if rule in rules_in(clean_report):
         return False, '{} already fires on the unbroken recipe, so it proves ' \
                       'nothing'.format(rule)
     report = contract(root)
     if rule not in rules_in(report):
-        return False, '{} did not fire on the broken copy'.format(rule)
+        # A note names what the checker could not check, so a rule that reports
+        # nothing is told apart from a rule that was never applied.
+        notes = notes_in(report)
+        return False, '{} did not fire on the broken copy{}'.format(
+            rule, '; ' + ' / '.join(notes) if notes else '')
     return True, '{} reported it'.format(rule)
 
 
