@@ -49,7 +49,7 @@
   * \brief   No copy for class templates.
   *          ClassName   The name of class
   *          Typenames   The name of class
-  *      Example: DECLARE_NOCOPY_TEMPLATE(TEString, <CharType>)
+  *      Example: DECLARE_NOCOPY_TEMPLATE(MyTemplate, <CharType>)
   **/
 #ifndef DECLARE_NOCOPY_TEMPLATE
 #define DECLARE_NOCOPY_TEMPLATE(ClassName, Typenames)                                               \
@@ -61,7 +61,7 @@
    * \brief   No move for class templates.
    *          ClassName   The name of class
    *          Typenames   The name of class
-   *      Example: DECLARE_NOMOVE_TEMPLATE(TEString, <CharType>)
+   *      Example: DECLARE_NOMOVE_TEMPLATE(MyTemplate, <CharType>)
    **/
 #ifndef DECLARE_NOMOVE_TEMPLATE
 #define DECLARE_NOMOVE_TEMPLATE(ClassName, Typenames)                                               \
@@ -106,7 +106,7 @@
  *          VERIFY / VERIFY_MSG always evaluate the expression,
  *          but only assert in Debug.
  **/
-#ifdef   _DEBUG
+#ifdef   DEBUG
 
     #include <assert.h>
 
@@ -124,7 +124,7 @@
         #define VERIFY_MSG(x, msg)              ASSERT_MSG((x), msg)
     #endif   // VERIFY_MSG
 
-#else    // _DEBUG
+#else    // DEBUG
 
     #ifndef ASSERT
         #define ASSERT(x)                       ((void)0)
@@ -141,27 +141,27 @@
         #define VERIFY_MSG(x, msg)              static_cast<void>(x)
     #endif   // VERIFY_MSG
 
-#endif   // _DEBUG
+#endif   // DEBUG
 
 /**
  * \brief   Debug new operator for MSVC CRT memory leak detection.
  *          In Release or non-MSVC builds, maps to plain new.
  **/
-#if defined(_DEBUG) && defined(_MSC_VER)
+#if defined(DEBUG) && defined(_MSC_VER)
     #include <crtdbg.h>
     #ifndef DEBUG_NEW
       #define DEBUG_NEW    new(_NORMAL_BLOCK, __FILE__, __LINE__)
    #endif   // DEBUG_NEW
-#else // _DEBUG
+#else // DEBUG
 #ifndef DEBUG_NEW
     #define DEBUG_NEW    new
 #endif   // DEBUG_NEW
-#endif   // _DEBUG
+#endif   // DEBUG
 
 /**
  * \brief   Debug output macros. Active only in Debug builds.
  **/
-#ifdef _DEBUG
+#ifdef DEBUG
 
 #include "areg/base/private/DebugDefs.hpp"
 
@@ -205,7 +205,7 @@
         #endif
     #endif
 
-#else   // _DEBUG, no meaning for other than Debug build.
+#else   // DEBUG, no meaning for other than Debug build.
 
     #ifndef AREG_OUTPUT_DBG
         #define AREG_OUTPUT_DBG(...)            ((void)0)
@@ -227,6 +227,6 @@
         #define AREG_OUTPUT_MSG(...)            ((void)0)
     #endif
 
-#endif  // _DEBUG
+#endif  // DEBUG
 
 #endif  // AREG_BASE_AREG_MACROS_H

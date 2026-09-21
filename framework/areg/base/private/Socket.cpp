@@ -135,14 +135,16 @@ void Socket::decrease_lock()
 
 uint32_t Socket::set_send_size(uint32_t sendSize, bool force /*= false*/) const
 {
-    if (is_valid() == false)
+    // Read the descriptor once: another thread can close the socket at any point.
+    const SOCKETHANDLE hSocket{ mSocket.value() };
+    if (areg::is_valid_socket(hSocket) == false)
     {
         return areg::PACKET_INVALID_SIZE;
     }
 
     if (force || (sendSize > mSendSize))
     {
-        mSendSize = areg::set_send_size(mSocket.value(), sendSize);
+        mSendSize = areg::set_send_size(hSocket, sendSize);
     }
 
     return mSendSize;
@@ -150,14 +152,16 @@ uint32_t Socket::set_send_size(uint32_t sendSize, bool force /*= false*/) const
 
 uint32_t Socket::set_recv_size(uint32_t recvSize, bool force /*= false*/) const
 {
-    if (is_valid() == false)
+    // Read the descriptor once: another thread can close the socket at any point.
+    const SOCKETHANDLE hSocket{ mSocket.value() };
+    if (areg::is_valid_socket(hSocket) == false)
     {
         return areg::PACKET_INVALID_SIZE;
     }
 
     if (force || (recvSize > mRecvSize))
     {
-        mRecvSize = areg::set_recv_size(mSocket.value(), recvSize);
+        mRecvSize = areg::set_recv_size(hSocket, recvSize);
     }
 
     return mRecvSize;

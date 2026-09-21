@@ -1,9 +1,16 @@
 # Implement a service consumer
 
+Reference for a hand-written consumer, and the sections `51-debug.md` cites. Not for
+filling a marker: `gen_skeleton.py --app` wrote the consumer.
+
 A consumer is your class inheriting `areg::Component` and the generated
 `<Name>ConsumerBase`. It calls requests and handles what comes back.
 
 Complete, working consumer for the `HelloService` document in `20-service-interface.md`:
+> `gen_skeleton.py --app` writes this class already, split the way the project is
+> laid out: the declaration in `<Class>.hpp` and the bodies in `<Class>.cpp`, both in
+> the process's own folder. The one block below is for reading, not for copying.
+
 
 ```cpp
 #include <iostream>
@@ -41,7 +48,7 @@ protected:
     void response_hello_service(bool success) final
     {
         std::cout << (success ? "greeted" : "failed") << std::endl;
-        areg::Application::signal_quit();
+        areg::Application::signal_quit();   // quit_with(code) where main() defines it
     }
 
     void request_hello_service_failed(areg::ResultType reason) final
@@ -112,6 +119,17 @@ restart into a dead application.
 
 Starting a consumer before its provider is normal and supported. It waits.
 
+**Waiting for ever is the other half of it.** A service runs until it is stopped; a
+task with a deadline does not. Two constants the scaffold writes:
+
+| Constant | Armed | Cancelled |
+|---|---|---|
+| `cConnectSeconds` | at startup | the first `Connected` |
+| `cReconnectSeconds` | on `Disconnected` or `ConnectionLost` | the next `Connected` |
+
+`0` waits for ever, right for a service that must outlive its provider. Set the one
+your scenario needs: the consumer then reports `FAIL:` and exits non-zero.
+
 ---
 
 ## 4. What you may override and call
@@ -150,6 +168,32 @@ already set it, so a handler must work when there is no value yet. Always check 
 it is `areg::DataState::DataIsOK`. The other states are `DataIsInvalid`,
 `DataIsUnavailable`, `DataUnexpectedError` and `DataIsUndefined`.
 
+### An update you are waiting for may never come
+
+Both facts that make a consumer wait for ever are in `20-service-interface.md`: that
+a response has no priority over a notification, so an update sent before it arrives
+first; and that `Notify="OnChange"` sends nothing when the value is already the one
+held. The two shapes that hit the second are a value that returns to where it
+started, and a value whose update crossed with the response that made you start
+waiting:
+
+```cpp
+void Consumer::response_cancel_order(bool accepted)
+{
+    mStep = WaitRefund;
+    if (mCredit == mFullCredit)     // the refund update may already have arrived,
+    {                               // and there will not be a second one
+        refund_seen();
+        return;
+    }
+    arm_watchdog();
+}
+```
+
+Test the value you already hold before arming a wait on it. Where a consumer genuinely
+needs every `set_` as an event rather than a value, that is what `Notify="Always"` on
+the attribute is for -- `20-service-interface.md`.
+
 ---
 
 ## 6. Before you move on
@@ -159,6 +203,8 @@ it is `areg::DataState::DataIsOK`. The other states are `DataIsInvalid`,
 - [ ] `Disconnected`, `ConnectionLost` and `Failed` do not quit the application.
 - [ ] Every broadcast and attribute you handle is subscribed to.
 - [ ] Attribute handlers check `areg::DataState` before using the value.
+- [ ] No step waits for a response that a notification may legitimately precede.
+- [ ] No step waits for an attribute update to a value the consumer already holds.
 - [ ] The dependency index matches the order of `REGISTER_DEPENDENCY` in the model.
 
 Next: `32-model.md` to register the component.

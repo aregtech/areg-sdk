@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<StateMachine FormatVersion="1.1.0">
+    <Overview ID="1" Name="Lamp" Version="1.0.0" Threading="Local">
+        <Description>A lamp that hosts the Blink machine twice instead of writing the flash out twice.</Description>
+    </Overview>
+    <EventList>
+        <Event ID="2" Name="WarmDone">
+            <Description>Sent when the warm-up flash has finished.</Description>
+        </Event>
+        <Event ID="3" Name="SignalDone">
+            <Description>Sent when the signal flash has finished.</Description>
+        </Event>
+    </EventList>
+    <MethodList>
+        <Method ID="4" Name="switch_on" MethodType="Trigger">
+            <Description>Asks the lamp to run its two flashes.</Description>
+        </Method>
+        <Method ID="5" Name="on_idle" MethodType="Action">
+            <Description>Runs whenever the lamp is idle.</Description>
+        </Method>
+    </MethodList>
+    <IncludeList>
+        <Location ID="6" Name="src/services/Blink.fsml" Alias="Blink" Version="1.0.0">
+            <Description>The machine this one hosts. Version is pinned: a generated static_assert fails when Blink moves past it.</Description>
+        </Location>
+    </IncludeList>
+    <StateList>
+        <State ID="7" Name="Start" Kind="Start">
+            <TransitionList>
+                <Transition ID="8" Kind="Initial" To="9"/>
+            </TransitionList>
+        </State>
+        <State ID="9" Name="LAMP_IDLE" Kind="Normal">
+            <Description>Waiting to be switched on.</Description>
+            <EntryList>
+                <ActionCall ID="10" Action="on_idle"/>
+            </EntryList>
+            <TransitionList>
+                <Transition ID="11" Kind="External" StimulusKind="Trigger" Stimulus="switch_on" To="12"/>
+            </TransitionList>
+        </State>
+        <State ID="12" Name="LAMP_WARMUP" Kind="Normal" Submachine="Blink" OnFinal="WarmDone">
+            <Description>The first hosted instance of Blink. It is entered through its own Start chain: nothing calls its triggers for you.</Description>
+            <TransitionList>
+                <Transition ID="13" Kind="External" StimulusKind="Event" Stimulus="WarmDone" To="14"/>
+            </TransitionList>
+        </State>
+        <State ID="14" Name="LAMP_SIGNAL" Kind="Normal" Submachine="Blink" OnFinal="SignalDone">
+            <Description>The second hosted instance, with its own action handler. Order here is the order of the constructor parameters.</Description>
+            <TransitionList>
+                <Transition ID="15" Kind="External" StimulusKind="Event" Stimulus="SignalDone" To="16"/>
+            </TransitionList>
+        </State>
+        <State ID="16" Name="LAMP_DONE" Kind="Final">
+            <Description>Both flashes are over. The machine stops and reports through the final observer.</Description>
+        </State>
+    </StateList>
+</StateMachine>

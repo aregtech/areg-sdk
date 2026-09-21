@@ -61,6 +61,8 @@ namespace
     constexpr uint32_t      TEST_WATCHDOG_MS    { 90u * 1000u };
 
     std::atomic_uint        gExpired    { 0u };      //!< expiries seen in the current cycle
+    std::atomic_uint        gChurnExpired{ 0u };      //!< expiries delivered by churned timers
+    std::atomic_uint        gStartFailed{ 0u };      //!< timer starts rejected in the current cycle
     std::atomic_int         gAlive      { 0 };       //!< live components
     std::atomic_bool        gChurnStop  { false };   //!< tells the churn threads to leave
     std::atomic_bool        gFinished   { false };   //!< tells the watchdog the run is over
@@ -148,7 +150,7 @@ public:
         gAlive.fetch_sub(1);
     }
 
-    void startup_component(areg::ComponentThread & comThread) override
+    virtual void startup_component(areg::ComponentThread & comThread) override
     {
         areg::Component::startup_component(comThread);
 
@@ -156,7 +158,10 @@ public:
         {
             areg::String name{ role_name() + "_churn_" + areg::String::make_string(i) };
             mTimers.push_back(std::make_unique<areg::Timer>(static_cast<areg::TimerConsumer &>(*this), name));
-            mTimers.back()->start_timer(_timeout(i), comThread, areg::Timer::CONTINUOUSLY);
+            if (!mTimers.back()->start_timer(_timeout(i), comThread, areg::Timer::CONTINUOUSLY))
+            {
+                gStartFailed.fetch_add(1u);
+            }
         }
 
         // Published only now: mTimers keeps its size from here until the destructor.
@@ -166,7 +171,7 @@ public:
         }
     }
 
-    void shutdown_component(areg::ComponentThread & comThread) override
+    virtual void shutdown_component(areg::ComponentThread & comThread) override
     {
         for (auto & timer : mTimers)
         {
@@ -193,24 +198,45 @@ public:
                 break;
 
             case 1u:
-                timer->start_timer(_timeout(step + i), areg::Timer::CONTINUOUSLY);
+                if (!timer->start_timer(_timeout(step + i), master_thread(), areg::Timer::CONTINUOUSLY))
+                {
+                    gStartFailed.fetch_add(1u);
+                }
                 break;
 
             case 2u:
-                timer->start_timer(_timeout(step + i), 1u);     // one shot
+                if (!timer->start_timer(_timeout(step + i), master_thread(), 1u))
+                {
+                    gStartFailed.fetch_add(1u);
+                }
                 break;
 
             default:
                 break;      // leave this one running, so something is always armed
             }
         }
+
+        // Destroy a timer while its start command may still be queued on the manager.
+        areg::Timer pending(static_cast<areg::TimerConsumer &>(*this));
+        if (!pending.start_timer(TEST_WATCHDOG_MS, master_thread(), 1u))
+        {
+            gStartFailed.fetch_add(1u);
+        }
     }
 
 private:
 
-    void process_timer(areg::Timer & /* timer */) override
+    virtual void process_timer(areg::Timer & timer) override
     {
         gExpired.fetch_add(1u, std::memory_order_relaxed);
+        for (uint32_t i = STABLE_TIMERS; i < mTimers.size(); ++i)
+        {
+            if (mTimers[i].get() == &timer)
+            {
+                gChurnExpired.fetch_add(1u, std::memory_order_relaxed);
+                break;
+            }
+        }
     }
 
     [[nodiscard]]
@@ -257,6 +283,9 @@ namespace
 
 int main()
 {
+    // Unbuffered: what the run printed before a crash still reaches the log.
+    setvbuf(stdout, nullptr, _IONBF, 0);
+
     start_test_watchdog();
 
     bool failed{ false };
@@ -265,7 +294,11 @@ int main()
     {
         gPhase.store(cycle * 10u + 1u);
         gExpired.store(0u);
+        gChurnExpired.store(0u);
+        gStartFailed.store(0u);
         gChurnStop.store(false);
+        std::printf("cycle %u: starting timer churn\n", cycle);
+        std::fflush(stdout);
 
         // The watchdog uses the same TimerPosix object and manager loop as the timer, so
         // every dispatch below exercises the watchdog backend too.
@@ -290,9 +323,20 @@ int main()
         }
 
         const uint32_t expired{ gExpired.load() };
+        const uint32_t churnExpired{ gChurnExpired.load() };
+        const uint32_t startFailed{ gStartFailed.load() };
+
+        std::printf("cycle %u: expiries %u, churn expiries %u, start failures %u; %s\n"
+                   , cycle, expired, churnExpired, startFailed
+                   , (cycle % 2u) == 0u ? "unloading with managers running" : "releasing application");
+        std::fflush(stdout);
 
         // Nothing in the teardown below may block.
         gPhase.store(cycle * 10u + 4u);
+        if ((cycle % 2u) == 0u)
+        {
+            areg::Application::unload_model(MODEL_NAME);
+        }
         areg::Application::release();
 
         gPhase.store(cycle * 10u + 5u);
@@ -300,13 +344,18 @@ int main()
         const bool   threadsGone{ (areg::Thread::find_by_address(areg::ThreadAddress(THREAD_ONE)) == nullptr) &&
                                   (areg::Thread::find_by_address(areg::ThreadAddress(THREAD_TWO)) == nullptr) };
 
-        std::printf("cycle %u: expiries %u, components left %d, threads gone %s\n"
-                   , cycle, expired, alive, threadsGone ? "yes" : "no");
+        std::printf("cycle %u: components left %d, threads gone %s\n", cycle, alive, threadsGone ? "yes" : "no");
         std::fflush(stdout);
 
         if (expired == 0u)
         {
             std::printf("FAILED: no timer expired in cycle %u\n", cycle);
+            failed = true;
+        }
+
+        if ((churnExpired == 0u) || (startFailed != 0u))
+        {
+            std::printf("FAILED: churned timers did not start and expire in cycle %u\n", cycle);
             failed = true;
         }
 

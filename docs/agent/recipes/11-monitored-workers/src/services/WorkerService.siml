@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="WorkerService" Version="1.0.0" Category="Private">
+        <Description>What one worker publishes about itself.</Description>
+    </Overview>
+    <AttributeList>
+        <Attribute ID="2" Name="State" DataType="uint32" Notify="OnChange">
+            <Description>1 while the worker is working, 0 once it has stalled.</Description>
+        </Attribute>
+    </AttributeList>
+</ServiceInterface>

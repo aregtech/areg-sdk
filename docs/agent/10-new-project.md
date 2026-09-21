@@ -4,12 +4,20 @@ An AREG application lives outside the SDK repository and pulls the SDK in throug
 CMake. The fastest correct start is the setup script:
 
 ```bash
-python3 <areg-sdk>/tools/setup_project.py --name myapp --root ~/myapp --mode local
-cd ~/myapp
-cmake -B build
-cmake --build build -j
+python3 <areg-sdk>/tools/agent/setup_project.py --name myapp --root . --mode local
+python3 <areg-sdk>/tools/agent/build_project.py
 ./build/bin/myapp.elf
 ```
+
+The directory the session started in is the project root. Scaffold into `.`: do not
+create a directory for the project, do not `cd` anywhere, and do not move the work
+under your home directory. If that directory is inside the SDK, or already holds an
+unrelated project, stop and say so.
+
+On Windows the same three commands are `python` instead of `python3` and
+`build\bin\myapp.exe` instead of the last line. Needed before any of it: CMake 3.20+,
+a Java 17+ runtime and a C++17 compiler. Without Python, copy a recipe from
+`recipes/` by hand instead; they are ordinary project files.
 
 It copies one of the recipes in `recipes/`, renames it, and writes the new
 project's own AGENTS.md and .gitignore.
@@ -18,13 +26,23 @@ project's own AGENTS.md and .gitignore.
 |---|---|
 | `--mode local` | One process; provider and consumer in two threads |
 | `--mode ipc` | Two processes; needs `mtrouter` and writes a `run.sh` |
-| `--mode pubsub` | Attributes and broadcasts in one process |
+| `--mode pubsub` | As `local`; its interface adds attributes and broadcasts beside requests |
 | `--sdk-root <path>` | Build against a local SDK copy instead of fetching from GitHub |
 | `--tag <tag>` | The SDK tag to fetch |
 | `--force` | Overwrite an existing directory |
 
 The rest of this page describes what it writes, for when a project has to be built
 by hand or an existing one has to be changed.
+
+**What the tools write, and what you compose.** `gen_docs.py` writes every document a
+design describes. `gen_skeleton.py --app` writes **one** application: one service, its
+provider and its consumer, and at most one machine folded into the provider, which is
+what `build_project.py` builds -- given several services it refuses rather than picking
+one. So a design of several is generated per service, each `--app` into its own
+directory, or one is named with `--doc` and `--machine`. Composition is yours: a
+component that provides one service and consumes another, two instances of one service,
+worker plumbing. `docs/agent/32-model.md` registers components; recipes `05`, `09` and
+`11` show the shapes.
 
 ---
 
@@ -37,12 +55,16 @@ by hand or an existing one has to be changed.
     CMakeLists.txt          declares the service interface and the executables
     services/
       HelloService.siml     the service contract
-    provider.cpp            the providing component and its model
-    consumer.cpp            the consuming component and its model
+    provider/
+      HelloProvider.hpp/.cpp  the providing component
+      main.cpp                the providing process: its model and main()
+    consumer/
+      HelloConsumer.hpp/.cpp  the consuming component
+      main.cpp                the consuming process: its model and main()
 ```
 
-For a single process application, use one `main.cpp` instead of `provider.cpp` and
-`consumer.cpp`, holding both components and one model.
+A single process application keeps `src/` flat: the components in their own files
+and one `src/main.cpp` holding the one model.
 
 ---
 
@@ -57,20 +79,22 @@ project(${PROJECT_NAME} VERSION ${PROJECT_VERSION} LANGUAGES C CXX)
 
 find_package(areg CONFIG)
 
+# build/bin whichever way areg was found; an installed package names product/ otherwise.
+set(AREG_BUILD_DIR "${CMAKE_BINARY_DIR}")
+option(AREG_OUTPUT_LAYOUT "Areg build structure" OFF)
+
 if (NOT areg_FOUND)
-    set(AREG_BUILD_DIR "${CMAKE_BINARY_DIR}")
     set(AREG_DEPS_DIR  "${CMAKE_BINARY_DIR}/packages")
     set(AREG_LIB_TYPE  shared)
     option(AREG_TESTS         "Build areg-sdk tests"    OFF)
     option(AREG_EXAMPLES      "Build areg-sdk examples" OFF)
     option(AREG_SYSTEM_GTEST  "Build GTest"             OFF)
-    option(AREG_OUTPUT_LAYOUT "Areg build structure"    OFF)
 
     include(FetchContent)
     set(FETCHCONTENT_BASE_DIR "${AREG_DEPS_DIR}")
     FetchContent_Declare(areg
         GIT_REPOSITORY https://github.com/aregtech/areg-sdk.git
-        GIT_TAG "master")
+        GIT_TAG "master")           # 2.0.0 and newer; do not pin 1.5.0 or earlier
     FetchContent_MakeAvailable(areg)
 
     set(AREG_SDK_ROOT         "${areg_SOURCE_DIR}")
@@ -86,6 +110,17 @@ add_subdirectory(src)
 Turning the SDK's own examples and tests off matters: it keeps the configure step
 offline and fast.
 
+`master` is the ref to fetch: 2.0.0 is not tagged yet and it is the only revision
+whose API matches these pages. **Never pin 1.5.0 or earlier.** The 2.0.0 rename
+removed the `NE`, `TE` and `IE` prefixes and moved everything public into namespace
+`areg`, so an older tag compiles against none of the names written here.
+`docs/agent/api.json` states the ref under `sdk`, and CI holds every recipe to it.
+
+`include(${AREG_CMAKE})` also writes `build/areg-sdk.paths`, which names where the
+SDK landed on this machine -- `sdk_root`, `headers`, `agent_docs`, `agents_md` and
+`codegen`, one `key = path` per line. Read it instead of guessing the path; it is
+correct whether areg was found, fetched or installed.
+
 ---
 
 ## 3. `src/CMakeLists.txt`
@@ -95,14 +130,21 @@ Two kinds of line, and nothing else.
 ```cmake
 addServiceInterface(gen_myproject src/services/HelloService.siml)
 
-macro_declare_executable(myproject_provider gen_myproject provider.cpp)
-macro_declare_executable(myproject_consumer gen_myproject consumer.cpp)
+macro_declare_executable(myproject_provider gen_myproject provider/main.cpp provider/HelloProvider.cpp)
+macro_declare_executable(myproject_consumer gen_myproject consumer/main.cpp consumer/HelloConsumer.cpp)
 ```
+
+**Every hand-written `.cpp` is named on the line of the executable that needs it**,
+and a file may be named on more than one. A source left off every line is compiled by
+nothing: the build reaches the link step and reports an undefined reference to a
+mangled symbol, naming neither the file nor the line that should have carried it.
+Splitting a component into its own `.cpp` is what usually leaves one behind, so
+`check_contract.py` reports it as P-15 before you build.
 
 | Function | What it does |
 |---|---|
 | `addServiceInterface(<target> <path.siml>)` | Runs the generator at configure time and builds the generated code into a static library named `<target>`. |
-| `macro_declare_executable(<name> <sources, targets, resources...>)` | Declares an executable. Everything after the name is sorted automatically into source files, libraries to link and resources, in any order. Name the generated target here to link it. |
+| `macro_declare_executable(<name> <sources, targets, resources...>)` | Declares an executable. Everything after the name is sorted automatically into source files, libraries to link and resources, in any order. Name the generated target here to link it, and every hand-written source the executable needs. |
 
 You never call the generator by hand and never add generated files to a source list.
 
@@ -123,9 +165,10 @@ Write them from the task pages, in this order:
 ## 5. Build and run
 
 ```bash
-cmake -B ./build
-cmake --build ./build -j
+python3 <areg-sdk>/tools/agent/build_project.py
 ```
+
+It configures, builds, and works the job count out itself.
 
 Binaries are written to `<project-root>/build/bin/`, with a platform suffix: `.elf`
 on Linux, `.mac` on macOS, `.exe` on Windows. The framework libraries and `mtrouter`
@@ -137,6 +180,14 @@ are placed there too, so a multi process project needs nothing installed.
 It is built into your own `build/bin/`. Consumers may start before providers; they
 wait and connect.
 
+```bash
+./build/bin/mtrouter.elf --service &      # POSIX: background it
+```
+
+```bat
+start "" build\bin\mtrouter.exe
+```
+
 ---
 
 ## 6. Before you move on
@@ -145,5 +196,6 @@ wait and connect.
 - [ ] Every `.siml` has an `addServiceInterface` line.
 - [ ] Every executable is declared with `macro_declare_executable` and names its
       generated target.
+- [ ] Every hand-written `.cpp` is named on a `macro_declare_executable` line.
 - [ ] No generated file is listed as a source and none was edited.
 - [ ] The build produced the expected binaries.

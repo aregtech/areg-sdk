@@ -51,12 +51,19 @@
 #   Scope Key Format:
 #     log::<module>::scope::<scope_pattern>
 #
+#   A scope is declared with DEF_LOG_SCOPE(<group>, <method>) and is named
+#   '<group>.<method>' -- joined with a DOT, not an underscore. So
+#   DEF_LOG_SCOPE(areg_base_areg, client_connect) is the scope
+#   'areg_base_areg.client_connect'.
+#
+#   A trailing ';' is optional on any value: the parser strips it.
+#
 #   Examples:
-#     log::*::scope::*                           # All scopes, all modules
-#     log::*::scope::areg_*                      # All scopes starting with 'areg_'
-#     log::*::scope::areg_base_File_open         # Single specific scope (all modules)
-#     log::myapp::scope::areg_*                  # Scopes starting with 'areg_' in 'myapp'
-#     log::myapp::scope::database_*              # Database scopes in 'myapp' only
+#     log::*::scope::*                              # All scopes, all modules
+#     log::*::scope::areg_*                         # All scopes starting with 'areg_'
+#     log::*::scope::areg_base_areg.client_connect  # Single specific scope (all modules)
+#     log::myapp::scope::areg_*                     # Scopes starting with 'areg_' in 'myapp'
+#     log::myapp::scope::database_*                 # Database scopes in 'myapp' only
 #
 # ---------------------------------------------------------------------------
 # PRIORITY LEVELS
@@ -89,16 +96,16 @@
 #     NOTSET - Disables logging for the scope or scope group.
 #              Use to silence specific scopes.
 #
-#   Priority Examples:
+#   Priority Examples (the trailing ';' is optional):
 #
 #     # Single priority
-#     log::myapp::scope::network = WARN
+#     log::myapp::scope::network = WARN ;
 #
 #     # Combined priorities (scope boundaries + warnings)
-#     log::myapp::scope::ui_* = WARN | SCOPE
+#     log::myapp::scope::ui_* = WARN | SCOPE ;
 #
 #     # Disable specific scope group
-#     log::*::scope::areg_* = NOTSET
+#     log::*::scope::areg_* = NOTSET ;
 #
 # ---------------------------------------------------------------------------
 # LAYOUT FORMAT SPECIFICATIONS

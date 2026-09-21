@@ -1,0 +1,116 @@
+=== EDIT THE THREE VALUES BELOW. NOTHING ELSE IN THIS FILE. ===============
+
+Then paste this whole file as your prompt.
+
+  task      what the software must do, and the checklist you are scored on:
+            prompt-coffeemachine.md beside this file. It names no framework.
+  project   a C identifier. The directory name and the CMake project name.
+  runner    absolute path to run_scenarios.py, the framework-neutral process
+            runner the report is scored with. It is read only.
+
+This file is the gRPC wrapper for the coffee machine task, and the other half of the
+split: the task file names no framework, and everything framework-specific is here.
+It is the worked example of how to give the same task to a different framework -- copy
+it, change "gRPC" to whatever you are measuring, rewrite the numbered steps for that
+framework's normal workflow, and you have a comparable arm.
+
+Nothing here is maintained against a gRPC release and nothing here is a
+published benchmark result. It is a shape to copy.
+
+--- PROMPT BEGINS BELOW THIS LINE ----------------------------------------
+
+You are building an application with gRPC. These are the settings for this task:
+
+  task      <task>
+  project   <project>
+
+gRPC and protobuf are installed on this machine: protoc and grpc_cpp_plugin are on
+the PATH, and the headers and libraries are installed where the compiler finds them.
+**Never install anything, never build gRPC or protobuf from source, and never
+FetchContent either of them.** If a header or a tool is missing, stop and report it.
+
+**The directory this session started in is the project root.** Work there, exactly
+there. Do not create a directory for the project and do not change to another
+directory.
+
+The process runner the report is scored with is
+
+  <runner>
+
+It is framework-neutral. Read its --help once, and write the scenarios.json it
+describes. Nothing else beside it is yours to open, and you never write into its
+directory.
+
+Do this:
+
+1. Read <task>. It is the whole specification: what the two programs must do, how to
+   prove it, and the acceptance checklist you are scored on. It names no framework on
+   purpose.
+
+2. Build it with gRPC in the normal way for C++ and CMake:
+
+   - one .proto declaring the service between the two programs, and the messages it
+     carries. Generate the stubs from it at build time; never hand-write or commit
+     generated code.
+   - a server program and a client program, each with its own entry point, in their
+     own subdirectories.
+   - the streaming or callback shape that fits "the user program is notified when a
+     value changes" -- a server-streaming RPC, or repeated unary calls, as you judge
+     best. The task says what must be observed, not how.
+   - the state machine the task requires is yours to express: gRPC has no state
+     machine of its own, so write one explicitly -- a state enum with a transition
+     table or equivalent -- and not a chain of ifs over flags.
+
+3. Carry it out end to end -- contract, code, build, run, fix, report. You are not
+   finished when the code is written. You are finished when it builds and every
+   scenario exits 0, or when the task file's stop rule tells you to stop and report
+   instead.
+
+4. End with the report the task file asks for -- the small table and no more. Do not
+   measure anything to fill it in and do not guess a number.
+
+Rules for this task, above anything else:
+
+- It is a project of its own. Do not add it to any other project's build files,
+  and write no IDE or editor project files.
+- **One class, one .hpp and one .cpp, named after the class.** Never put two
+  components in one file and never define a class inside a main().
+- **Never edit a generated file.** Change the .proto instead.
+- Never commit anything, and never run a git command.
+- Do not write a ReadMe.
+- **Never start the processes by hand.** No program launched in the background, no
+  sleep command and no process killed from the command line. A scenario is what you
+  run; the runner's --verbose prints every line each process wrote and --only <name>
+  runs one scenario. They leave nothing running.
+- **Every `-j` carries the number 8**: `cmake --build build -j8`.
+
+Two habits that halve the cost of the same work. Every request re-sends the whole
+conversation, so the bill is the number of requests multiplied by how much each one
+carries. Both are free to follow and neither changes what gets built.
+
+- **Put independent calls in one request.** Reading eight pages is one request, not
+  eight. A header and its source are written together. So are the two `main()` files
+  and `scenarios.json`. Only split where the next thing genuinely depends on the result
+  of the last -- a build, a check, a scenario run.
+- **Never pour a log into the conversation.** It stays there for every later request.
+  Everything that can print hundreds -- a file search, a recursive listing, a raw
+  compiler run -- is filtered or cut to its first lines before you ask for it.
+
+Fix -- bounded, then stop. You are finished when it builds **and** every scenario
+exits 0. Keep going until it does, within at most **3 build-and-fix cycles** and at
+most **3 run-and-fix cycles**. Fix the cause, not the symptom: widening a timeout,
+adding a sleep, retrying, deleting an assertion or loosening what a scenario expects is
+not a fix. Still failing after the third cycle of either kind? **Stop and report**:
+what fails, the exact output, what you tried, what you think the cause is.
+
+**Every acceptance item in the task file is an `expect` entry in `scenarios.json`**,
+matched against a line the run actually prints -- including the two that look like they
+need a terminal. A console quit path is `"stdin": ["-q"]` on the lead of a scenario of
+its own; the other side going away is a scenario-level `"stop"`. An item with no
+expectation behind it is reported as not passing, however sure you are of the code: the
+count is evidence, not judgement, and it is what makes two implementations of this task
+comparable.
+
+The report is the one small table the task file asks for, and the only report to
+write. Fill it from what you already know and measure nothing to fill it in. The
+acceptance count comes from the scenario output, not from a second run.

@@ -99,24 +99,13 @@ LogCollector & LogCollector::instance()
     return _logger;
 }
 
-#if AREG_EXTENDED
 void LogCollector::print_status(const String& status)
 {
-
     if (LogCollector::instance().current_option() == areg::ext::ServiceOption::CMD_Console)
     {
-        Console& console{ Console::instance() };
-        Console::Coord curPos{ console.cursor_cur_position() };
         LogCollector::_output_info(status);
-        console.set_cursor_cur_position(curPos);
     }
-
 }
-#else   // AREG_EXTENDED
-void LogCollector::print_status(const String& /* status */)
-{
-}
-#endif  // AREG_EXTENDED
 
 LogCollector::LogCollector()
     : ServiceApplicationBase( mServiceServer )
@@ -544,6 +533,7 @@ void LogCollector::_output_info( const String & info )
     console.output_txt( coord, areg::ext::MSG_SEPARATOR.data( ) );
     ++ coord.posY;
     console.output_str( coord, info );
+    console.refresh_screen( );
 
     console.unlock_console( );
 

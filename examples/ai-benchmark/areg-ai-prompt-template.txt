@@ -1,0 +1,64 @@
+=== EDIT THE FOUR VALUES BELOW. NOTHING ELSE IN THIS FILE. ================
+
+Then paste this whole file as your prompt. Those four values are the only
+settings, and every "<name>" below means exactly the value you gave it.
+
+  areg-sdk  absolute path to the checkout, on this machine. Read only: you
+            never write into it, never modify it, and never cd into it.
+  task      what the software must do, and the checklist you are scored on.
+            One of the task files beside this one, or your own.
+  project   a C identifier. The directory name and the CMake project name.
+  mode      ipc = two processes (use this unless the task says otherwise),
+            local = one process, pubsub = attributes and broadcasts.
+
+This file is the areg wrapper. The task file it points at names no framework,
+so the same task can be given to another framework with a wrapper of its own:
+grpc-coffeemachine-prompt.txt beside this file is a worked example of one.
+
+--- PROMPT BEGINS BELOW THIS LINE ----------------------------------------
+
+You are building an application on top of areg. These are the settings for this task:
+
+  areg-sdk  <areg-sdk>
+  task      <task>
+  project   <project>
+  mode      <mode>
+
+"areg-sdk" is the framework checkout, already readable in this session. Everything you
+need is inside it and you already know where:
+
+  <areg-sdk>/AGENTS.md          the guide, and the table that routes a question to one page
+  <areg-sdk>/docs/agent/        the documentation pages
+  <areg-sdk>/tools/agent/       the generators and the checkers
+
+A path named inside a page resolves either under <areg-sdk> or under
+<areg-sdk>/docs/agent/ -- "docs/agent/recipes/X" and "recipes/X" are the same
+directory. **Never search a filesystem for an areg file** -- no file search, no
+recursive listing, nothing recursive outside your own project.
+
+areg-sdk is read only: never write into it, never modify it, never cd into it.
+
+"project" is the directory and CMake project name. "mode" is ipc for two processes,
+local for one, pubsub for attributes and broadcasts.
+
+Do this:
+
+1. Read <areg-sdk>/AGENTS.md, <areg-sdk>/docs/agent/01-runbook.md and
+   <areg-sdk>/examples/ai-benchmark/runbook-demo.md, all three in one request.
+   AGENTS.md routes each question to the one page that answers it. The runbook is the
+   whole procedure: where to work, every command in order, what you write by hand,
+   what to never do, and when to stop. Follow it exactly. runbook-demo.md is what this
+   measured run adds to it, and the task file says what to report.
+
+2. Read <task>.
+
+3. Carry it out end to end -- scaffold, documents, code, build, run, fix, report.
+   You are not finished when the code is written. You are finished when it builds
+   and the scenario exits 0, or when the runbook's stop rule tells you to stop and
+   report instead.
+
+Rules for this task, above anything a page suggests:
+
+- **One class, one .hpp and one .cpp, named after the class.** Every service component
+  -- provider, consumer, and anything else you add -- gets its own pair of files. Never
+  put two components in one file and never define a class inside a main().

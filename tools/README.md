@@ -1,46 +1,136 @@
-﻿
 # Areg SDK Tools
 
-This directory contains **developer tools** shipped with the **Areg SDK**. They fall into two
-groups: tools you use to *build an application with* the SDK, and tools used to *develop and
-verify* the SDK itself.
+Everything the SDK ships to generate code, build, measure, debug and verify. The
+directory has two levels, and which level a tool sits in tells you who runs it.
 
 > **Areg SDK** is a multitasking application development platform for building modular, distributed, and IPC/RPC-based systems.
 
 ---
 
-## Contents Overview
+## Layout
 
-### Building an application with the SDK
+```
+tools/            what a developer runs: the generator, the environment check,
+                  the project scaffolder, sanitizers, profilers, benchmarks
+tools/agent/      what an AI coding agent runs, and what verifies the corpus
+                  that agent reads: docs/agent/, api.json and the eval bank
+```
 
-| Tool / Script         | Purpose                                                        | Section |
-|-----------------------|----------------------------------------------------------------|---------|
-| `codegen.jar`         | Generates C++ service code from `.siml`, `.fsml` and `.dtml`    | [1](#1-designing-and-generating-service-code-from-siml) |
-| `codegenerate.sh`     | Ready-made generator invocation for Linux/macOS                 | [1](#1-designing-and-generating-service-code-from-siml) |
-| `codegenerate.bat`    | Ready-made generator invocation for Windows                     | [1](#1-designing-and-generating-service-code-from-siml) |
-| `schema/*.xsd`        | Grammars of the service, state machine and data type documents  | [2](#2-document-schemas-and-the-rule-registry) |
-| `schema/rules.xml`    | The registry of validation rule numbers, shared with Lusan      | [2](#2-document-schemas-and-the-rule-registry) |
-| `setup_project.py`    | Creates a ready-to-build Areg project on any platform           | [5](#5-project-setup-scripts-quick-start) |
-| `gen_skeleton.py`     | Writes provider and consumer components from a `.siml`          | [5](#5-project-setup-scripts-quick-start) |
-| `run_scenarios.py`    | Runs an application and checks its output; one verdict          | [5](#5-project-setup-scripts-quick-start) |
-| `check_agent_docs.py` | Verifies paths named in the agent documentation resolve         | [5](#5-project-setup-scripts-quick-start) |
-| `setup-project.sh`    | Superseded by `setup_project.py`; interactive only              | [5](#5-project-setup-scripts-quick-start) |
-| `setup-project.bat`   | Superseded by `setup_project.py`; interactive only              | [5](#5-project-setup-scripts-quick-start) |
+**The rule:** a tool belongs in `tools/agent/` when it exists because of the agent
+documentation -- it reads `docs/agent/`, `AGENTS.md`, `docs/agent/api.json` or the
+eval bank, or it scaffolds for an agent. Everything else stays in `tools/`.
 
-### Developing and verifying the SDK
+Nothing in `tools/agent/` is required to develop with the SDK. It is there so that a
+developer reading this directory can tell at a glance which scripts are part of their
+job and which belong to the agent workflow.
 
-| Tool / Script            | Purpose                                                       | Section |
-|--------------------------|---------------------------------------------------------------|---------|
-| `sanitize.sh`            | Builds and runs a target under a sanitizer or a profiler      | [8](#8-sanitizers-and-profilers) |
-| `sanitizer/*.supp`       | Suppression files for LeakSanitizer and ThreadSanitizer       | [8](#8-sanitizers-and-profilers) |
-| `run-all-examples.py`    | Runs the built examples as pass/fail scenarios                | [9](#9-running-the-examples-as-a-test-suite) |
-| `run-all-examples.sh`    | Wrapper around the driver for Linux/macOS                     | [9](#9-running-the-examples-as-a-test-suite) |
-| `run-all-examples.bat`   | Wrapper around the driver for Windows                         | [9](#9-running-the-examples-as-a-test-suite) |
-| `report-ctest.py`        | Republishes failed ctest cases as build server annotations    | [9](#9-running-the-examples-as-a-test-suite) |
-| `areg_benchmarks.py`     | Turns the console output of the benchmarks into numbers       | [10](#10-measuring-throughput-and-latency) |
-| `latency/*`              | Unattended latency measurement and A/B comparison             | [10](#10-measuring-throughput-and-latency) |
-| `check-ascii.py`         | Finds non ASCII bytes and unwanted control characters         | [11](#11-source-hygiene-check-asciipy) |
-| `hunt-crash.py`          | Repeats a run under a debugger until it crashes, saves stacks | [12](#12-debugging-a-rare-crash) |
+### Do I need Python?
+
+**No.** Generating, building and running an Areg application needs a C++17 compiler,
+CMake 3.20+ and a Java 17+ runtime -- nothing else. Every tool in `tools/agent/` is
+Python, and every one of them is optional.
+
+The two places a developer might reach for Python have a Python-free equivalent:
+
+| Task | Without Python | With Python |
+|---|---|---|
+| create a project | `setup-project.sh` / `.bat` / `.ps1` | `agent/setup_project.py`, which also writes the agent files |
+| generate from a document | `codegenerate.sh` / `.bat`, or `addServiceInterface()` in CMake | -- |
+| check the environment | `check-env.sh` / `.bat` | -- |
+
+---
+
+## `tools/` -- developer tools
+
+| Tool / Script | Needs | Purpose | Section |
+|---|---|---|---|
+| `codegen.jar` | Java | Generates C++ service code from `.siml`, `.fsml` and `.dtml` | [1](#1-designing-and-generating-service-code-from-siml) |
+| `codegenerate.sh` | Java | Ready-made generator invocation for Linux/macOS | [1](#1-designing-and-generating-service-code-from-siml) |
+| `codegenerate.bat` | Java | Ready-made generator invocation for Windows | [1](#1-designing-and-generating-service-code-from-siml) |
+| `schema/*.xsd` | -- | Grammars of the service, state machine and data type documents | [2](#2-document-schemas-and-the-rule-registry) |
+| `schema/rules.xml` | -- | The registry of validation rule numbers, shared with Lusan | [2](#2-document-schemas-and-the-rule-registry) |
+| `explain_rule.py` | Python | Explains a generator validation finding, by number or `--search` | [2](#2-document-schemas-and-the-rule-registry) |
+| `check-env.sh` | -- | Reports whether CMake, Java and a compiler are present | [5](#5-project-setup-scripts-quick-start) |
+| `check-env.bat` | -- | The same check on Windows | [5](#5-project-setup-scripts-quick-start) |
+| `setup-project.sh` | -- | Creates a ready-to-build project; no interpreter | [5](#5-project-setup-scripts-quick-start) |
+| `setup-project.ps1` | -- | The same on Windows, in PowerShell 5.1 or 7 | [5](#5-project-setup-scripts-quick-start) |
+| `setup-project.bat` | -- | Runs `setup-project.ps1` | [5](#5-project-setup-scripts-quick-start) |
+| `sanitize.sh` | -- | Builds and runs a target under a sanitizer or a profiler | [8](#8-sanitizers-and-profilers) |
+| `sanitizer/*.supp` | -- | Suppression files for LeakSanitizer and ThreadSanitizer | [8](#8-sanitizers-and-profilers) |
+| `run-all-examples.py` | Python | Runs the built examples as pass/fail scenarios | [9](#9-running-the-examples-as-a-test-suite) |
+| `run-all-examples.sh` | Python | Wrapper around the driver for Linux/macOS | [9](#9-running-the-examples-as-a-test-suite) |
+| `run-all-examples.bat` | Python | Wrapper around the driver for Windows | [9](#9-running-the-examples-as-a-test-suite) |
+| `report-ctest.py` | Python | Republishes failed ctest cases as build server annotations | [9](#9-running-the-examples-as-a-test-suite) |
+| `areg_benchmarks.py` | Python | Turns the console output of the benchmarks into numbers | [10](#10-measuring-throughput-and-latency) |
+| `latency/*` | Python | Unattended latency measurement and A/B comparison | [10](#10-measuring-throughput-and-latency) |
+| `check-ascii.py` | Python | Finds non ASCII bytes and unwanted control characters | [11](#11-source-hygiene-check-asciipy) |
+| `hunt-crash.py` | Python | Repeats a run under a debugger until it crashes, saves stacks | [12](#12-debugging-a-rare-crash) |
+| `check_invariants.py` | Python | Seeds a defect per framework invariant, rebuilds, and asks whether the test suite notices. `--dry-run` is one second; `--restore` undoes a seed a killed run left | -- |
+
+`explain_rule.py` reads `schema/rules.xml`, so it lives beside it. It is the one
+Python script here a developer is likely to want: it turns a generator refusal into
+the rule that caused it and the correction. The generator itself needs no Python.
+
+---
+
+## `tools/agent/` -- AI agent tools
+
+Every script here is Python, and none is needed to build or run anything. They fall
+into three jobs.
+
+**Scaffolding an agent uses while writing an application:**
+
+| Tool / Script | Purpose |
+|---|---|
+| `setup_project.py` | Creates a ready-to-build Areg project, unattended |
+| `gen_skeleton.py` | Writes provider and consumer components from a `.siml` or `.fsml` |
+| `fsml_layout.py` | Writes the `<Layout>` of a `.fsml` so the machine opens laid out |
+| `run_scenarios.py` | Runs an application and checks its output; exit 0 is one verdict |
+| `service_ports.py` | Shared helper: the router and collector ports, and waiting on them |
+
+**Checking that application code obeys the contract:**
+
+| Tool / Script | Purpose |
+|---|---|
+| `check_contract.py` | Checks sources against `docs/agent/api.json`, before a build. `--audit-prohibitions` compares the three lists of rules; `--audit-legacy` checks the removed-name lists |
+| `check_symbols.py` | Checks every `areg::` name, framework macro and `Header.hpp:line` citation in the agent pages against `framework/` |
+| `check_agent_docs.py` | Verifies every path the agent documentation names resolves |
+| `check_commands.py` | Verifies every command the documentation gives resolves, and runs the read-only ones. `--deep` also runs the ones that need a project, in throw-away ones it scaffolds |
+
+**Proving the corpus is still true:**
+
+The rules these check against are `../../docs/ai-readiness.md`.
+
+| Tool / Script | Purpose |
+|---|---|
+| `check_corpus.py` | Asks every rule the agent corpus rests on and prints a finding per rule that does not hold; `--strict` fails on a warning too |
+| `run_evals.py` | Grades an application against an evaluation bank task; `--self-check` grades the reference recipes |
+| `evals/tasks.json` | The bank: build tasks and repair tasks, each bound to a rule id |
+| `check_recipes.py` | Generates, builds and runs every recipe under `docs/agent/recipes/` |
+| `check_mutations.py` | Breaks a good recipe the way the eval bank says, and asserts the documented diagnostic still fires |
+| `check_observability.py` | Runs two processes through `mtrouter` and `logcollector`, then queries the `.sqlog` database |
+| `check_doc_config.py` | Runs the configuration block `docs/agent/00-cheatsheet.md` gives, and asserts it logs what the page promises |
+| `setup_agent_redirect.py` | Writes the local, untracked redirect a coding agent looks for |
+| `setup_agent_memory.py` | Writes the local memory files an agent keeps between sessions |
+
+### Running them
+
+Every one takes `--help`. From the repository root:
+
+```bash
+python3 tools/agent/check_agent_docs.py            # seconds, no build needed
+python3 tools/agent/check_symbols.py
+python3 tools/agent/check_contract.py <project> --strict
+python3 tools/agent/check_mutations.py --static
+python3 tools/agent/check_corpus.py --verbose
+
+cmake -B build -DAREG_OUTPUT_LAYOUT=OFF && cmake --build build -j
+python3 tools/agent/check_recipes.py --lib build/bin
+python3 tools/agent/check_observability.py --lib build/bin
+```
+
+The first group needs no compiler. The second builds every recipe, so it takes
+minutes rather than seconds. `.github/workflows/agent-docs.yml` runs all of them.
 
 ---
 
@@ -233,74 +323,44 @@ If your system has multiple processes:
 
 ## 5. Project Setup Scripts (Quick Start)
 
-Areg provides scripts to bootstrap a **working example project** in one step.
+Three tools create the same ready-to-build project. Each copies a recipe from
+`docs/agent/recipes/` and renames it after the project, so a new project starts from code
+the recipes already build and run. `check_corpus.py` fails if the three drift apart.
 
-### Available Scripts
-
-| Platform      | Script              |
-| ------------- | ------------------- |
-| Any platform  | `setup_project.py` (recommended) |
-| Windows       | `setup-project.bat` (interactive only) |
-| Linux / macOS | `setup-project.sh` (interactive only)  |
-
-`setup_project.py` takes its answers on the command line, so it works unattended and
-in scripts. It copies one of the recipes in `docs/agent/recipes/`, renames it, and
-writes an `AGENTS.md` into the new project.
+| Script | Needs | Also writes |
+| --- | --- | --- |
+| `setup-project.sh` (Linux/macOS) | a POSIX shell | -- |
+| `setup-project.ps1` (Windows) | PowerShell 5.1 or 7; `setup-project.bat` runs it | -- |
+| `agent/setup_project.py` | Python 3 | `AGENTS.md`, `design.json`, `scenarios.json` and the startup file of each common coding agent |
 
 ```bash
-python3 tools/setup_project.py --name myapp --root ~/myapp --mode local
-python3 tools/setup_project.py --name myapp --root ~/myapp --mode ipc --sdk-root /opt/areg-sdk
+sh tools/setup-project.sh --name myapp --root ~/myapp --mode local
+tools\setup-project.bat --name myapp --root C:\dev\myapp --mode ipc --sdk-root C:\dev\areg-sdk
+python3 tools/agent/setup_project.py --name myapp --root ~/myapp --mode ipc --sdk-root /opt/areg-sdk
 ```
 
 | Option | Meaning |
 |---|---|
+| `--name` | Project name, a C identifier |
 | `--mode local` | One process, provider and consumer in two threads |
-| `--mode ipc` | Two processes; needs `mtrouter` |
+| `--mode ipc` | Two processes through `mtrouter`; also writes `run.sh` and `run.bat` |
 | `--mode pubsub` | Attributes and broadcasts in one process |
+| `--root` | Directory to create; defaults to `./<name>` |
 | `--sdk-root` | Build against a local SDK copy instead of fetching from GitHub |
 | `--tag` | The SDK tag to fetch |
-| `--force` | Overwrite an existing directory |
-| `--no-agents` | Do not write `AGENTS.md` |
+| `--force` | Scaffold into a directory that is not empty; nothing is deleted |
+| `--no-agents`, `--harness`, `--no-harness`, `--quiet` | `setup_project.py` only: which agent files to write |
 
+On a terminal, a missing name, mode or directory is asked for.
 
-### What the Script Does
+### Why Python for agentic coding
 
-* Prompts for **project name** (or uses default)
-
-* Prompts for **project root folder** (or uses default)
-
-* Creates project directories:
-
-  ```
-  src/
-  src/services/
-  ```
-
-* Generates:
-
-  * Top-level `CMakeLists.txt`
-  * `src/CMakeLists.txt`
-  * Example `src/services/HelloService.siml` Service Interface file
-  * Working `src/main.cpp` file with Service Provider and Service Consumer
-
-* Configures **Areg dependency automatically**
-
----
-
-### How to Run
-
-From the `tools/` directory:
-* Run on Linux/macOS:
-
-   ```bash
-   sh ./setup-project.sh
-   ```
-* Run on Windows:
-   ```bat
-   ./setup-project.bat
-   ```
-
-Follow the interactive prompts to set the project name and location.
+Python is not needed to build or run an Areg application. It is needed for agentic
+coding: the tools an agent works with are the Python scripts in `agent/`. They turn one
+`design.json` into the service documents, the C++ skeleton, the model and the test
+scenarios, check the contract before the build, and run the application to prove it.
+Without them an agent writes all of that by hand, which costs more requests, more tokens
+and more build-and-fix cycles. Details: [`AGENTS.md`](../AGENTS.md).
 
 ---
 
@@ -320,8 +380,8 @@ This produces a **fully functional Areg RPC example**.
 
 ## 7. Examples and Advanced Usage
 
-* **RPC (single process)**: Generated by setup scripts
-* **IPC (multi-process)**: See `examples/` folder in the Areg SDK root
+* **One process or two processes**: generated by the setup scripts, `--mode local`, `--mode ipc` or `--mode pubsub`
+* **More shapes**: `docs/agent/recipes/` and the `examples/` folder in the Areg SDK root
 * **Custom build flows**: Inspect `conf/cmake/` for advanced control
 
 ---
@@ -409,7 +469,7 @@ tools/sanitize.sh <mode> [options] [-- <args forwarded to the binary>]
 | Option            | Default            | Meaning                                          |
 |-------------------|--------------------|--------------------------------------------------|
 | `--compiler`      | `gnu`              | `gnu` (g++) or `llvm` (clang++).                 |
-| `--target`        | `areg-unit-tests`  | CMake target to build.                           |
+| `--target`        | `areg-unit-tests`  | CMake target to build. `--run ctest` builds every target instead. |
 | `--run`           | `auto`             | `ctest`, an explicit binary path, `auto`, or `none`. |
 | `--lib`           | `static`           | `static` (most robust for ASan) or `shared`.     |
 | `--examples`      | off                | Also build the `examples/` tree.                 |
@@ -473,6 +533,10 @@ python3 tools/run-all-examples.py --list      # what would run, without running 
 ```
 
 Both wrappers pass every argument through to the driver.
+
+Without `--bin-dir` the driver searches `build/bin` and every other CMake build tree in
+the repository, plus `product/build/<compiler>/<config>/bin`, keeps only the directories
+holding binaries the current platform can start, and takes the most recently built one.
 
 | Option | Default | Meaning |
 |--------|---------|---------|

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<StateMachine FormatVersion="1.1.0">
+    <Overview ID="1" Name="Blink" Version="1.0.0" Threading="Local">
+        <Description>One flash: on, then off. A machine small enough to be reused.</Description>
+    </Overview>
+    <TimerList>
+        <Timer ID="2" Name="Tick" Timeout="150" Repeat="1">
+            <Description>How long the flash lasts.</Description>
+        </Timer>
+    </TimerList>
+    <MethodList>
+        <Method ID="4" Name="on_lit" MethodType="Action">
+            <Description>Runs while the flash is on.</Description>
+        </Method>
+        <Method ID="5" Name="on_dark" MethodType="Action">
+            <Description>Runs when the flash is over.</Description>
+        </Method>
+    </MethodList>
+    <StateList>
+        <State ID="6" Name="Start" Kind="Start">
+            <TransitionList>
+                <Transition ID="7" Kind="Initial" To="10"/>
+            </TransitionList>
+        </State>
+        <State ID="10" Name="BLINK_LIT" Kind="Normal">
+            <Description>The flash is on.</Description>
+            <EntryList>
+                <TimerStart ID="11" Timer="Tick"/>
+                <ActionCall ID="12" Action="on_lit"/>
+            </EntryList>
+            <TransitionList>
+                <Transition ID="13" Kind="External" StimulusKind="Timer" Stimulus="Tick" To="14"/>
+            </TransitionList>
+        </State>
+        <State ID="14" Name="BLINK_DONE" Kind="Final">
+            <Description>The flash is over.</Description>
+            <EntryList>
+                <ActionCall ID="15" Action="on_dark"/>
+            </EntryList>
+        </State>
+    </StateList>
+</StateMachine>

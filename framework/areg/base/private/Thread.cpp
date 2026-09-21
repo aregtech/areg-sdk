@@ -512,7 +512,7 @@ Thread * Thread::next_thread( id_type & threadId ) noexcept
     return _map_thread_id().resource_next_key( threadId );
 }
 
-#ifdef  _DEBUG
+#ifdef  DEBUG
 /************************************************************************/
 // Thread debugging function
 /************************************************************************/
@@ -535,6 +535,6 @@ void Thread::dump_threads()
     mapNames.unlock();
 }
 
-#endif // _DEBUG
+#endif // DEBUG
 
 } // namespace areg

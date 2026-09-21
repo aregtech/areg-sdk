@@ -49,7 +49,13 @@ import threading
 import time
 
 IS_WINDOWS = platform.system() == 'Windows'
-EXE_SUFFIXES = ('', '.exe', '.elf', '.mac', '.out')
+IS_CYGWIN  = platform.system().startswith('CYGWIN')
+
+# The executable suffixes this platform can start.
+if IS_WINDOWS or IS_CYGWIN:
+    EXE_SUFFIXES = ('.exe', '')
+else:
+    EXE_SUFFIXES = ('', '.elf', '.mac', '.out')
 
 if IS_WINDOWS:
     pty = None
@@ -185,6 +191,10 @@ SCENARIOS = [
     # which is the failure this test exists to catch. Needs AREG_TESTS=ON to be built.
     {'name': 'timer_churn', 'tier': 'smoke', 'timeout': 240,
      'procs': [proc('areg-timer-churn-test', expect=[r'timer churn test passed'])]},
+    # Not an example either: internal events sent from startup_component and from foreign
+    # threads, the failure being a hang or a crash. Needs AREG_TESTS=ON to be built.
+    {'name': 'internal_events', 'tier': 'smoke', 'timeout': 150,
+     'procs': [proc('areg-internal-events-test', expect=[r'\bPASSED\b'])]},
 
     {'name': '01_minimalrpc', 'tier': 'smoke', 'procs': [proc('01_minimalrpc')]},
     {'name': '03_onethread', 'tier': 'smoke', 'procs': [proc('03_onethread')]},
@@ -1038,19 +1048,54 @@ def find_binary(bin_dir, name):
     return None
 
 
-def find_bin_dirs(root):
-    """Returns every built binary directory, the most recently built one first."""
+def is_runnable_bin_dir(path):
+    """Tells whether a directory holds binaries this platform can start."""
+    if not os.path.isdir(path):
+        return False
+    if find_binary(path, 'mtrouter') is not None:
+        return True
+    for scenario in SCENARIOS:
+        for proc in scenario['procs']:
+            if find_binary(path, proc['bin']) is not None:
+                return True
+    return False
+
+
+def _layout_bin_dirs(root):
+    """Yields the 'bin' of every build directory laid out by AREG_OUTPUT_LAYOUT."""
     build = os.path.join(root, 'product', 'build')
+    if not os.path.isdir(build):
+        return
+    for compiler in sorted(os.listdir(build)):
+        target = os.path.join(build, compiler)
+        if not os.path.isdir(target):
+            continue
+        for config in sorted(os.listdir(target)):
+            yield os.path.join(target, config, 'bin')
+
+
+def _cmake_bin_dirs(root):
+    """Yields the 'bin' of every CMake build tree, the layout of AREG_OUTPUT_LAYOUT=OFF."""
+    for parent in (root, os.path.join(root, 'product')):
+        if not os.path.isdir(parent):
+            continue
+        for name in sorted(os.listdir(parent)):
+            tree = os.path.join(parent, name)
+            if os.path.isfile(os.path.join(tree, 'CMakeCache.txt')):
+                yield os.path.join(tree, 'bin')
+
+
+def find_bin_dirs(root):
+    """Returns every runnable binary directory, the most recently built one first."""
     found = []
-    if os.path.isdir(build):
-        for compiler in os.listdir(build):
-            target = os.path.join(build, compiler)
-            if not os.path.isdir(target):
-                continue
-            for config in os.listdir(target):
-                candidate = os.path.join(target, config, 'bin')
-                if os.path.isdir(candidate):
-                    found.append((os.path.getmtime(candidate), candidate))
+    seen = set()
+    for candidate in list(_layout_bin_dirs(root)) + list(_cmake_bin_dirs(root)):
+        key = os.path.normcase(os.path.abspath(candidate))
+        if key in seen:
+            continue
+        seen.add(key)
+        if is_runnable_bin_dir(candidate):
+            found.append((os.path.getmtime(candidate), candidate))
     found.sort(reverse=True)
     return [entry[1] for entry in found]
 
@@ -1578,8 +1623,8 @@ def main():
             bin_dir = candidates[0]
             others = candidates[1:]
     if (bin_dir is None) or not os.path.isdir(bin_dir):
-        print('binary directory not found, build the examples or pass --bin-dir',
-              file=sys.stderr)
+        print('no binary directory holding binaries for %s was found, build the examples'
+              ' or pass --bin-dir' % platform.system(), file=sys.stderr)
         return 1
     bin_dir = os.path.abspath(bin_dir)
 

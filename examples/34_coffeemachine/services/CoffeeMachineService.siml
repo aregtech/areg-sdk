@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="CoffeeMachineService" Version="1.0.0" Category="Public">
+        <Description>Contract between the coffee machine and the program that operates it.</Description>
+    </Overview>
+    <AttributeList>
+        <Attribute ID="2" Name="Credit" DataType="uint32" Notify="OnChange">
+            <Description>The credit inserted and not yet spent, in cents.</Description>
+        </Attribute>
+        <Attribute ID="3" Name="Stage" DataType="String" Notify="OnChange">
+            <Description>The stage the machine is currently in.</Description>
+        </Attribute>
+    </AttributeList>
+    <MethodList>
+        <Method ID="10" Name="insert_coin" MethodType="Request">
+            <Description>Insert a coin. Accepted denominations are 5, 10, 20, 50, 100 and 200 cents; anything else is ignored.</Description>
+            <ParamList>
+                <Parameter ID="11" Name="coin" DataType="uint32">
+                    <Description>The coin value, in cents.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="12" Name="order_drink" MethodType="Request" Response="order_drink">
+            <Description>Order a drink by name: Espresso, Cappuccino or Latte.</Description>
+            <ParamList>
+                <Parameter ID="13" Name="drink" DataType="String">
+                    <Description>The name of the drink.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="14" Name="order_drink" MethodType="Response">
+            <Description>Whether the order was accepted, and why not otherwise.</Description>
+            <ParamList>
+                <Parameter ID="15" Name="accepted" DataType="bool">
+                    <Description>True if the machine started making the drink.</Description>
+                </Parameter>
+                <Parameter ID="16" Name="reason" DataType="String">
+                    <Description>Empty when accepted; otherwise the reason it was refused.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="17" Name="pause_making" MethodType="Request">
+            <Description>Pause the drink being made, wherever it is.</Description>
+        </Method>
+        <Method ID="18" Name="resume_making" MethodType="Request">
+            <Description>Resume a paused drink from the stage it was interrupted in.</Description>
+        </Method>
+        <Method ID="19" Name="cancel_order" MethodType="Request">
+            <Description>Cancel the pending or in-progress order and return the credit.</Description>
+        </Method>
+        <Method ID="20" Name="refill_tank" MethodType="Request" Response="refill_tank">
+            <Description>Refill a tank to full: Water, Beans or Milk.</Description>
+            <ParamList>
+                <Parameter ID="21" Name="tank" DataType="String">
+                    <Description>The name of the tank to refill.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="22" Name="refill_tank" MethodType="Response">
+            <Description>Whether the named tank was recognised and refilled.</Description>
+            <ParamList>
+                <Parameter ID="23" Name="ok" DataType="bool">
+                    <Description>True if the tank was recognised and refilled.</Description>
+                </Parameter>
+                <Parameter ID="24" Name="tank" DataType="String">
+                    <Description>The tank name that was passed in.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="25" Name="ingredient_warning" MethodType="Broadcast">
+            <Description>Sent once when an ingredient tank crosses below 20%, and once again when it reaches empty.</Description>
+            <ParamList>
+                <Parameter ID="26" Name="ingredient" DataType="String">
+                    <Description>Water, Beans or Milk.</Description>
+                </Parameter>
+                <Parameter ID="27" Name="level" DataType="String">
+                    <Description>"low" or "empty".</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="28" Name="drink_ready" MethodType="Broadcast">
+            <Description>Sent when a drink finishes and its price and ingredients have been taken.</Description>
+            <ParamList>
+                <Parameter ID="29" Name="drink" DataType="String">
+                    <Description>The drink that finished.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="30" Name="order_cancelled" MethodType="Broadcast">
+            <Description>Sent when an order is cancelled, before or during making.</Description>
+            <ParamList>
+                <Parameter ID="31" Name="refunded" DataType="uint32">
+                    <Description>The credit returned, in cents.</Description>
+                </Parameter>
+                <Parameter ID="32" Name="lost" DataType="String">
+                    <Description>The ingredients already consumed and not returned; empty if none.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+    </MethodList>
+</ServiceInterface>

@@ -27,6 +27,7 @@
 #include <chrono>
 #if defined(__GLIBC__)
     #include <malloc.h>     // malloc_trim(): hand a drained backlog's pages back to the OS
+    #include <mutex>
 #endif  // __GLIBC__
 
 namespace
@@ -36,10 +37,12 @@ namespace
 
     //!< Returns freed heap pages to the OS.
     //!< glibc keeps a slow consumer's drained backlog mapped at the RSS high-water mark (per-arena retention);
-    //!< malloc_trim(0) releases it.
+    //!< malloc_trim(0) releases it. Calls from different threads are serialized.
     inline void _release_heap( void ) noexcept
     {
 #if defined(__GLIBC__)
+        static std::mutex _trimLock;
+        std::lock_guard<std::mutex> guard( _trimLock );
         ::malloc_trim( 0 );
 #endif  // __GLIBC__
     }
@@ -69,6 +72,13 @@ namespace
         return (waitMs != areg::WAIT_INFINITE)
                     ? waitMs
                     : areg::Application::config_manager().queue_wait_timeout();
+    }
+
+    //!< The dispatcher whose loop runs on the calling thread, nullptr outside any loop.
+    inline const areg::EventDispatcherBase * & _running_dispatcher() noexcept
+    {
+        static thread_local const areg::EventDispatcherBase * _dispatcher{ nullptr };
+        return _dispatcher;
     }
 
 }
@@ -151,7 +161,8 @@ bool EventDispatcherBase::queue_event( Event& eventElem )
 
         if (areg::is_internal(eventType))
         {
-            return mInternalEvents.push_event(eventElem);
+            // The internal queue is not locked: only the thread running this loop pushes to it.
+            return (_running_dispatcher() == this) ? mInternalEvents.push_event(eventElem) : mExternalEvents.push_event(eventElem);
         }
     }
 
@@ -241,6 +252,8 @@ bool EventDispatcherBase::take_inline_send_credit() noexcept
 bool EventDispatcherBase::run_dispatcher()
 {
     ready_for_events( true );
+    const EventDispatcherBase * const outerDispatcher{ _running_dispatcher() };
+    _running_dispatcher() = this;
 
     bool isExit{ false };               // true once the ExitEvent is dequeued -> leave the loop
     uint64_t processedSinceTrim{ 0u };  // events drained since the last heap trim (this thread)
@@ -307,6 +320,7 @@ bool EventDispatcherBase::run_dispatcher()
 
     } while (true);
 
+    _running_dispatcher() = outerDispatcher;
     ready_for_events(false);
     remove_all_events();
     _clean();

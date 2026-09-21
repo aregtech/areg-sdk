@@ -1,0 +1,378 @@
+name: Sanitizers
+
+# The three sanitizers, each its own full instrumented build. They answer a
+# different question from the CMake matrix: that one asks whether the code builds
+# and runs on every supported platform and configuration, this one asks whether it
+# is correct once the compiler is watching.
+#
+# The three are not interchangeable and cannot be merged. ASan and TSan use
+# incompatible shadow-memory layouts, so neither can be built into the same binary
+# as the other; that is why asan and tsan are a matrix rather than one job. UBSan
+# rides along in the asan build, and the ubsan job here is the only one that runs
+# the examples, so it is the only sanitizer coverage the multi-process paths get.
+#
+# A run only happens when a file that can change the answer changed: the sources,
+# the build configuration that compiles them, the driver, its suppressions, or this
+# file. A documentation change cannot move a sanitizer, so it does not pay for one.
+
+on:
+  push:
+    branches: [ master ]
+    paths: &sanitized
+      - '**.cpp'
+      - '**.hpp'
+      - '**.h'
+      - '**/CMakeLists.txt'
+      - 'conf/cmake/**'
+      - 'tools/sanitize.sh'
+      - 'tools/sanitizer/**'
+      - 'tools/run-all-examples.py'
+      - '.github/workflows/sanitizers.yml'
+  pull_request:
+    branches: [ master ]
+    paths: *sanitized
+  workflow_dispatch:
+
+concurrency:
+  group: ${{github.workflow}}-${{github.ref}}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  sanitizers-linux:
+    name: ${{matrix.mode}} ${{matrix.config}} (unit tests)
+    # "The suite is TSAN-clean, keep it that way" is a standing invariant of this
+    # repository and until now nothing held it. Both sanitizers run the unit tests
+    # through the documented driver, so what CI runs is what a contributor runs.
+    # Each matrix leg fails the workflow when its sanitizer reports.
+    #
+    # Debug and RelWithDebInfo are separate legs because they are not the same program:
+    # the event queue waits 0x7FFFFFFF ms on a full ring in Debug and a bounded time in
+    # Release, and -O1 with frame pointers still reorders enough to move a race.
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [asan, tsan]
+        config: [Debug, RelWithDebInfo]
+
+    env:
+      # Makes a sanitizer report end in abort() rather than _exit(), so the kernel
+      # writes a core beside the report. Off by default, see tools/sanitize.sh.
+      AREG_SANITIZE_COREDUMP: 1
+
+    steps:
+
+      - name: Checkout Areg SDK source codes
+        uses: actions/checkout@v7
+
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v5.6.0
+        with:
+          java-version: 17
+          java-package: jre
+          distribution: temurin
+
+      # TSan's shadow memory cannot map the address layout of a modern kernel, and the
+      # process aborts before running a test. The driver disables ASLR per run with
+      # setarch, which needs no privilege; this lowers the entropy instead, which the
+      # runner does allow, so both routes are open.
+      - name: Make room for the sanitizer shadow mapping
+        run: sudo sysctl -w vm.mmap_rnd_bits=28 || true
+
+      # A crash that cannot be reproduced on a developer machine has to leave the runner
+      # with everything a post-mortem needs: the core, and the exact binary it came from.
+      - name: Let a crashing test leave a core behind
+        run: |
+          sudo mkdir -p /cores
+          sudo chmod 1777 /cores
+          sudo sysctl -w kernel.core_pattern='/cores/core.%e.%p.%t'
+          sudo sysctl -w kernel.yama.ptrace_scope=0 || true
+
+      # tools/sanitize.sh is the instrument CLAUDE.md and the perf skill prescribe.
+      # It configures its own build tree, builds areg-unit-tests instrumented, and
+      # runs ctest under the sanitizer with the repository's suppressions. A failing
+      # test or a sanitizer report leaves it non-zero.
+      - name: Run the unit tests under ${{matrix.mode}} ${{matrix.config}}
+        working-directory: ${{github.workspace}}
+        shell: bash
+        run: |
+          ulimit -c unlimited
+          tools/sanitize.sh ${{matrix.mode}} --config ${{matrix.config}} \
+              --target areg-unit-tests --run ctest
+
+      # The three teardown tests fail about once in a hundred runs, and one pass of the
+      # suite is one run of each. They are repeated here, in the tree the step above
+      # already built, so that a single job carries the report instead of ten pushes.
+      - name: Repeat the teardown tests under ${{matrix.mode}} ${{matrix.config}}
+        if: always()
+        working-directory: ${{github.workspace}}
+        shell: bash
+        timeout-minutes: 45
+        run: |
+          ulimit -c unlimited
+          tools/sanitize.sh ${{matrix.mode}} --config ${{matrix.config}} --keep --repeat 25 \
+              --run 'ctest:areg-(release-unload|timer-churn|internal-events)-test'
+
+      # Everything needed to open the crash on another machine: the cores, the binaries
+      # they came from, and what the runner was, so a local build can be matched to it.
+      - name: Collect the post-mortem
+        if: failure()
+        working-directory: ${{github.workspace}}
+        shell: bash
+        run: |
+          OUT="./postmortem"
+          mkdir -p "${OUT}/bin"
+          {
+            echo "runner   : $(uname -a)"
+            echo "os       : $(. /etc/os-release && echo "${PRETTY_NAME}")"
+            echo "compiler : $(gcc --version | head -n 1)"
+            echo "glibc    : $(ldd --version | head -n 1)"
+            echo "mode     : ${{matrix.mode}} ${{matrix.config}}"
+            echo "options  : ASAN_OPTIONS/TSAN_OPTIONS are printed by the driver above"
+          } > "${OUT}/provenance.txt"
+          BIN_DIR="./build-${{matrix.mode}}/product/bin"
+          for t in areg-release-unload-test areg-timer-churn-test areg-internal-events-test; do
+            [[ -f "${BIN_DIR}/${t}.elf" ]] || continue
+            cp "${BIN_DIR}/${t}.elf" "${OUT}/bin/"
+            echo "--- ldd ${t} ---" >> "${OUT}/provenance.txt"
+            ldd "${BIN_DIR}/${t}.elf" >> "${OUT}/provenance.txt" 2>&1 || true
+          done
+          # A core of an instrumented process is large. Anything over 3 GB is dropped
+          # rather than silently failing the upload.
+          shopt -s nullglob
+          for c in /cores/core.*; do
+            SIZE="$(stat -c %s "${c}")"
+            echo "core ${c} ${SIZE} bytes" >> "${OUT}/provenance.txt"
+            if [[ "${SIZE}" -gt 3221225472 ]]; then
+              echo "  dropped, larger than 3 GB" >> "${OUT}/provenance.txt"
+              continue
+            fi
+            gzip -1 -c "${c}" > "${OUT}/$(basename "${c}").gz"
+          done
+          cat "${OUT}/provenance.txt"
+
+      - name: Upload what the sanitizer left behind
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: sanitizer-${{matrix.mode}}-${{matrix.config}}
+          path: |
+            ./build-${{matrix.mode}}/Testing/
+            ./build-${{matrix.mode}}/**/*.log
+          if-no-files-found: ignore
+
+      - name: Upload the post-mortem
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: postmortem-${{matrix.mode}}-${{matrix.config}}
+          path: ./postmortem/
+          if-no-files-found: ignore
+          compression-level: 0
+
+  ubsan-linux:
+    name: ubsan (examples)
+    # The undefined behaviour sanitizer over the example suite. A report from
+    # framework/ fails the job; a report from an example is a warning, because an
+    # example is teaching material and is allowed to be corrected on its own schedule.
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+
+      - name: Checkout Areg SDK source codes
+        uses: actions/checkout@v7
+
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v5.6.0
+        with:
+          java-version: 17
+          java-package: jre
+          distribution: temurin
+
+      - name: Configure CMake with the undefined behaviour sanitizer
+        working-directory: ${{github.workspace}}
+        run: |
+          cmake -B ./product/cache/ubsan -DAREG_COMPILER_FAMILY=gnu -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+                -DAREG_LIB_TYPE=static -DAREG_EXTENDED:BOOL=ON -DAREG_LOGGING:BOOL=ON \
+                -DAREG_EXAMPLES:BOOL=ON -DAREG_TESTS:BOOL=OFF \
+                -DCMAKE_CXX_FLAGS="-fsanitize=undefined -fno-omit-frame-pointer -g" \
+                -DCMAKE_C_FLAGS="-fsanitize=undefined -fno-omit-frame-pointer -g" \
+                -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=undefined" \
+                -DCMAKE_SHARED_LINKER_FLAGS="-fsanitize=undefined"
+
+      - name: Build with CMake
+        working-directory: ${{github.workspace}}
+        run: cmake --build ./product/cache/ubsan -j16
+
+      - name: Run the examples under the sanitizer
+        working-directory: ${{github.workspace}}
+        shell: bash
+        timeout-minutes: 45
+        continue-on-error: true
+        env:
+          UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=0:log_path=${{github.workspace}}/ubsan/report
+        run: |
+          mkdir -p ./ubsan
+          sudo sysctl -w kernel.yama.ptrace_scope=0 > /dev/null || true
+          BIN_DIR="$(find ./product/build -type d -name bin 2>/dev/null | head -n 1)"
+          python3 tools/run-all-examples.py --bin-dir "${BIN_DIR}" --tier all \
+                  --out-dir ./ubsan/example-results
+
+      - name: Report what the sanitizer found
+        if: always()
+        working-directory: ${{github.workspace}}
+        shell: bash
+        run: |
+          COUNT="$(cat ./ubsan/report.* 2>/dev/null | grep -c 'runtime error:' || true)"
+          if [ "${COUNT}" = "0" ] || [ -z "${COUNT}" ]; then
+            echo "::notice title=ubsan::the sanitizer reported nothing"
+            exit 0
+          fi
+          echo "::warning title=ubsan::${COUNT} report(s), see the artifact"
+          # The address differs on every run, so it is removed before counting per place.
+          cat ./ubsan/report.* 2>/dev/null | grep 'runtime error:' \
+            | sed -e 's/0x[0-9a-f]*/<address>/g' -e 's#^.*/areg-sdk/##' \
+            | sort | uniq -c | sort -rn > ./ubsan/by-place.txt
+          echo "distinct places: $(wc -l < ./ubsan/by-place.txt)"
+          # Two traps, do not reintroduce them: the sed above leaves 'framework/...' with
+          # no leading slash, so a '/framework/' pattern never matches; and a grep that
+          # matches nothing exits 1, which under 'set -e' would discard every list below.
+          FRAMEWORK_RE='^[[:space:]]*[0-9]+[[:space:]]+framework/'
+          { grep -E "${FRAMEWORK_RE}" ./ubsan/by-place.txt || true; } > ./ubsan/framework.txt
+          head -n 6 ./ubsan/framework.txt \
+            | while IFS= read -r line; do echo "::error title=ubsan-framework::${line}"; done
+          { grep -Ev "${FRAMEWORK_RE}" ./ubsan/by-place.txt || true; } | head -n 8 \
+            | while IFS= read -r line; do echo "::warning title=ubsan-example::${line}"; done
+          sed -e 's/^.*runtime error: //' -e 's/0x[0-9a-f]*/<address>/g' ./ubsan/by-place.txt \
+            | sed -e "s/'[^']*'/'T'/g" | sort | uniq -c | sort -rn | head -n 20 | tr '\n' '|' \
+            | sed 's/^/::notice title=ubsan-kinds::/'
+          # Undefined behaviour inside the framework is a defect of the SDK itself and
+          # is the one class this job exists to stop. Everything above is a report; this
+          # is the gate.
+          FRAMEWORK_COUNT="$(wc -l < ./ubsan/framework.txt)"
+          if [ "${FRAMEWORK_COUNT}" != "0" ]; then
+            echo "the sanitizer reported ${FRAMEWORK_COUNT} place(s) inside framework/"
+            exit 1
+          fi
+
+      - name: Upload the sanitizer reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ubsan-linux
+          path: ./ubsan/
+
+  teardown-stress:
+    name: teardown tests, no sanitizer (${{matrix.config}})
+    # Both CI failures so far are in the tsan leg, and asan is clean, so nothing yet says
+    # whether the defect needs an instrumented allocator at all. This leg is the control:
+    # the same three tests, no sanitizer, Debug and Release, repeated until one fails.
+    # It is also the only place a Release build of the teardown path is exercised.
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config: [Debug, Release]
+
+    steps:
+
+      - name: Checkout Areg SDK source codes
+        uses: actions/checkout@v7
+
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v5.6.0
+        with:
+          java-version: 17
+          java-package: jre
+          distribution: temurin
+
+      - name: Let a crashing test leave a core behind
+        run: |
+          sudo mkdir -p /cores
+          sudo chmod 1777 /cores
+          sudo sysctl -w kernel.core_pattern='/cores/core.%e.%p.%t'
+          sudo sysctl -w kernel.yama.ptrace_scope=0 || true
+
+      # -g on both configurations: a Release core with no line table answers nothing.
+      - name: Configure and build without a sanitizer
+        working-directory: ${{github.workspace}}
+        shell: bash
+        run: |
+          cmake -B ./build-plain -S . \
+                -DAREG_COMPILER_FAMILY=gnu \
+                -DCMAKE_BUILD_TYPE=${{matrix.config}} \
+                -DAREG_LIB_TYPE=static \
+                -DAREG_TESTS=ON \
+                -DAREG_EXAMPLES=OFF \
+                -DAREG_OUTPUT_DIR=${{github.workspace}}/build-plain/product \
+                -DCMAKE_C_FLAGS="-g -fno-omit-frame-pointer" \
+                -DCMAKE_CXX_FLAGS="-g -fno-omit-frame-pointer"
+          cmake --build ./build-plain -j"$(nproc)"
+
+      - name: Repeat the teardown tests
+        working-directory: ${{github.workspace}}/build-plain
+        shell: bash
+        timeout-minutes: 60
+        run: |
+          ulimit -c unlimited
+          ctest --output-on-failure --repeat until-fail:100 \
+                -R 'areg-(release-unload|timer-churn|internal-events)-test'
+
+      - name: Collect the post-mortem
+        if: failure()
+        working-directory: ${{github.workspace}}
+        shell: bash
+        run: |
+          OUT="./postmortem"
+          mkdir -p "${OUT}/bin"
+          {
+            echo "runner   : $(uname -a)"
+            echo "os       : $(. /etc/os-release && echo "${PRETTY_NAME}")"
+            echo "compiler : $(gcc --version | head -n 1)"
+            echo "glibc    : $(ldd --version | head -n 1)"
+            echo "mode     : no sanitizer, ${{matrix.config}}"
+          } > "${OUT}/provenance.txt"
+          BIN_DIR="./build-plain/product/bin"
+          for t in areg-release-unload-test areg-timer-churn-test areg-internal-events-test; do
+            [[ -f "${BIN_DIR}/${t}.elf" ]] || continue
+            cp "${BIN_DIR}/${t}.elf" "${OUT}/bin/"
+            echo "--- ldd ${t} ---" >> "${OUT}/provenance.txt"
+            ldd "${BIN_DIR}/${t}.elf" >> "${OUT}/provenance.txt" 2>&1 || true
+          done
+          shopt -s nullglob
+          for c in /cores/core.*; do
+            SIZE="$(stat -c %s "${c}")"
+            echo "core ${c} ${SIZE} bytes" >> "${OUT}/provenance.txt"
+            if [[ "${SIZE}" -gt 3221225472 ]]; then
+              echo "  dropped, larger than 3 GB" >> "${OUT}/provenance.txt"
+              continue
+            fi
+            gzip -1 -c "${c}" > "${OUT}/$(basename "${c}").gz"
+          done
+          cat "${OUT}/provenance.txt"
+
+      - name: Upload the test logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: plain-${{matrix.config}}
+          path: ./build-plain/Testing/
+          if-no-files-found: ignore
+
+      - name: Upload the post-mortem
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: postmortem-plain-${{matrix.config}}
+          path: ./postmortem/
+          if-no-files-found: ignore
+          compression-level: 0
+

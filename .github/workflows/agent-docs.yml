@@ -39,7 +39,7 @@ jobs:
   references:
     name: documentation references
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
 
@@ -47,10 +47,83 @@ jobs:
         with:
           python-version: '3.11'
 
+      # check_mutations.py derives the generated names by running the jar, and
+      # judges nothing that rests on them without it. No runner image is promised
+      # to carry a JDK, so the job installs its own.
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v5.6.0
+        with:
+          java-version: 17
+          java-package: jre
+          distribution: temurin
+
       # Every path named in the documentation must resolve, relative and repository
       # form alike. A broken one makes an agent fail its first tool call.
       - name: Check documented paths
-        run: python3 tools/check_agent_docs.py
+        run: python3 tools/agent/check_agent_docs.py
+
+      - name: Check documented areg names against the framework
+        run: python3 tools/agent/check_symbols.py
+
+      # A path that resolves is not a command that runs. This splits every fenced and
+      # inline command out of the agent pages, fails on one naming a script that is
+      # not there, and executes the read-only tools so a misspelled flag is a red step
+      # rather than a dead instruction a reader discovers by following it.
+      #
+      # --deep also runs the commands that need a project: it scaffolds throw-away
+      # ones in a temporary directory and gives each command a private copy of the
+      # state its precondition names. Those are the commands a run actually pastes,
+      # and checking their flags against --help does not notice one that parses and
+      # no longer works. Half a minute, nothing compiled, nothing written outside
+      # that directory.
+      - name: Check the documented commands
+        run: python3 tools/agent/check_commands.py --deep
+
+      - name: Check the removed-name lists still match the framework
+        run: python3 tools/agent/check_contract.py --audit-legacy framework
+
+      # AGENTS.md section 6 tells an agent that check_contract.py detects every
+      # prohibition it lists. The same hand writes the bullet, the api.json entry
+      # and the rule, and the three have drifted apart before: a bullet with no
+      # rule reads as enforced and is not.
+      - name: Check the prohibition lists agree
+        run: python3 tools/agent/check_contract.py --audit-prohibitions
+
+      # Every recipe is copied before it is read, so a recipe that breaks a rule
+      # teaches the rule broken. The checker must also stay quiet on code that is
+      # correct, and the recipes are the only corpus that proves it.
+      - name: Check recipes against the agent contract
+        run: |
+          for recipe in docs/agent/recipes/*/; do
+            python3 tools/agent/check_contract.py "$recipe" --strict
+          done
+
+      # Breaks a good recipe the way the eval bank says and asserts the documented
+      # diagnostic still reports it. A rule that stops firing is otherwise invisible:
+      # the suite stays green because nothing was checking the checker.
+      - name: Check the checkers still catch the defects
+        run: python3 tools/agent/check_mutations.py --static
+
+      # The seeded framework defects anchor to exact lines of framework code. A
+      # refactor moves the anchor and the seed silently stops applying, so the
+      # full run measures nothing. This costs a second and says so.
+      - name: Check the seeded invariants still anchor to real code
+        run: python3 tools/check_invariants.py --dry-run
+
+      # The three scores, held at the value measured when this line was written.
+      # Raise a floor when the work that earns it lands; never lower one.
+      #
+      # Friendliness read lower on 2026-09-01 than the day before, and nothing had
+      # regressed: an independent audit showed F2 and F4 were scoring presence rather
+      # than execution, so both were rewritten to ask whether a checker runs the thing.
+      #
+      # Every rule the corpus rests on, asked as a rule: does a page answer each
+      # feature, does every self-claim hold, is every prohibition detected and proven
+      # to still fire, does each page show the includes its own code needs. A finding
+      # names what broke. Nothing here is weighted and no total is printed: a total
+      # needs weights, and a moved total says something broke without saying what.
+      - name: Check the agent corpus
+        run: python3 tools/agent/check_corpus.py --verbose
 
   recipes:
     name: recipes build and run
@@ -79,6 +152,7 @@ jobs:
                 -DAREG_TESTS=OFF -DAREG_EXAMPLES=OFF -DAREG_OUTPUT_LAYOUT=OFF
           cmake --build build -j $(nproc)
           cmake --build build --target mtrouter -j $(nproc)
+          cmake --build build --target logcollector -j $(nproc)
 
       # The IPC recipe is not run without it, and check_recipes.py fails rather than
       # reporting a green suite that skipped the one path with a silent-failure history.
@@ -87,13 +161,298 @@ jobs:
 
       # Generates, compiles and, where a recipe ends by itself, runs and checks output.
       - name: Check recipes
-        run: python3 tools/check_recipes.py --lib build/bin
+        run: python3 tools/agent/check_recipes.py --lib build/bin
+
+      # The two defects a static checker cannot decide: one the compiler must
+      # reject, and one that is an environment rather than a source edit.
+      - name: Check the defects that need a built recipe
+        run: python3 tools/agent/check_mutations.py --lib build/bin
+
+      # The loop the SDK exists to support: two processes through the router, both
+      # logging to the collector, and the .sqlog database queried for what they
+      # logged. Documented in three pages and, until this step, never executed.
+      - name: Check the observability path end to end
+        run: python3 tools/agent/check_observability.py --lib build/bin
+
+      # The cheat sheet is the fast path, and its configuration block cannot be
+      # checked by reading it: the block once shipped without the key that turns
+      # output on, and every static check stayed green. This one runs it.
+      - name: Run the configuration block the documentation gives
+        run: python3 tools/agent/check_doc_config.py --lib build/bin
 
       # The project setup tool is the only thing that carries the documentation into
       # an application, so a break in it disables everything else.
       - name: Check project setup
         run: |
-          python3 tools/setup_project.py --name citest --root "${RUNNER_TEMP}/citest" \
+          python3 tools/agent/setup_project.py --name citest --root "${RUNNER_TEMP}/citest" \
                   --mode local --sdk-root "${GITHUB_WORKSPACE}"
           test -f "${RUNNER_TEMP}/citest/AGENTS.md"
           test -f "${RUNNER_TEMP}/citest/src/main.cpp"
+          python3 tools/agent/check_contract.py "${RUNNER_TEMP}/citest" --strict
+
+      # Scaffolding a project is not the same as the project building. This is the
+      # only place addServiceInterface(), macro_declare_executable() and the
+      # FetchContent block of a *generated* project are executed rather than asserted.
+      - name: Build and run the project that was just scaffolded
+        run: |
+          cmake -S "${RUNNER_TEMP}/citest" -B "${RUNNER_TEMP}/citest/build" \
+                -DCMAKE_BUILD_TYPE=Release \
+                -DFETCHCONTENT_SOURCE_DIR_AREG="${GITHUB_WORKSPACE}"
+          cmake --build "${RUNNER_TEMP}/citest/build" -j $(nproc)
+          "${RUNNER_TEMP}/citest/build/bin/citest.elf"
+
+      # A service document is a configure dependency, so editing one and running only
+      # cmake --build regenerates from it. A scaffolded project reaches the generate
+      # step through add_subdirectory(), and the dependency was recorded against a
+      # directory CMake had already finished, which discarded it: the build stayed
+      # green and the binary kept the previous document.
+      - name: Check a document edit reaches the build without reconfiguring by hand
+        run: |
+          set -eu
+          doc="${RUNNER_TEMP}/citest/src/services/HelloService.siml"
+          gen="${RUNNER_TEMP}/citest/build/generate"
+          ! grep -rq 'probe_regenerated' "${gen}"
+          python3 - "${doc}" <<'PY'
+          import io, sys
+          path = sys.argv[1]
+          text = io.open(path, encoding='utf-8').read()
+          mark = text.index('</MethodList>')
+          added = '        <Method ID="991" Name="probe_regenerated" MethodType="Broadcast"/>\n'
+          io.open(path, 'w', encoding='utf-8', newline='').write(text[:mark] + added + text[mark:])
+          PY
+          cmake --build "${RUNNER_TEMP}/citest/build" -j $(nproc)
+          grep -rq 'probe_regenerated' "${gen}"
+
+  evals:
+    name: evaluation bank
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v5.6.0
+        with:
+          java-version: 17
+          java-package: jre
+          distribution: temurin
+
+      # Grades the reference answer of every task the way a finished application
+      # would be graded. It proves the task is solvable and that the grader works;
+      # no agent and no model take part. Each distinct recipe is built once, so the
+      # repair tasks cost nothing extra.
+      - name: Grade the reference answers
+        run: python3 tools/agent/run_evals.py --self-check --sdk-root .
+
+  chain:
+    name: the five-step chain, end to end
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v5.6.0
+        with:
+          java-version: 17
+          java-package: jre
+          distribution: temurin
+
+      # build_project.py is the command AGENTS.md and the runbook give every agent,
+      # and nothing executed it: check_commands.py reads its --help, while
+      # check_recipes.py and run_evals.py each carry their own copy of its chain,
+      # where a divergence from it cannot be seen. The design is the corpus's own
+      # --example, so this job has no fixture of its own to keep in step.
+      - name: Scaffold a project and give it the example design
+        run: |
+          python3 tools/agent/setup_project.py --name gatecheck \
+                  --root "${RUNNER_TEMP}/gatecheck" --mode ipc \
+                  --sdk-root "${GITHUB_WORKSPACE}"
+          python3 tools/agent/gen_docs.py --example > "${RUNNER_TEMP}/gatecheck/design.json"
+
+      # Documents, application, contract, configure, build: one call, as the runbook
+      # writes it. addStateMachine() reaches a compiler only here, and the state
+      # machine the example declares is generated from a .fsml this step writes.
+      - name: Run the chain
+        working-directory: ${{ runner.temp }}/gatecheck
+        env:
+          TOOLS: ${{ github.workspace }}/tools/agent
+        run: python3 $TOOLS/build_project.py --spec design.json
+
+      # The generator writes one scenario whole: the provider alone, fed "-q", exit 0.
+      # Every other scenario waits on a body a person writes, so this is the one that
+      # can be asserted here -- and it starts a real binary, which nothing else does.
+      - name: Run the scenario the generator writes whole
+        working-directory: ${{ runner.temp }}/gatecheck
+        env:
+          TOOLS: ${{ github.workspace }}/tools/agent
+        run: python3 $TOOLS/run_scenarios.py --build build/bin --only quit
+
+  macos:
+    name: the macOS branch of the tools
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+
+      # check_mutations.py derives the generated names by running the jar, and
+      # judges nothing that rests on them without it. No runner image is promised
+      # to carry a JDK, so the job installs its own.
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v5.6.0
+        with:
+          java-version: 17
+          java-package: jre
+          distribution: temurin
+
+      # run_scenarios.py names a binary <name>.mac on Darwin and <name>.elf on every
+      # other POSIX system. That branch decides whether a scenario finds anything to
+      # start, and no job had ever taken it. The self-test writes its fixtures under
+      # the platform's own suffix, so it takes the branch for real.
+      - name: Check the scenario runner on its own fixtures
+        run: python3 tools/agent/run_scenarios.py --self-test
+
+      - name: Check documented paths and the checkers
+        run: |
+          python3 tools/agent/check_agent_docs.py
+          python3 tools/agent/check_mutations.py --static
+          python3 tools/agent/check_commands.py
+
+      # setup_project.py writes the same Darwin branch into the run.sh it plants for
+      # a multi-process project. Building one here would cost a second framework
+      # compile for one line, so the script is parsed rather than run, and the branch
+      # it takes is read out of it.
+      #
+      # The branch goes to a file before it is sourced. This runner carries bash 3.2
+      # and no other bash, and its source builtin sizes the read from the file's
+      # st_size: 0 for a pipe, so sourcing a process substitution reads nothing and
+      # still reports success. grep also gates the step now -- no matching line is a
+      # failure here rather than an empty variable.
+      - name: Check project setup
+        run: |
+          python3 tools/agent/setup_project.py --name maccheck \
+                  --root "${RUNNER_TEMP}/maccheck" --mode ipc \
+                  --sdk-root "${GITHUB_WORKSPACE}"
+          python3 tools/agent/check_contract.py "${RUNNER_TEMP}/maccheck" --strict
+          bash -n "${RUNNER_TEMP}/maccheck/run.sh"
+          grep "^case " "${RUNNER_TEMP}/maccheck/run.sh" > "${RUNNER_TEMP}/sfx.sh"
+          bash -c '. "${RUNNER_TEMP}/sfx.sh"; test "$SFX" = .mac'
+
+  windows:
+    name: the Windows column of the documented commands
+    runs-on: windows-latest
+    # Two framework builds now: the recipe's, and the scaffolded project's. Each is
+    # a full MSVC compile of areg, so the bound is the sum of them and not the one.
+    timeout-minutes: 110
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v5.6.0
+        with:
+          java-version: 17
+          java-package: jre
+          distribution: temurin
+
+      # The first command AGENTS.md prescribes, in its Windows form. It needs no
+      # interpreter, which is the point of it.
+      - name: Check the environment
+        run: tools\check-env.bat
+        shell: cmd
+
+      # On Windows the interpreter is python, not python3. Half of the documented
+      # commands differ only in that, and nothing else executed them until now.
+      - name: Check documented paths and the checkers
+        run: |
+          python tools\agent\check_agent_docs.py
+          python tools\agent\check_mutations.py --static
+          python tools\agent\check_symbols.py
+
+      # run_scenarios.py carries a whole Windows branch: .bat fixtures instead of
+      # shell scripts, "set /p" for a read that blocks, "ping" where POSIX sleeps.
+      # It was written for this platform and had never run on it.
+      - name: Check the scenario runner on its own fixtures
+        run: python tools\agent\run_scenarios.py --self-test
+
+      # Every command the corpus gives, discovered, flag-checked and -- where it is
+      # safe -- run, in throw-away projects this scaffolds. Each page promises a
+      # Windows form of its commands; until now nothing read one here.
+      - name: Check the documented commands
+        run: python tools\agent\check_commands.py --deep
+
+      - name: Check project setup
+        run: |
+          python tools\agent\setup_project.py --name citest --root "${{ runner.temp }}\citest" --mode local --sdk-root "${{ github.workspace }}"
+          if (-not (Test-Path "${{ runner.temp }}\citest\AGENTS.md")) { exit 1 }
+          if (-not (Test-Path "${{ runner.temp }}\citest\src\main.cpp")) { exit 1 }
+          python tools\agent\check_contract.py "${{ runner.temp }}\citest" --strict
+
+      # The generator is the one tool an application cannot do without, and it is
+      # a jar: it must run the same from a Windows checkout.
+      - name: Run the code generator on a recipe
+        run: |
+          Copy-Item -Recurse docs\agent\recipes\01-local-single-process "${{ runner.temp }}\gentest"
+          java -jar tools\codegen.jar --root="${{ runner.temp }}\gentest" --doc=src/services/HelloService.siml --target=generated
+          if (-not (Test-Path "${{ runner.temp }}\gentest\generated\src\services\HelloServiceProviderBase.hpp")) { exit 1 }
+
+      # tools/agent/check_recipes.py drives a GCC style command line, so it cannot compile a
+      # recipe here. This step uses the path the recipe itself documents instead: plain
+      # CMake with the default Visual Studio generator, which is the MSVC toolchain
+      # (cl.exe through vcvars, set up by the generator). Until this ran, every recipe
+      # was proven on one compiler family only, and addServiceInterface() and
+      # macro_declare_executable() were never executed by msvc from a recipe.
+      # FETCHCONTENT_SOURCE_DIR_AREG points the recipe at this checkout instead of
+      # cloning master, so what is built is the change under review.
+      - name: Build a recipe with the MSVC toolchain
+        shell: pwsh
+        run: |
+          cmake -S "${{ runner.temp }}\gentest" -B "${{ runner.temp }}\gentest\build" `
+                -DCMAKE_BUILD_TYPE=Release `
+                -DFETCHCONTENT_SOURCE_DIR_AREG="${{ github.workspace }}"
+          cmake --build "${{ runner.temp }}\gentest\build" --config Release
+          $binary = Get-ChildItem -Path "${{ runner.temp }}\gentest\build" -Recurse -Filter hello_local.exe | Select-Object -First 1
+          if (-not $binary) { throw "the recipe built no hello_local.exe" }
+          $output = & $binary.FullName 2>&1 | Out-String
+          Write-Host $output
+          if ($output -notmatch 'consumer: greeted') { throw "the recipe ran and did not print what it promises" }
+
+      # The five-step chain, through the MSVC toolchain. The recipe above is written
+      # by hand; this is the path an agent actually takes -- a scaffold, a design,
+      # and one command that writes the documents, writes the application, checks it
+      # against the contract, configures and builds. The design is the corpus's own
+      # --example, so nothing here is a fixture to keep in step.
+      - name: Scaffold a project and give it the example design
+        run: |
+          python tools\agent\setup_project.py --name gatecheck --root "${{ runner.temp }}\gatecheck" --mode ipc --sdk-root "${{ github.workspace }}"
+          python tools\agent\gen_docs.py --example | Set-Content -Encoding ascii "${{ runner.temp }}\gatecheck\design.json"
+
+      - name: Run the chain
+        working-directory: ${{ runner.temp }}\gatecheck
+        env:
+          TOOLS: ${{ github.workspace }}\tools\agent
+        run: python $env:TOOLS\build_project.py --spec design.json
+
+      # Starts a real binary: the provider alone, fed "-q" on standard input, exit 0.
+      # It is the console quit path the generated main() carries, and the one scenario
+      # the generator writes complete.
+      - name: Run the scenario the generator writes whole
+        working-directory: ${{ runner.temp }}\gatecheck
+        env:
+          TOOLS: ${{ github.workspace }}\tools\agent
+        run: python $env:TOOLS\run_scenarios.py --build build\bin --only quit

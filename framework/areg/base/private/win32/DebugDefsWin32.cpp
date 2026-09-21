@@ -39,7 +39,7 @@
     #pragma warning(default: 4091)
 #endif  // _MSC_VER
 
-#ifdef  _DEBUG
+#ifdef  DEBUG
 void AREG_API_IMPL areg::output_message_os( const char * msg )
 {
     if (areg::is_empty<char>(msg) == false)
@@ -47,13 +47,13 @@ void AREG_API_IMPL areg::output_message_os( const char * msg )
         ::OutputDebugStringA(msg);
     }
 }
-#else   // _DEBUG
+#else   // DEBUG
 void AREG_API_IMPL areg::output_message_os(const char* /*msg*/)
 {
 }
-#endif  // _DEBUG
+#endif  // DEBUG
 
-#ifdef  _DEBUG
+#ifdef  DEBUG
 void AREG_API_IMPL areg::dump_call_stack( struct _EXCEPTION_POINTERS *ep, std::list<std::string> & callStack )
 {
 
@@ -166,10 +166,10 @@ void AREG_API_IMPL areg::dump_call_stack( struct _EXCEPTION_POINTERS *ep, std::l
         callStack.push_back( _msgCannotExtractSym );
     }
 }
-#else   // _DEBUG
+#else   // DEBUG
 void AREG_API_IMPL areg::dump_call_stack(struct _EXCEPTION_POINTERS* /*ep*/, std::list<std::string>& /*callStack*/)
 {
 }
-#endif  // _DEBUG
+#endif  // DEBUG
 
 #endif  // _WIN32

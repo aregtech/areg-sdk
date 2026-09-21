@@ -10,7 +10,14 @@ the service document. Copying costs nothing to read; adapting an example costs a
 | `03-attributes-and-broadcast/` | Publishing an attribute, subscribing to it, and sending a broadcast | no |
 | `04-timer/` | A provider that broadcasts on every period of a timer | no |
 | `05-two-services/` | Two services and a component that is provider of one and consumer of the other | no |
-| `06-state-machine/` | A service whose logic is a `.fsml` state machine, with its action handler | no |
+| `06-state-machine/` | A service whose logic is a `.fsml` state machine: a composite state resumed through `Shallow` history, a guard over a constant, an internal transition, an event the machine sends itself, `OnFinal`, and its action handler | no |
+| `07-worker-events/` | A worker thread doing the slow part of a request, a custom event each way, a watchdog and `config/areg.init` | no |
+| `08-observability/` | Two processes logging to `logcollector` instead of their own consoles, collected into a `.sqlog` database, which `query_sqlog.py` beside the recipe reads back | yes |
+| `09-shared-types/` | Two services carrying one structure, declared once in a `.dtml` and included by both, beside an enumeration, an imported C++ type and a container alias, kept in an `areg::ArrayList` | no |
+| `10-runtime-model/` | The model built with `areg::Model` at run time, when the number of components is not known at compile time | no |
+| `11-monitored-workers/` | A worked decomposition: two services, three workers, a monitor holding one proxy per worker, an operator | no |
+| `12-testing/` | A consumer tested against a scripted provider: canned answers, assertions on the worker's own thread, and a non-zero exit code when one fails | no |
+| `13-submachine/` | One `.fsml` hosting another twice: `IncludeList` with an alias and a pinned version, `Submachine` and `OnFinal` on the hosting states, one action handler per instance | no |
 
 ## How to use one
 
@@ -18,9 +25,14 @@ the service document. Copying costs nothing to read; adapting an example costs a
 cp -r <areg-sdk>/docs/agent/recipes/01-local-single-process ./myproject
 cd myproject
 cmake -B build
-cmake --build build -j
+cmake --build build -j8
 ./build/bin/hello_local.elf
 ```
+
+On Windows, copy the folder with `xcopy /E /I`, and the last line is
+`build\bin\hello_local.exe`. The two configure and build lines are the same
+everywhere. Copying a recipe needs no Python: CMake 3.20+, a Java 17+ runtime and a
+C++17 compiler are the whole requirement.
 
 The top level `CMakeLists.txt` finds an installed areg package, or fetches the SDK
 from GitHub when there is none. Nothing else has to be set up.
@@ -37,6 +49,11 @@ from GitHub when there is none. Nothing else has to be set up.
 The naming rule that turns a document into C++ names is in
 `../20-service-interface.md` section 3.
 
+The `.fsml` documents here carry no `Layout` block, because drawing coordinates cost
+an agent bytes and tell it nothing. Before opening one in Lusan, generate one:
+`python3 <areg-sdk>/tools/agent/fsml_layout.py src/services/<Name>.fsml`
+(`python` on Windows). Without it the editor opens the machine as overlapping boxes.
+
 ## Recipe 02 needs the router
 
 A service reaching beyond its own process is declared `Category="Public"` and needs
@@ -44,12 +61,31 @@ A service reaching beyond its own process is declared `Category="Public"` and ne
 
 ```bash
 ./build/bin/mtrouter.elf --service &     # --service, not the console default
-./build/bin/hello_provider.elf
+./build/bin/hello_provider.elf &         # it never ends by itself
 ./build/bin/hello_consumer.elf
 ```
 
-`--service` is the unattended mode; the console default paints a live status display
-that only makes sense on a terminal. Both route the same.
+```bat
+start "" build\bin\mtrouter.exe
+start "" build\bin\hello_provider.exe
+build\bin\hello_consumer.exe
+```
+
+The two shells need different options, and each one is wrong on the other system.
+
+**On POSIX** the console default binds 8181 and routes, but it also reads commands
+from stdin and end of input is `--quit`: started from a shell whose stdin is
+redirected, it paints its display, quits within a second and exits **0**, leaving
+8181 unbound and no error to see. `--service` is the same program without the console
+loop, so use it there.
+
+**On Windows** `--service` means the Service Control Manager and returns at once from
+a command line, having started nothing. `start ""` gives the process a console of its
+own, and console mode with a live stdin stays up; that is the form to use there.
+
+Both are long-lived, and so is the provider: leave either in the foreground and the
+sequence never reaches the line below it. Check the port, never the process list and
+never the exit code: `ss -ltn | grep 8181`.
 
 Only one router can hold port 8181. If one is already running, a second prints its
 banner, binds nothing and routes nothing, so check the port rather than assuming the
@@ -66,7 +102,7 @@ Every recipe here has been generated, compiled and, where it ends by itself, run
 From a clone of the SDK, this repeats the check:
 
 ```bash
-python3 tools/check_recipes.py --lib build/bin
+python3 tools/agent/check_recipes.py --lib build/bin
 ```
 
 A recipe that no longer compiles is worse than no recipe, because it is copied first

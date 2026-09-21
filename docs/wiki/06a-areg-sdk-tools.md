@@ -22,7 +22,7 @@ This document provides an overview of available tools, their purpose, and basic 
 
 | Tool             | Type        | Purpose                                                              |
 |------------------|-------------|----------------------------------------------------------------------|
-| `project-setup`  | Script      | Interactive project generator for rapid Areg SDK project creation    |
+| `setup-project`  | Script      | Creates a ready-to-build Areg SDK project in one command             |
 | `codegen.jar`    | Build-time  | Service interface code generator (C++ stub/skeleton generation)      |
 | `logcollector`   | Runtime     | Centralized log aggregation service for distributed applications     |
 | `logobserver`    | Runtime     | Console-based logging control and inspection tool                    |
@@ -35,40 +35,45 @@ This document provides an overview of available tools, their purpose, and basic 
 ## 1. Project Setup Tool
 
 **Scripts:**
-- Linux/macOS: `tools/project-setup.sh`
-- Windows: `tools/project-setup.bat`
+- Linux/macOS: `tools/setup-project.sh`
+- Windows: `tools/setup-project.bat`, which runs `tools/setup-project.ps1`
+- Any platform, with Python 3: `tools/agent/setup_project.py`
 
 ### Purpose
 
-Automated project scaffold generator that creates production-ready Areg SDK projects in under 30 seconds through an interactive command-line interface.
+Creates a ready-to-build Areg SDK project from a working recipe. All three tools write the same project; the Python tool also writes the files an AI coding agent works from.
 
 ### Features
 
-- **Interactive Configuration**: Guided prompts for project name, location, and architecture
-- **Architecture Selection**: Choose multithreading or multiprocessing model
+- **Command line or prompts**: `--name`, `--mode`, `--root`, `--sdk-root`, `--tag`, `--force`; a missing name, mode or directory is asked for on a terminal
+- **Two modes**: `local` (one process) or `ipc` (two processes)
 - **Automatic Generation**: CMake build files, service interfaces, and source templates
 - **Ready-to-Build**: Generated projects compile immediately without modifications
 
 ### Project Architectures
 
-1. **Multithreading**: Service provider and consumer in the same process, separate threads
-2. **Multiprocessing**: Service provider and consumer as independent processes (IPC-based)
+1. **`local`**: Service provider and consumer in the same process, separate threads
+2. **`ipc`**: Service provider and consumer as independent processes, connected through `mtrouter`
 
 ### Generated Artifacts
 
 - `CMakeLists.txt` - Top-level project configuration
 - `src/services/HelloService.siml` - Sample service interface definition
 - Provider/Consumer source files with basic implementation
+- `run.sh` and `run.bat` in `ipc` mode, which start `mtrouter`, the provider and the consumer in order
 - Configured build system ready for code generation and compilation
 
 ### Usage
 
 ```bash
 # Linux/macOS
-./areg-sdk/tools/project-setup.sh
+sh ./areg-sdk/tools/setup-project.sh --name myapp --mode local
 
 # Windows
-.\areg-sdk\tools\project-setup.bat
+.\areg-sdk\tools\setup-project.bat --name myapp --mode local
+
+# With Python 3, for agentic coding
+python3 ./areg-sdk/tools/agent/setup_project.py --name myapp --mode local
 ```
 
 **Detailed Guide**: [Quick Project Setup](./02a-quick-project-setup.md)
@@ -255,7 +260,7 @@ The Areg SDK tools form an integrated development and diagnostics pipeline:
 
 ### Workflow Integration
 
-1. **Project Creation**: Use `project-setup` to generate initial project structure
+1. **Project Creation**: Use `setup-project` to generate initial project structure
 2. **Service Design**: Define service interfaces in `.siml` files (manually or via Lusan)
 3. **Code Generation**: `codegen.jar` generates C++ code during build
 4. **Development**: Implement business logic in generated base classes
@@ -271,7 +276,7 @@ Areg SDK provides a complete toolchain for distributed C++ application developme
 
 | Development Phase | Tools |
 |-------------------|-------|
-| **Project Bootstrap** | `project-setup` script |
+| **Project Bootstrap** | `setup-project` script |
 | **Service Design** | `.siml` files, Lusan GUI |
 | **Code Generation** | `codegen.jar` (automated) |
 | **Runtime Logging** | `logcollector`, `logobserver` |
@@ -279,7 +284,7 @@ Areg SDK provides a complete toolchain for distributed C++ application developme
 
 ### Key Takeaways
 
-- **`project-setup`**: Rapid project scaffolding (< 30 seconds)
+- **`setup-project`**: A ready-to-build project in one command
 - **`codegen.jar`**: Automated service code generation (zero manual effort)
 - **`logcollector`**: Centralized log aggregation for distributed systems
 - **`logobserver`**: Console-based runtime logging control

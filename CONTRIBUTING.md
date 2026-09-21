@@ -99,14 +99,58 @@ Pull requests should follow these rules:
 
 All contributions must follow the Areg SDK coding style.
 
-* **Coding style guide:** `./docs/AREG_CODING_STYLE.md`
+* **Coding style guide:** `./docs/AREG_CODING_STYLE.md` -- the rules with their rationale and examples.
+* **Compact rule reference:** `./docs/AREG_AI_CODING_RULES.md` -- the same rules as numbered, normative one-liners. Give this one to an AI assistant working on the framework sources.
+
+Neither applies to an application built *with* Areg. That work is described in `./AGENTS.md`, and an application may use any style it likes.
 
 If your change touches existing code, keep changes consistent with the surrounding file style unless the change is part of a deliberate refactor that updates the whole file/module.
 
-### d. Documentation
+### d. Tool diagnostics
+
+If you change a message that a tool prints, keep the generator's diagnostic shape: `file:line:col: error[<number>/<RULE_NAME>]` with a `fix:` line under it. That shape is API -- `AGENTS.md` section 4 tells an agent to read it and `docs/agent/51-debug.md` shows it worked through, and both go stale silently if it changes. The rule numbers themselves are `tools/schema/rules.xml`, which `tools/explain_rule.py` reads.
+
+### e. Documentation
 
 Improvements to guides, examples, comments, and general documentation are welcome.
 Small corrections only require a Signed-off-by line.
+
+### f. Agent documentation
+
+`./AGENTS.md` is the single entry point for an agent building an application on top of Areg, and `./docs/agent/` is the corpus it routes to. Both are **agent-neutral**: no harness is named in them, and no harness gets its own copy of their contents.
+
+Do not add a tracked instruction file for a particular coding agent. One exists already, `./.github/copilot-instructions.md`, and it is permitted only because it holds no guidance of its own: it is three sentences pointing at `AGENTS.md`. Any new redirect must be generated locally and left untracked:
+
+```
+python3 tools/agent/setup_agent_redirect.py --list
+python3 tools/agent/setup_agent_redirect.py --harness claude
+python3 tools/agent/setup_agent_redirect.py --check     # fails if a redirect grew content
+```
+
+The reason is drift. Guidance duplicated per harness stops agreeing with `AGENTS.md` within a release or two, and the copies disagree with each other, so an agent's behaviour then depends on which file its harness happened to read.
+
+Two further rules apply to changes in `AGENTS.md` and `docs/agent/`:
+
+- **Every claim must be true of this commit.** A page that names a file, a method, a macro or a rule number is asserting it exists. `tools/agent/check_agent_docs.py` verifies the paths; the rest is on the author. A wrong name costs an agent more than a missing one, because it is followed before it is doubted.
+- **The corpus is checked.** `./docs/ai-readiness.md` states the rules and `tools/agent/check_corpus.py` asks each one. Run it before and after your change; it prints a finding per rule that does not hold, and CI fails on any of them. A pull request that adds a recorded exception should say why in its description.
+
+### g. Agent session knowledge
+
+Work on this repository runs across many sessions, and each one otherwise begins by rediscovering what the last one established: how the tools are invoked on this machine, which invariants a plausible-looking edit breaks, why a decision was taken the way it was. An untracked, machine-local tree holds that knowledge: one index of durable facts, one of mistakes made and the rule that would have prevented each, and a session bootstrap that points at both and is opened at the start of a session.
+
+Create that tree, and ask where each file goes, with:
+
+```
+python3 tools/agent/setup_agent_memory.py --init
+python3 tools/agent/setup_agent_memory.py --list     # the tree and the state of each file
+python3 tools/agent/setup_agent_memory.py --check    # fails if a file is missing or unlisted
+```
+
+**The protocol is tracked; the content is not.** The tool writes the tree and the two indexes and nothing else; what goes in them is written by hand, by whoever learned it. `.gitignore` matches `*claude*`, so none of it can enter a commit. The knowledge is local to one machine and one line of work, it would go stale inside a release, and an application author who found it would be misled by it.
+
+That is also why no tracked file names a path inside that tree, this one included, and why it is **not** linked from `AGENTS.md`: `AGENTS.md` and `docs/agent/` are the entry point for building an application on top of Areg, they must resolve for every reader from a clean clone, and a path that exists only on one machine does not. `--list` above is the tracked way to ask where something lives.
+
+Update the indexes at the end of any session that established a durable fact or made a mistake worth not repeating. Each index states its own criteria for what belongs in it; the short form is that a fact the repository already states is not a memory, and a general principle nobody got wrong is not a lesson.
 
 ---
 

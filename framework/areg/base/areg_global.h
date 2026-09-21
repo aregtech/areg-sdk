@@ -165,6 +165,6 @@
     #endif  // !(defined(OUTPUT_DEBUG) && (OUTPUT_DEBUG != 0))
 #else   // _NDEBUG
         #undef  OUTPUT_DEBUG
-#endif  // _DEBUG
+#endif  // DEBUG
 
 #endif  // AREG_BASE_AREG_GLOBAL_H
