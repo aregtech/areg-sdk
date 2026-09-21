@@ -333,9 +333,7 @@ python {sdk}/tools/agent/build_project.py --run
 ```
 
 The first call builds, and checks the design before anything else: a refused design
-stops it within seconds. **It compiles the framework too, so give it a command timeout
-of at least 15 minutes**; a shorter one is reported as a timeout and is not a failure
-of the build. `--run` rebuilds whatever changed and then runs every scenario in
+stops it within seconds. `--run` rebuilds whatever changed and then runs every scenario in
 `scenarios.json`: it starts each process in the order that project needs, waits for
 the lines the scenario expects and stops every process it started. These two commands
 are the whole route, on both systems, and nothing else here starts a process.
@@ -640,7 +638,7 @@ def main():
         print('  design.json holds every key of a design, empty: fill it, then')
     print('  python3 {}/build_project.py --spec design.json'.format(tools))
     print('    that first call compiles the framework too: give it a command timeout')
-    print('    of at least 15 minutes. Every later call takes seconds.')
+    print('    of 10 minutes (600000 ms). Every later call takes seconds.')
     print('  python3 {}/build_project.py --spec design.json --run'.format(tools))
     print('    once the bodies are filled: builds and runs every scenario in one call.')
     print_scenarios(root, mode)

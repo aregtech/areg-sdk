@@ -86,8 +86,7 @@ and exits non-zero on a missing one.
 than composing a chain from the tools below. Scaffold, fill `design.json`, one command
 that writes the documents and the application and builds them, a worksheet for every
 body, and a scenario that proves it; return here only for section 6.
-`build_project.py`'s first call compiles the framework, so **give it a command timeout
-of at least 15 minutes**. Without Python, copy
+Without Python, copy
 `docs/agent/recipes/01-local-single-process` and rename the project in its two
 `CMakeLists.txt` files; `recipes/README.md` says which recipe shows what.
 

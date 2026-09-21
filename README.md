@@ -86,21 +86,21 @@ If Areg saves you work, a ⭐ helps other C++ developers find it.
 
 ## Table of Contents
 
-[Why Areg](#why-areg)
-[How it works](#how-it-works)
-[Agentic coding](#agentic-coding)
-[Performance](#performance)
-[Areg vs. alternatives](#areg-vs-alternatives)
-[Getting started](#getting-started)
-[Architecture](#architecture)
-[Network deployment](#network-deployment-model)
-[Use cases](#use-cases)
-[Tools](#tools)
-[Project status](#project-status)
-[Roadmap](#roadmap)
-[Documentation](#documentation)
-[License](#license)
-[Community](#community)
+- [Why Areg](#why-areg)
+- [How it works](#how-it-works)
+- [Agentic coding](#agentic-coding)
+- [Performance](#performance)
+- [Areg vs. alternatives](#areg-vs-alternatives)
+- [Getting started](#getting-started)
+- [Architecture](#architecture)
+- [Network deployment](#network-deployment-model)
+- [Use cases](#use-cases)
+- [Tools](#tools)
+- [Project status](#project-status)
+- [Roadmap](#roadmap)
+- [Documentation](#documentation)
+- [License](#license)
+- [Community](#community)
 
 ---
 

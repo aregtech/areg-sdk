@@ -123,9 +123,10 @@ included as `"src/<dir>/Name.hpp"` from anywhere in `src/`.
 
 ## 5. Documents, application and build -- one command
 
-**This call compiles the framework itself, so give it a command timeout of at least
-15 minutes.** A shorter one returns a timeout or moves the call to the background, and
-neither is a failure of the build.
+**This call compiles the framework itself, so give it a command timeout of 10 minutes
+(600000 ms).** A slower build returns a timeout or moves the call to the background,
+and neither is a failure of the build. Moved to the background, wait for it to finish
+and never start a second build; timed out, run the same command again.
 
 ```
 python3 <areg-sdk>/tools/agent/build_project.py --spec design.json
