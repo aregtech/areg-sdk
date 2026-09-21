@@ -334,6 +334,12 @@ jobs:
       # a multi-process project. Building one here would cost a second framework
       # compile for one line, so the script is parsed rather than run, and the branch
       # it takes is read out of it.
+      #
+      # The branch goes to a file before it is sourced. This runner carries bash 3.2
+      # and no other bash, and its source builtin sizes the read from the file's
+      # st_size: 0 for a pipe, so sourcing a process substitution reads nothing and
+      # still reports success. grep also gates the step now -- no matching line is a
+      # failure here rather than an empty variable.
       - name: Check project setup
         run: |
           python3 tools/agent/setup_project.py --name maccheck \
@@ -341,7 +347,8 @@ jobs:
                   --sdk-root "${GITHUB_WORKSPACE}"
           python3 tools/agent/check_contract.py "${RUNNER_TEMP}/maccheck" --strict
           bash -n "${RUNNER_TEMP}/maccheck/run.sh"
-          bash -c 'source <(grep "^case " "${RUNNER_TEMP}/maccheck/run.sh"); test "$SFX" = .mac'
+          grep "^case " "${RUNNER_TEMP}/maccheck/run.sh" > "${RUNNER_TEMP}/sfx.sh"
+          bash -c '. "${RUNNER_TEMP}/sfx.sh"; test "$SFX" = .mac'
 
   windows:
     name: the Windows column of the documented commands

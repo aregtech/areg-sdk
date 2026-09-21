@@ -2753,6 +2753,42 @@ def check_posix_only(report):
               .format(found, bad))
 
 
+# Sourcing a process substitution reads nothing under bash 3.2: _evalfile sizes the
+# read from fstat().st_size, which is 0 for a pipe, so the shell sources an empty
+# string and reports success. The macOS runner image ships bash 3.2.57 and no other
+# bash, so a step written this way sets no variable, prints no error, and fails on
+# the assertion that follows it. Bash 4.0 and later read such a file to the end.
+SOURCED_PIPE = re.compile(r'(?:\bsource|(?<![\w.])\.)\s+<\(')
+
+
+def check_workflow_shell(report):
+    """No workflow sources a process substitution, which bash 3.2 reads as empty."""
+    folder = os.path.join(ROOT, '.github', 'workflows')
+    if not os.path.isdir(folder):
+        report.fail('portability', 'there are no workflows to check')
+        return
+
+    files = 0
+    offenders = 0
+    for name in sorted(os.listdir(folder)):
+        if not name.endswith(('.yml', '.yaml')):
+            continue
+        files += 1
+        for number, line in enumerate(read('.github', 'workflows', name).splitlines(), 1):
+            if line.strip().startswith('#') or not SOURCED_PIPE.search(line):
+                continue
+            offenders += 1
+            report.fail('portability',
+                        '.github/workflows/{}:{} sources a process substitution. The '
+                        'macOS runner has only bash 3.2, which reads 0 bytes from a '
+                        'pipe and sources nothing, so the step is silently a no-op. '
+                        'Write the text to a file and source that'
+                        .format(name, number))
+    if not offenders:
+        report.ok('portability',
+                  '{} workflow(s) source no process substitution'.format(files))
+
+
 # A framework name is answered by api_help.py, which reads the public headers and
 # prints the declaration and the header carrying it. A page that routes the lookup to
 # grep or to a header instead sends the agent into a 155 KB tree, and a curated page
@@ -2824,6 +2860,7 @@ def check_portability(report):
               .format(len(pages) - len(offenders), len(pages)))
 
     check_posix_only(report)
+    check_workflow_shell(report)
 
     if 'windows-' not in agent_workflow():
         report.fail('portability', 'the agent workflow has no Windows runner, so '
