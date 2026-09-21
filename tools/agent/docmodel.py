@@ -9,6 +9,7 @@ its own.
 
 Nothing here has a command line. gen_docs.py is the tool.
 """
+import contextlib
 import sys
 import xml.sax.saxutils as saxutils
 
@@ -25,7 +26,48 @@ TYPE_KINDS = {'enum': 'Enumeration', 'enumeration': 'Enumeration',
 DEFAULT_OF = {'bool': 'false', 'char': '0', 'float': '0.0', 'double': '0.0'}
 
 
+class Refused(Exception):
+    """One refusal, raised instead of exiting while a caller is gathering them."""
+
+
+# The list a caller is gathering refusals into, or None when a refusal ends the run
+# at once. Checks that are independent of each other are all knowable from the same
+# document, and reporting them one call at a time makes the caller fix one, run
+# again, and read the next.
+_GATHERED = None
+
+
+@contextlib.contextmanager
+def gathering(problems):
+    """Collect refusals raised inside this block into "problems" instead of exiting.
+
+    Each refusal still unwinds the block it was raised in, so no check runs on a
+    value an earlier one rejected. Independent blocks each contribute at most one.
+    """
+    global _GATHERED                             # noqa: PLW0603 - one per process
+    keep, _GATHERED = _GATHERED, problems
+    try:
+        yield problems
+    finally:
+        _GATHERED = keep
+
+
+def refuse(problems):
+    """End the run naming every refusal gathered, in the order they were found."""
+    sys.stdout.flush()
+    for message in problems:
+        sys.stderr.write('error: {}\n'.format(message))
+    if len(problems) > 1:
+        sys.stderr.write('{} errors, all of them in the document as it stands: '
+                         'fixing one does not change the others.\n'
+                         .format(len(problems)))
+    raise SystemExit(2)
+
+
 def fail(message):
+    if _GATHERED is not None:
+        _GATHERED.append(message)
+        raise Refused(message)
     # Output already printed is flushed first: stdout is block-buffered into a
     # pipe, so without this the error reaches the reader before the lines it is
     # about.

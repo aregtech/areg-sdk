@@ -32,6 +32,7 @@ interface or a machine, where Space is the data type document's name; the includ
 added for you.
 """
 import argparse
+import contextlib
 import difflib
 import json
 import os
@@ -63,10 +64,10 @@ def rule_number(name, band):
 
 import codegen_names  # noqa: E402
 from docmodel import (CONTAINERS, PREDEFINED, TYPE_KINDS,
-                      Vocabulary, Writer, described, esc, esc_text, fail, named_list,
-                      reserve_params, spell, unique, write_constants,
-                      write_datatypes, write_includes, write_method, write_overview,
-                      write_params)
+                      Refused, Vocabulary, Writer, described, esc, esc_text, fail,
+                      gathering, named_list, refuse, reserve_params, spell, unique,
+                      write_constants, write_datatypes, write_includes, write_method,
+                      write_overview, write_params)
 
 DTML_VERSION = '1.0.0'
 SIML_VERSION = '1.1.0'
@@ -1532,8 +1533,15 @@ def awaitable(spec):
 
 
 def check_sequences(project):
-    """A consumer's steps name only what their service declares, in a shape one driver runs."""
+    """A consumer's steps name only what their service declares, in a shape one driver runs.
+
+    Every step is checked against the document as it stands, so a fault in one says
+    nothing about the next. They are gathered and reported together: one refusal per
+    call makes the caller fix a step, generate again, and be told about the next one
+    that was already there.
+    """
     enums = enum_values(project)
+    problems = []
     for spec in project['interfaces']:
         steps = spec.get('steps') if isinstance(spec, dict) else None
         if not steps:
@@ -1548,75 +1556,78 @@ def check_sequences(project):
                        if 'answer' in entry or entry.get('response'))
         seen = set()
         for step in steps:
-            if not isinstance(step, dict):
-                fail('{} list {!r}, which is not a step object'.format(where, step))
-            name = step.get('name')
-            here = 'step "{}" of {}'.format(name, where)
-            if not isinstance(name, str) or not IDENTIFIER.match(name):
-                fail('{} has no name a C++ identifier can carry'.format(here))
-            key = name.replace('_', '').lower()
-            if key in STEP_RESERVED:
-                fail('{} takes a name the driver declares itself ({}, underscores and '
-                     'case aside); name it after what it does'
-                     .format(here, ', '.join(key.capitalize() for key in STEP_RESERVED)))
-            if key in seen:
-                fail('{} is named twice: a step name is unique, underscores and case '
-                     'aside'.format(here))
-            seen.add(key)
-            send, target, wait = step.get('send'), step.get('await'), step.get('wait') or 0
-            args = step.get('args') or {}
-            if send is not None and send not in requests:
-                fail('{} sends "{}", which is not a request of the service. Its requests: '
-                     '{}'.format(here, send, ', '.join(sorted(requests)) or 'none'))
-            if not isinstance(args, dict):
-                fail('{}: args is an object, {{"<parameter>": <C++ value>}}'.format(here))
-            params = [entry.get('name') for entry in listed(requests.get(send), 'params')]
-            for given in args:
-                if given not in params:
-                    fail('{} gives "{}", which request "{}" does not take. It takes: {}'
-                         .format(here, given, send, ', '.join(params) or 'nothing'))
-            for param in params:
-                if param not in args:
-                    fail('{} gives no value for parameter "{}" of request "{}"'
-                         .format(here, param, send))
-            # A value outside the set its parameter declares reaches a provider with
-            # no case for it, which usually does nothing, and the step then awaits an
-            # update nothing sends. The run reads as a stall with no cause.
-            for entry in listed(requests.get(send), 'params'):
-                allowed = entry.get('values')
-                given = args.get(entry.get('name'))
-                if isinstance(allowed, list) and allowed and given not in allowed:
-                    fail('{} sends {}({}={}), and "{}" takes only {}'
-                         .format(here, send, entry.get('name'), json.dumps(given),
-                                 entry.get('name'),
-                                 ', '.join(json.dumps(one) for one in allowed)))
-                # The generator qualifies a field of an enumeration with its type, and
-                # a name that type has no field of becomes a C++ error naming the
-                # generated call site rather than the step that wrote it.
-                fields = enums.get(str(entry.get('type', '')).rsplit('::', 1)[-1])
-                if fields and isinstance(given, str) \
-                        and not given.startswith(('expr:', 'raw:')) \
-                        and given.rsplit('::', 1)[-1] not in fields:
-                    fail('{} sends {}({}={}), and "{}" has no such field. It has: {}'
-                         .format(here, send, entry.get('name'), json.dumps(given),
-                                 entry.get('type'), ', '.join(fields)))
-            if isinstance(wait, bool) or not isinstance(wait, int) or wait < 0:
-                fail('{}: wait is a number of milliseconds'.format(here))
-            if target is not None and wait:
-                fail('{} awaits "{}" and also waits {} ms. A step does one of the two: '
-                     'split it into two steps'.format(here, target, wait))
-            stall = driver_of(spec)['stall_ticks']
-            if whole(stall) and stall and wait >= stall * DRIVER_TICK_SECONDS * 1000:
-                fail('{} waits {} ms, and the stall watchdog of the driver ends the run after '
-                     '{} second(s) with no step begun. Make the driver\'s stall_ticks longer '
-                     'than the wait, or leave stall_ticks out and the generator makes it '
-                     'longer'.format(here, wait, stall))
-            if target is not None and target not in awaited:
-                fail('{} awaits "{}", which is no response, broadcast or attribute of the '
-                     'service. It awaits one of: {}'
-                     .format(here, target, awaitable(spec)))
-            if send is None and target is None and not wait:
-                fail('{} sends nothing, awaits nothing and waits for no time'.format(here))
+            with gathering(problems), contextlib.suppress(Refused):
+                if not isinstance(step, dict):
+                    fail('{} list {!r}, which is not a step object'.format(where, step))
+                name = step.get('name')
+                here = 'step "{}" of {}'.format(name, where)
+                if not isinstance(name, str) or not IDENTIFIER.match(name):
+                    fail('{} has no name a C++ identifier can carry'.format(here))
+                key = name.replace('_', '').lower()
+                if key in STEP_RESERVED:
+                    fail('{} takes a name the driver declares itself ({}, underscores and '
+                         'case aside); name it after what it does'
+                         .format(here, ', '.join(key.capitalize() for key in STEP_RESERVED)))
+                if key in seen:
+                    fail('{} is named twice: a step name is unique, underscores and case '
+                         'aside'.format(here))
+                seen.add(key)
+                send, target, wait = step.get('send'), step.get('await'), step.get('wait') or 0
+                args = step.get('args') or {}
+                if send is not None and send not in requests:
+                    fail('{} sends "{}", which is not a request of the service. Its requests: '
+                         '{}'.format(here, send, ', '.join(sorted(requests)) or 'none'))
+                if not isinstance(args, dict):
+                    fail('{}: args is an object, {{"<parameter>": <C++ value>}}'.format(here))
+                params = [entry.get('name') for entry in listed(requests.get(send), 'params')]
+                for given in args:
+                    if given not in params:
+                        fail('{} gives "{}", which request "{}" does not take. It takes: {}'
+                             .format(here, given, send, ', '.join(params) or 'nothing'))
+                for param in params:
+                    if param not in args:
+                        fail('{} gives no value for parameter "{}" of request "{}"'
+                             .format(here, param, send))
+                # A value outside the set its parameter declares reaches a provider with
+                # no case for it, which usually does nothing, and the step then awaits an
+                # update nothing sends. The run reads as a stall with no cause.
+                for entry in listed(requests.get(send), 'params'):
+                    allowed = entry.get('values')
+                    given = args.get(entry.get('name'))
+                    if isinstance(allowed, list) and allowed and given not in allowed:
+                        fail('{} sends {}({}={}), and "{}" takes only {}'
+                             .format(here, send, entry.get('name'), json.dumps(given),
+                                     entry.get('name'),
+                                     ', '.join(json.dumps(one) for one in allowed)))
+                    # The generator qualifies a field of an enumeration with its type, and
+                    # a name that type has no field of becomes a C++ error naming the
+                    # generated call site rather than the step that wrote it.
+                    fields = enums.get(str(entry.get('type', '')).rsplit('::', 1)[-1])
+                    if fields and isinstance(given, str) \
+                            and not given.startswith(('expr:', 'raw:')) \
+                            and given.rsplit('::', 1)[-1] not in fields:
+                        fail('{} sends {}({}={}), and "{}" has no such field. It has: {}'
+                             .format(here, send, entry.get('name'), json.dumps(given),
+                                     entry.get('type'), ', '.join(fields)))
+                if isinstance(wait, bool) or not isinstance(wait, int) or wait < 0:
+                    fail('{}: wait is a number of milliseconds'.format(here))
+                if target is not None and wait:
+                    fail('{} awaits "{}" and also waits {} ms. A step does one of the two: '
+                         'split it into two steps'.format(here, target, wait))
+                stall = driver_of(spec)['stall_ticks']
+                if whole(stall) and stall and wait >= stall * DRIVER_TICK_SECONDS * 1000:
+                    fail('{} waits {} ms, and the stall watchdog of the driver ends the run after '
+                         '{} second(s) with no step begun. Make the driver\'s stall_ticks longer '
+                         'than the wait, or leave stall_ticks out and the generator makes it '
+                         'longer'.format(here, wait, stall))
+                if target is not None and target not in awaited:
+                    fail('{} awaits "{}", which is no response, broadcast or attribute of the '
+                         'service. It awaits one of: {}'
+                         .format(here, target, awaitable(spec)))
+                if send is None and target is None and not wait:
+                    fail('{} sends nothing, awaits nothing and waits for no time'.format(here))
+    if problems:
+        refuse(problems)
 
 
 def attribute_reads(node, found):
@@ -2065,7 +2076,45 @@ TEMPLATE = {
     NOTE: ["The design of this project: every document is written from this file. Fill the",
            "values and keep the keys. An entry left exactly as written here is skipped and an",
            "empty value is absent, so delete only a section the task does not need. A list",
-           "takes as many entries as the design has: copy its sample for each."],
+           "takes as many entries as the design has: copy its sample for each.",
+           "",
+           "What goes where, when this file is written or changed. Each answer is a rule,",
+           "not a preference; docs/agent/05-design.md is the same four with the reasoning.",
+           "",
+           "1. WHAT IS A SERVICE. One service per contract between two parties, not one per",
+           "class, entity or file. Two tests settle most cases: who owns the state (the owner",
+           "is the provider, and if neither side owns any there is no service, only a function",
+           "call), and would a second consumer make sense (if only ever one caller, it is a",
+           "method). If both sides call each other that is two services, each with its own",
+           "provider: a service is one-directional by construction.",
+           "",
+           "2. WHICH SHAPE. The commonest error is putting everything in requests.",
+           "  attribute -- one value a consumer must know the current state of. Kept by the",
+           "    provider, sent on subscribe and again per notify. Only an attribute has a",
+           "    validity state (areg::DataState), so a late subscriber still receives something.",
+           "  broadcast -- several values that mean something only together, at the moment it",
+           "    happened. Nothing is kept: one sent before a consumer subscribed is gone.",
+           "  request/response -- a caller wants an answer to its own call. One round trip,",
+           "    and the response goes only to that caller.",
+           "What separates them is whether the value outlives the moment it was sent, never",
+           "whether a consumer subscribes: neither arrives before it does. A consumer that",
+           "polls with a request wants an attribute. Telling everyone is a broadcast, not a",
+           "response. Where several values are reported together and a late subscriber must",
+           "still learn the latest, publish that one as an attribute beside the broadcast.",
+           "",
+           "3. COMPONENTS AND THREADS. A component is one instance with one role name, and",
+           "that role name is its routing identity: one component per role, not per service,",
+           "and a consumer names its provider by it character for character. A thread is a",
+           "dispatcher and every handler in it runs one at a time, so the thread boundary is",
+           "a blocking boundary, not a performance one. Anything slow -- a file, a socket, a",
+           "long computation -- gets its own thread or it stops every component sharing it.",
+           "Start with a thread per component and merge later, with a reason.",
+           "",
+           "4. HOW MANY PROCESSES. Ask only when there is a reason to separate: independent",
+           "lifetimes, isolation of a crash, different privileges, different machines.",
+           "Otherwise one process. The split fixes category in every document it touches, so",
+           "set the split first. A Private service consumed from another process never",
+           "connects and nothing reports it."],
     "datatypes": {
         NOTE: ["Types two documents share, spelled <name>::<Type> inside them. A type only one",
                "document needs goes in that document's own types list, in the same shape.",
@@ -2136,7 +2185,15 @@ TEMPLATE = {
     }],
     "machines": [{
         NOTE: ["A .fsml, only when behaviour depends on what happened before; delete this",
-               "section otherwise. The provider owns it: a request handler fires a trigger, an",
+               "section otherwise. The test: yes when the answer to an input depends on what",
+               "came before -- a phase, a mode, a sequence that must not be skipped. A handler",
+               "starting with if (mPhase == ...) is a state machine already, written where it",
+               "cannot be read. No when each request is answered from its arguments and the",
+               "stored data, which most services are. Decide it here, not from the format page.",
+               "The machine lives inside one component's provider and is not part of the",
+               "contract: consumers see requests and broadcasts, never states. What it declares",
+               "the bodies do not carry, so giving it up means writing the same logic by hand.",
+               "The provider owns it: a request handler fires a trigger, an",
                "action performs an effect, and every decision is a guard here.",
                "Every name a state uses is declared in a list of this machine. A trigger, a",
                "timer and an event never share a name; a state name is unique across levels.",

@@ -90,6 +90,7 @@ FILLER = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                       'fill_markers.py').replace(os.sep, '/')
 BUILDER = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                        'build_project.py').replace(os.sep, '/')
+TOOLS_DIR = os.path.dirname(os.path.abspath(__file__)).replace(os.sep, '/')
 WORKSHEET = 'worksheet.txt'
 BODIES = 'bodies.txt'
 
@@ -146,8 +147,13 @@ def defined_names(text):
     not: they are what the skeleton brought with it, and the only way to learn them
     today is to open the file. A helper is listed with its parameters: a name given
     without them is called with the wrong ones, and that costs a build.
+
+    A member is listed as it is declared, with the note its header writes beside it.
+    A bare name says neither what the member holds nor what it is for, and a body
+    that needs either opens the generated header for a line it was already given.
     """
     members, helpers = [], []
+    named = set()
     for line in text.splitlines():
         if ' final' in line or '= delete' in line or 'AREG_NOCOPY' in line:
             continue
@@ -157,8 +163,9 @@ def defined_names(text):
         if PLACEHOLDER_TAG.strip() in line:
             continue
         found = DECLARED.match(line)
-        if found and found.group(1) not in members:
-            members.append(found.group(1))
+        if found and found.group(1) not in named:
+            named.add(found.group(1))
+            members.append(declared_as(line))
             continue
         found = HELPER.match(line)
         if found and found.group(1) not in RESERVED:
@@ -166,6 +173,24 @@ def defined_names(text):
             if not any(h.endswith(spelt) or spelt in h for h in helpers):
                 helpers.append(spelt)
     return members, helpers
+
+
+# The note a generated header writes beside a member, on the same line.
+MEMBER_DOC = re.compile(r'^(.*?)\s*//!<\s?(.*?)\s*$')
+
+
+def declared_as(line):
+    """One member declaration as (spelt, note), from the line that declares it.
+
+    The type and the note are both on that line already. Carrying the name alone is
+    what sends a body to the generated header to learn whether a member holds a
+    value or an object.
+    """
+    note = ''
+    found = MEMBER_DOC.match(line)
+    if found:
+        line, note = found.group(1), found.group(2)
+    return ' '.join(line.split()).strip(), note
 
 
 # The comment a generated header writes above a helper it declares.
@@ -585,6 +610,37 @@ def section_notes(sections, driven=(), connected=()):
     return notes
 
 
+# The base-API spellings a body writes, carried into the worksheet so the page is not
+# opened to spell a call the section above already asked for. Every name here is
+# checked against docs/agent/members.json and against 40-base-api.md by check_corpus.py
+# case "base-api-parity": this is a second copy, and a second copy that drifts is worse
+# than none. The floor sentence is part of the block and not decoration -- an enumerated
+# list of what a type carries is read as the list of what it carries, and that belief
+# once survived contact with the header contradicting it.
+BASE_API = [
+    'areg::String and the containers, for the bodies below. A list here is a floor, not',
+    'a limit: it says what you may use without looking it up, never what exists. For',
+    'anything else ask "python3 {tools}/api_help.py <name>", or --search <word> when the',
+    'name is what you are missing. Never a header, and never grep.',
+    '',
+    '  as_string()                  const char *, and what a printf "%s" needs',
+    '  is_empty()                   bool',
+    '  length()                     areg::CharCount',
+    '  find_first(phrase)           areg::CharPos; the substring search',
+    '  is_valid_position(pos)       bool; a search that found nothing returns areg::END_POS',
+    '  compare(other)               areg::Ordering: Smaller, Equal, Bigger',
+    '  format(fmt, ...)             String &, printf rules, fills this string and chains',
+    '  to_int32() / from_int32(n)   and the uint32, int64, uint64, float, double, bool pairs',
+    '',
+    '  A String passed where a printf "%s" is wanted is the commonest compile error in',
+    '  application code: LOG_INFO("[ %s ]", name.as_string()), never LOG_INFO("[ %s ]", name).',
+]
+
+# The names of BASE_API, for the check that holds this copy and the page together.
+BASE_API_NAMES = ('as_string', 'is_empty', 'length', 'find_first', 'is_valid_position',
+                  'compare', 'format', 'to_int32', 'from_int32')
+
+
 # The generated functions whose behaviour no name gives away. A worksheet lists
 # mPace, cStallTicks, mStep and complete() as taken, and a body that has to know when
 # the stall watchdog fires, or when mStep moves, cannot read that out of the names:
@@ -667,8 +723,10 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
                      '#| the generated file it is declared in:\n#|')
         for _, (cls, members, helpers, docs) in sorted(carried.items()):
             lines.append('#|   {}'.format(cls))
-            if members:
-                lines.append('#|     members: ' + ', '.join(members))
+            for spelt, note in members:
+                lines.append('#|     {}'.format(spelt))
+                if note:
+                    lines.append('#|         {}'.format(note))
             for spelt in helpers:
                 lines.append('#|     {}'.format(spelt))
                 said = docs.get(spelt)
@@ -690,6 +748,9 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
             for line in body:
                 lines.append(('#|   ' + line).rstrip())
             lines.append('#|')
+    for line in BASE_API:
+        lines.append(('#| ' + line.format(tools=TOOLS_DIR)).rstrip())
+    lines.append('#|')
     lines.append('#| The names these bodies may call, spelt as the generator emits them.\n'
                  '#| A name spelt in another namespace than the one below does not\n'
                  '#| compile:\n#|')
@@ -2915,16 +2976,38 @@ APP_NOTE = (
     '  is never needed.')
 
 
-def report_todos(out, mode):
-    """Every marker still left in the application's sources, with its line."""
+def marker_sources(out):
+    """Every generated source of the application, in the order a report reads them."""
     names = []
     for folder, dirs, files in os.walk(out) if os.path.isdir(out) else []:
         dirs[:] = [d for d in dirs if d not in ('services', 'build')]
         names += [os.path.join(folder, name) for name in files
                   if name.endswith(('.hpp', '.cpp'))]
+    return sorted(names)
+
+
+def open_markers(out):
+    """How many markers the application still leaves open.
+
+    The count is what a caller needs to say whether the next step is the worksheet or
+    the build. It walks the same files --todos prints, so the two never disagree.
+    """
+    total = 0
+    for path in marker_sources(out):
+        try:
+            with open(path, encoding='utf-8') as handle:
+                total += sum(1 for line in handle if MARKER.search(line))
+        except OSError:
+            pass
+    return total
+
+
+def report_todos(out, mode):
+    """Every marker still left in the application's sources, with its line."""
+    names = marker_sources(out)
     total = 0
     files = 0
-    for path in sorted(names):
+    for path in names:
         if not os.path.exists(path):
             continue
         here = 0

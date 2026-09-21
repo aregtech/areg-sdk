@@ -489,6 +489,36 @@ def app_older_than(root, build, specs):
 MANIFEST = 'areg-project.json'
 
 
+def closing_lines(root, bodies, specs):
+    """What to do next, after a build that did not run the scenarios.
+
+    Which call comes next depends on whether a body has been written yet. Naming
+    --run while every marker is still open sends the reader to a command that builds
+    the same empty bodies again, and the worksheet it has to read first is never
+    named: one measured run spent a request working that out for itself.
+    """
+    same = '  python3 {} {}'.format(
+        os.path.join(HERE, 'build_project.py'),
+        ' '.join('--spec ' + spec for spec in specs)).replace('  ', ' ')
+    still_open = gen_skeleton.open_markers(os.path.join(root, 'src'))
+    if not still_open:
+        return ['Every step passed. Next, and after every fix, the same command with --run:',
+                'it applies the worksheet, builds, runs the scenarios and the final check:',
+                '{} --run'.format(same)]
+    length = ''
+    try:
+        with open(os.path.join(root, gen_skeleton.WORKSHEET), encoding='utf-8') as handle:
+            length = ' ({} lines)'.format(sum(1 for _ in handle))
+    except OSError:
+        pass
+    return ['Every step passed. {} marker(s) are open, so the application does nothing '
+            'yet.'.format(still_open),
+            'Next: read {}{}, then write every section it lists into {} in'
+            .format(gen_skeleton.WORKSHEET, length, bodies),
+            'one call. Then apply, build and run the scenarios in one command:',
+            '{} --run'.format(same)]
+
+
 def worksheet_has_code(path):
     """True when the worksheet names a section and carries a line of code under one."""
     try:
@@ -744,11 +774,8 @@ def main():
         return 0
 
     print('')
-    print('Every step passed. Next, and after every fix, the same command with --run:')
-    print('it applies the worksheet, builds, runs the scenarios and the final check:')
-    print('  python3 {} {} --run'.format(
-        os.path.join(HERE, 'build_project.py'),
-        ' '.join('--spec ' + spec for spec in args.spec)).replace('  ', ' '))
+    for line in closing_lines(root, args.bodies, args.spec):
+        print(line)
     return 0
 
 

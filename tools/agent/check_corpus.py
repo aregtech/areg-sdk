@@ -2907,6 +2907,8 @@ def run():
     check_shared_request_action(report)
     check_provider_timers(report)
     check_scaffold_routing(report)
+    check_build_routes_next(report)
+    check_base_api_parity(report)
     check_errors_follow_output(report)
     check_regeneration_report(report)
     check_regeneration_idempotent(report)
@@ -5582,6 +5584,119 @@ def check_scaffold_routing(report):
               'schema_help.py sends a design.json key to gen_docs.py --example')
 
 
+def check_base_api_parity(report):
+    """The worksheet's base-API block names only real calls, and says it is a floor.
+
+    It is a second copy of what 40-base-api.md carries, and a second copy that drifts is
+    worse than none. Two things are held: every name in it is a name the framework
+    actually declares (members.json is generated from the headers), and every name is
+    also on the page, so the two cannot disagree. The floor sentence is checked as well:
+    an enumerated list of what a type carries is read as the list of what it carries,
+    which once cost seven working lines rewritten against a header that contradicted it.
+    """
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_skeleton
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('base-api-parity',
+                    'gen_skeleton.py does not import: {}'.format(failure))
+        return
+
+    block = ' '.join(gen_skeleton.BASE_API)
+    if 'floor' not in block or 'not' not in block or 'api_help.py' not in block:
+        report.fail('base-api-parity',
+                    'the worksheet base-API block does not say it is a floor and not a '
+                    'limit, or does not route the rest to api_help.py. An enumerated '
+                    'list read as exhaustive manufactures absences')
+        return
+
+    try:
+        with open(os.path.join(ROOT, 'docs', 'agent', 'members.json'), encoding='utf-8') as handle:
+            declared = set(json.load(handle).get('members') or [])
+    except (OSError, ValueError) as failure:
+        report.fail('base-api-parity', 'members.json does not read: {}'.format(failure))
+        return
+    try:
+        with open(os.path.join(ROOT, 'docs', 'agent', '40-base-api.md'), encoding='utf-8') as handle:
+            page = handle.read()
+    except OSError as failure:
+        report.fail('base-api-parity', '40-base-api.md does not read: {}'.format(failure))
+        return
+
+    for name in gen_skeleton.BASE_API_NAMES:
+        if name not in declared:
+            report.fail('base-api-parity',
+                        'the worksheet offers "{}", which the framework does not declare '
+                        '(members.json is generated from the headers). A body written '
+                        'from it does not compile'.format(name))
+            return
+        if name not in page:
+            report.fail('base-api-parity',
+                        'the worksheet offers "{}" and 40-base-api.md does not carry it. '
+                        'The two copies have drifted'.format(name))
+            return
+        if name not in block:
+            report.fail('base-api-parity',
+                        '"{}" is listed in BASE_API_NAMES and is not in the block the '
+                        'worksheet prints'.format(name))
+            return
+    report.ok('base-api-parity',
+              'the worksheet base-API block names {} call(s), all of them declared by the '
+              'framework and all of them on 40-base-api.md, and says it is a floor'
+              .format(len(gen_skeleton.BASE_API_NAMES)))
+
+
+def check_build_routes_next(report):
+    """After a generation that leaves markers open, the build names the worksheet.
+
+    build_project.py used to close every generate-only call with "the same command
+    with --run", whichever it was. Run 20260921a-tempalarm was told that while 17
+    markers were still open and bodies.txt did not exist, so it spent a request
+    deciding for itself that the worksheet came first. The line a tool ends on is
+    what routes the next call.
+    """
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import build_project
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('build-route', 'build_project.py does not import: {}'.format(failure))
+        return
+
+    holder = tempfile.mkdtemp()
+    try:
+        source = os.path.join(holder, 'src', 'provider')
+        os.makedirs(source)
+        with open(os.path.join(source, 'P.cpp'), 'w', encoding='utf-8') as handle:
+            handle.write('void f()\n{\n    // TODO(you) body: write it.\n}\n')
+        with open(os.path.join(holder, 'worksheet.txt'), 'w', encoding='utf-8') as handle:
+            handle.write('#| one\n== body\n')
+        open_said = build_project.closing_lines(holder, 'bodies.txt', ['design.json'])
+        os.remove(os.path.join(source, 'P.cpp'))
+        filled_said = build_project.closing_lines(holder, 'bodies.txt', ['design.json'])
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+
+    whole = ' '.join(open_said)
+    if 'worksheet.txt' not in whole or 'bodies.txt' not in whole:
+        report.fail('build-route',
+                    'a build that leaves markers open does not name the worksheet and '
+                    'the bodies file as the next step: "{}"'.format(whole))
+        return
+    if 'marker' not in whole:
+        report.fail('build-route',
+                    'a build that leaves markers open does not say that it did, so '
+                    '--run reads as the next call: "{}"'.format(whole))
+        return
+    if 'worksheet.txt' in ' '.join(filled_said):
+        report.fail('build-route',
+                    'a build with every marker filled still sends the reader to the '
+                    'worksheet, which has nothing left in it')
+        return
+    report.ok('build-route',
+              'the build names the worksheet while markers are open and --run once '
+              'they are filled')
+
+
 def check_provider_timers(report):
     """A provider's own timer is declared in the design and filled in the worksheet.
 
@@ -5955,7 +6070,7 @@ def check_names_carry_signatures(report):
 
     header = ('class Cons\n'
               '{\n'
-              '    uint32_t mIdle{ 0 };\n'
+              '    uint32_t mIdle{ 0 };   //!< How many times it idled.\n'
               '    //! Starts the deadline timer for this many seconds.\n'
               '    void arm_deadline(uint32_t seconds);\n'
               '    inline Cons & self();\n'
@@ -5971,9 +6086,25 @@ def check_names_carry_signatures(report):
                     'the worksheet lists a helper without the line its header writes '
                     'above it, so what that helper does is learnt by opening the file')
         return
-    if 'mIdle' not in members:
+    spelt = [text for text, _ in members if 'mIdle' in text]
+    if not spelt:
         report.fail('name-signatures',
                     'the worksheet no longer lists the members the skeleton declares')
+        return
+    # A member named without its type is read as a value, and a body that has to
+    # know which one it is opens the generated header. Run 20260921a-tempalarm spent
+    # five requests there to learn that one member was a Timer.
+    if 'uint32_t' not in spelt[0]:
+        report.fail('name-signatures',
+                    'the worksheet names member "{}" without the type it is declared '
+                    'with. A body then guesses whether it holds a value or an object '
+                    'and opens the generated header to find out'.format(spelt[0]))
+        return
+    note = [said for text, said in members if 'mIdle' in text][0]
+    if not note or 'how many times' not in note.lower():
+        report.fail('name-signatures',
+                    'the worksheet drops the line the header writes beside a member, '
+                    'so what that member is for is learnt by opening the file')
         return
     armed = [h for h in helpers if 'arm_deadline' in h]
     if not armed:
