@@ -139,6 +139,7 @@ int32_t WaitablePosix::notify_any_waiters() noexcept
 {
     std::atomic<uint32_t>* toWake[areg::MAXIMUM_WAITING_OBJECTS];
     int32_t wakeCount{ 0 };
+    int32_t total{ 0 };
 
     while (mWaitersLock.test_and_set(std::memory_order_acquire)) {}
 
@@ -156,6 +157,19 @@ int32_t WaitablePosix::notify_any_waiters() noexcept
             {
                 break;
             }
+
+            // The list is longer than the batch. Empties it here, still under the lock,
+            // because the array holds no more.
+            if (wakeCount == areg::MAXIMUM_WAITING_OBJECTS)
+            {
+                for (int32_t i{ 0 }; i < wakeCount; ++i)
+                {
+                    _wake_one_waiter(toWake[i]);
+                }
+
+                total += wakeCount;
+                wakeCount = 0;
+            }
         }
 
         node = next;
@@ -168,7 +182,7 @@ int32_t WaitablePosix::notify_any_waiters() noexcept
         _wake_one_waiter(toWake[i]);
     }
 
-    return wakeCount;
+    return total + wakeCount;
 }
 
 #endif  // defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)

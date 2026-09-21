@@ -96,7 +96,21 @@ unsigned long Thread::_windows_thread_routine(void* /* data */)
 
 void Thread::_os_set_name(id_type threadId, const char* threadName)
 {
-    pthread_setname_np(threadId, threadName != nullptr ? threadName : "");
+    // The OS takes at most 16 bytes including the terminator, and rejects the whole
+    // name when it is longer. The tail is cut so that the name still reaches the OS.
+    constexpr size_t MAX_OS_NAME{ 15u };
+    char name[MAX_OS_NAME + 1u]{ };
+    if (threadName != nullptr)
+    {
+        size_t pos{ 0u };
+        while ((pos < MAX_OS_NAME) && (threadName[pos] != '\0'))
+        {
+            name[pos] = threadName[pos];
+            ++ pos;
+        }
+    }
+
+    pthread_setname_np(to_ptr<pthread_t, id_type>(threadId), name);
 }
 
 #else// !((__GLIBC__ > 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ >= 12)))

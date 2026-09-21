@@ -35,6 +35,10 @@
 #                             ctest      -> ctest in the build dir (default for tests).
 #                                           Builds every target, so each registered
 #                                           test has its executable.
+#                             ctest:<regex>
+#                                        -> only the tests whose name matches, with
+#                                           --repeat N as 'until-fail:N' rounds. Use it
+#                                           to hammer a test that fails once in a while.
 #                             examples   -> the example scenario driver over the whole
 #                                           instrumented tree
 #                             examples:<name>[,<name>...]
@@ -46,16 +50,22 @@
 #     --examples            Also build examples (default: off, tests only).
 #     --config  <type>      CMake build type (default: Debug). Use RelWithDebInfo when
 #                           chasing a race: -O0 changes the timing enough to hide it.
-#     --repeat  N           Rounds for '--run examples' (default: 1).
+#     --repeat  N           Rounds for '--run examples' and '--run ctest:<regex>' (default: 1).
 #     --leaks   on|off      LeakSanitizer, asan mode only (default: on). Turn it off when
 #                           hunting a use-after-free, so the report is not buried in leaks.
 #     --jobs N              Parallel build jobs (default: nproc).
 #     --keep                Reuse an existing build dir (skip reconfigure).
+#
+#   Environment
+#     AREG_SANITIZE_COREDUMP=1  End a sanitizer report with abort() instead of _exit(),
+#                           so the kernel writes a core. Off by default: a core of an
+#                           instrumented process is large. Needs 'ulimit -c unlimited'.
 #     --                    Everything after is forwarded to the run binary.
 #
 #   Examples
 #     tools/sanitize.sh asan                         # build+run unit tests under ASan/LSan/UBSan
 #     tools/sanitize.sh tsan --run ctest             # data-race scan over the test suite
+#     tools/sanitize.sh tsan --keep --repeat 25 --run ctest:areg-timer-churn-test
 #     tools/sanitize.sh asan --target 23_pubclient --examples -- --some-arg
 #     tools/sanitize.sh heaptrack --target mtrouter --examples -- -e
 #
@@ -152,12 +162,28 @@ UBSAN_FLAGS="-fsanitize=undefined -fno-sanitize-recover=all ${COMMON_DBG}"
 # --------------------------------------------------------------------------
 _detect_leaks=1
 [[ "${LEAKS}" == "off" ]] && _detect_leaks=0
-export ASAN_OPTIONS="detect_leaks=${_detect_leaks}:halt_on_error=0:abort_on_error=0:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1:print_stats=1:log_threads=1"
+# handle_abort / handle_sigill / handle_sigfpe / handle_sigbus make the sanitizer
+# print a symbolised stack for a deadly signal it does not raise itself. Without
+# them a glibc assertion (arena.c, malloc.c) reaches the log as one line of text
+# and the thread that hit it is unknown.
+DEADLY_SIGNALS="handle_abort=1:handle_sigill=1:handle_sigfpe=1:handle_sigbus=1"
+export ASAN_OPTIONS="detect_leaks=${_detect_leaks}:halt_on_error=0:abort_on_error=0:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1:print_stats=1:log_threads=1:${DEADLY_SIGNALS}"
 export UBSAN_OPTIONS="print_stacktrace=1:halt_on_error=0"
-export TSAN_OPTIONS="second_deadlock_stack=1:history_size=7:halt_on_error=0"
+export TSAN_OPTIONS="second_deadlock_stack=1:history_size=7:halt_on_error=0:${DEADLY_SIGNALS}"
 [[ -f "${SUPP_DIR}/lsan.supp" ]] && export LSAN_OPTIONS="suppressions=${SUPP_DIR}/lsan.supp:print_suppressions=0"
 [[ -f "${SUPP_DIR}/tsan.supp" ]] && export TSAN_OPTIONS="${TSAN_OPTIONS}:suppressions=${SUPP_DIR}/tsan.supp"
 [[ -f "${SUPP_DIR}/ubsan.supp" ]] && export UBSAN_OPTIONS="${UBSAN_OPTIONS}:suppressions=${SUPP_DIR}/ubsan.supp"
+
+# A sanitizer ends a report with _exit(), which leaves no core. With
+# AREG_SANITIZE_COREDUMP=1 it ends with abort() instead and the kernel writes one, so a
+# crash that only happens on a build server can be opened on a developer machine. The
+# core of an instrumented process is large, so this is opt-in. The last value of a
+# repeated key wins, which is how abort_on_error is overridden here.
+if [[ "${AREG_SANITIZE_COREDUMP:-0}" == "1" ]]; then
+    export ASAN_OPTIONS="${ASAN_OPTIONS}:disable_coredump=0:abort_on_error=1"
+    export TSAN_OPTIONS="${TSAN_OPTIONS}:disable_coredump=0:abort_on_error=1"
+    export UBSAN_OPTIONS="${UBSAN_OPTIONS}:disable_coredump=0:abort_on_error=1"
+fi
 
 # --------------------------------------------------------------------------
 # Helper: configure + build an instrumented tree.
@@ -190,7 +216,7 @@ configure_build() {
     # never built is reported "Not Run". The whole tree is built when the run is
     # ctest, so every registered test has its binary.
     local goal="${TARGET}"
-    if [[ "${RUN}" == "ctest" ]]; then
+    if [[ "${RUN}" == ctest* ]]; then
         goal="all"
     fi
     info "Building target '${goal}' with ${JOBS} jobs"
@@ -217,9 +243,13 @@ do_run() {
     local build_dir="$1"; local prefix=("${@:2}")
     case "${RUN}" in
         none) info "Run skipped (--run none)"; return 0;;
-        ctest)
-            info "Running ctest in ${build_dir}"
-            ( cd "${build_dir}" && "${prefix[@]}" ctest --output-on-failure ) ;;
+        ctest|ctest:*)
+            local only=()
+            [[ "${RUN}" == ctest:* ]] && only=(-R "${RUN#ctest:}")
+            local rounds=()
+            [[ "${REPEAT}" -gt 1 ]] && rounds=(--repeat "until-fail:${REPEAT}")
+            info "Running ctest in ${build_dir} ${only[*]-} ${rounds[*]-}"
+            ( cd "${build_dir}" && "${prefix[@]}" ctest --output-on-failure "${only[@]}" "${rounds[@]}" ) ;;
         examples|examples:*)
             # The interesting defects live between processes, not inside one binary, so the
             # scenario driver is what has to run under the sanitizer. Every process it

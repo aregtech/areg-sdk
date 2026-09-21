@@ -172,6 +172,9 @@ END_MODEL(MODEL_NAME)
 
 int main()
 {
+    // Unbuffered: what the run printed before a crash still reaches the log.
+    setvbuf(stdout, nullptr, _IONBF, 0);
+
     start_test_watchdog();
     bool failed{ false };
 
