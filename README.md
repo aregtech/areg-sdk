@@ -29,14 +29,14 @@ public internet endpoints.
 **You write the logic.** The generated base classes deliver each call to the component's thread:
 
 ```cpp
-// Provider thread: answer the request
+// Provider thread or process: answer the request
 void ServiceProvider::request_hello_service(const areg::String & client)
 {
     std::cout << "provider: hello, " << client << std::endl;
     response_hello_service(true);
 }
 
-// Consumer thread: receive the answer, asynchronously
+// Consumer thread or process: receive the answer, asynchronously
 void ServiceConsumer::response_hello_service(bool success)
 {
     std::cout << "consumer: " << (success ? "greeted" : "failed") << std::endl;
@@ -61,8 +61,11 @@ Full working code: [one process](./docs/agent/recipes/01-local-single-process/) 
 [two processes](./docs/agent/recipes/02-ipc-two-processes/) ·
 [model in plain C++](./docs/agent/recipes/10-runtime-model/) · [How it works](#how-it-works)
 
+---
+
 ## Quick start[![](./docs/img/pin.svg)](#quick-start)
 
+You can setup and start your own project, replace `myapp` with your real project name:
 ```bash
 git clone https://github.com/aregtech/areg-sdk.git
 sh areg-sdk/tools/setup-project.sh --name myapp --root myapp --mode local --sdk-root areg-sdk
@@ -80,8 +83,11 @@ Needs a C++17 compiler, CMake 3.20+ and Java 17+, which runs the code generator 
 
 If Areg saves you work, a ⭐ helps other C++ developers find it.
 
+> [!NOTE]
 > 🤖 **Coding with an AI agent?** Areg ships a guide, generators and checkers so an agent
-> that has never seen the framework can still build on it correctly. [Agentic coding](#agentic-coding)
+> that has never seen the `areg` framework can still build on it correctly. [Agentic coding](#agentic-coding)
+
+---
 
 ## Table of Contents
 
@@ -162,22 +168,26 @@ examples use. Details: [Service interface guide](./docs/wiki/06e-lusan-service-i
 ## Agentic coding[![](./docs/img/pin.svg)](#agentic-coding)
 
 Areg is built to be learned by coding agents while they work. The repository is the
-course: [`AGENTS.md`](./AGENTS.md) routes an agent to the one page its task needs. Those
-pages replace what a model remembers about Areg (the API was renamed in 2.0) and teach
-what it never knew, such as state machines, while generators and checkers write and
-verify the code.
+course: [`AGENTS.md`](./AGENTS.md) routes an agent to the one page its task needs. An
+agent that has never seen Areg learns to write a service interface (`.siml`), a state
+machine (`.fsml`) and a data type (`.dtml`), and wire them into a running project -- not
+an API it half-remembers from training.
 
-Try it: start your agent in an empty directory with
-[this prompt](./examples/ai-benchmark/areg-coffeemachine-prompt.txt) (fill in four
-values) for a coffee machine driven by a state machine. To compare, run the same task on
-gRPC, a framework the model already knows: [how to run it](./examples/ai-benchmark/).
+<div align="center"><img src="./docs/img/screenshot-fsm-ai.png" alt="A state machine an agent generated for the coffee-machine task, opened in Lusan" width="700"/></div>
+
+**Try it:** point your agent at [one of eight ready prompts](./examples/ai-benchmark/) --
+coffee machine, ATM, elevator, greenhouse -- and watch it design, generate and build a
+service from nothing; the same harness scores it against hidden checks and runs the
+identical task on gRPC to compare.
 
 In our runs, agents finished the task on Areg as reliably as on gRPC: 57 of 57 runs
 passed every hidden probe over 3 days, on 4 tasks and 3 model families. With Claude Code
 and Sonnet 5, Areg needed about half the API requests of gRPC (median 26, range 16-32,
 against 55.5, range 31-90), for equal output tokens and time, with no filesystem
-searches -- not behind a framework the model was trained on. Agent runs vary:
-[ranges and method](./examples/ai-benchmark/).
+searches -- not behind a framework the model was trained on. GitHub Copilot's
+GPT-5.6-Terra has been the cheapest of everything we've tried so far, across two agents
+and five models -- as few as 12 API requests, still 5 of 5 hidden probes passed. Agent
+runs vary: [ranges and method](./examples/ai-benchmark/).
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
