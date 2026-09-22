@@ -282,10 +282,19 @@ void ServiceCommunicationBase::connection_lost( SocketAccepted & clientSocket )
 
     if ( cookie != areg::COOKIE_UNKNOWN )
     {
+        AREG_DT_TRACE("connection_lost: socket [ %d ] maps to cookie [ %u ], raising the disconnect"
+                        , static_cast<int>(clientSocket.handle())
+                        , static_cast<uint32_t>(cookie));
+
         mLostFn(cookie);
         remove_instance(cookie);
         areg::MessageEnvelope msgDisconnect{ areg::create_disconnect_request(cookie, channel) };
         send_received_message(std::move(msgDisconnect), areg::EventPriority::HighPrio);
+    }
+    else
+    {
+        AREG_DT_TRACE("connection_lost: socket [ %d ] has no cookie, nothing is notified"
+                        , static_cast<int>(clientSocket.handle()));
     }
 
     mServerConnection.close_connection(clientSocket);

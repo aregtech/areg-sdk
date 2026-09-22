@@ -20,6 +20,8 @@
 #include "areg/logging/areg_log.h"
 #include "aregextend/service/SystemServiceDefs.hpp"
 
+#include "areg/base/private/DebugDefs.hpp"
+
 DEF_LOG_SCOPE(mtrouter_service_RouterServerService, register_service_provider);
 DEF_LOG_SCOPE(mtrouter_service_RouterServerService, unregister_service_provider);
 DEF_LOG_SCOPE(mtrouter_service_RouterServerService, register_service_consumer);
@@ -415,6 +417,11 @@ void RouterServerService::on_consumer_registered(const areg::ProxyAddress & prox
 void RouterServerService::on_provider_unregistered(const areg::StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ )
 {
     LOG_SCOPE( mtrouter_service_RouterServerService, on_provider_unregistered );
+    AREG_DT_TRACE("on_provider_unregistered: stub [ %s ], cookie [ %u ], status [ %d ]"
+                    , stub.to_string().as_string()
+                    , static_cast<uint32_t>(cookie)
+                    , static_cast<int>(mServiceRegistry.service_status(stub)));
+
     if ( mServiceRegistry.service_status(stub) == areg::ServiceConnectionState::Connected )
     {
         ListServiceProxies listProxies;
@@ -438,6 +445,9 @@ void RouterServerService::on_provider_unregistered(const areg::StubAddress & stu
                 if (sendList.add_if_unique(addrProxy.source()) )
                 {
                     send_message(areg::service_unregistered_event(stub, reason, mServerConnection.channel_id(), addrProxy.source( )), areg::EventPriority::HighPrio );
+
+                    AREG_DT_TRACE("on_provider_unregistered: queued the disconnect for proxy source [ %u ]"
+                                    , static_cast<uint32_t>(addrProxy.source()));
 
                     LOG_INFO("Send stub [ %s ] disconnect message to proxy [ %s ]"
                                     , stub.to_string().as_string()

@@ -663,6 +663,19 @@ class Runner:
               % (self.name, self.stacks))
         sys.stdout.flush()
 
+    def photograph_now(self, reason):
+        """Takes the backtraces of a process that keeps running.
+
+        Used for a process that is not the one being killed but whose state explains
+        why the other one stayed behind. The process is left running.
+        """
+        if not CAPTURE_STACKS or self.proc.poll() is not None:
+            return
+        self.stacks = capture_stacks(self.proc.pid, self.name, self.stack_path)
+        print('%s is still up and %s, this is where it stands:\n%s'
+              % (self.name, reason, self.stacks))
+        sys.stdout.flush()
+
     def stop(self):
         """Ends the process, preferring its own exit point over a kill."""
         if self.proc.poll() is None:
@@ -1293,12 +1306,31 @@ def run_scenario(scenario, bin_dir, out_dir, timeout, router_bin, keep_logs, use
                     break
                 time.sleep(0.2)
 
+            # A helper that stayed behind is usually waiting for something the router
+            # never sent, so the router is the process worth looking at. It leaves
+            # cleanly on '-q' later and would never be photographed on its way out,
+            # so its stack is taken here, while the scenario is still standing.
+            if (router is not None) and router.is_running():
+                if any(r.is_running() and scenario['procs'][i]['must_exit']
+                       for i, r in enumerate(runners[:-1])):
+                    router.photograph_now('a helper did not leave')
+
             for index, helper in enumerate(runners[:-1]):
                 entry = scenario['procs'][index]
                 if helper.is_running():
                     if entry['must_exit']:
-                        result.fail('%s was still running %d s after %s finished'
-                                    % (helper.name, int(GRACE_SECONDS), lead.name))
+                        # Whether the router was still up decides where to look: a router
+                        # that died takes the connection with it and the application is
+                        # expected to notice that by itself, which is a different defect
+                        # from a router that is alive and said nothing.
+                        if router is not None:
+                            state = 'up' if router.is_running() else 'gone'
+                        elif router_was_running:
+                            state = 'up' if is_router_listening() else 'gone'
+                        else:
+                            state = 'not used by this scenario'
+                        result.fail('%s was still running %d s after %s finished, router was %s'
+                                    % (helper.name, int(GRACE_SECONDS), lead.name, state))
                     helper.stop()
                 else:
                     code = helper.proc.returncode

@@ -91,6 +91,10 @@ void ServerSendThread::start_event_processing( areg::Event & eventElem )
                                }
                              , [&]( [[maybe_unused]] uint32_t messageId, [[maybe_unused]] ITEM_ID target )
                                {
+                                   AREG_DT_TRACE("send batch: no socket for target [ %u ], message [ %u ] is dropped"
+                                                   , static_cast<uint32_t>(target)
+                                                   , messageId);
+
                                    DEBUG_LOG_WARN("Discarding message (ID = [ %u ]) for disconnected target [ %u ]"
                                                    , messageId
                                                    , static_cast<uint32_t>(target));

@@ -1,0 +1,147 @@
+# Reproduces the intermittent 23_msgrate hang on macOS, where 23_pubclient keeps
+# running after 23_pubservice has left.
+#
+# The failure appeared once in thirteen jobs, so one run proves nothing. The build is
+# made once and the scenario is then run on many runners at the same time, which turns
+# a rare event into one that is expected to appear on every push.
+#
+# The configuration is the one that failed, down to the logging being off, because
+# switching logging on changes the timing that produces the failure. The evidence comes
+# from AREG_DIAGNOSE_TRACE instead, which is independent of the logging build option.
+#
+# Temporary. Delete this file together with the diagnostic traces once the defect is
+# understood and fixed.
+name: macOS probe 23_msgrate
+
+on:
+  push:
+    branches: [ 'bugfix/799-example-23-client-does-not-quit' ]
+  workflow_dispatch:
+    inputs:
+      shards:
+        description: 'how many runners execute the scenario in parallel'
+        required: false
+        default: '30'
+
+permissions:
+  contents: read
+
+env:
+  BUILD_TYPE: Release
+  CACHE_DEST: ./product/cache/llvm-clang++
+  INSTALL_DEST: ./product/install/llvm-clang++
+
+jobs:
+
+  build:
+    name: build once
+    runs-on: macos-latest
+    steps:
+
+      - name: Checkout Areg SDK source codes
+        uses: actions/checkout@v7
+
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v5.6.0
+        with:
+          java-version: 17
+          java-package: jre
+          distribution: temurin
+
+      - name: Ensure Xcode CLI Tools
+        run: sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+
+      # Same options as the macos-clang-static-noext-nolog job of the CMake workflow,
+      # plus the switch that compiles the diagnostic traces in.
+      - name: Configure CMake
+        run: |
+          cmake -B ${{env.CACHE_DEST}} \
+                -DAREG_COMPILER=clang \
+                -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
+                -DAREG_LIB_TYPE=static \
+                -DAREG_EXTENDED:BOOL=OFF \
+                -DAREG_LOGGING:BOOL=OFF \
+                -DAREG_EXAMPLES:BOOL=ON \
+                -DAREG_TESTS:BOOL=ON \
+                -DAREG_INSTALL:BOOL=OFF \
+                -DCMAKE_CXX_FLAGS="-DAREG_DIAGNOSE_TRACE=1"
+
+      - name: Build with CMake
+        run: cmake --build ${{env.CACHE_DEST}} --config ${{env.BUILD_TYPE}} -j16
+
+      # Packed into a tar because the artifact upload does not carry the executable bit,
+      # and an application that cannot be started is not a probe.
+      - name: Pack the binaries
+        shell: bash
+        run: |
+          BIN_DIR="$(find ./product/build -type d -name bin 2>/dev/null | head -n 1)"
+          if [ -z "${BIN_DIR}" ]; then echo "no bin directory was produced" >&2; exit 1; fi
+          echo "packing ${BIN_DIR}"
+          tar -czf ./probe-bin.tar.gz -C "$(dirname "${BIN_DIR}")" bin
+
+      - name: Upload the binaries
+        uses: actions/upload-artifact@v7
+        with:
+          name: probe-bin
+          path: ./probe-bin.tar.gz
+          retention-days: 3
+
+  probe:
+    name: shard ${{matrix.shard}}
+    needs: build
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+                 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                 21, 22, 23, 24, 25, 26, 27, 28, 29, 30 ]
+    steps:
+
+      - name: Checkout Areg SDK source codes
+        uses: actions/checkout@v7
+
+      - name: Download the binaries
+        uses: actions/download-artifact@v7
+        with:
+          name: probe-bin
+
+      - name: Unpack the binaries
+        shell: bash
+        run: |
+          mkdir -p ./probe
+          tar -xzf ./probe-bin.tar.gz -C ./probe
+          chmod -R +x ./probe/bin
+          ls -l ./probe/bin | head -n 20
+
+      # AREG_DIAG_TRACE switches the compiled in traces on at run time. The output of
+      # every application, the router included, is captured into the scenario directory.
+      - name: Run 23_msgrate
+        shell: bash
+        timeout-minutes: 30
+        env:
+          AREG_DIAG_TRACE: 1
+        run: |
+          python3 tools/run-all-examples.py \
+                  --bin-dir ./probe/bin \
+                  --tier perf \
+                  --only 23_msgrate \
+                  --keep-logs \
+                  --out-dir "./example-results/shard-${{matrix.shard}}"
+
+      - name: Show what the router traced
+        if: always()
+        shell: bash
+        run: |
+          echo "--- diagnostic traces of this shard ---"
+          grep -rh 'areg-diag-trace' "./example-results/shard-${{matrix.shard}}" || \
+              echo "(no trace line was produced)"
+
+      - name: Upload the captured output
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: probe-shard-${{matrix.shard}}
+          path: ./example-results/shard-${{matrix.shard}}/
+          retention-days: 7
+          if-no-files-found: ignore
