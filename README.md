@@ -312,8 +312,8 @@ project · [all scaffolding options](./docs/wiki/02a-quick-project-setup.md).
 3. **[03_helloservice](./examples/03_helloservice/)**: one thread, then separate threads, then separate processes.
 4. **[16_pubmesh](./examples/16_pubmesh/)**: a mesh of local and public services discovering each other.
 5. **[23_pubdatarate](./examples/23_pubdatarate/)** and **[30_publatency](./examples/30_publatency/)**: throughput and latency benchmarks on your hardware.
-6. **[33_tempalarm](./examples/33_tempalarm/)**: built by an AI agent. A monitor and an operator in two processes, attributes and broadcasts.
-7. **[34_coffeemachine](./examples/34_coffeemachine/)**: built by an AI agent. A service driven by a generated state machine, in two processes.
+6. **[33_tempalarm](./examples/33_tempalarm/)**: **built by an AI agent**. A monitor and an operator in two processes, attributes and broadcasts.
+7. **[34_coffeemachine](./examples/34_coffeemachine/)**: **built by an AI agent**. A service driven by a generated state machine, in two processes.
 8. **[All examples](./examples/README.md)**
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
@@ -404,8 +404,7 @@ More patterns, diagrams and limits: [Use cases and benefits](./docs/USECASES.md)
 
 <div align="center"><a href="./docs/img/lusan-service-if-general.png"><img src="./docs/img/lusan-service-if-general.png" alt="Lusan service interface designer" width="80%"/></a></div>
 
-Libraries: `areg` (core framework), `aregextend` (extended services, SQLite wrapper,
-utilities), `areglogger` (log observer API).
+Libraries: `areg` (core framework), `aregextend` (extended utilities, SQLite wrapper), `areglogger` (log observer API).
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
