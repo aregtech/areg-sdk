@@ -729,7 +729,8 @@ def main():
         print('== the first build compiles the framework too, so it takes minutes.')
         print('   A timeout here is the command timeout, not a failure of the build:')
         print('   every step is incremental, so running this again continues from')
-        print('   where it stopped. Nothing is lost and nothing is done twice.')
+        print('   where it stopped. Nothing is lost and nothing is done twice. If the')
+        print('   call was moved to the background, wait for it and start no second one.')
     if not run('configure', ['cmake', '-B', args.build], root, kept=3,
                build=args.build, heal=stale_healer(root, args.build)):
         return 1

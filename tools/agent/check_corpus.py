@@ -1299,15 +1299,16 @@ def check_grpc_isolation(report):
     if re.search(r'areg', helped.stdout.decode('utf-8', 'replace'), re.I):
         report.fail('grpc-arm', 'run_scenarios.py --help names areg, and the gRPC arm '
                                 'reads it')
-    wrapper = read('examples', 'ai-benchmark', 'grpc-coffeemachine-prompt.txt')
-    if not wrapper:
-        report.fail('grpc-arm', 'examples/ai-benchmark/grpc-coffeemachine-prompt.txt '
-                                'is missing')
-    elif re.search(r'areg|another framework|other arm', wrapper, re.I):
-        report.fail('grpc-arm', 'the gRPC wrapper names areg or another arm')
-    else:
-        report.ok('grpc-arm', 'the gRPC prompt and the runner help name no other '
-                              'framework')
+    for name in ('grpc-coffeemachine-prompt.txt', 'grpc-ai-prompt-template.txt'):
+        wrapper = read('examples', 'ai-benchmark', name)
+        if not wrapper:
+            report.fail('grpc-arm', 'examples/ai-benchmark/{} is missing'.format(name))
+            return
+        if re.search(r'areg|another framework|other arm', wrapper, re.I):
+            report.fail('grpc-arm', '{} names areg or another arm'.format(name))
+            return
+    report.ok('grpc-arm', 'the gRPC prompts and the runner help name no other '
+                          'framework')
 
 
 # Checklist phrases the hidden probes in verify_run.py score, one per probe.
@@ -3388,7 +3389,8 @@ def check_late_awaits(report):
 # run, over the runbook that supersedes it, because the task file is read later and
 # is therefore nearer in context.
 TASK_PROMPTS = ('prompt-tempalarm.md', 'prompt-coffeemachine.md', 'prompt-atm.md',
-                'prompt-atm-fsm.md', 'prompt-printscan.md')
+                'prompt-atm-fsm.md', 'prompt-printscan.md', 'prompt-elevator.md',
+                'prompt-sensorgateway.md', 'prompt-greenhouse.md')
 
 # Spellings that can only come from one framework or one operating system.
 TASK_PROMPT_LEAKS = ('.siml', '.fsml', '.dtml', 'setup_project.py', 'gen_skeleton.py',
