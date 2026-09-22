@@ -5,7 +5,7 @@
 
 **Distributed C++ services: one codebase for a thread, a process, or a network.**
 
-[![CMake build](https://github.com/aregtech/areg-sdk/actions/workflows/cmake.yml/badge.svg)](https://github.com/aregtech/areg-sdk/actions/workflows/cmake.yml)
+[![CMake build](https://github.com/aregtech/areg-sdk/actions/workflows/cmake.yml/badge.svg?branch=master)](https://github.com/aregtech/areg-sdk/actions/workflows/cmake.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue?style=flat-square)](./LICENSE.txt)
 [![C++17](https://img.shields.io/badge/C%2B%2B-17-blue?style=flat-square)](#getting-started)
 [![Linux | macOS | Windows](https://img.shields.io/badge/OS-Linux%20%7C%20macOS%20%7C%20Windows-blue?style=flat-square)](#getting-started)
