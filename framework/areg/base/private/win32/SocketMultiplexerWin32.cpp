@@ -134,6 +134,25 @@ inline void drain_wakeup(SOCKET fd) noexcept
     while (::recv(fd, buf, static_cast<int>(sizeof(buf)), 0) > 0) {}
 }
 
+// Drops hSocket from the unserved part of the batch and returns the new entry count.
+// The entries that stay are readiness that is already out of the kernel.
+inline uint32_t compact_batch( SOCKETHANDLE * fds, uint32_t * flags, uint32_t idx
+                             , uint32_t count, SOCKETHANDLE hSocket) noexcept
+{
+    uint32_t kept = idx;
+    for (uint32_t i = idx; i < count; ++i)
+    {
+        if (fds[i] != hSocket)
+        {
+            fds[kept]   = fds[i];
+            flags[kept] = flags[i];
+            ++kept;
+        }
+    }
+
+    return kept;
+}
+
 } // namespace
 
 areg::SocketMultiplexer::SocketMultiplexer(uint32_t maxConnections) noexcept
@@ -202,7 +221,7 @@ bool areg::SocketMultiplexer::unregister_socket(SOCKETHANDLE hSocket) noexcept
         {
             *it = mSockets.back();
             mSockets.pop_back();
-            mBatchCount = mBatchIdx = 0u;
+            mBatchCount = compact_batch(mBatchFds, mBatchEvents, mBatchIdx, mBatchCount, hSocket);
             return true;
         }
     }
@@ -252,9 +271,15 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         if (fd == mWakeupReadFd)
         {
             drain_wakeup(static_cast<SOCKET>(mWakeupReadFd));
-            mBatchCount = mBatchIdx = 0u;
-            // Hard reset --> FailedSocketHandle; soft wakeup() --> InvalidSocketHandle.
-            return mIsReset.load(std::memory_order_acquire) ? areg::FailedSocketHandle : areg::InvalidSocketHandle;
+            // A reset drops the batch, its sockets are unregistered. A soft wakeup keeps
+            // it: those entries are readiness that WSAPoll has already reported.
+            if (mIsReset.load(std::memory_order_acquire))
+            {
+                mBatchCount = mBatchIdx = 0u;
+                return areg::FailedSocketHandle;
+            }
+
+            return areg::InvalidSocketHandle;
         }
 
         return fd;
@@ -292,37 +317,38 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         return nReady == 0 ? areg::InvalidSocketHandle : areg::FailedSocketHandle;
     }
 
+    // Every ready socket of this WSAPoll result is cached before the wakeup is answered,
+    // so a wakeup in the same result costs no socket.
+    mBatchCount = mBatchIdx = 0u;
+    for (INT i = 0; i < socketCount; ++i)
+    {
+        const SHORT rev = fds[i].revents;
+        if (((rev & (POLLRDNORM | POLLERR | POLLHUP)) != 0) && (mBatchCount < areg::DEFAULT_DRAIN_LIMIT))
+        {
+            mBatchFds[mBatchCount]    = mSockets[static_cast<std::size_t>(i)];
+            mBatchEvents[mBatchCount] = static_cast<uint32_t>(rev);
+            ++mBatchCount;
+        }
+    }
+
     // Drain received bytes so the socket does not fire again on the next call
     if ((wakeupSlots > 0) && (fds[socketCount].revents & (POLLRDNORM | POLLHUP | POLLERR)))
     {
         drain_wakeup(static_cast<SOCKET>(mWakeupReadFd));
-        mBatchCount = mBatchIdx = 0u;
-        // Hard reset --> FailedSocketHandle; soft wakeup() --> InvalidSocketHandle.
-        return mIsReset.load(std::memory_order_acquire) ? areg::FailedSocketHandle : areg::InvalidSocketHandle;
-    }
-
-    // Collect ALL ready sockets from this WSAPoll result into the batch cache
-    mBatchCount = mBatchIdx = 0u;
-    SOCKETHANDLE first{ areg::InvalidSocketHandle };
-    for (INT i = 0; i < socketCount; ++i)
-    {
-        const SHORT rev = fds[i].revents;
-        if (rev & (POLLRDNORM | POLLERR | POLLHUP))
+        if (mIsReset.load(std::memory_order_acquire))
         {
-            if (first == areg::InvalidSocketHandle)
-            {
-                first = mSockets[static_cast<std::size_t>(i)];
-            }
-            else if (mBatchCount < areg::DEFAULT_DRAIN_LIMIT)
-            {
-                mBatchFds[mBatchCount]    = mSockets[static_cast<std::size_t>(i)];
-                mBatchEvents[mBatchCount] = static_cast<uint32_t>(rev);
-                ++mBatchCount;
-            }
+            mBatchCount = mBatchIdx = 0u;
+            return areg::FailedSocketHandle;
         }
+
+        return areg::InvalidSocketHandle;
     }
 
-    return first;
+    if (mBatchCount == 0u)
+        return areg::InvalidSocketHandle;
+
+    mBatchIdx = 1u;
+    return mBatchFds[0];
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -48,6 +48,25 @@ inline void drain_pipe(int fd) noexcept
     char buf[64];
     while (::read(fd, buf, sizeof(buf)) > 0) {}
 }
+
+// Drops hSocket from the unserved part of the batch and returns the new entry count.
+// The entries that stay are readiness that is already out of the kernel.
+inline uint32_t compact_batch( SOCKETHANDLE * fds, uint32_t * flags, uint32_t idx
+                             , uint32_t count, SOCKETHANDLE hSocket) noexcept
+{
+    uint32_t kept = idx;
+    for (uint32_t i = idx; i < count; ++i)
+    {
+        if (fds[i] != hSocket)
+        {
+            fds[kept]   = fds[i];
+            flags[kept] = flags[i];
+            ++kept;
+        }
+    }
+
+    return kept;
+}
 } // namespace
 
 // -----------------------------------------------------------------------
@@ -143,8 +162,7 @@ bool areg::SocketMultiplexer::unregister_socket(SOCKETHANDLE hSocket) noexcept
             *it = mSockets.back();
             mSockets.pop_back();
 
-            // Discard the batch cache, next wait() will fetch a fresh batch
-            mBatchCount = mBatchIdx = 0;
+            mBatchCount = compact_batch(mBatchFds, mBatchEvents, mBatchIdx, mBatchCount, hSocket);
             return true;
         }
     }
@@ -196,9 +214,15 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         if (fd == mWakeupReadFd)
         {
             drain_pipe(static_cast<int>(mWakeupReadFd));
-            mBatchCount = mBatchIdx = 0;
-            // Hard reset --> FailedSocketHandle; soft wakeup() --> InvalidSocketHandle.
-            return mIsReset.load(std::memory_order_acquire) ? areg::FailedSocketHandle : areg::InvalidSocketHandle;
+            // A reset drops the batch, its sockets are unregistered. A soft wakeup keeps
+            // it: those entries are readiness that poll() has already reported.
+            if (mIsReset.load(std::memory_order_acquire))
+            {
+                mBatchCount = mBatchIdx = 0u;
+                return areg::FailedSocketHandle;
+            }
+
+            return areg::InvalidSocketHandle;
         }
 
         return fd;
@@ -235,36 +259,37 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
     else if (nReady == 0)
         return areg::InvalidSocketHandle;   // timeout
 
-    if ((wakeupSlots > 0) && (fds[socketCount].revents & POLLIN))
-    {
-        drain_pipe(static_cast<int>(mWakeupReadFd));
-        mBatchCount = mBatchIdx = 0;
-        // Hard reset --> FailedSocketHandle; soft wakeup() --> InvalidSocketHandle.
-        return mIsReset.load(std::memory_order_acquire) ? areg::FailedSocketHandle : areg::InvalidSocketHandle;
-    }
-
-    mBatchCount = 0u;
-    SOCKETHANDLE first{ areg::InvalidSocketHandle };
+    // Every ready socket of this poll() result is cached before the wakeup is answered,
+    // so a wakeup in the same result costs no socket.
+    mBatchCount = mBatchIdx = 0u;
     for (uint32_t i = 0; i < socketCount; ++i)
     {
         const short rev = fds[i].revents;
-        if (rev & (POLLIN | POLLERR | POLLHUP))
+        if (((rev & (POLLIN | POLLERR | POLLHUP)) != 0) && (mBatchCount < areg::DEFAULT_DRAIN_LIMIT))
         {
-            if (first == areg::InvalidSocketHandle)
-            {
-                first   = mSockets[static_cast<std::size_t>(i)];
-            }
-            else if (mBatchCount < areg::DEFAULT_DRAIN_LIMIT)
-            {
-                mBatchFds[mBatchCount]    = mSockets[static_cast<std::size_t>(i)];
-                mBatchEvents[mBatchCount] = static_cast<uint32_t>(rev);
-                ++mBatchCount;
-            }
+            mBatchFds[mBatchCount]    = mSockets[static_cast<std::size_t>(i)];
+            mBatchEvents[mBatchCount] = static_cast<uint32_t>(rev);
+            ++mBatchCount;
         }
     }
 
-    mBatchIdx = 0u;
-    return first;
+    if ((wakeupSlots > 0) && (fds[socketCount].revents & POLLIN))
+    {
+        drain_pipe(static_cast<int>(mWakeupReadFd));
+        if (mIsReset.load(std::memory_order_acquire))
+        {
+            mBatchCount = mBatchIdx = 0u;
+            return areg::FailedSocketHandle;
+        }
+
+        return areg::InvalidSocketHandle;
+    }
+
+    if (mBatchCount == 0u)
+        return areg::InvalidSocketHandle;
+
+    mBatchIdx = 1u;
+    return mBatchFds[0];
 }
 
 #endif  // !defined(__linux__) && !defined(__APPLE__)
