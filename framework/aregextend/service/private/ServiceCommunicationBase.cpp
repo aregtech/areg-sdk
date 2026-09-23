@@ -824,6 +824,9 @@ void ServiceCommunicationBase::process_received_message(areg::MessageEnvelope & 
     {
         if ( msgId == areg::FuncIdRange::SystemServiceDisconnect )
         {
+            AREG_DT_TRACE("received the explicit disconnect from cookie [ %u ], socket [ %d ]"
+                            , static_cast<uint32_t>(cookie)
+                            , static_cast<int32_t>(whichSource.handle()));
             remove_instance( cookie );
             mServerConnection.close_connection( cookie );
         }

@@ -142,6 +142,9 @@ bool PoolReceiveThread::run_dispatcher()
             areg::SocketAccepted clientSocket = mConnection.client_by_handle(hReady);
             if ( !clientSocket.is_valid() )
             {
+                AREG_DT_TRACE("pool ready: socket [ %u ] is not an accepted client, unregistered and nothing is notified; cookie [ %u ]"
+                                , static_cast<uint32_t>(hReady)
+                                , static_cast<uint32_t>(mConnection.cookie(hReady)));
                 mMux.unregister_socket(hReady);
                 continue;
             }
@@ -190,6 +193,9 @@ bool PoolReceiveThread::run_dispatcher()
                 areg::SocketAccepted drainSocket = mConnection.client_by_handle(hDrain);
                 if ( !drainSocket.is_valid() )
                 {
+                    AREG_DT_TRACE("pool drain: socket [ %u ] is not an accepted client, unregistered and nothing is notified; cookie [ %u ]"
+                                    , static_cast<uint32_t>(hDrain)
+                                    , static_cast<uint32_t>(mConnection.cookie(hDrain)));
                     mMux.unregister_socket(hDrain);
                     continue;
                 }

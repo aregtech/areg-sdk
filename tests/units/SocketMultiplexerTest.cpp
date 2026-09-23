@@ -24,9 +24,11 @@
 
 #if defined(_POSIX)
 
+#include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include <cstring>
 #include <set>
 
 namespace
@@ -252,6 +254,71 @@ TEST( SocketMultiplexerTest, unregister_keeps_the_other_sockets )
     mux.reset();
     for ( uint32_t i = 0u; i < PAIR_COUNT; ++ i )
         close_pair( pairs[i] );
+}
+
+/**
+ * \brief   The read-ahead cache against the multiplexer. One cached receive moves the
+ *          whole kernel buffer into user space, so a peer that goes silent without
+ *          closing leaves the multiplexer with nothing to report while the cache is
+ *          still full. A receive loop that waits for readiness never comes back for it.
+ **/
+TEST( SocketMultiplexerTest, cached_data_is_invisible_to_the_multiplexer )
+{
+    constexpr uint32_t  BURST_SIZE  { 4096u };
+    constexpr uint32_t  CHUNK       { 64u };
+
+    SocketMultiplexer mux;
+    Pair pair;
+
+    ASSERT_TRUE( open_pair( pair ) );
+    ASSERT_TRUE( mux.register_socket( static_cast<SOCKETHANDLE>(pair.sock), true ) );
+
+    // The peer bursts as much as it can without blocking, then stays silent with the
+    // connection open.
+    char block[CHUNK];
+    ::memset( block, 'x', sizeof( block ) );
+    uint32_t written{ 0u };
+    for ( uint32_t i = 0u; i < BURST_SIZE; ++ i )
+    {
+        if ( ::send( pair.peer, block, sizeof( block ), MSG_DONTWAIT ) != static_cast<ssize_t>(sizeof( block )) )
+            break;
+
+        written += CHUNK;
+    }
+
+    ASSERT_GT( written, CHUNK );
+
+    EXPECT_NE( mux.wait( WAIT_MS ), areg::FailedSocketHandle );
+
+    // One small cached receive. Phase 3 of the cached read asks the kernel for the whole
+    // cache capacity, so it takes far more than the caller asked for.
+    areg::set_receive_mode( areg::ReceiveMode::MultiCache );
+    char one[CHUNK];
+    const int32_t got{ areg::receive_data( static_cast<SOCKETHANDLE>(pair.sock), reinterpret_cast<uint8_t *>(one), sizeof( one ) ) };
+    EXPECT_EQ( got, static_cast<int32_t>(sizeof( one )) );
+
+    // What the kernel still holds for this socket. The multiplexer can see this and
+    // nothing else.
+    int pending{ -1 };
+    ASSERT_EQ( ::ioctl( pair.sock, FIONREAD, &pending ), 0 );
+
+    const uint32_t consumed{ CHUNK };
+
+    // The premise, stated so that it fails loudly if a platform behaves otherwise.
+    ASSERT_GT( written, consumed ) << "the burst was too small to outlive one read";
+    ASSERT_EQ( pending, 0 ) << "the cached read left " << pending << " bytes in the kernel";
+
+    // The caller has taken one chunk, the kernel has nothing left, and the rest of the
+    // burst is in user space. Nothing has been sent since, so the multiplexer is the only
+    // way back to it -- and it cannot see a user-space buffer.
+    std::set<SOCKETHANDLE> seen;
+    collect( mux, seen );
+
+    EXPECT_EQ( seen.count( static_cast<SOCKETHANDLE>(pair.sock) ), 0u )
+        << "the multiplexer reported a socket whose unread data is only in the cache";
+
+    mux.reset();
+    close_pair( pair );
 }
 
 #endif  // defined(_POSIX)
