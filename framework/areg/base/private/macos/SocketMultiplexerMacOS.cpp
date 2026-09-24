@@ -152,6 +152,13 @@ areg::SocketMultiplexer::~SocketMultiplexer() noexcept
 
 bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket, bool search) noexcept
 {
+    // A pending reset is completed here, so the size cap and the search below see the
+    // set the caller expects and no stale handle survives into the new cycle.
+    if (mIsReset.load(std::memory_order_acquire))
+    {
+        _drop_registrations();
+    }
+
     if (    !areg::is_valid_socket(hSocket)
          || (mKqueueFd == areg::InvalidSocketHandle)
          || (hSocket == mWakeupWriteFd)
@@ -203,7 +210,7 @@ bool areg::SocketMultiplexer::unregister_socket(SOCKETHANDLE hSocket) noexcept
     return false;
 }
 
-void areg::SocketMultiplexer::reset() noexcept
+void areg::SocketMultiplexer::_drop_registrations() const noexcept
 {
     if (mKqueueFd != areg::InvalidSocketHandle)
     {
@@ -217,6 +224,10 @@ void areg::SocketMultiplexer::reset() noexcept
 
     mSockets.clear();
     mBatchCount = mBatchIdx = 0u;
+}
+
+void areg::SocketMultiplexer::reset() noexcept
+{
     mIsReset.store(true, std::memory_order_release);
 
     // Wake up any thread blocked in kevent() by writing one byte to the pipe.
@@ -241,7 +252,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
 {
     if (mIsReset.load(std::memory_order_acquire))
     {
-        mBatchCount = mBatchIdx = 0u;
+        _drop_registrations();
         if (mWakeupReadFd != areg::InvalidSocketHandle)
         {
             drain_pipe(static_cast<int>(mWakeupReadFd));

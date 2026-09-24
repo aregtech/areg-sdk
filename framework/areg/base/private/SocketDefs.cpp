@@ -156,6 +156,21 @@ namespace
         static thread_local std::unordered_map<SOCKETHANDLE, areg::ThreadCache> _rx_caches;
         return _rx_caches;
     }
+
+    //!< Last cache handed out by thread_rx_cache(), so a repeated ask for the same socket
+    //!< skips the hash. References to unordered_map elements survive a rehash, so an erase
+    //!< is the only thing that invalidates the entry pointer.
+    struct RxCacheMemo
+    {
+        SOCKETHANDLE        socket{ areg::InvalidSocketHandle };
+        areg::ThreadCache * entry { nullptr };
+    };
+
+    inline RxCacheMemo& _thread_cache_memo()
+    {
+        static thread_local RxCacheMemo _memo;
+        return _memo;
+    }
 }
 
 
@@ -1194,15 +1209,28 @@ AREG_API_IMPL areg::ThreadCache& areg::thread_rx_cache(SOCKETHANDLE hSocket) noe
     }
     else
     {
+        RxCacheMemo& memo = _thread_cache_memo();
+        if ((memo.entry != nullptr) && (memo.socket == hSocket))
+            return *memo.entry;
+
         std::unordered_map<SOCKETHANDLE, areg::ThreadCache>& map = _thread_local_cache();
         areg::ThreadCache& tc = map[hSocket];
         tc.socket = hSocket;
+
+        memo.socket = hSocket;
+        memo.entry  = &tc;
         return tc;
     }
 }
 
 AREG_API_IMPL void areg::thread_rx_cache_release(SOCKETHANDLE hSocket) noexcept
 {
+    // Dropped unconditionally: an erase is the one thing that can leave the memo pointing
+    // at a destroyed entry, and a release is rare enough that the extra miss costs nothing.
+    RxCacheMemo& memo = _thread_cache_memo();
+    memo.socket = areg::InvalidSocketHandle;
+    memo.entry  = nullptr;
+
     std::unordered_map<SOCKETHANDLE, areg::ThreadCache>& map = _thread_local_cache();
     auto found = map.find(hSocket);
     if (found != map.end())
