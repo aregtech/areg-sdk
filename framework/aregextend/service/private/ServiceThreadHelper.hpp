@@ -322,9 +322,13 @@ inline void run_send_batch( ThreadT & thread
  *          For each cached message, process_received_message() is called and
  *          \a accum is invoked with the byte and message counts.
  *
- *          Returns false on the first receive failure. The caller is
+ *          Returns -1 on the first receive failure. The caller is
  *          responsible for any failure cleanup (socket unregister, close,
  *          failed_receive_message(), etc.).
+ *
+ *          A return value equal to \a maxDrain means the ceiling stopped the
+ *          drain and the cache may still hold messages. The caller has to come
+ *          back to the socket: the multiplexer cannot see a user space buffer.
  *
  * \param   conn            Server connection (receive API).
  * \param   handler         Remote message handler (process callback).
@@ -332,29 +336,29 @@ inline void run_send_batch( ThreadT & thread
  * \param   clientSocket    Socket whose read-ahead cache to drain.
  * \param   msgReceived     Reusable message buffer; overwritten on each call.
  * \param   accum           Callable(uint64_t bytes, uint32_t msgs) on success.
- * \return  true if all cached data was consumed; false on receive failure.
+ * \return  The number of messages drained, or -1 on receive failure.
  **/
 template<typename AccumFn>
-inline bool drain_recv_cache( ServerConnection & conn
-                            , areg::RemoteMessageHandler & handler
-                            , uint32_t maxDrain
-                            , areg::SocketAccepted & clientSocket
-                            , areg::MessageEnvelope & msgReceived
-                            , AccumFn && accum )
+inline int32_t drain_recv_cache( ServerConnection & conn
+                               , areg::RemoteMessageHandler & handler
+                               , uint32_t maxDrain
+                               , areg::SocketAccepted & clientSocket
+                               , areg::MessageEnvelope & msgReceived
+                               , AccumFn && accum )
 {
     uint32_t drain{ 0u };
     while ( (areg::recv_data_available(clientSocket.handle()) != 0u) && (drain < maxDrain) )
     {
         const int32_t cached{ conn.receive_message(msgReceived, clientSocket) };
         if ( cached <= 0 )
-            return false;
+            return -1;
 
         handler.process_received_message(msgReceived, clientSocket);
         accum(static_cast<uint64_t>(cached), 1u);
         ++drain;
     }
 
-    return true;
+    return static_cast<int32_t>(drain);
 }
 
 } // namespace areg::ext

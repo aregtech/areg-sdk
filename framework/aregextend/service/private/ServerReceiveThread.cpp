@@ -118,12 +118,21 @@ void ServerReceiveThread::_process_connection_event(SOCKETHANDLE hSocket, const 
             mRemoteService.process_received_message(msgReceived, clientSocket);
         }
 
-        if (!areg::ext::drain_recv_cache(mConnection, mRemoteService, areg::DEFAULT_DRAIN_LIMIT - 1u, clientSocket,
-                msgReceived, [this](uint64_t bytes, uint32_t msgs) { accumulate_received(bytes, msgs); }))
+        constexpr uint32_t MAX_DRAIN{ areg::DEFAULT_DRAIN_LIMIT - 1u };
+        const int32_t drained{ areg::ext::drain_recv_cache(mConnection, mRemoteService, MAX_DRAIN, clientSocket,
+                msgReceived, [this](uint64_t bytes, uint32_t msgs) { accumulate_received(bytes, msgs); }) };
+
+        if (drained < 0)
         {
             mConnection.unregister_from_multiplexer(clientSocket.handle());
             mRemoteService.failed_receive_message(clientSocket);
             areg::thread_rx_cache_release(clientSocket.handle());
+            _forget_cached_socket(clientSocket.handle());
+        }
+        else if (drained == static_cast<int32_t>(MAX_DRAIN))
+        {
+            // The ceiling stopped the drain, so the cache may still hold messages.
+            _remember_cached_socket(clientSocket.handle());
         }
     }
     else
@@ -137,6 +146,58 @@ void ServerReceiveThread::_process_connection_event(SOCKETHANDLE hSocket, const 
         mConnection.unregister_from_multiplexer(clientSocket.handle());
         mRemoteService.failed_receive_message(clientSocket);
         areg::thread_rx_cache_release(clientSocket.handle());
+        _forget_cached_socket(clientSocket.handle());
+    }
+}
+
+void ServerReceiveThread::_remember_cached_socket(SOCKETHANDLE hSocket)
+{
+    for (SOCKETHANDLE known : mCachedPending)
+    {
+        if (known == hSocket)
+            return;
+    }
+
+    mCachedPending.push_back(hSocket);
+}
+
+void ServerReceiveThread::_forget_cached_socket(SOCKETHANDLE hSocket)
+{
+    for (auto pos = mCachedPending.begin(); pos != mCachedPending.end(); ++pos)
+    {
+        if (*pos == hSocket)
+        {
+            mCachedPending.erase(pos);
+            return;
+        }
+    }
+}
+
+void ServerReceiveThread::_service_cached_socket(areg::MessageEnvelope & msgReceived)
+{
+    const SOCKETHANDLE hSocket{ mCachedPending.front() };
+    mCachedPending.erase(mCachedPending.begin());
+
+    if (areg::recv_data_available(hSocket) == 0u)
+        return;
+
+    areg::SocketAccepted clientSocket{ mConnection.client_by_handle(hSocket) };
+    if (!clientSocket.is_valid())
+        return;
+
+    constexpr uint32_t MAX_DRAIN{ areg::DEFAULT_DRAIN_LIMIT - 1u };
+    const int32_t drained{ areg::ext::drain_recv_cache(mConnection, mRemoteService, MAX_DRAIN, clientSocket,
+            msgReceived, [this](uint64_t bytes, uint32_t msgs) { accumulate_received(bytes, msgs); }) };
+
+    if (drained < 0)
+    {
+        mConnection.unregister_from_multiplexer(hSocket);
+        mRemoteService.failed_receive_message(clientSocket);
+        areg::thread_rx_cache_release(hSocket);
+    }
+    else if (drained == static_cast<int32_t>(MAX_DRAIN))
+    {
+        mCachedPending.push_back(hSocket);
     }
 }
 
@@ -146,6 +207,9 @@ bool ServerReceiveThread::run_dispatcher()
     DEBUG_LOG_DBG("Starting dispatcher [ %s ]", name().as_string());
 
     areg::set_receive_mode(areg::ReceiveMode::MultiCache);
+
+    // This thread object outlives a run and is started again on a reconnect.
+    mCachedPending.clear();
 
     ready_for_events(true);
     bool isExit{ false };   // stays false if server_listen() fails (failure return); set on a clean ExitEvent
@@ -159,7 +223,20 @@ bool ServerReceiveThread::run_dispatcher()
             if ( !mExternalEvents.has_pending() )
             {
                 areg::SocketAddress addrAccepted;
-                SOCKETHANDLE hSocket = mConnection.wait_connection(addrAccepted);
+
+                // A socket whose cache still holds messages is invisible to the
+                // multiplexer, so it is serviced here and the wait never blocks
+                // while one is outstanding.
+                SOCKETHANDLE hSocket{ areg::InvalidSocketHandle };
+                if ( mCachedPending.empty() )
+                {
+                    hSocket = mConnection.wait_connection(addrAccepted);
+                }
+                else
+                {
+                    _service_cached_socket(msgReceived);
+                    hSocket = mConnection.wait_connection_nowait(addrAccepted);
+                }
 
                 if (!mConnection.is_valid())
                 {
