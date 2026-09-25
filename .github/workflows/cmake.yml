@@ -74,6 +74,17 @@ jobs:
               test  : ON
             }
 
+          - { name  : linux-gnu-arm64-shared-all-test,
+              os    : ubuntu-24.04-arm,
+              lib   : shared,
+              family: gnu,
+              cxx   : g++,
+              cc    : gcc,
+              extend: ON,
+              logs  : ON,
+              test  : ON
+            }
+
           - { name  : linux-gnu-shared-ext-nolog,
               os    : ubuntu-latest,
               lib   : shared,
@@ -587,3 +598,60 @@ jobs:
         with:
           name: ${{matrix.config.name}}
           path: ./${{matrix.config.name}}/
+
+  cross-arm32:
+    # 32-bit ARM Linux (armhf), cross-compiled with the toolchain file the SDK ships.
+    # Builds the libraries and the service binaries, then prints their sizes.
+    name: linux-gnu-arm32-cross-${{matrix.config.logs == 'ON' && 'log' || 'nolog'}}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - { logs: ON  }
+          - { logs: OFF }
+
+    steps:
+
+      - name: Checkout Areg SDK source codes
+        uses: actions/checkout@v7
+
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v6.0.1
+        with:
+          java-version: 17
+          java-package: jre
+          distribution: temurin
+
+      - name: Install the armhf cross-compiler
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils-arm-linux-gnueabihf
+
+      - name: Configure CMake with the arm32 toolchain
+        working-directory: ${{github.workspace}}
+        run: |
+          cmake -B ./product/cache/arm32 -DCMAKE_TOOLCHAIN_FILE=./conf/toolchains/gnu-linux-arm32.cmake -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_LIB_TYPE=shared -DAREG_EXTENDED:BOOL=OFF -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=OFF -DAREG_TESTS:BOOL=OFF -DAREG_SYSTEM_PACKAGES:BOOL=OFF -DAREG_SYSTEM_SQLITE:BOOL=OFF -DAREG_INSTALL:BOOL=OFF
+
+      - name: Dump the CMake logs of a failed configuration
+        if: failure()
+        working-directory: ${{github.workspace}}
+        shell: bash
+        run: |
+          for f in ./product/cache/arm32/CMakeFiles/CMakeConfigureLog.yaml ./product/cache/arm32/CMakeFiles/CMakeError.log; do
+            if [ -f "${f}" ]; then echo "===== ${f} ====="; tail -n 300 "${f}"; fi
+          done
+
+      - name: Build with CMake
+        working-directory: ${{github.workspace}}
+        run: cmake --build ./product/cache/arm32 -j16
+
+      - name: Report the binary sizes
+        working-directory: ${{github.workspace}}
+        shell: bash
+        run: |
+          BIN_DIR="$(find ./product/build -type d -name bin 2>/dev/null | head -n 1)"
+          if [ -z "${BIN_DIR}" ]; then echo "no bin directory under ./product/build" >&2; exit 1; fi
+          file "${BIN_DIR}/libareg.so"
+          file "${BIN_DIR}/libareg.so" | grep -q 'ARM' || { echo "libareg.so is not an ARM binary" >&2; exit 1; }
+          arm-linux-gnueabihf-size "${BIN_DIR}"/*.so "${BIN_DIR}"/*.elf

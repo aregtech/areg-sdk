@@ -124,6 +124,16 @@ public:
     [[nodiscard]]
     inline areg::SendQueueGate & send_gate() noexcept;
 
+    /**
+     * \brief   Hands one outbound message to this send thread and reports whether the queue took it.
+     *          When it returns false the message never reaches the socket, so the caller must
+     *          release what it reserved for it.
+     *
+     * \param   eventElem   The event to queue. Its target dispatcher must already be this thread.
+     * \return  true if the queue took the event, false if it did not.
+     **/
+    inline bool queue_message( areg::Event & eventElem );
+
 protected:
 /************************************************************************/
 // DispatcherThread overrides
@@ -242,6 +252,11 @@ inline uint32_t ServerSendThread::drain_limit() const noexcept
 inline areg::SendQueueGate & ServerSendThread::send_gate() noexcept
 {
     return mSendGate;
+}
+
+inline bool ServerSendThread::queue_message( areg::Event & eventElem )
+{
+    return EventDispatcher::post_event( eventElem );
 }
 
 } // namespace areg::ext

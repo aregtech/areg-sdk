@@ -661,7 +661,11 @@ bool ServiceCommunicationBase::do_send_shared( areg::MessageEnvelope && data, ar
     evt.set_event_priority(prio);
     evt.set_event_consumer(&mThreadSend);
     evt.set_target_dispatcher(&mThreadSend);
-    evt.deliver_event();
+    if (mThreadSend.queue_message(evt) == false)
+    {
+        mThreadSend.send_gate().leave(1u);  // a refused event is never popped by the send thread
+    }
+
     return true;
 }
 
@@ -686,7 +690,11 @@ bool ServiceCommunicationBase::do_send_pool( areg::MessageEnvelope && data, areg
     evt.set_event_priority(prio);
     evt.set_event_consumer(&sendThread);
     evt.set_target_dispatcher(&sendThread);
-    evt.deliver_event();
+    if (sendThread.queue_message(evt) == false)
+    {
+        sendThread.send_gate().leave(1u);   // a refused event is never popped by the send thread
+    }
+
     return true;
 }
 
