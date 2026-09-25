@@ -1264,6 +1264,7 @@
   "shared_buffer",
   "shift",
   "should_delay_event",
+  "shrink_to_fit",
   "shutdown",
   "shutdown_component",
   "shutdown_components",

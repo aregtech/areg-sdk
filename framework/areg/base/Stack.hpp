@@ -640,7 +640,7 @@ template <typename VALUE, typename SYNC>
 inline void StackBase<VALUE, SYNC>::free_extra()
 {
     Lock lock(mSyncObject);
-    mValueList.shrink_to_fit();
+    areg::shrink_to_fit( mValueList );
 }
 
 template <typename VALUE, typename SYNC>
@@ -648,7 +648,7 @@ inline void StackBase<VALUE, SYNC>::release()
 {
     Lock lock(mSyncObject);
     mValueList.clear();
-    mValueList.shrink_to_fit();
+    areg::shrink_to_fit( mValueList );
 }
 
 template <typename VALUE, typename SYNC>

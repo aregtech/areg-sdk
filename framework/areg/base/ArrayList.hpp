@@ -718,14 +718,14 @@ inline void ArrayList< VALUE >::clear() noexcept
 template<typename VALUE >
 inline void ArrayList< VALUE >::free_extra()
 {
-    mValueList.shrink_to_fit();
+    areg::shrink_to_fit( mValueList );
 }
 
 template<typename VALUE >
 inline void ArrayList< VALUE >::release() noexcept
 {
 	mValueList.clear();
-    mValueList.shrink_to_fit();
+    areg::shrink_to_fit( mValueList );
 }
 
 template<typename VALUE >

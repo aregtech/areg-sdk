@@ -1436,14 +1436,14 @@ inline void StringBase<CharType>::clear() noexcept
 template<typename CharType>
 inline void StringBase<CharType>::free_extra()
 {
-    mData.shrink_to_fit();
+    areg::shrink_to_fit( mData );
 }
 
 template<typename CharType>
 inline void StringBase<CharType>::release()
 {
     mData.clear();
-    mData.shrink_to_fit();
+    areg::shrink_to_fit( mData );
 }
 
 template<typename CharType>

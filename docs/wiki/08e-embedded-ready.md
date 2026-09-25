@@ -33,14 +33,15 @@ distributions, or a vendor BSP built on any of them.
 
 | Class | Architecture | Status | Typical silicon |
 |-------|--------------|--------|-----------------|
-| **64-bit ARM** | `aarch64` / ARM64 | ✅ Supported | NXP i.MX 8/9, TI AM62/AM64, Rockchip RK3399/RK3588, Broadcom BCM2711/2712 (Raspberry Pi 4/5), Allwinner A64/H6, Qualcomm QCS series |
-| **32-bit ARM** | `armhf` / ARMv7-A | ✅ Supported | NXP i.MX 6/7, TI AM335x (BeagleBone), STM32MP1, Allwinner H3, Broadcom BCM2837 (Raspberry Pi 3, 32-bit userspace) |
-| **64-bit x86** | `x86_64` | ✅ Supported | Intel Atom x6000E / Elkhart Lake, Intel Core embedded, AMD Ryzen Embedded V/R series |
-| **32-bit x86** | `i686` | ✅ Supported | Legacy Intel Atom and industrial PC platforms |
+| **64-bit ARM** | `aarch64` / ARM64 | ✅ Supported, flash measured | NXP i.MX 8/9, TI AM62/AM64, Rockchip RK3399/RK3588, Broadcom BCM2711/2712 (Raspberry Pi 4/5), Allwinner A64/H6, Qualcomm QCS series |
+| **32-bit ARM** | `armhf` / ARMv7-A | ✅ Supported, flash measured | NXP i.MX 6/7, TI AM335x (BeagleBone), STM32MP1, Allwinner H3, Broadcom BCM2837 (Raspberry Pi 3, 32-bit userspace) |
+| **64-bit x86** | `x86_64` | ✅ Supported, flash and RAM measured | Intel Atom x6000E / Elkhart Lake, Intel Core embedded, AMD Ryzen Embedded V/R series |
+| **32-bit x86** | `i686` | ✅ Supported, not measured | Legacy Intel Atom and industrial PC platforms |
 | **MIPS** | `mips` / `mips64` | Builds, not measured | MediaTek MT7621 and similar router-class silicon |
 
-The common requirement is not the instruction set. It is the operating system: if the
-target runs Linux with sockets and pthreads, areg runs on it.
+The common requirement is not the instruction set. It is the operating system: if the target
+runs Linux with sockets and pthreads, areg runs on it. What the instruction set does change is
+the size of the image, by a lot -- section 3.3.
 
 ### 2.1 Where the line is
 
@@ -55,25 +56,34 @@ target runs Linux with sockets and pthreads, areg runs on it.
 
 ## 3. Flash: What a Device Stores
 
-Measured with `tools/footprint.py --flash-only`, GNU 15.2.0, `Release`, `x86_64`. The
-`text` column is executable code and read-only data; `data` is initialized writable data.
-Both live in flash. `bss` is zero-filled at start and costs RAM, not flash.
+Measured with `tools/footprint.py --flash-only`, GNU 15.2.0 for every target, `Release`,
+`AREG_EXTENDED=OFF`. The `text` column is executable code and read-only data; `data` is
+initialized writable data. Both live in flash. `bss` is zero-filled at start and costs RAM,
+not flash.
+
+Three architectures were built and read: **x86_64** natively, **ARM64** (`aarch64-linux-gnu`)
+and **ARMv7** (`arm-linux-gnueabihf`) cross-compiled with the toolchain files the SDK ships in
+`conf/toolchains/`. The `size` of each toolchain read its own binaries; a host `size` cannot
+read a foreign object.
 
 ### 3.1 Shared library, logging on
 
 The default build. Applications link against one shared `libareg.so`, so the framework is
-stored once regardless of how many services run on the device.
+stored once regardless of how many services run on the device. Figures are `text` bytes.
 
-| Artefact | text | data | bss | file |
-|----------|-----:|-----:|----:|-----:|
-| `libareg.so` (the framework) | 1 256 922 | 38 139 | 60 360 | 1 687 576 |
-| `mtrouter` (the message router) | 285 137 | 12 600 | 36 256 | 396 960 |
-| `logobserver` | 72 623 | 2 312 | 2 752 | 100 568 |
-| a minimal service provider | 42 764 | 4 200 | 1 024 | 76 256 |
-| a minimal service consumer | 64 829 | 7 296 | 1 472 | 109 912 |
+| Artefact | x86_64 | ARM64 | ARMv7 |
+|----------|-------:|------:|------:|
+| `libareg.so` (the framework) | 1 256 922 | 1 181 021 | **740 761** |
+| `mtrouter` (the message router) | 285 137 | 254 888 | 171 238 |
+| `logobserver` | 72 623 | 61 721 | 44 628 |
+| a minimal service provider | 42 764 | 41 769 | 26 217 |
+| a minimal service consumer | 64 829 | 62 956 | 37 424 |
 
-**A node stores ~1.3 MB of framework plus tens of kB per service.** A node that also
-routes adds 285 kB.
+`libareg.so` also carries `data` and `bss`, which are 38 139 / 60 360 on x86_64,
+37 771 / 60 176 on ARM64 and **19 187 / 37 664** on ARMv7.
+
+**A node stores 0.7-1.3 MB of framework plus tens of kB per service**, and a node that also
+routes adds 171-285 kB.
 
 ### 3.2 Static library, logging off
 
@@ -86,30 +96,85 @@ cmake -B ./build -DCMAKE_BUILD_TYPE=Release \
       -DAREG_LOGGING=OFF -DAREG_EXTENDED=OFF
 ```
 
-| Artefact | text | data | bss | file |
-|----------|-----:|-----:|----:|-----:|
-| a minimal service provider | 525 813 | 24 404 | 37 464 | 723 600 |
-| a minimal service consumer | 549 480 | 26 828 | 37 720 | 758 008 |
-| a one-process application | 582 264 | 28 100 | 38 136 | 805 720 |
-| `mtrouter` | 694 183 | 31 148 | 71 320 | 957 632 |
+| Artefact | x86_64 | ARM64 | ARMv7 |
+|----------|-------:|------:|------:|
+| a minimal service provider | 525 813 | 486 836 | **287 778** |
+| a minimal service consumer | 549 480 | 501 321 | 297 327 |
+| a one-process application | 582 264 | 543 166 | 314 613 |
+| `mtrouter` | 694 183 | 627 973 | 378 718 |
 
-**A self-contained areg service is ~0.5 MB of code, and a self-contained router is under
-1 MB.** No shared library, no runtime dependency beyond libc and libstdc++.
+**A self-contained areg service is 0.29-0.53 MB of code, and a self-contained router is
+0.38-0.69 MB.** No shared library, no runtime dependency beyond libc and libstdc++. On ARMv7
+the whole provider binary is 484 840 bytes on disk, code, data and symbols together.
 
-The archive `libareg.a` is 13 MB on disk, and that figure is **not** a deployment number:
-the linker keeps only what a binary uses. What reaches the device is the ~0.5 MB above.
+The archive `libareg.a` is 13 MB on disk, and that figure is **not** a deployment number: the
+linker keeps only what a binary uses. What reaches the device is the figure above.
 `tools/footprint.py` reports archives as `n/a` for this reason.
 
-### 3.3 Choosing between them
+### 3.3 What the instruction set costs
+
+The same source, the same compiler version, the same switches:
+
+| Against x86_64 | ARM64 | ARMv7 |
+|----------------|------:|------:|
+| the framework, shared | -6.0% | **-41.1%** |
+| `mtrouter`, shared | -10.6% | -40.0% |
+| a self-contained service, static | -7.4% | **-45.3%** |
+| the framework's `bss` | -0.3% | -37.6% |
+
+**ARM64 is within about 10% of x86_64; ARMv7 is close to half the size.** The gap is not
+compiler luck: a 32-bit target halves every pointer in every structure the framework holds,
+and Thumb-2 encodes much of the code in 16 bits. The `bss` row is the clearest evidence, since
+it is pure data layout with no instruction encoding in it.
+
+This is also why no number on this page was ever estimated from another architecture. A single
+scaling factor would have been wrong by 35 percentage points depending on which row it was
+applied to.
+
+### 3.4 Smaller still: `MinSizeRel` and no exceptions
+
+Measured on ARMv7, static, logging off -- the configuration of section 3.2 -- changing one
+thing at a time. Figures are `text` bytes.
+
+| Configuration | a service | `mtrouter` |
+|---------------|----------:|-----------:|
+| section 3.2, `Release` | 287 778 | 378 718 |
+| `Release`, `-DAREG_NO_EXCEPTIONS=ON` | 245 997 (-14.5%) | 326 629 (-13.8%) |
+| `-DCMAKE_BUILD_TYPE=MinSizeRel` | 172 278 (-40.1%) | 230 655 (-39.1%) |
+| `MinSizeRel` and no exceptions | **143 816 (-50.0%)** | **194 182 (-48.7%)** |
+
+**A complete areg service is 144 kB of code on ARMv7**, with its data and bss adding 10 608
+and 23 120 bytes; the whole binary is 358 560 bytes on disk. A router beside it adds 194 kB.
+That is the smallest configuration, and it is reached with documented switches only:
+
+```bash
+cmake -B ./build -DCMAKE_TOOLCHAIN_FILE=./conf/toolchains/gnu-linux-arm32.cmake \
+      -DCMAKE_BUILD_TYPE=MinSizeRel \
+      -DAREG_LIB_TYPE=static -DAREG_LOGGER_LIB_TYPE=static \
+      -DAREG_LOGGING=OFF -DAREG_EXTENDED=OFF -DAREG_NO_EXCEPTIONS=ON
+```
+
+`MinSizeRel` builds at `-Os` and keeps the section, visibility and link time settings of
+`Release`, so the dead code is still dropped at the final link. It costs speed: `-Os` declines
+the inlining and loop transformations that `-O3` takes, so a build that has to hit a message
+rate should stay on `Release` and save its space elsewhere.
+
+`AREG_NO_EXCEPTIONS=ON` removes the exception tables and RTTI. It is a real constraint, not a
+free switch: the framework then reports failures by return value only, and any application
+code that throws has nothing to unwind it. The containers behave the same either way --
+`free_extra()` and `release()` return the memory in both builds, and the unit tests and all
+31 examples run in both.
+
+### 3.5 Choosing between shared and static
 
 | | Shared | Static |
 |---|---|---|
-| One service on the device | 1.3 MB + 43 kB | 0.5 MB |
-| Five services on the device | 1.3 MB + ~250 kB | ~2.6 MB |
+| One service on the device | framework + tens of kB | 0.29-0.53 MB |
+| Five services on the device | framework + ~150-250 kB | ~1.5-2.6 MB |
 | Runtime dependency | `libareg.so` must be deployed and versioned | none |
 
-Static wins for one or two binaries. Shared wins from roughly three services upward, and
-it is what the default build produces.
+Static wins for one or two binaries. Shared wins from roughly three services upward, and it is
+what the default build produces.
 
 ---
 
@@ -178,9 +243,19 @@ python3 tools/footprint.py --build-dir ./build-arm \
 python3 tools/footprint.py --json footprint.json
 ```
 
-Every run prints what produced it first: commit, whether the tree was modified, build
-type, compiler and version, machine, and the `AREG_LOGGING`, `AREG_EXTENDED` and
-`AREG_NO_EXCEPTIONS` switches. A number without that header is a number without a source.
+Every run prints what produced it first: commit, whether the tree was modified, build type,
+compiler and version, the **target** architecture, the **host** that read it, and the
+`AREG_LOGGING`, `AREG_EXTENDED` and `AREG_NO_EXCEPTIONS` switches. A number without that header
+is a number without a source.
+
+The target comes from the ELF headers of the binaries being measured, never from the machine
+running the tool, so a cross build cannot be published under the host's architecture by
+accident:
+
+```
+  target         arm (32-bit)
+  host           Linux x86_64
+```
 
 Full options: [`tools/README.md`, section 13](./../../tools/README.md#13-flash-and-ram-footprint).
 
@@ -188,9 +263,10 @@ Full options: [`tools/README.md`, section 13](./../../tools/README.md#13-flash-a
 
 **RAM needs `/proc`.** It is measured on Linux only, and the tool says so elsewhere.
 
-**RAM is never measured under an emulator.** A `qemu-user` run reports the emulator's
-memory, not the target's. ARM RAM figures come from an ARM runner or a real board; a cross
-build reports flash only.
+**RAM is never measured under an emulator.** A `qemu-user` run reports the emulator's memory,
+not the target's. ARM RAM figures come from an ARM runner or a real board; a cross build
+reports flash only. The tool enforces this rather than trusting the operator: when the
+binaries' architecture is not the host's, it measures flash and refuses RAM, saying so.
 
 ---
 
@@ -201,16 +277,23 @@ Claim boundaries matter more than favourable numbers.
 | Figure | Status |
 |--------|--------|
 | x86_64 flash, shared and static, logging on and off | **Measured**, Section 3 |
+| ARM64 flash, shared and static | **Measured**, Section 3. Cross-built with `conf/toolchains/gnu-linux-arm64.cmake`, read with `aarch64-linux-gnu-size` |
+| ARMv7 flash, shared and static | **Measured**, Section 3. Cross-built with `conf/toolchains/gnu-linux-arm32.cmake`, read with `arm-linux-gnueabihf-size` |
+| ARMv7 with `MinSizeRel` and `AREG_NO_EXCEPTIONS=ON` | **Measured**, Section 3.4 |
 | x86_64 RAM, both builds, `pairs = 0` and `16` | **Measured**, Section 4 |
-| ARM64 and ARMv7 flash | **Not yet measured.** Cross-compilation is supported and CI builds both; the figures are not published until they are read from a real build |
-| ARM RAM | **Not yet measured.** It needs an ARM runner or a board, never an emulator |
+| **ARM RAM** | **Not measured.** It needs an ARM runner or a board. An emulator reports its own memory, so no figure is published from one |
+| x86_64 with `MinSizeRel` | **Measured**: the framework is 892 784 against 1 256 957 at `Release`, 29% smaller. Its no-exceptions variant was not measured |
+| ARM64 with `MinSizeRel` or no exceptions | Not measured. Only ARMv7 and x86_64 were |
 | MIPS | Builds; never measured |
-| `-Os`, `AREG_NO_EXCEPTIONS=ON` | Supported switches; their effect on size is not yet measured |
+| The tuning keys other than `pairs` -- `queue::capacity`, `cache`, `drain`, `sndbuf`, `rcvbuf` | Not measured |
 | Any RTOS, including Zephyr | **Does not exist.** Planned after 2.0.0 |
 
-An ARM figure is not estimated from an x86_64 one on this page. Code density differs
-enough between the two that a scaled number would be a guess wearing a measurement's
-clothes.
+No figure on this page is estimated from another architecture, and section 3.3 shows why that
+matters: the same source is 6% smaller on ARM64 and 41% smaller on ARMv7, so no single factor
+would have been right.
+
+Every table names the build it came from, and `tools/footprint.py` prints the commit,
+compiler, target architecture and switches ahead of any number it reports.
 
 ---
 

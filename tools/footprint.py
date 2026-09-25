@@ -107,7 +107,51 @@ def _cmake_compiler(build_dir):
     return None
 
 
-def collect_provenance(build_dir, bin_dir, size_tool):
+ELF_MACHINES = {
+    0x03: 'i386',
+    0x08: 'mips',
+    0x28: 'arm',
+    0x3E: 'x86_64',
+    0xB7: 'aarch64',
+    0xF3: 'riscv',
+}
+
+HOST_ALIASES = {
+    'x86_64': 'x86_64', 'amd64': 'x86_64',
+    'aarch64': 'aarch64', 'arm64': 'aarch64',
+    'armv7l': 'arm', 'armv6l': 'arm', 'armhf': 'arm',
+    'i686': 'i386', 'i386': 'i386', 'x86': 'i386',
+}
+
+
+def _elf_target(path):
+    """Reads the architecture out of an ELF header. Returns None for anything else."""
+    try:
+        with open(path, 'rb') as handle:
+            header = handle.read(20)
+    except OSError:
+        return None
+    if len(header) < 20 or header[:4] != b'\x7fELF':
+        return None
+    order = 'little' if header[5] == 1 else 'big'
+    machine = int.from_bytes(header[18:20], order)
+    bits = 64 if header[4] == 2 else 32
+    return '%s (%d-bit)' % (ELF_MACHINES.get(machine, 'machine 0x%X' % machine), bits)
+
+
+def _measured_target(bin_dir, lib_dir):
+    """The architecture of the binaries being measured, not of the machine reading them."""
+    for directory in (bin_dir, lib_dir):
+        if not os.path.isdir(directory):
+            continue
+        for name, _purpose in FLASH_ARTEFACTS:
+            target = _elf_target(os.path.join(directory, name))
+            if target:
+                return target
+    return None
+
+
+def collect_provenance(build_dir, bin_dir, size_tool, lib_dir=None):
     """Collects what the numbers were measured on."""
     head = _run(['git', 'rev-parse', '--short', 'HEAD'])
     status = _run(['git', 'status', '--porcelain'])
@@ -125,8 +169,8 @@ def collect_provenance(build_dir, bin_dir, size_tool):
         'logging': _cmake_cache_value(build_dir, 'AREG_LOGGING') or 'unknown',
         'extended': _cmake_cache_value(build_dir, 'AREG_EXTENDED') or 'unknown',
         'no_exceptions': _cmake_cache_value(build_dir, 'AREG_NO_EXCEPTIONS') or 'unknown',
-        'machine': platform.machine(),
-        'system': platform.system(),
+        'target': _measured_target(bin_dir, lib_dir or bin_dir) or 'unknown',
+        'host': '%s %s' % (platform.system(), platform.machine()),
         'size_tool': size_tool,
     }
 
@@ -501,7 +545,7 @@ def print_ram(sections):
 
 def print_provenance(provenance):
     print('Measured on')
-    for key in ('commit', 'tree', 'build_type', 'compiler', 'machine', 'system',
+    for key in ('commit', 'tree', 'build_type', 'compiler', 'target', 'host',
                 'logging', 'extended', 'no_exceptions', 'cxx_flags', 'size_tool'):
         value = provenance.get(key)
         if value:
@@ -536,7 +580,7 @@ def main():
     out_dir = options.out_dir or os.path.join(options.build_dir, 'footprint')
     os.makedirs(out_dir, exist_ok=True)
 
-    report = {'provenance': collect_provenance(options.build_dir, bin_dir, options.size_tool)}
+    report = {'provenance': collect_provenance(options.build_dir, bin_dir, options.size_tool, lib_dir)}
     print_provenance(report['provenance'])
 
     if not options.ram_only:
@@ -548,8 +592,18 @@ def main():
             print_flash(records)
             report['flash'] = records
 
+    target_arch = report['provenance']['target'].split(' ')[0]
+    host_arch = HOST_ALIASES.get(platform.machine().lower(), platform.machine().lower())
+    foreign = target_arch not in ('unknown', host_arch)
+
     if not options.flash_only:
-        if platform.system() != 'Linux':
+        if foreign:
+            # A foreign binary either refuses to start or runs under an emulator, and an
+            # emulator reports its own memory. Neither is the target's footprint.
+            reason = 'the binaries are %s and this host is %s' % (target_arch, host_arch)
+            print('RAM -- not measured: %s\n' % reason)
+            report['ram_error'] = reason
+        elif platform.system() != 'Linux':
             print('RAM -- not measured: /proc is needed, this is %s\n' % platform.system())
             report['ram_error'] = 'no /proc on ' + platform.system()
         else:

@@ -22,9 +22,9 @@ jobs:
   invariants:
     name: the framework invariants still have anchors
     # tools/check_invariants.py seeds a defect per documented invariant, rebuilds and
-    # asserts something goes red. The seeding needs a build per defect and is run by
-    # hand; what rots first is the seed set itself, because a refactor moves the line
-    # it anchors to. This step is that check, and it needs no compiler.
+    # asserts something goes red. The seeding needs a build per defect and is run by hand;
+    # what rots first is the seed set itself, because a refactor moves the line it anchors to.
+    # This step is that check, and it needs no compiler.
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -151,8 +151,10 @@ jobs:
               test  : OFF
             }
 
-          # The framework uses no exceptions, no dynamic_cast and no typeid. These two
-          # entries compile it with both disabled, so a newly added one fails the build.
+          # The framework uses no exceptions, no dynamic_cast and no typeid. These entries
+          # compile it with both disabled, so a newly added one fails the build, and the three
+          # Linux ones run the suite as well: without exceptions the standard library declines
+          # to shrink a container, and a build-only entry does not notice that.
           - { name  : linux-gnu-shared-noexcept,
               os    : ubuntu-latest,
               lib   : shared,
@@ -161,7 +163,7 @@ jobs:
               cc    : gcc,
               extend: ON,
               logs  : ON,
-              test  : OFF,
+              test  : ON,
               noexc : ON
             }
 
@@ -173,8 +175,57 @@ jobs:
               cc    : clang,
               extend: ON,
               logs  : ON,
+              test  : ON,
+              noexc : ON
+            }
+
+          - { name  : linux-gnu-static-noexcept,
+              os    : ubuntu-latest,
+              lib   : static,
+              family: gnu,
+              cxx   : g++,
+              cc    : gcc,
+              extend: ON,
+              logs  : ON,
+              test  : ON,
+              noexc : ON
+            }
+
+          - { name  : macos-clang-shared-noexcept,
+              os    : macos-latest,
+              lib   : shared,
+              family: llvm,
+              cxx   : clang++,
+              cc    : clang,
+              extend: ON,
+              logs  : ON,
               test  : OFF,
               noexc : ON
+            }
+
+          # MinSizeRel and RelWithDebInfo are optimized configurations and carry the sections
+          - { name  : linux-gnu-shared-minsizerel,
+              os    : ubuntu-latest,
+              lib   : shared,
+              family: gnu,
+              cxx   : g++,
+              cc    : gcc,
+              extend: ON,
+              logs  : ON,
+              test  : ON,
+              btype : MinSizeRel
+            }
+
+          - { name  : linux-gnu-shared-relwithdebinfo,
+              os    : ubuntu-latest,
+              lib   : shared,
+              family: gnu,
+              cxx   : g++,
+              cc    : gcc,
+              extend: ON,
+              logs  : ON,
+              test  : ON,
+              btype : RelWithDebInfo
             }
 
           - { name  : macos-clang-shared-noext,
@@ -436,13 +487,13 @@ jobs:
         if: matrix.config.extend == 'ON'
         working-directory: ${{github.workspace}}
         run: |
-          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_NO_EXCEPTIONS:BOOL=${{matrix.config.noexc || 'OFF'}} -DAREG_INSTALL:BOOL=ON -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
+          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DCMAKE_BUILD_TYPE=${{matrix.config.btype || env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_NO_EXCEPTIONS:BOOL=${{matrix.config.noexc || 'OFF'}} -DAREG_INSTALL:BOOL=ON -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
 
       - name: Configure CMake by selecting compiler name
         if: matrix.config.extend == 'OFF'
         working-directory: ${{github.workspace}}
         run: |
-          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER=${{matrix.config.cc}} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_NO_EXCEPTIONS:BOOL=${{matrix.config.noexc || 'OFF'}} -DAREG_INSTALL:BOOL=ON -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
+          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER=${{matrix.config.cc}} -DCMAKE_BUILD_TYPE=${{matrix.config.btype || env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_NO_EXCEPTIONS:BOOL=${{matrix.config.noexc || 'OFF'}} -DAREG_INSTALL:BOOL=ON -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
 
       - name: Dump the CMake logs of a failed configuration
         if: failure()
@@ -483,9 +534,18 @@ jobs:
         # The build already fails on a new 'throw' or 'dynamic_cast'. This also catches a
         # build setting that quietly puts the flags back.
         run: |
-          LIB="${{env.BUILD_DEST}}/bin/libareg.so"
-          if [ ! -f "${LIB}" ]; then echo "not found: ${LIB}" >&2; exit 1; fi
+          LIB=""
+          for candidate in "${{env.BUILD_DEST}}/bin/libareg.so" \
+                           "${{env.BUILD_DEST}}/lib/libareg.a" \
+                           "${{env.BUILD_DEST}}/bin/libareg.dylib"; do
+            if [ -f "${candidate}" ]; then LIB="${candidate}"; break; fi
+          done
+          if [ -z "${LIB}" ]; then echo "no areg library under ${{env.BUILD_DEST}}" >&2; exit 1; fi
           echo "checking ${LIB}"
+          if [ "$(uname -s)" != "Linux" ]; then
+            echo "SKIPPED: the section and symbol check reads ELF; this runner is $(uname -s)"
+            exit 0
+          fi
           if readelf -SW "${LIB}" | grep -q '\.gcc_except_table'; then
             echo "FAILED: ${LIB} contains .gcc_except_table" >&2
             exit 1

@@ -813,13 +813,33 @@ RAM needs `/proc`, so it is Linux only and the tool says so on other systems. It
 measured under `qemu-user`: the emulator's own memory would be in the figure. A cross build
 reports flash only, and arm RAM figures come from an arm runner or a real board.
 
+The tool enforces that itself. It reads the architecture out of the ELF header of the artefacts
+it is measuring, and when that is not the architecture of the host, it reports flash and refuses
+RAM:
+
+```
+  target         arm (32-bit)
+  host           Linux x86_64
+RAM -- not measured: the binaries are arm and this host is x86_64
+```
+
+Cross-compiling for arm needs the toolchain's own `size`, since the host one cannot read a
+foreign object:
+
+```bash
+python3 tools/footprint.py --build-dir ./build-arm64 --size-tool aarch64-linux-gnu-size --flash-only
+python3 tools/footprint.py --build-dir ./build-arm32 --size-tool arm-linux-gnueabihf-size --flash-only
+```
+
 The configuration in `<bin-dir>/config/areg.init` decides what is measured. `net::*::tcpip::pairs`
 is the key with the largest effect: the pool threads are allocated in full at start, whatever the
 client count.
 
 Every run prints its provenance first -- commit, whether the tree is modified, build type,
-compiler and version, machine, and the `AREG_LOGGING`, `AREG_EXTENDED` and `AREG_NO_EXCEPTIONS`
-switches -- so a number copied out of the output says what produced it.
+compiler and version, the **target** architecture and the **host** that read it, and the
+`AREG_LOGGING`, `AREG_EXTENDED` and `AREG_NO_EXCEPTIONS` switches -- so a number copied out of the
+output says what produced it. `target` comes from the binaries, never from the host, so a cross
+build cannot be published under the host's architecture.
 
 ---
 

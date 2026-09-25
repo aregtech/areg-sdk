@@ -391,7 +391,9 @@ Lusan GUI
 
 Embedded Linux means a 32- or 64-bit CPU running Linux with sockets and pthreads. Bare
 metal, an RTOS and 16-bit targets are out of scope; Zephyr RTOS is planned after version
-2.0.0. Measured flash and RAM figures are in **[Embedded Ready](./08e-embedded-ready.md)**.
+2.0.0. Flash is measured on x86_64, ARM64 and ARMv7, and RAM on x86_64: a self-contained
+service is 288 kB of code on ARMv7 and a process holds 5.6-6.6 MB resident. The figures, and
+what is deliberately not measured, are in **[Embedded Ready](./08e-embedded-ready.md)**.
 
 ---
 

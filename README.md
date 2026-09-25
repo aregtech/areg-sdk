@@ -245,14 +245,24 @@ For context only (third-party, 2021, different hardware): gRPC C++ sequential RT
 runs Linux with sockets and pthreads, Areg runs on it: NXP i.MX, TI AM62/AM335x,
 Rockchip RK3588, STM32MP1, Raspberry Pi, Intel Atom.
 
-Measured with [`tools/footprint.py`](./tools/footprint.py) on `x86_64`, GCC 15.2.0, Release:
+Measured with [`tools/footprint.py`](./tools/footprint.py), GCC 15.2.0, Release, on three
+architectures -- `x86_64` natively, ARM64 and ARMv7 cross-compiled with the toolchain files
+the SDK ships. Framework code (`text`):
 
-| What a device pays | Shared, logging on | Static, logging off |
+| What a device stores | x86_64 | ARM64 | ARMv7 |
+|---|---:|---:|---:|
+| shared `libareg.so`, stored once for every service | 1.26 MB | 1.18 MB | **0.74 MB** |
+| a self-contained service, static, logging off | 526 KB | 487 KB | **288 KB** |
+| a service binary against the shared framework | 43 KB | 42 KB | 26 KB |
+| `mtrouter` | 285 KB | 255 KB | 171 KB |
+
+A 32-bit target is close to half the size of x86_64, and ARM64 within about 10% of it.
+
+RAM, read from `/proc` on `x86_64`:
+
+| What a process holds | Shared, logging on | Static, logging off |
 |---|---|---|
-| framework code | 1.26 MB `libareg.so`, stored once | linked in: **~0.5 MB** per self-contained service |
-| a service binary | ~43-65 KB | 526-549 KB, no runtime dependency |
-| `mtrouter` code | 285 KB | 694 KB |
-| a process, resident | 6.6 MB | **5.6 MB** |
+| a service, resident | 6.6 MB, 7 threads | **5.6 MB**, 6 threads |
 | `mtrouter`, resident | 6.5 MB, 9 threads | 5.7 MB, 8 threads |
 | each connected client | **~7 KB** -- ten clients cost under 1% of an idle router | ~6 KB |
 
@@ -261,8 +271,9 @@ Measured with [`tools/footprint.py`](./tools/footprint.py) on `x86_64`, GCC 15.2
 client connects.
 
 **Not** bare metal, **not** an RTOS and **not** 16-bit. Zephyr RTOS is planned after
-version 2.0.0 and does not exist today. ARM figures are not published until they are read
-from a real ARM build -- no number here is scaled from another architecture.
+version 2.0.0 and does not exist today. ARM **RAM** is not published until it is read on an
+ARM board or runner -- an emulator reports its own memory, not the target's. No number here
+is scaled from another architecture.
 
 📊 [What "embedded ready" means, and where the line is](./docs/wiki/08e-embedded-ready.md)
 
