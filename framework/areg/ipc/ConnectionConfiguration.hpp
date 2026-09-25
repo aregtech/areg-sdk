@@ -163,22 +163,6 @@ public:
     uint32_t socket_send_timeout() const noexcept;
 
     /**
-     * \brief   Returns the idle interval in milliseconds after which the client probes a silent
-     *          connection. Zero switches the probe off. Falls back to the compile-time default
-     *          (DEFAULT_ALIVE_IDLE_TIMEOUT) when the key is absent from areg.init.
-     **/
-    [[nodiscard]]
-    uint32_t alive_idle_timeout() const noexcept;
-
-    /**
-     * \brief   Returns the milliseconds the client waits for any incoming traffic after it sent
-     *          the probe. Falls back to the compile-time default (DEFAULT_ALIVE_WAIT_TIMEOUT)
-     *          when the key is absent or zero in areg.init.
-     **/
-    [[nodiscard]]
-    uint32_t alive_wait_timeout() const noexcept;
-
-    /**
      * \brief   Extracts IP address bytes from connection address.
      *
      * \param[out] field0      First byte of IP address.

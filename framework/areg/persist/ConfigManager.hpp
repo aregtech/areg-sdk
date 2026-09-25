@@ -900,26 +900,6 @@ public:
     uint32_t network_timeout(const String& module = areg::EmptyStringA, const String& connectType = areg::EmptyStringA) const noexcept;
 
     /**
-     * \brief   Returns the idle interval in milliseconds after which a client probes a silent
-     *          connection (net::MODULE::TRANSPORT::alive). Zero switches the probe off.
-     *          Lookup order: module-specific entry --> wildcard "*" entry --> compile-time default.
-     *
-     * \param   module          The process/application name. Pass empty string to use the current process name.
-     * \param   connectType     The transport type name (e.g. "tcpip"). Pass empty string to match any transport.
-     **/
-    uint32_t network_alive_idle(const String& module = areg::EmptyStringA, const String& connectType = areg::EmptyStringA) const noexcept;
-
-    /**
-     * \brief   Returns the time in milliseconds a client waits for any traffic after it sent the
-     *          liveness probe (net::MODULE::TRANSPORT::alivewait).
-     *          Lookup order: module-specific entry --> wildcard "*" entry --> compile-time default.
-     *
-     * \param   module          The process/application name. Pass empty string to use the current process name.
-     * \param   connectType     The transport type name (e.g. "tcpip"). Pass empty string to match any transport.
-     **/
-    uint32_t network_alive_wait(const String& module = areg::EmptyStringA, const String& connectType = areg::EmptyStringA) const noexcept;
-
-    /**
      * \brief   Returns the configured per thread (send/receive) cache size in bytes for network communication
      *          (net::MODULE::TRANSPORT::cache). The value saved in areg.init in kilobytes
      * \param   module          The process/application name. Pass empty string to use the current process name.

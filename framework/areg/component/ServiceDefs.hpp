@@ -470,8 +470,6 @@ enum class FuncIdRange  : uint32_t
     , ServiceLogRestoreConfiguration
     //!< Sent by log source to notify that the configuration file is read again.
     , ServiceLogConfigurationRestored
-    //!< Sent by a connected client to the remote service, and echoed back by the service, to probe that a silent connection is still alive.
-    , SystemServiceAlive
     //!< The last ID of service calls.
     , ServiceLastId         = SERVICE_ID_LAST  //!< Servicing call last ID
 
@@ -1709,8 +1707,6 @@ inline constexpr const char* areg::as_string( areg::FuncIdRange value ) noexcept
         return "areg::FuncIdRange::ServiceLogRestoreConfiguration";
     case areg::FuncIdRange::ServiceLogConfigurationRestored:
         return "areg::FuncIdRange::ServiceLogConfigurationRestored";
-    case areg::FuncIdRange::SystemServiceAlive:
-        return "areg::FuncIdRange::SystemServiceAlive";
     case areg::FuncIdRange::RequestFirstId:
         return "areg::FuncIdRange::RequestFirstId";
     case areg::FuncIdRange::ResponseFirstId:

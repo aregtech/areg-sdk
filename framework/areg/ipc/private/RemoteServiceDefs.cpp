@@ -280,27 +280,13 @@ AREG_API_IMPL areg::MessageEnvelope areg::create_connect_notify( const ITEM_ID &
     areg::EventHeader hdr{ HDR };
     hdr.source    = static_cast<uint32_t>(source);
     hdr.target    = static_cast<uint32_t>(target);
-    const uint32_t size{ sizeof(ITEM_ID) + sizeof(areg::ServiceConnectionState) + sizeof(uint32_t) };
-    if (msgNotifyConnect.init_envelope(hdr, size) != nullptr)
+    if (msgNotifyConnect.init_envelope(hdr, sizeof(ITEM_ID) + sizeof(areg::ServiceConnectionState)) != nullptr)
     {
         msgNotifyConnect << target;
         msgNotifyConnect << areg::ServiceConnectionState::Connected;
-        msgNotifyConnect << areg::SERVICE_CAPABILITIES;
     }
 
     return msgNotifyConnect;
-}
-
-AREG_API_IMPL areg::MessageEnvelope areg::create_alive_message( const ITEM_ID & source, const ITEM_ID & target )
-{
-    static constexpr areg::EventHeader HDR{ areg::message_alive_check() };
-    areg::MessageEnvelope msgAlive;
-    areg::EventHeader hdr{ HDR };
-    hdr.source    = static_cast<uint32_t>(source);
-    hdr.target    = static_cast<uint32_t>(target);
-    msgAlive.init_envelope(hdr);
-
-    return msgAlive;
 }
 
 AREG_API_IMPL areg::MessageEnvelope areg::create_disconnect_notify(const ITEM_ID & source, const ITEM_ID & target)

@@ -209,10 +209,7 @@ namespace areg {
         , QueueWaitTimeout     = 35    //!< Dispatcher lossless full-ring block timeout in ms (format: config::*::queue::timeout). 0 = QUEUE_DEFAULT_FULL_WAIT_MS.
         , QueueDropOnFull      = 36    //!< Dispatcher full-ring policy (format: config::*::queue::drop). false (default) = lossless block, true = drop-newest.
 
-        , NetAliveIdle         = 37    //!< Liveness probe idle interval in ms (format: net::SERVICE::TRANSPORT::alive).
-        , NetAliveWait         = 38    //!< Liveness probe answer wait in ms (format: net::SERVICE::TRANSPORT::alivewait).
-
-        , AnyKey               = 39    //!< Indicates any key type.
+        , AnyKey               = 37    //!< Indicates any key type.
     };
 
     /**
@@ -266,10 +263,7 @@ namespace areg {
             , {"config" , "*"   , "queue"   , "timeout"         }   //! 35  , Dispatcher lossless full-ring block timeout in ms (0 = QUEUE_DEFAULT_FULL_WAIT_MS).
             , {"config" , "*"   , "queue"   , "drop"            }   //! 36  , Dispatcher full-ring policy (false = lossless block, true = drop-newest).
 
-            , {"net"    , "*"   , "*"       , "alive"           }   //! 37  , Liveness probe idle interval in milliseconds (0 = disabled).
-            , {"net"    , "*"   , "*"       , "alivewait"       }   //! 38  , Liveness probe answer wait in milliseconds (0 = use compile-time default).
-
-            , {"*"      , "*"   , "*"       , "*"               }   //! 39  , Indicates any key type (AnyKey sentinel -- keep last).
+            , {"*"      , "*"   , "*"       , "*"               }   //! 37  , Indicates any key type (AnyKey sentinel -- keep last).
 
     };
 
@@ -435,16 +429,6 @@ inline constexpr const areg::ConfigKey& net_pool_pairs() noexcept
 inline constexpr const areg::ConfigKey& net_socket_timeout() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::NetSocketTimeout)];
-}
-
-inline constexpr const areg::ConfigKey& net_alive_idle() noexcept
-{
-    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::NetAliveIdle)];
-}
-
-inline constexpr const areg::ConfigKey& net_alive_wait() noexcept
-{
-    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::NetAliveWait)];
 }
 
 inline constexpr const areg::ConfigKey& net_thread_cache() noexcept

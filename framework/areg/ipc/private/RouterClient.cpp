@@ -365,7 +365,6 @@ void RouterClient::process_received_message( MessageEnvelope & msgReceived, Sock
     case areg::FuncIdRange::ServiceLogSourceStateUpdated:       // fall through
     case areg::FuncIdRange::ServiceLogRestoreConfiguration:     // fall through
     case areg::FuncIdRange::ServiceLogConfigurationRestored:    // fall through
-    case areg::FuncIdRange::SystemServiceAlive:                 // fall through
         break;
 
     case areg::FuncIdRange::AttributeLastId:          // fall through

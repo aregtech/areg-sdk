@@ -33,7 +33,6 @@
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/String.hpp"
 
-#include <atomic>
 #include <cstring>
 #include <utility>
 namespace areg {
@@ -82,34 +81,6 @@ protected:
      *          Used to test the DisconnectState and ConnectState bitmask bits.
      **/
     static inline constexpr bool has_phase_bit(ConnectionPhase state, ConnectionPhase mask) noexcept;
-
-    /**
-     * \brief   Delivers the expiration of the connection liveness timer to the connection.
-     *          A separate consumer, because the connection already consumes the reconnect timer.
-     **/
-    class AliveTimerConsumer : public areg::TimerConsumer
-    {
-    public:
-        /**
-         * \brief   Initializes the consumer with the connection it serves.
-         * \param   owner   The connection whose liveness timer this consumer delivers.
-         **/
-        explicit AliveTimerConsumer(ServiceClientConnectionBase & owner);
-
-        virtual ~AliveTimerConsumer() = default;
-
-    private:
-        /**
-         * \brief   Triggered when the liveness timer is expired.
-         * \param   timer   The timer object that is expired.
-         **/
-        void process_timer(areg::Timer & timer) final;
-
-        ServiceClientConnectionBase &   mOwner;     //!< The connection to notify.
-
-        AliveTimerConsumer() = delete;
-        AREG_NOCOPY_NOMOVE(AliveTimerConsumer);
-    };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -323,25 +294,6 @@ protected:
      * \brief   Called when the reconnection timer expires.
      **/
     void on_reconnect_timer() override;
-
-    /**
-     * \brief   Called when the connection liveness timer expires. Probes a connection that
-     *          carried no incoming traffic, and reports it lost when the probe changes nothing.
-     **/
-    void on_alive_timer();
-
-    /**
-     * \brief   Starts watching a newly established connection, when the remote service
-     *          advertised that it answers the probe and the idle interval is not zero.
-     *
-     * \param   capabilities    The capability set the remote service advertised.
-     **/
-    void start_alive_watch(uint32_t capabilities);
-
-    /**
-     * \brief   Stops watching the connection.
-     **/
-    void stop_alive_watch();
 
     /**
      * \brief   Called when event signals to start service and connection.
@@ -609,30 +561,6 @@ private:
      * \brief   Connection retry timer object.
      **/
     areg::Timer                     mTimerConnect;
-    /**
-     * \brief   Consumer of the connection liveness timer.
-     **/
-    AliveTimerConsumer              mAliveConsumer;
-    /**
-     * \brief   Connection liveness timer object.
-     **/
-    areg::Timer                     mTimerAlive;
-    /**
-     * \brief   Milliseconds of silence on the connection before it is probed. Zero disables the watch.
-     *          Written on the receive thread when a connection is established, read on the message
-     *          dispatcher thread when the timer expires.
-     **/
-    std::atomic_uint32_t            mAliveIdle;
-    /**
-     * \brief   Milliseconds to wait for any incoming traffic after the probe was sent. Written and
-     *          read on the same two threads as the idle interval.
-     **/
-    std::atomic_uint32_t            mAliveWait;
-    /**
-     * \brief   True while a probe is outstanding. The message dispatcher thread sets and clears it,
-     *          and a teardown on the receive thread clears it too.
-     **/
-    std::atomic_bool                mAliveProbed;
     /**
      * \brief   Message receiver thread
      **/
