@@ -66,6 +66,7 @@ The two places a developer might reach for Python have a Python-free equivalent:
 | `check-ascii.py` | Python | Finds non ASCII bytes and unwanted control characters | [11](#11-source-hygiene-check-asciipy) |
 | `fix-eol.py` | Python | Converts CRLF line endings to LF; `--check` only reports | [11](#line-endings-fix-eolpy) |
 | `hunt-crash.py` | Python | Repeats a run under a debugger until it crashes, saves stacks | [12](#12-debugging-a-rare-crash) |
+| `footprint.py` | Python | Reports the flash size of the artefacts and the RAM of the running processes | [13](#13-flash-and-ram-footprint) |
 | `check_invariants.py` | Python | Seeds a defect per framework invariant, rebuilds, and asks whether the test suite notices. `--dry-run` is one second; `--restore` undoes a seed a killed run left | -- |
 
 `explain_rule.py` reads `schema/rules.xml`, so it lives beside it. It is the one
@@ -769,7 +770,60 @@ Stops on the first fatal signal: `SIGSEGV`, `SIGABRT`, `SIGBUS`, `SIGILL`, `SIGF
 
 ---
 
-## 13. Summary
+## 13. Flash and RAM Footprint
+
+`footprint.py` answers what an areg deployment costs a device. It **builds nothing**: it reads a
+build directory that already exists, so the same script serves a native build, a cross build and a
+CI job that only wants the sizes.
+
+```bash
+python3 tools/footprint.py                                  # flash and RAM, reads build/bin
+python3 tools/footprint.py --flash-only                     # sizes only, starts no process
+python3 tools/footprint.py --size-tool arm-linux-gnueabihf-size --flash-only
+python3 tools/footprint.py --hold 10 --clients 1,10,100 --json footprint.json
+```
+
+| Option | Default | Meaning |
+|--------|---------|---------|
+| `--build-dir DIR` | `build` | The build directory to read |
+| `--bin-dir DIR` | `<build>/bin` | Where the binaries are |
+| `--lib-dir DIR` | `<build>/lib` | Where the static libraries are |
+| `--out-dir DIR` | `<build>/footprint` | Where the captured console output is written |
+| `--size-tool NAME` | `size` | The `size` utility of the toolchain |
+| `--flash-only` | off | Read the sizes, start no process |
+| `--ram-only` | off | Run the scenarios, read no size |
+| `--clients LIST` | `1,10` | Router client counts to measure |
+| `--hold SEC` | `5.0` | How long each state is sampled |
+| `--shape STR` | `-w=128 -h=128 -l=1 -t=25` | The block shape the provider streams |
+| `--channels N` | `8` | Channels the provider streams |
+| `--port N` | `8181` | The router port |
+| `--json FILE` | -- | Write the same numbers as data |
+
+**Flash** is the Berkeley `text`, `data` and `bss` of each artefact plus its size on disk. What a
+node stores is `libareg` plus its own application; a node that also routes adds `mtrouter`.
+
+**RAM** is `VmRSS`, `VmHWM`, `RssAnon` and the thread count from `/proc/<pid>/status`, sampled
+every 50 ms, reported as the peak of the run. `VmHWM` is the figure a device has to hold. The
+scenarios are a one-process application, the router alone and with clients attached, and a
+provider and consumer through the router, idle and streaming. Each router row prints how many
+connections were really open when it was taken, read from `/proc/net/tcp`, so the per-connection
+slope is measured rather than assumed.
+
+RAM needs `/proc`, so it is Linux only and the tool says so on other systems. It is **not**
+measured under `qemu-user`: the emulator's own memory would be in the figure. A cross build
+reports flash only, and arm RAM figures come from an arm runner or a real board.
+
+The configuration in `<bin-dir>/config/areg.init` decides what is measured. `net::*::tcpip::pairs`
+is the key with the largest effect: the pool threads are allocated in full at start, whatever the
+client count.
+
+Every run prints its provenance first -- commit, whether the tree is modified, build type,
+compiler and version, machine, and the `AREG_LOGGING`, `AREG_EXTENDED` and `AREG_NO_EXCEPTIONS`
+switches -- so a number copied out of the output says what produced it.
+
+---
+
+## 14. Summary
 
 Building an application with the SDK:
 

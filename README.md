@@ -95,6 +95,7 @@ If Areg saves you work, a ⭐ helps other C++ developers find it.
 - [How it works](#how-it-works)
 - [Agentic coding](#agentic-coding)
 - [Performance](#performance)
+- [Embedded ready](#embedded-ready)
 - [Areg vs. alternatives](#areg-vs-alternatives)
 - [Getting started](#getting-started)
 - [Architecture](#architecture)
@@ -233,6 +234,37 @@ For context only (third-party, 2021, different hardware): gRPC C++ sequential RT
 
 📊 Measure your own hardware: [`23_pubdatarate`](./examples/23_pubdatarate/) (throughput) · [`30_publatency`](./examples/30_publatency/) (latency)
 📈 [Full data and methodology](./docs/wiki/08b-areg-sdk-performance-benchmarks.md) · [vs ZMQ/NanoMsg/NNG](./docs/wiki/08c-areg-vs-hitachi-benchmark.md) · [Framework rankings](./docs/wiki/08d-areg-framework-rankings.md)
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
+
+---
+
+## Embedded ready[![](./docs/img/pin.svg)](#embedded-ready)
+
+**Embedded Linux on a 32- or 64-bit CPU** -- ARM64, ARMv7, x86_64 and x86. If the target
+runs Linux with sockets and pthreads, Areg runs on it: NXP i.MX, TI AM62/AM335x,
+Rockchip RK3588, STM32MP1, Raspberry Pi, Intel Atom.
+
+Measured with [`tools/footprint.py`](./tools/footprint.py) on `x86_64`, GCC 15.2.0, Release:
+
+| What a device pays | Shared, logging on | Static, logging off |
+|---|---|---|
+| framework code | 1.26 MB `libareg.so`, stored once | linked in: **~0.5 MB** per self-contained service |
+| a service binary | ~43-65 KB | 526-549 KB, no runtime dependency |
+| `mtrouter` code | 285 KB | 694 KB |
+| a process, resident | 6.6 MB | **5.6 MB** |
+| `mtrouter`, resident | 6.5 MB, 9 threads | 5.7 MB, 8 threads |
+| each connected client | **~7 KB** -- ten clients cost under 1% of an idle router | ~6 KB |
+
+`-DAREG_LOGGING=OFF` removes one thread and ~1 MB resident. Keep the shipped
+`net::*::tcpip::pairs = 0`: raising it to 16 costs 1.8 MB and 32 threads before a single
+client connects.
+
+**Not** bare metal, **not** an RTOS and **not** 16-bit. Zephyr RTOS is planned after
+version 2.0.0 and does not exist today. ARM figures are not published until they are read
+from a real ARM build -- no number here is scaled from another architecture.
+
+📊 [What "embedded ready" means, and where the line is](./docs/wiki/08e-embedded-ready.md)
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
