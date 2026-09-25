@@ -27,6 +27,8 @@
 namespace areg {
 
 DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, on_reconnect_timer);
+DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, on_alive_timer);
+DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, start_alive_watch);
 DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, on_service_start);
 DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, on_service_stop);
 DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, on_connection_started);
@@ -89,6 +91,11 @@ ServiceClientConnectionBase::ServiceClientConnectionBase( const ITEM_ID & target
     , mLock                 ( )
 
     , mTimerConnect         ( static_cast<TimerConsumer &>(self()), prefixName + areg::CLIENT_CONNECT_TIMER_NAME, areg::INVALID_TIMEOUT, Timer::IGNORE_TIMER_QUEUE, areg::EventPriority::HighPrio )
+    , mAliveConsumer        ( self() )
+    , mTimerAlive           ( mAliveConsumer, prefixName + areg::CLIENT_ALIVE_TIMER_NAME, areg::INVALID_TIMEOUT, Timer::IGNORE_TIMER_QUEUE, areg::EventPriority::HighPrio )
+    , mAliveIdle            ( 0u )
+    , mAliveWait            ( 0u )
+    , mAliveProbed          ( false )
     , mThreadReceive        (messageHandler, mClientConnection, prefixName)
     , mThreadSend           (messageHandler, mClientConnection, prefixName)
     , mSendStartLock        ( false )
@@ -184,6 +191,14 @@ void ServiceClientConnectionBase::service_connection_event(const MessageEnvelope
     areg::ServiceConnectionState connection{ areg::ServiceConnectionState::Unknown };
     msgReceived >> cookie;
     msgReceived >> connection;
+
+    uint32_t capabilities{ 0u };
+    if ((msgReceived.size_used() - msgReceived.position()) >= sizeof(uint32_t))
+    {
+        uint32_t word{ 0u };
+        msgReceived >> word;
+        capabilities = areg::service_capabilities(word);
+    }
     LOG_DBG("Remote service connection notification: status [ %s ], cookie [ %u ]", areg::as_string(connection), cookie);
 
     switch (connection)
@@ -193,11 +208,15 @@ void ServiceClientConnectionBase::service_connection_event(const MessageEnvelope
     {
         if (msgReceived.result() == areg::MESSAGE_SUCCESS)
         {
-            Lock lock(mLock);
-            ASSERT(cookie == static_cast<ITEM_ID>(msgReceived.target()));
-            mClientConnection.set_cookie(cookie);
-            on_channel_connected(cookie);
-            send_command(ServiceEventData::ServiceCommand::CMD_ServiceStarted);
+            {
+                Lock lock(mLock);
+                ASSERT(cookie == static_cast<ITEM_ID>(msgReceived.target()));
+                mClientConnection.set_cookie(cookie);
+                on_channel_connected(cookie);
+                send_command(ServiceEventData::ServiceCommand::CMD_ServiceStarted);
+            }
+
+            start_alive_watch(capabilities);
         }
         else
         {
@@ -330,6 +349,95 @@ void ServiceClientConnectionBase::on_reconnect_timer()
     on_service_start( );
 }
 
+ServiceClientConnectionBase::AliveTimerConsumer::AliveTimerConsumer(ServiceClientConnectionBase & owner)
+    : TimerConsumer ( )
+    , mOwner        ( owner )
+{
+}
+
+void ServiceClientConnectionBase::AliveTimerConsumer::process_timer(Timer & /*timer*/)
+{
+    mOwner.on_alive_timer();
+}
+
+void ServiceClientConnectionBase::start_alive_watch(uint32_t capabilities)
+{
+    LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, start_alive_watch );
+
+    ConnectionConfiguration config(mService, areg::ConnectionType::Tcpip);
+    uint32_t idle{ config.is_configured() ? config.alive_idle_timeout() : 0u };
+    const uint32_t wait{ config.is_configured() ? config.alive_wait_timeout() : 0u };
+
+    if ((capabilities & areg::SERVICE_CAPABILITY_ALIVE) == 0)
+    {
+        LOG_INFO("The remote service does not answer the liveness probe, the connection is not watched.");
+        idle = 0u;
+    }
+
+    if (wait == 0u)
+    {
+        idle = 0u;
+    }
+
+    mAliveIdle.store(idle, std::memory_order_relaxed);
+    mAliveWait.store(wait, std::memory_order_relaxed);
+    mAliveProbed.store(false, std::memory_order_relaxed);
+
+    if (idle == 0u)
+        return;
+
+    LOG_DBG("Watching the connection, idle [ %u ] ms, probe answer wait [ %u ] ms", idle, wait);
+    static_cast<void>(mThreadReceive.take_activity());
+    mTimerAlive.stop_timer();
+    if (!mTimerAlive.start_timer(idle, mMessageDispatcher, 1))
+    {
+        LOG_WARN("Failed to start the connection liveness timer, the connection is not watched.");
+    }
+}
+
+void ServiceClientConnectionBase::stop_alive_watch()
+{
+    mAliveIdle.store(0u, std::memory_order_relaxed);
+    mAliveProbed.store(false, std::memory_order_relaxed);
+    mTimerAlive.stop_timer();
+}
+
+void ServiceClientConnectionBase::on_alive_timer()
+{
+    LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, on_alive_timer );
+
+    mTimerAlive.stop_timer();
+    const uint32_t idle{ mAliveIdle.load(std::memory_order_relaxed) };
+    if (idle == 0u)
+        return;
+
+    if (mThreadReceive.take_activity())
+    {
+        // The connection carried traffic, there is nothing to probe.
+        mAliveProbed.store(false, std::memory_order_relaxed);
+        mTimerAlive.start_timer(idle, mMessageDispatcher, 1);
+        return;
+    }
+
+    const uint32_t wait{ mAliveWait.load(std::memory_order_relaxed) };
+    if (!mAliveProbed.load(std::memory_order_relaxed))
+    {
+        const ITEM_ID cookie{ mChannel.cookie() };
+        if (cookie <= areg::COOKIE_LOCAL)
+            return;
+
+        LOG_DBG("The connection carried nothing for [ %u ] ms, probing it", idle);
+        mAliveProbed.store(true, std::memory_order_relaxed);
+        send_message(areg::create_alive_message(cookie, mTarget));
+        mTimerAlive.start_timer(wait, mMessageDispatcher, 1);
+        return;
+    }
+
+    LOG_WARN("The connection answered nothing within [ %u ] ms of the probe, reporting it lost", wait);
+    mAliveProbed.store(false, std::memory_order_relaxed);
+    notify_connection_lost();
+}
+
 void ServiceClientConnectionBase::on_service_start()
 {
     LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, on_service_start );
@@ -372,6 +480,7 @@ void ServiceClientConnectionBase::on_service_stop()
     set_connection_state(ConnectionPhase::ConnectionStopping);
 
     mTimerConnect.stop_timer( );
+    stop_alive_watch();
 
     Channel channel{ mChannel };
     mChannel.invalidate();
@@ -606,6 +715,8 @@ void ServiceClientConnectionBase::cancel_connection()
 {
     LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, cancel_connection );
     LOG_WARN("Canceling client service connection");
+
+    stop_alive_watch();
 
     // Closing the socket aborts blocked receive / send calls of the I/O threads.
     mClientConnection.close_socket();

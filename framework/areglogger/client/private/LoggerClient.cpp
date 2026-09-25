@@ -734,6 +734,9 @@ void LoggerClient::process_received_message(MessageEnvelope& msgReceived, Socket
             }
             break;
 
+        case areg::FuncIdRange::SystemServiceAlive:
+            break;  // the answer to the liveness probe carries nothing but its own arrival
+
         case areg::FuncIdRange::SystemServiceNotifyRegister:      // fall through
         case areg::FuncIdRange::ServiceLastId:                    // fall through
         case areg::FuncIdRange::SystemServiceQueryInstances:      // fall through

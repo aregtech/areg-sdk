@@ -309,6 +309,14 @@ constexpr uint32_t      SOCKET_RECV_BUFFER_SIZE { 4u * areg::ONE_MEGABYTE };
 //!< Maximum milliseconds a single send() call may block waiting for TCP send-window space.
 constexpr uint32_t      SOCKET_SEND_TIMEOUT_MS  { 2500u };
 
+//!< Milliseconds a connection may carry no incoming traffic before the client probes it.
+//!< Override at runtime via net::SERVICE::TRANSPORT::alive in areg.init. 0 switches it off.
+constexpr uint32_t      DEFAULT_ALIVE_IDLE_TIMEOUT  { 30000u };
+
+//!< Milliseconds the client waits for any incoming traffic after it sent the probe, before it
+//!< reports the connection lost. Override via net::SERVICE::TRANSPORT::alivewait in areg.init.
+constexpr uint32_t      DEFAULT_ALIVE_WAIT_TIMEOUT  { 10000u };
+
 //!< Floor applied to any caller-supplied max, prevents degenerate limits.
 constexpr uint32_t      MIN_CONNECTIONS         { 32u };
 

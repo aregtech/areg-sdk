@@ -23,6 +23,8 @@
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/ipc/DataRateStats.hpp"
 
+#include <atomic>
+
 /************************************************************************
  * Dependencies
  ************************************************************************/
@@ -108,6 +110,18 @@ public:
      **/
     inline void set_handshake(areg::MessageEnvelope msg);
 
+    /**
+     * \brief   Reports that a message arrived on the socket. Called by the receive loop on
+     *          every received message, and by nothing else.
+     **/
+    inline void mark_activity() noexcept;
+
+    /**
+     * \brief   Returns true if a message arrived since the previous call, and clears the mark.
+     **/
+    [[nodiscard]]
+    inline bool take_activity() noexcept;
+
 protected:
 /************************************************************************/
 // EventRouter interface overrides
@@ -156,6 +170,11 @@ private:
      **/
     areg::MessageEnvelope     mHandshakeMsg;
 
+    /**
+     * \brief   Set by the receive loop on every received message, cleared by the liveness watchdog.
+     **/
+    std::atomic_bool          mRecvActivity;
+
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
@@ -196,6 +215,16 @@ inline void ClientReceiveThread::accumulate_received(uint64_t bytes, uint32_t ms
 inline void ClientReceiveThread::set_handshake(areg::MessageEnvelope msg)
 {
     mHandshakeMsg = std::move(msg);
+}
+
+inline void ClientReceiveThread::mark_activity() noexcept
+{
+    mRecvActivity.store(true, std::memory_order_relaxed);
+}
+
+inline bool ClientReceiveThread::take_activity() noexcept
+{
+    return mRecvActivity.exchange(false, std::memory_order_relaxed);
 }
 
 } // namespace areg

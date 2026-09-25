@@ -64,6 +64,7 @@ The two places a developer might reach for Python have a Python-free equivalent:
 | `areg_benchmarks.py` | Python | Turns the console output of the benchmarks into numbers | [10](#10-measuring-throughput-and-latency) |
 | `latency/*` | Python | Unattended latency measurement and A/B comparison | [10](#10-measuring-throughput-and-latency) |
 | `check-ascii.py` | Python | Finds non ASCII bytes and unwanted control characters | [11](#11-source-hygiene-check-asciipy) |
+| `fix-eol.py` | Python | Converts CRLF line endings to LF; `--check` only reports | [11](#line-endings-fix-eolpy) |
 | `hunt-crash.py` | Python | Repeats a run under a debugger until it crashes, saves stacks | [12](#12-debugging-a-rare-crash) |
 | `check_invariants.py` | Python | Seeds a defect per framework invariant, rebuilds, and asks whether the test suite notices. `--dry-run` is one second; `--restore` undoes a seed a killed run left | -- |
 
@@ -716,6 +717,18 @@ python3 tools/check-ascii.py --staged --quiet || exit 1
 python3 tools/check-ascii.py --staged --quiet --find control || exit 1
 EOF
 chmod +x .git/hooks/pre-commit
+```
+
+### Line endings: `fix-eol.py`
+
+The repository stores text with LF, and `.gitattributes` and `.editorconfig` say so. An editor
+that still saves a file with CRLF makes every line of it look changed. `fix-eol.py` rewrites such
+files with LF; `.bat`, `.ps1`, binaries and `tools/schema/*` are left as they are.
+
+```bash
+python3 tools/fix-eol.py              # files changed against HEAD, and untracked ones
+python3 tools/fix-eol.py --check      # report only; exit 1 when a file has CRLF
+python3 tools/fix-eol.py --all        # every tracked file
 ```
 
 ---

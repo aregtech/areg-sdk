@@ -115,6 +115,12 @@ constexpr areg::EventHeader message_bye_server() noexcept;
 constexpr areg::EventHeader notify_client_connection() noexcept;
 
 /**
+ * \brief   Returns EventHeader template for the connection liveness probe message.
+ **/
+[[nodiscard]]
+constexpr areg::EventHeader message_alive_check() noexcept;
+
+/**
  * \brief   Returns EventHeader template for the service registration request message.
  **/
 [[nodiscard]]
@@ -161,7 +167,45 @@ AREG_API MessageEnvelope create_connect_request(const ITEM_ID & source, const IT
 AREG_API MessageEnvelope create_disconnect_request( const ITEM_ID & source, const ITEM_ID & target );
 
 /**
- * \brief   Creates a connection available notification message.
+ * \brief   The upper half of the capability word. It identifies the word, so that a trailing
+ *          field of a connect notification built before the word existed is never read as one.
+ **/
+constexpr uint32_t  SERVICE_CAPABILITY_TAG      { 0xA5E6'0000u };
+
+/**
+ * \brief   The mask that separates the tag from the capability bits.
+ **/
+constexpr uint32_t  SERVICE_CAPABILITY_MASK     { 0xFFFF'0000u };
+
+/**
+ * \brief   The remote service answers the connection liveness probe.
+ **/
+constexpr uint32_t  SERVICE_CAPABILITY_ALIVE    { 1u << 0 };
+
+/**
+ * \brief   The capability set this build of the remote service advertises to a connecting
+ *          client, appended to the connect notification.
+ **/
+constexpr uint32_t  SERVICE_CAPABILITIES        { areg::SERVICE_CAPABILITY_TAG | areg::SERVICE_CAPABILITY_ALIVE };
+
+/**
+ * \brief   Returns the capability bits of a capability word read from a connect notification.
+ *          Returns none when the word is absent or carries no tag, which is what a remote
+ *          service built before the word produces.
+ *
+ * \param   word    The value read from the connect notification.
+ **/
+[[nodiscard]]
+inline constexpr uint32_t service_capabilities(uint32_t word) noexcept
+{
+    return ((word & areg::SERVICE_CAPABILITY_MASK) == areg::SERVICE_CAPABILITY_TAG)
+                ? (word & ~areg::SERVICE_CAPABILITY_MASK)
+                : 0u;
+}
+
+/**
+ * \brief   Creates a connection available notification message. The message carries the
+ *          capability set of the remote service after the connection state.
  *
  * \param   source      The ID of the source that sends the connect notification message.
  * \param   target      The ID of the target to send the connect notification message.
@@ -169,6 +213,17 @@ AREG_API MessageEnvelope create_disconnect_request( const ITEM_ID & source, cons
  **/
 [[nodiscard]]
 AREG_API MessageEnvelope create_connect_notify( const ITEM_ID & source, const ITEM_ID & target );
+
+/**
+ * \brief   Creates a connection liveness probe message. The client sends it to the remote
+ *          service, and the service answers with the same message and the ends swapped.
+ *
+ * \param   source      The ID of the source that sends the message.
+ * \param   target      The ID of the target that receives the message.
+ * \return  Returns initialized liveness probe message.
+ **/
+[[nodiscard]]
+AREG_API MessageEnvelope create_alive_message( const ITEM_ID & source, const ITEM_ID & target );
 
 /**
  * \brief   Creates a connection rejection notification message.
@@ -360,6 +415,17 @@ constexpr areg::EventHeader areg::notify_client_connection() noexcept
     hdr.eventType = static_cast<uint16_t>(areg::EventType::EventRemoteConnection);
     hdr.result    = areg::MESSAGE_SUCCESS;
     hdr.sequenceNr = areg::SEQUENCE_NUMBER_NOTIFY;
+    return hdr;
+}
+
+constexpr areg::EventHeader areg::message_alive_check() noexcept
+{
+    areg::EventHeader hdr{};
+    hdr.checksum  = areg::CHECKSUM_INVALID;
+    hdr.messageId = static_cast<uint32_t>(areg::FuncIdRange::SystemServiceAlive);
+    hdr.eventType = static_cast<uint16_t>(areg::EventType::EventRemoteConnection);
+    hdr.result    = areg::MESSAGE_SUCCESS;
+    hdr.sequenceNr= areg::SEQUENCE_NUMBER_NOTIFY;
     return hdr;
 }
 

@@ -820,6 +820,16 @@ void ServiceCommunicationBase::process_received_message(areg::MessageEnvelope & 
                     , static_cast<int32_t>(whichSource.address().host_port( ))
                     , target);
 
+    if ( msgId == areg::FuncIdRange::SystemServiceAlive )
+    {
+        if ( source == static_cast<uint32_t>(cookie) )
+        {
+            send_message( areg::create_alive_message( mServerConnection.channel_id(), cookie ) );
+        }
+
+        return;
+    }
+
     if ( (source == static_cast<uint32_t>(cookie)) && (msgId != areg::FuncIdRange::SystemServiceConnect) )
     {
         if ( msgId == areg::FuncIdRange::SystemServiceDisconnect )

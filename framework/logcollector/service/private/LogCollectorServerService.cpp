@@ -192,6 +192,9 @@ void LogCollectorServerService::dispatch_and_forward_logger_message(const areg::
         mLoggerProcessor.save_log_source_configuration(msgForward);
         break;
 
+    case areg::FuncIdRange::SystemServiceAlive:
+        break;  // answered by the connection layer before it reaches the service
+
     case areg::FuncIdRange::EmptyFunctionId:                  // fall through
     case areg::FuncIdRange::ComponentCleanup:                 // fall through
     case areg::FuncIdRange::RequestRegisterService:           // fall through
@@ -294,6 +297,9 @@ void LogCollectorServerService::on_message_received(const areg::MessageEnvelope 
         mLoggerProcessor.log_message(msgReceived);
         mDatabase.save_log_message(msgReceived);
         break;
+
+    case areg::FuncIdRange::SystemServiceAlive:
+        break;  // answered by the connection layer before it reaches the service
 
     case areg::FuncIdRange::SystemServiceConnect:
     case areg::FuncIdRange::SystemServiceDisconnect:

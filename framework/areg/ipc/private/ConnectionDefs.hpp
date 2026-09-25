@@ -74,6 +74,11 @@ namespace areg {
      **/
     constexpr std::string_view  SERVER_CONNECT_TIMER_NAME       { "SERVER_CONNECT_TIMER_NAME" };
     /**
+     * \brief   areg::CLIENT_ALIVE_TIMER_NAME
+     *          The name of the client connection liveness timer.
+     **/
+    constexpr std::string_view  CLIENT_ALIVE_TIMER_NAME         { "CLIENT_ALIVE_TIMER_NAME" };
+    /**
      * \brief   areg::DEFAULT_RETRY_CONNECT_TIMEOUT
      *          Default connect retry timer timeout value in milliseconds
      **/

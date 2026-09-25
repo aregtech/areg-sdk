@@ -199,6 +199,7 @@ case areg::FuncIdRange::ServiceLogMessage:                // fall through
     case areg::FuncIdRange::ServiceLogSourceStateUpdated:       // fall through
     case areg::FuncIdRange::ServiceLogRestoreConfiguration:     // fall through
     case areg::FuncIdRange::ServiceLogConfigurationRestored:    // fall through
+    case areg::FuncIdRange::SystemServiceAlive:                 // fall through
         break;
 
     case areg::FuncIdRange::ResponseServiceProviderConnection:// fall through

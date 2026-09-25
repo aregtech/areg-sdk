@@ -102,6 +102,16 @@ uint32_t ConnectionConfiguration::socket_send_timeout() const noexcept
     return Application::config_manager().network_timeout(areg::EmptyStringA, mConnectType);
 }
 
+uint32_t ConnectionConfiguration::alive_idle_timeout() const noexcept
+{
+    return Application::config_manager().network_alive_idle(areg::EmptyStringA, mConnectType);
+}
+
+uint32_t ConnectionConfiguration::alive_wait_timeout() const noexcept
+{
+    return Application::config_manager().network_alive_wait(areg::EmptyStringA, mConnectType);
+}
+
 bool ConnectionConfiguration::connection_ip_address( uint8_t & field0
                                                    , uint8_t & field1
                                                    , uint8_t & field2

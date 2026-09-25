@@ -1158,6 +1158,56 @@ uint32_t ConfigManager::network_pool_pairs(const String& module, const String& c
     return areg::DEFAULT_POOL_PAIRS;
 }
 
+uint32_t ConfigManager::network_alive_idle(const String& module, const String& connectType) const noexcept
+{
+    Lock lock(mLock);
+
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::NetAliveIdle };
+    constexpr const areg::ConfigKey&  key{ areg::net_alive_idle() };
+    const String& transport{ connectType.is_empty() ? String(areg::SYNTAX_ALL_MODULES) : connectType };
+
+    const String& mod{ module.is_empty() ? mModule : module };
+    if (!mod.is_empty())
+    {
+        const Property* prop = _get_property(mWritableProperties, key.section, mod, transport, key.position, confKey, true);
+        if (prop != nullptr)
+            return static_cast<uint32_t>(prop->value().as_integer());
+    }
+
+    {
+        const Property* prop = _get_property(mReadonlyProperties, key.section, String(areg::SYNTAX_ALL_MODULES), transport, key.position, confKey, false);
+        if (prop != nullptr)
+            return static_cast<uint32_t>(prop->value().as_integer());
+    }
+
+    return areg::DEFAULT_ALIVE_IDLE_TIMEOUT;
+}
+
+uint32_t ConfigManager::network_alive_wait(const String& module, const String& connectType) const noexcept
+{
+    Lock lock(mLock);
+
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::NetAliveWait };
+    constexpr const areg::ConfigKey&  key{ areg::net_alive_wait() };
+    const String& transport{ connectType.is_empty() ? String(areg::SYNTAX_ALL_MODULES) : connectType };
+
+    const String& mod{ module.is_empty() ? mModule : module };
+    if (!mod.is_empty())
+    {
+        const Property* prop = _get_property(mWritableProperties, key.section, mod, transport, key.position, confKey, true);
+        if ((prop != nullptr) && (prop->value().as_integer() > 0))
+            return static_cast<uint32_t>(prop->value().as_integer());
+    }
+
+    {
+        const Property* prop = _get_property(mReadonlyProperties, key.section, String(areg::SYNTAX_ALL_MODULES), transport, key.position, confKey, false);
+        if ((prop != nullptr) && (prop->value().as_integer() > 0))
+            return static_cast<uint32_t>(prop->value().as_integer());
+    }
+
+    return areg::DEFAULT_ALIVE_WAIT_TIMEOUT;
+}
+
 uint32_t ConfigManager::network_timeout(const String& module, const String& connectType) const noexcept
 {
     Lock lock(mLock);

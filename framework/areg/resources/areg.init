@@ -336,6 +336,8 @@ net::*::tcpip::drain                = 128                   # Send batch in mess
 net::*::tcpip::pairs                = 0                     # Pool thread-pair count. 0 = disabled (shared send/recv threads). >0 = dedicated pool pairs per N clients.
 net::*::tcpip::timeout              = 2500                  # SO_SNDTIMEO in ms. Raise (e.g. 30000) when debugging on Windows to prevent breakpoint-pause disconnects.
 net::*::tcpip::cache                = 256                   # The size per-socket cache to receive data. Same value is used to initialize send cache.
+net::*::tcpip::alive                = 30000                 # Silence in ms before a client probes the connection. 0 disables the probe.
+net::*::tcpip::alivewait            = 10000                 # Time in ms to wait for any traffic after the probe before the connection is reported lost.
 
 # ---------------------------------------------------------------------------
 # Remote Logger Settings

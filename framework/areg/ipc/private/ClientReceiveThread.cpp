@@ -33,6 +33,7 @@ ClientReceiveThread::ClientReceiveThread(RemoteMessageHandler& remoteService, Cl
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
     , mRecvStats        ( )
+    , mRecvActivity     ( false )
 {
 }
 
@@ -84,12 +85,14 @@ bool ClientReceiveThread::run_dispatcher()
             {
 #if defined(AREG_LATENCY_TRACE) && (AREG_LATENCY_TRACE)
                 accumulate_received(static_cast<uint64_t>(sizeReceive), 1);
+                mark_activity();
                 const uint64_t _ltRecv{ AREG_LT_NOW() };
                 mRemoteService.process_received_message( msgReceived, mConnection.socket( ) );
                 AREG_LT_SAMPLE(areg::LtStage::RecvNode, AREG_LT_NOW() - _ltRecv);
                 drainCount = (drainCount + 1) % DRAIN_LIMIT;
 #else   // defined(AREG_LATENCY_TRACE) && (AREG_LATENCY_TRACE)
                 accumulate_received(static_cast<uint64_t>(sizeReceive), 1);
+                mark_activity();
                 mRemoteService.process_received_message(msgReceived, mConnection.socket());
                 drainCount = (drainCount + 1) % DRAIN_LIMIT;
 #endif  // defined(AREG_LATENCY_TRACE) && (AREG_LATENCY_TRACE)
