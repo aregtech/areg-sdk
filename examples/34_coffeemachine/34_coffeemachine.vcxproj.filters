@@ -15,15 +15,15 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="operator\src\main.cpp">
+    <ClCompile Include="machine\src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="operator\src\TempMonitorServiceConsumer.cpp">
+    <ClCompile Include="machine\src\CoffeeMachineServiceProvider.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="operator\src\TempMonitorServiceConsumer.hpp">
+    <ClInclude Include="machine\src\CoffeeMachineServiceProvider.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

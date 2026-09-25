@@ -39,11 +39,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="operator\src\OperatorComponent.cpp" />
     <ClCompile Include="operator\src\main.cpp" />
+    <ClCompile Include="operator\src\TempMonitorServiceConsumer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="operator\src\OperatorComponent.hpp" />
+    <ClInclude Include="operator\src\TempMonitorServiceConsumer.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
