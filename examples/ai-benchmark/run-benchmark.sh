@@ -33,8 +33,8 @@ One cold agent run, measured, against a clean snapshot of this checkout.
                      LINE" marker is the prompt, with <areg-sdk>, <runner>, <task>,
                      <project> and <mode> substituted
                        (default: <framework>-<key>-prompt.txt beside a task named
-                        prompt-<key>.md; without one, areg uses
-                        areg-ai-prompt-template.txt and grpc refuses to start)
+                        prompt-<key>.md; without one, <framework>-ai-prompt-
+                        template.txt beside this script)
   --project NAME     C identifier: directory and CMake project name
                        (default: <key> of the task, e.g. coffeemachine)
   --mode MODE        ipc | local | pubsub, areg only      (default: ipc)
@@ -87,6 +87,9 @@ One cold agent run, measured, against a clean snapshot of this checkout.
     run-benchmark.sh --task examples/ai-benchmark/prompt-tempalarm.md
     run-benchmark.sh --task examples/ai-benchmark/prompt-atm.md --attempts 15
     run-benchmark.sh --task examples/ai-benchmark/prompt-printscan.md --attempts 15
+    run-benchmark.sh --task examples/ai-benchmark/prompt-elevator.md --attempts 15
+    run-benchmark.sh --task examples/ai-benchmark/prompt-sensorgateway.md --attempts 15
+    run-benchmark.sh --task examples/ai-benchmark/prompt-greenhouse.md --framework grpc
     run-benchmark.sh f --model opus --effort high --dry-run
     run-benchmark.sh --sdk ~/src/areg-sdk --framework grpc --grpc /usr/local
     run-benchmark.sh --agent copilot --model gpt-5.6-terra
@@ -311,9 +314,7 @@ main()
     if [ -z "${WRAPPER}" ]; then
         WRAPPER="$(dirname "${TASK_ABS}")/${FRAMEWORK}-${KEY}-prompt.txt"
         if [ ! -f "${WRAPPER}" ]; then
-            [ "${FRAMEWORK}" = "areg" ] \
-                || die "no ${FRAMEWORK} wrapper for this task: ${WRAPPER}. Write one, or pass --wrapper"
-            WRAPPER="${HERE}/areg-ai-prompt-template.txt"
+            WRAPPER="${HERE}/${FRAMEWORK}-ai-prompt-template.txt"
         fi
     fi
     case "${WRAPPER}" in /*) WRAPPER_ABS="${WRAPPER}" ;; *) WRAPPER_ABS="${SDK}/${WRAPPER}" ;; esac
@@ -398,15 +399,22 @@ main()
 ${stray}"
     else
         copied="$(snapshot "${SDK}" "${SNAP}")"
+        # The agent may read the snapshot and nothing else, so a task the snapshot
+        # does not carry -- outside the checkout, or ignored by git -- is copied into it.
+        local TASK_OWN=""
+        case "${TASK_ABS}" in "${SDK}/"*) [ -f "${SNAP}/${TASK_ABS#"${SDK}/"}" ] || TASK_OWN=1 ;; *) TASK_OWN=1 ;; esac
+        [ -z "${TASK_OWN}" ] || cp "${TASK_ABS}" "${SNAP}/task.md"
         ( cd "${SNAP}" && md5sum AGENTS.md docs/agent/*.md docs/agent/*.json docs/agent/.budgets \
                                tools/agent/*.py tools/agent/evals/tasks.json \
                                conf/cmake/functions.cmake examples/ai-benchmark/*.md \
-                               examples/ai-benchmark/*.txt ) > "${MD5F}"
+                               examples/ai-benchmark/*.txt ${TASK_OWN:+task.md} ) > "${MD5F}"
     fi
 
-    # A task inside the checkout is read from the snapshot; one outside it as given.
-    local TASK_RUN="${TASK_ABS}"
-    case "${TASK_ABS}" in "${SDK}/"*) TASK_RUN="${SNAP}/${TASK_ABS#"${SDK}/"}" ;; esac
+    # A task is read from the snapshot: where the checkout has it, or as task.md.
+    local TASK_RUN="${SNAP}/task.md"
+    if [ -z "${TASK_OWN:-}" ] && [ "${FRAMEWORK}" != "grpc" ]; then
+        TASK_RUN="${SNAP}/${TASK_ABS#"${SDK}/"}"
+    fi
 
     # What the prompt may call the procedure. The gRPC arm has no runbook and may
     # not be told that one exists anywhere.
