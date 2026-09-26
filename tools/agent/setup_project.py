@@ -103,6 +103,15 @@ MODES = {
 NAME_PATTERN = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')
 
 
+def inside(path, tree):
+    """True when path is tree itself or lies anywhere under it."""
+    tree = os.path.realpath(tree)
+    try:
+        return os.path.commonpath([os.path.realpath(path), tree]) == tree
+    except ValueError:
+        return False
+
+
 def fail(message, code=1):
     # Output already printed is flushed first: stdout is block-buffered into a
     # pipe, so without this the error reaches the reader before the lines it is
@@ -367,11 +376,11 @@ src/CMakeLists.txt    names the documents and each executable's sources
 |---|---|
 | **Build this application, start to finish** | `docs/agent/01-runbook.md` - every command in order, if you are not already following it |
 | **Anything ordinary** | `docs/agent/00-cheatsheet.md` - what the tools do not write |
-| Decide what the services are | `docs/agent/05-design.md`, before writing any file |
+| Decide what the services are | `docs/agent/05-design.md`, before any document |
 | Change the service contract | `docs/agent/20-service-interface.md` |
 | Declare a structure, enum or container | `docs/agent/21-data-types.md` |
 | Behaviour that depends on what happened before | `docs/agent/22-state-machine.md` (a `.fsml`) |
-| `areg::String` and the containers | `docs/agent/40-base-api.md` -- before the first line of C++ |
+| `areg::String` and the containers | the worksheet's list, else `docs/agent/40-base-api.md` before the first line |
 | The signature of one framework name | `python3 {sdk}/tools/agent/api_help.py <name>` -- never a page, never a header |
 | Implement a provider, a consumer, or the model | nothing: `gen_skeleton.py --app` wrote all three. Open `docs/agent/30-provider.md`, `docs/agent/31-consumer.md` or `docs/agent/32-model.md` only at a numbered section `51-debug.md` or `05-design.md` names |
 | Periodic or delayed work | the consumer already owns a stepping timer; for a second timer `docs/agent/33-timers.md` |
@@ -524,7 +533,7 @@ def main():
     parser = argparse.ArgumentParser(
         description='Create a ready-to-build AREG project.')
     parser.add_argument('--name', help='project name; a C identifier')
-    parser.add_argument('--root', help='directory to create; defaults to ./<name>')
+    parser.add_argument('--root', help='directory to create, outside the SDK; defaults to ./<name>')
     parser.add_argument('--mode', choices=sorted(MODES), default=None,
                         help='local: one process. ipc: two processes. '
                              'pubsub: local, whose interface also declares '
@@ -579,6 +588,10 @@ def main():
     check_tools(needs_git=sdk_root is None)
 
     root = os.path.abspath(root)
+    for sdk in (sdk_root, SDK_ROOT):
+        if sdk and os.path.isfile(os.path.join(sdk, 'areg.cmake')) and inside(root, sdk):
+            fail('{} is inside the SDK {}. A project is created outside it: run this '
+                 'from\n  the project directory with --root .'.format(root, sdk))
     if os.path.exists(root) and os.listdir(root) and not args.force:
         fail('{} exists and is not empty.\n'
              '  Pass --force to scaffold into it anyway. --force writes only the '
@@ -635,7 +648,9 @@ def main():
     if template == 'work':
         print('  design.json already carries a design, so it was left as it is.')
     else:
-        print('  design.json holds every key of a design, empty: fill it, then')
+        print('  design.json is the one file to read. AGENTS.md restates the runbook, and the')
+        print('  worksheet carries what scenarios.json needs. design.json holds every key of')
+        print('  a design, empty: fill it, then')
     print('  python3 {}/build_project.py --spec design.json'.format(tools))
     print('    that first call compiles the framework too: give it a command timeout')
     print('    of 10 minutes (600000 ms). Every later call takes seconds.')

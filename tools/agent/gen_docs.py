@@ -2167,7 +2167,12 @@ TEMPLATE = {
                    "broadcast or an attribute; a request with an answer awaits its response",
                    "unless the step names another. wait: milliseconds, instead of await.",
                    "Steps run in order and the run exits 0 after the last. A check calls fail(),",
-                   "stay() to wait for the next arrival, or go_to(Step::Name) for a loop."],
+                   "stay() to wait for the next arrival, or go_to(Step::Name) for a loop.",
+                   "One step per thing the task asks to prove, not one per message. A step",
+                   "starting work which takes time awaits the update saying it finished, before",
+                   "a later step or a go_to() sends again. Two processes: one step waits 300 ms",
+                   "or more after the first answer, with steps after it; the generated peer-lost",
+                   "scenario kills the provider there."],
             "name": "", "send": "", "args": {}, "await": "", "wait": 0, "description": ""
         }]
     }],

@@ -38,7 +38,7 @@ Find your task, open that one file, and do not search the repository.
 |---|---|
 | **Anything ordinary** | `docs/agent/00-cheatsheet.md` -- what the tools do not write |
 | **Start from working code** | `docs/agent/recipes/` - copy one, do not read it. `recipes/README.md` maps them |
-| **Decide what the services are** | `docs/agent/05-design.md`, before writing any file |
+| **Decide what the services are** | `docs/agent/05-design.md`, after the scaffold |
 | Start a new project by hand | `docs/agent/10-new-project.md` |
 | Define an interface; what to override, what to call | `docs/agent/20-service-interface.md` (section 3: the names) |
 | Implement a provider, a consumer, or the model | nothing: `tools/agent/gen_skeleton.py --app` wrote all three, compiling and running. Open `docs/agent/30-provider.md`, `docs/agent/31-consumer.md` or `docs/agent/32-model.md` only where `docs/agent/05-design.md` or `docs/agent/51-debug.md` cites a numbered section of one |
@@ -49,7 +49,7 @@ Find your task, open that one file, and do not search the repository.
 | Understand the seven core concepts | `CODEBASE.md` section 1 |
 | Data types: C++ spelling, struct, enum, `.dtml` | `docs/agent/21-data-types.md` |
 | Add a state machine | `docs/agent/22-state-machine.md` -- a `"machines"` block of `design.json`, never a recipe copied over a project you already have |
-| **Write any C++ that uses a string or a container** | `docs/agent/40-base-api.md`, before the first line of it, not after the first error |
+| **Write any C++ that uses a string or a container** | a worksheet's list, else `docs/agent/40-base-api.md` before the first line |
 | The signature of one framework name | `tools/agent/api_help.py <name>` -- not a page, not a header |
 | What a component knows about itself; the application, threads, timers, time, files | `docs/agent/42-runtime-api.md` |
 | Integrate areg into an existing CMake project | `docs/wiki/02b-cmake-integrate.md` |

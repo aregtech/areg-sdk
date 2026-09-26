@@ -17,16 +17,9 @@ On Windows: `python` for `python3`, `build\bin\x.exe` for `./build/bin/x.elf`,
 **The directory this session started in is the project root.** Work there, exactly
 there. Do not create a directory for the project, do not `cd` anywhere, and do not
 move the work under your home directory. Every command below runs from that
-directory, and every relative path is relative to it.
-
-Confirm it before the first command:
-
-```
-pwd
-```
-
-If that path is inside areg-sdk, or if the directory already holds an unrelated
-project, **stop and say so** rather than writing into it.
+directory, and every relative path is relative to it. The scaffold command checks
+it: if it refuses a root inside areg-sdk or one already holding a project, **stop
+and say so** rather than writing into it.
 
 ## 2. Scaffold, before you open a documentation page
 
@@ -53,8 +46,10 @@ It restates this page and the SDK's `AGENTS.md`; a run following this page skips
 ## 3. Design
 
 From the task, decide the requests, responses, broadcasts, attributes and data types.
-If the routing table offers a design page, open it once, here, in the same request as
-`design.json`.
+Right after the scaffold, in one request, read `design.json`, run
+`gen_docs.py --example` and open `05-design.md`, plus `22-state-machine.md` when a
+machine is needed. Open nothing else before `design.json` is written: `20` and `21`
+describe the XML the generator writes for you.
 
 **A provider reads its own attributes back.** An attribute gives the provider a getter
 as well as a setter, so state the service already carries needs no shadow member beside
@@ -75,17 +70,14 @@ every key present and empty, each section with a `#|` note on what its values ma
 Fill the values and keep the keys; no XML, `ID` or `To` is written by hand. A sample
 left as written is skipped and an empty value is absent, so delete only a section the
 task does not need. A key the generator does not read is refused by name.
-`gen_docs.py --example` prints a finished design of another application, 180 lines,
-short enough to read in one call: do not page it. It is the shape, not the rules: read
-it once, then write into the `design.json` you already have. Replacing that file with
-the example throws away its `#|` notes, which are what the example leaves out.
+`gen_docs.py --example` prints a finished design of another application, 180 lines
+read in one call: do not page it. It is the shape, and the `#|` notes are the rules:
+with both read, write `design.json` whole, in one `Write`. `gen_docs.py` ignores the
+notes, so none has to be kept.
 A consumer that drives a scenario and exits lists it as `"steps"`, branching included:
 the generator writes the step machine, and each check may `stay()`, `go_to(Step::Name)`
 or `fail("why")`. Writing that machine by hand is the largest avoidable cost here.
-Write one step per thing the task asks you to prove, not one per message: every step
-is another body to write and another place to put the order wrong. A step that starts
-work which takes time `await`s the update that says it finished, and the step after it
-is the next thing to prove, not the next request.
+The template's `steps` note says how many steps to write, and what each awaits.
 What it gives up after is `"driver"` of the same interface, which the template's own
 note explains; the generator declares all three, so no marker asks for one.
 
@@ -197,23 +189,17 @@ designing either: nothing in them changes what the spec should say. The one exce
 is a numbered section `51-debug.md` or `05-design.md` names -- open that section, not
 the page.
 
-`40-base-api.md` is the one page a body still needs: every body uses a string or a
-container and those names are not the ones training data carries. Read it before
-writing bodies rather than after, in the same request as the last page you needed.
-For a single framework name it does not carry -- a signature, an overload, what a
-class declares -- ask instead of reading:
+The worksheet lists the `areg::String` calls bodies use, a floor, not a limit. Open
+`40-base-api.md` only for a container or a call it lacks, and for a single framework
+name -- a signature, an overload, what a class declares -- ask instead of reading:
 
 ```
 python3 <areg-sdk>/tools/agent/api_help.py start_timer
 python3 <areg-sdk>/tools/agent/api_help.py Timer --class
 ```
 
-**`scenarios.json` is in the worksheet too**, as its last sections: one regular
-expression per line, every one of which has to match. The generated `main()` prints
-nothing, so each line comes from a body written above it -- the proof and the code
-that produces it go into the same file, in the same request. A body prints with
-`std::cout << ... << std::endl;`, and every `.cpp` the generator writes includes
-`<iostream>` already.
+**`scenarios.json` is in the worksheet too**, as its last sections, which say what
+each expectation line is and who prints it: it is written in the same request.
 
 ## 7. Build and run -- one command
 
@@ -225,13 +211,11 @@ The section 5 command with `--run`: it builds as it did there, then starts the r
 the provider and the consumer and checks their output. Exit 0 is a pass. **Run it after
 every fix too** -- worksheet, build and run are one request.
 
-**Every acceptance item goes in `scenarios.json`, including the two that look like
-they need a terminal.** A console quit path is `"stdin": ["-q"]` on that process,
-leading a scenario of its own; the peer going away is a scenario-level `"stop"`. The
-generator writes both for a stepped two-process project; a trigger it cannot pick
-is a worksheet section. One run
-then prints the line each expectation matched, and that output is the evidence for the
-report.
+**A console quit and the peer going away are scenarios too**, not terminal work: the
+quit is `"stdin": ["-q"]` on that process, leading a scenario of its own, and the loss
+a scenario-level `"stop"`. The generator writes both for a stepped two-process project;
+a trigger it cannot pick is a worksheet section. One run then prints the line each
+expectation matched, and that output is the evidence for the report.
 
 **Never start the processes by hand.** No `prog &`, no `sleep`, no `pkill`, no `ps`.
 It is slower, it is not repeatable, it leaves background processes behind, and a

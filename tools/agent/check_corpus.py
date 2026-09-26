@@ -2930,6 +2930,9 @@ def run():
     check_spec_semantics(report)
     check_await_spelling(report)
     check_start_kind(report)
+    check_design_request(report)
+    check_step_rules_at_use(report)
+    check_base_api_on_demand(report)
     check_codegen_name_rules(report)
     check_app_shape(report)
     check_update_note(report)
@@ -4438,6 +4441,152 @@ def check_start_kind(report):
     report.ok('start-kind',
               'a state of kind "start" generates the same .fsml as the level\'s "initial" '
               'naming it, and one the "initial" does not name is refused by that key')
+
+
+def runbook_section(number):
+    """The text of one numbered section of 01-runbook.md, or '' when it is missing."""
+    for part in read('docs', 'agent', '01-runbook.md').split('\n## '):
+        if part.startswith('{}. '.format(number)):
+            return part
+    return ''
+
+
+# Text that sends a run past the design request: (file, phrase, what it does).
+DESIGN_DETOURS = (
+    (('AGENTS.md',), '05-design.md`, before writing any file',
+     'routes to 05-design.md before the scaffold, which the runbook runs first'),
+    (('tools', 'agent', 'setup_project.py'), '05-design.md`, before writing any file',
+     'routes a project to 05-design.md before the scaffold'),
+    (('docs', 'agent', '05-design.md'), '`20-service-interface.md` to write the documents',
+     'sends a design to the XML page, which design.json replaces'),
+    (('docs', 'agent', '01-runbook.md'), 'throws away its `#|` notes',
+     'keeps design.json edited in pieces for notes gen_docs.py ignores'),
+)
+
+
+def check_design_request(report):
+    """The design is one request after the scaffold, and nothing routes a run past it."""
+    first = runbook_section(1)
+    if not first or re.search(r'^pwd$', first, re.M):
+        report.fail('design-request', '01-runbook.md section 1 asks for pwd in a request '
+                    'of its own, although the scaffold command checks the root')
+        return
+    design = runbook_section(3)
+    missing = [name for name in ('in one request', 'gen_docs.py --example', '05-design.md',
+                                 '22-state-machine.md', 'Open nothing else')
+               if name not in design]
+    if missing:
+        report.fail('design-request', '01-runbook.md section 3 does not name the design '
+                    'request; it lacks: {}'.format(', '.join(missing)))
+        return
+    if 'one `Write`' not in runbook_section(4):
+        report.fail('design-request', '01-runbook.md section 4 does not say design.json '
+                    'is written whole, in one `Write`')
+        return
+    for parts, phrase, does in DESIGN_DETOURS:
+        if phrase in read(*parts):
+            report.fail('design-request', '{} {}'.format('/'.join(parts), does))
+            return
+    for name in ('areg-ai-prompt-template.txt', 'areg-coffeemachine-prompt.txt'):
+        wrapper = read('examples', 'ai-benchmark', name)
+        if 'all four in one request' not in ' '.join(wrapper.split()) or \
+                '\n2. Read <task>' in wrapper:
+            report.fail('design-request', 'examples/ai-benchmark/{} reads the task file in '
+                        'a request of its own'.format(name))
+            return
+
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    holder = tempfile.mkdtemp()
+    try:
+        sdk = os.path.join(holder, 'sdk')
+        os.makedirs(sdk)
+        open(os.path.join(sdk, 'areg.cmake'), 'w').close()
+        inner = os.path.join(sdk, 'app')
+        done = subprocess.run([sys.executable, os.path.join(tools, 'setup_project.py'),
+                               '--name', 'app', '--root', inner, '--mode', 'ipc',
+                               '--sdk-root', sdk, '--quiet'],
+                              capture_output=True, text=True)
+        if done.returncode == 0 or os.path.exists(inner):
+            report.fail('design-request', 'setup_project.py scaffolds a root inside '
+                        '--sdk-root instead of refusing it')
+            return
+        outer = os.path.join(holder, 'app')
+        done = subprocess.run([sys.executable, os.path.join(tools, 'setup_project.py'),
+                               '--name', 'app', '--root', outer, '--mode', 'ipc',
+                               '--sdk-root', ROOT, '--quiet'],
+                              capture_output=True, text=True)
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    if done.returncode != 0 or 'design.json is the one file to read' not in done.stdout:
+        report.fail('design-request', 'the scaffold does not name design.json as the one '
+                    'file of the project to read')
+        return
+    report.ok('design-request', 'the runbook names one design request after the scaffold, '
+              'the scaffold refuses a root inside the SDK, and no page routes past it')
+
+
+# The scenario rules, each where it is used: (where, phrase).
+STEP_RULES_AT_USE = (
+    ('the template steps note', 'not one per message'),
+    ('the template steps note', 'awaits the update saying it finished'),
+    ('the template steps note', 'waits 300 ms or more'),
+    ('the worksheet scenarios.json header', 'One line per acceptance item'),
+)
+
+# The runbook sentences those replace, which it no longer states.
+STEP_RULES_MOVED = ('not one per message', '`await`s the update that says it finished',
+                    'Every acceptance item goes in')
+
+
+def check_step_rules_at_use(report):
+    """The step and scenario rules are in the template note and the worksheet, once."""
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_docs
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('step-rules', 'gen_docs.py does not import: {}'.format(failure))
+        return
+    note = ' '.join(gen_docs.TEMPLATE['interfaces'][0]['steps'][0][gen_docs.NOTE])
+    where = {'the template steps note': ' '.join(note.split()),
+             'the worksheet scenarios.json header': read('tools', 'agent', 'gen_skeleton.py')}
+    for place, phrase in STEP_RULES_AT_USE:
+        if phrase not in where[place]:
+            report.fail('step-rules', '{} does not say "{}"'.format(place, phrase))
+            return
+    runbook = ' '.join(read('docs', 'agent', '01-runbook.md').split())
+    for phrase in STEP_RULES_MOVED:
+        if phrase in runbook:
+            report.fail('step-rules', '01-runbook.md still states "{}", which the point of '
+                        'use now carries'.format(phrase))
+            return
+    report.ok('step-rules', 'the step rules and the peer-lost hold are in the template '
+              'steps note, the acceptance rule in the worksheet, and neither in the runbook')
+
+
+def check_base_api_on_demand(report):
+    """40-base-api.md is opened for a call the worksheet list lacks, not before every body."""
+    implement = ' '.join(runbook_section(6).split())
+    if 'Read it before writing bodies' in implement or \
+            'is the one page a body still needs' in implement:
+        report.fail('base-api-demand', '01-runbook.md section 6 makes 40-base-api.md a read '
+                    'before every body, although the worksheet lists the String calls')
+        return
+    missing = [name for name in ('floor, not a limit', '40-base-api.md', 'api_help.py')
+               if name not in implement]
+    if missing:
+        report.fail('base-api-demand', '01-runbook.md section 6 does not name {} beside '
+                    'the worksheet list'.format(', '.join(missing)))
+        return
+    for parts in (('AGENTS.md',), ('tools', 'agent', 'setup_project.py')):
+        rows = [line for line in read(*parts).splitlines()
+                if '40-base-api.md' in line and 'string' in line.lower() and
+                line.startswith('|')]
+        if not rows or any('worksheet' not in row for row in rows):
+            report.fail('base-api-demand', '{} routes every string to 40-base-api.md '
+                        'without the worksheet list first'.format('/'.join(parts)))
+            return
+    report.ok('base-api-demand', '40-base-api.md is routed for a call the worksheet list '
+              'lacks, beside api_help.py, and the list is a floor')
 
 
 def check_generated_defects(report):

@@ -160,5 +160,5 @@ both documents become `Category="Public"` and `mtrouter` has to run.
 
 ## Then
 
-`20-service-interface.md` to write the documents, `32-model.md` to write the model.
-Or copy the nearest recipe from `recipes/` and change its contract.
+`design.json` writes the documents and the model (`01-runbook.md` section 4); by
+hand, `20-service-interface.md`, `32-model.md` or a recipe from `recipes/`.
