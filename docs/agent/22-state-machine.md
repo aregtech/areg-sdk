@@ -105,10 +105,11 @@ field for each of these -- and a document you were handed is read with the same 
 
 **State names are unique across the whole document, not per level.** Every level is
 flattened into one C++ enumeration, so a substate of one composite collides with a
-substate of another and with the top level. A `Kind="Start"` marker counts as a state:
-a nested level that also begins at one needs a different name for it -- `Start`,
-`BrewStart`, `RinseStart`. A collision is `error[3/RULE_STATE_NAME]`, reported by
-`check_contract.py` and refused by the generator.
+substate of another and with the top level. A level's start marker is a pseudo-state,
+like a History marker: the machine passes through it into the state `"initial"` names.
+Its name is still taken: `Start`, or `<Composite>Start` on a nested level. A collision
+is `error[3/RULE_STATE_NAME]`, reported by `check_contract.py` and refused by the
+generator.
 
 **Every name a state or a transition uses is declared in a list of its own**, and all
 of them are optional:
@@ -128,7 +129,7 @@ names the kind it was looked up as, which names the list it is missing from.
 
 `gen_docs.py --example` prints a whole machine in this shape -- timers, triggers,
 actions, conditions, guards, a composite level and a final state. That is what you
-write; the XML is what `gen_docs.py` writes, and the `Kind="Start"` marker, every `ID`
+write; the XML is what `gen_docs.py` writes, and the start marker, every `ID`
 and the `To` of every transition are its work. What is still yours is the rule below.
 
 **A transition's target must be a sibling.** A transition cannot reach into or out of a composite: to leave a subtree,
@@ -149,7 +150,7 @@ resume re-enters where it left off. See "Re-entering a composite where it left o
 | `"on"` | the trigger, timer or event that fires it, read from those lists so it is never spelled twice |
 | `"do"` and `"set"` | run between the exit and the entry; `"set"` first, so an action sees it |
 
-`"initial"` becomes the level's `Kind="Start"` marker and the transition out of it.
+`"initial"` becomes the level's start marker and the transition out of it.
 
 A state may hold its own `"states"`. Its transitions then fire from anywhere inside
 that subtree, which is how one `power_off` trigger reaches every nested state at once.
@@ -159,7 +160,7 @@ that subtree, which is how one `power_off` trigger reaches every nested state at
 A composite records the substate it was left in, and a resume re-activates it.
 `Shallow` restores that direct substate, whose own children then start afresh; `Deep`
 restores the subtree down to the deepest state that was active. With nothing recorded
--- a first entry, or one after `release_fsm(true)` -- it descends the `Kind="Start"`
+-- a first entry, or one after `release_fsm(true)` -- it descends the Start
 chain. `init_fsm(thread, mode)` says how the top level is entered; `release_fsm(false)`
 keeps the record.
 

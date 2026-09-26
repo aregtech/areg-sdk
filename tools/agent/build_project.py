@@ -329,7 +329,10 @@ def show_passed(lines, tail):
     The tail is a line count and nothing anchors it to a diagnostic, so a warning the
     step did not fail on is otherwise delivered in part or not at all.
     """
-    start = len(lines) if tail is None else max(0, len(lines) - tail)
+    if tail is None:
+        show(lines, tail)
+        return
+    start = max(0, len(lines) - tail)
     above = picked(lines[:start], WARNED, WARNED_BUDGET, context=4) if start else None
     if above:
         print('   ... {} earlier line(s) naming a warning this step did not stop for:'

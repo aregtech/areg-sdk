@@ -2899,7 +2899,6 @@ def run():
     check_self_helper_is_described(report)
     check_step_hold(report)
     check_api_constructors(report)
-    check_late_awaits(report)
     check_review_verdicts(report)
     check_entry_toll(report)
     check_page_budget(report)
@@ -2924,9 +2923,13 @@ def run():
     check_peer_loss_branch(report)
     check_generated_defects(report)
     check_step_driver(report)
+    check_late_arrival(report)
+    check_step_fall_through(report)
     check_method_names(report)
     check_accessor_collision(report)
     check_spec_semantics(report)
+    check_await_spelling(report)
+    check_start_kind(report)
     check_codegen_name_rules(report)
     check_app_shape(report)
     check_update_note(report)
@@ -3410,16 +3413,6 @@ def review_blocks(said):
 # firing is a hole in this check, so every case names what it must print.
 REVIEW_CASES = (
     ('a skipped template entry', {'interfaces': [], 'machines': []}, 2, 'sample entr'),
-    ('a late await of an attribute', {'machines': [], 'interfaces': [{
-        'name': 'S', 'attributes': [{'name': 'X'}],
-        'requests': [{'name': 'ask', 'answer': [{'name': 'ok'}]}],
-        'steps': [{'name': 'a', 'send': 'ask'}, {'name': 'b', 'await': 'X'}]}]},
-     0, 'awaits "X"'),
-    ('a late await of a broadcast', {'machines': [], 'interfaces': [{
-        'name': 'S', 'broadcasts': [{'name': 'B'}],
-        'requests': [{'name': 'ask', 'answer': [{'name': 'ok'}]}],
-        'steps': [{'name': 'a', 'send': 'ask'}, {'name': 'b', 'await': 'B'}]}]},
-     0, 'awaits broadcast "B"'),
     ('an attribute no rule reads', {'interfaces': [], 'machines': [{
         'name': 'M', 'attributes': [{'name': 'Count', 'type': 'uint32'}],
         'triggers': [{'name': 'go'}], 'initial': 'Idle',
@@ -3509,52 +3502,6 @@ def check_review_verdicts(report):
     report.ok('review-verdict',
               'every note of a review over {} design(s) says either that the document '
               'is written or what to change'.format(len(REVIEW_CASES)))
-
-
-def check_late_awaits(report):
-    """The late-await note fires only where a step can drop the awaited update.
-
-    A step that sends a request with an answer holds for that answer, and an update
-    arriving then is dropped. A step that awaits the attribute itself receives it.
-    """
-    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
-    try:
-        import gen_docs
-    except Exception as failure:
-        report.fail('late-awaits', 'gen_docs.py does not import: {}'.format(failure))
-        return
-    cases = (
-        ('holds for its answer', [{'name': 'a', 'send': 'ask'},
-                                  {'name': 'b', 'await': 'X'}], 1),
-        ('awaits the update itself', [{'name': 'a', 'send': 'ask', 'await': 'X'},
-                                      {'name': 'b', 'await': 'X'}], 0),
-        ('ends at once', [{'name': 'a', 'send': 'fire'},
-                          {'name': 'b', 'await': 'X'}], 0),
-        ('a wait between', [{'name': 'a', 'send': 'fire'}, {'name': 'w', 'wait': 100},
-                            {'name': 'b', 'await': 'X'}], 1),
-    )
-    for label, steps, expected in cases:
-        project = {'interfaces': [{
-            'name': 'S', 'attributes': [{'name': 'X'}],
-            'requests': [{'name': 'ask', 'answer': [{'name': 'ok'}]}, {'name': 'fire'}],
-            'steps': steps}]}
-        found = len(gen_docs.late_awaits(project))
-        if found != expected:
-            report.fail('late-awaits', 'a step after one that {} gets {} late-await '
-                        'note(s), not {}'.format(label, found, expected))
-            return
-    # The note names one remedy. A step held by a timer has no request to move the
-    # await onto, so the answer's remedy there sends a run to rewrite a correct design.
-    for label, held, wanted in (('an answer', 'ok', 'awaits the attribute instead'),
-                                ('a broadcast', 'fired', 'awaits the attribute instead'),
-                                ('a time', 300, 'comes before the wait')):
-        said = gen_docs.late_remedy(held)
-        if wanted not in said:
-            report.fail('late-awaits', 'a step held by {} is told "{}"'
-                        .format(label, said))
-            return
-    report.ok('late-awaits', 'the late-await note fires where an update can be dropped, '
-              'and nowhere else, and its remedy matches what the earlier step holds for')
 
 
 # The task prompts are the comparison itself: the same requirements scored
@@ -4373,6 +4320,126 @@ def check_spec_semantics(report):
         shutil.rmtree(holder, ignore_errors=True)
 
 
+def check_await_spelling(report):
+    """A step may await a thing by the name of the consumer method that receives it."""
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_docs
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('await-spelling', 'gen_docs.py does not import: {}'.format(failure))
+        return
+    tools = os.path.join(ROOT, 'tools', 'agent')
+
+    def spec(target):
+        return {"interfaces": [{
+            "name": "Alarm",
+            "requests": [{"name": "set_limit", "params": [{"name": "high", "type": "int32"}],
+                          "answer": [{"name": "accepted", "type": "bool"}]}],
+            "broadcasts": [{"name": "alarm_raised"}],
+            "attributes": [{"name": "AlarmActive", "type": "bool"}],
+            "steps": [{"name": "Go", "send": "set_limit", "args": {"high": 3},
+                       "await": target}]}]}
+
+    holder = tempfile.mkdtemp()
+    try:
+        def loaded(target):
+            path = os.path.join(holder, 'design.json')
+            with open(path, 'w', encoding='utf-8', newline='\n') as handle:
+                json.dump(spec(target), handle)
+            done = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                                   '--spec', path, '--outdir', os.path.join(holder, 'out'),
+                                   '--force'], capture_output=True, text=True, cwd=holder)
+            steps = gen_docs.load_spec(path)[0]['interfaces'][0]['steps']
+            return done.returncode, steps[0].get('await'), done.stderr.strip()
+
+        for said, meant in (('response_set_limit', 'set_limit'),
+                            ('broadcast_alarm_raised', 'alarm_raised'),
+                            ('on_alarm_active_update', 'AlarmActive'),
+                            ('AlarmActive_update', 'AlarmActive')):
+            code, target, err = loaded(said)
+            if code != 0 or target != meant:
+                report.fail('await-spelling',
+                            'a step awaiting "{}" is read as "{}" and gen_docs.py exits {}, '
+                            'where it names "{}" and nothing else: {}'
+                            .format(said, target, code, meant, err[:160]))
+                return
+        for said in ('response_nothing', 'broadcast_set_limit', 'on_set_limit_update'):
+            code, _target, _err = loaded(said)
+            if code == 0:
+                report.fail('await-spelling',
+                            'a step awaiting "{}", which names nothing the service '
+                            'declares, is accepted'.format(said))
+                return
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    report.ok('await-spelling',
+              'a step awaiting response_<r>, broadcast_<b> or on_<attr>_update is read as '
+              'the thing it names, and a prefix naming nothing is still refused')
+
+
+def check_start_kind(report):
+    """A state marked "kind": "start" is the initial of its level, or it is refused."""
+    tools = os.path.join(ROOT, 'tools', 'agent')
+
+    def machine(top_kind, inner_kind, top_initial='Idle'):
+        idle = {"name": "Idle",
+                "transitions": [{"on": "go", "to": "Busy", "do": [{"call": "act"}]}]}
+        work = {"name": "Work", "transitions": [{"on": "go", "to": "Rest"}]}
+        if top_kind:
+            idle['kind'] = top_kind
+        if inner_kind:
+            work['kind'] = inner_kind
+        busy = {"name": "Busy", "initial": "Work", "states": [work, {"name": "Rest"}],
+                "transitions": [{"on": "stop", "to": "Idle"}]}
+        spec = {"name": "Door", "triggers": ["go", "stop"], "actions": [{"name": "act"}],
+                "states": [idle, busy]}
+        if top_initial:
+            spec['initial'] = top_initial
+        return {"machines": [spec]}
+
+    holder = tempfile.mkdtemp()
+    try:
+        def generated(spec):
+            path = os.path.join(holder, 'design.json')
+            out = os.path.join(holder, 'out')
+            with open(path, 'w', encoding='utf-8', newline='\n') as handle:
+                json.dump(spec, handle)
+            done = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                                   '--spec', path, '--outdir', out, '--force'],
+                                  capture_output=True, text=True, cwd=holder)
+            if done.returncode != 0:
+                return None, done.stderr.strip()
+            with open(os.path.join(out, 'Door.fsml'), 'rb') as handle:
+                return handle.read(), ''
+
+        plain, err = generated(machine(None, None))
+        if plain is None:
+            report.fail('start-kind', 'the plain machine does not generate: ' + err[:160])
+            return
+        for what, spec in (('on the initial', machine('start', None)),
+                           ('spelled Start, with no "initial"', machine('Start', None, None)),
+                           ('spelled initial, on a nested level', machine(None, 'initial'))):
+            text, err = generated(spec)
+            if text != plain:
+                report.fail('start-kind',
+                            '"kind": "start" {} does not generate the machine without it: {}'
+                            .format(what, err[:160] or 'the .fsml differs'))
+                return
+        wrong = machine(None, None)
+        wrong['machines'][0]['states'][1]['kind'] = 'start'
+        text, err = generated(wrong)
+        if text is not None or '"initial"' not in err:
+            report.fail('start-kind',
+                        'a "start" state the level\'s "initial" does not name is {}'
+                        .format('accepted' if text is not None else 'refused as: ' + err[:160]))
+            return
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    report.ok('start-kind',
+              'a state of kind "start" generates the same .fsml as the level\'s "initial" '
+              'naming it, and one the "initial" does not name is refused by that key')
+
+
 def check_generated_defects(report):
     """Every prohibition is checked against the source the generator itself writes.
 
@@ -4667,6 +4734,164 @@ STEP_REFUSALS = [({'name': 'fly', 'send': 'fly'}, 'is not a request'),
                  ({'name': 'nothing', 'await': 'Nobody'}, 'no response, broadcast'),
                  ({'name': 'odd_width', 'send': 'open', 'args': {'width': 3}},
                   'takes only 600, 1200, 2000')]
+
+
+LATE_SAMPLE = [{'name': 'open_gate', 'send': 'open', 'args': {'width': 600}},
+               {'name': 'watch_width', 'await': 'Width'},
+               {'name': 'watch_moved', 'await': 'gate_moved'},
+               {'name': 'reopen', 'send': 'open', 'args': {'width': 1200}, 'await': 'Recent'}]
+
+
+def check_late_arrival(report):
+    """An update or broadcast that arrives before the step awaiting it is kept for it.
+
+    It is kept from the last request on, and the step that awaits it without sending
+    runs its check on it once. A replay does not run the arrival body a second time.
+    """
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_docs
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('late-arrival', 'gen_docs.py does not import: {}'.format(failure))
+        return
+    held = io.StringIO()
+    with contextlib.redirect_stdout(held):
+        gen_docs.review({'machines': [], 'interfaces': [{
+            'name': 'S', 'attributes': [{'name': 'X'}], 'broadcasts': [{'name': 'B'}],
+            'requests': [{'name': 'ask', 'answer': [{'name': 'ok'}]}],
+            'steps': [{'name': 'a', 'send': 'ask'}, {'name': 'b', 'await': 'X'},
+                      {'name': 'c', 'await': 'B'}]}]}, 0)
+    if held.getvalue().strip():
+        report.fail('late-arrival', 'a design awaiting an update or broadcast after a '
+                                    'request still earns a note the driver made moot: '
+                                    + held.getvalue().strip()[:160])
+        return
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    holder = tempfile.mkdtemp()
+    here = os.getcwd()
+    try:
+        os.chdir(holder)
+        made = generate_application(tools, 'late', LATE_SAMPLE)
+        if not os.path.isfile(made):
+            report.fail('late-arrival', made)
+            return
+        with open(made, encoding='utf-8') as handle:
+            source = handle.read()
+        with open(made[:-4] + '.hpp', encoding='utf-8') as handle:
+            source += handle.read()
+
+        def body_of(signature):
+            found = re.search(re.escape(signature) + r'[^{]*\{(.*?)\n\}', source, re.S)
+            return found.group(1) if found else ''
+
+        width = body_of('::on_width_update(')
+        moved = body_of('::broadcast_gate_moved(')
+        begin = body_of('::begin(Step step)')
+        replay = body_of('::replay_late()')
+        wanted = (
+            ('an update dropped on another step is latched',
+             re.search(r'dropped\("update Width"\);\s*mLateWidth = true;', width)),
+            ('a broadcast dropped on another step keeps its arguments',
+             re.search(r'dropped\("broadcast gate_moved"\);\s*mLateGateMoved = true;\s*'
+                       r'mLateGateMovedReading = reading;', moved)),
+            ('the arrival body is not run again on a replay',
+             re.search(r'if \(mReplaying == false\)\s*\{\s*// TODO\(you\) update_width',
+                       width)),
+            ('a step that sends forgets what arrived before it',
+             re.search(r'case Step::Reopen:[^;]*;\s*forget_late\(\);\s*request_open\(1200\);',
+                       begin)),
+            ('a step that awaits without sending replays what is latched',
+             re.search(r'case Step::WatchWidth:[^;]*;\s*if \(mLateWidth\)\s*\{\s*'
+                       r'mLate\.start_timer\(', begin)),
+            ('the replay hands the held value to the check',
+             re.search(r'case Step::WatchWidth:.*?width\(state\).*?on_width_update\(',
+                       replay, re.S)),
+            ('the replay hands the kept arguments to the check',
+             re.search(r'case Step::WatchMoved:.*?broadcast_gate_moved\('
+                       r'mLateGateMovedReading\)', replay, re.S)),
+        )
+        for what, found in wanted:
+            if not found:
+                report.fail('late-arrival', 'the step driver does not hold a late arrival: '
+                            'nothing generated shows that ' + what)
+                return
+        if 'mLateRecent' in source:
+            report.fail('late-arrival', 'an attribute awaited only by a step that sends '
+                                        'is latched, and nothing replays it')
+            return
+        with open('worksheet.txt', encoding='utf-8') as handle:
+            sheet = handle.read()
+        if 'test the value already held' in sheet or 'dropped there' in sheet:
+            report.fail('late-arrival', 'the worksheet of a stepped design still asks the '
+                                        'author to handle an update that arrived early')
+            return
+        os.chdir(here)
+        shutil.rmtree(holder, ignore_errors=True)
+        holder = tempfile.mkdtemp()
+        os.chdir(holder)
+        made = generate_application(tools, 'prompt', LATE_SAMPLE[:1])
+        with open(made, encoding='utf-8') as handle:
+            if 'mLate' in handle.read():
+                report.fail('late-arrival', 'a design with no step awaiting without a '
+                                            'request still gets the latch')
+                return
+    finally:
+        os.chdir(here)
+        shutil.rmtree(holder, ignore_errors=True)
+    report.ok('late-arrival',
+              'an update or broadcast arriving before the step that awaits it is kept '
+              'from the last request on and checked once, without its arrival body')
+
+
+def check_step_fall_through(report):
+    """Every step_ section names the step its check falls through to, and a new
+    generation names each section whose target moved."""
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    holder = tempfile.mkdtemp()
+    here = os.getcwd()
+    first = [{'name': 'open_gate', 'send': 'open', 'args': {'width': 600}},
+             {'name': 'watch_width', 'await': 'Width'}]
+    try:
+        os.chdir(holder)
+        made = generate_application(tools, 'fall', first)
+        if not os.path.isfile(made):
+            report.fail('fall-through', made)
+            return
+
+        def section(name):
+            with open('worksheet.txt', encoding='utf-8') as handle:
+                found = re.search(r'^== {}\n((?:#\|.*\n)*)'.format(name), handle.read(),
+                                  re.M)
+            return found.group(1) if found else ''
+
+        if 'falling through begins Step::WatchWidth' not in section('step_open_gate') \
+                or 'falling through ends the run' not in section('step_watch_width'):
+            report.fail('fall-through', 'a step_ section does not say which step its '
+                                        'check falls through to, so a step inserted '
+                                        'after it re-targets the check unseen')
+            return
+        design = json.load(open('design.json', encoding='utf-8'))
+        design['interfaces'][0]['steps'] = [first[0], {'name': 'settle', 'wait': 100},
+                                            first[1]]
+        with open('design.json', 'w', encoding='utf-8', newline='\n') as handle:
+            json.dump(design, handle)
+        docs = sorted(glob.glob(os.path.join('src', 'services', '*.siml')))
+        machines = sorted(glob.glob(os.path.join('src', 'services', '*.fsml')))
+        again = [sys.executable, os.path.join(tools, 'gen_skeleton.py'), '--doc', docs[0],
+                 '--app', '--mode', 'ipc', '--force', '--spec', 'design.json']
+        if machines:
+            again += ['--machine', machines[0]]
+        said = subprocess.run(again, capture_output=True, text=True).stdout
+        if not re.search(r'step_open_gate\b.*Step::Settle.*Step::WatchWidth', said):
+            report.fail('fall-through', 'a generation that moved where a check falls '
+                                        'through does not name it: {}'
+                        .format(said.strip()[-200:]))
+            return
+    finally:
+        os.chdir(here)
+        shutil.rmtree(holder, ignore_errors=True)
+    report.ok('fall-through', 'every step_ section names where its check falls through, '
+                              'and a generation names each one that moved')
 
 
 def check_step_driver(report):
@@ -6333,6 +6558,18 @@ def check_passing_step_keeps_a_warning(report):
         report.fail('passing-warnings',
                     'a step with no warning prints something other than its tail; '
                     'every run would pay for the check')
+        return
+
+    # A step shown whole hides nothing, so an application line reading "warning:" is output.
+    output = ['pump_provider: ready', 'warning: tank level is low',
+              '      pump_consumer step 1: refused as expected']
+    held = io.StringIO()
+    with contextlib.redirect_stdout(held):
+        build_project.show(output, None)
+    if held.getvalue() != printed(output, None):
+        report.fail('passing-warnings',
+                    'a step shown whole also prints the application\'s own "warning:" '
+                    'lines as a warning it did not stop for, so they are printed twice')
         return
     report.ok('passing-warnings',
               'a step that passed hands over the warnings above its tail, with the '

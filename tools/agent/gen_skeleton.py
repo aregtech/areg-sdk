@@ -432,6 +432,9 @@ ORDER_NOTE = ['A response and an update are two deliveries, not one. A response 
               'for the other, so test the value already held before waiting for an',
               'update that may have arrived already, or the wait never ends.']
 
+# ORDER_NOTE for a worksheet whose steps await: the driver keeps an update that came early.
+STEPPED_ORDER_NOTE = ORDER_NOTE[:4] + ['for the other.']
+
 
 STEPS_NOTE = ['a step_ section runs only while its step is current. fail("why") ends the',
               'run with exit 1, stay() keeps the step for the next arrival, and',
@@ -444,9 +447,8 @@ STEPS_NOTE = ['a step_ section runs only while its step is current. fail("why") 
 
 # The same contract as STEPS_NOTE, short enough to repeat on every later step_
 # section. A worksheet states it once at the top and a run reads section nine.
-STEP_BRIEF = ['falling through the end of this body ends the step and starts the next.',
-              'stay() holds it, go_to(Step::Name) redirects, fail("why") stops, and an',
-              'early return keeps whichever of them the body already called']
+STEP_BRIEF = ['stay() holds the step, go_to(Step::Name) redirects, fail("why") stops,',
+              'and an early return keeps whichever of them the body already called']
 
 
 # A response no step awaits gets no step machinery at all, and the generated file is
@@ -489,8 +491,9 @@ CONNECT_INSIDE = ['the rest of service_connected() is generated: every broadcast
 
 
 UPDATE_NOTE = ['an update_ body runs on every arrival, whatever step is current, and',
-               'before the step_ check of the same update. That check runs only while',
-               'its step is current; an arrival on any other step is dropped there.',
+               'before the step_ check of the same update. That check runs while its',
+               'step is current, and once as it begins if one arrived since the last',
+               'request.',
                'Both run inside the check the generated handler makes, so the value is',
                'valid and no test of state is needed:',
                '    if (state == areg::DataState::DataIsOK)',
@@ -530,8 +533,9 @@ def header_notes(sections, awaited=()):
     """
     answers = [name for name, _, _, _, _ in sections if name.startswith('response_')]
     updates = [name for name, _, _, _, _ in sections if name.startswith('update_')]
-    return ORDER_NOTE if (answers or 'response' in awaited) \
-        and (updates or 'update' in awaited) else []
+    if not ((answers or 'response' in awaited) and (updates or 'update' in awaited)):
+        return []
+    return STEPPED_ORDER_NOTE if awaited else ORDER_NOTE
 
 
 def spelt(names):
@@ -768,6 +772,7 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
         lines.append('#|')
 
     notes = section_notes(sections, driven, connecting(produced))
+    falls = fall_through(steps)
     current = None
     for name, hint, path, file_name, signature in sections:
         if path != current:
@@ -777,6 +782,8 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
         lines.append('#| {}'.format(hint))
         if signature:
             lines.append('#| in: {}'.format(signature))
+        if name in falls:
+            lines.append('#| {}'.format(falls[name]))
         for line in notes.get(name, []):
             lines.append('#| {}'.format(line))
         lines.append('')
@@ -799,17 +806,50 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
     return lines
 
 
+def fall_through(steps):
+    """The fall-through line of each step_ section, keyed by the section name."""
+    falls = {}
+    for index, step in enumerate(steps):
+        after = steps[index + 1] if index + 1 < len(steps) else None
+        falls['step_' + step['name']] = \
+            'falling through begins Step::{}'.format(after['enum']) if after \
+            else 'falling through ends the run with exit 0'
+    return falls
+
+
+def fall_lines(text):
+    """The fall-through line of each step_ section of a worksheet's text."""
+    found, section = {}, None
+    for line in text.splitlines():
+        if line.startswith('== '):
+            section = line[3:].strip()
+        elif section and line.startswith('#| falling through '):
+            found[section] = line[3:]
+    return found
+
+
 def write_worksheet(produced, out, iface, document, machine, machine_doc,
                     scenarios=None, steps=()):
     """Write the worksheet. It carries no work, so it is rewritten every time.
 
     A bodies file holding only notes and empty sections is removed: it is the
     worksheet an earlier generator wrote in its place, and it carries no work either.
+    A step_ section whose fall-through target differs from the worksheet it replaces
+    is named.
     """
     lines = worksheet_lines(produced, out, iface, document, machine, machine_doc,
                             scenarios, steps)
     if not lines:
         return None
+    before = {}
+    if os.path.exists(WORKSHEET):
+        with open(WORKSHEET, encoding='utf-8', errors='replace') as handle:
+            before = fall_lines(handle.read())
+    after = fall_lines('\n'.join(lines))
+    for name in sorted(set(before) & set(after)):
+        if before[name] != after[name]:
+            print('  {}: {}, where it was "{}". Check its body still means that.'
+                  .format(name, after[name], before[name]))
     with open(WORKSHEET, 'w', encoding='utf-8', newline='\n') as handle:
         handle.write('\n'.join(lines).rstrip() + '\n')
     if os.path.exists(BODIES) and worksheet_pristine(BODIES):
@@ -1875,13 +1915,55 @@ def step_detail(step):
     return step_said(step).replace('\\', '\\\\').replace('"', '\\"')
 
 
-def step_dispatch(steps, kind, name, indent):
-    """The check of every step waiting on this handler, then the end of that step."""
+def generated_values(signature):
+    """(C++ type held by value, name) of each parameter of a generated signature."""
+    params, depth, current = [], 0, ''
+    for char in signature + ',':
+        depth += (char == '<') - (char == '>')
+        if char == ',' and depth == 0:
+            found = re.match(r'\s*(.*?)\s*\b(\w+)\s*$', current)
+            if found and found.group(1):
+                held = re.sub(r'^const\s+', '', found.group(1)).rstrip('& ').strip()
+                params.append((held, found.group(2)))
+            current = ''
+        else:
+            current += char
+    return params
+
+
+def late_latches(iface, steps):
+    """What the driver keeps for a step that awaits an update or broadcast and sends nothing.
+
+    Keyed by (kind, name): the flag member, and for a broadcast its arguments as
+    (member, type, parameter).
+    """
+    latches = {}
+    for step in steps:
+        if step['send'] is not None or step['awaits'] is None \
+                or step['awaits'][0] not in ('update', 'broadcast') \
+                or step['awaits'] in latches:
+            continue
+        kind, name = step['awaits']
+        flag = 'mLate' + pascal(name)
+        args = []
+        if kind == 'broadcast':
+            args = [(flag + pascal(param), held, param) for held, param in
+                    generated_values(iface.generated_params('broadcast', name))]
+        latches[step['awaits']] = {'flag': flag, 'args': args}
+    return latches
+
+
+def step_dispatch(steps, kind, name, indent, latch=None):
+    """The check of every step waiting on this handler, then the end of that step.
+
+    With a latch, an arrival no step checks is kept for a later step that awaits it.
+    """
     waiting = [step for step in steps if step['awaits'] == (kind, name)]
     if not waiting:
         return []
     pad = ' ' * indent
     lines = ['' if kind != 'response' else None,
+             pad + '{} = false;'.format(latch['flag']) if latch else None,
              pad + 'mHeld = false;', pad + 'mJumped = false;',
              pad + 'switch (mStep)', pad + '{']
     lines = [line for line in lines if line is not None]
@@ -1899,13 +1981,18 @@ def step_dispatch(steps, kind, name, indent):
     # ignore most messages. It is remembered rather than reported, because the step
     # that did want it waits for ever and the stall report is where that is answered.
     lines += [pad + 'default:',
-              pad + '    dropped("{} {}");'.format(kind, name),
-              pad + '    break;', pad + '}']
+              pad + '    dropped("{} {}");'.format(kind, name)]
+    if latch:
+        lines.append(pad + '    {} = true;'.format(latch['flag']))
+        lines += [pad + '    {} = {};'.format(member, param)
+                  for member, _, param in latch['args']]
+    lines += [pad + '    break;', pad + '}']
     return lines
 
 
-def driver_lines(steps, holds, cls):
+def driver_lines(steps, holds, cls, iface=None, latches=None):
     """The helpers that run the steps: begin one, end one, stay in one, jump to one."""
+    latches = latches or {}
     lines = ['    //! Ends the current step when a check body is left, by falling off',
              '    //! its end, by return, or by break. stay(), go_to() and fail() all',
              '    //! take effect in complete(), so every path reaches it. A body that',
@@ -1945,8 +2032,17 @@ def driver_lines(steps, holds, cls):
         lines += ['        case Step::{}:'.format(step['enum']),
                   '            std::cout << "step {}" << std::endl;'.format(step['name'])]
         if step['send']:
+            if latches:
+                lines.append('            forget_late();')
             lines.append('            {}({});'.format(step['call'],
                                                   ', '.join(step['args'])))
+        elif step['awaits'] in latches:
+            lines += ['            if ({})'.format(latches[step['awaits']]['flag']),
+                      '            {',
+                      '                mLate.start_timer(1, static_cast<areg::DispatcherThread &>'
+                      '(master_thread()),',
+                      '                                  areg::TimerBase::ONE_TIME);',
+                      '            }']
         if step['wait']:
             lines += ['            mHold.stop_timer();',
                       '            mHold.start_timer({}, static_cast<areg::DispatcherThread &>'
@@ -1997,7 +2093,67 @@ def driver_lines(steps, holds, cls):
               '']
     if holds:
         lines += ['    areg::Timer  mHold;   //!< Ends a step that waits for a time.', '']
+    if latches:
+        lines += late_lines(steps, iface, latches)
     return lines
+
+
+def late_lines(steps, iface, latches):
+    """The replay of an update or broadcast that arrived before the step awaiting it."""
+    lines = ['    //! Runs the check of the current step once on what arrived before it.',
+             '    void replay_late()',
+             '    {',
+             '        mReplaying = true;',
+             '        switch (mStep)',
+             '        {']
+    for step in steps:
+        if step['send'] is not None or step['awaits'] not in latches:
+            continue
+        kind, name = step['awaits']
+        flag = latches[step['awaits']]['flag']
+        lines += ['        case Step::{}:'.format(step['enum']),
+                  '            if ({})'.format(flag),
+                  '            {',
+                  '                {} = false;'.format(flag)]
+        if kind == 'update':
+            lines += ['                areg::DataState state{ areg::DataState::DataIsInvalid };',
+                      '                const auto value = {}(state);'.format(
+                          iface.spell('attribute', name, 'get')),
+                      '                {}(value, state);'.format(
+                          iface.spell('attribute', name, 'on_update'))]
+        else:
+            lines.append('                {}({});'.format(
+                iface.spell('broadcast', name),
+                ', '.join(member for member, _, _ in latches[step['awaits']]['args'])))
+        lines += ['            }',
+                  '            break;']
+    lines += ['        default:',
+              '            break;',
+              '        }',
+              '        mReplaying = false;',
+              '    }',
+              '',
+              '    //! Forgets every update and broadcast that arrived before a request.',
+              '    void forget_late()',
+              '    {']
+    lines += ['        {} = false;'.format(latch['flag']) for latch in latches.values()]
+    lines += ['    }',
+              '',
+              '    areg::Timer  mLate;   //!< Starts replay_late() once the step has begun.',
+              '    bool  mReplaying{ false };   //!< True while replay_late() runs a check.']
+    for (kind, name), latch in latches.items():
+        lines.append('    bool  {}{{ false }};   //!< True once {} {} arrived unchecked.'
+                     .format(latch['flag'], kind, name))
+        lines += ['    {}  {}{{}};   //!< The {} it carried.'.format(held, member, param)
+                  for member, held, param in latch['args']]
+    lines.append('')
+    return lines
+
+
+def replayed(said, indent):
+    """An arrival body that replay_late() does not run a second time."""
+    pad = ' ' * indent
+    return [pad + 'if (mReplaying == false)', pad + '{', said, pad + '}']
 
 
 def consumer_class(iface, cls, steps=(), driver=None):
@@ -2011,6 +2167,7 @@ def consumer_class(iface, cls, steps=(), driver=None):
     driver = dict(gen_docs.DRIVER_DEFAULTS) if driver is None else driver
     stepped = steps_scenario(iface) or bool(steps)
     holds = any(step['wait'] for step in steps)
+    latches = late_latches(iface, steps)
     pad = ' ' * (len(cls) + 13)
     lines = ['class {} final : public    areg::Component'.format(cls),
              '{}, protected {}ConsumerBase'.format(pad, iface.name),
@@ -2035,6 +2192,8 @@ def consumer_class(iface, cls, steps=(), driver=None):
         lines.append('        , mPace(static_cast<areg::TimerConsumer &>(self()), "Pace")')
     if holds:
         lines.append('        , mHold(static_cast<areg::TimerConsumer &>(self()), "Hold")')
+    if latches:
+        lines.append('        , mLate(static_cast<areg::TimerConsumer &>(self()), "Late")')
     lines += ['    { }',
               '',
               'protected:',
@@ -2156,6 +2315,13 @@ def consumer_class(iface, cls, steps=(), driver=None):
                   '            return;',
                   '        }',
                   '']
+    if latches:
+        lines += ['        if (&timer == &mLate)',
+                  '        {',
+                  '            replay_late();',
+                  '            return;',
+                  '        }',
+                  '']
     if stepped:
         # The watchdog counts a pace tick before the author's code runs, so a return
         # in that code never stops it counting.
@@ -2207,11 +2373,13 @@ def consumer_class(iface, cls, steps=(), driver=None):
     for name, params in iface.broadcasts:
         lines.append('    void {}({}) final'.format(iface.spell('broadcast', name),
                                                     iface.generated_params('broadcast', name)))
-        lines += ['    {',
-                  marker(iface.spell('broadcast', name),
-                         'what this broadcast means in every step' if steps else
-                         'what this broadcast means for the scenario')]
-        lines += step_dispatch(steps, 'broadcast', name, 8)
+        latch = latches.get(('broadcast', name))
+        said = marker(iface.spell('broadcast', name),
+                      'what this broadcast means in every step' if steps else
+                      'what this broadcast means for the scenario', 12 if latch else 8)
+        lines.append('    {')
+        lines += replayed(said, 8) if latch else [said]
+        lines += step_dispatch(steps, 'broadcast', name, 8, latch)
         lines += ['    }',
                   '']
 
@@ -2222,15 +2390,17 @@ def consumer_class(iface, cls, steps=(), driver=None):
                      .format(iface.spell('attribute', attr_name, 'on_update'),
                              iface.generated_params('attribute', attr_name,
                                                     'on_update').strip()))
+        latch = latches.get(('update', attr_name))
         lines += ['    {',
                   '        if (state == areg::DataState::DataIsOK)',
-                  '        {',
-                  marker('update_' + iface.spell('attribute', attr_name, 'get'),
-                         'the new value is ready to use', 12)]
+                  '        {']
+        said = marker('update_' + iface.spell('attribute', attr_name, 'get'),
+                      'the new value is ready to use', 16 if latch else 12)
+        lines += replayed(said, 12) if latch else [said]
         # With no request, the first update the provider's initial value sends ends it.
         if not steps and not iface.requests and attr_name == iface.attributes[0][0]:
             lines.append(placeholder('            quit_with(0);'))
-        lines += step_dispatch(steps, 'update', attr_name, 12)
+        lines += step_dispatch(steps, 'update', attr_name, 12, latch)
         lines += ['        }',
                   '    }',
                   '']
@@ -2322,6 +2492,8 @@ def consumer_class(iface, cls, steps=(), driver=None):
         lines.append('        mPace.stop_timer();')
     if holds:
         lines.append('        mHold.stop_timer();')
+    if latches:
+        lines.append('        mLate.stop_timer();')
     lines += ['        quit_with(1);',
               '    }',
               '',
@@ -2364,7 +2536,7 @@ def consumer_class(iface, cls, steps=(), driver=None):
                   .format(driver['stall_ticks']),
                   '    uint32_t                  mIdleTicks{ 0 };',
                   '']
-    lines += driver_lines(steps, holds, cls) if steps else []
+    lines += driver_lines(steps, holds, cls, iface, latches) if steps else []
     lines += ['    {}() = delete;'.format(cls),
               '    AREG_NOCOPY_NOMOVE({});'.format(cls),
               '};']

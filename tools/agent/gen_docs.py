@@ -1252,6 +1252,54 @@ def settle(node, skipped):
     return node
 
 
+def settle_awaits(spec):
+    """Rewrites a step awaiting a consumer method name to the name of what it receives.
+
+    response_<r>, broadcast_<b>, on_<attr>_update and <attr>_update each name one thing.
+    """
+    for iface in listed(spec, 'interfaces'):
+        answers = set(entry.get('name') for entry in listed(iface, 'responses'))
+        answers |= set(entry.get('name') for entry in listed(iface, 'requests')
+                       if 'answer' in entry or entry.get('response'))
+        broadcasts = set(entry.get('name') for entry in listed(iface, 'broadcasts'))
+        attributes = dict((str(entry.get('name')).replace('_', '').lower(), entry.get('name'))
+                          for entry in listed(iface, 'attributes'))
+        for step in listed(iface, 'steps'):
+            target = step.get('await')
+            if not isinstance(target, str) or target in answers | broadcasts \
+                    or target in attributes.values():
+                continue
+            meant = None
+            if target.startswith('response_') and target[9:] in answers:
+                meant = target[9:]
+            elif target.startswith('broadcast_') and target[10:] in broadcasts:
+                meant = target[10:]
+            elif target.endswith('_update'):
+                bare = target[3:-7] if target.startswith('on_') else target[:-7]
+                meant = attributes.get(bare.replace('_', '').lower())
+            if meant is not None:
+                step['await'] = meant
+
+
+def settle_start(level, owner):
+    """Rewrites a state of kind "start" or "initial" into its level's "initial".
+
+    The level is a machine or a state holding "states". A second start, or one the
+    level's "initial" does not name, is refused.
+    """
+    for state in listed(level, 'states'):
+        if str(state.get('kind', '')).lower() in ('start', 'initial'):
+            if level.get('initial') in (None, '', state.get('name')):
+                level['initial'] = state.get('name')
+                del state['kind']
+            else:
+                fail('state "{}" is marked "kind": "{}", and the "initial" of "{}" names '
+                     '"{}". The level\'s "initial" alone names the state it starts in: drop '
+                     'the kind'.format(state.get('name'), state['kind'], owner,
+                                       level.get('initial')))
+        settle_start(state, state.get('name'))
+
+
 def load_spec(path):
     """One spec file as the generator reads it, and how many samples it left untouched."""
     try:
@@ -1263,6 +1311,9 @@ def load_spec(path):
         fail('{} is not a spec object'.format(path))
     skipped = []
     spec = settle(raw, skipped)
+    settle_awaits(spec)
+    for machine in listed(spec, 'machines'):
+        settle_start(machine, machine.get('name'))
     if NOTE in raw and not spec:
         fail('{} is still the template: nothing in it is filled. Give each document the '
              'task needs a "name" and its entries, and delete a section it does not need.'
@@ -1794,74 +1845,6 @@ def otherwise_visible(interface):
     return offered
 
 
-def step_holds(step, answered):
-    """What a step waits for before the next begins: a name, milliseconds, or None.
-
-    A step that sends a request with an answer and names nothing else waits for that
-    answer. A step that waits for nothing ends at once, in the same dispatch.
-    """
-    target, wait = step.get('await'), step.get('wait') or 0
-    if target is None and not wait and step.get('send') in answered:
-        return step.get('send')
-    return target if target is not None else (wait or None)
-
-
-def late_awaits(project, key='attributes'):
-    """Steps that await a message an earlier request may send while another step holds.
-
-    A message arriving while the current step waits for something else is dropped
-    there. A step that sends nothing and awaits one therefore misses what an earlier
-    request caused when a step between them held for something else. A step that
-    awaits the same message receives it, and a step that ends at once holds nothing.
-    Returns (interface, step, message, the holding step, what it holds for, and
-    whether that is the answer to its own request).
-    """
-    found = []
-    for interface in project.get('interfaces') or []:
-        steps = interface.get('steps') if isinstance(interface, dict) else None
-        if not isinstance(steps, list):
-            continue
-        steps = [step for step in steps if isinstance(step, dict)]
-        targets = set(entry.get('name') for entry in listed(interface, key))
-        answered = set(entry.get('name') for entry in listed(interface, 'requests')
-                       if 'answer' in entry or entry.get('response'))
-        for index, step in enumerate(steps):
-            target = step.get('await')
-            if step.get('send') is not None or target not in targets:
-                continue
-            holder = None
-            for earlier in reversed(steps[:index]):
-                held = step_holds(earlier, answered)
-                if held == target:
-                    break
-                if held is not None and holder is None:
-                    holder = (earlier.get('name'), held, held == earlier.get('send'))
-                if earlier.get('send') is not None and holder is not None:
-                    found.append((interface.get('name', '?'), step.get('name'), target)
-                                 + holder)
-                    break
-    return found
-
-
-def late_remedy(held):
-    """What a late await is changed to, given what the earlier step holds for.
-
-    A step holding for an answer leaves the request's own step free to await the
-    attribute. A step holding for a time does not: the await goes ahead of it.
-    """
-    if isinstance(held, int):
-        return ('the awaiting step comes before the wait and its check stay()s until '
-                'the wait is over')
-    return 'the step that sends the request awaits the attribute instead'
-
-
-def holding(step, held, answer):
-    """How a note names what a holding step waits for."""
-    if isinstance(held, int):
-        return '"{}" waits {} ms'.format(step, held)
-    return '"{}" waits for {}"{}"'.format(step, 'the answer to ' if answer else '', held)
-
-
 def state_mirrors(project, spec):
     """Attributes that publish this machine's states, and the states they cannot say.
 
@@ -2275,40 +2258,6 @@ def review(project, skipped):
               'The document is written and this asks for no change: an entry left as '
               'the template spells it is not part of the design.'
               .format(skipped, 'y' if skipped == 1 else 'ies'))
-    # One note per finding and one explanation for all of them: the same paragraph
-    # under every name is re-sent with every later request of the conversation.
-    late, remedy = {}, {}
-    for owner, step, attribute, *held in late_awaits(project):
-        late.setdefault(owner, []).append('"{}" awaits "{}" while {}'
-                                          .format(step, attribute, holding(*held)))
-        remedy.setdefault(owner, set()).add(late_remedy(held[1]))
-    for owner in sorted(late):
-        print('  note  {}: {}.'.format(owner, '; '.join(late[owner])))
-        print('        The document is written and this asks for no change on its own. '
-              'An update arriving while another step waits is dropped there, and the '
-              'awaiting step sees the next one, which is what the sequence wants '
-              'whenever later updates follow. Leave it as written unless the dropped '
-              'update can be the last one; if it can, {}. A run that stalls here names '
-              'the dropped update and the step it arrived on.'
-              .format('; '.join(sorted(remedy[owner]))))
-    # The same shape on a broadcast, which is worse: an attribute sends another update
-    # the next time it is set, a broadcast never comes again. Whether it is a fault
-    # depends on something no design states -- where the provider sends it -- so this
-    # names the shape and the one question that settles it, once, for every row.
-    once = {}
-    for owner, step, message, *held in late_awaits(project, 'broadcasts'):
-        once.setdefault(owner, []).append('"{}" awaits broadcast "{}" while {}'
-                                          .format(step, message, holding(*held)))
-    for owner in sorted(once):
-        print('  note  {}: {}.'.format(owner, '; '.join(once[owner])))
-        print('        The document is written and one question settles each row: does '
-              'the provider send that broadcast while handling the earlier request? '
-              'If it does, the broadcast arrives before this step begins, is dropped, '
-              'and never comes again, because a broadcast is delivered once: await it '
-              'on the step that sends the request instead. If a timer or a state the '
-              'machine sits in separates them, the shape is correct and this asks for '
-              'no change. A run that stalls here names the dropped message and the '
-              'step it arrived on.')
     unread = {}
     for spec in project['machines']:
         for name in unread_attributes(spec):
