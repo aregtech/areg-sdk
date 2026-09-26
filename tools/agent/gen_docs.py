@@ -122,6 +122,20 @@ TYPE_KEYS = {
 STEP_KEYS = {'call': ('call', 'args'), 'send': ('send', 'args'), 'start': ('start',),
              'stop': ('stop',), 'set': ('set', 'to')}
 GUARD_KEYS = {'all': ('all',), 'any': ('any',), 'not': ('not',), 'call': ('call', 'args')}
+# The one shape the generator reads for a key. A key that takes more than one, such
+# as "value" or "default", is not here.
+SHAPES = dict(
+    [(key, (list, 'a list, [...]')) for key in (
+        'actions', 'all', 'answer', 'any', 'attributes', 'broadcasts', 'conditions',
+        'constants', 'declare', 'do', 'entry', 'events', 'exit', 'fields', 'includes',
+        'interfaces', 'machines', 'params', 'requests', 'responses', 'states', 'steps',
+        'submachines', 'timers', 'transitions', 'triggers', 'types', 'values')] +
+    [(key, (str, 'a string')) for key in (
+        'alias', 'answer_description', 'await', 'body', 'call', 'category', 'container',
+        'derives', 'description', 'final_event', 'header', 'implement', 'initial', 'key',
+        'kind', 'location', 'name', 'namespace', 'notify', 'object', 'of', 'on', 'path',
+        'return', 'send', 'stop', 'threading', 'to', 'type')] +
+    [(key, (dict, 'an object, {...}')) for key in ('datatypes', 'driver', 'set')])
 SINGULAR = {'attributes': 'attribute', 'requests': 'request', 'responses': 'response',
             'broadcasts': 'broadcast', 'constants': 'constant', 'includes': 'include',
             'params': 'parameter', 'answer': 'answer parameter', 'declare': 'type',
@@ -946,11 +960,24 @@ def refuse_key(key, allowed, where):
                  ', '.join(allowed)))
 
 
+def shape_of(value):
+    """What a JSON value is, in the words a refusal uses."""
+    if isinstance(value, bool):
+        return 'true or false'
+    if isinstance(value, (int, float)):
+        return 'a number'
+    return {str: 'a string', list: 'a list', dict: 'an object'}.get(type(value), 'null')
+
+
 def check_keys(node, allowed, where):
     if isinstance(node, dict):
         for key in node:
             if key not in allowed:
                 refuse_key(key, allowed, where)
+            shape = SHAPES.get(key)
+            if shape and node[key] is not None and not isinstance(node[key], shape[0]):
+                fail('{} gives "{}" as {}, and it is {}.'
+                     .format(where, key, shape_of(node[key]), shape[1]))
 
 
 def listed(owner, key):
@@ -1256,14 +1283,19 @@ def settle_awaits(spec):
     """Rewrites a step awaiting a consumer method name to the name of what it receives.
 
     response_<r>, broadcast_<b>, on_<attr>_update and <attr>_update each name one thing.
+    A name that is not a string is left to check_shape() to refuse.
     """
+    def names(iface, key, wanted=lambda entry: True):
+        return [entry.get('name') for entry in listed(iface, key)
+                if isinstance(entry.get('name'), str) and wanted(entry)]
+
     for iface in listed(spec, 'interfaces'):
-        answers = set(entry.get('name') for entry in listed(iface, 'responses'))
-        answers |= set(entry.get('name') for entry in listed(iface, 'requests')
-                       if 'answer' in entry or entry.get('response'))
-        broadcasts = set(entry.get('name') for entry in listed(iface, 'broadcasts'))
-        attributes = dict((str(entry.get('name')).replace('_', '').lower(), entry.get('name'))
-                          for entry in listed(iface, 'attributes'))
+        answers = set(names(iface, 'responses'))
+        answers |= set(names(iface, 'requests',
+                             lambda entry: 'answer' in entry or entry.get('response')))
+        broadcasts = set(names(iface, 'broadcasts'))
+        attributes = dict((name.replace('_', '').lower(), name)
+                          for name in names(iface, 'attributes'))
         for step in listed(iface, 'steps'):
             target = step.get('await')
             if not isinstance(target, str) or target in answers | broadcasts \
@@ -1665,6 +1697,17 @@ def check_sequences(project):
                         fail('{} sends {}({}={}), and "{}" has no such field. It has: {}'
                              .format(here, send, entry.get('name'), json.dumps(given),
                                      entry.get('type'), ', '.join(fields)))
+                    # A qualifier is the C++ spelling of the type, or a trailing part of it.
+                    if fields and isinstance(given, str) and '::' in given \
+                            and not given.startswith(('expr:', 'raw:')):
+                        declared = str(entry.get('type'))
+                        spelt = declared if '::' in declared \
+                            else '{}::{}'.format(spec.get('name'), declared)
+                        qualifier, field = given.rsplit('::', 1)
+                        if qualifier != spelt and not spelt.endswith('::' + qualifier):
+                            fail('{} gives "{}" for a "{}", and "{}" is not that type. C++ '
+                                 'spells this field "{}::{}"'
+                                 .format(here, given, declared, qualifier, spelt, field))
                 if isinstance(wait, bool) or not isinstance(wait, int) or wait < 0:
                     fail('{}: wait is a number of milliseconds'.format(here))
                 if target is not None and wait:

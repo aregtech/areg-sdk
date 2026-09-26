@@ -287,11 +287,16 @@ BUILD_CALL = re.compile(r"build_project\.py|cmake\s+--build|\bmake\b")
 SCEN_CALL = re.compile(r"run_scenarios\.py")
 # build_project.py --run chains run_scenarios.py as its last step, and that is the
 # spelling the documentation gives, so a run that never types run_scenarios.py still
-# runs the scenarios. The step is reached only when every step before it passed, and
-# build_project.py prints its header before starting it, so the call's own output is
-# what says whether it ran.
+# runs the scenarios. The step is reached only when every step before it passed, so
+# the call ran them unless its output names an earlier step as the one that failed.
+# An output cut by tail may have lost the "== scenarios:" header, but not that line.
 BUILD_RUN = re.compile(r"build_project\.py(?=.*\s--run\b)")
 SCEN_STEP = re.compile(r"^==\s*scenarios:", re.M)
+SCEN_VERDICT = re.compile(r"^\s*(?:PASS|FAIL)\s+\S+", re.M)
+STOPPED_BEFORE = re.compile(r'FAILED at step "(?:documents|application|worksheet|contract|'
+                            r'configure|build)"')
+# A build whose documents step refused the spec generated nothing from it.
+DOCS_REFUSED = re.compile(r'FAILED at step "documents"')
 COUNTING = re.compile(r"\bwc\b|\bdu\b|--stat\b|\bcloc\b|stat\s+-c|\bfind\b.*-name.*\|",
                       re.I)
 # A counting command measures the run only when it targets the run's own source.
@@ -354,6 +359,7 @@ def events(requests):
     builds, scenarios, respecs, counters = [], [], [], []
     build_fixes, scen_fixes = [], []
     edited_since_build = edited_since_scen = False
+    generated = False
     last_change = -1
     for i, r in enumerate(requests):
         for nm, what, result in r["calls"]:
@@ -362,7 +368,7 @@ def events(requests):
                 if base.endswith((".cpp", ".hpp", ".h", ".json", ".txt", ".cmake")):
                     edited_since_build = edited_since_scen = True
                     last_change = i
-                if spec and base == spec and builds:
+                if spec and base == spec and generated and i not in respecs:
                     respecs.append(i)
                 continue
             if nm != "Bash":
@@ -370,7 +376,8 @@ def events(requests):
             for edited in bash_edits(what):
                 edited_since_build = edited_since_scen = True
                 last_change = i
-                if spec and os.path.basename(edited) == spec and builds:
+                if spec and os.path.basename(edited) == spec and generated \
+                        and i not in respecs:
                     respecs.append(i)
             if BUILD_CALL.search(what):
                 if builds and edited_since_build:
@@ -378,10 +385,14 @@ def events(requests):
                 builds.append(i)
                 edited_since_build = False
                 last_change = max(last_change, i)
+                if not (result and DOCS_REFUSED.search(result)):
+                    generated = True
             # No captured output means the transcript did not keep it. The command
             # asked for the scenarios, so count it rather than lose it silently.
             ran = SCEN_CALL.search(what) or (BUILD_RUN.search(what) and
-                                             (not result or SCEN_STEP.search(result)))
+                                             (not result or SCEN_STEP.search(result) or
+                                              SCEN_VERDICT.search(result) or
+                                              not STOPPED_BEFORE.search(result)))
             if ran:
                 if scenarios and edited_since_scen:
                     scen_fixes.append(i)

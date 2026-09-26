@@ -2925,6 +2925,10 @@ def run():
     check_step_driver(report)
     check_late_arrival(report)
     check_step_fall_through(report)
+    check_stall_names_latest_drops(report)
+    check_step_enum_qualifier(report)
+    check_spec_value_shapes(report)
+    check_unused_parameters(report)
     check_method_names(report)
     check_accessor_collision(report)
     check_spec_semantics(report)
@@ -5021,7 +5025,8 @@ def check_step_fall_through(report):
             return
         design = json.load(open('design.json', encoding='utf-8'))
         design['interfaces'][0]['steps'] = [first[0], {'name': 'settle', 'wait': 100},
-                                            first[1]]
+                                            {'name': 'reopen', 'send': 'open',
+                                             'args': {'width': 300}}, first[1]]
         with open('design.json', 'w', encoding='utf-8', newline='\n') as handle:
             json.dump(design, handle)
         docs = sorted(glob.glob(os.path.join('src', 'services', '*.siml')))
@@ -5036,11 +5041,213 @@ def check_step_fall_through(report):
                                         'through does not name it: {}'
                         .format(said.strip()[-200:]))
             return
+        report.ok('fall-through', 'every step_ section names where its check falls '
+                                  'through, and a generation names each one that moved')
+        if not re.search(r'\bstep_reopen\b', said) or 'applies to it as before' in said:
+            report.fail('new-section', 'a generation that added a worksheet section does '
+                                       'not name it, so bodies.txt is written without it: {}'
+                        .format(said.strip()[-200:]))
+            return
+        same = subprocess.run(again, capture_output=True, text=True).stdout
+        if 'applies to it as before' not in same or 'step_reopen' in same:
+            report.fail('new-section', 'a generation that added no section no longer says '
+                                       'bodies.txt applies as before: {}'
+                        .format(same.strip()[-200:]))
+            return
     finally:
         os.chdir(here)
         shutil.rmtree(holder, ignore_errors=True)
-    report.ok('fall-through', 'every step_ section names where its check falls through, '
-                              'and a generation names each one that moved')
+    report.ok('new-section', 'a generation names each worksheet section it added, and '
+                             'one that added none says bodies.txt applies as before')
+
+
+def check_stall_names_latest_drops(report):
+    """The stall report names the latest messages dropped, not the first ones.
+
+    The drop on the step before the stall is the one that explains it, and a long
+    scenario drops many harmless messages before it.
+    """
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    holder = tempfile.mkdtemp()
+    here = os.getcwd()
+    try:
+        os.chdir(holder)
+        made = generate_application(tools, 'stall', STEP_SAMPLE)
+        if not os.path.isfile(made):
+            report.fail('stall-drops', made)
+            return
+        with open(made, encoding='utf-8') as handle:
+            source = handle.read()
+        with open(made[:-4] + '.hpp', encoding='utf-8') as handle:
+            source += handle.read()
+    finally:
+        os.chdir(here)
+        shutil.rmtree(holder, ignore_errors=True)
+
+    def body_of(signature):
+        found = re.search(re.escape(signature) + r'[^{;]*\{(.*?)\n\}', source, re.S)
+        return found.group(1) if found else ''
+
+    kept = body_of('::dropped(const char * what)')
+    shown = body_of('::stalled()')
+    if not kept or not shown:
+        report.fail('stall-drops', 'a stepped driver no longer defines dropped() and '
+                                   'stalled(), so this check reads nothing')
+        return
+    if not re.search(r'mDroppedCount\s*%\s*cDroppedMost', kept) \
+            or re.search(r'if\s*\(\s*\w+\s*<\s*cDroppedMost', kept) \
+            or not re.search(r'%\s*cDroppedMost', shown):
+        report.fail('stall-drops', 'the stall report keeps the first messages dropped and '
+                                   'counts the rest, so the drop just before the stall is '
+                                   'hidden behind "and N more"')
+        return
+    report.ok('stall-drops', 'the stall report names the latest messages dropped')
+
+
+def check_step_enum_qualifier(report):
+    """A step giving an enumeration field under another type's name is refused by
+    gen_docs, every such step in one answer, and every spelling of the right type
+    is taken."""
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    design = json.loads(subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                                        '--example'], capture_output=True, text=True).stdout)
+    service = design['interfaces'][0]
+    service.setdefault('types', []).append(
+        {'name': 'Pace', 'kind': 'enum', 'values': [{'name': 'Slow'}, {'name': 'Fast'}]})
+    service['requests'].append({'name': 'grade', 'params': [
+        {'name': 'quality', 'type': 'GateTypes::Quality'}, {'name': 'pace', 'type': 'Pace'}]})
+
+    def grade(name, quality, pace):
+        return {'name': name, 'send': 'grade', 'args': {'quality': quality, 'pace': pace}}
+
+    holder = tempfile.mkdtemp()
+    try:
+        path = os.path.join(holder, 'design.json')
+
+        def generate(steps):
+            service['steps'] = steps
+            with open(path, 'w', encoding='utf-8', newline='\n') as handle:
+                json.dump(design, handle)
+            out = os.path.join(holder, 'out')
+            shutil.rmtree(out, ignore_errors=True)
+            done = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                                   '--spec', path, '--outdir', out],
+                                  capture_output=True, text=True)
+            return done.returncode, done.stdout + done.stderr, os.path.isdir(out)
+
+        code, said, wrote = generate([grade('g_one', 'Other::Good', 'Slow'),
+                                      grade('g_two', 'Suspect', 'Wrong::Fast')])
+        if code == 0 or wrote or 'is not that type' not in said \
+                or 'g_one' not in said or 'g_two' not in said:
+            report.fail('step-enum-qualifier', 'a step giving an enumeration field under '
+                                               'another type is not refused by gen_docs, '
+                                               'every one in one answer, before a document '
+                                               'is written: {}'.format(said.strip()[-240:]))
+            return
+        code, said, _ = generate([grade('g_bare', 'Good', 'Fast'),
+                                  grade('g_type', 'Quality::Good', 'Pace::Fast'),
+                                  grade('g_full', 'GateTypes::Quality::Good',
+                                        'GateService::Pace::Fast')])
+        if code != 0:
+            report.fail('step-enum-qualifier', 'gen_docs refuses a spelling of the right '
+                                               'enumeration type: {}'
+                        .format(said.strip()[-240:]))
+            return
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    report.ok('step-enum-qualifier', 'gen_docs refuses every step giving an enumeration '
+                                     'field under another type, and takes every spelling '
+                                     'of the right one')
+
+
+def check_spec_value_shapes(report):
+    """A known spec key given a value of the wrong type is refused by name, not
+    ended in a traceback."""
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    design = json.loads(subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                                        '--example'], capture_output=True, text=True).stdout)
+    shapes = (('types', 5), ('broadcasts', 5), ('constants', 5),
+              ('requests.0.answer', 5), ('requests.0.name', {'a': 1}),
+              ('requests.0.name', ['x']), ('requests.0.name', 7))
+    holder = tempfile.mkdtemp()
+    try:
+        for where, value in shapes:
+            spec = json.loads(json.dumps(design))
+            node = spec['interfaces'][0]
+            *path, key = where.split('.')
+            for part in path:
+                node = node[int(part)] if part.isdigit() else node[part]
+            node[key] = value
+            path = os.path.join(holder, 'design.json')
+            with open(path, 'w', encoding='utf-8', newline='\n') as handle:
+                json.dump(spec, handle)
+            done = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                                   '--spec', path, '--outdir', os.path.join(holder, 'out')],
+                                  capture_output=True, text=True)
+            said = done.stdout + done.stderr
+            if 'Traceback' in said or '"{}"'.format(key) not in said:
+                report.fail('spec-value-shape', '"{}" given as {} ends in {} instead of a '
+                                                'refusal naming the key'
+                            .format(where, json.dumps(value),
+                                    said.strip().splitlines()[-1][:120] if said.strip()
+                                    else 'nothing'))
+                return
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    report.ok('spec-value-shape', '{} wrong-typed spec values are each refused by name'
+              .format(len(shapes)))
+
+
+def check_unused_parameters(report):
+    """A generated definition whose body is the author's marks each parameter its
+    generated lines do not read [[maybe_unused]], and the worksheet shows none."""
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    holder = tempfile.mkdtemp()
+    here = os.getcwd()
+    try:
+        os.chdir(holder)
+        made = generate_application(tools, 'unused', STEP_SAMPLE)
+        if not os.path.isfile(made):
+            report.fail('unused-parameter', made)
+            return
+        sources = sorted(glob.glob(os.path.join('src', '*', '*.cpp')))
+        with open('worksheet.txt', encoding='utf-8') as handle:
+            sheet = handle.read()
+        missed, marked = [], 0
+        for source in sources:
+            with open(source, encoding='utf-8') as handle:
+                text = handle.read()
+            for head, body in re.findall(r'^(\S[^\n]*\([^\n]*\)[^\n]*)\n\{\n(.*?)\n\}',
+                                         text, re.M | re.S):
+                if 'TODO(you)' not in body:
+                    continue
+                inner = head[head.find('(') + 1:head.rfind(')')]
+                code = re.sub(r'"(?:\\.|[^"\\])*"', '""', '\n'.join(
+                    line for line in body.splitlines()
+                    if 'TODO(you)' not in line and 'placeholder(you)' not in line))
+                for part in (inner.split(',') if inner.strip() else []):
+                    name = re.findall(r'\w+', part)[-1]
+                    if re.search(r'\b{}\b'.format(name), code):
+                        continue
+                    if '[[maybe_unused]]' in part:
+                        marked += 1
+                    else:
+                        missed.append('{} in {}'.format(name, head.strip()))
+    finally:
+        os.chdir(here)
+        shutil.rmtree(holder, ignore_errors=True)
+    if missed or not marked:
+        report.fail('unused-parameter', 'a parameter the author\'s body may ignore is not '
+                                        '[[maybe_unused]], so the body warns under -Wextra and '
+                                        'MSVC /W4: {}'.format('; '.join(missed[:3]) or 'none marked'))
+        return
+    if '[[maybe_unused]]' in sheet:
+        report.fail('unused-parameter', 'the worksheet shows [[maybe_unused]] in a signature '
+                                        'it lists')
+        return
+    report.ok('unused-parameter', '{} parameter(s) an author\'s body may ignore are '
+                                  '[[maybe_unused]], and the worksheet lists the signatures '
+                                  'as before'.format(marked))
 
 
 def check_step_driver(report):
@@ -7147,7 +7354,7 @@ def check_worksheet_contract(report):
             for folder in ('src/provider', 'src/consumer'):
                 for entry in sorted(os.listdir(folder)):
                     text = open(os.path.join(folder, entry), encoding='utf-8').read()
-                    found = found or where in text
+                    found = found or where in text.replace('[[maybe_unused]] ', '')
             if not found:
                 report.fail('worksheet', 'section "{}" says it sits in "{}", which no '
                                          'generated file carries'.format(name, where))

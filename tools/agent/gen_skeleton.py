@@ -81,6 +81,8 @@ def placeholder(line):
 
 
 MARKER = re.compile(r'//\s*TODO\(you\)\s+([A-Za-z_][\w]*)\s*:\s*(.*?)\s*$')
+# Written before each parameter of a definition whose body is the author's.
+UNUSED = '[[maybe_unused]] '
 
 # The tool that fills every marker of a project in one command, and the two files
 # around it. The worksheet is written by the generator: the sections, their order
@@ -118,6 +120,12 @@ WORKSHEET_NOTE = (
 WORKSHEET_AGAIN = (
     '  {total} hole(s) in {files} file(s). {path} is rewritten from this design,\n'
     '  {lines} line(s); {bodies} applies to it as before.')
+
+
+# The same, when the new worksheet has sections the one it replaces lacked.
+WORKSHEET_ADDED = (
+    '  {total} hole(s) in {files} file(s). {path} is rewritten from this design,\n'
+    '  {lines} line(s). New in it, so {bodies} has no body for them yet: {names}.')
 
 
 # The same markers, listed by --todos after the worksheet has been consumed.
@@ -224,10 +232,11 @@ def helper_docs(text):
     return found
 
 
-def print_todos(produced, out, written, holes=0, scenarios='', first=True):
+def print_todos(produced, out, written, holes=0, scenarios='', first=True, added=()):
     """How many holes each generated file leaves, and where the worksheet is.
 
-    The instructions come with the first worksheet only; a rewritten one gets a line.
+    The instructions come with the first worksheet only; a rewritten one gets a line,
+    which names every section it added.
 
     The lines themselves are not printed here. They are sections of the worksheet,
     which is read at the moment a body is written rather than recalled from the
@@ -256,6 +265,11 @@ def print_todos(produced, out, written, holes=0, scenarios='', first=True):
     except OSError:
         pass
     if not first:
+        if added:
+            print(WORKSHEET_ADDED.format(total=total, files=files, path=WORKSHEET,
+                                         bodies=BODIES, lines=lines,
+                                         names=', '.join(added)))
+            return
         print(WORKSHEET_AGAIN.format(total=total, files=files, path=WORKSHEET,
                                      bodies=BODIES, lines=lines))
         return
@@ -358,7 +372,7 @@ def enclosing(lines, index):
                 if (head.startswith(CONTROL) or '(' not in head or
                         head.startswith('//')):
                     break
-                return head
+                return head.replace(UNUSED, '')
             continue
         number -= 1
     return ''
@@ -820,6 +834,11 @@ def fall_through(steps):
     return falls
 
 
+def section_names(text):
+    """The "== " section names of a worksheet's text, in order."""
+    return [line[3:].strip() for line in text.splitlines() if line.startswith('== ')]
+
+
 def fall_lines(text):
     """The fall-through line of each step_ section of a worksheet's text."""
     found, section = {}, None
@@ -839,16 +858,22 @@ def write_worksheet(produced, out, iface, document, machine, machine_doc,
     worksheet an earlier generator wrote in its place, and it carries no work either.
     A step_ section whose fall-through target differs from the worksheet it replaces
     is named.
+
+    Returns the sections the worksheet it replaces lacked, in order, or None when
+    there is no worksheet to write.
     """
     lines = worksheet_lines(produced, out, iface, document, machine, machine_doc,
                             scenarios, steps)
     if not lines:
         return None
-    before = {}
+    before, known = {}, None
     if os.path.exists(WORKSHEET):
         with open(WORKSHEET, encoding='utf-8', errors='replace') as handle:
-            before = fall_lines(handle.read())
+            text = handle.read()
+        before, known = fall_lines(text), set(section_names(text))
     after = fall_lines('\n'.join(lines))
+    added = [name for name in section_names('\n'.join(lines))
+             if known is not None and name not in known]
     for name in sorted(set(before) & set(after)):
         if before[name] != after[name]:
             print('  {}: {}, where it was "{}". Check its body still means that.'
@@ -857,7 +882,7 @@ def write_worksheet(produced, out, iface, document, machine, machine_doc,
         handle.write('\n'.join(lines).rstrip() + '\n')
     if os.path.exists(BODIES) and worksheet_pristine(BODIES):
         os.remove(BODIES)
-    return True
+    return added
 
 
 def fields_of(declared):
@@ -2439,38 +2464,34 @@ def consumer_class(iface, cls, steps=(), driver=None):
                   '    }',
                   '',
                   '    //! Ends the scenario when no step has advanced, naming what the',
-                  '    //! step waits for and every message an earlier step discarded.',
+                  '    //! step waits for and the latest messages an earlier step discarded.',
                   '    void stalled()',
                   '    {',
                   '        fail("the scenario stopped making progress");',
                   '        std::cerr << "  " << step_slot() << " " << step_detail()',
                   '                  << (mRan ? ". Its check ran and kept the step."',
                   '                           : ". Nothing arrived.") << std::endl;',
-                  '        for (uint32_t kept = 0; kept < mDroppedKept; ++ kept)',
+                  '        const uint32_t shown = mDroppedCount < cDroppedMost ? mDroppedCount : cDroppedMost;',
+                  '        if (mDroppedCount > shown)',
                   '        {',
-                  '            std::cerr << "  dropped: " << mDroppedWhat[kept]',
-                  '                      << " arrived on " << mDroppedStep[kept]',
+                  '            std::cerr << "  dropped: " << (mDroppedCount - shown)',
+                  '                      << " earlier, not listed." << std::endl;',
+                  '        }',
+                  '        for (uint32_t index = mDroppedCount - shown; index < mDroppedCount; ++ index)',
+                  '        {',
+                  '            std::cerr << "  dropped: " << mDroppedWhat[index % cDroppedMost]',
+                  '                      << " arrived on " << mDroppedStep[index % cDroppedMost]',
                   '                      << ", which has no check for it."',
                   '                      << std::endl;',
-                  '        }',
-                  '        if (mDroppedCount > mDroppedKept)',
-                  '        {',
-                  '            std::cerr << "  dropped: and "',
-                  '                      << (mDroppedCount - mDroppedKept)',
-                  '                      << " more." << std::endl;',
                   '        }',
                   '    }',
                   '',
                   '    //! Remembers a message that arrived on a step with no check',
-                  '    //! for it. The stall report names them.',
+                  '    //! for it. The stall report names the latest ones.',
                   '    void dropped(const char * what)',
                   '    {',
-                  '        if (mDroppedKept < cDroppedMost)',
-                  '        {',
-                  '            mDroppedWhat[mDroppedKept] = what;',
-                  '            mDroppedStep[mDroppedKept] = step_slot();',
-                  '            ++ mDroppedKept;',
-                  '        }',
+                  '        mDroppedWhat[mDroppedCount % cDroppedMost] = what;',
+                  '        mDroppedStep[mDroppedCount % cDroppedMost] = step_slot();',
                   '        ++ mDroppedCount;',
                   '    }',
                   '',
@@ -2478,7 +2499,6 @@ def consumer_class(iface, cls, steps=(), driver=None):
                   '    static constexpr uint32_t cDroppedMost{ 4 };',
                   '    const char * mDroppedWhat[cDroppedMost]{};   //!< What each was.',
                   '    const char * mDroppedStep[cDroppedMost]{};   //!< Where each was.',
-                  '    uint32_t     mDroppedKept{ 0 };    //!< How many are remembered.',
                   '    uint32_t     mDroppedCount{ 0 };   //!< How many there were.',
                   '']
     lines += ['    //! Ends the scenario as a failure, naming what went wrong and the',
@@ -2707,6 +2727,54 @@ def split_class(cls, lines):
     return header, source
 
 
+def parameter_list(head):
+    """A one-line definition head as (up to its "(", its parameters, from its ")"),
+    or None when it takes none."""
+    start, end = head.find('('), head.rfind(')')
+    inner = head[start + 1:end] if 0 <= start < end else ''
+    if inner.strip() in ('', 'void'):
+        return None
+    parts, depth, begin = [], 0, 0
+    for index, char in enumerate(inner):
+        if char in '<(':
+            depth += 1
+        elif char in '>)':
+            depth -= 1
+        elif char == ',' and depth == 0:
+            parts.append(inner[begin:index])
+            begin = index + 1
+    parts.append(inner[begin:])
+    return head[:start + 1], parts, head[end:]
+
+
+def unused_allowed(definitions):
+    """The definitions, with each parameter of one whose body holds a marker, and
+    that no generated line other than a placeholder reads, written [[maybe_unused]]."""
+    lines = list(definitions)
+    for index, line in enumerate(lines[:-1]):
+        if not line or line[0].isspace() or lines[index + 1] != '{':
+            continue
+        end = index + 2
+        while end < len(lines) and lines[end] != '}':
+            end += 1
+        body = lines[index + 2:end]
+        found = parameter_list(line)
+        if found is None or not any(MARKER.search(text) for text in body):
+            continue
+        code = re.sub(r'"(?:\\.|[^"\\])*"', '""',
+                      '\n'.join(text for text in body if not MARKER.search(text) and
+                                not text.rstrip().endswith(PLACEHOLDER_TAG.strip())))
+        before, parts, after = found
+        marked = []
+        for part in parts:
+            name = re.findall(r'\w+', part)[-1]
+            read = re.search(r'\b{}\b'.format(re.escape(name)), code)
+            marked.append(part if read else
+                          part[:len(part) - len(part.lstrip())] + UNUSED + part.lstrip())
+        lines[index] = before + ','.join(marked) + after
+    return lines
+
+
 def component_files(cls, brief, includes, class_lines, state_slot, prelude=(),
                     state_hint='the members and helpers your rules need, defined here, '
                                'or one // line saying none is needed'):
@@ -2738,7 +2806,7 @@ def component_files(cls, brief, includes, class_lines, state_slot, prelude=(),
               '',
               '#include "areg/appbase/Application.hpp"',
               '']
-    source += definitions
+    source += unused_allowed(definitions)
     return [(cls + '.hpp', '\n'.join(header)), (cls + '.cpp', '\n'.join(source))]
 
 
@@ -3330,8 +3398,9 @@ def main():
         first = not os.path.isfile(WORKSHEET)
         written = write_worksheet(retained, args.out, iface, args.doc,
                                   machine, args.machine, args.scenarios, steps)
-        print_todos(retained, args.out, written,
-                    len(scenario_holes(args.scenarios)), args.scenarios, first)
+        print_todos(retained, args.out, written is not None,
+                    len(scenario_holes(args.scenarios)), args.scenarios, first,
+                    written or ())
         if first:
             print(APP_NOTE)
         return 0
