@@ -257,20 +257,33 @@ DIAGNOSTIC = re.compile(
 # a candidate, a note, a traceback frame.
 FOLLOWS = re.compile(r'^\s|^\s*\d+\s*\||note:|candidate|required from|in expansion of')
 
+# What a step that passed still has to hand over: a rule the generator reported without
+# refusing the document, and a warning a compiler did not stop for. The summary counts
+# ("0 errors, 1 warning") are not these, so they are not matched here.
+WARNED = re.compile(r'(^|[\s:])warning\[\d+/[A-Z_]+\]:'
+                    r'|(^|[\s:])warning:'
+                    r'|(^|[\s:])warning C\d{4}:'
+                    r'|^CMake Warning', re.IGNORECASE)
+
+# How many warning lines a step that passed prints. A build of a whole tree can hold
+# more than a reader needs.
+WARNED_BUDGET = 12
+
 # A line a tool prints when it gives up, which names no defect.
 GIVING_UP = re.compile(r'\*\*\*|^(g?make|ninja|cmake)(\[\d+\])?:|^Error\s*$'
                        r'|recipe for target|Stop\.$', re.IGNORECASE)
 
 
-def diagnostics(lines, budget, context=6):
-    """The lines of a failed log that name the defect, or None if it names none.
+def picked(lines, pattern, budget, context=6, skip=None):
+    """The lines matching `pattern`, or None if none do.
 
     Each match brings the lines under it that belong to it -- the source line, the
     caret, the candidates -- so one finding arrives whole. Matches are taken from
-    the first, because a later error is usually a consequence of the first.
+    the first, because a later one is usually a consequence of the first. A gap
+    between two matches is one None entry.
     """
     hits = [i for i, line in enumerate(lines)
-            if DIAGNOSTIC.search(line) and not GIVING_UP.search(line)]
+            if pattern.search(line) and not (skip and skip.search(line))]
     if not hits:
         return None
     kept, last = [], -1
@@ -279,7 +292,7 @@ def diagnostics(lines, budget, context=6):
             break
         end = i + 1
         while (end < len(lines) and end - i <= context and FOLLOWS.search(lines[end])
-               and not DIAGNOSTIC.search(lines[end])):
+               and not pattern.search(lines[end])):
             end += 1
         start = max(i, last + 1)
         if start > last + 1 and last >= 0:
@@ -289,20 +302,41 @@ def diagnostics(lines, budget, context=6):
     return kept[:budget]
 
 
+def diagnostics(lines, budget, context=6):
+    """The lines of a log that name a defect, or None if it names none."""
+    return picked(lines, DIAGNOSTIC, budget, context, skip=GIVING_UP)
+
+
 def show_failure(lines, tail):
     """Prints what a failed step said about the defect, and how much was left out."""
     tail = len(lines) if tail is None else tail
-    picked = diagnostics(lines, tail)
-    if picked is None:
+    found = diagnostics(lines, tail)
+    if found is None:
         show(lines, tail)
         return
-    for line in picked:
+    for line in found:
         print('   ...' if line is None else '   ' + line)
-    shown = sum(1 for line in picked if line is not None)
+    shown = sum(1 for line in found if line is not None)
     if shown < len(lines):
         print('   ... {} of {} log line(s) shown: the ones naming an error. '
               'The whole log is the same command without this one.'
               .format(shown, len(lines)))
+
+
+def show_passed(lines, tail):
+    """Prints the tail of a step that passed, and first any warning above it.
+
+    The tail is a line count and nothing anchors it to a diagnostic, so a warning the
+    step did not fail on is otherwise delivered in part or not at all.
+    """
+    start = len(lines) if tail is None else max(0, len(lines) - tail)
+    above = picked(lines[:start], WARNED, WARNED_BUDGET, context=4) if start else None
+    if above:
+        print('   ... {} earlier line(s) naming a warning this step did not stop for:'
+              .format(sum(1 for line in above if line is not None)))
+        for line in above:
+            print('   ...' if line is None else '   ' + line)
+    show(lines, tail)
 
 
 def run(step, command, cwd, kept=2, failed_kept=40, notes=None, build=None, heal=None):
@@ -335,7 +369,7 @@ def run(step, command, cwd, kept=2, failed_kept=40, notes=None, build=None, heal
         return False
     if notes:
         lines = collapse_notes(lines, notes)
-    show(lines, kept)
+    show_passed(lines, kept)
     return True
 
 

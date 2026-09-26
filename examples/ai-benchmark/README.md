@@ -220,9 +220,18 @@ run-benchmark.sh --model opus --effort high --attempts 15
 # It costs requests on purpose, so never compare it with a normal run
 run-benchmark.sh --task examples/ai-benchmark/prompt-elevator.md --debrief
 
-# Three draws of one arm on one tree: compare medians, never one run
-for label in a b c; do run-benchmark.sh "$label" --attempts 15; done
+# Three draws of one arm on one tree: compare the band, never one run
+run-benchmark.sh --repeat 3 --attempts 15
 ```
+
+**One run measures the draw, not the tree.** The same tree has come out 51% apart over
+31 runs, and the three coffee machine runs of 2026-09-25 were 49% apart on an
+agent-facing corpus that differed between their heads by two bytes. `--repeat N` takes
+the next free label for each run and prints, after every one of them, its cost, its
+output tokens and the running total, so the spend is visible before the next run
+starts; at the end it prints the band. The share of a plan's limit a run consumes
+tracks output tokens rather than dollars, which is why both are reported. 2 or 3
+settles most questions and 4 is the ceiling.
 
 Only a Claude run is read by `analyze_run.py` automatically at the end: cost and its
 split, requests, reasoning, cycles, pages opened, lines written.

@@ -1065,6 +1065,7 @@ def provider_files(iface, class_name, include_root):
                                                      iface.generated_params('request', name)))
     header += ['',
                'private:',
+               '    //! This component as a reference, for a member initialiser that takes one.',
                '    inline {} & self()'.format(class_name),
                '    {   return (*this); }',
                '',
@@ -1260,6 +1261,7 @@ def machine_files(iface, class_name, include_root):
                                                      iface.generated_params('action', name)))
     header += ['',
                'private:',
+               '    //! This component as a reference, for a member initialiser that takes one.',
                '    inline {} & self()'.format(class_name),
                '    {   return (*this); }',
                '',
@@ -1440,6 +1442,15 @@ def contract_lines(iface, document):
         out.append('  provider reads {t} & {n}(); consumer reads {r} {n}('
                    'areg::DataState & state)'
                    .format(t=cpp, r=read, n=spelled))
+    # Which of these a consumer handler can trust is not readable from the signatures,
+    # and the page that states it is not on the path a project takes.
+    if len(list(iface.attributes)) > 1:
+        out.append('  setting two of these in one function sends two updates, in that '
+                   'order. A consumer')
+        out.append('  handler reads the others by the getter above, so it sees only '
+                   'those set before')
+        out.append('  its own: set last the attribute whose update the consumer acts '
+                   'on.')
     return out + type_lines(iface)
 
 
@@ -1645,6 +1656,7 @@ def provider_class(iface, cls, machine=None, timers=()):
                   '    }',
                   '']
     lines += ['private:',
+              '    //! This component as a reference, for a member initialiser that takes one.',
               '    inline {} & self()'.format(cls),
               '    {   return (*this); }',
               '']
@@ -1709,7 +1721,9 @@ def enum_value(text, type_name, iface, where):
 
     A bare field name does not compile on its own and the compiler names the call
     site, not the design that wrote it, so a name that is no field of this type is
-    refused here instead.
+    refused here instead. The qualifier a design writes is the type the parameter
+    already declares, so any spelling of that type is taken and completed; one
+    naming a different type is refused.
     """
     spelt = iface.cpp_type(type_name)[0]
     fields = iface.enum_fields[type_name]
@@ -1717,9 +1731,12 @@ def enum_value(text, type_name, iface, where):
     if given not in fields:
         fail('{} gives "{}" for a "{}", which has no such field. It has: {}'
              .format(where or 'a step', text, type_name, ', '.join(fields) or 'none'))
-    if '::' in text and not text.endswith('{}::{}'.format(spelt, given)):
-        fail('{} gives "{}" for a "{}", which C++ spells "{}::{}"'
-             .format(where or 'a step', text, type_name, spelt, given))
+    if '::' in text:
+        qualifier = text.rsplit('::', 1)[0]
+        if qualifier != spelt and not spelt.endswith('::' + qualifier):
+            fail('{} gives "{}" for a "{}", and "{}" is not that type. C++ spells '
+                 'this field "{}::{}"'
+                 .format(where or 'a step', text, type_name, qualifier, spelt, given))
     return '{}::{}'.format(spelt, given)
 
 
@@ -2218,6 +2235,7 @@ def consumer_class(iface, cls, steps=(), driver=None):
                   '    }',
                   '']
     lines += ['private:',
+              '    //! This component as a reference, for a member initialiser that takes one.',
               '    inline {} & self()'.format(cls),
               '    {   return (*this); }',
               '']

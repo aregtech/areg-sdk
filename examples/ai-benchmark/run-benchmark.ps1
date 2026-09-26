@@ -44,6 +44,13 @@ One cold agent run, measured, against a clean snapshot of this checkout.
                      Any number other than the runbook's adds one rule to the prompt,
                      the same for both arms. 0 removes the bound, and is warned about:
                      the spend is unbounded.
+  --repeat N         run the same arm N times and report the band (default: 1).
+                     One run measures the draw, not the tree: the same tree has come
+                     out 51% apart. 2 or 3 settles most questions; 4 is the ceiling.
+                     Each run gets the next free label, and a short line after each
+                     gives its cost and output tokens with the running total, so the
+                     spend is visible before the next one starts. Refused with an
+                     explicit label, which every run would then share.
   --debrief          append a diagnostic pass: what the run could not find. It costs
                      requests on purpose, so such a run is never compared with one
                      made without it.
@@ -331,6 +338,7 @@ function Main([string[]]$Arguments)
     $Framework = 'areg'; $Task = 'examples/ai-benchmark/prompt-coffeemachine.md'; $Wrapper = ''
     $Project = ''; $Mode = 'ipc'; $Agent = 'claude'; $Model = ''; $Effort = ''
     $Attempts = '15'; $Debrief = $false; $Recipes = 'none'; $Label = ''; $Dry = $false
+    $Repeat = '1'
     $AllowInstalled = $false; $Verify = 'probes'
     $SdkOpt = ''; $GrpcOpt = ''; $Web = ''
 
@@ -344,7 +352,7 @@ function Main([string[]]$Arguments)
     while ($index -lt $Arguments.Count) {
         $option = $Arguments[$index]
         $valued = '--framework', '--agent', '--task', '--wrapper', '--project', '--mode', '--model',
-                  '--effort', '--attempts', '--recipes', '--sdk', '--grpc', '--verify', '--web'
+                  '--effort', '--attempts', '--repeat', '--recipes', '--sdk', '--grpc', '--verify', '--web'
         if ($option -cin $valued) {
             if ($index + 1 -ge $Arguments.Count) { Stop-Run "$option needs a value" }
             $value = $Arguments[$index + 1]
@@ -361,6 +369,7 @@ function Main([string[]]$Arguments)
                 }
                 '--effort'    { $Effort = $value }
                 '--attempts'  { $Attempts = $value }
+                '--repeat'    { $Repeat = $value }
                 '--recipes'   { $Recipes = $value }
                 '--sdk'       { $SdkOpt = $value }
                 '--grpc'      { $GrpcOpt = $value }
@@ -403,6 +412,12 @@ function Main([string[]]$Arguments)
     # lives: the snapshot for areg, the web for gRPC.
     if (-not $Web) { $Web = if ($Framework -eq 'grpc') { 'on' } else { 'off' } }
     if ($Attempts -notmatch '^[0-9]+$') { Stop-Run "--attempts must be a whole number, not '$Attempts'" }
+    if ($Repeat -notmatch '^[0-9]+$' -or $Repeat -eq '0') { Stop-Run "--repeat must be a whole number of 1 or more, not '$Repeat'" }
+    if ([int]$Repeat -gt 1) {
+        if ($Label) { Stop-Run '--repeat and an explicit label cannot both be given: every run would take the same one' }
+        if ($Dry) { Stop-Run '--repeat and --dry-run cannot both be given; a dry run starts nothing to repeat' }
+        if ([int]$Repeat -gt 4) { Stop-Run '--repeat is capped at 4; ask for more only by running the script again' }
+    }
     if ($Project -cnotmatch '^[A-Za-z_][A-Za-z0-9_]*$') { Stop-Run "--project must be a C identifier, not '$Project'" }
 
     if (-not (Get-Command $Agent -ErrorAction SilentlyContinue)) { Stop-Run "$Agent not found: install the selected CLI and log in" }
@@ -445,6 +460,31 @@ function Main([string[]]$Arguments)
         [Console]::Error.WriteLine('run-benchmark: WARNING --attempts 0 removes the fix bound; the spend is unbounded')
     }
 
+    $script:Ledger = Join-Path ([IO.Path]::GetTempPath()) ("run-benchmark-ledger-$PID.txt")
+    Write-Text $script:Ledger ''
+    $code = 0
+    $times = [int]$Repeat
+    for ($iteration = 1; $iteration -le $times; $iteration++) {
+        if ($times -gt 1) { Write-Output "run-benchmark: repeat $iteration of $times" }
+        $script:RunCode = 0
+        Invoke-OneRun
+        if ($script:RunCode -ne 0) { $code = $script:RunCode }
+        if ($times -gt 1) {
+            Write-Output (Invoke-Python (Join-Path $HERE 'repeat_report.py') $script:Ledger '--after' "$iteration" '--total' "$times")
+        }
+    }
+    if ($times -gt 1) {
+        Write-Output (Invoke-Python (Join-Path $HERE 'repeat_report.py') $script:Ledger '--band' '--total' "$times")
+    }
+    Remove-Item -LiteralPath $script:Ledger -ErrorAction SilentlyContinue
+    exit $code
+}
+
+
+# One run: its own snapshot, its own label, its own measurement. Called once per
+# --repeat, and it reads the settings Main validated.
+function Invoke-OneRun
+{
     $suffix = if ($Framework -eq 'grpc') { "grpc-$Project" } else { $Project }
 
     # The run is made where it is started, so no path is assumed and no home is
@@ -851,7 +891,10 @@ Be specific and short: a list, not prose.
         }
     }
     Remove-Item -LiteralPath $script:HelperPath -ErrorAction SilentlyContinue
-    exit $code
+    Add-Text $script:Ledger "$Run`n"
+    # The run's own code is handed back in a script variable, never as a return: the
+    # loop in Main must see every run through whatever any one of them exits with.
+    $script:RunCode = $code
 }
 
 Main @($args)

@@ -317,6 +317,11 @@ imports others still needs only one call.
 - Never expect `State/@History` to tell a fresh entry from a resume. It is on the state
   and applies to both; a `Kind="History"` marker is what tells them apart.
 - Never give an `Internal` transition a `To`, and never leave one off an `External`.
+- Never leave a trigger that carries a request without a transition in a state the
+  machine can be in. The stimulus is dropped, no action answers the caller, and the
+  consumer waits until its deadline for a response that was never sent. A state that
+  should turn the request down still needs its own transition, calling the action that
+  sends the refusal.
 
 ## The spelling, after a refusal
 

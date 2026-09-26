@@ -290,6 +290,11 @@ def build_siml(spec, shared_space, shared_names, prefix=''):
         for entry in requests:
             extra = ''
             if entry.get('response'):
+                if not isinstance(entry['response'], str):
+                    fail('request "{}" of {} writes "response" out in place, and it '
+                         'is the name of a response declared beside the request. The '
+                         'parameters of a response written in place go under '
+                         '"answer"'.format(entry['name'], where))
                 if entry['response'] not in set(r['name'] for r in responses):
                     fail('request "{}" of {} names response "{}", which is not declared'
                          .format(entry['name'], where, entry['response']))

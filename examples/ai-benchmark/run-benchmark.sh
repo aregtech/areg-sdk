@@ -13,6 +13,8 @@ set -eu
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SDK=""
+# The exit code of the run one_run() has just finished.
+RUN_CODE=0
 
 usage()
 {
@@ -49,6 +51,13 @@ One cold agent run, measured, against a clean snapshot of this checkout.
                      Any number other than the runbook's adds one rule to the prompt,
                      the same for both arms. 0 removes the bound, and is warned about:
                      the spend is unbounded.
+  --repeat N         run the same arm N times and report the band (default: 1).
+                     One run measures the draw, not the tree: the same tree has come
+                     out 51% apart. 2 or 3 settles most questions; 4 is the ceiling.
+                     Each run gets the next free label, and a short line after each
+                     gives its cost and output tokens with the running total, so the
+                     spend is visible before the next one starts. Refused with an
+                     explicit label, which every run would then share.
   --debrief          append a diagnostic pass: what the run could not find. It costs
                      requests on purpose, so such a run is never compared with one
                      made without it.
@@ -242,6 +251,7 @@ main()
     local FRAMEWORK="areg" TASK="examples/ai-benchmark/prompt-coffeemachine.md" WRAPPER=""
     local PROJECT="" MODE="ipc" AGENT="claude" MODEL="" EFFORT=""
     local ATTEMPTS="15" DEBRIEF="" RECIPES="none" LABEL="" DRY="" ALLOW_INSTALLED=""
+    local REPEAT="1"
     local VERIFY="probes" SDK_OPT="" GRPC_OPT="" WEB=""
 
     # A bare first word is the label. Anything starting with a dash is an option.
@@ -265,6 +275,7 @@ main()
             --model)     need "$@"; [ -n "$2" ] || die "--model needs a non-empty value"; MODEL="$2"; shift 2 ;;
             --effort)    need "$@"; EFFORT="$2";    shift 2 ;;
             --attempts)  need "$@"; ATTEMPTS="$2";  shift 2 ;;
+            --repeat)    need "$@"; REPEAT="$2";    shift 2 ;;
             --recipes)   need "$@"; RECIPES="$2";   shift 2 ;;
             --sdk)       need "$@"; SDK_OPT="$2";   shift 2 ;;
             --grpc)      need "$@"; GRPC_OPT="$2";  shift 2 ;;
@@ -299,6 +310,12 @@ main()
         WEB="off"; [ "${FRAMEWORK}" != "grpc" ] || WEB="on"
     fi
     case "${ATTEMPTS}" in ''|*[!0-9]*) die "--attempts must be a whole number, not '${ATTEMPTS}'" ;; esac
+    case "${REPEAT}"   in ''|*[!0-9]*|0) die "--repeat must be a whole number of 1 or more, not '${REPEAT}'" ;; esac
+    if [ "${REPEAT}" -gt 1 ]; then
+        [ -z "${LABEL}" ] || die "--repeat and an explicit label cannot both be given: every run would take the same one"
+        [ -z "${DRY}" ] || die "--repeat and --dry-run cannot both be given; a dry run starts nothing to repeat"
+        [ "${REPEAT}" -le 4 ] || die "--repeat is capped at 4; ask for more only by running the script again"
+    fi
     case "${PROJECT}"  in *[!A-Za-z0-9_]*|[!A-Za-z_]*|"") die "--project must be a C identifier, not '${PROJECT}'" ;; esac
 
     command -v "${AGENT}" >/dev/null || die "${AGENT} not found: install the selected CLI and log in"
@@ -337,6 +354,35 @@ main()
         echo "run-benchmark: WARNING --attempts 0 removes the fix bound; the spend is unbounded" >&2
     fi
 
+    local index code=0 LEDGER STARTED
+    LEDGER="$(mktemp)"
+    STARTED="$(pwd)"
+    trap 'rm -f "${LEDGER}"' EXIT
+    for (( index = 1; index <= REPEAT; index++ )); do
+        # one_run() ends inside its own work directory, and the next run is made where
+        # this one was started, never inside the last one.
+        cd "${STARTED}"
+        [ "${REPEAT}" -eq 1 ] || echo "run-benchmark: repeat ${index} of ${REPEAT}"
+        RUN_CODE=0
+        one_run
+        [ "${RUN_CODE}" -eq 0 ] || code="${RUN_CODE}"
+        if [ "${REPEAT}" -gt 1 ]; then
+            python3 "${HERE}/repeat_report.py" "${LEDGER}" --after "${index}" \
+                    --total "${REPEAT}" || true
+        fi
+    done
+    if [ "${REPEAT}" -gt 1 ]; then
+        python3 "${HERE}/repeat_report.py" "${LEDGER}" --band --total "${REPEAT}" || true
+    fi
+    exit ${code}
+}
+
+
+# One run: its own snapshot, its own label, its own measurement. Called once per
+# --repeat, and it reads the settings main() validated.
+one_run()
+{
+    local LABEL="${LABEL}"
     local suffix="${PROJECT}"
     [ "${FRAMEWORK}" = "grpc" ] && suffix="grpc-${PROJECT}"
 
@@ -676,7 +722,12 @@ ${leak}
         echo
         python3 "${HERE}/verify_run.py" "${RUN}" ${SANITIZE} || true
     fi
-    exit ${code}
+    [ -z "${LEDGER:-}" ] || printf '%s\n' "${RUN}" >> "${LEDGER}"
+    # The run's own code is handed back in a variable, never as a return: a function
+    # called in a test context runs with set -e suspended, and every failure inside
+    # this one must still stop the script.
+    RUN_CODE=${code}
+    return 0
 }
 
 main "$@"

@@ -82,6 +82,10 @@ the example throws away its `#|` notes, which are what the example leaves out.
 A consumer that drives a scenario and exits lists it as `"steps"`, branching included:
 the generator writes the step machine, and each check may `stay()`, `go_to(Step::Name)`
 or `fail("why")`. Writing that machine by hand is the largest avoidable cost here.
+Write one step per thing the task asks you to prove, not one per message: every step
+is another body to write and another place to put the order wrong. A step that starts
+work which takes time `await`s the update that says it finished, and the step after it
+is the next thing to prove, not the next request.
 What it gives up after is `"driver"` of the same interface, which the template's own
 note explains; the generator declares all three, so no marker asks for one.
 

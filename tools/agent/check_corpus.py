@@ -2894,6 +2894,9 @@ def run():
     check_example_type_placement(report)
     check_spec_value_prefixes(report)
     check_step_enum_values(report)
+    check_worksheet_names_update_order(report)
+    check_spec_refuses_a_nested_response(report)
+    check_self_helper_is_described(report)
     check_step_hold(report)
     check_api_constructors(report)
     check_late_awaits(report)
@@ -2935,6 +2938,7 @@ def run():
     check_command_coverage(report)
     check_worksheet_rewrite(report)
     check_failure_names_the_error(report)
+    check_passing_step_keeps_a_warning(report)
     check_names_carry_signatures(report)
     check_step_output_whole(report)
     check_design_reviewable(report)
@@ -3137,9 +3141,180 @@ def check_step_enum_values(report):
         return
     finally:
         sys.stderr = quiet
+    quiet, sys.stderr = sys.stderr, io.StringIO()
+    try:
+        partial = gen_skeleton.cpp_value('Drink::Latte', 'Drink', Iface(), 'a test')
+    except SystemExit:
+        partial = None
+    finally:
+        sys.stderr = quiet
+    if partial != 'Shared::Drink::Latte':
+        report.fail('step-enums',
+                    'a field qualified with its own enumeration, "Drink::Latte", is '
+                    'refused although it names the type the parameter takes. The '
+                    'bare name and the fully qualified one are both accepted, so '
+                    'the one spelling a C++ programmer writes is the only one that '
+                    'fails')
+        return
+    quiet, sys.stderr = sys.stderr, io.StringIO()
+    try:
+        gen_skeleton.cpp_value('Other::Latte', 'Drink', Iface(), 'a test')
+    except SystemExit:
+        pass
+    else:
+        sys.stderr = quiet
+        report.fail('step-enums',
+                    'a field qualified with a different enumeration is accepted, so '
+                    'naming the wrong type is written through in silence')
+        return
+    finally:
+        sys.stderr = quiet
     report.ok('step-enums',
               'a step argument names a field of an enumeration and the generator '
-              'qualifies it; an unknown field is refused')
+              'qualifies it, bare or already qualified with its own type; an '
+              'unknown field and a different type are refused')
+
+
+def check_self_helper_is_described(report):
+    """Every member the generated header declares carries a description, self() too.
+
+    The worksheet prints each member of the component under its "//!<" line, so a
+    member without one is listed bare among members that say what they are for. One
+    measured run read self() as a handle to call methods through and wrote "self()->"
+    twenty-five times, which cost a build and a fix.
+    """
+    bare = []
+    for name in ('gen_skeleton.py',):
+        path = os.path.join(ROOT, 'tools', 'agent', name)
+        lines = io.open(path, encoding='utf-8').read().split('\n')
+        for number, line in enumerate(lines):
+            if '& self()' not in line:
+                continue
+            above = lines[number - 1] if number else ''
+            if '//!' not in line and '//!' not in above:
+                bare.append('{}:{}'.format(name, number + 1))
+    if bare:
+        report.fail('self-described',
+                    'the self() helper is emitted with no "//!<" line above it at {}, '
+                    'so the worksheet lists it bare among members that say what they '
+                    'are for'.format(', '.join(bare)))
+        return
+    report.ok('self-described',
+              'every self() helper the generator emits carries a description line')
+
+
+def check_spec_refuses_a_nested_response(report):
+    """A request whose "response" is written out in place is refused, not crashed on.
+
+    "response" names a response declared beside the request; the parameters of one
+    written in place go under "answer". A spec that nests the object instead used to
+    reach a set() and end the run with a Python traceback, which names no key and
+    routes to no fix.
+    """
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_docs
+    except Exception as failure:
+        report.fail('spec-nested-response',
+                    'gen_docs.py does not import: {}'.format(failure))
+        return
+    spec = {'name': 'Probe', 'category': 'Public', 'description': 'A probe.',
+            'requests': [{'name': 'order', 'description': 'Ask.',
+                          'response': {'name': 'ordered', 'params': []}}]}
+    quiet, sys.stderr = sys.stderr, io.StringIO()
+    try:
+        gen_docs.build_siml(spec, None, set(), '')
+    except SystemExit:
+        said = sys.stderr.getvalue()
+    except Exception as failure:
+        sys.stderr = quiet
+        report.fail('spec-nested-response',
+                    'a request whose "response" is an object ends the generator with '
+                    '{}: {}. An agent is handed a traceback naming no key'
+                    .format(type(failure).__name__, failure))
+        return
+    else:
+        sys.stderr = quiet
+        report.fail('spec-nested-response',
+                    'a request whose "response" is an object is written through')
+        return
+    finally:
+        sys.stderr = quiet
+    if 'answer' not in said:
+        report.fail('spec-nested-response',
+                    'the refusal does not name "answer", the key that takes a '
+                    'response written out in place: {}'.format(said.strip()[:160]))
+        return
+    report.ok('spec-nested-response',
+              'a request whose "response" is an object is refused by name, and the '
+              'refusal names "answer"')
+
+
+def check_worksheet_names_update_order(report):
+    """The worksheet says what a consumer handler sees of the other attributes.
+
+    Two set_ calls in one function send two updates in that order, so a handler for
+    the first reads a stale value for the second. The rule is on
+    docs/agent/20-service-interface.md, a page no measured run has opened; the
+    worksheet is read by every run, and this is where the bodies are written.
+    """
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_skeleton
+    except Exception as failure:
+        report.fail('worksheet-attr-order',
+                    'gen_skeleton.py does not import: {}'.format(failure))
+        return
+
+    class Iface(object):
+        name = 'Probe'
+        requests = responses = broadcasts = triggers = actions = conditions = ()
+        imported_types = types = constants = ()
+        declared = {}
+
+        def __init__(self, attributes):
+            self.attributes = attributes
+
+        def spell(self, kind, name, form=None):
+            return '{}_{}'.format(form or kind, name)
+
+        def cpp_type(self, kind):
+            return kind, False
+
+        def passed_as(self, kind):
+            return kind
+
+        def attribute_setter(self, kind, flag):
+            return 'const {} &'.format(kind)
+
+        def generated_params(self, kind, name):
+            return ''
+
+    try:
+        many = '\n'.join(gen_skeleton.contract_lines(
+            Iface([('Credit', 'uint32'), ('Stage', 'uint32')]), 'probe.siml'))
+        one = '\n'.join(gen_skeleton.contract_lines(
+            Iface([('Credit', 'uint32')]), 'probe.siml'))
+    except Exception as failure:
+        report.fail('worksheet-attr-order',
+                    'contract_lines does not run on a plain interface: {}'.format(failure))
+        return
+    if 'set last' not in many:
+        report.fail('worksheet-attr-order',
+                    'an interface with two attributes lists both setters and says '
+                    'nothing about the order their updates reach a consumer in. A '
+                    'handler that reads another attribute by its getter then reads a '
+                    'value that has not been sent yet, and one measured run spent '
+                    'four requests in generated sources finding that out')
+        return
+    if 'set last' in one:
+        report.fail('worksheet-attr-order',
+                    'the ordering line is printed for an interface with one '
+                    'attribute, which has no order to get wrong')
+        return
+    report.ok('worksheet-attr-order',
+              'the worksheet names the order two attribute updates reach a consumer '
+              'in, and only where there are two')
 
 
 def check_api_constructors(report):
@@ -6090,6 +6265,78 @@ def check_failure_names_the_error(report):
     report.ok('failure-errors',
               'a failed step prints the lines naming the error and what belongs to '
               'them, not the summary of the tool that gave up')
+
+
+def check_passing_step_keeps_a_warning(report):
+    """A step that passed hands over the warnings it did not stop for.
+
+    The tail of a step that passed is a line count and nothing anchors it to a
+    diagnostic, so a generator warning above it arrives in part or not at all. Run
+    20260925a was told "the Action method [ on_order_accepted ]" with the line naming
+    rule 126 cut off, and spent a build-and-run cycle rediscovering it from a hung
+    scenario.
+    """
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import build_project
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('passing-warnings',
+                    'build_project.py does not import: {}'.format(failure))
+        return
+
+    def printed(lines, tail):
+        held = io.StringIO()
+        with contextlib.redirect_stdout(held):
+            build_project.show_passed(lines, tail)
+        return held.getvalue()
+
+    # One codegen warning, pushed above the tail by the lines cmake prints after it.
+    warning = ['src/services/M.fsml:37:70: warning[126/RULE_UNREFERENCED]: '
+               'declared but never referenced',
+               '  the Action method [ on_order_accepted ]']
+    log = ['-- line {}'.format(i) for i in range(40)] + warning + [
+        '-- Generating done (0.1s)',
+        '-- Build files have been written to: /w/build',
+        'src/services/M.fsml: 0 errors, 1 warning -- 8 files written']
+    shown = printed(log, 3)
+    if 'warning[126/RULE_UNREFERENCED]' not in shown:
+        report.fail('passing-warnings',
+                    'a step that passed drops the line naming the rule it warned '
+                    'about, so the number explain_rule.py takes never reaches the '
+                    'agent and only a verbless fragment does')
+        return
+    if 'the Action method' not in shown:
+        report.fail('passing-warnings',
+                    'a warning reaches the agent without the line under it that says '
+                    'which declaration it is about')
+        return
+
+    # A compiler warning the build did not stop for, for the same reason.
+    build = ['[ 50%] Building CXX object x.cpp.o',
+             "/w/src/C.cpp:222:62: warning: unused parameter 'Active' [-Wunused-parameter]",
+             '  222 | void C::on_update(bool Active)'] + \
+            ['[100%] Built target {}'.format(i) for i in range(8)]
+    if 'unused parameter' not in printed(build, 2):
+        report.fail('passing-warnings',
+                    'a compiler warning above the tail of a build that passed is '
+                    'dropped, so code an agent writes warns only on a toolchain it '
+                    'never runs')
+        return
+
+    # Nothing to say costs nothing: a clean step prints exactly what it always did.
+    clean = ['-- line {}'.format(i) for i in range(30)] + \
+            ['src/services/M.siml: 0 errors, 0 warnings -- 10 files written']
+    held = io.StringIO()
+    with contextlib.redirect_stdout(held):
+        build_project.show(clean, 3)
+    if held.getvalue() != printed(clean, 3):
+        report.fail('passing-warnings',
+                    'a step with no warning prints something other than its tail; '
+                    'every run would pay for the check')
+        return
+    report.ok('passing-warnings',
+              'a step that passed hands over the warnings above its tail, with the '
+              'rule number, and prints only the tail when there are none')
 
 
 def check_names_carry_signatures(report):
