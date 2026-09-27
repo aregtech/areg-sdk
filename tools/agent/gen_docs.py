@@ -2169,7 +2169,7 @@ TEMPLATE = {
                "sends every set. A request with answer also declares its response, of the same",
                "name; without answer it has none. A broadcast reaches every subscribed consumer.",
                "A request, response or broadcast name is kept as written after its prefix, so",
-               "write it snake_case: insert_coin is request_insert_coin. Attributes are converted.",
+               "write it snake_case: open_valve is request_open_valve. Attributes are converted.",
                "A parameter name used in several answers and broadcasts has one type in all.",
                "values: the legal values of a parameter, when they are a set and the type does",
                "not already say so. A step that sends one outside it is refused here rather",

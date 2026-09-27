@@ -2936,6 +2936,8 @@ def run():
     check_start_kind(report)
     check_design_request(report)
     check_step_rules_at_use(report)
+    check_benchmark_vocabulary(report)
+    check_phase_by_one_action(report)
     check_base_api_on_demand(report)
     check_codegen_name_rules(report)
     check_app_shape(report)
@@ -4565,6 +4567,70 @@ def check_step_rules_at_use(report):
             return
     report.ok('step-rules', 'the step rules and the peer-lost hold are in the template '
               'steps note, the acceptance rule in the worksheet, and neither in the runbook')
+
+
+# Nouns only a benchmark task uses. An example spelled with them hands one task its answer.
+BENCHMARK_WORDS = ('coffee', 'espresso', 'latte', 'cappuccino', 'drink', 'coin',
+                   'insert_coin', 'MakingHistory', 'MAKING', 'elevator', 'greenhouse',
+                   'thermostat')
+
+
+def template_notes(node):
+    """Every #| note line of the design template, in order."""
+    import gen_docs
+    if isinstance(node, dict):
+        for key, value in node.items():
+            if key == gen_docs.NOTE:
+                for line in value:
+                    yield line
+            else:
+                for line in template_notes(value):
+                    yield line
+    elif isinstance(node, list):
+        for item in node:
+            for line in template_notes(item):
+                yield line
+
+
+def check_benchmark_vocabulary(report):
+    """No page, AGENTS.md or template note teaches with a benchmark task's own nouns."""
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_docs
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('benchmark-words', 'gen_docs.py does not import: {}'.format(failure))
+        return
+    places = [('AGENTS.md', read('AGENTS.md')),
+              ('the design template notes', '\n'.join(template_notes(gen_docs.TEMPLATE)))]
+    pages = os.path.join(ROOT, 'docs', 'agent')
+    places += [('docs/agent/' + name, read('docs', 'agent', name))
+               for name in sorted(os.listdir(pages)) if name.endswith('.md')]
+    for place, text in places:
+        for word in BENCHMARK_WORDS:
+            flags = 0 if word.isupper() or word[0].isupper() else re.IGNORECASE
+            found = re.search(r'\b{}\b'.format(re.escape(word)), text, flags)
+            if found:
+                line = text[:found.start()].count('\n') + 1
+                report.fail('benchmark-words', '{}:{} says "{}", a noun of a benchmark '
+                            'task: an example in it hands that task its answer'
+                            .format(place, line, word))
+                return
+    report.ok('benchmark-words', 'no page, AGENTS.md or template note uses a benchmark '
+              "task's own nouns")
+
+
+def check_phase_by_one_action(report):
+    """22-state-machine.md publishes a phase by one action taking it, not one per state."""
+    page = ' '.join(read('docs', 'agent', '22-state-machine.md').split())
+    for phrase in ('{"call": "publish_phase", "args": {"phase": "lit:',
+                   'under `OnChange` the consumer hears it only if the value changed'):
+        if phrase not in page:
+            report.fail('phase-action', '22-state-machine.md does not say "{}", so a '
+                        'machine publishing its phase declares one action per state'
+                        .format(phrase))
+            return
+    report.ok('phase-action', '22-state-machine.md publishes a phase from every entry by '
+              'one action taking it, and says when OnChange sends a resumed one')
 
 
 def check_base_api_on_demand(report):
@@ -6466,6 +6532,10 @@ def check_build_routes_next(report):
         with open(os.path.join(holder, 'worksheet.txt'), 'w', encoding='utf-8') as handle:
             handle.write('#| one\n== body\n')
         open_said = build_project.closing_lines(holder, 'bodies.txt', ['design.json'])
+        with open(os.path.join(holder, 'bodies.txt'), 'w', encoding='utf-8') as handle:
+            handle.write('== other\n    int kept{ 0 };\n')
+        partial_said = build_project.closing_lines(holder, 'bodies.txt', ['design.json'])
+        os.remove(os.path.join(holder, 'bodies.txt'))
         os.remove(os.path.join(source, 'P.cpp'))
         filled_said = build_project.closing_lines(holder, 'bodies.txt', ['design.json'])
     finally:
@@ -6481,6 +6551,12 @@ def check_build_routes_next(report):
         report.fail('build-route',
                     'a build that leaves markers open does not say that it did, so '
                     '--run reads as the next call: "{}"'.format(whole))
+        return
+    partial = ' '.join(partial_said)
+    if 'every section' in partial or 'body' not in partial or '--run' not in partial:
+        report.fail('build-route',
+                    'a build whose bodies.txt already carries code asks for every section '
+                    'again instead of naming the open ones: "{}"'.format(partial))
         return
     if 'worksheet.txt' in ' '.join(filled_said):
         report.fail('build-route',

@@ -170,11 +170,11 @@ and another must resume, put a marker in the composite's `StateList` and point o
 resuming transition at it:
 
 ```json
-{"name": "MakingHistory", "kind": "history", "depth": "Shallow"}
+{"name": "RunHistory", "kind": "history", "depth": "Shallow"}
 ```
 
 A transition whose `"to"` is the marker resumes; one whose `"to"` is the composite
-descends its Start chain. So `order` targeting `MAKING` starts a fresh drink and
+descends its Start chain. So `start` targeting `RUNNING` begins a fresh job and
 `resume` targeting the marker continues the interrupted one, in one run.
 
 A document using a marker states `FormatVersion="1.2.0"`; one that does not stays
@@ -183,6 +183,11 @@ A document using a marker states `FormatVersion="1.2.0"`; one that does not stay
 **A restored state re-runs its `entry`.** That is what decides where the resume
 actions go: anything that must not happen twice belongs on the transition into the
 marker, not on the entry of the stage being resumed.
+
+**A phase a consumer watches is published from each state's `entry` by one action
+that takes it**: `{"call": "publish_phase", "args": {"phase": "lit:<Enum>::<Value>"}}`,
+whose one body calls the attribute's `set_`. A resume re-runs that entry; under
+`OnChange` the consumer hears it only if the value changed in between.
 
 ### Leaving a level when it finishes: `OnFinal`
 

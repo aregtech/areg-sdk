@@ -542,6 +542,20 @@ def closing_lines(root, bodies, specs):
         return ['Every step passed. Next, and after every fix, the same command with --run:',
                 'it applies the worksheet, builds, runs the scenarios and the final check:',
                 '{} --run'.format(same)]
+    if worksheet_has_code(os.path.join(root, bodies)):
+        names = []
+        for path in gen_skeleton.marker_sources(os.path.join(root, 'src')):
+            try:
+                with open(path, encoding='utf-8') as handle:
+                    names += [hit.group(1) for hit in map(gen_skeleton.MARKER.search, handle)
+                              if hit]
+            except OSError:
+                pass
+        return ['Every step passed. {} has no body yet for {} marker(s): {}.'
+                .format(bodies, still_open, ', '.join(names)),
+                'Add those sections from {} to it, then apply, build and run:'
+                .format(gen_skeleton.WORKSHEET),
+                '{} --run'.format(same)]
     length = ''
     try:
         with open(os.path.join(root, gen_skeleton.WORKSHEET), encoding='utf-8') as handle:

@@ -196,6 +196,43 @@ def find_transcript(run, sid):
     return max(found, key=os.path.getmtime)
 
 
+def cold_price(tot, first_read, aside):
+    """The run priced as a cold start with every write at the 1-hour tier, in dollars."""
+    base = (tot["input_tokens"] * PRICE_IN + tot["cache_read_input_tokens"] * PRICE_READ +
+            tot["output_tokens"] * PRICE_OUT)
+    warm = first_read * (PRICE_W1 - PRICE_READ)
+    return (base + (tot["w5"] + tot["w1"]) * PRICE_W1 + warm) / 1e6 + aside
+
+
+def cold_cost(run):
+    """(cost cold @1h, API requests) of a run directory, or None without its transcript."""
+    result = read_result(run)
+    tr = find_transcript(run, result.get("session_id"))
+    if not tr:
+        return None
+    seen, tot, first = set(), collections.Counter(), None
+    for e in rows(tr):
+        m = e.get("message")
+        if not isinstance(m, dict) or e.get("type") != "assistant" or m.get("id") in seen:
+            continue
+        seen.add(m.get("id"))
+        u = m.get("usage") or {}
+        if first is None:
+            first = u.get("cache_read_input_tokens") or 0
+        for k in ("input_tokens", "output_tokens", "cache_read_input_tokens"):
+            tot[k] += u.get(k) or 0
+        tier = u.get("cache_creation") or {}
+        w5 = tier.get("ephemeral_5m_input_tokens") or 0
+        w1 = tier.get("ephemeral_1h_input_tokens") or 0
+        tot["w5"] += w5
+        tot["w1"] += w1 if (w5 or w1) else u.get("cache_creation_input_tokens") or 0
+    if not seen:
+        return None
+    aside = sum(v.get("costUSD") or 0 for v in (result.get("modelUsage") or {}).values()
+                if "sonnet" not in str(v.get("canonicalModel") or ""))
+    return cold_price(tot, first or 0, aside), len(seen)
+
+
 def span_minutes(path):
     """Wall time from the first and last timestamped row of a transcript."""
     stamps = [e.get("timestamp") for e in rows(path) if e.get("timestamp")]
@@ -652,7 +689,7 @@ def main():
     # A run that began on a warm prefix was billed as a read what a cold start pays
     # as a write. The difference is added back so warm and cold runs compare.
     warm = requests[0]["cr"] * (PRICE_W1 - PRICE_READ) / 1e6
-    normal = (base + (tot["w5"] + tot["w1"]) * PRICE_W1) / 1e6 + aside + warm
+    normal = cold_price(tot, requests[0]["cr"], aside)
     facts = run_facts(result, requests, tot)
     if args.record:
         record(run, meta, facts)

@@ -9,9 +9,9 @@ repeats the "== <marker>" line of each section it fills, with the code that
 replaces that marker's line under it:
 
     == provider_state
-        uint32_t mCredit{ 0 };
-    == request_insert_coin
-        set_credit( credit() + coinValue );
+        uint32_t mLevel{ 0 };
+    == request_fill
+        set_level( level() + amount );
 
 A line starting with "#|" is furniture of the worksheet and is dropped. Every
 other line under a "==" is code and travels as written, so a comment in a body
