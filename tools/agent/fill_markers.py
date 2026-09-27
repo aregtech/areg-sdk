@@ -252,6 +252,15 @@ def write_expectations(path, filled):
         handle.write('\n')
 
 
+def held_expectations(path, place):
+    """The regular expressions a process or a stop holds now, as a list."""
+    with open(path, encoding='utf-8') as handle:
+        scenario = json.load(handle)['scenarios'][place[0]]
+    if place[1] is None:
+        return [scenario['stop']['after']]
+    return scenario['procs'][place[1]].get('expect', [])
+
+
 def resolve(name, markers, where):
     """The one marker or written body this section names, or a refusal that says how
     to say it."""
@@ -343,6 +352,7 @@ def main():
     claimed = {}
     expected = {}
     replaced = []
+    changed = []
     dropped = 0
     for name, body in sections:
         if name in expectations:
@@ -354,6 +364,9 @@ def main():
                      .format(args.bodies, name, len(expected[expectations[name]])))
             if name not in open_expect:
                 replaced.append(name)
+                if expected[expectations[name]] != held_expectations(
+                        args.scenarios, expectations[name]):
+                    changed.append(name)
             continue
         path, index, line, extra = resolve(name, addressable, args.bodies)
         if (path, index) in claimed:
@@ -392,6 +405,8 @@ def main():
             elif index in edits[path]:
                 extra, body, name = edits[path][index]
                 landed.append((len(out) + 1, name, len(body)))
+                if name in replaced and lines[index:index + 1 + extra] != body:
+                    changed.append(name)
                 out.extend(body)
                 skip = extra
             else:
@@ -419,7 +434,12 @@ def main():
     print('{} of {} marker(s) filled{}{}'
           .format(len(planned) + len(expected) - len(replaced),
                   len(planned) + len(expected) - len(replaced) + len(left),
-                  ', {} body(ies) rewritten'.format(len(replaced)) if replaced else '',
+                  ', {} body(ies) rewritten, {}'.format(
+                      len(replaced), '{} changed: {}'.format(
+                          len(changed), ', '.join(sorted(changed)[:SHOWN]) +
+                          (' and {} more'.format(len(changed) - SHOWN)
+                           if len(changed) > SHOWN else ''))
+                      if changed else 'none changed') if replaced else '',
                   ', {} placeholder line(s) dropped with them'.format(dropped)
                   if dropped else ''))
     if args.dry_run:

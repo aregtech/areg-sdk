@@ -4536,6 +4536,7 @@ STEP_RULES_AT_USE = (
     ('the template steps note', 'not one per message'),
     ('the template steps note', 'awaits the update saying it finished'),
     ('the template steps note', 'waits 300 ms or more'),
+    ('the template steps note', 'Every step sends, awaits or waits'),
     ('the worksheet scenarios.json header', 'One line per acceptance item'),
 )
 
@@ -6484,6 +6485,16 @@ def check_base_api_parity(report):
         report.fail('base-api-parity', '40-base-api.md does not read: {}'.format(failure))
         return
 
+    # Every call of the block is written on its receiver, as the page spells it.
+    for line in gen_skeleton.BASE_API:
+        called = line.strip().split('(')[0]
+        if called in gen_skeleton.BASE_API_NAMES:
+            report.fail('base-api-parity',
+                        'the worksheet lists "{}" with no receiver, so it reads as a free '
+                        'function in areg::. Write it as "s.{}(...)", the member call it '
+                        'is'.format(called, called))
+            return
+
     for name in gen_skeleton.BASE_API_NAMES:
         if name not in declared:
             report.fail('base-api-parity',
@@ -7175,13 +7186,25 @@ def check_worksheet_rewrite(report):
                         'no single place to write'
                         .format(after.count('body(you) step_one')))
             return
+        # A pass names the bodies it changed, and says so when it changed none.
+        if '1 changed: step_one' not in done.stdout or 'step_two' in \
+                done.stdout.split('changed:')[-1]:
+            report.fail('worksheet-rewrite',
+                        'a pass that changed one body of two does not name it, so a '
+                        'scenario failing the same way twice sends the reader into '
+                        'the source to see whether the edit landed')
+            return
 
         # Writing the same worksheet again writes the same file.
-        fill()
+        again = fill()
         if text() != after:
             report.fail('worksheet-rewrite',
                         'filling the same worksheet twice changed the source, so the '
                         'body grows or moves on every build')
+            return
+        if 'none changed' not in again.stdout:
+            report.fail('worksheet-rewrite',
+                        'a pass that changed no body does not say so')
             return
     finally:
         shutil.rmtree(holder, ignore_errors=True)

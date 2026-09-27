@@ -2209,6 +2209,7 @@ TEMPLATE = {
                    "send: a request, with args {parameter: C++ value}. await: a response, a",
                    "broadcast or an attribute; a request with an answer awaits its response",
                    "unless the step names another. wait: milliseconds, instead of await.",
+                   "Every step sends, awaits or waits; a check alone is not a step.",
                    "Steps run in order and the run exits 0 after the last. A check calls fail(),",
                    "stay() to wait for the next arrival, or go_to(Step::Name) for a loop.",
                    "One step per thing the task asks to prove, not one per message. A step",
