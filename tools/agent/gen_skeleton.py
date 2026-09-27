@@ -1457,6 +1457,12 @@ def contract_lines(iface, document):
         for name, params in iface.triggers:
             out.append('  call     bool {}({})'.format(iface.spell('trigger', name),
                                                      iface.generated_params('trigger', name)))
+        for name, kind in iface.attributes:
+            out.append('  call     {} {}() / void {}({})'
+                       .format(iface.cpp_type(kind)[0],
+                               iface.spell('attribute', name, 'get'),
+                               iface.spell('attribute', name, 'set'),
+                               iface.attribute_setter(kind, True)))
         for name, params in iface.actions:
             out.append('  override void {}({})'
                        .format(iface.spell('action', name),
@@ -1467,12 +1473,6 @@ def contract_lines(iface, document):
             out.append('  override {} {}({})'.format(
                 iface.generated().returns('condition', name), iface.spell('condition', name),
                 iface.generated_params('condition', name)))
-        for name, kind in iface.attributes:
-            out.append('  call     {} {}() / void {}({})'
-                       .format(iface.cpp_type(kind)[0],
-                               iface.spell('attribute', name, 'get'),
-                               iface.spell('attribute', name, 'set'),
-                               iface.attribute_setter(kind, True)))
         return out + type_lines(iface)
     if document.lower().endswith('.dtml'):
         out.append('classes:   none. {} is the namespace the types below are spelled in'

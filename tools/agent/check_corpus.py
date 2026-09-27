@@ -7249,6 +7249,22 @@ def check_worksheet_contract(report):
                                      'for itself'
                         .format(sheet, len(named), len(open_now)))
             return
+        # A machine's "call" lines sit together under the line naming their receiver,
+        # never after an "override" line, whose receiver is the component itself.
+        block, seen_override = [], False
+        for line in open(sheet, encoding='utf-8').read().splitlines():
+            if 'the machine object is mFsm' in line:
+                block, seen_override = ['head'], False
+            elif block and line.startswith('#|   override '):
+                seen_override = True
+            elif block and line.startswith('#|   call ') and seen_override:
+                report.fail('worksheet', 'a machine "call" line follows an "override" '
+                                         'line, away from the line naming its receiver: {}'
+                            .format(line[4:].strip()))
+                return
+        if not block:
+            report.fail('worksheet', 'the example worksheet carries no machine block')
+            return
         if not fill_markers.expectations_of('scenarios.json')[1]:
             report.fail('worksheet', 'scenarios.json leaves no named expectation, so '
                                      'what a run has to print is decided in a file the '
