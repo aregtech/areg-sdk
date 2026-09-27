@@ -507,18 +507,12 @@ CONNECT_INSIDE = ['the rest of service_connected() is generated: every broadcast
 UPDATE_NOTE = ['an update_ body runs on every arrival, whatever step is current, and',
                'before the step_ check of the same update. That check runs while its',
                'step is current, and once as it begins if one arrived since the last',
-               'request.']
-
-# Follows UPDATE_NOTE when a step awaits an attribute.
-RUNNING_NOTE = ['A value earlier steps also change is checked as a change from what an',
-                'earlier step_ check saved in a member, not against a total worked out',
-                'by hand.']
-
-UPDATE_GUARD = ['Both run inside the check the generated handler makes, so the value is',
-                'valid and no test of state is needed:',
-                '    if (state == areg::DataState::DataIsOK)',
-                '    {',
-                '        <the body>']
+               'request.',
+               'Both run inside the check the generated handler makes, so the value is',
+               'valid and no test of state is needed:',
+               '    if (state == areg::DataState::DataIsOK)',
+               '    {',
+               '        <the body>']
 
 
 PEER_LOST_NOTE = ['after this body the reconnect deadline starts: a provider not back within',
@@ -579,18 +573,17 @@ def first_sections(sections):
     return first
 
 
-def section_notes(sections, driven=(), connected=(), tracked=False):
+def section_notes(sections, driven=(), connected=()):
     """The warnings that belong to one section, keyed by its marker name.
 
     "driven" is what driven_body() quoted and "connected" the files with a generated
     service_connected(): both name a body no section covers, and the note that points
-    at it goes on the first section of its own file. "tracked" is true when a step
-    awaits an attribute.
+    at it goes on the first section of its own file.
     """
     notes = {}
     updates = [name for name, _, _, _, _ in sections if name.startswith('update_')]
     if updates:
-        notes[updates[0]] = UPDATE_NOTE + (RUNNING_NOTE if tracked else []) + UPDATE_GUARD
+        notes[updates[0]] = UPDATE_NOTE
     # The brief goes on the first step_ section of each handler, not on all of them:
     # the sections of one handler are read together.
     checks = [(name, signature) for name, _, _, _, signature in sections
@@ -792,11 +785,8 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
     if heading:
         lines.append('#|')
 
-    tracked = any(step['awaits'] and step['awaits'][0] == 'update' for step in steps)
-    notes = section_notes(sections, driven, connecting(produced), tracked)
+    notes = section_notes(sections, driven, connecting(produced))
     falls = fall_through(steps)
-    told = dict(('step_' + step['name'], step['description']) for step in steps
-                if step.get('description'))
     current = None
     for name, hint, path, file_name, signature in sections:
         if path != current:
@@ -808,8 +798,6 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
             lines.append('#| in: {}'.format(signature))
         if name in falls:
             lines.append('#| {}'.format(falls[name]))
-        for line in textwrap.wrap('design: ' + told[name], 77) if name in told else []:
-            lines.append('#| {}'.format(line))
         for line in notes.get(name, []):
             lines.append('#| {}'.format(line))
         lines.append('')
@@ -1883,8 +1871,7 @@ def steps_of(specs, iface):
     """The steps the specs declare for this service, resolved against its document.
 
     Each is a dict: name, enum, send (a request or None), args (C++ text in parameter
-    order), awaits ((kind, name) or None), wait (milliseconds, 0 for none) and
-    description (the design's own words, '' for none).
+    order), awaits ((kind, name) or None) and wait (milliseconds, 0 for none).
     """
     import gen_docs
     declared = []
@@ -1926,8 +1913,7 @@ def steps_of(specs, iface):
                       'call': iface.spell('request', send) if send is not None else None,
                       'args': values,
                       'awaits': (kinds[target], target) if target is not None else None,
-                      'wait': wait,
-                      'description': ' '.join(str(step.get('description') or '').split())})
+                      'wait': wait})
     return steps
 
 

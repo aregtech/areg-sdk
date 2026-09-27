@@ -2031,20 +2031,18 @@ EXAMPLE = {
         "broadcasts": [{"name": "gate_moved",
                         "params": [{"name": "reading", "type": "GateTypes::Reading"}]}],
         "driver": {"connect_seconds": 10, "reconnect_seconds": 10},
-        "steps": [{"name": "open_wide", "send": "open", "args": {"width": 1200},
-                   "description": "Width 0 -> 1200."},
-                  {"name": "widen", "send": "widen", "args": {"by": 200}, "await": "Width",
-                   "description": "Width 1200 -> 1400."},
+        "steps": [{"name": "open_wide", "send": "open", "args": {"width": 1200}},
+                  {"name": "widen", "send": "widen", "args": {"by": 200}, "await": "Width"},
                   {"name": "widen_more", "send": "widen", "args": {"by": 100},
                    "await": "Width",
-                   "description": "Width 1400 -> 1500: 300 is not a value of by, so it "
+                   "description": "Wider by 300 in all: 300 is not a value of by, so it "
                                   "is two steps."},
                   {"name": "hold", "wait": 500},
                   {"name": "close_gate", "send": "close",
                    "args": {"by": "night shift"}, "await": "Width",
-                   "description": "Width 1500 -> 0. A String value is written as it "
-                                  "reads: the generator quotes it. Its check calls "
-                                  "stay() until Width is 0."}]
+                   "description": "A String value is written as it reads: the "
+                                  "generator quotes it. Its check calls stay() "
+                                  "until Width is 0."}]
     }],
     "machines": [{
         "name": "Gate",
@@ -2218,9 +2216,7 @@ TEMPLATE = {
                    "send: a request, with args {parameter: C++ value}. await: a response, a",
                    "broadcast or an attribute; a request with an answer awaits its response",
                    "unless the step names another. wait: milliseconds, instead of await.",
-                   "A step that changes a running value says in its description what it",
-                   "leaves, as the example does. Every step sends, awaits or waits; a check",
-                   "alone is not a step.",
+                   "Every step sends, awaits or waits; a check alone is not a step.",
                    "Steps run in order and the run exits 0 after the last. A check calls fail(),",
                    "stay() to wait for the next arrival, or go_to(Step::Name) for a loop.",
                    "One step per thing the task asks to prove, not one per message. A step",

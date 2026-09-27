@@ -2925,7 +2925,7 @@ def run():
     check_step_driver(report)
     check_late_arrival(report)
     check_step_fall_through(report)
-    check_step_ledger(report)
+    check_step_values_split(report)
     check_stall_names_latest_drops(report)
     check_step_enum_qualifier(report)
     check_spec_value_shapes(report)
@@ -2937,7 +2937,6 @@ def run():
     check_start_kind(report)
     check_design_request(report)
     check_step_rules_at_use(report)
-    check_running_value_note(report)
     check_benchmark_vocabulary(report)
     check_phase_by_one_action(report)
     check_base_api_on_demand(report)
@@ -4544,7 +4543,6 @@ STEP_RULES_AT_USE = (
     ('the template steps note', 'awaits the update saying it finished'),
     ('the template steps note', 'waits 300 ms or more'),
     ('the template steps note', 'Every step sends, awaits or waits'),
-    ('the template steps note', 'says in its description what it leaves'),
     ('the worksheet scenarios.json header', 'One line per acceptance item'),
 )
 
@@ -4649,37 +4647,6 @@ def check_phase_by_one_action(report):
     report.ok('phase-action', '22-state-machine.md publishes a phase from every entry by '
               'one action taking it, and says when OnChange sends a resumed one; the '
               'runbook names the remedy; a target is a sibling of its declaring state')
-
-
-def check_running_value_note(report):
-    """A step awaiting an attribute is told to check a change, not a hand-worked total."""
-    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
-    try:
-        import gen_skeleton
-    except Exception as failure:                    # noqa: BLE001 - reported, not raised
-        report.fail('running-value', 'gen_skeleton.py does not import: {}'.format(failure))
-        return
-    handler = 'void Meter::on_level_update(uint32_t Level, areg::DataState state)'
-    sections = [('update_level', '', 'src/meter/Meter.cpp', 'src/meter/Meter.cpp', handler),
-                ('step_fill', '', 'src/meter/Meter.cpp', 'src/meter/Meter.cpp', handler)]
-    phrase = 'not against a total worked out by hand'
-    try:
-        awaited = gen_skeleton.section_notes(sections, tracked=True)
-        plain = gen_skeleton.section_notes(sections, tracked=False)
-    except TypeError as failure:
-        report.fail('running-value', 'section_notes() cannot say whether a step awaits an '
-                    'attribute: {}'.format(failure))
-        return
-    if phrase not in ' '.join(awaited.get('update_level', [])):
-        report.fail('running-value', 'the worksheet never says to check a value earlier '
-                    'steps also change as a change, where a step awaits an attribute')
-        return
-    if phrase in ' '.join(plain.get('update_level', [])):
-        report.fail('running-value', 'the worksheet gives the running-value rule to a '
-                    'consumer no step of which awaits an attribute')
-        return
-    report.ok('running-value', 'a step awaiting an attribute is told to check a change '
-              'from a saved value, and only then')
 
 
 def check_base_api_on_demand(report):
@@ -5176,20 +5143,13 @@ def check_step_fall_through(report):
                              'one that added none says bodies.txt applies as before')
 
 
-def check_step_ledger(report):
-    """The example records what each step leaves, and the worksheet carries it.
-
-    The example is what a design copies. It shows a total its values lack sent as
-    one step per value, and each acting step's description naming the value it
-    leaves. The worksheet prints that description in the step's section, where the
-    check is written.
-    """
-    tools = os.path.join(ROOT, 'tools', 'agent')
-    sys.path.insert(0, tools)
+def check_step_values_split(report):
+    """The example sends a total its values lack as one step per listed value."""
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
     try:
         import gen_docs
     except Exception as failure:                    # noqa: BLE001 - reported, not raised
-        report.fail('step-ledger', 'gen_docs.py does not import: {}'.format(failure))
+        report.fail('values-split', 'gen_docs.py does not import: {}'.format(failure))
         return
     iface = gen_docs.EXAMPLE['interfaces'][0]
     steps = iface.get('steps') or []
@@ -5198,7 +5158,6 @@ def check_step_ledger(report):
         for param in request.get('params') or []:
             if param.get('values'):
                 listed[(request['name'], param['name'])] = set(param['values'])
-    summed = False
     for first, second in zip(steps, steps[1:]):
         if first.get('send') and first.get('send') == second.get('send'):
             for (request, param), values in listed.items():
@@ -5206,43 +5165,11 @@ def check_step_ledger(report):
                     continue
                 parts = (first.get('args', {}).get(param), second.get('args', {}).get(param))
                 if all(part in values for part in parts) and sum(parts) not in values:
-                    summed = True
-    if not summed:
-        report.fail('step-ledger', 'the example never sends a total its values lack as one '
-                                   'step per listed value')
-        return
-    bare = [step['name'] for step in steps
-            if (step.get('send') or step.get('await')) and '->' not in step.get('description', '')]
-    if bare:
-        report.fail('step-ledger', 'example step(s) {} do not say in their description '
-                                   'what they leave ("<value> <before> -> <after>")'
-                    .format(', '.join(bare)))
-        return
-    holder = tempfile.mkdtemp()
-    here = os.getcwd()
-    try:
-        os.chdir(holder)
-        made = generate_application(tools, 'ledger', steps)
-        if not os.path.isfile(made):
-            report.fail('step-ledger', made)
-            return
-        with open('worksheet.txt', encoding='utf-8') as handle:
-            text = handle.read()
-        for step in steps:
-            if not step.get('description'):
-                continue
-            found = re.search(r'^== step_{}\n((?:#\|.*\n)*)'.format(step['name']), text, re.M)
-            said = ' '.join(line[3:].strip() for line in (found.group(1) if found else '')
-                            .splitlines())
-            if ' '.join(step['description'].split()) not in said:
-                report.fail('step-ledger', 'the worksheet section step_{} does not carry its '
-                                           'step\'s description'.format(step['name']))
-                return
-    finally:
-        os.chdir(here)
-        shutil.rmtree(holder, ignore_errors=True)
-    report.ok('step-ledger', 'the example sends a total one listed value per step, says '
-                             'what each step leaves, and the worksheet carries it')
+                    report.ok('values-split', 'the example sends a total its values lack '
+                                              'as one step per listed value')
+                    return
+    report.fail('values-split', 'the example never sends a total its values lack as one '
+                                'step per listed value')
 
 
 def check_stall_names_latest_drops(report):

@@ -71,7 +71,7 @@ every key present and empty, each section with a `#|` note on what its values ma
 Fill the values and keep the keys; no XML, `ID` or `To` is written by hand. A sample
 left as written is skipped and an empty value is absent, so delete only a section the
 task does not need. A key the generator does not read is refused by name.
-`gen_docs.py --example` prints a finished design of another application, 195 lines
+`gen_docs.py --example` prints a finished design of another application, 189 lines
 read in one call: do not page it. It is the shape, and the `#|` notes are the rules:
 with both read, write `design.json` whole, in one `Write`. `gen_docs.py` ignores the
 notes, so none has to be kept.
