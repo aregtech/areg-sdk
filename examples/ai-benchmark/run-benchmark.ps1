@@ -28,8 +28,8 @@ One cold agent run, measured, against a clean snapshot of this checkout.
                      LINE" marker is the prompt, with <areg-sdk>, <runner>, <task>,
                      <project> and <mode> substituted
                        (default: <framework>-<key>-prompt.txt beside a task named
-                        prompt-<key>.md; without one, areg uses
-                        areg-ai-prompt-template.txt and grpc refuses to start)
+                        prompt-<key>.md; without one, <framework>-ai-prompt-
+                        template.txt beside this script)
   --project NAME     C identifier: directory and CMake project name
                        (default: <key> of the task, e.g. coffeemachine)
   --mode MODE        ipc | local | pubsub, areg only      (default: ipc)
@@ -82,6 +82,9 @@ One cold agent run, measured, against a clean snapshot of this checkout.
     .\run-benchmark.ps1 --task examples/ai-benchmark/prompt-tempalarm.md
     .\run-benchmark.ps1 --task examples/ai-benchmark/prompt-atm.md --attempts 15
     .\run-benchmark.ps1 --task examples/ai-benchmark/prompt-printscan.md --attempts 15
+    .\run-benchmark.ps1 --task examples/ai-benchmark/prompt-elevator.md --attempts 15
+    .\run-benchmark.ps1 --task examples/ai-benchmark/prompt-sensorgateway.md --attempts 15
+    .\run-benchmark.ps1 --task examples/ai-benchmark/prompt-greenhouse.md --framework grpc
     .\run-benchmark.ps1 f --model opus --effort high --dry-run
     .\run-benchmark.ps1 --sdk C:\src\areg-sdk --framework grpc --grpc C:\grpc
     .\run-benchmark.ps1 --agent copilot --model gpt-5.6-terra
@@ -416,8 +419,7 @@ function Main([string[]]$Arguments)
     if (-not $Wrapper) {
         $Wrapper = Join-Path (Split-Path $TaskAbs -Parent) "$Framework-$Key-prompt.txt"
         if (-not (Test-Path -LiteralPath $Wrapper -PathType Leaf)) {
-            if ($Framework -ne 'areg') { Stop-Run "no $Framework wrapper for this task: $Wrapper. Write one, or pass --wrapper" }
-            $Wrapper = Join-Path $HERE 'areg-ai-prompt-template.txt'
+            $Wrapper = Join-Path $HERE "$Framework-ai-prompt-template.txt"
         }
     }
     $WrapperAbs = Resolve-InSdk $Wrapper
@@ -512,16 +514,24 @@ function Main([string[]]$Arguments)
     }
     else {
         $copied = (Invoke-Helper snapshot $SDK $Snap).Trim()
-        Invoke-Helper manifest $Snap $manifestPath 'AGENTS.md' 'docs/agent/*.md' 'docs/agent/*.json' `
-            'docs/agent/.budgets' 'tools/agent/*.py' 'tools/agent/evals/tasks.json' `
-            'conf/cmake/functions.cmake' 'examples/ai-benchmark/*.md' 'examples/ai-benchmark/*.txt' | Out-Null
+        # The agent may read the snapshot and nothing else, so a task the snapshot
+        # does not carry -- outside the checkout, or ignored by git -- is copied into it.
+        $taskOwn = @('task.md')
+        if ($TaskAbs.StartsWith($sdkPrefix, [StringComparison]::OrdinalIgnoreCase) -and
+            (Test-Path -LiteralPath (Join-Path $Snap $TaskAbs.Substring($sdkPrefix.Length)) -PathType Leaf)) { $taskOwn = @() }
+        if ($taskOwn.Count) { Copy-Item -LiteralPath $TaskAbs -Destination (Join-Path $Snap 'task.md') }
+        $patterns = @('AGENTS.md', 'docs/agent/*.md', 'docs/agent/*.json', 'docs/agent/.budgets',
+                      'tools/agent/*.py', 'tools/agent/evals/tasks.json', 'conf/cmake/functions.cmake',
+                      'examples/ai-benchmark/*.md', 'examples/ai-benchmark/*.txt') + $taskOwn
+        Invoke-Helper manifest $Snap $manifestPath @patterns | Out-Null
     }
 
     $SnapF = To-Slash $Snap
 
-    # A task inside the checkout is read from the snapshot; one outside it as given.
-    $TaskRun = To-Slash $TaskAbs
-    if ($TaskAbs.StartsWith($sdkPrefix, [StringComparison]::OrdinalIgnoreCase)) {
+    # A task is read from the snapshot: where the checkout has it, or as task.md.
+    $TaskRun = $SnapF + '/task.md'
+    if ($TaskAbs.StartsWith($sdkPrefix, [StringComparison]::OrdinalIgnoreCase) -and
+        (Test-Path -LiteralPath (Join-Path $Snap $TaskAbs.Substring($sdkPrefix.Length)) -PathType Leaf)) {
         $TaskRun = $SnapF + '/' + (To-Slash $TaskAbs.Substring($sdkPrefix.Length))
     }
 
