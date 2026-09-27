@@ -41,6 +41,18 @@ import gen_skeleton  # noqa: E402
 # costs no page: $(nproc) is absent on macOS and spelled differently on Windows.
 DEFAULT_JOBS = 8
 
+# Where a --run keeps every process's whole output, a pass included.
+KEPT_OUTPUT = '{build}/scenarios/'
+
+
+def passed_lines(build, only=None):
+    """The lines a passing --run ends on; the last one names where the output is kept."""
+    ran = 'scenario "{}"'.format(only) if only else 'the scenarios'
+    return ['Every step passed, {} included. Report from the lines printed above;'.format(ran),
+            'each process\'s whole output is in {}: grep there, never run again.'
+            .format(KEPT_OUTPUT.format(build=build.replace(os.sep, '/')))]
+
+
 # What to do when a step fails. Naming the step is the whole point of a chain:
 # a failure that does not say where it happened costs more than the requests saved.
 ADVICE = {
@@ -638,11 +650,15 @@ def main():
     parser.add_argument('--run', action='store_true',
                         help='run the scenarios once the build passed, in this '
                              'same call')
+    parser.add_argument('--only', metavar='NAME',
+                        help='run only the named scenario; implies --run')
     parser.add_argument('--regenerate', action='store_true',
                         help='write the application again, discarding what is in it')
     parser.add_argument('--no-check', action='store_true',
                         help='skip the contract check')
     args = parser.parse_args()
+    if args.only:
+        args.run = True
 
     root = os.path.abspath(args.root)
     if not os.path.isdir(root):
@@ -808,10 +824,12 @@ def main():
         # with no command able to clear it.
         # run_scenarios.py bounds each process's output itself. A failure is only
         # readable whole, and a pass carries the lead's lines the report is written from.
-        if not run('scenarios',
-                   [PYTHON, os.path.join(HERE, 'run_scenarios.py'),
-                    '--build', os.path.join(args.build, 'bin'), '--stale-ok'],
-                   root, kept=None, failed_kept=None):
+        scenarios = [PYTHON, os.path.join(HERE, 'run_scenarios.py'),
+                     '--build', os.path.join(args.build, 'bin'), '--stale-ok',
+                     '--keep', os.path.join(args.build, 'scenarios')]
+        if args.only:
+            scenarios += ['--only', args.only]
+        if not run('scenarios', scenarios, root, kept=None, failed_kept=None):
             return 1
         if not args.no_check:
             print('')
@@ -821,8 +839,8 @@ def main():
                        root, kept=1):
                 return 1
         print('')
-        print('Every step passed, the scenarios included. The lines each scenario printed')
-        print('are above: report from them, since a second run prints the same lines.')
+        for line in passed_lines(args.build, args.only):
+            print(line)
         return 0
 
     print('')

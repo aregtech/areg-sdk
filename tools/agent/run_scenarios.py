@@ -513,7 +513,18 @@ def stop_too_late(entry, lead, gap):
                             'stop matches')))
 
 
-def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_class=None):
+def kept_spool(keep, name):
+    """The folder under `keep` holding one scenario's process logs, emptied of the last run's."""
+    folder = os.path.join(keep, re.sub(r'[^\w.-]', '_', name))
+    os.makedirs(folder, exist_ok=True)
+    for entry in os.listdir(folder):
+        if entry.endswith('.log'):
+            os.remove(os.path.join(folder, entry))
+    return folder
+
+
+def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_class=None,
+                 keep=None):
     reader_class = reader_class or OutputReader
     name = scenario.get('name', 'unnamed')
     timeout = float(scenario.get('timeout', 60))
@@ -538,7 +549,7 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
     ended = {}
     verdict = None
     readers = {}
-    spool = tempfile.mkdtemp(prefix='scenario-')
+    spool = kept_spool(keep, name) if keep else tempfile.mkdtemp(prefix='scenario-')
     actions = []
     try:
         for index, spec in enumerate(procs):
@@ -680,7 +691,8 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
         # The lead's own lines are the steps it took and what each check saw.
         report_output([handles[lead_index]], {0: outputs.get(lead_index)}, quiet,
                       tail=PASS_TAIL_LINES)
-    shutil.rmtree(spool, ignore_errors=True)
+    if not keep:
+        shutil.rmtree(spool, ignore_errors=True)
     return True, name, 'ok'
 
 
@@ -996,6 +1008,8 @@ def main():
     parser.add_argument('--build', action='append', default=None,
                         help='directory holding the executables; repeatable')
     parser.add_argument('--only', default=None, help='run only the named scenario')
+    parser.add_argument('--keep', default=None,
+                        help='keep each process log under this folder, a pass included')
     parser.add_argument('--list', action='store_true', help='print the scenarios and exit')
     parser.add_argument('--json', action='store_true', help='print the verdict as JSON')
     parser.add_argument('--verbose', action='store_true',
@@ -1077,7 +1091,8 @@ def main():
             for note in lint_scenario(scenario):
                 print('note  {:24} {}'.format(scenario.get('name', 'unnamed'), note))
         passed, name, detail = run_scenario(scenario, build_dirs,
-                                            args.verbose, args.quiet or args.json)
+                                            args.verbose, args.quiet or args.json,
+                                            keep=args.keep)
         results.append({'name': name, 'passed': passed, 'detail': detail})
         if not args.json:
             print('{:5} {:24} {}'.format('PASS' if passed else 'FAIL', name, detail))

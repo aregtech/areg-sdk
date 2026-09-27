@@ -2925,6 +2925,7 @@ def run():
     check_step_driver(report)
     check_late_arrival(report)
     check_step_fall_through(report)
+    check_step_ledger(report)
     check_stall_names_latest_drops(report)
     check_step_enum_qualifier(report)
     check_spec_value_shapes(report)
@@ -2963,6 +2964,8 @@ def run():
     check_provider_timers(report)
     check_scaffold_routing(report)
     check_build_routes_next(report)
+    check_advice_flags_accepted(report)
+    check_passing_output_kept(report)
     check_base_api_parity(report)
     check_errors_follow_output(report)
     check_regeneration_report(report)
@@ -4541,7 +4544,7 @@ STEP_RULES_AT_USE = (
     ('the template steps note', 'awaits the update saying it finished'),
     ('the template steps note', 'waits 300 ms or more'),
     ('the template steps note', 'Every step sends, awaits or waits'),
-    ('the template steps note', 'a sum the set lacks takes one step per value'),
+    ('the template steps note', 'says in its description what it leaves'),
     ('the worksheet scenarios.json header', 'One line per acceptance item'),
 )
 
@@ -5171,6 +5174,75 @@ def check_step_fall_through(report):
         shutil.rmtree(holder, ignore_errors=True)
     report.ok('new-section', 'a generation names each worksheet section it added, and '
                              'one that added none says bodies.txt applies as before')
+
+
+def check_step_ledger(report):
+    """The example records what each step leaves, and the worksheet carries it.
+
+    The example is what a design copies. It shows a total its values lack sent as
+    one step per value, and each acting step's description naming the value it
+    leaves. The worksheet prints that description in the step's section, where the
+    check is written.
+    """
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    sys.path.insert(0, tools)
+    try:
+        import gen_docs
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('step-ledger', 'gen_docs.py does not import: {}'.format(failure))
+        return
+    iface = gen_docs.EXAMPLE['interfaces'][0]
+    steps = iface.get('steps') or []
+    listed = {}
+    for request in iface.get('requests') or []:
+        for param in request.get('params') or []:
+            if param.get('values'):
+                listed[(request['name'], param['name'])] = set(param['values'])
+    summed = False
+    for first, second in zip(steps, steps[1:]):
+        if first.get('send') and first.get('send') == second.get('send'):
+            for (request, param), values in listed.items():
+                if request != first['send']:
+                    continue
+                parts = (first.get('args', {}).get(param), second.get('args', {}).get(param))
+                if all(part in values for part in parts) and sum(parts) not in values:
+                    summed = True
+    if not summed:
+        report.fail('step-ledger', 'the example never sends a total its values lack as one '
+                                   'step per listed value')
+        return
+    bare = [step['name'] for step in steps
+            if (step.get('send') or step.get('await')) and '->' not in step.get('description', '')]
+    if bare:
+        report.fail('step-ledger', 'example step(s) {} do not say in their description '
+                                   'what they leave ("<value> <before> -> <after>")'
+                    .format(', '.join(bare)))
+        return
+    holder = tempfile.mkdtemp()
+    here = os.getcwd()
+    try:
+        os.chdir(holder)
+        made = generate_application(tools, 'ledger', steps)
+        if not os.path.isfile(made):
+            report.fail('step-ledger', made)
+            return
+        with open('worksheet.txt', encoding='utf-8') as handle:
+            text = handle.read()
+        for step in steps:
+            if not step.get('description'):
+                continue
+            found = re.search(r'^== step_{}\n((?:#\|.*\n)*)'.format(step['name']), text, re.M)
+            said = ' '.join(line[3:].strip() for line in (found.group(1) if found else '')
+                            .splitlines())
+            if ' '.join(step['description'].split()) not in said:
+                report.fail('step-ledger', 'the worksheet section step_{} does not carry its '
+                                           'step\'s description'.format(step['name']))
+                return
+    finally:
+        os.chdir(here)
+        shutil.rmtree(holder, ignore_errors=True)
+    report.ok('step-ledger', 'the example sends a total one listed value per step, says '
+                             'what each step leaves, and the worksheet carries it')
 
 
 def check_stall_names_latest_drops(report):
@@ -6622,6 +6694,101 @@ def check_build_routes_next(report):
     report.ok('build-route',
               'the build names the worksheet while markers are open and --run once '
               'they are filled')
+
+
+def check_advice_flags_accepted(report):
+    """Every flag a build_project.py failure advice names is one it accepts.
+
+    The advice is read right after a build_project.py call, so a flag it names is
+    tried on build_project.py. A flag only another tool takes is refused with exit 2,
+    and under a pipe the refusal prints nothing.
+    """
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import build_project
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('advice-flags', 'build_project.py does not import: {}'.format(failure))
+        return
+    helped = subprocess.run([sys.executable, os.path.join(ROOT, 'tools', 'agent',
+                                                          'build_project.py'), '--help'],
+                            capture_output=True, text=True).stdout
+    accepted = set(re.findall(r'--[a-z][a-z-]*', helped))
+    named = set()
+    for advice in build_project.ADVICE.values():
+        named.update(re.findall(r'--[a-z][a-z-]*', advice))
+    refused = sorted(named - accepted)
+    if refused:
+        report.fail('advice-flags',
+                    'build_project.py advice names {} but build_project.py refuses it'
+                    .format(', '.join(refused)))
+        return
+    report.ok('advice-flags', 'every flag the build advice names is accepted: {}'
+              .format(', '.join(sorted(named)) or 'none'))
+
+
+def check_passing_output_kept(report):
+    """A passing run keeps each process's whole output where the last line names it.
+
+    The last line of a passing build_project.py --run is the one a pipe through tail
+    keeps. Output deleted on a pass leaves an agent that cut it only a second run.
+    """
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import build_project
+        import run_scenarios
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('output-kept', 'a tool does not import: {}'.format(failure))
+        return
+    if not hasattr(build_project, 'passed_lines'):
+        report.fail('output-kept', 'build_project.py has no passed_lines(): the lines '
+                    'a passing --run ends on name no place its output is kept')
+        return
+    last = build_project.passed_lines('out')[-1]
+    kept_at = build_project.KEPT_OUTPUT.format(build='out')
+    if kept_at not in last:
+        report.fail('output-kept', 'the last line of a passing --run does not name {}: '
+                    '"{}"'.format(kept_at, last))
+        return
+    root = tempfile.mkdtemp(prefix='output-kept-')
+    try:
+        names = [name + run_scenarios.SELF_TEST_SUFFIX for name in ('keptprov', 'keptcons')]
+        for name, body in zip(names, run_scenarios.SELF_TEST_BODIES):
+            path = os.path.join(root, name)
+            with open(path, 'w', encoding='utf-8',
+                      newline=run_scenarios.SELF_TEST_NEWLINE) as handle:
+                handle.write(body)
+            os.chmod(path, 0o755)
+        scenario = {'name': 'kept', 'timeout': 15,
+                    'procs': [{'binary': names[0], 'name': 'provider',
+                               'expect': ['provider: serving']},
+                              {'binary': names[1], 'name': 'consumer',
+                               'expect': ['consumer: the provider was still there'],
+                               'exit': 0}]}
+        keep = os.path.join(root, 'kept-output')
+        try:
+            passed, _, detail = run_scenarios.run_scenario(scenario, [root], False, True,
+                                                           keep=keep)
+        except TypeError:
+            report.fail('output-kept', 'run_scenario() takes no keep directory')
+            return
+        if not passed:
+            report.fail('output-kept', 'the planted scenario did not pass: {}'.format(detail))
+            return
+        logs = []
+        for folder, _, files in os.walk(keep):
+            logs += [os.path.join(folder, name) for name in files]
+        text = ''
+        for path in logs:
+            with open(path, encoding='utf-8', errors='replace') as handle:
+                text += handle.read()
+        if 'consumer: the provider was still there' not in text:
+            report.fail('output-kept', 'a passing scenario left no process output in {}'
+                        .format(keep))
+            return
+    finally:
+        shutil.rmtree(root, ignore_errors=True)
+    report.ok('output-kept', 'a passing run keeps each process log and its last line '
+              'names {}'.format(kept_at))
 
 
 def check_provider_timers(report):

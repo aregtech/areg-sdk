@@ -795,6 +795,8 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
     tracked = any(step['awaits'] and step['awaits'][0] == 'update' for step in steps)
     notes = section_notes(sections, driven, connecting(produced), tracked)
     falls = fall_through(steps)
+    told = dict(('step_' + step['name'], step['description']) for step in steps
+                if step.get('description'))
     current = None
     for name, hint, path, file_name, signature in sections:
         if path != current:
@@ -806,6 +808,8 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
             lines.append('#| in: {}'.format(signature))
         if name in falls:
             lines.append('#| {}'.format(falls[name]))
+        for line in textwrap.wrap('design: ' + told[name], 77) if name in told else []:
+            lines.append('#| {}'.format(line))
         for line in notes.get(name, []):
             lines.append('#| {}'.format(line))
         lines.append('')
@@ -1879,7 +1883,8 @@ def steps_of(specs, iface):
     """The steps the specs declare for this service, resolved against its document.
 
     Each is a dict: name, enum, send (a request or None), args (C++ text in parameter
-    order), awaits ((kind, name) or None) and wait (milliseconds, 0 for none).
+    order), awaits ((kind, name) or None), wait (milliseconds, 0 for none) and
+    description (the design's own words, '' for none).
     """
     import gen_docs
     declared = []
@@ -1921,7 +1926,8 @@ def steps_of(specs, iface):
                       'call': iface.spell('request', send) if send is not None else None,
                       'args': values,
                       'awaits': (kinds[target], target) if target is not None else None,
-                      'wait': wait})
+                      'wait': wait,
+                      'description': ' '.join(str(step.get('description') or '').split())})
     return steps
 
 
