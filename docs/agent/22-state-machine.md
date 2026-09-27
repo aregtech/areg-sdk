@@ -132,7 +132,7 @@ actions, conditions, guards, a composite level and a final state. That is what y
 write; the XML is what `gen_docs.py` writes, and the start marker, every `ID`
 and the `To` of every transition are its work. What is still yours is the rule below.
 
-**A transition's target must be a sibling.** A transition cannot reach into or out of a composite: to leave a subtree,
+**A transition's target must be a sibling of the state that declares it.** A transition cannot reach into or out of a composite: to leave a subtree,
 put the transition on the composite, whose transitions fire from anywhere inside it.
 A `Kind="History"` marker is the one exception and exists for it -- a transition from
 outside a composite may name a marker in that composite's `StateList`, which is how a

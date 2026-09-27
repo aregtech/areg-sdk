@@ -2936,6 +2936,7 @@ def run():
     check_start_kind(report)
     check_design_request(report)
     check_step_rules_at_use(report)
+    check_running_value_note(report)
     check_benchmark_vocabulary(report)
     check_phase_by_one_action(report)
     check_base_api_on_demand(report)
@@ -4467,6 +4468,8 @@ DESIGN_DETOURS = (
      'sends a design to the XML page, which design.json replaces'),
     (('docs', 'agent', '01-runbook.md'), 'throws away its `#|` notes',
      'keeps design.json edited in pieces for notes gen_docs.py ignores'),
+    (('docs', 'agent', '01-runbook.md'), '`22-state-machine.md` when a machine is needed',
+     'opens 22-state-machine.md on a decision 05-design.md makes in the same request'),
 )
 
 
@@ -4479,7 +4482,8 @@ def check_design_request(report):
         return
     design = runbook_section(3)
     missing = [name for name in ('in one request', 'gen_docs.py --example', '05-design.md',
-                                 '22-state-machine.md', 'Open nothing else')
+                                 '22-state-machine.md', 'depends on what came before',
+                                 'Open nothing else')
                if name not in design]
     if missing:
         report.fail('design-request', '01-runbook.md section 3 does not name the design '
@@ -4537,6 +4541,7 @@ STEP_RULES_AT_USE = (
     ('the template steps note', 'awaits the update saying it finished'),
     ('the template steps note', 'waits 300 ms or more'),
     ('the template steps note', 'Every step sends, awaits or waits'),
+    ('the template steps note', 'a sum the set lacks takes one step per value'),
     ('the worksheet scenarios.json header', 'One line per acceptance item'),
 )
 
@@ -4630,8 +4635,48 @@ def check_phase_by_one_action(report):
                         'machine publishing its phase declares one action per state'
                         .format(phrase))
             return
+    if 'declare such an attribute `Always`' not in ' '.join(runbook_section(3).split()):
+        report.fail('phase-action', '01-runbook.md section 3 says what OnChange does to a '
+                    're-entered phase, not what to declare instead')
+        return
+    if "target must be a sibling of the state that declares it" not in page:
+        report.fail('phase-action', '22-state-machine.md does not say whose sibling a '
+                    'transition target is')
+        return
     report.ok('phase-action', '22-state-machine.md publishes a phase from every entry by '
-              'one action taking it, and says when OnChange sends a resumed one')
+              'one action taking it, and says when OnChange sends a resumed one; the '
+              'runbook names the remedy; a target is a sibling of its declaring state')
+
+
+def check_running_value_note(report):
+    """A step awaiting an attribute is told to check a change, not a hand-worked total."""
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_skeleton
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('running-value', 'gen_skeleton.py does not import: {}'.format(failure))
+        return
+    handler = 'void Meter::on_level_update(uint32_t Level, areg::DataState state)'
+    sections = [('update_level', '', 'src/meter/Meter.cpp', 'src/meter/Meter.cpp', handler),
+                ('step_fill', '', 'src/meter/Meter.cpp', 'src/meter/Meter.cpp', handler)]
+    phrase = 'not against a total worked out by hand'
+    try:
+        awaited = gen_skeleton.section_notes(sections, tracked=True)
+        plain = gen_skeleton.section_notes(sections, tracked=False)
+    except TypeError as failure:
+        report.fail('running-value', 'section_notes() cannot say whether a step awaits an '
+                    'attribute: {}'.format(failure))
+        return
+    if phrase not in ' '.join(awaited.get('update_level', [])):
+        report.fail('running-value', 'the worksheet never says to check a value earlier '
+                    'steps also change as a change, where a step awaits an attribute')
+        return
+    if phrase in ' '.join(plain.get('update_level', [])):
+        report.fail('running-value', 'the worksheet gives the running-value rule to a '
+                    'consumer no step of which awaits an attribute')
+        return
+    report.ok('running-value', 'a step awaiting an attribute is told to check a change '
+              'from a saved value, and only then')
 
 
 def check_base_api_on_demand(report):

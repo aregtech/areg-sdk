@@ -507,12 +507,18 @@ CONNECT_INSIDE = ['the rest of service_connected() is generated: every broadcast
 UPDATE_NOTE = ['an update_ body runs on every arrival, whatever step is current, and',
                'before the step_ check of the same update. That check runs while its',
                'step is current, and once as it begins if one arrived since the last',
-               'request.',
-               'Both run inside the check the generated handler makes, so the value is',
-               'valid and no test of state is needed:',
-               '    if (state == areg::DataState::DataIsOK)',
-               '    {',
-               '        <the body>']
+               'request.']
+
+# Follows UPDATE_NOTE when a step awaits an attribute.
+RUNNING_NOTE = ['A value earlier steps also change is checked as a change from what an',
+                'earlier step_ check saved in a member, not against a total worked out',
+                'by hand.']
+
+UPDATE_GUARD = ['Both run inside the check the generated handler makes, so the value is',
+                'valid and no test of state is needed:',
+                '    if (state == areg::DataState::DataIsOK)',
+                '    {',
+                '        <the body>']
 
 
 PEER_LOST_NOTE = ['after this body the reconnect deadline starts: a provider not back within',
@@ -573,17 +579,18 @@ def first_sections(sections):
     return first
 
 
-def section_notes(sections, driven=(), connected=()):
+def section_notes(sections, driven=(), connected=(), tracked=False):
     """The warnings that belong to one section, keyed by its marker name.
 
     "driven" is what driven_body() quoted and "connected" the files with a generated
     service_connected(): both name a body no section covers, and the note that points
-    at it goes on the first section of its own file.
+    at it goes on the first section of its own file. "tracked" is true when a step
+    awaits an attribute.
     """
     notes = {}
     updates = [name for name, _, _, _, _ in sections if name.startswith('update_')]
     if updates:
-        notes[updates[0]] = UPDATE_NOTE
+        notes[updates[0]] = UPDATE_NOTE + (RUNNING_NOTE if tracked else []) + UPDATE_GUARD
     # The brief goes on the first step_ section of each handler, not on all of them:
     # the sections of one handler are read together.
     checks = [(name, signature) for name, _, _, _, signature in sections
@@ -785,7 +792,8 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
     if heading:
         lines.append('#|')
 
-    notes = section_notes(sections, driven, connecting(produced))
+    tracked = any(step['awaits'] and step['awaits'][0] == 'update' for step in steps)
+    notes = section_notes(sections, driven, connecting(produced), tracked)
     falls = fall_through(steps)
     current = None
     for name, hint, path, file_name, signature in sections:

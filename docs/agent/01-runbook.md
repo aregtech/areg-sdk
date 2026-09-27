@@ -47,9 +47,9 @@ It restates this page and the SDK's `AGENTS.md`; a run following this page skips
 
 From the task, decide the requests, responses, broadcasts, attributes and data types.
 Right after the scaffold, in one request, read `design.json`, run
-`gen_docs.py --example` and open `05-design.md`, plus `22-state-machine.md` when a
-machine is needed. Open nothing else before `design.json` is written: `20` and `21`
-describe the XML the generator writes for you.
+`gen_docs.py --example` and open `05-design.md`, plus `22-state-machine.md` when an
+answer depends on what came before. Open nothing else before `design.json` is
+written: `20` and `21` describe the XML the generator writes for you.
 
 **A provider reads its own attributes back.** An attribute gives the provider a getter
 as well as a setter, so state the service already carries needs no shadow member beside
@@ -60,8 +60,9 @@ generated, which is the most expensive edit a run makes.
 work, every phase a peer must tell apart -- suspended and waiting phases included -- is
 a value of the enum the peer subscribes to, or the peer cannot see that phase at all.
 Under the default `Notify="OnChange"` it is worse: a phase left and re-entered re-sets
-the value already held, and no update is sent, so a step waiting for one waits for ever.
-Decide it here too; `gen_docs.py` notes a state an attribute that names others cannot say.
+the value already held, and no update is sent, so a step waiting for one waits for ever:
+declare such an attribute `Always`. Decide both here; `gen_docs.py` notes them only
+after generating.
 
 ## 4. The documents
 
