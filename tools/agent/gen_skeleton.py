@@ -805,7 +805,11 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
         lines.append('\n#| ---- {}: what a run has to print to prove a requirement.'
                      .format(scenarios))
         lines.append('#| One regular expression per line, and every one of them has to')
-        lines.append('#| match. The generated main() prints nothing, so each line comes')
+        if steps:
+            lines.append('#| match. On a pass, generated code prints only "step <name>" as')
+            lines.append('#| a step begins, so every other line comes')
+        else:
+            lines.append('#| match. The generated main() prints nothing, so each line comes')
         lines.append('#| from a body above: the expectation and the code that satisfies')
         lines.append('#| it are written together, in this file, or the run proves')
         lines.append('#| nothing. A "//" line is a pattern here, not a comment.')

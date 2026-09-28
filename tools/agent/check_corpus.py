@@ -5013,6 +5013,15 @@ def check_step_fall_through(report):
                                         'check falls through to, so a step inserted '
                                         'after it re-targets the check unseen')
             return
+        with open('worksheet.txt', encoding='utf-8') as handle:
+            sheet = re.sub(r'\n#\| ', ' ', handle.read())
+        if 'prints only "step <name>"' not in sheet or 'main() prints nothing' in sheet:
+            report.fail('step-print', 'a stepped worksheet does not say the generated '
+                                      'code prints "step <name>" as each step begins, so '
+                                      'a stop on a step name is traced into its source')
+        else:
+            report.ok('step-print', 'a stepped worksheet names the one line generated '
+                                    'code prints on a pass')
         design = json.load(open('design.json', encoding='utf-8'))
         design['interfaces'][0]['steps'] = [first[0], {'name': 'settle', 'wait': 100},
                                             {'name': 'reopen', 'send': 'open',
