@@ -809,7 +809,8 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
             lines.append('#| match. On a pass, generated code prints only "step {}" and the'
                          .format(steps[0]['name']))
             lines.append('#| like (each step\'s "name" as design.json spells it) as a step')
-            lines.append('#| begins, so every other line comes')
+            lines.append('#| begins, in the consumer; the generated provider prints nothing.')
+            lines.append('#| So every other line comes')
         else:
             lines.append('#| match. The generated main() prints nothing, so each line comes')
         lines.append('#| from a body above: the expectation and the code that satisfies')
@@ -3305,9 +3306,8 @@ def update_scenarios(path, mode, iface, steps=(), reconnect=0):
     print('wrote  {}'.format(path))
     print('  {} process(es), router {}. Each "expect" hole is a section of the'
           .format(len(procs), 'on' if scenarios[0].get('router') else 'off'))
-    print('  worksheet, one regular expression per line. The generated main() prints')
-    print('  nothing, so every line a scenario matches comes from a body you write.')
-    print('  Two more keys exist and no page is needed for them.')
+    print('  worksheet, one regular expression per line. Two more keys exist and no')
+    print('  page is needed for them.')
     print('  "stdin": ["-q"] is written the moment the process starts, so it goes')
     print('  on the lead of a scenario of its own; on any other process it quits that')
     print('  process before its peers are served. A scenario-level')

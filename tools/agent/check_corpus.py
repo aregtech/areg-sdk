@@ -2819,6 +2819,7 @@ def run():
     check_start_kind(report)
     check_design_request(report)
     check_step_rules_at_use(report)
+    check_machine_attribute_note(report)
     check_benchmark_vocabulary(report)
     check_phase_by_one_action(report)
     check_base_api_on_demand(report)
@@ -4457,6 +4458,24 @@ def check_step_rules_at_use(report):
               'steps note, the acceptance rule in the worksheet, and neither in the runbook')
 
 
+def check_machine_attribute_note(report):
+    """The template machine note says a same-named contract attribute is a separate value."""
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_docs
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('machine-attribute', 'gen_docs.py does not import: {}'.format(failure))
+        return
+    note = ' '.join(' '.join(gen_docs.TEMPLATE['machines'][0][gen_docs.NOTE]).split())
+    if 'contract attribute of the same name is another value' not in note:
+        report.fail('machine-attribute', 'the template machine note does not say that a '
+                                         'contract attribute named like a machine attribute '
+                                         'is a separate value, so a design expects them synced')
+        return
+    report.ok('machine-attribute', 'the template machine note says a same-named contract '
+                                   'attribute is a separate value')
+
+
 # Nouns only a benchmark task uses. An example spelled with them hands one task its answer.
 BENCHMARK_WORDS = ('coffee', 'espresso', 'latte', 'cappuccino', 'drink', 'coin',
                    'insert_coin', 'MakingHistory', 'MAKING', 'elevator', 'greenhouse',
@@ -5016,6 +5035,7 @@ def check_step_fall_through(report):
         with open('worksheet.txt', encoding='utf-8') as handle:
             sheet = re.sub(r'\n#\| ', ' ', handle.read())
         if 'prints only "step open_gate"' not in sheet or '"step <name>"' in sheet \
+                or 'generated provider prints nothing' not in sheet \
                 or 'main() prints nothing' in sheet:
             report.fail('step-print', 'a stepped worksheet does not spell the line the '
                                       'generated code prints as each step begins, so an '
@@ -5054,6 +5074,20 @@ def check_step_fall_through(report):
                                        'bodies.txt applies as before: {}'
                         .format(same.strip()[-200:]))
             return
+        scaffold = json.load(open('scenarios.json', encoding='utf-8'))
+        scaffold['scenarios'] = scaffold['scenarios'][:1]
+        scaffold['scenarios'][0]['scaffold'] = True
+        with open('scenarios.json', 'w', encoding='utf-8', newline='\n') as handle:
+            json.dump(scaffold, handle)
+        fresh = ' '.join(subprocess.run(again, capture_output=True,
+                                        text=True).stdout.split())
+        if 'wrote scenarios.json' not in fresh or 'prints nothing' in fresh:
+            report.fail('build-print', 'a stepped generation that writes scenarios.json '
+                                       'says the generated code prints nothing, against '
+                                       'the worksheet and the step lines it prints')
+            return
+        report.ok('build-print', 'a stepped generation makes no claim on what the '
+                                 'generated code prints; the worksheet states it once')
     finally:
         os.chdir(here)
         shutil.rmtree(holder, ignore_errors=True)
