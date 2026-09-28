@@ -1753,7 +1753,7 @@ def steps_scenario(iface):
 
 
 def pascal(name):
-    """order_latte -> OrderLatte; OrderLatte stays as it is."""
+    """open_valve -> OpenValve; OpenValve stays as it is."""
     return ''.join(part[:1].upper() + part[1:] for part in name.split('_') if part)
 
 
@@ -2057,6 +2057,23 @@ def driver_lines(steps, holds, cls, iface=None, latches=None):
              '        switch (step)',
              '        {']
     for step in steps:
+        if step.get('hold'):
+            lines += ['        case Step::{}:'.format(step['enum']),
+                      '            if (mHoldOnce)',
+                      '            {',
+                      '                mHoldOnce = false;',
+                      '                std::cout << "step {}" << std::endl;'.format(step['name']),
+                      '                mHold.stop_timer();',
+                      '                mHold.start_timer({}, static_cast<areg::DispatcherThread &>'
+                      '(master_thread()),'.format(step['wait']),
+                      '                                  areg::TimerBase::ONE_TIME);',
+                      '            }',
+                      '            else',
+                      '            {',
+                      '                complete();',
+                      '            }',
+                      '            break;']
+            continue
         lines += ['        case Step::{}:'.format(step['enum']),
                   '            std::cout << "step {}" << std::endl;'.format(step['name'])]
         if step['send']:
@@ -2121,6 +2138,9 @@ def driver_lines(steps, holds, cls, iface=None, latches=None):
               '']
     if holds:
         lines += ['    areg::Timer  mHold;   //!< Ends a step that waits for a time.', '']
+    if any(step.get('hold') for step in steps):
+        lines += ['    bool  mHoldOnce{{ hold_requested() }};   //!< True until the hold step '
+                  'has held, when main() was given {}.'.format(HOLD_FLAG), '']
     if latches:
         lines += late_lines(steps, iface, latches)
     return lines
@@ -2184,7 +2204,7 @@ def replayed(said, indent):
     return [pad + 'if (mReplaying == false)', pad + '{', said, pad + '}']
 
 
-def consumer_class(iface, cls, steps=(), driver=None):
+def consumer_class(iface, cls, steps=(), driver=None, hold=None):
     """The consumer component, subscribed and handling everything it subscribed to.
 
     With steps it also carries the driver that runs them: the requests, their order and
@@ -2194,7 +2214,7 @@ def consumer_class(iface, cls, steps=(), driver=None):
     import gen_docs
     driver = dict(gen_docs.DRIVER_DEFAULTS) if driver is None else driver
     stepped = steps_scenario(iface) or bool(steps)
-    holds = any(step['wait'] for step in steps)
+    holds = any(step['wait'] for step in steps) or hold is not None
     latches = late_latches(iface, steps)
     pad = ' ' * (len(cls) + 13)
     lines = ['class {} final : public    areg::Component'.format(cls),
@@ -2207,7 +2227,7 @@ def consumer_class(iface, cls, steps=(), driver=None):
                   '    enum class Step : uint32_t',
                   '    {',
                   '        Start,']
-        lines += ['        {},'.format(step['enum']) for step in steps]
+        lines += ['        {},'.format(step['enum']) for step in with_hold(steps, hold)]
         lines += ['        Done',
                   '    };',
                   '']
@@ -2559,7 +2579,7 @@ def consumer_class(iface, cls, steps=(), driver=None):
                   .format(driver['stall_ticks']),
                   '    uint32_t                  mIdleTicks{ 0 };',
                   '']
-    lines += driver_lines(steps, holds, cls, iface, latches) if steps else []
+    lines += driver_lines(with_hold(steps, hold), holds, cls, iface, latches) if steps else []
     lines += ['    {}() = delete;'.format(cls),
               '    AREG_NOCOPY_NOMOVE({});'.format(cls),
               '};']
@@ -2600,6 +2620,37 @@ EXIT_MAIN = ['int main()',
              '    return areg::Application::stored_element(_exitCode).valInt.mElement;',
              '}',
              '']
+
+# The step a stepped consumer holds on once, and for how long, when it is started with
+# HOLD_FLAG. The generated peer-lost scenario starts it so.
+HOLD_FLAG = '--hold'
+HOLD_NAME = 'peer_lost_hold'
+HOLD_MS = 1000
+
+HOLD_CODE = ['constexpr char const _hold[]{ "hold" };',
+             '',
+             '//! True when main() was given "{}".'.format(HOLD_FLAG),
+             'bool hold_requested()',
+             '{',
+             '    return areg::Application::is_element_stored(_hold);',
+             '}',
+             '']
+
+HOLD_MAIN = ['int main(int argc, char * argv[])',
+             '{',
+             '    areg::Application::setup();',
+             '',
+             '    // "{}" makes the steps hold once, so a scenario can take the provider away.'
+             .format(HOLD_FLAG),
+             '    for (int i = 1; i < argc; ++i)',
+             '    {',
+             '        if (std::strcmp(argv[i], "{}") == 0)'.format(HOLD_FLAG),
+             '        {',
+             '            areg::Application::store_element(_hold, areg::Primitive{});',
+             '        }',
+             '    }',
+             '',
+             '    areg::Application::load_model(_modelName);'] + EXIT_MAIN[4:]
 
 # The console quit path, asked of nearly every task. End of input is not a quit
 # request: a process started without a console is handed a stream nothing is ever
@@ -2820,6 +2871,12 @@ QUIT_DECLARATION = ['//! Ends the application with this exit code, in storage th
                     'bool is_quitting();',
                     '']
 
+# The hold switch of a stepped consumer, declared beside quit_with() and defined next
+# to main(), which sets it from the command line.
+HOLD_DECLARATION = ['//! True when main() was given "{}". Defined next to main().'.format(HOLD_FLAG),
+                    'bool hold_requested();',
+                    '']
+
 MAIN_INCLUDES = ['#include "areg/base/areg_global.h"',
                  '#include "areg/appbase/Application.hpp"',
                  '#include "areg/base/String.hpp"',
@@ -2853,7 +2910,8 @@ def app_files(iface, mode, include_root, machine=None, steps=(), driver=None, ti
     consumer_base = ['#include "{}/{}ConsumerBase.hpp"'.format(include_root, iface.name)]
 
     provider_lines = provider_class(iface, provider_cls, machine, timers)
-    consumer_lines = consumer_class(iface, consumer_cls, steps, driver)
+    hold = peer_hold(steps) if mode == 'ipc' else None
+    consumer_lines = consumer_class(iface, consumer_cls, steps, driver, hold)
     produced = [(PROVIDER_DIR[mode] + name, text) for name, text in component_files(
         provider_cls, 'Provider of the {} service.'.format(iface.name),
         class_includes(iface, machine) + timer_includes(provider_lines) + ['']
@@ -2863,7 +2921,7 @@ def app_files(iface, mode, include_root, machine=None, steps=(), driver=None, ti
         consumer_cls, 'Consumer of the {} service.'.format(iface.name),
         class_includes(iface) + timer_includes(consumer_lines) + [''] + consumer_base,
         consumer_lines, 'consumer_state',
-        QUIT_DECLARATION,
+        QUIT_DECLARATION + (HOLD_DECLARATION if hold else []),
         'the members and helpers your checks need, defined here, or one // line saying '
         'none is needed; the step the scenario is on is mStep already' if steps else
         'the members and helpers your rules need, defined here, or one // line saying '
@@ -2915,8 +2973,9 @@ def app_files(iface, mode, include_root, machine=None, steps=(), driver=None, ti
 
     consumer = head(CONSUMER_DIR[mode] + 'main.cpp',
                     'The process that consumes the {} service.'.format(iface.name))
+    consumer += (['#include <cstring>', ''] if hold else [])
     consumer += ['#include "{}.hpp"'.format(consumer_cls), '']
-    consumer += EXIT_CODE
+    consumer += EXIT_CODE + (HOLD_CODE if hold else [])
     consumer += ['constexpr char const _modelName[]{ "ConsumerModel" };',
                  '',
                  '// A unique role name lets several consumer processes run at the same time.',
@@ -2930,7 +2989,7 @@ def app_files(iface, mode, include_root, machine=None, steps=(), driver=None, ti
                  '    END_REGISTER_THREAD("ConsumerThread")',
                  'END_MODEL(_modelName)',
                  '']
-    consumer += EXIT_MAIN
+    consumer += HOLD_MAIN if hold else EXIT_MAIN
     return produced + [(PROVIDER_DIR[mode] + 'main.cpp', '\n'.join(provider)),
                        (CONSUMER_DIR[mode] + 'main.cpp', '\n'.join(consumer))]
 
@@ -3093,6 +3152,37 @@ def held_step(steps):
     held = [step for step in steps[:-1] if step['wait'] >= HOLD_MS_MIN]
     later = [step for step in held if step is not steps[0]]
     return (later or held or [None])[0]
+
+
+def peer_hold(steps):
+    """The hold step the generated consumer carries, or None when it has no place.
+
+    It follows the first step that awaits an answer, else the first that sends or
+    awaits anything, and only when a step comes after that one. Its name is one no
+    declared step has.
+    """
+    steps = list(steps)
+    answered = [index for index, step in enumerate(steps)
+                if step['awaits'] and step['awaits'][0] == 'response']
+    acting = [index for index, step in enumerate(steps) if step['awaits'] or step['send']]
+    after = (answered or acting or [None])[0]
+    if after is None or after >= len(steps) - 1:
+        return None
+    taken = set(step['name'] for step in steps) | set(step['enum'] for step in steps)
+    name, suffix = HOLD_NAME, 1
+    while name in taken or pascal(name) in taken:
+        suffix += 1
+        name = '{}{}'.format(HOLD_NAME, suffix)
+    return {'name': name, 'enum': pascal(name), 'send': None, 'call': None, 'args': [],
+            'awaits': None, 'wait': HOLD_MS, 'hold': True, 'after': after}
+
+
+def with_hold(steps, hold):
+    """The steps the driver runs: the declared ones, and the hold after its step."""
+    steps = list(steps)
+    if hold is None:
+        return steps
+    return steps[:hold['after'] + 1] + [hold] + steps[hold['after'] + 1:]
 STOP_TODO = 'TODO(you) {}: a line the lead prints while the provider serves it'
 STOP_HINT = ('one line "{lead}" prints in scenario "{scenario}", matched against the '
              'output of "{lead}" only. "{target}" is killed when it appears, and the '
@@ -3179,14 +3269,19 @@ def update_scenarios(path, mode, iface, steps=(), reconnect=0):
 
     # A consumer that loses its provider exits 1 through the generated reconnect
     # deadline. With no deadline there is no exit to check.
-    lost_written = False
+    lost_written, lost_held = False, False
     if mode == 'ipc' and len(procs) > 1 and reconnect \
             and not any(s.get('name') == PEER_LOST_SCENARIO or 'stop' in s
                         for s in scenarios):
         lead = procs[-1]
-        held = held_step(list(steps))
+        hold = peer_hold(steps)
+        held = hold or held_step(list(steps))
         trigger = '^step {}$'.format(re.escape(held['name'])) if held \
             else STOP_TODO.format(stop_slot(PEER_LOST_SCENARIO))
+        leader = {'binary': lead['binary'], 'name': proc_label(lead)}
+        if hold:
+            leader['args'] = [HOLD_FLAG]
+        leader.update({'lead': True, 'exit': 1})
         scenarios.append({'name': PEER_LOST_SCENARIO,
                           'timeout': scenarios[0]['timeout'] + reconnect,
                           'router': scenarios[0].get('router', True),
@@ -3194,10 +3289,9 @@ def update_scenarios(path, mode, iface, steps=(), reconnect=0):
                                    'after': trigger,
                                    'signal': 'kill'},
                           'procs': [{'binary': spec['binary'], 'name': proc_label(spec)}
-                                    for spec in procs[:-1]] +
-                                   [{'binary': lead['binary'], 'name': proc_label(lead),
-                                     'lead': True, 'exit': 1}]})
+                                    for spec in procs[:-1]] + [leader]})
         lost_written = held['name'] if held else True
+        lost_held = bool(hold)
 
     with open(path, 'w', encoding='utf-8') as handle:
         json.dump(document, handle, indent=2)
@@ -3224,6 +3318,12 @@ def update_scenarios(path, mode, iface, steps=(), reconnect=0):
             print('  exit 1 within reconnect_seconds. Its one hole, {}, is the line that'
                   .format(stop_slot(PEER_LOST_SCENARIO)))
             print('  starts the loss, and it is a section of the worksheet.')
+        elif lost_held:
+            print('  exit 1 within reconnect_seconds. The loss starts with step "{}", a'
+                  .format(lost_written))
+            print('  hold the consumer makes only when started with {}, as this scenario'
+                  .format(HOLD_FLAG))
+            print('  starts it; it needs nothing from you, and no step of the design.')
         else:
             print('  exit 1 within reconnect_seconds. The loss starts with step "{}",'
                   .format(lost_written))

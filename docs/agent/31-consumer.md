@@ -178,12 +178,12 @@ started, and a value whose update crossed with the response that made you start
 waiting:
 
 ```cpp
-void Consumer::response_cancel_order(bool accepted)
+void Consumer::response_stop_pump(bool accepted)
 {
-    mStep = WaitRefund;
-    if (mCredit == mFullCredit)     // the refund update may already have arrived,
+    mStep = WaitDrained;
+    if (mLevel == mEmptyLevel)      // the level update may already have arrived,
     {                               // and there will not be a second one
-        refund_seen();
+        drained_seen();
         return;
     }
     arm_watchdog();

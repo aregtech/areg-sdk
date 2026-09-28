@@ -507,125 +507,7 @@ TOOLS = ['setup_project.py', 'gen_skeleton.py', 'fsml_layout.py', 'run_scenarios
 # is only ever local while a run pays for the whole set. The ceiling is what stops the
 # set growing one locally-justified paragraph at a time: raising this number is a
 # deliberate edit in a reviewed file, and the commit that raises it says what it bought.
-# Measured 2026-09-09 at 183,365 bytes, down from 191,363 the day before. The headroom
-# is deliberately small: a ceiling with room in it ratchets nothing. Raised twice since,
-# both paid for: the Windows form of starting mtrouter and logcollector, which the pages
-# had wrong and which cost another agent two failed starts; and the exit-code block in
-# 32-model.md section 6, because two benchmark runs each invented a global to carry a
-# result from a component into main() and no page said that Application::store_element
-# outlives unload_model and release(). A third raise, for the subagent hand-off in
-# runbook section 4, was reclaimed: two runs carried the instruction and made zero
-# subagent calls, the second with the tool explicitly allowed. Raised again for the
-# String search entry in 40-base-api.md: a failed find_first returns areg::END_POS while
-# the header's own Doxygen promises areg::INVALID_POS, so the obvious test passes on a
-# search that found nothing. That one is silent; the run that found it lost a build cycle
-# and four framework greps to the visible half of the same gap. Raised a last time, by
-# 206 bytes, to route the agent at "gen_skeleton.py --app": the tool now writes the whole
-# application -- components, model and main() -- compiling and running as generated, so
-# the build phase stops reading 30-provider, 31-consumer, 32-model, 40-base-api,
-# 42-runtime-api, 33-timers and 50-running. In the run that paid for this those seven
-# pages entered context at request 21 of 55 and carried 27,309 reasoning tokens with them.
-# Raised by 391 bytes to route every document at tools/agent/gen_docs.py, which writes
-# the .dtml, the .siml and the .fsml of a project from one JSON description. Hand-
-# authoring the XML was the largest single reasoning sink measured: 20,700 of one run's
-# 63,000 reasoning tokens went into the grammar, the unique IDs and the numeric
-# Transition/@To targets, none of which is about the machine. A 143-line spec reproduces
-# the benchmark's own 464 lines of .siml and .fsml, generating byte-identical code.
-# The pages that taught the XML now teach the spec instead, which is why the number did
-# not have to rise again: the routing is substitutive, not additive.
-# Raised by 1,300 bytes for three tools that each remove a request rather than a page.
-# build_project.py runs the five mechanical steps -- documents, application, contract,
-# configure, build -- as one command and names the step that failed; the run that paid
-# for this spent six requests and about $0.15 of residency on that chain, with no
-# decision in any of them. api_help.py answers one framework name with its declarations
-# and the header carrying them: the run that paid for it spent 14,199 output tokens
-# around a grep for start_timer, the second largest reasoning moment measured. The third
-# is gen_skeleton.py naming every TODO(you) marker, which is what lets a hole be filled
-# by one Edit of one unique line; the run before it rewrote two generated files whole
-# for 40,018 output tokens, about $0.40, the largest single removable block left. 1,400
-# bytes of the addition were paid back inside docs/agent/01-runbook.md, whose
-# build-log and raw-output blocks the new command makes redundant.
-# Raised again, by 1,100 bytes, for the rule in 05-design.md section 2 that decides
-# between an attribute and a broadcast. The page had two lines of it and they were not
-# enough: two of the thirteen recipes shipped a one-shot broadcast carrying state a
-# consumer could not miss, and both hung about one run in eight because the broadcast
-# overtook the subscriber's registration. The page's own worked example named the
-# design its rule forbids. What the bytes buy is the whole of the distinction rather
-# than half: that subscribing and unsubscribing are the same for both and decide
-# nothing; that an attribute outlives the moment it was sent and is delivered to a
-# consumer that subscribes later, carrying a DataState, while a broadcast is gone; that
-# a broadcast carries as many parameters as the event needs where an attribute is one
-# value, so several values reported together are a broadcast with the one a late
-# subscriber needs published as an attribute beside it; and that only an attribute has
-# a validity state. 99 bytes were reclaimed inside the page and 83 spent on the reverse
-# smell, an attribute holding values that only mean something together. The last of
-# the raise is one row in 51-debug.md, under the symptom this cost a session to find:
-# a broadcast that fired once before the subscription request reached the provider.
-# The page listed every other cause of "an attribute or broadcast never arrives" and
-# not that one, and it is the one that leaves an application hanging with subscription
-# code that reads as correct.
-# Lowered 188800 -> 188400 when 20-service-interface.md gave back the ID counter and
-# the <Value>-child spelling: gen_docs.py assigns every ID and decides where a default
-# is written, and the page's own opening already says the shape of the XML is the
-# tool's business. The order-of-arrival and OnChange-waits-for-ever facts moved onto
-# that page from 31-consumer.md, which routing had taken off the build path -- a run
-# guessed the first of them and re-invented the exit-code global for want of the
-# second half of the same routing decision.
-# Raised from 188400 by 624 bytes on 2026-09-14: the two connection deadlines the
-# consumer scaffold now writes, documented in 31-consumer.md with the state table
-# they belong to, and P-19 in AGENTS.md section 6. Both are rules an agent cannot
-# follow from the code alone.
-# Raised from 189024 by 416 bytes on 2026-09-14: 00-cheatsheet.md names the "steps"
-# a sequencing consumer declares, on the page a run searched for them and found
-# nothing, and the naming row now says a method name is kept as written after its
-# prefix, which codegen.jar does and three pages denied.
-# Raised from 189440 by 1024 bytes on 2026-09-14, after run 20260914b: the two pages
-# a run reads before it designs described "steps" as a fixed sequence and named
-# neither stay() nor go_to(), so a run whose scenario branched ruled the feature out
-# and hand-wrote the generated step machine -- 422 lines, and the largest single
-# request of that run. 01-runbook.md now says branching is included and names both,
-# and gives --example its length, because the same run capped it at head -300 of 370
-# and paid a request for the rest. 30-provider.md's unblock rule said skipping the
-# call is always a defect; it is not, and the run spent thought deciding that a
-# synchronous state machine trigger may answer directly.
-# Raised 190464 -> 194560 on 2026-09-14 for what the independent audit of that date
-# found missing or wrong. What the 4 KB bought: the corpus's only functional coverage
-# hole, synchronization, which no page named at all (42-runtime-api.md section 8, eight
-# verified citations); the condition on every page that prescribed signal_quit(), which
-# check_contract.py reports as P-18 in the only project shape the runbook produces; the
-# first line of 30/31/32 saying what those 21 KB are for, which nothing stated; and the
-# narrowing of the "do not open them" rule that four pointers in 51-debug.md and
-# 05-design.md contradicted. check_corpus.py's own prescribed-call rule now holds the
-# first of those, so the bytes cannot silently rot back.
-# Raised 194560 -> 194816 on 2026-09-17 for the worksheet becoming the one place a
-# body is edited. 01-runbook.md section 6 now says that a body changed after a build
-# or a scenario run is changed in bodies.txt, that a failing check names the section
-# it is in, and that --regenerate restores every body; the paragraph sending the
-# reader to hand-edit a generated file came out, so the section grew 246 bytes net.
-# What the bytes replace: hunting a body in a generated file was 15 requests and 18%
-# of run 20260917c, against 246 bytes of residency worth about $0.002 a run.
-# Raised 194816 -> 194849 on 2026-09-17 for the design checkpoint routed at the end
-# of 01-runbook.md section 4, net of the fill_markers.py --dry-run preview deleted
-# from section 6. gen_docs.py --review answers, in one call that writes nothing,
-# both what the generator refuses and every note the design earns. Run
-# 20260917a-atm learnt the second half of that after a successful generation and
-# paid a --regenerate for it: 5 of 42 requests, $0.20 of a $2.13 run, against 295
-# bytes of residency.
-# Raised 194849 -> 195103 on 2026-09-18 for the two facts run 20260917b-atm could
-# not look up: how a step argument is written (00-cheatsheet.md), and that the
-# machine decision is made in 05-design.md and not by reading the 18 KB format
-# page. The run grepped docs/agent/ for "args", got "No matches found", spent a
-# --help call and then a scenario failure and a --regenerate on it: about $0.19
-# of a $1.53 run, against 254 bytes of residency. It also read the format page
-# and then wrote no machine at all, $0.066.
-# Raised 195103 -> 195701 on 2026-09-18 for two facts neither 20260918a run could
-# look up. 20260918a-atmfsm reasoned out that a scripted consumer on local IPC
-# finishes before a "stop" whose "after" matches partway through it, and fixed it
-# with a wait step: the remedy is now in 50-running.md, 400 bytes against 2 of 24
-# requests and $0.09 of a $1.60 run. The other 198 bytes are the "values" key in
-# 00-cheatsheet.md: 20260918a-coffeemachine sent insert_coin(120) where the six
-# legal coins were prose in a parameter description, and the provider ignored it
-# in silence -- 5 of 37 requests and $0.23 of a $2.31 run.
+# The headroom is deliberately small: a ceiling with room in it ratchets nothing.
 CORPUS_CEILING = 195701
 
 PAGE_CEILING = 8 * KB
@@ -2226,8 +2108,7 @@ def check_budget_review(report):
 
 # The pages every run opens before it has done anything: the entry document, the runbook
 # it routes to, and the project's own AGENTS.md that setup_project.py writes. .budgets
-# caps each page on its own and nothing caps the sum, which is what a run actually pays:
-# 36 059 B of documentation in run 20260915b, on top of the prompt.
+# caps each page on its own and nothing caps the sum, which is what a run actually pays.
 ENTRY_PAGES = ('AGENTS.md', 'docs/agent/01-runbook.md')
 # The generated file interpolates the SDK path, so its size moves with the checkout.
 # A fixed stand-in makes the measurement the same on every machine.
@@ -2460,7 +2341,8 @@ def tracked_files():
 
 def check_local_tree_references(report):
     names = [name for name in tracked_files()
-             if name.endswith('.md') or name.endswith('.txt')]
+             if name.endswith('.md') or name.endswith('.txt') or
+             (name.startswith('docs/agent/.') and '/' not in name[len('docs/agent/'):])]
     if not names:
         report.note('local-tree', 'git does not list the tracked files here, so no '
                     'document was read for a path into the local session tree')
@@ -3126,26 +3008,26 @@ def check_step_enum_values(report):
         return
 
     class Iface(object):
-        enum_fields = {'Drink': ['Espresso', 'Latte']}
+        enum_fields = {'Speed': ['Slow', 'Fast']}
 
         def cpp_type(self, name):
             return 'Shared::' + name, False
 
     try:
-        spelt = gen_skeleton.cpp_value('Latte', 'Drink', Iface(), 'a test')
+        spelt = gen_skeleton.cpp_value('Fast', 'Speed', Iface(), 'a test')
     except TypeError as failure:
         report.fail('step-enums',
                     'cpp_value does not take the type and the document it is '
                     'resolved against: {}'.format(failure))
         return
-    if spelt != 'Shared::Drink::Latte':
+    if spelt != 'Shared::Speed::Fast':
         report.fail('step-enums',
                     'a field of an enumeration is written "{}", which no C++ scope '
                     'declares'.format(spelt))
         return
     quiet, sys.stderr = sys.stderr, io.StringIO()
     try:
-        gen_skeleton.cpp_value('Mocha', 'Drink', Iface(), 'a test')
+        gen_skeleton.cpp_value('Warp', 'Speed', Iface(), 'a test')
     except SystemExit:
         pass
     else:
@@ -3158,14 +3040,14 @@ def check_step_enum_values(report):
         sys.stderr = quiet
     quiet, sys.stderr = sys.stderr, io.StringIO()
     try:
-        partial = gen_skeleton.cpp_value('Drink::Latte', 'Drink', Iface(), 'a test')
+        partial = gen_skeleton.cpp_value('Speed::Fast', 'Speed', Iface(), 'a test')
     except SystemExit:
         partial = None
     finally:
         sys.stderr = quiet
-    if partial != 'Shared::Drink::Latte':
+    if partial != 'Shared::Speed::Fast':
         report.fail('step-enums',
-                    'a field qualified with its own enumeration, "Drink::Latte", is '
+                    'a field qualified with its own enumeration, "Speed::Fast", is '
                     'refused although it names the type the parameter takes. The '
                     'bare name and the fully qualified one are both accepted, so '
                     'the one spelling a C++ programmer writes is the only one that '
@@ -3173,7 +3055,7 @@ def check_step_enum_values(report):
         return
     quiet, sys.stderr = sys.stderr, io.StringIO()
     try:
-        gen_skeleton.cpp_value('Other::Latte', 'Drink', Iface(), 'a test')
+        gen_skeleton.cpp_value('Other::Fast', 'Speed', Iface(), 'a test')
     except SystemExit:
         pass
     else:
@@ -3307,9 +3189,9 @@ def check_worksheet_names_update_order(report):
 
     try:
         many = '\n'.join(gen_skeleton.contract_lines(
-            Iface([('Credit', 'uint32'), ('Stage', 'uint32')]), 'probe.siml'))
+            Iface([('Level', 'uint32'), ('Phase', 'uint32')]), 'probe.siml'))
         one = '\n'.join(gen_skeleton.contract_lines(
-            Iface([('Credit', 'uint32')]), 'probe.siml'))
+            Iface([('Level', 'uint32')]), 'probe.siml'))
     except Exception as failure:
         report.fail('worksheet-attr-order',
                     'contract_lines does not run on a plain interface: {}'.format(failure))
@@ -4344,11 +4226,11 @@ def check_await_spelling(report):
 
     def spec(target):
         return {"interfaces": [{
-            "name": "Alarm",
+            "name": "Tank",
             "requests": [{"name": "set_limit", "params": [{"name": "high", "type": "int32"}],
                           "answer": [{"name": "accepted", "type": "bool"}]}],
-            "broadcasts": [{"name": "alarm_raised"}],
-            "attributes": [{"name": "AlarmActive", "type": "bool"}],
+            "broadcasts": [{"name": "limit_reached"}],
+            "attributes": [{"name": "Overflow", "type": "bool"}],
             "steps": [{"name": "Go", "send": "set_limit", "args": {"high": 3},
                        "await": target}]}]}
 
@@ -4365,9 +4247,9 @@ def check_await_spelling(report):
             return done.returncode, steps[0].get('await'), done.stderr.strip()
 
         for said, meant in (('response_set_limit', 'set_limit'),
-                            ('broadcast_alarm_raised', 'alarm_raised'),
-                            ('on_alarm_active_update', 'AlarmActive'),
-                            ('AlarmActive_update', 'AlarmActive')):
+                            ('broadcast_limit_reached', 'limit_reached'),
+                            ('on_overflow_update', 'Overflow'),
+                            ('Overflow_update', 'Overflow')):
             code, target, err = loaded(said)
             if code != 0 or target != meant:
                 report.fail('await-spelling',
@@ -4541,7 +4423,6 @@ def check_design_request(report):
 STEP_RULES_AT_USE = (
     ('the template steps note', 'not one per message'),
     ('the template steps note', 'awaits the update saying it finished'),
-    ('the template steps note', 'waits 300 ms or more'),
     ('the template steps note', 'Every step sends, awaits or waits'),
     ('the worksheet scenarios.json header', 'One line per acceptance item'),
 )
@@ -4572,14 +4453,33 @@ def check_step_rules_at_use(report):
             report.fail('step-rules', '01-runbook.md still states "{}", which the point of '
                         'use now carries'.format(phrase))
             return
-    report.ok('step-rules', 'the step rules and the peer-lost hold are in the template '
+    report.ok('step-rules', 'the step rules are in the template '
               'steps note, the acceptance rule in the worksheet, and neither in the runbook')
 
 
 # Nouns only a benchmark task uses. An example spelled with them hands one task its answer.
 BENCHMARK_WORDS = ('coffee', 'espresso', 'latte', 'cappuccino', 'drink', 'coin',
                    'insert_coin', 'MakingHistory', 'MAKING', 'elevator', 'greenhouse',
-                   'thermostat')
+                   'thermostat', 'coffeemachine', 'tempalarm', 'atmfsm', 'printscan',
+                   'refund', 'credit')
+
+# A benchmark run's directory name, or a sentence citing one as evidence.
+RUN_ID_RE = re.compile(r'\b20\d{6}[a-z]?-[a-z]|\bruns? 20\d{6}', re.IGNORECASE)
+
+
+def shipped_agent_sources():
+    """(place, text) of every docs/agent dotfile and every tools/agent script installed."""
+    install = read('conf', 'cmake', 'install.cmake') or ''
+    shipped = []
+    pages = os.path.join(ROOT, 'docs', 'agent')
+    for name in sorted(os.listdir(pages)):
+        if name.startswith('.') and os.path.isfile(os.path.join(pages, name)):
+            shipped.append(('docs/agent/' + name, read('docs', 'agent', name)))
+    listed = install.replace('(', '|').replace(')', '|')
+    for name in sorted(os.listdir(os.path.join(ROOT, 'tools', 'agent'))):
+        if name.endswith('.py') and '|{}|'.format(name[:-3]) not in listed:
+            shipped.append(('tools/agent/' + name, read('tools', 'agent', name)))
+    return shipped
 
 
 def template_notes(node):
@@ -4600,7 +4500,7 @@ def template_notes(node):
 
 
 def check_benchmark_vocabulary(report):
-    """No page, AGENTS.md or template note teaches with a benchmark task's own nouns."""
+    """No shipped page, note, dotfile or tool teaches with a benchmark's nouns or runs."""
     sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
     try:
         import gen_docs
@@ -4612,7 +4512,15 @@ def check_benchmark_vocabulary(report):
     pages = os.path.join(ROOT, 'docs', 'agent')
     places += [('docs/agent/' + name, read('docs', 'agent', name))
                for name in sorted(os.listdir(pages)) if name.endswith('.md')]
+    places += shipped_agent_sources()
     for place, text in places:
+        found = RUN_ID_RE.search(text or '')
+        if found:
+            line = text[:found.start()].count('\n') + 1
+            report.fail('benchmark-words', '{}:{} cites a benchmark run: what a shipped '
+                        'file says is true of every project, not of one run'
+                        .format(place, line))
+            return
         for word in BENCHMARK_WORDS:
             flags = 0 if word.isupper() or word[0].isupper() else re.IGNORECASE
             found = re.search(r'\b{}\b'.format(re.escape(word)), text, flags)
@@ -4622,8 +4530,8 @@ def check_benchmark_vocabulary(report):
                             'task: an example in it hands that task its answer'
                             .format(place, line, word))
                 return
-    report.ok('benchmark-words', 'no page, AGENTS.md or template note uses a benchmark '
-              "task's own nouns")
+    report.ok('benchmark-words', 'no page, AGENTS.md, template note, docs/agent dotfile '
+              "or shipped tool uses a benchmark task's own nouns or cites a run")
 
 
 def check_phase_by_one_action(report):
@@ -4784,8 +4692,8 @@ NAMING_SIML = """<?xml version="1.0" encoding="utf-8"?>
         <Attribute ID="2" Name="WaterLevel" DataType="uint32" Notify="OnChange"/>
     </AttributeList>
     <MethodList>
-        <Method ID="3" Name="InsertCoin" MethodType="Request" Response="InsertCoin"/>
-        <Method ID="4" Name="InsertCoin" MethodType="Response"/>
+        <Method ID="3" Name="OpenValve" MethodType="Request" Response="OpenValve"/>
+        <Method ID="4" Name="OpenValve" MethodType="Response"/>
         <Method ID="5" Name="LowWarning" MethodType="Broadcast"/>
     </MethodList>
 </ServiceInterface>
@@ -4829,7 +4737,7 @@ def check_method_names(report):
         for path in glob.glob(os.path.join(holder, 'src', '*', '*.[ch]pp')):
             with open(path, encoding='utf-8') as handle:
                 sources += handle.read()
-        wanted = ('request_InsertCoin(', 'response_InsertCoin(', 'broadcast_LowWarning(',
+        wanted = ('request_OpenValve(', 'response_OpenValve(', 'broadcast_LowWarning(',
                   'notify_on_broadcast_LowWarning(', 'on_water_level_update(')
         missing = [name for name in wanted if name not in sources]
         if made.returncode != 0 or missing:
@@ -4858,18 +4766,18 @@ def check_method_names(report):
         with open(consumer, 'w', encoding='utf-8', newline='\n') as handle:
             handle.write(text.replace('mDeadline.stop_timer();',
                                       'mDeadline.stop_timer();\n        '
-                                      'request_insert_coin();', 1))
+                                      'request_open_valve();', 1))
         if 'P-02' not in contract():
-            report.fail('method-names', 'check_contract.py accepts request_insert_coin '
-                                        'for a document request InsertCoin, which the base '
+            report.fail('method-names', 'check_contract.py accepts request_open_valve '
+                                        'for a document request OpenValve, which the base '
                                         'does not declare')
             return
         with open(consumer, 'w', encoding='utf-8', newline='\n') as handle:
             handle.write(text.replace('mDeadline.stop_timer();',
                                       'mDeadline.stop_timer();\n        '
-                                      'mFsm.request_balance();', 1))
+                                      'mFsm.request_status();', 1))
         if 'P-02' in contract():
-            report.fail('method-names', 'check_contract.py reports mFsm.request_balance(), '
+            report.fail('method-names', 'check_contract.py reports mFsm.request_status(), '
                                         'a call on another object, as a member no .siml '
                                         'declares')
             return
@@ -4893,8 +4801,8 @@ COLLIDING_SIML = """<?xml version="1.0" encoding="utf-8"?>
             </ParamList>
         </Method>
         <Method ID="5" Name="set_level" MethodType="Response"/>
-        <Method ID="6" Name="insert_coin" MethodType="Request" Response="insert_coin"/>
-        <Method ID="7" Name="insert_coin" MethodType="Response"/>
+        <Method ID="6" Name="open_valve" MethodType="Request" Response="open_valve"/>
+        <Method ID="7" Name="open_valve" MethodType="Response"/>
     </MethodList>
 </ServiceInterface>
 """
@@ -4944,7 +4852,7 @@ def check_accessor_collision(report):
             text = handle.read()
         with open(provider, 'w', encoding='utf-8', newline='\n') as handle:
             handle.write(text.replace('set_level(0);',
-                                      'set_level(0);\n    insert_coin();', 1))
+                                      'set_level(0);\n    open_valve();', 1))
         if 'P-02' not in contract():
             report.fail('accessor-collision', 'check_contract.py no longer reports a '
                                               'bare request call: the accessor exemption '
@@ -5589,8 +5497,8 @@ def check_final_entry_rule(report):
     """Rule 108 is reported before the document is written as well as after.
 
     A nested final state carrying entry operations was reported only by
-    check_contract.py, which runs after two generators have. Run 20260912f wrote the
-    documents, was refused, edited the spec twice and regenerated. The rule is the
+    check_contract.py, which runs after two generators have, so a design was written,
+    refused, edited and regenerated. The rule is the
     same rule, so the number comes from the shared catalogue in both tools rather
     than being written down twice.
     """
@@ -5721,8 +5629,8 @@ EXAMPLE_BYTES = 12 * 1024
 def check_example_size(report):
     """The runbook says --example is short enough to read in one call.
 
-    Run 20260913a read it as "head -260" and then "sed -n 260,420p": two requests
-    for one answer, because nothing said how long it is. The page now says, and the
+    A run that is not told its length pages it, and pays two requests for one
+    answer. The page now says, and the
     claim is only true while the template stays short. A number on the page would go
     stale instead, so the page carries the promise and this carries the measurement.
     """
@@ -5767,7 +5675,7 @@ def check_example_size(report):
     if stated is None:
         report.fail('example-size',
                     '01-runbook.md says --example reads in one call but not how long it '
-                    'is. Run 20260914b capped it at head -300 of 370 and paid a second '
+                    'is. A run then caps it at a guess of its own and pays a second '
                     'request for the rest; a length on the page is what stops that')
         return
     if stated != lines:
@@ -5785,8 +5693,8 @@ def check_worksheet_order_note(report):
     """The worksheet says a response and an update are two independent deliveries.
 
     The fact is on 20-service-interface.md and 31-consumer.md, and AGENTS.md tells a
-    run filling a marker not to open either. Run 20260913a opened neither, guessed an
-    order, stalled for the whole watchdog and paid a run-and-fix cycle to find the
+    run filling a marker not to open either. A run that opens neither guesses an
+    order, stalls for the whole watchdog and pays a run-and-fix cycle to find the
     worked example that page already carries. The worksheet is the one file every run
     reads, so the fact is written in its header: it is true of every body that waits,
     and writing it under the first response body put it under whichever body came
@@ -6221,10 +6129,10 @@ def check_step_output_whole(report):
     """A step shorter than its allowance prints all of it, not its last line.
 
     The documents step carries the design notes -- a step that awaits an update its
-    own earlier request caused, a state an attribute cannot express. In run 20260917e
-    gen_docs.py printed 15 lines, the allowance was 16, and a negative start index
-    showed line 15 alone and warned about nothing. The agent rediscovered one of the
-    dropped notes by hand, over six requests.
+    own earlier request caused, a state an attribute cannot express. A tail allowance
+    one line longer than the output once turned into a negative start index, showed
+    the last line alone and warned about nothing, and a dropped note is rediscovered
+    by hand over several requests.
     """
     sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
     try:
@@ -6305,7 +6213,7 @@ def check_answer_file(report):
     """The generator writes the worksheet and never the file the bodies go in.
 
     A pre-written bodies file of empty sections is filled one Edit per section by
-    some runs: run 20260918b-atmfsm sent 42 of them in 42 requests, $1.38 of $2.99.
+    some runs, one request per section.
     A file that does not exist yet can only be created whole.
     """
     tools = os.path.join(ROOT, 'tools', 'agent')
@@ -6361,16 +6269,18 @@ def check_answer_file(report):
 def check_peer_lost_scenario(report):
     """Every two-process project gets a peer-lost scenario the run does not write.
 
-    Written by hand, it costs a page read and a scenario edit on every run, and run
-    20260918b-atmfsm matched its trigger against the wrong process and paid a build
-    and a run for it. A design with a wait step between two others gets the trigger
-    written; one without, and one that declares no steps at all, gets it as a single
-    worksheet section. Run 20260919d-coffeemachine declared no steps, got no scenario,
-    and read four generated sources looking for what to write.
+    Written by hand, it costs a page read and a scenario edit, and a trigger matched
+    against the wrong process costs a build and a run. A stepped design gets the
+    trigger written against a hold the generated consumer makes only when the scenario
+    starts it with the hold flag, so no design needs a wait step for it, nor the design
+    edit and the regeneration that adding one costs. A design that declares no steps
+    gets the trigger as a single worksheet section, so it is not left looking in the
+    generated sources for what to write.
     """
     tools = os.path.join(ROOT, 'tools', 'agent')
     sys.path.insert(0, tools)
     import fill_markers
+    import gen_skeleton
 
     def no_wait(design):
         for entry in design['interfaces']:
@@ -6407,28 +6317,46 @@ def check_peer_lost_scenario(report):
                 return
             holes = fill_markers.expectations_of('scenarios.json')[1]
             slot = next((h for h in holes if h.startswith('stop_')), None)
-            if edit is None:
-                if slot or not lost[0]['stop']['after'].startswith('^step '):
-                    report.fail('peer-lost-scenario', 'the example has a wait step '
-                                'between two others and its stop trigger is still left '
-                                'to the run: {}'.format(lost[0]['stop']['after']))
-                    return
-                continue
             sheet = ''
             if os.path.exists('worksheet.txt'):
                 with open('worksheet.txt', encoding='utf-8') as handle:
                     sheet = handle.read()
+            if edit is not no_steps:
+                kind = 'unheld' if edit is no_wait else 'held'
+                trigger = lost[0]['stop']['after']
+                if slot or '== stop_' in sheet:
+                    report.fail('peer-lost-scenario', 'the example with {} steps leaves '
+                                'the stop trigger to the run, so a design edit and a '
+                                'regeneration follow: {}'.format(kind, trigger))
+                    return
+                hold = re.match(r'\^step (\w+)\$$', trigger)
+                if hold is None or lead[0].get('args') != [gen_skeleton.HOLD_FLAG]:
+                    report.fail('peer-lost-scenario', 'the example with {} steps is not '
+                                'stopped at the consumer\'s own hold: trigger {}, lead '
+                                'args {}'.format(kind, trigger, lead[0].get('args')))
+                    return
+                sources = {}
+                for folder, _dirs, files in os.walk('src'):
+                    for name in files:
+                        with open(os.path.join(folder, name), encoding='utf-8') as handle:
+                            sources[os.path.join(folder, name)] = handle.read()
+                consumer = ''.join(text for name, text in sources.items()
+                                   if name.endswith('Consumer.cpp') or
+                                   name.endswith('Consumer.hpp'))
+                mains = [text for name, text in sources.items()
+                         if os.path.basename(name) == 'main.cpp' and 'hold_requested' in text]
+                step = 'case Step::{}:'.format(gen_skeleton.pascal(hold.group(1)))
+                if step not in consumer or 'if (mHoldOnce)' not in consumer or \
+                        len(mains) != 1 or '"{}"'.format(gen_skeleton.HOLD_FLAG) not in mains[0]:
+                    report.fail('peer-lost-scenario', 'the example with {} steps names '
+                                'a hold the generated consumer does not make, or that '
+                                'main() never switches on'.format(kind))
+                    return
+                continue
             if slot is None or '== ' + slot not in sheet:
-                report.fail('peer-lost-scenario', 'with no wait step the stop trigger '
+                report.fail('peer-lost-scenario', 'with no steps the stop trigger '
                             'is no section of the worksheet, so it is written by '
                             'editing scenarios.json')
-                return
-            section = sheet.split('== ' + slot, 1)[1].split('\n== ', 1)[0]
-            if '"wait"' not in section or 'ms' not in section:
-                report.fail('peer-lost-scenario', 'the stop section does not say that '
-                            'a kill after the last step tests nothing, nor how a wait '
-                            'step holds the lead: run 20260919b-atmfsm paid a build '
-                            'and a run for it')
                 return
             for body, code in (('a\nb\n', 2), ('consumer: midway\n', 0)):
                 with open('bodies.txt', 'w', encoding='utf-8') as handle:
@@ -6453,19 +6381,18 @@ def check_peer_lost_scenario(report):
             os.chdir(here)
             shutil.rmtree(holder, ignore_errors=True)
     report.ok('peer-lost-scenario', 'every two-process project gets a peer-lost '
-              'scenario, steps or none: the trigger is written when a wait step holds '
-              'the consumer, and is one worksheet section otherwise, saying how to '
-              'hold it')
+              'scenario: a stepped one is stopped at the hold its consumer makes when '
+              'started with --hold, one with no steps gets the trigger as one worksheet '
+              'section')
 
 
 def check_scaffold_routing(report):
     """Before a design exists, nothing sends a run to a page the generator makes moot.
 
     The ipc scaffold used to end on "docs/agent/50-running.md has its keys" for a peer
-    that goes away, and 3 of the 4 runs of 20260919 read that page before designing:
-    tempalarm said it was for the scenarios build_project.py writes itself. A lookup
-    of step syntax in schema_help.py answered "no such element" (tempalarm r4) and cost
-    a request to find gen_docs.py --example.
+    that goes away, and runs read that page before designing, for scenarios
+    build_project.py writes itself. A lookup of step syntax in schema_help.py answers
+    "no such element" and costs a request to find gen_docs.py --example.
     """
     tools = os.path.join(ROOT, 'tools', 'agent')
     holder = tempfile.mkdtemp()
@@ -6566,9 +6493,8 @@ def check_build_routes_next(report):
     """After a generation that leaves markers open, the build names the worksheet.
 
     build_project.py used to close every generate-only call with "the same command
-    with --run", whichever it was. Run 20260921a-tempalarm was told that while 17
-    markers were still open and bodies.txt did not exist, so it spent a request
-    deciding for itself that the worksheet came first. The line a tool ends on is
+    with --run", whichever it was, even with every marker open and no bodies.txt, so
+    a run spent a request deciding for itself that the worksheet came first. The line a tool ends on is
     what routes the next call.
     """
     sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
@@ -6721,9 +6647,8 @@ def check_passing_output_kept(report):
 def check_provider_timers(report):
     """A provider's own timer is declared in the design and filled in the worksheet.
 
-    With no key for it, runs 20260919b-printscan and 20260919b-tempalarm searched the
-    framework headers for includes and edited generated files by hand, 21-29% of each
-    run, and a regeneration would have deleted the edits.
+    With no key for it, a run searches the framework headers for includes and edits
+    generated files by hand, and a regeneration deletes the edits.
     """
     tools = os.path.join(ROOT, 'tools', 'agent')
 
@@ -6784,9 +6709,8 @@ def check_provider_timers(report):
 def check_shared_request_action(report):
     """An action shared by triggers that forward answered requests is named twice.
 
-    Its body cannot tell which request it answers. Run 20260919b-atmfsm found that out
-    writing the bodies, and paid a redesign, a regeneration and a second worksheet
-    read. The design note says it before generation; the worksheet section says where
+    Its body cannot tell which request it answers. Found while writing the bodies, it
+    costs a redesign, a regeneration and a second worksheet read. The design note says it before generation; the worksheet section says where
     the action runs.
     """
     tools = os.path.join(ROOT, 'tools', 'agent')
@@ -7017,8 +6941,8 @@ def check_failure_names_the_error(report):
     """A failed step prints the line that names the defect, not the log tail.
 
     A compiler and a generator print the diagnostic in the middle and the summary of
-    the tool that gave up at the end, so a tail carries no error. Run 20260917d spent
-    three requests asking a second command for the errors the first one already had.
+    the tool that gave up at the end, so a tail carries no error, and a run asks a
+    second command for the errors the first one already had.
     """
     sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
     try:
@@ -7078,10 +7002,9 @@ def check_passing_step_keeps_a_warning(report):
     """A step that passed hands over the warnings it did not stop for.
 
     The tail of a step that passed is a line count and nothing anchors it to a
-    diagnostic, so a generator warning above it arrives in part or not at all. Run
-    20260925a was told "the Action method [ on_order_accepted ]" with the line naming
-    rule 126 cut off, and spent a build-and-run cycle rediscovering it from a hung
-    scenario.
+    diagnostic, so a generator warning above it arrives in part or not at all: a
+    warning whose line naming its rule is cut off is rediscovered from a hung scenario,
+    at the price of a build-and-run cycle.
     """
     sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
     try:
@@ -7100,7 +7023,7 @@ def check_passing_step_keeps_a_warning(report):
     # One codegen warning, pushed above the tail by the lines cmake prints after it.
     warning = ['src/services/M.fsml:37:70: warning[126/RULE_UNREFERENCED]: '
                'declared but never referenced',
-               '  the Action method [ on_order_accepted ]']
+               '  the Action method [ on_request_taken ]']
     log = ['-- line {}'.format(i) for i in range(40)] + warning + [
         '-- Generating done (0.1s)',
         '-- Build files have been written to: /w/build',
@@ -7161,8 +7084,8 @@ def check_passing_step_keeps_a_warning(report):
 def check_names_carry_signatures(report):
     """A name the worksheet hands a body carries the parameters it takes.
 
-    Both build-and-fix cycles of run 20260917d were a call written from a bare name:
-    the worksheet listed "arm_deadline()" for a helper that takes a uint32_t. A name
+    A call written from a bare name costs a build-and-fix cycle: a worksheet that
+    lists "arm_deadline()" for a helper taking a uint32_t invites one. A name
     without its parameters is a guess, and a guess is a compile, a read and an edit.
     """
     sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
@@ -7197,8 +7120,7 @@ def check_names_carry_signatures(report):
                     'the worksheet no longer lists the members the skeleton declares')
         return
     # A member named without its type is read as a value, and a body that has to
-    # know which one it is opens the generated header. Run 20260921a-tempalarm spent
-    # five requests there to learn that one member was a Timer.
+    # know which one it is opens the generated header.
     if 'uint32_t' not in spelt[0]:
         report.fail('name-signatures',
                     'the worksheet names member "{}" without the type it is declared '
@@ -7234,8 +7156,7 @@ def check_worksheet_rewrite(report):
     The worksheet is the only place a body is edited after a build, so a filled body
     has to keep its name: the filler leaves an anchor pair around it, finds that pair
     again, and rewrites the body between them and nothing else. Without this every
-    later fix is a hunt through a generated file, which cost 15 requests and 18% of
-    run 20260917c.
+    later fix is a hunt through a generated file.
     """
     sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
     try:
@@ -7420,9 +7341,8 @@ def check_worksheet_contract(report):
 
     gen_skeleton.py writes one file carrying a section per open marker, the names the
     generated classes already carry and the contract the bodies are written against,
-    so nothing has to be recalled from a command that ran fifteen requests earlier.
-    Run 20260912d spent 22,538 reasoning tokens on a plan it then dropped to ask one
-    tool for its own usage, which its build output had already printed.
+    so nothing has to be recalled from a command that ran many requests earlier, nor
+    asked again of a tool whose output already printed it.
     """
     sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
     try:
@@ -7593,8 +7513,8 @@ def check_worksheet_contract(report):
         if '#|' in touched:
             report.fail('worksheet', "the worksheet's own furniture reached a source file")
             return
-        # Every section says which function it sits in, and says it right: run
-        # 20260912e read four generated files back to find its parameter names.
+        # Every section says which function it sits in, and says it right, so no
+        # generated file is read back to find its parameter names.
         made = open(sheet, encoding='utf-8').read().splitlines()
         for number, line in enumerate(made):
             if not line.startswith('#| in: '):
@@ -7625,7 +7545,7 @@ def check_worksheet_contract(report):
                     break
 
         # A hash line in a body was meant as a comment, and C++ has none. Writing it
-        # silently as nothing left two markers open in run 20260912e.
+        # silently as nothing leaves the marker open.
         kept = open(sheet, encoding='utf-8').read().splitlines()
         marked = []
         for line in kept:
@@ -7670,8 +7590,7 @@ def check_placeholder_contract(report):
     gen_skeleton.py writes lines that exist only so the skeleton runs before a rule is
     filled in. They belong to the marker above them. When fill_markers.py leaves one
     behind, the body runs and then the placeholder runs after it: a request answered
-    twice, a guard that returns the answer it was given. Run 20260912c paid 10
-    requests to find and strip them by hand.
+    twice, a guard that returns the answer it was given.
     """
     sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
     try:
