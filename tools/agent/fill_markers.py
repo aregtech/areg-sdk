@@ -19,9 +19,11 @@ is "//" and a line starting with "#" has to be a preprocessor directive. A
 section with no code under it stays open and nothing is written for it: one pass
 fills what it knows, a later pass the rest.
 
-A name that matches no marker, a marker named twice, an ambiguous name and a "#"
-line that is no directive are all refused before anything is written: either
-every section applies or none does.
+A section named again with code under it replaces the earlier one, so a change to
+several bodies is one append at the end of the file; the report names each one.
+A name that matches no marker, an ambiguous name and a "#" line that is no
+directive are all refused before anything is written: either every section
+applies or none does.
 """
 import argparse
 import difflib
@@ -52,6 +54,9 @@ PLACEHOLDER = re.compile(r'//\s*placeholder\(you\)')
 
 # A run that filled most of its markers does not need the rest listed in full.
 SHOWN = 8
+
+# The sections named again in the bodies file, whose later copy replaced the earlier.
+REPEATED = []
 
 
 def fail(message):
@@ -107,12 +112,14 @@ def read_bodies(path):
     if not sections:
         fail('{} names no marker. A section starts with "== " and the marker name'
              .format(path))
-    seen = {}
-    for name, _, number in sections:
-        if name in seen:
-            fail('{} names "{}" twice, at line {} and line {}. One section per marker'
-                 .format(path, name, seen[name], number))
-        seen[name] = number
+    first = {}
+    for index, (name, body, number) in enumerate(sections):
+        if name not in first:
+            first[name] = index
+        elif any(line.strip() for line in body):
+            REPEATED.append(name)
+            sections[first[name]] = (name, body, sections[first[name]][2])
+    sections = [entry for index, entry in enumerate(sections) if first[entry[0]] == index]
     for name, body, number in sections:
         for offset, line in enumerate(body, 1):
             if BODY_OPEN.search(line) or BODY_END.search(line):
@@ -442,6 +449,9 @@ def main():
                       if changed else 'none changed') if replaced else '',
                   ', {} placeholder line(s) dropped with them'.format(dropped)
                   if dropped else ''))
+    if REPEATED:
+        print('  named again, the later section used: {}'
+              .format(', '.join(sorted(set(REPEATED)))))
     if args.dry_run:
         for name, path in left[:SHOWN]:
             print('  still open: {} in {}'.format(name, path.replace(os.sep, '/')))

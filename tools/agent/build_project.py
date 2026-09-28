@@ -67,7 +67,9 @@ ADVICE = {
                  'document appears in this output; anything else is CMakeLists.txt.',
     'scenarios': 'the application built, but a scenario did not pass. Each failure '
                  'names the process, what it was expected to print and what it '
-                 'wrote. "--only <name>" iterates on one.',
+                 'wrote. "--only <name>" iterates on one. Each section you change '
+                 'goes in one append at the end of bodies.txt: a section named again '
+                 'replaces the earlier one.',
     'final': 'the final pass does not allow an open marker. A passing scenario says '
              'nothing about the requirement behind one: no body was written for it. '
              'Fill it, then run this again.',
@@ -565,8 +567,10 @@ def closing_lines(root, bodies, specs):
                 pass
         return ['Every step passed. {} has no body yet for {} marker(s): {}.'
                 .format(bodies, still_open, ', '.join(names)),
-                'Add those sections from {} to it, then apply, build and run:'
+                'Append those sections from {}, and any section you change, to its '
+                'end in one call (a section named again replaces the earlier one),'
                 .format(gen_skeleton.WORKSHEET),
+                'then apply, build and run:',
                 '{} --run'.format(same)]
     length = ''
     try:

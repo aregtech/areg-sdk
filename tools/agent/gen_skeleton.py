@@ -439,15 +439,19 @@ def worksheet_pristine(path):
 
 # File-scope, not section-scope: it is true of every body that waits for anything,
 # and a reader meets it in whichever section their own wait is written in.
-ORDER_NOTE = ['A response and an update are two deliveries, not one. A response is',
-              'bound to its request and reaches only that caller. An update is bound',
-              'to the attribute and reaches every subscriber whenever the value is',
-              'set; it answers to no request, response or broadcast. Neither waits',
-              'for the other, so test the value already held before waiting for an',
-              'update that may have arrived already, or the wait never ends.']
+ORDER_FACTS = ['A response answers a request and reaches the consumer that sent it; an',
+               'update reaches every subscriber whenever the value is set. What a',
+               'provider sends reaches each consumer in the order sent, whatever its',
+               'kind: a set_ called before a response_ delivers the update first. The',
+               'provider handles one event at a time: a request handler, with every',
+               'transition and entry of the machine it drives, ends before the next',
+               'request, timer or event is taken.']
+
+ORDER_NOTE = ORDER_FACTS + ['Test the value already held before waiting for an update that',
+                            'may have arrived already, or the wait never ends.']
 
 # ORDER_NOTE for a worksheet whose steps await: the driver keeps an update that came early.
-STEPPED_ORDER_NOTE = ORDER_NOTE[:4] + ['for the other.']
+STEPPED_ORDER_NOTE = ORDER_FACTS
 
 
 STEPS_NOTE = ['a step_ section runs only while its step is current. fail("why") ends the',
@@ -806,11 +810,7 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
                      .format(scenarios))
         lines.append('#| One regular expression per line, and every one of them has to')
         if steps:
-            lines.append('#| match. On a pass, generated code prints only "step {}" and the'
-                         .format(steps[0]['name']))
-            lines.append('#| like (each step\'s "name" as design.json spells it) as a step')
-            lines.append('#| begins, in the consumer; the generated provider prints nothing.')
-            lines.append('#| So every other line comes')
+            lines.append('#| match. Each line comes')
         else:
             lines.append('#| match. The generated main() prints nothing, so each line comes')
         lines.append('#| from a body above: the expectation and the code that satisfies')
@@ -1519,13 +1519,14 @@ def contract_lines(iface, document):
                    .format(t=cpp, r=read, n=spelled))
     # Which of these a consumer handler can trust is not readable from the signatures,
     # and the page that states it is not on the path a project takes.
-    if len(list(iface.attributes)) > 1:
-        out.append('  setting two of these in one function sends two updates, in that '
-                   'order. A consumer')
-        out.append('  handler reads the others by the getter above, so it sees only '
-                   'those set before')
-        out.append('  its own: set last the attribute whose update the consumer acts '
-                   'on.')
+    attributes = len(list(iface.attributes))
+    if attributes > 1 or (attributes and (list(iface.broadcasts) or list(iface.responses))):
+        out.append('  set_, broadcast_ and response_ calls in one function arrive in that '
+                   'order.')
+        out.append('  A consumer handler, and any getter it calls, sees only what arrived '
+                   'before')
+        out.append('  its own message: set last, or send last, the one whose arrival it '
+                   'acts on.')
     return out + type_lines(iface)
 
 

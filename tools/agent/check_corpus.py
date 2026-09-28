@@ -2833,6 +2833,8 @@ def run():
     check_empty_section_note(report)
     check_command_coverage(report)
     check_worksheet_rewrite(report)
+    check_section_named_again(report)
+    check_unread_attribute_note(report)
     check_failure_names_the_error(report)
     check_passing_step_keeps_a_warning(report)
     check_names_carry_signatures(report)
@@ -3188,11 +3190,16 @@ def check_worksheet_names_update_order(report):
         def generated_params(self, kind, name):
             return ''
 
+    class Sends(Iface):
+        broadcasts = [('alarm', [])]
+
     try:
         many = '\n'.join(gen_skeleton.contract_lines(
             Iface([('Level', 'uint32'), ('Phase', 'uint32')]), 'probe.siml'))
         one = '\n'.join(gen_skeleton.contract_lines(
             Iface([('Level', 'uint32')]), 'probe.siml'))
+        mixed = '\n'.join(gen_skeleton.contract_lines(
+            Sends([('Level', 'uint32')]), 'probe.siml'))
     except Exception as failure:
         report.fail('worksheet-attr-order',
                     'contract_lines does not run on a plain interface: {}'.format(failure))
@@ -3210,9 +3217,15 @@ def check_worksheet_names_update_order(report):
                     'the ordering line is printed for an interface with one '
                     'attribute, which has no order to get wrong')
         return
+    if 'set last' not in mixed or 'broadcast_' not in mixed.split('set last')[0]:
+        report.fail('worksheet-attr-order',
+                    'an interface with an attribute and a broadcast says nothing about '
+                    'the order the update and the broadcast reach a consumer in, so a '
+                    'check on the update reads a broadcast that has not arrived')
+        return
     report.ok('worksheet-attr-order',
-              'the worksheet names the order two attribute updates reach a consumer '
-              'in, and only where there are two')
+              'the worksheet names the order set_, broadcast_ and response_ calls reach a '
+              'consumer in, wherever there are two to order')
 
 
 def check_api_constructors(report):
@@ -3313,7 +3326,7 @@ REVIEW_CASES = (
         'triggers': [{'name': 'go'}], 'initial': 'Idle',
         'states': [{'name': 'Idle', 'transitions': [{'on': 'go', 'to': 'Busy'}]},
                    {'name': 'Busy', 'transitions': []}]}]},
-     0, 'never read'),
+     0, 'passed to no guard'),
     ('one action on two forwarding triggers', {
         'interfaces': [{'name': 'S',
                         'requests': [{'name': 'open', 'answer': [{'name': 'ok'}]},
@@ -5034,15 +5047,15 @@ def check_step_fall_through(report):
             return
         with open('worksheet.txt', encoding='utf-8') as handle:
             sheet = re.sub(r'\n#\| ', ' ', handle.read())
-        if 'prints only "step open_gate"' not in sheet or '"step <name>"' in sheet \
-                or 'generated provider prints nothing' not in sheet \
-                or 'main() prints nothing' in sheet:
-            report.fail('step-print', 'a stepped worksheet does not spell the line the '
-                                      'generated code prints as each step begins, so an '
-                                      'expect line guesses it from the Step:: names')
+        claims = [phrase for phrase in ('prints only', 'prints nothing', '"step ')
+                  if phrase in sheet]
+        if claims or 'Each line comes from a body above' not in sheet:
+            report.fail('step-print', 'a stepped worksheet says what generated code '
+                                      'prints ({}), and a run opens the sources to check '
+                                      'it'.format(', '.join(claims) or 'no rule instead'))
         else:
-            report.ok('step-print', 'a stepped worksheet names the one line generated '
-                                    'code prints on a pass')
+            report.ok('step-print', 'a stepped worksheet says each expected line comes '
+                                    'from a body, and claims nothing about generated code')
         design = json.load(open('design.json', encoding='utf-8'))
         design['interfaces'][0]['steps'] = [first[0], {'name': 'settle', 'wait': 100},
                                             {'name': 'reopen', 'send': 'open',
@@ -5758,6 +5771,19 @@ def check_worksheet_order_note(report):
         return [name for name, lines in notes.items() if lines == gen_skeleton.ORDER_NOTE]
 
     full = sections(['first_request', 'response_go', 'response_stop', 'update_level'])
+    for kind, lines in (('stepped', gen_skeleton.STEPPED_ORDER_NOTE),
+                        ('plain', gen_skeleton.ORDER_NOTE)):
+        said = ' '.join(lines)
+        if 'in the order sent' not in said or 'one event at a time' not in said \
+                or 'Neither waits' in said:
+            report.fail('order-facts',
+                        'the {} worksheet note does not say that what a provider sends '
+                        'arrives in send order and that the provider handles one event at '
+                        'a time, so a run designs around a race that cannot happen'
+                        .format(kind))
+            return
+    report.ok('order-facts', 'the worksheet says what a provider sends arrives in send '
+                             'order, and that a request is handled whole')
     if gen_skeleton.header_notes(full) != gen_skeleton.ORDER_NOTE:
         report.fail('order-note',
                     'the worksheet header does not carry the note, so nothing a run '
@@ -7315,6 +7341,88 @@ def check_worksheet_rewrite(report):
 
     report.ok('worksheet-rewrite', 'the worksheet keeps every body it writes, and a '
               'changed section rewrites that body in place')
+
+
+def check_section_named_again(report):
+    """A section named again in the bodies file replaces the earlier one.
+
+    A repair that touches several bodies is then one append at the end of the file,
+    not one edit per section, and each of those edits re-reads the whole context.
+    """
+    holder = tempfile.mkdtemp()
+    src = os.path.join(holder, 'src')
+    os.makedirs(src)
+    source = os.path.join(src, 'Cons.cpp')
+    sheet = os.path.join(holder, 'bodies.txt')
+    try:
+        with open(source, 'w', encoding='utf-8', newline='\n') as handle:
+            handle.write('void f()\n{\n'
+                         '    // TODO(you) step_one: check this.\n'
+                         '    // TODO(you) step_two: check that.\n'
+                         '}\n')
+        with open(sheet, 'w', encoding='utf-8', newline='\n') as handle:
+            handle.write('== step_one\nfirst();\n== step_two\nsecond();\n'
+                         '== step_one\nfixed();\n== step_two\n\n')
+        done = subprocess.run([sys.executable,
+                               os.path.join(ROOT, 'tools', 'agent', 'fill_markers.py'),
+                               '--bodies', sheet, '--src', src],
+                              cwd=holder, capture_output=True, text=True)
+        with open(source, encoding='utf-8') as handle:
+            text = handle.read()
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    if done.returncode != 0:
+        report.fail('section-again', 'a section named again is refused, so a repair of '
+                                     'several bodies is one edit per section: {}'
+                    .format((done.stderr or done.stdout).strip()[:160]))
+        return
+    if 'fixed();' not in text or 'first();' in text or 'second();' not in text:
+        report.fail('section-again', 'a section named again did not replace the earlier '
+                                     'one, or an empty repeat erased a body')
+        return
+    if 'named again' not in done.stdout or 'step_two' in done.stdout.split(
+            'named again')[-1]:
+        report.fail('section-again', 'the filler does not name the section whose later '
+                                     'copy it used')
+        return
+    report.ok('section-again', 'a section named again with code replaces the earlier '
+                               'one, and the filler names it')
+
+
+def check_unread_attribute_note(report):
+    """The unread-attribute note says what the tool checked, and no more.
+
+    It sees the arguments a document passes, never a condition or action body, and a
+    body is where a parameterless condition reads machine data.
+    """
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    holder = tempfile.mkdtemp()
+    try:
+        spec = json.loads(subprocess.run([sys.executable,
+                                          os.path.join(tools, 'gen_docs.py'), '--example'],
+                                         capture_output=True, text=True).stdout)
+        machine = spec['machines'][0]
+        machine.setdefault('attributes', []).append(
+            {'name': 'Spare', 'type': 'uint32', 'value': '0',
+             'description': 'Read only by a condition body.'})
+        path = os.path.join(holder, 'design.json')
+        with open(path, 'w', encoding='utf-8', newline='\n') as handle:
+            json.dump(spec, handle)
+        said = ' '.join(subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                                        '--outdir', os.path.join(holder, 'out'), '--force',
+                                        '--chained', '--spec', path],
+                                       capture_output=True, text=True).stdout.split())
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    if '"Spare"' not in said:
+        report.fail('unread-note', 'a machine attribute no argument reads draws no note')
+        return
+    if 'never read' in said or 'passed to no guard, condition or action' not in said:
+        report.fail('unread-note', 'the note says a machine attribute is never read, '
+                                   'although a condition or action body may read it')
+        return
+    report.ok('unread-note', 'the unread-attribute note says what the tool checked: the '
+                             'arguments, not the bodies')
 
 
 def check_marker_spelling(report):

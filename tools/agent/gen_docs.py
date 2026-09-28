@@ -2318,12 +2318,11 @@ def review(project, skipped):
         for name in unread_attributes(spec):
             unread.setdefault(spec.get('name', '?'), []).append(name)
     for owner in sorted(unread):
-        print('  note  {}: attribute(s) {} written and never read by a guard, a '
-              'condition or an argument.'
+        print('  note  {}: attribute(s) {} written and passed to no guard, condition or '
+              'action as an argument.'
               .format(owner, ', '.join('"%s"' % n for n in unread[owner])))
-        print('        Data no rule of the machine reads belongs to the component '
-              'that computes it, not to the machine: take the attribute out of the '
-              'machine, or leave it if a rule still to be written reads it.')
+        print('        If no condition or action body reads it either, it belongs to the '
+              'component that computes it: take the attribute out of the machine.')
     for spec in project['machines']:
         shared = shared_request_actions(project, spec)
         if shared:
