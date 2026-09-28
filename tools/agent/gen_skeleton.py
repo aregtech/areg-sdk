@@ -806,8 +806,10 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
                      .format(scenarios))
         lines.append('#| One regular expression per line, and every one of them has to')
         if steps:
-            lines.append('#| match. On a pass, generated code prints only "step <name>" as')
-            lines.append('#| a step begins, so every other line comes')
+            lines.append('#| match. On a pass, generated code prints only "step {}" and the'
+                         .format(steps[0]['name']))
+            lines.append('#| like (each step\'s "name" as design.json spells it) as a step')
+            lines.append('#| begins, so every other line comes')
         else:
             lines.append('#| match. The generated main() prints nothing, so each line comes')
         lines.append('#| from a body above: the expectation and the code that satisfies')

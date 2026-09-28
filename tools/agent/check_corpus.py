@@ -5015,10 +5015,11 @@ def check_step_fall_through(report):
             return
         with open('worksheet.txt', encoding='utf-8') as handle:
             sheet = re.sub(r'\n#\| ', ' ', handle.read())
-        if 'prints only "step <name>"' not in sheet or 'main() prints nothing' in sheet:
-            report.fail('step-print', 'a stepped worksheet does not say the generated '
-                                      'code prints "step <name>" as each step begins, so '
-                                      'a stop on a step name is traced into its source')
+        if 'prints only "step open_gate"' not in sheet or '"step <name>"' in sheet \
+                or 'main() prints nothing' in sheet:
+            report.fail('step-print', 'a stepped worksheet does not spell the line the '
+                                      'generated code prints as each step begins, so an '
+                                      'expect line guesses it from the Step:: names')
         else:
             report.ok('step-print', 'a stepped worksheet names the one line generated '
                                     'code prints on a pass')
