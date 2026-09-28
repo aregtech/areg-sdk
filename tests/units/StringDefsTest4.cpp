@@ -428,15 +428,26 @@ TEST(StringDefsTest4, utf8_emoji_byte_ops)
         EXPECT_EQ(next, nullptr);
     }
 
-    //   the wide length is platform dependent  
-    // Windows: UTF-16, the code point is a surrogate pair -> 2 code units.
-    // POSIX with 4-byte wchar_t: UTF-32 -> 1 code unit.
-    {
-#if defined(_WIN32)
-        EXPECT_EQ(areg::string_length<wchar_t>(L"\U0001F600"), static_cast<areg::CharCount>(2));
-#else
-        EXPECT_EQ(areg::string_length<wchar_t>(L"\U0001F600"), static_cast<areg::CharCount>(1));
-#endif  // defined(_WIN32)
+//     //   the wide length is platform dependent  
+//     // Windows: UTF-16, the code point is a surrogate pair -> 2 code units.
+//     // POSIX with 4-byte wchar_t: UTF-32 -> 1 code unit.
+//     {
+// // #if defined(_WIN32) || defined(__CYGWIN__)
+// //         EXPECT_EQ(areg::string_length<wchar_t>(L"\U0001F600"), static_cast<areg::CharCount>(2));
+// // #else
+// //         EXPECT_EQ(areg::string_length<wchar_t>(L"\U0001F600"), static_cast<areg::CharCount>(1));
+// // #endif  // defined(_WIN32)
+//     }
+
+    {//Directly bypassing macro checks to split characters by case
+        if constexpr (sizeof(wchar_t) == 2)
+        {
+            EXPECT_EQ(areg::string_length<wchar_t>(L"\U0001F600"), static_cast<areg::CharCount>(2));
+        }
+        else
+        {
+            EXPECT_EQ(areg::string_length<wchar_t>(L"\U0001F600"), static_cast<areg::CharCount>(1));
+        }
     }
 }
 
