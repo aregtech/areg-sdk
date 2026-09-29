@@ -120,6 +120,9 @@ if (AREG_TESTS)
     include(${AREG_TESTS_DIR}/timer-churn/CMakeLists.txt)
     include(${AREG_TESTS_DIR}/internal-events/CMakeLists.txt)
 
+    # Built, not registered with ctest: it needs root and a packet filter.
+    include(${AREG_TESTS_DIR}/keepalive-probe/CMakeLists.txt)
+
     # Reuses the generated service interface of example 01, so it needs the examples.
     if (AREG_EXAMPLES AND TARGET 01_generated)
         include(${AREG_TESTS_DIR}/proxy-churn/CMakeLists.txt)
