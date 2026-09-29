@@ -35,6 +35,7 @@ PYTHON = sys.executable or 'python3'
 
 sys.path.insert(0, HERE)
 import gen_docs  # noqa: E402
+import fill_markers  # noqa: E402
 import gen_skeleton  # noqa: E402
 
 # A fixed job count is right on every machine the corpus has to describe, and it
@@ -67,15 +68,15 @@ ADVICE = {
                  'document appears in this output; anything else is CMakeLists.txt.',
     'scenarios': 'the application built, but a scenario did not pass. Each failure '
                  'names the process, what it was expected to print and what it '
-                 'wrote. "--only <name>" iterates on one. Each section you change '
-                 'goes in one append at the end of bodies.txt: a section named again '
-                 'replaces the earlier one.',
+                 'wrote. "--only <name>" iterates on one. Write every section you '
+                 'change to fix.txt in one call; the next run folds it into bodies.txt.',
     'final': 'the final pass does not allow an open marker. A passing scenario says '
              'nothing about the requirement behind one: no body was written for it. '
-             'Fill it, then run this again.',
+             'Write its section to fix.txt, then run this again.',
     'build': 'the compiler refused a source. The errors are above, each with the '
-             'line it is on: no second command is needed to see them. Fix the body '
-             'in bodies.txt, not the generated file, and run this again. A '
+             'line it is on: no second command is needed to see them. Write every '
+             'body you fix to fix.txt in one call, never the generated file, and run '
+             'this again. A '
              'provider that is abstract means the document gained a request the '
              'application has no handler for: add the handler, or --regenerate and '
              'fill the markers again.',
@@ -567,9 +568,9 @@ def closing_lines(root, bodies, specs):
                 pass
         return ['Every step passed. {} has no body yet for {} marker(s): {}.'
                 .format(bodies, still_open, ', '.join(names)),
-                'Append those sections from {}, and any section you change, to its '
-                'end in one call (a section named again replaces the earlier one),'
-                .format(gen_skeleton.WORKSHEET),
+                'Write those sections from {}, and any section you change, to {} in '
+                'one call; it is folded into {},'
+                .format(gen_skeleton.WORKSHEET, fill_markers.FIX_FILE, bodies),
                 'then apply, build and run:',
                 '{} --run'.format(same)]
     length = ''
@@ -777,7 +778,8 @@ def main():
     # section changed since the last one is written, and a --regenerate that reset the
     # sources gets every body back. Filling the same body twice writes the same file.
     worksheet = os.path.join(root, args.bodies)
-    if not args.no_fill and worksheet_has_code(worksheet):
+    fix = os.path.join(os.path.dirname(worksheet), fill_markers.FIX_FILE)
+    if not args.no_fill and (worksheet_has_code(worksheet) or os.path.exists(fix)):
         # src/ that holds only generated code and bodies.txt stays regenerable: the stamp
         # takes the filled sources, and a later design change writes src/ again by itself.
         filled_only = app_untouched(root, args.build)

@@ -19,8 +19,11 @@ is "//" and a line starting with "#" has to be a preprocessor directive. A
 section with no code under it stays open and nothing is written for it: one pass
 fills what it knows, a later pass the rest.
 
-A section named again with code under it replaces the earlier one, so a change to
-several bodies is one append at the end of the file; the report names each one.
+A section named again with code under it replaces the earlier one; the report
+names each one. A repair is written to fix.txt beside the bodies file, in one
+call: each of its sections with code replaces the section of that name in the
+bodies file, or is added to it, and fix.txt is removed once every section applies.
+
 A name that matches no marker, an ambiguous name and a "#" line that is no
 directive are all refused before anything is written: either every section
 applies or none does.
@@ -58,6 +61,9 @@ SHOWN = 8
 # The sections named again in the bodies file, whose later copy replaced the earlier.
 REPEATED = []
 
+# The repair file, beside the bodies file unless --fix names another.
+FIX_FILE = 'fix.txt'
+
 
 def fail(message):
     # Output already printed is flushed first: stdout is block-buffered into a
@@ -83,17 +89,57 @@ def note(line):
     return line.startswith(NOTE)
 
 
-def read_bodies(path):
-    """The worksheet as [(name, [line, ...])], in the order it names its markers."""
+def read_lines(path):
+    """The lines of a bodies file, or a refusal that says how to write it."""
     try:
         with open(path, encoding='utf-8') as handle:
-            lines = handle.read().splitlines()
+            return handle.read().splitlines()
     except (IOError, OSError) as problem:
         if not os.path.exists(path):
             fail('{} does not exist. It is yours to write, in one call: a "== <marker>" '
                  'line per section of worksheet.txt, each with its code under it'
                  .format(path))
         fail('cannot read {}: {}'.format(path, problem))
+
+
+def blocks_of(lines):
+    """The lines as [[name, lines]], the header line included; the first name is None."""
+    blocks = [[None, []]]
+    for line in lines:
+        found = None if note(line) else HEADER.match(line)
+        if found:
+            blocks.append([found.group(1), [line]])
+        else:
+            blocks[-1][1].append(line)
+    return blocks
+
+
+def fold(lines, fixes):
+    """The bodies lines with each fix section that carries code in place of the section
+    of its name, or added at the end, as (lines, replaced, added)."""
+    blocks = blocks_of(lines)
+    replaced, added = [], []
+    for name, text in blocks_of(fixes)[1:]:
+        if not any(line.strip() and not note(line) for line in text[1:]):
+            continue
+        body = trim(list(text))
+        hits = [block for block in blocks[1:] if block[0] == name]
+        if hits:
+            hits[0][1] = body + hits[0][1][len(trim(list(hits[0][1]))):]
+            blocks = [block for block in blocks if not any(block is h for h in hits[1:])]
+            replaced.append(name)
+        else:
+            if blocks[-1][1] and blocks[-1][1][-1].strip():
+                blocks[-1][1].append('')
+            blocks.append([name, body + ['']])
+            added.append(name)
+    return [line for _, text in blocks for line in text], replaced, added
+
+
+def read_bodies(path, lines=None):
+    """The worksheet as [(name, [line, ...])], in the order it names its markers."""
+    if lines is None:
+        lines = read_lines(path)
     sections = []
     current = None
     for number, line in enumerate(lines, 1):
@@ -324,11 +370,27 @@ def main():
     parser.add_argument('--scenarios', default='scenarios.json',
                         help='the scenario file whose named "expect" holes this also '
                              'fills (default: scenarios.json)')
+    parser.add_argument('--fix', default=None,
+                        help='the repair file folded into --bodies once every section '
+                             'applies, then removed (default: {} beside --bodies)'
+                             .format(FIX_FILE))
     parser.add_argument('--dry-run', action='store_true',
                         help='report what would change and write nothing')
     args = parser.parse_args()
 
-    sections = read_bodies(args.bodies)
+    fix = args.fix or os.path.join(os.path.dirname(args.bodies), FIX_FILE)
+    folded = None
+    fixed = set()
+    if os.path.exists(fix):
+        fixes = read_lines(fix)
+        read_bodies(fix, fixes)
+        del REPEATED[:]
+        present = read_lines(args.bodies) if os.path.exists(args.bodies) else []
+        folded = fold(present, fixes)
+        fixed = set(folded[1] + folded[2])
+        sections = read_bodies(args.bodies, folded[0])
+    else:
+        sections = read_bodies(args.bodies)
     # A section with no code under it is a marker this pass is not filling. Writing
     # it would take the marker and its placeholder away and leave a hole in the file.
     blank = [name for name, body in sections if not body]
@@ -375,7 +437,8 @@ def main():
                         args.scenarios, expectations[name]):
                     changed.append(name)
             continue
-        path, index, line, extra = resolve(name, addressable, args.bodies)
+        path, index, line, extra = resolve(name, addressable,
+                                           fix if name in fixed else args.bodies)
         if (path, index) in claimed:
             fail('{} fills the same marker twice, as "{}" and as "{}"'
                  .format(args.bodies, claimed[(path, index)], name))
@@ -433,6 +496,19 @@ def main():
         for number, name, count in landed:
             print('  {:<28} line {:<5} {} line(s)'.format(name, number, count))
 
+    if folded is not None:
+        if not args.dry_run:
+            with open(args.bodies, 'w', encoding='utf-8') as handle:
+                handle.write('\n'.join(folded[0]).rstrip('\n') + '\n')
+            os.remove(fix)
+        print('{} {} into {}: {}'.format(
+            'would fold' if args.dry_run else 'folded', fix.replace(os.sep, '/'),
+            args.bodies.replace(os.sep, '/'),
+            '; '.join(part for part in (
+                'replaced {}'.format(', '.join(folded[1])) if folded[1] else '',
+                'added {}'.format(', '.join(folded[2])) if folded[2] else '') if part)
+            or 'no section with code'))
+
     filled = set(claimed)
     left = [(name, path) for name, places in sorted(markers.items())
             for path, index, _, _ in places if (path, index) not in filled]
@@ -459,9 +535,9 @@ def main():
             print('  and {} more'.format(len(left) - SHOWN))
         return 0
     if not left:
-        print('  every marker of this project is filled. {} keeps every body: change '
-              'a section and run this again to rewrite it'
-              .format(args.bodies.replace(os.sep, '/')))
+        print('  every marker of this project is filled. {} keeps every body: a section '
+              'written to {} rewrites it on the next run'
+              .format(args.bodies.replace(os.sep, '/'), FIX_FILE))
         return 0
     named = set(name for name, _ in sections) | set(blank)
     orphans = [entry for entry in left if entry[0] not in named]

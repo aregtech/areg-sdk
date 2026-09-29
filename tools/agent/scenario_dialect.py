@@ -11,10 +11,10 @@
 SOURCE_SUFFIXES = ('.siml', '.fsml', '.dtml')
 
 # The files that describe the project and whose edits outdate a build.
-SPEC_FILES = ('bodies.txt', 'design.json')
+SPEC_FILES = ('bodies.txt', 'fix.txt', 'design.json')
 
 # A stop whose trigger is still an open section.
-FILL_HOLE = ('Fill it in bodies.txt with one line the lead prints while '
+FILL_HOLE = ('Fill it in fix.txt with one line the lead prints while '
              '{proc} serves it')
 
 # A lead that finishes before the stop can match.
@@ -30,5 +30,5 @@ NOTHING_TO_REBUILD = ('build_project.py --run would rebuild nothing and run the 
                       'same scenarios.')
 
 # Markers left open.
-FILL_MARKERS = ('Fill it with fill_markers.py --bodies, or write it in place and '
-                'delete the line.\ncheck_contract.py reports the same markers as P-17.')
+FILL_MARKERS = ('Write its section to fix.txt, which the next build fills, or write '
+                'it in place and delete the line.\ncheck_contract.py reports the same markers as P-17.')

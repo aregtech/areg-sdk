@@ -178,11 +178,11 @@ A line tagged `// placeholder(you)` stands only until the marker above it is fil
 a default `response_`, a `return false;`. The filler takes it away with that marker. An
 untagged line under a marker is real code and stays.
 
-**A body changed after a build or a scenario run is changed in `bodies.txt` too.** It
-keeps every body it writes, so changing a section and running the build
-command rewrites that body where it stands, and `--regenerate` gets every body back.
-A failing check names its own section, so the section to change is the one the failure
-printed: the whole fix is one edit and one command, and no generated file is opened.
+**A body changed after a build or a scenario run goes in `fix.txt`**: every section you
+change, in one call. The build command folds it into `bodies.txt`, which keeps every
+body, so it is rewritten where it stands and `--regenerate` gets it back. A failing
+check names its own section, so the section to change is the one the failure printed:
+the fix is one write and one command, and no generated file is opened.
 
 `30-provider.md`, `31-consumer.md` and `32-model.md` describe the code the tool has
 already written. Do not open them to fill a marker, and do not open them while

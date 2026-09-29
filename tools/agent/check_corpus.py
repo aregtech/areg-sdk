@@ -2834,6 +2834,7 @@ def run():
     check_command_coverage(report)
     check_worksheet_rewrite(report)
     check_section_named_again(report)
+    check_fix_file(report)
     check_unread_attribute_note(report)
     check_failure_names_the_error(report)
     check_passing_step_keeps_a_warning(report)
@@ -7399,6 +7400,87 @@ def check_section_named_again(report):
         return
     report.ok('section-again', 'a section named again with code replaces the earlier '
                                'one, and the filler names it')
+
+
+def check_fix_file(report):
+    """A repair goes in fix.txt, a file that starts absent, and is folded into bodies.txt.
+
+    A file that does not exist is written in one call; an existing one is edited one
+    section per request. Every repair route names fix.txt, and a refused fix changes
+    nothing.
+    """
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import build_project
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('fix-file', 'build_project.py does not import: {}'.format(failure))
+        return
+    routes = {'scenarios advice': build_project.ADVICE.get('scenarios', ''),
+              'build advice': build_project.ADVICE.get('build', '')}
+    with open(os.path.join(ROOT, 'docs', 'agent', '01-runbook.md'), encoding='utf-8') as handle:
+        routes['runbook'] = handle.read()
+    holder = tempfile.mkdtemp()
+    src = os.path.join(holder, 'src')
+    os.makedirs(src)
+    source = os.path.join(src, 'Cons.cpp')
+    sheet = os.path.join(holder, 'bodies.txt')
+    fix = os.path.join(holder, 'fix.txt')
+    filler = [sys.executable, os.path.join(ROOT, 'tools', 'agent', 'fill_markers.py'),
+              '--bodies', sheet, '--src', src, '--fix', fix]
+
+    def read(path):
+        if not os.path.exists(path):
+            return None
+        with open(path, encoding='utf-8') as handle:
+            return handle.read()
+
+    def write(path, text):
+        with open(path, 'w', encoding='utf-8', newline='\n') as handle:
+            handle.write(text)
+    try:
+        write(source, 'void f()\n{\n'
+                      '    // TODO(you) step_one: check this.\n'
+                      '    // TODO(you) step_two: check that.\n'
+                      '    // TODO(you) step_three: check more.\n'
+                      '}\n')
+        write(sheet, '== step_one\nfirst();\n== step_two\nsecond();\n')
+        write(fix, '== step_one\nfixed();\n== step_three\nthird();\n== step_two\n\n')
+        done = subprocess.run(filler, cwd=holder, capture_output=True, text=True)
+        text, bodies, left = read(source), read(sheet), read(fix)
+        write(fix, '== step_one\nagain();\n== step_nine\nnine();\n')
+        refused = subprocess.run(filler, cwd=holder, capture_output=True, text=True)
+        after = (read(source), read(sheet), read(fix))
+        write(source, 'void g()\n{\n    // TODO(you) step_four: check the rest.\n}\n')
+        routes['closing lines'] = ' '.join(build_project.closing_lines(
+            holder, 'bodies.txt', ['design.json']))
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    silent = [name for name, said in routes.items() if 'fix.txt' not in said]
+    if silent:
+        report.fail('fix-file', 'a repair route does not name fix.txt: {}'
+                    .format(', '.join(silent)))
+        return
+    if done.returncode != 0:
+        report.fail('fix-file', 'fix.txt is not folded into bodies.txt: {}'
+                    .format((done.stderr or done.stdout).strip()[:160]))
+        return
+    if (left is not None or not text or 'fixed();' not in text or 'first();' in text
+            or 'second();' not in text or 'third();' not in text):
+        report.fail('fix-file', 'fix.txt did not replace, add and keep the bodies it '
+                                'should, or was left behind')
+        return
+    if (bodies is None or bodies.count('== step_one') != 1 or 'first();' in bodies
+            or 'second();' not in bodies or 'third();' not in bodies):
+        report.fail('fix-file', 'bodies.txt does not hold the folded sections once each: '
+                                '{!r}'.format(bodies))
+        return
+    if (refused.returncode == 0 or after[0] != text or after[1] != bodies
+            or after[2] is None):
+        report.fail('fix-file', 'a refused fix.txt changed the sources or bodies.txt, '
+                                'or was removed')
+        return
+    report.ok('fix-file', 'a repair written to fix.txt is folded into bodies.txt section '
+                          'by section, and a refused one changes nothing')
 
 
 def check_unread_attribute_note(report):
