@@ -59,6 +59,24 @@ static bool _wait_io_thread_ready( DispatcherThread & ioThread )
     return true;
 }
 
+/**
+ * \brief   Stops the send thread and waits for it, under the lock that also guards its start.
+ *
+ * \param   startLock   The lock of the send thread's start and stop.
+ * \param   sendThread  The send thread to stop.
+ * \param   closing     True to discard what the thread still holds.
+ **/
+static void _stop_send_thread( Mutex & startLock, ClientSendThread & sendThread, bool closing )
+{
+    Lock lock( startLock );
+    if ( closing )
+    {
+        sendThread.set_closing();
+    }
+
+    sendThread.shutdown( areg::WAIT_INFINITE );
+}
+
 //////////////////////////////////////////////////////////////////////////
 // ServiceClientConnectionBase class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -383,17 +401,23 @@ void ServiceClientConnectionBase::on_service_stop()
         send_message(disconnect_message(channel.cookie(), mTarget));
     }
 
-    mThreadSend.set_closing();
-    mThreadSend.trigger_exit_drained();
-    if (!mThreadSend.wait_completion( areg::SEND_QUEUE_FLUSH_TIMEOUT ))
+    do
     {
-        LOG_WARN("The outgoing messages did not leave within [ %u ] ms, closing the connection", areg::SEND_QUEUE_FLUSH_TIMEOUT);
-        mThreadSend.trigger_exit();
-        mThreadSend.wait_completion( areg::WAIT_INFINITE );
-    }
+        // The send thread is started and stopped only under this lock.
+        Lock lock( mSendStartLock );
+        mThreadSend.set_closing();
+        mThreadSend.trigger_exit_drained();
+        if (!mThreadSend.wait_completion( areg::SEND_QUEUE_FLUSH_TIMEOUT ))
+        {
+            LOG_WARN("The outgoing messages did not leave within [ %u ] ms, closing the connection", areg::SEND_QUEUE_FLUSH_TIMEOUT);
+            mThreadSend.trigger_exit();
+            mThreadSend.wait_completion( areg::WAIT_INFINITE );
+        }
 
-    mClientConnection.close_socket( );
-    mThreadSend.shutdown( areg::DO_NOT_WAIT );
+        mClientConnection.close_socket( );
+        mThreadSend.shutdown( areg::DO_NOT_WAIT );
+    } while (false);
+
     mThreadReceive.shutdown( areg::WAIT_INFINITE );
 
     mMessageDispatcher.remove_event_type( ServiceClientEvent::CLASS_ID );
@@ -452,7 +476,7 @@ void ServiceClientConnectionBase::on_connection_stopped()
     cancel_connection( );
 
     mThreadReceive.shutdown( areg::WAIT_INFINITE );
-    mThreadSend.shutdown( areg::WAIT_INFINITE );
+    _stop_send_thread( mSendStartLock, mThreadSend, false );
     mConnectionConsumer.on_service_channel_disconnected( channel );
 
     if ( is_connection_allowed( ) && (prevState != ConnectionPhase::ConnectionStopping) )
@@ -491,7 +515,7 @@ void ServiceClientConnectionBase::on_connection_lost()
 
     LOG_DBG( "Restarting lost connection with remote service" );
     mThreadReceive.shutdown( areg::WAIT_INFINITE );
-    mThreadSend.shutdown( areg::WAIT_INFINITE );
+    _stop_send_thread( mSendStartLock, mThreadSend, false );
     mConnectionConsumer.on_service_channel_lost( channel );
     if (!mTimerConnect.start_timer(areg::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1))
     {
@@ -544,8 +568,7 @@ bool ServiceClientConnectionBase::start_connection()
     if ( mThreadSend.is_running() )
     {
         LOG_DBG("The send thread was started while the connection was down, stopping it before the new one");
-        mThreadSend.set_closing();
-        mThreadSend.shutdown( areg::WAIT_INFINITE );
+        _stop_send_thread( mSendStartLock, mThreadSend, true );
     }
 
     mTimerConnect.stop_timer();
@@ -590,7 +613,7 @@ bool ServiceClientConnectionBase::start_connection()
         // are bounded and no exiting I/O thread can overlap the next connection attempt.
         mClientConnection.close_socket();
         mThreadReceive.shutdown( areg::WAIT_INFINITE );
-        mThreadSend.shutdown( areg::WAIT_INFINITE );
+        _stop_send_thread( mSendStartLock, mThreadSend, false );
         if (!mTimerConnect.start_timer(areg::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1))
         {
             LOG_WARN("Failed to start reconnect timer, retrying connection immediately.");

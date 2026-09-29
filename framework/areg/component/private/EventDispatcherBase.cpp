@@ -121,7 +121,7 @@ EventDispatcherBase::~EventDispatcherBase()
 
 bool EventDispatcherBase::start_dispatcher()
 {
-    mExternalEvents.reset_exit();
+    // The exit request is cleared by on_thread_registered() before start() returns.
     return run_dispatcher( );
 }
 

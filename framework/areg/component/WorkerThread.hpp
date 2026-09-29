@@ -138,8 +138,9 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   On enable: registers event consumers via the WorkerThreadConsumer callback.
-     *          On disable: unregisters them. Then delegates to the base to update mHasStarted.
+     * \brief   On enable: opens the event queue, signals that the dispatcher started, then
+     *          registers event consumers via the WorkerThreadConsumer callback.
+     *          On disable: unregisters the consumers, then closes the queue.
      *
      * \param   is_ready    True to enable event dispatching, false to disable.
      **/
