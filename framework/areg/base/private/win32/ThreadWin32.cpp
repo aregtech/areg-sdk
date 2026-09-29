@@ -118,6 +118,9 @@ Thread::ThreadCompletion Thread::_os_destroy_thread(uint32_t waitForStopMs)
     THREADHANDLE handle = mThreadHandle;
     if (handle != Thread::INVALID_THREAD_HANDLE)
     {
+        // Owns the run until shutdown() releases it, and repeats the exit request.
+        ++ mStopCount;
+        request_exit();
         _unregister_thread();
         mSyncObject.unlock();  // unlock, to let thread complete exit task.
 
