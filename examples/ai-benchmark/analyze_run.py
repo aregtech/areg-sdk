@@ -334,8 +334,6 @@ STOPPED_BEFORE = re.compile(r'FAILED at step "(?:documents|application|worksheet
                             r'configure|build)"')
 # A build whose documents step refused the spec generated nothing from it.
 DOCS_REFUSED = re.compile(r'FAILED at step "documents"')
-COUNTING = re.compile(r"\bwc\b|\bdu\b|--stat\b|\bcloc\b|stat\s+-c|\bfind\b.*-name.*\|",
-                      re.I)
 # A counting command measures the run only when it targets the run's own source.
 COUNTED_SOURCE = re.compile(r"(^|[\s\"'])(src|scenarios\.json|design\.json|\*\.(cpp|hpp))")
 

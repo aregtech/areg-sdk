@@ -33,7 +33,6 @@ import subprocess
 import sys
 import time
 
-BIN_DIR_DEFAULT = os.path.join('build', 'bin')
 ROUTER_PORT_DEFAULT = 8181
 SAMPLE_INTERVAL = 0.05
 ROUTER_READY_SECONDS = 15.0

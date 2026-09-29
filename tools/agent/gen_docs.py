@@ -63,7 +63,7 @@ def rule_number(name, band):
     return None
 
 import codegen_names  # noqa: E402
-from docmodel import (CONTAINERS, PREDEFINED, TYPE_KINDS,
+from docmodel import (TYPE_KINDS,
                       Refused, Vocabulary, Writer, described, esc, esc_text, fail,
                       gathering, named_list, refuse, reserve_params, spell, unique,
                       write_constants, write_datatypes, write_includes, write_method,

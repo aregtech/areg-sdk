@@ -1101,9 +1101,6 @@ class Interface:
             return self.passed_as(type_name)
         return 'const {} &'.format(self.cpp_type(type_name)[0])
 
-    def call_args(self, params):
-        return ', '.join(name for name, _ in params)
-
     def generated(self):
         """The names codegen.jar generated for this document."""
         if self._generated is None:
