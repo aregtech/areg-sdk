@@ -24,7 +24,8 @@ import tempfile
 import threading
 import time
 
-PROBE_NAMES = ("areg-keepalive-probe", "areg-keepalive-probe.exe", "areg-keepalive-probe.elf")
+PROBE_NAMES = ("areg-keepalive-probe", "areg-keepalive-probe.exe", "areg-keepalive-probe.elf",
+               "areg-keepalive-probe.mac")
 
 
 def find_probe(search_roots):
