@@ -509,53 +509,50 @@ ${stray}"
     fi
 
     if [ -n "${DEBRIEF}" ] && [ "${FRAMEWORK}" = "grpc" ]; then
-        # The same five questions the other arm is asked, with every one that names
-        # a tool, a page or an artefact of the SDK removed: naming one would tell
+        # The same questions the other arm is asked, with every one that names a
+        # tool, a page or an artefact of the SDK removed: naming one would tell
         # this arm the SDK exists.
         RULES="${RULES}
 
-Additionally, for this run only -- a diagnostic pass the normal task does not ask
-for. Do it last, after the report, and never let it change what you built:
+Additionally, for this run only: a review of the documentation, written last, after
+the report. It must not change what you built.
 
-- **Every document you opened or fetched, in order, with the request you opened it
-  at and why**, and what sent you to it.
-- **Every question you answered from your own training rather than from a document**,
-  and what you would have needed to read to answer it from documentation.
-- **Every place two sources said different things**, naming both, and which one
-  you followed.
-- **Anything you looked for and could not find** -- a signature, a rule, an example
-  -- and where you looked first.
-- **Every file under the project's own src/ or build/ you opened or searched**, with
-  the request, the question it was meant to answer, and whether your .proto or the
-  stubs generated from it already answered it.
-- **Everything you opened before the first build**: what in the task made you open
-  it then, rather than after the stubs were generated.
-- **Every command you ran to learn a syntax, a name or a signature**, and whether
-  its answer was enough or you had to look again elsewhere.
+- **The documents you read or fetched, in order**, each with what pointed to it: a
+  line of the task, another document, a command's output, or nothing.
+- **Every fact the task needed that no document stated** -- a name, a signature, a
+  rule -- and where you expected to find it.
+- **Every place two sources disagree**, naming both, and which one you followed.
+- **Anything you searched for and did not find** -- a signature, a rule, an example
+  -- and where you searched first.
+- **Every file under the project's own src/ or build/ you read or searched**, the
+  question it answered, and whether your .proto or the stubs generated from it
+  already answered it.
+- **Every document you read before the first build**, and the line of the task that
+  pointed to it.
+- **Every command you ran to look up a syntax, a name or a signature**, and whether
+  its output was enough.
 
 Be specific and short: a list, not prose."
     elif [ -n "${DEBRIEF}" ]; then
         RULES="${RULES}
 
-Additionally, for this run only -- a diagnostic pass the normal task does not ask
-for. Do it last, after the report, and never let it change what you built:
+Additionally, for this run only: a review of the documentation, written last, after
+the report. It must not change what you built.
 
-- **Every page you opened, in order, with the request you opened it at and why.**
-  Name the row of a routing table that sent you, or say that nothing did.
-- **Every question you answered from your own training rather than from a page**,
-  and what you would have needed to read to answer it from the documentation.
-- **Every place two sources said different things**, naming both, and which one
-  you followed.
-- **Every marker whose one-line hint was not enough**, and what it should have said.
-- **Anything you looked for and could not find** -- a signature, a rule, an example
-  -- and where you looked first.
-- **Every file under the project's src/ or build/ you opened or searched**, with
-  the request, the question it was meant to answer, and whether worksheet.txt
-  already answered it.
-- **Every page you opened before the first build_project.py call**: what in the
-  task or in AGENTS.md made you open it then, rather than after generation.
-- **Every tool you ran to learn a syntax, a name or a signature**, and whether its
-  answer was enough or you had to look again elsewhere.
+- **The pages you read, in order**, each with the routing-table row or tool output
+  that pointed to it, or \"none\".
+- **Every fact the task needed that no page stated** -- a name, a signature, a rule
+  -- and the page that should have stated it.
+- **Every place two sources disagree**, naming both, and which one you followed.
+- **Every marker whose one-line hint was not enough**, and what it should say.
+- **Anything you searched for and did not find** -- a signature, a rule, an example
+  -- and where you searched first.
+- **Every file under the project's src/ or build/ you read or searched**, the
+  question it answered, and whether worksheet.txt already answered it.
+- **Every page you read before the first build_project.py call**, and the line of
+  the task or AGENTS.md that pointed to it.
+- **Every tool you ran to look up a syntax, a name or a signature**, and whether its
+  output was enough.
 
 Be specific and short: a list, not prose."
     fi
