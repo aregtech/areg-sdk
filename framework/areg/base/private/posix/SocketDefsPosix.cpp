@@ -48,23 +48,28 @@ bool _os_init_socket()
     return true;
 }
 
-void _os_configure_connected_socket(SOCKETHANDLE hSocket) noexcept
+void _os_configure_connected_socket(SOCKETHANDLE hSocket, int32_t keepIdle, int32_t keepInterval, int32_t keepCount) noexcept
 {
     ASSERT(areg::is_valid_socket(hSocket));
 
+    // Keepalive probes of an idle connection declare a silent peer lost after keepIdle + keepInterval * keepCount seconds.
+    constexpr int32_t keepAlive { 1 };
+    ::setsockopt(hSocket, SOL_SOCKET , SO_KEEPALIVE, reinterpret_cast<const char *>(&keepAlive), sizeof(keepAlive));
+#if defined(__APPLE__)
+    ::setsockopt(hSocket, IPPROTO_TCP, TCP_KEEPALIVE, reinterpret_cast<const char *>(&keepIdle), sizeof(keepIdle));
+#elif defined(TCP_KEEPIDLE)
+    ::setsockopt(hSocket, IPPROTO_TCP, TCP_KEEPIDLE, reinterpret_cast<const char *>(&keepIdle), sizeof(keepIdle));
+#endif  // __APPLE__ / TCP_KEEPIDLE
+#if defined(TCP_KEEPINTVL)
+    ::setsockopt(hSocket, IPPROTO_TCP, TCP_KEEPINTVL, reinterpret_cast<const char *>(&keepInterval), sizeof(keepInterval));
+#endif  // TCP_KEEPINTVL
+#if defined(TCP_KEEPCNT)
+    ::setsockopt(hSocket, IPPROTO_TCP, TCP_KEEPCNT, reinterpret_cast<const char *>(&keepCount), sizeof(keepCount));
+#endif  // TCP_KEEPCNT
+
 #if defined(__linux__)
-    // Emit aggressive keepalive probes so dead peers are detected quickly.
     // TCP_USER_TIMEOUT is intentionally not set. It aborts connections whenever
     // the send buffer stays full for the timeout duration.
-    constexpr int32_t keepAlive     { 1 };
-    constexpr int32_t keepIdle      { 5 };
-    constexpr int32_t keepInterval  { 1 };
-    constexpr int32_t keepCount     { 3 };
-
-    ::setsockopt(hSocket, SOL_SOCKET , SO_KEEPALIVE, reinterpret_cast<const char *>(&keepAlive), sizeof(keepAlive));
-    ::setsockopt(hSocket, IPPROTO_TCP, TCP_KEEPIDLE, reinterpret_cast<const char *>(&keepIdle), sizeof(keepIdle));
-    ::setsockopt(hSocket, IPPROTO_TCP, TCP_KEEPINTVL, reinterpret_cast<const char *>(&keepInterval), sizeof(keepInterval));
-    ::setsockopt(hSocket, IPPROTO_TCP, TCP_KEEPCNT, reinterpret_cast<const char *>(&keepCount), sizeof(keepCount));
 
     // TCP_QUICKACK: Suppress the 200 ms delayed-ACK for the initial message burst.
     //               The kernel resets this flag after each receive, but setting it 
@@ -72,35 +77,11 @@ void _os_configure_connected_socket(SOCKETHANDLE hSocket) noexcept
     //               are ACKed promptly rather than stalling the sender for up to 200 ms.
     constexpr int32_t quickAck  { 1 };
     ::setsockopt(hSocket, IPPROTO_TCP, TCP_QUICKACK, reinterpret_cast<const char *>(&quickAck), sizeof(quickAck));
-#elif defined(__APPLE__)
-    // Darwin exposes per-socket idle time only. Interval and probe count stay at the system defaults.
+#elif defined(SO_NOSIGPIPE)
     // SO_NOSIGPIPE suppresses SIGPIPE on broken peers.
-    constexpr int32_t keepAlive { 1 };
-    constexpr int32_t keepIdle  { 5 };
     constexpr int32_t noSigPipe { 1 };
-    ::setsockopt(hSocket, SOL_SOCKET , SO_KEEPALIVE, reinterpret_cast<const char *>(&keepAlive), sizeof(keepAlive));
-    ::setsockopt(hSocket, IPPROTO_TCP, TCP_KEEPALIVE, reinterpret_cast<const char *>(&keepIdle), sizeof(keepIdle));
     ::setsockopt(hSocket, SOL_SOCKET , SO_NOSIGPIPE, reinterpret_cast<const char *>(&noSigPipe), sizeof(noSigPipe));
-#else  // generic POSIX fallback (BSDs, QNX, etc.)
-    constexpr int32_t keepAlive{ 1 };
-    ::setsockopt(hSocket, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char*>(&keepAlive), sizeof(keepAlive));
-    #if defined(TCP_KEEPIDLE)
-        constexpr int32_t keepIdle{ 5 };
-        ::setsockopt(hSocket, IPPROTO_TCP, TCP_KEEPIDLE, reinterpret_cast<const char*>(&keepIdle), sizeof(keepIdle));
-    #endif
-    #if defined(TCP_KEEPINTVL)
-        constexpr int32_t keepInterval{ 1 };
-        ::setsockopt(hSocket, IPPROTO_TCP, TCP_KEEPINTVL, reinterpret_cast<const char*>(&keepInterval), sizeof(keepInterval));
-    #endif
-    #if defined(TCP_KEEPCNT)
-        constexpr int32_t keepCount{ 3 };
-        ::setsockopt(hSocket, IPPROTO_TCP, TCP_KEEPCNT, reinterpret_cast<const char*>(&keepCount), sizeof(keepCount));
-    #endif
-    #if defined(SO_NOSIGPIPE)
-        constexpr int32_t noSigPipe{ 1 };
-        ::setsockopt(hSocket, SOL_SOCKET, SO_NOSIGPIPE, reinterpret_cast<const char*>(&noSigPipe), sizeof(noSigPipe));
-    #endif
-#endif  // __linux__ / __APPLE__ / generic POSIX
+#endif  // __linux__ / SO_NOSIGPIPE
 }
 
 void _os_release_socket()

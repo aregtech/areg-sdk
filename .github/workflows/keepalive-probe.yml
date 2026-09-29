@@ -25,7 +25,7 @@ on:
       blips:
         description: 'drop durations in seconds for the blip scenario (Linux)'
         required: false
-        default: '2,3,4,6'
+        default: '2,4,6,8,10'
 
 permissions:
   contents: read
@@ -74,7 +74,7 @@ jobs:
           "${PYTHON}" tests/keepalive-probe/keepalive_probe.py \
                   --search ./build ./product \
                   --limit ${{ github.event.inputs.limit || '1500' }} \
-                  --blips "${{ github.event.inputs.blips || '2,3,4,6' }}" \
+                  --blips "${{ github.event.inputs.blips || '2,4,6,8,10' }}" \
                   --out "keepalive-${{matrix.os}}.md"
 
       - name: Upload the report

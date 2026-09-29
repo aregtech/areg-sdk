@@ -138,8 +138,12 @@ namespace areg::os {
 
     /**
      * \brief   Applies platform-specific options that require a connected TCP socket.
+     * \param   hSocket         A valid connected socket handle.
+     * \param   keepIdle        Seconds of idle before the first keepalive probe.
+     * \param   keepInterval    Seconds between unanswered keepalive probes.
+     * \param   keepCount       Unanswered keepalive probes before the connection is lost.
      **/
-    void _os_configure_connected_socket(SOCKETHANDLE hSocket) noexcept;
+    void _os_configure_connected_socket(SOCKETHANDLE hSocket, int32_t keepIdle, int32_t keepInterval, int32_t keepCount) noexcept;
 
 } // namespace areg::os
 
@@ -496,7 +500,17 @@ AREG_API_IMPL void areg::socket_set_no_delay(SOCKETHANDLE hSocket) noexcept
     // Only meaningful on connected sockets, do NOT call on listening sockets.
     constexpr int32_t noDelay{ 1 };
     ::setsockopt(hSocket, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<const char *>(&noDelay), sizeof(noDelay));
-    areg::os::_os_configure_connected_socket(hSocket);
+
+    // Splits the configured seconds into 5 probes after an idle time of at least 1 s.
+    constexpr int32_t keepCount{ 5 };
+    const String& transport{ Identifier::to_string( static_cast<uint32_t>(areg::ConnectionType::Tcpip)
+                                                  , areg::ConnectionIdentifiers
+                                                  , static_cast<uint32_t>(areg::ConnectionType::Undefined)) };
+    const uint32_t configured{ Application::config_manager().network_keepalive(areg::EmptyStringA, transport) };
+    const int32_t keepAlive{ static_cast<int32_t>(configured < areg::SOCKET_KEEPALIVE_MAX_SEC ? configured : areg::SOCKET_KEEPALIVE_MAX_SEC) };
+    const int32_t keepInterval{ keepAlive > 10 ? (keepAlive - 5) / keepCount : 1 };
+    const int32_t keepIdle{ keepAlive > keepInterval * keepCount ? keepAlive - keepInterval * keepCount : 1 };
+    areg::os::_os_configure_connected_socket(hSocket, keepIdle, keepInterval, keepCount);
 }
 
 AREG_API_IMPL uint32_t areg::set_send_size(SOCKETHANDLE hSocket, uint32_t sendSize) noexcept

@@ -309,6 +309,13 @@ constexpr uint32_t      SOCKET_RECV_BUFFER_SIZE { 4u * areg::ONE_MEGABYTE };
 //!< Maximum milliseconds a single send() call may block waiting for TCP send-window space.
 constexpr uint32_t      SOCKET_SEND_TIMEOUT_MS  { 2500u };
 
+//!< Compile-time default for the seconds after which a silent peer of an idle connection is declared lost.
+//!< Override at runtime via net::SERVICE::TRANSPORT::keepalive in areg.init (value in seconds).
+constexpr uint32_t      SOCKET_KEEPALIVE_SEC    { 15u };
+
+//!< The largest keepalive time in seconds a socket accepts; a larger configured value is reduced to it.
+constexpr uint32_t      SOCKET_KEEPALIVE_MAX_SEC{ 3600u };
+
 //!< Floor applied to any caller-supplied max, prevents degenerate limits.
 constexpr uint32_t      MIN_CONNECTIONS         { 32u };
 
@@ -490,7 +497,9 @@ AREG_API void socket_configure(SOCKETHANDLE hSocket) noexcept;
 
 /**
  * \brief   Disables the Nagle algorithm (TCP_NODELAY) on a connected socket.
- *          Also applies platform-specific keepalive and broken-pipe handling.
+ *          Also applies platform-specific keepalive and broken-pipe handling. The keepalive
+ *          declares a silent peer of an idle connection lost after the seconds configured in
+ *          net::MODULE::tcpip::keepalive (SOCKET_KEEPALIVE_SEC by default).
  *          Call this only on client or accepted sockets, never on listening sockets.
  *
  * \param   hSocket     Valid connected socket descriptor.

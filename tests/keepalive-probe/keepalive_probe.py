@@ -169,7 +169,7 @@ def main():
     parser.add_argument("--search", nargs="*", default=["build", "product"], help="where to look for the probe")
     parser.add_argument("--out", default="keepalive-report.md", help="Markdown report to write")
     parser.add_argument("--limit", type=int, default=1200, help="seconds each dead-peer scenario may take")
-    parser.add_argument("--blips", default="2,3,4,6", help="drop durations in seconds for the blip scenario")
+    parser.add_argument("--blips", default="2,4,6,8,10", help="drop durations in seconds for the blip scenario")
     parser.add_argument("--blip-phase", type=float, default=4.5,
                         help="seconds the connection is idle before a blip starts; 4.5 puts a keepalive probe inside it")
     parser.add_argument("--no-drop", action="store_true",

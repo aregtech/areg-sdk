@@ -908,6 +908,16 @@ public:
     uint32_t network_cache(const String& module = areg::EmptyStringA, const String& connectType = areg::EmptyStringA) const noexcept;
 
     /**
+     * \brief   Returns the seconds after which a silent peer of an idle connection is declared lost
+     *          (net::MODULE::TRANSPORT::keepalive).
+     *          Lookup order: module-specific entry --> wildcard "*" entry --> compile-time default.
+     *          Falls back to SOCKET_KEEPALIVE_SEC when the key is absent or zero.
+     * \param   module          The process/application name. Pass empty string to use the current process name.
+     * \param   connectType     The transport type name (e.g. "tcpip"). Pass empty string to match any transport.
+     **/
+    uint32_t network_keepalive(const String& module = areg::EmptyStringA, const String& connectType = areg::EmptyStringA) const noexcept;
+
+    /**
      * \brief   Returns the default buffer block size for growing buffers.
      *
      * \param   whichModule     The module name or '*' for generic settings.

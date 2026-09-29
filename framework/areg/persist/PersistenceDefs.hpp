@@ -209,7 +209,9 @@ namespace areg {
         , QueueWaitTimeout     = 35    //!< Dispatcher lossless full-ring block timeout in ms (format: config::*::queue::timeout). 0 = QUEUE_DEFAULT_FULL_WAIT_MS.
         , QueueDropOnFull      = 36    //!< Dispatcher full-ring policy (format: config::*::queue::drop). false (default) = lossless block, true = drop-newest.
 
-        , AnyKey               = 37    //!< Indicates any key type.
+        , NetKeepAlive         = 37    //!< Seconds until a silent peer of an idle connection is lost (format: net::SERVICE::TRANSPORT::keepalive).
+
+        , AnyKey               = 38    //!< Indicates any key type.
     };
 
     /**
@@ -263,7 +265,9 @@ namespace areg {
             , {"config" , "*"   , "queue"   , "timeout"         }   //! 35  , Dispatcher lossless full-ring block timeout in ms (0 = QUEUE_DEFAULT_FULL_WAIT_MS).
             , {"config" , "*"   , "queue"   , "drop"            }   //! 36  , Dispatcher full-ring policy (false = lossless block, true = drop-newest).
 
-            , {"*"      , "*"   , "*"       , "*"               }   //! 37  , Indicates any key type (AnyKey sentinel -- keep last).
+            , {"net"    , "*"   , "*"       , "keepalive"       }   //! 37  , Seconds until a silent peer of an idle connection is lost (0 = SOCKET_KEEPALIVE_SEC).
+
+            , {"*"      , "*"   , "*"       , "*"               }   //! 38  , Indicates any key type (AnyKey sentinel -- keep last).
 
     };
 
@@ -449,6 +453,11 @@ inline constexpr const areg::ConfigKey& queue_wait_timeout() noexcept
 inline constexpr const areg::ConfigKey& queue_drop_on_full() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::QueueDropOnFull)];
+}
+
+inline constexpr const areg::ConfigKey& net_keepalive() noexcept
+{
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::NetKeepAlive)];
 }
 
 } // namespace areg
