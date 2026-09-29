@@ -743,8 +743,8 @@ def main():
     stale = present == 2 and app_older_than(root, args.build, specs)
     untouched = stale and app_untouched(root, args.build)
     if untouched and not args.regenerate:
-        print('== application: {} changed and src/ holds nothing of yours yet, so it '
-              'is written again.'.format(', '.join(os.path.basename(s) for s in specs)))
+        print('== application: {} changed and src/ holds only generated code and '
+              'bodies.txt, so it is written again.'.format(', '.join(os.path.basename(s) for s in specs)))
     if args.regenerate or present == 0 or untouched:
         command = [PYTHON, os.path.join(HERE, 'gen_skeleton.py'), '--doc', document,
                    '--app', '--mode', mode, '--force']
@@ -778,11 +778,19 @@ def main():
     # sources gets every body back. Filling the same body twice writes the same file.
     worksheet = os.path.join(root, args.bodies)
     if not args.no_fill and worksheet_has_code(worksheet):
+        # src/ that holds only generated code and bodies.txt stays regenerable: the stamp
+        # takes the filled sources, and a later design change writes src/ again by itself.
+        filled_only = app_untouched(root, args.build)
         if not run('worksheet',
                    [PYTHON, os.path.join(HERE, 'fill_markers.py'),
                     '--bodies', args.bodies],
                    root, kept=3):
             return 1
+        if filled_only:
+            design, _sources = read_stamp(root, args.build)
+            with open(os.path.join(root, args.build, APP_STAMP), 'w',
+                      encoding='utf-8') as handle:
+                handle.write(design + '\n' + sources_digest(root) + '\n')
 
     # The scaffold pass allows an open marker: the generated files are promised to
     # compile and run as written, and a marker is where a body goes. The final pass

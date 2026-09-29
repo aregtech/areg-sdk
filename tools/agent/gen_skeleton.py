@@ -232,6 +232,15 @@ def helper_docs(text):
     return found
 
 
+def _bodies_sections():
+    """The section names bodies.txt in the current directory holds, or none without it."""
+    try:
+        with open(BODIES, encoding='utf-8') as handle:
+            return {line[3:].strip() for line in handle if line.startswith('== ')}
+    except OSError:
+        return set()
+
+
 def print_todos(produced, out, written, holes=0, scenarios='', first=True, added=()):
     """How many holes each generated file leaves, and where the worksheet is.
 
@@ -265,6 +274,8 @@ def print_todos(produced, out, written, holes=0, scenarios='', first=True, added
     except OSError:
         pass
     if not first:
+        in_bodies = _bodies_sections()
+        added = [name for name in added if name not in in_bodies]
         if added:
             print(WORKSHEET_ADDED.format(total=total, files=files, path=WORKSHEET,
                                          bodies=BODIES, lines=lines,

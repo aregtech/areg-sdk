@@ -5087,6 +5087,18 @@ def check_step_fall_through(report):
                                        'bodies.txt applies as before: {}'
                         .format(same.strip()[-200:]))
             return
+        design['interfaces'][0]['steps'].insert(-1, {'name': 'recheck', 'send': 'open',
+                                                     'args': {'width': 200}})
+        with open('design.json', 'w', encoding='utf-8', newline='\n') as handle:
+            json.dump(design, handle)
+        with open('bodies.txt', 'w', encoding='utf-8', newline='\n') as handle:
+            handle.write('== step_recheck\n    // any answer\n')
+        written = subprocess.run(again, capture_output=True, text=True).stdout
+        if 'step_recheck' in written or 'applies to it as before' not in written:
+            report.fail('new-section', 'a generation says bodies.txt has no body for a '
+                                       'section it already holds: {}'
+                        .format(written.strip()[-200:]))
+            return
         scaffold = json.load(open('scenarios.json', encoding='utf-8'))
         scaffold['scenarios'] = scaffold['scenarios'][:1]
         scaffold['scenarios'][0]['scaffold'] = True
@@ -5104,8 +5116,8 @@ def check_step_fall_through(report):
     finally:
         os.chdir(here)
         shutil.rmtree(holder, ignore_errors=True)
-    report.ok('new-section', 'a generation names each worksheet section it added, and '
-                             'one that added none says bodies.txt applies as before')
+    report.ok('new-section', 'a generation names each worksheet section it added and '
+                             'bodies.txt lacks, and otherwise says bodies.txt applies as before')
 
 
 def check_step_values_split(report):

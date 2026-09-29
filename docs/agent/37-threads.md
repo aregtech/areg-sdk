@@ -30,59 +30,56 @@ registered timeout into a running guard. `check_contract.py` reports the mismatc
 
 ## 2. Worker threads
 
-"Never block in a handler" leaves the question of where slow work goes. A worker
-thread is the framework's answer: it belongs to one component, is declared in the
-model beside it, and runs a consumer the component hands over when asked.
+A worker thread takes the slow work of one component; they talk with custom events
+(`23-events.md`). **The component adds the worker's listener before its service starts**:
+an event sent earlier is dropped, `send_event()` returns false. `register_event_consumers()`
+runs with no order against the first request: leave it empty.
 
 ```cpp
-#include "areg/component/ComponentLoader.hpp"
-
-BEGIN_REGISTER_COMPONENT("Provider", Provider)
-    REGISTER_IMPLEMENT_SERVICE(X::ServiceName, X::InterfaceVersion)
-    REGISTER_WORKER_THREAD("ScanThread", "ScanConsumer")
-END_REGISTER_COMPONENT("Provider")
+#include "areg/component/WorkerThreadConsumer.hpp"
+class Worker : public areg::WorkerThreadConsumer, public ScanEventConsumer   // and process_event()
+{
+    void register_event_consumers(areg::WorkerThread &, areg::ComponentThread &) final {}
+    void unregister_event_consumers(areg::WorkerThread &) final {}
+};
+// Provider members: Worker mWorker; areg::WorkerThread * mWorkerThread{ nullptr };
 ```
 
-The second argument is a **consumer name**, and the component must answer to it:
+**Declared in the model.** The model creates the thread, then calls
+`notify_thread_started()` on the component thread, before `startup_component()`:
 
 ```cpp
-#include "areg/appbase/Application.hpp"
-#include "areg/component/Component.hpp"
-#include "areg/component/ComponentThread.hpp"
-
-class Worker : public areg::WorkerThreadConsumer      // a member of the component
-{
-public:
-    explicit Worker(const areg::String & name) : areg::WorkerThreadConsumer(name) {}
-protected:
-    void register_event_consumers(areg::WorkerThread & work,
-                                  areg::ComponentThread & master) final;   // subscribe here
-    void unregister_event_consumers(areg::WorkerThread & work) final;
-};
+    REGISTER_WORKER_THREAD("ScanThread", "ScanConsumer")     // in BEGIN_REGISTER_COMPONENT
 
 Provider::Provider(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
-    : areg::Component(entry, owner)
-    , mWorker(entry.mWorkerThreads[0].mConsumerName)     // not the literal
-{ }
+    : areg::Component(entry, owner), mWorker(entry.mWorkerThreads[0].mConsumerName) { }
 
-areg::WorkerThreadConsumer * Provider::worker_thread_consumer(
-        const areg::String & consumerName, const areg::String & workerThreadName)
+areg::WorkerThreadConsumer * Provider::worker_thread_consumer(const areg::String & name, const areg::String & thread)
+{   return name == mWorker.consumer_name() ? &mWorker : areg::Component::worker_thread_consumer(name, thread); }
+
+void Provider::notify_thread_started(areg::WorkerThreadConsumer & consumer, areg::WorkerThread & thread)
 {
-    return mWorker.consumer_name() == consumerName
-         ? &mWorker
-         : areg::Component::worker_thread_consumer(consumerName, workerThreadName);
+    if (&consumer == &mWorker) { mWorkerThread = &thread; ScanEvent::add_listener(mWorker, thread); }
 }
 ```
 
-**Take the name from `entry.mWorkerThreads[]`, never from the literal you passed to
-the macro.** The model stores it qualified by the role name, so a consumer built from
-the bare literal never matches, the thread runs with no consumer, and every event
-sent to it is dropped in silence. `check_contract.py` reports a name nothing answers
-to as `P-11`. `REGISTER_WORKER_THREAD_EX` and `_EX2` take the same watchdog and stack
-arguments as the thread macros.
+Take the consumer name from `entry.mWorkerThreads[]`, never the literal: the model
+qualifies it by the role name (`P-11`). `REGISTER_WORKER_THREAD_EX` and `_EX2` take the
+thread macros' watchdog and stack arguments.
 
-The component and its worker thread talk with custom events: `23-events.md`, and
-`examples/18_pubworker` shows both sides.
+**Created by hand.** No macro and no `worker_thread_consumer()`:
+
+```cpp
+void Provider::startup_component(areg::ComponentThread & owner)
+{
+    mWorkerThread = create_worker_thread("ScanThread", mWorker, owner);  // once it accepts events
+    if (mWorkerThread != nullptr) ScanEvent::add_listener(mWorker, *mWorkerThread);
+    areg::Component::startup_component(owner);                          // announces the service
+}
+```
+
+Both remove the listener in `shutdown_component()` before calling the base.
+`recipes/07-worker-events` is the model form, built and run as written.
 
 ---
 
@@ -121,6 +118,6 @@ back from its `ComponentEntry`. Working example:
 - [ ] Every `REGISTER_WORKER_THREAD` consumer name is answered by
       `worker_thread_consumer()`, comparing against
       `entry.mWorkerThreads[..].mConsumerName` and not a literal.
-- [ ] The worker thread subscribes in `register_event_consumers` and unsubscribes in
-      `unregister_event_consumers`.
+- [ ] The component adds the worker's listener in `notify_thread_started()` or right after
+      `create_worker_thread()`, and removes it in `shutdown_component()`.
 - [ ] A runtime model is added with `add_model_unique()` before `load_model()`.

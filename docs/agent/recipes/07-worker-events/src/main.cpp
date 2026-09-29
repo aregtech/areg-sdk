@@ -69,8 +69,9 @@ AREG_DECLARE_EVENT(ScanRequestData, ScanRequestEvent, ScanRequestEventConsumer);
 AREG_DECLARE_EVENT(ScanResultData,  ScanResultEvent,  ScanResultEventConsumer);
 
 //! Runs on the worker thread. Nothing here blocks the component's dispatcher.
+//! The component adds and removes its listener, so the event consumer base is public.
 class ScanWorker final  : public    areg::WorkerThreadConsumer
-                        , private   ScanRequestEventConsumer
+                        , public    ScanRequestEventConsumer
 {
 public:
     explicit ScanWorker(const areg::String & consumerName)
@@ -78,18 +79,12 @@ public:
     { }
 
 protected:
-    void register_event_consumers(areg::WorkerThread & workThread,
+    void register_event_consumers(areg::WorkerThread & /*workThread*/,
                                   areg::ComponentThread & /*masterThread*/) final
-    {
-        ScanRequestEvent::add_listener(static_cast<ScanRequestEventConsumer &>(*this),
-                                       static_cast<areg::DispatcherThread &>(workThread));
-    }
+    { }
 
-    void unregister_event_consumers(areg::WorkerThread & workThread) final
-    {
-        ScanRequestEvent::remove_listener(static_cast<ScanRequestEventConsumer &>(*this),
-                                          static_cast<areg::DispatcherThread &>(workThread));
-    }
+    void unregister_event_consumers(areg::WorkerThread & /*workThread*/) final
+    { }
 
     void process_event(const ScanRequestData & data) final
     {
@@ -126,15 +121,31 @@ public:
     static constexpr std::string_view ConsumerName{ "ScanWorkerConsumer" };
 
 protected:
+    //! The model created the worker thread and it accepts events: its listener is added
+    //! here, before startup_component() announces the service.
+    void notify_thread_started(areg::WorkerThreadConsumer & consumer, areg::WorkerThread & workerThread) final
+    {
+        if (&consumer == &mWorker)
+        {
+            mWorkerThread = &workerThread;
+            ScanRequestEvent::add_listener(mWorker, workerThread);
+        }
+    }
+
     void startup_component(areg::ComponentThread & comThread) final
     {
-        areg::Component::startup_component(comThread);
         ScanResultEvent::add_listener(static_cast<ScanResultEventConsumer &>(self()),
                                       static_cast<areg::DispatcherThread &>(comThread));
+        areg::Component::startup_component(comThread);
     }
 
     void shutdown_component(areg::ComponentThread & comThread) final
     {
+        if (mWorkerThread != nullptr)
+        {
+            ScanRequestEvent::remove_listener(mWorker, *mWorkerThread);
+        }
+
         ScanResultEvent::remove_listener(static_cast<ScanResultEventConsumer &>(self()),
                                          static_cast<areg::DispatcherThread &>(comThread));
         areg::Component::shutdown_component(comThread);
@@ -187,7 +198,8 @@ protected:
     }
 
 private:
-    ScanWorker mWorker;
+    ScanWorker              mWorker;
+    areg::WorkerThread *    mWorkerThread{ nullptr };
 
     inline Scanner & self()
     {   return (*this); }
