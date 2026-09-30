@@ -333,7 +333,7 @@ the recipes already build and run. `check_corpus.py` fails if the three drift ap
 | --- | --- | --- |
 | `setup-project.sh` (Linux/macOS) | a POSIX shell | -- |
 | `setup-project.ps1` (Windows) | PowerShell 5.1 or 7; `setup-project.bat` runs it | -- |
-| `agent/setup_project.py` | Python 3 | `AGENTS.md`, `design.json`, `scenarios.json` and the startup file of each common coding agent |
+| `agent/setup_project.py` | Python 3 | `AGENTS.md`, `design.json` and `scenarios.json`; in a directory that already holds a project, only its `AGENTS.md` |
 
 ```bash
 sh tools/setup-project.sh --name myapp --root ~/myapp --mode local
@@ -351,7 +351,7 @@ python3 tools/agent/setup_project.py --name myapp --root ~/myapp --mode ipc --sd
 | `--sdk-root` | Build against a local SDK copy instead of fetching from GitHub |
 | `--tag` | The SDK tag to fetch |
 | `--force` | Scaffold into a directory that is not empty; nothing is deleted |
-| `--no-agents`, `--harness`, `--no-harness`, `--quiet` | `setup_project.py` only: which agent files to write |
+| `--no-agents`, `--harness`, `--no-harness`, `--quiet` | `setup_project.py` only: which agent files to write. `AGENTS.md` alone by default; `--harness NAME` or `--harness all` adds the startup file of a harness that does not read `AGENTS.md` |
 
 On a terminal, a missing name, mode or directory is asked for.
 

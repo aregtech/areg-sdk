@@ -6,8 +6,9 @@ the scripts that run an agent against them and measure the result.
 The benchmark asks one question: **can an agent that has never seen a framework build a
 correct application from that framework's own documentation, and what does it cost?**
 areg is measured against a framework the model already knows from training (gRPC): the
-same requirements, the same agent, the same model and the same effort. The first
-measured pair is [`baseline-2026-09-13.md`](baseline-2026-09-13.md).
+same requirements, the same agent, the same model and the same effort. The current
+comparison, with Claude Sonnet 5.5, is [`baseline-2026-09-29.md`](baseline-2026-09-29.md);
+the first measured pair, with Sonnet 5, is [`baseline-2026-09-13.md`](baseline-2026-09-13.md).
 
 - [Quick start](#quick-start)
 - [What is here](#what-is-here)
@@ -73,7 +74,8 @@ run-benchmark.sh --task examples/ai-benchmark/prompt-elevator.md --dry-run
 | `verify_run.py` | the hidden acceptance probes, run on the finished project; the agent never sees it | nobody |
 | `build_config.py` | records the configuration a run actually built (Debug or Release) as one line of `meta.txt` | nobody |
 | `INSTALL-grpc.md` | installing the gRPC toolchain, before the first gRPC run | **you**, once |
-| `baseline-2026-09-13.md` | the first areg and gRPC pair, side by side | -- |
+| `baseline-2026-09-29.md` | the current comparison: 4 runs per framework with Claude Sonnet 5.5 | -- |
+| `baseline-2026-09-13.md` | the first areg and gRPC pair, side by side, with Sonnet 5 | -- |
 
 ---
 
@@ -423,6 +425,7 @@ either, so neither agent is sent looking for the other framework.
 | `--mode` | the areg application shape the scaffold writes: `ipc`, `local` or `pubsub` | `ipc` | `--mode local` |
 | `--attempts` | the build-and-fix and run-and-fix bound, the same for both arms; `0` removes it and is warned about | `15` | `--attempts 15` |
 | `--debrief` | a diagnostic pass after the report: what the run could not find | off | `--debrief` |
+| `--debug` | the full analysis after the run: every event, page read and request. Without it the run ends with a short headline: cost, requests, tokens, time, lines of C++ | off | `--debug` |
 | `--verify` | the hidden probes after the run: `none`, `probes`, or `sanitize` for an ASan and UBSan rebuild as well | `probes` | `--verify sanitize` |
 | `--recipes` | areg only: whether a documented recipe may be copied, `none` or `copy` | `none` | `--recipes copy` |
 | `--web` | whether the agent may search and fetch pages | `off` areg, `on` gRPC | `--web on` |
@@ -498,7 +501,9 @@ python3 examples/ai-benchmark/verify_run.py  ./20260921c-coffeemachine --sanitiz
 
 ### The numbers
 
-`analyze_run.py` prints, per Claude run: cost and its split, API requests, reasoning
+A run ends with a short headline: cost billed and `cold @1h`, API requests, tokens, time
+and lines of C++. `--debug`, or `analyze_run.py` on the run directory, prints the full
+analysis, per Claude run: cost and its split, API requests, reasoning
 tokens, cache reads and writes, peak context, build and scenario runs, the fix cycles,
 filesystem searches, reads of framework sources, every page opened with its size, the
 lines of C++ written by hand, and a per-request timeline.

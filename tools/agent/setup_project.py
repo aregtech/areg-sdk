@@ -259,7 +259,107 @@ Do not search this project or the SDK before reading it.
 REDIRECT_FENCE = {
     '.cursor/rules/project.mdc':
         '---\ndescription: project entry point\nalwaysApply: true\n---\n',
+    'CLAUDE.md': '@AGENTS.md\n\n',
 }
+
+
+# The part of a project AGENTS.md this tool owns. A rerun replaces what lies between
+# the two lines and leaves everything around them as the project's authors wrote it.
+AGENTS_BEGIN = '<!-- areg-sdk:begin -- written by setup_project.py; a rerun replaces this block -->'
+AGENTS_END = '<!-- areg-sdk:end -->'
+# The first line of the guide an earlier setup_project.py wrote, without the markers.
+LEGACY_GUIDE = 'An application built on the AREG framework.'
+
+ATTACH = """## Building with AREG
+
+This project uses the AREG SDK at `{sdk}` for its multithreading, IPC and
+service components. Before writing code that uses areg, read `{sdk}/AGENTS.md`:
+it routes each task to the one page that answers it. Never search the SDK.
+
+| I need to ... | Read |
+|---|---|
+| Add areg to this project's CMake build | `{sdk}/docs/wiki/02b-cmake-integrate.md` |
+| Decide what the services are | `{sdk}/docs/agent/05-design.md` |
+| Add a service, a provider or a consumer | `{sdk}/docs/agent/00-cheatsheet.md` |
+| The signature of one framework name | `python3 {sdk}/tools/agent/api_help.py <name>` |
+| Check the code against the areg contract | `python3 {sdk}/tools/agent/check_contract.py <dir> --strict` |
+| Work out why it does not work | `{sdk}/docs/agent/51-debug.md` |
+
+What you remember about areg from training is out of date: its names were changed.
+Take every name from these pages or from `api_help.py`.
+"""
+
+
+def place_agents(root, text, keep_reference=None):
+    """Puts text into the project AGENTS.md between the markers, without losing a line.
+
+    A missing file is written. A file holding the markers has its block replaced, and
+    a guide an earlier version of this tool wrote is replaced whole. Any other file is
+    the project's own: the block is appended, unless keep_reference names a path the
+    file already mentions. Returns what was done: written, updated, appended or kept.
+    """
+    path = os.path.join(root, 'AGENTS.md')
+    block = '{}\n{}\n{}\n'.format(AGENTS_BEGIN, text.strip('\n'), AGENTS_END)
+    if not os.path.isfile(path):
+        with open(path, 'w', encoding='utf-8') as handle:
+            handle.write(block)
+        return 'written'
+    with open(path, encoding='utf-8', errors='replace') as handle:
+        old = handle.read()
+    begin, end = old.find(AGENTS_BEGIN), old.find(AGENTS_END)
+    if 0 <= begin < end:
+        rest = old[end + len(AGENTS_END):].lstrip('\n')
+        new, done = old[:begin] + block + rest, 'updated'
+    elif LEGACY_GUIDE in '\n'.join(old.splitlines()[:4]):
+        new, done = block, 'updated'
+    elif keep_reference and keep_reference in old:
+        return 'kept'
+    else:
+        new, done = old.rstrip('\n') + '\n\n' + block, 'appended'
+    with open(path, 'w', encoding='utf-8') as handle:
+        handle.write(new)
+    return done
+
+
+def import_agents_into_claude(root):
+    """Adds an @AGENTS.md import to each CLAUDE.md the project already has.
+
+    Claude Code reads AGENTS.md on its own only while no CLAUDE.md exists; a CLAUDE.md
+    that imports it loads both. Nothing else in the file changes.
+    """
+    changed = []
+    for relative, target in (('CLAUDE.md', '@AGENTS.md'),
+                             ('.claude/CLAUDE.md', '@../AGENTS.md')):
+        path = os.path.join(root, *relative.split('/'))
+        if not os.path.isfile(path):
+            continue
+        with open(path, encoding='utf-8', errors='replace') as handle:
+            text = handle.read()
+        if re.search(r'(^|\s)' + re.escape(target) + r'(\s|$)', text):
+            continue
+        with open(path, 'a', encoding='utf-8') as handle:
+            handle.write(('' if text.endswith('\n') or not text else '\n') + target + '\n')
+        changed.append(relative)
+    return changed
+
+
+def attach(root, sdk, quiet):
+    """Points an existing project at the SDK: AGENTS.md and nothing else of the scaffold."""
+    sdk = sdk.replace('\\', '/')
+    done = place_agents(root, ATTACH.format(sdk=sdk), keep_reference=sdk + '/AGENTS.md')
+    print('{}: AGENTS.md {}'.format(root, {
+        'written': 'written',
+        'updated': 'updated: the areg block was replaced',
+        'appended': 'already existed: the areg block was appended to it',
+        'kept': 'already names {}/AGENTS.md: left as it is'.format(sdk)}[done]))
+    for relative in import_agents_into_claude(root):
+        if not quiet:
+            print('  {}: @AGENTS.md import appended, so Claude Code loads AGENTS.md too'
+                  .format(relative))
+    print('  No file of the project was scaffolded: it keeps its own CMakeLists.txt and '
+          'sources.')
+    print('  Open your coding agent in {} and describe the component to add.'.format(root))
+    return 0
 
 
 def write_redirects(root, name, harnesses):
@@ -418,8 +518,7 @@ generated code under `build/` it does not read.
 {never}
 """.format(name=name, manual=manual, where=where, sdk=sdk, never=never)
 
-    with open(os.path.join(root, 'AGENTS.md'), 'w', encoding='utf-8') as handle:
-        handle.write(text)
+    return place_agents(root, text)
 
 
 def write_scenarios(root, mode, binaries):
@@ -529,11 +628,40 @@ def write_run_script(root, name, binaries):
     os.chmod(path, os.stat(path).st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
 
+def attach_existing(root, args):
+    """attach() for the directory named by --root, after the checks a scaffold makes."""
+    root = os.path.abspath(root)
+    if args.no_agents:
+        fail('{} already holds a project, and --no-agents leaves nothing to write'
+             .format(root))
+    sdk = os.path.abspath(args.sdk_root) if args.sdk_root else SDK_ROOT
+    if not os.path.isfile(os.path.join(sdk, 'AGENTS.md')):
+        fail('no AGENTS.md under the SDK {}; pass --sdk-root'.format(sdk))
+    for tree in (sdk, SDK_ROOT):
+        if inside(root, tree):
+            fail('{} is inside the SDK {}'.format(root, tree))
+    return attach(root, sdk, args.quiet)
+
+
+def existing_project(root):
+    """True for a directory holding files, none of them a scaffold of this tool.
+
+    Hidden entries do not count: an agent or an editor started in an empty directory
+    leaves its own state there, and that directory is still new.
+    """
+    if not os.path.isdir(root):
+        return False
+    names = [n for n in os.listdir(root) if not n.startswith('.')]
+    return bool(names) and not os.path.isfile(os.path.join(root, 'areg-project.json'))
+
+
 def main():
     parser = argparse.ArgumentParser(
         description='Create a ready-to-build AREG project.')
     parser.add_argument('--name', help='project name; a C identifier')
-    parser.add_argument('--root', help='directory to create, outside the SDK; defaults to ./<name>')
+    parser.add_argument('--root', help='directory to create, outside the SDK; defaults to '
+                                       './<name>. A directory that already holds a project '
+                                       'is not scaffolded: its AGENTS.md is pointed at the SDK')
     parser.add_argument('--mode', choices=sorted(MODES), default=None,
                         help='local: one process. ipc: two processes. '
                              'pubsub: local, whose interface also declares '
@@ -550,14 +678,12 @@ def main():
                         help='do not write AGENTS.md into the project')
     parser.add_argument('--harness', action='append', default=None,
                         metavar='NAME',
-                        help='write only these harnesses startup files, pointing at '
-                             'the project AGENTS.md. Repeatable. Default is every '
-                             'one, because the agent that opens this project next is '
-                             'not known here. Known: '
-                             + ', '.join(sorted(HARNESS_FILES)))
+                        help='also write this harness startup file, pointing at the '
+                             'project AGENTS.md, for a harness that does not read '
+                             'AGENTS.md itself. Repeatable; "all" writes every one. '
+                             'Default: none. Known: ' + ', '.join(sorted(HARNESS_FILES)))
     parser.add_argument('--no-harness', action='store_true',
-                        help='write no harness startup file. Only an agent whose '
-                             'harness reads AGENTS.md itself then finds the guide')
+                        help='write no harness startup file; the default')
     parser.add_argument('--quiet', action='store_true',
                         help='do not list the harness files written')
     args = parser.parse_args()
@@ -566,6 +692,11 @@ def main():
     name = args.name
     mode = args.mode
     root = args.root
+
+    # A directory holding files that no scaffold wrote is a project of its own: it is
+    # pointed at the SDK and nothing of it is replaced.
+    if root and existing_project(root) and not args.force:
+        return attach_existing(root, args)
 
     if name is None:
         if not interactive:
@@ -578,6 +709,8 @@ def main():
     if root is None:
         root = ask('Project directory', './' + name) if interactive else './' + name
 
+    if existing_project(root) and not args.force:
+        return attach_existing(root, args)
     if not NAME_PATTERN.match(name):
         fail('project name "{}" is not a C identifier; it becomes a CMake target'.format(name))
 
@@ -592,15 +725,15 @@ def main():
         if sdk and os.path.isfile(os.path.join(sdk, 'areg.cmake')) and inside(root, sdk):
             fail('{} is inside the SDK {}. A project is created outside it: run this '
                  'from\n  the project directory with --root .'.format(root, sdk))
-    if os.path.exists(root) and os.listdir(root) and not args.force:
-        fail('{} exists and is not empty.\n'
-             '  Pass --force to scaffold into it anyway. --force writes only the '
+    if os.path.isfile(os.path.join(root, 'areg-project.json')) and not args.force:
+        fail('{} already holds a project this tool scaffolded.\n'
+             '  Pass --force to scaffold into it again. --force writes only the '
              'files this tool\n'
-             '  scaffolds -- CMakeLists.txt, src/, AGENTS.md, scenarios.json, '
-             'run.sh, .gitignore --\n'
-             '  over any file of the same name. Every other file in the directory '
-             'is left alone,\n'
-             '  and nothing is deleted. Use a different --root to keep the '
+             '  scaffolds -- CMakeLists.txt, src/, scenarios.json, run.sh, '
+             '.gitignore -- over any\n'
+             '  file of the same name; AGENTS.md keeps every line outside its areg '
+             'block. Every\n  other file in the directory is left alone, '
+             'and nothing is deleted. Use a different --root to keep the '
              'existing files untouched.'.format(root))
 
     if not RECIPES:
@@ -623,7 +756,10 @@ def main():
     binaries = [b.format(name=name) for b in MODES[mode]['binaries']]
     if not args.no_agents:
         write_agents(root, name, mode, sdk_root, binaries)
-        harnesses = [] if args.no_harness else (args.harness or sorted(HARNESS_FILES))
+        for relative in import_agents_into_claude(root):
+            if not args.quiet:
+                print('  {}: @AGENTS.md import appended'.format(relative))
+        harnesses = [] if args.no_harness else (args.harness or [])
         if 'all' in harnesses:
             harnesses = sorted(HARNESS_FILES)
         unknown = [h for h in harnesses if h not in HARNESS_FILES]

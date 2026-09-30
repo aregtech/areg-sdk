@@ -74,7 +74,7 @@ project, so a new project starts from code that the SDK's own checks build and r
 | `tools/setup-project.sh` | a POSIX shell (Linux, macOS, WSL, Git Bash) | -- |
 | `tools/setup-project.bat` | Windows; runs `setup-project.ps1` beside it | -- |
 | `tools/setup-project.ps1` | Windows PowerShell 5.1 or PowerShell 7 | -- |
-| `tools/agent/setup_project.py` | Python 3 | the files an AI coding agent works from: `AGENTS.md`, `design.json`, `scenarios.json` and the startup file of each common agent |
+| `tools/agent/setup_project.py` | Python 3 | the files an AI coding agent works from: `AGENTS.md`, `design.json` and `scenarios.json` |
 
 Use the shell script or the batch file when you write the code yourself. Use the Python
 tool when an AI coding agent writes it; see [Building with an AI Coding Agent](#building-with-an-ai-coding-agent).
@@ -105,6 +105,17 @@ The three tools take the same options.
 
 `setup_project.py` has a few more options for the agent files: `--no-agents`,
 `--harness`, `--no-harness`, `--quiet`. Run it with `--help`.
+
+**An existing project.** Pointed with `--root` at a directory that already holds files
+this tool did not scaffold, `setup_project.py` scaffolds nothing. It writes `AGENTS.md`,
+or adds a marked areg block to the one the project has, naming the SDK, its tools and
+the pages for adding areg to an existing build. A rerun replaces only that block. A
+project `CLAUDE.md` gets an `@AGENTS.md` import, since Claude Code reads `AGENTS.md` on
+its own only while no `CLAUDE.md` exists.
+
+```bash
+python3 areg-sdk/tools/agent/setup_project.py --root ./my-existing-app
+```
 
 **Example: two processes, built against a local SDK copy:**
 ```bash
@@ -378,16 +389,19 @@ effective agentic coding, because the tools an agent works with are Python scrip
 
 | Tool | What it does for the agent |
 |------|----------------------------|
-| `setup_project.py` | writes `AGENTS.md`, which routes the agent to the one page its task needs, and the startup file of each common agent |
+| `setup_project.py` | writes `AGENTS.md`, which routes the agent to the one page its task needs; in an existing project it adds that route to the project's own `AGENTS.md` |
 | `build_project.py` | turns one `design.json` into the service documents, the C++ skeleton, the model and the test scenarios, then builds and runs them in one command |
 | `check_contract.py` | catches the defects that compile cleanly and fail silently, before the build |
 | `run_scenarios.py` | runs the application and exits 0 only when every scenario passes |
 
 Without these tools an agent writes the communication code, the model and the tests by
-hand, from memory. That means more requests, more build-and-fix cycles, more tokens and
-more defects. In a measured comparison, an agent using these tools wrote about 2.8x less
-C++ by hand and needed 3x fewer requests than an agent using gRPC:
-[AI benchmark](../../examples/ai-benchmark/baseline-2026-09-13.md).
+hand, from memory. That means more code to review, more build-and-fix cycles, more
+output tokens and more defects. In a measured comparison with Claude Sonnet 5.5, an agent
+using these tools wrote about 3x less C++ by hand than an agent using gRPC (386-420 lines
+against 1,252-1,411), with 37% fewer output tokens, and its cost varied by 4% from run to
+run against 32%. With the earlier Sonnet 5 the gap was wider: it also needed about half
+the API requests, where Sonnet 5.5 needs about the same number on both:
+[AI benchmark](../../examples/ai-benchmark/baseline-2026-09-29.md).
 
 **Start an agent project:**
 ```bash

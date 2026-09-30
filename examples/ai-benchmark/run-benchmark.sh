@@ -61,6 +61,9 @@ One cold agent run, measured, against a clean snapshot of this checkout.
   --debrief          append a diagnostic pass: what the run could not find. It costs
                      requests on purpose, so such a run is never compared with one
                      made without it.
+  --debug            print the full analysis of the run: every event, every page
+                     read and every request. Without it the run ends with a short
+                     headline: cost, requests, tokens, time and lines of C++.
   --recipes MODE     none | copy, areg only               (default: none)
                        none: no example source may be copied; every file is written
                        or generated. copy: a documented recipe may be copied.
@@ -250,7 +253,7 @@ main()
 {
     local FRAMEWORK="areg" TASK="examples/ai-benchmark/prompt-coffeemachine.md" WRAPPER=""
     local PROJECT="" MODE="ipc" AGENT="claude" MODEL="" EFFORT=""
-    local ATTEMPTS="15" DEBRIEF="" RECIPES="none" LABEL="" DRY="" ALLOW_INSTALLED=""
+    local ATTEMPTS="15" DEBRIEF="" DEBUG="" RECIPES="none" LABEL="" DRY="" ALLOW_INSTALLED=""
     local REPEAT="1"
     local VERIFY="probes" SDK_OPT="" GRPC_OPT="" WEB=""
 
@@ -282,6 +285,7 @@ main()
             --verify)    need "$@"; VERIFY="$2";    shift 2 ;;
             --web)       need "$@"; WEB="$2";       shift 2 ;;
             --debrief)   DEBRIEF=1; shift ;;
+            --debug)     DEBUG=1; shift ;;
             --dry-run)   DRY=1; shift ;;
             --allow-installed-areg) ALLOW_INSTALLED=1; shift ;;
             *) die "unknown option: $1 (run with --help)" ;;
@@ -707,8 +711,10 @@ ${leak}
     fi
     # A run that failed is the one most worth reading, and the analysis is what says
     # why. It runs whatever the exit code was, and it never changes that code.
+    local DETAIL="--brief"
+    [ -z "${DEBUG}" ] || DETAIL="--record"
     case "${AGENT}" in
-        claude)  python3 "${HERE}/analyze_run.py" "${RUN}" --record || true ;;
+        claude)  python3 "${HERE}/analyze_run.py" "${RUN}" --record "${DETAIL}" || true ;;
         copilot) python3 "${HERE}/measure.py" "${RUN}/result.json" || true ;;
         *) echo "usage: native metrics in ${RESULT}; no cross-agent cost conversion" ;;
     esac

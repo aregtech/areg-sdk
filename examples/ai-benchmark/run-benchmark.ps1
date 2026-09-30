@@ -54,6 +54,9 @@ One cold agent run, measured, against a clean snapshot of this checkout.
   --debrief          append a diagnostic pass: what the run could not find. It costs
                      requests on purpose, so such a run is never compared with one
                      made without it.
+  --debug            print the full analysis of the run: every event, every page
+                     read and every request. Without it the run ends with a short
+                     headline: cost, requests, tokens, time and lines of C++.
   --recipes MODE     none | copy, areg only               (default: none)
                        none: no example source may be copied; every file is written
                        or generated. copy: a documented recipe may be copied.
@@ -337,7 +340,7 @@ function Main([string[]]$Arguments)
 {
     $Framework = 'areg'; $Task = 'examples/ai-benchmark/prompt-coffeemachine.md'; $Wrapper = ''
     $Project = ''; $Mode = 'ipc'; $Agent = 'claude'; $Model = ''; $Effort = ''
-    $Attempts = '15'; $Debrief = $false; $Recipes = 'none'; $Label = ''; $Dry = $false
+    $Attempts = '15'; $Debrief = $false; $Debug = $false; $Recipes = 'none'; $Label = ''; $Dry = $false
     $Repeat = '1'
     $AllowInstalled = $false; $Verify = 'probes'
     $SdkOpt = ''; $GrpcOpt = ''; $Web = ''
@@ -383,6 +386,7 @@ function Main([string[]]$Arguments)
             '-h'                     { Write-Output $USAGE; exit 0 }
             '--help'                 { Write-Output $USAGE; exit 0 }
             '--debrief'              { $Debrief = $true }
+            '--debug'                { $Debug = $true }
             '--dry-run'              { $Dry = $true }
             '--allow-installed-areg' { $AllowInstalled = $true }
             default                  { Stop-Run "unknown option: $option (run with --help)" }
@@ -874,7 +878,10 @@ Be specific and short: a list, not prose.
     # A run that failed is the one most worth reading, and the analysis is what says
     # why. It runs whatever the exit code was, and it never changes that code.
     switch ($Agent) {
-        'claude'  { Write-Output (Invoke-Python (Join-Path $HERE 'analyze_run.py') $Run '--record') }
+        'claude'  {
+            $detail = if ($Debug) { '--record' } else { '--brief' }
+            Write-Output (Invoke-Python (Join-Path $HERE 'analyze_run.py') $Run '--record' $detail)
+        }
         'copilot' { Write-Output (Invoke-Python (Join-Path $HERE 'measure.py') (Join-Path $Run 'result.json')) }
         default   { Write-Output "usage: native metrics in $result; no cross-agent cost conversion" }
     }

@@ -182,13 +182,16 @@ service from nothing; the same harness scores it against hidden checks and runs 
 identical task on gRPC to compare.
 
 In our runs, agents finished the task on Areg as reliably as on gRPC: 57 of 57 runs
-passed every hidden probe over 3 days, on 4 tasks and 3 model families. With Claude Code
-and Sonnet 5, Areg needed about half the API requests of gRPC (median 26, range 16-32,
-against 55.5, range 31-90), for equal output tokens and time, with no filesystem
-searches -- not behind a framework the model was trained on. GitHub Copilot's
-GPT-5.6-Terra has been the cheapest of everything we've tried so far, across two agents
-and five models -- as few as 12 API requests, still 5 of 5 hidden probes passed. Agent
-runs vary: [ranges and method](./examples/ai-benchmark/).
+passed every hidden probe over 3 days, on 4 tasks and 3 model families, and so did all
+10 of the latest runs of both frameworks. With Claude Code and Sonnet 5.5, on the coffee
+machine, an agent on Areg wrote about 3x less C++ by hand than on gRPC (386-420 lines
+against 1,252-1,411), used 37% fewer output tokens and 34% less model time, with no
+filesystem searches, and cost a median of $0.71 against $0.80 -- within $0.03 from run to
+run, where gRPC runs varied by a third. Both needed about 9 API requests. With the earlier
+Sonnet 5 the gap was wider: Areg needed about half the API requests of gRPC (median 26
+against 55.5). GitHub Copilot's GPT-5.6-Terra also passed 5 of 5 hidden probes, in as
+few as 12 API requests. Agent runs vary: [4 runs per framework, ranges and
+method](./examples/ai-benchmark/baseline-2026-09-29.md).
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
