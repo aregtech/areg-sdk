@@ -1022,6 +1022,28 @@ class Interface:
         for attribute in root.findall('./AttributeList/Attribute'):
             self.attributes.append((attribute.get('Name'), attribute.get('DataType')))
 
+        # The machines this one hosts: (alias, document, hosting states in document
+        # order). load_imports() reads each into self.imports.
+        places = {}
+        for state in root.iter('State'):
+            if state.get('Submachine'):
+                places.setdefault(state.get('Submachine'), []).append(state.get('Name'))
+        self.hosted = [(location.get('Alias'), location.get('Name'),
+                        places.get(location.get('Alias'), []))
+                       for location in root.findall('./IncludeList/Location')
+                       if location.get('Alias') and location.get('Name')]
+        self.imports = []
+
+    def load_imports(self):
+        """Reads every hosted machine: (its Interface, its document, its hosting states)."""
+        self.imports = []
+        for alias, document, states in self.hosted:
+            if not os.path.isfile(document):
+                fail('{} hosts machine {} from {}, and there is no such file. The path is '
+                     'spelled from the project root.'.format(self.path, alias, document))
+            self.imports.append((Interface(document), document, states))
+        return self.imports
+
     def _params(self, method):
         result = []
         for param in method.findall('./ParamList/Parameter'):
@@ -1333,6 +1355,78 @@ def consumer_files(iface, class_name, include_root):
     return '\n'.join(header), '\n'.join(source)
 
 
+def handler_casts(machine):
+    """The arguments of the machine's constructor: its own handler, then one per hosted
+    instance, in the order codegen.jar declared them."""
+    casts = ['static_cast<{}ActionHandler &>(self())'.format(machine.name)]
+    handlers = machine.generated().entries('handler')
+    if machine.imports and len(handlers) != sum(len(states) for _, _, states in
+                                               machine.imports):
+        fail('codegen.jar declared {} hosted handler(s) for {}, which hosts {} state(s). '
+             'This is a defect of the tool, not of the document.'.format(
+                 len(handlers), machine.path,
+                 sum(len(states) for _, _, states in machine.imports)))
+    for entry in handlers.values():
+        casts.append('static_cast<{} &>(self())'.format(entry['returns']['call']))
+    return casts
+
+
+def hosted_bases(machine):
+    """The action handler class of each machine this one hosts, once each."""
+    return list(dict.fromkeys('{}ActionHandler'.format(inner.name)
+                              for inner, _, _ in machine.imports))
+
+
+def hosted_overrides(machine, indent=4):
+    """The actions and conditions of every hosted machine: one body serves every
+    instance. A name the host already declares is written once."""
+    done = set(machine.spell('action', name) for name, _ in machine.actions)
+    done.update(machine.spell('condition', name) for name, _, _ in machine.conditions
+                if machine.generated().has('condition', name))
+    pad = ' ' * indent
+    lines = []
+    for inner, _, states in machine.imports:
+        where = '{} runs it, in {}'.format(inner.name, ', '.join(states))
+        for name, params, returns in inner.conditions:
+            if not inner.generated().has('condition', name):
+                continue
+            spelled = inner.spell('condition', name)
+            if spelled in done:
+                continue
+            done.add(spelled)
+            lines += ['{}{} {}({}) final'.format(pad, inner.generated().returns('condition', name),
+                                                 spelled,
+                                                 inner.generated_params('condition', name)),
+                      pad + '{',
+                      marker('condition_' + name, 'answer the question this guard asks; '
+                             + where, indent + 4),
+                      placeholder('{}    return {};'.format(pad, default_expr(inner, returns))),
+                      pad + '}',
+                      '']
+        for name, params in inner.actions:
+            spelled = inner.spell('action', name)
+            if spelled in done:
+                continue
+            done.add(spelled)
+            lines += ['{}void {}({}) final'.format(pad, spelled,
+                                                   inner.generated_params('action', name)),
+                      pad + '{',
+                      marker(spelled, 'perform the effect; ' + where, indent + 4),
+                      pad + '}',
+                      '']
+    return lines
+
+
+def forward_calls(machine):
+    """How a request handler reaches the hosted instances, as comment lines."""
+    lines = []
+    for name, entry in machine.generated().entries('forward').items():
+        lines.append('    //   mFsm.{}({});'.format(name, ', '.join(
+            part.split()[-1].lstrip('&*') for part in
+            codegen_names.split_params(entry['params']['call']))))
+    return lines
+
+
 def machine_files(iface, class_name, include_root):
     """The component that hosts a state machine and implements its actions."""
     guard = class_name.upper() + '_HPP'
@@ -1346,11 +1440,16 @@ def machine_files(iface, class_name, include_root):
               '#include "areg/base/areg_global.h"',
               '#include "areg/component/Component.hpp"',
               '#include "{}/{}ActionHandler.hpp"'.format(include_root, iface.name),
-              '#include "{}/{}FSM.hpp"'.format(include_root, iface.name),
-              '',
+              '#include "{}/{}FSM.hpp"'.format(include_root, iface.name)]
+    header += ['#include "{}/{}ActionHandler.hpp"'.format(
+        os.path.dirname(document).replace('\\', '/'), inner.name)
+        for inner, document, _ in iface.imports]
+    header += ['',
               'class {} final : public    areg::Component'.format(class_name),
-              '{}, protected {}ActionHandler'.format(' ' * (len(class_name) + 13), iface.name),
-              '{',
+              '{}, protected {}ActionHandler'.format(' ' * (len(class_name) + 13), iface.name)]
+    header += ['{}, protected {}'.format(' ' * (len(class_name) + 13), base)
+               for base in hosted_bases(iface)]
+    header += ['{',
               'public:',
               '    {}(const areg::ComponentEntry & entry, areg::ComponentThread & owner);'.format(class_name),
               '',
@@ -1363,6 +1462,8 @@ def machine_files(iface, class_name, include_root):
         header.append('    //!< Runs the {} action of the machine.'.format(name))
         header.append('    void {}({}) final;'.format(iface.spell('action', name),
                                                      iface.generated_params('action', name)))
+    header += ['']
+    header += hosted_overrides(iface)
     header += ['',
                'private:',
                '    //! This component as a reference, for a member initialiser that takes one.',
@@ -1388,8 +1489,9 @@ def machine_files(iface, class_name, include_root):
               '',
               '{}::{}(const areg::ComponentEntry & entry, areg::ComponentThread & owner)'.format(class_name, class_name),
               '    : areg::Component(entry, owner)',
-              '    , {}ActionHandler()'.format(iface.name),
-              '    , mFsm(static_cast<{}ActionHandler &>(self()))'.format(iface.name),
+              '    , {}ActionHandler()'.format(iface.name)]
+    source += ['    , {}()'.format(base) for base in hosted_bases(iface)]
+    source += ['    , mFsm({})'.format(', '.join(handler_casts(iface))),
               '{',
               '}',
               '',
@@ -1493,6 +1595,8 @@ def contract_lines(iface, document):
         for name, params in iface.triggers:
             out.append('  call     bool {}({})'.format(iface.spell('trigger', name),
                                                      iface.generated_params('trigger', name)))
+        for name, entry in iface.generated().entries('forward').items():
+            out.append('  call     bool {}({})'.format(name, entry['params']['call']))
         for name, kind in iface.attributes:
             out.append('  call     {} {}() / void {}({})'
                        .format(iface.cpp_type(kind)[0],
@@ -1509,7 +1613,10 @@ def contract_lines(iface, document):
             out.append('  override {} {}({})'.format(
                 iface.generated().returns('condition', name), iface.spell('condition', name),
                 iface.generated_params('condition', name)))
-        return out + type_lines(iface)
+        out += type_lines(iface)
+        for inner, inner_doc, states in iface.imports:
+            out += hosted_contract(iface, inner, inner_doc, states)
+        return out
     if document.lower().endswith('.dtml'):
         out.append('classes:   none. {} is the namespace the types below are spelled in'
                    .format(iface.name))
@@ -1561,6 +1668,23 @@ def contract_lines(iface, document):
         out.append('  its own message: set last, or send last, the one whose arrival it '
                    'acts on.')
     return out + type_lines(iface)
+
+
+def hosted_contract(host, inner, document, states):
+    """What a provider owes a machine its own machine hosts."""
+    out = ['document:  {}, hosted by {} in {}'.format(document, host.name, ', '.join(states)),
+           '  each hosting state runs its own instance, started afresh on entry; its',
+           '  attributes keep their last value. One override below serves every instance.',
+           '  A trigger of it is called on mFsm under the forwarded names above.']
+    for name, params in inner.actions:
+        out.append('  override void {}({})'.format(inner.spell('action', name),
+                                                     inner.generated_params('action', name)))
+    for name, params, returns in inner.conditions:
+        if inner.generated().has('condition', name):
+            out.append('  override {} {}({})'.format(
+                inner.generated().returns('condition', name), inner.spell('condition', name),
+                inner.generated_params('condition', name)))
+    return out + type_lines(inner)
 
 
 def print_contract(iface, document):
@@ -1637,6 +1761,7 @@ def provider_class(iface, cls, machine=None, timers=()):
              '{}, protected {}ProviderBase'.format(pad, iface.name)]
     if machine:
         lines.append('{}, protected {}ActionHandler'.format(pad, machine.name))
+        lines += ['{}, protected {}'.format(pad, base) for base in hosted_bases(machine)]
     if timers:
         lines.append('{}, private   areg::TimerConsumer'.format(pad))
     lines += ['{',
@@ -1646,7 +1771,8 @@ def provider_class(iface, cls, machine=None, timers=()):
               '        , {}ProviderBase(static_cast<areg::Component &>(*this))'.format(iface.name)]
     if machine:
         lines.append('        , {}ActionHandler()'.format(machine.name))
-        lines.append('        , mFsm(static_cast<{}ActionHandler &>(self()))'.format(machine.name))
+        lines += ['        , {}()'.format(base) for base in hosted_bases(machine)]
+        lines.append('        , mFsm({})'.format(', '.join(handler_casts(machine))))
     if timers:
         lines.append('        , areg::TimerConsumer()')
         for timer in timers:
@@ -1699,6 +1825,9 @@ def provider_class(iface, cls, machine=None, timers=()):
         for name, params in machine.triggers:
             lines.append('    //   mFsm.{}({});'.format(
                 machine.spell('trigger', name), ', '.join(pname for pname, _ in params)))
+    if machine and machine.imports:
+        lines.append('    // A hosted machine\'s trigger, forwarded by the host:')
+        lines += forward_calls(machine)
     for name, params in iface.requests:
         spelled = iface.spell('request', name)
         lines.append('    void {}({}) final'.format(spelled,
@@ -1742,6 +1871,7 @@ def provider_class(iface, cls, machine=None, timers=()):
                       marker(spelled, 'perform the effect' + runs_on(machine, name)),
                       '    }',
                       '']
+        lines += hosted_overrides(machine)
 
     for timer in timers:
         every = 'every {} ms until stopped'.format(timer['timeout']) \
@@ -2750,7 +2880,8 @@ def provider_registration(iface, indent):
 def class_includes(iface, machine=None):
     """The framework headers the types of these documents need."""
     wanted = set()
-    for document in (iface, machine):
+    hosted = [inner for inner, _, _ in machine.imports] if machine else []
+    for document in [iface, machine] + hosted:
         if document is None:
             continue
         groups = [document.attributes]
@@ -2948,6 +3079,9 @@ def app_files(iface, mode, include_root, machine=None, steps=(), driver=None, ti
     if machine:
         provider_base += ['#include "{}/{}ActionHandler.hpp"'.format(include_root, machine.name),
                           '#include "{}/{}FSM.hpp"'.format(include_root, machine.name)]
+        provider_base += ['#include "{}/{}ActionHandler.hpp"'.format(
+            os.path.dirname(document).replace('\\', '/'), inner.name)
+            for inner, document, _ in machine.imports]
     consumer_base = ['#include "{}/{}ConsumerBase.hpp"'.format(include_root, iface.name)]
 
     provider_lines = provider_class(iface, provider_cls, machine, timers)
@@ -3469,6 +3603,8 @@ def main():
     args = parser.parse_args()
 
     iface = Interface(args.doc)
+    if args.doc.lower().endswith('.fsml') and not args.app:
+        iface.load_imports()
     if args.contract:
         return print_contract(iface, args.doc)
     if args.todos:
@@ -3497,6 +3633,7 @@ def main():
                 fail('--machine takes the .fsml state machine document; got {}'
                      .format(args.machine))
             machine = Interface(args.machine)
+            machine.load_imports()
             if not machine.actions:
                 fail('the machine declares no action, so there is nothing for the '
                      'provider to implement')
@@ -3529,6 +3666,8 @@ def main():
         if args.machine:
             documents.append(('addStateMachine',
                               os.path.relpath(args.machine).replace('\\', '/')))
+            documents += [('addStateMachine', os.path.normpath(document).replace('\\', '/'))
+                          for _, document, _ in machine.imports]
         changed = update_cmake(os.path.join(args.out, 'CMakeLists.txt'),
                                app_sources(produced, args.mode), documents)
         for change in changed or []:

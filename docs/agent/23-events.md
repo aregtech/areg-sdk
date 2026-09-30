@@ -119,4 +119,4 @@ thread instead of ahead of it.
 - [ ] Nothing in `process_event` blocks, sleeps or loops for long.
 - [ ] The traffic stays inside one process; if it does not, it is a service.
 
-A worked example, with a worker thread on each side: `examples/18_pubworker`.
+A working project: `recipes/07-worker-events/`.

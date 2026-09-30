@@ -58,13 +58,11 @@ Find your task, open that one file, and do not search the repository.
 | A `scenarios.json` key `--app` did not write; `mtrouter` by hand. In ipc it writes the `-q` scenario, and peer loss for a design with steps | `docs/agent/50-running.md` |
 | Read or query a `.sqlog` log database | `docs/agent/35-sqlog.md` |
 | Set the router address, ports, anything in `areg.init` | `docs/agent/36-config.md` |
-| Find the example showing a given facility | `docs/agent/41-examples.md` |
 | See a complete working application | `docs/agent/recipes/02-ipc-two-processes/`, which is always present |
 
 `docs/wiki/` is written for people and is large: open a page there only when a row
-above names it. `examples/` is optional and may be absent: for a path into it, use
-`docs/agent/recipes/` instead. Any other path that does not resolve is a defect to
-report, not a reason to search.
+above names it. A path that does not resolve is a defect to report, not a reason to
+search.
 
 ---
 

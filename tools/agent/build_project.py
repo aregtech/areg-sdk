@@ -425,18 +425,27 @@ PRUNED = re.compile(r'^removed\s+\w+\(\s*\S+\s+(\S+?)\s*\)')
 
 
 def documents_of(specs, outdir):
-    """The .siml, the .fsml and the .dtml the specs name, as paths under outdir."""
-    interfaces, machines, shared_types = [], [], []
+    """The .siml, the .fsml and the .dtml the specs name, as paths under outdir, and
+    the .fsml each machine hosts, as its "submachines" spell them."""
+    interfaces, machines, shared_types, hosted = [], [], [], []
     for spec in specs:
         document, _skipped = gen_docs.load_spec(spec)
         for entry in document.get('interfaces') or []:
             interfaces.append(os.path.join(outdir, entry['name'] + '.siml'))
         for entry in document.get('machines') or []:
             machines.append(os.path.join(outdir, entry['name'] + '.fsml'))
+            hosted += [os.path.normpath(inner['path']) for inner in
+                       entry.get('submachines') or [] if isinstance(inner, dict)
+                       and isinstance(inner.get('path'), str)]
         shared = document.get('datatypes') or {}
         if shared.get('name'):
             shared_types.append(os.path.join(outdir, shared['name'] + '.dtml'))
-    return interfaces, machines, shared_types
+    return interfaces, machines, shared_types, list(dict.fromkeys(hosted))
+
+
+def built_machines(machines, hosted):
+    """The machines an application can drive: a hosted one runs inside its host."""
+    return [path for path in machines if os.path.normpath(path) not in hosted]
 
 
 def drop_placeholders(root, changed, wanted):
@@ -667,8 +676,9 @@ def main():
                         help='where the documents are written')
     parser.add_argument('--doc', help='the .siml the application is built from '
                                       '(default: the first the specs name)')
-    parser.add_argument('--machine', help='the .fsml the provider owns '
-                                          '(default: the first the specs name)')
+    parser.add_argument('--machine', help='the .fsml the provider owns, or its machine '
+                                          'name (default: the one the specs name that '
+                                          'no other machine hosts)')
     parser.add_argument('--mode', choices=['ipc', 'local'],
                         help='default: read from scenarios.json')
     parser.add_argument('--build', default='build', help='the build directory')
@@ -734,10 +744,19 @@ def main():
                    notes=os.path.join(root, args.build, NOTES_SHOWN)):
             return 1
 
+    if specs and args.doc is None and not documents_of(specs, args.outdir)[0]:
+        print('== application: the design declares no service, so there is no application '
+              'to build. Its documents are written: a machine runs in the provider of a '
+              'service, or inside a machine that hosts it.')
+        return 0
+
     document = args.doc
     machine = args.machine
+    if machine and not machine.lower().endswith('.fsml'):
+        machine = os.path.join(args.outdir, machine + '.fsml')
     if specs and (document is None or machine is None):
-        interfaces, machines, _shared = documents_of(specs, args.outdir)
+        interfaces, machines, _shared, hosted = documents_of(specs, args.outdir)
+        machines = built_machines(machines, hosted)
         # The application this tool writes is one service and at most one machine.
         # Picking the first of several silently builds a part of the project and
         # calls it the project, so several are named and refused here instead.
@@ -762,7 +781,9 @@ def main():
     # The documents the spec describes are the ones the project builds, so the CMake
     # lines follow the spec: a new document gains its line and a dropped one loses it.
     if specs:
-        interfaces, machines, shared_types = documents_of(specs, args.outdir)
+        interfaces, machines, shared_types, hosted = documents_of(specs, args.outdir)
+        machines = list(dict.fromkeys([os.path.normpath(path) for path in machines]
+                                      + hosted))
         wanted = [('addServiceInterface', path) for path in interfaces] + \
                  [('addStateMachine', path) for path in machines]
         changed = gen_skeleton.update_cmake(

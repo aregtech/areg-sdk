@@ -107,8 +107,7 @@ areg::Application::load_model(nullptr);      // nullptr: every model added so fa
 `add_component<T>(roleName)` writes the create and delete functions for you.
 `add_supported_service(name, version)` is the runtime form of
 `REGISTER_IMPLEMENT_SERVICE`, and `set_data()` passes a `std::any` the component reads
-back from its `ComponentEntry`. Working example:
-`examples/17_pubtraffic/pubclient/src/main.cpp`.
+back from its `ComponentEntry`. Working project: `recipes/10-runtime-model/`.
 
 ---
 

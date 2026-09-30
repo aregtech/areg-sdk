@@ -133,7 +133,7 @@ same sections, and nothing about how to build it:
 | `## The report` | one small table the agent can fill without measuring anything |
 
 That is what lets the same requirements be scored against gRPC, ZeroMQ, DDS or areg.
-`python3 tools/agent/check_corpus.py` fails if a framework name, an operating system
+`python3 tools/intern/check_corpus.py` fails if a framework name, an operating system
 name, a tool name or a build command gets into one of them.
 
 ---
@@ -657,7 +657,7 @@ each one should make an agent use an ability the others do not.
 - **Keep the five sections** listed under [The task prompts](#the-task-prompts), keep
   the requirements the hidden probes score (start order, 20-second limit, the other
   side going away, no busy-waiting, exit codes), and add the file to `TASK_PROMPTS` in
-  `tools/agent/check_corpus.py`, which then checks all of it.
+  `tools/intern/check_corpus.py`, which then checks all of it.
 - **Write an acceptance checklist someone could score without asking you what you
   meant**, and make every item observable in the output of the normal run or the
   peer-loss run.

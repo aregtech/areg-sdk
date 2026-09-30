@@ -248,7 +248,7 @@ For context only (third-party, 2021, different hardware): gRPC C++ sequential RT
 runs Linux with sockets and pthreads, Areg runs on it: NXP i.MX, TI AM62/AM335x,
 Rockchip RK3588, STM32MP1, Raspberry Pi, Intel Atom.
 
-Measured with [`tools/footprint.py`](./tools/footprint.py), GCC 15.2.0, Release, on three
+Measured with [`tools/intern/footprint.py`](./tools/intern/footprint.py), GCC 15.2.0, Release, on three
 architectures -- `x86_64` natively, ARM64 and ARMv7 cross-compiled with the toolchain files
 the SDK ships. Framework code (`text`):
 

@@ -455,7 +455,7 @@ ${stray}"
         case "${TASK_ABS}" in "${SDK}/"*) [ -f "${SNAP}/${TASK_ABS#"${SDK}/"}" ] || TASK_OWN=1 ;; *) TASK_OWN=1 ;; esac
         [ -z "${TASK_OWN}" ] || cp "${TASK_ABS}" "${SNAP}/task.md"
         ( cd "${SNAP}" && md5sum AGENTS.md docs/agent/*.md docs/agent/*.json docs/agent/.budgets \
-                               tools/agent/*.py tools/agent/evals/tasks.json \
+                               tools/agent/*.py tools/intern/evals/tasks.json \
                                conf/cmake/functions.cmake examples/ai-benchmark/*.md \
                                examples/ai-benchmark/*.txt ${TASK_OWN:+task.md} ) > "${MD5F}"
     fi

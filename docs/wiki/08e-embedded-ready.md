@@ -5,7 +5,7 @@
 > It does not mean bare metal, it does not mean an RTOS, and it does not mean a 16-bit
 > microcontroller. Zephyr RTOS support is planned **after version 2.0.0** and does not
 > exist today. Every figure below was measured with
-> [`tools/footprint.py`](./../../tools/footprint.py) and carries the build it came from.
+> [`tools/intern/footprint.py`](./../../tools/intern/footprint.py) and carries the build it came from.
 
 ---
 
@@ -56,7 +56,7 @@ the size of the image, by a lot -- section 3.3.
 
 ## 3. Flash: What a Device Stores
 
-Measured with `tools/footprint.py --flash-only`, GNU 15.2.0 for every target, `Release`,
+Measured with `tools/intern/footprint.py --flash-only`, GNU 15.2.0 for every target, `Release`,
 `AREG_EXTENDED=OFF`. The `text` column is executable code and read-only data; `data` is
 initialized writable data. Both live in flash. `bss` is zero-filled at start and costs RAM,
 not flash.
@@ -109,7 +109,7 @@ the whole provider binary is 484 840 bytes on disk, code, data and symbols toget
 
 The archive `libareg.a` is 13 MB on disk, and that figure is **not** a deployment number: the
 linker keeps only what a binary uses. What reaches the device is the figure above.
-`tools/footprint.py` reports archives as `n/a` for this reason.
+`tools/intern/footprint.py` reports archives as `n/a` for this reason.
 
 ### 3.3 What the instruction set costs
 
@@ -180,7 +180,7 @@ what the default build produces.
 
 ## 4. RAM: What a Process Holds
 
-Measured with `tools/footprint.py`, reading `/proc/<pid>/status` every 50 ms and reporting
+Measured with `tools/intern/footprint.py`, reading `/proc/<pid>/status` every 50 ms and reporting
 the peak (`VmHWM`) of the run. `VmHWM` is the figure a device has to hold. The connection
 count in every router row was read from `/proc/net/tcp`, so the per-connection cost is
 measured, not assumed.
@@ -228,19 +228,19 @@ have not yet been measured. They are listed in the
 
 ## 5. Measuring Your Own Target
 
-`tools/footprint.py` builds nothing. It reads a build directory that already exists, so
+`tools/intern/footprint.py` builds nothing. It reads a build directory that already exists, so
 the same command serves a native build, a cross build, and a CI job that only wants sizes.
 
 ```bash
 # the full picture on the device itself
-python3 tools/footprint.py
+python3 tools/intern/footprint.py
 
 # sizes only, from a cross build, on the development host
-python3 tools/footprint.py --build-dir ./build-arm \
+python3 tools/intern/footprint.py --build-dir ./build-arm \
         --size-tool arm-linux-gnueabihf-size --flash-only
 
 # the same numbers as data, for a trend or a budget check
-python3 tools/footprint.py --json footprint.json
+python3 tools/intern/footprint.py --json footprint.json
 ```
 
 Every run prints what produced it first: commit, whether the tree was modified, build type,
@@ -292,7 +292,7 @@ No figure on this page is estimated from another architecture, and section 3.3 s
 matters: the same source is 6% smaller on ARM64 and 41% smaller on ARMv7, so no single factor
 would have been right.
 
-Every table names the build it came from, and `tools/footprint.py` prints the commit,
+Every table names the build it came from, and `tools/intern/footprint.py` prints the commit,
 compiler, target architecture and switches ahead of any number it reports.
 
 ---

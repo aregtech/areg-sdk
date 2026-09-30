@@ -24,9 +24,9 @@ on:
       - '**.h'
       - '**/CMakeLists.txt'
       - 'conf/cmake/**'
-      - 'tools/sanitize.sh'
-      - 'tools/sanitizer/**'
-      - 'tools/run-all-examples.py'
+      - 'tools/intern/sanitize.sh'
+      - 'tools/intern/sanitizer/**'
+      - 'tools/intern/run-all-examples.py'
       - '.github/workflows/sanitizers.yml'
   pull_request:
     branches: [ master ]
@@ -62,7 +62,7 @@ jobs:
 
     env:
       # Makes a sanitizer report end in abort() rather than _exit(), so the kernel
-      # writes a core beside the report. Off by default, see tools/sanitize.sh.
+      # writes a core beside the report. Off by default, see tools/intern/sanitize.sh.
       AREG_SANITIZE_COREDUMP: 1
 
     steps:
@@ -93,7 +93,7 @@ jobs:
           sudo sysctl -w kernel.core_pattern='/cores/core.%e.%p.%t'
           sudo sysctl -w kernel.yama.ptrace_scope=0 || true
 
-      # tools/sanitize.sh is the instrument CLAUDE.md and the perf skill prescribe.
+      # tools/intern/sanitize.sh is the instrument CLAUDE.md and the perf skill prescribe.
       # It configures its own build tree, builds areg-unit-tests instrumented, and
       # runs ctest under the sanitizer with the repository's suppressions. A failing
       # test or a sanitizer report leaves it non-zero.
@@ -102,7 +102,7 @@ jobs:
         shell: bash
         run: |
           ulimit -c unlimited
-          tools/sanitize.sh ${{matrix.mode}} --config ${{matrix.config}} \
+          tools/intern/sanitize.sh ${{matrix.mode}} --config ${{matrix.config}} \
               --target areg-unit-tests --run ctest
 
       # The three teardown tests fail about once in a hundred runs, and one pass of the
@@ -115,7 +115,7 @@ jobs:
         timeout-minutes: 45
         run: |
           ulimit -c unlimited
-          tools/sanitize.sh ${{matrix.mode}} --config ${{matrix.config}} --keep --repeat 25 \
+          tools/intern/sanitize.sh ${{matrix.mode}} --config ${{matrix.config}} --keep --repeat 25 \
               --run 'ctest:areg-(release-unload|timer-churn|internal-events)-test'
 
       # Everything needed to open the crash on another machine: the cores, the binaries
@@ -221,7 +221,7 @@ jobs:
           mkdir -p ./ubsan
           sudo sysctl -w kernel.yama.ptrace_scope=0 > /dev/null || true
           BIN_DIR="$(find ./product/build -type d -name bin 2>/dev/null | head -n 1)"
-          python3 tools/run-all-examples.py --bin-dir "${BIN_DIR}" --tier all \
+          python3 tools/intern/run-all-examples.py --bin-dir "${BIN_DIR}" --tier all \
                   --out-dir ./ubsan/example-results
 
       - name: Report what the sanitizer found

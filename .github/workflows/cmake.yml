@@ -21,7 +21,7 @@ env:
 jobs:
   invariants:
     name: the framework invariants still have anchors
-    # tools/check_invariants.py seeds a defect per documented invariant, rebuilds and
+    # tools/intern/check_invariants.py seeds a defect per documented invariant, rebuilds and
     # asserts something goes red. The seeding needs a build per defect and is run by hand;
     # what rots first is the seed set itself, because a refactor moves the line it anchors to.
     # This step is that check, and it needs no compiler.
@@ -37,7 +37,7 @@ jobs:
           python-version: '3.11'
 
       - name: Check every seeded defect still applies to exactly one place
-        run: python3 tools/check_invariants.py --dry-run
+        run: python3 tools/intern/check_invariants.py --dry-run
 
   build-tests:
     name: ${{matrix.config.name}}
@@ -583,7 +583,7 @@ jobs:
           ulimit -c unlimited || true
           BIN_DIR="${{env.BUILD_DEST}}/bin"
           if [ -d "${BIN_DIR}" ]; then BIN_ARG="--bin-dir ${BIN_DIR}"; else BIN_ARG=""; fi
-          "${{env.PY}}" tools/run-all-examples.py ${BIN_ARG} --tier all \
+          "${{env.PY}}" tools/intern/run-all-examples.py ${BIN_ARG} --tier all \
                   --out-dir "./example-results/${{matrix.config.name}}"
 
       - name: Run Unit Tests. Ignore if unit tests are not compiled
@@ -607,7 +607,7 @@ jobs:
         run: |
           BIN_DIR="${{env.BUILD_DEST}}/bin"
           if [ -d "${BIN_DIR}" ]; then BIN_ARG="--bin-dir ${BIN_DIR}"; else BIN_ARG=""; fi
-          "${{env.PY}}" tools/run-all-examples.py ${BIN_ARG} --tier perf \
+          "${{env.PY}}" tools/intern/run-all-examples.py ${BIN_ARG} --tier perf \
                   --out-dir "./example-results/${{matrix.config.name}}-benchmarks"
 
       - name: Report the failed unit tests
@@ -618,7 +618,7 @@ jobs:
         shell: bash
         continue-on-error: true
         run: |
-          "${{env.PY}}" tools/report-ctest.py "${{env.CACHE_DEST}}"
+          "${{env.PY}}" tools/intern/report-ctest.py "${{env.CACHE_DEST}}"
 
       - name: Collect the macOS crash reports
         # macOS writes a crash report per process instead of a core file.

@@ -136,7 +136,7 @@ Constructor()
 | A-01 | MUST | Every non-document file contains only ASCII bytes `0x00-0x7F`. Write `(c)`, `--`, `...` and `->`, never their Unicode forms. |
 | A-02 | MUST | Never add a non-ASCII byte when editing a file that already has one, and never convert a file in bulk without being asked. |
 
-Check a file with `python3 tools/check-ascii.py <path>`.
+Check a file with `python3 tools/intern/check-ascii.py <path>`.
 
 ---
 

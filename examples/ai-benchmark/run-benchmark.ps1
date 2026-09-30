@@ -565,7 +565,7 @@ function Invoke-OneRun
             (Test-Path -LiteralPath (Join-Path $Snap $TaskAbs.Substring($sdkPrefix.Length)) -PathType Leaf)) { $taskOwn = @() }
         if ($taskOwn.Count) { Copy-Item -LiteralPath $TaskAbs -Destination (Join-Path $Snap 'task.md') }
         $patterns = @('AGENTS.md', 'docs/agent/*.md', 'docs/agent/*.json', 'docs/agent/.budgets',
-                      'tools/agent/*.py', 'tools/agent/evals/tasks.json', 'conf/cmake/functions.cmake',
+                      'tools/agent/*.py', 'tools/intern/evals/tasks.json', 'conf/cmake/functions.cmake',
                       'examples/ai-benchmark/*.md', 'examples/ai-benchmark/*.txt') + $taskOwn
         Invoke-Helper manifest $Snap $manifestPath @patterns | Out-Null
     }

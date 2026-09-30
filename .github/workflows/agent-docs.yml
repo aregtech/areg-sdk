@@ -60,10 +60,10 @@ jobs:
       # Every path named in the documentation must resolve, relative and repository
       # form alike. A broken one makes an agent fail its first tool call.
       - name: Check documented paths
-        run: python3 tools/agent/check_agent_docs.py
+        run: python3 tools/intern/check_agent_docs.py
 
       - name: Check documented areg names against the framework
-        run: python3 tools/agent/check_symbols.py
+        run: python3 tools/intern/check_symbols.py
 
       # A path that resolves is not a command that runs. This splits every fenced and
       # inline command out of the agent pages, fails on one naming a script that is
@@ -77,7 +77,7 @@ jobs:
       # no longer works. Half a minute, nothing compiled, nothing written outside
       # that directory.
       - name: Check the documented commands
-        run: python3 tools/agent/check_commands.py --deep
+        run: python3 tools/intern/check_commands.py --deep
 
       - name: Check the removed-name lists still match the framework
         run: python3 tools/agent/check_contract.py --audit-legacy framework
@@ -102,13 +102,13 @@ jobs:
       # diagnostic still reports it. A rule that stops firing is otherwise invisible:
       # the suite stays green because nothing was checking the checker.
       - name: Check the checkers still catch the defects
-        run: python3 tools/agent/check_mutations.py --static
+        run: python3 tools/intern/check_mutations.py --static
 
       # The seeded framework defects anchor to exact lines of framework code. A
       # refactor moves the anchor and the seed silently stops applying, so the
       # full run measures nothing. This costs a second and says so.
       - name: Check the seeded invariants still anchor to real code
-        run: python3 tools/check_invariants.py --dry-run
+        run: python3 tools/intern/check_invariants.py --dry-run
 
       # The three scores, held at the value measured when this line was written.
       # Raise a floor when the work that earns it lands; never lower one.
@@ -123,7 +123,7 @@ jobs:
       # names what broke. Nothing here is weighted and no total is printed: a total
       # needs weights, and a moved total says something broke without saying what.
       - name: Check the agent corpus
-        run: python3 tools/agent/check_corpus.py --verbose
+        run: python3 tools/intern/check_corpus.py --verbose
 
   recipes:
     name: recipes build and run
@@ -161,24 +161,24 @@ jobs:
 
       # Generates, compiles and, where a recipe ends by itself, runs and checks output.
       - name: Check recipes
-        run: python3 tools/agent/check_recipes.py --lib build/bin
+        run: python3 tools/intern/check_recipes.py --lib build/bin
 
       # The two defects a static checker cannot decide: one the compiler must
       # reject, and one that is an environment rather than a source edit.
       - name: Check the defects that need a built recipe
-        run: python3 tools/agent/check_mutations.py --lib build/bin
+        run: python3 tools/intern/check_mutations.py --lib build/bin
 
       # The loop the SDK exists to support: two processes through the router, both
       # logging to the collector, and the .sqlog database queried for what they
       # logged. Documented in three pages and, until this step, never executed.
       - name: Check the observability path end to end
-        run: python3 tools/agent/check_observability.py --lib build/bin
+        run: python3 tools/intern/check_observability.py --lib build/bin
 
       # The cheat sheet is the fast path, and its configuration block cannot be
       # checked by reading it: the block once shipped without the key that turns
       # output on, and every static check stayed green. This one runs it.
       - name: Run the configuration block the documentation gives
-        run: python3 tools/agent/check_doc_config.py --lib build/bin
+        run: python3 tools/intern/check_doc_config.py --lib build/bin
 
       # The project setup tool is the only thing that carries the documentation into
       # an application, so a break in it disables everything else.
@@ -246,7 +246,7 @@ jobs:
       # no agent and no model take part. Each distinct recipe is built once, so the
       # repair tasks cost nothing extra.
       - name: Grade the reference answers
-        run: python3 tools/agent/run_evals.py --self-check --sdk-root .
+        run: python3 tools/intern/run_evals.py --self-check --sdk-root .
 
   chain:
     name: the five-step chain, end to end
@@ -326,9 +326,9 @@ jobs:
 
       - name: Check documented paths and the checkers
         run: |
-          python3 tools/agent/check_agent_docs.py
-          python3 tools/agent/check_mutations.py --static
-          python3 tools/agent/check_commands.py
+          python3 tools/intern/check_agent_docs.py
+          python3 tools/intern/check_mutations.py --static
+          python3 tools/intern/check_commands.py
 
       # setup_project.py writes the same Darwin branch into the run.sh it plants for
       # a multi-process project. Building one here would cost a second framework
@@ -380,9 +380,9 @@ jobs:
       # commands differ only in that, and nothing else executed them until now.
       - name: Check documented paths and the checkers
         run: |
-          python tools\agent\check_agent_docs.py
-          python tools\agent\check_mutations.py --static
-          python tools\agent\check_symbols.py
+          python tools\intern\check_agent_docs.py
+          python tools\intern\check_mutations.py --static
+          python tools\intern\check_symbols.py
 
       # run_scenarios.py carries a whole Windows branch: .bat fixtures instead of
       # shell scripts, "set /p" for a read that blocks, "ping" where POSIX sleeps.
@@ -394,7 +394,7 @@ jobs:
       # safe -- run, in throw-away projects this scaffolds. Each page promises a
       # Windows form of its commands; until now nothing read one here.
       - name: Check the documented commands
-        run: python tools\agent\check_commands.py --deep
+        run: python tools\intern\check_commands.py --deep
 
       - name: Check project setup
         run: |
@@ -411,7 +411,7 @@ jobs:
           java -jar tools\codegen.jar --root="${{ runner.temp }}\gentest" --doc=src/services/HelloService.siml --target=generated
           if (-not (Test-Path "${{ runner.temp }}\gentest\generated\src\services\HelloServiceProviderBase.hpp")) { exit 1 }
 
-      # tools/agent/check_recipes.py drives a GCC style command line, so it cannot compile a
+      # tools/intern/check_recipes.py drives a GCC style command line, so it cannot compile a
       # recipe here. This step uses the path the recipe itself documents instead: plain
       # CMake with the default Visual Studio generator, which is the MSVC toolchain
       # (cl.exe through vcvars, set up by the generator). Until this ran, every recipe

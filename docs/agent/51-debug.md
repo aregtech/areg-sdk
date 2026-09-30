@@ -62,10 +62,6 @@ Take these in order. Each one costs less than the one after it.
 6. **Compare with something that works.** Copy the nearest `recipes/` recipe, confirm
    it runs, then move your document into it one piece at a time.
 
-**A working example is the cheapest reference.** Where the clone carries
-`../../examples/`, run one with your shape before blaming your own code;
-`41-examples.md` has the table and commands.
-
 Every command here has a Windows form: `python` for `python3`, `.exe` for `.elf`.
 
 ---

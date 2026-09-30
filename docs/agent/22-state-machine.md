@@ -66,7 +66,6 @@ the machine is generated whole, by `01-runbook.md` section 5.
 
 The action handler is a base of the provider, the machine is a member, `init_fsm` and
 `release_fsm` are already placed, and every action is declared with a `TODO(you)`.
-On Windows the interpreter is `python`, not `python3`; nothing else changes.
 `init_fsm(&comThread)` binds the machine's timers and events to that dispatcher; a
 machine that is never initialised accepts no stimulus and runs nothing.
 
@@ -123,9 +122,8 @@ A name used but not declared is `error[46/RULE_UNRESOLVED_ELEMENT]`, and the mes
 names the kind it was looked up as, which names the list it is missing from.
 
 `gen_docs.py --example` prints a whole machine in this shape -- timers, triggers,
-actions, conditions, guards, a composite level and a final state. That is what you
-write; the XML is what `gen_docs.py` writes, and the start marker, every `ID`
-and the `To` of every transition are its work. What is still yours is the rule below.
+actions, conditions, guards, a composite level and a final state. What is still yours
+is the rule below.
 
 **A transition's target must be a sibling of the state that declares it.** A transition cannot reach into or out of a composite: to leave a subtree,
 put the transition on the composite, whose transitions fire from anywhere inside it.
@@ -215,25 +213,33 @@ substate a transition on it to `B2`.
 
 ### Reusing a whole machine: `Submachine`
 
-A state may host another `.fsml` instead of owning nested states: it carries one or
-the other, never both. The hosting state is entered through the imported machine's own
-`Start` chain, and **nothing calls the imported machine's triggers**, so an inner
-machine whose first state waits for a trigger stops there. Pair it with `final_event`.
+A state may host another machine instead of owning nested states, never both. The
+hosted machine is in the same design, or is a `.fsml` the project already holds and is
+not repeated in `"machines"`. The host names it by its path from the project root:
 
 ```json
 "submachines": [{"name": "Inner", "path": "src/services/Inner.fsml", "version": "1.0.0"}],
-"states": [{"name": "RUNNING", "submachine": "Inner", "final_event": "InnerDone"}]
+"states": [{"name": "RUNNING", "submachine": "Inner", "final_event": "RunDone"},
+           {"name": "RETRYING", "submachine": "Inner", "final_event": "RetryDone"}]
 ```
 
-The generated host carries a `static_assert` on the pinned `Version` that fails when
-the import moves past it. What else changes in the generated code:
+The build command is the same.
 
-- the host's constructor takes one extra `InnerActionHandler &` per hosting state, in
-  document order, so the host supplies the inner machine's actions
-- the host implements `InnerFSM::FinalObserver`, and `OnFinal` turns the inner machine
-  reaching Final into an event the host can transition on
-- the inner machine's triggers are forwarded through the host
-- `addStateMachine` is called once, naming only the importing document
+- **Each hosting state runs its own instance**, started at its initial state on entry
+  and stopped on exit. Its attributes keep their value between visits, so a count is
+  reset on its initial path.
+- **Its triggers are called on the host**: `mFsm.<trigger>(...)` reaches the active
+  instance, `mFsm.<trigger>_<state>(...)` one state's, as the worksheet spells them. A
+  host declaring the same trigger keeps only the second form.
+- **Reaching its `Final` raises the host's `final_event`**, which carries no outcome:
+  when the host must know how it ended, a hosted action records it and a host
+  condition reads it.
+- **The provider implements the hosted actions and conditions once**, beside the
+  host's; one body serves every instance. What differs between places belongs to the
+  host's transitions.
+
+A hosted document whose major version moves past the pinned `"version"` no longer
+compiles.
 
 Working project, hosting one machine from two states: `recipes/13-submachine/`.
 
@@ -297,8 +303,7 @@ Register it with `mFsm.set_final_observer(this)`. Where the project defines
 ## CMake
 
 `addStateMachine(<library> <the .fsml>)`, beside the `addServiceInterface` line and
-taking the same arguments. `build_project.py --spec` writes both, and a machine that
-imports others still needs only one call.
+taking the same arguments. `build_project.py --spec` writes both.
 
 ## Never
 
@@ -313,8 +318,6 @@ imports others still needs only one call.
 - Never target a `Kind="Start"`, nor a `Kind="History"` from inside its own level.
 - Never give two states one name, however deeply apart they sit. The commonest case is
   a nested level whose `Kind="Start"` marker is also called `Start`.
-- Never import a machine whose Start chain lands on a state that waits for a trigger.
-  Entering the hosting state will not send one, and the machine stops there.
 - Never expect `State/@History` to tell a fresh entry from a resume. It is on the state
   and applies to both; a `Kind="History"` marker is what tells them apart.
 - Never give an `Internal` transition a `To`, and never leave one off an `External`.
@@ -337,6 +340,8 @@ python3 <areg-sdk>/tools/schema_help.py State/@Kind --document fsml
 python3 <areg-sdk>/tools/schema_help.py --full tStateKind --document fsml
 python3 <areg-sdk>/tools/schema_help.py --list --document fsml
 ```
+
+On Windows the interpreter is `python`, not `python3`.
 
 The first gives where the element goes, every attribute with the values it accepts,
 and the children in order; the second one attribute; `--full` on a type name adds what

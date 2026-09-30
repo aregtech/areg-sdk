@@ -1167,18 +1167,41 @@ def check_unique_names(project):
         check_state_names(spec.get('states'), where)
 
 
-def check_codegen(documents, prefix):
+def imported_documents(project, documents, prefix):
+    """The .fsml a machine hosts that this design does not write: each is read from
+    the project, where its "path" is spelled from."""
+    written = set(os.path.normpath(prefix + name) for name, _ in documents)
+    found = []
+    for spec in listed(project, 'machines'):
+        for entry in listed(spec, 'submachines'):
+            path = entry.get('path')
+            if not isinstance(path, str) or os.path.normpath(path) in written:
+                continue
+            if not os.path.isfile(path):
+                fail('machine "{}" hosts "{}" from {}, which is neither a machine of this '
+                     'design nor a file under the project root {}. Name the .fsml that '
+                     'exists, spelled from the project root, or add the machine to '
+                     '"machines".'.format(spec.get('name', '?'), entry.get('name', '?'),
+                                          path, os.getcwd()))
+            with open(path, encoding='utf-8') as handle:
+                found.append((os.path.normpath(path).replace(os.sep, '/'), handle.read()))
+    return list(dict(found).items())
+
+
+def check_codegen(documents, prefix, imported=()):
     """codegen.jar generates every document built from this design, before any is
     written. What it refuses is reported in its own words: a name C++ cannot carry, a
-    keyword, two attributes with one accessor."""
+    keyword, two attributes with one accessor. An imported document is checked with
+    the documents that host it."""
     import hashlib
     import tempfile
-    digest = hashlib.sha1('\n'.join(name + '\n' + text for name, text in documents)
+    everything = [(prefix + name, text) for name, text in documents] + list(imported)
+    digest = hashlib.sha1('\n'.join(name + '\n' + text for name, text in everything)
                           .encode('utf-8')).hexdigest()
     holder = os.path.join(tempfile.gettempdir(), 'areg-gen-docs', digest)
     paths = []
-    for name, text in documents:
-        path = os.path.abspath(os.path.join(holder, prefix, name))
+    for name, text in everything:
+        path = os.path.abspath(os.path.join(holder, name))
         os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, 'w', encoding='utf-8', newline='\n') as handle:
             handle.write(text)
@@ -2437,6 +2460,7 @@ def main():
         args.outdir.replace(os.sep, '/').rstrip('/') + '/'
     documents = build_all(project, prefix)
     check_identities(documents)
+    imported = imported_documents(project, documents, prefix)
 
     if args.review:
         # Every note the build prints, at the point the design is still one file to
@@ -2444,13 +2468,13 @@ def main():
         # before the refusal so that one review answers everything the design is
         # asked, and one edit can settle all of it.
         review(project, skipped)
-        check_codegen(documents, prefix)
+        check_codegen(documents, prefix, imported)
         print('  reviewed {} document(s) of {} spec(s). Nothing was written. Build the '
               'project with build_project.py --spec.'
               .format(len(documents), len(specs)))
         return 0
 
-    check_codegen(documents, prefix)
+    check_codegen(documents, prefix, imported)
 
     try:
         os.makedirs(args.outdir, exist_ok=True)
