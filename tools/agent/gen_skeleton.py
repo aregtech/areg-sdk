@@ -2335,10 +2335,10 @@ def late_lines(steps, iface, latches):
                   '            {',
                   '                {} = false;'.format(flag)]
         if kind == 'update':
-            lines += ['                areg::DataState state{ areg::DataState::DataIsInvalid };',
-                      '                const auto value = {}(state);'.format(
+            lines += ['                areg::DataState lateState{ areg::DataState::DataIsInvalid };',
+                      '                const auto lateValue = {}(lateState);'.format(
                           iface.spell('attribute', name, 'get')),
-                      '                {}(value, state);'.format(
+                      '                {}(lateValue, lateState);'.format(
                           iface.spell('attribute', name, 'on_update'))]
         else:
             lines.append('                {}({});'.format(

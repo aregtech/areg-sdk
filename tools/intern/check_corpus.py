@@ -2801,6 +2801,7 @@ def run():
     check_generated_defects(report)
     check_step_driver(report)
     check_late_arrival(report)
+    check_self_transition(report)
     check_step_fall_through(report)
     check_step_values_split(report)
     check_stall_names_latest_drops(report)
@@ -4914,6 +4915,46 @@ LATE_SAMPLE = [{'name': 'open_gate', 'send': 'open', 'args': {'width': 600}},
                {'name': 'reopen', 'send': 'open', 'args': {'width': 1200}, 'await': 'Recent'}]
 
 
+def check_self_transition(report):
+    """A transition to its own state runs neither exit nor entry, and a design that
+    relies on them is told so."""
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_docs
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('self-transition', 'gen_docs.py does not import: {}'.format(failure))
+        return
+
+    def notes(target):
+        held = io.StringIO()
+        with contextlib.redirect_stdout(held):
+            gen_docs.review({'interfaces': [], 'machines': [{
+                'name': 'M', 'timers': [{'name': 'T', 'timeout': 100}],
+                'initial': 'A', 'states': [
+                    {'name': 'A', 'entry': ['start T'], 'exit': ['stop T'],
+                     'transitions': [{'on': 'T', 'to': target}]},
+                    {'name': 'B', 'transitions': [{'on': 'T', 'to': 'A'}]}]}]}, 0)
+        return held.getvalue()
+
+    if 'goes to itself' not in notes('A'):
+        report.fail('self-transition', 'a state with "entry" that goes to itself earns no '
+                                       'note, and its entry does not run again')
+        return
+    if 'goes to itself' in notes('B'):
+        report.fail('self-transition', 'a transition to another state earns the note of '
+                                       'a transition to its own state')
+        return
+    with open(os.path.join(ROOT, 'docs', 'agent', '22-state-machine.md'),
+              encoding='utf-8') as handle:
+        page = handle.read()
+    if 'or to its own state' not in page:
+        report.fail('self-transition', '22-state-machine.md does not say a transition to '
+                                       'its own state runs in place')
+        return
+    report.ok('self-transition', 'a transition to its own state is documented and noted '
+                                 'as running neither exit nor entry')
+
+
 def check_late_arrival(report):
     """An update or broadcast that arrives before the step awaiting it is kept for it.
 
@@ -4976,8 +5017,10 @@ def check_late_arrival(report):
              re.search(r'case Step::WatchWidth:[^;]*;\s*if \(mLateWidth\)\s*\{\s*'
                        r'mLate\.start_timer\(', begin)),
             ('the replay hands the held value to the check',
-             re.search(r'case Step::WatchWidth:.*?width\(state\).*?on_width_update\(',
+             re.search(r'case Step::WatchWidth:.*?width\(lateState\).*?on_width_update\(',
                        replay, re.S)),
+            ('no local of the replay can be spelled as a getter',
+             not re.search(r'\b(?:auto|areg::DataState)\s+[a-z_0-9]+\b', replay)),
             ('the replay hands the kept arguments to the check',
              re.search(r'case Step::WatchMoved:.*?broadcast_gate_moved\('
                        r'mLateGateMovedReading\)', replay, re.S)),

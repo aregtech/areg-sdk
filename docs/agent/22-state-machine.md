@@ -138,8 +138,8 @@ resume re-enters where it left off. See "Re-entering a composite where it left o
 | `"kind": "normal"`, the default | a state the machine occupies |
 | `"kind": "final"` | the level stops here and reports through the final observer |
 | `"entry"` / `"exit"` | steps run on entering or leaving: an action, `start`/`stop <Timer>`, `send <Event>` |
-| a transition with `"to"` | leaves the state, runs its exit, then the target's entry |
-| a transition without `"to"` | runs its steps in place; the state is not left or re-entered |
+| a transition with `"to"` another state | leaves the state, runs its exit, then the target's entry |
+| a transition without `"to"`, or to its own state | runs its steps in place; the state is not left or re-entered |
 | `"on"` | the trigger, timer or event that fires it, read from those lists so it is never spelled twice |
 | `"do"` and `"set"` | run between the exit and the entry; `"set"` first, so an action sees it |
 

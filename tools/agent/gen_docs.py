@@ -1978,6 +1978,24 @@ def trigger_coverage(spec):
     return [(name, answered[name]) for name in names]
 
 
+def self_transitions(spec):
+    """(state, trigger) of each transition to its own state, where that state has
+    "entry" or "exit" steps, which such a transition does not run."""
+    found = []
+
+    def walk(states):
+        for state in states or []:
+            label = state.get('name')
+            if label and (state.get('entry') or state.get('exit')):
+                found.extend((label, move.get('on', '?'))
+                             for move in state.get('transitions') or []
+                             if move.get('to') == label)
+            walk(state.get('states'))
+
+    walk(spec.get('states'))
+    return found
+
+
 def check_identities(documents):
     """No two documents of one run write the same file.
 
@@ -2373,6 +2391,12 @@ def review(project, skipped):
                       'already held, which notifies nobody, so a consumer waiting for '
                       'that update waits for ever. Declare the attribute '
                       'Notify="Always".'.format(notify))
+        for state, trigger in self_transitions(spec):
+            print('  note  {}: state "{}" goes to itself on "{}". A transition to its own '
+                  'state runs in place: its "exit" and "entry" do not run, so a timer the '
+                  'entry starts is not started again. Put what must run again in "do", '
+                  'or give such a timer "repeat": 0.'
+                  .format(spec.get('name', '?'), state, trigger))
         coverage = trigger_coverage(spec)
         if coverage:
             print('  table {}: which states answer each trigger (* the initial state, '
