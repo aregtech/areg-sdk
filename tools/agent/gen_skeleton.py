@@ -105,10 +105,14 @@ WORKSHEET_NOTE = (
     '  one section for each, in order, with the function it sits in and every name\n'
     '  a body may call. It is {lines} line(s): read it whole, in one call, and do\n'
     '  not page through it. It is rewritten on every generation, so no body goes\n'
-    '  in it: write {bodies} in one call, each "== <marker>" line with its code under\n'
-    '  it. Then apply it, build and run the scenarios in one command:\n'
+    '  in it: {bodies} is, each "== <marker>" line with its code under it. Write it,\n'
+    '  apply it, build and run the scenarios in one command, the file as a\n'
+    '  here-document:\n'
     '\n'
-    '    python3 {build} --spec design.json --run\n'
+    "    python3 {build} --spec design.json --write {bodies} --run <<'AREG_EOF'\n"
+    '    == <marker>\n'
+    '    <code>\n'
+    '    AREG_EOF\n'
     '\n'
     '  A project with no design.json applies it with python3 {tool} --bodies {bodies}.\n'
     '  A line tagged "// placeholder(you)" under a marker goes when that marker is\n'
@@ -297,11 +301,17 @@ def print_todos(produced, out, written, holes=0, scenarios='', first=True, added
 WORKSHEET_HEAD = """\
 #| The worksheet of this project: one section per open marker, in file order.
 #| The generator rewrites this file on every generation, so no body goes in it.
-#| The bodies go in {bodies}, a file of your own written in one call: for each
-#| section, its "==" line and under it the code that replaces that marker. Then
-#| apply it, build and run the scenarios in one command:
+#| The bodies go in {bodies}, a file of your own: for each section, its "==" line
+#| and under it the code that replaces that marker. Write it, apply it, build and
+#| run the scenarios in one command, the whole file as a here-document:
 #|
-#|   python3 {build} --spec design.json --run
+#|   python3 {build} --spec design.json --write {bodies} --run <<'AREG_EOF'
+#|   == <marker>
+#|   <code>
+#|   AREG_EOF
+#|
+#| A shell with no here-document writes {bodies} and runs the command without
+#| --write, both in the same message.
 #|
 #| A project with no design.json applies it with python3 {tool} --bodies {bodies}.
 #|
@@ -316,9 +326,9 @@ WORKSHEET_HEAD = """\
 #| left open is an error of the final contract check, after the build and the
 #| scenarios have already passed.
 #|
-#| Writing {bodies} and running that command is two requests. Filling it one
-#| section at a time is {total} requests instead, and a request is billed for the
-#| whole conversation again.
+#| Writing {bodies} and running it is one request. Filling it one section at a
+#| time is {total} requests instead, and a request is billed for the whole
+#| conversation again.
 #|
 #| {bodies} keeps every body it writes. A body already written stays addressable by
 #| the same section: change the section, run the command again, and that body alone
@@ -486,7 +496,8 @@ ANSWER_NOTE = ['no step awaits this answer, so this body sits outside the step',
                'sequence and nothing in it ends a step. complete() moves on only',
                'when no stay() is outstanding: the first complete() after a stay()',
                'clears it and returns. A step that has to react to this answer',
-               'awaits it in design.json, which puts its check in a step_ section']
+               'awaits it in design.json, which puts its check in a step_ section.',
+               'With nothing to do here, one // line closes it']
 
 
 # The section that is a header's private block. Two runs opened a generated header
@@ -527,7 +538,14 @@ UPDATE_NOTE = ['an update_ body runs on every arrival, whatever step is current,
                'valid and no test of state is needed:',
                '    if (state == areg::DataState::DataIsOK)',
                '    {',
-               '        <the body>']
+               '        <the body>',
+               'An invalidated value skips the body, so a copy kept in a member stays',
+               'stale. Any other section reads the getter and tests the state it returns.']
+
+# UPDATE_NOTE for every later update_ section, which is read on its own.
+UPDATE_BRIEF = ['runs before the step_ check of the same update, and only for a valid',
+                'value. Elsewhere read the getter and test its state: a copy misses an',
+                'invalidation']
 
 
 PEER_LOST_NOTE = ['after this body the reconnect deadline starts: a provider not back within',
@@ -535,7 +553,8 @@ PEER_LOST_NOTE = ['after this body the reconnect deadline starts: a provider not
                   'reports the loss. A reconnect_seconds of 0 waits for ever instead']
 
 
-REFUSED_NOTE = ['after this body the run ends with quit_with(1)']
+REFUSED_NOTE = ['after this body the run ends with quit_with(1), so the body only',
+                'reports it']
 
 
 # Formatted with the pacing interval, which is declared further down.
@@ -599,6 +618,8 @@ def section_notes(sections, driven=(), connected=()):
     updates = [name for name, _, _, _, _ in sections if name.startswith('update_')]
     if updates:
         notes[updates[0]] = UPDATE_NOTE
+        for name in updates[1:]:
+            notes[name] = UPDATE_BRIEF
     # The brief goes on the first step_ section of each handler, not on all of them:
     # the sections of one handler are read together.
     checks = [(name, signature) for name, _, _, _, signature in sections
@@ -1525,6 +1546,10 @@ def contract_lines(iface, document):
         out.append('  provider reads {t} & {n}(); consumer reads {r} {n}('
                    'areg::DataState & state)'
                    .format(t=cpp, r=read, n=spelled))
+    if list(iface.attributes):
+        out.append('  Only a set_ call changes an attribute and notifies; a consumer value '
+                   'holds only')
+        out.append('  when its state is areg::DataState::DataIsOK.')
     # Which of these a consumer handler can trust is not readable from the signatures,
     # and the page that states it is not on the path a project takes.
     attributes = len(list(iface.attributes))

@@ -37,11 +37,11 @@ Find your task, open that one file, and do not search the repository.
 | I need to ... | Read |
 |---|---|
 | **Anything ordinary** | `docs/agent/00-cheatsheet.md` -- what the tools do not write |
-| **Start from working code** | `docs/agent/recipes/` - copy one, do not read it. `recipes/README.md` maps them |
+| **Build a new application** | `docs/agent/01-runbook.md`, the golden path of section 4. Without Python, copy a recipe from `docs/agent/recipes/`, do not read it; `recipes/README.md` maps them |
 | **Decide what the services are** | `docs/agent/05-design.md`, after the scaffold |
 | Start a new project by hand | `docs/agent/10-new-project.md` |
 | Define an interface; what to override, what to call | `docs/agent/20-service-interface.md` (section 3: the names) |
-| Implement a provider, a consumer, or the model | nothing: `tools/agent/gen_skeleton.py --app` wrote all three, compiling and running. Open `docs/agent/30-provider.md`, `docs/agent/31-consumer.md` or `docs/agent/32-model.md` only where `docs/agent/05-design.md` or `docs/agent/51-debug.md` cites a numbered section of one |
+| Implement a provider, a consumer, or the model | no page: `tools/agent/gen_skeleton.py --app` wrote all three, compiling and running, and your code is the bodies its worksheet asks for. Open `docs/agent/30-provider.md`, `docs/agent/31-consumer.md` or `docs/agent/32-model.md` only where `docs/agent/05-design.md` or `docs/agent/51-debug.md` cites a numbered section of one |
 | Watchdog, worker thread, model built at run time | copy `docs/agent/recipes/07-worker-events/`; `docs/agent/37-threads.md` |
 | Send a custom event between threads | `docs/agent/23-events.md` |
 | Do periodic or delayed work | `docs/agent/33-timers.md` |

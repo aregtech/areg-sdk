@@ -4388,9 +4388,9 @@ def check_design_request(report):
         report.fail('design-request', '01-runbook.md section 3 does not name the design '
                     'request; it lacks: {}'.format(', '.join(missing)))
         return
-    if 'one `Write`' not in runbook_section(4):
+    if not all(phrase in runbook_section(4) for phrase in ('whole', '--write design.json')):
         report.fail('design-request', '01-runbook.md section 4 does not say design.json '
-                    'is written whole, in one `Write`')
+                    'is written whole and built in one call, with --write design.json')
         return
     for parts, phrase, does in DESIGN_DETOURS:
         if phrase in read(*parts):

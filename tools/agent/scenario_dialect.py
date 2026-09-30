@@ -30,5 +30,5 @@ NOTHING_TO_REBUILD = ('build_project.py --run would rebuild nothing and run the 
                       'same scenarios.')
 
 # Markers left open.
-FILL_MARKERS = ('Write its section to fix.txt, which the next build fills, or write '
-                'it in place and delete the line.\ncheck_contract.py reports the same markers as P-17.')
+FILL_MARKERS = ('Send its section as fix.txt with build_project.py --write fix.txt, '
+                'which fills it in the same call, or write it in place and delete the line.\ncheck_contract.py reports the same markers as P-17.')

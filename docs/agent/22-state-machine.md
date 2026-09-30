@@ -6,11 +6,12 @@ handlers are a chain of `if (mPhase == ...)` is a state machine written by hand.
 The machine is described in a `.fsml` document. The generator turns it into code the
 same way it turns a `.siml` into a service. You write the actions, never the machine.
 
-Working project to copy: `recipes/06-state-machine/`. One machine that builds and runs,
-carrying a history marker, a guard, an internal transition, an event the machine sends
-itself, `OnFinal` and a final observer. It resumes an interrupted cycle and starts a
-fresh one in the same run. Read it first; this page is the lookup
-for what it does not settle.
+A working project that shows every piece: `recipes/06-state-machine/`. One machine that
+builds and runs, carrying a history marker, a guard, an internal transition, an event
+the machine sends itself, `OnFinal` and a final observer. It resumes an interrupted cycle
+and starts a fresh one in the same run. A reference, not a starting point: a project
+gets its machine from the `"machines"` block of `design.json`, and this page is its
+lookup.
 
 ## What gets generated
 
@@ -50,7 +51,9 @@ state has no transition for it. A trigger the current state ignores is not an er
 **It does not report acceptance.** A state that refuses through a second, unguarded
 transition -- the shape `--example` shows -- takes the stimulus either way, so the
 trigger returns `true` whether the guard held or not. Report the outcome from the
-action the guarded transition calls, never from the trigger.
+action the guarded transition calls -- its `response_` call -- never from the trigger.
+That action runs inside the request handler that called the trigger, so the request is
+still open.
 
 **A machine's name becomes a C++ namespace**, so no class of yours may carry it. The
 generated application names its components after the service (`GateServiceProvider`)
@@ -59,11 +62,7 @@ and refuses a machine of that name; a class you add must not be named after a do
 ## Wiring it into a component
 
 **Do not type this by hand, and do not write a host component.** The provider that owns
-the machine is generated whole:
-
-```
-python3 <areg-sdk>/tools/agent/gen_skeleton.py --doc src/services/GateService.siml --machine src/services/Gate.fsml --app --mode ipc --force
-```
+the machine is generated whole, by `01-runbook.md` section 5.
 
 The action handler is a base of the provider, the machine is a member, `init_fsm` and
 `release_fsm` are already placed, and every action is declared with a `TODO(you)`.
@@ -78,12 +77,8 @@ requests that answer differently each get their own action.
 
 ## Writing the document
 
-**Do not write the XML. Describe the machine and generate it:**
-
-```bash
-python3 <areg-sdk>/tools/agent/gen_docs.py --template design.json
-python3 <areg-sdk>/tools/agent/build_project.py --spec design.json
-```
+**Do not write the XML. Describe the machine in `design.json` and generate it** with
+the same build command.
 
 The spec's `"machines"` names states, triggers, timers, events, guards and transitions;
 the tool assigns every `ID`, resolves every `To`, binds every guard operand to the

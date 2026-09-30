@@ -64,6 +64,10 @@ the value already held, and no update is sent, so a step waiting for one waits f
 declare such an attribute `Always`. Decide both here; `gen_docs.py` notes them only
 after generating.
 
+**A provider's messages arrive in the order sent**: a `set_` before a `response_`
+delivers the update first. A check sees only what arrived before the message its step
+awaits, so a step awaits the message sent last.
+
 ## 4. The documents
 
 **Every document is written from `design.json`, which the scaffold already wrote**:
@@ -73,8 +77,8 @@ left as written is skipped and an empty value is absent, so delete only a sectio
 task does not need. A key the generator does not read is refused by name.
 `gen_docs.py --example` prints a finished design of another application, 189 lines
 read in one call: do not page it. It is the shape, and the `#|` notes are the rules:
-with both read, write `design.json` whole, in one `Write`. `gen_docs.py` ignores the
-notes, so none has to be kept.
+with both read, write `design.json` whole and build it in one call: section 5's
+command with `--write design.json`. `gen_docs.py` ignores the notes.
 A consumer that drives a scenario and exits lists it as `"steps"`, branching included:
 the generator writes the step machine, and each check may `stay()`, `go_to(Step::Name)`
 or `fail("why")`. Writing that machine by hand is the largest avoidable cost here.
@@ -126,8 +130,13 @@ and neither is a failure of the build. Moved to the background, wait for it to f
 and never start a second build; timed out, run the same command again.
 
 ```
-python3 <areg-sdk>/tools/agent/build_project.py --spec design.json
+python3 <areg-sdk>/tools/agent/build_project.py --spec design.json --write design.json <<'AREG_EOF'
+{ ...the whole design... }
+AREG_EOF
 ```
+
+`--write <file>` saves standard input to that file first: a file and its build are one
+call. A shell with no here-document writes the file and runs this in the same message.
 
 Six steps with no decision in any of them: it writes the documents from the spec,
 writes the application from them, applies `bodies.txt`, checks the contract -- which
@@ -168,8 +177,8 @@ names come from a fixed rule and the tool has applied it.
 section per open marker, in file order, each naming the function it sits in, the names
 each generated class already carries, and the contract every body is written against.
 **No generated file has to be opened to write a body.** Read it whole, then write
-`bodies.txt` in one call: each `== <marker>` line with the code under it. Section 7's
-command applies it before it compiles.
+`bodies.txt` -- each `== <marker>` line with the code under it -- and run it in one
+call: section 7's command with `--write bodies.txt` applies it before it compiles.
 
 **That is the whole implementation, in two requests.** One edit per body and a full
 rewrite are the two most expensive shapes a run has.
@@ -179,10 +188,11 @@ a default `response_`, a `return false;`. The filler takes it away with that mar
 untagged line under a marker is real code and stays.
 
 **A body changed after a build or a scenario run goes in `fix.txt`**: every section you
-change, in one call. The build command folds it into `bodies.txt`, which keeps every
-body, so it is rewritten where it stands and `--regenerate` gets it back. A failing
-check names its own section, so the section to change is the one the failure printed:
-the fix is one write and one command, and no generated file is opened.
+change, sent with `--write fix.txt` on section 7's command. It is folded into
+`bodies.txt`, which keeps every body, so it is rewritten where it stands and
+`--regenerate` gets it back. A failing check names its own section, so the section to
+change is the one the failure printed: the fix is one call, and no generated file is
+opened.
 
 `30-provider.md`, `31-consumer.md` and `32-model.md` describe the code the tool has
 already written. Do not open them to fill a marker, and do not open them while
@@ -205,7 +215,10 @@ each expectation line is and who prints it: it is written in the same request.
 ## 7. Build and run -- one command
 
 ```
-python3 <areg-sdk>/tools/agent/build_project.py --spec design.json --run
+python3 <areg-sdk>/tools/agent/build_project.py --spec design.json --write bodies.txt --run <<'AREG_EOF'
+== <marker>
+<code>
+AREG_EOF
 ```
 
 The section 5 command with `--run`: it builds as it did there, then starts the router,

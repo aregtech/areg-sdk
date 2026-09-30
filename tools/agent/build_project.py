@@ -68,15 +68,17 @@ ADVICE = {
                  'document appears in this output; anything else is CMakeLists.txt.',
     'scenarios': 'the application built, but a scenario did not pass. Each failure '
                  'names the process, what it was expected to print and what it '
-                 'wrote. "--only <name>" iterates on one. Write every section you '
-                 'change to fix.txt in one call; the next run folds it into bodies.txt.',
+                 'wrote. "--only <name>" iterates on one. Send every section you '
+                 'change as fix.txt with this command, in one call: --write fix.txt '
+                 '<<\'AREG_EOF\'. It is folded into bodies.txt.',
     'final': 'the final pass does not allow an open marker. A passing scenario says '
              'nothing about the requirement behind one: no body was written for it. '
-             'Write its section to fix.txt, then run this again.',
+             'Send its section as fix.txt with this command, in one call: '
+             '--write fix.txt <<\'AREG_EOF\'.',
     'build': 'the compiler refused a source. The errors are above, each with the '
-             'line it is on: no second command is needed to see them. Write every '
-             'body you fix to fix.txt in one call, never the generated file, and run '
-             'this again. A '
+             'line it is on: no second command is needed to see them. Send every '
+             'body you fix as fix.txt with this command, in one call: --write fix.txt '
+             '<<\'AREG_EOF\'. Never edit the generated file. A '
              'provider that is abstract means the document gained a request the '
              'application has no handler for: add the handler, or --regenerate and '
              'fill the markers again.',
@@ -194,6 +196,33 @@ def fail(message):
     sys.stdout.flush()
     sys.stderr.write('error: {}\n'.format(message))
     sys.exit(2)
+
+
+def write_input(root, target):
+    """Writes standard input to target, a path inside the project root."""
+    path = os.path.abspath(target if os.path.isabs(target) else os.path.join(root, target))
+    try:
+        inside = os.path.commonpath([os.path.normcase(path), os.path.normcase(root)]) \
+            == os.path.normcase(root)
+    except ValueError:
+        inside = False
+    if not inside:
+        fail('--write {}: the file is outside the project root {}'.format(target, root))
+    if sys.stdin is None or sys.stdin.isatty():
+        fail('--write {}: nothing on standard input. Pass the text as a here-document: '
+             "--write {} <<'AREG_EOF' ... AREG_EOF".format(target, target))
+    text = sys.stdin.read()
+    if not text.strip():
+        fail('--write {}: standard input is empty, so nothing was written'.format(target))
+    if not text.endswith('\n'):
+        text += '\n'
+    parent = os.path.dirname(path)
+    if not os.path.isdir(parent):
+        fail('--write {}: no such directory {}'.format(target, parent))
+    with open(path, 'w', encoding='utf-8', newline='\n') as handle:
+        handle.write(text)
+    print('== write: {}, {} line(s)'.format(os.path.relpath(path, root).replace(os.sep, '/'),
+                                            text.count('\n')))
 
 
 def show(lines, tail):
@@ -568,11 +597,10 @@ def closing_lines(root, bodies, specs):
                 pass
         return ['Every step passed. {} has no body yet for {} marker(s): {}.'
                 .format(bodies, still_open, ', '.join(names)),
-                'Write those sections from {}, and any section you change, to {} in '
-                'one call; it is folded into {},'
+                'Send those sections from {}, and any section you change, as {}; '
+                'it is folded into {}. Write, apply, build and run in one call:'
                 .format(gen_skeleton.WORKSHEET, fill_markers.FIX_FILE, bodies),
-                'then apply, build and run:',
-                '{} --run'.format(same)]
+                "{} --write {} --run <<'AREG_EOF'".format(same, fill_markers.FIX_FILE)]
     length = ''
     try:
         with open(os.path.join(root, gen_skeleton.WORKSHEET), encoding='utf-8') as handle:
@@ -581,10 +609,10 @@ def closing_lines(root, bodies, specs):
         pass
     return ['Every step passed. {} marker(s) are open, so the application does nothing '
             'yet.'.format(still_open),
-            'Next: read {}{}, then write every section it lists into {} in'
+            'Next: read {}{}, then write every section it lists into {}, apply it, '
+            'build and run the scenarios in one call:'
             .format(gen_skeleton.WORKSHEET, length, bodies),
-            'one call. Then apply, build and run the scenarios in one command:',
-            '{} --run'.format(same)]
+            "{} --write {} --run <<'AREG_EOF'".format(same, bodies)]
 
 
 def worksheet_has_code(path):
@@ -661,6 +689,10 @@ def main():
                         help='write the application again, discarding what is in it')
     parser.add_argument('--no-check', action='store_true',
                         help='skip the contract check')
+    parser.add_argument('--write', metavar='FILE', action='append', default=[],
+                        help='write standard input to this project file first, then '
+                             'run as usual: design.json, bodies.txt or fix.txt and '
+                             'its build in one call. Once per call')
     args = parser.parse_args()
     if args.only:
         args.run = True
@@ -668,6 +700,10 @@ def main():
     root = os.path.abspath(args.root)
     if not os.path.isdir(root):
         fail('no such directory: {}'.format(args.root))
+    if len(args.write) > 1:
+        fail('--write takes one file per call: standard input holds one file')
+    for target in args.write:
+        write_input(root, target)
     mode = mode_of(root, args.mode)
 
     # Every input path is resolved once, against the project root, and that one
