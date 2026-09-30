@@ -9,6 +9,8 @@ takes to notice a dead peer, and whether a short loss kills a healthy one.
              with the client idle and with the client sending 64 bytes every 500 ms.
   blip       Linux, root: the packets are dropped for N seconds, then let through again;
              does the idle connection survive.
+  stall      every platform, no privileges: the receiver reads nothing for N seconds
+             while the sender sends at full rate; does the connection survive.
 
 Windows cannot drop loopback packets with its firewall, so it runs the report only.
 The result is written as Markdown to --out and, on GitHub, to the job summary.
@@ -172,6 +174,7 @@ def main():
     parser.add_argument("--blips", default="2,4,6,8,10", help="drop durations in seconds for the blip scenario")
     parser.add_argument("--blip-phase", type=float, default=4.5,
                         help="seconds the connection is idle before a blip starts; 4.5 puts a keepalive probe inside it")
+    parser.add_argument("--stalls", default="10,20", help="seconds the receiver reads nothing, for the stall scenario")
     parser.add_argument("--no-drop", action="store_true",
                         help="run the dead-peer scenarios without a drop rule, to check the plumbing")
     opts = parser.parse_args()
@@ -229,6 +232,16 @@ def main():
     else:
         md += ["## Dead peer", "", "Not run: %s." % ("Windows cannot drop loopback packets" if system == "Windows"
                                                     else "root (or passwordless sudo) and a packet filter are required")]
+
+    md += ["", "## Stall (the receiver reads nothing for N s while the sender sends)", "",
+           "| stall, s | survived | send timeouts | client error | server error |", "|---|---|---|---|---|"]
+    for seconds in [int(x) for x in opts.stalls.split(",") if x.strip()]:
+        out = subprocess.run([probe, "stall", str(seconds)], capture_output=True, text=True).stdout
+        for line in out.splitlines():
+            if line.startswith("RESULT"):
+                f = parse_result(line)
+                md.append("| %s | %s | %s | %s | %s |" % (f.get("seconds"), f.get("survived"), f.get("send_timeouts"),
+                                                         f.get("client_error"), f.get("server_error")))
 
     text = "\n".join(md) + "\n"
     with open(opts.out, "w") as out:

@@ -122,7 +122,7 @@ The `*` module is used for almost every key in the shipped file. You add process
 | `net::MODULE::tcpip::pairs` | count | `0` (disabled) | Dedicated send/recv thread-pool pairs |
 | `net::MODULE::tcpip::timeout` | ms | `2500` | `SO_SNDTIMEO` send timeout |
 | `net::MODULE::tcpip::cache` | KB | `256` | Per-socket send/recv cache size |
-| `net::MODULE::tcpip::keepalive` | s | `15` | Seconds until a silent peer of an idle connection is declared lost |
+| `net::MODULE::tcpip::keepalive` | s | `15` | Seconds until a silent peer is declared lost, idle or sending |
 
 > "Default" is the value in the shipped `areg.init`; where the key is **absent**, the compile-time fallback (in parentheses) applies.
 
@@ -512,7 +512,7 @@ net :: MODULE :: TRANSPORT :: <knob>
 | `pairs` | count | `0` | `0` | Dedicated send/recv thread-pair pool; `0` = shared threads |
 | `timeout` | ms | `2500` | `2500` (`SOCKET_SEND_TIMEOUT_MS`) | `SO_SNDTIMEO` send timeout |
 | `cache` | KB | `256` | `256` (`DEFAULT_THREAD_CACHE`) | Per-socket send/recv cache size |
-| `keepalive` | s | `15` | `15` (`SOCKET_KEEPALIVE_SEC`) | Seconds until a silent peer of an idle connection is declared lost, `6..3600` |
+| `keepalive` | s | `15` | `15` (`SOCKET_KEEPALIVE_SEC`) | Seconds until a silent peer is declared lost, idle or sending, `6..3600` |
 
 ```text
 net::mtrouter::tcpip::sndbuf     = 8192    # router 8 MB send buffer (raise for 3 MB+ frames)
@@ -561,7 +561,7 @@ connection and costs nothing on the message path.
 - `sndbuf`/`rcvbuf` are **not applied on Windows** — Windows TCP autotuning is used instead.
 - On **Linux**, the kernel **doubles** the requested `SO_SNDBUF`/`SO_RCVBUF` internally; the value you set is the pre-doubling request.
 - `timeout` is worth raising (e.g. `30000`) when debugging on Windows so a breakpoint pause does not trip a send-timeout disconnect.
-- `keepalive` is the time after which an **idle** connection whose peer stopped answering is closed, the same on Linux, macOS and Windows. The framework sends 5 TCP keepalive probes: the first after `keepalive - 5 x interval` seconds of silence, then one every `interval = (keepalive - 5) / 5` seconds. A network outage shorter than about 80% of `keepalive - 5` is survived (about 8 s at the default 15). Raise it on links that drop out for longer (Wi-Fi roaming, VPN reconnects); lower it to notice a dead host sooner. It does not bound a connection that is sending: there the operating system's retransmission timeout decides.
+- `keepalive` is the time after which a connection whose peer stopped answering is closed, idle or sending, the same on Linux, macOS and Windows. An idle connection finds out by keepalive probes. The framework sends 5 TCP keepalive probes: the first after `keepalive - 5 x interval` seconds of silence, then one every `interval = (keepalive - 5) / 5` seconds. A network outage shorter than about 80% of `keepalive - 5` is survived (about 8 s at the default 15). Raise it on links that drop out for longer (Wi-Fi roaming, VPN reconnects); lower it to notice a dead host sooner. A connection that is sending finds out when its data stays unacknowledged for `keepalive` seconds (`TCP_USER_TIMEOUT` on Linux, `TCP_RXT_CONNDROPTIME` on macOS, `TCP_MAXRT` on Windows); without that bound Linux retransmits for about 15 minutes. On Linux the bound also closes a connection whose peer keeps its receive window closed for `keepalive` seconds: a peer process stopped in a debugger while this side sends at full rate. Raise `keepalive` for such a debugging session.
 
 Accessors: `network_sndbuf()`, `network_rcvbuf()`, `network_drain_limit()`, `network_pool_pairs()`, `network_timeout()`, `network_cache()`, `network_keepalive()`. See **[Network Tuning Troubleshooting](./07d-troubleshooting-network-tunning.md)**.
 

@@ -82,6 +82,12 @@ void _os_configure_connected_socket(SOCKETHANDLE hSocket, int32_t keepIdle, int3
     ::setsockopt(hSocket, IPPROTO_TCP, TCP_KEEPCNT, reinterpret_cast<const char *>(&probeCount), sizeof(probeCount));
 #endif  // TCP_KEEPCNT
 
+#ifdef TCP_MAXRT
+    // Sent data that stays unacknowledged declares the peer lost after the same seconds.
+    const DWORD maxRetransmit{ static_cast<DWORD>(keepIdle + keepInterval * keepCount) };
+    ::setsockopt(hSocket, IPPROTO_TCP, TCP_MAXRT, reinterpret_cast<const char *>(&maxRetransmit), sizeof(maxRetransmit));
+#endif  // TCP_MAXRT
+
 #ifdef SIO_TCP_SET_ACK_FREQUENCY
     DWORD ackFreq{ 2u };   // ACK every segment
     DWORD outBytes{ 0u };

@@ -20,6 +20,9 @@
  *                                  side of the connection reports an error.
  *              blip <window>       prints READY, waits for GO, then reports whether the
  *                                  idle connection is still usable after <window> seconds.
+ *              stall <seconds>     the receiver reads nothing for <seconds> while the sender
+ *                                  sends at full rate, then reads again; reports whether the
+ *                                  connection survived. Needs no packet drop.
  ************************************************************************/
 
 #include "areg/base/areg_global.h"
@@ -464,6 +467,79 @@ namespace
     }
 
 #endif  // !WINDOWS
+
+    //!< Returns the pending error of the socket, 0 if there is none.
+    int socket_error(ProbeSocket s)
+    {
+        int value{ 0 };
+        ProbeLen len{ static_cast<ProbeLen>(sizeof(value)) };
+        return (::getsockopt(s, SOL_SOCKET, SO_ERROR, reinterpret_cast<char *>(&value), &len) == 0) ? value : last_error();
+    }
+
+    //!< True if the error only says that a send waited longer than the send timeout.
+    bool is_send_timeout(int error)
+    {
+#ifdef WINDOWS
+        return (error == WSAETIMEDOUT) || (error == WSAEWOULDBLOCK);
+#else   // WINDOWS
+        return (error == EAGAIN) || (error == EWOULDBLOCK);
+#endif  // WINDOWS
+    }
+
+    //!< The receiver reads nothing for stallSec seconds while the sender sends as fast as it can,
+    //!< then reads again. Reports whether the connection is still usable afterwards.
+    int run_stall(int stallSec)
+    {
+        Pair pair;
+        if (!open_pair(pair))
+        {
+            std::printf("error=cannot open a loopback pair, %d\n", last_error());
+            return 2;
+        }
+
+        std::atomic_bool stop{ false };
+        std::atomic_int  sendError{ 0 };
+        std::atomic_int  timeouts{ 0 };
+        std::thread sender([&pair, &stop, &sendError, &timeouts]() {
+            char buffer[16 * 1024]{};
+            while (!stop.load())
+            {
+                if (::send(pair.client, buffer, static_cast<int>(sizeof(buffer)), MSG_NOSIGNAL_PROBE) < 0)
+                {
+                    const int error{ last_error() };
+                    if (!is_send_timeout(error))
+                    {
+                        sendError.store(error);
+                        return;
+                    }
+
+                    timeouts.fetch_add(1);
+                }
+            }
+        });
+
+        std::this_thread::sleep_for(std::chrono::seconds(stallSec));
+
+        int readError{ 0 };
+        char buffer[64 * 1024];
+        const auto drainEnd{ Clock::now() + std::chrono::seconds(3) };
+        while ((Clock::now() < drainEnd) && (sendError.load() == 0))
+        {
+            if (::recv(pair.server, buffer, static_cast<int>(sizeof(buffer)), 0) <= 0)
+            {
+                readError = last_error();
+                break;
+            }
+        }
+
+        stop.store(true);
+        const int clientError{ sendError.load() != 0 ? sendError.load() : socket_error(pair.client) };
+        const int serverError{ readError != 0 ? readError : socket_error(pair.server) };
+        std::printf("RESULT scenario=stall seconds=%d survived=%d send_timeouts=%d client_error=%d server_error=%d\n",
+                    stallSec, ((clientError == 0) && (serverError == 0)) ? 1 : 0, timeouts.load(), clientError, serverError);
+        std::fflush(stdout);
+        std::_Exit(0);
+    }
 }
 
 int main(int argc, char ** argv)
@@ -490,9 +566,13 @@ int main(int argc, char ** argv)
         result = run_blip(std::atoi(argv[2]));
     }
 #endif  // !WINDOWS
+    else if ((mode == "stall") && (argc > 2))
+    {
+        result = run_stall(std::atoi(argv[2]));
+    }
     else
     {
-        std::printf("usage: %s report | deadpeer idle|busy [limit_s] | blip <window_s>\n", argv[0]);
+        std::printf("usage: %s report | deadpeer idle|busy [limit_s] | blip <window_s> | stall <seconds>\n", argv[0]);
     }
 
     areg::socket_release();

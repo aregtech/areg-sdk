@@ -309,7 +309,7 @@ constexpr uint32_t      SOCKET_RECV_BUFFER_SIZE { 4u * areg::ONE_MEGABYTE };
 //!< Maximum milliseconds a single send() call may block waiting for TCP send-window space.
 constexpr uint32_t      SOCKET_SEND_TIMEOUT_MS  { 2500u };
 
-//!< Compile-time default for the seconds after which a silent peer of an idle connection is declared lost.
+//!< Compile-time default for the seconds after which a silent peer is declared lost, whether the connection is idle or sending.
 //!< Override at runtime via net::SERVICE::TRANSPORT::keepalive in areg.init (value in seconds).
 constexpr uint32_t      SOCKET_KEEPALIVE_SEC    { 15u };
 
@@ -497,9 +497,11 @@ AREG_API void socket_configure(SOCKETHANDLE hSocket) noexcept;
 
 /**
  * \brief   Disables the Nagle algorithm (TCP_NODELAY) on a connected socket.
- *          Also applies platform-specific keepalive and broken-pipe handling. The keepalive
- *          declares a silent peer of an idle connection lost after the seconds configured in
- *          net::MODULE::tcpip::keepalive (SOCKET_KEEPALIVE_SEC by default).
+ *          Also applies platform-specific keepalive and broken-pipe handling. A silent peer is
+ *          declared lost after the seconds configured in net::MODULE::tcpip::keepalive
+ *          (SOCKET_KEEPALIVE_SEC by default): an idle connection by keepalive probes, a sending
+ *          one when its data stays unacknowledged that long. On Linux the same bound also ends
+ *          a connection whose peer keeps its receive window closed that long.
  *          Call this only on client or accepted sockets, never on listening sockets.
  *
  * \param   hSocket     Valid connected socket descriptor.

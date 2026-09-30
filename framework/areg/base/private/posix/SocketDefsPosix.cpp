@@ -67,10 +67,17 @@ void _os_configure_connected_socket(SOCKETHANDLE hSocket, int32_t keepIdle, int3
     ::setsockopt(hSocket, IPPROTO_TCP, TCP_KEEPCNT, reinterpret_cast<const char *>(&keepCount), sizeof(keepCount));
 #endif  // TCP_KEEPCNT
 
-#if defined(__linux__)
-    // TCP_USER_TIMEOUT is intentionally not set. It aborts connections whenever
-    // the send buffer stays full for the timeout duration.
+    // Sent data that stays unacknowledged declares the peer lost after the same seconds.
+    // On Linux the bound also ends a connection whose peer keeps its receive window closed that long.
+    const int32_t lostAfter{ keepIdle + keepInterval * keepCount };
+#if defined(TCP_USER_TIMEOUT)
+    const uint32_t userTimeout{ static_cast<uint32_t>(lostAfter) * 1'000u };
+    ::setsockopt(hSocket, IPPROTO_TCP, TCP_USER_TIMEOUT, reinterpret_cast<const char *>(&userTimeout), sizeof(userTimeout));
+#elif defined(TCP_RXT_CONNDROPTIME)
+    ::setsockopt(hSocket, IPPROTO_TCP, TCP_RXT_CONNDROPTIME, reinterpret_cast<const char *>(&lostAfter), sizeof(lostAfter));
+#endif  // TCP_USER_TIMEOUT / TCP_RXT_CONNDROPTIME
 
+#if defined(__linux__)
     // TCP_QUICKACK: Suppress the 200 ms delayed-ACK for the initial message burst.
     //               The kernel resets this flag after each receive, but setting it 
     //               at connection time ensures low-rate periods and connection startup

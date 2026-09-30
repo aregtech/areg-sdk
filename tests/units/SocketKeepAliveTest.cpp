@@ -32,7 +32,10 @@
     #include <netinet/in.h>
     #include <netinet/tcp.h>
     #include <sys/socket.h>
-#endif  // _POSIX
+#elif defined(WINDOWS)
+    #include <WinSock2.h>
+    #include <WS2tcpip.h>
+#endif  // _POSIX / WINDOWS
 
 namespace
 {
@@ -52,6 +55,13 @@ namespace
         const uint32_t result{ config.network_keepalive(areg::EmptyStringA, areg::String(TCPIP)) };
         std::remove(path.c_str());
         return (loaded ? result : 0u);
+    }
+
+    //!< The seconds a configured socket carries: the configured value within the socket limits.
+    int expected_keepalive()
+    {
+        const int configured{ static_cast<int>(areg::Application::config_manager().network_keepalive(areg::EmptyStringA, areg::String(TCPIP))) };
+        return (configured < 6 ? 6 : (configured > static_cast<int>(areg::SOCKET_KEEPALIVE_MAX_SEC) ? static_cast<int>(areg::SOCKET_KEEPALIVE_MAX_SEC) : configured));
     }
 }
 
@@ -110,12 +120,41 @@ TEST(SocketKeepAliveTest, SocketCarriesConfiguredValues)
     EXPECT_EQ(::getsockopt(hSocket, IPPROTO_TCP, TCP_KEEPCNT, &keepCount, &len), 0);
     areg::socket_close(hSocket);
 
-    const int configured{ static_cast<int>(areg::Application::config_manager().network_keepalive(areg::EmptyStringA, areg::String(TCPIP))) };
-    const int expected{ configured < 6 ? 6 : (configured > static_cast<int>(areg::SOCKET_KEEPALIVE_MAX_SEC) ? static_cast<int>(areg::SOCKET_KEEPALIVE_MAX_SEC) : configured) };
     EXPECT_EQ(keepCount, 5);
     EXPECT_GE(keepInterval, 1);
     EXPECT_GE(keepIdle, 1);
-    EXPECT_EQ(keepIdle + keepInterval * keepCount, expected);
+    EXPECT_EQ(keepIdle + keepInterval * keepCount, expected_keepalive());
 }
 
 #endif  // _POSIX
+
+/**
+ * \brief   A socket configured by socket_set_no_delay() declares a peer that leaves sent data
+ *          unacknowledged lost after the same seconds as a silent idle peer.
+ **/
+TEST(SocketKeepAliveTest, SocketBoundsUnacknowledgedData)
+{
+    ASSERT_TRUE(areg::socket_initialize());
+    const SOCKETHANDLE hSocket{ areg::socket_create() };
+    ASSERT_TRUE(areg::is_valid_socket(hSocket));
+    areg::socket_set_no_delay(hSocket);
+
+    int bound{ 0 };
+#if defined(WINDOWS) && defined(TCP_MAXRT)
+    int len{ static_cast<int>(sizeof(bound)) };
+    EXPECT_EQ(::getsockopt(hSocket, IPPROTO_TCP, TCP_MAXRT, reinterpret_cast<char *>(&bound), &len), 0);
+    const int expected{ expected_keepalive() };
+#elif defined(TCP_USER_TIMEOUT)
+    socklen_t len{ sizeof(bound) };
+    EXPECT_EQ(::getsockopt(hSocket, IPPROTO_TCP, TCP_USER_TIMEOUT, &bound, &len), 0);
+    const int expected{ expected_keepalive() * 1000 };
+#elif defined(TCP_RXT_CONNDROPTIME)
+    socklen_t len{ sizeof(bound) };
+    EXPECT_EQ(::getsockopt(hSocket, IPPROTO_TCP, TCP_RXT_CONNDROPTIME, &bound, &len), 0);
+    const int expected{ expected_keepalive() };
+#else
+    const int expected{ 0 };
+#endif
+    areg::socket_close(hSocket);
+    EXPECT_EQ(bound, expected);
+}
