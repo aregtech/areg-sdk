@@ -24,6 +24,7 @@
 #include "areg/component/Channel.hpp"
 #include "areg/component/ProxyAddress.hpp"
 #include "areg/component/StubAddress.hpp"
+#include "areg/component/StubBase.hpp"
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/base/Process.hpp"
@@ -33,6 +34,7 @@ namespace areg {
 DEF_LOG_SCOPE(areg_ipc_private_RouterClient, failed_send_message);
 DEF_LOG_SCOPE(areg_ipc_private_RouterClient, failed_receive_message);
 DEF_LOG_SCOPE(areg_ipc_private_RouterClient, failed_process_message);
+DEF_LOG_SCOPE(areg_ipc_private_RouterClient, report_duplicate_role);
 
 DEF_LOG_SCOPE(areg_ipc_private_RouterClient, process_request_event);
 DEF_LOG_SCOPE(areg_ipc_private_RouterClient, process_response_event);
@@ -206,15 +208,17 @@ void RouterClient::failed_send_message(const MessageEnvelope & msgFailed, Socket
                 evtError.deliver_event();
             }
 
-            if ( whichTarget.is_valid() && (whichTarget.is_alive() == false))
-            {
-                LOG_DBG("Trying to reconnect");
-                notify_connection_lost( );
-            }
         }
         else
         {
             LOG_WARN("The failed message, it is neither executable, nor connection notification. Ignoring to generate request failed event.");
+        }
+
+        // A part of a message may be on the wire: nothing more may follow it on this connection.
+        if ( whichTarget.is_valid() )
+        {
+            LOG_DBG("Closing the connection and reconnecting");
+            notify_connection_lost( );
         }
     }
     else
@@ -274,6 +278,26 @@ void RouterClient::failed_process_message( const MessageEnvelope & msgUnprocesse
     }
 }
 
+namespace
+{
+    // Logs that a public role name of this process is also registered by another process.
+    void _report_duplicate_role(const MessageEnvelope & msgReceived)
+    {
+        LOG_SCOPE( areg_ipc_private_RouterClient, report_duplicate_role );
+
+        const StubAddress stub(*msgReceived.header());
+        const StubBase * local{ StubBase::find_stub(stub) };
+        const StubAddress & named{ local != nullptr ? local->address() : stub };
+        areg::ConnectedInstance other{ };
+        msgReceived >> other;
+        LOG_ERR("Duplicate role name [ %s ] of service [ %s ]: process [ %s ] (%s) registers the same public role name. A role name is unique in the network; only the first registration is served"
+                    , named.role_name().as_string()
+                    , named.service_name().as_string()
+                    , other.ciInstance.c_str()
+                    , other.ciLocation.c_str());
+    }
+}
+
 void RouterClient::process_received_message( MessageEnvelope & msgReceived, Socket & whichSource )
 {
     DEBUG_LOG_SCOPE( areg_ipc_private_RouterClient, process_received_message );
@@ -292,6 +316,10 @@ void RouterClient::process_received_message( MessageEnvelope & msgReceived, Sock
     {
     case areg::FuncIdRange::SystemServiceNotifyConnection:
         service_connection_event(msgReceived);
+        break;
+
+    case areg::FuncIdRange::SystemServiceNotifyDuplicate:
+        _report_duplicate_role(msgReceived);
         break;
 
     case areg::FuncIdRange::SystemServiceNotifyRegister:
@@ -331,6 +359,12 @@ void RouterClient::process_received_message( MessageEnvelope & msgReceived, Sock
         {
             StubAddress stub(*msgReceived.header());
             stub.set_source( mChannel.source() );
+            if ( (reason == areg::DisconnectReason::ProviderRejected) && (stub.cookie() == mClientConnection.cookie()) )
+            {
+                // The rejected provider is one of this process.
+                stub.set_cookie( areg::COOKIE_LOCAL );
+            }
+
             mRegisterConsumer.on_provider_unregistered(stub, reason, areg::COOKIE_ANY);
         }
         break;

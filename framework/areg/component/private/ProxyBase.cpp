@@ -385,11 +385,27 @@ void ProxyBase::service_connection_updated( const StubAddress & server, const Ch
     }
 
     ProxyListenerList connectListeners;
+    ArrayList<uint32_t> notifyIds;
     {
         Lock lock(mListenerLock);
         ProxyListenerMap::MAPPOS mapPos = mListenerMap.find(CONNECTION_ID);
         if (mListenerMap.is_valid_position(mapPos))
             connectListeners = mapPos->second;
+
+        if (nowConnected && (wasConnected == false))
+        {
+            for (mapPos = mListenerMap.first_position(); mListenerMap.is_valid_position(mapPos); mapPos = mListenerMap.next_position(mapPos))
+            {
+                if ((mapPos->first != CONNECTION_ID) && has_notification_listener(mapPos->first))
+                    notifyIds.add(mapPos->first);
+            }
+        }
+    }
+
+    // A provider that has just connected knows no subscription: subscribe the listeners still in the list.
+    for (uint32_t i = 0u; i < notifyIds.size(); ++i)
+    {
+        start_notification(notifyIds[i]);
     }
 
     for (uint32_t i = 0u; i < connectListeners.size(); ++i)

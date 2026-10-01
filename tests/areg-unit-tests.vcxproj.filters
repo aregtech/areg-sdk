@@ -40,6 +40,9 @@
     <ClCompile Include="units\SocketKeepAliveTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="units\SocketLivenessTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="units\OptionParserTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

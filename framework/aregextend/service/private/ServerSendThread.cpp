@@ -27,6 +27,7 @@
 namespace areg::ext {
 
 DEBUG_DEF_LOG_SCOPE(areg_aregextend_service_ServerSendThread, start_event_processing);
+DEF_LOG_SCOPE(areg_aregextend_service_ServerSendThread, backlog_close);
 
 ServerSendThread::ServerSendThread(RemoteMessageHandler& remoteService, ServerConnection & connection)
     : DispatcherThread  ( areg::SERVER_SEND_MESSAGE_THREAD, areg::SYSTEM_THREAD_STACK_BIG, areg::SEND_THREAD_QUEUE_LIMIT )
@@ -38,6 +39,7 @@ ServerSendThread::ServerSendThread(RemoteMessageHandler& remoteService, ServerCo
     , mBatch            ( )
     , mSendStats        ( )
     , mSendGate         ( )
+    , mBacklog          ( mSendGate )
 {
 }
 
@@ -52,6 +54,7 @@ void ServerSendThread::ready_for_events( bool is_ready )
     else
     {
         DispatcherThread::ready_for_events( false );
+        release_backlog();
         mConnection.close_all_connections( );
         mConnection.disable_send( );
     }
@@ -68,7 +71,8 @@ void ServerSendThread::start_event_processing( areg::Event & eventElem )
                                              , mSockets.data()
                                              , &mSendGate
                                              , &mConnection
-                                             , &mRemoteService };
+                                             , &mRemoteService
+                                             , &mBacklog };
 
     areg::ext::run_send_batch( *this
                              , eventElem
@@ -86,6 +90,7 @@ void ServerSendThread::start_event_processing( areg::Event & eventElem )
                                    // This thread owns the listening socket of the service, so it
                                    // takes the whole connection down with it.
                                    DEBUG_LOG_DBG("Going to quit send message thread");
+                                   release_backlog();
                                    mConnection.close_all_connections();
                                    mConnection.close_socket();
                                }
@@ -99,6 +104,43 @@ void ServerSendThread::start_event_processing( areg::Event & eventElem )
                                                    , messageId
                                                    , static_cast<uint32_t>(target));
                                } );
+
+    areg::ext::serve_backlog(*this, mBacklog, static_cast<SendBacklog::Owner &>(*this));
+}
+
+SOCKETHANDLE ServerSendThread::backlog_socket(ITEM_ID cookie)
+{
+    return mConnection.handle_by_cookie(cookie);
+}
+
+void ServerSendThread::backlog_sent(uint64_t bytes, uint32_t msgs)
+{
+    accumulate_sent(bytes, msgs);
+}
+
+void ServerSendThread::backlog_close(const SendBacklog::Entry & entry, SendBacklog::Reason reason)
+{
+    LOG_SCOPE(areg_aregextend_service_ServerSendThread, backlog_close);
+    mBacklog.log_close(entry, reason);
+    if ( mConnection.is_interrupted() == false )
+    {
+        areg::SocketAccepted client{ mConnection.client_by_handle(entry.socket) };
+        mRemoteService.failed_send_message(entry.messages.front(), client);
+    }
+}
+
+void ServerSendThread::release_backlog()
+{
+    std::deque<SOCKETHANDLE> cutSockets;
+    mBacklog.release_all(cutSockets);
+    for ( const SOCKETHANDLE hSocket : cutSockets )
+    {
+        areg::SocketAccepted client{ mConnection.client_by_handle(hSocket) };
+        if ( client.is_valid() )
+        {
+            mConnection.close_connection(client);
+        }
+    }
 }
 
 bool ServerSendThread::post_event( Event & eventElem )

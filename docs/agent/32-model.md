@@ -167,5 +167,5 @@ never stored reads back as `areg::InvalidElement`, which is zero in every member
 - [ ] Every provided service has a `REGISTER_IMPLEMENT_SERVICE` line.
 - [ ] Every `BEGIN_` macro has its matching `END_` with the same argument.
 - [ ] The string in `BEGIN_MODEL` is the string passed to `load_model`.
-- [ ] Role names are unique within the process.
+- [ ] Role names are unique within the process, and public ones across the network.
 - [ ] For multi process: the `.siml` says `Public`, and `mtrouter` is running.

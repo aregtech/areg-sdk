@@ -128,6 +128,11 @@ if (AREG_TESTS)
         include(${AREG_TESTS_DIR}/proxy-churn/CMakeLists.txt)
     endif()
 
+    # Reuses the generated service interfaces of examples 25 and 32; driven by conn_scenario.py.
+    if (AREG_EXAMPLES AND TARGET 32_generated AND TARGET 25_generated)
+        include(${AREG_TESTS_DIR}/conn-scenario/CMakeLists.txt)
+    endif()
+
 else(AREG_TESTS)
     option(AREG_SYSTEM_GTEST  "Use GTest package" FALSE)
 endif(AREG_TESTS)

@@ -162,7 +162,7 @@ redesign, not an edit; know them first.
 
 The other eleven are one-line fixes: a `REGISTER_WORKER_THREAD` consumer name the
 component does not answer to, two
-components sharing a role name in one process, a header taken from a `private/`
+components sharing a role name (in one process; a public one in the network), a header taken from a `private/`
 folder, a watchdog timeout on a thread whose watchdog never starts, a response sent
 after its handler returned, an operation on a nested `.fsml` `Final` state, a
 hand-written source file no `macro_declare_executable` names, a timer told apart

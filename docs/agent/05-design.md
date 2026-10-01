@@ -61,11 +61,11 @@ Rules that follow from the table:
 ## 3. What are the components, and in which threads?
 
 A **component** is one instance with one **role name**, and the role name is its
-routing identity. A component may provide several services, consume several, or do
-both at once -- the middle component in `recipes/05-two-services/` does both.
+routing identity. A component may provide and consume several services at once, as
+the middle one in `recipes/05-two-services/` does.
 
-- One component per role in the system, not one per service.
-- Two components with the same role name in one process is an error.
+- One component per role, not per service. A role name is unique in its process, and
+  a public one in the network: `mtrouter` rejects a second provider.
 - A consumer names its provider by that role name, character for character.
 
 A **thread** is a dispatcher. Every handler of every component in it runs there, one

@@ -1182,8 +1182,8 @@ uint32_t ConfigManager::network_timeout(const String& module, const String& conn
             return static_cast<uint32_t>(prop->value().as_integer());
     }
 
-    // Step 3: compile-time default
-    return areg::SOCKET_SEND_TIMEOUT_MS;
+    // Step 3: the build default, resolved by the connection
+    return 0u;
 }
 
 uint32_t ConfigManager::network_cache(const String& module, const String& connectType) const noexcept

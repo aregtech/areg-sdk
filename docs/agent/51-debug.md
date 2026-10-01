@@ -112,6 +112,7 @@ message: this failure is silent by design.
 | Multi process, but the service is `Private` | `Category` in the `.siml` | Set `Public`, regenerate, rebuild |
 | The provider is not registered | Is there a `REGISTER_IMPLEMENT_SERVICE` line? | Add it |
 | Two components claim one role name | Search the model for the name | Give each a unique name, or `areg::generate_name()` |
+| A public provider is never served; both processes log `Duplicate role name` | Another process provides the same public role name | Give one of them another role name |
 
 ---
 

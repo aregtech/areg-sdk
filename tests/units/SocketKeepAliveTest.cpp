@@ -130,7 +130,8 @@ TEST(SocketKeepAliveTest, SocketCarriesConfiguredValues)
 
 /**
  * \brief   A socket configured by socket_set_no_delay() declares a peer that leaves sent data
- *          unacknowledged lost after the same seconds as a silent idle peer.
+ *          unacknowledged lost after the same seconds as a silent idle peer. Linux sets no
+ *          bound: it would also end a peer that is reachable but does not read.
  **/
 TEST(SocketKeepAliveTest, SocketBoundsUnacknowledgedData)
 {
@@ -144,14 +145,14 @@ TEST(SocketKeepAliveTest, SocketBoundsUnacknowledgedData)
     int len{ static_cast<int>(sizeof(bound)) };
     EXPECT_EQ(::getsockopt(hSocket, IPPROTO_TCP, TCP_MAXRT, reinterpret_cast<char *>(&bound), &len), 0);
     const int expected{ expected_keepalive() };
-#elif defined(TCP_USER_TIMEOUT)
-    socklen_t len{ sizeof(bound) };
-    EXPECT_EQ(::getsockopt(hSocket, IPPROTO_TCP, TCP_USER_TIMEOUT, &bound, &len), 0);
-    const int expected{ expected_keepalive() * 1000 };
 #elif defined(TCP_RXT_CONNDROPTIME)
     socklen_t len{ sizeof(bound) };
     EXPECT_EQ(::getsockopt(hSocket, IPPROTO_TCP, TCP_RXT_CONNDROPTIME, &bound, &len), 0);
     const int expected{ expected_keepalive() };
+#elif defined(TCP_USER_TIMEOUT)
+    socklen_t len{ sizeof(bound) };
+    EXPECT_EQ(::getsockopt(hSocket, IPPROTO_TCP, TCP_USER_TIMEOUT, &bound, &len), 0);
+    const int expected{ 0 };
 #else
     const int expected{ 0 };
 #endif

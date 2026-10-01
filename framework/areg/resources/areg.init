@@ -334,7 +334,7 @@ net::*::tcpip::sndbuf               = 8192                  # Default SO_SNDBUF 
 net::*::tcpip::rcvbuf               = 8192                  # Default SO_RCVBUF for all services (uncomment to set a global default).
 net::*::tcpip::drain                = 128                   # Send batch in messages, 0..128. A MEMORY setting: lowering it costs data rate. See wiki 05b.
 net::*::tcpip::pairs                = 0                     # Pool thread-pair count. 0 = disabled (shared send/recv threads). >0 = dedicated pool pairs per N clients.
-net::*::tcpip::timeout              = 2500                  # SO_SNDTIMEO in ms. Raise (e.g. 30000) when debugging on Windows to prevent breakpoint-pause disconnects.
+net::*::tcpip::timeout              = 0                     # ms a reachable peer may take no data before it is closed. 0 = build default: unlimited debug, keepalive release. Debug app through a release router: net::mtrouter::tcpip::timeout = 3600000
 net::*::tcpip::cache                = 256                   # The size per-socket cache to receive data. Same value is used to initialize send cache.
 net::*::tcpip::keepalive            = 15                    # Seconds until a silent peer is lost, idle or sending, 6..3600. A lost probe is survived up to ~80% of (value - 5).
 

@@ -58,6 +58,7 @@
     <ClCompile Include="units\StringUtilsTest.cpp" />
     <ClCompile Include="units\ThreadTest.cpp" />
     <ClCompile Include="units\SocketKeepAliveTest.cpp" />
+    <ClCompile Include="units\SocketLivenessTest.cpp" />
     <ClCompile Include="units\ArrayListTest.cpp" />
     <ClCompile Include="units\FixedArrayTest.cpp" />
     <ClCompile Include="units\HashMapTest.cpp" />

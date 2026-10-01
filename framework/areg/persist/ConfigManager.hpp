@@ -889,10 +889,11 @@ public:
     uint32_t network_pool_pairs(const String& module = areg::EmptyStringA, const String& connectType = areg::EmptyStringA) const noexcept;
 
     /**
-     * \brief   Returns the configured SO_SNDTIMEO value in milliseconds
-     *          (net::MODULE::TRANSPORT::timeout).
-     *          Lookup order: module-specific entry --> wildcard "*" entry --> compile-time default.
-     *          Falls back to SOCKET_SEND_TIMEOUT_MS when the key is absent or zero.
+     * \brief   Returns the configured send timeout in milliseconds
+     *          (net::MODULE::TRANSPORT::timeout): how long a reachable peer may take no data.
+     *          Lookup order: module-specific entry --> wildcard "*" entry.
+     *          Returns 0, the build default, when the key is absent or zero: unlimited in a
+     *          debug build, the keepalive time in a release build.
      *
      * \param   module          The process/application name. Pass empty string to use the current process name.
      * \param   connectType     The transport type name (e.g. "tcpip"). Pass empty string to match any transport.
