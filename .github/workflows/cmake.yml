@@ -412,7 +412,7 @@ jobs:
       - name: Setup Java JDK to run code generator
         uses: actions/setup-java@v6.0.1
         with:
-          java-version: 21
+          java-version: 17
           java-package: jre
           distribution: temurin
 
@@ -450,6 +450,18 @@ jobs:
           install-dir: 'C:\cygwin'
           add-to-path: false
           work-vol: 'C:'
+
+      - name: Pin the cygwin libuv1 to 1.52.1
+        if: matrix.config.family == 'cygwin'
+        shell: pwsh
+        # cmake under libuv1 1.53.0 waits forever for a child process that has already ended.
+        run: |
+          $url = 'https://mirrors.kernel.org/sourceware/cygwin/x86_64/release/libuv/libuv1/libuv1-1.52.1-1-x86_64.tar.xz'
+          $sha = 'bfeffaf2c576a58650b71f7057722f79166589bd1859b5546f8b64190a226e9417f6f1ae59529ad7db4ca3891034b17dba3fc2becdb3f4e81223890fe78298aa'
+          Invoke-WebRequest -Uri $url -OutFile C:\cygwin\tmp\libuv1.tar.xz
+          if ((Get-FileHash -Algorithm SHA512 C:\cygwin\tmp\libuv1.tar.xz).Hash -ne $sha) { throw 'libuv1 1.52.1: checksum mismatch' }
+          C:\cygwin\bin\bash.exe -c 'tar -xJf /tmp/libuv1.tar.xz -C / && strings /usr/bin/cyguv-1.dll | grep -m1 -x "1\.[0-9]*\.[0-9]*"'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Resolve the python 3 interpreter
         if: matrix.config.test == 'ON'
@@ -717,7 +729,7 @@ jobs:
       - name: Setup Java JDK to run code generator
         uses: actions/setup-java@v6.0.1
         with:
-          java-version: 21
+          java-version: 17
           java-package: jre
           distribution: temurin
 

@@ -6,8 +6,9 @@
 #
 # Waits until <done-file> exists or <limit-seconds> pass. On the limit, prints
 # every process, the thread stacks of each process whose executable is one of
-# <name> (without '.exe'), kills those processes and exits 1. The report is also
-# written to <done-file>.report. Runs on Linux, macOS and Cygwin, with bash 3.2.
+# <name>, with or without its extension, kills those processes and exits 1. The
+# report is also written to <done-file>.report. Runs on Linux, macOS and Cygwin,
+# with bash 3.2.
 # ---------------------------------------------------------------------------
 
 done_file="$1"
@@ -64,8 +65,9 @@ matching_pids() {
                 for (i = 9; i <= NF; ++i) cmd = cmd " " $i
                 sub(/.*[\\\/]/, "", cmd)
                 cmd = tolower(cmd)
-                sub(/\.exe$/, "", cmd)
-                if (index(tolower(names), " " cmd " ") > 0) print $1
+                base = cmd
+                sub(/\.[^.]*$/, "", base)
+                if (index(tolower(names), " " cmd " ") > 0 || index(tolower(names), " " base " ") > 0) print $1
             }'
             ;;
         *)
@@ -73,7 +75,9 @@ matching_pids() {
                 cmd = $2
                 for (i = 3; i <= NF; ++i) cmd = cmd " " $i
                 sub(/.*\//, "", cmd)
-                if (index(names, " " cmd " ") > 0) print $1
+                base = cmd
+                sub(/\.[^.]*$/, "", base)
+                if (index(names, " " cmd " ") > 0 || index(names, " " base " ") > 0) print $1
             }'
             ;;
     esac

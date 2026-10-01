@@ -207,9 +207,8 @@ inline uint32_t _wait_any_sleep(std::atomic<uint32_t>& firedWord, uint32_t msTim
 
         const int rc { ::__ulock_wait(areg::os::APPLE_ULOCK_COMPARE_AND_WAIT, &firedWord,
                                       static_cast<uint64_t>(SYNC_FIRE_INVALID), timeout_us) };
-        if (errno == ETIMEDOUT)
+        if ((rc < 0) && (errno == ETIMEDOUT))
             return SYNC_FIRE_INVALID;
-        (void)rc;
     }
 }
 
