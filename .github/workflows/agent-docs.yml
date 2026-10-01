@@ -37,6 +37,8 @@ permissions:
 
 jobs:
   references:
+    # Temporary: skipped on the branch that probes the macOS stall, see macos-probe-thread.yml.
+    if: github.head_ref != 'bugfix/799-example-23-client-does-not-quit' && github.ref_name != 'bugfix/799-example-23-client-does-not-quit'
     name: documentation references
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -126,6 +128,8 @@ jobs:
         run: python3 tools/intern/check_corpus.py --verbose
 
   recipes:
+    # Temporary: skipped on the branch that probes the macOS stall, see macos-probe-thread.yml.
+    if: github.head_ref != 'bugfix/799-example-23-client-does-not-quit' && github.ref_name != 'bugfix/799-example-23-client-does-not-quit'
     name: recipes build and run
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -224,6 +228,8 @@ jobs:
           grep -rq 'probe_regenerated' "${gen}"
 
   evals:
+    # Temporary: skipped on the branch that probes the macOS stall, see macos-probe-thread.yml.
+    if: github.head_ref != 'bugfix/799-example-23-client-does-not-quit' && github.ref_name != 'bugfix/799-example-23-client-does-not-quit'
     name: evaluation bank
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -249,6 +255,8 @@ jobs:
         run: python3 tools/intern/run_evals.py --self-check --sdk-root .
 
   chain:
+    # Temporary: skipped on the branch that probes the macOS stall, see macos-probe-thread.yml.
+    if: github.head_ref != 'bugfix/799-example-23-client-does-not-quit' && github.ref_name != 'bugfix/799-example-23-client-does-not-quit'
     name: the five-step chain, end to end
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -297,6 +305,8 @@ jobs:
         run: python3 $TOOLS/run_scenarios.py --build build/bin --only quit
 
   macos:
+    # Temporary: skipped on the branch that probes the macOS stall, see macos-probe-thread.yml.
+    if: github.head_ref != 'bugfix/799-example-23-client-does-not-quit' && github.ref_name != 'bugfix/799-example-23-client-does-not-quit'
     name: the macOS branch of the tools
     runs-on: macos-latest
     timeout-minutes: 30
@@ -351,6 +361,8 @@ jobs:
           bash -c '. "${RUNNER_TEMP}/sfx.sh"; test "$SFX" = .mac'
 
   windows:
+    # Temporary: skipped on the branch that probes the macOS stall, see macos-probe-thread.yml.
+    if: github.head_ref != 'bugfix/799-example-23-client-does-not-quit' && github.ref_name != 'bugfix/799-example-23-client-does-not-quit'
     name: the Windows column of the documented commands
     runs-on: windows-latest
     # Two framework builds now: the recipe's, and the scaffolded project's. Each is

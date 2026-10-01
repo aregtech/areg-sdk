@@ -12,6 +12,8 @@ on:
 
 jobs:
   analyze:
+    # Temporary: skipped on the branch that probes the macOS stall, see macos-probe-thread.yml.
+    if: github.head_ref != 'bugfix/799-example-23-client-does-not-quit' && github.ref_name != 'bugfix/799-example-23-client-does-not-quit'
     name: Analyze
     runs-on: ubuntu-latest
     permissions:

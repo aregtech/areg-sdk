@@ -1,0 +1,179 @@
+# Reproduces the macOS stall of ThreadTest.Concurrent*AndShutdownOfDispatcherNeverHang,
+# where a dispatcher shutdown() racing start() never returns.
+#
+# The stall appeared in every macOS job built with logging off and in none with logging
+# on. Both configurations are built once and the two tests are then repeated on many
+# runners at the same time: the logging build is the control.
+#
+# On a stall the test prints the calls per worker and the stack of every thread, taken
+# with 'sample', and ends the process. The 'suite' jobs run every unit test once on macOS,
+# because the other workflows skip this branch while the probe runs.
+#
+# Temporary. Delete this file once the defect is understood and fixed, and remove the
+# branch guard ('if: github.head_ref != ...') from the jobs of the other workflows.
+name: macOS probe ThreadTest
+
+on:
+  push:
+    branches: [ 'bugfix/799-example-23-client-does-not-quit' ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  BUILD_TYPE: Release
+  REPEAT: 200
+
+jobs:
+
+  build:
+    name: build logging=${{matrix.logging}}
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        logging: [ 'OFF', 'ON' ]
+    steps:
+
+      - name: Checkout Areg SDK source codes
+        uses: actions/checkout@v7
+
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v6.0.1
+        with:
+          java-version: 17
+          java-package: jre
+          distribution: temurin
+
+      - name: Ensure Xcode CLI Tools
+        run: sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+
+      # Same options as the macos-clang-static-noext-nolog job of the CMake workflow,
+      # with the logging switch taken from the matrix.
+      - name: Configure CMake
+        run: |
+          cmake -B ./product/cache/probe \
+                -DAREG_COMPILER=clang \
+                -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
+                -DAREG_LIB_TYPE=static \
+                -DAREG_EXTENDED:BOOL=OFF \
+                -DAREG_LOGGING:BOOL=${{matrix.logging}} \
+                -DAREG_EXAMPLES:BOOL=OFF \
+                -DAREG_TESTS:BOOL=ON \
+                -DAREG_INSTALL:BOOL=OFF
+
+      - name: Build the unit tests
+        run: cmake --build ./product/cache/probe --config ${{env.BUILD_TYPE}} --target areg-unit-tests -j16
+
+      # Packed into a tar because the artifact upload does not carry the executable bit.
+      - name: Pack the unit tests
+        shell: bash
+        run: |
+          EXE="$(find ./product/build -type f -name 'areg-unit-tests*' -perm -u+x 2>/dev/null | head -n 1)"
+          if [ -z "${EXE}" ]; then echo "no areg-unit-tests was produced" >&2; exit 1; fi
+          echo "packing ${EXE}"
+          mkdir -p ./probe
+          cp "${EXE}" ./probe/areg-unit-tests
+          tar -czf ./probe-tests.tar.gz -C ./probe areg-unit-tests
+
+      - name: Upload the unit tests
+        uses: actions/upload-artifact@v7
+        with:
+          name: probe-tests-logging-${{matrix.logging}}
+          path: ./probe-tests.tar.gz
+          retention-days: 3
+
+  # Every unit test once, the way the CMake workflow runs them on macOS, which is skipped on
+  # this branch: a failure that is not the stall shows here.
+  suite:
+    name: all unit tests logging=${{matrix.logging}}
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        logging: [ 'OFF', 'ON' ]
+    steps:
+
+      - name: Checkout Areg SDK source codes
+        uses: actions/checkout@v7
+
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v6.0.1
+        with:
+          java-version: 17
+          java-package: jre
+          distribution: temurin
+
+      - name: Ensure Xcode CLI Tools
+        run: sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+
+      - name: Configure CMake
+        run: |
+          cmake -B ./product/cache/suite \
+                -DAREG_COMPILER=clang \
+                -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
+                -DAREG_LIB_TYPE=static \
+                -DAREG_EXTENDED:BOOL=OFF \
+                -DAREG_LOGGING:BOOL=${{matrix.logging}} \
+                -DAREG_EXAMPLES:BOOL=OFF \
+                -DAREG_TESTS:BOOL=ON \
+                -DAREG_INSTALL:BOOL=OFF
+
+      - name: Build the unit tests
+        run: cmake --build ./product/cache/suite --config ${{env.BUILD_TYPE}} --target areg-unit-tests -j16
+
+      # A run that outlives 120 s gets its processes and the stacks of the unit tests printed,
+      # and is then stopped.
+      - name: Run the unit tests, watched
+        shell: bash
+        timeout-minutes: 30
+        run: |
+          rm -f product/unittests.done
+          bash tools/intern/hang-watchdog.sh product/unittests.done 120 areg-unit-tests &
+          rc=0
+          ctest --test-dir ./product/cache/suite -C ${{env.BUILD_TYPE}} --timeout 180 --output-on-failure || rc=$?
+          touch product/unittests.done
+          wait
+          exit ${rc}
+
+  probe:
+    name: logging=${{matrix.logging}} shard ${{matrix.shard}}
+    needs: build
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        logging: [ 'OFF', 'ON' ]
+        shard: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
+    steps:
+
+      - name: Download the unit tests
+        uses: actions/download-artifact@v7
+        with:
+          name: probe-tests-logging-${{matrix.logging}}
+
+      - name: Unpack the unit tests
+        shell: bash
+        run: |
+          tar -xzf ./probe-tests.tar.gz
+          chmod +x ./areg-unit-tests
+
+      # The process ends at the first stall, so a failing shard prints one stack.
+      - name: Repeat the dispatcher start and shutdown race
+        shell: bash
+        timeout-minutes: 30
+        run: |
+          set -o pipefail
+          ./areg-unit-tests \
+              --gtest_filter='ThreadTest.Concurrent*OfDispatcherNeverHang' \
+              --gtest_repeat=${{env.REPEAT}} 2>&1 | tee ./probe.log
+
+      - name: Upload the output
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: probe-output-logging-${{matrix.logging}}-shard-${{matrix.shard}}
+          path: ./probe.log
+          retention-days: 7
+          if-no-files-found: ignore

@@ -34,12 +34,28 @@
 #include <deque>
 #include <functional>
 #include <mutex>
+#include <string>
 #include <thread>
 #include <vector>
+
+#if defined(__APPLE__)
+    #include <unistd.h>
+#endif  // defined(__APPLE__)
 
 namespace
 {
     using areg::Thread;
+
+    //!< Prints the stack of every thread of this process on macOS.
+    void print_all_stacks()
+    {
+        std::fflush(stdout);
+#if defined(__APPLE__)
+        const std::string command{ "sample " + std::to_string(::getpid()) + " 1 -file /dev/stdout" };
+        static_cast<void>(std::system(command.c_str()));
+        std::fflush(stdout);
+#endif  // defined(__APPLE__)
+    }
 
     //!< How long each concurrent scenario runs.
     constexpr std::chrono::milliseconds STRESS_DURATION { 1000 };
@@ -98,7 +114,7 @@ namespace
                     if (mSignal.wait_for(lock, HANG_LIMIT, [this]() { return mLeft; }) == false)
                     {
                         ADD_FAILURE() << "The test made no progress for " << HANG_LIMIT.count() << " ms";
-                        std::fflush(stdout);
+                        print_all_stacks();
                         std::_Exit(EXIT_FAILURE);
                     }
                 })
@@ -177,9 +193,16 @@ namespace
                 }
                 else if (now - lastMove > HANG_LIMIT)
                 {
+                    std::string calls;
+                    for (const auto & value : mProgress)
+                    {
+                        calls += " " + std::to_string(value.load());
+                    }
+
                     ADD_FAILURE() << "A start() or shutdown() call made no progress for "
-                                  << HANG_LIMIT.count() << " ms";
-                    std::fflush(stdout);
+                                  << HANG_LIMIT.count() << " ms, calls per worker:" << calls
+                                  << ", workers finished: " << mFinished.load();
+                    print_all_stacks();
                     std::_Exit(EXIT_FAILURE);
                 }
             }
