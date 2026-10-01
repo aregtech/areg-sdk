@@ -24,6 +24,7 @@
 
 #if defined(_POSIX)
 
+#include <fcntl.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -274,13 +275,17 @@ TEST( SocketMultiplexerTest, cached_data_is_invisible_to_the_multiplexer )
     ASSERT_TRUE( mux.register_socket( static_cast<SOCKETHANDLE>(pair.sock), true ) );
 
     // The peer bursts as much as it can without blocking, then stays silent with the
-    // connection open.
+    // connection open. The peer is non-blocking, so the burst ends when its buffer is full.
+    const int peerFlags{ ::fcntl( pair.peer, F_GETFL, 0 ) };
+    ASSERT_NE( peerFlags, -1 );
+    ASSERT_NE( ::fcntl( pair.peer, F_SETFL, peerFlags | O_NONBLOCK ), -1 );
+
     char block[CHUNK];
     ::memset( block, 'x', sizeof( block ) );
     uint32_t written{ 0u };
     for ( uint32_t i = 0u; i < BURST_SIZE; ++ i )
     {
-        if ( ::send( pair.peer, block, sizeof( block ), MSG_DONTWAIT ) != static_cast<ssize_t>(sizeof( block )) )
+        if ( ::send( pair.peer, block, sizeof( block ), 0 ) != static_cast<ssize_t>(sizeof( block )) )
             break;
 
         written += CHUNK;
