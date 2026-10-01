@@ -412,7 +412,7 @@ jobs:
       - name: Setup Java JDK to run code generator
         uses: actions/setup-java@v6.0.1
         with:
-          java-version: 17
+          java-version: 21
           java-package: jre
           distribution: temurin
 
@@ -484,14 +484,32 @@ jobs:
           echo "example driver interpreter: ${PY} ($("${PY}" --version 2>&1))"
 
       - name: Configure CMake by selecting compiler family
-        if: matrix.config.extend == 'ON'
+        if: matrix.config.extend == 'ON' && matrix.config.family != 'cygwin'
         working-directory: ${{github.workspace}}
+        timeout-minutes: 15
         run: |
           cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DCMAKE_BUILD_TYPE=${{matrix.config.btype || env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_NO_EXCEPTIONS:BOOL=${{matrix.config.noexc || 'OFF'}} -DAREG_INSTALL:BOOL=ON -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
+
+      - name: Configure CMake by selecting compiler family, watched (cygwin)
+        if: matrix.config.extend == 'ON' && matrix.config.family == 'cygwin'
+        working-directory: ${{github.workspace}}
+        shell: pwsh
+        timeout-minutes: 15
+        # cmake runs from pwsh as in the step above. A configure that outlives 300 s gets its
+        # processes and the stacks of cmake, java and cygpath printed, and is then stopped.
+        run: |
+          New-Item -ItemType Directory -Force product | Out-Null
+          Remove-Item -Force -ErrorAction SilentlyContinue product/configure.done
+          Start-Process -NoNewWindow -FilePath C:\cygwin\bin\bash.exe -ArgumentList 'tools/intern/hang-watchdog.sh product/configure.done 300 cmake java cygpath'
+          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DCMAKE_BUILD_TYPE=${{matrix.config.btype || env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_NO_EXCEPTIONS:BOOL=${{matrix.config.noexc || 'OFF'}} -DAREG_INSTALL:BOOL=ON -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
+          $rc = $LASTEXITCODE
+          New-Item -ItemType File -Force product/configure.done | Out-Null
+          exit $rc
 
       - name: Configure CMake by selecting compiler name
         if: matrix.config.extend == 'OFF'
         working-directory: ${{github.workspace}}
+        timeout-minutes: 15
         run: |
           cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER=${{matrix.config.cc}} -DCMAKE_BUILD_TYPE=${{matrix.config.btype || env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_NO_EXCEPTIONS:BOOL=${{matrix.config.noexc || 'OFF'}} -DAREG_INSTALL:BOOL=ON -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
 
@@ -503,7 +521,8 @@ jobs:
         run: |
           for f in "${{env.CACHE_DEST}}/CMakeFiles/CMakeConfigureLog.yaml" \
                    "${{env.CACHE_DEST}}/CMakeFiles/CMakeError.log" \
-                   "${{env.CACHE_DEST}}/CMakeFiles/CMakeOutput.log"; do
+                   "${{env.CACHE_DEST}}/CMakeFiles/CMakeOutput.log" \
+                   "product/configure.done.report"; do
             if [ -f "${f}" ]; then
               echo "===== ${f} ====="
               tail -n 300 "${f}"
@@ -587,12 +606,29 @@ jobs:
                   --out-dir "./example-results/${{matrix.config.name}}"
 
       - name: Run Unit Tests. Ignore if unit tests are not compiled
-        if: matrix.config.test == 'ON'
+        if: matrix.config.test == 'ON' && runner.os != 'macOS'
         working-directory: ${{github.workspace}}
+        timeout-minutes: 30
         # '-C' is required on Windows: no generator is named. The Windows runners get
         # the multi configuration Visual Studio generator, where a test registered without
         # a configuration has no command and ctest exits 8 without running anything.
-        run: ctest --test-dir ${{env.CACHE_DEST}} -C ${{env.BUILD_TYPE}} --output-on-failure --output-junit test_results.xml
+        run: ctest --test-dir ${{env.CACHE_DEST}} -C ${{env.BUILD_TYPE}} --timeout 180 --output-on-failure --output-junit test_results.xml
+
+      - name: Run Unit Tests, watched (macOS)
+        if: matrix.config.test == 'ON' && runner.os == 'macOS'
+        working-directory: ${{github.workspace}}
+        shell: bash
+        timeout-minutes: 30
+        # A run that outlives 120 s gets its processes and the stacks of the unit tests printed,
+        # and is then stopped.
+        run: |
+          rm -f product/unittests.done
+          bash tools/intern/hang-watchdog.sh product/unittests.done 120 areg-unit-tests &
+          rc=0
+          ctest --test-dir ${{env.CACHE_DEST}} -C ${{env.BUILD_TYPE}} --timeout 180 --output-on-failure --output-junit test_results.xml || rc=$?
+          touch product/unittests.done
+          wait
+          exit ${rc}
 
       - name: Run the benchmarks and publish the measured rates
         # The measured rates are a trend line, not an acceptance criterion: a shared build
@@ -681,7 +717,7 @@ jobs:
       - name: Setup Java JDK to run code generator
         uses: actions/setup-java@v6.0.1
         with:
-          java-version: 17
+          java-version: 21
           java-package: jre
           distribution: temurin
 

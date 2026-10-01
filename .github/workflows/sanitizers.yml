@@ -73,7 +73,7 @@ jobs:
       - name: Setup Java JDK to run code generator
         uses: actions/setup-java@v6.0.1
         with:
-          java-version: 17
+          java-version: 21
           java-package: jre
           distribution: temurin
 
@@ -191,7 +191,7 @@ jobs:
       - name: Setup Java JDK to run code generator
         uses: actions/setup-java@v6.0.1
         with:
-          java-version: 17
+          java-version: 21
           java-package: jre
           distribution: temurin
 
@@ -290,7 +290,7 @@ jobs:
       - name: Setup Java JDK to run code generator
         uses: actions/setup-java@v6.0.1
         with:
-          java-version: 17
+          java-version: 21
           java-package: jre
           distribution: temurin
 
