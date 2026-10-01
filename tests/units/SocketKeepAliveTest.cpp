@@ -35,6 +35,10 @@
 #elif defined(WINDOWS)
     #include <WinSock2.h>
     #include <WS2tcpip.h>
+
+    #ifdef _MSC_VER
+        #pragma comment(lib, "ws2_32")
+    #endif  // _MSC_VER
 #endif  // _POSIX / WINDOWS
 
 namespace

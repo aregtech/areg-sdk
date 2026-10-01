@@ -30,6 +30,10 @@
 #include <WinSock2.h>
 #include <Windows.h>
 
+#ifdef _MSC_VER
+    #pragma comment(lib, "ws2_32")
+#endif  // _MSC_VER
+
 namespace areg::ext {
 
 namespace
