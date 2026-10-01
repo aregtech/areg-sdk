@@ -145,6 +145,14 @@ namespace areg::os {
      **/
     void _os_configure_connected_socket(SOCKETHANDLE hSocket, int32_t keepIdle, int32_t keepInterval, int32_t keepCount) noexcept;
 
+    /**
+     * \brief   Applies the platform-specific options of a socket accepted by a server.
+     *          On macOS it sets the socket non-blocking; the send and receive functions
+     *          of this file wait on it when it would block.
+     * \param   hSocket     A valid accepted socket handle.
+     **/
+    void _os_configure_accepted_socket(SOCKETHANDLE hSocket) noexcept;
+
 } // namespace areg::os
 
 namespace
@@ -808,6 +816,7 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept(areg::SocketMultiplexer & multipl
         {
             areg::socket_configure(result);
             areg::socket_set_no_delay(result);
+            areg::os::_os_configure_accepted_socket(result);
             if (socketAddr != nullptr)
             {
                 socketAddr->from_sockaddr(acceptAddr);
@@ -869,6 +878,7 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept(SOCKETHANDLE serverSocket, const 
             {
                 areg::socket_configure(result);
                 areg::socket_set_no_delay(result);
+                areg::os::_os_configure_accepted_socket(result);
                 if (socketAddr != nullptr)
                 {
                     socketAddr->from_sockaddr(acceptAddr);

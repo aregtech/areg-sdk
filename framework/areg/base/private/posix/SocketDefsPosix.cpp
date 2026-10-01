@@ -37,6 +37,48 @@
 #include <arpa/inet.h>
 #include <ctype.h>      // IEEE Std 1003.1-2001
 #include <fcntl.h>
+#include <poll.h>
+#include <climits>
+
+namespace {
+
+    /**
+     * \brief   After a call failed with EAGAIN on a non-blocking socket, waits until the socket is
+     *          ready for \a events or the timeout in socket option \a timeoutName expires.
+     * \return  Returns true if the call may be repeated; false for a blocking socket, another
+     *          error, or an expired timeout.
+     **/
+    bool _wait_would_block(SOCKETHANDLE hSocket, short events, int timeoutName) noexcept
+    {
+        if ((errno != EAGAIN) && (errno != EWOULDBLOCK))
+            return false;
+
+        const int flags{ ::fcntl(static_cast<int>(hSocket), F_GETFL, 0) };
+        if ((flags == -1) || ((flags & O_NONBLOCK) == 0))
+            return false;
+
+        int timeoutMs{ -1 };
+        struct timeval tv { };
+        socklen_t len{ sizeof(tv) };
+        if ((::getsockopt(static_cast<int>(hSocket), SOL_SOCKET, timeoutName, &tv, &len) == 0) && ((tv.tv_sec != 0) || (tv.tv_usec != 0)))
+        {
+            const int64_t ms{ static_cast<int64_t>(tv.tv_sec) * 1000 + (static_cast<int64_t>(tv.tv_usec) + 999) / 1000 };
+            timeoutMs = static_cast<int>(ms < static_cast<int64_t>(INT_MAX) ? ms : static_cast<int64_t>(INT_MAX));
+        }
+
+        struct pollfd ready { };
+        ready.fd     = static_cast<int>(hSocket);
+        ready.events = events;
+        int result{ 0 };
+        do
+        {
+            result = ::poll(&ready, 1, timeoutMs);
+        } while ((result < 0) && (errno == EINTR));
+
+        return (result > 0);
+    }
+
+} // namespace
 
 namespace areg::os {
 
@@ -87,6 +129,22 @@ void _os_configure_connected_socket(SOCKETHANDLE hSocket, int32_t keepIdle, int3
 #endif  // __linux__ / SO_NOSIGPIPE
 }
 
+void _os_configure_accepted_socket(SOCKETHANDLE hSocket) noexcept
+{
+    ASSERT(areg::is_valid_socket(hSocket));
+
+#if defined(__APPLE__)
+    // A send on the accepted socket returns EAGAIN instead of waiting for buffer space.
+    const int flags{ ::fcntl(static_cast<int>(hSocket), F_GETFL, 0) };
+    if (flags != -1)
+    {
+        ::fcntl(static_cast<int>(hSocket), F_SETFL, flags | O_NONBLOCK);
+    }
+#else   // defined(__APPLE__)
+    static_cast<void>(hSocket);
+#endif  // defined(__APPLE__)
+}
+
 void _os_release_socket()
 {
 }
@@ -121,7 +179,7 @@ int32_t _os_send_data_window(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, in
         const ssize_t written = ::send(hSocket, reinterpret_cast<const char*>(dataBuffer + total), static_cast<size_t>(chunk), sendFlags);
         if (written > 0)
             total += static_cast<int32_t>(written);
-        else if (errno != EINTR)
+        else if ((errno != EINTR) && (_wait_would_block(hSocket, POLLOUT, SO_SNDTIMEO) == false))
             return -1;
     } while (total < dataLength);
 
@@ -145,7 +203,7 @@ int32_t _os_send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t d
         const ssize_t written = ::send(hSocket, reinterpret_cast<const char*>(dataBuffer + total), static_cast<size_t>(dataLength - total), sendFlags);
         if (written > 0)
             total += static_cast<int32_t>(written);
-        else if (errno != EINTR)
+        else if ((errno != EINTR) && (_wait_would_block(hSocket, POLLOUT, SO_SNDTIMEO) == false))
             return -1;
     } while (total < dataLength);
 
@@ -161,6 +219,15 @@ int32_t _os_try_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers,
 #else
     constexpr int sendFlags = MSG_DONTWAIT;
 #endif
+
+#if defined(__APPLE__)
+    // Returns 0 at once when the socket cannot take any data now.
+    struct pollfd ready { };
+    ready.fd     = static_cast<int>(hSocket);
+    ready.events = POLLOUT;
+    if (::poll(&ready, 1, 0) == 0)
+        return 0;
+#endif  // defined(__APPLE__)
 
     struct iovec iov[areg::DEFAULT_DRAIN_LIMIT];
     size_t wanted{ static_cast<size_t>(totalSize) };
@@ -249,7 +316,7 @@ int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uin
             const ssize_t written = ::writev(static_cast<int>(hSocket), &iov[idx], static_cast<int>(count - idx));
             if (written < 0)
             {
-                if (errno == EINTR)
+                if ((errno == EINTR) || _wait_would_block(hSocket, POLLOUT, SO_SNDTIMEO))
                     continue;
                 return -1;
             }
@@ -339,7 +406,7 @@ static int32_t _recv_exact(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t da
         const ssize_t received = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer + total), static_cast<size_t>(dataLength - total), recvExact);
         if (received > 0)
             total += static_cast<int32_t>(received);
-        else if (received == 0 || errno != EINTR)
+        else if ((received == 0) || ((errno != EINTR) && (_wait_would_block(hSocket, POLLIN, SO_RCVTIMEO) == false)))
             return -1;
     } while (total < dataLength);
     return total;
@@ -393,7 +460,7 @@ static int32_t _recv_cached(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t d
                 total  += static_cast<uint32_t>(received);
                 needed -= static_cast<uint32_t>(received);
             }
-            else if (received == 0 || errno != EINTR)
+            else if ((received == 0) || ((errno != EINTR) && (_wait_would_block(hSocket, POLLIN, SO_RCVTIMEO) == false)))
             {
                 return -1;
             }
@@ -411,7 +478,7 @@ static int32_t _recv_cached(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t d
         const ssize_t filled = ::recv(hSocket, reinterpret_cast<char*>(cache + tc.unread), static_cast<size_t>(tc.space - tc.unread), 0);
         if (filled > 0)
             tc.unread += static_cast<uint32_t>(filled);
-        else if (filled == 0 || errno != EINTR)
+        else if ((filled == 0) || ((errno != EINTR) && (_wait_would_block(hSocket, POLLIN, SO_RCVTIMEO) == false)))
         {
             tc.head   = 0u;
             tc.unread = 0u;
@@ -457,7 +524,7 @@ int32_t _os_recv_data_window(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t 
         const ssize_t received = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer + total), static_cast<size_t>(chunk), recvExact);
         if (received > 0)
             total += static_cast<int32_t>(received);
-        else if (received == 0 || errno != EINTR)
+        else if ((received == 0) || ((errno != EINTR) && (_wait_would_block(hSocket, POLLIN, SO_RCVTIMEO) == false)))
             return -1;
     } while (total < dataLength);
 

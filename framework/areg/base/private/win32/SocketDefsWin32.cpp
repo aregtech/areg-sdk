@@ -61,6 +61,12 @@ bool _os_init_socket()
     return result;
 }
 
+void _os_configure_accepted_socket(SOCKETHANDLE hSocket) noexcept
+{
+    ASSERT(areg::is_valid_socket(hSocket));
+    static_cast<void>(hSocket);
+}
+
 void _os_configure_connected_socket(SOCKETHANDLE hSocket, int32_t keepIdle, int32_t keepInterval, int32_t keepCount) noexcept
 {
     ASSERT(areg::is_valid_socket(hSocket));

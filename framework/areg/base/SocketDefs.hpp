@@ -573,7 +573,8 @@ AREG_API bool server_listen(SOCKETHANDLE serverSocket, int32_t maxQueueSize = ar
  *          client connection if the server socket fired.
  *
  *          All sockets must have been registered with \a multiplexer before
- *          calling this overload.
+ *          calling this overload. On macOS a newly accepted socket is non-blocking;
+ *          the send and receive functions of this file wait on it when it would block.
  *
  * \param   multiplexer     Persistent multiplexer with the server and client sockets already registered.
  * \param   serverSocket    The listening server socket descriptor.
@@ -589,7 +590,8 @@ AREG_API SOCKETHANDLE server_accept(SocketMultiplexer& multiplexer, SOCKETHANDLE
  * \brief   Accepts one pending client connection on \a serverSocket.
  *          Legacy stateless overload -- builds a temporary poll list from
  *          \a masterList.  Prefer the SocketMultiplexer overload for
- *          persistent server accept loops.
+ *          persistent server accept loops. On macOS the accepted socket is non-blocking;
+ *          the send and receive functions of this file wait on it when it would block.
  *
  * \param   serverSocket    Listening server socket descriptor.
  * \param   masterList      Array of already-accepted socket descriptors, or nullptr if none.

@@ -42,8 +42,6 @@ permissions:
 
 jobs:
   sanitizers-linux:
-    # Temporary: skipped on the branch that probes the macOS stall, see macos-probe-thread.yml.
-    if: github.head_ref != 'bugfix/799-example-23-client-does-not-quit' && github.ref_name != 'bugfix/799-example-23-client-does-not-quit'
     name: ${{matrix.mode}} ${{matrix.config}} (unit tests)
     # "The suite is TSAN-clean, keep it that way" is a standing invariant of this
     # repository and until now nothing held it. Both sanitizers run the unit tests
@@ -178,8 +176,6 @@ jobs:
           compression-level: 0
 
   ubsan-linux:
-    # Temporary: skipped on the branch that probes the macOS stall, see macos-probe-thread.yml.
-    if: github.head_ref != 'bugfix/799-example-23-client-does-not-quit' && github.ref_name != 'bugfix/799-example-23-client-does-not-quit'
     name: ubsan (examples)
     # The undefined behaviour sanitizer over the example suite. A report from
     # framework/ fails the job; a report from an example is a warning, because an
@@ -273,8 +269,6 @@ jobs:
           path: ./ubsan/
 
   teardown-stress:
-    # Temporary: skipped on the branch that probes the macOS stall, see macos-probe-thread.yml.
-    if: github.head_ref != 'bugfix/799-example-23-client-does-not-quit' && github.ref_name != 'bugfix/799-example-23-client-does-not-quit'
     name: teardown tests, no sanitizer (${{matrix.config}})
     # Both CI failures so far are in the tsan leg, and asan is clean, so nothing yet says
     # whether the defect needs an instrumented allocator at all. This leg is the control:

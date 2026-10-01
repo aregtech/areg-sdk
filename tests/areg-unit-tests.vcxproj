@@ -53,6 +53,7 @@
     <ClCompile Include="units\MultiLockTest.cpp" />
     <ClCompile Include="units\SharedBufferTest.cpp" />
     <ClCompile Include="units\SocketMultiplexerTest.cpp" />
+    <ClCompile Include="units\SocketWouldBlockTest.cpp" />
     <ClCompile Include="units\StringDefsTest.cpp" />
     <ClCompile Include="units\OptionParserTest.cpp" />
     <ClCompile Include="units\StringDefsTest2.cpp" />

@@ -20,8 +20,6 @@ env:
 
 jobs:
   invariants:
-    # Temporary: skipped on the branch that probes the macOS stall, see macos-probe-thread.yml.
-    if: github.head_ref != 'bugfix/799-example-23-client-does-not-quit' && github.ref_name != 'bugfix/799-example-23-client-does-not-quit'
     name: the framework invariants still have anchors
     # tools/intern/check_invariants.py seeds a defect per documented invariant, rebuilds and
     # asserts something goes red. The seeding needs a build per defect and is run by hand;
@@ -42,8 +40,6 @@ jobs:
         run: python3 tools/intern/check_invariants.py --dry-run
 
   build-tests:
-    # Temporary: skipped on the branch that probes the macOS stall, see macos-probe-thread.yml.
-    if: github.head_ref != 'bugfix/799-example-23-client-does-not-quit' && github.ref_name != 'bugfix/799-example-23-client-does-not-quit'
     name: ${{matrix.config.name}}
     runs-on: ${{matrix.config.os}}
     timeout-minutes: 120
@@ -52,6 +48,7 @@ jobs:
       fail-fast: false
       matrix:
         # '*-all-test' builds and runs the examples and the unit tests.
+        # 'bench: ON' also runs the benchmarks; one shared library build per OS.
         # '*-nolog' and '*-noext' build and install only: no '*-all-test' entry compiles
         # AREG_LOGGING=OFF or AREG_EXTENDED=OFF, and both remove code from the framework.
         config: # Create matrix with combinations
@@ -75,7 +72,8 @@ jobs:
               cc    : gcc,
               extend: ON,
               logs  : ON,
-              test  : ON
+              test  : ON,
+              bench : ON
             }
 
           - { name  : linux-gnu-arm64-shared-all-test,
@@ -240,7 +238,8 @@ jobs:
               cc    : clang,
               extend: OFF,
               logs  : ON,
-              test  : ON
+              test  : ON,
+              bench : ON
             }
 
           - { name  : macos-clang-shared-noext-nolog,
@@ -383,7 +382,8 @@ jobs:
               cc    : cl,
               extend: ON,
               logs  : ON,
-              test  : ON
+              test  : ON,
+              bench : ON
             }
 
           - { name  : win-msvc-shared-ext-nolog,
@@ -652,7 +652,8 @@ jobs:
         # without an artifact, and a slow number never fails the step.
         # The step does fail when an application of a scenario crashes, hangs or does not
         # print what it must, because that is a defect and not a measurement.
-        if: matrix.config.test == 'ON'
+        # Runs once per OS, in the shared library build marked 'bench'.
+        if: matrix.config.test == 'ON' && matrix.config.bench == 'ON'
         working-directory: ${{github.workspace}}
         shell: bash
         timeout-minutes: 40
@@ -712,8 +713,6 @@ jobs:
           path: ./${{matrix.config.name}}/
 
   cross-arm32:
-    # Temporary: skipped on the branch that probes the macOS stall, see macos-probe-thread.yml.
-    if: github.head_ref != 'bugfix/799-example-23-client-does-not-quit' && github.ref_name != 'bugfix/799-example-23-client-does-not-quit'
     # 32-bit ARM Linux (armhf), cross-compiled with the toolchain file the SDK ships.
     # Builds the libraries and the service binaries, then prints their sizes.
     name: linux-gnu-arm32-cross-${{matrix.config.logs == 'ON' && 'log' || 'nolog'}}

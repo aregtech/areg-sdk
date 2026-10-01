@@ -6,8 +6,6 @@ on:
 
 jobs:
   pr-check:
-    # Temporary: skipped on the branch that probes the macOS stall, see macos-probe-thread.yml.
-    if: github.head_ref != 'bugfix/799-example-23-client-does-not-quit' && github.ref_name != 'bugfix/799-example-23-client-does-not-quit'
     runs-on: ubuntu-latest
     steps:
       - name: Verify PR Checklist

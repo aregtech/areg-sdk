@@ -65,6 +65,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     SocketKeepAliveTest.cpp
     SocketLivenessTest.cpp
     SocketMultiplexerTest.cpp
+    SocketWouldBlockTest.cpp
     SortedLinkedListTest.cpp
     StackTest.cpp
     StringDefsTest.cpp
