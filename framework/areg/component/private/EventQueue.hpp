@@ -119,8 +119,8 @@ private:
     //!< that reloads the ticket sees the refusal in the value it already needs.
     static constexpr size_t     RING_CLOSED   { static_cast<size_t>(1u) << ((sizeof(size_t) * 8u) - 1u) };
 
-    static constexpr uint32_t   CLOSE_SPIN_PAUSES { 64u };      //!< CPU-pause spins before yielding.
-    static constexpr uint32_t   CLOSE_SPIN_LIMIT  { 4096u };    //!< Total spins before giving up on a slot.
+    static constexpr uint32_t   CLOSE_SPIN_PAUSES { 64u };      //!< CPU-pause spins on a slot before sleeping.
+    static constexpr uint32_t   CLOSE_WAIT_MS     { 1000u };    //!< Longest a close waits for its slots, in ms.
 
     static constexpr uint8_t    EXIT_NONE     { 0u };     //!< The queue keeps running.
     static constexpr uint8_t    EXIT_NOW      { 1u };     //!< Stop at once, queued events are dropped.
@@ -204,7 +204,8 @@ public:
     /**
      * \brief   Closes the queue: every further push_event() and push_events() is
      *          refused, and the call returns once every producer that had already
-     *          taken a ring slot has left it. The lanes stay allocated.
+     *          taken a ring slot has left it, or after CLOSE_WAIT_MS. The lanes stay
+     *          allocated.
      *
      * \note    Call from the owner dispatcher when it stops reporting itself started.
      *          After it returns the ring holds no producer, so the owner can drain it.

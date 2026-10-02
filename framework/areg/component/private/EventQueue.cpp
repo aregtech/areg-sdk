@@ -119,21 +119,36 @@ void EventQueue::close_lanes() noexcept
 
     mSlotEvent.set_signaled();  // a producer parked on a full ring never gets its slot now
 
-    // A slot taken before the close is published within a move and a store, so every
-    // slot up to the closing cursor falls quiet after a bounded spin.
+    // A slot taken before the close is published within a move and a store. A producer
+    // preempted in between is waited for by sleeping, which lets a thread of any priority run.
     const size_t claimed{ closing & ~EventQueue::RING_CLOSED };
+    std::chrono::steady_clock::time_point deadline{ };
+    bool sleeping{ false };
     for (size_t pos = mDequeuePos.load(std::memory_order_relaxed); pos != claimed; ++pos)
     {
         const Cell& cell{ ring[pos & mMask] };
         uint32_t spin{ 0u };
-        while ((cell.sequence.load(std::memory_order_acquire) == pos) && (spin < EventQueue::CLOSE_SPIN_LIMIT))
+        while (cell.sequence.load(std::memory_order_acquire) == pos)
         {
             if (spin < EventQueue::CLOSE_SPIN_PAUSES)
+            {
                 Thread::cpu_pause();
-            else
-                Thread::switch_thread();
+                ++spin;
+                continue;
+            }
 
-            ++spin;
+            const std::chrono::steady_clock::time_point now{ std::chrono::steady_clock::now() };
+            if (sleeping == false)
+            {
+                sleeping = true;
+                deadline = now + std::chrono::milliseconds(EventQueue::CLOSE_WAIT_MS);
+            }
+            else if (now >= deadline)
+            {
+                break;
+            }
+
+            Thread::sleep(EventQueue::RING_WAIT_RECHECK_MS);
         }
     }
 }
