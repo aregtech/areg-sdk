@@ -658,7 +658,8 @@ void LoggerClient::failed_send_message(const MessageEnvelope& /* msgFailed */, S
         callback();
     }
 
-    if (Application::is_servicing_ready() && whichTarget.is_valid() && (whichTarget.is_alive() == false))
+    // A part of a message may be on the wire: nothing more may follow it on this connection.
+    if (Application::is_servicing_ready() && whichTarget.is_valid())
     {
         notify_connection_lost();
     }

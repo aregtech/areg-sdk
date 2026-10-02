@@ -112,7 +112,7 @@ both on its command line and at its prompt:
 
 ```bash
 ./build/bin/logobserver.elf -n -q                               # list the connected applications
-./build/bin/logobserver.elf -o "*::areg_base_NESocket=DEBUG" -q # raise one scope everywhere
+./build/bin/logobserver.elf -o "*::areg_base_Socket=DEBUG" -q # raise one scope everywhere
 ```
 
 **Use the command line.** The observer connects itself, waits for the collector to

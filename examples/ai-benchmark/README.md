@@ -6,8 +6,9 @@ the scripts that run an agent against them and measure the result.
 The benchmark asks one question: **can an agent that has never seen a framework build a
 correct application from that framework's own documentation, and what does it cost?**
 areg is measured against a framework the model already knows from training (gRPC): the
-same requirements, the same agent, the same model and the same effort. The first
-measured pair is [`baseline-2026-09-13.md`](baseline-2026-09-13.md).
+same requirements, the same agent, the same model and the same effort. The current
+comparison, with Claude Sonnet 5.5, is [`baseline-2026-09-29.md`](baseline-2026-09-29.md);
+the first measured pair, with Sonnet 5, is [`baseline-2026-09-13.md`](baseline-2026-09-13.md).
 
 - [Quick start](#quick-start)
 - [What is here](#what-is-here)
@@ -73,7 +74,8 @@ run-benchmark.sh --task examples/ai-benchmark/prompt-elevator.md --dry-run
 | `verify_run.py` | the hidden acceptance probes, run on the finished project; the agent never sees it | nobody |
 | `build_config.py` | records the configuration a run actually built (Debug or Release) as one line of `meta.txt` | nobody |
 | `INSTALL-grpc.md` | installing the gRPC toolchain, before the first gRPC run | **you**, once |
-| `baseline-2026-09-13.md` | the first areg and gRPC pair, side by side | -- |
+| `baseline-2026-09-29.md` | the current comparison: 4 runs per framework with Claude Sonnet 5.5 | -- |
+| `baseline-2026-09-13.md` | the first areg and gRPC pair, side by side, with Sonnet 5 | -- |
 
 ---
 
@@ -131,7 +133,7 @@ same sections, and nothing about how to build it:
 | `## The report` | one small table the agent can fill without measuring anything |
 
 That is what lets the same requirements be scored against gRPC, ZeroMQ, DDS or areg.
-`python3 tools/agent/check_corpus.py` fails if a framework name, an operating system
+`python3 tools/intern/check_corpus.py` fails if a framework name, an operating system
 name, a tool name or a build command gets into one of them.
 
 ---
@@ -220,9 +222,18 @@ run-benchmark.sh --model opus --effort high --attempts 15
 # It costs requests on purpose, so never compare it with a normal run
 run-benchmark.sh --task examples/ai-benchmark/prompt-elevator.md --debrief
 
-# Three draws of one arm on one tree: compare medians, never one run
-for label in a b c; do run-benchmark.sh "$label" --attempts 15; done
+# Three draws of one arm on one tree: compare the band, never one run
+run-benchmark.sh --repeat 3 --attempts 15
 ```
+
+**One run measures the draw, not the tree.** The same tree has come out 51% apart over
+31 runs, and the three coffee machine runs of 2026-09-25 were 49% apart on an
+agent-facing corpus that differed between their heads by two bytes. `--repeat N` takes
+the next free label for each run and prints, after every one of them, its cost, its
+output tokens and the running total, so the spend is visible before the next run
+starts; at the end it prints the band. The share of a plan's limit a run consumes
+tracks output tokens rather than dollars, which is why both are reported. 2 or 3
+settles most questions and 4 is the ceiling.
 
 Only a Claude run is read by `analyze_run.py` automatically at the end: cost and its
 split, requests, reasoning, cycles, pages opened, lines written.
@@ -414,6 +425,7 @@ either, so neither agent is sent looking for the other framework.
 | `--mode` | the areg application shape the scaffold writes: `ipc`, `local` or `pubsub` | `ipc` | `--mode local` |
 | `--attempts` | the build-and-fix and run-and-fix bound, the same for both arms; `0` removes it and is warned about | `15` | `--attempts 15` |
 | `--debrief` | a diagnostic pass after the report: what the run could not find | off | `--debrief` |
+| `--debug` | the full analysis after the run: every event, page read and request. Without it the run ends with a short headline: cost, requests, tokens, time, lines of C++ | off | `--debug` |
 | `--verify` | the hidden probes after the run: `none`, `probes`, or `sanitize` for an ASan and UBSan rebuild as well | `probes` | `--verify sanitize` |
 | `--recipes` | areg only: whether a documented recipe may be copied, `none` or `copy` | `none` | `--recipes copy` |
 | `--web` | whether the agent may search and fetch pages | `off` areg, `on` gRPC | `--web on` |
@@ -489,7 +501,9 @@ python3 examples/ai-benchmark/verify_run.py  ./20260921c-coffeemachine --sanitiz
 
 ### The numbers
 
-`analyze_run.py` prints, per Claude run: cost and its split, API requests, reasoning
+A run ends with a short headline: cost billed and `cold @1h`, API requests, tokens, time
+and lines of C++. `--debug`, or `analyze_run.py` on the run directory, prints the full
+analysis, per Claude run: cost and its split, API requests, reasoning
 tokens, cache reads and writes, peak context, build and scenario runs, the fix cycles,
 filesystem searches, reads of framework sources, every page opened with its size, the
 lines of C++ written by hand, and a per-request timeline.
@@ -643,7 +657,7 @@ each one should make an agent use an ability the others do not.
 - **Keep the five sections** listed under [The task prompts](#the-task-prompts), keep
   the requirements the hidden probes score (start order, 20-second limit, the other
   side going away, no busy-waiting, exit codes), and add the file to `TASK_PROMPTS` in
-  `tools/agent/check_corpus.py`, which then checks all of it.
+  `tools/intern/check_corpus.py`, which then checks all of it.
 - **Write an acceptance checklist someone could score without asking you what you
   meant**, and make every item observable in the output of the normal run or the
   peer-loss run.

@@ -124,7 +124,7 @@ stuck. An unattended run can therefore never wait for ever.
 To run it as part of the example test suite, together with example 31:
 
 ```bash
-python3 tools/run-all-examples.py --tier perf --only 30_owt,30_rtt,31_locsame,31_loccross --perf
+python3 tools/intern/run-all-examples.py --tier perf --only 30_owt,30_rtt,31_locsame,31_loccross --perf
 ```
 
 ### Running Tests

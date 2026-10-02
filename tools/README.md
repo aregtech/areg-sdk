@@ -1,7 +1,7 @@
 # Areg SDK Tools
 
 Everything the SDK ships to generate code, build, measure, debug and verify. The
-directory has two levels, and which level a tool sits in tells you who runs it.
+directory has three levels, and which level a tool sits in tells you who runs it.
 
 > **Areg SDK** is a multitasking application development platform for building modular, distributed, and IPC/RPC-based systems.
 
@@ -10,19 +10,19 @@ directory has two levels, and which level a tool sits in tells you who runs it.
 ## Layout
 
 ```
-tools/            what a developer runs: the generator, the environment check,
-                  the project scaffolder, sanitizers, profilers, benchmarks
-tools/agent/      what an AI coding agent runs, and what verifies the corpus
-                  that agent reads: docs/agent/, api.json and the eval bank
+tools/            what anyone building on areg runs: the generator, the
+                  environment check, the project scaffolder, the rule lookup
+tools/schema/     the schemas and the rule registry every document is validated by
+tools/agent/      what an AI coding agent runs while it writes an application
+tools/intern/     what developing areg itself needs: the example runner,
+                  sanitizers, profilers, benchmarks, and the corpus checks
 ```
 
-**The rule:** a tool belongs in `tools/agent/` when it exists because of the agent
-documentation -- it reads `docs/agent/`, `AGENTS.md`, `docs/agent/api.json` or the
-eval bank, or it scaffolds for an agent. Everything else stays in `tools/`.
-
-Nothing in `tools/agent/` is required to develop with the SDK. It is there so that a
-developer reading this directory can tell at a glance which scripts are part of their
-job and which belong to the agent workflow.
+**The rule:** a tool a project built on areg uses, by hand or through an agent, is in
+`tools/`, `tools/schema/` or `tools/agent/`, and is installed; `tools/agent/` only for
+agentic coding. A tool only areg's contributors and CI use -- it reads `framework/`,
+`docs/agent/`, the eval bank, the examples or the CI workflows -- is in `tools/intern/`,
+and is not installed: it is not for use by a project.
 
 ### Do I need Python?
 
@@ -55,17 +55,6 @@ The two places a developer might reach for Python have a Python-free equivalent:
 | `setup-project.sh` | -- | Creates a ready-to-build project; no interpreter | [5](#5-project-setup-scripts-quick-start) |
 | `setup-project.ps1` | -- | The same on Windows, in PowerShell 5.1 or 7 | [5](#5-project-setup-scripts-quick-start) |
 | `setup-project.bat` | -- | Runs `setup-project.ps1` | [5](#5-project-setup-scripts-quick-start) |
-| `sanitize.sh` | -- | Builds and runs a target under a sanitizer or a profiler | [8](#8-sanitizers-and-profilers) |
-| `sanitizer/*.supp` | -- | Suppression files for LeakSanitizer and ThreadSanitizer | [8](#8-sanitizers-and-profilers) |
-| `run-all-examples.py` | Python | Runs the built examples as pass/fail scenarios | [9](#9-running-the-examples-as-a-test-suite) |
-| `run-all-examples.sh` | Python | Wrapper around the driver for Linux/macOS | [9](#9-running-the-examples-as-a-test-suite) |
-| `run-all-examples.bat` | Python | Wrapper around the driver for Windows | [9](#9-running-the-examples-as-a-test-suite) |
-| `report-ctest.py` | Python | Republishes failed ctest cases as build server annotations | [9](#9-running-the-examples-as-a-test-suite) |
-| `areg_benchmarks.py` | Python | Turns the console output of the benchmarks into numbers | [10](#10-measuring-throughput-and-latency) |
-| `latency/*` | Python | Unattended latency measurement and A/B comparison | [10](#10-measuring-throughput-and-latency) |
-| `check-ascii.py` | Python | Finds non ASCII bytes and unwanted control characters | [11](#11-source-hygiene-check-asciipy) |
-| `hunt-crash.py` | Python | Repeats a run under a debugger until it crashes, saves stacks | [12](#12-debugging-a-rare-crash) |
-| `check_invariants.py` | Python | Seeds a defect per framework invariant, rebuilds, and asks whether the test suite notices. `--dry-run` is one second; `--restore` undoes a seed a killed run left | -- |
 
 `explain_rule.py` reads `schema/rules.xml`, so it lives beside it. It is the one
 Python script here a developer is likely to want: it turns a generator refusal into
@@ -76,7 +65,7 @@ the rule that caused it and the correction. The generator itself needs no Python
 ## `tools/agent/` -- AI agent tools
 
 Every script here is Python, and none is needed to build or run anything. They fall
-into three jobs.
+into two jobs.
 
 **Scaffolding an agent uses while writing an application:**
 
@@ -86,30 +75,51 @@ into three jobs.
 | `gen_skeleton.py` | Writes provider and consumer components from a `.siml` or `.fsml` |
 | `fsml_layout.py` | Writes the `<Layout>` of a `.fsml` so the machine opens laid out |
 | `run_scenarios.py` | Runs an application and checks its output; exit 0 is one verdict |
-| `service_ports.py` | Shared helper: the router and collector ports, and waiting on them |
 
 **Checking that application code obeys the contract:**
 
 | Tool / Script | Purpose |
 |---|---|
 | `check_contract.py` | Checks sources against `docs/agent/api.json`, before a build. `--audit-prohibitions` compares the three lists of rules; `--audit-legacy` checks the removed-name lists |
-| `check_symbols.py` | Checks every `areg::` name, framework macro and `Header.hpp:line` citation in the agent pages against `framework/` |
-| `check_agent_docs.py` | Verifies every path the agent documentation names resolves |
-| `check_commands.py` | Verifies every command the documentation gives resolves, and runs the read-only ones. `--deep` also runs the ones that need a project, in throw-away ones it scaffolds |
 
-**Proving the corpus is still true:**
+## `tools/intern/` -- tools for developing areg
 
-The rules these check against are `../../docs/ai-readiness.md`.
+Not installed, and not for use by a project built on areg. They answer questions
+about this repository: whether the framework, the agent corpus and the CI still hold.
+
+**The framework:**
+
+| Tool / Script | Needs | Purpose | Section |
+|---|---|---|---|
+| `sanitize.sh` | -- | Builds and runs a target under a sanitizer or a profiler | [8](#8-sanitizers-and-profilers) |
+| `sanitizer/*.supp` | -- | Suppression files for LeakSanitizer and ThreadSanitizer | [8](#8-sanitizers-and-profilers) |
+| `run-all-examples.py` | Python | Runs the built examples as pass/fail scenarios | [9](#9-running-the-examples-as-a-test-suite) |
+| `run-all-examples.sh` | Python | Wrapper around the driver for Linux/macOS | [9](#9-running-the-examples-as-a-test-suite) |
+| `run-all-examples.bat` | Python | Wrapper around the driver for Windows | [9](#9-running-the-examples-as-a-test-suite) |
+| `areg_benchmarks.py` | Python | Turns the console output of the benchmarks into numbers | [10](#10-measuring-throughput-and-latency) |
+| `report-ctest.py` | Python | Republishes failed ctest cases as build server annotations | [9](#9-running-the-examples-as-a-test-suite) |
+| `latency/*` | Python | Unattended latency measurement and A/B comparison | [10](#10-measuring-throughput-and-latency) |
+| `check-ascii.py` | Python | Finds non ASCII bytes and unwanted control characters | [11](#11-source-hygiene-check-asciipy) |
+| `fix-eol.py` | Python | Converts CRLF line endings to LF; `--check` only reports | [11](#line-endings-fix-eolpy) |
+| `hunt-crash.py` | Python | Repeats a run under a debugger until it crashes, saves stacks | [12](#12-debugging-a-rare-crash) |
+| `footprint.py` | Python | Reports the flash size of the artefacts and the RAM of the running processes | [13](#13-flash-and-ram-footprint) |
+| `check_invariants.py` | Python | Seeds a defect per framework invariant, rebuilds, and asks whether the test suite notices. `--dry-run` is one second; `--restore` undoes a seed a killed run left | -- |
+
+**The agent corpus.** The rules these check against are `../../docs/ai-readiness.md`.
 
 | Tool / Script | Purpose |
 |---|---|
 | `check_corpus.py` | Asks every rule the agent corpus rests on and prints a finding per rule that does not hold; `--strict` fails on a warning too |
+| `check_agent_docs.py` | Verifies every path the agent documentation names resolves |
+| `check_symbols.py` | Checks every `areg::` name, framework macro and `Header.hpp:line` citation in the agent pages against `framework/` |
+| `check_commands.py` | Verifies every command the documentation gives resolves, and runs the read-only ones. `--deep` also runs the ones that need a project, in throw-away ones it scaffolds |
 | `run_evals.py` | Grades an application against an evaluation bank task; `--self-check` grades the reference recipes |
 | `evals/tasks.json` | The bank: build tasks and repair tasks, each bound to a rule id |
 | `check_recipes.py` | Generates, builds and runs every recipe under `docs/agent/recipes/` |
 | `check_mutations.py` | Breaks a good recipe the way the eval bank says, and asserts the documented diagnostic still fires |
 | `check_observability.py` | Runs two processes through `mtrouter` and `logcollector`, then queries the `.sqlog` database |
 | `check_doc_config.py` | Runs the configuration block `docs/agent/00-cheatsheet.md` gives, and asserts it logs what the page promises |
+| `service_ports.py` | Shared helper: the router and collector ports, and waiting on them |
 | `setup_agent_redirect.py` | Writes the local, untracked redirect a coding agent looks for |
 | `setup_agent_memory.py` | Writes the local memory files an agent keeps between sessions |
 
@@ -118,15 +128,15 @@ The rules these check against are `../../docs/ai-readiness.md`.
 Every one takes `--help`. From the repository root:
 
 ```bash
-python3 tools/agent/check_agent_docs.py            # seconds, no build needed
-python3 tools/agent/check_symbols.py
+python3 tools/intern/check_agent_docs.py            # seconds, no build needed
+python3 tools/intern/check_symbols.py
 python3 tools/agent/check_contract.py <project> --strict
-python3 tools/agent/check_mutations.py --static
-python3 tools/agent/check_corpus.py --verbose
+python3 tools/intern/check_mutations.py --static
+python3 tools/intern/check_corpus.py --verbose
 
 cmake -B build -DAREG_OUTPUT_LAYOUT=OFF && cmake --build build -j
-python3 tools/agent/check_recipes.py --lib build/bin
-python3 tools/agent/check_observability.py --lib build/bin
+python3 tools/intern/check_recipes.py --lib build/bin
+python3 tools/intern/check_observability.py --lib build/bin
 ```
 
 The first group needs no compiler. The second builds every recipe, so it takes
@@ -331,7 +341,7 @@ the recipes already build and run. `check_corpus.py` fails if the three drift ap
 | --- | --- | --- |
 | `setup-project.sh` (Linux/macOS) | a POSIX shell | -- |
 | `setup-project.ps1` (Windows) | PowerShell 5.1 or 7; `setup-project.bat` runs it | -- |
-| `agent/setup_project.py` | Python 3 | `AGENTS.md`, `design.json`, `scenarios.json` and the startup file of each common coding agent |
+| `agent/setup_project.py` | Python 3 | `AGENTS.md`, `design.json` and `scenarios.json`; in a directory that already holds a project, only its `AGENTS.md` |
 
 ```bash
 sh tools/setup-project.sh --name myapp --root ~/myapp --mode local
@@ -349,7 +359,7 @@ python3 tools/agent/setup_project.py --name myapp --root ~/myapp --mode ipc --sd
 | `--sdk-root` | Build against a local SDK copy instead of fetching from GitHub |
 | `--tag` | The SDK tag to fetch |
 | `--force` | Scaffold into a directory that is not empty; nothing is deleted |
-| `--no-agents`, `--harness`, `--no-harness`, `--quiet` | `setup_project.py` only: which agent files to write |
+| `--no-agents`, `--harness`, `--no-harness`, `--quiet` | `setup_project.py` only: which agent files to write. `AGENTS.md` alone by default; `--harness NAME` or `--harness all` adds the startup file of a harness that does not read `AGENTS.md` |
 
 On a terminal, a missing name, mode or directory is asked for.
 
@@ -453,7 +463,7 @@ filesystem such as `~/`) and it links cleanly.
 ### Usage
 
 ```bash
-tools/sanitize.sh <mode> [options] [-- <args forwarded to the binary>]
+tools/intern/sanitize.sh <mode> [options] [-- <args forwarded to the binary>]
 ```
 
 | Mode         | What it catches / does                                                      |
@@ -480,16 +490,16 @@ tools/sanitize.sh <mode> [options] [-- <args forwarded to the binary>]
 
 ```bash
 # Run the whole unit-test suite under ASan/LSan/UBSan:
-tools/sanitize.sh asan --run ctest
+tools/intern/sanitize.sh asan --run ctest
 
 # Hunt data races across the test suite:
-tools/sanitize.sh tsan --run ctest
+tools/intern/sanitize.sh tsan --run ctest
 
 # Memory + concurrency check of a live IPC client (needs mtrouter running):
-tools/sanitize.sh asan --target 23_pubclient --examples -- <client args>
+tools/intern/sanitize.sh asan --target 23_pubclient --examples -- <client args>
 
 # Allocation / peak-RSS profile of the router under load:
-tools/sanitize.sh heaptrack --target mtrouter --examples -- -e
+tools/intern/sanitize.sh heaptrack --target mtrouter --examples -- -e
 ```
 
 ### Latency-focused profiling tips
@@ -527,9 +537,9 @@ belong together are started together, the driving process is given a deadline, a
 passes only if every process ends the way it is supposed to end.
 
 ```bash
-tools/run-all-examples.sh                     # Linux, macOS
-tools\run-all-examples.bat                    # Windows
-python3 tools/run-all-examples.py --list      # what would run, without running it
+tools/intern/run-all-examples.sh                     # Linux, macOS
+tools\intern\run-all-examples.bat                    # Windows
+python3 tools/intern/run-all-examples.py --list      # what would run, without running it
 ```
 
 Both wrappers pass every argument through to the driver.
@@ -554,10 +564,10 @@ Exit code 0 means every scenario passed.
 
 ```bash
 # A single flaky scenario, twenty times, to see how often it really fails:
-tools/run-all-examples.sh --only 12_svcmulti --repeat 20
+tools/intern/run-all-examples.sh --only 12_svcmulti --repeat 20
 
 # Everything, against an explicitly chosen build:
-tools/run-all-examples.sh --bin-dir product/build/gnu-g++/linux-64-x86_64-release-shared/bin
+tools/intern/run-all-examples.sh --bin-dir product/build/gnu-g++/linux-64-x86_64-release-shared/bin
 ```
 
 > [!IMPORTANT]
@@ -573,7 +583,7 @@ and republishes the cases that did not pass as annotations, so a red matrix entr
 a browser.
 
 ```bash
-python3 tools/report-ctest.py <ctest build directory> [--title ctest]
+python3 tools/intern/report-ctest.py <ctest build directory> [--title ctest]
 ```
 
 It never fails the job: a missing file, an unreadable file and a file without a single failure
@@ -612,8 +622,8 @@ it; there is nothing to run by hand.
 | `win_latency_trace.ps1` | Windows | The Windows counterpart of `run-latency-trace.sh` |
 
 ```bash
-tools/latency/run-local-latency.sh --repeat 3 --label baseline
-python3 tools/latency/run-pub-latency.py --modes pp0,pp64 --count 20000
+tools/intern/latency/run-local-latency.sh --repeat 3 --label baseline
+python3 tools/intern/latency/run-pub-latency.py --modes pp0,pp64 --count 20000
 ```
 
 Results are written to `product/tasks/measurements`, which is not under version control.
@@ -658,9 +668,9 @@ Every source, script, CMake and configuration file of the SDK must contain only 
 Documents (`.md`, `.txt`) are exempt.
 
 ```bash
-python3 tools/check-ascii.py                     # the whole repository
-python3 tools/check-ascii.py framework examples  # only these paths
-python3 tools/check-ascii.py --staged            # only what git has staged
+python3 tools/intern/check-ascii.py                     # the whole repository
+python3 tools/intern/check-ascii.py framework examples  # only these paths
+python3 tools/intern/check-ascii.py --staged            # only what git has staged
 ```
 
 The reason is the compilers, not taste. A source file without a byte order mark is read in the
@@ -684,11 +694,11 @@ tests/units/*Encod*Test.cpp
 waiver list -- a control character is unwanted in a character test as much as anywhere else.
 
 ```bash
-python3 tools/check-ascii.py --find control      # every C0 control but TAB, LF, CR, plus DEL
-python3 tools/check-ascii.py --find 0x08         # one value
-python3 tools/check-ascii.py --find 0x01-0x12    # a range
-python3 tools/check-ascii.py --find 0x08,0x1B,0x7F
-python3 tools/check-ascii.py --find control --docs   # documents searched too
+python3 tools/intern/check-ascii.py --find control      # every C0 control but TAB, LF, CR, plus DEL
+python3 tools/intern/check-ascii.py --find 0x08         # one value
+python3 tools/intern/check-ascii.py --find 0x01-0x12    # a range
+python3 tools/intern/check-ascii.py --find 0x08,0x1B,0x7F
+python3 tools/intern/check-ascii.py --find control --docs   # documents searched too
 ```
 
 Values are hexadecimal. `control` and `non-ascii` are accepted as names.
@@ -712,10 +722,22 @@ repository is dominated by the file system, not by the check.
 ```bash
 cat > .git/hooks/pre-commit <<'EOF'
 #!/bin/sh
-python3 tools/check-ascii.py --staged --quiet || exit 1
-python3 tools/check-ascii.py --staged --quiet --find control || exit 1
+python3 tools/intern/check-ascii.py --staged --quiet || exit 1
+python3 tools/intern/check-ascii.py --staged --quiet --find control || exit 1
 EOF
 chmod +x .git/hooks/pre-commit
+```
+
+### Line endings: `fix-eol.py`
+
+The repository stores text with LF, and `.gitattributes` and `.editorconfig` say so. An editor
+that still saves a file with CRLF makes every line of it look changed. `fix-eol.py` rewrites such
+files with LF; `.bat`, `.ps1`, binaries and `tools/schema/*` are left as they are.
+
+```bash
+python3 tools/intern/fix-eol.py              # files changed against HEAD, and untracked ones
+python3 tools/intern/fix-eol.py --check      # report only; exit 1 when a file has CRLF
+python3 tools/intern/fix-eol.py --all        # every tracked file
 ```
 
 ---
@@ -728,9 +750,9 @@ WSL often writes neither -- so the program is started **under the debugger from 
 the debugger is asked for the stacks at the moment it stops.
 
 ```bash
-python3 tools/hunt-crash.py --runs 200 14_locmesh.elf
-python3 tools/hunt-crash.py --bin-dir <dir> --runs 50 --timeout 120 22_pubservice.elf
-python3 tools/hunt-crash.py --runs 100 --out crash.txt 30_pubprovider.elf -- --some-arg
+python3 tools/intern/hunt-crash.py --runs 200 14_locmesh.elf
+python3 tools/intern/hunt-crash.py --bin-dir <dir> --runs 50 --timeout 120 22_pubservice.elf
+python3 tools/intern/hunt-crash.py --runs 100 --out crash.txt 30_pubprovider.elf -- --some-arg
 ```
 
 | Option | Default | Meaning |
@@ -746,17 +768,90 @@ finished without one, and 2 when the tool could not run at all.
 
 Stops on the first fatal signal: `SIGSEGV`, `SIGABRT`, `SIGBUS`, `SIGILL`, `SIGFPE` and, on macOS,
 `EXC_BAD_ACCESS`. A hang is not a crash -- for that, run the scenario under
-`tools/run-all-examples.py --repeat N`, which photographs a process it has to kill.
+`tools/intern/run-all-examples.py --repeat N`, which photographs a process it has to kill.
 
 > [!TIP]
 > Build with `-DCMAKE_BUILD_TYPE=RelWithDebInfo` before hunting. A Debug build changes the timing
 > enough that a race often stops reproducing, and a plain Release build has no symbols to print.
-> If the defect is a memory error rather than a race, `tools/sanitize.sh asan` finds it in one run
+> If the defect is a memory error rather than a race, `tools/intern/sanitize.sh asan` finds it in one run
 > instead of fifty.
 
 ---
 
-## 13. Summary
+## 13. Flash and RAM Footprint
+
+`footprint.py` answers what an areg deployment costs a device. It **builds nothing**: it reads a
+build directory that already exists, so the same script serves a native build, a cross build and a
+CI job that only wants the sizes.
+
+```bash
+python3 tools/intern/footprint.py                                  # flash and RAM, reads build/bin
+python3 tools/intern/footprint.py --flash-only                     # sizes only, starts no process
+python3 tools/intern/footprint.py --size-tool arm-linux-gnueabihf-size --flash-only
+python3 tools/intern/footprint.py --hold 10 --clients 1,10,100 --json footprint.json
+```
+
+| Option | Default | Meaning |
+|--------|---------|---------|
+| `--build-dir DIR` | `build` | The build directory to read |
+| `--bin-dir DIR` | `<build>/bin` | Where the binaries are |
+| `--lib-dir DIR` | `<build>/lib` | Where the static libraries are |
+| `--out-dir DIR` | `<build>/footprint` | Where the captured console output is written |
+| `--size-tool NAME` | `size` | The `size` utility of the toolchain |
+| `--flash-only` | off | Read the sizes, start no process |
+| `--ram-only` | off | Run the scenarios, read no size |
+| `--clients LIST` | `1,10` | Router client counts to measure |
+| `--hold SEC` | `5.0` | How long each state is sampled |
+| `--shape STR` | `-w=128 -h=128 -l=1 -t=25` | The block shape the provider streams |
+| `--channels N` | `8` | Channels the provider streams |
+| `--port N` | `8181` | The router port |
+| `--json FILE` | -- | Write the same numbers as data |
+
+**Flash** is the Berkeley `text`, `data` and `bss` of each artefact plus its size on disk. What a
+node stores is `libareg` plus its own application; a node that also routes adds `mtrouter`.
+
+**RAM** is `VmRSS`, `VmHWM`, `RssAnon` and the thread count from `/proc/<pid>/status`, sampled
+every 50 ms, reported as the peak of the run. `VmHWM` is the figure a device has to hold. The
+scenarios are a one-process application, the router alone and with clients attached, and a
+provider and consumer through the router, idle and streaming. Each router row prints how many
+connections were really open when it was taken, read from `/proc/net/tcp`, so the per-connection
+slope is measured rather than assumed.
+
+RAM needs `/proc`, so it is Linux only and the tool says so on other systems. It is **not**
+measured under `qemu-user`: the emulator's own memory would be in the figure. A cross build
+reports flash only, and arm RAM figures come from an arm runner or a real board.
+
+The tool enforces that itself. It reads the architecture out of the ELF header of the artefacts
+it is measuring, and when that is not the architecture of the host, it reports flash and refuses
+RAM:
+
+```
+  target         arm (32-bit)
+  host           Linux x86_64
+RAM -- not measured: the binaries are arm and this host is x86_64
+```
+
+Cross-compiling for arm needs the toolchain's own `size`, since the host one cannot read a
+foreign object:
+
+```bash
+python3 tools/intern/footprint.py --build-dir ./build-arm64 --size-tool aarch64-linux-gnu-size --flash-only
+python3 tools/intern/footprint.py --build-dir ./build-arm32 --size-tool arm-linux-gnueabihf-size --flash-only
+```
+
+The configuration in `<bin-dir>/config/areg.init` decides what is measured. `net::*::tcpip::pairs`
+is the key with the largest effect: the pool threads are allocated in full at start, whatever the
+client count.
+
+Every run prints its provenance first -- commit, whether the tree is modified, build type,
+compiler and version, the **target** architecture and the **host** that read it, and the
+`AREG_LOGGING`, `AREG_EXTENDED` and `AREG_NO_EXCEPTIONS` switches -- so a number copied out of the
+output says what produced it. `target` comes from the binaries, never from the host, so a cross
+build cannot be published under the host's architecture.
+
+---
+
+## 14. Summary
 
 Building an application with the SDK:
 

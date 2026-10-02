@@ -507,6 +507,17 @@ inline void trace(const char* /*format*/, ...) noexcept
 #endif  // defined(AREG_DIAGNOSE_TRACE) && (AREG_DIAGNOSE_TRACE)
 
 /**
+ * AREG_DT_TRACE writes one diagnostic line. Unlike a direct call of areg::trace(), it
+ * leaves nothing of the arguments behind when the facility is switched off, so an
+ * argument may format a string or read a registry without costing an ordinary build.
+ **/
+#if defined(AREG_DIAGNOSE_TRACE) && (AREG_DIAGNOSE_TRACE)
+    #define AREG_DT_TRACE(...)      areg::trace(__VA_ARGS__)
+#else   // !AREG_DIAGNOSE_TRACE
+    #define AREG_DT_TRACE(...)      ((void)0)
+#endif  // AREG_DIAGNOSE_TRACE
+
+/**
  * \brief   areg::DebugPriority
  *          Defines message priority in debug output window.
  *          There is no filter of messages in priority, but

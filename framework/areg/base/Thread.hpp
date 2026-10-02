@@ -197,7 +197,10 @@ public:
      *                              running. Set DO_NOT_WAIT for immediate return without guarantee
      *                              of thread running. Set WAIT_INFINITE to ensure thread is
      *                              running. Set other values in milliseconds for specific timeout.
-     * \return  Returns true if new thread is successfully created and started.
+     * \return  Returns true if new thread is successfully created and started. Returns false
+     *          without changing anything while a thread still runs on the object or a
+     *          shutdown() of it is in progress. A shutdown() called concurrently may end the new
+     *          thread before it runs; then this returns true and is_running() returns false.
      **/
     virtual bool start( uint32_t waitForStartMs = areg::DO_NOT_WAIT );
 
@@ -615,6 +618,8 @@ protected:
 #if defined(_MSC_VER)
     #pragma warning(pop)
 #endif  // _MSC_VER
+    //!< The number of shutdown() calls that own the running thread, guarded by mSyncObject.
+    uint8_t                 mStopCount;
 
 //////////////////////////////////////////////////////////////////////////
 // Private / Hidden types, variables and methods

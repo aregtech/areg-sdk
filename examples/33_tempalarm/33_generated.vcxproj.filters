@@ -15,41 +15,41 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)examples\33_tempalarm\services\private\TempAlarmConsumerBase.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\33_tempalarm\services\private\TempMonitorService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\33_tempalarm\services\private\TempAlarmEvents.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\33_tempalarm\services\private\TempMonitorServiceEvents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\33_tempalarm\services\private\TempAlarmProxy.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\33_tempalarm\services\private\TempMonitorServiceProviderBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\33_tempalarm\services\private\TempAlarmProviderBase.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\33_tempalarm\services\private\TempMonitorServiceProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\33_tempalarm\services\private\TempAlarm.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\33_tempalarm\services\private\TempMonitorServiceConsumerBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(AregGenerateDir)examples\33_tempalarm\services\private\TempAlarmEvents.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\33_tempalarm\services\TempMonitorService.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\33_tempalarm\services\private\TempAlarmProxy.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\33_tempalarm\services\private\TempMonitorServiceEvents.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\33_tempalarm\services\TempAlarmConsumerBase.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\33_tempalarm\services\TempMonitorServiceProviderBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\33_tempalarm\services\TempAlarmProviderBase.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\33_tempalarm\services\private\TempMonitorServiceProxy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\33_tempalarm\services\TempAlarm.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\33_tempalarm\services\TempMonitorServiceConsumerBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="services\TempAlarm.siml">
+    <None Include="services\TempMonitorService.siml">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

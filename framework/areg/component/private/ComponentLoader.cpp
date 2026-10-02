@@ -19,6 +19,8 @@
 #include "areg/component/ComponentThread.hpp"
 #include "areg/component/private/ServiceManager.hpp"
 #include "areg/base/CommonDefs.hpp"
+
+#include <chrono>
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -583,16 +585,26 @@ void ComponentLoader::_exit_threads( const ThreadList & threadList ) const noexc
 
 void ComponentLoader::_wait_threads( const ThreadList & threadList ) const
 {
+    // The threads drain in parallel, so one deadline bounds the whole list.
+    const std::chrono::steady_clock::time_point deadline{ std::chrono::steady_clock::now() + std::chrono::milliseconds(areg::SHUTDOWN_DRAIN_TIMEOUT) };
     for ( uint32_t i = 0; i < threadList.size(); ++ i )
     {
         ComponentThread * thrObject = threadList[i];
         ASSERT( thrObject != nullptr );
 
-        if ( thrObject->wait_completion( areg::SHUTDOWN_DRAIN_TIMEOUT ) )
-            continue;
+        const std::chrono::steady_clock::time_point now{ std::chrono::steady_clock::now() };
+        const uint32_t remaining{ (now < deadline)
+                                  ? static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::milliseconds>(deadline - now).count()) + 1u
+                                  : 1u };
+        if ( thrObject->wait_completion( remaining ) == false )
+        {
+            thrObject->trigger_exit( );
+        }
+    }
 
-        thrObject->trigger_exit( );
-        thrObject->wait_completion( areg::WAIT_INFINITE );
+    for ( uint32_t i = 0; i < threadList.size(); ++ i )
+    {
+        threadList[i]->wait_completion( areg::WAIT_INFINITE );
     }
 }
 

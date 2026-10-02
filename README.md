@@ -95,6 +95,7 @@ If Areg saves you work, a ⭐ helps other C++ developers find it.
 - [How it works](#how-it-works)
 - [Agentic coding](#agentic-coding)
 - [Performance](#performance)
+- [Embedded ready](#embedded-ready)
 - [Areg vs. alternatives](#areg-vs-alternatives)
 - [Getting started](#getting-started)
 - [Architecture](#architecture)
@@ -181,13 +182,16 @@ service from nothing; the same harness scores it against hidden checks and runs 
 identical task on gRPC to compare.
 
 In our runs, agents finished the task on Areg as reliably as on gRPC: 57 of 57 runs
-passed every hidden probe over 3 days, on 4 tasks and 3 model families. With Claude Code
-and Sonnet 5, Areg needed about half the API requests of gRPC (median 26, range 16-32,
-against 55.5, range 31-90), for equal output tokens and time, with no filesystem
-searches -- not behind a framework the model was trained on. GitHub Copilot's
-GPT-5.6-Terra has been the cheapest of everything we've tried so far, across two agents
-and five models -- as few as 12 API requests, still 5 of 5 hidden probes passed. Agent
-runs vary: [ranges and method](./examples/ai-benchmark/).
+passed every hidden probe over 3 days, on 4 tasks and 3 model families, and so did all
+10 of the latest runs of both frameworks. With Claude Code and Sonnet 5.5, on the coffee
+machine, an agent on Areg wrote about 3x less C++ by hand than on gRPC (386-420 lines
+against 1,252-1,411), used 37% fewer output tokens and 34% less model time, with no
+filesystem searches, and cost a median of $0.71 against $0.80 -- within $0.03 from run to
+run, where gRPC runs varied by a third. Both needed about 9 API requests. With the earlier
+Sonnet 5 the gap was wider: Areg needed about half the API requests of gRPC (median 26
+against 55.5). GitHub Copilot's GPT-5.6-Terra also passed 5 of 5 hidden probes, in as
+few as 12 API requests. Agent runs vary: [4 runs per framework, ranges and
+method](./examples/ai-benchmark/baseline-2026-09-29.md).
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -233,6 +237,48 @@ For context only (third-party, 2021, different hardware): gRPC C++ sequential RT
 
 📊 Measure your own hardware: [`23_pubdatarate`](./examples/23_pubdatarate/) (throughput) · [`30_publatency`](./examples/30_publatency/) (latency)
 📈 [Full data and methodology](./docs/wiki/08b-areg-sdk-performance-benchmarks.md) · [vs ZMQ/NanoMsg/NNG](./docs/wiki/08c-areg-vs-hitachi-benchmark.md) · [Framework rankings](./docs/wiki/08d-areg-framework-rankings.md)
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
+
+---
+
+## Embedded ready[![](./docs/img/pin.svg)](#embedded-ready)
+
+**Embedded Linux on a 32- or 64-bit CPU** -- ARM64, ARMv7, x86_64 and x86. If the target
+runs Linux with sockets and pthreads, Areg runs on it: NXP i.MX, TI AM62/AM335x,
+Rockchip RK3588, STM32MP1, Raspberry Pi, Intel Atom.
+
+Measured with [`tools/intern/footprint.py`](./tools/intern/footprint.py), GCC 15.2.0, Release, on three
+architectures -- `x86_64` natively, ARM64 and ARMv7 cross-compiled with the toolchain files
+the SDK ships. Framework code (`text`):
+
+| What a device stores | x86_64 | ARM64 | ARMv7 |
+|---|---:|---:|---:|
+| shared `libareg.so`, stored once for every service | 1.26 MB | 1.18 MB | **0.74 MB** |
+| a self-contained service, static, logging off | 526 KB | 487 KB | **288 KB** |
+| a service binary against the shared framework | 43 KB | 42 KB | 26 KB |
+| `mtrouter` | 285 KB | 255 KB | 171 KB |
+
+A 32-bit target is close to half the size of x86_64, and ARM64 within about 10% of it.
+
+RAM, read from `/proc` on `x86_64`:
+
+| What a process holds | Shared, logging on | Static, logging off |
+|---|---|---|
+| a service, resident | 6.6 MB, 7 threads | **5.6 MB**, 6 threads |
+| `mtrouter`, resident | 6.5 MB, 9 threads | 5.7 MB, 8 threads |
+| each connected client | **~7 KB** -- ten clients cost under 1% of an idle router | ~6 KB |
+
+`-DAREG_LOGGING=OFF` removes one thread and ~1 MB resident. Keep the shipped
+`net::*::tcpip::pairs = 0`: raising it to 16 costs 1.8 MB and 32 threads before a single
+client connects.
+
+**Not** bare metal, **not** an RTOS and **not** 16-bit. Zephyr RTOS is planned after
+version 2.0.0 and does not exist today. ARM **RAM** is not published until it is read on an
+ARM board or runner -- an emulator reports its own memory, not the target's. No number here
+is scaled from another architecture.
+
+📊 [What "embedded ready" means, and where the line is](./docs/wiki/08e-embedded-ready.md)
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 

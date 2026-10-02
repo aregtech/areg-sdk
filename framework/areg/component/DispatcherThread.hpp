@@ -193,8 +193,8 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Sets exit event in the queue. When all messages are dispatched, the dispatcher will
-     *          be stopped and exit loop.
+     * \brief   Requests the thread to exit at once. The queued events are not dispatched,
+     *          and the thread takes no new event from this call on.
      **/
     void trigger_exit();
 
@@ -202,6 +202,7 @@ public:
      * \brief   Requests the thread to exit after the queued events are dispatched.
      *          Unlike trigger_exit(), the pending events are delivered first. Use it
      *          to stop a thread whose queue still holds events that must not be lost.
+     *          The thread takes no new event from this call on: posting to it fails.
      **/
     void trigger_exit_drained();
 

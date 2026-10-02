@@ -258,7 +258,24 @@ def probe_cpu(loads):
                   .format(max(loads), CPU_LIMIT))
 
 
-def probe_sanitize(run_dir, work, scenario):
+def binary_dirs(build, document):
+    """build/bin and build, then every directory under build holding a scenario binary."""
+    names = set()
+    for scenario in document.get('scenarios') or []:
+        for proc in scenario.get('procs') or []:
+            if proc.get('binary'):
+                names.update((proc['binary'], proc['binary'] + run_scenarios.SUFFIX))
+    found = [os.path.join(build, 'bin'), build]
+    for root, dirs, files in os.walk(build):
+        dirs[:] = [d for d in dirs if d != 'CMakeFiles']
+        if root not in found and any(
+                name in names and os.access(os.path.join(root, name), os.X_OK)
+                for name in files):
+            found.append(root)
+    return found
+
+
+def probe_sanitize(run_dir, work, scenario, document):
     """A rebuild under ASan and UBSan, the normal run and one peer loss under it."""
     build = os.path.join(run_dir, 'verify-sanitize-build')
     steps = [['cmake', '-S', work, '-B', build, '-DCMAKE_BUILD_TYPE=Debug',
@@ -273,7 +290,7 @@ def probe_sanitize(run_dir, work, scenario):
             last = (done.stdout.strip().splitlines() or ['no output'])[-1]
             return result('sanitize', None, 'sanitizer build failed: ' + last[:160])
     os.environ.setdefault('ASAN_OPTIONS', 'detect_leaks=0')
-    build_dirs = [os.path.join(build, 'bin'), build]
+    build_dirs = binary_dirs(build, document)
     slow = dict(scenario, timeout=float(scenario.get('timeout', 60)) * 3)
     _, detail, observed, _, _ = run(slow, build_dirs)
     if not ran(observed):
@@ -386,7 +403,7 @@ def main():
         print('verify_run: no normal scenario in scenarios.json: two or more processes, '
               'no stop, and a lead that exits 0')
         return 2
-    build_dirs = [os.path.join(work, 'build', 'bin'), os.path.join(work, 'build')]
+    build_dirs = binary_dirs(os.path.join(work, 'build'), document)
     os.chdir(work)
 
     print('== hidden probes: {}'.format(run_dir))
@@ -409,7 +426,7 @@ def main():
                            statistics.median(leads) if leads else None))
     report(probe_cpu(loads))
     if args.sanitize:
-        report(probe_sanitize(run_dir, work, scenario))
+        report(probe_sanitize(run_dir, work, scenario, document))
 
     scored = [item for item in results if item['passed'] is not None]
     skipped = [item['probe'] for item in results if item['passed'] is None]

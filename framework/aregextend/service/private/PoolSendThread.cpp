@@ -30,6 +30,7 @@
 namespace areg::ext {
 
 DEBUG_DEF_LOG_SCOPE(areg_aregextend_service_PoolSendThread, start_event_processing);
+DEF_LOG_SCOPE(areg_aregextend_service_PoolSendThread, backlog_close);
 
 PoolSendThread::PoolSendThread( ClientConnectionPair & owner
                                 , areg::RemoteMessageHandler & remoteService
@@ -46,6 +47,7 @@ PoolSendThread::PoolSendThread( ClientConnectionPair & owner
     , mDrainLimit       ( areg::DEFAULT_DRAIN_LIMIT )
     , mBatch            ( )
     , mSendGate         ( )
+    , mBacklog          ( mSendGate )
 {
 }
 
@@ -60,6 +62,7 @@ void PoolSendThread::ready_for_events( bool is_ready )
     else
     {
         DispatcherThread::ready_for_events( false );
+        release_backlog();
     }
 }
 
@@ -74,7 +77,8 @@ void PoolSendThread::start_event_processing( areg::Event & eventElem )
                                              , mSockets.data()
                                              , &mSendGate
                                              , &mConnection
-                                             , &mRemoteService };
+                                             , &mRemoteService
+                                             , &mBacklog };
 
     areg::ext::run_send_batch( *this
                              , eventElem
@@ -92,6 +96,7 @@ void PoolSendThread::start_event_processing( areg::Event & eventElem )
                                    // A pool thread owns none of the sockets it writes into: the
                                    // connection pair it serves closes them.
                                    DEBUG_LOG_DBG("Going to quit pool send message thread");
+                                   release_backlog();
                                }
                              , [&]( [[maybe_unused]] uint32_t messageId, [[maybe_unused]] ITEM_ID target )
                                {
@@ -99,6 +104,43 @@ void PoolSendThread::start_event_processing( areg::Event & eventElem )
                                                    , messageId
                                                    , static_cast<uint32_t>(target));
                                } );
+
+    areg::ext::serve_backlog(*this, mBacklog, static_cast<SendBacklog::Owner &>(*this));
+}
+
+SOCKETHANDLE PoolSendThread::backlog_socket(ITEM_ID cookie)
+{
+    return mOwner.socket_by_cookie(cookie);
+}
+
+void PoolSendThread::backlog_sent(uint64_t bytes, uint32_t msgs)
+{
+    mGlobalStats.accumulate_sent(bytes, msgs);
+}
+
+void PoolSendThread::backlog_close(const SendBacklog::Entry & entry, SendBacklog::Reason reason)
+{
+    LOG_SCOPE(areg_aregextend_service_PoolSendThread, backlog_close);
+    mBacklog.log_close(entry, reason);
+    if ( mConnection.is_interrupted() == false )
+    {
+        areg::SocketAccepted client{ mConnection.client_by_handle(entry.socket) };
+        mRemoteService.failed_send_message(entry.messages.front(), client);
+    }
+}
+
+void PoolSendThread::release_backlog()
+{
+    std::deque<SOCKETHANDLE> cutSockets;
+    mBacklog.release_all(cutSockets);
+    for ( const SOCKETHANDLE hSocket : cutSockets )
+    {
+        areg::SocketAccepted client{ mConnection.client_by_handle(hSocket) };
+        if ( client.is_valid() )
+        {
+            mConnection.close_connection(client);
+        }
+    }
 }
 
 bool PoolSendThread::post_event( Event & eventElem )

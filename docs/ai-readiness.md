@@ -8,15 +8,15 @@ someone reads the documentation, tries a task, writes down an impression -- that
 claim cannot be regressed. A later change that quietly removes a page, doubles the
 entry toll, or breaks the one example a feature has shows up nowhere.
 
-`tools/agent/check_corpus.py` replaces the impression with a set of rules. It reads
+`tools/intern/check_corpus.py` replaces the impression with a set of rules. It reads
 the repository and reports which rules do not hold. It is deterministic: same tree,
 same findings, on any machine, with no network and no build.
 
 ```
-python3 tools/agent/check_corpus.py             # the findings
-python3 tools/agent/check_corpus.py --verbose   # the rules that hold, as well
-python3 tools/agent/check_corpus.py --json      # the same, for CI
-python3 tools/agent/check_corpus.py --strict    # a warning fails the run too
+python3 tools/intern/check_corpus.py             # the findings
+python3 tools/intern/check_corpus.py --verbose   # the rules that hold, as well
+python3 tools/intern/check_corpus.py --json      # the same, for CI
+python3 tools/intern/check_corpus.py --strict    # a warning fails the run too
 ```
 
 Three severities. `FAIL` is a rule that must hold and does not, and it fails the
@@ -56,7 +56,7 @@ here rather than left to be discovered:
 
 - **No model is in the loop.** `run_evals.py --self-check` grades the reference
   answers, not an agent's. Whether a cold model actually succeeds is measured by
-  running one against `tools/agent/evals/tasks.json`, and nothing here substitutes
+  running one against `tools/intern/evals/tasks.json`, and nothing here substitutes
   for that. It is slow, costs money and is not deterministic, so it is never a gate
   -- and it is the only measure not graded by the hand that wrote the corpus.
 - **Nothing is built.** Where a property can only be established by execution, what
@@ -150,7 +150,7 @@ here rather than left to be discovered:
 
 The coverage and eval rules measure against one list: the things an agent is
 expected to be able to do, taken from the scope statement in `AGENTS.md` section 1.
-The list lives in `tools/agent/check_corpus.py` as `FEATURES`, so it is data, not
+The list lives in `tools/intern/check_corpus.py` as `FEATURES`, so it is data, not
 prose, and cannot drift from what is checked. Each entry names the page that must
 answer it, a substring proving the page really covers it rather than mentioning it,
 the recipe that demonstrates it, and whether an eval grades it.

@@ -119,10 +119,19 @@ if (AREG_TESTS)
     include(${AREG_TESTS_DIR}/release-unload/CMakeLists.txt)
     include(${AREG_TESTS_DIR}/timer-churn/CMakeLists.txt)
     include(${AREG_TESTS_DIR}/internal-events/CMakeLists.txt)
+    include(${AREG_TESTS_DIR}/stub-teardown/CMakeLists.txt)
+
+    # Built, not registered with ctest: it needs root and a packet filter.
+    include(${AREG_TESTS_DIR}/keepalive-probe/CMakeLists.txt)
 
     # Reuses the generated service interface of example 01, so it needs the examples.
     if (AREG_EXAMPLES AND TARGET 01_generated)
         include(${AREG_TESTS_DIR}/proxy-churn/CMakeLists.txt)
+    endif()
+
+    # Reuses the generated service interfaces of examples 25 and 32; driven by conn_scenario.py.
+    if (AREG_EXAMPLES AND TARGET 32_generated AND TARGET 25_generated)
+        include(${AREG_TESTS_DIR}/conn-scenario/CMakeLists.txt)
     endif()
 
 else(AREG_TESTS)

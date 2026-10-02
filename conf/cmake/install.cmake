@@ -96,19 +96,14 @@ install(FILES ${AREG_SDK_ROOT}/areg.cmake
             PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
 )
 
-# Copy the tools a project built on areg uses. The corpus and framework maintenance
-# tools are left out: they read this repository's own layout and answer questions
-# about developing areg, not about using it. Shipping them puts twenty-five scripts
-# in front of a reader who needs seven.
+# Copy the tools a project built on areg uses. tools/intern/ holds the tools for
+# developing areg itself, and is left out.
 install(DIRECTORY tools/
             DESTINATION tools/${AREG_PACKAGE_NAME}
             COMPONENT Development
             DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ WORLD_READ GROUP_EXECUTE WORLD_EXECUTE
-            PATTERN "latency"   EXCLUDE
-            PATTERN "sanitizer" EXCLUDE
-            PATTERN "evals"     EXCLUDE
-            REGEX "/(areg_benchmarks|build_members|check-ascii|check_agent_docs|check_commands|check_corpus|check_doc_config|check_invariants|check_mutations|check_observability|check_recipes|check_symbols|hunt-crash|report-ctest|run_evals|service_ports|setup_agent_memory|setup_agent_redirect)\\.py$" EXCLUDE
-            REGEX "/sanitize\\.sh$" EXCLUDE
+            PATTERN "intern"    EXCLUDE
+            PATTERN "__pycache__" EXCLUDE
 )
 
 # Copy compiled Areg SDK tools: logcollector, logobserver and mtrouter

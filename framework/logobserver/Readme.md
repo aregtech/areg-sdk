@@ -60,7 +60,7 @@ When running as a console application, the following commands can be used to man
 
 - **`--scope`** or **`-o`**:
   Update log scope priorities.
-  **Example**: `--scope *::areg_base_NESocket=NOTSET` (where `*` can be a cookie ID)
+  **Example**: `--scope *::areg_base_Socket=NOTSET` (where `*` can be a cookie ID)
 
 - **`--pause`** or **`-p`**:
   Pause log observation.
