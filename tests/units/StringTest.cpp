@@ -18,6 +18,7 @@
  ************************************************************************/
 #include "units/GUnitTest.hpp"
 #include "areg/base/String.hpp"
+#include "areg/base/WideString.hpp"
 
 #include <string>
 #include <string_view>
@@ -361,6 +362,39 @@ TEST(StringTestComparison, CompareWithStringObject)
     String b("ABC");
     EXPECT_EQ(a.compare(b, false), areg::Ordering::Equal);
     EXPECT_NE(a.compare(b, true), areg::Ordering::Equal);
+}
+
+/**
+ * \brief   Test compare with a single string argument of each string type.
+ **/
+TEST(StringTestComparison, CompareSingleArgument)
+{
+    const String str("abc");
+    const String same("abc");
+    const std::string stdSame("abc");
+
+    EXPECT_EQ(str.compare(same), areg::Ordering::Equal);
+    EXPECT_EQ(str.compare(String("abd")), areg::Ordering::Smaller);
+    EXPECT_EQ(str.compare(stdSame), areg::Ordering::Equal);
+    EXPECT_EQ(str.compare(std::string("abb")), areg::Ordering::Bigger);
+    EXPECT_EQ(str.compare(std::string_view("abc")), areg::Ordering::Equal);
+    EXPECT_EQ(str.compare("abc"), areg::Ordering::Equal);
+
+    const areg::WideString wide(L"abc");
+    EXPECT_EQ(wide.compare(areg::WideString(L"abc")), areg::Ordering::Equal);
+    EXPECT_EQ(wide.compare(std::wstring(L"abd")), areg::Ordering::Smaller);
+    EXPECT_EQ(wide.compare(areg::WideString(L"ABC"), false), areg::Ordering::Equal);
+}
+
+/**
+ * \brief   Test compare of a String object starting at a position.
+ **/
+TEST(StringTestComparison, CompareObjectAtPosition)
+{
+    const String str("Hello World");
+    EXPECT_EQ(str.compare(String("World"), 6), areg::Ordering::Equal);
+    EXPECT_EQ(str.compare(std::string("World"), 6), areg::Ordering::Equal);
+    EXPECT_EQ(str.compare(String("WORLD"), 6, areg::COUNT_ALL, false), areg::Ordering::Equal);
 }
 
 //////////////////////////////////////////////////////////////////////////

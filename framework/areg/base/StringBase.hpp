@@ -480,13 +480,13 @@ public:
 
     [[nodiscard]]
     inline areg::Ordering compare( const StringBase<CharType>& strOther
-                                 , areg::CharPos startAt = areg::START_POS
+                                 , areg::CharPos startAt
                                  , areg::CharCount count = areg::COUNT_ALL
                                  , bool caseSensitive = true) const noexcept;
 
     [[nodiscard]]
     inline areg::Ordering compare( const std::basic_string<CharType>& strOther
-                                 , areg::CharPos startAt = areg::START_POS
+                                 , areg::CharPos startAt
                                  , areg::CharCount count = areg::COUNT_ALL
                                  , bool caseSensitive = true) const noexcept;
 
@@ -1731,7 +1731,7 @@ inline areg::Ordering StringBase<CharType>::compare(const std::basic_string_view
 
 template<typename CharType>
 inline areg::Ordering StringBase<CharType>::compare( const StringBase<CharType>& other
-                                                   , areg::CharPos startPos /*= areg::START_POS*/
+                                                   , areg::CharPos startPos
                                                    , areg::CharCount count  /*= areg::COUNT_ALL*/
                                                    , bool caseSensitive         /*= true*/) const noexcept
 {
@@ -1740,7 +1740,7 @@ inline areg::Ordering StringBase<CharType>::compare( const StringBase<CharType>&
 
 template<typename CharType>
 inline areg::Ordering StringBase<CharType>::compare( const std::basic_string<CharType>& other
-                                                   , areg::CharPos startAt  /*= areg::START_POS*/
+                                                   , areg::CharPos startAt
                                                    , areg::CharCount count  /*= areg::COUNT_ALL*/
                                                    , bool caseSensitive         /*= true*/) const noexcept
 {

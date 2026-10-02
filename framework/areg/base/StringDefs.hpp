@@ -416,6 +416,28 @@ template<typename CharLhs, typename CharRhs>
 [[nodiscard]]
 inline areg::Ordering compare(const CharLhs* left_side, const CharRhs* right_side) noexcept;
 
+//! True if CharType is `char` or `wchar_t`.
+template<typename CharType>
+inline constexpr bool is_string_char_v{ std::is_same_v<CharType, char> || std::is_same_v<CharType, wchar_t> };
+
+/**
+ * \brief   Compares two strings of the same character type until the first null terminator,
+ *          case-sensitive. Accepts character arrays and const or non-const pointers.
+ *
+ * \param   left_side       The left-hand side string to compare.
+ * \param   right_side      The right-hand side string to compare.
+ * \return  Returns -1 if left-side is less than right-side, 0 if equal, 1 if left-side is
+ *          greater. Valid only for first 256 UTF-8 code page symbols.
+ * \tparam  CharType    The type of characters, `char` or `wchar_t`.
+ **/
+template<typename CharType>
+[[nodiscard]]
+inline std::enable_if_t<areg::is_string_char_v<CharType>, areg::Ordering> compare(const CharType* left_side, const CharType* right_side) noexcept;
+
+template<typename CharType>
+[[nodiscard]]
+inline std::enable_if_t<areg::is_string_char_v<CharType>, areg::Ordering> compare(CharType* left_side, CharType* right_side) noexcept;
+
 /**
  * \brief   Fast comparison of the first count characters of two strings, case-sensitive.
  *
@@ -2414,6 +2436,20 @@ template<typename CharLhs, typename CharRhs>
 inline areg::Ordering areg::compare(const CharLhs* left_side, const CharRhs* right_side) noexcept
 {
     return areg::compare_strings<CharLhs, CharRhs>(left_side, right_side, areg::COUNT_ALL, true);
+}
+
+/** --------------------------------------------------- **/
+template<typename CharType>
+inline std::enable_if_t<areg::is_string_char_v<CharType>, areg::Ordering> areg::compare(const CharType* left_side, const CharType* right_side) noexcept
+{
+    return areg::compare_strings<CharType, CharType>(left_side, right_side, areg::COUNT_ALL, true);
+}
+
+/** --------------------------------------------------- **/
+template<typename CharType>
+inline std::enable_if_t<areg::is_string_char_v<CharType>, areg::Ordering> areg::compare(CharType* left_side, CharType* right_side) noexcept
+{
+    return areg::compare_strings<CharType, CharType>(left_side, right_side, areg::COUNT_ALL, true);
 }
 
 /** --------------------------------------------------- **/
