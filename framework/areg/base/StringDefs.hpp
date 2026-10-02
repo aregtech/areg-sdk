@@ -421,13 +421,13 @@ template<typename CharType>
 inline constexpr bool is_string_char_v{ std::is_same_v<CharType, char> || std::is_same_v<CharType, wchar_t> };
 
 /**
- * \brief   Compares two strings of the same character type until the first null terminator,
- *          case-sensitive. Accepts character arrays and const or non-const pointers.
+ * \brief   Compares two strings of the same character type until the first null terminator, case-sensitive.
+ *          Accepts character arrays and const or non-const pointers.
  *
  * \param   left_side       The left-hand side string to compare.
  * \param   right_side      The right-hand side string to compare.
- * \return  Returns -1 if left-side is less than right-side, 0 if equal, 1 if left-side is
- *          greater. Valid only for first 256 UTF-8 code page symbols.
+ * \return  Returns -1 if left-side is less than right-side, 0 if equal, 1 if left-side is greater.
+ *          Valid only for first 256 UTF-8 code page symbols.
  * \tparam  CharType    The type of characters, `char` or `wchar_t`.
  **/
 template<typename CharType>
