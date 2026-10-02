@@ -169,6 +169,16 @@ bool EventDispatcherBase::queue_event( Event& eventElem )
     return false;
 }
 
+EventQueue::PushResult EventDispatcherBase::try_queue_event( Event& eventElem )
+{
+    if (mHasStarted.load(std::memory_order_relaxed) && areg::is_external(eventElem.event_type()))
+    {
+        return mExternalEvents.try_push_event(eventElem);
+    }
+
+    return EventQueue::PushResult::Refused;
+}
+
 bool EventDispatcherBase::register_event_consumer( const uint32_t whichClass, EventConsumer& whichConsumer )
 {
     mConsumerMap.lock();

@@ -142,6 +142,13 @@ void EventQueue::release_lanes() noexcept
 {
     close_lanes();
 
+    // A producer waiting for a slot sees the close and leaves; nothing is freed before it has.
+    while (mProducersWaiting.load(std::memory_order_acquire) != 0u)
+    {
+        mSlotEvent.set_signaled();
+        Thread::sleep(RING_WAIT_RECHECK_MS);
+    }
+
     Cell* const ring{ mRing.exchange(nullptr, std::memory_order_acq_rel) };
 
     {
@@ -234,6 +241,61 @@ bool EventQueue::push_event(Event& eventElem, Event* removedEvent /*= nullptr*/)
     }
 
     return false;
+}
+
+EventQueue::PushResult EventQueue::try_push_event(Event& eventElem)
+{
+    Cell* const ring{ mRing.load(std::memory_order_acquire) };
+    if (ring == nullptr)
+        return PushResult::Refused;
+
+    const areg::EventPriority prio{ eventElem.event_priority() };
+    if (prio == areg::EventPriority::ExitPrio)
+    {
+        trigger_exit();
+        return PushResult::Queued;
+    }
+
+    if (prio >= areg::EventPriority::HighPrio)
+    {
+        Lock lock(mPrioLock);
+        if (mPrioQueue.has_value() && (!is_closed()))
+        {
+            auto it = mPrioQueue->begin();
+            while (it != mPrioQueue->end() && it->event_priority() >= prio)
+                ++it;
+
+            mPrioQueue->insert(it, std::move(eventElem));
+            mPrioCount.store(static_cast<uint32_t>(mPrioQueue->size()), std::memory_order_relaxed);
+            _wake_consumer();
+            return PushResult::Queued;
+        }
+    }
+
+    if (_ring_try_enqueue(ring, eventElem))
+    {
+        _wake_consumer();
+        return PushResult::Queued;
+    }
+
+    if (mDropOnFull || is_closed() || is_exit_triggered())
+        return PushResult::Refused;
+
+    mProducersWaiting.fetch_add(1u, std::memory_order_relaxed);
+    return PushResult::MustWait;
+}
+
+bool EventQueue::wait_push_event(Event& eventElem) noexcept
+{
+    // The ring cannot be released here: release_lanes() waits for every registered producer.
+    Cell* const ring{ mRing.load(std::memory_order_acquire) };
+    if (ring == nullptr)
+    {
+        mProducersWaiting.fetch_sub(1u, std::memory_order_release);
+        return false;
+    }
+
+    return _ring_wait_registered(ring, eventElem);
 }
 
 uint32_t EventQueue::push_events(Event* eventElems, uint32_t count)
@@ -524,10 +586,15 @@ bool EventQueue::_ring_enqueue(Cell* ring, Event& eventElem) noexcept
 
 bool EventQueue::_ring_wait_enqueue(Cell* ring, Event& eventElem) noexcept
 {
+    mProducersWaiting.fetch_add(1u, std::memory_order_relaxed);
+    return _ring_wait_registered(ring, eventElem);
+}
+
+bool EventQueue::_ring_wait_registered(Cell* ring, Event& eventElem) noexcept
+{
     // Lossless: block up to mWaitMs for a free slot; abortable by exit.
     const auto waitBegin{ std::chrono::steady_clock::now() };
     const auto deadline{ waitBegin + std::chrono::milliseconds(mWaitMs) };
-    mProducersWaiting.fetch_add(1u, std::memory_order_relaxed);
     bool enqueued{ false };
     for (;;)
     {
@@ -543,7 +610,11 @@ bool EventQueue::_ring_wait_enqueue(Cell* ring, Event& eventElem) noexcept
             break;
         mSlotEvent.lock(RING_WAIT_RECHECK_MS);   // woken by a consumer pop or the re-check timeout
     }
-    mProducersWaiting.fetch_sub(1u, std::memory_order_relaxed);
+
+    if (enqueued)
+    {
+        _wake_consumer();
+    }
 
     // Only recorded, never logged here: this queue also serves the log manager.
     const uint32_t waited{ static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -554,6 +625,8 @@ bool EventQueue::_ring_wait_enqueue(Cell* ring, Event& eventElem) noexcept
     {
     }
 
+    // The last access to this queue: release_lanes() may free it once the count drops.
+    mProducersWaiting.fetch_sub(1u, std::memory_order_release);
     return enqueued;
 }
 

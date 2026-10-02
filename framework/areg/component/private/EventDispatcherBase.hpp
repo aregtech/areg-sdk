@@ -204,6 +204,24 @@ public:
     bool queue_event(Event& eventElem);
 
     /**
+     * \brief   Queues an external event like queue_event(), but never waits for a free slot.
+     *          On MustWait the caller must call wait_queue_event() once, and may do so after
+     *          it stops keeping this dispatcher alive: its queue outlives that call.
+     *
+     * \param   eventElem   Event to queue. It is left untouched when it is not queued.
+     * \return  Queued, Refused, or MustWait when the queue is full and lossless.
+     **/
+    EventQueue::PushResult try_queue_event(Event& eventElem);
+
+    /**
+     * \brief   Completes a try_queue_event() that returned MustWait: waits for a free slot.
+     *
+     * \param   eventElem   Event to queue.
+     * \return  Returns true if the event was queued.
+     **/
+    inline bool wait_queue_event(Event& eventElem) noexcept;
+
+    /**
      * \brief   Pushes a batch of events (by move) with a single priority-lane lock acquisition.
      *          Events that cannot be enqueued due to capacity overflow remain in their slots and
      *          the overflow count is returned.
@@ -383,6 +401,11 @@ private:
 inline uint32_t EventDispatcherBase::queue_events(Event* listEvents, uint32_t count)
 {
     return mExternalEvents.push_events(listEvents, count);
+}
+
+inline bool EventDispatcherBase::wait_queue_event(Event& eventElem) noexcept
+{
+    return mExternalEvents.wait_push_event(eventElem);
 }
 
 inline uint32_t EventDispatcherBase::extract_max_producer_wait_ms() noexcept

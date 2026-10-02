@@ -135,6 +135,15 @@ private:
     //////////////////////////////////////////////////////////////////////////
     static constexpr uint32_t   AREG_MPSC_CACHE_LINE_SIZE{ 128u };
 
+public:
+    //!< The outcome of try_push_event().
+    enum class PushResult : uint8_t
+    {
+          Queued    //!< The event is queued.
+        , Refused   //!< The event is not queued and is not to be retried.
+        , MustWait  //!< The ring is full; the caller must call wait_push_event().
+    };
+
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
@@ -288,6 +297,27 @@ public:
     bool push_event(Event& eventElem, Event* removedEvent = nullptr);
 
     /**
+     * \brief   Queues an event like push_event(), but never waits for a free slot. The event
+     *          is left untouched when it is not queued.
+     *
+     * \param   eventElem   Event to queue (moved in on success).
+     * \return  Queued or Refused; MustWait if the ring is full and the queue is lossless. A
+     *          MustWait caller is registered as a waiting producer and must call
+     *          wait_push_event() exactly once, which it may do after it stops keeping the
+     *          owner of this queue alive: the queue is not released before that call returns.
+     **/
+    PushResult try_push_event(Event& eventElem);
+
+    /**
+     * \brief   Waits for a free slot and queues the event, after try_push_event() returned
+     *          MustWait. Waits up to the lossless timeout; a close or an exit aborts the wait.
+     *
+     * \param   eventElem   Event to queue (moved in on success).
+     * \return  true if the queue took the event.
+     **/
+    bool wait_push_event(Event& eventElem) noexcept;
+
+    /**
      * \brief   Dequeues the next event. Priority lane is always drained first.
      *          Returns an invalid Event (is_valid() == false) when both lanes are empty.
      **/
@@ -357,6 +387,12 @@ private:
      *          \a eventElem. Returns false on timeout or exit.
      **/
     bool _ring_wait_enqueue(Cell* ring, Event& eventElem) noexcept;
+
+    /**
+     * \brief   The wait of _ring_wait_enqueue() for a producer already counted in
+     *          mProducersWaiting. Removes it from the count as its last access to the queue.
+     **/
+    bool _ring_wait_registered(Cell* ring, Event& eventElem) noexcept;
 
     /**
      * \brief   Consumer-only dequeue of the next \a ring event into \a result.

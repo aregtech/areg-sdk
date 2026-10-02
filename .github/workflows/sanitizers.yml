@@ -105,7 +105,7 @@ jobs:
           tools/intern/sanitize.sh ${{matrix.mode}} --config ${{matrix.config}} \
               --target areg-unit-tests --run ctest
 
-      # The three teardown tests fail about once in a hundred runs, and one pass of the
+      # The teardown tests fail about once in a hundred runs, and one pass of the
       # suite is one run of each. They are repeated here, in the tree the step above
       # already built, so that a single job carries the report instead of ten pushes.
       - name: Repeat the teardown tests under ${{matrix.mode}} ${{matrix.config}}
@@ -116,7 +116,7 @@ jobs:
         run: |
           ulimit -c unlimited
           tools/intern/sanitize.sh ${{matrix.mode}} --config ${{matrix.config}} --keep --repeat 25 \
-              --run 'ctest:areg-(release-unload|timer-churn|internal-events)-test'
+              --run 'ctest:areg-(release-unload|timer-churn|internal-events|stub-teardown)-test'
 
       # Everything needed to open the crash on another machine: the cores, the binaries
       # they came from, and what the runner was, so a local build can be matched to it.
@@ -136,7 +136,7 @@ jobs:
             echo "options  : ASAN_OPTIONS/TSAN_OPTIONS are printed by the driver above"
           } > "${OUT}/provenance.txt"
           BIN_DIR="./build-${{matrix.mode}}/product/bin"
-          for t in areg-release-unload-test areg-timer-churn-test areg-internal-events-test; do
+          for t in areg-release-unload-test areg-timer-churn-test areg-internal-events-test areg-stub-teardown-test; do
             [[ -f "${BIN_DIR}/${t}.elf" ]] || continue
             cp "${BIN_DIR}/${t}.elf" "${OUT}/bin/"
             echo "--- ldd ${t} ---" >> "${OUT}/provenance.txt"
@@ -272,7 +272,7 @@ jobs:
     name: teardown tests, no sanitizer (${{matrix.config}})
     # Both CI failures so far are in the tsan leg, and asan is clean, so nothing yet says
     # whether the defect needs an instrumented allocator at all. This leg is the control:
-    # the same three tests, no sanitizer, Debug and Release, repeated until one fails.
+    # the same teardown tests, no sanitizer, Debug and Release, repeated until one fails.
     # It is also the only place a Release build of the teardown path is exercised.
     runs-on: ubuntu-latest
     timeout-minutes: 90
@@ -324,7 +324,7 @@ jobs:
         run: |
           ulimit -c unlimited
           ctest --output-on-failure --repeat until-fail:100 \
-                -R 'areg-(release-unload|timer-churn|internal-events)-test'
+                -R 'areg-(release-unload|timer-churn|internal-events|stub-teardown)-test'
 
       - name: Collect the post-mortem
         if: failure()
@@ -341,7 +341,7 @@ jobs:
             echo "mode     : no sanitizer, ${{matrix.config}}"
           } > "${OUT}/provenance.txt"
           BIN_DIR="./build-plain/product/bin"
-          for t in areg-release-unload-test areg-timer-churn-test areg-internal-events-test; do
+          for t in areg-release-unload-test areg-timer-churn-test areg-internal-events-test areg-stub-teardown-test; do
             [[ -f "${BIN_DIR}/${t}.elf" ]] || continue
             cp "${BIN_DIR}/${t}.elf" "${OUT}/bin/"
             echo "--- ldd ${t} ---" >> "${OUT}/provenance.txt"
