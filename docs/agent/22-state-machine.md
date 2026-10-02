@@ -6,11 +6,12 @@ handlers are a chain of `if (mPhase == ...)` is a state machine written by hand.
 The machine is described in a `.fsml` document. The generator turns it into code the
 same way it turns a `.siml` into a service. You write the actions, never the machine.
 
-Working project to copy: `recipes/06-state-machine/`. One machine that builds and runs,
-carrying a history marker, a guard, an internal transition, an event the machine sends
-itself, `OnFinal` and a final observer. It resumes an interrupted cycle and starts a
-fresh one in the same run. Read it first; this page is the lookup
-for what it does not settle.
+A working project that shows every piece: `recipes/06-state-machine/`. One machine that
+builds and runs, carrying a history marker, a guard, an internal transition, an event
+the machine sends itself, `OnFinal` and a final observer. It resumes an interrupted cycle
+and starts a fresh one in the same run. A reference, not a starting point: a project
+gets its machine from the `"machines"` block of `design.json`, and this page is its
+lookup.
 
 ## What gets generated
 
@@ -50,7 +51,9 @@ state has no transition for it. A trigger the current state ignores is not an er
 **It does not report acceptance.** A state that refuses through a second, unguarded
 transition -- the shape `--example` shows -- takes the stimulus either way, so the
 trigger returns `true` whether the guard held or not. Report the outcome from the
-action the guarded transition calls, never from the trigger.
+action the guarded transition calls -- its `response_` call -- never from the trigger.
+That action runs inside the request handler that called the trigger, so the request is
+still open.
 
 **A machine's name becomes a C++ namespace**, so no class of yours may carry it. The
 generated application names its components after the service (`GateServiceProvider`)
@@ -59,15 +62,10 @@ and refuses a machine of that name; a class you add must not be named after a do
 ## Wiring it into a component
 
 **Do not type this by hand, and do not write a host component.** The provider that owns
-the machine is generated whole:
-
-```
-python3 <areg-sdk>/tools/agent/gen_skeleton.py --doc src/services/GateService.siml --machine src/services/Gate.fsml --app --mode ipc --force
-```
+the machine is generated whole, by `01-runbook.md` section 5.
 
 The action handler is a base of the provider, the machine is a member, `init_fsm` and
 `release_fsm` are already placed, and every action is declared with a `TODO(you)`.
-On Windows the interpreter is `python`, not `python3`; nothing else changes.
 `init_fsm(&comThread)` binds the machine's timers and events to that dispatcher; a
 machine that is never initialised accepts no stimulus and runs nothing.
 
@@ -78,12 +76,8 @@ requests that answer differently each get their own action.
 
 ## Writing the document
 
-**Do not write the XML. Describe the machine and generate it:**
-
-```bash
-python3 <areg-sdk>/tools/agent/gen_docs.py --template design.json
-python3 <areg-sdk>/tools/agent/build_project.py --spec design.json
-```
+**Do not write the XML. Describe the machine in `design.json` and generate it** with
+the same build command.
 
 The spec's `"machines"` names states, triggers, timers, events, guards and transitions;
 the tool assigns every `ID`, resolves every `To`, binds every guard operand to the
@@ -105,10 +99,11 @@ field for each of these -- and a document you were handed is read with the same 
 
 **State names are unique across the whole document, not per level.** Every level is
 flattened into one C++ enumeration, so a substate of one composite collides with a
-substate of another and with the top level. A `Kind="Start"` marker counts as a state:
-a nested level that also begins at one needs a different name for it -- `Start`,
-`BrewStart`, `RinseStart`. A collision is `error[3/RULE_STATE_NAME]`, reported by
-`check_contract.py` and refused by the generator.
+substate of another and with the top level. A level's start marker is a pseudo-state,
+like a History marker: the machine passes through it into the state `"initial"` names.
+Its name is still taken: `Start`, or `<Composite>Start` on a nested level. A collision
+is `error[3/RULE_STATE_NAME]`, reported by `check_contract.py` and refused by the
+generator.
 
 **Every name a state or a transition uses is declared in a list of its own**, and all
 of them are optional:
@@ -127,11 +122,10 @@ A name used but not declared is `error[46/RULE_UNRESOLVED_ELEMENT]`, and the mes
 names the kind it was looked up as, which names the list it is missing from.
 
 `gen_docs.py --example` prints a whole machine in this shape -- timers, triggers,
-actions, conditions, guards, a composite level and a final state. That is what you
-write; the XML is what `gen_docs.py` writes, and the `Kind="Start"` marker, every `ID`
-and the `To` of every transition are its work. What is still yours is the rule below.
+actions, conditions, guards, a composite level and a final state. What is still yours
+is the rule below.
 
-**A transition's target must be a sibling.** A transition cannot reach into or out of a composite: to leave a subtree,
+**A transition's target must be a sibling of the state that declares it.** A transition cannot reach into or out of a composite: to leave a subtree,
 put the transition on the composite, whose transitions fire from anywhere inside it.
 A `Kind="History"` marker is the one exception and exists for it -- a transition from
 outside a composite may name a marker in that composite's `StateList`, which is how a
@@ -144,12 +138,12 @@ resume re-enters where it left off. See "Re-entering a composite where it left o
 | `"kind": "normal"`, the default | a state the machine occupies |
 | `"kind": "final"` | the level stops here and reports through the final observer |
 | `"entry"` / `"exit"` | steps run on entering or leaving: an action, `start`/`stop <Timer>`, `send <Event>` |
-| a transition with `"to"` | leaves the state, runs its exit, then the target's entry |
-| a transition without `"to"` | runs its steps in place; the state is not left or re-entered |
+| a transition with `"to"` another state | leaves the state, runs its exit, then the target's entry |
+| a transition without `"to"`, or to its own state | runs its steps in place; the state is not left or re-entered |
 | `"on"` | the trigger, timer or event that fires it, read from those lists so it is never spelled twice |
 | `"do"` and `"set"` | run between the exit and the entry; `"set"` first, so an action sees it |
 
-`"initial"` becomes the level's `Kind="Start"` marker and the transition out of it.
+`"initial"` becomes the level's start marker and the transition out of it.
 
 A state may hold its own `"states"`. Its transitions then fire from anywhere inside
 that subtree, which is how one `power_off` trigger reaches every nested state at once.
@@ -159,7 +153,7 @@ that subtree, which is how one `power_off` trigger reaches every nested state at
 A composite records the substate it was left in, and a resume re-activates it.
 `Shallow` restores that direct substate, whose own children then start afresh; `Deep`
 restores the subtree down to the deepest state that was active. With nothing recorded
--- a first entry, or one after `release_fsm(true)` -- it descends the `Kind="Start"`
+-- a first entry, or one after `release_fsm(true)` -- it descends the Start
 chain. `init_fsm(thread, mode)` says how the top level is entered; `release_fsm(false)`
 keeps the record.
 
@@ -169,11 +163,11 @@ and another must resume, put a marker in the composite's `StateList` and point o
 resuming transition at it:
 
 ```json
-{"name": "MakingHistory", "kind": "history", "depth": "Shallow"}
+{"name": "RunHistory", "kind": "history", "depth": "Shallow"}
 ```
 
 A transition whose `"to"` is the marker resumes; one whose `"to"` is the composite
-descends its Start chain. So `order` targeting `MAKING` starts a fresh drink and
+descends its Start chain. So `start` targeting `RUNNING` begins a fresh job and
 `resume` targeting the marker continues the interrupted one, in one run.
 
 A document using a marker states `FormatVersion="1.2.0"`; one that does not stays
@@ -182,6 +176,11 @@ A document using a marker states `FormatVersion="1.2.0"`; one that does not stay
 **A restored state re-runs its `entry`.** That is what decides where the resume
 actions go: anything that must not happen twice belongs on the transition into the
 marker, not on the entry of the stage being resumed.
+
+**A phase a consumer watches is published from each state's `entry` by one action
+that takes it**: `{"call": "publish_phase", "args": {"phase": "lit:<Enum>::<Value>"}}`,
+whose one body calls the attribute's `set_`. A resume re-runs that entry; under
+`OnChange` the consumer hears it only if the value changed in between.
 
 ### Leaving a level when it finishes: `OnFinal`
 
@@ -214,25 +213,33 @@ substate a transition on it to `B2`.
 
 ### Reusing a whole machine: `Submachine`
 
-A state may host another `.fsml` instead of owning nested states: it carries one or
-the other, never both. The hosting state is entered through the imported machine's own
-`Start` chain, and **nothing calls the imported machine's triggers**, so an inner
-machine whose first state waits for a trigger stops there. Pair it with `final_event`.
+A state may host another machine instead of owning nested states, never both. The
+hosted machine is in the same design, or is a `.fsml` the project already holds and is
+not repeated in `"machines"`. The host names it by its path from the project root:
 
 ```json
 "submachines": [{"name": "Inner", "path": "src/services/Inner.fsml", "version": "1.0.0"}],
-"states": [{"name": "RUNNING", "submachine": "Inner", "final_event": "InnerDone"}]
+"states": [{"name": "RUNNING", "submachine": "Inner", "final_event": "RunDone"},
+           {"name": "RETRYING", "submachine": "Inner", "final_event": "RetryDone"}]
 ```
 
-The generated host carries a `static_assert` on the pinned `Version` that fails when
-the import moves past it. What else changes in the generated code:
+The build command is the same.
 
-- the host's constructor takes one extra `InnerActionHandler &` per hosting state, in
-  document order, so the host supplies the inner machine's actions
-- the host implements `InnerFSM::FinalObserver`, and `OnFinal` turns the inner machine
-  reaching Final into an event the host can transition on
-- the inner machine's triggers are forwarded through the host
-- `addStateMachine` is called once, naming only the importing document
+- **Each hosting state runs its own instance**, started at its initial state on entry
+  and stopped on exit. Its attributes keep their value between visits, so a count is
+  reset on its initial path.
+- **Its triggers are called on the host**: `mFsm.<trigger>(...)` reaches the active
+  instance, `mFsm.<trigger>_<state>(...)` one state's, as the worksheet spells them. A
+  host declaring the same trigger keeps only the second form.
+- **Reaching its `Final` raises the host's `final_event`**, which carries no outcome:
+  when the host must know how it ended, a hosted action records it and a host
+  condition reads it.
+- **The provider implements the hosted actions and conditions once**, beside the
+  host's; one body serves every instance. What differs between places belongs to the
+  host's transitions.
+
+A hosted document whose major version moves past the pinned `"version"` no longer
+compiles.
 
 Working project, hosting one machine from two states: `recipes/13-submachine/`.
 
@@ -296,8 +303,7 @@ Register it with `mFsm.set_final_observer(this)`. Where the project defines
 ## CMake
 
 `addStateMachine(<library> <the .fsml>)`, beside the `addServiceInterface` line and
-taking the same arguments. `build_project.py --spec` writes both, and a machine that
-imports others still needs only one call.
+taking the same arguments. `build_project.py --spec` writes both.
 
 ## Never
 
@@ -312,11 +318,14 @@ imports others still needs only one call.
 - Never target a `Kind="Start"`, nor a `Kind="History"` from inside its own level.
 - Never give two states one name, however deeply apart they sit. The commonest case is
   a nested level whose `Kind="Start"` marker is also called `Start`.
-- Never import a machine whose Start chain lands on a state that waits for a trigger.
-  Entering the hosting state will not send one, and the machine stops there.
 - Never expect `State/@History` to tell a fresh entry from a resume. It is on the state
   and applies to both; a `Kind="History"` marker is what tells them apart.
 - Never give an `Internal` transition a `To`, and never leave one off an `External`.
+- Never leave a trigger that carries a request without a transition in a state the
+  machine can be in. The stimulus is dropped, no action answers the caller, and the
+  consumer waits until its deadline for a response that was never sent. A state that
+  should turn the request down still needs its own transition, calling the action that
+  sends the refusal.
 
 ## The spelling, after a refusal
 
@@ -331,6 +340,8 @@ python3 <areg-sdk>/tools/schema_help.py State/@Kind --document fsml
 python3 <areg-sdk>/tools/schema_help.py --full tStateKind --document fsml
 python3 <areg-sdk>/tools/schema_help.py --list --document fsml
 ```
+
+On Windows the interpreter is `python`, not `python3`.
 
 The first gives where the element goes, every attribute with the values it accepts,
 and the children in order; the second one attribute; `--full` on a type name adds what

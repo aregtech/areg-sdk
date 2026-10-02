@@ -18,31 +18,45 @@ endif()
 list(APPEND AREG_COMPILER_OPTIONS /permissive-)
 
 get_property(_areg_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+# Debug is the only unoptimized configuration. MinSizeRel and RelWithDebInfo keep the code
+# generation and link time settings of Release, and take their own optimization level.
 if (_areg_multi_config)
     # Multi-config generator (Visual Studio): scope flags per-configuration using
-    # generator expressions so Release-only /O2 never bleeds into Debug builds.
+    # generator expressions so an optimization level never bleeds into a Debug build.
+    foreach(_areg_cfg IN ITEMS Release RelWithDebInfo MinSizeRel Debug)
+        macro_optimization_option("${_areg_cfg}" _areg_cfg_opt)
+        if (NOT "${_areg_cfg_opt}" STREQUAL "")
+            list(APPEND AREG_COMPILER_OPTIONS $<$<CONFIG:${_areg_cfg}>:${_areg_cfg_opt}>)
+        endif()
+        string(TOUPPER "${_areg_cfg}" _areg_cfg_name)
+        if (NOT "${_areg_cfg}" STREQUAL "Debug")
+            set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_${_areg_cfg_name} TRUE)
+            set(CMAKE_EXE_LINKER_FLAGS_${_areg_cfg_name}    "${CMAKE_EXE_LINKER_FLAGS_${_areg_cfg_name}} /OPT:REF /OPT:ICF")
+            set(CMAKE_SHARED_LINKER_FLAGS_${_areg_cfg_name} "${CMAKE_SHARED_LINKER_FLAGS_${_areg_cfg_name}} /OPT:REF /OPT:ICF")
+        endif()
+    endforeach()
+    unset(_areg_cfg)
+    unset(_areg_cfg_opt)
+    unset(_areg_cfg_name)
     list(APPEND AREG_COMPILER_OPTIONS
-        $<$<CONFIG:Release>:/O2>
-        $<$<CONFIG:Release>:/GL>
-        $<$<CONFIG:Release>:/Gy>
-        $<$<CONFIG:Release>:/fp:fast>
-        $<$<NOT:$<CONFIG:Release>>:/Od>
-        $<$<NOT:$<CONFIG:Release>>:/RTC1>
+        $<$<NOT:$<CONFIG:Debug>>:/GL>
+        $<$<NOT:$<CONFIG:Debug>>:/Gy>
+        $<$<NOT:$<CONFIG:Debug>>:/fp:fast>
+        $<$<CONFIG:Debug>:/RTC1>
         /c
     )
-    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
-    set(CMAKE_EXE_LINKER_FLAGS_RELEASE    "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /OPT:REF /OPT:ICF")
-    set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /OPT:REF /OPT:ICF")
 else()
     # Single-config generator (Ninja, NMake): CMAKE_BUILD_TYPE is reliable.
-    if ("${CMAKE_BUILD_TYPE}" MATCHES "Release")
-        list(APPEND AREG_COMPILER_OPTIONS /O2 /GL /Gy /fp:fast /c)
+    string(TOUPPER "${CMAKE_BUILD_TYPE}" _areg_cfg_name)
+    if (AREG_BUILD_OPTIMIZED)
+        list(APPEND AREG_COMPILER_OPTIONS ${AREG_OPTIMIZATION} /GL /Gy /fp:fast /c)
         set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
-        set(CMAKE_EXE_LINKER_FLAGS_RELEASE    "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /OPT:REF /OPT:ICF")
-        set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /OPT:REF /OPT:ICF")
+        set(CMAKE_EXE_LINKER_FLAGS_${_areg_cfg_name}    "${CMAKE_EXE_LINKER_FLAGS_${_areg_cfg_name}} /OPT:REF /OPT:ICF")
+        set(CMAKE_SHARED_LINKER_FLAGS_${_areg_cfg_name} "${CMAKE_SHARED_LINKER_FLAGS_${_areg_cfg_name}} /OPT:REF /OPT:ICF")
     else()
-        list(APPEND AREG_COMPILER_OPTIONS /Od /RTC1 /c)
+        list(APPEND AREG_COMPILER_OPTIONS ${AREG_OPTIMIZATION} /RTC1 /c)
     endif()
+    unset(_areg_cfg_name)
 endif()
 
 # Linker flags (-l is not necessary)

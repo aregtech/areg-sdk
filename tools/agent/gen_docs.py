@@ -63,7 +63,7 @@ def rule_number(name, band):
     return None
 
 import codegen_names  # noqa: E402
-from docmodel import (CONTAINERS, PREDEFINED, TYPE_KINDS,
+from docmodel import (TYPE_KINDS,
                       Refused, Vocabulary, Writer, described, esc, esc_text, fail,
                       gathering, named_list, refuse, reserve_params, spell, unique,
                       write_constants, write_datatypes, write_includes, write_method,
@@ -122,6 +122,20 @@ TYPE_KEYS = {
 STEP_KEYS = {'call': ('call', 'args'), 'send': ('send', 'args'), 'start': ('start',),
              'stop': ('stop',), 'set': ('set', 'to')}
 GUARD_KEYS = {'all': ('all',), 'any': ('any',), 'not': ('not',), 'call': ('call', 'args')}
+# The one shape the generator reads for a key. A key that takes more than one, such
+# as "value" or "default", is not here.
+SHAPES = dict(
+    [(key, (list, 'a list, [...]')) for key in (
+        'actions', 'all', 'answer', 'any', 'attributes', 'broadcasts', 'conditions',
+        'constants', 'declare', 'do', 'entry', 'events', 'exit', 'fields', 'includes',
+        'interfaces', 'machines', 'params', 'requests', 'responses', 'states', 'steps',
+        'submachines', 'timers', 'transitions', 'triggers', 'types', 'values')] +
+    [(key, (str, 'a string')) for key in (
+        'alias', 'answer_description', 'await', 'body', 'call', 'category', 'container',
+        'derives', 'description', 'final_event', 'header', 'implement', 'initial', 'key',
+        'kind', 'location', 'name', 'namespace', 'notify', 'object', 'of', 'on', 'path',
+        'return', 'send', 'stop', 'threading', 'to', 'type')] +
+    [(key, (dict, 'an object, {...}')) for key in ('datatypes', 'driver', 'set')])
 SINGULAR = {'attributes': 'attribute', 'requests': 'request', 'responses': 'response',
             'broadcasts': 'broadcast', 'constants': 'constant', 'includes': 'include',
             'params': 'parameter', 'answer': 'answer parameter', 'declare': 'type',
@@ -290,6 +304,11 @@ def build_siml(spec, shared_space, shared_names, prefix=''):
         for entry in requests:
             extra = ''
             if entry.get('response'):
+                if not isinstance(entry['response'], str):
+                    fail('request "{}" of {} writes "response" out in place, and it '
+                         'is the name of a response declared beside the request. The '
+                         'parameters of a response written in place go under '
+                         '"answer"'.format(entry['name'], where))
                 if entry['response'] not in set(r['name'] for r in responses):
                     fail('request "{}" of {} names response "{}", which is not declared'
                          .format(entry['name'], where, entry['response']))
@@ -941,11 +960,24 @@ def refuse_key(key, allowed, where):
                  ', '.join(allowed)))
 
 
+def shape_of(value):
+    """What a JSON value is, in the words a refusal uses."""
+    if isinstance(value, bool):
+        return 'true or false'
+    if isinstance(value, (int, float)):
+        return 'a number'
+    return {str: 'a string', list: 'a list', dict: 'an object'}.get(type(value), 'null')
+
+
 def check_keys(node, allowed, where):
     if isinstance(node, dict):
         for key in node:
             if key not in allowed:
                 refuse_key(key, allowed, where)
+            shape = SHAPES.get(key)
+            if shape and node[key] is not None and not isinstance(node[key], shape[0]):
+                fail('{} gives "{}" as {}, and it is {}.'
+                     .format(where, key, shape_of(node[key]), shape[1]))
 
 
 def listed(owner, key):
@@ -1135,18 +1167,41 @@ def check_unique_names(project):
         check_state_names(spec.get('states'), where)
 
 
-def check_codegen(documents, prefix):
+def imported_documents(project, documents, prefix):
+    """The .fsml a machine hosts that this design does not write: each is read from
+    the project, where its "path" is spelled from."""
+    written = set(os.path.normpath(prefix + name) for name, _ in documents)
+    found = []
+    for spec in listed(project, 'machines'):
+        for entry in listed(spec, 'submachines'):
+            path = entry.get('path')
+            if not isinstance(path, str) or os.path.normpath(path) in written:
+                continue
+            if not os.path.isfile(path):
+                fail('machine "{}" hosts "{}" from {}, which is neither a machine of this '
+                     'design nor a file under the project root {}. Name the .fsml that '
+                     'exists, spelled from the project root, or add the machine to '
+                     '"machines".'.format(spec.get('name', '?'), entry.get('name', '?'),
+                                          path, os.getcwd()))
+            with open(path, encoding='utf-8') as handle:
+                found.append((os.path.normpath(path).replace(os.sep, '/'), handle.read()))
+    return list(dict(found).items())
+
+
+def check_codegen(documents, prefix, imported=()):
     """codegen.jar generates every document built from this design, before any is
     written. What it refuses is reported in its own words: a name C++ cannot carry, a
-    keyword, two attributes with one accessor."""
+    keyword, two attributes with one accessor. An imported document is checked with
+    the documents that host it."""
     import hashlib
     import tempfile
-    digest = hashlib.sha1('\n'.join(name + '\n' + text for name, text in documents)
+    everything = [(prefix + name, text) for name, text in documents] + list(imported)
+    digest = hashlib.sha1('\n'.join(name + '\n' + text for name, text in everything)
                           .encode('utf-8')).hexdigest()
     holder = os.path.join(tempfile.gettempdir(), 'areg-gen-docs', digest)
     paths = []
-    for name, text in documents:
-        path = os.path.abspath(os.path.join(holder, prefix, name))
+    for name, text in everything:
+        path = os.path.abspath(os.path.join(holder, name))
         os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, 'w', encoding='utf-8', newline='\n') as handle:
             handle.write(text)
@@ -1247,6 +1302,59 @@ def settle(node, skipped):
     return node
 
 
+def settle_awaits(spec):
+    """Rewrites a step awaiting a consumer method name to the name of what it receives.
+
+    response_<r>, broadcast_<b>, on_<attr>_update and <attr>_update each name one thing.
+    A name that is not a string is left to check_shape() to refuse.
+    """
+    def names(iface, key, wanted=lambda entry: True):
+        return [entry.get('name') for entry in listed(iface, key)
+                if isinstance(entry.get('name'), str) and wanted(entry)]
+
+    for iface in listed(spec, 'interfaces'):
+        answers = set(names(iface, 'responses'))
+        answers |= set(names(iface, 'requests',
+                             lambda entry: 'answer' in entry or entry.get('response')))
+        broadcasts = set(names(iface, 'broadcasts'))
+        attributes = dict((name.replace('_', '').lower(), name)
+                          for name in names(iface, 'attributes'))
+        for step in listed(iface, 'steps'):
+            target = step.get('await')
+            if not isinstance(target, str) or target in answers | broadcasts \
+                    or target in attributes.values():
+                continue
+            meant = None
+            if target.startswith('response_') and target[9:] in answers:
+                meant = target[9:]
+            elif target.startswith('broadcast_') and target[10:] in broadcasts:
+                meant = target[10:]
+            elif target.endswith('_update'):
+                bare = target[3:-7] if target.startswith('on_') else target[:-7]
+                meant = attributes.get(bare.replace('_', '').lower())
+            if meant is not None:
+                step['await'] = meant
+
+
+def settle_start(level, owner):
+    """Rewrites a state of kind "start" or "initial" into its level's "initial".
+
+    The level is a machine or a state holding "states". A second start, or one the
+    level's "initial" does not name, is refused.
+    """
+    for state in listed(level, 'states'):
+        if str(state.get('kind', '')).lower() in ('start', 'initial'):
+            if level.get('initial') in (None, '', state.get('name')):
+                level['initial'] = state.get('name')
+                del state['kind']
+            else:
+                fail('state "{}" is marked "kind": "{}", and the "initial" of "{}" names '
+                     '"{}". The level\'s "initial" alone names the state it starts in: drop '
+                     'the kind'.format(state.get('name'), state['kind'], owner,
+                                       level.get('initial')))
+        settle_start(state, state.get('name'))
+
+
 def load_spec(path):
     """One spec file as the generator reads it, and how many samples it left untouched."""
     try:
@@ -1258,6 +1366,9 @@ def load_spec(path):
         fail('{} is not a spec object'.format(path))
     skipped = []
     spec = settle(raw, skipped)
+    settle_awaits(spec)
+    for machine in listed(spec, 'machines'):
+        settle_start(machine, machine.get('name'))
     if NOTE in raw and not spec:
         fail('{} is still the template: nothing in it is filled. Give each document the '
              'task needs a "name" and its entries, and delete a section it does not need.'
@@ -1609,6 +1720,17 @@ def check_sequences(project):
                         fail('{} sends {}({}={}), and "{}" has no such field. It has: {}'
                              .format(here, send, entry.get('name'), json.dumps(given),
                                      entry.get('type'), ', '.join(fields)))
+                    # A qualifier is the C++ spelling of the type, or a trailing part of it.
+                    if fields and isinstance(given, str) and '::' in given \
+                            and not given.startswith(('expr:', 'raw:')):
+                        declared = str(entry.get('type'))
+                        spelt = declared if '::' in declared \
+                            else '{}::{}'.format(spec.get('name'), declared)
+                        qualifier, field = given.rsplit('::', 1)
+                        if qualifier != spelt and not spelt.endswith('::' + qualifier):
+                            fail('{} gives "{}" for a "{}", and "{}" is not that type. C++ '
+                                 'spells this field "{}::{}"'
+                                 .format(here, given, declared, qualifier, spelt, field))
                 if isinstance(wait, bool) or not isinstance(wait, int) or wait < 0:
                     fail('{}: wait is a number of milliseconds'.format(here))
                 if target is not None and wait:
@@ -1789,74 +1911,6 @@ def otherwise_visible(interface):
     return offered
 
 
-def step_holds(step, answered):
-    """What a step waits for before the next begins: a name, milliseconds, or None.
-
-    A step that sends a request with an answer and names nothing else waits for that
-    answer. A step that waits for nothing ends at once, in the same dispatch.
-    """
-    target, wait = step.get('await'), step.get('wait') or 0
-    if target is None and not wait and step.get('send') in answered:
-        return step.get('send')
-    return target if target is not None else (wait or None)
-
-
-def late_awaits(project, key='attributes'):
-    """Steps that await a message an earlier request may send while another step holds.
-
-    A message arriving while the current step waits for something else is dropped
-    there. A step that sends nothing and awaits one therefore misses what an earlier
-    request caused when a step between them held for something else. A step that
-    awaits the same message receives it, and a step that ends at once holds nothing.
-    Returns (interface, step, message, the holding step, what it holds for, and
-    whether that is the answer to its own request).
-    """
-    found = []
-    for interface in project.get('interfaces') or []:
-        steps = interface.get('steps') if isinstance(interface, dict) else None
-        if not isinstance(steps, list):
-            continue
-        steps = [step for step in steps if isinstance(step, dict)]
-        targets = set(entry.get('name') for entry in listed(interface, key))
-        answered = set(entry.get('name') for entry in listed(interface, 'requests')
-                       if 'answer' in entry or entry.get('response'))
-        for index, step in enumerate(steps):
-            target = step.get('await')
-            if step.get('send') is not None or target not in targets:
-                continue
-            holder = None
-            for earlier in reversed(steps[:index]):
-                held = step_holds(earlier, answered)
-                if held == target:
-                    break
-                if held is not None and holder is None:
-                    holder = (earlier.get('name'), held, held == earlier.get('send'))
-                if earlier.get('send') is not None and holder is not None:
-                    found.append((interface.get('name', '?'), step.get('name'), target)
-                                 + holder)
-                    break
-    return found
-
-
-def late_remedy(held):
-    """What a late await is changed to, given what the earlier step holds for.
-
-    A step holding for an answer leaves the request's own step free to await the
-    attribute. A step holding for a time does not: the await goes ahead of it.
-    """
-    if isinstance(held, int):
-        return ('the awaiting step comes before the wait and its check stay()s until '
-                'the wait is over')
-    return 'the step that sends the request awaits the attribute instead'
-
-
-def holding(step, held, answer):
-    """How a note names what a holding step waits for."""
-    if isinstance(held, int):
-        return '"{}" waits {} ms'.format(step, held)
-    return '"{}" waits for {}"{}"'.format(step, 'the answer to ' if answer else '', held)
-
-
 def state_mirrors(project, spec):
     """Attributes that publish this machine's states, and the states they cannot say.
 
@@ -1922,6 +1976,24 @@ def trigger_coverage(spec):
 
     walk(spec.get('states'), spec.get('initial'), True)
     return [(name, answered[name]) for name in names]
+
+
+def self_transitions(spec):
+    """(state, trigger) of each transition to its own state, where that state has
+    "entry" or "exit" steps, which such a transition does not run."""
+    found = []
+
+    def walk(states):
+        for state in states or []:
+            label = state.get('name')
+            if label and (state.get('entry') or state.get('exit')):
+                found.extend((label, move.get('on', '?'))
+                             for move in state.get('transitions') or []
+                             if move.get('to') == label)
+            walk(state.get('states'))
+
+    walk(spec.get('states'))
+    return found
 
 
 def check_identities(documents):
@@ -1992,6 +2064,8 @@ EXAMPLE = {
                          "values": [600, 1200, 2000]}],
              "answer": [{"name": "accepted", "type": "bool"},
                         {"name": "reason", "type": "String"}]},
+            {"name": "widen", "description": "Open the gate further by one motor step.",
+             "params": [{"name": "by", "type": "uint32", "values": [100, 200]}]},
             {"name": "close", "description": "Close the gate.",
              "params": [{"name": "by", "type": "String"}]}
         ],
@@ -1999,6 +2073,11 @@ EXAMPLE = {
                         "params": [{"name": "reading", "type": "GateTypes::Reading"}]}],
         "driver": {"connect_seconds": 10, "reconnect_seconds": 10},
         "steps": [{"name": "open_wide", "send": "open", "args": {"width": 1200}},
+                  {"name": "widen", "send": "widen", "args": {"by": 200}, "await": "Width"},
+                  {"name": "widen_more", "send": "widen", "args": {"by": 100},
+                   "await": "Width",
+                   "description": "Wider by 300 in all: 300 is not a value of by, so it "
+                                  "is two steps."},
                   {"name": "hold", "wait": 500},
                   {"name": "close_gate", "send": "close",
                    "args": {"by": "night shift"}, "await": "Width",
@@ -2138,7 +2217,7 @@ TEMPLATE = {
                "sends every set. A request with answer also declares its response, of the same",
                "name; without answer it has none. A broadcast reaches every subscribed consumer.",
                "A request, response or broadcast name is kept as written after its prefix, so",
-               "write it snake_case: insert_coin is request_insert_coin. Attributes are converted.",
+               "write it snake_case: open_valve is request_open_valve. Attributes are converted.",
                "A parameter name used in several answers and broadcasts has one type in all.",
                "values: the legal values of a parameter, when they are a set and the type does",
                "not already say so. A step that sends one outside it is refused here rather",
@@ -2175,11 +2254,17 @@ TEMPLATE = {
             NOTE: ["For a consumer that drives a scenario and then exits, branching included;",
                    "delete it only for one that stays up and reacts. The generator writes the",
                    "sequencing, and each step that awaits something gets one marker for its check.",
-                   "send: a request, with args {parameter: C++ value}. await: a response, a",
-                   "broadcast or an attribute; a request with an answer awaits its response",
-                   "unless the step names another. wait: milliseconds, instead of await.",
+                   "send: a request, with args {parameter: C++ value}; an enum value is spelled",
+                   "whole, as \"GateTypes::Quality::Good\". await: a response, a broadcast or an",
+                   "attribute; a request with an answer awaits its response unless the step",
+                   "names another. wait: milliseconds, instead of await.",
+                   "Every step sends, awaits or waits, and one that only awaits is a step too;",
+                   "a check alone is not a step.",
                    "Steps run in order and the run exits 0 after the last. A check calls fail(),",
-                   "stay() to wait for the next arrival, or go_to(Step::Name) for a loop."],
+                   "stay() to wait for the next arrival, or go_to(Step::Name) for a loop.",
+                   "One step per thing the task asks to prove, not one per message. A step",
+                   "starting work which takes time awaits the update saying it finished, before",
+                   "a later step or a go_to() sends again."],
             "name": "", "send": "", "args": {}, "await": "", "wait": 0, "description": ""
         }]
     }],
@@ -2197,7 +2282,8 @@ TEMPLATE = {
                "action performs an effect, and every decision is a guard here.",
                "Every name a state uses is declared in a list of this machine. A trigger, a",
                "timer and an event never share a name; a state name is unique across levels.",
-               "attributes: what guards compare and set assigns, each with its initial value.",
+               "attributes: what guards compare and set assigns, each with its initial value;",
+               "a contract attribute of the same name is another value, set by provider code.",
                "conditions: a question a guard asks the code. actions: an effect the code runs."],
         "name": "", "description": "",
         "types": [],
@@ -2270,51 +2356,16 @@ def review(project, skipped):
               'The document is written and this asks for no change: an entry left as '
               'the template spells it is not part of the design.'
               .format(skipped, 'y' if skipped == 1 else 'ies'))
-    # One note per finding and one explanation for all of them: the same paragraph
-    # under every name is re-sent with every later request of the conversation.
-    late, remedy = {}, {}
-    for owner, step, attribute, *held in late_awaits(project):
-        late.setdefault(owner, []).append('"{}" awaits "{}" while {}'
-                                          .format(step, attribute, holding(*held)))
-        remedy.setdefault(owner, set()).add(late_remedy(held[1]))
-    for owner in sorted(late):
-        print('  note  {}: {}.'.format(owner, '; '.join(late[owner])))
-        print('        The document is written and this asks for no change on its own. '
-              'An update arriving while another step waits is dropped there, and the '
-              'awaiting step sees the next one, which is what the sequence wants '
-              'whenever later updates follow. Leave it as written unless the dropped '
-              'update can be the last one; if it can, {}. A run that stalls here names '
-              'the dropped update and the step it arrived on.'
-              .format('; '.join(sorted(remedy[owner]))))
-    # The same shape on a broadcast, which is worse: an attribute sends another update
-    # the next time it is set, a broadcast never comes again. Whether it is a fault
-    # depends on something no design states -- where the provider sends it -- so this
-    # names the shape and the one question that settles it, once, for every row.
-    once = {}
-    for owner, step, message, *held in late_awaits(project, 'broadcasts'):
-        once.setdefault(owner, []).append('"{}" awaits broadcast "{}" while {}'
-                                          .format(step, message, holding(*held)))
-    for owner in sorted(once):
-        print('  note  {}: {}.'.format(owner, '; '.join(once[owner])))
-        print('        The document is written and one question settles each row: does '
-              'the provider send that broadcast while handling the earlier request? '
-              'If it does, the broadcast arrives before this step begins, is dropped, '
-              'and never comes again, because a broadcast is delivered once: await it '
-              'on the step that sends the request instead. If a timer or a state the '
-              'machine sits in separates them, the shape is correct and this asks for '
-              'no change. A run that stalls here names the dropped message and the '
-              'step it arrived on.')
     unread = {}
     for spec in project['machines']:
         for name in unread_attributes(spec):
             unread.setdefault(spec.get('name', '?'), []).append(name)
     for owner in sorted(unread):
-        print('  note  {}: attribute(s) {} written and never read by a guard, a '
-              'condition or an argument.'
+        print('  note  {}: attribute(s) {} written and passed to no guard, condition or '
+              'action as an argument.'
               .format(owner, ', '.join('"%s"' % n for n in unread[owner])))
-        print('        Data no rule of the machine reads belongs to the component '
-              'that computes it, not to the machine: take the attribute out of the '
-              'machine, or leave it if a rule still to be written reads it.')
+        print('        If no condition or action body reads it either, it belongs to the '
+              'component that computes it: take the attribute out of the machine.')
     for spec in project['machines']:
         shared = shared_request_actions(project, spec)
         if shared:
@@ -2340,6 +2391,12 @@ def review(project, skipped):
                       'already held, which notifies nobody, so a consumer waiting for '
                       'that update waits for ever. Declare the attribute '
                       'Notify="Always".'.format(notify))
+        for state, trigger in self_transitions(spec):
+            print('  note  {}: state "{}" goes to itself on "{}". A transition to its own '
+                  'state runs in place: its "exit" and "entry" do not run, so a timer the '
+                  'entry starts is not started again. Put what must run again in "do", '
+                  'or give such a timer "repeat": 0.'
+                  .format(spec.get('name', '?'), state, trigger))
         coverage = trigger_coverage(spec)
         if coverage:
             print('  table {}: which states answer each trigger (* the initial state, '
@@ -2427,6 +2484,7 @@ def main():
         args.outdir.replace(os.sep, '/').rstrip('/') + '/'
     documents = build_all(project, prefix)
     check_identities(documents)
+    imported = imported_documents(project, documents, prefix)
 
     if args.review:
         # Every note the build prints, at the point the design is still one file to
@@ -2434,13 +2492,13 @@ def main():
         # before the refusal so that one review answers everything the design is
         # asked, and one edit can settle all of it.
         review(project, skipped)
-        check_codegen(documents, prefix)
+        check_codegen(documents, prefix, imported)
         print('  reviewed {} document(s) of {} spec(s). Nothing was written. Build the '
               'project with build_project.py --spec.'
               .format(len(documents), len(specs)))
         return 0
 
-    check_codegen(documents, prefix)
+    check_codegen(documents, prefix, imported)
 
     try:
         os.makedirs(args.outdir, exist_ok=True)

@@ -55,7 +55,7 @@ namespace
         , {"-i, --install   : Command to install Log Collector as a service. Valid only for Windows OS. Usage: \'logcollector --install\'"}
         , {"-l, --load      : Command to initialize from specified file. Used to start application. Usage: \'logcollector --load=<path-to-init-file>\'"}
         , {"-n, --instances : Command option to display list of connected instances. Used in console application. Usage: --instances"}
-        , {"-o, --scope     : Command to update log scope priority. Used in console application. Usage (\'*\' can be a cookie number): --scope *::areg_base_NESocket=NOTSET"}
+        , {"-o, --scope     : Command to update log scope priority. Used in console application. Usage (\'*\' can be a cookie number): --scope *::areg_base_Socket=NOTSET"}
         , {"-p, --pause     : Command option to pause connection. Used in console application. Usage: --pause"}
         , {"-q, --quit      : Command option to stop Log Collector and quit application. Used in console application. Usage: --quit"}
         , {"-r, --restart   : Command option to restart connection. Used in console application. Usage: --restart"}

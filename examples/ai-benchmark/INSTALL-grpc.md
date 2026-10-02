@@ -28,6 +28,17 @@ sudo apt install -y build-essential cmake pkg-config \
                     libgrpc++-dev protobuf-compiler-grpc libprotobuf-dev protobuf-compiler
 ```
 
+`libgrpc++-dev` ships `gRPCConfig.cmake`, but `libprotobuf-dev` ships no protobuf config
+package, so `find_package(Protobuf CONFIG)` fails. Add one that forwards to the system
+protobuf; nothing is compiled:
+
+```bash
+examples/ai-benchmark/install-protobuf-cmake-config.sh           # /usr/local, with sudo
+examples/ai-benchmark/install-protobuf-cmake-config.sh --user    # ~/.local, no sudo
+```
+
+It ends with the check [below](#check-it) and exits non-zero unless both print `1`.
+
 **Fedora, RHEL and derivatives**
 
 ```bash

@@ -13,9 +13,25 @@
  * \brief       Areg Platform Client Connection class declaration
  ************************************************************************/
 #include "areg/ipc/ClientConnection.hpp"
+#include "areg/base/private/SocketLiveness.hpp"
 
 #include "areg/base/SocketDefs.hpp"
 #include "areg/component/ServiceDefs.hpp"
+#include "areg/appbase/Application.hpp"
+#include "areg/persist/ConfigManager.hpp"
+
+namespace
+{
+    // Returns how long sent data may stay unacknowledged: the refusal limit, or the keepalive time when it is unlimited.
+    uint32_t _unacked_limit_ms(uint32_t refusalMs) noexcept
+    {
+        if (refusalMs < areg::SEND_REFUSAL_UNLIMITED)
+            return refusalMs;
+
+        const uint32_t keepalive{ areg::Application::config_manager().network_keepalive() };
+        return (keepalive < areg::SOCKET_KEEPALIVE_MAX_SEC ? keepalive : areg::SOCKET_KEEPALIVE_MAX_SEC) * 1'000u;
+    }
+}
 
 namespace areg {
 
@@ -58,6 +74,7 @@ bool ClientConnection::create_socket(const String & hostName, uint16_t portNr)
         areg::set_send_size(mClientSocket.handle(), mSockSendBuf);
         areg::set_recv_size(mClientSocket.handle(), mSockRecvBuf);
         areg::set_send_timeout(mClientSocket.handle(), mSockSendTimeoutMs);
+        areg::set_send_refusal(mClientSocket.handle(), _unacked_limit_ms(mSockSendTimeoutMs));
         areg::socket_set_no_delay(mClientSocket.handle());
     }
 
@@ -72,6 +89,7 @@ bool ClientConnection::create_socket()
         areg::set_send_size(mClientSocket.handle(), mSockSendBuf);
         areg::set_recv_size(mClientSocket.handle(), mSockRecvBuf);
         areg::set_send_timeout(mClientSocket.handle(), mSockSendTimeoutMs);
+        areg::set_send_refusal(mClientSocket.handle(), _unacked_limit_ms(mSockSendTimeoutMs));
         areg::socket_set_no_delay(mClientSocket.handle());
     }
 
@@ -86,6 +104,7 @@ bool ClientConnection::create_socket_fd()
         areg::set_send_size(mClientSocket.handle(), mSockSendBuf);
         areg::set_recv_size(mClientSocket.handle(), mSockRecvBuf);
         areg::set_send_timeout(mClientSocket.handle(), mSockSendTimeoutMs);
+        areg::set_send_refusal(mClientSocket.handle(), _unacked_limit_ms(mSockSendTimeoutMs));
     }
 
     return mClientSocket.is_valid();

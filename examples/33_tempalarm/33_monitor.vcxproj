@@ -39,11 +39,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="monitor\src\MonitorComponent.cpp" />
     <ClCompile Include="monitor\src\main.cpp" />
+    <ClCompile Include="monitor\src\TempMonitorServiceProvider.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="monitor\src\MonitorComponent.hpp" />
+    <ClInclude Include="monitor\src\TempMonitorServiceProvider.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

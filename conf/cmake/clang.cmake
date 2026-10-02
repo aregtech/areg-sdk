@@ -10,32 +10,52 @@ if (AREG_PLATFORM_WINDOWS)
     get_property(_areg_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
     if (_areg_multi_config)
         # Multi-config generator (Visual Studio + ClangCL): scope flags per-configuration.
+        foreach(_areg_cfg IN ITEMS Release RelWithDebInfo MinSizeRel Debug)
+            if ("${_areg_cfg}" STREQUAL "Release")
+                # ClangCL is given the MSVC level by CMake. Areg builds Release at -O3 here.
+                set(_areg_cfg_opt -O3)
+            elseif ("${_areg_cfg}" STREQUAL "Debug")
+                set(_areg_cfg_opt -Od)
+            else()
+                macro_optimization_option("${_areg_cfg}" _areg_cfg_opt)
+            endif()
+            if (NOT "${_areg_cfg_opt}" STREQUAL "")
+                list(APPEND AREG_COMPILER_OPTIONS $<$<CONFIG:${_areg_cfg}>:${_areg_cfg_opt}>)
+            endif()
+        endforeach()
+        unset(_areg_cfg)
+        unset(_areg_cfg_opt)
         list(APPEND AREG_COMPILER_OPTIONS
-            $<$<CONFIG:Release>:-O3>
-            $<$<CONFIG:Release>:-ffunction-sections>
-            $<$<CONFIG:Release>:-fdata-sections>
-            $<$<NOT:$<CONFIG:Release>>:-Od>
-            $<$<NOT:$<CONFIG:Release>>:-RTC1>
+            $<$<NOT:$<CONFIG:Debug>>:-ffunction-sections>
+            $<$<NOT:$<CONFIG:Debug>>:-fdata-sections>
+            $<$<CONFIG:Debug>:-RTC1>
         )
         if (NOT CMAKE_CROSSCOMPILING)
             if (AREG_ARCH_NATIVE)
                 list(APPEND AREG_COMPILER_OPTIONS
-                    $<$<CONFIG:Release>:-march=native>
-                    $<$<CONFIG:Release>:-mtune=native>
+                    $<$<NOT:$<CONFIG:Debug>>:-march=native>
+                    $<$<NOT:$<CONFIG:Debug>>:-mtune=native>
                 )
             elseif ("${AREG_ARCH}" STREQUAL "${_proc_x86}" OR "${AREG_ARCH}" STREQUAL "${_proc_x64}")
                 # Portable SSE4.2 baseline, keeps hardware CRC32C (MathDefs.hpp).
                 macro_check_sse42(AREG_SSE42_HW)
                 if (AREG_SSE42_HW)
-                    list(APPEND AREG_COMPILER_OPTIONS $<$<CONFIG:Release>:-msse4.2>)
+                    list(APPEND AREG_COMPILER_OPTIONS $<$<NOT:$<CONFIG:Debug>>:-msse4.2>)
                 endif()
             endif()
         endif()
         set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO TRUE)
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_MINSIZEREL TRUE)
     else()
         # Single-config generator: CMAKE_BUILD_TYPE is reliable.
-        if ("${CMAKE_BUILD_TYPE}" MATCHES "Release")
-            list(APPEND AREG_COMPILER_OPTIONS -O3 -ffunction-sections -fdata-sections)
+        # ClangCL is given the MSVC level by CMake. Areg builds Release at -O3 here.
+        set(_areg_cl_opt ${AREG_OPTIMIZATION})
+        if ("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
+            set(_areg_cl_opt -O3)
+        endif()
+        if (AREG_BUILD_OPTIMIZED)
+            list(APPEND AREG_COMPILER_OPTIONS ${_areg_cl_opt} -ffunction-sections -fdata-sections)
             if (NOT CMAKE_CROSSCOMPILING)
                 if (AREG_ARCH_NATIVE)
                     list(APPEND AREG_COMPILER_OPTIONS -march=native -mtune=native)
@@ -51,6 +71,7 @@ if (AREG_PLATFORM_WINDOWS)
         else()
             list(APPEND AREG_COMPILER_OPTIONS -Od -RTC1 -c)
         endif()
+        unset(_areg_cl_opt)
     endif()
 
     # Win32 API
@@ -68,8 +89,8 @@ if (AREG_PLATFORM_WINDOWS)
 
 else()
 
-    if ("${CMAKE_BUILD_TYPE}" MATCHES "Release")
-        list(APPEND AREG_COMPILER_OPTIONS -O3 -ffunction-sections -fdata-sections -fvisibility=hidden "$<$<COMPILE_LANGUAGE:CXX>:-fvisibility-inlines-hidden>")
+    if (AREG_BUILD_OPTIMIZED)
+        list(APPEND AREG_COMPILER_OPTIONS ${AREG_OPTIMIZATION} -ffunction-sections -fdata-sections -fvisibility=hidden "$<$<COMPILE_LANGUAGE:CXX>:-fvisibility-inlines-hidden>")
         if (NOT CMAKE_CROSSCOMPILING)
             if (AREG_ARCH_NATIVE)
                 list(APPEND AREG_COMPILER_OPTIONS -march=native -mtune=native)
@@ -83,7 +104,7 @@ else()
         endif()
         set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
     else()
-        list(APPEND AREG_COMPILER_OPTIONS -O0 -g3)
+        list(APPEND AREG_COMPILER_OPTIONS ${AREG_OPTIMIZATION} -g3)
     endif()
 
     # POSIX API
@@ -102,7 +123,7 @@ else()
     list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0)
     # Linker flags (-l is not necessary)
     if (AREG_PLATFORM_MACOS)
-        if ("${CMAKE_BUILD_TYPE}" MATCHES "Release")
+        if (AREG_BUILD_OPTIMIZED)
             list(APPEND AREG_LDFLAGS -Wl,-dead_strip m pthread)
             set(AREG_LDFLAGS_STR  "-Wl,-dead_strip -lm -lpthread")
         else()
@@ -115,7 +136,7 @@ else()
         endif()
         set(AREG_COMPILER_VERSION -stdlib=libc++)
     else()
-        if ("${CMAKE_BUILD_TYPE}" MATCHES "Release")
+        if (AREG_BUILD_OPTIMIZED)
             list(APPEND AREG_LDFLAGS -Wl,--gc-sections -Wl,-O1 stdc++ m pthread rt)
             set(AREG_LDFLAGS_STR  "-Wl,--gc-sections -Wl,-O1 -lstdc++ -lm -lpthread -lrt")
         else()

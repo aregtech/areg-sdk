@@ -2,6 +2,7 @@
 """Read a benchmark run from its Claude Code transcript, request by request.
 
     python3 analyze_run.py <run-dir>
+    python3 analyze_run.py <run-dir> --brief
     python3 analyze_run.py <run-dir> --sdk <areg-sdk>
 
 <run-dir> is what run-benchmark.sh writes: result.json, meta.txt, and the project in
@@ -17,7 +18,8 @@ fallback       a read of SDK internals: tools/agent/*.py source, conf/cmake/,
 
 The session id comes from result.json. When that file is missing or empty the
 transcript is found from the run directory path instead, and wall time is taken
-from the transcript timestamps. Prices are Sonnet 5 list prices.
+from the transcript timestamps. Prices are the Sonnet 5 list prices, which Sonnet 5.5
+shares.
 """
 import argparse
 import collections
@@ -34,7 +36,7 @@ import tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
-# Sonnet 5 list prices per million tokens. A cache write costs 2.50 at the 5-minute
+# Sonnet 5 and Sonnet 5.5 list prices per million tokens. A cache write costs 2.50 at the 5-minute
 # TTL and 4.00 at the 1-hour one, and the harness picks the TTL, so two runs at
 # different tiers are 60% apart on that line for a reason no tree change explains.
 PRICE_IN, PRICE_READ, PRICE_OUT = 2.00, 0.20, 10.00
@@ -196,6 +198,43 @@ def find_transcript(run, sid):
     return max(found, key=os.path.getmtime)
 
 
+def cold_price(tot, first_read, aside):
+    """The run priced as a cold start with every write at the 1-hour tier, in dollars."""
+    base = (tot["input_tokens"] * PRICE_IN + tot["cache_read_input_tokens"] * PRICE_READ +
+            tot["output_tokens"] * PRICE_OUT)
+    warm = first_read * (PRICE_W1 - PRICE_READ)
+    return (base + (tot["w5"] + tot["w1"]) * PRICE_W1 + warm) / 1e6 + aside
+
+
+def cold_cost(run):
+    """(cost cold @1h, API requests) of a run directory, or None without its transcript."""
+    result = read_result(run)
+    tr = find_transcript(run, result.get("session_id"))
+    if not tr:
+        return None
+    seen, tot, first = set(), collections.Counter(), None
+    for e in rows(tr):
+        m = e.get("message")
+        if not isinstance(m, dict) or e.get("type") != "assistant" or m.get("id") in seen:
+            continue
+        seen.add(m.get("id"))
+        u = m.get("usage") or {}
+        if first is None:
+            first = u.get("cache_read_input_tokens") or 0
+        for k in ("input_tokens", "output_tokens", "cache_read_input_tokens"):
+            tot[k] += u.get(k) or 0
+        tier = u.get("cache_creation") or {}
+        w5 = tier.get("ephemeral_5m_input_tokens") or 0
+        w1 = tier.get("ephemeral_1h_input_tokens") or 0
+        tot["w5"] += w5
+        tot["w1"] += w1 if (w5 or w1) else u.get("cache_creation_input_tokens") or 0
+    if not seen:
+        return None
+    aside = sum(v.get("costUSD") or 0 for v in (result.get("modelUsage") or {}).values()
+                if "sonnet" not in str(v.get("canonicalModel") or ""))
+    return cold_price(tot, first or 0, aside), len(seen)
+
+
 def span_minutes(path):
     """Wall time from the first and last timestamped row of a transcript."""
     stamps = [e.get("timestamp") for e in rows(path) if e.get("timestamp")]
@@ -287,13 +326,16 @@ BUILD_CALL = re.compile(r"build_project\.py|cmake\s+--build|\bmake\b")
 SCEN_CALL = re.compile(r"run_scenarios\.py")
 # build_project.py --run chains run_scenarios.py as its last step, and that is the
 # spelling the documentation gives, so a run that never types run_scenarios.py still
-# runs the scenarios. The step is reached only when every step before it passed, and
-# build_project.py prints its header before starting it, so the call's own output is
-# what says whether it ran.
+# runs the scenarios. The step is reached only when every step before it passed, so
+# the call ran them unless its output names an earlier step as the one that failed.
+# An output cut by tail may have lost the "== scenarios:" header, but not that line.
 BUILD_RUN = re.compile(r"build_project\.py(?=.*\s--run\b)")
 SCEN_STEP = re.compile(r"^==\s*scenarios:", re.M)
-COUNTING = re.compile(r"\bwc\b|\bdu\b|--stat\b|\bcloc\b|stat\s+-c|\bfind\b.*-name.*\|",
-                      re.I)
+SCEN_VERDICT = re.compile(r"^\s*(?:PASS|FAIL)\s+\S+", re.M)
+STOPPED_BEFORE = re.compile(r'FAILED at step "(?:documents|application|worksheet|contract|'
+                            r'configure|build)"')
+# A build whose documents step refused the spec generated nothing from it.
+DOCS_REFUSED = re.compile(r'FAILED at step "documents"')
 # A counting command measures the run only when it targets the run's own source.
 COUNTED_SOURCE = re.compile(r"(^|[\s\"'])(src|scenarios\.json|design\.json|\*\.(cpp|hpp))")
 
@@ -338,11 +380,17 @@ def bash_edits(cmd):
 
 
 
+# What the first build after generation applies: the implementation, not a repair.
+IMPLEMENTATION_FILES = {"bodies.txt", "scenarios.json"}
+
+
 def events(requests):
     """The discrete things that happen to a run, with the request each began at.
 
     A build is a fix cycle only when a source changed since the previous build; a
-    build that follows no edit is a confirmation.
+    build that follows no edit is a confirmation. The build that first applies
+    bodies.txt is the implementation, not a fix, when bodies.txt and scenarios.json are
+    all that changed before it.
     """
     spec = None
     for r in requests:
@@ -354,6 +402,8 @@ def events(requests):
     builds, scenarios, respecs, counters = [], [], [], []
     build_fixes, scen_fixes = [], []
     edited_since_build = edited_since_scen = False
+    generated = False
+    changed, bodies_built = set(), False
     last_change = -1
     for i, r in enumerate(requests):
         for nm, what, result in r["calls"]:
@@ -362,7 +412,8 @@ def events(requests):
                 if base.endswith((".cpp", ".hpp", ".h", ".json", ".txt", ".cmake")):
                     edited_since_build = edited_since_scen = True
                     last_change = i
-                if spec and base == spec and builds:
+                    changed.add(base)
+                if spec and base == spec and generated and i not in respecs:
                     respecs.append(i)
                 continue
             if nm != "Bash":
@@ -370,18 +421,28 @@ def events(requests):
             for edited in bash_edits(what):
                 edited_since_build = edited_since_scen = True
                 last_change = i
-                if spec and os.path.basename(edited) == spec and builds:
+                changed.add(os.path.basename(edited))
+                if spec and os.path.basename(edited) == spec and generated \
+                        and i not in respecs:
                     respecs.append(i)
             if BUILD_CALL.search(what):
-                if builds and edited_since_build:
+                first_bodies = (not bodies_built and "bodies.txt" in changed
+                                and changed <= IMPLEMENTATION_FILES)
+                if builds and edited_since_build and not first_bodies:
                     build_fixes.append(i)
+                bodies_built = bodies_built or "bodies.txt" in changed
+                changed = set()
                 builds.append(i)
                 edited_since_build = False
                 last_change = max(last_change, i)
+                if not (result and DOCS_REFUSED.search(result)):
+                    generated = True
             # No captured output means the transcript did not keep it. The command
             # asked for the scenarios, so count it rather than lose it silently.
             ran = SCEN_CALL.search(what) or (BUILD_RUN.search(what) and
-                                             (not result or SCEN_STEP.search(result)))
+                                             (not result or SCEN_STEP.search(result) or
+                                              SCEN_VERDICT.search(result) or
+                                              not STOPPED_BEFORE.search(result)))
             if ran:
                 if scenarios and edited_since_scen:
                     scen_fixes.append(i)
@@ -528,12 +589,80 @@ def print_events(requests, own, resident):
             print("   %-30s %s" % ("", note))
 
 
+def code_facts(run, sdk):
+    """The C++ the run left: lines, files, and how many of them were written by hand."""
+    # The areg arm keeps its sources under work/src and generates the rest from its
+    # documents. Another framework lays its tree out its own way -- the gRPC arm uses
+    # a directory per process -- so the sources are found by walking the project.
+    framework = (meta_of(run).get("framework") or "areg").strip()
+    work = os.path.join(run, "work")
+    src = os.path.join(work, "src")
+    base = src if os.path.isdir(src) else work
+    sources = {}
+    for root, dirs, names in os.walk(base):
+        dirs[:] = [d for d in dirs if d not in ("build", "services", ".git")]
+        for n in names:
+            if n.endswith((".hpp", ".cpp", ".h", ".cc")):
+                path = os.path.join(root, n)
+                sources[os.path.relpath(path, base)] = open(path, errors="ignore").read()
+    facts = {"framework": framework, "files": len(sources),
+             "where": os.path.relpath(base, run).replace(os.sep, "/"),
+             "lines": sum(len(t.splitlines()) for t in sources.values()),
+             "hand": None, "layout": [], "specs": 0}
+    if framework == "areg":
+        facts["hand"] = hand_written(src, sources, sdk)
+        facts["layout"] = layout_findings(sources)
+    else:
+        # Nothing here is generated from a document the run wrote: protoc output goes
+        # to the build directory, which is not walked.
+        facts["hand"] = facts["lines"]
+        for root, dirs, names in os.walk(work):
+            dirs[:] = [d for d in dirs if d not in ("build", ".git")]
+            facts["specs"] += len([n for n in names if n.endswith(".proto")])
+    return facts
+
+
+def print_brief(run, sdk, tr, result, meta, facts, requests, tot, cost, normal):
+    """The headline of a run: what it cost, how many requests, which tokens, how long."""
+    think = sum(r["think"] for r in requests)
+    model = ", ".join(result.get("modelUsage") or {}) or meta.get("model") or "unknown"
+    code = code_facts(run, sdk)
+    hand = "unknown" if code["hand"] is None else code["hand"]
+    wall = (result.get("duration_ms") or 0) / 60000.0
+    print("== %s" % run)
+    if facts["stop"] != "completed":
+        print("   INCOMPLETE: the run stopped on %s; its price is not a price point"
+              % facts["stop"])
+    print("   %-16s %s, %s" % ("framework", meta.get("framework") or "areg", model))
+    print("   %-16s $%.4f billed, $%.4f cold @1h (compare runs on this one)"
+          % ("cost", cost, normal))
+    print("   %-16s %d, peak context %s" % ("API requests", len(requests),
+                                            format(max(r["ctx"] for r in requests), ",")))
+    print("   %-16s %s output (%s thinking), %s input" % (
+        "tokens", format(tot["output_tokens"], ","), format(think, ","),
+        format(tot["input_tokens"], ",")))
+    print("   %-16s %s read, %s written" % (
+        "cache", format(tot["cache_read_input_tokens"], ","),
+        format(tot["cache_creation_input_tokens"], ",")))
+    print("   %-16s %.1f min, %.1f min of it in the model" % (
+        "time", wall or span_minutes(tr),
+        (result.get("duration_api_ms") or 0) / 60000.0))
+    hits = dict((name, len(found)) for name, found, _, _ in events(requests))
+    print("   %-16s %d build-and-fix, %d run-and-fix" % (
+        "fix cycles", hits["build-and-fix cycles"], hits["run-and-fix cycles"]))
+    print("   %-16s %d in %d file(s), %s written by hand" % (
+        "C++ lines", code["lines"], code["files"], hand))
+    print("   (--debug prints the full analysis: every event, page and request)")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("run", nargs="?", default=".", help="the run directory")
     parser.add_argument("--sdk", help="the SDK the run read (default: meta.txt, then here)")
     parser.add_argument("--record", action="store_true",
                         help="also append stop, start and cache ttl to meta.txt")
+    parser.add_argument("--brief", action="store_true",
+                        help="print only the headline: cost, requests, tokens, time, code")
     args = parser.parse_args()
     run = args.run
     sdk = sdk_of(run, args.sdk).rstrip("/")
@@ -641,10 +770,13 @@ def main():
     # A run that began on a warm prefix was billed as a read what a cold start pays
     # as a write. The difference is added back so warm and cold runs compare.
     warm = requests[0]["cr"] * (PRICE_W1 - PRICE_READ) / 1e6
-    normal = (base + (tot["w5"] + tot["w1"]) * PRICE_W1) / 1e6 + aside + warm
+    normal = cold_price(tot, requests[0]["cr"], aside)
     facts = run_facts(result, requests, tot)
     if args.record:
         record(run, meta, facts)
+    if args.brief:
+        print_brief(run, sdk, tr, result, meta, facts, requests, tot, cost, normal)
+        return
     print("== %s" % run)
     if facts["stop"] != "completed":
         print("   INCOMPLETE: the run stopped on %s; its price is not a price point"
@@ -736,43 +868,23 @@ def main():
         total += n
         print("   %8d  %s" % (n, f[len(sdk) + 1:]))
     print("   %8d  total, %d file(s) opened inside the SDK" % (total, len(opened)))
-    # The areg arm keeps its sources under work/src and generates the rest from its
-    # documents. Another framework lays its tree out its own way -- the gRPC arm uses
-    # a directory per process -- so the sources are found by walking the project.
-    framework = (meta_of(run).get("framework") or "areg").strip()
-    work = os.path.join(run, "work")
-    src = os.path.join(work, "src")
-    base = src if os.path.isdir(src) else work
-    sources = {}
-    for root, dirs, names in os.walk(base):
-        dirs[:] = [d for d in dirs if d not in ("build", "services", ".git")]
-        for n in names:
-            if n.endswith((".hpp", ".cpp", ".h", ".cc")):
-                path = os.path.join(root, n)
-                sources[os.path.relpath(path, base)] = open(path, errors="ignore").read()
-    where = os.path.relpath(base, run).replace(os.sep, "/")
-    lines = sum(len(t.splitlines()) for t in sources.values())
-    print("   %-26s %d   (%d file(s) under %s)" % ("C++ lines", lines, len(sources), where))
-    if framework == "areg":
-        written = hand_written(src, sources, sdk)
+    code = code_facts(run, sdk)
+    print("   %-26s %d   (%d file(s) under %s)" % ("C++ lines", code["lines"], code["files"],
+                                                   code["where"]))
+    if code["framework"] == "areg":
+        written = code["hand"]
         print("   %-26s %s" % ("  hand-written",
                                  "%d  (not in a regeneration of the same documents)" % written
                                  if written is not None else "unknown (regeneration failed)"))
-        layout = layout_findings(sources)
-        for finding in layout:
+        for finding in code["layout"]:
             print("   %-26s %s" % ("LAYOUT", finding))
-        if not layout:
+        if not code["layout"]:
             print("   %-26s %s" % ("layout", "one class per file, no class beside main()"))
     else:
-        # Nothing here is generated from a document the run wrote: protoc output goes
-        # to the build directory, which is not walked.
-        specs = []
-        for root, dirs, names in os.walk(work):
-            dirs[:] = [d for d in dirs if d not in ("build", ".git")]
-            specs += [n for n in names if n.endswith(".proto")]
-        print("   %-26s %d  (every line under %s)" % ("  hand-written", lines, where))
+        print("   %-26s %d  (every line under %s)" % ("  hand-written", code["lines"],
+                                                       code["where"]))
         print("   %-26s %d  (protoc output is under build/, not counted)"
-              % ("  .proto contract(s)", len(specs)))
+              % ("  .proto contract(s)", code["specs"]))
 
     spikes = sorted(enumerate(requests), key=lambda p: -p[1]["out"])[:2]
     print("\n== the reasoning spikes (the design and the implementation thought)")

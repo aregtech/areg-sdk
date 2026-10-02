@@ -1285,8 +1285,8 @@ def check_threads(sources, findings, read):
                 'nullptr and the worker thread runs nothing' % name))
 
 
-# P-02. A generated member called by its bare document name: insert_coin(...) where
-# the base declares request_insert_coin(...). The compiler reports it only after a
+# P-02. A generated member called by its bare document name: open_valve(...) where
+# the base declares request_open_valve(...). The compiler reports it only after a
 # build, and names neither the document nor the prefix.
 BARE_CALL_RE = re.compile(r'(?<![\w:.>~#])([a-z_][a-z0-9_]*)\s*\(')
 NOT_A_CALL = frozenset(('if', 'for', 'while', 'switch', 'return', 'sizeof', 'catch',

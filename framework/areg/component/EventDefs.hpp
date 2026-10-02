@@ -19,6 +19,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/areg_global.h"
+#include "areg/base/CommonDefs.hpp"
 #include "areg/base/IOStream.hpp"
 #include "areg/base/MemoryDefs.hpp"
 

@@ -18,12 +18,12 @@
     <ClCompile Include="monitor\src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="monitor\src\MonitorComponent.cpp">
+    <ClCompile Include="monitor\src\TempMonitorServiceProvider.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="monitor\src\MonitorComponent.hpp">
+    <ClInclude Include="monitor\src\TempMonitorServiceProvider.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

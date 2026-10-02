@@ -92,6 +92,8 @@ ROUTER_READY_SECONDS = 10.0
 STALE_TOLERANCE_SECONDS = 30.0
 OUTPUT_TAIL_LINES = 40
 PASS_TAIL_LINES = 150
+# How many unmet expectations a failed verdict names.
+MISSES_NAMED = 4
 
 
 def is_listening(port, host='127.0.0.1'):
@@ -513,7 +515,29 @@ def stop_too_late(entry, lead, gap):
                             'stop matches')))
 
 
-def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_class=None):
+def printed_by(pattern, index, handles, outputs):
+    """Names another process of the scenario that printed a line, and where."""
+    for other, (spec, _) in enumerate(handles):
+        output = outputs.get(other) or ''
+        found = re.search(pattern, output, re.MULTILINE) if other != index else None
+        if found is not None:
+            return ' ({} printed it, line {})'.format(
+                proc_name(spec), output.count('\n', 0, found.start()) + 1)
+    return ''
+
+
+def kept_spool(keep, name):
+    """The folder under `keep` holding one scenario's process logs, emptied of the last run's."""
+    folder = os.path.join(keep, re.sub(r'[^\w.-]', '_', name))
+    os.makedirs(folder, exist_ok=True)
+    for entry in os.listdir(folder):
+        if entry.endswith('.log'):
+            os.remove(os.path.join(folder, entry))
+    return folder
+
+
+def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_class=None,
+                 keep=None):
     reader_class = reader_class or OutputReader
     name = scenario.get('name', 'unnamed')
     timeout = float(scenario.get('timeout', 60))
@@ -538,7 +562,7 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
     ended = {}
     verdict = None
     readers = {}
-    spool = tempfile.mkdtemp(prefix='scenario-')
+    spool = kept_spool(keep, name) if keep else tempfile.mkdtemp(prefix='scenario-')
     actions = []
     try:
         for index, spec in enumerate(procs):
@@ -645,32 +669,46 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
     if verdict is not None:
         return failed(verdict)
 
-    evidence = []
+    # Exit codes are judged before any expectation; a mismatch quotes the last FAIL
+    # line of that process.
     for index, (spec, handle) in enumerate(handles):
+        wanted = spec.get('exit')
+        if wanted is None or handle.returncode == wanted:
+            continue
+        label = proc_name(spec)
+        late = []
+        if index == lead_index and lead_index in ended:
+            exited = launched[lead_index] + ended[lead_index]
+            late = [(entry, exited - entry['fired_clock']) for entry in actions
+                    if 'fired_clock' in entry
+                    and (entry.get('late') or exited - entry['fired_clock'] < LATE_STOP_SECONDS)]
+        said = re.findall(r'^FAIL\b.*$', outputs.get(index) or '', re.MULTILINE)
+        return failed('{} exited {}, expected {}{}{}'.format(
+            label, handle.returncode, wanted,
+            ': "{}"'.format(said[-1].strip()) if said else '',
+            stop_too_late(late[0][0], label, late[0][1]) if late else ''))
+
+    evidence = []
+    misses = []
+    for index, (spec, _) in enumerate(handles):
         label = proc_name(spec)
         output = outputs.get(index) or ''
         for pattern in spec.get('expect', []):
             found = re.search(pattern, output, re.MULTILINE)
             if found is None:
-                return failed('no match for {!r} in the output of {}'.format(
-                    pattern, label))
+                misses.append('no match for {!r} in the output of {}{}'.format(
+                    pattern, label, printed_by(pattern, index, handles, outputs)))
+                continue
             evidence.append((label, found.group(0)))
         for pattern in spec.get('reject', []):
             found = re.search(pattern, output, re.MULTILINE)
             if found is not None:
-                return failed('{!r} was rejected but matched {!r} in {}'.format(
+                misses.append('{!r} was rejected but matched {!r} in {}'.format(
                     pattern, found.group(0), label))
-        wanted = spec.get('exit')
-        if wanted is not None and handle.returncode != wanted:
-            late = []
-            if index == lead_index and lead_index in ended:
-                exited = launched[lead_index] + ended[lead_index]
-                late = [(entry, exited - entry['fired_clock']) for entry in actions
-                        if 'fired_clock' in entry
-                        and (entry.get('late') or exited - entry['fired_clock'] < LATE_STOP_SECONDS)]
-            return failed('{} exited {}, expected {}{}'.format(
-                label, handle.returncode, wanted, stop_too_late(late[0][0], label, late[0][1])
-                if late else ''))
+    if misses:
+        more = len(misses) - MISSES_NAMED
+        return failed('; '.join(misses[:MISSES_NAMED])
+                      + ('; and {} more'.format(more) if more > 0 else ''))
 
     if verbose:
         report_output(handles, outputs, quiet, full=True)
@@ -680,7 +718,8 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
         # The lead's own lines are the steps it took and what each check saw.
         report_output([handles[lead_index]], {0: outputs.get(lead_index)}, quiet,
                       tail=PASS_TAIL_LINES)
-    shutil.rmtree(spool, ignore_errors=True)
+    if not keep:
+        shutil.rmtree(spool, ignore_errors=True)
     return True, name, 'ok'
 
 
@@ -805,6 +844,22 @@ done
 echo "provider: drained"
 """
 
+SELF_TEST_QUITTER = """#!/usr/bin/env bash
+sleep 1
+echo "consumer: one"
+echo "consumer: two"
+echo "FAIL [step_two]: planted" >&2
+exit 1
+"""
+
+SELF_TEST_QUITTER_BATCH = """@echo off
+ping -n 2 127.0.0.1 >nul
+echo consumer: one
+echo consumer: two
+>&2 echo FAIL [step_two]: planted
+exit 1
+"""
+
 SELF_TEST_NOISY_BATCH = """@echo off
 echo provider: serving
 set LINE=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -820,11 +875,13 @@ if platform.system() == 'Windows':
     SELF_TEST_NEWLINE = '\r\n'
     SELF_TEST_BODIES  = (SELF_TEST_PROVIDER_BATCH, SELF_TEST_CONSUMER_BATCH)
     SELF_TEST_NOISY_BODY = SELF_TEST_NOISY_BATCH
+    SELF_TEST_QUITTER_BODY = SELF_TEST_QUITTER_BATCH
 else:
     SELF_TEST_SUFFIX  = SUFFIX
     SELF_TEST_NEWLINE = '\n'
     SELF_TEST_BODIES  = (SELF_TEST_PROVIDER, SELF_TEST_CONSUMER)
     SELF_TEST_NOISY_BODY = SELF_TEST_NOISY
+    SELF_TEST_QUITTER_BODY = SELF_TEST_QUITTER
 
 
 def self_test():
@@ -941,9 +998,42 @@ def self_test():
                   'named in the exit mismatch: {}'.format(detail))
             return 1
 
-        print('self-test ok: 7 case(s): end of input, an unfired stop, a fired stop, '
+        # A lead that exits on its own failure is reported by its exit code and its
+        # FAIL line, not by a line it never reached.
+        quitter = 'selftestquit' + SELF_TEST_SUFFIX
+        path = os.path.join(root, quitter)
+        with open(path, 'w', encoding='utf-8', newline=SELF_TEST_NEWLINE) as handle:
+            handle.write(SELF_TEST_QUITTER_BODY)
+        os.chmod(path, 0o755)
+        stopped = {
+            'name': 'lead-stopped', 'timeout': 15,
+            'procs': [{'binary': provider, 'name': 'provider',
+                       'expect': ['provider: serving', 'provider: never printed']},
+                      {'binary': quitter, 'name': 'consumer', 'exit': 0}]}
+        passed, _, detail = run_scenario(stopped, [root], False, True)
+        if passed or not detail.startswith('consumer exited 1, expected 0') \
+                or 'FAIL [step_two]: planted' not in detail:
+            print('self-test FAILED: a lead that exited on its own failure was reported '
+                  'by a line it never reached: {}'.format(detail))
+            return 1
+
+        # Two lines expected of the wrong process are both named, with where they are.
+        misplaced = {
+            'name': 'misplaced', 'timeout': 15,
+            'procs': [{'binary': provider, 'name': 'provider',
+                       'expect': ['consumer: one', 'consumer: two']},
+                      {'binary': quitter, 'name': 'consumer'}]}
+        passed, _, detail = run_scenario(misplaced, [root], False, True)
+        if passed or 'consumer printed it, line 1' not in detail \
+                or 'consumer printed it, line 2' not in detail:
+            print('self-test FAILED: lines expected of the wrong process were not all '
+                  'named with the process that printed them: {}'.format(detail))
+            return 1
+
+        print('self-test ok: 9 case(s): end of input, an unfired stop, a fired stop, '
               'a stop on the last line of an exited lead, a stop too late for the lead, '
-              'output pressure, a scenario that asserts nothing')
+              'output pressure, a scenario that asserts nothing, a lead that stopped '
+              'on its own failure, lines expected of the wrong process')
         return 0
     finally:
         shutil.rmtree(root, ignore_errors=True)
@@ -996,6 +1086,8 @@ def main():
     parser.add_argument('--build', action='append', default=None,
                         help='directory holding the executables; repeatable')
     parser.add_argument('--only', default=None, help='run only the named scenario')
+    parser.add_argument('--keep', default=None,
+                        help='keep each process log under this folder, a pass included')
     parser.add_argument('--list', action='store_true', help='print the scenarios and exit')
     parser.add_argument('--json', action='store_true', help='print the verdict as JSON')
     parser.add_argument('--verbose', action='store_true',
@@ -1077,7 +1169,8 @@ def main():
             for note in lint_scenario(scenario):
                 print('note  {:24} {}'.format(scenario.get('name', 'unnamed'), note))
         passed, name, detail = run_scenario(scenario, build_dirs,
-                                            args.verbose, args.quiet or args.json)
+                                            args.verbose, args.quiet or args.json,
+                                            keep=args.keep)
         results.append({'name': name, 'passed': passed, 'detail': detail})
         if not args.json:
             print('{:5} {:24} {}'.format('PASS' if passed else 'FAIL', name, detail))

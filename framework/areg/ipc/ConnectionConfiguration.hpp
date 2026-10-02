@@ -155,12 +155,20 @@ public:
     uint32_t pool_pairs() const noexcept;
 
     /**
-     * \brief   Returns the configured SO_SNDTIMEO value in milliseconds for this service connection.
-     *          Falls back to the compile-time default (SOCKET_SEND_TIMEOUT_MS) when the
-     *          key is absent or zero in areg.init.
+     * \brief   Returns the configured send timeout in milliseconds for this service connection,
+     *          or 0 when the key is absent or zero in areg.init, which means the build default.
+     *          See socket_refusal_timeout().
      **/
     [[nodiscard]]
     uint32_t socket_send_timeout() const noexcept;
+
+    /**
+     * \brief   Returns the milliseconds a reachable peer may take no data before the connection
+     *          is closed: the configured send timeout, or the build default when it is 0 --
+     *          unlimited in a debug build, the keepalive time in a release build.
+     **/
+    [[nodiscard]]
+    uint32_t socket_refusal_timeout() const noexcept;
 
     /**
      * \brief   Extracts IP address bytes from connection address.

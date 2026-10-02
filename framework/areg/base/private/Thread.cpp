@@ -185,6 +185,7 @@ Thread::Thread(ThreadConsumer &threadConsumer, const String & threadName, uint32
     , mExitRequest      (true, false)
     , mExitRequested    ( false )
     , mRegistered       ( false )
+    , mStopCount        ( 0u )
 {
     mWaitForExit.set_signaled();
 }
@@ -204,6 +205,7 @@ Thread::Thread( areg::NullTag, ThreadConsumer & threadConsumer, const String & t
     , mExitRequest      ( areg::NullTag{} )
     , mExitRequested    ( false )
     , mRegistered       ( false )
+    , mStopCount        ( 0u )
 {
     // Null thread: not registered in thread maps, no OS handle, no sync events allocated.
 }
@@ -231,9 +233,14 @@ bool Thread::start(uint32_t waitForStartMs /* = areg::DO_NOT_WAIT */)
     do
     {
         Lock  lock(mSyncObject);
+        // A running routine or a shutdown() in progress owns the state of the object.
+        if ((mStopCount != 0u) || (mRunState.load(std::memory_order_acquire) != Thread::RunState::NotRunning))
+        {
+            return false;
+        }
+
         // Reclaims the handle of a previous run that ended without a shutdown() call
-        if ((mThreadHandle != Thread::INVALID_THREAD_HANDLE) &&
-            (mRunState.load(std::memory_order_acquire) == Thread::RunState::NotRunning))
+        if (mThreadHandle != Thread::INVALID_THREAD_HANDLE)
         {
             _clean_resources(false, true);
         }
@@ -285,7 +292,8 @@ void Thread::sleep( uint32_t msTimeout )
 
 bool Thread::wait_exit( uint32_t msTimeout )
 {
-    Thread * current = Thread::current_thread();
+    // The routine's own object, also after shutdown() has unregistered it.
+    Thread * current = Thread::_self_thread();
     if ((current == nullptr) || (current->mExitRequest.is_valid() == false))
     {
         // Not an areg thread: there is no exit request to wait for, so this degrades to a sleep.
@@ -301,6 +309,12 @@ Thread::ThreadCompletion Thread::shutdown( uint32_t waitForStopMs /* = areg::WAI
     request_exit();
 
     Thread::ThreadCompletion result{ _os_destroy_thread( waitForStopMs ) };
+    if ( result == Thread::ThreadCompletion::Invalid )
+    {
+        // Nothing is owned, so nothing is released.
+        return result;
+    }
+
     if ( result == Thread::ThreadCompletion::Completed )
     {
         // The exit event is signaled while the routine still runs on this object.
@@ -308,6 +322,10 @@ Thread::ThreadCompletion Thread::shutdown( uint32_t waitForStopMs /* = areg::WAI
     }
 
     _clean_resources( true, true );
+
+    Lock lock(mSyncObject);
+    ASSERT(mStopCount != 0u);
+    -- mStopCount;
 
     return result;
 }
@@ -393,6 +411,12 @@ int32_t Thread::_thread_entry()
 
         tls.remove_item(STORAGE_THREAD_CONSUMER);
         tls.remove_item(STORAGE_STARTUP_PHASE);
+    }
+    else
+    {
+        // Unregistered by a shutdown() before it ran: releases the start() waiter.
+        _set_run_state(Thread::RunState::Exiting);
+        mWaitForRun.set_signaled();
     }
 
     _clean_resources( true, false );

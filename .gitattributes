@@ -1,3 +1,26 @@
+# Every text file is stored with LF and checked out with LF, whatever the platform or the
+# local core.autocrlf. A file an editor saved with CRLF is normalized when it is staged, so
+# a commit never carries a whole file nobody changed. Git decides what is text; binaries
+# are left alone. The rules below override this one where a file needs something else.
+* text=auto eol=lf
+
+# Sources, build files and configuration: text always, never left to detection.
+*.c       text eol=lf
+*.h       text eol=lf
+*.cpp     text eol=lf
+*.hpp     text eol=lf
+*.inl     text eol=lf
+*.cmake   text eol=lf
+*.in      text eol=lf
+*.init    text eol=lf
+*.json    text eol=lf
+*.yml     text eol=lf
+*.siml    text eol=lf
+*.dtml    text eol=lf
+*.fsml    text eol=lf
+*.txt     text eol=lf
+CMakeLists.txt text eol=lf
+
 # The document schemas and the rule registry are mirrored between this repository and its two
 # siblings, and every copy has to be byte-comparable from any checkout. Without this a Windows
 # clone stores them with carriage returns, the comparison goes red, and the person who sees it

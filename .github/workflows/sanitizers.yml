@@ -24,9 +24,9 @@ on:
       - '**.h'
       - '**/CMakeLists.txt'
       - 'conf/cmake/**'
-      - 'tools/sanitize.sh'
-      - 'tools/sanitizer/**'
-      - 'tools/run-all-examples.py'
+      - 'tools/intern/sanitize.sh'
+      - 'tools/intern/sanitizer/**'
+      - 'tools/intern/run-all-examples.py'
       - '.github/workflows/sanitizers.yml'
   pull_request:
     branches: [ master ]
@@ -62,7 +62,7 @@ jobs:
 
     env:
       # Makes a sanitizer report end in abort() rather than _exit(), so the kernel
-      # writes a core beside the report. Off by default, see tools/sanitize.sh.
+      # writes a core beside the report. Off by default, see tools/intern/sanitize.sh.
       AREG_SANITIZE_COREDUMP: 1
 
     steps:
@@ -93,7 +93,7 @@ jobs:
           sudo sysctl -w kernel.core_pattern='/cores/core.%e.%p.%t'
           sudo sysctl -w kernel.yama.ptrace_scope=0 || true
 
-      # tools/sanitize.sh is the instrument CLAUDE.md and the perf skill prescribe.
+      # tools/intern/sanitize.sh is the instrument CLAUDE.md and the perf skill prescribe.
       # It configures its own build tree, builds areg-unit-tests instrumented, and
       # runs ctest under the sanitizer with the repository's suppressions. A failing
       # test or a sanitizer report leaves it non-zero.
@@ -102,10 +102,10 @@ jobs:
         shell: bash
         run: |
           ulimit -c unlimited
-          tools/sanitize.sh ${{matrix.mode}} --config ${{matrix.config}} \
+          tools/intern/sanitize.sh ${{matrix.mode}} --config ${{matrix.config}} \
               --target areg-unit-tests --run ctest
 
-      # The three teardown tests fail about once in a hundred runs, and one pass of the
+      # The teardown tests fail about once in a hundred runs, and one pass of the
       # suite is one run of each. They are repeated here, in the tree the step above
       # already built, so that a single job carries the report instead of ten pushes.
       - name: Repeat the teardown tests under ${{matrix.mode}} ${{matrix.config}}
@@ -115,8 +115,8 @@ jobs:
         timeout-minutes: 45
         run: |
           ulimit -c unlimited
-          tools/sanitize.sh ${{matrix.mode}} --config ${{matrix.config}} --keep --repeat 25 \
-              --run 'ctest:areg-(release-unload|timer-churn|internal-events)-test'
+          tools/intern/sanitize.sh ${{matrix.mode}} --config ${{matrix.config}} --keep --repeat 25 \
+              --run 'ctest:areg-(release-unload|timer-churn|internal-events|stub-teardown)-test'
 
       # Everything needed to open the crash on another machine: the cores, the binaries
       # they came from, and what the runner was, so a local build can be matched to it.
@@ -136,7 +136,7 @@ jobs:
             echo "options  : ASAN_OPTIONS/TSAN_OPTIONS are printed by the driver above"
           } > "${OUT}/provenance.txt"
           BIN_DIR="./build-${{matrix.mode}}/product/bin"
-          for t in areg-release-unload-test areg-timer-churn-test areg-internal-events-test; do
+          for t in areg-release-unload-test areg-timer-churn-test areg-internal-events-test areg-stub-teardown-test; do
             [[ -f "${BIN_DIR}/${t}.elf" ]] || continue
             cp "${BIN_DIR}/${t}.elf" "${OUT}/bin/"
             echo "--- ldd ${t} ---" >> "${OUT}/provenance.txt"
@@ -221,7 +221,7 @@ jobs:
           mkdir -p ./ubsan
           sudo sysctl -w kernel.yama.ptrace_scope=0 > /dev/null || true
           BIN_DIR="$(find ./product/build -type d -name bin 2>/dev/null | head -n 1)"
-          python3 tools/run-all-examples.py --bin-dir "${BIN_DIR}" --tier all \
+          python3 tools/intern/run-all-examples.py --bin-dir "${BIN_DIR}" --tier all \
                   --out-dir ./ubsan/example-results
 
       - name: Report what the sanitizer found
@@ -272,7 +272,7 @@ jobs:
     name: teardown tests, no sanitizer (${{matrix.config}})
     # Both CI failures so far are in the tsan leg, and asan is clean, so nothing yet says
     # whether the defect needs an instrumented allocator at all. This leg is the control:
-    # the same three tests, no sanitizer, Debug and Release, repeated until one fails.
+    # the same teardown tests, no sanitizer, Debug and Release, repeated until one fails.
     # It is also the only place a Release build of the teardown path is exercised.
     runs-on: ubuntu-latest
     timeout-minutes: 90
@@ -324,7 +324,7 @@ jobs:
         run: |
           ulimit -c unlimited
           ctest --output-on-failure --repeat until-fail:100 \
-                -R 'areg-(release-unload|timer-churn|internal-events)-test'
+                -R 'areg-(release-unload|timer-churn|internal-events|stub-teardown)-test'
 
       - name: Collect the post-mortem
         if: failure()
@@ -341,7 +341,7 @@ jobs:
             echo "mode     : no sanitizer, ${{matrix.config}}"
           } > "${OUT}/provenance.txt"
           BIN_DIR="./build-plain/product/bin"
-          for t in areg-release-unload-test areg-timer-churn-test areg-internal-events-test; do
+          for t in areg-release-unload-test areg-timer-churn-test areg-internal-events-test areg-stub-teardown-test; do
             [[ -f "${BIN_DIR}/${t}.elf" ]] || continue
             cp "${BIN_DIR}/${t}.elf" "${OUT}/bin/"
             echo "--- ldd ${t} ---" >> "${OUT}/provenance.txt"

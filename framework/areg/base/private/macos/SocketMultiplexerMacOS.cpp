@@ -34,6 +34,25 @@ inline void drain_pipe(int fd) noexcept
     char buf[64];
     while (::read(fd, buf, sizeof(buf)) > 0) {}
 }
+
+// Drops hSocket from the unserved part of the batch and returns the new entry count.
+// The entries that stay are readiness that is already out of the kernel.
+inline uint32_t compact_batch( SOCKETHANDLE * fds, uint32_t * flags, uint32_t idx
+                             , uint32_t count, SOCKETHANDLE hSocket) noexcept
+{
+    uint32_t kept = idx;
+    for (uint32_t i = idx; i < count; ++i)
+    {
+        if (fds[i] != hSocket)
+        {
+            fds[kept]   = fds[i];
+            flags[kept] = flags[i];
+            ++kept;
+        }
+    }
+
+    return kept;
+}
 } // namespace
 
 //////////////////////////////////////////////////////////////////////////
@@ -133,6 +152,13 @@ areg::SocketMultiplexer::~SocketMultiplexer() noexcept
 
 bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket, bool search) noexcept
 {
+    // A pending reset is completed here, so the size cap and the search below see the
+    // set the caller expects and no stale handle survives into the new cycle.
+    if (mIsReset.load(std::memory_order_acquire))
+    {
+        _drop_registrations();
+    }
+
     if (    !areg::is_valid_socket(hSocket)
          || (mKqueueFd == areg::InvalidSocketHandle)
          || (hSocket == mWakeupWriteFd)
@@ -176,7 +202,7 @@ bool areg::SocketMultiplexer::unregister_socket(SOCKETHANDLE hSocket) noexcept
 
             *it = mSockets.back();
             mSockets.pop_back();
-            mBatchCount = mBatchIdx = 0u;
+            mBatchCount = compact_batch(mBatchFds, mBatchEvents, mBatchIdx, mBatchCount, hSocket);
             return true;
         }
     }
@@ -184,7 +210,7 @@ bool areg::SocketMultiplexer::unregister_socket(SOCKETHANDLE hSocket) noexcept
     return false;
 }
 
-void areg::SocketMultiplexer::reset() noexcept
+void areg::SocketMultiplexer::_drop_registrations() const noexcept
 {
     if (mKqueueFd != areg::InvalidSocketHandle)
     {
@@ -198,6 +224,10 @@ void areg::SocketMultiplexer::reset() noexcept
 
     mSockets.clear();
     mBatchCount = mBatchIdx = 0u;
+}
+
+void areg::SocketMultiplexer::reset() noexcept
+{
     mIsReset.store(true, std::memory_order_release);
 
     // Wake up any thread blocked in kevent() by writing one byte to the pipe.
@@ -222,7 +252,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
 {
     if (mIsReset.load(std::memory_order_acquire))
     {
-        mBatchCount = mBatchIdx = 0u;
+        _drop_registrations();
         if (mWakeupReadFd != areg::InvalidSocketHandle)
         {
             drain_pipe(static_cast<int>(mWakeupReadFd));
@@ -243,9 +273,15 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         if (fd == mWakeupReadFd)
         {
             drain_pipe(static_cast<int>(mWakeupReadFd));
-            mBatchCount = mBatchIdx = 0u;
-            // Hard reset --> FailedSocketHandle; soft wakeup() --> InvalidSocketHandle.
-            return mIsReset.load(std::memory_order_acquire) ? areg::FailedSocketHandle : areg::InvalidSocketHandle;
+            // A reset drops the batch, its sockets are unregistered. A soft wakeup keeps
+            // it: those events are already out of the kernel and nothing repeats them.
+            if (mIsReset.load(std::memory_order_acquire))
+            {
+                mBatchCount = mBatchIdx = 0u;
+                return areg::FailedSocketHandle;
+            }
+
+            return areg::InvalidSocketHandle;
         }
 
         return fd;
@@ -288,9 +324,14 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
     if (first == mWakeupReadFd)
     {
         drain_pipe(static_cast<int>(mWakeupReadFd));
-        mBatchCount = mBatchIdx = 0u;
-        // Hard reset --> FailedSocketHandle; soft wakeup() --> InvalidSocketHandle.
-        return mIsReset.load(std::memory_order_acquire) ? areg::FailedSocketHandle : areg::InvalidSocketHandle;
+        // The events behind the wakeup are already dequeued and stay in the batch.
+        if (mIsReset.load(std::memory_order_acquire))
+        {
+            mBatchCount = mBatchIdx = 0u;
+            return areg::FailedSocketHandle;
+        }
+
+        return areg::InvalidSocketHandle;
     }
 
     return first;

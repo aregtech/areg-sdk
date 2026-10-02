@@ -54,6 +54,15 @@
     <ClCompile Include="aregextend\service\private\ServerSendThread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="aregextend\service\private\SendBacklog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="aregextend\service\private\posix\SendBacklogPosix.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="aregextend\service\private\win32\SendBacklogWin32.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="aregextend\service\private\ServiceCommunicationBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -128,6 +137,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="aregextend\service\private\ServerSendThread.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="aregextend\service\private\SendBacklog.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="aregextend\service\ServiceCommunicationBase.hpp">

@@ -515,6 +515,9 @@
     <ClInclude Include="areg\base\private\DebugDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="areg\base\private\SocketLiveness.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="areg\base\Containers.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

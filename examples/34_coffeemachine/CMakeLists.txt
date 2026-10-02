@@ -1,17 +1,17 @@
 
 # add service interface and state machine
 addServiceInterface(34_generated examples/34_coffeemachine/services/CoffeeMachineService.siml)
-addStateMachine(34_generated     examples/34_coffeemachine/services/CoffeeMachine.fsml)
+addStateMachine(34_generated     examples/34_coffeemachine/services/CoffeeMaking.fsml)
 
 # add projects
 macro_declare_executable(34_coffeemachine  34_generated
     machine/src/main.cpp
-    machine/src/MachineComponent.cpp
+    machine/src/CoffeeMachineServiceProvider.cpp
 )
 
 macro_declare_executable(34_user           34_generated
     user/src/main.cpp
-    user/src/UserComponent.cpp
+    user/src/CoffeeMachineServiceConsumer.cpp
 )
 
 # disable some warnings in this example. They come from generated files.

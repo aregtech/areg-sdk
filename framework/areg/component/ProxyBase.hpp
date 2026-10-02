@@ -1071,7 +1071,7 @@ inline constexpr bool ProxyBase::Listener::operator != (const ProxyBase::Listene
 //////////////////////////////////////////////////////////////////////////
 inline NotificationConsumer& ProxyBase::ServiceAvailableEvent::consumer() const noexcept
 {
-    return *reinterpret_cast<NotificationConsumer* const>(event_consumer());
+    return *reinterpret_cast<NotificationConsumer *>(event_consumer());
 }
 
 inline void ProxyBase::ServiceAvailableEvent::set_event_delay(uint32_t msDelay) noexcept

@@ -39,11 +39,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="user\src\UserComponent.hpp" />
+    <ClCompile Include="user\src\main.cpp" />
+    <ClCompile Include="user\src\CoffeeMachineServiceConsumer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="user\src\main.cpp" />
-    <ClCompile Include="user\src\UserComponent.cpp" />
+    <ClInclude Include="user\src\CoffeeMachineServiceConsumer.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -18,6 +18,9 @@ Kinds and roles:
     action      call
     condition   call
     trigger     call
+    forward     call: a trigger of an imported machine, reached through the host
+    handler     call: the handler type of one hosted instance, named after its
+                constructor parameter, in constructor order
 
 Nothing here has a command line.
 """
@@ -34,7 +37,7 @@ import xml.etree.ElementTree as ET
 HERE = os.path.dirname(os.path.abspath(__file__))
 JAR = os.path.join(os.path.dirname(HERE), 'codegen.jar')
 CACHE = os.path.join(tempfile.gettempdir(), 'areg-codegen-names')
-FORMAT = 5
+FORMAT = 6
 
 
 class CodegenError(Exception):
@@ -78,7 +81,9 @@ class Names:
     def members(self):
         """Every name the generated bases declare for the document's elements."""
         found = set()
-        for elements in self.kinds.values():
+        for kind, elements in self.kinds.items():
+            if kind == 'handler':
+                continue
             for entry in elements.values():
                 found.update(entry.get('all', []))
                 found.update(entry['names'].values())
@@ -318,12 +323,18 @@ SECTION = re.compile(r'^\s*//\s+(.*\S)\s*$')
 ATTRIBUTE_BRIEF = re.compile(r'\\brief\s+(Returns|Sets) the attribute (\w+)\.')
 
 
-def _read(headers, suffix):
-    for name, path in headers.items():
-        if name.endswith(suffix):
-            with open(path, encoding='utf-8') as handle:
-                return handle.read().splitlines()
-    raise CodegenError('codegen.jar wrote no *{} header'.format(suffix))
+def _read(headers, suffix, owner):
+    """The lines of <owner><suffix>: an imported document writes headers of its own."""
+    path = headers.get(owner + suffix)
+    if path is None:
+        raise CodegenError('codegen.jar wrote no {}{} header'.format(owner, suffix))
+    with open(path, encoding='utf-8') as handle:
+        return handle.read().splitlines()
+
+
+def _overview_name(doc):
+    overview = ET.parse(doc).getroot().find('Overview')
+    return overview.get('Name') if overview is not None else ''
 
 
 def _declarations(lines):
@@ -371,7 +382,8 @@ def _blocks(lines):
 
 def _service(doc, headers):
     kinds = {}
-    for (kind, doc_name), found in _blocks(_read(headers, 'ConsumerBase.hpp')).items():
+    owner = _overview_name(doc)
+    for (kind, doc_name), found in _blocks(_read(headers, 'ConsumerBase.hpp', owner)).items():
         entry = _entry(kinds, kind, doc_name)
         for returns, name, params, tail in found:
             entry['all'].append(name)
@@ -393,7 +405,7 @@ def _service(doc, headers):
                 _put(entry, 'notify', returns, name, params)
             else:
                 _put(entry, 'call', returns, name, params)
-    for (kind, doc_name), found in _blocks(_read(headers, 'ProviderBase.hpp')).items():
+    for (kind, doc_name), found in _blocks(_read(headers, 'ProviderBase.hpp', owner)).items():
         if kind != 'attribute':
             continue
         entry = _entry(kinds, kind, doc_name)
@@ -440,8 +452,8 @@ def _machine(doc, headers):
                      or (method.get('Implement') == 'Embedded') == embedded)]
 
     kinds = {}
-    handler = _sections(_read(headers, 'ActionHandler.hpp'))
-    machine_class = _sections(_read(headers, 'FSM.hpp'))
+    handler = _sections(_read(headers, 'ActionHandler.hpp', machine))
+    machine_class = _sections(_read(headers, 'FSM.hpp', machine))
     for kind, title, doc_names, source in (
             ('action', '{} actions', listed('Action'), handler),
             ('condition', '{} conditions', listed('Condition', False), handler),
@@ -455,7 +467,14 @@ def _machine(doc, headers):
             entry = _entry(kinds, kind, doc_name)
             entry['all'].append(name)
             _put(entry, 'call', returns, name, params)
-    lines = _read(headers, 'FSM.hpp')
+    for index, (returns, name, params, tail) in machine_class.get(
+            '{} State Machine imported submachine triggers'.format(machine), []):
+        entry = _entry(kinds, 'forward', name)
+        entry['all'].append(name)
+        _put(entry, 'call', returns, name, params)
+    lines = _read(headers, 'FSM.hpp', machine)
+    for returns, name, params in _handlers(lines, machine):
+        _put(_entry(kinds, 'handler', name), 'call', returns, name, params)
     pending = None
     wanted = dict((index, rest) for index, *rest in _declarations(lines))
     for index, line in enumerate(lines):
@@ -470,6 +489,18 @@ def _machine(doc, headers):
             pending = None
     _check_counts(doc, kinds, {'attribute': './AttributeList/Attribute'})
     return kinds
+
+
+def _handlers(lines, machine):
+    """(type, parameter, '') of each hosted instance's handler, in constructor order."""
+    for line in lines:
+        found = re.match(r'\s*explicit\s+{}FSM\s*\((.*)\)\s*;'.format(machine), line)
+        if found:
+            for part in split_params(found.group(1))[1:]:
+                typed = re.match(r'(\w+)\s*&\s*(\w+)$', part)
+                if typed:
+                    yield typed.group(1), typed.group(2), ''
+            return
 
 
 def _check_counts(doc, kinds, paths):

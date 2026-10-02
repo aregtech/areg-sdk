@@ -98,12 +98,5 @@ Consumers may start before providers. They wait and connect when the provider ap
 
 ## Verification status
 
-Every recipe here has been generated, compiled and, where it ends by itself, run.
-From a clone of the SDK, this repeats the check:
-
-```bash
-python3 tools/agent/check_recipes.py --lib build/bin
-```
-
-A recipe that no longer compiles is worse than no recipe, because it is copied first
-and debugged afterwards. Run the check after any change to the framework.
+Every recipe here has been generated, compiled and, where it ends by itself, run, and
+the SDK's CI repeats that on every change to the framework.

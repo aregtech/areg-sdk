@@ -44,9 +44,19 @@ One cold agent run, measured, against a clean snapshot of this checkout.
                      Any number other than the runbook's adds one rule to the prompt,
                      the same for both arms. 0 removes the bound, and is warned about:
                      the spend is unbounded.
+  --repeat N         run the same arm N times and report the band (default: 1).
+                     One run measures the draw, not the tree: the same tree has come
+                     out 51% apart. 2 or 3 settles most questions; 4 is the ceiling.
+                     Each run gets the next free label, and a short line after each
+                     gives its cost and output tokens with the running total, so the
+                     spend is visible before the next one starts. Refused with an
+                     explicit label, which every run would then share.
   --debrief          append a diagnostic pass: what the run could not find. It costs
                      requests on purpose, so such a run is never compared with one
                      made without it.
+  --debug            print the full analysis of the run: every event, every page
+                     read and every request. Without it the run ends with a short
+                     headline: cost, requests, tokens, time and lines of C++.
   --recipes MODE     none | copy, areg only               (default: none)
                        none: no example source may be copied; every file is written
                        or generated. copy: a documented recipe may be copied.
@@ -330,7 +340,8 @@ function Main([string[]]$Arguments)
 {
     $Framework = 'areg'; $Task = 'examples/ai-benchmark/prompt-coffeemachine.md'; $Wrapper = ''
     $Project = ''; $Mode = 'ipc'; $Agent = 'claude'; $Model = ''; $Effort = ''
-    $Attempts = '15'; $Debrief = $false; $Recipes = 'none'; $Label = ''; $Dry = $false
+    $Attempts = '15'; $Debrief = $false; $Debug = $false; $Recipes = 'none'; $Label = ''; $Dry = $false
+    $Repeat = '1'
     $AllowInstalled = $false; $Verify = 'probes'
     $SdkOpt = ''; $GrpcOpt = ''; $Web = ''
 
@@ -344,7 +355,7 @@ function Main([string[]]$Arguments)
     while ($index -lt $Arguments.Count) {
         $option = $Arguments[$index]
         $valued = '--framework', '--agent', '--task', '--wrapper', '--project', '--mode', '--model',
-                  '--effort', '--attempts', '--recipes', '--sdk', '--grpc', '--verify', '--web'
+                  '--effort', '--attempts', '--repeat', '--recipes', '--sdk', '--grpc', '--verify', '--web'
         if ($option -cin $valued) {
             if ($index + 1 -ge $Arguments.Count) { Stop-Run "$option needs a value" }
             $value = $Arguments[$index + 1]
@@ -361,6 +372,7 @@ function Main([string[]]$Arguments)
                 }
                 '--effort'    { $Effort = $value }
                 '--attempts'  { $Attempts = $value }
+                '--repeat'    { $Repeat = $value }
                 '--recipes'   { $Recipes = $value }
                 '--sdk'       { $SdkOpt = $value }
                 '--grpc'      { $GrpcOpt = $value }
@@ -374,6 +386,7 @@ function Main([string[]]$Arguments)
             '-h'                     { Write-Output $USAGE; exit 0 }
             '--help'                 { Write-Output $USAGE; exit 0 }
             '--debrief'              { $Debrief = $true }
+            '--debug'                { $Debug = $true }
             '--dry-run'              { $Dry = $true }
             '--allow-installed-areg' { $AllowInstalled = $true }
             default                  { Stop-Run "unknown option: $option (run with --help)" }
@@ -403,6 +416,12 @@ function Main([string[]]$Arguments)
     # lives: the snapshot for areg, the web for gRPC.
     if (-not $Web) { $Web = if ($Framework -eq 'grpc') { 'on' } else { 'off' } }
     if ($Attempts -notmatch '^[0-9]+$') { Stop-Run "--attempts must be a whole number, not '$Attempts'" }
+    if ($Repeat -notmatch '^[0-9]+$' -or $Repeat -eq '0') { Stop-Run "--repeat must be a whole number of 1 or more, not '$Repeat'" }
+    if ([int]$Repeat -gt 1) {
+        if ($Label) { Stop-Run '--repeat and an explicit label cannot both be given: every run would take the same one' }
+        if ($Dry) { Stop-Run '--repeat and --dry-run cannot both be given; a dry run starts nothing to repeat' }
+        if ([int]$Repeat -gt 4) { Stop-Run '--repeat is capped at 4; ask for more only by running the script again' }
+    }
     if ($Project -cnotmatch '^[A-Za-z_][A-Za-z0-9_]*$') { Stop-Run "--project must be a C identifier, not '$Project'" }
 
     if (-not (Get-Command $Agent -ErrorAction SilentlyContinue)) { Stop-Run "$Agent not found: install the selected CLI and log in" }
@@ -445,6 +464,31 @@ function Main([string[]]$Arguments)
         [Console]::Error.WriteLine('run-benchmark: WARNING --attempts 0 removes the fix bound; the spend is unbounded')
     }
 
+    $script:Ledger = Join-Path ([IO.Path]::GetTempPath()) ("run-benchmark-ledger-$PID.txt")
+    Write-Text $script:Ledger ''
+    $code = 0
+    $times = [int]$Repeat
+    for ($iteration = 1; $iteration -le $times; $iteration++) {
+        if ($times -gt 1) { Write-Output "run-benchmark: repeat $iteration of $times" }
+        $script:RunCode = 0
+        Invoke-OneRun
+        if ($script:RunCode -ne 0) { $code = $script:RunCode }
+        if ($times -gt 1) {
+            Write-Output (Invoke-Python (Join-Path $HERE 'repeat_report.py') $script:Ledger '--after' "$iteration" '--total' "$times")
+        }
+    }
+    if ($times -gt 1) {
+        Write-Output (Invoke-Python (Join-Path $HERE 'repeat_report.py') $script:Ledger '--band' '--total' "$times")
+    }
+    Remove-Item -LiteralPath $script:Ledger -ErrorAction SilentlyContinue
+    exit $code
+}
+
+
+# One run: its own snapshot, its own label, its own measurement. Called once per
+# --repeat, and it reads the settings Main validated.
+function Invoke-OneRun
+{
     $suffix = if ($Framework -eq 'grpc') { "grpc-$Project" } else { $Project }
 
     # The run is made where it is started, so no path is assumed and no home is
@@ -521,7 +565,7 @@ function Main([string[]]$Arguments)
             (Test-Path -LiteralPath (Join-Path $Snap $TaskAbs.Substring($sdkPrefix.Length)) -PathType Leaf)) { $taskOwn = @() }
         if ($taskOwn.Count) { Copy-Item -LiteralPath $TaskAbs -Destination (Join-Path $Snap 'task.md') }
         $patterns = @('AGENTS.md', 'docs/agent/*.md', 'docs/agent/*.json', 'docs/agent/.budgets',
-                      'tools/agent/*.py', 'tools/agent/evals/tasks.json', 'conf/cmake/functions.cmake',
+                      'tools/agent/*.py', 'tools/intern/evals/tasks.json', 'conf/cmake/functions.cmake',
                       'examples/ai-benchmark/*.md', 'examples/ai-benchmark/*.txt') + $taskOwn
         Invoke-Helper manifest $Snap $manifestPath @patterns | Out-Null
     }
@@ -608,24 +652,23 @@ function Main([string[]]$Arguments)
         $Rules += @"
 
 
-Additionally, for this run only -- a diagnostic pass the normal task does not ask
-for. Do it last, after the report, and never let it change what you built:
+Additionally, for this run only: a review of the documentation, written last, after
+the report. It must not change what you built.
 
-- **Every document you opened or fetched, in order, with the request you opened it
-  at and why**, and what sent you to it.
-- **Every question you answered from your own training rather than from a document**,
-  and what you would have needed to read to answer it from documentation.
-- **Every place two sources said different things**, naming both, and which one
-  you followed.
-- **Anything you looked for and could not find** -- a signature, a rule, an example
-  -- and where you looked first.
-- **Every file under the project's own src/ or build/ you opened or searched**, with
-  the request, the question it was meant to answer, and whether your .proto or the
-  stubs generated from it already answered it.
-- **Everything you opened before the first build**: what in the task made you open
-  it then, rather than after the stubs were generated.
-- **Every command you ran to learn a syntax, a name or a signature**, and whether
-  its answer was enough or you had to look again elsewhere.
+- **The documents you read or fetched, in order**, each with what pointed to it: a
+  line of the task, another document, a command's output, or nothing.
+- **Every fact the task needed that no document stated** -- a name, a signature, a
+  rule -- and where you expected to find it.
+- **Every place two sources disagree**, naming both, and which one you followed.
+- **Anything you searched for and did not find** -- a signature, a rule, an example
+  -- and where you searched first.
+- **Every file under the project's own src/ or build/ you read or searched**, the
+  question it answered, and whether your .proto or the stubs generated from it
+  already answered it.
+- **Every document you read before the first build**, and the line of the task that
+  pointed to it.
+- **Every command you ran to look up a syntax, a name or a signature**, and whether
+  its output was enough.
 
 Be specific and short: a list, not prose.
 "@
@@ -634,25 +677,23 @@ Be specific and short: a list, not prose.
         $Rules += @"
 
 
-Additionally, for this run only -- a diagnostic pass the normal task does not ask
-for. Do it last, after the report, and never let it change what you built:
+Additionally, for this run only: a review of the documentation, written last, after
+the report. It must not change what you built.
 
-- **Every page you opened, in order, with the request you opened it at and why.**
-  Name the row of a routing table that sent you, or say that nothing did.
-- **Every question you answered from your own training rather than from a page**,
-  and what you would have needed to read to answer it from the documentation.
-- **Every place two sources said different things**, naming both, and which one
-  you followed.
-- **Every marker whose one-line hint was not enough**, and what it should have said.
-- **Anything you looked for and could not find** -- a signature, a rule, an example
-  -- and where you looked first.
-- **Every file under the project's src/ or build/ you opened or searched**, with
-  the request, the question it was meant to answer, and whether worksheet.txt
-  already answered it.
-- **Every page you opened before the first build_project.py call**: what in the
-  task or in AGENTS.md made you open it then, rather than after generation.
-- **Every tool you ran to learn a syntax, a name or a signature**, and whether its
-  answer was enough or you had to look again elsewhere.
+- **The pages you read, in order**, each with the routing-table row or tool output
+  that pointed to it, or "none".
+- **Every fact the task needed that no page stated** -- a name, a signature, a rule
+  -- and the page that should have stated it.
+- **Every place two sources disagree**, naming both, and which one you followed.
+- **Every marker whose one-line hint was not enough**, and what it should say.
+- **Anything you searched for and did not find** -- a signature, a rule, an example
+  -- and where you searched first.
+- **Every file under the project's src/ or build/ you read or searched**, the
+  question it answered, and whether worksheet.txt already answered it.
+- **Every page you read before the first build_project.py call**, and the line of
+  the task or AGENTS.md that pointed to it.
+- **Every tool you ran to look up a syntax, a name or a signature**, and whether its
+  output was enough.
 
 Be specific and short: a list, not prose.
 "@
@@ -837,7 +878,10 @@ Be specific and short: a list, not prose.
     # A run that failed is the one most worth reading, and the analysis is what says
     # why. It runs whatever the exit code was, and it never changes that code.
     switch ($Agent) {
-        'claude'  { Write-Output (Invoke-Python (Join-Path $HERE 'analyze_run.py') $Run '--record') }
+        'claude'  {
+            $detail = if ($Debug) { '--record' } else { '--brief' }
+            Write-Output (Invoke-Python (Join-Path $HERE 'analyze_run.py') $Run '--record' $detail)
+        }
         'copilot' { Write-Output (Invoke-Python (Join-Path $HERE 'measure.py') (Join-Path $Run 'result.json')) }
         default   { Write-Output "usage: native metrics in $result; no cross-agent cost conversion" }
     }
@@ -851,7 +895,10 @@ Be specific and short: a list, not prose.
         }
     }
     Remove-Item -LiteralPath $script:HelperPath -ErrorAction SilentlyContinue
-    exit $code
+    Add-Text $script:Ledger "$Run`n"
+    # The run's own code is handed back in a script variable, never as a return: the
+    # loop in Main must see every run through whatever any one of them exits with.
+    $script:RunCode = $code
 }
 
 Main @($args)

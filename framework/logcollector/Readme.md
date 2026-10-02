@@ -139,7 +139,7 @@ When running as a console application, the following commands are available to m
 - **`--help`** or **`-h`**: Display the help message.
 - **`--instances`** or **`-n`**: Display the list of connected instances.
 - **`--scope`** or **`-o`**: Update log scope priorities.
-  **Example**: `--scope *::areg_base_NESocket=NOTSET`
+  **Example**: `--scope *::areg_base_Socket=NOTSET`
 
 - **`--pause`** or **`-p`**: Pause logging connections.
 - **`--quit`** or **`-q`**: Stop the `logcollector` and exit.
