@@ -127,12 +127,12 @@ bool EventDispatcherBase::start_dispatcher()
 
 void EventDispatcherBase::stop_dispatcher() noexcept
 {
-    mExternalEvents.trigger_exit();
+    mExternalEvents.exit_queue(true);
 }
 
 void EventDispatcherBase::stop_dispatcher_drained() noexcept
 {
-    mExternalEvents.trigger_exit_drained();
+    mExternalEvents.exit_queue(false);
 }
 
 void EventDispatcherBase::exit_dispatcher() noexcept

@@ -143,8 +143,9 @@ public:
     /**
      * \brief   Stops the dispatcher after the queued events are dispatched. Use it
      *          when the pending events still have to be delivered, for example an
-     *          outgoing message queue on a graceful disconnect. stop_dispatcher()
-     *          remains the immediate stop and overrides this one.
+     *          outgoing message queue on a graceful disconnect. The queue takes no new
+     *          event from this call on. stop_dispatcher() remains the immediate stop
+     *          and overrides this one.
      **/
     void stop_dispatcher_drained() noexcept;
 
@@ -420,7 +421,7 @@ inline uint32_t EventDispatcherBase::pop_events(Event* listEvents, uint32_t coun
 
 inline void EventDispatcherBase::signal_exit_event() noexcept
 {
-    mExternalEvents.trigger_exit();
+    mExternalEvents.exit_queue(true);
 }
 
 inline bool EventDispatcherBase::is_ready() const noexcept

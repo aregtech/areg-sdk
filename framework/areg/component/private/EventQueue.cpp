@@ -112,9 +112,10 @@ void EventQueue::acquire_lanes() noexcept
 
 void EventQueue::close_lanes() noexcept
 {
+    // An exit request may have closed the ring already; the slots it left in flight are waited for here.
     const size_t closing{ mEnqueuePos.fetch_or(EventQueue::RING_CLOSED, std::memory_order_acq_rel) };
     Cell* const  ring   { mRing.load(std::memory_order_acquire) };
-    if ((ring == nullptr) || ((closing & EventQueue::RING_CLOSED) != 0u))
+    if (ring == nullptr)
         return;
 
     mSlotEvent.set_signaled();  // a producer parked on a full ring never gets its slot now
@@ -223,7 +224,7 @@ bool EventQueue::push_event(Event& eventElem, Event* removedEvent /*= nullptr*/)
     if (prio == areg::EventPriority::ExitPrio)
     {
         // Exit is a sticky flag, never queued; the caller's event is dropped by its owner.
-        trigger_exit();
+        exit_queue(true);
         return true;
     }
 
@@ -267,7 +268,7 @@ EventQueue::PushResult EventQueue::try_push_event(Event& eventElem)
     const areg::EventPriority prio{ eventElem.event_priority() };
     if (prio == areg::EventPriority::ExitPrio)
     {
-        trigger_exit();
+        exit_queue(true);
         return PushResult::Queued;
     }
 
@@ -382,7 +383,7 @@ uint32_t EventQueue::push_events(Event* eventElems, uint32_t count)
 
     if (exitRequested)
     {
-        trigger_exit();
+        exit_queue(true);
     }
     else if (signalCount != 0u)
     {
@@ -423,7 +424,7 @@ Event EventQueue::pop_event() noexcept
     if (_ring_try_dequeue(ring, result))
         return result;
 
-    if ((mExitState.load(std::memory_order_acquire) & EventQueue::EXIT_DRAINED) != 0u)
+    if (_exit_due())
         return ExitEvent::exit_event();
 
     return Event{};
@@ -466,7 +467,7 @@ uint32_t EventQueue::pop_events(Event* eventElems, uint32_t count)
         ++popped;
     }
 
-    if ((popped == 0u) && ((mExitState.load(std::memory_order_acquire) & EventQueue::EXIT_DRAINED) != 0u))
+    if ((popped == 0u) && _exit_due())
     {
         eventElems[0] = ExitEvent::exit_event();
         popped = 1u;
@@ -643,6 +644,17 @@ bool EventQueue::_ring_wait_registered(Cell* ring, Event& eventElem) noexcept
     // The last access to this queue: release_lanes() may free it once the count drops.
     mProducersWaiting.fetch_sub(1u, std::memory_order_release);
     return enqueued;
+}
+
+bool EventQueue::_exit_due() noexcept
+{
+    const uint8_t exitState{ mExitState.load(std::memory_order_acquire) };
+    if ((exitState == EventQueue::EXIT_NONE) || (_exit_reached(exitState) == false))
+        return false;
+
+    // A priority producer that saw the queue open before the close inserts under this lock.
+    Lock lock(mPrioLock);
+    return (mPrioQueue.has_value() == false) || mPrioQueue->empty();
 }
 
 bool EventQueue::_ring_try_dequeue(Cell* ring, Event& result) noexcept

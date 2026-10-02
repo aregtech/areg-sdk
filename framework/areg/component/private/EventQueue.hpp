@@ -70,7 +70,7 @@ namespace areg {
  *          When the ring is full the behaviour is selected at construction:
  *            - dropOnFull == false (default): the producer blocks up to waitMs for
  *              a free slot, then fails the enqueue (lossless; request/response safe).
- *              The wait is aborted by trigger_exit().
+ *              The wait is aborted by exit_queue().
  *            - dropOnFull == true: the incoming event is rejected (drop-newest),
  *              for best-effort / latest-value streams (e.g. broadcasts).
  *
@@ -253,17 +253,17 @@ public:
     inline uint32_t extract_max_wait_ms() noexcept;
 
     /**
-     * \brief   Requests exit: sets the sticky exit flag, wakes the consumer
-     *          blocked in wait_event() and any producers blocked on a full ring.
-     *          After this, pop_event() returns the singleton ExitEvent until
-     *          reset_exit() is called.
+     * \brief   Requests exit. The queue refuses every new event from this call on and
+     *          wakes the consumer and any producer blocked on a full ring. The exit
+     *          is sticky until reset_exit() is called.
+     *
+     * \param   exitNow     If true, pop_event() returns the singleton ExitEvent at once
+     *                      and the queued events are not delivered. If false, the
+     *                      events queued before the call are delivered first, then
+     *                      pop_event() returns the ExitEvent. An exit now overrides a
+     *                      drained exit, never the reverse.
      **/
-    inline void trigger_exit() noexcept;
-
-    /**
-     * \brief   Requests exit, but only after the queued events are processed.
-     **/
-    inline void trigger_exit_drained() noexcept;
+    inline void exit_queue(bool exitNow = false) noexcept;
 
     /**
      * \brief   Clears the sticky exit flags. Must be called only when the owner
@@ -402,6 +402,21 @@ private:
     bool _ring_try_dequeue(Cell* ring, Event& result) noexcept;
 
     /**
+     * \brief   Returns true if the requested exit is due: at once for an exit now, or
+     *          once every ring slot taken before the close is consumed for a drained exit.
+     * \param   exitState   The exit state, not EXIT_NONE.
+     **/
+    [[nodiscard]]
+    inline bool _exit_reached(uint8_t exitState) const noexcept;
+
+    /**
+     * \brief   Consumer-only. Returns true if the consumer found nothing to pop and the
+     *          requested exit is due, including an empty priority lane.
+     **/
+    [[nodiscard]]
+    bool _exit_due() noexcept;
+
+    /**
      * \brief   Rings the consumer doorbell, but only when the consumer is parked
      *          (eventcount discipline). The full fence pairs with wait_event()'s arm
      *          so a consumer that is in the act of parking is never missed.
@@ -446,7 +461,7 @@ private:
                             mPrioQueue; //!< [Critical-][High-] ordered (stored by value)
     std::atomic_uint32_t    mPrioCount; //!< The number of elements in mPrioQueue
 
-    //!< Consumer wake-up doorbell. Manual-reset: set by push/trigger_exit, reset only by wait_event.
+    //!< Consumer wake-up doorbell. Manual-reset: set by push/exit_queue, reset only by wait_event.
     SimpleEvent             mQueueEvent;
     //!< Set by the consumer while parked in wait_event(); read by producers so the doorbell
     //!< is rung only when a waiter actually needs it (eventcount discipline, lost-wakeup-free).
@@ -513,22 +528,27 @@ inline bool EventQueue::has_pending() const noexcept
         return is_exit_triggered();
 
     const size_t pos{ mDequeuePos.load(std::memory_order_relaxed) };
-    return (ring[pos & mMask].sequence.load(std::memory_order_acquire) == (pos + 1u))
-        || (mPrioCount.load(std::memory_order_relaxed) != 0u)
-        || (mExitState.load(std::memory_order_acquire) != EventQueue::EXIT_NONE);
+    if ((ring[pos & mMask].sequence.load(std::memory_order_acquire) == (pos + 1u))
+        || (mPrioCount.load(std::memory_order_relaxed) != 0u))
+    {
+        return true;
+    }
+
+    const uint8_t exitState{ mExitState.load(std::memory_order_acquire) };
+    return (exitState == EventQueue::EXIT_NONE) ? false : _exit_reached(exitState);
 }
 
-inline void EventQueue::trigger_exit() noexcept
+inline bool EventQueue::_exit_reached(uint8_t exitState) const noexcept
 {
-    mExitState.store(EventQueue::EXIT_NOW, std::memory_order_release);
-    std::atomic_thread_fence(std::memory_order_seq_cst);
-    mQueueEvent.set_signaled();     // wake the consumer
-    mSlotEvent.set_signaled();      // wake any producer blocked on a full ring
+    // A drained exit waits for the slots taken before the close; their publish wakes the consumer.
+    return ((exitState & EventQueue::EXIT_NOW) != 0u)
+        || ((mEnqueuePos.load(std::memory_order_acquire) & ~EventQueue::RING_CLOSED) == mDequeuePos.load(std::memory_order_relaxed));
 }
 
-inline void EventQueue::trigger_exit_drained() noexcept
+inline void EventQueue::exit_queue(bool exitNow /*= false*/) noexcept
 {
-    static_cast<void>(mExitState.fetch_or(EventQueue::EXIT_DRAINED, std::memory_order_release));
+    static_cast<void>(mEnqueuePos.fetch_or(EventQueue::RING_CLOSED, std::memory_order_acq_rel));
+    static_cast<void>(mExitState.fetch_or(exitNow ? EventQueue::EXIT_NOW : EventQueue::EXIT_DRAINED, std::memory_order_release));
     std::atomic_thread_fence(std::memory_order_seq_cst);
     mQueueEvent.set_signaled();     // wake the consumer
     mSlotEvent.set_signaled();      // wake any producer blocked on a full ring
