@@ -9,7 +9,7 @@
  * \copyright   (c) 2017-2026 Aregtech (Artak Avetyan)
  * \file        units/StringDefsTest4.cpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
- * \author      Artak Avetyan, Jiang Mingpeng
+ * \author      Jiang Mingpeng
  * \brief       Areg Platform, Areg framework unit test file.
  *              Extends StringDefsTest.cpp / StringDefsTest2.cpp / StringDefsTest3.cpp
  *              with inputs none of them covers:
