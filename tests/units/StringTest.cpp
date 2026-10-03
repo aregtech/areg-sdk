@@ -397,6 +397,48 @@ TEST(StringTestComparison, CompareObjectAtPosition)
     EXPECT_EQ(str.compare(String("WORLD"), 6, areg::COUNT_ALL, false), areg::Ordering::Equal);
 }
 
+/**
+ * \brief   Test that a bool second argument is 'caseSensitive' and an integral one is a position.
+ **/
+TEST(StringTestComparison, CompareBoolOrPosition)
+{
+    const String str("abcdef");
+    const char* upper = "ABCDEF";
+    EXPECT_EQ(str.compare("ABCDEF", false), areg::Ordering::Equal);
+    EXPECT_EQ(str.compare(upper, false), areg::Ordering::Equal);
+    EXPECT_EQ(str.compare("bcdef", true), areg::Ordering::Bigger);
+
+    const String hello("Hello World");
+    EXPECT_EQ(hello.compare("World", 6u), areg::Ordering::Equal);
+    EXPECT_EQ(hello.compare(String("World"), 6u), areg::Ordering::Equal);
+    EXPECT_EQ(hello.compare(std::string("World"), std::size_t{ 6 }), areg::Ordering::Equal);
+    EXPECT_EQ(hello.compare(std::string_view("World"), 6), areg::Ordering::Equal);
+    EXPECT_EQ(hello.compare(std::string_view("WORLD"), 6u, areg::COUNT_ALL, false), areg::Ordering::Equal);
+    EXPECT_EQ(hello.compare(std::string_view("Worldwide").substr(0, 5), 6), areg::Ordering::Equal);
+
+    const areg::WideString wide(L"Hello World");
+    EXPECT_EQ(wide.compare(L"HELLO WORLD", false), areg::Ordering::Equal);
+    EXPECT_EQ(wide.compare(areg::WideString(L"World"), 6u), areg::Ordering::Equal);
+    EXPECT_EQ(wide.compare(std::wstring_view(L"World"), 6u), areg::Ordering::Equal);
+}
+
+/**
+ * \brief   Test case-insensitive compare with a view that is not null-terminated.
+ **/
+TEST(StringTestComparison, CompareIgnoreCaseView)
+{
+    const String str("ABC");
+    const char buffer[]{ 'a', 'b', 'c' };
+    EXPECT_EQ(str.compare(std::string_view("abcdef").substr(0, 3), false), areg::Ordering::Equal);
+    EXPECT_EQ(str.compare(std::string_view(buffer, 3), false), areg::Ordering::Equal);
+    EXPECT_EQ(str.compare(std::string_view("abd"), false), areg::Ordering::Smaller);
+    EXPECT_EQ(str.compare(std::string_view("abb"), false), areg::Ordering::Bigger);
+    EXPECT_EQ(str.compare("abcdef", 0, 3, false), areg::Ordering::Equal);
+
+    const areg::WideString wide(L"ABC");
+    EXPECT_EQ(wide.compare(std::wstring_view(L"abcdef").substr(0, 3), false), areg::Ordering::Equal);
+}
+
 //////////////////////////////////////////////////////////////////////////
 // StringTestConcatenation tests
 //////////////////////////////////////////////////////////////////////////

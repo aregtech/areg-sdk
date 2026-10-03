@@ -1024,6 +1024,26 @@ TEST(StringDefsTest2, compare_deduced_char_type)
 }
 
 /**
+ * \brief   Test that areg::compare of two pointers to a non-character type compares the pointers.
+ **/
+TEST(StringDefsTest2, compare_object_pointers)
+{
+    const int values[]{ 7, 7 };
+    const int* first    = &values[0];
+    const int* second   = &values[1];
+    int buffer[]{ 1, 2 };
+    int* mutableFirst   = &buffer[0];
+    int* mutableSecond  = &buffer[1];
+
+    EXPECT_EQ(areg::compare(first, second), areg::Ordering::Smaller);
+    EXPECT_EQ(areg::compare(second, first), areg::Ordering::Bigger);
+    EXPECT_EQ(areg::compare(first, first), areg::Ordering::Equal);
+    EXPECT_EQ(areg::compare(mutableFirst, mutableSecond), areg::Ordering::Smaller);
+    EXPECT_EQ(areg::compare("abc", "abc"), areg::Ordering::Equal);
+    EXPECT_EQ(areg::compare(L"abc", "abd", 2), areg::Ordering::Equal);
+}
+
+/**
  * \brief   Test find_first and find_last for wchar_t strings.
  *
  *          Exercises the wide-character SIMD path (wstring_view::find/rfind) for
