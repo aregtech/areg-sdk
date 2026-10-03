@@ -859,7 +859,7 @@ public:
 
     /**
      * \brief   Takes the lock and waits for the current owner. The wait spins for a short while
-     *          and then yields the processor, so it does not keep a core busy.
+     *          and then sleeps until the owner releases the lock, so it uses no processor time.
      **/
     void acquire() noexcept;
 
@@ -870,6 +870,13 @@ public:
     void release() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
+// Constants
+//////////////////////////////////////////////////////////////////////////
+private:
+    static constexpr uint32_t   WRITER_FREE     { 0u }; //!< No thread owns the lock.
+    static constexpr uint32_t   WRITER_OWNED    { 1u }; //!< A thread owns the lock.
+
+//////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
@@ -877,8 +884,10 @@ private:
     #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
-    //!< True while a thread owns the lock.
-    std::atomic<bool>   mBusy;
+    //!< The lock state, WRITER_FREE or WRITER_OWNED. Sleeping waiters wait on this word.
+    std::atomic<uint32_t>   mBusy;
+    //!< The number of threads asleep on the lock, or about to sleep.
+    std::atomic<uint32_t>   mSleepers;
 #if defined(_MSC_VER)
     #pragma warning(pop)
 #endif  // _MSC_VER
@@ -969,7 +978,8 @@ inline bool areg::is_local_address(const areg::String& address) noexcept
 //////////////////////////////////////////////////////////////////////////
 
 constexpr areg::SocketWriter::SocketWriter() noexcept
-    : mBusy ( false )
+    : mBusy     ( SocketWriter::WRITER_FREE )
+    , mSleepers ( 0u )
 {
 }
 

@@ -257,7 +257,7 @@ accident:
   host           Linux x86_64
 ```
 
-Full options: [`tools/README.md`, section 13](./../../tools/README.md#13-flash-and-ram-footprint).
+Full options: [`tools/README.md`, section 12](./../../tools/README.md#12-flash-and-ram-footprint).
 
 ### 5.1 Two rules for honest figures
 
@@ -306,5 +306,5 @@ compiler, target architecture and switches ahead of any number it reports.
 - [Cross-compilation](./01b-cmake-build.md#cross-compilation) – building for ARM targets
 - [`areg.init` reference](./05b-areg-configuration-file.md) – the runtime keys, including
   `net::*::tcpip::pairs`
-- [`tools/README.md`, section 13](./../../tools/README.md#13-flash-and-ram-footprint) –
+- [`tools/README.md`, section 12](./../../tools/README.md#12-flash-and-ram-footprint) –
   `footprint.py` options

@@ -30,12 +30,44 @@
 #include "areg/base/private/posix/WaitableSemaphorePosix.hpp"
 #include "areg/base/private/posix/CriticalSectionPosix.hpp"
 #include "areg/base/private/posix/WaitableTimerPosix.hpp"
-#include "areg/base/private/posix/SpinLockPosix.hpp"
 #include "areg/base/private/posix/SyncLockAndWaitPosix.hpp"
+#include "areg/base/private/posix/SyncDefsPosix.hpp"
+#include "areg/base/private/WaitWord.hpp"
 
+#include <climits>
 #include <cstdint>
 #include <string.h>
 #include <time.h>
+
+#if defined(__APPLE__)
+
+extern "C" {
+    int __ulock_wait(uint32_t operation, void* addr, uint64_t value, uint32_t timeout_us);
+    int __ulock_wake(uint32_t operation, void* addr, uint64_t wake_value);
+}
+
+#elif defined(__CYGWIN__)
+
+    #ifndef NOMINMAX
+        #define NOMINMAX
+    #endif  // NOMINMAX
+    #include <windows.h>
+
+#else   // Linux
+
+    #include <linux/futex.h>
+    #include <sys/syscall.h>
+    #include <unistd.h>
+
+namespace
+{
+    //!< membarrier() command: a barrier on every running thread of the process (kernel ABI value).
+    constexpr int MEMBARRIER_PRIVATE_EXPEDITED          { 1 << 3 };
+    //!< membarrier() command: registers the process for MEMBARRIER_PRIVATE_EXPEDITED (kernel ABI value).
+    constexpr int MEMBARRIER_REGISTER_PRIVATE_EXPEDITED { 1 << 4 };
+}
+
+#endif  // defined(__APPLE__) / defined(__CYGWIN__) / Linux
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -318,5 +350,72 @@ Wait::WaitResolution Wait::_os_wait_for(const Wait::Duration& timeout) const
 }
 
 } // namespace areg
+
+//////////////////////////////////////////////////////////////////////////
+// Wait on a word
+//////////////////////////////////////////////////////////////////////////
+
+namespace areg::os {
+
+void _os_wait_word(const std::atomic<uint32_t> & word, uint32_t expected) noexcept
+{
+    void * address{ const_cast<std::atomic<uint32_t> *>(&word) };
+#if defined(__APPLE__)
+    ::__ulock_wait(areg::os::APPLE_ULOCK_COMPARE_AND_WAIT, address, expected, 0u);
+#elif defined(__CYGWIN__)
+    ::WaitOnAddress(address, &expected, sizeof(expected), INFINITE);
+#else   // Linux
+    ::syscall(SYS_futex, address, FUTEX_WAIT_PRIVATE, expected, nullptr, nullptr, 0);
+#endif  // defined(__APPLE__) / defined(__CYGWIN__) / Linux
+}
+
+void _os_wake_word(std::atomic<uint32_t> & word) noexcept
+{
+#if defined(__APPLE__)
+    ::__ulock_wake(areg::os::APPLE_ULOCK_COMPARE_AND_WAIT, &word, 0u);
+#elif defined(__CYGWIN__)
+    ::WakeByAddressSingle(&word);
+#else   // Linux
+    ::syscall(SYS_futex, &word, FUTEX_WAKE_PRIVATE, 1, nullptr, nullptr, 0);
+#endif  // defined(__APPLE__) / defined(__CYGWIN__) / Linux
+}
+
+void _os_wake_word_all(const std::atomic<uint32_t> * word) noexcept
+{
+    void * address{ const_cast<std::atomic<uint32_t> *>(word) };
+#if defined(__APPLE__)
+    constexpr uint32_t ULOCK_WAKE_ALL{ 0x00000100u };
+    ::__ulock_wake(areg::os::APPLE_ULOCK_COMPARE_AND_WAIT | ULOCK_WAKE_ALL, address, 0u);
+#elif defined(__CYGWIN__)
+    ::WakeByAddressAll(address);
+#else   // Linux
+    ::syscall(SYS_futex, address, FUTEX_WAKE_PRIVATE, INT_MAX, nullptr, nullptr, 0);
+#endif  // defined(__APPLE__) / defined(__CYGWIN__) / Linux
+}
+
+bool _os_has_process_barrier() noexcept
+{
+#if defined(__APPLE__)
+    return false;
+#elif defined(__CYGWIN__)
+    return true;
+#elif defined(SYS_membarrier)
+    static const bool _registered{ ::syscall(SYS_membarrier, MEMBARRIER_REGISTER_PRIVATE_EXPEDITED, 0, 0) == 0 };
+    return _registered;
+#else   // Linux without the membarrier system call
+    return false;
+#endif  // defined(__APPLE__) / defined(__CYGWIN__) / Linux
+}
+
+void _os_process_barrier() noexcept
+{
+#if defined(__CYGWIN__)
+    ::FlushProcessWriteBuffers();
+#elif !defined(__APPLE__) && defined(SYS_membarrier)
+    ::syscall(SYS_membarrier, MEMBARRIER_PRIVATE_EXPEDITED, 0, 0);
+#endif  // defined(__CYGWIN__) / Linux
+}
+
+} // namespace areg::os
 
 #endif  // defined(_POSIX) || defined(POSIX)

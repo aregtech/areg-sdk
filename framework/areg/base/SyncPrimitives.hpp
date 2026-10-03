@@ -641,15 +641,16 @@ private:
 // class SpinLock declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Recursive spin-lock for fast synchronization.
+ * \brief   Recursive lock for short critical sections.
  *
  *          Uses an atomic owner-thread ID and a recursion counter to support
- *          same-thread re-entry without deadlocking. No OS primitives are
- *          required -- implemented entirely with C++17 standard atomics and
- *          portable CPU-pause hints.
+ *          same-thread re-entry, up to 65535 levels, without deadlocking. A free
+ *          lock is taken with one atomic operation and holds no OS resource.
  *
- *          Use only for short critical sections. Spinning wastes CPU cycles
- *          while waiting; prefer CriticalSection or Mutex for longer holds.
+ *          A thread that finds the lock taken spins for a short while, then
+ *          sleeps until the owner releases it, so a waiter uses no processor
+ *          time and a lower-priority owner gets to run. It sleeps with futex
+ *          on Linux, __ulock on macOS and WaitOnAddress on Windows and Cygwin.
  *
  *          Compatible with all platforms: Windows (x86/x86-64), Linux, macOS,
  *          Cygwin, MinGW, ARM (32-bit and 64-bit). Works with MSVC, GCC, Clang.
@@ -671,7 +672,7 @@ public:
     /**
      * \brief   Acquires spin-lock ownership. If called again from the same
      *          thread, increments the recursion counter and returns immediately.
-     *          Spins until the lock is available when called from another thread.
+     *          Waits until the lock is available when another thread owns it.
      *
      * \return  Always returns true.
      **/
@@ -716,7 +717,7 @@ private:
 #endif  // _MSC_VER
 
     std::atomic<id_type>    mOwner;     //!< Thread ID of the current owner; 0 = unlocked.
-    std::atomic<uint32_t>   mCount;     //!< Recursion depth; 0 when unlocked.
+    std::atomic<uint32_t>   mCount;     //!< Recursion depth in the low 16 bits, sleeping threads in the high 16 bits.
 
 #if defined(_MSC_VER)
     #pragma warning(pop)

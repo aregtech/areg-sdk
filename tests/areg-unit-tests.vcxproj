@@ -67,6 +67,7 @@
     <ClCompile Include="units\FixedArrayTest.cpp" />
     <ClCompile Include="units\HashMapTest.cpp" />
     <ClCompile Include="units\LinkedListTest.cpp" />
+    <ClCompile Include="units\LockWaitTest.cpp" />
     <ClCompile Include="units\MapTest.cpp" />
     <ClCompile Include="units\KeyValuePairTest.cpp" />
     <ClCompile Include="units\RingStackTest.cpp" />

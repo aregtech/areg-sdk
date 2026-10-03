@@ -98,11 +98,8 @@ about this repository: whether the framework, the agent corpus and the CI still 
 | `run-all-examples.bat` | Python | Wrapper around the driver for Windows | [9](#9-running-the-examples-as-a-test-suite) |
 | `areg_benchmarks.py` | Python | Turns the console output of the benchmarks into numbers | [10](#10-measuring-throughput-and-latency) |
 | `report-ctest.py` | Python | Republishes failed ctest cases as build server annotations | [9](#9-running-the-examples-as-a-test-suite) |
-| `latency/*` | Python | Unattended latency measurement and A/B comparison | [10](#10-measuring-throughput-and-latency) |
 | `check-ascii.py` | Python | Finds non ASCII bytes and unwanted control characters | [11](#11-source-hygiene-check-asciipy) |
-| `fix-eol.py` | Python | Converts CRLF line endings to LF; `--check` only reports | [11](#line-endings-fix-eolpy) |
-| `hunt-crash.py` | Python | Repeats a run under a debugger until it crashes, saves stacks | [12](#12-debugging-a-rare-crash) |
-| `footprint.py` | Python | Reports the flash size of the artefacts and the RAM of the running processes | [13](#13-flash-and-ram-footprint) |
+| `footprint.py` | Python | Reports the flash size of the artefacts and the RAM of the running processes | [12](#12-flash-and-ram-footprint) |
 | `check_invariants.py` | Python | Seeds a defect per framework invariant, rebuilds, and asks whether the test suite notices. `--dry-run` is one second; `--restore` undoes a seed a killed run left | -- |
 
 **The agent corpus.** The rules these check against are `../../docs/ai-readiness.md`.
@@ -611,50 +608,6 @@ place, so the captured output is a stream of ANSI escapes with the same lines re
 of times. This turns that stream into a table of numbers. `run-all-examples.py --perf` imports
 it; there is nothing to run by hand.
 
-### `latency/` -- unattended measurement
-
-| Script | Platform | What it does |
-|--------|----------|--------------|
-| `run-local-latency.sh` | Linux, macOS | Example 31 in both topologies, all modes, into one CSV and one log |
-| `run-pub-latency.py` | Linux, macOS | Example 30 through the router; starts and stops the router itself |
-| `run-latency-trace.sh` | Linux, macOS | A per-stage trace build, to see where the time inside a trip goes |
-| `run-win-abba.py` | Windows | Runs two builds alternately in ABBA order and compares them |
-| `win_latency_trace.ps1` | Windows | The Windows counterpart of `run-latency-trace.sh` |
-
-```bash
-tools/intern/latency/run-local-latency.sh --repeat 3 --label baseline
-python3 tools/intern/latency/run-pub-latency.py --modes pp0,pp64 --count 20000
-```
-
-Results are written to `product/tasks/measurements`, which is not under version control.
-
-### The per-stage trace
-
-Building the framework with `AREG_LATENCY_TRACE=1` turns on the instrumentation in
-`framework/areg/base/private/DebugDefs.hpp`. Every instrumented stage accumulates count, minimum,
-mean and maximum, and the table is printed to standard error when the process exits:
-
-| Stage | What it times |
-|-------|---------------|
-| `SendNode` | The send thread: drain, serialize and write the batch |
-| `SendSyscall` | The send thread: only the write syscall |
-| `RecvNode` | The receive thread: deserialize and route one message |
-| `CompDispatch` | The dispatcher: the component's own handler |
-| `MpscHandoff` | The event queue, from enqueue to dequeue: handing a message to another thread, wake-up included |
-
-Instrument a new stage by adding an entry to `areg::LtStage` before `Count` and placing an
-`AREG_LT_SCOPE(areg::LtStage::YourStage)` in the scope to be timed. The macros compile to nothing
-when the option is off.
-
-> [!WARNING]
-> Three rules, or the numbers are worthless.
-> 1. The table is printed by `std::atexit`. It appears **only** when the process ends through its
->    own exit path. Never kill the processes -- quit them with their console `-q` command.
-> 2. The instrumentation itself costs time. A traced build is slower than a normal one. Read the
->    **share** of each stage, never its absolute value, and never mix the two builds in one table.
-> 3. Measure on a quiet machine. A build, a browser or a second benchmark running at the same time
->    changes the result more than most of the changes worth measuring.
-
 ---
 
 ## 11. Source Hygiene: `check-ascii.py`
@@ -728,57 +681,9 @@ EOF
 chmod +x .git/hooks/pre-commit
 ```
 
-### Line endings: `fix-eol.py`
-
-The repository stores text with LF, and `.gitattributes` and `.editorconfig` say so. An editor
-that still saves a file with CRLF makes every line of it look changed. `fix-eol.py` rewrites such
-files with LF; `.bat`, `.ps1`, binaries and `tools/schema/*` are left as they are.
-
-```bash
-python3 tools/intern/fix-eol.py              # files changed against HEAD, and untracked ones
-python3 tools/intern/fix-eol.py --check      # report only; exit 1 when a file has CRLF
-python3 tools/intern/fix-eol.py --all        # every tracked file
-```
-
 ---
 
-## 12. Debugging a Rare Crash
-
-`hunt-crash.py` is for the defect that appears once in a few dozen runs. A core file is not always
-available -- `ptrace` is restricted in containers, macOS writes crash reports instead of cores, and
-WSL often writes neither -- so the program is started **under the debugger from the beginning** and
-the debugger is asked for the stacks at the moment it stops.
-
-```bash
-python3 tools/intern/hunt-crash.py --runs 200 14_locmesh.elf
-python3 tools/intern/hunt-crash.py --bin-dir <dir> --runs 50 --timeout 120 22_pubservice.elf
-python3 tools/intern/hunt-crash.py --runs 100 --out crash.txt 30_pubprovider.elf -- --some-arg
-```
-
-| Option | Default | Meaning |
-|--------|---------|---------|
-| `--runs N` | `100` | How many times to try |
-| `--timeout SEC` | `120` | Deadline for one run |
-| `--bin-dir DIR` | newest build | Where the executable is |
-| `--out FILE` | `crash-stacks.txt` | Where the stacks are written |
-
-It uses `gdb` on Linux and cygwin and `lldb` on macOS, both in batch mode, so nothing is
-interactive and it can be left running. Exit status is 0 when a crash was captured, 1 when the runs
-finished without one, and 2 when the tool could not run at all.
-
-Stops on the first fatal signal: `SIGSEGV`, `SIGABRT`, `SIGBUS`, `SIGILL`, `SIGFPE` and, on macOS,
-`EXC_BAD_ACCESS`. A hang is not a crash -- for that, run the scenario under
-`tools/intern/run-all-examples.py --repeat N`, which photographs a process it has to kill.
-
-> [!TIP]
-> Build with `-DCMAKE_BUILD_TYPE=RelWithDebInfo` before hunting. A Debug build changes the timing
-> enough that a race often stops reproducing, and a plain Release build has no symbols to print.
-> If the defect is a memory error rather than a race, `tools/intern/sanitize.sh asan` finds it in one run
-> instead of fifty.
-
----
-
-## 13. Flash and RAM Footprint
+## 12. Flash and RAM Footprint
 
 `footprint.py` answers what an areg deployment costs a device. It **builds nothing**: it reads a
 build directory that already exists, so the same script serves a native build, a cross build and a
@@ -851,7 +756,7 @@ build cannot be published under the host's architecture.
 
 ---
 
-## 14. Summary
+## 13. Summary
 
 Building an application with the SDK:
 
@@ -867,7 +772,5 @@ Working on the SDK itself:
 * `run-all-examples.sh` after every build -- it covers what the unit tests cannot
 * `sanitize.sh asan` before trusting a change that touches memory or lifetime
 * `check-ascii.py --staged` from a pre-commit hook, both checks
-* `hunt-crash.py` for a defect that reproduces rarely, `sanitize.sh` for one that reproduces
-* Measure with `latency/` on a quiet machine, and compare shares rather than absolute numbers
 
 This workflow scales from a **hello-service example** to **full distributed production systems**.

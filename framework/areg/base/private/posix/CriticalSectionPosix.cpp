@@ -56,12 +56,11 @@ bool CriticalSectionPosix::try_lock() const noexcept
 
 bool CriticalSectionPosix::is_valid() const noexcept
 {
-    return mSpinLock.is_valid();
+    return true;
 }
 
 void CriticalSectionPosix::free_resources()
 {
-    mSpinLock.free_resources();
 }
 
 } // namespace areg::os

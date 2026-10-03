@@ -129,6 +129,31 @@ TEST(EventQueueTest, priority_lane_drained_first)
     EXPECT_FALSE(queue.has_pending());
 }
 
+TEST(EventQueueTest, priority_lane_keeps_posting_order_per_priority)
+{
+    // Critical events in posting order, then high events in posting order, whichever push path.
+    ReadyQueue queue(0u);
+    Event h1 = makeEvent(1u, EventPriority::HighPrio);      queue.push_event(h1);
+    Event c2 = makeEvent(2u, EventPriority::CriticalPrio);  queue.push_event(c2);
+    Event h3 = makeEvent(3u, EventPriority::HighPrio);      EXPECT_EQ(queue.try_push_event(h3), EventQueue::PushResult::Queued);
+    Event c4 = makeEvent(4u, EventPriority::CriticalPrio);  EXPECT_EQ(queue.try_push_event(c4), EventQueue::PushResult::Queued);
+    Event batch[3] =
+    {
+          makeEvent(5u, EventPriority::HighPrio)
+        , makeEvent(6u, EventPriority::CriticalPrio)
+        , makeEvent(7u, EventPriority::HighPrio)
+    };
+    EXPECT_EQ(queue.push_events(batch, 3u), 0u);
+    Event c8 = makeEvent(8u, EventPriority::CriticalPrio);  queue.push_event(c8);
+
+    for (uint32_t expected : { 2u, 4u, 6u, 8u, 1u, 3u, 5u, 7u })
+    {
+        EXPECT_EQ(queue.pop_event().event_id(), expected);
+    }
+
+    EXPECT_FALSE(queue.has_pending());
+}
+
 TEST(EventQueueTest, exit_preempts_is_sticky_and_resets)
 {
     ReadyQueue queue(0u);

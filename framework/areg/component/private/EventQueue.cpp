@@ -21,11 +21,29 @@
 #include "areg/base/private/DebugDefs.hpp"
 
 #include <chrono>
+#include <iterator>
 #include <type_traits>
 
 // pop_event() is noexcept and returns the exit event by copying the cached singleton.
 static_assert(std::is_nothrow_copy_constructible_v<areg::Event>, "Event copy must be noexcept for noexcept pop_event()");
 static_assert(std::is_nothrow_move_assignable_v<areg::Event>, "Event move must be noexcept for the ring hand-off");
+
+namespace
+{
+    /**
+     * \brief   Inserts the event into the priority lane behind every event of the same or a
+     *          higher priority. The lane is searched from the tail, so an event of the lowest
+     *          priority present is appended at once.
+     **/
+    inline void _prio_insert(std::deque<areg::Event> & lane, areg::Event && evt, areg::EventPriority prio)
+    {
+        auto it = lane.end();
+        while ((it != lane.begin()) && (std::prev(it)->event_priority() < prio))
+            --it;
+
+        lane.insert(it, std::move(evt));
+    }
+}
 
 namespace areg {
 
@@ -233,11 +251,7 @@ bool EventQueue::push_event(Event& eventElem, Event* removedEvent /*= nullptr*/)
         Lock lock(mPrioLock);
         if (mPrioQueue.has_value() && (!is_closed()))
         {
-            auto it = mPrioQueue->begin();
-            while (it != mPrioQueue->end() && it->event_priority() >= prio)
-                ++it;
-
-            mPrioQueue->insert(it, std::move(eventElem));
+            _prio_insert(*mPrioQueue, std::move(eventElem), prio);
             mPrioCount.store(static_cast<uint32_t>(mPrioQueue->size()), std::memory_order_relaxed);
             _wake_consumer();
             return true;
@@ -277,11 +291,7 @@ EventQueue::PushResult EventQueue::try_push_event(Event& eventElem)
         Lock lock(mPrioLock);
         if (mPrioQueue.has_value() && (!is_closed()))
         {
-            auto it = mPrioQueue->begin();
-            while (it != mPrioQueue->end() && it->event_priority() >= prio)
-                ++it;
-
-            mPrioQueue->insert(it, std::move(eventElem));
+            _prio_insert(*mPrioQueue, std::move(eventElem), prio);
             mPrioCount.store(static_cast<uint32_t>(mPrioQueue->size()), std::memory_order_relaxed);
             _wake_consumer();
             return PushResult::Queued;
@@ -343,12 +353,7 @@ uint32_t EventQueue::push_events(Event* eventElems, uint32_t count)
             }
             else if (prio >= areg::EventPriority::HighPrio)
             {
-                // '>=' keeps equal priorities in posting order -- see push_event().
-                auto it = mPrioQueue->begin();
-                while (it != mPrioQueue->end() && it->event_priority() >= prio)
-                    ++it;
-
-                mPrioQueue->insert(it, std::move(evt));
+                _prio_insert(*mPrioQueue, std::move(evt), prio);
                 ++signalCount;
             }
             else

@@ -22,7 +22,7 @@
 
 #if defined(_POSIX) || defined(POSIX)
 
-#include "areg/base/private/posix/SpinLockPosix.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 #include <sys/types.h>
 #include <time.h>
 
@@ -295,7 +295,7 @@ private:
     /**
      * \brief   Synchronization object.
      */
-    mutable SpinLockPosix  mLock;
+    mutable areg::SpinLock  mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -311,32 +311,32 @@ private:
 #ifdef __linux__
 inline int TimerPosix::timer_fd() const noexcept
 {
-    SpinAutolockPosix lock(mLock);
+    areg::Lock lock(mLock);
     return mTimerFd;
 }
 #endif  // __linux__
 
 inline void * TimerPosix::context() const noexcept
 {
-	SpinAutolockPosix lock(mLock);
+	areg::Lock lock(mLock);
     return mContext;
 }
 
 inline id_type TimerPosix::context_id() const noexcept
 {
-    SpinAutolockPosix lock(mLock);
+    areg::Lock lock(mLock);
     return mContextId;
 }
 
 inline const timespec & TimerPosix::due_time() const noexcept
 {
-	SpinAutolockPosix lock(mLock);
+	areg::Lock lock(mLock);
     return mDueTime;
 }
 
 inline bool TimerPosix::is_valid() const noexcept
 {
-    SpinAutolockPosix lock(mLock);
+    areg::Lock lock(mLock);
 #ifdef __APPLE__
     return (((mContext != nullptr) || (mContextId != 0u)) && (mTimerQueue != nullptr));
 #elif defined(__linux__)
@@ -350,7 +350,7 @@ inline bool TimerPosix::is_valid() const noexcept
 #if !defined(__linux__) && !defined(__APPLE__)
 inline bool TimerPosix::armed_due_time( struct timespec & out_dueTime ) const noexcept
 {
-    SpinAutolockPosix lock(mLock);
+    areg::Lock lock(mLock);
     if (mArmed)
     {
         out_dueTime = mDueTime;
