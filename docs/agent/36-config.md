@@ -82,7 +82,7 @@ scope line; matching that is the tidier habit.
 | `service::` | `list`, the remote services an application may connect to (`router \| logger`) | rarely; the default names both |
 | `router::` | how to reach `mtrouter`: `service`, `connect`, `enable::tcpip`, `address::tcpip`, `port::tcpip` | yes, for any multi-process application not on one machine |
 | `logger::` | how to reach `logcollector`, with the same five properties | yes, when collecting logs of several processes |
-| `net::` | socket tuning per service: `sndbuf`, `rcvbuf`, `drain`, `pairs`, `timeout`, `cache` | no; change one only to answer a measurement |
+| `net::` | socket tuning per service: `sndbuf`, `rcvbuf`, `drain`, `pairs`, `timeout`, `cache`, `keepalive` | no; change one only to answer a measurement |
 
 `config::*::version` and `log::*::version` state which schema the file is written
 against. The framework reads them back, and assumes its own built-in version when one

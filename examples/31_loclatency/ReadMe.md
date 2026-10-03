@@ -171,7 +171,7 @@ Both examples are benchmark scenarios of the shared example driver, so one comma
 the whole ladder from one thread to two processes:
 
 ```bash
-python3 tools/run-all-examples.py --tier perf --only 31_locsame,31_loccross,30_owt,30_rtt --perf
+python3 tools/intern/run-all-examples.py --tier perf --only 31_locsame,31_loccross,30_owt,30_rtt --perf
 ```
 
 The driver prints every run and then works out the two steps of the ladder, per mode:

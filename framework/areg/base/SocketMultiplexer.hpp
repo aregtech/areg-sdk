@@ -129,11 +129,22 @@ public:
     bool unregister_socket(SOCKETHANDLE hSocket) noexcept;
 
     /**
-     * \brief   Removes all registered sockets and signals any thread
-     *          blocked in wait() to return FailedSocketHandle immediately.
+     * \brief   Signals any thread blocked in wait() to return
+     *          FailedSocketHandle immediately, and marks every registered
+     *          socket for removal.
      *
-     *          Safe to call from a different thread than the one currently
-     *          blocking in wait().
+     *          Safe to call from a different thread than the one that calls
+     *          wait(). It only raises the reset flag and writes the wakeup
+     *          handle: the registered set and the batch cursor belong to the
+     *          thread that calls wait(), and that thread drops them itself
+     *          when it observes the flag. Touching them here is a data race,
+     *          because register_socket() and unregister_socket() write them
+     *          with no lock.
+     *
+     *          The registered set is therefore empty by the time the owning
+     *          thread next enters wait() or register_socket(), not by the
+     *          time this call returns. A multiplexer that is destroyed before
+     *          that drops its whole interest list when its handle is closed.
      **/
     void reset() noexcept;
 
@@ -194,6 +205,14 @@ public:
     [[nodiscard]]
     inline bool is_registered(SOCKETHANDLE hSocket) const noexcept;
 
+private:
+    /**
+     * \brief   Removes every registered socket from the OS readiness object and
+     *          empties the registered set and the batch cursor. Runs only on the
+     *          thread that calls wait(), which is the only writer of both.
+     **/
+    void _drop_registrations() const noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -202,7 +221,9 @@ private:
     #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
-    std::vector<SOCKETHANDLE>   mSockets;   //!< Registered socket handles (growable).
+    //!< Registered socket handles (growable). Written only by the thread that calls
+    //!< wait(): register_socket(), unregister_socket() and the deferred drop of reset().
+    mutable std::vector<SOCKETHANDLE>   mSockets;
     uint32_t                    mMaxCount;  //!< Configurable connection cap.
     std::atomic<bool>           mIsReset;   //!< Set by reset(); cleared by register_socket(). Guards re-entry after wakeup is drained.
 

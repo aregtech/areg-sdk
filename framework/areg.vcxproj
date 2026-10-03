@@ -309,6 +309,7 @@
     <ClInclude Include="areg\base\ThreadConsumer.hpp" />
     <ClInclude Include="areg\component\WorkerThreadConsumer.hpp" />
     <ClInclude Include="areg\base\private\DebugDefs.hpp" />
+    <ClInclude Include="areg\base\private\SocketLiveness.hpp" />
     <ClInclude Include="areg\base\MathDefs.hpp" />
     <ClInclude Include="areg\base\MemoryDefs.hpp" />
     <ClInclude Include="areg\component\Model.hpp" />

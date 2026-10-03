@@ -42,21 +42,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="services\TempAlarm.siml" />
+    <None Include="services\TempMonitorService.siml" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)examples\33_tempalarm\services\private\TempAlarmConsumerBase.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\33_tempalarm\services\private\TempAlarmEvents.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\33_tempalarm\services\private\TempAlarmProxy.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\33_tempalarm\services\private\TempAlarmProviderBase.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\33_tempalarm\services\private\TempAlarm.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\33_tempalarm\services\private\TempMonitorService.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\33_tempalarm\services\private\TempMonitorServiceEvents.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\33_tempalarm\services\private\TempMonitorServiceProviderBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\33_tempalarm\services\private\TempMonitorServiceProxy.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\33_tempalarm\services\private\TempMonitorServiceConsumerBase.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(AregGenerateDir)examples\33_tempalarm\services\TempAlarmConsumerBase.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\33_tempalarm\services\TempAlarmProviderBase.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\33_tempalarm\services\TempAlarm.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\33_tempalarm\services\private\TempAlarmEvents.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\33_tempalarm\services\private\TempAlarmProxy.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\33_tempalarm\services\TempMonitorService.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\33_tempalarm\services\private\TempMonitorServiceEvents.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\33_tempalarm\services\TempMonitorServiceProviderBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\33_tempalarm\services\private\TempMonitorServiceProxy.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\33_tempalarm\services\TempMonitorServiceConsumerBase.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

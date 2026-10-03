@@ -139,6 +139,12 @@ constexpr areg::EventHeader message_notify_instances() noexcept;
 constexpr areg::EventHeader message_register_notify() noexcept;
 
 /**
+ * \brief   Returns EventHeader template for the duplicate role name notification.
+ **/
+[[nodiscard]]
+constexpr areg::EventHeader message_duplicate_notify() noexcept;
+
+/**
  * \brief   Creates a connection request message with specified source, target, and message
  *          source type.
  *
@@ -258,6 +264,19 @@ AREG_API MessageEnvelope service_registered_event( const StubAddress & stub, con
  **/
 [[nodiscard]]
 AREG_API MessageEnvelope service_unregistered_event( const StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
+
+/**
+ * \brief   Creates the notification that a public role name is registered twice. It is sent to
+ *          both processes and names the other one.
+ *
+ * \param   stub        The address of the Stub whose role name is registered twice.
+ * \param   other       The process that holds or requested the same role name.
+ * \param   source      The ID of the source that sends the notification.
+ * \param   target      The ID of the target to send the notification.
+ * \return  Returns initialized duplicate role name notification message.
+ **/
+[[nodiscard]]
+AREG_API MessageEnvelope service_duplicate_event( const StubAddress & stub, const areg::ConnectedInstance & other, const ITEM_ID & source, const ITEM_ID & target);
 
 /**
  * \brief   Creates a Proxy availability notification message to broadcast.
@@ -405,6 +424,18 @@ constexpr areg::EventHeader areg::message_register_notify() noexcept
     hdr.checksum  = areg::CHECKSUM_INVALID;
     hdr.source    = static_cast<uint32_t>(areg::COOKIE_ROUTER);
     hdr.messageId = static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyRegister);
+    hdr.eventType = static_cast<uint16_t>(areg::EventType::EventRemoteConnection);
+    hdr.result    = areg::MESSAGE_SUCCESS;
+    hdr.sequenceNr = areg::SEQUENCE_NUMBER_NOTIFY;
+    return hdr;
+}
+
+constexpr areg::EventHeader areg::message_duplicate_notify() noexcept
+{
+    areg::EventHeader hdr{};
+    hdr.checksum  = areg::CHECKSUM_INVALID;
+    hdr.source    = static_cast<uint32_t>(areg::COOKIE_ROUTER);
+    hdr.messageId = static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyDuplicate);
     hdr.eventType = static_cast<uint16_t>(areg::EventType::EventRemoteConnection);
     hdr.result    = areg::MESSAGE_SUCCESS;
     hdr.sequenceNr = areg::SEQUENCE_NUMBER_NOTIFY;

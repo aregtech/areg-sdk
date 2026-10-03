@@ -143,6 +143,17 @@ public:
      **/
     void report_failed_send(const areg::MessageEnvelope & msgFailed, areg::Socket & whichTarget);
 
+private:
+    /**
+     * \brief   Notifies the message handler of every message of a batch whose write failed,
+     *          from index \a from up to \a count. Nothing is reported while the connection is closing.
+     *
+     * \param   first   The event that started the batch, the message at index 0.
+     * \param   from    The first message that did not reach the socket.
+     * \param   count   The number of messages in the batch.
+     **/
+    void report_failed_batch(Event & first, uint32_t from, uint32_t count);
+
 protected:
 /************************************************************************/
 // DispatcherThread overrides

@@ -63,9 +63,8 @@ ReadingEvent::remove_listener(consumer, thread);
 ```
 
 Register when the owner starts and unregister when it stops. In a component that is
-`startup_component` / `shutdown_component`; in a worker thread consumer it is
-`register_event_consumers` / `unregister_event_consumers`, which exist for exactly
-this and receive the worker thread to pass in (see `32-model.md` section 4).
+`startup_component` / `shutdown_component`. A worker thread's listener is added by its
+component, before the service starts: `37-threads.md` section 2.
 
 ## 2. Sending
 
@@ -120,4 +119,4 @@ thread instead of ahead of it.
 - [ ] Nothing in `process_event` blocks, sleeps or loops for long.
 - [ ] The traffic stays inside one process; if it does not, it is a service.
 
-A worked example, with a worker thread on each side: `examples/18_pubworker`.
+A working project: `recipes/07-worker-events/`.

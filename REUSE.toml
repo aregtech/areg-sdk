@@ -7,6 +7,7 @@ SPDX-PackageDownloadLocation = "https://github.com/aregtech/areg-sdk"
 [[annotations]]
 path = [
   ".github/**",
+  ".editorconfig",
   ".gitattributes",
   ".gitignore",
   "AGENTS.md",

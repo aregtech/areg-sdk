@@ -316,7 +316,7 @@ options in the order they are written, and exits:
 
 ```bash
 ./logobserver -n -q                                 # list the connected applications
-./logobserver -o "*::areg_base_NESocket=DEBUG" -q   # raise one scope in every application
+./logobserver -o "*::areg_base_Socket=DEBUG" -q     # raise one scope in every application
 ./logobserver -e 256 -n -q                          # query the scopes of instance 256
 ```
 

@@ -120,8 +120,9 @@ The `*` module is used for almost every key in the shipped file. You add process
 | `net::MODULE::tcpip::rcvbuf` | KB | 4096 (4 MB) | `SO_RCVBUF` size |
 | `net::MODULE::tcpip::drain` | count | `128` | Send batch size, `0..128`. Bounds pinned batch memory; lowering it costs data rate |
 | `net::MODULE::tcpip::pairs` | count | `0` (disabled) | Dedicated send/recv thread-pool pairs |
-| `net::MODULE::tcpip::timeout` | ms | `2500` | `SO_SNDTIMEO` send timeout |
+| `net::MODULE::tcpip::timeout` | ms | `0` (build default) | How long a peer that is reachable but takes no data keeps its connection. `0`: unlimited in a debug build, the `keepalive` time in a release build |
 | `net::MODULE::tcpip::cache` | KB | `256` | Per-socket send/recv cache size |
+| `net::MODULE::tcpip::keepalive` | s | `15` | Seconds until a silent peer is declared lost, idle or sending |
 
 > "Default" is the value in the shipped `areg.init`; where the key is **absent**, the compile-time fallback (in parentheses) applies.
 
@@ -204,11 +205,10 @@ config::*::queue::timeout = 0      # built-in default
 config::*::queue::timeout = 5000   # block up to 5 s before giving up
 ```
 
-**Why the release default is 10 seconds.** `SO_SNDTIMEO` is 2500 ms, so a healthy but slow socket
-never needs more than about three seconds; a longer wait means something is genuinely wrong. The
-earlier default of 1000 ms was too close to normal operation — example 32 under load recorded a
-producer waiting **4973 ms** for a free slot, which the old value would have turned into a silently
-destroyed message.
+**Why the release default is 10 seconds.** A shorter wait is too close to normal operation:
+example 32 under load recorded a producer waiting **4973 ms** for a free slot, which a 1000 ms limit
+would have turned into a silently destroyed message. A connection whose peer takes no data at all
+is closed after `net::*::tcpip::timeout` (release: the `keepalive` time, 15 s).
 
 **Seeing it happen.** A wait longer than one second is reported in the log with its real duration.
 Framework scopes are off by default, so enable them to see it:
@@ -509,8 +509,9 @@ net :: MODULE :: TRANSPORT :: <knob>
 | `rcvbuf` | KB | same as `sndbuf` | 4 MB | Socket `SO_RCVBUF` |
 | `drain` | count | `128` | `128` (`DEFAULT_DRAIN_LIMIT`) | Messages drained/sent per dispatcher wake-up |
 | `pairs` | count | `0` | `0` | Dedicated send/recv thread-pair pool; `0` = shared threads |
-| `timeout` | ms | `2500` | `2500` (`SOCKET_SEND_TIMEOUT_MS`) | `SO_SNDTIMEO` send timeout |
+| `timeout` | ms | `0` | `0`: unlimited in a debug build, `keepalive` in a release build | How long a peer that is reachable but takes no data keeps its connection |
 | `cache` | KB | `256` | `256` (`DEFAULT_THREAD_CACHE`) | Per-socket send/recv cache size |
+| `keepalive` | s | `15` | `15` (`SOCKET_KEEPALIVE_SEC`) | Seconds until a silent peer is declared lost, idle or sending, `6..3600` |
 
 ```text
 net::mtrouter::tcpip::sndbuf     = 8192    # router 8 MB send buffer (raise for 3 MB+ frames)
@@ -521,8 +522,9 @@ net::*::tcpip::sndbuf            = 8192    # default for all other processes
 net::*::tcpip::rcvbuf            = 8192
 net::*::tcpip::drain             = 128
 net::*::tcpip::pairs             = 0
-net::*::tcpip::timeout           = 2500
+net::*::tcpip::timeout           = 0       # build default
 net::*::tcpip::cache             = 256
+net::*::tcpip::keepalive         = 15
 ```
 
 #### `drain` in detail - a memory setting, not a speed setting
@@ -557,9 +559,11 @@ connection and costs nothing on the message path.
 
 - `sndbuf`/`rcvbuf` are **not applied on Windows** — Windows TCP autotuning is used instead.
 - On **Linux**, the kernel **doubles** the requested `SO_SNDBUF`/`SO_RCVBUF` internally; the value you set is the pre-doubling request.
-- `timeout` is worth raising (e.g. `30000`) when debugging on Windows so a breakpoint pause does not trip a send-timeout disconnect.
+- `timeout` is how long a peer that is reachable but takes no data keeps its connection: a process stopped in a debugger, or a router that stopped reading. `0`, the shipped value, is the build default: **unlimited in a debug build** and the `keepalive` time (15 s) in a release build. While debugging, the router's limit is the one that matters: a debug `mtrouter` never disconnects a paused application, and a release `mtrouter` serving an application that is being debugged needs `net::mtrouter::tcpip::timeout = 3600000`. The other way round, an application on Linux that is sending to a paused `mtrouter` is closed after the `keepalive` time even in a debug build, unless its own `timeout` is set: the same bound tells it that the router's host is gone. When the limit passes, the connection is closed and the application reconnects; every message that was not sent is reported as failed, and none arrives cut short.
+- `mtrouter` never waits on one slow client. What a client's socket cannot take waits for that client alone, in order, while every other client is served at full rate. A client whose waiting data grows beyond its `sndbuf` and that takes nothing for one second is closed before `timeout` passes; it reconnects. So `sndbuf` bounds the memory the router spends on one stopped client, and a high data rate reaches that bound in seconds.
+- `keepalive` is the time after which a connection whose peer stopped answering is closed, idle or sending, the same on Linux, macOS and Windows. An idle connection finds out by keepalive probes. The framework sends 5 TCP keepalive probes: the first after `keepalive - 5 x interval` seconds of silence, then one every `interval = (keepalive - 5) / 5` seconds. A network outage shorter than about 80% of `keepalive - 5` is survived (about 8 s at the default 15). Raise it on links that drop out for longer (Wi-Fi roaming, VPN reconnects); lower it to notice a dead host sooner. A connection that is sending finds out when its data stays unacknowledged for `keepalive` seconds (on Linux `TCP_USER_TIMEOUT` in an application and a `TCP_INFO` check in `mtrouter`, `TCP_RXT_CONNDROPTIME` on macOS, `TCP_MAXRT` on Windows); without that bound Linux retransmits for about 15 minutes. A peer that answers but keeps its receive window closed, such as a process stopped in a debugger, is not a lost peer: `timeout` decides how long it keeps its connection.
 
-Accessors: `network_sndbuf()`, `network_rcvbuf()`, `network_drain_limit()`, `network_pool_pairs()`, `network_timeout()`, `network_cache()`. See **[Network Tuning Troubleshooting](./07d-troubleshooting-network-tunning.md)**.
+Accessors: `network_sndbuf()`, `network_rcvbuf()`, `network_drain_limit()`, `network_pool_pairs()`, `network_timeout()`, `network_cache()`, `network_keepalive()`. See **[Network Tuning Troubleshooting](./07d-troubleshooting-network-tunning.md)**.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -654,7 +658,7 @@ For arbitrary keys (including your own), use the generic `property_value()` / `s
 - **`db` logging does nothing in my application** — the `log::*::db::*` keys take effect only for `logcollector` and `logobserver`, which register an SQLite engine themselves. Any other process needs `areg::set_db_engine()` in its own code. See §5.7.
 - **No `.sqlog` file appears for the collector** — check that the keys use the `logcollector` module and not `*`, that `db::engine` is `sqlite3`, that the master switch `log::logcollector::enable` is not `false`, and that the relative `location` points where you are looking. `logcollector --log=db` switches it on without editing the file.
 - **Socket buffer size seems wrong on Windows** — `sndbuf`/`rcvbuf` are ignored there (OS autotuning). On Linux the kernel doubles your value.
-- **Disconnects while debugging on Windows** — raise `net::*::tcpip::timeout` so a paused breakpoint doesn't trip `SO_SNDTIMEO`.
+- **Disconnects while debugging** — a debug build never disconnects a paused peer (`net::*::tcpip::timeout = 0`). A release `mtrouter` does, after the `keepalive` time: set `net::mtrouter::tcpip::timeout = 3600000` for the debugging session.
 - **Values as lists** — use `|` for multi-value entries (`DEBUG | SCOPE`, `remote | file`). A trailing `;` is allowed but optional.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>

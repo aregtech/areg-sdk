@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<StateMachine FormatVersion="1.2.0">
+    <Overview ID="30" Name="CoffeeMaking" Version="1.0.0" Threading="Local">
+        <Description>Drives one drink through its stages, pausable and cancellable.</Description>
+    </Overview>
+    <EventList>
+        <Event ID="31" Name="DrinkDone">
+            <Description>The making level reached its Final.</Description>
+        </Event>
+    </EventList>
+    <TimerList>
+        <Timer ID="32" Name="GrindTimer" Timeout="300" Repeat="1">
+            <Description>Grinding the beans.</Description>
+        </Timer>
+        <Timer ID="33" Name="HeatTimer" Timeout="300" Repeat="1">
+            <Description>Heating the water.</Description>
+        </Timer>
+        <Timer ID="34" Name="BrewTimer" Timeout="400" Repeat="1">
+            <Description>Brewing.</Description>
+        </Timer>
+        <Timer ID="35" Name="FrothTimer" Timeout="300" Repeat="1">
+            <Description>Frothing the milk.</Description>
+        </Timer>
+        <Timer ID="36" Name="DispenseTimer" Timeout="300" Repeat="1">
+            <Description>Dispensing.</Description>
+        </Timer>
+    </TimerList>
+    <MethodList>
+        <Method ID="37" Name="order" MethodType="Trigger">
+            <Description>A drink was requested.</Description>
+            <ParamList>
+                <Parameter ID="14" Name="price" DataType="uint32"/>
+                <Parameter ID="15" Name="water" DataType="uint32"/>
+                <Parameter ID="16" Name="beans" DataType="uint32"/>
+                <Parameter ID="17" Name="milk" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="38" Name="pause" MethodType="Trigger">
+            <Description>Pause the drink in progress.</Description>
+        </Method>
+        <Method ID="39" Name="resume" MethodType="Trigger">
+            <Description>Resume the paused drink.</Description>
+        </Method>
+        <Method ID="40" Name="cancel" MethodType="Trigger">
+            <Description>Cancel the pending or in-progress drink.</Description>
+        </Method>
+        <Method ID="41" Name="accept_order" MethodType="Action">
+            <Description>Remember the recipe amounts and answer the order accepted.</Description>
+            <ParamList>
+                <Parameter ID="18" Name="price" DataType="uint32"/>
+                <Parameter ID="19" Name="water" DataType="uint32"/>
+                <Parameter ID="20" Name="beans" DataType="uint32"/>
+                <Parameter ID="21" Name="milk" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="42" Name="refuse_order" MethodType="Action">
+            <Description>Answer the order refused, naming why.</Description>
+            <ParamList>
+                <Parameter ID="22" Name="price" DataType="uint32"/>
+                <Parameter ID="23" Name="water" DataType="uint32"/>
+                <Parameter ID="24" Name="beans" DataType="uint32"/>
+                <Parameter ID="25" Name="milk" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="43" Name="abandon_drink" MethodType="Action">
+            <Description>Leave Making without charging or drawing ingredients.</Description>
+        </Method>
+        <Method ID="44" Name="finish_drink" MethodType="Action">
+            <Description>Charge the credit, draw the ingredients, and warn if a tank crossed a level.</Description>
+        </Method>
+        <Method ID="45" Name="enter_grinding" MethodType="Action">
+            <Description>Report the Grinding stage.</Description>
+        </Method>
+        <Method ID="46" Name="enter_heating" MethodType="Action">
+            <Description>Report the Heating stage.</Description>
+        </Method>
+        <Method ID="47" Name="enter_brewing" MethodType="Action">
+            <Description>Report the Brewing stage.</Description>
+        </Method>
+        <Method ID="48" Name="enter_frothing" MethodType="Action">
+            <Description>Report the Frothing stage.</Description>
+        </Method>
+        <Method ID="49" Name="enter_dispensing" MethodType="Action">
+            <Description>Report the Dispensing stage.</Description>
+        </Method>
+        <Method ID="50" Name="pause_now" MethodType="Action">
+            <Description>Report Paused true.</Description>
+        </Method>
+        <Method ID="51" Name="resume_now" MethodType="Action">
+            <Description>Report Paused false.</Description>
+        </Method>
+        <Method ID="52" Name="set_busy" MethodType="Action">
+            <Description>Remember that a drink is being made.</Description>
+        </Method>
+        <Method ID="53" Name="clear_busy" MethodType="Action">
+            <Description>Remember that the machine is free again.</Description>
+        </Method>
+        <Method ID="9" Name="has_credit" MethodType="Condition" Return="bool" Implement="Handler">
+            <Description>True when the held credit covers an amount.</Description>
+            <ParamList>
+                <Parameter ID="26" Name="amount" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="10" Name="has_water" MethodType="Condition" Return="bool" Implement="Handler">
+            <Description>True when the water tank holds an amount.</Description>
+            <ParamList>
+                <Parameter ID="27" Name="amount" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="11" Name="has_beans" MethodType="Condition" Return="bool" Implement="Handler">
+            <Description>True when the beans tank holds an amount.</Description>
+            <ParamList>
+                <Parameter ID="28" Name="amount" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="12" Name="has_milk" MethodType="Condition" Return="bool" Implement="Handler">
+            <Description>True when the milk tank holds an amount.</Description>
+            <ParamList>
+                <Parameter ID="29" Name="amount" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="13" Name="needs_milk" MethodType="Condition" Return="bool" Implement="Handler">
+            <Description>True when the drink being made needs milk.</Description>
+        </Method>
+    </MethodList>
+    <StateList>
+        <State ID="54" Name="Start" Kind="Start">
+            <TransitionList>
+                <Transition ID="55" Kind="Initial" To="1"/>
+            </TransitionList>
+        </State>
+        <State ID="1" Name="IDLE" Kind="Normal">
+            <TransitionList>
+                <Transition ID="56" Kind="External" StimulusKind="Trigger" Stimulus="order" To="2">
+                    <Guard state="ok">
+                        <Expr>
+                            <And>
+                                <Call id="9" name="has_credit">
+                                    <Arg id="26">
+                                        <Param id="14" name="price"/>
+                                    </Arg>
+                                </Call>
+                                <Call id="10" name="has_water">
+                                    <Arg id="27">
+                                        <Param id="15" name="water"/>
+                                    </Arg>
+                                </Call>
+                                <Call id="11" name="has_beans">
+                                    <Arg id="28">
+                                        <Param id="16" name="beans"/>
+                                    </Arg>
+                                </Call>
+                                <Call id="12" name="has_milk">
+                                    <Arg id="29">
+                                        <Param id="17" name="milk"/>
+                                    </Arg>
+                                </Call>
+                            </And>
+                        </Expr>
+                    </Guard>
+                    <OperationList>
+                        <ActionCall ID="57" Action="accept_order">
+                            <ArgumentList>
+                                <Argument ID="58" Name="price" Source="Param" Value="price"/>
+                                <Argument ID="59" Name="water" Source="Param" Value="water"/>
+                                <Argument ID="60" Name="beans" Source="Param" Value="beans"/>
+                                <Argument ID="61" Name="milk" Source="Param" Value="milk"/>
+                            </ArgumentList>
+                        </ActionCall>
+                    </OperationList>
+                </Transition>
+                <Transition ID="62" Kind="Internal" StimulusKind="Trigger" Stimulus="order">
+                    <Description>Not enough credit or a missing ingredient.</Description>
+                    <OperationList>
+                        <ActionCall ID="63" Action="refuse_order">
+                            <ArgumentList>
+                                <Argument ID="64" Name="price" Source="Param" Value="price"/>
+                                <Argument ID="65" Name="water" Source="Param" Value="water"/>
+                                <Argument ID="66" Name="beans" Source="Param" Value="beans"/>
+                                <Argument ID="67" Name="milk" Source="Param" Value="milk"/>
+                            </ArgumentList>
+                        </ActionCall>
+                    </OperationList>
+                </Transition>
+            </TransitionList>
+        </State>
+        <State ID="2" Name="MAKING" Kind="Normal" OnFinal="DrinkDone">
+            <EntryList>
+                <ActionCall ID="68" Action="set_busy"/>
+            </EntryList>
+            <ExitList>
+                <ActionCall ID="69" Action="clear_busy"/>
+            </ExitList>
+            <TransitionList>
+                <Transition ID="70" Kind="External" StimulusKind="Trigger" Stimulus="cancel" To="1">
+                    <OperationList>
+                        <ActionCall ID="71" Action="abandon_drink"/>
+                    </OperationList>
+                </Transition>
+                <Transition ID="72" Kind="External" StimulusKind="Event" Stimulus="DrinkDone" To="1">
+                    <OperationList>
+                        <ActionCall ID="73" Action="finish_drink"/>
+                    </OperationList>
+                </Transition>
+            </TransitionList>
+            <StateList>
+                <State ID="74" Name="MAKINGStart" Kind="Start">
+                    <TransitionList>
+                        <Transition ID="75" Kind="Initial" To="3"/>
+                    </TransitionList>
+                </State>
+                <State ID="3" Name="GRINDING" Kind="Normal">
+                    <EntryList>
+                        <ActionCall ID="76" Action="enter_grinding"/>
+                        <TimerStart ID="77" Timer="GrindTimer"/>
+                    </EntryList>
+                    <ExitList>
+                        <TimerStop ID="78" Timer="GrindTimer"/>
+                    </ExitList>
+                    <TransitionList>
+                        <Transition ID="79" Kind="External" StimulusKind="Timer" Stimulus="GrindTimer" To="4"/>
+                        <Transition ID="80" Kind="Internal" StimulusKind="Trigger" Stimulus="pause">
+                            <OperationList>
+                                <TimerStop ID="81" Timer="GrindTimer"/>
+                                <ActionCall ID="82" Action="pause_now"/>
+                            </OperationList>
+                        </Transition>
+                        <Transition ID="83" Kind="Internal" StimulusKind="Trigger" Stimulus="resume">
+                            <OperationList>
+                                <TimerStart ID="84" Timer="GrindTimer"/>
+                                <ActionCall ID="85" Action="resume_now"/>
+                            </OperationList>
+                        </Transition>
+                    </TransitionList>
+                </State>
+                <State ID="4" Name="HEATING" Kind="Normal">
+                    <EntryList>
+                        <ActionCall ID="86" Action="enter_heating"/>
+                        <TimerStart ID="87" Timer="HeatTimer"/>
+                    </EntryList>
+                    <ExitList>
+                        <TimerStop ID="88" Timer="HeatTimer"/>
+                    </ExitList>
+                    <TransitionList>
+                        <Transition ID="89" Kind="External" StimulusKind="Timer" Stimulus="HeatTimer" To="5"/>
+                        <Transition ID="90" Kind="Internal" StimulusKind="Trigger" Stimulus="pause">
+                            <OperationList>
+                                <TimerStop ID="91" Timer="HeatTimer"/>
+                                <ActionCall ID="92" Action="pause_now"/>
+                            </OperationList>
+                        </Transition>
+                        <Transition ID="93" Kind="Internal" StimulusKind="Trigger" Stimulus="resume">
+                            <OperationList>
+                                <TimerStart ID="94" Timer="HeatTimer"/>
+                                <ActionCall ID="95" Action="resume_now"/>
+                            </OperationList>
+                        </Transition>
+                    </TransitionList>
+                </State>
+                <State ID="5" Name="BREWING" Kind="Normal">
+                    <EntryList>
+                        <ActionCall ID="96" Action="enter_brewing"/>
+                        <TimerStart ID="97" Timer="BrewTimer"/>
+                    </EntryList>
+                    <ExitList>
+                        <TimerStop ID="98" Timer="BrewTimer"/>
+                    </ExitList>
+                    <TransitionList>
+                        <Transition ID="99" Kind="External" StimulusKind="Timer" Stimulus="BrewTimer" To="6">
+                            <Guard state="ok">
+                                <Expr>
+                                    <Call id="13" name="needs_milk"/>
+                                </Expr>
+                            </Guard>
+                        </Transition>
+                        <Transition ID="100" Kind="External" StimulusKind="Timer" Stimulus="BrewTimer" To="7"/>
+                        <Transition ID="101" Kind="Internal" StimulusKind="Trigger" Stimulus="pause">
+                            <OperationList>
+                                <TimerStop ID="102" Timer="BrewTimer"/>
+                                <ActionCall ID="103" Action="pause_now"/>
+                            </OperationList>
+                        </Transition>
+                        <Transition ID="104" Kind="Internal" StimulusKind="Trigger" Stimulus="resume">
+                            <OperationList>
+                                <TimerStart ID="105" Timer="BrewTimer"/>
+                                <ActionCall ID="106" Action="resume_now"/>
+                            </OperationList>
+                        </Transition>
+                    </TransitionList>
+                </State>
+                <State ID="6" Name="FROTHING" Kind="Normal">
+                    <EntryList>
+                        <ActionCall ID="107" Action="enter_frothing"/>
+                        <TimerStart ID="108" Timer="FrothTimer"/>
+                    </EntryList>
+                    <ExitList>
+                        <TimerStop ID="109" Timer="FrothTimer"/>
+                    </ExitList>
+                    <TransitionList>
+                        <Transition ID="110" Kind="External" StimulusKind="Timer" Stimulus="FrothTimer" To="7"/>
+                        <Transition ID="111" Kind="Internal" StimulusKind="Trigger" Stimulus="pause">
+                            <OperationList>
+                                <TimerStop ID="112" Timer="FrothTimer"/>
+                                <ActionCall ID="113" Action="pause_now"/>
+                            </OperationList>
+                        </Transition>
+                        <Transition ID="114" Kind="Internal" StimulusKind="Trigger" Stimulus="resume">
+                            <OperationList>
+                                <TimerStart ID="115" Timer="FrothTimer"/>
+                                <ActionCall ID="116" Action="resume_now"/>
+                            </OperationList>
+                        </Transition>
+                    </TransitionList>
+                </State>
+                <State ID="7" Name="DISPENSING" Kind="Normal">
+                    <EntryList>
+                        <ActionCall ID="117" Action="enter_dispensing"/>
+                        <TimerStart ID="118" Timer="DispenseTimer"/>
+                    </EntryList>
+                    <ExitList>
+                        <TimerStop ID="119" Timer="DispenseTimer"/>
+                    </ExitList>
+                    <TransitionList>
+                        <Transition ID="120" Kind="External" StimulusKind="Timer" Stimulus="DispenseTimer" To="8"/>
+                        <Transition ID="121" Kind="Internal" StimulusKind="Trigger" Stimulus="pause">
+                            <OperationList>
+                                <TimerStop ID="122" Timer="DispenseTimer"/>
+                                <ActionCall ID="123" Action="pause_now"/>
+                            </OperationList>
+                        </Transition>
+                        <Transition ID="124" Kind="Internal" StimulusKind="Trigger" Stimulus="resume">
+                            <OperationList>
+                                <TimerStart ID="125" Timer="DispenseTimer"/>
+                                <ActionCall ID="126" Action="resume_now"/>
+                            </OperationList>
+                        </Transition>
+                    </TransitionList>
+                </State>
+                <State ID="8" Name="MAKING_DONE" Kind="Final"/>
+            </StateList>
+        </State>
+    </StateList>
+</StateMachine>

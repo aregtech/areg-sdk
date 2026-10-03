@@ -20,11 +20,20 @@
 #include "areg/logging/areg_log.h"
 #include "aregextend/service/SystemServiceDefs.hpp"
 
+#include "areg/base/private/DebugDefs.hpp"
+#include "areg/appbase/Application.hpp"
+#include "areg/persist/ConfigManager.hpp"
+
+#include <chrono>
+
 DEF_LOG_SCOPE(mtrouter_service_RouterServerService, register_service_provider);
 DEF_LOG_SCOPE(mtrouter_service_RouterServerService, unregister_service_provider);
 DEF_LOG_SCOPE(mtrouter_service_RouterServerService, register_service_consumer);
 DEF_LOG_SCOPE(mtrouter_service_RouterServerService, unregister_service_consumer);
 
+DEF_LOG_SCOPE(mtrouter_service_RouterServerService, disconnect_source);
+DEF_LOG_SCOPE(mtrouter_service_RouterServerService, reject_duplicates);
+DEF_LOG_SCOPE(mtrouter_service_RouterServerService, activate_held_stub);
 DEF_LOG_SCOPE(mtrouter_service_RouterServerService, on_provider_registered);
 DEF_LOG_SCOPE(mtrouter_service_RouterServerService, on_consumer_registered);
 DEF_LOG_SCOPE(mtrouter_service_RouterServerService, on_provider_unregistered);
@@ -36,6 +45,21 @@ DEF_LOG_SCOPE(mtrouter_service_RouterServerService, on_message_send);
 //////////////////////////////////////////////////////////////////////////
 // RouterServerService class implementation
 //////////////////////////////////////////////////////////////////////////
+
+namespace
+{
+    // Returns the steady clock in milliseconds.
+    inline uint64_t _now_ms() noexcept
+    {
+        return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count());
+    }
+
+    // Returns true if both addresses name the same service and role.
+    inline bool _same_service(const areg::StubAddress & lhs, const areg::StubAddress & rhs) noexcept
+    {
+        return (static_cast<const areg::ServiceAddress &>(lhs) == static_cast<const areg::ServiceAddress &>(rhs));
+    }
+}
 
 RouterServerService::RouterServerService()
     : areg::ext::ServiceCommunicationBase   ( areg::COOKIE_ROUTER
@@ -49,8 +73,11 @@ RouterServerService::RouterServerService()
                                             , areg::ext::DEFAULT_COMMUNICATION_PAIR_COUNT )
     , areg::RegistrationConsumer ( )
     , areg::RegistrationProvider ( )
+    , areg::TimerConsumer       ( )
 
     , mServiceRegistry          ( )
+    , mHeldStubs                ( )
+    , mTimerHeld                ( static_cast<areg::TimerConsumer &>(*this), "RouterHeldStubs" )
 {
 }
 
@@ -151,27 +178,7 @@ void RouterServerService::on_message_received(const areg::MessageEnvelope &msgRe
         {
             ITEM_ID cookie = areg::COOKIE_UNKNOWN;
             msgReceived >> cookie;
-            remove_instance(cookie);
-            mServerConnection.close_connection(cookie);
-
-            areg::ArrayList<areg::StubAddress>  listStubs;
-            areg::ArrayList<areg::ProxyAddress> listProxies;
-            mServiceRegistry.service_sources(cookie, listStubs, listProxies);
-
-            LOG_DBG("Routing service received disconnect message from cookie [ %u ], [ %d ] stubs and [ %d ] proxies are going to be disconnected"
-                        , static_cast<uint32_t>(cookie)
-                        , listStubs.size()
-                        , listProxies.size());
-
-            for (uint32_t i = 0; i < listProxies.size(); ++i)
-            {
-                on_consumer_unregistered(listProxies[i], areg::DisconnectReason::ConsumerDisconnected, cookie);
-            }
-
-            for (uint32_t i = 0; i < listStubs.size(); ++i)
-            {
-                on_provider_unregistered(listStubs[i], areg::DisconnectReason::ProviderDisconnected, cookie);
-            }
+            disconnect_source(cookie);
         }
         break;
 
@@ -260,6 +267,8 @@ void RouterServerService::on_message_send(const areg::MessageEnvelope &msgSend)
 void RouterServerService::disconnect_services()
 {
     ServiceCommunicationBase::disconnect_services( );
+    mTimerHeld.stop_timer();
+    mHeldStubs.clear();
 
     areg::ArrayList<areg::StubAddress>  stubList;
     areg::ArrayList<areg::ProxyAddress> proxyList;
@@ -283,13 +292,167 @@ void RouterServerService::extract_service_addresses( const ITEM_ID & cookie, are
     mServiceRegistry.service_list(cookie, out_listStubs, out_lisProxies);
 }
 
+void RouterServerService::disconnect_source(const ITEM_ID & cookie)
+{
+    LOG_SCOPE( mtrouter_service_RouterServerService, disconnect_source );
+
+    remove_instance(cookie);
+    mServerConnection.close_connection(cookie);
+
+    areg::ArrayList<areg::StubAddress>  listStubs;
+    areg::ArrayList<areg::ProxyAddress> listProxies;
+    mServiceRegistry.service_sources(cookie, listStubs, listProxies);
+
+    LOG_DBG("Routing service disconnects source [ %u ], [ %d ] stubs and [ %d ] proxies are going to be disconnected"
+                , static_cast<uint32_t>(cookie)
+                , listStubs.size()
+                , listProxies.size());
+
+    for (uint32_t i = 0; i < listProxies.size(); ++i)
+    {
+        on_consumer_unregistered(listProxies[i], areg::DisconnectReason::ConsumerDisconnected, cookie);
+    }
+
+    for (uint32_t i = 0; i < listStubs.size(); ++i)
+    {
+        on_provider_unregistered(listStubs[i], areg::DisconnectReason::ProviderDisconnected, cookie);
+    }
+
+    remove_held_stubs(cookie, nullptr);
+}
+
+void RouterServerService::process_timer(areg::Timer & /*timer*/)
+{
+    reject_duplicates();
+}
+
+void RouterServerService::hold_stub(const areg::StubAddress & stub)
+{
+    remove_held_stubs(stub.source(), &stub);
+
+    const uint32_t keepalive{ areg::Application::config_manager().network_keepalive() };
+    const uint64_t waitMs{ static_cast<uint64_t>(keepalive < areg::SOCKET_KEEPALIVE_MAX_SEC ? keepalive : areg::SOCKET_KEEPALIVE_MAX_SEC) * 1'000u + 1'000u };
+    mHeldStubs.push_back(HeldStub{ stub, _now_ms() + waitMs });
+    schedule_held_check();
+}
+
+void RouterServerService::activate_held_stub(const areg::StubAddress & stub)
+{
+    LOG_SCOPE( mtrouter_service_RouterServerService, activate_held_stub );
+
+    for (auto it = mHeldStubs.begin(); it != mHeldStubs.end(); ++ it)
+    {
+        if (_same_service(it->hsStub, stub))
+        {
+            const areg::StubAddress held{ it->hsStub };
+            mHeldStubs.erase(it);
+            LOG_WARN("Stub [ %s ] is registered after the previous holder of its role name left", areg::StubAddress::to_path(held).as_string());
+            on_provider_registered(held);
+            break;
+        }
+    }
+
+    schedule_held_check();
+}
+
+void RouterServerService::remove_held_stubs(const ITEM_ID & source, const areg::StubAddress * stub)
+{
+    for (auto it = mHeldStubs.begin(); it != mHeldStubs.end(); )
+    {
+        if ((it->hsStub.source() == source) && ((stub == nullptr) || _same_service(it->hsStub, *stub)))
+        {
+            it = mHeldStubs.erase(it);
+        }
+        else
+        {
+            ++ it;
+        }
+    }
+}
+
+void RouterServerService::reject_duplicates()
+{
+    LOG_SCOPE( mtrouter_service_RouterServerService, reject_duplicates );
+
+    const uint64_t now{ _now_ms() };
+    std::vector<areg::StubAddress> expired;
+    for (auto it = mHeldStubs.begin(); it != mHeldStubs.end(); )
+    {
+        if (it->hsDeadline <= now)
+        {
+            expired.push_back(it->hsStub);
+            it = mHeldStubs.erase(it);
+        }
+        else
+        {
+            ++ it;
+        }
+    }
+
+    const areg::MapInstances & instances{ ServiceCommunicationBase::instances() };
+    for (const areg::StubAddress & held : expired)
+    {
+        const ServiceStub & holder{ mServiceRegistry.stub_service(held) };
+        if ((holder.service_status() != areg::ServiceConnectionState::Connected) || (holder.service_address().source() == held.source()))
+        {
+            on_provider_registered(held);
+            continue;
+        }
+
+        const ITEM_ID holderSource{ holder.service_address().source() };
+        areg::ConnectedInstance holderInstance{};
+        areg::ConnectedInstance heldInstance{};
+        static_cast<void>(instances.find(holderSource, holderInstance));
+        static_cast<void>(instances.find(held.source(), heldInstance));
+
+        LOG_ERR("Duplicate role name: [ %s ] is provided by [ %s ] (source [ %u ]), the registration from [ %s ] (source [ %u ]) is rejected"
+                    , areg::StubAddress::to_path(held).as_string()
+                    , holderInstance.ciInstance.c_str()
+                    , static_cast<uint32_t>(holderSource)
+                    , heldInstance.ciInstance.c_str()
+                    , static_cast<uint32_t>(held.source()));
+
+        send_message(areg::service_duplicate_event(held, heldInstance, mServerConnection.channel_id(), holderSource));
+        send_message(areg::service_duplicate_event(held, holderInstance, mServerConnection.channel_id(), held.source()));
+        send_message(areg::service_unregistered_event(held, areg::DisconnectReason::ProviderRejected, mServerConnection.channel_id(), held.source()));
+    }
+
+    schedule_held_check();
+}
+
+void RouterServerService::schedule_held_check()
+{
+    mTimerHeld.stop_timer();
+    if (mHeldStubs.empty())
+        return;
+
+    uint64_t earliest{ mHeldStubs.front().hsDeadline };
+    for (const HeldStub & entry : mHeldStubs)
+    {
+        earliest = entry.hsDeadline < earliest ? entry.hsDeadline : earliest;
+    }
+
+    const uint64_t now{ _now_ms() };
+    const uint32_t waitMs{ earliest > now ? static_cast<uint32_t>(earliest - now) : 1u };
+    mTimerHeld.start_timer(waitMs, static_cast<areg::DispatcherThread &>(self()), areg::Timer::ONE_TIME);
+}
+
 void RouterServerService::on_provider_registered(const areg::StubAddress & stub)
 {
     LOG_SCOPE( mtrouter_service_RouterServerService, on_provider_registered );
     ASSERT(stub.is_service_public());
 
     LOG_DBG("Going to register remote stub [ %s ]", areg::StubAddress::to_path(stub).as_string());
-    if ( mServiceRegistry.service_status(stub) != areg::ServiceConnectionState::Connected )
+    const ServiceStub & registered{ mServiceRegistry.stub_service(stub) };
+    if ( (registered.service_status() == areg::ServiceConnectionState::Connected) && (registered.service_address().source() != stub.source()) )
+    {
+        // Held until the holder's connection is lost; a holder still connected at the deadline makes it a duplicate.
+        LOG_WARN("Stub [ %s ] is held, its role name is provided by source [ %u ]"
+                    , areg::StubAddress::to_path(stub).as_string()
+                    , static_cast<uint32_t>(registered.service_address().source()));
+        hold_stub(stub);
+    }
+    else if ( registered.service_status() != areg::ServiceConnectionState::Connected )
     {
         ListServiceProxies listProxies;
         const ServiceStub & stubService = mServiceRegistry.register_service_provider(stub, listProxies);
@@ -415,7 +578,20 @@ void RouterServerService::on_consumer_registered(const areg::ProxyAddress & prox
 void RouterServerService::on_provider_unregistered(const areg::StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ )
 {
     LOG_SCOPE( mtrouter_service_RouterServerService, on_provider_unregistered );
-    if ( mServiceRegistry.service_status(stub) == areg::ServiceConnectionState::Connected )
+    AREG_DT_TRACE("on_provider_unregistered: stub [ %s ], cookie [ %u ], status [ %d ]"
+                    , stub.to_string().as_string()
+                    , static_cast<uint32_t>(cookie)
+                    , static_cast<int>(mServiceRegistry.service_status(stub)));
+
+    const ServiceStub & registered{ mServiceRegistry.stub_service(stub) };
+    if ( (registered.service_status() == areg::ServiceConnectionState::Connected) && (registered.service_address().source() != stub.source()) )
+    {
+        remove_held_stubs(stub.source(), &stub);
+        LOG_DBG("Ignore unregistering stub [ %s ], the service is registered by source [ %u ]"
+                        , stub.to_string().as_string()
+                        , static_cast<uint32_t>(registered.service_address().source()));
+    }
+    else if ( registered.service_status() == areg::ServiceConnectionState::Connected )
     {
         ListServiceProxies listProxies;
         mServiceRegistry.unregister_service_provider(stub, listProxies);
@@ -437,7 +613,10 @@ void RouterServerService::on_provider_unregistered(const areg::StubAddress & stu
                 // no need to send message to unregistered stub, only to proxy side
                 if (sendList.add_if_unique(addrProxy.source()) )
                 {
-                    send_message(areg::service_unregistered_event(stub, reason, mServerConnection.channel_id(), addrProxy.source( )), areg::EventPriority::HighPrio );
+                    send_message(areg::service_unregistered_event(stub, reason, mServerConnection.channel_id(), addrProxy.source( )));
+
+                    AREG_DT_TRACE("on_provider_unregistered: queued the disconnect for proxy source [ %u ]"
+                                    , static_cast<uint32_t>(addrProxy.source()));
 
                     LOG_INFO("Send stub [ %s ] disconnect message to proxy [ %s ]"
                                     , stub.to_string().as_string()
@@ -457,6 +636,8 @@ void RouterServerService::on_provider_unregistered(const areg::StubAddress & stu
                 LOG_DBG("Proxy [ %s ] is marked as ignored by source [ %u ], remove and skip", addrProxy.to_string().as_string(), static_cast<uint32_t>(cookie));
             }
         }
+
+        activate_held_stub(stub);
     }
     else
     {
@@ -490,7 +671,7 @@ void RouterServerService::on_consumer_unregistered(const areg::ProxyAddress & pr
 
     if ((svcStub->service_status() == areg::ServiceConnectionState::Connected) && (proxy.source() != addrStub.source()))
     {
-        send_message(areg::client_unregistered_event(proxy, reason, mServerConnection.channel_id(), addrStub.source( )), areg::EventPriority::HighPrio);
+        send_message(areg::client_unregistered_event(proxy, reason, mServerConnection.channel_id(), addrStub.source( )));
         LOG_INFO("Send proxy [ %s ] disconnect message to stub [ %s ]", proxy.to_string().as_string(), addrStub.to_string().as_string());
     }
     else

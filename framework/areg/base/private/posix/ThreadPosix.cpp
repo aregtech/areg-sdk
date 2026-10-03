@@ -178,6 +178,9 @@ Thread::ThreadCompletion Thread::_os_destroy_thread(uint32_t waitForStopMs)
             return Thread::ThreadCompletion::Invalid;
         }
 
+        // Owns the run until shutdown() releases it, and repeats the exit request.
+        ++ mStopCount;
+        request_exit();
         _unregister_thread();
 
     } while (false);

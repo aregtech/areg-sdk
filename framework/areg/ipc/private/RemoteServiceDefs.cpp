@@ -222,6 +222,25 @@ AREG_API_IMPL areg::MessageEnvelope areg::service_unregistered_event(const StubA
     return msgResult;
 }
 
+AREG_API_IMPL areg::MessageEnvelope areg::service_duplicate_event(const StubAddress & stub, const areg::ConnectedInstance & other, const ITEM_ID & source, const ITEM_ID & target)
+{
+    areg::MessageEnvelope msgResult;
+    if ( stub.is_service_public() && _isValidSource(target) )
+    {
+        static constexpr areg::EventHeader HDR{ areg::message_duplicate_notify() };
+        areg::EventHeader hdr{ HDR };
+        stub.to_endpoint(hdr.rawService, hdr.provider);
+        hdr.source = static_cast<uint32_t>(source);
+        hdr.target = static_cast<uint32_t>(target);
+        if (msgResult.init_envelope(hdr, sizeof(areg::ConnectedInstance)) != nullptr)
+        {
+            msgResult << other;
+        }
+    }
+
+    return msgResult;
+}
+
 AREG_API_IMPL areg::MessageEnvelope areg::client_unregistered_event(const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target)
 {
     areg::MessageEnvelope msgResult;

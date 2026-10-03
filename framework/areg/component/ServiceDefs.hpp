@@ -470,6 +470,8 @@ enum class FuncIdRange  : uint32_t
     , ServiceLogRestoreConfiguration
     //!< Sent by log source to notify that the configuration file is read again.
     , ServiceLogConfigurationRestored
+    //!< Sent by Routing Service to both processes when a public role name is registered twice.
+    , SystemServiceNotifyDuplicate
     //!< The last ID of service calls.
     , ServiceLastId         = SERVICE_ID_LAST  //!< Servicing call last ID
 
@@ -1707,6 +1709,8 @@ inline constexpr const char* areg::as_string( areg::FuncIdRange value ) noexcept
         return "areg::FuncIdRange::ServiceLogRestoreConfiguration";
     case areg::FuncIdRange::ServiceLogConfigurationRestored:
         return "areg::FuncIdRange::ServiceLogConfigurationRestored";
+    case areg::FuncIdRange::SystemServiceNotifyDuplicate:
+        return "areg::FuncIdRange::SystemServiceNotifyDuplicate";
     case areg::FuncIdRange::RequestFirstId:
         return "areg::FuncIdRange::RequestFirstId";
     case areg::FuncIdRange::ResponseFirstId:

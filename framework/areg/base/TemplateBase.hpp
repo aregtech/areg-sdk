@@ -24,7 +24,32 @@
 #include "areg/base/MathDefs.hpp"
 #include "areg/base/StringDefs.hpp"
 #include "areg/base/IOStream.hpp"
+
+#include <iterator>
+
 namespace areg {
+
+//////////////////////////////////////////////////////////////////////////
+// Container helpers
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Releases the memory that a container holds beyond its size.
+ *          The standard shrink_to_fit() is a request that the standard library
+ *          declines when the code is compiled without exceptions; this rebuilds
+ *          the container in that case.
+ * \param   container   The container to shrink. It keeps its elements.
+ **/
+template <typename Container>
+inline void shrink_to_fit( Container & container )
+{
+#if defined(__cpp_exceptions) || defined(_CPPUNWIND)
+    container.shrink_to_fit( );
+#else
+    Container( std::make_move_iterator( container.begin( ) )
+             , std::make_move_iterator( container.end( ) )
+             , container.get_allocator( ) ).swap( container );
+#endif  // defined(__cpp_exceptions) || defined(_CPPUNWIND)
+}
 
 //////////////////////////////////////////////////////////////////////////
 // ResourceMapImpl class template declaration

@@ -474,7 +474,7 @@
     },
     {
       "id": "P-09",
-      "rule": "Never register two components with the same role name in one process."
+      "rule": "Never register two components with the same role name in one process, nor two providers of one public role name in the network: mtrouter rejects the second."
     },
     {
       "id": "P-10",

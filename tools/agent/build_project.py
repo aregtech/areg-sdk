@@ -35,11 +35,24 @@ PYTHON = sys.executable or 'python3'
 
 sys.path.insert(0, HERE)
 import gen_docs  # noqa: E402
+import fill_markers  # noqa: E402
 import gen_skeleton  # noqa: E402
 
 # A fixed job count is right on every machine the corpus has to describe, and it
 # costs no page: $(nproc) is absent on macOS and spelled differently on Windows.
 DEFAULT_JOBS = 8
+
+# Where a --run keeps every process's whole output, a pass included.
+KEPT_OUTPUT = '{build}/scenarios/'
+
+
+def passed_lines(build, only=None):
+    """The lines a passing --run ends on; the last one names where the output is kept."""
+    ran = 'scenario "{}"'.format(only) if only else 'the scenarios'
+    return ['Every step passed, {} included. Report from the lines printed above;'.format(ran),
+            'each process\'s whole output is in {}: grep there, never run again.'
+            .format(KEPT_OUTPUT.format(build=build.replace(os.sep, '/')))]
+
 
 # What to do when a step fails. Naming the step is the whole point of a chain:
 # a failure that does not say where it happened costs more than the requests saved.
@@ -55,13 +68,17 @@ ADVICE = {
                  'document appears in this output; anything else is CMakeLists.txt.',
     'scenarios': 'the application built, but a scenario did not pass. Each failure '
                  'names the process, what it was expected to print and what it '
-                 'wrote. "--only <name>" iterates on one.',
+                 'wrote. "--only <name>" iterates on one. Send every section you '
+                 'change as fix.txt with this command, in one call: --write fix.txt '
+                 '<<\'AREG_EOF\'. It is folded into bodies.txt.',
     'final': 'the final pass does not allow an open marker. A passing scenario says '
              'nothing about the requirement behind one: no body was written for it. '
-             'Fill it, then run this again.',
+             'Send its section as fix.txt with this command, in one call: '
+             '--write fix.txt <<\'AREG_EOF\'.',
     'build': 'the compiler refused a source. The errors are above, each with the '
-             'line it is on: no second command is needed to see them. Fix the body '
-             'in bodies.txt, not the generated file, and run this again. A '
+             'line it is on: no second command is needed to see them. Send every '
+             'body you fix as fix.txt with this command, in one call: --write fix.txt '
+             '<<\'AREG_EOF\'. Never edit the generated file. A '
              'provider that is abstract means the document gained a request the '
              'application has no handler for: add the handler, or --regenerate and '
              'fill the markers again.',
@@ -181,6 +198,33 @@ def fail(message):
     sys.exit(2)
 
 
+def write_input(root, target):
+    """Writes standard input to target, a path inside the project root."""
+    path = os.path.abspath(target if os.path.isabs(target) else os.path.join(root, target))
+    try:
+        inside = os.path.commonpath([os.path.normcase(path), os.path.normcase(root)]) \
+            == os.path.normcase(root)
+    except ValueError:
+        inside = False
+    if not inside:
+        fail('--write {}: the file is outside the project root {}'.format(target, root))
+    if sys.stdin is None or sys.stdin.isatty():
+        fail('--write {}: nothing on standard input. Pass the text as a here-document: '
+             "--write {} <<'AREG_EOF' ... AREG_EOF".format(target, target))
+    text = sys.stdin.read()
+    if not text.strip():
+        fail('--write {}: standard input is empty, so nothing was written'.format(target))
+    if not text.endswith('\n'):
+        text += '\n'
+    parent = os.path.dirname(path)
+    if not os.path.isdir(parent):
+        fail('--write {}: no such directory {}'.format(target, parent))
+    with open(path, 'w', encoding='utf-8', newline='\n') as handle:
+        handle.write(text)
+    print('== write: {}, {} line(s)'.format(os.path.relpath(path, root).replace(os.sep, '/'),
+                                            text.count('\n')))
+
+
 def show(lines, tail):
     """Prints the last `tail` lines, or all of them when tail is None.
 
@@ -257,20 +301,33 @@ DIAGNOSTIC = re.compile(
 # a candidate, a note, a traceback frame.
 FOLLOWS = re.compile(r'^\s|^\s*\d+\s*\||note:|candidate|required from|in expansion of')
 
+# What a step that passed still has to hand over: a rule the generator reported without
+# refusing the document, and a warning a compiler did not stop for. The summary counts
+# ("0 errors, 1 warning") are not these, so they are not matched here.
+WARNED = re.compile(r'(^|[\s:])warning\[\d+/[A-Z_]+\]:'
+                    r'|(^|[\s:])warning:'
+                    r'|(^|[\s:])warning C\d{4}:'
+                    r'|^CMake Warning', re.IGNORECASE)
+
+# How many warning lines a step that passed prints. A build of a whole tree can hold
+# more than a reader needs.
+WARNED_BUDGET = 12
+
 # A line a tool prints when it gives up, which names no defect.
 GIVING_UP = re.compile(r'\*\*\*|^(g?make|ninja|cmake)(\[\d+\])?:|^Error\s*$'
                        r'|recipe for target|Stop\.$', re.IGNORECASE)
 
 
-def diagnostics(lines, budget, context=6):
-    """The lines of a failed log that name the defect, or None if it names none.
+def picked(lines, pattern, budget, context=6, skip=None):
+    """The lines matching `pattern`, or None if none do.
 
     Each match brings the lines under it that belong to it -- the source line, the
     caret, the candidates -- so one finding arrives whole. Matches are taken from
-    the first, because a later error is usually a consequence of the first.
+    the first, because a later one is usually a consequence of the first. A gap
+    between two matches is one None entry.
     """
     hits = [i for i, line in enumerate(lines)
-            if DIAGNOSTIC.search(line) and not GIVING_UP.search(line)]
+            if pattern.search(line) and not (skip and skip.search(line))]
     if not hits:
         return None
     kept, last = [], -1
@@ -279,7 +336,7 @@ def diagnostics(lines, budget, context=6):
             break
         end = i + 1
         while (end < len(lines) and end - i <= context and FOLLOWS.search(lines[end])
-               and not DIAGNOSTIC.search(lines[end])):
+               and not pattern.search(lines[end])):
             end += 1
         start = max(i, last + 1)
         if start > last + 1 and last >= 0:
@@ -289,20 +346,44 @@ def diagnostics(lines, budget, context=6):
     return kept[:budget]
 
 
+def diagnostics(lines, budget, context=6):
+    """The lines of a log that name a defect, or None if it names none."""
+    return picked(lines, DIAGNOSTIC, budget, context, skip=GIVING_UP)
+
+
 def show_failure(lines, tail):
     """Prints what a failed step said about the defect, and how much was left out."""
     tail = len(lines) if tail is None else tail
-    picked = diagnostics(lines, tail)
-    if picked is None:
+    found = diagnostics(lines, tail)
+    if found is None:
         show(lines, tail)
         return
-    for line in picked:
+    for line in found:
         print('   ...' if line is None else '   ' + line)
-    shown = sum(1 for line in picked if line is not None)
+    shown = sum(1 for line in found if line is not None)
     if shown < len(lines):
         print('   ... {} of {} log line(s) shown: the ones naming an error. '
               'The whole log is the same command without this one.'
               .format(shown, len(lines)))
+
+
+def show_passed(lines, tail):
+    """Prints the tail of a step that passed, and first any warning above it.
+
+    The tail is a line count and nothing anchors it to a diagnostic, so a warning the
+    step did not fail on is otherwise delivered in part or not at all.
+    """
+    if tail is None:
+        show(lines, tail)
+        return
+    start = max(0, len(lines) - tail)
+    above = picked(lines[:start], WARNED, WARNED_BUDGET, context=4) if start else None
+    if above:
+        print('   ... {} earlier line(s) naming a warning this step did not stop for:'
+              .format(sum(1 for line in above if line is not None)))
+        for line in above:
+            print('   ...' if line is None else '   ' + line)
+    show(lines, tail)
 
 
 def run(step, command, cwd, kept=2, failed_kept=40, notes=None, build=None, heal=None):
@@ -335,7 +416,7 @@ def run(step, command, cwd, kept=2, failed_kept=40, notes=None, build=None, heal
         return False
     if notes:
         lines = collapse_notes(lines, notes)
-    show(lines, kept)
+    show_passed(lines, kept)
     return True
 
 
@@ -344,18 +425,27 @@ PRUNED = re.compile(r'^removed\s+\w+\(\s*\S+\s+(\S+?)\s*\)')
 
 
 def documents_of(specs, outdir):
-    """The .siml, the .fsml and the .dtml the specs name, as paths under outdir."""
-    interfaces, machines, shared_types = [], [], []
+    """The .siml, the .fsml and the .dtml the specs name, as paths under outdir, and
+    the .fsml each machine hosts, as its "submachines" spell them."""
+    interfaces, machines, shared_types, hosted = [], [], [], []
     for spec in specs:
         document, _skipped = gen_docs.load_spec(spec)
         for entry in document.get('interfaces') or []:
             interfaces.append(os.path.join(outdir, entry['name'] + '.siml'))
         for entry in document.get('machines') or []:
             machines.append(os.path.join(outdir, entry['name'] + '.fsml'))
+            hosted += [os.path.normpath(inner['path']) for inner in
+                       entry.get('submachines') or [] if isinstance(inner, dict)
+                       and isinstance(inner.get('path'), str)]
         shared = document.get('datatypes') or {}
         if shared.get('name'):
             shared_types.append(os.path.join(outdir, shared['name'] + '.dtml'))
-    return interfaces, machines, shared_types
+    return interfaces, machines, shared_types, list(dict.fromkeys(hosted))
+
+
+def built_machines(machines, hosted):
+    """The machines an application can drive: a hosted one runs inside its host."""
+    return [path for path in machines if os.path.normpath(path) not in hosted]
 
 
 def drop_placeholders(root, changed, wanted):
@@ -505,6 +595,21 @@ def closing_lines(root, bodies, specs):
         return ['Every step passed. Next, and after every fix, the same command with --run:',
                 'it applies the worksheet, builds, runs the scenarios and the final check:',
                 '{} --run'.format(same)]
+    if worksheet_has_code(os.path.join(root, bodies)):
+        names = []
+        for path in gen_skeleton.marker_sources(os.path.join(root, 'src')):
+            try:
+                with open(path, encoding='utf-8') as handle:
+                    names += [hit.group(1) for hit in map(gen_skeleton.MARKER.search, handle)
+                              if hit]
+            except OSError:
+                pass
+        return ['Every step passed. {} has no body yet for {} marker(s): {}.'
+                .format(bodies, still_open, ', '.join(names)),
+                'Send those sections from {}, and any section you change, as {}; '
+                'it is folded into {}. Write, apply, build and run in one call:'
+                .format(gen_skeleton.WORKSHEET, fill_markers.FIX_FILE, bodies),
+                "{} --write {} --run <<'AREG_EOF'".format(same, fill_markers.FIX_FILE)]
     length = ''
     try:
         with open(os.path.join(root, gen_skeleton.WORKSHEET), encoding='utf-8') as handle:
@@ -513,10 +618,10 @@ def closing_lines(root, bodies, specs):
         pass
     return ['Every step passed. {} marker(s) are open, so the application does nothing '
             'yet.'.format(still_open),
-            'Next: read {}{}, then write every section it lists into {} in'
+            'Next: read {}{}, then write every section it lists into {}, apply it, '
+            'build and run the scenarios in one call:'
             .format(gen_skeleton.WORKSHEET, length, bodies),
-            'one call. Then apply, build and run the scenarios in one command:',
-            '{} --run'.format(same)]
+            "{} --write {} --run <<'AREG_EOF'".format(same, bodies)]
 
 
 def worksheet_has_code(path):
@@ -571,8 +676,9 @@ def main():
                         help='where the documents are written')
     parser.add_argument('--doc', help='the .siml the application is built from '
                                       '(default: the first the specs name)')
-    parser.add_argument('--machine', help='the .fsml the provider owns '
-                                          '(default: the first the specs name)')
+    parser.add_argument('--machine', help='the .fsml the provider owns, or its machine '
+                                          'name (default: the one the specs name that '
+                                          'no other machine hosts)')
     parser.add_argument('--mode', choices=['ipc', 'local'],
                         help='default: read from scenarios.json')
     parser.add_argument('--build', default='build', help='the build directory')
@@ -587,15 +693,27 @@ def main():
     parser.add_argument('--run', action='store_true',
                         help='run the scenarios once the build passed, in this '
                              'same call')
+    parser.add_argument('--only', metavar='NAME',
+                        help='run only the named scenario; implies --run')
     parser.add_argument('--regenerate', action='store_true',
                         help='write the application again, discarding what is in it')
     parser.add_argument('--no-check', action='store_true',
                         help='skip the contract check')
+    parser.add_argument('--write', metavar='FILE', action='append', default=[],
+                        help='write standard input to this project file first, then '
+                             'run as usual: design.json, bodies.txt or fix.txt and '
+                             'its build in one call. Once per call')
     args = parser.parse_args()
+    if args.only:
+        args.run = True
 
     root = os.path.abspath(args.root)
     if not os.path.isdir(root):
         fail('no such directory: {}'.format(args.root))
+    if len(args.write) > 1:
+        fail('--write takes one file per call: standard input holds one file')
+    for target in args.write:
+        write_input(root, target)
     mode = mode_of(root, args.mode)
 
     # Every input path is resolved once, against the project root, and that one
@@ -626,10 +744,19 @@ def main():
                    notes=os.path.join(root, args.build, NOTES_SHOWN)):
             return 1
 
+    if specs and args.doc is None and not documents_of(specs, args.outdir)[0]:
+        print('== application: the design declares no service, so there is no application '
+              'to build. Its documents are written: a machine runs in the provider of a '
+              'service, or inside a machine that hosts it.')
+        return 0
+
     document = args.doc
     machine = args.machine
+    if machine and not machine.lower().endswith('.fsml'):
+        machine = os.path.join(args.outdir, machine + '.fsml')
     if specs and (document is None or machine is None):
-        interfaces, machines, _shared = documents_of(specs, args.outdir)
+        interfaces, machines, _shared, hosted = documents_of(specs, args.outdir)
+        machines = built_machines(machines, hosted)
         # The application this tool writes is one service and at most one machine.
         # Picking the first of several silently builds a part of the project and
         # calls it the project, so several are named and refused here instead.
@@ -654,7 +781,9 @@ def main():
     # The documents the spec describes are the ones the project builds, so the CMake
     # lines follow the spec: a new document gains its line and a dropped one loses it.
     if specs:
-        interfaces, machines, shared_types = documents_of(specs, args.outdir)
+        interfaces, machines, shared_types, hosted = documents_of(specs, args.outdir)
+        machines = list(dict.fromkeys([os.path.normpath(path) for path in machines]
+                                      + hosted))
         wanted = [('addServiceInterface', path) for path in interfaces] + \
                  [('addStateMachine', path) for path in machines]
         changed = gen_skeleton.update_cmake(
@@ -672,8 +801,8 @@ def main():
     stale = present == 2 and app_older_than(root, args.build, specs)
     untouched = stale and app_untouched(root, args.build)
     if untouched and not args.regenerate:
-        print('== application: {} changed and src/ holds nothing of yours yet, so it '
-              'is written again.'.format(', '.join(os.path.basename(s) for s in specs)))
+        print('== application: {} changed and src/ holds only generated code and '
+              'bodies.txt, so it is written again.'.format(', '.join(os.path.basename(s) for s in specs)))
     if args.regenerate or present == 0 or untouched:
         command = [PYTHON, os.path.join(HERE, 'gen_skeleton.py'), '--doc', document,
                    '--app', '--mode', mode, '--force']
@@ -706,12 +835,21 @@ def main():
     # section changed since the last one is written, and a --regenerate that reset the
     # sources gets every body back. Filling the same body twice writes the same file.
     worksheet = os.path.join(root, args.bodies)
-    if not args.no_fill and worksheet_has_code(worksheet):
+    fix = os.path.join(os.path.dirname(worksheet), fill_markers.FIX_FILE)
+    if not args.no_fill and (worksheet_has_code(worksheet) or os.path.exists(fix)):
+        # src/ that holds only generated code and bodies.txt stays regenerable: the stamp
+        # takes the filled sources, and a later design change writes src/ again by itself.
+        filled_only = app_untouched(root, args.build)
         if not run('worksheet',
                    [PYTHON, os.path.join(HERE, 'fill_markers.py'),
                     '--bodies', args.bodies],
                    root, kept=3):
             return 1
+        if filled_only:
+            design, _sources = read_stamp(root, args.build)
+            with open(os.path.join(root, args.build, APP_STAMP), 'w',
+                      encoding='utf-8') as handle:
+                handle.write(design + '\n' + sources_digest(root) + '\n')
 
     # The scaffold pass allows an open marker: the generated files are promised to
     # compile and run as written, and a marker is where a body goes. The final pass
@@ -757,10 +895,12 @@ def main():
         # with no command able to clear it.
         # run_scenarios.py bounds each process's output itself. A failure is only
         # readable whole, and a pass carries the lead's lines the report is written from.
-        if not run('scenarios',
-                   [PYTHON, os.path.join(HERE, 'run_scenarios.py'),
-                    '--build', os.path.join(args.build, 'bin'), '--stale-ok'],
-                   root, kept=None, failed_kept=None):
+        scenarios = [PYTHON, os.path.join(HERE, 'run_scenarios.py'),
+                     '--build', os.path.join(args.build, 'bin'), '--stale-ok',
+                     '--keep', os.path.join(args.build, 'scenarios')]
+        if args.only:
+            scenarios += ['--only', args.only]
+        if not run('scenarios', scenarios, root, kept=None, failed_kept=None):
             return 1
         if not args.no_check:
             print('')
@@ -770,8 +910,8 @@ def main():
                        root, kept=1):
                 return 1
         print('')
-        print('Every step passed, the scenarios included. The lines each scenario printed')
-        print('are above: report from them, since a second run prints the same lines.')
+        for line in passed_lines(args.build, args.only):
+            print(line)
         return 0
 
     print('')

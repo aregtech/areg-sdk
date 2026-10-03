@@ -207,9 +207,8 @@ inline uint32_t _wait_any_sleep(std::atomic<uint32_t>& firedWord, uint32_t msTim
 
         const int rc { ::__ulock_wait(areg::os::APPLE_ULOCK_COMPARE_AND_WAIT, &firedWord,
                                       static_cast<uint64_t>(SYNC_FIRE_INVALID), timeout_us) };
-        if (errno == ETIMEDOUT)
+        if ((rc < 0) && (errno == ETIMEDOUT))
             return SYNC_FIRE_INVALID;
-        (void)rc;
     }
 }
 
@@ -274,8 +273,6 @@ int32_t SyncLockAndWaitPosix::_wait_any_new(WaitablePosix** listWaitables, int32
 
     for ( ; ; )
     {
-        firedWord.store(SYNC_FIRE_INVALID, std::memory_order_release);
-
         // Try to actually take ownership of any currently-signaled waitable.
         int32_t acquired{ areg::INVALID_INDEX };
         for (int32_t i{ 0 }; i < count; ++i)
@@ -325,6 +322,10 @@ int32_t SyncLockAndWaitPosix::_wait_any_new(WaitablePosix** listWaitables, int32
             resultCode = static_cast<int32_t>(areg::os::SyncSignal::AsyncSignal);
             break;
         }
+
+        // Re-arms the fire word, ordered before the waitables are checked again.
+        firedWord.store(SYNC_FIRE_INVALID, std::memory_order_relaxed);
+        std::atomic_thread_fence(std::memory_order_seq_cst);
     }
 
     for (int32_t i{ 0 }; i < count; ++i)

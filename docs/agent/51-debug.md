@@ -62,10 +62,6 @@ Take these in order. Each one costs less than the one after it.
 6. **Compare with something that works.** Copy the nearest `recipes/` recipe, confirm
    it runs, then move your document into it one piece at a time.
 
-**A working example is the cheapest reference.** Where the clone carries
-`../../examples/`, run one with your shape before blaming your own code;
-`41-examples.md` has the table and commands.
-
 Every command here has a Windows form: `python` for `python3`, `.exe` for `.elf`.
 
 ---
@@ -116,6 +112,7 @@ message: this failure is silent by design.
 | Multi process, but the service is `Private` | `Category` in the `.siml` | Set `Public`, regenerate, rebuild |
 | The provider is not registered | Is there a `REGISTER_IMPLEMENT_SERVICE` line? | Add it |
 | Two components claim one role name | Search the model for the name | Give each a unique name, or `areg::generate_name()` |
+| A public provider is never served; both processes log `Duplicate role name` | Another process provides the same public role name | Give one of them another role name |
 
 ---
 
@@ -210,7 +207,7 @@ Nothing here reports an error. Every one of these compiles, starts, and stays si
 |---|---|---|
 | The worker consumer name is not the one the component answers to | Compare the string in `REGISTER_WORKER_THREAD` with every name `worker_thread_consumer()` tests | Make them equal. An unknown name returns `nullptr` and the thread runs nothing |
 | A custom event has no listener | Is there an `add_listener` for that event, in the thread that should receive it? | Register in the consumer's own thread; see `23-events.md` |
-| A custom event is sent before its listener registers | Is `add_listener` called in the component constructor or in `started()`? | Register before the first send |
+| A custom event is sent before its listener registers | Is `add_listener` after the service starts, or a worker's in `register_event_consumers()`? | `37-threads.md` section 2 |
 | `AREG_DECLARE_EVENT_EX` names a thread that is not in the model | Compare the macro's thread name with `BEGIN_REGISTER_THREAD` | Make them equal; the automatic registration silently finds no thread |
 | A watchdog timeout never bites | Was `areg::Application::setup()` called with `startWatchdog` true? | A non-zero timeout in `BEGIN_REGISTER_THREAD_EX` does nothing while the watchdog manager is off; see `37-threads.md` |
 

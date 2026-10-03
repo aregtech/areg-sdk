@@ -38,6 +38,7 @@
  * Dependencies
  ************************************************************************/
 namespace areg {
+    class MessageEnvelope;
     class RemoteMessageHandler;
 } // namespace areg
 
@@ -150,6 +151,29 @@ private:
      **/
     void _process_pending_sockets();
 
+    /**
+     * \brief   Services one socket whose read-ahead cache still holds messages.
+     *          The socket is taken from the front of the list and put back only
+     *          if the drain ceiling stopped it again.
+     *
+     * \param   msgReceived     Reusable message buffer; overwritten on each call.
+     **/
+    void _service_cached_socket( areg::MessageEnvelope & msgReceived );
+
+    /**
+     * \brief   Adds the socket to the list of sockets with cached messages.
+     *
+     * \param   hSocket     The socket whose cache was not fully drained.
+     **/
+    void _remember_cached_socket( SOCKETHANDLE hSocket );
+
+    /**
+     * \brief   Removes the socket from the list of sockets with cached messages.
+     *
+     * \param   hSocket     The socket this thread stops servicing.
+     **/
+    void _forget_cached_socket( SOCKETHANDLE hSocket );
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -162,6 +186,7 @@ private:
     mutable ResourceLock                mPendingLock;       //!< Guards the two pending queues below.
     std::vector<areg::SocketAccepted>   mPendingAdd;        //!< Sockets queued for registration.
     std::vector<SOCKETHANDLE>           mPendingRemove;     //!< Socket handles queued for unregistration.
+    std::vector<SOCKETHANDLE>           mCachedPending;     //!< Sockets whose read-ahead cache still holds messages. Dispatching thread only.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

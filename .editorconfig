@@ -1,0 +1,9 @@
+# Line endings for editors that read EditorConfig, Visual Studio and VS Code among them.
+# Kept in step with .gitattributes.
+root = true
+
+[*]
+end_of_line = lf
+
+[*.{bat,ps1}]
+end_of_line = crlf

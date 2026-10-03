@@ -61,20 +61,38 @@ bool _os_init_socket()
     return result;
 }
 
-void _os_configure_connected_socket(SOCKETHANDLE hSocket) noexcept
+void _os_configure_accepted_socket(SOCKETHANDLE hSocket) noexcept
+{
+    ASSERT(areg::is_valid_socket(hSocket));
+    static_cast<void>(hSocket);
+}
+
+void _os_configure_connected_socket(SOCKETHANDLE hSocket, int32_t keepIdle, int32_t keepInterval, int32_t keepCount) noexcept
 {
     ASSERT(areg::is_valid_socket(hSocket));
 
+    // Keepalive probes of an idle connection declare a silent peer lost after keepIdle + keepInterval * keepCount seconds.
     constexpr int32_t keepAlive{ 1 };
     ::setsockopt(hSocket, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char *>(&keepAlive), sizeof(keepAlive));
 
     tcp_keepalive keepAliveValues{ };
     keepAliveValues.onoff             = 1u;
-    keepAliveValues.keepalivetime     = 5'000u;
-    keepAliveValues.keepaliveinterval = 1'000u;
+    keepAliveValues.keepalivetime     = static_cast<ULONG>(keepIdle) * 1'000u;
+    keepAliveValues.keepaliveinterval = static_cast<ULONG>(keepInterval) * 1'000u;
 
     DWORD bytesReturned{ 0u };
     ::WSAIoctl(hSocket, SIO_KEEPALIVE_VALS, &keepAliveValues, static_cast<DWORD>(sizeof(keepAliveValues)), nullptr, 0u, &bytesReturned, nullptr, nullptr);
+
+#ifdef TCP_KEEPCNT
+    const DWORD probeCount{ static_cast<DWORD>(keepCount) };
+    ::setsockopt(hSocket, IPPROTO_TCP, TCP_KEEPCNT, reinterpret_cast<const char *>(&probeCount), sizeof(probeCount));
+#endif  // TCP_KEEPCNT
+
+#ifdef TCP_MAXRT
+    // Sent data that stays unacknowledged declares the peer lost after the same seconds.
+    const DWORD maxRetransmit{ static_cast<DWORD>(keepIdle + keepInterval * keepCount) };
+    ::setsockopt(hSocket, IPPROTO_TCP, TCP_MAXRT, reinterpret_cast<const char *>(&maxRetransmit), sizeof(maxRetransmit));
+#endif  // TCP_MAXRT
 
 #ifdef SIO_TCP_SET_ACK_FREQUENCY
     DWORD ackFreq{ 2u };   // ACK every segment
