@@ -82,17 +82,22 @@ bool SocketClient::create_fd()
 
 bool SocketClient::connect_to()
 {
-    if ( !is_valid() || !mAddress.is_valid() )
+    const SOCKETHANDLE hSocket{ handle() };
+    if (!areg::is_valid_socket(hSocket) || !mAddress.is_valid())
         return false;
 
-    if ( !areg::client_connect_fd(handle(), mAddress) )
+    if (!areg::client_connect_fd(hSocket, mAddress))
     {
         close();
         return false;
     }
 
-    mSendSize = areg::max_send_size(handle());
-    mRecvSize = areg::max_receive_size(handle());
+    // Another thread closes the socket to abort a blocked connect.
+    if (!is_valid())
+        return false;
+
+    mSendSize = areg::max_send_size(hSocket);
+    mRecvSize = areg::max_receive_size(hSocket);
     return true;
 }
 

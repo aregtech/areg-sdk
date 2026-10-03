@@ -18,6 +18,7 @@
  ************************************************************************/
 #include "units/GUnitTest.hpp"
 #include "areg/base/String.hpp"
+#include "areg/base/WideString.hpp"
 
 #include <string>
 #include <string_view>
@@ -361,6 +362,81 @@ TEST(StringTestComparison, CompareWithStringObject)
     String b("ABC");
     EXPECT_EQ(a.compare(b, false), areg::Ordering::Equal);
     EXPECT_NE(a.compare(b, true), areg::Ordering::Equal);
+}
+
+/**
+ * \brief   Test compare with a single string argument of each string type.
+ **/
+TEST(StringTestComparison, CompareSingleArgument)
+{
+    const String str("abc");
+    const String same("abc");
+    const std::string stdSame("abc");
+
+    EXPECT_EQ(str.compare(same), areg::Ordering::Equal);
+    EXPECT_EQ(str.compare(String("abd")), areg::Ordering::Smaller);
+    EXPECT_EQ(str.compare(stdSame), areg::Ordering::Equal);
+    EXPECT_EQ(str.compare(std::string("abb")), areg::Ordering::Bigger);
+    EXPECT_EQ(str.compare(std::string_view("abc")), areg::Ordering::Equal);
+    EXPECT_EQ(str.compare("abc"), areg::Ordering::Equal);
+
+    const areg::WideString wide(L"abc");
+    EXPECT_EQ(wide.compare(areg::WideString(L"abc")), areg::Ordering::Equal);
+    EXPECT_EQ(wide.compare(std::wstring(L"abd")), areg::Ordering::Smaller);
+    EXPECT_EQ(wide.compare(areg::WideString(L"ABC"), false), areg::Ordering::Equal);
+}
+
+/**
+ * \brief   Test compare of a String object starting at a position.
+ **/
+TEST(StringTestComparison, CompareObjectAtPosition)
+{
+    const String str("Hello World");
+    EXPECT_EQ(str.compare(String("World"), 6), areg::Ordering::Equal);
+    EXPECT_EQ(str.compare(std::string("World"), 6), areg::Ordering::Equal);
+    EXPECT_EQ(str.compare(String("WORLD"), 6, areg::COUNT_ALL, false), areg::Ordering::Equal);
+}
+
+/**
+ * \brief   Test that a bool second argument is 'caseSensitive' and an integral one is a position.
+ **/
+TEST(StringTestComparison, CompareBoolOrPosition)
+{
+    const String str("abcdef");
+    const char* upper = "ABCDEF";
+    EXPECT_EQ(str.compare("ABCDEF", false), areg::Ordering::Equal);
+    EXPECT_EQ(str.compare(upper, false), areg::Ordering::Equal);
+    EXPECT_EQ(str.compare("bcdef", true), areg::Ordering::Bigger);
+
+    const String hello("Hello World");
+    EXPECT_EQ(hello.compare("World", 6u), areg::Ordering::Equal);
+    EXPECT_EQ(hello.compare(String("World"), 6u), areg::Ordering::Equal);
+    EXPECT_EQ(hello.compare(std::string("World"), std::size_t{ 6 }), areg::Ordering::Equal);
+    EXPECT_EQ(hello.compare(std::string_view("World"), 6), areg::Ordering::Equal);
+    EXPECT_EQ(hello.compare(std::string_view("WORLD"), 6u, areg::COUNT_ALL, false), areg::Ordering::Equal);
+    EXPECT_EQ(hello.compare(std::string_view("Worldwide").substr(0, 5), 6), areg::Ordering::Equal);
+
+    const areg::WideString wide(L"Hello World");
+    EXPECT_EQ(wide.compare(L"HELLO WORLD", false), areg::Ordering::Equal);
+    EXPECT_EQ(wide.compare(areg::WideString(L"World"), 6u), areg::Ordering::Equal);
+    EXPECT_EQ(wide.compare(std::wstring_view(L"World"), 6u), areg::Ordering::Equal);
+}
+
+/**
+ * \brief   Test case-insensitive compare with a view that is not null-terminated.
+ **/
+TEST(StringTestComparison, CompareIgnoreCaseView)
+{
+    const String str("ABC");
+    const char buffer[]{ 'a', 'b', 'c' };
+    EXPECT_EQ(str.compare(std::string_view("abcdef").substr(0, 3), false), areg::Ordering::Equal);
+    EXPECT_EQ(str.compare(std::string_view(buffer, 3), false), areg::Ordering::Equal);
+    EXPECT_EQ(str.compare(std::string_view("abd"), false), areg::Ordering::Smaller);
+    EXPECT_EQ(str.compare(std::string_view("abb"), false), areg::Ordering::Bigger);
+    EXPECT_EQ(str.compare("abcdef", 0, 3, false), areg::Ordering::Equal);
+
+    const areg::WideString wide(L"ABC");
+    EXPECT_EQ(wide.compare(std::wstring_view(L"abcdef").substr(0, 3), false), areg::Ordering::Equal);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1562,4 +1638,87 @@ TEST(StringTestEdgeCases, MakeAlphanumeric)
     String str("Hello, World! 123");
     str.make_alphanumeric();
     EXPECT_TRUE(str.is_alphanumeric());
+}
+
+/**
+ * \brief Tests the std::hash specialization for the String class.
+ **/
+TEST(StringTest, StdHashSpecialization)
+{
+    String str1("hello");
+    String str2("hello");
+    String str3("world");
+    std::hash<areg::String> hasher;
+    EXPECT_EQ(hasher(str1), hasher(str2));
+    EXPECT_NE(hasher(str1), hasher(str3));
+
+    String empty1("");
+    String empty2;
+    EXPECT_EQ(hasher(empty1), hasher(empty2));
+
+    String space(" ");
+    String tab("\t");
+    EXPECT_NE(hasher(space), hasher(tab));
+
+    String upperCase("HELLO");
+    EXPECT_NE(hasher(str1), hasher(upperCase));
+}
+
+/**
+ * \brief Tests the required_size template specialization for std::string_view.
+ **/
+TEST(StringTest, RequiredSize_StdStringView )
+{
+    areg::required_size<std::string_view> required;
+    std::string_view view1("hello");
+    std::string_view view2("world !");
+    std::string_view emptyView("");
+    EXPECT_EQ(required(view1), 14u);
+    EXPECT_EQ(required(view2), 16u);
+    EXPECT_EQ(required(emptyView), 9u);
+
+    std::string_view emptyView2;
+    EXPECT_EQ(required(emptyView), required(emptyView2));
+
+    EXPECT_NE(required(view1), required(view2));
+
+}
+
+
+/**
+ * \brief Tests the required_size template specialization for std::string.
+ **/
+TEST(StringTest, RequiredSize_StdString) {
+    areg::required_size<std::string> required;
+    std::string str1("hello");
+    std::string str2("world !");
+    std::string empty1("");
+
+    EXPECT_EQ(required(str1), 14u);
+    EXPECT_EQ(required(str2), 16u);
+    EXPECT_EQ(required(empty1), 9u);
+
+    std::string empty2;
+    EXPECT_EQ(required(empty1), required(empty2));
+    EXPECT_NE(required(str1), required(str2));
+}
+
+/**
+ * \brief Tests the required_size template specialization for areg::string.
+ **/
+TEST(StringTest, RequiredSize_aregString)
+{
+    areg::required_size<areg::String> required;
+    areg::String str1("hello");
+    areg::String str2("world !");
+    areg::String empty1("");
+    EXPECT_EQ(required(str1), 14u);
+    EXPECT_EQ(required(str2), 16u);
+    EXPECT_EQ(required(empty1), 9u);
+
+    areg::String empty2;
+    EXPECT_EQ(required(empty1), required(empty2));
+    EXPECT_NE(required(str1), required(str2));
+
+
 }

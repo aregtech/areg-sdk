@@ -17,6 +17,7 @@
 #include "areg/base/RuntimeClassID.hpp"
 #include "areg/component/Event.hpp"
 #include "areg/component/ExitEvent.hpp"
+#include "areg/base/Thread.hpp"
 #include "areg/base/private/DebugDefs.hpp"
 
 #include <chrono>
@@ -50,9 +51,6 @@ EventQueue::EventQueue(uint32_t maxQueue, bool dropOnFull /*= false*/, uint32_t 
     , mMaxWaitMs        ( 0u )
     , mProducersWaiting ( 0u )
 {
-    mRing = new Cell[mCapacity];
-    for (uint32_t i = 0u; i < mCapacity; ++i)
-        mRing[i].sequence.store(i, std::memory_order_relaxed);
 }
 
 EventQueue::EventQueue( areg::NullTag ) noexcept
@@ -77,8 +75,107 @@ EventQueue::EventQueue( areg::NullTag ) noexcept
 
 EventQueue::~EventQueue()
 {
-    delete[] mRing;
-    mRing = nullptr;
+    release_lanes();
+}
+
+//////////////////////////////////////////////////////////////////////////
+// EventQueue - lane lifecycle
+//////////////////////////////////////////////////////////////////////////
+
+void EventQueue::acquire_lanes() noexcept
+{
+    if (mCapacity == 0u)
+        return;
+
+    if (mRing.load(std::memory_order_relaxed) != nullptr)
+    {
+        // The ring outlives a stop, so starting again only opens it for producers.
+        static_cast<void>(mEnqueuePos.fetch_and(~EventQueue::RING_CLOSED, std::memory_order_release));
+        return;
+    }
+
+    Cell* const ring{ new Cell[mCapacity] };
+    for (uint32_t i = 0u; i < mCapacity; ++i)
+        ring[i].sequence.store(i, std::memory_order_relaxed);
+
+    mEnqueuePos.store(0u, std::memory_order_relaxed);
+    mDequeuePos.store(0u, std::memory_order_relaxed);
+
+    {
+        Lock lock(mPrioLock);
+        mPrioQueue.emplace();
+        mPrioCount.store(0u, std::memory_order_relaxed);
+    }
+
+    mRing.store(ring, std::memory_order_release);
+}
+
+void EventQueue::close_lanes() noexcept
+{
+    // An exit request may have closed the ring already; the slots it left in flight are waited for here.
+    const size_t closing{ mEnqueuePos.fetch_or(EventQueue::RING_CLOSED, std::memory_order_acq_rel) };
+    Cell* const  ring   { mRing.load(std::memory_order_acquire) };
+    if (ring == nullptr)
+        return;
+
+    mSlotEvent.set_signaled();  // a producer parked on a full ring never gets its slot now
+
+    // A slot taken before the close is published within a move and a store. A producer
+    // preempted in between is waited for by sleeping, which lets a thread of any priority run.
+    const size_t claimed{ closing & ~EventQueue::RING_CLOSED };
+    std::chrono::steady_clock::time_point deadline{ };
+    bool sleeping{ false };
+    for (size_t pos = mDequeuePos.load(std::memory_order_relaxed); pos != claimed; ++pos)
+    {
+        const Cell& cell{ ring[pos & mMask] };
+        uint32_t spin{ 0u };
+        while (cell.sequence.load(std::memory_order_acquire) == pos)
+        {
+            if (spin < EventQueue::CLOSE_SPIN_PAUSES)
+            {
+                Thread::cpu_pause();
+                ++spin;
+                continue;
+            }
+
+            const std::chrono::steady_clock::time_point now{ std::chrono::steady_clock::now() };
+            if (sleeping == false)
+            {
+                sleeping = true;
+                deadline = now + std::chrono::milliseconds(EventQueue::CLOSE_WAIT_MS);
+            }
+            else if (now >= deadline)
+            {
+                break;
+            }
+
+            Thread::sleep(EventQueue::RING_WAIT_RECHECK_MS);
+        }
+    }
+}
+
+void EventQueue::release_lanes() noexcept
+{
+    close_lanes();
+
+    // A producer waiting for a slot sees the close and leaves; nothing is freed before it has.
+    while (mProducersWaiting.load(std::memory_order_acquire) != 0u)
+    {
+        mSlotEvent.set_signaled();
+        Thread::sleep(RING_WAIT_RECHECK_MS);
+    }
+
+    Cell* const ring{ mRing.exchange(nullptr, std::memory_order_acq_rel) };
+
+    {
+        Lock lock(mPrioLock);
+        mPrioQueue.reset();     // each element's ~Event() releases its payload
+        mPrioCount.store(0u, std::memory_order_relaxed);
+    }
+
+    delete[] ring;              // each cell's ~Event() releases its payload
+    mEnqueuePos.store(0u, std::memory_order_relaxed);
+    mDequeuePos.store(0u, std::memory_order_relaxed);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -118,7 +215,8 @@ inline void EventQueue::_wake_consumer() noexcept
 
 bool EventQueue::push_event(Event& eventElem, Event* removedEvent /*= nullptr*/)
 {
-    if (mRing == nullptr)
+    Cell* const ring{ mRing.load(std::memory_order_acquire) };
+    if (ring == nullptr)
         return false;
 
     const areg::EventPriority prio{ eventElem.event_priority() };
@@ -126,25 +224,28 @@ bool EventQueue::push_event(Event& eventElem, Event* removedEvent /*= nullptr*/)
     if (prio == areg::EventPriority::ExitPrio)
     {
         // Exit is a sticky flag, never queued; the caller's event is dropped by its owner.
-        trigger_exit();
+        exit_queue(true);
         return true;
     }
 
     if (prio >= areg::EventPriority::HighPrio)
     {
         Lock lock(mPrioLock);
-        auto it = mPrioQueue.begin();
-        while (it != mPrioQueue.end() && it->event_priority() >= prio)
-            ++it;
+        if (mPrioQueue.has_value() && (!is_closed()))
+        {
+            auto it = mPrioQueue->begin();
+            while (it != mPrioQueue->end() && it->event_priority() >= prio)
+                ++it;
 
-        mPrioQueue.insert(it, std::move(eventElem));
-        mPrioCount.store(static_cast<uint32_t>(mPrioQueue.size()), std::memory_order_relaxed);
-        _wake_consumer();
-        return true;
+            mPrioQueue->insert(it, std::move(eventElem));
+            mPrioCount.store(static_cast<uint32_t>(mPrioQueue->size()), std::memory_order_relaxed);
+            _wake_consumer();
+            return true;
+        }
     }
 
     // Normal-priority: bounded ring (drop or block per policy).
-    if (_ring_enqueue(eventElem))
+    if (_ring_enqueue(ring, eventElem))
     {
         _wake_consumer();
         return true;
@@ -158,9 +259,65 @@ bool EventQueue::push_event(Event& eventElem, Event* removedEvent /*= nullptr*/)
     return false;
 }
 
+EventQueue::PushResult EventQueue::try_push_event(Event& eventElem)
+{
+    Cell* const ring{ mRing.load(std::memory_order_acquire) };
+    if (ring == nullptr)
+        return PushResult::Refused;
+
+    const areg::EventPriority prio{ eventElem.event_priority() };
+    if (prio == areg::EventPriority::ExitPrio)
+    {
+        exit_queue(true);
+        return PushResult::Queued;
+    }
+
+    if (prio >= areg::EventPriority::HighPrio)
+    {
+        Lock lock(mPrioLock);
+        if (mPrioQueue.has_value() && (!is_closed()))
+        {
+            auto it = mPrioQueue->begin();
+            while (it != mPrioQueue->end() && it->event_priority() >= prio)
+                ++it;
+
+            mPrioQueue->insert(it, std::move(eventElem));
+            mPrioCount.store(static_cast<uint32_t>(mPrioQueue->size()), std::memory_order_relaxed);
+            _wake_consumer();
+            return PushResult::Queued;
+        }
+    }
+
+    if (_ring_try_enqueue(ring, eventElem))
+    {
+        _wake_consumer();
+        return PushResult::Queued;
+    }
+
+    if (mDropOnFull || is_closed() || is_exit_triggered())
+        return PushResult::Refused;
+
+    mProducersWaiting.fetch_add(1u, std::memory_order_relaxed);
+    return PushResult::MustWait;
+}
+
+bool EventQueue::wait_push_event(Event& eventElem) noexcept
+{
+    // The ring cannot be released here: release_lanes() waits for every registered producer.
+    Cell* const ring{ mRing.load(std::memory_order_acquire) };
+    if (ring == nullptr)
+    {
+        mProducersWaiting.fetch_sub(1u, std::memory_order_release);
+        return false;
+    }
+
+    return _ring_wait_registered(ring, eventElem);
+}
+
 uint32_t EventQueue::push_events(Event* eventElems, uint32_t count)
 {
-    if ((eventElems == nullptr) || (count == 0u) || (mRing == nullptr))
+    Cell* const ring{ mRing.load(std::memory_order_acquire) };
+    if ((eventElems == nullptr) || (count == 0u) || (ring == nullptr))
         return 0u;
 
     uint32_t signalCount{ 0u };
@@ -170,7 +327,8 @@ uint32_t EventQueue::push_events(Event* eventElems, uint32_t count)
     if (eventElems[0].event_priority() > areg::EventPriority::NormalPrio)
     {
         Lock lock(mPrioLock);
-        for (uint32_t i = 0u; i < count; ++i)
+        const bool prioOpen{ mPrioQueue.has_value() && (!is_closed()) };
+        for (uint32_t i = 0u; (i < count) && prioOpen; ++i)
         {
             Event& evt = eventElems[i];
             if (!evt.is_valid())
@@ -186,11 +344,11 @@ uint32_t EventQueue::push_events(Event* eventElems, uint32_t count)
             else if (prio >= areg::EventPriority::HighPrio)
             {
                 // '>=' keeps equal priorities in posting order -- see push_event().
-                auto it = mPrioQueue.begin();
-                while (it != mPrioQueue.end() && it->event_priority() >= prio)
+                auto it = mPrioQueue->begin();
+                while (it != mPrioQueue->end() && it->event_priority() >= prio)
                     ++it;
 
-                mPrioQueue.insert(it, std::move(evt));
+                mPrioQueue->insert(it, std::move(evt));
                 ++signalCount;
             }
             else
@@ -199,7 +357,8 @@ uint32_t EventQueue::push_events(Event* eventElems, uint32_t count)
             }
         }
 
-        mPrioCount.store(static_cast<uint32_t>(mPrioQueue.size()), std::memory_order_relaxed);
+        mPrioCount.store(mPrioQueue.has_value() ? static_cast<uint32_t>(mPrioQueue->size()) : 0u
+                        , std::memory_order_relaxed);
     }
 
     // Phase 2: insert NormalPrio events into the ring; not-enqueued ones compact to the front.
@@ -210,7 +369,7 @@ uint32_t EventQueue::push_events(Event* eventElems, uint32_t count)
         if (!evt.is_valid())
             continue;
 
-        if (_ring_enqueue(evt))
+        if (_ring_enqueue(ring, evt))
         {
             ++signalCount;
         }
@@ -224,7 +383,7 @@ uint32_t EventQueue::push_events(Event* eventElems, uint32_t count)
 
     if (exitRequested)
     {
-        trigger_exit();
+        exit_queue(true);
     }
     else if (signalCount != 0u)
     {
@@ -240,7 +399,8 @@ uint32_t EventQueue::push_events(Event* eventElems, uint32_t count)
 
 Event EventQueue::pop_event() noexcept
 {
-    if (mRing == nullptr)
+    Cell* const ring{ mRing.load(std::memory_order_acquire) };
+    if (ring == nullptr)
         return Event{};
 
     // Immediate exit preempts everything
@@ -251,20 +411,20 @@ Event EventQueue::pop_event() noexcept
     if (mPrioCount.load(std::memory_order_relaxed) != 0u)
     {
         Lock lock(mPrioLock);
-        if (!mPrioQueue.empty())
+        if (mPrioQueue.has_value() && !mPrioQueue->empty())
         {
-            Event result{ std::move(mPrioQueue.front()) };
-            mPrioQueue.pop_front();
-            mPrioCount.store(static_cast<uint32_t>(mPrioQueue.size()), std::memory_order_relaxed);
+            Event result{ std::move(mPrioQueue->front()) };
+            mPrioQueue->pop_front();
+            mPrioCount.store(static_cast<uint32_t>(mPrioQueue->size()), std::memory_order_relaxed);
             return result;
         }
     }
 
     Event result;
-    if (_ring_try_dequeue(result))
+    if (_ring_try_dequeue(ring, result))
         return result;
 
-    if ((mExitState.load(std::memory_order_acquire) & EventQueue::EXIT_DRAINED) != 0u)
+    if (_exit_due())
         return ExitEvent::exit_event();
 
     return Event{};
@@ -272,7 +432,8 @@ Event EventQueue::pop_event() noexcept
 
 uint32_t EventQueue::pop_events(Event* eventElems, uint32_t count)
 {
-    if ((eventElems == nullptr) || (count == 0u) || (mRing == nullptr))
+    Cell* const ring{ mRing.load(std::memory_order_acquire) };
+    if ((eventElems == nullptr) || (count == 0u) || (ring == nullptr))
         return 0u;
 
     // Immediate exit preempts every lane
@@ -288,24 +449,25 @@ uint32_t EventQueue::pop_events(Event* eventElems, uint32_t count)
     if (mPrioCount.load(std::memory_order_relaxed) != 0u)
     {
         Lock lock(mPrioLock);
-        while (!mPrioQueue.empty() && (popped < count))
+        while (mPrioQueue.has_value() && !mPrioQueue->empty() && (popped < count))
         {
-            eventElems[popped++] = std::move(mPrioQueue.front());
-            mPrioQueue.pop_front();
+            eventElems[popped++] = std::move(mPrioQueue->front());
+            mPrioQueue->pop_front();
         }
 
-        mPrioCount.store(static_cast<uint32_t>(mPrioQueue.size()), std::memory_order_relaxed);
+        mPrioCount.store(mPrioQueue.has_value() ? static_cast<uint32_t>(mPrioQueue->size()) : 0u
+                        , std::memory_order_relaxed);
     }
 
     // Phase 2: drain the ring into the remaining slots (consumer thread only).
     while (popped < count)
     {
-        if (!_ring_try_dequeue(eventElems[popped]))
+        if (!_ring_try_dequeue(ring, eventElems[popped]))
             break;
         ++popped;
     }
 
-    if ((popped == 0u) && ((mExitState.load(std::memory_order_acquire) & EventQueue::EXIT_DRAINED) != 0u))
+    if ((popped == 0u) && _exit_due())
     {
         eventElems[0] = ExitEvent::exit_event();
         popped = 1u;
@@ -320,26 +482,30 @@ uint32_t EventQueue::pop_events(Event* eventElems, uint32_t count)
 
 void EventQueue::remove_events(const uint32_t eventClassId) noexcept
 {
-    if (mRing == nullptr)
-        return;
+    Cell* const ring{ mRing.load(std::memory_order_acquire) };
+    if ((ring == nullptr) || is_closed())
+        return;     // a closed queue keeps nothing: remove_all_events() empties it
 
     if (mPrioCount.load(std::memory_order_relaxed) != 0u)
     {
         Lock lock(mPrioLock);
-        auto it = mPrioQueue.begin();
-        while (it != mPrioQueue.end())
+        if (mPrioQueue.has_value())
         {
-            if ((!it->is_exit_prio()) && (eventClassId == it->event_id()))
+            auto it = mPrioQueue->begin();
+            while (it != mPrioQueue->end())
             {
-                it = mPrioQueue.erase(it);  // erase() destroys the element -> payload released
+                if ((!it->is_exit_prio()) && (eventClassId == it->event_id()))
+                {
+                    it = mPrioQueue->erase(it); // erase() destroys the element -> payload released
+                }
+                else
+                {
+                    ++it;
+                }
             }
-            else
-            {
-                ++it;
-            }
-        }
 
-        mPrioCount.store(static_cast<uint32_t>(mPrioQueue.size()), std::memory_order_relaxed);
+            mPrioCount.store(static_cast<uint32_t>(mPrioQueue->size()), std::memory_order_relaxed);
+        }
     }
 
     // Drain the ring, keep non-matching events
@@ -347,7 +513,7 @@ void EventQueue::remove_events(const uint32_t eventClassId) noexcept
     for (;;)
     {
         Event evt;
-        if (!_ring_try_dequeue(evt))
+        if (!_ring_try_dequeue(ring, evt))
             break;
 
         if (evt.event_id() != eventClassId)
@@ -356,26 +522,29 @@ void EventQueue::remove_events(const uint32_t eventClassId) noexcept
 
     for (Event& e : kept)
     {
-        VERIFY(_ring_try_enqueue(e));
+        VERIFY(_ring_try_enqueue(ring, e));
     }
 }
 
 void EventQueue::remove_all_events() noexcept
 {
-    if (mRing == nullptr)
+    Cell* const ring{ mRing.load(std::memory_order_acquire) };
+    if (ring == nullptr)
         return;
 
     if (mPrioCount.load(std::memory_order_relaxed) != 0u)
     {
         Lock lock(mPrioLock);
-        mPrioQueue.clear();     // each element's ~Event() releases its payload
+        if (mPrioQueue.has_value())
+            mPrioQueue->clear();    // each element's ~Event() releases its payload
+
         mPrioCount.store(0u, std::memory_order_relaxed);
     }
 
     for (;;)
     {
         Event evt;
-        if (!_ring_try_dequeue(evt))
+        if (!_ring_try_dequeue(ring, evt))
             break;
     }
 }
@@ -384,15 +553,18 @@ void EventQueue::remove_all_events() noexcept
 // EventQueue - Vyukov bounded ring
 //////////////////////////////////////////////////////////////////////////
 
-bool EventQueue::_ring_try_enqueue(Event& eventElem) noexcept
+bool EventQueue::_ring_try_enqueue(Cell* ring, Event& eventElem) noexcept
 {
-    ASSERT(mRing != nullptr);
+    ASSERT(ring != nullptr);
 
     size_t pos{ mEnqueuePos.load(std::memory_order_relaxed) };
     Cell*  cell{ nullptr };
     for (;;)
     {
-        cell = &mRing[pos & mMask];
+        if ((pos & EventQueue::RING_CLOSED) != 0u)
+            return false;   // closed: no new slot is handed out
+
+        cell = &ring[pos & mMask];
         const size_t   seq{ cell->sequence.load(std::memory_order_acquire) };
         const intptr_t dif{ static_cast<intptr_t>(seq) - static_cast<intptr_t>(pos) };
         if (dif == 0)
@@ -411,34 +583,41 @@ bool EventQueue::_ring_try_enqueue(Event& eventElem) noexcept
     }
 
     cell->event = std::move(eventElem);
-#ifdef AREG_LATENCY_TRACE
+#if defined(AREG_LATENCY_TRACE) && (AREG_LATENCY_TRACE)
     cell->lt_ns = AREG_LT_NOW();    // stamp before publishing; visible to consumer via the release store
 #endif
     cell->sequence.store(pos + 1u, std::memory_order_release);
     return true;
 }
 
-bool EventQueue::_ring_enqueue(Event& eventElem) noexcept
+bool EventQueue::_ring_enqueue(Cell* ring, Event& eventElem) noexcept
 {
-    ASSERT(mRing != nullptr);
+    ASSERT(ring != nullptr);
 
-    if (_ring_try_enqueue(eventElem))
+    if (_ring_try_enqueue(ring, eventElem))
         return true;
 
-    if (mDropOnFull)
-        return false;   // drop-newest
+    return mDropOnFull ? false : _ring_wait_enqueue(ring, eventElem);
+}
 
+bool EventQueue::_ring_wait_enqueue(Cell* ring, Event& eventElem) noexcept
+{
+    mProducersWaiting.fetch_add(1u, std::memory_order_relaxed);
+    return _ring_wait_registered(ring, eventElem);
+}
+
+bool EventQueue::_ring_wait_registered(Cell* ring, Event& eventElem) noexcept
+{
     // Lossless: block up to mWaitMs for a free slot; abortable by exit.
     const auto waitBegin{ std::chrono::steady_clock::now() };
     const auto deadline{ waitBegin + std::chrono::milliseconds(mWaitMs) };
-    mProducersWaiting.fetch_add(1u, std::memory_order_relaxed);
     bool enqueued{ false };
     for (;;)
     {
-        // Only the immediate exit aborts the wait.
-        if (is_exit_triggered())
+        // Only the immediate exit or a close aborts the wait.
+        if (is_exit_triggered() || is_closed())
             break;
-        if (_ring_try_enqueue(eventElem))
+        if (_ring_try_enqueue(ring, eventElem))
         {
             enqueued = true;
             break;
@@ -447,7 +626,11 @@ bool EventQueue::_ring_enqueue(Event& eventElem) noexcept
             break;
         mSlotEvent.lock(RING_WAIT_RECHECK_MS);   // woken by a consumer pop or the re-check timeout
     }
-    mProducersWaiting.fetch_sub(1u, std::memory_order_relaxed);
+
+    if (enqueued)
+    {
+        _wake_consumer();
+    }
 
     // Only recorded, never logged here: this queue also serves the log manager.
     const uint32_t waited{ static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -458,21 +641,34 @@ bool EventQueue::_ring_enqueue(Event& eventElem) noexcept
     {
     }
 
+    // The last access to this queue: release_lanes() may free it once the count drops.
+    mProducersWaiting.fetch_sub(1u, std::memory_order_release);
     return enqueued;
 }
 
-bool EventQueue::_ring_try_dequeue(Event& result) noexcept
+bool EventQueue::_exit_due() noexcept
 {
-    ASSERT(mRing != nullptr);
+    const uint8_t exitState{ mExitState.load(std::memory_order_acquire) };
+    if ((exitState == EventQueue::EXIT_NONE) || (_exit_reached(exitState) == false))
+        return false;
+
+    // A priority producer that saw the queue open before the close inserts under this lock.
+    Lock lock(mPrioLock);
+    return (mPrioQueue.has_value() == false) || mPrioQueue->empty();
+}
+
+bool EventQueue::_ring_try_dequeue(Cell* ring, Event& result) noexcept
+{
+    ASSERT(ring != nullptr);
 
     const size_t pos{ mDequeuePos.load(std::memory_order_relaxed) };
-    Cell&        cell{ mRing[pos & mMask] };
+    Cell&        cell{ ring[pos & mMask] };
     const size_t seq{ cell.sequence.load(std::memory_order_acquire) };
     if (seq != (pos + 1u))
         return false;   // head not yet published
 
     result = std::move(cell.event);
-#ifdef AREG_LATENCY_TRACE
+#if defined(AREG_LATENCY_TRACE) && (AREG_LATENCY_TRACE)
     AREG_LT_SAMPLE(areg::LtStage::MpscHandoff, AREG_LT_NOW() - cell.lt_ns);
 #endif
     cell.sequence.store(pos + mMask + 1u, std::memory_order_release);   // free the slot for the next lap

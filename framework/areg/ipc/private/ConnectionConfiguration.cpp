@@ -21,6 +21,7 @@
 #include "areg/appbase/AppDefs.hpp"
 #include "areg/base/Identifier.hpp"
 #include "areg/persist/ConfigManager.hpp"
+#include "areg/base/private/SocketLiveness.hpp"
 
 namespace areg {
 
@@ -100,6 +101,14 @@ uint32_t ConnectionConfiguration::pool_pairs() const noexcept
 uint32_t ConnectionConfiguration::socket_send_timeout() const noexcept
 {
     return Application::config_manager().network_timeout(areg::EmptyStringA, mConnectType);
+}
+
+uint32_t ConnectionConfiguration::socket_refusal_timeout() const noexcept
+{
+    const ConfigManager & config{ Application::config_manager() };
+    const uint32_t keepalive{ config.network_keepalive(areg::EmptyStringA, mConnectType) };
+    const uint32_t keepaliveSec{ keepalive < areg::SOCKET_KEEPALIVE_MAX_SEC ? keepalive : areg::SOCKET_KEEPALIVE_MAX_SEC };
+    return areg::send_refusal_ms(config.network_timeout(areg::EmptyStringA, mConnectType), keepaliveSec);
 }
 
 bool ConnectionConfiguration::connection_ip_address( uint8_t & field0

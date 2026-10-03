@@ -30,7 +30,6 @@ EventDispatcher::EventDispatcher( const String & name, uint32_t maxQeueue, areg:
     : EventDispatcherBase( name, maxQeueue, dropOnFull, waitMs )
     , ThreadConsumer     (  )
     , EventRouter        (  )
-    , mDispatcherThread  ( nullptr )
 {
 }
 
@@ -38,13 +37,11 @@ EventDispatcher::EventDispatcher( areg::NullTag ) noexcept
     : EventDispatcherBase( areg::NullTag{} )
     , ThreadConsumer     (  )
     , EventRouter        (  )
-    , mDispatcherThread  ( nullptr )
 {
 }
 
 EventDispatcher::~EventDispatcher()
 {
-    mDispatcherThread   = nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -52,8 +49,8 @@ EventDispatcher::~EventDispatcher()
 //////////////////////////////////////////////////////////////////////////
 bool EventDispatcher::on_thread_registered( Thread * threadObj )
 {
-    mDispatcherThread = AREG_RUNTIME_CAST(threadObj, DispatcherThread);
-    ASSERT(mDispatcherThread != nullptr);
+    ASSERT(AREG_RUNTIME_CAST(threadObj, DispatcherThread) == static_cast<DispatcherThread *>(this));
+    static_cast<void>(threadObj);
 
     EventDispatcherBase::remove_all_events( );
     EventDispatcherBase::mExternalEvents.reset_exit();
@@ -63,20 +60,22 @@ bool EventDispatcher::on_thread_registered( Thread * threadObj )
 void EventDispatcher::on_thread_unregistering()
 {
     stop_dispatcher();
-    mDispatcherThread   = nullptr;
 }
 
 void EventDispatcher::on_run()
 {
-    ASSERT(mDispatcherThread != nullptr);
     start_dispatcher();
 }
 
 int32_t EventDispatcher::on_exit()
 {
     exit_dispatcher( );
-    mDispatcherThread   = nullptr;
     return static_cast<int32_t>(ThreadConsumer::ExitCode::Normal);
+}
+
+DispatcherThread & EventDispatcher::dispatcher_thread() const noexcept
+{
+    return static_cast<DispatcherThread &>(const_cast<EventDispatcher &>(*this));
 }
 
 bool EventDispatcher::post_event( Event& eventElem )

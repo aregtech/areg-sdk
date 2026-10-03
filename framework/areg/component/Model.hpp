@@ -106,7 +106,7 @@ using  FuncCreateComponent  = std::function<areg::Component* (const areg::Compon
 using FuncDeleteComponent   = std::function<void (areg::Component& /*comp*/, const areg::ComponentEntry& /*entry*/)>;
 
 //////////////////////////////////////////////////////////////////////////
-// NERegistry namespace declaration
+// Model registry declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief       This namespace contains collection of classes to register
@@ -1742,7 +1742,7 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// NERegistry namespace Predefined Invalid Entries.
+// Predefined invalid registry entries.
 //////////////////////////////////////////////////////////////////////////
 
  /**
@@ -1813,7 +1813,7 @@ AREG_API const areg::Model & invalid_model() noexcept;
 } // namespace areg
 
 //////////////////////////////////////////////////////////////////////////
-// NERegistry inline methods
+// Registry inline methods
 //////////////////////////////////////////////////////////////////////////
 
 inline const areg::ServiceEntry& areg::ServiceList::operator [] (uint32_t index) const noexcept

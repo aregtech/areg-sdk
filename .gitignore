@@ -15,6 +15,7 @@
 .vs
 .vscode
 .cache
+*copilot*
 *claude*
 .idea
 

@@ -55,7 +55,7 @@ namespace
         , {"-i, --install   : Command to install Log Collector as a service. Valid only for Windows OS. Usage: \'logcollector --install\'"}
         , {"-l, --load      : Command to initialize from specified file. Used to start application. Usage: \'logcollector --load=<path-to-init-file>\'"}
         , {"-n, --instances : Command option to display list of connected instances. Used in console application. Usage: --instances"}
-        , {"-o, --scope     : Command to update log scope priority. Used in console application. Usage (\'*\' can be a cookie number): --scope *::areg_base_NESocket=NOTSET"}
+        , {"-o, --scope     : Command to update log scope priority. Used in console application. Usage (\'*\' can be a cookie number): --scope *::areg_base_Socket=NOTSET"}
         , {"-p, --pause     : Command option to pause connection. Used in console application. Usage: --pause"}
         , {"-q, --quit      : Command option to stop Log Collector and quit application. Used in console application. Usage: --quit"}
         , {"-r, --restart   : Command option to restart connection. Used in console application. Usage: --restart"}
@@ -99,24 +99,13 @@ LogCollector & LogCollector::instance()
     return _logger;
 }
 
-#if AREG_EXTENDED
 void LogCollector::print_status(const String& status)
 {
-
     if (LogCollector::instance().current_option() == areg::ext::ServiceOption::CMD_Console)
     {
-        Console& console{ Console::instance() };
-        Console::Coord curPos{ console.cursor_cur_position() };
         LogCollector::_output_info(status);
-        console.set_cursor_cur_position(curPos);
     }
-
 }
-#else   // AREG_EXTENDED
-void LogCollector::print_status(const String& /* status */)
-{
-}
-#endif  // AREG_EXTENDED
 
 LogCollector::LogCollector()
     : ServiceApplicationBase( mServiceServer )
@@ -544,6 +533,7 @@ void LogCollector::_output_info( const String & info )
     console.output_txt( coord, areg::ext::MSG_SEPARATOR.data( ) );
     ++ coord.posY;
     console.output_str( coord, info );
+    console.refresh_screen( );
 
     console.unlock_console( );
 

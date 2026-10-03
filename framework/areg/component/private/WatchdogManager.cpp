@@ -94,7 +94,7 @@ void WatchdogManager::stop_timer(Watchdog& watchdog)
 //////////////////////////////////////////////////////////////////////////
 
 WatchdogManager::WatchdogManager()
-    : TimerManagerBase(WatchdogManager::WATCHDOG_THREAD_NAME, areg::SYSTEM_THREAD_STACK_NORMAL)
+    : TimerManagerBase(WatchdogManager::WATCHDOG_THREAD_NAME, areg::SYSTEM_THREAD_STACK_NORMAL, areg::QUEUE_DEFAULT_RING_CAPACITY)
 
     , mWatchdogResource()
 {
@@ -165,11 +165,11 @@ void WatchdogManager::_process_expired_timer(Watchdog* watchdog, Watchdog::WATCH
 
     mWatchdogResource.lock();
 
-    Watchdog::SEQUENCE_ID sequence  = Watchdog::make_sequence_id(watchdog_id);
+    const Watchdog::SEQUENCE_ID sequence = Watchdog::make_sequence_id(watchdog_id);
     if ((watchdog != nullptr) && (watchdog->sequence() == sequence))
     {
-        LOG_WARN("The watchdog [ %s ] has expired, terminating component thread [ %s ]", watchdog->name().as_string(), watchdog->component_thread().name().as_string());
         componentThread = &watchdog->component_thread();
+        LOG_WARN("The watchdog [ %s ] has expired, terminating component thread [ %s ]", watchdog->name().as_string(), componentThread->name().as_string());
     }
 
     mWatchdogResource.unlock();

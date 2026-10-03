@@ -217,6 +217,46 @@ public:
     bool request_save_configuration(const ITEM_ID & target = areg::TARGET_ALL);
 
     /**
+     * \brief   Sends a request to read the log configuration file again, so the scope priorities
+     *          go back to what the file holds.
+     *
+     * \param   target      The ID of the target to send the message. If areg::TARGET_ALL,
+     *                      sends to all connected clients.
+     * \return  Returns true if request was processed; false otherwise.
+     **/
+    bool request_restore_configuration(const ITEM_ID & target = areg::TARGET_ALL);
+
+    /**
+     * \brief   Sends a request to start or stop sending the logs the target produces.
+     *
+     * \param   target      The ID of the target to send the message. If areg::TARGET_ALL,
+     *                      sends to all connected clients.
+     * \param   state       The state the target should take.
+     * \return  Returns true if request was processed; false otherwise.
+     **/
+    bool request_source_state(const ITEM_ID & target, areg::LogSourceState state);
+
+    /**
+     * \brief   Makes a log message on the observer side and saves it in the logging database, the
+     *          same way as a message received from a remote log source.
+     *
+     * \param   cookie      The ID of the instance the message belongs to.
+     * \param   prio        The priority to give the message.
+     * \param   timestamp   The moment to stamp the message with. Zero takes the current time.
+     * \param   message     The text of the message. Can be nullptr for an empty one.
+     * \return  The ID the log message got in the database, or 0 if it was not saved.
+     **/
+    uint32_t add_log(const ITEM_ID & cookie, areg::LogPriority prio, TIME64 timestamp, const char * message);
+
+    /**
+     * \brief   Deletes one log message from the logging database.
+     *
+     * \param   logId   The ID of the log message, as returned by `add_log()`.
+     * \return  Returns true if the message was deleted; false otherwise.
+     **/
+    bool remove_log(uint32_t logId);
+
+    /**
      * \brief   Creates or opens the logging database. If no path is specified, uses the location
      *          from configuration file.
      *

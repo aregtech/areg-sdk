@@ -50,6 +50,29 @@ public:
         uint32_t    scopePrio   { 0u }; //!< Scope log prio
     };
 
+    /**
+     * \brief   The place of one row in the time ordered reading of the logs. The row id
+     *          follows the timestamp so that the place stays unique when two logs were
+     *          generated in the same moment.
+     **/
+    struct LogPosition
+    {
+        TIME64      timeCreated { 0 };  //!< The moment the log was generated.
+        uint64_t    rowId       { 0 };  //!< The row of the log in the table.
+    };
+
+    /**
+     * \brief   One stretch of time during which the logs of a scope are left out of the
+     *          reading. An end of zero means the stretch is still open.
+     **/
+    struct RefusedSpan
+    {
+        uint32_t    scopeId     { 0u }; //!< The scope to leave out.
+        ITEM_ID     targetId    { 0u }; //!< The process the scope belongs to.
+        TIME64      fromTime    { 0 };  //!< The moment it stopped being read, zero for the whole file.
+        TIME64      toTime      { 0 };  //!< The moment it started being read again, zero while still open.
+    };
+
 //////////////////////////////////////////////////////////////////////////
 // Static methods
 //////////////////////////////////////////////////////////////////////////
@@ -223,6 +246,24 @@ public:
      * \return  Returns true if succeeded to save the log in the database.
      **/
     bool log_message(const areg::LogEntry & message) final;
+
+    /**
+     * \brief   Returns the identifier of the log message saved by the last successful call of
+     *          `log_message()`, or 0 if no message was saved yet.
+     *
+     * \note    Read it right after the call whose identifier is needed. Any other insert on the
+     *          same connection replaces the value.
+     **/
+    [[nodiscard]]
+    uint32_t last_log_id() const noexcept;
+
+    /**
+     * \brief   Deletes one log message from the database.
+     *
+     * \param   logId   The identifier of the log message, as returned by `last_log_id()`.
+     * \return  Returns true if the statement ran. A missing identifier is not an error.
+     **/
+    bool remove_log(uint32_t logId);
 
     /**
      * \brief   Called when need to log information about log source instance.
@@ -667,6 +708,64 @@ public:
      **/
     bool disable_filter_mask(ITEM_ID instId = areg::TARGET_ALL);
 
+    /**
+     * \brief   Creates the index that orders the logs by the time they were generated, unless
+     *          the database already carries it. A database created by this class has the index
+     *          from the start; a file written before the index existed gains it here.
+     *
+     *          Building it over an existing large table takes time proportional to the number
+     *          of rows, so call it from a worker thread and not while serving the interface.
+     *
+     * \return  Returns true if the database carries the index when the call returns. A database
+     *          opened read only cannot gain it and returns false.
+     **/
+    bool ensure_time_index();
+
+    /**
+     * \brief   Prepares a statement that reads one window of logs in the order they were
+     *          generated, starting after the given place. Rows that a refused span covers
+     *          are left out by the query itself, so the window comes back full.
+     *
+     * \param   stmt    The statement to prepare.
+     * \param   after   The place to continue from. A zeroed place starts at the first log.
+     * \param   limit   The greatest number of rows the window holds.
+     * \return  Returns true if the statement is ready to be read.
+     **/
+    bool setup_statement_read_window(SqliteStatement& stmt, const LogPosition& after, int32_t limit);
+
+    /**
+     * \brief   Prepares a statement that reads one window of logs backwards, ending before
+     *          the given place. The rows come back newest first, so the caller reverses them.
+     *
+     * \param   stmt    The statement to prepare.
+     * \param   before  The place to read back from. A zeroed place starts at the last log.
+     * \param   limit   The greatest number of rows the window holds.
+     * \return  Returns true if the statement is ready to be read.
+     **/
+    bool setup_statement_read_window_back(SqliteStatement& stmt, const LogPosition& before, int32_t limit);
+
+    /**
+     * \brief   Replaces the stretches of time the reading leaves out. The stretches live in
+     *          the temporary database, so they are dropped when the connection closes and
+     *          they never touch the log file, including a file opened read only.
+     *
+     * \param   spans   The stretches to apply. An empty list reads everything again.
+     * \return  Returns true if the stretches were applied.
+     **/
+    bool set_refused_spans(const areg::ArrayList<RefusedSpan>& spans);
+
+    /**
+     * \brief   Reads rows of a prepared window into the given list and reports the place of
+     *          the last row read, which is where the next window continues from.
+     *
+     * \param   logs        The list to append the rows to.
+     * \param   stmt        The statement prepared by one of the window methods.
+     * \param   maxEntries  The greatest number of rows to read.
+     * \param   lastRead    On return, the place of the last row read.
+     * \return  Returns the number of rows read.
+     **/
+    static int32_t fill_log_window(std::vector<areg::SharedBuffer>& logs, SqliteStatement& stmt, int32_t maxEntries, LogPosition& lastRead);
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
@@ -729,6 +828,11 @@ private:
      * \return  Returns true if operation succeeded.
      **/
     inline uint32_t _update_filter_log_scopes(ITEM_ID instId, const areg::ArrayList<ScopeFilter>& filter);
+
+    /**
+     * \brief   Creates the temporary table of refused stretches unless it already exists.
+     **/
+    inline bool _create_temp_refused() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.

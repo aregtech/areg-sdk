@@ -42,6 +42,9 @@ using ListScopes    = StringToIntegerHashMap;
 //!< The hash map container of all logging scopes.
 using LogScopeMap   = HashMap<uint32_t, LogScope *>;
 
+//!< The hash map of scope IDs to the priorities saved before the scopes were stopped.
+using ScopePrioMap  = HashMap<uint32_t, uint32_t>;
+
 //!< Initial reservation for the scope map to avoid rehashing during static initialization.
 inline constexpr uint32_t SCOPE_MAP_INITIAL_RESERVE { 512u };
 
@@ -100,6 +103,12 @@ public:
      **/
     [[nodiscard]]
     bool is_scope_registered( const char * scopeName ) const noexcept;
+
+    /**
+     * \brief   Returns true if the scopes are stopped, so that no scope produces a log message.
+     **/
+    [[nodiscard]]
+    inline bool is_stopped() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -276,6 +285,30 @@ public:
     inline void clear_config_scopes();
 
     /**
+     * \brief   Saves the priority of every registered scope and sets them all to PrioNotset, so
+     *          that no scope produces a log message. Does nothing if the scopes are already
+     *          stopped.
+     * \return  True if the scopes were stopped by this call.
+     **/
+    bool stop_scopes();
+
+    /**
+     * \brief   Sets back the scope priorities saved by stop_scopes(). A scope registered while
+     *          the scopes were stopped takes the priority of the configuration. Does nothing if
+     *          the scopes are not stopped.
+     * \return  True if the scopes were resumed by this call.
+     **/
+    bool resume_scopes();
+
+    /**
+     * \brief   Drops the priorities saved by stop_scopes() and clears the stopped state, keeping
+     *          the priorities the scopes hold now. Call it when a new configuration is applied
+     *          while the scopes are stopped, so the new priorities are not overwritten later.
+     * \return  True if the scopes were stopped before this call.
+     **/
+    bool discard_saved_scopes();
+
+    /**
      * \brief   Resets and disables all scope priorities.
      **/
     void reset();
@@ -377,6 +410,10 @@ private:
     ListScopes          mConfigScopeGroup;
     //!< The map of registered log scope objects.
     LogScopeMap         mMapLogScope;
+    //!< The scope priorities saved by stop_scopes(), empty when the scopes are not stopped.
+    ScopePrioMap        mSavedScopePrio;
+    //!< True when stop_scopes() set every scope priority to PrioNotset.
+    bool                mIsStopped;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -392,6 +429,11 @@ private:
 inline const LogScopeMap & ScopeController::scope_list() const noexcept
 {
     return mMapLogScope;
+}
+
+inline bool ScopeController::is_stopped() const noexcept
+{
+    return mIsStopped;
 }
 
 inline LogScope * ScopeController::scope( uint32_t scopeId ) const noexcept

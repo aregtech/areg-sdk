@@ -28,6 +28,11 @@
 namespace areg {
 
 areg::ScopeController::ScopeController()
+    : mConfigScopeList  ( )
+    , mConfigScopeGroup ( )
+    , mMapLogScope      ( )
+    , mSavedScopePrio   ( )
+    , mIsStopped        ( false )
 {
     mMapLogScope.reserve( SCOPE_MAP_INITIAL_RESERVE );
 }
@@ -176,6 +181,64 @@ void ScopeController::reset()
 
     mConfigScopeList.clear();
     mConfigScopeGroup.clear();
+    discard_saved_scopes();
+}
+
+bool ScopeController::stop_scopes()
+{
+    if (mIsStopped)
+        return false;
+
+    mSavedScopePrio.clear();
+    mSavedScopePrio.reserve(mMapLogScope.size());
+    const uint32_t noPrio{ static_cast<uint32_t>(areg::LogPriority::PrioNotset) };
+    for (auto pos = mMapLogScope.first_position(); mMapLogScope.is_valid_position(pos); pos = mMapLogScope.next_position(pos))
+    {
+        LogScope * scope = mMapLogScope.value_at(pos);
+        ASSERT(scope != nullptr);
+        mSavedScopePrio.set_value_at(static_cast<uint32_t>(*scope), scope->priority());
+        scope->set_priority(noPrio);
+    }
+
+    mIsStopped = true;
+    return true;
+}
+
+bool ScopeController::resume_scopes()
+{
+    if (!mIsStopped)
+        return false;
+
+    mIsStopped = false;
+    uint32_t defaultPrio{ areg::DEFAULT_LOG_PRIORITY };
+    mConfigScopeGroup.find(areg::LOG_SCOPES_GROUP, defaultPrio);
+
+    for (auto pos = mMapLogScope.first_position(); mMapLogScope.is_valid_position(pos); pos = mMapLogScope.next_position(pos))
+    {
+        LogScope * scope = mMapLogScope.value_at(pos);
+        ASSERT(scope != nullptr);
+        uint32_t savedPrio{ static_cast<uint32_t>(areg::LogPriority::PrioNotset) };
+        if (mSavedScopePrio.find(static_cast<uint32_t>(*scope), savedPrio))
+        {
+            scope->set_priority(savedPrio);
+        }
+        else
+        {
+            // Registered after the stop, so it takes the priority of the configuration.
+            activate_scope(*scope, defaultPrio);
+        }
+    }
+
+    mSavedScopePrio.clear();
+    return true;
+}
+
+bool ScopeController::discard_saved_scopes()
+{
+    const bool wasStopped{ mIsStopped };
+    mIsStopped = false;
+    mSavedScopePrio.clear();
+    return wasStopped;
 }
 
 void ScopeController::activate_defaults()

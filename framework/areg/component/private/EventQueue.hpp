@@ -25,12 +25,24 @@
 #include <atomic>
 #include <cstdint>
 #include <deque>
+#include <optional>
 #include <vector>
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
 #include "areg/component/Event.hpp"
+
+/**
+ * \brief   Alignment of one ring slot, in bytes. One cache line keeps the hand-off
+ *          state of neighbouring slots on separate lines, so two producers writing
+ *          to adjacent slots do not fight over the same line. Define it as 8 to pack
+ *          the ring tightly on a target where the few extra bytes per slot matter
+ *          more than producer throughput.
+ **/
+#ifndef AREG_MPSC_CELL_ALIGN
+    #define AREG_MPSC_CELL_ALIGN    64
+#endif  // AREG_MPSC_CELL_ALIGN
 
 namespace areg {
 
@@ -58,7 +70,7 @@ namespace areg {
  *          When the ring is full the behaviour is selected at construction:
  *            - dropOnFull == false (default): the producer blocks up to waitMs for
  *              a free slot, then fails the enqueue (lossless; request/response safe).
- *              The wait is aborted by trigger_exit().
+ *              The wait is aborted by exit_queue().
  *            - dropOnFull == true: the incoming event is rejected (drop-newest),
  *              for best-effort / latest-value streams (e.g. broadcasts).
  *
@@ -66,6 +78,13 @@ namespace areg {
  *          lost-wakeup-free eventcount discipline) and the producer wake-up (an
  *          auto-reset SyncEvent signalled when a slot is freed). ExitPrio is never
  *          queued; it sets the sticky exit flag.
+ *
+ *          Both lanes are allocated by acquire_lanes(), which the owner dispatcher
+ *          calls before it accepts events, and are freed by release_lanes(). A queue
+ *          that holds no lanes takes no event: every operation is a safe no-op. The
+ *          exit flag and the two wake-ups live in the object and stay usable at any
+ *          time. A dispatcher that stops keeps its ring and reuses it when it starts
+ *          again, so a restart allocates nothing.
  *
  * \note    pop_event() and wait_event() must be called from a single consumer
  *          thread only. push_event() is safe from any number of producer threads.
@@ -82,17 +101,26 @@ private:
     /**
      * \brief   One ring slot. \a sequence carries the Vyukov hand-off state:
      *          == enqueue cursor -> free to claim; == cursor+1 -> published.
+     *          One slot occupies whole cache lines, so a producer publishing into
+     *          one slot never dirties the line of a neighbouring slot.
      **/
-    struct Cell
+    struct alignas(AREG_MPSC_CELL_ALIGN) Cell
     {
         std::atomic<size_t> sequence { 0u };
         Event               event    {     };
-#ifdef AREG_LATENCY_TRACE
+#if defined(AREG_LATENCY_TRACE) && (AREG_LATENCY_TRACE)
         uint64_t            lt_ns    { 0u };    //!< enqueue timestamp (ns), carried to dequeue.
 #endif
     };
 
     static constexpr uint32_t   RING_WAIT_RECHECK_MS  { 1u };     //!< Producer block re-check interval.
+
+    //!< Top bit of the enqueue cursor. Set while the queue is closed, so a producer
+    //!< that reloads the ticket sees the refusal in the value it already needs.
+    static constexpr size_t     RING_CLOSED   { static_cast<size_t>(1u) << ((sizeof(size_t) * 8u) - 1u) };
+
+    static constexpr uint32_t   CLOSE_SPIN_PAUSES { 64u };      //!< CPU-pause spins on a slot before sleeping.
+    static constexpr uint32_t   CLOSE_WAIT_MS     { 1000u };    //!< Longest a close waits for its slots, in ms.
 
     static constexpr uint8_t    EXIT_NONE     { 0u };     //!< The queue keeps running.
     static constexpr uint8_t    EXIT_NOW      { 1u };     //!< Stop at once, queued events are dropped.
@@ -107,16 +135,26 @@ private:
     //////////////////////////////////////////////////////////////////////////
     static constexpr uint32_t   AREG_MPSC_CACHE_LINE_SIZE{ 128u };
 
+public:
+    //!< The outcome of try_push_event().
+    enum class PushResult : uint8_t
+    {
+          Queued    //!< The event is queued.
+        , Refused   //!< The event is not queued and is not to be retried.
+        , MustWait  //!< The ring is full; the caller must call wait_push_event().
+    };
+
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Constructs the queue and allocates the fixed ring.
+     * \brief   Constructs the queue. The lanes stay empty until acquire_lanes() is called.
      *
      * \param   maxQueue    Ring size for normal-priority events; rounded up to a
      *                      power of two (minimum 32). Pass areg::IGNORE_VALUE (0)
-     *                      to use the default ring size.
+     *                      to use the default ring size. The cells are allocated by
+     *                      acquire_lanes(), not here.
      * \param   dropOnFull  false (default): producer blocks up to \a waitMs for a
      *                      slot, then fails the enqueue. true: drop the incoming
      *                      event when the ring is full.
@@ -129,7 +167,7 @@ public:
 
 protected:
     /**
-     * \brief   Null constructor: creates a hollow queue with no ring buffer and no OS sync handles.
+     * \brief   Null constructor: creates a hollow queue that can never hold lanes.
      *          All operations are safe no-ops. Used only by EventDispatcherBase(NullTag) to build
      *          zero-allocation sentinel dispatcher objects.
      **/
@@ -151,6 +189,45 @@ public:
      * \brief   Releases one acquisition of the priority-lane SpinLock.
      **/
     inline void unlock_queue() noexcept;
+
+    /**
+     * \brief   Allocates the ring and the priority lane, and opens the queue for
+     *          producers. A dispatcher that stops and starts again reuses the ring it
+     *          already holds, so the restart only reopens it.
+     *
+     * \note    Call from the owner dispatcher, under lock_queue(), before the
+     *          dispatcher reports itself started. It does not touch the exit flag:
+     *          the owner clears that with reset_exit() before it starts.
+     **/
+    void acquire_lanes() noexcept;
+
+    /**
+     * \brief   Closes the queue: every further push_event() and push_events() is
+     *          refused, and the call returns once every producer that had already
+     *          taken a ring slot has left it, or after CLOSE_WAIT_MS. The lanes stay
+     *          allocated.
+     *
+     * \note    Call from the owner dispatcher when it stops reporting itself started.
+     *          After it returns the ring holds no producer, so the owner can drain it.
+     **/
+    void close_lanes() noexcept;
+
+    /**
+     * \brief   Returns true while the queue is closed for producers.
+     **/
+    [[nodiscard]]
+    inline bool is_closed() const noexcept;
+
+    /**
+     * \brief   Closes the queue, destroys every queued event and frees the ring and
+     *          the priority lane. After this the queue takes no event until
+     *          acquire_lanes() is called again.
+     *
+     * \note    close_lanes() shuts the producers out, but a producer that had already
+     *          read the ring pointer may still be about to touch it. Call this only
+     *          where the owner thread is known to be gone, as the destructor is.
+     **/
+    void release_lanes() noexcept;
 
     /**
      * \brief   Returns true if the consumer has something to pop: a queued event
@@ -176,17 +253,17 @@ public:
     inline uint32_t extract_max_wait_ms() noexcept;
 
     /**
-     * \brief   Requests exit: sets the sticky exit flag, wakes the consumer
-     *          blocked in wait_event() and any producers blocked on a full ring.
-     *          After this, pop_event() returns the singleton ExitEvent until
-     *          reset_exit() is called.
+     * \brief   Requests exit. The queue refuses every new event from this call on and
+     *          wakes the consumer and any producer blocked on a full ring. The exit
+     *          is sticky until reset_exit() is called.
+     *
+     * \param   exitNow     If true, pop_event() returns the singleton ExitEvent at once
+     *                      and the queued events are not delivered. If false, the
+     *                      events queued before the call are delivered first, then
+     *                      pop_event() returns the ExitEvent. An exit now overrides a
+     *                      drained exit, never the reverse.
      **/
-    inline void trigger_exit() noexcept;
-
-    /**
-     * \brief   Requests exit, but only after the queued events are processed.
-     **/
-    inline void trigger_exit_drained() noexcept;
+    inline void exit_queue(bool exitNow = false) noexcept;
 
     /**
      * \brief   Clears the sticky exit flags. Must be called only when the owner
@@ -219,6 +296,27 @@ public:
      *          is the only signal a producer gets, so the caller must pass it on.
      **/
     bool push_event(Event& eventElem, Event* removedEvent = nullptr);
+
+    /**
+     * \brief   Queues an event like push_event(), but never waits for a free slot. The event
+     *          is left untouched when it is not queued.
+     *
+     * \param   eventElem   Event to queue (moved in on success).
+     * \return  Queued or Refused; MustWait if the ring is full and the queue is lossless. A
+     *          MustWait caller is registered as a waiting producer and must call
+     *          wait_push_event() exactly once, which it may do after it stops keeping the
+     *          owner of this queue alive: the queue is not released before that call returns.
+     **/
+    PushResult try_push_event(Event& eventElem);
+
+    /**
+     * \brief   Waits for a free slot and queues the event, after try_push_event() returned
+     *          MustWait. Waits up to the lossless timeout; a close or an exit aborts the wait.
+     *
+     * \param   eventElem   Event to queue (moved in on success).
+     * \return  true if the queue took the event.
+     **/
+    bool wait_push_event(Event& eventElem) noexcept;
 
     /**
      * \brief   Dequeues the next event. Priority lane is always drained first.
@@ -273,22 +371,50 @@ public:
 private:
 
     /**
-     * \brief   One producer attempt to publish \a eventElem into the ring.
+     * \brief   One attempt to publish \a eventElem into \a ring.
      *          Lock-free, safe from any producer. Returns false when the ring is full.
      **/
-    bool _ring_try_enqueue(Event& eventElem) noexcept;
+    bool _ring_try_enqueue(Cell* ring, Event& eventElem) noexcept;
 
     /**
-     * \brief   Publishes \a eventElem honoring the full-ring policy: drop, or block
-     *          up to mWaitMs (abortable by exit). Returns false if not enqueued.
+     * \brief   Publishes \a eventElem into \a ring honoring the full-ring policy:
+     *          drop, or block up to mWaitMs (abortable by exit). Returns false if
+     *          not enqueued.
      **/
-    bool _ring_enqueue(Event& eventElem) noexcept;
+    bool _ring_enqueue(Cell* ring, Event& eventElem) noexcept;
 
     /**
-     * \brief   Consumer-only dequeue of the next ring event into \a result.
+     * \brief   Blocks up to mWaitMs for a free slot in \a ring, then publishes
+     *          \a eventElem. Returns false on timeout or exit.
+     **/
+    bool _ring_wait_enqueue(Cell* ring, Event& eventElem) noexcept;
+
+    /**
+     * \brief   The wait of _ring_wait_enqueue() for a producer already counted in
+     *          mProducersWaiting. Removes it from the count as its last access to the queue.
+     **/
+    bool _ring_wait_registered(Cell* ring, Event& eventElem) noexcept;
+
+    /**
+     * \brief   Consumer-only dequeue of the next \a ring event into \a result.
      *          Returns false when the head slot is not yet published (ring empty).
      **/
-    bool _ring_try_dequeue(Event& result) noexcept;
+    bool _ring_try_dequeue(Cell* ring, Event& result) noexcept;
+
+    /**
+     * \brief   Returns true if the requested exit is due: at once for an exit now, or
+     *          once every ring slot taken before the close is consumed for a drained exit.
+     * \param   exitState   The exit state, not EXIT_NONE.
+     **/
+    [[nodiscard]]
+    inline bool _exit_reached(uint8_t exitState) const noexcept;
+
+    /**
+     * \brief   Consumer-only. Returns true if the consumer found nothing to pop and the
+     *          requested exit is due, including an empty priority lane.
+     **/
+    [[nodiscard]]
+    bool _exit_due() noexcept;
 
     /**
      * \brief   Rings the consumer doorbell, but only when the consumer is parked
@@ -315,11 +441,13 @@ private:
 private:
 
     //!< Read-only after construction.
-    const uint32_t          mCapacity;   //!< Ring size (power of two).
+    const uint32_t          mCapacity;   //!< Ring size (power of two). 0 for a hollow queue.
     const size_t            mMask;       //!< mCapacity - 1 (index mask).
     const bool              mDropOnFull; //!< true: drop on full; false: block up to mWaitMs.
     const uint32_t          mWaitMs;     //!< Lossless-mode full-ring block timeout (ms).
-    Cell*                   mRing;       //!< Fixed array of mCapacity cells.
+
+    //!< Array of mCapacity cells while the lanes are held, nullptr otherwise.
+    std::atomic<Cell*>      mRing;
 
     //!< Producer-written enqueue cursor - own cache line.
     alignas(AREG_MPSC_CACHE_LINE_SIZE) std::atomic<size_t> mEnqueuePos;
@@ -329,10 +457,11 @@ private:
 
     //!< Priority lane - Critical at front, then descending priority order.
     SpinLock                mPrioLock;  //!< Recursive guard for mPrioQueue
-    std::deque<Event>       mPrioQueue; //!< [Critical-][High-] ordered (stored by value)
+    std::optional<std::deque<Event>>
+                            mPrioQueue; //!< [Critical-][High-] ordered (stored by value)
     std::atomic_uint32_t    mPrioCount; //!< The number of elements in mPrioQueue
 
-    //!< Consumer wake-up doorbell. Manual-reset: set by push/trigger_exit, reset only by wait_event.
+    //!< Consumer wake-up doorbell. Manual-reset: set by push/exit_queue, reset only by wait_event.
     SimpleEvent             mQueueEvent;
     //!< Set by the consumer while parked in wait_event(); read by producers so the doorbell
     //!< is rung only when a waiter actually needs it (eventcount discipline, lost-wakeup-free).
@@ -387,28 +516,39 @@ inline bool EventQueue::is_exit_triggered() const noexcept
     return (mExitState.load(std::memory_order_acquire) & EventQueue::EXIT_NOW) != 0u;
 }
 
+inline bool EventQueue::is_closed() const noexcept
+{
+    return (mEnqueuePos.load(std::memory_order_acquire) & EventQueue::RING_CLOSED) != 0u;
+}
+
 inline bool EventQueue::has_pending() const noexcept
 {
-    if (mRing == nullptr)
+    const Cell* const ring{ mRing.load(std::memory_order_acquire) };
+    if (ring == nullptr)
         return is_exit_triggered();
 
     const size_t pos{ mDequeuePos.load(std::memory_order_relaxed) };
-    return (mRing[pos & mMask].sequence.load(std::memory_order_acquire) == (pos + 1u))
-        || (mPrioCount.load(std::memory_order_relaxed) != 0u)
-        || (mExitState.load(std::memory_order_acquire) != EventQueue::EXIT_NONE);
+    if ((ring[pos & mMask].sequence.load(std::memory_order_acquire) == (pos + 1u))
+        || (mPrioCount.load(std::memory_order_relaxed) != 0u))
+    {
+        return true;
+    }
+
+    const uint8_t exitState{ mExitState.load(std::memory_order_acquire) };
+    return (exitState == EventQueue::EXIT_NONE) ? false : _exit_reached(exitState);
 }
 
-inline void EventQueue::trigger_exit() noexcept
+inline bool EventQueue::_exit_reached(uint8_t exitState) const noexcept
 {
-    mExitState.store(EventQueue::EXIT_NOW, std::memory_order_release);
-    std::atomic_thread_fence(std::memory_order_seq_cst);
-    mQueueEvent.set_signaled();     // wake the consumer
-    mSlotEvent.set_signaled();      // wake any producer blocked on a full ring
+    // A drained exit waits for the slots taken before the close; their publish wakes the consumer.
+    return ((exitState & EventQueue::EXIT_NOW) != 0u)
+        || ((mEnqueuePos.load(std::memory_order_acquire) & ~EventQueue::RING_CLOSED) == mDequeuePos.load(std::memory_order_relaxed));
 }
 
-inline void EventQueue::trigger_exit_drained() noexcept
+inline void EventQueue::exit_queue(bool exitNow /*= false*/) noexcept
 {
-    static_cast<void>(mExitState.fetch_or(EventQueue::EXIT_DRAINED, std::memory_order_release));
+    static_cast<void>(mEnqueuePos.fetch_or(EventQueue::RING_CLOSED, std::memory_order_acq_rel));
+    static_cast<void>(mExitState.fetch_or(exitNow ? EventQueue::EXIT_NOW : EventQueue::EXIT_DRAINED, std::memory_order_release));
     std::atomic_thread_fence(std::memory_order_seq_cst);
     mQueueEvent.set_signaled();     // wake the consumer
     mSlotEvent.set_signaled();      // wake any producer blocked on a full ring

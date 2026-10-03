@@ -25,6 +25,33 @@
 #include "areg/component/ComponentThread.hpp"
 
 #include "areg/logging/areg_log.h"
+
+namespace
+{
+    //!< Holds the lock of a resource map for the lifetime of the object.
+    template <class RESOURCE_MAP>
+    class MapLock
+    {
+    public:
+        explicit MapLock(const RESOURCE_MAP & resources)
+            : mResources(resources)
+        {
+            mResources.lock();
+        }
+
+        ~MapLock()
+        {
+            mResources.unlock();
+        }
+
+        MapLock(const MapLock &) = delete;
+        MapLock & operator = (const MapLock &) = delete;
+
+    private:
+        const RESOURCE_MAP & mResources;    //!< The locked resource map.
+    };
+}
+
 namespace areg {
 DEBUG_DEF_LOG_SCOPE(areg_component_RemoteEventFactory, route_outgoing_message);
 DEBUG_DEF_LOG_SCOPE(areg_component_RemoteEventFactory, route_incoming_message);
@@ -98,30 +125,42 @@ bool RemoteEventFactory::route_incoming_message( MessageEnvelope & src, const Ch
     case areg::EventType::EventRemoteRequest:       // fall through
     case areg::EventType::EventRemoteNotifyRequest:
     {
-        UniqueNumber stubId = hdr->provider.number;
-        StubBase * stub = StubBase::find_stub(stubId);
-        if ( stub == nullptr )
-            return false;
-
-        DispatcherThread& thread{ stub->component_thread() };
-        ASSERT(thread.is_valid());
-
-        const Channel chTarget(stub->address().channel());
-        const Channel chSource(comChannel.source(), chTarget.source(), src.source());
-
-        // Route to stub's local thread
-        hdr->target          = chTarget.cookie();
-        hdr->channel         = chTarget.target();
-        hdr->provider.id     = chTarget.cookie();
-        hdr->provider.thread = chTarget.source();
-        // Response routing key back through RouterClient
-        hdr->source          = chSource.target();
-        hdr->consumer.id     = chSource.cookie();
-        hdr->consumer.thread = chSource.source();
-        hdr->internal2       = areg::to_num<uint64_t, EventConsumer*>(stub);
-
+        // The stub and its thread are used only under the registry lock, which the stub
+        // destructor takes. A full lossless queue keeps the producer registered, so it waits outside.
+        StubBase::MapProviderResource & providers{ StubBase::map_providers() };
+        const uint32_t stubKey{ hdr->provider.number };
+        const uint32_t srcCookie{ src.source() };
         Event evt(std::move(src));
-        return thread.event_dispatcher().post_event(evt);
+        hdr = evt.header();
+
+        EventDispatcherBase * dispatcher{ nullptr };
+        {
+            MapLock<StubBase::MapProviderResource> lock(providers);
+            StubBase * stub = providers.find_resource_object(stubKey);
+            if ( stub == nullptr )
+                return false;
+
+            const Channel chTarget(stub->address().channel());
+            const Channel chSource(comChannel.source(), chTarget.source(), srcCookie);
+
+            // Route to stub's local thread
+            hdr->target          = chTarget.cookie();
+            hdr->channel         = chTarget.target();
+            hdr->provider.id     = chTarget.cookie();
+            hdr->provider.thread = chTarget.source();
+            // Response routing key back through RouterClient
+            hdr->source          = chSource.target();
+            hdr->consumer.id     = chSource.cookie();
+            hdr->consumer.thread = chSource.source();
+            hdr->internal2       = areg::to_num<uint64_t, EventConsumer*>(stub);
+
+            dispatcher = &static_cast<EventDispatcherBase &>(stub->component_thread().event_dispatcher());
+            const EventQueue::PushResult result{ dispatcher->try_queue_event(evt) };
+            if (result != EventQueue::PushResult::MustWait)
+                return (result == EventQueue::PushResult::Queued);
+        }
+
+        return dispatcher->wait_queue_event(evt);
     }
 
     case areg::EventType::EventRemoteResponse:

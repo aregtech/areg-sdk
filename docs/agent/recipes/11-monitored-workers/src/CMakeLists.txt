@@ -1,0 +1,3 @@
+addServiceInterface(gen_monitored_workers src/services/WorkerService.siml)
+addServiceInterface(gen_monitored_workers src/services/MonitorService.siml)
+macro_declare_executable(monitored_workers gen_monitored_workers main.cpp)

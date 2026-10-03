@@ -20,6 +20,7 @@
 #include "areg/component/private/posix/TimerPosix.hpp"
 #include "areg/component/private/Watchdog.hpp"
 #include <sys/epoll.h>
+#include <unistd.h>
 
 namespace areg {
 
@@ -27,6 +28,10 @@ void WatchdogManager::_on_timerfd_expired(TIMERHANDLE handle)
 {
     areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(handle);
     ASSERT(posixTimer != nullptr);
+
+    uint64_t expirations{ 0u };
+    if (::read(posixTimer->timer_fd(), &expirations, sizeof(expirations)) != static_cast<ssize_t>(sizeof(expirations)))
+        return;
 
     Watchdog::WATCHDOG_ID watchdog_id = static_cast<Watchdog::WATCHDOG_ID>(posixTimer->context_id());
     Watchdog::GUARD_ID    guardId     = Watchdog::make_guard_id(watchdog_id);

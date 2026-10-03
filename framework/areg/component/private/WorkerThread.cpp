@@ -63,14 +63,16 @@ void WorkerThread::ready_for_events( bool is_ready )
 {
     if ( is_ready )
     {
+        // The queue accepts events and the start is signaled before the consumer's own code runs.
+        EventDispatcher::ready_for_events( true );
+        mEventStarted.set_signaled( );
         mWorkerThreadConsumer.register_event_consumers( self( ), mBindingComponent.master_thread( ) );
     }
     else
     {
         mWorkerThreadConsumer.unregister_event_consumers( self( ) );
+        DispatcherThread::ready_for_events( false );
     }
-
-    DispatcherThread::ready_for_events(is_ready);
 }
 
 DispatcherThread* WorkerThread::event_consumer_thread( const uint32_t whichClass ) noexcept

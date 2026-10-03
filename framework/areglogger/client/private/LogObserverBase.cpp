@@ -206,6 +206,16 @@ bool LogObserverBase::request_save_config(ITEM_ID target /*= areg::TARGET_ALL*/)
     return log_observer_request_save_config(target);
 }
 
+bool LogObserverBase::request_restore_config(ITEM_ID target /*= areg::TARGET_ALL*/)
+{
+    return log_observer_request_restore_config(target);
+}
+
+bool LogObserverBase::request_source_state(ITEM_ID target, areg::LogSourceState state)
+{
+    return log_observer_request_source_state(target, static_cast<unsigned char>(state));
+}
+
 void LogObserverBase::save_logger_config()
 {
     LoggerClient::instance().save_configuration();

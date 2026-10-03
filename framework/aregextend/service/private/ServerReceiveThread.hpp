@@ -22,6 +22,8 @@
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/ipc/DataRateStats.hpp"
 
+#include <vector>
+
 /************************************************************************
  * Dependencies
  ************************************************************************/
@@ -108,6 +110,19 @@ public:
 
 protected:
 /************************************************************************/
+// EventRouter interface overrides
+/************************************************************************/
+
+    /**
+     * \brief   Queues the event. The dispatching loop of this thread services the sockets and
+     *          picks the queued events between them, so the queue carries the exit request.
+     *
+     * \param   eventElem       Event object to post.
+     * \return  Returns true if the event was queued.
+     **/
+    bool post_event( areg::Event & eventElem ) final;
+
+/************************************************************************/
 // DispatcherThread overrides
 /************************************************************************/
 
@@ -138,6 +153,29 @@ private:
      **/
     void _process_connection_event(SOCKETHANDLE hSocket, const areg::SocketAddress & addrAccepted, areg::MessageEnvelope & msgReceived);
 
+    /**
+     * \brief   Services one socket whose read-ahead cache still holds messages.
+     *          The socket is taken from the front of the list and put back only
+     *          if the drain ceiling stopped it again.
+     *
+     * \param   msgReceived     Reusable message buffer; overwritten on each call.
+     **/
+    void _service_cached_socket(areg::MessageEnvelope & msgReceived);
+
+    /**
+     * \brief   Adds the socket to the list of sockets with cached messages.
+     *
+     * \param   hSocket     The socket whose cache was not fully drained.
+     **/
+    void _remember_cached_socket(SOCKETHANDLE hSocket);
+
+    /**
+     * \brief   Removes the socket from the list of sockets with cached messages.
+     *
+     * \param   hSocket     The socket this thread stops servicing.
+     **/
+    void _forget_cached_socket(SOCKETHANDLE hSocket);
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -158,6 +196,11 @@ private:
      * \brief   Atomic stats (bytes + messages received + enabled flag).
      **/
     DataRateStats                   mRecvStats;
+    /**
+     * \brief   Sockets whose read-ahead cache still holds messages. Used by the
+     *          dispatching thread only.
+     **/
+    std::vector<SOCKETHANDLE>       mCachedPending;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

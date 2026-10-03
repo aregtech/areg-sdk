@@ -27,9 +27,14 @@ void TimerManager::_posix_timer_expired(areg::os::TimerPosix* posixTimer)
 {
     TimerManager& timerManager = TimerManager::instance();
     ASSERT(posixTimer != nullptr);
+    Lock resourceLock(timerManager.mTimerResource.lockable());
     Timer* timer = timerManager.mTimerResource.find_resource_object(reinterpret_cast<TIMERHANDLE>(posixTimer));
 
-    if ((timer != nullptr) && posixTimer->is_valid())
+    if (timer == nullptr)
+        return;
+
+    Lock timerLock(timer->mLock);
+    if (posixTimer->is_valid())
     {
         uint32_t highValue = static_cast<uint32_t>(posixTimer->mDueTime.tv_sec);
         uint32_t lowValue  = static_cast<uint32_t>(posixTimer->mDueTime.tv_nsec);

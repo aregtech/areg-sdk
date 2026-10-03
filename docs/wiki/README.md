@@ -1,5 +1,5 @@
 <h1 align="center" style="display: block; font-size: 2.5em; font-weight: bold; margin-block-start: 1em; margin-block-end: 1em;">
-<a name="logo" href="https://www.areg.tech"><img align="center" src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/areg-sdk-1280x360px-logo.png" alt="Areg SDK Home" style="width:70%;height:70%"/></a>
+<a name="logo" href="https://www.areg.tech"><img align="center" src="../img/areg-sdk-logo.svg" alt="Areg SDK Home" width="640"/></a>
   <br /><br /><strong>Areg SDK Documentation</strong>
 </h1>
 
@@ -193,6 +193,7 @@ Areg SDK is built on a performance mandate: **latency, throughput, stability, an
 - **[areg-sdk Performance Benchmarks](./08b-areg-sdk-performance-benchmarks.md)** – Full latency and throughput data across Linux, Windows, and macOS. Includes methodology, timestamp placement, and reproduction instructions.
 - **[areg-sdk vs ZMQ / NanoMsg / NNG](./08c-areg-vs-hitachi-benchmark.md)** – Direct TCP comparison against the Hitachi Energy Research benchmark (arXiv:2508.07934v1), using raw CSV data.
 - **[areg-sdk Framework Rankings](./08d-areg-framework-rankings.md)** – Competitive position across latency, message rate, and data rate versus all known frameworks with cited sources.
+- **[Embedded Ready](./08e-embedded-ready.md)** – What "embedded ready" means for areg-sdk: measured flash and RAM footprint, the supported Embedded Linux target classes, and where the line is.
 
 > 📁 *Prefix note:* These files use the `08` prefix alongside examples, since benchmarks run via examples 23 and 30. If additional benchmark documents are added, a dedicated `09` prefix is recommended.
 
@@ -239,6 +240,7 @@ Areg SDK is built on a performance mandate: **latency, throughput, stability, an
 → **[Areg Configuration Reference](./05b-areg-configuration-file.md)** (`areg.init` file)
 
 ### ...build for embedded systems
+→ **[Embedded Ready](./08e-embedded-ready.md)** (flash and RAM footprint, target classes)  
 → **[CMake Cross-Compilation](./01b-cmake-build.md#cross-compilation)** (ARM, etc.)  
 → **[CMake Troubleshooting](./07b-troubleshooting-cmake-linux-builds.md)** (build issues)
 
@@ -386,6 +388,12 @@ Lusan GUI
 | **macOS** | ✅ Fully Supported | Clang, GCC | x86_64, ARM64 |
 | **WSL** | ✅ Fully Supported | GCC, Clang | x86_64, ARM64 |
 | **Embedded Linux** | ✅ Supported | GCC (cross-compile) | ARM, ARM64, MIPS |
+
+Embedded Linux means a 32- or 64-bit CPU running Linux with sockets and pthreads. Bare
+metal, an RTOS and 16-bit targets are out of scope; Zephyr RTOS is planned after version
+2.0.0. Flash is measured on x86_64, ARM64 and ARMv7, and RAM on x86_64: a self-contained
+service is 288 kB of code on ARMv7 and a process holds 5.6-6.6 MB resident. The figures, and
+what is deliberately not measured, are in **[Embedded Ready](./08e-embedded-ready.md)**.
 
 ---
 

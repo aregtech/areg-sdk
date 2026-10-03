@@ -109,25 +109,51 @@ namespace {
 #else   // !_WIN32
         count = ::snprintf( buffer, CharCount, format, number);
 #endif  // _WIN32
-        result.assign(buffer, count > 0 ? count : 0);
+        // snprintf returns the length the text needed, which can exceed the buffer.
+        int32_t stored{ count > 0 ? (count < CharCount ? count : CharCount - 1) : 0 };
+        result.assign(buffer, stored);
         return count;
     }
 
     /**
      * \brief   Formats the list of arguments and copies the result into the buffer.
-     * \param   buffer  The buffer to copy formatted values.
-     * \param   count   The size of the buffer to allocated.
-     * \param   format  The format to convert.
-     * \param   argptr  The list of arguments to convert.
-     * \return  Returns the number of characters in the buffer, not including null-character.
+     *          The buffer is never written past its end and is always null-terminated.
+     * \param   buffer      The buffer to copy formatted values.
+     * \param   count       The size of the buffer, including the null-character.
+     * \param   format      The format to convert.
+     * \param   argptr      The list of arguments to convert.
+     * \param   required    If not nullptr, on output receives the number of characters
+     *                      the formatted text needs, without the null-character. A value
+     *                      of 'count' or more means the text did not fit and was cut.
+     * \return  Returns the number of characters written in the buffer, without the
+     *          null-character. Never more than 'count - 1'.
      **/
-    inline int32_t _format_string_list( char * buffer, int32_t count, const char * format, va_list argptr )
+    inline int32_t _format_string_list( char * buffer, int32_t count, const char * format, va_list argptr, int32_t * required = nullptr )
     {
-#ifdef  _WIN32
-        return vsprintf_s( buffer, static_cast<size_t>(count), format, argptr );
-#else   // !_WIN32
-        return vsnprintf( buffer, count, format, argptr );
-#endif  // _WIN32
+        if ((buffer == nullptr) || (count <= 0))
+        {
+            if (required != nullptr)
+            {
+                *required = 0;
+            }
+
+            return 0;
+        }
+
+        // vsnprintf truncates, terminates, and returns the length the text needed.
+        int32_t needed{ ::vsnprintf( buffer, static_cast<size_t>(count), format, argptr ) };
+        if (needed < 0)
+        {
+            buffer[0] = areg::StringBase<char>::EmptyChar;
+            needed = 0;
+        }
+
+        if (required != nullptr)
+        {
+            *required = needed;
+        }
+
+        return needed < count ? needed : count - 1;
     }
 
     /**
@@ -143,9 +169,10 @@ namespace {
     inline int32_t _format_string_list( areg::String & result, const char * format, va_list argptr )
     {
         char buffer[ CharCount ] { 0 };
-        int32_t count = _format_string_list( buffer, CharCount, format, argptr );
+        int32_t required{ 0 };
+        int32_t count = _format_string_list( buffer, CharCount, format, argptr, &required );
         result.assign( buffer, count > 0 ? count : 0 );
-        return count;
+        return required;
     }
 
     /**
@@ -541,6 +568,12 @@ int32_t String::format_string( char * strDst, int32_t count, const char * format
 int32_t String::format_string_list( char * strDst, int32_t count, const char * format, va_list argptr )
 {
     return (strDst != nullptr ? _format_string_list( strDst, count, format, argptr ) : -1);
+}
+
+int32_t String::format_string_list( char * strDst, int32_t count, const char * format, va_list argptr, int32_t & required )
+{
+    required = 0;
+    return (strDst != nullptr ? _format_string_list( strDst, count, format, argptr, &required ) : -1);
 }
 
 String & String::format(const char * format, ...)

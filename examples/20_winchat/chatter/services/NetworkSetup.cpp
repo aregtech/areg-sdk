@@ -41,7 +41,7 @@ void NetworkSetup::response_connect( const areg::String & nickName, uint32_t coo
 
     mConnectionHandler.SetRegistered( false );
     bool isConnected = result == ConnectionManager::ConnectionResult::Accepted;
-    areg::DispatcherThread *dispThread = dispatcher_thread();
+    areg::DispatcherThread * dispThread = dispatcher_thread();
     DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdClientConnection, isConnected ? 1 : 0, reinterpret_cast<LPARAM>(dispThread) );
 }
 

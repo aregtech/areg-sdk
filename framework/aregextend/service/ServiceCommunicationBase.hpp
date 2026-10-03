@@ -603,16 +603,20 @@ private:
      *          - the send queue of that target owes nothing to the socket, see SendQueueGate;
      *          - the message is not larger than areg::INLINE_SEND_MAX_BYTES;
      *          - the writer lock of the socket is free, see areg::SocketWriter;
-     *          - the socket accepts the whole message without waiting.
+     *          - the connection has no backlog and the socket takes at least a part of the
+     *            message now. A rest the socket does not take goes to the backlog.
      *
      * \param   data        The message to write. Its local-only header fields are cleared before
      *                      the write, because the message goes to the wire.
      * \param   hSocket     The socket of the target, already resolved by the caller.
      * \param   gate        The gate of the send queue that serves this target.
+     * \param   backlog     The writer of the send thread that serves this target.
+     * \param   wakeSender  On return, true if a rest went to the backlog and the send thread
+     *                      must be woken to write it.
      * \return  True when the message has been dealt with and must not be queued, either because
      *          it was written or because the socket failed. False when the caller must queue it.
      **/
-    bool try_send_inline(areg::MessageEnvelope & data, SOCKETHANDLE hSocket, areg::SendQueueGate & gate);
+    bool try_send_inline(areg::MessageEnvelope & data, SOCKETHANDLE hSocket, areg::SendQueueGate & gate, SendBacklog & backlog, bool & wakeSender);
 
     /**
      * \brief   Forwards a received message to its target on the receive thread, instead of
@@ -671,6 +675,9 @@ protected:
     ServerReceiveThread             mThreadReceive;     //!< The thread to receive messages from clients
 
     ClientPairList                  mClientPairs;       //!< Pool thread pairs; size == mNumPairs when running, mst be declared before mDataRateHelper.
+    uint64_t                        mSendCapBytes;      //!< The most a client connection may keep unwritten, in bytes.
+    uint32_t                        mSendRefusalMs;     //!< Milliseconds a client may take no data before it is closed.
+    uint32_t                        mKeepaliveMs;       //!< Milliseconds a silent client is given.
     std::atomic_bool                mShuttingDown;      //!< True during stop_connection() -- suppresses spurious disconnect callbacks.
     DataRateHelper                  mDataRateHelper;    //!< The helper object to query information of sent and receive bytes.
     StringArray                     mWhiteList;         //!< The list of enabled fixed client hosts.

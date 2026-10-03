@@ -34,7 +34,7 @@ AREG_IMPLEMENT_RUNTIME_EVENT(TimerEvent, Event)
 TimerEvent::TimerEvent(Timer & timer, DispatcherThread & target, areg::EventPriority prio /*= areg::DefaultPriority*/)
     : Event(areg::EventType::EventCustomExternal, static_cast<uint32_t>(sizeof(void*)), prio)
 {
-    ASSERT(target.is_running());
+    ASSERT(target.is_valid());
     set_event_id( TimerEvent::CLASS_ID );
     // Store Timer* at payload_ptr() (LOCAL-ONLY, same-process only, never serialized).
     *reinterpret_cast<Timer**>(payload_ptr()) = &timer;

@@ -31,27 +31,30 @@
 #if AREG_LOGGING
 
 namespace {
-    inline areg::EventHeader _log_empty_header() noexcept
+    //!< Builds the event header shared by every logging message.
+    inline areg::EventHeader _make_log_header(uint32_t messageId) noexcept
     {
         areg::EventHeader hdr{};
         hdr.checksum   = areg::CHECKSUM_INVALID;
         hdr.target     = static_cast<uint32_t>(areg::COOKIE_LOGGER);
+        hdr.messageId  = messageId;
         hdr.eventType  = static_cast<uint16_t>(areg::EventType::EventRemoteConnection);
         hdr.result     = areg::MESSAGE_SUCCESS;
         hdr.sequenceNr = areg::SEQUENCE_NUMBER_NOTIFY;
         return hdr;
     }
 
-    inline areg::EventHeader _log_message_header() noexcept
+    const areg::EventHeader EMPTY_HEADER  { _make_log_header(0u) };
+    const areg::EventHeader MESSAGE_HEADER{ _make_log_header(static_cast<uint32_t>(areg::FuncIdRange::ServiceLogMessage)) };
+
+    inline const areg::EventHeader & _log_empty_header() noexcept
     {
-        areg::EventHeader hdr{};
-        hdr.checksum   = areg::CHECKSUM_INVALID;
-        hdr.target     = static_cast<uint32_t>(areg::COOKIE_LOGGER);
-        hdr.messageId  = static_cast<uint32_t>(areg::FuncIdRange::ServiceLogMessage);
-        hdr.eventType  = static_cast<uint16_t>(areg::EventType::EventRemoteConnection);
-        hdr.result     = areg::MESSAGE_SUCCESS;
-        hdr.sequenceNr = areg::SEQUENCE_NUMBER_NOTIFY;
-        return hdr;
+        return EMPTY_HEADER;
+    }
+
+    inline const areg::EventHeader & _log_message_header() noexcept
+    {
+        return MESSAGE_HEADER;
     }
 
     void _store_scope_list(areg::MessageEnvelope& msgEnv, const areg::ScopeList& scopeList)
@@ -86,9 +89,9 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType)
     , logModuleLen  { 0 }
     , logTarget     { areg::COOKIE_LOGGER }
     , logCookie     { areg::COOKIE_LOCAL }
-    , logMessage    { '\0' }
     , logThread     { '\0' }
     , logModule     { '\0' }
+    , logMessage    { '\0' }
 {
 }
 
@@ -110,9 +113,9 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType, uint32_t scopeId, uint32_
     , logModuleLen  { 0 }
     , logTarget     { areg::COOKIE_LOGGER }
     , logCookie     { LogManager::connection_cookie() }
-    , logMessage    { '\0' }
     , logThread     { '\0' }
     , logModule     { '\0' }
+    , logMessage    { '\0' }
 {
     uint32_t len = message != nullptr ? areg::mem_copy(logMessage, areg::LOG_MSG_SIZE - 1, message, msgLen) : 0u;
     logMessage[len] = String::EmptyChar;
@@ -135,9 +138,9 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType, uint32_t /*scopeId*/, uin
     , logModuleLen  { 0 }
     , logTarget     { areg::COOKIE_LOGGER }
     , logCookie     { areg::COOKIE_LOCAL }
-    , logMessage    { '\0' }
     , logThread     { '\0' }
     , logModule     { '\0' }
+    , logMessage    { '\0' }
 {
 }
 #endif  // AREG_LOGGING
@@ -159,18 +162,18 @@ areg::LogEntry::LogEntry(const areg::LogEntry & src)
     , logModuleLen  { }
     , logTarget     { }
     , logCookie     { }
-    , logMessage    { }
     , logThread     { }
     , logModule     { }
+    , logMessage    { }
 {
-    areg::mem_copy(this, sizeof(areg::LogEntry), &src, sizeof(areg::LogEntry));
+    areg::mem_copy(this, sizeof(areg::LogEntry), &src, areg::log_entry_size(src));
 }
 
 areg::LogEntry & areg::LogEntry::operator = (const areg::LogEntry & src)
 {
     if (this != &src)
     {
-        areg::mem_copy(this, sizeof(areg::LogEntry), &src, sizeof(areg::LogEntry));
+        areg::mem_copy(this, sizeof(areg::LogEntry), &src, areg::log_entry_size(src));
     }
 
     return (*this);
@@ -225,6 +228,21 @@ AREG_API_IMPL bool areg::save_logging( const char * configFile )
     return LogManager::save_log_config(configFile);
 }
 
+AREG_API_IMPL bool areg::restore_logging()
+{
+    return LogManager::restore_log_config();
+}
+
+AREG_API_IMPL areg::LogSourceState areg::set_source_state( areg::LogSourceState state )
+{
+    return LogManager::set_source_state(state);
+}
+
+AREG_API_IMPL areg::LogSourceState areg::source_state()
+{
+    return LogManager::source_state();
+}
+
 AREG_API_IMPL uint32_t areg::set_scope_priority( const char * scopeName, uint32_t newPrio )
 {
     return LogManager::set_scope_priority( scopeName, newPrio );
@@ -243,8 +261,9 @@ AREG_API_IMPL areg::MessageEnvelope areg::make_log_message( areg::LogMessageType
                                                         , const char* message
                                                         , uint32_t msgLen)
 {
+    const uint32_t entrySize{ areg::log_entry_size(msgLen) };
     MessageEnvelope msg;
-    areg::LogEntry* log = reinterpret_cast<areg::LogEntry*>(msg.init_envelope(_log_message_header(), sizeof(areg::LogEntry)));
+    areg::LogEntry* log = reinterpret_cast<areg::LogEntry*>(msg.init_envelope(_log_message_header(), entrySize));
     if (log != nullptr)
     {
         const TIME64 now    = DateTime::now();
@@ -265,11 +284,13 @@ AREG_API_IMPL areg::MessageEnvelope areg::make_log_message( areg::LogMessageType
         log->logModuleLen   = 0u;
         log->logModuleId    = 0u;
 
-        uint32_t len = areg::mem_copy(log->logMessage, areg::LOG_MSG_SIZE - 1u, message, msgLen);
+        const uint32_t space{ entrySize - areg::log_entry_head() - 1u };
+        uint32_t len = areg::mem_copy(log->logMessage, space, message, msgLen);
         log->logMessage[len] = String::EmptyChar;
-        log->logMessageLen   = len;
+        // keep the length before the cut, so a reader can tell how much is missing
+        log->logMessageLen   = msgLen;
 
-        msg.set_size_used(sizeof(areg::LogEntry));
+        msg.set_size_used(entrySize);
         msg.move_to_end();
     }
 
@@ -312,14 +333,15 @@ AREG_API_IMPL void areg::finalize_log_message(areg::MessageEnvelope& msg, areg::
 
 AREG_API_IMPL areg::MessageEnvelope areg::create_log_message(const areg::LogEntry& logMessage, areg::LogDataType dataType, const ITEM_ID& srcCookie)
 {
+    const uint32_t entrySize{ areg::log_entry_size(logMessage) };
     MessageEnvelope msgLog;
-    areg::LogEntry* log = reinterpret_cast<areg::LogEntry*>(msgLog.init_envelope(_log_message_header(), sizeof(areg::LogEntry)));
+    areg::LogEntry* log = reinterpret_cast<areg::LogEntry*>(msgLog.init_envelope(_log_message_header(), entrySize));
     if (log != nullptr)
     {
         constexpr uint32_t NAME_LENGTH {areg::LOG_NAME_SIZE - 1};
 
-        areg::mem_copy(log, sizeof(areg::LogEntry), &logMessage, sizeof(areg::LogEntry));
-        msgLog.set_size_used(sizeof(areg::LogEntry));
+        areg::mem_copy(log, entrySize, &logMessage, entrySize);
+        msgLog.set_size_used(entrySize);
         msgLog.move_to_end();
         msgLog.set_source(static_cast<uint32_t>(srcCookie));
         log->logCookie   = srcCookie;
@@ -493,6 +515,73 @@ AREG_API_IMPL areg::MessageEnvelope areg::message_configuration_saved()
     return msgScope;
 }
 
+AREG_API_IMPL areg::MessageEnvelope areg::message_restore_configuration(const ITEM_ID& source, const ITEM_ID& target)
+{
+    MessageEnvelope msgRequest;
+    if ((source != areg::COOKIE_UNKNOWN) &&
+        (target != areg::COOKIE_UNKNOWN) &&
+        (msgRequest.init_envelope(_log_empty_header()) != nullptr))
+    {
+        msgRequest.set_message_id(static_cast<uint32_t>(areg::FuncIdRange::ServiceLogRestoreConfiguration));
+        msgRequest.set_target(static_cast<uint32_t>(target));
+        msgRequest.set_source(static_cast<uint32_t>(source));
+        msgRequest << target;
+    }
+
+    return msgRequest;
+}
+
+AREG_API_IMPL areg::MessageEnvelope areg::message_configuration_restored()
+{
+    MessageEnvelope msgScope;
+    if (msgScope.init_envelope(_log_empty_header()) != nullptr)
+    {
+        msgScope.set_message_id(static_cast<uint32_t>(areg::FuncIdRange::ServiceLogConfigurationRestored));
+        msgScope.set_target(static_cast<uint32_t>(areg::COOKIE_LOGGER));
+        msgScope.set_source(static_cast<uint32_t>(areg::cookie()));
+    }
+
+    return msgScope;
+}
+
+AREG_API_IMPL areg::MessageEnvelope areg::message_update_source_state(const ITEM_ID& source, const ITEM_ID& target, areg::LogSourceState state)
+{
+    MessageEnvelope msgRequest;
+    if ((source != areg::COOKIE_UNKNOWN) &&
+        (target != areg::COOKIE_UNKNOWN) &&
+        (msgRequest.init_envelope(_log_empty_header()) != nullptr))
+    {
+        msgRequest.set_message_id(static_cast<uint32_t>(areg::FuncIdRange::ServiceLogUpdateSourceState));
+        msgRequest.set_target(static_cast<uint32_t>(target));
+        msgRequest.set_source(static_cast<uint32_t>(source));
+        msgRequest << target;
+        msgRequest << static_cast<uint8_t>(state);
+    }
+
+    return msgRequest;
+}
+
+AREG_API_IMPL areg::MessageEnvelope areg::message_source_state_updated( const ITEM_ID & source
+                                                                      , const ITEM_ID & target
+                                                                      , areg::LogSourceState state
+                                                                      , const ITEM_ID & byObserver)
+{
+    MessageEnvelope msgScope;
+    if ((source != areg::COOKIE_UNKNOWN) &&
+        (target != areg::COOKIE_UNKNOWN) &&
+        (msgScope.init_envelope(_log_empty_header()) != nullptr))
+    {
+        msgScope.set_message_id(static_cast<uint32_t>(areg::FuncIdRange::ServiceLogSourceStateUpdated));
+        msgScope.set_target(static_cast<uint32_t>(target));
+        msgScope.set_source(static_cast<uint32_t>(source));
+        msgScope << source;
+        msgScope << static_cast<uint8_t>(state);
+        msgScope << byObserver;
+    }
+
+    return msgScope;
+}
+
 AREG_API_IMPL void areg::set_db_engine(LogDatabaseEngine * dbEngine)
 {
     LogManager::set_db_engine(dbEngine);
@@ -583,6 +672,21 @@ AREG_API_IMPL bool areg::save_logging( const char * /*configFile*/ )
     return true;
 }
 
+AREG_API_IMPL bool areg::restore_logging()
+{
+    return true;
+}
+
+AREG_API_IMPL areg::LogSourceState areg::set_source_state( areg::LogSourceState /*state*/ )
+{
+    return areg::LogSourceState::Undefined;
+}
+
+AREG_API_IMPL areg::LogSourceState areg::source_state()
+{
+    return areg::LogSourceState::Undefined;
+}
+
 AREG_API_IMPL uint32_t areg::set_scope_priority( const char * /*scopeName*/, uint32_t /*newPrio*/ )
 {
     return true;
@@ -655,6 +759,29 @@ AREG_API_IMPL areg::MessageEnvelope areg::message_save_configuration(const ITEM_
 }
 
 AREG_API_IMPL areg::MessageEnvelope areg::message_configuration_saved()
+{
+    return areg::MessageEnvelope{};
+}
+
+AREG_API_IMPL areg::MessageEnvelope areg::message_restore_configuration(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/)
+{
+    return areg::MessageEnvelope{};
+}
+
+AREG_API_IMPL areg::MessageEnvelope areg::message_configuration_restored()
+{
+    return areg::MessageEnvelope{};
+}
+
+AREG_API_IMPL areg::MessageEnvelope areg::message_update_source_state(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/, areg::LogSourceState /*state*/)
+{
+    return areg::MessageEnvelope{};
+}
+
+AREG_API_IMPL areg::MessageEnvelope areg::message_source_state_updated( const ITEM_ID & /*source*/
+                                                                      , const ITEM_ID & /*target*/
+                                                                      , areg::LogSourceState /*state*/
+                                                                      , const ITEM_ID & /*byObserver*/)
 {
     return areg::MessageEnvelope{};
 }

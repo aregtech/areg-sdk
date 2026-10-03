@@ -73,7 +73,8 @@ void ConnectionList::response_register_connection( const ConnectionManager::Conn
         mConnectionHandler.SetTimeConnected( connection.connectedTime );
         mConnectionHandler.AddConnections(connectionList);
         mConnectionHandler.SetRegistered( true );
-        DistributedDialog::PostServiceMessage(NEDistributedApp::WindowCommand::CmdClientRegistration, 1, reinterpret_cast<LPARAM>(dispatcher_thread()));
+        areg::DispatcherThread* dispThread = dispatcher_thread();
+        DistributedDialog::PostServiceMessage(NEDistributedApp::WindowCommand::CmdClientRegistration, 1, reinterpret_cast<LPARAM>(dispThread));
     }
     else
     {

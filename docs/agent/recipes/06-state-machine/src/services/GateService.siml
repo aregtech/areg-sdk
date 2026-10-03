@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="GateService" Version="1.0.0" Category="Private">
+        <Description>Gate control service. Its logic is a state machine.</Description>
+    </Overview>
+    <MethodList>
+        <Method ID="2" Name="open_gate" MethodType="Request">
+            <Description>Ask the gate to open to a width. The gate closes itself later.</Description>
+            <ParamList>
+                <Parameter ID="3" Name="width" DataType="uint32">
+                    <Description>The width asked for, in centimetres.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="4" Name="hold_gate" MethodType="Request">
+            <Description>Interrupt the cycle wherever it has got to.</Description>
+        </Method>
+        <Method ID="5" Name="resume_gate" MethodType="Request">
+            <Description>Continue the cycle from where it was interrupted.</Description>
+        </Method>
+        <Method ID="6" Name="gate_stage" MethodType="Broadcast">
+            <Description>Sent every time the gate reaches a new stage.</Description>
+            <ParamList>
+                <Parameter ID="7" Name="stage" DataType="String">
+                    <Description>The stage the gate has reached.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+    </MethodList>
+</ServiceInterface>

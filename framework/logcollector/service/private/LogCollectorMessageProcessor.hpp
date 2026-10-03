@@ -22,6 +22,7 @@
 
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/base/ArrayList.hpp"
+#include "areg/logging/LoggingDefs.hpp"
 #include "aregextend/service/ServiceCommunicationBase.hpp"
 
 /************************************************************************
@@ -161,6 +162,64 @@ public:
     void log_source_configuration_saved(const areg::MessageEnvelope& msgReceived);
 
     /**
+     * \brief   Called when an observer asks a log source to read its configuration file again.
+     *          The message is forwarded either to all connected log sources or to one of them.
+     *
+     * \param   msgReceived     The message to process.
+     **/
+    void restore_log_source_configuration(const areg::MessageEnvelope& msgReceived) const;
+
+    /**
+     * \brief   Called when a log source read its configuration file again. The message is
+     *          forwarded to every connected observer.
+     *
+     * \param   msgReceived     The message to process.
+     **/
+    void log_source_configuration_restored(const areg::MessageEnvelope& msgReceived) const;
+
+    /**
+     * \brief   Called when an observer asks a log source to start or stop sending its logs.
+     *          The message is forwarded either to all connected log sources or to one of them.
+     *
+     * \param   msgReceived     The message to process.
+     **/
+    void update_log_source_state(const areg::MessageEnvelope& msgReceived);
+
+    /**
+     * \brief   Called when a log source reports the state it took. The state is remembered and
+     *          the message is forwarded to every connected observer, so two observers never
+     *          disagree about which source is silent.
+     *
+     * \param   msgReceived     The message to process.
+     **/
+    void log_source_state_updated(const areg::MessageEnvelope& msgReceived);
+
+    /**
+     * \brief   Sends the state of every silenced log source to the given observer, so an observer
+     *          that connects late is never out of step.
+     *
+     * \param   target  The observer to answer.
+     **/
+    void send_source_states(const ITEM_ID& target) const;
+
+    /**
+     * \brief   Puts the silenced log sources back to sending.
+     *
+     * \param   isExplicit  True when an observer asked for the resume, and then every silenced
+     *                      source is resumed, paused and stopped alike. False when the log
+     *                      collector resumes by itself because the last observer left, and then a
+     *                      stopped source stays stopped: it was stopped to run without logs, and
+     *                      an observer that leaves may not restart it.
+     **/
+    void resume_all_sources(bool isExplicit);
+
+    /**
+     * \brief   Drops the states of every silenced log source without sending anything. Call it
+     *          when the instances are removed and no message can reach them.
+     **/
+    inline void forget_source_states(void);
+
+    /**
      * \brief   Processes the next log source application in the queue to save configuration.
      **/
     void process_next_save_config();
@@ -219,6 +278,13 @@ private:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
+    //!< The state of a log source that is not sending, and the observer that asked for it.
+    struct SourceState
+    {
+        areg::LogSourceState    state;      //!< The state the log source reported.
+        ITEM_ID                 byObserver; //!< The observer that asked for the state.
+    };
+
     //!< The instance of the Log Collector service.
     LogCollectorServerService & mLoggerService;
 
@@ -227,6 +293,9 @@ private:
 
     //!< The ID of an application pending to save the configuration.
     ITEM_ID                     mPendingSave;
+
+    //!< A log source that is not sending, mapped to its state and the observer that asked for it.
+    areg::OrderedMap<ITEM_ID, SourceState>  mPausedSources;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -238,5 +307,14 @@ private:
     LogCollectorMessageProcessor() = delete;
     AREG_NOCOPY_NOMOVE(LogCollectorMessageProcessor);
 };
+
+//////////////////////////////////////////////////////////////////////////
+// LogCollectorMessageProcessor inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline void LogCollectorMessageProcessor::forget_source_states(void)
+{
+    mPausedSources.clear();
+}
 
 #endif // AREG_LOGCOLLECTOR_SERVICE_PRIVATE_LOGCOLLECTORMESSAGEPROCESSOR_HPP

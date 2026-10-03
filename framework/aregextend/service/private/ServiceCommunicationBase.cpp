@@ -24,6 +24,10 @@
 #include "areg/ipc/RemoteServiceDefs.hpp"
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
+#include "areg/appbase/Application.hpp"
+#include "areg/base/Identifier.hpp"
+#include "areg/base/private/SocketLiveness.hpp"
+#include "areg/persist/ConfigManager.hpp"
 #include "areg/logging/areg_log.h"
 
 #include "aregextend/service/SystemServiceDefs.hpp"
@@ -54,6 +58,29 @@ DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, do_accept_client_
 
 DEBUG_DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, process_received_message);
 
+namespace
+{
+    //!< Queues a message for no connection, so that the send thread wakes up and moves its backlog on.
+    template<typename SendThreadT>
+    void wake_send_thread(SendThreadT & sendThread)
+    {
+        static constexpr areg::EventHeader HDR{ areg::notify_client_connection() };
+        areg::MessageEnvelope wake;
+        if ( wake.init_envelope(HDR, static_cast<uint32_t>(sizeof(ITEM_ID))) == nullptr )
+            return;
+
+        wake.set_target(static_cast<uint32_t>(areg::COOKIE_UNKNOWN));
+        sendThread.send_gate().enter();
+        areg::Event evt(std::move(wake));
+        evt.set_event_consumer(&sendThread);
+        evt.set_target_dispatcher(&sendThread);
+        if ( sendThread.queue_message(evt) == false )
+        {
+            sendThread.send_gate().leave(1u);
+        }
+    }
+}
+
 //////////////////////////////////////////////////////////////////////////
 // ServiceCommunicationBase class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -68,7 +95,7 @@ ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
     : RemoteMessageHandler  ( )
     , ConnectionConsumer    ( )
     , ConnectionProvider    ( )
-    , DispatcherThread      ( dispatcher, stackSizeKb, areg::QUEUE_SIZE_MAXIMUM )
+    , DispatcherThread      ( dispatcher, stackSizeKb, areg::QUEUE_DEFAULT_RING_CAPACITY )
     , ServiceEventConsumer  ( )
     , ConnectionHandler     ( )
 
@@ -81,6 +108,9 @@ ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
     , mThreadSend       ( static_cast<RemoteMessageHandler&>(self()), mServerConnection )
     , mThreadReceive    ( static_cast<ConnectionHandler&>(self()), static_cast<RemoteMessageHandler&>(self()), mServerConnection )
     , mClientPairs      ( )
+    , mSendCapBytes     ( areg::SOCKET_SEND_BUFFER_SIZE )
+    , mSendRefusalMs    ( areg::send_refusal_ms(0u, areg::SOCKET_KEEPALIVE_SEC) )
+    , mKeepaliveMs      ( areg::SOCKET_KEEPALIVE_SEC * 1'000u )
     , mShuttingDown     ( false )
     , mDataRateHelper   ( self() , areg::ext::DEFAULT_VERBOSE)
     , mWhiteList        ( )
@@ -151,7 +181,18 @@ bool ServiceCommunicationBase::setup_connection_data(areg::RemoteServiceKind ser
     uint16_t port{ config.connection_port() };
     bool result = mServerConnection.set_address(address, port);
     mServerConnection.set_socket_buffers(config.socket_send_buffer(), config.socket_recv_buffer());
-    mServerConnection.set_send_timeout(config.socket_send_timeout());
+
+    // Writes to clients never wait; the send timeout only bounds the few blocking writes left.
+    mServerConnection.set_send_timeout(areg::SOCKET_SEND_TIMEOUT_MS);
+    const String transport{ areg::Identifier::to_string( static_cast<uint32_t>(areg::ConnectionType::Tcpip)
+                                                       , areg::ConnectionIdentifiers
+                                                       , static_cast<uint32_t>(areg::ConnectionType::Undefined)) };
+    const uint32_t keepalive{ Application::config_manager().network_keepalive(areg::EmptyStringA, transport) };
+    const uint32_t keepaliveSec{ keepalive < areg::SOCKET_KEEPALIVE_MAX_SEC ? keepalive : areg::SOCKET_KEEPALIVE_MAX_SEC };
+    mSendCapBytes  = config.socket_send_buffer() != 0u ? config.socket_send_buffer() : areg::SOCKET_SEND_BUFFER_SIZE;
+    mSendRefusalMs = config.socket_refusal_timeout();
+    mKeepaliveMs   = keepaliveSec * 1'000u;
+    mThreadSend.backlog().set_limits(mSendCapBytes, mSendRefusalMs, mKeepaliveMs);
 
     const uint32_t configPairs{ config.pool_pairs() };
     if (configPairs != mNumPairs)
@@ -282,10 +323,19 @@ void ServiceCommunicationBase::connection_lost( SocketAccepted & clientSocket )
 
     if ( cookie != areg::COOKIE_UNKNOWN )
     {
+        AREG_DT_TRACE("connection_lost: socket [ %d ] maps to cookie [ %u ], raising the disconnect"
+                        , static_cast<int>(clientSocket.handle())
+                        , static_cast<uint32_t>(cookie));
+
         mLostFn(cookie);
         remove_instance(cookie);
         areg::MessageEnvelope msgDisconnect{ areg::create_disconnect_request(cookie, channel) };
         send_received_message(std::move(msgDisconnect), areg::EventPriority::HighPrio);
+    }
+    else
+    {
+        AREG_DT_TRACE("connection_lost: socket [ %d ] has no cookie, nothing is notified"
+                        , static_cast<int>(clientSocket.handle()));
     }
 
     mServerConnection.close_connection(clientSocket);
@@ -385,6 +435,7 @@ bool ServiceCommunicationBase::start_connection()
                                 , sendName.as_string()
                                 , recvName.as_string() );
 
+                pair->send_thread().backlog().set_limits(mSendCapBytes, mSendRefusalMs, mKeepaliveMs);
                 if ( !pair->start() )
                 {
                     LOG_ERR("Failed to start pool pair [ %u ], aborting pool creation", i);
@@ -515,6 +566,7 @@ void ServiceCommunicationBase::stop_connection()
 
 bool ServiceCommunicationBase::on_client_accepted( SocketAccepted & clientSocket )
 {
+    areg::set_send_refusal(clientSocket.handle(), mSendRefusalMs);
     return mAcceptFn(clientSocket);
 }
 
@@ -578,8 +630,9 @@ bool ServiceCommunicationBase::do_send_shared( const areg::MessageEnvelope & dat
     return do_send_shared(std::move(copy), prio);
 }
 
-bool ServiceCommunicationBase::try_send_inline( areg::MessageEnvelope & data, SOCKETHANDLE hSocket, areg::SendQueueGate & gate )
+bool ServiceCommunicationBase::try_send_inline( areg::MessageEnvelope & data, SOCKETHANDLE hSocket, areg::SendQueueGate & gate, SendBacklog & backlog, bool & wakeSender )
 {
+    wakeSender = false;
     if ( (areg::is_valid_socket(hSocket) == false) || (gate.is_clear() == false) )
         return false;
 
@@ -600,27 +653,29 @@ bool ServiceCommunicationBase::try_send_inline( areg::MessageEnvelope & data, SO
     hdr->custom    = 0u;
     data.buffer_completion_fix();
 
-    int32_t sent{ 0 };
+    int32_t result{ 0 };
     {
         AREG_LT_SCOPE(areg::LtStage::SendSyscall);
-        const areg::IoBuffer ioBuffer{ reinterpret_cast<const uint8_t *>(hdr), wireSize };
-        sent = areg::try_send_data_v(hSocket, &ioBuffer, 1u, wireSize);
+        result = backlog.write_inline(static_cast<ITEM_ID>(data.target()), hSocket, data);
     }
 
     writer.release();
 
-    if ( sent > 0 )
+    if ( result > 0 )
     {
-        mThreadSend.accumulate_sent(static_cast<uint64_t>(sent), 1u);
+        if ( result == 1 )
+        {
+            mThreadSend.accumulate_sent(static_cast<uint64_t>(wireSize), 1u);
+        }
+
+        wakeSender = (result == 2);
         return true;
     }
-    else if ( sent == 0 )
+    else if ( result == 0 )
     {
         return false;
     }
 
-    // A negative result may follow a partial write: the first bytes are already on the wire,
-    // so the message cannot be queued again and the connection has to go.
     if ( mServerConnection.is_interrupted() == false )
     {
         areg::SocketAccepted client{ mServerConnection.client_by_handle(hSocket) };
@@ -633,16 +688,30 @@ bool ServiceCommunicationBase::try_send_inline( areg::MessageEnvelope & data, SO
 bool ServiceCommunicationBase::try_forward_inline( areg::MessageEnvelope & data )
 {
     const ITEM_ID target{ static_cast<ITEM_ID>(data.target()) };
+    bool wakeSender{ false };
 
     if ( mClientPairs.empty() )
     {
         areg::SendQueueGate & gate{ mThreadSend.send_gate() };
-        return gate.is_clear() && try_send_inline(data, mServerConnection.handle_by_cookie(target), gate);
+        const bool result{ gate.is_clear() && try_send_inline(data, mServerConnection.handle_by_cookie(target), gate, mThreadSend.backlog(), wakeSender) };
+        if ( wakeSender )
+        {
+            wake_send_thread(mThreadSend);
+        }
+
+        return result;
     }
 
     ClientConnectionPair & pair{ *mClientPairs[data.target() % mNumPairs] };
-    areg::SendQueueGate & gate{ pair.send_thread().send_gate() };
-    return gate.is_clear() && try_send_inline(data, pair.socket_by_cookie(target), gate);
+    PoolSendThread & sendThread{ pair.send_thread() };
+    areg::SendQueueGate & gate{ sendThread.send_gate() };
+    const bool result{ gate.is_clear() && try_send_inline(data, pair.socket_by_cookie(target), gate, sendThread.backlog(), wakeSender) };
+    if ( wakeSender )
+    {
+        wake_send_thread(sendThread);
+    }
+
+    return result;
 }
 
 bool ServiceCommunicationBase::do_send_shared( areg::MessageEnvelope && data, areg::EventPriority prio )
@@ -652,7 +721,11 @@ bool ServiceCommunicationBase::do_send_shared( areg::MessageEnvelope && data, ar
     evt.set_event_priority(prio);
     evt.set_event_consumer(&mThreadSend);
     evt.set_target_dispatcher(&mThreadSend);
-    evt.deliver_event();
+    if (mThreadSend.queue_message(evt) == false)
+    {
+        mThreadSend.send_gate().leave(1u);  // a refused event is never popped by the send thread
+    }
+
     return true;
 }
 
@@ -677,7 +750,11 @@ bool ServiceCommunicationBase::do_send_pool( areg::MessageEnvelope && data, areg
     evt.set_event_priority(prio);
     evt.set_event_consumer(&sendThread);
     evt.set_target_dispatcher(&sendThread);
-    evt.deliver_event();
+    if (sendThread.queue_message(evt) == false)
+    {
+        sendThread.send_gate().leave(1u);   // a refused event is never popped by the send thread
+    }
+
     return true;
 }
 

@@ -219,7 +219,7 @@ cmake --install ./build --prefix /opt/areg
 
 **Tools:**
 - `codegen.jar` - Service interface code generator
-- `project-setup.sh` / `project-setup.bat` - Project creation scripts
+- `setup-project.sh` / `setup-project.bat` / `setup-project.ps1` - Project creation scripts
 
 **Configuration:**
 - `areg.init` - Default configuration file

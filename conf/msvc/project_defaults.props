@@ -43,7 +43,6 @@
             <RuntimeLibrary Condition="'$(ConfigShortName)'=='Release'">MultiThreadedDLL</RuntimeLibrary>
             <Optimization Condition="'$(ConfigShortName)'=='Release'">Full</Optimization>
             <InlineFunctionExpansion Condition="'$(ConfigShortName)'=='Release'">AnySuitable</InlineFunctionExpansion>
-            <ExceptionHandling Condition="'$(ConfigShortName)'=='Release'">false</ExceptionHandling>
             <DebugInformationFormat Condition="'$(ConfigShortName)'=='Release'">None</DebugInformationFormat>
             <FunctionLevelLinking Condition="'$(ConfigShortName)'=='Release'">true</FunctionLevelLinking>
             <IntrinsicFunctions Condition="'$(ConfigShortName)'=='Release'">true</IntrinsicFunctions>

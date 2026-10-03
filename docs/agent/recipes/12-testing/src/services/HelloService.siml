@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="HelloService" Version="1.0.0" Category="Private">
+        <Description>Greeting service used inside one process.</Description>
+    </Overview>
+    <MethodList>
+        <Method ID="2" Name="hello_service" MethodType="Request" Response="hello_service">
+            <Description>Ask the provider to greet the caller.</Description>
+            <ParamList>
+                <Parameter ID="51" Name="client" DataType="String">
+                    <Description>Name of the caller.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="4" Name="hello_service" MethodType="Response">
+            <Description>Result of the greeting.</Description>
+            <ParamList>
+                <Parameter ID="52" Name="success" DataType="bool">
+                    <Description>True when the greeting was printed.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+    </MethodList>
+</ServiceInterface>

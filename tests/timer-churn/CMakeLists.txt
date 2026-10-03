@@ -6,6 +6,9 @@
 # Arms, disarms, restarts and destroys timers from several threads while they are
 # firing, with the watchdog enabled, and then tears the application down, several
 # times over.
+# Checks successful cross-thread starts and expiries of churned timers, destroys
+# timers with pending start commands, and alternates live-manager model unload
+# with concurrent application teardown.
 #
 # Calls Application::setup() and Application::release() repeatedly, so it runs as its
 # own executable rather than as a case in the unit test binary.

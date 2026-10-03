@@ -27,37 +27,17 @@ namespace areg {
 
 #if AREG_LOGGING
 
-ScopeMessage::ScopeMessage( const LogScope & logScope )
-    : mScope    ( logScope )
-    , mSessionId( logScope.mScopePrio != 0u ? logScope.next_session() : 0 )
-    , mTimestamp( logScope.mScopePrio != 0u ? static_cast<TIME64>(DateTime::timestamp()) : static_cast<TIME64>(0u) )
+void ScopeMessage::_send_scope( areg::LogMessageType msgType ) const
 {
-    if ( is_scope_enabled() )
-    {
-        areg::MessageEnvelope msg = areg::make_log_message( areg::LogMessageType::ScopeEnter
-                                                  , logScope.mScopeId
-                                                  , mSessionId
-                                                  , 0u
-                                                  , areg::LogPriority::PrioScope
-                                                  , mScope.name().data()
-                                                  , static_cast<uint32_t>(mScope.name().size()));
-        LogManager::log_message(std::move(msg));
-    }
-}
-
-ScopeMessage::~ScopeMessage()
-{
-    if ( is_scope_enabled() )
-    {
-        areg::MessageEnvelope msg = areg::make_log_message( areg::LogMessageType::ScopeExit
-                                                  , mScope.mScopeId
-                                                  , mSessionId
-                                                  , mTimestamp
-                                                  , areg::LogPriority::PrioScope
-                                                  , mScope.name().data()
-                                                  , static_cast<uint32_t>(mScope.name().size()));
-        LogManager::log_message(std::move(msg));
-    }
+    const TIME64 scopeStamp{ msgType == areg::LogMessageType::ScopeExit ? mTimestamp : static_cast<TIME64>(0u) };
+    areg::MessageEnvelope msg = areg::make_log_message( msgType
+                                              , mScope.id()
+                                              , mSessionId
+                                              , scopeStamp
+                                              , areg::LogPriority::PrioScope
+                                              , mScope.name().data()
+                                              , static_cast<uint32_t>(mScope.name().size()));
+    LogManager::log_message(std::move(msg));
 }
 
 void ScopeMessage::log_debug( const char * format, ... ) const
@@ -115,7 +95,7 @@ void ScopeMessage::log_fatal( const char * format, ... ) const
     }
 }
 
-void ScopeMessage::log_message(areg::LogPriority logPrio, const char * format, ...)
+void ScopeMessage::log_message(areg::LogPriority logPrio, const char * format, ...) const
 {
     if ( is_prio_enabled(logPrio) )
     {
@@ -134,25 +114,18 @@ void ScopeMessage::log( areg::LogPriority logPrio, const char * format, ... )
     va_end(args);
 }
 
-inline void ScopeMessage::_send_log( uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, areg::LogPriority msgPrio, const char * format, va_list args )
+void ScopeMessage::_send_log( uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, areg::LogPriority msgPrio, const char * format, va_list args )
 {
-    areg::MessageEnvelope msg = areg::make_log_message(areg::LogMessageType::MessageText, scopeId, sessionId, scopeStamp, msgPrio, nullptr, 0u);
-    if (!msg.is_valid())
-        return;
+    // Format first: the envelope is sized to the message, so the length must be known before it.
+    char text[areg::LOG_MSG_SIZE];
+    int32_t required{ 0 };
+    String::format_string_list(text, static_cast<int32_t>(areg::LOG_MSG_SIZE), format, args, required);
 
-    areg::LogEntry* log = reinterpret_cast<areg::LogEntry*>(msg.buffer());
-    log->logMessageLen = static_cast<uint32_t>(String::format_string_list(log->logMessage, areg::LOG_MSG_SIZE, format, args));
-    LogManager::log_message(std::move(msg));
-}
-
-#else   // AREG_LOGGING
-
-ScopeMessage::ScopeMessage(const areg::LogScope& /*logScope*/)
-{
-}
-
-ScopeMessage::~ScopeMessage()
-{
+    areg::MessageEnvelope msg = areg::make_log_message(areg::LogMessageType::MessageText, scopeId, sessionId, scopeStamp, msgPrio, text, static_cast<uint32_t>(required));
+    if (msg.is_valid())
+    {
+        LogManager::log_message(std::move(msg));
+    }
 }
 
 #endif // AREG_LOGGING

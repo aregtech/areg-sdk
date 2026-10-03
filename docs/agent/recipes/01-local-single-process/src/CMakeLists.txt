@@ -1,0 +1,2 @@
+addServiceInterface(gen_hello_local src/services/HelloService.siml)
+macro_declare_executable(hello_local gen_hello_local main.cpp)

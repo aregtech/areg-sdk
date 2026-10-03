@@ -1,0 +1,27 @@
+# Pages that are deliberately over the 8 KB ceiling, and why.
+#
+# The ceiling exists because every byte of a page is paid by the agent that opens
+# it. A page is normally split when it exceeds the ceiling. These two are not,
+# because splitting them would cost the reader more than the bytes do: each is
+# opened to look one thing up, and the answer would land on the other side of the
+# split as often as not.
+#
+# An exception is not free. A page listed here is reported on every run, so the
+# pressure to shrink it stays visible. An entry naming a page that does not exist,
+# or one that is already under the ceiling, is a defect and is reported.
+#
+# There is a second, hard ceiling of 20 KB, and nothing here raises it. A size above
+# it cannot be recorded in this file, and a page above it fails whatever this file
+# says: it is split, or what a tool can answer moves into the schema. It exists
+# because every raise argued here has been granted, which left the six largest pages
+# as the six exempt ones and turned the ceiling into a report rather than a limit.
+#
+#   <page> = <bytes> # reason
+#
+01-runbook.md       = 16384  # the whole procedure for building an application, scaffold to passing scenario, and the page AGENTS.md sends every such task to first. Not split: it is read whole in the first request, so a split only adds a request and an ordering to get wrong. It carries the command timeout beside the one call that compiles the framework, the design checkpoint, and the rule that a body is changed in bodies.txt and nowhere else. reviewed 2026-09-17
+22-state-machine.md = 18560  # the whole .fsml format as an author writes it: the generated C++ API, the worked example in design.json form, the top-level declaration lists, and the routing to tools/schema_help.py for the grammar the schema carries. Its parts answer each other, so it cannot be half-learned, and a split sends the reader to a 50 KB schema that gives the grammar and not the meaning. The exception keeps headroom for the next feature. reviewed 2026-09-14
+51-debug.md         = 14848  # a symptom index: a split makes the reader guess which half their symptom is in. It shows the refusal message shape a finding is read against, the subscription-order cause of a broadcast that never arrives, and the OnChange cause of an update that is never sent. reviewed 2026-09-14
+50-running.md       = 11264  # the page that turns "it built" into "it is proven to work": the scenario keys stdin, stop and reject, the console-loop shape a quit path needs, run_scenarios.py --verbose for the raw output, and what the router does in console mode. Not split: a task proves its quit path and its peer-loss path from the same page. reviewed 2026-09-14
+42-runtime-api.md   = 10240  # the lookup page for the runtime types. Section 8 is the only place in the corpus that names a synchronization primitive, for a worker thread sharing state with a component, with the header and line of each signature, beside the rule that a component needs no lock for its own state. Not split: it is opened to look one call up, and a split doubles the guess about which half holds it. reviewed 2026-09-14
+31-consumer.md      = 8704   # a few hundred bytes over the ceiling for the line saying what the page is for and the clause that a scaffolded project ends with quit_with(code), without which the page prescribes the call check_contract.py reports as P-18. Splitting a page this size to hold them costs the reader a request. reviewed 2026-09-14
+entry-path          = 27371  # not a page: the sum of everything a run opens before it has done anything -- AGENTS.md, docs/agent/01-runbook.md, and the project's own AGENTS.md when the runbook routes to it. Each is inside its own limit, which is why this is needed: three pages a little under their caps are a bigger entry path than one page over, and AGENTS.md has no page budget of its own. Set at the measured sum with no slack, so raising it is a decision about a cost every run pays, and it is argued. reviewed 2026-09-19

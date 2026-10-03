@@ -24,6 +24,7 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/component/ProxyAddress.hpp"
 #include "areg/component/StubAddress.hpp"
+#include "areg/component/StubBase.hpp"
 #include "areg/component/private/ProxyConnectEvent.hpp"
 #include "areg/component/private/StubConnectEvent.hpp"
 #include "areg/component/private/ServiceManager.hpp"
@@ -307,6 +308,17 @@ void ServiceManagerEventProcessor::_unregister_provider( const StubAddress & whi
 
     if ( whichServer.is_local_address( ) && whichServer.is_service_public( ) )
     {
+        if ( reason == areg::DisconnectReason::ProviderRejected )
+        {
+            // Rejected in the network only: the consumers of this process keep the local provider.
+            const StubBase * local{ StubBase::find_stub( whichServer ) };
+            const StubAddress & named{ local != nullptr ? local->address( ) : whichServer };
+            LOG_ERR( "The provider of role name [ %s ], service [ %s ] is rejected in the network: another process already provides this public role name. It serves only the consumers of this process"
+                       , named.role_name( ).as_string( )
+                       , named.service_name( ).as_string( ) );
+            return;
+        }
+
         registerProvider.unregister_service_provider( whichServer, reason );
     }
 

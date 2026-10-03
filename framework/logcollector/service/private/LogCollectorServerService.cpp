@@ -95,6 +95,8 @@ void LogCollectorServerService::add_instance(const ITEM_ID& cookie, const areg::
     else if (LogCollectorMessageProcessor::is_log_observer(instance.ciSource))
     {
         mObservers.add_if_unique(cookie, instance);
+        // An observer that arrives late is told at once which sources are silent.
+        mLoggerProcessor.send_source_states(cookie);
     }
 }
 
@@ -127,6 +129,12 @@ void LogCollectorServerService::remove_instance(const ITEM_ID & cookie)
     else if (LogCollectorMessageProcessor::is_log_observer(instance.ciSource))
     {
         mObservers.remove_at(cookie);
+        if (mObservers.is_empty())
+        {
+            // Nobody is listening, so a paused source is put back to sending. A stopped one is
+            // left alone, see resume_all_sources().
+            mLoggerProcessor.resume_all_sources(false);
+        }
     }
 }
 
@@ -160,6 +168,7 @@ void LogCollectorServerService::remove_all_instances()
     }
 
     mObservers.clear();
+    mLoggerProcessor.forget_source_states();
 }
 
 void LogCollectorServerService::dispatch_and_forward_logger_message(const areg::MessageEnvelope& msgForward)
@@ -201,6 +210,10 @@ void LogCollectorServerService::dispatch_and_forward_logger_message(const areg::
     case areg::FuncIdRange::ServiceLogScopesUpdated:          // fall through
     case areg::FuncIdRange::ServiceLogConfigurationSaved:     // fall through
     case areg::FuncIdRange::ServiceLogMessage:                // fall through
+    case areg::FuncIdRange::ServiceLogUpdateSourceState:      // fall through
+    case areg::FuncIdRange::ServiceLogSourceStateUpdated:     // fall through
+    case areg::FuncIdRange::ServiceLogRestoreConfiguration:   // fall through
+    case areg::FuncIdRange::ServiceLogConfigurationRestored:  // fall through
     case areg::FuncIdRange::RequestFirstId:                   // fall through
     case areg::FuncIdRange::ResponseFirstId:                  // fall through
     case areg::FuncIdRange::AttributeFirstId:                 // fall through
@@ -258,6 +271,22 @@ void LogCollectorServerService::on_message_received(const areg::MessageEnvelope 
 
     case areg::FuncIdRange::ServiceLogConfigurationSaved:
         mLoggerProcessor.log_source_configuration_saved(msgReceived);
+        break;
+
+    case areg::FuncIdRange::ServiceLogRestoreConfiguration:
+        mLoggerProcessor.restore_log_source_configuration(msgReceived);
+        break;
+
+    case areg::FuncIdRange::ServiceLogConfigurationRestored:
+        mLoggerProcessor.log_source_configuration_restored(msgReceived);
+        break;
+
+    case areg::FuncIdRange::ServiceLogUpdateSourceState:
+        mLoggerProcessor.update_log_source_state(msgReceived);
+        break;
+
+    case areg::FuncIdRange::ServiceLogSourceStateUpdated:
+        mLoggerProcessor.log_source_state_updated(msgReceived);
         break;
 
     case areg::FuncIdRange::ServiceLogMessage:

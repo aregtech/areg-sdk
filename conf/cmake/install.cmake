@@ -96,11 +96,14 @@ install(FILES ${AREG_SDK_ROOT}/areg.cmake
             PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
 )
 
-# Copy all tools
+# Copy the tools a project built on areg uses. tools/intern/ holds the tools for
+# developing areg itself, and is left out.
 install(DIRECTORY tools/
             DESTINATION tools/${AREG_PACKAGE_NAME}
             COMPONENT Development
             DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ WORLD_READ GROUP_EXECUTE WORLD_EXECUTE
+            PATTERN "intern"    EXCLUDE
+            PATTERN "__pycache__" EXCLUDE
 )
 
 # Copy compiled Areg SDK tools: logcollector, logobserver and mtrouter
@@ -208,7 +211,8 @@ endif()
 write_basic_package_version_file(exports/${AREG_PACKAGE_NAME}-config-version.cmake VERSION ${AREG_PROJECT_VERSION} COMPATIBILITY AnyNewerVersion) 
 configure_package_config_file("${AREG_EXPORTS_DIR}/config.cmake.in" 
                               "${CMAKE_CURRENT_BINARY_DIR}/exports/${AREG_PACKAGE_NAME}-config.cmake" 
-                              INSTALL_DESTINATION share/${AREG_PACKAGE_NAME})
+                              INSTALL_DESTINATION share/${AREG_PACKAGE_NAME}
+                              PATH_VARS CMAKE_INSTALL_FULL_INCLUDEDIR)
 
 if (AREG_SQLITE_FOUND)
     export(TARGETS areg aregextend areglogger
@@ -244,3 +248,31 @@ install(DIRECTORY ${AREG_EXPORTS_DIR}/example
             DESTINATION share/${AREG_PACKAGE_NAME}
             COMPONENT Development   COMPONENT Runtime
 )
+
+# Copy the agent documentation, its recipes and the document schemas. The set is
+# installed with the same layout it has in the repository, so that every relative
+# link inside it resolves from an installation as it does from a clone.
+install(FILES ${AREG_SDK_ROOT}/AGENTS.md
+              ${AREG_SDK_ROOT}/CODEBASE.md
+            DESTINATION share/${AREG_PACKAGE_NAME}/sdk
+            COMPONENT Development
+)
+
+install(DIRECTORY ${AREG_SDK_ROOT}/docs/agent
+            DESTINATION share/${AREG_PACKAGE_NAME}/sdk/docs
+            COMPONENT Development
+            PATTERN "build" EXCLUDE
+            PATTERN "generated" EXCLUDE
+)
+
+install(DIRECTORY ${AREG_SDK_ROOT}/tools/schema
+            DESTINATION share/${AREG_PACKAGE_NAME}/sdk/tools
+            COMPONENT Development
+)
+
+# The pages the agent documentation refers to outside its own directory.
+install(DIRECTORY ${AREG_SDK_ROOT}/docs/wiki
+            DESTINATION share/${AREG_PACKAGE_NAME}/sdk/docs
+            COMPONENT Development
+)
+

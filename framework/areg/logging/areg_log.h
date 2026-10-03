@@ -211,31 +211,31 @@
      *          This macro will use global scope for logging. There can be only one global scope
      *          per source file defined.
      **/
-    #define GLOBAL_DBG(...)                             _global_scope().log_debug( __VA_ARGS__ )
+    #define GLOBAL_DBG(...)                             do { areg::ScopeMessage & _global_messager{ _global_scope() }; if (_global_messager.is_dbg_enabled()) _global_messager.log_debug( __VA_ARGS__ ); } while(0)
     /**
      * \brief   Use this macro to log Information priority messages in logging target (file or remote host)
      *          This macro will use global scope for logging. There can be only one global scope
      *          per source file defined.
      **/
-    #define GLOBAL_INFO(...)                            _global_scope().log_info( __VA_ARGS__ )
+    #define GLOBAL_INFO(...)                            do { areg::ScopeMessage & _global_messager{ _global_scope() }; if (_global_messager.is_info_enabled()) _global_messager.log_info( __VA_ARGS__ ); } while(0)
     /**
      * \brief   Use this macro to log Warning priority messages in logging target (file or remote host)
      *          This macro will use global scope for logging. There can be only one global scope
      *          per source file defined.
      **/
-    #define GLOBAL_WARN(...)                            _global_scope().log_warning( __VA_ARGS__ )
+    #define GLOBAL_WARN(...)                            do { areg::ScopeMessage & _global_messager{ _global_scope() }; if (_global_messager.is_warn_enabled()) _global_messager.log_warning( __VA_ARGS__ ); } while(0)
     /**
      * \brief   Use this macro to log Error priority messages in logging target (file or remote host)
      *          This macro will use global scope for logging. There can be only one global scope
      *          per source file defined.
      **/
-    #define GLOBAL_ERR(...)                             _global_scope().log_error( __VA_ARGS__ )
+    #define GLOBAL_ERR(...)                             do { areg::ScopeMessage & _global_messager{ _global_scope() }; if (_global_messager.is_err_enabled()) _global_messager.log_error( __VA_ARGS__ ); } while(0)
     /**
      * \brief   Use this macro to log Fatal Error priority messages in logging target (file or remote host)
      *          This macro will use global scope for logging. There can be only one global scope
      *          per source file defined.
      **/
-    #define GLOBAL_FATAL(...)                           _global_scope().log_fatal( __VA_ARGS__ )
+    #define GLOBAL_FATAL(...)                           do { areg::ScopeMessage & _global_messager{ _global_scope() }; if (_global_messager.is_fatal_enabled()) _global_messager.log_fatal( __VA_ARGS__ ); } while(0)
 
     // Set the flag to non-zero to debug and analyze network communication and other time critical modules.
     #ifdef DEBUG

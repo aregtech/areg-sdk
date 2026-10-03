@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="TickService" Version="1.0.0" Category="Private">
+        <Description>Sends a tick on every period of a timer.</Description>
+    </Overview>
+    <MethodList>
+        <Method ID="2" Name="tick" MethodType="Broadcast">
+            <Description>Sent on every timer period.</Description>
+            <ParamList>
+                <Parameter ID="3" Name="count" DataType="uint32">
+                    <Description>Number of the tick, starting at one.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+    </MethodList>
+</ServiceInterface>

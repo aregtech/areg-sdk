@@ -44,7 +44,7 @@ NetTcpLogger::NetTcpLogger(LogConfiguration & logConfig, ScopeController & scope
     , RemoteMessageHandler  ( )
 
     , mScopeController  ( scopeController )
-    , mIsEnabled        ( false )
+    , mFlags            ( NetTcpLogger::FLAG_NONE )
     , mRingStack        ( 0, areg::OverlapPolicy::Shift )
 {
 }
@@ -58,7 +58,7 @@ bool NetTcpLogger::open_logger()
         if (mClientConnection.is_valid())
             return is_connect_state();
 
-        mIsEnabled = false;
+        mFlags.store(NetTcpLogger::FLAG_NONE, std::memory_order_release);
         if (!mLogConfiguration.is_remote_logging_enabled())
         {
             mRingStack.release();
@@ -70,11 +70,25 @@ bool NetTcpLogger::open_logger()
 
         String host{ mLogConfiguration.remote_tcp_address() };
         uint16_t port{ mLogConfiguration.remote_tcp_port() };
-        mIsEnabled = true;
+        mFlags.store(NetTcpLogger::FLAG_ENABLED, std::memory_order_release);
         apply_connection_data(host, port);
     } while (false);
 
     return connect_service_host();
+}
+
+void NetTcpLogger::notify_source_state(areg::LogSourceState previous, const ITEM_ID & byObserver)
+{
+    const areg::LogSourceState current{ LogManager::source_state() };
+    if (current != previous)
+    {
+        send_message(areg::message_source_state_updated(mChannel.cookie(), areg::COOKIE_LOGGER, current, byObserver));
+    }
+}
+
+bool NetTcpLogger::is_connection_allowed() const
+{
+    return true;
 }
 
 void NetTcpLogger::close_logger()
@@ -86,7 +100,8 @@ void NetTcpLogger::close_logger()
 
 void NetTcpLogger::log_message(const areg::LogEntry& logMessage)
 {
-    if (!mIsEnabled)
+    // A paused source drops what it produced. Nothing is queued, so nothing is replayed on resume.
+    if (!is_sending())
         return;
 
     if (mChannel.is_valid() && is_connected_state())
@@ -101,7 +116,8 @@ void NetTcpLogger::log_message(const areg::LogEntry& logMessage)
 
 void NetTcpLogger::forward_message(const areg::MessageEnvelope& msg)
 {
-    if (!mIsEnabled)
+    // A paused source drops what it produced. Nothing is queued, so nothing is replayed on resume.
+    if (!is_sending())
         return;
 
     if (mChannel.is_valid() && is_connected_state())
@@ -116,7 +132,8 @@ void NetTcpLogger::forward_message(const areg::MessageEnvelope& msg)
 
 void NetTcpLogger::forward_message(areg::MessageEnvelope&& msg)
 {
-    if (!mIsEnabled)
+    // A paused source drops what it produced. Nothing is queued, so nothing is replayed on resume.
+    if (!is_sending())
         return;
 
     if (mChannel.is_valid() && is_connected_state())
@@ -141,7 +158,8 @@ void NetTcpLogger::on_service_channel_connected(const Channel & channel)
     ASSERT(channel.cookie() >= areg::COOKIE_REMOTE_SERVICE);
     ASSERT(mChannel.is_valid());
 
-    mIsEnabled = true;
+    // A new connection is a new state: the source comes back enabled and never paused.
+    mFlags.store(NetTcpLogger::FLAG_ENABLED, std::memory_order_release);
     const ITEM_ID& cookie = channel.cookie();
 
     const areg::ScopeList& scopes{ static_cast<const areg::ScopeList&>(mScopeController.scope_list()) };
@@ -159,7 +177,7 @@ void NetTcpLogger::on_service_channel_connected(const Channel & channel)
 void NetTcpLogger::on_service_channel_disconnected(const Channel & /* channel */)
 {
     ASSERT(mChannel.is_valid() == false);
-    mIsEnabled = false;
+    mFlags.store(NetTcpLogger::FLAG_NONE, std::memory_order_release);
     mClientConnection.set_cookie(areg::COOKIE_UNKNOWN);
 }
 
@@ -174,7 +192,7 @@ void NetTcpLogger::failed_send_message(const MessageEnvelope & msgFailed, Socket
     if (connection_state() == ConnectionPhase::ConnectionStopping)
         return;
 
-    ASSERT(mIsEnabled);
+    ASSERT(is_enabled());
     if (mLogConfiguration.stack_size() > 0)
     {
         mRingStack.push(msgFailed);
@@ -211,6 +229,7 @@ void NetTcpLogger::process_received_message(MessageEnvelope & msgReceived, Socke
         {
             uint32_t scopeCount{ 0 };
             areg::ScopeEntry scopeInfo{};
+            const areg::LogSourceState before{ LogManager::source_state() };
             msgReceived >> scopeCount;
             for ( uint32_t i = 0; i < scopeCount; ++ i)
             {
@@ -222,6 +241,7 @@ void NetTcpLogger::process_received_message(MessageEnvelope & msgReceived, Socke
             {
                 const areg::ScopeList& scopes{ static_cast<const areg::ScopeList&>(mScopeController.scope_list()) };
                 send_message(areg::message_scopes_updated(mChannel.cookie(), areg::COOKIE_LOGGER, scopes));
+                notify_source_state(before, static_cast<ITEM_ID>(msgReceived.source()));
             }
         }
         break;
@@ -238,6 +258,42 @@ void NetTcpLogger::process_received_message(MessageEnvelope & msgReceived, Socke
         if (LogManager::save_log_config())
         {
             send_message(areg::message_configuration_saved());
+        }
+        break;
+
+    case areg::FuncIdRange::ServiceLogRestoreConfiguration:
+        {
+            const areg::LogSourceState before{ LogManager::source_state() };
+            LogManager::restore_log_config();
+            const areg::ScopeList& scopes{ static_cast<const areg::ScopeList&>(mScopeController.scope_list()) };
+            send_message(areg::message_configuration_restored());
+            // The observers hold the priorities, so they are sent the list the file restored.
+            send_message(areg::message_scopes_updated(mChannel.cookie(), areg::COOKIE_LOGGER, scopes));
+            notify_source_state(before, static_cast<ITEM_ID>(msgReceived.source()));
+        }
+        break;
+
+    case areg::FuncIdRange::ServiceLogUpdateSourceState:
+        {
+            ITEM_ID  target{ areg::COOKIE_UNKNOWN };
+            uint8_t  wanted{ static_cast<uint8_t>(areg::LogSourceState::Undefined) };
+            msgReceived >> target;
+            msgReceived >> wanted;
+
+            // The byte arrives over the network, so only the defined states are accepted.
+            const areg::LogSourceState state{ static_cast<areg::LogSourceState>(wanted) };
+            if (areg::is_source_state_valid(state))
+            {
+                const ITEM_ID byObserver{ static_cast<ITEM_ID>(msgReceived.source()) };
+                const areg::LogSourceState taken{ LogManager::set_source_state(state) };
+                send_message(areg::message_source_state_updated(mChannel.cookie(), areg::COOKIE_LOGGER, taken, byObserver));
+                if (taken != areg::LogSourceState::Stopped)
+                {
+                    // Leaving the stopped state sets the priorities back, so the list is sent.
+                    const areg::ScopeList& scopes{ static_cast<const areg::ScopeList&>(mScopeController.scope_list()) };
+                    send_message(areg::message_scopes_updated(mChannel.cookie(), areg::COOKIE_LOGGER, scopes));
+                }
+            }
         }
         break;
 
@@ -258,6 +314,8 @@ void NetTcpLogger::process_received_message(MessageEnvelope & msgReceived, Socke
     case areg::FuncIdRange::ServiceLogScopesUpdated:          // fall through
     case areg::FuncIdRange::ServiceLogConfigurationSaved:     // fall through
     case areg::FuncIdRange::ServiceLogMessage:                // fall through
+    case areg::FuncIdRange::ServiceLogSourceStateUpdated:     // fall through
+    case areg::FuncIdRange::ServiceLogConfigurationRestored:  // fall through
     case areg::FuncIdRange::AttributeLastId:                  // fall through
     case areg::FuncIdRange::AttributeFirstId:                 // fall through
     case areg::FuncIdRange::ResponseLastId:                   // fall through
