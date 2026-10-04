@@ -1997,6 +1997,27 @@ def self_transitions(spec):
     return found
 
 
+def lapsed_timers(spec):
+    """(state, timer, repeat) of each state that stays on a timer its "entry" starts,
+    where no transition staying on it starts it again and it is not repeating."""
+    repeats = {timer.get('name'): timer.get('repeat', 1) for timer in spec.get('timers') or []}
+    found = []
+
+    def walk(states):
+        for state in states or []:
+            for name in [step[len('start '):].strip() for step in state.get('entry') or []
+                         if isinstance(step, str) and step.startswith('start ')]:
+                stays = [move for move in state.get('transitions') or []
+                         if move.get('on') == name and not move.get('to')]
+                if stays and repeats.get(name, 0) != 0 and not any(
+                        'start ' + name in (move.get('do') or []) for move in stays):
+                    found.append((state.get('name'), name, repeats[name]))
+            walk(state.get('states'))
+
+    walk(spec.get('states'))
+    return found
+
+
 def check_identities(documents):
     """No two documents of one run write the same file.
 
@@ -2419,6 +2440,11 @@ def review(project, skipped):
                   'entry starts is not started again. Put what must run again in "do", '
                   'or give such a timer "repeat": 0.'
                   .format(spec.get('name', '?'), state, trigger))
+        for state, timer, repeat in lapsed_timers(spec):
+            print('  note  {}: state "{}" stays on timer "{}" and never starts it again, so '
+                  'with "repeat": {} that transition runs {} time(s) per visit. To run it on '
+                  'every tick, add "start {}" to its "do", or give the timer "repeat": 0.'
+                  .format(spec.get('name', '?'), state, timer, repeat, repeat, timer))
         coverage = trigger_coverage(spec)
         if coverage:
             print('  table {}: which states answer each trigger (* the initial state, '

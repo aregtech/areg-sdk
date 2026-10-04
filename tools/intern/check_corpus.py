@@ -4958,14 +4958,14 @@ def check_self_transition(report):
         report.fail('self-transition', 'gen_docs.py does not import: {}'.format(failure))
         return
 
-    def notes(target):
+    def notes(target, moves=None, repeat=1):
         held = io.StringIO()
         with contextlib.redirect_stdout(held):
             gen_docs.review({'interfaces': [], 'machines': [{
-                'name': 'M', 'timers': [{'name': 'T', 'timeout': 100}],
+                'name': 'M', 'timers': [{'name': 'T', 'timeout': 100, 'repeat': repeat}],
                 'initial': 'A', 'states': [
                     {'name': 'A', 'entry': ['start T'], 'exit': ['stop T'],
-                     'transitions': [{'on': 'T', 'to': target}]},
+                     'transitions': moves or [{'on': 'T', 'to': target}]},
                     {'name': 'B', 'transitions': [{'on': 'T', 'to': 'A'}]}]}]}, 0)
         return held.getvalue()
 
@@ -4977,6 +4977,18 @@ def check_self_transition(report):
         report.fail('self-transition', 'a transition to another state earns the note of '
                                        'a transition to its own state')
         return
+    leave = {'on': 'T', 'to': 'B', 'guard': ['lit:1', 'eq', 'lit:2']}
+    if 'stays on timer' not in notes('', [leave, {'on': 'T', 'do': ['a']}]):
+        report.fail('self-transition', 'a state that stays on a timer its entry starts, '
+                                       'and starts it nowhere again, earns no note')
+        return
+    for moves, repeat in (([leave, {'on': 'T', 'do': ['a', 'start T']}], 1),
+                          ([{'on': 'T', 'do': ['a']}, {'on': 'T', 'do': ['start T']}], 1),
+                          ([leave, {'on': 'T', 'do': ['a']}], 0)):
+        if 'stays on timer' in notes('', moves, repeat):
+            report.fail('self-transition', 'a timer started again, or repeating, earns '
+                                           'the note of a timer that fires once')
+            return
     with open(os.path.join(ROOT, 'docs', 'agent', '22-state-machine.md'),
               encoding='utf-8') as handle:
         page = handle.read()
@@ -4985,7 +4997,8 @@ def check_self_transition(report):
                                        'its own state runs in place')
         return
     report.ok('self-transition', 'a transition to its own state is documented and noted '
-                                 'as running neither exit nor entry')
+                                 'as running neither exit nor entry; a timer that cannot '
+                                 'fire again in the state that stays on it is noted')
 
 
 def check_late_arrival(report):
