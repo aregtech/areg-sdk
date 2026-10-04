@@ -2776,6 +2776,7 @@ def run():
     check_self_helper_is_described(report)
     check_step_hold(report)
     check_api_constructors(report)
+    check_api_class_complete(report)
     check_review_verdicts(report)
     check_entry_toll(report)
     check_page_budget(report)
@@ -3226,6 +3227,36 @@ def check_worksheet_names_update_order(report):
     report.ok('worksheet-attr-order',
               'the worksheet names the order set_, broadcast_ and response_ calls reach a '
               'consumer in, wherever there are two to order')
+
+
+def check_api_class_complete(report, tools=None):
+    """api_help.py answers a class with its operators and what it inherits, and
+    Class::member through a public base: a lookup that leaves either out reads as
+    an absence."""
+    tool = os.path.join(tools or os.path.join(ROOT, 'tools', 'agent'), 'api_help.py')
+
+    def ask(*words):
+        done = subprocess.run([sys.executable, tool] + list(words),
+                              capture_output=True, text=True)
+        return done.returncode, done.stdout
+
+    wanted = (
+        (('String', '--class'), r'bool operator == \(const String& other\) const;',
+         'String --class lists no operator == of String'),
+        (('String', '--class'), r'inherited from areg::StringBase .*\n(?:  .*\n)*?.*\bcompare\b',
+         'String --class does not name what it inherits from StringBase'),
+        (('Timer', '--class'), r'inherited from areg::TimerBase',
+         'Timer --class does not name what it inherits from TimerBase'),
+        (('String::compare',), r'areg::StringBase .*inherited by areg::String',
+         'String::compare is not answered from the base that declares it'),
+    )
+    for words, pattern, failure in wanted:
+        code, said = ask(*words)
+        if code or not re.search(pattern, said):
+            report.fail('api-class-complete', failure)
+            return
+    report.ok('api-class-complete', 'api_help.py lists a class\'s operators and the names it '
+                                    'inherits, and answers Class::member through a base')
 
 
 def check_api_constructors(report):

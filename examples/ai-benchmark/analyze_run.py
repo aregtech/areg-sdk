@@ -475,7 +475,8 @@ READS = re.compile(r"(^|[;&|(]\s*)(cat|head|tail|grep|egrep|rg|sed -n|less|awk|w
 WRITES = re.compile(r"\bsed\s+-i|>\s*\S*src/|\btee\b")
 LOOKUP = re.compile(r"schema_help|api_help|gen_docs\.py\s+--example|gen_skeleton\.py.*--contract"
                     r"|\bgrep\b|explain_rule")
-EMPTY = re.compile(r"no such|not found|no match|unknown|nothing matched|0 declaration",
+EMPTY = re.compile(r"no such|not found|no match|unknown|nothing matched|0 declaration"
+                   r"|completed with no output",
                    re.IGNORECASE)
 
 

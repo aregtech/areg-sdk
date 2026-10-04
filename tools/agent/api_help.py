@@ -22,6 +22,7 @@ import json
 import os
 import re
 import sys
+import textwrap
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
@@ -40,6 +41,10 @@ ENUMERATOR = re.compile(r'^([A-Za-z_]\w*)')
 
 # One declaration: an optional return type, the name, and the parameter list.
 DECLARATION = re.compile(r'^(.*?\b)([A-Za-z_~]\w*)\s*\((.*)$', re.S)
+
+# "bool operator == (const String& other) const" and "operator bool() const".
+OPERATOR = re.compile(r'^(.*?)\boperator\s*(\(\)|\[\]|[^\w\s(]+|[A-Za-z_][\w:\s\*&]*?)'
+                      r'\s*\((.*)$', re.S)
 
 # "constexpr CharPos START_POS { areg::FIRST_INDEX };" and "const int SIZE = 8;".
 # A constant carries no parameter list, so DECLARATION never matches one.
@@ -128,6 +133,7 @@ class Header(object):
         self.classes = {}        #!< class name -> [signature]
         self.enums = {}          #!< enumeration name -> [enumerator]
         self.constants = {}      #!< constant name -> (owner, signature, doc)
+        self.bases = {}          #!< class name -> [public base class name]
         self.seen = set()
         self._parse()
 
@@ -148,6 +154,7 @@ class Header(object):
             head = CLASS_HEAD.match(line)
             if head and '(' not in line.split(head.group(1))[0]:
                 pending = head.group(1)
+                self._bases(pending, line, lines[number + 1:number + 4])
             if buffer or ('(' in line and ';' not in line.split('(')[0]):
                 if not buffer:
                     start = number
@@ -171,6 +178,31 @@ class Header(object):
                     owners.pop()
                 depth = max(0, depth - 1)
 
+    def _bases(self, name, line, following):
+        """Records the public base classes a class head names."""
+        text = line[CLASS_HEAD.match(line).end():]
+        for extra in following:
+            if '{' in text or ';' in text:
+                break
+            text += ' ' + extra
+        text = re.sub(r'^final\b', '', text.split('{')[0].split(';')[0].strip()).strip()
+        if not text.startswith(':') or text.startswith('::'):
+            return
+        text = text[1:]
+        while '<' in text:
+            shorter = re.sub(r'<[^<>]*>', '', text)
+            if shorter == text:
+                break
+            text = shorter
+        is_struct = line.lstrip().startswith('struct')
+        for part in text.split(','):
+            words = part.split()
+            if not words or 'private' in words or 'protected' in words:
+                continue
+            if 'public' not in words and not is_struct:
+                continue
+            self.bases.setdefault(name, []).append(words[-1].split('::')[-1])
+
     def _declaration(self, statement, owners, raw_lines, start):
         statement = ' '.join(statement.split())
         if not statement.endswith((';', '{', '}')) and '{' not in statement:
@@ -181,12 +213,18 @@ class Header(object):
         statement = statement.rstrip(';').strip()
         if not statement or statement.startswith('#') or '##' in statement:
             return
-        found = DECLARATION.match(statement)
-        if not found:
-            return
-        name = found.group(2)
-        if name in NOT_A_NAME or found.group(1).rstrip().endswith('operator'):
-            return
+        found = OPERATOR.match(statement)
+        if found:
+            symbol = ' '.join(found.group(2).split())
+            name = ('operator ' + symbol if symbol[:1].isalpha() or symbol[:1] == '_'
+                    else 'operator' + symbol.replace(' ', ''))
+        else:
+            found = DECLARATION.match(statement)
+            if not found:
+                return
+            name = found.group(2)
+            if name in NOT_A_NAME or found.group(1).rstrip().endswith('operator'):
+                return
         prefix = found.group(1).rstrip()
         if '=' in prefix or ')' in prefix:
             return
@@ -368,8 +406,30 @@ def mentioned(headers, name):
     return None
 
 
+def lineage(headers, name):
+    """The class and every public base above it, nearest first."""
+    chain = [name]
+    for current in chain:
+        for header in headers:
+            for base in header.bases.get(current, []):
+                if base not in chain:
+                    chain.append(base)
+    return chain
+
+
+def inherited(headers, base, below):
+    """The names a base declares that a class below it inherits: no constructor, destructor
+    or assignment, which every class declares for itself."""
+    hidden = set(below) | {base}
+    return [(member, header) for header in headers
+            for member, owner, _signature, _doc in header.members
+            if owner == base and member not in hidden and member.lstrip('~') not in hidden
+            and member != 'operator=']
+
+
 def answer_class(headers, name, full):
-    """What one class declares, in the order the header declares it."""
+    """What one class declares, in the order the header declares it, then what it
+    inherits from each public base."""
     found = False
     for header in headers:
         if name not in header.classes:
@@ -380,7 +440,46 @@ def answer_class(headers, name, full):
               .format(name, header.relative, len(entries)))
         for signature in entries:
             print('  {}'.format(signature))
+    if found:
+        chain = lineage(headers, name)
+        for index, base in enumerate(chain[1:], 1):
+            entries = inherited(headers, base, chain[:index])
+            if not entries:
+                continue
+            names = list(dict.fromkeys(member for member, _header in entries))
+            print('inherited from areg::{}  ({}) -- {} name(s); {}::<name> gives the '
+                  'signatures'.format(base, entries[0][1].relative, len(names), name))
+            print(textwrap.fill(', '.join(names), width=96, initial_indent='  ',
+                                subsequent_indent='  ', break_on_hyphens=False))
     return found
+
+
+def answer_qualified(headers, name, full):
+    """Class::member, answered from the class and every public base above it."""
+    owner, _, member = name.rpartition('::')
+    owner = owner.split('::')[-1]
+    if not owner or owner == 'areg':
+        return answer_member(headers, member, full)
+    chain = lineage(headers, owner)
+    groups = []
+    for base in chain:
+        for header in headers:
+            entries = [(signature, doc) for found, cls, signature, doc in header.members
+                       if found == member and cls == base]
+            if entries:
+                groups.append((base, header.relative, entries))
+    if not groups:
+        return False
+    print('{} -- {} declaration(s)'.format(name, sum(len(g[2]) for g in groups)))
+    for base, path, entries in groups:
+        print('')
+        print('areg::{}  ({}){}'.format(base, path, '' if base == owner else
+                                         ', inherited by areg::' + owner))
+        for signature, doc in entries:
+            print('  {}'.format(signature))
+            if full and doc:
+                print('      {}'.format(doc))
+    return True
 
 
 def answer_enum(headers, name):
@@ -465,6 +564,8 @@ def main():
             print('')
         if args.as_class:
             answered = answer_class(headers, name, args.full)
+        elif '::' in name and not args.enum:
+            answered = answer_qualified(headers, name, args.full)
         elif args.enum:
             answered = answer_enum(headers, name)
         else:
@@ -515,11 +616,9 @@ def main():
             if instead and declares(headers, instead):
                 print('It is a spelling borrowed from another library. areg calls it '
                       '"{}": look that up.'.format(instead))
-            print('Operators are reached through the type and are not members, so '
-                  'this says nothing about + or ==, and no name holds it either.'
-                  if not search(headers, name) else
-                  'Operators are reached through the type and are not members, so '
-                  'this says nothing about + or ==.')
+            if not search(headers, name):
+                print('No name holds it either.')
+            print('An operator is listed by its class: api_help.py <Class> --class.')
             missing += 1
     return 1 if missing else 0
 
