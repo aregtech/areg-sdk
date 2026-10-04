@@ -423,6 +423,7 @@ either, so neither agent is sent looking for the other framework.
 | `--wrapper` | a wrapper other than the default | by name, then the template | `--wrapper ~/my-areg-wrapper.txt` |
 | `--project` | the directory and CMake project name inside `work/`, and the run directory suffix | `<key>` | `--project atm2` |
 | `--mode` | the areg application shape the scaffold writes: `ipc`, `local` or `pubsub` | `ipc` | `--mode local` |
+| `--cache-ttl` | Claude only: the prompt-cache TTL the run writes at, `1h` or `5m` | `1h` | `--cache-ttl 5m` |
 | `--attempts` | the build-and-fix and run-and-fix bound, the same for both arms; `0` removes it and is warned about | `15` | `--attempts 15` |
 | `--debrief` | a diagnostic pass after the report: what the run could not find | off | `--debrief` |
 | `--debug` | the full analysis after the run: every event, page read and request. Without it the run ends with a short headline: cost, requests, tokens, time, lines of C++ | off | `--debug` |
@@ -451,18 +452,28 @@ Acceptance is in `verify.json`, never implied by a zero exit.
    everything the agent may read.
 4. Starts the CLI headless in the empty `work/`, with `prompt.txt` on standard input.
 5. After the agent ends: checks that it changed nothing it read, prints the usage
-   report (Claude and Copilot), and runs the hidden probes on the project it built.
+   report (Claude and Copilot), keeps a Claude run's transcript, and runs the hidden
+   probes on the project it built.
 
 | In the run directory | Holds |
 |---|---|
-| `meta.txt` | framework, agent, model, effort, web, attempts, head, the time |
+| `meta.txt` | framework, agent, model, effort, cache TTL, web, attempts, head, the time |
 | `prompt.txt` | exactly what the agent received |
 | `result.json` / `result.jsonl`, `run.out`, `run.err` | the CLI's own output and usage |
+| `transcript.jsonl` | Claude only: the whole session, request by request, copied from `~/.claude/projects/` |
 | `sdk/` or `task/` | what the agent could read |
 | `sdk-head.txt`, `sdk-md5.txt`, `sdk-before.txt` | which tree, and proof it was not edited; `provenance/` in the gRPC arm, out of the agent's reach |
 | `toolchain.txt` | gRPC arm: the `protoc` and plugin versions |
 | `work/` | the project the agent built |
 | `verify.json`, `verify-sanitize.json` | the probes' verdict and its evidence |
+
+**The transcript makes the run directory self-contained.** `analyze_run.py` reads
+`transcript.jsonl` first, so a run can be analysed on another machine, or after Claude
+Code has deleted its own copy (`cleanupPeriodDays`, 30 days by default). For a run made
+before this file was kept, `analyze_run.py <run> --record` copies it while the
+original still exists. **Before sending a run directory to anyone, read what it
+holds:** the transcript is the full session, with every prompt, every command and its
+output, and the absolute paths of your machine, including your home directory.
 
 ---
 
@@ -512,11 +523,19 @@ lines of C++ written by hand, and a per-request timeline.
 Run each arm at least three times on one tree and compare medians; the quality rows
 (acceptance items, probes passing) are the ones that hold at one run.
 
-**Compare the normalised line, not the bill.** The harness picks the prompt-cache TTL,
-and a run started within an hour of another reads the static prefix from that run's
-cache. The model is handed the same bytes either way; only the price differs.
-`cost, billed` reconciles with `result.json`; `cost, cold @1h` puts both back and is
-the one two runs can be held against each other.
+**Compare the normalised line, not the bill.** A run started within an hour of another
+reads the static prefix from that run's cache. The model is handed the same bytes
+either way; only the price differs. `cost, billed` reconciles with `result.json`;
+`cost, cold @1h` adds the difference back and is the one two runs can be held against
+each other.
+
+**Every published dollar assumes the 1-hour TTL.** Left to itself, Claude Code writes
+the prompt cache for 1 hour on a subscription and for 5 minutes on an API key, and a
+1-hour write costs 60% more ($4.00 against $2.50 per million tokens). The runner pins
+1 hour (`--cache-ttl`), so runs made on either plan compare, and the analysis says so
+when a run wrote at another TTL than the pinned one. An API-key user who builds with
+Claude Code's own default pays the 5-minute price: on a run whose requests are less
+than 5 minutes apart, that is roughly 16-18% below `cost, cold @1h`.
 
 **Keep billing units apart.** Claude Code reports USD. Copilot reports AI credits, and a
 premium-request count is labelled legacy and never converted. Compare arms on

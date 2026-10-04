@@ -16,9 +16,10 @@ fallback       a read of SDK internals: tools/agent/*.py source, conf/cmake/,
                framework/. The documentation routes around all of them, so each one
                names a page that failed.
 
-The session id comes from result.json. When that file is missing or empty the
-transcript is found from the run directory path instead, and wall time is taken
-from the transcript timestamps. Prices are the Sonnet 5 list prices, which Sonnet 5.5
+The transcript is transcript.jsonl in the run directory when --record has kept it
+there, else the harness's copy found by the session id in result.json. When that file
+is missing or empty the transcript is found from the run directory path instead, and
+wall time is taken from the transcript timestamps. Prices are the Sonnet 5 list prices, which Sonnet 5.5
 shares.
 """
 import argparse
@@ -114,6 +115,15 @@ def run_facts(result, requests, tot):
     return {"stop": stop, "prefix": start, "ttl": ttl}
 
 
+def ttl_mismatch(meta, facts):
+    """The warning for a run that wrote at another TTL than the runner pinned, or None."""
+    pinned = meta.get("cachettl")
+    if pinned in (None, "agent-default") or pinned == facts["ttl"]:
+        return None
+    return "the run wrote at %s, not the pinned %s; its price is not comparable" % (
+        facts["ttl"], pinned)
+
+
 def record(run, meta, facts):
     """Appends the facts meta.txt does not hold yet."""
     lines = ["%-8s %s\n" % (key, facts[key]) for key in ("stop", "prefix", "ttl")
@@ -181,8 +191,14 @@ def read_result(run):
         return {}
 
 
+KEPT = "transcript.jsonl"
+
+
 def find_transcript(run, sid):
-    """The transcript of this run: by session id, else by run directory path."""
+    """The transcript of this run: its kept copy, by session id, else by run directory path."""
+    kept = os.path.join(run, KEPT)
+    if os.path.isfile(kept):
+        return kept
     projects = os.path.expanduser(os.path.join("~", ".claude", "projects"))
     if sid:
         hit = glob.glob(os.path.join(projects, "*", "%s.jsonl" % sid))
@@ -196,6 +212,21 @@ def find_transcript(run, sid):
     if not found:
         return None
     return max(found, key=os.path.getmtime)
+
+
+def keep_transcript(run, tr):
+    """Copies the transcript into the run directory as transcript.jsonl."""
+    kept = os.path.join(run, KEPT)
+    if os.path.abspath(tr) != os.path.abspath(kept):
+        shutil.copyfile(tr, kept)
+
+
+def session_of(tr):
+    """The session id written in a transcript's rows, or None."""
+    for e in rows(tr):
+        if e.get("sessionId"):
+            return e["sessionId"]
+    return None
 
 
 def cold_price(tot, first_read, aside):
@@ -634,6 +665,8 @@ def print_brief(run, sdk, tr, result, meta, facts, requests, tot, cost, normal):
     if facts["stop"] != "completed":
         print("   INCOMPLETE: the run stopped on %s; its price is not a price point"
               % facts["stop"])
+    if meta.get("median"):
+        print("   %-16s %s" % ("median", meta["median"]))
     print("   %-16s %s, %s" % ("framework", meta.get("framework") or "areg", model))
     print("   %-16s $%.4f billed, $%.4f cold @1h (compare runs on this one)"
           % ("cost", cost, normal))
@@ -645,6 +678,8 @@ def print_brief(run, sdk, tr, result, meta, facts, requests, tot, cost, normal):
     print("   %-16s %s read, %s written" % (
         "cache", format(tot["cache_read_input_tokens"], ","),
         format(tot["cache_creation_input_tokens"], ",")))
+    if ttl_mismatch(meta, facts):
+        print("   %-16s %s" % ("CACHE TTL", ttl_mismatch(meta, facts)))
     print("   %-16s %.1f min, %.1f min of it in the model" % (
         "time", wall or span_minutes(tr),
         (result.get("duration_api_ms") or 0) / 60000.0))
@@ -653,7 +688,7 @@ def print_brief(run, sdk, tr, result, meta, facts, requests, tot, cost, normal):
         "fix cycles", hits["build-and-fix cycles"], hits["run-and-fix cycles"]))
     print("   %-16s %d in %d file(s), %s written by hand" % (
         "C++ lines", code["lines"], code["files"], hand))
-    print("   (--debug prints the full analysis: every event, page and request)")
+    print("   (full analysis: the runner's --debug, or this script without --brief)")
 
 
 def main():
@@ -661,7 +696,8 @@ def main():
     parser.add_argument("run", nargs="?", default=".", help="the run directory")
     parser.add_argument("--sdk", help="the SDK the run read (default: meta.txt, then here)")
     parser.add_argument("--record", action="store_true",
-                        help="also append stop, start and cache ttl to meta.txt")
+                        help="also append stop, start and cache ttl to meta.txt, "
+                             "and keep the transcript as transcript.jsonl")
     parser.add_argument("--brief", action="store_true",
                         help="print only the headline: cost, requests, tokens, time, code")
     args = parser.parse_args()
@@ -674,9 +710,11 @@ def main():
     tr = find_transcript(run, sid)
     if not tr:
         sys.exit("no transcript for %s" % (sid or run))
+    if args.record:
+        keep_transcript(run, tr)
     results = tool_results(tr)
     if not sid:
-        sid = os.path.basename(tr)[:-6] + "  (result.json missing; found by path)"
+        sid = "%s  (result.json missing; found by path)" % session_of(tr)
 
     runabs = os.path.abspath(run).rstrip("/")
     seen_msg, seen_block = set(), set()
@@ -782,10 +820,12 @@ def main():
     if facts["stop"] != "completed":
         print("   INCOMPLETE: the run stopped on %s; its price is not a price point"
               % facts["stop"])
+    if meta.get("median"):
+        print("   %-26s %s" % ("median", meta["median"]))
     print("   %-26s %s" % ("session", sid))
     print("   %-26s %s" % ("stop", facts["stop"]))
     print("   %-26s %s" % ("cache at start", facts["prefix"]))
-    print("   %-26s %s" % ("cache ttl", facts["ttl"]))
+    print("   %-26s %s" % ("cache ttl", ttl_mismatch(meta, facts) or facts["ttl"]))
     areg_arm = (meta.get("framework") or "areg").strip() == "areg"
     print("   %-26s %s" % ("sdk read" if areg_arm else "runner staged from", sdk))
     if meta.get("model") and meta.get("model") != "sonnet":

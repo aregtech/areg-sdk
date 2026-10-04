@@ -39,6 +39,10 @@ One cold agent run, measured, against a clean snapshot of this checkout.
                      Claude's --effort, Copilot's --reasoning-effort or Codex's
                      model_reasoning_effort. Gemini has no such setting and refuses it
                        (default: medium for Claude; the CLI default otherwise)
+  --cache-ttl TTL    1h | 5m, Claude only: the prompt-cache TTL the run writes at.
+                     Unpinned, Claude Code picks 1h on a subscription and 5m on an
+                     API key, and a 1h write costs 60% more, so runs made on two
+                     plans would not compare                (default: 1h)
   --attempts N       the build-and-fix and run-and-fix bound (default: 15, which is
                      what every published run used; the runbook's own bound is 3).
                      Any number other than the runbook's adds one rule to the prompt,
@@ -341,7 +345,7 @@ function Main([string[]]$Arguments)
     $Framework = 'areg'; $Task = 'examples/ai-benchmark/prompt-coffeemachine.md'; $Wrapper = ''
     $Project = ''; $Mode = 'ipc'; $Agent = 'claude'; $Model = ''; $Effort = ''
     $Attempts = '15'; $Debrief = $false; $Debug = $false; $Recipes = 'none'; $Label = ''; $Dry = $false
-    $Repeat = '1'
+    $Repeat = '1'; $CacheTtl = ''
     $AllowInstalled = $false; $Verify = 'probes'
     $SdkOpt = ''; $GrpcOpt = ''; $Web = ''
 
@@ -355,7 +359,7 @@ function Main([string[]]$Arguments)
     while ($index -lt $Arguments.Count) {
         $option = $Arguments[$index]
         $valued = '--framework', '--agent', '--task', '--wrapper', '--project', '--mode', '--model',
-                  '--effort', '--attempts', '--repeat', '--recipes', '--sdk', '--grpc', '--verify', '--web'
+                  '--effort', '--attempts', '--cache-ttl', '--repeat', '--recipes', '--sdk', '--grpc', '--verify', '--web'
         if ($option -cin $valued) {
             if ($index + 1 -ge $Arguments.Count) { Stop-Run "$option needs a value" }
             $value = $Arguments[$index + 1]
@@ -372,6 +376,7 @@ function Main([string[]]$Arguments)
                 }
                 '--effort'    { $Effort = $value }
                 '--attempts'  { $Attempts = $value }
+                '--cache-ttl' { $CacheTtl = $value }
                 '--repeat'    { $Repeat = $value }
                 '--recipes'   { $Recipes = $value }
                 '--sdk'       { $SdkOpt = $value }
@@ -404,10 +409,13 @@ function Main([string[]]$Arguments)
     if ($Mode -cnotin 'ipc', 'local', 'pubsub') { Stop-Run "--mode must be ipc, local or pubsub, not '$Mode'" }
     if ($Agent -cnotin 'claude', 'copilot', 'codex', 'gemini') { Stop-Run "--agent must be claude, copilot, codex or gemini, not '$Agent'" }
     if ($Effort -cnotin '', 'low', 'medium', 'high') { Stop-Run "--effort must be low, medium or high, not '$Effort'" }
+    if ($CacheTtl -cnotin '', '1h', '5m') { Stop-Run "--cache-ttl must be 1h or 5m, not '$CacheTtl'" }
     if ($Agent -eq 'claude') {
         if (-not $Model) { $Model = 'sonnet' }
         if (-not $Effort) { $Effort = 'medium' }
+        if (-not $CacheTtl) { $CacheTtl = '1h' }
     }
+    elseif ($CacheTtl) { Stop-Run '--cache-ttl is supported by Claude Code only; omit it' }
     elseif ($Agent -eq 'gemini' -and $Effort) { Stop-Run '--effort is not supported by Gemini CLI; omit it' }
     if ($Recipes -cnotin 'none', 'copy') { Stop-Run "--recipes must be none or copy, not '$Recipes'" }
     if ($Verify -cnotin 'none', 'probes', 'sanitize') { Stop-Run "--verify must be none, probes or sanitize, not '$Verify'" }
@@ -757,6 +765,7 @@ Be specific and short: a list, not prose.
         "framework $Framework", "agent    $Agent", "model    $modelLabel", "effort   $effortLabel", "task     $TaskRun",
         "mode     $Mode", "recipes  $Recipes", "attempts $Attempts",
         "debrief  $(if ($Debrief) { '1' } else { 'no' })",
+        "cachettl $(if ($CacheTtl) { $CacheTtl } else { 'agent-default' })",
         $(if ($Framework -eq 'grpc') { "staged   $Snap" } else { "source   $SDK"; "sdk      $Snap" }),
         "files    $copied", "head     $head",
         "web      $Web", "isolation $isolation",
@@ -816,11 +825,13 @@ Be specific and short: a list, not prose.
     # PowerShell invokes native CLIs and npm shims alike. Stream UTF-8, including on 5.1.
     $oldEncoding = $OutputEncoding; $oldConsoleEncoding = [Console]::OutputEncoding
     $oldDefault = $env:BASH_DEFAULT_TIMEOUT_MS; $oldMax = $env:BASH_MAX_TIMEOUT_MS
+    $oldTtl = $env:CLAUDE_CODE_PROMPT_CACHE_TTL
     $writer = [IO.StreamWriter]::new($result, $false, $Utf8)
     Push-Location $Work
     try {
         $OutputEncoding = $Utf8; [Console]::OutputEncoding = $Utf8
         $env:BASH_DEFAULT_TIMEOUT_MS = '600000'; $env:BASH_MAX_TIMEOUT_MS = '900000'
+        $env:CLAUDE_CODE_PROMPT_CACHE_TTL = $CacheTtl
         $global:LASTEXITCODE = -1
         [IO.File]::ReadAllText($promptPath) | & $Agent @agentArgs 2> (Join-Path $Run 'run.err') |
             ForEach-Object { $writer.WriteLine($_) }
@@ -831,6 +842,7 @@ Be specific and short: a list, not prose.
         $writer.Dispose()
         $OutputEncoding = $oldEncoding; [Console]::OutputEncoding = $oldConsoleEncoding
         $env:BASH_DEFAULT_TIMEOUT_MS = $oldDefault; $env:BASH_MAX_TIMEOUT_MS = $oldMax
+        $env:CLAUDE_CODE_PROMPT_CACHE_TTL = $oldTtl
     }
     Add-Text $meta ("end      $(Get-Utc 'yyyy-MM-ddTHH:mm:ssZ')`nexit     $code`n")
 
