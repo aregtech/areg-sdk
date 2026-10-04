@@ -677,13 +677,15 @@ BASE_API = [
     'anything else ask "python3 {tools}/api_help.py <name>", or --search <word> when the',
     'name is what you are missing. Never a header, and never grep.',
     '',
+    '  areg::String s("text")       a const char * converts to a String wherever one is wanted',
     '  s.as_string()                const char *, and what a printf "%s" needs',
     '  s.is_empty()                 bool',
+    '  s.clear()                    empties it',
     '  s.length()                   areg::CharCount',
     '  s.find_first(phrase)         areg::CharPos; the substring search',
     '  s.is_valid_position(pos)     bool; a search that found nothing returns areg::END_POS',
-    '  s.compare(other)             areg::Ordering: Smaller, Equal, Bigger; s == other is bool',
-    '  s += x, s + x                append; x is a String, a const char * or a char',
+    '  s.compare(other)             areg::Ordering: Smaller, Equal, Bigger; s == x, s != x are bool',
+    '  s = x, s += x, s + x         assign, append; x is a String, a const char * or a char',
     '  s.format(fmt, ...)           String &, printf rules, fills this string and chains',
     '  s.to_int32() / from_int32(n) and the uint32, int64, uint64, float, double, bool pairs',
     '',
@@ -692,8 +694,8 @@ BASE_API = [
 ]
 
 # The names of BASE_API, for the check that holds this copy and the page together.
-BASE_API_NAMES = ('as_string', 'is_empty', 'length', 'find_first', 'is_valid_position',
-                  'compare', 'format', 'to_int32', 'from_int32')
+BASE_API_NAMES = ('as_string', 'is_empty', 'clear', 'length', 'find_first',
+                  'is_valid_position', 'compare', 'format', 'to_int32', 'from_int32')
 
 
 # The generated functions whose behaviour no name gives away. A worksheet lists
