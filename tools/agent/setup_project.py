@@ -51,6 +51,24 @@ def find_agent_docs():
 SDK_ROOT = os.path.dirname(os.path.dirname(HERE))
 AGENT_DOCS = find_agent_docs()
 RECIPES = os.path.join(AGENT_DOCS, 'recipes') if AGENT_DOCS else ''
+
+
+def installed_docs_root():
+    """The directory an installation keeps AGENTS.md in, or None when this tool does not
+    run from an installation."""
+    if os.path.isfile(os.path.join(SDK_ROOT, 'areg.cmake')) or not AGENT_DOCS:
+        return None
+    return os.path.dirname(os.path.dirname(AGENT_DOCS)).replace('\\', '/')
+
+
+def tools_of(sdk):
+    """The directory holding tools/agent for the SDK at sdk. An installation keeps the
+    tools apart from AGENTS.md, so there it is the directory this tool runs from."""
+    if installed_docs_root() and not os.path.isdir(os.path.join(sdk, 'tools', 'agent')):
+        return os.path.dirname(HERE).replace('\\', '/')
+    return sdk + '/tools'
+
+
 # The revision to fetch when --tag is not given. api.json owns it; this literal is
 # the answer when api.json cannot be read, and check_corpus.py holds the two equal.
 FALLBACK_TAG = 'master'
@@ -281,8 +299,8 @@ it routes each task to the one page that answers it. Never search the SDK.
 | Add areg to this project's CMake build | `{sdk}/docs/wiki/02b-cmake-integrate.md` |
 | Decide what the services are | `{sdk}/docs/agent/05-design.md` |
 | Add a service, a provider or a consumer | `{sdk}/docs/agent/00-cheatsheet.md` |
-| The signature of one framework name | `python3 {sdk}/tools/agent/api_help.py <name>` |
-| Check the code against the areg contract | `python3 {sdk}/tools/agent/check_contract.py <dir> --strict` |
+| The signature of one framework name | `python3 {tools}/agent/api_help.py <name>` |
+| Check the code against the areg contract | `python3 {tools}/agent/check_contract.py <dir> --strict` |
 | Work out why it does not work | `{sdk}/docs/agent/51-debug.md` |
 
 What you remember about areg from training is out of date: its names were changed.
@@ -346,7 +364,8 @@ def import_agents_into_claude(root):
 def attach(root, sdk, quiet):
     """Points an existing project at the SDK: AGENTS.md and nothing else of the scaffold."""
     sdk = sdk.replace('\\', '/')
-    done = place_agents(root, ATTACH.format(sdk=sdk), keep_reference=sdk + '/AGENTS.md')
+    done = place_agents(root, ATTACH.format(sdk=sdk, tools=tools_of(sdk)),
+                        keep_reference=sdk + '/AGENTS.md')
     print('{}: AGENTS.md {}'.format(root, {
         'written': 'written',
         'updated': 'updated: the areg block was replaced',
@@ -386,7 +405,8 @@ def write_redirects(root, name, harnesses):
 
 def write_agents(root, name, mode, sdk_root, binaries):
     """The project's own AGENTS.md: what an agent working here loads first."""
-    sdk = sdk_root if sdk_root else 'build/packages/areg-src'
+    sdk = sdk_root or installed_docs_root() or 'build/packages/areg-src'
+    tools = tools_of(sdk)
     # The SDK lands somewhere different for a clone, a fetch and an installed
     # package, so the project is told how to ask rather than given one answer.
     where = ('`build/areg-sdk.paths` names where the SDK is on this machine, one '
@@ -396,7 +416,7 @@ def write_agents(root, name, mode, sdk_root, binaries):
              'run `cmake -B build` first if it is not there; if it is still absent '
              'after that, ask for the SDK path and pass it as '
              '`-DAREG_SDK_ROOT=<path>`. The commands below assume `{}`.'
-             .format(sdk))
+             .format(sdk if tools == sdk + '/tools' else tools))
     never = prohibition_bullets()
     if never is None:
         never = ('- The full list is section 6 of `{}/AGENTS.md`; api.json could not be '
@@ -430,15 +450,15 @@ and empty, and every document of this project is generated from it. Fill its val
 and keep its keys, then:
 
 ```bash
-python3 {sdk}/tools/agent/build_project.py --spec design.json
-python3 {sdk}/tools/agent/build_project.py --run
+python3 {tools}/agent/build_project.py --spec design.json
+python3 {tools}/agent/build_project.py --run
 ```
 
 The same on Windows, where the interpreter is `python`:
 
 ```bat
-python {sdk}/tools/agent/build_project.py --spec design.json
-python {sdk}/tools/agent/build_project.py --run
+python {tools}/agent/build_project.py --spec design.json
+python {tools}/agent/build_project.py --run
 ```
 
 The first call builds, and checks the design before anything else: a refused design
@@ -481,7 +501,7 @@ src/CMakeLists.txt    names the documents and each executable's sources
 | Declare a structure, enum or container | `docs/agent/21-data-types.md` |
 | Behaviour that depends on what happened before | `docs/agent/22-state-machine.md` (a `.fsml`) |
 | `areg::String` and the containers | the worksheet's list, else `docs/agent/40-base-api.md` before the first line |
-| The signature of one framework name | `python3 {sdk}/tools/agent/api_help.py <name>` -- never a page, never a header |
+| The signature of one framework name | `python3 {tools}/agent/api_help.py <name>` -- never a page, never a header |
 | Implement a provider, a consumer, or the model | nothing: `gen_skeleton.py --app` wrote all three. Open `docs/agent/30-provider.md`, `docs/agent/31-consumer.md` or `docs/agent/32-model.md` only at a numbered section `51-debug.md` or `05-design.md` names |
 | Periodic or delayed work | the consumer already owns a stepping timer; for a second timer `docs/agent/33-timers.md` |
 | A custom event between threads | `docs/agent/23-events.md` |
@@ -502,10 +522,10 @@ a turn**:
 
 | Ask | Only when |
 |---|---|
-| `python3 {sdk}/tools/agent/gen_skeleton.py --doc <document> --contract` | you need the name a document generates -- a method, or a type a signature is written in. `--todos` lists the markers still open |
-| `python3 {sdk}/tools/agent/api_help.py <name>` | you need the signature of a **framework** name. Never grep the SDK for one |
-| `python3 {sdk}/tools/explain_rule.py <number> --at <Element>/@<Attribute>` | `gen_docs.py` refused a document and its `fix:` line was not enough |
-| `python3 {sdk}/tools/schema_help.py <name> --document fsml` | `gen_docs.py` refused a document over a name. Nothing before that: you write `design.json`, and the generator writes every element name in it |
+| `python3 {tools}/agent/gen_skeleton.py --doc <document> --contract` | you need the name a document generates -- a method, or a type a signature is written in. `--todos` lists the markers still open |
+| `python3 {tools}/agent/api_help.py <name>` | you need the signature of a **framework** name. Never grep the SDK for one |
+| `python3 {tools}/explain_rule.py <number> --at <Element>/@<Attribute>` | `gen_docs.py` refused a document and its `fix:` line was not enough |
+| `python3 {tools}/schema_help.py <name> --document fsml` | `gen_docs.py` refused a document over a name. Nothing before that: you write `design.json`, and the generator writes every element name in it |
 
 All take `--help`. On Windows the interpreter is `python`, not `python3`.
 
@@ -516,7 +536,7 @@ Each line closes a class of wrong code, not a style preference.
 generated code under `build/` it does not read.
 
 {never}
-""".format(name=name, manual=manual, where=where, sdk=sdk, never=never)
+""".format(name=name, manual=manual, where=where, sdk=sdk, tools=tools, never=never)
 
     return place_agents(root, text)
 
@@ -634,7 +654,8 @@ def attach_existing(root, args):
     if args.no_agents:
         fail('{} already holds a project, and --no-agents leaves nothing to write'
              .format(root))
-    sdk = os.path.abspath(args.sdk_root) if args.sdk_root else SDK_ROOT
+    sdk = os.path.abspath(args.sdk_root) if args.sdk_root else \
+        (installed_docs_root() or SDK_ROOT)
     if not os.path.isfile(os.path.join(sdk, 'AGENTS.md')):
         fail('no AGENTS.md under the SDK {}; pass --sdk-root'.format(sdk))
     for tree in (sdk, SDK_ROOT):

@@ -932,8 +932,9 @@ def build_fsml(spec, shared_space, shared_names, prefix=''):
     hosted = []
     for entry in machine.submachines:
         if not entry.get('path'):
-            fail('submachine "{}" of {} has no "path" naming its .fsml document'
-                 .format(entry['name'], machine.where))
+            fail('submachine "{}" of {} has no "path" naming its .fsml document, and no '
+                 'machine of this design is called "{}"'
+                 .format(entry['name'], machine.where, entry['name']))
         hosted.append({'name': entry['path'], 'alias': entry['name'],
                        'version': entry.get('version', '1.0.0'),
                        'description': entry.get('description')})
@@ -2017,12 +2018,33 @@ def check_identities(documents):
         seen[key] = name
 
 
+def settle_hosted_paths(project, prefix):
+    """A hosted machine of this design takes the path of the document written for it.
+    A path given for it that names no file is refused with the one it would take."""
+    designed = set(spec.get('name') for spec in listed(project, 'machines'))
+    for spec in listed(project, 'machines'):
+        for entry in listed(spec, 'submachines'):
+            if not isinstance(entry, dict) or entry.get('name') not in designed:
+                continue
+            path = '{}{}.fsml'.format(prefix, entry['name'])
+            given = entry.get('path')
+            if not given:
+                entry['path'] = path
+            elif os.path.normpath(given) != os.path.normpath(path) \
+                    and not os.path.isfile(given):
+                fail('machine "{}" hosts "{}", a machine of this design, from {}, which '
+                     'is no file; this design writes it to {}. Give that path, or leave '
+                     '"path" out'
+                     .format(spec.get('name', '?'), entry['name'], given, path))
+
+
 def build_all(project, prefix=''):
     """Every document of the project, as (file name, text)."""
     shared = project.get('datatypes')
     space = shared['name'] if shared else None
     names = set(t['name'] for t in named_list(shared, 'declare', 'datatypes')) if shared else set()
 
+    settle_hosted_paths(project, prefix)
     documents = []
     if shared:
         documents.append(('{}.dtml'.format(shared['name']), build_dtml(shared)))

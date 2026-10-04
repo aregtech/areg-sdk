@@ -2809,6 +2809,8 @@ def run():
     check_spec_value_shapes(report)
     check_unused_parameters(report)
     check_hosted_machine(report)
+    check_hosted_path(report)
+    check_installed_scaffold(report)
     check_method_names(report)
     check_accessor_collision(report)
     check_spec_semantics(report)
@@ -5036,6 +5038,17 @@ def check_late_arrival(report):
             return
         with open('worksheet.txt', encoding='utf-8') as handle:
             sheet = handle.read()
+        ordered = re.search(r'// TODO\(you\) broadcast_gate_moved:[^\n]*runs before the '
+                            r'step_ check of the same broadcast.*?switch \(mStep\)',
+                            moved, re.S)
+        if not ordered or not re.search(r'== broadcast_gate_moved\n#\| [^\n]*runs before '
+                                        r'the step_ check of the same broadcast', sheet):
+            report.fail('broadcast-order', 'a stepped broadcast_ section does not say it '
+                                           'runs before the step_ check of the same '
+                                           'broadcast, or the handler no longer does so')
+        else:
+            report.ok('broadcast-order', 'a stepped broadcast_ section says it runs before '
+                                         'the step_ check of the same broadcast')
         if 'test the value already held' in sheet or 'dropped there' in sheet:
             report.fail('late-arrival', 'the worksheet of a stepped design still asks the '
                                         'author to handle an update that arrived early')
@@ -5432,6 +5445,119 @@ def check_hosted_machine(report, tools=None):
     report.ok('hosted-machine', 'a machine hosting another from two states generates an '
                                 'application, whether the hosted one is designed with it '
                                 'or already on disk')
+
+
+def hosted_path_failure(tools):
+    """What a hosted machine of the same design is refused for over its "path", or ''."""
+    import importlib.util
+
+    def generate(design, outdir):
+        with open('design.json', 'w', encoding='utf-8', newline='\n') as handle:
+            json.dump(design, handle, indent=2)
+        done = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                               '--outdir', outdir, '--force', '--spec', 'design.json'],
+                              capture_output=True, text=True)
+        texts = {}
+        for path in glob.glob(os.path.join(outdir, '*')):
+            with open(path, encoding='utf-8') as handle:
+                texts[os.path.basename(path)] = handle.read()
+        return done.returncode, (done.stdout + done.stderr).strip(), texts
+
+    code, said, named = generate(HOSTED_SAMPLE, os.path.join('src', 'services'))
+    if code:
+        return 'the design with its path refused: {}'.format(said.splitlines()[-1:])
+    bare = copy.deepcopy(HOSTED_SAMPLE)
+    del bare['machines'][1]['submachines'][0]['path']
+    code, said, left = generate(bare, os.path.join('src', 'services'))
+    if code:
+        return 'a hosted machine of the design with no "path" is refused: {}'.format(
+            said.splitlines()[-1:])
+    if left != named:
+        return 'a hosted machine with no "path" writes other documents than with its path'
+    spec = importlib.util.spec_from_file_location(
+        'hosted_path_build', os.path.join(tools, 'build_project.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    found = module.documents_of(['design.json'], os.path.join('src', 'services'))
+    chosen = [os.path.basename(path) for path in module.built_machines(found[1], found[3])]
+    if chosen != ['Loop.fsml']:
+        return 'build_project.py builds {} for a host whose hosted path is left out'.format(
+            chosen)
+    wrong = copy.deepcopy(HOSTED_SAMPLE)
+    wrong['machines'][1]['submachines'][0]['path'] = 'src/other/Pass.fsml'
+    code, said, _ = generate(wrong, os.path.join('src', 'services'))
+    if not code or 'src/services/Pass.fsml' not in said:
+        return ('a path naming no file for a machine of the design is not refused '
+                'with the right one')
+    return ''
+
+
+def check_hosted_path(report, tools=None):
+    """A hosted machine of the same design needs no "path", and a wrong one is refused
+    with the path the design writes it to."""
+    tools = tools or os.path.join(ROOT, 'tools', 'agent')
+    holder = tempfile.mkdtemp()
+    here = os.getcwd()
+    try:
+        os.chdir(holder)
+        failure = hosted_path_failure(tools)
+    finally:
+        os.chdir(here)
+        shutil.rmtree(holder, ignore_errors=True)
+    if failure:
+        report.fail('hosted-path', failure)
+        return
+    report.ok('hosted-path', 'a hosted machine of the same design takes its path from the '
+                             'design; a path naming no file is refused with the right one')
+
+
+def installed_scaffold_failure(prefix):
+    """What a project made from an installed SDK names that does not exist, or ''."""
+    tools = os.path.join(prefix, 'tools', 'areg')
+    sdk = os.path.join(prefix, 'share', 'areg', 'sdk')
+    shutil.copytree(os.path.join(ROOT, 'tools'), tools,
+                    ignore=shutil.ignore_patterns('intern', '__pycache__', '*.jar'))
+    shutil.copytree(os.path.join(ROOT, 'docs', 'agent'), os.path.join(sdk, 'docs', 'agent'),
+                    ignore=shutil.ignore_patterns('build', 'generated'))
+    shutil.copy(os.path.join(ROOT, 'AGENTS.md'), sdk)
+    setup = os.path.join(tools, 'agent', 'setup_project.py')
+    for kind in ('scaffold', 'attach'):
+        project = os.path.join(prefix, kind)
+        os.makedirs(project)
+        if kind == 'attach':
+            with open(os.path.join(project, 'main.cpp'), 'w', encoding='utf-8') as handle:
+                handle.write('int main() { return 0; }\n')
+        done = subprocess.run([sys.executable, setup, '--name', 'lamp', '--root', project,
+                               '--mode', 'ipc', '--quiet'], capture_output=True, text=True)
+        if done.returncode:
+            return 'the {} from an installation fails: {}'.format(
+                kind, (done.stdout + done.stderr).strip().splitlines()[-1:])
+        with open(os.path.join(project, 'AGENTS.md'), encoding='utf-8') as handle:
+            text = handle.read()
+        if 'build/packages/' in text:
+            return 'the {} from an installation names a fetch path'.format(kind)
+        named = set(re.findall(r'(?:python3? |`)((?:[A-Za-z]:)?/[^\s`]+\.py)',
+                               text.replace('\\', '/')))
+        missing = sorted(path for path in named if not os.path.isfile(path))
+        if not named or missing:
+            return 'the {} from an installation names {}'.format(
+                kind, ', '.join(missing) if missing else 'no tool by its path')
+    return ''
+
+
+def check_installed_scaffold(report):
+    """A project scaffolded or attached from an installed SDK, with no --sdk-root, names
+    tools that exist in that installation."""
+    holder = tempfile.mkdtemp()
+    try:
+        failure = installed_scaffold_failure(holder)
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    if failure:
+        report.fail('installed-scaffold', failure)
+        return
+    report.ok('installed-scaffold', 'a project made from an installed SDK names the '
+                                    'installed tools')
 
 
 def check_unused_parameters(report):

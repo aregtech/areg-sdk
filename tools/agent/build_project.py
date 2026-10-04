@@ -428,15 +428,22 @@ def documents_of(specs, outdir):
     """The .siml, the .fsml and the .dtml the specs name, as paths under outdir, and
     the .fsml each machine hosts, as its "submachines" spell them."""
     interfaces, machines, shared_types, hosted = [], [], [], []
-    for spec in specs:
-        document, _skipped = gen_docs.load_spec(spec)
+    documents = [gen_docs.load_spec(spec)[0] for spec in specs]
+    designed = set(entry.get('name') for document in documents
+                   for entry in document.get('machines') or [])
+    for document in documents:
         for entry in document.get('interfaces') or []:
             interfaces.append(os.path.join(outdir, entry['name'] + '.siml'))
         for entry in document.get('machines') or []:
             machines.append(os.path.join(outdir, entry['name'] + '.fsml'))
-            hosted += [os.path.normpath(inner['path']) for inner in
-                       entry.get('submachines') or [] if isinstance(inner, dict)
-                       and isinstance(inner.get('path'), str)]
+            for inner in entry.get('submachines') or []:
+                if not isinstance(inner, dict):
+                    continue
+                path = inner.get('path')
+                if not path and inner.get('name') in designed:
+                    path = os.path.join(outdir, inner['name'] + '.fsml')
+                if isinstance(path, str):
+                    hosted.append(os.path.normpath(path))
         shared = document.get('datatypes') or {}
         if shared.get('name'):
             shared_types.append(os.path.join(outdir, shared['name'] + '.dtml'))

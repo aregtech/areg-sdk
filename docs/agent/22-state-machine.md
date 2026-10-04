@@ -214,11 +214,11 @@ substate a transition on it to `B2`.
 ### Reusing a whole machine: `Submachine`
 
 A state may host another machine instead of owning nested states, never both. The
-hosted machine is in the same design, or is a `.fsml` the project already holds and is
-not repeated in `"machines"`. The host names it by its path from the project root:
+hosted machine is in the same design, or is a `.fsml` the project already holds, not
+repeated in `"machines"` and named by `"path"` from the project root:
 
 ```json
-"submachines": [{"name": "Inner", "path": "src/services/Inner.fsml", "version": "1.0.0"}],
+"submachines": [{"name": "Inner", "version": "1.0.0"}],
 "states": [{"name": "RUNNING", "submachine": "Inner", "final_event": "RunDone"},
            {"name": "RETRYING", "submachine": "Inner", "final_event": "RetryDone"}]
 ```

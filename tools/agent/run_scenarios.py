@@ -14,6 +14,7 @@
 # Exit code 0 when every scenario passed, 1 otherwise, 2 on a bad file.
 # ===========================================================================
 import argparse
+import difflib
 import importlib.util
 import json
 import os
@@ -94,6 +95,8 @@ OUTPUT_TAIL_LINES = 40
 PASS_TAIL_LINES = 150
 # How many unmet expectations a failed verdict names.
 MISSES_NAMED = 4
+# How alike a printed line and a missed expectation must be for the line to be named.
+NEAREST_CUTOFF = 0.6
 
 
 def is_listening(port, host='127.0.0.1'):
@@ -523,7 +526,17 @@ def printed_by(pattern, index, handles, outputs):
         if found is not None:
             return ' ({} printed it, line {})'.format(
                 proc_name(spec), output.count('\n', 0, found.start()) + 1)
-    return ''
+    return nearest_line(pattern, outputs.get(index) or '')
+
+
+def nearest_line(pattern, output):
+    """The line of the output most like an expectation it did not match, and where."""
+    lines = output.splitlines()
+    text = re.sub(r'\\(.)', r'\1', pattern).strip('^$')
+    close = difflib.get_close_matches(text, lines, n=1, cutoff=NEAREST_CUTOFF)
+    if not close:
+        return ''
+    return ' (nearest: {!r}, line {})'.format(close[0].strip(), lines.index(close[0]) + 1)
 
 
 def kept_spool(keep, name):
@@ -546,7 +559,13 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
         return False, name, 'no processes listed'
 
     router_handle = None
-    if scenario.get('router'):
+    # A router port another process already serves is used as it is; no second
+    # router is started.
+    foreign = bool(scenario.get('router')) and is_listening(ROUTER_PORT)
+    if foreign and not quiet:
+        sys.stdout.write('      port {} is already served by a process this run did not '
+                         'start; the scenario uses it\n'.format(ROUTER_PORT))
+    if scenario.get('router') and not foreign:
         router = find_service('mtrouter', build_dirs)
         if router is None:
             return False, name, 'mtrouter not found in ' + ', '.join(build_dirs)
@@ -663,7 +682,13 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
         report_output(handles, outputs, quiet, full=verbose)
         report_status(handles, outputs, ended, lead_index, quiet)
         if not quiet:
-            sys.stdout.write('      full output of every process: {}\n'.format(spool))
+            logs = [reader.path() for _, reader in sorted(readers.items())]
+            sys.stdout.write('      full output of every process: {}\n'.format(
+                ', '.join(path.replace(os.sep, '/') for path in logs) or spool))
+        if foreign:
+            detail += ('; the router on port {} was not started by this run{}'.format(
+                ROUTER_PORT, '' if is_listening(ROUTER_PORT)
+                else ', and it stopped during the scenario'))
         return False, name, detail
 
     if verdict is not None:
@@ -1030,10 +1055,61 @@ def self_test():
                   'named with the process that printed them: {}'.format(detail))
             return 1
 
-        print('self-test ok: 9 case(s): end of input, an unfired stop, a fired stop, '
+        # A line no process printed names the nearest one printed, and the failure
+        # names each process's log file.
+        import contextlib
+        import io
+        nearly = {
+            'name': 'nearly', 'timeout': 15,
+            'procs': [{'binary': provider, 'name': 'provider',
+                       'expect': [r'provider serving\b']},
+                      {'binary': quitter, 'name': 'consumer'}]}
+        said = io.StringIO()
+        with contextlib.redirect_stdout(said):
+            passed, _, detail = run_scenario(nearly, [root], False, False)
+        if passed or "nearest: 'provider: serving', line 1" not in detail \
+                or not re.search(r'full output of every process: \S+/0-provider\.log, '
+                                 r'\S+/1-consumer\.log', said.getvalue()):
+            print('self-test FAILED: a missed line did not name the nearest printed one '
+                  'and the log files: {}'.format(detail))
+            return 1
+
+        # A router port another process serves is used, no router is started, and a
+        # failure names it, and whether it stopped.
+        global ROUTER_PORT
+        saved_port = ROUTER_PORT
+        foreign = {
+            'name': 'foreign-router', 'timeout': 15, 'router': True,
+            'procs': [{'binary': provider, 'name': 'provider',
+                       'expect': ['provider: never printed']},
+                      {'binary': quitter, 'name': 'consumer'}]}
+        try:
+            for stops in (False, True):
+                listener = socket.socket()
+                listener.bind(('127.0.0.1', 0))
+                listener.listen(4)
+                ROUTER_PORT = listener.getsockname()[1]
+                if stops:
+                    threading.Thread(target=lambda: (listener.accept()[0].close(),
+                                                     listener.close()),
+                                     daemon=True).start()
+                passed, _, detail = run_scenario(foreign, [root], False, True)
+                if not stops:
+                    listener.close()
+                stopped = ', and it stopped during the scenario' in detail
+                if passed or 'was not started by this run' not in detail \
+                        or stopped != stops:
+                    print('self-test FAILED: a router this run did not start was not '
+                          'used and named: {}'.format(detail))
+                    return 1
+        finally:
+            ROUTER_PORT = saved_port
+
+        print('self-test ok: 11 case(s): end of input, an unfired stop, a fired stop, '
               'a stop on the last line of an exited lead, a stop too late for the lead, '
               'output pressure, a scenario that asserts nothing, a lead that stopped '
-              'on its own failure, lines expected of the wrong process')
+              'on its own failure, lines expected of the wrong process, the nearest '
+              'line to a miss, a router this run did not start')
         return 0
     finally:
         shutil.rmtree(root, ignore_errors=True)

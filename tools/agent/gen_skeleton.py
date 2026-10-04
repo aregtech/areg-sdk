@@ -2593,12 +2593,16 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
         lines.append('    void {}({}) final'.format(iface.spell('broadcast', name),
                                                     iface.generated_params('broadcast', name)))
         latch = latches.get(('broadcast', name))
-        said = marker(iface.spell('broadcast', name),
-                      'what this broadcast means in every step' if steps else
-                      'what this broadcast means for the scenario', 12 if latch else 8)
+        dispatch = step_dispatch(steps, 'broadcast', name, 8, latch)
+        hint = 'what this broadcast means for the scenario'
+        if steps:
+            hint = 'what this broadcast means in every step'
+        if dispatch:
+            hint += '; it runs before the step_ check of the same broadcast'
+        said = marker(iface.spell('broadcast', name), hint, 12 if latch else 8)
         lines.append('    {')
         lines += replayed(said, 8) if latch else [said]
-        lines += step_dispatch(steps, 'broadcast', name, 8, latch)
+        lines += dispatch
         lines += ['    }',
                   '']
 
