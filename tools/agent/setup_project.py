@@ -69,6 +69,13 @@ def tools_of(sdk):
     return sdk + '/tools'
 
 
+def moved_tools(sdk, tools):
+    """The sentence that maps the pages' tool paths onto an installation, or ''."""
+    if tools == sdk + '/tools':
+        return ''
+    return ' Where a page writes `<areg-sdk>/tools/`, the tools are in `{}/`.'.format(tools)
+
+
 # The revision to fetch when --tag is not given. api.json owns it; this literal is
 # the answer when api.json cannot be read, and check_corpus.py holds the two equal.
 FALLBACK_TAG = 'master'
@@ -292,7 +299,7 @@ ATTACH = """## Building with AREG
 
 This project uses the AREG SDK at `{sdk}` for its multithreading, IPC and
 service components. Before writing code that uses areg, read `{sdk}/AGENTS.md`:
-it routes each task to the one page that answers it. Never search the SDK.
+it routes each task to the one page that answers it. Never search the SDK.{moved}
 
 | I need to ... | Read |
 |---|---|
@@ -364,7 +371,9 @@ def import_agents_into_claude(root):
 def attach(root, sdk, quiet):
     """Points an existing project at the SDK: AGENTS.md and nothing else of the scaffold."""
     sdk = sdk.replace('\\', '/')
-    done = place_agents(root, ATTACH.format(sdk=sdk, tools=tools_of(sdk)),
+    tools = tools_of(sdk)
+    done = place_agents(root, ATTACH.format(sdk=sdk, tools=tools,
+                                            moved=moved_tools(sdk, tools)),
                         keep_reference=sdk + '/AGENTS.md')
     print('{}: AGENTS.md {}'.format(root, {
         'written': 'written',
@@ -415,8 +424,8 @@ def write_agents(root, name, mode, sdk_root, binaries):
              'configures, so '
              'run `cmake -B build` first if it is not there; if it is still absent '
              'after that, ask for the SDK path and pass it as '
-             '`-DAREG_SDK_ROOT=<path>`. The commands below assume `{}`.'
-             .format(sdk if tools == sdk + '/tools' else tools))
+             '`-DAREG_SDK_ROOT=<path>`. The commands below assume `{}`.{}'
+             .format(sdk if tools == sdk + '/tools' else tools, moved_tools(sdk, tools)))
     never = prohibition_bullets()
     if never is None:
         never = ('- The full list is section 6 of `{}/AGENTS.md`; api.json could not be '

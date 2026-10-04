@@ -113,7 +113,7 @@ of them are optional:
 | `"types"` | any `"type"`; spelled as in `21-data-types.md` |
 | `"attributes"` | a `"set"` key, and an attribute operand of a guard |
 | `"events"` | `"on"` of an event, `{"send": ...}`, `"final_event"` |
-| `"timers"` | `"on"` of a timer, `"start X"` / `"stop X"` |
+| `"timers"` | `"on"` of a timer, `"start X"` (fires `"repeat"` times, default 1) / `"stop X"` |
 | `"triggers"`, `"actions"`, `"conditions"` | `"on"` of a trigger, `{"call": ...}`, a guard's `{"call": ...}` |
 | `"constants"` | a constant operand of a guard |
 | `"states"` | every `"to"` |

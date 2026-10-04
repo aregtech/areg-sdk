@@ -5597,6 +5597,10 @@ def installed_scaffold_failure(prefix):
         if not named or missing:
             return 'the {} from an installation names {}'.format(
                 kind, ', '.join(missing) if missing else 'no tool by its path')
+        moved = '`<areg-sdk>/tools/`, the tools are in `{}/`'.format(tools.replace('\\', '/'))
+        if moved not in text:
+            return ('the {} from an installation does not say where the tools a page '
+                    'writes as <areg-sdk>/tools/ are'.format(kind))
     return ''
 
 
