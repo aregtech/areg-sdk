@@ -17,9 +17,56 @@
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/base/MathDefs.hpp"
 #include "areg/base/Thread.hpp"
+#include "areg/base/private/WaitWord.hpp"
 
 #include <algorithm>
-#include <thread>
+
+namespace
+{
+    //!< Bits of SpinLock::mCount holding the recursion depth of the owner.
+    constexpr uint32_t  LOCK_DEPTH      { 0x0000'FFFFu };
+
+    //!< One thread asleep on SpinLock::mCount; the high bits count the sleepers.
+    constexpr uint32_t  LOCK_SLEEPER    { 0x0001'0000u };
+
+    //!< Pause re-checks before a waiter goes to sleep.
+    constexpr uint32_t  LOCK_SPIN_PAUSES{ 64u };
+
+    /**
+     * \brief   Takes a SpinLock word that another thread holds: re-checks it LOCK_SPIN_PAUSES
+     *          times, then counts itself as a sleeper and sleeps on the word until it is free.
+     **/
+    void _spin_lock_contended(std::atomic<uint32_t> & word) noexcept
+    {
+        for (uint32_t spin = 0u; spin < LOCK_SPIN_PAUSES; ++spin)
+        {
+            areg::Thread::cpu_pause();
+            uint32_t value{ word.load(std::memory_order_relaxed) };
+            if (((value & LOCK_DEPTH) == 0u) &&
+                word.compare_exchange_weak(value, value + 1u, std::memory_order_acquire, std::memory_order_relaxed))
+            {
+                return;
+            }
+        }
+
+        uint32_t value{ word.fetch_add(LOCK_SLEEPER, std::memory_order_relaxed) + LOCK_SLEEPER };
+        for (;;)
+        {
+            if ((value & LOCK_DEPTH) == 0u)
+            {
+                // Leaves the sleepers and takes the lock in one step.
+                if (word.compare_exchange_weak(value, value - LOCK_SLEEPER + 1u, std::memory_order_acquire, std::memory_order_relaxed))
+                    return;
+
+                continue;
+            }
+
+            areg::os::_os_wait_word(word, value);
+            value = word.load(std::memory_order_relaxed);
+        }
+    }
+}
+
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -189,30 +236,14 @@ bool SpinLock::lock(uint32_t /*timeout = areg::WAIT_INFINITE*/)
         return true;
     }
 
-    // Spin until acquire.
-    uint32_t spins{ 0u };
-    for (;;)
+    uint32_t expected{ 0u };
+    if (mCount.compare_exchange_strong(expected, 1u, std::memory_order_acquire, std::memory_order_relaxed) == false)
     {
-        id_type expected{ 0 };
-        if (mOwner.compare_exchange_weak(expected, self,
-            std::memory_order_acquire,
-            std::memory_order_relaxed))
-        {
-            mCount.store(1u, std::memory_order_relaxed);
-            return true;
-        }
-
-        // After 64 pause iterations, yield to the OS scheduler to prevent
-        // CPU starvation under contention (critical on Linux / POSIX)
-        while (mOwner.load(std::memory_order_relaxed) != 0)
-        {
-            Thread::cpu_pause();
-            if ((++spins & 63u) == 0u)
-            {
-                std::this_thread::yield();
-            }
-        }
+        _spin_lock_contended(mCount);
     }
+
+    mOwner.store(self, std::memory_order_relaxed);
+    return true;
 }
 
 bool SpinLock::try_lock()
@@ -224,11 +255,11 @@ bool SpinLock::try_lock()
         return true;
     }
 
-    // Single attempt, no spinning.
-    id_type expected{ 0 };
-    if (mOwner.compare_exchange_strong(expected, self, std::memory_order_acquire, std::memory_order_relaxed))
+    uint32_t value{ mCount.load(std::memory_order_relaxed) };
+    if (((value & LOCK_DEPTH) == 0u) &&
+        mCount.compare_exchange_strong(value, value + 1u, std::memory_order_acquire, std::memory_order_relaxed))
     {
-        mCount.store(1u, std::memory_order_relaxed);
+        mOwner.store(self, std::memory_order_relaxed);
         return true;
     }
 
@@ -237,16 +268,22 @@ bool SpinLock::try_lock()
 
 bool SpinLock::unlock()
 {
-    // Only the owning thread may unlock.
     const id_type self = Thread::current_thread_id();
     if (mOwner.load(std::memory_order_relaxed) != self)
     {
         return false;
     }
 
-    if (mCount.fetch_sub(1u, std::memory_order_relaxed) == 1u)
+    // The owner is cleared before the release and restored if the lock is still held.
+    mOwner.store(0, std::memory_order_relaxed);
+    const uint32_t value{ mCount.fetch_sub(1u, std::memory_order_release) };
+    if ((value & LOCK_DEPTH) > 1u)
     {
-        mOwner.store(0, std::memory_order_release);
+        mOwner.store(self, std::memory_order_relaxed);
+    }
+    else if (value >= LOCK_SLEEPER)
+    {
+        areg::os::_os_wake_word(mCount);
     }
 
     return true;

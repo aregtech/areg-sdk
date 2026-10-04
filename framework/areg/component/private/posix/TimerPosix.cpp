@@ -142,13 +142,13 @@ TimerPosix::TimerPosix()
 
 TimerPosix::~TimerPosix()
 {
-    SpinAutolockPosix lock(mLock);
+    areg::Lock lock(mLock);
     _destroy_timer();
 }
 
 bool TimerPosix::create_timer(FuncPosixTimerRoutine funcTimer) noexcept
 {
-    SpinAutolockPosix lock(mLock);
+    areg::Lock lock(mLock);
 #ifdef __APPLE__
     return ((mTimerQueue != nullptr) && (mTimerCallback != nullptr)) ||
            ((funcTimer != nullptr) && _create_timer(funcTimer));
@@ -163,7 +163,7 @@ bool TimerPosix::create_timer(FuncPosixTimerRoutine funcTimer) noexcept
 
 bool TimerPosix::start_timer(TimerBase& context, id_type contextId, [[maybe_unused]] FuncPosixTimerRoutine funcTimer) noexcept
 {
-    SpinAutolockPosix lock(mLock);
+    areg::Lock lock(mLock);
 
     mContext   = &context;
     mContextId = contextId;
@@ -189,13 +189,13 @@ bool TimerPosix::start_timer(TimerBase& context, id_type contextId, [[maybe_unus
 
 bool TimerPosix::restart_timer() noexcept
 {
-    SpinAutolockPosix lock(mLock);
+    areg::Lock lock(mLock);
     return _start_timer();
 }
 
 bool TimerPosix::pause_timer() noexcept
 {
-    SpinAutolockPosix lock(mLock);
+    areg::Lock lock(mLock);
 
     if (_is_started())
     {
@@ -214,7 +214,7 @@ bool TimerPosix::pause_timer() noexcept
 
 bool TimerPosix::stop_timer() noexcept
 {
-    SpinAutolockPosix lock(mLock);
+    areg::Lock lock(mLock);
 
     if (_is_started())
     {
@@ -233,7 +233,7 @@ bool TimerPosix::stop_timer() noexcept
 
 void TimerPosix::destroy_timer() noexcept
 {
-    SpinAutolockPosix lock(mLock);
+    areg::Lock lock(mLock);
 
     _destroy_timer();
 
@@ -243,7 +243,7 @@ void TimerPosix::destroy_timer() noexcept
 
 void TimerPosix::timer_expired() noexcept
 {
-    SpinAutolockPosix lock(mLock);
+    areg::Lock lock(mLock);
     if (mContext == nullptr)
         return;
 

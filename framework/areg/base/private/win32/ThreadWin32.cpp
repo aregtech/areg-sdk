@@ -142,7 +142,7 @@ Thread::ThreadCompletion Thread::_os_destroy_thread(uint32_t waitForStopMs)
                 result = Thread::ThreadCompletion::Terminated;
                 this->mWaitForRun.reset();
                 this->mWaitForExit.set_signaled();
-                this->_set_run_state(Thread::RunState::NotRunning);
+                this->_set_not_running();
             }
             else
             {

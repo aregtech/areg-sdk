@@ -11,7 +11,8 @@
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, the writer of a service send thread that never waits for one
- *              socket. POSIX part: a write completes when it returns.
+ *              socket. POSIX part: a write completes when it returns, and the send thread
+ *              waits in poll() for its sockets and its wake-up descriptor.
  ************************************************************************/
 
 /************************************************************************
@@ -21,10 +22,18 @@
 
 #if defined(_POSIX) || defined(POSIX)
 
+#include <new>
+
 #include <cerrno>
+#include <fcntl.h>
 #include <poll.h>
 #include <sys/socket.h>
 #include <sys/uio.h>
+#include <unistd.h>
+
+#if defined(__linux__)
+    #include <sys/eventfd.h>
+#endif  // defined(__linux__)
 
 namespace areg::ext {
 
@@ -35,6 +44,27 @@ struct SendBacklogOs
 void SendBacklogOsDelete::operator () (SendBacklogOs * os) const noexcept
 {
     delete os;
+}
+
+struct SendBacklogWaitOs
+{
+    int                         readFd  { -1 }; //!< Readable while the wait is signalled.
+    int                         writeFd { -1 }; //!< Written to signal; the same as readFd for an eventfd.
+    std::vector<struct pollfd>  fds     { };    //!< The descriptors of one wait, reused.
+};
+
+void SendBacklogWaitOsDelete::operator () (SendBacklogWaitOs * wait) const noexcept
+{
+    if (wait == nullptr)
+        return;
+
+    if (wait->writeFd != wait->readFd)
+    {
+        static_cast<void>(::close(wait->writeFd));
+    }
+
+    static_cast<void>(::close(wait->readFd));
+    delete wait;
 }
 
 int64_t backlog_os_start( SendBacklogOsPtr & /*os*/
@@ -89,18 +119,89 @@ uint64_t backlog_os_in_flight(const SendBacklogOs * /*os*/) noexcept
     return 0u;
 }
 
-bool backlog_os_cancel(SendBacklogOsPtr & os, SOCKETHANDLE /*hSocket*/) noexcept
+void backlog_os_cancel(SendBacklogOs * /*os*/, SOCKETHANDLE /*hSocket*/) noexcept
 {
-    os.reset();
+}
+
+bool backlog_os_done(const SendBacklogOs * /*os*/) noexcept
+{
     return true;
 }
 
-void backlog_os_wait(SOCKETHANDLE hSocket, uint32_t timeoutMs) noexcept
+SendBacklogWaitOs * backlog_os_wait_create() noexcept
 {
-    struct pollfd fd { };
-    fd.fd       = static_cast<int>(hSocket);
-    fd.events   = POLLOUT;
-    static_cast<void>(::poll(&fd, 1, static_cast<int>(timeoutMs)));
+    SendBacklogWaitOs * wait{ new (std::nothrow) SendBacklogWaitOs() };
+    if (wait == nullptr)
+        return nullptr;
+
+#if defined(__linux__)
+    wait->readFd  = ::eventfd(0u, EFD_NONBLOCK | EFD_CLOEXEC);
+    wait->writeFd = wait->readFd;
+    if (wait->readFd >= 0)
+        return wait;
+#else   // defined(__linux__)
+    int fds[2]{ -1, -1 };
+    if (::pipe(fds) == 0)
+    {
+        for (const int fd : fds)
+        {
+            static_cast<void>(::fcntl(fd, F_SETFL, ::fcntl(fd, F_GETFL) | O_NONBLOCK));
+            static_cast<void>(::fcntl(fd, F_SETFD, FD_CLOEXEC));
+        }
+
+        wait->readFd  = fds[0];
+        wait->writeFd = fds[1];
+        return wait;
+    }
+#endif  // defined(__linux__)
+
+    delete wait;
+    return nullptr;
+}
+
+bool backlog_os_attach(SendBacklogWaitOs * /*wait*/, SOCKETHANDLE /*hSocket*/) noexcept
+{
+    return true;
+}
+
+void backlog_os_signal(SendBacklogWaitOs * wait) noexcept
+{
+#if defined(__linux__)
+    const uint64_t one{ 1u };
+#else   // defined(__linux__)
+    const uint8_t one{ 1u };
+#endif  // defined(__linux__)
+
+    ssize_t result{ 0 };
+    do
+    {
+        result = ::write(wait->writeFd, &one, sizeof(one));
+    } while ((result < 0) && (errno == EINTR));
+}
+
+bool backlog_os_wait(SendBacklogWaitOs * wait, const SOCKETHANDLE * sockets, uint32_t count, uint32_t timeoutMs) noexcept
+{
+    std::vector<struct pollfd> & fds{ wait->fds };
+    if (fds.size() < static_cast<std::size_t>(count) + 1u)
+    {
+        fds.resize(static_cast<std::size_t>(count) + 1u);
+    }
+
+    fds[0] = { wait->readFd, POLLIN, 0 };
+    for (uint32_t i = 0u; i < count; ++i)
+    {
+        fds[i + 1u] = { static_cast<int>(sockets[i]), POLLOUT, 0 };
+    }
+
+    const int timeout{ timeoutMs < static_cast<uint32_t>(INT32_MAX) ? static_cast<int>(timeoutMs) : -1 };
+    if ((::poll(fds.data(), static_cast<nfds_t>(count + 1u), timeout) <= 0) || (fds[0].revents == 0))
+        return false;
+
+    // One read empties the wake descriptor.
+    uint64_t drained[8];
+    const ssize_t drainedBytes{ ::read(wait->readFd, drained, sizeof(drained)) };
+    static_cast<void>(drainedBytes);
+    return true;
 }
 
 } // namespace areg::ext

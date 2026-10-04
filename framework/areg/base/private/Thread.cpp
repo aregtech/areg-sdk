@@ -17,6 +17,7 @@
 #include "areg/base/Thread.hpp"
 #include "areg/base/ThreadConsumer.hpp"
 #include "areg/base/ThreadLocalStorage.hpp"
+#include "areg/base/private/WaitWord.hpp"
 
 #include <algorithm>
 
@@ -100,7 +101,7 @@ unsigned long Thread::_default_thread_function(void* data)
         Thread::_set_self_thread(nullptr);
         Thread::_thread_local_storage(nullptr);
         threadObj->mWaitForExit.set_signaled();
-        threadObj->_set_run_state(Thread::RunState::NotRunning);
+        threadObj->_set_not_running();
     }
 
     return static_cast<unsigned long>(result);
@@ -177,7 +178,7 @@ Thread::Thread(ThreadConsumer &threadConsumer, const String & threadName, uint32
     , mThreadId         (Thread::INVALID_THREAD_ID)
     , mThreadAddress    (threadName.is_empty() == false ? threadName : areg::generate_name(DEFAULT_THREAD_PREFIX.data()))
     , mThreadPriority   (Thread::ThreadPriority::Undefined)
-    , mRunState         ( Thread::RunState::NotRunning )
+    , mRunState         ( static_cast<uint32_t>(Thread::RunState::NotRunning) )
     , mStackSizeKB      ( stackSizeKb )
     , mSyncObject       ( )
     , mWaitForRun       (false, false)
@@ -197,7 +198,7 @@ Thread::Thread( areg::NullTag, ThreadConsumer & threadConsumer, const String & t
     , mThreadId         ( Thread::INVALID_THREAD_ID )
     , mThreadAddress    ( threadName )
     , mThreadPriority   ( Thread::ThreadPriority::Undefined )
-    , mRunState         ( Thread::RunState::NotRunning )
+    , mRunState         ( static_cast<uint32_t>(Thread::RunState::NotRunning) )
     , mStackSizeKB      ( 0u )
     , mSyncObject       ( )
     , mWaitForRun       ( areg::NullTag{} )
@@ -234,7 +235,7 @@ bool Thread::start(uint32_t waitForStartMs /* = areg::DO_NOT_WAIT */)
     {
         Lock  lock(mSyncObject);
         // A running routine or a shutdown() in progress owns the state of the object.
-        if ((mStopCount != 0u) || (mRunState.load(std::memory_order_acquire) != Thread::RunState::NotRunning))
+        if ((mStopCount != 0u) || (_run_state() != Thread::RunState::NotRunning))
         {
             return false;
         }
@@ -252,7 +253,7 @@ bool Thread::start(uint32_t waitForStartMs /* = areg::DO_NOT_WAIT */)
         result = _os_create();
         if (result == false)
         {
-            _set_run_state(Thread::RunState::NotRunning);
+            _set_not_running();
         }
     } while (false);
 
@@ -447,18 +448,19 @@ void Thread::_clean_resources(bool unregister, bool releaseHandle)
 
     if (releaseHandle)
     {
-        const bool joinThread{ mRunState.load(std::memory_order_acquire) == Thread::RunState::NotRunning };
+        const bool joinThread{ _run_state() == Thread::RunState::NotRunning };
         Thread::_os_close_handle(handle, joinThread);
     }
 }
 
 void Thread::_wait_exit_completed() const noexcept
 {
-    constexpr uint32_t  SPIN_COUNT{ 64u };   //!< Pause spins before the first yield.
+    constexpr uint32_t  SPIN_COUNT{ 64u };      //!< Pause spins before the first sleep.
+    constexpr uint32_t  EXITING{ static_cast<uint32_t>(Thread::RunState::Exiting) };
 
-    // Only the 'Exiting' state is waited for.
+    // Only the 'Exiting' state is waited for; _set_not_running() wakes the sleeper.
     uint32_t spin{ 0u };
-    while (mRunState.load(std::memory_order_acquire) == Thread::RunState::Exiting)
+    while (mRunState.load(std::memory_order_acquire) == EXITING)
     {
         if (spin < SPIN_COUNT)
         {
@@ -467,10 +469,16 @@ void Thread::_wait_exit_completed() const noexcept
         }
         else
         {
-            // Hand the CPU to the routine that has to leave, no timed wait.
-            Thread::switch_thread();
+            areg::os::_os_wait_word(mRunState, EXITING);
         }
     }
+}
+
+void Thread::_set_not_running() noexcept
+{
+    const std::atomic<uint32_t> * word{ &mRunState };
+    mRunState.store(static_cast<uint32_t>(Thread::RunState::NotRunning), std::memory_order_release);
+    areg::os::_os_wake_word_all(word);
 }
 
 bool Thread::_register_thread()

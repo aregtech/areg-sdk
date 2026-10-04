@@ -22,6 +22,7 @@
  ************************************************************************/
 #include "units/GUnitTest.hpp"
 #include "areg/component/private/EventQueue.hpp"
+#include "areg/component/private/SimpleEvent.hpp"
 #include "areg/component/Event.hpp"
 #include "areg/component/EventDefs.hpp"
 
@@ -53,6 +54,19 @@ namespace
     {
         return TagEvent(tag, prio);
     }
+
+    //!< A wait object that counts the calls of wake().
+    struct CountingWaiter final : public areg::QueueWaiter
+    {
+        std::atomic<uint32_t>   wakes   { 0u };
+        areg::SimpleEvent       signal  { };
+
+        void wake() noexcept override
+        {
+            wakes.fetch_add(1u, std::memory_order_relaxed);
+            signal.set_signaled();
+        }
+    };
 
     //!< An EventQueue holding its lanes, the state a running dispatcher keeps it in.
     struct ReadyQueue : public EventQueue
@@ -125,6 +139,31 @@ TEST(EventQueueTest, priority_lane_drained_first)
     EXPECT_EQ(queue.pop_event().event_id(), 3u);    // critical first
     EXPECT_EQ(queue.pop_event().event_id(), 2u);    // then high
     EXPECT_EQ(queue.pop_event().event_id(), 1u);    // then normal
+
+    EXPECT_FALSE(queue.has_pending());
+}
+
+TEST(EventQueueTest, priority_lane_keeps_posting_order_per_priority)
+{
+    // Critical events in posting order, then high events in posting order, whichever push path.
+    ReadyQueue queue(0u);
+    Event h1 = makeEvent(1u, EventPriority::HighPrio);      queue.push_event(h1);
+    Event c2 = makeEvent(2u, EventPriority::CriticalPrio);  queue.push_event(c2);
+    Event h3 = makeEvent(3u, EventPriority::HighPrio);      EXPECT_EQ(queue.try_push_event(h3), EventQueue::PushResult::Queued);
+    Event c4 = makeEvent(4u, EventPriority::CriticalPrio);  EXPECT_EQ(queue.try_push_event(c4), EventQueue::PushResult::Queued);
+    Event batch[3] =
+    {
+          makeEvent(5u, EventPriority::HighPrio)
+        , makeEvent(6u, EventPriority::CriticalPrio)
+        , makeEvent(7u, EventPriority::HighPrio)
+    };
+    EXPECT_EQ(queue.push_events(batch, 3u), 0u);
+    Event c8 = makeEvent(8u, EventPriority::CriticalPrio);  queue.push_event(c8);
+
+    for (uint32_t expected : { 2u, 4u, 6u, 8u, 1u, 3u, 5u, 7u })
+    {
+        EXPECT_EQ(queue.pop_event().event_id(), expected);
+    }
 
     EXPECT_FALSE(queue.has_pending());
 }
@@ -306,15 +345,13 @@ TEST(EventQueueTest, drained_exit_ends_under_a_steady_producer)
     // A producer posting without pause must not keep a drained exit alive.
     ReadyQueue queue(0u);
     std::atomic<bool> stop{ false };
-    std::atomic<uint32_t> refused{ 0u };
     std::thread producer([&]
     {
         uint32_t id{ 0u };
         while (stop.load(std::memory_order_acquire) == false)
         {
             Event evt = makeEvent(++id);
-            if (queue.push_event(evt) == false)
-                refused.fetch_add(1u, std::memory_order_relaxed);
+            static_cast<void>(queue.push_event(evt));
         }
     });
 
@@ -338,12 +375,15 @@ TEST(EventQueueTest, drained_exit_ends_under_a_steady_producer)
             queue.wait_event(10u);
     }
 
+    // The drained exit refuses the producer from the request on, whenever it posts next.
+    const bool closed{ queue.is_closed() };
+
     stop.store(true, std::memory_order_release);
     producer.join();
 
     EXPECT_TRUE(exited);
     EXPECT_GT(popped, 0u);
-    EXPECT_GT(refused.load(std::memory_order_relaxed), 0u);
+    EXPECT_TRUE(closed);
 }
 
 TEST(EventQueueTest, capacity_overflow_returns_event)
@@ -418,9 +458,116 @@ TEST(EventQueueTest, wait_event_wakes_on_exit)
     EXPECT_TRUE(sawExit.load(std::memory_order_acquire));
 }
 
+TEST(EventQueueTest, armed_waiter_wakes_on_push_instead_of_doorbell)
+{
+    ReadyQueue queue(0u);
+    CountingWaiter waiter;
+    ASSERT_TRUE(queue.arm_waiter(waiter, true));
+
+    Event evt = makeEvent(1u);
+    queue.push_event(evt);
+    EXPECT_EQ(waiter.wakes.load(), 1u);
+    queue.disarm_waiter();
+
+    // Nothing armed: a push reaches no waiter.
+    Event other = makeEvent(2u);
+    queue.push_event(other);
+    EXPECT_EQ(waiter.wakes.load(), 1u);
+}
+
+TEST(EventQueueTest, arm_waiter_refuses_when_something_is_pending)
+{
+    ReadyQueue queue(0u);
+    CountingWaiter waiter;
+    Event evt = makeEvent(1u);
+    queue.push_event(evt);
+
+    EXPECT_FALSE(queue.arm_waiter(waiter, true));
+    queue.disarm_waiter();
+
+    // Without taking events a queued event does not end the wait, an exit does.
+    EXPECT_TRUE(queue.arm_waiter(waiter, false));
+    queue.disarm_waiter();
+    queue.exit_queue(true);
+    EXPECT_FALSE(queue.arm_waiter(waiter, false));
+    queue.disarm_waiter();
+    EXPECT_EQ(waiter.wakes.load(), 0u);
+}
+
+TEST(EventQueueTest, waiter_without_events_wakes_only_on_exit)
+{
+    ReadyQueue queue(0u);
+    CountingWaiter waiter;
+    ASSERT_TRUE(queue.arm_waiter(waiter, false));
+
+    Event evt = makeEvent(1u);
+    queue.push_event(evt);
+    Event prio = makeEvent(2u, EventPriority::HighPrio);
+    queue.push_event(prio);
+    EXPECT_EQ(waiter.wakes.load(), 0u);
+
+    queue.exit_queue(false);
+    EXPECT_EQ(waiter.wakes.load(), 1u);
+    queue.disarm_waiter();
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Multi-threaded stress
 //////////////////////////////////////////////////////////////////////////
+
+// The consumer blocks only in an armed waiter. A missed wake-up stalls it until the
+// watchdog exit, leaving consumed < ITERS.
+TEST(EventQueueTest, armed_waiter_no_lost_wakeup)
+{
+    ReadyQueue queue(0u);
+    constexpr uint32_t ITERS{ 200000u };
+    std::atomic<uint32_t> consumed{ 0u };
+    CountingWaiter waiter;
+
+    std::thread consumer([&]
+    {
+        for (;;)
+        {
+            if (queue.arm_waiter(waiter, true))
+            {
+                waiter.signal.lock(areg::WAIT_INFINITE);
+            }
+
+            queue.disarm_waiter();
+            bool exit = false;
+            for (;;)
+            {
+                Event evt = queue.pop_event();
+                if (!evt.is_valid())
+                    break;
+                if (evt.is_exit_prio())
+                {
+                    exit = true;
+                    break;
+                }
+                consumed.fetch_add(1u, std::memory_order_release);
+            }
+            if (exit)
+                break;
+        }
+    });
+
+    for (uint32_t i = 0u; i < ITERS; ++i)
+    {
+        Event evt = makeEvent(i);
+        queue.push_event(evt);
+    }
+
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(30);
+    while ((consumed.load(std::memory_order_acquire) < ITERS) && (std::chrono::steady_clock::now() < deadline))
+        std::this_thread::yield();
+
+    queue.exit_queue(true);
+    consumer.join();
+
+    EXPECT_EQ(consumed.load(std::memory_order_acquire), ITERS);
+}
+
 
 // Single producer drives one event at a time while the consumer blocks on
 // wait_event(WAIT_INFINITE). A missed wake-up would stall the consumer until

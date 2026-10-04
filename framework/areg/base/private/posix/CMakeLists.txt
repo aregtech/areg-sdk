@@ -6,7 +6,6 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/base/private/posix/ProcessPosix.cpp
 	areg/base/private/posix/SocketDefsPosix.cpp
 	areg/base/private/posix/SocketMultiplexerPosix.cpp
-	areg/base/private/posix/SpinLockPosix.cpp
 	areg/base/private/posix/SyncLockAndWaitPosix.cpp
 	areg/base/private/posix/SyncPrimitivesPosix.cpp
 	areg/base/private/posix/ThreadPosix.cpp

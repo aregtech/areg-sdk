@@ -67,6 +67,9 @@
     <ClCompile Include="units\LinkedListTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="units\LockWaitTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="units\RingStackTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

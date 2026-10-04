@@ -22,11 +22,13 @@
 #include "areg/base/private/SocketLiveness.hpp"
 #include "areg/logging/areg_log.h"
 
+#include <algorithm>
 #include <chrono>
+#include <limits>
 #include <new>
-#include <vector>
 
 DEF_LOG_SCOPE(areg_aregextend_service_SendBacklog, log_close);
+DEF_LOG_SCOPE(areg_aregextend_service_SendBacklog, enter_fallback);
 
 namespace areg::ext {
 
@@ -63,7 +65,17 @@ SendBacklog::SendBacklog(areg::SendQueueGate & gate)
     , mCapBytes     ( static_cast<uint64_t>(areg::SOCKET_SEND_BUFFER_SIZE) )
     , mRefuseMs     ( SendBacklog::UNLIMITED )
     , mKeepaliveMs  ( areg::SOCKET_KEEPALIVE_SEC * 1'000u )
+    , mWait         ( backlog_os_wait_create() )
+    , mFallbackEvent( )
+    , mWoken        ( false )
+    , mFallback     ( false )
+    , mPumpList     ( )
+    , mWaitSockets  ( )
 {
+    if (mWait == nullptr)
+    {
+        enter_fallback("no wait object");
+    }
 }
 
 SendBacklog::~SendBacklog()
@@ -114,7 +126,7 @@ SendBacklog::Result SendBacklog::write(ITEM_ID cookie, SOCKETHANDLE hSocket, con
     const int64_t written{ backlog_os_start(os, hSocket, buffers, count, in_flight_limit(), started) };
     if (written < 0)
     {
-        if (backlog_os_cancel(os, hSocket) == false)
+        if (cancel_writes(os, hSocket) == false)
         {
             // The operating system may still read these buffers: they are never released.
             auto * kept{ new (std::nothrow) std::deque<areg::MessageEnvelope>() };
@@ -163,7 +175,7 @@ int32_t SendBacklog::write_inline(ITEM_ID cookie, SOCKETHANDLE hSocket, const ar
     const int64_t written{ backlog_os_start(os, hSocket, &buffer, 1u, in_flight_limit(), started) };
     if (written < 0)
     {
-        if (backlog_os_cancel(os, hSocket) == false)
+        if (cancel_writes(os, hSocket) == false)
         {
             // The operating system may still read this buffer: it is never released.
             static_cast<void>(new (std::nothrow) areg::MessageEnvelope(message));
@@ -198,18 +210,17 @@ bool SendBacklog::pump(SendBacklog::Owner & owner)
     if (is_empty())
         return false;
 
-    std::vector<Entry *> entries;
+    mPumpList.clear();
     {
         std::lock_guard<std::mutex> lock(mLock);
-        entries.reserve(mEntries.size());
         for (auto & pair : mEntries)
         {
-            entries.push_back(&pair.second);
+            mPumpList.push_back(&pair.second);
         }
     }
 
     bool progressed{ false };
-    for (Entry * entry : entries)
+    for (Entry * entry : mPumpList)
     {
         const SOCKETHANDLE current{ owner.backlog_socket(entry->cookie) };
         if (current != entry->socket)
@@ -251,45 +262,88 @@ bool SendBacklog::pump(SendBacklog::Owner & owner)
         }
     }
 
+    mPumpList.clear();
     return progressed;
 }
 
-bool SendBacklog::is_over_cap() const noexcept
+bool SendBacklog::attach(SOCKETHANDLE hSocket) noexcept
 {
-    if (is_empty())
-        return false;
+    if ((mWait != nullptr) && backlog_os_attach(mWait.get(), hSocket))
+        return true;
 
-    const uint64_t cap{ mCapBytes.load(std::memory_order_relaxed) };
-    const uint64_t nowMs{ now_ms() };
-    std::lock_guard<std::mutex> lock(mLock);
-    for (const auto & pair : mEntries)
-    {
-        if ((pair.second.bytes > cap) && ((nowMs - pair.second.progressMs) < SendBacklog::CAP_PROGRESS_MS))
-            return true;
-    }
-
+    enter_fallback("a socket could not be attached");
     return false;
 }
 
-void SendBacklog::wait_writable(uint32_t timeoutMs)
+uint32_t SendBacklog::prepare_wait(bool & overCap)
 {
-    SOCKETHANDLE hSocket{ areg::InvalidSocketHandle };
-    uint64_t largest{ 0u };
+    const uint64_t nowMs{ now_ms() };
+    const uint64_t cap{ mCapBytes.load(std::memory_order_relaxed) };
+    const uint32_t refuseMs{ mRefuseMs.load(std::memory_order_relaxed) };
+    uint64_t deadline{ std::numeric_limits<uint64_t>::max() };
+    if (refuseMs == SendBacklog::UNLIMITED)
+    {
+        const uint32_t keepaliveMs{ mKeepaliveMs.load(std::memory_order_relaxed) };
+        deadline = nowMs + std::max(1u, std::min(SendBacklog::TICK_MS, keepaliveMs / 5u));
+    }
+
+    overCap = false;
+    mWaitSockets.clear();
     {
         std::lock_guard<std::mutex> lock(mLock);
         for (const auto & pair : mEntries)
         {
-            if (pair.second.bytes >= largest)
+            const Entry & entry{ pair.second };
+            mWaitSockets.push_back(entry.socket);
+            if (refuseMs != SendBacklog::UNLIMITED)
             {
-                largest = pair.second.bytes;
-                hSocket = pair.second.socket;
+                deadline = std::min(deadline, entry.progressMs + refuseMs);
+            }
+
+            if (entry.bytes > cap)
+            {
+                deadline = std::min(deadline, entry.progressMs + SendBacklog::CAP_STALL_MS);
+                if ((nowMs - entry.progressMs) < SendBacklog::CAP_PROGRESS_MS)
+                {
+                    overCap = true;
+                    deadline = std::min(deadline, entry.progressMs + SendBacklog::CAP_PROGRESS_MS);
+                }
             }
         }
     }
 
-    if (areg::is_valid_socket(hSocket))
+    const uint64_t remaining{ deadline > nowMs ? deadline - nowMs : 1u };
+    return static_cast<uint32_t>(std::min<uint64_t>(remaining, areg::WAIT_INFINITE - 1u));
+}
+
+void SendBacklog::wait(uint32_t timeoutMs)
+{
+    if (mFallback.load(std::memory_order_relaxed))
     {
-        backlog_os_wait(hSocket, timeoutMs);
+        timeoutMs = std::min(timeoutMs, SendBacklog::RECHECK_MS);
+    }
+
+    if (mWait == nullptr)
+    {
+        static_cast<void>(mFallbackEvent.lock(timeoutMs));
+        return;
+    }
+
+    static_cast<void>(backlog_os_wait(mWait.get(), mWaitSockets.data(), static_cast<uint32_t>(mWaitSockets.size()), timeoutMs));
+}
+
+void SendBacklog::wake() noexcept
+{
+    if (mWoken.exchange(true, std::memory_order_acq_rel))
+        return;
+
+    if (mWait != nullptr)
+    {
+        backlog_os_signal(mWait.get());
+    }
+    else
+    {
+        static_cast<void>(mFallbackEvent.set_signaled());
     }
 }
 
@@ -391,7 +445,7 @@ void SendBacklog::remove(ITEM_ID cookie)
 
 void SendBacklog::release_entry(Entry & entry) noexcept
 {
-    if (backlog_os_cancel(entry.os, entry.socket) == false)
+    if (cancel_writes(entry.os, entry.socket) == false)
     {
         // The operating system may still read these buffers: they are never released.
         static_cast<void>(new (std::nothrow) std::deque<areg::MessageEnvelope>(std::move(entry.messages)));
@@ -404,6 +458,59 @@ void SendBacklog::release_entry(Entry & entry) noexcept
 
     entry.messages.clear();
     entry.bytes = 0u;
+}
+
+bool SendBacklog::cancel_writes(SendBacklogOsPtr & os, SOCKETHANDLE hSocket) noexcept
+{
+    if (backlog_os_done(os.get()))
+    {
+        os.reset();
+        return true;
+    }
+
+    // The buffers belong to the operating system until every write ended.
+    backlog_os_cancel(os.get(), hSocket);
+    const uint64_t deadline{ now_ms() + SendBacklog::CANCEL_WAIT_MS };
+    const bool fallback{ mFallback.load(std::memory_order_relaxed) };
+    bool consumed{ false };
+    for (uint64_t nowMs{ now_ms() }; (backlog_os_done(os.get()) == false) && (nowMs < deadline); nowMs = now_ms())
+    {
+        const uint32_t remaining{ static_cast<uint32_t>(deadline - nowMs) };
+        if (mWait == nullptr)
+        {
+            static_cast<void>(mFallbackEvent.lock(std::min(remaining, SendBacklog::RECHECK_MS)));
+        }
+        else
+        {
+            consumed = backlog_os_wait(mWait.get(), nullptr, 0u, fallback ? std::min(remaining, SendBacklog::RECHECK_MS) : remaining) || consumed;
+        }
+    }
+
+    if (consumed)
+    {
+        // A completion of another socket may have been taken here: the next wait looks again.
+        backlog_os_signal(mWait.get());
+    }
+
+    if (backlog_os_done(os.get()))
+    {
+        os.reset();
+        return true;
+    }
+
+    static_cast<void>(os.release());
+    return false;
+}
+
+void SendBacklog::enter_fallback(const char * what) noexcept
+{
+    if (mFallback.exchange(true, std::memory_order_acq_rel))
+        return;
+
+    LOG_SCOPE(areg_aregextend_service_SendBacklog, enter_fallback);
+    LOG_WARN("Send backlog: %s, a slow connection is now served every [ %u ] ms"
+                , what
+                , SendBacklog::RECHECK_MS);
 }
 
 uint32_t SendBacklog::complete(Entry & entry, uint64_t bytes, uint64_t nowMs)

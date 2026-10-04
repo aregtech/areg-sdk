@@ -17,6 +17,7 @@
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/base/SocketMultiplexer.hpp"
 #include "areg/base/Thread.hpp"
+#include "areg/base/private/WaitWord.hpp"
 #include "areg/appbase/Application.hpp"
 
 #include "areg/logging/areg_log.h"
@@ -985,6 +986,12 @@ AREG_API_IMPL int32_t areg::try_send_data_v(SOCKETHANDLE hSocket, const areg::Io
     return areg::os::_os_try_send_data_v(hSocket, buffers, count, totalSize);
 }
 
+namespace
+{
+    //!< True if a waiter runs a process barrier before it sleeps; false until the library is loaded.
+    const bool _processBarrier{ areg::os::_os_has_process_barrier() };
+}
+
 AREG_API_IMPL areg::SocketWriter & areg::SocketWriter::writer_of(SOCKETHANDLE hSocket) noexcept
 {
     static areg::SocketWriter _writers[areg::SOCKET_WRITER_SLOTS];
@@ -993,31 +1000,58 @@ AREG_API_IMPL areg::SocketWriter & areg::SocketWriter::writer_of(SOCKETHANDLE hS
 
 AREG_API_IMPL bool areg::SocketWriter::try_acquire() noexcept
 {
-    return (mBusy.exchange(true, std::memory_order_acquire) == false);
+    return (mBusy.exchange(SocketWriter::WRITER_OWNED, std::memory_order_acquire) == SocketWriter::WRITER_FREE);
 }
 
 AREG_API_IMPL void areg::SocketWriter::acquire() noexcept
 {
     constexpr uint32_t SPIN_COUNT{ 64u };
 
-    uint32_t spin{ 0u };
-    while (mBusy.exchange(true, std::memory_order_acquire))
+    if (mBusy.exchange(SocketWriter::WRITER_OWNED, std::memory_order_acquire) == SocketWriter::WRITER_FREE)
+        return;
+
+    for (uint32_t spin = 0u; spin < SPIN_COUNT; ++spin)
     {
-        if (spin < SPIN_COUNT)
+        Thread::cpu_pause();
+        if ((mBusy.load(std::memory_order_relaxed) == SocketWriter::WRITER_FREE) &&
+            (mBusy.exchange(SocketWriter::WRITER_OWNED, std::memory_order_acquire) == SocketWriter::WRITER_FREE))
         {
-            ++spin;
-            Thread::cpu_pause();
-        }
-        else
-        {
-            Thread::switch_thread();
+            return;
         }
     }
+
+    // The sleeper count is published to every thread before the lock is checked again.
+    mSleepers.fetch_add(1u, std::memory_order_seq_cst);
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    if (areg::os::_os_has_process_barrier())
+    {
+        areg::os::_os_process_barrier();
+    }
+
+    while (mBusy.exchange(SocketWriter::WRITER_OWNED, std::memory_order_acquire) != SocketWriter::WRITER_FREE)
+    {
+        areg::os::_os_wait_word(mBusy, SocketWriter::WRITER_OWNED);
+    }
+
+    mSleepers.fetch_sub(1u, std::memory_order_relaxed);
 }
 
 AREG_API_IMPL void areg::SocketWriter::release() noexcept
 {
-    mBusy.store(false, std::memory_order_release);
+    mBusy.store(SocketWriter::WRITER_FREE, std::memory_order_release);
+    if (_processBarrier)
+    {
+        std::atomic_signal_fence(std::memory_order_seq_cst);
+    }
+    else
+    {
+        std::atomic_thread_fence(std::memory_order_seq_cst);
+    }
+
+    if (mSleepers.load(std::memory_order_relaxed) != 0u)
+    {
+        areg::os::_os_wake_word(mBusy);
+    }
 }
 
 AREG_API_IMPL int32_t areg::receive_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, uint32_t dataLength) noexcept

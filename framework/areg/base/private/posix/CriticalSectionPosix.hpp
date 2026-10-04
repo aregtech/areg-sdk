@@ -24,7 +24,7 @@
 #if  defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/private/posix/SyncObjectPosix.hpp"
-#include "areg/base/private/posix/SpinLockPosix.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 #include <pthread.h>
 namespace areg::os {
 
@@ -32,8 +32,8 @@ namespace areg::os {
 // CriticalSectionPosix class declaration.
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   POSIX critical section wrapper for POSIX spin-lock. Provides synchronization for
- *          inter-thread communication.
+ * \brief   POSIX critical section, a recursive areg::SpinLock: a waiter spins for a short while,
+ *          then sleeps until the owner releases it.
  **/
 class CriticalSectionPosix   : protected SyncObjectPosix
 {
@@ -98,9 +98,9 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   The Critical Section object, which has implementation of recursive spin lock.
+     * \brief   The recursive lock of the critical section.
      **/
-    mutable SpinLockPosix  mSpinLock;
+    mutable areg::SpinLock  mSpinLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

@@ -62,7 +62,7 @@ FENCE_ANY_RE = re.compile(r'^```\S*\s*$')
 SHELL_HEADS = ('python3', 'python', 'cmake', 'ctest', 'bash', 'sh', 'git', 'java',
                'start', 'cd', './', '../', 'tools/', 'tools\\', 'build/', 'build\\')
 # A tool invocation written inline rather than fenced. Most of the routing tables --
-# CLAUDE.md section 4, AGENTS.md section 5 -- give their commands this way, and those
+# CLAUDE.md and its build page, AGENTS.md section 5 -- give their commands this way, and those
 # are the commands a reader actually pastes.
 # A page under docs/agent/ writes a tool as ../../tools/agent/x.py, because that is
 # what resolves from where the page is. Matching only 'python3' and 'tools/' left every
@@ -83,11 +83,14 @@ AGENT_DOCS = ['AGENTS.md', 'CODEBASE.md'] + [
     os.path.join('docs', 'agent', name)
     for name in sorted(os.listdir(os.path.join(ROOT, 'docs', 'agent')))
     if name.endswith('.md')] + [os.path.join('docs', 'agent', 'recipes', 'README.md')]
-CONTRIB_DOCS = ['CLAUDE.md', 'CONTRIBUTING.md'] + [
+INTERNAL_DOCS = sorted(os.path.join('.claude', 'docs', name)
+                       for name in os.listdir(os.path.join(ROOT, '.claude', 'docs')) if name.endswith('.md')) \
+    if os.path.isdir(os.path.join(ROOT, '.claude', 'docs')) else []
+CONTRIB_DOCS = ['CLAUDE.md', 'CONTRIBUTING.md'] + INTERNAL_DOCS + [
     os.path.join('.claude', 'memory', name)
     for name in sorted(os.listdir(os.path.join(ROOT, '.claude', 'memory')))
     if name.endswith('.md')] if os.path.isdir(os.path.join(ROOT, '.claude', 'memory')) \
-    else ['CLAUDE.md', 'CONTRIBUTING.md']
+    else ['CLAUDE.md', 'CONTRIBUTING.md'] + INTERNAL_DOCS
 
 SAFE_HEAD = ('python3', 'python')
 

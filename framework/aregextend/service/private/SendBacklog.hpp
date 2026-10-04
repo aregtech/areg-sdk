@@ -24,6 +24,8 @@
 #include "areg/base/MessageEnvelope.hpp"
 #include "areg/base/SocketDefs.hpp"
 #include "areg/base/private/SocketLiveness.hpp"
+#include "areg/component/private/EventQueue.hpp"
+#include "areg/component/private/SimpleEvent.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
 
 #include <atomic>
@@ -31,6 +33,7 @@
 #include <memory>
 #include <mutex>
 #include <unordered_map>
+#include <vector>
 
 namespace areg::ext {
 
@@ -49,6 +52,21 @@ struct SendBacklogOsDelete
 //!< Owns the operating system part of one connection's backlog.
 using SendBacklogOsPtr = std::unique_ptr<SendBacklogOs, SendBacklogOsDelete>;
 
+/**
+ * \brief   The operating system objects a send thread waits on: its wake-up, and on Windows
+ *          the completion port of its sockets.
+ **/
+struct SendBacklogWaitOs;
+
+//!< Deletes the wait objects, which are complete only in the operating system files.
+struct SendBacklogWaitOsDelete
+{
+    void operator () (SendBacklogWaitOs * wait) const noexcept;
+};
+
+//!< Owns the wait objects of a send thread.
+using SendBacklogWaitOsPtr = std::unique_ptr<SendBacklogWaitOs, SendBacklogWaitOsDelete>;
+
 class SendBacklog;
 
 /**
@@ -59,8 +77,12 @@ class SendBacklog;
  *          The map is shared with a thread that writes inline (see write_inline()), so it is
  *          locked; the data of an entry is touched only while holding the writer lock of the
  *          socket, see areg::SocketWriter. Only the send thread removes entries.
+ *
+ *          It is also the wait object of its send thread: the thread arms it in its event
+ *          queue and blocks in wait() until a socket takes data, a queued event or an exit
+ *          calls wake(), or the nearest deadline of a backlog is due.
  **/
-class SendBacklog
+class SendBacklog final : public areg::QueueWaiter
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants
@@ -72,8 +94,12 @@ public:
     static constexpr uint32_t   CAP_STALL_MS        { 1'000u };
     //!< A backlog above its cap holds new messages back only if it moved within these milliseconds.
     static constexpr uint32_t   CAP_PROGRESS_MS     { 50u };
-    //!< Longest wait, in milliseconds, of a send thread for its slow sockets.
-    static constexpr uint32_t   MAX_WAIT_MS         { 50u };
+    //!< Longest wait, in milliseconds, of a send thread without its wait objects (fallback mode).
+    static constexpr uint32_t   RECHECK_MS          { 10u };
+    //!< Longest wait, in milliseconds, between two liveness checks of an unlimited backlog.
+    static constexpr uint32_t   TICK_MS             { 1'000u };
+    //!< Milliseconds a cancelled write is waited for before its buffers are kept for ever.
+    static constexpr uint32_t   CANCEL_WAIT_MS      { 5'000u };
     //!< Refusal limit that means: never close a peer for refusing data.
     static constexpr uint32_t   UNLIMITED           { areg::SEND_REFUSAL_UNLIMITED };
 
@@ -192,18 +218,45 @@ public:
     bool pump(Owner & owner);
 
     /**
-     * \brief   Returns true if a connection keeps more than its cap while its peer still takes
-     *          data, within CAP_PROGRESS_MS. The send thread then stops taking new messages until
-     *          it is below. A peer that takes nothing holds no one back; it is closed instead.
+     * \brief   Registers an accepted socket that this backlog writes. Where the operating system
+     *          reports a completed write to a wait object, the socket is attached to it here.
+     *          Thread safe. On failure the backlog works on in fallback mode, see RECHECK_MS.
+     *
+     * \return  False if the socket could not be attached.
      **/
-    [[nodiscard]]
-    bool is_over_cap() const noexcept;
+    bool attach(SOCKETHANDLE hSocket) noexcept;
 
     /**
-     * \brief   Waits up to \a timeoutMs for a socket with a backlog to take data. Used while the
-     *          send thread holds back new messages. Called by the send thread only.
+     * \brief   Prepares the next wait() in one pass over the backlogs: collects their sockets and
+     *          returns the milliseconds until the nearest deadline, a limit that closes a
+     *          connection, the end of the over cap state, or a liveness check.
+     *          Called by the send thread only.
+     *
+     * \param   overCap On return, true if a connection keeps more than its cap while its peer
+     *                  still takes data, within CAP_PROGRESS_MS. The send thread then stops
+     *                  taking new messages until it is below. A peer that takes nothing holds no
+     *                  one back; it is closed instead.
+     * \return  The milliseconds wait() may block.
      **/
-    void wait_writable(uint32_t timeoutMs);
+    [[nodiscard]]
+    uint32_t prepare_wait(bool & overCap);
+
+    /**
+     * \brief   Makes the next wake() end the next wait(). Call it before arming the backlog in
+     *          the event queue of the send thread.
+     **/
+    inline void reset_wake() noexcept;
+
+    /**
+     * \brief   Blocks until a socket collected by prepare_wait() can take data or a write
+     *          completes, wake() is called, or \a timeoutMs elapses. Called by the send thread only.
+     **/
+    void wait(uint32_t timeoutMs);
+
+    /**
+     * \brief   Ends the wait of the send thread. Called by its event queue from any thread.
+     **/
+    void wake() noexcept override;
 
     /**
      * \brief   Logs why the connection of \a entry is closed, naming the configuration key
@@ -232,7 +285,13 @@ private:
     void remove(ITEM_ID cookie);
 
     //!< Releases the writes and the messages of an entry that is no longer in the map.
-    static void release_entry(Entry & entry) noexcept;
+    void release_entry(Entry & entry) noexcept;
+
+    //!< Cancels the writes in progress. Returns false if one did not end and its buffers must not be freed.
+    bool cancel_writes(SendBacklogOsPtr & os, SOCKETHANDLE hSocket) noexcept;
+
+    //!< Enters fallback mode once and logs why.
+    void enter_fallback(const char * what) noexcept;
 
     //!< Completes \a bytes of the entry and returns the number of messages completed.
     uint32_t complete(Entry & entry, uint64_t bytes, uint64_t nowMs);
@@ -265,6 +324,18 @@ private:
     std::atomic<uint32_t>                   mRefuseMs;
     //!< The keepalive time, in milliseconds.
     std::atomic<uint32_t>                   mKeepaliveMs;
+    //!< The wait objects of the send thread, nullptr if they could not be created.
+    SendBacklogWaitOsPtr                    mWait;
+    //!< The wake-up used in fallback mode.
+    areg::SimpleEvent                       mFallbackEvent;
+    //!< True once wake() signalled the current wait.
+    std::atomic<bool>                       mWoken;
+    //!< True if a wait object is missing; waits then last at most RECHECK_MS.
+    std::atomic<bool>                       mFallback;
+    //!< The entries of one pump(), reused.
+    std::vector<Entry *>                    mPumpList;
+    //!< The sockets of one wait(), reused.
+    std::vector<SOCKETHANDLE>               mWaitSockets;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -310,17 +381,37 @@ int64_t backlog_os_collect(SendBacklogOs * os, SOCKETHANDLE hSocket);
 uint64_t backlog_os_in_flight(const SendBacklogOs * os) noexcept;
 
 /**
- * \brief   Cancels the writes in progress and waits until the operating system released the
- *          buffers. Called before a backlog is released.
- *
- * \return  False if a write did not end in time and its buffers must not be freed.
+ * \brief   Asks the operating system to cancel the writes in progress, without waiting.
  **/
-bool backlog_os_cancel(SendBacklogOsPtr & os, SOCKETHANDLE hSocket) noexcept;
+void backlog_os_cancel(SendBacklogOs * os, SOCKETHANDLE hSocket) noexcept;
 
 /**
- * \brief   Waits up to \a timeoutMs until \a hSocket can take data or a write completes.
+ * \brief   Returns true if no started write is still in progress.
  **/
-void backlog_os_wait(SOCKETHANDLE hSocket, uint32_t timeoutMs) noexcept;
+bool backlog_os_done(const SendBacklogOs * os) noexcept;
+
+/**
+ * \brief   Creates the wait objects of a send thread. Returns nullptr on failure.
+ **/
+SendBacklogWaitOs * backlog_os_wait_create() noexcept;
+
+/**
+ * \brief   Attaches an accepted socket to the wait objects. Returns false on failure.
+ **/
+bool backlog_os_attach(SendBacklogWaitOs * wait, SOCKETHANDLE hSocket) noexcept;
+
+/**
+ * \brief   Ends the current or the next backlog_os_wait(). Called from any thread.
+ **/
+void backlog_os_signal(SendBacklogWaitOs * wait) noexcept;
+
+/**
+ * \brief   Blocks until one of \a sockets can take data or a write completes, the wait is
+ *          signalled, or \a timeoutMs elapses. Consumes the signal.
+ *
+ * \return  True if it consumed a completion or a signal.
+ **/
+bool backlog_os_wait(SendBacklogWaitOs * wait, const SOCKETHANDLE * sockets, uint32_t count, uint32_t timeoutMs) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // SendBacklog inline and template methods
@@ -329,6 +420,11 @@ void backlog_os_wait(SOCKETHANDLE hSocket, uint32_t timeoutMs) noexcept;
 inline bool SendBacklog::is_empty() const noexcept
 {
     return (mCount.load(std::memory_order_acquire) == 0u);
+}
+
+inline void SendBacklog::reset_wake() noexcept
+{
+    mWoken.store(false, std::memory_order_relaxed);
 }
 
 } // namespace areg::ext

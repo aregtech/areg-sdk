@@ -163,38 +163,30 @@ inline void send_pending_groups( areg::ext::PendingSend * batch
 
 /**
  * \brief   Moves the backlog of a send thread on after a batch. While a connection keeps more
- *          than its cap, new messages wait: the thread takes nothing from its queue. Otherwise
- *          the thread returns as soon as a new message is queued, and waits for its slow
- *          sockets while the queue is empty, from 1 ms up to SendBacklog::MAX_WAIT_MS.
+ *          than its cap, new messages wait: the thread takes nothing from its queue and wakes
+ *          only for its sockets, an exit or a deadline. Otherwise the thread returns as soon as
+ *          a message is queued, and while the queue is empty it waits for whichever comes
+ *          first: a socket that takes data, a queued message, an exit or the nearest deadline.
  *
- * \param   thread  The send thread: has_queued_events(), wait_queued_events(), is_exit_requested().
+ * \param   thread  The send thread: has_queued_events(), wait_backlog(), is_exit_requested().
  * \param   backlog The writer of the thread.
  * \param   owner   The owner of the backlog, the send thread.
  **/
 template<typename ThreadT>
 inline void serve_backlog(ThreadT & thread, SendBacklog & backlog, SendBacklog::Owner & owner)
 {
-    uint32_t waitMs{ 1u };
     while ( backlog.is_empty() == false )
     {
-        const bool moved{ backlog.pump(owner) };
+        static_cast<void>(backlog.pump(owner));
         if ( backlog.is_empty() || thread.is_exit_requested() )
             break;
 
-        if ( backlog.is_over_cap() )
-        {
-            backlog.wait_writable(waitMs);
-        }
-        else if ( thread.has_queued_events() )
-        {
+        bool overCap{ false };
+        const uint32_t timeoutMs{ backlog.prepare_wait(overCap) };
+        if ( (overCap == false) && thread.has_queued_events() )
             break;
-        }
-        else
-        {
-            thread.wait_queued_events(waitMs);
-        }
 
-        waitMs = moved ? 1u : std::min(waitMs * 2u, SendBacklog::MAX_WAIT_MS);
+        thread.wait_backlog(overCap == false, timeoutMs);
     }
 }
 

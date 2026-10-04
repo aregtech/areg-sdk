@@ -21,11 +21,30 @@
 #include "areg/base/private/DebugDefs.hpp"
 
 #include <chrono>
+#include <cstddef>
+#include <iterator>
 #include <type_traits>
 
 // pop_event() is noexcept and returns the exit event by copying the cached singleton.
 static_assert(std::is_nothrow_copy_constructible_v<areg::Event>, "Event copy must be noexcept for noexcept pop_event()");
 static_assert(std::is_nothrow_move_assignable_v<areg::Event>, "Event move must be noexcept for the ring hand-off");
+
+namespace
+{
+    /**
+     * \brief   Inserts the event into the priority lane behind every event of the same or a
+     *          higher priority. The lane is searched from the tail, so an event of the lowest
+     *          priority present is appended at once.
+     **/
+    inline void _prio_insert(std::deque<areg::Event> & lane, areg::Event && evt, areg::EventPriority prio)
+    {
+        auto it = lane.end();
+        while ((it != lane.begin()) && (std::prev(it)->event_priority() < prio))
+            --it;
+
+        lane.insert(it, std::move(evt));
+    }
+}
 
 namespace areg {
 
@@ -39,6 +58,7 @@ EventQueue::EventQueue(uint32_t maxQueue, bool dropOnFull /*= false*/, uint32_t 
     , mDropOnFull       ( dropOnFull )
     , mWaitMs           ( waitMs )
     , mRing             ( nullptr )
+    , mWaiter           ( nullptr )
     , mEnqueuePos       ( 0u )
     , mDequeuePos       ( 0u )
     , mPrioLock         ( )
@@ -59,6 +79,7 @@ EventQueue::EventQueue( areg::NullTag ) noexcept
     , mDropOnFull       ( false )
     , mWaitMs           ( 0u )
     , mRing             ( nullptr )
+    , mWaiter           ( nullptr )
     , mEnqueuePos       ( 0u )
     , mDequeuePos       ( 0u )
     , mPrioLock         ( )
@@ -75,6 +96,18 @@ EventQueue::EventQueue( areg::NullTag ) noexcept
 
 EventQueue::~EventQueue()
 {
+#if defined(__GNUC__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Winvalid-offsetof"
+#endif  // defined(__GNUC__)
+    // mWaiter lives in the padding of the first line; the cursors keep their offsets.
+    static_assert(offsetof(EventQueue, mWaiter) + sizeof(mWaiter) <= AREG_MPSC_CACHE_LINE_SIZE, "mWaiter must stay in the first cache line");
+    static_assert(offsetof(EventQueue, mEnqueuePos) == AREG_MPSC_CACHE_LINE_SIZE, "mEnqueuePos must start the second cache line");
+    static_assert(offsetof(EventQueue, mDequeuePos) == 2u * AREG_MPSC_CACHE_LINE_SIZE, "mDequeuePos must start the third cache line");
+#if defined(__GNUC__)
+    #pragma GCC diagnostic pop
+#endif  // defined(__GNUC__)
+
     release_lanes();
 }
 
@@ -202,11 +235,35 @@ bool EventQueue::wait_event(uint32_t timeout /*= areg::WAIT_INFINITE*/) noexcept
     return signaled || has_pending();
 }
 
+bool EventQueue::arm_waiter(QueueWaiter & waiter, bool takeEvents) noexcept
+{
+    mWaiter.store(&waiter, std::memory_order_relaxed);
+    mConsumerParked.store(takeEvents, std::memory_order_relaxed);
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    return (takeEvents ? has_pending() : is_exit_triggered()) == false;
+}
+
+void EventQueue::disarm_waiter() noexcept
+{
+    mConsumerParked.store(false, std::memory_order_relaxed);
+    mWaiter.store(nullptr, std::memory_order_relaxed);
+}
+
 inline void EventQueue::_wake_consumer() noexcept
 {
     std::atomic_thread_fence(std::memory_order_seq_cst);
     if (mConsumerParked.load(std::memory_order_relaxed))
-        mQueueEvent.set_signaled();
+    {
+        QueueWaiter * const waiter{ mWaiter.load(std::memory_order_relaxed) };
+        if (waiter != nullptr)
+        {
+            waiter->wake();
+        }
+        else
+        {
+            mQueueEvent.set_signaled();
+        }
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -233,11 +290,7 @@ bool EventQueue::push_event(Event& eventElem, Event* removedEvent /*= nullptr*/)
         Lock lock(mPrioLock);
         if (mPrioQueue.has_value() && (!is_closed()))
         {
-            auto it = mPrioQueue->begin();
-            while (it != mPrioQueue->end() && it->event_priority() >= prio)
-                ++it;
-
-            mPrioQueue->insert(it, std::move(eventElem));
+            _prio_insert(*mPrioQueue, std::move(eventElem), prio);
             mPrioCount.store(static_cast<uint32_t>(mPrioQueue->size()), std::memory_order_relaxed);
             _wake_consumer();
             return true;
@@ -277,11 +330,7 @@ EventQueue::PushResult EventQueue::try_push_event(Event& eventElem)
         Lock lock(mPrioLock);
         if (mPrioQueue.has_value() && (!is_closed()))
         {
-            auto it = mPrioQueue->begin();
-            while (it != mPrioQueue->end() && it->event_priority() >= prio)
-                ++it;
-
-            mPrioQueue->insert(it, std::move(eventElem));
+            _prio_insert(*mPrioQueue, std::move(eventElem), prio);
             mPrioCount.store(static_cast<uint32_t>(mPrioQueue->size()), std::memory_order_relaxed);
             _wake_consumer();
             return PushResult::Queued;
@@ -343,12 +392,7 @@ uint32_t EventQueue::push_events(Event* eventElems, uint32_t count)
             }
             else if (prio >= areg::EventPriority::HighPrio)
             {
-                // '>=' keeps equal priorities in posting order -- see push_event().
-                auto it = mPrioQueue->begin();
-                while (it != mPrioQueue->end() && it->event_priority() >= prio)
-                    ++it;
-
-                mPrioQueue->insert(it, std::move(evt));
+                _prio_insert(*mPrioQueue, std::move(evt), prio);
                 ++signalCount;
             }
             else

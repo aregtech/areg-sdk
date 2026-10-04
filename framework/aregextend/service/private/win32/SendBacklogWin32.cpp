@@ -11,7 +11,8 @@
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, the writer of a service send thread that never waits for one
- *              socket. Windows part: overlapped writes, completed in the order they started.
+ *              socket. Windows part: overlapped writes, completed in the order they started
+ *              and reported to the completion port of the send thread.
  ************************************************************************/
 
 /************************************************************************
@@ -30,6 +31,8 @@
 #include <WinSock2.h>
 #include <Windows.h>
 
+#include <new>
+
 #ifdef _MSC_VER
     #pragma comment(lib, "ws2_32")
 #endif  // _MSC_VER
@@ -45,8 +48,8 @@ namespace
         uint64_t        bytes       { 0u }; //!< The bytes of the write.
     };
 
-    //!< Milliseconds a cancelled write is waited for before its buffers are released anyway.
-    constexpr uint32_t  CANCEL_WAIT_MS  { 5'000u };
+    //!< The number of completions taken from the port by one call.
+    constexpr ULONG     PORT_ENTRIES    { 64u };
 }
 
 struct SendBacklogOs
@@ -58,6 +61,20 @@ struct SendBacklogOs
 void SendBacklogOsDelete::operator () (SendBacklogOs * os) const noexcept
 {
     delete os;
+}
+
+struct SendBacklogWaitOs
+{
+    HANDLE  port{ nullptr };    //!< The completion port of the sockets of the send thread.
+};
+
+void SendBacklogWaitOsDelete::operator () (SendBacklogWaitOs * wait) const noexcept
+{
+    if (wait == nullptr)
+        return;
+
+    static_cast<void>(::CloseHandle(wait->port));
+    delete wait;
 }
 
 int64_t backlog_os_start( SendBacklogOsPtr & os
@@ -167,10 +184,10 @@ uint64_t backlog_os_in_flight(const SendBacklogOs * os) noexcept
     return (os != nullptr ? os->inFlight : 0u);
 }
 
-bool backlog_os_cancel(SendBacklogOsPtr & os, SOCKETHANDLE hSocket) noexcept
+void backlog_os_cancel(SendBacklogOs * os, SOCKETHANDLE hSocket) noexcept
 {
     if (os == nullptr)
-        return true;
+        return;
 
     for (const auto & op : os->ops)
     {
@@ -179,35 +196,62 @@ bool backlog_os_cancel(SendBacklogOsPtr & os, SOCKETHANDLE hSocket) noexcept
             static_cast<void>(::CancelIoEx(reinterpret_cast<HANDLE>(hSocket), &op->overlapped));
         }
     }
-
-    // The buffers belong to the operating system until every write is done.
-    const ULONGLONG deadline{ ::GetTickCount64() + CANCEL_WAIT_MS };
-    bool result{ true };
-    for (const auto & op : os->ops)
-    {
-        while ((HasOverlappedIoCompleted(&op->overlapped) == FALSE) && (::GetTickCount64() < deadline))
-        {
-            ::Sleep(1);
-        }
-
-        result = result && (HasOverlappedIoCompleted(&op->overlapped) != FALSE);
-    }
-
-    if (result)
-    {
-        os.reset();
-    }
-    else
-    {
-        static_cast<void>(os.release());
-    }
-
-    return result;
 }
 
-void backlog_os_wait(SOCKETHANDLE /*hSocket*/, uint32_t timeoutMs) noexcept
+bool backlog_os_done(const SendBacklogOs * os) noexcept
 {
-    ::Sleep(timeoutMs);
+    if (os == nullptr)
+        return true;
+
+    for (const auto & op : os->ops)
+    {
+        if (HasOverlappedIoCompleted(&op->overlapped) == FALSE)
+            return false;
+    }
+
+    return true;
+}
+
+SendBacklogWaitOs * backlog_os_wait_create() noexcept
+{
+    SendBacklogWaitOs * wait{ new (std::nothrow) SendBacklogWaitOs() };
+    if (wait == nullptr)
+        return nullptr;
+
+    wait->port = ::CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0u, 1u);
+    if (wait->port != nullptr)
+        return wait;
+
+    delete wait;
+    return nullptr;
+}
+
+bool backlog_os_attach(SendBacklogWaitOs * wait, SOCKETHANDLE hSocket) noexcept
+{
+    // A write that completes at once queues nothing; only a write that waited reports to the port.
+    const HANDLE handle{ reinterpret_cast<HANDLE>(hSocket) };
+    return (::SetFileCompletionNotificationModes(handle, FILE_SKIP_COMPLETION_PORT_ON_SUCCESS | FILE_SKIP_SET_EVENT_ON_HANDLE) != FALSE)
+        && (::CreateIoCompletionPort(handle, wait->port, 0u, 0u) == wait->port);
+}
+
+void backlog_os_signal(SendBacklogWaitOs * wait) noexcept
+{
+    static_cast<void>(::PostQueuedCompletionStatus(wait->port, 0u, 0u, nullptr));
+}
+
+bool backlog_os_wait(SendBacklogWaitOs * wait, const SOCKETHANDLE * /*sockets*/, uint32_t /*count*/, uint32_t timeoutMs) noexcept
+{
+    // The port only wakes the thread; HasOverlappedIoCompleted() tells which write ended.
+    OVERLAPPED_ENTRY entries[PORT_ENTRIES];
+    ULONG taken{ 0u };
+    if (::GetQueuedCompletionStatusEx(wait->port, entries, PORT_ENTRIES, &taken, static_cast<DWORD>(timeoutMs), FALSE) == FALSE)
+        return false;
+
+    while ((taken == PORT_ENTRIES) && (::GetQueuedCompletionStatusEx(wait->port, entries, PORT_ENTRIES, &taken, 0u, FALSE) != FALSE))
+    {
+    }
+
+    return true;
 }
 
 } // namespace areg::ext

@@ -183,11 +183,11 @@ shape `37-threads.md` and `recipes/07-worker-events/` teach.
 | `areg::Mutex` | `explicit Mutex(bool initLock = true)` | `SyncPrimitives.hpp:140` |
 | `lock()` | `bool lock(uint32_t timeout = areg::WAIT_INFINITE)` | `SyncPrimitives.hpp:154` |
 | `unlock()` | `bool unlock()` | `SyncPrimitives.hpp:161` |
-| `areg::Lock` | `explicit Lock(SyncObject & syncObj, bool autoLock = true)` | `SyncPrimitives.hpp:998` |
+| `areg::Lock` | `explicit Lock(SyncObject & syncObj, bool autoLock = true)` | `SyncPrimitives.hpp:999` |
 | `areg::SyncEvent` | `explicit SyncEvent(bool initLock = true, bool autoReset = true)` | `SyncPrimitives.hpp:254` |
 | `set_signaled()` | `bool set_signaled() noexcept` | `SyncPrimitives.hpp:295` |
 | `reset()` | `bool reset() noexcept` | `SyncPrimitives.hpp:301` |
-| `areg::SpinLock` | `SpinLock()`, for a hold of a few instructions | `SyncPrimitives.hpp:657` |
+| `areg::SpinLock` | `SpinLock()`, for a hold of a few instructions | `SyncPrimitives.hpp:664` |
 
 `areg::Lock` is the RAII scope lock: it takes any of the others and unlocks on the way
 out. `std::mutex` is not prohibited; the areg types are what the framework's own waits
