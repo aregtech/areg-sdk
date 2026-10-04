@@ -62,6 +62,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     MultiLockTest.cpp
     OptionParserTest.cpp
     RingStackTest.cpp
+    SendBacklogTest.cpp
     SharedBufferTest.cpp
     SocketKeepAliveTest.cpp
     SocketLivenessTest.cpp

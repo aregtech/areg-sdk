@@ -567,6 +567,13 @@ void ServiceCommunicationBase::stop_connection()
 bool ServiceCommunicationBase::on_client_accepted( SocketAccepted & clientSocket )
 {
     areg::set_send_refusal(clientSocket.handle(), mSendRefusalMs);
+
+    // The thread that writes the socket is the one do_send_pool() and do_send_shared() pick.
+    const ITEM_ID cookie{ mServerConnection.cookie(clientSocket) };
+    const bool pooled{ (mShuttingDown.load(std::memory_order_acquire) == false) && (mClientPairs.empty() == false) && (cookie != areg::COOKIE_UNKNOWN) };
+    SendBacklog & backlog{ pooled ? mClientPairs[static_cast<uint32_t>(cookie) % mNumPairs]->send_thread().backlog() : mThreadSend.backlog() };
+    static_cast<void>(backlog.attach(clientSocket.handle()));
+
     return mAcceptFn(clientSocket);
 }
 

@@ -76,7 +76,7 @@ SKIPPED_DIR_PREFIXES = ('build-', 'build_')
 # character is unwanted in a character test as much as anywhere else.
 ASCII_WAIVED = (
     'framework/areg/base/TableDefs.hpp',
-    'tests/units/String*Test.cpp',
+    'tests/units/String*Test*.cpp',
     'tests/units/*Encod*Test.cpp',
 )
 

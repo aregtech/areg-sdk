@@ -46,6 +46,22 @@
 
 namespace areg {
 
+/**
+ * \brief   A wait of the consumer thread on an operating system object other than the
+ *          queue doorbell. While armed with EventQueue::arm_waiter(), the queue calls
+ *          wake() instead of ringing its doorbell.
+ **/
+class QueueWaiter
+{
+public:
+    //!< Ends the consumer's wait. Called by any thread; must not block.
+    virtual void wake() noexcept = 0;
+
+protected:
+    QueueWaiter() noexcept = default;
+    ~QueueWaiter() = default;
+};
+
 //////////////////////////////////////////////////////////////////////////
 // EventQueue class declaration
 //////////////////////////////////////////////////////////////////////////
@@ -283,6 +299,25 @@ public:
     bool wait_event(uint32_t timeout = areg::WAIT_INFINITE) noexcept;
 
     /**
+     * \brief   Prepares the single consumer thread to block in \a waiter instead of
+     *          wait_event(). From this call until disarm_waiter(), an exit calls
+     *          waiter.wake(), and so does a queued event if \a takeEvents is true.
+     *          Call disarm_waiter() afterwards, whatever this returns.
+     *
+     * \param   waiter      The wait object of the consumer thread. Must outlive the queue.
+     * \param   takeEvents  True if a queued event ends the wait.
+     * \return  True if the consumer may block in \a waiter; false if an exit is
+     *          requested, or an event is queued and \a takeEvents is true.
+     **/
+    [[nodiscard]]
+    bool arm_waiter(QueueWaiter & waiter, bool takeEvents) noexcept;
+
+    /**
+     * \brief   Ends what arm_waiter() started. Called by the consumer thread.
+     **/
+    void disarm_waiter() noexcept;
+
+    /**
      * \brief   Queues an event by moving it into the queue. The event's shared buffer is
      *          transferred (O(1) -- no data copy). The caller's event is left in a moved-from
      *          (empty/invalid) state after a successful push. If the ring is full and the event
@@ -448,6 +483,8 @@ private:
 
     //!< Array of mCapacity cells while the lanes are held, nullptr otherwise.
     std::atomic<Cell*>      mRing;
+    //!< The armed wait object of the consumer, or nullptr.
+    std::atomic<QueueWaiter*> mWaiter;
 
     //!< Producer-written enqueue cursor - own cache line.
     alignas(AREG_MPSC_CACHE_LINE_SIZE) std::atomic<size_t> mEnqueuePos;
@@ -550,6 +587,12 @@ inline void EventQueue::exit_queue(bool exitNow /*= false*/) noexcept
     static_cast<void>(mEnqueuePos.fetch_or(EventQueue::RING_CLOSED, std::memory_order_acq_rel));
     static_cast<void>(mExitState.fetch_or(exitNow ? EventQueue::EXIT_NOW : EventQueue::EXIT_DRAINED, std::memory_order_release));
     std::atomic_thread_fence(std::memory_order_seq_cst);
+    QueueWaiter * const waiter{ mWaiter.load(std::memory_order_relaxed) };
+    if (waiter != nullptr)
+    {
+        waiter->wake();
+    }
+
     mQueueEvent.set_signaled();     // wake the consumer
     mSlotEvent.set_signaled();      // wake any producer blocked on a full ring
 }

@@ -149,9 +149,10 @@ public:
     inline bool has_queued_events() const noexcept;
 
     /**
-     * \brief   Waits up to \a timeoutMs for a message in the queue.
+     * \brief   Blocks in the backlog wait for up to \a timeoutMs: until a socket with a backlog
+     *          takes data, an exit, or, if \a takeEvents is true, a queued message.
      **/
-    inline void wait_queued_events(uint32_t timeoutMs) noexcept;
+    inline void wait_backlog(bool takeEvents, uint32_t timeoutMs);
 
     /**
      * \brief   Returns true if the thread is asked to exit.
@@ -313,9 +314,15 @@ inline bool ServerSendThread::has_queued_events() const noexcept
     return mExternalEvents.has_pending();
 }
 
-inline void ServerSendThread::wait_queued_events(uint32_t timeoutMs) noexcept
+inline void ServerSendThread::wait_backlog(bool takeEvents, uint32_t timeoutMs)
 {
-    static_cast<void>(mExternalEvents.wait_event(timeoutMs));
+    mBacklog.reset_wake();
+    if ( mExternalEvents.arm_waiter(mBacklog, takeEvents) )
+    {
+        mBacklog.wait(timeoutMs);
+    }
+
+    mExternalEvents.disarm_waiter();
 }
 
 inline bool ServerSendThread::is_exit_requested() const noexcept
