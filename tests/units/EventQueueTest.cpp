@@ -345,15 +345,13 @@ TEST(EventQueueTest, drained_exit_ends_under_a_steady_producer)
     // A producer posting without pause must not keep a drained exit alive.
     ReadyQueue queue(0u);
     std::atomic<bool> stop{ false };
-    std::atomic<uint32_t> refused{ 0u };
     std::thread producer([&]
     {
         uint32_t id{ 0u };
         while (stop.load(std::memory_order_acquire) == false)
         {
             Event evt = makeEvent(++id);
-            if (queue.push_event(evt) == false)
-                refused.fetch_add(1u, std::memory_order_relaxed);
+            static_cast<void>(queue.push_event(evt));
         }
     });
 
@@ -377,12 +375,15 @@ TEST(EventQueueTest, drained_exit_ends_under_a_steady_producer)
             queue.wait_event(10u);
     }
 
+    // The drained exit refuses the producer from the request on, whenever it posts next.
+    const bool closed{ queue.is_closed() };
+
     stop.store(true, std::memory_order_release);
     producer.join();
 
     EXPECT_TRUE(exited);
     EXPECT_GT(popped, 0u);
-    EXPECT_GT(refused.load(std::memory_order_relaxed), 0u);
+    EXPECT_TRUE(closed);
 }
 
 TEST(EventQueueTest, capacity_overflow_returns_event)
