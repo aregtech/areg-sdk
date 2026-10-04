@@ -683,6 +683,7 @@ BASE_API = [
     '  s.find_first(phrase)         areg::CharPos; the substring search',
     '  s.is_valid_position(pos)     bool; a search that found nothing returns areg::END_POS',
     '  s.compare(other)             areg::Ordering: Smaller, Equal, Bigger; s == other is bool',
+    '  s += x, s + x                append; x is a String, a const char * or a char',
     '  s.format(fmt, ...)           String &, printf rules, fills this string and chains',
     '  s.to_int32() / from_int32(n) and the uint32, int64, uint64, float, double, bool pairs',
     '',
