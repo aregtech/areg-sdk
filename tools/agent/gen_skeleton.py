@@ -2091,6 +2091,9 @@ def steps_of(specs, iface):
 STEP_CHECK = {'response': 'check this answer', 'broadcast': 'check this broadcast',
               'update': 'check the new value'}
 
+# Appended to the check of a step that sends and awaits an update.
+SENT_UPDATE = "; one sent before this step's request may arrive first: stay() on it"
+
 
 def step_said(step):
     """What one step sent and what it waits for, in plain words."""
@@ -2173,7 +2176,8 @@ def step_dispatch(steps, kind, name, indent, latch=None):
         lines += [pad + 'case Step::{}:'.format(step['enum']),
                   pad + '    {',
                   pad + '        StepEnd ending(*this);',
-                  marker('step_' + step['name'], STEP_CHECK[kind], indent + 8),
+                  marker('step_' + step['name'], STEP_CHECK[kind] + (
+                      SENT_UPDATE if kind == 'update' and step.get('send') else ''), indent + 8),
                   pad + '    }',
                   pad + '    break;']
     # A message arriving on a step with no case for it is not an error: most steps

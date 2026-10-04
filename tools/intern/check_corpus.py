@@ -5093,6 +5093,17 @@ def check_late_arrival(report):
         else:
             report.ok('broadcast-order', 'a stepped broadcast_ section says it runs before '
                                          'the step_ check of the same broadcast')
+        sent = re.search(r'== step_reopen\n#\| [^\n]*before this step\'s request', sheet)
+        awaited = re.search(r'== step_watch_width\n#\| [^\n]*before this step\'s request',
+                            sheet)
+        if not sent or awaited:
+            report.fail('in-flight-update', 'the step_ section of a step that sends and '
+                                            'awaits an update does not say an update sent '
+                                            'before its request can arrive first, or a step '
+                                            'that sends nothing says so too')
+        else:
+            report.ok('in-flight-update', 'a step that sends and awaits an update is told an '
+                                          'update sent before its request can arrive first')
         if 'test the value already held' in sheet or 'dropped there' in sheet:
             report.fail('late-arrival', 'the worksheet of a stepped design still asks the '
                                         'author to handle an update that arrived early')
