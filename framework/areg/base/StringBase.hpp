@@ -480,15 +480,44 @@ public:
 
     [[nodiscard]]
     inline areg::Ordering compare( const StringBase<CharType>& strOther
-                                 , areg::CharPos startAt = areg::START_POS
+                                 , areg::CharPos startAt
                                  , areg::CharCount count = areg::COUNT_ALL
                                  , bool caseSensitive = true) const noexcept;
 
     [[nodiscard]]
     inline areg::Ordering compare( const std::basic_string<CharType>& strOther
-                                 , areg::CharPos startAt = areg::START_POS
+                                 , areg::CharPos startAt
                                  , areg::CharCount count = areg::COUNT_ALL
                                  , bool caseSensitive = true) const noexcept;
+
+    /**
+     * \brief   Compares with a string starting at 'startAt' of this string, the position given
+     *          by any integral type except bool. A bool second argument is 'caseSensitive'.
+     **/
+    template<typename PosType>
+    [[nodiscard]]
+    inline std::enable_if_t<std::is_integral_v<PosType> && !std::is_same_v<PosType, bool>, areg::Ordering>
+        compare(const CharType* strOther, PosType startAt, areg::CharCount count = areg::COUNT_ALL, bool caseSensitive = true) const noexcept;
+
+    template<typename PosType>
+    [[nodiscard]]
+    inline std::enable_if_t<std::is_integral_v<PosType> && !std::is_same_v<PosType, bool>, areg::Ordering>
+        compare(const StringBase<CharType>& strOther, PosType startAt, areg::CharCount count = areg::COUNT_ALL, bool caseSensitive = true) const noexcept;
+
+    template<typename PosType>
+    [[nodiscard]]
+    inline std::enable_if_t<std::is_integral_v<PosType> && !std::is_same_v<PosType, bool>, areg::Ordering>
+        compare(const std::basic_string<CharType>& strOther, PosType startAt, areg::CharCount count = areg::COUNT_ALL, bool caseSensitive = true) const noexcept;
+
+    template<typename PosType>
+    [[nodiscard]]
+    inline std::enable_if_t<std::is_integral_v<PosType> && !std::is_same_v<PosType, bool>, areg::Ordering>
+        compare(const std::basic_string_view<CharType>& strOther, PosType startAt, areg::CharCount count = areg::COUNT_ALL, bool caseSensitive = true) const noexcept;
+
+    template<typename BoolType>
+    [[nodiscard]]
+    inline std::enable_if_t<std::is_same_v<BoolType, bool>, areg::Ordering>
+        compare(const CharType* strOther, BoolType caseSensitive) const noexcept;
 
     /**
      * \brief   Truncates the starting at zero-based 'startPos' given number of characters. If
@@ -1683,25 +1712,17 @@ areg::Ordering StringBase<CharType>::compare( const CharType* what
             return (cmp < 0) ? areg::Ordering::Smaller : areg::Ordering::Bigger;
         }
 
-        // Case-insensitive: char-by-char with fold-to-lower.
+        // Case-insensitive: char-by-char with fold-to-lower, exactly 'count' characters.
         const CharType* current = buffer(startAt);
-        const CharType* other = what;
-        result = areg::Ordering::Equal;
-
-        CharType ch1{ EmptyChar };
-        CharType ch2{ EmptyChar };
-        do
+        for (areg::CharCount i = 0; i < count; ++i)
         {
-            ch1 = areg::make_lower<CharType>(*current++);
-            ch2 = areg::make_lower<CharType>(*other++);
+            const CharType ch1 = areg::make_lower<CharType>(current[i]);
+            const CharType ch2 = areg::make_lower<CharType>(what[i]);
             if (ch1 != ch2)
-                break;
-        } while (ch1 != EmptyChar);
+                return (ch1 < ch2) ? areg::Ordering::Smaller : areg::Ordering::Bigger;
+        }
 
-        if (ch1 < ch2)
-            result = areg::Ordering::Smaller;
-        else if (ch1 > ch2)
-            result = areg::Ordering::Bigger;
+        result = areg::Ordering::Equal;
     }
     else if (length > count)
     {
@@ -1731,7 +1752,7 @@ inline areg::Ordering StringBase<CharType>::compare(const std::basic_string_view
 
 template<typename CharType>
 inline areg::Ordering StringBase<CharType>::compare( const StringBase<CharType>& other
-                                                   , areg::CharPos startPos /*= areg::START_POS*/
+                                                   , areg::CharPos startPos
                                                    , areg::CharCount count  /*= areg::COUNT_ALL*/
                                                    , bool caseSensitive         /*= true*/) const noexcept
 {
@@ -1740,11 +1761,65 @@ inline areg::Ordering StringBase<CharType>::compare( const StringBase<CharType>&
 
 template<typename CharType>
 inline areg::Ordering StringBase<CharType>::compare( const std::basic_string<CharType>& other
-                                                   , areg::CharPos startAt  /*= areg::START_POS*/
+                                                   , areg::CharPos startAt
                                                    , areg::CharCount count  /*= areg::COUNT_ALL*/
                                                    , bool caseSensitive         /*= true*/) const noexcept
 {
     return compare(other.c_str(), startAt, count, caseSensitive);
+}
+
+template<typename CharType>
+template<typename PosType>
+inline std::enable_if_t<std::is_integral_v<PosType> && !std::is_same_v<PosType, bool>, areg::Ordering>
+StringBase<CharType>::compare( const CharType* other
+                             , PosType startAt
+                             , areg::CharCount count    /*= areg::COUNT_ALL*/
+                             , bool caseSensitive       /*= true*/) const noexcept
+{
+    return compare(other, static_cast<areg::CharPos>(startAt), count, caseSensitive);
+}
+
+template<typename CharType>
+template<typename PosType>
+inline std::enable_if_t<std::is_integral_v<PosType> && !std::is_same_v<PosType, bool>, areg::Ordering>
+StringBase<CharType>::compare( const StringBase<CharType>& other
+                             , PosType startAt
+                             , areg::CharCount count    /*= areg::COUNT_ALL*/
+                             , bool caseSensitive       /*= true*/) const noexcept
+{
+    return compare(other.mData.c_str(), static_cast<areg::CharPos>(startAt), count, caseSensitive);
+}
+
+template<typename CharType>
+template<typename PosType>
+inline std::enable_if_t<std::is_integral_v<PosType> && !std::is_same_v<PosType, bool>, areg::Ordering>
+StringBase<CharType>::compare( const std::basic_string<CharType>& other
+                             , PosType startAt
+                             , areg::CharCount count    /*= areg::COUNT_ALL*/
+                             , bool caseSensitive       /*= true*/) const noexcept
+{
+    return compare(other.c_str(), static_cast<areg::CharPos>(startAt), count, caseSensitive);
+}
+
+template<typename CharType>
+template<typename PosType>
+inline std::enable_if_t<std::is_integral_v<PosType> && !std::is_same_v<PosType, bool>, areg::Ordering>
+StringBase<CharType>::compare( const std::basic_string_view<CharType>& other
+                             , PosType startAt
+                             , areg::CharCount count    /*= areg::COUNT_ALL*/
+                             , bool caseSensitive       /*= true*/) const noexcept
+{
+    const areg::CharCount length = static_cast<areg::CharCount>(other.length());
+    count = ((count == areg::COUNT_ALL) || (count > length)) ? length : count;
+    return compare(other.data(), static_cast<areg::CharPos>(startAt), count, caseSensitive);
+}
+
+template<typename CharType>
+template<typename BoolType>
+inline std::enable_if_t<std::is_same_v<BoolType, bool>, areg::Ordering>
+StringBase<CharType>::compare(const CharType* other, BoolType caseSensitive) const noexcept
+{
+    return compare(other, areg::START_POS, areg::COUNT_ALL, caseSensitive);
 }
 
 template<typename CharType>

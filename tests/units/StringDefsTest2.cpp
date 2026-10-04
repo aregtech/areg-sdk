@@ -992,6 +992,58 @@ TEST(StringDefsTest2, wchar_compare_strings)
 }
 
 /**
+ * \brief   Test compare of two strings without explicit template arguments.
+ *          Pointers of the same character type compare the content, not the address.
+ **/
+TEST(StringDefsTest2, compare_deduced_char_type)
+{
+    const char* left    = "hello";
+    const char* right   = "world";
+    char first[]        = "abc";
+    char second[]       = "abc";
+    char* ptrFirst      = first;
+    char* ptrSecond     = second;
+
+    EXPECT_EQ(areg::compare(left, right), areg::Ordering::Smaller);
+    EXPECT_EQ(areg::compare(right, left), areg::Ordering::Bigger);
+    EXPECT_EQ(areg::compare(ptrFirst, ptrSecond), areg::Ordering::Equal);
+    EXPECT_EQ(areg::compare(first, second), areg::Ordering::Equal);
+    EXPECT_EQ(areg::compare(ptrFirst, left), areg::Ordering::Smaller);
+    EXPECT_EQ(areg::compare("abc", "abd"), areg::Ordering::Smaller);
+    EXPECT_EQ(areg::compare("abc", "abcd"), areg::Ordering::Smaller);
+
+    const wchar_t* wideLeft = L"abc";
+    wchar_t wideBuffer[]    = L"abc";
+    wchar_t* wideRight      = wideBuffer;
+    EXPECT_EQ(areg::compare(wideLeft, wideRight), areg::Ordering::Equal);
+    EXPECT_EQ(areg::compare(wideRight, wideRight), areg::Ordering::Equal);
+    EXPECT_EQ(areg::compare(L"abc", L"abd"), areg::Ordering::Smaller);
+    EXPECT_EQ(areg::compare(wideLeft, "abc"), areg::Ordering::Equal);
+
+    EXPECT_EQ(areg::compare(1, 2), areg::Ordering::Smaller);
+}
+
+/**
+ * \brief   Test that areg::compare of two pointers to a non-character type compares the pointers.
+ **/
+TEST(StringDefsTest2, compare_object_pointers)
+{
+    const int values[]{ 7, 7 };
+    const int* first    = &values[0];
+    const int* second   = &values[1];
+    int buffer[]{ 1, 2 };
+    int* mutableFirst   = &buffer[0];
+    int* mutableSecond  = &buffer[1];
+
+    EXPECT_EQ(areg::compare(first, second), areg::Ordering::Smaller);
+    EXPECT_EQ(areg::compare(second, first), areg::Ordering::Bigger);
+    EXPECT_EQ(areg::compare(first, first), areg::Ordering::Equal);
+    EXPECT_EQ(areg::compare(mutableFirst, mutableSecond), areg::Ordering::Smaller);
+    EXPECT_EQ(areg::compare("abc", "abc"), areg::Ordering::Equal);
+    EXPECT_EQ(areg::compare(L"abc", "abd", 2), areg::Ordering::Equal);
+}
+
+/**
  * \brief   Test find_first and find_last for wchar_t strings.
  *
  *          Exercises the wide-character SIMD path (wstring_view::find/rfind) for
