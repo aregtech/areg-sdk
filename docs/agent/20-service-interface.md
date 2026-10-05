@@ -40,8 +40,8 @@ addServiceInterface(gen_myproject src/services/HelloService.siml)
 - `Category` decides how far the service reaches: `Private` inside one process,
   `Public` across processes on one machine, `Internet` across machines. A `Private`
   service cannot be reached through the router.
-- A `Request` with no `"answer"` is fire and forget; a `Response` exists only as the
-  answer to one.
+- A `Request` with no `"answer"` key is fire and forget; `"answer": []` has an
+  empty `Response` to send.
 - Two methods may share a name only when they are of different kinds. A request and
   its response usually carry the same name, as above.
 - A `Parameter`'s default becomes the default argument of the generated method, so

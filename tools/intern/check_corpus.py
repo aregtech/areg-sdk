@@ -2812,6 +2812,8 @@ def run():
     check_unused_parameters(report)
     check_hosted_machine(report)
     check_hosted_path(report)
+    check_hosted_counter(report)
+    check_empty_answer(report)
     check_installed_scaffold(report)
     check_method_names(report)
     check_accessor_collision(report)
@@ -5567,6 +5569,110 @@ def hosted_path_failure(tools):
         return ('a path naming no file for a machine of the design is not refused '
                 'with the right one')
     return ''
+
+
+def hosted_counter_failure(tools):
+    """What is wrong with the advice for a hosted counter that never restarts, or ''.
+
+    The note names the hosted machine and its initial state, the reset at the start of a
+    visit, and that the host cannot set it; a design that follows it draws no note."""
+    def review(design):
+        holder = tempfile.mkdtemp()
+        try:
+            spec = os.path.join(holder, 'design.json')
+            with open(spec, 'w', encoding='utf-8') as handle:
+                json.dump(design, handle)
+            done = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                                   '--review', '--spec', spec], capture_output=True,
+                                  text=True, cwd=holder)
+            return done.returncode, done.stdout + done.stderr
+        finally:
+            shutil.rmtree(holder, ignore_errors=True)
+
+    counting = copy.deepcopy(HOSTED_SAMPLE)
+    inner = counting['machines'][0]
+    inner['attributes'] = [{'name': 'Count', 'type': 'uint32', 'value': '0'}]
+    inner['states'][0]['transitions'].append(
+        {'on': 'advance', 'set': {'Count': 'raw:mAttrCount + 1'}})
+    code, said = review(counting)
+    note = ' '.join(line.strip() for line in said.splitlines()
+                    if 'only ever set from its own value' in line or line.startswith(' ' * 6))
+    if code or 'only ever set from its own value' not in said:
+        return 'a hosted counter only ever set from itself draws no note: {}'.format(
+            said.strip().splitlines()[-1:])
+    for wanted in ('inside Pass', '"entry" of "RUNNING"', '"lit:0"', 'host cannot set it'):
+        if wanted not in note:
+            return 'the hosted-counter note does not say {}: "{}"'.format(wanted, note[:300])
+    fixed = copy.deepcopy(counting)
+    inner = fixed['machines'][0]
+    inner['events'] = [{'name': 'PassStarted'}]
+    inner['states'][0]['entry'] = ['on_pass', {'send': 'PassStarted'}]
+    inner['states'][0]['transitions'].append({'on': 'PassStarted', 'set': {'Count': 'lit:0'}})
+    code, said = review(fixed)
+    if code:
+        return 'the design that follows the note is refused: {}'.format(
+            said.strip().splitlines()[-1:])
+    if 'only ever set from its own value' in said:
+        return 'the design that follows the note still draws it'
+    return ''
+
+
+def check_hosted_counter(report, tools=None):
+    """A hosted counter that never restarts is told to reset inside the hosted machine as a
+    visit starts, and the design that does so is accepted and no longer noted."""
+    failure = hosted_counter_failure(tools or os.path.join(ROOT, 'tools', 'agent'))
+    if failure:
+        report.fail('hosted-counter', failure)
+        return
+    report.ok('hosted-counter', 'a hosted counter is told to reset inside its machine as a '
+              'visit starts; the design that does so is accepted and not noted')
+
+
+def empty_answer_failure(tools):
+    """What is wrong with "answer": [], or '': it declares a response, and the template and
+    the service page both say so."""
+    example = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'), '--example'],
+                             capture_output=True, text=True)
+    design = json.loads(example.stdout)
+    request = design['interfaces'][0]['requests'][1]
+    request['answer'] = []
+    holder = tempfile.mkdtemp()
+    try:
+        spec = os.path.join(holder, 'design.json')
+        with open(spec, 'w', encoding='utf-8') as handle:
+            json.dump(design, handle)
+        done = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'), '--outdir',
+                               os.path.join(holder, 'out'), '--force', '--spec', spec],
+                              capture_output=True, text=True)
+        siml = ''.join(open(path, encoding='utf-8').read()
+                       for path in glob.glob(os.path.join(holder, 'out', '*.siml')))
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    if done.returncode or 'Name="{}" MethodType="Response"'.format(request['name']) not in siml:
+        return '"answer": [] no longer declares a response'
+    holder = tempfile.mkdtemp()
+    try:
+        path = os.path.join(holder, 'design.json')
+        subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'), '--template', path],
+                       capture_output=True, text=True)
+        template = open(path, encoding='utf-8').read() if os.path.isfile(path) else ''
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    if 'even []' not in template:
+        return 'the design template does not say that "answer": [] still has a response'
+    if '`"answer": []` has an' not in read('docs', 'agent', '20-service-interface.md'):
+        return '20-service-interface.md does not say that "answer": [] still has a response'
+    return ''
+
+
+def check_empty_answer(report, tools=None):
+    """An empty answer declares a response, and the pages that define "answer" say so."""
+    failure = empty_answer_failure(tools or os.path.join(ROOT, 'tools', 'agent'))
+    if failure:
+        report.fail('empty-answer', failure)
+        return
+    report.ok('empty-answer', '"answer": [] declares a response with no value, and the '
+              'template and the service page say so')
 
 
 def check_hosted_path(report, tools=None):

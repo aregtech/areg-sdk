@@ -2338,8 +2338,8 @@ TEMPLATE = {
                "type: bool char uint8 int16 uint16 int32 uint32 int64 uint64 float double String",
                "WideString BinaryBuffer DateTime, a type of types, or <datatypes name>::<Type>.",
                "notify: OnChange sends a value only when it differs from the one held; Always",
-               "sends every set. A request with answer also declares its response, of the same",
-               "name; without answer it has none. A broadcast reaches every subscribed consumer.",
+               "sends every set. A request with answer, even [], has a same-named response the",
+               "provider must send; with no answer key, none. Broadcasts reach every subscriber.",
                "A request, response or broadcast name is written snake_case, without the prefix",
                "the generator adds: open_valve is request_open_valve. Attributes are converted.",
                "A parameter name used in several answers and broadcasts has one type in all.",
@@ -2500,10 +2500,13 @@ def review(project, skipped):
                   'response, and an action cannot tell which trigger ran it. Declare '
                   'one action per trigger, or pass what differs as an argument.')
         for attribute in hosted_accumulators(project, spec):
-            print('  note  {}: attribute "{}" is only ever set from its own value. A hosted '
-                  'instance keeps it between visits, so it never starts again: when it '
-                  'counts per visit, set it with "lit:" on the transition that starts or '
-                  'ends a visit.'.format(spec.get('name', '?'), attribute))
+            print('  note  {0}: attribute "{1}" is only ever set from its own value. A '
+                  'hosted instance keeps it between visits, so it never starts again. When '
+                  'it counts per visit, reset it inside {0} as each visit starts, however '
+                  'the last one ended: the "entry" of "{2}" sends an event, and a transition '
+                  'of "{2}" on that event, with no "to", sets "{1}" to "lit:0". A '
+                  'transition of the host cannot set it.'
+                  .format(spec.get('name', '?'), attribute, spec.get('initial', '?')))
         for owner, attribute, notify, matched, missing in state_mirrors(project, spec):
             print('  note  {}: attribute "{}" of {} takes {} of this machine\'s state '
                   'names and has no value for: {}. A consumer cannot see the machine '
