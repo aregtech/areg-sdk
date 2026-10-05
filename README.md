@@ -176,7 +176,7 @@ an API it half-remembers from training.
 
 <div align="center"><img src="./docs/img/screenshot-fsm-ai.png" alt="A state machine an agent generated for the coffee-machine task, opened in Lusan" width="700"/></div>
 
-**Try it:** point your agent at [one of eight ready prompts](./examples/ai-benchmark/) --
+**Try it:** point your agent at [one of ten ready prompts](./examples/ai-benchmark/) --
 coffee machine, ATM, elevator, greenhouse -- and watch it design, generate and build a
 service from nothing; the same harness scores it against hidden checks and runs the
 identical task on gRPC to compare.
@@ -189,9 +189,12 @@ against 1,252-1,411), used 37% fewer output tokens and 34% less model time, with
 filesystem searches, and cost a median of $0.71 against $0.80 -- within $0.03 from run to
 run, where gRPC runs varied by a third. Both needed about 9 API requests. With the earlier
 Sonnet 5 the gap was wider: Areg needed about half the API requests of gRPC (median 26
-against 55.5). GitHub Copilot's GPT-5.6-Terra also passed 5 of 5 hidden probes, in as
-few as 12 API requests. Agent runs vary: [4 runs per framework, ranges and
-method](./examples/ai-benchmark/baseline-2026-09-29.md).
+against 55.5). With GitHub Copilot and GPT-5.6 Terra, on four tasks, all 12 Areg runs
+passed every hidden probe (7 of 8 on gRPC), with fewer API requests on every task (medians
+7-16 against 12.5-20), 2-4x less hand-written C++, and AI credits at parity on one task
+and 9-22% lower on three. Agent runs vary: ranges and method for
+[Sonnet 5.5](./examples/ai-benchmark/baseline-2026-09-29.md) and
+[GPT-5.6 Terra](./examples/ai-benchmark/baseline-2026-10-05.md).
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 

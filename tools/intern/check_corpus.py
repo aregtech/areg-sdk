@@ -3456,7 +3456,8 @@ def check_review_verdicts(report):
 # is therefore nearer in context.
 TASK_PROMPTS = ('prompt-tempalarm.md', 'prompt-coffeemachine.md', 'prompt-atm.md',
                 'prompt-atm-fsm.md', 'prompt-printscan.md', 'prompt-elevator.md',
-                'prompt-sensorgateway.md', 'prompt-greenhouse.md')
+                'prompt-sensorgateway.md', 'prompt-greenhouse.md', 'prompt-washer.md',
+                'prompt-orderdesk.md')
 
 # Spellings that can only come from one framework or one operating system.
 TASK_PROMPT_LEAKS = ('.siml', '.fsml', '.dtml', 'setup_project.py', 'gen_skeleton.py',

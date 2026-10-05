@@ -7,8 +7,10 @@ The benchmark asks one question: **can an agent that has never seen a framework 
 correct application from that framework's own documentation, and what does it cost?**
 areg is measured against a framework the model already knows from training (gRPC): the
 same requirements, the same agent, the same model and the same effort. The current
-comparison, with Claude Sonnet 5.5, is [`baseline-2026-09-29.md`](baseline-2026-09-29.md);
-the first measured pair, with Sonnet 5, is [`baseline-2026-09-13.md`](baseline-2026-09-13.md).
+comparisons are [`baseline-2026-10-05.md`](baseline-2026-10-05.md), GPT-5.6 Terra on
+four tasks, and [`baseline-2026-09-29.md`](baseline-2026-09-29.md), Claude Sonnet 5.5 on
+the coffee machine; the first measured pair, with Sonnet 5, is
+[`baseline-2026-09-13.md`](baseline-2026-09-13.md).
 
 - [Quick start](#quick-start)
 - [What is here](#what-is-here)
@@ -74,7 +76,8 @@ run-benchmark.sh --task examples/ai-benchmark/prompt-elevator.md --dry-run
 | `verify_run.py` | the hidden acceptance probes, run on the finished project; the agent never sees it | nobody |
 | `build_config.py` | records the configuration a run actually built (Debug or Release) as one line of `meta.txt` | nobody |
 | `INSTALL-grpc.md` | installing the gRPC toolchain, before the first gRPC run | **you**, once |
-| `baseline-2026-09-29.md` | the current comparison: 4 runs per framework with Claude Sonnet 5.5 | -- |
+| `baseline-2026-10-05.md` | the current comparison with GitHub Copilot and GPT-5.6 Terra: four tasks, 3 areg and 2 gRPC runs each | -- |
+| `baseline-2026-09-29.md` | the current comparison with Claude Sonnet 5.5: 4 runs per framework on the coffee machine | -- |
 | `baseline-2026-09-13.md` | the first areg and gRPC pair, side by side, with Sonnet 5 | -- |
 
 ---
@@ -83,18 +86,61 @@ run-benchmark.sh --task examples/ai-benchmark/prompt-elevator.md --dry-run
 
 Each prompt builds one small but complete system: two or three programs that talk to
 each other, a scenario that proves it end to end, and a run in which one side is taken
-away. Each one is chosen for a different area of what a framework must get right.
+away. Each one is chosen for a different area of what a framework must get right, so a
+change to the documentation or the tools is judged across several of them, never on
+one.
 
-| Prompt | Builds | What it exercises |
-|---|---|---|
-| `prompt-tempalarm.md` | a temperature monitor and a simulated operator | the plain service shape: a request, a published value, broadcasts. No state machine |
-| `prompt-coffeemachine.md` | a coffee machine and a simulated user | a state machine: nested states, guarded transitions, resuming an interrupted sequence |
-| `prompt-atm.md` | an ATM and a simulated customer | one retry-limited check reached from two places, each with its own attempt count, written by hand |
-| `prompt-atm-fsm.md` | the same ATM, same checklist | the same behaviour as a declared machine: what a declaration costs against hand-written control flow |
-| `prompt-printscan.md` | a multifunction device and a simulated operator | two engines scheduled one job at a time, reused by a copy job, faults reported one way |
-| `prompt-elevator.md` | an elevator controller, a simulated passenger and a floor display | **three programs**: a machine with a nested door sequence entered at a later step, halt-and-resume from the exact step, provider-side timing, two clients watching at once |
-| `prompt-sensorgateway.md` | a sensor gateway and a simulated monitor | a worker thread handing readings to a component as messages; structured shared types (records, enumerations, lists); **one state machine driven from two threads** |
-| `prompt-greenhouse.md` | a zone host and a simulated console | three instances of one controller reached by name; **moving an instance into another program by configuration, with no code change** |
+| Prompt | Builds | Programs | Declared state machine | What it exercises |
+|---|---|---|---|---|
+| `prompt-tempalarm.md` | a temperature monitor and a simulated operator | 2 | no | the plain service shape: a request, a published value, broadcasts, a threshold with hysteresis |
+| `prompt-coffeemachine.md` | a coffee machine and a simulated user | 2 | yes | nested states, guarded transitions, resuming an interrupted sequence, a provider timer, consumption counters and low-level warnings |
+| `prompt-atm.md` | an ATM and a simulated customer | 2 | **ruled out** | one retry-limited check reached from two places, each with its own attempt count, written by hand |
+| `prompt-atm-fsm.md` | the same ATM, same checklist | 2 | yes | the same behaviour declared: one hosted machine reused from two states, an attempt count that starts again on every visit, an outcome the host reads after the hosted machine finishes |
+| `prompt-printscan.md` | a multifunction device and a simulated operator | 2 | yes | two engines scheduled one job at a time, both reused by a copy job, an injected fault, recovery, every stage announced |
+| `prompt-elevator.md` | an elevator controller, a simulated passenger and a floor display | **3** | yes | one sequence entered at a later step, halt-and-resume from the exact step, provider-side timing, two clients watching one provider at once |
+| `prompt-sensorgateway.md` | a sensor gateway and a simulated monitor | 2 | yes | a thread of the application's own feeding a component by messages; records, enumerations and lists declared once and shared; one machine taking inputs that start on two threads |
+| `prompt-greenhouse.md` | a zone host and a simulated console | 2 | no | three named instances of one controller; moving one instance into the console's own process by configuration, with no code change |
+| `prompt-washer.md` | a washing machine and a simulated user | 2 | yes | **the hardest machine:** a rinse reused N times per programme, a fill reused inside the wash and every rinse, an attempt limit that starts again on every fill, pause at a stage boundary, fault and retry of the failed stage only |
+| `prompt-orderdesk.md` | a warehouse, an order desk and a simulated customer | **3** | no | two services in one program; a program that serves clients while being a client of two others; answers given only after other services answered; three orders in flight at once; undoing a reservation when a later step fails |
+
+### Which prompt tests which feature
+
+Pick the prompts that exercise what a change touches. A feature listed under one prompt
+only is measured by that prompt only.
+
+| Feature | Prompts |
+|---|---|
+| request and response, a refusal that names its reason | all |
+| a value published to every client, received at once by a late one | `tempalarm`, `coffeemachine`, `elevator`, `sensorgateway`, `greenhouse`, `washer`, `orderdesk` |
+| announcements sent to every client as they happen | `tempalarm`, `coffeemachine`, `printscan`, `elevator`, `greenhouse`, `washer` |
+| timing kept by the provider (timers) | `coffeemachine`, `printscan`, `elevator`, `greenhouse`, `washer`, `orderdesk` |
+| a declared state machine: nested states and guards | `coffeemachine`, `atm-fsm`, `printscan`, `elevator`, `sensorgateway`, `washer` |
+| resuming where a sequence was interrupted | `coffeemachine`, `elevator`, `washer` |
+| entering a sequence at a later step | `elevator` |
+| one machine reused from several places (hosted machine) | `atm-fsm`, `washer`; `printscan` when the design chooses it |
+| a count that starts again on every visit | `atm`, `atm-fsm`, `washer` |
+| an injected fault, then recovery or retry | `printscan`, `sensorgateway`, `washer` |
+| hand-written control flow against a declared machine | `atm` against `atm-fsm` |
+| shared data types: records, enumerations, lists | `sensorgateway` |
+| a thread of the application's own, talking to a component by messages | `sensorgateway` |
+| three programs; two clients of one provider | `elevator`, `orderdesk` |
+| two services in one program; a client of several providers | `orderdesk` |
+| an answer given after asking another service, without blocking | `orderdesk` |
+| several requests in flight at once | `orderdesk` |
+| undoing an earlier step when a later one fails | `orderdesk` |
+| several named instances of one service | `greenhouse` |
+| deployment chosen by configuration, not code | `greenhouse` |
+| a peer lost mid-scenario, and a start in the wrong order | all; the hidden probes score both |
+
+### Which have been measured
+
+`tempalarm`, `coffeemachine`, `atm-fsm` and `printscan` are measured regularly and have
+gRPC runs beside them. `atm` has two runs, from before most of the current tools
+existed. `elevator`, `sensorgateway`, `greenhouse`, `washer` and `orderdesk` have none:
+their first runs measure parts of the documentation the other four never reach --
+three programs, several services, named instances, a worker thread -- and are where
+the next undocumented rule is most likely to turn up. Read their debriefs
+(`--debrief`) before their costs.
 
 **Where to start.** Run `prompt-tempalarm.md` and `prompt-coffeemachine.md` first, in
 that order: the first costs what the plain service path costs, the second adds a state
@@ -105,21 +151,30 @@ once with the session written by hand and a declared state machine ruled out, on
 it declared. Compare the cost against the hand-written body count: the hand-written
 arm is cheaper to reach and larger to keep.
 
-**The three newer prompts** each aim at one ability:
+**What each newer prompt is after:**
 
-- `prompt-elevator.md` checks that an agent can express "enter the same sequence at a
-  later step" and "resume exactly where it halted" **inside the machine**, rather than
-  duplicating states or keeping a hand-saved copy of the state. It is also the only
-  task with three programs, so two clients watch one provider at once.
-- `prompt-sensorgateway.md` checks thread discipline: a thread of the application's
-  own feeds a component by messages only, and a shared state machine takes input from
-  that thread and from the serving side without being corrupted.
-- `prompt-greenhouse.md` is **location transparency**: the same controller runs as
-  three named instances, and one of them moves from the host program into the
-  console's own process by a configuration change, with the scenario passing in both
-  deployments from the same build. This is a design where the framework decides
-  most of the cost. It is a good gRPC comparison: there, an in-process instance is a
+- `prompt-elevator.md`: can an agent express "enter the same sequence at a later step"
+  and "resume exactly where it halted" **inside the machine**, rather than duplicating
+  states or keeping a hand-saved copy of the state? It is also a task with three
+  programs, so two clients watch one provider at once.
+- `prompt-sensorgateway.md`: thread discipline. A thread of the application's own feeds
+  a component by messages only, and one state machine takes inputs that start on that
+  thread and on the serving side without losing or half-applying any.
+- `prompt-greenhouse.md`: **location transparency**. The same controller runs as three
+  named instances, and one of them moves from the host program into the console's own
+  process by a configuration change, with the scenario passing in both deployments
+  from the same build. It is a good gRPC comparison: there, an in-process instance is a
   different code path from a remote one.
+- `prompt-washer.md`: the machine features that cost the most when they are wrong. A
+  piece reused from several places, a count that must start again on every use however
+  the last one ended, a pause that waits for a stage boundary, and a retry that repeats
+  only the failed stage. Each has an exact expected output, so a wrong reuse or a stale
+  count fails the scenario rather than passing unnoticed.
+- `prompt-orderdesk.md`: the shape of most real services. The desk answers its own
+  client only after two other services answered, keeps three such conversations open
+  at once, and releases a reservation when the payment fails. It needs no state
+  machine; it measures several services, several providers per client and deferred
+  answers.
 
 **Every task prompt names no framework and no operating system.** Each one holds the
 same sections, and nothing about how to build it:

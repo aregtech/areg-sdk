@@ -401,7 +401,9 @@ using these tools wrote about 3x less C++ by hand than an agent using gRPC (386-
 against 1,252-1,411), with 37% fewer output tokens, and its cost varied by 4% from run to
 run against 32%. With the earlier Sonnet 5 the gap was wider: it also needed about half
 the API requests, where Sonnet 5.5 needs about the same number on both:
-[AI benchmark](../../examples/ai-benchmark/baseline-2026-09-29.md).
+[AI benchmark](../../examples/ai-benchmark/baseline-2026-09-29.md). With GPT-5.6 Terra on
+four tasks it needed fewer API requests than gRPC on every task and 2-4x less
+hand-written C++: [baseline](../../examples/ai-benchmark/baseline-2026-10-05.md).
 
 **Start an agent project:**
 ```bash

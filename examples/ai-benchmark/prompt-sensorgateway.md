@@ -44,14 +44,15 @@ process, and the serving side does everything else.
 - **The health**, published: one of starting, normal, degraded, fault, together with
   the list of sensors that are silent.
 
-**The health is one state machine, driven from two threads.** The reading thread
-drives it with what the hardware does: the first full set of readings moves it from
+**The health is one state machine, with inputs from two threads.** What the hardware
+does comes from the reading thread: the first full set of readings moves it from
 starting to normal; in normal, a sensor that has given no reading for **500 ms** moves
 it to degraded; the last silent sensor coming back moves it back to normal. In
-starting, a silent sensor keeps it in starting until a full set arrives. The serving side drives it
-with what the monitor asks: a **reset** moves degraded or fault back to starting. Both
-inputs go through the **same** machine instance, each is applied whole, and neither
-thread may see the machine half-changed by the other.
+starting, a silent sensor keeps it in starting until a full set arrives. What the
+monitor asks comes from the serving side: a **reset** moves degraded or fault back to
+starting. Both inputs reach the **same** machine instance, each is applied whole, and
+no input from one thread is lost or seen half-applied because of the other. How an
+input crosses from the reading thread to the machine is the implementation's choice.
 
 **Requests that depend on the health.** A **calibrate** request is accepted only in
 normal, and answered with the sensor it calibrated. In any other state it is refused
@@ -127,9 +128,9 @@ framework, against this list:
       the health back to normal
 - [ ] calibrate is accepted in normal and refused elsewhere, naming the state
 - [ ] reset moves degraded back to starting, and is refused in normal naming the reason
-- [ ] **the health is one state machine instance, driven both from the reading thread
-      and from the serving side, and no input from one thread is lost or applied
-      half-way because of the other**
+- [ ] **the health is one state machine instance that takes inputs originating on the
+      reading thread and on the serving side, and no input from one thread is lost or
+      applied half-way because of the other**
 - [ ] the gateway accepts `-q` / `--quit` at its console and exits cleanly, stopping
       the reading thread first
 - [ ] neither program waits more than 20 seconds for something that never arrives
