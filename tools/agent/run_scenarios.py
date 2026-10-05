@@ -467,6 +467,21 @@ def fire_stops(pending, started, text):
     return left
 
 
+def open_expectations(handles):
+    """Names the expectations still open, for a failure judged before any of them."""
+    slots = []
+    for spec, _ in handles:
+        for pattern in spec.get('expect', []):
+            hole = re.match(r'TODO\(you\)\s+(\w+)', pattern) \
+                if isinstance(pattern, str) else None
+            if hole and hole.group(1) not in slots:
+                slots.append(hole.group(1))
+    if not slots:
+        return ''
+    return ('; still open, and failing next once this is fixed: {}. Fill {} in the same '
+            'call'.format(', '.join(slots), 'it' if len(slots) == 1 else 'them'))
+
+
 def stops_missed(pending):
     """Why the scenario proves nothing, when a stop it declared never fired.
 
@@ -708,10 +723,11 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
                     if 'fired_clock' in entry
                     and (entry.get('late') or exited - entry['fired_clock'] < LATE_STOP_SECONDS)]
         said = re.findall(r'^FAIL\b.*$', outputs.get(index) or '', re.MULTILINE)
-        return failed('{} exited {}, expected {}{}{}'.format(
+        return failed('{} exited {}, expected {}{}{}{}'.format(
             label, handle.returncode, wanted,
             ': "{}"'.format(said[-1].strip()) if said else '',
-            stop_too_late(late[0][0], label, late[0][1]) if late else ''))
+            stop_too_late(late[0][0], label, late[0][1]) if late else '',
+            open_expectations(handles)))
 
     evidence = []
     misses = []
@@ -965,6 +981,17 @@ def self_test():
                   .format(detail))
             return 1
 
+        # An exit-code failure also names the expectations still open.
+        unfilled = dict(scenario, name='exit-and-open-expectation')
+        unfilled['procs'] = [dict(scenario['procs'][0],
+                                  expect=['TODO(you) expect_selftest_provider: a line']),
+                             dict(scenario['procs'][1], exit=3)]
+        passed, _, detail = run_scenario(unfilled, [root], False, True)
+        if passed or 'expect_selftest_provider' not in detail:
+            print('self-test FAILED: an exit-code failure did not name the open '
+                  'expectation: {}'.format(detail))
+            return 1
+
         # The lead prints the trigger and exits before its reader hands the line over.
         passed, _, detail = run_scenario(fired, [root], False, True,
                                          reader_class=LaggingReader)
@@ -1105,8 +1132,9 @@ def self_test():
         finally:
             ROUTER_PORT = saved_port
 
-        print('self-test ok: 11 case(s): end of input, an unfired stop, a fired stop, '
-              'a stop on the last line of an exited lead, a stop too late for the lead, '
+        print('self-test ok: 12 case(s): end of input, an unfired stop, a fired stop, '
+              'an exit failure naming an open expectation, a stop on the last line of an '
+              'exited lead, a stop too late for the lead, '
               'output pressure, a scenario that asserts nothing, a lead that stopped '
               'on its own failure, lines expected of the wrong process, the nearest '
               'line to a miss, a router this run did not start')

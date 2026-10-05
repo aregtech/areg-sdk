@@ -1775,9 +1775,11 @@ def provider_class(iface, cls, machine=None, timers=()):
     if machine:
         lines.append('        , {}ActionHandler()'.format(machine.name))
         lines += ['        , {}()'.format(base) for base in hosted_bases(machine)]
-        lines.append('        , mFsm({})'.format(', '.join(handler_casts(machine))))
     if timers:
         lines.append('        , areg::TimerConsumer()')
+    if machine:
+        lines.append('        , mFsm({})'.format(', '.join(handler_casts(machine))))
+    if timers:
         for timer in timers:
             lines.append('        , {}(static_cast<areg::TimerConsumer &>(self()), "{}")'
                          .format(timer['member'], timer['name']))

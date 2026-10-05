@@ -1776,7 +1776,8 @@ def attribute_reads(node, found):
 
 
 def shared_request_actions(project, spec):
-    """Actions run on two or more triggers that each forward a request with an answer.
+    """Actions run with the same arguments on two or more triggers that each forward a
+    request with an answer.
 
     An action has no parameter naming the stimulus that ran it, so its body cannot
     tell which of those requests it is answering. A trigger forwards a request when
@@ -1801,17 +1802,64 @@ def shared_request_actions(project, spec):
                 for step in move.get('do') or []:
                     name = step if isinstance(step, str) else \
                         step.get('call') if isinstance(step, dict) else None
-                    if isinstance(name, str) and on:
-                        runs.setdefault(name, [])
-                        if on not in runs[name]:
-                            runs[name].append(on)
+                    if isinstance(name, str) and on and forwards(on):
+                        args = json.dumps(step.get('args'), sort_keys=True) \
+                            if isinstance(step, dict) else 'null'
+                        triggers = runs.setdefault(name, {}).setdefault(args, [])
+                        if on not in triggers:
+                            triggers.append(on)
             walk(state.get('states'))
 
     walk(spec.get('states'))
     actions = set(entry.get('name') for entry in spec.get('actions') or []
                   if isinstance(entry, dict))
-    return [(name, triggers) for name, triggers in runs.items()
-            if name in actions and len([on for on in triggers if forwards(on)]) > 1]
+    shared = []
+    for name, calls in runs.items():
+        alike = [triggers for triggers in calls.values() if len(triggers) > 1]
+        if name in actions and alike:
+            shared.append((name, [on for triggers in alike for on in triggers]))
+    return shared
+
+
+def hosted_accumulators(project, spec):
+    """Attributes of a hosted machine that every assignment derives from their own value."""
+    name = spec.get('name')
+    hosted = any(state.get('submachine') == name
+                 for other in project.get('machines') or [] if other is not spec
+                 for state in all_states(other.get('states')))
+    if not name or not hosted:
+        return []
+    assigned = {}
+
+    def collect(node):
+        if isinstance(node, list):
+            for item in node:
+                collect(item)
+        elif isinstance(node, dict):
+            pairs = node['set'].items() if isinstance(node.get('set'), dict) else \
+                [(node['set'], node.get('to'))] if isinstance(node.get('set'), str) else []
+            for attribute, value in pairs:
+                assigned.setdefault(attribute, []).append(spell(value))
+            for key, value in node.items():
+                if key != 'set':
+                    collect(value)
+
+    collect(spec.get('states'))
+    found = []
+    for attribute, values in assigned.items():
+        own = re.compile(r'\b(mAttr)?{}\b'.format(re.escape(attribute)))
+        if all(value == 'attr:' + attribute
+               or (value.startswith(('raw:', 'expr:')) and own.search(value))
+               for value in values):
+            found.append(attribute)
+    return found
+
+
+def all_states(states):
+    """Every state of a list, nested states included."""
+    for state in states or []:
+        yield state
+        yield from all_states(state.get('states'))
 
 
 def unread_attributes(spec):
@@ -2418,6 +2466,11 @@ def review(project, skipped):
             print('        Each of these triggers forwards a request with its own '
                   'response, and an action cannot tell which trigger ran it. Declare '
                   'one action per trigger, or pass what differs as an argument.')
+        for attribute in hosted_accumulators(project, spec):
+            print('  note  {}: attribute "{}" is only ever set from its own value. A hosted '
+                  'instance keeps it between visits, so it never starts again: when it '
+                  'counts per visit, set it with "lit:" on the transition that starts or '
+                  'ends a visit.'.format(spec.get('name', '?'), attribute))
         for owner, attribute, notify, matched, missing in state_mirrors(project, spec):
             print('  note  {}: attribute "{}" of {} takes {} of this machine\'s state '
                   'names and has no value for: {}. A consumer cannot see the machine '

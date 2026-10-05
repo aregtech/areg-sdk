@@ -208,12 +208,17 @@ def write_input(root, target):
         inside = False
     if not inside:
         fail('--write {}: the file is outside the project root {}'.format(target, root))
-    if sys.stdin is None or sys.stdin.isatty():
-        fail('--write {}: nothing on standard input. Pass the text as a here-document: '
-             "--write {} <<'AREG_EOF' ... AREG_EOF".format(target, target))
-    text = sys.stdin.read()
+    text = '' if sys.stdin is None or sys.stdin.isatty() else sys.stdin.read()
     if not text.strip():
-        fail('--write {}: standard input is empty, so nothing was written'.format(target))
+        name = os.path.relpath(path, root).replace(os.sep, '/')
+        if os.path.isfile(path):
+            with open(path, encoding='utf-8') as handle:
+                lines = handle.read().count('\n')
+            print('== write: standard input is empty, so {} is used as it is on disk, '
+                  '{} line(s)'.format(name, lines))
+            return
+        fail('--write {}: nothing on standard input and no such file. Pass the text as a '
+             "here-document: --write {} <<'AREG_EOF' ... AREG_EOF".format(target, target))
     if not text.endswith('\n'):
         text += '\n'
     parent = os.path.dirname(path)

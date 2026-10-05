@@ -227,8 +227,8 @@ the project already holds, named by `"path"` from the project root and not repea
 The build command is the same.
 
 - **Each hosting state runs its own instance**, started at its initial state on entry
-  and stopped on exit. Its attributes keep their value between visits, so a count is
-  reset on its initial path.
+  and stopped on exit. Its attributes keep their value: set a per-visit count to
+  `lit:0` where a visit starts or ends.
 - **Its triggers are called on the host**: `mFsm.<trigger>(...)` reaches the active
   instance, `mFsm.<trigger>_<state>(...)` one state's, as the worksheet spells them. A
   host declaring the same trigger keeps only the second form.
