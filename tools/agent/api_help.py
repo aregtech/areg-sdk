@@ -494,6 +494,12 @@ def answer_enum(headers, name):
     return False
 
 
+# The functions gen_skeleton.py defines beside main(), which no header declares.
+SCAFFOLD_NAMES = {
+    'quit_with': 'void quit_with(int code);   // ends this program with that exit code',
+    'is_quitting': 'bool is_quitting();         // true once quit_with() has run',
+}
+
 # The spellings agents write from memory, and what areg calls each one. These are the
 # names 40-base-api.md lists as the ones most often borrowed from std::string and
 # std::vector; check_contract.py reports each as B-08. A replacement is printed only
@@ -574,6 +580,12 @@ def main():
                         or answer_enum(headers, name)
                         or answer_constant(headers, name))
         if not answered:
+            if name in SCAFFOLD_NAMES:
+                print('"{}" is not in the areg headers: gen_skeleton.py writes it into '
+                      'the main.cpp of every program it generates.'.format(name))
+                print('')
+                print('  {}'.format(SCAFFOLD_NAMES[name]))
+                continue
             if catalogued(name):
                 print('"{}" is a member of the framework -- docs/agent/members.json '
                       'lists it -- but no header declares it on a line this reader '

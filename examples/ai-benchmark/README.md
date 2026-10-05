@@ -538,8 +538,9 @@ output, and the absolute paths of your machine, including your home directory.
 
 Every task's checklist asks for things a run in which everything works cannot show,
 and an agent's own scenarios rarely try: a start in the wrong order, a peer that never
-comes, a peer that dies at an unlucky moment, a spinning thread. Every agent reports
-a full checklist, so the checklist alone cannot tell two implementations apart.
+comes, a peer that dies at an unlucky moment, a spinning thread. The agent's own
+checklist count is honest about what it saw, not about what holds, so it alone cannot
+tell two implementations apart.
 
 `verify_run.py <run directory>` runs the finished project against those requirements
 after the agent has ended. The probes are generated from the project's own
@@ -554,7 +555,13 @@ agent never sees them: the snapshot does not carry this file.
 | `no-peer` | no program waits more than 20 seconds for something that never arrives | the lead alone exits non-zero within 30 s |
 | `peer-loss` | if one side goes away mid-scenario, the other exits non-zero | with the first other process killed at 25%, 50% and 75% of a normal run, the lead exits non-zero each time and never hangs |
 | `cpu` | no busy-waiting | a normal run averages under 0.5 cores (where the platform reports child CPU time) |
+| `programs` | as many separate programs as the task asks for | the normal scenario runs at least the number of distinct programs the prompt names ("three separate programs"); not scored for a prompt that names none |
 | `sanitize` (`--sanitize`) | no memory or undefined-behaviour defect -- not a checklist item | a rebuild under ASan and UBSan runs the normal scenario and one peer loss with no finding |
+
+`verify.json` also records `claimed`: the last "acceptance items passing n of m" the
+agent reported. It is not scored, because an agent counts an item it did not observe as
+not passing, but a run that claims 6 of 13 left half the task out whatever the probes
+say: read the two together.
 
 `verify.json` or `verify-sanitize.json` keeps each verdict with its evidence, so a
 second verification does not overwrite the first. A framework compiled from source is

@@ -17,6 +17,7 @@ import argparse
 import copy
 import json
 import os
+import re
 import statistics
 import subprocess
 import sys
@@ -53,8 +54,56 @@ REQUIREMENTS = {
                    'never arrives',
     'peer-loss':   'if one side goes away mid-scenario, the other exits non-zero',
     'cpu':         'no busy-waiting',
+    'programs':    'as many separate programs as the task asks for, all in the normal run',
     'sanitize':    'no memory or undefined-behaviour defect (not a checklist item)',
 }
+
+
+# How a task names its programs, and how an agent reports its checklist.
+PROGRAMS_RE = re.compile(r'\b(two|three|four|five)\s+separate\s+programs\b', re.IGNORECASE)
+PROGRAM_COUNT = {'two': 2, 'three': 3, 'four': 4, 'five': 5}
+CLAIM_RE = re.compile(r'acceptance items passing\s*\|\s*(\d+)\s+of\s+(\d+)', re.IGNORECASE)
+
+
+def task_text(run_dir):
+    """The task prompt the run was given, from meta.txt, or '' when it cannot be read."""
+    try:
+        with open(os.path.join(run_dir, 'meta.txt'), encoding='utf-8') as handle:
+            for line in handle:
+                key, _, value = line.partition(' ')
+                if key == 'task':
+                    with open(value.strip(), encoding='utf-8') as task:
+                        return task.read()
+    except OSError:
+        pass
+    return ''
+
+
+def probe_programs(scenario, run_dir):
+    """The normal scenario runs as many distinct programs as the task asks for."""
+    found = PROGRAMS_RE.search(task_text(run_dir))
+    if found is None:
+        return result('programs', None, 'the task names no number of separate programs')
+    need = PROGRAM_COUNT[found.group(1).lower()]
+    have = sorted(set(proc.get('binary') for proc in scenario.get('procs') or []))
+    return result('programs', len(have) >= need,
+                  '{} asked, {} in the normal run: {}'.format(need, len(have), ', '.join(have)))
+
+
+def claimed(run_dir):
+    """The last acceptance count the agent reported, as "n of m", or None.
+
+    Reported beside the probes and not scored: an agent counts an item it did not
+    observe as not passing, so a correct run can claim less than all.
+    """
+    claims = []
+    for name in ('run.out', 'transcript.jsonl'):
+        try:
+            with open(os.path.join(run_dir, name), encoding='utf-8', errors='replace') as handle:
+                claims += CLAIM_RE.findall(handle.read())
+        except OSError:
+            continue
+    return '{} of {}'.format(*claims[-1]) if claims else None
 
 
 def child_cpu():
@@ -425,12 +474,15 @@ def main():
     report(probe_peer_loss(scenario, build_dirs,
                            statistics.median(leads) if leads else None))
     report(probe_cpu(loads))
+    report(probe_programs(scenario, run_dir))
     if args.sanitize:
         report(probe_sanitize(run_dir, work, scenario, document))
 
     scored = [item for item in results if item['passed'] is not None]
     skipped = [item['probe'] for item in results if item['passed'] is None]
     passed = sum(1 for item in scored if item['passed'])
+    claim = claimed(run_dir)
+    print('   agent claims     {} acceptance item(s) passing'.format(claim or 'no count of'))
     print('   probes passed    {} of {}{}'.format(
         passed, len(scored),
         ', {} not evaluated: {}'.format(len(skipped), ', '.join(skipped))
@@ -440,7 +492,7 @@ def main():
     name = 'verify-sanitize.json' if args.sanitize else 'verify.json'
     with open(os.path.join(run_dir, name), 'w', encoding='utf-8') as handle:
         json.dump({'scenario': scenario.get('name'), 'passed': passed,
-                   'scored': len(scored), 'skipped': skipped,
+                   'scored': len(scored), 'skipped': skipped, 'claimed': claim,
                    'repeat': args.repeat, 'sanitize': args.sanitize,
                    'verified': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
                    'results': results},

@@ -109,7 +109,7 @@ KEYS = {
     'state': ('name', 'kind', 'depth', 'description', 'entry', 'exit', 'transitions',
               'initial', 'final_event', 'states', 'submachine'),
     'transition': ('on', 'to', 'guard', 'set', 'do', 'description'),
-    'step': ('name', 'description', 'send', 'args', 'await', 'wait'),
+    'step': ('name', 'description', 'send', 'args', 'await', 'until', 'wait'),
 }
 TYPE_KEYS = {
     'Enumeration': ('name', 'kind', 'description', 'values', 'derives'),
@@ -135,7 +135,7 @@ SHAPES = dict(
         'derives', 'description', 'final_event', 'header', 'implement', 'initial', 'key',
         'kind', 'location', 'name', 'namespace', 'notify', 'object', 'of', 'on', 'path',
         'return', 'send', 'stop', 'threading', 'to', 'type')] +
-    [(key, (dict, 'an object, {...}')) for key in ('datatypes', 'driver', 'set')])
+    [(key, (dict, 'an object, {...}')) for key in ('datatypes', 'driver', 'set', 'until')])
 SINGULAR = {'attributes': 'attribute', 'requests': 'request', 'responses': 'response',
             'broadcasts': 'broadcast', 'constants': 'constant', 'includes': 'include',
             'params': 'parameter', 'answer': 'answer parameter', 'declare': 'type',
@@ -1770,6 +1770,9 @@ def check_sequences(project):
                 if target is not None and wait:
                     fail('{} awaits "{}" and also waits {} ms. A step does one of the two: '
                          'split it into two steps'.format(here, target, wait))
+                if step.get('until') and target is None and send is None:
+                    fail('{} has "until" and awaits nothing: "until" holds a step until '
+                         'what it awaits arrives with those values'.format(here))
                 stall = driver_of(spec)['stall_ticks']
                 if whole(stall) and stall and wait >= stall * DRIVER_TICK_SECONDS * 1000:
                     fail('{} waits {} ms, and the stall watchdog of the driver ends the run after '
@@ -2205,8 +2208,9 @@ EXAMPLE = {
                   {"name": "hold", "wait": 500},
                   {"name": "close_gate", "send": "close",
                    "args": {"by": "night shift"}, "await": "Width",
+                   "until": {"Width": 0},
                    "description": "A String value is written as it reads: the "
-                                  "generator quotes it. Its check calls stay() "
+                                  "generator quotes it. until holds the step "
                                   "until Width is 0."}]
     }],
     "machines": [{
@@ -2386,10 +2390,12 @@ TEMPLATE = {
                    "a check alone is not a step.",
                    "Steps run in order and the run exits 0 after the last. A check calls fail(),",
                    "stay() to wait for the next arrival, or go_to(Step::Name) for a loop.",
+                   "until: {parameter: value}, for what arrives more than once: the step holds",
+                   "until one arrives with those values.",
                    "One step per thing the task asks to prove, not one per message. A step",
                    "starting work which takes time awaits the update saying it finished, before",
                    "a later step or a go_to() sends again."],
-            "name": "", "send": "", "args": {}, "await": "", "wait": 0, "description": ""
+            "name": "", "send": "", "args": {}, "await": "", "until": {}, "wait": 0, "description": ""
         }]
     }],
     "machines": [{

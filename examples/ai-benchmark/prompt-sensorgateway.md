@@ -78,7 +78,8 @@ step to the console so a person can read what happened:
 2. wait for the health to become **normal**
 3. collect **20** sets of readings -- expect every set to hold all three sensors,
    every value to match the table for its reading number, and no reading number
-   skipped or repeated within a sensor
+   skipped or repeated within a sensor, counted from the first set the monitor
+   receives: it may join after the gateway has started
 4. ask for the summary of sensor 1 -- expect lowest **20**, highest **24**, and an
    average within 0.5 of **22**
 5. calibrate sensor 1 -- expect it accepted

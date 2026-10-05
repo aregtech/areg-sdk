@@ -450,13 +450,14 @@ EXIT_DEFINITION = re.compile(r'\bvoid\s+quit_with\s*\(\s*int\b')
 SIGNAL_QUIT = re.compile(r'\bApplication::signal_quit\s*\(')
 
 
-def exit_body(sources, read):
-    """The file and line range of the quit_with() definition, or None.
+def exit_bodies(sources, read):
+    """The file and line range of every quit_with() definition, one per program.
 
     A prototype is not the definition: the header of a scaffolded project declares
-    quit_with() beside the class, and main.cpp defines it. Only the definition's own
+    quit_with() beside the class, and each main.cpp defines it. Only a definition's own
     body may reach signal_quit().
     """
+    found = []
     for path in sources:
         text = read(path)
         if text is None:
@@ -465,8 +466,8 @@ def exit_body(sources, read):
         for number, line in enumerate(lines):
             if EXIT_DEFINITION.search(line) is None or ';' in line:
                 continue
-            return path, number, body_range(lines, number)
-    return None
+            found.append((path, number, body_range(lines, number)))
+    return found
 
 
 # A class and the bases it derives from, and one entry of a constructor's
@@ -535,10 +536,10 @@ def check_single_exit(sources, findings, read):
     The rule applies only where quit_with() is defined, so a program that ends itself
     directly and returns its own code is not touched.
     """
-    where = exit_body(sources, read)
-    if where is None:
+    bodies = exit_bodies(sources, read)
+    if not bodies:
         return
-    holder, first, last = where
+    holder = bodies[0][0]
     for path in sources:
         text = read(path)
         if text is None:
@@ -546,7 +547,8 @@ def check_single_exit(sources, findings, read):
         for number, line in enumerate(text.splitlines()):
             if SIGNAL_QUIT.search(line) is None:
                 continue
-            if path == holder and first <= number <= last:
+            if any(path == where and first <= number <= last
+                   for where, first, last in bodies):
                 continue
             findings.append(Finding(
                 'P-18', 'error', path, number + 1,

@@ -699,6 +699,10 @@ BASE_API = [
     '  application code: LOG_INFO("[ %s ]", name.as_string()), never LOG_INFO("[ %s ]", name).',
 ]
 
+# How a body ends its program, printed when the application defines quit_with().
+QUIT_NOTE = ['quit_with(code) ends this program with that exit code, and is_quitting() is',
+             'true once it has run. main() defines both, in every program of this project.']
+
 # The names of BASE_API, for the check that holds this copy and the page together.
 BASE_API_NAMES = ('as_string', 'is_empty', 'clear', 'length', 'find_first',
                   'is_valid_position', 'compare', 'format', 'to_int32', 'from_int32')
@@ -814,6 +818,11 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
     for line in BASE_API:
         lines.append(('#| ' + line.format(tools=TOOLS_DIR)).rstrip())
     lines.append('#|')
+    if any(file_name.endswith('main.cpp') and 'void quit_with(int code)' in text
+           for file_name, text in produced):
+        for line in QUIT_NOTE:
+            lines.append('#| ' + line)
+        lines.append('#|')
     lines.append('#| The names these bodies may call, spelt as the generator emits them.\n'
                  '#| A name spelt in another namespace than the one below does not\n'
                  '#| compile:\n#|')
@@ -2095,8 +2104,34 @@ def steps_of(specs, iface):
                       'call': iface.spell('request', send) if send is not None else None,
                       'args': values,
                       'awaits': (kinds[target], target) if target is not None else None,
-                      'wait': wait})
+                      'wait': wait,
+                      'until': until_of(step.get('until'), target, kinds, iface, where)})
     return steps
+
+
+def until_of(until, target, kinds, iface, where):
+    """The C++ conditions of a step's "until", one per parameter, all of which must hold."""
+    if not until:
+        return []
+    if not isinstance(until, dict):
+        fail('{} has "until" {!r}: it is an object, {{parameter: value}}'.format(where, until))
+    if target is None:
+        fail('{} has "until" and awaits nothing. "until" holds the step until what it '
+             'awaits arrives with these values'.format(where))
+    kind = kinds[target]
+    if kind == 'update':
+        params = [(target, dict(iface.attributes)[target])]
+    else:
+        params = dict(iface.broadcasts if kind == 'broadcast' else iface.responses)[target]
+    types = dict(params)
+    conditions = []
+    for param, value in until.items():
+        if param not in types:
+            fail('{} holds until "{}", which is no parameter of {} {}. It has: {}'
+                 .format(where, param, kind, target, ', '.join(types) or 'none'))
+        conditions.append('({} == {})'.format(param, cpp_value(value, types[param], iface,
+                                                              where)))
+    return conditions
 
 
 STEP_CHECK = {'response': 'check this answer', 'broadcast': 'check this broadcast',
@@ -2104,6 +2139,9 @@ STEP_CHECK = {'response': 'check this answer', 'broadcast': 'check this broadcas
 
 # Appended to the check of a step that sends and awaits an update.
 SENT_UPDATE = "; one sent before this step's request may arrive first: stay() on it"
+
+# Appended to the check of a step with "until": the generated test above it holds the step.
+UNTIL_HELD = '; it runs only on the arrival its "until" names, the earlier ones already stay()'
 
 
 def step_said(step):
@@ -2113,6 +2151,8 @@ def step_said(step):
         said.append('sent {}({})'.format(step['call'], ', '.join(step['args'])))
     if step['awaits']:
         said.append('awaits {} {}'.format(*step['awaits']))
+        if step.get('until'):
+            said[-1] += ' with {}'.format(' && '.join(step['until']))
     elif step['wait']:
         said.append('waits {} ms'.format(step['wait']))
     return ' and '.join(said) if said else 'waits for nothing'
@@ -2186,8 +2226,15 @@ def step_dispatch(steps, kind, name, indent, latch=None):
     for step in waiting:
         lines += [pad + 'case Step::{}:'.format(step['enum']),
                   pad + '    {',
-                  pad + '        StepEnd ending(*this);',
-                  marker('step_' + step['name'], STEP_CHECK[kind] + (
+                  pad + '        StepEnd ending(*this);']
+        if step.get('until'):
+            lines += [pad + '        if (!({}))'.format(' && '.join(step['until'])),
+                      pad + '        {',
+                      pad + '            stay();',
+                      pad + '            break;',
+                      pad + '        }']
+        lines += [marker('step_' + step['name'], STEP_CHECK[kind] + (
+                      UNTIL_HELD if step.get('until') else
                       SENT_UPDATE if kind == 'update' and step.get('send') else ''), indent + 8),
                   pad + '    }',
                   pad + '    break;']
@@ -2844,8 +2891,8 @@ HOLD_MAIN = ['int main(int argc, char * argv[])',
 
 # The console quit path, asked of nearly every task. End of input is not a quit
 # request: a process started without a console is handed a stream nothing is ever
-# written to, so the loop blocks there and the service keeps running.
-CONSOLE_INCLUDES = ['#include <iostream>', '#include <string>']
+# written to, so the loop blocks on its own thread and the service keeps running.
+CONSOLE_INCLUDES = ['#include <iostream>', '#include <string>', '#include <thread>']
 
 MAIN_BODY = ['int main()',
              '{',
@@ -2854,24 +2901,24 @@ MAIN_BODY = ['int main()',
              '',
              '    // Quits on "-q" or "--quit" from the console. Any other input is',
              '    // ignored, and end of input keeps the service running.',
-             '    bool quitRequested{ false };',
-             '    std::string line;',
-             '    while (std::getline(std::cin, line))',
+             '    std::thread console([]()',
              '    {',
-             '        if ((line == "-q") || (line == "--quit"))',
+             '        std::string line;',
+             '        while (std::getline(std::cin, line))',
              '        {',
-             '            quitRequested = true;',
-             '            break;',
+             '            if ((line == "-q") || (line == "--quit"))',
+             '            {',
+             '                quit_with(0);',
+             '                break;',
+             '            }',
              '        }',
-             '    }',
-             '    if (quitRequested == false)',
-             '    {',
-             '        areg::Application::wait_quit(areg::WAIT_INFINITE);',
-             '    }',
+             '    });',
+             '    console.detach();',
              '',
+             '    areg::Application::wait_quit(areg::WAIT_INFINITE);',
              '    areg::Application::unload_model(_modelName);',
              '    areg::Application::release();',
-             '    return 0;',
+             '    return areg::Application::stored_element(_exitCode).valInt.mElement;',
              '}',
              '']
 
@@ -3052,7 +3099,7 @@ def component_files(cls, brief, includes, class_lines, state_slot, prelude=(),
     return [(cls + '.hpp', '\n'.join(header)), (cls + '.cpp', '\n'.join(source))]
 
 
-# The consumer ends the application through this; main() defines it, next to the
+# A component ends the application through this; main() defines it, next to the
 # storage it writes.
 QUIT_DECLARATION = ['//! Ends the application with this exit code, in storage that outlives',
                     '//! the components. Defined next to main().',
@@ -3110,7 +3157,7 @@ def app_files(iface, mode, include_root, machine=None, steps=(), driver=None, ti
         provider_cls, 'Provider of the {} service.'.format(iface.name),
         class_includes(iface, machine) + timer_includes(provider_lines) + ['']
         + provider_base,
-        provider_lines, 'provider_state')]
+        provider_lines, 'provider_state', QUIT_DECLARATION)]
     produced += [(CONSUMER_DIR[mode] + name, text) for name, text in component_files(
         consumer_cls, 'Consumer of the {} service.'.format(iface.name),
         class_includes(iface) + timer_includes(consumer_lines) + [''] + consumer_base,
@@ -3158,6 +3205,7 @@ def app_files(iface, mode, include_root, machine=None, steps=(), driver=None, ti
                     'The process that provides the {} service.'.format(iface.name))
     provider += CONSOLE_INCLUDES + ['']
     provider += ['#include "{}.hpp"'.format(provider_cls), '']
+    provider += EXIT_CODE
     provider += ['constexpr char const _modelName[]{ "ProviderModel" };',
                  '',
                  'BEGIN_MODEL(_modelName)']
