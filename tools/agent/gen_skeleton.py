@@ -424,13 +424,19 @@ def scenario_holes(path):
     for scenario in scenarios:
         label = scenario.get('name', '')
         procs = scenario.get('procs', [])
+        silent = [spec for spec in procs if spec.get('expect') == [] and not spec.get('reject')]
         for spec in procs:
             for entry in spec.get('expect', []):
                 found = MARKER.search('// ' + entry) if entry.startswith('TODO(you)') \
                     else None
                 if found:
-                    holes.append((found.group(1), 'what "{}" must print in scenario '
-                                  '"{}".'.format(proc_label(spec), label)))
+                    hint = 'what "{}" must print in scenario "{}".'.format(
+                        proc_label(spec), label)
+                    for other in silent:
+                        hint += (' "{0}" expects nothing: these lines are the evidence. A '
+                                 'requirement only "{0}" can show goes in a section == {1}.'
+                                 .format(proc_label(other), expect_slot(label, other)))
+                    holes.append((found.group(1), hint))
         stop = scenario.get('stop')
         after = stop.get('after') if isinstance(stop, dict) else None
         found = MARKER.search('// ' + after) \
@@ -3427,8 +3433,9 @@ def update_scenarios(path, mode, iface, steps=(), reconnect=0):
         print('  kept   {} -- its expectations are yours, not the scaffold\'s'
               .format(path))
         return
+    # With steps the lead prints what each step saw, so it alone holds a hole.
     for index, spec in enumerate(procs):
-        spec['expect'] = [SCENARIO_TODO.format(
+        spec['expect'] = [] if steps and index < len(procs) - 1 else [SCENARIO_TODO.format(
             expect_slot(scenarios[0].get('name', 'scenario'), spec))]
         if index == len(procs) - 1:
             spec['exit'] = 0

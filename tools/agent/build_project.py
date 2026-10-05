@@ -246,6 +246,10 @@ def show(lines, tail):
 
 NOTES_SHOWN = '.notes-shown'
 NOTE_LINE = re.compile(r'^(\s*)(?:note  |table )(\S+)')
+# The design notes that ask for a change to design.json, and those this call printed.
+CHANGE_NOTE = re.compile(r'is only ever set from its own value|'
+                         r'Each of these triggers forwards a request')
+CHANGES_ASKED = []
 
 
 def collapse_notes(lines, record):
@@ -280,6 +284,8 @@ def collapse_notes(lines, record):
             collapsed += 1
         else:
             kept.extend(lines[index:end])
+            if CHANGE_NOTE.search(block):
+                CHANGES_ASKED.append(digest)
         index = end
     if where is not None:
         kept[where[0]] = '{}note  {} design note(s) unchanged since the last call, not repeated' \
@@ -434,6 +440,8 @@ def documents_of(specs, outdir):
     the .fsml each machine hosts, as its "submachines" spell them."""
     interfaces, machines, shared_types, hosted = [], [], [], []
     documents = [gen_docs.load_spec(spec)[0] for spec in specs]
+    gen_docs.settle_submachines([entry for document in documents
+                                 for entry in gen_docs.listed(document, 'machines')])
     designed = set(entry.get('name') for document in documents
                    for entry in document.get('machines') or [])
     for document in documents:
@@ -628,11 +636,17 @@ def closing_lines(root, bodies, specs):
             length = ' ({} lines)'.format(sum(1 for _ in handle))
     except OSError:
         pass
-    return ['Every step passed. {} marker(s) are open, so the application does nothing '
-            'yet.'.format(still_open),
-            'Next: read {}{}, then write every section it lists into {}, apply it, '
+    first = ['Every step passed. {} marker(s) are open, so the application does nothing '
+             'yet.'.format(still_open)]
+    if CHANGES_ASKED:
+        first.append('{} note(s) above ask for a change to design.json. If you take one, '
+                     'change design.json and run this command again before reading {}: it '
+                     'is rewritten then.'.format(len(CHANGES_ASKED), gen_skeleton.WORKSHEET))
+    return first + [
+            '{}: read {}{}, then write every section it lists into {}, apply it, '
             'build and run the scenarios in one call:'
-            .format(gen_skeleton.WORKSHEET, length, bodies),
+            .format('Otherwise' if CHANGES_ASKED else 'Next', gen_skeleton.WORKSHEET,
+                    length, bodies),
             "{} --write {} --run <<'AREG_EOF'".format(same, bodies)]
 
 
@@ -707,6 +721,8 @@ def main():
                              'same call')
     parser.add_argument('--only', metavar='NAME',
                         help='run only the named scenario; implies --run')
+    parser.add_argument('--verbose', action='store_true',
+                        help='print every line each process wrote; implies --run')
     parser.add_argument('--regenerate', action='store_true',
                         help='write the application again, discarding what is in it')
     parser.add_argument('--no-check', action='store_true',
@@ -716,7 +732,7 @@ def main():
                              'run as usual: design.json, bodies.txt or fix.txt and '
                              'its build in one call. Once per call')
     args = parser.parse_args()
-    if args.only:
+    if args.only or args.verbose:
         args.run = True
 
     root = os.path.abspath(args.root)
@@ -912,6 +928,8 @@ def main():
                      '--keep', os.path.join(args.build, 'scenarios')]
         if args.only:
             scenarios += ['--only', args.only]
+        if args.verbose:
+            scenarios.append('--verbose')
         if not run('scenarios', scenarios, root, kept=None, failed_kept=None):
             return 1
         if not args.no_check:

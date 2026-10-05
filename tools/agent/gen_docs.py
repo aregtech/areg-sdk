@@ -778,8 +778,11 @@ def write_state(machine, writer, depth, state):
         head += ' HistoryDepth="{}"'.format(depth_of)
     if state.get('submachine'):
         if state['submachine'] not in machine.submachine_names:
-            fail('state "{}" hosts "{}", which is not in "submachines"'
-                 .format(state['name'], state['submachine']))
+            fail('state "{}" hosts "{}", which is neither another machine of this design '
+                 'nor in "submachines". A .fsml the project holds is listed as '
+                 '"submachines": [{{"name": "{}", "version": "1.0.0", "path": "<its .fsml, '
+                 'from the project root>"}}]'
+                 .format(state['name'], state['submachine'], state['submachine']))
         head += ' Submachine="{}"'.format(esc(state['submachine']))
     if state.get('final_event'):
         if state['final_event'] not in machine.event_names:
@@ -1370,11 +1373,41 @@ def load_spec(path):
     settle_awaits(spec)
     for machine in listed(spec, 'machines'):
         settle_start(machine, machine.get('name'))
+    settle_submachines(listed(spec, 'machines'))
     if NOTE in raw and not spec:
         fail('{} is still the template: nothing in it is filled. Give each document the '
              'task needs a "name" and its entries, and delete a section it does not need.'
              .format(path))
     return spec, len(skipped)
+
+
+def settle_submachines(machines):
+    """List in "submachines" every machine of these that a state of another one hosts.
+
+    The entry takes the hosted machine's version; its path is settled later, as for an
+    entry written by hand. A name that is no machine of these is left to be refused.
+    """
+    def hosts(states):
+        for state in states if isinstance(states, list) else []:
+            if isinstance(state, dict):
+                if isinstance(state.get('submachine'), str):
+                    yield state['submachine']
+                yield from hosts(state.get('states'))
+
+    designed = dict((spec['name'], spec) for spec in machines
+                    if isinstance(spec.get('name'), str))
+    for spec in machines:
+        entries = spec.get('submachines')
+        if entries is not None and not isinstance(entries, list):
+            continue
+        listed_names = set(entry.get('name') if isinstance(entry, dict) else entry
+                           for entry in entries or [] if isinstance(entry, (dict, str)))
+        for name in hosts(spec.get('states')):
+            if name in designed and name != spec.get('name') and name not in listed_names:
+                entries = spec.setdefault('submachines', [])
+                entries.append({'name': name,
+                                'version': designed[name].get('version', '1.0.0')})
+                listed_names.add(name)
 
 
 def render(node, depth=0, lead=0):
@@ -2572,6 +2605,7 @@ def main():
         skipped += count
 
     project = merge(specs)
+    settle_submachines(listed(project, 'machines'))
     check_shape(project)
     check_unique_names(project)
     cross_check(project)

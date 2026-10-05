@@ -2316,9 +2316,10 @@ def check_generated_code(report):
 # the only tree an application author or CI ever has.
 #
 # Documents only. The tools that create and read the tree name it because that is
-# what they do, and each one works when it is absent.
+# what they do, and each one works when it is absent. A home path (~/.claude/,
+# $HOME/.claude/) is Claude Code's own directory, not this tree.
 # ---------------------------------------------------------------------------
-LOCAL_TREE_RE = re.compile(r'(?<![\w.-])\.claude/')
+LOCAL_TREE_RE = re.compile(r'(?<![\w.-])(?<!~/)(?<!HOME/)\.claude/')
 
 
 def tracked_files():
@@ -2845,10 +2846,12 @@ def run():
     check_generated_prefix(report)
     check_answer_file(report)
     check_peer_lost_scenario(report)
+    check_stepped_evidence(report)
     check_shared_request_action(report)
     check_provider_timers(report)
     check_scaffold_routing(report)
     check_build_routes_next(report)
+    check_change_note_route(report)
     check_advice_flags_accepted(report)
     check_passing_output_kept(report)
     check_base_api_parity(report)
@@ -5538,6 +5541,25 @@ def hosted_path_failure(tools):
     if chosen != ['Loop.fsml']:
         return 'build_project.py builds {} for a host whose hosted path is left out'.format(
             chosen)
+    unlisted = copy.deepcopy(HOSTED_SAMPLE)
+    del unlisted['machines'][1]['submachines']
+    code, said, left = generate(unlisted, os.path.join('src', 'services'))
+    if code:
+        return 'a hosted machine of the design with no "submachines" entry is refused: ' \
+               '{}'.format(said.splitlines()[-1:])
+    if left != named:
+        return 'a hosted machine with no "submachines" entry writes other documents'
+    found = module.documents_of(['design.json'], os.path.join('src', 'services'))
+    chosen = [os.path.basename(path) for path in module.built_machines(found[1], found[3])]
+    if chosen != ['Loop.fsml']:
+        return 'build_project.py builds {} for a host with no "submachines" entry'.format(
+            chosen)
+    unknown = copy.deepcopy(unlisted)
+    unknown['machines'][1]['states'][1]['submachine'] = 'Elsewhere'
+    code, said, _ = generate(unknown, os.path.join('src', 'services'))
+    if not code or '"path"' not in said:
+        return 'a hosted name that is no machine of the design is not refused with the ' \
+               'entry form'
     wrong = copy.deepcopy(HOSTED_SAMPLE)
     wrong['machines'][1]['submachines'][0]['path'] = 'src/other/Pass.fsml'
     code, said, _ = generate(wrong, os.path.join('src', 'services'))
@@ -5548,8 +5570,8 @@ def hosted_path_failure(tools):
 
 
 def check_hosted_path(report, tools=None):
-    """A hosted machine of the same design needs no "path", and a wrong one is refused
-    with the path the design writes it to."""
+    """A hosted machine of the same design needs no "path" and no "submachines" entry, and
+    a wrong path is refused with the path the design writes it to."""
     tools = tools or os.path.join(ROOT, 'tools', 'agent')
     holder = tempfile.mkdtemp()
     here = os.getcwd()
@@ -5562,8 +5584,9 @@ def check_hosted_path(report, tools=None):
     if failure:
         report.fail('hosted-path', failure)
         return
-    report.ok('hosted-path', 'a hosted machine of the same design takes its path from the '
-                             'design; a path naming no file is refused with the right one')
+    report.ok('hosted-path', 'a hosted machine of the same design takes its path and its '
+                             '"submachines" entry from the design; a path naming no file is '
+                             'refused with the right one')
 
 
 def installed_scaffold_failure(prefix):
@@ -6681,6 +6704,75 @@ def check_answer_file(report):
                                                              gen_skeleton.BODIES))
 
 
+def stepped_evidence_failure(tools):
+    """What is wrong with the expectation holes of the example, with and without steps,
+    or ''. The working directory is a fresh one per call."""
+    sys.path.insert(0, tools)
+    import fill_markers
+    import gen_skeleton
+    import run_scenarios
+    sys.path.pop(0)
+
+    def no_steps(design):
+        for entry in design['interfaces']:
+            entry.pop('steps', None)
+
+    here = os.getcwd()
+    for edit in (None, no_steps):
+        holder = tempfile.mkdtemp()
+        try:
+            os.chdir(holder)
+            failed = lay_example_app(tools, edit)
+            if failed:
+                return failed
+            with open('scenarios.json', encoding='utf-8') as handle:
+                smoke = json.load(handle)['scenarios'][0]
+            procs = smoke['procs']
+            holes = [bool(p.get('expect')) for p in procs]
+            if edit is no_steps:
+                if not all(holes):
+                    return 'with no steps a process of smoke holds no expectation hole'
+                continue
+            if holes != [False] * (len(procs) - 1) + [True]:
+                return ('with steps smoke holds a hole on {}, not on the lead alone'
+                        .format([p.get('name') or p['binary'] for p, h in zip(procs, holes)
+                                 if h]))
+            if run_scenarios.asserts_nothing(smoke):
+                return 'with steps smoke asserts nothing'
+            silent = gen_skeleton.expect_slot(smoke.get('name'), procs[0])
+            with open('worksheet.txt', encoding='utf-8') as handle:
+                sheet = handle.read()
+            if re.search(r'^== {}$'.format(silent), sheet, re.MULTILINE) or \
+                    'section == ' + silent not in re.sub(r'\s*\n#\|\s*', ' ', sheet):
+                return ('the worksheet does not name {} beside the lead\'s expectations, '
+                        'or offers it as a hole'.format(silent))
+            with open('bodies.txt', 'w', encoding='utf-8') as handle:
+                handle.write('== {}\nprovider: only it can show this\n'.format(silent))
+            done = subprocess.run([sys.executable, os.path.join(tools, 'fill_markers.py'),
+                                   '--bodies', 'bodies.txt'], capture_output=True, text=True)
+            with open('scenarios.json', encoding='utf-8') as handle:
+                first = json.load(handle)['scenarios'][0]['procs'][0]
+            if first.get('expect') != ['provider: only it can show this']:
+                return 'a section for the provider did not reach its "expect": {}'.format(
+                    (done.stdout + done.stderr).strip().splitlines()[-1:])
+        finally:
+            os.chdir(here)
+            shutil.rmtree(holder, ignore_errors=True)
+    return ''
+
+
+def check_stepped_evidence(report, tools=None):
+    """With steps only the lead of smoke holds an expectation hole, and a section still
+    gives the provider one; with no steps every process holds one."""
+    failure = stepped_evidence_failure(tools or os.path.join(ROOT, 'tools', 'agent'))
+    if failure:
+        report.fail('stepped-evidence', failure)
+        return
+    report.ok('stepped-evidence', 'with steps the lead alone holds an expectation hole and '
+              'the worksheet names the provider\'s optional section; with no steps every '
+              'process holds one')
+
+
 def check_peer_lost_scenario(report):
     """Every two-process project gets a peer-lost scenario the run does not write.
 
@@ -6964,8 +7056,74 @@ def check_build_routes_next(report):
               'they are filled')
 
 
+def change_note_route_failure(tools):
+    """What is wrong with the closing lines after a note asking for a design change, or ''.
+
+    The note is the one gen_docs.py prints for an action shared by two answered requests.
+    """
+    sys.path.insert(0, tools)
+    import build_project
+    sys.path.pop(0)
+    if not hasattr(build_project, 'CHANGES_ASKED'):
+        return 'build_project.py keeps no record of a note asking for a design change'
+    example = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'), '--example'],
+                             capture_output=True, text=True)
+    shared = json.loads(example.stdout)
+    for request in shared['interfaces'][0]['requests']:
+        request.setdefault('answer', [{'name': 'done', 'type': 'bool'}])
+    shared['machines'][0]['states'][0]['transitions'] += [
+        {'on': 'open', 'do': ['on_open']}, {'on': 'close', 'do': ['on_open']}]
+    holder = tempfile.mkdtemp()
+    try:
+        spec = os.path.join(holder, 'design.json')
+        with open(spec, 'w', encoding='utf-8') as handle:
+            json.dump(shared, handle)
+        done = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'), '--outdir',
+                               os.path.join(holder, 'out'), '--force', '--spec', spec],
+                              capture_output=True, text=True)
+        lines = (done.stdout + done.stderr).splitlines()
+        source = os.path.join(holder, 'src', 'provider')
+        os.makedirs(source)
+        with open(os.path.join(source, 'P.cpp'), 'w', encoding='utf-8') as handle:
+            handle.write('void f()\n{\n    // TODO(you) body: write it.\n}\n')
+        record = os.path.join(holder, 'build', 'notes')
+        said = []
+        for _ in range(2):
+            del build_project.CHANGES_ASKED[:]
+            build_project.collapse_notes(lines, record)
+            said.append(' '.join(build_project.closing_lines(holder, 'bodies.txt',
+                                                              ['design.json'])))
+        del build_project.CHANGES_ASKED[:]
+        build_project.collapse_notes([line for line in lines if 'forwards' not in line
+                                      and 'runs on' not in line], os.path.join(holder, 'x'))
+        said.append(' '.join(build_project.closing_lines(holder, 'bodies.txt',
+                                                          ['design.json'])))
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    if 'change to design.json' not in said[0] or 'before reading worksheet.txt' not in said[0]:
+        return 'a fresh shared-action note does not put the design change before the ' \
+               'worksheet: "{}"'.format(said[0])
+    if 'change to design.json' in said[1]:
+        return 'a note already shown asks for the design change again: "{}"'.format(said[1])
+    if 'change to design.json' in said[2]:
+        return 'a build with no design-change note asks for one: "{}"'.format(said[2])
+    return ''
+
+
+def check_change_note_route(report, tools=None):
+    """A note asking for a design change, printed fresh, puts the change before the
+    worksheet read; a repeated note or none leaves the closing lines as they are."""
+    failure = change_note_route_failure(tools or os.path.join(ROOT, 'tools', 'agent'))
+    if failure:
+        report.fail('change-note-route', failure)
+        return
+    report.ok('change-note-route', 'a fresh design-change note puts the change before the '
+              'worksheet read; a repeated note or none does not')
+
+
 def check_advice_flags_accepted(report):
-    """Every flag a build_project.py failure advice names is one it accepts.
+    """Every flag a build_project.py failure advice names, and every run control the
+    run pages name, is one it accepts.
 
     The advice is read right after a build_project.py call, so a flag it names is
     tried on build_project.py. A flag only another tool takes is refused with exit 2,
@@ -6984,13 +7142,17 @@ def check_advice_flags_accepted(report):
     named = set()
     for advice in build_project.ADVICE.values():
         named.update(re.findall(r'--[a-z][a-z-]*', advice))
+    # The run controls the pages name are tried on build_project.py, the command that runs.
+    pages = read('docs', 'agent', '01-runbook.md') + read('docs', 'agent', '51-debug.md')
+    named.update(flag for flag in ('--only', '--verbose') if flag in pages)
     refused = sorted(named - accepted)
     if refused:
         report.fail('advice-flags',
                     'build_project.py advice names {} but build_project.py refuses it'
                     .format(', '.join(refused)))
         return
-    report.ok('advice-flags', 'every flag the build advice names is accepted: {}'
+    report.ok('advice-flags', 'every flag the build advice and the run pages name is '
+                              'accepted: {}'
               .format(', '.join(sorted(named)) or 'none'))
 
 
