@@ -141,7 +141,7 @@ resume re-enters where it left off. See "Re-entering a composite where it left o
 | a transition with `"to"` another state | leaves the state, runs its exit, then the target's entry |
 | a transition without `"to"`, or to its own state | runs its steps in place; the state is not left or re-entered |
 | `"on"` | the trigger, timer or event that fires it, read from those lists so it is never spelled twice |
-| `"do"` and `"set"` | run between the exit and the entry; `"set"` first, so an action sees it |
+| `"do"` and `"set"` | between exit and entry, `"set"` first: a guard reads old values, `"do"` new |
 
 `"initial"` becomes the level's start marker and the transition out of it.
 
@@ -280,7 +280,7 @@ which generates `const bool isEligible = (mAttrOpened == false);` and takes the
 transition only when it holds. **Transitions that share one trigger are tried in
 document order, and the first whose guard holds is the one taken**; write the
 guarded ones first and the unguarded fallback last. A refused transition is not an
-error: the trigger returns `false`, exactly as it does for a state with no
+error: the trigger returns `false`, as it does for a state with no
 transition at all. Nest with
 `{"all": [...]}`, `{"any": [...]}` and `{"not": ...}`; call a declared `"conditions"`
 entry with `{"call": "is_ready"}`.
