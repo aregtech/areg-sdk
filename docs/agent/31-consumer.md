@@ -162,9 +162,13 @@ if (areg::is_service_connected(status))
 }
 ```
 
-An attribute handler is called once immediately after subscribing, then on every
-update. That first call can report the value as not valid even when the provider has
-already set it, so a handler must work when there is no value yet. Always check the `areg::DataState` argument: the value is meaningful only when
+An attribute handler is called at once on subscribing with the value the proxy holds,
+not valid on a first subscription; then with the provider's current value; then on
+every change. A request sent right after subscribing reaches the provider after that
+current value is sent, so the first value that arrives after the request is the state
+before it: a request's result is read from its response or a broadcast. Outside the
+handler, a consumer reads the value as `x(state)`: its getter always takes the state.
+Always check the `areg::DataState` argument: the value is meaningful only when
 it is `areg::DataState::DataIsOK`. The other states are `DataIsInvalid`,
 `DataIsUnavailable`, `DataUnexpectedError` and `DataIsUndefined`.
 

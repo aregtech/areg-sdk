@@ -82,8 +82,8 @@ the same build command.
 The spec's `"machines"` names states, triggers, timers, events, guards and transitions;
 the tool assigns every `ID`, resolves every `To`, binds every guard operand to the
 declaration it means, and refuses a name that is not declared. The same spec writes the
-`.siml` and the `.dtml`, so a type or an attribute the service and the machine share is
-declared once. Only `Overview` and `StateList` are required, so no `Layout` block is
+`.siml` and the `.dtml`, so a type the service and the machine share is declared
+once. Only `Overview` and `StateList` are required, so no `Layout` block is
 needed; `fsml_layout.py <document>` adds one for the editor.
 
 Everything this page describes has a field: `"submachines"` and a state's
@@ -179,7 +179,7 @@ marker, not on the entry of the stage being resumed.
 
 **A phase a consumer watches is published from each state's `entry` by one action
 that takes it**: `{"call": "publish_phase", "args": {"phase": "lit:<Enum>::<Value>"}}`,
-whose one body calls the attribute's `set_`. A resume re-runs that entry; under
+whose one body sets the service attribute on the provider. A resume re-runs that entry; under
 `OnChange` the consumer hears it only if the value changed in between.
 
 ### Leaving a level when it finishes: `OnFinal`
@@ -251,12 +251,11 @@ Decide this once, per value, before writing the spec. Who reads it decides:
 | Read by | Declared in | Reached as |
 |---|---|---|
 | a guard, a condition or an action of the machine | the `.fsml` `"attributes"` | `mAttrX` inside the machine, `x()` / `set_x()` on it |
-| the other process -- a consumer or a provider of the service | the `.siml` `"attributes"` | `set_x()` on the provider, `notify_on_x_update` on the consumer |
+| another process | the `.siml` `"attributes"` | pages 30 and 31 |
 | neither: only the component that computes it | nothing. A plain C++ member | itself |
 
-A value read by both is declared in both: the `.siml` attribute is what the peer
-sees, and the provider sets it from the machine. Nothing is copied into the machine
-that no guard, condition or action reads -- that member belongs to the component.
+A machine attribute is a member of the machine: `x()` reads it with no parameter,
+`set_x()` writes it, and a change notifies nobody.
 
 ### Guarding a transition
 
@@ -327,28 +326,3 @@ taking the same arguments. `build_project.py --spec` writes both.
   consumer waits until its deadline for a response that was never sent. A state that
   should turn the request down still needs its own transition, calling the action that
   sends the refusal.
-
-## The spelling, after a refusal
-
-Only once `gen_docs.py` has refused a document over a name. You do not write a `.fsml`
--- `gen_docs.py` writes it from `design.json` -- so before a refusal there is nothing
-here to ask about. After one, `schema_help.py` answers one name out of
-`../../tools/schema/fsml.xsd`. Ask it; never read the 50 KB schema.
-
-```bash
-python3 <areg-sdk>/tools/schema_help.py State --document fsml
-python3 <areg-sdk>/tools/schema_help.py State/@Kind --document fsml
-python3 <areg-sdk>/tools/schema_help.py --full tStateKind --document fsml
-python3 <areg-sdk>/tools/schema_help.py --list --document fsml
-```
-
-On Windows the interpreter is `python`, not `python3`.
-
-The first gives where the element goes, every attribute with the values it accepts,
-and the children in order; the second one attribute; `--full` on a type name adds what
-the values mean; `--list` names every element. A bare attribute name (`Source`,
-`MethodType`, `HistoryDepth`, `Threading`) is answered with the elements that carry it,
-and `--search <word>` finds a name from a word in it.
-
-A refused document is `explain_rule.py <number> --at <Element>/@<Attribute>`: it gives
-the rule and the values that attribute accepts in one call.

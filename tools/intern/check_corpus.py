@@ -172,7 +172,8 @@ FEATURES = [
 # unexercised construct is one whose first real use finds the defect.
 # ---------------------------------------------------------------------------
 SCHEMA_FEATURES = [
-    ('history pseudo-state', 'HistoryDepth="',       '22-state-machine.md', 'HistoryDepth'),
+    ('history pseudo-state', 'HistoryDepth="',       '22-state-machine.md',
+     '"depth"|HistoryDepth'),
     ('a hosted machine',     'Submachine="',         '22-state-machine.md', 'Submachine'),
     ('a level reporting done', 'OnFinal="',          '22-state-machine.md', 'OnFinal'),
     ('a guarded transition', '<Guard',               '22-state-machine.md', '"guard"|<Guard'),
