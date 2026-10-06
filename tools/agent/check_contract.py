@@ -1117,14 +1117,162 @@ def check_deferred_responses(sources, findings, read):
             if re.search(r'\bprepare_response\s*\(', line):
                 deferred.append((path, number + 1))
 
-    if released:
-        return
-    for path, number in deferred:
-        findings.append(Finding(
-            'P-13', 'error', path, number,
-            'prepare_response() answers a request that was deferred, but nothing '
-            'calls unblock_current_request(); without the release the request stays '
-            'busy and a second client is refused with RequestBusy'))
+    if not released:
+        for path, number in deferred:
+            findings.append(Finding(
+                'P-13', 'error', path, number,
+                'prepare_response() answers a request that was deferred, but nothing '
+                'calls unblock_current_request(); without the release the request stays '
+                'busy and a second client is refused with RequestBusy'))
+    check_late_responses(sources, findings, read)
+
+
+# The keywords whose parenthesised head opens a block that is not a function.
+NOT_FUNCTIONS = {'if', 'for', 'while', 'switch', 'catch', 'return', 'sizeof',
+                 'decltype', 'alignof', 'static_assert'}
+FUNCTION_HEAD_RE = re.compile(r'(~?\w+)\s*\(')
+CLASS_HEAD_RE = re.compile(r'\b(?:class|struct)\s+(\w+)(?:\s+final)?\s*(?::[^;{}()]*)?$')
+FUNCTION_TAIL_RE = re.compile(r'\)\s*(?:(?:const|noexcept|override|final|volatile)\s*)*$')
+CALLED_NAME_RE = re.compile(r'\b(\w+)\s*\(')
+RESPONSE_CALL_RE = re.compile(r'\bresponse_(\w+)\s*\(')
+# The callbacks areg dispatches to a component, each one its own event.
+DISPATCH_RE = re.compile(r'(?:process_timer|process_event|service_connected|request_\w+'
+                         r'|response_\w+|broadcast_\w+|on_\w+_update)$')
+DEFINITION_BEFORE_RE = re.compile(r'\bvoid\s+(?:\w+\s*::\s*)*$')
+
+
+def code_text(text):
+    """The text with comments and string contents removed, line breaks kept."""
+    text = '\n'.join(strip_noise(line) for line in text.splitlines())
+    return re.sub(r'/\*.*?\*/', lambda m: '\n' * m.group(0).count('\n'), text,
+                  flags=re.DOTALL)
+
+
+def function_bodies(code):
+    """(name, start, end, owner) of every function body in code, end exclusive.
+
+    A brace opens a function body when the text since the last ';', '{' or '}'
+    ends with a parameter list, and a class body when it follows class or struct.
+    owner is the class a body belongs to, by its qualifier or by the class body
+    around it, or None. Every other brace is a block of its enclosing body.
+    """
+    found = []
+    stack = []
+    last = 0
+    for index, char in enumerate(code):
+        if char == '{':
+            head = code[last:index]
+            kind, name, owner = 'block', None, None
+            match = CLASS_HEAD_RE.search(head)
+            if match:
+                kind, name = 'class', match.group(1)
+            else:
+                match = FUNCTION_HEAD_RE.search(head)
+                if match and FUNCTION_TAIL_RE.search(head) \
+                        and match.group(1) not in NOT_FUNCTIONS:
+                    kind, name = 'function', match.group(1)
+                    qualified = re.search(r'(\w+)\s*::\s*' + re.escape(name) + r'\s*\(', head)
+                    if qualified:
+                        owner = qualified.group(1)
+                    else:
+                        owner = next((entry[1] for entry in reversed(stack)
+                                      if entry[0] == 'class'), None)
+            stack.append((kind, name, owner, index))
+            last = index + 1
+        elif char == '}':
+            if stack:
+                kind, name, owner, start = stack.pop()
+                if kind == 'function':
+                    found.append((name, start, index + 1, owner))
+            last = index + 1
+        elif char == ';':
+            last = index + 1
+    return found
+
+
+def check_late_responses(sources, findings, read):
+    """P-13. A response sent after its request handler returned, with no release.
+
+    A response_<name>() sent from a timer, an event or another callback answers a
+    request whose handler has already returned. Unless request_<name>() released
+    it with unblock_current_request(), directly or through a function it calls,
+    the request stays busy and the next caller is refused with RequestBusy.
+    A sender is reported only when the project's own calls reach it from such a
+    callback and not from request_<name>(): a call made through generated code,
+    such as a state machine action, is not followed. A sending function that
+    calls prepare_response() is left to the rule above.
+    """
+    files = []
+    bodies = {}
+    owned = set()
+    for path in sources:
+        text = read(path)
+        if text is None:
+            continue
+        code = code_text(text)
+        spans = function_bodies(code)
+        files.append((path, text, code, spans))
+        for name, start, end, owner in spans:
+            bodies.setdefault(name, []).append(code[start:end])
+            owned.add((owner, name))
+
+    def reached_from(names):
+        seen = set(names)
+        pending = list(names)
+        while pending:
+            for body in bodies.get(pending.pop(), []):
+                for called in CALLED_NAME_RE.findall(body):
+                    if called in bodies and called not in seen \
+                            and not DISPATCH_RE.match(called):
+                        seen.add(called)
+                        pending.append(called)
+        return seen
+
+    def releases(names):
+        return any('unblock_current_request' in body
+                   for name in names for body in bodies.get(name, []))
+
+    reach = {}
+    reported = set()
+    for path, text, code, spans in files:
+        lines = text.splitlines()
+        for match in RESPONSE_CALL_RE.finditer(code):
+            if DEFINITION_BEFORE_RE.search(code[max(0, match.start() - 200):match.start()]):
+                continue
+            request = 'request_' + match.group(1)
+            if request not in bodies:
+                continue
+            enclosing = [s for s in spans if s[1] < match.start() < s[2]]
+            if not enclosing:
+                continue
+            sender, start, end, owner = min(enclosing, key=lambda s: s[2] - s[1])
+            if 'prepare_response' in code[start:end]:
+                continue
+            before = code[max(0, match.start() - 40):match.start()]
+            if not OBJECT_CALL_RE.search(before) \
+                    and (owner, match.group(0).rstrip('( ')) in owned:
+                continue
+            if request not in reach:
+                roots = [name for name in bodies
+                         if name != request and DISPATCH_RE.match(name)]
+                reach[request] = (reached_from([request]), reached_from(roots))
+            inside, late = reach[request]
+            if sender in inside or sender not in late or releases(inside) \
+                    or (path, start, request) in reported:
+                continue
+            number = code.count('\n', 0, match.start()) + 1
+            if suppressed(lines, number, 'P-13'):
+                continue
+            reported.add((path, start, request))
+            findings.append(Finding(
+                'P-13', 'error', path, number,
+                '%s() is sent from %s(), after %s() has returned, but %s() never '
+                'calls unblock_current_request(); the request stays busy and the '
+                'next caller is refused with RequestBusy. In %s(): const '
+                'areg::SessionID session{ unblock_current_request() }; keep it, and '
+                'answer with: if (prepare_response(session)) %s(...);'
+                % (match.group(0).rstrip('( '), sender, request, request, request,
+                   match.group(0).rstrip('( '))))
 
 
 # P-15. macro_declare_executable takes the source files after the target name. A

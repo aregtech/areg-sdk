@@ -309,10 +309,11 @@ taking the same arguments. `build_project.py --spec` writes both.
 
 - Never keep phase state in the component beside the machine. Two sources of truth
   disagree the first time a transition is added.
-- Never raise a stimulus from inside an action. The machine is already dispatching:
-  it logs an error and asserts. The single exception is `send_event()`, which queues
-  the event instead of dispatching it, and is the one call an action may make back
-  into the machine.
+- Never raise a stimulus of a machine from inside one of its own actions; a machine it
+  hosts, and the one hosting it, count as its own. That machine is mid-transition: it
+  logs an error and asserts. The single exception is
+  `send_event()`, which queues the event instead of dispatching it. A request, a
+  response, a broadcast or a trigger of another machine is allowed.
 - Never raise a stimulus before `init_fsm()`. That asserts as well.
 - Never edit `*FSM.*`, `*ActionHandler.*` or `*Defs.*`. Change the `.fsml`.
 - Never target a `Kind="Start"`, nor a `Kind="History"` from inside its own level.

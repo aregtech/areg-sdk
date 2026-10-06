@@ -494,7 +494,7 @@
     {
       "id": "P-13",
       "rule": "A request handler holds its request until it returns. A provider that answers later calls unblock_current_request() inside the handler, which releases the request and returns the session id that prepare_response(session) later restores. Without the release the request stays busy: one client hides it, the second is refused with RequestBusy.",
-      "detect": "a prepare_response() call in a project where unblock_current_request() appears nowhere"
+      "detect": "a prepare_response() call in a project where unblock_current_request() appears nowhere; or a response_<name>() sent from a timer, an event or another callback, without prepare_response(), when request_<name>() never calls unblock_current_request()"
     },
     {
       "id": "108",

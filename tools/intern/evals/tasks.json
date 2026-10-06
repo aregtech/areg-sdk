@@ -902,6 +902,34 @@
         "rule": "B-08"
       },
       "teaches": "an areg object declared with parentheses is still an areg object; std::string names such as c_str() do not exist on it"
+    },
+    {
+      "id": "r35-late-response-not-released",
+      "kind": "repair",
+      "prompt": "The client never gets its answer, and a second request is refused with RequestBusy. The provider hands the work on and answers when the result event arrives. Find what the request handler never does.",
+      "expect": [
+        "worker: scanned depth",
+        "client: found"
+      ],
+      "reference": "07-worker-events",
+      "defect": {
+        "file": "src/main.cpp",
+        "edits": [
+          {
+            "find": "        const areg::SessionID session{ unblock_current_request() };",
+            "replace": "        const areg::SessionID session{ 0u };"
+          },
+          {
+            "find": "        if (prepare_response(data.session()))\n        {\n            response_scan(data.found());\n        }",
+            "replace": "        response_scan(data.found());"
+          }
+        ]
+      },
+      "detect": {
+        "by": "check_contract",
+        "rule": "P-13"
+      },
+      "teaches": "a response sent from an event, a timer or another callback answers a request whose handler has returned; that handler must call unblock_current_request() and the answer goes through prepare_response()"
     }
   ]
 }

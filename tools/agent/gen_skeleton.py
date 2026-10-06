@@ -1650,6 +1650,10 @@ def contract_lines(iface, document):
         # and a condition are overrides on the component itself.
         out.append('  the machine object is mFsm in a generated provider: a "call" '
                    'below is mFsm.<name>(...)')
+        out.append('  an action never calls a trigger of this machine: the transition is not '
+                   'finished. send_event() queues an event instead')
+        if iface.imports:
+            out.append('  a machine it hosts, and the one hosting it, count as this machine')
         # Every name below is read from what codegen.jar generated for the document.
         for name, params in iface.triggers:
             out.append('  call     bool {}({})'.format(iface.spell('trigger', name),
