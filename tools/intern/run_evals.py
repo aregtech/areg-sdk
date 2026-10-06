@@ -489,12 +489,10 @@ def self_check(tasks, args):
         else:
             SERVICE_DIRS[:] = [os.path.join(prefix, 'tools', 'areg'),
                                os.path.join(prefix, 'bin')]
-            # The installed services name the library without a path to it.
-            for variable, folder in (('LD_LIBRARY_PATH', 'lib'), ('DYLD_LIBRARY_PATH', 'lib'),
-                                     ('PATH', 'bin')):
-                os.environ[variable] = os.pathsep.join(
-                    [os.path.join(prefix, folder)]
-                    + [part for part in [os.environ.get(variable)] if part])
+            # A Windows application built against the installation loads its DLL from bin.
+            os.environ['PATH'] = os.pathsep.join(
+                [os.path.join(prefix, 'bin')]
+                + [part for part in [os.environ.get('PATH')] if part])
     each = max(1, args.jobs // len(groups)) + 1 if groups else args.jobs
     print('grading {} task(s) on {} recipe(s), built together at -j {} each, {}.'.format(
         sum(len(group) for group in groups.values()), len(groups), each, how), flush=True)

@@ -72,6 +72,19 @@ reporting each step to the console so a person can read what happened:
 6. release `south`, set it to **22** -- expect it accepted, cooling, and settling at 22
 7. print the final temperature of each zone -- expect 20, 16 and 22
 
+Once a step's expectation has held, the console prints its line below, with this
+exact wording, alone or at the end of a line:
+
+```lines
+step 1: north 15, centre 18, south 21, each at its target
+step 2: all three accepted, north heating, centre cooling, south heating
+step 3: north 16 17 18 19 20, centre 17 16, south 22 23 24, all settled
+step 4: refused, out of range
+step 5: refused, held
+step 6: south accepted, cooling, settled at 22
+step 7: north 20, centre 16, south 22
+```
+
 Then exit. **Exit code 0 if every expectation held, non-zero otherwise**, printing
 which step failed. The console must survive the zone host being started after it.
 

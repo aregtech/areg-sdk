@@ -85,6 +85,18 @@ step so a person can read what happened:
    them: lowest 110, highest 320, alarms raised exactly 1
 6. check that exactly one raise and one clear arrived in total
 
+Once a step's expectation has held, the operator prints its line below, with this
+exact wording, alone or at the end of a line:
+
+```lines
+step 1: refused, hysteresis 0
+step 2: refused, hysteresis 400
+step 3: thresholds accepted
+step 4: alarm raised, then cleared
+step 5: lowest 110, highest 320, alarms raised 1
+step 6: one raise and one clear in total
+```
+
 Then exit. **Exit code 0 if every expectation held, non-zero otherwise**, printing
 which step failed. The operator program must survive being started before the
 monitor, and if the monitor is stopped before the scenario completes it must

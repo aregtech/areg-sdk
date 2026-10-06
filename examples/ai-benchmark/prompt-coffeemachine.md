@@ -89,6 +89,20 @@ step to the console so a person can read what happened:
 8. start one more small drink, then cancel it -- expect the whole credit returned
    and no ingredient drawn
 
+Once a step's expectation has held, the simulated user prints its line below, with this
+exact wording, alone or at the end of a line; `<stage>` is the stage's name:
+
+```lines
+step 1: refused, insufficient credit
+step 2: Cappuccino accepted
+step 3: paused in <stage>, resumed in the same stage
+step 4: Cappuccino finished, credit 20
+step 5: low milk warning, then Latte refused: out of milk
+step 6: refilled, Latte finished
+step 7: Espresso finished, no frothing stage
+step 8: cancelled, whole credit returned, no ingredient drawn
+```
+
 Then exit. **Exit code 0 if every expectation held, non-zero otherwise**, printing
 which step failed. The user program must survive the machine being started after it.
 

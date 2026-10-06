@@ -28,13 +28,18 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, HERE)
 import codegen_names  # noqa: E402
-DEFAULT_API = os.path.join(ROOT, 'docs', 'agent', 'api.json')
+# A clone keeps docs/ two levels above tools/agent; an installation keeps it under
+# share/areg/sdk beside tools/.
+DEFAULT_API = next((path for path in (
+    os.path.join(ROOT, 'docs', 'agent', 'api.json'),
+    os.path.join(ROOT, os.pardir, 'share', 'areg', 'sdk', 'docs', 'agent', 'api.json'))
+    if os.path.isfile(path)), os.path.join(ROOT, 'docs', 'agent', 'api.json'))
 
 # A nested Final carrying an operation is registered in the rule catalogue the generator and the editor
 # share, so it is reported under the number they report it under rather than under a
-# second identity of its own. tools/schema/rules.xml is the only place that number is
+# second identity of its own. schema/rules.xml beside agent/ is the only place that number is
 # decided; there is no copy of it here to fall out of step.
-RULES_XML = os.path.join(ROOT, 'tools', 'schema', 'rules.xml')
+RULES_XML = os.path.join(os.path.dirname(HERE), 'schema', 'rules.xml')
 FINAL_ENTRY_RULE = 'RULE_FINAL_ENTRY_ORDER'
 STATE_NAME_RULE = 'RULE_STATE_NAME'
 ERROR_BAND = 0

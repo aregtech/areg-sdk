@@ -94,6 +94,20 @@ step to the console so a person can read what happened:
 8. clear the fault and run one more small print job of **1** page -- expect it
    to succeed, proving the device fully recovered
 
+Once a step's expectation has held, the operator prints its line below, with this
+exact wording, alone or at the end of a line; `<reason>` is the reason given:
+
+```lines
+step 1: scan finished, 3 pages
+step 2: print refused, <reason>
+step 3: print finished, 4 pages
+step 4: copy finished, 2 pages scanned, then 2 printed
+step 5: printer fault after 2 pages, next job refused
+step 6: fault cleared, idle
+step 7: scanner fault after 1 page
+step 8: print finished, 1 page, recovered
+```
+
 Then exit. **Exit code 0 if every expectation held, non-zero otherwise**, printing
 which step failed. The operator program must survive the device being started after
 it.

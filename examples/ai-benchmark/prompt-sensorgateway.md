@@ -93,6 +93,22 @@ step to the console so a person can read what happened:
    **normal**
 10. reset once more -- expect a refusal naming the normal state
 
+Once a step's expectation has held, the monitor prints its line below, with this
+exact wording, alone or at the end of a line; `<average>` is the average:
+
+```lines
+step 1: 3 sensors listed
+step 2: health normal
+step 3: 20 sets received, every value matches the table
+step 4: sensor 1 lowest 20, highest 24, average <average>
+step 5: sensor 1 calibrated
+step 6: health degraded, sensor 2 silent, readings from sensors 1 and 3
+step 7: calibrate refused, degraded
+step 8: health normal, sensor 2 back
+step 9: reset to starting, normal only after sensor 3 restored
+step 10: reset refused, normal
+```
+
 Then exit. **Exit code 0 if every expectation held, non-zero otherwise**, printing
 which step failed. The monitor must survive the gateway being started after it.
 

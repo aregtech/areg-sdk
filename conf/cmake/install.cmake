@@ -114,19 +114,20 @@ install(TARGETS logcollector logobserver mtrouter
             PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ WORLD_READ GROUP_EXECUTE WORLD_EXECUTE
 )
 
-if (AREG_SQLITE_FOUND)
-    # Copy additionally areg and areglogger dynamic libraries
-    install(TARGETS areg areglogger
-        LIBRARY DESTINATION tools/${AREG_PACKAGE_NAME}
-                COMPONENT Development   COMPONENT Runtime
-    )
-else()
-    # Copy additionally areg and areglogger dynamic libraries
-    install(TARGETS areg areglogger
-        LIBRARY DESTINATION tools/${AREG_PACKAGE_NAME}
-                COMPONENT Development   COMPONENT Runtime
-    )
+# The installed tools load the libraries installed beside them.
+if (APPLE)
+    set_target_properties(logcollector logobserver mtrouter PROPERTIES INSTALL_RPATH "@loader_path")
+elseif (UNIX)
+    set_target_properties(logcollector logobserver mtrouter PROPERTIES INSTALL_RPATH "$ORIGIN")
 endif()
+
+# Copy additionally areg and areglogger dynamic libraries beside the tools
+install(TARGETS areg areglogger
+    RUNTIME DESTINATION tools/${AREG_PACKAGE_NAME}
+            COMPONENT Development   COMPONENT Runtime
+    LIBRARY DESTINATION tools/${AREG_PACKAGE_NAME}
+            COMPONENT Development   COMPONENT Runtime
+)
 
 # Copy Areg configuration file
 install(FILES "${AREG_FRAMEWORK}/areg/resources/areg.init"

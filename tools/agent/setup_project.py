@@ -174,6 +174,7 @@ def fetch_block(sdk_root, tag):
 
 
 INCLUDE_ROOT = 'include_directories("${CMAKE_CURRENT_SOURCE_DIR}")'
+FIND_PACKAGE = 'find_package(areg CONFIG)'
 
 
 def rewrite_top_cmake(path, name, sdk_root, tag):
@@ -186,6 +187,12 @@ def rewrite_top_cmake(path, name, sdk_root, tag):
     if old not in text:
         fail('recipe CMakeLists.txt does not carry the expected FetchContent block')
     text = text.replace(old, fetch_block(sdk_root, tag))
+
+    # Scaffolded from an installation, the project finds that installation first.
+    if installed_docs_root() and not sdk_root:
+        prefix = os.path.normpath(os.path.join(installed_docs_root(), os.pardir, os.pardir,
+                                               os.pardir)).replace('\\', '/')
+        text = text.replace(FIND_PACKAGE, '{} HINTS "{}")'.format(FIND_PACKAGE[:-1], prefix), 1)
 
     # The project root on the include path: a header of the project is included as
     # "src/x/Name.hpp" exactly as a generated one is, from any directory of src/.

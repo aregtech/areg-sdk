@@ -108,6 +108,20 @@ to the console so a person can read what happened:
    `0000`, `1111`, `2222`; expect the card to be retained, and any further
    request on that card to be refused because there is no card in the machine
 
+Once a step's expectation has held, the customer prints its line below, with this
+exact wording, alone or at the end of a line:
+
+```lines
+step 1: refused twice, 2 then 1 attempts left, then logged in
+step 2: balance 500
+step 3: refused, not a multiple of the note value
+step 4: refused, over the daily limit
+step 5: withdrew 80, balance 420, withdrawn today 80
+step 6: current PIN accepted after one wrong attempt
+step 7: session ended
+step 8: card retained, further request refused: no card
+```
+
 Then exit. **Exit code 0 if every expectation held, non-zero otherwise**, printing
 which step failed. The customer program must survive the ATM being started after it.
 

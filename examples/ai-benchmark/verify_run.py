@@ -59,6 +59,7 @@ REQUIREMENTS = {
     'peer-loss':   'if one side goes away mid-scenario, the other exits non-zero',
     'cpu':         'no busy-waiting',
     'programs':    'as many separate programs as the task asks for, all in the normal run',
+    'lines':       'every line the task says its programs print, in the normal run',
     'sanitize':    'no memory or undefined-behaviour defect (not a checklist item)',
 }
 
@@ -67,6 +68,9 @@ REQUIREMENTS = {
 PROGRAMS_RE = re.compile(r'\b(two|three|four|five)\s+separate\s+programs\b', re.IGNORECASE)
 PROGRAM_COUNT = {'two': 2, 'three': 3, 'four': 4, 'five': 5}
 CLAIM_RE = re.compile(r'acceptance items passing\s*\|\s*(\d+)\s+of\s+(\d+)', re.IGNORECASE)
+# The lines a task says its programs print: a fenced block with the info string "lines".
+LINES_RE = re.compile(r'^```lines[ \t]*\n(.*?)^```', re.MULTILINE | re.DOTALL)
+PLACEHOLDER_RE = re.compile(r'<[^<>]+>')
 
 
 def task_text(run_dir):
@@ -92,6 +96,36 @@ def probe_programs(scenario, run_dir):
     have = sorted(set(proc.get('binary') for proc in scenario.get('procs') or []))
     return result('programs', len(have) >= need,
                   '{} asked, {} in the normal run: {}'.format(need, len(have), ', '.join(have)))
+
+
+def task_lines(text):
+    """Every line of the task's "lines" blocks, in order."""
+    return [line.strip() for block in LINES_RE.findall(text)
+            for line in block.splitlines() if line.strip()]
+
+
+def line_pattern(line):
+    """A printed line ending with this text, any case and spacing; <name> is any value."""
+    parts = []
+    for index, piece in enumerate(PLACEHOLDER_RE.split(line)):
+        if index:
+            parts.append('.+?')
+        parts += [r'\s+' if token.isspace() else re.escape(token)
+                  for token in re.split(r'(\s+)', piece) if token]
+    return re.compile(r'(?<![0-9a-z])' + ''.join(parts) + r'\s*$', re.IGNORECASE)
+
+
+def judge_lines(wanted, outputs):
+    """Every wanted line is printed by some process of the normal run."""
+    if not wanted:
+        return result('lines', None, 'the task names no printed lines')
+    printed = [line for text in outputs.values() for line in text.splitlines()]
+    missing = [want for want in wanted
+               if not any(line_pattern(want).search(line) for line in printed)]
+    evidence = '{} of {} printed'.format(len(wanted) - len(missing), len(wanted))
+    if missing:
+        evidence += '; missing: ' + '; '.join('"{}"'.format(want) for want in missing)
+    return result('lines', not missing, evidence)
 
 
 def claimed(run_dir):
@@ -189,12 +223,18 @@ def progress(text):
 
 
 def probe_repeat(scenario, build_dirs, count):
-    """The normal scenario, count times. Returns (result, lead times, CPU loads)."""
-    passes, leads, loads, first = 0, [], [], None
+    """The normal scenario, count times.
+
+    Returns (result, lead times, CPU loads, the outputs of the first passing run, or
+    of the first run when none passed).
+    """
+    passes, leads, loads, first, outputs = 0, [], [], None, None
     for index in range(count):
         progress('repeat: run {} of {}{}'.format(
             index + 1, count, ', {:.0f}s each'.format(leads[-1]) if leads else ''))
         passed, detail, observed, wall, cpu = run(scenario, build_dirs)
+        if outputs is None or (passed and not passes):
+            outputs = observed.get('outputs') or {}
         if not passed:
             first = first or detail
             continue
@@ -206,7 +246,7 @@ def probe_repeat(scenario, build_dirs, count):
     evidence = '{} of {} passed'.format(passes, count)
     if first:
         evidence += '; first failure: ' + first
-    return result('repeat', passes == count, evidence), leads, loads
+    return result('repeat', passes == count, evidence), leads, loads, outputs or {}
 
 
 def probe_start_order(scenario, build_dirs):
@@ -408,6 +448,25 @@ SELF_TEST_LOSS = (
      {'exits': {'p': 0}, 'elapsed': 2.15, 'actions': [{'fired_at': 0.15}]}, (True, True)),
 )
 
+# Printed lines against the wanted ones: (name, wanted, printed, verdict).
+SELF_TEST_LINES = (
+    ('every line, after a prefix and in another case',
+     ['step 1: refused, insufficient credit', 'step 4: Cappuccino finished, credit 20'],
+     'user: Step 1: Refused, insufficient credit\n[4]  step 4:  Cappuccino finished, '
+     'credit 20  \n', True),
+    ('a longer number is not the wanted one', ['step 4: credit 20'],
+     'step 4: credit 200\n', False),
+    ('the wanted text inside a longer word', ['step 1: done'], 'substep 1: done\n', False),
+    ('the wanted text with more after it', ['step 1: done'], 'step 1: done twice\n', False),
+    ('a placeholder takes the value', ['step 3: paused in <stage>, resumed in the same stage'],
+     'step 3: paused in Frothing milk, resumed in the same stage\n', True),
+    ('a placeholder takes something', ['step 5: halted at floor <floor>'],
+     'step 5: halted at floor \n', False),
+    ('audit: a partial run, every probe passing', ['step 2: Cappuccino accepted',
+     'step 6: refilled, Latte finished'], 'step 2: Cappuccino accepted\n', False),
+    ('no lines asked', [], 'anything\n', None),
+)
+
 SELF_TEST_RAN = (
     ('audit: nothing ran', {'exits': {}, 'verdict': 'binary not found: x'}, False),
     ('no exit code', {'exits': {'p': None}}, False),
@@ -428,11 +487,19 @@ def self_test():
         if (hit, bad) != expected:
             failures.append('peer-loss, {}: {} expected, got {}'
                             .format(name, expected, (hit, bad)))
+    for name, wanted, printed, expected in SELF_TEST_LINES:
+        got = judge_lines(wanted, {'p': printed})['passed']
+        if got is not expected:
+            failures.append('lines, {}: {} expected, got {}'.format(name, expected, got))
+    blocks = task_lines('text\n```lines\nstep 1: a\n\nstep 2: b\n```\n```\nx\n```\n')
+    if blocks != ['step 1: a', 'step 2: b']:
+        failures.append('lines, the task block: {} read'.format(blocks))
     for name, observed, expected in SELF_TEST_RAN:
         if ran(observed) is not expected:
             failures.append('sanitize, {}: {} expected, got {}'
                             .format(name, expected, ran(observed)))
-    cases = len(SELF_TEST_NO_PEER) + len(SELF_TEST_LOSS) + len(SELF_TEST_RAN)
+    cases = (len(SELF_TEST_NO_PEER) + len(SELF_TEST_LOSS) + len(SELF_TEST_LINES) + 1
+             + len(SELF_TEST_RAN))
     for line in failures:
         print('   FAIL  ' + line)
     print('verify_run --self-test: {} case(s), {} failure(s)'.format(cases, len(failures)))
@@ -485,7 +552,7 @@ def main():
         sys.stdout.flush()
         results.append(item)
 
-    repeat, leads, loads = probe_repeat(scenario, build_dirs, args.repeat)
+    repeat, leads, loads, outputs = probe_repeat(scenario, build_dirs, args.repeat)
     report(repeat)
     report(probe_start_order(scenario, build_dirs))
     report(probe_no_peer(scenario, build_dirs))
@@ -493,6 +560,7 @@ def main():
                            statistics.median(leads) if leads else None))
     report(probe_cpu(loads))
     report(probe_programs(scenario, run_dir))
+    report(judge_lines(task_lines(task_text(run_dir)), outputs))
     if args.sanitize:
         report(probe_sanitize(run_dir, work, scenario, document))
 

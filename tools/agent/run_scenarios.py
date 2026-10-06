@@ -118,6 +118,10 @@ def is_listening(port, host='127.0.0.1'):
 SERVICE_SUFFIXES = ('.elf', '.exe', '.mac', '')
 
 
+# An installation keeps mtrouter in the directory above this tool.
+INSTALLED_SERVICES = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
 def find_service(name, directories):
     """A framework service binary of this name, with or without a suffix."""
     for directory in directories:
@@ -583,9 +587,10 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
         sys.stdout.write('      port {} is already served by a process this run did not '
                          'start; the scenario uses it\n'.format(ROUTER_PORT))
     if scenario.get('router') and not foreign:
-        router = find_service('mtrouter', build_dirs)
+        searched = list(build_dirs) + [INSTALLED_SERVICES]
+        router = find_service('mtrouter', searched)
         if router is None:
-            return False, name, 'mtrouter not found in ' + ', '.join(build_dirs)
+            return False, name, 'mtrouter not found in ' + ', '.join(searched)
         router_handle, why = start_service(router, ROUTER_PORT)
         if router_handle is None:
             return False, name, why

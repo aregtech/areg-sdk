@@ -67,8 +67,9 @@ non-zero.
 
 A second client that watches the controller and does nothing else. It prints one line
 per change of floor and one per change of what the car is doing, so a person can
-follow the car from the display alone. When the controller announces it is out of
-service, the display prints that and exits 0. If the controller goes away without that
+follow the car from the display alone, as `display: floor <n>` or `display: <what the
+car is doing>` in the words of the list above. When the controller announces it is out
+of service, the display prints that and exits 0. If the controller goes away without that
 announcement, the display reports the loss and exits non-zero.
 
 ### The simulated passenger
@@ -93,6 +94,31 @@ step to the console so a person can read what happened:
 9. release the stop -- expect the doors to close, not to open again, and the car idle
    at floor 1
 10. take the car out of service -- expect the announcement
+
+Once a step's expectation has held, the passenger prints its line below, with this
+exact wording, alone or at the end of a line; `<floor>` is the floor's number:
+
+```lines
+step 1: doors opened and closed at floor 0, no floor announced
+step 2: floors 1, 2, 3, 4 announced, idle at floor 4
+step 3: refused, busy
+step 4: refused, out of range
+step 5: halted at floor <floor>
+step 6: refused, halted
+step 7: continued to floor 0, no floor announced twice or skipped
+step 8: halted at floor 1, doors open
+step 9: doors closed without opening again, idle at floor 1
+step 10: out of service
+```
+
+In the same run the display prints, among its other lines:
+
+```lines
+display: floor 4
+display: doors open
+display: halted
+display: out of service
+```
 
 Then exit. **Exit code 0 if every expectation held, non-zero otherwise**, printing
 which step failed. The passenger program must survive the controller being started

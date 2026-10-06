@@ -86,6 +86,18 @@ what happened:
 6. print the stock and the accepted orders -- expect bolt 4, nut 5, gear 1, and 3
    accepted orders
 
+Once a step's expectation has held, the customer prints its line below, with this
+exact wording, alone or at the end of a line:
+
+```lines
+step 1: bolt 10, nut 5, gear 3
+step 2: order 1 accepted, amount 12, bolt 6
+step 3: order 2 refused by the stock, 5 available, nut 5
+step 4: order 3 refused by the payment limit, amount 120, gear 3
+step 5: order 4 accepted, amount 80; order 5 accepted, amount 6; order 6 refused by the stock, 1 available
+step 6: bolt 4, nut 5, gear 1, 3 accepted orders
+```
+
 Then exit. **Exit code 0 if every expectation held, non-zero otherwise**, printing
 which step failed. The customer must survive the other programs being started after it.
 

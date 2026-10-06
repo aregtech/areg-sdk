@@ -102,6 +102,23 @@ step to the console so a person can read what happened:
     wash **not** run again, then spin and the cycle done
 11. retry once more -- expect a refusal naming that there is no fault
 
+Once a step's expectation has held, the simulated user prints its line below, with this
+exact wording, alone or at the end of a line:
+
+```lines
+step 1: refused, door open
+step 2: normal done: wash, rinse 1, rinse 2, spin, door unlocked
+step 3: paused after rinse 2, no rinse 3 started
+step 4: refused, paused
+step 5: heavy done: rinse 3, spin, rinse 2 not run again
+step 6: wash fill attempts 1 and 2 failed, fault in wash
+step 7: refused, fault
+step 8: wash fill attempt 1 failed, attempt 2 succeeded, quick done
+step 9: rinse 1 fill attempts 1 and 2 failed, fault in rinse 1
+step 10: rinse 1 filled at attempt 1, wash not run again, quick done
+step 11: retry refused, no fault
+```
+
 Then exit. **Exit code 0 if every expectation held, non-zero otherwise**, printing
 which step failed. The simulated user must survive the controller being started after
 it.

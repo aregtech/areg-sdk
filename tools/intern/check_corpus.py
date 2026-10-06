@@ -5833,6 +5833,23 @@ def installed_scaffold_failure(prefix):
         if moved not in text:
             return ('the {} from an installation does not say where the tools a page '
                     'writes as <areg-sdk>/tools/ are'.format(kind))
+        if kind != 'scaffold':
+            continue
+        with open(os.path.join(project, 'CMakeLists.txt'), encoding='utf-8') as handle:
+            if 'HINTS "{}")'.format(prefix.replace('\\', '/')) not in handle.read():
+                return 'the scaffold from an installation does not find that installation'
+        done = subprocess.run([sys.executable, os.path.join(tools, 'agent', 'check_contract.py'),
+                               project, '--strict', '--allow-todo'],
+                              capture_output=True, text=True)
+        if done.returncode:
+            return 'check_contract.py of an installation refuses its scaffold: {}'.format(
+                (done.stdout + done.stderr).strip().splitlines()[:1])
+        done = subprocess.run([sys.executable, '-c', 'import run_scenarios; '
+                               'print(run_scenarios.INSTALLED_SERVICES)'],
+                              cwd=os.path.join(tools, 'agent'), capture_output=True, text=True)
+        if os.path.normcase(done.stdout.strip()) != os.path.normcase(tools):
+            return 'run_scenarios.py of an installation does not look for mtrouter in {}'.format(
+                tools)
     return ''
 
 
@@ -5848,7 +5865,8 @@ def check_installed_scaffold(report):
         report.fail('installed-scaffold', failure)
         return
     report.ok('installed-scaffold', 'a project made from an installed SDK names the '
-                                    'installed tools')
+                                    'installed tools, finds that installation, passes its '
+                                    'contract check and looks for its router there')
 
 
 def check_unused_parameters(report):
