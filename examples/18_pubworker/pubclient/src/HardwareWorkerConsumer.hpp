@@ -22,7 +22,7 @@
  *          of the same binding component (master).
  **/
 class HardwareWorkerConsumer final  : public    areg::WorkerThreadConsumer
-                                    , private   IEPatientInfoEventConsumer
+                                    , public    IEPatientInfoEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor.
@@ -45,18 +45,15 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Triggered by Worker Thread when starts running.
-     *          Make initializations and add event consumers in this
-     *          method to start receiving events.
+     * \brief   Runs on the worker thread when it starts: initializes the hardware. The listener
+     *          of the events it receives is added by the binding component.
      * \param   workThread      The Worker Thread object to notify startup
      * \param   masterThread    The component thread, which owns worker thread.
      **/
     void register_event_consumers( areg::WorkerThread & workThread, areg::ComponentThread & masterThread ) final;
 
     /**
-     * \brief   Triggered by Worker Thread when stops running.
-     *          Make cleanups and remove event consumers in this
-     *          method to stop receiving events.
+     * \brief   Runs on the worker thread when it stops: releases the hardware.
      * \param   workThread  The Worker Thread object to notify stop
      **/
     void unregister_event_consumers( areg::WorkerThread & workThread ) final;
@@ -73,11 +70,6 @@ private:
      * \brief   Updates the patient information (assumes here updates the HW data).
      **/
     void update_info_patient( const areg::SharedBuffer & data );
-
-    /**
-     * \brief   Wrapper of this pointer.
-     **/
-    inline HardwareWorkerConsumer & self();
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

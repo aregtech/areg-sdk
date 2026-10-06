@@ -557,6 +557,7 @@ agent never sees them: the snapshot does not carry this file.
 | `cpu` | no busy-waiting | a normal run averages under 0.5 cores (where the platform reports child CPU time) |
 | `programs` | as many separate programs as the task asks for | the normal scenario runs at least the number of distinct programs the prompt names ("three separate programs"); not scored for a prompt that names none |
 | `lines` | the task's own scenario, every step of it | every line of the prompt's `lines` blocks ends a line some process printed in the first passing normal run (any case and spacing, `<name>` is any value); not scored for a prompt with no block |
+| `timing` | the timed work the task states is done, not skipped | the median normal run takes at least half of what the task's own waits add up to (`MIN_SECONDS` in `verify_run.py`, kept out of the prompt so a sleep cannot meet it); not scored for a task that states no timing |
 | `sanitize` (`--sanitize`) | no memory or undefined-behaviour defect -- not a checklist item | a rebuild under ASan and UBSan runs the normal scenario and one peer loss with no finding |
 
 `verify.json` also records `claimed`: the last "acceptance items passing n of m" the

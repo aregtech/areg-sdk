@@ -13,9 +13,8 @@
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       Areg Platform, Worker Thread Consumer.
- *              This object is required by every worker thread to
- *              trigger register / unregister methods when thread
- *              starts and stops.
+ *              The object a worker thread is bound to. It is told on
+ *              the worker thread when the thread starts and stops.
  *
  ************************************************************************/
 /************************************************************************
@@ -36,8 +35,13 @@ class WorkerThread;
 // WorkerThreadConsumer class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Interface for Worker Thread to notify register/unregister lifecycle. Allows consumer to
- *          set listeners and receive notification messages.
+ * \brief   The object a worker thread is bound to, named so that the owning component can find it
+ *          in worker_thread_consumer(). One consumer may serve several worker threads.
+ *
+ *          The listeners of the events a worker receives are added by the owning component, in
+ *          Component::notify_thread_started() or right after Component::create_worker_thread(),
+ *          before the component's service is announced. An event sent before its listener exists
+ *          is dropped.
  **/
 class AREG_API WorkerThreadConsumer
 {
@@ -85,21 +89,23 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Triggered by Worker Thread when starting. Add event consumers to start receiving
-     *          events.
+     * \brief   Runs on the worker thread once it accepts events, before it dispatches any. Optional:
+     *          for setup that must run on the worker thread, or a loop of the worker's own.
+     *          Listeners are added by the owning component, not here: an event sent before this
+     *          method runs finds no listener and is dropped.
      *
-     * \param   workThread      The Worker Thread object to notify startup
-     * \param   masterThread    The component thread, which owns worker thread.
+     * \param   workThread      The worker thread that starts.
+     * \param   masterThread    The component thread that owns the worker thread.
      **/
-    virtual void register_event_consumers( WorkerThread & workThread, ComponentThread & masterThread ) = 0;
+    virtual void register_event_consumers( WorkerThread & workThread, ComponentThread & masterThread );
 
     /**
-     * \brief   Triggered by Worker Thread when stopping. Remove event consumers to stop receiving
-     *          events.
+     * \brief   Runs on the worker thread as it stops, after its last event. Optional: undoes what
+     *          register_event_consumers() did.
      *
-     * \param   workThread      The Worker Thread object to notify stop
+     * \param   workThread      The worker thread that stops.
      **/
-    virtual void unregister_event_consumers( WorkerThread & workThread ) = 0;
+    virtual void unregister_event_consumers( WorkerThread & workThread );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -141,6 +147,14 @@ inline WorkerThreadConsumer::operator uint32_t() const noexcept
 inline const String & WorkerThreadConsumer::consumer_name() const
 {
     return mConsumerName;
+}
+
+inline void WorkerThreadConsumer::register_event_consumers( WorkerThread & /*workThread*/, ComponentThread & /*masterThread*/ )
+{
+}
+
+inline void WorkerThreadConsumer::unregister_event_consumers( WorkerThread & /*workThread*/ )
+{
 }
 
 inline bool WorkerThreadConsumer::is_equal_name( const String & consumerName ) const

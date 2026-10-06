@@ -176,7 +176,7 @@ always the larger. Working project: `recipes/07-worker-events/`.
 **Read this row first.** Every handler of one component runs on that component's own
 thread, one at a time, so state a component owns alone needs no lock at all. Reach for
 one only where a worker thread you started shares state with a component, which is the
-shape `37-threads.md` and `recipes/07-worker-events/` teach.
+shape `38-workers.md` and `recipes/07-worker-events/` teach.
 
 | Call | Signature | Header |
 |---|---|---|
@@ -219,5 +219,5 @@ const areg::String _consumer(areg::generate_name("ServiceConsumer"));
 |---|---|
 | `areg::String` and the containers | `40-base-api.md` |
 | Timer ownership and threading rules | `33-timers.md` |
-| Worker threads, watchdogs, a model built at run time | `37-threads.md` |
+| Worker threads; watchdogs, a model built at run time | `38-workers.md`; `37-threads.md` |
 | Anything else in the framework | `../../tools/agent/api_help.py <name>`, or `../../tools/agent/api_help.py --search <word>` when the name is what you are missing. **Never a header, and never `grep`.** |

@@ -94,7 +94,7 @@ FEATURES = [
      '32-model.md',             'BEGIN_MODEL',         '01-local-single-process',
      ('examples/03_helloservice',)),
     ('worker_thread', 'a component worker thread',
-     '37-threads.md',           'REGISTER_WORKER_THREAD', '07-worker-events',
+     '38-workers.md',           'REGISTER_WORKER_THREAD', '07-worker-events',
      ('examples/18_pubworker',)),
     ('timers',        'periodic and delayed work',
      '33-timers.md',            'start_timer',         '04-timer',
@@ -2803,6 +2803,8 @@ def run():
     check_peer_loss_branch(report)
     check_generated_defects(report)
     check_step_driver(report)
+    check_answer_queue(report)
+    check_programs_gathered(report)
     check_late_arrival(report)
     check_self_transition(report)
     check_step_fall_through(report)
@@ -4995,6 +4997,17 @@ STEP_REFUSALS = [({'name': 'fly', 'send': 'fly'}, 'is not a request'),
                   'takes only 600, 1200, 2000')]
 
 
+# Two requests in flight, then two steps that collect their answers.
+QUEUE_SAMPLE = [{'name': 'open_narrow', 'send': 'open', 'args': {'width': 600}, 'wait': 1},
+                {'name': 'open_wide', 'send': 'open', 'args': {'width': 1200}, 'wait': 1},
+                {'name': 'first_answer', 'await': 'open'},
+                {'name': 'second_answer', 'await': 'open'}]
+
+# A step that awaits its own answer while the one sent before it is still owed.
+OWED_SAMPLE = [{'name': 'open_narrow', 'send': 'open', 'args': {'width': 600}, 'wait': 1},
+               {'name': 'open_wide', 'send': 'open', 'args': {'width': 1200}}]
+
+
 LATE_SAMPLE = [{'name': 'open_gate', 'send': 'open', 'args': {'width': 600}},
                {'name': 'watch_width', 'await': 'Width'},
                {'name': 'watch_moved', 'await': 'gate_moved'},
@@ -5919,6 +5932,97 @@ def check_unused_parameters(report):
     report.ok('unused-parameter', '{} parameter(s) an author\'s body may ignore are '
                                   '[[maybe_unused]], and the worksheet lists the signatures '
                                   'as before'.format(marked))
+
+
+def check_answer_queue(report):
+    """Answers of requests sent by a step that waits a time are kept for the steps that
+    collect them, and a step that would take one of them as its own is refused."""
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    holder = tempfile.mkdtemp()
+    here = os.getcwd()
+    try:
+        os.chdir(holder)
+        made = generate_application(tools, 'queued', QUEUE_SAMPLE)
+        if not os.path.isfile(made):
+            report.fail('answer-queue', made)
+            return
+        with open(made, encoding='utf-8') as handle:
+            source = handle.read()
+        with open(made[:-4] + '.hpp', encoding='utf-8') as handle:
+            header = handle.read()
+        kept = re.search(r'default:\s*if \((mLate\w+Count) < 2\)\s*\{\s*(mLate\w+)\[\1\+\+\]',
+                         source)
+        if kept is None or '{}[2]'.format(kept.group(2)) not in header:
+            report.fail('answer-queue', 'an answer arriving while a sending step waits is '
+                                        'not kept, two deep, for the steps that collect it')
+            return
+        begun = re.search(r'case Step::FirstAnswer:.*?if \({} != 0\).*?mLate\.start_timer'
+                          .format(kept.group(1)), source, re.S)
+        if begun is None:
+            report.fail('answer-queue', 'a collecting step does not take a kept answer as it '
+                                        'begins')
+            return
+        found = subprocess.run([sys.executable, os.path.join(tools, 'check_contract.py'),
+                                '.', '--strict', '--allow-todo'],
+                               capture_output=True, text=True)
+        if 'ERROR' in found.stdout + found.stderr:
+            report.fail('answer-queue', 'the kept answers break the contract')
+            return
+        with open('design.json', encoding='utf-8') as handle:
+            design = json.load(handle)
+        design['interfaces'][0]['steps'] = OWED_SAMPLE
+        with open('owed.json', 'w', encoding='utf-8', newline='\n') as handle:
+            json.dump(design, handle)
+        done = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                               '--spec', 'owed.json', '--outdir', 'refused'],
+                              capture_output=True, text=True)
+        if done.returncode == 0 or 'may still come' not in done.stderr:
+            report.fail('answer-queue', 'a step awaiting its own answer while an earlier '
+                                        'one is owed is not refused')
+            return
+    finally:
+        os.chdir(here)
+        shutil.rmtree(holder, ignore_errors=True)
+    report.ok('answer-queue', 'answers of requests in flight are kept for the steps that '
+                              'collect them, and a step that would take one as its own is '
+                              'refused')
+
+
+def check_programs_gathered(report):
+    """Independent mistakes of a "programs" block are refused together, in one call."""
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    spec = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                           '--example', 'programs'], capture_output=True, text=True)
+    try:
+        design = json.loads(spec.stdout)
+    except ValueError:
+        report.fail('programs-gathered', 'gen_docs.py --example programs prints no design')
+        return
+    for program in design.get('programs') or []:
+        for component in program['components']:
+            if component.get('provides') and component.get('roles'):
+                component['role'] = component.pop('roles')[0]
+            if component.get('drives'):
+                component['role'] = 'buyer_itself'
+    holder = tempfile.mkdtemp()
+    try:
+        path = os.path.join(holder, 'design.json')
+        with open(path, 'w', encoding='utf-8', newline='\n') as handle:
+            json.dump(design, handle)
+        done = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                               '--spec', path, '--outdir', os.path.join(holder, 'out')],
+                              capture_output=True, text=True)
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    said = done.stderr
+    if done.returncode == 0 or said.count('gives "role"') < 2 \
+            or '"buyer_itself", which no component provides' not in said:
+        report.fail('programs-gathered', 'a provider\'s "role" and a driver\'s unknown role '
+                                         'are not refused in one call: {}'
+                    .format(said.strip()[:200]))
+        return
+    report.ok('programs-gathered', 'every independent mistake of a "programs" block is '
+                                   'refused in one call')
 
 
 def check_step_driver(report):

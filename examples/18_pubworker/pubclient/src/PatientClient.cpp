@@ -11,12 +11,14 @@
  ************************************************************************/
 #include "pubclient/src/PatientClient.hpp"
 #include "areg/appbase/Application.hpp"
+#include "areg/component/WorkerThread.hpp"
 
 PatientClient::PatientClient(const areg::ComponentEntry & entry, areg::ComponentThread & /* owner */)
     : areg::Component                     ( entry.mRoleName )
     , PatientInformationConsumerBase  ( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(*this) )
 
     , mHwWorker ( entry.mWorkerThreads[0].mConsumerName )
+    , mHwThread ( nullptr )
 {
 }
 
@@ -35,6 +37,26 @@ areg::WorkerThreadConsumer * PatientClient::worker_thread_consumer(const areg::S
     {
         return areg::Component::worker_thread_consumer(consumerName, workerThreadName);
     }
+}
+
+void PatientClient::notify_thread_started(areg::WorkerThreadConsumer & consumer, areg::WorkerThread & workerThread)
+{
+    if (&consumer == &mHwWorker)
+    {
+        mHwThread = &workerThread;
+        PatientInfoEvent::add_listener( static_cast<IEPatientInfoEventConsumer &>(mHwWorker), static_cast<areg::DispatcherThread &>(workerThread) );
+    }
+}
+
+void PatientClient::shutdown_component(areg::ComponentThread & comThread)
+{
+    if (mHwThread != nullptr)
+    {
+        PatientInfoEvent::remove_listener( static_cast<IEPatientInfoEventConsumer &>(mHwWorker), static_cast<areg::DispatcherThread &>(*mHwThread) );
+        mHwThread = nullptr;
+    }
+
+    areg::Component::shutdown_component(comThread);
 }
 
 bool PatientClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)

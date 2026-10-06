@@ -79,13 +79,6 @@ public:
     { }
 
 protected:
-    void register_event_consumers(areg::WorkerThread & /*workThread*/,
-                                  areg::ComponentThread & /*masterThread*/) final
-    { }
-
-    void unregister_event_consumers(areg::WorkerThread & /*workThread*/) final
-    { }
-
     void process_event(const ScanRequestData & data) final
     {
         LOG_SCOPE(scan_ScanWorker, process_event);
@@ -115,7 +108,11 @@ public:
         // The model stores the consumer name qualified by the role name, so take
         // it from the entry rather than repeating the literal.
         , mWorker(entry.mWorkerThreads[0].mConsumerName)
-    { }
+    {
+        // Added before the worker exists, so no result it sends comes early.
+        ScanResultEvent::add_listener(static_cast<ScanResultEventConsumer &>(self()),
+                                      static_cast<areg::DispatcherThread &>(owner));
+    }
 
     static constexpr std::string_view ThreadName  { "ScanWorkerThread" };
     static constexpr std::string_view ConsumerName{ "ScanWorkerConsumer" };
@@ -130,13 +127,6 @@ protected:
             mWorkerThread = &workerThread;
             ScanRequestEvent::add_listener(mWorker, workerThread);
         }
-    }
-
-    void startup_component(areg::ComponentThread & comThread) final
-    {
-        ScanResultEvent::add_listener(static_cast<ScanResultEventConsumer &>(self()),
-                                      static_cast<areg::DispatcherThread &>(comThread));
-        areg::Component::startup_component(comThread);
     }
 
     void shutdown_component(areg::ComponentThread & comThread) final

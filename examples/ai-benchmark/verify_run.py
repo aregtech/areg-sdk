@@ -48,6 +48,18 @@ LOSS_LATENCY = 0.25
 # Lines of the lead's own output a failed loss point keeps as its evidence.
 LOSS_TAIL_LINES = 8
 CPU_LIMIT = 0.5
+# The least time, in seconds, a normal run of a task with stated timing can take: half
+# of what its own waits add up to, so only a run that skips the timed work falls below.
+# Keyed by the prompt's file name; kept here and not in the prompt, so it cannot be met
+# by a sleep.
+MIN_SECONDS = {
+    'prompt-washer.md':        6.3,    # 12.6 s: every fill, stage, spin and failed attempt
+    'prompt-elevator.md':      4.2,    # 8.4 s: the floors travelled and four door sequences
+    'prompt-tempalarm.md':     2.2,    # 4.4 s: 22 readings of 200 ms up to the clear
+    'prompt-sensorgateway.md': 1.25,   # 2.5 s: 20 sets of 100 ms and 500 ms of silence
+    'prompt-greenhouse.md':    0.7,    # 1.4 s: five and then two degrees of 200 ms
+    'prompt-orderdesk.md':     0.45,   # 0.9 s: three charges of 300 ms in sequence
+}
 SANITIZE_FLAGS = '-fsanitize=address,undefined -fno-omit-frame-pointer'
 SANITIZER_MARKS = ('ERROR: AddressSanitizer', 'runtime error:')
 
@@ -60,6 +72,7 @@ REQUIREMENTS = {
     'cpu':         'no busy-waiting',
     'programs':    'as many separate programs as the task asks for, all in the normal run',
     'lines':       'every line the task says its programs print, in the normal run',
+    'timing':      'the timed work the task states takes its time in the normal run',
     'sanitize':    'no memory or undefined-behaviour defect (not a checklist item)',
 }
 
@@ -73,18 +86,27 @@ LINES_RE = re.compile(r'^```lines[ \t]*\n(.*?)^```', re.MULTILINE | re.DOTALL)
 PLACEHOLDER_RE = re.compile(r'<[^<>]+>')
 
 
-def task_text(run_dir):
-    """The task prompt the run was given, from meta.txt, or '' when it cannot be read."""
+def task_file(run_dir):
+    """The path of the task prompt the run was given, from meta.txt, or ''."""
     try:
         with open(os.path.join(run_dir, 'meta.txt'), encoding='utf-8') as handle:
             for line in handle:
                 key, _, value = line.partition(' ')
                 if key == 'task':
-                    with open(value.strip(), encoding='utf-8') as task:
-                        return task.read()
+                    return value.strip()
     except OSError:
         pass
     return ''
+
+
+def task_text(run_dir):
+    """The task prompt the run was given, or '' when it cannot be read."""
+    path = task_file(run_dir)
+    try:
+        with open(path, encoding='utf-8') as task:
+            return task.read()
+    except OSError:
+        return ''
 
 
 def probe_programs(scenario, run_dir):
@@ -126,6 +148,17 @@ def judge_lines(wanted, outputs):
     if missing:
         evidence += '; missing: ' + '; '.join('"{}"'.format(want) for want in missing)
     return result('lines', not missing, evidence)
+
+
+def judge_timing(least, lead_time):
+    """The normal run took at least the least time its task's stated waits allow."""
+    if least is None:
+        return result('timing', None, 'the task states no timing')
+    if not lead_time:
+        return result('timing', None, 'no passing normal run to time')
+    return result('timing', lead_time >= least,
+                  'a normal run takes {:.2f}s; the timing the task states needs at least '
+                  '{:.2f}s'.format(lead_time, least))
 
 
 def claimed(run_dir):
@@ -467,6 +500,15 @@ SELF_TEST_LINES = (
     ('no lines asked', [], 'anything\n', None),
 )
 
+# (case, least seconds or None, median lead time or None, expected verdict)
+SELF_TEST_TIMING = (
+    ('the task states no timing', None, 0.05, None),
+    ('no passing run', 6.3, None, None),
+    ('the timed work skipped: 06f-washer', 6.3, 0.05, False),
+    ('the timed work done: 06e-washer', 6.3, 13.5, True),
+    ('at the least time', 0.45, 0.45, True),
+)
+
 SELF_TEST_RAN = (
     ('audit: nothing ran', {'exits': {}, 'verdict': 'binary not found: x'}, False),
     ('no exit code', {'exits': {'p': None}}, False),
@@ -494,12 +536,16 @@ def self_test():
     blocks = task_lines('text\n```lines\nstep 1: a\n\nstep 2: b\n```\n```\nx\n```\n')
     if blocks != ['step 1: a', 'step 2: b']:
         failures.append('lines, the task block: {} read'.format(blocks))
+    for name, least, lead_time, expected in SELF_TEST_TIMING:
+        got = judge_timing(least, lead_time)['passed']
+        if got is not expected:
+            failures.append('timing, {}: {} expected, got {}'.format(name, expected, got))
     for name, observed, expected in SELF_TEST_RAN:
         if ran(observed) is not expected:
             failures.append('sanitize, {}: {} expected, got {}'
                             .format(name, expected, ran(observed)))
     cases = (len(SELF_TEST_NO_PEER) + len(SELF_TEST_LOSS) + len(SELF_TEST_LINES) + 1
-             + len(SELF_TEST_RAN))
+             + len(SELF_TEST_TIMING) + len(SELF_TEST_RAN))
     for line in failures:
         print('   FAIL  ' + line)
     print('verify_run --self-test: {} case(s), {} failure(s)'.format(cases, len(failures)))
@@ -561,6 +607,8 @@ def main():
     report(probe_cpu(loads))
     report(probe_programs(scenario, run_dir))
     report(judge_lines(task_lines(task_text(run_dir)), outputs))
+    report(judge_timing(MIN_SECONDS.get(os.path.basename(task_file(run_dir))),
+                        statistics.median(leads) if leads else None))
     if args.sanitize:
         report(probe_sanitize(run_dir, work, scenario, document))
 

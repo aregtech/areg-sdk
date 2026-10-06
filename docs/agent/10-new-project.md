@@ -40,7 +40,7 @@ one service, its provider program and its consumer program, and at most one mach
 with those it hosts -- folded into the provider. A design of several services, several
 instances of one, a component that provides one service and uses another, or a third
 program says in `"programs"` which program runs what (`gen_docs.py --example
-programs`), and every program is generated. Worker plumbing is yours (`37-threads.md`);
+programs`), and every program is generated. Worker plumbing is yours (`38-workers.md`);
 `32-model.md` registers components; recipes `05`, `09` and `11` show the shapes.
 
 ---

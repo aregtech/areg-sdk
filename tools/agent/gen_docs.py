@@ -1604,7 +1604,12 @@ def component_uses(component, project=None):
 
 
 def check_programs(project):
-    """The "programs" block: every name resolves, and every role is provided once."""
+    """The "programs" block: every name resolves, and every role is provided once.
+
+    Each program and each component is checked on its own and every problem is reported
+    in one refusal. The roles are checked against each other only when every component
+    could be read, so one mistake is not reported a second time as a missing role.
+    """
     programs = project.get('programs') or []
     if not programs:
         return
@@ -1613,111 +1618,147 @@ def check_programs(project):
     if not isinstance(programs, list) or not all(isinstance(p, dict) for p in programs):
         fail('"programs" is a list of objects, one per executable: '
              '{"name": "...", "components": [...]}')
-    names, roles, provided, driven = set(), {}, {}, []
+    names, roles, provided, driven, problems = set(), {}, {}, [], []
+    read = True
     for program in programs:
         name = program.get('name')
         here = 'program "{}"'.format(name)
-        check_keys(program, KEYS['program'], here)
-        if not isinstance(name, str) or not IDENTIFIER.match(name) or name.lower() in names:
-            fail('{} needs a name of its own that a C identifier can carry: it names '
-                 'the executable and its folder under src/'.format(here))
-        names.add(name.lower())
+        with gathering(problems), contextlib.suppress(Refused):
+            check_keys(program, KEYS['program'], here)
+            if not isinstance(name, str) or not IDENTIFIER.match(name) \
+                    or name.lower() in names:
+                fail('{} needs a name of its own that a C identifier can carry: it names '
+                     'the executable and its folder under src/'.format(here))
+        names.add(str(name).lower())
         components = program.get('components')
         if not isinstance(components, list) or not components \
                 or not all(isinstance(c, dict) for c in components):
-            fail('{} lists no component. Each is {{"provides": "<Service>"}}, '
-                 '{{"drives": "<Service>"}} or {{"watches": "<Service>"}}'.format(here))
+            read = False
+            with gathering(problems), contextlib.suppress(Refused):
+                fail('{} lists no component. Each is {{"provides": "<Service>"}}, '
+                     '{{"drives": "<Service>"}} or {{"watches": "<Service>"}}'.format(here))
+            continue
         for component in components:
-            check_keys(component, KEYS['component'], 'a component of ' + here)
-            for key in ('name', 'thread'):
-                value = component.get(key)
-                if value is not None and (not isinstance(value, str)
-                                          or not IDENTIFIER.match(value)):
-                    fail('a component of {} gives the {} {!r}, which a C identifier '
-                         'cannot carry'.format(here, key, value))
-            kinds = [kind for kind in COMPONENT_KINDS if component.get(kind)]
-            if len(kinds) != 1:
-                fail('a component of {} names {}: each provides, drives or watches '
-                     'exactly one service. Another service it calls, waits on or reads '
-                     'goes in its "uses"; a second component in the program is a '
-                     'separate thread the steps cannot wait on'
-                     .format(here, ' and '.join(kinds) or 'none of '
-                             '"provides", "drives" and "watches"'))
-            kind, service = kinds[0], component[kinds[0]]
-            where = '{} "{}" of {}'.format(kind, service, here)
-            if service not in services:
-                fail('{} names a service the design does not declare. Its services: {}'
-                     .format(where, ', '.join(sorted(s for s in services if s))))
-            if kind == 'provides':
-                if component.get('role'):
-                    fail('{} gives "role", which names a provider to use. A providing '
-                         'component names its own instances with "roles"'.format(where))
-                if service in provided:
-                    fail('{} provides it a second time, in program "{}" too. One '
-                         'component provides a service; several instances of it are '
-                         'its "roles"'.format(where, provided[service]))
-                provided[service] = name
-                for role in component.get('roles') or [service + 'Provider']:
-                    if not isinstance(role, str) or not IDENTIFIER.match(role):
-                        fail('{} gives the role {!r}: a role is a name a C identifier '
-                             'can carry'.format(where, role))
-                    if role in roles:
-                        fail('{} gives the role "{}", which {} already has. A role '
-                             'names one provider in the whole system'
-                             .format(where, role, roles[role][1]))
-                    roles[role] = (service, where)
-            elif component.get('roles'):
-                fail('{} gives "roles", which names the instances a component '
-                     'provides. The instance it {} is "role", and the other instances '
-                     'it talks to are "uses": [{{"service": "{}", "roles": [...]}}], one '
-                     'client member each'.format(where, kind, service))
-            if kind == 'drives':
-                driven.append((service, where))
-            for entry in component.get('uses') or []:
-                if isinstance(entry, dict):
-                    check_keys(entry, KEYS['use'], 'a used service of ' + where)
-                elif not isinstance(entry, str):
-                    fail('a used service of {} is a service name or {{"service": ..., '
-                         '"role": ...}}'.format(where))
-            for used, used_roles in component_uses(component, project):
-                if used not in services:
-                    fail('{} uses "{}", which the design does not declare'
-                         .format(where, used))
-                if used == service and kind == 'provides':
-                    fail('{} uses the service it provides. Another instance of it is '
-                         'consumed by another component'.format(where))
-                if used == service and (component.get('role')
-                                        or consumed_role(project, service)) \
-                        in used_roles:
-                    fail('{} uses the role it already {}: list the other instances '
-                         'only'.format(where, kind))
-    for program, component, kind, service in program_components(project):
-        where = '{} "{}" of program "{}"'.format(kind, service, program.get('name'))
-        wanted = []
-        if kind in ('drives', 'watches'):
-            wanted.append((service, component.get('role') or consumed_role(project, service)))
-        for used, used_roles in component_uses(component, project):
-            wanted += [(used, role) for role in used_roles]
-        for used, role in wanted:
-            if role not in roles:
-                fail('{} consumes the role "{}", which no component provides. The '
-                     'roles provided: {}'.format(where, role,
-                                                 ', '.join(sorted(roles)) or 'none'))
-            if roles[role][0] != used:
-                fail('{} consumes "{}" as a {}, and that role provides {}'
-                     .format(where, role, used, roles[role][0]))
-    if len(driven) > 1:
-        fail('{} drive a scenario, and one component leads it. Make the others '
-             '"watches"'.format(' and '.join(where for _, where in driven)))
-    for entry in project['interfaces']:
+            with gathering(problems):
+                try:
+                    check_component(project, component, here, name, services, roles,
+                                    provided, driven, problems)
+                except Refused:
+                    read = False
+    if read:
+        for program, component, kind, service in program_components(project):
+            with gathering(problems), contextlib.suppress(Refused):
+                check_consumed_roles(project, program, component, kind, service, roles)
+    with gathering(problems), contextlib.suppress(Refused):
+        if len(driven) > 1:
+            fail('{} drive a scenario, and one component leads it. Make the others '
+                 '"watches"'.format(' and '.join(where for _, where in driven)))
+    for entry in project['interfaces'] if read else []:
         if not isinstance(entry, dict):
             continue
-        if entry.get('name') not in provided:
-            fail('no component of "programs" provides "{}". Every service the design '
-                 'declares runs in one program'.format(entry.get('name')))
-        if entry.get('steps') and not any(s == entry.get('name') for s, _ in driven):
-            fail('"{}" declares steps, and no component drives it. The steps run in '
-                 'the component that "drives" that service'.format(entry.get('name')))
+        with gathering(problems), contextlib.suppress(Refused):
+            if entry.get('name') not in provided:
+                fail('no component of "programs" provides "{}". Every service the design '
+                     'declares runs in one program'.format(entry.get('name')))
+            if entry.get('steps') and not any(s == entry.get('name') for s, _ in driven):
+                fail('"{}" declares steps, and no component drives it. The steps run in '
+                     'the component that "drives" that service'.format(entry.get('name')))
+    if problems:
+        refuse(problems)
+
+
+def check_component(project, component, here, name, services, roles, provided, driven,
+                    problems):
+    """One component of a program: its keys, its service, its roles and its "uses"."""
+    check_keys(component, KEYS['component'], 'a component of ' + here)
+    for key in ('name', 'thread'):
+        value = component.get(key)
+        if value is not None and (not isinstance(value, str)
+                                  or not IDENTIFIER.match(value)):
+            fail('a component of {} gives the {} {!r}, which a C identifier '
+                 'cannot carry'.format(here, key, value))
+    kinds = [kind for kind in COMPONENT_KINDS if component.get(kind)]
+    if len(kinds) != 1:
+        fail('a component of {} names {}: each provides, drives or watches '
+             'exactly one service. Another service it calls, waits on or reads '
+             'goes in its "uses"; a second component in the program is a '
+             'separate thread the steps cannot wait on'
+             .format(here, ' and '.join(kinds) or 'none of '
+                     '"provides", "drives" and "watches"'))
+    kind, service = kinds[0], component[kinds[0]]
+    where = '{} "{}" of {}'.format(kind, service, here)
+    if service not in services:
+        fail('{} names a service the design does not declare. Its services: {}'
+             .format(where, ', '.join(sorted(s for s in services if s))))
+    if kind == 'provides':
+        given = component.get('roles') or [service + 'Provider']
+        if component.get('role'):
+            # Reported, and read as the instance it names, so the roles that consume it
+            # are checked in the same call.
+            problems.append('{} gives "role", which names a provider to use. A providing '
+                            'component names its own instances with "roles"'.format(where))
+            given = [component['role']]
+        if service in provided:
+            fail('{} provides it a second time, in program "{}" too. One '
+                 'component provides a service; several instances of it are '
+                 'its "roles"'.format(where, provided[service]))
+        provided[service] = name
+        for role in given:
+            if not isinstance(role, str) or not IDENTIFIER.match(role):
+                fail('{} gives the role {!r}: a role is a name a C identifier '
+                     'can carry'.format(where, role))
+            if role in roles:
+                fail('{} gives the role "{}", which {} already has. A role '
+                     'names one provider in the whole system'
+                     .format(where, role, roles[role][1]))
+            roles[role] = (service, where)
+    elif component.get('roles'):
+        fail('{} gives "roles", which names the instances a component '
+             'provides. The instance it {} is "role", and the other instances '
+             'it talks to are "uses": [{{"service": "{}", "roles": [...]}}], one '
+             'client member each'.format(where, kind, service))
+    if kind == 'drives':
+        driven.append((service, where))
+    for entry in component.get('uses') or []:
+        if isinstance(entry, dict):
+            check_keys(entry, KEYS['use'], 'a used service of ' + where)
+        elif not isinstance(entry, str):
+            fail('a used service of {} is a service name or {{"service": ..., '
+                 '"role": ...}}'.format(where))
+    for used, used_roles in component_uses(component, project):
+        if used not in services:
+            fail('{} uses "{}", which the design does not declare'
+                 .format(where, used))
+        if used == service and kind == 'provides':
+            fail('{} uses the service it provides. Another instance of it is '
+                 'consumed by another component'.format(where))
+        if used == service and (component.get('role')
+                                or consumed_role(project, service)) \
+                in used_roles:
+            fail('{} uses the role it already {}: list the other instances '
+                 'only'.format(where, kind))
+
+
+def check_consumed_roles(project, program, component, kind, service, roles):
+    """Every role a component consumes is provided, and provides the service it names."""
+    where = '{} "{}" of program "{}"'.format(kind, service, program.get('name'))
+    wanted = []
+    if kind in ('drives', 'watches'):
+        wanted.append((service, component.get('role') or consumed_role(project, service)))
+    for used, used_roles in component_uses(component, project):
+        wanted += [(used, role) for role in used_roles]
+    for used, role in wanted:
+        if role not in roles:
+            own = kind in ('drives', 'watches') and used == service \
+                and role == component.get('role')
+            fail('{} consumes the role "{}", which no component provides.{} The roles '
+                 'provided: {}'.format(where, role,
+                                       ' Its "role" is the provider instance it talks '
+                                       'to, not a name of its own.' if own else '',
+                                       ', '.join(sorted(roles)) or 'none'))
+        if roles[role][0] != used:
+            fail('{} consumes "{}" as a {}, and that role provides {}'
+                 .format(where, role, used, roles[role][0]))
 
 
 def check_final_entry(project):
@@ -1944,8 +1985,11 @@ def check_sequences(project):
         awaited |= set(name for name, entry in requests.items()
                        if 'answer' in entry or entry.get('response'))
         seen = set()
+        owed = {}
         for step in steps:
             with gathering(problems), contextlib.suppress(Refused):
+                if isinstance(step, dict):
+                    owe_answers(step, requests, owed, where)
                 if not isinstance(step, dict):
                     fail('{} list {!r}, which is not a step object'.format(where, step))
                 name = step.get('name')
@@ -2031,6 +2075,44 @@ def check_sequences(project):
                     fail('{} sends nothing, awaits nothing and waits for no time'.format(here))
     if problems:
         refuse(problems)
+
+
+def answer_of(requests, name):
+    """The answer a step's "send" or "await" names, when it names a request with one."""
+    entry = requests.get(name)
+    if not isinstance(entry, dict):
+        return name
+    return entry.get('response') or (name if 'answer' in entry else None)
+
+
+def owe_answers(step, requests, owed, where):
+    """Counts the answers still to come from steps that send and wait a time, and refuses
+    a step that awaits its own answer while one of them may arrive first. Awaiting any
+    other message settles them: the provider answered before it sent that."""
+    send, target, wait = step.get('send'), step.get('await'), step.get('wait') or 0
+    mine = answer_of(requests, send) if send in requests else None
+    awaits = mine if target is None and send is not None and not wait \
+        else answer_of(requests, target) if target is not None else None
+    if mine is not None and awaits == mine:
+        earlier = owed.get(mine)
+        if earlier:
+            many = len(earlier) > 1
+            fail('step "{}" of {} sends "{}" and awaits its answer while the {} to {} {}, '
+                 'sent before it, may still come: this step would take {}. Let {} await '
+                 'its answer, or collect {} first in steps that only await "{}"'
+                 .format(step.get('name'), where, send, 'answers' if many else 'answer',
+                         'steps' if many else 'step',
+                         ', '.join('"{}"'.format(n) for n in earlier),
+                         'one of them' if many else 'that one',
+                         'each of them' if many else 'that step',
+                         'them' if many else 'it', send))
+        return
+    if awaits is not None and owed.get(awaits):
+        owed[awaits].pop(0)
+    elif awaits is not None:
+        owed.clear()
+    if mine is not None and wait and target is None:
+        owed.setdefault(mine, []).append(step.get('name'))
 
 
 def attribute_reads(node, found):
@@ -2752,8 +2834,8 @@ TEMPLATE = {
                    "whole, as \"GateTypes::Quality::Good\". await: a response, a broadcast or an",
                    "attribute; a request with an answer awaits its response unless the step",
                    "names another. wait: milliseconds, instead of await. Several requests in",
-                   "flight: each sends with wait: 1, and later steps await the answers in the",
-                   "order they arrive, each check telling by its values which one it got.",
+                   "flight: each sends with wait: 1, and later steps that only await take the",
+                   "answers in the order they arrive, each check telling by its values which.",
                    "Every step sends, awaits or waits, and one that only awaits is a step too;",
                    "a check alone is not a step.",
                    "Steps run in order and the run exits 0 after the last. A check calls fail(),",
@@ -2999,11 +3081,13 @@ def main():
     check_shape(project)
     check_unique_names(project)
     cross_check(project)
-    check_sequences(project)
-    check_drivers(project)
-    check_service_timers(project)
-    check_final_entry(project)
-    check_programs(project)
+    problems = []
+    for check in (check_sequences, check_drivers, check_service_timers, check_final_entry,
+                  check_programs):
+        with gathering(problems), contextlib.suppress(Refused):
+            check(project)
+    if problems:
+        refuse(problems)
     check_deployments(project)
     # An include names a document the way the project root spells it, which is the
     # directory the documents are written to.

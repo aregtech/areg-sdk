@@ -207,7 +207,7 @@ Nothing here reports an error. Every one of these compiles, starts, and stays si
 |---|---|---|
 | The worker consumer name is not the one the component answers to | Compare the string in `REGISTER_WORKER_THREAD` with every name `worker_thread_consumer()` tests | Make them equal. An unknown name returns `nullptr` and the thread runs nothing |
 | A custom event has no listener | Is there an `add_listener` for that event, in the thread that should receive it? | Register in the consumer's own thread; see `23-events.md` |
-| A custom event is sent before its listener registers | Is `add_listener` after the service starts, or a worker's in `register_event_consumers()`? | `37-threads.md` section 2 |
+| A custom event is sent before its listener registers | Is `add_listener` after the service starts, or a worker's in `register_event_consumers()`? | `38-workers.md` |
 | `AREG_DECLARE_EVENT_EX` names a thread that is not in the model | Compare the macro's thread name with `BEGIN_REGISTER_THREAD` | Make them equal; the automatic registration silently finds no thread |
 | A watchdog timeout never bites | Was `areg::Application::setup()` called with `startWatchdog` true? | A non-zero timeout in `BEGIN_REGISTER_THREAD_EX` does nothing while the watchdog manager is off; see `37-threads.md` |
 

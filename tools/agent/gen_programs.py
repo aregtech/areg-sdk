@@ -263,7 +263,7 @@ def client_class(owner, iface, roles, cls, reconnect, driving=False):
                       iface.generated_params('request', name, 'failed').strip()),
                   '    {',
                   '        std::cerr << mRole.as_string() << ": request {} failed, reason " '
-                  '<< static_cast<int>(reason) << std::endl;'.format(name),
+                  '<< areg::as_string(reason) << std::endl;'.format(name),
                   '    }',
                   '']
     for name, _ in iface.broadcasts:
@@ -457,7 +457,7 @@ def watcher_class(iface, cls, driver):
                       iface.generated_params('request', name, 'failed').strip()),
                   '    {',
                   '        std::cerr << "request {} failed, reason " '
-                  '<< static_cast<int>(reason) << std::endl;'.format(name),
+                  '<< areg::as_string(reason) << std::endl;'.format(name),
                   '        quit_with(1);',
                   '    }',
                   '']

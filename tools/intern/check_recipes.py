@@ -320,7 +320,11 @@ def main():
     parser.add_argument('--repeat', type=int, default=1,
                         help='run each recipe this many times after building it '
                              'once; an intermittent defect is invisible at 1')
+    parser.add_argument('--only', default='',
+                        help='comma separated recipe names or number prefixes, for instance '
+                             '07 or 07-worker-events; the generated app shapes are then skipped')
     args = parser.parse_args()
+    only = [name.strip() for name in args.only.split(',') if name.strip()]
     if args.repeat < 1:
         parser.error('--repeat takes 1 or more')
 
@@ -335,11 +339,15 @@ def main():
         for recipe in sorted(glob.glob(os.path.join(RECIPES, '*'))):
             if not os.path.isdir(recipe):
                 continue
+            if only and not any(os.path.basename(recipe) == name
+                                or os.path.basename(recipe).startswith(name + '-')
+                                for name in only):
+                continue
             passed, detail = check(recipe, work, lib, args.compiler, args.repeat)
             print('{:5} {:32} {}'.format('PASS' if passed else 'FAIL',
                                          os.path.basename(recipe), detail))
             failures += 0 if passed else 1
-        for label, mode, spec, runs in APP_SHAPES:
+        for label, mode, spec, runs in [] if only else APP_SHAPES:
             passed, detail = check_app_shape(label, mode, spec, runs, work, lib,
                                              args.compiler)
             print('{:5} {:32} {}'.format('PASS' if passed else 'FAIL', label, detail))

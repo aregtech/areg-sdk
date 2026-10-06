@@ -42,7 +42,7 @@ Find your task, open that one file, and do not search the repository.
 | Start a new project by hand | `docs/agent/10-new-project.md` |
 | Define an interface; what to override, what to call | `docs/agent/20-service-interface.md` (section 3: the names) |
 | Implement a provider, a consumer, or the model | no page: `tools/agent/gen_skeleton.py --app` wrote all three, compiling and running, and your code is the bodies its worksheet asks for. Open `docs/agent/30-provider.md`, `docs/agent/31-consumer.md` or `docs/agent/32-model.md` only where `docs/agent/05-design.md` or `docs/agent/51-debug.md` cites a numbered section of one |
-| Watchdog, worker thread, model built at run time | copy `docs/agent/recipes/07-worker-events/`; `docs/agent/37-threads.md` |
+| Worker thread; watchdog, model built at run time | copy `docs/agent/recipes/07-worker-events/`; `docs/agent/38-workers.md`; `docs/agent/37-threads.md` |
 | Send a custom event between threads | `docs/agent/23-events.md` |
 | Do periodic or delayed work | `docs/agent/33-timers.md` |
 | Log from code; collect several processes' logs | `docs/agent/34-logging.md` |
@@ -161,8 +161,8 @@ redesign, not an edit; know them first.
   `std::optional`, or an error code.
 
 The other eleven are one-line fixes: a `REGISTER_WORKER_THREAD` consumer name the
-component does not answer to, two
-components sharing a role name (in one process; a public one in the network), a header taken from a `private/`
+component does not answer to, two components sharing a role name (in one process;
+a public one in the network), a header taken from a `private/`
 folder, a watchdog timeout on a thread whose watchdog never starts, a response sent
 after its handler returned, an operation on a nested `.fsml` `Final` state, a
 hand-written source file no `macro_declare_executable` names, a timer told apart
@@ -188,4 +188,3 @@ cannot catch and allows no unfilled marker. Silence a false positive with
 
 A multi-process application starts `mtrouter` first, then the provider, then the
 consumer. A consumer that starts first is not an error: it waits.
-

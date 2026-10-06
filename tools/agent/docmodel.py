@@ -53,7 +53,11 @@ def gathering(problems):
 
 
 def refuse(problems):
-    """End the run naming every refusal gathered, in the order they were found."""
+    """End the run naming every refusal gathered, in the order they were found. Inside
+    an enclosing gathering they join its list instead."""
+    if _GATHERED is not None:
+        _GATHERED.extend(problems)
+        raise Refused(problems[-1])
     sys.stdout.flush()
     for message in problems:
         sys.stderr.write('error: {}\n'.format(message))

@@ -2244,7 +2244,49 @@ def late_latches(iface, steps):
             args = [(flag + pascal(param), held, param) for held, param in
                     generated_values(iface.generated_params('broadcast', name))]
         latches[step['awaits']] = {'flag': flag, 'args': args}
+    latches.update(answer_queues(iface, steps))
     return latches
+
+
+def answer_queues(iface, steps):
+    """What the driver keeps of the answers of requests sent by a step that waits a time.
+
+    Keyed by ('response', name), when a later step collects that answer without sending
+    its request: the struct, the array and its count, sized by the number of such sends,
+    and the fields as (field, type, parameter).
+    """
+    sizes = {}
+    for step in steps:
+        answer = iface.response_of.get(step['send']) if step['send'] else None
+        if answer is not None and step['wait'] and step['awaits'] is None:
+            sizes[answer] = sizes.get(answer, 0) + 1
+    queues = {}
+    for step in steps:
+        if step['awaits'] is None or step['awaits'][0] != 'response':
+            continue
+        name = step['awaits'][1]
+        if name not in sizes or iface.response_of.get(step['send']) == name:
+            continue
+        member = 'mLate' + pascal(name)
+        queues[('response', name)] = {
+            'queue': sizes[name], 'type': 'Late' + pascal(name), 'member': member,
+            'count': member + 'Count',
+            'args': [(param, held, param) for held, param in
+                     generated_values(iface.generated_params('response', name))]}
+    return queues
+
+
+def flag_latches(latches):
+    """The latches of updates and broadcasts: one flag each."""
+    return dict((key, latch) for key, latch in latches.items() if 'flag' in latch)
+
+
+def collects(step, latches, iface):
+    """True when the step takes a kept answer: it awaits one that is queued and did not
+    send its request itself."""
+    latch = latches.get(step['awaits'])
+    return bool(latch) and 'queue' in latch \
+        and iface.response_of.get(step['send']) != step['awaits'][1]
 
 
 def step_dispatch(steps, kind, name, indent, latch=None):
@@ -2257,7 +2299,7 @@ def step_dispatch(steps, kind, name, indent, latch=None):
         return []
     pad = ' ' * indent
     lines = ['' if kind != 'response' else None,
-             pad + '{} = false;'.format(latch['flag']) if latch else None,
+             pad + '{} = false;'.format(latch['flag']) if latch and 'flag' in latch else None,
              pad + 'mHeld = false;', pad + 'mJumped = false;',
              pad + 'switch (mStep)', pad + '{']
     lines = [line for line in lines if line is not None]
@@ -2282,6 +2324,20 @@ def step_dispatch(steps, kind, name, indent, latch=None):
     # A message arriving on a step with no case for it is not an error: most steps
     # ignore most messages. It is remembered rather than reported, because the step
     # that did want it waits for ever and the stall report is where that is answered.
+    if latch and 'queue' in latch:
+        values = ', '.join(param for _, _, param in latch['args'])
+        return lines + [
+            pad + 'default:',
+            pad + '    if ({} < {})'.format(latch['count'], latch['queue']),
+            pad + '    {',
+            pad + '        {}[{}++] = {}{{ {} }};'.format(latch['member'], latch['count'],
+                                                     latch['type'], values),
+            pad + '    }',
+            pad + '    else',
+            pad + '    {',
+            pad + '        dropped("{} {}");'.format(kind, name),
+            pad + '    }',
+            pad + '    break;', pad + '}']
     lines += [pad + 'default:',
               pad + '    dropped("{} {}");'.format(kind, name)]
     if latch:
@@ -2348,11 +2404,18 @@ def driver_lines(steps, holds, cls, iface=None, latches=None):
         lines += ['        case Step::{}:'.format(step['enum']),
                   '            std::cout << "step {}" << std::endl;'.format(step['name'])]
         if step['send']:
-            if latches:
+            if flag_latches(latches):
                 lines.append('            forget_late();')
             lines.append('            {}({});'.format(step['call'],
                                                   ', '.join(step['args'])))
-        elif step['awaits'] in latches:
+        if collects(step, latches, iface):
+            lines += ['            if ({} != 0)'.format(latches[step['awaits']]['count']),
+                      '            {',
+                      '                mLate.start_timer(1, static_cast<areg::DispatcherThread &>'
+                      '(master_thread()),',
+                      '                                  areg::TimerBase::ONE_TIME);',
+                      '            }']
+        elif not step['send'] and step['awaits'] in flag_latches(latches):
             lines += ['            if ({})'.format(latches[step['awaits']]['flag']),
                       '            {',
                       '                mLate.start_timer(1, static_cast<areg::DispatcherThread &>'
@@ -2434,8 +2497,35 @@ def late_lines(steps, iface, latches):
              '        mReplaying = true;',
              '        switch (mStep)',
              '        {']
+    flags = flag_latches(latches)
     for step in steps:
-        if step['send'] is not None or step['awaits'] not in latches:
+        if collects(step, latches, iface):
+            latch = latches[step['awaits']]
+            lines += ['        case Step::{}:'.format(step['enum']),
+                      '            if ({} != 0)'.format(latch['count']),
+                      '            {',
+                      '                const {} late{{ {}[0] }};'.format(latch['type'],
+                                                                     latch['member']),
+                      '                for (uint32_t index = 1; index < {}; ++index)'
+                      .format(latch['count']),
+                      '                {',
+                      '                    {0}[index - 1] = {0}[index];'.format(latch['member']),
+                      '                }',
+                      '                --{};'.format(latch['count']),
+                      '                {}({});'.format(
+                          iface.spell('response', step['awaits'][1]),
+                          ', '.join('late.' + field for field, _, _ in latch['args'])),
+                      '                if ((mStep == Step::{}) && ({} != 0))'
+                      .format(step['enum'], latch['count']),
+                      '                {',
+                      '                    mLate.start_timer(1, static_cast<areg::DispatcherThread &>'
+                      '(master_thread()),',
+                      '                                      areg::TimerBase::ONE_TIME);',
+                      '                }',
+                      '            }',
+                      '            break;']
+            continue
+        if step['send'] is not None or step['awaits'] not in flags:
             continue
         kind, name = step['awaits']
         flag = latches[step['awaits']]['flag']
@@ -2460,16 +2550,30 @@ def late_lines(steps, iface, latches):
               '        }',
               '        mReplaying = false;',
               '    }',
-              '',
-              '    //! Forgets every update and broadcast that arrived before a request.',
-              '    void forget_late()',
-              '    {']
-    lines += ['        {} = false;'.format(latch['flag']) for latch in latches.values()]
-    lines += ['    }',
-              '',
-              '    areg::Timer  mLate;   //!< Starts replay_late() once the step has begun.',
+              '']
+    if flags:
+        lines += ['    //! Forgets every update and broadcast that arrived before a request.',
+                  '    void forget_late()',
+                  '    {']
+        lines += ['        {} = false;'.format(latch['flag']) for latch in flags.values()]
+        lines += ['    }',
+                  '']
+    lines += ['    areg::Timer  mLate;   //!< Starts replay_late() once the step has begun.',
               '    bool  mReplaying{ false };   //!< True while replay_late() runs a check.']
     for (kind, name), latch in latches.items():
+        if 'queue' in latch:
+            lines += ['',
+                      '    //! An answer of {} that arrived before the step collecting it.'
+                      .format(name),
+                      '    struct {}'.format(latch['type']),
+                      '    {']
+            lines += ['        {}  {}{{}};'.format(held, field) for field, held, _ in latch['args']]
+            lines += ['    };',
+                      '    {}  {}[{}]{{}};   //!< Kept answers of {}, oldest first.'
+                      .format(latch['type'], latch['member'], latch['queue'], name),
+                      '    uint32_t  {}{{ 0 }};   //!< How many answers of {} are kept.'
+                      .format(latch['count'], name)]
+            continue
         lines.append('    bool  {}{{ false }};   //!< True once {} {} arrived unchecked.'
                      .format(latch['flag'], kind, name))
         lines += ['    {}  {}{{}};   //!< The {} it carried.'.format(held, member, param)
@@ -2693,7 +2797,7 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
                 lines.append(placeholder('        mPace.stop_timer();'))
             lines.append(placeholder('        quit_with(0);'))
             first = False
-        lines += step_dispatch(steps, 'response', name, 8)
+        lines += step_dispatch(steps, 'response', name, 8, latches.get(('response', name)))
         lines.append('    }')
         lines.append('')
 
@@ -2703,7 +2807,7 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
             iface.generated_params('request', name, 'failed').strip()))
         lines += ['    {',
                   '        std::cerr << "request {} failed, reason " '
-                  '<< static_cast<int>(reason) << std::endl;'.format(name)]
+                  '<< areg::as_string(reason) << std::endl;'.format(name)]
         if stepped:
             lines.append('        mPace.stop_timer();')
         lines += ['        quit_with(1);',
