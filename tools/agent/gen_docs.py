@@ -84,7 +84,10 @@ NOTE = '#|'
 
 # Every key each kind of spec object may carry. Any other key is refused.
 KEYS = {
-    'spec': ('datatypes', 'interfaces', 'machines'),
+    'spec': ('datatypes', 'interfaces', 'machines', 'programs'),
+    'program': ('name', 'description', 'components'),
+    'component': ('provides', 'roles', 'drives', 'watches', 'role', 'uses', 'description'),
+    'use': ('service', 'role', 'roles'),
     'datatypes': ('name', 'description', 'version', 'declare', 'includes'),
     'interface': ('name', 'category', 'description', 'version', 'types', 'attributes',
                   'requests', 'responses', 'broadcasts', 'constants', 'includes',
@@ -129,12 +132,14 @@ SHAPES = dict(
         'actions', 'all', 'answer', 'any', 'attributes', 'broadcasts', 'conditions',
         'constants', 'declare', 'do', 'entry', 'events', 'exit', 'fields', 'includes',
         'interfaces', 'machines', 'params', 'requests', 'responses', 'states', 'steps',
-        'submachines', 'timers', 'transitions', 'triggers', 'types', 'values')] +
+        'submachines', 'timers', 'transitions', 'triggers', 'types', 'values',
+        'programs', 'components', 'uses', 'roles')] +
     [(key, (str, 'a string')) for key in (
         'alias', 'answer_description', 'await', 'body', 'call', 'category', 'container',
         'derives', 'description', 'final_event', 'header', 'implement', 'initial', 'key',
         'kind', 'location', 'name', 'namespace', 'notify', 'object', 'of', 'on', 'path',
-        'return', 'send', 'stop', 'threading', 'to', 'type')] +
+        'return', 'send', 'stop', 'threading', 'to', 'type', 'provides', 'drives',
+        'watches', 'role', 'service')] +
     [(key, (dict, 'an object, {...}')) for key in ('datatypes', 'driver', 'set', 'until')])
 SINGULAR = {'attributes': 'attribute', 'requests': 'request', 'responses': 'response',
             'broadcasts': 'broadcast', 'constants': 'constant', 'includes': 'include',
@@ -143,7 +148,8 @@ SINGULAR = {'attributes': 'attribute', 'requests': 'request', 'responses': 'resp
             'timers': 'timer', 'triggers': 'trigger', 'actions': 'action',
             'conditions': 'condition', 'submachines': 'submachine', 'steps': 'step',
             'states': 'state', 'interfaces': 'service interface', 'machines': 'state machine',
-            'datatypes': 'data type document'}
+            'datatypes': 'data type document', 'programs': 'program',
+            'components': 'component', 'uses': 'used service'}
 
 
 # ----------------------------------------------------------------------------- shared
@@ -1461,7 +1467,7 @@ def write_template(path):
 
 def merge(specs):
     """One project from every spec file given."""
-    project = {'datatypes': None, 'interfaces': [], 'machines': []}
+    project = {'datatypes': None, 'interfaces': [], 'machines': [], 'programs': []}
     for path, spec in specs:
         if not isinstance(spec, dict):
             fail('{} is not a spec object'.format(path))
@@ -1473,9 +1479,148 @@ def merge(specs):
             project['datatypes'] = spec['datatypes']
         project['interfaces'].extend(spec.get('interfaces') or [])
         project['machines'].extend(spec.get('machines') or [])
+        project['programs'].extend(spec.get('programs') or [])
     if not (project['datatypes'] or project['interfaces'] or project['machines']):
         fail('the spec describes no document')
     return project
+
+
+def program_components(project):
+    """Every component of "programs", as (program, component, kind, service), in order."""
+    found = []
+    for program in listed(project, 'programs'):
+        for component in listed(program, 'components'):
+            kinds = [kind for kind in COMPONENT_KINDS if component.get(kind)]
+            found.append((program, component, kinds[0] if len(kinds) == 1 else None,
+                          component.get(kinds[0]) if len(kinds) == 1 else None))
+    return found
+
+
+# What a component of a program does with its service, exactly one per component.
+COMPONENT_KINDS = ('provides', 'drives', 'watches')
+
+
+def component_uses(component):
+    """The services a component uses, as (service, [roles]), a bare name as its default."""
+    found = []
+    for entry in component.get('uses') or []:
+        if isinstance(entry, str):
+            entry = {'service': entry}
+        if not isinstance(entry, dict):
+            continue
+        service = entry.get('service')
+        roles = entry.get('roles') or ([entry['role']] if entry.get('role') else
+                                       [str(service) + 'Provider'])
+        found.append((service, roles))
+    return found
+
+
+def check_programs(project):
+    """The "programs" block: every name resolves, and every role is provided once."""
+    programs = project.get('programs') or []
+    if not programs:
+        return
+    services = set(entry.get('name') for entry in project['interfaces']
+                   if isinstance(entry, dict))
+    if not isinstance(programs, list) or not all(isinstance(p, dict) for p in programs):
+        fail('"programs" is a list of objects, one per executable: '
+             '{"name": "...", "components": [...]}')
+    names, roles, provided, driven = set(), {}, {}, []
+    for program in programs:
+        name = program.get('name')
+        here = 'program "{}"'.format(name)
+        check_keys(program, KEYS['program'], here)
+        if not isinstance(name, str) or not IDENTIFIER.match(name) or name.lower() in names:
+            fail('{} needs a name of its own that a C identifier can carry: it names '
+                 'the executable and its folder under src/'.format(here))
+        names.add(name.lower())
+        components = program.get('components')
+        if not isinstance(components, list) or not components \
+                or not all(isinstance(c, dict) for c in components):
+            fail('{} lists no component. Each is {{"provides": "<Service>"}}, '
+                 '{{"drives": "<Service>"}} or {{"watches": "<Service>"}}'.format(here))
+        for component in components:
+            check_keys(component, KEYS['component'], 'a component of ' + here)
+            kinds = [kind for kind in COMPONENT_KINDS if component.get(kind)]
+            if len(kinds) != 1:
+                fail('a component of {} names {}: each provides, drives or watches '
+                     'exactly one service. Another service it calls, waits on or reads '
+                     'goes in its "uses"; a second component in the program is a '
+                     'separate thread the steps cannot wait on'
+                     .format(here, ' and '.join(kinds) or 'none of '
+                             '"provides", "drives" and "watches"'))
+            kind, service = kinds[0], component[kinds[0]]
+            where = '{} "{}" of {}'.format(kind, service, here)
+            if service not in services:
+                fail('{} names a service the design does not declare. Its services: {}'
+                     .format(where, ', '.join(sorted(s for s in services if s))))
+            if kind == 'provides':
+                if component.get('role'):
+                    fail('{} gives "role", which names a provider to use. A providing '
+                         'component names its own instances with "roles"'.format(where))
+                if service in provided:
+                    fail('{} provides it a second time, in program "{}" too. One '
+                         'component provides a service; several instances of it are '
+                         'its "roles"'.format(where, provided[service]))
+                provided[service] = name
+                for role in component.get('roles') or [service + 'Provider']:
+                    if not isinstance(role, str) or not IDENTIFIER.match(role):
+                        fail('{} gives the role {!r}: a role is a name a C identifier '
+                             'can carry'.format(where, role))
+                    if role in roles:
+                        fail('{} gives the role "{}", which {} already has. A role '
+                             'names one provider in the whole system'
+                             .format(where, role, roles[role][1]))
+                    roles[role] = (service, where)
+            elif component.get('roles'):
+                fail('{} gives "roles", which names the instances a component '
+                     'provides. The provider it consumes is "role"'.format(where))
+            if kind == 'drives':
+                driven.append((service, where))
+            for entry in component.get('uses') or []:
+                if isinstance(entry, dict):
+                    check_keys(entry, KEYS['use'], 'a used service of ' + where)
+                elif not isinstance(entry, str):
+                    fail('a used service of {} is a service name or {{"service": ..., '
+                         '"role": ...}}'.format(where))
+            for used, used_roles in component_uses(component):
+                if used not in services:
+                    fail('{} uses "{}", which the design does not declare'
+                         .format(where, used))
+                if used == service and kind == 'provides':
+                    fail('{} uses the service it provides. Another instance of it is '
+                         'consumed by another component'.format(where))
+                if used == service and (component.get('role') or service + 'Provider') \
+                        in used_roles:
+                    fail('{} uses the role it already {}: list the other instances '
+                         'only'.format(where, kind))
+    for program, component, kind, service in program_components(project):
+        where = '{} "{}" of program "{}"'.format(kind, service, program.get('name'))
+        wanted = []
+        if kind in ('drives', 'watches'):
+            wanted.append((service, component.get('role') or service + 'Provider'))
+        for used, used_roles in component_uses(component):
+            wanted += [(used, role) for role in used_roles]
+        for used, role in wanted:
+            if role not in roles:
+                fail('{} consumes the role "{}", which no component provides. The '
+                     'roles provided: {}'.format(where, role,
+                                                 ', '.join(sorted(roles)) or 'none'))
+            if roles[role][0] != used:
+                fail('{} consumes "{}" as a {}, and that role provides {}'
+                     .format(where, role, used, roles[role][0]))
+    if len(driven) > 1:
+        fail('{} drive a scenario, and one component leads it. Make the others '
+             '"watches"'.format(' and '.join(where for _, where in driven)))
+    for entry in project['interfaces']:
+        if not isinstance(entry, dict):
+            continue
+        if entry.get('name') not in provided:
+            fail('no component of "programs" provides "{}". Every service the design '
+                 'declares runs in one program'.format(entry.get('name')))
+        if entry.get('steps') and not any(s == entry.get('name') for s, _ in driven):
+            fail('"{}" declares steps, and no component drives it. The steps run in '
+                 'the component that "drives" that service'.format(entry.get('name')))
 
 
 def check_final_entry(project):
@@ -2385,7 +2530,9 @@ TEMPLATE = {
                    "send: a request, with args {parameter: C++ value}; an enum value is spelled",
                    "whole, as \"GateTypes::Quality::Good\". await: a response, a broadcast or an",
                    "attribute; a request with an answer awaits its response unless the step",
-                   "names another. wait: milliseconds, instead of await.",
+                   "names another. wait: milliseconds, instead of await. Several requests in",
+                   "flight: each sends with wait: 1, and later steps await the answers in the",
+                   "order they arrive, each check telling by its values which one it got.",
                    "Every step sends, awaits or waits, and one that only awaits is a step too;",
                    "a check alone is not a step.",
                    "Steps run in order and the run exits 0 after the last. A check calls fail(),",
@@ -2622,6 +2769,7 @@ def main():
     check_drivers(project)
     check_service_timers(project)
     check_final_entry(project)
+    check_programs(project)
     # An include names a document the way the project root spells it, which is the
     # directory the documents are written to.
     prefix = '' if os.path.isabs(args.outdir) else \

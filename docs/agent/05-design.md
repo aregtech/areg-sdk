@@ -61,8 +61,8 @@ Rules that follow from the table:
 ## 3. What are the components, and in which threads?
 
 A **component** is one instance with one **role name**, and the role name is its
-routing identity. A component may provide and consume several services at once, as
-the middle one in `recipes/05-two-services/` does.
+routing identity. A component may provide one service and use others;
+`"programs"` in `design.json` places components and instances.
 
 - One component per role, not per service. A role name is unique in its process, and
   a public one in the network: `mtrouter` rejects a second provider.

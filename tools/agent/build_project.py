@@ -463,6 +463,52 @@ def documents_of(specs, outdir):
     return interfaces, machines, shared_types, list(dict.fromkeys(hosted))
 
 
+# The shape of a "programs" block, printed where a design of several services meets it.
+PROGRAMS_SHAPE = '''  "programs": [
+    {"name": "server", "components": [{"provides": "StockService"},
+                                      {"provides": "PaymentService"}]},
+    {"name": "desk", "components": [{"provides": "OrderService",
+                                     "uses": ["StockService", "PaymentService"]}]},
+    {"name": "client", "components": [{"drives": "OrderService"}]}]
+  A program is an executable. A component provides one service, drives the scenario
+  (the "steps" of that service), or watches one; "roles": ["a", "b"] on a provider runs
+  named instances of it, and "role" or {"service": ..., "role"/"roles": ...} in "uses"
+  picks the instance a consumer talks to. "uses" gives any component a client member of
+  each used provider, with every answer, update and broadcast a worksheet section.'''
+
+
+def programs_of(specs):
+    """The "programs" block of the specs, or an empty list.
+
+    A block that only restates the default shape -- one service, its provider in one
+    program and the component driving it in another, nothing used -- is the
+    application build_project.py writes without it, so it is not used.
+    """
+    found, interfaces = [], []
+    for spec in specs:
+        loaded = gen_docs.load_spec(spec)[0]
+        found += loaded.get('programs') or []
+        interfaces += [entry for entry in loaded.get('interfaces') or []
+                       if isinstance(entry, dict)]
+    components = [component for program in found if isinstance(program, dict)
+                  for component in program.get('components') or []
+                  if isinstance(component, dict)]
+    kinds = sorted(kind for component in components
+                   for kind in gen_docs.COMPONENT_KINDS if component.get(kind))
+    if len(interfaces) == 1 and len(found) <= 2 and kinds == ['drives', 'provides'] \
+            and not any(component.get('uses') or len(component.get('roles') or []) > 1
+                        for component in components):
+        return []
+    return found
+
+
+def programs_present(root, programs):
+    """0 when no program has its main.cpp yet, 2 when every one has, 1 otherwise."""
+    present = [os.path.isfile(os.path.join(root, 'src', program.get('name', ''), 'main.cpp'))
+               for program in programs if isinstance(program, dict)]
+    return 2 if present and all(present) else (1 if any(present) else 0)
+
+
 def built_machines(machines, hosted):
     """The machines an application can drive: a hosted one runs inside its host."""
     return [path for path in machines if os.path.normpath(path) not in hosted]
@@ -778,11 +824,12 @@ def main():
               'service, or inside a machine that hosts it.')
         return 0
 
+    programs = programs_of(specs) if specs and args.doc is None else []
     document = args.doc
     machine = args.machine
     if machine and not machine.lower().endswith('.fsml'):
         machine = os.path.join(args.outdir, machine + '.fsml')
-    if specs and (document is None or machine is None):
+    if specs and (document is None or machine is None) and not programs:
         interfaces, machines, _shared, hosted = documents_of(specs, args.outdir)
         machines = built_machines(machines, hosted)
         # The application this tool writes is one service and at most one machine.
@@ -791,13 +838,12 @@ def main():
         for what, found, option in (('service', interfaces, '--doc'),
                                     ('state machine', machines, '--machine')):
             if len(found) > 1 and (args.doc if option == '--doc' else args.machine) is None:
-                fail('this project describes {} {}s: {}. build_project.py writes one '
-                     'application, of one service and at most one machine: name the one '
-                     'to build with {}, and write the others with gen_skeleton.py --app '
-                     'into their own directories. docs/agent/10-new-project.md has the '
-                     'shape.'.format(len(found), what,
-                                     ', '.join(os.path.basename(f) for f in found),
-                                     option))
+                fail('this project describes {} {}s: {}. Say which program runs '
+                     'which of them with a "programs" block in design.json, and this '
+                     'command writes every program:\n{}'
+                     .format(len(found), what,
+                             ', '.join(os.path.basename(f) for f in found),
+                             PROGRAMS_SHAPE))
         document = document or (interfaces[0] if interfaces else None)
         machine = machine or (machines[0] if machines else None)
     if document is None:
@@ -825,16 +871,20 @@ def main():
             print('   removed {} -- the placeholder document the spec replaced'
                   .format(path))
 
-    present = app_present(root, document)
+    present = programs_present(root, programs) if programs else app_present(root, document)
     stale = present == 2 and app_older_than(root, args.build, specs)
     untouched = stale and app_untouched(root, args.build)
     if untouched and not args.regenerate:
         print('== application: {} changed and src/ holds only generated code and '
               'bodies.txt, so it is written again.'.format(', '.join(os.path.basename(s) for s in specs)))
     if args.regenerate or present == 0 or untouched:
-        command = [PYTHON, os.path.join(HERE, 'gen_skeleton.py'), '--doc', document,
-                   '--app', '--mode', mode, '--force']
-        if machine:
+        if programs:
+            command = [PYTHON, os.path.join(HERE, 'gen_skeleton.py'), '--programs',
+                       '--services', args.outdir, '--force']
+        else:
+            command = [PYTHON, os.path.join(HERE, 'gen_skeleton.py'), '--doc', document,
+                       '--app', '--mode', mode, '--force']
+        if machine and not programs:
             command += ['--machine', machine]
         for spec in specs:
             command += ['--spec', spec]

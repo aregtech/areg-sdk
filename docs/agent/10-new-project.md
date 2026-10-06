@@ -35,14 +35,13 @@ The rest of this page describes what it writes, for when a project has to be bui
 by hand or an existing one has to be changed.
 
 **What the tools write, and what you compose.** `gen_docs.py` writes every document a
-design describes. `gen_skeleton.py --app` writes **one** application: one service, its
-provider and its consumer, and at most one machine -- with those it hosts -- folded
-into the provider, which is what `build_project.py` builds. Given several services it
-refuses rather than picking one. So a design of several is generated per service, each
-`--app` into its own directory, or one is named with `--doc` and `--machine`. Composition is yours: a
-component that provides one service and consumes another, two instances of one service,
-worker plumbing. `docs/agent/32-model.md` registers components; recipes `05`, `09` and
-`11` show the shapes.
+design describes. Without `"programs"`, `build_project.py` builds **one** application:
+one service, its provider program and its consumer program, and at most one machine --
+with those it hosts -- folded into the provider. A design of several services, several
+instances of one, a component that provides one service and uses another, or a third
+program says in `"programs"` which program runs what (`build_project.py` prints its
+shape), and every program is generated. Worker plumbing is yours (`37-threads.md`);
+`32-model.md` registers components; recipes `05`, `09` and `11` show the shapes.
 
 ---
 

@@ -40,12 +40,13 @@ MARKER = re.compile(r'//\s*TODO\(you\)\s+([A-Za-z_][\w]*)\s*:\s*(.*?)\s*$')
 
 # A filled body keeps its name. These two lines stand where the marker stood, so the
 # same section of the worksheet addresses the body again after it is written.
-BODY_OPEN = re.compile(r'//\s*body\(you\)\s+([A-Za-z_][\w]*)\s*$')
-BODY_END = re.compile(r'//\s*end\(you\)\s+([A-Za-z_][\w]*)\s*$')
+BODY_OPEN = re.compile(r'//\s*body\(you\)\s+(?:[\w.]+:)?([A-Za-z_][\w]*)\s*$')
+BODY_END = re.compile(r'//\s*end\(you\)\s+(?:[\w.]+:)?([A-Za-z_][\w]*)\s*$')
 
 
 def anchored(body, pad, slot):
-    """The body between the two lines that name it."""
+    """The body between the two lines that name it, by its marker name alone."""
+    slot = slot.rpartition(':')[2]
     return ([pad + '// body(you) {}'.format(slot)] + list(body) +
             [pad + '// end(you) {}'.format(slot)])
 

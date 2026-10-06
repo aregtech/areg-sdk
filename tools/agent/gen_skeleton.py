@@ -344,7 +344,6 @@ WORKSHEET_HEAD = """\
 #| A helper of your own is declared and defined in the "*_state" section, which is
 #| the private block of that class's header. Every other section is code inside
 #| an existing function body, so an out-of-line definition there does not compile.
-#| Nothing else has to be added by hand.
 #|
 #| A body prints with "std::cout << ... << std::endl;". Every .cpp of this project
 #| includes <iostream> already, so a section that prints adds no include.
@@ -766,7 +765,7 @@ def one_driven(lines, wanted, keep):
 
 
 def worksheet_lines(produced, out, iface, document, machine, machine_doc,
-                    scenarios=None, steps=()):
+                    scenarios=None, steps=(), contracts=None, extra=()):
     """The whole worksheet, ready to write."""
     sections = worksheet_sections(produced, out)
     holes = scenario_holes(scenarios) if scenarios else []
@@ -826,12 +825,14 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
     lines.append('#| The names these bodies may call, spelt as the generator emits them.\n'
                  '#| A name spelt in another namespace than the one below does not\n'
                  '#| compile:\n#|')
-    for spec, doc in ((iface, document), (machine, machine_doc)):
+    for spec, doc in contracts or ((iface, document), (machine, machine_doc)):
         if spec is None:
             continue
         for line in contract_lines(spec, doc):
             lines.append(('#| ' + line).rstrip())
     lines.append('#|')
+    if extra:
+        lines += [('#| ' + line).rstrip() for line in extra] + ['#|']
     heading = header_notes(sections, set(step['awaits'][0] for step in steps
                                          if step['awaits']))
     for line in heading:
@@ -842,11 +843,16 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
     notes = section_notes(sections, driven, connecting(produced))
     falls = fall_through(steps)
     current = None
+    # A name more than one file carries is addressed through its file.
+    counts = {}
+    for name, _, _, _, _ in sections:
+        counts[name] = counts.get(name, 0) + 1
     for name, hint, path, file_name, signature in sections:
         if path != current:
             lines.append('\n#| ---- {}'.format(path))
             current = path
-        lines.append('== {}'.format(name))
+        lines.append('== {}'.format(name if counts[name] == 1 else
+                                     '{}:{}'.format(os.path.basename(file_name), name)))
         lines.append('#| {}'.format(hint))
         if signature:
             lines.append('#| in: {}'.format(signature))
@@ -908,7 +914,7 @@ def fall_lines(text):
 
 
 def write_worksheet(produced, out, iface, document, machine, machine_doc,
-                    scenarios=None, steps=()):
+                    scenarios=None, steps=(), contracts=None, extra=()):
     """Write the worksheet. It carries no work, so it is rewritten every time.
 
     A bodies file holding only notes and empty sections is removed: it is the
@@ -920,7 +926,7 @@ def write_worksheet(produced, out, iface, document, machine, machine_doc,
     there is no worksheet to write.
     """
     lines = worksheet_lines(produced, out, iface, document, machine, machine_doc,
-                            scenarios, steps)
+                            scenarios, steps, contracts, extra)
     if not lines:
         return None
     before, known = {}, None
@@ -3631,6 +3637,9 @@ def report_todos(out, mode):
 
 
 def main():
+    if '--programs' in sys.argv[1:]:
+        import gen_programs
+        return gen_programs.main([arg for arg in sys.argv[1:] if arg != '--programs'])
     parser = argparse.ArgumentParser(
         description='Write the components a .siml or .fsml document needs.')
     parser.add_argument('--doc', required=True, help='the .siml or .fsml document')

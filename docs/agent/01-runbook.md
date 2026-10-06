@@ -150,21 +150,22 @@ so this is also the command for every later build, which takes seconds.
 one: the action handler is a base, every action is declared, and there is no separate
 host component to write, merge or delete.
 
-The application is the **whole** of `src/`: every component in its own `.hpp` and
+The application starts as the whole of `src/`: every component in its own `.hpp` and
 `.cpp`, named after its class, plus a `main.cpp` holding only the model and `main()`.
 Two processes get a folder each -- `src/provider/` and `src/consumer/`, each with its
 own `main.cpp`; one process keeps `src/` flat. The mode comes from `scenarios.json`,
 so it is never given twice.
 
 **It compiles and runs as written.** The model, `main()`, the connection test and
-every `notify_on_*` subscription are already correct, so none of them needs a page. A
-consumer that makes more than one request also gets a stepping timer, because
-responses arrive asynchronously and a straight-line sequence races them.
+every `notify_on_*` subscription are already correct, so none of them needs a page.
 `scenarios.json` is pointed at what was generated.
 
 Every place a rule of yours belongs is one line: `// TODO(you) <name>: <what>`, and
-the command prints all of them. **Do not rewrite these files and do not read them
-back.** `gen_skeleton.py --doc <document> --todos` reprints whichever are left.
+the command prints all of them; `gen_skeleton.py --doc <document> --todos` reprints
+whichever are left. **These files are yours, not generated:** fill the markers without
+rereading them, and add what the tool writes no shape for -- a worker thread, a
+component no design declares -- as files of your own, registered in `main.cpp` (`37`,
+`32`, `10`): that is no workaround. `--regenerate` drops what lies outside markers.
 
 `gen_skeleton.py --doc <document> --contract` prints every signature and every
 generated data type in a few hundred tokens and writes no file. Read that instead of
@@ -194,11 +195,9 @@ change, sent with `--write fix.txt` on section 7's command. It is folded into
 change is the one the failure printed: the fix is one call, and no generated file is
 opened.
 
-`30-provider.md`, `31-consumer.md` and `32-model.md` describe the code the tool has
-already written. Do not open them to fill a marker, and do not open them while
-designing either: nothing in them changes what the spec should say. The one exception
-is a numbered section `51-debug.md` or `05-design.md` names -- open that section, not
-the page.
+`30-provider.md`, `31-consumer.md` and `32-model.md` describe code the tool already
+wrote: open them only to add what it does not write, or for a numbered section
+`51-debug.md` or `05-design.md` names -- that section, not the page.
 
 The worksheet lists the `areg::String` calls bodies use, a floor, not a limit. Open
 `40-base-api.md` only for a container or a call it lacks, and for a single framework
