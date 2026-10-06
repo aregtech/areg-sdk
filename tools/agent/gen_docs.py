@@ -2524,8 +2524,9 @@ EXAMPLE_PROGRAMS = {
     NOTE: ["A stock service and an order desk that answers only after the stock has.",
            "programs: one executable each, under src/<name>/. A component provides one",
            "service (\"roles\" runs named instances of it), drives the scenario (the steps",
-           "of that service; \"role\" is the instance it talks to) or watches one. \"uses\"",
-           "gives any component a client member per used role: mStock below, called as",
+           "of that service; \"role\" is the instance it talks to) or watches one, as the",
+           "board does: it reacts to updates and drives nothing. \"uses\" gives any",
+           "component a client member per used role: mStock below, called as",
            "mStock.request_reserve(...), every answer a worksheet section. \"thread\" puts",
            "components of one program in one thread. deployments: named alternatives, each",
            "placing a role or a named component in another program or program/thread;",
@@ -2547,7 +2548,8 @@ EXAMPLE_PROGRAMS = {
                                          "uses": [{"service": "StockService", "role": "stock"}],
                                          "thread": "orders"}]},
         {"name": "customer", "components": [{"name": "buyer", "drives": "OrderService",
-                                             "role": "desk"}]}
+                                             "role": "desk"}]},
+        {"name": "board", "components": [{"watches": "StockService", "role": "stock"}]}
     ],
     "deployments": [{"name": "together", "description": "The stock runs inside the desk.",
                      "place": {"stock": "desk/orders"}}]

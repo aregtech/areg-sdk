@@ -117,7 +117,7 @@ only is measured by that prompt only.
 | a declared state machine: nested states and guards | `coffeemachine`, `atm-fsm`, `printscan`, `elevator`, `sensorgateway`, `washer` |
 | resuming where a sequence was interrupted | `coffeemachine`, `elevator`, `washer` |
 | entering a sequence at a later step | `elevator` |
-| one machine reused from several places (hosted machine) | `atm-fsm`, `washer`; `printscan` when the design chooses it |
+| one machine reused from several places (hosted machine) | `atm-fsm`, `printscan`, `washer` |
 | a count that starts again on every visit | `atm`, `atm-fsm`, `washer` |
 | an injected fault, then recovery or retry | `printscan`, `sensorgateway`, `washer` |
 | hand-written control flow against a declared machine | `atm` against `atm-fsm` |

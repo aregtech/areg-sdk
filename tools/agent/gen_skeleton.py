@@ -534,6 +534,10 @@ CONNECT_INSIDE = ['the rest of service_connected() is generated: every broadcast
                   'and the pace timer starts below it. It runs again on every',
                   'reconnection, so this body sends the first request each time']
 
+CONNECT_ONLY = ['service_connected() is generated and runs before any body below: it',
+                'subscribes to every broadcast and attribute the document declares.',
+                'It runs again on every reconnection']
+
 
 UPDATE_NOTE = ['an update_ body runs on every arrival, whatever step is current, and',
                'before the step_ check of the same update. That check runs while its',
@@ -598,9 +602,12 @@ def spelt(names):
 
 
 def connecting(produced):
-    """The .cpp files that carry a generated service_connected()."""
-    return set(file_name for file_name, body in produced
-               if file_name.endswith('.cpp') and '::service_connected(' in body)
+    """The .cpp files that carry a generated service_connected(), each with the note
+    that says what it does: enter the steps, hold the first request, or subscribe."""
+    return dict((file_name, CONNECT_NOTE if 'begin(Step::' in body else
+                 CONNECT_INSIDE if 'TODO(you) first_request:' in body else CONNECT_ONLY)
+                for file_name, body in produced
+                if file_name.endswith('.cpp') and '::service_connected(' in body)
 
 
 def first_sections(sections):
@@ -612,7 +619,7 @@ def first_sections(sections):
     return first
 
 
-def section_notes(sections, driven=(), connected=()):
+def section_notes(sections, driven=(), connected=None):
     """The warnings that belong to one section, keyed by its marker name.
 
     "driven" is what driven_body() quoted and "connected" the files with a generated
@@ -662,8 +669,8 @@ def section_notes(sections, driven=(), connected=()):
         if cls in quoted:
             said += textwrap.wrap(DRIVEN_POINTER.format(
                 spelt(quoted[cls]), 'is' if len(quoted[cls]) < 2 else 'are'), 74)
-        if file_name in connected:
-            said += CONNECT_NOTE if checks else CONNECT_INSIDE
+        if file_name in (connected or {}):
+            said += connected[file_name]
         if said:
             notes[name] = notes.get(name, []) + said
     return notes
@@ -2302,10 +2309,7 @@ def driver_lines(steps, holds, cls, iface=None, latches=None):
                       '            {',
                       '                mHoldOnce = false;',
                       '                std::cout << "step {}" << std::endl;'.format(step['name']),
-                      '                mHold.stop_timer();',
-                      '                mHold.start_timer({}, static_cast<areg::DispatcherThread &>'
-                      '(master_thread()),'.format(step['wait']),
-                      '                                  areg::TimerBase::ONE_TIME);',
+                      '                hold({});'.format(step['wait']),
                       '            }',
                       '            else',
                       '            {',
@@ -2328,10 +2332,7 @@ def driver_lines(steps, holds, cls, iface=None, latches=None):
                       '                                  areg::TimerBase::ONE_TIME);',
                       '            }']
         if step['wait']:
-            lines += ['            mHold.stop_timer();',
-                      '            mHold.start_timer({}, static_cast<areg::DispatcherThread &>'
-                      '(master_thread()),'.format(step['wait']),
-                      '                              areg::TimerBase::ONE_TIME);']
+            lines.append('            hold({});'.format(step['wait']))
         elif step['awaits'] is None:
             lines.append('            complete();')
         lines.append('            break;')
@@ -2376,7 +2377,19 @@ def driver_lines(steps, holds, cls, iface=None, latches=None):
               '    bool  mEnding{ false };       //!< True until the running check ends its step.',
               '']
     if holds:
-        lines += ['    areg::Timer  mHold;   //!< Ends a step that waits for a time.', '']
+        lines += ['    //! Starts the wait of the current step, in milliseconds.',
+                  '    void hold(uint32_t ms)',
+                  '    {',
+                  '        mHoldMs = ms;',
+                  '        mHold.stop_timer();',
+                  '        mHold.start_timer(ms, static_cast<areg::DispatcherThread &>'
+                  '(master_thread()),',
+                  '                          areg::TimerBase::ONE_TIME);',
+                  '    }',
+                  '',
+                  '    areg::Timer  mHold;   //!< Ends a step that waits for a time.',
+                  '    uint32_t     mHoldMs{ 0 };   //!< The wait mHold runs, 0 when none.',
+                  '']
     if any(step.get('hold') for step in steps):
         lines += ['    bool  mHoldOnce{{ hold_requested() }};   //!< True until the hold step '
                   'has held, when main() was given {}.'.format(HOLD_FLAG), '']
@@ -2523,6 +2536,13 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
                   '                {',
                   '                    begin(Step::{});'.format(steps[0]['enum']),
                   '                }']
+        if holds:
+            lines += ['                else if (mHoldMs != 0)',
+                      '                {',
+                      '                    // The wait the loss stopped starts again.',
+                      '                    progressed();',
+                      '                    hold(mHoldMs);',
+                      '                }']
     else:
         answered_first = next((entry for entry in iface.requests
                                if entry[0] in set(n for n, _ in iface.responses)), None)
@@ -2558,8 +2578,12 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
               '                {',
               marker('peer_lost',
                      'what losing the provider means to this scenario', 20),
-              '                    arm_deadline(cReconnectSeconds);',
-              '                }',
+              '                    arm_deadline(cReconnectSeconds);']
+    if holds:
+        lines.append('                    mHold.stop_timer();')
+    if latches:
+        lines.append('                    mLate.stop_timer();')
+    lines += ['                }',
               '            }',
               '            else if ((status == areg::ServiceConnectionState::Rejected) ||',
               '                     (status == areg::ServiceConnectionState::Shutdown))',
@@ -2598,6 +2622,7 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
     if holds:
         lines += ['        if (&timer == &mHold)',
                   '        {',
+                  '            mHoldMs = 0;',
                   '            complete();',
                   '            return;',
                   '        }',
@@ -2709,7 +2734,7 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
                   '        {']
         lines += ['        case Step::{}:  return "step_{}";'.format(step['enum'],
                                                                     step['name'])
-                  for step in steps]
+                  for step in with_hold(steps, hold)]
         lines += ['        default:  return "no step";',
                   '        }',
                   '    }',
@@ -2721,7 +2746,7 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
                   '        {']
         lines += ['        case Step::{}:  return "{}";'.format(step['enum'],
                                                                 step_detail(step))
-                  for step in steps]
+                  for step in with_hold(steps, hold)]
         lines += ['        default:  return "waits for nothing";',
                   '        }',
                   '    }',

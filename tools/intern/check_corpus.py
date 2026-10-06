@@ -2848,6 +2848,7 @@ def run():
     check_codegen_plain_error(report)
     check_generated_prefix(report)
     check_example_machine(report)
+    check_example_programs(report)
     check_answer_file(report)
     check_peer_lost_scenario(report)
     check_stepped_evidence(report)
@@ -5839,13 +5840,28 @@ def check_step_driver(report):
                              ('request_close("night shift");',
                               'a request with no answer, and a String argument the '
                               'design writes as plain text and C++ needs quoted'),
-                             ('mHold.start_timer(100,', 'a timed wait'),
+                             ('hold(100);', 'a timed wait'),
                              ('quit_with(0);', 'the exit after the last step'),
                              ('begin(Step::OpenGate);', 'the first step')):
             if wanted not in source:
                 report.fail('step-driver', 'the driver does not write {}: "{}" is missing'
                             .format(what, wanted))
                 return
+        # A wait left running while the provider is away ends its step, and a last
+        # step that waits then exits 0 with no provider at all.
+        lost = re.search(r'ServiceConnectionState::ConnectionLost\)\)(.*?)'
+                         r'ServiceConnectionState::Rejected', source, re.S)
+        if lost is None or 'mHold.stop_timer();' not in lost.group(1) or \
+                'hold(mHoldMs);' not in source.split('ServiceConnectionState::Disconnected')[0]:
+            report.fail('step-driver', 'losing the provider does not stop the wait of the '
+                                       'current step, or reconnecting does not start it '
+                                       'again: a run whose steps left are waits exits 0 '
+                                       'without its provider')
+            return
+        if 'case Step::PeerLostHold:  return "step_peer_lost_hold";' not in source:
+            report.fail('step-driver', 'a failure during the generated hold step names '
+                                       '"no step" instead of the step')
+            return
         checks = sorted(re.findall(r'TODO\(you\) (step_\w+):', source))
         if checks != ['step_open_gate', 'step_watch_width']:
             report.fail('step-driver', 'the steps that await something should carry one '
@@ -7563,6 +7579,46 @@ def check_example_machine(report):
         return
     report.ok('example-machine', 'gen_docs.py --example machine reviews clean, with "{}" '
               'hosted from {}'.format(reused[0], ', '.join(hosts[reused[0]])))
+
+
+def check_example_programs(report):
+    """--example programs is a design gen_docs.py accepts with no note, showing each kind
+    of component: one that provides, one that drives and one that watches."""
+    tool = os.path.join(ROOT, 'tools', 'agent', 'gen_docs.py')
+    example = subprocess.run([sys.executable, tool, '--example', 'programs'],
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                             universal_newlines=True)
+    if example.returncode != 0:
+        report.fail('example-programs', 'gen_docs.py --example programs does not run')
+        return
+    design = json.loads(example.stdout)
+    kinds = set(kind for program in design.get('programs') or []
+                for component in program.get('components') or []
+                for kind in ('provides', 'drives', 'watches') if component.get(kind))
+    if kinds != {'provides', 'drives', 'watches'}:
+        report.fail('example-programs', 'gen_docs.py --example programs shows no component '
+                    'that {}, so a design needing one writes it with "uses" only and is '
+                    'refused'.format(' or '.join(sorted({'provides', 'drives', 'watches'}
+                                                        - kinds))))
+        return
+    holder = tempfile.mkdtemp(prefix='areg-example-programs-')
+    try:
+        with open(os.path.join(holder, 'design.json'), 'w', encoding='utf-8') as handle:
+            handle.write(example.stdout)
+        reviewed = subprocess.run([sys.executable, tool, '--spec', 'design.json',
+                                   '--review'], cwd=holder, stdout=subprocess.PIPE,
+                                  stderr=subprocess.STDOUT, universal_newlines=True)
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    notes = [line.strip() for line in reviewed.stdout.splitlines()
+             if line.lstrip().startswith('note ')]
+    if reviewed.returncode != 0 or notes:
+        report.fail('example-programs', 'gen_docs.py --example programs earns a refusal or '
+                    'a design note, and a run copies both: ' +
+                    (notes[0] if notes else reviewed.stdout.strip()[-300:]))
+        return
+    report.ok('example-programs', 'gen_docs.py --example programs reviews clean and shows '
+              'a component that provides, one that drives and one that watches')
 
 
 def check_design_reviewable(report):

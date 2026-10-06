@@ -41,6 +41,10 @@ WAIT_LIMIT = 20.0
 # the limit is not refused for the seconds it did not spend waiting.
 WAIT_MARGIN = 10.0
 LOSS_POINTS = (0.25, 0.5, 0.75)
+# Seconds from the kill to the lead seeing the loss: the runner polls every 50 ms,
+# and the router then reports the closed connection. A lead that exits 0 inside
+# this window may have finished before the loss reached it.
+LOSS_LATENCY = 0.25
 # Lines of the lead's own output a failed loss point keeps as its evidence.
 LOSS_TAIL_LINES = 8
 CPU_LIMIT = 0.5
@@ -254,18 +258,21 @@ def judge_loss_point(label, at, name, observed):
     if code is None or elapsed is None:
         return True, True, '{} did not run: {}'.format(
             label, observed.get('verdict') or 'no exit code')
-    if elapsed < at:
-        # The kill never reached a living process, so this point proves nothing --
-        # unless the process died on its own, which is a failure of its own.
-        if code == 0:
-            return False, False, '{} finished at {:.1f}s, before the loss at {:.1f}s' \
-                .format(label, elapsed, at)
-        return True, True, '{} exited {} at {:.1f}s, before the loss at {:.1f}s' \
-            .format(label, code, elapsed, at)
+    fired = [action.get('fired_at') for action in observed.get('actions') or []]
+    killed = fired[0] if fired and fired[0] is not None else at
+    if code == 0 and elapsed < killed + LOSS_LATENCY:
+        # The loss never reached the process before it finished its work, so this
+        # point proves nothing.
+        return False, False, '{} finished at {:.2f}s, before the loss at {:.2f}s ' \
+            'reached it'.format(label, elapsed, killed)
+    if elapsed < killed:
+        return True, True, '{} exited {} at {:.2f}s, before the loss at {:.2f}s' \
+            .format(label, code, elapsed, killed)
     if code == 0:
-        return True, True, '{} exit 0 {:.1f}s after the loss'.format(label, elapsed - at)
-    return True, False, '{} exit {} {:.1f}s after the loss'.format(label, code,
-                                                                  elapsed - at)
+        return True, True, '{} exit 0 {:.2f}s after the loss'.format(label,
+                                                                   elapsed - killed)
+    return True, False, '{} exit {} {:.2f}s after the loss'.format(label, code,
+                                                                  elapsed - killed)
 
 
 def probe_peer_loss(scenario, build_dirs, lead_time):
@@ -277,7 +284,7 @@ def probe_peer_loss(scenario, build_dirs, lead_time):
         progress('peer-loss: the peer is killed at {:.0%} of a normal run'.format(fraction))
         procs, lead = processes(scenario, keep_checks=False)
         peer = next(p for p in procs if p is not lead)
-        at = round(fraction * lead_time, 1)
+        at = round(fraction * lead_time, 2)
         stop = {'proc': peer['name'], 'after': at, 'signal': 'kill'}
         timeout = at + WAIT_LIMIT + WAIT_MARGIN
         _, _, observed, _, _ = run(variant(scenario, 'peer-loss', procs, timeout, stop),
@@ -291,6 +298,9 @@ def probe_peer_loss(scenario, build_dirs, lead_time):
             text += ' [last lines of {}: {}]'.format(
                 lead['name'], ' | '.join(said.splitlines()[-LOSS_TAIL_LINES:]) or 'none')
         points.append(text)
+    if lead_time < 1:
+        points.insert(0, 'a normal run takes {:.2f}s, so a point within {:.2f}s of its '
+                         'end is not reached'.format(lead_time, LOSS_LATENCY))
     if reached == 0:
         return result('peer-loss', None, 'not evaluated: no run reached the loss; '
                                          + '; '.join(points))
@@ -381,13 +391,21 @@ SELF_TEST_NO_PEER = (
 )
 
 SELF_TEST_LOSS = (
-    ('exited after the loss', {'exits': {'p': 1}, 'elapsed': 13.0}, (True, False)),
-    ('audit: crashed before the loss', {'exits': {'p': 1}, 'elapsed': 0.1}, (True, True)),
-    ('finished its work before the loss', {'exits': {'p': 0}, 'elapsed': 5.0},
+    ('exited after the loss', 12.0, {'exits': {'p': 1}, 'elapsed': 13.0}, (True, False)),
+    ('audit: crashed before the loss', 12.0, {'exits': {'p': 1}, 'elapsed': 0.1},
+     (True, True)),
+    ('finished its work before the loss', 12.0, {'exits': {'p': 0}, 'elapsed': 5.0},
      (False, False)),
-    ('survived the loss and exited 0', {'exits': {'p': 0}, 'elapsed': 13.0}, (True, True)),
-    ('hung', {'verdict': 'timed out after 40s'}, (True, True)),
-    ('never ran', {'exits': {}, 'verdict': 'binary not found: x'}, (True, True)),
+    ('survived the loss and exited 0', 12.0, {'exits': {'p': 0}, 'elapsed': 13.0},
+     (True, True)),
+    ('hung', 12.0, {'verdict': 'timed out after 40s'}, (True, True)),
+    ('never ran', 12.0, {'exits': {}, 'verdict': 'binary not found: x'}, (True, True)),
+    ('audit: a 0.18s run killed at 75%, done as the kill landed', 0.14,
+     {'exits': {'p': 0}, 'elapsed': 0.18, 'actions': [{'fired_at': 0.15}]}, (False, False)),
+    ('a 0.18s run, the kill time unknown', 0.14, {'exits': {'p': 0}, 'elapsed': 0.18},
+     (False, False)),
+    ('exited 0 two seconds after the kill', 0.14,
+     {'exits': {'p': 0}, 'elapsed': 2.15, 'actions': [{'fired_at': 0.15}]}, (True, True)),
 )
 
 SELF_TEST_RAN = (
@@ -405,8 +423,8 @@ def self_test():
         if got is not expected:
             failures.append('no-peer, {}: {} expected, got {}'
                             .format(name, expected, got))
-    for name, observed, expected in SELF_TEST_LOSS:
-        hit, bad, _ = judge_loss_point('50%', 12.0, 'p', observed)
+    for name, at, observed, expected in SELF_TEST_LOSS:
+        hit, bad, _ = judge_loss_point('50%', at, 'p', observed)
         if (hit, bad) != expected:
             failures.append('peer-loss, {}: {} expected, got {}'
                             .format(name, expected, (hit, bad)))

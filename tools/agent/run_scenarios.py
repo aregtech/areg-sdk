@@ -14,8 +14,10 @@
 # Exit code 0 when every scenario passed, 1 otherwise, 2 on a bad file.
 # ===========================================================================
 import argparse
+import contextlib
 import difflib
 import importlib.util
+import io
 import json
 import os
 import platform
@@ -596,6 +598,8 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
     ended = {}
     verdict = None
     readers = {}
+    # What every other process had printed when the lead ended, before teardown.
+    at_lead_end = {}
     spool = kept_spool(keep, name) if keep else tempfile.mkdtemp(prefix='scenario-')
     actions = []
     try:
@@ -643,6 +647,8 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
                         # The lead's last lines can still be in its reader: drain it to
                         # the end, then judge the stops on everything it printed.
                         reader.join(5)
+                        at_lead_end = dict((index, other.text())
+                                           for index, other in readers.items())
                         waiting = pending
                         pending = fire_stops(pending, started, reader.text())
                         for entry in waiting:
@@ -759,6 +765,8 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
         # The lead's own lines are the steps it took and what each check saw.
         report_output([handles[lead_index]], {0: outputs.get(lead_index)}, quiet,
                       tail=PASS_TAIL_LINES)
+        if actions:
+            report_survivors(handles, at_lead_end, ended, lead_index)
     if not keep:
         shutil.rmtree(spool, ignore_errors=True)
     return True, name, 'ok'
@@ -782,6 +790,20 @@ def report_output(handles, outputs, quiet, full=False, tail=OUTPUT_TAIL_LINES):
             head += ' (last {} of {} lines)'.format(tail, len(lines))
             lines = lines[-tail:]
         sys.stdout.write(head + '\n' + '\n'.join(lines) + '\n')
+
+
+def report_survivors(handles, outputs, ended, lead_index):
+    """After a stop, how each process the stop left running fared by the time the lead
+    ended, and its last line then: a peer's report of the loss is evidence too."""
+    lead = proc_name(handles[lead_index][0])
+    for index, (spec, handle) in enumerate(handles):
+        if index == lead_index or getattr(handle, 'stopped_by_scenario', False):
+            continue
+        lines = (outputs.get(index) or '').strip().splitlines()
+        state = 'exited {} by {:.1f}s'.format(handle.returncode, ended[index]) \
+            if index in ended else 'running when {} ended'.format(lead)
+        sys.stdout.write('      {:<20} {}; last line: {}\n'.format(
+            proc_name(spec), state, lines[-1].strip()[:100] if lines else 'none'))
 
 
 def report_status(handles, outputs, ended, lead_index, quiet):
@@ -981,6 +1003,19 @@ def self_test():
                   .format(detail))
             return 1
 
+        # After a stop, a peer the stop left running is named with its last line.
+        watched = dict(fired, name='stop-and-a-watcher')
+        watched['procs'] = [scenario['procs'][0],
+                            {'binary': provider, 'name': 'watcher'}, scenario['procs'][1]]
+        caught = io.StringIO()
+        with contextlib.redirect_stdout(caught):
+            passed, _, detail = run_scenario(watched, [root], False, False)
+        if not passed or 'watcher              running when consumer ended; last line: ' \
+                         'provider: serving' not in caught.getvalue():
+            print('self-test FAILED: a peer the stop left running is not reported with '
+                  'its last line: {}'.format(detail if not passed else caught.getvalue()))
+            return 1
+
         # An exit-code failure also names the expectations still open.
         unfilled = dict(scenario, name='exit-and-open-expectation')
         unfilled['procs'] = [dict(scenario['procs'][0],
@@ -1084,8 +1119,6 @@ def self_test():
 
         # A line no process printed names the nearest one printed, and the failure
         # names each process's log file.
-        import contextlib
-        import io
         nearly = {
             'name': 'nearly', 'timeout': 15,
             'procs': [{'binary': provider, 'name': 'provider',
@@ -1132,7 +1165,8 @@ def self_test():
         finally:
             ROUTER_PORT = saved_port
 
-        print('self-test ok: 12 case(s): end of input, an unfired stop, a fired stop, '
+        print('self-test ok: 13 case(s): end of input, an unfired stop, a fired stop, '
+              'a peer left running by a stop, '
               'an exit failure naming an open expectation, a stop on the last line of an '
               'exited lead, a stop too late for the lead, '
               'output pressure, a scenario that asserts nothing, a lead that stopped '
