@@ -162,6 +162,17 @@ public:
      **/
     inline double read64_real() const noexcept;
 
+    /**
+     * \brief   Returns the element count, limited to the bytes left to read. A container
+     *          extractor reads at most this many; an element serialized as zero bytes is
+     *          not supported.
+     *
+     * \param   count   The element count read from the stream.
+     * \return  \a count, or the number of bytes left if that is smaller.
+     **/
+    [[nodiscard]]
+    inline uint32_t bounded_count(uint32_t count) const noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
@@ -512,6 +523,12 @@ inline double areg::InStream::read64_real() const noexcept
     return result;
 }
 
+inline uint32_t areg::InStream::bounded_count(uint32_t count) const noexcept
+{
+    const uint32_t readable{ size_readable() };
+    return (count < readable ? count : readable);
+}
+
 /************************************************************************
  * \brief   OutStream convenience helpers -- inline implementations
  ************************************************************************/
@@ -627,12 +644,11 @@ inline const areg::InStream& operator >> (const areg::InStream& stream, std::bas
 {
     input.clear();
 
-    CharType ch;
-    stream >> ch;
-    while (ch != static_cast<CharType>('\0'))
+    constexpr uint32_t single = static_cast<uint32_t>(sizeof(CharType));
+    CharType ch{ };
+    while ((stream.read(reinterpret_cast<uint8_t *>(&ch), single) == single) && (ch != static_cast<CharType>('\0')))
     {
         input += ch;
-        stream >> ch;
     }
 
     return stream;
@@ -657,7 +673,7 @@ inline const areg::InStream& operator >> (const areg::InStream& stream, std::deq
 
     uint32_t size = 0;
     stream >> size;
-    input.resize(size);
+    input.resize(stream.bounded_count(size));
     for (auto& elem : input)
     {
         stream >> elem;
@@ -685,7 +701,7 @@ inline const areg::InStream& operator >> (const areg::InStream& stream, std::lis
 
     uint32_t size = 0;
     stream >> size;
-    input.resize(size);
+    input.resize(stream.bounded_count(size));
     for (auto& elem : input)
     {
         stream >> elem;
@@ -713,7 +729,7 @@ inline const areg::InStream& operator >> (const areg::InStream& stream, std::vec
 
     uint32_t size = 0;
     stream >> size;
-    input.resize(size);
+    input.resize(stream.bounded_count(size));
     for (auto& elem : input)
     {
         stream >> elem;
@@ -757,6 +773,7 @@ inline const areg::InStream& operator >> (const areg::InStream& stream, std::map
 
     uint32_t size = 0;
     stream >> size;
+    size = stream.bounded_count(size);
     for (uint32_t i = 0; i < size; ++i)
     {
         std::pair<Key, Value> elem;
@@ -786,6 +803,7 @@ inline const areg::InStream& operator >> (const areg::InStream& stream, std::uno
 
     uint32_t size = 0;
     stream >> size;
+    size = stream.bounded_count(size);
     for (uint32_t i = 0; i < size; ++i)
     {
         std::pair<Key, Value> elem;

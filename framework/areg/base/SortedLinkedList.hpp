@@ -1179,7 +1179,7 @@ const areg::InStream& operator >> (const areg::InStream& stream, areg::SortedLin
     uint8_t sort{ 0u };
     stream >> size;
     stream >> sort;
-    input.mValueList.resize(size);
+    input.mValueList.resize(stream.bounded_count(size));
     input.mSorting = static_cast<areg::SortOrder>(sort);
 
     for (auto& elem : input.mValueList)

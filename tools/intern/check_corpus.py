@@ -2846,6 +2846,7 @@ def run():
     check_design_reviewable(report)
     check_codegen_plain_error(report)
     check_generated_prefix(report)
+    check_example_machine(report)
     check_answer_file(report)
     check_peer_lost_scenario(report)
     check_stepped_evidence(report)
@@ -7513,6 +7514,54 @@ def check_generated_prefix(report):
         return
     report.ok('generated-prefix',
               'a request named "request_open" is refused with "open" as the name to write')
+
+
+def check_example_machine(report):
+    """--example machine is a design gen_docs.py accepts with no note, whose hosted machine
+    runs from two states and keeps its own timer, within the size of one call."""
+    tool = os.path.join(ROOT, 'tools', 'agent', 'gen_docs.py')
+    example = subprocess.run([sys.executable, tool, '--example', 'machine'],
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                             universal_newlines=True)
+    if example.returncode != 0:
+        report.fail('example-machine', 'gen_docs.py --example machine does not run')
+        return
+    if (len(example.stdout.splitlines()) > EXAMPLE_LINES
+            or len(example.stdout.encode('utf-8')) > EXAMPLE_BYTES):
+        report.fail('example-machine', 'gen_docs.py --example machine is over the size '
+                    'a run reads in one call')
+        return
+    design = json.loads(example.stdout)
+    machines = {spec.get('name'): spec for spec in design.get('machines') or []}
+    hosts = {}
+    for spec in machines.values():
+        for state in spec.get('states') or []:
+            if state.get('submachine'):
+                hosts.setdefault(state['submachine'], []).append(state['name'])
+    reused = [name for name, states in hosts.items()
+              if len(states) > 1 and machines.get(name, {}).get('timers')]
+    if not reused:
+        report.fail('example-machine', 'gen_docs.py --example machine no longer shows a '
+                    'machine with its own timer hosted from two states')
+        return
+    holder = tempfile.mkdtemp(prefix='areg-example-machine-')
+    try:
+        with open(os.path.join(holder, 'design.json'), 'w', encoding='utf-8') as handle:
+            handle.write(example.stdout)
+        reviewed = subprocess.run([sys.executable, tool, '--spec', 'design.json',
+                                   '--review'], cwd=holder, stdout=subprocess.PIPE,
+                                  stderr=subprocess.STDOUT, universal_newlines=True)
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    notes = [line.strip() for line in reviewed.stdout.splitlines()
+             if line.lstrip().startswith('note ')]
+    if reviewed.returncode != 0 or notes:
+        report.fail('example-machine', 'gen_docs.py --example machine earns a refusal or '
+                    'a design note, and a run copies both: ' +
+                    (notes[0] if notes else reviewed.stdout.strip()[-300:]))
+        return
+    report.ok('example-machine', 'gen_docs.py --example machine reviews clean, with "{}" '
+              'hosted from {}'.format(reused[0], ', '.join(hosts[reused[0]])))
 
 
 def check_design_reviewable(report):

@@ -239,10 +239,10 @@ The build command is the same.
   host's; one body serves every instance. What differs between places belongs to the
   host's transitions.
 
-A hosted document whose major version moves past the pinned `"version"` no longer
-compiles.
+A hosted major version past the pinned `"version"` does not compile.
 
-Working project, hosting one machine from two states: `recipes/13-submachine/`.
+Timed, hosted from two states, run N times: `gen_docs.py --example machine`;
+`recipes/13-submachine/`.
 
 ### Where a piece of data lives
 

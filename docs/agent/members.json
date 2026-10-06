@@ -59,6 +59,7 @@
   "binding_component_thread",
   "bitness",
   "block_size",
+  "bounded_count",
   "buffer",
   "buffer_block_size",
   "buffer_completion_fix",

@@ -1333,6 +1333,7 @@ const areg::InStream & operator >> ( const areg::InStream & stream, areg::RingSt
 
     uint32_t size{ 0u };
     stream >> size;
+    size = stream.bounded_count(size);
 
     input.clear();
     if ((input.reserve(size)) >= size && (size != 0))

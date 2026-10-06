@@ -583,7 +583,7 @@ const InStream & operator >> ( const InStream & stream, FixedArray<V> & input )
     uint32_t size = 0;
     stream >> size;
     input.clear();
-    input.resize(size);
+    input.resize(stream.bounded_count(size));
 
     for (uint32_t i = 0; i < input.mElemCount; ++ i )
     {

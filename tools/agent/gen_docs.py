@@ -2553,6 +2553,90 @@ EXAMPLE_PROGRAMS = {
                      "place": {"stock": "desk/orders"}}]
 }
 
+# A timed piece of behaviour reused by a machine, printed by --example machine.
+EXAMPLE_MACHINE = {
+    NOTE: ["A press that feeds a part before every pass. Feed is one hosted machine, timed",
+           "and limited to two tries, used from two states of Press. Each hosting state",
+           "runs its own instance from its initial state on every entry, so a piece run N",
+           "times is a hosting state entered N times: PRESSING and REFEEDING alternate. A",
+           "transition to its own state would not restart it. Feed resets Tries as each",
+           "visit starts. Its final raises the host's final_event, which carries no",
+           "outcome: the action on the way to FED records it and the condition fed reads",
+           "it. The provider writes each action and condition once, for every instance."],
+    "interfaces": [{
+        "name": "PressService", "category": "Public", "description": "A press of parts.",
+        "attributes": [{"name": "Passes", "type": "uint32", "notify": "Always",
+                        "description": "Passes finished in this job."}],
+        "requests": [{"name": "press", "params": [{"name": "passes", "type": "uint32"}],
+                      "answer": [{"name": "accepted", "type": "bool"}]}],
+        "broadcasts": [{"name": "feed_failed", "params": [{"name": "attempt", "type": "uint32"}]},
+                       {"name": "job_ended", "params": [{"name": "done", "type": "bool"}]}],
+        "steps": [{"name": "press_two", "send": "press", "args": {"passes": 2},
+                   "await": "job_ended"}]
+    }],
+    "machines": [
+        {"name": "Feed", "description": "One feed: up to two tries of 300 ms.",
+         "attributes": [{"name": "Tries", "type": "uint32", "value": "0"}],
+         "timers": [{"name": "TryTimer", "timeout": 300}],
+         "events": [{"name": "Begin", "description": "Starts each visit with no tries."}],
+         "actions": [{"name": "feed_ended", "params": [{"name": "fed", "type": "bool"}]},
+                     {"name": "try_failed", "params": [{"name": "attempt", "type": "uint32"}]}],
+         "conditions": [{"name": "has_material"}],
+         "initial": "FEEDING",
+         "states": [
+             {"name": "FEEDING", "entry": ["send Begin", "start TryTimer"],
+              "transitions": [
+                  {"on": "Begin", "set": {"Tries": "lit:0"}},
+                  {"on": "TryTimer", "to": "FED", "guard": {"call": "has_material"},
+                   "do": [{"call": "feed_ended", "args": {"fed": "lit:true"}}]},
+                  {"on": "TryTimer", "to": "FED", "guard": ["Tries", "eq", "lit:1"],
+                   "do": [{"call": "try_failed", "args": {"attempt": "lit:2"}},
+                          {"call": "feed_ended", "args": {"fed": "lit:false"}}]},
+                  {"on": "TryTimer", "set": {"Tries": "raw:mAttrTries + 1"},
+                   "do": [{"call": "try_failed", "args": {"attempt": "attr:Tries"}},
+                          "start TryTimer"]}]},
+             {"name": "FED", "kind": "final"}]},
+        {"name": "Press", "description": "Feeds, then presses, until every pass is done.",
+         "attributes": [{"name": "Done", "type": "uint32", "value": "0"},
+                        {"name": "Wanted", "type": "uint32", "value": "0"}],
+         "submachines": [{"name": "Feed", "version": "1.0.0"}],
+         "triggers": [{"name": "press", "params": [{"name": "passes", "type": "uint32"}]}],
+         "timers": [{"name": "PassTimer", "timeout": 200}],
+         "events": [{"name": "FirstFed"}, {"name": "Refed"}],
+         "actions": [{"name": "accept"}, {"name": "refuse"},
+                     {"name": "pass_done", "params": [{"name": "passes", "type": "uint32"}]},
+                     {"name": "end_job", "params": [{"name": "done", "type": "bool"}]}],
+         "conditions": [{"name": "fed"}],
+         "initial": "IDLE",
+         "states": [
+             {"name": "IDLE",
+              "transitions": [{"on": "press", "to": "FEEDING_FIRST", "do": ["accept"],
+                               "set": {"Wanted": "param:passes", "Done": "lit:0"}}]},
+             {"name": "FEEDING_FIRST", "submachine": "Feed", "final_event": "FirstFed",
+              "transitions": [
+                  {"on": "FirstFed", "to": "PRESSING", "guard": {"call": "fed"},
+                   "set": {"Done": "raw:mAttrDone + 1"}},
+                  {"on": "FirstFed", "to": "IDLE",
+                   "do": [{"call": "end_job", "args": {"done": "lit:false"}}]},
+                  {"on": "press", "do": ["refuse"]}]},
+             {"name": "PRESSING", "entry": ["start PassTimer"], "exit": ["stop PassTimer"],
+              "transitions": [
+                  {"on": "PassTimer", "to": "IDLE", "guard": ["Done", "ge", "Wanted"],
+                   "do": [{"call": "pass_done", "args": {"passes": "attr:Done"}},
+                          {"call": "end_job", "args": {"done": "lit:true"}}]},
+                  {"on": "PassTimer", "to": "REFEEDING",
+                   "do": [{"call": "pass_done", "args": {"passes": "attr:Done"}}]},
+                  {"on": "press", "do": ["refuse"]}]},
+             {"name": "REFEEDING", "submachine": "Feed", "final_event": "Refed",
+              "transitions": [
+                  {"on": "Refed", "to": "PRESSING", "guard": {"call": "fed"},
+                   "set": {"Done": "raw:mAttrDone + 1"}},
+                  {"on": "Refed", "to": "IDLE",
+                   "do": [{"call": "end_job", "args": {"done": "lit:false"}}]},
+                  {"on": "press", "do": ["refuse"]}]}]}
+    ]
+}
+
 TEMPLATE_WIDTH = 92
 
 TEMPLATE = {
@@ -2854,10 +2938,12 @@ def main():
     parser.add_argument('--spec', action='append', default=[],
                         help='a JSON description; pass it once per spec file')
     parser.add_argument('--outdir', help='the directory the documents are written to')
-    parser.add_argument('--example', nargs='?', const='service', choices=['service', 'programs'],
+    parser.add_argument('--example', nargs='?', const='service',
+                        choices=['service', 'programs', 'machine'],
                         help='print a whole spec to copy, and write nothing. "programs" '
                              'prints one of several services in several programs: roles, '
-                             'uses, threads and deployments')
+                             'uses, threads and deployments. "machine" prints a timed '
+                             'machine hosted from two states and run N times')
     parser.add_argument('--template', metavar='PATH',
                         help='write a spec with every key present and empty, each section '
                              'with its note, to fill in. A file there that carries work is '
@@ -2876,7 +2962,8 @@ def main():
         # The same renderer the template uses: every value that fits stays on its
         # line. The page tells the agent to read this in one call, and one value per
         # line makes that call twice the size for nothing.
-        print(render(EXAMPLE if args.example == 'service' else EXAMPLE_PROGRAMS))
+        print(render({'service': EXAMPLE, 'programs': EXAMPLE_PROGRAMS,
+                      'machine': EXAMPLE_MACHINE}[args.example]))
         return 0
     if args.template:
         if write_template(args.template) == 'work':
