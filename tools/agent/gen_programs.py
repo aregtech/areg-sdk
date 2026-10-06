@@ -170,8 +170,30 @@ def client_class(owner, iface, roles, cls, reconnect, driving=False):
              '        , mThread(thread)',
              '        , mDeadline(static_cast<areg::TimerConsumer &>(*this), role)',
              '    { }',
-             '',
-             'protected:',
+             '']
+    early = driving and bool(iface.attributes)
+    if early:
+        lines += ['    //! Runs each update body once on the value held, when an update arrived',
+                  '    //! before the steps of the owner began.',
+                  '    void deliver_early()',
+                  '    {',
+                  '        if (mEarly == false)',
+                  '        {',
+                  '            return;',
+                  '        }',
+                  '',
+                  '        mEarly = false;']
+        for attr_name, _ in iface.attributes:
+            lines += ['        {',
+                      '            areg::DataState lateState{ areg::DataState::DataIsInvalid };',
+                      '            const auto lateValue = {}(lateState);'.format(
+                          iface.spell('attribute', attr_name, 'get')),
+                      '            {}(lateValue, lateState);'.format(
+                          iface.spell('attribute', attr_name, 'on_update')),
+                      '        }']
+        lines += ['    }',
+                  '']
+    lines += ['protected:',
              '    bool service_connected(areg::ServiceConnectionState status, areg::ProxyBase & proxy) final',
              '    {',
              '        bool result{ false };',
@@ -258,9 +280,18 @@ def client_class(owner, iface, roles, cls, reconnect, driving=False):
                       iface.generated_params('attribute', attr_name, 'on_update').strip()),
                   '    {',
                   '        if (state == areg::DataState::DataIsOK)',
-                  '        {',
-                  gs.marker('update_' + iface.spell('attribute', attr_name, 'get'),
-                            'the new value is ready to use', 12),
+                  '        {']
+        if early:
+            lines += ['            if (mOwner.mStep == {}::Step::Start)'.format(owner),
+                      '            {',
+                      '                mEarly = true;',
+                      '                return;',
+                      '            }',
+                      '']
+        lines += [gs.marker('update_' + iface.spell('attribute', attr_name, 'get'),
+                            'the new value is ready to use' + (
+                                '; one that arrives before the steps begin runs as they '
+                                'begin' if early else ''), 12),
                   '        }',
                   '    }',
                   '']
@@ -271,7 +302,11 @@ def client_class(owner, iface, roles, cls, reconnect, driving=False):
               '    areg::Timer mDeadline;    //!< How long a lost provider is waited for.',
               '    //! Seconds a lost provider is waited for. 0 waits for ever.',
               '    static constexpr uint32_t cReconnectSeconds{{ {} }};'.format(reconnect),
-              '',
+              '']
+    if early:
+        lines += ['    bool mEarly{ false };    //!< True once an update waits for the steps to begin.',
+                  '']
+    lines += [
               '    {}() = delete;'.format(cls),
               '    AREG_NOCOPY_NOMOVE({});'.format(cls),
               '};']
@@ -309,6 +344,10 @@ def with_clients(lines, component):
         start = lines.index('                if (mStep == Step::Start)')
         lines[start] = '                if ((mStep == Step::Start) && clients_connected())'
         held = [member_of(role) for _, roles, _ in component.clients for role in roles]
+        early = [member_of(role) for iface, roles, _ in component.clients
+                 if iface.attributes for role in roles]
+        lines[start + 3:start + 3] = ['                    {}.deliver_early();'.format(member)
+                                      for member in early]
         deleted = lines.index('    {}() = delete;'.format(component.cls))
         lines[deleted:deleted] = [
             '    //! True once every used provider is connected.',
@@ -323,7 +362,8 @@ def with_clients(lines, component):
             '    {',
             '        if (mConnected && (mStep == Step::Start) && clients_connected())',
             '        {',
-            '            begin(Step::{});'.format(component.steps[0]['enum']),
+            '            begin(Step::{});'.format(component.steps[0]['enum'])] + [
+            '            {}.deliver_early();'.format(member) for member in early] + [
             '        }',
             '    }',
             '']

@@ -1812,7 +1812,7 @@ IDENTIFIER = re.compile(r'^[A-Za-z_]\w*$')
 # these, so a tick count and a second are the same number here.
 DRIVER_TICK_SECONDS = 1
 
-DRIVER_DEFAULTS = {'connect_seconds': 10, 'reconnect_seconds': 10, 'stall_ticks': 30}
+DRIVER_DEFAULTS = {'connect_seconds': 10, 'reconnect_seconds': 10}
 
 # Ticks a default stall watchdog outlasts the reconnect deadline and the longest
 # timed step by.
@@ -1836,7 +1836,7 @@ def driver_of(spec):
         settings.update((key, value) for key, value in given.items() if key != NOTE)
     if not (isinstance(given, dict) and 'stall_ticks' in given):
         reconnect = settings['reconnect_seconds']
-        floor = [settings['stall_ticks']]
+        floor = [STALL_MARGIN_TICKS]
         if whole(reconnect) and reconnect > 0:
             floor.append(reconnect + STALL_MARGIN_TICKS)
         steps = spec.get('steps') if isinstance(spec, dict) else None
@@ -1856,9 +1856,9 @@ def check_drivers(project):
             continue
         where = 'the driver of "{}"'.format(spec.get('name', '?'))
         if not isinstance(given, dict):
-            fail('{} is an object of {}'.format(where, ', '.join(sorted(DRIVER_DEFAULTS))))
+            fail('{} is an object of {}'.format(where, ', '.join(sorted(driver_of({})))))
         settings = driver_of(spec)
-        for key in sorted(DRIVER_DEFAULTS):
+        for key in sorted(settings):
             value = settings[key]
             if isinstance(value, bool) or not isinstance(value, int) or value < 0:
                 fail('{} gives "{}" as {!r}. It is a whole number of {}, and 0 turns it '
@@ -1869,8 +1869,10 @@ def check_drivers(project):
         if stall and reconnect and stall <= reconnect:
             fail('{} lets the stall watchdog fire before the reconnect deadline '
                  '({} tick(s) against {} second(s)): a provider that goes away would be '
-                 'reported by whichever timer wins. Make stall_ticks longer than '
-                 'reconnect_seconds'.format(where, settings['stall_ticks'], reconnect))
+                 'reported by whichever timer wins. Give stall_ticks {} or more, or '
+                 'reconnect_seconds {} or less'
+                 .format(where, settings['stall_ticks'], reconnect,
+                         reconnect // DRIVER_TICK_SECONDS + 1, stall - 1))
 
 
 def check_service_timers(project):
@@ -2438,8 +2440,9 @@ EXAMPLE = {
             {"name": "close", "description": "Close the gate.",
              "params": [{"name": "by", "type": "String"}]}
         ],
-        "broadcasts": [{"name": "gate_moved",
-                        "params": [{"name": "reading", "type": "GateTypes::Reading"}]}],
+        "broadcasts": [{"name": "gate_moved", "description": "Sent on every move.",
+                        "params": [{"name": "width", "type": "uint32"},
+                                   {"name": "reading", "type": "GateTypes::Reading"}]}],
         "driver": {"connect_seconds": 10, "reconnect_seconds": 10},
         "steps": [{"name": "open_wide", "send": "open", "args": {"width": 1200}},
                   {"name": "widen", "send": "widen", "args": {"by": 200}, "await": "Width"},
@@ -2449,11 +2452,11 @@ EXAMPLE = {
                                   "is two steps."},
                   {"name": "hold", "wait": 500},
                   {"name": "close_gate", "send": "close",
-                   "args": {"by": "night shift"}, "await": "Width",
-                   "until": {"Width": 0},
+                   "args": {"by": "night shift"}, "await": "gate_moved",
+                   "until": {"width": 0},
                    "description": "A String value is written as it reads: the "
                                   "generator quotes it. until holds the step "
-                                  "until Width is 0."}]
+                                  "until a gate_moved with width 0 arrives."}]
     }],
     "machines": [{
         "name": "Gate",
@@ -2758,8 +2761,10 @@ TEMPLATE = {
                    "until: {parameter: value}, for what arrives more than once: the step holds",
                    "until one arrives with those values.",
                    "One step per thing the task asks to prove, not one per message. A step",
-                   "starting work which takes time awaits the update saying it finished, before",
-                   "a later step or a go_to() sends again."],
+                   "starting work which takes time awaits the broadcast saying it finished",
+                   "(until on its values) or its response, before a later step or a go_to()",
+                   "sends again. Never an attribute with until: its first update after a",
+                   "request can be the value from before it."],
             "name": "", "send": "", "args": {}, "await": "", "until": {}, "wait": 0, "description": ""
         }]
     }],

@@ -2807,6 +2807,8 @@ def run():
     check_self_transition(report)
     check_step_fall_through(report)
     check_step_values_split(report)
+    check_example_until(report)
+    check_stall_default(report)
     check_stall_names_latest_drops(report)
     check_step_enum_qualifier(report)
     check_spec_value_shapes(report)
@@ -2849,6 +2851,8 @@ def run():
     check_generated_prefix(report)
     check_example_machine(report)
     check_example_programs(report)
+    check_driver_client_early(report)
+    check_removed_marker_body(report)
     check_answer_file(report)
     check_peer_lost_scenario(report)
     check_stepped_evidence(report)
@@ -4476,7 +4480,7 @@ def check_design_request(report):
 # The scenario rules, each where it is used: (where, phrase).
 STEP_RULES_AT_USE = (
     ('the template steps note', 'not one per message'),
-    ('the template steps note', 'awaits the update saying it finished'),
+    ('the template steps note', 'awaits the broadcast saying it finished'),
     ('the template steps note', 'Every step sends, awaits or waits'),
     ('the worksheet scenarios.json header', 'One line per acceptance item'),
 )
@@ -4755,6 +4759,46 @@ def generate_application(tools, name='gen', steps=None):
     if not found:
         return 'no consumer source was written'
     return found[0]
+
+
+def check_removed_marker_body(report):
+    """A body of a marker the regenerated design no longer has leaves bodies.txt, named;
+    a section that never was a marker stays for fill_markers.py to refuse."""
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    here = os.getcwd()
+    holder = tempfile.mkdtemp(prefix='areg-removed-marker-')
+    try:
+        os.chdir(holder)
+        made = generate_application(tools, 'gen', STEP_SAMPLE)
+        if not os.path.isfile(made):
+            report.fail('removed-marker', made)
+            return
+        with open('bodies.txt', 'w', encoding='utf-8', newline='\n') as handle:
+            handle.write('== step_open_gate\n// accepted\n== step_watch_width\n// seen\n'
+                         '== step_watch_widht\n// misspelt\n')
+        with open('design.json', encoding='utf-8') as handle:
+            design = json.load(handle)
+        design['interfaces'][0]['steps'] = [step for step in STEP_SAMPLE
+                                            if step['name'] != 'watch_width']
+        with open('design.json', 'w', encoding='utf-8', newline='\n') as handle:
+            json.dump(design, handle)
+        done = subprocess.run([sys.executable, os.path.join(tools, 'gen_skeleton.py'),
+                               '--doc', sorted(glob.glob('src/services/*.siml'))[0],
+                               '--app', '--mode', 'ipc', '--force', '--spec', 'design.json'],
+                              capture_output=True, text=True)
+        with open('bodies.txt', encoding='utf-8') as handle:
+            sections = [line[3:].strip() for line in handle if line.startswith('== ')]
+    finally:
+        os.chdir(here)
+        shutil.rmtree(holder, ignore_errors=True)
+    if sections != ['step_open_gate', 'step_watch_widht'] or \
+            'removed step_watch_width' not in done.stdout:
+        report.fail('removed-marker', 'regenerating without a step leaves its body in '
+                    'bodies.txt, which then refuses the whole write, or removes a section '
+                    'that never was a marker; sections left: {}'.format(sections))
+        return
+    report.ok('removed-marker', 'the body of a marker the design removed leaves bodies.txt, '
+              'named, and a misspelt section stays for the refusal')
 
 
 NAMING_SIML = """<?xml version="1.0" encoding="utf-8"?>
@@ -5061,7 +5105,8 @@ def check_late_arrival(report):
              re.search(r'dropped\("update Width"\);\s*mLateWidth = true;', width)),
             ('a broadcast dropped on another step keeps its arguments',
              re.search(r'dropped\("broadcast gate_moved"\);\s*mLateGateMoved = true;\s*'
-                       r'mLateGateMovedReading = reading;', moved)),
+                       r'mLateGateMovedWidth = width;\s*mLateGateMovedReading = reading;',
+                       moved)),
             ('the arrival body is not run again on a replay',
              re.search(r'if \(mReplaying == false\)\s*\{\s*// TODO\(you\) update_width',
                        width)),
@@ -5078,7 +5123,7 @@ def check_late_arrival(report):
              not re.search(r'\b(?:auto|areg::DataState)\s+[a-z_0-9]+\b', replay)),
             ('the replay hands the kept arguments to the check',
              re.search(r'case Step::WatchMoved:.*?broadcast_gate_moved\('
-                       r'mLateGateMovedReading\)', replay, re.S)),
+                       r'mLateGateMovedWidth, mLateGateMovedReading\)', replay, re.S)),
         )
         for what, found in wanted:
             if not found:
@@ -5264,6 +5309,60 @@ def check_step_values_split(report):
                     return
     report.fail('values-split', 'the example never sends a total its values lack as one '
                                 'step per listed value')
+
+
+def check_example_until(report):
+    """The example proves a request's work by a broadcast with until, never an attribute."""
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_docs
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('example-until', 'gen_docs.py does not import: {}'.format(failure))
+        return
+    iface = gen_docs.EXAMPLE['interfaces'][0]
+    attributes = set(entry['name'] for entry in iface.get('attributes') or [])
+    broadcasts = set(entry['name'] for entry in iface.get('broadcasts') or [])
+    held = [step['name'] for step in iface.get('steps') or []
+            if step.get('until') and step.get('await') in attributes]
+    if held:
+        report.fail('example-until', 'the example holds {} until an attribute reaches a '
+                    'value: its first update after a request can be the value from before '
+                    'it'.format(', '.join(held)))
+        return
+    if not any(step.get('until') and step.get('await') in broadcasts
+               for step in iface.get('steps') or []):
+        report.fail('example-until', 'no step of the example awaits a broadcast with until')
+        return
+    report.ok('example-until', 'the example awaits a broadcast with until, and no attribute')
+
+
+def check_stall_default(report):
+    """The default stall outlasts the default reconnect by the margin, and refusing a
+    stall no longer than the reconnect names a value that repairs each."""
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_docs
+        import docmodel
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('stall-default', 'gen_docs.py does not import: {}'.format(failure))
+        return
+    stall = gen_docs.driver_of({})['stall_ticks']
+    if stall != gen_docs.DRIVER_DEFAULTS['reconnect_seconds'] + gen_docs.STALL_MARGIN_TICKS:
+        report.fail('stall-default', 'the default stall is {} ticks, not the default '
+                    'reconnect plus the margin'.format(stall))
+        return
+    problems = []
+    with docmodel.gathering(problems), contextlib.suppress(docmodel.Refused):
+        gen_docs.check_drivers({'interfaces': [{'name': 'X', 'driver': {
+            'reconnect_seconds': 20, 'stall_ticks': 20}}]})
+    if not problems or 'stall_ticks 21 or more, or reconnect_seconds 19 or less' \
+            not in problems[0]:
+        report.fail('stall-default', 'a stall equal to the reconnect is accepted, or its '
+                    'refusal names no value that repairs it: {}'
+                    .format(problems[0] if problems else 'accepted'))
+        return
+    report.ok('stall-default', 'the default stall is {} ticks, and the refusal of a stall '
+              'equal to the reconnect names both repairs'.format(stall))
 
 
 def check_stall_names_latest_drops(report):
@@ -7619,6 +7718,72 @@ def check_example_programs(report):
         return
     report.ok('example-programs', 'gen_docs.py --example programs reviews clean and shows '
               'a component that provides, one that drives and one that watches')
+
+
+def check_driver_client_early(report):
+    """A driver's used client keeps an update that arrives before the steps begin and
+    runs its body once they do; a client of a component with no steps does not."""
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    example = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                              '--example', 'programs'], stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE, universal_newlines=True)
+    if example.returncode != 0:
+        report.fail('client-early', 'gen_docs.py --example programs does not run')
+        return
+    design = json.loads(example.stdout)
+    for program in design['programs']:
+        for component in program['components']:
+            if component.get('drives'):
+                component['uses'] = [{'service': 'StockService', 'role': 'stock'}]
+    holder = tempfile.mkdtemp(prefix='areg-client-early-')
+    try:
+        if subprocess.run([sys.executable, os.path.join(tools, 'setup_project.py'),
+                           '--name', 'early', '--root', holder, '--mode', 'ipc',
+                           '--sdk-root', ROOT, '--quiet'],
+                          capture_output=True, text=True).returncode != 0:
+            report.fail('client-early', 'the scaffold no longer lays out a project')
+            return
+        with open(os.path.join(holder, 'design.json'), 'w', encoding='utf-8') as handle:
+            json.dump(design, handle)
+        for command in (['gen_docs.py', '--outdir', 'src/services', '--force', '--chained',
+                         '--spec', 'design.json'],
+                        ['gen_skeleton.py', '--programs', '--services', 'src/services',
+                         '--force', '--spec', 'design.json']):
+            done = subprocess.run([sys.executable, os.path.join(tools, command[0])] +
+                                  command[1:], cwd=holder, stdout=subprocess.PIPE,
+                                  stderr=subprocess.STDOUT, universal_newlines=True)
+            if done.returncode != 0:
+                report.fail('client-early', '{} refuses the example with a driver that uses '
+                            'a service: {}'.format(command[0], done.stdout.strip()[-300:]))
+                return
+        sources = {}
+        for path in glob.glob(os.path.join(holder, 'src', '*', '*.?pp')):
+            with open(path, encoding='utf-8') as handle:
+                sources[os.path.relpath(path, holder).replace(os.sep, '/')] = handle.read()
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    driving = ''.join(text for name, text in sources.items()
+                      if name.startswith('src/customer/') and 'Client' in name)
+    owner = ''.join(text for name, text in sources.items()
+                    if name.startswith('src/customer/') and 'Client' not in name)
+    other = ''.join(text for name, text in sources.items()
+                    if name.startswith('src/desk/') and 'Client' in name)
+    if not re.search(r'if \(mOwner\.mStep == \w+::Step::Start\)\s*\{\s*mEarly = true;'
+                     r'\s*return;', driving) or 'void deliver_early()' not in \
+            ''.join(text for name, text in sources.items() if name.endswith('.hpp')):
+        report.fail('client-early', 'a used client of a driver runs an update that arrives '
+                    'before the steps begin and keeps nothing: the first step never sees it')
+        return
+    if len(re.findall(r'begin\(Step::Small\);\s*mStock\.deliver_early\(\);', owner)) != 2:
+        report.fail('client-early', 'the driver does not hand its used clients the updates '
+                    'they kept, each time its steps begin')
+        return
+    if 'mEarly' in other:
+        report.fail('client-early', 'a used client of a component with no steps keeps '
+                    'its updates for steps that never begin')
+        return
+    report.ok('client-early', 'a driver\'s used client keeps an update that arrives before '
+              'the steps begin and runs it as they begin')
 
 
 def check_design_reviewable(report):

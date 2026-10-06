@@ -950,9 +950,37 @@ def write_worksheet(produced, out, iface, document, machine, machine_doc,
                   .format(name, after[name], before[name]))
     with open(WORKSHEET, 'w', encoding='utf-8', newline='\n') as handle:
         handle.write('\n'.join(lines).rstrip() + '\n')
+    if known is not None:
+        drop_removed_sections(known, section_names('\n'.join(lines)))
     if os.path.exists(BODIES) and worksheet_pristine(BODIES):
         os.remove(BODIES)
     return added
+
+
+def drop_removed_sections(known, kept):
+    """Remove from bodies.txt each section of a marker the replaced worksheet had and
+    this one lacks, and name every one removed."""
+    def bare(name):
+        return name.rpartition(':')[2]
+    gone = set(bare(name) for name in known) - set(bare(name) for name in kept)
+    if not gone or not os.path.exists(BODIES):
+        return
+    with open(BODIES, encoding='utf-8', errors='replace') as handle:
+        lines = handle.read().splitlines()
+    out, dropped, skipping = [], [], False
+    for line in lines:
+        if line.startswith('== '):
+            skipping = bare(line[3:].strip()) in gone
+            if skipping:
+                dropped.append(line[3:].strip())
+        if not skipping:
+            out.append(line)
+    if not dropped:
+        return
+    with open(BODIES, 'w', encoding='utf-8', newline='\n') as handle:
+        handle.write('\n'.join(out).rstrip('\n') + '\n')
+    print('  {}: removed {}, the body of a marker this design no longer has.'
+          .format(BODIES, ', '.join(dropped)))
 
 
 def fields_of(declared):
@@ -2015,7 +2043,7 @@ def enum_value(text, type_name, iface, where):
 def driver_of(specs, iface):
     """The driver settings the specs declare for this service, every key present."""
     import gen_docs
-    settings = dict(gen_docs.DRIVER_DEFAULTS)
+    settings = gen_docs.driver_of({})
     for path in specs:
         spec, _skipped = gen_docs.load_spec(path)
         for entry in spec.get('interfaces') or []:
@@ -2464,7 +2492,7 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
     the driver gives up after come from the spec, so no marker asks for one.
     """
     import gen_docs
-    driver = dict(gen_docs.DRIVER_DEFAULTS) if driver is None else driver
+    driver = gen_docs.driver_of({}) if driver is None else driver
     stepped = steps_scenario(iface) or bool(steps)
     holds = any(step['wait'] for step in steps) or hold is not None
     latches = late_latches(iface, steps)
