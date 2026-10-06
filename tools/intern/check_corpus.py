@@ -3983,7 +3983,7 @@ def check_app_shape(report):
                                    '--no-check'],
                                   capture_output=True, text=True, cwd=root)
             said = done.stdout + done.stderr
-            named = 'writes one application' in said
+            named = '"programs"' in said
             if refuses and not named:
                 report.fail('app-shape',
                             'build_project.py took one of two services without saying '
@@ -4008,9 +4008,9 @@ def check_app_shape(report):
         done = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
                                '--spec', spec, '--outdir', docs, '--force', '--chained'],
                               capture_output=True, text=True)
-        if 'writes one application' not in done.stdout + done.stderr:
+        if '"programs"' not in done.stdout + done.stderr:
             report.fail('app-shape',
-                        'gen_docs.py --chained does not name the one-service ceiling, '
+                        'gen_docs.py --chained does not name the "programs" block, '
                         'so the golden path first hears it from build_project.py, a '
                         'step later and after the documents are written')
             return

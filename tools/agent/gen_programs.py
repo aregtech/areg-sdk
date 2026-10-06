@@ -46,6 +46,8 @@ class Component:
         self.cls = None
         self.steps = ()
         self.hold = None
+        self.name = entry.get('name')
+        self.thread = entry.get('thread')
 
 
 def load_project(specs):
@@ -97,8 +99,13 @@ def components_of(project, specs, services_dir):
             if service in machines:
                 component.machine, component.machine_doc = machines[service]
         else:
-            component.role = entry.get('role') or gs.provider_name(iface)
-        for used, roles in gen_docs.component_uses(entry):
+            component.role = entry.get('role') or gen_docs.consumed_role(project, service)
+        # Entries naming one service, each with its own role, are one client class.
+        merged = {}
+        for used, roles in gen_docs.component_uses(entry, project):
+            merged.setdefault(used, [])
+            merged[used] += [role for role in roles if role not in merged[used]]
+        for used, roles in merged.items():
             component.uses.append((interface(used)[0], roles))
         found.append(component)
 
@@ -542,25 +549,90 @@ def name_slot(cls):
     return gs.snake(cls) + '_state'
 
 
-def program_main(program, components, mode_project):
-    """The main.cpp of one program: its model and main()."""
-    mine = [c for c in components if c.program is program]
-    driver = next((c for c in mine if c.kind == 'drives'), None)
+def hosted(program, components, placed):
+    """What one program registers in one placement, as (component, role or None, thread)."""
+    found = []
+    for c in components:
+        if c.kind == 'provides':
+            for role in c.roles:
+                where, thread = placed.get(role, (c.program['name'], c.thread))
+                if where == program['name']:
+                    found.append((c, role, thread or c.thread))
+        else:
+            where, thread = placed.get(c.name, (c.program['name'], c.thread)) if c.name \
+                else (c.program['name'], c.thread)
+            if where == program['name']:
+                found.append((c, None, thread or c.thread))
+    return found
+
+
+def model_lines(model, instances, local=None):
+    """One model: its threads, each with the components registered in it.
+
+    With local, the name of a function that builds it at run time instead, for a model
+    the command line picks: one source holds one static model.
+    """
+    threads = {}
+    for c, role, thread in instances:
+        if c.kind == 'provides':
+            name = thread or '{}Thread'.format(role)
+            lines = ['        BEGIN_REGISTER_COMPONENT("{}", {})'.format(role, c.cls),
+                     '            REGISTER_IMPLEMENT_SERVICE({}::ServiceName, '
+                     '{}::InterfaceVersion)'.format(c.iface.name, c.iface.name),
+                     '        END_REGISTER_COMPONENT("{}")'.format(role)]
+        else:
+            name = thread or '{}Thread'.format(c.cls)
+            member = '_' + gs.snake(c.cls)
+            lines = ['        BEGIN_REGISTER_COMPONENT({}, {})'.format(member, c.cls),
+                     '            REGISTER_DEPENDENCY("{}")'.format(c.role),
+                     '        END_REGISTER_COMPONENT({})'.format(member)]
+        threads.setdefault(name, []).extend(lines)
+    body = []
+    for name, lines in threads.items():
+        body += ['    BEGIN_REGISTER_THREAD("{}")'.format(name)] + lines + \
+                ['    END_REGISTER_THREAD("{}")'.format(name)]
+    if local is None:
+        return ['BEGIN_MODEL({})'.format(model)] + body + ['END_MODEL({})'.format(model), '']
+    return (['//! Builds the model of one deployment, before it is loaded.',
+             'void {}()'.format(local),
+             '{',
+             '    BEGIN_MODEL_LOCAL({})'.format(model)] +
+            ['    ' + line for line in body] +
+            ['    END_MODEL_LOCAL({})'.format(model), '}', ''])
+
+
+def program_main(program, components, placements):
+    """The main.cpp of one program: its models, one per deployment, and main()."""
     name = program['name']
+    per = [(deployment, hosted(program, components, placed))
+           for deployment, placed in placements]
+    mine = []
+    for _, instances in per:
+        for c, _, _ in instances:
+            if c not in mine:
+                mine.append(c)
+    driver = next((c for c in mine if c.kind == 'drives'), None)
+    chosen = len(placements) > 1
     lines = ['/**',
              ' * \\file    {}main.cpp'.format(program_dir(program)),
              ' * \\brief   The {} program. The model and main(); the components are in '
              'their own files.'.format(name),
              ' **/'] + gs.MAIN_INCLUDES + ['']
     if driver is None:
-        lines += gs.CONSOLE_INCLUDES + ['']
-    elif driver.hold:
-        lines += ['#include <cstring>', '']
-    lines += ['#include "{}.hpp"'.format(c.cls) for c in mine] + ['']
+        lines += gs.CONSOLE_INCLUDES + (['#include <cstring>'] if chosen else []) + ['']
+    elif driver.hold or chosen:
+        lines += (['#include <iostream>'] if chosen else []) + ['#include <cstring>', '']
+    lines += ['#include "{}{}.hpp"'.format('' if c.program is program else
+                                           '../' + program_dir(c.program), c.cls)
+              for c in mine] + ['']
     lines += gs.EXIT_CODE
     if driver is not None and driver.hold:
         lines += gs.HOLD_CODE
-    lines += ['constexpr char const _modelName[]{{ "{}Model" }};'.format(gs.pascal(name)), '']
+    lines += ['constexpr char const _modelName[]{{ "{}Model" }};'.format(gs.pascal(name))]
+    for deployment, _ in per[1:]:
+        lines.append('constexpr char const _model{}[]{{ "{}Model{}" }};'
+                     .format(gs.pascal(deployment), gs.pascal(name), gs.pascal(deployment)))
+    lines.append('')
     consumers = [c for c in mine if c.kind != 'provides']
     if consumers:
         lines.append('// A unique role name lets several consumer processes run at the same time.')
@@ -568,38 +640,66 @@ def program_main(program, components, mode_project):
             lines.append('const areg::String _{}(areg::generate_name("{}"));'
                          .format(gs.snake(c.cls), c.cls))
         lines.append('')
-    lines.append('BEGIN_MODEL(_modelName)')
-    for c in mine:
-        if c.kind == 'provides':
-            for role in c.roles:
-                lines += ['    BEGIN_REGISTER_THREAD("{}Thread")'.format(role),
-                          '        BEGIN_REGISTER_COMPONENT("{}", {})'.format(role, c.cls),
-                          '            REGISTER_IMPLEMENT_SERVICE({}::ServiceName, '
-                          '{}::InterfaceVersion)'.format(c.iface.name, c.iface.name),
-                          '        END_REGISTER_COMPONENT("{}")'.format(role),
-                          '    END_REGISTER_THREAD("{}Thread")'.format(role)]
-        else:
-            member = '_' + gs.snake(c.cls)
-            lines += ['    BEGIN_REGISTER_THREAD("{}Thread")'.format(c.cls),
-                      '        BEGIN_REGISTER_COMPONENT({}, {})'.format(member, c.cls),
-                      '            REGISTER_DEPENDENCY("{}")'.format(c.role),
-                      '        END_REGISTER_COMPONENT({})'.format(member),
-                      '    END_REGISTER_THREAD("{}Thread")'.format(c.cls)]
-    lines += ['END_MODEL(_modelName)', '']
-    if driver is None:
-        lines += gs.MAIN_BODY
-    elif driver.hold:
-        lines += gs.HOLD_MAIN
+    # One model is registered: a second that names the same threads and roles is
+    # refused, so with deployments each is built only when it is the one chosen.
+    lines += model_lines('_modelName', per[0][1], 'build_model_default' if chosen else None)
+    for deployment, instances in per[1:]:
+        lines += model_lines('_model' + gs.pascal(deployment), instances,
+                             'build_model_' + gs.snake(deployment).lower())
+    if chosen:
+        lines += ['//! The model of the deployment named on the command line, the first',
+                  '//! when none is named, or nullptr for a name no deployment has.',
+                  'const char * deployment_model(int argc, char * argv[])',
+                  '{',
+                  '    const char * name{{ "{}" }};'.format(per[0][0]),
+                  '    for (int i = 1; i + 1 < argc; ++i)',
+                  '    {',
+                  '        if (std::strcmp(argv[i], "--deployment") == 0)',
+                  '        {',
+                  '            name = argv[i + 1];',
+                  '        }',
+                  '    }',
+                  '',
+                  '    const char * model{ nullptr };',
+                  '    if (std::strcmp(name, "{}") == 0)'.format(per[0][0]),
+                  '    {',
+                  '        build_model_default();',
+                  '        model = _modelName;',
+                  '    }']
+        for deployment, _ in per[1:]:
+            lines += ['    else if (std::strcmp(name, "{}") == 0)'.format(deployment),
+                      '    {',
+                      '        {}();'.format('build_model_' + gs.snake(deployment).lower()),
+                      '        model = _model{};'.format(gs.pascal(deployment)),
+                      '    }']
+        lines += ['',
+                  '    return model;',
+                  '}',
+                  '']
+    body = gs.MAIN_BODY if driver is None else gs.HOLD_MAIN if driver.hold else gs.EXIT_MAIN
+    if chosen:
+        selected = ['int main(int argc, char * argv[])',
+                    '{',
+                    '    const char * model{ deployment_model(argc, argv) };',
+                    '    if (model == nullptr)',
+                    '    {',
+                    '        std::cerr << "unknown --deployment; the deployments: {}" << std::endl;'
+                    .format(', '.join(d for d, _ in per)),
+                    '        return 2;',
+                    '    }',
+                    '']
+        rest = body[2:] if body[0].startswith('int main') else body
+        lines += selected + [line.replace('(_modelName)', '(model)') for line in rest]
     else:
-        lines += gs.EXIT_MAIN
-    return (program_dir(program) + 'main.cpp', '\n'.join(lines))
+        lines += body
+    return (program_dir(program) + 'main.cpp', '\n'.join(lines)), mine
 
 
 EXECUTABLE = gs.EXECUTABLE
 DOCUMENT = gs.DOCUMENT
 
 
-def write_cmake(path, programs, produced):
+def write_cmake(path, programs, produced, hosts=None):
     """One executable line per program, naming its main() and every source it compiles.
 
     A source the caller added to a program's line is kept. The scaffold's two
@@ -631,10 +731,17 @@ def write_cmake(path, programs, produced):
     wanted = {}
     for program in programs:
         folder = program_dir(program)
-        wanted['{}_{}'.format(project, program['name'])] = \
-            [folder + 'main.cpp'] + [n for n, _ in produced
-                                     if n.startswith(folder) and n.endswith('.cpp')
-                                     and not n.endswith('main.cpp')]
+        sources = [folder + 'main.cpp'] + [n for n, _ in produced
+                                           if n.startswith(folder) and n.endswith('.cpp')
+                                           and not n.endswith('main.cpp')]
+        # A class another program owns, which a deployment places here, is compiled
+        # here too, from where it is.
+        for c in (hosts or {}).get(program['name'], []):
+            if c.program is not program:
+                home = program_dir(c.program)
+                sources += [home + c.cls + '.cpp'] + \
+                    [home + name + '.cpp' for _, _, name in c.clients]
+        wanted['{}_{}'.format(project, program['name'])] = sources
     ours = set(wanted) | {project + '_provider', project + '_consumer', project}
     kept, changed, extra = [], [], {}
     for line in lines:
@@ -677,7 +784,7 @@ def drop_placeholders(out, produced):
               .format(path.replace('\\', '/')))
 
 
-def write_scenarios(path, programs, components, project_name, specs):
+def write_scenarios(path, programs, components, project_name, specs, deployments=()):
     """The normal run of every program, the console quit of each server and a peer loss."""
     if not os.path.exists(path):
         return
@@ -724,6 +831,15 @@ def write_scenarios(path, programs, components, project_name, specs):
                           'timeout': 30, 'router': True,
                           'procs': [{'binary': binary(program), 'name': program['name'],
                                      'lead': True, 'stdin': ['-q'], 'exit': 0}]})
+    # Every other deployment runs the same programs, started with its name; the
+    # driver's own checks are the proof, so it has no expectation of its own.
+    for deployment in deployments:
+        scenarios.append({'name': 'smoke-{}'.format(deployment),
+                          'timeout': scenarios[0]['timeout'], 'router': True,
+                          'procs': [dict({'binary': p['binary'], 'name': p['name'],
+                                          'args': ['--deployment', deployment]},
+                                         **({'lead': True, 'exit': 0} if p.get('lead') else {}))
+                                    for p in procs]})
     reconnect = gs.driver_of(specs, driver.iface)['reconnect_seconds'] if driver else 0
     if driver and reconnect:
         lost = next((c.program for c in components if c.kind == 'provides'
@@ -762,7 +878,7 @@ def write_scenarios(path, programs, components, project_name, specs):
     print('  were added, and need nothing from you.')
 
 
-def wiring(programs, components):
+def wiring(programs, components, deployments=()):
     """The worksheet lines saying which program holds what, and how its parts meet."""
     lines = ['The programs, and how their components reach each other:']
     for program in programs:
@@ -779,8 +895,16 @@ def wiring(programs, components):
                 said += ' watches ' + c.role
             for iface, roles, name in c.clients:
                 said += '; {} {}'.format(name, ', '.join(member_of(r) for r in roles))
+            if c.thread:
+                said += ' (thread {})'.format(c.thread)
             parts.append(said)
         lines.append('  {}: {}'.format(program['name'], '. '.join(parts)))
+    for deployment in deployments:
+        moves = ', '.join('{} in {}'.format(k, v)
+                          for k, v in sorted((deployment.get('place') or {}).items()))
+        lines.append('  deployment {}: {}; main() takes --deployment {}, and a role '
+                     'is reached the same way wherever it runs'
+                     .format(deployment['name'], moves or 'as above', deployment['name']))
     if any(c.clients for c in components):
         lines += ['A component calls a used provider through its member, as',
                   '{}.request_<name>(...), and reads its attributes there. A client\'s'
@@ -819,17 +943,23 @@ def main(argv=None):
     produced = []
     for component in components:
         produced += component_classes(component, args.spec, include_root)
+    placements = [('default', gen_docs.placement(project))] + \
+        [(d['name'], gen_docs.placement(project, d)) for d in project.get('deployments') or []]
+    hosts = {}
     for program in programs:
-        produced.append(program_main(program, components, None))
+        main_file, mine = program_main(program, components, placements)
+        produced.append(main_file)
+        hosts[program['name']] = mine
 
     retained = [(name, gs.write(os.path.join(args.out, name), text, args.force))
                 for name, text in produced]
     drop_placeholders(args.out, produced)
     changed, project_name = write_cmake(os.path.join(args.out, 'CMakeLists.txt'),
-                                        programs, produced)
+                                        programs, produced, hosts)
     for change in changed:
         print('  {}/{}'.format(args.out.replace('\\', '/'), change))
-    write_scenarios(args.scenarios, programs, components, project_name, args.spec)
+    write_scenarios(args.scenarios, programs, components, project_name, args.spec,
+                    [name for name, _ in placements[1:]])
 
     driver = next((c for c in components if c.kind == 'drives'), None)
     contracts = []
@@ -842,7 +972,9 @@ def main(argv=None):
     written = gs.write_worksheet(retained, args.out, contracts[0][0], contracts[0][1],
                                  None, None, args.scenarios,
                                  driver.steps if driver else (),
-                                 contracts=contracts, extra=wiring(programs, components))
+                                 contracts=contracts,
+                                 extra=wiring(programs, components,
+                                              project.get('deployments') or []))
     gs.print_todos(retained, args.out, written is not None,
                    len(gs.scenario_holes(args.scenarios)), args.scenarios, first,
                    written or ())

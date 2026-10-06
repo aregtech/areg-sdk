@@ -84,9 +84,11 @@ NOTE = '#|'
 
 # Every key each kind of spec object may carry. Any other key is refused.
 KEYS = {
-    'spec': ('datatypes', 'interfaces', 'machines', 'programs'),
+    'spec': ('datatypes', 'interfaces', 'machines', 'programs', 'deployments'),
+    'deployment': ('name', 'description', 'place'),
     'program': ('name', 'description', 'components'),
-    'component': ('provides', 'roles', 'drives', 'watches', 'role', 'uses', 'description'),
+    'component': ('name', 'provides', 'roles', 'drives', 'watches', 'role', 'uses', 'thread',
+                  'description'),
     'use': ('service', 'role', 'roles'),
     'datatypes': ('name', 'description', 'version', 'declare', 'includes'),
     'interface': ('name', 'category', 'description', 'version', 'types', 'attributes',
@@ -133,14 +135,15 @@ SHAPES = dict(
         'constants', 'declare', 'do', 'entry', 'events', 'exit', 'fields', 'includes',
         'interfaces', 'machines', 'params', 'requests', 'responses', 'states', 'steps',
         'submachines', 'timers', 'transitions', 'triggers', 'types', 'values',
-        'programs', 'components', 'uses', 'roles')] +
+        'programs', 'components', 'uses', 'roles', 'deployments')] +
     [(key, (str, 'a string')) for key in (
         'alias', 'answer_description', 'await', 'body', 'call', 'category', 'container',
         'derives', 'description', 'final_event', 'header', 'implement', 'initial', 'key',
         'kind', 'location', 'name', 'namespace', 'notify', 'object', 'of', 'on', 'path',
         'return', 'send', 'stop', 'threading', 'to', 'type', 'provides', 'drives',
-        'watches', 'role', 'service')] +
-    [(key, (dict, 'an object, {...}')) for key in ('datatypes', 'driver', 'set', 'until')])
+        'watches', 'role', 'service', 'thread')] +
+    [(key, (dict, 'an object, {...}')) for key in ('datatypes', 'driver', 'set', 'until',
+                                                     'place')])
 SINGULAR = {'attributes': 'attribute', 'requests': 'request', 'responses': 'response',
             'broadcasts': 'broadcast', 'constants': 'constant', 'includes': 'include',
             'params': 'parameter', 'answer': 'answer parameter', 'declare': 'type',
@@ -1467,7 +1470,8 @@ def write_template(path):
 
 def merge(specs):
     """One project from every spec file given."""
-    project = {'datatypes': None, 'interfaces': [], 'machines': [], 'programs': []}
+    project = {'datatypes': None, 'interfaces': [], 'machines': [], 'programs': [],
+               'deployments': []}
     for path, spec in specs:
         if not isinstance(spec, dict):
             fail('{} is not a spec object'.format(path))
@@ -1480,6 +1484,7 @@ def merge(specs):
         project['interfaces'].extend(spec.get('interfaces') or [])
         project['machines'].extend(spec.get('machines') or [])
         project['programs'].extend(spec.get('programs') or [])
+        project['deployments'].extend(spec.get('deployments') or [])
     if not (project['datatypes'] or project['interfaces'] or project['machines']):
         fail('the spec describes no document')
     return project
@@ -1500,7 +1505,89 @@ def program_components(project):
 COMPONENT_KINDS = ('provides', 'drives', 'watches')
 
 
-def component_uses(component):
+def component_names(project):
+    """Every object a deployment can place, by name: provided roles and named components.
+
+    Each maps to (program, component, the role when it is one instance of a provider).
+    """
+    found = {}
+    for program, component, kind, service in program_components(project):
+        if kind == 'provides':
+            for role in component.get('roles') or [str(service) + 'Provider']:
+                found[role] = (program, component, role)
+        if component.get('name'):
+            found[component['name']] = (program, component, None)
+    return found
+
+
+def placement(project, deployment=None):
+    """Where every object runs in one deployment: name -> (program name, thread or None).
+
+    Without a deployment it is the "programs" block itself.
+    """
+    placed = {}
+    for name, (program, component, _) in component_names(project).items():
+        placed[name] = (program.get('name'), component.get('thread'))
+    for name, target in ((deployment or {}).get('place') or {}).items():
+        program, _, thread = str(target).partition('/')
+        placed[name] = (program, thread or None)
+    return placed
+
+
+def check_deployments(project):
+    """Every deployment names objects that exist and programs that exist."""
+    deployments = project.get('deployments') or []
+    if not deployments:
+        return
+    if not project.get('programs'):
+        fail('"deployments" moves the objects of "programs", and the design has none')
+    programs = set(p.get('name') for p in listed(project, 'programs'))
+    objects = component_names(project)
+    names = set()
+    for deployment in deployments:
+        if not isinstance(deployment, dict):
+            fail('a deployment is {"name": "...", "place": {"<role or component name>": '
+                 '"<program>" or "<program>/<thread>"}}')
+        name = deployment.get('name')
+        here = 'deployment "{}"'.format(name)
+        check_keys(deployment, KEYS['deployment'], here)
+        if not isinstance(name, str) or not IDENTIFIER.match(name) or name in names \
+                or name == 'default':
+            fail('{} needs a name of its own a C identifier can carry, other than '
+                 '"default", which is the "programs" block itself: it is what '
+                 '--deployment selects'.format(here))
+        names.add(name)
+        for moved, target in (deployment.get('place') or {}).items():
+            if moved not in objects:
+                fail('{} places "{}", which is no role a component provides and no '
+                     'component "name". It can place: {}'
+                     .format(here, moved, ', '.join(sorted(objects))))
+            program, _, thread = str(target).partition('/')
+            if program not in programs:
+                fail('{} places "{}" in "{}", which is no program. The programs: {}'
+                     .format(here, moved, target, ', '.join(sorted(programs))))
+            if thread and not IDENTIFIER.match(thread):
+                fail('{} places "{}" in the thread "{}", which a C identifier cannot '
+                     'carry'.format(here, moved, thread))
+
+
+def provided_roles(project):
+    """The roles each service is provided as, by service name."""
+    found = {}
+    for _, component, kind, service in program_components(project):
+        if kind == 'provides':
+            found.setdefault(service, []).extend(component.get('roles')
+                                                 or [str(service) + 'Provider'])
+    return found
+
+
+def consumed_role(project, service):
+    """The provider a consumer naming no role talks to: the one role of that service."""
+    roles = provided_roles(project).get(service) or []
+    return roles[0] if len(roles) == 1 else str(service) + 'Provider'
+
+
+def component_uses(component, project=None):
     """The services a component uses, as (service, [roles]), a bare name as its default."""
     found = []
     for entry in component.get('uses') or []:
@@ -1510,7 +1597,8 @@ def component_uses(component):
             continue
         service = entry.get('service')
         roles = entry.get('roles') or ([entry['role']] if entry.get('role') else
-                                       [str(service) + 'Provider'])
+                                       [consumed_role(project, service) if project
+                                        else str(service) + 'Provider'])
         found.append((service, roles))
     return found
 
@@ -1541,6 +1629,12 @@ def check_programs(project):
                  '{{"drives": "<Service>"}} or {{"watches": "<Service>"}}'.format(here))
         for component in components:
             check_keys(component, KEYS['component'], 'a component of ' + here)
+            for key in ('name', 'thread'):
+                value = component.get(key)
+                if value is not None and (not isinstance(value, str)
+                                          or not IDENTIFIER.match(value)):
+                    fail('a component of {} gives the {} {!r}, which a C identifier '
+                         'cannot carry'.format(here, key, value))
             kinds = [kind for kind in COMPONENT_KINDS if component.get(kind)]
             if len(kinds) != 1:
                 fail('a component of {} names {}: each provides, drives or watches '
@@ -1574,7 +1668,9 @@ def check_programs(project):
                     roles[role] = (service, where)
             elif component.get('roles'):
                 fail('{} gives "roles", which names the instances a component '
-                     'provides. The provider it consumes is "role"'.format(where))
+                     'provides. The instance it {} is "role", and the other instances '
+                     'it talks to are "uses": [{{"service": "{}", "roles": [...]}}], one '
+                     'client member each'.format(where, kind, service))
             if kind == 'drives':
                 driven.append((service, where))
             for entry in component.get('uses') or []:
@@ -1583,14 +1679,15 @@ def check_programs(project):
                 elif not isinstance(entry, str):
                     fail('a used service of {} is a service name or {{"service": ..., '
                          '"role": ...}}'.format(where))
-            for used, used_roles in component_uses(component):
+            for used, used_roles in component_uses(component, project):
                 if used not in services:
                     fail('{} uses "{}", which the design does not declare'
                          .format(where, used))
                 if used == service and kind == 'provides':
                     fail('{} uses the service it provides. Another instance of it is '
                          'consumed by another component'.format(where))
-                if used == service and (component.get('role') or service + 'Provider') \
+                if used == service and (component.get('role')
+                                        or consumed_role(project, service)) \
                         in used_roles:
                     fail('{} uses the role it already {}: list the other instances '
                          'only'.format(where, kind))
@@ -1598,8 +1695,8 @@ def check_programs(project):
         where = '{} "{}" of program "{}"'.format(kind, service, program.get('name'))
         wanted = []
         if kind in ('drives', 'watches'):
-            wanted.append((service, component.get('role') or service + 'Provider'))
-        for used, used_roles in component_uses(component):
+            wanted.append((service, component.get('role') or consumed_role(project, service)))
+        for used, used_roles in component_uses(component, project):
             wanted += [(used, role) for role in used_roles]
         for used, role in wanted:
             if role not in roles:
@@ -2422,6 +2519,40 @@ EXAMPLE = {
     }]
 }
 
+# A design of several services in several programs, printed by --example programs.
+EXAMPLE_PROGRAMS = {
+    NOTE: ["A stock service and an order desk that answers only after the stock has.",
+           "programs: one executable each, under src/<name>/. A component provides one",
+           "service (\"roles\" runs named instances of it), drives the scenario (the steps",
+           "of that service; \"role\" is the instance it talks to) or watches one. \"uses\"",
+           "gives any component a client member per used role: mStock below, called as",
+           "mStock.request_reserve(...), every answer a worksheet section. \"thread\" puts",
+           "components of one program in one thread. deployments: named alternatives, each",
+           "placing a role or a named component in another program or program/thread;",
+           "main() takes --deployment <name>. Without programs, a design is one service."],
+    "interfaces": [
+        {"name": "StockService", "category": "Public", "description": "Items in stock.",
+         "attributes": [{"name": "Bolts", "type": "uint32", "notify": "Always"}],
+         "requests": [{"name": "reserve", "params": [{"name": "count", "type": "uint32"}],
+                       "answer": [{"name": "reserved", "type": "bool"}]}]},
+        {"name": "OrderService", "category": "Public", "description": "Orders of bolts.",
+         "requests": [{"name": "place", "params": [{"name": "count", "type": "uint32"}],
+                       "answer": [{"name": "accepted", "type": "bool"}]}],
+         "steps": [{"name": "small", "send": "place", "args": {"count": 2}},
+                   {"name": "large", "send": "place", "args": {"count": 90}}]}
+    ],
+    "programs": [
+        {"name": "warehouse", "components": [{"provides": "StockService", "roles": ["stock"]}]},
+        {"name": "desk", "components": [{"provides": "OrderService", "roles": ["desk"],
+                                         "uses": [{"service": "StockService", "role": "stock"}],
+                                         "thread": "orders"}]},
+        {"name": "customer", "components": [{"name": "buyer", "drives": "OrderService",
+                                             "role": "desk"}]}
+    ],
+    "deployments": [{"name": "together", "description": "The stock runs inside the desk.",
+                     "place": {"stock": "desk/orders"}}]
+}
+
 TEMPLATE_WIDTH = 92
 
 TEMPLATE = {
@@ -2491,6 +2622,7 @@ TEMPLATE = {
                "provider must send; with no answer key, none. Broadcasts reach every subscriber.",
                "A request, response or broadcast name is written snake_case, without the prefix",
                "the generator adds: open_valve is request_open_valve. Attributes are converted.",
+               "Several services, instances or programs: gen_docs.py --example programs.",
                "A parameter name used in several answers and broadcasts has one type in all.",
                "values: the legal values of a parameter, when they are a set and the type does",
                "not already say so. A step that sends one outside it is refused here rather",
@@ -2702,22 +2834,30 @@ def review(project, skipped):
     # in the words build_project.py refuses with, several steps later, and it is said
     # on both paths: build_project.py passes --chained, so a note only the bare call
     # prints is a note the documented path never shows.
-    for what, found, option in (('service', project.get('interfaces') or [], '--doc'),
-                                ('state machine', project.get('machines') or [],
-                                 '--machine')):
-        if len(found) > 1:
-            print('  note  this design describes {} {}s. build_project.py writes one '
-                  'application, of one service and at most one machine: name the one '
-                  'to build with {}, and write the others with gen_skeleton.py --app '
-                  'into their own directories.'.format(len(found), what, option))
+    services = [entry for entry in project.get('interfaces') or [] if isinstance(entry, dict)]
+    if len(services) > 1 and not project.get('programs'):
+        print('  note  this design describes {} services. Declare which program runs which '
+              'in "programs", and build_project.py writes every program; '
+              'gen_docs.py --example programs prints the shape.'.format(len(services)))
+    hosted = set(inner.get('name') if isinstance(inner, dict) else inner
+                 for entry in project.get('machines') or [] if isinstance(entry, dict)
+                 for inner in entry.get('submachines') or [])
+    top = [entry.get('name') for entry in project.get('machines') or []
+           if isinstance(entry, dict) and entry.get('name') not in hosted]
+    if len(top) > 1 and len(paired(project)) < len(top):
+        print('  note  this design describes {} state machines no other machine hosts: {}. '
+              'Declare on each service the machine its provider runs: "machine".'
+              .format(len(top), ', '.join(str(name) for name in top)))
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument('--spec', action='append', default=[],
                         help='a JSON description; pass it once per spec file')
     parser.add_argument('--outdir', help='the directory the documents are written to')
-    parser.add_argument('--example', action='store_true',
-                        help='print a whole spec to copy, and write nothing')
+    parser.add_argument('--example', nargs='?', const='service', choices=['service', 'programs'],
+                        help='print a whole spec to copy, and write nothing. "programs" '
+                             'prints one of several services in several programs: roles, '
+                             'uses, threads and deployments')
     parser.add_argument('--template', metavar='PATH',
                         help='write a spec with every key present and empty, each section '
                              'with its note, to fill in. A file there that carries work is '
@@ -2736,7 +2876,7 @@ def main():
         # The same renderer the template uses: every value that fits stays on its
         # line. The page tells the agent to read this in one call, and one value per
         # line makes that call twice the size for nothing.
-        print(render(EXAMPLE))
+        print(render(EXAMPLE if args.example == 'service' else EXAMPLE_PROGRAMS))
         return 0
     if args.template:
         if write_template(args.template) == 'work':
@@ -2770,6 +2910,7 @@ def main():
     check_service_timers(project)
     check_final_entry(project)
     check_programs(project)
+    check_deployments(project)
     # An include names a document the way the project root spells it, which is the
     # directory the documents are written to.
     prefix = '' if os.path.isabs(args.outdir) else \

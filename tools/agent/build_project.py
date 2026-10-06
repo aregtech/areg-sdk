@@ -840,7 +840,8 @@ def main():
             if len(found) > 1 and (args.doc if option == '--doc' else args.machine) is None:
                 fail('this project describes {} {}s: {}. Say which program runs '
                      'which of them with a "programs" block in design.json, and this '
-                     'command writes every program:\n{}'
+                     'command writes every program; gen_docs.py --example programs '
+                     'prints a whole one:\n{}'
                      .format(len(found), what,
                              ', '.join(os.path.basename(f) for f in found),
                              PROGRAMS_SHAPE))
