@@ -456,20 +456,20 @@ jobs:
               EXTRA_CMAKE_FLAGS="${EXTRA_CMAKE_FLAGS} -T ClangCL"
             fi
           fi
-        if [ "${{runner.os}}" = "Linux" ]; then
-          if [ "${{matrix.config.arch}}" = "x86" ]; then
-            if [ "${{matrix.config.family}}" = "llvm" ]; then
-              EXTRA_CMAKE_FLAGS="${EXTRA_CMAKE_FLAGS} -DCMAKE_TOOLCHAIN_FILE=./conf/toolchains/clang-linux-x86.cmake"
-            elif [ "${{matrix.config.family}}" = "gnu" ]; then
-              EXTRA_CMAKE_FLAGS="${EXTRA_CMAKE_FLAGS} -DCMAKE_TOOLCHAIN_FILE=./conf/toolchains/gnu-linux-x86.cmake"
+          if [ "${{runner.os}}" = "Linux" ]; then
+            if [ "${{matrix.config.arch}}" = "x86" ]; then
+              if [ "${{matrix.config.family}}" = "llvm" ]; then
+                EXTRA_CMAKE_FLAGS="${EXTRA_CMAKE_FLAGS} -DCMAKE_TOOLCHAIN_FILE=./conf/toolchains/clang-linux-x86.cmake"
+              elif [ "${{matrix.config.family}}" = "gnu" ]; then
+                EXTRA_CMAKE_FLAGS="${EXTRA_CMAKE_FLAGS} -DCMAKE_TOOLCHAIN_FILE=./conf/toolchains/gnu-linux-x86.cmake"
+              fi
+            elif [ "${{matrix.config.arch}}" = "arm" ]; then
+              EXTRA_CMAKE_FLAGS="${EXTRA_CMAKE_FLAGS} -DCMAKE_TOOLCHAIN_FILE=./conf/toolchains/gnu-linux-arm32.cmake"
+            elif [ "${{matrix.config.arch}}" = "aarch64" ]; then
+              EXTRA_CMAKE_FLAGS="${EXTRA_CMAKE_FLAGS} -DCMAKE_TOOLCHAIN_FILE=./conf/toolchains/gnu-linux-arm64.cmake"
             fi
-          elif [ "${{matrix.config.arch}}" = "arm" ]; then
-            EXTRA_CMAKE_FLAGS="${EXTRA_CMAKE_FLAGS} -DCMAKE_TOOLCHAIN_FILE=./conf/toolchains/gnu-linux-arm32.cmake"
-          elif [ "${{matrix.config.arch}}" = "aarch64" ]; then
-            EXTRA_CMAKE_FLAGS="${EXTRA_CMAKE_FLAGS} -DCMAKE_TOOLCHAIN_FILE=./conf/toolchains/gnu-linux-arm64.cmake"
           fi
-        fi
-        echo "EXTRA_CMAKE_FLAGS=${EXTRA_CMAKE_FLAGS}" >> "${GITHUB_ENV}"
+          echo "EXTRA_CMAKE_FLAGS=${EXTRA_CMAKE_FLAGS}" >> "${GITHUB_ENV}"
 
       - name: Resolve the python 3 interpreter
         if: matrix.config.test == 'ON'
