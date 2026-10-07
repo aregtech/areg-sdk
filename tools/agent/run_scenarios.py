@@ -16,6 +16,7 @@
 import argparse
 import contextlib
 import difflib
+import glob
 import importlib.util
 import io
 import json
@@ -114,21 +115,21 @@ def is_listening(port, host='127.0.0.1'):
         probe.close()
 
 
-# The router port line of an areg.init.
+# The router port line of a config/*.init file.
 PORT_RE = re.compile(r'^[ \t]*router::\*::port::tcpip[ \t]*=[ \t]*(\d+)', re.MULTILINE)
 
 
 def router_port(directories):
-    """The router port the config/areg.init beside the binaries names, else ROUTER_PORT."""
+    """The router port a config/*.init beside the binaries names, else ROUTER_PORT."""
     for directory in directories:
-        try:
-            with open(os.path.join(directory, 'config', 'areg.init'), encoding='utf-8',
-                      errors='replace') as handle:
-                found = PORT_RE.search(handle.read())
-        except OSError:
-            continue
-        if found:
-            return int(found.group(1))
+        for path in sorted(glob.glob(os.path.join(directory, 'config', '*.init'))):
+            try:
+                with open(path, encoding='utf-8', errors='replace') as handle:
+                    found = PORT_RE.search(handle.read())
+            except OSError:
+                continue
+            if found:
+                return int(found.group(1))
     return ROUTER_PORT
 
 
