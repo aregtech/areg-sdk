@@ -544,7 +544,7 @@ template <class DATA_CLASS>                                                     
 AregImpl_##ConsumerClass##Extended<DATA_CLASS>::AregImpl_##ConsumerClass##Extended()                                            \
     : AregImpl_##ConsumerClass<DATA_CLASS> ( )                                                                                  \
 {                                                                                                                               \
-    areg::DispatcherThread& dispThread = areg::DispatcherThread::dispatcher_thread(ConsumerThreadName);                         \
+    areg::DispatcherThread& dispThread = areg::DispatcherThread::dispatcher_thread(areg::ThreadAddress(ConsumerThreadName));    \
     VERIFY( dispThread.register_event_consumer(AregImpl_##EventClass<DATA_CLASS>::CLASS_ID, self()) );                          \
 }                                                                                                                               \
 
