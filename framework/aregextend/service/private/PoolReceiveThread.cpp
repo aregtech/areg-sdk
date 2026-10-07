@@ -50,6 +50,7 @@ PoolReceiveThread::PoolReceiveThread( areg::RemoteMessageHandler & remoteService
     , mPendingLock      ( )
     , mPendingAdd       ( )
     , mPendingRemove    ( )
+    , mCachedPending    ( )
 {
 }
 
@@ -91,7 +92,10 @@ void PoolReceiveThread::_process_pending_sockets()
     mHasPending.store(false, std::memory_order_relaxed);
 
     for ( SOCKETHANDLE hRemove : mPendingRemove )
+    {
         mMux.unregister_socket(hRemove);
+        _forget_cached_socket(hRemove);
+    }
 
     mPendingRemove.clear();
     for ( const areg::SocketAccepted & sock : mPendingAdd )
@@ -103,12 +107,66 @@ void PoolReceiveThread::_process_pending_sockets()
     mPendingAdd.clear();
 }
 
+void PoolReceiveThread::_remember_cached_socket( SOCKETHANDLE hSocket )
+{
+    for ( SOCKETHANDLE known : mCachedPending )
+    {
+        if ( known == hSocket )
+            return;
+    }
+
+    mCachedPending.push_back(hSocket);
+}
+
+void PoolReceiveThread::_forget_cached_socket( SOCKETHANDLE hSocket )
+{
+    for ( auto pos = mCachedPending.begin(); pos != mCachedPending.end(); ++pos )
+    {
+        if ( *pos == hSocket )
+        {
+            mCachedPending.erase(pos);
+            return;
+        }
+    }
+}
+
+void PoolReceiveThread::_service_cached_socket( areg::MessageEnvelope & msgReceived )
+{
+    const SOCKETHANDLE hSocket{ mCachedPending.front() };
+    mCachedPending.erase(mCachedPending.begin());
+
+    // A socket this thread no longer monitors may already belong to another pool
+    // thread under the same handle value. Only the multiplexer says who owns it.
+    if ( !mMux.is_registered(hSocket) || (areg::recv_data_available(hSocket) == 0u) )
+        return;
+
+    areg::SocketAccepted clientSocket{ mConnection.client_by_handle(hSocket) };
+    if ( !clientSocket.is_valid() )
+        return;
+
+    constexpr uint32_t MAX_DRAIN{ areg::DEFAULT_DRAIN_LIMIT - 1u };
+    const int32_t drained{ areg::ext::drain_recv_cache(mConnection, mRemoteService, MAX_DRAIN, clientSocket,
+            msgReceived, [this](uint64_t bytes, uint32_t msgs) { mGlobalStats.accumulate_received(bytes, msgs); }) };
+
+    if ( drained < 0 )
+    {
+        mMux.unregister_socket(hSocket);
+        mRemoteService.failed_receive_message(clientSocket);
+        areg::thread_rx_cache_release(hSocket);
+    }
+    else if ( drained == static_cast<int32_t>(MAX_DRAIN) )
+    {
+        mCachedPending.push_back(hSocket);
+    }
+}
+
 bool PoolReceiveThread::run_dispatcher()
 {
     DEBUG_LOG_SCOPE(areg_aregextend_service_PoolReceiveThread, run_dispatcher);
     DEBUG_LOG_DBG("Pool receive thread [ %s ] starting", name().as_string());
 
     areg::set_receive_mode(areg::ReceiveMode::MultiCache);
+    mCachedPending.clear();
     ready_for_events(true);
 
     areg::MessageEnvelope msgReceived;
@@ -126,7 +184,19 @@ bool PoolReceiveThread::run_dispatcher()
             continue;
         }
 
-        const SOCKETHANDLE hReady = mMux.wait();
+        // A socket whose cache still holds messages is invisible to the
+        // multiplexer, so it is serviced here and the wait never blocks
+        // while one is outstanding.
+        SOCKETHANDLE hReady{ areg::InvalidSocketHandle };
+        if ( mCachedPending.empty() )
+        {
+            hReady = mMux.wait();
+        }
+        else
+        {
+            _service_cached_socket(msgReceived);
+            hReady = mMux.wait(0);
+        }
 
         if ( hReady == areg::FailedSocketHandle )
         {
@@ -143,6 +213,7 @@ bool PoolReceiveThread::run_dispatcher()
             if ( !clientSocket.is_valid() )
             {
                 mMux.unregister_socket(hReady);
+                _forget_cached_socket(hReady);
                 continue;
             }
 
@@ -156,12 +227,21 @@ bool PoolReceiveThread::run_dispatcher()
                 }
 
                 // Drain bytes cached by _os_recv_data read-ahead.
-                if (!areg::ext::drain_recv_cache(mConnection, mRemoteService, areg::DEFAULT_DRAIN_LIMIT - 1u, clientSocket,
-                        msgReceived, [this](uint64_t bytes, uint32_t msgs) { mGlobalStats.accumulate_received(bytes, msgs); }))
+                constexpr uint32_t MAX_DRAIN{ areg::DEFAULT_DRAIN_LIMIT - 1u };
+                const int32_t drained{ areg::ext::drain_recv_cache(mConnection, mRemoteService, MAX_DRAIN, clientSocket,
+                        msgReceived, [this](uint64_t bytes, uint32_t msgs) { mGlobalStats.accumulate_received(bytes, msgs); }) };
+
+                if (drained < 0)
                 {
                     mMux.unregister_socket(hReady);
                     mRemoteService.failed_receive_message(clientSocket);
                     areg::thread_rx_cache_release(hReady);
+                    _forget_cached_socket(hReady);
+                }
+                else if (drained == static_cast<int32_t>(MAX_DRAIN))
+                {
+                    // The ceiling stopped the drain, so the cache may still hold messages.
+                    _remember_cached_socket(hReady);
                 }
             }
             else
@@ -173,6 +253,7 @@ bool PoolReceiveThread::run_dispatcher()
                 mMux.unregister_socket(hReady);
                 mRemoteService.failed_receive_message(clientSocket);
                 areg::thread_rx_cache_release(hReady);
+                _forget_cached_socket(hReady);
             }
 
 #if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
@@ -191,6 +272,7 @@ bool PoolReceiveThread::run_dispatcher()
                 if ( !drainSocket.is_valid() )
                 {
                     mMux.unregister_socket(hDrain);
+                    _forget_cached_socket(hDrain);
                     continue;
                 }
 
@@ -204,12 +286,21 @@ bool PoolReceiveThread::run_dispatcher()
                     }
 
                     // Drain read-ahead cache for this socket too.
-                    if (!areg::ext::drain_recv_cache(mConnection, mRemoteService, areg::DEFAULT_DRAIN_LIMIT - 1u, drainSocket,
-                            msgReceived, [this](uint64_t bytes, uint32_t msgs) { mGlobalStats.accumulate_received(bytes, msgs); }))
+                    constexpr uint32_t MAX_DRAIN{ areg::DEFAULT_DRAIN_LIMIT - 1u };
+                    const int32_t drained{ areg::ext::drain_recv_cache(mConnection, mRemoteService, MAX_DRAIN, drainSocket,
+                            msgReceived, [this](uint64_t bytes, uint32_t msgs) { mGlobalStats.accumulate_received(bytes, msgs); }) };
+
+                    if (drained < 0)
                     {
                         mMux.unregister_socket(hDrain);
                         mRemoteService.failed_receive_message(drainSocket);
                         areg::thread_rx_cache_release(hDrain);
+                        _forget_cached_socket(hDrain);
+                    }
+                    else if (drained == static_cast<int32_t>(MAX_DRAIN))
+                    {
+                        // The ceiling stopped the drain, so the cache may still hold messages.
+                        _remember_cached_socket(hDrain);
                     }
                 }
                 else
@@ -218,6 +309,7 @@ bool PoolReceiveThread::run_dispatcher()
                     mMux.unregister_socket(hDrain);
                     mRemoteService.failed_receive_message(drainSocket);
                     areg::thread_rx_cache_release(hDrain);
+                    _forget_cached_socket(hDrain);
                 }
             }
 
@@ -237,6 +329,11 @@ bool PoolReceiveThread::run_dispatcher()
     DEBUG_LOG_DBG("Pool receive thread [ %s ] stopped", name().as_string());
 
     return isExit;
+}
+
+bool PoolReceiveThread::post_event( areg::Event & eventElem )
+{
+    return areg::EventDispatcher::post_event( eventElem );
 }
 
 } // namespace areg::ext

@@ -36,6 +36,13 @@ TimerManagerBase::TimerManagerBase(const String& threadName, uint32_t stackSizeK
 {
 }
 
+TimerManagerBase::~TimerManagerBase()
+{
+#ifdef __linux__
+    _close_descriptors();
+#endif  // __linux__
+}
+
 // Windows and macOS drive their timers from an OS callback, so this loop only serves the
 // event queue. Linux and the other POSIX platforms have their own loop.
 #if !defined(__linux__) && (defined(__APPLE__) || !(defined(_POSIX) || defined(POSIX)))

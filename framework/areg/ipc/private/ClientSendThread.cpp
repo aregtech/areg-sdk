@@ -131,8 +131,8 @@ void ClientSendThread::start_event_processing( Event & eventElem )
 
         if ( sentBytes > 0 )
             accumulate_sent( static_cast<uint64_t>(sentBytes), bufCount );
-        else if ( !mIsClosing.load(std::memory_order_relaxed) )
-            mRemoteService.failed_send_message( eventElem.envelope(), mConnection.socket() );
+        else
+            report_failed_batch( eventElem, 0u, bufCount );
     }
     else
     {
@@ -153,9 +153,14 @@ void ClientSendThread::start_event_processing( Event & eventElem )
             }
 
             if ( sentBytes > 0 )
+            {
                 accumulate_sent( static_cast<uint64_t>(sentBytes), end - start );
-            else if ( !mIsClosing.load(std::memory_order_relaxed) )
-                mRemoteService.failed_send_message( eventElem.envelope(), mConnection.socket() );
+            }
+            else
+            {
+                report_failed_batch( eventElem, start, bufCount );
+                break;
+            }
 
             start = end;
         }
@@ -173,6 +178,26 @@ void ClientSendThread::start_event_processing( Event & eventElem )
     {
         LOG_SCOPE(areg_ipc_private_ClientSendThread, report_producer_wait);
         LOG_WARN("Send queue was full: a producer waited [ %u ] ms for a free slot", waitedMs);
+    }
+}
+
+void ClientSendThread::report_failed_batch(Event & first, uint32_t from, uint32_t count)
+{
+    if ( mIsClosing.load(std::memory_order_relaxed) )
+        return;
+
+    for ( uint32_t i{ from }; i < count; ++i )
+    {
+        if ( i == 0u )
+        {
+            mRemoteService.failed_send_message( first.envelope(), mConnection.socket() );
+        }
+        else
+        {
+            // The failure event is built from the header alone.
+            const areg::MessageEnvelope failed{ *reinterpret_cast<const areg::EventHeader *>(mIoBuffer[i].data), 0u };
+            mRemoteService.failed_send_message( failed, mConnection.socket() );
+        }
     }
 }
 

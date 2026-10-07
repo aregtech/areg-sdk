@@ -23,8 +23,13 @@
 #include "areg/ipc/RegistrationConsumer.hpp"
 #include "areg/ipc/RegistrationProvider.hpp"
 #include "aregextend/service/ServiceCommunicationBase.hpp"
+#include "areg/component/Timer.hpp"
+#include "areg/component/TimerConsumer.hpp"
 
 #include "mtrouter/service/private/ServiceRegistry.hpp"
+
+#include <cstdint>
+#include <vector>
 
 //////////////////////////////////////////////////////////////////////////
 // RouterServerService class declaration
@@ -36,7 +41,15 @@
 class RouterServerService final : public    areg::ext::ServiceCommunicationBase
                                 , private   areg::RegistrationConsumer
                                 , private   areg::RegistrationProvider
+                                , private   areg::TimerConsumer
 {
+    //!< A provider registration held while another source holds its role name.
+    struct HeldStub
+    {
+        areg::StubAddress   hsStub;     //!< The held provider.
+        uint64_t            hsDeadline; //!< Steady milliseconds after which a living holder makes it a duplicate.
+    };
+
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
@@ -223,11 +236,59 @@ private:
      **/
     inline RouterServerService & self();
 
+    /**
+     * \brief   Closes the connection of a source and unregisters its providers and consumers.
+     *
+     * \param   cookie      The cookie of the source connection.
+     **/
+    void disconnect_source(const ITEM_ID & cookie);
+
+    /**
+     * \brief   Triggered when the check time of the held providers comes.
+     *
+     * \param   timer       The timer of the held providers.
+     **/
+    void process_timer(areg::Timer & timer) final;
+
+    /**
+     * \brief   Holds a provider whose role name is held by another source.
+     *
+     * \param   stub        The provider to hold.
+     **/
+    void hold_stub(const areg::StubAddress & stub);
+
+    /**
+     * \brief   Registers the oldest provider held for the service of the given stub.
+     *
+     * \param   stub        The stub address of the service that lost its provider.
+     **/
+    void activate_held_stub(const areg::StubAddress & stub);
+
+    /**
+     * \brief   Removes the held providers of the given source, or of one service when a stub is given.
+     *
+     * \param   source      The source of the held providers to remove.
+     * \param   stub        The service to match, or nullptr for every service of the source.
+     **/
+    void remove_held_stubs(const ITEM_ID & source, const areg::StubAddress * stub);
+
+    /**
+     * \brief   Rejects every held provider whose holder is still connected after its deadline.
+     **/
+    void reject_duplicates();
+
+    /**
+     * \brief   Starts the timer for the earliest deadline of the held providers.
+     **/
+    void schedule_held_check();
+
 //////////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////////
 private:
     ServiceRegistry mServiceRegistry;   //!< The service registry map to track stub-proxy connections
+    std::vector<HeldStub> mHeldStubs;   //!< The providers held while another source holds their role names.
+    areg::Timer     mTimerHeld;         //!< The timer that checks the deadlines of the held providers.
 
 //////////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

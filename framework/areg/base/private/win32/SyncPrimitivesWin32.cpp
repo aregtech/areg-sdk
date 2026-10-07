@@ -22,6 +22,14 @@
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/base/Thread.hpp"
+#include "areg/base/private/WaitWord.hpp"
+
+// WaitOnAddress and WakeByAddressSingle are declared for Windows 8 and newer only.
+#if !defined(_WIN32_WINNT) || (_WIN32_WINNT < 0x0602)
+    #undef  _WIN32_WINNT
+    #define _WIN32_WINNT    0x0602
+#endif  // !defined(_WIN32_WINNT) || (_WIN32_WINNT < 0x0602)
+
 #ifndef NOMINMAX
     #define NOMINMAX
 #endif // !NOMINMAX
@@ -357,4 +365,38 @@ Wait::WaitResolution Wait::_os_wait_for(const Wait::Duration& timeout) const
 
 
 } // namespace areg
+
+//////////////////////////////////////////////////////////////////////////
+// Wait on a word
+//////////////////////////////////////////////////////////////////////////
+
+namespace areg::os {
+
+void _os_wait_word(const std::atomic<uint32_t> & word, uint32_t expected) noexcept
+{
+    ::WaitOnAddress(const_cast<std::atomic<uint32_t> *>(&word), &expected, sizeof(expected), INFINITE);
+}
+
+void _os_wake_word(std::atomic<uint32_t> & word) noexcept
+{
+    ::WakeByAddressSingle(&word);
+}
+
+void _os_wake_word_all(const std::atomic<uint32_t> * word) noexcept
+{
+    ::WakeByAddressAll(const_cast<std::atomic<uint32_t> *>(word));
+}
+
+bool _os_has_process_barrier() noexcept
+{
+    return true;
+}
+
+void _os_process_barrier() noexcept
+{
+    ::FlushProcessWriteBuffers();
+}
+
+} // namespace areg::os
+
 #endif  // _WIN32

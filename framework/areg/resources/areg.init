@@ -51,12 +51,19 @@
 #   Scope Key Format:
 #     log::<module>::scope::<scope_pattern>
 #
+#   A scope is declared with DEF_LOG_SCOPE(<group>, <method>) and is named
+#   '<group>.<method>' -- joined with a DOT, not an underscore. So
+#   DEF_LOG_SCOPE(areg_base_areg, client_connect) is the scope
+#   'areg_base_areg.client_connect'.
+#
+#   A trailing ';' is optional on any value: the parser strips it.
+#
 #   Examples:
-#     log::*::scope::*                           # All scopes, all modules
-#     log::*::scope::areg_*                      # All scopes starting with 'areg_'
-#     log::*::scope::areg_base_File_open         # Single specific scope (all modules)
-#     log::myapp::scope::areg_*                  # Scopes starting with 'areg_' in 'myapp'
-#     log::myapp::scope::database_*              # Database scopes in 'myapp' only
+#     log::*::scope::*                              # All scopes, all modules
+#     log::*::scope::areg_*                         # All scopes starting with 'areg_'
+#     log::*::scope::areg_base_areg.client_connect  # Single specific scope (all modules)
+#     log::myapp::scope::areg_*                     # Scopes starting with 'areg_' in 'myapp'
+#     log::myapp::scope::database_*                 # Database scopes in 'myapp' only
 #
 # ---------------------------------------------------------------------------
 # PRIORITY LEVELS
@@ -89,16 +96,16 @@
 #     NOTSET - Disables logging for the scope or scope group.
 #              Use to silence specific scopes.
 #
-#   Priority Examples:
+#   Priority Examples (the trailing ';' is optional):
 #
 #     # Single priority
-#     log::myapp::scope::network = WARN
+#     log::myapp::scope::network = WARN ;
 #
 #     # Combined priorities (scope boundaries + warnings)
-#     log::myapp::scope::ui_* = WARN | SCOPE
+#     log::myapp::scope::ui_* = WARN | SCOPE ;
 #
 #     # Disable specific scope group
-#     log::*::scope::areg_* = NOTSET
+#     log::*::scope::areg_* = NOTSET ;
 #
 # ---------------------------------------------------------------------------
 # LAYOUT FORMAT SPECIFICATIONS
@@ -327,8 +334,9 @@ net::*::tcpip::sndbuf               = 8192                  # Default SO_SNDBUF 
 net::*::tcpip::rcvbuf               = 8192                  # Default SO_RCVBUF for all services (uncomment to set a global default).
 net::*::tcpip::drain                = 128                   # Send batch in messages, 0..128. A MEMORY setting: lowering it costs data rate. See wiki 05b.
 net::*::tcpip::pairs                = 0                     # Pool thread-pair count. 0 = disabled (shared send/recv threads). >0 = dedicated pool pairs per N clients.
-net::*::tcpip::timeout              = 2500                  # SO_SNDTIMEO in ms. Raise (e.g. 30000) when debugging on Windows to prevent breakpoint-pause disconnects.
+net::*::tcpip::timeout              = 0                     # ms a reachable peer may take no data before it is closed. 0 = build default: unlimited debug, keepalive release. Debug app through a release router: net::mtrouter::tcpip::timeout = 3600000
 net::*::tcpip::cache                = 256                   # The size per-socket cache to receive data. Same value is used to initialize send cache.
+net::*::tcpip::keepalive            = 15                    # Seconds until a silent peer is lost, idle or sending, 6..3600. A lost probe is survived up to ~80% of (value - 5).
 
 # ---------------------------------------------------------------------------
 # Remote Logger Settings

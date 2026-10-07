@@ -34,6 +34,15 @@
     <ClCompile Include="units\StringUtilsTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="units\ThreadTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\SocketKeepAliveTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\SocketLivenessTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="units\OptionParserTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -56,6 +65,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="units\LinkedListTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\LockWaitTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="units\RingStackTest.cpp">
@@ -83,6 +95,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="units\MultiLockTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\LogMessageLengthTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\SocketMultiplexerTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\SocketWouldBlockTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\StringTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

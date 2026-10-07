@@ -21,7 +21,7 @@
 #include "areg/base/UtilityDefs.hpp"
 #include "areg/base/Containers.hpp"
 
-#ifdef  _DEBUG
+#ifdef  DEBUG
 
 void AREG_API_IMPL areg::output_message_os( const char * msg )
 {
@@ -32,12 +32,12 @@ void AREG_API_IMPL areg::output_message_os( const char * msg )
     }
 }
 
-#else   // _DEBUG
+#else   // DEBUG
 
 void AREG_API_IMPL areg::output_message_os( const char * /*msg*/ )
 {
 }
 
-#endif  // _DEBUG
+#endif  // DEBUG
 
 #endif  // defined(_POSIX) || defined(POSIX)

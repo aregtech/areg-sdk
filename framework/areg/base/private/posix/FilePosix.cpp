@@ -261,7 +261,7 @@ uint32_t File::_os_read_file(uint8_t* buffer, uint32_t size) const noexcept
     {
         result = static_cast<uint32_t>(sizeRead);
     }
-#ifdef  _DEBUG
+#ifdef  DEBUG
     else if (sizeRead < 0)
     {
         AREG_OUTPUT_ERR("Failed read file [ %s ], error code [ %p ].", mFileName.as_string(), static_cast<id_type>(errno));
@@ -270,7 +270,7 @@ uint32_t File::_os_read_file(uint8_t* buffer, uint32_t size) const noexcept
     {
         AREG_OUTPUT_DBG("Finished to read file [ %s ]", mFileName.as_string());
     }
-#endif  // !_DEBUG
+#endif  // !DEBUG
 
     return result;
 }

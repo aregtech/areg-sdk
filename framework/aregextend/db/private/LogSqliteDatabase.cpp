@@ -638,20 +638,24 @@ inline void LogSqliteDatabase::_initialize() noexcept
     }
 
     {
+        // The header row. It carries no scope and the PrioIgnore bit, which is how a
+        // reader separates it from an application log message.
+        const String message{ "Starting database logging..." };
         SqliteStatement stmt(mDatabase, _sqlInsertLog);
         stmt.bind_uint32( 0, static_cast<uint32_t>(areg::COOKIE_LOCAL));
-        stmt.bind_uint32( 1, static_cast<uint32_t>(areg::CHECKSUM_IGNORE));
+        stmt.bind_uint32( 1, static_cast<uint32_t>(areg::LOG_SCOPE_ID_NONE));
         stmt.bind_uint32( 2, static_cast<uint32_t>(0u));
         stmt.bind_uint32( 3, static_cast<uint32_t>(areg::LogMessageType::MessageText));
         stmt.bind_uint32( 4, static_cast<uint32_t>(areg::LogPriority::PrioIgnore));
         stmt.bind_uint64( 5, static_cast<uint64_t>(proc.id()));
         stmt.bind_uint64( 6, static_cast<uint64_t>(threadId));
-        stmt.bind_text(   7, String("Starting database logging..."));
-        stmt.bind_text(   8, thread);
-        stmt.bind_text(   9, module);
-        stmt.bind_uint64(10, static_cast<uint64_t>(now.time()));
+        stmt.bind_text(   7, message);
+        stmt.bind_uint32( 8, static_cast<uint32_t>(message.length()));
+        stmt.bind_text(   9, thread);
+        stmt.bind_text(  10, module);
         stmt.bind_uint64(11, static_cast<uint64_t>(now.time()));
-        stmt.bind_uint32(12, static_cast<uint32_t>(0u));
+        stmt.bind_uint64(12, static_cast<uint64_t>(now.time()));
+        stmt.bind_uint32(13, static_cast<uint32_t>(0u));
         VERIFY(stmt.execute());
     }
 }

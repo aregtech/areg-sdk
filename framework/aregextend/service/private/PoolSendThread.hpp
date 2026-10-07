@@ -28,6 +28,7 @@
 #include "areg/component/EventConsumer.hpp"
 #include "aregextend/service/SystemServiceDefs.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
+#include "aregextend/service/private/SendBacklog.hpp"
 
 #include <string_view>
 
@@ -57,6 +58,7 @@ namespace areg::ext {
  **/
 class PoolSendThread final  : public    DispatcherThread
                             , public    areg::EventConsumer
+                            , private   SendBacklog::Owner
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants
@@ -104,6 +106,40 @@ public:
     [[nodiscard]]
     inline areg::SendQueueGate & send_gate() noexcept;
 
+    /**
+     * \brief   Hands one outbound message to this send thread and reports whether the queue took it.
+     *          When it returns false the message never reaches the socket, so the caller must
+     *          release what it reserved for it.
+     *
+     * \param   eventElem   The event to queue. Its target dispatcher must already be this thread.
+     * \return  true if the queue took the event, false if it did not.
+     **/
+    inline bool queue_message( areg::Event & eventElem );
+
+    /**
+     * \brief   Returns the writer of this thread.
+     **/
+    [[nodiscard]]
+    inline SendBacklog & backlog() noexcept;
+
+    /**
+     * \brief   Returns true if a message or the exit waits in the queue.
+     **/
+    [[nodiscard]]
+    inline bool has_queued_events() const noexcept;
+
+    /**
+     * \brief   Blocks in the backlog wait for up to \a timeoutMs: until a socket with a backlog
+     *          takes data, an exit, or, if \a takeEvents is true, a queued message.
+     **/
+    inline void wait_backlog(bool takeEvents, uint32_t timeoutMs);
+
+    /**
+     * \brief   Returns true if the thread is asked to exit.
+     **/
+    [[nodiscard]]
+    inline bool is_exit_requested() const noexcept;
+
 protected:
 /************************************************************************/
 // DispatcherThread overrides
@@ -140,6 +176,17 @@ private:
      **/
     void start_event_processing( areg::Event & eventElem ) final;
 
+// SendBacklog::Owner overrides
+
+    SOCKETHANDLE backlog_socket(ITEM_ID cookie) final;
+
+    void backlog_sent(uint64_t bytes, uint32_t msgs) final;
+
+    void backlog_close(const SendBacklog::Entry & entry, SendBacklog::Reason reason) final;
+
+    //!< Releases the backlog and closes every socket whose message was cut.
+    void release_backlog();
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -162,6 +209,8 @@ private:
     std::array<areg::Event, areg::DEFAULT_DRAIN_LIMIT>   mEvents;
     //!< Tells the producers whether this queue still owes a message to a socket.
     areg::SendQueueGate                                  mSendGate;
+    //!< Keeps what a socket cannot take now. Declared after the gate it enters.
+    SendBacklog                                          mBacklog;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -183,6 +232,37 @@ inline uint32_t PoolSendThread::drain_limit() const noexcept
 inline areg::SendQueueGate & PoolSendThread::send_gate() noexcept
 {
     return mSendGate;
+}
+
+inline bool PoolSendThread::queue_message( areg::Event & eventElem )
+{
+    return EventDispatcher::post_event( eventElem );
+}
+
+inline SendBacklog & PoolSendThread::backlog() noexcept
+{
+    return mBacklog;
+}
+
+inline bool PoolSendThread::has_queued_events() const noexcept
+{
+    return mExternalEvents.has_pending();
+}
+
+inline void PoolSendThread::wait_backlog(bool takeEvents, uint32_t timeoutMs)
+{
+    mBacklog.reset_wake();
+    if ( mExternalEvents.arm_waiter(mBacklog, takeEvents) )
+    {
+        mBacklog.wait(timeoutMs);
+    }
+
+    mExternalEvents.disarm_waiter();
+}
+
+inline bool PoolSendThread::is_exit_requested() const noexcept
+{
+    return mExternalEvents.is_exit_triggered();
 }
 
 } // namespace areg::ext

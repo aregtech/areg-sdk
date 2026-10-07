@@ -17,6 +17,7 @@
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/base/SocketMultiplexer.hpp"
 #include "areg/base/Thread.hpp"
+#include "areg/base/private/WaitWord.hpp"
 #include "areg/appbase/Application.hpp"
 
 #include "areg/logging/areg_log.h"
@@ -138,8 +139,20 @@ namespace areg::os {
 
     /**
      * \brief   Applies platform-specific options that require a connected TCP socket.
+     * \param   hSocket         A valid connected socket handle.
+     * \param   keepIdle        Seconds of idle before the first keepalive probe.
+     * \param   keepInterval    Seconds between unanswered keepalive probes.
+     * \param   keepCount       Unanswered keepalive probes before the connection is lost.
      **/
-    void _os_configure_connected_socket(SOCKETHANDLE hSocket) noexcept;
+    void _os_configure_connected_socket(SOCKETHANDLE hSocket, int32_t keepIdle, int32_t keepInterval, int32_t keepCount) noexcept;
+
+    /**
+     * \brief   Applies the platform-specific options of a socket accepted by a server.
+     *          On macOS it sets the socket non-blocking; the send and receive functions
+     *          of this file wait on it when it would block.
+     * \param   hSocket     A valid accepted socket handle.
+     **/
+    void _os_configure_accepted_socket(SOCKETHANDLE hSocket) noexcept;
 
 } // namespace areg::os
 
@@ -155,6 +168,21 @@ namespace
     {
         static thread_local std::unordered_map<SOCKETHANDLE, areg::ThreadCache> _rx_caches;
         return _rx_caches;
+    }
+
+    //!< Last cache handed out by thread_rx_cache(), so a repeated ask for the same socket
+    //!< skips the hash. References to unordered_map elements survive a rehash, so an erase
+    //!< is the only thing that invalidates the entry pointer.
+    struct RxCacheMemo
+    {
+        SOCKETHANDLE        socket{ areg::InvalidSocketHandle };
+        areg::ThreadCache * entry { nullptr };
+    };
+
+    inline RxCacheMemo& _thread_cache_memo()
+    {
+        static thread_local RxCacheMemo _memo;
+        return _memo;
     }
 }
 
@@ -481,7 +509,17 @@ AREG_API_IMPL void areg::socket_set_no_delay(SOCKETHANDLE hSocket) noexcept
     // Only meaningful on connected sockets, do NOT call on listening sockets.
     constexpr int32_t noDelay{ 1 };
     ::setsockopt(hSocket, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<const char *>(&noDelay), sizeof(noDelay));
-    areg::os::_os_configure_connected_socket(hSocket);
+
+    // Splits the configured seconds into 5 probes after an idle time of at least 1 s.
+    constexpr int32_t keepCount{ 5 };
+    const String& transport{ Identifier::to_string( static_cast<uint32_t>(areg::ConnectionType::Tcpip)
+                                                  , areg::ConnectionIdentifiers
+                                                  , static_cast<uint32_t>(areg::ConnectionType::Undefined)) };
+    const uint32_t configured{ Application::config_manager().network_keepalive(areg::EmptyStringA, transport) };
+    const int32_t keepAlive{ static_cast<int32_t>(configured < areg::SOCKET_KEEPALIVE_MAX_SEC ? configured : areg::SOCKET_KEEPALIVE_MAX_SEC) };
+    const int32_t keepInterval{ keepAlive > 10 ? (keepAlive - 5) / keepCount : 1 };
+    const int32_t keepIdle{ keepAlive > keepInterval * keepCount ? keepAlive - keepInterval * keepCount : 1 };
+    areg::os::_os_configure_connected_socket(hSocket, keepIdle, keepInterval, keepCount);
 }
 
 AREG_API_IMPL uint32_t areg::set_send_size(SOCKETHANDLE hSocket, uint32_t sendSize) noexcept
@@ -698,8 +736,14 @@ AREG_API_IMPL SOCKETHANDLE areg::server_connect(const areg::SocketAddress & peer
         {
             areg::socket_configure(result);
 
-            int32_t yes = 1; // avoid the "address already in use" error message
+            int32_t yes = 1;
+#ifdef   _WIN32
+            // Refuses a second bind while this socket holds the port.
+            ::setsockopt( result, SOL_SOCKET, SO_EXCLUSIVEADDRUSE, reinterpret_cast<const char *>(&yes), sizeof(int32_t) );
+#else   // _WIN32
+            // Rebinds a port left in TIME_WAIT and refuses a second listener.
             ::setsockopt( result, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&yes), sizeof(int32_t) );
+#endif  // _WIN32
             if (areg::RETURNED_OK != bind(result, reinterpret_cast<sockaddr *>(&serverAddr), sizeof(sockaddr_in)) )
             {
                 LOG_ERR("Server failed to bind on host [ %s ] and port number [ %u ]. Closing socket [ %u ]"
@@ -773,6 +817,7 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept(areg::SocketMultiplexer & multipl
         {
             areg::socket_configure(result);
             areg::socket_set_no_delay(result);
+            areg::os::_os_configure_accepted_socket(result);
             if (socketAddr != nullptr)
             {
                 socketAddr->from_sockaddr(acceptAddr);
@@ -834,6 +879,7 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept(SOCKETHANDLE serverSocket, const 
             {
                 areg::socket_configure(result);
                 areg::socket_set_no_delay(result);
+                areg::os::_os_configure_accepted_socket(result);
                 if (socketAddr != nullptr)
                 {
                     socketAddr->from_sockaddr(acceptAddr);
@@ -940,6 +986,12 @@ AREG_API_IMPL int32_t areg::try_send_data_v(SOCKETHANDLE hSocket, const areg::Io
     return areg::os::_os_try_send_data_v(hSocket, buffers, count, totalSize);
 }
 
+namespace
+{
+    //!< True if a waiter runs a process barrier before it sleeps; false until the library is loaded.
+    const bool _processBarrier{ areg::os::_os_has_process_barrier() };
+}
+
 AREG_API_IMPL areg::SocketWriter & areg::SocketWriter::writer_of(SOCKETHANDLE hSocket) noexcept
 {
     static areg::SocketWriter _writers[areg::SOCKET_WRITER_SLOTS];
@@ -948,31 +1000,58 @@ AREG_API_IMPL areg::SocketWriter & areg::SocketWriter::writer_of(SOCKETHANDLE hS
 
 AREG_API_IMPL bool areg::SocketWriter::try_acquire() noexcept
 {
-    return (mBusy.exchange(true, std::memory_order_acquire) == false);
+    return (mBusy.exchange(SocketWriter::WRITER_OWNED, std::memory_order_acquire) == SocketWriter::WRITER_FREE);
 }
 
 AREG_API_IMPL void areg::SocketWriter::acquire() noexcept
 {
     constexpr uint32_t SPIN_COUNT{ 64u };
 
-    uint32_t spin{ 0u };
-    while (mBusy.exchange(true, std::memory_order_acquire))
+    if (mBusy.exchange(SocketWriter::WRITER_OWNED, std::memory_order_acquire) == SocketWriter::WRITER_FREE)
+        return;
+
+    for (uint32_t spin = 0u; spin < SPIN_COUNT; ++spin)
     {
-        if (spin < SPIN_COUNT)
+        Thread::cpu_pause();
+        if ((mBusy.load(std::memory_order_relaxed) == SocketWriter::WRITER_FREE) &&
+            (mBusy.exchange(SocketWriter::WRITER_OWNED, std::memory_order_acquire) == SocketWriter::WRITER_FREE))
         {
-            ++spin;
-            Thread::cpu_pause();
-        }
-        else
-        {
-            Thread::switch_thread();
+            return;
         }
     }
+
+    // The sleeper count is published to every thread before the lock is checked again.
+    mSleepers.fetch_add(1u, std::memory_order_seq_cst);
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    if (areg::os::_os_has_process_barrier())
+    {
+        areg::os::_os_process_barrier();
+    }
+
+    while (mBusy.exchange(SocketWriter::WRITER_OWNED, std::memory_order_acquire) != SocketWriter::WRITER_FREE)
+    {
+        areg::os::_os_wait_word(mBusy, SocketWriter::WRITER_OWNED);
+    }
+
+    mSleepers.fetch_sub(1u, std::memory_order_relaxed);
 }
 
 AREG_API_IMPL void areg::SocketWriter::release() noexcept
 {
-    mBusy.store(false, std::memory_order_release);
+    mBusy.store(SocketWriter::WRITER_FREE, std::memory_order_release);
+    if (_processBarrier)
+    {
+        std::atomic_signal_fence(std::memory_order_seq_cst);
+    }
+    else
+    {
+        std::atomic_thread_fence(std::memory_order_seq_cst);
+    }
+
+    if (mSleepers.load(std::memory_order_relaxed) != 0u)
+    {
+        areg::os::_os_wake_word(mBusy);
+    }
 }
 
 AREG_API_IMPL int32_t areg::receive_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, uint32_t dataLength) noexcept
@@ -1188,15 +1267,28 @@ AREG_API_IMPL areg::ThreadCache& areg::thread_rx_cache(SOCKETHANDLE hSocket) noe
     }
     else
     {
+        RxCacheMemo& memo = _thread_cache_memo();
+        if ((memo.entry != nullptr) && (memo.socket == hSocket))
+            return *memo.entry;
+
         std::unordered_map<SOCKETHANDLE, areg::ThreadCache>& map = _thread_local_cache();
         areg::ThreadCache& tc = map[hSocket];
         tc.socket = hSocket;
+
+        memo.socket = hSocket;
+        memo.entry  = &tc;
         return tc;
     }
 }
 
 AREG_API_IMPL void areg::thread_rx_cache_release(SOCKETHANDLE hSocket) noexcept
 {
+    // Dropped unconditionally: an erase is the one thing that can leave the memo pointing
+    // at a destroyed entry, and a release is rare enough that the extra miss costs nothing.
+    RxCacheMemo& memo = _thread_cache_memo();
+    memo.socket = areg::InvalidSocketHandle;
+    memo.entry  = nullptr;
+
     std::unordered_map<SOCKETHANDLE, areg::ThreadCache>& map = _thread_local_cache();
     auto found = map.find(hSocket);
     if (found != map.end())

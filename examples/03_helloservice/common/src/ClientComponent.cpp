@@ -4,7 +4,6 @@
  **/
 #include "common/src/ClientComponent.hpp"
 
-#include "areg/base/Thread.hpp"
 #include "areg/base/CommonDefs.hpp"
 #include "areg/component/ComponentThread.hpp"
 #include "areg/appbase/Application.hpp"
@@ -46,11 +45,6 @@ bool ClientComponent::service_connected( areg::ServiceConnectionState status, ar
 void ClientComponent::response_hello_service( bool success )
 {
     std::cout << (success ? "Succeeded" : "Failed") << " to output message." << std::endl;
-
-    // Sleep for no reason! Do not do this in a real application.
-    // It is done to give a chance to see an output message on the console.
-    // Otherwise, the next line of code closes the application and you miss the message on console.
-    areg::Thread::sleep(areg::WAIT_1_SECOND);
 
     // The client completed the job, set signal to quit application
     areg::Application::signal_quit();

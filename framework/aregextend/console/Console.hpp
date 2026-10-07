@@ -199,7 +199,9 @@ public:
     void print_msg(const char* format, ...) const;
 
     /**
-     * \brief   Returns the current coordinate of the cursor on the console.
+     * \brief   Returns the coordinate the cursor was last moved to by set_cursor_cur_position().
+     *          The terminal is not queried, so the call is safe on any thread while another
+     *          thread waits for the user input.
      **/
     [[nodiscard]]
     inline Console::Coord cursor_cur_position() const noexcept;
@@ -332,7 +334,9 @@ private:
     void _os_output_text(std::string_view text) const noexcept;
 
     /**
-     * \brief   Returns the current position of the cursor on the console. OS specific implementation.
+     * \brief   Returns the tracked position of the cursor on the console. OS specific implementation.
+     *          Implementations must not read the terminal, because the thread that waits for the
+     *          user input owns the standard input and consumes any answer of the terminal.
      **/
     Console::Coord _os_get_cursor_position() const noexcept;
 

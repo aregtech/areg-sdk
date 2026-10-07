@@ -55,18 +55,26 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     HashMapTest.cpp
     KeyValuePairTest.cpp
     LinkedListTest.cpp
+    LockWaitTest.cpp
     LogMessageLengthTest.cpp
     LogScopesTest.cpp
     MapTest.cpp
     MultiLockTest.cpp
     OptionParserTest.cpp
     RingStackTest.cpp
+    SendBacklogTest.cpp
     SharedBufferTest.cpp
+    SocketKeepAliveTest.cpp
+    SocketLivenessTest.cpp
+    SocketMultiplexerTest.cpp
+    SocketWouldBlockTest.cpp
     SortedLinkedListTest.cpp
     StackTest.cpp
     StringDefsTest.cpp
     StringDefsTest2.cpp
     StringDefsTest3.cpp
+    StringDefsTest4.cpp 
     StringTest.cpp
     StringUtilsTest.cpp
+    ThreadTest.cpp
 )

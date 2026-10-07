@@ -77,7 +77,7 @@ AREG_API_IMPL void areg::st_ensure_atexit() noexcept
 // Debug functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-#ifdef  _DEBUG
+#ifdef  DEBUG
 
 void AREG_API_IMPL areg::output_console( areg::DebugPriority priority, const char * msg, ... )
 {
@@ -100,15 +100,15 @@ void AREG_API_IMPL areg::output_console( areg::DebugPriority priority, const cha
     }
 }
 
-#else   // !_DEBUG
+#else   // !DEBUG
 
 void AREG_API_IMPL areg::output_console( areg::DebugPriority /*priority*/, const char * /*msg*/, ... )
 {
 }
 
-#endif  // _DEBUG
+#endif  // DEBUG
 
-#ifdef  _DEBUG
+#ifdef  DEBUG
 
 void AREG_API_IMPL areg::output_console(const char * msg, ...)
 {
@@ -125,10 +125,10 @@ void AREG_API_IMPL areg::output_console(const char * msg, ...)
     }
 }
 
-#else   // !_DEBUG
+#else   // !DEBUG
 
 void AREG_API_IMPL areg::output_console(const char * /*msg*/, ...)
 {
 }
 
-#endif  // _DEBUG
+#endif  // DEBUG

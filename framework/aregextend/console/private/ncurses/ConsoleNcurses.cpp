@@ -219,7 +219,7 @@ void Console::_os_clear_screen() const noexcept
 
 bool Console::_os_read_input_list(const char* format, va_list varList) const
 {
-    return (mContext != 0 ? vw_scanw(reinterpret_cast<WINDOW *>(mContext), format, varList) >= 0 : false);
+    return (mContext != 0 ? vw_scanw(reinterpret_cast<WINDOW *>(mContext), const_cast<char *>(format), varList) >= 0 : false);
 }
 
 void Console::_os_save_cursor_position() const noexcept

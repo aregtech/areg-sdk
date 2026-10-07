@@ -115,6 +115,7 @@ public:
      * \param   timeoutInMs     Timeout in milliseconds.
      * \param   eventCount      Number of events (CONTINUOUSLY for infinite).
      * \return  Returns true if timer was successfully started.
+     * \note    The caller must be a dispatcher thread. Other threads use the explicit-thread overload.
      **/
     bool start_timer(uint32_t timeoutInMs, uint32_t eventCount = TimerBase::CONTINUOUSLY);
 

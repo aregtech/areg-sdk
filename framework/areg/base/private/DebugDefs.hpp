@@ -63,6 +63,12 @@
 #include <string>
 #include <string_view>
 
+#if defined(AREG_LOCK_TRACE) && (AREG_LOCK_TRACE) && defined(__linux__)
+    #include <cstdlib>
+    #include <execinfo.h>
+    #include <unistd.h>
+#endif  // defined(AREG_LOCK_TRACE) && (AREG_LOCK_TRACE) && defined(__linux__)
+
 #if defined(AREG_DIAGNOSE_TRACE) && (AREG_DIAGNOSE_TRACE)
     // Included only for the diagnostic trace, so that an ordinary build of the
     // 15 sources that include this header does not pay for them.
@@ -439,6 +445,162 @@ private:
 
 #endif  // AREG_STALL_TRACE
 
+#if defined(AREG_LOCK_TRACE) && (AREG_LOCK_TRACE) && defined(__linux__)
+
+/**
+ * \brief   Kind of lock whose waiter went to sleep or whose release woke a sleeper.
+ **/
+enum class LkKind : uint32_t
+{
+      SpinLock  = 0 //!< areg::SpinLock and every ResourceLock
+    , Writer        //!< areg::SocketWriter
+    , Count         //!< Number of kinds, keep last
+};
+
+//!< Frames of the caller recorded per site, the lock function itself excluded.
+constexpr uint32_t LK_FRAMES    { 4u };
+
+//!< Number of distinct sites the table keeps.
+constexpr uint32_t LK_SITES     { 256u };
+
+/**
+ * \brief   One call site: the caller frames, how often a waiter slept there, for how long, and
+ *          how often a release there woke a sleeper.
+ **/
+struct LkSite
+{
+    std::atomic<uint64_t>   hash    { 0u };
+    void *                  frames[LK_FRAMES] { };
+    LkKind                  kind    { LkKind::SpinLock };
+    std::atomic<uint64_t>   parks   { 0u };
+    std::atomic<uint64_t>   parkNs  { 0u };
+    std::atomic<uint64_t>   maxNs   { 0u };
+    std::atomic<uint64_t>   wakes   { 0u };
+};
+
+[[nodiscard]]
+inline LkSite * lk_table() noexcept
+{
+    static LkSite table[LK_SITES];
+    return table;
+}
+
+[[nodiscard]]
+inline uint64_t lk_now_ns() noexcept
+{
+    return static_cast<uint64_t>(
+        std::chrono::duration_cast<std::chrono::nanoseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count());
+}
+
+/**
+ * \brief   Prints every recorded site to stderr: kind, sleeps, mean and longest sleep, wakes,
+ *          and the caller frames as module(+offset), for addr2line.
+ **/
+inline void lk_dump() noexcept
+{
+    const char * const names[]{ "SpinLock", "Writer" };
+    std::fprintf(stderr, "\n==================== AREG LOCK TRACE (pid %d) ====================\n", static_cast<int>(::getpid()));
+    for (uint32_t i = 0u; i < LK_SITES; ++i)
+    {
+        LkSite & site{ lk_table()[i] };
+        if (site.hash.load(std::memory_order_acquire) <= 1u)
+            continue;
+
+        const uint64_t parks{ site.parks.load(std::memory_order_relaxed) };
+        const uint64_t wakes{ site.wakes.load(std::memory_order_relaxed) };
+        std::fprintf(stderr, "%-8s sleeps %10llu  mean %10.2f us  max %10.2f us  wakes %10llu\n"
+                    , names[static_cast<uint32_t>(site.kind)]
+                    , static_cast<unsigned long long>(parks)
+                    , parks != 0u ? static_cast<double>(site.parkNs.load(std::memory_order_relaxed)) / static_cast<double>(parks) / 1000.0 : 0.0
+                    , static_cast<double>(site.maxNs.load(std::memory_order_relaxed)) / 1000.0
+                    , static_cast<unsigned long long>(wakes));
+        char ** symbols{ ::backtrace_symbols(site.frames, static_cast<int>(LK_FRAMES)) };
+        for (uint32_t f = 0u; (symbols != nullptr) && (f < LK_FRAMES); ++f)
+            std::fprintf(stderr, "        %s\n", symbols[f]);
+        std::free(symbols);
+    }
+    std::fprintf(stderr, "==================================================================\n");
+}
+
+/**
+ * \brief   Returns the site of the calling stack, creating it on first use. Skips the frames of
+ *          the trace and of the lock function. Returns nullptr when the table is full.
+ **/
+inline LkSite * lk_site(LkKind kind) noexcept
+{
+    static std::once_flag _once;
+    std::call_once(_once, []() noexcept { std::atexit(&areg::lk_dump); });
+
+    void * stack[LK_FRAMES + 2u]{ };
+    const int depth{ ::backtrace(stack, static_cast<int>(LK_FRAMES + 2u)) };
+    uint64_t hash{ 1469598103934665603ull + static_cast<uint64_t>(kind) };
+    for (int f = 2; f < depth; ++f)
+        hash = (hash ^ reinterpret_cast<uintptr_t>(stack[f])) * 1099511628211ull;
+    hash |= 2u;
+
+    for (uint32_t probe = 0u; probe < LK_SITES; ++probe)
+    {
+        LkSite & site{ lk_table()[(hash + probe) % LK_SITES] };
+        uint64_t current{ site.hash.load(std::memory_order_acquire) };
+        if (current == hash)
+            return &site;
+
+        if ((current == 0u) && site.hash.compare_exchange_strong(current, 1u, std::memory_order_acq_rel))
+        {
+            for (int f = 2; f < depth; ++f)
+                site.frames[f - 2] = stack[f];
+            site.kind = kind;
+            site.hash.store(hash, std::memory_order_release);
+            return &site;
+        }
+
+        while (site.hash.load(std::memory_order_acquire) == 1u) { }
+        if (site.hash.load(std::memory_order_acquire) == hash)
+            return &site;
+    }
+
+    return nullptr;
+}
+
+/**
+ * \brief   Records one sleep of a waiter that started at startNs.
+ **/
+inline void lk_park(LkKind kind, uint64_t startNs) noexcept
+{
+    const uint64_t ns{ lk_now_ns() - startNs };
+    LkSite * site{ lk_site(kind) };
+    if (site == nullptr)
+        return;
+
+    site->parks.fetch_add(1u, std::memory_order_relaxed);
+    site->parkNs.fetch_add(ns, std::memory_order_relaxed);
+    uint64_t cur{ site->maxNs.load(std::memory_order_relaxed) };
+    while ((ns > cur) && !site->maxNs.compare_exchange_weak(cur, ns, std::memory_order_relaxed)) { }
+}
+
+/**
+ * \brief   Records one release that woke a sleeper.
+ **/
+inline void lk_wake(LkKind kind) noexcept
+{
+    LkSite * site{ lk_site(kind) };
+    if (site != nullptr)
+        site->wakes.fetch_add(1u, std::memory_order_relaxed);
+}
+
+    #define AREG_LK_NOW()               areg::lk_now_ns()
+    #define AREG_LK_PARK(kind, start)   areg::lk_park((kind), (start))
+    #define AREG_LK_WAKE(kind)          areg::lk_wake(kind)
+
+#else   // !AREG_LOCK_TRACE
+
+    #define AREG_LK_NOW()               (static_cast<uint64_t>(0))
+    #define AREG_LK_PARK(kind, start)   ((void)0)
+    #define AREG_LK_WAKE(kind)          ((void)0)
+
+#endif  // AREG_LOCK_TRACE
+
 
 #if defined(AREG_DIAGNOSE_TRACE) && (AREG_DIAGNOSE_TRACE)
 
@@ -505,6 +667,17 @@ inline void trace(const char* /*format*/, ...) noexcept
 }
 
 #endif  // defined(AREG_DIAGNOSE_TRACE) && (AREG_DIAGNOSE_TRACE)
+
+/**
+ * AREG_DT_TRACE writes one diagnostic line. Unlike a direct call of areg::trace(), it
+ * leaves nothing of the arguments behind when the facility is switched off, so an
+ * argument may format a string or read a registry without costing an ordinary build.
+ **/
+#if defined(AREG_DIAGNOSE_TRACE) && (AREG_DIAGNOSE_TRACE)
+    #define AREG_DT_TRACE(...)      areg::trace(__VA_ARGS__)
+#else   // !AREG_DIAGNOSE_TRACE
+    #define AREG_DT_TRACE(...)      ((void)0)
+#endif  // AREG_DIAGNOSE_TRACE
 
 /**
  * \brief   areg::DebugPriority

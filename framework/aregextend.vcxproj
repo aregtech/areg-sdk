@@ -60,6 +60,9 @@
     <ClCompile Include="aregextend\service\private\ServerConnection.cpp" />
     <ClCompile Include="aregextend\service\private\ServerReceiveThread.cpp" />
     <ClCompile Include="aregextend\service\private\ServerSendThread.cpp" />
+    <ClCompile Include="aregextend\service\private\SendBacklog.cpp" />
+    <ClCompile Include="aregextend\service\private\posix\SendBacklogPosix.cpp" />
+    <ClCompile Include="aregextend\service\private\win32\SendBacklogWin32.cpp" />
     <ClCompile Include="aregextend\service\private\ServiceCommunicationBase.cpp" />
     <ClCompile Include="aregextend\service\private\win32\ServiceApplicationBaseWin32.cpp" />
   </ItemGroup>
@@ -88,6 +91,7 @@
     <ClInclude Include="aregextend\service\private\PoolSendThread.hpp" />
     <ClInclude Include="aregextend\service\private\ServerReceiveThread.hpp" />
     <ClInclude Include="aregextend\service\private\ServerSendThread.hpp" />
+    <ClInclude Include="aregextend\service\private\SendBacklog.hpp" />
     <ClInclude Include="aregextend\service\ServiceCommunicationBase.hpp" />
     <ClInclude Include="aregextend\resources\resource.h" />
   </ItemGroup>

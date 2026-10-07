@@ -118,6 +118,9 @@ Thread::ThreadCompletion Thread::_os_destroy_thread(uint32_t waitForStopMs)
     THREADHANDLE handle = mThreadHandle;
     if (handle != Thread::INVALID_THREAD_HANDLE)
     {
+        // Owns the run until shutdown() releases it, and repeats the exit request.
+        ++ mStopCount;
+        request_exit();
         _unregister_thread();
         mSyncObject.unlock();  // unlock, to let thread complete exit task.
 
@@ -139,7 +142,7 @@ Thread::ThreadCompletion Thread::_os_destroy_thread(uint32_t waitForStopMs)
                 result = Thread::ThreadCompletion::Terminated;
                 this->mWaitForRun.reset();
                 this->mWaitForExit.set_signaled();
-                this->_set_run_state(Thread::RunState::NotRunning);
+                this->_set_not_running();
             }
             else
             {

@@ -849,7 +849,7 @@ logcollector --load=./config/mycollector.init --log=db
 ```
 
 ```
---scope *::areg_base_NESocket=NOTSET     # silence one scope in every application
+--scope *::areg_base_Socket=NOTSET       # silence one scope in every application
 --scope 257::myapp_Component_*=DEBUG     # full detail for a scope group of one application
 --query *                                # list the scopes of every connected application
 --query 257                              # list the scopes of one application

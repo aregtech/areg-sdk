@@ -883,6 +883,46 @@ macro(macro_setup_compilers_data_by_family compiler_family var_name_short var_na
 endmacro(macro_setup_compilers_data_by_family)
 
 # ---------------------------------------------------------------------------
+# Macro ......: macro_optimization_option
+# Purpose ....: Sets the optimization option that Areg adds for a build configuration.
+#               Sets an empty string when the caller's own flags already carry one, so
+#               that CMAKE_CXX_FLAGS and CMAKE_CXX_FLAGS_<CONFIG> are not overridden.
+# Parameters .: ${config}  -- The build configuration, like Release or MinSizeRel.
+#               ${var_opt} -- Name of the variable to hold the option.
+# Usage ......: macro_optimization_option("Release" _areg_opt)
+# ---------------------------------------------------------------------------
+macro(macro_optimization_option config var_opt)
+
+    string(TOUPPER "${config}" _areg_cfg_name)
+    set(${var_opt} "")
+
+    if (NOT "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_${_areg_cfg_name}}" MATCHES "(^| )[-/]O")
+        if (MSVC)
+            if ("${_areg_cfg_name}" STREQUAL "DEBUG")
+                set(${var_opt} /Od)
+            elseif ("${_areg_cfg_name}" STREQUAL "MINSIZEREL")
+                set(${var_opt} /O1)
+            else()
+                set(${var_opt} /O2)
+            endif()
+        else()
+            if ("${_areg_cfg_name}" STREQUAL "DEBUG")
+                set(${var_opt} -O0)
+            elseif ("${_areg_cfg_name}" STREQUAL "MINSIZEREL")
+                set(${var_opt} -Os)
+            elseif ("${_areg_cfg_name}" STREQUAL "RELWITHDEBINFO")
+                set(${var_opt} -O2)
+            else()
+                set(${var_opt} -O3)
+            endif()
+        endif()
+    endif()
+
+    unset(_areg_cfg_name)
+
+endmacro(macro_optimization_option)
+
+# ---------------------------------------------------------------------------
 # Function ...: setAppOptions
 # Purpose ....: Configures the compiler and linker options for executable applications.
 #               Automatically links the Areg library, along with any additional libraries specified.
@@ -1531,8 +1571,7 @@ function(areg_generate_documents)
             set_property(GLOBAL PROPERTY AREG_GENDOC_${_input_id}_DIR "${_input_gen}")
         endforeach()
 
-        # Re-configure when any document read is edited, imports included.
-        set_property(DIRECTORY "${_call_dir}" APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${_inputs})
+        set_property(DIRECTORY "${CMAKE_SOURCE_DIR}" APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${_inputs})
 
         if (NOT AREG_GENERATE_ONLY)
             target_sources(${_lib} PRIVATE "${_sources}")
@@ -1924,7 +1963,7 @@ function(printAregConfigStatus var_make_print var_prefix var_header var_footer)
     message(STATUS "${var_prefix}: >>> Java Launch Options : fast start of the code generator = '${_java_fast_state}'")
     message(STATUS "${var_prefix}: >>> Packages Use .......: SQLite3 package use = '${AREG_SYSTEM_SQLITE}', GTest package use = '${AREG_SYSTEM_GTEST}'")
     message(STATUS "${var_prefix}: >>> Feature Options ....: Logs = '${AREG_LOGGING}', Extended = '${AREG_EXTENDED}', No exceptions = '${AREG_NO_EXCEPTIONS}'")
-    message(STATUS "${var_prefix}: >>> Other Options ......: Examples = '${AREG_EXAMPLES}', Unit Tests = '${AREG_TESTS}'")
+    message(STATUS "${var_prefix}: >>> Other Options ......: Examples = '${AREG_EXAMPLES}', Unit Tests = '${AREG_TESTS}', Benchmarks = '${AREG_BENCHMARKS}'")
     message(STATUS "${var_prefix}: >>> Installation .......: Enabled = '${AREG_INSTALL}', location = '${CMAKE_INSTALL_PREFIX}'")
 
     # Print the footer section with separators

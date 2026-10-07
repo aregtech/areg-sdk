@@ -118,4 +118,9 @@ bool ClientReceiveThread::run_dispatcher()
     return isExit;
 }
 
+bool ClientReceiveThread::post_event( Event & eventElem )
+{
+    return EventDispatcher::post_event( eventElem );
+}
+
 } // namespace areg

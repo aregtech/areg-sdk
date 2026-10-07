@@ -4,34 +4,27 @@ A service interface is one XML document with the extension `.siml`. It is the
 contract between a provider and its consumers. The generator turns it into two base
 classes that you inherit.
 
-Minimal document, complete and valid:
+**You do not write this XML.** Describe the interface and generate it, together with
+every other document of the project:
 
-```xml
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<ServiceInterface FormatVersion="1.1.0">
-    <Overview ID="1" Name="HelloService" Version="1.0.0" Category="Public">
-        <Description>Greeting service.</Description>
-    </Overview>
-    <MethodList>
-        <Method ID="2" Name="hello_service" MethodType="Request" Response="hello_service">
-            <Description>Ask the provider to greet.</Description>
-            <ParamList>
-                <Parameter ID="51" Name="client" DataType="String">
-                    <Description>Name of the caller.</Description>
-                </Parameter>
-            </ParamList>
-        </Method>
-        <Method ID="4" Name="hello_service" MethodType="Response">
-            <Description>Result of the greeting.</Description>
-            <ParamList>
-                <Parameter ID="52" Name="success" DataType="bool">
-                    <Description>True when the greeting was printed.</Description>
-                </Parameter>
-            </ParamList>
-        </Method>
-    </MethodList>
-</ServiceInterface>
+```json
+{"interfaces": [{
+  "name": "HelloService", "category": "Public",
+  "description": "Greeting service.",
+  "requests": [
+    {"name": "hello_service", "description": "Ask the provider to greet.",
+     "params": [{"name": "client", "type": "String", "description": "Name of the caller."}],
+     "answer": [{"name": "success", "type": "bool", "description": "True when the greeting was printed."}]}
+  ]
+}]}
 ```
+
+
+`build_project.py --spec design.json` writes it, and everything after it. A request's
+`"answer"` declares its response and links the two, so the pair cannot
+drift apart. `"broadcasts"`, `"attributes"`, `"constants"` and `"types"` are lists
+beside `"requests"`. What each of them means is the rest of this page; the shape of
+the XML is the tool's business, and `--example` prints a whole spec to copy.
 
 Place it under your project, for example `src/services/HelloService.siml`, and add
 one line to the project's `CMakeLists.txt`:
@@ -44,22 +37,23 @@ addServiceInterface(gen_myproject src/services/HelloService.siml)
 
 ## 1. Rules that make a document valid
 
-- Every element carries an `ID` that is unique in the document. One counter, never
-  reused. The value does not matter; the uniqueness does.
 - `Category` decides how far the service reaches: `Private` inside one process,
   `Public` across processes on one machine, `Internet` across machines. A `Private`
   service cannot be reached through the router.
-- A `Request` names the `Response` that answers it. The response must exist and be
-  declared with `MethodType="Response"`. A request with no `Response` attribute is
-  fire and forget.
+- A `Request` with no `"answer"` is fire and forget; a `Response` exists only as the
+  answer to one.
 - Two methods may share a name only when they are of different kinds. A request and
   its response usually carry the same name, as above.
+- A `Parameter`'s default becomes the default argument of the generated method, so
+  every parameter after it needs one too.
 - Every `DataType` you reference must be predefined (`bool`, `uint32`, `String`, ...),
   declared in this document's `DataTypeList`, or imported from a `.dtml` document.
 
-The full grammar is `../../tools/schema/siml.xsd`. Its comments list the rules the schema
-cannot express. Validation findings are reported with the numbers registered in
-`../../tools/schema/rules.xml`.
+`../../tools/schema_help.py <name> --document siml` reads the grammar out one name at a
+time, and it says only what an element may contain. Ask it to settle a spelling nothing
+here gives, never to look up a meaning and never for a refused document: every rule an
+application meets is on this page or is `tools/explain_rule.py <number>`, which reads
+out the registry the findings are numbered from.
 
 ---
 
@@ -91,7 +85,7 @@ Provider class inherits `<Name>ProviderBase`. Consumer class inherits `<Name>Con
 | `Broadcast bar(c)` | **calls** `broadcast_bar(c)` | **may override** `void broadcast_bar(c) final`, **subscribes** with `notify_on_broadcast_bar(true)` |
 | `Attribute Baz` of type `T` | **calls** `set_baz(value)`; also `is_baz_valid()`, `invalidate_baz()` | **reads** `baz(state)`, **may override** `void on_baz_update(T Baz, areg::DataState state) final`, **subscribes** with `notify_on_baz_update(true)` |
 | `Constant Qux` | `<Name>::Qux` | `<Name>::Qux` |
-| `DataType Enumeration E` | `<Name>::E`, plus `<Name>::as_string(E)` | same |
+| `DataType Enumeration E` | `<Name>::E`, plus `const char * <Name>::as_string(E)` | same |
 | `DataType Structure S` | `<Name>::S` | same |
 | `Overview/@Name` | `<Name>::ServiceName`, `<Name>::InterfaceVersion` | same |
 
@@ -99,16 +93,17 @@ Provider class inherits `<Name>ProviderBase`. Consumer class inherits `<Name>Con
 
 | What | Transform | Example |
 |---|---|---|
-| Method name | to `snake_case`, with the prefix of its kind | `hello_service` -> `request_hello_service`, `response_hello_service` |
-| Broadcast name | to `snake_case`, prefix `broadcast_` | `reached_maximum` -> `broadcast_reached_maximum` |
+| Method name | kept as written after its kind's prefix; write `snake_case` | `hello_service` -> `request_hello_service`, `response_hello_service` |
+| Broadcast name | kept as written, prefix `broadcast_` | `reached_maximum` -> `broadcast_reached_maximum` |
 | Attribute name | to `snake_case` in every generated method | `StringOnChange` -> `set_string_on_change`, `on_string_on_change_update`, `string_on_change(state)` |
 | Data type, structure, constant name | kept exactly as written | `sConnectedClient` -> `HelloWorld::sConnectedClient` |
 | Parameter name | kept exactly as written | `StringOnChange` stays the parameter name in the handler |
 
-A worked case, from the `PubSub` example. The document declares
-`<Attribute Name="StringOnChange" DataType="String" Notify="OnChange"/>`, so:
+A worked case, from the `PubSub` example. The spec declares
+`{"name": "StringOnChange", "type": "String", "notify": "OnChange"}`, so:
 
 ```cpp
+// areg-check: ignore
 // provider
 void set_string_on_change(const areg::String & newValue);
 bool is_string_on_change_valid() const noexcept;
@@ -122,8 +117,29 @@ virtual void on_string_on_change_update(const areg::String & StringOnChange, are
 
 ### `Notify` on an attribute
 
-`OnChange` sends an update only when the value differs from the previous one.
-`Always` sends one on every `set_`. Absent means `OnChange`.
+`OnChange` sends an update when the value differs from the one held, or when the
+attribute is not valid: a `set_` to the value already held notifies nobody, while the
+first `set_` after `invalidate_<name>()` always does. `Always` sends one on every
+`set_`, with no comparison. Absent means `OnChange`.
+
+Pick `Always` for an attribute a consumer waits on as an event, `OnChange` for one it
+reads as a value. **A consumer step that waits for `OnChange` to deliver the value it
+already holds waits for ever**, and the symptom is a scenario that runs correctly to
+that point and then times out.
+
+### The order the consumer sees them in
+
+**A response has no priority over a notification.** What one provider sends one
+consumer arrives in the order it was sent, so a handler that sets an attribute and
+then answers delivers the **update first**. Drive the next step from whichever
+message carries the fact you need -- the one reporting the effect, not the one
+accepting the request -- never from "the response comes first".
+
+**Quit from the handler of the last message the step needs.** A process that has
+quit cannot receive what has not arrived: events already queued are delivered, but a
+message still crossing the router when the process exits is lost, and the exit code
+is 0. Quitting in the update handler of a provider that answers afterwards drops the
+answer.
 
 ---
 
@@ -148,7 +164,7 @@ matches, because provider requests are pure virtual.
 - [ ] Every `ID` in the document is unique.
 - [ ] Every `Request` names an existing `Response`, or is deliberately fire and forget.
 - [ ] `Category` matches the deployment: `Public` if the consumer is another process.
-- [ ] The build ran the generator without a reported rule number.
+- [ ] The build ran the generator without a refusal.
 - [ ] You did not open a generated file to learn a name.
 
 Next: `30-provider.md` to implement the provider, `31-consumer.md` for the consumer.

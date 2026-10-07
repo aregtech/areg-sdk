@@ -154,16 +154,25 @@ WorkerThread* Component::create_worker_thread(  const String & threadName
     if (workThread == nullptr)
         return nullptr;
     
-    if (workThread->start(areg::WAIT_INFINITE))
-    {
-        mComponentInfo.register_worker_thread(*workThread);
-        return workThread;
-    }
-    else
+    if (!workThread->start(areg::WAIT_INFINITE))
     {
         delete workThread;
         return nullptr;
     }
+
+    // Returns once the worker's queue accepts events; a worker that stops first is released.
+    while (!workThread->wait_start(areg::WAIT_10_MILLISECONDS))
+    {
+        if (!workThread->is_running())
+        {
+            workThread->shutdown(areg::WAIT_INFINITE);
+            delete workThread;
+            return nullptr;
+        }
+    }
+
+    mComponentInfo.register_worker_thread(*workThread);
+    return workThread;
 }
 
 void Component::delete_worker_thread( const String & threadName )

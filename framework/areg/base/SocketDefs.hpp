@@ -309,6 +309,13 @@ constexpr uint32_t      SOCKET_RECV_BUFFER_SIZE { 4u * areg::ONE_MEGABYTE };
 //!< Maximum milliseconds a single send() call may block waiting for TCP send-window space.
 constexpr uint32_t      SOCKET_SEND_TIMEOUT_MS  { 2500u };
 
+//!< Compile-time default for the seconds after which a silent peer is declared lost, whether the connection is idle or sending.
+//!< Override at runtime via net::SERVICE::TRANSPORT::keepalive in areg.init (value in seconds).
+constexpr uint32_t      SOCKET_KEEPALIVE_SEC    { 15u };
+
+//!< The largest keepalive time in seconds a socket accepts; a larger configured value is reduced to it.
+constexpr uint32_t      SOCKET_KEEPALIVE_MAX_SEC{ 3600u };
+
 //!< Floor applied to any caller-supplied max, prevents degenerate limits.
 constexpr uint32_t      MIN_CONNECTIONS         { 32u };
 
@@ -490,7 +497,11 @@ AREG_API void socket_configure(SOCKETHANDLE hSocket) noexcept;
 
 /**
  * \brief   Disables the Nagle algorithm (TCP_NODELAY) on a connected socket.
- *          Also applies platform-specific keepalive and broken-pipe handling.
+ *          Also applies platform-specific keepalive and broken-pipe handling. A silent peer is
+ *          declared lost after the seconds configured in net::MODULE::tcpip::keepalive
+ *          (SOCKET_KEEPALIVE_SEC by default): an idle connection by keepalive probes, a sending
+ *          one when its data stays unacknowledged that long. On Linux the same bound also ends
+ *          a connection whose peer keeps its receive window closed that long.
  *          Call this only on client or accepted sockets, never on listening sockets.
  *
  * \param   hSocket     Valid connected socket descriptor.
@@ -562,7 +573,8 @@ AREG_API bool server_listen(SOCKETHANDLE serverSocket, int32_t maxQueueSize = ar
  *          client connection if the server socket fired.
  *
  *          All sockets must have been registered with \a multiplexer before
- *          calling this overload.
+ *          calling this overload. On macOS a newly accepted socket is non-blocking;
+ *          the send and receive functions of this file wait on it when it would block.
  *
  * \param   multiplexer     Persistent multiplexer with the server and client sockets already registered.
  * \param   serverSocket    The listening server socket descriptor.
@@ -578,7 +590,8 @@ AREG_API SOCKETHANDLE server_accept(SocketMultiplexer& multiplexer, SOCKETHANDLE
  * \brief   Accepts one pending client connection on \a serverSocket.
  *          Legacy stateless overload -- builds a temporary poll list from
  *          \a masterList.  Prefer the SocketMultiplexer overload for
- *          persistent server accept loops.
+ *          persistent server accept loops. On macOS the accepted socket is non-blocking;
+ *          the send and receive functions of this file wait on it when it would block.
  *
  * \param   serverSocket    Listening server socket descriptor.
  * \param   masterList      Array of already-accepted socket descriptors, or nullptr if none.
@@ -846,7 +859,7 @@ public:
 
     /**
      * \brief   Takes the lock and waits for the current owner. The wait spins for a short while
-     *          and then yields the processor, so it does not keep a core busy.
+     *          and then sleeps until the owner releases the lock, so it uses no processor time.
      **/
     void acquire() noexcept;
 
@@ -857,6 +870,13 @@ public:
     void release() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
+// Constants
+//////////////////////////////////////////////////////////////////////////
+private:
+    static constexpr uint32_t   WRITER_FREE     { 0u }; //!< No thread owns the lock.
+    static constexpr uint32_t   WRITER_OWNED    { 1u }; //!< A thread owns the lock.
+
+//////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
@@ -864,8 +884,10 @@ private:
     #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
-    //!< True while a thread owns the lock.
-    std::atomic<bool>   mBusy;
+    //!< The lock state, WRITER_FREE or WRITER_OWNED. Sleeping waiters wait on this word.
+    std::atomic<uint32_t>   mBusy;
+    //!< The number of threads asleep on the lock, or about to sleep.
+    std::atomic<uint32_t>   mSleepers;
 #if defined(_MSC_VER)
     #pragma warning(pop)
 #endif  // _MSC_VER
@@ -956,7 +978,8 @@ inline bool areg::is_local_address(const areg::String& address) noexcept
 //////////////////////////////////////////////////////////////////////////
 
 constexpr areg::SocketWriter::SocketWriter() noexcept
-    : mBusy ( false )
+    : mBusy     ( SocketWriter::WRITER_FREE )
+    , mSleepers ( 0u )
 {
 }
 

@@ -105,7 +105,8 @@ bool Event::register_for_thread( UniqueNumber threadNum )
 
 bool Event::register_for_thread( DispatcherThread * dispatchThread )
 {
-    if ((dispatchThread != nullptr) && dispatchThread->is_valid())
+    // Reads the run state without taking the thread's lock.
+    if ((dispatchThread != nullptr) && dispatchThread->is_running())
     {
         set_target_dispatcher(dispatchThread->is_ready() ? dispatchThread : nullptr);
     }

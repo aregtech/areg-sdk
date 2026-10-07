@@ -193,8 +193,8 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Sets exit event in the queue. When all messages are dispatched, the dispatcher will
-     *          be stopped and exit loop.
+     * \brief   Requests the thread to exit at once. The queued events are not dispatched,
+     *          and the thread takes no new event from this call on.
      **/
     void trigger_exit();
 
@@ -202,6 +202,7 @@ public:
      * \brief   Requests the thread to exit after the queued events are dispatched.
      *          Unlike trigger_exit(), the pending events are delivered first. Use it
      *          to stop a thread whose queue still holds events that must not be lost.
+     *          The thread takes no new event from this call on: posting to it fails.
      **/
     void trigger_exit_drained();
 
@@ -230,14 +231,15 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Posts event and delivers to its target. Since the Dispatcher Thread is a Base object
-     *          for Worker and Component threads, it does nothing and only destroys event object
-     *          without processing. Override this method or use Worker / Component thread.
+     * \brief   Posts the event and delivers it to its target. Every dispatcher thread decides
+     *          whether it accepts posted events: it either filters them or forwards them to
+     *          EventDispatcher::post_event(). There is no default, so a thread that accepts no
+     *          posted events says so instead of inheriting a silent one.
      *
      * \param   eventElem       Event object to post
-     * \return  In this class it always returns true.
+     * \return  Returns true if the event was queued.
      **/
-    bool post_event( Event & eventElem ) override;
+    bool post_event( Event & eventElem ) override = 0;
 
 /************************************************************************/
 // DispatcherThread overrides

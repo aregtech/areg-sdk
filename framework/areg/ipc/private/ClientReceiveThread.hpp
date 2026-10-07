@@ -110,6 +110,19 @@ public:
 
 protected:
 /************************************************************************/
+// EventRouter interface overrides
+/************************************************************************/
+
+    /**
+     * \brief   Queues the event. The dispatching loop of this thread reads the socket and picks
+     *          the queued events between the reads, so the queue carries the exit request.
+     *
+     * \param   eventElem       Event object to post.
+     * \return  Returns true if the event was queued.
+     **/
+    bool post_event( Event & eventElem ) final;
+
+/************************************************************************/
 // DispatcherThread overrides
 /************************************************************************/
 

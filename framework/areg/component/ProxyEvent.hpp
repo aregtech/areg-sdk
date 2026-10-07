@@ -125,7 +125,7 @@ public:
     /**
      * \brief   Returns the target proxy address.
      **/
-    inline const uint32_t target_proxy() const;
+    inline uint32_t target_proxy() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -339,7 +339,7 @@ inline ProxyEvent::ProxyEvent(MessageEnvelope&& envelope) noexcept
 // ProxyEvent class inline functions implementations
 //////////////////////////////////////////////////////////////////////////
 
-inline const uint32_t ProxyEvent::target_proxy() const
+inline uint32_t ProxyEvent::target_proxy() const
 {
     ASSERT(is_valid());
     return consumer().number;

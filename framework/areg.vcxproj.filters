@@ -360,9 +360,6 @@
     <ClCompile Include="areg\ipc\private\ServerConnectionBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\posix\SpinLockPosix.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\appbase\private\AppDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -477,9 +474,6 @@
     <ClCompile Include="areg\base\private\macos\SocketMultiplexerMacOS.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\macos\SpinLockMacOS.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\base\private\macos\WaitableTimerMacOS.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -513,6 +507,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\private\DebugDefs.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\base\private\SocketLiveness.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\Containers.hpp">
@@ -687,6 +684,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\private\WriteConverter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\base\private\WaitWord.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\private\RuntimeBase.hpp">
@@ -927,9 +927,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\ipc\ServiceClientConnectionBase.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\base\private\posix\SpinLockPosix.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\WideString.hpp">

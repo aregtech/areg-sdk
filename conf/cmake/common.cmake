@@ -60,7 +60,27 @@ if ("${AREG_COMPILER_FAMILY}" STREQUAL "")
 
 elseif("${AREG_COMPILER_SHORT}" STREQUAL "")
 
-    message(FATAL_ERROR "Areg: >>> The file \'${AREG_CMAKE_CONFIG_DIR}/setup.cmake\' should be included before \'common.cmake\', fix it and retry again.")
+    # A toolchain file is read inside 'project()', after 'user.cmake' has run, so a family it
+    # sets arrives here with no short name yet. The compilers stay as 'project()' resolved them.
+    macro_setup_compilers_data_by_family("${AREG_COMPILER_FAMILY}" AREG_COMPILER_SHORT _family_cxx _family_c _family_target _compiler_found)
+    if (_compiler_found)
+        set(AREG_CXX_COMPILER "${CMAKE_CXX_COMPILER}")
+        set(AREG_C_COMPILER   "${CMAKE_C_COMPILER}")
+        if ("${AREG_TARGET}" STREQUAL "")
+            set(AREG_TARGET "${_family_target}")
+        endif()
+        message(STATUS "Areg: >>> Compiler family '${AREG_COMPILER_FAMILY}' set outside 'user.cmake', resolved here:")
+        message(STATUS "Areg: ... CXX compiler = '${AREG_CXX_COMPILER}'")
+        message(STATUS "Areg: ... CC  compiler = '${AREG_C_COMPILER}'")
+        message(STATUS "Areg: ... Compiler Target = '${AREG_TARGET}'")
+    else()
+        message(WARNING "Areg: >>> Unknown compiler family '${AREG_COMPILER_FAMILY}'; results may be unpredictable")
+    endif()
+
+    unset(_family_cxx)
+    unset(_family_c)
+    unset(_family_target)
+    unset(_compiler_found)
 
 endif()
 
@@ -139,6 +159,16 @@ set(AREG_OPT_DISABLE_WARN_EXAMPLES)
 set(AREG_OPT_DISABLE_WARN_CODEGEN)
 # Disable warnings only for thirdparty projects
 set(AREG_OPT_DISABLE_WARN_THIRDPARTY)
+
+# Debug is the only unoptimized configuration. MinSizeRel and RelWithDebInfo take the same
+# sections, visibility and link time settings as Release.
+set(AREG_BUILD_OPTIMIZED TRUE)
+if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+    set(AREG_BUILD_OPTIMIZED FALSE)
+endif()
+
+# The optimization option Areg adds, empty when the caller already set one.
+macro_optimization_option("${CMAKE_BUILD_TYPE}" AREG_OPTIMIZATION)
 
 # Checking Compiler for adding corresponded tweaks and flags
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")

@@ -560,7 +560,7 @@ inline SocketAccepted ServerConnectionBase::client_by_handle(SOCKETHANDLE client
 inline SocketAccepted ServerConnectionBase::client_by_handle_nolock(SOCKETHANDLE clientSocket) const
 {
     MapSocketToObject::MAPPOS pos = mAcceptedConnections.find(clientSocket);
-    return (mAcceptedConnections.is_valid_position(pos) ? mAcceptedConnections.value_at(clientSocket) : SocketAccepted());
+    return (mAcceptedConnections.is_valid_position(pos) ? mAcceptedConnections.value_at(pos) : SocketAccepted());
 }
 
 inline bool ServerConnectionBase::handle_exist(SOCKETHANDLE clientSocket) const noexcept

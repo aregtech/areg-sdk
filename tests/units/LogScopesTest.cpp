@@ -33,8 +33,11 @@ namespace {
     //!< The default config file
     constexpr   std::string_view    DEFAULT_CONFIG_FILE { areg::DEFAULT_CONFIG_FILE };
 
-    //!< Config file for testing
-    constexpr   std::string_view    TEST_CONFIG_FILE    { "./logs/test_log.init" };
+    //!< Returns the config file path owned by the running test.
+    areg::String test_config_file()
+    {
+        return areg::String("./logs/") + ::testing::UnitTest::GetInstance()->current_test_info()->name() + ".init";
+    }
 
     class TestConfigListener final : public areg::ConfigListener
     {
@@ -116,8 +119,9 @@ TEST( LogScopeTest, load_and_save_configuration )
     do
     {
         LOG_SCOPE( areg_unit_tests_LogScopeTest, load_and_save_configuration);
-        ASSERT_TRUE( areg::save_logging( TEST_CONFIG_FILE.data( ) ) );
-        LOG_DBG( "Successfully saved configuration in the file [ %s ]", TEST_CONFIG_FILE.data( ) );
+        const areg::String testConfig{ test_config_file( ) };
+        ASSERT_TRUE( areg::save_logging( testConfig ) );
+        LOG_DBG( "Successfully saved configuration in the file [ %s ]", testConfig.as_string( ) );
 
     } while ( false );
 
@@ -137,7 +141,7 @@ TEST( LogScopeTest, load_saved_log_configuration_part1 )
     LOG_TEST_SETUP(false);
 
     areg::String defaultConfig{ DEFAULT_CONFIG_FILE };
-    areg::String testConfig{ TEST_CONFIG_FILE };
+    areg::String testConfig{ test_config_file( ) };
     bool isLogEnabled{ false };
 
     do
@@ -201,7 +205,7 @@ TEST( LogScopeTest, change_scope_prio_and_save_config )
     LOG_TEST_SETUP(false);
 
     areg::String defaultConfig{ DEFAULT_CONFIG_FILE };
-    areg::String testConfig{ TEST_CONFIG_FILE };
+    areg::String testConfig{ test_config_file( ) };
 
     LOGGING_START( defaultConfig );
     do
@@ -319,7 +323,7 @@ TEST( LogScopeTest, scope_priority_groupping )
     LOG_TEST_SETUP(false);
 
     areg::String defaultConfig{ DEFAULT_CONFIG_FILE };
-    areg::String testConfig{ TEST_CONFIG_FILE };
+    areg::String testConfig{ test_config_file( ) };
 
     uint32_t information{ 0 };
     uint32_t errLeaf1{ 0 };

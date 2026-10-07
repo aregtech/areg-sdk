@@ -1,0 +1,15 @@
+# Configuration of this application. The framework reads it from the config/
+# subdirectory of the executable's own folder. See docs/agent/36-config.md.
+config::*::version          = 2.0.0
+
+log::*::version             = 2.0.0
+log::*::enable              = true
+log::*::target              = debug | file
+log::*::enable::debug       = true
+log::*::enable::file        = true
+log::*::file::location      = ./logs/%appname%.log
+log::*::enable::remote      = false
+
+# Everything off, then one group on: the scanner's own scopes.
+log::*::scope::*            = NOTSET ;
+log::*::scope::scan_*       = DEBUG | SCOPE ;

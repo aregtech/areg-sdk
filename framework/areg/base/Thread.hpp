@@ -115,7 +115,7 @@ public:
      *          The states of the thread routine with respect to the thread object. The object
      *          may be released only in the 'NotRunning' state.
      **/
-    enum class RunState : uint8_t
+    enum class RunState : uint32_t
     {
           NotRunning    = 0   //!< No routine runs on the object, it may be released.
         , Starting      = 1   //!< The OS thread is requested, the routine did not enter yet.
@@ -197,7 +197,10 @@ public:
      *                              running. Set DO_NOT_WAIT for immediate return without guarantee
      *                              of thread running. Set WAIT_INFINITE to ensure thread is
      *                              running. Set other values in milliseconds for specific timeout.
-     * \return  Returns true if new thread is successfully created and started.
+     * \return  Returns true if new thread is successfully created and started. Returns false
+     *          without changing anything while a thread still runs on the object or a
+     *          shutdown() of it is in progress. A shutdown() called concurrently may end the new
+     *          thread before it runs; then this returns true and is_running() returns false.
      **/
     virtual bool start( uint32_t waitForStartMs = areg::DO_NOT_WAIT );
 
@@ -505,12 +508,12 @@ public:
 /************************************************************************/
 // Thread debugging function
 /************************************************************************/
-#ifdef _DEBUG
+#ifdef DEBUG
     /**
      * \brief   Dumps all created threads information to the output window. Valid only in debug builds.
      **/
     static void dump_threads();
-#endif // _DEBUG
+#endif // DEBUG
 
 //////////////////////////////////////////////////////////////////////////
 // Protected override operations
@@ -579,8 +582,8 @@ protected:
     #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
-    //!< The state of the thread routine, see Thread::RunState.
-    std::atomic<RunState>   mRunState;
+    //!< The state of the thread routine, a Thread::RunState value; waiters sleep on this word.
+    std::atomic<uint32_t>   mRunState;
 #if defined(_MSC_VER)
     #pragma warning(pop)
 #endif  // _MSC_VER
@@ -615,6 +618,8 @@ protected:
 #if defined(_MSC_VER)
     #pragma warning(pop)
 #endif  // _MSC_VER
+    //!< The number of shutdown() calls that own the running thread, guarded by mSyncObject.
+    uint8_t                 mStopCount;
 
 //////////////////////////////////////////////////////////////////////////
 // Private / Hidden types, variables and methods
@@ -638,7 +643,7 @@ private:
     void _clean_resources( bool unregister, bool releaseHandle );
 
     /**
-     * \brief   Spins and yields while the thread routine is in the 'Exiting' state, that is
+     * \brief   Spins, then sleeps on the state, while the thread routine is in the 'Exiting' state, that is
      *          until its last access to this object. Returns at once in every other state.
      **/
     void _wait_exit_completed() const noexcept;
@@ -676,6 +681,18 @@ private:
      * \param   state       The state to set.
      **/
     inline void _set_run_state(Thread::RunState state) noexcept;
+
+    /**
+     * \brief   Returns the state of the thread routine.
+     **/
+    [[nodiscard]]
+    inline Thread::RunState _run_state() const noexcept;
+
+    /**
+     * \brief   Sets the 'NotRunning' state and wakes every thread waiting for the routine to
+     *          leave. Touches nothing of the object after the state is set.
+     **/
+    void _set_not_running() noexcept;
 
     /**
      * \brief   Checks whether the thread is valid without acquiring synchronization locks.
@@ -871,7 +888,7 @@ inline bool Thread::_is_valid_no_lock() const noexcept
 
 inline bool Thread::is_running() const noexcept
 {
-    return (mRunState.load(std::memory_order_acquire) == Thread::RunState::Running);
+    return (_run_state() == Thread::RunState::Running);
 }
 
 inline bool Thread::is_valid() const noexcept
@@ -935,7 +952,12 @@ inline void Thread::_set_running( bool is_running ) noexcept
 
 inline void Thread::_set_run_state( Thread::RunState state ) noexcept
 {
-    mRunState.store(state, std::memory_order_release);
+    mRunState.store(static_cast<uint32_t>(state), std::memory_order_release);
+}
+
+inline Thread::RunState Thread::_run_state() const noexcept
+{
+    return static_cast<Thread::RunState>(mRunState.load(std::memory_order_acquire));
 }
 
 inline Thread * Thread::current_thread() noexcept

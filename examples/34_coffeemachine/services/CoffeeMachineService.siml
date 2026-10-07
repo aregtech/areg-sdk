@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="CoffeeMachineService" Version="1.0.0" Category="Public">
+        <Description>Contract between the coffee machine and the simulated user.</Description>
+    </Overview>
+    <DataTypeList>
+        <DataType ID="2" Name="DrinkType" Type="Enumeration" Values="default">
+            <Description>The drinks the machine can make.</Description>
+            <FieldList>
+                <EnumEntry ID="3" Name="Espresso">
+                    <Value>0</Value>
+                    <Description>120 cents.</Description>
+                </EnumEntry>
+                <EnumEntry ID="4" Name="Cappuccino">
+                    <Value>1</Value>
+                    <Description>180 cents.</Description>
+                </EnumEntry>
+                <EnumEntry ID="5" Name="Latte">
+                    <Value>2</Value>
+                    <Description>200 cents.</Description>
+                </EnumEntry>
+            </FieldList>
+        </DataType>
+        <DataType ID="6" Name="MachineStage" Type="Enumeration" Values="default">
+            <Description>What the machine is doing right now.</Description>
+            <FieldList>
+                <EnumEntry ID="7" Name="Idle">
+                    <Value>0</Value>
+                    <Description>Not making anything.</Description>
+                </EnumEntry>
+                <EnumEntry ID="8" Name="Grinding">
+                    <Value>1</Value>
+                    <Description>Grinding the beans.</Description>
+                </EnumEntry>
+                <EnumEntry ID="9" Name="Heating">
+                    <Value>2</Value>
+                    <Description>Heating the water.</Description>
+                </EnumEntry>
+                <EnumEntry ID="10" Name="Brewing">
+                    <Value>3</Value>
+                    <Description>Brewing.</Description>
+                </EnumEntry>
+                <EnumEntry ID="11" Name="Frothing">
+                    <Value>4</Value>
+                    <Description>Frothing the milk.</Description>
+                </EnumEntry>
+                <EnumEntry ID="12" Name="Dispensing">
+                    <Value>5</Value>
+                    <Description>Dispensing the drink.</Description>
+                </EnumEntry>
+            </FieldList>
+        </DataType>
+        <DataType ID="13" Name="IngredientType" Type="Enumeration" Values="default">
+            <Description>A tank the machine keeps.</Description>
+            <FieldList>
+                <EnumEntry ID="14" Name="Water">
+                    <Value>0</Value>
+                </EnumEntry>
+                <EnumEntry ID="15" Name="Beans">
+                    <Value>1</Value>
+                </EnumEntry>
+                <EnumEntry ID="16" Name="Milk">
+                    <Value>2</Value>
+                </EnumEntry>
+            </FieldList>
+        </DataType>
+        <DataType ID="17" Name="WarningLevel" Type="Enumeration" Values="default">
+            <Description>How far a tank has fallen.</Description>
+            <FieldList>
+                <EnumEntry ID="18" Name="Low">
+                    <Value>0</Value>
+                    <Description>Below 20% of capacity.</Description>
+                </EnumEntry>
+                <EnumEntry ID="19" Name="Empty">
+                    <Value>1</Value>
+                    <Description>At zero.</Description>
+                </EnumEntry>
+            </FieldList>
+        </DataType>
+    </DataTypeList>
+    <AttributeList>
+        <Attribute ID="20" Name="Credit" DataType="uint32" Notify="OnChange">
+            <Description>Cents of credit held by the machine.</Description>
+        </Attribute>
+        <Attribute ID="21" Name="Stage" DataType="MachineStage" Notify="OnChange">
+            <Description>The stage the machine is in.</Description>
+        </Attribute>
+        <Attribute ID="22" Name="Paused" DataType="bool" Notify="OnChange">
+            <Description>True while a drink in progress is paused.</Description>
+        </Attribute>
+    </AttributeList>
+    <MethodList>
+        <Method ID="23" Name="insert_coin" MethodType="Request">
+            <Description>Add a coin to the credit.</Description>
+            <ParamList>
+                <Parameter ID="24" Name="value" DataType="uint32">
+                    <Description>The coin, in cents.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="25" Name="order_drink" MethodType="Request" Response="order_drink">
+            <Description>Ask the machine to make a drink.</Description>
+            <ParamList>
+                <Parameter ID="26" Name="drink" DataType="DrinkType">
+                    <Description>The drink wanted.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="27" Name="pause_drink" MethodType="Request">
+            <Description>Pause the drink being made, if any.</Description>
+        </Method>
+        <Method ID="28" Name="resume_drink" MethodType="Request">
+            <Description>Resume a paused drink, if any.</Description>
+        </Method>
+        <Method ID="29" Name="cancel_drink" MethodType="Request">
+            <Description>Cancel the pending or in-progress order and return the credit.</Description>
+        </Method>
+        <Method ID="30" Name="refill_tank" MethodType="Request" Response="refill_tank">
+            <Description>Refill a tank to full.</Description>
+            <ParamList>
+                <Parameter ID="31" Name="tank" DataType="IngredientType">
+                    <Description>Which tank to refill.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="32" Name="order_drink" MethodType="Response">
+            <Description>The answer to order_drink.</Description>
+            <ParamList>
+                <Parameter ID="33" Name="accepted" DataType="bool">
+                    <Description>True when the machine started making it.</Description>
+                </Parameter>
+                <Parameter ID="34" Name="reason" DataType="String">
+                    <Description>Why it was refused; empty when accepted.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="35" Name="refill_tank" MethodType="Response">
+            <Description>The answer to refill_tank.</Description>
+            <ParamList>
+                <Parameter ID="36" Name="success" DataType="bool">
+                    <Description>Always true.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="37" Name="ingredient_warning" MethodType="Broadcast">
+            <Description>Sent once when a tank crosses a level, low or empty.</Description>
+            <ParamList>
+                <Parameter ID="38" Name="tank" DataType="IngredientType">
+                    <Description>Which tank.</Description>
+                </Parameter>
+                <Parameter ID="39" Name="level" DataType="WarningLevel">
+                    <Description>Low or Empty.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+    </MethodList>
+</ServiceInterface>

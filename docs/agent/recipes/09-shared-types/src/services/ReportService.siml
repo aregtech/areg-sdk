@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="ReportService" Version="1.0.0" Category="Private">
+        <Description>Reports a reading that has been checked.</Description>
+    </Overview>
+    <AttributeList>
+        <Attribute ID="2" Name="History" DataType="SharedTypes::ReadingList" Notify="OnChange">
+            <Description>Every reading accepted so far, oldest first. An attribute, not a broadcast: a subscriber is sent the current value when it subscribes, where a broadcast is only heard by whoever is already listening.</Description>
+        </Attribute>
+    </AttributeList>
+    <IncludeList>
+        <Location ID="4" Name="src/services/SharedTypes.dtml">
+            <Description>The structure this service shares with MeterService.</Description>
+        </Location>
+    </IncludeList>
+</ServiceInterface>

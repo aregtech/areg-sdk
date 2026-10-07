@@ -66,6 +66,9 @@ END_MODEL(_modelName)
 
 int main()
 {
+    // Unbuffered: what the run printed before a crash still reaches the log.
+    setvbuf(stdout, nullptr, _IONBF, 0);
+
     areg::Application::setup(false, true, false, true, false, nullptr);
     areg::Application::load_model(_modelName);
 

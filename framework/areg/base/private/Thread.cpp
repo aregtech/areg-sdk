@@ -17,6 +17,7 @@
 #include "areg/base/Thread.hpp"
 #include "areg/base/ThreadConsumer.hpp"
 #include "areg/base/ThreadLocalStorage.hpp"
+#include "areg/base/private/WaitWord.hpp"
 
 #include <algorithm>
 
@@ -100,7 +101,7 @@ unsigned long Thread::_default_thread_function(void* data)
         Thread::_set_self_thread(nullptr);
         Thread::_thread_local_storage(nullptr);
         threadObj->mWaitForExit.set_signaled();
-        threadObj->_set_run_state(Thread::RunState::NotRunning);
+        threadObj->_set_not_running();
     }
 
     return static_cast<unsigned long>(result);
@@ -177,7 +178,7 @@ Thread::Thread(ThreadConsumer &threadConsumer, const String & threadName, uint32
     , mThreadId         (Thread::INVALID_THREAD_ID)
     , mThreadAddress    (threadName.is_empty() == false ? threadName : areg::generate_name(DEFAULT_THREAD_PREFIX.data()))
     , mThreadPriority   (Thread::ThreadPriority::Undefined)
-    , mRunState         ( Thread::RunState::NotRunning )
+    , mRunState         ( static_cast<uint32_t>(Thread::RunState::NotRunning) )
     , mStackSizeKB      ( stackSizeKb )
     , mSyncObject       ( )
     , mWaitForRun       (false, false)
@@ -185,6 +186,7 @@ Thread::Thread(ThreadConsumer &threadConsumer, const String & threadName, uint32
     , mExitRequest      (true, false)
     , mExitRequested    ( false )
     , mRegistered       ( false )
+    , mStopCount        ( 0u )
 {
     mWaitForExit.set_signaled();
 }
@@ -196,7 +198,7 @@ Thread::Thread( areg::NullTag, ThreadConsumer & threadConsumer, const String & t
     , mThreadId         ( Thread::INVALID_THREAD_ID )
     , mThreadAddress    ( threadName )
     , mThreadPriority   ( Thread::ThreadPriority::Undefined )
-    , mRunState         ( Thread::RunState::NotRunning )
+    , mRunState         ( static_cast<uint32_t>(Thread::RunState::NotRunning) )
     , mStackSizeKB      ( 0u )
     , mSyncObject       ( )
     , mWaitForRun       ( areg::NullTag{} )
@@ -204,6 +206,7 @@ Thread::Thread( areg::NullTag, ThreadConsumer & threadConsumer, const String & t
     , mExitRequest      ( areg::NullTag{} )
     , mExitRequested    ( false )
     , mRegistered       ( false )
+    , mStopCount        ( 0u )
 {
     // Null thread: not registered in thread maps, no OS handle, no sync events allocated.
 }
@@ -231,9 +234,14 @@ bool Thread::start(uint32_t waitForStartMs /* = areg::DO_NOT_WAIT */)
     do
     {
         Lock  lock(mSyncObject);
+        // A running routine or a shutdown() in progress owns the state of the object.
+        if ((mStopCount != 0u) || (_run_state() != Thread::RunState::NotRunning))
+        {
+            return false;
+        }
+
         // Reclaims the handle of a previous run that ended without a shutdown() call
-        if ((mThreadHandle != Thread::INVALID_THREAD_HANDLE) &&
-            (mRunState.load(std::memory_order_acquire) == Thread::RunState::NotRunning))
+        if (mThreadHandle != Thread::INVALID_THREAD_HANDLE)
         {
             _clean_resources(false, true);
         }
@@ -245,7 +253,7 @@ bool Thread::start(uint32_t waitForStartMs /* = areg::DO_NOT_WAIT */)
         result = _os_create();
         if (result == false)
         {
-            _set_run_state(Thread::RunState::NotRunning);
+            _set_not_running();
         }
     } while (false);
 
@@ -285,7 +293,8 @@ void Thread::sleep( uint32_t msTimeout )
 
 bool Thread::wait_exit( uint32_t msTimeout )
 {
-    Thread * current = Thread::current_thread();
+    // The routine's own object, also after shutdown() has unregistered it.
+    Thread * current = Thread::_self_thread();
     if ((current == nullptr) || (current->mExitRequest.is_valid() == false))
     {
         // Not an areg thread: there is no exit request to wait for, so this degrades to a sleep.
@@ -301,6 +310,12 @@ Thread::ThreadCompletion Thread::shutdown( uint32_t waitForStopMs /* = areg::WAI
     request_exit();
 
     Thread::ThreadCompletion result{ _os_destroy_thread( waitForStopMs ) };
+    if ( result == Thread::ThreadCompletion::Invalid )
+    {
+        // Nothing is owned, so nothing is released.
+        return result;
+    }
+
     if ( result == Thread::ThreadCompletion::Completed )
     {
         // The exit event is signaled while the routine still runs on this object.
@@ -308,6 +323,10 @@ Thread::ThreadCompletion Thread::shutdown( uint32_t waitForStopMs /* = areg::WAI
     }
 
     _clean_resources( true, true );
+
+    Lock lock(mSyncObject);
+    ASSERT(mStopCount != 0u);
+    -- mStopCount;
 
     return result;
 }
@@ -394,6 +413,12 @@ int32_t Thread::_thread_entry()
         tls.remove_item(STORAGE_THREAD_CONSUMER);
         tls.remove_item(STORAGE_STARTUP_PHASE);
     }
+    else
+    {
+        // Unregistered by a shutdown() before it ran: releases the start() waiter.
+        _set_run_state(Thread::RunState::Exiting);
+        mWaitForRun.set_signaled();
+    }
 
     _clean_resources( true, false );
     return static_cast<int32_t>(result);
@@ -423,18 +448,19 @@ void Thread::_clean_resources(bool unregister, bool releaseHandle)
 
     if (releaseHandle)
     {
-        const bool joinThread{ mRunState.load(std::memory_order_acquire) == Thread::RunState::NotRunning };
+        const bool joinThread{ _run_state() == Thread::RunState::NotRunning };
         Thread::_os_close_handle(handle, joinThread);
     }
 }
 
 void Thread::_wait_exit_completed() const noexcept
 {
-    constexpr uint32_t  SPIN_COUNT{ 64u };   //!< Pause spins before the first yield.
+    constexpr uint32_t  SPIN_COUNT{ 64u };      //!< Pause spins before the first sleep.
+    constexpr uint32_t  EXITING{ static_cast<uint32_t>(Thread::RunState::Exiting) };
 
-    // Only the 'Exiting' state is waited for.
+    // Only the 'Exiting' state is waited for; _set_not_running() wakes the sleeper.
     uint32_t spin{ 0u };
-    while (mRunState.load(std::memory_order_acquire) == Thread::RunState::Exiting)
+    while (mRunState.load(std::memory_order_acquire) == EXITING)
     {
         if (spin < SPIN_COUNT)
         {
@@ -443,10 +469,16 @@ void Thread::_wait_exit_completed() const noexcept
         }
         else
         {
-            // Hand the CPU to the routine that has to leave, no timed wait.
-            Thread::switch_thread();
+            areg::os::_os_wait_word(mRunState, EXITING);
         }
     }
+}
+
+void Thread::_set_not_running() noexcept
+{
+    const std::atomic<uint32_t> * word{ &mRunState };
+    mRunState.store(static_cast<uint32_t>(Thread::RunState::NotRunning), std::memory_order_release);
+    areg::os::_os_wake_word_all(word);
 }
 
 bool Thread::_register_thread()
@@ -512,7 +544,7 @@ Thread * Thread::next_thread( id_type & threadId ) noexcept
     return _map_thread_id().resource_next_key( threadId );
 }
 
-#ifdef  _DEBUG
+#ifdef  DEBUG
 /************************************************************************/
 // Thread debugging function
 /************************************************************************/
@@ -535,6 +567,6 @@ void Thread::dump_threads()
     mapNames.unlock();
 }
 
-#endif // _DEBUG
+#endif // DEBUG
 
 } // namespace areg

@@ -143,8 +143,9 @@ public:
     /**
      * \brief   Stops the dispatcher after the queued events are dispatched. Use it
      *          when the pending events still have to be delivered, for example an
-     *          outgoing message queue on a graceful disconnect. stop_dispatcher()
-     *          remains the immediate stop and overrides this one.
+     *          outgoing message queue on a graceful disconnect. The queue takes no new
+     *          event from this call on. stop_dispatcher() remains the immediate stop
+     *          and overrides this one.
      **/
     void stop_dispatcher_drained() noexcept;
 
@@ -202,6 +203,24 @@ public:
      *          should be deleted.
      **/
     bool queue_event(Event& eventElem);
+
+    /**
+     * \brief   Queues an external event like queue_event(), but never waits for a free slot.
+     *          On MustWait the caller must call wait_queue_event() once, and may do so after
+     *          it stops keeping this dispatcher alive: its queue outlives that call.
+     *
+     * \param   eventElem   Event to queue. It is left untouched when it is not queued.
+     * \return  Queued, Refused, or MustWait when the queue is full and lossless.
+     **/
+    EventQueue::PushResult try_queue_event(Event& eventElem);
+
+    /**
+     * \brief   Completes a try_queue_event() that returned MustWait: waits for a free slot.
+     *
+     * \param   eventElem   Event to queue.
+     * \return  Returns true if the event was queued.
+     **/
+    inline bool wait_queue_event(Event& eventElem) noexcept;
 
     /**
      * \brief   Pushes a batch of events (by move) with a single priority-lane lock acquisition.
@@ -385,6 +404,11 @@ inline uint32_t EventDispatcherBase::queue_events(Event* listEvents, uint32_t co
     return mExternalEvents.push_events(listEvents, count);
 }
 
+inline bool EventDispatcherBase::wait_queue_event(Event& eventElem) noexcept
+{
+    return mExternalEvents.wait_push_event(eventElem);
+}
+
 inline uint32_t EventDispatcherBase::extract_max_producer_wait_ms() noexcept
 {
     return mExternalEvents.extract_max_wait_ms();
@@ -397,7 +421,7 @@ inline uint32_t EventDispatcherBase::pop_events(Event* listEvents, uint32_t coun
 
 inline void EventDispatcherBase::signal_exit_event() noexcept
 {
-    mExternalEvents.trigger_exit();
+    mExternalEvents.exit_queue(true);
 }
 
 inline bool EventDispatcherBase::is_ready() const noexcept

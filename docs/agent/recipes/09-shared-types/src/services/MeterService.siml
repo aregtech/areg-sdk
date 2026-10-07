@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="MeterService" Version="1.0.0" Category="Private">
+        <Description>Publishes the reading of a meter.</Description>
+    </Overview>
+    <AttributeList>
+        <Attribute ID="2" Name="Reading" DataType="SharedTypes::Reading" Notify="OnChange">
+            <Description>The last measurement the meter took.</Description>
+        </Attribute>
+    </AttributeList>
+    <IncludeList>
+        <Location ID="3" Name="src/services/SharedTypes.dtml">
+            <Description>The structure this service shares with ReportService.</Description>
+        </Location>
+    </IncludeList>
+</ServiceInterface>
