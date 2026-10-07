@@ -2805,6 +2805,7 @@ def run():
     check_step_driver(report)
     check_answer_queue(report)
     check_answer_until(report)
+    check_cause_trail(report)
     check_worker_entry_name(report)
     check_type_order(report)
     check_step_proof(report)
@@ -6054,6 +6055,43 @@ def check_answer_until(report):
         return
     report.ok('answer-until', 'a collecting step with "until" takes the kept answer that '
                               'matches and keeps the others for the later steps')
+
+
+def check_cause_trail(report):
+    """A failing driver prints what ended each step and the latest arrivals with what
+    became of each, and marks an attribute's first value after subscribing."""
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    holder = tempfile.mkdtemp()
+    here = os.getcwd()
+    steps = [{'name': 'open_gate', 'send': 'open', 'args': {'width': 600}, 'await': 'Width'},
+             {'name': 'later', 'await': 'Width'}]
+    try:
+        os.chdir(holder)
+        made = generate_application(tools, 'trail', steps)
+        if not os.path.isfile(made):
+            report.fail('cause-trail', made)
+            return
+        with open(made, encoding='utf-8') as handle:
+            source = handle.read()
+        with open(made[:-4] + '.hpp', encoding='utf-8') as handle:
+            source += handle.read()
+    finally:
+        os.chdir(here)
+        shutil.rmtree(holder, ignore_errors=True)
+    for needed, what in (('Arrival arrival(*this, "update Width", mFreshWidth);',
+                          'an awaited update does not open a trail entry marked by its '
+                          'freshness'),
+                         ('mFreshWidth = true;', 'subscribing does not mark the next value '
+                          'as the one from subscribing'),
+                         ('print_trail();', 'fail() does not print the trail'),
+                         ('how each step ended', 'the trail does not say what ended each step'),
+                         ('its value from subscribing', 'the trail does not name a value '
+                          'from subscribing')):
+        if needed not in source:
+            report.fail('cause-trail', what)
+            return
+    report.ok('cause-trail', 'a failing driver prints what ended each step and the latest '
+                             'arrivals, and names a value from subscribing')
 
 
 def check_answer_queue(report):

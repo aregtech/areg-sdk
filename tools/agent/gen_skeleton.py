@@ -2378,8 +2378,12 @@ def step_dispatch(steps, kind, name, indent, latch=None, role=None):
     if not waiting:
         return []
     pad = ' ' * indent
+    what = '{} {}{}'.format(kind, name, ' of ' + role if role else '')
+    fresh = fresh_flag(name) if kind == 'update' and not role else None
     lines = ['' if kind != 'response' else None,
              pad + '{} = false;'.format(latch['flag']) if latch and 'flag' in latch else None,
+             pad + 'Arrival arrival(*this, "{}"{});'.format(what, ', ' + fresh if fresh else ''),
+             pad + '{} = false;'.format(fresh) if fresh else None,
              pad + 'mHeld = false;', pad + 'mJumped = false;',
              pad + 'switch (mStep)', pad + '{']
     lines = [line for line in lines if line is not None]
@@ -2418,8 +2422,20 @@ def step_dispatch(steps, kind, name, indent, latch=None, role=None):
         lines.append(pad + '    {} = true;'.format(latch['flag']))
         lines += [pad + '    {} = {};'.format(member, param)
                   for member, _, param in latch['args']]
+        lines.append(pad + '    mark("held, unchecked, for a step that awaits it");')
     lines += [pad + '    break;', pad + '}']
     return lines
+
+
+def fresh_flag(name):
+    """The member that is true until the first value of this attribute after subscribing."""
+    return 'mFresh' + pascal(name)
+
+
+def fresh_attributes(steps):
+    """The attributes of the driven service a step awaits."""
+    return sorted(set(step['awaits'][1] for step in steps if step['awaits']
+                      and step['awaits'][0] == 'update' and not step.get('role')))
 
 
 def keep_answer(latch, kind, name, role=None):
@@ -2429,6 +2445,7 @@ def keep_answer(latch, kind, name, role=None):
             '{',
             '    {}[{}++] = {}{{ {} }};'.format(latch['member'], latch['count'],
                                              latch['type'], values),
+            '    mark("queued for a later step that collects it");',
             '}',
             'else',
             '{',
@@ -2482,6 +2499,33 @@ def driver_lines(steps, holds, cls, iface=None, latches=None):
              '        AREG_NOCOPY_NOMOVE(StepEnd);',
              '    private:',
              '        {} & mOwner;'.format(cls),
+             '    };',
+             '',
+             '    //! Records one arrival in the trail and, when its handler returns,',
+             '    //! what became of it.',
+             '    struct Arrival',
+             '    {',
+             '        Arrival({} & owner, const char * what, bool first = false)'.format(cls),
+             '            : mOwner(owner), mWhat(what), mAt(owner.mTrailCount++)',
+             '            , mBefore(owner.mStep), mFirst(first)',
+             '        {',
+             '            const uint32_t slot{ mAt % cTrailMost };',
+             '            mOwner.mTrailWhat[slot] = what;',
+             '            mOwner.mTrailStep[slot] = mOwner.step_slot();',
+             '            mOwner.mTrailDone[slot] = nullptr;',
+             '            mOwner.mTrailFirst[slot] = first;',
+             '            mOwner.mTrailLate[slot] = {};'.format(
+                 'mOwner.mReplaying' if latches else 'false'),
+             '        }',
+             '        ~Arrival(void) { mOwner.settle(mAt, mBefore, mWhat, mFirst); }',
+             '        Arrival(void) = delete;',
+             '        AREG_NOCOPY_NOMOVE(Arrival);',
+             '    private:',
+             '        {} & mOwner;'.format(cls),
+             '        const char * const mWhat;',
+             '        const uint32_t mAt;',
+             '        const Step mBefore;',
+             '        const bool mFirst;',
              '    };',
              '',
              '    //! Begins a step: sends its request or starts its wait. A step that',
@@ -2809,6 +2853,8 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
         for name, _ in iface.broadcasts:
             lines.append('                {}(true);'.format(
                 iface.spell('broadcast', name, 'notify')))
+        lines += ['                {} = true;'.format(fresh_flag(name))
+                  for name in fresh_attributes(steps)]
     # A generated application that waits forever is not one that runs as written.
     # The first request that carries a response completes a round trip, and the
     # response handler below quits, so the program starts and ends on its own.
@@ -3019,7 +3065,13 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
                   '    //! scenario is on.',
                   '    const char * step_slot()',
                   '    {',
-                  '        switch (mStep)',
+                  '        return step_slot(mStep);',
+                  '    }',
+                  '',
+                  '    //! The worksheet section holding the check of one step.',
+                  '    const char * step_slot(Step step)',
+                  '    {',
+                  '        switch (step)',
                   '        {']
         lines += ['        case Step::{}:  return "step_{}";'.format(step['enum'],
                                                                     step['name'])
@@ -3044,47 +3096,122 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
                   '    //! step waits for and the latest messages an earlier step discarded.',
                   '    void stalled()',
                   '    {',
-                  '        fail("the scenario stopped making progress");',
+                  '        std::cerr << "FAIL [" << step_slot() << "]: the scenario stopped making progress"',
+                  '                  << std::endl;',
                   '        std::cerr << "  " << step_slot() << " " << step_detail()',
                   '                  << (mRan ? ". Its check ran and kept the step."',
-                  '                           : ". Nothing arrived.") << std::endl;',
-                  '        const uint32_t shown = mDroppedCount < cDroppedMost ? mDroppedCount : cDroppedMost;',
-                  '        if (mDroppedCount > shown)',
+                  '                           : ". Nothing arrived for it.") << std::endl;',
+                  '        fail(nullptr);',
+                  '    }',
+                  '',
+                  '    //! Marks the arrival being handled as one no step checks.',
+                  '    //! dropped() names what arrived, for the trail.',
+                  '    void dropped([[maybe_unused]] const char * what)',
+                  '    {',
+                  '        mark("no step checks it, dropped");',
+                  '    }',
+                  '',
+                  '    //! Sets what became of the arrival being handled.',
+                  '    void mark(const char * done)',
+                  '    {',
+                  '        if (mTrailCount != 0)',
                   '        {',
-                  '            std::cerr << "  dropped: " << (mDroppedCount - shown)',
-                  '                      << " earlier, not listed." << std::endl;',
+                  '            mTrailDone[(mTrailCount - 1) % cTrailMost] = done;',
                   '        }',
-                  '        for (uint32_t index = mDroppedCount - shown; index < mDroppedCount; ++ index)',
+                  '    }',
+                  '',
+                  '    //! Completes the trail entry of one arrival once its handler returned,',
+                  '    //! and records it as what ended the step it arrived on.',
+                  '    void settle(uint32_t at, Step before, const char * what, bool first)',
+                  '    {',
+                  '        if (mStep != before)',
                   '        {',
-                  '            std::cerr << "  dropped: " << mDroppedWhat[index % cDroppedMost]',
-                  '                      << " arrived on " << mDroppedStep[index % cDroppedMost]',
-                  '                      << ", which has no check for it."',
+                  '            mEndedBy[static_cast<uint32_t>(before)] = what;',
+                  '            mEndedFirst[static_cast<uint32_t>(before)] = first;',
+                  '        }',
+                  '',
+                  '        const uint32_t slot{ at % cTrailMost };',
+                  '        if ((at + cTrailMost < mTrailCount) || (mTrailDone[slot] != nullptr))',
+                  '        {',
+                  '            return;',
+                  '        }',
+                  '',
+                  '        mTrailDone[slot] = is_quitting() ? "its check took it and failed"',
+                  '                         : mStep != before ? "its check took it and ended the step"',
+                  '                         : "its check took it and kept the step waiting";',
+                  '    }',
+                  '',
+                  '    //! Prints what ended each step so far, then the latest arrivals and',
+                  '    //! what became of each.',
+                  '    void print_trail()',
+                  '    {',
+                  '        const uint32_t current{ static_cast<uint32_t>(mStep) };',
+                  '        if (current > static_cast<uint32_t>(Step::Start) + 1)',
+                  '        {',
+                  '            std::cerr << "  how each step ended:" << std::endl;',
+                  '        }',
+                  '',
+                  '        for (uint32_t index = static_cast<uint32_t>(Step::Start) + 1; index < current; ++ index)',
+                  '        {',
+                  '            std::cerr << "    " << step_slot(static_cast<Step>(index)) << ": ";',
+                  '            if (mEndedBy[index] != nullptr)',
+                  '            {',
+                  '                std::cerr << "ended by " << mEndedBy[index]',
+                  '                          << (mEndedFirst[index] ? " (its value from subscribing)" : "");',
+                  '            }',
+                  '            else',
+                  '            {',
+                  '                std::cerr << "ended by its wait, or ran no check";',
+                  '            }',
+                  '',
+                  '            std::cerr << std::endl;',
+                  '        }',
+                  '',
+                  '        const uint32_t shown{ mTrailCount < cTrailMost ? mTrailCount : cTrailMost };',
+                  '        if (shown == 0)',
+                  '        {',
+                  '            return;',
+                  '        }',
+                  '',
+                  '        std::cerr << "  the last " << shown << " arrivals, oldest first:" << std::endl;',
+                  '        for (uint32_t index = mTrailCount - shown; index < mTrailCount; ++ index)',
+                  '        {',
+                  '            const uint32_t slot{ index % cTrailMost };',
+                  '            std::cerr << "    " << mTrailWhat[slot]',
+                  '                      << (mTrailFirst[slot] ? " (its value from subscribing)" : "")',
+                  '                      << (mTrailLate[slot] ? " (kept earlier, replayed)" : "")',
+                  '                      << " on " << mTrailStep[slot] << ": "',
+                  '                      << (mTrailDone[slot] != nullptr ? mTrailDone[slot]',
+                  '                                                      : "its check was running")',
                   '                      << std::endl;',
                   '        }',
                   '    }',
                   '',
-                  '    //! Remembers a message that arrived on a step with no check',
-                  '    //! for it. The stall report names the latest ones.',
-                  '    void dropped(const char * what)',
-                  '    {',
-                  '        mDroppedWhat[mDroppedCount % cDroppedMost] = what;',
-                  '        mDroppedStep[mDroppedCount % cDroppedMost] = step_slot();',
-                  '        ++ mDroppedCount;',
-                  '    }',
-                  '',
-                  '    //! How many discarded messages the stall report names.',
-                  '    static constexpr uint32_t cDroppedMost{ 4 };',
-                  '    const char * mDroppedWhat[cDroppedMost]{};   //!< What each was.',
-                  '    const char * mDroppedStep[cDroppedMost]{};   //!< Where each was.',
-                  '    uint32_t     mDroppedCount{ 0 };   //!< How many there were.',
-                  '']
+                  '    //! How many of the latest arrivals the trail keeps.',
+                  '    static constexpr uint32_t cTrailMost{ 8 };',
+                  '    const char * mTrailWhat[cTrailMost]{};   //!< What each arrival was.',
+                  '    const char * mTrailStep[cTrailMost]{};   //!< The step each arrived on.',
+                  '    const char * mTrailDone[cTrailMost]{};   //!< What became of each.',
+                  '    bool         mTrailFirst[cTrailMost]{};  //!< True for a value from subscribing.',
+                  '    bool         mTrailLate[cTrailMost]{};   //!< True for a kept one replayed.',
+                  '    uint32_t     mTrailCount{ 0 };   //!< How many arrived so far.',
+                  '    const char * mEndedBy[static_cast<uint32_t>(Step::Done) + 1]{};   //!< What ended each step.',
+                  '    bool         mEndedFirst[static_cast<uint32_t>(Step::Done) + 1]{};   //!< True when that was a value from subscribing.']
+        lines += ['    bool         {}{{ false }};   //!< True until a value after subscribing.'
+                  .format(fresh_flag(name)) for name in fresh_attributes(steps)]
+        lines += ['']
     lines += ['    //! Ends the scenario as a failure, naming what went wrong and the',
               '    //! step the scenario was on.',
               '    void fail(const char * why)',
               '    {']
     if steps:
-        lines += ['        std::cerr << "FAIL [" << step_slot() << "]: " << why',
-                  '                  << std::endl;']
+        lines += ['        if (why != nullptr)',
+                  '        {',
+                  '            std::cerr << "FAIL [" << step_slot() << "]: " << why',
+                  '                      << std::endl;',
+                  '        }',
+                  '',
+                  '        print_trail();']
     else:
         lines.append('        std::cerr << "FAIL: " << why << std::endl;')
     lines += ['        mDeadline.stop_timer();']
