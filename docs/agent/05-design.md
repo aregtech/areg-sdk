@@ -2,7 +2,7 @@
 
 The step before any file is written. A wrong split here is not a bug to fix later: the
 documents, the components and the model are all derived from it, so it is rewritten
-rather than corrected. Spend a few minutes here and the rest follows.
+rather than corrected.
 
 Answer four questions, in this order. Each has a rule, not a preference.
 
@@ -28,30 +28,32 @@ attributes, providers answer and publish. There is no bidirectional service.
 
 ## 2. What goes in the contract?
 
-The commonest design error is putting everything in requests. Three shapes exist and
-they are not interchangeable.
+The commonest design error is putting everything in requests. A service reads like a
+C++ class shared between processes: attributes are its data members, requests its
+methods, broadcasts its signals. The three are not interchangeable.
 
 | Use | When | Costs |
 |---|---|---|
-| **Attribute** | one value a consumer must know the current state of | kept by the provider. A subscriber is sent it the moment it subscribes, and again on every `set_` (`Notify="Always"`) or only when it changes (`OnChange`, the default) |
-| **Broadcast** | several values that mean something only together, at the moment it happened | fire and forget. Heard by whoever is subscribed at that instant; nothing is kept |
-| **Request / Response** | a caller wants an answer to its own call | one round trip; the response goes only to the caller |
+| **Attribute** | a data member: one value a consumer must know the current state of, as many as the state has | kept by the provider. A subscriber holds a copy it reads at any time, sent the moment it subscribes and again on every `set_` (`Notify="Always"`) or only when it changes (`OnChange`, the default) |
+| **Broadcast** | a signal: several values that mean something only together, at the moment it happened | fire and forget. Heard by whoever is subscribed at that instant; nothing is kept |
+| **Request / Response** | a method call: the caller wants an answer to its own call | the response goes only to the caller, at once or when the work is done (`unblock_current_request()` frees the provider meanwhile) |
 
 Rules that follow from the table:
 
-- **Subscribing is not what separates them.** Neither reaches a consumer until it
-  subscribes, and either can be unsubscribed again at any point while it runs.
-- **What separates them is whether the value outlives the moment it was sent.** An
-  attribute does: a consumer that subscribes later is still sent the current value,
-  carrying a `areg::DataState` that says whether it is valid yet, so it always
-  receives something. A broadcast does not: one sent before a consumer subscribed is
-  gone, and that consumer waits for the next.
+- **What separates them is whether the value outlives the moment it was sent**, not
+  subscribing: neither reaches a consumer before it subscribes. A later subscriber of
+  an attribute is still sent the current value, with an `areg::DataState` saying
+  whether it is valid yet; a broadcast sent before it subscribed is gone.
 - **A broadcast carries as many parameters as the event needs; an attribute is one
   value.** Where several values are reported together **and** a late subscriber must
   still learn the latest, publish that one as an attribute beside the broadcast:
   `recipes/03-attributes-and-broadcast/` is that pair.
-- **Only an attribute has a validity state.** Broadcast parameters are always
-  meaningful, because they exist only in the message that carried them.
+- **An attribute says what something is, not that something happened.** A value that
+  leaves and returns (idle, busy, idle) looks unchanged; the first one a subscriber
+  gets is from before anything it asks next. That a job finished is a broadcast or a
+  response.
+- One provider's messages reach a consumer in the order it sent them; two providers'
+  in no order.
 - A consumer that polls with a request wants an **attribute**. Attributes exist so
   round trips do not.
 - A response goes to one caller. Telling everyone is a **broadcast**.
@@ -92,8 +94,7 @@ It fixes the `Category` in every document it touches:
 | `Public` | between processes on one machine | **yes** |
 | `Internet` | between machines | yes |
 
-A `Private` service consumed from another process never connects, and nothing
-reports it. Set `Category` from the process split, and set the process split first.
+A `Private` service consumed from another process never connects, unreported. Set `Category` from the process split, and set the process split first.
 
 ## Is a state machine needed?
 
@@ -135,12 +136,7 @@ writes log lines.
 - **`Alarm`**, provided by the monitor, consumed by whoever reacts. A raised alarm
   reports the client, the level and the reason together, at the moment it happened:
   a **broadcast**, with the level also an attribute for whoever connects later.
-- **The logger is not a service.** Logging is a framework facility, not a contract
-  between parties: `34-logging.md`. Making it a service adds a hop to every line and
-  buys nothing.
-
-Five components, four services? No -- **two** services, five components. The count of
-services follows the contracts, never the parts.
+- **The logger is not a service**, but a framework facility: `34-logging.md`.
 
 Processes: one, unless the clients must survive the monitor restarting. If they must,
 both documents become `Category="Public"` and `mtrouter` has to run.

@@ -2808,6 +2808,7 @@ def run():
     check_worker_entry_name(report)
     check_type_order(report)
     check_step_proof(report)
+    check_shape_facts(report)
     check_programs_gathered(report)
     check_late_arrival(report)
     check_self_transition(report)
@@ -6383,6 +6384,42 @@ def check_peer_loss_branch(report):
 
     report.ok('peer-loss', 'the generated consumer answers a provider that went away '
                            'where that arrives, with a marker and without quitting')
+
+
+# What a design learns of the three message shapes, where it is decided: (place, phrase).
+SHAPE_FACTS = (
+    ('template', 'attributes are its data members, requests its methods, broadcasts its signals'),
+    ('template', 'not that something happened'),
+    ('template', 'at once or when the work is done'),
+    ('steps', 'one step that only awaits the answer collects them all'),
+    ('steps', 'a broadcast sent at its end'),
+    ('steps', 'such as idle, ends the step at once'),
+    ('design', 'attributes are its data members, requests its methods, broadcasts its signals'),
+    ('design', 'says what something is, not that something happened'),
+)
+
+
+def check_shape_facts(report):
+    """The template and 05-design.md describe a service as a class, an attribute as a
+    state rather than an event, and the step shapes for finished work and many answers."""
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_docs
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('shape-facts', 'gen_docs.py does not import: {}'.format(failure))
+        return
+    flat = lambda lines: ' '.join(' '.join(lines).split())
+    where = {'template': flat(gen_docs.TEMPLATE[gen_docs.NOTE]),
+             'steps': flat(gen_docs.TEMPLATE['interfaces'][0]['steps'][0][gen_docs.NOTE]),
+             'design': ' '.join(read('docs', 'agent', '05-design.md').split())}
+    for place, phrase in SHAPE_FACTS:
+        if phrase not in where[place]:
+            report.fail('shape-facts', '{} does not say "{}"'.format(
+                {'template': 'the template note', 'steps': 'the template steps note',
+                 'design': '05-design.md'}[place], phrase))
+            return
+    report.ok('shape-facts', 'the template and 05-design.md give the class model of a '
+                             'service and the step shapes for finished work and many answers')
 
 
 def check_step_proof(report):
