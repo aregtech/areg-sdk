@@ -2649,10 +2649,12 @@ EXAMPLE_PROGRAMS = {
            "component a client member per used role: mStock below, called as",
            "mStock.request_reserve(...), every answer a worksheet section. A step with",
            "\"role\" sends to and awaits a used role: stock_left awaits the stock's Bolts,",
-           "which comes in no order against the desk's answer. \"thread\" puts components",
-           "of one program in one thread. deployments: named alternatives, each placing a",
-           "role or a named component in another program or program/thread; main() takes",
-           "--deployment <name>. Without programs, a design is one service."],
+           "which comes in no order against the desk's answer, until 98, the 100 it starts",
+           "with less the 2 ordered: the value from subscribing is the one from before the",
+           "order. \"thread\" puts components of one program in one thread. deployments:",
+           "named alternatives, each placing a role or a named component in another",
+           "program or program/thread; main() takes --deployment <name>. Without",
+           "programs, a design is one service."],
     "interfaces": [
         {"name": "StockService", "category": "Public", "description": "Items in stock.",
          "attributes": [{"name": "Bolts", "type": "uint32", "notify": "Always"}],
@@ -2662,7 +2664,8 @@ EXAMPLE_PROGRAMS = {
          "requests": [{"name": "place", "params": [{"name": "count", "type": "uint32"}],
                        "answer": [{"name": "accepted", "type": "bool"}]}],
          "steps": [{"name": "small", "send": "place", "args": {"count": 2}},
-                   {"name": "stock_left", "role": "stock", "await": "Bolts"},
+                   {"name": "stock_left", "role": "stock", "await": "Bolts",
+                    "until": {"Bolts": 98}},
                    {"name": "large", "send": "place", "args": {"count": 90}}]}
     ],
     "programs": [

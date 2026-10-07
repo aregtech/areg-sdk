@@ -2807,6 +2807,7 @@ def run():
     check_answer_until(report)
     check_worker_entry_name(report)
     check_type_order(report)
+    check_step_proof(report)
     check_programs_gathered(report)
     check_late_arrival(report)
     check_self_transition(report)
@@ -6382,6 +6383,31 @@ def check_peer_loss_branch(report):
 
     report.ok('peer-loss', 'the generated consumer answers a provider that went away '
                            'where that arrives, with a marker and without quitting')
+
+
+def check_step_proof(report):
+    """Every step marker says what a line it prints shows, and the programs example
+    holds its step on another provider's attribute until the value after the order."""
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_docs
+        import gen_skeleton
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('step-proof', 'the generators do not import: {}'.format(failure))
+        return
+    if 'proves only the values it compared' not in getattr(gen_skeleton, 'STEP_PROOF', ''):
+        report.fail('step-proof', 'a step marker no longer says that a line it prints proves '
+                                  'only the values its check compared')
+        return
+    held = [step for step in gen_docs.EXAMPLE_PROGRAMS['interfaces'][1]['steps']
+            if step.get('role') and step.get('await')]
+    if not held or not all(step.get('until') for step in held):
+        report.fail('step-proof', 'the programs example awaits another provider\'s attribute '
+                                  'with no "until", so its value from subscribing, from before '
+                                  'the order, can end the step')
+        return
+    report.ok('step-proof', 'step markers say what a printed line proves, and the programs '
+                            'example holds its attribute step until the value after the order')
 
 
 def check_type_order(report):

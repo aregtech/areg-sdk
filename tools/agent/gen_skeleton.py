@@ -2243,6 +2243,9 @@ ROLE_ORDER = '; it comes from {}, in no order against what the driven service se
 # Appended to the check of a step that sends and awaits an update.
 SENT_UPDATE = "; one sent before this step's request may arrive first: stay() on it"
 
+# Appended to the check of every step: what a printed line of it shows.
+STEP_PROOF = '; a line it prints proves only the values it compared'
+
 # Appended to the check of a step with "until": the generated test above it holds the step.
 UNTIL_HELD = '; it runs only on the arrival its "until" names, the earlier ones already stay()'
 
@@ -2399,7 +2402,7 @@ def step_dispatch(steps, kind, name, indent, latch=None, role=None):
         lines += [marker('step_' + step['name'], STEP_CHECK[kind] + (
                       UNTIL_HELD if step.get('until') else
                       SENT_UPDATE if kind == 'update' and step.get('send') else '') + (
-                      ROLE_ORDER.format(role) if role else ''), indent + 8),
+                      ROLE_ORDER.format(role) if role else '') + STEP_PROOF, indent + 8),
                   pad + '    }',
                   pad + '    break;']
     # A message arriving on a step with no case for it is not an error: most steps
