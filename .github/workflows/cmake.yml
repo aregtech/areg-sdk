@@ -172,9 +172,17 @@ jobs:
               test  : OFF
             }
 
-          # Skipped linux-clang-shared-x86 due to upstream bug:
-          # FixedArray operator[] ambiguity (uint32_t vs int32_t) on 32-bit Clang
-          # See: framework/areg/base/private/posix/SyncLockAndWaitPosix.cpp:771
+          - { name  : linux-clang-shared-x86,
+              os    : ubuntu-latest,
+              arch  : x86,
+              lib   : shared,
+              family: llvm,
+              cxx   : clang++,
+              cc    : clang,
+              extend: OFF,
+              logs  : ON,
+              test  : OFF
+            }
 
           - { name  : linux-gnu-shared-arm,
               os    : ubuntu-latest,
