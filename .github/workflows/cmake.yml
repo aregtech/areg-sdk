@@ -358,6 +358,13 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Cache apt packages for faster setup
+        if: runner.os == 'Linux'
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: clang gcc-multilib g++-multilib gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+          version: 1.0
+
       - name: Setup Java JDK to run code generator
         uses: actions/setup-java@v5
         with:
@@ -370,6 +377,16 @@ jobs:
         run: |
           echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}"     >> "${GITHUB_ENV}"
           echo "INSTALL_DEST=./product/install/${{matrix.config.family}}-${{matrix.config.cxx}}" >> "${GITHUB_ENV}"
+
+      - name: Install Ninja build system for faster builds
+        if: runner.os == 'Linux' || runner.os == 'macOS'
+        shell: bash
+        run: |
+          if [ "${{runner.os}}" = "Linux" ]; then
+            sudo apt-get update && sudo apt-get install -y ninja-build
+          else
+            brew install ninja
+          fi
 
       - name: Ensure Xcode CLI Tools
         if: runner.os == 'macOS'
@@ -395,11 +412,25 @@ jobs:
           install-dir: 'C:\cygwin'
           add-to-path: false
 
+      - name: Install Clang compiler for Linux
+        if: runner.os == 'Linux' && matrix.config.family == 'llvm'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang
+
       - name: Install Linux 32-bit multilib toolchains
         if: runner.os == 'Linux' && matrix.config.arch == 'x86'
         run: |
+          sudo dpkg --add-architecture i386
           sudo apt-get update
-          sudo apt-get install -y gcc-multilib g++-multilib
+          sudo apt-get install -y gcc-multilib g++-multilib libncurses-dev:i386
+
+      - name: Setup ccache for faster compilation
+        if: runner.os == 'Linux' || runner.os == 'macOS'
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{matrix.config.name}}
+          max-size: 500M
 
       - name: Install Linux ARM and AArch64 cross-compilers
         if: runner.os == 'Linux' && (matrix.config.arch == 'arm' || matrix.config.arch == 'aarch64')
@@ -421,18 +452,24 @@ jobs:
             elif [ "${{matrix.config.arch}}" = "x64" ]; then
               EXTRA_CMAKE_FLAGS="${EXTRA_CMAKE_FLAGS} -A x64"
             fi
-            if [ "${{matrix.config.family}}" = "llvm" ]; then
-              EXTRA_CMAKE_FLAGS="${EXTRA_CMAKE_FLAGS} -T ClangCL"
-            fi
+          if [ "${{matrix.config.family}}" = "llvm" ]; then
+            EXTRA_CMAKE_FLAGS="${EXTRA_CMAKE_FLAGS} -T ClangCL"
           fi
-          if [ "${{matrix.config.arch}}" = "x86" ] && [ "${{matrix.config.family}}" = "llvm" ] && [ "${{runner.os}}" = "Linux" ]; then
-            EXTRA_CMAKE_FLAGS="${EXTRA_CMAKE_FLAGS} -DCMAKE_TOOLCHAIN_FILE=./conf/toolchains/clang-linux-x86.cmake"
+        fi
+        if [ "${{runner.os}}" = "Linux" ]; then
+          if [ "${{matrix.config.arch}}" = "x86" ]; then
+            if [ "${{matrix.config.family}}" = "llvm" ]; then
+              EXTRA_CMAKE_FLAGS="${EXTRA_CMAKE_FLAGS} -DCMAKE_TOOLCHAIN_FILE=./conf/toolchains/clang-linux-x86.cmake"
+            elif [ "${{matrix.config.family}}" = "gnu" ]; then
+              EXTRA_CMAKE_FLAGS="${EXTRA_CMAKE_FLAGS} -DCMAKE_TOOLCHAIN_FILE=./conf/toolchains/gnu-linux-x86.cmake"
+            fi
           elif [ "${{matrix.config.arch}}" = "arm" ]; then
             EXTRA_CMAKE_FLAGS="${EXTRA_CMAKE_FLAGS} -DCMAKE_TOOLCHAIN_FILE=./conf/toolchains/gnu-linux-arm32.cmake"
           elif [ "${{matrix.config.arch}}" = "aarch64" ]; then
             EXTRA_CMAKE_FLAGS="${EXTRA_CMAKE_FLAGS} -DCMAKE_TOOLCHAIN_FILE=./conf/toolchains/gnu-linux-arm64.cmake"
           fi
-          echo "EXTRA_CMAKE_FLAGS=${EXTRA_CMAKE_FLAGS}" >> "${GITHUB_ENV}"
+        fi
+        echo "EXTRA_CMAKE_FLAGS=${EXTRA_CMAKE_FLAGS}" >> "${GITHUB_ENV}"
 
       - name: Resolve the python 3 interpreter
         if: matrix.config.test == 'ON'
@@ -467,14 +504,24 @@ jobs:
       - name: Configure CMake by selecting compiler family
         if: matrix.config.extend == 'ON'
         working-directory: ${{github.workspace}}
+        shell: bash
         run: |
-          cmake -B ${{env.CACHE_DEST}} ${{env.EXTRA_CMAKE_FLAGS}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_NO_EXCEPTIONS:BOOL=${{matrix.config.noexc || 'OFF'}} -DAREG_INSTALL:BOOL=${{matrix.config.test}} -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
+          GENERATOR=""
+          if [ "${{runner.os}}" = "Linux" ] || [ "${{runner.os}}" = "macOS" ]; then
+            GENERATOR="-G Ninja"
+          fi
+          cmake -B ${{env.CACHE_DEST}} ${GENERATOR} ${{env.EXTRA_CMAKE_FLAGS}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_NO_EXCEPTIONS:BOOL=${{matrix.config.noexc || 'OFF'}} -DAREG_INSTALL:BOOL=${{matrix.config.test}} -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
 
       - name: Configure CMake by selecting compiler name
         if: matrix.config.extend == 'OFF'
         working-directory: ${{github.workspace}}
+        shell: bash
         run: |
-          cmake -B ${{env.CACHE_DEST}} ${{env.EXTRA_CMAKE_FLAGS}} -DAREG_COMPILER=${{matrix.config.cc}} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_NO_EXCEPTIONS:BOOL=${{matrix.config.noexc || 'OFF'}} -DAREG_INSTALL:BOOL=${{matrix.config.test}} -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
+          GENERATOR=""
+          if [ "${{runner.os}}" = "Linux" ] || [ "${{runner.os}}" = "macOS" ]; then
+            GENERATOR="-G Ninja"
+          fi
+          cmake -B ${{env.CACHE_DEST}} ${GENERATOR} ${{env.EXTRA_CMAKE_FLAGS}} -DAREG_COMPILER=${{matrix.config.cc}} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_NO_EXCEPTIONS:BOOL=${{matrix.config.noexc || 'OFF'}} -DAREG_INSTALL:BOOL=${{matrix.config.test}} -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
 
       - name: Dump the CMake logs of a failed configuration
         if: failure()
@@ -492,7 +539,13 @@ jobs:
 
       - name: Build with CMake
         working-directory: ${{github.workspace}}
-        run: cmake --build ${{env.CACHE_DEST}} --config ${{env.BUILD_TYPE}} -j16
+        shell: bash
+        env:
+          CMAKE_CXX_COMPILER_LAUNCHER: ${{ (runner.os == 'Linux' || runner.os == 'macOS') && 'ccache' || '' }}
+          CMAKE_C_COMPILER_LAUNCHER: ${{ (runner.os == 'Linux' || runner.os == 'macOS') && 'ccache' || '' }}
+        run: |
+          NPROC=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
+          cmake --build ${{env.CACHE_DEST}} --config ${{env.BUILD_TYPE}} -j${NPROC}
 
       - name: Locate the build output directory
         if: matrix.config.test == 'ON' || matrix.config.noexc == 'ON'
@@ -640,4 +693,7 @@ jobs:
 
       - name: Build with CMake
         working-directory: ${{github.workspace}}
-        run: cmake --build ./product/cache/ubsan -j16
+        shell: bash
+        run: |
+          NPROC=$(nproc 2>/dev/null || echo 4)
+          cmake --build ./product/cache/ubsan -j${NPROC}
