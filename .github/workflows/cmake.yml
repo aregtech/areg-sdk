@@ -383,7 +383,7 @@ jobs:
         shell: bash
         run: |
           if [ "${{runner.os}}" = "Linux" ]; then
-            sudo apt-get update && sudo apt-get install -y ninja-build
+            sudo apt-get install -y ninja-build
           else
             brew install ninja
           fi
@@ -414,15 +414,12 @@ jobs:
 
       - name: Install Clang compiler for Linux
         if: runner.os == 'Linux' && matrix.config.family == 'llvm'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y clang
+        run: sudo apt-get install -y clang
 
       - name: Install Linux 32-bit multilib toolchains
         if: runner.os == 'Linux' && matrix.config.arch == 'x86'
         run: |
           sudo dpkg --add-architecture i386
-          sudo apt-get update
           sudo apt-get install -y gcc-multilib g++-multilib libncurses-dev:i386
 
       - name: Setup ccache for faster compilation
@@ -435,7 +432,7 @@ jobs:
       - name: Install Linux ARM and AArch64 cross-compilers
         if: runner.os == 'Linux' && (matrix.config.arch == 'arm' || matrix.config.arch == 'aarch64')
         run: |
-          sudo apt-get update && sudo apt-get install -y \
+          sudo apt-get install -y \
             gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf \
             gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
 
