@@ -582,6 +582,7 @@ def component_classes(component, specs, include_root):
             bases += ['#include "{}/{}ActionHandler.hpp"'.format(
                 os.path.dirname(document).replace('\\', '/'), inner.name)
                 for inner, document, _ in machine.imports]
+        bases.append(gs.marker('includes', gs.INCLUDES_HINT, 0))
         slot, hint = 'provider_state', None
         prelude = gs.QUIT_DECLARATION
         brief = 'Provider of the {} service.'.format(iface.name)

@@ -661,10 +661,10 @@ def section_notes(sections, driven=(), connected=None):
     for name, _, _, _, _ in sections:
         if name.startswith('response_'):
             notes[name] = ANSWER_NOTE
-    # The only marker a header carries is its class's private block. Matching the
+    # A header carries its class's private block and its includes. Matching the
     # name instead takes "update_machine_state" with it.
     for name, _, _, file_name, _ in sections:
-        if file_name.endswith('.hpp'):
+        if file_name.endswith('.hpp') and name.split(':')[-1] != 'includes':
             notes[name] = STATE_NOTE
     names = [name for name, _, _, _, _ in sections]
     if 'peer_lost' in names:
@@ -1826,6 +1826,15 @@ def timer_includes(class_lines):
     """TIMER_INCLUDES when the emitted class names an areg timer type, else nothing."""
     return TIMER_INCLUDES if any('areg::Timer' in line for line in class_lines) else []
 
+# The provider's own lifecycle sections, and the includes they need.
+STARTUP_HINT = ('what this provider starts before its service is announced, comThread its '
+                'thread: a worker thread and the listeners it receives on (38-workers.md), '
+                'or one // line')
+SHUTDOWN_HINT = ('what it stops before the service stops: remove those listeners and '
+                 'delete_worker_thread(), or one // line')
+INCLUDES_HINT = 'the headers of your own files this provider uses, or one // line'
+
+
 def provider_class(iface, cls, machine=None, timers=()):
     """The provider component, with every request answered.
 
@@ -1869,23 +1878,24 @@ def provider_class(iface, cls, machine=None, timers=()):
     lines += ['    }', '', 'protected:']
 
     started = [timer for timer in timers if timer['autostart']]
-    if machine or started or timers:
-        lines += ['    void startup_component(areg::ComponentThread & comThread) final',
-                  '    {',
-                  '        areg::Component::startup_component(comThread);']
-        if machine:
-            lines.append('        mFsm.init_fsm(&comThread);')
-        lines += ['        {}();'.format(timer['start']) for timer in started]
-        lines += ['    }',
-                  '',
-                  '    void shutdown_component(areg::ComponentThread & comThread) final',
-                  '    {']
-        lines += ['        {}.stop_timer();'.format(timer['member']) for timer in timers]
-        if machine:
-            lines.append('        mFsm.release_fsm();')
-        lines += ['        areg::Component::shutdown_component(comThread);',
-                  '    }',
-                  '']
+    lines += ['    void startup_component(areg::ComponentThread & comThread) final',
+              '    {',
+              marker('startup', STARTUP_HINT),
+              '        areg::Component::startup_component(comThread);']
+    if machine:
+        lines.append('        mFsm.init_fsm(&comThread);')
+    lines += ['        {}();'.format(timer['start']) for timer in started]
+    lines += ['    }',
+              '',
+              '    void shutdown_component(areg::ComponentThread & comThread) final',
+              '    {',
+              marker('shutdown', SHUTDOWN_HINT)]
+    lines += ['        {}.stop_timer();'.format(timer['member']) for timer in timers]
+    if machine:
+        lines.append('        mFsm.release_fsm();')
+    lines += ['        areg::Component::shutdown_component(comThread);',
+              '    }',
+              '']
     if timers:
         lines += ['    void process_timer(areg::Timer & timer) final',
                   '    {']
@@ -3638,7 +3648,7 @@ def app_files(iface, mode, include_root, machine=None, steps=(), driver=None, ti
     produced = [(PROVIDER_DIR[mode] + name, text) for name, text in component_files(
         provider_cls, 'Provider of the {} service.'.format(iface.name),
         class_includes(iface, machine) + timer_includes(provider_lines) + ['']
-        + provider_base,
+        + provider_base + [marker('includes', INCLUDES_HINT, 0)],
         provider_lines, 'provider_state', QUIT_DECLARATION)]
     produced += [(CONSUMER_DIR[mode] + name, text) for name, text in component_files(
         consumer_cls, 'Consumer of the {} service.'.format(iface.name),

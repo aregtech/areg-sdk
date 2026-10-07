@@ -115,12 +115,12 @@
 /**
  * \brief   Declares Event and Consumer classes. Standard version, without registering Consumer in the thread.
  *          Do not call. Use AREG_DECLARE_EVENT or AREG_DECLARE_EVENT_EX instead.
- * \param   DATA_CLASS      The name of data object type. Can be any class and should have assigning operator available.
+ * \param   DataClass       The name of data object type. Can be any class and should have assigning operator available.
  * \param   EventClass      The event class name.
  * \param   ConsumerClass   The event consumer class name.
  * \param   EventKind       The type of event to create.
  **/
-#define AREG_DEFINE_EVENT_STANDARD(DATA_CLASS, EventClass, ConsumerClass, EventKind)                                  \
+#define AREG_DEFINE_EVENT_STANDARD(DataClass, EventClass, ConsumerClass, EventKind)                                   \
 template <class DATA_CLASS> class AregImpl_##EventClass;                                                                \
 template <class DATA_CLASS> class AregImpl_##ConsumerClass;                                                             \
 template <class DATA_CLASS> class AregImpl_##ConsumerClass##Extended;                                                   \
@@ -240,7 +240,7 @@ private:                                                                        
     /** Sets internal1 (DispatcherThread*) then delivers the event. Named lvalue required.       **/                      \
     static bool _send(areg::DispatcherThread& dispThread, AregImpl_##EventClass<DATA_CLASS>& event);                    \
 };                                                                                                                      \
-using EventClass = AregImpl_##EventClass<DATA_CLASS>;                                                                   \
+using EventClass = AregImpl_##EventClass<DataClass>;                                                                     \
 AREG_IMPLEMENT_EVENT_REGISTRATION_TEMPLATE(template <class DATA_CLASS>, AregImpl_##EventClass<DATA_CLASS>)              \
 template <class DATA_CLASS>                                                                                             \
 void AregImpl_##ConsumerClass<DATA_CLASS>::start_event_processing(areg::Event& eventElem)                               \

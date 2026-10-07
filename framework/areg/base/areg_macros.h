@@ -53,8 +53,8 @@
   **/
 #ifndef DECLARE_NOCOPY_TEMPLATE
 #define DECLARE_NOCOPY_TEMPLATE(ClassName, Typenames)                                               \
-        ClassName( const ClassName##Typenames & /*src*/ ) = delete;                                 \
-        ClassName##Typenames & operator = ( const ClassName##Typenames & /*src*/ ) = delete
+        ClassName( const ClassName Typenames & /*src*/ ) = delete;                                 \
+        ClassName Typenames & operator = ( const ClassName Typenames & /*src*/ ) = delete
 #endif // !DECLARE_NOCOPY_TEMPLATE
 
   /**
@@ -65,8 +65,8 @@
    **/
 #ifndef DECLARE_NOMOVE_TEMPLATE
 #define DECLARE_NOMOVE_TEMPLATE(ClassName, Typenames)                                               \
-            ClassName( ClassName##Typenames && /*src*/ ) noexcept = delete;                         \
-            ClassName##Typenames & operator = ( ClassName##Typenames && /*src*/ ) noexcept = delete
+            ClassName( ClassName Typenames && /*src*/ ) noexcept = delete;                         \
+            ClassName Typenames & operator = ( ClassName Typenames && /*src*/ ) noexcept = delete
 #endif // !DECLARE_NOMOVE_TEMPLATE
 
 #ifndef DECLARE_NOCOPY_NOMOVE_TEMPLATE
