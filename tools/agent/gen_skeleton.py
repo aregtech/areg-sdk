@@ -2375,11 +2375,11 @@ def step_dispatch(steps, kind, name, indent, latch=None, role=None):
     """
     waiting = [step for step in steps if step['awaits'] == (kind, name)
                and step.get('role') == role]
-    if not waiting:
-        return []
     pad = ' ' * indent
     what = '{} {}{}'.format(kind, name, ' of ' + role if role else '')
     fresh = fresh_flag(name) if kind == 'update' and not role else None
+    if not waiting:
+        return []
     lines = ['' if kind != 'response' else None,
              pad + '{} = false;'.format(latch['flag']) if latch and 'flag' in latch else None,
              pad + 'Arrival arrival(*this, "{}"{});'.format(what, ', ' + fresh if fresh else ''),
@@ -2417,7 +2417,7 @@ def step_dispatch(steps, kind, name, indent, latch=None, role=None):
             + [pad + '    ' + line for line in keep_answer(latch, kind, name, role)] \
             + [pad + '    break;', pad + '}']
     lines += [pad + 'default:',
-              pad + '    dropped("{} {}{}");'.format(kind, name, ' of ' + role if role else '')]
+              pad + '    dropped();']
     if latch:
         lines.append(pad + '    {} = true;'.format(latch['flag']))
         lines += [pad + '    {} = {};'.format(member, param)
@@ -2427,15 +2427,27 @@ def step_dispatch(steps, kind, name, indent, latch=None, role=None):
     return lines
 
 
+def record_only(steps, kind, name, indent):
+    """The trail entry of a message of the driven service that no step awaits."""
+    if not steps:
+        return []
+    pad = ' ' * indent
+    fresh = fresh_flag(name) if kind == 'update' else None
+    lines = [pad + 'Arrival arrival(*this, "{} {}"{});'.format(kind, name,
+                                                             ', ' + fresh if fresh else '')]
+    if fresh:
+        lines.append(pad + '{} = false;'.format(fresh))
+    return lines + [pad + 'mark("no step awaits it");']
+
+
 def fresh_flag(name):
     """The member that is true until the first value of this attribute after subscribing."""
     return 'mFresh' + pascal(name)
 
 
-def fresh_attributes(steps):
-    """The attributes of the driven service a step awaits."""
-    return sorted(set(step['awaits'][1] for step in steps if step['awaits']
-                      and step['awaits'][0] == 'update' and not step.get('role')))
+def fresh_attributes(steps, iface):
+    """The attributes of the driven service, when steps drive it."""
+    return sorted(name for name, _ in iface.attributes) if steps else []
 
 
 def keep_answer(latch, kind, name, role=None):
@@ -2449,7 +2461,7 @@ def keep_answer(latch, kind, name, role=None):
             '}',
             'else',
             '{',
-            '    dropped("{} {}{}");'.format(kind, name, ' of ' + role if role else ''),
+            '    dropped();',
             '}']
 
 
@@ -2854,7 +2866,7 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
             lines.append('                {}(true);'.format(
                 iface.spell('broadcast', name, 'notify')))
         lines += ['                {} = true;'.format(fresh_flag(name))
-                  for name in fresh_attributes(steps)]
+                  for name in fresh_attributes(steps, iface)]
     # A generated application that waits forever is not one that runs as written.
     # The first request that carries a response completes a round trip, and the
     # response handler below quits, so the program starts and ends on its own.
@@ -2995,7 +3007,8 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
                 lines.append(placeholder('        mPace.stop_timer();'))
             lines.append(placeholder('        quit_with(0);'))
             first = False
-        lines += step_dispatch(steps, 'response', name, 8, latches.get(('response', name)))
+        lines += step_dispatch(steps, 'response', name, 8, latches.get(('response', name))) \
+            or record_only(steps, 'response', name, 8)
         lines.append('    }')
         lines.append('')
 
@@ -3025,7 +3038,7 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
         said = marker(iface.spell('broadcast', name), hint, 12 if latch else 8)
         lines.append('    {')
         lines += replayed(said, 8) if latch else [said]
-        lines += dispatch
+        lines += dispatch or record_only(steps, 'broadcast', name, 8)
         lines += ['    }',
                   '']
 
@@ -3050,7 +3063,7 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
         # With no request, the first update the provider's initial value sends ends it.
         if not steps and not iface.requests and attr_name == iface.attributes[0][0]:
             lines.append(placeholder('            quit_with(0);'))
-        lines += dispatch
+        lines += dispatch or record_only(steps, 'update', attr_name, 12)
         lines += ['        }',
                   '    }',
                   '']
@@ -3105,8 +3118,7 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
                   '    }',
                   '',
                   '    //! Marks the arrival being handled as one no step checks.',
-                  '    //! dropped() names what arrived, for the trail.',
-                  '    void dropped([[maybe_unused]] const char * what)',
+                  '    void dropped()',
                   '    {',
                   '        mark("no step checks it, dropped");',
                   '    }',
@@ -3157,7 +3169,7 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
                   '            if (mEndedBy[index] != nullptr)',
                   '            {',
                   '                std::cerr << "ended by " << mEndedBy[index]',
-                  '                          << (mEndedFirst[index] ? " (its value from subscribing)" : "");',
+                  '                          << (mEndedFirst[index] ? " (the value it already had on subscribing, before any request)" : "");',
                   '            }',
                   '            else',
                   '            {',
@@ -3178,7 +3190,7 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
                   '        {',
                   '            const uint32_t slot{ index % cTrailMost };',
                   '            std::cerr << "    " << mTrailWhat[slot]',
-                  '                      << (mTrailFirst[slot] ? " (its value from subscribing)" : "")',
+                  '                      << (mTrailFirst[slot] ? " (the value it already had on subscribing, before any request)" : "")',
                   '                      << (mTrailLate[slot] ? " (kept earlier, replayed)" : "")',
                   '                      << " on " << mTrailStep[slot] << ": "',
                   '                      << (mTrailDone[slot] != nullptr ? mTrailDone[slot]',
@@ -3198,7 +3210,7 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
                   '    const char * mEndedBy[static_cast<uint32_t>(Step::Done) + 1]{};   //!< What ended each step.',
                   '    bool         mEndedFirst[static_cast<uint32_t>(Step::Done) + 1]{};   //!< True when that was a value from subscribing.']
         lines += ['    bool         {}{{ false }};   //!< True until a value after subscribing.'
-                  .format(fresh_flag(name)) for name in fresh_attributes(steps)]
+                  .format(fresh_flag(name)) for name in fresh_attributes(steps, iface)]
         lines += ['']
     lines += ['    //! Ends the scenario as a failure, naming what went wrong and the',
               '    //! step the scenario was on.',

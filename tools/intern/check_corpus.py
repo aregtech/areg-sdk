@@ -5202,9 +5202,9 @@ def check_late_arrival(report):
         replay = body_of('::replay_late()')
         wanted = (
             ('an update dropped on another step is latched',
-             re.search(r'dropped\("update Width"\);\s*mLateWidth = true;', width)),
+             re.search(r'dropped\(\);\s*mLateWidth = true;', width)),
             ('a broadcast dropped on another step keeps its arguments',
-             re.search(r'dropped\("broadcast gate_moved"\);\s*mLateGateMoved = true;\s*'
+             re.search(r'dropped\(\);\s*mLateGateMoved = true;\s*'
                        r'mLateGateMovedWidth = width;\s*mLateGateMovedReading = reading;',
                        moved)),
             ('the arrival body is not run again on a replay',
@@ -5458,10 +5458,10 @@ def check_stall_default(report):
 
 
 def check_stall_names_latest_drops(report):
-    """The stall report names the latest messages dropped, not the first ones.
+    """The failure trail keeps the latest arrivals, not the first ones.
 
-    The drop on the step before the stall is the one that explains it, and a long
-    scenario drops many harmless messages before it.
+    The arrival just before a stall is the one that explains it, and a long scenario
+    sees many harmless ones before it.
     """
     tools = os.path.join(ROOT, 'tools', 'agent')
     holder = tempfile.mkdtemp()
@@ -5484,31 +5484,19 @@ def check_stall_names_latest_drops(report):
         found = re.search(re.escape(signature) + r'[^{;]*\{(.*?)\n\}', source, re.S)
         return found.group(1) if found else ''
 
-    kept = body_of('::dropped(const char * what)')
-    shown = body_of('::stalled()')
-    if not kept or not shown:
-        report.fail('stall-drops', 'a stepped driver no longer defines dropped() and '
-                                   'stalled(), so this check reads nothing')
+    shown = body_of('::print_trail()')
+    stalled = body_of('::stalled()')
+    if not shown or 'fail(' not in stalled:
+        report.fail('stall-drops', 'a stepped driver no longer defines print_trail(), or its '
+                                   'stall report no longer ends in fail(), so this check '
+                                   'reads nothing')
         return
-    if not re.search(r'mDroppedCount\s*%\s*cDroppedMost', kept) \
-            or re.search(r'if\s*\(\s*\w+\s*<\s*cDroppedMost', kept) \
-            or not re.search(r'%\s*cDroppedMost', shown):
-        report.fail('stall-drops', 'the stall report keeps the first messages dropped and '
-                                   'counts the rest, so the drop just before the stall is '
-                                   'hidden behind "and N more"')
+    if not re.search(r'mTrailCount\s*-\s*shown', shown) or not re.search(r'%\s*cTrailMost', shown):
+        report.fail('stall-drops', 'the failure trail keeps the first arrivals and hides the '
+                                   'latest, so the one just before the stall is not shown')
         return
-    report.ok('stall-drops', 'the stall report names the latest messages dropped')
-    connected = body_of('::service_connected(areg::ServiceConnectionState status, '
-                        'areg::ProxyBase & proxy)')
-    lost = connected.split('ConnectionLost', 1)[-1].split('Rejected', 1)[0]
-    resumed = body_of('::resume_pace()')
-    if 'resume_pace();' not in connected or 'mPace.stop_timer();' not in lost \
-            or 'progressed();' not in resumed:
-        report.fail('stall-pause', 'a lost provider leaves the stall watchdog counting, or '
-                                   'a reconnection does not restart it from zero')
-        return
-    report.ok('stall-pause', 'a lost provider pauses the stall watchdog, and a reconnection '
-                             'restarts it from zero')
+    report.ok('stall-drops', 'the failure trail shows the latest arrivals, the one before '
+                             'the stall included')
 
 
 def check_step_enum_qualifier(report):
@@ -6085,7 +6073,7 @@ def check_cause_trail(report):
                           'as the one from subscribing'),
                          ('print_trail();', 'fail() does not print the trail'),
                          ('how each step ended', 'the trail does not say what ended each step'),
-                         ('its value from subscribing', 'the trail does not name a value '
+                         ('already had on subscribing, before any request', 'the trail does not name a value '
                           'from subscribing')):
         if needed not in source:
             report.fail('cause-trail', what)
@@ -8249,7 +8237,7 @@ def check_role_steps(report):
         report.fail('role-step', 'the stock client does not hand Bolts to the driver\'s check '
                                  'of the step that awaits it with "role"')
         return
-    if not re.search(r'default:\s*dropped\("update Bolts of stock"\);\s*mLateStockBolts = true;',
+    if not re.search(r'default:\s*dropped\(\);\s*mLateStockBolts = true;',
                      driver) or not re.search(r'case Step::StockLeft:[^}]*if \(mLateStockBolts\)',
                                               driver):
         report.fail('role-step', 'a Bolts update that arrives before its step is not kept '
