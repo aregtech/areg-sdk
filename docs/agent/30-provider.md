@@ -101,9 +101,9 @@ void request_read_file(const areg::String & path) final
 To answer after the handler has returned, the request must first be **released**.
 
 **Only a request that declares a `Response` blocks**, and only until that response is
-sent: a second caller meanwhile is refused with `RequestBusy` and never reaches the
-handler. A request with no `Response` never blocks and may be called again at once, so
-it needs none of what follows.
+sent: a second call of it meanwhile, from any consumer including the same one, is
+refused with `RequestBusy` and never reaches the handler. A request with no `Response`
+never blocks and may be called again at once, so it needs none of what follows.
 
 ```cpp
 void request_read_file(const areg::String & path) final
@@ -121,7 +121,8 @@ void on_worker_done(const areg::String & text, areg::SessionID session)
 }
 ```
 
-`unblock_current_request()` returns the session that identifies this call; carry it
+`unblock_current_request()` returns the session (an `areg::SessionID`, a `uint32_t`)
+that identifies this call; carry it
 with the work and give it back to `prepare_response()` before sending the answer.
 Both are `areg::StubBase` members, so a provider already has them.
 

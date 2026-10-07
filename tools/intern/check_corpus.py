@@ -2828,6 +2828,7 @@ def run():
     check_design_request(report)
     check_step_rules_at_use(report)
     check_machine_attribute_note(report)
+    check_answer_order_note(report)
     check_benchmark_vocabulary(report)
     check_phase_by_one_action(report)
     check_base_api_on_demand(report)
@@ -4536,6 +4537,31 @@ def check_machine_attribute_note(report):
         return
     report.ok('machine-attribute', 'the template machine note says a same-named contract '
                                    'attribute is a separate value')
+
+
+def check_answer_order_note(report):
+    """The template interface note says how a caller tells several open answers apart."""
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_docs
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('answer-order', 'gen_docs.py does not import: {}'.format(failure))
+        return
+    note = ' '.join(' '.join(gen_docs.TEMPLATE['interfaces'][0][gen_docs.NOTE]).split())
+    for phrase in ('another call of it meanwhile fails with RequestBusy',
+                   "a caller's answers come in the order it asked",
+                   'the caller tells them apart by the answer fields'):
+        if phrase not in note:
+            report.fail('answer-order', 'the template interface note does not say "{}", so '
+                        'a design learns how answers are told apart only after its first '
+                        'build'.format(phrase))
+            return
+    if 'areg::SessionID (a uint32_t)' not in read('tools', 'agent', 'gen_programs.py'):
+        report.fail('answer-order', 'the worksheet line showing unblock_current_request() '
+                    'does not name the SessionID type')
+        return
+    report.ok('answer-order', 'the template interface note says when answers come in order '
+              'and how open ones are told apart; the worksheet names the SessionID type')
 
 
 # Nouns only a benchmark task uses. An example spelled with them hands one task its answer.

@@ -1000,7 +1000,8 @@ def wiring(programs, components, deployments=()):
                   'to. A driver begins its steps once every provider it uses is connected.']
     if any(c.clients for c in components if c.kind == 'provides'):
         lines += ['A request answered after its handler returns -- when a used provider',
-                  'answers, a timer fires or an event arrives -- keeps its caller:',
+                  'answers, a timer fires or an event arrives -- keeps its caller, an',
+                  'areg::SessionID (a uint32_t):',
                   '  const areg::SessionID session{ unblock_current_request() };',
                   'and once the answer is known, the same component sends it to that caller:',
                   '  if (prepare_response(session)) { response_<name>(...); }',
