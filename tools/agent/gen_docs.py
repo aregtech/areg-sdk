@@ -2421,17 +2421,21 @@ def trigger_coverage(spec):
 
 
 def self_transitions(spec):
-    """(state, trigger) of each transition to its own state, where that state has
-    "entry" or "exit" steps, which such a transition does not run."""
+    """(state, trigger) of each transition to its own state, where that state's "entry"
+    starts a timer that is not repeating and the transition's "do" does not start again."""
+    repeats = {timer.get('name'): timer.get('repeat', 1) for timer in spec.get('timers') or []}
     found = []
 
     def walk(states):
         for state in states or []:
             label = state.get('name')
-            if label and (state.get('entry') or state.get('exit')):
-                found.extend((label, move.get('on', '?'))
-                             for move in state.get('transitions') or []
-                             if move.get('to') == label)
+            started = [step[len('start '):].strip() for step in state.get('entry') or []
+                       if isinstance(step, str) and step.startswith('start ')]
+            for move in state.get('transitions') or []:
+                if label and move.get('to') == label and any(
+                        repeats.get(name, 0) != 0 and 'start ' + name not in (move.get('do') or [])
+                        for name in started):
+                    found.append((label, move.get('on', '?')))
             walk(state.get('states'))
 
     walk(spec.get('states'))
@@ -2889,7 +2893,8 @@ TEMPLATE = {
                    "One step per thing the task asks to prove, not one per message. A step",
                    "starting work which takes time awaits what says it finished before a",
                    "later step or a go_to() sends again. Await by what the check reacts to: an",
-                   "attribute for a value as state (current on subscribing, then each change),",
+                   "attribute for a value as state (its value on subscribing, still the one",
+                   "from before the first step's request, then each change),",
                    "a response for the result of its own request (only after it), a broadcast",
                    "for several values together (on every call). One provider's messages",
                    "arrive in the order it sent them, two providers' in no order. role: a",

@@ -2829,6 +2829,7 @@ def run():
     check_step_rules_at_use(report)
     check_machine_attribute_note(report)
     check_answer_order_note(report)
+    check_attribute_first_value(report)
     check_example_one_call(report)
     check_benchmark_vocabulary(report)
     check_phase_by_one_action(report)
@@ -4566,6 +4567,25 @@ def check_answer_order_note(report):
               'and how open ones are told apart; the worksheet names the SessionID type')
 
 
+def check_attribute_first_value(report):
+    """The template steps note says which value an attribute delivers on subscribing."""
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_docs
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('attribute-first-value', 'gen_docs.py does not import: {}'.format(failure))
+        return
+    note = ' '.join(' '.join(gen_docs.TEMPLATE['interfaces'][0]['steps'][0][gen_docs.NOTE])
+                    .split())
+    if "still the one from before the first step's request" not in note:
+        report.fail('attribute-first-value', 'the template steps note does not say an '
+                    "attribute's value on subscribing is still the one from before the first "
+                    "step's request, so a first step awaits a value it already holds")
+        return
+    report.ok('attribute-first-value', "the template steps note says an attribute's value on "
+              "subscribing predates the first step's request")
+
+
 def check_example_one_call(report):
     """The runbook names one gen_docs.py --example call that prints two designs."""
     runbook = ' '.join(read('docs', 'agent', '01-runbook.md').split())
@@ -5092,6 +5112,11 @@ def check_self_transition(report):
     if 'goes to itself' in notes('B'):
         report.fail('self-transition', 'a transition to another state earns the note of '
                                        'a transition to its own state')
+        return
+    if ('goes to itself' in notes('A', repeat=0)
+            or 'goes to itself' in notes('', [{'on': 'T', 'to': 'A', 'do': ['start T']}])):
+        report.fail('self-transition', 'a transition to its own state earns the note while '
+                                       'its timer repeats or its "do" starts it again')
         return
     leave = {'on': 'T', 'to': 'B', 'guard': ['lit:1', 'eq', 'lit:2']}
     if 'stays on timer' not in notes('', [leave, {'on': 'T', 'do': ['a']}]):
