@@ -2829,6 +2829,7 @@ def run():
     check_step_rules_at_use(report)
     check_machine_attribute_note(report)
     check_answer_order_note(report)
+    check_example_one_call(report)
     check_benchmark_vocabulary(report)
     check_phase_by_one_action(report)
     check_base_api_on_demand(report)
@@ -4550,7 +4551,8 @@ def check_answer_order_note(report):
     note = ' '.join(' '.join(gen_docs.TEMPLATE['interfaces'][0][gen_docs.NOTE]).split())
     for phrase in ('another call of it meanwhile fails with RequestBusy',
                    "a caller's answers come in the order it asked",
-                   'the caller tells them apart by the answer fields'):
+                   'the caller tells them apart by the answer fields',
+                   "a response carries only those, never the request's parameters"):
         if phrase not in note:
             report.fail('answer-order', 'the template interface note does not say "{}", so '
                         'a design learns how answers are told apart only after its first '
@@ -4562,6 +4564,25 @@ def check_answer_order_note(report):
         return
     report.ok('answer-order', 'the template interface note says when answers come in order '
               'and how open ones are told apart; the worksheet names the SessionID type')
+
+
+def check_example_one_call(report):
+    """The runbook names one gen_docs.py --example call that prints two designs."""
+    runbook = ' '.join(read('docs', 'agent', '01-runbook.md').split())
+    if '`--example service programs`' not in runbook:
+        report.fail('example-one-call', '01-runbook.md section 3 does not name '
+                    '"--example service programs", so a multi-program design asks twice')
+        return
+    done = subprocess.run([sys.executable, os.path.join(ROOT, 'tools', 'agent', 'gen_docs.py'),
+                           '--example', 'service', 'programs'], capture_output=True, text=True,
+                          stdin=subprocess.DEVNULL)
+    heads = [line for line in done.stdout.splitlines() if line.startswith('== gen_docs.py')]
+    if done.returncode != 0 or len(heads) != 2:
+        report.fail('example-one-call', 'gen_docs.py --example service programs does not '
+                    'print both designs, each under its own head line')
+        return
+    report.ok('example-one-call', 'one --example call prints the service and the programs '
+              'design, and the runbook names it')
 
 
 # Nouns only a benchmark task uses. An example spelled with them hands one task its answer.

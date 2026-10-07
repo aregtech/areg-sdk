@@ -4,8 +4,9 @@
 #
 # Runs the project an agent built, after the agent has finished, against the
 # requirements every task prompt states. Each probe is generated from the
-# project's own scenarios.json and assumes no framework. The snapshot the agent
-# reads does not contain this file.
+# project's own scenarios.json and assumes no framework, except "checked", which
+# reads the step bodies of bodies.txt. The snapshot the agent reads does not contain
+# this file.
 #
 #   python3 examples/ai-benchmark/verify_run.py <run directory>
 #   python3 examples/ai-benchmark/verify_run.py <run directory> --sanitize
@@ -75,6 +76,7 @@ REQUIREMENTS = {
     'cpu':         'no busy-waiting',
     'programs':    'as many separate programs as the task asks for, all in the normal run',
     'lines':       'every line the task says its programs print, in the normal run',
+    'checked':     'a printed task line states only values its steps compared',
     'timing':      'the timed work the task states takes its time in the normal run',
     'sanitize':    'no memory or undefined-behaviour defect (not a checklist item)',
 }
@@ -151,6 +153,134 @@ def judge_lines(wanted, outputs):
     if missing:
         evidence += '; missing: ' + '; '.join('"{}"'.format(want) for want in missing)
     return result('lines', not missing, evidence)
+
+
+# A section of bodies.txt, its C++ strings and comments, and a number in text or code.
+SECTION_RE = re.compile(r'^== (\S+)[ \t]*$', re.MULTILINE)
+STRING_RE = re.compile(r'"((?:[^"\\\n]|\\.)*)"')
+COMMENT_RE = re.compile(r'//[^\n]*|/\*.*?\*/', re.DOTALL)
+CODE_NUMBER_RE = re.compile(r'(?<![\w.])(\d+(?:\.\d+)?)[uUlLfF]*(?![\w.])')
+TEXT_NUMBER_RE = re.compile(r'(?:([A-Za-z_]+)\s+)?(?<![\w.])(\d+(?:\.\d+)?)(?![\w.])')
+STEP_PREFIX_RE = re.compile(r'\bstep\s+\d+\s*:', re.IGNORECASE)
+# A statement that prints, and a string a statement compares against.
+OUTPUT_RE = re.compile(r'\bcout\b|\bprintf\s*\(|\bputs\s*\(')
+COMPARED_STRING_RE = re.compile(
+    r'(?:==|!=)\s*"((?:[^"\\\n]|\\.)*)"|"((?:[^"\\\n]|\\.)*)"\s*(?:==|!=)'
+    r'|\b(?:find\w*|compare|starts_with|ends_with|contains)\s*\(\s*"((?:[^"\\\n]|\\.)*)"')
+
+
+def body_sections(text):
+    """{section name: body} of a bodies.txt, file prefix kept; a later one wins."""
+    sections = {}
+    marks = list(SECTION_RE.finditer(text))
+    for index, mark in enumerate(marks):
+        end = marks[index + 1].start() if index + 1 < len(marks) else len(text)
+        sections[mark.group(1)] = text[mark.end():end]
+    return sections
+
+
+def step_order(design):
+    """[(step name, its until and args values)] of every interface's steps, in order."""
+    return [(step.get('name', ''),
+             [str(value) for key in ('until', 'args') for value in (step.get(key) or {}).values()])
+            for spec in design.get('interfaces') or [] for step in spec.get('steps') or []]
+
+
+def number(text):
+    """A number as one spelling: 12, 12.0 and 12.00 are the same."""
+    return text.rstrip('0').rstrip('.') if '.' in text else text
+
+
+def stated_values(body, wanted):
+    """[(word, number)] a body prints as fixed text inside a task line, without step N:."""
+    pieces = [piece.lower() for line in wanted for piece in PLACEHOLDER_RE.split(line)]
+    body = COMMENT_RE.sub('', body)
+    masked = STRING_RE.sub(lambda found: '"' + 'x' * len(found.group(1)) + '"', body)
+    stated = []
+    for found in STRING_RE.finditer(body):
+        start = masked.rfind(';', 0, found.start()) + 1
+        end = masked.find(';', found.end())
+        if not OUTPUT_RE.search(masked[start:end if end >= 0 else len(masked)]):
+            continue
+        text = found.group(1).replace('\\"', '"').strip()
+        if len(text) < 6 or not any(text.lower() in piece for piece in pieces):
+            continue
+        for word, value in TEXT_NUMBER_RE.findall(STEP_PREFIX_RE.sub('', text)):
+            stated.append((word, number(value)))
+    return stated
+
+
+def compared_values(bodies, untils):
+    """Every number these bodies' code or compared strings hold, and every step value."""
+    found = []
+    for body in bodies:
+        body = COMMENT_RE.sub('', body)
+        code = STRING_RE.sub('""', body)
+        found += [number(value) for value in CODE_NUMBER_RE.findall(code)]
+        for groups in COMPARED_STRING_RE.findall(body):
+            found += [number(value) for text in groups
+                      for _, value in TEXT_NUMBER_RE.findall(text)]
+    return found + [number(value) for value in untils]
+
+
+def read_text(path):
+    """The text of a file, or None when it cannot be read."""
+    try:
+        with open(path, encoding='utf-8') as handle:
+            return handle.read()
+    except OSError:
+        return None
+
+
+def read_json(path):
+    """A JSON file's object, or {} when it cannot be read."""
+    try:
+        with open(path, encoding='utf-8') as handle:
+            return json.load(handle)
+    except (OSError, ValueError):
+        return {}
+
+
+def judge_checked(wanted, bodies_text, design):
+    """Each fixed value a printed task line states is sent or compared by the steps it ends."""
+    if not wanted:
+        return result('checked', None, 'the task names no printed lines')
+    if bodies_text is None:
+        return result('checked', None, 'no bodies.txt: the step bodies cannot be read')
+    sections = body_sections(bodies_text)
+    order = step_order(design)
+    position = {'step_' + name: index for index, (name, _) in enumerate(order)}
+    short = {name: name.rpartition(':')[2] for name in sections}
+    printing = sorted((name for name in sections if stated_values(sections[name], wanted)),
+                      key=lambda name: position.get(short[name], -1))
+    shared = [body for name, body in sections.items() if short[name] == 'consumer_state']
+    unchecked = []
+    begin = 0
+    for name in printing:
+        if short[name] in position:
+            span = order[begin:position[short[name]] + 1]
+            begin = position[short[name]] + 1
+            steps = set('step_' + step for step, _ in span)
+            bodies = shared + [body for other, body in sections.items() if short[other] in steps]
+            untils = [value for _, values in span for value in values]
+        else:
+            bodies, untils = list(sections.values()), []
+        have = compared_values(bodies, untils)
+        missing = []
+        for word, value in stated_values(sections[name], wanted):
+            if value in have:
+                have.remove(value)
+            else:
+                missing.append((word + ' ' + value).strip())
+        if missing:
+            unchecked.append('{} prints {} unchecked'.format(name, ', '.join(missing)))
+    if not printing:
+        return result('checked', True, 'no task line is printed as fixed text with a value')
+    evidence = '{} of {} printing bodies compare every value they print'.format(
+        len(printing) - len(unchecked), len(printing))
+    if unchecked:
+        evidence += '; ' + '; '.join(unchecked)
+    return result('checked', not unchecked, evidence)
 
 
 def judge_timing(least, lead_time):
@@ -549,6 +679,46 @@ SELF_TEST_LINES = (
 )
 
 # (case, least seconds or None, median lead time or None, expected verdict)
+# Bodies against the task lines: (name, wanted, bodies.txt, steps, expected verdict).
+CHECK_LINE = ['step 1: bolt 10, nut 5, gear 3']
+SELF_TEST_CHECKED = (
+    ('one of three values compared', CHECK_LINE,
+     '== step_start\nif (bolt != 10) fail("bolt");\n'
+     'else std::cout << "step 1: bolt 10, nut 5, gear 3" << std::endl;\n',
+     [{'name': 'start'}], False),
+    ('every value compared', CHECK_LINE,
+     '== step_start\nif (bolt != 10u || nut != 5 || gear != 3) { fail("step 1"); return; }\n'
+     'std::cout << "step 1: bolt 10, nut 5, gear 3" << std::endl;\n',
+     [{'name': 'start'}], True),
+    ('compared in an earlier step and an until', CHECK_LINE,
+     '== step_first\nif (bolt != 10) fail("x");\n== step_last\n'
+     'if (nut != 5) fail("x"); else std::cout << "step 1: bolt 10, nut 5, gear 3";\n',
+     [{'name': 'first'}, {'name': 'last', 'until': {'gear': 3}}], True),
+    ('a value the step sent', ['step 1: refused, hysteresis 0'],
+     '== step_send\nif (accepted) fail("x"); else std::cout << "step 1: refused, hysteresis 0";\n',
+     [{'name': 'send', 'args': {'hysteresis': 0}}], True),
+    ('a semicolon inside the printed text', ['step 5: order 4 accepted; order 6 refused'],
+     '== step_all\nif (count != 3) fail("x"); '
+     'else std::cout << "step 5: order 4 accepted; order 6 refused" << std::endl;\n',
+     [{'name': 'all'}], False),
+    ('printed by a helper, compared in a handler', CHECK_LINE,
+     '== consumer_state\nvoid show() { std::cout << "step 1: bolt 10, nut 5, gear 3"; }\n'
+     '== Client.cpp:update_stock\nif (bolt == 10 && nut == 5 && gear == 3) mOwner.show();\n',
+     [], True),
+    ('a name compared as a string', ['step 2: normal done: rinse 1'],
+     '== step_done\nif (stage != "rinse 1") fail("x"); '
+     'else std::cout << "step 2: normal done: rinse 1";\n', [{'name': 'done'}], True),
+    ('only the step number is a number', ['step 6: done'],
+     '== step_end\nstd::cout << "step 6: done" << std::endl;\n', [{'name': 'end'}], True),
+    ('the value printed from a variable', CHECK_LINE,
+     '== step_start\nstd::cout << "step 1: bolt " << bolt << ", nut " << nut << ", gear "'
+     ' << gear;\n', [{'name': 'start'}], True),
+    ('a string in a fail message is no check', CHECK_LINE,
+     '== step_start\nif (bolt != 10) fail("nut 5 gear 3");\n'
+     'std::cout << "step 1: bolt 10, nut 5, gear 3";\n', [{'name': 'start'}], False),
+    ('no bodies.txt', CHECK_LINE, None, [], None),
+)
+
 SELF_TEST_TIMING = (
     ('the task states no timing', None, 0.05, None),
     ('no passing run', 6.3, None, None),
@@ -584,6 +754,10 @@ def self_test():
     blocks = task_lines('text\n```lines\nstep 1: a\n\nstep 2: b\n```\n```\nx\n```\n')
     if blocks != ['step 1: a', 'step 2: b']:
         failures.append('lines, the task block: {} read'.format(blocks))
+    for name, wanted, bodies, steps, expected in SELF_TEST_CHECKED:
+        got = judge_checked(wanted, bodies, {'interfaces': [{'steps': steps}]})['passed']
+        if got is not expected:
+            failures.append('checked, {}: {} expected, got {}'.format(name, expected, got))
     for name, least, lead_time, expected in SELF_TEST_TIMING:
         got = judge_timing(least, lead_time)['passed']
         if got is not expected:
@@ -593,7 +767,7 @@ def self_test():
             failures.append('sanitize, {}: {} expected, got {}'
                             .format(name, expected, ran(observed)))
     cases = (len(SELF_TEST_NO_PEER) + len(SELF_TEST_LOSS) + len(SELF_TEST_LINES) + 1
-             + len(SELF_TEST_TIMING) + len(SELF_TEST_RAN))
+             + len(SELF_TEST_CHECKED) + len(SELF_TEST_TIMING) + len(SELF_TEST_RAN))
     for line in failures:
         print('   FAIL  ' + line)
     print('verify_run --self-test: {} case(s), {} failure(s)'.format(cases, len(failures)))
@@ -655,6 +829,8 @@ def main():
     report(probe_cpu(loads))
     report(probe_programs(scenario, run_dir))
     report(judge_lines(task_lines(task_text(run_dir)), outputs))
+    report(judge_checked(task_lines(task_text(run_dir)), read_text('bodies.txt'),
+                         read_json('design.json')))
     report(judge_timing(MIN_SECONDS.get(os.path.basename(task_file(run_dir))),
                         statistics.median(leads) if leads else None))
     if args.sanitize:

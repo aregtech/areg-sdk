@@ -545,8 +545,9 @@ tell two implementations apart.
 `verify_run.py <run directory>` runs the finished project against those requirements
 after the agent has ended. The probes are generated from the project's own
 `scenarios.json` -- the first scenario with two or more processes, no stop, and a lead
-that exits 0 -- so they assume no framework, and the same probes score every arm. The
-agent never sees them: the snapshot does not carry this file.
+that exits 0 -- so they assume no framework, and the same probes score every arm, except
+`checked`, which reads the step bodies of an areg project's `bodies.txt`. The agent never
+sees them: the snapshot does not carry this file.
 
 | Probe | Requirement it scores | Passes when |
 |---|---|---|
@@ -557,6 +558,7 @@ agent never sees them: the snapshot does not carry this file.
 | `cpu` | no busy-waiting | a normal run averages under 0.5 cores (where the platform reports child CPU time) |
 | `programs` | as many separate programs as the task asks for | the normal scenario runs at least the number of distinct programs the prompt names ("three separate programs"); not scored for a prompt that names none |
 | `lines` | the task's own scenario, every step of it | every line of the prompt's `lines` blocks ends a line some process printed in the first passing normal run (any case and spacing, `<name>` is any value); not scored for a prompt with no block |
+| `checked` | a line is printed once its expectation held, not merely printed | every number a task line states as fixed text in a step body's print is compared in that step or the steps since the previous printed line (a code literal, a compared string, an `until` or a sent `args` value); a print outside a step counts every body. Not scored without `bodies.txt` or a `lines` block |
 | `timing` | the timed work the task states is done, not skipped | the median normal run takes at least half of what the task's own waits add up to (`MIN_SECONDS` in `verify_run.py`, kept out of the prompt so a sleep cannot meet it); not scored for a task that states no timing |
 | `sanitize` (`--sanitize`) | no memory or undefined-behaviour defect -- not a checklist item | a rebuild under ASan and UBSan runs the normal scenario and one peer loss with no finding |
 

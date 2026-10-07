@@ -47,9 +47,10 @@ It restates this page and the SDK's `AGENTS.md`; a run following this page skips
 
 From the task, decide the requests, responses, broadcasts, attributes and data types.
 Right after the scaffold, in one request, read `design.json`, run
-`gen_docs.py --example` and open `05-design.md`, plus `22-state-machine.md` when an
-answer depends on what came before. Open nothing else before `design.json` is
-written: `20` and `21` describe the XML the generator writes for you.
+`gen_docs.py --example` (`--example service programs` for several services or
+programs) and open `05-design.md`, plus `22-state-machine.md` when an answer
+depends on what came before. Open nothing else before `design.json` is written:
+`20` and `21` describe the XML the generator writes.
 
 **A provider reads its own attributes back.** An attribute gives the provider a getter
 as well as a setter, so state the service already carries needs no shadow member beside

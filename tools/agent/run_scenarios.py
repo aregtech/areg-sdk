@@ -114,6 +114,24 @@ def is_listening(port, host='127.0.0.1'):
         probe.close()
 
 
+# The router port line of an areg.init.
+PORT_RE = re.compile(r'^[ \t]*router::\*::port::tcpip[ \t]*=[ \t]*(\d+)', re.MULTILINE)
+
+
+def router_port(directories):
+    """The router port the config/areg.init beside the binaries names, else ROUTER_PORT."""
+    for directory in directories:
+        try:
+            with open(os.path.join(directory, 'config', 'areg.init'), encoding='utf-8',
+                      errors='replace') as handle:
+                found = PORT_RE.search(handle.read())
+        except OSError:
+            continue
+        if found:
+            return int(found.group(1))
+    return ROUTER_PORT
+
+
 # The suffixes a framework service is built with, whichever system built it.
 SERVICE_SUFFIXES = ('.elf', '.exe', '.mac', '')
 
@@ -587,18 +605,19 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
         return False, name, 'no processes listed'
 
     router_handle = None
+    port = router_port(build_dirs)
     # A router port another process already serves is used as it is; no second
     # router is started.
-    foreign = bool(scenario.get('router')) and is_listening(ROUTER_PORT)
+    foreign = bool(scenario.get('router')) and is_listening(port)
     if foreign and not quiet:
         sys.stdout.write('      port {} is already served by a process this run did not '
-                         'start; the scenario uses it\n'.format(ROUTER_PORT))
+                         'start; the scenario uses it\n'.format(port))
     if scenario.get('router') and not foreign:
         searched = list(build_dirs) + [INSTALLED_SERVICES]
         router = find_service('mtrouter', searched)
         if router is None:
             return False, name, 'mtrouter not found in ' + ', '.join(searched)
-        router_handle, why = start_service(router, ROUTER_PORT)
+        router_handle, why = start_service(router, port)
         if router_handle is None:
             return False, name, why
 
@@ -737,7 +756,7 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
                 ', '.join(path.replace(os.sep, '/') for path in logs) or spool))
         if foreign:
             detail += ('; the router on port {} was not started by this run{}'.format(
-                ROUTER_PORT, '' if is_listening(ROUTER_PORT)
+                port, '' if is_listening(port)
                 else ', and it stopped during the scenario'))
         return False, name, detail
 

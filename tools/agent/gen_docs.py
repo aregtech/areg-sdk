@@ -2833,7 +2833,8 @@ TEMPLATE = {
                "in the order it asked. A provider that answers later (on a timer, a signal or",
                "another service's answer) and must take the next call meanwhile releases it with",
                "unblock_current_request(); then several are open, they may be answered in any",
-               "order, and the caller tells them apart by the answer fields.",
+               "order, and the caller tells them apart by the answer fields: a response",
+               "carries only those, never the request's parameters.",
                "A request, response or broadcast name is written snake_case, without the prefix",
                "the generator adds: open_valve is request_open_valve. Attributes are converted.",
                "Several services, instances or programs: gen_docs.py --example programs.",
@@ -3074,12 +3075,12 @@ def main():
     parser.add_argument('--spec', action='append', default=[],
                         help='a JSON description; pass it once per spec file')
     parser.add_argument('--outdir', help='the directory the documents are written to')
-    parser.add_argument('--example', nargs='?', const='service',
-                        choices=['service', 'programs', 'machine'],
-                        help='print a whole spec to copy, and write nothing. "programs" '
-                             'prints one of several services in several programs: roles, '
-                             'uses, threads and deployments. "machine" prints a timed '
-                             'machine hosted from two states and run N times')
+    parser.add_argument('--example', nargs='*', choices=['service', 'programs', 'machine'],
+                        help='print a whole spec to copy, and write nothing; several names '
+                             'print several in one call, "service" when none is named. '
+                             '"programs" prints one of several services in several '
+                             'programs: roles, uses, threads and deployments. "machine" '
+                             'prints a timed machine hosted from two states and run N times')
     parser.add_argument('--template', metavar='PATH',
                         help='write a spec with every key present and empty, each section '
                              'with its note, to fill in. A file there that carries work is '
@@ -3094,12 +3095,16 @@ def main():
                              'do not print them')
     args = parser.parse_args()
 
-    if args.example:
+    if args.example is not None:
         # The same renderer the template uses: every value that fits stays on its
         # line. The page tells the agent to read this in one call, and one value per
         # line makes that call twice the size for nothing.
-        print(render({'service': EXAMPLE, 'programs': EXAMPLE_PROGRAMS,
-                      'machine': EXAMPLE_MACHINE}[args.example]))
+        names = list(dict.fromkeys(args.example or ['service']))
+        for name in names:
+            if len(names) > 1:
+                print('== gen_docs.py --example {}'.format(name))
+            print(render({'service': EXAMPLE, 'programs': EXAMPLE_PROGRAMS,
+                          'machine': EXAMPLE_MACHINE}[name]))
         return 0
     if args.template:
         if write_template(args.template) == 'work':
