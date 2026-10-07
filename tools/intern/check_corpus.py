@@ -2804,6 +2804,9 @@ def run():
     check_generated_defects(report)
     check_step_driver(report)
     check_answer_queue(report)
+    check_answer_until(report)
+    check_worker_entry_name(report)
+    check_type_order(report)
     check_programs_gathered(report)
     check_late_arrival(report)
     check_self_transition(report)
@@ -5073,6 +5076,12 @@ QUEUE_SAMPLE = [{'name': 'open_narrow', 'send': 'open', 'args': {'width': 600}, 
                 {'name': 'first_answer', 'await': 'open'},
                 {'name': 'second_answer', 'await': 'open'}]
 
+# Two requests in flight, each answer collected by its values, in either order.
+UNTIL_QUEUE_SAMPLE = [{'name': 'open_narrow', 'send': 'open', 'args': {'width': 600}, 'wait': 1},
+                      {'name': 'open_wide', 'send': 'open', 'args': {'width': 1200}, 'wait': 1},
+                      {'name': 'refused', 'await': 'open', 'until': {'accepted': False}},
+                      {'name': 'granted', 'await': 'open', 'until': {'accepted': True}}]
+
 # A step that awaits its own answer while the one sent before it is still owed.
 OWED_SAMPLE = [{'name': 'open_narrow', 'send': 'open', 'args': {'width': 600}, 'wait': 1},
                {'name': 'open_wide', 'send': 'open', 'args': {'width': 1200}}]
@@ -6012,6 +6021,39 @@ def check_unused_parameters(report):
                                   'as before'.format(marked))
 
 
+def check_answer_until(report):
+    """A step that collects a kept answer with "until" takes the one that matches and
+    leaves the others kept for the later steps, whatever order they arrived in."""
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    holder = tempfile.mkdtemp()
+    here = os.getcwd()
+    try:
+        os.chdir(holder)
+        made = generate_application(tools, 'matched', UNTIL_QUEUE_SAMPLE)
+        if not os.path.isfile(made):
+            report.fail('answer-until', made)
+            return
+        with open(made, encoding='utf-8') as handle:
+            source = handle.read()
+    finally:
+        os.chdir(here)
+        shutil.rmtree(holder, ignore_errors=True)
+    live = re.search(r'case Step::Refused:.*?if \(!\(\(accepted == false\)\)\)\s*\{\s*'
+                     r'if \((mLate\w+Count) < 2\)\s*\{\s*(mLate\w+)\[\1\+\+\]', source, re.S)
+    if live is None:
+        report.fail('answer-until', 'an answer a collecting step\'s "until" does not match is '
+                                    'dropped instead of kept for the later steps')
+        return
+    if not re.search(r'case Step::Granted:\s*for \(uint32_t at = 0; at < {}; \+\+at\)\s*\{{'
+                     r'\s*if \(!\(\({}\[at\]\.accepted == true\)\)\)'
+                     .format(live.group(1), live.group(2)), source):
+        report.fail('answer-until', 'a collecting step with "until" takes the first kept '
+                                    'answer instead of the one that matches')
+        return
+    report.ok('answer-until', 'a collecting step with "until" takes the kept answer that '
+                              'matches and keeps the others for the later steps')
+
+
 def check_answer_queue(report):
     """Answers of requests sent by a step that waits a time are kept for the steps that
     collect them, and a step that would take one of them as its own is refused."""
@@ -6340,6 +6382,62 @@ def check_peer_loss_branch(report):
 
     report.ok('peer-loss', 'the generated consumer answers a provider that went away '
                            'where that arrives, with a marker and without quitting')
+
+
+def check_type_order(report):
+    """A data type list is written with each type after the ones it uses, so a design
+    may declare a structure before the container its field names."""
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_docs
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('type-order', 'gen_docs.py does not import: {}'.format(failure))
+        return
+    spec = {'name': 'OrderTypes', 'declare': [
+        {'name': 'Holder', 'kind': 'struct', 'fields': [{'name': 'ids', 'type': 'Ids'},
+                                                        {'name': 'mode', 'type': 'Mode'}]},
+        {'name': 'Ids', 'kind': 'container', 'container': 'Array', 'of': 'uint32'},
+        {'name': 'Mode', 'kind': 'enum', 'values': [{'name': 'On'}, {'name': 'Off'}]}]}
+    written = re.findall(r'<DataType ID="\d+" Name="(\w+)"', gen_docs.build_dtml(spec))
+    if written != ['Ids', 'Mode', 'Holder']:
+        report.fail('type-order', 'a structure declared before the types its fields use is '
+                    'written first, which codegen.jar refuses as an unresolved type: {}'
+                    .format(', '.join(written)))
+        return
+    spec['declare'] = [spec['declare'][1], spec['declare'][2], spec['declare'][0]]
+    if gen_docs.build_dtml(spec).count('<DataType ') != 3:
+        report.fail('type-order', 'a list already in order is not written whole')
+        return
+    report.ok('type-order', 'data types are written after the types they use')
+
+
+def check_worker_entry_name(report):
+    """P-11 takes a worker consumer name read from the model entry as answered, the way
+    page 38 tells it to be read, and still reports a name nothing answers to."""
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import check_contract
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('worker-entry-name', 'check_contract.py does not import: {}'
+                    .format(failure))
+        return
+    model = 'REGISTER_WORKER_THREAD("ReaderThread", "Reader")'
+    entry = ', mReader(entry.mWorkerThreads[0].mConsumerName)'
+    found = {}
+    for label, texts in (('entry', [model, entry]), ('nothing', [model, '// Reader'])):
+        findings = []
+        check_contract.check_threads(range(len(texts)), findings, lambda at: texts[at])
+        found[label] = [item for item in findings if item.rule == 'P-11']
+    if found['entry']:
+        report.fail('worker-entry-name', 'P-11 reports a worker consumer name the '
+                    'component reads from entry.mWorkerThreads, which page 38 prescribes')
+        return
+    if not found['nothing']:
+        report.fail('worker-entry-name', 'P-11 no longer reports a worker consumer name '
+                    'nothing in the project answers to')
+        return
+    report.ok('worker-entry-name', 'P-11 takes a name read from the model entry as '
+              'answered and reports one nothing answers to')
 
 
 def check_final_entry_rule(report):

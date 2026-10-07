@@ -2173,13 +2173,15 @@ def steps_of(specs, iface, used=None, driven_role=None):
             fail('{} awaits "{}", which is no response, broadcast or attribute of {}. '
                  'It awaits one of: {}'
                  .format(where, target, source.name, awaitable(source)))
+        until = until_of(step.get('until'), target, kinds, source, where)
         steps.append({'name': name, 'enum': pascal(name), 'send': send,
                       'call': prefix + source.spell('request', send) if send is not None
                       else None,
                       'args': values,
                       'awaits': (kinds[target], target) if target is not None else None,
                       'wait': wait,
-                      'until': until_of(step.get('until'), target, kinds, source, where),
+                      'until': ['({} == {})'.format(param, value) for param, value in until],
+                      'until_pairs': until,
                       'role': role, 'source': source, 'call_member': prefix})
     return steps
 
@@ -2209,7 +2211,7 @@ def role_params(step):
 
 
 def until_of(until, target, kinds, iface, where):
-    """The C++ conditions of a step's "until", one per parameter, all of which must hold."""
+    """(parameter, C++ value) of a step's "until", all of which must hold."""
     if not until:
         return []
     if not isinstance(until, dict):
@@ -2228,8 +2230,7 @@ def until_of(until, target, kinds, iface, where):
         if param not in types:
             fail('{} holds until "{}", which is no parameter of {} {}. It has: {}'
                  .format(where, param, kind, target, ', '.join(types) or 'none'))
-        conditions.append('({} == {})'.format(param, cpp_value(value, types[param], iface,
-                                                              where)))
+        conditions.append((param, cpp_value(value, types[param], iface, where)))
     return conditions
 
 
@@ -2388,8 +2389,11 @@ def step_dispatch(steps, kind, name, indent, latch=None, role=None):
                   pad + '        StepEnd ending(*this);']
         if step.get('until'):
             lines += [pad + '        if (!({}))'.format(' && '.join(step['until'])),
-                      pad + '        {',
-                      pad + '            stay();',
+                      pad + '        {']
+            if latch and 'queue' in latch \
+                    and step['source'].response_of.get(step['send']) != name:
+                lines += [pad + '            ' + line for line in keep_answer(latch, kind, name)]
+            lines += [pad + '            stay();',
                       pad + '            break;',
                       pad + '        }']
         lines += [marker('step_' + step['name'], STEP_CHECK[kind] + (
@@ -2402,19 +2406,9 @@ def step_dispatch(steps, kind, name, indent, latch=None, role=None):
     # ignore most messages. It is remembered rather than reported, because the step
     # that did want it waits for ever and the stall report is where that is answered.
     if latch and 'queue' in latch:
-        values = ', '.join(param for _, _, param in latch['args'])
-        return lines + [
-            pad + 'default:',
-            pad + '    if ({} < {})'.format(latch['count'], latch['queue']),
-            pad + '    {',
-            pad + '        {}[{}++] = {}{{ {} }};'.format(latch['member'], latch['count'],
-                                                     latch['type'], values),
-            pad + '    }',
-            pad + '    else',
-            pad + '    {',
-            pad + '        dropped("{} {}{}");'.format(kind, name, ' of ' + role if role else ''),
-            pad + '    }',
-            pad + '    break;', pad + '}']
+        return lines + [pad + 'default:'] \
+            + [pad + '    ' + line for line in keep_answer(latch, kind, name, role)] \
+            + [pad + '    break;', pad + '}']
     lines += [pad + 'default:',
               pad + '    dropped("{} {}{}");'.format(kind, name, ' of ' + role if role else '')]
     if latch:
@@ -2423,6 +2417,20 @@ def step_dispatch(steps, kind, name, indent, latch=None, role=None):
                   for member, _, param in latch['args']]
     lines += [pad + '    break;', pad + '}']
     return lines
+
+
+def keep_answer(latch, kind, name, role=None):
+    """Puts an answer at the end of its queue for a later step, or reports it dropped."""
+    values = ', '.join(param for _, _, param in latch['args'])
+    return ['if ({} < {})'.format(latch['count'], latch['queue']),
+            '{',
+            '    {}[{}++] = {}{{ {} }};'.format(latch['member'], latch['count'],
+                                             latch['type'], values),
+            '}',
+            'else',
+            '{',
+            '    dropped("{} {}{}");'.format(kind, name, ' of ' + role if role else ''),
+            '}']
 
 
 def role_methods(steps, latches):
@@ -2599,6 +2607,33 @@ def late_lines(steps, iface, latches):
              '        {']
     flags = flag_latches(latches)
     for step in steps:
+        if collects(step, latches, iface) and step.get('until'):
+            latch = latches[await_key(step)]
+            lines += ['        case Step::{}:'.format(step['enum']),
+                      '            for (uint32_t at = 0; at < {}; ++at)'.format(latch['count']),
+                      '            {',
+                      '                if (!({}))'.format(' && '.join(
+                          '({}[at].{} == {})'.format(latch['member'], param, value)
+                          for param, value in step['until_pairs'])),
+                      '                {',
+                      '                    continue;',
+                      '                }',
+                      '',
+                      '                const {} late{{ {}[at] }};'.format(latch['type'],
+                                                                      latch['member']),
+                      '                for (uint32_t index = at + 1; index < {}; ++index)'
+                      .format(latch['count']),
+                      '                {',
+                      '                    {0}[index - 1] = {0}[index];'.format(latch['member']),
+                      '                }',
+                      '                --{};'.format(latch['count']),
+                      '                {}({});'.format(
+                          iface.spell('response', step['awaits'][1]),
+                          ', '.join('late.' + field for field, _, _ in latch['args'])),
+                      '                break;',
+                      '            }',
+                      '            break;']
+            continue
         if collects(step, latches, iface):
             latch = latches[await_key(step)]
             lines += ['        case Step::{}:'.format(step['enum']),

@@ -10,6 +10,7 @@ its own.
 Nothing here has a command line. gen_docs.py is the tool.
 """
 import contextlib
+import re
 import sys
 import xml.sax.saxutils as saxutils
 
@@ -291,12 +292,35 @@ def write_datatype(writer, depth, entry, vocab):
     writer.add(depth, '</DataType>')
 
 
+def used_types(entry, names):
+    """The names of this list that a type's fields, value or key spell."""
+    spelled = [field.get('type') for field in entry.get('fields') or []
+               if isinstance(field, dict)] + [entry.get('of'), entry.get('key')]
+    return set(word for text in spelled if isinstance(text, str)
+               for word in re.findall(r'[A-Za-z_]\w*', text)
+               if word in names and word != entry.get('name'))
+
+
+def dependency_order(types):
+    """The types in their written order, except that one comes after those it uses."""
+    names = set(entry.get('name') for entry in types)
+    waiting = list(types)
+    placed, ordered = set(), []
+    while waiting:
+        ready = [entry for entry in waiting if used_types(entry, names) <= placed]
+        entry = ready[0] if ready else waiting[0]
+        waiting.remove(entry)
+        placed.add(entry.get('name'))
+        ordered.append(entry)
+    return ordered
+
+
 def write_datatypes(writer, depth, types, vocab):
-    """The DataTypeList every document kind carries."""
+    """The DataTypeList every document kind carries, each type after those it uses."""
     if not types:
         return
     writer.add(depth, '<DataTypeList>')
-    for entry in types:
+    for entry in dependency_order(types):
         write_datatype(writer, depth + 1, entry, vocab)
     writer.add(depth, '</DataTypeList>')
 

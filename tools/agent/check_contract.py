@@ -220,6 +220,7 @@ SETUP_RE = re.compile(r'\bApplication\s*::\s*setup\s*\(')
 # answers to in worker_thread_consumer(). A mismatch is silent: the worker thread
 # starts and never runs a consumer.
 WORKER_MACRO_RE = re.compile(r'\b(REGISTER_WORKER_THREAD(?:_EX2?)?)\s*\(')
+WORKER_ENTRY_RE = re.compile(r'\bmWorkerThreads\s*\[')
 
 # B8. Any finding can be silenced on the offending line or the line above. A
 # checker that cannot be quieted on a correct edge case gets switched off wholesale.
@@ -1371,7 +1372,8 @@ def check_threads(sources, findings, read):
     from worker_thread_consumer(). The base implementation returns nullptr for a
     name it does not know, so a misspelling starts the thread and runs nothing.
     The name may be a constant, so it is reported only when its exact text appears
-    nowhere else in the project -- the same tolerance P-03 uses.
+    nowhere else in the project -- the same tolerance P-03 uses -- and the project
+    does not read it from the model through ComponentEntry::mWorkerThreads.
 
     The plan asked P-11 to catch an event sent to a thread name that no thread
     answers to. That is not detectable: send_event takes a DispatcherThread
@@ -1382,6 +1384,7 @@ def check_threads(sources, findings, read):
     watchdog_on = False
     consumers = []
     literals = set()
+    from_entry = False
 
     for path in sources:
         text = read(path)
@@ -1420,6 +1423,8 @@ def check_threads(sources, findings, read):
                         consumers.append((name[1:-1], path, number + 1))
             else:
                 literals.update(LITERAL_RE.findall(raw))
+            if WORKER_ENTRY_RE.search(line):
+                from_entry = True
 
     if timeouts and not watchdog_on:
         value, path, number = timeouts[0]
@@ -1431,7 +1436,7 @@ def check_threads(sources, findings, read):
             'set to true, or register the thread with no timeout' % value))
 
     for name, path, number in consumers:
-        if name not in literals:
+        if name not in literals and not from_entry:
             findings.append(Finding(
                 'P-11', 'advice', path, number,
                 'nothing in the project answers to the worker thread consumer '
