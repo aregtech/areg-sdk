@@ -420,6 +420,7 @@ jobs:
         if: runner.os == 'Linux' && matrix.config.arch == 'x86'
         run: |
           sudo dpkg --add-architecture i386
+          sudo apt-get update
           sudo apt-get install -y gcc-multilib g++-multilib libncurses-dev:i386
 
       - name: Setup ccache for faster compilation
