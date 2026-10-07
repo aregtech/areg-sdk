@@ -138,6 +138,8 @@ AREG_EOF
 
 `--write <file>` saves standard input to that file first: a file and its build are one
 call. A shell with no here-document writes the file and runs this in the same message.
+`--edit` instead changes lines of your files in the same call: `== <file>`,
+`<<<<<<< SEARCH`, the old lines, `=======`, the new lines, `>>>>>>> REPLACE`.
 
 Six steps with no decision in any of them: it writes the documents from the spec,
 writes the application from them, applies `bodies.txt`, checks the contract -- which
@@ -231,21 +233,19 @@ a scenario-level `"stop"`. The generator writes both for a stepped two-process p
 a trigger it cannot pick is a worksheet section. One run then prints the line each
 expectation matched, and that output is the evidence for the report.
 
-**Never start the processes by hand.** No `prog &`, no `sleep`, no `pkill`, no `ps`.
-It is slower, it is not repeatable, it leaves background processes behind, and a
-command ending in `pkill` or `grep` that matches nothing exits non-zero, which most
-harnesses show as a failed tool call with no output -- a trap that can cost a dozen
-turns. The project's run.sh exists for a human watching it; a scenario is what you run.
+**Never start the processes by hand** (`prog &`, `sleep`, `pkill`, `ps`): it is not
+repeatable, it leaves processes behind, and a `pkill` or `grep` that matches nothing
+exits non-zero, which a harness shows as a failed call with no output. `run.sh` is for
+a human watching; a scenario is what you run.
 
 **When you need the raw output of a run, ask the runner for it, not the shell.**
 `--verbose` prints every line each process wrote, which is where a temporary
 diagnostic printout comes back; `--only <name>` runs one scenario. Together they are
 the whole of ad-hoc debugging, and they leave nothing running.
 
-**Every request re-sends the whole conversation**, so the bill is the number of
-requests multiplied by how much each one carries. Never pour a log into it: anything
-that can print hundreds of lines -- `find`, `ls -R`, a raw compiler run -- is piped
-through `grep` or `head` before you ask for it.
+**Every request re-sends the whole conversation**, so the bill is the requests times
+what each one carries. Never pour a log into it: anything that can print hundreds of
+lines -- `find`, `ls -R`, a raw compiler run -- is piped through `grep` or `head`.
 
 ## 8. Fix -- bounded, then stop
 

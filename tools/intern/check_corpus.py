@@ -2807,6 +2807,8 @@ def run():
     check_answer_until(report)
     check_cause_trail(report)
     check_worker_entry_name(report)
+    check_worker_markers(report)
+    check_edit_blocks(report)
     check_type_order(report)
     check_step_proof(report)
     check_shape_facts(report)
@@ -6498,6 +6500,102 @@ def check_type_order(report):
         report.fail('type-order', 'a list already in order is not written whole')
         return
     report.ok('type-order', 'data types are written after the types they use')
+
+
+def check_worker_markers(report):
+    """Page 38 section 4 builds a worker from the provider's startup, shutdown and
+    includes sections, and the generator writes each of them with a hint naming it."""
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_skeleton
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('worker-markers', 'gen_skeleton.py does not import: {}'.format(failure))
+        return
+    page = read('docs', 'agent', '38-workers.md')
+    section = page.partition('## 4. In a project from design.json')[2].partition('\n## ')[0]
+    if not section:
+        report.fail('worker-markers', '38-workers.md has no section 4 "In a project from '
+                    'design.json", which the startup hint names')
+        return
+    missing = [name for name in ('== includes', '== provider_state', '== startup',
+                                 '== shutdown', 'create_worker_thread(',
+                                 'delete_worker_thread(', 'macro_declare_executable')
+               if name not in section]
+    if missing:
+        report.fail('worker-markers', '38-workers.md section 4 lost {}'
+                    .format(', '.join(missing)))
+        return
+    if '38-workers.md section 4' not in gen_skeleton.STARTUP_HINT:
+        report.fail('worker-markers', 'the startup hint no longer names 38-workers.md '
+                    'section 4')
+        return
+    source = read('tools', 'agent', 'gen_skeleton.py')
+    absent = [name for name in ("marker('startup'", "marker('shutdown'", "marker('includes'")
+              if name not in source]
+    if absent:
+        report.fail('worker-markers', 'gen_skeleton.py writes no {} section, which page 38 '
+                    'section 4 fills'.format(', '.join(absent)))
+        return
+    report.ok('worker-markers', 'page 38 section 4 fills the startup, shutdown and includes '
+              'sections the generator writes, and the startup hint names it')
+
+
+def check_edit_blocks(report):
+    """build_project.py --edit applies a block that matches once, in several files at
+    once, and refuses every block, writing nothing, when one matches no place, several
+    places, or a source written from bodies.txt."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        'edit_build', os.path.join(ROOT, 'tools', 'agent', 'build_project.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    if not hasattr(module, 'apply_edits'):
+        report.fail('edit-blocks', 'build_project.py has no --edit')
+        return
+
+    def block(name, old, new):
+        return '== {}\n<<<<<<< SEARCH\n{}\n=======\n{}\n>>>>>>> REPLACE\n'.format(
+            name, old, new)
+
+    design = '{\n  "a": {"x": 1},\n  "b": {"x": 1},\n  "c": 2\n}\n'
+    cases = (('match in two files', block('design.json', '  "c": 2', '  "c": 3')
+              + block('src/Own.cpp', 'int f();', 'int g();'), True,
+              ('"c": 3', 'int g();')),
+             ('no match', block('design.json', '  "c": 9', '  "c": 3'), False, ()),
+             ('two matches', block('design.json', '{"x": 1}', '{"x": 2}'), False, ()),
+             ('generated source', block('src/Own.cpp', 'int f();', 'int g();')
+              + block('src/P.cpp', '    int a;', '    int b;'), False, ()))
+    for label, text, applies, expected in cases:
+        with tempfile.TemporaryDirectory() as root:
+            os.makedirs(os.path.join(root, 'src'))
+            files = {'design.json': design, 'src/Own.cpp': 'int f();\n',
+                     'src/P.cpp': 'void p()\n{\n    // body(you) request_p\n    int a;\n'
+                                  '    // end(you) request_p\n}\n'}
+            for name, content in files.items():
+                with open(os.path.join(root, name), 'w', newline='\n') as handle:
+                    handle.write(content)
+            try:
+                with contextlib.redirect_stdout(io.StringIO()), \
+                        contextlib.redirect_stderr(io.StringIO()):
+                    module.apply_edits(root, text, [('src/services', 'design.json')])
+                applied = True
+            except SystemExit:
+                applied = False
+            now = ''.join(open(os.path.join(root, name)).read() for name in sorted(files))
+        if applied != applies:
+            report.fail('edit-blocks', '--edit, {}: {}'.format(
+                label, 'applied' if applied else 'refused'))
+            return
+        if not applies and now != ''.join(files[name] for name in sorted(files)):
+            report.fail('edit-blocks', '--edit, {}: refused, but a file changed'.format(label))
+            return
+        lost = [text for text in expected if text not in now]
+        if lost:
+            report.fail('edit-blocks', '--edit, {}: {} not written'.format(
+                label, ', '.join(lost)))
+            return
+    report.ok('edit-blocks', '--edit applies blocks that match once, across files, and '
+              'refuses every block when one matches nothing, twice, or a generated source')
 
 
 def check_worker_entry_name(report):

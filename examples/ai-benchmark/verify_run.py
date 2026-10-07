@@ -28,11 +28,6 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.normpath(os.path.join(HERE, '..', '..', 'tools', 'agent')))
 import run_scenarios  # noqa: E402
 
-try:
-    import resource
-except ImportError:
-    resource = None
-
 START_DELAY = 3.0
 # The deadline the task asks the application to respect.
 WAIT_LIMIT = 20.0
@@ -51,7 +46,7 @@ LOSS_LATENCY = 0.25
 LOSS_TEARDOWN = 3.0
 # Lines of the lead's own output a failed loss point keeps as its evidence.
 LOSS_TAIL_LINES = 8
-CPU_LIMIT = 0.5
+CPU_LIMIT = run_scenarios.CPU_LIMIT
 # The least time, in seconds, a normal run of a task with stated timing can take: half
 # of what its own waits add up to, so only a run that skips the timed work falls below.
 # Keyed by the prompt's file name; kept here and not in the prompt, so it cannot be met
@@ -310,23 +305,15 @@ def claimed(run_dir):
     return '{} of {}'.format(*claims[-1]) if claims else None
 
 
-def child_cpu():
-    """CPU seconds of every finished child process, or None where not measurable."""
-    if resource is None:
-        return None
-    usage = resource.getrusage(resource.RUSAGE_CHILDREN)
-    return usage.ru_utime + usage.ru_stime
-
-
 def run(scenario, build_dirs):
     """Runs one scenario. Returns (passed, detail, observed, wall, cpu)."""
     observed = {}
-    before = child_cpu()
+    before = run_scenarios.child_cpu()
     started = time.time()
     passed, _, detail = run_scenarios.run_scenario(scenario, build_dirs, False, True,
                                                    observed)
     wall = time.time() - started
-    cpu = None if before is None else child_cpu() - before
+    cpu = None if before is None else run_scenarios.child_cpu() - before
     return passed, detail, observed, wall, cpu
 
 

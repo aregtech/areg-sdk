@@ -468,7 +468,10 @@ inline bool AregImpl_##EventClass<DATA_CLASS>::send_event(AregImpl_##EventClass<
 template <class DATA_CLASS>                                                                                             \
 inline bool AregImpl_##EventClass<DATA_CLASS>::add_listener(AregImpl_##ConsumerClass<DATA_CLASS>& listener,             \
                                                              const areg::String& whichThread)                           \
-{   return areg::Event::add_listener(AregImpl_##EventClass<DATA_CLASS>::CLASS_ID, listener, whichThread); }             \
+{                                                                                                                       \
+    return areg::Event::add_listener(AregImpl_##EventClass<DATA_CLASS>::CLASS_ID, listener,                             \
+                                     static_cast<uint32_t>(areg::ThreadAddress(whichThread)));                          \
+}                                                                                                                       \
 template <class DATA_CLASS>                                                                                             \
 inline bool AregImpl_##EventClass<DATA_CLASS>::add_listener(AregImpl_##ConsumerClass<DATA_CLASS>& listener,             \
                                                              areg::DispatcherThread& dispThread)                        \
@@ -476,7 +479,10 @@ inline bool AregImpl_##EventClass<DATA_CLASS>::add_listener(AregImpl_##ConsumerC
 template <class DATA_CLASS>                                                                                             \
 inline bool AregImpl_##EventClass<DATA_CLASS>::remove_listener(AregImpl_##ConsumerClass<DATA_CLASS>& listener,          \
                                                                 const areg::String& whichThread)                        \
-{   return areg::Event::remove_listener(AregImpl_##EventClass<DATA_CLASS>::CLASS_ID, listener, whichThread); }          \
+{                                                                                                                       \
+    return areg::Event::remove_listener(AregImpl_##EventClass<DATA_CLASS>::CLASS_ID, listener,                          \
+                                        static_cast<uint32_t>(areg::ThreadAddress(whichThread)));                       \
+}                                                                                                                       \
 template <class DATA_CLASS>                                                                                             \
 inline bool AregImpl_##EventClass<DATA_CLASS>::remove_listener(AregImpl_##ConsumerClass<DATA_CLASS>& listener,          \
                                                                 areg::DispatcherThread& dispThread)                     \

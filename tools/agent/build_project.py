@@ -54,12 +54,18 @@ def passed_lines(build, only=None):
             .format(KEPT_OUTPUT.format(build=build.replace(os.sep, '/')))]
 
 
+# The one-call form of a change of a few lines, named where a step fails.
+EDIT_HOW = ('A few lines of design.json, scenarios.json or a file of your own change in '
+            'this same command: --edit <<\'AREG_EOF\', then "== <file>", "<<<<<<< SEARCH", '
+            'the lines as they are, "=======", the lines that replace them, '
+            '">>>>>>> REPLACE"; several blocks and files in one call.')
+
 # What to do when a step fails. Naming the step is the whole point of a chain:
 # a failure that does not say where it happened costs more than the requests saved.
 ADVICE = {
     'documents': 'the spec was refused. The message names the file, the line and the '
                  'rule: fix the spec, not the XML. "python3 {tools}/explain_rule.py '
-                 '<number>" explains a rule by its number.',
+                 '<number>" explains a rule by its number. ' + EDIT_HOW,
     'application': 'the documents generated, but the application could not be written '
                    'from them. The message names what the document lacks.',
     'contract': 'the sources break a rule of docs/agent/api.json. Every finding names '
@@ -70,7 +76,7 @@ ADVICE = {
                  'names the process, what it was expected to print and what it '
                  'wrote. "--only <name>" iterates on one. Send every section you '
                  'change as fix.txt with this command, in one call: --write fix.txt '
-                 '<<\'AREG_EOF\'. It is folded into bodies.txt.',
+                 '<<\'AREG_EOF\'. It is folded into bodies.txt. ' + EDIT_HOW,
     'final': 'the final pass does not allow an open marker. A passing scenario says '
              'nothing about the requirement behind one: no body was written for it. '
              'Send its section as fix.txt with this command, in one call: '
@@ -81,7 +87,7 @@ ADVICE = {
              '<<\'AREG_EOF\'. Never edit the generated file. A '
              'provider that is abstract means the document gained a request the '
              'application has no handler for: add the handler, or --regenerate and '
-             'fill the markers again.',
+             'fill the markers again. ' + EDIT_HOW,
 }
 
 
@@ -228,6 +234,170 @@ def write_input(root, target):
         handle.write(text)
     print('== write: {}, {} line(s)'.format(os.path.relpath(path, root).replace(os.sep, '/'),
                                             text.count('\n')))
+
+
+# The lines of an --edit: a file, then blocks of the lines as they are and the lines
+# that replace them.
+EDIT_FILE = re.compile(r'^==\s+(\S.*?)\s*$')
+EDIT_OPEN = re.compile(r'^<{7}(\s.*)?$')
+EDIT_SPLIT = re.compile(r'^={7}\s*$')
+EDIT_CLOSE = re.compile(r'^>{7}(\s.*)?$')
+EDIT_SHAPE = ('"== <file>", "<<<<<<< SEARCH", the lines as they are, "=======", the lines '
+              'that replace them, ">>>>>>> REPLACE"')
+
+# A body lives in bodies.txt; a source holding one of these lines is written from it.
+GENERATED_SOURCE = re.compile(r'//\s*(TODO|body)\(you\)\s')
+
+
+def parse_edits(text):
+    """Returns the blocks of an --edit as [(file, line, old lines, new lines)]."""
+    edits, target, state, start = [], None, None, 0
+    old, new = [], []
+    for number, line in enumerate(text.splitlines(), 1):
+        if state is None:
+            named = EDIT_FILE.match(line)
+            if named:
+                target = named.group(1)
+            elif EDIT_OPEN.match(line):
+                if target is None:
+                    fail('--edit line {}: a block before any "== <file>" line. Each block is '
+                         '{}'.format(number, EDIT_SHAPE))
+                state, start, old, new = 'old', number, [], []
+            elif line.strip():
+                fail('--edit line {}: "{}" is outside a block. Each block is {}'
+                     .format(number, line.strip()[:60], EDIT_SHAPE))
+        elif state == 'old':
+            if EDIT_SPLIT.match(line):
+                state = 'new'
+            elif EDIT_OPEN.match(line) or EDIT_CLOSE.match(line):
+                fail('--edit line {}: the block of line {} has no "=======" line before '
+                     'this one'.format(number, start))
+            else:
+                old.append(line)
+        elif EDIT_CLOSE.match(line):
+            edits.append((target, start, old, new))
+            state = None
+        elif EDIT_OPEN.match(line) or EDIT_SPLIT.match(line):
+            fail('--edit line {}: the block of line {} has no ">>>>>>> REPLACE" line '
+                 'before this one'.format(number, start))
+        else:
+            new.append(line)
+    if state is not None:
+        fail('--edit: the block of line {} has no ">>>>>>> REPLACE" line'.format(start))
+    if not edits:
+        fail('--edit: standard input holds no block. Each block is {}'.format(EDIT_SHAPE))
+    return edits
+
+
+def edit_refusal(root, target, path, generated_dirs):
+    """Why a file may not be edited, or None."""
+    rel = os.path.relpath(path, root).replace(os.sep, '/')
+    try:
+        inside = os.path.commonpath([os.path.normcase(path), os.path.normcase(root)]) \
+            == os.path.normcase(root)
+    except ValueError:
+        inside = False
+    if not inside:
+        return 'the file is outside the project root {}'.format(root)
+    if not os.path.isfile(path):
+        return 'no such file. --write writes a whole file'
+    if rel == 'worksheet.txt':
+        return 'the generator rewrites it on every generation: change design.json or bodies.txt'
+    for where, what in generated_dirs:
+        if rel.startswith(where.rstrip('/') + '/'):
+            return 'it is generated from {}: change that instead'.format(what)
+    if rel.endswith(('.cpp', '.hpp', '.h')):
+        with open(path, encoding='utf-8', errors='replace') as handle:
+            if GENERATED_SOURCE.search(handle.read()):
+                return ('it is written from bodies.txt, so the next build writes over an '
+                        'edit in a body: change its section in bodies.txt, or send it as '
+                        'fix.txt')
+    return None
+
+
+def replace_once(text, old, new):
+    """Returns (text, note) with old replaced by new, or (None, why)."""
+    if not any(line.strip() for line in old):
+        return None, 'its search lines are empty. --write writes a whole file'
+    found = text.count('\n'.join(old))
+    if found == 1:
+        return text.replace('\n'.join(old), '\n'.join(new), 1), ''
+    lines = text.split('\n')
+    if found > 1:
+        first = old[0].strip()
+        at = [str(index + 1) for index, line in enumerate(lines) if first and first in line]
+        return None, ('its search lines appear {} times (line {}): add a line around them '
+                      'that only one place has'.format(found, ', '.join(at[:6])))
+    size = len(old)
+    stripped = [line.strip() for line in old]
+    starts = [index for index in range(len(lines) - size + 1)
+              if [line.strip() for line in lines[index:index + size]] == stripped]
+    if len(starts) == 1:
+        index = starts[0]
+        return '\n'.join(lines[:index] + new + lines[index + size:]), \
+            ' (matched ignoring spaces at the ends of lines)'
+    if len(starts) > 1:
+        return None, ('its search lines appear {} times (line {}): add a line around them '
+                      'that only one place has'
+                      .format(len(starts), ', '.join(str(index + 1) for index in starts[:6])))
+    if new and any(line.strip() for line in new) and text.count('\n'.join(new)) == 1:
+        return None, ('its search lines are not in the file and its replacement is: it was '
+                      'applied before, so leave this block out')
+    best, at = 0, -1
+    for index in range(len(lines)):
+        run = 0
+        while run < size and index + run < len(lines) \
+                and lines[index + run].strip() == stripped[run]:
+            run += 1
+        if run > best:
+            best, at = run, index
+    if best == 0:
+        return None, 'its first search line "{}" is in no line of the file'.format(
+            old[0].strip()[:80])
+    return None, ('from line {}, the file matches its first {} search line(s); line {} '
+                  'differs: the file has "{}", the block "{}"'
+                  .format(at + 1, best, at + best + 1,
+                          lines[at + best].strip()[:80] if at + best < len(lines) else '',
+                          stripped[best][:80]))
+
+
+def apply_edits(root, text, generated_dirs):
+    """Applies every --edit block, or refuses them all and writes nothing."""
+    edits = parse_edits(text)
+    files, order, refused, notes = {}, [], [], []
+    for target, start, old, new in edits:
+        path = os.path.abspath(target if os.path.isabs(target) else os.path.join(root, target))
+        name = os.path.relpath(path, root).replace(os.sep, '/')
+        if path not in files:
+            why = edit_refusal(root, target, path, generated_dirs)
+            if why:
+                refused.append('block of line {}, {}: {}'.format(start, target, why))
+                files[path] = None
+                continue
+            with open(path, encoding='utf-8', newline='') as handle:
+                raw = handle.read()
+            files[path] = [raw.replace('\r\n', '\n'), '\r\n' in raw, 0, name]
+            order.append(path)
+        entry = files[path]
+        if entry is None:
+            continue
+        result, why = replace_once(entry[0], old, new)
+        if result is None:
+            refused.append('block of line {}, {}: {}'.format(start, name, why))
+            continue
+        entry[0] = result
+        entry[2] += 1
+        if why:
+            notes.append('block of line {}{}'.format(start, why))
+    if refused:
+        fail('--edit applied nothing, every file is as it was:\n  ' + '\n  '.join(refused))
+    for path in order:
+        content, crlf, count, name = files[path]
+        with open(path, 'w', encoding='utf-8', newline='\r\n' if crlf else '\n') as handle:
+            handle.write(content)
+        print('== edit: {}, {} block(s)'.format(name, count))
+    for note in notes:
+        print('   ' + note)
 
 
 def show(lines, tail):
@@ -777,6 +947,12 @@ def main():
                         help='write standard input to this project file first, then '
                              'run as usual: design.json, bodies.txt or fix.txt and '
                              'its build in one call. Once per call')
+    parser.add_argument('--edit', action='store_true',
+                        help='read search/replace blocks from standard input and apply '
+                             'them first: "== <file>", "<<<<<<< SEARCH", the lines as '
+                             'they are, "=======", the new lines, ">>>>>>> REPLACE". '
+                             'Several blocks and files per call; one that does not match '
+                             'exactly once applies none')
     args = parser.parse_args()
     if args.only or args.verbose:
         args.run = True
@@ -786,6 +962,13 @@ def main():
         fail('no such directory: {}'.format(args.root))
     if len(args.write) > 1:
         fail('--write takes one file per call: standard input holds one file')
+    if args.edit and args.write:
+        fail('--edit and --write both read standard input: pass one of them')
+    if args.edit:
+        text = '' if sys.stdin is None or sys.stdin.isatty() else sys.stdin.read()
+        made = [(args.outdir.replace(os.sep, '/'), 'design.json')] \
+            if args.spec or read_manifest(root) else []
+        apply_edits(root, text, made + [(args.build.replace(os.sep, '/'), 'the build')])
     for target in args.write:
         write_input(root, target)
     mode = mode_of(root, args.mode)

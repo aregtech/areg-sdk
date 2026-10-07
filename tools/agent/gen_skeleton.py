@@ -1828,7 +1828,7 @@ def timer_includes(class_lines):
 
 # The provider's own lifecycle sections, and the includes they need.
 STARTUP_HINT = ('what this provider starts before its service is announced, comThread its '
-                'thread: a worker thread and the listeners it receives on (38-workers.md), '
+                'thread: a worker thread and the listeners it receives on (38-workers.md section 4), '
                 'or one // line')
 SHUTDOWN_HINT = ('what it stops before the service stops: remove those listeners and '
                  'delete_worker_thread(), or one // line')

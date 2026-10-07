@@ -9,16 +9,17 @@ time are `37-threads.md`.
 
 - **A worker talks by custom events and timers only** (`23-events.md`). It never calls the
   component's members; state both touch needs a lock (`42-runtime-api.md` section 8).
-- **Its consumer.** Every worker is bound to an `areg::WorkerThreadConsumer`, named; the
-  component returns it from `worker_thread_consumer()`. One consumer may serve several
-  workers: the `areg::WorkerThread &` each call passes tells them apart.
+- **Its consumer.** Every worker is bound to a named `areg::WorkerThreadConsumer`; for a
+  worker declared in the model, the component returns it from `worker_thread_consumer()`.
+  One consumer may serve several workers: the `areg::WorkerThread &` each call passes
+  tells them apart.
 - **The component adds every listener a worker receives on**, in `notify_thread_started()`
   (declared in the model) or right after `create_worker_thread()` (by hand), before the
   service is announced; and removes it in `shutdown_component()` before calling the base.
   An event sent before its listener exists is dropped: `send_event()` returns false.
-- **The component's own listeners**, for what a worker sends it, are added in its
-  constructor: the component thread accepts events before it constructs its components,
-  and no worker exists yet.
+- **The component's own listeners**, for what a worker sends it, are added before the
+  worker is created: in its constructor, or in `startup_component()` before
+  `create_worker_thread()`.
 - **`register_event_consumers()` / `unregister_event_consumers()` are optional.** They run
   on the worker thread as it starts and stops: start the worker's timers there, or run a
   loop of its own that blocks on its source. Never add a listener there.
@@ -71,19 +72,62 @@ void Provider::startup_component(areg::ComponentThread & owner)
 `shutdown_component()` removes the listener, calls the base, which stops every worker of
 the component, then `delete_worker_thread("ScanThread")`.
 
-## 4. Who sends to whom
+## 4. In a project from design.json
+
+A worker takes four sections of the generated provider, in `bodies.txt`. The provider's
+bases, the model and `main.cpp` stay as generated: a member sink receives the worker's
+event and calls one method.
+
+```
+== includes
+#include "src/provider/ReadingSink.hpp"
+#include "src/provider/Reader.hpp"
+== provider_state
+Reader mReader{ "Reader" };
+ReadingSink<GatewayProvider> mSink{ *this, &GatewayProvider::on_reading };
+void on_reading(const ReadingData & data) { /* set attributes, answer, trigger */ }
+== startup
+ReadingEvent::add_listener(mSink, comThread);
+create_worker_thread("ReaderThread", mReader, comThread);
+== shutdown
+delete_worker_thread("ReaderThread");         // stops the worker and waits for it
+ReadingEvent::remove_listener(mSink, comThread);
+```
+
+```cpp
+// src/provider/ReadingSink.hpp: includes the header that declares ReadingEvent
+template <class Owner>
+class ReadingSink final : public ReadingEventConsumer
+{
+public:
+    ReadingSink(Owner & owner, void (Owner::*method)(const ReadingData &)) : mOwner(owner), mMethod(method) {}
+protected:
+    void process_event(const ReadingData & data) override { (mOwner.*mMethod)(data); }
+private:
+    Owner & mOwner;
+    void (Owner::*mMethod)(const ReadingData &);
+};
+```
+
+`Reader` is section 6's worker. `startup` runs on the component thread before the
+service is announced, so the listener exists before the worker sends, and `on_reading`
+runs there too. A listener the worker receives on is added in `startup` right after
+`create_worker_thread()`, for the thread it returns. Your `.cpp` files go on the
+program's `macro_declare_executable` line.
+
+## 5. Who sends to whom
 
 | Direction | Listener added | Runs on |
 |---|---|---|
-| component -> worker | by the component, for the worker's thread (sections 2, 3) | the worker |
-| worker -> component | by the component, in its constructor | the component thread |
+| component -> worker | by the component, for the worker's thread (sections 2-4) | the worker |
+| worker -> component | by the component, before the worker is created | the component thread |
 | worker -> worker, one component | by the component, for the receiving worker's thread | the receiving worker |
 
 `send_event(data)` with no thread reaches the thread whose listener was added for that
 event: from a worker it looks at the worker's own thread, then the component thread, then
 the component's other workers.
 
-## 5. Work every N ms
+## 6. Work every N ms
 
 A worker that is also an `areg::TimerConsumer` starts its timer on its own thread, so
 `process_timer()` runs there. No listener is needed for a timer.
@@ -111,14 +155,15 @@ A worker that blocks on its source instead runs its loop in `register_event_cons
 and returns to stop; it dispatches no event and no timer while the loop runs, and the
 component's shutdown waits until it returns: `examples/18_pubworker` (`pubservice`).
 
-## 6. Before you move on
+## 7. Before you move on
 
 - [ ] Every `REGISTER_WORKER_THREAD` consumer name is answered by `worker_thread_consumer()`,
       comparing against `entry.mWorkerThreads[..].mConsumerName`.
 - [ ] Every listener a worker receives on is added by the component in
       `notify_thread_started()` or right after `create_worker_thread()`, and removed in
       `shutdown_component()`; none in `register_event_consumers()`.
-- [ ] The component's listener for what a worker sends is added in its constructor.
+- [ ] The component's listener for what a worker sends is added before the worker is
+      created; in a design.json project, in `startup` (section 4).
 - [ ] A worker's timer is started on the worker thread and stopped in
       `unregister_event_consumers()`.
 

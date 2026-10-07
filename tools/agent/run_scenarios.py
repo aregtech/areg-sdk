@@ -31,6 +31,11 @@ import tempfile
 import threading
 import time
 
+try:
+    import resource
+except ImportError:                                 # Windows: no CPU accounting
+    resource = None
+
 SCHEMA = """Scenario file: {"scenarios": [ { ... }, ... ]}
 
   name      Scenario name.
@@ -98,6 +103,9 @@ OUTPUT_TAIL_LINES = 40
 PASS_TAIL_LINES = 150
 # How many unmet expectations a failed verdict names.
 MISSES_NAMED = 4
+# The most CPU a scenario's processes may use together, in cores, averaged over the
+# scenario. Programs that block until their next message stay far below it.
+CPU_LIMIT = 0.5
 # How alike a printed line and a missed expectation must be for the line to be named.
 NEAREST_CUTOFF = 0.6
 
@@ -594,6 +602,35 @@ def kept_spool(keep, name):
         if entry.endswith('.log'):
             os.remove(os.path.join(folder, entry))
     return folder
+
+
+def child_cpu():
+    """CPU seconds of every finished child process, or None where not measurable."""
+    if resource is None:
+        return None
+    usage = resource.getrusage(resource.RUSAGE_CHILDREN)
+    return usage.ru_utime + usage.ru_stime
+
+
+def busy_verdict(cpu, wall, outputs):
+    """Why a passing scenario kept the CPU busy, or None when it did not."""
+    if cpu is None or wall <= 0 or cpu / wall < CPU_LIMIT:
+        return None
+    verdict = ('its processes used {:.2f} cores on average over {:.1f} s, the limit is '
+               '{}: a program that waits for its next message uses almost none, one that '
+               'sends again at once or polls keeps a core busy'
+               .format(cpu / wall, wall, CPU_LIMIT))
+    counted = []
+    for name, text in (outputs or {}).items():
+        lines = [line.strip() for line in text.splitlines() if line.strip()]
+        if lines:
+            line = max(set(lines), key=lines.count)
+            counted.append((lines.count(line), name, line))
+    if counted:
+        times, name, line = max(counted)
+        if times > 1:
+            verdict += '. {} printed "{}" {} times'.format(name, line[:80], times)
+    return verdict
 
 
 def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_class=None,
@@ -1226,14 +1263,21 @@ def self_test():
         finally:
             ROUTER_PORT = saved_port
 
-        print('self-test ok: 14 case(s): end of input, an unfired stop, a fired stop, '
+        quiet = busy_verdict(0.3, 10.0, {'a': 'step one\n'})
+        busy = busy_verdict(8.0, 10.0, {'a': 'x\nstep two\nstep two\n', 'b': 'y\n'})
+        if quiet is not None or busy is None or '"step two" 2 times' not in busy:
+            print('self-test FAILED: a busy scenario is not told from a quiet one: {} / {}'
+                  .format(quiet, busy))
+            return 1
+
+        print('self-test ok: 15 case(s): end of input, an unfired stop, a fired stop, '
               'a peer left running by a stop, '
               'an exit failure naming an open expectation, a stop on the last line of an '
               'exited lead, a stop too late for the lead, '
               'output pressure, a scenario that asserts nothing, a lead that stopped '
               'on its own failure, a stop missed by a failed lead, lines expected of '
               'the wrong process, the nearest '
-              'line to a miss, a router this run did not start')
+              'line to a miss, a router this run did not start, a busy scenario')
         return 0
     finally:
         shutil.rmtree(root, ignore_errors=True)
@@ -1368,9 +1412,15 @@ def main():
         if not args.json:
             for note in lint_scenario(scenario):
                 print('note  {:24} {}'.format(scenario.get('name', 'unnamed'), note))
+        observed, before, started = {}, child_cpu(), time.time()
         passed, name, detail = run_scenario(scenario, build_dirs,
                                             args.verbose, args.quiet or args.json,
-                                            keep=args.keep)
+                                            observed, keep=args.keep)
+        busy = busy_verdict(None if before is None else child_cpu() - before,
+                            time.time() - started, observed.get('outputs')) \
+            if passed else None
+        if busy:
+            passed, detail = False, busy
         results.append({'name': name, 'passed': passed, 'detail': detail})
         if not args.json:
             print('{:5} {:24} {}'.format('PASS' if passed else 'FAIL', name, detail))
