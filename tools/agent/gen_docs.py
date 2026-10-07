@@ -114,7 +114,7 @@ KEYS = {
     'state': ('name', 'kind', 'depth', 'description', 'entry', 'exit', 'transitions',
               'initial', 'final_event', 'states', 'submachine'),
     'transition': ('on', 'to', 'guard', 'set', 'do', 'description'),
-    'step': ('name', 'description', 'send', 'args', 'await', 'until', 'wait'),
+    'step': ('name', 'description', 'role', 'send', 'args', 'await', 'until', 'wait'),
 }
 TYPE_KEYS = {
     'Enumeration': ('name', 'kind', 'description', 'values', 'derives'),
@@ -1855,9 +1855,11 @@ DRIVER_TICK_SECONDS = 1
 
 DRIVER_DEFAULTS = {'connect_seconds': 10, 'reconnect_seconds': 10}
 
-# Ticks a default stall watchdog outlasts the reconnect deadline and the longest
-# timed step by.
-STALL_MARGIN_TICKS = 10
+# The least default stall watchdog, in ticks.
+STALL_FLOOR_TICKS = 20
+
+# Ticks a default stall watchdog outlasts the longest timed step by.
+STALL_MARGIN_TICKS = 2
 
 
 def whole(value):
@@ -1868,8 +1870,8 @@ def whole(value):
 def driver_of(spec):
     """The driver settings of one interface, every key present.
 
-    A stall watchdog the spec does not name outlasts the reconnect deadline and every
-    timed step, so the default never ends a run that is still making progress.
+    A stall watchdog the spec does not name is at least the floor and the reconnect
+    deadline, and outlasts every timed step.
     """
     settings = dict(DRIVER_DEFAULTS)
     given = spec.get('driver') if isinstance(spec, dict) else None
@@ -1877,9 +1879,9 @@ def driver_of(spec):
         settings.update((key, value) for key, value in given.items() if key != NOTE)
     if not (isinstance(given, dict) and 'stall_ticks' in given):
         reconnect = settings['reconnect_seconds']
-        floor = [STALL_MARGIN_TICKS]
+        floor = [STALL_FLOOR_TICKS]
         if whole(reconnect) and reconnect > 0:
-            floor.append(reconnect + STALL_MARGIN_TICKS)
+            floor.append(reconnect)
         steps = spec.get('steps') if isinstance(spec, dict) else None
         for step in steps if isinstance(steps, list) else []:
             wait = step.get('wait') if isinstance(step, dict) else None
@@ -1890,7 +1892,7 @@ def driver_of(spec):
 
 
 def check_drivers(project):
-    """A consumer's deadlines are whole seconds, and its watchdog outlives them."""
+    """A consumer's deadlines and its watchdog are whole numbers."""
     for spec in project['interfaces']:
         given = spec.get('driver') if isinstance(spec, dict) else None
         if given is None:
@@ -1905,15 +1907,6 @@ def check_drivers(project):
                 fail('{} gives "{}" as {!r}. It is a whole number of {}, and 0 turns it '
                      'off'.format(where, key, value,
                                   'ticks' if key == 'stall_ticks' else 'seconds'))
-        stall = settings['stall_ticks'] * DRIVER_TICK_SECONDS
-        reconnect = settings['reconnect_seconds']
-        if stall and reconnect and stall <= reconnect:
-            fail('{} lets the stall watchdog fire before the reconnect deadline '
-                 '({} tick(s) against {} second(s)): a provider that goes away would be '
-                 'reported by whichever timer wins. Give stall_ticks {} or more, or '
-                 'reconnect_seconds {} or less'
-                 .format(where, settings['stall_ticks'], reconnect,
-                         reconnect // DRIVER_TICK_SECONDS + 1, stall - 1))
 
 
 def check_service_timers(project):
@@ -1962,6 +1955,40 @@ def awaitable(spec):
     return '; '.join(said) or 'nothing: the service declares none'
 
 
+def step_roles(project, spec):
+    """The provider roles the driver of this service uses, each with its service, and
+    the roles it drives."""
+    used, driven = {}, set()
+    for _, component, kind, service in program_components(project):
+        if kind != 'drives' or service != spec.get('name'):
+            continue
+        driven.add(component.get('role') or consumed_role(project, service))
+        for name, roles in component_uses(component, project):
+            used.update((role, name) for role in roles)
+    return used, driven
+
+
+def step_service(project, spec, step, used, driven, here):
+    """The service a step sends to and awaits: the driven one, or the one its "role" uses."""
+    role = step.get('role')
+    if role is None or role in driven:
+        return spec, 'the service'
+    if not isinstance(role, str) or role not in used:
+        fail('{} names role {}, which the component driving "{}" does not use. {}. "role" '
+             'is a provider role in that component\'s "uses": the step sends to and '
+             'awaits that service instead; leave it out for "{}" itself'
+             .format(here, json.dumps(role), spec.get('name'),
+                     'It uses: ' + ', '.join(sorted(used)) if used
+                     else 'It uses no other service',
+                     spec.get('name')))
+    found = next((entry for entry in project['interfaces']
+                  if isinstance(entry, dict) and entry.get('name') == used[role]), None)
+    if found is None:
+        fail('{} names role "{}" of "{}", which the design does not declare'
+             .format(here, role, used[role]))
+    return found, '{}, the service of role "{}"'.format(found.get('name'), role)
+
+
 def check_sequences(project):
     """A consumer's steps name only what their service declares, in a shape one driver runs.
 
@@ -1979,21 +2006,24 @@ def check_sequences(project):
         where = 'the steps of "{}"'.format(spec.get('name', '?'))
         if not isinstance(steps, list):
             fail('{} are a list of step objects'.format(where))
-        requests = dict((entry.get('name'), entry) for entry in listed(spec, 'requests'))
-        awaited = set(entry.get('name') for key in ('responses', 'broadcasts', 'attributes')
-                      for entry in listed(spec, key))
-        awaited |= set(name for name, entry in requests.items()
-                       if 'answer' in entry or entry.get('response'))
+        used, driven = step_roles(project, spec)
         seen = set()
         owed = {}
         for step in steps:
             with gathering(problems), contextlib.suppress(Refused):
-                if isinstance(step, dict):
-                    owe_answers(step, requests, owed, where)
                 if not isinstance(step, dict):
                     fail('{} list {!r}, which is not a step object'.format(where, step))
                 name = step.get('name')
                 here = 'step "{}" of {}'.format(name, where)
+                svc, of = step_service(project, spec, step, used, driven, here)
+                requests = dict((entry.get('name'), entry)
+                                for entry in listed(svc, 'requests'))
+                awaited = set(entry.get('name')
+                              for key in ('responses', 'broadcasts', 'attributes')
+                              for entry in listed(svc, key))
+                awaited |= set(name for name, entry in requests.items()
+                               if 'answer' in entry or entry.get('response'))
+                owe_answers(step, requests, owed.setdefault(svc.get('name'), {}), where)
                 if not isinstance(name, str) or not IDENTIFIER.match(name):
                     fail('{} has no name a C++ identifier can carry'.format(here))
                 key = name.replace('_', '').lower()
@@ -2008,8 +2038,9 @@ def check_sequences(project):
                 send, target, wait = step.get('send'), step.get('await'), step.get('wait') or 0
                 args = step.get('args') or {}
                 if send is not None and send not in requests:
-                    fail('{} sends "{}", which is not a request of the service. Its requests: '
-                         '{}'.format(here, send, ', '.join(sorted(requests)) or 'none'))
+                    fail('{} sends "{}", which is not a request of {}. Its '
+                         'requests: {}'.format(here, send, of, ', '.join(sorted(requests))
+                                               or 'none'))
                 if not isinstance(args, dict):
                     fail('{}: args is an object, {{"<parameter>": <C++ value>}}'.format(here))
                 params = [entry.get('name') for entry in listed(requests.get(send), 'params')]
@@ -2047,7 +2078,7 @@ def check_sequences(project):
                             and not given.startswith(('expr:', 'raw:')):
                         declared = str(entry.get('type'))
                         spelt = declared if '::' in declared \
-                            else '{}::{}'.format(spec.get('name'), declared)
+                            else '{}::{}'.format(svc.get('name'), declared)
                         qualifier, field = given.rsplit('::', 1)
                         if qualifier != spelt and not spelt.endswith('::' + qualifier):
                             fail('{} gives "{}" for a "{}", and "{}" is not that type. C++ '
@@ -2068,9 +2099,9 @@ def check_sequences(project):
                          'than the wait, or leave stall_ticks out and the generator makes it '
                          'longer'.format(here, wait, stall))
                 if target is not None and target not in awaited:
-                    fail('{} awaits "{}", which is no response, broadcast or attribute of the '
-                         'service. It awaits one of: {}'
-                         .format(here, target, awaitable(spec)))
+                    fail('{} awaits "{}", which is no response, broadcast or attribute of '
+                         '{}. It awaits one of: {}'
+                         .format(here, target, of, awaitable(svc)))
                 if send is None and target is None and not wait:
                     fail('{} sends nothing, awaits nothing and waits for no time'.format(here))
     if problems:
@@ -2612,10 +2643,12 @@ EXAMPLE_PROGRAMS = {
            "of that service; \"role\" is the instance it talks to) or watches one, as the",
            "board does: it reacts to updates and drives nothing. \"uses\" gives any",
            "component a client member per used role: mStock below, called as",
-           "mStock.request_reserve(...), every answer a worksheet section. \"thread\" puts",
-           "components of one program in one thread. deployments: named alternatives, each",
-           "placing a role or a named component in another program or program/thread;",
-           "main() takes --deployment <name>. Without programs, a design is one service."],
+           "mStock.request_reserve(...), every answer a worksheet section. A step with",
+           "\"role\" sends to and awaits a used role: stock_left awaits the stock's Bolts,",
+           "which comes in no order against the desk's answer. \"thread\" puts components",
+           "of one program in one thread. deployments: named alternatives, each placing a",
+           "role or a named component in another program or program/thread; main() takes",
+           "--deployment <name>. Without programs, a design is one service."],
     "interfaces": [
         {"name": "StockService", "category": "Public", "description": "Items in stock.",
          "attributes": [{"name": "Bolts", "type": "uint32", "notify": "Always"}],
@@ -2625,6 +2658,7 @@ EXAMPLE_PROGRAMS = {
          "requests": [{"name": "place", "params": [{"name": "count", "type": "uint32"}],
                        "answer": [{"name": "accepted", "type": "bool"}]}],
          "steps": [{"name": "small", "send": "place", "args": {"count": 2}},
+                   {"name": "stock_left", "role": "stock", "await": "Bolts"},
                    {"name": "large", "send": "place", "args": {"count": 90}}]}
     ],
     "programs": [
@@ -2633,7 +2667,9 @@ EXAMPLE_PROGRAMS = {
                                          "uses": [{"service": "StockService", "role": "stock"}],
                                          "thread": "orders"}]},
         {"name": "customer", "components": [{"name": "buyer", "drives": "OrderService",
-                                             "role": "desk"}]},
+                                             "role": "desk",
+                                             "uses": [{"service": "StockService",
+                                                       "role": "stock"}]}]},
         {"name": "board", "components": [{"watches": "StockService", "role": "stock"}]}
     ],
     "deployments": [{"name": "together", "description": "The stock runs inside the desk.",
@@ -2821,9 +2857,9 @@ TEMPLATE = {
                    "connect_seconds: how long to wait for the provider to appear.",
                    "reconnect_seconds: how long to wait for it to come back.",
                    "0 turns either off and waits for ever.",
-                   "stall_ticks is left out on purpose: the generator makes it longer than",
-                   "reconnect_seconds and than every step's wait, one tick a second. Add it",
-                   "only to override that; shorter than either is refused."],
+                   "stall_ticks is left out on purpose: how long a step waits for what it",
+                   "awaits, one tick a second. The generator makes it at least 20 and",
+                   "reconnect_seconds, and longer than every step's wait."],
             "connect_seconds": 10, "reconnect_seconds": 10
         },
         "steps": [{
@@ -2843,11 +2879,15 @@ TEMPLATE = {
                    "until: {parameter: value}, for what arrives more than once: the step holds",
                    "until one arrives with those values.",
                    "One step per thing the task asks to prove, not one per message. A step",
-                   "starting work which takes time awaits the broadcast saying it finished",
-                   "(until on its values) or its response, before a later step or a go_to()",
-                   "sends again. Never an attribute with until: its first update after a",
-                   "request can be the value from before it."],
-            "name": "", "send": "", "args": {}, "await": "", "until": {}, "wait": 0, "description": ""
+                   "starting work which takes time awaits what says it finished before a",
+                   "later step or a go_to() sends again. Await by what the check reacts to: an",
+                   "attribute for a value as state (current on subscribing, then each change),",
+                   "a response for the result of its own request (only after it), a broadcast",
+                   "for several values together (on every call). One provider's messages",
+                   "arrive in the order it sent them, two providers' in no order. role: a",
+                   "provider role this program uses; the step sends to and awaits it instead."],
+            "name": "", "role": "", "send": "", "args": {}, "await": "", "until": {}, "wait": 0,
+            "description": ""
         }]
     }],
     "machines": [{

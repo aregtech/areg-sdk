@@ -45,6 +45,9 @@ LOSS_POINTS = (0.25, 0.5, 0.75)
 # and the router then reports the closed connection. A lead that exits 0 inside
 # this window may have finished before the loss reached it.
 LOSS_LATENCY = 0.25
+# Seconds a process that gave up after a loss may take to end: areg's teardown and the
+# runner's poll. Unlike WAIT_MARGIN, no start-up falls inside a loss.
+LOSS_TEARDOWN = 3.0
 # Lines of the lead's own output a failed loss point keeps as its evidence.
 LOSS_TAIL_LINES = 8
 CPU_LIMIT = 0.5
@@ -323,7 +326,12 @@ def probe_no_peer(scenario, build_dirs):
 
 
 def judge_loss_point(label, at, name, observed):
-    """One kill point. Returns (the loss was reached, it failed, the evidence)."""
+    """One kill point. Returns (the loss was reached, it failed, the evidence).
+
+    Every process the kill left running exits non-zero, each within WAIT_LIMIT and
+    LOSS_TEARDOWN of the loss or of the survivor that exited before it: a process
+    that waits on another survivor learns of the loss only when that one gives up.
+    """
     if timed_out(observed):
         return True, True, '{} hung'.format(label)
     code = observed.get('exits', {}).get(name)
@@ -338,18 +346,42 @@ def judge_loss_point(label, at, name, observed):
         # point proves nothing.
         return False, False, '{} finished at {:.2f}s, before the loss at {:.2f}s ' \
             'reached it'.format(label, elapsed, killed)
-    if elapsed < killed:
-        return True, True, '{} exited {} at {:.2f}s, before the loss at {:.2f}s' \
-            .format(label, code, elapsed, killed)
-    if code == 0:
-        return True, True, '{} exit 0 {:.2f}s after the loss'.format(label,
-                                                                   elapsed - killed)
-    return True, False, '{} exit {} {:.2f}s after the loss'.format(label, code,
-                                                                  elapsed - killed)
+    stopped = set(observed.get('stopped') or [])
+    ended_at = observed.get('ended_at') or {name: elapsed}
+    survivors = sorted((who for who in ended_at if who not in stopped),
+                       key=lambda who: (ended_at[who] is None, ended_at[who] or 0))
+    allowed = WAIT_LIMIT + LOSS_TEARDOWN
+    said, bad, since = [], False, killed
+    for who in survivors:
+        when, code = ended_at[who], observed.get('exits', {}).get(who)
+        who = who if len(survivors) > 1 else ''
+        if when is None:
+            bad = True
+            said.append('{} never exited'.format(who).strip())
+            continue
+        if when < killed:
+            bad = True
+            said.append('{} exited {} at {:.2f}s, before the loss at {:.2f}s'
+                        .format(who, code, when, killed).strip())
+        elif code == 0:
+            bad = True
+            said.append('{} exit 0 {:.2f}s after the loss'.format(who, when - killed).strip())
+        elif when - since > allowed:
+            bad = True
+            said.append('{} exit {} {:.2f}s after the loss, over the {:.0f}s allowed'
+                        .format(who, code, when - killed, allowed).strip())
+        else:
+            said.append('{} exit {} {:.2f}s after the loss'
+                        .format(who, code, when - killed).strip())
+        since = max(since, when)
+    return True, bad, '{} {}'.format(label, ', '.join(said))
 
 
 def probe_peer_loss(scenario, build_dirs, lead_time):
-    """The normal scenario with the first other process killed at several points."""
+    """The normal scenario with the first other process killed at several points.
+
+    The first process is the one the others need, as every task lists it.
+    """
     if not lead_time:
         return result('peer-loss', False, 'no passing normal run to time the loss against')
     points, failures, reached = [], 0, 0
@@ -359,9 +391,10 @@ def probe_peer_loss(scenario, build_dirs, lead_time):
         peer = next(p for p in procs if p is not lead)
         at = round(fraction * lead_time, 2)
         stop = {'proc': peer['name'], 'after': at, 'signal': 'kill'}
-        timeout = at + WAIT_LIMIT + WAIT_MARGIN
-        _, _, observed, _, _ = run(variant(scenario, 'peer-loss', procs, timeout, stop),
-                                   build_dirs)
+        timeout = at + (WAIT_LIMIT + LOSS_TEARDOWN) * (len(procs) - 1) + LOSS_TEARDOWN
+        observed = {}
+        run_scenarios.run_scenario(variant(scenario, 'peer-loss', procs, timeout, stop),
+                                   build_dirs, False, True, observed, wait_all=True)
         hit, bad, text = judge_loss_point('{:.0%}'.format(fraction), at,
                                           lead['name'], observed)
         reached += 1 if hit else 0
@@ -479,6 +512,21 @@ SELF_TEST_LOSS = (
      (False, False)),
     ('exited 0 two seconds after the kill', 0.14,
      {'exits': {'p': 0}, 'elapsed': 2.15, 'actions': [{'fired_at': 0.15}]}, (True, True)),
+    ('audit: 07b, the only survivor 29.7s after the loss', 1.0,
+     {'exits': {'w': -9, 'p': 1}, 'elapsed': 30.7, 'stopped': ['w'],
+      'ended_at': {'w': 1.0, 'p': 30.7}}, (True, True)),
+    ('audit: 07b, a survivor that never exits', 1.0,
+     {'exits': {'w': -9, 'd': -15, 'p': 1}, 'elapsed': 21.3, 'stopped': ['w'],
+      'ended_at': {'w': 1.0, 'd': None, 'p': 21.3}}, (True, True)),
+    ('07a, every survivor exits after the loss', 1.0,
+     {'exits': {'w': -9, 'd': 1, 'p': 1}, 'elapsed': 21.6, 'stopped': ['w'],
+      'ended_at': {'w': 1.0, 'd': 21.4, 'p': 21.6}}, (True, False)),
+    ('a survivor waiting on another survivor exits after it', 1.0,
+     {'exits': {'w': -9, 'd': 1, 'p': 1}, 'elapsed': 42.0, 'stopped': ['w'],
+      'ended_at': {'w': 1.0, 'd': 21.4, 'p': 42.0}}, (True, False)),
+    ('a survivor exits 0 after the loss', 1.0,
+     {'exits': {'w': -9, 'd': 0, 'p': 1}, 'elapsed': 21.6, 'stopped': ['w'],
+      'ended_at': {'w': 1.0, 'd': 21.4, 'p': 21.6}}, (True, True)),
 )
 
 # Printed lines against the wanted ones: (name, wanted, printed, verdict).

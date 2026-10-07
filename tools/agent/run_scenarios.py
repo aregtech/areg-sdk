@@ -488,12 +488,12 @@ def open_expectations(handles):
             'call'.format(', '.join(slots), 'it' if len(slots) == 1 else 'them'))
 
 
-def stops_missed(pending):
+def stops_missed(pending, lead=None, code=None, output=''):
     """Why the scenario proves nothing, when a stop it declared never fired.
 
     A stop is the experiment the scenario exists to run. Cleanup terminates every
     process whether it fired or not, so without this the scenario passes having
-    never injected the fault it names.
+    never injected the fault it names. A lead that exited non-zero failed on its own.
     """
     entry = pending[0]
     after = entry['after']
@@ -509,6 +509,13 @@ def stops_missed(pending):
         why = 'the run ended before {}s'.format(after)
     else:
         why = 'nothing matched {!r}'.format(after)
+    if code:
+        last = [line.strip() for line in output.splitlines() if line.strip()]
+        return ('the stop on {} never fired: {}, and {} exited {} before it with nothing '
+                'taken away, so it failed on its own (last line: {!r}). Fix that '
+                'failure first; it is the same one the normal run reports. A hold '
+                'step does not help a lead that fails'
+                .format(entry['proc'], why, lead, code, last[-1] if last else ''))
     # The lead outrunning the match is the common cause and the remedy is a step,
     # not a sleep: a run that reaches for pkill or a shell sleep here has lost the
     # scenario file as the one place the experiment is written down.
@@ -571,7 +578,7 @@ def kept_spool(keep, name):
 
 
 def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_class=None,
-                 keep=None):
+                 keep=None, wait_all=False):
     reader_class = reader_class or OutputReader
     name = scenario.get('name', 'unnamed')
     timeout = float(scenario.get('timeout', 60))
@@ -607,6 +614,7 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
     at_lead_end = {}
     spool = kept_spool(keep, name) if keep else tempfile.mkdtemp(prefix='scenario-')
     actions = []
+    started = None
     try:
         for index, spec in enumerate(procs):
             binary = find_binary(spec['binary'], build_dirs)
@@ -642,12 +650,15 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
                 reader = readers[lead_index]
                 started = time.time()
                 deadline = started + timeout
+                lead_done = False
                 while True:
-                    pending = fire_stops(pending, started, reader.text())
+                    if not lead_done:
+                        pending = fire_stops(pending, started, reader.text())
                     for index, (_, handle) in enumerate(handles):
                         if index not in ended and handle.poll() is not None:
                             ended[index] = time.time() - launched[index]
-                    if lead.poll() is not None:
+                    if not lead_done and lead.poll() is not None:
+                        lead_done = True
                         ended.setdefault(lead_index, time.time() - launched[lead_index])
                         # The lead's last lines can still be in its reader: drain it to
                         # the end, then judge the stops on everything it printed.
@@ -659,14 +670,20 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
                         for entry in waiting:
                             if entry not in pending:
                                 entry['late'] = True
+                    # With wait_all and every stop fired, the processes still running
+                    # after the lead are given until the deadline to end on their own.
+                    if lead_done and not (wait_all and not pending and any(
+                            handle.poll() is None for _, handle in handles)):
                         break
                     if time.time() >= deadline:
-                        lead.kill()
-                        verdict = 'timed out after {:.0f}s'.format(timeout)
+                        if not lead_done:
+                            lead.kill()
+                            verdict = 'timed out after {:.0f}s'.format(timeout)
                         break
                     time.sleep(0.05)
                 if verdict is None and pending:
-                    verdict = stops_missed(pending)
+                    verdict = stops_missed(pending, proc_name(handles[lead_index][0]),
+                                           lead.returncode, reader.text())
     finally:
         # Every process that is still running is stopped, then reaped. Its output
         # was drained by its own reader from the moment it started, so nothing here
@@ -698,6 +715,13 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
         observed['outputs'] = dict((proc_name(spec), outputs.get(index) or '')
                                    for index, (spec, _) in enumerate(handles))
         observed['elapsed'] = ended.get(lead_index)
+        # When each process ended on its own, in seconds on the clock of the stops.
+        observed['ended_at'] = dict(
+            (proc_name(spec), launched[index] + ended[index] - started
+             if index in ended and started is not None else None)
+            for index, (spec, _) in enumerate(handles))
+        observed['stopped'] = [proc_name(spec) for spec, handle in handles
+                               if getattr(handle, 'stopped_by_scenario', False)]
         observed['verdict'] = verdict
         observed['actions'] = [{'proc': entry['proc'], 'after': entry['after'],
                                 'signal': entry['signal'],
@@ -1109,6 +1133,18 @@ def self_test():
                   'by a line it never reached: {}'.format(detail))
             return 1
 
+        # A stop that never fired because the lead failed first names that failure.
+        failing = {
+            'name': 'stop-after-a-failure', 'timeout': 15,
+            'stop': {'proc': 'provider', 'after': 'NEVER_PRINTED', 'signal': 'kill'},
+            'procs': [{'binary': provider, 'name': 'provider'},
+                      {'binary': quitter, 'name': 'consumer', 'exit': 1}]}
+        passed, _, detail = run_scenario(failing, [root], False, True)
+        if passed or 'failed on its own' not in detail or 'outruns' in detail:
+            print('self-test FAILED: a stop missed because the lead failed first asked '
+                  'for a hold: {}'.format(detail))
+            return 1
+
         # Two lines expected of the wrong process are both named, with where they are.
         misplaced = {
             'name': 'misplaced', 'timeout': 15,
@@ -1170,12 +1206,13 @@ def self_test():
         finally:
             ROUTER_PORT = saved_port
 
-        print('self-test ok: 13 case(s): end of input, an unfired stop, a fired stop, '
+        print('self-test ok: 14 case(s): end of input, an unfired stop, a fired stop, '
               'a peer left running by a stop, '
               'an exit failure naming an open expectation, a stop on the last line of an '
               'exited lead, a stop too late for the lead, '
               'output pressure, a scenario that asserts nothing, a lead that stopped '
-              'on its own failure, lines expected of the wrong process, the nearest '
+              'on its own failure, a stop missed by a failed lead, lines expected of '
+              'the wrong process, the nearest '
               'line to a miss, a router this run did not start')
         return 0
     finally:

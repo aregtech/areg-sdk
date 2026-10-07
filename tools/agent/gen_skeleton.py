@@ -542,7 +542,7 @@ CONNECT_ONLY = ['service_connected() is generated and runs before any body below
 UPDATE_NOTE = ['an update_ body runs on every arrival, whatever step is current, and',
                'before the step_ check of the same update. That check runs while its',
                'step is current, and once as it begins if one arrived since the last',
-               'request.',
+               'request to its service.',
                'Both run inside the check the generated handler makes, so the value is',
                'valid and no test of state is needed:',
                '    if (state == areg::DataState::DataIsOK)',
@@ -555,6 +555,18 @@ UPDATE_NOTE = ['an update_ body runs on every arrival, whatever step is current,
 UPDATE_BRIEF = ['runs before the step_ check of the same update, and only for a valid',
                 'value. Elsewhere read the getter and test its state: a copy misses an',
                 'invalidation']
+
+# The tail of the hint of an update_ marker that a step check follows.
+UPDATE_CHECKED = 'it runs before the step_ check of the same update'
+
+# The notes of an update_ section that no step awaits, first and later.
+UPDATE_PLAIN = ['an update_ body runs on every arrival. No step awaits this update, so no',
+                'step_ check follows it and no step ends or stays on it.',
+                'The body runs inside the check the generated handler makes, so the',
+                'value is valid and no test of state is needed:'] + UPDATE_NOTE[6:]
+
+UPDATE_PLAIN_BRIEF = ['runs only for a valid value, and no step awaits it. Elsewhere read',
+                      'the getter and test its state: a copy misses an invalidation']
 
 
 PEER_LOST_NOTE = ['after this body the reconnect deadline starts: a provider not back within',
@@ -627,11 +639,14 @@ def section_notes(sections, driven=(), connected=None):
     at it goes on the first section of its own file.
     """
     notes = {}
-    updates = [name for name, _, _, _, _ in sections if name.startswith('update_')]
-    if updates:
-        notes[updates[0]] = UPDATE_NOTE
-        for name in updates[1:]:
-            notes[name] = UPDATE_BRIEF
+    # Keyed by file as well: one attribute name can be awaited in one file and not in
+    # another.
+    for checked, first, later in ((True, UPDATE_NOTE, UPDATE_BRIEF),
+                                  (False, UPDATE_PLAIN, UPDATE_PLAIN_BRIEF)):
+        updates = [(file_name, name) for name, hint, _, file_name, _ in sections
+                   if name.startswith('update_') and (UPDATE_CHECKED in hint) == checked]
+        for index, key in enumerate(updates):
+            notes[key] = later if index else first
     # The brief goes on the first step_ section of each handler, not on all of them:
     # the sections of one handler are read together.
     checks = [(name, signature) for name, _, _, _, signature in sections
@@ -672,7 +687,8 @@ def section_notes(sections, driven=(), connected=None):
         if file_name in (connected or {}):
             said += connected[file_name]
         if said:
-            notes[name] = notes.get(name, []) + said
+            key = (file_name, name) if (file_name, name) in notes else name
+            notes[key] = notes.get(key, []) + said
     return notes
 
 
@@ -865,7 +881,7 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
             lines.append('#| in: {}'.format(signature))
         if name in falls:
             lines.append('#| {}'.format(falls[name]))
-        for line in notes.get(name, []):
+        for line in notes.get((file_name, name), notes.get(name, [])):
             lines.append('#| {}'.format(line))
         lines.append('')
     if holes:
@@ -2103,11 +2119,13 @@ def awaitable(iface):
     return '; '.join(said) if said else 'nothing: it declares none'
 
 
-def steps_of(specs, iface):
+def steps_of(specs, iface, used=None, driven_role=None):
     """The steps the specs declare for this service, resolved against its document.
 
     Each is a dict: name, enum, send (a request or None), args (C++ text in parameter
-    order), awaits ((kind, name) or None) and wait (milliseconds, 0 for none).
+    order), awaits ((kind, name) or None), wait (milliseconds, 0 for none), role (the
+    used provider role it sends to and awaits, or None) and source (that service).
+    used maps a used role to (its Interface, the member holding its client).
     """
     import gen_docs
     declared = []
@@ -2116,42 +2134,78 @@ def steps_of(specs, iface):
         for entry in spec.get('interfaces') or []:
             if isinstance(entry, dict) and entry.get('name') == iface.name:
                 declared = entry.get('steps') or []
-    requests = dict(iface.requests)
-    kinds = {}
-    for kind, entries in (('update', iface.attributes), ('broadcast', iface.broadcasts),
-                          ('response', iface.responses)):
-        for name, _ in entries:
-            kinds[name] = kind
     steps = []
     for step in declared:
         name, send = step.get('name'), step.get('send')
         where = 'step "{}"'.format(name)
+        role, source, prefix = step.get('role'), iface, ''
+        if role == driven_role:
+            role = None
+        if role is not None:
+            if role not in (used or {}):
+                fail('{} names role "{}", which this driver does not use. It uses: {}'
+                     .format(where, role, ', '.join(sorted(used or {})) or 'none'))
+            source, member = used[role]
+            prefix = member + '.'
+        requests = dict(source.requests)
+        kinds = {}
+        for kind, entries in (('update', source.attributes),
+                              ('broadcast', source.broadcasts),
+                              ('response', source.responses)):
+            for entry_name, _ in entries:
+                kinds[entry_name] = kind
         if send is not None and send not in requests:
             fail('{} sends "{}", which {} does not declare as a request. It sends one '
-                 'of: {}'.format(where, send, iface.name,
+                 'of: {}'.format(where, send, source.name,
                                  ', '.join(requests) or 'nothing: it declares none'))
         args = step.get('args') or {}
         values = []
         for param, param_type in requests.get(send, []):
             if param not in args:
                 fail('{} gives no value for "{}" of request "{}"'.format(where, param, send))
-            values.append(cpp_value(args[param], param_type, iface, where))
+            values.append(cpp_value(args[param], param_type, source, where))
         target, wait = step.get('await'), step.get('wait') or 0
         if target is None and send is not None and not wait:
-            target = iface.response_of.get(send)
-        elif target in iface.response_of:
-            target = iface.response_of[target]
+            target = source.response_of.get(send)
+        elif target in source.response_of:
+            target = source.response_of[target]
         if target is not None and target not in kinds:
             fail('{} awaits "{}", which is no response, broadcast or attribute of {}. '
                  'It awaits one of: {}'
-                 .format(where, target, iface.name, awaitable(iface)))
+                 .format(where, target, source.name, awaitable(source)))
         steps.append({'name': name, 'enum': pascal(name), 'send': send,
-                      'call': iface.spell('request', send) if send is not None else None,
+                      'call': prefix + source.spell('request', send) if send is not None
+                      else None,
                       'args': values,
                       'awaits': (kinds[target], target) if target is not None else None,
                       'wait': wait,
-                      'until': until_of(step.get('until'), target, kinds, iface, where)})
+                      'until': until_of(step.get('until'), target, kinds, source, where),
+                      'role': role, 'source': source, 'call_member': prefix})
     return steps
+
+
+def await_key(step):
+    """What a step awaits, told apart by the used role it comes from."""
+    return step['awaits'] + (step['role'],) if step.get('role') else step['awaits']
+
+
+def role_method(step):
+    """The driver's method that runs the checks of what a used role sends, for one step."""
+    kind, name = step['awaits']
+    source = step['source']
+    handler = source.spell('attribute', name, 'on_update') if kind == 'update' \
+        else source.spell(kind, name)
+    return '{}_{}'.format(step['role'], handler)
+
+
+def role_params(step):
+    """The parameters of a role method: the handler's, an update without its state."""
+    kind, name = step['awaits']
+    source = step['source']
+    if kind == 'update':
+        params = source.generated_params('attribute', name, 'on_update').strip()
+        return re.sub(r',\s*(const\s+)?areg::DataState\s*&?\s*\w+\s*$', '', params)
+    return source.generated_params(kind, name).strip()
 
 
 def until_of(until, target, kinds, iface, where):
@@ -2182,6 +2236,9 @@ def until_of(until, target, kinds, iface, where):
 STEP_CHECK = {'response': 'check this answer', 'broadcast': 'check this broadcast',
               'update': 'check the new value'}
 
+# Appended to the check of a step with "role", formatted with the role.
+ROLE_ORDER = '; it comes from {}, in no order against what the driven service sends'
+
 # Appended to the check of a step that sends and awaits an update.
 SENT_UPDATE = "; one sent before this step's request may arrive first: stay() on it"
 
@@ -2196,6 +2253,8 @@ def step_said(step):
         said.append('sent {}({})'.format(step['call'], ', '.join(step['args'])))
     if step['awaits']:
         said.append('awaits {} {}'.format(*step['awaits']))
+        if step.get('role'):
+            said[-1] += ' of {}'.format(step['role'])
         if step.get('until'):
             said[-1] += ' with {}'.format(' && '.join(step['until']))
     elif step['wait']:
@@ -2239,15 +2298,18 @@ def late_latches(iface, steps):
     for step in steps:
         if step['send'] is not None or step['awaits'] is None \
                 or step['awaits'][0] not in ('update', 'broadcast') \
-                or step['awaits'] in latches:
+                or await_key(step) in latches:
             continue
         kind, name = step['awaits']
-        flag = 'mLate' + pascal(name)
+        source = step.get('source') or iface
+        flag = 'mLate' + pascal(step.get('role') or '') + pascal(name)
         args = []
         if kind == 'broadcast':
             args = [(flag + pascal(param), held, param) for held, param in
-                    generated_values(iface.generated_params('broadcast', name))]
-        latches[step['awaits']] = {'flag': flag, 'args': args}
+                    generated_values(source.generated_params('broadcast', name))]
+        latches[await_key(step)] = {'flag': flag, 'args': args}
+        if step.get('role'):
+            latches[await_key(step)]['method'] = role_method(step)
     latches.update(answer_queues(iface, steps))
     return latches
 
@@ -2260,6 +2322,7 @@ def answer_queues(iface, steps):
     and the fields as (field, type, parameter).
     """
     sizes = {}
+    steps = [step for step in steps if not step.get('role')]
     for step in steps:
         answer = iface.response_of.get(step['send']) if step['send'] else None
         if answer is not None and step['wait'] and step['awaits'] is None:
@@ -2280,25 +2343,34 @@ def answer_queues(iface, steps):
     return queues
 
 
-def flag_latches(latches):
-    """The latches of updates and broadcasts: one flag each."""
-    return dict((key, latch) for key, latch in latches.items() if 'flag' in latch)
+def flag_latches(latches, role=False):
+    """The latches of updates and broadcasts: one flag each. With a role (None for the
+    driven service), only those of what that role sends."""
+    return dict((key, latch) for key, latch in latches.items() if 'flag' in latch
+                and (role is False or (key[2] if len(key) > 2 else None) == role))
+
+
+def forget_name(role):
+    """The helper forgetting what one role, or the driven service with None, sent."""
+    return 'forget_late' + ('_' + role if role else '')
 
 
 def collects(step, latches, iface):
     """True when the step takes a kept answer: it awaits one that is queued and did not
     send its request itself."""
-    latch = latches.get(step['awaits'])
+    latch = latches.get(await_key(step)) if step['awaits'] else None
     return bool(latch) and 'queue' in latch \
         and iface.response_of.get(step['send']) != step['awaits'][1]
 
 
-def step_dispatch(steps, kind, name, indent, latch=None):
+def step_dispatch(steps, kind, name, indent, latch=None, role=None):
     """The check of every step waiting on this handler, then the end of that step.
 
     With a latch, an arrival no step checks is kept for a later step that awaits it.
+    With a role, the steps awaiting what that used role sends.
     """
-    waiting = [step for step in steps if step['awaits'] == (kind, name)]
+    waiting = [step for step in steps if step['awaits'] == (kind, name)
+               and step.get('role') == role]
     if not waiting:
         return []
     pad = ' ' * indent
@@ -2322,7 +2394,8 @@ def step_dispatch(steps, kind, name, indent, latch=None):
                       pad + '        }']
         lines += [marker('step_' + step['name'], STEP_CHECK[kind] + (
                       UNTIL_HELD if step.get('until') else
-                      SENT_UPDATE if kind == 'update' and step.get('send') else ''), indent + 8),
+                      SENT_UPDATE if kind == 'update' and step.get('send') else '') + (
+                      ROLE_ORDER.format(role) if role else ''), indent + 8),
                   pad + '    }',
                   pad + '    break;']
     # A message arriving on a step with no case for it is not an error: most steps
@@ -2339,16 +2412,38 @@ def step_dispatch(steps, kind, name, indent, latch=None):
             pad + '    }',
             pad + '    else',
             pad + '    {',
-            pad + '        dropped("{} {}");'.format(kind, name),
+            pad + '        dropped("{} {}{}");'.format(kind, name, ' of ' + role if role else ''),
             pad + '    }',
             pad + '    break;', pad + '}']
     lines += [pad + 'default:',
-              pad + '    dropped("{} {}");'.format(kind, name)]
+              pad + '    dropped("{} {}{}");'.format(kind, name, ' of ' + role if role else '')]
     if latch:
         lines.append(pad + '    {} = true;'.format(latch['flag']))
         lines += [pad + '    {} = {};'.format(member, param)
                   for member, _, param in latch['args']]
     lines += [pad + '    break;', pad + '}']
+    return lines
+
+
+def role_methods(steps, latches):
+    """One method per message of a used role a step awaits: the checks of those steps.
+
+    The client of that role calls it from its own handler.
+    """
+    lines, done = [], set()
+    for step in steps:
+        if not step.get('role') or not step['awaits'] or await_key(step) in done:
+            continue
+        done.add(await_key(step))
+        kind, name = step['awaits']
+        dispatch = step_dispatch(steps, kind, name, 8, latches.get(await_key(step)),
+                                 step['role'])
+        while dispatch and dispatch[0] == '':
+            dispatch.pop(0)
+        lines += ['    //! The checks of the steps awaiting {} {} of {}.'.format(kind, name,
+                                                                          step['role']),
+                  '    void {}({})'.format(role_method(step), role_params(step)),
+                  '    {'] + dispatch + ['    }', '']
     return lines
 
 
@@ -2408,19 +2503,20 @@ def driver_lines(steps, holds, cls, iface=None, latches=None):
         lines += ['        case Step::{}:'.format(step['enum']),
                   '            std::cout << "step {}" << std::endl;'.format(step['name'])]
         if step['send']:
-            if flag_latches(latches):
-                lines.append('            forget_late();')
+            if flag_latches(latches, step.get('role')):
+                lines.append('            {}();'.format(forget_name(step.get('role'))))
             lines.append('            {}({});'.format(step['call'],
                                                   ', '.join(step['args'])))
         if collects(step, latches, iface):
-            lines += ['            if ({} != 0)'.format(latches[step['awaits']]['count']),
+            lines += ['            if ({} != 0)'.format(latches[await_key(step)]['count']),
                       '            {',
                       '                mLate.start_timer(1, static_cast<areg::DispatcherThread &>'
                       '(master_thread()),',
                       '                                  areg::TimerBase::ONE_TIME);',
                       '            }']
-        elif not step['send'] and step['awaits'] in flag_latches(latches):
-            lines += ['            if ({})'.format(latches[step['awaits']]['flag']),
+        elif not step['send'] and step['awaits'] and \
+                await_key(step) in flag_latches(latches):
+            lines += ['            if ({})'.format(latches[await_key(step)]['flag']),
                       '            {',
                       '                mLate.start_timer(1, static_cast<areg::DispatcherThread &>'
                       '(master_thread()),',
@@ -2504,7 +2600,7 @@ def late_lines(steps, iface, latches):
     flags = flag_latches(latches)
     for step in steps:
         if collects(step, latches, iface):
-            latch = latches[step['awaits']]
+            latch = latches[await_key(step)]
             lines += ['        case Step::{}:'.format(step['enum']),
                       '            if ({} != 0)'.format(latch['count']),
                       '            {',
@@ -2529,15 +2625,27 @@ def late_lines(steps, iface, latches):
                       '            }',
                       '            break;']
             continue
-        if step['send'] is not None or step['awaits'] not in flags:
+        if step['send'] is not None or step['awaits'] is None or await_key(step) not in flags:
             continue
         kind, name = step['awaits']
-        flag = latches[step['awaits']]['flag']
+        latch = latches[await_key(step)]
+        flag = latch['flag']
         lines += ['        case Step::{}:'.format(step['enum']),
                   '            if ({})'.format(flag),
                   '            {',
                   '                {} = false;'.format(flag)]
-        if kind == 'update':
+        if step.get('role') and kind == 'update':
+            lines += ['                areg::DataState lateState{ areg::DataState::DataIsInvalid };',
+                      '                const auto lateValue = {}{}(lateState);'.format(
+                          step['call_member'], step['source'].spell('attribute', name, 'get')),
+                      '                if (lateState == areg::DataState::DataIsOK)',
+                      '                {',
+                      '                    {}(lateValue);'.format(latch['method']),
+                      '                }']
+        elif step.get('role'):
+            lines.append('                {}({});'.format(
+                latch['method'], ', '.join(member for member, _, _ in latch['args'])))
+        elif kind == 'update':
             lines += ['                areg::DataState lateState{ areg::DataState::DataIsInvalid };',
                       '                const auto lateValue = {}(lateState);'.format(
                           iface.spell('attribute', name, 'get')),
@@ -2546,7 +2654,7 @@ def late_lines(steps, iface, latches):
         else:
             lines.append('                {}({});'.format(
                 iface.spell('broadcast', name),
-                ', '.join(member for member, _, _ in latches[step['awaits']]['args'])))
+                ', '.join(member for member, _, _ in latch['args'])))
         lines += ['            }',
                   '            break;']
     lines += ['        default:',
@@ -2555,16 +2663,20 @@ def late_lines(steps, iface, latches):
               '        mReplaying = false;',
               '    }',
               '']
-    if flags:
-        lines += ['    //! Forgets every update and broadcast that arrived before a request.',
-                  '    void forget_late()',
+    sending = set(step.get('role') or '' for step in steps if step['send'])
+    for role in sorted(set(key[2] if len(key) > 2 else '' for key in flags) & sending):
+        sent = flag_latches(latches, role or None)
+        lines += ['    //! Forgets every update and broadcast {} sent before a request to it.'
+                  .format(role or 'the driven service'),
+                  '    void {}()'.format(forget_name(role)),
                   '    {']
-        lines += ['        {} = false;'.format(latch['flag']) for latch in flags.values()]
+        lines += ['        {} = false;'.format(latch['flag']) for latch in sent.values()]
         lines += ['    }',
                   '']
     lines += ['    areg::Timer  mLate;   //!< Starts replay_late() once the step has begun.',
               '    bool  mReplaying{ false };   //!< True while replay_late() runs a check.']
-    for (kind, name), latch in latches.items():
+    for key, latch in latches.items():
+        kind, name = key[:2]
         if 'queue' in latch:
             lines += ['',
                       '    //! An answer of {} that arrived before the step collecting it.'
@@ -2578,8 +2690,9 @@ def late_lines(steps, iface, latches):
                       '    uint32_t  {}{{ 0 }};   //!< How many answers of {} are kept.'
                       .format(latch['count'], name)]
             continue
-        lines.append('    bool  {}{{ false }};   //!< True once {} {} arrived unchecked.'
-                     .format(latch['flag'], kind, name))
+        lines.append('    bool  {}{{ false }};   //!< True once {} {}{} arrived unchecked.'
+                     .format(latch['flag'], kind, name,
+                             ' of ' + key[2] if len(key) > 2 else ''))
         lines += ['    {}  {}{{}};   //!< The {} it carried.'.format(held, member, param)
                   for member, held, param in latch['args']]
     lines.append('')
@@ -2663,11 +2776,8 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
     # response handler below quits, so the program starts and ends on its own.
     if steps:
         lines += ['',
-                  '                // The stall watchdog ticks from here; the steps begin once.',
-                  '                mPace.stop_timer();',
-                  '                mPace.start_timer({}, static_cast<areg::DispatcherThread &>'
-                  '(master_thread()),'.format(STEP_INTERVAL_MS),
-                  '                                  areg::TimerBase::CONTINUOUSLY);',
+                  '                // The stall watchdog counts from here; the steps begin once.',
+                  '                resume_pace();',
                   '                if (mStep == Step::Start)',
                   '                {',
                   '                    begin(Step::{});'.format(steps[0]['enum']),
@@ -2693,10 +2803,7 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
         if stepped:
             lines += ['',
                       '                // One step of the scenario per tick.',
-                      '                mPace.stop_timer();',
-                      '                mPace.start_timer({}, static_cast<areg::DispatcherThread &>'
-                      '(master_thread()),'.format(STEP_INTERVAL_MS),
-                      '                                  areg::TimerBase::CONTINUOUSLY);']
+                      '                resume_pace();']
         # Nothing answers the first request, and no attribute update arrives to end on.
         if not answered_first and (iface.requests or not iface.attributes):
             lines.append('                // placeholder(you): the scenario ends here until '
@@ -2715,6 +2822,8 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
               marker('peer_lost',
                      'what losing the provider means to this scenario', 20),
               '                    arm_deadline(cReconnectSeconds);']
+    if stepped:
+        lines.append('                    mPace.stop_timer();')
     if holds:
         lines.append('                    mHold.stop_timer();')
     if latches:
@@ -2791,7 +2900,8 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
                                                     iface.generated_params('response', name)))
         lines.append('    {')
         # A step that awaits this answer checks it, so a second marker would be empty.
-        if not any(step['awaits'] == ('response', name) for step in steps):
+        if not any(step['awaits'] == ('response', name) and not step.get('role')
+                   for step in steps):
             lines.append(marker(iface.spell('response', name),
                                 'what this answer means for the scenario'))
         if first and not steps:
@@ -2846,16 +2956,21 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
         lines += ['    {',
                   '        if (state == areg::DataState::DataIsOK)',
                   '        {']
-        said = marker('update_' + iface.spell('attribute', attr_name, 'get'),
-                      'the new value is ready to use', 16 if latch else 12)
+        dispatch = step_dispatch(steps, 'update', attr_name, 12, latch)
+        hint = 'the new value is ready to use'
+        if dispatch:
+            hint += '; ' + UPDATE_CHECKED
+        said = marker('update_' + iface.spell('attribute', attr_name, 'get'), hint,
+                      16 if latch else 12)
         lines += replayed(said, 12) if latch else [said]
         # With no request, the first update the provider's initial value sends ends it.
         if not steps and not iface.requests and attr_name == iface.attributes[0][0]:
             lines.append(placeholder('            quit_with(0);'))
-        lines += step_dispatch(steps, 'update', attr_name, 12, latch)
+        lines += dispatch
         lines += ['        }',
                   '    }',
                   '']
+    lines += role_methods(steps, latches)
     lines += ['private:',
               '    //! This component as a reference, for a member initialiser that takes one.',
               '    inline {} & self()'.format(cls),
@@ -2975,6 +3090,20 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
                   '    void progressed()',
                   '    {   mIdleTicks = 0; }',
                   '',
+                  '    //! Starts the pace and the stall watchdog from zero while the provider',
+                  '    //! is connected. A lost provider stops both.',
+                  '    void resume_pace()',
+                  '    {',
+                  '        mPace.stop_timer();',
+                  '        if (is_connected())',
+                  '        {',
+                  '            progressed();',
+                  '            mPace.start_timer({}, static_cast<areg::DispatcherThread &>'
+                  '(master_thread()),'.format(STEP_INTERVAL_MS),
+                  '                              areg::TimerBase::CONTINUOUSLY);',
+                  '        }',
+                  '    }',
+                  '',
                   '    areg::Timer  mPace;   //!< Spaces the requests of the scenario.',
                   '',
                   '    //! Ticks of no progress that end the run, one tick a second.',
@@ -3059,7 +3188,8 @@ HOLD_MAIN = ['int main(int argc, char * argv[])',
 # The console quit path, asked of nearly every task. End of input is not a quit
 # request: a process started without a console is handed a stream nothing is ever
 # written to, so the loop blocks on its own thread and the service keeps running.
-CONSOLE_INCLUDES = ['#include <iostream>', '#include <string>', '#include <thread>']
+CONSOLE_INCLUDES = ['#include <cstdio>', '#include <cstdlib>', '#include <iostream>',
+                    '#include <string>', '#include <thread>']
 
 MAIN_BODY = ['int main()',
              '{',
@@ -3085,7 +3215,15 @@ MAIN_BODY = ['int main()',
              '    areg::Application::wait_quit(areg::WAIT_INFINITE);',
              '    areg::Application::unload_model(_modelName);',
              '    areg::Application::release();',
-             '    return areg::Application::stored_element(_exitCode).valInt.mElement;',
+             '',
+             '    // Flushes the output and ends the process at once, with the console',
+             '    // thread still reading.',
+             '    const int exitCode{ areg::Application::stored_element(_exitCode).valInt.mElement };',
+             '    std::cout.flush();',
+             '    std::cerr.flush();',
+             '    std::fflush(stdout);',
+             '    std::fflush(stderr);',
+             '    std::_Exit(exitCode);',
              '}',
              '']
 
@@ -3572,7 +3710,8 @@ def peer_hold(steps):
     """
     steps = list(steps)
     answered = [index for index, step in enumerate(steps)
-                if step['awaits'] and step['awaits'][0] == 'response']
+                if step['awaits'] and step['awaits'][0] == 'response'
+                and not step.get('role')]
     acting = [index for index, step in enumerate(steps) if step['awaits'] or step['send']]
     after = (answered or acting or [None])[0]
     if after is None or after >= len(steps) - 1:

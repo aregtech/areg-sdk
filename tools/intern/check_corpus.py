@@ -2854,6 +2854,7 @@ def run():
     check_example_machine(report)
     check_example_programs(report)
     check_driver_client_early(report)
+    check_role_steps(report)
     check_removed_marker_body(report)
     check_answer_file(report)
     check_peer_lost_scenario(report)
@@ -4482,7 +4483,9 @@ def check_design_request(report):
 # The scenario rules, each where it is used: (where, phrase).
 STEP_RULES_AT_USE = (
     ('the template steps note', 'not one per message'),
-    ('the template steps note', 'awaits the broadcast saying it finished'),
+    ('the template steps note', 'awaits what says it finished'),
+    ('the template steps note', 'two providers\' in no order'),
+    ('the template steps note', 'role: a provider role this program uses'),
     ('the template steps note', 'Every step sends, awaits or waits'),
     ('the worksheet scenarios.json header', 'One line per acceptance item'),
 )
@@ -5325,7 +5328,7 @@ def check_step_values_split(report):
 
 
 def check_example_until(report):
-    """The example proves a request's work by a broadcast with until, never an attribute."""
+    """The example shows a step that awaits a broadcast with until."""
     sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
     try:
         import gen_docs
@@ -5333,25 +5336,17 @@ def check_example_until(report):
         report.fail('example-until', 'gen_docs.py does not import: {}'.format(failure))
         return
     iface = gen_docs.EXAMPLE['interfaces'][0]
-    attributes = set(entry['name'] for entry in iface.get('attributes') or [])
     broadcasts = set(entry['name'] for entry in iface.get('broadcasts') or [])
-    held = [step['name'] for step in iface.get('steps') or []
-            if step.get('until') and step.get('await') in attributes]
-    if held:
-        report.fail('example-until', 'the example holds {} until an attribute reaches a '
-                    'value: its first update after a request can be the value from before '
-                    'it'.format(', '.join(held)))
-        return
     if not any(step.get('until') and step.get('await') in broadcasts
                for step in iface.get('steps') or []):
         report.fail('example-until', 'no step of the example awaits a broadcast with until')
         return
-    report.ok('example-until', 'the example awaits a broadcast with until, and no attribute')
+    report.ok('example-until', 'the example awaits a broadcast with until')
 
 
 def check_stall_default(report):
-    """The default stall outlasts the default reconnect by the margin, and refusing a
-    stall no longer than the reconnect names a value that repairs each."""
+    """The default stall is the floor, a reconnect deadline as long gives the same stall,
+    and a stall no longer than the reconnect is accepted."""
     sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
     try:
         import gen_docs
@@ -5359,23 +5354,23 @@ def check_stall_default(report):
     except Exception as failure:                    # noqa: BLE001 - reported, not raised
         report.fail('stall-default', 'gen_docs.py does not import: {}'.format(failure))
         return
+    floor = gen_docs.STALL_FLOOR_TICKS
     stall = gen_docs.driver_of({})['stall_ticks']
-    if stall != gen_docs.DRIVER_DEFAULTS['reconnect_seconds'] + gen_docs.STALL_MARGIN_TICKS:
-        report.fail('stall-default', 'the default stall is {} ticks, not the default '
-                    'reconnect plus the margin'.format(stall))
+    paired = gen_docs.driver_of({'driver': {'reconnect_seconds': floor}})['stall_ticks']
+    if stall != floor or paired != floor:
+        report.fail('stall-default', 'the default stall is {} ticks, and {} with a reconnect '
+                    'of {} s; both should be {}'.format(stall, paired, floor, floor))
         return
     problems = []
     with docmodel.gathering(problems), contextlib.suppress(docmodel.Refused):
         gen_docs.check_drivers({'interfaces': [{'name': 'X', 'driver': {
-            'reconnect_seconds': 20, 'stall_ticks': 20}}]})
-    if not problems or 'stall_ticks 21 or more, or reconnect_seconds 19 or less' \
-            not in problems[0]:
-        report.fail('stall-default', 'a stall equal to the reconnect is accepted, or its '
-                    'refusal names no value that repairs it: {}'
-                    .format(problems[0] if problems else 'accepted'))
+            'reconnect_seconds': floor, 'stall_ticks': floor}}]})
+    if problems:
+        report.fail('stall-default', 'a stall equal to the reconnect is refused: {}'
+                    .format(problems[0]))
         return
-    report.ok('stall-default', 'the default stall is {} ticks, and the refusal of a stall '
-              'equal to the reconnect names both repairs'.format(stall))
+    report.ok('stall-default', 'the default stall is {} ticks, also with a reconnect of {} '
+              's, and a stall equal to the reconnect is accepted'.format(stall, floor))
 
 
 def check_stall_names_latest_drops(report):
@@ -5419,6 +5414,17 @@ def check_stall_names_latest_drops(report):
                                    'hidden behind "and N more"')
         return
     report.ok('stall-drops', 'the stall report names the latest messages dropped')
+    connected = body_of('::service_connected(areg::ServiceConnectionState status, '
+                        'areg::ProxyBase & proxy)')
+    lost = connected.split('ConnectionLost', 1)[-1].split('Rejected', 1)[0]
+    resumed = body_of('::resume_pace()')
+    if 'resume_pace();' not in connected or 'mPace.stop_timer();' not in lost \
+            or 'progressed();' not in resumed:
+        report.fail('stall-pause', 'a lost provider leaves the stall watchdog counting, or '
+                                   'a reconnection does not restart it from zero')
+        return
+    report.ok('stall-pause', 'a lost provider pauses the stall watchdog, and a reconnection '
+                             'restarts it from zero')
 
 
 def check_step_enum_qualifier(report):
@@ -7906,6 +7912,88 @@ def check_driver_client_early(report):
         return
     report.ok('client-early', 'a driver\'s used client keeps an update that arrives before '
               'the steps begin and runs it as they begin')
+
+
+def check_role_steps(report):
+    """A step with "role" awaits a used role: its client hands the message to the driver's
+    check, one arriving before the step is kept for it, a request to the driven service
+    does not forget it, and an unknown role is refused naming the used ones."""
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    example = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                              '--example', 'programs'], stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE, universal_newlines=True)
+    if example.returncode != 0:
+        report.fail('role-step', 'gen_docs.py --example programs does not run')
+        return
+    design = json.loads(example.stdout)
+    steps = next(entry.get('steps') for entry in design['interfaces'] if entry.get('steps'))
+    if not any(step.get('role') for step in steps):
+        report.fail('role-step', 'gen_docs.py --example programs shows no step with "role"')
+        return
+    holder = tempfile.mkdtemp(prefix='areg-role-step-')
+    try:
+        if subprocess.run([sys.executable, os.path.join(tools, 'setup_project.py'),
+                           '--name', 'role', '--root', holder, '--mode', 'ipc',
+                           '--sdk-root', ROOT, '--quiet'],
+                          capture_output=True, text=True).returncode != 0:
+            report.fail('role-step', 'the scaffold no longer lays out a project')
+            return
+
+        def generate(spec):
+            with open(os.path.join(holder, 'design.json'), 'w', encoding='utf-8') as handle:
+                json.dump(spec, handle)
+            for command in (['gen_docs.py', '--outdir', 'src/services', '--force',
+                             '--chained', '--spec', 'design.json'],
+                            ['gen_skeleton.py', '--programs', '--services', 'src/services',
+                             '--force', '--spec', 'design.json']):
+                done = subprocess.run([sys.executable, os.path.join(tools, command[0])] +
+                                      command[1:], cwd=holder, stdout=subprocess.PIPE,
+                                      stderr=subprocess.STDOUT, universal_newlines=True)
+                if done.returncode != 0:
+                    return done.stdout
+            return None
+
+        refused = generate(design)
+        if refused:
+            report.fail('role-step', 'the example with a role step is refused: {}'
+                        .format(refused.strip()[-300:]))
+            return
+        sources = {}
+        for path in glob.glob(os.path.join(holder, 'src', 'customer', '*.?pp')):
+            with open(path, encoding='utf-8') as handle:
+                sources[os.path.basename(path)] = handle.read()
+        wrong = dict(design, interfaces=[dict(entry, steps=[dict(step, role='stok')
+                                                            for step in entry['steps']])
+                                         if entry.get('steps') else entry
+                                         for entry in design['interfaces']])
+        refusal = generate(wrong) or ''
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    client = ''.join(text for name, text in sources.items() if 'Client' in name)
+    driver = ''.join(text for name, text in sources.items() if 'Client' not in name)
+    begun = re.search(r'case Step::Large:\s*std::cout << "step large" << std::endl;(.*?)break;',
+                      driver, re.S)
+    if 'mOwner.stock_on_bolts_update(Bolts);' not in client \
+            or not re.search(r'stock_on_bolts_update\(.*?case Step::StockLeft:', driver, re.S):
+        report.fail('role-step', 'the stock client does not hand Bolts to the driver\'s check '
+                                 'of the step that awaits it with "role"')
+        return
+    if not re.search(r'default:\s*dropped\("update Bolts of stock"\);\s*mLateStockBolts = true;',
+                     driver) or not re.search(r'case Step::StockLeft:[^}]*if \(mLateStockBolts\)',
+                                              driver):
+        report.fail('role-step', 'a Bolts update that arrives before its step is not kept '
+                                 'for it: the stock and the desk send in no order')
+        return
+    if begun is None or 'forget_late' in begun.group(1):
+        report.fail('role-step', 'a request to the desk forgets what the stock sent, which '
+                                 'comes in no order against it')
+        return
+    if 'names role "stok"' not in refusal or 'It uses: stock' not in refusal:
+        report.fail('role-step', 'an unknown role is not refused naming the used ones: {}'
+                    .format(refusal.strip()[-200:] or 'accepted'))
+        return
+    report.ok('role-step', 'a step with "role" checks what the used role sends, keeps one '
+                           'that arrives before it, and an unknown role is refused')
 
 
 def check_design_reviewable(report):

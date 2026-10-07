@@ -124,7 +124,9 @@ def components_of(project, specs, services_dir):
             component.cls = gs.provider_name(component.iface)
         elif component.kind == 'drives':
             component.cls = gs.consumer_name(component.iface)
-            component.steps = gs.steps_of(specs, component.iface)
+            reached = dict((role, (iface, member_of(role)))
+                           for iface, roles in component.uses for role in roles)
+            component.steps = gs.steps_of(specs, component.iface, reached, component.role)
             component.hold = gs.peer_hold(component.steps)
         else:
             component.cls = (prefix if watched[component.iface.name] > 1 else '') + \
@@ -150,11 +152,32 @@ def member_of(role):
     return 'm' + gs.pascal(role)
 
 
-def client_class(owner, iface, roles, cls, reconnect, driving=False):
+def forwards(steps, roles, kind, name, indent):
+    """The calls handing one message of this client to the driver's step checks, one per
+    role a step awaits it from; a client of several roles calls only for its own."""
+    pad = ' ' * indent
+    lines, done = [], set()
+    for step in steps:
+        role = step.get('role')
+        if role not in roles or step['awaits'] != (kind, name) or role in done:
+            continue
+        done.add(role)
+        call = 'mOwner.{}({});'.format(gs.role_method(step), ', '.join(
+            param for _, param in gs.generated_values(gs.role_params(step))))
+        if len(roles) > 1:
+            lines += [pad + 'if (mRole == "{}")'.format(role), pad + '{',
+                      pad + '    ' + call, pad + '}']
+        else:
+            lines.append(pad + call)
+    return lines
+
+
+def client_class(owner, iface, roles, cls, reconnect, driving=False, steps=()):
     """The client of one used service: a consumer base, subscribed, every answer a marker.
 
     A provider that goes away is waited for reconnect seconds, the "driver" setting of
-    that service, and the section that runs then decides; 0 waits for ever.
+    that service, and the section that runs then decides; 0 waits for ever. A message a
+    step awaits with "role" goes on to the driver's check of that step.
     """
     pad = ' ' * (len(cls) + 13)
     lines = ['class {} final : public    {}ConsumerBase'.format(cls, iface.name),
@@ -250,11 +273,14 @@ def client_class(owner, iface, roles, cls, reconnect, driving=False):
               '    }',
               '']
     for name, _ in iface.responses:
+        handed = forwards(steps, roles, 'response', name, 8)
         lines += ['    void {}({}) final'.format(iface.spell('response', name),
                                                 iface.generated_params('response', name)),
                   '    {',
                   gs.marker(iface.spell('response', name),
-                            'what this answer means to {}'.format(owner)),
+                            'what this answer means to {}'.format(owner) + (
+                                '; it runs before the step_ check of the same answer'
+                                if handed else ''))] + handed + [
                   '    }',
                   '']
     for name, _ in iface.requests:
@@ -267,11 +293,14 @@ def client_class(owner, iface, roles, cls, reconnect, driving=False):
                   '    }',
                   '']
     for name, _ in iface.broadcasts:
+        handed = forwards(steps, roles, 'broadcast', name, 8)
         lines += ['    void {}({}) final'.format(iface.spell('broadcast', name),
                                                 iface.generated_params('broadcast', name)),
                   '    {',
                   gs.marker(iface.spell('broadcast', name),
-                            'what this broadcast means to {}'.format(owner)),
+                            'what this broadcast means to {}'.format(owner) + (
+                                '; it runs before the step_ check of the same broadcast'
+                                if handed else ''))] + handed + [
                   '    }',
                   '']
     for attr_name, _ in iface.attributes:
@@ -288,10 +317,17 @@ def client_class(owner, iface, roles, cls, reconnect, driving=False):
                       '                return;',
                       '            }',
                       '']
-        lines += [gs.marker('update_' + iface.spell('attribute', attr_name, 'get'),
-                            'the new value is ready to use' + (
-                                '; one that arrives before the steps begin runs as they '
-                                'begin' if early else ''), 12),
+        handed = forwards(steps, roles, 'update', attr_name, 12)
+        hint = 'the new value is ready to use'
+        if early:
+            hint += '; one that arrives before the steps begin runs as they begin'
+        if handed:
+            hint += '; ' + gs.UPDATE_CHECKED
+        elif driving:
+            hint += '; no step awaits it; a step does with "role": "{}", "await": "{}"'.format(
+                roles[0], attr_name)
+        lines += [gs.marker('update_' + iface.spell('attribute', attr_name, 'get'), hint,
+                            12)] + handed + [
                   '        }',
                   '    }',
                   '']
@@ -346,8 +382,15 @@ def with_clients(lines, component):
         held = [member_of(role) for _, roles, _ in component.clients for role in roles]
         early = [member_of(role) for iface, roles, _ in component.clients
                  if iface.attributes for role in roles]
+        # A first step that sends to a used role forgets what that role sent before its
+        # request, as begin() does; the kept updates are handed over after begin().
+        first = component.steps[0]
+        forget = ['{}();'.format(gs.forget_name(first['role']))] \
+            if early and first['send'] and first.get('role') and gs.flag_latches(
+                gs.late_latches(component.iface, component.steps), first['role']) else []
         lines[start + 3:start + 3] = ['                    {}.deliver_early();'.format(member)
-                                      for member in early]
+                                      for member in early] + \
+            ['                    ' + line for line in forget]
         deleted = lines.index('    {}() = delete;'.format(component.cls))
         lines[deleted:deleted] = [
             '    //! True once every used provider is connected.',
@@ -364,6 +407,7 @@ def with_clients(lines, component):
             '        {',
             '            begin(Step::{});'.format(component.steps[0]['enum'])] + [
             '            {}.deliver_early();'.format(member) for member in early] + [
+            '            ' + line for line in forget] + [
             '        }',
             '    }',
             '']
@@ -566,7 +610,8 @@ def component_classes(component, specs, include_root):
     for used, roles, name in component.clients:
         client = client_class(component.cls, used, roles, name,
                               gs.driver_of(specs, used)['reconnect_seconds'],
-                              component.kind == 'drives' and bool(component.steps))
+                              component.kind == 'drives' and bool(component.steps),
+                              component.steps if component.kind == 'drives' else ())
         client_includes = gs.class_includes(used) + gs.timer_includes(client) + [
             '', '#include "{}/{}ConsumerBase.hpp"'.format(include_root, used.name)]
         prelude_lines = gs.QUIT_DECLARATION + ['class {};'.format(component.cls), '']
