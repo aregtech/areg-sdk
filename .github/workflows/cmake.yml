@@ -452,10 +452,10 @@ jobs:
             elif [ "${{matrix.config.arch}}" = "x64" ]; then
               EXTRA_CMAKE_FLAGS="${EXTRA_CMAKE_FLAGS} -A x64"
             fi
-          if [ "${{matrix.config.family}}" = "llvm" ]; then
-            EXTRA_CMAKE_FLAGS="${EXTRA_CMAKE_FLAGS} -T ClangCL"
+            if [ "${{matrix.config.family}}" = "llvm" ]; then
+              EXTRA_CMAKE_FLAGS="${EXTRA_CMAKE_FLAGS} -T ClangCL"
+            fi
           fi
-        fi
         if [ "${{runner.os}}" = "Linux" ]; then
           if [ "${{matrix.config.arch}}" = "x86" ]; then
             if [ "${{matrix.config.family}}" = "llvm" ]; then
