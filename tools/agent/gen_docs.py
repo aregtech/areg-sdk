@@ -1375,11 +1375,26 @@ def settle_start(level, owner):
 
 def load_spec(path):
     """One spec file as the generator reads it, and how many samples it left untouched."""
+    twice = []
+
+    def unique(pairs):
+        keys = [key for key, _ in pairs]
+        twice.extend((dict(pairs).get('name'), key) for key in dict.fromkeys(keys)
+                     if keys.count(key) > 1)
+        return dict(pairs)
+
     try:
         with open(path, encoding='utf-8') as handle:
-            raw = json.load(handle)
+            raw = json.load(handle, object_pairs_hook=unique)
     except (OSError, ValueError) as problem:
         fail('cannot read {}: {}'.format(path, problem))
+    if twice:
+        fail('{} writes a key twice in one object: {}. JSON keeps only the last of them, '
+             'so everything under the first is lost. Write each key once, its entries '
+             'merged into one list.'
+             .format(path, '; '.join('"{}" in {}'.format(
+                 key, '"{}"'.format(name) if isinstance(name, str) else 'an object')
+                 for name, key in twice)))
     if not isinstance(raw, dict):
         fail('{} is not a spec object'.format(path))
     skipped = []
@@ -2504,6 +2519,52 @@ def trigger_coverage(spec):
 
     walk(spec.get('states'), spec.get('initial'), True)
     return [(name, answered[name]) for name in names]
+
+
+def states_without(spec, trigger):
+    """The states in which `trigger` does nothing: neither they nor a state enclosing
+    them has a transition on it. A composite none of whose states takes it is named
+    once, with "+"; a final or history state is never named."""
+    def walk(states):
+        labels, whole = [], True
+        for state in states or []:
+            if not isinstance(state, dict) or not state.get('name') \
+                    or state.get('kind') in ('final', 'history'):
+                continue
+            if any(isinstance(move, dict) and move.get('on') == trigger
+                   for move in state.get('transitions') or []):
+                whole = False
+            elif state.get('states'):
+                inner, all_inside = walk(state.get('states'))
+                if all_inside:
+                    labels.append(state['name'] + '+')
+                else:
+                    labels += inner
+                    whole = False
+            else:
+                labels.append(state['name'])
+        return labels, whole and bool(labels)
+
+    return walk(spec.get('states'))[0]
+
+
+def moves_without_do(spec, trigger):
+    """Each transition on `trigger` that runs no "do", as "STATE -> TARGET"."""
+    found = []
+
+    def walk(states):
+        for state in states or []:
+            if not isinstance(state, dict):
+                continue
+            for move in state.get('transitions') or []:
+                if isinstance(move, dict) and move.get('on') == trigger \
+                        and not move.get('do'):
+                    found.append('{} -> {}'.format(state.get('name', '?'),
+                                                   move.get('to') or 'itself'))
+            walk(state.get('states'))
+
+    walk(spec.get('states'))
+    return found
 
 
 def self_transitions(spec):

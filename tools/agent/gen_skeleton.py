@@ -1005,10 +1005,20 @@ def write_worksheet(produced, out, iface, document, machine, machine_doc,
     with open(WORKSHEET, 'w', encoding='utf-8', newline='\n') as handle:
         handle.write('\n'.join(lines).rstrip() + '\n')
     if known is not None:
-        drop_removed_sections(known, section_names('\n'.join(lines)))
+        drop_removed_sections(known, kept_sections('\n'.join(lines), scenarios))
     if os.path.exists(BODIES) and worksheet_pristine(BODIES):
         os.remove(BODIES)
     return added
+
+
+def kept_sections(text, scenarios):
+    """The sections a body may still name: the worksheet's, and each expectation and
+    stop of the scenario file, filled or open."""
+    import fill_markers
+    kept = section_names(text)
+    if scenarios:
+        kept += list(fill_markers.expectations_of(scenarios)[0])
+    return kept
 
 
 def drop_removed_sections(known, kept):

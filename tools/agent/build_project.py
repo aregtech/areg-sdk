@@ -584,7 +584,8 @@ def show_passed(lines, tail):
     show(lines, tail)
 
 
-def run(step, command, cwd, kept=2, failed_kept=40, notes=None, build=None, heal=None):
+def run(step, command, cwd, kept=2, failed_kept=40, notes=None, build=None, heal=None,
+        explain=None):
     """One step of the chain, and whether it passed.
 
     A step that passed prints its last `kept` lines and nothing more: a build log
@@ -593,7 +594,8 @@ def run(step, command, cwd, kept=2, failed_kept=40, notes=None, build=None, heal
     them, and what to do about it. With `notes`, the design notes printed by an
     earlier call are replaced by one line that counts them. With `build`, a failure
     whose cause is a stale CMake cache in that directory says how to clear it; with
-    `heal`, that cache is cleared here and the step runs once more instead.
+    `heal`, that cache is cleared here and the step runs once more instead. With
+    `explain`, a failure also prints the lines it returns for the failed output.
     """
     print('== {}: {}'.format(step, ' '.join(command)))
     result = subprocess.run(command, cwd=cwd, capture_output=True, text=True)
@@ -601,8 +603,10 @@ def run(step, command, cwd, kept=2, failed_kept=40, notes=None, build=None, heal
     if result.returncode != 0:
         said = '\n'.join(lines)
         if heal and STALE_CACHE.search(said) and heal(said):
-            return run(step, command, cwd, kept, failed_kept, notes, build, heal)
+            return run(step, command, cwd, kept, failed_kept, notes, build, heal, explain)
         show_failure(lines, failed_kept)
+        for line in explain(lines) if explain else []:
+            print('   ' + line)
         print('')
         print('FAILED at step "{}", exit {}.'.format(step, result.returncode))
         advice = ADVICE.get(step, '')
@@ -616,6 +620,48 @@ def run(step, command, cwd, kept=2, failed_kept=40, notes=None, build=None, heal
         lines = collapse_notes(lines, notes)
     show_passed(lines, kept)
     return True
+
+
+# The line a scenario driver prints for a request whose response never arrived.
+UNANSWERED = re.compile(r'sent request_(\w+)\(.*\) and awaits response \w+.*\. '
+                        r'Nothing arrived for it\.')
+
+
+def unanswered_triggers(lines, specs):
+    """For each request a scenario got no answer to, where a machine trigger of the
+    same name is taken, and which of its transitions run no "do"."""
+    requests = []
+    for line in lines:
+        found = UNANSWERED.search(line)
+        if found and found.group(1) not in requests:
+            requests.append(found.group(1))
+    said = []
+    if not requests:
+        return said
+    for spec in specs:
+        for machine in gen_docs.listed(gen_docs.load_spec(spec)[0], 'machines'):
+            coverage = dict(gen_docs.trigger_coverage(machine))
+            for request in requests:
+                if request not in coverage:
+                    continue
+                name = machine.get('name', '?')
+                missing = gen_docs.states_without(machine, request)
+                where = ', '.join(missing) or 'no state of {} is one'.format(name)
+                if any(label.endswith('+') for label in missing):
+                    where += ' (+ with every state inside it)'
+                said.append('request_{0} reaches machine {1} only when its body calls '
+                            'the trigger {0}(). In a state with no transition on "{0}", '
+                            'inside none that has one, the trigger takes nothing, returns '
+                            'false and sends no answer: {2}.'.format(request, name, where))
+                said.append('The states that take it answer only through an action that '
+                            'calls response_{}: {} (* the initial state, + also while '
+                            'inside it).'.format(request, ', '.join(coverage[request])
+                                                 or 'none'))
+                bare = gen_docs.moves_without_do(machine, request)
+                if bare:
+                    said.append('Transitions on "{}" that run no "do": {}.'
+                                .format(request, ', '.join(bare)))
+    return said
 
 
 # What update_cmake prints when it takes a document's line out.
@@ -1182,7 +1228,8 @@ def main():
             scenarios += ['--only', args.only]
         if args.verbose:
             scenarios.append('--verbose')
-        if not run('scenarios', scenarios, root, kept=None, failed_kept=None):
+        if not run('scenarios', scenarios, root, kept=None, failed_kept=None,
+                   explain=lambda lines: unanswered_triggers(lines, specs)):
             return 1
         if not args.no_check:
             print('')

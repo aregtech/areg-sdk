@@ -2797,6 +2797,9 @@ def run():
     check_scenario_runner(report)
     check_mutation_verdicts(report)
     check_trigger_coverage(report)
+    check_unanswered_trigger(report)
+    check_filled_expectations_kept(report)
+    check_duplicate_keys(report)
     check_state_mirrors(report)
     check_placeholder_contract(report)
     check_design_template(report)
@@ -3662,6 +3665,120 @@ def check_trigger_coverage(report):
     report.ok('trigger-coverage',
               'gen_docs.py marks the initial state, a composite and a trigger no '
               'state answers')
+
+
+def check_duplicate_keys(report):
+    """gen_docs.py refuses a design that writes a key twice in one object.
+
+    JSON keeps only the last of them, so a state with "transitions" twice loses the
+    first list with no word, and the machine drops every trigger it held.
+    """
+    holder = tempfile.mkdtemp()
+    try:
+        spec = os.path.join(holder, 'design.json')
+        with open(spec, 'w', encoding='utf-8') as handle:
+            handle.write('{"machines": [{"name": "M", "triggers": [{"name": "go"}], '
+                         '"actions": [{"name": "act"}], "initial": "A", "states": [{'
+                         '"name": "A", "transitions": [{"on": "go", "do": ["act"]}], '
+                         '"transitions": [{"on": "go", "do": ["act"]}]}]}]}')
+        result = subprocess.run([sys.executable,
+                                 os.path.join(ROOT, 'tools', 'agent', 'gen_docs.py'),
+                                 '--outdir', os.path.join(holder, 'out'), '--force',
+                                 '--chained', '--spec', spec],
+                                capture_output=True, text=True)
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    said = result.stdout + result.stderr
+    if result.returncode == 0 or '"transitions" in "A"' not in said:
+        report.fail('duplicate-key', 'gen_docs.py accepts a design that writes "transitions" '
+                                     'twice in one state (exit {}):\n{}'
+                    .format(result.returncode, said.strip()[-400:]))
+        return
+    report.ok('duplicate-key', 'gen_docs.py refuses a key written twice in one object, '
+                               'naming the key and the object')
+
+
+def check_filled_expectations_kept(report):
+    """A regeneration keeps the bodies of scenario expectations that are already filled.
+
+    A filled expectation leaves the worksheet, yet fill_markers.py still writes its
+    section, so its body in bodies.txt is not the body of a removed marker.
+    """
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    sys.path.insert(0, tools)
+    try:
+        import gen_skeleton
+    finally:
+        sys.path.pop(0)
+    if not hasattr(gen_skeleton, 'kept_sections'):
+        report.fail('expect-kept', 'gen_skeleton.py has no kept_sections()')
+        return
+    holder = tempfile.mkdtemp()
+    try:
+        path = os.path.join(holder, 'scenarios.json')
+        with open(path, 'w', encoding='utf-8') as handle:
+            json.dump({'scenarios': [{'name': 'smoke', 'procs': [
+                {'name': 'display', 'expect': ['^display: floor 4$']}]}]}, handle)
+        kept = gen_skeleton.kept_sections('== watch_lost\n', path)
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    if 'expect_smoke_display' not in kept or 'watch_lost' not in kept:
+        report.fail('expect-kept', 'a regeneration drops the body of a filled scenario '
+                                   'expectation from bodies.txt: kept {}'.format(kept))
+        return
+    report.ok('expect-kept', 'a regeneration keeps the bodies of filled scenario '
+                             'expectations')
+
+
+def check_unanswered_trigger(report):
+    """A scenario whose request got no answer names where the machine trigger of that
+    name does nothing, and its transitions that run no "do"."""
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    sys.path.insert(0, tools)
+    try:
+        import build_project
+        import gen_skeleton
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('unanswered-trigger', 'build_project.py does not import: {}'
+                    .format(failure))
+        return
+    finally:
+        sys.path.pop(0)
+    if not hasattr(build_project, 'unanswered_triggers'):
+        report.fail('unanswered-trigger', 'build_project.py does not explain a request '
+                                          'no scenario got an answer to')
+        return
+    step = {'send': True, 'call': 'request_go', 'args': ['1'], 'awaits': ('response', 'go'),
+            'role': 'gate', 'until': None, 'wait': None}
+    line = '  step_go {}. Nothing arrived for it.'.format(gen_skeleton.step_said(step))
+    design = {'interfaces': [{'name': 'S', 'requests': [
+        {'name': 'go', 'answer': [{'name': 'done', 'type': 'bool'}]}]}],
+        'machines': [{'name': 'M', 'triggers': [{'name': 'go'}], 'initial': 'Idle',
+                      'actions': [{'name': 'answer'}],
+                      'states': [
+                          {'name': 'Idle', 'transitions': [{'on': 'go', 'to': 'Run'}]},
+                          {'name': 'Run', 'initial': 'Fast', 'states': [
+                              {'name': 'Fast', 'transitions': []},
+                              {'name': 'Done', 'kind': 'final'}]},
+                          {'name': 'Halted', 'transitions': [
+                              {'on': 'go', 'do': ['answer']}]}]}]}
+    holder = tempfile.mkdtemp()
+    try:
+        spec = os.path.join(holder, 'design.json')
+        with open(spec, 'w', encoding='utf-8') as handle:
+            json.dump(design, handle)
+        said = '\n'.join(build_project.unanswered_triggers([line], [spec]))
+        quiet = build_project.unanswered_triggers([line.replace('Nothing', 'All')], [spec])
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    if 'sends no answer: Run+' not in said or 'that run no "do": Idle -> Run' not in said \
+            or 'Idle*, Halted' not in said or quiet:
+        report.fail('unanswered-trigger',
+                    'a request no scenario got an answer to does not name the states where '
+                    'the machine trigger of its name does nothing:\n{}'.format(said))
+        return
+    report.ok('unanswered-trigger', 'an unanswered request names the states where its '
+                                    'trigger does nothing and its transitions with no "do"')
 
 
 def check_state_mirrors(report):
