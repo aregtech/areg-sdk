@@ -1481,6 +1481,10 @@ def merge(specs):
         if not isinstance(spec, dict):
             fail('{} is not a spec object'.format(path))
         check_keys(spec, KEYS['spec'], path)
+        shared = spec.get('datatypes')
+        # A data type block that declares and includes nothing is the same as none.
+        if isinstance(shared, dict) and not shared.get('declare') and not shared.get('includes'):
+            spec = dict(spec, datatypes=None)
         if spec.get('datatypes'):
             if project['datatypes']:
                 fail('{} declares a second "datatypes" document; a project has one'

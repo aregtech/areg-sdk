@@ -628,7 +628,7 @@ def documents_of(specs, outdir):
                 if isinstance(path, str):
                     hosted.append(os.path.normpath(path))
         shared = document.get('datatypes') or {}
-        if shared.get('name'):
+        if shared.get('name') and (shared.get('declare') or shared.get('includes')):
             shared_types.append(os.path.join(outdir, shared['name'] + '.dtml'))
     return interfaces, machines, shared_types, list(dict.fromkeys(hosted))
 
