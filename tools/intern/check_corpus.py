@@ -2805,6 +2805,7 @@ def run():
     check_step_driver(report)
     check_answer_queue(report)
     check_answer_until(report)
+    check_until_names(report)
     check_cause_trail(report)
     check_worker_entry_name(report)
     check_worker_markers(report)
@@ -5092,6 +5093,12 @@ UNTIL_QUEUE_SAMPLE = [{'name': 'open_narrow', 'send': 'open', 'args': {'width': 
 OWED_SAMPLE = [{'name': 'open_narrow', 'send': 'open', 'args': {'width': 600}, 'wait': 1},
                {'name': 'open_wide', 'send': 'open', 'args': {'width': 1200}}]
 
+# Keys of "until" in another letter case, and fields of a structure parameter.
+UNTIL_NAMES_SAMPLE = [{'name': 'open_gate', 'send': 'open', 'args': {'width': 600},
+                       'await': 'Width', 'until': {'width': 600}},
+                      {'name': 'good_move', 'await': 'gate_moved',
+                       'until': {'quality': 'Good', 'reading.value': 600}}]
+
 
 LATE_SAMPLE = [{'name': 'open_gate', 'send': 'open', 'args': {'width': 600}},
                {'name': 'watch_width', 'await': 'Width'},
@@ -6013,6 +6020,44 @@ def check_unused_parameters(report):
     report.ok('unused-parameter', '{} parameter(s) an author\'s body may ignore are '
                                   '[[maybe_unused]], and the worksheet lists the signatures '
                                   'as before'.format(marked))
+
+
+def check_until_names(report):
+    """An "until" key in another letter case, a field of a structure parameter and
+    "parameter.field" are each compared; a key that names nothing is refused."""
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    here = os.getcwd()
+    for steps, refused in ((UNTIL_NAMES_SAMPLE, False),
+                           (UNTIL_NAMES_SAMPLE[:1] + [{'name': 'bad', 'await': 'gate_moved',
+                                                       'until': {'colour': 1}}], True)):
+        holder = tempfile.mkdtemp()
+        try:
+            os.chdir(holder)
+            made = generate_application(tools, 'names', steps)
+            source = ''
+            if os.path.isfile(made):
+                with open(made, encoding='utf-8') as handle:
+                    source = handle.read()
+        finally:
+            os.chdir(here)
+            shutil.rmtree(holder, ignore_errors=True)
+        if refused:
+            if source:
+                report.fail('until-names', 'an "until" key that names no parameter or field '
+                                           'is generated instead of refused')
+                return
+            continue
+        if not source:
+            report.fail('until-names', made)
+            return
+        for wanted in ('(Width == 600)', '(reading.quality == GateTypes::Quality::Good)',
+                       '(reading.value == 600)'):
+            if wanted not in source:
+                report.fail('until-names', 'the generated driver does not compare {}'
+                                           .format(wanted))
+                return
+    report.ok('until-names', '"until" takes a parameter in any letter case and a field of a '
+                             'structure parameter, and refuses a key that names neither')
 
 
 def check_answer_until(report):

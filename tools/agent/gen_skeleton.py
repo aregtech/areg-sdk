@@ -1011,6 +1011,22 @@ def fields_of(declared):
             if entry.get('Name')]
 
 
+def members_of(declared, space='', local=()):
+    """(name, type) of each field of one structure declaration, in document order.
+
+    A field type the same document declares is qualified with its space.
+    """
+    members = []
+    for field in declared.findall('./FieldList/Field'):
+        if not field.get('Name'):
+            continue
+        type_name = field.get('DataType') or ''
+        if space and type_name in local:
+            type_name = '{}::{}'.format(space, type_name)
+        members.append((field.get('Name'), type_name))
+    return members
+
+
 class Interface:
     """The parts of a .siml document the components have to match."""
 
@@ -1038,6 +1054,8 @@ class Interface:
         self.imported_types = []
         # The field names of every enumeration in reach, by every spelling of its type.
         self.enum_fields = {}
+        # (name, type) of each field of every structure in reach, by every spelling.
+        self.struct_fields = {}
         for declared in root.findall('./DataTypeList/DataType'):
             kind = (declared.get('Type') or '').lower()
             type_name = declared.get('Name')
@@ -1048,6 +1066,8 @@ class Interface:
             if kind in ('enumeration', 'enumerate'):
                 self.by_value.add(type_name)
                 self.enum_fields[type_name] = fields_of(declared)
+            elif kind == 'structure':
+                self.struct_fields[type_name] = members_of(declared)
 
         self.constants = []
         for constant in root.findall('./ConstantList/Constant'):
@@ -1158,6 +1178,8 @@ class Interface:
             return
         overview = included.find('./Overview')
         space = overview.get('Name') if overview is not None else ''
+        local = set(declared.get('Name') for declared in
+                    included.findall('./DataTypeList/DataType'))
         for declared in included.findall('./DataTypeList/DataType'):
             type_name = declared.get('Name')
             if not type_name:
@@ -1172,6 +1194,8 @@ class Interface:
                 if kind in ('enumeration', 'enumerate'):
                     self.by_value.add(spelling)
                     self.enum_fields[spelling] = fields_of(declared)
+                elif kind == 'structure':
+                    self.struct_fields[spelling] = members_of(declared, space, local)
 
     def cpp_type(self, type_name):
         """The C++ spelling of a document type, and how it is passed.
@@ -1787,23 +1811,28 @@ def type_lines(iface):
     """
     out = []
     for path, space, type_name, kind in iface.imported_types:
-        out.append(type_line(space, type_name, kind, ' (from {})'.format(path)))
+        fields = iface.struct_fields.get('{}::{}'.format(space, type_name) if space
+                                         else type_name, [])
+        out.append(type_line(space, type_name, kind, ' (from {})'.format(path), fields))
     for type_name, kind in iface.types:
-        out.append(type_line(iface.name, type_name, kind, ''))
+        out.append(type_line(iface.name, type_name, kind, '',
+                             iface.struct_fields.get(type_name, [])))
     for name, kind in iface.constants:
         out.append('  constant {}::{} of type {}'.format(iface.name, name, kind))
     return out
 
 
-def type_line(space, type_name, kind, origin):
-    """One declared type: its C++ spelling, and what the generator gives it."""
+def type_line(space, type_name, kind, origin, fields=()):
+    """One declared type: its C++ spelling, its fields, and what the generator gives it."""
     scope = '{}::'.format(space) if space else ''
     full = scope + type_name
     if kind in ('enumeration', 'enumerate'):
         return ('  enum class {}, with const char * {}as_string({} value){}'
                 .format(full, scope, full, origin))
     if kind == 'structure':
-        return '  struct {}, with a field-by-field == and <<{}'.format(full, origin)
+        named = ', '.join(field for field, _ in fields)
+        return '  struct {}, public fields {}, with a field-by-field == and <<{}'.format(
+            full, named or 'none', origin)
     if kind == 'imported':
         return '  {} names the type your own header declares{}'.format(full, origin)
     return '  {} is an alias to an areg container{}'.format(full, origin)
@@ -2512,12 +2541,52 @@ def until_of(until, target, kinds, iface, where):
         params = dict(iface.broadcasts if kind == 'broadcast' else iface.responses)[target]
     types = dict(params)
     conditions = []
-    for param, value in until.items():
-        if param not in types:
+    for key, value in until.items():
+        param, type_name = until_operand(key, types, iface)
+        if param is None:
             fail('{} holds until "{}", which is no parameter of {} {}. It has: {}'
-                 .format(where, param, kind, target, ', '.join(types) or 'none'))
-        conditions.append((param, cpp_value(value, types[param], iface, where)))
+                 .format(where, key, kind, target, until_choices(types, iface)))
+        conditions.append((param, cpp_value(value, type_name, iface, where)))
     return conditions
+
+
+def until_operand(key, types, iface):
+    """(C++ operand, type) an "until" key names, or (None, None).
+
+    The key is a parameter, or a field of a structure parameter, written alone or as
+    "parameter.field". A parameter comes before a field and the exact spelling before
+    another letter case; a key two candidates of one tier match is refused.
+    """
+    params = list(types.items())
+    fields = [('{}.{}'.format(param, field), field_type)
+              for param, type_name in params
+              for field, field_type in iface.struct_fields.get(type_name, [])]
+    for exact in (True, False):
+        for candidates in (params, fields):
+            found = [(operand, type_name) for operand, type_name in candidates
+                     if until_names(key, operand, exact)]
+            if len(found) == 1:
+                return found[0]
+            if found:
+                return None, None
+    return None, None
+
+
+def until_names(key, operand, exact):
+    """True if an "until" key names the operand "param" or "param.field"."""
+    names = [operand] + ([operand.split('.', 1)[1]] if '.' in operand else [])
+    if exact:
+        return key in names
+    return key.lower() in [name.lower() for name in names]
+
+
+def until_choices(types, iface):
+    """The parameters an "until" may name, each structure with its fields."""
+    choices = []
+    for param, type_name in types.items():
+        fields = [field for field, _ in iface.struct_fields.get(type_name, [])]
+        choices.append('{} (fields {})'.format(param, ', '.join(fields)) if fields else param)
+    return ', '.join(choices) or 'none'
 
 
 STEP_CHECK = {'response': 'check this answer', 'broadcast': 'check this broadcast',
