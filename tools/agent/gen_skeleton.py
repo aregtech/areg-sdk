@@ -150,9 +150,11 @@ DECLARED = re.compile(r'^\s{4}(?:static\s+)?(?:constexpr\s+)?[\w:]+(?:\s*[&*])?\
                       r'([mc][A-Z]\w*)\s*[;{=]')
 HELPER = re.compile(r'^\s{4}(?:inline\s+)?[\w:]+(?:\s*[&*])?\s+(\w+)\s*\([^)]*\)\s*[;{]?\s*$')
 RESERVED = ('if', 'while', 'for', 'switch', 'return')
+# Helpers of a worker that only the generated provider calls.
+WIRING = ('add_listeners', 'remove_listeners')
 
 
-def defined_names(text):
+def defined_names(text, cls=None):
     """The members and helpers this class declares that are not overrides.
 
     An override is named by --contract and by the marker above its body. These are
@@ -166,7 +168,10 @@ def defined_names(text):
     """
     members, helpers = [], []
     named = set()
-    for line in text.splitlines():
+    lines = text.splitlines()
+    head = 'class {} '.format(cls)
+    start = next((index for index, line in enumerate(lines) if line.startswith(head)), 0)
+    for line in lines[start:]:
         if ' final' in line or '= delete' in line or 'AREG_NOCOPY' in line:
             continue
         # A placeholder stands until its marker is filled, and the line that fills it
@@ -180,7 +185,7 @@ def defined_names(text):
             members.append(declared_as(line))
             continue
         found = HELPER.match(line)
-        if found and found.group(1) not in RESERVED:
+        if found and found.group(1) not in RESERVED + WIRING:
             spelt = ' '.join(line.split()).rstrip('{;').strip()
             if not any(h.endswith(spelt) or spelt in h for h in helpers):
                 helpers.append(spelt)
@@ -797,7 +802,7 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
     carried = {}
     for file_name, text in produced:
         if file_name.endswith('.hpp'):
-            members, helpers = defined_names(text)
+            members, helpers = defined_names(text, os.path.basename(file_name)[:-4])
             if members or helpers:
                 carried[file_name] = (os.path.basename(file_name)[:-4], members, helpers,
                                       helper_docs(text))
@@ -1828,23 +1833,29 @@ def timer_includes(class_lines):
 
 # The provider's own lifecycle sections, and the includes they need.
 STARTUP_HINT = ('what this provider starts before its service is announced, comThread its '
-                'thread: a worker thread and the listeners it receives on (38-workers.md section 4), '
-                'or one // line')
-SHUTDOWN_HINT = ('what it stops before the service stops: remove those listeners and '
-                 'delete_worker_thread(), or one // line')
+                'thread, or one // line; a worker thread is a "workers" entry of the service '
+                'in design.json')
+STARTUP_HINT_WORKERS = ('what this provider starts before its service is announced, comThread '
+                        'its thread, or one // line; its workers start and stop on their own')
+SHUTDOWN_HINT = 'what it stops before the service stops, or one // line'
 INCLUDES_HINT = 'the headers of your own files this provider uses, or one // line'
 
 
-def provider_class(iface, cls, machine=None, timers=()):
+def provider_class(iface, cls, machine=None, timers=(), workers=()):
     """The provider component, with every request answered.
 
     Given a machine, the same component owns it: the action handler is a base, the
     machine is a member, and every action is declared here. A separate host component
     is what the pair used to need, and merging them is what removes it. Given timers,
     it is their consumer: each has a member, a start and a stop helper, and a section
-    in process_timer.
+    in process_timer. Given workers, it owns each: the consumer, its thread once started,
+    a sink per event to the provider, and a send helper per event to the worker.
     """
     pad = ' ' * (len(cls) + 13)
+    inbound = [(worker, event) for worker in workers for event in worker['events']
+               if event['to'] == 'provider']
+    outbound = [(worker, event) for worker in workers for event in worker['events']
+                if event['to'] == 'worker']
     lines = ['class {} final : public    areg::Component'.format(cls),
              '{}, protected {}ProviderBase'.format(pad, iface.name)]
     if machine:
@@ -1852,8 +1863,9 @@ def provider_class(iface, cls, machine=None, timers=()):
         lines += ['{}, protected {}'.format(pad, base) for base in hosted_bases(machine)]
     if timers:
         lines.append('{}, private   areg::TimerConsumer'.format(pad))
-    lines += ['{',
-              'public:',
+    lines.append('{')
+    lines += ['    friend class {}<{}>;'.format(event['sink'], cls) for _, event in inbound]
+    lines += ['public:',
               '    {}(const areg::ComponentEntry & entry, areg::ComponentThread & owner)'.format(cls),
               '        : areg::Component(entry, owner)',
               '        , {}ProviderBase(static_cast<areg::Component &>(*this))'.format(iface.name)]
@@ -1868,7 +1880,12 @@ def provider_class(iface, cls, machine=None, timers=()):
         for timer in timers:
             lines.append('        , {}(static_cast<areg::TimerConsumer &>(self()), "{}")'
                          .format(timer['member'], timer['name']))
+    lines += ['        , m{}(self())'.format(event['sink']) for _, event in inbound]
+    lines += ['        , m{}(entry.mWorkerThreads[{}].mConsumerName, owner)'.format(worker['name'], index)
+              for index, worker in enumerate(workers)]
     lines.append('    {')
+    lines += ['        {}::add_listener(m{}, static_cast<areg::DispatcherThread &>(owner));'
+              .format(event['event'], event['sink']) for _, event in inbound]
     if iface.attributes:
         lines.append(marker('initial_values', 'the value each attribute starts with; an '
                             'attribute is invalid until it is set once'))
@@ -1880,7 +1897,7 @@ def provider_class(iface, cls, machine=None, timers=()):
     started = [timer for timer in timers if timer['autostart']]
     lines += ['    void startup_component(areg::ComponentThread & comThread) final',
               '    {',
-              marker('startup', STARTUP_HINT),
+              marker('startup', STARTUP_HINT_WORKERS if workers else STARTUP_HINT),
               '        areg::Component::startup_component(comThread);']
     if machine:
         lines.append('        mFsm.init_fsm(&comThread);')
@@ -1891,11 +1908,49 @@ def provider_class(iface, cls, machine=None, timers=()):
               '    {',
               marker('shutdown', SHUTDOWN_HINT)]
     lines += ['        {}.stop_timer();'.format(timer['member']) for timer in timers]
+    for worker in workers:
+        if any(event['to'] == 'worker' for event in worker['events']):
+            lines += ['        if (m{0}Thread != nullptr)'.format(worker['name']),
+                      '            m{0}.remove_listeners(*m{0}Thread);'.format(worker['name'])]
+    lines += ['        {}::remove_listener(m{}, static_cast<areg::DispatcherThread &>(comThread));'
+              .format(event['event'], event['sink']) for _, event in inbound]
     if machine:
         lines.append('        mFsm.release_fsm();')
-    lines += ['        areg::Component::shutdown_component(comThread);',
-              '    }',
+    lines += ['        areg::Component::shutdown_component(comThread);']
+    lines += ['        m{}Thread = nullptr;'.format(worker['name']) for worker in workers]
+    lines += ['    }',
               '']
+    if workers:
+        lines += ['    areg::WorkerThreadConsumer * worker_thread_consumer(const areg::String & '
+                  'consumerName, const areg::String & workerThreadName) final',
+                  '    {']
+        for worker in workers:
+            lines += ['        if (consumerName == m{}.consumer_name())'.format(worker['name']),
+                      '            return &m{};'.format(worker['name'])]
+        lines += ['        return areg::Component::worker_thread_consumer(consumerName, '
+                  'workerThreadName);',
+                  '    }',
+                  '',
+                  '    void notify_thread_started(areg::WorkerThreadConsumer & consumer, '
+                  'areg::WorkerThread & workerThread) final',
+                  '    {']
+        for index, worker in enumerate(workers):
+            lines += ['        {}if (&consumer == &m{})'.format('' if index == 0 else 'else ',
+                                                             worker['name']),
+                      '        {',
+                      '            m{}Thread = &workerThread;'.format(worker['name'])]
+            if any(event['to'] == 'worker' for event in worker['events']):
+                lines.append('            m{}.add_listeners(workerThread);'.format(worker['name']))
+            lines.append('        }')
+        lines += ['    }',
+                  '']
+    for worker, event in inbound:
+        lines += ['    void {}({})'.format(event['slot'], worker_args(iface, event['params'])[0]),
+                  '    {',
+                  marker(event['slot'], 'what the provider does with {} from {}, on its own '
+                         'thread'.format(event['name'], worker['name'])),
+                  '    }',
+                  '']
     if timers:
         lines += ['    void process_timer(areg::Timer & timer) final',
                   '    {']
@@ -1985,6 +2040,17 @@ def provider_class(iface, cls, machine=None, timers=()):
                   '        {}.stop_timer();'.format(timer['member']),
                   '    }',
                   '']
+    for worker, event in outbound:
+        signature, init = worker_args(iface, event['params'])
+        lines += ['    //! Sends {} to {}, whose on_{} runs on its thread; false before it '
+                  'started.'.format(event['name'], worker['name'], event['name']),
+                  '    inline bool send_{}({})'.format(event['name'], signature),
+                  '    {',
+                  '        return (m{0}Thread != nullptr) && {1}::send_event({2}{3}, '
+                  'static_cast<areg::DispatcherThread &>(*m{0}Thread));'
+                  .format(worker['name'], event['event'], event['data'], init),
+                  '    }',
+                  '']
     lines += ['private:',
               '    //! This component as a reference, for a member initialiser that takes one.',
               '    inline {} & self()'.format(cls),
@@ -1997,6 +2063,15 @@ def provider_class(iface, cls, machine=None, timers=()):
         lines += ['    areg::Timer {};    //!< {}'.format(
             timer['member'], timer['description'] or 'The timer "{}".'.format(timer['name'])),
             '']
+    for worker, event in inbound:
+        lines += ['    {}<{}> m{};    //!< Receives {} from {} on this thread.'.format(
+            event['sink'], cls, event['sink'], event['name'], worker['name']), '']
+    for worker in workers:
+        lines += ['    {0} m{0};    //!< The worker thread consumer {0}.'.format(worker['name']),
+                  '',
+                  '    areg::WorkerThread * m{}Thread{{ nullptr }};    //!< Its thread, once it started.'
+                  .format(worker['name']),
+                  '']
     lines += ['    {}() = delete;'.format(cls),
               '    AREG_NOCOPY_NOMOVE({});'.format(cls),
               '};']
@@ -2112,6 +2187,207 @@ def timers_of(specs, iface):
                        'autostart': bool(entry.get('start')),
                        'description': entry.get('description') or ''})
     return timers
+
+
+def workers_of(specs, iface):
+    """The worker threads the specs give this service's provider, in declaration order.
+
+    Each is a dict: name (its class), slot (its state section), tick (its timer section,
+    or None), period (ms or None), description, and events, each a dict: name, to
+    ('provider' or 'worker'), params [(name, type)], data, event, consumer and sink (the
+    C++ names), slot (its on_ section).
+    """
+    import gen_docs
+    declared = []
+    for path in specs:
+        spec, _skipped = gen_docs.load_spec(path)
+        for entry in spec.get('interfaces') or []:
+            if isinstance(entry, dict) and entry.get('name') == iface.name:
+                declared = entry.get('workers') or []
+    workers = []
+    for entry in declared:
+        name = entry['name']
+        events = []
+        for event in entry.get('events') or []:
+            stem = name + pascal(event['name'])
+            events.append({'name': event['name'], 'to': event['to'],
+                           'params': [(p['name'], p['type']) for p in event.get('params') or []],
+                           'data': stem + 'Data', 'event': stem + 'Event',
+                           'consumer': stem + 'EventConsumer', 'sink': stem + 'Sink',
+                           'slot': 'on_' + event['name'],
+                           'description': event.get('description') or ''})
+        period = entry.get('period_ms')
+        workers.append({'name': name, 'slot': snake(name) + '_state',
+                        'tick': snake(name) + '_tick' if period else None,
+                        'period': period, 'description': entry.get('description') or '',
+                        'events': events})
+    return workers
+
+
+def worker_args(iface, params):
+    """The parameter list and the brace initialiser of one worker event's data."""
+    return (iface.signature(params).strip(),
+            '{{ {} }}'.format(', '.join(name for name, _ in params)) if params else '{}')
+
+
+def worker_prelude(iface, worker):
+    """What the worker header declares before the class: each event's data, the event,
+    and for each event to the provider, the sink the provider holds."""
+    lines = []
+    for event in worker['events']:
+        lines += ['//! What {} carries{}.'.format(
+                      event['name'], ' from {} to the provider'.format(worker['name'])
+                      if event['to'] == 'provider' else
+                      ' from the provider to {}'.format(worker['name'])),
+                  'struct {}'.format(event['data']), '{']
+        lines += ['    {} {}{{}};'.format(iface.cpp_type(type_name)[0], name)
+                  for name, type_name in event['params']]
+        lines += ['};', '',
+                  'AREG_DECLARE_EVENT({}, {}, {})'.format(event['data'], event['event'],
+                                                          event['consumer']), '']
+    for event in worker['events']:
+        if event['to'] != 'provider':
+            continue
+        call = ', '.join('data.' + name for name, _ in event['params'])
+        lines += ['//! Receives {} on the thread its listener was added for, and calls'
+                  .format(event['name']),
+                  '//! on_{}() of the owner there.'.format(event['name']),
+                  'template <class Owner>',
+                  'class {} final : public {}'.format(event['sink'], event['consumer']),
+                  '{',
+                  'public:',
+                  '    explicit {}(Owner & owner)'.format(event['sink']),
+                  '        : {}()'.format(event['consumer']),
+                  '        , mOwner(owner)',
+                  '    {   }',
+                  '',
+                  'protected:',
+                  '    void process_event(const {} & {}) final'.format(
+                      event['data'], 'data' if event['params'] else '/*data*/'),
+                  '    {{   mOwner.{}({}); }}'.format(event['slot'], call),
+                  '',
+                  'private:',
+                  '    Owner & mOwner;',
+                  '};', '']
+    return lines
+
+
+def worker_class(iface, worker):
+    """The worker thread consumer: its timer, the events it receives, and a helper per
+    event it sends to the provider."""
+    cls = worker['name']
+    inbound = [event for event in worker['events'] if event['to'] == 'worker']
+    outbound = [event for event in worker['events'] if event['to'] == 'provider']
+    pad = ' ' * (len(cls) + 13)
+    lines = ['class {} final : public    areg::WorkerThreadConsumer'.format(cls)]
+    if worker['period']:
+        lines.append('{}, private   areg::TimerConsumer'.format(pad))
+    lines += ['{}, protected {}'.format(pad, event['consumer']) for event in inbound]
+    lines += ['{',
+              'public:',
+              '    {}(const areg::String & name, areg::ComponentThread & owner)'.format(cls),
+              '        : areg::WorkerThreadConsumer(name)']
+    if worker['period']:
+        lines.append('        , areg::TimerConsumer()')
+    lines += ['        , {}()'.format(event['consumer']) for event in inbound]
+    lines.append('        , mOwner(owner)')
+    if worker['period']:
+        lines.append('        , mTick(static_cast<areg::TimerConsumer &>(self()), "{}Tick")'
+                     .format(cls))
+    lines += ['    {   }', '']
+    if inbound:
+        for verb, call in (('Adds', 'add_listener'), ('Removes', 'remove_listener')):
+            lines += ['    //! {} the listener of every event this worker receives, for its thread.'
+                      .format(verb),
+                      '    inline void {}s(areg::WorkerThread & thread)'.format(call),
+                      '    {']
+            lines += ['        {}::{}(static_cast<{} &>(self()), static_cast<areg::DispatcherThread &>'
+                      '(thread));'.format(event['event'], call, event['consumer'])
+                      for event in inbound]
+            lines += ['    }', '']
+    lines += ['protected:']
+    if worker['period']:
+        lines += ['    void register_event_consumers(areg::WorkerThread & workThread, '
+                  'areg::ComponentThread & /*masterThread*/) final',
+                  '    {',
+                  '        mTick.start_timer({}, static_cast<areg::DispatcherThread &>(workThread), '
+                  'areg::TimerBase::CONTINUOUSLY);'.format(worker['period']),
+                  '    }',
+                  '',
+                  '    void unregister_event_consumers(areg::WorkerThread & /*workThread*/) final',
+                  '    {',
+                  '        mTick.stop_timer();',
+                  '    }',
+                  '',
+                  '    void process_timer(areg::Timer & timer) final',
+                  '    {',
+                  marker(worker['tick'], 'what {} does every {} ms on its own thread{}'.format(
+                      cls, worker['period'], ': read, then {} to the provider'.format(
+                          ' or '.join('send_{}(...)'.format(event['name']) for event in outbound))
+                      if outbound else '')),
+                  '    }',
+                  '']
+    for event in inbound:
+        call = ', '.join('data.' + name for name, _ in event['params'])
+        lines += ['    void process_event(const {} & {}) final'.format(
+                      event['data'], 'data' if event['params'] else '/*data*/'),
+                  '    {',
+                  '        {}({});'.format(event['slot'], call),
+                  '    }',
+                  '',
+                  '    void {}({})'.format(event['slot'], worker_args(iface, event['params'])[0]),
+                  '    {',
+                  marker(event['slot'], 'what {} does with {} from the provider, on its own '
+                         'thread'.format(cls, event['name'])),
+                  '    }',
+                  '']
+    for event in outbound:
+        signature, init = worker_args(iface, event['params'])
+        lines += ['    //! Sends {} to the provider, whose on_{} runs on its thread; false once it '
+                  'stopped listening.'.format(event['name'], event['name']),
+                  '    inline bool send_{}({})'.format(event['name'], signature),
+                  '    {',
+                  '        return {}::send_event({}{}, static_cast<areg::DispatcherThread &>(mOwner));'
+                  .format(event['event'], event['data'], init),
+                  '    }',
+                  '']
+    lines += ['private:',
+              '    //! This worker as a reference, for a member initialiser that takes one.',
+              '    inline {} & self()'.format(cls),
+              '    {   return (*this); }',
+              '',
+              '    areg::ComponentThread & mOwner;    //!< The provider\'s thread, where events to it go.',
+              '']
+    if worker['period']:
+        lines += ['    areg::Timer mTick;    //!< Fires every {} ms on this worker\'s thread.'
+                  .format(worker['period']), '']
+    lines += ['    {}() = delete;'.format(cls),
+              '    AREG_NOCOPY_NOMOVE({});'.format(cls),
+              '};']
+    return lines
+
+
+WORKER_INCLUDES = ['#include "areg/component/EventTemplate.hpp"',
+                   '#include "areg/component/WorkerThread.hpp"',
+                   '#include "areg/component/WorkerThreadConsumer.hpp"']
+
+
+def worker_files(iface, worker, include_root):
+    """The .hpp and .cpp of one worker thread consumer."""
+    lines = worker_class(iface, worker)
+    includes = WORKER_INCLUDES + timer_includes(lines) + \
+        ['', '#include "{}/{}.hpp"'.format(include_root, iface.name)]
+    return component_files(worker['name'], worker['description'] or
+                           'A worker thread of the {} provider.'.format(iface.name),
+                           includes, lines, worker['slot'], worker_prelude(iface, worker),
+                           state_hint='the members this worker keeps between its calls, '
+                                      'or one // line saying none is needed')
+
+
+def worker_registration(workers, pad):
+    """The model lines that declare each worker thread of one provider component."""
+    return [pad + 'REGISTER_WORKER_THREAD("{0}Thread", "{0}")'.format(worker['name'])
+            for worker in workers]
 
 
 def awaitable(iface):
@@ -3424,14 +3700,15 @@ def consumer_name(iface):
     return iface.name + 'Consumer'
 
 
-def provider_registration(iface, indent):
+def provider_registration(iface, indent, workers=()):
     pad = ' ' * indent
     cls = provider_name(iface)
     return [pad + 'BEGIN_REGISTER_THREAD("ProviderThread")',
             pad + '    BEGIN_REGISTER_COMPONENT("{}", {})'.format(cls, cls),
             pad + '        REGISTER_IMPLEMENT_SERVICE({}::ServiceName, {}::InterfaceVersion)'
-            .format(iface.name, iface.name),
-            pad + '    END_REGISTER_COMPONENT("{}")'.format(cls),
+            .format(iface.name, iface.name)] + \
+        worker_registration(workers, pad + '        ') + \
+           [pad + '    END_REGISTER_COMPONENT("{}")'.format(cls),
             pad + 'END_REGISTER_THREAD("ProviderThread")']
 
 
@@ -3625,7 +3902,8 @@ SCAFFOLD_MAINS = {'provider.cpp': 'provider/main.cpp',
                   'consumer.cpp': 'consumer/main.cpp'}
 
 
-def app_files(iface, mode, include_root, machine=None, steps=(), driver=None, timers=()):
+def app_files(iface, mode, include_root, machine=None, steps=(), driver=None, timers=(),
+              workers=()):
     """The whole application: one .hpp and .cpp per component, and the model with main().
 
     Returns a list of (file name, text). The result compiles and runs as written;
@@ -3642,7 +3920,8 @@ def app_files(iface, mode, include_root, machine=None, steps=(), driver=None, ti
             for inner, document, _ in machine.imports]
     consumer_base = ['#include "{}/{}ConsumerBase.hpp"'.format(include_root, iface.name)]
 
-    provider_lines = provider_class(iface, provider_cls, machine, timers)
+    provider_lines = provider_class(iface, provider_cls, machine, timers, workers)
+    provider_base += ['#include "{}.hpp"'.format(worker['name']) for worker in workers]
     hold = peer_hold(steps) if mode == 'ipc' else None
     consumer_lines = consumer_class(iface, consumer_cls, steps, driver, hold)
     produced = [(PROVIDER_DIR[mode] + name, text) for name, text in component_files(
@@ -3650,6 +3929,9 @@ def app_files(iface, mode, include_root, machine=None, steps=(), driver=None, ti
         class_includes(iface, machine) + timer_includes(provider_lines) + ['']
         + provider_base + [marker('includes', INCLUDES_HINT, 0)],
         provider_lines, 'provider_state', QUIT_DECLARATION)]
+    for worker in workers:
+        produced += [(PROVIDER_DIR[mode] + name, text)
+                     for name, text in worker_files(iface, worker, include_root)]
     produced += [(CONSUMER_DIR[mode] + name, text) for name, text in component_files(
         consumer_cls, 'Consumer of the {} service.'.format(iface.name),
         class_includes(iface) + timer_includes(consumer_lines) + [''] + consumer_base,
@@ -3680,7 +3962,7 @@ def app_files(iface, mode, include_root, machine=None, steps=(), driver=None, ti
                   '',
                   'BEGIN_MODEL(_modelName)',
                   '']
-        lines += provider_registration(iface, 4)
+        lines += provider_registration(iface, 4, workers)
         lines += ['',
                   '    BEGIN_REGISTER_THREAD("ConsumerThread")',
                   '        BEGIN_REGISTER_COMPONENT("{}", {})'.format(consumer_cls, consumer_cls),
@@ -3701,7 +3983,7 @@ def app_files(iface, mode, include_root, machine=None, steps=(), driver=None, ti
     provider += ['constexpr char const _modelName[]{ "ProviderModel" };',
                  '',
                  'BEGIN_MODEL(_modelName)']
-    provider += provider_registration(iface, 4)
+    provider += provider_registration(iface, 4, workers)
     provider += ['END_MODEL(_modelName)', '']
     provider += MAIN_BODY
 
@@ -3771,7 +4053,7 @@ def app_sources(produced, mode):
     if mode == 'local':
         return {'main.cpp': components}
     return {PROVIDER_DIR[mode] + 'main.cpp':
-            [n for n in components if n.endswith('Provider.cpp')],
+            [n for n in components if n.startswith(PROVIDER_DIR[mode])],
             CONSUMER_DIR[mode] + 'main.cpp':
             [n for n in components if n.endswith('Consumer.cpp')]}
 
@@ -4212,7 +4494,8 @@ def main():
                      'machine.'.format(machine.name))
         steps = steps_of(args.spec, iface)
         produced = app_files(iface, args.mode, include_root, machine, steps,
-                             driver_of(args.spec, iface), timers_of(args.spec, iface))
+                             driver_of(args.spec, iface), timers_of(args.spec, iface),
+                             workers_of(args.spec, iface))
         retained = [(file_name,
                      write(os.path.join(args.out, file_name), text, args.force))
                     for file_name, text in produced]

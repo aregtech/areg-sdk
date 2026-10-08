@@ -48,6 +48,7 @@ class Component:
         self.hold = None
         self.name = entry.get('name')
         self.thread = entry.get('thread')
+        self.workers = ()
 
 
 def load_project(specs):
@@ -96,6 +97,7 @@ def components_of(project, specs, services_dir):
         component = Component(program, kind, iface, entry)
         if kind == 'provides':
             component.roles = list(entry.get('roles') or [gs.provider_name(iface)])
+            component.workers = gs.workers_of(specs, iface)
             if service in machines:
                 component.machine, component.machine_doc = machines[service]
         else:
@@ -137,7 +139,8 @@ def components_of(project, specs, services_dir):
             component.clients.append((iface, roles, name))
     names = {}
     for component in found:
-        for name in [component.cls] + [c[2] for c in component.clients]:
+        for name in [component.cls] + [c[2] for c in component.clients] + \
+                [worker['name'] for worker in component.workers]:
             if name in names:
                 fail('two components of the design would both be the class {}: {} and '
                      'program "{}". Give the second its own program, or let one '
@@ -569,7 +572,8 @@ def component_classes(component, specs, include_root):
     folder = program_dir(component.program)
     machine = component.machine
     if component.kind == 'provides':
-        lines = gs.provider_class(iface, component.cls, machine, gs.timers_of(specs, iface))
+        lines = gs.provider_class(iface, component.cls, machine, gs.timers_of(specs, iface),
+                                  component.workers)
         if len(component.roles) > 1:
             lines = [line.replace('an attribute is invalid until it is set once',
                                   'an attribute is invalid until it is set once; '
@@ -582,6 +586,7 @@ def component_classes(component, specs, include_root):
             bases += ['#include "{}/{}ActionHandler.hpp"'.format(
                 os.path.dirname(document).replace('\\', '/'), inner.name)
                 for inner, document, _ in machine.imports]
+        bases += ['#include "{}.hpp"'.format(worker['name']) for worker in component.workers]
         bases.append(gs.marker('includes', gs.INCLUDES_HINT, 0))
         slot, hint = 'provider_state', None
         prelude = gs.QUIT_DECLARATION
@@ -608,6 +613,9 @@ def component_classes(component, specs, include_root):
     files = gs.component_files(component.cls, brief, includes, lines, slot,
                                prelude, **({'state_hint': hint} if hint else {}))
     produced = [(folder + name, text) for name, text in files]
+    for worker in component.workers:
+        produced += [(folder + name, text)
+                     for name, text in gs.worker_files(iface, worker, include_root)]
     for used, roles, name in component.clients:
         client = client_class(component.cls, used, roles, name,
                               gs.driver_of(specs, used)['reconnect_seconds'],
@@ -659,13 +667,23 @@ def model_lines(model, instances, local=None):
     the command line picks: one source holds one static model.
     """
     threads = {}
+    working = {}
     for c, role, thread in instances:
         if c.kind == 'provides':
             name = thread or '{}Thread'.format(role)
+            if c.workers:
+                if (name, c.cls) in working:
+                    fail('roles "{}" and "{}" of {} both run in thread "{}", and {} has a '
+                         'worker thread. Its events go to the thread they are sent to, so '
+                         'each role of it runs in a thread of its own: give the component '
+                         'no "thread", or place the roles apart'
+                         .format(working[(name, c.cls)], role, c.cls, name, c.cls))
+                working[(name, c.cls)] = role
             lines = ['        BEGIN_REGISTER_COMPONENT("{}", {})'.format(role, c.cls),
                      '            REGISTER_IMPLEMENT_SERVICE({}::ServiceName, '
-                     '{}::InterfaceVersion)'.format(c.iface.name, c.iface.name),
-                     '        END_REGISTER_COMPONENT("{}")'.format(role)]
+                     '{}::InterfaceVersion)'.format(c.iface.name, c.iface.name)] + \
+                gs.worker_registration(c.workers, '            ') + \
+                    ['        END_REGISTER_COMPONENT("{}")'.format(role)]
         else:
             name = thread or '{}Thread'.format(c.cls)
             member = '_' + gs.snake(c.cls)
@@ -826,7 +844,8 @@ def write_cmake(path, programs, produced, hosts=None):
             if c.program is not program:
                 home = program_dir(c.program)
                 sources += [home + c.cls + '.cpp'] + \
-                    [home + name + '.cpp' for _, _, name in c.clients]
+                    [home + name + '.cpp' for _, _, name in c.clients] + \
+                    [home + worker['name'] + '.cpp' for worker in c.workers]
         wanted['{}_{}'.format(project, program['name'])] = sources
     ours = set(wanted) | {project + '_provider', project + '_consumer', project}
     kept, changed, extra = [], [], {}

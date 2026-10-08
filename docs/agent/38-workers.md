@@ -74,46 +74,29 @@ the component, then `delete_worker_thread("ScanThread")`.
 
 ## 4. In a project from design.json
 
-A worker takes four sections of the generated provider, in `bodies.txt`. The provider's
-bases, the model and `main.cpp` stay as generated: a member sink receives the worker's
-event and calls one method.
+Declare the worker on its service, beside `timers`. The generator writes its class, its
+`REGISTER_WORKER_THREAD`, one event per entry of `events` and every listener, added and
+removed where sections 1-2 say; `gen_docs.py --example worker` prints a whole design.
 
-```
-== includes
-#include "src/provider/ReadingSink.hpp"
-#include "src/provider/Reader.hpp"
-== provider_state
-Reader mReader{ "Reader" };
-ReadingSink<GatewayProvider> mSink{ *this, &GatewayProvider::on_reading };
-void on_reading(const ReadingData & data) { /* set attributes, answer, trigger */ }
-== startup
-ReadingEvent::add_listener(mSink, comThread);
-create_worker_thread("ReaderThread", mReader, comThread);
-== shutdown
-delete_worker_thread("ReaderThread");         // stops the worker and waits for it
-ReadingEvent::remove_listener(mSink, comThread);
+```json
+"workers": [{"name": "Sampler", "period_ms": 100,
+             "events": [{"name": "sample", "to": "provider",
+                         "params": [{"name": "level", "type": "uint32"}]},
+                        {"name": "set_paused", "to": "worker",
+                         "params": [{"name": "paused", "type": "bool"}]}]}]
 ```
 
-```cpp
-// src/provider/ReadingSink.hpp: includes the header that declares ReadingEvent
-template <class Owner>
-class ReadingSink final : public ReadingEventConsumer
-{
-public:
-    ReadingSink(Owner & owner, void (Owner::*method)(const ReadingData &)) : mOwner(owner), mMethod(method) {}
-protected:
-    void process_event(const ReadingData & data) override { (mOwner.*mMethod)(data); }
-private:
-    Owner & mOwner;
-    void (Owner::*mMethod)(const ReadingData &);
-};
-```
+| Section in `bodies.txt` | Runs on | Writes |
+|---|---|---|
+| `sampler_state` | -- | the worker's members |
+| `sampler_tick` | the worker, every `period_ms` | read, then `send_sample(level);` |
+| `on_sample` (provider) | the provider's thread | setters, answers, triggers |
+| `on_set_paused` (worker) | the worker | its own members |
 
-`Reader` is section 6's worker. `startup` runs on the component thread before the
-service is announced, so the listener exists before the worker sends, and `on_reading`
-runs there too. A listener the worker receives on is added in `startup` right after
-`create_worker_thread()`, for the thread it returns. Your `.cpp` files go on the
-program's `macro_declare_executable` line.
+A provider body calls `send_set_paused(paused)`; it returns false until the worker has
+started. No `startup`, `shutdown` or `includes` line is needed. Each event goes to the
+thread that receives it, so none arrives after the provider removed its listener at
+shutdown; two roles of such a provider run in threads of their own.
 
 ## 5. Who sends to whom
 
@@ -163,7 +146,7 @@ component's shutdown waits until it returns: `examples/18_pubworker` (`pubservic
       `notify_thread_started()` or right after `create_worker_thread()`, and removed in
       `shutdown_component()`; none in `register_event_consumers()`.
 - [ ] The component's listener for what a worker sends is added before the worker is
-      created; in a design.json project, in `startup` (section 4).
+      created; in a design.json project the generator adds it (section 4).
 - [ ] A worker's timer is started on the worker thread and stopped in
       `unregister_event_consumers()`.
 

@@ -2808,6 +2808,7 @@ def run():
     check_cause_trail(report)
     check_worker_entry_name(report)
     check_worker_markers(report)
+    check_worker_declared(report)
     check_edit_blocks(report)
     check_type_order(report)
     check_step_proof(report)
@@ -6503,8 +6504,8 @@ def check_type_order(report):
 
 
 def check_worker_markers(report):
-    """Page 38 section 4 builds a worker from the provider's startup, shutdown and
-    includes sections, and the generator writes each of them with a hint naming it."""
+    """Page 38 section 4 declares a worker in design.json, with the sections the generator
+    writes for it, and the startup hint sends a provider's worker to "workers"."""
     sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
     try:
         import gen_skeleton
@@ -6515,29 +6516,101 @@ def check_worker_markers(report):
     section = page.partition('## 4. In a project from design.json')[2].partition('\n## ')[0]
     if not section:
         report.fail('worker-markers', '38-workers.md has no section 4 "In a project from '
-                    'design.json", which the startup hint names')
+                    'design.json", which AGENTS.md and the template route a worker to')
         return
-    missing = [name for name in ('== includes', '== provider_state', '== startup',
-                                 '== shutdown', 'create_worker_thread(',
-                                 'delete_worker_thread(', 'macro_declare_executable')
+    missing = [name for name in ('"workers"', '"period_ms"', '"to": "provider"',
+                                 '"to": "worker"', '_tick', 'on_', 'send_',
+                                 '--example worker')
                if name not in section]
     if missing:
         report.fail('worker-markers', '38-workers.md section 4 lost {}'
                     .format(', '.join(missing)))
         return
-    if '38-workers.md section 4' not in gen_skeleton.STARTUP_HINT:
-        report.fail('worker-markers', 'the startup hint no longer names 38-workers.md '
-                    'section 4')
+    if '"workers"' not in gen_skeleton.STARTUP_HINT or \
+            'workers' in gen_skeleton.STARTUP_HINT_WORKERS.replace('its workers start', ''):
+        report.fail('worker-markers', 'the startup hint no longer sends a worker thread to '
+                    '"workers", or still does so where the workers are declared already')
         return
-    source = read('tools', 'agent', 'gen_skeleton.py')
-    absent = [name for name in ("marker('startup'", "marker('shutdown'", "marker('includes'")
-              if name not in source]
-    if absent:
-        report.fail('worker-markers', 'gen_skeleton.py writes no {} section, which page 38 '
-                    'section 4 fills'.format(', '.join(absent)))
+    report.ok('worker-markers', 'page 38 section 4 declares a worker in design.json, and the '
+              'startup hint sends a provider\'s worker to "workers" unless it has one')
+
+
+def check_worker_declared(report):
+    """A worker declared in design.json is generated end to end: its class with the timer,
+    the events and their sections, the provider's wiring, the model line and the CMake
+    source; a worker nothing ever runs is refused."""
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    sys.path.insert(0, tools)
+    try:
+        import gen_docs
+        import gen_skeleton as gs
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('worker-declared', 'the generator does not import: {}'.format(failure))
         return
-    report.ok('worker-markers', 'page 38 section 4 fills the startup, shutdown and includes '
-              'sections the generator writes, and the startup hint names it')
+    holder = tempfile.mkdtemp()
+    try:
+        spec = os.path.join(holder, 'design.json')
+        with open(spec, 'w', encoding='utf-8', newline='\n') as handle:
+            json.dump(gen_docs.EXAMPLE_WORKER, handle)
+        done = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'), '--spec',
+                               spec, '--outdir', holder, '--force', '--chained'],
+                              capture_output=True, text=True)
+        if done.returncode:
+            report.fail('worker-declared', 'gen_docs.py refuses its own --example worker: {}'
+                        .format((done.stdout + done.stderr).strip()[-200:]))
+            return
+        iface = gs.Interface(os.path.join(holder, 'Meter.siml'))
+        workers = gs.workers_of([spec], iface)
+        files = dict(gs.app_files(iface, 'ipc', 'src/services', workers=workers))
+        provider = files.get('provider/MeterProvider.hpp', '') + \
+            files.get('provider/MeterProvider.cpp', '')
+        worker = files.get('provider/Sampler.hpp', '') + files.get('provider/Sampler.cpp', '')
+        wanted = [('the worker class', worker, 'class Sampler final : public    '
+                   'areg::WorkerThreadConsumer'),
+                  ('its timer on its thread', worker, 'mTick.start_timer(100, '
+                   'static_cast<areg::DispatcherThread &>(workThread)'),
+                  ('its tick section', worker, 'TODO(you) sampler_tick:'),
+                  ('its event section', worker, 'TODO(you) on_set_paused:'),
+                  ('its send helper', worker, 'inline bool send_sample(uint32_t level)'),
+                  ('the event', worker, 'AREG_DECLARE_EVENT(SamplerSampleData, '
+                   'SamplerSampleEvent, SamplerSampleEventConsumer)'),
+                  ('the consumer name read from the model', provider,
+                   'mSampler(entry.mWorkerThreads[0].mConsumerName, owner)'),
+                  ('the consumer answered', provider, 'worker_thread_consumer('),
+                  ('the worker listeners added', provider, 'mSampler.add_listeners(workerThread);'),
+                  ('the worker listeners removed', provider,
+                   'mSampler.remove_listeners(*mSamplerThread);'),
+                  ('the sink removed', provider, 'SamplerSampleEvent::remove_listener('
+                   'mSamplerSampleSink'),
+                  ('the provider section', provider, 'TODO(you) on_sample:'),
+                  ('the provider send helper', provider, 'inline bool send_set_paused(bool paused)'),
+                  ('the model line', files.get('provider/main.cpp', ''),
+                   'REGISTER_WORKER_THREAD("SamplerThread", "Sampler")')]
+        lost = [what for what, text, needle in wanted if needle not in text]
+        if lost:
+            report.fail('worker-declared', 'the generated worker lost {}'.format(', '.join(lost)))
+            return
+        sources = gs.app_sources(list(files.items()), 'ipc').get('provider/main.cpp', [])
+        if 'provider/Sampler.cpp' not in sources:
+            report.fail('worker-declared', 'the worker source is not on the provider\'s '
+                        'executable line: {}'.format(', '.join(sources)))
+            return
+        idle = json.loads(json.dumps(gen_docs.EXAMPLE_WORKER))
+        entry = idle['interfaces'][0]['workers'][0]
+        entry.pop('period_ms')
+        entry['events'] = [event for event in entry['events'] if event['to'] == 'provider']
+        with open(spec, 'w', encoding='utf-8', newline='\n') as handle:
+            json.dump(idle, handle)
+        done = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'), '--spec',
+                               spec, '--review'], capture_output=True, text=True)
+        if 'nothing ever runs on it' not in done.stdout + done.stderr:
+            report.fail('worker-declared', 'a worker with no period_ms and no event to it '
+                        'is not refused')
+            return
+        report.ok('worker-declared', 'a declared worker is generated with its class, timer, '
+                  'events, sections, wiring, model line and source; an idle one is refused')
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
 
 
 def check_edit_blocks(report):

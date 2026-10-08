@@ -166,8 +166,8 @@ every `notify_on_*` subscription are already correct, so none of them needs a pa
 Every place a rule of yours belongs is one line: `// TODO(you) <name>: <what>`, and
 the command prints all of them; `gen_skeleton.py --doc <document> --todos` reprints
 whichever are left. **These files are yours, not generated:** fill the markers without
-rereading them, and add what the tool writes no shape for -- a worker thread, a
-component no design declares -- as files of your own, registered in `main.cpp` (`37`,
+rereading them, and add what the tool writes no shape for -- a consumer's worker thread,
+a component no design declares -- as files of your own, registered in `main.cpp` (`37`,
 `32`, `10`): that is no workaround. `--regenerate` drops what lies outside markers.
 
 `gen_skeleton.py --doc <document> --contract` prints every signature and every

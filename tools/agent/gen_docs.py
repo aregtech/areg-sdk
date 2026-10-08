@@ -93,7 +93,7 @@ KEYS = {
     'datatypes': ('name', 'description', 'version', 'declare', 'includes'),
     'interface': ('name', 'category', 'description', 'version', 'types', 'attributes',
                   'requests', 'responses', 'broadcasts', 'constants', 'includes',
-                  'machine', 'steps', 'driver', 'timers'),
+                  'machine', 'steps', 'driver', 'timers', 'workers'),
     'driver': ('connect_seconds', 'reconnect_seconds', 'stall_ticks'),
     'machine': ('name', 'description', 'version', 'threading', 'types', 'attributes',
                 'constants', 'triggers', 'timers', 'events', 'actions', 'conditions',
@@ -109,6 +109,8 @@ KEYS = {
     'include': ('name', 'description', 'alias', 'version'),
     'timer': ('name', 'timeout', 'repeat', 'description'),
     'service timer': ('name', 'timeout', 'repeat', 'start', 'description'),
+    'worker': ('name', 'period_ms', 'events', 'description'),
+    'worker event': ('name', 'to', 'params', 'description'),
     'condition': ('name', 'description', 'params', 'implement', 'body', 'return'),
     'submachine': ('name', 'path', 'version', 'description'),
     'state': ('name', 'kind', 'depth', 'description', 'entry', 'exit', 'transitions',
@@ -135,7 +137,7 @@ SHAPES = dict(
         'constants', 'declare', 'do', 'entry', 'events', 'exit', 'fields', 'includes',
         'interfaces', 'machines', 'params', 'requests', 'responses', 'states', 'steps',
         'submachines', 'timers', 'transitions', 'triggers', 'types', 'values',
-        'programs', 'components', 'uses', 'roles', 'deployments')] +
+        'programs', 'components', 'uses', 'roles', 'deployments', 'workers')] +
     [(key, (str, 'a string')) for key in (
         'alias', 'answer_description', 'await', 'body', 'call', 'category', 'container',
         'derives', 'description', 'final_event', 'header', 'implement', 'initial', 'key',
@@ -152,7 +154,7 @@ SINGULAR = {'attributes': 'attribute', 'requests': 'request', 'responses': 'resp
             'conditions': 'condition', 'submachines': 'submachine', 'steps': 'step',
             'states': 'state', 'interfaces': 'service interface', 'machines': 'state machine',
             'datatypes': 'data type document', 'programs': 'program',
-            'components': 'component', 'uses': 'used service'}
+            'components': 'component', 'uses': 'used service', 'workers': 'worker'}
 
 
 # ----------------------------------------------------------------------------- shared
@@ -1088,6 +1090,9 @@ def check_shape(project):
                           ('constants', 'constant'), ('includes', 'include'),
                           ('steps', 'step'), ('timers', 'service timer')):
             check_list(spec, key, kind, where)
+        for worker in check_list(spec, 'workers', 'worker', where):
+            check_list(worker, 'events', 'worker event', 'worker "{}" of {}'
+                       .format(worker.get('name', '?'), where))
     for spec in project['machines']:
         if not isinstance(spec, dict):
             continue
@@ -1940,6 +1945,83 @@ def check_service_timers(project):
                      .format(here, entry.get('start')))
 
 
+WORKER_TARGETS = ('provider', 'worker')
+SNAKE_NAME = re.compile(r'^[a-z][a-z0-9_]*$')
+
+
+def check_workers(project):
+    """A provider's worker threads: names that become classes, a period or an event to
+    run on, events that say which way they go, and types the documents declare."""
+    shared = project.get('datatypes') if isinstance(project.get('datatypes'), dict) else None
+    space = shared.get('name') if shared else None
+    shared_names = set(entry_names(shared, 'declare')) if shared else set()
+    taken = set(entry_names(project, 'interfaces')) | set(entry_names(project, 'machines'))
+    taken |= set(name + suffix for name in entry_names(project, 'interfaces')
+                 for suffix in ('Provider', 'Consumer'))
+    taken |= shared_names | ({space} if space else set())
+    for spec in listed(project, 'interfaces'):
+        taken |= set(entry_names(spec, 'types'))
+    seen = set()
+    for spec in listed(project, 'interfaces'):
+        workers = spec.get('workers')
+        if not workers:
+            continue
+        owner = spec.get('name', '?')
+        if not isinstance(workers, list):
+            fail('the workers of "{}" are a list of worker objects'.format(owner))
+        _, vocab = vocabulary_for(spec, space, shared_names, owner)
+        events = set()
+        for worker in workers:
+            name = worker.get('name') if isinstance(worker, dict) else None
+            if not isinstance(name, str) or not IDENTIFIER.match(name):
+                fail('the workers of "{}": a worker is {{"name": "<ClassName>", "period_ms": '
+                     '<ms>, "events": [...]}}; got {!r}'.format(owner, worker))
+            here = 'worker "{}" of "{}"'.format(name, owner)
+            if name in seen:
+                fail('two workers of the design are named "{}". The name is the worker\'s '
+                     'class, so it is unique in the design'.format(name))
+            if name in taken:
+                fail('{} is named like a service, a machine, a type or a generated class. '
+                     'The name is the worker\'s class: choose another, such as "{}Worker"'
+                     .format(here, name))
+            seen.add(name)
+            period = worker.get('period_ms')
+            if period is not None and (not whole(period) or period <= 0):
+                fail('{} gives period_ms {!r}: a whole number of milliseconds above 0, or '
+                     'leave it out for a worker that only reacts to its events'
+                     .format(here, period))
+            inbound = False
+            for event in listed(worker, 'events'):
+                ename = event.get('name')
+                there = 'event "{}" of {}'.format(ename, here)
+                if not isinstance(ename, str) or not SNAKE_NAME.match(ename):
+                    fail('{}: an event name is snake_case, such as "readings" or '
+                         '"set_rate"; it becomes send_<name>() and on_<name>()'.format(there))
+                if ename in events:
+                    fail('{}: two events of the workers of "{}" are named "{}". The provider '
+                         'carries one send_{}() or on_{}(), so the name is unique among its '
+                         'workers'.format(there, owner, ename, ename, ename))
+                events.add(ename)
+                target = event.get('to')
+                if target not in WORKER_TARGETS:
+                    fail('{} goes "to" {!r}. It is "provider": the worker sends it and the '
+                         'provider\'s on_{} runs on the provider\'s thread; or "worker": the '
+                         'provider sends it and the worker\'s on_{} runs on the worker'
+                         .format(there, target, ename, ename))
+                inbound = inbound or target == 'worker'
+                for param in listed(event, 'params'):
+                    if not isinstance(param.get('name'), str) or \
+                            not IDENTIFIER.match(param.get('name')):
+                        fail('{}: a parameter is {{"name": "<identifier>", "type": "<type>"}}; '
+                             'got {!r}'.format(there, param))
+                    vocab.check(param.get('type'), 'parameter "{}" of {}'
+                                .format(param['name'], there))
+            if period is None and not inbound:
+                fail('{} has no period_ms and no event "to": "worker", so nothing ever runs '
+                     'on it. Give it period_ms for work every N ms, or an event the provider '
+                     'sends it'.format(here))
+
+
 def awaitable(spec):
     """What a step of this service may await, as design.json spells it, by kind."""
     said = []
@@ -2767,6 +2849,25 @@ EXAMPLE_MACHINE = {
     ]
 }
 
+EXAMPLE_WORKER = {
+    "interfaces": [{
+        "name": "Meter", "category": "Public",
+        "description": "A level a worker thread reads from the device every 100 ms.",
+        "attributes": [{"name": "Level", "type": "uint32", "notify": "Always"}],
+        "requests": [{"name": "pause", "params": [{"name": "paused", "type": "bool"}]}],
+        "workers": [{
+            NOTE: ["Bodies: sampler_state (the worker's members), sampler_tick (read, then",
+                   "send_sample(level)), on_sample in the provider (set_level(level)),",
+                   "on_set_paused in the worker. request_pause calls send_set_paused(paused)."],
+            "name": "Sampler", "period_ms": 100, "description": "Reads the device.",
+            "events": [{"name": "sample", "to": "provider",
+                        "params": [{"name": "level", "type": "uint32"}]},
+                       {"name": "set_paused", "to": "worker",
+                        "params": [{"name": "paused", "type": "bool"}]}]
+        }]
+    }]
+}
+
 TEMPLATE_WIDTH = 92
 
 TEMPLATE = {
@@ -2873,6 +2974,19 @@ TEMPLATE = {
                    "times it fires, 0 until stopped. start: true starts it with the component;",
                    "otherwise a body calls start_<name>(). Each gets a timer_<name> section."],
             "name": "", "timeout": 1000, "repeat": 0, "start": False, "description": ""
+        }],
+        "workers": [{
+            NOTE: ["A thread of the provider's own, for work a handler must not do: a device",
+                   "read every N ms, a slow computation; delete it when there is none. The",
+                   "generator writes the thread, its events and their listeners. period_ms: its",
+                   "<name>_tick section runs every period on the worker. An event is snake_case",
+                   "and is everything that crosses: the worker never touches provider members.",
+                   "to provider: the worker calls send_<event>(...), the provider's on_<event>",
+                   "runs on the provider thread. to worker: the provider calls send_<event>(...),",
+                   "the worker's on_<event> runs on the worker."],
+            "name": "", "period_ms": 100, "description": "",
+            "events": [{"name": "", "to": "provider", "params": [{"name": "", "type": ""}],
+                        "description": ""}]
         }],
         "driver": {
             NOTE: ["What the generated consumer gives up after. These values are the",
@@ -3095,12 +3209,14 @@ def main():
     parser.add_argument('--spec', action='append', default=[],
                         help='a JSON description; pass it once per spec file')
     parser.add_argument('--outdir', help='the directory the documents are written to')
-    parser.add_argument('--example', nargs='*', choices=['service', 'programs', 'machine'],
+    parser.add_argument('--example', nargs='*',
+                        choices=['service', 'programs', 'machine', 'worker'],
                         help='print a whole spec to copy, and write nothing; several names '
                              'print several in one call, "service" when none is named. '
                              '"programs" prints one of several services in several '
                              'programs: roles, uses, threads and deployments. "machine" '
-                             'prints a timed machine hosted from two states and run N times')
+                             'prints a timed machine hosted from two states and run N '
+                             'times. "worker" prints a provider with a worker thread')
     parser.add_argument('--template', metavar='PATH',
                         help='write a spec with every key present and empty, each section '
                              'with its note, to fill in. A file there that carries work is '
@@ -3124,7 +3240,7 @@ def main():
             if len(names) > 1:
                 print('== gen_docs.py --example {}'.format(name))
             print(render({'service': EXAMPLE, 'programs': EXAMPLE_PROGRAMS,
-                          'machine': EXAMPLE_MACHINE}[name]))
+                          'machine': EXAMPLE_MACHINE, 'worker': EXAMPLE_WORKER}[name]))
         return 0
     if args.template:
         if write_template(args.template) == 'work':
@@ -3154,8 +3270,8 @@ def main():
     check_unique_names(project)
     cross_check(project)
     problems = []
-    for check in (check_sequences, check_drivers, check_service_timers, check_final_entry,
-                  check_programs):
+    for check in (check_sequences, check_drivers, check_service_timers, check_workers,
+                  check_final_entry, check_programs):
         with gathering(problems), contextlib.suppress(Refused):
             check(project)
     if problems:
