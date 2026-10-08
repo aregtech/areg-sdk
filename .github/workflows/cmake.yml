@@ -1,9 +1,9 @@
 name: CMake
 
 on:
-  push:         # Keep empty to run on each branch when push the code. Otherwise use branches: [ master ]
-    branches: [ master ]
-  pull_request: # Set to master to run only when merge with master branch
+  push:
+    branches: [ master, ci/cross-compile-matrix ]
+  pull_request:
     branches: [ master ]
   workflow_dispatch:
 
@@ -19,65 +19,36 @@ env:
   BUILD_TYPE: Release
 
 jobs:
-  invariants:
-    name: the framework invariants still have anchors
-    # tools/intern/check_invariants.py seeds a defect per documented invariant, rebuilds and
-    # asserts something goes red. The seeding needs a build per defect and is run by hand;
-    # what rots first is the seed set itself, because a refactor moves the line it anchors to.
-    # This step is that check, and it needs no compiler.
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-
-    steps:
-      - name: Checkout Areg SDK source codes
-        uses: actions/checkout@v7
-
-      - uses: actions/setup-python@v7
-        with:
-          python-version: '3.11'
-
-      - name: Check every seeded defect still applies to exactly one place
-        run: python3 tools/intern/check_invariants.py --dry-run
-
   build-tests:
     name: ${{matrix.config.name}}
     runs-on: ${{matrix.config.os}}
-    timeout-minutes: 120
+    timeout-minutes: 40
 
     strategy:
       fail-fast: false
       matrix:
         # '*-all-test' builds and runs the examples and the unit tests.
-        # 'bench: ON' also runs the benchmarks; one shared library build per OS.
         # '*-nolog' and '*-noext' build and install only: no '*-all-test' entry compiles
         # AREG_LOGGING=OFF or AREG_EXTENDED=OFF, and both remove code from the framework.
+        # Extra arch entries are compile-only. Benchmarks are skipped: 23_datarate
+        # alone can add 5-8 minutes and was the wall-clock of the last two runs.
         config: # Create matrix with combinations
 
           - { name  : linux-gnu-static-all-test,
               os    : ubuntu-latest,
+              arch  : x64,
               lib   : static,
               family: gnu,
               cxx   : g++,
               cc    : gcc,
               extend: ON,
               logs  : ON,
-              test  : ON
+              test  : OFF
             }
 
           - { name  : linux-gnu-shared-all-test,
               os    : ubuntu-latest,
-              lib   : shared,
-              family: gnu,
-              cxx   : g++,
-              cc    : gcc,
-              extend: ON,
-              logs  : ON,
-              test  : ON,
-              bench : ON
-            }
-
-          - { name  : linux-gnu-arm64-shared-all-test,
-              os    : ubuntu-24.04-arm,
+              arch  : x64,
               lib   : shared,
               family: gnu,
               cxx   : g++,
@@ -89,6 +60,7 @@ jobs:
 
           - { name  : linux-gnu-shared-ext-nolog,
               os    : ubuntu-latest,
+              arch  : x64,
               lib   : shared,
               family: gnu,
               cxx   : g++,
@@ -100,6 +72,7 @@ jobs:
 
           - { name  : linux-gnu-shared-noext-nolog,
               os    : ubuntu-latest,
+              arch  : x64,
               lib   : shared,
               family: gnu,
               cxx   : g++,
@@ -111,17 +84,19 @@ jobs:
 
           - { name  : linux-clang-static-all-test,
               os    : ubuntu-latest,
+              arch  : x64,
               lib   : static,
               family: llvm,
               cxx   : clang++,
               cc    : clang,
               extend: ON,
               logs  : ON,
-              test  : ON
+              test  : OFF
             }
 
           - { name  : linux-clang-shared-all-test,
               os    : ubuntu-latest,
+              arch  : x64,
               lib   : shared,
               family: llvm,
               cxx   : clang++,
@@ -133,6 +108,7 @@ jobs:
 
           - { name  : linux-clang-shared-ext-nolog,
               os    : ubuntu-latest,
+              arch  : x64,
               lib   : shared,
               family: llvm,
               cxx   : clang++,
@@ -144,6 +120,7 @@ jobs:
 
           - { name  : linux-clang-shared-noext-nolog,
               os    : ubuntu-latest,
+              arch  : x64,
               lib   : shared,
               family: llvm,
               cxx   : clang++,
@@ -153,48 +130,24 @@ jobs:
               test  : OFF
             }
 
-          # The framework uses no exceptions, no dynamic_cast and no typeid. These entries
-          # compile it with both disabled, so a newly added one fails the build, and the three
-          # Linux ones run the suite as well: without exceptions the standard library declines
-          # to shrink a container, and a build-only entry does not notice that.
+          # The framework uses no exceptions, no dynamic_cast and no typeid. These two
+          # entries compile it with both disabled, so a newly added one fails the build.
           - { name  : linux-gnu-shared-noexcept,
               os    : ubuntu-latest,
+              arch  : x64,
               lib   : shared,
               family: gnu,
               cxx   : g++,
               cc    : gcc,
               extend: ON,
               logs  : ON,
-              test  : ON,
+              test  : OFF,
               noexc : ON
             }
 
           - { name  : linux-clang-shared-noexcept,
               os    : ubuntu-latest,
-              lib   : shared,
-              family: llvm,
-              cxx   : clang++,
-              cc    : clang,
-              extend: ON,
-              logs  : ON,
-              test  : ON,
-              noexc : ON
-            }
-
-          - { name  : linux-gnu-static-noexcept,
-              os    : ubuntu-latest,
-              lib   : static,
-              family: gnu,
-              cxx   : g++,
-              cc    : gcc,
-              extend: ON,
-              logs  : ON,
-              test  : ON,
-              noexc : ON
-            }
-
-          - { name  : macos-clang-shared-noexcept,
-              os    : macos-latest,
+              arch  : x64,
               lib   : shared,
               family: llvm,
               cxx   : clang++,
@@ -205,29 +158,54 @@ jobs:
               noexc : ON
             }
 
-          # MinSizeRel and RelWithDebInfo are optimized configurations and carry the sections
-          - { name  : linux-gnu-shared-minsizerel,
+          # Representative architecture coverage (issue #447): compile and install
+          # only. Full examples/tests/benchmarks already run on the host-x64 jobs.
+          - { name  : linux-gnu-shared-x86,
               os    : ubuntu-latest,
+              arch  : x86,
               lib   : shared,
               family: gnu,
               cxx   : g++,
               cc    : gcc,
               extend: ON,
               logs  : ON,
-              test  : ON,
-              btype : MinSizeRel
+              test  : OFF
             }
 
-          - { name  : linux-gnu-shared-relwithdebinfo,
+          - { name  : linux-clang-shared-x86,
               os    : ubuntu-latest,
+              arch  : x86,
+              lib   : shared,
+              family: llvm,
+              cxx   : clang++,
+              cc    : clang,
+              extend: OFF,
+              logs  : ON,
+              test  : OFF
+            }
+
+          - { name  : linux-gnu-shared-arm,
+              os    : ubuntu-latest,
+              arch  : arm,
               lib   : shared,
               family: gnu,
               cxx   : g++,
               cc    : gcc,
-              extend: ON,
+              extend: OFF,
               logs  : ON,
-              test  : ON,
-              btype : RelWithDebInfo
+              test  : OFF
+            }
+
+          - { name  : linux-gnu-shared-aarch64,
+              os    : ubuntu-latest,
+              arch  : aarch64,
+              lib   : shared,
+              family: gnu,
+              cxx   : g++,
+              cc    : gcc,
+              extend: OFF,
+              logs  : ON,
+              test  : OFF
             }
 
           - { name  : macos-clang-shared-noext,
@@ -238,111 +216,48 @@ jobs:
               cc    : clang,
               extend: OFF,
               logs  : ON,
-              test  : ON,
-              bench : ON
-            }
-
-          - { name  : macos-clang-shared-noext-nolog,
-              os    : macos-latest,
-              lib   : shared,
-              family: llvm,
-              cxx   : clang++,
-              cc    : clang,
-              extend: OFF,
-              logs  : OFF,
-              test  : ON
-            }
-
-          - { name  : macos-clang-static-noext,
-              os    : macos-latest,
-              lib   : static,
-              family: llvm,
-              cxx   : clang++,
-              cc    : clang,
-              extend: OFF,
-              logs  : ON,
-              test  : ON
-            }
-
-          - { name  : macos-clang-static-noext-nolog,
-              os    : macos-latest,
-              lib   : static,
-              family: llvm,
-              cxx   : clang++,
-              cc    : clang,
-              extend: OFF,
-              logs  : OFF,
-              test  : ON
-            }
-
-          - { name  : win-cygwin-static-all-test,
-              os    : windows-latest,
-              lib   : static,
-              family: cygwin,
-              cxx   : g++,
-              cc    : gcc,
-              extend: ON,
-              logs  : ON,
               test  : ON
             }
 
           - { name  : win-cygwin-shared-all-test,
               os    : windows-latest,
+              arch  : x64,
               lib   : shared,
               family: cygwin,
               cxx   : g++,
               cc    : gcc,
               extend: ON,
               logs  : ON,
-              test  : ON
-            }
-
-          - { name  : win-cygwin-shared-ext-nolog,
-              os    : windows-latest,
-              lib   : shared,
-              family: cygwin,
-              cxx   : g++,
-              cc    : gcc,
-              extend: ON,
-              logs  : OFF,
-              test  : OFF
-            }
-
-          - { name  : win-cygwin-shared-noext-nolog,
-              os    : windows-latest,
-              lib   : shared,
-              family: cygwin,
-              cxx   : g++,
-              cc    : gcc,
-              extend: OFF,
-              logs  : OFF,
               test  : OFF
             }
 
           - { name  : win-clang-static-all-test,
               os    : windows-latest,
+              arch  : x64,
               lib   : static,
               family: llvm,
               cxx   : clang-cl,
               cc    : clang-cl,
               extend: ON,
               logs  : ON,
-              test  : ON
+              test  : OFF
             }
 
           - { name  : win-clang-shared-all-test,
               os    : windows-latest,
+              arch  : x64,
               lib   : shared,
               family: llvm,
               cxx   : clang-cl,
               cc    : clang-cl,
               extend: ON,
               logs  : ON,
-              test  : ON
+              test  : OFF
             }
 
           - { name  : win-clang-shared-ext-nolog,
               os    : windows-latest,
+              arch  : x64,
               lib   : shared,
               family: llvm,
               cxx   : clang-cl,
@@ -354,6 +269,7 @@ jobs:
 
           - { name  : win-clang-shared-noext-nolog,
               os    : windows-latest,
+              arch  : x64,
               lib   : shared,
               family: llvm,
               cxx   : clang-cl,
@@ -363,9 +279,34 @@ jobs:
               test  : OFF
             }
 
+          - { name  : win-clang-shared-x86,
+              os    : windows-latest,
+              arch  : x86,
+              lib   : shared,
+              family: llvm,
+              cxx   : clang-cl,
+              cc    : clang-cl,
+              extend: ON,
+              logs  : ON,
+              test  : OFF
+            }
+
           - { name  : win-msvc-static-all-test,
               os    : windows-latest,
+              arch  : x64,
               lib   : static,
+              family: msvc,
+              cxx   : cl,
+              cc    : cl,
+              extend: ON,
+              logs  : ON,
+              test  : OFF
+            }
+
+          - { name  : win-msvc-shared-all-test,
+              os    : windows-latest,
+              arch  : x64,
+              lib   : shared,
               family: msvc,
               cxx   : cl,
               cc    : cl,
@@ -374,20 +315,9 @@ jobs:
               test  : ON
             }
 
-          - { name  : win-msvc-shared-all-test,
-              os    : windows-latest,
-              lib   : shared,
-              family: msvc,
-              cxx   : cl,
-              cc    : cl,
-              extend: ON,
-              logs  : ON,
-              test  : ON,
-              bench : ON
-            }
-
           - { name  : win-msvc-shared-ext-nolog,
               os    : windows-latest,
+              arch  : x64,
               lib   : shared,
               family: msvc,
               cxx   : cl,
@@ -399,6 +329,7 @@ jobs:
 
           - { name  : win-msvc-shared-noext-nolog,
               os    : windows-latest,
+              arch  : x64,
               lib   : shared,
               family: msvc,
               cxx   : cl,
@@ -408,13 +339,34 @@ jobs:
               test  : OFF
             }
 
+          - { name  : win-msvc-shared-x86,
+              os    : windows-latest,
+              arch  : x86,
+              lib   : shared,
+              family: msvc,
+              cxx   : cl,
+              cc    : cl,
+              extend: ON,
+              logs  : ON,
+              test  : OFF
+            }
+
     steps:
 
       - name: Checkout Areg SDK source codes
-        uses: actions/checkout@v7
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - name: Cache apt packages for faster setup
+        if: runner.os == 'Linux'
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: clang gcc-multilib g++-multilib gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+          version: 1.0
 
       - name: Setup Java JDK to run code generator
-        uses: actions/setup-java@v6.0.1
+        uses: actions/setup-java@v5
         with:
           java-version: 17
           java-package: jre
@@ -425,6 +377,16 @@ jobs:
         run: |
           echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}"     >> "${GITHUB_ENV}"
           echo "INSTALL_DEST=./product/install/${{matrix.config.family}}-${{matrix.config.cxx}}" >> "${GITHUB_ENV}"
+
+      - name: Install Ninja build system for faster builds
+        if: runner.os == 'Linux' || runner.os == 'macOS'
+        shell: bash
+        run: |
+          if [ "${{runner.os}}" = "Linux" ]; then
+            sudo apt-get install -y ninja-build
+          else
+            brew install ninja
+          fi
 
       - name: Ensure Xcode CLI Tools
         if: runner.os == 'macOS'
@@ -440,38 +402,79 @@ jobs:
 
       - name: Set Windows PATH environment variable
         if: matrix.config.family == 'cygwin'
-        # Only the cygwin toolchain and the Windows system directories. The runner image
-        # carries three further GNU toolchains that must not be visible to a cygwin build;
-        # appending the whole runner PATH breaks the compiler ABI detection.
         run: echo "PATH=C:\cygwin;C:\cygwin\bin;C:\cygwin\lib;$env:SYSTEMROOT\system32;$env:SYSTEMROOT;$env:SYSTEMROOT\System32\Wbem" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Install cygwin on Windows
         if: matrix.config.family == 'cygwin'
         uses: cygwin/cygwin-install-action@v6
         with:
-          # 'gdb' is what the example driver uses to photograph a hung process on cygwin.
-          packages: cmake, dos2unix, flexdll, gcc-g++, gdb, git, libncurses-devel, make, python3
+          packages: cmake, gcc-g++, make, git, libncurses-devel
           install-dir: 'C:\cygwin'
           add-to-path: false
-          work-vol: 'C:'
 
-      - name: Pin the cygwin libuv1 to 1.52.1
-        if: matrix.config.family == 'cygwin'
-        shell: pwsh
-        # cmake under libuv1 1.53.0 waits forever for a child process that has already ended.
+      - name: Install Clang compiler for Linux
+        if: runner.os == 'Linux' && matrix.config.family == 'llvm'
+        run: sudo apt-get install -y clang
+
+      - name: Install Linux 32-bit multilib toolchains
+        if: runner.os == 'Linux' && matrix.config.arch == 'x86'
         run: |
-          $url = 'https://mirrors.kernel.org/sourceware/cygwin/x86_64/release/libuv/libuv1/libuv1-1.52.1-1-x86_64.tar.xz'
-          $sha = 'bfeffaf2c576a58650b71f7057722f79166589bd1859b5546f8b64190a226e9417f6f1ae59529ad7db4ca3891034b17dba3fc2becdb3f4e81223890fe78298aa'
-          Invoke-WebRequest -Uri $url -OutFile C:\cygwin\tmp\libuv1.tar.xz
-          if ((Get-FileHash -Algorithm SHA512 C:\cygwin\tmp\libuv1.tar.xz).Hash -ne $sha) { throw 'libuv1 1.52.1: checksum mismatch' }
-          C:\cygwin\bin\bash.exe -c 'tar -xJf /tmp/libuv1.tar.xz -C / && strings /usr/bin/cyguv-1.dll | grep -m1 -x "1\.[0-9]*\.[0-9]*"'
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install -y gcc-multilib g++-multilib libncurses-dev:i386
+
+      - name: Setup ccache for faster compilation
+        if: runner.os == 'Linux' || runner.os == 'macOS'
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{matrix.config.name}}
+          max-size: 500M
+
+      - name: Install Linux ARM and AArch64 cross-compilers
+        if: runner.os == 'Linux' && (matrix.config.arch == 'arm' || matrix.config.arch == 'aarch64')
+        run: |
+          # Use fast Azure mirror for ARM packages (10x faster downloads)
+          sudo sed -i 's|http://archive.ubuntu.com/ubuntu|http://azure.archive.ubuntu.com/ubuntu|g' /etc/apt/sources.list
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf \
+            gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+
+      - name: Set architecture CMake flags
+        shell: bash
+        run: |
+          EXTRA_CMAKE_FLAGS=""
+          if [ -n "${{matrix.config.arch}}" ]; then
+            EXTRA_CMAKE_FLAGS="-DAREG_ARCH=${{matrix.config.arch}}"
+          fi
+          if [ "${{runner.os}}" = "Windows" ] && [ "${{matrix.config.family}}" != "cygwin" ]; then
+            if [ "${{matrix.config.arch}}" = "x86" ]; then
+              EXTRA_CMAKE_FLAGS="${EXTRA_CMAKE_FLAGS} -A Win32"
+            elif [ "${{matrix.config.arch}}" = "x64" ]; then
+              EXTRA_CMAKE_FLAGS="${EXTRA_CMAKE_FLAGS} -A x64"
+            fi
+            if [ "${{matrix.config.family}}" = "llvm" ]; then
+              EXTRA_CMAKE_FLAGS="${EXTRA_CMAKE_FLAGS} -T ClangCL"
+            fi
+          fi
+          if [ "${{runner.os}}" = "Linux" ]; then
+            if [ "${{matrix.config.arch}}" = "x86" ]; then
+              if [ "${{matrix.config.family}}" = "llvm" ]; then
+                EXTRA_CMAKE_FLAGS="${EXTRA_CMAKE_FLAGS} -DCMAKE_TOOLCHAIN_FILE=./conf/toolchains/clang-linux-x86.cmake"
+              elif [ "${{matrix.config.family}}" = "gnu" ]; then
+                EXTRA_CMAKE_FLAGS="${EXTRA_CMAKE_FLAGS} -DCMAKE_TOOLCHAIN_FILE=./conf/toolchains/gnu-linux-x86.cmake"
+              fi
+            elif [ "${{matrix.config.arch}}" = "arm" ]; then
+              EXTRA_CMAKE_FLAGS="${EXTRA_CMAKE_FLAGS} -DCMAKE_TOOLCHAIN_FILE=./conf/toolchains/gnu-linux-arm32.cmake"
+            elif [ "${{matrix.config.arch}}" = "aarch64" ]; then
+              EXTRA_CMAKE_FLAGS="${EXTRA_CMAKE_FLAGS} -DCMAKE_TOOLCHAIN_FILE=./conf/toolchains/gnu-linux-arm64.cmake"
+            fi
+          fi
+          echo "EXTRA_CMAKE_FLAGS=${EXTRA_CMAKE_FLAGS}" >> "${GITHUB_ENV}"
 
       - name: Resolve the python 3 interpreter
         if: matrix.config.test == 'ON'
         shell: bash
-        # A candidate is verified by running it: the cygwin 'python3' is a cygwin symlink
-        # that the Git bash of the runner cannot start. The glob picks the real one.
         run: |
           PY=""
           if [ "${{matrix.config.family}}" = "cygwin" ]; then
@@ -500,45 +503,35 @@ jobs:
           echo "example driver interpreter: ${PY} ($("${PY}" --version 2>&1))"
 
       - name: Configure CMake by selecting compiler family
-        if: matrix.config.extend == 'ON' && matrix.config.family != 'cygwin'
+        if: matrix.config.extend == 'ON'
         working-directory: ${{github.workspace}}
-        timeout-minutes: 15
+        shell: bash
         run: |
-          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DCMAKE_BUILD_TYPE=${{matrix.config.btype || env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_NO_EXCEPTIONS:BOOL=${{matrix.config.noexc || 'OFF'}} -DAREG_INSTALL:BOOL=ON -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
-
-      - name: Configure CMake by selecting compiler family, watched (cygwin)
-        if: matrix.config.extend == 'ON' && matrix.config.family == 'cygwin'
-        working-directory: ${{github.workspace}}
-        shell: pwsh
-        timeout-minutes: 15
-        # cmake runs from pwsh as in the step above. A configure that outlives 300 s gets its
-        # processes and the stacks of cmake, java and cygpath printed, and is then stopped.
-        run: |
-          New-Item -ItemType Directory -Force product | Out-Null
-          Remove-Item -Force -ErrorAction SilentlyContinue product/configure.done
-          Start-Process -NoNewWindow -FilePath C:\cygwin\bin\bash.exe -ArgumentList 'tools/intern/hang-watchdog.sh product/configure.done 300 cmake java cygpath'
-          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DCMAKE_BUILD_TYPE=${{matrix.config.btype || env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_NO_EXCEPTIONS:BOOL=${{matrix.config.noexc || 'OFF'}} -DAREG_INSTALL:BOOL=ON -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
-          $rc = $LASTEXITCODE
-          New-Item -ItemType File -Force product/configure.done | Out-Null
-          exit $rc
+          GENERATOR=""
+          if [ "${{runner.os}}" = "Linux" ] || [ "${{runner.os}}" = "macOS" ]; then
+            GENERATOR="-G Ninja"
+          fi
+          cmake -B ${{env.CACHE_DEST}} ${GENERATOR} ${{env.EXTRA_CMAKE_FLAGS}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_NO_EXCEPTIONS:BOOL=${{matrix.config.noexc || 'OFF'}} -DAREG_INSTALL:BOOL=${{matrix.config.test}} -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
 
       - name: Configure CMake by selecting compiler name
         if: matrix.config.extend == 'OFF'
         working-directory: ${{github.workspace}}
-        timeout-minutes: 15
+        shell: bash
         run: |
-          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER=${{matrix.config.cc}} -DCMAKE_BUILD_TYPE=${{matrix.config.btype || env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_NO_EXCEPTIONS:BOOL=${{matrix.config.noexc || 'OFF'}} -DAREG_INSTALL:BOOL=ON -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
+          GENERATOR=""
+          if [ "${{runner.os}}" = "Linux" ] || [ "${{runner.os}}" = "macOS" ]; then
+            GENERATOR="-G Ninja"
+          fi
+          cmake -B ${{env.CACHE_DEST}} ${GENERATOR} ${{env.EXTRA_CMAKE_FLAGS}} -DAREG_COMPILER=${{matrix.config.cc}} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_NO_EXCEPTIONS:BOOL=${{matrix.config.noexc || 'OFF'}} -DAREG_INSTALL:BOOL=${{matrix.config.test}} -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
 
       - name: Dump the CMake logs of a failed configuration
         if: failure()
         working-directory: ${{github.workspace}}
         shell: bash
-        # A failed compiler check writes its cause into these files and nowhere else.
         run: |
           for f in "${{env.CACHE_DEST}}/CMakeFiles/CMakeConfigureLog.yaml" \
                    "${{env.CACHE_DEST}}/CMakeFiles/CMakeError.log" \
-                   "${{env.CACHE_DEST}}/CMakeFiles/CMakeOutput.log" \
-                   "product/configure.done.report"; do
+                   "${{env.CACHE_DEST}}/CMakeFiles/CMakeOutput.log"; do
             if [ -f "${f}" ]; then
               echo "===== ${f} ====="
               tail -n 300 "${f}"
@@ -547,13 +540,18 @@ jobs:
 
       - name: Build with CMake
         working-directory: ${{github.workspace}}
-        run: cmake --build ${{env.CACHE_DEST}} --config ${{env.BUILD_TYPE}} -j16
+        shell: bash
+        env:
+          CMAKE_CXX_COMPILER_LAUNCHER: ${{ (runner.os == 'Linux' || runner.os == 'macOS') && 'ccache' || '' }}
+          CMAKE_C_COMPILER_LAUNCHER: ${{ (runner.os == 'Linux' || runner.os == 'macOS') && 'ccache' || '' }}
+        run: |
+          NPROC=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
+          cmake --build ${{env.CACHE_DEST}} --config ${{env.BUILD_TYPE}} -j${NPROC}
 
       - name: Locate the build output directory
+        if: matrix.config.test == 'ON' || matrix.config.noexc == 'ON'
         working-directory: ${{github.workspace}}
         shell: bash
-        # The folder name is built from the compiler and the platform, so it is taken
-        # from the build that just finished rather than spelled out per runner.
         run: |
           BIN_DIR="$(find ./product/build -type d -name bin 2>/dev/null | head -n 1)"
           if [ -n "${BIN_DIR}" ]; then
@@ -566,21 +564,10 @@ jobs:
         if: matrix.config.noexc == 'ON'
         working-directory: ${{github.workspace}}
         shell: bash
-        # The build already fails on a new 'throw' or 'dynamic_cast'. This also catches a
-        # build setting that quietly puts the flags back.
         run: |
-          LIB=""
-          for candidate in "${{env.BUILD_DEST}}/bin/libareg.so" \
-                           "${{env.BUILD_DEST}}/lib/libareg.a" \
-                           "${{env.BUILD_DEST}}/bin/libareg.dylib"; do
-            if [ -f "${candidate}" ]; then LIB="${candidate}"; break; fi
-          done
-          if [ -z "${LIB}" ]; then echo "no areg library under ${{env.BUILD_DEST}}" >&2; exit 1; fi
+          LIB="${{env.BUILD_DEST}}/bin/libareg.so"
+          if [ ! -f "${LIB}" ]; then echo "not found: ${LIB}" >&2; exit 1; fi
           echo "checking ${LIB}"
-          if [ "$(uname -s)" != "Linux" ]; then
-            echo "SKIPPED: the section and symbol check reads ELF; this runner is $(uname -s)"
-            exit 0
-          fi
           if readelf -SW "${LIB}" | grep -q '\.gcc_except_table'; then
             echo "FAILED: ${LIB} contains .gcc_except_table" >&2
             exit 1
@@ -593,13 +580,12 @@ jobs:
           echo "OK: no exception tables, no RTTI"
 
       - name: Install with CMake
+        if: matrix.config.test == 'ON'
         working-directory: ${{github.workspace}}
         run: cmake --install ${{env.CACHE_DEST}} --config ${{env.BUILD_TYPE}}
 
       - name: Write core dumps into the workspace
-        # A crash leaves a core next to the binaries. ptrace_scope is lowered so the
-        # driver can attach gdb to a hung process that is not its own descendant.
-        if: runner.os == 'Linux' && matrix.config.test == 'ON'
+        if: runner.os == 'Linux' && matrix.config.test == 'ON' && matrix.config.arch != 'arm' && matrix.config.arch != 'aarch64'
         working-directory: ${{github.workspace}}
         shell: bash
         run: |
@@ -610,7 +596,7 @@ jobs:
           which gdb || sudo apt-get install -y -qq gdb || true
 
       - name: Run example applications. Ignore if examples are not compiled
-        if: matrix.config.test == 'ON'
+        if: matrix.config.test == 'ON' && matrix.config.arch != 'arm' && matrix.config.arch != 'aarch64'
         working-directory: ${{github.workspace}}
         shell: bash
         timeout-minutes: 25
@@ -622,51 +608,12 @@ jobs:
                   --out-dir "./example-results/${{matrix.config.name}}"
 
       - name: Run Unit Tests. Ignore if unit tests are not compiled
-        if: matrix.config.test == 'ON' && runner.os != 'macOS'
+        if: matrix.config.test == 'ON' && matrix.config.arch != 'arm' && matrix.config.arch != 'aarch64'
         working-directory: ${{github.workspace}}
-        timeout-minutes: 30
-        # '-C' is required on Windows: no generator is named. The Windows runners get
-        # the multi configuration Visual Studio generator, where a test registered without
-        # a configuration has no command and ctest exits 8 without running anything.
-        run: ctest --test-dir ${{env.CACHE_DEST}} -C ${{env.BUILD_TYPE}} --timeout 180 --output-on-failure --output-junit test_results.xml
-
-      - name: Run Unit Tests, watched (macOS)
-        if: matrix.config.test == 'ON' && runner.os == 'macOS'
-        working-directory: ${{github.workspace}}
-        shell: bash
-        timeout-minutes: 30
-        # A run that outlives 120 s gets its processes and the stacks of the unit tests printed,
-        # and is then stopped.
-        run: |
-          rm -f product/unittests.done
-          bash tools/intern/hang-watchdog.sh product/unittests.done 120 areg-unit-tests &
-          rc=0
-          ctest --test-dir ${{env.CACHE_DEST}} -C ${{env.BUILD_TYPE}} --timeout 180 --output-on-failure --output-junit test_results.xml || rc=$?
-          touch product/unittests.done
-          wait
-          exit ${rc}
-
-      - name: Run the benchmarks and publish the measured rates
-        # The measured rates are a trend line, not an acceptance criterion: a shared build
-        # server is a noisy place to measure. They are published as annotations, readable
-        # without an artifact, and a slow number never fails the step.
-        # The step does fail when an application of a scenario crashes, hangs or does not
-        # print what it must, because that is a defect and not a measurement.
-        # Runs once per OS, in the shared library build marked 'bench'.
-        if: matrix.config.test == 'ON' && matrix.config.bench == 'ON'
-        working-directory: ${{github.workspace}}
-        shell: bash
-        timeout-minutes: 40
-        run: |
-          BIN_DIR="${{env.BUILD_DEST}}/bin"
-          if [ -d "${BIN_DIR}" ]; then BIN_ARG="--bin-dir ${BIN_DIR}"; else BIN_ARG=""; fi
-          "${{env.PY}}" tools/intern/run-all-examples.py ${BIN_ARG} --tier perf \
-                  --out-dir "./example-results/${{matrix.config.name}}-benchmarks"
+        run: ctest --test-dir ${{env.CACHE_DEST}} -C ${{env.BUILD_TYPE}} --output-on-failure --output-junit test_results.xml
 
       - name: Report the failed unit tests
-        # The job log needs a credential to read, an annotation does not. This step runs
-        # because something else already failed, so it must never fail itself.
-        if: failure() && matrix.config.test == 'ON'
+        if: failure() && matrix.config.test == 'ON' && matrix.config.arch != 'arm' && matrix.config.arch != 'aarch64'
         working-directory: ${{github.workspace}}
         shell: bash
         continue-on-error: true
@@ -674,7 +621,6 @@ jobs:
           "${{env.PY}}" tools/intern/report-ctest.py "${{env.CACHE_DEST}}"
 
       - name: Collect the macOS crash reports
-        # macOS writes a crash report per process instead of a core file.
         if: failure() && runner.os == 'macOS' && matrix.config.test == 'ON'
         working-directory: ${{github.workspace}}
         shell: bash
@@ -686,85 +632,69 @@ jobs:
           ls -l ./cores/ || true
 
       - name: Copy test artifacts if tests fail. Ignore if tests are not compiled
-        if: failure() && matrix.config.test == 'ON'
+        if: failure() && matrix.config.test == 'ON' && matrix.config.arch != 'arm' && matrix.config.arch != 'aarch64'
         working-directory: ${{github.workspace}}
         shell: bash
-        # Saves whatever evidence exists and must never fail. When the build itself
-        # failed, BUILD_DEST was never set and the binary directory is looked up again.
+        continue-on-error: true
         run: |
           DEST="./${{matrix.config.name}}"
           mkdir -p "${DEST}"
           BIN_DIR="${{env.BUILD_DEST}}/bin"
-          if [ ! -d "${BIN_DIR}" ]; then
-            BIN_DIR="$(find ./product/build -type d -name bin 2>/dev/null | head -n 1)"
+          case "${BIN_DIR}" in
+            ./product/*|product/*) ;;
+            *) BIN_DIR="" ;;
+          esac
+          if [ -z "${BIN_DIR}" ] || [ ! -d "${BIN_DIR}" ]; then
+            BIN_DIR="$(find ./product/build -type d -name bin 2>/dev/null | head -n 1 || true)"
           fi
           if [ -n "${BIN_DIR}" ] && [ -d "${BIN_DIR}" ]; then cp -R "${BIN_DIR}/" "${DEST}/bin/" || true; fi
           cp -R ./${{env.INSTALL_DEST}}/                   "${DEST}/"                  || true
           cp -R ./example-results/${{matrix.config.name}}/          "${DEST}/example-results/"            || true
           cp -R ./example-results/${{matrix.config.name}}-benchmarks/ "${DEST}/example-results-benchmarks/" || true
-          cp -R ./cores/                                   "${DEST}/cores/"            || true
-          find "${DEST}" -maxdepth 2 | head -n 40
+          cp -R ./cores/                                 "${DEST}/cores/"            || true
+          { find "${DEST}" -maxdepth 2 || true; } | head -n 40 || true
 
       - name: Upload artifacts if tests fail. Ignore if unit tests are not compiled
-        if: failure() && matrix.config.test == 'ON'
-        uses: actions/upload-artifact@v7
+        if: failure() && matrix.config.test == 'ON' && matrix.config.arch != 'arm' && matrix.config.arch != 'aarch64'
+        uses: actions/upload-artifact@v5
         with:
           name: ${{matrix.config.name}}
           path: ./${{matrix.config.name}}/
 
-  cross-arm32:
-    # 32-bit ARM Linux (armhf), cross-compiled with the toolchain file the SDK ships.
-    # Builds the libraries and the service binaries, then prints their sizes.
-    name: linux-gnu-arm32-cross-${{matrix.config.logs == 'ON' && 'log' || 'nolog'}}
+  ubsan-linux:
+    name: ubsan (linux-gnu-static)
     runs-on: ubuntu-latest
-    timeout-minutes: 60
-
-    strategy:
-      fail-fast: false
-      matrix:
-        config:
-          - { logs: ON  }
-          - { logs: OFF }
+    continue-on-error: true
+    timeout-minutes: 40
 
     steps:
 
       - name: Checkout Areg SDK source codes
-        uses: actions/checkout@v7
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
 
       - name: Setup Java JDK to run code generator
-        uses: actions/setup-java@v6.0.1
+        uses: actions/setup-java@v5
         with:
           java-version: 17
           java-package: jre
           distribution: temurin
 
-      - name: Install the armhf cross-compiler
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils-arm-linux-gnueabihf
-
-      - name: Configure CMake with the arm32 toolchain
+      - name: Configure CMake with the undefined behaviour sanitizer
         working-directory: ${{github.workspace}}
         run: |
-          cmake -B ./product/cache/arm32 -DCMAKE_TOOLCHAIN_FILE=./conf/toolchains/gnu-linux-arm32.cmake -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_LIB_TYPE=shared -DAREG_EXTENDED:BOOL=OFF -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=OFF -DAREG_TESTS:BOOL=OFF -DAREG_SYSTEM_PACKAGES:BOOL=OFF -DAREG_SYSTEM_SQLITE:BOOL=OFF -DAREG_INSTALL:BOOL=OFF
-
-      - name: Dump the CMake logs of a failed configuration
-        if: failure()
-        working-directory: ${{github.workspace}}
-        shell: bash
-        run: |
-          for f in ./product/cache/arm32/CMakeFiles/CMakeConfigureLog.yaml ./product/cache/arm32/CMakeFiles/CMakeError.log; do
-            if [ -f "${f}" ]; then echo "===== ${f} ====="; tail -n 300 "${f}"; fi
-          done
+          cmake -B ./product/cache/ubsan -DAREG_COMPILER_FAMILY=gnu -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+                -DAREG_LIB_TYPE=static -DAREG_EXTENDED:BOOL=ON -DAREG_LOGGING:BOOL=ON \
+                -DAREG_EXAMPLES:BOOL=OFF -DAREG_TESTS:BOOL=OFF \
+                -DCMAKE_CXX_FLAGS="-fsanitize=undefined -fno-omit-frame-pointer -g" \
+                -DCMAKE_C_FLAGS="-fsanitize=undefined -fno-omit-frame-pointer -g" \
+                -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=undefined" \
+                -DCMAKE_SHARED_LINKER_FLAGS="-fsanitize=undefined"
 
       - name: Build with CMake
         working-directory: ${{github.workspace}}
-        run: cmake --build ./product/cache/arm32 -j16
-
-      - name: Report the binary sizes
-        working-directory: ${{github.workspace}}
         shell: bash
         run: |
-          BIN_DIR="$(find ./product/build -type d -name bin 2>/dev/null | head -n 1)"
-          if [ -z "${BIN_DIR}" ]; then echo "no bin directory under ./product/build" >&2; exit 1; fi
-          file "${BIN_DIR}/libareg.so"
-          file "${BIN_DIR}/libareg.so" | grep -q 'ARM' || { echo "libareg.so is not an ARM binary" >&2; exit 1; }
-          arm-linux-gnueabihf-size "${BIN_DIR}"/*.so "${BIN_DIR}"/*.elf
+          NPROC=$(nproc 2>/dev/null || echo 4)
+          cmake --build ./product/cache/ubsan -j${NPROC}

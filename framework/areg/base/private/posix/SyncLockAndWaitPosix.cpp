@@ -769,7 +769,7 @@ bool SyncLockAndWaitPosix::_request_ownership( int32_t firedEvent ) noexcept
     if ( firedEvent != static_cast<int32_t>(areg::os::SyncSignal::All) )
     {
         ASSERT(mWaitingList.size() > static_cast<uint32_t>(firedEvent));
-        WaitablePosix *waitable = mWaitingList[firedEvent];
+        WaitablePosix *waitable = mWaitingList[static_cast<uint32_t>(firedEvent)];
         ASSERT(waitable != nullptr);
 
         result = waitable->notify_request_ownership(mContext);
