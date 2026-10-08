@@ -2621,6 +2621,18 @@ def step_said(step):
     return ' and '.join(said) if said else 'waits for nothing'
 
 
+def step_kept(step):
+    """Why a step whose check ran is still waiting, as a C++ string literal's contents."""
+    kind, name = step['awaits']
+    if step.get('until'):
+        return ('. {} {} arrived, and none had the values its \\"until\\" names, or the '
+                'step_{} body called stay() on the one that had them.'
+                .format(kind.capitalize(), name, step['name']))
+    return ('. {} {} arrived and the step_{} body ran on it and called stay(): what that '
+            'body compared did not match what arrived.'
+            .format(kind.capitalize(), name, step['name']))
+
+
 def step_detail(step):
     """What one step sent and what it waits for, as a C++ string literal's contents.
 
@@ -3460,6 +3472,17 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
                   '        }',
                   '    }',
                   '',
+                  '    //! What kept the step the scenario is on once its check ran.',
+                  '    const char * step_kept()',
+                  '    {',
+                  '        switch (mStep)',
+                  '        {']
+        lines += ['        case Step::{}:  return "{}";'.format(step['enum'], step_kept(step))
+                  for step in steps if step['awaits']]
+        lines += ['        default:  return ". Its check ran and kept the step.";',
+                  '        }',
+                  '    }',
+                  '',
                   '    //! Ends the scenario when no step has advanced, naming what the',
                   '    //! step waits for and the latest messages an earlier step discarded.',
                   '    void stalled()',
@@ -3467,8 +3490,7 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
                   '        std::cerr << "FAIL [" << step_slot() << "]: the scenario stopped making progress"',
                   '                  << std::endl;',
                   '        std::cerr << "  " << step_slot() << " " << step_detail()',
-                  '                  << (mRan ? ". Its check ran and kept the step."',
-                  '                           : ". Nothing arrived for it.") << std::endl;',
+                  '                  << (mRan ? step_kept() : ". Nothing arrived for it.") << std::endl;',
                   '        fail(nullptr);',
                   '    }',
                   '',

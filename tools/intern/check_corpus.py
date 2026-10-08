@@ -2806,6 +2806,7 @@ def run():
     check_answer_queue(report)
     check_answer_until(report)
     check_until_names(report)
+    check_stall_kept(report)
     check_cause_trail(report)
     check_worker_entry_name(report)
     check_worker_markers(report)
@@ -5099,6 +5100,11 @@ UNTIL_NAMES_SAMPLE = [{'name': 'open_gate', 'send': 'open', 'args': {'width': 60
                       {'name': 'good_move', 'await': 'gate_moved',
                        'until': {'quality': 'Good', 'reading.value': 600}}]
 
+# One step held by "until", one checked by its body alone.
+KEPT_SAMPLE = [{'name': 'open_gate', 'send': 'open', 'args': {'width': 600},
+                'await': 'Width', 'until': {'Width': 600}},
+               {'name': 'watch_moved', 'await': 'gate_moved'}]
+
 
 LATE_SAMPLE = [{'name': 'open_gate', 'send': 'open', 'args': {'width': 600}},
                {'name': 'watch_width', 'await': 'Width'},
@@ -6020,6 +6026,34 @@ def check_unused_parameters(report):
     report.ok('unused-parameter', '{} parameter(s) an author\'s body may ignore are '
                                   '[[maybe_unused]], and the worksheet lists the signatures '
                                   'as before'.format(marked))
+
+
+def check_stall_kept(report):
+    """A stall on a step whose check ran names what arrived and the body that kept it."""
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    here = os.getcwd()
+    holder = tempfile.mkdtemp()
+    try:
+        os.chdir(holder)
+        made = generate_application(tools, 'kept', KEPT_SAMPLE)
+        source = ''
+        if os.path.isfile(made):
+            with open(made, encoding='utf-8') as handle:
+                source = handle.read()
+    finally:
+        os.chdir(here)
+        shutil.rmtree(holder, ignore_errors=True)
+    if not source:
+        report.fail('stall-kept', made)
+        return
+    if 'step_open_gate body called stay() on the one that had them' not in source or \
+            'the step_watch_moved body ran on it and called stay()' not in source or \
+            'mRan ? step_kept()' not in source:
+        report.fail('stall-kept', 'a stalled step whose check ran does not name what arrived '
+                                  'and the body that kept the step')
+        return
+    report.ok('stall-kept', 'a stalled step whose check ran names what arrived and the body '
+                            'that kept the step')
 
 
 def check_until_names(report):
