@@ -2816,6 +2816,7 @@ def run():
     check_type_order(report)
     check_step_proof(report)
     check_shape_facts(report)
+    check_point_facts(report)
     check_programs_gathered(report)
     check_late_arrival(report)
     check_self_transition(report)
@@ -6503,10 +6504,46 @@ SHAPE_FACTS = (
     ('template', 'at once or when the work is done'),
     ('steps', 'one step that only awaits the answer collects them all'),
     ('steps', 'a broadcast sent at its end'),
-    ('steps', 'such as idle, ends the step at once'),
+    ('steps', 'so an until on a value it can hold before the work (idle, closed, 0) ends the step at once'),
     ('design', 'attributes are its data members, requests its methods, broadcasts its signals'),
     ('design', 'says what something is, not that something happened'),
 )
+
+
+# Facts a cold reader found missing or contradictory, each where it is used: (where, phrase).
+POINT_FACTS = (
+    ('head', 'Section names follow design.json'),
+    ('head', 'in a watcher the same three with watch_ in front'),
+    ('head', 'an "expect_" section takes patterns only'),
+    ('head', 'only the final check names them'),
+    ('enum', "the value's own name as declared"),
+    ('state', 'A history substate goes in the states of the composite it resumes'),
+    ('history', 'outside the composite names it'),
+)
+
+
+def check_point_facts(report):
+    """The worksheet head names sections before they exist and says where "//" closes
+    one; an enum line says what as_string returns; the history notes say where it goes."""
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_docs
+        import gen_skeleton
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('point-facts', 'a generator does not import: {}'.format(failure))
+        return
+    flat = lambda text: ' '.join(text.split())
+    state = gen_docs.TEMPLATE['machines'][0]['states'][0]
+    where = {'head': flat(gen_skeleton.WORKSHEET_HEAD.replace('#|', ' ')),
+             'enum': flat(gen_skeleton.type_line('Space', 'Kind', 'enumeration', '')),
+             'state': flat(' '.join(state[gen_docs.NOTE])),
+             'history': flat(' '.join(state['states'][1][gen_docs.NOTE]))}
+    for place, phrase in POINT_FACTS:
+        if phrase not in where[place]:
+            report.fail('point-facts', '{} does not say "{}"'.format(place, phrase))
+            return
+    report.ok('point-facts', 'section names, "//" against expect_, as_string and the '
+                             'history placement are stated where they are used')
 
 
 def check_shape_facts(report):
@@ -6777,8 +6814,30 @@ def check_edit_blocks(report):
             report.fail('edit-blocks', '--edit, {}: {} not written'.format(
                 label, ', '.join(lost)))
             return
+    for label, text, applies in (
+            ('design and new fix.txt', block('design.json', '  "c": 2', '  "c": 3')
+             + block('fix.txt', '', '== step_new\n//'), True),
+            ('empty search in design.json', block('design.json', '', '  "d": 1'), False),
+            ('fix.txt sections outside a block', '== fix.txt\n== step_new\n//\n', False)):
+        with tempfile.TemporaryDirectory() as root:
+            with open(os.path.join(root, 'design.json'), 'w', newline='\n') as handle:
+                handle.write(design)
+            try:
+                with contextlib.redirect_stdout(io.StringIO()), \
+                        contextlib.redirect_stderr(io.StringIO()):
+                    module.apply_edits(root, text, [('src/services', 'design.json')])
+                applied = True
+            except SystemExit:
+                applied = False
+            fix = os.path.join(root, 'fix.txt')
+            added = open(fix).read() if os.path.isfile(fix) else ''
+        if applied != applies or (applies and added != '== step_new\n//\n'):
+            report.fail('edit-blocks', '--edit, {}: {}, fix.txt {!r}'.format(
+                label, 'applied' if applied else 'refused', added))
+            return
     report.ok('edit-blocks', '--edit applies blocks that match once, across files, and '
-              'refuses every block when one matches nothing, twice, or a generated source')
+              'refuses every block when one matches nothing, twice, or a generated source; '
+              'a fix.txt block with no search lines adds its sections')
 
 
 def check_worker_entry_name(report):

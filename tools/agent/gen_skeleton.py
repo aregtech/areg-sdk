@@ -326,10 +326,21 @@ WORKSHEET_HEAD = """\
 #| with no code, stays open and nothing is written for it, so one pass can fill
 #| what it knows and a later pass the rest.
 #|
-#| A section that needs nothing still takes one line: a "//" comment saying so
-#| closes it. This holds for every section, the "*_state" ones included. A marker
+#| A code section that needs nothing still takes one line:
+#| a "//" comment saying so closes it. This holds for every code section, the
+#| "*_state" ones included; an "expect_" section takes patterns only. A marker
 #| left open is an error of the final contract check, after the build and the
 #| scenarios have already passed.
+#|
+#| Section names follow design.json, so a design change names its new sections
+#| before they are generated: step_<step>, request_<request>, action_<action>,
+#| condition_<condition>, timer_<timer>; in a consumer response_<request>,
+#| update_<getter> (Floor: update_floor) and broadcast_<broadcast>; in a watcher
+#| the same three with watch_ in front; a provider sends a broadcast with
+#| broadcast_<broadcast>(...). A new request, attribute or broadcast adds a section
+#| in every program that uses the service. A name two files share is written
+#| <File>:<name>, as below. A run with new sections still open builds and runs
+#| the scenarios on their placeholders; only the final check names them.
 #|
 #| Writing {bodies} and running it is one request. Filling it one section at a
 #| time is {total} requests instead, and a request is billed for the whole
@@ -1885,8 +1896,8 @@ def type_line(space, type_name, kind, origin, fields=(), container=''):
     scope = '{}::'.format(space) if space else ''
     full = scope + type_name
     if kind in ('enumeration', 'enumerate'):
-        return ('  enum class {}, with const char * {}as_string({} value){}'
-                .format(full, scope, full, origin))
+        return ('  enum class {}, with const char * {}as_string({} value), the value\'s own '
+                'name as declared{}'.format(full, scope, full, origin))
     if kind == 'structure':
         named = ', '.join(field for field, _ in fields)
         return '  struct {}, public fields {}, with a field-by-field == and <<{}'.format(

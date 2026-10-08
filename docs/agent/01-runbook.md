@@ -76,7 +76,7 @@ every key present and empty, each section with a `#|` note on what its values ma
 Fill the values and keep the keys; no XML, `ID` or `To` is written by hand. A sample
 left as written is skipped and an empty value is absent, so delete only a section the
 task does not need. A key the generator does not read is refused by name.
-`gen_docs.py --example` prints a finished design of another application, 192 lines
+`gen_docs.py --example` prints a finished design of another application, 196 lines
 read in one call: do not page it. It is the shape, and the `#|` notes are the rules:
 with both read, write `design.json` whole and build it in one call: section 5's
 command with `--write design.json`. `gen_docs.py` ignores the notes.
@@ -146,8 +146,8 @@ writes the application from them, applies `bodies.txt`, checks the contract -- w
 catches the mistakes that compile cleanly and fail later -- configures and builds. It
 stops at the first failure and names the step, so nothing is hidden. Pass `--spec`
 once per spec file. `--regenerate` writes the application again, **discarding what
-`bodies.txt` does not carry**; without it a second run keeps `src/` and only rebuilds,
-so this is also the command for every later build, which takes seconds.
+`bodies.txt` does not carry**; without it a run rebuilds, and writes `src/` again only
+after a `design.json` change. Every later build is this one, in seconds.
 
 **A state machine is folded into the provider automatically** when the spec declares
 one: the action handler is a base, every action is declared, and there is no separate

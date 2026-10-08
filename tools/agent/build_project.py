@@ -58,7 +58,9 @@ def passed_lines(build, only=None):
 EDIT_HOW = ('A few lines of design.json, scenarios.json or a file of your own change in '
             'this same command: --edit <<\'AREG_EOF\', then "== <file>", "<<<<<<< SEARCH", '
             'the lines as they are, "=======", the lines that replace them, '
-            '">>>>>>> REPLACE"; several blocks and files in one call.')
+            '">>>>>>> REPLACE"; several blocks and files in one call. A design change and '
+            'the sections it adds go in the same call: "== fix.txt", "<<<<<<< SEARCH", '
+            '"=======", the "== <section>" lines and their code, ">>>>>>> REPLACE".')
 
 # What to do when a step fails. Naming the step is the whole point of a chain:
 # a failure that does not say where it happened costs more than the requests saved.
@@ -257,6 +259,12 @@ def parse_edits(text):
         if state is None:
             named = EDIT_FILE.match(line)
             if named:
+                if target == fill_markers.FIX_FILE and not any(
+                        edit[0] == target for edit in edits):
+                    fail('--edit line {}: "{}" follows "== {}" outside a block. Its '
+                         'sections go inside one with no search lines: "<<<<<<< SEARCH", '
+                         '"=======", the "== <section>" lines and their code, '
+                         '">>>>>>> REPLACE"'.format(number, line.strip()[:60], target))
                 target = named.group(1)
             elif EDIT_OPEN.match(line):
                 if target is None:
@@ -299,7 +307,7 @@ def edit_refusal(root, target, path, generated_dirs):
         inside = False
     if not inside:
         return 'the file is outside the project root {}'.format(root)
-    if not os.path.isfile(path):
+    if not os.path.isfile(path) and rel != fill_markers.FIX_FILE:
         return 'no such file. --write writes a whole file'
     if rel == 'worksheet.txt':
         return 'the generator rewrites it on every generation: change design.json or bodies.txt'
@@ -361,8 +369,10 @@ def replace_once(text, old, new):
                           stripped[best][:80]))
 
 
-def apply_edits(root, text, generated_dirs):
-    """Applies every --edit block, or refuses them all and writes nothing."""
+def apply_edits(root, text, generated_dirs, appendable=None):
+    """Applies every --edit block, or refuses them all and writes nothing. A block with
+    no search lines adds its lines to the end of a file in appendable."""
+    appendable = (fill_markers.FIX_FILE, 'bodies.txt') if appendable is None else appendable
     edits = parse_edits(text)
     files, order, refused, notes = {}, [], [], []
     for target, start, old, new in edits:
@@ -374,12 +384,19 @@ def apply_edits(root, text, generated_dirs):
                 refused.append('block of line {}, {}: {}'.format(start, target, why))
                 files[path] = None
                 continue
-            with open(path, encoding='utf-8', newline='') as handle:
-                raw = handle.read()
+            raw = ''
+            if os.path.isfile(path):
+                with open(path, encoding='utf-8', newline='') as handle:
+                    raw = handle.read()
             files[path] = [raw.replace('\r\n', '\n'), '\r\n' in raw, 0, name]
             order.append(path)
         entry = files[path]
         if entry is None:
+            continue
+        if not any(line.strip() for line in old) and name in appendable:
+            body = entry[0] if not entry[0] or entry[0].endswith('\n') else entry[0] + '\n'
+            entry[0] = body + '\n'.join(new) + '\n'
+            entry[2] += 1
             continue
         result, why = replace_once(entry[0], old, new)
         if result is None:
@@ -968,7 +985,8 @@ def main():
         text = '' if sys.stdin is None or sys.stdin.isatty() else sys.stdin.read()
         made = [(args.outdir.replace(os.sep, '/'), 'design.json')] \
             if args.spec or read_manifest(root) else []
-        apply_edits(root, text, made + [(args.build.replace(os.sep, '/'), 'the build')])
+        apply_edits(root, text, made + [(args.build.replace(os.sep, '/'), 'the build')],
+                    (fill_markers.FIX_FILE, args.bodies.replace(os.sep, '/')))
     for target in args.write:
         write_input(root, target)
     mode = mode_of(root, args.mode)
