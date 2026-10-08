@@ -4497,7 +4497,8 @@ def check_design_request(report):
 
 # The scenario rules, each where it is used: (where, phrase).
 STEP_RULES_AT_USE = (
-    ('the template steps note', 'not one per message'),
+    ('the template steps note', 'not one per arrival'),
+    ('the template steps note', 'is several steps, and the last of them prints it'),
     ('the template steps note', 'awaits what says it finished'),
     ('the template steps note', 'two providers\' in no order'),
     ('the template steps note', 'role: a provider role this program uses'),
@@ -4506,7 +4507,7 @@ STEP_RULES_AT_USE = (
 )
 
 # The runbook sentences those replace, which it no longer states.
-STEP_RULES_MOVED = ('not one per message', '`await`s the update that says it finished',
+STEP_RULES_MOVED = ('not one per message', 'not one per arrival', '`await`s the update that says it finished',
                     'Every acceptance item goes in')
 
 
