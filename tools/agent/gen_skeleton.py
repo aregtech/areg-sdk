@@ -734,6 +734,24 @@ QUIT_NOTE = ['quit_with(code) ends this program with that exit code, and is_quit
 BASE_API_NAMES = ('as_string', 'is_empty', 'clear', 'length', 'find_first',
                   'is_valid_position', 'compare', 'format', 'to_int32', 'from_int32')
 
+# The container spellings, printed under BASE_API when a contract below names a container.
+BASE_API_CONTAINERS = [
+    '',
+    '  The containers the types below name, l one of them:',
+    '  l.size(), l.is_empty()       uint32_t, bool',
+    '  l[i], l.clear()              the element at index i (a map: the value at key i); empties it',
+    '  l.add(v)                     appends to an areg::ArrayList; l.push_last(v) to a LinkedList;',
+    '                               a map takes l[key] = v',
+    '  l.contains(v), l.remove_at(i)  bool; removes index i of an ArrayList (a map: key i)',
+    '  l.data()                     the std container it wraps, const: std::vector for an ArrayList.',
+    '                               l has no begin()/end(); a range-for goes over l.data()',
+    '  Anything else: api_help.py <the class its type line names> --class.',
+]
+
+# The names of BASE_API_CONTAINERS, held to the page as BASE_API_NAMES is.
+BASE_API_CONTAINER_NAMES = ('size', 'is_empty', 'clear', 'add', 'push_last', 'contains',
+                            'remove_at', 'data')
+
 
 # The generated functions whose behaviour no name gives away. A worksheet lists
 # mPace, cStallTicks, mStep and complete() as taken, and a body that has to know when
@@ -842,7 +860,10 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
             for line in body:
                 lines.append(('#|   ' + line).rstrip())
             lines.append('#|')
-    for line in BASE_API:
+    specs = [spec for spec, _ in contracts or ((iface, document), (machine, machine_doc))
+             if spec is not None]
+    containers = any(getattr(spec, 'containers', None) for spec in specs)
+    for line in BASE_API + (BASE_API_CONTAINERS if containers else []):
         lines.append(('#| ' + line.format(tools=TOOLS_DIR)).rstrip())
     lines.append('#|')
     if any(file_name.endswith('main.cpp') and 'void quit_with(int code)' in text
@@ -1027,6 +1048,32 @@ def members_of(declared, space='', local=()):
     return members
 
 
+# The areg class each document container kind is generated as, from tools/schema/datatype.xml.
+CONTAINERS = {'Array': 'areg::ArrayList', 'LinkedList': 'areg::LinkedList',
+              'HashMap': 'areg::HashMap', 'Map': 'areg::OrderedMap',
+              'Pair': 'areg::KeyValuePair'}
+
+
+def container_of(declared, space='', local=()):
+    """The C++ spelling of one container declaration, or '' for a kind not in CONTAINERS."""
+    kind = (declared.findtext('Container') or '').strip()
+    if kind not in CONTAINERS:
+        return ''
+    args = []
+    for tag in ('BaseTypeKey', 'BaseTypeValue'):
+        name = (declared.findtext(tag) or '').strip()
+        if not name:
+            continue
+        if name in SCALARS:
+            name = SCALARS[name]
+        elif name in CLASSES:
+            name = CLASSES[name]
+        elif space and name in local:
+            name = '{}::{}'.format(space, name)
+        args.append(name)
+    return '{}<{}>'.format(CONTAINERS[kind], ', '.join(args))
+
+
 class Interface:
     """The parts of a .siml document the components have to match."""
 
@@ -1056,6 +1103,10 @@ class Interface:
         self.enum_fields = {}
         # (name, type) of each field of every structure in reach, by every spelling.
         self.struct_fields = {}
+        # The C++ spelling of every container in reach, by every spelling of its type.
+        self.containers = {}
+        local = set(declared.get('Name') for declared in
+                    root.findall('./DataTypeList/DataType'))
         for declared in root.findall('./DataTypeList/DataType'):
             kind = (declared.get('Type') or '').lower()
             type_name = declared.get('Name')
@@ -1068,6 +1119,8 @@ class Interface:
                 self.enum_fields[type_name] = fields_of(declared)
             elif kind == 'structure':
                 self.struct_fields[type_name] = members_of(declared)
+            elif kind == 'container':
+                self.containers[type_name] = container_of(declared, self.name, local)
 
         self.constants = []
         for constant in root.findall('./ConstantList/Constant'):
@@ -1196,6 +1249,8 @@ class Interface:
                     self.enum_fields[spelling] = fields_of(declared)
                 elif kind == 'structure':
                     self.struct_fields[spelling] = members_of(declared, space, local)
+                elif kind == 'container':
+                    self.containers[spelling] = container_of(declared, space, local)
 
     def cpp_type(self, type_name):
         """The C++ spelling of a document type, and how it is passed.
@@ -1811,18 +1866,20 @@ def type_lines(iface):
     """
     out = []
     for path, space, type_name, kind in iface.imported_types:
-        fields = iface.struct_fields.get('{}::{}'.format(space, type_name) if space
-                                         else type_name, [])
-        out.append(type_line(space, type_name, kind, ' (from {})'.format(path), fields))
+        spelling = '{}::{}'.format(space, type_name) if space else type_name
+        out.append(type_line(space, type_name, kind, ' (from {})'.format(path),
+                             iface.struct_fields.get(spelling, []),
+                             iface.containers.get(spelling, '')))
     for type_name, kind in iface.types:
         out.append(type_line(iface.name, type_name, kind, '',
-                             iface.struct_fields.get(type_name, [])))
+                             iface.struct_fields.get(type_name, []),
+                             iface.containers.get(type_name, '')))
     for name, kind in iface.constants:
         out.append('  constant {}::{} of type {}'.format(iface.name, name, kind))
     return out
 
 
-def type_line(space, type_name, kind, origin, fields=()):
+def type_line(space, type_name, kind, origin, fields=(), container=''):
     """One declared type: its C++ spelling, its fields, and what the generator gives it."""
     scope = '{}::'.format(space) if space else ''
     full = scope + type_name
@@ -1835,6 +1892,8 @@ def type_line(space, type_name, kind, origin, fields=()):
             full, named or 'none', origin)
     if kind == 'imported':
         return '  {} names the type your own header declares{}'.format(full, origin)
+    if container:
+        return '  {} is {}{}'.format(full, container, origin)
     return '  {} is an alias to an areg container{}'.format(full, origin)
 
 
@@ -1867,6 +1926,10 @@ STARTUP_HINT = ('what this provider starts before its service is announced, comT
 STARTUP_HINT_WORKERS = ('what this provider starts before its service is announced, comThread '
                         'its thread, or one // line; its workers start and stop on their own')
 SHUTDOWN_HINT = 'what it stops before the service stops, or one // line'
+# Added to both hints when the provider owns a machine.
+STARTUP_HINT_MACHINE = ('; the generated lines after this body call mFsm.init_fsm(&comThread), '
+                        'and a second call asserts')
+SHUTDOWN_HINT_MACHINE = '; the generated lines after this body call mFsm.release_fsm()'
 INCLUDES_HINT = 'the headers of your own files this provider uses, or one // line'
 
 
@@ -1926,7 +1989,8 @@ def provider_class(iface, cls, machine=None, timers=(), workers=()):
     started = [timer for timer in timers if timer['autostart']]
     lines += ['    void startup_component(areg::ComponentThread & comThread) final',
               '    {',
-              marker('startup', STARTUP_HINT_WORKERS if workers else STARTUP_HINT),
+              marker('startup', (STARTUP_HINT_WORKERS if workers else STARTUP_HINT)
+                     + (STARTUP_HINT_MACHINE if machine else '')),
               '        areg::Component::startup_component(comThread);']
     if machine:
         lines.append('        mFsm.init_fsm(&comThread);')
@@ -1935,7 +1999,7 @@ def provider_class(iface, cls, machine=None, timers=(), workers=()):
               '',
               '    void shutdown_component(areg::ComponentThread & comThread) final',
               '    {',
-              marker('shutdown', SHUTDOWN_HINT)]
+              marker('shutdown', SHUTDOWN_HINT + (SHUTDOWN_HINT_MACHINE if machine else ''))]
     lines += ['        {}.stop_timer();'.format(timer['member']) for timer in timers]
     for worker in workers:
         if any(event['to'] == 'worker' for event in worker['events']):

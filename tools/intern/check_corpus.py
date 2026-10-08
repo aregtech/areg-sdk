@@ -2810,6 +2810,7 @@ def run():
     check_cause_trail(report)
     check_worker_entry_name(report)
     check_worker_markers(report)
+    check_machine_lifecycle(report)
     check_worker_declared(report)
     check_edit_blocks(report)
     check_type_order(report)
@@ -6614,6 +6615,35 @@ def check_worker_markers(report):
               'startup hint sends a provider\'s worker to "workers" unless it has one')
 
 
+def check_machine_lifecycle(report):
+    """A machine provider's startup and shutdown sections say that the generated lines
+    after them call mFsm.init_fsm and mFsm.release_fsm, and those lines are generated."""
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_skeleton
+        import inspect
+        source = inspect.getsource(gen_skeleton.provider_class)
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('machine-lifecycle', 'gen_skeleton.py does not import: {}'.format(failure))
+        return
+    pairs = ((getattr(gen_skeleton, 'STARTUP_HINT_MACHINE', ''), 'mFsm.init_fsm(&comThread);'),
+             (getattr(gen_skeleton, 'SHUTDOWN_HINT_MACHINE', ''), 'mFsm.release_fsm();'))
+    for hint, call in pairs:
+        if call.rstrip(';') not in hint or call not in source:
+            report.fail('machine-lifecycle', 'the startup or shutdown hint of a machine '
+                        'provider no longer names "{}" that the generated code after it '
+                        'calls; a body that repeats init_fsm asserts in a Debug build'
+                        .format(call))
+            return
+    if 'STARTUP_HINT_MACHINE if machine' not in source or \
+            'SHUTDOWN_HINT_MACHINE if machine' not in source:
+        report.fail('machine-lifecycle', 'provider_class no longer adds the machine '
+                    'lifecycle to the startup and shutdown hints')
+        return
+    report.ok('machine-lifecycle', 'a machine provider\'s startup and shutdown sections '
+              'name the init_fsm and release_fsm calls generated after them')
+
+
 def check_worker_declared(report):
     """A worker declared in design.json is generated end to end: its class with the timer,
     the events and their sections, the provider's wiring, the model line and the CMake
@@ -7803,7 +7833,8 @@ def check_base_api_parity(report):
                     'gen_skeleton.py does not import: {}'.format(failure))
         return
 
-    block = ' '.join(gen_skeleton.BASE_API)
+    block = ' '.join(gen_skeleton.BASE_API + gen_skeleton.BASE_API_CONTAINERS)
+    names = gen_skeleton.BASE_API_NAMES + gen_skeleton.BASE_API_CONTAINER_NAMES
     if 'floor' not in block or 'not' not in block or 'api_help.py' not in block:
         report.fail('base-api-parity',
                     'the worksheet base-API block does not say it is a floor and not a '
@@ -7825,23 +7856,23 @@ def check_base_api_parity(report):
         return
 
     # Every call of the block is written on its receiver, as the page spells it.
-    for line in gen_skeleton.BASE_API:
+    for line in gen_skeleton.BASE_API + gen_skeleton.BASE_API_CONTAINERS:
         called = line.strip().split('(')[0]
-        if called in gen_skeleton.BASE_API_NAMES:
+        if called in names:
             report.fail('base-api-parity',
                         'the worksheet lists "{}" with no receiver, so it reads as a free '
                         'function in areg::. Write it as "s.{}(...)", the member call it '
                         'is'.format(called, called))
             return
 
-    for name in gen_skeleton.BASE_API_NAMES:
+    for name in names:
         if name not in declared:
             report.fail('base-api-parity',
                         'the worksheet offers "{}", which the framework does not declare '
                         '(members.json is generated from the headers). A body written '
                         'from it does not compile'.format(name))
             return
-        if name not in page:
+        if not re.search(r'\b{}\('.format(name), page):
             report.fail('base-api-parity',
                         'the worksheet offers "{}" and 40-base-api.md does not carry it. '
                         'The two copies have drifted'.format(name))
@@ -7854,7 +7885,7 @@ def check_base_api_parity(report):
     report.ok('base-api-parity',
               'the worksheet base-API block names {} call(s), all of them declared by the '
               'framework and all of them on 40-base-api.md, and says it is a floor'
-              .format(len(gen_skeleton.BASE_API_NAMES)))
+              .format(len(names)))
 
 
 def check_build_routes_next(report):

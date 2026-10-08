@@ -105,7 +105,8 @@ Every `from_*` returns `String &`, so they chain.
 `areg::HashMap<KEY, VALUE>` and `areg::LinkedList<VALUE>`.
 
 > **These containers do not expose `begin()` and `end()`.**
-> A range-`for` over one does not compile. Iterate by index.
+> A range-`for` over one does not compile; iterate by index, or over `list.data()`, the
+> wrapped `std::vector`, `std::list` or `std::unordered_map` (`ArrayList.hpp:194`).
 
 ```cpp
 for (uint32_t i = 0; i < list.size(); ++ i)
@@ -123,7 +124,9 @@ for (uint32_t i = 0; i < list.size(); ++ i)
 `HashMap` and `LinkedList` also index by position (`MAPPOS`, `LISTPOS`) for cursor
 style traversal. Index access is enough for ordinary code.
 
-Common to all three: `add(...)`, `clear()`, `release()`, `find(...)`.
+Add: `add(v)` (`ArrayList.hpp:258`), `push_last(v)` (`LinkedList.hpp:518`), `map[key] = v`.
+Remove: `remove_at(index)` (`ArrayList.hpp:387`), `remove_at(key)` (`HashMap.hpp:367`).
+All three: `clear()`, `release()`, `find(...)`.
 
 A container in working code, built and run by CI: `recipes/09-shared-types/`, where the
 collector keeps every reading it accepted and prints them by index.
