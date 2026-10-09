@@ -378,7 +378,9 @@ WORKSHEET_HEAD = """\
 #| an existing function body, so an out-of-line definition there does not compile.
 #|
 #| A body prints with "std::cout << ... << std::endl;". Every .cpp of this project
-#| includes <iostream> already, so a section that prints adds no include.
+#| includes <iostream> already, so a section that prints adds no include. Every
+#| header has <vector>, <map>, <unordered_map>, <deque> and <list> from areg's
+#| own headers, so a "*_state" keeping one adds no include either.
 """
 
 def worksheet_sections(produced, out):

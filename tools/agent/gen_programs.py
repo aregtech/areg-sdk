@@ -944,6 +944,7 @@ def write_scenarios(path, programs, components, project_name, specs, deployments
                                          **({'lead': True, 'exit': 0} if p.get('lead') else {}))
                                     for p in procs]})
     reconnect = gs.driver_of(specs, driver.iface)['reconnect_seconds'] if driver else 0
+    killed = None
     if driver and reconnect:
         lost = next((c.program for c in components if c.kind == 'provides'
                      and driver.role in c.roles), None)
@@ -959,6 +960,7 @@ def write_scenarios(path, programs, components, project_name, specs, deployments
                 spec.update({'lead': True, 'exit': 1})
             lost_procs.append(spec)
         if lost is not None and lost is not lead:
+            killed = lost['name']
             scenarios.append({'name': gs.PEER_LOST_SCENARIO,
                               'timeout': scenarios[0]['timeout'] + reconnect,
                               'router': True,
@@ -976,9 +978,12 @@ def write_scenarios(path, programs, components, project_name, specs, deployments
     print('  {} program(s), router on: "smoke" runs them all and {} leads it; each'
           .format(len(order), lead['name']))
     print('  "expect" hole is a section of the worksheet. {} quit scenario(s) and {}'
-          .format(len(servers), 'a peer-lost scenario' if driver and reconnect
-                  else 'no peer-lost scenario'))
+          .format(len(servers), 'a peer-lost scenario' if killed else 'no peer-lost scenario'))
     print('  were added, and need nothing from you.')
+    if killed:
+        print('  peer-lost kills {} and expects only {} to exit 1; its "stop" "proc" names'
+              .format(killed, lead['name']))
+        print('  any other program, and "exit": 1 on a process expects its exit too.')
 
 
 def wiring(programs, components, deployments=()):

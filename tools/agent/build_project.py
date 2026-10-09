@@ -21,6 +21,7 @@
 # Exit code 0 when every step passed, 1 otherwise.
 # ===========================================================================
 import argparse
+import difflib
 import glob
 import hashlib
 import json
@@ -50,7 +51,8 @@ def passed_lines(build, only=None):
     """The lines a passing --run ends on; the last one names where the output is kept."""
     ran = 'scenario "{}"'.format(only) if only else 'the scenarios'
     return ['Every step passed, {} included. Report from the lines printed above;'.format(ran),
-            'each process\'s whole output is in {}: grep there, never run again.'
+            'each process\'s whole output is {}<scenario>/<n>-<process>.log, n its place '
+            'in "procs" from 0: grep there, never run again.'
             .format(KEPT_OUTPUT.format(build=build.replace(os.sep, '/')))]
 
 
@@ -477,6 +479,8 @@ NOTE_LINE = re.compile(r'^(\s*)(?:note  |table )(\S+)')
 CHANGE_NOTE = re.compile(r'is only ever set from its own value|'
                          r'Each of these triggers forwards a request')
 CHANGES_ASKED = []
+# What a rewritten worksheet changed against the one it replaced.
+WORKSHEET_CHANGES = []
 
 
 def collapse_notes(lines, record):
@@ -956,17 +960,60 @@ def closing_lines(root, bodies, specs):
     except OSError:
         pass
     first = ['Every step passed. {} marker(s) are open, so the application does nothing '
-             'yet.'.format(still_open)]
+             'yet.'.format(still_open)] + WORKSHEET_CHANGES
     if CHANGES_ASKED:
         first.append('{} note(s) above ask for a change to design.json. If you take one, '
                      'change design.json and run this command again before reading {}: it '
                      'is rewritten then.'.format(len(CHANGES_ASKED), gen_skeleton.WORKSHEET))
     return first + [
-            '{}: read {}{}, then write every section it lists into {}, apply it, '
+            '{}: read {}{}{}, then write every section it lists into {}, apply it, '
             'build and run the scenarios in one call:'
             .format('Otherwise' if CHANGES_ASKED else 'Next', gen_skeleton.WORKSHEET,
-                    length, bodies),
+                    length, ', or only what changed' if WORKSHEET_CHANGES else '',
+                    bodies),
             "{} --write {} --run <<'AREG_EOF'".format(same, bodies)]
+
+
+# A count in the worksheet notes that moves with every marker added or removed.
+WORKSHEET_COUNT = re.compile(r'\d+ requests instead')
+
+
+def worksheet_sections(path):
+    """Each section of a worksheet by name as (first line, lines), the notes before the
+    first section under '', or None without a worksheet."""
+    try:
+        with open(path, encoding='utf-8') as handle:
+            lines = handle.read().splitlines()
+    except (IOError, OSError):
+        return None
+    sections, name = {'': [1, []]}, ''
+    for number, line in enumerate(lines, 1):
+        if line.startswith('== '):
+            name = line[3:].strip()
+            sections[name] = [number, []]
+        elif not line.startswith('#| ---- '):
+            sections[name][1].append(WORKSHEET_COUNT.sub('', line))
+    return sections
+
+
+def worksheet_changes(before, after):
+    """The line saying what a rewritten worksheet changed, or none."""
+    if before is None or after is None:
+        return []
+    changed = []
+    matcher = difflib.SequenceMatcher(None, before[''][1], after[''][1], autojunk=False)
+    for tag, _, _, first, last in matcher.get_opcodes():
+        if tag in ('replace', 'insert'):
+            changed.append('line {}'.format(first + 1) if last == first + 1
+                           else 'lines {}-{}'.format(first + 1, last))
+    changed += ['{} (line {})'.format(name, after[name][0]) for name in after
+                if name and after[name][1] != (before.get(name) or [0, None])[1]]
+    if not changed:
+        return ['{} is rewritten and reads as before: a reading of it before this change '
+                'still holds.'.format(gen_skeleton.WORKSHEET)]
+    return ['{} is rewritten. Against the one before, only these are new or changed: {}. '
+            'A reading of it before this change needs only those.'
+            .format(gen_skeleton.WORKSHEET, ', '.join(changed))]
 
 
 def worksheet_has_code(path):
@@ -1178,8 +1225,11 @@ def main():
             command += ['--machine', machine]
         for spec in specs:
             command += ['--spec', spec]
+        before = worksheet_sections(os.path.join(root, gen_skeleton.WORKSHEET))
         if not run('application', command, root, kept=200):
             return 1
+        WORKSHEET_CHANGES[:] = worksheet_changes(
+            before, worksheet_sections(os.path.join(root, gen_skeleton.WORKSHEET)))
         if specs:
             os.makedirs(os.path.join(root, args.build), exist_ok=True)
             with open(os.path.join(root, args.build, APP_STAMP), 'w',
