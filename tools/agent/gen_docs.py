@@ -1386,6 +1386,10 @@ def load_spec(path):
     try:
         with open(path, encoding='utf-8') as handle:
             raw = json.load(handle, object_pairs_hook=unique)
+    except json.JSONDecodeError as problem:
+        before = problem.doc[:problem.pos].rstrip('\r\n').split('\n')[-1][-60:]
+        after = problem.doc[problem.pos:problem.pos + 20].split('\n')[0]
+        fail('cannot read {}: {}, in: {}{}'.format(path, problem, before, after))
     except (OSError, ValueError) as problem:
         fail('cannot read {}: {}'.format(path, problem))
     if twice:
@@ -3115,8 +3119,8 @@ TEMPLATE = {
                    "the work (idle, closed, 0) ends the step at once. Await a value only the",
                    "work produces, its response (only after the request), or a broadcast sent",
                    "at the work's end (on every call, several values together). One provider's",
-                   "messages arrive in the order it sent them, the values on subscribing in the",
-                   "order its attributes are declared; two providers' in no order.",
+                   "messages arrive in the order it sent them; on subscribing, the value the first",
+                   "step awaits from it comes after its other values; two providers' in no order.",
                    "role: a provider role this program uses; the step sends to and awaits it",
                    "instead. A step collects the answers of one role: one per role in flight."],
             "name": "", "role": "", "send": "", "args": {}, "await": "", "until": {}, "wait": 0,

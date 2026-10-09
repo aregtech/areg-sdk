@@ -2846,23 +2846,16 @@ SENT_UPDATE = "; one sent before this step's request may arrive first: stay() on
 # Appended to the check of a step with "until": the generated test above it holds the step.
 UNTIL_HELD = '; it runs only on the arrival its "until" names, the earlier ones already stay()'
 
-# Appended to the check of the first step awaiting an update of one provider, formatted
-# with the attributes declared after it and the verb.
-SUBSCRIBE_ORDER = '; on subscribing, {} {} after it, still invalid here: a check reading ' \
-                  'them awaits {}'
-
-
-def subscribed_later(steps, step, name, role):
-    """The attributes whose first value arrives after this one, when this step is the
-    first to await an update of its provider."""
-    first = next(each for each in steps if each['awaits'] and each['awaits'][0] == 'update'
-                 and each.get('role') == role)
-    names = [attr for attr, _ in getattr(step.get('source'), 'attributes', [])]
-    if first is not step or step.get('send') or name not in names:
-        return ''
-    later = names[names.index(name) + 1:]
-    return SUBSCRIBE_ORDER.format(spelt(later), 'arrive' if len(later) > 1 else 'arrives',
-                                  later[-1]) if later else ''
+def subscribe_order(attributes, steps, roles):
+    """The attribute names of one provider in subscription order: declaration order, with
+    the one the first step awaiting an update of these roles names moved last."""
+    names = [attr for attr, _ in attributes]
+    first = next((each['awaits'][1] for each in steps if each['awaits']
+                  and each['awaits'][0] == 'update' and each.get('role') in roles), None)
+    if first in names:
+        names.remove(first)
+        names.append(first)
+    return names
 
 
 def step_said(step):
@@ -3037,8 +3030,7 @@ def step_dispatch(steps, kind, name, indent, latch=None, role=None):
         lines += [marker('step_' + step['name'], STEP_CHECK[kind] + (
                       UNTIL_HELD if step.get('until') else
                       SENT_UPDATE if kind == 'update' and step.get('send') else '') + (
-                      ROLE_ORDER.format(role) if role else '') + (
-                      subscribed_later(steps, step, name, role) if kind == 'update' else ''),
+                      ROLE_ORDER.format(role) if role else ''),
                   indent + 8),
                   pad + '    }',
                   pad + '    break;']
@@ -3493,7 +3485,7 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
     if iface.attributes or iface.broadcasts:
         lines.append('                // Subscriptions are made here, and again after '
                      'every reconnection.')
-        for attr_name, _ in iface.attributes:
+        for attr_name in subscribe_order(iface.attributes, steps, (None,)):
             lines.append('                {}(true);'.format(
                 iface.spell('attribute', attr_name, 'notify')))
         for name, _ in iface.broadcasts:

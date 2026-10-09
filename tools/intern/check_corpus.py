@@ -8846,7 +8846,7 @@ def check_role_steps(report):
 def check_used_clients(report):
     """A client of a used role ends its program after "gone" whatever the body says, each
     section carries its own notes once, a program with no steps is told nothing of steps,
-    and the first step awaiting one of several attributes names those that arrive later."""
+    and the attribute the first step awaits is subscribed and replayed after the others."""
     tools = os.path.join(ROOT, 'tools', 'agent')
     example = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
                               '--example', 'programs'], stdout=subprocess.PIPE,
@@ -8889,6 +8889,11 @@ def check_used_clients(report):
         for path in glob.glob(os.path.join(holder, 'src', 'desk', '*Client.cpp')):
             with open(path, encoding='utf-8') as handle:
                 client += handle.read()
+        driving = ''
+        for path in glob.glob(os.path.join(holder, 'src', '*', '*Client.*')):
+            with open(path, encoding='utf-8') as handle:
+                text = handle.read()
+            driving += text if 'deliver_early' in text else ''
     finally:
         shutil.rmtree(holder, ignore_errors=True)
     if not re.search(r'TODO\(you\) gone:.*\n.*placeholder\(you\)\n\s*quit_with\(1\);\n',
@@ -8910,15 +8915,17 @@ def check_used_clients(report):
         report.fail('used-client', 'section {} of the desk, which has no steps, speaks of '
                                    'steps'.format(desk[0]))
         return
-    known = next((part for part in sections if part.startswith('step_known')), '')
-    if 'on subscribing, Nuts arrives after it, still invalid here: a check reading ' \
-            'them awaits Nuts' not in known:
-        report.fail('used-client', 'the first step awaiting Bolts does not say Nuts '
-                                   'arrives after it on subscribing, nor what to await')
+    order = re.findall(r'\b(?:notify_on_(bolts|nuts)_update\(true\)|'
+                       r'on_(bolts|nuts)_update\(lateValue)', driving)
+    order = [first or second for first, second in order]
+    if order != ['nuts', 'bolts'] * 2:
+        report.fail('used-client', 'the client of the first step awaiting Bolts subscribes '
+                                   'or replays in the order {}, where Bolts comes after '
+                                   'Nuts'.format(order))
         return
     report.ok('used-client', 'a used client ends the program after "gone", notes appear '
                              'once, a program with no steps hears nothing of them, and the '
-                             'subscribe order is named where it matters')
+                             'awaited value is subscribed and replayed last')
 
 
 def check_design_reviewable(report):

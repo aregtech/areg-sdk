@@ -209,7 +209,7 @@ def client_class(owner, iface, roles, cls, reconnect, driving=False, steps=()):
                   '        }',
                   '',
                   '        mEarly = false;']
-        for attr_name, _ in iface.attributes:
+        for attr_name in gs.subscribe_order(iface.attributes, steps, roles):
             lines += ['        {',
                       '            areg::DataState lateState{ areg::DataState::DataIsInvalid };',
                       '            const auto lateValue = {}(lateState);'.format(
@@ -228,7 +228,7 @@ def client_class(owner, iface, roles, cls, reconnect, driving=False, steps=()):
              '            result = true;',
              '            if (areg::is_service_connected(status))',
              '            {']
-    for attr_name, _ in iface.attributes:
+    for attr_name in gs.subscribe_order(iface.attributes, steps, roles):
         lines.append('                {}(true);'.format(
             iface.spell('attribute', attr_name, 'notify')))
     for name, _ in iface.broadcasts:
