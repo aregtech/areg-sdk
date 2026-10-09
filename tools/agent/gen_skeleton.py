@@ -354,6 +354,9 @@ WORKSHEET_HEAD = """\
 #| in every program that uses the service. A name two files share is written
 #| <File>:<name>, as below. A run with new sections still open builds and runs
 #| the scenarios on their placeholders; only the final check names them.
+#| A design change and its sections are one call, --edit in place of --write: a
+#| "== design.json" block, then "== fix.txt", "<<<<<<< SEARCH", "=======", the
+#| sections, ">>>>>>> REPLACE".
 #|
 #| Writing {bodies} and running it is one request. Filling it one section at a
 #| time is {total} requests instead, and a request is billed for the whole

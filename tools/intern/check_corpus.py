@@ -6649,6 +6649,7 @@ POINT_FACTS = (
     ('head', 'in a watcher the same three with watch_ in front'),
     ('head', 'an "expect_" section takes patterns only'),
     ('head', 'only the final check names them'),
+    ('head', 'A design change and its sections are one call, --edit in place of --write'),
     ('enum', "the value's own name as declared"),
     ('state', 'A history substate goes in the states of the composite it resumes'),
     ('history', 'outside the composite names it'),
