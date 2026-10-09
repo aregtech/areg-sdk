@@ -1,8 +1,7 @@
 # Designing the application
 
-The step before any file is written. A wrong split here is not a bug to fix later: the
-documents, the components and the model are all derived from it, so it is rewritten
-rather than corrected.
+The step before any file is written. The documents, the components and the model all
+derive from this split, so a wrong one is rewritten, not corrected.
 
 Answer four questions, in this order. Each has a rule, not a preference.
 
@@ -24,7 +23,7 @@ Two tests that settle most cases:
 
 If both sides call each other, that is **two services**, each with its own provider.
 A service is one-directional by construction: consumers call requests and read
-attributes, providers answer and publish. There is no bidirectional service.
+attributes, providers answer and publish.
 
 ## 2. What goes in the contract?
 
@@ -35,7 +34,7 @@ methods, broadcasts its signals. The three are not interchangeable.
 | Use | When | Costs |
 |---|---|---|
 | **Attribute** | a data member: one value a consumer must know the current state of, as many as the state has | kept by the provider. A subscriber holds a copy it reads at any time, sent the moment it subscribes and again on every `set_` (`Notify="Always"`) or only when it changes (`OnChange`, the default) |
-| **Broadcast** | a signal: several values that mean something only together, at the moment it happened | fire and forget. Heard by whoever is subscribed at that instant; nothing is kept |
+| **Broadcast** | a signal: as many values as the event needs, meaningful only together, at the moment it happened | fire and forget. Heard by whoever is subscribed at that instant; nothing is kept |
 | **Request / Response** | a method call: the caller wants an answer to its own call | the response goes only to the caller, at once or when the work is done (`unblock_current_request()` frees the provider meanwhile) |
 
 Rules that follow from the table:
@@ -43,10 +42,9 @@ Rules that follow from the table:
 - **What separates them is whether the value outlives the moment it was sent**, not
   subscribing: neither reaches a consumer before it subscribes. A later subscriber of
   an attribute is still sent the current value, with an `areg::DataState` saying
-  whether it is valid yet; a broadcast sent before it subscribed is gone.
-- **A broadcast carries as many parameters as the event needs; an attribute is one
-  value.** Where several values are reported together **and** a late subscriber must
-  still learn the latest, publish that one as an attribute beside the broadcast:
+  whether it is valid yet.
+- Where several values are reported together **and** a late subscriber must still
+  learn the latest, publish that one as an attribute beside the broadcast:
   `recipes/03-attributes-and-broadcast/` is that pair.
 - **An attribute says what something is, not that something happened.** A value that
   leaves and returns (idle, busy, idle) looks unchanged; the first one a subscriber
@@ -56,7 +54,7 @@ Rules that follow from the table:
   in no order.
 - A consumer that polls with a request wants an **attribute**. Attributes exist so
   round trips do not.
-- A response goes to one caller. Telling everyone is a **broadcast**.
+- Telling everyone is a **broadcast**, not a response.
 - A request needs a response only when the caller must know the outcome. A request
   with nothing to report is declared without one.
 
@@ -76,7 +74,7 @@ performance one:
 
 - Components that must not delay each other go in different threads.
 - Anything slow -- a file, a socket, a long computation -- gets its own thread, or it
-  stops every component sharing its own.
+  stops every component sharing its thread.
 - Components that only exchange messages may share a thread. Sharing is cheaper.
 
 Start with a thread per component. Merge later, with a reason.
@@ -86,7 +84,7 @@ Start with a thread per component. Merge later, with a reason.
 Ask only when there is a reason to separate: independent lifetimes, isolation of a
 crash, different privileges, or different machines. Otherwise use one process.
 
-It fixes the `Category` in every document it touches:
+Decide the split first: it fixes the `Category` in every document it touches.
 
 | `Category` | Reach | Needs `mtrouter` |
 |---|---|---|
@@ -94,7 +92,7 @@ It fixes the `Category` in every document it touches:
 | `Public` | between processes on one machine | **yes** |
 | `Internet` | between machines | yes |
 
-A `Private` service consumed from another process never connects, unreported. Set `Category` from the process split, and set the process split first.
+A `Private` service consumed from another process never connects, and nothing reports it.
 
 ## Is a state machine needed?
 
@@ -148,7 +146,6 @@ both documents become `Category="Public"` and `mtrouter` has to run.
 | A service with one request and no state | it is a function; delete the service |
 | A component with fifteen requests | several services wearing one name |
 | Two services that always change together | one service |
-| A request whose response nobody reads | it needs no response |
 | A consumer polling an attribute | subscribe instead |
 | A broadcast a consumer must not miss | it is an attribute |
 | An attribute holding values that only mean something together | it is a broadcast |

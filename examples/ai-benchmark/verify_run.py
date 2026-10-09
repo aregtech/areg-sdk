@@ -4,9 +4,9 @@
 #
 # Runs the project an agent built, after the agent has finished, against the
 # requirements every task prompt states. Each probe is generated from the
-# project's own scenarios.json and assumes no framework, except "checked", which
-# reads the step bodies of bodies.txt. The snapshot the agent reads does not contain
-# this file.
+# project's own scenarios.json and assumes no framework. The note "checked" reads
+# the step bodies of bodies.txt and is not scored. The snapshot the agent reads does
+# not contain this file.
 #
 #   python3 examples/ai-benchmark/verify_run.py <run directory>
 #   python3 examples/ai-benchmark/verify_run.py <run directory> --sanitize
@@ -61,6 +61,9 @@ MIN_SECONDS = {
 }
 SANITIZE_FLAGS = '-fsanitize=address,undefined -fno-omit-frame-pointer'
 SANITIZER_MARKS = ('ERROR: AddressSanitizer', 'runtime error:')
+
+# Probes reported with their evidence and left out of the score.
+NOTES = ('checked',)
 
 REQUIREMENTS = {
     'repeat':      'the scenario exits 0, every time it is run',
@@ -802,6 +805,8 @@ def main():
     def report(item):
         progress('')
         state = {True: 'PASS', False: 'FAIL', None: 'SKIP'}[item['passed']]
+        if item['probe'] in NOTES:
+            state = 'NOTE'
         print('   {:5} {:12} {}'.format(state, item['probe'], item['requirement']))
         print('   {:5} {:12} {}'.format('', '', item['evidence']))
         sys.stdout.flush()
@@ -823,8 +828,10 @@ def main():
     if args.sanitize:
         report(probe_sanitize(run_dir, work, scenario, document))
 
-    scored = [item for item in results if item['passed'] is not None]
-    skipped = [item['probe'] for item in results if item['passed'] is None]
+    scored = [item for item in results
+              if item['passed'] is not None and item['probe'] not in NOTES]
+    skipped = [item['probe'] for item in results
+               if item['passed'] is None and item['probe'] not in NOTES]
     passed = sum(1 for item in scored if item['passed'])
     claim = claimed(run_dir)
     print('   agent claims     {} acceptance item(s) passing'.format(claim or 'no count of'))
@@ -837,7 +844,8 @@ def main():
     name = 'verify-sanitize.json' if args.sanitize else 'verify.json'
     with open(os.path.join(run_dir, name), 'w', encoding='utf-8') as handle:
         json.dump({'scenario': scenario.get('name'), 'passed': passed,
-                   'scored': len(scored), 'skipped': skipped, 'claimed': claim,
+                   'scored': len(scored), 'skipped': skipped, 'notes': list(NOTES),
+                   'claimed': claim,
                    'repeat': args.repeat, 'sanitize': args.sanitize,
                    'verified': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
                    'results': results},

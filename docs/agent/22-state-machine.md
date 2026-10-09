@@ -71,8 +71,8 @@ machine that is never initialised accepts no stimulus and runs nothing.
 
 **The division of work.** A request handler converts the call into a stimulus and
 decides nothing. An action performs an effect and asks the machine nothing. Every
-decision lives in the document. An action does not know which trigger ran it, so two
-requests that answer differently each get their own action.
+decision lives in the document. An action does not know which trigger ran it, so each
+request gets its own action, a refusal too: each request has its own response.
 
 ## Writing the document
 
@@ -193,9 +193,7 @@ The `OPENING` state of `gen_docs.py --example` is that shape, whole: its own
 `"initial"`, its substates, a `"kind": "final"` and the `"final_event"` the transition
 out of it carries.
 
-Without `OnFinal` a finished level simply stops and nothing follows. The nested marker
-the tool writes for the nested level is named after the composite, because the top
-level already has a `Start` and the two levels share one enumeration.
+Without `OnFinal` a finished level simply stops and nothing follows.
 
 **Keep the nested `Final` empty.** The self-event runs only after the step that reached
 the `Final` has settled, so an operation on the nested `Final` runs while the machine is
@@ -224,11 +222,10 @@ the project already holds, named by `"path"` from the project root and not repea
            {"name": "RETRYING", "submachine": "Inner", "final_event": "RetryDone"}]
 ```
 
-The build command is the same.
-
 - **Each hosting state runs its own instance**, started at its initial state on entry
-  and stopped on exit. Its attributes keep their value: reset a per-visit count to
-  `lit:0` inside it as visits start.
+  and stopped on exit. Its attributes keep their value between visits: to count per
+  visit, the `entry` of its initial state sends an event, and a transition of that
+  state on it, with no `to`, sets the count to `lit:0`. A host transition cannot.
 - **Its triggers are called on the host**: `mFsm.<trigger>(...)` reaches the active
   instance, `mFsm.<trigger>_<state>(...)` one state's, as the worksheet spells them. A
   host declaring the same trigger keeps only the second form.
@@ -250,7 +247,8 @@ Decide this once, per value, before writing the spec. Who reads it decides:
 
 | Read by | Declared in | Reached as |
 |---|---|---|
-| a guard, a condition or an action of the machine | the `.fsml` `"attributes"` | `mAttrX` inside the machine, `x()` / `set_x()` on it |
+| a guard, a condition or an action of the machine, set by its own `"set"` | the `.fsml` `"attributes"` | `mAttrX` inside the machine, `x()` / `set_x()` on it |
+| a hosted or host condition, set by the host, a request or a hosted action (a job's size, an armed fault, how it ended) | nothing. A provider member | the condition's body |
 | another process | the `.siml` `"attributes"` | pages 30 and 31 |
 | neither: only the component that computes it | nothing. A plain C++ member | itself |
 
@@ -276,8 +274,8 @@ allowed. The guard is an expression tree, not text:
 ```
 
 which generates `const bool isEligible = (mAttrOpened == false);` and takes the
-transition only when it holds. **Transitions that share one trigger are tried in
-document order, and the first whose guard holds is the one taken**; write the
+transition only when it holds. **Transitions that share one trigger are tried
+innermost state first, then in document order, and the first whose guard holds is the one taken**; write the
 guarded ones first and the unguarded fallback last. A refused transition is not an
 error: the trigger returns `false`, as it does for a state with no
 transition at all. Nest with
@@ -317,13 +315,8 @@ taking the same arguments. `build_project.py --spec` writes both.
 - Never raise a stimulus before `init_fsm()`. That asserts as well.
 - Never edit `*FSM.*`, `*ActionHandler.*` or `*Defs.*`. Change the `.fsml`.
 - Never target a `Kind="Start"`, nor a `Kind="History"` from inside its own level.
-- Never give two states one name, however deeply apart they sit. The commonest case is
-  a nested level whose `Kind="Start"` marker is also called `Start`.
-- Never expect `State/@History` to tell a fresh entry from a resume. It is on the state
-  and applies to both; a `Kind="History"` marker is what tells them apart.
-- Never give an `Internal` transition a `To`, and never leave one off an `External`.
 - Never leave a trigger that carries a request without a transition in a state the
   machine can be in. The stimulus is dropped, no action answers the caller, and the
   consumer waits until its deadline for a response that was never sent. A state that
-  should turn the request down still needs its own transition, calling the action that
-  sends the refusal.
+  should turn the request down still needs its own transition, calling that request's
+  own refusal action.

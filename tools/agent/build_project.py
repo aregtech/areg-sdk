@@ -408,6 +408,8 @@ def apply_edits(root, text, generated_dirs, appendable=None):
             notes.append('block of line {}{}'.format(start, why))
     if refused:
         fail('--edit applied nothing, every file is as it was:\n  ' + '\n  '.join(refused))
+    scenarios = os.path.join(root, 'scenarios.json')
+    held = held_lists(scenarios) if scenarios in order else {}
     for path in order:
         content, crlf, count, name = files[path]
         with open(path, 'w', encoding='utf-8', newline='\r\n' if crlf else '\n') as handle:
@@ -415,6 +417,44 @@ def apply_edits(root, text, generated_dirs, appendable=None):
         print('== edit: {}, {} block(s)'.format(name, count))
     for note in notes:
         print('   ' + note)
+    if held:
+        carry_lists(root, scenarios, held, appendable[-1])
+
+
+def held_lists(scenarios):
+    """Every expect list and stop line of a scenario file, by the section that fills it."""
+    places, _ = fill_markers.expectations_of(scenarios)
+    lists = {}
+    for name, place in places.items():
+        try:
+            lists[name] = fill_markers.held_expectations(scenarios, place)
+        except (KeyError, IndexError, TypeError, ValueError):
+            continue
+    return lists
+
+
+def carry_lists(root, scenarios, before, bodies):
+    """Writes each list an edit of the scenario file changed into its section of bodies,
+    which the filler writes back into the scenario file."""
+    path = os.path.join(root, bodies)
+    if not os.path.isfile(path):
+        return
+    with open(path, encoding='utf-8', newline='') as handle:
+        raw = handle.read()
+    lines = raw.replace('\r\n', '\n').split('\n')
+    owned = {name for name, _ in fill_markers.blocks_of(lines)[1:]}
+    after = held_lists(scenarios)
+    fixes = []
+    for name in sorted(after):
+        if name in owned and name in before and after[name] != before[name]:
+            fixes += ['== ' + name] + [str(entry) for entry in after[name]] + ['']
+    if not fixes:
+        return
+    folded, replaced, _ = fill_markers.fold(lines, fixes)
+    with open(path, 'w', encoding='utf-8', newline='\r\n' if '\r\n' in raw else '\n') as handle:
+        handle.write('\n'.join(folded))
+    print('   scenarios.json: {} is filled from {}, so the edit is written there too'
+          .format(', '.join(replaced), bodies))
 
 
 def show(lines, tail):
@@ -1026,7 +1066,9 @@ def main():
     if len(args.write) > 1:
         fail('--write takes one file per call: standard input holds one file')
     if args.edit and args.write:
-        fail('--edit and --write both read standard input: pass one of them')
+        fail('--edit and --write both read standard input: pass --edit alone, with the '
+             'sections inside it as a "== fix.txt" block: "<<<<<<< SEARCH", "=======", '
+             'the "== <section>" lines and their code, ">>>>>>> REPLACE"')
     if args.edit:
         text = '' if sys.stdin is None or sys.stdin.isatty() else sys.stdin.read()
         made = [(args.outdir.replace(os.sep, '/'), 'design.json')] \

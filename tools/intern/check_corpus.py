@@ -2810,14 +2810,16 @@ def run():
     check_answer_until(report)
     check_until_names(report)
     check_stall_kept(report)
+    check_steps_plain(report)
     check_cause_trail(report)
     check_worker_entry_name(report)
     check_worker_markers(report)
     check_machine_lifecycle(report)
+    check_action_answers(report)
     check_worker_declared(report)
     check_edit_blocks(report)
     check_type_order(report)
-    check_step_proof(report)
+    check_held_until(report)
     check_shape_facts(report)
     check_point_facts(report)
     check_programs_gathered(report)
@@ -2874,9 +2876,11 @@ def run():
     check_example_programs(report)
     check_driver_client_early(report)
     check_role_steps(report)
+    check_used_clients(report)
     check_removed_marker_body(report)
     check_answer_file(report)
     check_peer_lost_scenario(report)
+    check_peer_hold_midrun(report)
     check_stepped_evidence(report)
     check_shared_request_action(report)
     check_provider_timers(report)
@@ -4720,20 +4724,21 @@ def check_attribute_first_value(report):
 def check_example_one_call(report):
     """The runbook names one gen_docs.py --example call that prints two designs."""
     runbook = ' '.join(read('docs', 'agent', '01-runbook.md').split())
-    if '`--example service programs`' not in runbook:
-        report.fail('example-one-call', '01-runbook.md section 3 does not name '
-                    '"--example service programs", so a multi-program design asks twice')
+    if not all(part in runbook for part in ('`gen_docs.py --example service`, adding `programs`',
+                                            'and `machine` when a machine reuses')):
+        report.fail('example-one-call', '01-runbook.md section 3 does not name "--example '
+                    'service" with "programs" and "machine" added, so a design asks twice')
         return
     done = subprocess.run([sys.executable, os.path.join(ROOT, 'tools', 'agent', 'gen_docs.py'),
-                           '--example', 'service', 'programs'], capture_output=True, text=True,
-                          stdin=subprocess.DEVNULL)
+                           '--example', 'service', 'programs', 'machine'], capture_output=True,
+                          text=True, stdin=subprocess.DEVNULL)
     heads = [line for line in done.stdout.splitlines() if line.startswith('== gen_docs.py')]
-    if done.returncode != 0 or len(heads) != 2:
-        report.fail('example-one-call', 'gen_docs.py --example service programs does not '
-                    'print both designs, each under its own head line')
+    if done.returncode != 0 or len(heads) != 3:
+        report.fail('example-one-call', 'gen_docs.py --example service programs machine does '
+                    'not print the three designs, each under its own head line')
         return
-    report.ok('example-one-call', 'one --example call prints the service and the programs '
-              'design, and the runbook names it')
+    report.ok('example-one-call', 'one --example call prints the service, programs and machine '
+              'designs, and the runbook names it')
 
 
 # Nouns only a benchmark task uses. An example spelled with them hands one task its answer.
@@ -6176,6 +6181,17 @@ def check_stall_kept(report):
                             'that kept the step')
 
 
+def check_steps_plain(report):
+    """The runbook says steps are plain consumer code, not a machine."""
+    design = runbook_section(4)
+    if 'plain consumer code' not in design or 'no `.fsml`' not in design \
+            or 'step machine' in design:
+        report.fail('steps-plain', '01-runbook.md section 4 does not say steps are plain '
+                                   'consumer code with no .fsml, or calls them a machine')
+        return
+    report.ok('steps-plain', 'steps are plain consumer code')
+
+
 def check_until_names(report):
     """An "until" key in another letter case, a field of a structure parameter and
     "parameter.field" are each compared; a key that names nothing is refused."""
@@ -6686,29 +6702,24 @@ def check_shape_facts(report):
                              'service and the step shapes for finished work and many answers')
 
 
-def check_step_proof(report):
-    """Every step marker says what a line it prints shows, and the programs example
-    holds its step on another provider's attribute until the value after the order."""
+def check_held_until(report):
+    """The programs example holds its step on another provider's attribute until the
+    value after the order."""
     sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
     try:
         import gen_docs
-        import gen_skeleton
     except Exception as failure:                    # noqa: BLE001 - reported, not raised
-        report.fail('step-proof', 'the generators do not import: {}'.format(failure))
-        return
-    if 'proves only the values it compared' not in getattr(gen_skeleton, 'STEP_PROOF', ''):
-        report.fail('step-proof', 'a step marker no longer says that a line it prints proves '
-                                  'only the values its check compared')
+        report.fail('held-until', 'the generators do not import: {}'.format(failure))
         return
     held = [step for step in gen_docs.EXAMPLE_PROGRAMS['interfaces'][1]['steps']
             if step.get('role') and step.get('await')]
     if not held or not all(step.get('until') for step in held):
-        report.fail('step-proof', 'the programs example awaits another provider\'s attribute '
+        report.fail('held-until', 'the programs example awaits another provider\'s attribute '
                                   'with no "until", so its value from subscribing, from before '
                                   'the order, can end the step')
         return
-    report.ok('step-proof', 'step markers say what a printed line proves, and the programs '
-                            'example holds its attribute step until the value after the order')
+    report.ok('held-until', 'the programs example holds its attribute step until the value '
+                            'after the order')
 
 
 def check_type_order(report):
@@ -6797,6 +6808,46 @@ def check_machine_lifecycle(report):
         return
     report.ok('machine-lifecycle', 'a machine provider\'s startup and shutdown sections '
               'name the init_fsm and release_fsm calls generated after them')
+
+
+def check_action_answers(report):
+    """An action a request's trigger runs names that request and the response that
+    answers it; an action no request runs gets no such clause."""
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_skeleton
+        import inspect
+        source = inspect.getsource(gen_skeleton.provider_class)
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('action-answers', 'gen_skeleton.py does not import: {}'.format(failure))
+        return
+
+    class Machine:
+        runs_on = {'halt': ['stop in WORK'], 'tick': ['Tick in WORK'],
+                   'release': ['resume in HALTED', 'resume in IDLE']}
+
+    class Iface:
+        requests = [('stop', []), ('resume', [])]
+        response_of = {'stop': 'stop', 'resume': 'resume'}
+
+        @staticmethod
+        def spell(kind, name):
+            return '{}_{}'.format(kind, name)
+
+    answers = getattr(gen_skeleton, 'answers_on', None)
+    if answers is None or 'answers_on(machine, iface, name)' not in source:
+        report.fail('action-answers', 'the action marker no longer names the request whose '
+                    'trigger runs it, so a body that does not answer it stalls the caller')
+        return
+    halt = answers(Machine, Iface, 'halt')
+    release = answers(Machine, Iface, 'release')
+    if 'request stop' not in halt or 'response_stop' not in halt \
+            or '(in HALTED, IDLE)' not in release or answers(Machine, Iface, 'tick'):
+        report.fail('action-answers', 'answers_on names the wrong request or response: '
+                    '"{}", "{}"'.format(halt, release))
+        return
+    report.ok('action-answers', 'an action a request\'s trigger runs names the request and '
+              'the response that answers it')
 
 
 def check_worker_declared(report):
@@ -6952,9 +7003,31 @@ def check_edit_blocks(report):
             report.fail('edit-blocks', '--edit, {}: {}, fix.txt {!r}'.format(
                 label, 'applied' if applied else 'refused', added))
             return
+    scenarios = {'scenarios': [{'name': 'smoke', 'procs': [
+        {'name': 'app', 'expect': ['^ready$', 'done']}]}]}
+    with tempfile.TemporaryDirectory() as root:
+        with open(os.path.join(root, 'scenarios.json'), 'w', newline='\n') as handle:
+            json.dump(scenarios, handle, indent=2)
+        with open(os.path.join(root, 'bodies.txt'), 'w', newline='\n') as handle:
+            handle.write('== step_go\n//\n\n== expect_smoke_app\n^ready$\ndone\n')
+        try:
+            with contextlib.redirect_stdout(io.StringIO()), \
+                    contextlib.redirect_stderr(io.StringIO()):
+                module.apply_edits(root, block('scenarios.json', '        "done"',
+                                               '        "done",\n        "left \\\\. 2"'),
+                                   [('src/services', 'design.json')])
+            bodies = open(os.path.join(root, 'bodies.txt')).read()
+        except SystemExit:
+            bodies = 'refused'
+    if 'done\nleft \\. 2\n' not in bodies or '== step_go\n//\n' not in bodies:
+        report.fail('edit-blocks', '--edit of an expect list in scenarios.json is not '
+                    'written into its bodies.txt section, so the next fill undoes it: '
+                    '{!r}'.format(bodies))
+        return
     report.ok('edit-blocks', '--edit applies blocks that match once, across files, and '
               'refuses every block when one matches nothing, twice, or a generated source; '
-              'a fix.txt block with no search lines adds its sections')
+              'a fix.txt block with no search lines adds its sections; an edited expect '
+              'list is written into its bodies.txt section')
 
 
 def check_worker_entry_name(report):
@@ -7841,6 +7914,27 @@ def check_stepped_evidence(report, tools=None):
               'process holds one')
 
 
+def check_peer_hold_midrun(report):
+    """The peer-lost hold follows the last send before the first step awaiting a
+    broadcast, behind a silent lead, so work the provider started shows before the loss."""
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    import gen_skeleton
+
+    def step(name, send, awaits):
+        return {'name': name, 'enum': gen_skeleton.pascal(name), 'send': send,
+                'awaits': awaits, 'wait': 0}
+    steps = [step('refused', 'set', ('response', 'set')),
+             step('accepted', 'set', ('response', 'set')),
+             step('finished', None, ('broadcast', 'done')),
+             step('totals', 'get', ('response', 'get'))]
+    hold = gen_skeleton.peer_hold(steps)
+    names = [entry['name'] for entry in gen_skeleton.with_hold(steps, hold)] if hold else []
+    if names[1:4] != ['accepted', gen_skeleton.HOLD_LEAD_NAME, gen_skeleton.HOLD_NAME] \
+            if hasattr(gen_skeleton, 'HOLD_LEAD_NAME') else True:
+        report.fail('peer-hold-midrun', 'the peer-lost hold does not follow the step that '
+                    'starts the work behind a silent lead: {}'.format(names))
+
+
 def check_peer_lost_scenario(report):
     """Every two-process project gets a peer-lost scenario the run does not write.
 
@@ -8300,7 +8394,9 @@ def check_provider_timers(report):
 
     def with_timer(design):
         design['interfaces'][0]['timers'] = [{'name': 'Heartbeat', 'timeout': 200,
-                                              'repeat': 0, 'start': True}]
+                                              'repeat': 0, 'start': True},
+                                             {'name': 'Charge', 'timeout': 300,
+                                              'repeat': 1, 'instances': 3}]
 
     holder = tempfile.mkdtemp()
     here = os.getcwd()
@@ -8328,7 +8424,14 @@ def check_provider_timers(report):
                   ('start_heartbeat();', sources),
                   ('mHeartbeat.stop_timer();', sources),
                   ('== timer_heartbeat', sheet),
-                  ('inline void start_heartbeat()', sheet)]
+                  ('inline void start_heartbeat(uint32_t ms = 200)', sheet),
+                  ('mHeartbeat.start_timer(ms,', sources),
+                  ('areg::Timer mCharge[3];', sources),
+                  ('inline bool start_charge(uint32_t key, uint32_t ms = 300)', sources),
+                  ('inline void stop_charge(uint32_t key)', sources),
+                  ('[[maybe_unused]] const uint32_t key = mChargeKey[i];', sources),
+                  ('    stop_charge();', sources),
+                  ('== timer_charge', sheet)]
         missing = [text for text, where in wanted if text not in where]
         if missing:
             report.fail('provider-timers', 'a timer the design gives the provider is not '
@@ -8344,6 +8447,16 @@ def check_provider_timers(report):
                               capture_output=True, text=True)
         if done.returncode == 0:
             report.fail('provider-timers', 'a provider timer with timeout 0 is accepted')
+            return
+        design['interfaces'][0]['timers'][0]['timeout'] = 200
+        design['interfaces'][0]['timers'][1]['repeat'] = 0
+        with open('bad.json', 'w', encoding='utf-8') as handle:
+            json.dump(design, handle)
+        done = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                               '--outdir', 'bad', '--force', '--spec', 'bad.json'],
+                              capture_output=True, text=True)
+        if done.returncode == 0:
+            report.fail('provider-timers', 'a timer with instances and repeat 0 is accepted')
             return
     finally:
         os.chdir(here)
@@ -8684,6 +8797,15 @@ def check_role_steps(report):
                                          if entry.get('steps') else entry
                                          for entry in design['interfaces']])
         refusal = generate(wrong) or ''
+        later = [{'name': 'ask', 'role': 'stock', 'send': 'reserve', 'args': {'count': 1},
+                  'wait': 1},
+                 {'name': 'got', 'role': 'stock', 'await': 'reserve'}]
+        collect = dict(design, interfaces=[dict(entry, steps=later) if entry.get('steps')
+                                           else entry for entry in design['interfaces']])
+        collected = generate(collect) or ''
+        for path in glob.glob(os.path.join(holder, 'src', 'customer', '*Consumer.?pp')):
+            with open(path, encoding='utf-8') as handle:
+                collected += handle.read()
     finally:
         shutil.rmtree(holder, ignore_errors=True)
     client = ''.join(text for name, text in sources.items() if 'Client' in name)
@@ -8709,8 +8831,93 @@ def check_role_steps(report):
         report.fail('role-step', 'an unknown role is not refused naming the used ones: {}'
                     .format(refusal.strip()[-200:] or 'accepted'))
         return
+    if not re.search(r'default:\s*if \(mLateStockReserveCount < 1\)', collected) \
+            or not re.search(r'case Step::Got:[^}]*mLateStockReserveCount', collected):
+        report.fail('role-step', 'an answer of the stock to a request sent with "wait" is '
+                                 'dropped, so the later step of that role collecting it '
+                                 'stalls')
+        return
     report.ok('role-step', 'a step with "role" checks what the used role sends, keeps one '
-                           'that arrives before it, and an unknown role is refused')
+                           'that arrives before it, an answer included, and an unknown role '
+                           'is refused')
+
+
+def check_used_clients(report):
+    """A client of a used role ends its program after "gone" whatever the body says, each
+    section carries its own notes once, a program with no steps is told nothing of steps,
+    and the first step awaiting one of several attributes names those that arrive later."""
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    example = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                              '--example', 'programs'], stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE, universal_newlines=True)
+    if example.returncode != 0:
+        report.fail('used-client', 'gen_docs.py --example programs does not run')
+        return
+    design = json.loads(example.stdout)
+    for entry in design['interfaces']:
+        if entry['name'] == 'StockService':
+            entry['attributes'] = entry['attributes'] + [
+                {'name': 'Nuts', 'type': 'uint32', 'notify': 'Always'}]
+        if entry.get('steps'):
+            entry['steps'] = [{'name': 'known', 'role': 'stock', 'await': 'Bolts',
+                               'until': {'Bolts': 100}}] + entry['steps']
+    holder = tempfile.mkdtemp(prefix='areg-used-client-')
+    try:
+        if subprocess.run([sys.executable, os.path.join(tools, 'setup_project.py'),
+                           '--name', 'used', '--root', holder, '--mode', 'ipc',
+                           '--sdk-root', ROOT, '--quiet'],
+                          capture_output=True, text=True).returncode != 0:
+            report.fail('used-client', 'the scaffold no longer lays out a project')
+            return
+        with open(os.path.join(holder, 'design.json'), 'w', encoding='utf-8') as handle:
+            json.dump(design, handle)
+        for command in (['gen_docs.py', '--outdir', 'src/services', '--force',
+                         '--chained', '--spec', 'design.json'],
+                        ['gen_skeleton.py', '--programs', '--services', 'src/services',
+                         '--force', '--spec', 'design.json']):
+            done = subprocess.run([sys.executable, os.path.join(tools, command[0])] +
+                                  command[1:], cwd=holder, stdout=subprocess.PIPE,
+                                  stderr=subprocess.STDOUT, universal_newlines=True)
+            if done.returncode != 0:
+                report.fail('used-client', 'the example is refused: {}'
+                            .format(done.stdout.strip()[-300:]))
+                return
+        with open(os.path.join(holder, 'worksheet.txt'), encoding='utf-8') as handle:
+            sheet = handle.read()
+        client = ''
+        for path in glob.glob(os.path.join(holder, 'src', 'desk', '*Client.cpp')):
+            with open(path, encoding='utf-8') as handle:
+                client += handle.read()
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    if not re.search(r'TODO\(you\) gone:.*\n.*placeholder\(you\)\n\s*quit_with\(1\);\n',
+                     client):
+        report.fail('used-client', 'the exit after "gone" is a placeholder, so a body that '
+                                   'only reports the loss keeps the program running')
+        return
+    sections = re.split(r'^== ', sheet, flags=re.M)[1:]
+    twice = [part.split('\n', 1)[0] for part in sections
+             if part.count('subscribes to every broadcast and attribute') > 1
+             or part.count('is quoted whole at the top') > 1]
+    if twice:
+        report.fail('used-client', 'a note is repeated in section {}: notes are keyed by '
+                                   'a name several files share'.format(twice[0]))
+        return
+    desk = [part.split('\n', 1)[0] for part in sections
+            if part.startswith('DeskStockServiceClient.cpp:') and 'step' in part.lower()]
+    if desk:
+        report.fail('used-client', 'section {} of the desk, which has no steps, speaks of '
+                                   'steps'.format(desk[0]))
+        return
+    known = next((part for part in sections if part.startswith('step_known')), '')
+    if 'on subscribing, Nuts arrives after it, still invalid here: a check reading ' \
+            'them awaits Nuts' not in known:
+        report.fail('used-client', 'the first step awaiting Bolts does not say Nuts '
+                                   'arrives after it on subscribing, nor what to await')
+        return
+    report.ok('used-client', 'a used client ends the program after "gone", notes appear '
+                             'once, a program with no steps hears nothing of them, and the '
+                             'subscribe order is named where it matters')
 
 
 def check_design_reviewable(report):

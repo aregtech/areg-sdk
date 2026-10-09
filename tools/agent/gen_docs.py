@@ -108,7 +108,7 @@ KEYS = {
     'constant': ('name', 'type', 'value', 'description'),
     'include': ('name', 'description', 'alias', 'version'),
     'timer': ('name', 'timeout', 'repeat', 'description'),
-    'service timer': ('name', 'timeout', 'repeat', 'start', 'description'),
+    'service timer': ('name', 'timeout', 'repeat', 'start', 'instances', 'description'),
     'worker': ('name', 'period_ms', 'events', 'description'),
     'worker event': ('name', 'to', 'params', 'description'),
     'condition': ('name', 'description', 'params', 'implement', 'body', 'return'),
@@ -342,7 +342,7 @@ def build_siml(spec, shared_space, shared_names, prefix=''):
 class Machine:
     """The machine spec, checked, with an identifier reserved for everything named."""
 
-    def __init__(self, spec, shared_space, shared_names, prefix=''):
+    def __init__(self, spec, shared_space, shared_names, prefix='', hosted=False):
         if not spec.get('name'):
             fail('every entry of "machines" needs a "name"')
         self.spec = spec
@@ -358,7 +358,7 @@ class Machine:
         self.actions = named_list(spec, 'actions', self.where)
         self.conditions = named_list(spec, 'conditions', self.where)
         self.submachines = named_list(spec, 'submachines', self.where)
-        if not self.actions and not self.conditions:
+        if not self.actions and not self.conditions and not hosted:
             fail('{} has no action, so it generates nothing to implement'.format(self.where))
 
         self.attribute_names = unique(self.attributes, self.where)
@@ -845,8 +845,8 @@ def write_state_list(machine, writer, depth, states, initial, start_name, owner)
     writer.add(depth, '</StateList>')
 
 
-def build_fsml(spec, shared_space, shared_names, prefix=''):
-    machine = Machine(spec, shared_space, shared_names, prefix)
+def build_fsml(spec, shared_space, shared_names, prefix='', hosted=False):
+    machine = Machine(spec, shared_space, shared_names, prefix, hosted)
     writer = Writer()
     vocab = machine.vocab
 
@@ -1962,6 +1962,13 @@ def check_service_timers(project):
             if not isinstance(entry.get('start', False), bool):
                 fail('{} gives start {!r}: true starts it with the component'
                      .format(here, entry.get('start')))
+            instances = entry.get('instances', 1)
+            if not whole(instances) or not 1 <= instances <= 64:
+                fail('{} gives instances {!r}: how many run at once, 1 to 64'
+                     .format(here, instances))
+            if instances > 1 and (repeat != 1 or entry.get('start')):
+                fail('{} runs {} instances: each fires once, so it takes "repeat": 1 '
+                     'and no "start"'.format(here, instances))
 
 
 WORKER_TARGETS = ('provider', 'worker')
@@ -2521,6 +2528,16 @@ def trigger_coverage(spec):
     return [(name, answered[name]) for name in names]
 
 
+def unanswered_requests(project, spec):
+    """The triggers of machine `spec` that carry a request with an answer of the
+    service it runs: one name for both."""
+    triggers = set(entry['name'] for entry in named_list(spec, 'triggers', spec.get('name', '?')))
+    return [request.get('name') for interface, machine in paired(project) if machine is spec
+            for request in interface.get('requests') or []
+            if ('answer' in request or request.get('response'))
+            and request.get('name') in triggers]
+
+
 def states_without(spec, trigger):
     """The states in which `trigger` does nothing: neither they nor a state enclosing
     them has a transition on it. A composite none of whose states takes it is named
@@ -2663,8 +2680,11 @@ def build_all(project, prefix=''):
         documents.append(('{}.dtml'.format(shared['name']), build_dtml(shared)))
     for spec in project['interfaces']:
         documents.append(('{}.siml'.format(spec['name']), build_siml(spec, space, names, prefix)))
+    hosted = set(entry.get('name') for spec in project['machines']
+                 for entry in listed(spec, 'submachines'))
     for spec in project['machines']:
-        documents.append(('{}.fsml'.format(spec['name']), build_fsml(spec, space, names, prefix)))
+        documents.append(('{}.fsml'.format(spec['name']),
+                          build_fsml(spec, space, names, prefix, spec['name'] in hosted)))
     return documents
 
 
@@ -3038,7 +3058,8 @@ TEMPLATE = {
             NOTE: ["Timers the provider owns, for periodic or delayed work it does itself;",
                    "delete it when there is none. timeout: milliseconds. repeat: how many",
                    "times it fires, 0 until stopped. start: true starts it with the component;",
-                   "otherwise a body calls start_<name>(). Each gets a timer_<name> section."],
+                   "otherwise a body calls start_<name>(). Each gets a timer_<name> section.",
+                   "Delays that overlap: \"instances\": N, N timers of repeat 1, one per key."],
             "name": "", "timeout": 1000, "repeat": 0, "start": False, "description": ""
         }],
         "workers": [{
@@ -3061,8 +3082,8 @@ TEMPLATE = {
                    "reconnect_seconds: how long to wait for it to come back.",
                    "0 turns either off and waits for ever.",
                    "stall_ticks is left out on purpose: how long a step waits for what it",
-                   "awaits, one tick a second. The generator makes it at least 20 and",
-                   "reconnect_seconds, and longer than every step's wait."],
+                   "awaits, one tick a second. The generator makes it the largest of 20,",
+                   "reconnect_seconds and each step's wait in seconds + 2."],
             "connect_seconds": 10, "reconnect_seconds": 10
         },
         "steps": [{
@@ -3075,12 +3096,12 @@ TEMPLATE = {
                    "names another. wait: milliseconds, instead of await. Several requests in",
                    "flight: each sends with wait: 1, then one step that only awaits the answer",
                    "collects them all: its check records each by an answer field that names it",
-                   "(an id the request sent, declared in the answer too) and stay()s until every",
-                   "one is in.",
+                   "(an id the request sent or the provider gave, in the answer) and stay()s",
+                   "until every one is in.",
                    "Every step sends, awaits or waits, and one that only awaits is a step too;",
                    "a check alone is not a step.",
                    "Steps run in order and the run exits 0 after the last. A check calls fail(),",
-                   "stay() to wait for the next arrival, or go_to(Step::Name) for a loop.",
+                   "stay() to wait for the next arrival it awaits, or go_to(Step::Name) to loop.",
                    "until: {parameter: value}, for what arrives more than once: the step holds",
                    "until one arrives with those values.",
                    "One step per request sent or change awaited in turn, not one per arrival:",
@@ -3094,9 +3115,10 @@ TEMPLATE = {
                    "the work (idle, closed, 0) ends the step at once. Await a value only the",
                    "work produces, its response (only after the request), or a broadcast sent",
                    "at the work's end (on every call, several values together). One provider's",
-                   "messages arrive in the order it sent them, two providers' in no order.",
+                   "messages arrive in the order it sent them, the values on subscribing in the",
+                   "order its attributes are declared; two providers' in no order.",
                    "role: a provider role this program uses; the step sends to and awaits it",
-                   "instead."],
+                   "instead. A step collects the answers of one role: one per role in flight."],
             "name": "", "role": "", "send": "", "args": {}, "await": "", "until": {}, "wait": 0,
             "description": ""
         }]
@@ -3141,10 +3163,12 @@ TEMPLATE = {
                    "its final substate ends the level and sends final_event, which a transition",
                    "of the composite takes. A history substate goes in the states of the",
                    "composite it resumes; a transition of a state outside that composite",
-                   "targets it to resume where it left off."],
+                   "targets it to resume where it left off.",
+                   "submachine: a machine of this design run inside this state instead of",
+                   "states; several states hosting it write it once (--example machine)."],
             "name": "", "kind": "", "entry": [], "exit": [],
             "transitions": [{"on": "", "to": "", "guard": [], "set": {}, "do": []}],
-            "initial": "", "final_event": "",
+            "initial": "", "final_event": "", "submachine": "",
             "states": [{
                 NOTE: ["A substate. The composite's own \"initial\" names one of these, and a",
                        "transition of the composite fires on its \"final_event\"."],
@@ -3257,6 +3281,14 @@ def review(project, skipped):
             for name, states in coverage:
                 print('          {}  {}'.format(name.ljust(width),
                                                 ', '.join(states) or 'NO STATE'))
+            for name in unanswered_requests(project, spec):
+                where = states_without(spec, name)
+                if where:
+                    print('  note  {0}: request "{1}" reaches it through {1}(), and no '
+                          'transition takes it in {2}: sent there, it is never answered '
+                          'unless request_{1} answers when {1}() returns false. Give it '
+                          'a transition in those states, a refusal too.'
+                          .format(spec.get('name', '?'), name, ', '.join(where)))
     # The documents are legitimate, so this is a note and not a refusal. It is said
     # in the words build_project.py refuses with, several steps later, and it is said
     # on both paths: build_project.py passes --chained, so a note only the bare call

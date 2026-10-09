@@ -247,7 +247,8 @@ def client_class(owner, iface, roles, cls, reconnect, driving=False, steps=()):
               '                if (is_quitting() == false)',
               '                {',
               gs.marker('lost', 'what losing this provider means to {} while it is '
-                        'waited for; never quit here'.format(owner), 20),
+                        'waited for; the cReconnectSeconds deadline starts after it; '
+                        'never quit here'.format(owner), 20),
               '                }',
               '',
               '                if ((cReconnectSeconds != 0) && (is_quitting() == false))',
@@ -267,11 +268,12 @@ def client_class(owner, iface, roles, cls, reconnect, driving=False, steps=()):
               '    {',
               '        if (&timer == &mDeadline)',
               '        {',
-              gs.marker('gone', 'what it means to {} that this provider did not come '
-                        'back within cReconnectSeconds'.format(owner), 12),
+              gs.marker('gone', 'what {} reports when this provider did not come back '
+                        'within cReconnectSeconds; quit_with(1) follows, and a body that '
+                        'keeps the program running returns before it'.format(owner), 12),
               gs.placeholder('            std::cerr << "FAIL: " << mRole.as_string() << '
                              '" did not come back" << std::endl;'),
-              gs.placeholder('            quit_with(1);'),
+              '            quit_with(1);',
               '        }',
               '    }',
               '']
@@ -290,9 +292,7 @@ def client_class(owner, iface, roles, cls, reconnect, driving=False, steps=()):
         lines += ['    void {}({}) final'.format(
                       iface.spell('request', name, 'failed'),
                       iface.generated_params('request', name, 'failed').strip()),
-                  '    {',
-                  '        std::cerr << mRole.as_string() << ": request {} failed, reason " '
-                  '<< areg::as_string(reason) << std::endl;'.format(name),
+                  '    {'] + gs.request_failed_report(name, 'mRole.as_string() << ": " << ') + [
                   '    }',
                   '']
     for name, _ in iface.broadcasts:
@@ -502,9 +502,7 @@ def watcher_class(iface, cls, driver):
         lines += ['    void {}({}) final'.format(
                       iface.spell('request', name, 'failed'),
                       iface.generated_params('request', name, 'failed').strip()),
-                  '    {',
-                  '        std::cerr << "request {} failed, reason " '
-                  '<< areg::as_string(reason) << std::endl;'.format(name),
+                  '    {'] + gs.request_failed_report(name) + [
                   '        quit_with(1);',
                   '    }',
                   '']
@@ -585,7 +583,7 @@ def component_classes(component, specs, include_root):
                       '#include "{}/{}FSM.hpp"'.format(include_root, machine.name)]
             bases += ['#include "{}/{}ActionHandler.hpp"'.format(
                 os.path.dirname(document).replace('\\', '/'), inner.name)
-                for inner, document, _ in machine.imports]
+                for inner, document, _ in machine.all_imports()]
         bases += ['#include "{}.hpp"'.format(worker['name']) for worker in component.workers]
         bases.append(gs.marker('includes', gs.INCLUDES_HINT, 0))
         slot, hint = 'provider_state', None
@@ -1015,9 +1013,11 @@ def wiring(programs, components, deployments=()):
                   '{}.request_<name>(...), and reads its attributes there. A client\'s'
                   .format(member_of(next(r for c in components for _, rs, _ in c.clients
                                          for r in rs))),
-                  'sections reach their component as mOwner, private members included;',
-                  'quit_with() stays a free call. mRole names the provider the client talks',
-                  'to. A driver begins its steps once every provider it uses is connected.']
+                  'sections reach their component as mOwner, private members included,',
+                  'its own types spelt as {}::Name; quit_with() stays a free call.'
+                  .format(next(c.cls for c in components if c.clients)),
+                  'mRole names the provider the client talks to. A driver begins its steps',
+                  'once every provider it uses is connected.']
     if any(c.clients for c in components if c.kind == 'provides'):
         lines += ['A request answered after its handler returns -- when a used provider',
                   'answers, a timer fires or an event arrives -- keeps its caller, an',

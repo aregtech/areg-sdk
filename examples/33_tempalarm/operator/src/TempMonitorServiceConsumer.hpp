@@ -133,7 +133,7 @@ private:
     //! the run, called stay() or called go_to(). Calling it more than
     //! once for one check ends one step.
     void complete();
-    //! Keeps the current step for the next answer, broadcast or update.
+    //! Keeps the current step for the next arrival it awaits.
     void stay()
     {   mHeld = true; }
 

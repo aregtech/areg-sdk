@@ -47,10 +47,11 @@ It restates this page and the SDK's `AGENTS.md`; a run following this page skips
 
 From the task, decide the requests, responses, broadcasts, attributes and data types.
 Right after the scaffold, in one request, read `design.json`, run
-`gen_docs.py --example` (`--example service programs` for several services or
-programs) and open `05-design.md`, plus `22-state-machine.md` when an answer
-depends on what came before. Open nothing else before `design.json` is written:
-`20` and `21` describe the XML the generator writes.
+`gen_docs.py --example service`, adding `programs` when the task has more than two
+programs or more than one service and `machine` when a machine reuses one piece of
+behaviour, and open `05-design.md`, plus
+`22-state-machine.md` when an answer depends on what came before. Open nothing else
+before `design.json` is written: `20` and `21` describe the XML generated.
 
 **A provider reads its own attributes back.** An attribute gives the provider a getter
 as well as a setter, so state the service already carries needs no shadow member beside
@@ -81,9 +82,10 @@ read in one call: do not page it. It is the shape, and the `#|` notes are the ru
 with both read, write `design.json` whole and build it in one call: section 5's
 command with `--write design.json`. `gen_docs.py` ignores the notes.
 A consumer that drives a scenario and exits lists it as `"steps"`, branching included:
-the generator writes the step machine, and each check may `stay()`, `go_to(Step::Name)`
-or `fail("why")`. Writing that machine by hand is the largest avoidable cost here.
-The template's `steps` note says how many steps to write, and what each awaits.
+the generator writes them as plain consumer code, no `.fsml`, and each check may
+`stay()`, `go_to(Step::Name)` or `fail("why")`. Writing that by hand is the largest
+avoidable cost here.
+The template's `steps` note says what makes one step, and what each awaits.
 What it gives up after is `"driver"` of the same interface, which the template's own
 note explains; the generator declares all three, so no marker asks for one.
 
@@ -97,10 +99,10 @@ A large project splits the spec across files and passes each with its own `--spe
 - **A state machine, a `.fsml`, only if** behaviour depends on what happened before
   and a chain of `if` cannot express it cleanly: pausing and resuming mid-sequence, a
   retry count with a limit, a mode that changes what the same input means. If the
-  task says the logic must be a state machine, write one. If it does not and plain
-  code is enough, do not. Where the task says the same behaviour is reached from more
-  than one place, model it once as a nested sub-machine entered from each place,
-  never as duplicated states.
+  task says the logic must be a state machine, write one. If it rules one out, or
+  plain code is enough, do not. In a machine, behaviour reached from more than one
+  place is one machine, hosted by a `"submachine"` state in each, never duplicated
+  states.
 
 **Only after the generator refuses a document over a name.** Until then there is nothing
 to ask: you write `design.json`, and `gen_docs.py` writes every name in it. Then ask
@@ -115,13 +117,13 @@ python3 <areg-sdk>/tools/schema_help.py --list --document siml
 ```
 
 `--full` on a type name adds what its values mean and `--search <word>` finds a name.
-Never open `siml.xsd`, `dtml.xsd` or `fsml.xsd` themselves: 20 KB to 50 KB carried in
-context is re-sent on every turn for the rest of the task.
+Never open `siml.xsd`, `dtml.xsd` or `fsml.xsd`: 20-50 KB each, re-sent with every
+later request.
 
-`src/CMakeLists.txt` is not yours to edit for these: the command below names every
-document of the spec and every source it generates. A source you add yourself goes on
-its executable's `macro_declare_executable` line, relative to `src/`; a header is
-included as `"src/<dir>/Name.hpp"` from anywhere in `src/`.
+The command below writes every document and generated source into `src/CMakeLists.txt`
+and keeps the names already there; a source you add yourself goes on its executable's
+`macro_declare_executable` line, relative to `src/`, and its header is included as
+`"src/<dir>/Name.hpp"`.
 
 ## 5. Documents, application and build -- one command
 
