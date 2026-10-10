@@ -887,13 +887,21 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
                 if said:
                     lines.append('#|         {}'.format(said))
         lines.append('#|')
+    hold = peer_hold(steps) if steps else None
+    if hold and not any('Step::' + hold['enum'] in text for _, text in produced):
+        hold = None
     if steps:
         lines.append('#| The steps of the scenario, in order. go_to() takes one of these\n'
                      '#| names; a step with no step_ section below has nothing to check:\n#|')
-        width = max(len(step['enum']) for step in steps) + 6
-        for step in steps:
-            lines.append('#|   {:{}} {}'.format('Step::' + step['enum'], width,
-                                               step_said(step)))
+        listed = with_hold(steps, hold)
+        width = max(len(step['enum']) for step in listed) + 6
+        for step in listed:
+            said = step_said(step)
+            if step.get('hold'):
+                said = 'with {} only, {}{}; without it, ends at once'.format(
+                    HOLD_FLAG, said, '' if step.get('keep') else
+                    ', while {} stops the provider'.format(PEER_LOST_SCENARIO))
+            lines.append('#|   {:{}} {}'.format('Step::' + step['enum'], width, said))
         lines.append('#|')
     driven = driven_body(produced)
     if driven:
@@ -934,7 +942,7 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
     stepless = set(file_name for file_name, body in produced
                    if 'Step::' not in body and 'client_connected()' not in body)
     notes = section_notes(sections, driven, connecting(produced), stepless)
-    falls = fall_through(steps)
+    falls = fall_through(steps, hold)
     current = None
     # A name more than one file carries is addressed through its file.
     counts = {}
@@ -979,7 +987,7 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
     return lines
 
 
-def fall_through(steps):
+def fall_through(steps, hold=None):
     """The fall-through line of each step_ section, keyed by the section name."""
     falls = {}
     for index, step in enumerate(steps):
@@ -987,6 +995,9 @@ def fall_through(steps):
         falls['step_' + step['name']] = \
             'falling through begins Step::{}'.format(after['enum']) if after \
             else 'falling through ends the run with exit 0'
+        if hold and index == hold['after'] and after:
+            falls['step_' + step['name']] += '; with {}, Step::{} and Step::{} run first' \
+                .format(HOLD_FLAG, hold['lead']['enum'], hold['enum'])
     return falls
 
 

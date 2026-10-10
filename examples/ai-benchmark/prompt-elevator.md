@@ -46,6 +46,7 @@ refused naming the reason. When the stop is **released**, the car **continues fr
 exact step it was halted in**: toward the same target if it was travelling, without
 re-announcing the floor it is at; or with the same door step if the doors were moving
 or open. Nothing is restarted from the beginning, and the target is not forgotten.
+What the car is doing once it continues is published like any other change.
 
 **What the controller publishes.** The car's current floor, its direction (up, down,
 none), and what it is doing (idle, travelling, doors opening, doors open, doors
@@ -91,8 +92,9 @@ step to the console so a person can read what happened:
    with no floor announced twice and none skipped, then the door sequence at 0 and idle
 8. call the car to floor **1**; when the doors at floor 1 are **open**, press the
    emergency stop -- expect the doors to stay open and the car halted at floor 1
-9. release the stop -- expect the doors to close, not to open again, and the car idle
-   at floor 1
+9. release the stop -- expect the doors to stay open, then close without opening again:
+   what the car is doing goes from halted to doors open, then doors closing, never doors
+   opening, and the car is idle at floor 1
 10. take the car out of service -- expect the announcement
 
 Once a step's expectation has held, the passenger prints its line below, with this
