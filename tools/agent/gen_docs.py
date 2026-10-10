@@ -1594,9 +1594,9 @@ def check_deployments(project):
             if program not in programs:
                 fail('{} places "{}" in "{}", which is no program. The programs: {}'
                      .format(here, moved, target, ', '.join(sorted(programs))))
-            if thread and not IDENTIFIER.match(thread):
-                fail('{} places "{}" in the thread "{}", which a C identifier cannot '
-                     'carry'.format(here, moved, thread))
+            if thread and not THREAD_NAME.match(thread):
+                fail('{} places "{}" in the thread "{}", which a thread name cannot '
+                     'carry: letters, digits, _ and -'.format(here, moved, thread))
 
 
 def provided_roles(project):
@@ -1699,12 +1699,14 @@ def check_component(project, component, here, name, services, roles, provided, d
                     problems):
     """One component of a program: its keys, its service, its roles and its "uses"."""
     check_keys(component, KEYS['component'], 'a component of ' + here)
-    for key in ('name', 'thread'):
+    for key, pattern, kind in (('name', IDENTIFIER, 'a C identifier cannot carry'),
+                               ('thread', THREAD_NAME, 'a thread name cannot carry: '
+                                                       'letters, digits, _ and - only')):
         value = component.get(key)
         if value is not None and (not isinstance(value, str)
-                                  or not IDENTIFIER.match(value)):
-            fail('a component of {} gives the {} {!r}, which a C identifier '
-                 'cannot carry'.format(here, key, value))
+                                  or not pattern.match(value)):
+            fail('a component of {} gives the {} {!r}, which {}'
+                 .format(here, key, value, kind))
     kinds = [kind for kind in COMPONENT_KINDS if component.get(kind)]
     if len(kinds) != 1:
         fail('a component of {} names {}: each provides, drives or watches '
@@ -1875,6 +1877,8 @@ def cross_check(project):
 # The driver declares these two steps itself, around the ones a spec lists.
 STEP_RESERVED = ('start', 'done')
 IDENTIFIER = re.compile(r'^[A-Za-z_]\w*$')
+# The characters a thread name may hold.
+THREAD_NAME = re.compile(r'^[A-Za-z_][\w-]*$')
 
 
 # One tick of a stepped consumer, in seconds. The driver's stall watchdog counts

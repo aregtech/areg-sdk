@@ -208,8 +208,8 @@ def fail(message):
     sys.exit(2)
 
 
-def write_input(root, target):
-    """Writes standard input to target, a path inside the project root."""
+def write_input(root, target, text):
+    """Writes text, read from standard input, to target, a path inside the project root."""
     path = os.path.abspath(target if os.path.isabs(target) else os.path.join(root, target))
     try:
         inside = os.path.commonpath([os.path.normcase(path), os.path.normcase(root)]) \
@@ -218,7 +218,6 @@ def write_input(root, target):
         inside = False
     if not inside:
         fail('--write {}: the file is outside the project root {}'.format(target, root))
-    text = '' if sys.stdin is None or sys.stdin.isatty() else sys.stdin.read()
     if not text.strip():
         name = os.path.relpath(path, root).replace(os.sep, '/')
         if os.path.isfile(path):
@@ -297,6 +296,42 @@ def parse_edits(text):
     if not edits:
         fail('--edit: standard input holds no block. Each block is {}'.format(EDIT_SHAPE))
     return edits
+
+
+def split_file_edits(root, text):
+    """Splits the "== <project file>" search/replace blocks out of a --write text.
+
+    Returns (edit text, the rest). A block starts at a "== <name>" line naming an existing
+    project file whose next non-empty line opens a block, and ends after its last block.
+    """
+    lines = text.split('\n')
+
+    def opens_edit(index):
+        named = EDIT_FILE.match(lines[index])
+        if not named or not os.path.isfile(os.path.join(root, named.group(1))):
+            return False
+        after = next((line for line in lines[index + 1:] if line.strip()), '')
+        return bool(EDIT_OPEN.match(after))
+
+    edits, rest, index, inside = [], [], 0, False
+    while index < len(lines):
+        line = lines[index]
+        if not inside and opens_edit(index):
+            inside, state = True, None
+        if not inside:
+            rest.append(line)
+            index += 1
+            continue
+        edits.append(line)
+        if state is None and EDIT_OPEN.match(line):
+            state = 'open'
+        elif state == 'open' and EDIT_CLOSE.match(line):
+            state = None
+            after = next((i for i in range(index + 1, len(lines)) if lines[i].strip()), None)
+            if after is None or not (EDIT_OPEN.match(lines[after]) or opens_edit(after)):
+                inside = False
+        index += 1
+    return '\n'.join(edits), '\n'.join(rest)
 
 
 def edit_refusal(root, target, path, generated_dirs):
@@ -1116,14 +1151,25 @@ def main():
         fail('--edit and --write both read standard input: pass --edit alone, with the '
              'sections inside it as a "== fix.txt" block: "<<<<<<< SEARCH", "=======", '
              'the "== <section>" lines and their code, ">>>>>>> REPLACE"')
+    made = [(args.outdir.replace(os.sep, '/'), 'design.json')] \
+        if args.spec or read_manifest(root) else []
+    made.append((args.build.replace(os.sep, '/'), 'the build'))
+    appendable = (fill_markers.FIX_FILE, args.bodies.replace(os.sep, '/'))
     if args.edit:
         text = '' if sys.stdin is None or sys.stdin.isatty() else sys.stdin.read()
-        made = [(args.outdir.replace(os.sep, '/'), 'design.json')] \
-            if args.spec or read_manifest(root) else []
-        apply_edits(root, text, made + [(args.build.replace(os.sep, '/'), 'the build')],
-                    (fill_markers.FIX_FILE, args.bodies.replace(os.sep, '/')))
+        apply_edits(root, text, made, appendable)
     for target in args.write:
-        write_input(root, target)
+        text = '' if sys.stdin is None or sys.stdin.isatty() else sys.stdin.read()
+        if os.path.basename(target) in appendable:
+            edits, text = split_file_edits(root, text)
+            if edits.strip():
+                if any(EDIT_FILE.match(line) and os.path.basename(
+                        EDIT_FILE.match(line).group(1)) in appendable
+                       for line in edits.split('\n')):
+                    fail('--write {}: its sections are written as they are, so a block '
+                         'cannot edit {} itself'.format(target, ' or '.join(appendable)))
+                apply_edits(root, edits, made, appendable)
+        write_input(root, target, text)
     mode = mode_of(root, args.mode)
 
     # Every input path is resolved once, against the project root, and that one

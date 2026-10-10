@@ -983,7 +983,8 @@ def write_scenarios(path, programs, components, project_name, specs, deployments
     if killed:
         print('  peer-lost kills {} and expects only {} to exit 1; its "stop" "proc" names'
               .format(killed, lead['name']))
-        print('  any other program, and "exit": 1 on a process expects its exit too.')
+        print('  any other program, and "exit": 1 on a process expects its exit too. Both change')
+        print('  in the --write bodies.txt call: a "== scenarios.json" line, then SEARCH/REPLACE blocks.')
 
 
 def wiring(programs, components, deployments=()):
@@ -1018,7 +1019,8 @@ def wiring(programs, components, deployments=()):
                   '{}.request_<name>(...), and reads its attributes there. A client\'s'
                   .format(member_of(next(r for c in components for _, rs, _ in c.clients
                                          for r in rs))),
-                  'sections reach their component as mOwner, private members included,',
+                  'sections reach their component as mOwner, whose header the client\'s .cpp',
+                  'includes; private members and *_state helpers included,',
                   'its own types spelt as {}::Name; quit_with() stays a free call.'
                   .format(next(c.cls for c in components if c.clients)),
                   'mRole names the provider the client talks to. A driver begins its steps',
@@ -1030,7 +1032,12 @@ def wiring(programs, components, deployments=()):
                   '  const areg::SessionID session{ unblock_current_request() };',
                   'and once the answer is known, the same component sends it to that caller:',
                   '  if (prepare_response(session)) { response_<name>(...); }',
-                  'Several such requests may be open at once, each with its own session.']
+                  'Several such requests may be open at once, each with its own session.',
+                  'A provider\'s handlers can run before the providers it uses connect:',
+                  'bool {}.is_connected() tells, and a request sent through a member not yet'
+                  .format(member_of(next(r for c in components if c.kind == 'provides'
+                                         for _, rs, _ in c.clients for r in rs))),
+                  'connected is never answered and never reported failed.']
     return lines
 
 
