@@ -1037,7 +1037,9 @@ def wiring(programs, components, deployments=()):
                   'bool {}.is_connected() tells, and a request sent through a member not yet'
                   .format(member_of(next(r for c in components if c.kind == 'provides'
                                          for _, rs, _ in c.clients for r in rs))),
-                  'connected is never answered and never reported failed.']
+                  'connected is never answered and never reported failed. Not connected yet',
+                  'is not lost: keep such a request and send it from that client\'s connected',
+                  'section.']
     return lines
 
 

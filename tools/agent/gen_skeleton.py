@@ -2372,6 +2372,10 @@ def pascal(name):
 # The document types whose values are written in C++ as a quoted literal.
 TEXT_TYPES = ('String', 'WideString')
 
+# A text value spelt as a C++ string constructor: String("bolt"), areg::String{"bolt"}.
+TEXT_CONSTRUCTOR = re.compile(
+    r'^\s*(?:(?:areg|std)::)?(?:W?String|w?string)\s*[({]\s*("(?:[^"\\]|\\.)*")\s*[)}]\s*$')
+
 
 def cpp_value(value, type_name=None, iface=None, where=''):
     """A value of design.json as the C++ text an argument is written with.
@@ -2383,11 +2387,18 @@ def cpp_value(value, type_name=None, iface=None, where=''):
     """
     if isinstance(value, bool):
         return 'true' if value else 'false'
+    if isinstance(value, (dict, list)):
+        fail('{} gives {} for a "{}": a value is a number, a text or an enumeration '
+             'field, and "raw:<c++>" passes C++ through'
+             .format(where or 'a step', json.dumps(value), type_name))
     text = str(value)
     for prefix in ('raw:', 'expr:'):
         if text.startswith(prefix):
             return text[len(prefix):]
     if type_name in TEXT_TYPES and isinstance(value, str):
+        constructed = TEXT_CONSTRUCTOR.match(text)
+        if constructed:
+            return constructed.group(1)
         if len(text) > 1 and text.startswith('"') and text.endswith('"'):
             return text
         return '"{}"'.format(text.replace('\\', '\\\\').replace('"', '\\"'))
@@ -2793,6 +2804,16 @@ def until_of(until, target, kinds, iface, where):
         if param is None:
             fail('{} holds until "{}", which is no parameter of {} {}. It has: {}'
                  .format(where, key, kind, target, until_choices(types, iface)))
+        if isinstance(value, dict) and type_name in iface.struct_fields:
+            for field, field_value in value.items():
+                operand, field_type = until_operand('{}.{}'.format(param, field),
+                                                    {param: type_name}, iface)
+                if operand is None or '.' not in operand:
+                    fail('{} holds until "{}" field "{}", which {} does not have. It has: {}'
+                         .format(where, key, field, type_name,
+                                 until_choices({param: type_name}, iface)))
+                conditions.append((operand, cpp_value(field_value, field_type, iface, where)))
+            continue
         conditions.append((param, cpp_value(value, type_name, iface, where)))
     return conditions
 
