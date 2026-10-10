@@ -517,16 +517,17 @@ STEPPED_ORDER_NOTE = ORDER_FACTS
 STEPS_NOTE = ['a step_ section runs only while its step is current. fail("why") ends the',
               'run with exit 1, stay() keeps the step for the next arrival, and',
               'go_to(Step::Name) picks the next step. Doing none of them goes on to the',
-              'step listed next, and after the last one the run exits 0. Each of the',
-              'three takes effect when the body is left, so leaving early by return',
-              'changes nothing: what the body called last is what happens. A step with',
-              'nothing to check still takes one line: a // comment saying so']
+              'step listed next, and after the last one the run exits 0. stay() and',
+              'go_to() take effect when the body is left, the one called last. fail()',
+              'does not leave the body: return right after it, or what follows still',
+              'runs and prints. A step with nothing to check still takes one line: a //',
+              'comment saying so']
 
 
 # The same contract as STEPS_NOTE, short enough to repeat on every later step_
 # section. A worksheet states it once at the top and a run reads section nine.
-STEP_BRIEF = ['stay() holds the step, go_to(Step::Name) redirects, fail("why") stops,',
-              'and an early return keeps whichever of them the body already called']
+STEP_BRIEF = ['stay() holds the step, go_to(Step::Name) redirects, fail("why") ends the',
+              'run but not the body: return right after it']
 
 
 # A response no step awaits gets no step machinery at all, and the generated file is
@@ -768,8 +769,8 @@ BASE_API = [
 ]
 
 # How a body ends its program, printed when the application defines quit_with().
-QUIT_NOTE = ['quit_with(code) ends this program with that exit code, and is_quitting() is',
-             'true once it has run. main() defines both, in every program of this project.']
+QUIT_NOTE = ['quit_with(code) ends this program with that exit code once the handler',
+             'returns; is_quitting() is true from the call. Every main() defines both.']
 
 # The names of BASE_API, for the check that holds this copy and the page together.
 BASE_API_NAMES = ('as_string', 'is_empty', 'clear', 'length', 'find_first',
@@ -3143,10 +3144,10 @@ def driver_lines(steps, holds, cls, iface=None, latches=None):
     """The helpers that run the steps: begin one, end one, stay in one, jump to one."""
     latches = latches or {}
     lines = ['    //! Ends the current step when a check body is left, by falling off',
-             '    //! its end, by return, or by break. stay(), go_to() and fail() all',
-             '    //! take effect in complete(), so every path reaches it. A body that',
-             '    //! calls complete() itself ends the step there, and leaving it does',
-             '    //! not end a second one.',
+             '    //! its end, by return, or by break. stay() and go_to() take effect in',
+             '    //! complete(), so every path reaches it; fail() ends the run, not the',
+             '    //! body. A body that calls complete() itself ends the step there, and',
+             '    //! leaving it does not end a second one.',
              '    struct StepEnd',
              '    {',
              '        explicit StepEnd({} & owner)'.format(cls),
