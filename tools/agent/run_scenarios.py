@@ -1288,7 +1288,7 @@ def newer_than_binaries(scenarios, build_dirs, root):
 
     A pass proves the binaries, not the tree. Without this the reader has to run the
     build again to find out whether the two still agree, which is a second verdict
-    for the same question.
+    for the same question. The reference is the newest binary, as in stale_binaries().
     """
     built = []
     for scenario in scenarios:
@@ -1301,20 +1301,20 @@ def newer_than_binaries(scenarios, build_dirs, root):
                     pass
     if not built:
         return []
-    oldest = min(built)
+    newest = max(built)
     changed = []
     for base, _dirs, names in os.walk(os.path.join(root, 'src')):
         for name in names:
             path = os.path.join(base, name)
             try:
-                if os.path.getmtime(path) > oldest:
+                if os.path.getmtime(path) > newest:
                     changed.append(os.path.relpath(path, root).replace(os.sep, '/'))
             except OSError:
                 pass
     for name in dialect('SPEC_FILES', ()):
         path = os.path.join(root, name)
         try:
-            if os.path.exists(path) and os.path.getmtime(path) > oldest:
+            if os.path.exists(path) and os.path.getmtime(path) > newest:
                 changed.append(name)
         except OSError:
             pass

@@ -2954,6 +2954,10 @@ def late_latches(iface, steps):
         if kind == 'broadcast':
             args = [(flag + pascal(param), held, param) for held, param in
                     generated_values(source.generated_params('broadcast', name))]
+        elif not step.get('role'):
+            args = [(flag + 'Value', held, param) for held, param in
+                    generated_values(source.generated_params('attribute', name,
+                                                             'on_update'))[:1]]
         latches[await_key(step)] = {'flag': flag, 'args': args}
         if step.get('role'):
             latches[await_key(step)]['method'] = role_method(step)
@@ -3301,11 +3305,11 @@ def driver_lines(steps, holds, cls, iface=None, latches=None):
         lines += ['    bool  mHoldOnce{{ hold_requested() }};   //!< True until the hold step '
                   'has held, when main() was given {}.'.format(HOLD_FLAG), '']
     if latches:
-        lines += late_lines(steps, iface, latches)
+        lines += late_lines(steps, iface, latches, holds)
     return lines
 
 
-def late_lines(steps, iface, latches):
+def late_lines(steps, iface, latches, holds=False):
     """The replay of an update or broadcast that arrived before the step awaiting it."""
     lines = ['    //! Runs the check of the current step on each arrival kept before it, in turn.',
              '    void replay_late()',
@@ -3389,11 +3393,19 @@ def late_lines(steps, iface, latches):
             lines.append('                {}({});'.format(
                 latch['method'], ', '.join(member for member, _, _ in latch['args'])))
         elif kind == 'update':
-            lines += ['                areg::DataState lateState{ areg::DataState::DataIsInvalid };',
-                      '                const auto lateValue = {}(lateState);'.format(
+            lines += ['                if (mSettling)',
+                      '                {',
+                      '                    {}({}, areg::DataState::DataIsOK);'.format(
+                          iface.spell('attribute', name, 'on_update'), latch['args'][0][0]),
+                      '                }',
+                      '                else',
+                      '                {',
+                      '                    areg::DataState lateState{ areg::DataState::DataIsInvalid };',
+                      '                    const auto lateValue = {}(lateState);'.format(
                           iface.spell('attribute', name, 'get')),
-                      '                {}(lateValue, lateState);'.format(
-                          iface.spell('attribute', name, 'on_update'))]
+                      '                    {}(lateValue, lateState);'.format(
+                          iface.spell('attribute', name, 'on_update')),
+                      '                }']
         else:
             lines.append('                {}({});'.format(
                 iface.spell('broadcast', name),
@@ -3406,6 +3418,7 @@ def late_lines(steps, iface, latches):
               '        mReplaying = false;',
               '    }',
               '']
+    lines += settle_lines(steps, iface, latches, holds)
     sending = set(step.get('role') or '' for step in steps if step['send'])
     for role in sorted(set(key[2] if len(key) > 2 else '' for key in flags) & sending):
         sent = flag_latches(latches, role or None)
@@ -3417,7 +3430,8 @@ def late_lines(steps, iface, latches):
         lines += ['    }',
                   '']
     lines += ['    areg::Timer  mLate;   //!< Starts replay_late() once the step has begun.',
-              '    bool  mReplaying{ false };   //!< True while replay_late() runs a check.']
+              '    bool  mReplaying{ false };   //!< True while replay_late() runs a check.',
+              '    bool  mSettling{ false };   //!< True while settle() runs.']
     for key, latch in latches.items():
         kind, name = key[:2]
         if 'queue' in latch:
@@ -3439,6 +3453,78 @@ def late_lines(steps, iface, latches):
         lines += ['    {}  {}{{}};   //!< The {} it carried.'.format(held, member, param)
                   for member, held, param in latch['args']]
     lines.append('')
+    return lines
+
+
+def settle_lines(steps, iface, latches, holds):
+    """kept() and settle(): the checks of what arrived before the provider was lost."""
+    lines = ['    //! How many arrivals are kept for that step.',
+             '    uint32_t kept(Step step) const',
+             '    {',
+             '        switch (step)',
+             '        {']
+    most = 2
+    for step in steps:
+        if not step['awaits'] or await_key(step) not in latches:
+            continue
+        latch = latches[await_key(step)]
+        if collects(step, latches, iface):
+            lines += ['        case Step::{}:'.format(step['enum']),
+                      '            return {};'.format(latch['count'])]
+            most += latch['queue']
+        elif not step['send'] and 'flag' in latch:
+            lines += ['        case Step::{}:'.format(step['enum']),
+                      '            return ({} ? 1u : 0u);'.format(latch['flag'])]
+            most += 1
+        else:
+            continue
+        most += 1
+    lines += ['        default:',
+              '            return 0u;',
+              '        }',
+              '    }',
+              '',
+              '    //! Runs the checks of what arrived before the provider was lost.',
+              '    void settle()',
+              '    {',
+              '        mSettling = true;',
+              '        for (uint32_t turn = 0; (turn < {}) && (is_quitting() == false); ++turn)'
+              .format(most),
+              '        {',
+              '            const Step at{ mStep };']
+    if holds:
+        held = ''.join('(mStep == Step::{}) || '.format(step['enum'])
+                       for step in steps if step.get('hold'))
+        lines += ['            if (mHoldMs != 0)',
+                  '            {',
+                  '                if ({}(kept(mJumped ? mNext : static_cast<Step>('
+                  'static_cast<uint32_t>(mStep) + 1)) == 0))'.format(held),
+                  '                {',
+                  '                    break;',
+                  '                }',
+                  '',
+                  '                mHold.stop_timer();',
+                  '                mHoldMs = 0;',
+                  '                complete();',
+                  '                continue;',
+                  '            }',
+                  '']
+    lines += ['            const uint32_t before{ kept(at) };',
+              '            if (before == 0)',
+              '            {',
+              '                break;',
+              '            }',
+              '',
+              '            replay_late();',
+              '            if ((mStep == at) && (kept(at) == before))',
+              '            {',
+              '                break;',
+              '            }',
+              '        }',
+              '',
+              '        mSettling = false;',
+              '    }',
+              '']
     return lines
 
 
@@ -3561,8 +3647,10 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
               '                     (status == areg::ServiceConnectionState::ConnectionLost))',
               '            {',
               '                // The provider went away. The framework reconnects and',
-              '                // calls this again; the reconnect deadline is the exit.',
-              '                if (is_quitting() == false)',
+              '                // calls this again; the reconnect deadline is the exit.']
+    if stepped and latches:
+        lines.append('                settle();')
+    lines += ['                if (is_quitting() == false)',
               '                {',
               marker('peer_lost',
                      'what losing the provider means to this scenario', 20),
