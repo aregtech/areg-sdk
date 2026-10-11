@@ -106,6 +106,9 @@ MISSES_NAMED = 4
 # The most CPU a scenario's processes may use together, in cores, averaged over the
 # scenario. Programs that block until their next message stay far below it.
 CPU_LIMIT = 0.5
+# The shortest span, in seconds, the CPU is averaged over. Starting the processes costs
+# the same in a scenario of a fraction of a second, which polling does not explain.
+CPU_WINDOW = 2.0
 # How alike a printed line and a missed expectation must be for the line to be named.
 NEAREST_CUTOFF = 0.6
 
@@ -614,12 +617,13 @@ def child_cpu():
 
 def busy_verdict(cpu, wall, outputs):
     """Why a passing scenario kept the CPU busy, or None when it did not."""
-    if cpu is None or wall <= 0 or cpu / wall < CPU_LIMIT:
+    span = max(wall, CPU_WINDOW)
+    if cpu is None or wall <= 0 or cpu / span < CPU_LIMIT:
         return None
     verdict = ('its processes used {:.2f} cores on average over {:.1f} s, the limit is '
                '{}: a program that waits for its next message uses almost none, one that '
                'sends again at once or polls keeps a core busy'
-               .format(cpu / wall, wall, CPU_LIMIT))
+               .format(cpu / span, span, CPU_LIMIT))
     counted = []
     for name, text in (outputs or {}).items():
         lines = [line.strip() for line in text.splitlines() if line.strip()]
@@ -1263,7 +1267,8 @@ def self_test():
         finally:
             ROUTER_PORT = saved_port
 
-        quiet = busy_verdict(0.3, 10.0, {'a': 'step one\n'})
+        quiet = busy_verdict(0.3, 10.0, {'a': 'step one\n'}) or \
+            busy_verdict(0.25, 0.3, {'a': 'step one\n'})
         busy = busy_verdict(8.0, 10.0, {'a': 'x\nstep two\nstep two\n', 'b': 'y\n'})
         if quiet is not None or busy is None or '"step two" 2 times' not in busy:
             print('self-test FAILED: a busy scenario is not told from a quiet one: {} / {}'

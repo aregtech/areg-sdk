@@ -1901,12 +1901,56 @@ def paired(project):
         pairs.append((interface, machines[wanted]))
     if not named and len(project['interfaces']) == 1 and len(project['machines']) == 1:
         pairs.append((project['interfaces'][0], project['machines'][0]))
+    elif not named:
+        pairs += inferred_pairs(project)
+    return pairs
+
+
+def top_machines(project):
+    """The machines no other machine hosts: each runs in a provider."""
+    hosted = set(inner.get('name') if isinstance(inner, dict) else inner
+                 for entry in listed(project, 'machines')
+                 for inner in entry.get('submachines') or [])
+    return [entry for entry in listed(project, 'machines') if entry.get('name') not in hosted]
+
+
+def provided_services(project):
+    """The services a program provides, or every service of a design with no programs."""
+    names = set(service for _, _, kind, service in program_components(project)
+                if kind == 'provides')
+    return [entry for entry in listed(project, 'interfaces')
+            if not names or entry.get('name') in names]
+
+
+def inferred_pairs(project):
+    """Each top machine with the one provided service that has requests named as its
+    triggers, when exactly one has."""
+    pairs = []
+    for machine in top_machines(project):
+        triggers = set(entry.get('name') for entry in listed(machine, 'triggers'))
+        found = [service for service in provided_services(project)
+                 if triggers & set(entry.get('name')
+                                   for entry in listed(service, 'requests'))]
+        if len(found) == 1:
+            pairs.append((found[0], machine))
     return pairs
 
 
 def cross_check(project):
     """What only a service and the machine behind it can see: one name, one meaning."""
-    for interface, machine in paired(project):
+    pairs = paired(project)
+    services = provided_services(project)
+    if project.get('programs') and len(services) > 1:
+        bound = set(machine.get('name') for _, machine in pairs)
+        for machine in top_machines(project):
+            if machine.get('name') not in bound:
+                fail('the machine "{0}" runs in no provider: this design provides {1}, '
+                     'and none names it. Add "machine": "{0}" to the service whose '
+                     'provider runs it; its provider then drives it and its actions are '
+                     'worksheet sections'
+                     .format(machine.get('name', '?'),
+                             ', '.join(str(entry.get('name')) for entry in services)))
+    for interface, machine in pairs:
         types = {}
         for entry in (interface, machine):
             for attribute in named_list(entry, 'attributes', entry.get('name', '?')):

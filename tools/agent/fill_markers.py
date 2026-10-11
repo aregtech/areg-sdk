@@ -65,6 +65,9 @@ REPEATED = []
 # The repair file, beside the bodies file unless --fix names another.
 FIX_FILE = 'fix.txt'
 
+# A call on the owner a client forwards an arrival to.
+OWNER_CALL = re.compile(r'\bmOwner\s*\.\s*([A-Za-z_]\w*)\s*\(')
+
 
 def fail(message):
     # Output already printed is flushed first: stdout is block-buffered into a
@@ -343,6 +346,17 @@ def resolve(name, markers, where):
     return places[0]
 
 
+def owner_calls_after(lines, index, extra):
+    """The owner methods the generated code calls after the marker at `index`, up to
+    the end of its function."""
+    tail = []
+    for line in lines[index + 1 + extra:]:
+        if line.startswith('}'):
+            break
+        tail.append(line.split('//')[0])
+    return set(OWNER_CALL.findall('\n'.join(tail)))
+
+
 def indent_of(line):
     return line[:len(line) - len(line.lstrip())]
 
@@ -420,6 +434,8 @@ def main():
     # exactly as it was rather than half filled.
     planned = []
     claimed = {}
+    sources = {}
+    doubled = []
     expected = {}
     replaced = []
     changed = []
@@ -444,6 +460,15 @@ def main():
             fail('{} fills the same marker twice, as "{}" and as "{}"'
                  .format(args.bodies, claimed[(path, index)], name))
         claimed[(path, index)] = name
+        if path.endswith('.cpp') and path not in sources:
+            with open(path, encoding='utf-8') as handle:
+                sources[path] = handle.read().splitlines()
+        after = (owner_calls_after(sources[path], index, extra) if path in sources
+                 else set())
+        twice = sorted(set(OWNER_CALL.findall('\n'.join(text.split('//')[0]
+                                                        for text in body))) & after)
+        if twice:
+            doubled.append('"{}" calls mOwner.{}()'.format(name, twice[0]))
         again = any(where[:2] == (path, index) for where in written.get(name, ()))
         if again:
             replaced.append(name)
@@ -451,6 +476,12 @@ def main():
             dropped += extra
         planned.append((path, index, extra, name,
                         anchored(place(body, line), indent_of(line), name)))
+
+    if doubled:
+        fail('{}: {}. The generated code makes that call right after the body, so '
+             'every arrival would reach the owner twice. Leave the call out: the body '
+             'holds only what the arrival means to the owner. Nothing was written'
+             .format(args.bodies, '; '.join(doubled)))
 
     if expected and not args.dry_run:
         write_expectations(args.scenarios, expected)
