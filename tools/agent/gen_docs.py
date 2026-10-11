@@ -3458,7 +3458,7 @@ def main():
     parser.add_argument('--spec', action='append', default=[],
                         help='a JSON description; pass it once per spec file')
     parser.add_argument('--outdir', help='the directory the documents are written to')
-    parser.add_argument('--example', nargs='*',
+    parser.add_argument('--example', nargs='*', action='extend',
                         choices=['service', 'programs', 'machine', 'worker'],
                         help='print a whole spec to copy, and write nothing; several names '
                              'print several in one call, "service" when none is named. '
