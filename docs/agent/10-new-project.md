@@ -53,7 +53,7 @@ programs`), and every program is generated. Worker plumbing is yours (`38-worker
   src/
     CMakeLists.txt          declares the service interface and the executables
     services/
-      HelloService.siml     the service contract
+      HelloService.siml     the service interface
     provider/
       HelloProvider.hpp/.cpp  the providing component
       main.cpp                the providing process: its model and main()

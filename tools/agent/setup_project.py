@@ -311,7 +311,7 @@ it routes each task to the one page that answers it. Never search the SDK.{moved
 | I need to ... | Read |
 |---|---|
 | Add areg to this project's CMake build | `{sdk}/docs/wiki/02b-cmake-integrate.md` |
-| Decide what the services are | `{sdk}/docs/agent/05-design.md` |
+| Decide the services and their interfaces | `{sdk}/docs/agent/05-design.md` |
 | Add a service, a provider or a consumer | `{sdk}/docs/agent/00-cheatsheet.md` |
 | The signature of one framework name | `python3 {tools}/agent/api_help.py <name>` |
 | Check the code against the areg contract | `python3 {tools}/agent/check_contract.py <dir> --strict` |
@@ -512,13 +512,13 @@ src/CMakeLists.txt    names the documents and each executable's sources
 |---|---|
 | **Build this application, start to finish** | `docs/agent/01-runbook.md` - every command in order, if you are not already following it |
 | **Anything ordinary** | `docs/agent/00-cheatsheet.md` - what the tools do not write |
-| Decide what the services are | `docs/agent/05-design.md`, before any document |
+| Decide the services and their interfaces | `docs/agent/05-design.md`, before any document |
 | Change the service contract | `docs/agent/20-service-interface.md` |
 | Declare a structure, enum or container | `docs/agent/21-data-types.md` |
 | Behaviour that depends on what happened before | `docs/agent/22-state-machine.md` (a `.fsml`) |
 | `areg::String` and the containers | the worksheet's list, else `docs/agent/40-base-api.md` before the first line |
 | The signature of one framework name | `python3 {tools}/agent/api_help.py <name>` -- never a page, never a header |
-| Implement a provider, a consumer, or the model | nothing: `gen_skeleton.py --app` wrote all three. Open `docs/agent/30-provider.md`, `docs/agent/31-consumer.md` or `docs/agent/32-model.md` only at a numbered section `51-debug.md` or `05-design.md` names |
+| Implement a provider, a consumer, or the model | nothing: `gen_skeleton.py --app` wrote all three. Open `docs/agent/30-provider.md`, `docs/agent/31-consumer.md` or `docs/agent/32-model.md` only at a numbered section `51-debug.md` or `05-design.md` names; several services in one component: `docs/agent/24-component.md` |
 | Periodic or delayed work | the consumer already owns a stepping timer; for a second timer `docs/agent/33-timers.md` |
 | A custom event between threads | `docs/agent/23-events.md` |
 | Worker threads; watchdogs, a run-time model | `docs/agent/38-workers.md`; `docs/agent/37-threads.md` |

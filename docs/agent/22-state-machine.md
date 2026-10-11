@@ -4,7 +4,7 @@ Use one when the reaction to an input depends on what happened before. A service
 handlers are a chain of `if (mPhase == ...)` is a state machine written by hand.
 
 The machine is described in a `.fsml` document. The generator turns it into code the
-same way it turns a `.siml` into a service. You write the actions, never the machine.
+same way it turns a `.siml` into an interface's base classes. You write the actions, never the machine.
 
 A working project that shows every piece: `recipes/06-state-machine/`. One machine that
 builds and runs, carrying a history marker, a guard, an internal transition, an event

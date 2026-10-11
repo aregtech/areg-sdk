@@ -1,8 +1,7 @@
 # Define a service interface
 
-A service interface is one XML document with the extension `.siml`. It is the
-contract between a provider and its consumers. The generator turns it into two base
-classes that you inherit.
+A service interface is a `.siml` XML document: a contract that provides nothing. A service (a component, by role name) implements it; several services
+may. The generator turns it into two base classes that you inherit.
 
 **You do not write this XML.** Describe the interface and generate it, together with
 every other document of the project:
@@ -21,8 +20,7 @@ every other document of the project:
 
 
 `build_project.py --spec design.json` writes it, and everything after it. A request's
-`"answer"` declares its response and links the two, so the pair cannot
-drift apart. `"broadcasts"`, `"attributes"`, `"constants"` and `"types"` are lists
+`"answer"` declares its response and links the two. `"broadcasts"`, `"attributes"`, `"constants"` and `"types"` are lists
 beside `"requests"`. What each of them means is the rest of this page; the shape of
 the XML is the tool's business, and `--example` prints a whole spec to copy.
 
@@ -37,9 +35,9 @@ addServiceInterface(gen_myproject src/services/HelloService.siml)
 
 ## 1. Rules that make a document valid
 
-- `Category` decides how far the service reaches: `Private` inside one process,
+- `Category` decides how far the interface reaches: `Private` inside one process,
   `Public` across processes on one machine, `Internet` across machines. A `Private`
-  service cannot be reached through the router.
+  interface is never reached through the router.
 - A `Request` with no `"answer"` key is fire and forget; `"answer": []` has an
   empty `Response` to send.
 - Two methods may share a name only when they are of different kinds. A request and

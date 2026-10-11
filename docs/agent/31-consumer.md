@@ -4,7 +4,8 @@ Reference for a hand-written consumer, and the sections `51-debug.md` cites. Not
 filling a marker: `gen_skeleton.py --app` wrote the consumer.
 
 A consumer is your class inheriting `areg::Component` and the generated
-`<Name>ConsumerBase`. It calls requests and handles what comes back.
+`<Name>ConsumerBase`, the interface; it connects to a service by role name, calls
+requests and handles what comes back.
 
 Complete, working consumer for the `HelloService` document in `20-service-interface.md`:
 > `gen_skeleton.py --app` writes this class already, split the way the project is

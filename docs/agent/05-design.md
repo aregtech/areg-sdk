@@ -5,29 +5,33 @@ derive from this split, so a wrong one is rewritten, not corrected.
 
 Answer four questions, in this order. Each has a rule, not a preference.
 
-## 1. What are the services?
+## 1. What are the service interfaces?
 
-**One service per contract between two parties.** Not one per class, per entity, or
-per file.
+A **service interface** (`.siml`) is a contract; it provides nothing. A **service**
+is a component that implements one or more interfaces under its role name. A consumer
+knows the service's role name and the interface it uses. Several services, each with
+its own role name, may implement one interface.
+
+**One interface per contract between two parties**, not per class, entity or file.
 
 Draw the arrows between the parts of the system first. Every arrow that crosses a
-responsibility boundary is a candidate service; everything inside one responsibility
-is ordinary C++ and needs no document at all.
+responsibility boundary is a candidate interface; everything inside one is ordinary
+C++ and needs no document.
 
 Two tests that settle most cases:
 
 - **Who owns the state?** The owner is the provider. If neither side owns anything,
-  there is no service, only a function call.
-- **Would a second consumer make sense?** If yes it is a service. If the answer is
+  there is no interface, only a function call.
+- **Would a second consumer make sense?** If yes it is an interface. If the answer is
   "only this one caller, ever", it is a method.
 
-If both sides call each other, that is **two services**, each with its own provider.
-A service is one-directional by construction: consumers call requests and read
+If both sides call each other, that is **two interfaces**, one provided by each side.
+An interface is one-directional by construction: consumers call requests and read
 attributes, providers answer and publish.
 
 ## 2. What goes in the contract?
 
-The commonest design error is putting everything in requests. A service reads like a
+The commonest design error is putting everything in requests. An interface reads like a
 C++ class shared between processes: attributes are its data members, requests its
 methods, broadcasts its signals. The three are not interchangeable.
 
@@ -60,13 +64,13 @@ Rules that follow from the table:
 
 ## 3. What are the components, and in which threads?
 
-A **component** is one instance with one **role name**, and the role name is its
-routing identity. A component may provide one service and use others; programs,
+A **component** is one instance with one **role name**, its routing identity; one
+that implements an interface is a service. It provides one and uses others (several: `24-component.md`); programs,
 instances, deployments: `gen_docs.py --example programs`.
 
-- One component per role, not per service. A role name is unique in its process, and
+- One component per role, not per interface. A role name is unique in its process, and
   a public one in the network: `mtrouter` rejects a second provider.
-- A consumer names its provider by that role name, character for character.
+- A consumer names the service by that role name, character for character.
 
 A **thread** is a dispatcher. Every handler of every component in it runs there, one
 at a time, in order. So the thread boundary is a **blocking** boundary, not a
@@ -92,7 +96,7 @@ Decide the split first: it fixes the `Category` in every document it touches.
 | `Public` | between processes on one machine | **yes** |
 | `Internet` | between machines | yes |
 
-A `Private` service consumed from another process never connects, and nothing reports it.
+A `Private` interface consumed from another process never connects, and nothing reports it.
 
 ## Is a state machine needed?
 
@@ -100,22 +104,21 @@ Yes when the answer to an input depends on what came before -- a phase, a mode, 
 sequence that must not be skipped. A handler that starts with `if (mPhase == ...)` is
 a state machine already, written where it cannot be read.
 
-No when each request is answered from the arguments and the stored data. Most
-services are.
+No when each request is answered from the arguments and the stored data. Most are.
 
 Answer it here, not in `22-state-machine.md`: that page is the format, not the
-decision. What the machine declares, the bodies do not carry -- give the machine up
-and the same logic is written by hand. It lives inside one component's provider and
-is not part of the contract; consumers see requests and broadcasts, never states.
+decision. Without one, the same logic is written by hand in the bodies. It lives in the service that controls what it
+describes (`"machine"` on that interface), not in the contract: consumers see requests
+and broadcasts, never states. Shared by several: `24-component.md`.
 
 ## Write this table before any file
 
-| Service | Provider role | Consumed by | Category | Contract |
+| Interface | Service (role) | Consumed by | Category | Contract |
 |---|---|---|---|---|
 | `MeterService` | `MeterProvider` | `Collector` | Private | attribute `Reading` |
 | `ReportService` | `Collector` | `Display` | Private | attribute `Report`, not a broadcast: `Display` must not miss it |
 
-Then a second table of components: role name, services provided, dependencies,
+Then a second table of components: role name, interfaces provided, dependencies,
 thread, process. Everything after this is mechanical -- one `.siml` per row of the
 first table, one class per row of the second, and the model is the second table
 written as macros.
@@ -129,8 +132,8 @@ writes log lines.
 
 - **`ClientState`**, provided by each client, consumed by the monitor. The state is a
   value that must be current, so it is an **attribute**, not a request. Three
-  components provide it -- same service, three role names: `Client1`, `Client2`,
-  `Client3`. One document, three providers.
+  components provide it -- one interface, three services: `Client1`, `Client2`,
+  `Client3`.
 - **`Alarm`**, provided by the monitor, consumed by whoever reacts. A raised alarm
   reports the client, the level and the reason together, at the moment it happened:
   a **broadcast**, with the level also an attribute for whoever connects later.
@@ -143,9 +146,9 @@ both documents become `Category="Public"` and `mtrouter` has to run.
 
 | Sign | What it usually means |
 |---|---|
-| A service with one request and no state | it is a function; delete the service |
-| A component with fifteen requests | several services wearing one name |
-| Two services that always change together | one service |
+| An interface with one request and no state | it is a function; delete it |
+| A component with fifteen requests | several interfaces wearing one name |
+| Two interfaces that always change together | one interface |
 | A consumer polling an attribute | subscribe instead |
 | A broadcast a consumer must not miss | it is an attribute |
 | An attribute holding values that only mean something together | it is a broadcast |

@@ -95,7 +95,7 @@ a state names its target state, a guard names an attribute, a parameter names it
 and the tool refuses a name that was never declared.
 A large project splits the spec across files and passes each with its own `--spec`.
 
-- **A service contract, a `.siml`. Always.** The interface between the two programs.
+- **A service interface, a `.siml`. Always.** The interface between the two programs.
 - **A state machine, a `.fsml`, only if** behaviour depends on what happened before
   and a chain of `if` cannot express it cleanly: pausing and resuming mid-sequence, a
   retry count with a limit, a mode that changes what the same input means. If the

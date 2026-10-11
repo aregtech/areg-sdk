@@ -4,7 +4,9 @@ Reference for a hand-written provider, and the sections `51-debug.md` cites. Not
 filling a marker: `gen_skeleton.py --app` wrote the provider.
 
 A provider is your class inheriting `areg::Component` and the generated
-`<Name>ProviderBase`. It implements every request and answers with a response.
+`<Name>ProviderBase`: the component is the service, reached by its role name, and the
+base is the interface it implements. It implements every request and answers with a
+response.
 
 Complete, working provider for the `HelloService` document in `20-service-interface.md`:
 > `gen_skeleton.py --app` writes this class already, split the way the project is
@@ -177,7 +179,8 @@ class Mixed final : public    areg::Component
 ```
 
 Each provided service is declared with its own `REGISTER_IMPLEMENT_SERVICE` line in
-the model. See `32-model.md`.
+the model. See `32-model.md`. Bases sharing a member name, or services sharing one
+state machine: providers as members, `24-component.md`.
 
 ---
 

@@ -1901,8 +1901,6 @@ def paired(project):
         pairs.append((interface, machines[wanted]))
     if not named and len(project['interfaces']) == 1 and len(project['machines']) == 1:
         pairs.append((project['interfaces'][0], project['machines'][0]))
-    elif not named:
-        pairs += inferred_pairs(project)
     return pairs
 
 
@@ -1922,20 +1920,6 @@ def provided_services(project):
             if not names or entry.get('name') in names]
 
 
-def inferred_pairs(project):
-    """Each top machine with the one provided service that has requests named as its
-    triggers, when exactly one has."""
-    pairs = []
-    for machine in top_machines(project):
-        triggers = set(entry.get('name') for entry in listed(machine, 'triggers'))
-        found = [service for service in provided_services(project)
-                 if triggers & set(entry.get('name')
-                                   for entry in listed(service, 'requests'))]
-        if len(found) == 1:
-            pairs.append((found[0], machine))
-    return pairs
-
-
 def cross_check(project):
     """What only a service and the machine behind it can see: one name, one meaning."""
     pairs = paired(project)
@@ -1944,10 +1928,11 @@ def cross_check(project):
         bound = set(machine.get('name') for _, machine in pairs)
         for machine in top_machines(project):
             if machine.get('name') not in bound:
-                fail('the machine "{0}" runs in no provider: this design provides {1}, '
-                     'and none names it. Add "machine": "{0}" to the service whose '
-                     'provider runs it; its provider then drives it and its actions are '
-                     'worksheet sections'
+                fail('the machine "{0}" runs in no provider: this design provides the '
+                     'interfaces {1}, and none names it. Decide which service controls '
+                     'what the machine describes and add "machine": "{0}" to the interface '
+                     'it implements; that provider owns and drives the machine, and its '
+                     'actions become worksheet sections'
                      .format(machine.get('name', '?'),
                              ', '.join(str(entry.get('name')) for entry in services)))
     for interface, machine in pairs:
@@ -3067,14 +3052,16 @@ TEMPLATE = {
            "What goes where, when this file is written or changed. Each answer is a rule,",
            "not a preference; docs/agent/05-design.md is the same four with the reasoning.",
            "",
-           "1. WHAT IS A SERVICE. One service per contract between two parties, not one per",
-           "class, entity or file. Two tests settle most cases: who owns the state (the owner",
-           "is the provider, and if neither side owns any there is no service, only a function",
-           "call), and would a second consumer make sense (if only ever one caller, it is a",
-           "method). If both sides call each other that is two services, each with its own",
-           "provider: a service is one-directional by construction.",
+           "1. WHAT IS AN INTERFACE. A .siml is a service interface: a contract that provides",
+           "nothing. A service is a component implementing interfaces under its role name; a",
+           "consumer knows that role name and the interface it uses. One interface per",
+           "contract between two parties, not per class, entity or file. Two tests: who owns",
+           "the state (the provider; if neither side owns any there is no interface, only a",
+           "function call), and would a second consumer make sense (if only ever one caller,",
+           "it is a method). If both sides call each other that is two interfaces, one",
+           "provided by each side: an interface is one-directional by construction.",
            "",
-           "2. WHICH SHAPE. A service is a C++ class shared between processes: attributes",
+           "2. WHICH SHAPE. An interface is a C++ class shared between processes: attributes",
            "are its data members, requests its methods, broadcasts its signals. The",
            "commonest error is putting everything in requests.",
            "  attribute -- a data member the provider owns: as many as its state has, one",
@@ -3107,7 +3094,7 @@ TEMPLATE = {
            "4. HOW MANY PROCESSES. Ask only when there is a reason to separate: independent",
            "lifetimes, isolation of a crash, different privileges, different machines.",
            "Otherwise one process. The split fixes category in every document it touches, so",
-           "set the split first. A Private service consumed from another process never",
+           "set the split first. A Private interface consumed from another process never",
            "connects and nothing reports it."],
     "datatypes": {
         NOTE: ["Types two documents share, spelled <name>::<Type> inside them. A type only one",
@@ -3124,7 +3111,7 @@ TEMPLATE = {
         ]
     },
     "interfaces": [{
-        NOTE: ["A .siml: the contract between provider and consumer. category: Public across",
+        NOTE: ["A .siml: a service interface, implemented by a service. category: Public across",
                "processes, Private inside one, Internet across machines.",
                "type: bool char uint8 int16 uint16 int32 uint32 int64 uint64 float double String",
                "WideString BinaryBuffer DateTime, a type of types, or <datatypes name>::<Type>.",
@@ -3141,7 +3128,7 @@ TEMPLATE = {
                "carries only those, never the request's parameters.",
                "A request, response or broadcast name is written snake_case, without the prefix",
                "the generator adds: open_valve is request_open_valve. Attributes are converted.",
-               "Several services, instances or programs: gen_docs.py --example programs.",
+               "Several interfaces, instances or programs: gen_docs.py --example programs.",
                "A parameter name used in several answers and broadcasts has one type in all.",
                "values: the legal values of a parameter, when they are a set and the type does",
                "not already say so. A step that sends one outside it is refused here rather",

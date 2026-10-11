@@ -82,8 +82,9 @@ normally reads **22 kW**. A charging bay draws **7 kW**. A **brownout** request 
 the meter read **10 kW** for the next **600 ms**, then 22 kW again.
 
 When the reading is lower than what the charging bays draw, the manager **suspends the
-most recently started charging bay** and announces it. When the reading is enough again,
-it **resumes** that bay and announces it. A brownout during a brownout is refused,
+most recently started charging bay** and announces it. When the reading is enough again
+for every bay that would then charge, the resumed one included, it **resumes** that bay
+and announces it. A brownout during a brownout is refused,
 naming the reason.
 
 **Stopping and timing out.** The station and the manager run until they are stopped:
@@ -107,9 +108,9 @@ happened:
    `bay 3` with target 3 -- expect handshake attempts 1 and 2 failed, then a refusal
    naming the fault, and the session list holding only `bay 2`
 6. start a session on `bay 1` with target **4**; once the session list shows `bay 1` at 1
-   kWh, ask for a brownout -- expect `bay 1` suspended, `bay 2` still charging, then
-   `bay 1` resumed, authorized again at attempt 1, and its session done with exactly
-   **4** kWh
+   kWh, ask for a brownout -- expect `bay 1` suspended once, `bay 2` still charging, then
+   `bay 1` resumed once, after the brownout, authorized again at attempt 1, and its
+   session done with exactly **4** kWh
 7. expect `bay 2`'s session done with **30** kWh, never suspended
 8. reset `bay 3` directly, and only then start watching `bay 3`'s published values --
    expect idle and 0 kWh at once
