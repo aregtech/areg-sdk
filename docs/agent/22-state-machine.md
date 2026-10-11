@@ -113,13 +113,13 @@ of them are optional:
 | `"types"` | any `"type"`; spelled as in `21-data-types.md` |
 | `"attributes"` | a `"set"` key, and an attribute operand of a guard |
 | `"events"` | `"on"` of an event, `{"send": ...}`, `"final_event"` |
-| `"timers"` | `"on"` of a timer, `"start X"` (fires `"repeat"` times, default 1) / `"stop X"` |
+| `"timers"` | `"on"` of a timer, `"start X"` (fires `"repeat"` times, default 1; 0 if its state stays and leaves on it) / `"stop X"` |
 | `"triggers"`, `"actions"`, `"conditions"` | `"on"` of a trigger, `{"call": ...}`, a guard's `{"call": ...}` |
 | `"constants"` | a constant operand of a guard |
 | `"states"` | every `"to"` |
 
 A name used but not declared is `error[46/RULE_UNRESOLVED_ELEMENT]`, and the message
-names the kind it was looked up as, which names the list it is missing from.
+names the list it is missing from.
 
 `gen_docs.py --example` prints a whole machine in this shape -- timers, triggers,
 actions, conditions, guards, a composite level and a final state. What is still yours
@@ -243,12 +243,12 @@ Timed, hosted from two states, run N times: `gen_docs.py --example machine`;
 
 ### Where a piece of data lives
 
-Decide this once, per value, before writing the spec. Who reads it decides:
+Decide it per value before the spec: who reads it decides.
 
 | Read by | Declared in | Reached as |
 |---|---|---|
 | a guard, a condition or an action of the machine, set by its own `"set"` | the `.fsml` `"attributes"` | `mAttrX` inside the machine, `x()` / `set_x()` on it |
-| a hosted or host condition, set by the host, a request or a hosted action (a job's size, an armed fault, how it ended) | nothing. A provider member | the condition's body |
+| a hosted or host condition, set by the host, a request or a hosted action (a job's size, an armed fault, how it ended) | nothing. A provider member | the condition's body reads it, never changes it |
 | another process | the `.siml` `"attributes"` | pages 30 and 31 |
 | neither: only the component that computes it | nothing. A plain C++ member | itself |
 

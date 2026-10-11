@@ -955,7 +955,8 @@ def build_fsml(spec, shared_space, shared_names, prefix='', hosted=False):
                 fail('timer "{}" of {} waits "{}"; a timeout is milliseconds, at least 1'
                      .format(entry['name'], machine.where, timeout))
             head = '<Timer ID="{}" Name="{}" Timeout="{}" Repeat="{}"'.format(
-                writer.ident(), esc(entry['name']), esc(timeout), esc(entry.get('repeat', 1)))
+                writer.ident(), esc(entry['name']), esc(timeout),
+                esc(timer_repeats(spec)[entry['name']]))
             if entry.get('description'):
                 writer.add(2, head + '>')
                 described(writer, 3, entry)
@@ -2681,10 +2682,50 @@ def moves_without_do(spec, trigger):
     return found
 
 
+def timer_repeats(spec):
+    """Timer name -> how many times it fires, 0 until stopped.
+
+    A timer with no "repeat" fires once, except one a state both stays and leaves on
+    under a guard: it fires until stopped when only the "entry" of states that also
+    stop it on "exit" starts it.
+    """
+    timers = [timer for timer in spec.get('timers') or [] if isinstance(timer, dict)]
+    repeats = {timer.get('name'): timer.get('repeat', 1) for timer in timers}
+    every, restarted = [], set()
+
+    def steps(state, key):
+        return [step for step in state.get(key) or [] if isinstance(step, str)]
+
+    def walk(states):
+        for state in states or []:
+            every.append(state)
+            for move in state.get('transitions') or []:
+                restarted.update(step[len('start '):].strip()
+                                 for step in move.get('do') or []
+                                 if isinstance(step, str) and step.startswith('start '))
+            walk(state.get('states'))
+
+    walk(spec.get('states'))
+    for timer in timers:
+        name = timer.get('name')
+        if 'repeat' in timer or name in restarted:
+            continue
+        owners = [state for state in every if 'start ' + name in steps(state, 'entry')]
+        if not owners or any('stop ' + name not in steps(state, 'exit') for state in owners):
+            continue
+        for state in owners:
+            moves = [move for move in state.get('transitions') or [] if move.get('on') == name]
+            if any(move.get('to') for move in moves) \
+                    and any(not move.get('to') for move in moves) \
+                    and any(move.get('guard') for move in moves):
+                repeats[name] = 0
+    return repeats
+
+
 def self_transitions(spec):
     """(state, trigger) of each transition to its own state, where that state's "entry"
     starts a timer that is not repeating and the transition's "do" does not start again."""
-    repeats = {timer.get('name'): timer.get('repeat', 1) for timer in spec.get('timers') or []}
+    repeats = timer_repeats(spec)
     found = []
 
     def walk(states):
@@ -2706,7 +2747,7 @@ def self_transitions(spec):
 def lapsed_timers(spec):
     """(state, timer, repeat) of each state that stays on a timer its "entry" starts,
     where no transition staying on it starts it again and it is not repeating."""
-    repeats = {timer.get('name'): timer.get('repeat', 1) for timer in spec.get('timers') or []}
+    repeats = timer_repeats(spec)
     found = []
 
     def walk(states):

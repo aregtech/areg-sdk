@@ -68,6 +68,17 @@ def runs_on(machine, action, most=4):
     return '; it runs on {}{} and cannot tell which'.format(shown, more)
 
 
+# The hint of every condition marker.
+ASK = 'answer this guard\'s question and change nothing: each guard calls it'
+
+
+def set_first(machine, action):
+    """Each argument an action reads from an attribute its transition sets, as the tail
+    of its marker."""
+    return ''.join('; on {3}, {0} is {1} after the "set" ({2})'.format(*entry)
+                   for entry in dict.fromkeys(machine.set_first.get(action) or []))
+
+
 def answers_on(machine, iface, action):
     """The requests whose trigger runs an action, as the tail of its marker."""
     states = {}
@@ -321,7 +332,8 @@ WORKSHEET_HEAD = """\
 #| The generator rewrites this file on every generation, so no body goes in it.
 #| The bodies go in {bodies}, a file of your own: for each section, its "==" line
 #| and under it the code that replaces that marker. Write it, apply it, build and
-#| run the scenarios in one command, the whole file as a here-document:
+#| run the scenarios in one command, the whole file as a here-document. This call
+#| saves the file in place of an editor; an editor first costs a request more:
 #|
 #|   python3 {build} --spec design.json --write {bodies} --run <<'AREG_EOF'
 #|   == <marker>
@@ -1247,13 +1259,24 @@ class Interface:
 
         # Where each action runs: "<stimulus> in <state>", one per transition.
         self.runs_on = {}
+        # Action -> (parameter, attribute, new value, place): an argument read after "set".
+        self.set_first = {}
         for state in root.iter('State'):
             for move in state.findall('./TransitionList/Transition'):
                 if not move.get('Stimulus'):
                     continue
+                where = '{} in {}'.format(move.get('Stimulus'), state.get('Name'))
+                sets = {}
+                for change in move.iter('AttributeSet'):
+                    sets[change.get('Attribute')] = (change.findtext('Expression') or
+                                                     change.get('Value') or '').strip()
                 for call in move.iter('ActionCall'):
-                    where = '{} in {}'.format(move.get('Stimulus'), state.get('Name'))
                     self.runs_on.setdefault(call.get('Action'), []).append(where)
+                    for argument in call.iter('Argument'):
+                        if argument.get('Source') == 'Attribute' and argument.get('Value') in sets:
+                            self.set_first.setdefault(call.get('Action'), []).append(
+                                (argument.get('Name'), argument.get('Value'),
+                                 sets[argument.get('Value')], where))
 
         self.attributes = []
         for attribute in root.findall('./AttributeList/Attribute'):
@@ -1673,8 +1696,7 @@ def hosted_overrides(machine, indent=4):
                                                  spelled,
                                                  inner.generated_params('condition', name)),
                       pad + '{',
-                      marker('condition_' + name, 'answer the question this guard asks; '
-                             + where, indent + 4),
+                      marker('condition_' + name, ASK + '; ' + where, indent + 4),
                       placeholder('{}    return {};'.format(pad, default_expr(inner, returns))),
                       pad + '}',
                       '']
@@ -1686,7 +1708,8 @@ def hosted_overrides(machine, indent=4):
             lines += ['{}void {}({}) final'.format(pad, spelled,
                                                    inner.generated_params('action', name)),
                       pad + '{',
-                      marker(spelled, 'perform the effect; ' + where, indent + 4),
+                      marker(spelled, 'perform the effect; ' + where + set_first(inner, name),
+                             indent + 4),
                       pad + '}',
                       '']
     return lines
@@ -2292,8 +2315,7 @@ def provider_class(iface, cls, machine=None, timers=(), workers=()):
                 machine.spell('condition', name),
                 machine.generated_params('condition', name)))
             lines += ['    {',
-                      marker('condition_' + name,
-                             'answer the question this guard asks'),
+                      marker('condition_' + name, ASK),
                       placeholder('        return {};'
                                   .format(default_expr(machine, returns))),
                       '    }',
@@ -2308,7 +2330,7 @@ def provider_class(iface, cls, machine=None, timers=(), workers=()):
                                                         machine.generated_params('action', name)))
             lines += ['    {',
                       marker(spelled, 'perform the effect' + runs_on(machine, name)
-                             + answers_on(machine, iface, name)),
+                             + set_first(machine, name) + answers_on(machine, iface, name)),
                       '    }',
                       '']
         lines += hosted_overrides(machine)
