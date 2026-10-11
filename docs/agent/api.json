@@ -449,7 +449,7 @@
     },
     {
       "id": "P-04",
-      "rule": "Never call a request before the service is connected.",
+      "rule": "Never call a request in a component constructor; any later handler may send one.",
       "detect": "a request_* or notify_on_* call in a component constructor, which runs before the service can be connected"
     },
     {

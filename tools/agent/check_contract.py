@@ -977,9 +977,8 @@ def check_file(path, lines, known, findings):
                 if bad and 'ConsumerBase' not in body:
                     findings.append(Finding(
                         'P-04', 'error', path, inner + 1,
-                        '"%s" runs before the service is connected; the first '
-                        'legal moment is inside service_connected() once '
-                        'areg::is_service_connected(status) is true'
+                        '"%s" runs in a constructor, where nothing is connected; '
+                        'send it from service_connected() or any later handler'
                         % bad.group(1)))
             handled.update(range(number, end + 1))
             continue

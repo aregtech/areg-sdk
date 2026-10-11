@@ -82,10 +82,10 @@ the model. With several dependencies, index them in the order they are declared.
 
 ---
 
-## 2. `service_connected` is the only place to start work
+## 2. `service_connected` is where work starts
 
-A consumer must not call a request before the service is connected. The proxy exists
-from construction, but there is nothing behind it yet.
+Never call a request in the constructor. Later, any handler may send one; before the
+service is connected it gets no answer and no `request_<name>_failed`.
 
 The pattern above is the correct one, and its three parts all matter:
 
@@ -203,7 +203,7 @@ the attribute is for -- `20-service-interface.md`.
 
 ## 6. Before you move on
 
-- [ ] No request is called outside `service_connected` or a later handler.
+- [ ] No request in a constructor.
 - [ ] `service_connected` calls the base version first and returns its result.
 - [ ] `Disconnected`, `ConnectionLost` and `Failed` do not quit the application.
 - [ ] Every broadcast and attribute you handle is subscribed to.

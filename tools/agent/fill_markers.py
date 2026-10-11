@@ -347,14 +347,43 @@ def resolve(name, markers, where):
 
 
 def owner_calls_after(lines, index, extra):
-    """The owner methods the generated code calls after the marker at `index`, up to
-    the end of its function."""
-    tail = []
+    """The owner calls the generated code makes after the marker at `index`, up to the
+    end of its function, other bodies left out: {method: {statement without spaces}}."""
+    calls = {}
+    inside = False
     for line in lines[index + 1 + extra:]:
         if line.startswith('}'):
             break
-        tail.append(line.split('//')[0])
-    return set(OWNER_CALL.findall('\n'.join(tail)))
+        if BODY_OPEN.search(line) or BODY_END.search(line):
+            inside = bool(BODY_OPEN.search(line))
+            continue
+        if inside:
+            continue
+        code = line.split('//')[0]
+        for method in OWNER_CALL.findall(code):
+            calls.setdefault(method, set()).add(''.join(code.split()))
+    return calls
+
+
+def without_trailing_call(body, after):
+    """(method, the body without it) when the body's last statement is exactly a call
+    the generated code makes after it, outside every brace of the body; else None."""
+    code = [(number, text.split('//')[0].strip()) for number, text in enumerate(body)]
+    code = [(number, text) for number, text in code if text]
+    if not code:
+        return None
+    number, last = code[-1]
+    methods = OWNER_CALL.findall(last)
+    if len(methods) != 1 or ''.join(last.split()) not in after.get(methods[0], ()):
+        return None
+    if sum(text.count('{') - text.count('}') for _, text in code[:-1]) != 0:
+        return None
+    if any(methods[0] in OWNER_CALL.findall(text) for _, text in code[:-1]):
+        return None
+    kept = body[:number] + body[number + 1:]
+    if not any(text.split('//')[0].strip() or '//' in text for text in kept):
+        kept = ['// mOwner.{}() follows this body'.format(methods[0])]
+    return methods[0], trim(kept)
 
 
 def indent_of(line):
@@ -436,6 +465,7 @@ def main():
     claimed = {}
     sources = {}
     doubled = []
+    forwarded = []
     expected = {}
     replaced = []
     changed = []
@@ -464,9 +494,13 @@ def main():
             with open(path, encoding='utf-8') as handle:
                 sources[path] = handle.read().splitlines()
         after = (owner_calls_after(sources[path], index, extra) if path in sources
-                 else set())
+                 else {})
+        shorter = without_trailing_call(body, after)
+        if shorter is not None:
+            forwarded.append('"{}" ends with mOwner.{}()'.format(name, shorter[0]))
+            body = shorter[1]
         twice = sorted(set(OWNER_CALL.findall('\n'.join(text.split('//')[0]
-                                                        for text in body))) & after)
+                                                        for text in body))) & set(after))
         if twice:
             doubled.append('"{}" calls mOwner.{}()'.format(name, twice[0]))
         again = any(where[:2] == (path, index) for where in written.get(name, ()))
@@ -482,6 +516,10 @@ def main():
              'every arrival would reach the owner twice. Leave the call out: the body '
              'holds only what the arrival means to the owner. Nothing was written'
              .format(args.bodies, '; '.join(doubled)))
+    if forwarded:
+        print('  {} body(ies) end with the mOwner call the generated code makes right '
+              'after the body; that last line is left out of each, so every arrival '
+              'reaches the owner once: {}'.format(len(forwarded), '; '.join(forwarded)))
 
     if expected and not args.dry_run:
         write_expectations(args.scenarios, expected)

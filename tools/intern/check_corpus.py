@@ -2878,6 +2878,7 @@ def run():
     check_role_steps(report)
     check_used_clients(report)
     check_removed_marker_body(report)
+    check_owner_forward(report)
     check_answer_file(report)
     check_peer_lost_scenario(report)
     check_peer_hold_midrun(report)
@@ -4967,6 +4968,60 @@ def generate_application(tools, name='gen', steps=None):
     if not found:
         return 'no consumer source was written'
     return found[0]
+
+
+def check_owner_forward(report):
+    """fill_markers.py leaves out a client body's last line when it is the owner call
+    the generated code makes right after the body, refuses that call anywhere else in
+    the body, and fills the same bodies twice without refusing another body's call."""
+    holder = tempfile.mkdtemp()
+    src = os.path.join(holder, 'src')
+    os.makedirs(src)
+    source = os.path.join(src, 'Client.cpp')
+    sheet = os.path.join(holder, 'bodies.txt')
+    filler = os.path.join(ROOT, 'tools', 'agent', 'fill_markers.py')
+    skeleton = ('void Client::response_x(int a)\n{\n'
+                '    // TODO(you) response_x: what this answer means.\n'
+                '    mOwner.role_response_x(a);\n}\n\n'
+                'void Client::on_status(int status)\n{\n'
+                '    if (status == 1)\n    {\n'
+                '        // TODO(you) connected: what connecting means.\n'
+                '    }\n    else\n    {\n'
+                '        // TODO(you) lost: what a loss means.\n'
+                '    }\n}\n')
+
+    def fill(first):
+        with open(sheet, 'w', encoding='utf-8', newline='\n') as handle:
+            handle.write('== response_x\n' + first + '\n== connected\nkeep();\n'
+                         '== lost\nmOwner.helper(*this);\n')
+        return subprocess.run([sys.executable, filler, '--bodies', sheet, '--src', src],
+                              cwd=holder, capture_output=True, text=True)
+
+    try:
+        with open(source, 'w', encoding='utf-8', newline='\n') as handle:
+            handle.write(skeleton)
+        trailing = 'note(a);\nmOwner.role_response_x(a);'
+        first, again = fill(trailing), fill(trailing)
+        with open(source, encoding='utf-8') as handle:
+            calls = handle.read().count('mOwner.role_response_x(a);')
+        with open(source, 'w', encoding='utf-8', newline='\n') as handle:
+            handle.write(skeleton)
+        nested = fill('if (a)\n{\n    mOwner.role_response_x(a);\n}')
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    if first.returncode != 0 or 'left out' not in first.stdout or calls != 1:
+        report.fail('owner-forward', 'a body ending with the generated owner call is not '
+                    'filled with that line left out (exit {}, {} call(s)): {}'
+                    .format(first.returncode, calls, (first.stderr or first.stdout)[:200]))
+    elif again.returncode != 0:
+        report.fail('owner-forward', 'a second fill of the same bodies is refused: {}'
+                    .format((again.stderr or again.stdout).strip()[:200]))
+    elif nested.returncode == 0:
+        report.fail('owner-forward', 'an owner call inside a brace of the body, made '
+                    'again by the generated code, is filled instead of refused')
+    else:
+        report.ok('owner-forward', 'a trailing owner call the generated code makes is left '
+                  'out, one inside a brace is refused, and a second fill passes')
 
 
 def check_removed_marker_body(report):

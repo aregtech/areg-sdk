@@ -90,8 +90,11 @@ naming the reason.
 **Stopping and timing out.** The station and the manager run until they are stopped:
 each accepts `-q` or `--quit` typed at its console and exits cleanly. No program may wait
 forever -- if something it is waiting for has not arrived within 20 seconds, it reports
-that and exits. If one side goes away mid-scenario, the other reports the loss and exits
-non-zero.
+that and exits. The site manager is the site's shutdown point: the station is also its
+client, only to learn when it is gone. If a program goes away mid-scenario, every program
+that is its client reports the loss and exits non-zero: the station and the driver when
+the site manager goes away; the site manager when the station goes away, and then the
+driver, which has lost the site manager.
 
 ### The simulated driver
 
@@ -144,8 +147,9 @@ they need a second run of their own:
 1. **The normal run** -- all three programs, the sequence above end to end, the driver
    exits 0.
 2. **A run where the other side is taken away.** Start all three, let the sequence
-   reach the middle, then stop the site manager abruptly. The driver must say that it
-   lost the other side and exit non-zero. It must not hang, and it must not exit 0.
+   reach the middle, then stop the site manager abruptly. The driver and the station
+   must each say that they lost the site manager and exit non-zero. Neither may hang,
+   and neither may exit 0.
 
 **An acceptance item counts as passing only when the output of one of those runs shows
 it.** An item you believe you implemented but never observed is reported as not
@@ -180,7 +184,8 @@ framework, against this list:
 - [ ] the station and the manager accept `-q` / `--quit` at their console and exit
       cleanly
 - [ ] no program waits more than 20 seconds for something that never arrives
-- [ ] if one side goes away mid-scenario, the other reports it and exits non-zero
+- [ ] if a program goes away mid-scenario, every program that is its client reports it
+      and exits non-zero; the station is a client of the site manager for this
 - [ ] the scenario exits 0, and non-zero when an expectation fails
 - [ ] no busy-waiting and no sleeping inside a message handler
 

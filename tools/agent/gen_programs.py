@@ -1038,8 +1038,8 @@ def wiring(programs, components, deployments=()):
                   .format(member_of(next(r for c in components if c.kind == 'provides'
                                          for _, rs, _ in c.clients for r in rs))),
                   'connected is never answered and never reported failed. Not connected yet',
-                  'is not lost: keep such a request and send it from that client\'s connected',
-                  'section.']
+                  'is not lost: hold such a request for that client\'s connected section,',
+                  'answer the caller with an error, or retry later, as the application needs.']
     return lines
 
 
