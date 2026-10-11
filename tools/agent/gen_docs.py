@@ -201,6 +201,7 @@ def build_dtml(spec):
         fail('{} declares nothing'.format(where))
     vocab = Vocabulary()
     vocab.declare(set(t['name'] for t in types))
+    vocab.own = spec['name']
 
     writer = Writer()
     writer.add(0, '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>')
@@ -2200,7 +2201,7 @@ def check_sequences(project):
         used, driven = step_roles(project, spec)
         seen = set()
         owed = {}
-        for step in steps:
+        for index, step in enumerate(steps):
             with gathering(problems), contextlib.suppress(Refused):
                 if not isinstance(step, dict):
                     fail('{} list {!r}, which is not a step object'.format(where, step))
@@ -2214,7 +2215,8 @@ def check_sequences(project):
                               for entry in listed(svc, key))
                 awaited |= set(name for name, entry in requests.items()
                                if 'answer' in entry or entry.get('response'))
-                owe_answers(step, requests, owed.setdefault(svc.get('name'), {}), where)
+                owe_answers(step, requests, owed.setdefault(svc.get('name'), {}), where,
+                            steps[index + 1:])
                 if not isinstance(name, str) or not IDENTIFIER.match(name):
                     fail('{} has no name a C++ identifier can carry'.format(here))
                 key = name.replace('_', '').lower()
@@ -2307,10 +2309,12 @@ def answer_of(requests, name):
     return entry.get('response') or (name if 'answer' in entry else None)
 
 
-def owe_answers(step, requests, owed, where):
+def owe_answers(step, requests, owed, where, later=()):
     """Counts the answers still to come from steps that send and wait a time, and refuses
     a step that awaits its own answer while one of them may arrive first. Awaiting any
-    other message settles them: the provider answered before it sent that."""
+    other message settles them: the provider answered before it sent that. A step that
+    only awaits one of them, with no "until", collects every one the steps only awaiting
+    it right after it leave."""
     send, target, wait = step.get('send'), step.get('await'), step.get('wait') or 0
     mine = answer_of(requests, send) if send in requests else None
     awaits = mine if target is None and send is not None and not wait \
@@ -2330,7 +2334,17 @@ def owe_answers(step, requests, owed, where):
                          'them' if many else 'it', send))
         return
     if awaits is not None and owed.get(awaits):
-        owed[awaits].pop(0)
+        take = 1
+        if send is None and not step.get('until'):
+            rest = 0
+            for each in later:
+                if not isinstance(each, dict) or each.get('send') is not None \
+                        or each.get('wait') or each.get('role') != step.get('role') \
+                        or answer_of(requests, each.get('await')) != awaits:
+                    break
+                rest += 1
+            take = max(1, len(owed[awaits]) - rest)
+        del owed[awaits][:take]
     elif awaits is not None:
         owed.clear()
     if mine is not None and wait and target is None:
@@ -2948,6 +2962,7 @@ EXAMPLE_MACHINE = {
            "condition once, for every instance."],
     "interfaces": [{
         "name": "PressService", "category": "Public", "description": "A press of parts.",
+        "machine": "Press",
         "attributes": [{"name": "Passes", "type": "uint32", "notify": "Always",
                         "description": "Passes finished in this job."}],
         "requests": [{"name": "press", "params": [{"name": "passes", "type": "uint32"}],

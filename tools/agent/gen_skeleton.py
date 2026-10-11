@@ -2787,7 +2787,38 @@ def steps_of(specs, iface, used=None, driven_role=None):
                       'until': ['({} == {})'.format(param, value) for param, value in until],
                       'until_pairs': until,
                       'role': role, 'source': source, 'call_member': prefix})
+    mark_collectors(steps)
     return steps
+
+
+def mark_collectors(steps):
+    """Sets "collects" on a step that only awaits an answer and takes several still owed:
+    the names of the steps that sent them with "wait", as gen_docs.py counts them."""
+    owed = {}
+    for index, step in enumerate(steps):
+        source = step['source']
+        mine = source.response_of.get(step['send']) if step['send'] is not None else None
+        awaits = step['awaits'][1] if step['awaits'] else None
+        pending = owed.setdefault(id(source), {})
+        if mine is not None and awaits == mine:
+            pending.pop(mine, None)
+        elif awaits is not None and pending.get(awaits):
+            take = 1
+            if step['send'] is None and not step['until']:
+                rest = 0
+                for each in steps[index + 1:]:
+                    if each['send'] is not None or each['wait'] or each['source'] is not source \
+                            or each['awaits'] != step['awaits']:
+                        break
+                    rest += 1
+                take = max(1, len(pending[awaits]) - rest)
+            if take > 1:
+                step['collects'] = pending[awaits][:take]
+            del pending[awaits][:take]
+        elif awaits is not None:
+            pending.clear()
+        if mine is not None and step['wait'] and step['awaits'] is None:
+            pending.setdefault(mine, []).append(step['name'])
 
 
 def await_key(step):
@@ -2899,6 +2930,10 @@ SENT_UPDATE = "; one sent before this step's request may arrive first: stay() on
 
 # Appended to the check of a step with "until": the generated test above it holds the step.
 UNTIL_HELD = '; it runs only on the arrival its "until" names, the earlier ones already stay()'
+
+# Appended to the check of a step that collects several answers, with their steps and count.
+COLLECTS = ('; it collects the answers to {}: record each by an answer field that names it '
+            'and stay() until all {} are in')
 
 def subscribe_order(attributes, steps, roles):
     """The attribute names of one provider in subscription order: declaration order, with
@@ -3088,6 +3123,8 @@ def step_dispatch(steps, kind, name, indent, latch=None, role=None):
         lines += [marker('step_' + step['name'], STEP_CHECK[kind] + (
                       UNTIL_HELD if step.get('until') else
                       SENT_UPDATE if kind == 'update' and step.get('send') else '') + (
+                      COLLECTS.format(', '.join('"{}"'.format(each) for each in step['collects']),
+                                      len(step['collects'])) if step.get('collects') else '') + (
                       ROLE_ORDER.format(role) if role else ''),
                   indent + 8),
                   pad + '    }',

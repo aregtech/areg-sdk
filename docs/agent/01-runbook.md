@@ -117,8 +117,7 @@ python3 <areg-sdk>/tools/schema_help.py --list --document siml
 ```
 
 `--full` on a type name adds what its values mean and `--search <word>` finds a name.
-Never open `siml.xsd`, `dtml.xsd` or `fsml.xsd`: 20-50 KB each, re-sent with every
-later request.
+Never open a `.xsd`: 20-50 KB each, re-sent with every later request.
 
 The command below writes every document and generated source into `src/CMakeLists.txt`
 and keeps the names already there; a source you add yourself goes on its executable's
@@ -139,7 +138,8 @@ AREG_EOF
 ```
 
 `--write <file>` saves standard input to that file first: a file and its build are one
-call. A shell with no here-document writes the file and runs this in the same message.
+call, even where your harness prefers its own editor. A shell with no here-document
+writes the file and runs this in the same message.
 `--edit` instead changes lines of your files in the same call: `== <file>`,
 `<<<<<<< SEARCH`, the old lines, `=======`, the new lines, `>>>>>>> REPLACE`.
 
@@ -167,9 +167,9 @@ every `notify_on_*` subscription are already correct, so none of them needs a pa
 
 Every place a rule of yours belongs is one line: `// TODO(you) <name>: <what>`, and
 the command prints all of them; `gen_skeleton.py --doc <document> --todos` reprints
-whichever are left. **These files are yours, not generated:** fill the markers without
-rereading them, and add what the tool writes no shape for -- a consumer's worker thread,
-a component no design declares -- as files of your own, registered in `main.cpp` (`37`,
+whichever are left. **These files are yours, not generated:** `bodies.txt` fills their
+markers and none is reread; add what the tool writes no shape for -- a consumer's worker
+thread, a component no design declares -- as files of your own, registered in `main.cpp` (`37`,
 `32`, `10`): that is no workaround. `--regenerate` drops what lies outside markers.
 
 `gen_skeleton.py --doc <document> --contract` prints every signature and every
@@ -225,8 +225,8 @@ python3 <areg-sdk>/tools/agent/build_project.py --spec design.json --write bodie
 AREG_EOF
 ```
 
-The section 5 command with `--run`: it builds as it did there, then starts the router,
-the provider and the consumer and checks their output. Exit 0 is a pass. **Run it after
+The section 5 command with `--run`: it builds, then starts the router and every
+process and checks their output. Exit 0 is a pass. **Run it after
 every fix too** -- worksheet, build and run are one request.
 
 **A console quit and the peer going away are scenarios too**, not terminal work: the

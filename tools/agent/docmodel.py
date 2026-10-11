@@ -169,6 +169,7 @@ class Vocabulary:
         self.shared = set(shared_names)
         self.local = set()
         self.prefix = prefix
+        self.own = None
 
     def declare(self, names):
         self.local = set(names)
@@ -187,6 +188,10 @@ class Vocabulary:
             fail('{} has no type'.format(where))
         if self.known(name):
             return name
+        # A type of this document spelled with the document's own name is that type.
+        head, sep, tail = name.partition('::')
+        if sep and self.own and head == self.own and tail in self.local:
+            return tail
         offered = sorted(self.local) + \
             sorted('{}::{}'.format(self.space, n) for n in self.shared)
         fail('{} is declared "{}", which is not a type. This document declares: {}. '
