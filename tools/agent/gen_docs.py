@@ -387,6 +387,8 @@ class Machine:
             fail('{} has no "states"'.format(self.where))
         self.state_names = set()
         collect_states(self.states, self.state_names, self.where)
+        self.parents, self.kinds = {}, {}
+        collect_parents(self.states, None, self.parents, self.kinds)
 
         # A "final_event" is by definition an event this machine sends to itself, so
         # declaring it twice is bookkeeping. Anything a state ends on and "events" does
@@ -430,6 +432,49 @@ def final_events(states):
         found.extend(n for n in final_events(state.get('states') or [])
                      if n not in found)
     return found
+
+
+def collect_parents(states, parent, parents, kinds):
+    """The composite holding each state, None for the top level, and each state's kind."""
+    for state in states:
+        parents[state.get('name')] = parent
+        kinds[state.get('name')] = state.get('kind')
+        collect_parents(state.get('states') or [], state.get('name'), parents, kinds)
+
+
+def ancestry(machine, name):
+    """The state and every composite holding it, innermost first."""
+    chain = [name]
+    while machine.parents.get(chain[-1]):
+        chain.append(machine.parents[chain[-1]])
+    return chain
+
+
+def target_remedy(machine, owner, target):
+    """What a "to" that names no state should be instead."""
+    name = re.split(r'[/\\]', target)[-1]
+    lead = '"to" names one state, never a path.' if name != target else ''
+    if name not in machine.state_names:
+        close = difflib.get_close_matches(name, sorted(machine.state_names), 1)
+        return ' '.join(filter(None, [lead, 'Did you mean "{}"?'.format(close[0]) if close else '']))
+    lead += ' ' if lead else ''
+    for source in ancestry(machine, owner):
+        for holder in ancestry(machine, name):
+            if machine.parents.get(source) != machine.parents.get(holder):
+                continue
+            marker = (machine.kinds.get(name) == 'history'
+                      and machine.parents.get(name) == holder)
+            if source == owner and (holder == name or marker):
+                return lead + 'Write "{}".'.format(name)
+            if holder == name:
+                return (lead + '"{0}" is not beside "{1}": to leave "{2}" from inside it, '
+                        'put this transition on "{2}", whose transitions fire from anywhere '
+                        'inside it. A transition of the state inside, on the same "on", is '
+                        'tried first.'.format(name, owner, source))
+            return (lead + 'A transition enters a composite only through the composite: '
+                    'target "{}", which holds "{}" and starts at its "initial", from a state beside '
+                    'it.'.format(holder, name))
+    return lead.strip()
 
 
 def collect_states(states, seen, where):
@@ -746,8 +791,9 @@ def write_transition(machine, writer, depth, transition, owner):
 
     target = transition.get('to')
     if target is not None and target not in machine.state_names:
-        fail('{} goes to "{}", which is not a state of {}'
-             .format(where, target, machine.where))
+        remedy = target_remedy(machine, owner, target)
+        fail('{} goes to "{}", which is not a state of {}.{}'
+             .format(where, target, machine.where, ' ' + remedy if remedy else ''))
     head = '<Transition ID="{}" Kind="{}" StimulusKind="{}" Stimulus="{}"'.format(
         writer.ident(), 'External' if target else 'Internal', kind_of, esc(stimulus_name))
     if target:

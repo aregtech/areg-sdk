@@ -614,6 +614,15 @@ PEER_LOST_NOTE = ['after this body the reconnect deadline starts: a provider not
                   'cReconnectSeconds ends the run through fail(), exit 1, so the body only',
                   'reports the loss. A reconnect_seconds of 0 waits for ever instead']
 
+WATCH_LOST_NOTE = ['after this body the reconnect deadline starts: a provider not back within',
+                   'cReconnectSeconds ends the run with exit 1, so the body only reports the',
+                   'loss. A reconnect_seconds of 0 waits for ever instead']
+
+# Added to the first update_ section of a file whose attributes carry a mFresh flag.
+FRESH_NOTE = ['mFresh<Name> is true in the body of the value subscribing delivers, on',
+              'every connection: the current value, not a change. It is false from the',
+              'next arrival on']
+
 
 REFUSED_NOTE = ['after this body the run ends with quit_with(1), so the body only',
                 'reports it']
@@ -672,7 +681,7 @@ def first_sections(sections):
     return first
 
 
-def section_notes(sections, driven=(), connected=None, stepless=()):
+def section_notes(sections, driven=(), connected=None, stepless=(), fresh=()):
     """The warnings that belong to one section, keyed by its marker name.
 
     "driven" is what driven_body() quoted and "connected" the files with a generated
@@ -692,6 +701,12 @@ def section_notes(sections, driven=(), connected=None, stepless=()):
                 notes[key] = UPDATE_STEPLESS_BRIEF if index else UPDATE_STEPLESS
             else:
                 notes[key] = later if index else first
+    # "fresh" are the files whose attributes carry a mFresh flag.
+    noted = set()
+    for name, _, _, file_name, _ in sections:
+        if name.startswith('update_') and file_name in fresh and file_name not in noted:
+            noted.add(file_name)
+            notes[(file_name, name)] = notes[(file_name, name)] + FRESH_NOTE
     # The brief goes on the first step_ section of each handler, not on all of them:
     # the sections of one handler are read together.
     checks = [(name, signature) for name, _, _, _, signature in sections
@@ -715,6 +730,8 @@ def section_notes(sections, driven=(), connected=None, stepless=()):
     names = [name for name, _, _, _, _ in sections]
     if 'peer_lost' in names:
         notes['peer_lost'] = PEER_LOST_NOTE
+    if 'watch_lost' in names:
+        notes['watch_lost'] = WATCH_LOST_NOTE
     if 'service_refused' in names:
         notes['service_refused'] = REFUSED_NOTE
     if any(name == 'next_step' for name, _, _, _, _ in sections):
@@ -941,7 +958,9 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
 
     stepless = set(file_name for file_name, body in produced
                    if 'Step::' not in body and 'client_connected()' not in body)
-    notes = section_notes(sections, driven, connecting(produced), stepless)
+    fresh = set(file_name for file_name, body in produced
+                if file_name.endswith('.cpp') and 'mFresh' in body)
+    notes = section_notes(sections, driven, connecting(produced), stepless, fresh)
     falls = fall_through(steps, hold)
     current = None
     # A name more than one file carries is addressed through its file.
@@ -3966,7 +3985,7 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
                   '    uint32_t     mTrailCount{ 0 };   //!< How many arrived so far.',
                   '    const char * mEndedBy[static_cast<uint32_t>(Step::Done) + 1]{};   //!< What ended each step.',
                   '    bool         mEndedFirst[static_cast<uint32_t>(Step::Done) + 1]{};   //!< True when that was a value from subscribing.']
-        lines += ['    bool         {}{{ false }};   //!< True until a value after subscribing.'
+        lines += ['    bool         {}{{ false }};   //!< True for the value subscribing delivers.'
                   .format(fresh_flag(name)) for name in fresh_attributes(steps, iface)]
         lines += ['']
     lines += ['    //! Ends the scenario as a failure, naming what went wrong and the',

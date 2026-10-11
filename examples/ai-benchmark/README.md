@@ -102,6 +102,8 @@ one.
 | `prompt-greenhouse.md` | a zone host and a simulated console | 2 | no | three named instances of one controller; moving one instance into the console's own process by configuration, with no code change |
 | `prompt-washer.md` | a washing machine and a simulated user | 2 | yes | **the hardest machine:** a rinse reused N times per programme, a fill reused inside the wash and every rinse, an attempt limit that starts again on every fill, pause at a stage boundary, fault and retry of the failed stage only |
 | `prompt-orderdesk.md` | a warehouse, an order desk and a simulated customer | **3** | no | two services in one program; a program that serves clients while being a client of two others; answers given only after other services answered; three orders in flight at once; undoing a reservation when a later step fails |
+| `prompt-chargepoint.md` | a charging station, a site manager and a simulated driver | **3** | yes | **the widest:** three named instances of one machine with a handshake reused at start and resume; a manager that answers only after a bay answered, two requests in flight, a slot given back on refusal; a meter thread feeding it by messages; suspend and resume from the energy reached; a late watcher |
+| `prompt-camera.md` | a camera and a viewer that checks every frame | 2 | no | 64 KB frames at a fixed rate and in a burst; a capture thread of the device's own, noticed when stuck, ended and replaced; a part of the client stopped and started again at run time, its two parts talking by messages |
 
 ### Which prompt tests which feature
 
@@ -117,18 +119,21 @@ only is measured by that prompt only.
 | a declared state machine: nested states and guards | `coffeemachine`, `atm-fsm`, `printscan`, `elevator`, `sensorgateway`, `washer` |
 | resuming where a sequence was interrupted | `coffeemachine`, `elevator`, `washer` |
 | entering a sequence at a later step | `elevator` |
-| one machine reused from several places (hosted machine) | `atm-fsm`, `printscan`, `washer` |
+| one machine reused from several places (hosted machine) | `atm-fsm`, `printscan`, `washer`, `chargepoint` |
 | a count that starts again on every visit | `atm`, `atm-fsm`, `washer` |
 | an injected fault, then recovery or retry | `printscan`, `sensorgateway`, `washer` |
 | hand-written control flow against a declared machine | `atm` against `atm-fsm` |
 | shared data types: records, enumerations, lists | `sensorgateway` |
-| a thread of the application's own, talking to a component by messages | `sensorgateway` |
+| a thread of the application's own, talking to a component by messages | `sensorgateway`, `chargepoint`, `camera` |
+| large data blocks at a fixed rate and in a burst | `camera` |
+| a worker thread that gets stuck, noticed, ended and replaced | `camera` |
+| part of a program stopped and started again while it runs | `camera` |
 | three programs; two clients of one provider | `elevator`, `orderdesk` |
 | two services in one program; a client of several providers | `orderdesk` |
-| an answer given after asking another service, without blocking | `orderdesk` |
-| several requests in flight at once | `orderdesk` |
+| an answer given after asking another service, without blocking | `orderdesk`, `chargepoint` |
+| several requests in flight at once | `orderdesk`, `chargepoint` |
 | undoing an earlier step when a later one fails | `orderdesk` |
-| several named instances of one service | `greenhouse` |
+| several named instances of one service | `greenhouse`, `chargepoint` |
 | deployment chosen by configuration, not code | `greenhouse` |
 | a peer lost mid-scenario, and a start in the wrong order | all; the hidden probes score both |
 

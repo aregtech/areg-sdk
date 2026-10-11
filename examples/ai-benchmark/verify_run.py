@@ -58,6 +58,8 @@ MIN_SECONDS = {
     'prompt-sensorgateway.md': 1.25,   # 2.5 s: 20 sets of 100 ms and 500 ms of silence
     'prompt-greenhouse.md':    0.7,    # 1.4 s: five and then two degrees of 200 ms
     'prompt-orderdesk.md':     0.45,   # 0.9 s: three charges of 300 ms in sequence
+    'prompt-chargepoint.md':   1.95,   # 3.9 s: bay 2's 30 kWh session, then bay 3's 2 kWh
+    'prompt-camera.md':        0.75,   # 1.5 s: 20 frames of 50 ms, 300 ms away, 20 more
 }
 SANITIZE_FLAGS = '-fsanitize=address,undefined -fno-omit-frame-pointer'
 SANITIZER_MARKS = ('ERROR: AddressSanitizer', 'runtime error:')
