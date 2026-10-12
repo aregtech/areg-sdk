@@ -371,7 +371,10 @@ def lookups(component):
                           const, name, lookup_name(iface), ' const' if const else ''),
                       '    {']
             for role in roles:
-                lines += ['        if (role == "{}")'.format(role),
+                spellings = [role] + sorted(set(gen_docs.RENAMED_ROLES.get(role, [])))
+                lines += ['        if ({})'.format(' || '.join(
+                    ('(role == "{}")' if len(spellings) > 1 else 'role == "{}"').format(one)
+                    for one in spellings)),
                           '        {',
                           '            return &{};'.format(member_of(role)),
                           '        }',

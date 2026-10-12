@@ -105,8 +105,8 @@ Every `from_*` returns `String &`, so they chain.
 `areg::HashMap<KEY, VALUE>` and `areg::LinkedList<VALUE>`.
 
 > **These containers do not expose `begin()` and `end()`.**
-> A range-`for` over one does not compile; iterate by index, or over `list.data()`, the
-> wrapped `std::vector`, `std::list` or `std::unordered_map` (`ArrayList.hpp:194`).
+> A range-`for` over one does not compile; iterate by index, or over `list.data()`
+> (`ArrayList.hpp:194`), the wrapped `std::vector`, `std::list` or `std::unordered_map`.
 
 ```cpp
 for (uint32_t i = 0; i < list.size(); ++ i)

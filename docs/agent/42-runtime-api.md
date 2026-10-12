@@ -77,9 +77,9 @@ past it is reported as P-18. A program with no `quit_with()` calls `signal_quit(
 |---|---|---|
 | constructor used by the model | `Component(const areg::ComponentEntry & regEntry, ComponentThread & ownerThread)` | `Component.hpp:167` |
 | constructor by role name | `Component(const String & roleName, ComponentThread & ownerThread)` | `Component.hpp:159` |
-| own role name | `const String & role_name() const noexcept` | `Component.hpp:317` |
-| own address | `const ComponentAddress & address() const noexcept` | `Component.hpp:323` |
-| owning thread | `ComponentThread & master_thread() noexcept` | `Component.hpp:311` |
+| own role name | `const String & role_name() const noexcept` | `Component.hpp:321` |
+| own address | `const ComponentAddress & address() const noexcept` | `Component.hpp:327` |
+| owning thread | `ComponentThread & master_thread() noexcept` | `Component.hpp:315` |
 
 Optional lifecycle overrides:
 `startup_component(ComponentThread &)` (`Component.hpp:191`),

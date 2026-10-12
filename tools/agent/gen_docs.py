@@ -1421,6 +1421,41 @@ def settle_start(level, owner):
         settle_start(state, state.get('name'))
 
 
+# The spacing a role written as a phrase carries where its identifier has "_".
+ROLE_SPACING = re.compile(r'[\s-]+')
+# Each role written as a phrase, by the identifier it was read as.
+RENAMED_ROLES = {}
+
+
+def role_identifier(role):
+    """A role as a C identifier: its spaces and dashes become "_"."""
+    return ROLE_SPACING.sub('_', role.strip()) if isinstance(role, str) else role
+
+
+def settle_roles(spec):
+    """Read every role of the spec as a C identifier, and record each one renamed."""
+    def one(role):
+        named = role_identifier(role)
+        if named != role:
+            RENAMED_ROLES.setdefault(named, []).append(role)
+        return named
+
+    def both(owner):
+        if isinstance(owner.get('role'), str):
+            owner['role'] = one(owner['role'])
+        if isinstance(owner.get('roles'), list):
+            owner['roles'] = [one(role) for role in owner['roles']]
+
+    for program in listed(spec, 'programs'):
+        for component in listed(program, 'components'):
+            both(component)
+            for use in listed(component, 'uses'):
+                both(use)
+    for interface in listed(spec, 'interfaces'):
+        for step in listed(interface, 'steps'):
+            both(step)
+
+
 def load_spec(path):
     """One spec file as the generator reads it, and how many samples it left untouched."""
     twice = []
@@ -1451,6 +1486,7 @@ def load_spec(path):
         fail('{} is not a spec object'.format(path))
     skipped = []
     spec = settle(raw, skipped)
+    settle_roles(spec)
     settle_awaits(spec)
     for machine in listed(spec, 'machines'):
         settle_start(machine, machine.get('name'))
@@ -3513,6 +3549,12 @@ def main():
         specs.append((path, spec))
         skipped += count
 
+    if RENAMED_ROLES:
+        print('  note  a role is a C identifier, so {}; the client looked up by role name '
+              'takes either spelling'.format(', '.join(
+                  '"{}" is {}'.format(phrase, named)
+                  for named, phrases in sorted(RENAMED_ROLES.items())
+                  for phrase in sorted(set(phrases)))))
     project = merge(specs)
     settle_submachines(listed(project, 'machines'))
     check_shape(project)

@@ -327,11 +327,11 @@ def print_todos(produced, out, written, holes=0, scenarios='', first=True, added
 # written where the markers are written, so nothing has to be recalled from an
 # earlier command or looked up in a second one.
 # ---------------------------------------------------------------------------
-# Sections above which the worksheet offers the bodies in parts, one call each.
+# Sections above which the worksheet prices the bodies in parts, one call each.
 PARTS_OVER = 60
-PARTS = """ A worksheet this long goes
-#| in parts, one program each: the first --write {bodies}, each later one
-#| --write fix.txt (folded into {bodies}), only the last with --run."""
+PARTS = """ One here-document is the cheapest
+#| at any length; parts, one program each, cost a request each: the first --write
+#| {bodies}, each later one --write fix.txt (folded in), only the last with --run."""
 
 WORKSHEET_HEAD = """\
 #| The worksheet of this project: one section per open marker, in file order.
@@ -4430,7 +4430,11 @@ def component_files(cls, brief, includes, class_lines, state_slot, prelude=(),
     """The .hpp and the .cpp of one component, named after its class."""
     declaration, definitions = split_class(cls, class_lines)
     private = declaration.index('private:')
-    declaration.insert(private + 1, marker(state_slot, 'private: ' + state_hint, 4))
+    declaration[private + 1:private + 1] = [
+        '    //! The log scope of GLOBAL_INFO, GLOBAL_WARN and GLOBAL_ERR in this class.',
+        '    static areg::ScopeMessage & _global_scope();',
+        '',
+        marker(state_slot, 'private: ' + state_hint, 4)]
     guard = cls.upper() + '_HPP'
     header = ['/**',
               ' * \\file    {}.hpp'.format(cls),
@@ -4441,7 +4445,8 @@ def component_files(cls, brief, includes, class_lines, state_slot, prelude=(),
               '',
               '#include "areg/base/areg_global.h"',
               '#include "areg/component/Component.hpp"',
-              '#include "areg/component/ComponentThread.hpp"']
+              '#include "areg/component/ComponentThread.hpp"',
+              '#include "areg/logging/areg_log.h"']
     header += includes + ['']
     header += list(prelude)
     header += declaration + ['', '#endif // {}'.format(guard), '']
@@ -4456,6 +4461,13 @@ def component_files(cls, brief, includes, class_lines, state_slot, prelude=(),
               '',
               '// GLOBAL_INFO, GLOBAL_WARN and GLOBAL_ERR anywhere in this file log in this scope.',
               'GLOBAL_LOG_SCOPE({}, log);'.format(cls),
+              '',
+              '#if AREG_LOGGING',
+              'areg::ScopeMessage & {}::_global_scope()'.format(cls),
+              '{',
+              '    return ::_global_scope();',
+              '}',
+              '#endif  // AREG_LOGGING',
               '']
     source += unused_allowed(definitions)
     return [(cls + '.hpp', '\n'.join(header)), (cls + '.cpp', '\n'.join(source))]

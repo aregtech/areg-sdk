@@ -187,8 +187,8 @@ each generated class already carries, and the contract every body is written aga
 `bodies.txt` -- each `== <marker>` line with the code under it -- and run it in one
 call: section 7's command with `--write bodies.txt` applies it before it compiles.
 
-**The whole implementation is two requests, or one per part if the worksheet says
-so.** One edit per body or a full rewrite costs most.
+**The whole implementation is two requests.** One edit per body or a full rewrite
+costs most.
 
 A line tagged `// placeholder(you)` stands only until the marker above it is filled --
 a default `response_`, a `return false;`. The filler takes it away with that marker. An
