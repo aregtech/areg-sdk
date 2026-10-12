@@ -2,7 +2,6 @@
  * \file    provider.cpp
  * \brief   The process that provides the service.
  **/
-#include <iostream>
 
 #include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
@@ -29,7 +28,7 @@ protected:
     {
         LOG_SCOPE(obs_Provider, request_hello_service);
         LOG_INFO("greeting %s", client.as_string());
-        std::cout << "provider: hello, " << client << std::endl;
+        LOG_INFO("provider: hello, %s", client.as_string());
         response_hello_service(true);
     }
 

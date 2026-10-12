@@ -172,7 +172,7 @@ GROUP BY s.scope_name ORDER BY n DESC LIMIT 20;
 ```
 
 Feed the top rows back into `areg.init` as `NOTSET` to quieten them; the scope-key
-syntax is in `34-logging.md` section 3.
+syntax is in `34-logging.md` section 2.
 
 **A scope's own timeline across processes**
 
@@ -184,7 +184,7 @@ ORDER BY l.time_created, l.id;
 ```
 
 Scope names are dot-joined from the `DEF_LOG_SCOPE` arguments -- see `34-logging.md`
-section 3.
+section 2.
 
 ---
 

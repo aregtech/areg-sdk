@@ -141,12 +141,14 @@ def components_of(project, specs, services_dir):
     for component in found:
         for name in [component.cls] + [c[2] for c in component.clients] + \
                 [worker['name'] for worker in component.workers]:
+            who = 'the "{}" component of program "{}"'.format(
+                component.name or (component.roles[0] if component.roles else component.role),
+                component.program['name'])
             if name in names:
-                fail('two components of the design would both be the class {}: {} and '
-                     'program "{}". Give the second its own program, or let one '
-                     'component use the service for both'
-                     .format(name, names[name], component.program['name']))
-            names[name] = 'program "{}"'.format(component.program['name'])
+                fail('two components of the design would both be the class {}: {} and {}. '
+                     'Give the second its own program, or let one component use the '
+                     'service for both'.format(name, names[name], who))
+            names[name] = who
     return found, ifaces
 
 
@@ -271,8 +273,7 @@ def client_class(owner, iface, roles, cls, reconnect, driving=False, steps=()):
               gs.marker('gone', 'what {} reports when this provider did not come back '
                         'within cReconnectSeconds; quit_with(1) follows, and a body that '
                         'keeps the program running returns before it'.format(owner), 12),
-              gs.placeholder('            std::cerr << "FAIL: " << mRole.as_string() << '
-                             '" did not come back" << std::endl;'),
+              gs.placeholder('            GLOBAL_ERR("FAIL: %s did not come back", mRole.as_string());'),
               '            quit_with(1);',
               '        }',
               '    }',
@@ -292,7 +293,7 @@ def client_class(owner, iface, roles, cls, reconnect, driving=False, steps=()):
         lines += ['    void {}({}) final'.format(
                       iface.spell('request', name, 'failed'),
                       iface.generated_params('request', name, 'failed').strip()),
-                  '    {'] + gs.request_failed_report(name, 'mRole.as_string() << ": " << ') + [
+                  '    {'] + gs.request_failed_report(name, 'mRole.as_string()') + [
                   '    }',
                   '']
     for name, _ in iface.broadcasts:
@@ -498,8 +499,7 @@ def watcher_class(iface, cls, driver):
               '                     (status == areg::ServiceConnectionState::Shutdown))',
               '            {',
               '                mDeadline.stop_timer();',
-              '                std::cerr << "service is " << areg::as_string(status)',
-              '                          << ", giving up" << std::endl;',
+              '                GLOBAL_ERR("service is %s, giving up", areg::as_string(status));',
               '                quit_with(1);',
               '            }',
               '        }',
@@ -511,10 +511,10 @@ def watcher_class(iface, cls, driver):
               '    {',
               '        if (&timer == &mDeadline)',
               '        {',
-              '            std::cerr << "FAIL: " << (mConnected ? "the provider did not come '
-              'back within the reconnect deadline"',
-              '                                                : "no provider connected '
-              'within the connect deadline") << std::endl;',
+              '            GLOBAL_ERR("FAIL: %s", mConnected ? "the provider did not come back '
+              'within the reconnect deadline"',
+              '                                              : "no provider connected within '
+              'the connect deadline");',
               '            quit_with(1);',
               '        }',
               '    }',
@@ -749,14 +749,12 @@ def program_main(program, components, placements):
              ' * \\brief   The {} program. The model and main(); the components are in '
              'their own files.'.format(name),
              ' **/'] + gs.MAIN_INCLUDES + ['']
-    if driver is None:
-        lines += gs.CONSOLE_INCLUDES + (['#include <cstring>'] if chosen else []) + ['']
-    elif driver.hold or chosen:
-        lines += (['#include <iostream>'] if chosen else []) + ['#include <cstring>', '']
+    if (driver is not None and driver.hold) or chosen:
+        lines += ['#include <cstring>', '']
     lines += ['#include "{}{}.hpp"'.format('' if c.program is program else
                                            '../' + program_dir(c.program), c.cls)
               for c in mine] + ['']
-    lines += gs.EXIT_CODE
+    lines += gs.EXIT_CODE + gs.main_top(gs.snake(name))
     if driver is not None and driver.hold:
         lines += gs.HOLD_CODE
     lines += ['constexpr char const _modelName[]{{ "{}Model" }};'.format(gs.pascal(name))]
@@ -807,22 +805,25 @@ def program_main(program, components, placements):
                   '    return model;',
                   '}',
                   '']
-    body = gs.MAIN_BODY if driver is None else gs.HOLD_MAIN if driver.hold else gs.EXIT_MAIN
+    body = gs.HOLD_MAIN if driver is not None and driver.hold else gs.EXIT_MAIN
     if chosen:
         selected = ['int main(int argc, char * argv[])',
                     '{',
+                    body[2],
                     '    const char * model{ deployment_model(argc, argv) };',
                     '    if (model == nullptr)',
                     '    {',
-                    '        std::cerr << "unknown --deployment; the deployments: {}" << std::endl;'
+                    '        GLOBAL_ERR("unknown --deployment; the deployments: {}");'
                     .format(', '.join(d for d, _ in per)),
+                    '        areg::Application::release();',
                     '        return 2;',
                     '    }',
                     '']
-        rest = body[2:] if body[0].startswith('int main') else body
-        lines += selected + [line.replace('(_modelName)', '(model)') for line in rest]
+        rest = body[3:]
+        lines += gs.main_run(selected + [line.replace('(_modelName)', '(model)')
+                                          for line in rest], gs.snake(name))
     else:
-        lines += body
+        lines += gs.main_run(body, gs.snake(name))
     return (program_dir(program) + 'main.cpp', '\n'.join(lines)), mine
 
 
@@ -917,7 +918,7 @@ def drop_placeholders(out, produced):
 
 
 def write_scenarios(path, programs, components, project_name, specs, deployments=()):
-    """The normal run of every program, the console quit of each server and a peer loss."""
+    """The normal run of every program, and a peer loss."""
     if not os.path.exists(path):
         return
     try:
@@ -956,13 +957,6 @@ def write_scenarios(path, programs, components, project_name, specs, deployments
     requests = len(driver.iface.requests) if driver else 0
     scenarios = [{'name': 'smoke', 'timeout': 60 + requests * gs.STEP_INTERVAL_MS // 1000,
                   'router': True, 'procs': procs}]
-    servers = [p for p in programs if 'provides' in kinds(p) and p is not lead]
-    for index, program in enumerate(servers):
-        scenarios.append({'name': gs.QUIT_SCENARIO if index == 0
-                          else '{}-{}'.format(gs.QUIT_SCENARIO, program['name']),
-                          'timeout': 30, 'router': True,
-                          'procs': [{'binary': binary(program), 'name': program['name'],
-                                     'lead': True, 'stdin': ['-q'], 'exit': 0}]})
     # Every other deployment runs the same programs, started with its name; the
     # driver's own checks are the proof, so it has no expectation of its own.
     for deployment in deployments:
@@ -999,16 +993,16 @@ def write_scenarios(path, programs, components, project_name, specs, deployments
     document['scenarios'] = scenarios + [s for s in document['scenarios'][1:]
                                          if s.get('name') not in
                                          set(x['name'] for x in scenarios)
-                                         and s.get('name') not in ('quit', 'peer-lost')]
+                                         and s.get('name') != gs.PEER_LOST_SCENARIO]
     with open(path, 'w', encoding='utf-8') as handle:
         json.dump(document, handle, indent=2)
         handle.write('\n')
     print('wrote  {}'.format(path))
     print('  {} program(s), router on: "smoke" runs them all and {} leads it; each'
           .format(len(order), lead['name']))
-    print('  "expect" hole is a section of the worksheet. {} quit scenario(s) and {}'
-          .format(len(servers), 'a peer-lost scenario' if killed else 'no peer-lost scenario'))
-    print('  were added, and need nothing from you.')
+    print('  "expect" hole is a section of the worksheet. {}'
+          .format('A peer-lost scenario was added, and needs nothing from you.' if killed
+                  else 'No peer-lost scenario was added.'))
     if killed:
         print('  peer-lost kills {} and expects only {} to exit 1; its "stop" "proc" names'
               .format(killed, lead['name']))
@@ -1116,6 +1110,8 @@ def main(argv=None):
                                         programs, produced, hosts)
     for change in changed:
         print('  {}/{}'.format(args.out.replace('\\', '/'), change))
+    for path in gs.ensure_config(args.out):
+        print('wrote  {}'.format(os.path.relpath(path).replace('\\', '/')))
     write_scenarios(args.scenarios, programs, components, project_name, args.spec,
                     [name for name, _ in placements[1:]])
 

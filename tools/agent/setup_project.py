@@ -485,8 +485,8 @@ are the whole route, on both systems, and nothing else here starts a process.
 
 **`--run` exiting 0 is what done means**, and the lines it prints are the evidence to
 report. Every acceptance item belongs in `scenarios.json`, the peer going away as a
-scenario-level `"stop"` and the console quit path as the `quit` scenario that is
-already there. Never start the processes by hand with `&`, `sleep`, `pkill` or `ps`.
+scenario-level `"stop"`. Never start the processes by hand with `&`, `sleep`, `pkill`
+or `ps`.
 {manual}
 Executables are written to `build/bin/`. The suffix is `.elf` on Linux, `.mac` on
 macOS and `.exe` on Windows.
@@ -524,7 +524,9 @@ src/CMakeLists.txt    names the documents and each executable's sources
 | Worker threads; watchdogs, a run-time model | `docs/agent/38-workers.md`; `docs/agent/37-threads.md` |
 | The application, components, time, files | `docs/agent/42-runtime-api.md` |
 | Log from application code | `docs/agent/34-logging.md` |
-| Start the pieces in the right order | nothing: `run_scenarios.py` does it and `--app` wrote `scenarios.json`. `--only` is for iterating on a failure, never for confirming a pass. `docs/agent/50-running.md` for `router`, `lead` and `stop`/`after`/`signal` |
+| `mtrouter`, `logcollector`, `logobserver` by hand | `docs/agent/50-running.md` |
+| A console program: read a command, print a result | `docs/agent/39-console.md` |
+| Start the pieces in the right order | nothing: `run_scenarios.py` does it and `--app` wrote `scenarios.json`. `--only` is for iterating on a failure, never for confirming a pass. `docs/agent/53-scenarios.md` for `router`, `lead` and `stop`/`after`/`signal` |
 | Write a test | `docs/agent/52-testing.md` |
 | Work out why it does not work | `docs/agent/51-debug.md` |
 | **Anything this table does not cover** | `AGENTS.md` section 2 in the SDK -- it routes the full set. Never search the SDK by hand |
@@ -856,11 +858,11 @@ def print_scenarios(root, mode):
         print('    "{}": {} -- the last one leads and ends it'
               .format(scenario.get('name', '?'), ', '.join(labels) or 'no process'))
     if mode == 'ipc':
-        print('    build_project.py adds "quit" and "peer-lost" (the provider killed '
-              'mid-run): write neither, and open no page for them.')
+        print('    build_project.py adds "peer-lost" (the provider killed '
+              'mid-run): do not write it, and open no page for it.')
     else:
         print('    a peer going away is a scenario of its own, with "stop"; '
-              'docs/agent/50-running.md has its keys.')
+              'docs/agent/53-scenarios.md has its keys.')
 
 
 if __name__ == '__main__':

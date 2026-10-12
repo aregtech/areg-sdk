@@ -51,8 +51,9 @@ void Provider::notify_thread_started(areg::WorkerThreadConsumer & consumer, areg
 // Members: Worker mWorker; areg::WorkerThread * mWorkerThread{ nullptr };
 ```
 
-Take the consumer name from `entry.mWorkerThreads[]`, never the literal: the model
-qualifies it by the role name (`P-11`). `REGISTER_WORKER_THREAD_EX` and `_EX2` take the
+Take the consumer name from `entry.mWorkerThreads[]`, never the literal: the model stores
+it as `<role>:<name>`, so the same component with its workers is duplicated by a second
+role alone (`P-11`). `REGISTER_WORKER_THREAD_EX` and `_EX2` take the
 thread macros' watchdog and stack arguments (`37-threads.md` section 1).
 
 ## 3. Created by hand

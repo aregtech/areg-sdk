@@ -2,7 +2,6 @@
  * \file    consumer.cpp
  * \brief   The process that consumes the service.
  **/
-#include <iostream>
 
 #include "areg/base/areg_global.h"
 #include "areg/base/UtilityDefs.hpp"
@@ -16,6 +15,8 @@
 #include "src/services/HelloServiceConsumerBase.hpp"
 
 DEF_LOG_SCOPE(obs_Consumer, service_connected);
+DEF_LOG_SCOPE(obs_Consumer, response_hello_service);
+DEF_LOG_SCOPE(obs_Consumer, request_hello_service_failed);
 
 class ServiceConsumer final : public    areg::Component
                             , protected HelloServiceConsumerBase
@@ -47,13 +48,15 @@ protected:
 
     void response_hello_service(bool success) final
     {
-        std::cout << "consumer: " << (success ? "greeted" : "failed") << std::endl;
+        LOG_SCOPE(obs_Consumer, response_hello_service);
+        LOG_INFO("consumer: %s", success ? "greeted" : "failed");
         areg::Application::signal_quit();
     }
 
     void request_hello_service_failed(areg::ResultType /*reason*/) final
     {
-        std::cerr << "consumer: request failed" << std::endl;
+        LOG_SCOPE(obs_Consumer, request_hello_service_failed);
+        LOG_ERR("consumer: request failed");
     }
 };
 

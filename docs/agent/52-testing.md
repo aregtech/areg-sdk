@@ -4,7 +4,7 @@ Three things can be tested, and they need different tools. Pick the row, not the
 
 | What you want to know | Use | Where |
 |---|---|---|
-| does the whole application still work | the scenario harness | `50-running.md`, last section |
+| does the whole application still work | the scenario harness | `53-scenarios.md` |
 | does one component answer correctly | a scripted provider in the model | section 1 below |
 | does a plain function or class still work | any C++ test framework | section 3 below |
 
@@ -108,7 +108,7 @@ whenever a rule, a calculation or a state decision can be lifted out of a handle
 ## 4. The whole application, as one verdict
 
 `run_scenarios.py` starts the processes, matches the expected lines and checks the
-exit codes. It is documented in `50-running.md`; a `scenarios.json` beside the project
+exit codes. It is documented in `53-scenarios.md`; a `scenarios.json` beside the project
 is what an agent runs to prove the application works. Use it for anything that needs
 `mtrouter`, two processes, or a real log database.
 

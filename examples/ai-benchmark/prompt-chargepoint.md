@@ -88,11 +88,12 @@ and announces it. A brownout during a brownout is refused,
 naming the reason.
 
 **Stopping and timing out.** The station and the manager run until they are stopped:
-each accepts `-q` or `--quit` typed at its console and exits cleanly. No program may wait
-forever -- if something it is waiting for has not arrived within 20 seconds, it reports
-that and exits. The site manager is the site's shutdown point: the station is also its
-client, only to learn when it is gone. If a program goes away mid-scenario, every program
-that is its client reports the loss and exits non-zero: the station and the driver when
+each accepts `-q` or `--quit` typed at its console and exits cleanly, with exit code 0: a
+quit is normal behaviour, not a failure. No program may wait forever -- if something it
+is waiting for has not arrived within 20 seconds, it reports that and exits. The site
+manager is the site's shutdown point: the station is also its client, only to learn when
+it is gone. If a program goes away abruptly mid-scenario, every program that is its
+client reports the loss and exits non-zero: the station and the driver when
 the site manager goes away; the site manager when the station goes away, and then the
 driver, which has lost the site manager.
 
@@ -182,9 +183,9 @@ framework, against this list:
 - [ ] what a bay is doing, its energy and the session list are published, and a client
       that starts watching late receives the current values at once
 - [ ] the station and the manager accept `-q` / `--quit` at their console and exit
-      cleanly
+      cleanly, with exit code 0
 - [ ] no program waits more than 20 seconds for something that never arrives
-- [ ] if a program goes away mid-scenario, every program that is its client reports it
+- [ ] if a program goes away abruptly mid-scenario, every program that is its client reports it
       and exits non-zero; the station is a client of the site manager for this
 - [ ] the scenario exits 0, and non-zero when an expectation fails
 - [ ] no busy-waiting and no sleeping inside a message handler

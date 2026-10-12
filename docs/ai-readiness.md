@@ -144,6 +144,7 @@ here rather than left to be discovered:
 | `tool` | Every tool `AGENTS.md` names exists. A named tool that is absent is a dead instruction, and an agent follows it before it discovers that. | `FAIL` |
 | `tool` | `explain_rule.py` reads its registry, and every rule says both what is wrong and what to change. What is checked is what the tool prints, not what one of its inputs holds. | `WARN` |
 | `observability` | A checker starts the router, collects logs with `logcollector`, queries the `.sqlog` database it writes, and runs in CI. This is the debugging loop the SDK exists to support, and the one an agent cannot invent. What is checked is what a script does, never what a page says. | `FAIL` |
+| `console` | No console instruction in `AGENTS.md` or `docs/agent/` outside `39-console.md` and `50-running.md`, and no console code (`std::cout`, `std::cin`, `printf(`, `getline`) in the recipes or the generators. An areg application is as often a service, a GUI or a library as a console program, so it logs; console use is taught on its own page. | `FAIL` |
 | `portability` | Line endings normalised for executable text, a Windows form for every POSIX command an agent is told to run, and CI proving it on a non-Linux runner. | `FAIL` |
 
 ## 6. The feature catalogue

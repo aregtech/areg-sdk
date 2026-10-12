@@ -45,7 +45,7 @@ Find your task, open that one file, and do not search the repository.
 | Worker thread; watchdog, model built at run time | a provider's: `workers` of its service in design.json, the template's note; otherwise copy `docs/agent/recipes/07-worker-events/`; `docs/agent/38-workers.md`; `docs/agent/37-threads.md` |
 | Send a custom event between threads | `docs/agent/23-events.md` |
 | Do periodic or delayed work | `docs/agent/33-timers.md` |
-| Log from code; collect several processes' logs | `docs/agent/34-logging.md` |
+| Log from code; read a program's log | `docs/agent/34-logging.md` |
 | Understand the seven core concepts | `CODEBASE.md` section 1 |
 | Data types: C++ spelling, struct, enum, `.dtml` | `docs/agent/21-data-types.md` |
 | Add a state machine | `docs/agent/22-state-machine.md` -- a `"machines"` block of `design.json`, never a recipe copied over a project you already have |
@@ -55,7 +55,9 @@ Find your task, open that one file, and do not search the repository.
 | Integrate areg into an existing CMake project | `docs/wiki/02b-cmake-integrate.md` |
 | Work out why it does not work | `docs/agent/51-debug.md` |
 | Test the application, or a component on its own | copy `docs/agent/recipes/12-testing/`; `docs/agent/52-testing.md` |
-| A `scenarios.json` key `--app` did not write; `mtrouter` by hand. In ipc it writes the `-q` scenario, and peer loss for a design with steps | `docs/agent/50-running.md` |
+| A `scenarios.json` key `--app` did not write | `docs/agent/53-scenarios.md` |
+| `mtrouter`, `logcollector`, `logobserver` by hand; collect logs | `docs/agent/50-running.md` |
+| A console program: read a command, print a result | `docs/agent/39-console.md` |
 | Read or query a `.sqlog` log database | `docs/agent/35-sqlog.md` |
 | Set the router address, ports, anything in `areg.init` | `docs/agent/36-config.md` |
 | See a complete working application | `docs/agent/recipes/02-ipc-two-processes/`, which is always present |

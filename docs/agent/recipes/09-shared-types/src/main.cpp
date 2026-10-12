@@ -3,7 +3,6 @@
  * \brief   Two services that carry the same structure, declared once in a shared
  *          .dtml document and included by both.
  **/
-#include <iostream>
 
 #include "areg/base/areg_global.h"
 #include "areg/base/ArrayList.hpp"
@@ -16,6 +15,9 @@
 #include "src/services/MeterServiceConsumerBase.hpp"
 #include "src/services/ReportServiceProviderBase.hpp"
 #include "src/services/ReportServiceConsumerBase.hpp"
+#include "areg/logging/areg_log.h"
+
+GLOBAL_LOG_SCOPE(shared_main, log);
 
 //! Owns the meter value and publishes it as an attribute.
 class MeterProvider final   : public    areg::Component
@@ -74,10 +76,9 @@ protected:
     {
         if (state == areg::DataState::DataIsOK)
         {
-            std::cout << "collector: reading " << Reading.value
-                      << " from " << Reading.sensor << std::endl;
-            std::cout << "collector: quality " << SharedTypes::as_string(Reading.quality)
-                      << ", firmware " << Reading.firmware.to_string() << std::endl;
+            GLOBAL_INFO("collector: reading %u from %s", Reading.value, Reading.sensor.as_string());
+            GLOBAL_INFO("collector: quality %s, firmware %s", SharedTypes::as_string(Reading.quality),
+                        Reading.firmware.to_string().as_string());
             mHistory.add(Reading);
             report_history();
             set_history(mHistory);
@@ -85,22 +86,21 @@ protected:
     }
 
 private:
-    //! Prints every reading kept so far. An areg container has no begin() and no
+    //! Logs every reading kept so far. An areg container has no begin() and no
     //! end(), so the loop is by index over size().
     void report_history() const
     {
         if (mHistory.is_empty())
         {
-            std::cout << "collector: history empty" << std::endl;
+            GLOBAL_INFO("collector: history empty");
             return;
         }
 
-        std::cout << "collector: history holds " << mHistory.size() << std::endl;
+        GLOBAL_INFO("collector: history holds %u", mHistory.size());
         for (uint32_t i = 0; i < mHistory.size(); ++ i)
         {
             const SharedTypes::Reading & kept = mHistory[i];
-            std::cout << "collector: kept " << kept.value
-                      << " from " << kept.sensor << std::endl;
+            GLOBAL_INFO("collector: kept %u from %s", kept.value, kept.sensor.as_string());
         }
     }
 
@@ -147,10 +147,8 @@ protected:
         }
 
         const SharedTypes::Reading & newest = History[History.size() - 1];
-        std::cout << "display: report " << newest.value
-                  << " from " << newest.sensor << std::endl;
-        std::cout << "display: readings crossed the boundary: " << History.size()
-                  << std::endl;
+        GLOBAL_INFO("display: report %u from %s", newest.value, newest.sensor.as_string());
+        GLOBAL_INFO("display: readings crossed the boundary: %u", History.size());
         areg::Application::signal_quit();
     }
 };
@@ -182,7 +180,7 @@ END_MODEL(_modelName)
 
 int main()
 {
-    areg::Application::setup();
+    areg::Application::setup(true, true, true, true, false, "./config/project.init");
     areg::Application::load_model(_modelName);
     areg::Application::wait_quit(areg::WAIT_INFINITE);
     areg::Application::unload_model(_modelName);

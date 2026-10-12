@@ -483,8 +483,8 @@
     },
     {
       "id": "P-11",
-      "rule": "The consumer name in REGISTER_WORKER_THREAD must equal the name the component answers to from worker_thread_consumer(); an unknown name yields nullptr and the worker thread runs nothing.",
-      "detect": "a worker consumer string literal whose exact text appears nowhere else in the project"
+      "rule": "The model stores a REGISTER_WORKER_THREAD consumer name as <role>:<name>, so worker_thread_consumer() is asked for that; take it from entry.mWorkerThreads[i].mConsumerName or areg::create_component_item_name(role, name). A name it does not answer starts no worker thread.",
+      "detect": "a REGISTER_WORKER_THREAD in a project that reads no ComponentEntry::mWorkerThreads and calls no create_component_item_name()"
     },
     {
       "id": "P-12",

@@ -2,7 +2,6 @@
  * \file    main.cpp
  * \brief   A provider that broadcasts on every period of a timer.
  **/
-#include <iostream>
 
 #include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
@@ -14,6 +13,9 @@
 
 #include "src/services/TickServiceProviderBase.hpp"
 #include "src/services/TickServiceConsumerBase.hpp"
+#include "areg/logging/areg_log.h"
+
+GLOBAL_LOG_SCOPE(timer_main, log);
 
 class TickProvider final    : public    areg::Component
                             , protected TickServiceProviderBase
@@ -84,7 +86,7 @@ protected:
 
     void broadcast_tick(uint32_t count) final
     {
-        std::cout << "consumer: tick " << count << std::endl;
+        GLOBAL_INFO("consumer: tick %u", static_cast<unsigned int>(count));
         if (count >= 3)
         {
             areg::Application::signal_quit();
@@ -112,7 +114,7 @@ END_MODEL(_modelName)
 
 int main()
 {
-    areg::Application::setup();
+    areg::Application::setup(true, true, true, true, false, "./config/project.init");
     areg::Application::load_model(_modelName);
     areg::Application::wait_quit(areg::WAIT_INFINITE);
     areg::Application::unload_model(_modelName);

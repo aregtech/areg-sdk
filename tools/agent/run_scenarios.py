@@ -50,15 +50,13 @@ Process: {"binary": "myapp", "args": [], "expect": ["regex"], "exit": 0}
   binary   Name without a platform suffix; looked up in the build directory.
   name     Label for this process, for reports and for "stop". Default: binary.
   args     Command line arguments.
-  expect   Regular expressions that all have to match the captured output.
-  reject   Regular expressions that must not match the captured output.
+  expect   Regular expressions that all have to match the lines the process wrote:
+           the messages of its log file under logs/ beside the executable, without
+           their time, thread and priority, and its standard output.
+  reject   Regular expressions that must not match those lines.
   stdin    Lines written to the process's standard input once it has started;
-           the stream is closed after the last one. This is how a "-q" quit path
-           is exercised, on the lead of a scenario of its own: on any other process
-           the quit is read at once and it ends before its peers are served.
-           WITHOUT this key the process still gets its own standard
-           input and nothing ever writes to it or closes it, so a console loop
-           waits there instead of reading end of input at once.
+           the stream is closed after the last one. Without this key the process
+           still gets its own standard input, which nothing writes to or closes.
   exit     Required exit code. Omit or null to accept any.
   lead     true to make this the process the scenario waits for. Default: the
            last one in the list.
@@ -67,18 +65,17 @@ Process: {"binary": "myapp", "args": [], "expect": ["regex"], "exit": 0}
 Stop: {"proc": "provider", "after": "consumer: ready", "signal": "term"}
   proc     The process to stop, by its name.
   after    A regular expression: the process is stopped once this matches the
-           lead's output. A number instead waits that many seconds. Omitted, the
+           lead's lines. A number instead waits that many seconds. Omitted, the
            process is stopped as soon as it is running.
   signal   "term" (default) or "kill". "kill" is an abrupt loss of the peer.
   A list of these runs them in order.
 
-The output of a failing process is printed with the verdict, and a passing
+The lines of a failing process are printed with the verdict, and a passing
 scenario prints the line every expectation matched and the last 150 lines of the
-lead's output, so one run is the whole evidence. --quiet prints only the verdict.
+lead, so one run is the whole evidence. --quiet prints only the verdict.
 
-Two acceptance items recur in nearly every task and both are keys here, so
-neither needs a shell: the console quit path is "stdin", and the peer going away
-is "stop". Never start the processes by hand with &, sleep, pkill or ps.
+The peer going away is the key "stop", so it needs no shell. Never start the
+processes by hand with &, sleep, pkill or ps.
 """
 
 SUFFIX = {'Windows': '.exe', 'Darwin': '.mac'}.get(platform.system(), '.elf')
@@ -399,6 +396,31 @@ def stop_handle(handle, signal_name):
 TAIL_LIMIT = 4 * 1024 * 1024
 
 
+# The layout prefix of a log line the generated project.init writes, up to the message.
+LOG_PREFIX = re.compile(r'^[^\n]*? >>> \] ')
+# Seconds a log file is read on after its process ended, for lines still being written.
+LOG_SETTLE_SECONDS = 0.5
+
+
+def log_file_of(log_dir, mark, since):
+    """The log file under log_dir started after since whose first line holds mark."""
+    try:
+        names = os.listdir(log_dir)
+    except OSError:
+        return None
+    for name in names:
+        path = os.path.join(log_dir, name)
+        try:
+            if not name.endswith('.log') or os.path.getmtime(path) < since - 2:
+                continue
+            with open(path, encoding='utf-8', errors='replace') as handle:
+                if mark in handle.readline():
+                    return path
+        except OSError:
+            continue
+    return None
+
+
 class OutputReader(object):
     """Drains one process line by line, spools it to a file and keeps the tail.
 
@@ -407,7 +429,7 @@ class OutputReader(object):
     its own work, and the scenario then reports a timeout with no cause in it.
     """
 
-    def __init__(self, handle, path):
+    def __init__(self, handle, path, log_dir=None):
         self._handle = handle
         self._path = path
         self._lines = []
@@ -418,6 +440,11 @@ class OutputReader(object):
         self._thread = threading.Thread(target=self._pump)
         self._thread.daemon = True
         self._thread.start()
+        self._follower = None
+        if log_dir:
+            self._follower = threading.Thread(target=self._follow, args=(log_dir, time.time()))
+            self._follower.daemon = True
+            self._follower.start()
 
     def _pump(self):
         for line in iter(self._handle.stdout.readline, ''):
@@ -427,6 +454,44 @@ class OutputReader(object):
                 stream.close()
             except (OSError, ValueError):
                 pass
+
+    def _follow(self, log_dir, since):
+        """Takes the lines of the log file this process writes, without their layout prefix.
+
+        The file is the one under log_dir whose first line names this process's ID. It
+        is read until the process has ended and the file has nothing more.
+        """
+        mark = 'with ID [ {} ]'.format(self._handle.pid)
+        found = None
+        while found is None:
+            found = log_file_of(log_dir, mark, since)
+            if found is None:
+                if self._handle.poll() is not None:
+                    found = log_file_of(log_dir, mark, since)
+                    if found is None:
+                        return
+                else:
+                    time.sleep(0.05)
+        idle = 0.0
+        pending = ''
+        with open(found, encoding='utf-8', errors='replace') as log:
+            while True:
+                chunk = log.readline()
+                if chunk:
+                    idle = 0.0
+                    pending += chunk
+                    if pending.endswith('\n'):
+                        if mark not in pending:
+                            self._take(LOG_PREFIX.sub('', pending, count=1))
+                        pending = ''
+                    continue
+                if self._handle.poll() is not None:
+                    idle += 0.05
+                    if idle > LOG_SETTLE_SECONDS:
+                        break
+                time.sleep(0.05)
+        if pending and mark not in pending:
+            self._take(LOG_PREFIX.sub('', pending, count=1) + '\n')
 
     def _take(self, line):
         """Spools one line and keeps it in the tail."""
@@ -452,6 +517,8 @@ class OutputReader(object):
 
     def join(self, timeout):
         self._thread.join(timeout)
+        if self._follower is not None:
+            self._follower.join(timeout)
         try:
             self._spool.close()
         except (OSError, ValueError):
@@ -686,7 +753,7 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
             # Every process gets its own pipe, written and closed only when the
             # scenario says so. Inheriting this runner's standard input hands the
             # process whatever the shell had -- usually end of input at once, which
-            # stops a console loop before the service has served anything.
+            # ends a process that reads its input before it has served anything.
             handle = subprocess.Popen([binary] + list(spec.get('args', [])),
                                       stdin=subprocess.PIPE,
                                       stdout=subprocess.PIPE,
@@ -695,7 +762,8 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
             launched[index] = time.time()
             handles.append((spec, handle))
             readers[index] = reader_class(
-                handle, os.path.join(spool, '{}-{}.log'.format(index, proc_name(spec))))
+                handle, os.path.join(spool, '{}-{}.log'.format(index, proc_name(spec))),
+                os.path.join(os.path.dirname(binary), 'logs'))
             if feed:
                 send_stdin(handle, feed)
             if index != lead_index or (index < len(procs) - 1 and 'delay' in spec):

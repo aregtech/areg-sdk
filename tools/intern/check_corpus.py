@@ -948,6 +948,10 @@ def check_prohibitions(report):
     for rule in rules:
         if rule['id'] in missing or rule['id'] in proven:
             continue
+        if rule['id'] in UNPROVEN_BY_DECISION:
+            report.note('prohibition', '{} has no repair task: {}'.format(
+                rule['id'], UNPROVEN_BY_DECISION[rule['id']]))
+            continue
         report.fail('prohibition', '{} is detected, but no repair task proves it '
                     'still fires'.format(rule['id']))
     # AGENTS.md states how many rules the checker reports. A rule added to
@@ -2747,6 +2751,52 @@ def check_portability(report):
                     'half the documented commands are never executed')
 
 
+# The two pages that may teach console use: a console program on areg, and areg's own
+# console programs. A line naming either page routes to it and is not console text.
+CONSOLE_PAGES = ('39-console.md', '50-running.md')
+CONSOLE_TEXT = re.compile(r'std::cout|std::cerr|std::cin|\bgetline\b|\bscanf\b|\bprintf\(|'
+                          r'"-q"|`-q`|--quit|\bconsole\b', re.IGNORECASE)
+CONSOLE_CODE = re.compile(r'std::cout|std::cerr|std::cin|\bgetline\b|\bscanf\b|\bprintf\(')
+
+
+def check_console(report):
+    """No console instruction in the agent corpus and no console code in what it builds.
+
+    areg applications are services, GUIs, libraries and console programs alike, so only
+    the console pages teach console use; everything else logs.
+    """
+    found = []
+    pages = ['AGENTS.md'] + ['docs/agent/' + p for p in agent_pages()
+                             if p not in CONSOLE_PAGES]
+    for page in pages:
+        for number, line in enumerate(read(*page.split('/')).splitlines(), 1):
+            if CONSOLE_TEXT.search(line) and not any(c in line for c in CONSOLE_PAGES):
+                found.append('{}:{}'.format(page, number))
+    sources = glob.glob(os.path.join(ROOT, 'docs', 'agent', 'recipes', '*', 'src', '*.?pp'))
+    sources += [os.path.join(ROOT, 'tools', 'agent', name)
+                for name in ('gen_skeleton.py', 'gen_programs.py')]
+    for path in sorted(sources):
+        with open(path, encoding='utf-8', errors='replace') as handle:
+            for number, line in enumerate(handle, 1):
+                if CONSOLE_CODE.search(line):
+                    found.append('{}:{}'.format(os.path.relpath(path, ROOT).replace(os.sep, '/'),
+                                                number))
+    for where in found:
+        report.fail('console', '{} is console text or code outside {}; an areg '
+                    'application logs (34-logging.md)'.format(where, ' and '.join(CONSOLE_PAGES)))
+    if not found:
+        report.ok('console', 'no console text outside {}, and no console code in the '
+                  'recipes or the generators'.format(' and '.join(CONSOLE_PAGES)))
+
+
+# Rules the owner decided need no repair task, with the reason. Each is a NOTE on every run.
+UNPROVEN_BY_DECISION = {
+    'P-11': 'the check worker-entry-name in this file proves it fires on a name compared '
+            'without its role and stays silent on the entry and create_component_item_name() '
+            'forms; tests/units/WorkerThreadTest.cpp proves the framework side (owner, 2026-10-12)',
+}
+
+
 # ---------------------------------------------------------------------------
 def run():
     report = Report()
@@ -2790,6 +2840,7 @@ def run():
     check_tools(report)
     check_observability(report)
     check_portability(report)
+    check_console(report)
     check_name_lookup(report)
     check_service_launch(report)
     check_project_routing(report)
@@ -7087,8 +7138,8 @@ def check_edit_blocks(report):
 
 
 def check_worker_entry_name(report):
-    """P-11 takes a worker consumer name read from the model entry as answered, the way
-    page 38 tells it to be read, and still reports a name nothing answers to."""
+    """P-11 takes a worker consumer name read from the model entry, or built with
+    create_component_item_name(), as answered, and reports one compared without its role."""
     sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
     try:
         import check_contract
@@ -7097,22 +7148,21 @@ def check_worker_entry_name(report):
                     .format(failure))
         return
     model = 'REGISTER_WORKER_THREAD("ReaderThread", "Reader")'
-    entry = ', mReader(entry.mWorkerThreads[0].mConsumerName)'
-    found = {}
-    for label, texts in (('entry', [model, entry]), ('nothing', [model, '// Reader'])):
+    cases = (('entry', ', mReader(entry.mWorkerThreads[0].mConsumerName)', False),
+             ('qualified', ', mReader(areg::create_component_item_name(role, "Reader"))', False),
+             ('literal', ', mReader("Reader")', True),
+             ('nothing', '// Reader', True))
+    for label, line, reported in cases:
+        texts = [model, line]
         findings = []
         check_contract.check_threads(range(len(texts)), findings, lambda at: texts[at])
-        found[label] = [item for item in findings if item.rule == 'P-11']
-    if found['entry']:
-        report.fail('worker-entry-name', 'P-11 reports a worker consumer name the '
-                    'component reads from entry.mWorkerThreads, which page 38 prescribes')
-        return
-    if not found['nothing']:
-        report.fail('worker-entry-name', 'P-11 no longer reports a worker consumer name '
-                    'nothing in the project answers to')
-        return
-    report.ok('worker-entry-name', 'P-11 takes a name read from the model entry as '
-              'answered and reports one nothing answers to')
+        if bool([item for item in findings if item.rule == 'P-11']) != reported:
+            report.fail('worker-entry-name', 'P-11 {} a worker consumer name answered '
+                        'by {}: {}'.format('misses' if reported else 'reports', label, line))
+            return
+    report.ok('worker-entry-name', 'P-11 takes a name from the model entry or '
+              'create_component_item_name() as answered, and reports one compared '
+              'without its role or not answered at all')
 
 
 def check_final_entry_rule(report):
@@ -8866,7 +8916,7 @@ def check_role_steps(report):
         shutil.rmtree(holder, ignore_errors=True)
     client = ''.join(text for name, text in sources.items() if 'Client' in name)
     driver = ''.join(text for name, text in sources.items() if 'Client' not in name)
-    begun = re.search(r'case Step::Large:\s*std::cout << "step large" << std::endl;(.*?)break;',
+    begun = re.search(r'case Step::Large:\s*GLOBAL_INFO\("step large"\);(.*?)break;',
                       driver, re.S)
     if 'mOwner.stock_on_bolts_update(Bolts);' not in client \
             or not re.search(r'stock_on_bolts_update\(.*?case Step::StockLeft:', driver, re.S):

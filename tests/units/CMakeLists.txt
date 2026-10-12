@@ -78,4 +78,5 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     StringTest.cpp
     StringUtilsTest.cpp
     ThreadTest.cpp
+    WorkerThreadTest.cpp
 )

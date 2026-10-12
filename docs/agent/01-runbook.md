@@ -37,11 +37,12 @@ That writes a project that already builds and runs:
 | `src/provider.cpp`, `src/consumer.cpp` | placeholders section 5 replaces |
 | `design.json` | your design, empty: section 3 fills it |
 | `areg-project.json` | the spec a later build reuses |
-| `scenarios.json` | what to run, and the output that proves it worked |
+| `config/project.init` | router and log settings; `main()` reads it |
+| `scenarios.json` | what to run, and the lines that prove it |
 | `run.sh`, `run.bat` | starts the router and both applications |
 | `AGENTS.md` | the guide of a later session that starts here |
 
-It restates this page and the SDK's `AGENTS.md`; a run following this page skips it.
+It restates this page and the SDK's `AGENTS.md`: skip it.
 
 ## 3. Design
 
@@ -226,14 +227,13 @@ AREG_EOF
 ```
 
 The section 5 command with `--run`: it builds, then starts the router and every
-process and checks their output. Exit 0 is a pass. **Run it after
+process and checks the lines each one logs. Exit 0 is a pass. **Run it after
 every fix too** -- worksheet, build and run are one request.
 
-**A console quit and the peer going away are scenarios too**, not terminal work: the
-quit is `"stdin": ["-q"]` on that process, leading a scenario of its own, and the loss
-a scenario-level `"stop"`. The generator writes both for a stepped two-process project;
-a trigger it cannot pick is a worksheet section. One run then prints the line each
-expectation matched, and that output is the evidence for the report.
+**The peer going away is a scenario too**, not terminal work: a scenario-level
+`"stop"`. The generator writes it for a stepped two-process project; a trigger it cannot
+pick is a worksheet section. One run then prints the line each expectation matched, and
+that output is the evidence for the report.
 
 **Never start the processes by hand** (`prog &`, `sleep`, `pkill`, `ps`): it is not
 repeatable, it leaves processes behind, and a `pkill` or `grep` that matches nothing

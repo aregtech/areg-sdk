@@ -64,10 +64,6 @@ int main()
 
 Every `BEGIN_` has a matching `END_` taking the same argument.
 
-Components in different threads run at the same time, so `std::cout` from two handlers
-interleaves and a line can arrive split. Expect it when reading output, and log instead
-of printing when the order matters.
-
 ---
 
 ## 2. The role name is the routing identity

@@ -2,7 +2,6 @@
  * \file    provider.cpp
  * \brief   The process that provides the service.
  **/
-#include <iostream>
 
 #include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
@@ -11,6 +10,9 @@
 #include "areg/component/ComponentThread.hpp"
 
 #include "src/services/HelloServiceProviderBase.hpp"
+#include "areg/logging/areg_log.h"
+
+GLOBAL_LOG_SCOPE(hello_provider, log);
 
 class ServiceProvider final : public    areg::Component
                             , protected HelloServiceProviderBase
@@ -24,7 +26,7 @@ public:
 protected:
     void request_hello_service(const areg::String & client) final
     {
-        std::cout << "provider: hello, " << client << std::endl;
+        GLOBAL_INFO("provider: hello, %s", client.as_string());
         response_hello_service(true);
     }
 
@@ -45,7 +47,7 @@ END_MODEL(_modelName)
 
 int main()
 {
-    areg::Application::setup();
+    areg::Application::setup(true, true, true, true, false, "./config/project.init");
     areg::Application::load_model(_modelName);
     areg::Application::wait_quit(areg::WAIT_INFINITE);
     areg::Application::unload_model(_modelName);

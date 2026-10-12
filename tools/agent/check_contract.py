@@ -216,11 +216,10 @@ WATCHDOG_TIMEOUT_ARG = {'BEGIN_REGISTER_THREAD_EX': 1,
 WATCHDOG_ON_RE = re.compile(r'\bstart_watchdog_manager\s*\(')
 SETUP_RE = re.compile(r'\bApplication\s*::\s*setup\s*\(')
 
-# P-11. The consumer name in the model is matched against the string the component
-# answers to in worker_thread_consumer(). A mismatch is silent: the worker thread
-# starts and never runs a consumer.
+# P-11. The model qualifies a worker consumer name by the component's role, and the
+# component is asked for that qualified name. A mismatch is silent: no worker starts.
 WORKER_MACRO_RE = re.compile(r'\b(REGISTER_WORKER_THREAD(?:_EX2?)?)\s*\(')
-WORKER_ENTRY_RE = re.compile(r'\bmWorkerThreads\s*\[')
+WORKER_ENTRY_RE = re.compile(r'\bmWorkerThreads\s*\[|\bcreate_component_item_name\s*\(')
 
 # B8. Any finding can be silenced on the offending line or the line above. A
 # checker that cannot be quieted on a correct edge case gets switched off wholesale.
@@ -243,7 +242,7 @@ CHECKS = [
     ('P-08', 'error',   'throw, try or catch'),
     ('P-09', 'error',   'two components with one role name in one model'),
     ('P-10', 'advice',  'a watchdog timeout registered while the watchdog is off'),
-    ('P-11', 'advice',  'a worker thread consumer name nothing answers to'),
+    ('P-11', 'advice',  'a worker consumer name answered without its role'),
     ('P-12', 'error',   'a broadcast or attribute handled but never subscribed to'),
     ('P-13', 'error',   'a response deferred without releasing the request'),
     (FINAL_ENTRY_CODE, 'advice',
@@ -1367,12 +1366,11 @@ def check_threads(sources, findings, read):
     to false. A timeout registered with the manager off is a guard that never
     fires, which reads in the model as though the thread is protected.
 
-    P-11. REGISTER_WORKER_THREAD names the consumer the component must answer to
-    from worker_thread_consumer(). The base implementation returns nullptr for a
-    name it does not know, so a misspelling starts the thread and runs nothing.
-    The name may be a constant, so it is reported only when its exact text appears
-    nowhere else in the project -- the same tolerance P-03 uses -- and the project
-    does not read it from the model through ComponentEntry::mWorkerThreads.
+    P-11. The model stores a REGISTER_WORKER_THREAD consumer name as
+    "<role>:<name>" (areg::create_component_item_name), and worker_thread_consumer()
+    is asked for that name; one it does not answer starts no worker thread, silently.
+    A project answers it only through ComponentEntry::mWorkerThreads or
+    create_component_item_name(); without either, every registration is reported.
 
     The plan asked P-11 to catch an event sent to a thread name that no thread
     answers to. That is not detectable: send_event takes a DispatcherThread
@@ -1382,7 +1380,6 @@ def check_threads(sources, findings, read):
     timeouts = []
     watchdog_on = False
     consumers = []
-    literals = set()
     from_entry = False
 
     for path in sources:
@@ -1413,15 +1410,14 @@ def check_threads(sources, findings, read):
 
             worker = WORKER_MACRO_RE.search(raw)
             if worker:
-                # The literal is the point of this rule, so the arguments are read
-                # from the raw line, before strip_noise() blanks its strings.
+                # The name is read from the raw line, before strip_noise() blanks its
+                # strings, so the report can show it.
                 args = split_args(raw, worker.end() - 1)
                 if args and len(args) >= 2:
                     name = args[1].strip()
                     if len(name) > 1 and name.startswith('"') and name.endswith('"'):
-                        consumers.append((name[1:-1], path, number + 1))
-            else:
-                literals.update(LITERAL_RE.findall(raw))
+                        name = name[1:-1]
+                    consumers.append((name, path, number + 1))
             if WORKER_ENTRY_RE.search(line):
                 from_entry = True
 
@@ -1435,13 +1431,14 @@ def check_threads(sources, findings, read):
             'set to true, or register the thread with no timeout' % value))
 
     for name, path, number in consumers:
-        if name not in literals and not from_entry:
+        if not from_entry:
             findings.append(Finding(
                 'P-11', 'advice', path, number,
-                'nothing in the project answers to the worker thread consumer '
-                'name "%s". The component returns it from '
-                'worker_thread_consumer(); a name it does not recognise yields '
-                'nullptr and the worker thread runs nothing' % name))
+                'the model qualifies the worker consumer name %s by the role, so '
+                'worker_thread_consumer() is asked for "<role>:%s", and nothing in the '
+                'project answers that name: no worker thread starts. Construct the '
+                'consumer with entry.mWorkerThreads[i].mConsumerName, or '
+                'areg::create_component_item_name(role, name)' % (name, name.strip('"'))))
 
 
 # P-02. A generated member called by its bare document name: open_valve(...) where

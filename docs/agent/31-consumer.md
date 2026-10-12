@@ -14,12 +14,14 @@ Complete, working consumer for the `HelloService` document in `20-service-interf
 
 
 ```cpp
-#include <iostream>
 #include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentThread.hpp"
+#include "areg/logging/areg_log.h"
 #include "src/services/HelloServiceConsumerBase.hpp"
+
+GLOBAL_LOG_SCOPE(hello_ServiceConsumer, log);
 
 class ServiceConsumer final : public    areg::Component
                             , protected HelloServiceConsumerBase
@@ -48,7 +50,7 @@ protected:
 
     void response_hello_service(bool success) final
     {
-        std::cout << (success ? "greeted" : "failed") << std::endl;
+        GLOBAL_INFO("%s", success ? "greeted" : "failed");
         areg::Application::signal_quit();   // quit_with(code) where main() defines it
     }
 

@@ -3,7 +3,6 @@
  * \brief   Two services and three components. The middle one is both a consumer
  *          of the first service and the provider of the second.
  **/
-#include <iostream>
 
 #include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
@@ -15,6 +14,9 @@
 #include "src/services/MeterServiceConsumerBase.hpp"
 #include "src/services/ReportServiceProviderBase.hpp"
 #include "src/services/ReportServiceConsumerBase.hpp"
+#include "areg/logging/areg_log.h"
+
+GLOBAL_LOG_SCOPE(two_main, log);
 
 //! Owns the meter value and publishes it as an attribute.
 class MeterProvider final   : public    areg::Component
@@ -72,7 +74,7 @@ protected:
     {
         if (state == areg::DataState::DataIsOK)
         {
-            std::cout << "collector: reading " << Reading << std::endl;
+            GLOBAL_INFO("collector: reading %u", static_cast<unsigned int>(Reading));
             set_report(Reading);
         }
     }
@@ -113,7 +115,7 @@ protected:
     {
         if (state == areg::DataState::DataIsOK)
         {
-            std::cout << "display: report " << Report << std::endl;
+            GLOBAL_INFO("display: report %u", static_cast<unsigned int>(Report));
             areg::Application::signal_quit();
         }
     }
@@ -146,7 +148,7 @@ END_MODEL(_modelName)
 
 int main()
 {
-    areg::Application::setup();
+    areg::Application::setup(true, true, true, true, false, "./config/project.init");
     areg::Application::load_model(_modelName);
     areg::Application::wait_quit(areg::WAIT_INFINITE);
     areg::Application::unload_model(_modelName);

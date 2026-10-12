@@ -46,7 +46,8 @@ start them with **no option**: `start ""` gives the process a console, and conso
 with a live stdin stays up. `-i` and `-u` install and remove the real service, which is
 the only thing `--service` is for.
 
-Simpler than either: let `run_scenarios.py` start the router; it knows both forms.
+A test run lets `run_scenarios.py` start the router; it knows both forms
+(`53-scenarios.md`).
 
 `--help` on any of the four prints its whole option table, which is the answer to a
 spelling this page does not give.
@@ -58,20 +59,17 @@ ss -ltn | grep 8181        # the router
 ss -ltn | grep 8282        # the collector
 ```
 
-There is no `ss` on Windows. The same two checks are
-`netstat -ano | findstr :8181` and `netstat -ano | findstr :8282`.
+On Windows: `netstat -ano | findstr :8181` and `:8282`.
 
 `logobserver` is the exception: it takes no `--service`. With no option it opens a
 console; with any option below it runs and exits, the form an agent wants.
 
 `mtrouter` needs no configuration to route. **`logcollector` does:** nothing reaches
-it until `config/areg.init` enables the remote target and names port 8282, so
-starting it alone changes nothing. The keys are in `34-logging.md` section 4.
+it until the application's configuration file enables the remote target and names port
+8282, so starting it alone changes nothing. The keys are below.
 
-To keep the logs rather than watch them scroll past, start the collector with
-`--log=db`. It writes a SQLite `.sqlog`; an optional path as the next argument is the
-only way to place it, and with none it lands in
-`<working dir>/logs/logcollector_<timestamp>.sqlog`. Queries are in `35-sqlog.md`.
+To keep the logs, start the collector with `--log=db`: it writes a SQLite `.sqlog`, at
+the path given next, else `<working dir>/logs/`. Queries: `35-sqlog.md`.
 
 ```bash
 ./build/bin/logcollector.elf --service --log=db /tmp/run.sqlog &
@@ -81,9 +79,7 @@ On Windows the same four are `build\bin\<name>.exe`, backgrounded with
 `start "" build\bin\mtrouter.exe` -- no option -- rather than a trailing `&`. They
 install as Windows services with `-i` and are removed with `-u`.
 
-**A second router is the other way this fails.** Only one process can hold 8181. A
-router already running -- from an earlier scenario, or left by a crashed test --
-makes the second one print its banner, bind nothing and route nothing.
+**A second router binds nothing and routes nothing**: only one process holds 8181.
 
 All four take the same options, and no option at all means console:
 
@@ -115,11 +111,9 @@ both on its command line and at its prompt:
 ./build/bin/logobserver.elf -o "*::areg_base_Socket=DEBUG" -q # raise one scope everywhere
 ```
 
-**Use the command line.** The observer connects itself, waits for the collector to
-report the applications and their scopes -- up to 15 seconds, and it says so when the
-data never came -- then runs the options in the order written and exits, printing
-plain lines that pipe and grep. `-c` opens the console afterwards instead of exiting.
-The wait is the point: a command issued the instant the socket opens finds nothing.
+**Use the command line.** The observer connects, waits up to 15 seconds for the
+collector to report the applications and their scopes, runs the options in order and
+exits, printing plain lines. `-c` opens the console afterwards instead of exiting.
 
 At the prompt the connection is **not** automatic: type `-r` first, then `-n`.
 
@@ -132,92 +126,27 @@ Single process applications never need any of this.
 
 ---
 
-## Running it unattended, as one verdict
+## Collecting the logs of several processes
 
-`run_scenarios.py` starts a list of processes in order, waits for the leading one and
-exits 0 only when every process ended as the scenario says and every expected line
-appeared. It reads `scenarios.json` unless `--file` says otherwise:
+`logcollector` gathers the logs of several processes and `logobserver` displays them.
+It is configuration only, in the file the application reads (`34-logging.md`):
 
-```json
-{ "scenarios": [ {
-    "name":    "smoke",
-    "router":  true,
-    "timeout": 30,
-    "procs": [
-      { "binary": "myprovider" },
-      { "binary": "myconsumer", "expect": ["connected", "answer: 42"], "exit": 0 }
-    ] } ] }
+```ini
+log::*::target            = remote | file   # one list: change the line, never add a second
+log::*::enable::remote    = true
+log::*::remote::service   = logger          # the section that holds the address below
+
+logger::*::service        = logcollector
+logger::*::connect        = tcpip
+logger::*::enable::tcpip  = true
+logger::*::address::tcpip = localhost       # the machine running logcollector
+logger::*::port::tcpip    = 8282            # logcollector's port
 ```
 
-| Key | Means |
-|---|---|
-| `procs` | started in the listed order; the last one leads unless one sets `"lead": true` |
-| `binary` | name without a platform suffix, looked up in the build directory |
-| `name` | label for this process, used in reports and by `stop`. Default: the binary |
-| `args` | command line arguments |
-| `expect` | regular expressions that must all match that process's captured output |
-| `reject` | regular expressions that must **not** match it |
-| `stdin` | lines written to the process, then the stream is closed |
-| `exit` | required exit code; omit or `null` to accept any |
-| `router` | `true` starts `mtrouter` first. Default `false` |
-| `timeout` | seconds before the scenario is failed and killed. Default 60 |
-| `stop` | stops one process while the others run, so a peer can be seen reacting |
+**8282 is logcollector. 8181 is `mtrouter`.** A router that is running says nothing
+about whether logs are being collected. A project with this wired:
+`recipes/08-observability/`.
 
-```bash
-python3 <areg-sdk>/tools/agent/run_scenarios.py               # exit 0 means it works
-python3 <areg-sdk>/tools/agent/run_scenarios.py --only smoke --json
-```
-
-A binary the build did not produce fails the scenario rather than passing silently.
-
-**One run is the evidence.** A pass prints the line every `expect` matched, a failure
-prints what the process wrote.
-
-### Two acceptance items that look like they need a terminal
-
-Every areg application runs until told to stop and talks to another process, so
-**the console quit path** and **the peer going away** are asked of nearly every
-task. Both are scenario keys, so neither needs `&`, `sleep`, `kill` or `ps`.
-
-`stdin` feeds the console loop and then closes the stream:
-
-```json
-{ "binary": "myprovider", "lead": true, "stdin": ["-q"], "exit": 0 }
-```
-
-**`gen_skeleton.py --app` already writes that loop into the provider's `main()`, and
-the `quit` scenario that proves it.** Neither is yours to write.
-
-**End of input is not a quit request, and this is the trap** if you write one of your
-own. A process with no `stdin` key still gets its own standard input; nothing is ever
-written to it, so the loop must keep serving when `getline` returns false, not unload
-the model. A loop that unloads on end of input shuts the service down within
-milliseconds whenever it runs without a terminal: every peer waits for a provider
-that has already gone, and there is no error to read, because the process exited
-normally and printed nothing.
-
-`stop` ends one process while the rest run on. `after` is a regular expression
-matched against the leading process's output as it appears, a number of seconds, or
-absent for "as soon as it is running"; `"signal": "kill"` is an abrupt loss,
-`"term"` the default:
-
-```json
-{ "name": "peer-lost", "router": true,
-  "stop": { "proc": "provider", "after": "consumer: ordered", "signal": "kill" },
-  "procs": [
-    { "binary": "myprovider", "name": "provider" },
-    { "binary": "myconsumer", "name": "consumer",
-      "expect": ["service lost, waiting"], "reject": ["crash"] } ] }
-```
-
-**A scripted consumer on local IPC finishes in well under a second**, so a `stop` whose
-`after` matches a line partway through the script is read only once the lead has
-exited, and nothing is stopped. The runner fails the scenario for it. The remedy is a
-step, never a sleep: a `{"name": "settle", "wait": 3000}` step in `design.json`, right
-after the step `after` matches.
-
-What to expect depends on what the consumer is for. A long-running one must survive
-it -- `Disconnected` and `ConnectionLost` reconnect on their own, so expect the line
-the reconnect path prints and no exit. A client that runs a fixed script and finishes
-may instead give up on a deadline: expect the line it prints and the non-zero exit,
-and say which of the two the application is.
+`logobserver` displays and does not store. An application whose collector is not
+running still runs, and retries quietly: **a silent `logobserver` is not evidence that
+the application is broken** -- check that `logcollector` is up on 8282.

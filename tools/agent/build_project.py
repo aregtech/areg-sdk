@@ -77,7 +77,7 @@ ADVICE = {
     'configure': 'CMake could not configure. The generator runs here, so a refused '
                  'document appears in this output; anything else is CMakeLists.txt.',
     'scenarios': 'the application built, but a scenario did not pass. Each failure '
-                 'names the process, what it was expected to print and what it '
+                 'names the process, what it was expected to write and what it '
                  'wrote. "--only <name>" iterates on one. Send every section you '
                  'change as fix.txt with this command, in one call: --write fix.txt '
                  '<<\'AREG_EOF\'. It is folded into bodies.txt. ' + EDIT_HOW,

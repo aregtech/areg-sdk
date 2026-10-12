@@ -81,7 +81,7 @@ log::myapp::scope::*   = DEBUG | SCOPE ;          # every scope line ends with '
 ```
 
 Collecting several processes' logs needs `logcollector` on 8282 plus the remote keys:
-`34-logging.md` section 4. (`mtrouter` is a different service, on 8181.)
+`50-running.md`, last section. (`mtrouter` is a different service, on 8181.)
 
 ## Connection states
 

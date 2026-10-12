@@ -207,14 +207,18 @@ def by_runtime(root, lib, compiler, task):
     if chosen is None:
         return False, 'no binary named {} was built'.format(lead)
 
+    check_recipes.clear_logs(root)
     try:
         result = subprocess.run([chosen], cwd=root, capture_output=True, text=True,
                                 timeout=NO_ROUTER_SECONDS)
-        return judge_no_router(result.stdout + result.stderr,
+        return judge_no_router(check_recipes.written(root, result),
                                task['detect'].get('absent', []), result.returncode)
     except subprocess.TimeoutExpired as expired:
         output = (expired.stdout or b'').decode('utf-8', 'replace') \
             + (expired.stderr or b'').decode('utf-8', 'replace')
+        for path in glob.glob(os.path.join(root, 'logs', '*.log')):
+            with open(path, encoding='utf-8', errors='replace') as handle:
+                output += handle.read()
         return judge_no_router(output, task['detect'].get('absent', []), None)
 
 

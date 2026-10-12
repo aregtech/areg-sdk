@@ -226,8 +226,8 @@
       "reference": "01-local-single-process",
       "defect": {
         "file": "src/main.cpp",
-        "find": "        std::cout << \"provider: hello, \" << client << std::endl;",
-        "replace": "        std::this_thread::sleep_for(std::chrono::seconds(2));\n        std::cout << \"provider: hello, \" << client << std::endl;"
+        "find": "        GLOBAL_INFO(\"provider: hello, %s\", client.as_string());",
+        "replace": "        std::this_thread::sleep_for(std::chrono::seconds(2));\n        GLOBAL_INFO(\"provider: hello, %s\", client.as_string());"
       },
       "detect": {
         "by": "check_contract",
@@ -432,34 +432,14 @@
       "reference": "01-local-single-process",
       "defect": {
         "file": "src/main.cpp",
-        "find": "        std::cout << \"provider: hello, \" << client << std::endl;",
-        "replace": "        std::cout << \"provider: hello, \" << NEString::getString(client) << std::endl;"
+        "find": "        GLOBAL_INFO(\"provider: hello, %s\", client.as_string());",
+        "replace": "        GLOBAL_INFO(\"provider: hello, %s\", NEString::getString(client));"
       },
       "detect": {
         "by": "check_contract",
         "rule": "B-05"
       },
       "teaches": "the NE and TE prefixes are gone from the public API; a name recalled from training data does not exist"
-    },
-    {
-      "id": "r13-worker-consumer-name",
-      "kind": "repair",
-      "prompt": "The scanner never scans. The application starts, the client asks for a scan and nothing answers; the worker thread is registered and it runs nothing. Nothing fails and nothing is logged. Find out why and fix it.",
-      "expect": [
-        "worker: scanned depth",
-        "client: found"
-      ],
-      "reference": "07-worker-events",
-      "defect": {
-        "file": "src/main.cpp",
-        "find": "            REGISTER_WORKER_THREAD(Scanner::ThreadName.data(), Scanner::ConsumerName.data())",
-        "replace": "            REGISTER_WORKER_THREAD(\"ScanWorkerThread\", \"ScanWorkerConsumerTypo\")"
-      },
-      "detect": {
-        "by": "check_contract",
-        "rule": "P-11"
-      },
-      "teaches": "the consumer name in REGISTER_WORKER_THREAD must be a name the component answers to from worker_thread_consumer(); an unknown name yields nullptr and the worker thread runs nothing"
     },
     {
       "id": "r14-watchdog-off",
@@ -519,8 +499,8 @@
       "reference": "01-local-single-process",
       "defect": {
         "file": "src/main.cpp",
-        "find": "        std::cout << \"provider: hello, \" << client << std::endl;",
-        "replace": "        std::cout << \"provider: hello, \" << client << std::endl;\n        std::cout << \"provider: name is \" << client.getLength() << \" long\" << std::endl;"
+        "find": "        GLOBAL_INFO(\"provider: hello, %s\", client.as_string());",
+        "replace": "        GLOBAL_INFO(\"provider: hello, %s\", client.as_string());\n        GLOBAL_INFO(\"provider: name is %u long\", client.getLength());"
       },
       "detect": {
         "by": "check_contract",
@@ -665,8 +645,8 @@
       "reference": "08-observability",
       "defect": {
         "file": "src/provider.cpp",
-        "find": "client.as_string()",
-        "replace": "client.get_str()"
+        "find": "LOG_INFO(\"provider: hello, %s\", client.as_string());",
+        "replace": "LOG_INFO(\"provider: hello, %s\", client.get_str());"
       },
       "detect": {
         "by": "check_contract",
@@ -821,12 +801,12 @@
             "replace": "#include \"src/services/HelloServiceConsumerBase.hpp\"\n\n//! Ends the application with this exit code, in storage that outlives\n//! the components. Defined next to main().\nvoid quit_with(int code);\n"
           },
           {
-            "find": "    void request_hello_service_failed(areg::ResultType /*reason*/) final\n    {\n        std::cerr << \"consumer: request failed\" << std::endl;\n    }\n",
-            "replace": "    void request_hello_service_failed(areg::ResultType /*reason*/) final\n    {\n        std::cerr << \"consumer: request failed\" << std::endl;\n        quit_with(1);\n    }\n"
+            "find": "    void request_hello_service_failed(areg::ResultType /*reason*/) final\n    {\n        GLOBAL_ERR(\"consumer: request failed\");\n    }\n",
+            "replace": "    void request_hello_service_failed(areg::ResultType /*reason*/) final\n    {\n        GLOBAL_ERR(\"consumer: request failed\");\n        quit_with(1);\n    }\n"
           },
           {
-            "find": "int main()\n{\n    areg::Application::setup();\n    areg::Application::load_model(_modelName);\n    areg::Application::wait_quit(areg::WAIT_INFINITE);\n    areg::Application::unload_model(_modelName);\n    areg::Application::release();\n    return 0;\n}\n",
-            "replace": "constexpr char const _exitCode[]{ \"exitCode\" };\n\n//! Ends the application with this exit code, in storage that outlives\n//! the components.\nvoid quit_with(int code)\n{\n    areg::Primitive value{};\n    value.valInt.mElement = code;\n    areg::Application::store_element(_exitCode, value);\n    areg::Application::signal_quit();\n}\n\nint main()\n{\n    areg::Application::setup();\n    areg::Application::load_model(_modelName);\n    areg::Application::wait_quit(areg::WAIT_INFINITE);\n    areg::Application::unload_model(_modelName);\n    areg::Application::release();\n    return areg::Application::stored_element(_exitCode).valInt.mElement;\n}\n"
+            "find": "int main()\n{\n    areg::Application::setup(true, true, true, true, false, \"./config/project.init\");\n    areg::Application::load_model(_modelName);\n    areg::Application::wait_quit(areg::WAIT_INFINITE);\n    areg::Application::unload_model(_modelName);\n    areg::Application::release();\n    return 0;\n}\n",
+            "replace": "constexpr char const _exitCode[]{ \"exitCode\" };\n\n//! Ends the application with this exit code, in storage that outlives\n//! the components.\nvoid quit_with(int code)\n{\n    areg::Primitive value{};\n    value.valInt.mElement = code;\n    areg::Application::store_element(_exitCode, value);\n    areg::Application::signal_quit();\n}\n\nint main()\n{\n    areg::Application::setup(true, true, true, true, false, \"./config/project.init\");\n    areg::Application::load_model(_modelName);\n    areg::Application::wait_quit(areg::WAIT_INFINITE);\n    areg::Application::unload_model(_modelName);\n    areg::Application::release();\n    return areg::Application::stored_element(_exitCode).valInt.mElement;\n}\n"
           }
         ]
       },
@@ -874,8 +854,8 @@
       "reference": "01-local-single-process",
       "defect": {
         "file": "src/main.cpp",
-        "find": "        std::cout << \"provider: hello, \" << client << std::endl;",
-        "replace": "        std::cout << \"provider: hello, \" << client.getString() << std::endl;"
+        "find": "        GLOBAL_INFO(\"provider: hello, %s\", client.as_string());",
+        "replace": "        GLOBAL_INFO(\"provider: hello, %s\", client.getString());"
       },
       "detect": {
         "by": "check_contract",
@@ -894,8 +874,8 @@
       "reference": "01-local-single-process",
       "defect": {
         "file": "src/main.cpp",
-        "find": "        std::cout << \"provider: hello, \" << client << std::endl;",
-        "replace": "        areg::String name(client);\n        std::cout << \"provider: hello, \" << name.c_str() << std::endl;"
+        "find": "        GLOBAL_INFO(\"provider: hello, %s\", client.as_string());",
+        "replace": "        areg::String name(client);\n        GLOBAL_INFO(\"provider: hello, %s\", name.c_str());"
       },
       "detect": {
         "by": "check_contract",

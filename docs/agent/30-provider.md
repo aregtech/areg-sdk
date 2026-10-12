@@ -15,12 +15,14 @@ Complete, working provider for the `HelloService` document in `20-service-interf
 
 
 ```cpp
-#include <iostream>
 #include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentThread.hpp"
+#include "areg/logging/areg_log.h"
 #include "src/services/HelloServiceProviderBase.hpp"
+
+GLOBAL_LOG_SCOPE(hello_ServiceProvider, log);
 
 class ServiceProvider final : public    areg::Component
                             , protected HelloServiceProviderBase
@@ -34,7 +36,7 @@ public:
 protected:
     void request_hello_service(const areg::String & client) final
     {
-        std::cout << "Hello, " << client << std::endl;
+        GLOBAL_INFO("Hello, %s", client.as_string());
         response_hello_service(true);
     }
 

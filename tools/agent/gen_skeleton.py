@@ -389,10 +389,13 @@ WORKSHEET_HEAD = """\
 #| the private block of that class's header. Every other section is code inside
 #| an existing function body, so an out-of-line definition there does not compile.
 #|
-#| A body prints with "std::cout << ... << std::endl;". Every .cpp of this project
-#| includes <iostream> already, so a section that prints adds no include. Every
-#| header has <vector>, <map>, <unordered_map>, <deque> and <list> from areg's
-#| own headers, so a "*_state" keeping one adds no include either.
+#| A body logs with GLOBAL_INFO(...), GLOBAL_WARN(...) or GLOBAL_ERR(...), printf
+#| rules: GLOBAL_INFO("bay %s at %u kWh", name.as_string(), energy). Every .cpp of
+#| this project declares its log scope already, so a section that logs adds no
+#| include; each program writes its lines to logs/ beside its executable, and a
+#| scenario's "expect" matches them. Every header has <vector>, <map>,
+#| <unordered_map>, <deque> and <list> from areg's own headers, so a "*_state"
+#| keeping one adds no include either.
 """
 
 def worksheet_sections(produced, out):
@@ -475,7 +478,7 @@ def scenario_holes(path):
                 found = MARKER.search('// ' + entry) if entry.startswith('TODO(you)') \
                     else None
                 if found:
-                    hint = 'what "{}" must print in scenario "{}".'.format(
+                    hint = 'what "{}" must write in scenario "{}".'.format(
                         proc_label(spec), label)
                     for other in silent:
                         hint += (' "{0}" expects nothing: these lines are the evidence. A '
@@ -532,7 +535,7 @@ STEPS_NOTE = ['a step_ section runs only while its step is current. fail("why") 
               'step listed next, and after the last one the run exits 0. stay() and',
               'go_to() take effect when the body is left, the one called last. fail()',
               'does not leave the body: return right after it, or what follows still',
-              'runs and prints. A step with nothing to check still takes one line: a //',
+              'runs. A step with nothing to check still takes one line: a //',
               'comment saying so']
 
 
@@ -994,17 +997,18 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
             lines.append('#| {}'.format(line))
         lines.append('')
     if holes:
-        lines.append('\n#| ---- {}: what a run has to print to prove a requirement.'
+        lines.append('\n#| ---- {}: what a run has to write to prove a requirement.'
                      .format(scenarios))
         lines.append('#| One regular expression per line, and every one of them has to')
         if steps:
             lines.append('#| match. Each line comes')
         else:
-            lines.append('#| match. The generated main() prints nothing, so each line comes')
+            lines.append('#| match. The generated main() writes nothing, so each line comes')
         lines.append('#| from a body above: the expectation and the code that satisfies')
         lines.append('#| it are written together, in this file, or the run proves')
-        lines.append('#| nothing. A "//" line is a pattern here, not a comment.')
-        lines.append('#| One line per acceptance item of the task, printed by the body')
+        lines.append('#| nothing. A "//" line is a pattern here, not a comment. A pattern')
+        lines.append('#| matches the message of a log line, without its time, thread and priority.')
+        lines.append('#| One line per acceptance item of the task, logged by the body')
         lines.append('#| that proves it. A run that passes with every line matched is')
         lines.append('#| final: nothing is added to prove it again.')
         lines.append('#| The dialect is Python re, searched and not anchored, with')
@@ -1715,12 +1719,13 @@ def hosted_overrides(machine, indent=4):
     return lines
 
 
-def request_failed_report(name, who=''):
-    """The lines a request_<name>_failed handler reports its reason with."""
-    return ['        std::cerr << {}"request {} failed, reason " << areg::as_string(reason)'
-            .format(who, name),
-            '                  << (reason == areg::ResultType::RequestBusy ? ": the provider '
-            'has not answered the previous {}" : "") << std::endl;'.format(name)]
+def request_failed_report(name, who=None):
+    """The lines a request_<name>_failed handler logs its reason with; who is a C string
+    expression naming the client, or None."""
+    return ['        GLOBAL_ERR("{}request {} failed, reason %s%s"{}, areg::as_string(reason),'
+            .format('%s: ' if who else '', name, ', ' + who if who else ''),
+            '                   (reason == areg::ResultType::RequestBusy ? ": the provider '
+            'has not answered the previous {}" : ""));'.format(name)]
 
 
 def forward_calls(machine):
@@ -3301,7 +3306,7 @@ def driver_lines(steps, holds, cls, iface=None, latches=None):
                       '            {']
             if not step.get('keep'):
                 lines.append('                mHoldOnce = false;')
-            lines += ['                std::cout << "step {}" << std::endl;'.format(step['name']),
+            lines += ['                GLOBAL_INFO("step {}");'.format(step['name']),
                       '                hold({});'.format(step['wait']),
                       '            }',
                       '            else',
@@ -3311,7 +3316,7 @@ def driver_lines(steps, holds, cls, iface=None, latches=None):
                       '            break;']
             continue
         lines += ['        case Step::{}:'.format(step['enum']),
-                  '            std::cout << "step {}" << std::endl;'.format(step['name'])]
+                  '            GLOBAL_INFO("step {}");'.format(step['name'])]
         if step['send']:
             if flag_latches(latches, step.get('role')):
                 lines.append('            {}();'.format(forget_name(step.get('role'))))
@@ -3761,8 +3766,7 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
               marker('service_refused',
                      'what a refused or shut-down service means here', 16),
               '                mDeadline.stop_timer();',
-              '                std::cerr << "service is " << areg::as_string(status)',
-              '                          << ", giving up" << std::endl;']
+              '                GLOBAL_ERR("service is %s, giving up", areg::as_string(status));']
     if stepped:
         lines.append('                mPace.stop_timer();')
     lines += ['                quit_with(1);',
@@ -3945,10 +3949,9 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
                   '    //! step waits for and the latest messages an earlier step discarded.',
                   '    void stalled()',
                   '    {',
-                  '        std::cerr << "FAIL [" << step_slot() << "]: the scenario stopped making progress"',
-                  '                  << std::endl;',
-                  '        std::cerr << "  " << step_slot() << " " << step_detail()',
-                  '                  << (mRan ? step_kept() : ". Nothing arrived for it.") << std::endl;',
+                  '        GLOBAL_ERR("FAIL [%s]: the scenario stopped making progress", step_slot());',
+                  '        GLOBAL_ERR("  %s %s%s", step_slot(), step_detail(),',
+                  '                   mRan ? step_kept() : ". Nothing arrived for it.");',
                   '        fail(nullptr);',
                   '    }',
                   '',
@@ -3988,30 +3991,27 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
                   '                         : "its check took it and kept the step waiting";',
                   '    }',
                   '',
-                  '    //! Prints what ended each step so far, then the latest arrivals and',
+                  '    //! Logs what ended each step so far, then the latest arrivals and',
                   '    //! what became of each.',
                   '    void print_trail()',
                   '    {',
                   '        const uint32_t current{ static_cast<uint32_t>(mStep) };',
                   '        if (current > static_cast<uint32_t>(Step::Start) + 1)',
                   '        {',
-                  '            std::cerr << "  how each step ended:" << std::endl;',
+                  '            GLOBAL_ERR("  how each step ended:");',
                   '        }',
                   '',
                   '        for (uint32_t index = static_cast<uint32_t>(Step::Start) + 1; index < current; ++ index)',
                   '        {',
-                  '            std::cerr << "    " << step_slot(static_cast<Step>(index)) << ": ";',
                   '            if (mEndedBy[index] != nullptr)',
                   '            {',
-                  '                std::cerr << "ended by " << mEndedBy[index]',
-                  '                          << (mEndedFirst[index] ? " (the value it already had on subscribing, before any request)" : "");',
+                  '                GLOBAL_ERR("    %s: ended by %s%s", step_slot(static_cast<Step>(index)), mEndedBy[index],',
+                  '                           mEndedFirst[index] ? " (the value it already had on subscribing, before any request)" : "");',
                   '            }',
                   '            else',
                   '            {',
-                  '                std::cerr << "ended by its wait, or ran no check";',
+                  '                GLOBAL_ERR("    %s: ended by its wait, or ran no check", step_slot(static_cast<Step>(index)));',
                   '            }',
-                  '',
-                  '            std::cerr << std::endl;',
                   '        }',
                   '',
                   '        const uint32_t shown{ mTrailCount < cTrailMost ? mTrailCount : cTrailMost };',
@@ -4020,17 +4020,15 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
                   '            return;',
                   '        }',
                   '',
-                  '        std::cerr << "  the last " << shown << " arrivals, oldest first:" << std::endl;',
+                  '        GLOBAL_ERR("  the last %u arrivals, oldest first:", static_cast<unsigned int>(shown));',
                   '        for (uint32_t index = mTrailCount - shown; index < mTrailCount; ++ index)',
                   '        {',
                   '            const uint32_t slot{ index % cTrailMost };',
-                  '            std::cerr << "    " << mTrailWhat[slot]',
-                  '                      << (mTrailFirst[slot] ? " (the value it already had on subscribing, before any request)" : "")',
-                  '                      << (mTrailLate[slot] ? " (kept earlier, replayed)" : "")',
-                  '                      << " on " << mTrailStep[slot] << ": "',
-                  '                      << (mTrailDone[slot] != nullptr ? mTrailDone[slot]',
-                  '                                                      : "its check was running")',
-                  '                      << std::endl;',
+                  '            GLOBAL_ERR("    %s%s%s on %s: %s", mTrailWhat[slot],',
+                  '                       mTrailFirst[slot] ? " (the value it already had on subscribing, before any request)" : "",',
+                  '                       mTrailLate[slot] ? " (kept earlier, replayed)" : "",',
+                  '                       mTrailStep[slot],',
+                  '                       mTrailDone[slot] != nullptr ? mTrailDone[slot] : "its check was running");',
                   '        }',
                   '    }',
                   '',
@@ -4054,13 +4052,12 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
     if steps:
         lines += ['        if (why != nullptr)',
                   '        {',
-                  '            std::cerr << "FAIL [" << step_slot() << "]: " << why',
-                  '                      << std::endl;',
+                  '            GLOBAL_ERR("FAIL [%s]: %s", step_slot(), why);',
                   '        }',
                   '',
                   '        print_trail();']
     else:
-        lines.append('        std::cerr << "FAIL: " << why << std::endl;')
+        lines.append('        GLOBAL_ERR("FAIL: %s", why);')
     lines += ['        mDeadline.stop_timer();']
     if stepped:
         lines.append('        mPace.stop_timer();')
@@ -4135,7 +4132,60 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
 # application storage, which outlives them. Generating this is what stops an
 # application inventing a global for its exit code: a scenario that asserts a non-zero
 # exit passes falsely when nothing ever sets one.
-EXIT_CODE = ['constexpr char const _exitCode[]{ "exitCode" };',
+# The project's own configuration file, which the generator writes once and every
+# generated main() names in setup(). areg's build copies its own areg.init into the
+# same folder on every build, so the project's file has a name of its own.
+CONFIG_NAME = 'project.init'
+CONFIG_TEXT = '''# The configuration of this project's programs; main() reads it in Application::setup().
+# A relative path is resolved against the folder of the executable.
+config::*::version          = 2.0.0
+router::*::service          = mtrouter
+router::*::connect          = tcpip
+router::*::enable::tcpip    = true
+router::*::address::tcpip   = localhost
+router::*::port::tcpip      = 8181
+log::*::version             = 2.0.0
+log::*::enable              = true
+log::*::target              = file
+log::*::enable::file        = true
+log::*::enable::remote      = false
+log::*::enable::debug       = false
+log::*::file::location      = ./logs/%appname%_%time%.log
+log::*::file::append        = false
+log::*::layout::message     = %d: [ %t  %p >>> ] %m%n
+log::*::scope::areg_*       = NOTSET ;
+log::*::scope::src_services_* = NOTSET ;
+log::*::scope::*            = DEBUG ;
+'''
+CONFIG_CMAKE = ('configure_file("${{CMAKE_CURRENT_SOURCE_DIR}}/../config/{0}" '
+                '"${{CMAKE_RUNTIME_OUTPUT_DIRECTORY}}/config/{0}" COPYONLY)'.format(CONFIG_NAME))
+
+
+def ensure_config(out):
+    """Writes config/project.init beside out once, and the line of out/CMakeLists.txt
+    that copies it next to the executables. Returns the paths written."""
+    written = []
+    path = os.path.join(os.path.dirname(os.path.abspath(out)), 'config', CONFIG_NAME)
+    if not os.path.isfile(path):
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, 'w', encoding='utf-8') as handle:
+            handle.write(CONFIG_TEXT)
+        written.append(path)
+    cmake = os.path.join(out, 'CMakeLists.txt')
+    if os.path.isfile(cmake):
+        with open(cmake, encoding='utf-8') as handle:
+            text = handle.read()
+        if CONFIG_CMAKE not in text:
+            with open(cmake, 'w', encoding='utf-8') as handle:
+                handle.write(text.rstrip('\n') + '\n' + CONFIG_CMAKE + '\n')
+            written.append(cmake)
+    return written
+
+
+EXIT_CODE = ['//! The configuration file this program reads, in its executable\'s folder.',
+             'constexpr char const _configFile[]{{ "./config/{}" }};'.format(CONFIG_NAME),
+             '',
+             'constexpr char const _exitCode[]{ "exitCode" };',
              '',
              '//! Ends the application with this exit code, in storage that outlives',
              '//! the components.',
@@ -4155,9 +4205,31 @@ EXIT_CODE = ['constexpr char const _exitCode[]{ "exitCode" };',
              '}',
              '']
 
+def main_top(program=''):
+    """The log scope and the file-scope section of a main.cpp: its includes and helpers."""
+    return ['GLOBAL_LOG_SCOPE({}_main, log);'.format(program or 'app'), '',
+            marker('main_top' + ('_' + program if program else ''),
+                   'the includes and helpers this main.cpp needs, at file scope, or one '
+                   '// line', 0), '']
+
+
+def main_run(body, program=''):
+    """The main() lines with the section for what the program starts once its model is
+    loaded and before it waits to quit."""
+    slot = 'main_run' + ('_' + program if program else '')
+    lines = []
+    for line in body:
+        lines.append(line)
+        if '::load_model(' in line:
+            lines.append(marker(slot, 'what this program starts once its model is loaded, '
+                                'before it waits to quit: a thread, an event loop, a reader; '
+                                'quit_with(code) ends the program. Or one // line', 4))
+    return lines
+
+
 EXIT_MAIN = ['int main()',
              '{',
-             '    areg::Application::setup();',
+             '    areg::Application::setup(true, true, true, true, false, _configFile);',
              '    areg::Application::load_model(_modelName);',
              '    areg::Application::wait_quit(areg::WAIT_INFINITE);',
              '    areg::Application::unload_model(_modelName);',
@@ -4186,7 +4258,7 @@ HOLD_CODE = ['constexpr char const _hold[]{ "hold" };',
 
 HOLD_MAIN = ['int main(int argc, char * argv[])',
              '{',
-             '    areg::Application::setup();',
+             '    areg::Application::setup(true, true, true, true, false, _configFile);',
              '',
              '    // "{}" makes the steps hold once, so a scenario can take the provider away.'
              .format(HOLD_FLAG),
@@ -4199,48 +4271,6 @@ HOLD_MAIN = ['int main(int argc, char * argv[])',
              '    }',
              '',
              '    areg::Application::load_model(_modelName);'] + EXIT_MAIN[4:]
-
-# The console quit path, asked of nearly every task. End of input is not a quit
-# request: a process started without a console is handed a stream nothing is ever
-# written to, so the loop blocks on its own thread and the service keeps running.
-CONSOLE_INCLUDES = ['#include <cstdio>', '#include <cstdlib>', '#include <iostream>',
-                    '#include <string>', '#include <thread>']
-
-MAIN_BODY = ['int main()',
-             '{',
-             '    areg::Application::setup();',
-             '    areg::Application::load_model(_modelName);',
-             '',
-             '    // Quits on "-q" or "--quit" from the console. Any other input is',
-             '    // ignored, and end of input keeps the service running.',
-             '    std::thread console([]()',
-             '    {',
-             '        std::string line;',
-             '        while (std::getline(std::cin, line))',
-             '        {',
-             '            if ((line == "-q") || (line == "--quit"))',
-             '            {',
-             '                quit_with(0);',
-             '                break;',
-             '            }',
-             '        }',
-             '    });',
-             '    console.detach();',
-             '',
-             '    areg::Application::wait_quit(areg::WAIT_INFINITE);',
-             '    areg::Application::unload_model(_modelName);',
-             '    areg::Application::release();',
-             '',
-             '    // Flushes the output and ends the process at once, with the console',
-             '    // thread still reading.',
-             '    const int exitCode{ areg::Application::stored_element(_exitCode).valInt.mElement };',
-             '    std::cout.flush();',
-             '    std::cerr.flush();',
-             '    std::fflush(stdout);',
-             '    std::fflush(stderr);',
-             '    std::_Exit(exitCode);',
-             '}',
-             '']
 
 def provider_name(iface):
     """The provider component: named after the service, like its generated base."""
@@ -4412,9 +4442,11 @@ def component_files(cls, brief, includes, class_lines, state_slot, prelude=(),
               ' **/',
               '#include "{}.hpp"'.format(cls),
               '',
-              '#include <iostream>',
-              '',
               '#include "areg/appbase/Application.hpp"',
+              '#include "areg/logging/areg_log.h"',
+              '',
+              '// GLOBAL_INFO, GLOBAL_WARN and GLOBAL_ERR anywhere in this file log in this scope.',
+              'GLOBAL_LOG_SCOPE({}, log);'.format(cls),
               '']
     source += unused_allowed(definitions)
     return [(cls + '.hpp', '\n'.join(header)), (cls + '.cpp', '\n'.join(source))]
@@ -4439,7 +4471,8 @@ HOLD_DECLARATION = ['//! True when main() was given "{}". Defined next to main()
 MAIN_INCLUDES = ['#include "areg/base/areg_global.h"',
                  '#include "areg/appbase/Application.hpp"',
                  '#include "areg/base/String.hpp"',
-                 '#include "areg/component/ComponentLoader.hpp"']
+                 '#include "areg/component/ComponentLoader.hpp"',
+                 '#include "areg/logging/areg_log.h"']
 
 
 # The task of a two-process application asks for the two programs in separate
@@ -4509,7 +4542,7 @@ def app_files(iface, mode, include_root, machine=None, steps=(), driver=None, ti
                      .format(iface.name))
         lines += ['#include "{}.hpp"'.format(provider_cls),
                   '#include "{}.hpp"'.format(consumer_cls), '']
-        lines += EXIT_CODE
+        lines += EXIT_CODE + main_top()
         lines += ['constexpr char const _modelName[]{{ "{}Model" }};'.format(iface.name),
                   '',
                   'BEGIN_MODEL(_modelName)',
@@ -4524,26 +4557,25 @@ def app_files(iface, mode, include_root, machine=None, steps=(), driver=None, ti
                   '',
                   'END_MODEL(_modelName)',
                   '']
-        lines += EXIT_MAIN
+        lines += main_run(EXIT_MAIN)
         return produced + [('main.cpp', '\n'.join(lines))]
 
     provider = head(PROVIDER_DIR[mode] + 'main.cpp',
                     'The process that provides the {} service.'.format(iface.name))
-    provider += CONSOLE_INCLUDES + ['']
     provider += ['#include "{}.hpp"'.format(provider_cls), '']
-    provider += EXIT_CODE
+    provider += EXIT_CODE + main_top('provider')
     provider += ['constexpr char const _modelName[]{ "ProviderModel" };',
                  '',
                  'BEGIN_MODEL(_modelName)']
     provider += provider_registration(iface, 4, workers)
     provider += ['END_MODEL(_modelName)', '']
-    provider += MAIN_BODY
+    provider += main_run(EXIT_MAIN, 'provider')
 
     consumer = head(CONSUMER_DIR[mode] + 'main.cpp',
                     'The process that consumes the {} service.'.format(iface.name))
     consumer += (['#include <cstring>', ''] if hold else [])
     consumer += ['#include "{}.hpp"'.format(consumer_cls), '']
-    consumer += EXIT_CODE + (HOLD_CODE if hold else [])
+    consumer += EXIT_CODE + (HOLD_CODE if hold else []) + main_top('consumer')
     consumer += ['constexpr char const _modelName[]{ "ConsumerModel" };',
                  '',
                  '// A unique role name lets several consumer processes run at the same time.',
@@ -4557,7 +4589,7 @@ def app_files(iface, mode, include_root, machine=None, steps=(), driver=None, ti
                  '    END_REGISTER_THREAD("ConsumerThread")',
                  'END_MODEL(_modelName)',
                  '']
-    consumer += HOLD_MAIN if hold else EXIT_MAIN
+    consumer += main_run(HOLD_MAIN if hold else EXIT_MAIN, 'consumer')
     return produced + [(PROVIDER_DIR[mode] + 'main.cpp', '\n'.join(provider)),
                        (CONSUMER_DIR[mode] + 'main.cpp', '\n'.join(consumer))]
 
@@ -4691,15 +4723,11 @@ def update_cmake(path, sources=None, documents=None, prune=None):
     return changed
 
 
-# What a process is expected to print, until the rule that prints it is written.
+# What a process is expected to write, until the rule that writes it is written.
 # It is a regular expression that matches nothing, so a scenario left unfilled fails
 # and says which line is missing rather than passing on no evidence at all.
 SCENARIO_TODO = ('TODO(you) {}: one regular expression per line, each a line this '
-                 'process prints that proves a requirement')
-
-# The scenario that proves the generated console quit loop. It expects no output, so
-# it holds no hole and passes as written.
-QUIT_SCENARIO = 'quit'
+                 'process writes that proves a requirement')
 
 # The scenario that proves the generated reconnect deadline: the provider is killed
 # while it serves the consumer, and the consumer exits 1. Its one hole is the line
@@ -4767,14 +4795,14 @@ def with_hold(steps, hold):
     if hold is None:
         return steps
     return steps[:hold['after'] + 1] + [hold['lead'], hold] + steps[hold['after'] + 1:]
-STOP_TODO = 'TODO(you) {}: a line the lead prints while the provider serves it'
-STOP_HINT = ('one line "{lead}" prints in scenario "{scenario}", matched against the '
-             'output of "{lead}" only. "{target}" is killed when it appears, and the '
+STOP_TODO = 'TODO(you) {}: a line the lead writes while the provider serves it'
+STOP_HINT = ('one line "{lead}" writes in scenario "{scenario}", matched against the '
+             'lines of "{lead}" only. "{target}" is killed when it appears, and the '
              'kill lands about 50 ms later: a send that is answered at once finishes '
-             'sooner than that. Pick a line printed after the first answer and before '
+             'sooner than that. Pick a line written after the first answer and before '
              'something that takes time. A design with steps holds the lead still by '
              'adding a {{"name": "...", "wait": 300}} step right after the step that '
-             'prints it; one without steps picks a line the lead prints while it is '
+             'writes it; one without steps picks a line the lead writes while it is '
              'still being served. A regular expression, one line.')
 
 
@@ -4836,22 +4864,6 @@ def update_scenarios(path, mode, iface, steps=(), reconnect=0):
     scenarios[0]['timeout'] = max(int(scenarios[0].get('timeout', 60)),
                                   60 + len(iface.requests) * STEP_INTERVAL_MS // 1000)
 
-    # The provider's main() carries the console quit loop, so the scenario that
-    # proves it is written here too. "stdin" is fed the moment the process starts,
-    # which is why the provider leads a scenario of its own.
-    quit_written = False
-    if mode == 'ipc' and not any(s.get('name') == QUIT_SCENARIO for s in scenarios):
-        lead = procs[0]
-        scenarios.append({'name': QUIT_SCENARIO,
-                          'timeout': 30,
-                          'router': scenarios[0].get('router', True),
-                          'procs': [{'binary': lead['binary'],
-                                     'name': proc_label(lead),
-                                     'lead': True,
-                                     'stdin': ['-q'],
-                                     'exit': 0}]})
-        quit_written = True
-
     # A consumer that loses its provider exits 1 through the generated reconnect
     # deadline. With no deadline there is no exit to check.
     lost_written, lost_held = False, False
@@ -4884,17 +4896,8 @@ def update_scenarios(path, mode, iface, steps=(), reconnect=0):
     print('wrote  {}'.format(path))
     print('  {} process(es), router {}. Each "expect" hole is a section of the'
           .format(len(procs), 'on' if scenarios[0].get('router') else 'off'))
-    print('  worksheet, one regular expression per line. Two more keys exist and no')
-    print('  page is needed for them.')
-    print('  "stdin": ["-q"] is written the moment the process starts, so it goes')
-    print('  on the lead of a scenario of its own; on any other process it quits that')
-    print('  process before its peers are served. A scenario-level')
+    print('  worksheet, one regular expression per line. A scenario-level')
     print('  "stop": {"proc": "<name>", "after": "<regex>"} takes a peer away.')
-    if quit_written:
-        print('  A "{}" scenario was added: the provider alone, fed "-q", exit 0. It'
-              .format(QUIT_SCENARIO))
-        print('  proves the console quit path the generated main() already carries,')
-        print('  and it needs nothing from you.')
     if lost_written:
         print('  A "{}" scenario was added: {} is killed while it serves, and {} has to'
               .format(PEER_LOST_SCENARIO, proc_label(procs[0]), proc_label(procs[-1])))
@@ -5086,6 +5089,8 @@ def main():
                                app_sources(produced, args.mode), documents)
         for change in changed or []:
             print('  {}/CMakeLists.txt: {}'.format(args.out.replace('\\', '/'), change))
+        for path in ensure_config(args.out):
+            print('wrote  {}'.format(os.path.relpath(path).replace('\\', '/')))
         update_scenarios(args.scenarios, args.mode, iface, steps,
                          driver_of(args.spec, iface)['reconnect_seconds'])
         first = not os.path.isfile(WORKSHEET)

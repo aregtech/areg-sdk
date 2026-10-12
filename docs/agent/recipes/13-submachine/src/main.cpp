@@ -2,7 +2,6 @@
  * \file    main.cpp
  * \brief   A state machine that hosts another state machine twice.
  **/
-#include <iostream>
 
 #include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
@@ -13,6 +12,9 @@
 #include "src/services/LampActionHandler.hpp"
 #include "src/services/BlinkActionHandler.hpp"
 #include "src/services/LampFSM.hpp"
+#include "areg/logging/areg_log.h"
+
+GLOBAL_LOG_SCOPE(lamp_main, log);
 
 //! The actions of one hosted Blink. Each hosting state gets its own, so the two
 //! instances of the same machine do different work.
@@ -27,12 +29,12 @@ public:
 protected:
     void action_on_lit() final
     {
-        std::cout << "blink: " << mName << " lit" << std::endl;
+        GLOBAL_INFO("blink: %s lit", mName);
     }
 
     void action_on_dark() final
     {
-        std::cout << "blink: " << mName << " dark" << std::endl;
+        GLOBAL_INFO("blink: %s dark", mName);
     }
 
 private:
@@ -73,12 +75,12 @@ protected:
 
     void action_on_idle() final
     {
-        std::cout << "lamp: idle" << std::endl;
+        GLOBAL_INFO("lamp: idle");
     }
 
     void on_fsm_final(LampFSM & /*machine*/, const char * const finalState) final
     {
-        std::cout << "lamp: finished in " << finalState << std::endl;
+        GLOBAL_INFO("lamp: finished in %s", finalState);
         areg::Application::signal_quit();
     }
 
@@ -104,7 +106,7 @@ END_MODEL(_modelName)
 
 int main()
 {
-    areg::Application::setup();
+    areg::Application::setup(true, true, true, true, false, "./config/project.init");
     areg::Application::load_model(_modelName);
     areg::Application::wait_quit(areg::WAIT_INFINITE);
     areg::Application::unload_model(_modelName);
