@@ -1,5 +1,5 @@
 #include "src/InputParser.hpp"
-#include <set>
+#include <unordered_set>
 
 BenchmarkConfig InputParser::parseInput(int argc, char* argv[]) {
     std::vector<std::string> args;
@@ -34,7 +34,7 @@ BenchmarkConfig InputParser::buildConfig(std::vector<ParsedArg> pList) {
     BenchmarkConfig cfg;
     for (ParsedArg p : pList) {
         int argVal;
-        std::set<std::string> numericalFlags = {"l", "w", "t", "a", "af", "ad", "as", "sl"};
+        std::unordered_set<std::string> numericalFlags = {"l", "w", "t", "a", "af", "ad", "as", "sl"};
         if (numericalFlags.find(p.flag) != numericalFlags.end()) {
             try {
                 argVal = stoi(p.value);
