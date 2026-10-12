@@ -449,11 +449,10 @@ class OutputReader(object):
     def _pump(self):
         for line in iter(self._handle.stdout.readline, ''):
             self._take(line)
-        for stream in (self._handle.stdout, self._spool):
-            try:
-                stream.close()
-            except (OSError, ValueError):
-                pass
+        try:
+            self._handle.stdout.close()
+        except (OSError, ValueError):
+            pass
 
     def _follow(self, log_dir, since):
         """Takes the lines of the log file this process writes, without their layout prefix.
@@ -496,7 +495,8 @@ class OutputReader(object):
     def _take(self, line):
         """Spools one line and keeps it in the tail."""
         with self._lock:
-            self._spool.write(line)
+            if not self._spool.closed:
+                self._spool.write(line)
             self._lines.append(line)
             self._size += len(line)
             while self._size > TAIL_LIMIT and len(self._lines) > 1:
@@ -519,10 +519,11 @@ class OutputReader(object):
         self._thread.join(timeout)
         if self._follower is not None:
             self._follower.join(timeout)
-        try:
-            self._spool.close()
-        except (OSError, ValueError):
-            pass
+        with self._lock:
+            try:
+                self._spool.close()
+            except (OSError, ValueError):
+                pass
 
 
 class LaggingReader(OutputReader):

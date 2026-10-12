@@ -327,6 +327,12 @@ def print_todos(produced, out, written, holes=0, scenarios='', first=True, added
 # written where the markers are written, so nothing has to be recalled from an
 # earlier command or looked up in a second one.
 # ---------------------------------------------------------------------------
+# Sections above which the worksheet offers the bodies in parts, one call each.
+PARTS_OVER = 60
+PARTS = """ A worksheet this long goes
+#| in parts, one program each: the first --write {bodies}, each later one
+#| --write fix.txt (folded into {bodies}), only the last with --run."""
+
 WORKSHEET_HEAD = """\
 #| The worksheet of this project: one section per open marker, in file order.
 #| The generator rewrites this file on every generation, so no body goes in it.
@@ -372,7 +378,9 @@ WORKSHEET_HEAD = """\
 #|
 #| Writing {bodies} and running it is one request. Filling it one section at a
 #| time is {total} requests instead, and a request is billed for the whole
-#| conversation again.
+#| conversation again.{parts}
+#| An editor runs nothing, so every edit made with one, each later fix
+#| included, costs a request more.
 #|
 #| {bodies} keeps every body it writes. A body already written stays addressable by
 #| the same section: send only the sections you change with --write fix.txt on the
@@ -899,8 +907,10 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
                 carried[file_name] = (os.path.basename(file_name)[:-4], members, helpers,
                                       helper_docs(text))
 
-    lines = [WORKSHEET_HEAD.format(tool=FILLER, build=BUILDER, bodies=BODIES,
-                                   total=len(sections) + len(holes))]
+    total = len(sections) + len(holes)
+    lines = [WORKSHEET_HEAD.format(tool=FILLER, build=BUILDER, bodies=BODIES, total=total,
+                                   parts=PARTS.format(bodies=BODIES)
+                                   if total > PARTS_OVER else '')]
     if carried:
         lines.append('#| These names are taken already. Declaring one of them again in\n'
                      '#| a section below shadows it, and the compiler points at the line\n'

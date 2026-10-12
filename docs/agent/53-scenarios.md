@@ -1,8 +1,9 @@
 # Testing an application with scenarios
 
 `tools/agent/run_scenarios.py` starts a list of processes in order, waits for the
-leading one and exits 0 only when every process ended as the scenario says and every
-expected line appeared. A line is a message a process logged (`34-logging.md`), read
+leading one, stops every process still running, and exits 0 only when each ended as
+the scenario says and every expected line appeared: a provider that runs until stopped
+needs no `stop` and no `exit`. A line is a message a process logged (`34-logging.md`), read
 from its log file as it is written, without its time, thread and priority; what a process writes
 to its standard output counts too. `build_project.py --run` runs it after every build.
 The file is `scenarios.json` unless `--file` says otherwise:

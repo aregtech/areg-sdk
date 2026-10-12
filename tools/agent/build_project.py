@@ -629,8 +629,13 @@ def diagnostics(lines, budget, context=6):
 
 
 def show_failure(lines, tail):
-    """Prints what a failed step said about the defect, and how much was left out."""
-    tail = len(lines) if tail is None else tail
+    """Prints what a failed step said about the defect, and how much was left out.
+
+    With tail None the whole log is printed.
+    """
+    if tail is None:
+        show(lines, tail)
+        return
     found = diagnostics(lines, tail)
     if found is None:
         show(lines, tail)
@@ -1169,6 +1174,8 @@ def main():
                     fail('--write {}: its sections are written as they are, so a block '
                          'cannot edit {} itself'.format(target, ' or '.join(appendable)))
                 apply_edits(root, edits, made, appendable)
+                if not text.strip():
+                    continue
         write_input(root, target, text)
     mode = mode_of(root, args.mode)
 

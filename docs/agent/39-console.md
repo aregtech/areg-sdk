@@ -64,12 +64,19 @@ call.
 ## 3. Testing it
 
 A scenario (`53-scenarios.md`) writes the command with `stdin`, on the lead of a
-scenario of its own, added with `--edit` (a regeneration keeps a scenario it did not write); on any other process the command is read at once and that process
-quits before its peers are served:
+scenario of its own; on any other process the command is read at once and that process
+quits before its peers are served. The scenario is a block of the bodies call, and a
+regeneration keeps it:
 
-```json
-{ "name": "quit", "router": true, "timeout": 30,
-  "procs": [ { "binary": "myprovider", "lead": true, "stdin": ["quit"], "exit": 0 } ] }
+```text
+== scenarios.json
+<<<<<<< SEARCH
+  "scenarios": [
+=======
+  "scenarios": [
+    { "name": "quit", "router": true, "timeout": 30,
+      "procs": [ { "binary": "myprovider", "lead": true, "stdin": ["quit"], "exit": 0 } ] },
+>>>>>>> REPLACE
 ```
 
 `expect` matches what a process prints as well as what it logs. A process with no
