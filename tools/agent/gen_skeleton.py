@@ -336,18 +336,19 @@ PARTS = """ A worksheet this long goes
 WORKSHEET_HEAD = """\
 #| The worksheet of this project: one section per open marker, in file order.
 #| The generator rewrites this file on every generation, so no body goes in it.
-#| The bodies go in {bodies}, a file of your own: for each section, its "==" line
-#| and under it the code that replaces that marker. Write it, apply it, build and
-#| run the scenarios in one command, the whole file as a here-document. This call
-#| saves the file in place of an editor; an editor first costs a request more:
+#| The bodies are the input of build_project.py, a bulk-edit tool: from one
+#| here-document it fills every marker of every source file, keeps the input as
+#| {bodies}, builds and runs the scenarios. For each section, its "==" line and
+#| under it the code that replaces that marker:
 #|
 #|   python3 {build} --spec design.json --write {bodies} --run <<'AREG_EOF'
 #|   == <marker>
 #|   <code>
 #|   AREG_EOF
 #|
-#| A shell with no here-document writes {bodies} and runs the command without
-#| --write, both in the same message.
+#| An editor, or a shell with no here-document, writes {bodies} or fix.txt whole
+#| and runs the command without --write: a request more. A body patched into its
+#| source file instead is dropped by --regenerate, and costs a patch per file.
 #|
 #| A project with no design.json applies it with python3 {tool} --bodies {bodies}.
 #|
@@ -379,8 +380,6 @@ WORKSHEET_HEAD = """\
 #| Writing {bodies} and running it is one request. Filling it one section at a
 #| time is {total} requests instead, and a request is billed for the whole
 #| conversation again.{parts}
-#| An editor runs nothing, so every edit made with one, each later fix
-#| included, costs a request more.
 #|
 #| {bodies} keeps every body it writes. A body already written stays addressable by
 #| the same section: send only the sections you change with --write fix.txt on the

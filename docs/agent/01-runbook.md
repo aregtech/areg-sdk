@@ -138,9 +138,9 @@ python3 <areg-sdk>/tools/agent/build_project.py --spec design.json --write desig
 AREG_EOF
 ```
 
-`--write <file>` saves standard input to that file first: a file and its build are one
-call, even where your harness prefers its own editor. A shell with no here-document
-writes the file and runs this in the same message.
+`--write <file>` makes this a bulk-edit tool: it saves standard input to that file
+and builds in one call, even if a harness prefers its editor. A shell with no
+here-document writes the file and runs this in one message.
 `--edit` instead changes lines of your files in the same call: `== <file>`,
 `<<<<<<< SEARCH`, the old lines, `=======`, the new lines, `>>>>>>> REPLACE`.
 
@@ -187,8 +187,8 @@ each generated class already carries, and the contract every body is written aga
 `bodies.txt` -- each `== <marker>` line with the code under it -- and run it in one
 call: section 7's command with `--write bodies.txt` applies it before it compiles.
 
-**That is the whole implementation, in two requests.** One edit per body and a full
-rewrite are the two most expensive shapes a run has.
+**The whole implementation is two requests, or one per part if the worksheet says
+so.** One edit per body or a full rewrite costs most.
 
 A line tagged `// placeholder(you)` stands only until the marker above it is filled --
 a default `response_`, a `return false;`. The filler takes it away with that marker. An
