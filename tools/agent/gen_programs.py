@@ -352,6 +352,35 @@ def client_class(owner, iface, roles, cls, reconnect, driving=False, steps=()):
     return lines
 
 
+def lookup_name(iface):
+    """The method returning the client of one role of a service used under several roles."""
+    return gs.snake(iface.name) + '_client'
+
+
+def lookups(component):
+    """For each service the component uses under several roles, its client by role name."""
+    lines = []
+    for iface, roles, name in component.clients:
+        if len(roles) < 2:
+            continue
+        for const in ('', 'const '):
+            lines += ['    //! The client of the {} provider of this role name; nullptr for a role '
+                      'this component does not use.'.format(iface.name),
+                      '    {}{} * {}(const areg::String & role){}'.format(
+                          const, name, lookup_name(iface), ' const' if const else ''),
+                      '    {']
+            for role in roles:
+                lines += ['        if (role == "{}")'.format(role),
+                          '        {',
+                          '            return &{};'.format(member_of(role)),
+                          '        }',
+                          '']
+            lines += ['        return nullptr;',
+                      '    }',
+                      '']
+    return lines
+
+
 def with_clients(lines, component):
     """The class lines of a component, holding one client member per used role."""
     if not component.clients:
@@ -376,7 +405,7 @@ def with_clients(lines, component):
                            .format(name, member_of(role), iface.name, role))
     lines[last + 1:last + 1] = inits
     deleted = lines.index('    {}() = delete;'.format(component.cls))
-    lines[deleted:deleted] = members + ['']
+    lines[deleted:deleted] = members + [''] + lookups(component)
     if component.kind == 'drives' and component.steps:
         # The steps begin once this service and every used provider are connected,
         # whichever of them connects last.
@@ -1025,6 +1054,14 @@ def wiring(programs, components, deployments=()):
                   .format(next(c.cls for c in components if c.clients)),
                   'mRole names the provider the client talks to. A driver begins its steps',
                   'once every provider it uses is connected.']
+    several = [(c, iface) for c in components for iface, roles, _ in c.clients
+               if len(roles) > 1]
+    if several:
+        component, iface = several[0]
+        lines += ['A service used under several roles is also reached by role name:',
+                  '{}(role) of {} returns that role\'s client,'
+                  .format(lookup_name(iface), component.cls),
+                  'nullptr for a role it does not use, so a role added to "uses" needs no code.']
     if any(c.clients for c in components if c.kind == 'provides'):
         lines += ['A request answered after its handler returns -- when a used provider',
                   'answers, a timer fires or an event arrives -- keeps its caller, an',
