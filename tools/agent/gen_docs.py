@@ -1845,6 +1845,12 @@ def check_component(project, component, here, name, services, roles, provided, d
         driven.append((service, where))
     for entry in component.get('uses') or []:
         if isinstance(entry, dict):
+            if 'reconnect_seconds' in entry:
+                fail('a used service of {} carries "reconnect_seconds", which is not one of '
+                     'its keys. How long every client of "{}" waits for its provider to come '
+                     'back is the "reconnect_seconds" of that interface\'s "driver" block, one '
+                     'value per service. Its keys: {}'
+                     .format(where, entry.get('service'), ', '.join(KEYS['use'])))
             check_keys(entry, KEYS['use'], 'a used service of ' + where)
             seconds = entry.get('connect_seconds', 0)
             if isinstance(seconds, bool) or not isinstance(seconds, int) or seconds < 0:
