@@ -6,7 +6,7 @@ class ResultProcessor
 public:
     ResultProcessor();
 
-    static SessionResult summarize(std::vector<uint64_t> mSamples, BenchmarkConfig mCfg, SampleType sType, double mClockSpeedNs);
+    static SessionResult summarize(std::vector<uint64_t> mSamples, BenchmarkConfig mCfg, SampleType sampleType, double mClockSpeedNs);
 
 };
 

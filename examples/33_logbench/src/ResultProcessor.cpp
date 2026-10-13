@@ -17,7 +17,7 @@ namespace {
     }
 }
 
-SessionResult ResultProcessor::summarize(std::vector<uint64_t> mSamples, BenchmarkConfig mCfg, SampleType sType, double mClockSpeedNs) {
+SessionResult ResultProcessor::summarize(std::vector<uint64_t> mSamples, BenchmarkConfig mCfg, SampleType sampleType, double mClockSpeedNs) {
     sort(mSamples.begin(), mSamples.end()); 
     SessionResult result;
     result.max_us = mSamples.back() / NS_PER_US;
@@ -28,7 +28,7 @@ SessionResult ResultProcessor::summarize(std::vector<uint64_t> mSamples, Benchma
     result.p99_us = _percentile_us(mSamples, 0.99);
     result.p999_us = _percentile_us(mSamples, 0.999);
     result.cfg = mCfg;
-    result.sampleType = sType;
+    result.sampleType = sampleType;
     result.clock_speed_us = mClockSpeedNs / NS_PER_US;
 
     double squaredDiffSum = 0.0;
