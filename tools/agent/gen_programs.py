@@ -1078,14 +1078,19 @@ def wiring(programs, components, deployments=()):
                   .format(next(c.cls for c in components if c.clients)),
                   'mRole names the provider the client talks to. A driver begins its steps',
                   'once every provider it uses is connected.']
-    several = [(c, iface) for c in components for iface, roles, _ in c.clients
+    several = [(c, iface, roles) for c in components for iface, roles, _ in c.clients
                if len(roles) > 1]
     if several:
-        component, iface = several[0]
+        component, iface, roles = several[0]
         lines += ['A service used under several roles is also reached by role name:',
                   '{}(role) of {} returns that role\'s client,'
                   .format(lookup_name(iface), component.cls),
                   'nullptr for a role it does not use, so a role added to "uses" needs no code.']
+        renamed = [(role, phrase) for role in roles
+                   for phrase in sorted(set(gen_docs.RENAMED_ROLES.get(role, [])))]
+        if renamed:
+            lines += ['It takes the spelling of the design too: "{}" and "{}" are the same role.'
+                      .format(renamed[0][1], renamed[0][0])]
     if any(c.clients for c in components if c.kind == 'provides'):
         lines += ['A request answered after its handler returns -- when a used provider',
                   'answers, a timer fires or an event arrives -- keeps its caller, an',

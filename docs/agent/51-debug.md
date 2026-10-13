@@ -208,7 +208,7 @@ Nothing here reports an error. Every one of these compiles, starts, and stays si
 | A custom event has no listener | Is there an `add_listener` for that event, in the thread that should receive it? | Register in the consumer's own thread; see `23-events.md` |
 | A custom event is sent before its listener registers | Is `add_listener` after the service starts, or a worker's in `register_event_consumers()`? | `38-workers.md` |
 | `AREG_DECLARE_EVENT_EX` names a thread that is not in the model | Compare the macro's thread name with `BEGIN_REGISTER_THREAD` | Make them equal; the automatic registration silently finds no thread |
-| A watchdog timeout never bites | Was `areg::Application::setup()` called with `startWatchdog` true? | A non-zero timeout in `BEGIN_REGISTER_THREAD_EX` does nothing while the watchdog manager is off; see `37-threads.md` |
+| A watchdog timeout never bites | Does `areg::Application::setup()` start the service manager (its second argument, true by default) or pass `startWatchdog` true? | The watchdog manager starts with either; without both a timeout does nothing: `37-threads.md` section 1 |
 
 `python3 <sdk>/tools/agent/check_contract.py . --strict` reports the first of these as `P-11`
 and the last as `P-10` without building anything.

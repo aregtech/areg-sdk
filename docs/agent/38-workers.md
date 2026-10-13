@@ -2,8 +2,9 @@
 
 Read this page when a component has work too slow for a handler, or a source of its own:
 a device read every N ms, a blocking read, a long computation. A worker thread belongs to
-one component and stops with it. Thread options, the watchdog and a model built at run
-time are `37-threads.md`.
+one component and stops with it. It is a dispatcher: it runs the events and timers sent
+to it, so work every N ms is a timer on it (section 6). Which thread to choose, a plain
+one included, the watchdog and a model built at run time are `37-threads.md`.
 
 ## 1. The rules
 
@@ -71,7 +72,9 @@ void Provider::startup_component(areg::ComponentThread & owner)
 ```
 
 `shutdown_component()` removes the listener, calls the base, which stops every worker of
-the component, then `delete_worker_thread("ScanThread")`.
+the component, then `delete_worker_thread("ScanThread")`. `delete_worker_thread()` stops
+the worker and waits for it; `create_worker_thread()` with the same name then starts a
+new one, which replaces a stalled worker at run time.
 
 ## 4. In a project from design.json
 

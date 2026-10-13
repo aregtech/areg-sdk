@@ -28,9 +28,9 @@ python3 <areg-sdk>/tools/agent/setup_project.py --name <project> --root . --mode
 
 `<list>`, comma-separated or `""`: what the design needs beyond services and data types,
 `machine` (an answer depends on what came before), `timers` (a provider's delayed or
-periodic work), `workers` (a provider's own thread), `steps` (a program that drives a
-sequence and exits). `design.json` holds only those; `gen_docs.py --rules <name>` prints
-the rules of one left out.
+periodic work), `workers` (a provider's thread for slow, periodic or many tasks),
+`steps` (a program that drives a sequence and exits). `design.json` holds only those;
+`gen_docs.py --rules <name>` prints the rules of one left out.
 
 That writes a project that already builds and runs:
 

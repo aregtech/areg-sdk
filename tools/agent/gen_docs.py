@@ -3271,8 +3271,10 @@ TEMPLATE = {
             "name": "", "timeout": 1000, "repeat": 0, "start": False, "description": ""
         }],
         "workers": [{
-            NOTE: ["A thread of the provider's own, for work a handler must not do: a device",
-                   "read every N ms, a slow computation; delete it when there is none. The",
+            NOTE: ["A dispatcher thread of the provider's own, told things by events and alive as",
+                   "long as the provider, for work a handler must not do: a device read every N ms,",
+                   "a slow computation; delete it when there is none. One started, stopped or",
+                   "replaced on request is created by hand: 38-workers.md section 3. The",
                    "generator writes the thread, its events and their listeners. period_ms: its",
                    "<name>_tick section runs every period on the worker. An event is snake_case",
                    "and is everything that crosses: the worker never touches provider members.",

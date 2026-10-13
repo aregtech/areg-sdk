@@ -206,14 +206,14 @@ BANNER_LINES = 20
 LOG_MACRO_RE = re.compile(r'\b(?:LOG|TRACE)_(?:DBG|INFO|WARN|ERR|FATAL|SCOPE)\s*\(')
 
 # P-10. A watchdog timeout is registered per thread; it does nothing unless the
-# watchdog manager is running, and the manager is off by default.
+# watchdog manager runs, and the manager starts with the service manager.
 WATCHDOG_MACRO_RE = re.compile(
     r'\b(BEGIN_REGISTER_THREAD_EX2?|REGISTER_WORKER_THREAD_EX2?)\s*\(')
 WATCHDOG_TIMEOUT_ARG = {'BEGIN_REGISTER_THREAD_EX': 1,
                         'BEGIN_REGISTER_THREAD_EX2': 1,
                         'REGISTER_WORKER_THREAD_EX': 2,
                         'REGISTER_WORKER_THREAD_EX2': 2}
-WATCHDOG_ON_RE = re.compile(r'\bstart_watchdog_manager\s*\(')
+WATCHDOG_ON_RE = re.compile(r'\bstart_(?:watchdog|service)_manager\s*\(')
 SETUP_RE = re.compile(r'\bApplication\s*::\s*setup\s*\(')
 
 # P-11. The model qualifies a worker consumer name by the component's role, and the
@@ -1361,10 +1361,11 @@ def check_threads(sources, findings, read):
     """P-10 and P-11, both of which need the whole project to decide.
 
     P-10. A watchdog timeout is a per thread number in the model. It is enforced
-    only while the watchdog manager runs, and the manager is off unless asked for:
-    Application::setup() takes startWatchdog as its fifth argument and defaults it
-    to false. A timeout registered with the manager off is a guard that never
-    fires, which reads in the model as though the thread is protected.
+    only while the watchdog manager runs. Application::setup() starts it with the
+    service manager (startServicing, second argument, true by default), or alone
+    when startWatchdog, the fifth argument, is true. A timeout registered while
+    every setup() passes startServicing false and no startWatchdog is a guard that
+    never fires, which reads in the model as though the thread is protected.
 
     P-11. The model stores a REGISTER_WORKER_THREAD consumer name as
     "<role>:<name>" (areg::create_component_item_name), and worker_thread_consumer()
@@ -1379,6 +1380,7 @@ def check_threads(sources, findings, read):
     """
     timeouts = []
     watchdog_on = False
+    setup_seen = False
     consumers = []
     from_entry = False
 
@@ -1394,8 +1396,10 @@ def check_threads(sources, findings, read):
                 watchdog_on = True
             setup = SETUP_RE.search(line)
             if setup:
-                args = split_args(line, line.index('(', setup.end() - 1))
-                if args and len(args) >= 5 and args[4].strip() == 'true':
+                setup_seen = True
+                args = split_args(line, line.index('(', setup.end() - 1)) or []
+                servicing = len(args) < 2 or args[1].strip() != 'false'
+                if servicing or (len(args) >= 5 and args[4].strip() == 'true'):
                     watchdog_on = True
 
             match = WATCHDOG_MACRO_RE.search(line)
@@ -1421,14 +1425,14 @@ def check_threads(sources, findings, read):
             if WORKER_ENTRY_RE.search(line):
                 from_entry = True
 
-    if timeouts and not watchdog_on:
+    if timeouts and setup_seen and not watchdog_on:
         value, path, number = timeouts[0]
         findings.append(Finding(
             'P-10', 'advice', path, number,
-            'a watchdog timeout of %s is registered but the watchdog manager is '
-            'never started, so nothing enforces it. Call '
-            'areg::Application::setup() with its fifth argument, startWatchdog, '
-            'set to true, or register the thread with no timeout' % value))
+            'a watchdog timeout of %s is registered but the watchdog manager '
+            'never starts: setup() starts no service manager and is not asked for '
+            'the watchdog. Pass true as its fifth argument, startWatchdog, or '
+            'register the thread with no timeout' % value))
 
     for name, path, number in consumers:
         if not from_entry:

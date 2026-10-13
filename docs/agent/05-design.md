@@ -78,7 +78,14 @@ performance one:
 
 - Components that must not delay each other go in different threads.
 - Anything slow -- a file, a socket, a long computation -- gets its own thread, or it
-  stops every component sharing its thread.
+  stops every component sharing its thread. Make it a **worker** (`workers` in
+  design.json): it is told things by events, so it can be stopped, paused, re-set and
+  guarded by the watchdog, runs every N ms on a timer, and takes many tasks in order;
+  one started, stopped or replaced on request is created by hand (`38-workers.md`
+  section 3). A **plain thread** (`areg::Thread`, `std::thread`) only for a short task
+  that runs alone, is started seldom and is bound to no component, or for a library
+  call that never returns: `37-threads.md` section 2. Either hands its result to its
+  component as a custom event (`23-events.md`).
 - Components that only exchange messages may share a thread. Sharing is cheaper.
 
 Start with a thread per component. Merge later, with a reason.

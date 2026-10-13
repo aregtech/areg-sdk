@@ -42,7 +42,7 @@ Find your task, open that one file, and do not search the repository.
 | Start a new project by hand | `docs/agent/10-new-project.md` |
 | Define an interface; what to override, what to call | `docs/agent/20-service-interface.md` (section 3: the names) |
 | Implement a provider, a consumer, or the model | no page: `tools/agent/gen_skeleton.py --app` wrote all three, compiling and running, and your code is the bodies its worksheet asks for. Open `docs/agent/30-provider.md`, `docs/agent/31-consumer.md` or `docs/agent/32-model.md` only where `docs/agent/05-design.md` or `docs/agent/51-debug.md` cites a numbered section of one; several services in one component: `docs/agent/24-component.md` |
-| Worker thread; watchdog, model built at run time | a provider's: `workers` of its service in design.json, the template's note; otherwise copy `docs/agent/recipes/07-worker-events/`; `docs/agent/38-workers.md`; `docs/agent/37-threads.md` |
+| Worker thread, or a plain one (which: `docs/agent/37-threads.md` section 2); watchdog, model built at run time | a provider's: `workers` of its service in design.json, the template's note; otherwise copy `docs/agent/recipes/07-worker-events/`; `docs/agent/38-workers.md`; `docs/agent/37-threads.md` |
 | Send a custom event between threads | `docs/agent/23-events.md` |
 | Do periodic or delayed work | `docs/agent/33-timers.md` |
 | Log from code; read a program's log | `docs/agent/34-logging.md` |

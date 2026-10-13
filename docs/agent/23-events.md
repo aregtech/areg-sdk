@@ -1,8 +1,8 @@
 # Custom events between threads
 
-A custom event carries one data object from the thread that sends it to a consumer
-running in another dispatcher thread of the **same process**. It is how a worker
-thread reports back to its component, and it is the only message the framework
+A custom event carries one data object from the thread that sends it, any thread of the
+**same process**, to a consumer running in a dispatcher thread. It is how a worker or a
+plain thread reports back to its component, and it is the only message the framework
 delivers that no service interface describes.
 
 **Reach for a service first.** Anything that has a caller and an answer, anything a

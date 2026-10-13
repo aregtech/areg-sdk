@@ -444,7 +444,7 @@
     {
       "id": "r14-watchdog-off",
       "kind": "repair",
-      "prompt": "The thread declares a watchdog timeout and the watchdog never bites: a stuck component is never restarted. The timeout is not zero and the code compiles. Find out why and fix it.",
+      "prompt": "The components start, but the client never finds the service and the declared watchdog never bites: a stuck component is never restarted. The code compiles. Find out why and fix it.",
       "expect": [
         "worker: scanned depth",
         "client: found"
@@ -453,13 +453,13 @@
       "defect": {
         "file": "src/main.cpp",
         "find": "    areg::Application::setup(true, true, true, true, true);",
-        "replace": "    areg::Application::setup(true, true, true, true, false);"
+        "replace": "    areg::Application::setup(true, false, false, true, false);"
       },
       "detect": {
         "by": "check_contract",
         "rule": "P-10"
       },
-      "teaches": "a non-zero timeout in BEGIN_REGISTER_THREAD_EX does nothing while the watchdog manager is off; setup() takes startWatchdog as its fifth argument and it defaults to false"
+      "teaches": "the watchdog manager starts with the service manager; setup() with startServicing false starts neither, and startWatchdog alone starts the watchdog"
     },
     {
       "id": "r15-string-in-log-macro",
