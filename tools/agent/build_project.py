@@ -354,9 +354,8 @@ def edit_refusal(root, target, path, generated_dirs):
     if rel.endswith(('.cpp', '.hpp', '.h')):
         with open(path, encoding='utf-8', errors='replace') as handle:
             if GENERATED_SOURCE.search(handle.read()):
-                return ('it is written from bodies.txt, so the next build writes over an '
-                        'edit in a body: change its section in bodies.txt, or send it as '
-                        'fix.txt')
+                return ('it is written from bodies.txt: change its section in bodies.txt, '
+                        'or send it as fix.txt')
     return None
 
 
@@ -858,14 +857,16 @@ def drop_placeholders(root, changed, wanted):
 def mode_of(root, given):
     """ipc or local: what the project was scaffolded as.
 
-    Taken from scenarios.json, which names one process for a local project and two
-    for an ipc one, so the mode is never asked for twice.
+    Taken from the generated "smoke" scenario of scenarios.json, which names one
+    process for a local project and two for an ipc one, so the mode is never asked
+    for twice. A scenario of the author's own may stand before it.
     """
     if given:
         return given
     try:
         with open(os.path.join(root, 'scenarios.json'), encoding='utf-8') as handle:
-            procs = json.load(handle)['scenarios'][0]['procs']
+            scenarios = json.load(handle)['scenarios']
+        procs = next((s for s in scenarios if s.get('name') == 'smoke'), scenarios[0])['procs']
         return 'local' if len(procs) < 2 else 'ipc'
     except (ValueError, OSError, KeyError, IndexError, TypeError):
         return 'ipc'
@@ -954,6 +955,186 @@ def app_older_than(root, build, specs):
             if name.endswith(('.cpp', '.hpp', '.h', '.cc', '.cxx')):
                 newest = max(newest, os.path.getmtime(os.path.join(folder, name)))
     return newest > 0 and max(os.path.getmtime(spec) for spec in specs) > newest
+
+
+# The sources as the last generation wrote them, before any body, and the sections of
+# bodies.txt the last fill applied. Together they tell a body edited in a source from
+# one edited in bodies.txt.
+PRISTINE = 'pristine'
+APPLIED = '.bodies-applied.json'
+
+
+def app_sources(base):
+    """Every application source under base, by path relative to it."""
+    found = {}
+    for folder, dirs, files in os.walk(base):
+        dirs[:] = sorted(d for d in dirs if d not in ('services', 'build'))
+        for name in sorted(files):
+            if name.endswith(('.cpp', '.hpp', '.h')):
+                path = os.path.join(folder, name)
+                found[os.path.relpath(path, base).replace(os.sep, '/')] = path
+    return found
+
+
+def keep_pristine(root, build):
+    """Copies src/ as just generated, so a later call can find the bodies in it."""
+    target = os.path.join(root, build, PRISTINE)
+    shutil.rmtree(target, ignore_errors=True)
+    for rel, path in app_sources(os.path.join(root, 'src')).items():
+        os.makedirs(os.path.dirname(os.path.join(target, rel)), exist_ok=True)
+        shutil.copyfile(path, os.path.join(target, rel))
+
+
+def keep_applied(root, build, bodies):
+    """Records the sections of bodies.txt a fill has just applied."""
+    path = os.path.join(root, bodies)
+    sections = fill_markers.read_bodies(path) if worksheet_has_code(path) else []
+    os.makedirs(os.path.join(root, build), exist_ok=True)
+    with open(os.path.join(root, build, APPLIED), 'w', encoding='utf-8') as handle:
+        json.dump({name: body for name, body in sections}, handle)
+
+
+def dedent(lines):
+    """The lines without their common indentation and trailing spaces."""
+    lines = [line.rstrip() for line in lines]
+    while lines and not lines[0]:
+        lines.pop(0)
+    while lines and not lines[-1]:
+        lines.pop()
+    pads = [len(line) - len(line.lstrip()) for line in lines if line]
+    cut = min(pads) if pads else 0
+    return [line[cut:] for line in lines]
+
+
+def source_bodies(pristine, current):
+    """{marker: (body lines, first, end, pad)} found in current where pristine holds the
+    marker, first and end bounding an unanchored body in current (None when anchored),
+    pad the marker's indentation; and the count of pristine lines changed outside any
+    marker."""
+    lines = current.splitlines()
+    plain = pristine.splitlines()
+    mapped = {}
+    matcher = difflib.SequenceMatcher(None, plain, lines, autojunk=False)
+    for tag, i1, i2, j1, _j2 in matcher.get_opcodes():
+        if tag == 'equal':
+            for offset in range(i2 - i1):
+                mapped[i1 + offset] = j1 + offset
+    bodies, inside = {}, set()
+    for index, line in enumerate(plain):
+        hit = fill_markers.MARKER.search(line)
+        if not hit:
+            continue
+        last = index
+        while last + 1 < len(plain) and fill_markers.PLACEHOLDER.search(plain[last + 1]):
+            last += 1
+        inside.update(range(index, last + 1))
+        before, after = mapped.get(index - 1), mapped.get(last + 1)
+        if before is None or after is None or after <= before:
+            continue
+        body = lines[before + 1:after]
+        span = None
+        if body and fill_markers.BODY_OPEN.search(body[0]) \
+                and fill_markers.BODY_END.search(body[-1]):
+            body = body[1:-1]
+        elif any(fill_markers.MARKER.search(text) for text in body):
+            continue
+        else:
+            span = (before + 1, after)
+        bodies[hit.group(1)] = (dedent(body), span, fill_markers.indent_of(line))
+    edited = sum(1 for index in range(len(plain))
+                 if index not in mapped and index not in inside)
+    return bodies, edited
+
+
+def write_section(path, name, body):
+    """Replaces the body of one bodies.txt section, or appends the section."""
+    lines = fill_markers.read_lines(path) if os.path.isfile(path) else []
+    start = next((index for index, line in enumerate(lines)
+                  if fill_markers.HEADER.match(line)
+                  and fill_markers.HEADER.match(line).group(1) == name), None)
+    if start is None:
+        lines += ['== {}'.format(name)] + body
+    else:
+        end = next((index for index in range(start + 1, len(lines))
+                    if fill_markers.HEADER.match(lines[index])), len(lines))
+        lines[start + 1:end] = body + ([''] if end < len(lines) else [])
+    with open(path, 'w', encoding='utf-8', newline='\n') as handle:
+        handle.write('\n'.join(lines) + '\n')
+
+
+def read_back(root, build, bodies, regenerate=False):
+    """Takes every body written or edited in a source into bodies.txt.
+
+    A source body differing from the last generation and the last fill is taken when
+    its bodies.txt section did not change since that fill; both changed is refused,
+    unless regenerate, where bodies.txt is kept. Returns True when src/ then differs from the last generation in bodies alone.
+    """
+    base = os.path.join(root, build, PRISTINE)
+    if not os.path.isdir(base):
+        return False
+    try:
+        with open(os.path.join(root, build, APPLIED), encoding='utf-8') as handle:
+            applied = json.load(handle)
+    except (OSError, ValueError):
+        applied = {}
+    path = os.path.join(root, bodies)
+    written = dict(fill_markers.read_bodies(path)) if worksheet_has_code(path) else {}
+    pristine = app_sources(base)
+    current = app_sources(os.path.join(root, 'src'))
+    owners = {}
+    for rel, where in pristine.items():
+        with open(where, encoding='utf-8') as handle:
+            for name in set(hit.group(1) for hit in map(fill_markers.MARKER.search, handle)
+                            if hit):
+                owners.setdefault(name, []).append(rel)
+    clean, taken, both = True, [], []
+    for rel, where in sorted(pristine.items()):
+        if rel not in current:
+            clean = False
+            continue
+        with open(where, encoding='utf-8') as handle:
+            old = handle.read()
+        with open(current[rel], encoding='utf-8') as handle:
+            new = handle.read()
+        if old == new:
+            continue
+        found, edited = source_bodies(old, new)
+        clean = clean and edited == 0
+        anchors = []
+        for marker, (body, span, pad) in sorted(found.items()):
+            name = marker if len(owners.get(marker, ())) < 2 else \
+                '{}:{}'.format(os.path.basename(rel), marker)
+            section = written.get(name, written.get(marker) if name == marker else None)
+            last = applied.get(name)
+            if section is not None and dedent(section) == body:
+                if span:
+                    anchors.append((span, pad, marker))
+                continue
+            if last is not None and dedent(last) == body:
+                continue
+            if section is not None and (last is None or dedent(section) != dedent(last)):
+                if not regenerate:
+                    both.append('{} ({})'.format(name, rel))
+                continue
+            write_section(path, name, body)
+            taken.append(name)
+            if span:
+                anchors.append((span, pad, marker))
+        if anchors:
+            lines = new.splitlines()
+            for (first, end), pad, marker in sorted(anchors, reverse=True):
+                lines[first:end] = fill_markers.anchored(lines[first:end], pad, marker)
+            with open(current[rel], 'w', encoding='utf-8', newline='\n') as handle:
+                handle.write('\n'.join(lines) + '\n')
+    if both:
+        fail('{} changed both in its source and in {} since the last build, so neither '
+             'is taken. Keep one: --regenerate keeps the {} section, or delete that '
+             'section and the source body is taken.'
+             .format(', '.join(both), bodies, bodies))
+    if taken:
+        print('== bodies: {} body(ies) written in the sources are now sections of {}: '
+              '{}'.format(len(taken), bodies, ', '.join(taken)))
+    return clean and len(current) == len(pristine)
 
 
 # The project's own record of which files describe it. Without it a later call
@@ -1269,6 +1450,12 @@ def main():
             print('   removed {} -- the placeholder document the spec replaced'
                   .format(path))
 
+    if not args.no_fill and read_back(root, args.build, args.bodies, args.regenerate):
+        design, _sources = read_stamp(root, args.build)
+        if design is not None:
+            with open(os.path.join(root, args.build, APP_STAMP), 'w',
+                      encoding='utf-8') as handle:
+                handle.write(design + '\n' + sources_digest(root) + '\n')
     present = programs_present(root, programs) if programs else app_present(root, document)
     stale = present == 2 and app_older_than(root, args.build, specs)
     untouched = stale and app_untouched(root, args.build)
@@ -1291,6 +1478,7 @@ def main():
             return 1
         WORKSHEET_CHANGES[:] = worksheet_changes(
             before, worksheet_sections(os.path.join(root, gen_skeleton.WORKSHEET)))
+        keep_pristine(root, args.build)
         if specs:
             os.makedirs(os.path.join(root, args.build), exist_ok=True)
             with open(os.path.join(root, args.build, APP_STAMP), 'w',
@@ -1324,6 +1512,7 @@ def main():
                     '--bodies', args.bodies],
                    root, kept=3):
             return 1
+        keep_applied(root, args.build, args.bodies)
         if filled_only:
             design, _sources = read_stamp(root, args.build)
             with open(os.path.join(root, args.build, APP_STAMP), 'w',

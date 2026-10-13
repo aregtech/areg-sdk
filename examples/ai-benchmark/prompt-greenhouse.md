@@ -73,7 +73,7 @@ reporting each step to the console so a person can read what happened:
 7. print the final temperature of each zone -- expect 20, 16 and 22
 
 Once a step's expectation has held, the console prints its line below, with this
-exact wording, alone or at the end of a line:
+exact wording, alone or at the end of a line, nothing after it:
 
 ```lines
 step 1: north 15, centre 18, south 21, each at its target

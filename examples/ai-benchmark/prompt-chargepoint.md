@@ -122,7 +122,7 @@ happened:
    kWh
 
 Once a step's expectation has held, the driver prints its line below, with this exact
-wording, alone or at the end of a line:
+wording, alone or at the end of a line, nothing after it:
 
 ```lines
 step 1: refused, unknown bay

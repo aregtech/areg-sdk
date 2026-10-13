@@ -86,7 +86,7 @@ step so a person can read what happened:
 6. check that exactly one raise and one clear arrived in total
 
 Once a step's expectation has held, the operator prints its line below, with this
-exact wording, alone or at the end of a line:
+exact wording, alone or at the end of a line, nothing after it:
 
 ```lines
 step 1: refused, hysteresis 0

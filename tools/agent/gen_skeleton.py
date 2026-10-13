@@ -216,6 +216,28 @@ def defined_names(text, cls=None):
     return members, helpers
 
 
+# The generated members and helpers that only generated code reads: the driver's
+# bookkeeping, the stall watchdog, the trail, the late and early arrival store, and the
+# first-connect deadline. The worksheet names them without a description.
+INTERNAL = re.compile(r'^(?:mIdleTicks|cStallTicks|resume_pace|mTrailCount|print_trail|mRan|'
+                      r'cTrailMost|mEnding|mHoldMs|mJumped|mReplaying|mSettling|replay_late|'
+                      r'settle|mNext|mHeld|mHoldOnce|mLate|mHold|mPace|mEarly|deliver_early|'
+                      r'client_connected|mConnected|stalled|begin|'
+                      r'arm_connect_deadline|mLate[A-Z]\w*|forget_late\w*)$')
+
+
+def spelt_name(spelt):
+    """The name a member or helper declaration declares."""
+    found = re.search(r'(\w+)\s*(?:\(|\{|;|=|$)', spelt.split('(')[0] + '(' if '(' in spelt
+                      else spelt)
+    return found.group(1) if found else spelt
+
+
+def is_internal(spelt):
+    """True for a generated member or helper that only generated code reads."""
+    return bool(INTERNAL.match(spelt_name(spelt)))
+
+
 # The note a generated header writes beside a member, on the same line.
 MEMBER_DOC = re.compile(r'^(.*?)\s*//!<\s?(.*?)\s*$')
 
@@ -348,7 +370,7 @@ WORKSHEET_HEAD = """\
 #|
 #| An editor, or a shell with no here-document, writes {bodies} or fix.txt whole
 #| and runs the command without --write: a request more. A body patched into its
-#| source file instead is dropped by --regenerate, and costs a patch per file.
+#| source file instead comes back into {bodies} on the next build, a patch per file.
 #|
 #| A project with no design.json applies it with python3 {tool} --bodies {bodies}.
 #|
@@ -962,15 +984,26 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
                      '#| the generated file it is declared in:\n#|')
         for _, (cls, members, helpers, docs) in sorted(carried.items()):
             lines.append('#|   {}'.format(cls))
+            internal = []
             for spelt, note in members:
+                if is_internal(spelt):
+                    internal.append(spelt_name(spelt))
+                    continue
                 lines.append('#|     {}'.format(spelt))
                 if note:
                     lines.append('#|         {}'.format(note))
             for spelt in helpers:
+                if is_internal(spelt):
+                    internal.append(spelt_name(spelt) + '()')
+                    continue
                 lines.append('#|     {}'.format(spelt))
                 said = docs.get(spelt)
                 if said:
                     lines.append('#|         {}'.format(said))
+            if internal:
+                for line in textwrap.wrap('generator state no body reads: ' + ', '.join(
+                        dict.fromkeys(internal)), 79):
+                    lines.append('#|     {}'.format(line))
         lines.append('#|')
     hold = peer_hold(steps) if steps else None
     if hold and not any('Step::' + hold['enum'] in text for _, text in produced):

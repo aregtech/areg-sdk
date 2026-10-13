@@ -103,7 +103,7 @@ step to the console so a person can read what happened:
 11. retry once more -- expect a refusal naming that there is no fault
 
 Once a step's expectation has held, the simulated user prints its line below, with this
-exact wording, alone or at the end of a line:
+exact wording, alone or at the end of a line, nothing after it:
 
 ```lines
 step 1: refused, door open

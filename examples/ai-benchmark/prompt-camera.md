@@ -86,7 +86,7 @@ read what happened:
 8. ask for a burst of **101** frames -- expect a refusal naming the range
 
 Once a step's expectation has held, the controller prints its line below, with this
-exact wording, alone or at the end of a line:
+exact wording, alone or at the end of a line, nothing after it:
 
 ```lines
 step 1: refused, not streaming

@@ -94,7 +94,7 @@ step to the console so a person can read what happened:
 10. reset once more -- expect a refusal naming the normal state
 
 Once a step's expectation has held, the monitor prints its line below, with this
-exact wording, alone or at the end of a line; `<average>` is the average:
+exact wording, alone or at the end of a line, nothing after it; `<average>` is the average:
 
 ```lines
 step 1: 3 sensors listed

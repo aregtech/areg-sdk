@@ -92,7 +92,7 @@ to the console so a person can read what happened:
    request on that card to be refused because there is no card in the machine
 
 Once a step's expectation has held, the customer prints its line below, with this
-exact wording, alone or at the end of a line:
+exact wording, alone or at the end of a line, nothing after it:
 
 ```lines
 step 1: refused twice, 2 then 1 attempts left, then logged in

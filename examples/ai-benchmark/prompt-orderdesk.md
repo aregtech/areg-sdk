@@ -87,7 +87,7 @@ what happened:
    accepted orders
 
 Once a step's expectation has held, the customer prints its line below, with this
-exact wording, alone or at the end of a line:
+exact wording, alone or at the end of a line, nothing after it:
 
 ```lines
 step 1: bolt 10, nut 5, gear 3

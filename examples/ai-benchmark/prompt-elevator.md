@@ -98,7 +98,7 @@ step to the console so a person can read what happened:
 10. take the car out of service -- expect the announcement
 
 Once a step's expectation has held, the passenger prints its line below, with this
-exact wording, alone or at the end of a line; `<floor>` is the floor's number:
+exact wording, alone or at the end of a line, nothing after it; `<floor>` is the floor's number:
 
 ```lines
 step 1: doors opened and closed at floor 0, no floor announced

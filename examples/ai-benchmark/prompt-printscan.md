@@ -95,7 +95,7 @@ step to the console so a person can read what happened:
    to succeed, proving the device fully recovered
 
 Once a step's expectation has held, the operator prints its line below, with this
-exact wording, alone or at the end of a line; `<reason>` is the reason given:
+exact wording, alone or at the end of a line, nothing after it; `<reason>` is the reason given:
 
 ```lines
 step 1: scan finished, 3 pages

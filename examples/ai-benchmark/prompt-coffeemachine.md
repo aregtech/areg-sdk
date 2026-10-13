@@ -90,7 +90,7 @@ step to the console so a person can read what happened:
    and no ingredient drawn
 
 Once a step's expectation has held, the simulated user prints its line below, with this
-exact wording, alone or at the end of a line; `<stage>` is the stage's name:
+exact wording, alone or at the end of a line, nothing after it; `<stage>` is the stage's name:
 
 ```lines
 step 1: refused, insufficient credit

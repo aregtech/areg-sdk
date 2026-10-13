@@ -2857,6 +2857,8 @@ def run():
     check_feature_router(report)
     check_peer_loss_branch(report)
     check_peer_lost_named(report)
+    check_bodies_read_back(report)
+    check_internal_names(report)
     check_generated_defects(report)
     check_step_driver(report)
     check_answer_queue(report)
@@ -6857,6 +6859,105 @@ def check_peer_loss_branch(report):
 
     report.ok('peer-loss', 'the generated consumer answers a provider that went away '
                            'where that arrives, with a marker and without quitting')
+
+
+def check_internal_names(report):
+    """The worksheet describes every generated member a body uses and names the
+    generator's own state without a description."""
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_skeleton
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('internal-names', 'gen_skeleton.py does not import: {}'.format(failure))
+        return
+    used = ('void fail(const char * why)', 'void stay()', 'void go_to(Step step)',
+            'void complete()', 'void hold(uint32_t ms)', 'Step mStep{ Step::Start };',
+            'void progressed()', 'void arm_deadline(uint32_t seconds)',
+            'void mark(const char * done)', 'void dropped()', 'areg::Timer mDeadline;', 'bool mFreshLevel{ false };',
+            'static constexpr uint32_t cReconnectSeconds{ 10 };',
+            'static constexpr uint32_t cConnectSeconds{ 20 };', 'inline Unit & self()')
+    hidden = [spelt for spelt in used if gen_skeleton.is_internal(spelt)]
+    shown = [spelt for spelt in ('void print_trail()', 'bool mLateLevel{ false };',
+                                 'uint32_t mIdleTicks{ 0 };', 'void forget_late_bay_1()')
+             if not gen_skeleton.is_internal(spelt)]
+    if hidden or shown:
+        report.fail('internal-names', 'a member a body uses is listed without its '
+                    'description, or generator state with one: {}'.format(hidden + shown))
+        return
+    report.ok('internal-names', 'members a body uses keep their description; the '
+                                'generator\'s own state is named only')
+
+
+def check_bodies_read_back(report):
+    """A body written into a source, anchored or over its marker, comes back into
+    bodies.txt; one changed in both places is refused; a generated line edited keeps
+    src/ from being called regenerable."""
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import build_project
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('read-back', 'build_project.py does not import: {}'.format(failure))
+        return
+    pristine = ('void A::f()\n{\n    int x = 1;\n    // TODO(you) alpha: do alpha\n'
+                '    return;   // placeholder(you)\n}\nvoid A::g()\n{\n'
+                '    // TODO(you) beta: do beta\n}\n')
+    current = pristine.replace(
+        '    // TODO(you) alpha: do alpha\n    return;   // placeholder(you)\n',
+        '    // body(you) alpha\n    x += 2;\n    // end(you) alpha\n').replace(
+        '    // TODO(you) beta: do beta\n', '    call_beta();\n')
+    holder = tempfile.mkdtemp()
+    shown = io.StringIO()
+    try:
+        for folder in ('src', os.path.join('build', build_project.PRISTINE)):
+            os.makedirs(os.path.join(holder, folder))
+        with open(os.path.join(holder, 'build', build_project.PRISTINE, 'a.cpp'), 'w') as out:
+            out.write(pristine)
+        with open(os.path.join(holder, 'src', 'a.cpp'), 'w') as out:
+            out.write(current)
+        with open(os.path.join(holder, 'build', build_project.APPLIED), 'w') as out:
+            json.dump({'alpha': ['x += 1;']}, out)
+        with open(os.path.join(holder, 'bodies.txt'), 'w') as out:
+            out.write('== alpha\nx += 1;\n')
+        with contextlib.redirect_stdout(shown):
+            clean = build_project.read_back(holder, 'build', 'bodies.txt')
+        with open(os.path.join(holder, 'bodies.txt')) as out:
+            sections = dict(build_project.fill_markers.read_bodies(
+                'bodies.txt', out.read().splitlines()))
+        with open(os.path.join(holder, 'src', 'a.cpp')) as out:
+            anchored = '// body(you) beta' in out.read()
+        if not (clean and sections.get('alpha') == ['x += 2;']
+                and sections.get('beta') == ['call_beta();'] and anchored):
+            report.fail('read-back', 'bodies written in a source are not taken into '
+                                     'bodies.txt and anchored: {} {}'
+                        .format(sections, shown.getvalue().strip()[:160]))
+            return
+        with open(os.path.join(holder, 'src', 'a.cpp'), 'w') as out:
+            out.write(current.replace('x += 2;', 'x += 3;').replace('void A::g()', 'void A::h()'))
+        with open(os.path.join(holder, 'bodies.txt'), 'w') as out:
+            out.write('== alpha\nx += 4;\n== beta\ncall_beta();\n')
+        refused = io.StringIO()
+        try:
+            with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(refused):
+                build_project.read_back(holder, 'build', 'bodies.txt')
+            report.fail('read-back', 'a body changed both in its source and in bodies.txt '
+                                     'is not refused')
+            return
+        except SystemExit:
+            pass
+        if 'alpha' not in refused.getvalue():
+            report.fail('read-back', 'the refusal does not name the section: {}'
+                        .format(refused.getvalue().strip()[:160]))
+            return
+        with contextlib.redirect_stdout(io.StringIO()):
+            kept = build_project.read_back(holder, 'build', 'bodies.txt', regenerate=True)
+        if kept:
+            report.fail('read-back', 'a generated line edited outside every marker still '
+                                     'calls src/ regenerable')
+            return
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    report.ok('read-back', 'source bodies come back into bodies.txt, anchored or over '
+                           'their marker; both edited is refused; a generated edit is kept')
 
 
 def check_peer_lost_named(report):
