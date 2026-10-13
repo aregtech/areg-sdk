@@ -6,8 +6,7 @@ what the software must do; `<project>` is a C identifier naming the project; `<m
 `local` for one process or `ipc` for two; `pubsub` is `local` whose interface
 adds attributes and broadcasts.
 
-On Windows: `python` for `python3`, `build\bin\x.exe` for `./build/bin/x.elf`,
-`start "" prog` for `prog &`. Nothing else differs. `build_project.py` passes the
+On Windows, read commands as `AGENTS.md` section 4 says. `build_project.py` passes the
 `-j8` that `AGENTS.md` requires everywhere, so no command here carries one.
 
 ---
@@ -24,8 +23,14 @@ and say so** rather than writing into it.
 ## 2. Scaffold, before you open a documentation page
 
 ```
-python3 <areg-sdk>/tools/agent/setup_project.py --name <project> --root . --mode <mode> --sdk-root <areg-sdk>
+python3 <areg-sdk>/tools/agent/setup_project.py --name <project> --root . --mode <mode> --sdk-root <areg-sdk> --features <list>
 ```
+
+`<list>`, comma-separated or `""`: what the design needs beyond services and data types,
+`machine` (an answer depends on what came before), `timers` (a provider's delayed or
+periodic work), `workers` (a provider's own thread), `steps` (a program that drives a
+sequence and exits). `design.json` holds only those; `gen_docs.py --rules <name>` prints
+the rules of one left out.
 
 That writes a project that already builds and runs:
 
@@ -82,13 +87,11 @@ task does not need. A key the generator does not read is refused by name.
 read in one call: do not page it. It is the shape, and the `#|` notes are the rules:
 with both read, write `design.json` whole and build it in one call: section 5's
 command with `--write design.json`. `gen_docs.py` ignores the notes.
-A consumer that drives a scenario and exits lists it as `"steps"`, branching included:
-the generator writes them as plain consumer code, no `.fsml`, and each check may
-`stay()`, `go_to(Step::Name)` or `fail("why")`. Writing that by hand is the largest
-avoidable cost here.
-The template's `steps` note says what makes one step, and what each awaits.
-What it gives up after is `"driver"` of the same interface, which the template's own
-note explains; the generator declares all three, so no marker asks for one.
+A consumer that drives a scenario and exits lists it as `"steps"`, branching included,
+and what it gives up after as `"driver"`: the generator writes them as
+plain consumer code, no `.fsml`, and declares `stay()`, `go_to(Step::Name)` and
+`fail("why")` for each check. Its template notes say what makes a step and what each
+awaits. Writing that by hand is the largest avoidable cost here.
 
 The spec holds `"datatypes"` (one `.dtml`, when two documents share a type),
 `"interfaces"` (a `.siml` each) and `"machines"` (a `.fsml` each). Everything is named:
@@ -105,9 +108,8 @@ A large project splits the spec across files and passes each with its own `--spe
   place is one machine, hosted by a `"submachine"` state in each, never duplicated
   states.
 
-**Only after the generator refuses a document over a name.** Until then there is nothing
-to ask: you write `design.json`, and `gen_docs.py` writes every name in it. Then ask
-the grammar. `<areg-sdk>/tools/schema_help.py`
+**Only after the generator refuses a document over a name, ask the grammar**: until
+then `gen_docs.py` writes every name of `design.json`. `<areg-sdk>/tools/schema_help.py`
 answers one name out of the schemas the generator validates against -- an element, an
 attribute (`State/@Kind`), a type (`tStateKind`) or a bare attribute name -- in a few
 lines:
@@ -144,10 +146,9 @@ here-document writes the file and runs this in one message.
 `--edit` instead changes lines of your files in the same call: `== <file>`,
 `<<<<<<< SEARCH`, the old lines, `=======`, the new lines, `>>>>>>> REPLACE`.
 
-Six steps with no decision in any of them: it writes the documents from the spec,
-writes the application from them, applies `bodies.txt`, checks the contract -- which
-catches the mistakes that compile cleanly and fail later -- configures and builds. It
-stops at the first failure and names the step, so nothing is hidden. Pass `--spec`
+Six steps, none a decision: the documents from the spec, the application from them,
+`bodies.txt` applied, the contract checked (mistakes that compile cleanly and fail
+later), configure, build. It stops at the first failure and names the step. Pass `--spec`
 once per spec file. `--regenerate` writes the application again, **discarding what
 `bodies.txt` does not carry**; without it a run rebuilds, and writes `src/` again only
 after a `design.json` change. Every later build is this one, in seconds.
@@ -156,11 +157,10 @@ after a `design.json` change. Every later build is this one, in seconds.
 one: the action handler is a base, every action is declared, and there is no separate
 host component to write, merge or delete.
 
-The application starts as the whole of `src/`: every component in its own `.hpp` and
-`.cpp`, named after its class, plus a `main.cpp` holding only the model and `main()`.
-Two processes get a folder each -- `src/provider/` and `src/consumer/`, each with its
-own `main.cpp`; one process keeps `src/` flat. The mode comes from `scenarios.json`,
-so it is never given twice.
+The application is the whole of `src/`: each component in a `.hpp` and `.cpp` named
+after its class, and a `main.cpp` holding only the model and `main()`, in a folder per
+process (`src/provider/`, `src/consumer/`) or flat for one. The mode comes from
+`scenarios.json`, so it is never given twice.
 
 **It compiles and runs as written.** The model, `main()`, the connection test and
 every `notify_on_*` subscription are already correct, so none of them needs a page.

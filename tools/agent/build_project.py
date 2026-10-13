@@ -1087,13 +1087,21 @@ def read_manifest(root):
 
 
 def write_manifest(root, specs):
-    """Records the spec paths, relative to the project when they are inside it."""
+    """Records the spec paths, relative to the project when they are inside it; every
+    other key the file holds is kept."""
     named = []
     for spec in specs:
         inside = os.path.relpath(spec, root)
         named.append(spec if inside.startswith(os.pardir) else inside.replace(os.sep, '/'))
+    try:
+        with open(os.path.join(root, MANIFEST), encoding='utf-8') as handle:
+            manifest = json.load(handle)
+    except (OSError, ValueError):
+        manifest = {}
+    manifest = manifest if isinstance(manifest, dict) else {}
+    manifest['spec'] = named
     with open(os.path.join(root, MANIFEST), 'w', encoding='utf-8') as handle:
-        json.dump({'spec': named}, handle, indent=2)
+        json.dump(manifest, handle, indent=2)
         handle.write('\n')
 
 

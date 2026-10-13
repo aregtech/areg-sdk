@@ -33,11 +33,13 @@ added for you.
 """
 import argparse
 import contextlib
+import copy
 import difflib
 import json
 import os
 import re
 import sys
+import textwrap
 import xml.etree.ElementTree as ET
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -1556,8 +1558,10 @@ def render(node, depth=0, lead=0):
     return '{{\n{}\n{}}}'.format(',\n'.join(lines), pad)
 
 
-def write_template(path):
+def write_template(path, features=None):
     """Write the template to path, unless a file there already carries work.
+
+    features names the optional blocks it holds; None writes every one.
 
     Returns "wrote", or "work" for a file that is not an untouched template, which is
     never replaced.
@@ -1572,7 +1576,7 @@ def write_template(path):
             return 'work'
     os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
     with open(path, 'w', encoding='utf-8', newline='\n') as handle:
-        handle.write(render(TEMPLATE) + '\n')
+        handle.write(render(template_for(features)) + '\n')
     return 'wrote'
 
 
@@ -3396,6 +3400,108 @@ TEMPLATE = {
 
 SAMPLES = samples_of(TEMPLATE, set())
 
+# The optional blocks of the template, by the feature that receives them: a top-level key,
+# or a key inside every entry of a top-level list.
+FEATURES = {
+    'machine': [('machines',)],
+    'timers': [('interfaces', 'timers')],
+    'workers': [('interfaces', 'workers')],
+    'steps': [('interfaces', 'driver'), ('interfaces', 'steps')],
+}
+FEATURE_FILE = 'areg-project.json'
+
+
+def features_of(text):
+    """The feature names of a comma-separated list; an unknown name is refused."""
+    names = [name.strip() for name in text.split(',') if name.strip()]
+    unknown = [name for name in names if name not in FEATURES]
+    if unknown:
+        fail('unknown feature {}. The features are {}; an empty list names none.'.format(
+            ', '.join('"{}"'.format(name) for name in unknown), ', '.join(sorted(FEATURES))))
+    return sorted(set(names))
+
+
+def template_for(features=None):
+    """The template with the blocks of the named features only; None names every one."""
+    chosen = copy.deepcopy(TEMPLATE)
+    for feature, blocks in FEATURES.items():
+        if features is None or feature in features:
+            continue
+        for block in blocks:
+            if len(block) == 1:
+                chosen.pop(block[0], None)
+            else:
+                for entry in chosen.get(block[0]) or []:
+                    entry.pop(block[1], None)
+    return chosen
+
+
+def notes_in(node):
+    """Every note inside a template block, in order, as one text."""
+    texts = []
+    if isinstance(node, dict):
+        for key, value in node.items():
+            texts.append(' '.join(value) if key == NOTE else notes_in(value))
+    elif isinstance(node, list):
+        texts.extend(notes_in(value) for value in node)
+    return ' '.join(' '.join(texts).split())
+
+
+def feature_rules(feature):
+    """The notes the template carries for one feature's blocks."""
+    texts = []
+    for block in FEATURES[feature]:
+        node = TEMPLATE[block[0]]
+        texts.append(notes_in(node if len(block) == 1 else node[0][block[1]]))
+    return ' '.join(texts)
+
+
+def used_features(project):
+    """The features whose blocks a design fills."""
+    used = {'machine'} if listed(project, 'machines') else set()
+    for interface in listed(project, 'interfaces'):
+        for feature, blocks in FEATURES.items():
+            if any(len(block) > 1 and interface.get(block[1]) for block in blocks):
+                used.add(feature)
+    return used
+
+
+def delivered_features(spec_path):
+    """The features the scaffold wrote into the template beside this spec; None for all."""
+    path = os.path.join(os.path.dirname(os.path.abspath(spec_path)), FEATURE_FILE)
+    try:
+        with open(path, encoding='utf-8') as handle:
+            named = json.load(handle).get('features')
+    except (OSError, ValueError, AttributeError):
+        return None
+    return named if isinstance(named, list) else None
+
+
+def print_rules(features):
+    """The template's rules of each feature named, wrapped."""
+    for feature in features:
+        print('== {}'.format(feature))
+        for line in textwrap.wrap(feature_rules(feature), 88):
+            print(line)
+
+
+def print_undelivered(project, spec_paths, whole):
+    """A note for each feature a design uses and its template left out: the rules
+    themselves when whole, otherwise the command that prints them."""
+    delivered = delivered_features(spec_paths[0]) if spec_paths else None
+    if delivered is None:
+        return
+    for feature in sorted(used_features(project) - set(delivered)):
+        if whole:
+            print('  note  design.json uses "{}", a feature its template left out; its rules:'
+                  .format(feature))
+            for line in textwrap.wrap(feature_rules(feature), 84):
+                print('        ' + line)
+        else:
+            print('  note  design.json uses "{}", a feature its template left out; its rules: '
+                  'python3 {} --rules {}'.format(feature, os.path.abspath(__file__)
+                                                 .replace('\\', '/'), feature))
+
 
 # A document rewritten with the same text still gets a new modification time, and a
 # build system and run_scenarios.py both read that time as an edit. build_project.py
@@ -3529,6 +3635,13 @@ def main():
                         help='write a spec with every key present and empty, each section '
                              'with its note, to fill in. A file there that carries work is '
                              'never replaced')
+    parser.add_argument('--features', metavar='LIST',
+                        help='with --template, the optional blocks it holds, comma-separated: '
+                             'machine, timers, workers, steps; an empty list writes none and '
+                             'leaving it out writes every one')
+    parser.add_argument('--rules', metavar='LIST',
+                        help='print the template\'s rules of these features, comma-separated, '
+                             'and write nothing')
     parser.add_argument('--review', action='store_true',
                         help='check the design and print every note it earns, writing '
                              'nothing. Answers what a build would say about the design '
@@ -3550,8 +3663,12 @@ def main():
             print(render({'service': EXAMPLE, 'programs': EXAMPLE_PROGRAMS,
                           'machine': EXAMPLE_MACHINE, 'worker': EXAMPLE_WORKER}[name]))
         return 0
+    if args.rules is not None:
+        print_rules(features_of(args.rules) or sorted(FEATURES))
+        return 0
     if args.template:
-        if write_template(args.template) == 'work':
+        features = None if args.features is None else features_of(args.features)
+        if write_template(args.template, features) == 'work':
             fail('{} already carries a design, and a template never replaces one. Fill '
                  'that file, or name another path.'.format(args.template))
         print('wrote {}: every key of a design, empty. Fill the values and keep the keys; '
@@ -3579,6 +3696,7 @@ def main():
                   for named, phrases in sorted(RENAMED_ROLES.items())
                   for phrase in sorted(set(phrases)))))
     project = merge(specs)
+    print_undelivered(project, args.spec, args.review)
     settle_submachines(listed(project, 'machines'))
     check_shape(project)
     check_unique_names(project)

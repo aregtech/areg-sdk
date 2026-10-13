@@ -584,14 +584,18 @@ def write_scenarios(root, mode, binaries):
         handle.write('\n')
 
 
-def write_manifest(root):
+def write_manifest(root, features=None):
     """The project's record of the files that describe it, for build_project.py.
 
     A later call given no --spec reads it, so the documents and the application
-    are written from the design as it stands rather than left as they were.
+    are written from the design as it stands rather than left as they were. The
+    features the template was written with are kept there for gen_docs.py.
     """
+    manifest = {'spec': ['design.json']}
+    if features is not None:
+        manifest['features'] = features
     with open(os.path.join(root, 'areg-project.json'), 'w', encoding='utf-8') as handle:
-        json.dump({'spec': ['design.json']}, handle, indent=2)
+        json.dump(manifest, handle, indent=2)
         handle.write('\n')
 
 
@@ -709,6 +713,9 @@ def main():
                         help='use this local SDK copy instead of fetching from GitHub')
     parser.add_argument('--tag', default=DEFAULT_TAG,
                         help='SDK git tag to fetch (default: {})'.format(DEFAULT_TAG))
+    parser.add_argument('--features', metavar='LIST', default=None,
+                        help='the optional blocks design.json holds, comma-separated: '
+                             'machine, timers, workers, steps. Left out, it holds every one')
     parser.add_argument('--force', action='store_true',
                         help='scaffold into a directory that is not empty. Writes '
                              'the scaffolded files over any of the same name and '
@@ -726,6 +733,7 @@ def main():
     parser.add_argument('--quiet', action='store_true',
                         help='do not list the harness files written')
     args = parser.parse_args()
+    features = None if args.features is None else gen_docs.features_of(args.features)
 
     interactive = sys.stdin.isatty()
     name = args.name
@@ -810,8 +818,8 @@ def main():
                 print('  {} -> AGENTS.md'.format(relative))
     write_gitignore(root)
     write_scenarios(root, mode, binaries)
-    template = gen_docs.write_template(os.path.join(root, 'design.json'))
-    write_manifest(root)
+    template = gen_docs.write_template(os.path.join(root, 'design.json'), features)
+    write_manifest(root, None if template == 'work' else features)
     if MODES[mode]['router']:
         write_run_script(root, name, binaries)
         write_run_bat(root, name, binaries)
@@ -825,7 +833,8 @@ def main():
     else:
         print('  design.json is the one file to read. AGENTS.md restates the runbook, and the')
         print('  worksheet carries what scenarios.json needs. design.json holds every key of')
-        print('  a design, empty: fill it, then')
+        print('  a design{}, empty: fill it, then'.format(
+            '' if features is None else ' with ' + (', '.join(features) or 'no optional block')))
     print('  python3 {}/build_project.py --spec design.json'.format(tools))
     print('    that first call compiles the framework too: give it a command timeout')
     print('    of 10 minutes (600000 ms). Every later call takes seconds.')
