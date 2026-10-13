@@ -2854,7 +2854,9 @@ def run():
     check_state_mirrors(report)
     check_placeholder_contract(report)
     check_design_template(report)
+    check_feature_router(report)
     check_peer_loss_branch(report)
+    check_peer_lost_named(report)
     check_generated_defects(report)
     check_step_driver(report)
     check_answer_queue(report)
@@ -4073,6 +4075,127 @@ def check_design_template(report):
                           'the generator\'s, untouched it is refused, filled it generates, '
                           'a stray key is refused by name with a value and without one, '
                           'work is never replaced, and a bad --outdir answers in one line')
+
+
+def check_feature_router(report):
+    """setup_project.py --features writes the core template plus the named blocks only.
+
+    The runbook menu names every feature, an unknown name is refused before anything is
+    written, the list is recorded beside design.json, a design filling a block its
+    template left out is told the command that prints that block's rules, and a block it
+    was given earns no such note.
+    """
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_docs
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('features', 'gen_docs.py does not import: {}'.format(failure))
+        return
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    runbook = read('docs', 'agent', '01-runbook.md')
+    unnamed = [name for name in sorted(gen_docs.FEATURES)
+               if '`{}` ('.format(name) not in runbook]
+    if '--features <list>' not in runbook or unnamed:
+        report.fail('features', 'runbook section 2 does not show --features <list> with '
+                                'every feature: {}'.format(', '.join(unnamed) or 'the flag'))
+        return
+    optional = {('machines',), ('interfaces', 'timers'), ('interfaces', 'workers'),
+                ('interfaces', 'driver'), ('interfaces', 'steps')}
+    routed = set(block for blocks in gen_docs.FEATURES.values() for block in blocks)
+    if routed != optional:
+        report.fail('features', 'the feature blocks are not the optional ones; core cut: '
+                                '{}'.format(sorted(routed - optional)))
+        return
+    core = gen_docs.without_notes(gen_docs.template_for([]))
+    full = gen_docs.without_notes(gen_docs.TEMPLATE)
+    for key, value in full.items():
+        if (key,) in optional:
+            continue
+        kept = core.get(key)
+        if isinstance(value, list) and value and isinstance(value[0], dict):
+            inner = set(block[1] for block in optional if len(block) > 1 and block[0] == key)
+            lost = sorted(set(value[0]) - inner - set((kept or [{}])[0]))
+        else:
+            lost = [] if kept == value else [key]
+        if lost:
+            report.fail('features', 'the core template with no feature lost {} of "{}"'
+                        .format(', '.join(lost), key))
+            return
+
+    def scaffold(features):
+        return subprocess.run([sys.executable, os.path.join(tools, 'setup_project.py'),
+                               '--name', 'plan', '--root', '.', '--mode', 'ipc',
+                               '--sdk-root', ROOT, '--quiet', '--features', features],
+                              capture_output=True, text=True, stdin=subprocess.DEVNULL)
+
+    holder = tempfile.mkdtemp()
+    here = os.getcwd()
+    try:
+        os.chdir(holder)
+        wrong = scaffold('steps,clock')
+        if wrong.returncode == 0 or '"clock"' not in wrong.stderr or os.listdir('.'):
+            report.fail('features', 'an unknown feature is not refused by name before '
+                                    'anything is written: {}'
+                        .format((wrong.stderr or wrong.stdout).strip()[:200]))
+            return
+        laid = scaffold('steps')
+        if laid.returncode != 0:
+            report.fail('features', 'setup_project.py --features steps fails: {}'
+                        .format(laid.stderr.strip()[:200]))
+            return
+        with open('design.json', encoding='utf-8') as handle:
+            written = json.load(handle)
+        with open('areg-project.json', encoding='utf-8') as handle:
+            recorded = json.load(handle).get('features')
+        if (gen_docs.without_notes(written)
+                != gen_docs.without_notes(gen_docs.template_for(['steps']))
+                or recorded != ['steps']):
+            report.fail('features', '--features steps does not write the core plus the '
+                                    'steps blocks, or does not record the list: {}'
+                        .format(recorded))
+            return
+
+        design = json.loads(json.dumps(written))
+        design['datatypes']['name'] = 'PlanTypes'
+        service = design['interfaces'][0]
+        service['name'] = 'PlanService'
+        service['attributes'].insert(0, {'name': 'Level', 'type': 'uint32',
+                                         'notify': 'OnChange', 'description': ''})
+        service['timers'] = [{'name': 'Tick', 'timeout': 100, 'repeat': 1,
+                              'description': ''}]
+        with open('design.json', 'w', encoding='utf-8') as handle:
+            json.dump(design, handle, indent=2)
+
+        def notes():
+            made = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                                   '--spec', 'design.json', '--outdir', 'out', '--force'],
+                                  capture_output=True, text=True, stdin=subprocess.DEVNULL)
+            return made.stdout + made.stderr
+
+        told = notes()
+        if '--rules timers' not in told or '--rules steps' in told:
+            report.fail('features', 'a timers block its template left out is not named '
+                                    'with gen_docs.py --rules timers, or a delivered block '
+                                    'is: {}'.format(told.strip()[:300]))
+            return
+        rules = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                                '--rules', 'timers'], capture_output=True, text=True)
+        if rules.returncode != 0 or rules.stdout.count('\n') < 3:
+            report.fail('features', 'gen_docs.py --rules timers prints no rules: {}'
+                        .format((rules.stderr or rules.stdout).strip()[:200]))
+            return
+        with open('areg-project.json', 'w', encoding='utf-8') as handle:
+            json.dump({'spec': ['design.json'], 'features': ['steps', 'timers']}, handle)
+        if '--rules' in notes():
+            report.fail('features', 'a design whose template held its blocks still earns '
+                                    'a --rules note')
+            return
+    finally:
+        os.chdir(here)
+        shutil.rmtree(holder, ignore_errors=True)
+    report.ok('features', '--features writes the core template plus the named blocks and '
+                          'records them; an unknown name is refused before writing; a block '
+                          'left out and then filled is named with gen_docs.py --rules')
 
 
 # Two defects planted in the shape the generator writes, not in a hand-made sample.
@@ -6734,6 +6857,46 @@ def check_peer_loss_branch(report):
 
     report.ok('peer-loss', 'the generated consumer answers a provider that went away '
                            'where that arrives, with a marker and without quitting')
+
+
+def check_peer_lost_named(report):
+    """The worksheet names the program a stop scenario kills and the edit that retargets it.
+
+    Without it the target was printed only in build output that an agent's tail cuts, so a
+    task naming another program was left unproven, or a scenario written with guessed keys.
+    """
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
+    try:
+        import gen_skeleton
+    except Exception as failure:                    # noqa: BLE001 - reported, not raised
+        report.fail('peer-lost-named', 'gen_skeleton.py does not import: {}'.format(failure))
+        return
+    procs = [{'binary': 'app_store', 'name': 'store'}, {'binary': 'app_desk', 'name': 'desk'},
+             {'binary': 'app_buyer', 'name': 'buyer', 'lead': True, 'exit': 1}]
+    holder = tempfile.mkdtemp()
+    try:
+        path = os.path.join(holder, 'scenarios.json')
+        with open(path, 'w', encoding='utf-8') as handle:
+            json.dump({'scenarios': [
+                {'name': 'smoke', 'procs': procs},
+                {'name': 'peer-lost', 'stop': {'proc': 'desk', 'after': 'x'}, 'procs': procs}]},
+                handle, indent=2)
+        lines = gen_skeleton.wrap_quoted(gen_skeleton.scenario_runs(path), 77)
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    said = ' '.join(lines)
+    for fact in ('killing app_desk', 'replacing its "proc": "desk"', '"exit": 1 added to'):
+        if fact not in said:
+            report.fail('peer-lost-named', 'the worksheet\'s scenario note lacks "{}": {}'
+                        .format(fact, said[:240]))
+            return
+    edge = gen_skeleton.wrap_quoted('{} line `  "scenarios": [`.'.format('w' * 64), 77)
+    if not all(any('`  "scenarios": [`' in line for line in wrapped) for wrapped in (lines, edge)):
+        report.fail('peer-lost-named', 'the worksheet\'s scenario note breaks its SEARCH '
+                                       'anchor across lines')
+        return
+    report.ok('peer-lost-named', 'the worksheet names the program a stop kills, the "proc" '
+                                 'edit that retargets it, and keeps its SEARCH anchor whole')
 
 
 # What a design learns of the three message shapes, where it is decided: (place, phrase).

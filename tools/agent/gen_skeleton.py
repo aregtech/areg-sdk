@@ -522,6 +522,17 @@ def scenario_runs(path):
         if not binaries:
             continue
         said = 'the same' if binaries == before else ', '.join(binaries)
+        stop = scenario.get('stop')
+        if isinstance(stop, dict) and isinstance(stop.get('proc'), str):
+            killed = next((spec.get('binary') for spec in procs
+                           if stop['proc'] in (spec.get('name'), spec.get('binary'))), None)
+            said += ', killing {}mid-run; a "== scenarios.json" block replacing its "proc": ' \
+                    '"{}" kills another program instead'.format(
+                        killed + ' ' if killed else '', stop['proc'])
+            exits = [spec for spec in procs if 'exit' in spec]
+            if exits == [lead]:
+                said += '. Only its lead has an "exit"; "exit": 1 added to another process ' \
+                        'expects that exit too'
         runs.append('"{}" {}'.format(scenario.get('name', '?'), said))
         before = binaries
     if not runs:
@@ -530,6 +541,13 @@ def scenario_runs(path):
     if anchor:
         said += ', added by a "== scenarios.json" SEARCH block after its line `{}`'.format(anchor)
     return said + '.'
+
+
+def wrap_quoted(text, width):
+    """text wrapped to width, never breaking inside a `quoted` span."""
+    kept = re.sub(r'`[^`]*`', lambda quoted: quoted.group(0).replace(' ', '\0'), text)
+    return [line.replace('\0', ' ')
+            for line in textwrap.wrap(kept, width, break_on_hyphens=False)]
 
 
 def worksheet_pristine(path):
@@ -1049,7 +1067,7 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
         lines.append('#| The dialect is Python re, searched and not anchored, with')
         lines.append('#| MULTILINE on: ^ and $ meet every line, and a plain substring')
         lines.append('#| is a valid pattern. Escape . ( ) [ ] * + ? that mean themselves.')
-        for line in textwrap.wrap(scenario_runs(scenarios), 77, break_on_hyphens=False):
+        for line in wrap_quoted(scenario_runs(scenarios), 77):
             lines.append('#| {}'.format(line))
         for name, hint in holes:
             lines.append('== {}'.format(name))
