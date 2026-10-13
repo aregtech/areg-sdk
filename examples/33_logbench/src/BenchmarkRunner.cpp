@@ -30,7 +30,7 @@ void visualise_results(const SessionResult& results)
 {
     std::string benchType;
 
-    switch(results.sType) {
+    switch(results.sampleType) {
         case SampleType::LogScope:
             benchType = "LgScp";
             break;
@@ -61,14 +61,14 @@ void visualise_results(const SessionResult& results)
 
     std::cout
         << "| " << std::setw(10) << benchType
-        << " | " << std::setw(8) << results._min
-        << " | " << std::setw(8) << results._max
-        << " | " << std::setw(8) << std::fixed << std::setprecision(2) << results._mean
-        << " | " << std::setw(8) << results._p50
-        << " | " << std::setw(8) << results._p90
-        << " | " << std::setw(8) << results._p99
-        << " | " << std::setw(8) << results._p999
-        << " | " << std::setw(8) << results._sd
+        << " | " << std::setw(8) << results.min_us
+        << " | " << std::setw(8) << results.max_us
+        << " | " << std::setw(8) << std::fixed << std::setprecision(2) << results.mean_us
+        << " | " << std::setw(8) << results.p50_us
+        << " | " << std::setw(8) << results.p90_us
+        << " | " << std::setw(8) << results.p99_us
+        << " | " << std::setw(8) << results.p999_us
+        << " | " << std::setw(8) << results.sd_us
         << " |\n";
 }
 
@@ -96,32 +96,32 @@ constexpr SampleType sampleTypeVals[] = {
 
 
 
-BenchmarkRunner::BenchmarkRunner(BenchmarkConfig cfg)
-    : cfg(cfg)
+BenchmarkRunner::BenchmarkRunner(BenchmarkConfig mCfg)
+    : mCfg(mCfg)
 {
-    clockSpeedNs = measure_clock_cost(1000u);
+    mClockSpeedNs = measure_clock_cost(1000u);
 }
 
 void BenchmarkRunner::init_benchmark() {
-    samples = {};
+    mSamples = {};
 }
 
 void BenchmarkRunner::run_benchmark() {
     std::cout << "Overhead latency test: " << std::endl;
     visualise_header();
-    for (int i = 0; i < cfg.nWarmUps; i++) {
+    for (int i = 0; i < mCfg.nWarmUps; i++) {
         run_single_session(SampleType::LogScope);
         init_benchmark();
     }
 
-    for (SampleType sType : sampleTypeVals) {
-        if (sType == SampleType::DebugDynamicString) {
+    for (SampleType sampleType : sampleTypeVals) {
+        if (sampleType == SampleType::DebugDynamicString) {
             run_dynamic_log_session();
         } else {
-            run_single_session(sType);
+            run_single_session(sampleType);
             
         }
-        SessionResult results = ResultProcessor::summarize(samples, cfg, sType, clockSpeedNs);
+        SessionResult results = ResultProcessor::summarize(mSamples, mCfg, sampleType, mClockSpeedNs);
         visualise_results(results);
         init_benchmark();
         
@@ -138,24 +138,24 @@ void BenchmarkRunner::run_dynamic_log_session() {
     };
 
     // Starts runtime dispatch to find the right template function that matches number of specified arguments
-    dispatchNI<0>(cfg.nIntArgs,cfg.nStringArgs,cfg.nFloatArgs,makeLogCall);
+    dispatchNI<0>(mCfg.nIntArgs,mCfg.nStringArgs,mCfg.nFloatArgs,makeLogCall);
 
     LOGGING_STOP();
 }
 
-void BenchmarkRunner::run_single_session(SampleType sType) {
+void BenchmarkRunner::run_single_session(SampleType sampleType) {
     LOGGING_CONFIGURE_AND_START(nullptr, true);
-    for (int i = 0; i < cfg.nSamples; i++) {
-        uint64_t sampleTime = run_sample(sType);
-        samples.push_back(sampleTime);
+    for (int i = 0; i < mCfg.nSamples; i++) {
+        uint64_t sampleTime = run_sample(sampleType);
+        mSamples.push_back(sampleTime);
     }
     LOGGING_STOP();
     
 }
 
-uint64_t BenchmarkRunner::run_sample(SampleType sType) {
+uint64_t BenchmarkRunner::run_sample(SampleType sampleType) {
     uint64_t sample = 0;
-    switch (sType)
+    switch (sampleType)
     {
     case SampleType::LogScope:
         sample = bench_log_scope();
@@ -184,7 +184,6 @@ uint64_t BenchmarkRunner::run_sample(SampleType sType) {
     case SampleType::DebugLongString:
         sample = bench_long_string();
         break;
-
     default:
         break;
     }

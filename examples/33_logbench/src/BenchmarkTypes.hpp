@@ -53,16 +53,16 @@ struct SessionResult
 {
     
     BenchmarkConfig cfg;
-    SampleType sType;
-    double _min = { 0.0 };
-    double _max = { 0.0 };
-    double _mean = { 0.0 };
-    double _p50 = { 0.0 };
-    double _p90 = { 0.0 };
-    double _p99 = { 0.0 };
-    double _p999 = { 0.0 };
-    double _sd = { 0.0 };
-    double clockSpeedNs = { 0.0 };
+    SampleType sampleType;
+    double min_us = { 0.0 };
+    double max_us = { 0.0 };
+    double mean_us = { 0.0 };
+    double p50_us = { 0.0 };
+    double p90_us = { 0.0 };
+    double p99_us = { 0.0 };
+    double p999_us = { 0.0 };
+    double sd_us = { 0.0 };
+    double clock_speed_us = { 0.0 };
 };
 
 

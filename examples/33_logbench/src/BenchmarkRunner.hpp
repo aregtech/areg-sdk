@@ -21,18 +21,18 @@ class BenchmarkRunner
 
 private:
 
-    BenchmarkConfig cfg;
+    BenchmarkConfig mCfg;
 
-    std::vector<uint64_t> samples; // Holds result of each sample in a single sessions
+    std::vector<uint64_t> mSamples; // Holds result of each sample in a single sessions
 
-    double clockSpeedNs; // Speed of calling now_ns()
+    double mClockSpeedNs; // Speed of calling now_ns()
 
 
 public:
 
     // Constructor
     
-    BenchmarkRunner(BenchmarkConfig cfg);
+    BenchmarkRunner(BenchmarkConfig mCfg);
 
     // Benchmarking Functions
 
@@ -60,9 +60,9 @@ private:
             );
     }
 
-    double measure_clock_cost(uint32_t samples) noexcept
+    double measure_clock_cost(uint32_t mSamples) noexcept
     {
-        if (samples == 0u)
+        if (mSamples == 0u)
             return 0.0;
 
         // Warm the clock path up first, then time the loop as a whole: timing every single
@@ -72,12 +72,12 @@ private:
             sink = now_ns();
 
         const uint64_t begin{ now_ns() };
-        for (uint32_t i = 0u; i < samples; ++i)
+        for (uint32_t i = 0u; i < mSamples; ++i)
             sink = now_ns();
 
         const uint64_t end{ now_ns() };
         static_cast<void>(sink);
-        return static_cast<double>(end - begin) / static_cast<double>(samples);
+        return static_cast<double>(end - begin) / static_cast<double>(mSamples);
     }
     
     uint64_t bench_log_scope();
@@ -166,12 +166,12 @@ private:
         LoggingCall&& logCall
     ) 
     {
-        for (int i = 0; i < cfg.nSamples; i++) {
+        for (int i = 0; i < mCfg.nSamples; i++) {
             uint64_t begin = now_ns();
             logCall(formatString.c_str(), ((void)NI, 42)..., ((void)NS, "Hello")..., ((void)NF, 3.14)...);
             uint64_t end = now_ns();
             uint64_t sample = end - begin;
-            samples.push_back(sample);
+            mSamples.push_back(sample);
         }
         
     }

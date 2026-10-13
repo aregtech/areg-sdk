@@ -17,29 +17,29 @@ namespace {
     }
 }
 
-SessionResult ResultProcessor::summarize(std::vector<uint64_t> samples, BenchmarkConfig cfg, SampleType sType, double clockSpeedNs) {
-    sort(samples.begin(), samples.end()); 
+SessionResult ResultProcessor::summarize(std::vector<uint64_t> mSamples, BenchmarkConfig mCfg, SampleType sType, double mClockSpeedNs) {
+    sort(mSamples.begin(), mSamples.end()); 
     SessionResult result;
-    result._max = samples.back() / NS_PER_US;
-    result._min = samples.front() / NS_PER_US;
-    result._mean = (std::accumulate(samples.begin(),samples.end(),0) / cfg.nSamples) / NS_PER_US;
-    result._p50 = _percentile_us(samples, 0.5);
-    result._p90 = _percentile_us(samples, 0.9);
-    result._p99 = _percentile_us(samples, 0.99);
-    result._p999 = _percentile_us(samples, 0.999);
-    result.cfg = cfg;
-    result.sType = sType;
-    result.clockSpeedNs = clockSpeedNs / NS_PER_US;
+    result.max_us = mSamples.back() / NS_PER_US;
+    result.min_us = mSamples.front() / NS_PER_US;
+    result.mean_us = (std::accumulate(mSamples.begin(),mSamples.end(),0) / mCfg.nSamples) / NS_PER_US;
+    result.p50_us = _percentile_us(mSamples, 0.5);
+    result.p90_us = _percentile_us(mSamples, 0.9);
+    result.p99_us = _percentile_us(mSamples, 0.99);
+    result.p999_us = _percentile_us(mSamples, 0.999);
+    result.cfg = mCfg;
+    result.sampleType = sType;
+    result.clock_speed_us = mClockSpeedNs / NS_PER_US;
 
     double squaredDiffSum = 0.0;
 
-    for (uint64_t sample : samples)
+    for (uint64_t sample : mSamples)
     {
-        double diff = static_cast<double>(sample / NS_PER_US) - result._mean;
+        double diff = static_cast<double>(sample / NS_PER_US) - result.mean_us;
         squaredDiffSum += diff * diff;
     }
 
-    result._sd = std::sqrt(squaredDiffSum / samples.size());
+    result.sd_us = std::sqrt(squaredDiffSum / mSamples.size());
 
     return result;
 }
