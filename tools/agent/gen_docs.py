@@ -89,7 +89,7 @@ KEYS = {
     'program': ('name', 'description', 'components'),
     'component': ('name', 'provides', 'roles', 'drives', 'watches', 'role', 'uses', 'thread',
                   'description'),
-    'use': ('service', 'role', 'roles'),
+    'use': ('service', 'role', 'roles', 'connect_seconds'),
     'datatypes': ('name', 'description', 'version', 'declare', 'includes'),
     'interface': ('name', 'category', 'description', 'version', 'types', 'attributes',
                   'requests', 'responses', 'broadcasts', 'constants', 'includes',
@@ -1715,6 +1715,16 @@ def component_uses(component, project=None):
     return found
 
 
+def connect_seconds(component):
+    """The seconds each used service's first connection is waited for, 0 for ever."""
+    found = {}
+    for entry in component.get('uses') or []:
+        if isinstance(entry, dict) and entry.get('connect_seconds'):
+            service = entry.get('service')
+            found[service] = max(found.get(service, 0), entry['connect_seconds'])
+    return found
+
+
 def check_programs(project):
     """The "programs" block: every name resolves, and every role is provided once.
 
@@ -1836,6 +1846,11 @@ def check_component(project, component, here, name, services, roles, provided, d
     for entry in component.get('uses') or []:
         if isinstance(entry, dict):
             check_keys(entry, KEYS['use'], 'a used service of ' + where)
+            seconds = entry.get('connect_seconds', 0)
+            if isinstance(seconds, bool) or not isinstance(seconds, int) or seconds < 0:
+                fail('a used service of {} gives "connect_seconds" as {!r}. It is a whole '
+                     'number of seconds the first connection is waited for, and 0 waits '
+                     'for ever'.format(where, seconds))
         elif not isinstance(entry, str):
             fail('a used service of {} is a service name or {{"service": ..., '
                  '"role": ...}}'.format(where))
@@ -2985,18 +3000,20 @@ EXAMPLE = {
 EXAMPLE_PROGRAMS = {
     NOTE: ["A stock service and an order desk that answers only after the stock has.",
            "programs: one executable each, under src/<name>/. A component provides one",
-           "service (\"roles\" runs named instances of it), drives the scenario (the steps",
-           "of that service; \"role\" is the instance it talks to) or watches one, as the",
-           "board does: it reacts to updates and drives nothing. \"uses\" gives any",
-           "component a client member per used role: mStock below, called as",
-           "mStock.request_reserve(...), every answer a worksheet section. A step with",
-           "\"role\" sends to and awaits a used role: stock_left awaits the stock's Bolts,",
-           "which comes in no order against the desk's answer, until 98, the 100 it starts",
-           "with less the 2 ordered: the value from subscribing is the one from before the",
+           "service (\"roles\" runs named instances of it), drives the scenario (the steps of",
+           "that service; \"role\" is the instance it talks to) or watches one, as the board",
+           "does: it reacts to updates and drives nothing. \"uses\" gives any component a",
+           "client member per used role: mStock below, called as",
+           "mStock.request_reserve(...), every answer a worksheet section. A client waits",
+           "for its first connection without limit; \"connect_seconds\": N on a use runs its",
+           "\"gone\" section and exits 1 after N seconds without one. A step with \"role\"",
+           "sends to and awaits a used role: stock_left awaits the stock's Bolts, which",
+           "comes in no order against the desk's answer, until 98, the 100 it starts with",
+           "less the 2 ordered: the value from subscribing is the one from before the",
            "order. \"thread\" puts components of one program in one thread. deployments:",
-           "named alternatives, each placing a role or a named component in another",
-           "program or program/thread; main() takes --deployment <name>. Without",
-           "programs, a design is one service."],
+           "named alternatives, each placing a role or a named component in another program",
+           "or program/thread; main() takes --deployment <name>. Without programs, a design",
+           "is one service."],
     "interfaces": [
         {"name": "StockService", "category": "Public", "description": "Items in stock.",
          "attributes": [{"name": "Bolts", "type": "uint32", "notify": "Always"}],

@@ -397,12 +397,12 @@ WORKSHEET_HEAD = """\
 #| an existing function body, so an out-of-line definition there does not compile.
 #|
 #| A body logs with GLOBAL_INFO(...), GLOBAL_WARN(...) or GLOBAL_ERR(...), printf
-#| rules: GLOBAL_INFO("bay %s at %u kWh", name.as_string(), energy). Every .cpp of
-#| this project declares its log scope already, so a section that logs adds no
-#| include; each program writes its lines to logs/ beside its executable, and a
-#| scenario's "expect" matches them. Every header has <vector>, <map>,
-#| <unordered_map>, <deque> and <list> from areg's own headers, so a "*_state"
-#| keeping one adds no include either.
+#| rules: GLOBAL_INFO("bay %s at %u kWh", name.as_string(), energy). Every class
+#| of this project carries its log scope already, so a section that logs, a
+#| "*_state" helper included, adds no include; each program writes its lines to
+#| logs/ beside its executable, and a scenario's "expect" matches them. Every
+#| header has <vector>, <map>, <unordered_map>, <deque> and <list> from areg's
+#| own headers, so a "*_state" keeping one adds no include either.
 """
 
 def worksheet_sections(produced, out):
@@ -503,6 +503,35 @@ def scenario_holes(path):
     return holes
 
 
+def scenario_runs(path):
+    """What each scenario of a scenario file starts, as one note: its binaries, the lead marked."""
+    try:
+        with open(path, encoding='utf-8') as handle:
+            text = handle.read()
+        scenarios = json.loads(text)['scenarios']
+    except (ValueError, OSError, KeyError, TypeError):
+        return ''
+    anchor = next((line for line in text.splitlines() if '"scenarios": [' in line), None)
+    runs, before = [], None
+    for scenario in scenarios:
+        procs = [spec for spec in (scenario.get('procs', []) if isinstance(scenario, dict)
+                                   else []) if isinstance(spec, dict)]
+        lead = next((spec for spec in procs if spec.get('lead')), procs[-1] if procs else None)
+        binaries = ['{}{}'.format(spec.get('binary', '?'), ' (lead)' if spec is lead else '')
+                    for spec in procs]
+        if not binaries:
+            continue
+        said = 'the same' if binaries == before else ', '.join(binaries)
+        runs.append('"{}" {}'.format(scenario.get('name', '?'), said))
+        before = binaries
+    if not runs:
+        return ''
+    said = 'This file runs {}. A scenario of your own starts these binaries'.format('; '.join(runs))
+    if anchor:
+        said += ', added by a "== scenarios.json" SEARCH block after its line `{}`'.format(anchor)
+    return said + '.'
+
+
 def worksheet_pristine(path):
     """True when the file holds notes and empty sections only, so rewriting loses nothing."""
     try:
@@ -565,10 +594,7 @@ ANSWER_NOTE = ['no step awaits this answer, so this body sits outside the step',
 # The section that is a header's private block. Two runs opened a generated header
 # to ask where a helper of their own may live; the preamble says it 130 lines above.
 STATE_NOTE = ["this section is the private block of that class's header: a helper of",
-              'your own is declared and defined here, and nowhere else. Every other',
-              'section is code inside an existing function body, where an out-of-line',
-              'definition does not compile. The names already taken are listed at the',
-              'top of this worksheet, and declaring one again shadows it']
+              'your own is declared and defined here, and nowhere else']
 
 
 # Sends a section to the bodies quoted at the top rather than to the file they are
@@ -1023,6 +1049,8 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
         lines.append('#| The dialect is Python re, searched and not anchored, with')
         lines.append('#| MULTILINE on: ^ and $ meet every line, and a plain substring')
         lines.append('#| is a valid pattern. Escape . ( ) [ ] * + ? that mean themselves.')
+        for line in textwrap.wrap(scenario_runs(scenarios), 77, break_on_hyphens=False):
+            lines.append('#| {}'.format(line))
         for name, hint in holes:
             lines.append('== {}'.format(name))
             for line in textwrap.wrap(hint, 77):

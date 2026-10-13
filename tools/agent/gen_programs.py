@@ -102,6 +102,7 @@ def components_of(project, specs, services_dir):
                 component.machine, component.machine_doc = machines[service]
         else:
             component.role = entry.get('role') or gen_docs.consumed_role(project, service)
+        component.connects = gen_docs.connect_seconds(entry)
         # Entries naming one service, each with its own role, are one client class.
         merged = {}
         for used, roles in gen_docs.component_uses(entry, project):
@@ -177,12 +178,13 @@ def forwards(steps, roles, kind, name, indent):
     return lines
 
 
-def client_class(owner, iface, roles, cls, reconnect, driving=False, steps=()):
+def client_class(owner, iface, roles, cls, reconnect, driving=False, steps=(), connect=0):
     """The client of one used service: a consumer base, subscribed, every answer a marker.
 
     A provider that goes away is waited for reconnect seconds, the "driver" setting of
-    that service, and the section that runs then decides; 0 waits for ever. A message a
-    step awaits with "role" goes on to the driver's check of that step.
+    that service, and the section that runs then decides; 0 waits for ever. With connect
+    seconds, the first connection is waited for that long once the owner starts. A
+    message a step awaits with "role" goes on to the driver's check of that step.
     """
     pad = ' ' * (len(cls) + 13)
     lines = ['class {} final : public    {}ConsumerBase'.format(cls, iface.name),
@@ -199,6 +201,16 @@ def client_class(owner, iface, roles, cls, reconnect, driving=False, steps=()):
              '        , mDeadline(static_cast<areg::TimerConsumer &>(*this), role)',
              '    { }',
              '']
+    if connect:
+        lines += ['    //! Starts the wait for the first connection; the connection stops it.',
+                  '    void arm_connect_deadline()',
+                  '    {',
+                  '        mDeadline.stop_timer();',
+                  '        mDeadline.start_timer(cConnectSeconds * 1000, '
+                  'static_cast<areg::DispatcherThread &>(mThread),',
+                  '                              areg::TimerBase::ONE_TIME);',
+                  '    }',
+                  '']
     early = driving and bool(iface.attributes)
     if early:
         lines += ['    //! Runs each update body once on the value held, when an update arrived',
@@ -270,10 +282,13 @@ def client_class(owner, iface, roles, cls, reconnect, driving=False, steps=()):
               '    {',
               '        if (&timer == &mDeadline)',
               '        {',
-              gs.marker('gone', 'what {} reports when this provider did not come back '
+              gs.marker('gone', 'what {} reports when this provider did not {}'
                         'within cReconnectSeconds; quit_with(1) follows, and a body that '
-                        'keeps the program running returns before it'.format(owner), 12),
-              gs.placeholder('            GLOBAL_ERR("FAIL: %s did not come back", mRole.as_string());'),
+                        'keeps the program running returns before it'.format(
+                            owner, 'connect within cConnectSeconds or come back '
+                            if connect else 'come back '), 12),
+              gs.placeholder('            GLOBAL_ERR("FAIL: %s did not {}", mRole.as_string());'
+                             .format('connect or come back' if connect else 'come back')),
               '            quit_with(1);',
               '        }',
               '    }',
@@ -343,6 +358,10 @@ def client_class(owner, iface, roles, cls, reconnect, driving=False, steps=()):
               '    //! Seconds a lost provider is waited for. 0 waits for ever.',
               '    static constexpr uint32_t cReconnectSeconds{{ {} }};'.format(reconnect),
               '']
+    if connect:
+        lines += ['    //! Seconds the first connection is waited for once the owner starts.',
+                  '    static constexpr uint32_t cConnectSeconds{{ {} }};'.format(connect),
+                  '']
     if early:
         lines += ['    bool mEarly{ false };    //!< True once an update waits for the steps to begin.',
                   '']
@@ -408,6 +427,13 @@ def with_clients(lines, component):
             members.append('    {} {};    //!< The {} provider "{}".'
                            .format(name, member_of(role), iface.name, role))
     lines[last + 1:last + 1] = inits
+    armed = ['        {}.arm_connect_deadline();'.format(member_of(role))
+             for iface, roles, _ in component.clients
+             if component.connects.get(iface.name) for role in roles]
+    if armed:
+        started = next(i for i, line in enumerate(lines)
+                       if 'areg::Component::startup_component(' in line)
+        lines[started + 1:started + 1] = armed
     deleted = lines.index('    {}() = delete;'.format(component.cls))
     lines[deleted:deleted] = members + [''] + lookups(component)
     if component.kind == 'drives' and component.steps:
@@ -650,7 +676,8 @@ def component_classes(component, specs, include_root):
         client = client_class(component.cls, used, roles, name,
                               gs.driver_of(specs, used)['reconnect_seconds'],
                               component.kind == 'drives' and bool(component.steps),
-                              component.steps if component.kind == 'drives' else ())
+                              component.steps if component.kind == 'drives' else (),
+                              component.connects.get(used.name, 0))
         client_includes = gs.class_includes(used) + gs.timer_includes(client) + [
             '', '#include "{}/{}ConsumerBase.hpp"'.format(include_root, used.name)]
         prelude_lines = gs.QUIT_DECLARATION + ['class {};'.format(component.cls), '']
