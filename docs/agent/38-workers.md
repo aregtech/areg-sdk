@@ -73,8 +73,9 @@ void Provider::startup_component(areg::ComponentThread & owner)
 
 `shutdown_component()` removes the listener, calls the base, which stops every worker of
 the component, then `delete_worker_thread("ScanThread")`. `delete_worker_thread()` stops
-the worker and waits for it; `create_worker_thread()` with the same name then starts a
-new one, which replaces a stalled worker at run time.
+the worker and waits until its current handler returns, so a handler blocked on a wait
+of its own is released by the caller first; `create_worker_thread()` with the same name
+then starts a new one, which replaces a stalled worker at run time.
 
 ## 4. In a project from design.json
 

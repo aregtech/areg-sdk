@@ -504,7 +504,7 @@ TOOLS = ['setup_project.py', 'gen_skeleton.py', 'fsml_layout.py', 'run_scenarios
 # set growing one locally-justified paragraph at a time: raising this number is a
 # deliberate edit in a reviewed file, and the commit that raises it says what it bought.
 # The headroom is deliberately small: a ceiling with room in it ratchets nothing.
-CORPUS_CEILING = 202768
+CORPUS_CEILING = 202858
 
 PAGE_CEILING = 8 * KB
 # The stop the exception mechanism did not have. An entry in .budgets raises the
@@ -5421,14 +5421,13 @@ def check_accessor_collision(report):
 
 
 STEP_SAMPLE = [{'name': 'open_gate', 'send': 'open', 'args': {'width': 600}},
-               {'name': 'settle', 'wait': 100},
+               {'name': 'start', 'wait': 100},
                {'name': 'close_gate', 'send': 'close', 'args': {'by': 'night shift'}},
                {'name': 'watch_width', 'await': 'Width'}]
 
 STEP_REFUSALS = [({'name': 'fly', 'send': 'fly'}, 'is not a request'),
                  ({'name': 'open_gate', 'send': 'open'}, 'gives no value'),
                  ({'name': 'both', 'await': 'Width', 'wait': 10}, 'does one of the two'),
-                 ({'name': 'done', 'wait': 10}, 'the driver declares itself (Start, Done'),
                  ({'name': 'nothing', 'await': 'Nobody'}, 'no response, broadcast'),
                  ({'name': 'odd_width', 'send': 'open', 'args': {'width': 3}},
                   'takes only 600, 1200, 2000')]
@@ -6660,7 +6659,9 @@ def check_step_driver(report):
                               'design writes as plain text and C++ needs quoted'),
                              ('hold(100);', 'a timed wait'),
                              ('quit_with(0);', 'the exit after the last step'),
-                             ('begin(Step::OpenGate);', 'the first step')):
+                             ('begin(Step::OpenGate);', 'the first step'),
+                             ('case Step::StartStep:', 'a step named "start", whose value '
+                              'the driver\'s own Step::Start would otherwise take')):
             if wanted not in source:
                 report.fail('step-driver', 'the driver does not write {}: "{}" is missing'
                             .format(what, wanted))

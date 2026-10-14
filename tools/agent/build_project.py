@@ -549,11 +549,12 @@ def collapse_notes(lines, record):
             collapsed += 1
         else:
             kept.extend(lines[index:end])
-            if CHANGE_NOTE.search(block):
-                CHANGES_ASKED.append(digest)
+            if CHANGE_NOTE.search(block) and block not in CHANGES_ASKED:
+                CHANGES_ASKED.append(block)
         index = end
     if where is not None:
-        kept[where[0]] = '{}note  {} design note(s) unchanged since the last call, not repeated' \
+        kept[where[0]] = '{}note  {} design note(s) unchanged since the last call, not ' \
+            'repeated; gen_docs.py --review --spec design.json prints every one' \
             .format(where[1], collapsed)
     try:
         os.makedirs(os.path.dirname(record), exist_ok=True)
@@ -1183,9 +1184,12 @@ def closing_lines(root, bodies, specs):
     first = ['Every step passed. {} marker(s) are open, so the application does nothing '
              'yet.'.format(still_open)] + WORKSHEET_CHANGES
     if CHANGES_ASKED:
-        first.append('{} note(s) above ask for a change to design.json. If you take one, '
-                     'change design.json and run this command again before reading {}: it '
-                     'is rewritten then.'.format(len(CHANGES_ASKED), gen_skeleton.WORKSHEET))
+        first.append('{} design note(s) ask for a change to design.json:'
+                     .format(len(CHANGES_ASKED)))
+        for block in CHANGES_ASKED:
+            first += ['  ' + line.strip() for line in block.splitlines()]
+        first.append('If you take one, change design.json and run this command again before '
+                     'reading {}: it is rewritten then.'.format(gen_skeleton.WORKSHEET))
     return first + [
             '{}: read {}{}{}, then write every section it lists into {}, apply it, '
             'build and run the scenarios in one call:'

@@ -28,6 +28,25 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 FRAMEWORK = os.path.join(ROOT, 'framework', 'areg')
 
+sys.path.insert(0, HERE)
+from gen_skeleton import CLASSES as DESIGN_CLASSES, CLASS_HEADERS, WORKSHEET  # noqa: E402
+
+# The methods the generator writes for a service of the design, by the shape of the name.
+GENERATED = (
+    (re.compile(r'^notify_on_broadcast_(\w+)$'),
+     'a public method the generator writes on the consumer and on every client of the '
+     'service that declares broadcast "{0}": void {1}(bool notify = true). true '
+     'subscribes and its broadcast_{0} section runs on every one sent after; false '
+     'unsubscribes.'),
+    (re.compile(r'^notify_on_(\w+)_update$'),
+     'a public method the generator writes on the consumer and on every client of the '
+     'service that declares the attribute "{0}": void {1}(bool notify = true). true '
+     'subscribes, and the value the provider holds arrives at once in its update '
+     'section, then every change; false unsubscribes. The getter reads the value held.'),
+    (re.compile(r'^(?:request|response|broadcast|set)_(\w+)$'),
+     'a method the generator writes for "{0}" of a service of the design.'),
+)
+
 BLOCK_COMMENT = re.compile(r'/\*.*?\*/', re.S)
 LINE_COMMENT = re.compile(r'//[^\n]*')
 
@@ -542,6 +561,28 @@ def search(headers, word):
     return bool(members or classes or enums or constants)
 
 
+def answer_generated(name):
+    """What a name the generator writes is, and its lines in the project's worksheet."""
+    for pattern, text in GENERATED:
+        match = pattern.match(name)
+        if match:
+            break
+    else:
+        return False
+    print('"{}" is not in the areg headers: it is {}'.format(name, text.format(match.group(1), name)))
+    try:
+        with open(WORKSHEET, encoding='utf-8') as handle:
+            lines = [line.rstrip() for line in handle if name in line]
+    except OSError:
+        lines = []
+    if lines:
+        print('')
+        print('{} names it:'.format(WORKSHEET))
+        for line in lines[:4]:
+            print('  ' + line.lstrip('#| ').strip())
+    return True
+
+
 def main():
     parser = argparse.ArgumentParser(
         description='What one framework name is, from the public areg headers.')
@@ -568,6 +609,14 @@ def main():
     for index, name in enumerate(args.names):
         if index:
             print('')
+        if name in DESIGN_CLASSES:
+            cpp = DESIGN_CLASSES[name]
+            print('"{}" is the design type; the generated C++ spells it {} ({}).'
+                  .format(name, cpp, CLASS_HEADERS[cpp]))
+            print('')
+            if not answer_class(headers, cpp.split('::')[-1], args.full):
+                missing += 1
+            continue
         if args.as_class:
             answered = answer_class(headers, name, args.full)
         elif '::' in name and not args.enum:
@@ -580,6 +629,8 @@ def main():
                         or answer_enum(headers, name)
                         or answer_constant(headers, name))
         if not answered:
+            if answer_generated(name):
+                continue
             if name in SCAFFOLD_NAMES:
                 print('"{}" is not in the areg headers: gen_skeleton.py writes it into '
                       'the main.cpp of every program it generates.'.format(name))

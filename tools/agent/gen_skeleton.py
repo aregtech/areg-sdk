@@ -2515,6 +2515,16 @@ def pascal(name):
     return ''.join(part[:1].upper() + part[1:] for part in name.split('_') if part)
 
 
+# The Step values the driver declares itself.
+STEP_SENTINELS = ('Start', 'Done')
+
+
+def step_enum(name):
+    """The Step value of a step: its name in PascalCase, with "Step" added to Start or Done."""
+    value = pascal(name)
+    return value + 'Step' if value.lower() in (s.lower() for s in STEP_SENTINELS) else value
+
+
 # The document types whose values are written in C++ as a quoted literal.
 TEXT_TYPES = ('String', 'WideString')
 
@@ -2893,7 +2903,7 @@ def steps_of(specs, iface, used=None, driven_role=None):
                  'It awaits one of: {}'
                  .format(where, target, source.name, awaitable(source)))
         until = until_of(step.get('until'), target, kinds, source, where)
-        steps.append({'name': name, 'enum': pascal(name), 'send': send,
+        steps.append({'name': name, 'enum': step_enum(name), 'send': send,
                       'call': prefix + source.spell('request', send) if send is not None
                       else None,
                       'args': values,
@@ -4875,16 +4885,16 @@ def peer_hold(steps):
 
     def free(base):
         name, suffix = base, 1
-        while name in taken or pascal(name) in taken:
+        while name in taken or step_enum(name) in taken:
             suffix += 1
             name = '{}{}'.format(base, suffix)
         taken.add(name)
         return name
 
     name, lead = free(HOLD_NAME), free(HOLD_LEAD_NAME)
-    return {'name': name, 'enum': pascal(name), 'send': None, 'call': None, 'args': [],
+    return {'name': name, 'enum': step_enum(name), 'send': None, 'call': None, 'args': [],
             'awaits': None, 'wait': HOLD_MS, 'hold': True, 'after': after,
-            'lead': {'name': lead, 'enum': pascal(lead), 'send': None, 'call': None,
+            'lead': {'name': lead, 'enum': step_enum(lead), 'send': None, 'call': None,
                      'args': [], 'awaits': None, 'wait': HOLD_LEAD_MS, 'hold': True,
                      'keep': True}}
 

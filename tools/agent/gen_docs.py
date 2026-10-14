@@ -2283,9 +2283,7 @@ def check_sequences(project):
                     fail('{} has no name a C++ identifier can carry'.format(here))
                 key = name.replace('_', '').lower()
                 if key in STEP_RESERVED:
-                    fail('{} takes a name the driver declares itself ({}, underscores and '
-                         'case aside); name it after what it does'
-                         .format(here, ', '.join(key.capitalize() for key in STEP_RESERVED)))
+                    key += 'step'
                 if key in seen:
                     fail('{} is named twice: a step name is unique, underscores and case '
                          'aside'.format(here))
