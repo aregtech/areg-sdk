@@ -3049,7 +3049,9 @@ EXAMPLE_PROGRAMS = {
            "client member per used role: mStock below, called as",
            "mStock.request_reserve(...), every answer a worksheet section. A client waits",
            "for its first connection without limit; \"connect_seconds\": N on a use runs its",
-           "\"gone\" section and exits 1 after N seconds without one. A step with \"role\"",
+           "\"gone\" section and exits 1 after N seconds without one. How long a lost one",
+           "is waited for is \"reconnect_seconds\" of that interface's \"driver\" block, one",
+           "value for every client of the service. A step with \"role\"",
            "sends to and awaits a used role: stock_left awaits the stock's Bolts, which",
            "comes in no order against the desk's answer, until 98, the 100 it starts with",
            "less the 2 ordered: the value from subscribing is the one from before the",
@@ -3455,6 +3457,8 @@ FEATURES = {
     'sources': [('sources',)],
 }
 FEATURE_FILE = 'areg-project.json'
+# The names --example prints.
+EXAMPLE_NAMES = ('service', 'programs', 'submachine', 'machine', 'worker')
 
 
 def features_of(text):
@@ -3462,8 +3466,11 @@ def features_of(text):
     names = [name.strip() for name in text.split(',') if name.strip()]
     unknown = [name for name in names if name not in FEATURES]
     if unknown:
-        fail('unknown feature {}. The features are {}; an empty list names none.'.format(
-            ', '.join('"{}"'.format(name) for name in unknown), ', '.join(sorted(FEATURES))))
+        examples = [name for name in unknown if name in EXAMPLE_NAMES]
+        fail('unknown feature {}. The features are {}; an empty list names none.{}'.format(
+            ', '.join('"{}"'.format(name) for name in unknown), ', '.join(sorted(FEATURES)),
+            ' {} has no rules of its own: gen_docs.py --example {} prints its keys in use.'
+            .format(', '.join(examples), ' '.join(examples)) if examples else ''))
     return sorted(set(names))
 
 
@@ -3686,8 +3693,8 @@ def main():
                              'never replaced')
     parser.add_argument('--features', metavar='LIST',
                         help='with --template, the optional blocks it holds, comma-separated: '
-                             'machine, timers, workers, steps; an empty list writes none and '
-                             'leaving it out writes every one')
+                             'machine, timers, workers, steps, sources; an empty list writes '
+                             'none and leaving it out writes every one')
     parser.add_argument('--rules', metavar='LIST',
                         help='print the template\'s rules of these features, comma-separated, '
                              'and write nothing')

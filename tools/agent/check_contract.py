@@ -1107,7 +1107,7 @@ def check_subscriptions(sources, findings, read):
                 % (member, subscription)))
 
 
-def check_deferred_responses(sources, findings, read):
+def check_deferred_responses(sources, findings, read, allow_todo=False):
     """P-13. A response answered later, with the request never released.
 
     A request handler holds its request until it returns. A provider that answers
@@ -1121,8 +1121,10 @@ def check_deferred_responses(sources, findings, read):
     that answers are usually in different files. prepare_response() is reported only
     when unblock_current_request() appears nowhere at all -- there is no other way to
     obtain a session id, so a project that calls one and not the other is wrong.
+    With allow_todo, a request handler still open leaves it undecided.
     """
     released = False
+    pending = False
     deferred = []
     for path in sources:
         text = read(path)
@@ -1132,10 +1134,13 @@ def check_deferred_responses(sources, findings, read):
             line = strip_noise(raw)
             if 'unblock_current_request' in line:
                 released = True
+            marker = TODO_MARKER_RE.search(raw)
+            if marker and marker.group(1).startswith('request_'):
+                pending = True
             if re.search(r'\bprepare_response\s*\(', line):
                 deferred.append((path, number + 1))
 
-    if not released:
+    if not released and not (allow_todo and pending):
         for path, number in deferred:
             findings.append(Finding(
                 'P-13', 'error', path, number,
@@ -1962,7 +1967,7 @@ def main():
     check_threads(sources, findings, read)
     check_sources_declared(base, sources, findings, read)
     check_subscriptions(sources, findings, read)
-    check_deferred_responses(sources, findings, read)
+    check_deferred_responses(sources, findings, read, args.allow_todo)
     check_bare_calls(generated, sources, findings, read)
     check_timer_dispatch(sources, findings, read)
     check_generate_target(base, findings, read)

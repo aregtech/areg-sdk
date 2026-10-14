@@ -53,11 +53,12 @@ It restates this page and the SDK's `AGENTS.md`: skip it.
 ## 3. Design
 
 From the task, decide the requests, responses, broadcasts, attributes and data types.
-Right after the scaffold, in one request, read `design.json`, run
+After the scaffold, in one request, each in its own call: read `design.json`, run
 `gen_docs.py --example service`, adding `programs` when the task has more than two
 programs or more than one service and `submachine` when a machine hosts another (the
-service example already holds a machine), and open `05-design.md`, plus
-`22-state-machine.md` when an answer depends on what came before. Open nothing else
+service example already holds a machine), and open `22-state-machine.md` when an answer
+depends on what came before. The four rules atop `design.json` decide the split;
+`05-design.md` is their reasoning, for a choice they leave open. Open nothing else
 before `design.json` is written: `20` and `21` describe the XML generated.
 
 **A provider reads its own attributes back.** An attribute gives the provider a getter

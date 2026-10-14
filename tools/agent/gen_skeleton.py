@@ -896,6 +896,35 @@ BASE_API_CONTAINERS = [
     '  Anything else: api_help.py <the class its type line names> --class.',
 ]
 
+# The buffer spellings, printed under BASE_API when a document declares a BinaryBuffer.
+BASE_API_BUFFER = [
+    '',
+    '  areg::SharedBuffer, the BinaryBuffer of the contracts below, b one of them:',
+    '  areg::SharedBuffer b(bytes, n)  a copy of n bytes from a const uint8_t *',
+    '  b.buffer(), b.size_used()       const uint8_t * to the bytes; how many there are',
+    '  b.write(bytes, n), b.reset()    appends n bytes; rewinds the read position',
+    '  Anything else: api_help.py SharedBuffer --class.',
+]
+
+def carries_buffer(documents):
+    """True when a document, or a .dtml beside it, declares a BinaryBuffer."""
+    folders = set(os.path.dirname(os.path.abspath(doc)) for doc in documents if doc)
+    for folder in folders:
+        for name in (os.listdir(folder) if os.path.isdir(folder) else []):
+            if not name.endswith(('.siml', '.dtml')):
+                continue
+            try:
+                with open(os.path.join(folder, name), encoding='utf-8') as handle:
+                    if 'BinaryBuffer' in handle.read():
+                        return True
+            except OSError:
+                continue
+    return False
+
+
+# The names of BASE_API_BUFFER, held to 42-runtime-api.md.
+BASE_API_BUFFER_NAMES = ('buffer', 'size_used', 'write', 'reset')
+
 # The names of BASE_API_CONTAINERS, held to the page as BASE_API_NAMES is.
 BASE_API_CONTAINER_NAMES = ('size', 'is_empty', 'clear', 'add', 'push_last', 'contains',
                             'remove_at', 'data')
@@ -1041,7 +1070,9 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
     specs = [spec for spec, _ in contracts or ((iface, document), (machine, machine_doc))
              if spec is not None]
     containers = any(getattr(spec, 'containers', None) for spec in specs)
-    for line in BASE_API + (BASE_API_CONTAINERS if containers else []):
+    buffers = carries_buffer([doc for _, doc in contracts or ((iface, document),)])
+    for line in (BASE_API + (BASE_API_CONTAINERS if containers else [])
+                 + (BASE_API_BUFFER if buffers else [])):
         lines.append(('#| ' + line.format(tools=TOOLS_DIR)).rstrip())
     lines.append('#|')
     if any(file_name.endswith('main.cpp') and 'void quit_with(int code)' in text
@@ -4610,7 +4641,7 @@ CONSUMER_DIR = {'ipc': 'consumer/', 'local': ''}
 
 
 # The hint of a header design.json "sources" names, which holds no generated class.
-OWN_HEADER = 'the whole header, '
+OWN_HEADER = 'the whole header ('
 
 
 def own_sources(specs, folders):
@@ -4631,13 +4662,16 @@ def own_sources(specs, folders):
                      'src/' + each for each in sorted(folders)) or 'src/'))
         stem, ext = os.path.splitext(os.path.basename(name))
         marker = '{}_{}'.format(stem, ext[1:])
-        what = entry.get('description') or 'a file of your own'
+        what = (entry.get('description') or 'a file of your own').strip().rstrip('.')
         if ext == '.cpp':
-            text = ('// TODO(you) {}: the whole source, {}\n').format(marker, what)
+            text = ('#include "areg/logging/areg_log.h"\n\nGLOBAL_LOG_SCOPE({stem}, log);\n\n'
+                    '// TODO(you) {marker}: the whole source ({what}) below its log scope; '
+                    'it logs with GLOBAL_INFO(...) and declares no scope of its own\n').format(
+                        stem=stem, marker=marker, what=what)
         else:
             guard = '{}_{}'.format(stem.upper(), ext[1:].upper())
             text = ('#ifndef {guard}\n#define {guard}\n\n'
-                    '// TODO(you) {marker}: ' + OWN_HEADER + '{what}; included as '
+                    '// TODO(you) {marker}: ' + OWN_HEADER + '{what}), included as '
                     '"src/{name}"\n\n#endif // {guard}\n').format(
                         guard=guard, marker=marker, what=what, name=name)
         produced.append((name, text))

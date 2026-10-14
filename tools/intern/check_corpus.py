@@ -8539,10 +8539,28 @@ def check_base_api_parity(report):
                         '"{}" is listed in BASE_API_NAMES and is not in the block the '
                         'worksheet prints'.format(name))
             return
+
+    try:
+        with open(os.path.join(ROOT, 'docs', 'agent', '42-runtime-api.md'),
+                  encoding='utf-8') as handle:
+            runtime = handle.read()
+    except OSError as failure:
+        report.fail('base-api-parity', '42-runtime-api.md does not read: {}'.format(failure))
+        return
+    buffer_block = ' '.join(gen_skeleton.BASE_API_BUFFER)
+    for name in gen_skeleton.BASE_API_BUFFER_NAMES:
+        if name not in declared or not re.search(r'\b{}\('.format(name), runtime) \
+                or 'b.' + name not in buffer_block:
+            report.fail('base-api-parity',
+                        'the worksheet buffer block offers "{}", and the framework, '
+                        '42-runtime-api.md section 7 or the block itself does not carry '
+                        'it. The copies have drifted'.format(name))
+            return
     report.ok('base-api-parity',
               'the worksheet base-API block names {} call(s), all of them declared by the '
-              'framework and all of them on 40-base-api.md, and says it is a floor'
-              .format(len(names)))
+              'framework and all of them on 40-base-api.md, and says it is a floor; its '
+              'buffer block names {}, all on 42-runtime-api.md'
+              .format(len(names), len(gen_skeleton.BASE_API_BUFFER_NAMES)))
 
 
 def check_build_routes_next(report):

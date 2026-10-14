@@ -151,10 +151,11 @@ output blocks; do it on a worker thread, never in a handler.
 
 `#include "areg/base/SharedBuffer.hpp"`
 
-Serialize with `operator <<` and `operator >>`; the members below are the rest.
+Serialize with `<<` and `>>`; the members below are the rest.
 
 | Call | Signature | Header |
 |---|---|---|
+| `buffer()` | `const uint8_t * buffer() const` | `SharedBuffer.hpp:333` |
 | `write(bytes)` | `uint32_t write(const uint8_t * buf, uint32_t size)` | `SharedBuffer.hpp:247` |
 | `read(bytes)` | `uint32_t read(uint8_t * buf, uint32_t size) const noexcept` | `SharedBuffer.hpp:282` |
 | `reset()` | `void reset() const noexcept` | `SharedBuffer.hpp:285` |

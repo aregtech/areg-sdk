@@ -988,6 +988,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "34_coffeemachine", "34_coffeemachine", "{FD2627E1-B59E-43DB-ACA9-EF6E5AAFD741}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "services", "services", "{CD640475-8EFA-4005-9099-B3B13E12BE2D}"
+	ProjectSection(SolutionItems) = preProject
+		examples\33_tempalarm\services\TempMonitorService.siml = examples\33_tempalarm\services\TempMonitorService.siml
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "34_generated", "examples\34_coffeemachine\34_generated.vcxproj", "{96F935CF-BF68-4A0B-AABF-BF22AE887AD6}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -1009,6 +1012,50 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "34_user", "examples\34_coff
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "services", "services", "{4B8E2190-2784-4DF9-BEB2-15ED65EDCD2A}"
+	ProjectSection(SolutionItems) = preProject
+		examples\34_coffeemachine\services\CoffeeMachineService.siml = examples\34_coffeemachine\services\CoffeeMachineService.siml
+		examples\34_coffeemachine\services\CoffeeMaking.fsml = examples\34_coffeemachine\services\CoffeeMaking.fsml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ai-benchmark", "ai-benchmark", "{51F437EE-1E65-477E-95A4-FD980CF3997C}"
+	ProjectSection(SolutionItems) = preProject
+		examples\ai-benchmark\INSTALL-grpc.md = examples\ai-benchmark\INSTALL-grpc.md
+		examples\ai-benchmark\README.md = examples\ai-benchmark\README.md
+		examples\ai-benchmark\runbook-demo.md = examples\ai-benchmark\runbook-demo.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{F5E9EA4E-8E18-4269-9659-926C48A63D16}"
+	ProjectSection(SolutionItems) = preProject
+		examples\ai-benchmark\analyze_run.py = examples\ai-benchmark\analyze_run.py
+		examples\ai-benchmark\build_config.py = examples\ai-benchmark\build_config.py
+		examples\ai-benchmark\grpc-scenario-dialect.py = examples\ai-benchmark\grpc-scenario-dialect.py
+		examples\ai-benchmark\install-protobuf-cmake-config.sh = examples\ai-benchmark\install-protobuf-cmake-config.sh
+		examples\ai-benchmark\measure.py = examples\ai-benchmark\measure.py
+		examples\ai-benchmark\repeat_report.py = examples\ai-benchmark\repeat_report.py
+		examples\ai-benchmark\run-benchmark.ps1 = examples\ai-benchmark\run-benchmark.ps1
+		examples\ai-benchmark\runbook-demo.md = examples\ai-benchmark\runbook-demo.md
+		examples\ai-benchmark\verify_run.py = examples\ai-benchmark\verify_run.py
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test-prompts", "test-prompts", "{C9504D14-D07B-494F-AA07-6B796BD1B386}"
+	ProjectSection(SolutionItems) = preProject
+		examples\ai-benchmark\areg-ai-prompt-template.txt = examples\ai-benchmark\areg-ai-prompt-template.txt
+		examples\ai-benchmark\areg-coffeemachine-prompt.txt = examples\ai-benchmark\areg-coffeemachine-prompt.txt
+		examples\ai-benchmark\grpc-ai-prompt-template.txt = examples\ai-benchmark\grpc-ai-prompt-template.txt
+		examples\ai-benchmark\grpc-coffeemachine-prompt.txt = examples\ai-benchmark\grpc-coffeemachine-prompt.txt
+		examples\ai-benchmark\prompt-atm-fsm.md = examples\ai-benchmark\prompt-atm-fsm.md
+		examples\ai-benchmark\prompt-atm.md = examples\ai-benchmark\prompt-atm.md
+		examples\ai-benchmark\prompt-camera.md = examples\ai-benchmark\prompt-camera.md
+		examples\ai-benchmark\prompt-chargepoint.md = examples\ai-benchmark\prompt-chargepoint.md
+		examples\ai-benchmark\prompt-coffeemachine.md = examples\ai-benchmark\prompt-coffeemachine.md
+		examples\ai-benchmark\prompt-elevator.md = examples\ai-benchmark\prompt-elevator.md
+		examples\ai-benchmark\prompt-greenhouse.md = examples\ai-benchmark\prompt-greenhouse.md
+		examples\ai-benchmark\prompt-orderdesk.md = examples\ai-benchmark\prompt-orderdesk.md
+		examples\ai-benchmark\prompt-printscan.md = examples\ai-benchmark\prompt-printscan.md
+		examples\ai-benchmark\prompt-sensorgateway.md = examples\ai-benchmark\prompt-sensorgateway.md
+		examples\ai-benchmark\prompt-tempalarm.md = examples\ai-benchmark\prompt-tempalarm.md
+		examples\ai-benchmark\prompt-washer.md = examples\ai-benchmark\prompt-washer.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1881,6 +1928,9 @@ Global
 		{5818A150-5879-447C-9394-FC2A04BA03EB} = {FD2627E1-B59E-43DB-ACA9-EF6E5AAFD741}
 		{D63ADF53-2A56-4439-9103-CA25836F57E4} = {FD2627E1-B59E-43DB-ACA9-EF6E5AAFD741}
 		{4B8E2190-2784-4DF9-BEB2-15ED65EDCD2A} = {FD2627E1-B59E-43DB-ACA9-EF6E5AAFD741}
+		{51F437EE-1E65-477E-95A4-FD980CF3997C} = {07BFF46A-D4BC-4FAD-9727-D959755BFBAC}
+		{F5E9EA4E-8E18-4269-9659-926C48A63D16} = {51F437EE-1E65-477E-95A4-FD980CF3997C}
+		{C9504D14-D07B-494F-AA07-6B796BD1B386} = {51F437EE-1E65-477E-95A4-FD980CF3997C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1034084F-74DD-4B33-86E3-D8038C748F48}

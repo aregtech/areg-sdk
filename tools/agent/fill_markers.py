@@ -611,13 +611,13 @@ def main():
         return 0
     named = set(name for name, _ in sections) | set(blank)
     orphans = [entry for entry in left if entry[0] not in named]
-    print('  {} marker(s) still open; {} carries a section for {} of them'
-          .format(len(left), args.bodies.replace(os.sep, '/'), len(left) - len(orphans)))
     for name, path in orphans[:SHOWN]:
         print('  no section for: {} in {}'.format(name, path.replace(os.sep, '/')))
     if len(orphans) > SHOWN:
-        print('  and {} more the worksheet does not name; gen_skeleton.py --todos '
-              'lists them'.format(len(orphans) - SHOWN))
+        print('  and {} more; gen_skeleton.py --todos lists them'
+              .format(len(orphans) - SHOWN))
+    print('  {} marker(s) still open; {} carries a section for {} of them'
+          .format(len(left), args.bodies.replace(os.sep, '/'), len(left) - len(orphans)))
     return 0
 
 

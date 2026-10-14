@@ -378,6 +378,31 @@ def answer_constant(headers, name):
     return found
 
 
+def answer_macro(headers, name):
+    """The first definition of a macro of this name, with its header and brief."""
+    pattern = re.compile(r'^\s*#\s*define\s+' + re.escape(name) + r'(\([^)]*\))?[ \t]+\S')
+    for header in headers:
+        with open(header.path, encoding='utf-8', errors='ignore') as handle:
+            lines = handle.read().splitlines()
+        for number, line in enumerate(lines):
+            hit = pattern.match(line)
+            if hit is None:
+                continue
+            brief = ''
+            for back in range(number - 1, max(number - 8, -1), -1):
+                found = re.search(r'\\brief\s+(.*)', lines[back])
+                if found:
+                    brief = found.group(1).strip()
+                    break
+                if not lines[back].strip().startswith(('*', '/**')):
+                    break
+            print('{}{} -- a macro  ({})'.format(name, hit.group(1) or '', header.relative))
+            if brief:
+                print('  {}'.format(brief))
+            return True
+    return False
+
+
 def role_in(signature, name):
     """What a name is where it appears in a declaration.
 
@@ -627,7 +652,8 @@ def main():
             answered = (answer_member(headers, name, args.full)
                         or answer_class(headers, name, args.full)
                         or answer_enum(headers, name)
-                        or answer_constant(headers, name))
+                        or answer_constant(headers, name)
+                        or answer_macro(headers, name))
         if not answered:
             if answer_generated(name):
                 continue
@@ -670,7 +696,7 @@ def main():
                                         'namespace areg', path))
                 print('  {}'.format(signature))
                 continue
-            print('"{}" is not a member, a class, an enumeration or a constant in the '
+            print('"{}" is not a member, a class, an enumeration, a constant or a macro in the '
                   'public areg headers, and appears in no declaration they carry.'
                   .format(name))
             instead = REPLACED_BY.get(name)
