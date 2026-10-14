@@ -309,6 +309,53 @@ def write_expectations(path, filled):
         handle.write('\n')
 
 
+STACK_OUTPUT = re.compile(r'\b(?:GLOBAL|LOG)_[A-Z]+\s*\(|\bprintf\s*\(|\bputs\s*\(|\bcout\b')
+STACK_BRANCH = re.compile(r'\b(?:if|else|case|switch|fail|stay|return|go_to)\b|\?')
+STACK_STRING = re.compile(r'"((?:[^"\\\n]|\\.)*)"')
+STACK_LEAST = 4
+
+
+def all_expectations(path, filled):
+    """Every regular expression the scenario file holds once this pass has written."""
+    patterns = []
+    try:
+        with open(path, encoding='utf-8') as handle:
+            scenarios = json.load(handle)['scenarios']
+    except (ValueError, OSError, KeyError, TypeError):
+        return patterns
+    for outer, scenario in enumerate(scenarios):
+        for inner, spec in enumerate(scenario.get('procs', [])):
+            for text in filled.get((outer, inner), spec.get('expect', [])):
+                try:
+                    patterns.append(re.compile(text))
+                except (re.error, TypeError):
+                    pass
+    return patterns
+
+
+def stacked_lines(sections, patterns):
+    """[(section, count)] of step checks that log STACK_LEAST or more expected lines as
+    fixed text one after another, with no branch or check between them."""
+    found = []
+    for name, body in sections:
+        if not name.rpartition(':')[2].startswith('step_'):
+            continue
+        run, most = set(), 0
+        code = '\n'.join(line.split('//')[0] for line in body)
+        for statement in re.split(r'[;{}]', code):
+            text = STACK_STRING.search(statement)
+            hits = [index for index, pattern in enumerate(patterns)
+                    if text and '%' not in text.group(1) and pattern.search(text.group(1))]
+            if hits and STACK_OUTPUT.search(statement) and not STACK_BRANCH.search(statement):
+                run.add(hits[0])
+                most = max(most, len(run))
+            elif statement.strip():
+                run = set()
+        if most >= STACK_LEAST:
+            found.append((name, most))
+    return found
+
+
 def held_expectations(path, place):
     """The regular expressions a process or a stop holds now, as a list."""
     with open(path, encoding='utf-8') as handle:
@@ -522,6 +569,13 @@ def main():
              'every arrival would reach the owner twice. Leave the call out: the body '
              'holds only what the arrival means to the owner. Nothing was written'
              .format(args.bodies, '; '.join(doubled)))
+    stacked = stacked_lines(sections, all_expectations(args.scenarios, expected))
+    if stacked:
+        fail('{}: section "{}" logs {} lines of scenarios.json\'s expectations one after '
+             'another, with nothing compared between them. A line proves its requirement '
+             'only when the check that compared it prints it: give each its own step '
+             '(design.json "steps") or its own check, and print it after that check. '
+             'Nothing was written'.format(args.bodies, stacked[0][0], stacked[0][1]))
     if forwarded:
         print('  {} body(ies) end with the mOwner call the generated code makes right '
               'after the body; that last line is left out of each, so every arrival '
