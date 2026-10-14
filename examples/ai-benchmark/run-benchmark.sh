@@ -529,20 +529,13 @@ ${stray}"
 Additionally, for this run only: a review of the documentation, written last, after
 the report. It must not change what you built.
 
-- **The documents you read or fetched, in order**, each with what pointed to it: a
-  line of the task, another document, a command's output, or nothing.
 - **Every fact the task needed that no document stated** -- a name, a signature, a
   rule -- and where you expected to find it.
 - **Every place two sources disagree**, naming both, and which one you followed.
 - **Anything you searched for and did not find** -- a signature, a rule, an example
   -- and where you searched first.
-- **Every file under the project's own src/ or build/ you read or searched**, the
-  question it answered, and whether your .proto or the stubs generated from it
-  already answered it.
-- **Every document you read before the first build**, and the line of the task that
-  pointed to it.
-- **Every command you ran to look up a syntax, a name or a signature**, and whether
-  its output was enough.
+- **Every file under the project's own src/ or build/ you read**, for a question your
+  .proto or the stubs generated from it did not answer.
 
 Be specific and short: a list, not prose."
     elif [ -n "${DEBRIEF}" ]; then
@@ -551,20 +544,14 @@ Be specific and short: a list, not prose."
 Additionally, for this run only: a review of the documentation, written last, after
 the report. It must not change what you built.
 
-- **The pages you read, in order**, each with the routing-table row or tool output
-  that pointed to it, or \"none\".
 - **Every fact the task needed that no page stated** -- a name, a signature, a rule
   -- and the page that should have stated it.
 - **Every place two sources disagree**, naming both, and which one you followed.
 - **Every marker whose one-line hint was not enough**, and what it should say.
 - **Anything you searched for and did not find** -- a signature, a rule, an example
   -- and where you searched first.
-- **Every file under the project's src/ or build/ you read or searched**, the
-  question it answered, and whether worksheet.txt already answered it.
-- **Every page you read before the first build_project.py call**, and the line of
-  the task or AGENTS.md that pointed to it.
-- **Every tool you ran to look up a syntax, a name or a signature**, and whether its
-  output was enough.
+- **Every file under the project's src/ or build/ you read**, for a question
+  worksheet.txt did not answer.
 
 Be specific and short: a list, not prose."
     fi

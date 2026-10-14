@@ -238,7 +238,7 @@ the project already holds, named by `"path"` from the project root and not repea
 
 A hosted major version past the pinned `"version"` does not compile.
 
-Timed, hosted from two states, run N times: `gen_docs.py --example machine`;
+Timed, hosted from two states, run N times: `gen_docs.py --example submachine`;
 `recipes/13-submachine/`.
 
 ### Where a piece of data lives

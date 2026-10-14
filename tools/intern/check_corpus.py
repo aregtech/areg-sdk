@@ -2930,6 +2930,9 @@ def run():
     check_example_machine(report)
     check_example_programs(report)
     check_driver_client_early(report)
+    check_shared_client(report)
+    check_own_sources(report)
+    check_watcher_connect(report)
     check_role_steps(report)
     check_used_clients(report)
     check_removed_marker_body(report)
@@ -3282,7 +3285,7 @@ def check_worksheet_names_update_order(report):
         def attribute_setter(self, kind, flag):
             return 'const {} &'.format(kind)
 
-        def generated_params(self, kind, name):
+        def generated_params(self, kind, name, role='call'):
             return ''
 
     class Sends(Iface):
@@ -4102,7 +4105,7 @@ def check_feature_router(report):
                                 'every feature: {}'.format(', '.join(unnamed) or 'the flag'))
         return
     optional = {('machines',), ('interfaces', 'timers'), ('interfaces', 'workers'),
-                ('interfaces', 'driver'), ('interfaces', 'steps')}
+                ('interfaces', 'driver'), ('interfaces', 'steps'), ('sources',)}
     routed = set(block for blocks in gen_docs.FEATURES.values() for block in blocks)
     if routed != optional:
         report.fail('features', 'the feature blocks are not the optional ones; core cut: '
@@ -4902,19 +4905,19 @@ def check_example_one_call(report):
     """The runbook names one gen_docs.py --example call that prints two designs."""
     runbook = ' '.join(read('docs', 'agent', '01-runbook.md').split())
     if not all(part in runbook for part in ('`gen_docs.py --example service`, adding `programs`',
-                                            'and `machine` when a machine reuses')):
+                                            'and `submachine` when a machine hosts')):
         report.fail('example-one-call', '01-runbook.md section 3 does not name "--example '
-                    'service" with "programs" and "machine" added, so a design asks twice')
+                    'service" with "programs" and "submachine" added, so a design asks twice')
         return
     done = subprocess.run([sys.executable, os.path.join(ROOT, 'tools', 'agent', 'gen_docs.py'),
-                           '--example', 'service', 'programs', 'machine'], capture_output=True,
+                           '--example', 'service', 'programs', 'submachine'], capture_output=True,
                           text=True, stdin=subprocess.DEVNULL)
     heads = [line for line in done.stdout.splitlines() if line.startswith('== gen_docs.py')]
     if done.returncode != 0 or len(heads) != 3:
-        report.fail('example-one-call', 'gen_docs.py --example service programs machine does '
+        report.fail('example-one-call', 'gen_docs.py --example service programs submachine does '
                     'not print the three designs, each under its own head line')
         return
-    report.ok('example-one-call', 'one --example call prints the service, programs and machine '
+    report.ok('example-one-call', 'one --example call prints the service, programs and submachine '
               'designs, and the runbook names it')
 
 
@@ -5336,11 +5339,23 @@ def check_method_names(report):
                                         'a call on another object, as a member no .siml '
                                         'declares')
             return
+        with open(consumer, 'w', encoding='utf-8', newline='\n') as handle:
+            handle.write(text)
+        with open(os.path.join(holder, 'src', 'consumer', 'Pump.hpp'), 'w',
+                  encoding='utf-8', newline='\n') as handle:
+            handle.write('class Pump\n{\npublic:\n    void request_more();\n'
+                         '    void run() { request_more(); }\n};\n')
+        if 'P-02' in contract():
+            report.fail('method-names', 'check_contract.py reports request_more() of a '
+                                        'class of the project\'s own, built on no '
+                                        'generated base, as a member no .siml declares')
+            return
     finally:
         shutil.rmtree(holder, ignore_errors=True)
     report.ok('method-names', 'a method keeps its document spelling after its prefix in '
-                              'api.json, the skeleton and the contract check, and a '
-                              'snake-cased spelling of it is reported')
+                              'api.json, the skeleton and the contract check, a '
+                              'snake-cased spelling of it is reported, and a class of '
+                              'the project\'s own may name a method request_*')
 
 
 COLLIDING_SIML = """<?xml version="1.0" encoding="utf-8"?>
@@ -8962,18 +8977,18 @@ def check_generated_prefix(report):
 
 
 def check_example_machine(report):
-    """--example machine is a design gen_docs.py accepts with no note, whose hosted machine
+    """--example submachine is a design gen_docs.py accepts with no note, whose hosted machine
     runs from two states and keeps its own timer, within the size of one call."""
     tool = os.path.join(ROOT, 'tools', 'agent', 'gen_docs.py')
-    example = subprocess.run([sys.executable, tool, '--example', 'machine'],
+    example = subprocess.run([sys.executable, tool, '--example', 'submachine'],
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                              universal_newlines=True)
     if example.returncode != 0:
-        report.fail('example-machine', 'gen_docs.py --example machine does not run')
+        report.fail('example-machine', 'gen_docs.py --example submachine does not run')
         return
     if (len(example.stdout.splitlines()) > EXAMPLE_LINES
             or len(example.stdout.encode('utf-8')) > EXAMPLE_BYTES):
-        report.fail('example-machine', 'gen_docs.py --example machine is over the size '
+        report.fail('example-machine', 'gen_docs.py --example submachine is over the size '
                     'a run reads in one call')
         return
     design = json.loads(example.stdout)
@@ -8986,7 +9001,7 @@ def check_example_machine(report):
     reused = [name for name, states in hosts.items()
               if len(states) > 1 and machines.get(name, {}).get('timers')]
     if not reused:
-        report.fail('example-machine', 'gen_docs.py --example machine no longer shows a '
+        report.fail('example-machine', 'gen_docs.py --example submachine no longer shows a '
                     'machine with its own timer hosted from two states')
         return
     holder = tempfile.mkdtemp(prefix='areg-example-machine-')
@@ -9001,11 +9016,11 @@ def check_example_machine(report):
     notes = [line.strip() for line in reviewed.stdout.splitlines()
              if line.lstrip().startswith('note ')]
     if reviewed.returncode != 0 or notes:
-        report.fail('example-machine', 'gen_docs.py --example machine earns a refusal or '
+        report.fail('example-machine', 'gen_docs.py --example submachine earns a refusal or '
                     'a design note, and a run copies both: ' +
                     (notes[0] if notes else reviewed.stdout.strip()[-300:]))
         return
-    report.ok('example-machine', 'gen_docs.py --example machine reviews clean, with "{}" '
+    report.ok('example-machine', 'gen_docs.py --example submachine reviews clean, with "{}" '
               'hosted from {}'.format(reused[0], ', '.join(hosts[reused[0]])))
 
 
@@ -9113,6 +9128,194 @@ def check_driver_client_early(report):
         return
     report.ok('client-early', 'a driver\'s used client keeps an update that arrives before '
               'the steps begin and runs it as they begin')
+
+
+def check_shared_client(report):
+    """Two components of one program that use one service each get a client class of
+    their own, and the program a used service runs in is the peer-lost scenario's loss."""
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    example = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                              '--example', 'programs'], stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE, universal_newlines=True)
+    if example.returncode != 0:
+        report.fail('shared-client', 'gen_docs.py --example programs does not run')
+        return
+    design = json.loads(example.stdout)
+    design.pop('deployments', None)
+    programs = dict((program['name'], program) for program in design['programs'])
+    programs['desk']['components'] += programs['customer']['components']
+    design['programs'] = [programs['warehouse'], programs['desk']]
+    holder = tempfile.mkdtemp(prefix='areg-shared-client-')
+    try:
+        if subprocess.run([sys.executable, os.path.join(tools, 'setup_project.py'),
+                           '--name', 'shared', '--root', holder, '--mode', 'ipc',
+                           '--sdk-root', ROOT, '--quiet'],
+                          capture_output=True, text=True).returncode != 0:
+            report.fail('shared-client', 'the scaffold no longer lays out a project')
+            return
+        with open(os.path.join(holder, 'design.json'), 'w', encoding='utf-8') as handle:
+            json.dump(design, handle)
+        for command in (['gen_docs.py', '--outdir', 'src/services', '--force', '--chained',
+                         '--spec', 'design.json'],
+                        ['gen_skeleton.py', '--programs', '--services', 'src/services',
+                         '--force', '--spec', 'design.json']):
+            done = subprocess.run([sys.executable, os.path.join(tools, command[0])] +
+                                  command[1:], cwd=holder, stdout=subprocess.PIPE,
+                                  stderr=subprocess.STDOUT, universal_newlines=True)
+            if done.returncode != 0:
+                report.fail('shared-client', '{} refuses a provider and a driver of one '
+                            'program that both use one service: {}'.format(
+                                command[0], done.stdout.strip()[-300:]))
+                return
+        clients = sorted(os.path.basename(path) for path in
+                         glob.glob(os.path.join(holder, 'src', 'desk', '*StockServiceClient.hpp')))
+        with open(os.path.join(holder, 'scenarios.json'), encoding='utf-8') as handle:
+            scenarios = json.load(handle)['scenarios']
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    if len(clients) != 2:
+        report.fail('shared-client', 'two components of one program that use one service '
+                    'do not get a client class each: {}'.format(clients))
+        return
+    lost = [scenario for scenario in scenarios if scenario.get('name') == 'peer-lost']
+    if not lost or lost[0].get('stop', {}).get('proc') != 'warehouse':
+        report.fail('shared-client', 'with the driven provider in the lead\'s own program, '
+                    'no peer-lost scenario kills the program of the service it uses')
+        return
+    report.ok('shared-client', 'two components of one program using one service get {} '
+              'and peer-lost kills the program of that service'.format(' and '.join(clients)))
+
+
+def check_watcher_connect(report):
+    """A watching component takes "connect_seconds" as its own connect deadline; any other
+    component carrying it is refused, naming where its wait is set."""
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    example = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                              '--example', 'programs'], stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE, universal_newlines=True)
+    if example.returncode != 0:
+        report.fail('watcher-connect', 'gen_docs.py --example programs does not run')
+        return
+    design = json.loads(example.stdout)
+    design.pop('deployments', None)
+    components = [c for p in design['programs'] for c in p['components']]
+    watcher = next(c for c in components if c.get('watches'))
+    watcher['connect_seconds'] = 7
+    holder = tempfile.mkdtemp(prefix='areg-watcher-connect-')
+    try:
+        if subprocess.run([sys.executable, os.path.join(tools, 'setup_project.py'),
+                           '--name', 'watch', '--root', holder, '--mode', 'ipc',
+                           '--sdk-root', ROOT, '--quiet'],
+                          capture_output=True, text=True).returncode != 0:
+            report.fail('watcher-connect', 'the scaffold no longer lays out a project')
+            return
+
+        def generate():
+            with open(os.path.join(holder, 'design.json'), 'w', encoding='utf-8') as handle:
+                json.dump(design, handle)
+            said = ''
+            for command in (['gen_docs.py', '--outdir', 'src/services', '--force',
+                             '--chained', '--spec', 'design.json'],
+                            ['gen_skeleton.py', '--programs', '--services', 'src/services',
+                             '--force', '--spec', 'design.json']):
+                done = subprocess.run([sys.executable, os.path.join(tools, command[0])] +
+                                      command[1:], cwd=holder, stdout=subprocess.PIPE,
+                                      stderr=subprocess.STDOUT, universal_newlines=True)
+                said += done.stdout
+                if done.returncode != 0:
+                    return False, said
+            return True, said
+
+        made, said = generate()
+        texts = ''
+        for path in glob.glob(os.path.join(holder, 'src', '*', '*Watcher.hpp')):
+            with open(path, encoding='utf-8') as handle:
+                texts += handle.read()
+        del watcher['connect_seconds']
+        next(c for c in components if c.get('provides'))['connect_seconds'] = 7
+        refused, why = generate()
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    if not made or 'cConnectSeconds{ 7 }' not in texts:
+        report.fail('watcher-connect', 'a watching component\'s "connect_seconds" is refused '
+                    'or not its connect deadline: {}'.format(said.strip()[-200:]))
+        return
+    if refused or 'only a component that watches' not in why:
+        report.fail('watcher-connect', 'a providing component carrying "connect_seconds" is '
+                    'not refused by name')
+        return
+    report.ok('watcher-connect', 'a watcher takes "connect_seconds" as its connect deadline; '
+              'another component carrying it is refused, naming where its wait is set')
+
+
+def check_own_sources(report):
+    """A file design.json "sources" names is written as one worksheet section, its .cpp is
+    compiled into the program of its folder, and a folder no program compiles is refused."""
+    tools = os.path.join(ROOT, 'tools', 'agent')
+    example = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
+                              '--example', 'programs'], stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE, universal_newlines=True)
+    if example.returncode != 0:
+        report.fail('own-sources', 'gen_docs.py --example programs does not run')
+        return
+    design = json.loads(example.stdout)
+    design.pop('deployments', None)
+    design['sources'] = [{'file': 'desk/Ledger.hpp', 'description': 'the order ledger'},
+                         {'file': 'desk/Ledger.cpp'}]
+
+    def generate(holder):
+        with open(os.path.join(holder, 'design.json'), 'w', encoding='utf-8') as handle:
+            json.dump(design, handle)
+        for command in (['gen_docs.py', '--outdir', 'src/services', '--force', '--chained',
+                         '--spec', 'design.json'],
+                        ['gen_skeleton.py', '--programs', '--services', 'src/services',
+                         '--force', '--spec', 'design.json']):
+            done = subprocess.run([sys.executable, os.path.join(tools, command[0])] +
+                                  command[1:], cwd=holder, stdout=subprocess.PIPE,
+                                  stderr=subprocess.STDOUT, universal_newlines=True)
+            if done.returncode != 0:
+                return done.stdout
+        return None
+
+    holder = tempfile.mkdtemp(prefix='areg-own-sources-')
+    try:
+        if subprocess.run([sys.executable, os.path.join(tools, 'setup_project.py'),
+                           '--name', 'own', '--root', holder, '--mode', 'ipc',
+                           '--sdk-root', ROOT, '--quiet'],
+                          capture_output=True, text=True).returncode != 0:
+            report.fail('own-sources', 'the scaffold no longer lays out a project')
+            return
+        refused = generate(holder)
+        if refused is not None:
+            report.fail('own-sources', 'a design with "sources" is refused: {}'
+                        .format(refused.strip()[-300:]))
+            return
+        with open(os.path.join(holder, 'src', 'CMakeLists.txt'), encoding='utf-8') as handle:
+            cmake = handle.read()
+        with open(os.path.join(holder, 'worksheet.txt'), encoding='utf-8') as handle:
+            sheet = handle.read()
+        header = os.path.isfile(os.path.join(holder, 'src', 'desk', 'Ledger.hpp'))
+        design['sources'] = [{'file': 'nowhere/Ledger.hpp'}]
+        wrong = generate(holder) or ''
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    line = next((l for l in cmake.splitlines() if 'Ledger.cpp' in l), '')
+    section = sheet.split('== Ledger_hpp', 1)[-1].split('\n== ', 1)[0]
+    if not header or '_desk ' not in line:
+        report.fail('own-sources', 'a "sources" file is not written, or its .cpp is not '
+                    'compiled into its program: {}'.format(line or 'no line names it'))
+        return
+    if '== Ledger_hpp' not in sheet or 'the order ledger' not in section \
+            or '"src/desk/Ledger.hpp"' not in section or 'private' in section:
+        report.fail('own-sources', 'the worksheet section of a "sources" header does not '
+                    'say what it is and how it is included, or carries a class\'s notes')
+        return
+    if 'no program compiles src/nowhere/' not in wrong:
+        report.fail('own-sources', 'a "sources" file in a folder no program compiles is not '
+                    'refused by name')
+        return
+    report.ok('own-sources', 'a "sources" file is one worksheet section, compiled into the '
+              'program of its folder; an unknown folder is refused')
 
 
 def check_role_steps(report):

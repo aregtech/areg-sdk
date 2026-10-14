@@ -59,7 +59,8 @@ thread macros' watchdog and stack arguments (`37-threads.md` section 1).
 
 ## 3. Created by hand
 
-No macro and no `worker_thread_consumer()`. `create_worker_thread()` returns once the
+Its classes are files of design.json `"sources"` (runbook section 5): no macro and no
+`worker_thread_consumer()`. `create_worker_thread()` returns once the
 worker accepts events, or `nullptr`:
 
 ```cpp
@@ -99,9 +100,8 @@ removed where sections 1-2 say; `gen_docs.py --example worker` prints a whole de
 | `on_set_paused` (worker) | the worker | its own members |
 
 A provider body calls `send_set_paused(paused)`; it returns false until the worker has
-started. No `startup`, `shutdown` or `includes` line is needed. Each event goes to the
-thread that receives it, so none arrives after the provider removed its listener at
-shutdown; two roles of such a provider run in threads of their own.
+started. No `startup`, `shutdown` or `includes` line is needed. Two roles of such a
+provider run in threads of their own.
 
 ## 5. Who sends to whom
 

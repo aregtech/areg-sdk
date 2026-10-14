@@ -775,7 +775,26 @@ def body_range(lines, start):
     return len(lines) - 1
 
 
-def check_file(path, lines, known, findings):
+# A class built on a generated base: a provider, a consumer or a client of a service.
+SERVICE_BASE_RE = re.compile(r'\b\w+(?:ProviderBase|ConsumerBase|Stub|ClientBase)\b')
+
+
+def serves_service(path, text, read):
+    """Whether a source or the header of the same name names a generated base."""
+    if SERVICE_BASE_RE.search(text):
+        return True
+    stem = os.path.splitext(path)[0]
+    for suffix in ('.hpp', '.h'):
+        if os.path.isfile(stem + suffix):
+            header = read(stem + suffix)
+            if header and SERVICE_BASE_RE.search(header):
+                return True
+    return False
+
+
+def check_file(path, lines, known, findings, serves=True):
+    """serves: the file or its header names a generated base, so its own members are
+    the ones the service documents generate."""
     in_model = False
     model_roles = {}
     handled = set()
@@ -928,7 +947,7 @@ def check_file(path, lines, known, findings):
                         'log macro needs %s.as_string() for %%s' % (var, var)))
                     break
 
-        if known:
+        if known and serves:
             match = OVERRIDE_RE.search(line) or QUALIFIED_RE.search(line)
             if match and GENERATED_RE.match(match.group(1)) \
                     and match.group(1) not in known:
@@ -1937,7 +1956,8 @@ def main():
         text = read(path)
         if text is None:
             continue
-        check_file(path, text.splitlines(), known, findings)
+        check_file(path, text.splitlines(), known, findings,
+                   serves_service(path, text, read))
     check_roles(sources, findings, read)
     check_threads(sources, findings, read)
     check_sources_declared(base, sources, findings, read)

@@ -345,7 +345,8 @@ def edit_refusal(root, target, path, generated_dirs):
     if not inside:
         return 'the file is outside the project root {}'.format(root)
     if not os.path.isfile(path) and rel != fill_markers.FIX_FILE:
-        return 'no such file. --write writes a whole file'
+        return 'no such file. --write writes a whole file; a file of your own is an entry ' \
+               'of design.json "sources"'
     if rel == 'worksheet.txt':
         return 'the generator rewrites it on every generation: change design.json or bodies.txt'
     for where, what in generated_dirs:

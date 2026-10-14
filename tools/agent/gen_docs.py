@@ -86,11 +86,12 @@ NOTE = '#|'
 
 # Every key each kind of spec object may carry. Any other key is refused.
 KEYS = {
-    'spec': ('datatypes', 'interfaces', 'machines', 'programs', 'deployments'),
+    'spec': ('datatypes', 'interfaces', 'machines', 'programs', 'deployments', 'sources'),
+    'source': ('file', 'description'),
     'deployment': ('name', 'description', 'place'),
     'program': ('name', 'description', 'components'),
     'component': ('name', 'provides', 'roles', 'drives', 'watches', 'role', 'uses', 'thread',
-                  'description'),
+                  'connect_seconds', 'description'),
     'use': ('service', 'role', 'roles', 'connect_seconds'),
     'datatypes': ('name', 'description', 'version', 'declare', 'includes'),
     'interface': ('name', 'category', 'description', 'version', 'types', 'attributes',
@@ -139,13 +140,13 @@ SHAPES = dict(
         'constants', 'declare', 'do', 'entry', 'events', 'exit', 'fields', 'includes',
         'interfaces', 'machines', 'params', 'requests', 'responses', 'states', 'steps',
         'submachines', 'timers', 'transitions', 'triggers', 'types', 'values',
-        'programs', 'components', 'uses', 'roles', 'deployments', 'workers')] +
+        'programs', 'components', 'uses', 'roles', 'deployments', 'workers', 'sources')] +
     [(key, (str, 'a string')) for key in (
         'alias', 'answer_description', 'await', 'body', 'call', 'category', 'container',
         'derives', 'description', 'final_event', 'header', 'implement', 'initial', 'key',
         'kind', 'location', 'name', 'namespace', 'notify', 'object', 'of', 'on', 'path',
         'return', 'send', 'stop', 'threading', 'to', 'type', 'provides', 'drives',
-        'watches', 'role', 'service', 'thread')] +
+        'watches', 'role', 'service', 'thread', 'file')] +
     [(key, (dict, 'an object, {...}')) for key in ('datatypes', 'driver', 'set', 'until',
                                                      'place')])
 SINGULAR = {'attributes': 'attribute', 'requests': 'request', 'responses': 'response',
@@ -156,7 +157,8 @@ SINGULAR = {'attributes': 'attribute', 'requests': 'request', 'responses': 'resp
             'conditions': 'condition', 'submachines': 'submachine', 'steps': 'step',
             'states': 'state', 'interfaces': 'service interface', 'machines': 'state machine',
             'datatypes': 'data type document', 'programs': 'program',
-            'components': 'component', 'uses': 'used service', 'workers': 'worker'}
+            'components': 'component', 'uses': 'used service', 'workers': 'worker',
+            'sources': 'source file'}
 
 
 # ----------------------------------------------------------------------------- shared
@@ -1155,6 +1157,29 @@ def check_shape(project):
                           ('submachines', 'submachine'), ('includes', 'include')):
             check_list(spec, key, kind, where)
         check_states(spec.get('states'), where)
+    check_sources(project)
+
+
+# A file of the project's own under src/: <dir>/<Name>.hpp or .cpp, or <Name>.hpp flat.
+SOURCE_FILE = re.compile(r'^(?:[A-Za-z_]\w*/)?[A-Za-z_]\w*\.(?:hpp|h|cpp)$')
+
+
+def check_sources(project):
+    """Every "sources" entry names one file of the project's own, once."""
+    seen = set()
+    for entry in project.get('sources') or []:
+        if not isinstance(entry, dict):
+            fail('"sources" is a list of objects: {"file": "<dir>/<Name>.hpp", '
+                 '"description": "..."}')
+        check_keys(entry, KEYS['source'], 'a file of "sources"')
+        name = entry.get('file')
+        if not isinstance(name, str) or not SOURCE_FILE.match(name):
+            fail('"sources" names {}: a file is "<dir>/<Name>.hpp" or "<dir>/<Name>.cpp", '
+                 '<dir> the folder under src/ of the program that compiles it'
+                 .format(json.dumps(name)))
+        if name in seen:
+            fail('"sources" names "{}" twice'.format(name))
+        seen.add(name)
 
 
 def entry_names(owner, key):
@@ -1583,7 +1608,7 @@ def write_template(path, features=None):
 def merge(specs):
     """One project from every spec file given."""
     project = {'datatypes': None, 'interfaces': [], 'machines': [], 'programs': [],
-               'deployments': []}
+               'deployments': [], 'sources': []}
     for path, spec in specs:
         if not isinstance(spec, dict):
             fail('{} is not a spec object'.format(path))
@@ -1601,6 +1626,7 @@ def merge(specs):
         project['machines'].extend(spec.get('machines') or [])
         project['programs'].extend(spec.get('programs') or [])
         project['deployments'].extend(spec.get('deployments') or [])
+        project['sources'].extend(spec.get('sources') or [])
     if not (project['datatypes'] or project['interfaces'] or project['machines']):
         fail('the spec describes no document')
     return project
@@ -1847,6 +1873,15 @@ def check_component(project, component, here, name, services, roles, provided, d
              'client member each'.format(where, kind, service))
     if kind == 'drives':
         driven.append((service, where))
+    if 'connect_seconds' in component:
+        seconds = component['connect_seconds']
+        if kind != 'watches':
+            fail('{} carries "connect_seconds", which only a component that watches takes. '
+                 'A driving component waits as its interface\'s "driver" block says; a used '
+                 'service takes it on its "uses" entry'.format(where))
+        if isinstance(seconds, bool) or not isinstance(seconds, int) or seconds < 0:
+            fail('{} gives "connect_seconds" as {!r}. It is a whole number of seconds the '
+                 'first connection is waited for, and 0 waits for ever'.format(where, seconds))
     for entry in component.get('uses') or []:
         if isinstance(entry, dict):
             if 'reconnect_seconds' in entry:
@@ -3050,7 +3085,8 @@ EXAMPLE_PROGRAMS = {
                      "place": {"stock": "desk/orders"}}]
 }
 
-# A timed piece of behaviour reused by a machine, printed by --example machine.
+# A timed piece of behaviour reused by a machine, printed by --example submachine.
+EXAMPLE_ALIASES = {'machine': 'submachine'}
 EXAMPLE_MACHINE = {
     NOTE: ["A press that feeds a part before every pass. Feed is one hosted machine, timed",
            "and limited to two tries, used from two states of Press. Each hosting state",
@@ -3373,7 +3409,7 @@ TEMPLATE = {
                    "composite it resumes; a transition of a state outside that composite",
                    "targets it to resume where it left off.",
                    "submachine: a machine of this design run inside this state instead of",
-                   "states; several states hosting it write it once (--example machine)."],
+                   "states; several states hosting it write it once (--example submachine)."],
             "name": "", "kind": "", "entry": [], "exit": [],
             "transitions": [{"on": "", "to": "", "guard": [], "set": {}, "do": []}],
             "initial": "", "final_event": "", "submachine": "",
@@ -3395,6 +3431,15 @@ TEMPLATE = {
                 "name": "", "kind": "final"
             }]
         }]
+    }],
+    "sources": [{
+        NOTE: ["A file of your own beside the generated ones: a class the generator writes no",
+               "shape for, such as a worker or a thread created by hand or the data of a custom",
+               "event. file is <dir>/<Name>.hpp or .cpp, <dir> the folder under src/ of the",
+               "program that compiles it (provider or consumer without programs, none in local",
+               "mode). Each gets one worksheet section that is the whole file, filled by the",
+               "bodies call like any other; a .cpp is compiled into that program."],
+        "file": "", "description": ""
     }]
 }
 
@@ -3407,6 +3452,7 @@ FEATURES = {
     'timers': [('interfaces', 'timers')],
     'workers': [('interfaces', 'workers')],
     'steps': [('interfaces', 'driver'), ('interfaces', 'steps')],
+    'sources': [('sources',)],
 }
 FEATURE_FILE = 'areg-project.json'
 
@@ -3459,6 +3505,8 @@ def feature_rules(feature):
 def used_features(project):
     """The features whose blocks a design fills."""
     used = {'machine'} if listed(project, 'machines') else set()
+    if listed(project, 'sources'):
+        used.add('sources')
     for interface in listed(project, 'interfaces'):
         for feature, blocks in FEATURES.items():
             if any(len(block) > 1 and interface.get(block[1]) for block in blocks):
@@ -3624,13 +3672,14 @@ def main():
                         help='a JSON description; pass it once per spec file')
     parser.add_argument('--outdir', help='the directory the documents are written to')
     parser.add_argument('--example', nargs='*', action='extend',
-                        choices=['service', 'programs', 'machine', 'worker'],
+                        choices=['service', 'programs', 'submachine', 'machine', 'worker'],
                         help='print a whole spec to copy, and write nothing; several names '
                              'print several in one call, "service" when none is named. '
                              '"programs" prints one of several services in several '
-                             'programs: roles, uses, threads and deployments. "machine" '
-                             'prints a timed machine hosted from two states and run N '
-                             'times. "worker" prints a provider with a worker thread')
+                             'programs: roles, uses, threads and deployments. "submachine" '
+                             '("machine" too) prints a timed machine hosted from two states '
+                             'and run N times; "service" already holds a machine. "worker" '
+                             'prints a provider with a worker thread')
     parser.add_argument('--template', metavar='PATH',
                         help='write a spec with every key present and empty, each section '
                              'with its note, to fill in. A file there that carries work is '
@@ -3656,12 +3705,13 @@ def main():
         # The same renderer the template uses: every value that fits stays on its
         # line. The page tells the agent to read this in one call, and one value per
         # line makes that call twice the size for nothing.
-        names = list(dict.fromkeys(args.example or ['service']))
+        names = list(dict.fromkeys(EXAMPLE_ALIASES.get(name, name)
+                                   for name in args.example or ['service']))
         for name in names:
             if len(names) > 1:
                 print('== gen_docs.py --example {}'.format(name))
             print(render({'service': EXAMPLE, 'programs': EXAMPLE_PROGRAMS,
-                          'machine': EXAMPLE_MACHINE, 'worker': EXAMPLE_WORKER}[name]))
+                          'submachine': EXAMPLE_MACHINE, 'worker': EXAMPLE_WORKER}[name]))
         return 0
     if args.rules is not None:
         print_rules(features_of(args.rules) or sorted(FEATURES))

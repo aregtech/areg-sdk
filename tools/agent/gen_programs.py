@@ -116,11 +116,14 @@ def components_of(project, specs, services_dir):
     # its file, so every class of the project gets a name of its own.
     watched = {}
     used = {}
+    used_here = {}
     for component in found:
         if component.kind == 'watches':
             watched[component.iface.name] = watched.get(component.iface.name, 0) + 1
         for iface, _ in component.uses:
             used[iface.name] = used.get(iface.name, 0) + 1
+            here = (component.program['name'], iface.name)
+            used_here[here] = used_here.get(here, 0) + 1
     for component in found:
         prefix = gs.pascal(component.program['name'])
         if component.kind == 'provides':
@@ -135,8 +138,12 @@ def components_of(project, specs, services_dir):
             component.cls = (prefix if watched[component.iface.name] > 1 else '') + \
                 component.iface.name + 'Watcher'
         component.clients = []
+        label = gs.pascal(component.name or (component.roles[0] if component.roles
+                                             else component.role) or '')
         for iface, roles in component.uses:
-            name = (prefix if used[iface.name] > 1 else '') + iface.name + 'Client'
+            here = used_here[(component.program['name'], iface.name)]
+            name = (prefix if used[iface.name] > here else '') + \
+                (label if here > 1 else '') + iface.name + 'Client'
             component.clients.append((iface, roles, name))
     names = {}
     for component in found:
@@ -658,7 +665,10 @@ def component_classes(component, specs, include_root):
         prelude = gs.QUIT_DECLARATION + (gs.HOLD_DECLARATION if component.hold else [])
         brief = 'Consumer of the {} service; it drives the scenario.'.format(iface.name)
     else:
-        lines = watcher_class(iface, component.cls, gs.driver_of(specs, iface))
+        driver = dict(gs.driver_of(specs, iface))
+        if 'connect_seconds' in component.entry:
+            driver['connect_seconds'] = component.entry['connect_seconds']
+        lines = watcher_class(iface, component.cls, driver)
         bases = ['#include "{}/{}ConsumerBase.hpp"'.format(include_root, iface.name)]
         slot, hint = 'watcher_state', None
         prelude = gs.QUIT_DECLARATION
@@ -997,10 +1007,21 @@ def write_scenarios(path, programs, components, project_name, specs, deployments
                                          **({'lead': True, 'exit': 0} if p.get('lead') else {}))
                                     for p in procs]})
     reconnect = gs.driver_of(specs, driver.iface)['reconnect_seconds'] if driver else 0
+    lost = next((c.program for c in components if c.kind == 'provides'
+                 and driver.role in c.roles), None) if driver else None
+    # A driven provider in the lead's own program: the peer lost is a program
+    # providing a service the lead uses.
+    if driver and (lost is None or lost is lead):
+        used = [(iface, set(roles)) for c in components if c.program is lead
+                for iface, roles in c.uses]
+        found = next(((c.program, iface) for c in components for iface, roles in used
+                      if c.kind == 'provides' and c.program is not lead
+                      and roles & set(c.roles)), None)
+        if found:
+            lost = found[0]
+            reconnect = gs.driver_of(specs, found[1])['reconnect_seconds']
     killed = None
     if driver and reconnect:
-        lost = next((c.program for c in components if c.kind == 'provides'
-                     and driver.role in c.roles), None)
         held = driver.hold or gs.held_step(list(driver.steps))
         trigger = '^step {}$'.format(re.escape(held['name'])) if held else \
             gs.STOP_TODO.format(gs.stop_slot(gs.PEER_LOST_SCENARIO))
@@ -1032,7 +1053,8 @@ def write_scenarios(path, programs, components, project_name, specs, deployments
           .format(len(order), lead['name']))
     print('  "expect" hole is a section of the worksheet. {}'
           .format('A peer-lost scenario was added, and needs nothing from you.' if killed
-                  else 'No peer-lost scenario was added.'))
+                  else 'No peer-lost scenario was added: one is a scenario with "stop", '
+                  'its keys in docs/agent/53-scenarios.md "The peer going away".'))
     if killed:
         print('  peer-lost kills {} and expects only {} to exit 1; its "stop" "proc" names'
               .format(killed, lead['name']))
@@ -1137,6 +1159,7 @@ def main(argv=None):
         main_file, mine = program_main(program, components, placements)
         produced.append(main_file)
         hosts[program['name']] = mine
+    produced += gs.own_sources(args.spec, set(program_dir(p) for p in programs))
 
     retained = [(name, gs.write(os.path.join(args.out, name), text, args.force))
                 for name, text in produced]

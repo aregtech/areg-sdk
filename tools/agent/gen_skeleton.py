@@ -812,8 +812,9 @@ def section_notes(sections, driven=(), connected=None, stepless=(), fresh=()):
             notes[(file_name, name)] = ANSWER_NOTE
     # A header carries its class's private block and its includes. Matching the
     # name instead takes "update_machine_state" with it.
-    for name, _, _, file_name, _ in sections:
-        if file_name.endswith('.hpp') and name.split(':')[-1] != 'includes':
+    for name, hint, _, file_name, _ in sections:
+        if file_name.endswith('.hpp') and name.split(':')[-1] != 'includes' \
+                and not hint.startswith(OWN_HEADER):
             notes[name] = STATE_NOTE
     names = [name for name, _, _, _, _ in sections]
     if 'peer_lost' in names:
@@ -1009,8 +1010,17 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
     if hold and not any('Step::' + hold['enum'] in text for _, text in produced):
         hold = None
     if steps:
+        driver_cls = next((os.path.basename(file_name)[:-4] for file_name, text in produced
+                           if file_name.endswith('.hpp') and 'enum class Step' in text), None)
         lines.append('#| The steps of the scenario, in order. go_to() takes one of these\n'
-                     '#| names; a step with no step_ section below has nothing to check:\n#|')
+                     '#| names; a step with no step_ section below has nothing to check.')
+        if driver_cls:
+            for line in textwrap.wrap(
+                    'A check while such a step runs, a wait, goes in the section of what it '
+                    'watches, testing mStep == Step::<Name>; a client of the driver tests '
+                    'mOwner.mStep == {}::Step::<Name>.'.format(driver_cls), 74):
+                lines.append('#| ' + line)
+        lines.append('#|')
         listed = with_hold(steps, hold)
         width = max(len(step['enum']) for step in listed) + 6
         for step in listed:
@@ -1041,11 +1051,18 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
         lines.append('#|')
     lines.append('#| The names these bodies may call, spelt as the generator emits them.\n'
                  '#| A name spelt in another namespace than the one below does not\n'
-                 '#| compile:\n#|')
+                 '#| compile. A generated consumer or client subscribes to everything\n'
+                 '#| its document declares as it connects; no body calls notify_on_*:\n#|')
+    # A type or a rule two documents share is listed under the first.
+    listed = set()
     for spec, doc in contracts or ((iface, document), (machine, machine_doc)):
         if spec is None:
             continue
         for line in contract_lines(spec, doc):
+            if len(line) >= 30 and line.startswith('  '):
+                if line in listed:
+                    continue
+                listed.add(line)
             lines.append(('#| ' + line).rstrip())
     lines.append('#|')
     if extra:
@@ -2038,8 +2055,7 @@ def contract_lines(iface, document):
                    .format(iface.spell('response', name),
                            iface.generated_params('response', name)))
     for name, params in iface.broadcasts:
-        out.append('  provider calls {}({}); consumer subscribes with '
-                   '{}(true)'
+        out.append('  provider calls {}({}); consumer overrides it, subscribed by {}(true)'
                    .format(iface.spell('broadcast', name),
                            iface.generated_params('broadcast', name),
                            iface.spell('broadcast', name, 'notify')))
@@ -2047,10 +2063,11 @@ def contract_lines(iface, document):
         spelled = iface.spell('attribute', name, 'get')
         cpp = iface.cpp_type(kind)[0]
         read = iface.passed_as(kind)
-        out.append('  provider calls {}({}); consumer subscribes with '
-                   '{}(true)'
+        out.append('  provider calls {}({}); consumer overrides {}({}), subscribed by {}(true)'
                    .format(iface.spell('attribute', name, 'set'),
                            iface.attribute_setter(kind, False),
+                           iface.spell('attribute', name, 'on_update'),
+                           iface.generated_params('attribute', name, 'on_update'),
                            iface.spell('attribute', name, 'notify')))
         # The last value is readable at any time, on both sides, and the two
         # readers do not have the same signature. Reading the generated header to
@@ -4591,6 +4608,42 @@ MAIN_INCLUDES = ['#include "areg/base/areg_global.h"',
 PROVIDER_DIR = {'ipc': 'provider/', 'local': ''}
 CONSUMER_DIR = {'ipc': 'consumer/', 'local': ''}
 
+
+# The hint of a header design.json "sources" names, which holds no generated class.
+OWN_HEADER = 'the whole header, '
+
+
+def own_sources(specs, folders):
+    """The files design.json "sources" names, as [(path under src/, text)], each one
+    marker that is the whole file. folders are the directories a program compiles."""
+    import gen_docs
+    entries = []
+    for path in specs or []:
+        spec, _skipped = gen_docs.load_spec(path)
+        entries += [entry for entry in spec.get('sources') or [] if isinstance(entry, dict)]
+    produced = []
+    for entry in entries:
+        name = entry.get('file', '')
+        folder = name.rsplit('/', 1)[0] + '/' if '/' in name else ''
+        if folder not in folders:
+            fail('"sources" names "{}", and no program compiles src/{}. A file goes in one '
+                 'of: {}'.format(name, folder or '(the top)', ', '.join(
+                     'src/' + each for each in sorted(folders)) or 'src/'))
+        stem, ext = os.path.splitext(os.path.basename(name))
+        marker = '{}_{}'.format(stem, ext[1:])
+        what = entry.get('description') or 'a file of your own'
+        if ext == '.cpp':
+            text = ('// TODO(you) {}: the whole source, {}\n').format(marker, what)
+        else:
+            guard = '{}_{}'.format(stem.upper(), ext[1:].upper())
+            text = ('#ifndef {guard}\n#define {guard}\n\n'
+                    '// TODO(you) {marker}: ' + OWN_HEADER + '{what}; included as '
+                    '"src/{name}"\n\n#endif // {guard}\n').format(
+                        guard=guard, marker=marker, what=what, name=name)
+        produced.append((name, text))
+    return produced
+
+
 # What the scaffold's CMakeLists.txt names, and what it becomes once the
 # application is written into its folders.
 SCAFFOLD_MAINS = {'provider.cpp': 'provider/main.cpp',
@@ -5176,6 +5229,8 @@ def main():
         produced = app_files(iface, args.mode, include_root, machine, steps,
                              driver_of(args.spec, iface), timers_of(args.spec, iface),
                              workers_of(args.spec, iface))
+        folders = set((PROVIDER_DIR[args.mode], CONSUMER_DIR[args.mode]))
+        produced += own_sources(args.spec, folders)
         retained = [(file_name,
                      write(os.path.join(args.out, file_name), text, args.force))
                     for file_name, text in produced]
@@ -5195,8 +5250,13 @@ def main():
                               os.path.relpath(args.machine).replace('\\', '/')))
             documents += [('addStateMachine', os.path.normpath(document).replace('\\', '/'))
                           for _, document, _ in machine.all_imports()]
-        changed = update_cmake(os.path.join(args.out, 'CMakeLists.txt'),
-                               app_sources(produced, args.mode), documents)
+        sources = app_sources(produced, args.mode)
+        for file_name, _ in own_sources(args.spec, folders):
+            folder = file_name.rsplit('/', 1)[0] + '/' if '/' in file_name else ''
+            listed = sources.setdefault(folder + 'main.cpp', [])
+            if file_name.endswith('.cpp') and file_name not in listed:
+                listed.append(file_name)
+        changed = update_cmake(os.path.join(args.out, 'CMakeLists.txt'), sources, documents)
         for change in changed or []:
             print('  {}/CMakeLists.txt: {}'.format(args.out.replace('\\', '/'), change))
         for path in ensure_config(args.out):

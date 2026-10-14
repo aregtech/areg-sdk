@@ -29,8 +29,9 @@ python3 <areg-sdk>/tools/agent/setup_project.py --name <project> --root . --mode
 `<list>`, comma-separated or `""`: what the design needs beyond services and data types,
 `machine` (an answer depends on what came before), `timers` (a provider's delayed or
 periodic work), `workers` (a provider's thread for slow, periodic or many tasks),
-`steps` (a program that drives a sequence and exits). `design.json` holds only those;
-`gen_docs.py --rules <name>` prints the rules of one left out.
+`steps` (a program that drives a sequence and exits), `sources` (files of your own beside
+the generated ones: a worker created by hand is one, not `workers`). `design.json` holds
+only those; `gen_docs.py --rules <name>` prints the rules of one left out.
 
 That writes a project that already builds and runs:
 
@@ -54,8 +55,8 @@ It restates this page and the SDK's `AGENTS.md`: skip it.
 From the task, decide the requests, responses, broadcasts, attributes and data types.
 Right after the scaffold, in one request, read `design.json`, run
 `gen_docs.py --example service`, adding `programs` when the task has more than two
-programs or more than one service and `machine` when a machine reuses one piece of
-behaviour, and open `05-design.md`, plus
+programs or more than one service and `submachine` when a machine hosts another (the
+service example already holds a machine), and open `05-design.md`, plus
 `22-state-machine.md` when an answer depends on what came before. Open nothing else
 before `design.json` is written: `20` and `21` describe the XML generated.
 
@@ -122,11 +123,6 @@ python3 <areg-sdk>/tools/schema_help.py --list --document siml
 `--full` on a type name adds what its values mean and `--search <word>` finds a name.
 Never open a `.xsd`: 20-50 KB each, re-sent with every later request.
 
-The command below writes every document and generated source into `src/CMakeLists.txt`
-and keeps the names already there; a source you add yourself goes on its executable's
-`macro_declare_executable` line, relative to `src/`, and its header is included as
-`"src/<dir>/Name.hpp"`.
-
 ## 5. Documents, application and build -- one command
 
 **This call compiles the framework itself, so give it a command timeout of 10 minutes
@@ -171,7 +167,8 @@ the command prints all of them; `gen_skeleton.py --doc <document> --todos` repri
 whichever are left. **These files are yours, not generated:** `bodies.txt` fills their
 markers and none is reread; add what the tool writes no shape for -- a consumer's worker
 thread, a component no design declares -- as files of your own, registered in `main.cpp` (`37`,
-`32`, `10`): that is no workaround. `--regenerate` drops what lies outside markers.
+`32`, `10`): that is no workaround. Each is a design.json `"sources"` entry, compiled, its
+whole text one worksheet section. `--regenerate` drops what lies outside markers.
 
 `gen_skeleton.py --doc <document> --contract` prints every signature and every
 generated data type in a few hundred tokens and writes no file. Read that instead of
@@ -231,7 +228,7 @@ process and checks the lines each one logs. Exit 0 is a pass. **Run it after
 every fix too** -- worksheet, build and run are one request.
 
 **The peer going away is a scenario too**, not terminal work: a scenario-level
-`"stop"`. The generator writes it for a stepped two-process project; a trigger it cannot
+`"stop"`. The generator writes it for a stepped project of programs; a trigger it cannot
 pick is a worksheet section. One run then prints the line each expectation matched, and
 that output is the evidence for the report.
 
