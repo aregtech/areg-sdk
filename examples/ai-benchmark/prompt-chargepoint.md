@@ -116,8 +116,7 @@ happened:
    `bay 1` resumed once, after the brownout, authorized again at attempt 1, and its
    session done with exactly **4** kWh
 7. expect `bay 2`'s session done with **30** kWh, never suspended
-8. reset `bay 3` directly, and only then start watching `bay 3`'s published values --
-   expect idle and 0 kWh at once
+8. reset `bay 3` directly -- expect `bay 3`'s published values to read idle and 0 kWh
 9. start a session on `bay 3` with target **2** -- expect it accepted and done with **2**
    kWh
 
@@ -132,7 +131,7 @@ step 4: bay 1 done, 5 kWh
 step 5: bay 3 handshake attempts 1 and 2 failed, refused, fault
 step 6: bay 1 suspended in the brownout, resumed, done, 4 kWh
 step 7: bay 2 done, 30 kWh, never suspended
-step 8: bay 3 reset, idle received at once
+step 8: bay 3 reset, idle and 0 kWh
 step 9: bay 3 done, 2 kWh
 ```
 

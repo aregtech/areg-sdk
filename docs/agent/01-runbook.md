@@ -28,9 +28,9 @@ python3 <areg-sdk>/tools/agent/setup_project.py --name <project> --root . --mode
 
 `<list>`, comma-separated or `""`: what the design needs beyond services and data types,
 `machine` (an answer depends on what came before), `timers` (a provider's delayed or
-periodic work), `workers` (a provider's thread for slow, periodic or many tasks),
-`steps` (a program that drives a sequence and exits), `sources` (files of your own beside
-the generated ones: a worker created by hand is one, not `workers`). `design.json` holds
+periodic work), `workers` (a provider's thread for slow, periodic or many tasks, or one started on
+request), `steps` (a program that drives a sequence and exits), `sources` (files of your
+own, a class no feature writes). `design.json` holds
 only those; `gen_docs.py --rules <name>` prints the rules of one left out.
 
 That writes a project that already builds and runs:
@@ -52,14 +52,13 @@ It restates this page and the SDK's `AGENTS.md`: skip it.
 
 ## 3. Design
 
-From the task, decide the requests, responses, broadcasts, attributes and data types.
-After the scaffold, in one request, each in its own call: read `design.json`, run
+Decide the requests, responses, broadcasts, attributes and data types.
+After the scaffold, in one request, each its own call: read `design.json`, run
 `gen_docs.py --example service`, adding `programs` when the task has more than two
 programs or more than one service and `submachine` when a machine hosts another (the
-service example already holds a machine), and open `22-state-machine.md` when an answer
-depends on what came before. The four rules atop `design.json` decide the split;
-`05-design.md` is their reasoning, for a choice they leave open. Open nothing else
-before `design.json` is written: `20` and `21` describe the XML generated.
+service example already holds a machine), plus `22-state-machine.md` when an answer
+depends on what came before; `05-design.md` only for a doubt the rules in
+`design.json` leave. Open nothing else before it is written: `20` and `21` describe the XML.
 
 **A provider reads its own attributes back.** An attribute gives the provider a getter
 as well as a setter, so state the service already carries needs no shadow member beside

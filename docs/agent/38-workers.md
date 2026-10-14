@@ -59,8 +59,8 @@ thread macros' watchdog and stack arguments (`37-threads.md` section 1).
 
 ## 3. Created by hand
 
-Its classes are files of design.json `"sources"` (runbook section 5): no macro and no
-`worker_thread_consumer()`. `create_worker_thread()` returns once the
+Section 4 generates it (`"start": false`); else its classes are `"sources"` files: no
+macro and no `worker_thread_consumer()`. `create_worker_thread()` returns once the
 worker accepts events, or `nullptr`:
 
 ```cpp
@@ -73,10 +73,8 @@ void Provider::startup_component(areg::ComponentThread & owner)
 ```
 
 `shutdown_component()` removes the listener, calls the base, which stops every worker of
-the component, then `delete_worker_thread("ScanThread")`. `delete_worker_thread()` stops
-the worker and waits until its current handler returns, so a handler blocked on a wait
-of its own is released by the caller first; `create_worker_thread()` with the same name
-then starts a new one, which replaces a stalled worker at run time.
+the component, then `delete_worker_thread("ScanThread")`, which waits until the
+worker's current handler returns.
 
 ## 4. In a project from design.json
 
@@ -102,6 +100,10 @@ removed where sections 1-2 say; `gen_docs.py --example worker` prints a whole de
 A provider body calls `send_set_paused(paused)`; it returns false until the worker has
 started. No `startup`, `shutdown` or `includes` line is needed. Two roles of such a
 provider run in threads of their own.
+
+`"start": false`: a body calls `start_sampler()`; `stop_sampler()` runs `sampler_release`
+(free a handler waiting on its own `areg::SyncEvent`), stops the thread, waits;
+stop then start replaces a stuck worker. Shutdown stops it.
 
 ## 5. Who sends to whom
 

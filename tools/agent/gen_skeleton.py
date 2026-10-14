@@ -2265,6 +2265,9 @@ STARTUP_HINT = ('what this provider starts before its service is announced, comT
                 'in design.json')
 STARTUP_HINT_WORKERS = ('what this provider starts before its service is announced, comThread '
                         'its thread, or one // line; its workers start and stop on their own')
+STARTUP_HINT_MANUAL = ('what this provider starts before its service is announced, comThread '
+                       'its thread, or one // line; {} starts a worker where a body calls it, '
+                       'and the generated shutdown stops it')
 SHUTDOWN_HINT = 'what it stops before the service stops, or one // line'
 # Added to both hints when the provider owns a machine.
 STARTUP_HINT_MACHINE = ('; the generated lines after this body call mFsm.init_fsm(&comThread), '
@@ -2317,8 +2320,14 @@ def provider_class(iface, cls, machine=None, timers=(), workers=()):
             lines.append('        , {}(static_cast<areg::TimerConsumer &>(self()), "{}")'
                          .format(timer['member'], timer['name']))
     lines += ['        , m{}(self())'.format(event['sink']) for _, event in inbound]
-    lines += ['        , m{}(entry.mWorkerThreads[{}].mConsumerName, owner)'.format(worker['name'], index)
-              for index, worker in enumerate(workers)]
+    automatic = [worker for worker in workers if not worker['manual']]
+    manual = [worker for worker in workers if worker['manual']]
+    for worker in workers:
+        if worker['manual']:
+            lines.append('        , m{0}(entry.mRoleName + ":{0}", owner)'.format(worker['name']))
+        else:
+            lines.append('        , m{}(entry.mWorkerThreads[{}].mConsumerName, owner)'
+                         .format(worker['name'], automatic.index(worker)))
     lines.append('    {')
     lines += ['        {}::add_listener(m{}, static_cast<areg::DispatcherThread &>(owner));'
               .format(event['event'], event['sink']) for _, event in inbound]
@@ -2333,7 +2342,10 @@ def provider_class(iface, cls, machine=None, timers=(), workers=()):
     started = [timer for timer in timers if timer['autostart']]
     lines += ['    void startup_component(areg::ComponentThread & comThread) final',
               '    {',
-              marker('startup', (STARTUP_HINT_WORKERS if workers else STARTUP_HINT)
+              marker('startup', (STARTUP_HINT_WORKERS if automatic else
+                                 STARTUP_HINT_MANUAL.format(', '.join(
+                                     '{}()'.format(worker['start']) for worker in manual))
+                                 if manual else STARTUP_HINT)
                      + (STARTUP_HINT_MACHINE if machine else '')),
               '        areg::Component::startup_component(comThread);']
     if machine:
@@ -2347,7 +2359,8 @@ def provider_class(iface, cls, machine=None, timers=(), workers=()):
     for timer in timers:
         lines.append('        {}();'.format(timer['stop']) if timer['instances'] > 1
                      else '        {}.stop_timer();'.format(timer['member']))
-    for worker in workers:
+    lines += ['        {}();'.format(worker['stop']) for worker in manual]
+    for worker in automatic:
         if any(event['to'] == 'worker' for event in worker['events']):
             lines += ['        if (m{0}Thread != nullptr)'.format(worker['name']),
                       '            m{0}.remove_listeners(*m{0}Thread);'.format(worker['name'])]
@@ -2356,14 +2369,14 @@ def provider_class(iface, cls, machine=None, timers=(), workers=()):
     if machine:
         lines.append('        mFsm.release_fsm();')
     lines += ['        areg::Component::shutdown_component(comThread);']
-    lines += ['        m{}Thread = nullptr;'.format(worker['name']) for worker in workers]
+    lines += ['        m{}Thread = nullptr;'.format(worker['name']) for worker in automatic]
     lines += ['    }',
               '']
-    if workers:
+    if automatic:
         lines += ['    areg::WorkerThreadConsumer * worker_thread_consumer(const areg::String & '
                   'consumerName, const areg::String & workerThreadName) final',
                   '    {']
-        for worker in workers:
+        for worker in automatic:
             lines += ['        if (consumerName == m{}.consumer_name())'.format(worker['name']),
                       '            return &m{};'.format(worker['name'])]
         lines += ['        return areg::Component::worker_thread_consumer(consumerName, '
@@ -2373,7 +2386,7 @@ def provider_class(iface, cls, machine=None, timers=(), workers=()):
                   '    void notify_thread_started(areg::WorkerThreadConsumer & consumer, '
                   'areg::WorkerThread & workerThread) final',
                   '    {']
-        for index, worker in enumerate(workers):
+        for index, worker in enumerate(automatic):
             lines += ['        {}if (&consumer == &m{})'.format('' if index == 0 else 'else ',
                                                              worker['name']),
                       '        {',
@@ -2498,6 +2511,35 @@ def provider_class(iface, cls, machine=None, timers=(), workers=()):
                   '    inline void {}()'.format(timer['stop']),
                   '    {',
                   '        {}.stop_timer();'.format(timer['member']),
+                  '    }',
+                  '']
+    for worker in manual:
+        listens = any(event['to'] == 'worker' for event in worker['events'])
+        lines += ['    //! Starts {}\'s thread; false when it runs already or did not start.'
+                  .format(worker['name']),
+                  '    inline bool {}()'.format(worker['start']),
+                  '    {',
+                  '        if (m{}Thread != nullptr)'.format(worker['name']),
+                  '            return false;',
+                  '        m{0}Thread = create_worker_thread(m{0}.consumer_name(), m{0}, '
+                  'master_thread());'.format(worker['name'])]
+        if listens:
+            lines += ['        if (m{}Thread != nullptr)'.format(worker['name']),
+                      '            m{0}.add_listeners(*m{0}Thread);'.format(worker['name'])]
+        lines += ['        return (m{}Thread != nullptr);'.format(worker['name']),
+                  '    }',
+                  '',
+                  '    //! Releases {0}, stops its thread and waits until its current handler '
+                  'returns; {1}() then starts a new one.'.format(worker['name'], worker['start']),
+                  '    inline void {}()'.format(worker['stop']),
+                  '    {',
+                  '        if (m{}Thread == nullptr)'.format(worker['name']),
+                  '            return;',
+                  '        m{}.release();'.format(worker['name'])]
+        if listens:
+            lines.append('        m{0}.remove_listeners(*m{0}Thread);'.format(worker['name']))
+        lines += ['        m{}Thread = nullptr;'.format(worker['name']),
+                  '        delete_worker_thread(m{}.consumer_name());'.format(worker['name']),
                   '    }',
                   '']
     for worker, event in outbound:
@@ -2686,7 +2728,8 @@ def workers_of(specs, iface):
     Each is a dict: name (its class), slot (its state section), tick (its timer section,
     or None), period (ms or None), description, and events, each a dict: name, to
     ('provider' or 'worker'), params [(name, type)], data, event, consumer and sink (the
-    C++ names), slot (its on_ section).
+    C++ names), slot (its on_ section). A worker with "start": false is manual: no model
+    entry, and start, stop and release name its two helpers and its release section.
     """
     import gen_docs
     declared = []
@@ -2708,10 +2751,14 @@ def workers_of(specs, iface):
                            'slot': 'on_' + event['name'],
                            'description': event.get('description') or ''})
         period = entry.get('period_ms')
+        manual = entry.get('start') is False
         workers.append({'name': name, 'slot': snake(name) + '_state',
                         'tick': snake(name) + '_tick' if period else None,
                         'period': period, 'description': entry.get('description') or '',
-                        'events': events})
+                        'events': events, 'manual': manual,
+                        'start': 'start_' + snake(name) if manual else None,
+                        'stop': 'stop_' + snake(name) if manual else None,
+                        'release': snake(name) + '_release' if manual else None})
     return workers
 
 
@@ -2786,6 +2833,17 @@ def worker_class(iface, worker):
         lines.append('        , mTick(static_cast<areg::TimerConsumer &>(self()), "{}Tick")'
                      .format(cls))
     lines += ['    {   }', '']
+    if worker['manual']:
+        lines += ['    //! Makes a handler of this worker that waits on an object of its own return.',
+                  '    void release()',
+                  '    {',
+                  marker(worker['release'], 'what makes a handler of {} that waits on an '
+                         'object of its own return; {}() calls it on the provider\'s thread '
+                         'before it stops the thread, so it touches only what is safe across '
+                         'threads, or one // line when no handler waits'
+                         .format(cls, worker['stop'])),
+                  '    }',
+                  '']
     if inbound:
         for verb, call in (('Adds', 'add_listener'), ('Removes', 'remove_listener')):
             lines += ['    //! {} the listener of every event this worker receives, for its thread.'
@@ -2878,7 +2936,7 @@ def worker_files(iface, worker, include_root):
 def worker_registration(workers, pad):
     """The model lines that declare each worker thread of one provider component."""
     return [pad + 'REGISTER_WORKER_THREAD("{0}Thread", "{0}")'.format(worker['name'])
-            for worker in workers]
+            for worker in workers if not worker['manual']]
 
 
 def awaitable(iface):

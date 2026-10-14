@@ -7297,6 +7297,33 @@ def check_worker_declared(report):
             report.fail('worker-declared', 'the worker source is not on the provider\'s '
                         'executable line: {}'.format(', '.join(sources)))
             return
+        manual = json.loads(json.dumps(gen_docs.EXAMPLE_WORKER))
+        manual['interfaces'][0]['workers'][0]['start'] = False
+        with open(spec, 'w', encoding='utf-8', newline='\n') as handle:
+            json.dump(manual, handle)
+        workers = gs.workers_of([spec], iface)
+        files = dict(gs.app_files(iface, 'ipc', 'src/services', workers=workers))
+        provider = files.get('provider/MeterProvider.hpp', '') + \
+            files.get('provider/MeterProvider.cpp', '')
+        worker = files.get('provider/Sampler.hpp', '') + files.get('provider/Sampler.cpp', '')
+        wanted = [('the consumer named by role', provider,
+                   'mSampler(entry.mRoleName + ":Sampler", owner)'),
+                  ('its start helper', provider, 'inline bool start_sampler()'),
+                  ('its stop helper', provider, 'inline void stop_sampler()'),
+                  ('the release before the stop', provider, 'mSampler.release();'),
+                  ('the thread deleted', provider,
+                   'delete_worker_thread(mSampler.consumer_name());'),
+                  ('the stop on shutdown', provider, '    stop_sampler();'),
+                  ('its release section', worker, 'TODO(you) sampler_release:')]
+        lost = [what for what, text, needle in wanted if needle not in text]
+        if 'REGISTER_WORKER_THREAD' in files.get('provider/main.cpp', ''):
+            lost.append('no model line')
+        if 'worker_thread_consumer(' in provider:
+            lost.append('no worker_thread_consumer()')
+        if lost:
+            report.fail('worker-declared', 'a worker with "start": false lost {}'
+                        .format(', '.join(lost)))
+            return
         idle = json.loads(json.dumps(gen_docs.EXAMPLE_WORKER))
         entry = idle['interfaces'][0]['workers'][0]
         entry.pop('period_ms')
@@ -7310,7 +7337,9 @@ def check_worker_declared(report):
                         'is not refused')
             return
         report.ok('worker-declared', 'a declared worker is generated with its class, timer, '
-                  'events, sections, wiring, model line and source; an idle one is refused')
+                  'events, sections, wiring, model line and source; with "start": false, '
+                  'start/stop helpers and a release section instead of the model line; an '
+                  'idle one is refused')
     finally:
         shutil.rmtree(holder, ignore_errors=True)
 

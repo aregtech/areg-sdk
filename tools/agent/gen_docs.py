@@ -112,7 +112,7 @@ KEYS = {
     'include': ('name', 'description', 'alias', 'version'),
     'timer': ('name', 'timeout', 'repeat', 'description'),
     'service timer': ('name', 'timeout', 'repeat', 'start', 'instances', 'description'),
-    'worker': ('name', 'period_ms', 'events', 'description'),
+    'worker': ('name', 'period_ms', 'start', 'events', 'description'),
     'worker event': ('name', 'to', 'params', 'description'),
     'condition': ('name', 'description', 'params', 'implement', 'body', 'return'),
     'submachine': ('name', 'path', 'version', 'description'),
@@ -2192,6 +2192,16 @@ def check_workers(project):
                      'The name is the worker\'s class: choose another, such as "{}Worker"'
                      .format(here, name))
             seen.add(name)
+            if worker.get('start') not in (None, True, False):
+                fail('{} gives start {!r}: true or left out, its thread runs as long as the '
+                     'provider; false, a body starts it with start_<name>() and ends or '
+                     'replaces it with stop_<name>()'.format(here, worker.get('start')))
+            helper = re.sub(r'(?<=[a-z0-9])([A-Z])', r'_\1', name).lower()
+            clash = [timer.get('name') for timer in listed(spec, 'timers')
+                     if worker.get('start') is False and timer.get('name') == helper]
+            if clash:
+                fail('{} and timer "{}" would both have start_{}() and stop_{}(). Rename '
+                     'one of them'.format(here, clash[0], helper, helper))
             period = worker.get('period_ms')
             if period is not None and (not whole(period) or period <= 0):
                 fail('{} gives period_ms {!r}: a whole number of milliseconds above 0, or '
@@ -3307,17 +3317,18 @@ TEMPLATE = {
             "name": "", "timeout": 1000, "repeat": 0, "start": False, "description": ""
         }],
         "workers": [{
-            NOTE: ["A dispatcher thread of the provider's own, told things by events and alive as",
-                   "long as the provider, for work a handler must not do: a device read every N ms,",
-                   "a slow computation; delete it when there is none. One started, stopped or",
-                   "replaced on request is created by hand: 38-workers.md section 3. The",
+            NOTE: ["A dispatcher thread of the provider's own, told things by events, for work a",
+                   "handler must not do: a device read every N ms, a slow computation; delete it",
+                   "when there is none. start: true, it runs as long as the provider; false, a",
+                   "body calls start_<name>() and stop_<name>(), which releases it (a <name>_release",
+                   "section), stops it and waits; stop then start replaces a stuck one. The",
                    "generator writes the thread, its events and their listeners. period_ms: its",
                    "<name>_tick section runs every period on the worker. An event is snake_case",
                    "and is everything that crosses: the worker never touches provider members.",
                    "to provider: the worker calls send_<event>(...), the provider's on_<event>",
                    "runs on the provider thread. to worker: the provider calls send_<event>(...),",
                    "the worker's on_<event> runs on the worker."],
-            "name": "", "period_ms": 100, "description": "",
+            "name": "", "period_ms": 100, "start": True, "description": "",
             "events": [{"name": "", "to": "provider", "params": [{"name": "", "type": ""}],
                         "description": ""}]
         }],
@@ -3436,7 +3447,7 @@ TEMPLATE = {
     }],
     "sources": [{
         NOTE: ["A file of your own beside the generated ones: a class the generator writes no",
-               "shape for, such as a worker or a thread created by hand or the data of a custom",
+               "shape for, such as a thread no provider owns or the data of a custom",
                "event. file is <dir>/<Name>.hpp or .cpp, <dir> the folder under src/ of the",
                "program that compiles it (provider or consumer without programs, none in local",
                "mode). Each gets one worksheet section that is the whole file, filled by the",
