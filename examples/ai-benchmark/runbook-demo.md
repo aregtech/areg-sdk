@@ -18,7 +18,7 @@ to it, so every run is scored on the procedure a user's own agent follows.
   carries on without it.
 - **Every task here is a console program.** The quit command the task names is a line
   typed at the console, read as `docs/agent/39-console.md` shows (open it in the request
-  that opens `docs/agent/05-design.md`), in each program the task says accepts it, and proven by a
+  that reads `design.json`), in each program the task says accepts it, and proven by a
   scenario of its own with `"stdin"`. A line the task says
   a program prints is logged with `GLOBAL_INFO`: a scenario's `expect` matches it, and
   `--verbose` shows it.

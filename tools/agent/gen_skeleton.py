@@ -813,7 +813,7 @@ def section_notes(sections, driven=(), connected=None, stepless=(), fresh=()):
     # A header carries its class's private block and its includes. Matching the
     # name instead takes "update_machine_state" with it.
     for name, hint, _, file_name, _ in sections:
-        if file_name.endswith('.hpp') and name.split(':')[-1] != 'includes' \
+        if file_name.endswith('.hpp') and not name.split(':')[-1].endswith('includes') \
                 and not hint.startswith(OWN_HEADER):
             notes[name] = STATE_NOTE
     names = [name for name, _, _, _, _ in sections]
@@ -2276,6 +2276,26 @@ SHUTDOWN_HINT_MACHINE = '; the generated lines after this body call mFsm.release
 INCLUDES_HINT = 'the headers of your own files this provider uses, or one // line'
 
 
+def includes_marker(state_slot, what):
+    """The includes marker of a header beside its state_slot, in a design with headers
+    of its own."""
+    return marker(state_slot.replace('_state', '_includes'),
+                  INCLUDES_HINT.replace('provider', what), 0)
+
+
+def own_headers(specs):
+    """The folders under src/ holding a header design.json \"sources\" names, as 'dir/'."""
+    import gen_docs
+    folders = set()
+    for path in specs or []:
+        spec, _skipped = gen_docs.load_spec(path)
+        for entry in spec.get('sources') or []:
+            name = str(entry.get('file', '')) if isinstance(entry, dict) else ''
+            if name.endswith('.hpp'):
+                folders.add(name.rsplit('/', 1)[0] + '/' if '/' in name else '')
+    return folders
+
+
 def provider_class(iface, cls, machine=None, timers=(), workers=()):
     """The provider component, with every request answered.
 
@@ -2838,7 +2858,8 @@ def worker_class(iface, worker):
                   '    void release()',
                   '    {',
                   marker(worker['release'], 'what makes a handler of {} that waits on an '
-                         'object of its own return; {}() calls it on the provider\'s thread '
+                         'object of its own return (an areg::SyncEvent member it lock()s on: '
+                         'set_signaled() here); {}() calls it on the provider\'s thread '
                          'before it stops the thread, so it touches only what is safe across '
                          'threads, or one // line when no handler waits'
                          .format(cls, worker['stop'])),
@@ -2921,11 +2942,12 @@ WORKER_INCLUDES = ['#include "areg/component/EventTemplate.hpp"',
                    '#include "areg/component/WorkerThreadConsumer.hpp"']
 
 
-def worker_files(iface, worker, include_root):
-    """The .hpp and .cpp of one worker thread consumer."""
+def worker_files(iface, worker, include_root, own=False):
+    """The .hpp and .cpp of one worker thread consumer; own adds an includes marker."""
     lines = worker_class(iface, worker)
     includes = WORKER_INCLUDES + timer_includes(lines) + \
-        ['', '#include "{}/{}.hpp"'.format(include_root, iface.name)]
+        ['', '#include "{}/{}.hpp"'.format(include_root, iface.name)] + \
+        ([includes_marker(worker['slot'], 'worker')] if own else [])
     return component_files(worker['name'], worker['description'] or
                            'A worker thread of the {} provider.'.format(iface.name),
                            includes, lines, worker['slot'], worker_prelude(iface, worker),
@@ -4743,7 +4765,7 @@ SCAFFOLD_MAINS = {'provider.cpp': 'provider/main.cpp',
 
 
 def app_files(iface, mode, include_root, machine=None, steps=(), driver=None, timers=(),
-              workers=()):
+              workers=(), own=()):
     """The whole application: one .hpp and .cpp per component, and the model with main().
 
     Returns a list of (file name, text). The result compiles and runs as written;
@@ -4771,10 +4793,12 @@ def app_files(iface, mode, include_root, machine=None, steps=(), driver=None, ti
         provider_lines, 'provider_state', QUIT_DECLARATION)]
     for worker in workers:
         produced += [(PROVIDER_DIR[mode] + name, text)
-                     for name, text in worker_files(iface, worker, include_root)]
+                     for name, text in worker_files(iface, worker, include_root,
+                                                   PROVIDER_DIR[mode] in own)]
     produced += [(CONSUMER_DIR[mode] + name, text) for name, text in component_files(
         consumer_cls, 'Consumer of the {} service.'.format(iface.name),
-        class_includes(iface) + timer_includes(consumer_lines) + [''] + consumer_base,
+        class_includes(iface) + timer_includes(consumer_lines) + [''] + consumer_base
+        + ([includes_marker('consumer_state', 'consumer')] if CONSUMER_DIR[mode] in own else []),
         consumer_lines, 'consumer_state',
         QUIT_DECLARATION + (HOLD_DECLARATION if hold else []),
         'the members and helpers your checks need, defined here, or one // line saying '
@@ -5320,7 +5344,7 @@ def main():
         steps = steps_of(args.spec, iface)
         produced = app_files(iface, args.mode, include_root, machine, steps,
                              driver_of(args.spec, iface), timers_of(args.spec, iface),
-                             workers_of(args.spec, iface))
+                             workers_of(args.spec, iface), own_headers(args.spec))
         folders = set((PROVIDER_DIR[args.mode], CONSUMER_DIR[args.mode]))
         produced += own_sources(args.spec, folders)
         retained = [(file_name,

@@ -1819,6 +1819,29 @@ def check_programs(project):
         refuse(problems)
 
 
+def one_kind_form(component, kinds):
+    """The valid form of a component that names several of provides, drives and watches."""
+    if len(kinds) < 2:
+        return ('Another service it calls, waits on or reads goes in its "uses"')
+    keep = 'drives' if 'drives' in kinds else 'provides'
+    moved = [kind for kind in kinds if kind != keep]
+    role = component.get('role') or '<role>'
+    uses = ', '.join('{{"service": "{}", "role": "{}"}}'.format(component[kind], role)
+                     for kind in moved if kind != 'provides')
+    text = 'Keep "{}": "{}"'.format(keep, component[keep])
+    if uses:
+        text += ' and put {} in its "uses": [{}]; it calls, subscribes to and reads a used ' \
+                'service as a client'.format(' and '.join('"{}"'.format(component[kind])
+                                                          for kind in moved
+                                                          if kind != 'provides'), uses)
+    if 'provides' in moved:
+        text += ('; "{0}" gets a component of its own in this program, {{"provides": "{0}", '
+                 '"roles": [...], "thread": "..."}}, and this one names it in "uses". Its '
+                 'requests and broadcasts are the messages between the two'
+                 .format(component['provides']))
+    return text
+
+
 def check_component(project, component, here, name, services, roles, provided, driven,
                     problems):
     """One component of a program: its keys, its service, its roles and its "uses"."""
@@ -1834,11 +1857,9 @@ def check_component(project, component, here, name, services, roles, provided, d
     kinds = [kind for kind in COMPONENT_KINDS if component.get(kind)]
     if len(kinds) != 1:
         fail('a component of {} names {}: each provides, drives or watches '
-             'exactly one service. Another service it calls, waits on or reads '
-             'goes in its "uses"; a second component in the program is a '
-             'separate thread the steps cannot wait on'
+             'exactly one service. {}'
              .format(here, ' and '.join(kinds) or 'none of '
-                     '"provides", "drives" and "watches"'))
+                     '"provides", "drives" and "watches"', one_kind_form(component, kinds)))
     kind, service = kinds[0], component[kinds[0]]
     where = '{} "{}" of {}'.format(kind, service, here)
     if service not in services:
@@ -3447,11 +3468,14 @@ TEMPLATE = {
     }],
     "sources": [{
         NOTE: ["A file of your own beside the generated ones: a class the generator writes no",
-               "shape for, such as a thread no provider owns or the data of a custom",
-               "event. file is <dir>/<Name>.hpp or .cpp, <dir> the folder under src/ of the",
-               "program that compiles it (provider or consumer without programs, none in local",
-               "mode). Each gets one worksheet section that is the whole file, filled by the",
-               "bodies call like any other; a .cpp is compiled into that program."],
+               "shape for, such as the data of a custom event or a plain thread blocked in a",
+               "read of its own. A part on a thread of its own that another part reaches by",
+               "messages is a component of \"programs\" with a service of its own",
+               "(gen_docs.py --example programs), not a source. file is <dir>/<Name>.hpp or",
+               ".cpp, <dir> the folder under src/ of the program that compiles it (provider",
+               "or consumer without programs, none in local mode). Each gets one worksheet",
+               "section that is the whole file, filled by the bodies call like any other; a",
+               ".cpp is compiled into that program."],
         "file": "", "description": ""
     }]
 }
@@ -3711,8 +3735,9 @@ def main():
                              'and write nothing')
     parser.add_argument('--review', action='store_true',
                         help='check the design and print every note it earns, writing '
-                             'nothing. Answers what a build would say about the design '
-                             'before any document, source or scenario file exists')
+                             'nothing. build_project.py --spec prints the same notes '
+                             'and builds in the same call: a review before it is a '
+                             'request more')
     parser.add_argument('--force', action='store_true', help='overwrite existing documents')
     parser.add_argument('--chained', action='store_true',
                         help='run by build_project.py, which does the next steps itself: '

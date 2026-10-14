@@ -323,6 +323,10 @@ def resolve(name, markers, where):
     to say it."""
     wanted, _, bare = name.rpartition(':')
     places = markers.get(bare or name)
+    if not places and '.' in name and ':' not in name:
+        fail('{} names "{}", a file: it holds only "== <section>" lines, each followed by '
+             'its code. The "== <file>" and SEARCH/REPLACE form goes after --edit, not '
+             '--write'.format(where, name))
     if not places:
         near = difflib.get_close_matches(bare or name, sorted(markers), 3, 0.6)
         fail('{} names "{}", which is neither an open marker of this project nor a '

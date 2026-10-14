@@ -6,8 +6,8 @@ what the software must do; `<project>` is a C identifier naming the project; `<m
 `local` for one process or `ipc` for two; `pubsub` is `local` whose interface
 adds attributes and broadcasts.
 
-On Windows, read commands as `AGENTS.md` section 4 says. `build_project.py` passes the
-`-j8` that `AGENTS.md` requires everywhere, so no command here carries one.
+On Windows, read commands as `AGENTS.md` section 4 says. `build_project.py` passes
+`-j8`, so no command here carries one.
 
 ---
 
@@ -166,8 +166,7 @@ Every place a rule of yours belongs is one line: `// TODO(you) <name>: <what>`, 
 the command prints all of them; `gen_skeleton.py --doc <document> --todos` reprints
 whichever are left. **These files are yours, not generated:** `bodies.txt` fills their
 markers and none is reread; add what the tool writes no shape for -- a consumer's worker
-thread, a component no design declares -- as files of your own, registered in `main.cpp` (`37`,
-`32`, `10`): that is no workaround. Each is a design.json `"sources"` entry, compiled, its
+thread -- as files of your own, registered in `main.cpp` (`37`, `32`, `10`): no workaround. Each is a design.json `"sources"` entry, compiled, its
 whole text one worksheet section. `--regenerate` drops what lies outside markers.
 
 `gen_skeleton.py --doc <document> --contract` prints every signature and every
@@ -248,8 +247,8 @@ lines -- `find`, `ls -R`, a raw compiler run -- is piped through `grep` or `head
 
 ## 8. Fix -- bounded, then stop
 
-You are finished when it builds **and** the scenario exits 0. Keep going until it
-does, within:
+You are finished when it builds **and** the scenario exits 0, every requirement of
+the task printed by the check that compared it. Keep going until it does, within:
 
 - at most **3 build-and-fix cycles**
 - at most **3 run-and-fix cycles**
@@ -282,7 +281,8 @@ not converge" is a useful result; a half-built application is not.
 
 ## 10. Stop immediately if
 
-- **The task is too large to do well.** Say which part defeated it, and stop.
+Never for size: markers, programs and steps are the tools' job.
+
 - **The generator produces wrong or broken code from your document.** It is not
   exercised for every feature and its output can genuinely be defective. Never edit a
   generated file and never work around the defect by hand. Stop and report exactly:

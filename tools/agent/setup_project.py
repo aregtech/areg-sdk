@@ -512,7 +512,7 @@ src/CMakeLists.txt    names the documents and each executable's sources
 |---|---|
 | **Build this application, start to finish** | `docs/agent/01-runbook.md` - every command in order, if you are not already following it |
 | **Anything ordinary** | `docs/agent/00-cheatsheet.md` - what the tools do not write |
-| Decide the services and their interfaces | `docs/agent/05-design.md`, before any document |
+| Decide the services and their interfaces | the rules in `design.json`; `docs/agent/05-design.md` for a doubt they leave |
 | Change the service contract | `docs/agent/20-service-interface.md` |
 | Declare a structure, enum or container | `docs/agent/21-data-types.md` |
 | Behaviour that depends on what happened before | `docs/agent/22-state-machine.md` (a `.fsml`) |

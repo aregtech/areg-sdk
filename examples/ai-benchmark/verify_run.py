@@ -161,9 +161,10 @@ STRING_RE = re.compile(r'"((?:[^"\\\n]|\\.)*)"')
 COMMENT_RE = re.compile(r'//[^\n]*|/\*.*?\*/', re.DOTALL)
 CODE_NUMBER_RE = re.compile(r'(?<![\w.])(\d+(?:\.\d+)?)[uUlLfF]*(?![\w.])')
 TEXT_NUMBER_RE = re.compile(r'(?:([A-Za-z_]+)\s+)?(?<![\w.])(\d+(?:\.\d+)?)(?![\w.])')
+SECONDS_RE = re.compile(r'\s*seconds?\b', re.IGNORECASE)
 STEP_PREFIX_RE = re.compile(r'\bstep\s+\d+\s*:', re.IGNORECASE)
 # A statement that prints, and a string a statement compares against.
-OUTPUT_RE = re.compile(r'\bcout\b|\bprintf\s*\(|\bputs\s*\(')
+OUTPUT_RE = re.compile(r'\bcout\b|\bprintf\s*\(|\bputs\s*\(|\b(?:GLOBAL|LOG)_[A-Z]+\s*\(')
 COMPARED_STRING_RE = re.compile(
     r'(?:==|!=)\s*"((?:[^"\\\n]|\\.)*)"|"((?:[^"\\\n]|\\.)*)"\s*(?:==|!=)'
     r'|\b(?:find\w*|compare|starts_with|ends_with|contains)\s*\(\s*"((?:[^"\\\n]|\\.)*)"')
@@ -180,9 +181,10 @@ def body_sections(text):
 
 
 def step_order(design):
-    """[(step name, its until and args values)] of every interface's steps, in order."""
+    """[(step name, its until and args values and its role)] of every interface's steps."""
     return [(step.get('name', ''),
-             [str(value) for key in ('until', 'args') for value in (step.get(key) or {}).values()])
+             [str(value) for key in ('until', 'args') for value in (step.get(key) or {}).values()]
+             + ([str(step['role'])] if step.get('role') else []))
             for spec in design.get('interfaces') or [] for step in spec.get('steps') or []]
 
 
@@ -205,8 +207,11 @@ def stated_values(body, wanted):
         text = found.group(1).replace('\\"', '"').strip()
         if len(text) < 6 or not any(text.lower() in piece for piece in pieces):
             continue
-        for word, value in TEXT_NUMBER_RE.findall(STEP_PREFIX_RE.sub('', text)):
-            stated.append((word, number(value)))
+        text = STEP_PREFIX_RE.sub('', text)
+        for found_number in TEXT_NUMBER_RE.finditer(text):
+            word, value = found_number.group(1) or '', number(found_number.group(2))
+            seconds = SECONDS_RE.match(text, found_number.end()) and value.isdigit()
+            stated.append((word, value) + ((str(int(value) * 1000),) if seconds else ()))
     return stated
 
 
@@ -220,7 +225,8 @@ def compared_values(bodies, untils):
         for groups in COMPARED_STRING_RE.findall(body):
             found += [number(value) for text in groups
                       for _, value in TEXT_NUMBER_RE.findall(text)]
-    return found + [number(value) for value in untils]
+    return found + [number(value) for text in untils
+                    for value in re.findall(r'\d+(?:\.\d+)?', text)]
 
 
 def read_text(path):
@@ -267,9 +273,12 @@ def judge_checked(wanted, bodies_text, design):
             bodies, untils = list(sections.values()), []
         have = compared_values(bodies, untils)
         missing = []
-        for word, value in stated_values(sections[name], wanted):
-            if value in have:
-                have.remove(value)
+        for word, value, *millis in stated_values(sections[name], wanted):
+            near = [value] + millis + ([str(int(value) - 1), str(int(value) + 1)]
+                                       if value.isdigit() and int(value) >= 10 else [])
+            match = next((one for one in near if one in have), None)
+            if match is not None:
+                have.remove(match)
             else:
                 missing.append((word + ' ' + value).strip())
         if missing:
@@ -674,6 +683,22 @@ SELF_TEST_LINES = (
 # Bodies against the task lines: (name, wanted, bodies.txt, steps, expected verdict).
 CHECK_LINE = ['step 1: bolt 10, nut 5, gear 3']
 SELF_TEST_CHECKED = (
+    ('seconds printed, milliseconds compared', ['step 7: 100 frames within 1 second'],
+     '== step_burst\nif (count != 100 || ms >= 1000) { fail("x"); return; }\n'
+     'GLOBAL_INFO("step 7: 100 frames within 1 second");\n', [{'name': 'burst'}], True),
+    ('a count checked as the last index of a range', ['step 4: 10 frames intact'],
+     '== step_more\nif (last < first + 9) { stay(); return; }\nGLOBAL_INFO("step 4: 10 frames intact");\n',
+     [{'name': 'more'}], True),
+    ('a name with a number awaited by until and role', ['step 7: bay 2 done, bay 3 idle'],
+     '== step_done\nGLOBAL_INFO("step 7: bay 2 done, bay 3 idle");\n',
+     [{'name': 'done', 'until': {'bay': 'bay 2'}, 'role': 'bay_3'}], True),
+    ('values logged as fixed text', CHECK_LINE,
+     '== step_start\nGLOBAL_INFO("step 1: bolt 10, nut 5, gear 3");\n',
+     [{'name': 'start'}], False),
+    ('values logged after a comparison', CHECK_LINE,
+     '== step_start\nif (bolt != 10u || nut != 5 || gear != 3) { fail("step 1"); return; }\n'
+     'GLOBAL_INFO("step 1: bolt 10, nut 5, gear 3");\n',
+     [{'name': 'start'}], True),
     ('one of three values compared', CHECK_LINE,
      '== step_start\nif (bolt != 10) fail("bolt");\n'
      'else std::cout << "step 1: bolt 10, nut 5, gear 3" << std::endl;\n',

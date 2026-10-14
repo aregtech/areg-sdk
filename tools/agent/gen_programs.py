@@ -673,6 +673,10 @@ def component_classes(component, specs, include_root):
         slot, hint = 'watcher_state', None
         prelude = gs.QUIT_DECLARATION
         brief = 'Watcher of the {} service: it subscribes and reacts.'.format(iface.name)
+    own = folder in gs.own_headers(specs)
+    if own and component.kind != 'provides':
+        bases.append(gs.includes_marker(slot, 'consumer' if component.kind == 'drives'
+                                        else 'watcher'))
     lines = with_clients(lines, component)
     includes = gs.class_includes(iface, machine) + gs.timer_includes(lines) + [''] + bases
     includes += ['#include "{}.hpp"'.format(name) for _, _, name in component.clients]
@@ -681,7 +685,7 @@ def component_classes(component, specs, include_root):
     produced = [(folder + name, text) for name, text in files]
     for worker in component.workers:
         produced += [(folder + name, text)
-                     for name, text in gs.worker_files(iface, worker, include_root)]
+                     for name, text in gs.worker_files(iface, worker, include_root, own)]
     for used, roles, name in component.clients:
         client = client_class(component.cls, used, roles, name,
                               gs.driver_of(specs, used)['reconnect_seconds'],
@@ -689,7 +693,8 @@ def component_classes(component, specs, include_root):
                               component.steps if component.kind == 'drives' else (),
                               component.connects.get(used.name, 0))
         client_includes = gs.class_includes(used) + gs.timer_includes(client) + [
-            '', '#include "{}/{}ConsumerBase.hpp"'.format(include_root, used.name)]
+            '', '#include "{}/{}ConsumerBase.hpp"'.format(include_root, used.name)] + (
+            [gs.includes_marker(name_slot(name), 'client')] if own else [])
         prelude_lines = gs.QUIT_DECLARATION + ['class {};'.format(component.cls), '']
         files = gs.component_files(name, 'What {} uses of the {} service: one member per '
                                    'provider role.'.format(component.cls, used.name),
