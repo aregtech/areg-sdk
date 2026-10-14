@@ -478,6 +478,8 @@ def main():
         if name in expectations:
             expected[expectations[name]] = [text.strip() for text in body
                                             if text.strip()]
+            if expected[expectations[name]] == ['[]'] and expectations[name][1] is not None:
+                expected[expectations[name]] = []
             if expectations[name][1] is None and len(expected[expectations[name]]) != 1:
                 fail('{}: section "{}" is the line that triggers a stop, so it takes '
                      'exactly one regular expression, not {}. Nothing was written'
@@ -582,6 +584,11 @@ def main():
                 'replaced {}'.format(', '.join(folded[1])) if folded[1] else '',
                 'added {}'.format(', '.join(folded[2])) if folded[2] else '') if part)
             or 'no section with code'))
+        unread = [name for name, text in blocks_of(fixes)[1:] if name.startswith('expect_')
+                  and not any(line.strip() and not note(line) for line in text[1:])]
+        if unread:
+            print('{} kept as it was: a section with no line changes nothing; the one '
+                  'line [] makes it expect nothing'.format(', '.join(unread)))
 
     filled = set(claimed)
     left = [(name, path) for name, places in sorted(markers.items())

@@ -513,6 +513,10 @@ def scenario_holes(path):
                         hint += (' "{0}" expects nothing: these lines are the evidence. A '
                                  'requirement only "{0}" can show goes in a section == {1}.'
                                  .format(proc_label(other), expect_slot(label, other)))
+                    lost = [one for one in scenarios if one.get('stop') and one is not scenario]
+                    if lost and not scenario.get('stop'):
+                        hint += (' A line written on losing a peer goes in == {}, not here.'
+                                 .format(expect_slot(lost[0].get('name', ''), spec)))
                     holes.append((found.group(1), hint))
         stop = scenario.get('stop')
         after = stop.get('after') if isinstance(stop, dict) else None
@@ -1140,7 +1144,8 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
             lines.append('#| match. The generated main() writes nothing, so each line comes')
         lines.append('#| from a body above: the expectation and the code that satisfies')
         lines.append('#| it are written together, in this file, or the run proves')
-        lines.append('#| nothing. A "//" line is a pattern here, not a comment. A pattern')
+        lines.append('#| nothing. A "//" line is a pattern here, not a comment; a section')
+        lines.append('#| of the one line [] expects nothing of that process. A pattern')
         lines.append('#| matches the message of a log line, without its time, thread and priority.')
         lines.append('#| One line per acceptance item of the task, logged by the body')
         lines.append('#| that proves it. A run that passes with every line matched is')
@@ -2106,6 +2111,9 @@ def contract_lines(iface, document):
         out.append('  provider reads {t} & {n}(); consumer reads {r} {n}('
                    'areg::DataState & state)'
                    .format(t=cpp, r=read, n=spelled))
+        if spelled == 'state':
+            out.append('  in an update_ section its parameter state hides this getter: '
+                       'call this->state(ds)')
     if list(iface.attributes):
         out.append('  Only a set_ call changes an attribute and notifies; a consumer value '
                    'holds only')

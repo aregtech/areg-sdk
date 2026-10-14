@@ -55,10 +55,10 @@ It restates this page and the SDK's `AGENTS.md`: skip it.
 Decide the requests, responses, broadcasts, attributes and data types.
 After the scaffold, in one request, each its own call: read `design.json`, run
 `gen_docs.py --example service`, adding `programs` when the task has more than two
-programs or more than one service and `submachine` when a machine hosts another (the
-service example already holds a machine), plus `22-state-machine.md` when an answer
-depends on what came before; `05-design.md` only for a doubt the rules in
-`design.json` leave. Open nothing else before it is written: `20` and `21` describe the XML.
+programs, more than one service or parts on threads of their own, and `submachine`
+when a machine hosts another (the service example already holds a machine), plus
+`22-state-machine.md` when an answer depends on what came before; `05-design.md` only
+for a doubt the rules in `design.json` leave. Open nothing else before it is written.
 
 **A provider reads its own attributes back.** An attribute gives the provider a getter
 as well as a setter, so state the service already carries needs no shadow member beside
