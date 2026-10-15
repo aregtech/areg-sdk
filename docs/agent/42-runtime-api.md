@@ -184,7 +184,7 @@ shape `38-workers.md` and `recipes/07-worker-events/` teach.
 | `areg::Mutex` | `explicit Mutex(bool initLock = true)` | `SyncPrimitives.hpp:140` |
 | `lock()` | `bool lock(uint32_t timeout = areg::WAIT_INFINITE)` | `SyncPrimitives.hpp:154` |
 | `unlock()` | `bool unlock()` | `SyncPrimitives.hpp:161` |
-| `areg::Lock` | `explicit Lock(SyncObject & syncObj, bool autoLock = true)` | `SyncPrimitives.hpp:999` |
+| `areg::Lock` | `explicit Lock(SyncObject & syncObj, bool autoLock = true)` | `SyncPrimitives.hpp:1052` |
 | `areg::SyncEvent` | `explicit SyncEvent(bool initLock = true, bool autoReset = true)` | `SyncPrimitives.hpp:254` |
 | `set_signaled()` | `bool set_signaled() noexcept` | `SyncPrimitives.hpp:295` |
 | `reset()` | `bool reset() noexcept` | `SyncPrimitives.hpp:301` |

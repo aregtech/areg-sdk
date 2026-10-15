@@ -26,6 +26,9 @@
 
 #include "areg/base/Containers.hpp"
 #include "areg/base/SyncPrimitives.hpp"
+
+#include <type_traits>
+
 namespace areg {
 
   /************************************************************************
@@ -201,6 +204,23 @@ public:
      * \return  Returns a const pointer to the resource list if found; nullptr otherwise.
      **/
     inline const ResourceList * find_resource( const RESOURCE_KEY & Key ) const;
+
+    /**
+     * \brief   Searches for the resource list by the given key without locking.
+     *          The caller holds lockable() for as long as it uses the returned pointer.
+     *
+     * \param   Key     The unique key that specifies the resource list.
+     * \return  Returns a pointer to the resource list if found; nullptr otherwise.
+     **/
+    inline ResourceList * find_resource_locked( const RESOURCE_KEY & Key ) noexcept;
+    /**
+     * \brief   Searches for the resource list by the given key without locking (const overload).
+     *          The caller holds lockable() for as long as it uses the returned pointer.
+     *
+     * \param   Key     The unique key that specifies the resource list.
+     * \return  Returns a const pointer to the resource list if found; nullptr otherwise.
+     **/
+    inline const ResourceList * find_resource_locked( const RESOURCE_KEY & Key ) const noexcept;
 
     /**
      * \brief   Returns a pointer to the resource list for the given key.
@@ -489,6 +509,45 @@ template < typename RESOURCE_KEY
 inline const ResourceList * ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, ResourceList, MapContainer, Tracker>::find_resource( const RESOURCE_KEY & Key ) const
 {
     Lock lock( lockable() );
+
+    typename MapContainer::MAPPOS pos = MapContainer::is_empty() ? MapContainer::invalid_position() : MapContainer::find(Key);
+    return (MapContainer::is_valid_position(pos) ? &MapContainer::value_at(pos) : nullptr);
+}
+
+template < typename RESOURCE_KEY
+         , typename RESOURCE_OBJECT
+         , typename LOCKABLE    /*= NolockSyncObject */
+         , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
+         , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
+         , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
+inline ResourceList * ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, ResourceList, MapContainer, Tracker>::find_resource_locked( const RESOURCE_KEY & Key ) noexcept
+{
+#ifdef DEBUG
+    if constexpr (std::is_same_v<LOCKABLE, SpinLock>)
+    {
+        ASSERT(mSyncObj.is_held_by_current());
+    }
+#endif // DEBUG
+
+
+    typename MapContainer::MAPPOS pos = MapContainer::is_empty() ? MapContainer::invalid_position() : MapContainer::find(Key);
+    return (MapContainer::is_valid_position(pos) ? &MapContainer::value_at(pos) : nullptr);
+}
+
+template < typename RESOURCE_KEY
+         , typename RESOURCE_OBJECT
+         , typename LOCKABLE    /*= NolockSyncObject */
+         , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
+         , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
+         , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
+inline const ResourceList * ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, ResourceList, MapContainer, Tracker>::find_resource_locked( const RESOURCE_KEY & Key ) const noexcept
+{
+#ifdef DEBUG
+    if constexpr (std::is_same_v<LOCKABLE, SpinLock>)
+    {
+        ASSERT(mSyncObj.is_held_by_current());
+    }
+#endif // DEBUG
 
     typename MapContainer::MAPPOS pos = MapContainer::is_empty() ? MapContainer::invalid_position() : MapContainer::find(Key);
     return (MapContainer::is_valid_position(pos) ? &MapContainer::value_at(pos) : nullptr);

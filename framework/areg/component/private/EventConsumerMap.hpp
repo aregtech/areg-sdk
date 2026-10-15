@@ -166,9 +166,10 @@ public:
 using MapConsumer = IntegerHashMap<EventConsumerList>;
 
 /**
- * \brief   The Map of the list, where the key is a magic number and values are list of proxies.
+ * \brief   The map of event consumer lists, keyed by event class ID. Not locked: the owning
+ *          EventDispatcherBase guards it.
  **/
-using EventConsumerMap = ConcurrentResourceListMap<uint32_t, EventConsumer*, EventConsumerList, MapConsumer, ImplConsumerMap>;
+using EventConsumerMap = ResourceListMap<uint32_t, EventConsumer*, EventConsumerList, MapConsumer, ImplConsumerMap>;
 
 //////////////////////////////////////////////////////////////////////////
 // Inline functions implementation

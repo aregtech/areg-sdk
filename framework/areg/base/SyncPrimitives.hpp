@@ -705,6 +705,12 @@ public:
      **/
     bool try_lock() final;
 
+    /**
+     * \brief   Returns true if the calling thread holds the spin-lock.
+     **/
+    [[nodiscard]]
+    bool is_held_by_current() const noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -728,6 +734,53 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     AREG_NOCOPY_NOMOVE( SpinLock );
+};
+
+//////////////////////////////////////////////////////////////////////////
+// PlainSpinLock class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Non-recursive spin-lock without an owner: one CAS to lock, one atomic operation to
+ *          unlock. A contended lock re-checks 64 times, then sleeps on the word like SpinLock.
+ *          The thread holding it must not lock it again. Satisfies std BasicLockable.
+ **/
+class AREG_API PlainSpinLock
+{
+public:
+    PlainSpinLock() noexcept = default;
+    ~PlainSpinLock() = default;
+
+    /**
+     * \brief   Acquires the lock, sleeping while another thread holds it.
+     **/
+    inline void lock() noexcept;
+
+    /**
+     * \brief   Releases the lock and wakes one sleeping thread, if any.
+     **/
+    inline void unlock() noexcept;
+
+private:
+    //!< Takes the lock that another thread holds.
+    void _lock_contended() noexcept;
+    //!< Wakes one thread sleeping on the lock.
+    void _wake_sleeper() noexcept;
+
+    //!< The lowest bit of the word: the lock is taken; bit 16 and above: sleeping threads.
+    static constexpr uint32_t   SLEEPER_SHIFT   { 16u };
+
+#if defined(_MSC_VER)
+    #pragma warning(push)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+
+    std::atomic<uint32_t>   mWord{ 0u };    //!< 1 while held, plus the sleepers in the high bits.
+
+#if defined(_MSC_VER)
+    #pragma warning(pop)
+#endif  // _MSC_VER
+
+    AREG_NOCOPY_NOMOVE( PlainSpinLock );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -1463,6 +1516,27 @@ inline bool CriticalSection::lock()
 inline bool SpinLock::lock()
 {
     return lock(areg::WAIT_INFINITE);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// PlainSpinLock class inline functions
+//////////////////////////////////////////////////////////////////////////
+
+inline void PlainSpinLock::lock() noexcept
+{
+    uint32_t expected{ 0u };
+    if (mWord.compare_exchange_strong(expected, 1u, std::memory_order_acquire, std::memory_order_relaxed) == false)
+    {
+        _lock_contended();
+    }
+}
+
+inline void PlainSpinLock::unlock() noexcept
+{
+    if ((mWord.fetch_sub(1u, std::memory_order_release) >> SLEEPER_SHIFT) != 0u)
+    {
+        _wake_sleeper();
+    }
 }
 
 

@@ -289,6 +289,26 @@ bool SpinLock::unlock()
     return true;
 }
 
+bool SpinLock::is_held_by_current() const noexcept
+{
+    return (mOwner.load(std::memory_order_relaxed) == Thread::current_thread_id());
+}
+
+//////////////////////////////////////////////////////////////////////////
+// PlainSpinLock class implementation
+//////////////////////////////////////////////////////////////////////////
+
+void PlainSpinLock::_lock_contended() noexcept
+{
+    static_assert((1u << SLEEPER_SHIFT) == LOCK_SLEEPER, "PlainSpinLock and SpinLock share the word layout");
+    _spin_lock_contended(mWord);
+}
+
+void PlainSpinLock::_wake_sleeper() noexcept
+{
+    areg::os::_os_wake_word(mWord);
+}
+
 //////////////////////////////////////////////////////////////////////////
 // NolockSyncObject class implementation
 //////////////////////////////////////////////////////////////////////////

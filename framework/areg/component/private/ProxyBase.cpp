@@ -169,7 +169,8 @@ std::shared_ptr<ProxyBase> ProxyBase::acquire_proxy( const String & roleName
 
 int32_t ProxyBase::find_thread_proxies(DispatcherThread & ownerThread, ArrayList<std::shared_ptr<ProxyBase>> & threadProxyList )
 {
-    ThreadProxyList * proxyList = ProxyBase::thread_proxies().find_resource(static_cast<uint32_t>(ownerThread.address()));
+    Lock lock(ProxyBase::thread_proxies().lockable());
+    ThreadProxyList * proxyList = ProxyBase::thread_proxies().find_resource_locked(static_cast<uint32_t>(ownerThread.address()));
     int32_t result = proxyList != nullptr ? static_cast<int32_t>(proxyList->size()) : 0;
     if ( result > 0 )
     {

@@ -18,13 +18,16 @@
 #include "areg/component/Event.hpp"
 #include "areg/component/EventConsumer.hpp"
 #include "areg/component/ExitEvent.hpp"
+#include "areg/component/DispatcherThread.hpp"
 
 #include "areg/appbase/Application.hpp"
 #include "areg/persist/ConfigManager.hpp"
 #include "areg/base/private/DebugDefs.hpp"
+#include "areg/base/private/WaitWord.hpp"
 
 #include <atomic>
 #include <chrono>
+#include <mutex>
 #if defined(__GLIBC__)
     #include <malloc.h>     // malloc_trim(): hand a drained backlog's pages back to the OS
     #include <mutex>
@@ -83,6 +86,15 @@ namespace
 
 }
 
+namespace {
+    //!< Listeners of one event copied on the stack before they are called.
+    constexpr uint32_t  DISPATCH_INLINE_LISTENERS{ 8u };
+    //!< The count that sends a dispatch to the allocated copy.
+    constexpr uint32_t  DISPATCH_TOO_MANY{ 0xFFFF'FFFFu };
+    //!< The bit of mInDispatch set while a thread waits for the running callback.
+    constexpr uintptr_t DISPATCH_WAITER{ 1u };
+} // namespace
+
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -98,6 +110,9 @@ EventDispatcherBase::EventDispatcherBase(const String & name, uint32_t maxQeueue
     , mInternalEvents( )
     , mHasStarted    ( false )
     , mConsumerMap   ( )
+    , mConsumerLock  ( )
+    , mInDispatch    ( 0u )
+    , mDispatchDone  ( 0u )
 {
 }
 
@@ -107,6 +122,9 @@ EventDispatcherBase::EventDispatcherBase( areg::NullTag ) noexcept
     , mInternalEvents( )
     , mHasStarted    ( false )
     , mConsumerMap   ( )
+    , mConsumerLock  ( )
+    , mInDispatch    ( 0u )
+    , mDispatchDone  ( 0u )
 {
 }
 
@@ -181,56 +199,58 @@ EventQueue::PushResult EventDispatcherBase::try_queue_event( Event& eventElem )
 
 bool EventDispatcherBase::register_event_consumer( const uint32_t whichClass, EventConsumer& whichConsumer )
 {
-    mConsumerMap.lock();
-    bool result = false;
-    EventConsumerList* listConsumers = mConsumerMap.find_resource(whichClass);
-    if (listConsumers == nullptr || !listConsumers->exist(whichConsumer))
+    std::lock_guard<PlainSpinLock> lock(mConsumerLock);
+    EventConsumerList* listConsumers{ mConsumerMap.find_resource_locked(whichClass) };
+    if ((listConsumers != nullptr) && listConsumers->exist(whichConsumer))
     {
-        mConsumerMap.register_resource_object(whichClass, &whichConsumer);
-        result = true;
+        return false;
     }
-    mConsumerMap.unlock();
-    return result;
+
+    mConsumerMap.register_resource_object(whichClass, &whichConsumer);
+    return true;
 }
 
 bool EventDispatcherBase::unregister_event_consumer( const uint32_t whichClass, EventConsumer & whichConsumer )
 {
-    mConsumerMap.lock();
-    bool result = mConsumerMap.exist(whichClass);
-    if (result)
+    bool result{ false };
     {
-        mConsumerMap.unregister_resource_object(whichClass, &whichConsumer, true);
-    }
-    mConsumerMap.unlock();
-    return result;
-}
-
-
-int32_t EventDispatcherBase::remove_consumer( EventConsumer & whichConsumer )
-{
-    mConsumerMap.lock();
-
-    int32_t result = 0;
-    std::vector<uint32_t> toRemove;
-
-    for (const auto & entry : mConsumerMap.data())
-    {
-        EventConsumerList & list = const_cast<EventConsumerList &>(entry.second);
-        ASSERT(list.is_empty() == false);
-        result += list.remove_consumer(whichConsumer) ? 1 : 0;
-        if (list.is_empty())
+        std::lock_guard<PlainSpinLock> lock(mConsumerLock);
+        result = mConsumerMap.find_resource_locked(whichClass) != nullptr;
+        if (result)
         {
-            toRemove.push_back(entry.first);
+            mConsumerMap.unregister_resource_object(whichClass, &whichConsumer, true);
         }
     }
 
-    for (uint32_t key : toRemove)
+    _wait_listener_done(whichConsumer);
+    return result;
+}
+
+int32_t EventDispatcherBase::remove_consumer( EventConsumer & whichConsumer )
+{
+    int32_t result{ 0 };
     {
-        EventConsumerList removed = mConsumerMap.unregister_resource(key);
-        removed.remove_all_consumers();
+        std::lock_guard<PlainSpinLock> lock(mConsumerLock);
+        std::vector<uint32_t> toRemove;
+        for (const auto & entry : mConsumerMap.data())
+        {
+            EventConsumerList & list = const_cast<EventConsumerList &>(entry.second);
+            ASSERT(list.is_empty() == false);
+            result += list.remove_consumer(whichConsumer) ? 1 : 0;
+            if (list.is_empty())
+            {
+                toRemove.push_back(entry.first);
+            }
+        }
+
+        for (uint32_t key : toRemove)
+        {
+            EventConsumerList removed = mConsumerMap.unregister_resource(key);
+            removed.remove_all_consumers();
+        }
     }
 
-    mConsumerMap.unlock();
+    _wait_listener_done(whichConsumer);
     return result;
 }
 
@@ -378,40 +398,140 @@ bool EventDispatcherBase::dispatch_event( Event& eventElem )
         eventElem.dispatch_self(consumer);
         return true;
     }
-    else
+
+    // The listeners are copied under the lock and called without it.
+    const uint32_t eventId{ eventElem.event_id() };
+    EventConsumer* listeners[DISPATCH_INLINE_LISTENERS];
+    uint32_t count{ 0u };
     {
-        EventConsumerList* listConsumers = mConsumerMap.find_resource(eventElem.event_id());
-        if (listConsumers != nullptr)
+        std::lock_guard<PlainSpinLock> lock(mConsumerLock);
+        const EventConsumerList* listConsumers{ mConsumerMap.find_resource_locked(eventId) };
+        count = (listConsumers != nullptr) ? listConsumers->size() : 0u;
+        if (count > DISPATCH_INLINE_LISTENERS)
         {
-            for (auto entry : listConsumers->data())
+            count = DISPATCH_TOO_MANY;
+        }
+        else if (count != 0u)
+        {
+            for (uint32_t i = 0u; i < count; ++i)
             {
-                eventElem.dispatch_self(entry);
+                listeners[i] = (*listConsumers)[i];
             }
 
-            return !listConsumers->is_empty();
+            mInDispatch.store(reinterpret_cast<uintptr_t>(listeners[0]), std::memory_order_relaxed);
         }
     }
 
-    return false;
+    if (count == DISPATCH_TOO_MANY)
+    {
+        return _dispatch_many(eventElem);
+    }
+
+    _dispatch_listeners(eventElem, listeners, count);
+    return (count != 0u);
+}
+
+bool EventDispatcherBase::_dispatch_many( Event & eventElem )
+{
+    // The copy is allocated outside the lock, so the size is checked again under it.
+    const uint32_t eventId{ eventElem.event_id() };
+    std::vector<EventConsumer*> listeners;
+    uint32_t count{ 0u };
+    for (;;)
+    {
+        {
+            std::lock_guard<PlainSpinLock> lock(mConsumerLock);
+            const EventConsumerList* listConsumers{ mConsumerMap.find_resource_locked(eventId) };
+            count = (listConsumers != nullptr) ? listConsumers->size() : 0u;
+            if (count <= listeners.size())
+            {
+                for (uint32_t i = 0u; i < count; ++i)
+                {
+                    listeners[i] = (*listConsumers)[i];
+                }
+
+                if (count != 0u)
+                {
+                    mInDispatch.store(reinterpret_cast<uintptr_t>(listeners[0]), std::memory_order_relaxed);
+                }
+
+                break;
+            }
+        }
+
+        listeners.resize(count);
+    }
+
+    _dispatch_listeners(eventElem, listeners.data(), count);
+    return (count != 0u);
+}
+
+void EventDispatcherBase::_dispatch_listeners( Event & eventElem, EventConsumer * const * listeners, uint32_t count )
+{
+    for (uint32_t i = 0u; i < count; ++i)
+    {
+        EventConsumer* entry{ listeners[i] };
+        if (i != 0u)
+        {
+            // A listener removed after the copy is skipped.
+            std::lock_guard<PlainSpinLock> lock(mConsumerLock);
+            const EventConsumerList* listConsumers{ mConsumerMap.find_resource_locked(eventElem.event_id()) };
+            if ((listConsumers == nullptr) || (listConsumers->exist(*entry) == false))
+            {
+                continue;
+            }
+
+            mInDispatch.store(reinterpret_cast<uintptr_t>(entry), std::memory_order_relaxed);
+        }
+
+        eventElem.dispatch_self(entry);
+        if ((mInDispatch.exchange(0u, std::memory_order_acq_rel) & DISPATCH_WAITER) != 0u)
+        {
+            mDispatchDone.fetch_add(1u, std::memory_order_release);
+            areg::os::_os_wake_word_all(&mDispatchDone);
+        }
+    }
+}
+
+void EventDispatcherBase::_wait_listener_done( const EventConsumer & consumer ) noexcept
+{
+    const uintptr_t target{ reinterpret_cast<uintptr_t>(&consumer) };
+    const uint32_t seen{ mDispatchDone.load(std::memory_order_acquire) };
+    uintptr_t state{ mInDispatch.load(std::memory_order_acquire) };
+    if (((state & ~DISPATCH_WAITER) != target) || (&DispatcherThread::current_dispatcher() == this))
+    {
+        return;
+    }
+
+    while ((state & ~DISPATCH_WAITER) == target)
+    {
+        if (mInDispatch.compare_exchange_weak(state, target | DISPATCH_WAITER, std::memory_order_acq_rel, std::memory_order_acquire))
+        {
+            while (mDispatchDone.load(std::memory_order_acquire) == seen)
+            {
+                areg::os::_os_wait_word(mDispatchDone, seen);
+            }
+
+            return;
+        }
+    }
 }
 
 bool EventDispatcherBase::has_registered_consumer( uint32_t whichClass ) const
 {
-    return mConsumerMap.exist(whichClass);
+    std::lock_guard<PlainSpinLock> lock(mConsumerLock);
+    return (mConsumerMap.find_resource_locked(whichClass) != nullptr);
 }
 
 inline void EventDispatcherBase::_clean() noexcept
 {
-    mConsumerMap.lock();
-
+    std::lock_guard<PlainSpinLock> lock(mConsumerLock);
     while (!mConsumerMap.is_empty())
     {
         uint32_t key = mConsumerMap.data().begin()->first;
         EventConsumerList removed = mConsumerMap.unregister_resource(key);
         removed.remove_all_consumers();
     }
-
-    mConsumerMap.unlock();
 }
 
 bool EventDispatcherBase::pulse_exit()

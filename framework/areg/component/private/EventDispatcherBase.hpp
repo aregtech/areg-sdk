@@ -376,6 +376,22 @@ protected:
      **/
     EventConsumerMap    mConsumerMap;
 
+private:
+    /**
+     * \brief   Guards mConsumerMap. Never held while a consumer runs.
+     **/
+    mutable PlainSpinLock   mConsumerLock;
+
+    /**
+     * \brief   The listener whose callback runs now, or 0. The lowest bit is set when a thread waits for it.
+     **/
+    std::atomic<uintptr_t>  mInDispatch;
+
+    /**
+     * \brief   The word a removing thread waits on; incremented when a waited callback ends.
+     **/
+    std::atomic<uint32_t>   mDispatchDone;
+
 #if defined(_MSC_VER)
     #pragma warning(pop)
 #endif  // _MSC_VER
@@ -386,6 +402,32 @@ protected:
 private:
     inline EventDispatcherBase & self() noexcept;
     void _clean() noexcept;
+
+    /**
+     * \brief   Dispatches the event to more listeners than fit on the stack.
+     *
+     * \param   eventElem   The event to dispatch.
+     * \return  Returns true if the event had at least one listener.
+     **/
+    bool _dispatch_many( Event & eventElem );
+
+    /**
+     * \brief   Calls the copied listeners without the lock; mInDispatch holds the first one.
+     *          A listener removed after the copy is skipped.
+     *
+     * \param   eventElem   The event to dispatch.
+     * \param   listeners   The listeners copied under the lock.
+     * \param   count       The number of listeners.
+     **/
+    void _dispatch_listeners( Event & eventElem, EventConsumer * const * listeners, uint32_t count );
+
+    /**
+     * \brief   Waits until the consumer's callback ends if it runs now on another thread. Called
+     *          after the consumer is removed from the map.
+     *
+     * \param   consumer    The removed consumer.
+     **/
+    void _wait_listener_done( const EventConsumer & consumer ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden method calls
