@@ -430,9 +430,12 @@ jobs:
           cmake --build "${{ runner.temp }}\gentest\build" --config Release
           $binary = Get-ChildItem -Path "${{ runner.temp }}\gentest\build" -Recurse -Filter hello_local.exe | Select-Object -First 1
           if (-not $binary) { throw "the recipe built no hello_local.exe" }
+          $logs = Join-Path $binary.DirectoryName "logs"
+          Remove-Item -Recurse -Force $logs -ErrorAction SilentlyContinue
           $output = & $binary.FullName 2>&1 | Out-String
+          if (Test-Path $logs) { $output += Get-ChildItem -Path $logs -Filter *.log | Get-Content -Raw | Out-String }
           Write-Host $output
-          if ($output -notmatch 'consumer: greeted') { throw "the recipe ran and did not print what it promises" }
+          if ($output -notmatch 'consumer: greeted') { throw "the recipe ran and did not log what it promises" }
 
       # The five-step chain, through the MSVC toolchain. The recipe above is written
       # by hand; this is the path an agent actually takes -- a scaffold, a design,
