@@ -573,7 +573,8 @@ def scenario_runs(path):
         before = binaries
     if not runs:
         return ''
-    said = 'This file runs {}. A scenario of your own starts these binaries'.format('; '.join(runs))
+    said = ('This file runs {}. A scenario of your own starts these binaries, each proc '
+            'any of "binary", "lead", "stdin", "expect", "reject", "exit"').format('; '.join(runs))
     if anchor:
         said += ', added by a "== scenarios.json" SEARCH block after its line `{}`'.format(anchor)
     return said + '.'
@@ -2878,7 +2879,7 @@ def worker_class(iface, worker):
                   '    void release()',
                   '    {',
                   marker(worker['release'], 'what makes a handler of {} that waits on an '
-                         'object of its own return (an areg::SyncEvent member it lock()s on: '
+                         'object of its own return (an areg::SyncEvent member, unsignaled and auto-reset by default, it lock()s on: '
                          'set_signaled() here); {}() calls it on the provider\'s thread '
                          'before it stops the thread, so it touches only what is safe across '
                          'threads, or one // line when no handler waits'

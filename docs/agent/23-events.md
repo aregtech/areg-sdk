@@ -97,8 +97,8 @@ thread instead of ahead of it.
 - **Never send a custom event to another process.** It has no wire format and
   `mtrouter` never sees it. Traffic that crosses a process boundary is a `Public`
   service, and nothing else.
-- **Never block in `process_event`.** It is a dispatcher handler like any other, so
-  it stops every component of that thread while it runs.
+- **Never block in `process_event` on a component thread.** It stops every component
+  of that thread; a wait belongs on a worker (`38`).
 - **Never send before the consumer is registered.** The event is dropped and
   `send_event` returns `false`; nothing else reports it.
 - **Never keep a reference to the data after `process_event` returns.** Copy what

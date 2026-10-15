@@ -1099,7 +1099,8 @@ def wiring(programs, components, deployments=()):
                   '{}.request_<name>(...), and reads its attributes there. A client\'s'
                   .format(member_of(next(r for c in components for _, rs, _ in c.clients
                                          for r in rs))),
-                  'sections reach their component as mOwner, whose header the client\'s .cpp',
+                  'sections call request_<name>(...) bare and reach their component as',
+                  'mOwner, whose header the client\'s .cpp',
                   'includes; private members and *_state helpers included,',
                   'its own types spelt as {}::Name; quit_with() stays a free call.'
                   .format(next(c.cls for c in components if c.clients)),
