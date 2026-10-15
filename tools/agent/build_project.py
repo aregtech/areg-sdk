@@ -334,6 +334,21 @@ def split_file_edits(root, text):
     return '\n'.join(edits), '\n'.join(rest)
 
 
+def apply_file_blocks(root, target, text, made, appendable):
+    """Applies the "== <project file>" blocks of a bodies or fix text and returns the
+    rest, the sections alone."""
+    edits, rest = split_file_edits(root, text)
+    if not edits.strip():
+        return text
+    if any(EDIT_FILE.match(line) and os.path.basename(
+            EDIT_FILE.match(line).group(1)) in appendable
+           for line in edits.split('\n')):
+        fail('--write {}: its sections are written as they are, so a block '
+             'cannot edit {} itself'.format(target, ' or '.join(appendable)))
+    apply_edits(root, edits, made, appendable)
+    return rest
+
+
 def edit_refusal(root, target, path, generated_dirs):
     """Why a file may not be edited, or None."""
     rel = os.path.relpath(path, root).replace(os.sep, '/')
@@ -1360,17 +1375,22 @@ def main():
     for target in args.write:
         text = '' if sys.stdin is None or sys.stdin.isatty() else sys.stdin.read()
         if os.path.basename(target) in appendable:
-            edits, text = split_file_edits(root, text)
-            if edits.strip():
-                if any(EDIT_FILE.match(line) and os.path.basename(
-                        EDIT_FILE.match(line).group(1)) in appendable
-                       for line in edits.split('\n')):
-                    fail('--write {}: its sections are written as they are, so a block '
-                         'cannot edit {} itself'.format(target, ' or '.join(appendable)))
-                apply_edits(root, edits, made, appendable)
-                if not text.strip():
-                    continue
+            text = apply_file_blocks(root, target, text, made, appendable)
+            if not text.strip():
+                continue
         write_input(root, target, text)
+    for target in appendable:
+        path = os.path.join(root, target)
+        if args.no_fill or not os.path.isfile(path):
+            continue
+        with open(path, encoding='utf-8') as handle:
+            text = handle.read()
+        rest = apply_file_blocks(root, target, text, made, appendable)
+        if rest != text:
+            with open(path, 'w', encoding='utf-8') as handle:
+                handle.write(rest if rest.endswith('\n') else rest + '\n')
+            print('== write: the "== <file>" blocks of {} are applied and taken out of it'
+                  .format(target))
     mode = mode_of(root, args.mode)
 
     # Every input path is resolved once, against the project root, and that one

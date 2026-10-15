@@ -2718,8 +2718,9 @@ def state_mirrors(project, spec):
     return found
 
 
-def trigger_coverage(spec):
-    """Which states answer each trigger, in declaration order.
+def trigger_coverage(spec, asked=()):
+    """Which states answer each trigger, in declaration order. A trigger in `asked`
+    carries a request owed an answer; a state taking it only behind guards is marked "?".
 
     A trigger has no effect in a state that declares no transition on it. Codegen
     accepts the machine, the generated call compiles, and nothing reports that it
@@ -2730,8 +2731,9 @@ def trigger_coverage(spec):
         return []
     answered = dict((name, []) for name in names)
 
-    def walk(states, entry, enters):
-        """entry: the state this level starts in. enters: this level is entered at start."""
+    def walk(states, entry, enters, sure):
+        """entry: the state this level starts in. enters: this level is entered at start.
+        sure: the triggers an enclosing state takes with no guard."""
         for state in states or []:
             label = state.get('name')
             if not label:
@@ -2739,15 +2741,16 @@ def trigger_coverage(spec):
             starts = enters and label == entry
             mark = label + ('*' if starts else '') \
                          + ('+' if state.get('states') else '')
-            seen = set()
-            for move in state.get('transitions') or []:
-                on = move.get('on')
-                if on in answered and on not in seen:
-                    seen.add(on)
-                    answered[on].append(mark)
-            walk(state.get('states'), state.get('initial'), starts)
+            moves = [move for move in state.get('transitions') or [] if isinstance(move, dict)]
+            taken = set(move.get('on') for move in moves if move.get('on') in answered)
+            unguarded = set(move.get('on') for move in moves if not move.get('guard'))
+            for on in names:
+                if on in taken:
+                    answered[on].append(mark + ('?' if on in asked and on not in unguarded | sure
+                                                else ''))
+            walk(state.get('states'), state.get('initial'), starts, sure | unguarded)
 
-    walk(spec.get('states'), spec.get('initial'), True)
+    walk(spec.get('states'), spec.get('initial'), True, set())
     return [(name, answered[name]) for name in names]
 
 
@@ -3672,11 +3675,12 @@ def review(project, skipped):
                   'with "repeat": {} that transition runs {} time(s) per visit. To run it on '
                   'every tick, add "start {}" to its "do", or give the timer "repeat": 0.'
                   .format(spec.get('name', '?'), state, timer, repeat, repeat, timer))
-        coverage = trigger_coverage(spec)
+        coverage = trigger_coverage(spec, unanswered_requests(project, spec))
         if coverage:
             print('  table {}: which states answer each trigger (* the initial state, '
-                  '+ also while inside it). The document is written and this asks for '
-                  'no change: it is here to read, because a trigger called in a state '
+                  '+ also while inside it, ? a request answered only while a guard holds). The document is '
+                  'written and this asks for no change: it is here to read, because a '
+                  'trigger called in a state '
                   'not listed beside it does nothing and nothing reports it.'
                   .format(spec.get('name', '?')))
             width = max(len(name) for name, _ in coverage)
