@@ -8,9 +8,9 @@
 #   python3 tools/agent/api_help.py DataState       # a scoped enumeration
 #   python3 tools/agent/api_help.py --search timer  # names holding a word
 #
-# --full adds the documentation block a declaration carries. Everything printed
-# is read from the headers at run time and nothing is written down here, so an
-# answer cannot disagree with the framework it describes.
+# A member answer of a few declarations carries their briefs; --full adds them to every
+# answer, uncut. Everything printed is read from the headers at run time and nothing is
+# written down here, so an answer cannot disagree with the framework it describes.
 #
 # Reading a header instead costs 20 KB to 60 KB, carried in context and re-sent
 # on every later request. This answers in a few lines.
@@ -82,6 +82,10 @@ noexcept explicit operator delete new
 
 
 MEMBERS = os.path.join(ROOT, 'docs', 'agent', 'members.json')
+
+# A member answer of at most this many declarations prints each one's brief, cut to BRIEF_CHARS.
+BRIEF_DECLARATIONS = 4
+BRIEF_CHARS = 200
 
 
 def catalogued(name):
@@ -351,15 +355,27 @@ def answer_member(headers, name, full):
     if not groups:
         return False
     total = sum(len(v) for v in groups.values())
+    briefs = full or total <= BRIEF_DECLARATIONS
     print('{} -- {} declaration(s)'.format(name, total))
     for (owner, path), entries in sorted(groups.items()):
         print('')
         print('{}  ({})'.format(owner, path))
         for signature, doc in entries:
             print('  {}'.format(signature))
-            if full and doc:
-                print('      {}'.format(doc))
+            if briefs and doc:
+                print('      {}'.format(doc if full else short_brief(doc)))
+    if not briefs:
+        print('')
+        print('--full adds what each one does.')
     return True
+
+
+def short_brief(doc):
+    """The brief cut to BRIEF_CHARS, at the last sentence end inside it when there is one."""
+    if len(doc) <= BRIEF_CHARS:
+        return doc
+    cut = doc.rfind('. ', 0, BRIEF_CHARS)
+    return doc[:cut + 1] if cut > 0 else doc[:BRIEF_CHARS].rstrip() + '...'
 
 
 def answer_constant(headers, name):

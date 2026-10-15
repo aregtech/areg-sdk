@@ -802,8 +802,9 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
                                 entry['late'] = True
                     # With wait_all and every stop fired, the processes still running
                     # after the lead are given until the deadline to end on their own.
+                    # Running is read from ended, so no exit goes unrecorded.
                     if lead_done and not (wait_all and not pending and any(
-                            handle.poll() is None for _, handle in handles)):
+                            index not in ended for index in range(len(handles)))):
                         break
                     if time.time() >= deadline:
                         if not lead_done:

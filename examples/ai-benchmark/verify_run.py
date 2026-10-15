@@ -86,7 +86,7 @@ REQUIREMENTS = {
 PROGRAMS_RE = re.compile(r'\b(two|three|four|five)\s+separate\s+programs\b', re.IGNORECASE)
 PROGRAM_COUNT = {'two': 2, 'three': 3, 'four': 4, 'five': 5}
 CLAIM_RE = re.compile(r'acceptance items passing\s*\|([^|\n]*)', re.IGNORECASE)
-COUNT_RE = re.compile(r'(\d+)\s+of\s+(\d+)')
+COUNT_RE = re.compile(r'(\d+)\s+of\s+(?:the\s+)?(\d+)')
 # The lines a task says its programs print: a fenced block with the info string "lines".
 LINES_RE = re.compile(r'^```lines[ \t]*\n(.*?)^```', re.MULTILINE | re.DOTALL)
 PLACEHOLDER_RE = re.compile(r'<[^<>]+>')
@@ -103,6 +103,23 @@ def task_file(run_dir):
     except OSError:
         pass
     return ''
+
+
+def min_seconds(run_dir):
+    """The least normal-run time of the run's task: by the prompt's file name, else by
+    the benchmark prompt with the same text, as a staged task.md is a copy of one."""
+    path = task_file(run_dir)
+    if os.path.basename(path) in MIN_SECONDS:
+        return MIN_SECONDS[os.path.basename(path)]
+    text = task_text(run_dir)
+    for name, seconds in MIN_SECONDS.items():
+        try:
+            with open(os.path.join(HERE, name), encoding='utf-8') as prompt:
+                if text and prompt.read() == text:
+                    return seconds
+        except OSError:
+            pass
+    return None
 
 
 def task_text(run_dir):
@@ -770,6 +787,8 @@ SELF_TEST_CLAIMS = (
      ('12 of 13', '5 of 5')),
     ('the code count named before its number', ' 12 of 13; code items 5 of 5 ',
      ('12 of 13', '5 of 5')),
+    ('"of the" between the numbers', ' 14 of the 14 unmarked items. 3 of the 3 (code) items ',
+     ('14 of 14', '3 of 3')),
     ('no count', ' none |', None),
 )
 
@@ -884,7 +903,7 @@ def main():
     report(judge_lines(task_lines(task_text(run_dir)), outputs))
     report(judge_checked(task_lines(task_text(run_dir)), read_text('bodies.txt'),
                          read_json('design.json')))
-    report(judge_timing(MIN_SECONDS.get(os.path.basename(task_file(run_dir))),
+    report(judge_timing(min_seconds(run_dir),
                         statistics.median(leads) if leads else None))
     if args.sanitize:
         report(probe_sanitize(run_dir, work, scenario, document))

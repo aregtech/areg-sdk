@@ -1097,7 +1097,9 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
     lines.append('#| The names these bodies may call, spelt as the generator emits them.\n'
                  '#| A name spelt in another namespace than the one below does not\n'
                  '#| compile. A generated consumer or client subscribes to everything\n'
-                 '#| its document declares as it connects; no body calls notify_on_*:\n#|')
+                 '#| its document declares as it connects. A body calls notify_on_*\n'
+                 '#| of its consumer or client member only to stop (false) or resume\n'
+                 '#| (true); resuming an attribute delivers its current value at once:\n#|')
     # A type or a rule two documents share is listed under the first.
     listed = set()
     for spec, doc in contracts or ((iface, document), (machine, machine_doc)):
