@@ -9297,7 +9297,8 @@ def check_watcher_connect(report):
 
 def check_own_sources(report):
     """A file design.json "sources" names is written as one worksheet section, its .cpp is
-    compiled into the program of its folder, and a folder no program compiles is refused."""
+    compiled into the program of its folder and includes its own header, and a folder no
+    program compiles is refused."""
     tools = os.path.join(ROOT, 'tools', 'agent')
     example = subprocess.run([sys.executable, os.path.join(tools, 'gen_docs.py'),
                               '--example', 'programs'], stdout=subprocess.PIPE,
@@ -9342,6 +9343,8 @@ def check_own_sources(report):
         with open(os.path.join(holder, 'worksheet.txt'), encoding='utf-8') as handle:
             sheet = handle.read()
         header = os.path.isfile(os.path.join(holder, 'src', 'desk', 'Ledger.hpp'))
+        with open(os.path.join(holder, 'src', 'desk', 'Ledger.cpp'), encoding='utf-8') as handle:
+            source = handle.read()
         design['sources'] = [{'file': 'nowhere/Ledger.hpp'}]
         wrong = generate(holder) or ''
     finally:
@@ -9356,6 +9359,10 @@ def check_own_sources(report):
             or '"src/desk/Ledger.hpp"' not in section or 'private' in section:
         report.fail('own-sources', 'the worksheet section of a "sources" header does not '
                     'say what it is and how it is included, or carries a class\'s notes')
+        return
+    if '#include "src/desk/Ledger.hpp"' not in source:
+        report.fail('own-sources', 'a "sources" .cpp does not include the header of the '
+                    'same name that "sources" also names')
         return
     if 'no program compiles src/nowhere/' not in wrong:
         report.fail('own-sources', 'a "sources" file in a folder no program compiles is not '

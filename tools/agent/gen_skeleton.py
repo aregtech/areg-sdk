@@ -484,6 +484,15 @@ CONTROL = ('if', 'else', 'for', 'while', 'switch', 'do', 'try', 'catch')
 CARRIED = '()[]<>,&|=+-*/.?:"'
 
 
+def bystander(scenario, spec):
+    """Whether this process runs in that scenario neither stopped by it nor leading it."""
+    procs = scenario.get('procs', [])
+    lead = next((one for one in procs if one.get('lead')), procs[-1] if procs else None)
+    same = [one for one in procs if proc_label(one) == proc_label(spec)]
+    stopped = (scenario.get('stop') or {}).get('proc')
+    return bool(same) and same[0] is not lead and proc_label(spec) != stopped
+
+
 def scenario_holes(path):
     """Every unfilled hole of a scenario file, as (marker, what the section asks).
 
@@ -514,8 +523,9 @@ def scenario_holes(path):
                                  'requirement only "{0}" can show goes in a section == {1}.'
                                  .format(proc_label(other), expect_slot(label, other)))
                     lost = [one for one in scenarios if one.get('stop') and one is not scenario]
-                    if lost and not scenario.get('stop'):
-                        hint += (' A line written on losing a peer goes in == {}, not here.'
+                    if lost and not scenario.get('stop') and bystander(lost[0], spec):
+                        hint += (' A line it writes on losing a peer goes in a section == {} of '
+                                 'this file, not here.'
                                  .format(expect_slot(lost[0].get('name', ''), spec)))
                     holes.append((found.group(1), hint))
         stop = scenario.get('stop')
@@ -4741,6 +4751,7 @@ def own_sources(specs, folders):
         spec, _skipped = gen_docs.load_spec(path)
         entries += [entry for entry in spec.get('sources') or [] if isinstance(entry, dict)]
     produced = []
+    names = set(entry.get('file', '') for entry in entries)
     for entry in entries:
         name = entry.get('file', '')
         folder = name.rsplit('/', 1)[0] + '/' if '/' in name else ''
@@ -4752,10 +4763,14 @@ def own_sources(specs, folders):
         marker = '{}_{}'.format(stem, ext[1:])
         what = (entry.get('description') or 'a file of your own').strip().rstrip('.')
         if ext == '.cpp':
-            text = ('#include "areg/logging/areg_log.h"\n\nGLOBAL_LOG_SCOPE({stem}, log);\n\n'
-                    '// TODO(you) {marker}: the whole source ({what}) below its log scope; '
+            own = os.path.splitext(name)[0] + '.hpp'
+            own = own if own in names else ''
+            text = ('#include "areg/logging/areg_log.h"\n{include}\nGLOBAL_LOG_SCOPE({stem}, log);\n\n'
+                    '// TODO(you) {marker}: the whole source ({what}) below its log scope{has}; '
                     'it logs with GLOBAL_INFO(...) and declares no scope of its own\n').format(
-                        stem=stem, marker=marker, what=what)
+                        stem=stem, marker=marker, what=what,
+                        include='#include "src/{}"\n'.format(own) if own else '',
+                        has=' and its own header' if own else '')
         else:
             guard = '{}_{}'.format(stem.upper(), ext[1:].upper())
             text = ('#ifndef {guard}\n#define {guard}\n\n'

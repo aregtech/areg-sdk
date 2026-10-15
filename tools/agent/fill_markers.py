@@ -334,11 +334,11 @@ def all_expectations(path, filled):
 
 
 def stacked_lines(sections, patterns):
-    """[(section, count)] of step checks that log STACK_LEAST or more expected lines as
-    fixed text one after another, with no branch or check between them."""
+    """[(section, count)] of sections, startup and main() aside, that log STACK_LEAST or
+    more expected lines as fixed text one after another, with no branch or check between."""
     found = []
     for name, body in sections:
-        if not name.rpartition(':')[2].startswith('step_'):
+        if re.match(r'(?:main_|startup|initial_values|expect_)', name.rpartition(':')[2]):
             continue
         run, most = set(), 0
         code = '\n'.join(line.split('//')[0] for line in body)

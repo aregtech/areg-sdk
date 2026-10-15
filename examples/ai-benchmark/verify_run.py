@@ -204,7 +204,7 @@ def stated_values(body, wanted):
         end = masked.find(';', found.end())
         if not OUTPUT_RE.search(masked[start:end if end >= 0 else len(masked)]):
             continue
-        text = found.group(1).replace('\\"', '"').strip()
+        text = re.sub(r'\\[nrt]', ' ', found.group(1).replace('\\"', '"')).strip()
         if len(text) < 6 or not any(text.lower() in piece for piece in pieces):
             continue
         text = STEP_PREFIX_RE.sub('', text)
@@ -692,6 +692,9 @@ SELF_TEST_CHECKED = (
     ('a name with a number awaited by until and role', ['step 7: bay 2 done, bay 3 idle'],
      '== step_done\nGLOBAL_INFO("step 7: bay 2 done, bay 3 idle");\n',
      [{'name': 'done', 'until': {'bay': 'bay 2'}, 'role': 'bay_3'}], True),
+    ('values printed as fixed text with a newline', CHECK_LINE,
+     '== step_start\nstd::printf("step 1: bolt 10, nut 5, gear 3\\n"); std::fflush(stdout);\n',
+     [{'name': 'start'}], False),
     ('values logged as fixed text', CHECK_LINE,
      '== step_start\nGLOBAL_INFO("step 1: bolt 10, nut 5, gear 3");\n',
      [{'name': 'start'}], False),

@@ -38,7 +38,8 @@ std::thread(read_console).detach();
 std::atexit([]() { std::fflush(stdout); std::_Exit(areg::Application::stored_element(_exitCode).valInt.mElement); });
 ```
 
-The command is the application's choice; one program per section pair.
+The command is the application's choice; one program per section pair. `quit_with()` and
+`_exitCode` come from the generated `main.cpp`.
 
 - **End of input is not a quit request.** A process started without a terminal is handed
   a stream nothing is ever written to, or one already at its end. A loop that quits
@@ -51,9 +52,8 @@ The command is the application's choice; one program per section pair.
 
 ## 2. Printing a result
 
-One line, one call. Components on different threads print at the same time, and each
-`<<` is a write of its own, so `std::cout << "bay " << n << std::endl` from two threads
-mixes their lines and a test matches neither. `std::printf("bay %u ready\n", n);` is one
+One line, one call. Each `<<` is a write of its own, so `std::cout << "bay " << n` from
+two threads mixes their lines and a test matches neither. `std::printf("bay %u ready\n", n);` is one
 call.
 
 `std::printf` needs no include in a generated file: `areg/base/String.hpp` brings
