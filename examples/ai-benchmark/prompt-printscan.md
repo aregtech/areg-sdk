@@ -125,7 +125,9 @@ they need a second run of their own:
 
 **An acceptance item counts as passing only when the output of one of those runs shows
 it.** An item you believe you implemented but never observed is reported as not
-passing: naming the ones you could not prove is worth more than a full score.
+passing: naming the ones you could not prove is worth more than a full score. An item
+marked (code) is one no output can show: count it apart, as present only where you can
+name the file and the class or function that does it.
 
 ### Acceptance checklist
 
@@ -146,17 +148,17 @@ framework, against this list:
 - [ ] a jam during a scan job is reported the same way, naming the scanner
 - [ ] no new job is accepted while a fault stands
 - [ ] clearing the fault returns the device to idle and it accepts jobs again
-- [ ] jams are injected deterministically for the next named job, not randomly
-- [ ] the device's states and transitions are declared in one place, by name, and
+- [ ] (code) jams are injected deterministically for the next named job, not randomly
+- [ ] (code) the device's states and transitions are declared in one place, by name, and
       the running code follows that declaration rather than restating it
-- [ ] printing and scanning are each one nested piece of the machine, entered from
+- [ ] (code) printing and scanning are each one nested piece of the machine, entered from
       its own job and from the copy job -- not two copies and not one copy steered
       by a flag
 - [ ] the device accepts `-q` / `--quit` at its console and exits cleanly
 - [ ] neither program waits more than 20 seconds for something that never arrives
 - [ ] if one side goes away mid-scenario, the other reports it and exits non-zero
 - [ ] the scenario exits 0, and non-zero when an expectation fails
-- [ ] no busy-waiting and no sleeping inside a message handler
+- [ ] (code) no busy-waiting and no sleeping inside a message handler
 
 ---
 
@@ -194,7 +196,7 @@ End with this table and nothing longer.
 |---|---|
 | build-and-fix cycles | |
 | run-and-fix cycles | |
-| acceptance items passing | n of the checklist above, and which failed |
+| acceptance items passing | n of the unmarked items shown by the output, and which were not; c of the (code) items, each with where |
 | checker findings, first run | name the checker, or "none run" |
 | files you opened that the documentation did not route you to | names, or "none" |
 

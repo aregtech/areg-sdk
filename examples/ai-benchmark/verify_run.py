@@ -85,7 +85,8 @@ REQUIREMENTS = {
 # How a task names its programs, and how an agent reports its checklist.
 PROGRAMS_RE = re.compile(r'\b(two|three|four|five)\s+separate\s+programs\b', re.IGNORECASE)
 PROGRAM_COUNT = {'two': 2, 'three': 3, 'four': 4, 'five': 5}
-CLAIM_RE = re.compile(r'acceptance items passing\s*\|\s*(\d+)\s+of\s+(\d+)', re.IGNORECASE)
+CLAIM_RE = re.compile(r'acceptance items passing\s*\|([^|\n]*)', re.IGNORECASE)
+COUNT_RE = re.compile(r'(\d+)\s+of\s+(\d+)')
 # The lines a task says its programs print: a fenced block with the info string "lines".
 LINES_RE = re.compile(r'^```lines[ \t]*\n(.*?)^```', re.MULTILINE | re.DOTALL)
 PLACEHOLDER_RE = re.compile(r'<[^<>]+>')
@@ -303,8 +304,22 @@ def judge_timing(least, lead_time):
                   '{:.2f}s'.format(lead_time, least))
 
 
+def claim_counts(cell):
+    """("n of m" shown by output, "c of k" of the (code) items or None) of one report
+    cell, or None when it holds no count."""
+    counts = list(COUNT_RE.finditer(cell))
+    if not counts:
+        return None
+    code = next((found for found in counts[1:]
+                 if 'code' in cell[max(found.start() - 24, counts[0].end()):
+                                   found.end() + 24].lower()), None)
+    return ('{} of {}'.format(*counts[0].groups()),
+            '{} of {}'.format(*code.groups()) if code else None)
+
+
 def claimed(run_dir):
-    """The last acceptance count the agent reported, as "n of m", or None.
+    """The last acceptance counts the agent reported, as claim_counts gives them, or
+    (None, None).
 
     Reported beside the probes and not scored: an agent counts an item it did not
     observe as not passing, so a correct run can claim less than all.
@@ -313,10 +328,11 @@ def claimed(run_dir):
     for name in ('run.out', 'transcript.jsonl'):
         try:
             with open(os.path.join(run_dir, name), encoding='utf-8', errors='replace') as handle:
-                claims += CLAIM_RE.findall(handle.read())
+                claims += [found for found in map(claim_counts, CLAIM_RE.findall(
+                    handle.read().replace('\\n', '\n'))) if found]
         except OSError:
             continue
-    return '{} of {}'.format(*claims[-1]) if claims else None
+    return claims[-1] if claims else (None, None)
 
 
 def run(scenario, build_dirs):
@@ -747,6 +763,16 @@ SELF_TEST_TIMING = (
     ('at the least time', 0.45, 0.45, True),
 )
 
+# (case, report cell, expected claim_counts)
+SELF_TEST_CLAIMS = (
+    ('the old row', ' 14 of 18. Not observed: x |', ('14 of 18', None)),
+    ('both counts', ' 12 of 13 shown by the output; 5 of 5 (code) items, in src/a.cpp ',
+     ('12 of 13', '5 of 5')),
+    ('the code count named before its number', ' 12 of 13; code items 5 of 5 ',
+     ('12 of 13', '5 of 5')),
+    ('no count', ' none |', None),
+)
+
 SELF_TEST_RAN = (
     ('audit: nothing ran', {'exits': {}, 'verdict': 'binary not found: x'}, False),
     ('no exit code', {'exits': {'p': None}}, False),
@@ -782,12 +808,17 @@ def self_test():
         got = judge_timing(least, lead_time)['passed']
         if got is not expected:
             failures.append('timing, {}: {} expected, got {}'.format(name, expected, got))
+    for name, cell, expected in SELF_TEST_CLAIMS:
+        if claim_counts(cell) != expected:
+            failures.append('claimed, {}: {} expected, got {}'.format(
+                name, expected, claim_counts(cell)))
     for name, observed, expected in SELF_TEST_RAN:
         if ran(observed) is not expected:
             failures.append('sanitize, {}: {} expected, got {}'
                             .format(name, expected, ran(observed)))
     cases = (len(SELF_TEST_NO_PEER) + len(SELF_TEST_LOSS) + len(SELF_TEST_LINES) + 1
-             + len(SELF_TEST_CHECKED) + len(SELF_TEST_TIMING) + len(SELF_TEST_RAN))
+             + len(SELF_TEST_CHECKED) + len(SELF_TEST_TIMING) + len(SELF_TEST_RAN)
+             + len(SELF_TEST_CLAIMS))
     for line in failures:
         print('   FAIL  ' + line)
     print('verify_run --self-test: {} case(s), {} failure(s)'.format(cases, len(failures)))
@@ -863,8 +894,9 @@ def main():
     skipped = [item['probe'] for item in results
                if item['passed'] is None and item['probe'] not in NOTES]
     passed = sum(1 for item in scored if item['passed'])
-    claim = claimed(run_dir)
-    print('   agent claims     {} acceptance item(s) passing'.format(claim or 'no count of'))
+    claim, claim_code = claimed(run_dir)
+    print('   agent claims     {} acceptance item(s) passing{}'.format(
+        claim or 'no count of', ', {} (code) item(s)'.format(claim_code) if claim_code else ''))
     print('   probes passed    {} of {}{}'.format(
         passed, len(scored),
         ', {} not evaluated: {}'.format(len(skipped), ', '.join(skipped))
@@ -875,7 +907,7 @@ def main():
     with open(os.path.join(run_dir, name), 'w', encoding='utf-8') as handle:
         json.dump({'scenario': scenario.get('name'), 'passed': passed,
                    'scored': len(scored), 'skipped': skipped, 'notes': list(NOTES),
-                   'claimed': claim,
+                   'claimed': claim, 'claimed_code': claim_code,
                    'repeat': args.repeat, 'sanitize': args.sanitize,
                    'verified': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
                    'results': results},

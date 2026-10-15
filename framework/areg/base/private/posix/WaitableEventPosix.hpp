@@ -64,10 +64,9 @@ public:
     inline areg::os::ResetMode  reset_info() const noexcept;
 
     /**
-     * \brief   Resets the event to non-signaled state. Only manual-reset events can be manually
-     *          reset; calls on auto-reset events are ignored.
+     * \brief   Resets the event to non-signaled state, of a manual-reset or an auto-reset event.
      *
-     * \return  Returns true if operation succeeded; false if the event is auto-reset.
+     * \return  Returns true if operation succeeded; false if the event is not valid.
      **/
     inline bool reset() noexcept;
 

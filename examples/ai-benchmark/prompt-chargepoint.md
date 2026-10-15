@@ -116,7 +116,9 @@ happened:
    `bay 1` resumed once, after the brownout, authorized again at attempt 1, and its
    session done with exactly **4** kWh
 7. expect `bay 2`'s session done with **30** kWh, never suspended
-8. reset `bay 3` directly -- expect `bay 3`'s published values to read idle and 0 kWh
+8. reset `bay 3` directly -- expect `bay 3`'s published values to read idle and 0 kWh;
+   then suspend `bay 3` and reset it again -- expect both refused, naming that it is not
+   charging and not in fault
 9. start a session on `bay 3` with target **2** -- expect it accepted and done with **2**
    kWh
 
@@ -131,7 +133,7 @@ step 4: bay 1 done, 5 kWh
 step 5: bay 3 handshake attempts 1 and 2 failed, refused, fault
 step 6: bay 1 suspended in the brownout, resumed, done, 4 kWh
 step 7: bay 2 done, 30 kWh, never suspended
-step 8: bay 3 reset, idle and 0 kWh
+step 8: bay 3 reset, idle and 0 kWh, suspend and reset refused
 step 9: bay 3 done, 2 kWh
 ```
 
@@ -153,7 +155,9 @@ they need a second run of their own:
 
 **An acceptance item counts as passing only when the output of one of those runs shows
 it.** An item you believe you implemented but never observed is reported as not
-passing: naming the ones you could not prove is worth more than a full score.
+passing: naming the ones you could not prove is worth more than a full score. An item
+marked (code) is one no output can show: count it apart, as present only where you can
+name the file and the class or function that does it.
 
 ### Acceptance checklist
 
@@ -161,7 +165,7 @@ The run is a success when all of these hold. Score any implementation, in any
 framework, against this list:
 
 - [ ] three separate programs, talking over the connection only
-- [ ] three bays are three instances of one charger, reached by name; a fourth needs no
+- [ ] (code) three bays are three instances of one charger, reached by name; a fourth needs no
       new code
 - [ ] **a start session is answered only after the bay answered and its authorization
       ended, and two start sessions are in flight at once without blocking**
@@ -172,12 +176,12 @@ framework, against this list:
       bay in fault naming the handshake**
 - [ ] **a resumed session authorizes again and continues from the energy delivered:
       nothing lost, nothing counted twice**
-- [ ] the handshake is declared once and used at start and at resume
-- [ ] the bay's behaviour is a state machine: named states
-- [ ] the meter is read on a thread of the manager's own, and its readings reach the
+- [ ] (code) the handshake is declared once and used at start and at resume
+- [ ] (code) the bay's behaviour is a state machine: named states
+- [ ] (code) the meter is read on a thread of the manager's own, and its readings reach the
       manager's logic as messages
 - [ ] a brownout suspends the most recently started bay and resumes it afterwards
-- [ ] all timing is kept by the station and the manager; no client sends ticks or waits
+- [ ] (code) all timing is kept by the station and the manager; no client sends ticks or waits
       to pace them
 - [ ] what a bay is doing, its energy and the session list are published, and a client
       that starts watching late receives the current values at once
@@ -187,7 +191,7 @@ framework, against this list:
 - [ ] if a program goes away abruptly mid-scenario, every program that is its client reports it
       and exits non-zero; the station is a client of the site manager for this
 - [ ] the scenario exits 0, and non-zero when an expectation fails
-- [ ] no busy-waiting and no sleeping inside a message handler
+- [ ] (code) no busy-waiting and no sleeping inside a message handler
 
 ---
 
@@ -223,7 +227,7 @@ End with this table and nothing longer.
 |---|---|
 | build-and-fix cycles | |
 | run-and-fix cycles | |
-| acceptance items passing | n of the checklist above, and which failed |
+| acceptance items passing | n of the unmarked items shown by the output, and which were not; c of the (code) items, each with where |
 | checker findings, first run | name the checker, or "none run" |
 | files you opened that the documentation did not route you to | names, or "none" |
 

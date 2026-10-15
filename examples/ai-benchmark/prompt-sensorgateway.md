@@ -124,7 +124,9 @@ they need a second run of their own:
 
 **An acceptance item counts as passing only when the output of one of those runs shows
 it.** An item you believe you implemented but never observed is reported as not
-passing: naming the ones you could not prove is worth more than a full score.
+passing: naming the ones you could not prove is worth more than a full score. An item
+marked (code) is one no output can show: count it apart, as present only where you can
+name the file and the class or function that does it.
 
 ### Acceptance checklist
 
@@ -132,9 +134,9 @@ The run is a success when all of these hold. Score any implementation, in any
 framework, against this list:
 
 - [ ] two separate programs, talking over the connection only
-- [ ] the sensors are read on a thread of the gateway's own, which hands its readings
+- [ ] (code) the sensors are read on a thread of the gateway's own, which hands its readings
       to the serving side as messages and shares no data with it
-- [ ] a reading is one record type carrying id, kind, value, number and quality; the
+- [ ] (code) a reading is one record type carrying id, kind, value, number and quality; the
       kind and the quality are enumerations; the set of readings and the silent
       sensors are lists; all are declared once and shared by both programs
 - [ ] the sensor list names all three sensors with their kinds
@@ -145,7 +147,7 @@ framework, against this list:
       the health back to normal
 - [ ] calibrate is accepted in normal and refused elsewhere, naming the state
 - [ ] reset moves degraded back to starting, and is refused in normal naming the reason
-- [ ] **the health is one state machine instance that takes inputs originating on the
+- [ ] (code) **the health is one state machine instance that takes inputs originating on the
       reading thread and on the serving side, and no input from one thread is lost or
       applied half-way because of the other**
 - [ ] the gateway accepts `-q` / `--quit` at its console and exits cleanly, stopping
@@ -153,7 +155,7 @@ framework, against this list:
 - [ ] neither program waits more than 20 seconds for something that never arrives
 - [ ] if one side goes away mid-scenario, the other reports it and exits non-zero
 - [ ] the scenario exits 0, and non-zero when an expectation fails
-- [ ] no busy-waiting and no sleeping inside a message handler
+- [ ] (code) no busy-waiting and no sleeping inside a message handler
 
 ---
 
@@ -192,7 +194,7 @@ End with this table and nothing longer.
 |---|---|
 | build-and-fix cycles | |
 | run-and-fix cycles | |
-| acceptance items passing | n of the checklist above, and which failed |
+| acceptance items passing | n of the unmarked items shown by the output, and which were not; c of the (code) items, each with where |
 | checker findings, first run | name the checker, or "none run" |
 | files you opened that the documentation did not route you to | names, or "none" |
 

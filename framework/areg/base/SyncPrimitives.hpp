@@ -295,7 +295,7 @@ public:
     inline bool set_signaled() noexcept;
 
     /**
-     * \brief   Resets the event to non-signaled state. Only manual-reset events can be manually reset.
+     * \brief   Resets the event to non-signaled state, of a manual-reset or an auto-reset event.
      * \return  Returns true if operation succeeded.
      **/
     inline bool reset() noexcept;

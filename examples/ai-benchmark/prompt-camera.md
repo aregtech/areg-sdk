@@ -73,7 +73,8 @@ read what happened:
 1. stop the camera -- expect a refusal naming that it is not streaming
 2. start the camera -- expect the checker to receive **20** frames, numbered 1 to 20,
    every one intact, and the 20 frames to take at least **950 ms**
-3. start the camera again -- expect a refusal naming that it is already streaming
+3. start the camera again, then ask for a burst of **10** frames -- expect both refused,
+   naming that it is already streaming
 4. stop the checker; wait **300 ms**; start it again -- expect it to receive the frames
    produced so far at once (at least **26**), then **10** more frames, numbered on from
    one another, every one intact
@@ -91,7 +92,7 @@ exact wording, alone or at the end of a line, nothing after it:
 ```lines
 step 1: refused, not streaming
 step 2: 20 frames intact, 1 to 20
-step 3: refused, already streaming
+step 3: start and burst refused, already streaming
 step 4: checker restarted, frame count received at once, 10 frames intact
 step 5: capture stalled and restarted, 10 frames intact, none skipped
 step 6: stopped, no frame after the stop
@@ -115,7 +116,9 @@ they need a second run of their own:
 
 **An acceptance item counts as passing only when the output of one of those runs shows
 it.** An item you believe you implemented but never observed is reported as not
-passing: naming the ones you could not prove is worth more than a full score.
+passing: naming the ones you could not prove is worth more than a full score. An item
+marked (code) is one no output can show: count it apart, as present only where you can
+name the file and the class or function that does it.
 
 ### Acceptance checklist
 
@@ -126,7 +129,7 @@ framework, against this list:
 - [ ] every frame carries 65,536 bytes and arrives whole, its data and checksum correct
 - [ ] sequence numbers start at 1 and are never repeated or skipped, across stops,
       bursts and a restarted capture thread
-- [ ] frames are produced on a thread of the camera's own, every 50 ms while streaming
+- [ ] (code) frames are produced on a thread of the camera's own, every 50 ms while streaming
 - [ ] **a stuck capture thread is noticed within 200 ms, ended and waited for, replaced,
       and streaming resumes within 500 ms, with stalled and restarted announced**
 - [ ] a burst of 100 frames arrives intact within 1 second
@@ -135,14 +138,14 @@ framework, against this list:
 - [ ] no frame is delivered after a stop is answered
 - [ ] **the viewer's checker is stopped and started again while the viewer runs, and
       receives the camera's current values at once when it starts**
-- [ ] the viewer's two parts talk to each other only by messages
+- [ ] (code) the viewer's two parts talk to each other only by messages
 - [ ] what the camera is doing and the frame count are published, and a client that
       starts watching late receives the current values at once
 - [ ] the camera accepts `-q` / `--quit` at its console and exits cleanly
 - [ ] neither program waits more than 20 seconds for something that never arrives
 - [ ] if one side goes away mid-scenario, the other reports it and exits non-zero
 - [ ] the scenario exits 0, and non-zero when an expectation fails
-- [ ] no busy-waiting and no sleeping inside a message handler
+- [ ] (code) no busy-waiting and no sleeping inside a message handler
 
 ---
 
@@ -174,7 +177,7 @@ End with this table and nothing longer.
 |---|---|
 | build-and-fix cycles | |
 | run-and-fix cycles | |
-| acceptance items passing | n of the checklist above, and which failed |
+| acceptance items passing | n of the unmarked items shown by the output, and which were not; c of the (code) items, each with where |
 | checker findings, first run | name the checker, or "none run" |
 | files you opened that the documentation did not route you to | names, or "none" |
 

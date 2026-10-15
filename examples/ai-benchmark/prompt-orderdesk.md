@@ -115,7 +115,9 @@ they need a second run of their own:
 
 **An acceptance item counts as passing only when the output of one of those runs shows
 it.** An item you believe you implemented but never observed is reported as not
-passing: naming the ones you could not prove is worth more than a full score.
+passing: naming the ones you could not prove is worth more than a full score. An item
+marked (code) is one no output can show: count it apart, as present only where you can
+name the file and the class or function that does it.
 
 ### Acceptance checklist
 
@@ -123,7 +125,7 @@ The run is a success when all of these hold. Score any implementation, in any
 framework, against this list:
 
 - [ ] three separate programs, talking over the connection only
-- [ ] stock and payment are two services with two contracts, both in the warehouse
+- [ ] (code) stock and payment are two services with two contracts, both in the warehouse
       program
 - [ ] the desk is a client of both warehouse services; the customer is a client of
       the desk and of the stock at the same time
@@ -135,7 +137,7 @@ framework, against this list:
       before the order**
 - [ ] a refusal names its reason: the stock with the quantity available, the payment
       with its limit
-- [ ] the 300 ms of a charge is kept by the payment service; no client paces it
+- [ ] (code) the 300 ms of a charge is kept by the payment service; no client paces it
 - [ ] the stock, the approved total and the accepted orders are published, and a
       client that starts watching late receives the current values at once
 - [ ] the warehouse and the desk accept `-q` / `--quit` at their consoles and exit
@@ -144,7 +146,7 @@ framework, against this list:
 - [ ] if the warehouse goes away mid-scenario, the desk and the customer each report it
       and exit non-zero
 - [ ] the scenario exits 0, and non-zero when an expectation fails
-- [ ] no busy-waiting and no sleeping inside a message handler
+- [ ] (code) no busy-waiting and no sleeping inside a message handler
 
 ---
 
@@ -176,7 +178,7 @@ End with this table and nothing longer.
 |---|---|
 | build-and-fix cycles | |
 | run-and-fix cycles | |
-| acceptance items passing | n of the checklist above, and which failed |
+| acceptance items passing | n of the unmarked items shown by the output, and which were not; c of the (code) items, each with where |
 | checker findings, first run | name the checker, or "none run" |
 | files you opened that the documentation did not route you to | names, or "none" |
 

@@ -140,7 +140,9 @@ they need a second run of their own:
 
 **An acceptance item counts as passing only when the output of one of those runs shows
 it.** An item you believe you implemented but never observed is reported as not
-passing: naming the ones you could not prove is worth more than a full score.
+passing: naming the ones you could not prove is worth more than a full score. An item
+marked (code) is one no output can show: count it apart, as present only where you can
+name the file and the class or function that does it.
 
 ### Acceptance checklist
 
@@ -153,7 +155,7 @@ framework, against this list:
       the door sequence
 - [ ] a call to the current floor runs the door sequence with no movement and no floor
       announced
-- [ ] the door sequence after a journey and after a call to the current floor is one
+- [ ] (code) the door sequence after a journey and after a call to the current floor is one
       piece of logic, entered at a different step, not two copies
 - [ ] a call while busy, a call out of range and a call while halted are each refused,
       naming the reason
@@ -161,17 +163,17 @@ framework, against this list:
       target from the floor reached: no floor announced twice, none skipped**
 - [ ] **an emergency stop with the doors open, once released, closes them without
       opening them again**
-- [ ] all timing is kept by the controller; no client sends ticks or waits to pace it
+- [ ] (code) all timing is kept by the controller; no client sends ticks or waits to pace it
 - [ ] the display shows every floor change and every change of what the car is doing,
       and a display started late receives the current values at once
-- [ ] the controller's behaviour is a state machine: named states, and the door
+- [ ] (code) the controller's behaviour is a state machine: named states, and the door
       sequence and the journey are each declared once
 - [ ] out of service is announced to every client; the display exits 0 on it
 - [ ] the controller accepts `-q` / `--quit` at its console and exits cleanly
 - [ ] no program waits more than 20 seconds for something that never arrives
 - [ ] if one side goes away mid-scenario, the other reports it and exits non-zero
 - [ ] the scenario exits 0, and non-zero when an expectation fails
-- [ ] no busy-waiting and no sleeping inside a message handler
+- [ ] (code) no busy-waiting and no sleeping inside a message handler
 
 ---
 
@@ -208,7 +210,7 @@ End with this table and nothing longer.
 |---|---|
 | build-and-fix cycles | |
 | run-and-fix cycles | |
-| acceptance items passing | n of the checklist above, and which failed |
+| acceptance items passing | n of the unmarked items shown by the output, and which were not; c of the (code) items, each with where |
 | checker findings, first run | name the checker, or "none run" |
 | files you opened that the documentation did not route you to | names, or "none" |
 
