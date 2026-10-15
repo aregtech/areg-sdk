@@ -184,7 +184,8 @@ STEP_PREFIX_RE = re.compile(r'\bstep\s+\d+\s*:', re.IGNORECASE)
 # A statement that prints, and a string a statement compares against.
 OUTPUT_RE = re.compile(r'\bcout\b|\bprintf\s*\(|\bputs\s*\(|\b(?:GLOBAL|LOG)_[A-Z]+\s*\(')
 COMPARED_STRING_RE = re.compile(
-    r'(?:==|!=)\s*"((?:[^"\\\n]|\\.)*)"|"((?:[^"\\\n]|\\.)*)"\s*(?:==|!=)'
+    r'(?:==|!=)\s*(?:[\w:]+\s*[({]\s*)?"((?:[^"\\\n]|\\.)*)"'
+    r'|"((?:[^"\\\n]|\\.)*)"\s*[)}]?\s*(?:==|!=)'
     r'|\b(?:find\w*|compare|starts_with|ends_with|contains)\s*\(\s*"((?:[^"\\\n]|\\.)*)"')
 
 
@@ -761,6 +762,9 @@ SELF_TEST_CHECKED = (
     ('a name compared as a string', ['step 2: normal done: rinse 1'],
      '== step_done\nif (stage != "rinse 1") fail("x"); '
      'else std::cout << "step 2: normal done: rinse 1";\n', [{'name': 'done'}], True),
+    ('a name compared as a constructed string', ['step 4: bay 1 done, 5 kWh'],
+     '== step_done\nif ((bay != areg::String("bay 1")) || (energy != 5)) fail("x"); '
+     'else GLOBAL_INFO("step 4: bay 1 done, 5 kWh");\n', [{'name': 'done'}], True),
     ('only the step number is a number', ['step 6: done'],
      '== step_end\nstd::cout << "step 6: done" << std::endl;\n', [{'name': 'end'}], True),
     ('the value printed from a variable', CHECK_LINE,
