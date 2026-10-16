@@ -304,11 +304,9 @@ def client_class(owner, iface, roles, cls, reconnect, driving=False, steps=(), c
         handed = forwards(steps, roles, 'response', name, 8)
         lines += ['    void {}({}) final'.format(iface.spell('response', name),
                                                 iface.generated_params('response', name)),
-                  '    {',
+                  '    {'] + (gs.filled(iface.spell('response', name)) if handed else [
                   gs.marker(iface.spell('response', name),
-                            'what this answer means to {}'.format(owner) + (
-                                '; it runs before the step_ check of the same answer'
-                                if handed else ''))] + handed + [
+                            'what this answer means to {}'.format(owner))]) + handed + [
                   '    }',
                   '']
     for name, _ in iface.requests:
@@ -344,16 +342,9 @@ def client_class(owner, iface, roles, cls, reconnect, driving=False, steps=(), c
                       '            }',
                       '']
         handed = forwards(steps, roles, 'update', attr_name, 12)
-        hint = 'the new value is ready to use'
-        if early:
-            hint += '; one that arrives before the steps begin runs as they begin'
-        if handed:
-            hint += '; ' + gs.UPDATE_CHECKED
-        elif driving:
-            hint += '; no step awaits it; a step does with "role": "{}", "await": "{}"'.format(
-                roles[0], attr_name)
-        lines += [gs.marker('update_' + iface.spell('attribute', attr_name, 'get'), hint,
-                            12)] + handed + [
+        slot = 'update_' + iface.spell('attribute', attr_name, 'get')
+        lines += (gs.filled(slot, 12) if driving else
+                  [gs.marker(slot, 'the new value is ready to use', 12)]) + handed + [
                   '        }',
                   '    }',
                   '']
@@ -558,9 +549,7 @@ def watcher_class(iface, cls, driver):
     for name, _ in iface.responses:
         lines += ['    void {}({}) final'.format(iface.spell('response', name),
                                                 iface.generated_params('response', name)),
-                  '    {',
-                  gs.marker('watch_' + iface.spell('response', name),
-                            'what this answer means to the watcher'),
+                  '    {'] + gs.filled('watch_' + iface.spell('response', name)) + [
                   '    }',
                   '']
     for name, _ in iface.requests:
@@ -576,8 +565,8 @@ def watcher_class(iface, cls, driver):
                                                 iface.generated_params('broadcast', name)),
                   '    {',
                   gs.marker('watch_' + iface.spell('broadcast', name),
-                            'what this broadcast means to the watcher; quit_with(0) ends '
-                            'it'),
+                            'what this broadcast means to the watcher, or one // line; '
+                            'quit_with(0) there ends this program'),
                   '    }',
                   '']
     for attr_name, _ in iface.attributes:
@@ -588,8 +577,8 @@ def watcher_class(iface, cls, driver):
                   '        if (state == areg::DataState::DataIsOK)',
                   '        {',
                   gs.marker('watch_update_' + iface.spell('attribute', attr_name, 'get'),
-                            'what the new value means to the watcher; quit_with(0) ends '
-                            'it', 12),
+                            'what the new value means to the watcher, or one // line; '
+                            'quit_with(0) there ends this program', 12),
                   '        }',
                   '    }',
                   '']
@@ -1095,10 +1084,11 @@ def wiring(programs, components, deployments=()):
                      'is reached the same way wherever it runs'
                      .format(deployment['name'], moves or 'as above', deployment['name']))
     if any(c.clients for c in components):
+        member = member_of(next(r for c in components for _, rs, _ in c.clients for r in rs))
         lines += ['A component calls a used provider through its member, as',
-                  '{}.request_<name>(...), and reads its attributes there. A client\'s'
-                  .format(member_of(next(r for c in components for _, rs, _ in c.clients
-                                         for r in rs))),
+                  '{0}.request_<name>(...), and reads an attribute there with the consumer'
+                  .format(member),
+                  'getter listed above, as {}.<getter>(state). A client\'s'.format(member),
                   'sections call request_<name>(...) bare and reach their component as',
                   'mOwner, whose header the client\'s .cpp',
                   'includes; private members and *_state helpers included,',

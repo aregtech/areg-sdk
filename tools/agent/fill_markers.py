@@ -556,7 +556,8 @@ def main():
                                                         for text in body))) & set(after))
         if twice:
             doubled.append('"{}" calls mOwner.{}()'.format(name, twice[0]))
-        again = any(where[:2] == (path, index) for where in written.get(name, ()))
+        again = any(where[:2] == (path, index)
+                    for where in written.get(name.rpartition(':')[2], ()))
         if again:
             replaced.append(name)
         else:

@@ -1027,7 +1027,8 @@ def source_bodies(pristine, current):
     """{marker: (body lines, first, end, pad)} found in current where pristine holds the
     marker, first and end bounding an unanchored body in current (None when anchored),
     pad the marker's indentation; and the count of pristine lines changed outside any
-    marker."""
+    marker. A body the generator wrote filled counts as a marker, and is found only
+    once it differs from what the generator wrote."""
     lines = current.splitlines()
     plain = pristine.splitlines()
     mapped = {}
@@ -1038,10 +1039,14 @@ def source_bodies(pristine, current):
                 mapped[i1 + offset] = j1 + offset
     bodies, inside = {}, set()
     for index, line in enumerate(plain):
-        hit = fill_markers.MARKER.search(line)
+        hit = fill_markers.MARKER.search(line) or fill_markers.BODY_OPEN.search(line)
         if not hit:
             continue
         last = index
+        written = bool(fill_markers.BODY_OPEN.search(line))
+        if written:
+            last = next((end for end in range(index + 1, len(plain))
+                         if fill_markers.BODY_END.search(plain[end])), index)
         while last + 1 < len(plain) and fill_markers.PLACEHOLDER.search(plain[last + 1]):
             last += 1
         inside.update(range(index, last + 1))
@@ -1057,6 +1062,8 @@ def source_bodies(pristine, current):
             continue
         else:
             span = (before + 1, after)
+        if written and dedent(body) == dedent(plain[index + 1:last]):
+            continue
         bodies[hit.group(1)] = (dedent(body), span, fill_markers.indent_of(line))
     edited = sum(1 for index in range(len(plain))
                  if index not in mapped and index not in inside)
@@ -1101,7 +1108,9 @@ def read_back(root, build, bodies, regenerate=False):
     owners = {}
     for rel, where in pristine.items():
         with open(where, encoding='utf-8') as handle:
-            for name in set(hit.group(1) for hit in map(fill_markers.MARKER.search, handle)
+            for name in set(hit.group(1) for hit in
+                            (fill_markers.MARKER.search(line) or
+                             fill_markers.BODY_OPEN.search(line) for line in handle)
                             if hit):
                 owners.setdefault(name, []).append(rel)
     clean, taken, both = True, [], []
@@ -1227,12 +1236,17 @@ def worksheet_sections(path):
             lines = handle.read().splitlines()
     except (IOError, OSError):
         return None
-    sections, name = {'': [1, []]}, ''
+    sections, name, where = {'': [1, []]}, '', ''
     for number, line in enumerate(lines, 1):
         if line.startswith('== '):
             name = line[3:].strip()
             sections[name] = [number, []]
-        elif not line.startswith('#| ---- '):
+        elif line.startswith('#| ---- '):
+            where = line[8:].strip()
+        elif line.startswith('#| ' + gen_skeleton.FILLED_HEAD):
+            name = 'the filled list of ' + where
+            sections[name] = [number, [line]]
+        else:
             sections[name][1].append(WORKSHEET_COUNT.sub('', line))
     return sections
 
