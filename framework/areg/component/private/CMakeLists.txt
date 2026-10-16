@@ -23,6 +23,7 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/component/private/ProxyBase.cpp
 	areg/component/private/ProxyConnectEvent.cpp
 	areg/component/private/ProxyEvent.cpp
+	areg/component/private/RemoteEventConsumer.cpp
 	areg/component/private/RemoteEventFactory.cpp
 	areg/component/private/ServerInfo.cpp
 	areg/component/private/ServerList.cpp
@@ -37,12 +38,14 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/component/private/StubEvent.cpp
 	areg/component/private/Timer.cpp
 	areg/component/private/TimerBase.cpp
+	areg/component/private/TimerConsumer.cpp
 	areg/component/private/TimerEventData.cpp
 	areg/component/private/TimerManager.cpp
 	areg/component/private/TimerManagerBase.cpp
 	areg/component/private/Watchdog.cpp
 	areg/component/private/WatchdogManager.cpp
 	areg/component/private/WorkerThread.cpp
+	areg/component/private/WorkerThreadConsumer.cpp
 )
 
 include("${AREG_FRAMEWORK}/areg/component/private/posix/CMakeLists.txt")

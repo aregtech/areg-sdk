@@ -1,8 +1,8 @@
 /************************************************************************
  * This file is part of the Areg SDK core engine.
- * Areg SDK is dual-licensed under Free open source (Apache version 2.0
- * License) and Commercial (with various pricing models) licenses, depending
- * on the nature of the project (commercial, research, academic or free).
+ * Areg SDK is dual-licensed under Free open source (Apache version 2.0 License)
+ * and Commercial (with various pricing models) licenses, depending on the
+ * nature of the project (commercial, research, academic or free).
  * You should have received a copy of the Areg SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
@@ -102,8 +102,6 @@ namespace
     //  U+597D           E5 A5 BD           3      好
     //  U+1F600          F0 9F 98 80        4      (grinning face, above the BMP)
     //  U+1F44D          F0 9F 91 8D        4      (thumbs up, above the BMP)
-    constexpr char UTF8_ZHONG      []{ "\xE4\xB8\xAD" };                 // 中
-    constexpr char UTF8_WEN        []{ "\xE6\x96\x87" };                 // 文
     constexpr char UTF8_ZHONG_WEN  []{ "\xE4\xB8\xAD\xE6\x96\x87" };     // 中文  (6 bytes, 2 code points)
     constexpr char UTF8_NI_HAO     []{ "\xE4\xBD\xA0\xE5\xA5\xBD" };     // 你好  (6 bytes, 2 code points)
     constexpr char UTF8_EMOJI_GRIN []{ "\xF0\x9F\x98\x80" };             // 😄emoji笑   1 code point, 4 bytes

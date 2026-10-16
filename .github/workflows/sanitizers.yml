@@ -40,10 +40,12 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  # A Lock or ScopedLock that could not take its object ends the test process (FatalError.hpp).
+  AREG_LOCK_FAILURE_FATAL: 1
+
 jobs:
   sanitizers-linux:
-    # Temporary: skipped on the branch that runs the diag-814.yml experiments.
-    if: github.head_ref != 'feature/812-general-ai-agent-doc-improvement' && github.ref_name != 'feature/812-general-ai-agent-doc-improvement'
     name: ${{matrix.mode}} ${{matrix.config}} (unit tests)
     # "The suite is TSAN-clean, keep it that way" is a standing invariant of this
     # repository and until now nothing held it. Both sanitizers run the unit tests
@@ -178,8 +180,6 @@ jobs:
           compression-level: 0
 
   ubsan-linux:
-    # Temporary: skipped on the branch that runs the diag-814.yml experiments.
-    if: github.head_ref != 'feature/812-general-ai-agent-doc-improvement' && github.ref_name != 'feature/812-general-ai-agent-doc-improvement'
     name: ubsan (examples)
     # The undefined behaviour sanitizer over the example suite. A report from
     # framework/ fails the job; a report from an example is a warning, because an
@@ -273,8 +273,6 @@ jobs:
           path: ./ubsan/
 
   teardown-stress:
-    # Temporary: skipped on the branch that runs the diag-814.yml experiments.
-    if: github.head_ref != 'feature/812-general-ai-agent-doc-improvement' && github.ref_name != 'feature/812-general-ai-agent-doc-improvement'
     name: teardown tests, no sanitizer (${{matrix.config}})
     # Both CI failures so far are in the tsan leg, and asan is clean, so nothing yet says
     # whether the defect needs an instrumented allocator at all. This leg is the control:

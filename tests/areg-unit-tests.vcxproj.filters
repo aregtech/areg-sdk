@@ -73,7 +73,13 @@
     <ClCompile Include="units\LockWaitTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="units\FatalErrorTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="units\RingStackTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\ScopedLockTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="units\SortedLinkedListTest.cpp">

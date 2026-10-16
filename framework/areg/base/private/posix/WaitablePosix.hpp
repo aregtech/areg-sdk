@@ -2,9 +2,9 @@
 #define AREG_BASE_PRIVATE_POSIX_WAITABLEPOSIX_HPP
 /************************************************************************
  * This file is part of the Areg SDK core engine.
- * Areg SDK is dual-licensed under Free open source (Apache version 2.0
- * License) and Commercial (with various pricing models) licenses, depending
- * on the nature of the project (commercial, research, academic or free).
+ * Areg SDK is dual-licensed under Free open source (Apache version 2.0 License)
+ * and Commercial (with various pricing models) licenses, depending on the
+ * nature of the project (commercial, research, academic or free).
  * You should have received a copy of the Areg SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
@@ -112,7 +112,7 @@ public:
      * \brief   Returns true if the synchronization object is valid.
      **/
     [[nodiscard]]
-    inline bool is_valid() const noexcept override;
+    bool is_valid() const noexcept override;
 
     /**
      * \brief   Called before deletion. Releases all waiting threads with failure code.
@@ -216,11 +216,6 @@ inline void WaitablePosix::remove_wait_all_registration() noexcept
 inline bool WaitablePosix::has_wait_all_waiters() const noexcept
 {
     return mWaitAllCount.load(std::memory_order_relaxed) > 0u;
-}
-
-inline bool WaitablePosix::is_valid() const noexcept
-{
-    return mValid.load(std::memory_order_relaxed);
 }
 
 inline bool  WaitablePosix::has_waiters() const noexcept

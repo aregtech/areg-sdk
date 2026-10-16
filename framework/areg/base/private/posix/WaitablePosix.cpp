@@ -1,8 +1,8 @@
 /************************************************************************
  * This file is part of the Areg SDK core engine.
- * Areg SDK is dual-licensed under Free open source (Apache version 2.0
- * License) and Commercial (with various pricing models) licenses, depending
- * on the nature of the project (commercial, research, academic or free).
+ * Areg SDK is dual-licensed under Free open source (Apache version 2.0 License)
+ * and Commercial (with various pricing models) licenses, depending on the
+ * nature of the project (commercial, research, academic or free).
  * You should have received a copy of the Areg SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
@@ -69,6 +69,11 @@ WaitablePosix::WaitablePosix( areg::os::SyncKind syncType )
 WaitablePosix::~WaitablePosix()
 {
     ASSERT(SyncLockAndWaitPosix::is_waitable_registered(*this) == false);
+}
+
+bool WaitablePosix::is_valid() const noexcept
+{
+    return mValid.load(std::memory_order_relaxed);
 }
 
 void WaitablePosix::free_resources()

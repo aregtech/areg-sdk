@@ -1,8 +1,8 @@
 /************************************************************************
  * This file is part of the Areg SDK core engine.
- * Areg SDK is dual-licensed under Free open source (Apache version 2.0
- * License) and Commercial (with various pricing models) licenses, depending
- * on the nature of the project (commercial, research, academic or free).
+ * Areg SDK is dual-licensed under Free open source (Apache version 2.0 License)
+ * and Commercial (with various pricing models) licenses, depending on the
+ * nature of the project (commercial, research, academic or free).
  * You should have received a copy of the Areg SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
@@ -95,7 +95,7 @@ bool Lockable::try_lock()
 //////////////////////////////////////////////////////////////////////////
 // Mutex class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-Mutex::Mutex( bool initLock /* = true */ )
+Mutex::Mutex( bool initLock /* = false */ )
     : Lockable( SyncObject::SyncKind::SoMutex )
     , mOwnerThreadId( 0 )
 {
@@ -105,6 +105,23 @@ Mutex::Mutex( bool initLock /* = true */ )
 Mutex::~Mutex()
 {
     _os_unlock_mutex( );
+}
+
+bool Mutex::lock( uint32_t timeout /* = areg::WAIT_INFINITE */ )
+{
+    ASSERT( mSyncObject != nullptr );
+    return _os_lock_mutex( timeout );
+}
+
+bool Mutex::try_lock()
+{
+    return lock( areg::DO_NOT_WAIT );
+}
+
+bool Mutex::unlock()
+{
+    ASSERT( mSyncObject != nullptr );
+    return _os_unlock_mutex( );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -132,6 +149,16 @@ SyncEvent::~SyncEvent()
 {
     if (mSyncObject != nullptr)
         _os_unlock_event( mSyncObject );
+}
+
+bool SyncEvent::unlock()
+{
+    return (mSyncObject != nullptr ? _os_unlock_event(mSyncObject) : false);
+}
+
+bool SyncEvent::lock( uint32_t timeout /* = areg::WAIT_INFINITE */ )
+{
+    return (mSyncObject != nullptr ? _os_lock_event(timeout) : false);
 }
 
 int32_t SyncEvent::wait_any( SyncEvent** events, int32_t count, uint32_t timeout /* = areg::WAIT_INFINITE */ ) noexcept
@@ -214,6 +241,24 @@ CriticalSection::~CriticalSection()
 {
     ASSERT( mSyncObject != nullptr );
     _os_release_critical_section( );
+}
+
+bool CriticalSection::lock( uint32_t  /*timeout = areg::WAIT_INFINITE */ )
+{
+    ASSERT( mSyncObject != nullptr );
+    return _os_lock( );
+}
+
+bool CriticalSection::unlock()
+{
+    ASSERT( mSyncObject != nullptr );
+    return _os_unlock( );
+}
+
+bool CriticalSection::try_lock()
+{
+    ASSERT( mSyncObject != nullptr );
+    return _os_try_lock( );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -318,6 +363,21 @@ NolockSyncObject::NolockSyncObject()
 {
 }
 
+bool NolockSyncObject::lock( uint32_t /*timeout = areg::WAIT_INFINITE*/ )
+{
+    return true;
+}
+
+bool NolockSyncObject::unlock()
+{
+    return true;
+}
+
+bool NolockSyncObject::try_lock()
+{
+    return true;
+}
+
 //////////////////////////////////////////////////////////////////////////
 // SyncTimer implementation
 //////////////////////////////////////////////////////////////////////////
@@ -340,6 +400,18 @@ SyncTimer::~SyncTimer()
     ASSERT( mSyncObject != nullptr );
     _os_release_time( );
     mSyncObject = nullptr;
+}
+
+bool SyncTimer::lock( uint32_t timeout /* = areg::WAIT_INFINITE */ )
+{
+    ASSERT( mSyncObject != nullptr );
+    return _os_lock( timeout );
+}
+
+bool SyncTimer::unlock()
+{
+    ASSERT( mSyncObject != nullptr );
+    return _os_cancel_timer( );
 }
 
 //////////////////////////////////////////////////////////////////////////

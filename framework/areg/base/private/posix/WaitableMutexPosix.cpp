@@ -1,8 +1,8 @@
 /************************************************************************
  * This file is part of the Areg SDK core engine.
- * Areg SDK is dual-licensed under Free open source (Apache version 2.0
- * License) and Commercial (with various pricing models) licenses, depending
- * on the nature of the project (commercial, research, academic or free).
+ * Areg SDK is dual-licensed under Free open source (Apache version 2.0 License)
+ * and Commercial (with various pricing models) licenses, depending on the
+ * nature of the project (commercial, research, academic or free).
  * You should have received a copy of the Areg SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
@@ -37,6 +37,33 @@ WaitableMutexPosix::WaitableMutexPosix(bool initOwned /*= false*/)
     , mOwnerThread   ( initOwned ? pthread_self() : static_cast<pthread_t>(0) )
     , mLockCount     ( initOwned ? 1 : 0 )
 {
+}
+
+#ifdef  DEBUG
+void WaitableMutexPosix::notify_released_threads(int32_t numThreads)
+{
+    ASSERT((numThreads == 1) || (numThreads == 0));
+}
+#else   // DEBUG
+void WaitableMutexPosix::notify_released_threads(int32_t /*numThreads*/)
+{
+}
+#endif  // DEBUG
+
+bool WaitableMutexPosix::can_signal_threads() const noexcept
+{
+    return false;
+}
+
+bool WaitableMutexPosix::check_signaled(pthread_t contextThread) const
+{
+    ObjectLockPosix lock(mObjectLock);
+    return (mOwnerThread == static_cast<pthread_t>(0)) || (mOwnerThread == contextThread);
+}
+
+bool WaitableMutexPosix::is_valid() const noexcept
+{
+    return mObjectLock.is_valid();
 }
 
 bool WaitableMutexPosix::release_mutex() noexcept

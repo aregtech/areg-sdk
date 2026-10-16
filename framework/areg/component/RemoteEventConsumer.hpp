@@ -2,9 +2,9 @@
 #define AREG_COMPONENT_REMOTEEVENTCONSUMER_HPP
 /************************************************************************
  * This file is part of the Areg SDK core engine.
- * Areg SDK is dual-licensed under Free open source (Apache version 2.0
- * License) and Commercial (with various pricing models) licenses, depending
- * on the nature of the project (commercial, research, academic or free).
+ * Areg SDK is dual-licensed under Free open source (Apache version 2.0 License)
+ * and Commercial (with various pricing models) licenses, depending on the
+ * nature of the project (commercial, research, academic or free).
  * You should have received a copy of the Areg SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
@@ -88,7 +88,7 @@ private:
      *
      * \param   eventElem       The event object being processed by the dispatcher.
      **/
-    inline void start_event_processing( Event & eventElem ) final;
+    void start_event_processing( Event & eventElem ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -96,27 +96,6 @@ private:
 private:
     AREG_NOCOPY_NOMOVE( RemoteEventConsumer );
 };
-
-//////////////////////////////////////////////////////////////////////////
-// RemoteEventConsumer inline methods
-//////////////////////////////////////////////////////////////////////////
-inline void RemoteEventConsumer::start_event_processing(Event& eventElem)
-{
-    switch (eventElem.event_type())
-    {
-    case areg::EventType::EventRemoteRequest:
-        process_request_event(static_cast<ServiceRequestEvent&>(eventElem));
-        break;
-    case areg::EventType::EventRemoteResponse:
-        process_response_event(static_cast<ServiceResponseEvent&>(eventElem));
-        break;
-    case areg::EventType::EventRemoteNotifyRequest:
-        process_notify_request(static_cast<ServiceRequestEvent&>(eventElem));
-        break;
-    default:
-        break;
-    }
-}
 
 } // namespace areg
 #endif  // AREG_COMPONENT_REMOTEEVENTCONSUMER_HPP

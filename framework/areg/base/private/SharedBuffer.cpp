@@ -1,8 +1,8 @@
 /************************************************************************
  * This file is part of the Areg SDK core engine.
- * Areg SDK is dual-licensed under Free open source (Apache version 2.0
- * License) and Commercial (with various pricing models) licenses, depending
- * on the nature of the project (commercial, research, academic or free).
+ * Areg SDK is dual-licensed under Free open source (Apache version 2.0 License)
+ * and Commercial (with various pricing models) licenses, depending on the
+ * nature of the project (commercial, research, academic or free).
  * You should have received a copy of the Areg SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
@@ -38,6 +38,67 @@ SharedBuffer::SharedBuffer(uint32_t blockSize /* = areg::BLOCK_SIZE */)
     , mViewStart    ( 0u )
     , mViewEnd      ( 0u )
 {
+}
+
+bool SharedBuffer::can_write() const noexcept
+{
+    return !is_view();
+}
+
+
+uint32_t SharedBuffer::position() const noexcept
+{
+    return is_valid() ? (mPosition - mViewStart) : areg::Cursor::INVALID_CURSOR_POSITION;
+}
+
+uint32_t SharedBuffer::write(const uint8_t* buf, uint32_t size)
+{
+    return write_data(buf, size);
+}
+
+uint32_t SharedBuffer::write(const String& ascii)
+{
+    return write_data(reinterpret_cast<const uint8_t*>(ascii.as_string()), ascii.space());
+}
+
+uint32_t SharedBuffer::write(const WideString& wide)
+{
+    return write_data(reinterpret_cast<const uint8_t*>(wide.as_string()), wide.space());
+}
+
+void SharedBuffer::flush() noexcept
+{
+    // No-op: in-memory buffer, nothing to flush.
+}
+
+bool SharedBuffer::ensure_size(uint32_t addSize)
+{
+    uint32_t newSize = size_used() + addSize;
+    return (reserve(newSize, true) == newSize);
+}
+
+uint32_t SharedBuffer::read(uint8_t* buf, uint32_t size) const noexcept
+{
+    return read_data(buf, size);
+}
+
+void SharedBuffer::reset() const noexcept
+{
+    mPosition = mViewStart;
+}
+
+uint32_t SharedBuffer::size_readable() const noexcept
+{
+    if (!is_valid()) return 0u;
+    const uint32_t limit = (mViewEnd > 0u ? mViewEnd : mByteBuffer->bufHeader.biUsed);
+    return (mPosition < limit ? limit - mPosition : 0u);
+}
+
+uint32_t SharedBuffer::size_writable() const noexcept
+{
+    if (!is_valid() || is_view())
+        return 0u;
+    return mByteBuffer->bufHeader.biLength - mByteBuffer->bufHeader.biUsed;
 }
 
 SharedBuffer::SharedBuffer(uint32_t reserveSize, uint32_t blockSize)

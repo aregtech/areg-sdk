@@ -69,6 +69,8 @@ else()
         list(APPEND AREG_COMPILER_OPTIONS ${AREG_OPTIMIZATION} -ffunction-sections -fdata-sections)
         if (NOT CYGWIN)
             list(APPEND AREG_COMPILER_OPTIONS -fvisibility=hidden "$<$<COMPILE_LANGUAGE:CXX>:-fvisibility-inlines-hidden>")
+            # Calls between the exported functions of one shared library bind directly, not through the PLT.
+            list(APPEND AREG_COMPILER_OPTIONS -fno-semantic-interposition)
         endif()
         if (NOT CMAKE_CROSSCOMPILING AND NOT CYGWIN)
             if (AREG_ARCH_NATIVE)

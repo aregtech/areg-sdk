@@ -71,7 +71,9 @@
     <ClCompile Include="units\LockWaitTest.cpp" />
     <ClCompile Include="units\MapTest.cpp" />
     <ClCompile Include="units\KeyValuePairTest.cpp" />
+    <ClCompile Include="units\FatalErrorTest.cpp" />
     <ClCompile Include="units\RingStackTest.cpp" />
+    <ClCompile Include="units\ScopedLockTest.cpp" />
     <ClCompile Include="units\SortedLinkedListTest.cpp" />
     <ClCompile Include="units\StackTest.cpp" />
   </ItemGroup>

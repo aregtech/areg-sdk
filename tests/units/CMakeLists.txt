@@ -50,6 +50,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     DateTimeTest.cpp
     EventEnvelopeTest.cpp
     EventQueueTest.cpp
+    FatalErrorTest.cpp
     FileTest.cpp
     FixedArrayTest.cpp
     HashMapTest.cpp
@@ -63,6 +64,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     MultiLockTest.cpp
     OptionParserTest.cpp
     RingStackTest.cpp
+    ScopedLockTest.cpp
     SendBacklogTest.cpp
     SharedBufferTest.cpp
     SocketKeepAliveTest.cpp

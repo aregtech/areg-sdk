@@ -17,11 +17,11 @@ permissions:
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
+  # A Lock or ScopedLock that could not take its object ends the test process (FatalError.hpp).
+  AREG_LOCK_FAILURE_FATAL: 1
 
 jobs:
   invariants:
-    # Temporary: skipped on the branch that runs the diag-814.yml experiments.
-    if: github.head_ref != 'feature/812-general-ai-agent-doc-improvement' && github.ref_name != 'feature/812-general-ai-agent-doc-improvement'
     name: the framework invariants still have anchors
     # tools/intern/check_invariants.py seeds a defect per documented invariant, rebuilds and
     # asserts something goes red. The seeding needs a build per defect and is run by hand;
@@ -41,9 +41,11 @@ jobs:
       - name: Check every seeded defect still applies to exactly one place
         run: python3 tools/intern/check_invariants.py --dry-run
 
+      # areg is a shared library: an inline virtual method can leave a client unable to link (bug 418).
+      - name: Check no non-template class defines a virtual method inline
+        run: python3 tools/intern/check_inline_virtuals.py
+
   build-tests:
-    # Temporary: skipped on the branch that runs the diag-814.yml experiments.
-    if: github.head_ref != 'feature/812-general-ai-agent-doc-improvement' && github.ref_name != 'feature/812-general-ai-agent-doc-improvement'
     name: ${{matrix.config.name}}
     runs-on: ${{matrix.config.os}}
     timeout-minutes: 120
@@ -717,8 +719,6 @@ jobs:
           path: ./${{matrix.config.name}}/
 
   cross-arm32:
-    # Temporary: skipped on the branch that runs the diag-814.yml experiments.
-    if: github.head_ref != 'feature/812-general-ai-agent-doc-improvement' && github.ref_name != 'feature/812-general-ai-agent-doc-improvement'
     # 32-bit ARM Linux (armhf), cross-compiled with the toolchain file the SDK ships.
     # Builds the libraries and the service binaries, then prints their sizes.
     name: linux-gnu-arm32-cross-${{matrix.config.logs == 'ON' && 'log' || 'nolog'}}

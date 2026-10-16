@@ -2,9 +2,9 @@
 #define AREG_BASE_RESOURCEMAP_HPP
 /************************************************************************
  * This file is part of the Areg SDK core engine.
- * Areg SDK is dual-licensed under Free open source (Apache version 2.0
- * License) and Commercial (with various pricing models) licenses, depending
- * on the nature of the project (commercial, research, academic or free).
+ * Areg SDK is dual-licensed under Free open source (Apache version 2.0 License)
+ * and Commercial (with various pricing models) licenses, depending on the
+ * nature of the project (commercial, research, academic or free).
  * You should have received a copy of the Areg SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
@@ -300,14 +300,14 @@ inline ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, De
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, class MapContainer, class Deleter>
 inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter>::register_resource_object(const RESOURCE_KEY & Key, RESOURCE_OBJECT Resource)
 {
-    Lock lock(lockable());
+    ScopedLock lock(mSyncObj);
     MapContainer::set_value_at(Key, Resource);
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, class MapContainer, class Deleter>
 inline RESOURCE_OBJECT ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter>::unregister_resource_object(const RESOURCE_KEY & Key)
 {
-    Lock lock(lockable());
+    ScopedLock lock(mSyncObj);
     RESOURCE_OBJECT result{ nullptr };
     MapContainer::remove_at(Key, result);
     return result;
@@ -316,7 +316,7 @@ inline RESOURCE_OBJECT ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, class MapContainer, class Deleter>
 inline RESOURCE_OBJECT ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter>::find_resource_object(const RESOURCE_KEY & Key) const
 {
-    Lock lock(lockable());
+    ScopedLock lock(mSyncObj);
     if (MapContainer::is_empty())
         return nullptr;
 
@@ -328,26 +328,26 @@ inline RESOURCE_OBJECT ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, class MapContainer, class Deleter>
 inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter>::exist(const RESOURCE_KEY & Key) const
 {
-    Lock lock(lockable());
+    ScopedLock lock(mSyncObj);
     return MapContainer::contains(Key);
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, class MapContainer, class Deleter>
 inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter>::lock() const
 {
-    lockable().lock(areg::WAIT_INFINITE);
+    mSyncObj.lock(areg::WAIT_INFINITE);
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, class MapContainer, class Deleter>
 inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter>::unlock() const
 {
-    lockable().unlock();
+    mSyncObj.unlock();
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, class MapContainer, class Deleter>
 inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter>::try_lock() const
 {
-    return lockable().try_lock();
+    return mSyncObj.try_lock();
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, class MapContainer, class Deleter>
@@ -367,21 +367,21 @@ inline Lockable& ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapCon
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, class MapContainer, class Deleter>
 inline uint32_t ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter>::size() const noexcept
 {
-    Lock lock(lockable());
+    ScopedLock lock(mSyncObj);
     return MapContainer::size();
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, class MapContainer, class Deleter>
 inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter>::is_empty() const noexcept
 {
-    Lock lock(lockable());
+    ScopedLock lock(mSyncObj);
     return MapContainer::is_empty();
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, class MapContainer, class Deleter>
 inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter>::remove_resource_object( RESOURCE_OBJECT Resource )
 {
-    Lock lock(lockable());
+    ScopedLock lock(mSyncObj);
 
     bool result{ false };
     for ( auto pos = MapContainer::first_position(); pos != nullptr; pos = MapContainer::next_position(pos))
@@ -400,7 +400,7 @@ inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContaine
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, class MapContainer, class Deleter>
 inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter>::remove_all_resources()
 {
-    Lock lock(lockable());
+    ScopedLock lock(mSyncObj);
 
     for ( auto pos = MapContainer::first_position(); MapContainer::is_valid_position(pos); pos = MapContainer::next_position(pos))
     {
@@ -416,7 +416,7 @@ inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContaine
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, class MapContainer, class Deleter>
 inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter>::remove_first_element(std::pair<RESOURCE_KEY, RESOURCE_OBJECT> & firstElement )
 {
-    Lock lock(lockable());
+    ScopedLock lock(mSyncObj);
     bool result{ false };
     typename MapContainer::MAPPOS pos  = MapContainer::first_position();
     if (MapContainer::is_valid_position(pos))
@@ -431,7 +431,7 @@ inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContaine
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, class MapContainer, class Deleter>
 inline RESOURCE_OBJECT ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter>::resource_first_key( RESOURCE_KEY & firstKey ) const
 {
-    Lock lock(lockable());
+    ScopedLock lock(mSyncObj);
 
     RESOURCE_OBJECT result{ nullptr };
     typename MapContainer::MAPPOS pos = MapContainer::first_position();
@@ -446,7 +446,7 @@ inline RESOURCE_OBJECT ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, class MapContainer, class Deleter>
 inline RESOURCE_OBJECT ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter>::resource_next_key( RESOURCE_KEY & nextKey ) const
 {
-    Lock lock(lockable());
+    ScopedLock lock(mSyncObj);
 
     RESOURCE_OBJECT result{ nullptr };
     typename MapContainer::MAPPOS pos = MapContainer::is_empty() ? MapContainer::invalid_position() : MapContainer::find(nextKey);

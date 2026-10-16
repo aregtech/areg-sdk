@@ -1,8 +1,8 @@
 /************************************************************************
  * This file is part of the Areg SDK core engine.
- * Areg SDK is dual-licensed under Free open source (Apache version 2.0
- * License) and Commercial (with various pricing models) licenses, depending
- * on the nature of the project (commercial, research, academic or free).
+ * Areg SDK is dual-licensed under Free open source (Apache version 2.0 License)
+ * and Commercial (with various pricing models) licenses, depending on the
+ * nature of the project (commercial, research, academic or free).
  * You should have received a copy of the Areg SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
@@ -23,8 +23,10 @@
 #include "areg/base/private/posix/SyncLockAndWaitPosix.hpp"
 #include "areg/base/private/posix/WaitablePosix.hpp"
 #include "areg/base/SyncPrimitives.hpp"
+#include "areg/base/FatalError.hpp"
 #include "areg/base/Thread.hpp"
 #include <algorithm>
+#include <new>
 #include <chrono>
 #include <cstdint>
 #include <errno.h>
@@ -104,6 +106,11 @@ struct WaitState
             }
 
             ::pthread_mutexattr_destroy(&attr);
+        }
+
+        if (valid == false)
+        {
+            areg::fatal_error("pthread_mutex_init or pthread_cond_init failed, a thread cannot wait");
         }
     }
 
@@ -358,8 +365,10 @@ SyncLockAndWaitPosix::WaitAnyRegistryMap & SyncLockAndWaitPosix::_map_wait_any_i
 
 SyncLockAndWaitPosix::SyncResourceMapIX & SyncLockAndWaitPosix::_map_sync_resources() noexcept
 {
-    static SyncLockAndWaitPosix::SyncResourceMapIX _theSyncResourceMapIX;
-    return _theSyncResourceMapIX;
+    // Never destroyed: waitable objects owned by other statics remove themselves from it at exit.
+    alignas(SyncResourceMapIX) static unsigned char _theStorage[sizeof(SyncResourceMapIX)];
+    static SyncResourceMapIX * const _theSyncResourceMapIX{ new (_theStorage) SyncResourceMapIX() };
+    return *_theSyncResourceMapIX;
 }
 
 int32_t SyncLockAndWaitPosix::wait_single( WaitablePosix & syncWait, uint32_t msTimeout /* = areg::WAIT_INFINITE */ )

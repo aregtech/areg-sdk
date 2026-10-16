@@ -99,6 +99,7 @@
     <ClCompile Include="areg\base\private\ThreadConsumer.cpp" />
     <ClCompile Include="areg\base\private\SocketDefs.cpp" />
     <ClCompile Include="areg\base\private\DebugDefs.cpp" />
+    <ClCompile Include="areg\base\private\FatalError.cpp" />
     <ClCompile Include="areg\base\private\UtilityDefs.cpp" />
     <ClCompile Include="areg\base\private\SocketMultiplexer.cpp" />
     <ClCompile Include="areg\component\private\EventStack.cpp" />
@@ -158,7 +159,10 @@
     <ClCompile Include="areg\component\private\TimerManager.cpp" />
     <ClCompile Include="areg\component\private\win32\WatchdogManagerWin32.cpp" />
     <ClCompile Include="areg\component\private\WorkerThread.cpp" />
+    <ClCompile Include="areg\component\private\WorkerThreadConsumer.cpp" />
     <ClCompile Include="areg\component\private\EventConsumer.cpp" />
+    <ClCompile Include="areg\component\private\RemoteEventConsumer.cpp" />
+    <ClCompile Include="areg\component\private\TimerConsumer.cpp" />
     <ClCompile Include="areg\component\private\Model.cpp" />
     <ClCompile Include="areg\component\private\ServiceDefs.cpp" />
     <ClCompile Include="areg\ipc\private\ClientConnection.cpp" />
@@ -259,6 +263,7 @@
     <ClInclude Include="areg\component\private\EventConsumerMap.hpp" />
     <ClInclude Include="areg\component\EventDispatcher.hpp" />
     <ClInclude Include="areg\component\private\EventDispatcherBase.hpp" />
+    <ClInclude Include="areg\base\FatalError.hpp" />
     <ClInclude Include="areg\base\File.hpp" />
     <ClInclude Include="areg\base\FileBase.hpp" />
     <ClInclude Include="areg\base\FileBuffer.hpp" />

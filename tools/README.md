@@ -101,6 +101,7 @@ about this repository: whether the framework, the agent corpus and the CI still 
 | `check-ascii.py` | Python | Finds non ASCII bytes and unwanted control characters | [11](#11-source-hygiene-check-asciipy) |
 | `footprint.py` | Python | Reports the flash size of the artefacts and the RAM of the running processes | [12](#12-flash-and-ram-footprint) |
 | `check_invariants.py` | Python | Seeds a defect per framework invariant, rebuilds, and asks whether the test suite notices. `--dry-run` is one second; `--restore` undoes a seed a killed run left | -- |
+| `check_inline_virtuals.py` | Python | Fails when a header defines a virtual method of a non-template class inline; such a method can leave a client of the shared library unable to link (bug 418) | -- |
 
 **The agent corpus.** The rules these check against are `../../docs/ai-readiness.md`.
 
