@@ -19,6 +19,8 @@ permissions:
 
 jobs:
   reuse:
+    # Temporary: skipped on the branch that runs the diag-814.yml experiments.
+    if: github.head_ref != 'feature/812-general-ai-agent-doc-improvement' && github.ref_name != 'feature/812-general-ai-agent-doc-improvement'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7

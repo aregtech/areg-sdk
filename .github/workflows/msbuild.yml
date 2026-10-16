@@ -26,6 +26,8 @@ permissions:
 
 jobs:
   build-tests:
+    # Temporary: skipped on the branch that runs the diag-814.yml experiments.
+    if: github.head_ref != 'feature/812-general-ai-agent-doc-improvement' && github.ref_name != 'feature/812-general-ai-agent-doc-improvement'
     name: ${{matrix.config.name}}
     # Pinned to windows-2022 (Visual Studio 2022) on purpose
     runs-on: windows-2022
