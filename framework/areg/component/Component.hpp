@@ -2,9 +2,9 @@
 #define AREG_COMPONENT_COMPONENT_HPP
 /************************************************************************
  * This file is part of the Areg SDK core engine.
- * Areg SDK is dual-licensed under Free open source (Apache version 2.0
- * License) and Commercial (with various pricing models) licenses, depending
- * on the nature of the project (commercial, research, academic or free).
+ * Areg SDK is dual-licensed under Free open source (Apache version 2.0 License)
+ * and Commercial (with various pricing models) licenses, depending on the
+ * nature of the project (commercial, research, academic or free).
  * You should have received a copy of the Areg SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
@@ -214,8 +214,9 @@ public:
     virtual void wait_component_completion( uint32_t waitTimeout );
 
     /**
-     * \brief   Returns the worker thread consumer for creating worker threads. Called during
-     *          component initialization.
+     * \brief   Returns the consumer of a worker thread the model declares, matched by consumer
+     *          name. Called while the component is loaded, once per declared worker thread. One
+     *          consumer may serve several worker threads.
      *
      * \param   consumerName        The name of the consumer to identify.
      * \param   workerThreadName    The name of the worker thread.
@@ -224,7 +225,9 @@ public:
     virtual WorkerThreadConsumer * worker_thread_consumer( const String & consumerName, const String & workerThreadName );
 
     /**
-     * \brief   Called when a worker thread starts. Override to perform additional operations.
+     * \brief   Called on the component thread when a worker thread the model declares has started
+     *          and accepts events, before the component's service is announced. Override it to add
+     *          the listeners of the events the worker receives and to start the worker's timers.
      *
      * \param   consumer        The worker thread consumer.
      * \param   workerThread    The worker thread that started.
@@ -236,7 +239,8 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Creates and starts a worker thread with the specified configuration.
+     * \brief   Creates and starts a worker thread with the specified configuration. Returns when
+     *          the worker accepts events; add the listeners of the events it receives right after.
      *
      * \param   threadName          Unique thread name within the system.
      * \param   consumer            The consumer whose start and stop methods will be called.

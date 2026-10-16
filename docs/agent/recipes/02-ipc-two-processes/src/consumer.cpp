@@ -2,7 +2,6 @@
  * \file    consumer.cpp
  * \brief   The process that consumes the service.
  **/
-#include <iostream>
 
 #include "areg/base/areg_global.h"
 #include "areg/base/UtilityDefs.hpp"
@@ -13,6 +12,9 @@
 #include "areg/component/ComponentThread.hpp"
 
 #include "src/services/HelloServiceConsumerBase.hpp"
+#include "areg/logging/areg_log.h"
+
+GLOBAL_LOG_SCOPE(hello_consumer, log);
 
 class ServiceConsumer final : public    areg::Component
                             , protected HelloServiceConsumerBase
@@ -41,13 +43,13 @@ protected:
 
     void response_hello_service(bool success) final
     {
-        std::cout << "consumer: " << (success ? "greeted" : "failed") << std::endl;
+        GLOBAL_INFO("consumer: %s", success ? "greeted" : "failed");
         areg::Application::signal_quit();
     }
 
     void request_hello_service_failed(areg::ResultType /*reason*/) final
     {
-        std::cerr << "consumer: request failed" << std::endl;
+        GLOBAL_ERR("consumer: request failed");
     }
 };
 
@@ -66,7 +68,7 @@ END_MODEL(_modelName)
 
 int main()
 {
-    areg::Application::setup();
+    areg::Application::setup(true, true, true, true, false, "./config/project.init");
     areg::Application::load_model(_modelName);
     areg::Application::wait_quit(areg::WAIT_INFINITE);
     areg::Application::unload_model(_modelName);

@@ -21,6 +21,7 @@
 # Exit code 0 when every step passed, 1 otherwise.
 # ===========================================================================
 import argparse
+import difflib
 import glob
 import hashlib
 import json
@@ -50,16 +51,25 @@ def passed_lines(build, only=None):
     """The lines a passing --run ends on; the last one names where the output is kept."""
     ran = 'scenario "{}"'.format(only) if only else 'the scenarios'
     return ['Every step passed, {} included. Report from the lines printed above;'.format(ran),
-            'each process\'s whole output is in {}: grep there, never run again.'
+            'each process\'s whole output is {}<scenario>/<n>-<process>.log, n its place '
+            'in "procs" from 0: grep there, never run again.'
             .format(KEPT_OUTPUT.format(build=build.replace(os.sep, '/')))]
 
+
+# The one-call form of a change of a few lines, named where a step fails.
+EDIT_HOW = ('A few lines of design.json, scenarios.json or a file of your own change in '
+            'this same command: --edit <<\'AREG_EOF\', then "== <file>", "<<<<<<< SEARCH", '
+            'the lines as they are, "=======", the lines that replace them, '
+            '">>>>>>> REPLACE"; several blocks and files in one call. A design change and '
+            'the sections it adds go in the same call: "== fix.txt", "<<<<<<< SEARCH", '
+            '"=======", the "== <section>" lines and their code, ">>>>>>> REPLACE".')
 
 # What to do when a step fails. Naming the step is the whole point of a chain:
 # a failure that does not say where it happened costs more than the requests saved.
 ADVICE = {
     'documents': 'the spec was refused. The message names the file, the line and the '
                  'rule: fix the spec, not the XML. "python3 {tools}/explain_rule.py '
-                 '<number>" explains a rule by its number.',
+                 '<number>" explains a rule by its number. ' + EDIT_HOW,
     'application': 'the documents generated, but the application could not be written '
                    'from them. The message names what the document lacks.',
     'contract': 'the sources break a rule of docs/agent/api.json. Every finding names '
@@ -67,10 +77,10 @@ ADVICE = {
     'configure': 'CMake could not configure. The generator runs here, so a refused '
                  'document appears in this output; anything else is CMakeLists.txt.',
     'scenarios': 'the application built, but a scenario did not pass. Each failure '
-                 'names the process, what it was expected to print and what it '
+                 'names the process, what it was expected to write and what it '
                  'wrote. "--only <name>" iterates on one. Send every section you '
                  'change as fix.txt with this command, in one call: --write fix.txt '
-                 '<<\'AREG_EOF\'. It is folded into bodies.txt.',
+                 '<<\'AREG_EOF\'. It is folded into bodies.txt. ' + EDIT_HOW,
     'final': 'the final pass does not allow an open marker. A passing scenario says '
              'nothing about the requirement behind one: no body was written for it. '
              'Send its section as fix.txt with this command, in one call: '
@@ -81,7 +91,7 @@ ADVICE = {
              '<<\'AREG_EOF\'. Never edit the generated file. A '
              'provider that is abstract means the document gained a request the '
              'application has no handler for: add the handler, or --regenerate and '
-             'fill the markers again.',
+             'fill the markers again. ' + EDIT_HOW,
 }
 
 
@@ -198,8 +208,8 @@ def fail(message):
     sys.exit(2)
 
 
-def write_input(root, target):
-    """Writes standard input to target, a path inside the project root."""
+def write_input(root, target, text):
+    """Writes text, read from standard input, to target, a path inside the project root."""
     path = os.path.abspath(target if os.path.isabs(target) else os.path.join(root, target))
     try:
         inside = os.path.commonpath([os.path.normcase(path), os.path.normcase(root)]) \
@@ -208,12 +218,16 @@ def write_input(root, target):
         inside = False
     if not inside:
         fail('--write {}: the file is outside the project root {}'.format(target, root))
-    if sys.stdin is None or sys.stdin.isatty():
-        fail('--write {}: nothing on standard input. Pass the text as a here-document: '
-             "--write {} <<'AREG_EOF' ... AREG_EOF".format(target, target))
-    text = sys.stdin.read()
     if not text.strip():
-        fail('--write {}: standard input is empty, so nothing was written'.format(target))
+        name = os.path.relpath(path, root).replace(os.sep, '/')
+        if os.path.isfile(path):
+            with open(path, encoding='utf-8') as handle:
+                lines = handle.read().count('\n')
+            print('== write: standard input is empty, so {} is used as it is on disk, '
+                  '{} line(s)'.format(name, lines))
+            return
+        fail('--write {}: nothing on standard input and no such file. Pass the text as a '
+             "here-document: --write {} <<'AREG_EOF' ... AREG_EOF".format(target, target))
     if not text.endswith('\n'):
         text += '\n'
     parent = os.path.dirname(path)
@@ -223,6 +237,276 @@ def write_input(root, target):
         handle.write(text)
     print('== write: {}, {} line(s)'.format(os.path.relpath(path, root).replace(os.sep, '/'),
                                             text.count('\n')))
+
+
+# The lines of an --edit: a file, then blocks of the lines as they are and the lines
+# that replace them.
+EDIT_FILE = re.compile(r'^==\s+(\S.*?)\s*$')
+EDIT_OPEN = re.compile(r'^<{7}(\s.*)?$')
+EDIT_SPLIT = re.compile(r'^={7}\s*$')
+EDIT_CLOSE = re.compile(r'^>{7}(\s.*)?$')
+EDIT_SHAPE = ('"== <file>", "<<<<<<< SEARCH", the lines as they are, "=======", the lines '
+              'that replace them, ">>>>>>> REPLACE"')
+
+# A body lives in bodies.txt; a source holding one of these lines is written from it.
+GENERATED_SOURCE = re.compile(r'//\s*(TODO|body)\(you\)\s')
+
+
+def parse_edits(text):
+    """Returns the blocks of an --edit as [(file, line, old lines, new lines)]."""
+    edits, target, state, start = [], None, None, 0
+    old, new = [], []
+    for number, line in enumerate(text.splitlines(), 1):
+        if state is None:
+            named = EDIT_FILE.match(line)
+            if named:
+                if target == fill_markers.FIX_FILE and not any(
+                        edit[0] == target for edit in edits):
+                    fail('--edit line {}: "{}" follows "== {}" outside a block. Its '
+                         'sections go inside one with no search lines: "<<<<<<< SEARCH", '
+                         '"=======", the "== <section>" lines and their code, '
+                         '">>>>>>> REPLACE"'.format(number, line.strip()[:60], target))
+                target = named.group(1)
+            elif EDIT_OPEN.match(line):
+                if target is None:
+                    fail('--edit line {}: a block before any "== <file>" line. Each block is '
+                         '{}'.format(number, EDIT_SHAPE))
+                state, start, old, new = 'old', number, [], []
+            elif line.strip():
+                fail('--edit line {}: "{}" is outside a block. Each block is {}'
+                     .format(number, line.strip()[:60], EDIT_SHAPE))
+        elif state == 'old':
+            if EDIT_SPLIT.match(line):
+                state = 'new'
+            elif EDIT_OPEN.match(line) or EDIT_CLOSE.match(line):
+                fail('--edit line {}: the block of line {} has no "=======" line before '
+                     'this one'.format(number, start))
+            else:
+                old.append(line)
+        elif EDIT_CLOSE.match(line):
+            edits.append((target, start, old, new))
+            state = None
+        elif EDIT_OPEN.match(line) or EDIT_SPLIT.match(line):
+            fail('--edit line {}: the block of line {} has no ">>>>>>> REPLACE" line '
+                 'before this one'.format(number, start))
+        else:
+            new.append(line)
+    if state is not None:
+        fail('--edit: the block of line {} has no ">>>>>>> REPLACE" line'.format(start))
+    if not edits:
+        fail('--edit: standard input holds no block. Each block is {}'.format(EDIT_SHAPE))
+    return edits
+
+
+def split_file_edits(root, text):
+    """Splits the "== <project file>" search/replace blocks out of a --write text.
+
+    Returns (edit text, the rest). A block starts at a "== <name>" line naming an existing
+    project file whose next non-empty line opens a block, and ends after its last block.
+    """
+    lines = text.split('\n')
+
+    def opens_edit(index):
+        named = EDIT_FILE.match(lines[index])
+        if not named or not os.path.isfile(os.path.join(root, named.group(1))):
+            return False
+        after = next((line for line in lines[index + 1:] if line.strip()), '')
+        return bool(EDIT_OPEN.match(after))
+
+    edits, rest, index, inside = [], [], 0, False
+    while index < len(lines):
+        line = lines[index]
+        if not inside and opens_edit(index):
+            inside, state = True, None
+        if not inside:
+            rest.append(line)
+            index += 1
+            continue
+        edits.append(line)
+        if state is None and EDIT_OPEN.match(line):
+            state = 'open'
+        elif state == 'open' and EDIT_CLOSE.match(line):
+            state = None
+            after = next((i for i in range(index + 1, len(lines)) if lines[i].strip()), None)
+            if after is None or not (EDIT_OPEN.match(lines[after]) or opens_edit(after)):
+                inside = False
+        index += 1
+    return '\n'.join(edits), '\n'.join(rest)
+
+
+def apply_file_blocks(root, target, text, made, appendable):
+    """Applies the "== <project file>" blocks of a bodies or fix text and returns the
+    rest, the sections alone."""
+    edits, rest = split_file_edits(root, text)
+    if not edits.strip():
+        return text
+    if any(EDIT_FILE.match(line) and os.path.basename(
+            EDIT_FILE.match(line).group(1)) in appendable
+           for line in edits.split('\n')):
+        fail('--write {}: its sections are written as they are, so a block '
+             'cannot edit {} itself'.format(target, ' or '.join(appendable)))
+    apply_edits(root, edits, made, appendable)
+    return rest
+
+
+def edit_refusal(root, target, path, generated_dirs):
+    """Why a file may not be edited, or None."""
+    rel = os.path.relpath(path, root).replace(os.sep, '/')
+    try:
+        inside = os.path.commonpath([os.path.normcase(path), os.path.normcase(root)]) \
+            == os.path.normcase(root)
+    except ValueError:
+        inside = False
+    if not inside:
+        return 'the file is outside the project root {}'.format(root)
+    if not os.path.isfile(path) and rel != fill_markers.FIX_FILE:
+        return 'no such file. --write writes a whole file; a file of your own is an entry ' \
+               'of design.json "sources"'
+    if rel == 'worksheet.txt':
+        return 'the generator rewrites it on every generation: change design.json or bodies.txt'
+    for where, what in generated_dirs:
+        if rel.startswith(where.rstrip('/') + '/'):
+            return 'it is generated from {}: change that instead'.format(what)
+    if rel.endswith(('.cpp', '.hpp', '.h')):
+        with open(path, encoding='utf-8', errors='replace') as handle:
+            if GENERATED_SOURCE.search(handle.read()):
+                return ('it is written from bodies.txt: change its section in bodies.txt, '
+                        'or send it as fix.txt')
+    return None
+
+
+def replace_once(text, old, new):
+    """Returns (text, note) with old replaced by new, or (None, why)."""
+    if not any(line.strip() for line in old):
+        return None, 'its search lines are empty. --write writes a whole file'
+    found = text.count('\n'.join(old))
+    if found == 1:
+        return text.replace('\n'.join(old), '\n'.join(new), 1), ''
+    lines = text.split('\n')
+    if found > 1:
+        first = old[0].strip()
+        at = [str(index + 1) for index, line in enumerate(lines) if first and first in line]
+        return None, ('its search lines appear {} times (line {}): add a line around them '
+                      'that only one place has'.format(found, ', '.join(at[:6])))
+    size = len(old)
+    stripped = [line.strip() for line in old]
+    starts = [index for index in range(len(lines) - size + 1)
+              if [line.strip() for line in lines[index:index + size]] == stripped]
+    if len(starts) == 1:
+        index = starts[0]
+        return '\n'.join(lines[:index] + new + lines[index + size:]), \
+            ' (matched ignoring spaces at the ends of lines)'
+    if len(starts) > 1:
+        return None, ('its search lines appear {} times (line {}): add a line around them '
+                      'that only one place has'
+                      .format(len(starts), ', '.join(str(index + 1) for index in starts[:6])))
+    if new and any(line.strip() for line in new) and text.count('\n'.join(new)) == 1:
+        return None, ('its search lines are not in the file and its replacement is: it was '
+                      'applied before, so leave this block out')
+    best, at = 0, -1
+    for index in range(len(lines)):
+        run = 0
+        while run < size and index + run < len(lines) \
+                and lines[index + run].strip() == stripped[run]:
+            run += 1
+        if run > best:
+            best, at = run, index
+    if best == 0:
+        return None, 'its first search line "{}" is in no line of the file'.format(
+            old[0].strip()[:80])
+    return None, ('from line {}, the file matches its first {} search line(s); line {} '
+                  'differs: the file has "{}", the block "{}"'
+                  .format(at + 1, best, at + best + 1,
+                          lines[at + best].strip()[:80] if at + best < len(lines) else '',
+                          stripped[best][:80]))
+
+
+def apply_edits(root, text, generated_dirs, appendable=None):
+    """Applies every --edit block, or refuses them all and writes nothing. A block with
+    no search lines adds its lines to the end of a file in appendable."""
+    appendable = (fill_markers.FIX_FILE, 'bodies.txt') if appendable is None else appendable
+    edits = parse_edits(text)
+    files, order, refused, notes = {}, [], [], []
+    for target, start, old, new in edits:
+        path = os.path.abspath(target if os.path.isabs(target) else os.path.join(root, target))
+        name = os.path.relpath(path, root).replace(os.sep, '/')
+        if path not in files:
+            why = edit_refusal(root, target, path, generated_dirs)
+            if why:
+                refused.append('block of line {}, {}: {}'.format(start, target, why))
+                files[path] = None
+                continue
+            raw = ''
+            if os.path.isfile(path):
+                with open(path, encoding='utf-8', newline='') as handle:
+                    raw = handle.read()
+            files[path] = [raw.replace('\r\n', '\n'), '\r\n' in raw, 0, name]
+            order.append(path)
+        entry = files[path]
+        if entry is None:
+            continue
+        if not any(line.strip() for line in old) and name in appendable:
+            body = entry[0] if not entry[0] or entry[0].endswith('\n') else entry[0] + '\n'
+            entry[0] = body + '\n'.join(new) + '\n'
+            entry[2] += 1
+            continue
+        result, why = replace_once(entry[0], old, new)
+        if result is None:
+            refused.append('block of line {}, {}: {}'.format(start, name, why))
+            continue
+        entry[0] = result
+        entry[2] += 1
+        if why:
+            notes.append('block of line {}{}'.format(start, why))
+    if refused:
+        fail('--edit applied nothing, every file is as it was:\n  ' + '\n  '.join(refused))
+    scenarios = os.path.join(root, 'scenarios.json')
+    held = held_lists(scenarios) if scenarios in order else {}
+    for path in order:
+        content, crlf, count, name = files[path]
+        with open(path, 'w', encoding='utf-8', newline='\r\n' if crlf else '\n') as handle:
+            handle.write(content)
+        print('== edit: {}, {} block(s)'.format(name, count))
+    for note in notes:
+        print('   ' + note)
+    if held:
+        carry_lists(root, scenarios, held, appendable[-1])
+
+
+def held_lists(scenarios):
+    """Every expect list and stop line of a scenario file, by the section that fills it."""
+    places, _ = fill_markers.expectations_of(scenarios)
+    lists = {}
+    for name, place in places.items():
+        try:
+            lists[name] = fill_markers.held_expectations(scenarios, place)
+        except (KeyError, IndexError, TypeError, ValueError):
+            continue
+    return lists
+
+
+def carry_lists(root, scenarios, before, bodies):
+    """Writes each list an edit of the scenario file changed into its section of bodies,
+    which the filler writes back into the scenario file."""
+    path = os.path.join(root, bodies)
+    if not os.path.isfile(path):
+        return
+    with open(path, encoding='utf-8', newline='') as handle:
+        raw = handle.read()
+    lines = raw.replace('\r\n', '\n').split('\n')
+    owned = {name for name, _ in fill_markers.blocks_of(lines)[1:]}
+    after = held_lists(scenarios)
+    fixes = []
+    for name in sorted(after):
+        if name in owned and name in before and after[name] != before[name]:
+            fixes += ['== ' + name] + [str(entry) for entry in after[name]] + ['']
+    if not fixes:
+        return
+    folded, replaced, _ = fill_markers.fold(lines, fixes)
+    with open(path, 'w', encoding='utf-8', newline='\r\n' if '\r\n' in raw else '\n') as handle:
+        handle.write('\n'.join(folded))
+    print('   scenarios.json: {} is filled from {}, so the edit is written there too'
+          .format(', '.join(replaced), bodies))
 
 
 def show(lines, tail):
@@ -241,6 +525,12 @@ def show(lines, tail):
 
 NOTES_SHOWN = '.notes-shown'
 NOTE_LINE = re.compile(r'^(\s*)(?:note  |table )(\S+)')
+# The design notes that ask for a change to design.json, and those this call printed.
+CHANGE_NOTE = re.compile(r'is only ever set from its own value|'
+                         r'Each of these triggers forwards a request')
+CHANGES_ASKED = []
+# What a rewritten worksheet changed against the one it replaced.
+WORKSHEET_CHANGES = []
 
 
 def collapse_notes(lines, record):
@@ -275,9 +565,12 @@ def collapse_notes(lines, record):
             collapsed += 1
         else:
             kept.extend(lines[index:end])
+            if CHANGE_NOTE.search(block) and block not in CHANGES_ASKED:
+                CHANGES_ASKED.append(block)
         index = end
     if where is not None:
-        kept[where[0]] = '{}note  {} design note(s) unchanged since the last call, not repeated' \
+        kept[where[0]] = '{}note  {} design note(s) unchanged since the last call, not ' \
+            'repeated; gen_docs.py --review --spec design.json prints every one' \
             .format(where[1], collapsed)
     try:
         os.makedirs(os.path.dirname(record), exist_ok=True)
@@ -352,8 +645,13 @@ def diagnostics(lines, budget, context=6):
 
 
 def show_failure(lines, tail):
-    """Prints what a failed step said about the defect, and how much was left out."""
-    tail = len(lines) if tail is None else tail
+    """Prints what a failed step said about the defect, and how much was left out.
+
+    With tail None the whole log is printed.
+    """
+    if tail is None:
+        show(lines, tail)
+        return
     found = diagnostics(lines, tail)
     if found is None:
         show(lines, tail)
@@ -386,7 +684,8 @@ def show_passed(lines, tail):
     show(lines, tail)
 
 
-def run(step, command, cwd, kept=2, failed_kept=40, notes=None, build=None, heal=None):
+def run(step, command, cwd, kept=2, failed_kept=40, notes=None, build=None, heal=None,
+        explain=None):
     """One step of the chain, and whether it passed.
 
     A step that passed prints its last `kept` lines and nothing more: a build log
@@ -395,7 +694,8 @@ def run(step, command, cwd, kept=2, failed_kept=40, notes=None, build=None, heal
     them, and what to do about it. With `notes`, the design notes printed by an
     earlier call are replaced by one line that counts them. With `build`, a failure
     whose cause is a stale CMake cache in that directory says how to clear it; with
-    `heal`, that cache is cleared here and the step runs once more instead.
+    `heal`, that cache is cleared here and the step runs once more instead. With
+    `explain`, a failure also prints the lines it returns for the failed output.
     """
     print('== {}: {}'.format(step, ' '.join(command)))
     result = subprocess.run(command, cwd=cwd, capture_output=True, text=True)
@@ -403,8 +703,10 @@ def run(step, command, cwd, kept=2, failed_kept=40, notes=None, build=None, heal
     if result.returncode != 0:
         said = '\n'.join(lines)
         if heal and STALE_CACHE.search(said) and heal(said):
-            return run(step, command, cwd, kept, failed_kept, notes, build, heal)
+            return run(step, command, cwd, kept, failed_kept, notes, build, heal, explain)
         show_failure(lines, failed_kept)
+        for line in explain(lines) if explain else []:
+            print('   ' + line)
         print('')
         print('FAILED at step "{}", exit {}.'.format(step, result.returncode))
         advice = ADVICE.get(step, '')
@@ -420,6 +722,48 @@ def run(step, command, cwd, kept=2, failed_kept=40, notes=None, build=None, heal
     return True
 
 
+# The line a scenario driver prints for a request whose response never arrived.
+UNANSWERED = re.compile(r'sent request_(\w+)\(.*\) and awaits response \w+.*\. '
+                        r'Nothing arrived for it\.')
+
+
+def unanswered_triggers(lines, specs):
+    """For each request a scenario got no answer to, where a machine trigger of the
+    same name is taken, and which of its transitions run no "do"."""
+    requests = []
+    for line in lines:
+        found = UNANSWERED.search(line)
+        if found and found.group(1) not in requests:
+            requests.append(found.group(1))
+    said = []
+    if not requests:
+        return said
+    for spec in specs:
+        for machine in gen_docs.listed(gen_docs.load_spec(spec)[0], 'machines'):
+            coverage = dict(gen_docs.trigger_coverage(machine))
+            for request in requests:
+                if request not in coverage:
+                    continue
+                name = machine.get('name', '?')
+                missing = gen_docs.states_without(machine, request)
+                where = ', '.join(missing) or 'no state of {} is one'.format(name)
+                if any(label.endswith('+') for label in missing):
+                    where += ' (+ with every state inside it)'
+                said.append('request_{0} reaches machine {1} only when its body calls '
+                            'the trigger {0}(). In a state with no transition on "{0}", '
+                            'inside none that has one, the trigger takes nothing, returns '
+                            'false and sends no answer: {2}.'.format(request, name, where))
+                said.append('The states that take it answer only through an action that '
+                            'calls response_{}: {} (* the initial state, + also while '
+                            'inside it).'.format(request, ', '.join(coverage[request])
+                                                 or 'none'))
+                bare = gen_docs.moves_without_do(machine, request)
+                if bare:
+                    said.append('Transitions on "{}" that run no "do": {}.'
+                                .format(request, ', '.join(bare)))
+    return said
+
+
 # What update_cmake prints when it takes a document's line out.
 PRUNED = re.compile(r'^removed\s+\w+\(\s*\S+\s+(\S+?)\s*\)')
 
@@ -428,19 +772,74 @@ def documents_of(specs, outdir):
     """The .siml, the .fsml and the .dtml the specs name, as paths under outdir, and
     the .fsml each machine hosts, as its "submachines" spell them."""
     interfaces, machines, shared_types, hosted = [], [], [], []
-    for spec in specs:
-        document, _skipped = gen_docs.load_spec(spec)
+    documents = [gen_docs.load_spec(spec)[0] for spec in specs]
+    gen_docs.settle_submachines([entry for document in documents
+                                 for entry in gen_docs.listed(document, 'machines')])
+    designed = set(entry.get('name') for document in documents
+                   for entry in document.get('machines') or [])
+    for document in documents:
         for entry in document.get('interfaces') or []:
             interfaces.append(os.path.join(outdir, entry['name'] + '.siml'))
         for entry in document.get('machines') or []:
             machines.append(os.path.join(outdir, entry['name'] + '.fsml'))
-            hosted += [os.path.normpath(inner['path']) for inner in
-                       entry.get('submachines') or [] if isinstance(inner, dict)
-                       and isinstance(inner.get('path'), str)]
+            for inner in entry.get('submachines') or []:
+                if not isinstance(inner, dict):
+                    continue
+                path = inner.get('path')
+                if not path and inner.get('name') in designed:
+                    path = os.path.join(outdir, inner['name'] + '.fsml')
+                if isinstance(path, str):
+                    hosted.append(os.path.normpath(path))
         shared = document.get('datatypes') or {}
-        if shared.get('name'):
+        if shared.get('name') and (shared.get('declare') or shared.get('includes')):
             shared_types.append(os.path.join(outdir, shared['name'] + '.dtml'))
     return interfaces, machines, shared_types, list(dict.fromkeys(hosted))
+
+
+# The shape of a "programs" block, printed where a design of several services meets it.
+PROGRAMS_SHAPE = '''  "programs": [
+    {"name": "server", "components": [{"provides": "StockService"},
+                                      {"provides": "PaymentService"}]},
+    {"name": "desk", "components": [{"provides": "OrderService",
+                                     "uses": ["StockService", "PaymentService"]}]},
+    {"name": "client", "components": [{"drives": "OrderService"}]}]
+  A program is an executable. A component provides one service, drives the scenario
+  (the "steps" of that service), or watches one; "roles": ["a", "b"] on a provider runs
+  named instances of it, and "role" or {"service": ..., "role"/"roles": ...} in "uses"
+  picks the instance a consumer talks to. "uses" gives any component a client member of
+  each used provider, with every answer, update and broadcast a worksheet section.'''
+
+
+def programs_of(specs):
+    """The "programs" block of the specs, or an empty list.
+
+    A block that only restates the default shape -- one service, its provider in one
+    program and the component driving it in another, nothing used -- is the
+    application build_project.py writes without it, so it is not used.
+    """
+    found, interfaces = [], []
+    for spec in specs:
+        loaded = gen_docs.load_spec(spec)[0]
+        found += loaded.get('programs') or []
+        interfaces += [entry for entry in loaded.get('interfaces') or []
+                       if isinstance(entry, dict)]
+    components = [component for program in found if isinstance(program, dict)
+                  for component in program.get('components') or []
+                  if isinstance(component, dict)]
+    kinds = sorted(kind for component in components
+                   for kind in gen_docs.COMPONENT_KINDS if component.get(kind))
+    if len(interfaces) == 1 and len(found) <= 2 and kinds == ['drives', 'provides'] \
+            and not any(component.get('uses') or len(component.get('roles') or []) > 1
+                        for component in components):
+        return []
+    return found
+
+
+def programs_present(root, programs):
+    """0 when no program has its main.cpp yet, 2 when every one has, 1 otherwise."""
+    present = [os.path.isfile(os.path.join(root, 'src', program.get('name', ''), 'main.cpp'))
+               for program in programs if isinstance(program, dict)]
+    return 2 if present and all(present) else (1 if any(present) else 0)
 
 
 def built_machines(machines, hosted):
@@ -475,14 +874,16 @@ def drop_placeholders(root, changed, wanted):
 def mode_of(root, given):
     """ipc or local: what the project was scaffolded as.
 
-    Taken from scenarios.json, which names one process for a local project and two
-    for an ipc one, so the mode is never asked for twice.
+    Taken from the generated "smoke" scenario of scenarios.json, which names one
+    process for a local project and two for an ipc one, so the mode is never asked
+    for twice. A scenario of the author's own may stand before it.
     """
     if given:
         return given
     try:
         with open(os.path.join(root, 'scenarios.json'), encoding='utf-8') as handle:
-            procs = json.load(handle)['scenarios'][0]['procs']
+            scenarios = json.load(handle)['scenarios']
+        procs = next((s for s in scenarios if s.get('name') == 'smoke'), scenarios[0])['procs']
         return 'local' if len(procs) < 2 else 'ipc'
     except (ValueError, OSError, KeyError, IndexError, TypeError):
         return 'ipc'
@@ -573,6 +974,186 @@ def app_older_than(root, build, specs):
     return newest > 0 and max(os.path.getmtime(spec) for spec in specs) > newest
 
 
+# The sources as the last generation wrote them, before any body, and the sections of
+# bodies.txt the last fill applied. Together they tell a body edited in a source from
+# one edited in bodies.txt.
+PRISTINE = 'pristine'
+APPLIED = '.bodies-applied.json'
+
+
+def app_sources(base):
+    """Every application source under base, by path relative to it."""
+    found = {}
+    for folder, dirs, files in os.walk(base):
+        dirs[:] = sorted(d for d in dirs if d not in ('services', 'build'))
+        for name in sorted(files):
+            if name.endswith(('.cpp', '.hpp', '.h')):
+                path = os.path.join(folder, name)
+                found[os.path.relpath(path, base).replace(os.sep, '/')] = path
+    return found
+
+
+def keep_pristine(root, build):
+    """Copies src/ as just generated, so a later call can find the bodies in it."""
+    target = os.path.join(root, build, PRISTINE)
+    shutil.rmtree(target, ignore_errors=True)
+    for rel, path in app_sources(os.path.join(root, 'src')).items():
+        os.makedirs(os.path.dirname(os.path.join(target, rel)), exist_ok=True)
+        shutil.copyfile(path, os.path.join(target, rel))
+
+
+def keep_applied(root, build, bodies):
+    """Records the sections of bodies.txt a fill has just applied."""
+    path = os.path.join(root, bodies)
+    sections = fill_markers.read_bodies(path) if worksheet_has_code(path) else []
+    os.makedirs(os.path.join(root, build), exist_ok=True)
+    with open(os.path.join(root, build, APPLIED), 'w', encoding='utf-8') as handle:
+        json.dump({name: body for name, body in sections}, handle)
+
+
+def dedent(lines):
+    """The lines without their common indentation and trailing spaces."""
+    lines = [line.rstrip() for line in lines]
+    while lines and not lines[0]:
+        lines.pop(0)
+    while lines and not lines[-1]:
+        lines.pop()
+    pads = [len(line) - len(line.lstrip()) for line in lines if line]
+    cut = min(pads) if pads else 0
+    return [line[cut:] for line in lines]
+
+
+def source_bodies(pristine, current):
+    """{marker: (body lines, first, end, pad)} found in current where pristine holds the
+    marker, first and end bounding an unanchored body in current (None when anchored),
+    pad the marker's indentation; and the count of pristine lines changed outside any
+    marker."""
+    lines = current.splitlines()
+    plain = pristine.splitlines()
+    mapped = {}
+    matcher = difflib.SequenceMatcher(None, plain, lines, autojunk=False)
+    for tag, i1, i2, j1, _j2 in matcher.get_opcodes():
+        if tag == 'equal':
+            for offset in range(i2 - i1):
+                mapped[i1 + offset] = j1 + offset
+    bodies, inside = {}, set()
+    for index, line in enumerate(plain):
+        hit = fill_markers.MARKER.search(line)
+        if not hit:
+            continue
+        last = index
+        while last + 1 < len(plain) and fill_markers.PLACEHOLDER.search(plain[last + 1]):
+            last += 1
+        inside.update(range(index, last + 1))
+        before, after = mapped.get(index - 1), mapped.get(last + 1)
+        if before is None or after is None or after <= before:
+            continue
+        body = lines[before + 1:after]
+        span = None
+        if body and fill_markers.BODY_OPEN.search(body[0]) \
+                and fill_markers.BODY_END.search(body[-1]):
+            body = body[1:-1]
+        elif any(fill_markers.MARKER.search(text) for text in body):
+            continue
+        else:
+            span = (before + 1, after)
+        bodies[hit.group(1)] = (dedent(body), span, fill_markers.indent_of(line))
+    edited = sum(1 for index in range(len(plain))
+                 if index not in mapped and index not in inside)
+    return bodies, edited
+
+
+def write_section(path, name, body):
+    """Replaces the body of one bodies.txt section, or appends the section."""
+    lines = fill_markers.read_lines(path) if os.path.isfile(path) else []
+    start = next((index for index, line in enumerate(lines)
+                  if fill_markers.HEADER.match(line)
+                  and fill_markers.HEADER.match(line).group(1) == name), None)
+    if start is None:
+        lines += ['== {}'.format(name)] + body
+    else:
+        end = next((index for index in range(start + 1, len(lines))
+                    if fill_markers.HEADER.match(lines[index])), len(lines))
+        lines[start + 1:end] = body + ([''] if end < len(lines) else [])
+    with open(path, 'w', encoding='utf-8', newline='\n') as handle:
+        handle.write('\n'.join(lines) + '\n')
+
+
+def read_back(root, build, bodies, regenerate=False):
+    """Takes every body written or edited in a source into bodies.txt.
+
+    A source body differing from the last generation and the last fill is taken when
+    its bodies.txt section did not change since that fill; both changed is refused,
+    unless regenerate, where bodies.txt is kept. Returns True when src/ then differs from the last generation in bodies alone.
+    """
+    base = os.path.join(root, build, PRISTINE)
+    if not os.path.isdir(base):
+        return False
+    try:
+        with open(os.path.join(root, build, APPLIED), encoding='utf-8') as handle:
+            applied = json.load(handle)
+    except (OSError, ValueError):
+        applied = {}
+    path = os.path.join(root, bodies)
+    written = dict(fill_markers.read_bodies(path)) if worksheet_has_code(path) else {}
+    pristine = app_sources(base)
+    current = app_sources(os.path.join(root, 'src'))
+    owners = {}
+    for rel, where in pristine.items():
+        with open(where, encoding='utf-8') as handle:
+            for name in set(hit.group(1) for hit in map(fill_markers.MARKER.search, handle)
+                            if hit):
+                owners.setdefault(name, []).append(rel)
+    clean, taken, both = True, [], []
+    for rel, where in sorted(pristine.items()):
+        if rel not in current:
+            clean = False
+            continue
+        with open(where, encoding='utf-8') as handle:
+            old = handle.read()
+        with open(current[rel], encoding='utf-8') as handle:
+            new = handle.read()
+        if old == new:
+            continue
+        found, edited = source_bodies(old, new)
+        clean = clean and edited == 0
+        anchors = []
+        for marker, (body, span, pad) in sorted(found.items()):
+            name = marker if len(owners.get(marker, ())) < 2 else \
+                '{}:{}'.format(os.path.basename(rel), marker)
+            section = written.get(name, written.get(marker) if name == marker else None)
+            last = applied.get(name)
+            if section is not None and dedent(section) == body:
+                if span:
+                    anchors.append((span, pad, marker))
+                continue
+            if last is not None and dedent(last) == body:
+                continue
+            if section is not None and (last is None or dedent(section) != dedent(last)):
+                if not regenerate:
+                    both.append('{} ({})'.format(name, rel))
+                continue
+            write_section(path, name, body)
+            taken.append(name)
+            if span:
+                anchors.append((span, pad, marker))
+        if anchors:
+            lines = new.splitlines()
+            for (first, end), pad, marker in sorted(anchors, reverse=True):
+                lines[first:end] = fill_markers.anchored(lines[first:end], pad, marker)
+            with open(current[rel], 'w', encoding='utf-8', newline='\n') as handle:
+                handle.write('\n'.join(lines) + '\n')
+    if both:
+        fail('{} changed both in its source and in {} since the last build, so neither '
+             'is taken. Keep one: --regenerate keeps the {} section, or delete that '
+             'section and the source body is taken.'
+             .format(', '.join(both), bodies, bodies))
+    if taken:
+        print('== bodies: {} body(ies) written in the sources are now sections of {}: '
+              '{}'.format(len(taken), bodies, ', '.join(taken)))
+    return clean and len(current) == len(pristine)
+
+
 # The project's own record of which files describe it. Without it a later call
 # has no way to know what --spec the first one was given, so it rebuilds the
 # application of the previous design and verifies the previous contract.
@@ -616,12 +1197,64 @@ def closing_lines(root, bodies, specs):
             length = ' ({} lines)'.format(sum(1 for _ in handle))
     except OSError:
         pass
-    return ['Every step passed. {} marker(s) are open, so the application does nothing '
-            'yet.'.format(still_open),
-            'Next: read {}{}, then write every section it lists into {}, apply it, '
+    first = ['Every step passed. {} marker(s) are open, so the application does nothing '
+             'yet.'.format(still_open)] + WORKSHEET_CHANGES
+    if CHANGES_ASKED:
+        first.append('{} design note(s) ask for a change to design.json:'
+                     .format(len(CHANGES_ASKED)))
+        for block in CHANGES_ASKED:
+            first += ['  ' + line.strip() for line in block.splitlines()]
+        first.append('If you take one, change design.json and run this command again before '
+                     'reading {}: it is rewritten then.'.format(gen_skeleton.WORKSHEET))
+    return first + [
+            '{}: read {}{}{}, then write every section it lists into {}, apply it, '
             'build and run the scenarios in one call:'
-            .format(gen_skeleton.WORKSHEET, length, bodies),
+            .format('Otherwise' if CHANGES_ASKED else 'Next', gen_skeleton.WORKSHEET,
+                    length, ', or only what changed' if WORKSHEET_CHANGES else '',
+                    bodies),
             "{} --write {} --run <<'AREG_EOF'".format(same, bodies)]
+
+
+# A count in the worksheet notes that moves with every marker added or removed.
+WORKSHEET_COUNT = re.compile(r'\d+ requests instead')
+
+
+def worksheet_sections(path):
+    """Each section of a worksheet by name as (first line, lines), the notes before the
+    first section under '', or None without a worksheet."""
+    try:
+        with open(path, encoding='utf-8') as handle:
+            lines = handle.read().splitlines()
+    except (IOError, OSError):
+        return None
+    sections, name = {'': [1, []]}, ''
+    for number, line in enumerate(lines, 1):
+        if line.startswith('== '):
+            name = line[3:].strip()
+            sections[name] = [number, []]
+        elif not line.startswith('#| ---- '):
+            sections[name][1].append(WORKSHEET_COUNT.sub('', line))
+    return sections
+
+
+def worksheet_changes(before, after):
+    """The line saying what a rewritten worksheet changed, or none."""
+    if before is None or after is None:
+        return []
+    changed = []
+    matcher = difflib.SequenceMatcher(None, before[''][1], after[''][1], autojunk=False)
+    for tag, _, _, first, last in matcher.get_opcodes():
+        if tag in ('replace', 'insert'):
+            changed.append('line {}'.format(first + 1) if last == first + 1
+                           else 'lines {}-{}'.format(first + 1, last))
+    changed += ['{} (line {})'.format(name, after[name][0]) for name in after
+                if name and after[name][1] != (before.get(name) or [0, None])[1]]
+    if not changed:
+        return ['{} is rewritten and reads as before: a reading of it before this change '
+                'still holds.'.format(gen_skeleton.WORKSHEET)]
+    return ['{} is rewritten. Against the one before, only these are new or changed: {}. '
+            'A reading of it before this change needs only those.'
+            .format(gen_skeleton.WORKSHEET, ', '.join(changed))]
 
 
 def worksheet_has_code(path):
@@ -655,13 +1288,21 @@ def read_manifest(root):
 
 
 def write_manifest(root, specs):
-    """Records the spec paths, relative to the project when they are inside it."""
+    """Records the spec paths, relative to the project when they are inside it; every
+    other key the file holds is kept."""
     named = []
     for spec in specs:
         inside = os.path.relpath(spec, root)
         named.append(spec if inside.startswith(os.pardir) else inside.replace(os.sep, '/'))
+    try:
+        with open(os.path.join(root, MANIFEST), encoding='utf-8') as handle:
+            manifest = json.load(handle)
+    except (OSError, ValueError):
+        manifest = {}
+    manifest = manifest if isinstance(manifest, dict) else {}
+    manifest['spec'] = named
     with open(os.path.join(root, MANIFEST), 'w', encoding='utf-8') as handle:
-        json.dump({'spec': named}, handle, indent=2)
+        json.dump(manifest, handle, indent=2)
         handle.write('\n')
 
 
@@ -695,6 +1336,8 @@ def main():
                              'same call')
     parser.add_argument('--only', metavar='NAME',
                         help='run only the named scenario; implies --run')
+    parser.add_argument('--verbose', action='store_true',
+                        help='print every line each process wrote; implies --run')
     parser.add_argument('--regenerate', action='store_true',
                         help='write the application again, discarding what is in it')
     parser.add_argument('--no-check', action='store_true',
@@ -703,8 +1346,14 @@ def main():
                         help='write standard input to this project file first, then '
                              'run as usual: design.json, bodies.txt or fix.txt and '
                              'its build in one call. Once per call')
+    parser.add_argument('--edit', action='store_true',
+                        help='read search/replace blocks from standard input and apply '
+                             'them first: "== <file>", "<<<<<<< SEARCH", the lines as '
+                             'they are, "=======", the new lines, ">>>>>>> REPLACE". '
+                             'Several blocks and files per call; one that does not match '
+                             'exactly once applies none')
     args = parser.parse_args()
-    if args.only:
+    if args.only or args.verbose:
         args.run = True
 
     root = os.path.abspath(args.root)
@@ -712,8 +1361,36 @@ def main():
         fail('no such directory: {}'.format(args.root))
     if len(args.write) > 1:
         fail('--write takes one file per call: standard input holds one file')
+    if args.edit and args.write:
+        fail('--edit and --write both read standard input: pass --edit alone, with the '
+             'sections inside it as a "== fix.txt" block: "<<<<<<< SEARCH", "=======", '
+             'the "== <section>" lines and their code, ">>>>>>> REPLACE"')
+    made = [(args.outdir.replace(os.sep, '/'), 'design.json')] \
+        if args.spec or read_manifest(root) else []
+    made.append((args.build.replace(os.sep, '/'), 'the build'))
+    appendable = (fill_markers.FIX_FILE, args.bodies.replace(os.sep, '/'))
+    if args.edit:
+        text = '' if sys.stdin is None or sys.stdin.isatty() else sys.stdin.read()
+        apply_edits(root, text, made, appendable)
     for target in args.write:
-        write_input(root, target)
+        text = '' if sys.stdin is None or sys.stdin.isatty() else sys.stdin.read()
+        if os.path.basename(target) in appendable:
+            text = apply_file_blocks(root, target, text, made, appendable)
+            if not text.strip():
+                continue
+        write_input(root, target, text)
+    for target in appendable:
+        path = os.path.join(root, target)
+        if args.no_fill or not os.path.isfile(path):
+            continue
+        with open(path, encoding='utf-8') as handle:
+            text = handle.read()
+        rest = apply_file_blocks(root, target, text, made, appendable)
+        if rest != text:
+            with open(path, 'w', encoding='utf-8') as handle:
+                handle.write(rest if rest.endswith('\n') else rest + '\n')
+            print('== write: the "== <file>" blocks of {} are applied and taken out of it'
+                  .format(target))
     mode = mode_of(root, args.mode)
 
     # Every input path is resolved once, against the project root, and that one
@@ -750,11 +1427,12 @@ def main():
               'service, or inside a machine that hosts it.')
         return 0
 
+    programs = programs_of(specs) if specs and args.doc is None else []
     document = args.doc
     machine = args.machine
     if machine and not machine.lower().endswith('.fsml'):
         machine = os.path.join(args.outdir, machine + '.fsml')
-    if specs and (document is None or machine is None):
+    if specs and (document is None or machine is None) and not programs:
         interfaces, machines, _shared, hosted = documents_of(specs, args.outdir)
         machines = built_machines(machines, hosted)
         # The application this tool writes is one service and at most one machine.
@@ -763,13 +1441,13 @@ def main():
         for what, found, option in (('service', interfaces, '--doc'),
                                     ('state machine', machines, '--machine')):
             if len(found) > 1 and (args.doc if option == '--doc' else args.machine) is None:
-                fail('this project describes {} {}s: {}. build_project.py writes one '
-                     'application, of one service and at most one machine: name the one '
-                     'to build with {}, and write the others with gen_skeleton.py --app '
-                     'into their own directories. docs/agent/10-new-project.md has the '
-                     'shape.'.format(len(found), what,
-                                     ', '.join(os.path.basename(f) for f in found),
-                                     option))
+                fail('this project describes {} {}s: {}. Say which program runs '
+                     'which of them with a "programs" block in design.json, and this '
+                     'command writes every program; gen_docs.py --example programs '
+                     'prints a whole one:\n{}'
+                     .format(len(found), what,
+                             ', '.join(os.path.basename(f) for f in found),
+                             PROGRAMS_SHAPE))
         document = document or (interfaces[0] if interfaces else None)
         machine = machine or (machines[0] if machines else None)
     if document is None:
@@ -797,21 +1475,35 @@ def main():
             print('   removed {} -- the placeholder document the spec replaced'
                   .format(path))
 
-    present = app_present(root, document)
+    if not args.no_fill and read_back(root, args.build, args.bodies, args.regenerate):
+        design, _sources = read_stamp(root, args.build)
+        if design is not None:
+            with open(os.path.join(root, args.build, APP_STAMP), 'w',
+                      encoding='utf-8') as handle:
+                handle.write(design + '\n' + sources_digest(root) + '\n')
+    present = programs_present(root, programs) if programs else app_present(root, document)
     stale = present == 2 and app_older_than(root, args.build, specs)
     untouched = stale and app_untouched(root, args.build)
     if untouched and not args.regenerate:
         print('== application: {} changed and src/ holds only generated code and '
               'bodies.txt, so it is written again.'.format(', '.join(os.path.basename(s) for s in specs)))
     if args.regenerate or present == 0 or untouched:
-        command = [PYTHON, os.path.join(HERE, 'gen_skeleton.py'), '--doc', document,
-                   '--app', '--mode', mode, '--force']
-        if machine:
+        if programs:
+            command = [PYTHON, os.path.join(HERE, 'gen_skeleton.py'), '--programs',
+                       '--services', args.outdir, '--force']
+        else:
+            command = [PYTHON, os.path.join(HERE, 'gen_skeleton.py'), '--doc', document,
+                       '--app', '--mode', mode, '--force']
+        if machine and not programs:
             command += ['--machine', machine]
         for spec in specs:
             command += ['--spec', spec]
+        before = worksheet_sections(os.path.join(root, gen_skeleton.WORKSHEET))
         if not run('application', command, root, kept=200):
             return 1
+        WORKSHEET_CHANGES[:] = worksheet_changes(
+            before, worksheet_sections(os.path.join(root, gen_skeleton.WORKSHEET)))
+        keep_pristine(root, args.build)
         if specs:
             os.makedirs(os.path.join(root, args.build), exist_ok=True)
             with open(os.path.join(root, args.build, APP_STAMP), 'w',
@@ -845,6 +1537,7 @@ def main():
                     '--bodies', args.bodies],
                    root, kept=3):
             return 1
+        keep_applied(root, args.build, args.bodies)
         if filled_only:
             design, _sources = read_stamp(root, args.build)
             with open(os.path.join(root, args.build, APP_STAMP), 'w',
@@ -900,7 +1593,10 @@ def main():
                      '--keep', os.path.join(args.build, 'scenarios')]
         if args.only:
             scenarios += ['--only', args.only]
-        if not run('scenarios', scenarios, root, kept=None, failed_kept=None):
+        if args.verbose:
+            scenarios.append('--verbose')
+        if not run('scenarios', scenarios, root, kept=None, failed_kept=None,
+                   explain=lambda lines: unanswered_triggers(lines, specs)):
             return 1
         if not args.no_check:
             print('')

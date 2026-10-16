@@ -24,10 +24,22 @@
     <ClCompile Include="areg\base\private\DebugDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="areg\base\private\FatalError.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="areg\base\private\UtilityDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\component\private\EventConsumer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\component\private\RemoteEventConsumer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\component\private\TimerConsumer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\component\private\WorkerThreadConsumer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\component\private\Model.cpp">
@@ -696,6 +708,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\DateTime.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\base\FatalError.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\File.hpp">

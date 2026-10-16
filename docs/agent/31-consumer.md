@@ -4,7 +4,8 @@ Reference for a hand-written consumer, and the sections `51-debug.md` cites. Not
 filling a marker: `gen_skeleton.py --app` wrote the consumer.
 
 A consumer is your class inheriting `areg::Component` and the generated
-`<Name>ConsumerBase`. It calls requests and handles what comes back.
+`<Name>ConsumerBase`, the interface; it connects to a service by role name, calls
+requests and handles what comes back.
 
 Complete, working consumer for the `HelloService` document in `20-service-interface.md`:
 > `gen_skeleton.py --app` writes this class already, split the way the project is
@@ -13,12 +14,14 @@ Complete, working consumer for the `HelloService` document in `20-service-interf
 
 
 ```cpp
-#include <iostream>
 #include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentThread.hpp"
+#include "areg/logging/areg_log.h"
 #include "src/services/HelloServiceConsumerBase.hpp"
+
+GLOBAL_LOG_SCOPE(hello_ServiceConsumer, log);
 
 class ServiceConsumer final : public    areg::Component
                             , protected HelloServiceConsumerBase
@@ -47,7 +50,7 @@ protected:
 
     void response_hello_service(bool success) final
     {
-        std::cout << (success ? "greeted" : "failed") << std::endl;
+        GLOBAL_INFO("%s", success ? "greeted" : "failed");
         areg::Application::signal_quit();   // quit_with(code) where main() defines it
     }
 
@@ -81,10 +84,10 @@ the model. With several dependencies, index them in the order they are declared.
 
 ---
 
-## 2. `service_connected` is the only place to start work
+## 2. `service_connected` is where work starts
 
-A consumer must not call a request before the service is connected. The proxy exists
-from construction, but there is nothing behind it yet.
+Never call a request in the constructor. Later, any handler may send one; before the
+service is connected it gets no answer and no `request_<name>_failed`.
 
 The pattern above is the correct one, and its three parts all matter:
 
@@ -162,9 +165,13 @@ if (areg::is_service_connected(status))
 }
 ```
 
-An attribute handler is called once immediately after subscribing, then on every
-update. That first call can report the value as not valid even when the provider has
-already set it, so a handler must work when there is no value yet. Always check the `areg::DataState` argument: the value is meaningful only when
+An attribute handler is called at once on subscribing with the value the proxy holds,
+not valid on a first subscription; then with the provider's current value; then on
+every change. A request sent right after subscribing reaches the provider after that
+current value is sent, so the first value that arrives after the request is the state
+before it: a request's result is read from its response or a broadcast. Outside the
+handler, a consumer reads the value as `x(state)`: its getter always takes the state.
+Always check the `areg::DataState` argument: the value is meaningful only when
 it is `areg::DataState::DataIsOK`. The other states are `DataIsInvalid`,
 `DataIsUnavailable`, `DataUnexpectedError` and `DataIsUndefined`.
 
@@ -198,7 +205,7 @@ the attribute is for -- `20-service-interface.md`.
 
 ## 6. Before you move on
 
-- [ ] No request is called outside `service_connected` or a later handler.
+- [ ] No request in a constructor.
 - [ ] `service_connected` calls the base version first and returns its result.
 - [ ] `Disconnected`, `ConnectionLost` and `Failed` do not quit the application.
 - [ ] Every broadcast and attribute you handle is subscribed to.

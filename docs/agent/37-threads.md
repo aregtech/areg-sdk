@@ -1,9 +1,8 @@
 # Thread options, worker threads and runtime models
 
-Three things the plain model macros do not reach. Read this page when a thread needs
-a watchdog or a different queue, when a component has work too slow for a handler, or
-when the components are known only at run time. `32-model.md` is the page for
-everything else about the model.
+Read this page to choose a thread, for a plain thread of your own, a watchdog or a
+different queue, or components known only at run time. Worker threads are
+`38-workers.md`; `32-model.md` is the page for everything else about the model.
 
 ## 1. Thread options and the watchdog
 
@@ -17,69 +16,40 @@ everything else about the model.
 | `BEGIN_REGISTER_THREAD_EX2(name, timeout, stackSizeKb, queueSize, dropOnFull, queueWait)` | stack size in KB (0 = system default), event queue capacity (0 = default), whether an event is dropped when the queue is full, and how long a sender waits before that |
 
 The watchdog measures how long the thread takes to process one event; a thread that
-takes longer than its timeout is terminated and restarted. Set it well above the
-slowest legitimate handler.
-
-**A timeout on its own does nothing.** The watchdog service is off by default:
-`areg::Application::setup()` takes `startWatchdog` as its fifth argument and it
-defaults to `false`, so `setup(true, true, true, true, true)` is what turns a
-registered timeout into a running guard. `check_contract.py` reports the mismatch as
-`P-10`.
+takes longer than its timeout is ended and created again, with new components that
+start again. Set it well above the slowest legitimate handler. On Linux and macOS a
+thread that does not return cannot be ended: it is abandoned, still running, with its
+components, which are never released. The watchdog manager starts with the service
+manager, so the default `setup()` runs it; `startWatchdog`, its fifth argument, matters
+only where no service manager starts (`check_contract.py` `P-10`).
 
 ---
 
-## 2. Worker threads
+## 2. Worker or plain thread
 
-A worker thread takes the slow work of one component; they talk with custom events
-(`23-events.md`). **The component adds the worker's listener before its service starts**:
-an event sent earlier is dropped, `send_event()` returns false. `register_event_consumers()`
-runs with no order against the first request: leave it empty.
+Component threads host the components. A component's own extra thread is a worker or a
+plain thread, and the design decides which. Ask of the job:
 
-```cpp
-#include "areg/component/WorkerThreadConsumer.hpp"
-class Worker : public areg::WorkerThreadConsumer, public ScanEventConsumer   // and process_event()
-{
-    void register_event_consumers(areg::WorkerThread &, areg::ComponentThread &) final {}
-    void unregister_event_consumers(areg::WorkerThread &) final {}
-};
-// Provider members: Worker mWorker; areg::WorkerThread * mWorkerThread{ nullptr };
-```
+| Question | Yes means |
+|---|---|
+| Does it exchange messages both ways with its component or another worker? | worker |
+| Must it be told things while it runs: stop, pause, a new setting? | worker |
+| Must queued jobs run one at a time, in order? | worker |
+| Does it run every N ms? A timer is an event, so the period is a worker's `Timer`, not a loop | worker |
+| Does it run long, or many tasks one after another? Resuming a waiting worker costs less than starting a thread | worker |
+| Must a stuck run be caught by the watchdog (section 1)? | worker |
+| Is it a short task that runs alone, is started seldom, hands back at most its result, and must not be bound to a component? | plain thread |
+| Does a library call hold the thread and never return? | plain thread |
 
-**Declared in the model.** The model creates the thread, then calls
-`notify_thread_started()` on the component thread, before `startup_component()`:
+When in doubt, a worker: it is more controllable.
 
-```cpp
-    REGISTER_WORKER_THREAD("ScanThread", "ScanConsumer")     // in BEGIN_REGISTER_COMPONENT
-
-Provider::Provider(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
-    : areg::Component(entry, owner), mWorker(entry.mWorkerThreads[0].mConsumerName) { }
-
-areg::WorkerThreadConsumer * Provider::worker_thread_consumer(const areg::String & name, const areg::String & thread)
-{   return name == mWorker.consumer_name() ? &mWorker : areg::Component::worker_thread_consumer(name, thread); }
-
-void Provider::notify_thread_started(areg::WorkerThreadConsumer & consumer, areg::WorkerThread & thread)
-{
-    if (&consumer == &mWorker) { mWorkerThread = &thread; ScanEvent::add_listener(mWorker, thread); }
-}
-```
-
-Take the consumer name from `entry.mWorkerThreads[]`, never the literal: the model
-qualifies it by the role name (`P-11`). `REGISTER_WORKER_THREAD_EX` and `_EX2` take the
-thread macros' watchdog and stack arguments.
-
-**Created by hand.** No macro and no `worker_thread_consumer()`:
-
-```cpp
-void Provider::startup_component(areg::ComponentThread & owner)
-{
-    mWorkerThread = create_worker_thread("ScanThread", mWorker, owner);  // once it accepts events
-    if (mWorkerThread != nullptr) ScanEvent::add_listener(mWorker, *mWorkerThread);
-    areg::Component::startup_component(owner);                          // announces the service
-}
-```
-
-Both remove the listener in `shutdown_component()` before calling the base.
-`recipes/07-worker-events` is the model form, built and run as written.
+A worker is declared in the model (`REGISTER_WORKER_THREAD`, or `workers` in
+design.json) and lives with its component, or is created by hand and replaced on
+request: `38-workers.md`. A plain thread is `areg::Thread` with an
+`areg::ThreadConsumer` whose `on_run()` is the task, or `std::thread`:
+`areg::Thread::wait_exit(ms)` returns false once `shutdown()` asks, `shutdown()` waits
+for the thread, `start()` runs `on_run()` again, and the result goes to a component as a
+custom event (`23-events.md`).
 
 ---
 
@@ -113,10 +83,5 @@ back from its `ComponentEntry`. Working project: `recipes/10-runtime-model/`.
 
 ## 4. Before you move on
 
-- [ ] A registered watchdog timeout is matched by `startWatchdog` in `setup()`.
-- [ ] Every `REGISTER_WORKER_THREAD` consumer name is answered by
-      `worker_thread_consumer()`, comparing against
-      `entry.mWorkerThreads[..].mConsumerName` and not a literal.
-- [ ] The component adds the worker's listener in `notify_thread_started()` or right after
-      `create_worker_thread()`, and removes it in `shutdown_component()`.
+- [ ] Work every N ms is a timer of a worker, not a loop.
 - [ ] A runtime model is added with `add_model_unique()` before `load_model()`.

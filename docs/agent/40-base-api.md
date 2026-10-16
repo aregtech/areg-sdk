@@ -38,6 +38,7 @@ declared on that base. That is an implementation detail; you call them all on a
 |---|---|---|
 | `as_string()` | `const char * as_string() const noexcept` | `StringBase.hpp:289` |
 | `is_empty()` | `bool is_empty() const noexcept` | `StringBase.hpp:254` |
+| `clear()` | `void clear() noexcept` | `StringBase.hpp:329` |
 | `length()` | `areg::CharCount length() const noexcept` | `StringBase.hpp:260` |
 | `compare(...)` | `areg::Ordering compare(const StringBase<char> & other, bool caseSensitive = true) const noexcept` | `StringBase.hpp:473` |
 | `find_first(...)` | `areg::CharPos find_first(const char * phrase, areg::CharPos startPos = areg::START_POS, bool caseSensitive = true, bool wholeWord = false) const noexcept` | `StringBase.hpp:397` |
@@ -104,7 +105,8 @@ Every `from_*` returns `String &`, so they chain.
 `areg::HashMap<KEY, VALUE>` and `areg::LinkedList<VALUE>`.
 
 > **These containers do not expose `begin()` and `end()`.**
-> A range-`for` over one does not compile. Iterate by index.
+> A range-`for` over one does not compile; iterate by index, or over `list.data()`
+> (`ArrayList.hpp:194`), the wrapped `std::vector`, `std::list` or `std::unordered_map`.
 
 ```cpp
 for (uint32_t i = 0; i < list.size(); ++ i)
@@ -122,7 +124,9 @@ for (uint32_t i = 0; i < list.size(); ++ i)
 `HashMap` and `LinkedList` also index by position (`MAPPOS`, `LISTPOS`) for cursor
 style traversal. Index access is enough for ordinary code.
 
-Common to all three: `add(...)`, `clear()`, `release()`, `find(...)`.
+Add: `add(v)` (`ArrayList.hpp:258`), `push_last(v)` (`LinkedList.hpp:518`), `map[key] = v`.
+Remove: `remove_at(index)` (`ArrayList.hpp:387`), `remove_at(key)` (`HashMap.hpp:367`).
+All three: `clear()`, `release()`, `find(...)`.
 
 A container in working code, built and run by CI: `recipes/09-shared-types/`, where the
 collector keeps every reading it accepted and prints them by index.

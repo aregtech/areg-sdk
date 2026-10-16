@@ -4,8 +4,7 @@ The process and the threads it runs in: the application, a component's own ident
 threads, timers, time, files and buffers.
 
 Every method is `snake_case` and every public type is in `namespace areg`. Every
-signature was read from the header cited beside it, and the `Header.hpp:line` is
-checked against that header on every push.
+`Header.hpp:line` is checked against that header on every push.
 
 | Looking for | Section |
 |---|---|
@@ -16,7 +15,8 @@ checked against that header on every push.
 | now, formatting, elapsed time | 5, `areg::DateTime` |
 | reading and writing a file, paths | 6, `areg::File` |
 | carrying bytes through an event | 7, `areg::SharedBuffer` |
-| a name nothing else in the process has | 8, unique names |
+| a lock shared with a worker thread, a fatal error | 8, synchronization |
+| a name nothing else in the process has | 9, unique names |
 
 ---
 
@@ -77,9 +77,9 @@ past it is reported as P-18. A program with no `quit_with()` calls `signal_quit(
 |---|---|---|
 | constructor used by the model | `Component(const areg::ComponentEntry & regEntry, ComponentThread & ownerThread)` | `Component.hpp:167` |
 | constructor by role name | `Component(const String & roleName, ComponentThread & ownerThread)` | `Component.hpp:159` |
-| own role name | `const String & role_name() const noexcept` | `Component.hpp:317` |
-| own address | `const ComponentAddress & address() const noexcept` | `Component.hpp:323` |
-| owning thread | `ComponentThread & master_thread() noexcept` | `Component.hpp:311` |
+| own role name | `const String & role_name() const noexcept` | `Component.hpp:321` |
+| own address | `const ComponentAddress & address() const noexcept` | `Component.hpp:327` |
+| owning thread | `ComponentThread & master_thread() noexcept` | `Component.hpp:315` |
 
 Optional lifecycle overrides:
 `startup_component(ComponentThread &)` (`Component.hpp:191`),
@@ -151,10 +151,11 @@ output blocks; do it on a worker thread, never in a handler.
 
 `#include "areg/base/SharedBuffer.hpp"`
 
-Serialize with `operator <<` and `operator >>`; the members below are the rest.
+Serialize with `<<` and `>>`; the members below are the rest.
 
 | Call | Signature | Header |
 |---|---|---|
+| `buffer()` | `const uint8_t * buffer() const` | `SharedBuffer.hpp:333` |
 | `write(bytes)` | `uint32_t write(const uint8_t * buf, uint32_t size)` | `SharedBuffer.hpp:247` |
 | `read(bytes)` | `uint32_t read(uint8_t * buf, uint32_t size) const noexcept` | `SharedBuffer.hpp:282` |
 | `reset()` | `void reset() const noexcept` | `SharedBuffer.hpp:285` |
@@ -173,26 +174,32 @@ always the larger. Working project: `recipes/07-worker-events/`.
 
 `#include "areg/base/SyncPrimitives.hpp"`
 
-**Read this row first.** Every handler of one component runs on that component's own
-thread, one at a time, so state a component owns alone needs no lock at all. Reach for
-one only where a worker thread you started shares state with a component, which is the
-shape `37-threads.md` and `recipes/07-worker-events/` teach.
+**Read this first.** A component's handlers run one at a time on its own thread, so
+state the component owns alone needs no lock. Lock only state that a worker thread you
+started shares with a component: `38-workers.md`, `recipes/07-worker-events/`.
 
 | Call | Signature | Header |
 |---|---|---|
-| `areg::Mutex` | `explicit Mutex(bool initLock = true)` | `SyncPrimitives.hpp:140` |
-| `lock()` | `bool lock(uint32_t timeout = areg::WAIT_INFINITE)` | `SyncPrimitives.hpp:154` |
-| `unlock()` | `bool unlock()` | `SyncPrimitives.hpp:161` |
-| `areg::Lock` | `explicit Lock(SyncObject & syncObj, bool autoLock = true)` | `SyncPrimitives.hpp:999` |
-| `areg::SyncEvent` | `explicit SyncEvent(bool initLock = true, bool autoReset = true)` | `SyncPrimitives.hpp:254` |
-| `set_signaled()` | `bool set_signaled() noexcept` | `SyncPrimitives.hpp:295` |
-| `reset()` | `bool reset() noexcept` | `SyncPrimitives.hpp:301` |
-| `areg::SpinLock` | `SpinLock()`, for a hold of a few instructions | `SyncPrimitives.hpp:664` |
+| `areg::Mutex` | `explicit Mutex(bool initLock = false)` | `SyncPrimitives.hpp:144` |
+| `lock()` | `bool lock(uint32_t timeout = areg::WAIT_INFINITE)` | `SyncPrimitives.hpp:158` |
+| `unlock()` | `bool unlock()` | `SyncPrimitives.hpp:165` |
+| `areg::Lock` | `explicit Lock(SyncObject & syncObj, bool autoLock = true)` | `SyncPrimitives.hpp:1056` |
+| `areg::ScopedLock` | `explicit ScopedLock(LOCKABLE & syncObj)`, type deduced | `SyncPrimitives.hpp:1134` |
+| `areg::SyncEvent` | `explicit SyncEvent(bool initLock = true, bool autoReset = true)` | `SyncPrimitives.hpp:258` |
+| `set_signaled()` | `bool set_signaled() noexcept` | `SyncPrimitives.hpp:299` |
+| `reset()` | `bool reset() noexcept` | `SyncPrimitives.hpp:305` |
+| `areg::SpinLock` | `SpinLock()`, for a hold of a few instructions | `SyncPrimitives.hpp:668` |
+| `areg::set_fatal_handler` | `FatalHandler set_fatal_handler(FatalHandler handler) noexcept`, null restores the default | `FatalError.hpp:42` |
 
-`areg::Lock` is the RAII scope lock: it takes any of the others and unlocks on the way
-out. `std::mutex` is not prohibited; the areg types are what the framework's own waits
-and timeouts are written against. Never wait on any of them inside a handler --
-`AGENTS.md` section 6 forbids blocking there.
+`areg::Lock` is the RAII scope lock for any of them; `areg::ScopedLock` is the same for a
+lock of known type, a member `SpinLock` for example, without virtual calls. A lock the
+system cannot create calls `areg::fatal_error(reason)` (`FatalError.hpp:50`): the default
+writes the reason and aborts, and an embedded application installs a handler that reaches
+a safe state. A `Lock` or `ScopedLock` that cannot take its object calls
+`areg::report_lock_failure(reason)` (`FatalError.hpp:60`) and continues, or ends the
+process when the environment sets `AREG_LOCK_FAILURE_FATAL=1`. `std::mutex` is allowed;
+the framework's own waits and timeouts use the areg types. Never wait on any of them in a
+handler: `AGENTS.md` section 6 forbids blocking there.
 
 ---
 
@@ -219,5 +226,5 @@ const areg::String _consumer(areg::generate_name("ServiceConsumer"));
 |---|---|
 | `areg::String` and the containers | `40-base-api.md` |
 | Timer ownership and threading rules | `33-timers.md` |
-| Worker threads, watchdogs, a model built at run time | `37-threads.md` |
+| Worker threads; watchdogs, a model built at run time | `38-workers.md`; `37-threads.md` |
 | Anything else in the framework | `../../tools/agent/api_help.py <name>`, or `../../tools/agent/api_help.py --search <word>` when the name is what you are missing. **Never a header, and never `grep`.** |

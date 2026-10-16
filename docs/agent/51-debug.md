@@ -26,7 +26,6 @@ of what the tool printed.
 | `undefined reference` to **your own** class or function, from a file that plainly defines it | the `.cpp` defining it is named on no `macro_declare_executable` line, so nothing compiled it | `10-new-project.md` section 3, and `check_contract.py` rule `P-15` |
 | `No such file or directory` for a `...Base.hpp` | the generator did not run, or the path is wrong | "The generated code does not match the document" below |
 | `No such file or directory` for **your own** header, spelt `src/Yours.hpp` | only generated headers carry a `src/` prefix; they live in a mirror tree. Include your own by name alone: `#include "Yours.hpp"` | `20-service-interface.md` section 3 |
-| a provider that exits at once, prints nothing, and leaves every peer waiting | a console loop treating end of input as a quit request | `50-running.md` |
 | nothing at all: the consumer prints nothing and does not exit | it never connected | "The consumer never connects" below |
 | nothing at all: a worker thread, a custom event handler or a watchdog never runs | it was never wired to a name that exists | "A worker thread or a custom event does nothing" below |
 | an action on a nested `Final` state sees the composite's data, not the state the machine goes to | the `Final` entry runs before the `OnFinal` event leaves the composite | `22-state-machine.md`, and `check_contract.py` rule `108` |
@@ -52,8 +51,8 @@ Take these in order. Each one costs less than the one after it.
    and reports the ones a build cannot see: a dependency string that matches no role,
    a request called in a constructor, a blocking handler, an invented member name.
 4. **Turn on a scope.** Logging is off until a configuration file says otherwise, and
-   that file is `build/bin/config/areg.init` -- inside a `config/` subdirectory, not
-   beside the executable. See `34-logging.md`. Switch on the scope of the handler that
+   that file is the one `main()` names, under `build/bin/config/` -- inside a `config/`
+   subdirectory, not beside the executable. See `34-logging.md`. Switch on the scope of the handler that
    should have run. If it never entered, the message never arrived; if it entered, the
    logic is wrong.
 5. **Check the wiring, not the code.** Most silent failures are a role name that does
@@ -205,11 +204,11 @@ Nothing here reports an error. Every one of these compiles, starts, and stays si
 
 | Cause | Check | Fix |
 |---|---|---|
-| The worker consumer name is not the one the component answers to | Compare the string in `REGISTER_WORKER_THREAD` with every name `worker_thread_consumer()` tests | Make them equal. An unknown name returns `nullptr` and the thread runs nothing |
+| The worker consumer name is not the one the component answers to | Does the consumer take its name from `entry.mWorkerThreads[i].mConsumerName`? The component is asked for `<role>:<name>` | Take it from there. An unknown name returns `nullptr` and no worker starts |
 | A custom event has no listener | Is there an `add_listener` for that event, in the thread that should receive it? | Register in the consumer's own thread; see `23-events.md` |
-| A custom event is sent before its listener registers | Is `add_listener` after the service starts, or a worker's in `register_event_consumers()`? | `37-threads.md` section 2 |
+| A custom event is sent before its listener registers | Is `add_listener` after the service starts, or a worker's in `register_event_consumers()`? | `38-workers.md` |
 | `AREG_DECLARE_EVENT_EX` names a thread that is not in the model | Compare the macro's thread name with `BEGIN_REGISTER_THREAD` | Make them equal; the automatic registration silently finds no thread |
-| A watchdog timeout never bites | Was `areg::Application::setup()` called with `startWatchdog` true? | A non-zero timeout in `BEGIN_REGISTER_THREAD_EX` does nothing while the watchdog manager is off; see `37-threads.md` |
+| A watchdog timeout never bites | Does `areg::Application::setup()` start the service manager (its second argument, true by default) or pass `startWatchdog` true? | The watchdog manager starts with either; without both a timeout does nothing: `37-threads.md` section 1 |
 
 `python3 <sdk>/tools/agent/check_contract.py . --strict` reports the first of these as `P-11`
 and the last as `P-10` without building anything.
@@ -242,6 +241,6 @@ to the generator has the same effect.
 
 ## Getting more out of the application
 
-Turning scopes on is step 4 above: key syntax in `34-logging.md` section 3, the full
+Turning scopes on is step 4 above: key syntax in `34-logging.md` section 2, the full
 description in `../wiki/04a-logging-config.md`. Collected logs are plain SQLite; any
 client can query them: `35-sqlog.md`, or `../wiki/04e-log-database-format.md`.

@@ -85,6 +85,18 @@ step so a person can read what happened:
    them: lowest 110, highest 320, alarms raised exactly 1
 6. check that exactly one raise and one clear arrived in total
 
+Once a step's expectation has held, the operator prints its line below, with this
+exact wording, alone or at the end of a line, nothing after it:
+
+```lines
+step 1: refused, hysteresis 0
+step 2: refused, hysteresis 400
+step 3: thresholds accepted
+step 4: alarm raised, then cleared
+step 5: lowest 110, highest 320, alarms raised 1
+step 6: one raise and one clear in total
+```
+
 Then exit. **Exit code 0 if every expectation held, non-zero otherwise**, printing
 which step failed. The operator program must survive being started before the
 monitor, and if the monitor is stopped before the scenario completes it must
@@ -103,7 +115,9 @@ they need a second run of their own:
 
 **An acceptance item counts as passing only when the output of one of those runs shows
 it.** An item you believe you implemented but never observed is reported as not
-passing: naming the ones you could not prove is worth more than a full score.
+passing: naming the ones you could not prove is worth more than a full score. An item
+marked (code) is one no output can show: count it apart, as present only where you can
+name the file and the class or function that does it.
 
 ### Acceptance checklist
 
@@ -112,7 +126,7 @@ framework, against this list:
 
 - [ ] two separate programs, talking over the connection only
 - [ ] the reading is published and the operator is notified as it changes
-- [ ] the operator follows pushed updates rather than polling for the next reading
+- [ ] (code) the operator follows pushed updates rather than polling for the next reading
 - [ ] setting thresholds is refused for a hysteresis of 0, with a reason
 - [ ] setting thresholds is refused for a hysteresis wider than the limit
 - [ ] the alarm is raised when the reading reaches the limit
@@ -124,7 +138,7 @@ framework, against this list:
 - [ ] neither program waits more than 20 seconds for something that never arrives
 - [ ] if the monitor goes away mid-run, the operator reports it and exits non-zero
 - [ ] the scenario exits 0, and non-zero when an expectation fails
-- [ ] no busy-waiting and no sleeping inside a message handler
+- [ ] (code) no busy-waiting and no sleeping inside a message handler
 
 ---
 
@@ -159,7 +173,7 @@ End with this table and nothing longer.
 |---|---|
 | build-and-fix cycles | |
 | run-and-fix cycles | |
-| acceptance items passing | n of the checklist above, and which failed |
+| acceptance items passing | n of the unmarked items shown by the output, and which were not; c of the (code) items, each with where |
 | checker findings, first run | name the checker, or "none run" |
 | files you opened that the documentation did not route you to | names, or "none" |
 

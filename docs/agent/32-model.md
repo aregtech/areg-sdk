@@ -64,10 +64,6 @@ int main()
 
 Every `BEGIN_` has a matching `END_` taking the same argument.
 
-Components in different threads run at the same time, so `std::cout` from two handlers
-interleaves and a line can arrive split. Expect it when reading output, and log instead
-of printing when the order matters.
-
 ---
 
 ## 2. The role name is the routing identity
@@ -110,7 +106,7 @@ may share a thread, and the call still returns asynchronously.
 A thread registered with `BEGIN_REGISTER_THREAD` has no watchdog, the system stack
 size and the default event queue. Longer forms set all three, a component can own a
 worker thread for slow work, and a model can be built at run time instead of by
-macro: `37-threads.md` covers the three together.
+macro: `37-threads.md` covers them, workers in `38-workers.md`.
 
 ---
 

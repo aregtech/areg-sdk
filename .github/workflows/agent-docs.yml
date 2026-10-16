@@ -287,14 +287,16 @@ jobs:
           TOOLS: ${{ github.workspace }}/tools/agent
         run: python3 $TOOLS/build_project.py --spec design.json
 
-      # The generator writes one scenario whole: the provider alone, fed "-q", exit 0.
-      # Every other scenario waits on a body a person writes, so this is the one that
-      # can be asserted here -- and it starts a real binary, which nothing else does.
-      - name: Run the scenario the generator writes whole
+      # The generated scenarios wait on bodies a person writes. The consumer alone
+      # needs none: its generated connect deadline reports the missing provider and
+      # exits 1. This starts a real binary, which nothing else here does.
+      - name: Run the consumer alone to its connect deadline
         working-directory: ${{ runner.temp }}/gatecheck
         env:
           TOOLS: ${{ github.workspace }}/tools/agent
-        run: python3 $TOOLS/run_scenarios.py --build build/bin --only quit
+        run: |
+          python3 -c "import json;p='scenarios.json';d=json.load(open(p));d['scenarios'].append(dict(name='alone',router=True,timeout=60,procs=[dict(binary='gatecheck_consumer',lead=True,exit=1,expect=['no provider connected within the connect deadline'])]));json.dump(d,open(p,'w'),indent=2)"
+          python3 $TOOLS/run_scenarios.py --build build/bin --only alone
 
   macos:
     name: the macOS branch of the tools
@@ -428,9 +430,12 @@ jobs:
           cmake --build "${{ runner.temp }}\gentest\build" --config Release
           $binary = Get-ChildItem -Path "${{ runner.temp }}\gentest\build" -Recurse -Filter hello_local.exe | Select-Object -First 1
           if (-not $binary) { throw "the recipe built no hello_local.exe" }
+          $logs = Join-Path $binary.DirectoryName "logs"
+          Remove-Item -Recurse -Force $logs -ErrorAction SilentlyContinue
           $output = & $binary.FullName 2>&1 | Out-String
+          if (Test-Path $logs) { $output += Get-ChildItem -Path $logs -Filter *.log | Get-Content -Raw | Out-String }
           Write-Host $output
-          if ($output -notmatch 'consumer: greeted') { throw "the recipe ran and did not print what it promises" }
+          if ($output -notmatch 'consumer: greeted') { throw "the recipe ran and did not log what it promises" }
 
       # The five-step chain, through the MSVC toolchain. The recipe above is written
       # by hand; this is the path an agent actually takes -- a scaffold, a design,
@@ -448,11 +453,12 @@ jobs:
           TOOLS: ${{ github.workspace }}\tools\agent
         run: python $env:TOOLS\build_project.py --spec design.json
 
-      # Starts a real binary: the provider alone, fed "-q" on standard input, exit 0.
-      # It is the console quit path the generated main() carries, and the one scenario
-      # the generator writes complete.
-      - name: Run the scenario the generator writes whole
+      # Starts a real binary: the consumer alone, ended by its generated connect
+      # deadline with exit 1.
+      - name: Run the consumer alone to its connect deadline
         working-directory: ${{ runner.temp }}\gatecheck
         env:
           TOOLS: ${{ github.workspace }}\tools\agent
-        run: python $env:TOOLS\run_scenarios.py --build build\bin --only quit
+        run: |
+          python -c "import json;p='scenarios.json';d=json.load(open(p));d['scenarios'].append(dict(name='alone',router=True,timeout=60,procs=[dict(binary='gatecheck_consumer',lead=True,exit=1,expect=['no provider connected within the connect deadline'])]));json.dump(d,open(p,'w'),indent=2)"
+          python $env:TOOLS\run_scenarios.py --build build\bin --only alone

@@ -2,9 +2,9 @@
 #define AREG_BASE_FIXEDARRAY_HPP
 /************************************************************************
  * This file is part of the Areg SDK core engine.
- * Areg SDK is dual-licensed under Free open source (Apache version 2.0
- * License) and Commercial (with various pricing models) licenses, depending
- * on the nature of the project (commercial, research, academic or free).
+ * Areg SDK is dual-licensed under Free open source (Apache version 2.0 License)
+ * and Commercial (with various pricing models) licenses, depending on the
+ * nature of the project (commercial, research, academic or free).
  * You should have received a copy of the Areg SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
@@ -583,7 +583,7 @@ const InStream & operator >> ( const InStream & stream, FixedArray<V> & input )
     uint32_t size = 0;
     stream >> size;
     input.clear();
-    input.resize(size);
+    input.resize(stream.bounded_count(size));
 
     for (uint32_t i = 0; i < input.mElemCount; ++ i )
     {

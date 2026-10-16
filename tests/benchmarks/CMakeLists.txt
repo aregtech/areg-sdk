@@ -60,6 +60,7 @@ if (AREG_BENCHMARKS)
     foreach(item IN ITEMS  BenchmarkMain.cpp
                            ContainerBenchmark.cpp
                            DateTimeBenchmark.cpp
+                           LockBenchmark.cpp
                            SharedBufferBenchmark.cpp
                            StringBenchmark.cpp)
         list(APPEND _benchmarks "${AREG_BENCHMARK_BASE}/${item}")

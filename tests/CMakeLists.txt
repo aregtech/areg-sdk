@@ -120,6 +120,15 @@ if (AREG_TESTS)
     include(${AREG_TESTS_DIR}/timer-churn/CMakeLists.txt)
     include(${AREG_TESTS_DIR}/internal-events/CMakeLists.txt)
     include(${AREG_TESTS_DIR}/stub-teardown/CMakeLists.txt)
+    # Built only with a shared areg library.
+    if (NOT "${AREG_LIB_TYPE}" STREQUAL "static")
+        include(${AREG_TESTS_DIR}/client-link/CMakeLists.txt)
+    endif()
+
+    # Replaces pthread_mutex_init() of the C library, which only the Linux dynamic linker allows.
+    if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        include(${AREG_TESTS_DIR}/fatal-create/CMakeLists.txt)
+    endif()
 
     # Built, not registered with ctest: it needs root and a packet filter.
     include(${AREG_TESTS_DIR}/keepalive-probe/CMakeLists.txt)

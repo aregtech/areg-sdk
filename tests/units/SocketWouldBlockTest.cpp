@@ -1,8 +1,8 @@
 /************************************************************************
  * This file is part of the Areg SDK core engine.
- * Areg SDK is dual-licensed under Free open source (Apache version 2.0
- * License) and Commercial (with various pricing models) licenses, depending
- * on the nature of the project (commercial, research, academic or free).
+ * Areg SDK is dual-licensed under Free open source (Apache version 2.0 License)
+ * and Commercial (with various pricing models) licenses, depending on the
+ * nature of the project (commercial, research, academic or free).
  * You should have received a copy of the Areg SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
@@ -27,6 +27,7 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <netinet/in.h>
+#include <poll.h>
 #include <sys/socket.h>
 #include <sys/uio.h>
 #include <unistd.h>
@@ -121,18 +122,13 @@ namespace
         return ( ( flags != -1 ) && ( ( flags & O_NONBLOCK ) != 0 ) );
     }
 
-    //!< Writes into the socket until its send buffer is full. Restores the blocking mode it found.
-    bool fill( int sock )
+    //!< Sends 'chunk' sized pieces until the socket refuses one. Returns false on an error other than EAGAIN.
+    bool send_until_full( int sock, size_t chunk, uint64_t & total )
     {
-        const bool wasNonBlocking{ is_nonblocking( sock ) };
-        if ( ( wasNonBlocking == false ) && ( set_nonblocking( sock, true ) == false ) )
-            return false;
-
-        std::vector<uint8_t> chunk( 64u * 1024u, 0x5Au );
-        uint64_t total{ 0u };
+        std::vector<uint8_t> data( chunk, 0x5Au );
         for ( ;; )
         {
-            const ssize_t written{ ::send( sock, chunk.data( ), chunk.size( ), 0 ) };
+            const ssize_t written{ ::send( sock, data.data( ), data.size( ), 0 ) };
             if ( written > 0 )
             {
                 total += static_cast<uint64_t>(written);
@@ -142,10 +138,41 @@ namespace
             if ( ( written < 0 ) && ( errno == EINTR ) )
                 continue;
 
-            break;
+            return ( ( written < 0 ) && ( ( errno == EAGAIN ) || ( errno == EWOULDBLOCK ) ) );
+        }
+    }
+
+    //!< Writes into the socket until its send buffer is full. Restores the blocking mode it found.
+    //!< Queued data keeps moving to the peer after the first EAGAIN, so the fill is repeated with
+    //!< ever smaller pieces until the socket stays not writable for SETTLE_MS.
+    bool fill( int sock )
+    {
+        constexpr int       SETTLE_MS   { 50 };
+        constexpr uint32_t  MAX_ROUNDS  { 50u };
+
+        const bool wasNonBlocking{ is_nonblocking( sock ) };
+        if ( ( wasNonBlocking == false ) && ( set_nonblocking( sock, true ) == false ) )
+            return false;
+
+        uint64_t total{ 0u };
+        bool full{ false };
+        for ( uint32_t round = 0u; ( full == false ) && ( round < MAX_ROUNDS ); ++ round )
+        {
+            bool sent{ true };
+            for ( const size_t chunk : { size_t{ 64u * 1024u }, size_t{ 4096u }, size_t{ 256u }, size_t{ 1u } } )
+            {
+                sent = sent && send_until_full( sock, chunk, total );
+            }
+
+            if ( sent == false )
+                break;
+
+            pollfd ready{ };
+            ready.fd     = sock;
+            ready.events = POLLOUT;
+            full = ( ::poll( &ready, 1, SETTLE_MS ) == 0 );
         }
 
-        const bool full{ ( errno == EAGAIN ) || ( errno == EWOULDBLOCK ) };
         if ( wasNonBlocking == false )
             static_cast<void>(set_nonblocking( sock, false ));
 
@@ -231,16 +258,27 @@ TEST( SocketWouldBlockTest, TrySendOnFullSocketReturnsAtOnce )
     ASSERT_TRUE( open_pair( pair ) );
     ASSERT_TRUE( areg::set_send_timeout( static_cast<SOCKETHANDLE>(pair.client), SEND_TIMEOUT_MS ) );
     ASSERT_FALSE( is_nonblocking( pair.client ) );
-    ASSERT_TRUE( fill( pair.client ) );
+    shrink_buffers( pair );
 
+    // The receive buffer of the peer can still grow after a fill (macOS), so a try-send may find
+    // room. Sending all of it at once is then correct; the unread data stays and the fill repeats.
+    constexpr uint32_t MAX_ATTEMPTS{ 10u };
     uint8_t message[64]{ };
     const areg::IoBuffer buffer{ message, sizeof( message ) };
-    const Clock::time_point start{ Clock::now( ) };
-    const int32_t sent{ areg::try_send_data_v( static_cast<SOCKETHANDLE>(pair.client), &buffer, 1u, sizeof( message ) ) };
-    const int64_t took{ elapsed_ms( start ) };
+    int32_t sent{ -1 };
+    for ( uint32_t attempt = 0u; ( sent != 0 ) && ( attempt < MAX_ATTEMPTS ); ++ attempt )
+    {
+        ASSERT_TRUE( fill( pair.client ) );
+
+        const Clock::time_point start{ Clock::now( ) };
+        sent = areg::try_send_data_v( static_cast<SOCKETHANDLE>(pair.client), &buffer, 1u, sizeof( message ) );
+        const int64_t took{ elapsed_ms( start ) };
+
+        EXPECT_LT( took, PROMPT_MS ) << "the try-send blocked for " << took << " ms";
+        ASSERT_TRUE( ( sent == 0 ) || ( sent == static_cast<int32_t>(sizeof( message )) ) ) << "sent " << sent;
+    }
 
     EXPECT_EQ( sent, 0 );
-    EXPECT_LT( took, PROMPT_MS ) << "the try-send blocked for " << took << " ms";
 
     close_pair( pair );
 }

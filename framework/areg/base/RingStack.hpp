@@ -2,9 +2,9 @@
 #define AREG_BASE_RINGSTACK_HPP
 /************************************************************************
  * This file is part of the Areg SDK core engine.
- * Areg SDK is dual-licensed under Free open source (Apache version 2.0
- * License) and Commercial (with various pricing models) licenses, depending
- * on the nature of the project (commercial, research, academic or free).
+ * Areg SDK is dual-licensed under Free open source (Apache version 2.0 License)
+ * and Commercial (with various pricing models) licenses, depending on the
+ * nature of the project (commercial, research, academic or free).
  * You should have received a copy of the Areg SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
@@ -1333,6 +1333,7 @@ const areg::InStream & operator >> ( const areg::InStream & stream, areg::RingSt
 
     uint32_t size{ 0u };
     stream >> size;
+    size = stream.bounded_count(size);
 
     input.clear();
     if ((input.reserve(size)) >= size && (size != 0))

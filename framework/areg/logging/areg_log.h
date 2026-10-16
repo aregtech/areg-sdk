@@ -2,9 +2,9 @@
 #define AREG_LOGGING_AREG_LOG_H
 /************************************************************************
  * This file is part of the Areg SDK core engine.
- * Areg SDK is dual-licensed under Free open source (Apache version 2.0
- * License) and Commercial (with various pricing models) licenses, depending
- * on the nature of the project (commercial, research, academic or free).
+ * Areg SDK is dual-licensed under Free open source (Apache version 2.0 License)
+ * and Commercial (with various pricing models) licenses, depending on the
+ * nature of the project (commercial, research, academic or free).
  * You should have received a copy of the Areg SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
@@ -191,20 +191,22 @@
     /**
      * \brief   Defines the global scope and a static accessor function. There can be only one global
      *          scope per source file. The scope string stored at runtime is "path.method".
+     *          The scope is created during static initialization, as a DEF_LOG_SCOPE scope is.
      *
      * \param   path    Underscore-separated node path identifying the module and class,
      *                  e.g. areg_component_ServiceManager.
      * \param   method  The snake_case method name, e.g. start_service.
      **/
     #define GLOBAL_LOG_SCOPE(path, method)                                                                      \
-        static areg::ScopeMessage & _global_scope()                                                             \
+        [[maybe_unused]] static areg::ScopeMessage & _global_scope()                                            \
         {                                                                                                       \
             static areg::LogScope     _##path##_##method(#path "." #method);                                    \
             static areg::ScopeMessage  _messager(_##path##_##method);                                           \
             static bool is_activated { false };                                                                 \
             if (!is_activated) { areg::activate_scope( _##path##_##method ); is_activated = true; }             \
             return _messager;                                                                                   \
-        }
+        }                                                                                                       \
+        [[maybe_unused]] static areg::ScopeMessage & _global_scope_ready{ _global_scope() }
 
     /**
      * \brief   Use this macro to log Debug priority messages in logging target (file or remote host).

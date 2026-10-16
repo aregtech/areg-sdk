@@ -89,6 +89,20 @@ step to the console so a person can read what happened:
 8. start one more small drink, then cancel it -- expect the whole credit returned
    and no ingredient drawn
 
+Once a step's expectation has held, the simulated user prints its line below, with this
+exact wording, alone or at the end of a line, nothing after it; `<stage>` is the stage's name:
+
+```lines
+step 1: refused, insufficient credit
+step 2: Cappuccino accepted
+step 3: paused in <stage>, resumed in the same stage
+step 4: Cappuccino finished, credit 20
+step 5: low milk warning, then Latte refused: out of milk
+step 6: refilled, Latte finished
+step 7: Espresso finished, no frothing stage
+step 8: cancelled, whole credit returned, no ingredient drawn
+```
+
 Then exit. **Exit code 0 if every expectation held, non-zero otherwise**, printing
 which step failed. The user program must survive the machine being started after it.
 
@@ -105,7 +119,9 @@ they need a second run of their own:
 
 **An acceptance item counts as passing only when the output of one of those runs shows
 it.** An item you believe you implemented but never observed is reported as not
-passing: naming the ones you could not prove is worth more than a full score.
+passing: naming the ones you could not prove is worth more than a full score. An item
+marked (code) is one no output can show: count it apart, as present only where you can
+name the file and the class or function that does it.
 
 ### Acceptance checklist
 
@@ -126,7 +142,7 @@ framework, against this list:
 - [ ] neither program waits more than 20 seconds for something that never arrives
 - [ ] if one side goes away mid-scenario, the other reports it and exits non-zero
 - [ ] the scenario exits 0, and non-zero when an expectation fails
-- [ ] no busy-waiting and no sleeping inside a message handler
+- [ ] (code) no busy-waiting and no sleeping inside a message handler
 
 ---
 
@@ -163,7 +179,7 @@ End with this table and nothing longer.
 |---|---|
 | build-and-fix cycles | |
 | run-and-fix cycles | |
-| acceptance items passing | n of the checklist above, and which failed |
+| acceptance items passing | n of the unmarked items shown by the output, and which were not; c of the (code) items, each with where |
 | checker findings, first run | name the checker, or "none run" |
 | files you opened that the documentation did not route you to | names, or "none" |
 

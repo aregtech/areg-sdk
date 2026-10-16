@@ -51,6 +51,31 @@ def find_agent_docs():
 SDK_ROOT = os.path.dirname(os.path.dirname(HERE))
 AGENT_DOCS = find_agent_docs()
 RECIPES = os.path.join(AGENT_DOCS, 'recipes') if AGENT_DOCS else ''
+
+
+def installed_docs_root():
+    """The directory an installation keeps AGENTS.md in, or None when this tool does not
+    run from an installation."""
+    if os.path.isfile(os.path.join(SDK_ROOT, 'areg.cmake')) or not AGENT_DOCS:
+        return None
+    return os.path.dirname(os.path.dirname(AGENT_DOCS)).replace('\\', '/')
+
+
+def tools_of(sdk):
+    """The directory holding tools/agent for the SDK at sdk. An installation keeps the
+    tools apart from AGENTS.md, so there it is the directory this tool runs from."""
+    if installed_docs_root() and not os.path.isdir(os.path.join(sdk, 'tools', 'agent')):
+        return os.path.dirname(HERE).replace('\\', '/')
+    return sdk + '/tools'
+
+
+def moved_tools(sdk, tools):
+    """The sentence that maps the pages' tool paths onto an installation, or ''."""
+    if tools == sdk + '/tools':
+        return ''
+    return ' Where a page writes `<areg-sdk>/tools/`, the tools are in `{}/`.'.format(tools)
+
+
 # The revision to fetch when --tag is not given. api.json owns it; this literal is
 # the answer when api.json cannot be read, and check_corpus.py holds the two equal.
 FALLBACK_TAG = 'master'
@@ -149,6 +174,7 @@ def fetch_block(sdk_root, tag):
 
 
 INCLUDE_ROOT = 'include_directories("${CMAKE_CURRENT_SOURCE_DIR}")'
+FIND_PACKAGE = 'find_package(areg CONFIG)'
 
 
 def rewrite_top_cmake(path, name, sdk_root, tag):
@@ -161,6 +187,12 @@ def rewrite_top_cmake(path, name, sdk_root, tag):
     if old not in text:
         fail('recipe CMakeLists.txt does not carry the expected FetchContent block')
     text = text.replace(old, fetch_block(sdk_root, tag))
+
+    # Scaffolded from an installation, the project finds that installation first.
+    if installed_docs_root() and not sdk_root:
+        prefix = os.path.normpath(os.path.join(installed_docs_root(), os.pardir, os.pardir,
+                                               os.pardir)).replace('\\', '/')
+        text = text.replace(FIND_PACKAGE, '{} HINTS "{}")'.format(FIND_PACKAGE[:-1], prefix), 1)
 
     # The project root on the include path: a header of the project is included as
     # "src/x/Name.hpp" exactly as a generated one is, from any directory of src/.
@@ -274,15 +306,15 @@ ATTACH = """## Building with AREG
 
 This project uses the AREG SDK at `{sdk}` for its multithreading, IPC and
 service components. Before writing code that uses areg, read `{sdk}/AGENTS.md`:
-it routes each task to the one page that answers it. Never search the SDK.
+it routes each task to the one page that answers it. Never search the SDK.{moved}
 
 | I need to ... | Read |
 |---|---|
 | Add areg to this project's CMake build | `{sdk}/docs/wiki/02b-cmake-integrate.md` |
-| Decide what the services are | `{sdk}/docs/agent/05-design.md` |
+| Decide the services and their interfaces | `{sdk}/docs/agent/05-design.md` |
 | Add a service, a provider or a consumer | `{sdk}/docs/agent/00-cheatsheet.md` |
-| The signature of one framework name | `python3 {sdk}/tools/agent/api_help.py <name>` |
-| Check the code against the areg contract | `python3 {sdk}/tools/agent/check_contract.py <dir> --strict` |
+| The signature of one framework name | `python3 {tools}/agent/api_help.py <name>` |
+| Check the code against the areg contract | `python3 {tools}/agent/check_contract.py <dir> --strict` |
 | Work out why it does not work | `{sdk}/docs/agent/51-debug.md` |
 
 What you remember about areg from training is out of date: its names were changed.
@@ -346,7 +378,10 @@ def import_agents_into_claude(root):
 def attach(root, sdk, quiet):
     """Points an existing project at the SDK: AGENTS.md and nothing else of the scaffold."""
     sdk = sdk.replace('\\', '/')
-    done = place_agents(root, ATTACH.format(sdk=sdk), keep_reference=sdk + '/AGENTS.md')
+    tools = tools_of(sdk)
+    done = place_agents(root, ATTACH.format(sdk=sdk, tools=tools,
+                                            moved=moved_tools(sdk, tools)),
+                        keep_reference=sdk + '/AGENTS.md')
     print('{}: AGENTS.md {}'.format(root, {
         'written': 'written',
         'updated': 'updated: the areg block was replaced',
@@ -386,7 +421,8 @@ def write_redirects(root, name, harnesses):
 
 def write_agents(root, name, mode, sdk_root, binaries):
     """The project's own AGENTS.md: what an agent working here loads first."""
-    sdk = sdk_root if sdk_root else 'build/packages/areg-src'
+    sdk = sdk_root or installed_docs_root() or 'build/packages/areg-src'
+    tools = tools_of(sdk)
     # The SDK lands somewhere different for a clone, a fetch and an installed
     # package, so the project is told how to ask rather than given one answer.
     where = ('`build/areg-sdk.paths` names where the SDK is on this machine, one '
@@ -395,8 +431,8 @@ def write_agents(root, name, mode, sdk_root, binaries):
              'configures, so '
              'run `cmake -B build` first if it is not there; if it is still absent '
              'after that, ask for the SDK path and pass it as '
-             '`-DAREG_SDK_ROOT=<path>`. The commands below assume `{}`.'
-             .format(sdk))
+             '`-DAREG_SDK_ROOT=<path>`. The commands below assume `{}`.{}'
+             .format(sdk if tools == sdk + '/tools' else tools, moved_tools(sdk, tools)))
     never = prohibition_bullets()
     if never is None:
         never = ('- The full list is section 6 of `{}/AGENTS.md`; api.json could not be '
@@ -430,15 +466,15 @@ and empty, and every document of this project is generated from it. Fill its val
 and keep its keys, then:
 
 ```bash
-python3 {sdk}/tools/agent/build_project.py --spec design.json
-python3 {sdk}/tools/agent/build_project.py --run
+python3 {tools}/agent/build_project.py --spec design.json
+python3 {tools}/agent/build_project.py --run
 ```
 
 The same on Windows, where the interpreter is `python`:
 
 ```bat
-python {sdk}/tools/agent/build_project.py --spec design.json
-python {sdk}/tools/agent/build_project.py --run
+python {tools}/agent/build_project.py --spec design.json
+python {tools}/agent/build_project.py --run
 ```
 
 The first call builds, and checks the design before anything else: a refused design
@@ -449,8 +485,8 @@ are the whole route, on both systems, and nothing else here starts a process.
 
 **`--run` exiting 0 is what done means**, and the lines it prints are the evidence to
 report. Every acceptance item belongs in `scenarios.json`, the peer going away as a
-scenario-level `"stop"` and the console quit path as the `quit` scenario that is
-already there. Never start the processes by hand with `&`, `sleep`, `pkill` or `ps`.
+scenario-level `"stop"`. Never start the processes by hand with `&`, `sleep`, `pkill`
+or `ps`.
 {manual}
 Executables are written to `build/bin/`. The suffix is `.elf` on Linux, `.mac` on
 macOS and `.exe` on Windows.
@@ -476,19 +512,21 @@ src/CMakeLists.txt    names the documents and each executable's sources
 |---|---|
 | **Build this application, start to finish** | `docs/agent/01-runbook.md` - every command in order, if you are not already following it |
 | **Anything ordinary** | `docs/agent/00-cheatsheet.md` - what the tools do not write |
-| Decide what the services are | `docs/agent/05-design.md`, before any document |
+| Decide the services and their interfaces | the rules in `design.json`; `docs/agent/05-design.md` for a doubt they leave |
 | Change the service contract | `docs/agent/20-service-interface.md` |
 | Declare a structure, enum or container | `docs/agent/21-data-types.md` |
 | Behaviour that depends on what happened before | `docs/agent/22-state-machine.md` (a `.fsml`) |
 | `areg::String` and the containers | the worksheet's list, else `docs/agent/40-base-api.md` before the first line |
-| The signature of one framework name | `python3 {sdk}/tools/agent/api_help.py <name>` -- never a page, never a header |
-| Implement a provider, a consumer, or the model | nothing: `gen_skeleton.py --app` wrote all three. Open `docs/agent/30-provider.md`, `docs/agent/31-consumer.md` or `docs/agent/32-model.md` only at a numbered section `51-debug.md` or `05-design.md` names |
+| The signature of one framework name | `python3 {tools}/agent/api_help.py <name>` -- never a page, never a header |
+| Implement a provider, a consumer, or the model | nothing: `gen_skeleton.py --app` wrote all three. Open `docs/agent/30-provider.md`, `docs/agent/31-consumer.md` or `docs/agent/32-model.md` only at a numbered section `51-debug.md` or `05-design.md` names; several services in one component: `docs/agent/24-component.md` |
 | Periodic or delayed work | the consumer already owns a stepping timer; for a second timer `docs/agent/33-timers.md` |
 | A custom event between threads | `docs/agent/23-events.md` |
-| Worker threads, watchdogs, a run-time model | `docs/agent/37-threads.md` |
+| Worker threads; watchdogs, a run-time model | `docs/agent/38-workers.md`; `docs/agent/37-threads.md` |
 | The application, components, time, files | `docs/agent/42-runtime-api.md` |
 | Log from application code | `docs/agent/34-logging.md` |
-| Start the pieces in the right order | nothing: `run_scenarios.py` does it and `--app` wrote `scenarios.json`. `--only` is for iterating on a failure, never for confirming a pass. `docs/agent/50-running.md` for `router`, `lead` and `stop`/`after`/`signal` |
+| `mtrouter`, `logcollector`, `logobserver` by hand | `docs/agent/50-running.md` |
+| A console program: read a command, print a result | `docs/agent/39-console.md` |
+| Start the pieces in the right order | nothing: `run_scenarios.py` does it and `--app` wrote `scenarios.json`. `--only` is for iterating on a failure, never for confirming a pass. `docs/agent/53-scenarios.md` for `router`, `lead` and `stop`/`after`/`signal` |
 | Write a test | `docs/agent/52-testing.md` |
 | Work out why it does not work | `docs/agent/51-debug.md` |
 | **Anything this table does not cover** | `AGENTS.md` section 2 in the SDK -- it routes the full set. Never search the SDK by hand |
@@ -502,10 +540,10 @@ a turn**:
 
 | Ask | Only when |
 |---|---|
-| `python3 {sdk}/tools/agent/gen_skeleton.py --doc <document> --contract` | you need the name a document generates -- a method, or a type a signature is written in. `--todos` lists the markers still open |
-| `python3 {sdk}/tools/agent/api_help.py <name>` | you need the signature of a **framework** name. Never grep the SDK for one |
-| `python3 {sdk}/tools/explain_rule.py <number> --at <Element>/@<Attribute>` | `gen_docs.py` refused a document and its `fix:` line was not enough |
-| `python3 {sdk}/tools/schema_help.py <name> --document fsml` | `gen_docs.py` refused a document over a name. Nothing before that: you write `design.json`, and the generator writes every element name in it |
+| `python3 {tools}/agent/gen_skeleton.py --doc <document> --contract` | you need the name a document generates -- a method, or a type a signature is written in. `--todos` lists the markers still open |
+| `python3 {tools}/agent/api_help.py <name>` | you need the signature of a **framework** name. Never grep the SDK for one |
+| `python3 {tools}/explain_rule.py <number> --at <Element>/@<Attribute>` | `gen_docs.py` refused a document and its `fix:` line was not enough |
+| `python3 {tools}/schema_help.py <name> --document fsml` | `gen_docs.py` refused a document over a name. Nothing before that: you write `design.json`, and the generator writes every element name in it |
 
 All take `--help`. On Windows the interpreter is `python`, not `python3`.
 
@@ -516,7 +554,7 @@ Each line closes a class of wrong code, not a style preference.
 generated code under `build/` it does not read.
 
 {never}
-""".format(name=name, manual=manual, where=where, sdk=sdk, never=never)
+""".format(name=name, manual=manual, where=where, sdk=sdk, tools=tools, never=never)
 
     return place_agents(root, text)
 
@@ -546,14 +584,18 @@ def write_scenarios(root, mode, binaries):
         handle.write('\n')
 
 
-def write_manifest(root):
+def write_manifest(root, features=None):
     """The project's record of the files that describe it, for build_project.py.
 
     A later call given no --spec reads it, so the documents and the application
-    are written from the design as it stands rather than left as they were.
+    are written from the design as it stands rather than left as they were. The
+    features the template was written with are kept there for gen_docs.py.
     """
+    manifest = {'spec': ['design.json']}
+    if features is not None:
+        manifest['features'] = features
     with open(os.path.join(root, 'areg-project.json'), 'w', encoding='utf-8') as handle:
-        json.dump({'spec': ['design.json']}, handle, indent=2)
+        json.dump(manifest, handle, indent=2)
         handle.write('\n')
 
 
@@ -634,7 +676,8 @@ def attach_existing(root, args):
     if args.no_agents:
         fail('{} already holds a project, and --no-agents leaves nothing to write'
              .format(root))
-    sdk = os.path.abspath(args.sdk_root) if args.sdk_root else SDK_ROOT
+    sdk = os.path.abspath(args.sdk_root) if args.sdk_root else \
+        (installed_docs_root() or SDK_ROOT)
     if not os.path.isfile(os.path.join(sdk, 'AGENTS.md')):
         fail('no AGENTS.md under the SDK {}; pass --sdk-root'.format(sdk))
     for tree in (sdk, SDK_ROOT):
@@ -670,6 +713,9 @@ def main():
                         help='use this local SDK copy instead of fetching from GitHub')
     parser.add_argument('--tag', default=DEFAULT_TAG,
                         help='SDK git tag to fetch (default: {})'.format(DEFAULT_TAG))
+    parser.add_argument('--features', metavar='LIST', default=None,
+                        help='the optional blocks design.json holds, comma-separated: '
+                             'machine, timers, workers, steps. Left out, it holds every one')
     parser.add_argument('--force', action='store_true',
                         help='scaffold into a directory that is not empty. Writes '
                              'the scaffolded files over any of the same name and '
@@ -687,6 +733,7 @@ def main():
     parser.add_argument('--quiet', action='store_true',
                         help='do not list the harness files written')
     args = parser.parse_args()
+    features = None if args.features is None else gen_docs.features_of(args.features)
 
     interactive = sys.stdin.isatty()
     name = args.name
@@ -771,8 +818,8 @@ def main():
                 print('  {} -> AGENTS.md'.format(relative))
     write_gitignore(root)
     write_scenarios(root, mode, binaries)
-    template = gen_docs.write_template(os.path.join(root, 'design.json'))
-    write_manifest(root)
+    template = gen_docs.write_template(os.path.join(root, 'design.json'), features)
+    write_manifest(root, None if template == 'work' else features)
     if MODES[mode]['router']:
         write_run_script(root, name, binaries)
         write_run_bat(root, name, binaries)
@@ -786,7 +833,8 @@ def main():
     else:
         print('  design.json is the one file to read. AGENTS.md restates the runbook, and the')
         print('  worksheet carries what scenarios.json needs. design.json holds every key of')
-        print('  a design, empty: fill it, then')
+        print('  a design{}, empty: fill it, then'.format(
+            '' if features is None else ' with ' + (', '.join(features) or 'no optional block')))
     print('  python3 {}/build_project.py --spec design.json'.format(tools))
     print('    that first call compiles the framework too: give it a command timeout')
     print('    of 10 minutes (600000 ms). Every later call takes seconds.')
@@ -819,11 +867,11 @@ def print_scenarios(root, mode):
         print('    "{}": {} -- the last one leads and ends it'
               .format(scenario.get('name', '?'), ', '.join(labels) or 'no process'))
     if mode == 'ipc':
-        print('    build_project.py adds "quit" and "peer-lost" (the provider killed '
-              'mid-run): write neither, and open no page for them.')
+        print('    build_project.py adds "peer-lost" (the provider killed '
+              'mid-run): do not write it, and open no page for it.')
     else:
         print('    a peer going away is a scenario of its own, with "stop"; '
-              'docs/agent/50-running.md has its keys.')
+              'docs/agent/53-scenarios.md has its keys.')
 
 
 if __name__ == '__main__':

@@ -2,9 +2,9 @@
 #define AREG_BASE_THREAD_HPP
 /************************************************************************
  * This file is part of the Areg SDK core engine.
- * Areg SDK is dual-licensed under Free open source (Apache version 2.0
- * License) and Commercial (with various pricing models) licenses, depending
- * on the nature of the project (commercial, research, academic or free).
+ * Areg SDK is dual-licensed under Free open source (Apache version 2.0 License)
+ * and Commercial (with various pricing models) licenses, depending on the
+ * nature of the project (commercial, research, academic or free).
  * You should have received a copy of the Areg SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
@@ -405,7 +405,7 @@ public:
     /**
      * \brief   Takes this thread out of the thread name and thread ID maps and asks it to leave,
      *          without waiting for it and without releasing anything it owns. After the call
-     *          find_by_name(), find_by_id() and find_by_address() no longer hand it out, and its
+     *          find_by_number(), find_by_id() and find_by_address() no longer hand it out, and its
      *          name is free for another thread to take.
      *
      * \see     shutdown, ThreadCompletion::Stuck

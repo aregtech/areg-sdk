@@ -17,6 +17,7 @@
 .cache
 *copilot*
 *claude*
+CLAUDE.md
 .idea
 
 build/*

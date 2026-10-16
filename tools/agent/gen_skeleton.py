@@ -68,6 +68,30 @@ def runs_on(machine, action, most=4):
     return '; it runs on {}{} and cannot tell which'.format(shown, more)
 
 
+# The hint of every condition marker.
+ASK = 'answer this guard\'s question and change nothing: each guard calls it'
+
+
+def set_first(machine, action):
+    """Each argument an action reads from an attribute its transition sets, as the tail
+    of its marker."""
+    return ''.join('; on {3}, {0} is {1} after the "set" ({2})'.format(*entry)
+                   for entry in dict.fromkeys(machine.set_first.get(action) or []))
+
+
+def answers_on(machine, iface, action):
+    """The requests whose trigger runs an action, as the tail of its marker."""
+    states = {}
+    for place in machine.runs_on.get(action) or []:
+        stimulus, _, state = place.partition(' in ')
+        if stimulus in iface.response_of and any(stimulus == name for name, _ in iface.requests):
+            states.setdefault(stimulus, []).append(state)
+    return ''.join('; request {} runs it (in {}) and is answered only when a body calls {}'
+                   .format(name, ', '.join(where),
+                           iface.spell('response', iface.response_of[name]))
+                   for name, where in states.items())
+
+
 # A line written only so the skeleton runs before any rule is filled in. It belongs to
 # the marker above it and goes when that marker is filled: fill_markers.py drops it,
 # and an Edit replaces it along with the marker line. Lines after a marker that carry
@@ -101,7 +125,7 @@ BODIES = 'bodies.txt'
 # writes. A request costs its whole context again, so N requests of one Edit cost
 # N times what one worksheet costs.
 WORKSHEET_NOTE = (
-    '  {total} hole(s) in {files} file(s). {path} is written beside this project:\n'
+    '  {total} hole(s) in {files} file(s). {path} is written in the project root:\n'
     '  one section for each, in order, with the function it sits in and every name\n'
     '  a body may call. It is {lines} line(s): read it whole, in one call, and do\n'
     '  not page through it. It is rewritten on every generation, so no body goes\n'
@@ -150,9 +174,11 @@ DECLARED = re.compile(r'^\s{4}(?:static\s+)?(?:constexpr\s+)?[\w:]+(?:\s*[&*])?\
                       r'([mc][A-Z]\w*)\s*[;{=]')
 HELPER = re.compile(r'^\s{4}(?:inline\s+)?[\w:]+(?:\s*[&*])?\s+(\w+)\s*\([^)]*\)\s*[;{]?\s*$')
 RESERVED = ('if', 'while', 'for', 'switch', 'return')
+# Helpers of a worker that only the generated provider calls.
+WIRING = ('add_listeners', 'remove_listeners')
 
 
-def defined_names(text):
+def defined_names(text, cls=None):
     """The members and helpers this class declares that are not overrides.
 
     An override is named by --contract and by the marker above its body. These are
@@ -166,7 +192,10 @@ def defined_names(text):
     """
     members, helpers = [], []
     named = set()
-    for line in text.splitlines():
+    lines = text.splitlines()
+    head = 'class {} '.format(cls)
+    start = next((index for index, line in enumerate(lines) if line.startswith(head)), 0)
+    for line in lines[start:]:
         if ' final' in line or '= delete' in line or 'AREG_NOCOPY' in line:
             continue
         # A placeholder stands until its marker is filled, and the line that fills it
@@ -180,11 +209,33 @@ def defined_names(text):
             members.append(declared_as(line))
             continue
         found = HELPER.match(line)
-        if found and found.group(1) not in RESERVED:
+        if found and found.group(1) not in RESERVED + WIRING:
             spelt = ' '.join(line.split()).rstrip('{;').strip()
             if not any(h.endswith(spelt) or spelt in h for h in helpers):
                 helpers.append(spelt)
     return members, helpers
+
+
+# The generated members and helpers that only generated code reads: the driver's
+# bookkeeping, the stall watchdog, the trail, the late and early arrival store, and the
+# first-connect deadline. The worksheet names them without a description.
+INTERNAL = re.compile(r'^(?:mIdleTicks|cStallTicks|resume_pace|mTrailCount|print_trail|mRan|'
+                      r'cTrailMost|mEnding|mHoldMs|mJumped|mReplaying|mSettling|replay_late|'
+                      r'settle|mNext|mHeld|mHoldOnce|mLate|mHold|mPace|mEarly|deliver_early|'
+                      r'client_connected|mConnected|stalled|begin|'
+                      r'arm_connect_deadline|mLate[A-Z]\w*|forget_late\w*)$')
+
+
+def spelt_name(spelt):
+    """The name a member or helper declaration declares."""
+    found = re.search(r'(\w+)\s*(?:\(|\{|;|=|$)', spelt.split('(')[0] + '(' if '(' in spelt
+                      else spelt)
+    return found.group(1) if found else spelt
+
+
+def is_internal(spelt):
+    """True for a generated member or helper that only generated code reads."""
+    return bool(INTERNAL.match(spelt_name(spelt)))
 
 
 # The note a generated header writes beside a member, on the same line.
@@ -298,20 +349,28 @@ def print_todos(produced, out, written, holes=0, scenarios='', first=True, added
 # written where the markers are written, so nothing has to be recalled from an
 # earlier command or looked up in a second one.
 # ---------------------------------------------------------------------------
+# Sections above which the worksheet prices the bodies in parts, one call each.
+PARTS_OVER = 60
+PARTS = """ One here-document is the cheapest
+#| at any length; parts, one program each, cost a request each: the first --write
+#| {bodies}, each later one --write fix.txt (folded in), only the last with --run."""
+
 WORKSHEET_HEAD = """\
 #| The worksheet of this project: one section per open marker, in file order.
 #| The generator rewrites this file on every generation, so no body goes in it.
-#| The bodies go in {bodies}, a file of your own: for each section, its "==" line
-#| and under it the code that replaces that marker. Write it, apply it, build and
-#| run the scenarios in one command, the whole file as a here-document:
+#| The bodies are the input of build_project.py, a bulk-edit tool: from one
+#| here-document it fills every marker of every source file, keeps the input as
+#| {bodies}, builds and runs the scenarios. For each section, its "==" line and
+#| under it the code that replaces that marker:
 #|
 #|   python3 {build} --spec design.json --write {bodies} --run <<'AREG_EOF'
 #|   == <marker>
 #|   <code>
 #|   AREG_EOF
 #|
-#| A shell with no here-document writes {bodies} and runs the command without
-#| --write, both in the same message.
+#| An editor, or a shell with no here-document, writes {bodies} or fix.txt whole
+#| and runs the command without --write: a request more. A body patched into its
+#| source file instead comes back into {bodies} on the next build, a patch per file.
 #|
 #| A project with no design.json applies it with python3 {tool} --bodies {bodies}.
 #|
@@ -321,20 +380,34 @@ WORKSHEET_HEAD = """\
 #| with no code, stays open and nothing is written for it, so one pass can fill
 #| what it knows and a later pass the rest.
 #|
-#| A section that needs nothing still takes one line: a "//" comment saying so
-#| closes it. This holds for every section, the "*_state" ones included. A marker
+#| A code section that needs nothing still takes one line:
+#| a "//" comment saying so closes it. This holds for every code section, the
+#| "*_state" ones included; an "expect_" section takes patterns only. A marker
 #| left open is an error of the final contract check, after the build and the
 #| scenarios have already passed.
 #|
+#| Section names follow design.json, so a design change names its new sections
+#| before they are generated: step_<step>, request_<request>, action_<action>,
+#| condition_<condition>, timer_<timer>; in a consumer response_<request>,
+#| update_<getter> (Floor: update_floor) and broadcast_<broadcast>; in a watcher
+#| the same three with watch_ in front; a provider sends a broadcast with
+#| broadcast_<broadcast>(...). A new request, attribute or broadcast adds a section
+#| in every program that uses the service. A name two files share is written
+#| <File>:<name>, as below. A run with new sections still open builds and runs
+#| the scenarios on their placeholders; only the final check names them.
+#| A design change and its sections are one call, --edit in place of --write: a
+#| "== design.json" block, then "== fix.txt", "<<<<<<< SEARCH", "=======", the
+#| sections, ">>>>>>> REPLACE".
+#|
 #| Writing {bodies} and running it is one request. Filling it one section at a
 #| time is {total} requests instead, and a request is billed for the whole
-#| conversation again.
+#| conversation again.{parts}
 #|
 #| {bodies} keeps every body it writes. A body already written stays addressable by
-#| the same section: change the section, run the command again, and that body alone
-#| is rewritten where it stands. A scenario that fails names the section its check is
-#| in, so the section to change is the one the failure printed, and no source file is
-#| opened to find it.
+#| the same section: send only the sections you change with --write fix.txt on the
+#| same command, and each body alone is rewritten where it stands. A scenario that
+#| fails names the section its check is in, so the section to change is the one the
+#| failure printed, and no source file is opened to find it.
 #|
 #| No source file has to be opened to fill this in: every name a body may call is
 #| named below, every place a body belongs is a section below, and each section
@@ -344,10 +417,14 @@ WORKSHEET_HEAD = """\
 #| A helper of your own is declared and defined in the "*_state" section, which is
 #| the private block of that class's header. Every other section is code inside
 #| an existing function body, so an out-of-line definition there does not compile.
-#| Nothing else has to be added by hand.
 #|
-#| A body prints with "std::cout << ... << std::endl;". Every .cpp of this project
-#| includes <iostream> already, so a section that prints adds no include.
+#| A body logs with GLOBAL_INFO(...), GLOBAL_WARN(...) or GLOBAL_ERR(...), printf
+#| rules: GLOBAL_INFO("bay %s at %u kWh", name.as_string(), energy). Every class
+#| of this project carries its log scope already, so a section that logs, a
+#| "*_state" helper included, adds no include; each program writes its lines to
+#| logs/ beside its executable, and a scenario's "expect" matches them. Every
+#| header has <vector>, <map>, <unordered_map>, <deque> and <list> from areg's
+#| own headers, so a "*_state" keeping one adds no include either.
 """
 
 def worksheet_sections(produced, out):
@@ -407,6 +484,15 @@ CONTROL = ('if', 'else', 'for', 'while', 'switch', 'do', 'try', 'catch')
 CARRIED = '()[]<>,&|=+-*/.?:"'
 
 
+def bystander(scenario, spec):
+    """Whether this process runs in that scenario neither stopped by it nor leading it."""
+    procs = scenario.get('procs', [])
+    lead = next((one for one in procs if one.get('lead')), procs[-1] if procs else None)
+    same = [one for one in procs if proc_label(one) == proc_label(spec)]
+    stopped = (scenario.get('stop') or {}).get('proc')
+    return bool(same) and same[0] is not lead and proc_label(spec) != stopped
+
+
 def scenario_holes(path):
     """Every unfilled hole of a scenario file, as (marker, what the section asks).
 
@@ -424,13 +510,24 @@ def scenario_holes(path):
     for scenario in scenarios:
         label = scenario.get('name', '')
         procs = scenario.get('procs', [])
+        silent = [spec for spec in procs if spec.get('expect') == [] and not spec.get('reject')]
         for spec in procs:
             for entry in spec.get('expect', []):
                 found = MARKER.search('// ' + entry) if entry.startswith('TODO(you)') \
                     else None
                 if found:
-                    holes.append((found.group(1), 'what "{}" must print in scenario '
-                                  '"{}".'.format(proc_label(spec), label)))
+                    hint = 'what "{}" must write in scenario "{}".'.format(
+                        proc_label(spec), label)
+                    for other in silent:
+                        hint += (' "{0}" expects nothing: these lines are the evidence. A '
+                                 'requirement only "{0}" can show goes in a section == {1}.'
+                                 .format(proc_label(other), expect_slot(label, other)))
+                    lost = [one for one in scenarios if one.get('stop') and one is not scenario]
+                    if lost and not scenario.get('stop') and bystander(lost[0], spec):
+                        hint += (' A line it writes on losing a peer goes in a section == {} of '
+                                 'this file, not here.'
+                                 .format(expect_slot(lost[0].get('name', ''), spec)))
+                    holes.append((found.group(1), hint))
         stop = scenario.get('stop')
         after = stop.get('after') if isinstance(stop, dict) else None
         found = MARKER.search('// ' + after) \
@@ -440,6 +537,54 @@ def scenario_holes(path):
             holes.append((found.group(1), STOP_HINT.format(
                 lead=proc_label(lead), scenario=label, target=stop.get('proc'))))
     return holes
+
+
+def scenario_runs(path):
+    """What each scenario of a scenario file starts, as one note: its binaries, the lead marked."""
+    try:
+        with open(path, encoding='utf-8') as handle:
+            text = handle.read()
+        scenarios = json.loads(text)['scenarios']
+    except (ValueError, OSError, KeyError, TypeError):
+        return ''
+    anchor = next((line for line in text.splitlines() if '"scenarios": [' in line), None)
+    runs, before = [], None
+    for scenario in scenarios:
+        procs = [spec for spec in (scenario.get('procs', []) if isinstance(scenario, dict)
+                                   else []) if isinstance(spec, dict)]
+        lead = next((spec for spec in procs if spec.get('lead')), procs[-1] if procs else None)
+        binaries = ['{}{}'.format(spec.get('binary', '?'), ' (lead)' if spec is lead else '')
+                    for spec in procs]
+        if not binaries:
+            continue
+        said = 'the same' if binaries == before else ', '.join(binaries)
+        stop = scenario.get('stop')
+        if isinstance(stop, dict) and isinstance(stop.get('proc'), str):
+            killed = next((spec.get('binary') for spec in procs
+                           if stop['proc'] in (spec.get('name'), spec.get('binary'))), None)
+            said += ', killing {}mid-run; a "== scenarios.json" block replacing its "proc": ' \
+                    '"{}" kills another program instead'.format(
+                        killed + ' ' if killed else '', stop['proc'])
+            exits = [spec for spec in procs if 'exit' in spec]
+            if exits == [lead]:
+                said += '. Only its lead has an "exit"; "exit": 1 added to another process ' \
+                        'expects that exit too'
+        runs.append('"{}" {}'.format(scenario.get('name', '?'), said))
+        before = binaries
+    if not runs:
+        return ''
+    said = ('This file runs {}. A scenario of your own starts these binaries, each proc '
+            'any of "binary", "lead", "stdin", "expect", "reject", "exit"').format('; '.join(runs))
+    if anchor:
+        said += ', added by a "== scenarios.json" SEARCH block after its line `{}`'.format(anchor)
+    return said + '.'
+
+
+def wrap_quoted(text, width):
+    """text wrapped to width, never breaking inside a `quoted` span."""
+    kept = re.sub(r'`[^`]*`', lambda quoted: quoted.group(0).replace(' ', '\0'), text)
+    return [line.replace('\0', ' ')
+            for line in textwrap.wrap(kept, width, break_on_hyphens=False)]
 
 
 def worksheet_pristine(path):
@@ -478,16 +623,17 @@ STEPPED_ORDER_NOTE = ORDER_FACTS
 STEPS_NOTE = ['a step_ section runs only while its step is current. fail("why") ends the',
               'run with exit 1, stay() keeps the step for the next arrival, and',
               'go_to(Step::Name) picks the next step. Doing none of them goes on to the',
-              'step listed next, and after the last one the run exits 0. Each of the',
-              'three takes effect when the body is left, so leaving early by return',
-              'changes nothing: what the body called last is what happens. A step with',
-              'nothing to check still takes one line: a // comment saying so']
+              'step listed next, and after the last one the run exits 0. stay() and',
+              'go_to() take effect when the body is left, the one called last. fail()',
+              'does not leave the body: return right after it, or what follows still',
+              'runs. A step with nothing to check still takes one line: a //',
+              'comment saying so']
 
 
 # The same contract as STEPS_NOTE, short enough to repeat on every later step_
 # section. A worksheet states it once at the top and a run reads section nine.
-STEP_BRIEF = ['stay() holds the step, go_to(Step::Name) redirects, fail("why") stops,',
-              'and an early return keeps whichever of them the body already called']
+STEP_BRIEF = ['stay() holds the step, go_to(Step::Name) redirects, fail("why") ends the',
+              'run but not the body: return right after it']
 
 
 # A response no step awaits gets no step machinery at all, and the generated file is
@@ -503,10 +649,7 @@ ANSWER_NOTE = ['no step awaits this answer, so this body sits outside the step',
 # The section that is a header's private block. Two runs opened a generated header
 # to ask where a helper of their own may live; the preamble says it 130 lines above.
 STATE_NOTE = ["this section is the private block of that class's header: a helper of",
-              'your own is declared and defined here, and nowhere else. Every other',
-              'section is code inside an existing function body, where an out-of-line',
-              'definition does not compile. The names already taken are listed at the',
-              'top of this worksheet, and declaring one again shadows it']
+              'your own is declared and defined here, and nowhere else']
 
 
 # Sends a section to the bodies quoted at the top rather than to the file they are
@@ -529,11 +672,15 @@ CONNECT_INSIDE = ['the rest of service_connected() is generated: every broadcast
                   'and the pace timer starts below it. It runs again on every',
                   'reconnection, so this body sends the first request each time']
 
+CONNECT_ONLY = ['service_connected() is generated and runs before any body below: it',
+                'subscribes to every broadcast and attribute the document declares.',
+                'It runs again on every reconnection']
+
 
 UPDATE_NOTE = ['an update_ body runs on every arrival, whatever step is current, and',
                'before the step_ check of the same update. That check runs while its',
                'step is current, and once as it begins if one arrived since the last',
-               'request.',
+               'request to its service.',
                'Both run inside the check the generated handler makes, so the value is',
                'valid and no test of state is needed:',
                '    if (state == areg::DataState::DataIsOK)',
@@ -547,10 +694,37 @@ UPDATE_BRIEF = ['runs before the step_ check of the same update, and only for a 
                 'value. Elsewhere read the getter and test its state: a copy misses an',
                 'invalidation']
 
+# The tail of the hint of an update_ marker that a step check follows.
+UPDATE_CHECKED = 'it runs before the step_ check of the same update'
+
+# The notes of an update_ section that no step awaits, first and later.
+UPDATE_PLAIN = ['an update_ body runs on every arrival. No step awaits this update, so no',
+                'step_ check follows it and no step ends or stays on it.',
+                'The body runs inside the check the generated handler makes, so the',
+                'value is valid and no test of state is needed:'] + UPDATE_NOTE[6:]
+
+UPDATE_PLAIN_BRIEF = ['runs only for a valid value, and no step awaits it. Elsewhere read',
+                      'the getter and test its state: a copy misses an invalidation']
+
+# The same two for a program with no steps.
+UPDATE_STEPLESS = ['an update_ body runs on every arrival.'] + UPDATE_PLAIN[2:]
+
+UPDATE_STEPLESS_BRIEF = ['runs only for a valid value. Elsewhere read the getter and test',
+                         'its state: a copy misses an invalidation']
+
 
 PEER_LOST_NOTE = ['after this body the reconnect deadline starts: a provider not back within',
                   'cReconnectSeconds ends the run through fail(), exit 1, so the body only',
                   'reports the loss. A reconnect_seconds of 0 waits for ever instead']
+
+WATCH_LOST_NOTE = ['after this body the reconnect deadline starts: a provider not back within',
+                   'cReconnectSeconds ends the run with exit 1, so the body only reports the',
+                   'loss. A reconnect_seconds of 0 waits for ever instead']
+
+# Added to the first update_ section of a file whose attributes carry a mFresh flag.
+FRESH_NOTE = ['mFresh<Name> is true in the body of the value subscribing delivers, on',
+              'every connection: the current value, not a change. It is false from the',
+              'next arrival on']
 
 
 REFUSED_NOTE = ['after this body the run ends with quit_with(1), so the body only',
@@ -593,9 +767,12 @@ def spelt(names):
 
 
 def connecting(produced):
-    """The .cpp files that carry a generated service_connected()."""
-    return set(file_name for file_name, body in produced
-               if file_name.endswith('.cpp') and '::service_connected(' in body)
+    """The .cpp files that carry a generated service_connected(), each with the note
+    that says what it does: enter the steps, hold the first request, or subscribe."""
+    return dict((file_name, CONNECT_NOTE if 'begin(Step::' in body else
+                 CONNECT_INSIDE if 'TODO(you) first_request:' in body else CONNECT_ONLY)
+                for file_name, body in produced
+                if file_name.endswith('.cpp') and '::service_connected(' in body)
 
 
 def first_sections(sections):
@@ -607,19 +784,32 @@ def first_sections(sections):
     return first
 
 
-def section_notes(sections, driven=(), connected=()):
+def section_notes(sections, driven=(), connected=None, stepless=(), fresh=()):
     """The warnings that belong to one section, keyed by its marker name.
 
     "driven" is what driven_body() quoted and "connected" the files with a generated
     service_connected(): both name a body no section covers, and the note that points
-    at it goes on the first section of its own file.
+    at it goes on the first section of its own file. "stepless" are the files no step
+    reaches, whose notes say nothing of steps.
     """
     notes = {}
-    updates = [name for name, _, _, _, _ in sections if name.startswith('update_')]
-    if updates:
-        notes[updates[0]] = UPDATE_NOTE
-        for name in updates[1:]:
-            notes[name] = UPDATE_BRIEF
+    # Keyed by file as well: one attribute name can be awaited in one file and not in
+    # another.
+    for checked, first, later in ((True, UPDATE_NOTE, UPDATE_BRIEF),
+                                  (False, UPDATE_PLAIN, UPDATE_PLAIN_BRIEF)):
+        updates = [(file_name, name) for name, hint, _, file_name, _ in sections
+                   if name.startswith('update_') and (UPDATE_CHECKED in hint) == checked]
+        for index, key in enumerate(updates):
+            if key[0] in stepless and not checked:
+                notes[key] = UPDATE_STEPLESS_BRIEF if index else UPDATE_STEPLESS
+            else:
+                notes[key] = later if index else first
+    # "fresh" are the files whose attributes carry a mFresh flag.
+    noted = set()
+    for name, _, _, file_name, _ in sections:
+        if name.startswith('update_') and file_name in fresh and file_name not in noted:
+            noted.add(file_name)
+            notes[(file_name, name)] = notes[(file_name, name)] + FRESH_NOTE
     # The brief goes on the first step_ section of each handler, not on all of them:
     # the sections of one handler are read together.
     checks = [(name, signature) for name, _, _, _, signature in sections
@@ -631,17 +821,21 @@ def section_notes(sections, driven=(), connected=()):
         if signature not in seen:
             seen.add(signature)
             notes[name] = STEP_BRIEF
-    for name, _, _, _, _ in sections:
-        if name.startswith('response_'):
-            notes[name] = ANSWER_NOTE
-    # The only marker a header carries is its class's private block. Matching the
+    for name, hint, _, file_name, _ in sections:
+        if (name.startswith('response_') and 'before the step_ check' not in hint
+                and file_name not in stepless):
+            notes[(file_name, name)] = ANSWER_NOTE
+    # A header carries its class's private block and its includes. Matching the
     # name instead takes "update_machine_state" with it.
-    for name, _, _, file_name, _ in sections:
-        if file_name.endswith('.hpp'):
+    for name, hint, _, file_name, _ in sections:
+        if file_name.endswith('.hpp') and not name.split(':')[-1].endswith('includes') \
+                and not hint.startswith(OWN_HEADER):
             notes[name] = STATE_NOTE
     names = [name for name, _, _, _, _ in sections]
     if 'peer_lost' in names:
         notes['peer_lost'] = PEER_LOST_NOTE
+    if 'watch_lost' in names:
+        notes['watch_lost'] = WATCH_LOST_NOTE
     if 'service_refused' in names:
         notes['service_refused'] = REFUSED_NOTE
     if any(name == 'next_step' for name, _, _, _, _ in sections):
@@ -657,10 +851,11 @@ def section_notes(sections, driven=(), connected=()):
         if cls in quoted:
             said += textwrap.wrap(DRIVEN_POINTER.format(
                 spelt(quoted[cls]), 'is' if len(quoted[cls]) < 2 else 'are'), 74)
-        if file_name in connected:
-            said += CONNECT_NOTE if checks else CONNECT_INSIDE
+        if file_name in (connected or {}):
+            said += connected[file_name]
         if said:
-            notes[name] = notes.get(name, []) + said
+            notes[(file_name, name)] = notes.get((file_name, name),
+                                                 notes.get(name, [])) + said
     return notes
 
 
@@ -677,22 +872,77 @@ BASE_API = [
     'anything else ask "python3 {tools}/api_help.py <name>", or --search <word> when the',
     'name is what you are missing. Never a header, and never grep.',
     '',
+    '  areg::String s("text")       a const char * converts to a String wherever one is wanted',
     '  s.as_string()                const char *, and what a printf "%s" needs',
     '  s.is_empty()                 bool',
+    '  s.clear()                    empties it',
     '  s.length()                   areg::CharCount',
     '  s.find_first(phrase)         areg::CharPos; the substring search',
     '  s.is_valid_position(pos)     bool; a search that found nothing returns areg::END_POS',
-    '  s.compare(other)             areg::Ordering: Smaller, Equal, Bigger',
+    '  s.compare(other)             areg::Ordering: Smaller, Equal, Bigger; s == x, s != x are bool',
+    '  s = x, s += x, s + x         assign, append; x is a String, a const char * or a char',
     '  s.format(fmt, ...)           String &, printf rules, fills this string and chains',
-    '  s.to_int32() / from_int32(n) and the uint32, int64, uint64, float, double, bool pairs',
+    '  s.to_int32()                 int32_t; to_uint32, to_int64, to_uint64, to_float, to_double, to_bool alike',
+    '  s.from_int32(n)              String &, a member that fills s and chains; from_uint32 and the rest alike',
     '',
     '  A String passed where a printf "%s" is wanted is the commonest compile error in',
     '  application code: LOG_INFO("[ %s ]", name.as_string()), never LOG_INFO("[ %s ]", name).',
 ]
 
+# How a body ends its program, printed when the application defines quit_with().
+QUIT_NOTE = ['quit_with(code) ends this program with that exit code once the handler',
+             'returns; is_quitting() is true from the call. Every main() defines both.']
+
 # The names of BASE_API, for the check that holds this copy and the page together.
-BASE_API_NAMES = ('as_string', 'is_empty', 'length', 'find_first', 'is_valid_position',
-                  'compare', 'format', 'to_int32', 'from_int32')
+BASE_API_NAMES = ('as_string', 'is_empty', 'clear', 'length', 'find_first',
+                  'is_valid_position', 'compare', 'format', 'to_int32', 'from_int32')
+
+# The container spellings, printed under BASE_API when a contract below names a container.
+BASE_API_CONTAINERS = [
+    '',
+    '  The containers the types below name, l one of them:',
+    '  l.size(), l.is_empty()       uint32_t, bool',
+    '  l[i], l.clear()              the element at index i (a map: the value at key i); empties it',
+    '  l.add(v)                     appends to an areg::ArrayList; l.push_last(v) to a LinkedList;',
+    '                               a map takes l[key] = v',
+    '  l.contains(v), l.remove_at(i)  bool; removes index i of an ArrayList (a map: key i)',
+    '  l.data()                     the std container it wraps, const: std::vector for an ArrayList.',
+    '                               l has no begin()/end(); a range-for goes over l.data()',
+    '  Anything else: api_help.py <the class its type line names> --class.',
+]
+
+# The buffer spellings, printed under BASE_API when a document declares a BinaryBuffer.
+BASE_API_BUFFER = [
+    '',
+    '  areg::SharedBuffer, the BinaryBuffer of the contracts below, b one of them:',
+    '  areg::SharedBuffer b(bytes, n)  a copy of n bytes from a const uint8_t *',
+    '  b.buffer(), b.size_used()       const uint8_t * to the bytes; how many there are',
+    '  b.write(bytes, n), b.reset()    appends n bytes; rewinds the read position',
+    '  Anything else: api_help.py SharedBuffer --class.',
+]
+
+def carries_buffer(documents):
+    """True when a document, or a .dtml beside it, declares a BinaryBuffer."""
+    folders = set(os.path.dirname(os.path.abspath(doc)) for doc in documents if doc)
+    for folder in folders:
+        for name in (os.listdir(folder) if os.path.isdir(folder) else []):
+            if not name.endswith(('.siml', '.dtml')):
+                continue
+            try:
+                with open(os.path.join(folder, name), encoding='utf-8') as handle:
+                    if 'BinaryBuffer' in handle.read():
+                        return True
+            except OSError:
+                continue
+    return False
+
+
+# The names of BASE_API_BUFFER, held to 42-runtime-api.md.
+BASE_API_BUFFER_NAMES = ('buffer', 'size_used', 'write', 'reset')
+
+# The names of BASE_API_CONTAINERS, held to the page as BASE_API_NAMES is.
+BASE_API_CONTAINER_NAMES = ('size', 'is_empty', 'clear', 'add', 'push_last', 'contains',
+                            'remove_at', 'data')
 
 
 # The generated functions whose behaviour no name gives away. A worksheet lists
@@ -753,7 +1003,7 @@ def one_driven(lines, wanted, keep):
 
 
 def worksheet_lines(produced, out, iface, document, machine, machine_doc,
-                    scenarios=None, steps=()):
+                    scenarios=None, steps=(), contracts=None, extra=()):
     """The whole worksheet, ready to write."""
     sections = worksheet_sections(produced, out)
     holes = scenario_holes(scenarios) if scenarios else []
@@ -762,13 +1012,15 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
     carried = {}
     for file_name, text in produced:
         if file_name.endswith('.hpp'):
-            members, helpers = defined_names(text)
+            members, helpers = defined_names(text, os.path.basename(file_name)[:-4])
             if members or helpers:
                 carried[file_name] = (os.path.basename(file_name)[:-4], members, helpers,
                                       helper_docs(text))
 
-    lines = [WORKSHEET_HEAD.format(tool=FILLER, build=BUILDER, bodies=BODIES,
-                                   total=len(sections) + len(holes))]
+    total = len(sections) + len(holes)
+    lines = [WORKSHEET_HEAD.format(tool=FILLER, build=BUILDER, bodies=BODIES, total=total,
+                                   parts=PARTS.format(bodies=BODIES)
+                                   if total > PARTS_OVER else '')]
     if carried:
         lines.append('#| These names are taken already. Declaring one of them again in\n'
                      '#| a section below shadows it, and the compiler points at the line\n'
@@ -777,23 +1029,51 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
                      '#| the generated file it is declared in:\n#|')
         for _, (cls, members, helpers, docs) in sorted(carried.items()):
             lines.append('#|   {}'.format(cls))
+            internal = []
             for spelt, note in members:
+                if is_internal(spelt):
+                    internal.append(spelt_name(spelt))
+                    continue
                 lines.append('#|     {}'.format(spelt))
                 if note:
                     lines.append('#|         {}'.format(note))
             for spelt in helpers:
+                if is_internal(spelt):
+                    internal.append(spelt_name(spelt) + '()')
+                    continue
                 lines.append('#|     {}'.format(spelt))
                 said = docs.get(spelt)
                 if said:
                     lines.append('#|         {}'.format(said))
+            if internal:
+                for line in textwrap.wrap('generator state no body reads: ' + ', '.join(
+                        dict.fromkeys(internal)), 79):
+                    lines.append('#|     {}'.format(line))
         lines.append('#|')
+    hold = peer_hold(steps) if steps else None
+    if hold and not any('Step::' + hold['enum'] in text for _, text in produced):
+        hold = None
     if steps:
+        driver_cls = next((os.path.basename(file_name)[:-4] for file_name, text in produced
+                           if file_name.endswith('.hpp') and 'enum class Step' in text), None)
         lines.append('#| The steps of the scenario, in order. go_to() takes one of these\n'
-                     '#| names; a step with no step_ section below has nothing to check:\n#|')
-        width = max(len(step['enum']) for step in steps) + 6
-        for step in steps:
-            lines.append('#|   {:{}} {}'.format('Step::' + step['enum'], width,
-                                               step_said(step)))
+                     '#| names; a step with no step_ section below has nothing to check.')
+        if driver_cls:
+            for line in textwrap.wrap(
+                    'A check while such a step runs, a wait, goes in the section of what it '
+                    'watches, testing mStep == Step::<Name>; a client of the driver tests '
+                    'mOwner.mStep == {}::Step::<Name>.'.format(driver_cls), 74):
+                lines.append('#| ' + line)
+        lines.append('#|')
+        listed = with_hold(steps, hold)
+        width = max(len(step['enum']) for step in listed) + 6
+        for step in listed:
+            said = step_said(step)
+            if step.get('hold'):
+                said = 'with {} only, {}{}; without it, ends at once'.format(
+                    HOLD_FLAG, said, '' if step.get('keep') else
+                    ', while {} stops the provider'.format(PEER_LOST_SCENARIO))
+            lines.append('#|   {:{}} {}'.format('Step::' + step['enum'], width, said))
         lines.append('#|')
     driven = driven_body(produced)
     if driven:
@@ -802,18 +1082,39 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
             for line in body:
                 lines.append(('#|   ' + line).rstrip())
             lines.append('#|')
-    for line in BASE_API:
+    specs = [spec for spec, _ in contracts or ((iface, document), (machine, machine_doc))
+             if spec is not None]
+    containers = any(getattr(spec, 'containers', None) for spec in specs)
+    buffers = carries_buffer([doc for _, doc in contracts or ((iface, document),)])
+    for line in (BASE_API + (BASE_API_CONTAINERS if containers else [])
+                 + (BASE_API_BUFFER if buffers else [])):
         lines.append(('#| ' + line.format(tools=TOOLS_DIR)).rstrip())
     lines.append('#|')
+    if any(file_name.endswith('main.cpp') and 'void quit_with(int code)' in text
+           for file_name, text in produced):
+        for line in QUIT_NOTE:
+            lines.append('#| ' + line)
+        lines.append('#|')
     lines.append('#| The names these bodies may call, spelt as the generator emits them.\n'
                  '#| A name spelt in another namespace than the one below does not\n'
-                 '#| compile:\n#|')
-    for spec, doc in ((iface, document), (machine, machine_doc)):
+                 '#| compile. A generated consumer or client subscribes to everything\n'
+                 '#| its document declares as it connects. A body calls notify_on_*\n'
+                 '#| of its consumer or client member only to stop (false) or resume\n'
+                 '#| (true); resuming an attribute delivers its current value at once:\n#|')
+    # A type or a rule two documents share is listed under the first.
+    listed = set()
+    for spec, doc in contracts or ((iface, document), (machine, machine_doc)):
         if spec is None:
             continue
         for line in contract_lines(spec, doc):
+            if len(line) >= 30 and line.startswith('  '):
+                if line in listed:
+                    continue
+                listed.add(line)
             lines.append(('#| ' + line).rstrip())
     lines.append('#|')
+    if extra:
+        lines += [('#| ' + line).rstrip() for line in extra] + ['#|']
     heading = header_notes(sections, set(step['awaits'][0] for step in steps
                                          if step['awaits']))
     for line in heading:
@@ -821,39 +1122,52 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
     if heading:
         lines.append('#|')
 
-    notes = section_notes(sections, driven, connecting(produced))
-    falls = fall_through(steps)
+    stepless = set(file_name for file_name, body in produced
+                   if 'Step::' not in body and 'client_connected()' not in body)
+    fresh = set(file_name for file_name, body in produced
+                if file_name.endswith('.cpp') and 'mFresh' in body)
+    notes = section_notes(sections, driven, connecting(produced), stepless, fresh)
+    falls = fall_through(steps, hold)
     current = None
+    # A name more than one file carries is addressed through its file.
+    counts = {}
+    for name, _, _, _, _ in sections:
+        counts[name] = counts.get(name, 0) + 1
     for name, hint, path, file_name, signature in sections:
         if path != current:
             lines.append('\n#| ---- {}'.format(path))
             current = path
-        lines.append('== {}'.format(name))
+        lines.append('== {}'.format(name if counts[name] == 1 else
+                                     '{}:{}'.format(os.path.basename(file_name), name)))
         lines.append('#| {}'.format(hint))
         if signature:
             lines.append('#| in: {}'.format(signature))
         if name in falls:
             lines.append('#| {}'.format(falls[name]))
-        for line in notes.get(name, []):
+        for line in notes.get((file_name, name), notes.get(name, [])):
             lines.append('#| {}'.format(line))
         lines.append('')
     if holes:
-        lines.append('\n#| ---- {}: what a run has to print to prove a requirement.'
+        lines.append('\n#| ---- {}: what a run has to write to prove a requirement.'
                      .format(scenarios))
         lines.append('#| One regular expression per line, and every one of them has to')
         if steps:
             lines.append('#| match. Each line comes')
         else:
-            lines.append('#| match. The generated main() prints nothing, so each line comes')
+            lines.append('#| match. The generated main() writes nothing, so each line comes')
         lines.append('#| from a body above: the expectation and the code that satisfies')
         lines.append('#| it are written together, in this file, or the run proves')
-        lines.append('#| nothing. A "//" line is a pattern here, not a comment.')
-        lines.append('#| One line per acceptance item of the task, printed by the body')
+        lines.append('#| nothing. A "//" line is a pattern here, not a comment; a section')
+        lines.append('#| of the one line [] expects nothing of that process. A pattern')
+        lines.append('#| matches the message of a log line, without its time, thread and priority.')
+        lines.append('#| One line per acceptance item of the task, logged by the body')
         lines.append('#| that proves it. A run that passes with every line matched is')
         lines.append('#| final: nothing is added to prove it again.')
         lines.append('#| The dialect is Python re, searched and not anchored, with')
         lines.append('#| MULTILINE on: ^ and $ meet every line, and a plain substring')
         lines.append('#| is a valid pattern. Escape . ( ) [ ] * + ? that mean themselves.')
+        for line in wrap_quoted(scenario_runs(scenarios), 77):
+            lines.append('#| {}'.format(line))
         for name, hint in holes:
             lines.append('== {}'.format(name))
             for line in textwrap.wrap(hint, 77):
@@ -862,7 +1176,7 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
     return lines
 
 
-def fall_through(steps):
+def fall_through(steps, hold=None):
     """The fall-through line of each step_ section, keyed by the section name."""
     falls = {}
     for index, step in enumerate(steps):
@@ -870,6 +1184,9 @@ def fall_through(steps):
         falls['step_' + step['name']] = \
             'falling through begins Step::{}'.format(after['enum']) if after \
             else 'falling through ends the run with exit 0'
+        if hold and index == hold['after'] and after:
+            falls['step_' + step['name']] += '; with {}, Step::{} and Step::{} run first' \
+                .format(HOLD_FLAG, hold['lead']['enum'], hold['enum'])
     return falls
 
 
@@ -890,7 +1207,7 @@ def fall_lines(text):
 
 
 def write_worksheet(produced, out, iface, document, machine, machine_doc,
-                    scenarios=None, steps=()):
+                    scenarios=None, steps=(), contracts=None, extra=()):
     """Write the worksheet. It carries no work, so it is rewritten every time.
 
     A bodies file holding only notes and empty sections is removed: it is the
@@ -902,7 +1219,7 @@ def write_worksheet(produced, out, iface, document, machine, machine_doc,
     there is no worksheet to write.
     """
     lines = worksheet_lines(produced, out, iface, document, machine, machine_doc,
-                            scenarios, steps)
+                            scenarios, steps, contracts, extra)
     if not lines:
         return None
     before, known = {}, None
@@ -919,9 +1236,47 @@ def write_worksheet(produced, out, iface, document, machine, machine_doc,
                   .format(name, after[name], before[name]))
     with open(WORKSHEET, 'w', encoding='utf-8', newline='\n') as handle:
         handle.write('\n'.join(lines).rstrip() + '\n')
+    if known is not None:
+        drop_removed_sections(known, kept_sections('\n'.join(lines), scenarios))
     if os.path.exists(BODIES) and worksheet_pristine(BODIES):
         os.remove(BODIES)
     return added
+
+
+def kept_sections(text, scenarios):
+    """The sections a body may still name: the worksheet's, and each expectation and
+    stop of the scenario file, filled or open."""
+    import fill_markers
+    kept = section_names(text)
+    if scenarios:
+        kept += list(fill_markers.expectations_of(scenarios)[0])
+    return kept
+
+
+def drop_removed_sections(known, kept):
+    """Remove from bodies.txt each section of a marker the replaced worksheet had and
+    this one lacks, and name every one removed."""
+    def bare(name):
+        return name.rpartition(':')[2]
+    gone = set(bare(name) for name in known) - set(bare(name) for name in kept)
+    if not gone or not os.path.exists(BODIES):
+        return
+    with open(BODIES, encoding='utf-8', errors='replace') as handle:
+        lines = handle.read().splitlines()
+    out, dropped, skipping = [], [], False
+    for line in lines:
+        if line.startswith('== '):
+            skipping = bare(line[3:].strip()) in gone
+            if skipping:
+                dropped.append(line[3:].strip())
+        if not skipping:
+            out.append(line)
+    if not dropped:
+        return
+    with open(BODIES, 'w', encoding='utf-8', newline='\n') as handle:
+        handle.write('\n'.join(out).rstrip('\n') + '\n')
+    print('  {}: removed {}, the body of a marker this design no longer has.'
+          .format(BODIES, ', '.join(dropped)))
 
 
 def fields_of(declared):
@@ -929,6 +1284,48 @@ def fields_of(declared):
     return [entry.get('Name')
             for entry in declared.findall('./FieldList/EnumEntry')
             if entry.get('Name')]
+
+
+def members_of(declared, space='', local=()):
+    """(name, type) of each field of one structure declaration, in document order.
+
+    A field type the same document declares is qualified with its space.
+    """
+    members = []
+    for field in declared.findall('./FieldList/Field'):
+        if not field.get('Name'):
+            continue
+        type_name = field.get('DataType') or ''
+        if space and type_name in local:
+            type_name = '{}::{}'.format(space, type_name)
+        members.append((field.get('Name'), type_name))
+    return members
+
+
+# The areg class each document container kind is generated as, from tools/schema/datatype.xml.
+CONTAINERS = {'Array': 'areg::ArrayList', 'LinkedList': 'areg::LinkedList',
+              'HashMap': 'areg::HashMap', 'Map': 'areg::OrderedMap',
+              'Pair': 'areg::KeyValuePair'}
+
+
+def container_of(declared, space='', local=()):
+    """The C++ spelling of one container declaration, or '' for a kind not in CONTAINERS."""
+    kind = (declared.findtext('Container') or '').strip()
+    if kind not in CONTAINERS:
+        return ''
+    args = []
+    for tag in ('BaseTypeKey', 'BaseTypeValue'):
+        name = (declared.findtext(tag) or '').strip()
+        if not name:
+            continue
+        if name in SCALARS:
+            name = SCALARS[name]
+        elif name in CLASSES:
+            name = CLASSES[name]
+        elif space and name in local:
+            name = '{}::{}'.format(space, name)
+        args.append(name)
+    return '{}<{}>'.format(CONTAINERS[kind], ', '.join(args))
 
 
 class Interface:
@@ -958,6 +1355,12 @@ class Interface:
         self.imported_types = []
         # The field names of every enumeration in reach, by every spelling of its type.
         self.enum_fields = {}
+        # (name, type) of each field of every structure in reach, by every spelling.
+        self.struct_fields = {}
+        # The C++ spelling of every container in reach, by every spelling of its type.
+        self.containers = {}
+        local = set(declared.get('Name') for declared in
+                    root.findall('./DataTypeList/DataType'))
         for declared in root.findall('./DataTypeList/DataType'):
             kind = (declared.get('Type') or '').lower()
             type_name = declared.get('Name')
@@ -968,6 +1371,10 @@ class Interface:
             if kind in ('enumeration', 'enumerate'):
                 self.by_value.add(type_name)
                 self.enum_fields[type_name] = fields_of(declared)
+            elif kind == 'structure':
+                self.struct_fields[type_name] = members_of(declared)
+            elif kind == 'container':
+                self.containers[type_name] = container_of(declared, self.name, local)
 
         self.constants = []
         for constant in root.findall('./ConstantList/Constant'):
@@ -1010,13 +1417,24 @@ class Interface:
 
         # Where each action runs: "<stimulus> in <state>", one per transition.
         self.runs_on = {}
+        # Action -> (parameter, attribute, new value, place): an argument read after "set".
+        self.set_first = {}
         for state in root.iter('State'):
             for move in state.findall('./TransitionList/Transition'):
                 if not move.get('Stimulus'):
                     continue
+                where = '{} in {}'.format(move.get('Stimulus'), state.get('Name'))
+                sets = {}
+                for change in move.iter('AttributeSet'):
+                    sets[change.get('Attribute')] = (change.findtext('Expression') or
+                                                     change.get('Value') or '').strip()
                 for call in move.iter('ActionCall'):
-                    where = '{} in {}'.format(move.get('Stimulus'), state.get('Name'))
                     self.runs_on.setdefault(call.get('Action'), []).append(where)
+                    for argument in call.iter('Argument'):
+                        if argument.get('Source') == 'Attribute' and argument.get('Value') in sets:
+                            self.set_first.setdefault(call.get('Action'), []).append(
+                                (argument.get('Name'), argument.get('Value'),
+                                 sets[argument.get('Value')], where))
 
         self.attributes = []
         for attribute in root.findall('./AttributeList/Attribute'):
@@ -1034,15 +1452,49 @@ class Interface:
                        if location.get('Alias') and location.get('Name')]
         self.imports = []
 
-    def load_imports(self):
-        """Reads every hosted machine: (its Interface, its document, its hosting states)."""
+    def load_imports(self, hosts=()):
+        """Reads every hosted machine: (its Interface, its document, its hosting states),
+        each with the machines it hosts in turn."""
         self.imports = []
+        hosts = hosts + (os.path.abspath(self.path),)
         for alias, document, states in self.hosted:
             if not os.path.isfile(document):
                 fail('{} hosts machine {} from {}, and there is no such file. The path is '
                      'spelled from the project root.'.format(self.path, alias, document))
-            self.imports.append((Interface(document), document, states))
+            if os.path.abspath(document) in hosts:
+                fail('{} hosts machine {} from {}, which hosts {} in turn.'.format(
+                    self.path, alias, document, self.path))
+            inner = Interface(document)
+            inner.load_imports(hosts)
+            self.imports.append((inner, document, states))
         return self.imports
+
+    def all_imports(self):
+        """Every machine hosted at any depth, once each: (Interface, document, the
+        states hosting it)."""
+        merged = {}
+        for inner, document, states in self.imports:
+            for entry in [(inner, document, states)] + inner.all_imports():
+                held = merged.setdefault(os.path.normpath(entry[1]), (entry[0], entry[1], []))
+                held[2].extend(state for state in entry[2] if state not in held[2])
+        return list(merged.values())
+
+    def hosting(self):
+        """By hosted document, at any depth: "<host> in <its hosting states>" per host."""
+        places = {}
+        for inner, document, states in self.imports:
+            held = places.setdefault(os.path.normpath(document), [])
+            held.append('{} in {}'.format(self.name, ', '.join(states)))
+            for key, deeper in inner.hosting().items():
+                held = places.setdefault(key, [])
+                held.extend(place for place in deeper if place not in held)
+        return places
+
+    def hosted_instances(self):
+        """The hosted instances codegen.jar declares a handler for: one per hosting
+        state, and each instance's own in turn."""
+        return sum(len(states) * (1 + inner.hosted_instances())
+                   for inner, _, states in self.imports)
 
     def _params(self, method):
         result = []
@@ -1078,6 +1530,8 @@ class Interface:
             return
         overview = included.find('./Overview')
         space = overview.get('Name') if overview is not None else ''
+        local = set(declared.get('Name') for declared in
+                    included.findall('./DataTypeList/DataType'))
         for declared in included.findall('./DataTypeList/DataType'):
             type_name = declared.get('Name')
             if not type_name:
@@ -1092,6 +1546,10 @@ class Interface:
                 if kind in ('enumeration', 'enumerate'):
                     self.by_value.add(spelling)
                     self.enum_fields[spelling] = fields_of(declared)
+                elif kind == 'structure':
+                    self.struct_fields[spelling] = members_of(declared, space, local)
+                elif kind == 'container':
+                    self.containers[spelling] = container_of(declared, space, local)
 
     def cpp_type(self, type_name):
         """The C++ spelling of a document type, and how it is passed.
@@ -1360,12 +1818,10 @@ def handler_casts(machine):
     instance, in the order codegen.jar declared them."""
     casts = ['static_cast<{}ActionHandler &>(self())'.format(machine.name)]
     handlers = machine.generated().entries('handler')
-    if machine.imports and len(handlers) != sum(len(states) for _, _, states in
-                                               machine.imports):
-        fail('codegen.jar declared {} hosted handler(s) for {}, which hosts {} state(s). '
+    if machine.imports and len(handlers) != machine.hosted_instances():
+        fail('codegen.jar declared {} hosted handler(s) for {}, which hosts {} instance(s). '
              'This is a defect of the tool, not of the document.'.format(
-                 len(handlers), machine.path,
-                 sum(len(states) for _, _, states in machine.imports)))
+                 len(handlers), machine.path, machine.hosted_instances()))
     for entry in handlers.values():
         casts.append('static_cast<{} &>(self())'.format(entry['returns']['call']))
     return casts
@@ -1374,7 +1830,7 @@ def handler_casts(machine):
 def hosted_bases(machine):
     """The action handler class of each machine this one hosts, once each."""
     return list(dict.fromkeys('{}ActionHandler'.format(inner.name)
-                              for inner, _, _ in machine.imports))
+                              for inner, _, _ in machine.all_imports()))
 
 
 def hosted_overrides(machine, indent=4):
@@ -1385,7 +1841,7 @@ def hosted_overrides(machine, indent=4):
                 if machine.generated().has('condition', name))
     pad = ' ' * indent
     lines = []
-    for inner, _, states in machine.imports:
+    for inner, _, states in machine.all_imports():
         where = '{} runs it, in {}'.format(inner.name, ', '.join(states))
         for name, params, returns in inner.conditions:
             if not inner.generated().has('condition', name):
@@ -1398,8 +1854,7 @@ def hosted_overrides(machine, indent=4):
                                                  spelled,
                                                  inner.generated_params('condition', name)),
                       pad + '{',
-                      marker('condition_' + name, 'answer the question this guard asks; '
-                             + where, indent + 4),
+                      marker('condition_' + name, ASK + '; ' + where, indent + 4),
                       placeholder('{}    return {};'.format(pad, default_expr(inner, returns))),
                       pad + '}',
                       '']
@@ -1411,10 +1866,20 @@ def hosted_overrides(machine, indent=4):
             lines += ['{}void {}({}) final'.format(pad, spelled,
                                                    inner.generated_params('action', name)),
                       pad + '{',
-                      marker(spelled, 'perform the effect; ' + where, indent + 4),
+                      marker(spelled, 'perform the effect; ' + where + set_first(inner, name),
+                             indent + 4),
                       pad + '}',
                       '']
     return lines
+
+
+def request_failed_report(name, who=None):
+    """The lines a request_<name>_failed handler logs its reason with; who is a C string
+    expression naming the client, or None."""
+    return ['        GLOBAL_ERR("{}request {} failed, reason %s%s"{}, areg::as_string(reason),'
+            .format('%s: ' if who else '', name, ', ' + who if who else ''),
+            '                   (reason == areg::ResultType::RequestBusy ? ": the provider '
+            'has not answered the previous {}" : ""));'.format(name)]
 
 
 def forward_calls(machine):
@@ -1443,7 +1908,7 @@ def machine_files(iface, class_name, include_root):
               '#include "{}/{}FSM.hpp"'.format(include_root, iface.name)]
     header += ['#include "{}/{}ActionHandler.hpp"'.format(
         os.path.dirname(document).replace('\\', '/'), inner.name)
-        for inner, document, _ in iface.imports]
+        for inner, document, _ in iface.all_imports()]
     header += ['',
               'class {} final : public    areg::Component'.format(class_name),
               '{}, protected {}ActionHandler'.format(' ' * (len(class_name) + 13), iface.name)]
@@ -1591,6 +2056,10 @@ def contract_lines(iface, document):
         # and a condition are overrides on the component itself.
         out.append('  the machine object is mFsm in a generated provider: a "call" '
                    'below is mFsm.<name>(...)')
+        out.append('  an action never calls a trigger of this machine: the transition is not '
+                   'finished. send_event() queues an event instead')
+        if iface.imports:
+            out.append('  a machine it hosts, and the one hosting it, count as this machine')
         # Every name below is read from what codegen.jar generated for the document.
         for name, params in iface.triggers:
             out.append('  call     bool {}({})'.format(iface.spell('trigger', name),
@@ -1614,8 +2083,10 @@ def contract_lines(iface, document):
                 iface.generated().returns('condition', name), iface.spell('condition', name),
                 iface.generated_params('condition', name)))
         out += type_lines(iface)
-        for inner, inner_doc, states in iface.imports:
-            out += hosted_contract(iface, inner, inner_doc, states)
+        places = iface.hosting()
+        for inner, inner_doc, _ in iface.all_imports():
+            out += hosted_contract(inner, inner_doc,
+                                   '; '.join(places[os.path.normpath(inner_doc)]))
         return out
     if document.lower().endswith('.dtml'):
         out.append('classes:   none. {} is the namespace the types below are spelled in'
@@ -1633,8 +2104,7 @@ def contract_lines(iface, document):
                    .format(iface.spell('response', name),
                            iface.generated_params('response', name)))
     for name, params in iface.broadcasts:
-        out.append('  provider calls {}({}); consumer subscribes with '
-                   '{}(true)'
+        out.append('  provider calls {}({}); consumer overrides it, subscribed by {}(true)'
                    .format(iface.spell('broadcast', name),
                            iface.generated_params('broadcast', name),
                            iface.spell('broadcast', name, 'notify')))
@@ -1642,10 +2112,11 @@ def contract_lines(iface, document):
         spelled = iface.spell('attribute', name, 'get')
         cpp = iface.cpp_type(kind)[0]
         read = iface.passed_as(kind)
-        out.append('  provider calls {}({}); consumer subscribes with '
-                   '{}(true)'
+        out.append('  provider calls {}({}); consumer overrides {}({}), subscribed by {}(true)'
                    .format(iface.spell('attribute', name, 'set'),
                            iface.attribute_setter(kind, False),
+                           iface.spell('attribute', name, 'on_update'),
+                           iface.generated_params('attribute', name, 'on_update'),
                            iface.spell('attribute', name, 'notify')))
         # The last value is readable at any time, on both sides, and the two
         # readers do not have the same signature. Reading the generated header to
@@ -1653,6 +2124,9 @@ def contract_lines(iface, document):
         out.append('  provider reads {t} & {n}(); consumer reads {r} {n}('
                    'areg::DataState & state)'
                    .format(t=cpp, r=read, n=spelled))
+        if spelled == 'state':
+            out.append('  in an update_ section its parameter state hides this getter: '
+                       'call this->state(ds)')
     if list(iface.attributes):
         out.append('  Only a set_ call changes an attribute and notifies; a consumer value '
                    'holds only')
@@ -1670,9 +2144,9 @@ def contract_lines(iface, document):
     return out + type_lines(iface)
 
 
-def hosted_contract(host, inner, document, states):
-    """What a provider owes a machine its own machine hosts."""
-    out = ['document:  {}, hosted by {} in {}'.format(document, host.name, ', '.join(states)),
+def hosted_contract(inner, document, where):
+    """What a provider owes a machine its own machine hosts, at any depth."""
+    out = ['document:  {}, hosted by {}'.format(document, where),
            '  each hosting state runs its own instance, started afresh on entry; its',
            '  attributes keep their last value. One override below serves every instance.',
            '  A trigger of it is called on mFsm under the forwarded names above.']
@@ -1703,25 +2177,34 @@ def type_lines(iface):
     """
     out = []
     for path, space, type_name, kind in iface.imported_types:
-        out.append(type_line(space, type_name, kind, ' (from {})'.format(path)))
+        spelling = '{}::{}'.format(space, type_name) if space else type_name
+        out.append(type_line(space, type_name, kind, ' (from {})'.format(path),
+                             iface.struct_fields.get(spelling, []),
+                             iface.containers.get(spelling, '')))
     for type_name, kind in iface.types:
-        out.append(type_line(iface.name, type_name, kind, ''))
+        out.append(type_line(iface.name, type_name, kind, '',
+                             iface.struct_fields.get(type_name, []),
+                             iface.containers.get(type_name, '')))
     for name, kind in iface.constants:
         out.append('  constant {}::{} of type {}'.format(iface.name, name, kind))
     return out
 
 
-def type_line(space, type_name, kind, origin):
-    """One declared type: its C++ spelling, and what the generator gives it."""
+def type_line(space, type_name, kind, origin, fields=(), container=''):
+    """One declared type: its C++ spelling, its fields, and what the generator gives it."""
     scope = '{}::'.format(space) if space else ''
     full = scope + type_name
     if kind in ('enumeration', 'enumerate'):
-        return ('  enum class {}, with const char * {}as_string({} value){}'
-                .format(full, scope, full, origin))
+        return ('  enum class {}, with const char * {}as_string({} value), the value\'s own '
+                'name as declared{}'.format(full, scope, full, origin))
     if kind == 'structure':
-        return '  struct {}, with a field-by-field == and <<{}'.format(full, origin)
+        named = ', '.join(field for field, _ in fields)
+        return '  struct {}, public fields {}, with a field-by-field == and <<{}'.format(
+            full, named or 'none', origin)
     if kind == 'imported':
         return '  {} names the type your own header declares{}'.format(full, origin)
+    if container:
+        return '  {} is {}{}'.format(full, container, origin)
     return '  {} is an alias to an areg container{}'.format(full, origin)
 
 
@@ -1738,6 +2221,56 @@ def default_expr(iface, type_name):
     return '{}{{}}'.format(iface.cpp_type(type_name)[0])
 
 
+def pooled_timer_helpers(timer):
+    """The start and stop helpers of a timer with instances, one instance per key."""
+    member, size = timer['member'], timer['instances']
+    return ['    //! Starts a free {} instance for key: it fires once, {} ms after the call; an ms '
+            'passed replaces the {}.'.format(timer['name'], timer['timeout'], timer['timeout']),
+            '    //! Returns false when all {} run: nothing is started.'.format(size),
+            '    inline bool {}(uint32_t key, uint32_t ms = {})'.format(timer['start'],
+                                                                     timer['timeout']),
+            '    {',
+            '        for (uint32_t i = 0; i < {}; ++i)'.format(size),
+            '        {',
+            '            if ({}Busy[i] == false)'.format(member),
+            '            {',
+            '                {0}Busy[i] = true;'.format(member),
+            '                {0}Key[i] = key;'.format(member),
+            '                {0}[i].start_timer(ms, static_cast<areg::DispatcherThread &>'
+            '(master_thread()), 1);'.format(member),
+            '                return true;',
+            '            }',
+            '        }',
+            '',
+            '        return false;',
+            '    }',
+            '',
+            '    //! Stops the {} instance running for key; safe when none does.'
+            .format(timer['name']),
+            '    inline void {}(uint32_t key)'.format(timer['stop']),
+            '    {',
+            '        for (uint32_t i = 0; i < {}; ++i)'.format(size),
+            '        {',
+            '            if ({0}Busy[i] && ({0}Key[i] == key))'.format(member),
+            '            {',
+            '                {0}[i].stop_timer();'.format(member),
+            '                {0}Busy[i] = false;'.format(member),
+            '            }',
+            '        }',
+            '    }',
+            '',
+            '    //! Stops every {} instance.'.format(timer['name']),
+            '    inline void {}()'.format(timer['stop']),
+            '    {',
+            '        for (uint32_t i = 0; i < {}; ++i)'.format(size),
+            '        {',
+            '            {0}[i].stop_timer();'.format(member),
+            '            {0}Busy[i] = false;'.format(member),
+            '        }',
+            '    }',
+            '']
+
+
 # The headers a class that declares a timer needs.
 TIMER_INCLUDES = ['#include "areg/component/Timer.hpp"',
                   '#include "areg/component/TimerConsumer.hpp"']
@@ -1747,16 +2280,58 @@ def timer_includes(class_lines):
     """TIMER_INCLUDES when the emitted class names an areg timer type, else nothing."""
     return TIMER_INCLUDES if any('areg::Timer' in line for line in class_lines) else []
 
-def provider_class(iface, cls, machine=None, timers=()):
+# The provider's own lifecycle sections, and the includes they need.
+STARTUP_HINT = ('what this provider starts before its service is announced, comThread its '
+                'thread, or one // line; a worker thread is a "workers" entry of the service '
+                'in design.json')
+STARTUP_HINT_WORKERS = ('what this provider starts before its service is announced, comThread '
+                        'its thread, or one // line; its workers start and stop on their own')
+STARTUP_HINT_MANUAL = ('what this provider starts before its service is announced, comThread '
+                       'its thread, or one // line; {} starts a worker where a body calls it, '
+                       'and the generated shutdown stops it')
+SHUTDOWN_HINT = 'what it stops before the service stops, or one // line'
+# Added to both hints when the provider owns a machine.
+STARTUP_HINT_MACHINE = ('; the generated lines after this body call mFsm.init_fsm(&comThread), '
+                        'and a second call asserts')
+SHUTDOWN_HINT_MACHINE = '; the generated lines after this body call mFsm.release_fsm()'
+INCLUDES_HINT = 'the headers of your own files this provider uses, or one // line'
+
+
+def includes_marker(state_slot, what):
+    """The includes marker of a header beside its state_slot, in a design with headers
+    of its own."""
+    return marker(state_slot.replace('_state', '_includes'),
+                  INCLUDES_HINT.replace('provider', what), 0)
+
+
+def own_headers(specs):
+    """The folders under src/ holding a header design.json \"sources\" names, as 'dir/'."""
+    import gen_docs
+    folders = set()
+    for path in specs or []:
+        spec, _skipped = gen_docs.load_spec(path)
+        for entry in spec.get('sources') or []:
+            name = str(entry.get('file', '')) if isinstance(entry, dict) else ''
+            if name.endswith('.hpp'):
+                folders.add(name.rsplit('/', 1)[0] + '/' if '/' in name else '')
+    return folders
+
+
+def provider_class(iface, cls, machine=None, timers=(), workers=()):
     """The provider component, with every request answered.
 
     Given a machine, the same component owns it: the action handler is a base, the
     machine is a member, and every action is declared here. A separate host component
     is what the pair used to need, and merging them is what removes it. Given timers,
     it is their consumer: each has a member, a start and a stop helper, and a section
-    in process_timer.
+    in process_timer. Given workers, it owns each: the consumer, its thread once started,
+    a sink per event to the provider, and a send helper per event to the worker.
     """
     pad = ' ' * (len(cls) + 13)
+    inbound = [(worker, event) for worker in workers for event in worker['events']
+               if event['to'] == 'provider']
+    outbound = [(worker, event) for worker in workers for event in worker['events']
+                if event['to'] == 'worker']
     lines = ['class {} final : public    areg::Component'.format(cls),
              '{}, protected {}ProviderBase'.format(pad, iface.name)]
     if machine:
@@ -1764,21 +2339,39 @@ def provider_class(iface, cls, machine=None, timers=()):
         lines += ['{}, protected {}'.format(pad, base) for base in hosted_bases(machine)]
     if timers:
         lines.append('{}, private   areg::TimerConsumer'.format(pad))
-    lines += ['{',
-              'public:',
+    lines.append('{')
+    lines += ['    friend class {}<{}>;'.format(event['sink'], cls) for _, event in inbound]
+    lines += ['public:',
               '    {}(const areg::ComponentEntry & entry, areg::ComponentThread & owner)'.format(cls),
               '        : areg::Component(entry, owner)',
               '        , {}ProviderBase(static_cast<areg::Component &>(*this))'.format(iface.name)]
     if machine:
         lines.append('        , {}ActionHandler()'.format(machine.name))
         lines += ['        , {}()'.format(base) for base in hosted_bases(machine)]
-        lines.append('        , mFsm({})'.format(', '.join(handler_casts(machine))))
     if timers:
         lines.append('        , areg::TimerConsumer()')
-        for timer in timers:
+    if machine:
+        lines.append('        , mFsm({})'.format(', '.join(handler_casts(machine))))
+    for timer in timers:
+        if timer['instances'] > 1:
+            lines.append('        , {}{{ {} }}'.format(timer['member'], ', '.join(
+                'areg::Timer(static_cast<areg::TimerConsumer &>(self()), "{}_{}")'
+                .format(timer['name'], index) for index in range(timer['instances']))))
+        else:
             lines.append('        , {}(static_cast<areg::TimerConsumer &>(self()), "{}")'
                          .format(timer['member'], timer['name']))
+    lines += ['        , m{}(self())'.format(event['sink']) for _, event in inbound]
+    automatic = [worker for worker in workers if not worker['manual']]
+    manual = [worker for worker in workers if worker['manual']]
+    for worker in workers:
+        if worker['manual']:
+            lines.append('        , m{0}(entry.mRoleName + ":{0}", owner)'.format(worker['name']))
+        else:
+            lines.append('        , m{}(entry.mWorkerThreads[{}].mConsumerName, owner)'
+                         .format(worker['name'], automatic.index(worker)))
     lines.append('    {')
+    lines += ['        {}::add_listener(m{}, static_cast<areg::DispatcherThread &>(owner));'
+              .format(event['event'], event['sink']) for _, event in inbound]
     if iface.attributes:
         lines.append(marker('initial_values', 'the value each attribute starts with; an '
                             'attribute is invalid until it is set once'))
@@ -1788,27 +2381,91 @@ def provider_class(iface, cls, machine=None, timers=()):
     lines += ['    }', '', 'protected:']
 
     started = [timer for timer in timers if timer['autostart']]
-    if machine or started or timers:
-        lines += ['    void startup_component(areg::ComponentThread & comThread) final',
-                  '    {',
-                  '        areg::Component::startup_component(comThread);']
-        if machine:
-            lines.append('        mFsm.init_fsm(&comThread);')
-        lines += ['        {}();'.format(timer['start']) for timer in started]
-        lines += ['    }',
-                  '',
-                  '    void shutdown_component(areg::ComponentThread & comThread) final',
+    lines += ['    void startup_component(areg::ComponentThread & comThread) final',
+              '    {',
+              marker('startup', (STARTUP_HINT_WORKERS if automatic else
+                                 STARTUP_HINT_MANUAL.format(', '.join(
+                                     '{}()'.format(worker['start']) for worker in manual))
+                                 if manual else STARTUP_HINT)
+                     + (STARTUP_HINT_MACHINE if machine else '')),
+              '        areg::Component::startup_component(comThread);']
+    if machine:
+        lines.append('        mFsm.init_fsm(&comThread);')
+    lines += ['        {}();'.format(timer['start']) for timer in started]
+    lines += ['    }',
+              '',
+              '    void shutdown_component(areg::ComponentThread & comThread) final',
+              '    {',
+              marker('shutdown', SHUTDOWN_HINT + (SHUTDOWN_HINT_MACHINE if machine else ''))]
+    for timer in timers:
+        lines.append('        {}();'.format(timer['stop']) if timer['instances'] > 1
+                     else '        {}.stop_timer();'.format(timer['member']))
+    lines += ['        {}();'.format(worker['stop']) for worker in manual]
+    for worker in automatic:
+        if any(event['to'] == 'worker' for event in worker['events']):
+            lines += ['        if (m{0}Thread != nullptr)'.format(worker['name']),
+                      '            m{0}.remove_listeners(*m{0}Thread);'.format(worker['name'])]
+    lines += ['        {}::remove_listener(m{}, static_cast<areg::DispatcherThread &>(comThread));'
+              .format(event['event'], event['sink']) for _, event in inbound]
+    if machine:
+        lines.append('        mFsm.release_fsm();')
+    lines += ['        areg::Component::shutdown_component(comThread);']
+    lines += ['        m{}Thread = nullptr;'.format(worker['name']) for worker in automatic]
+    lines += ['    }',
+              '']
+    if automatic:
+        lines += ['    areg::WorkerThreadConsumer * worker_thread_consumer(const areg::String & '
+                  'consumerName, const areg::String & workerThreadName) final',
                   '    {']
-        lines += ['        {}.stop_timer();'.format(timer['member']) for timer in timers]
-        if machine:
-            lines.append('        mFsm.release_fsm();')
-        lines += ['        areg::Component::shutdown_component(comThread);',
+        for worker in automatic:
+            lines += ['        if (consumerName == m{}.consumer_name())'.format(worker['name']),
+                      '            return &m{};'.format(worker['name'])]
+        lines += ['        return areg::Component::worker_thread_consumer(consumerName, '
+                  'workerThreadName);',
+                  '    }',
+                  '',
+                  '    void notify_thread_started(areg::WorkerThreadConsumer & consumer, '
+                  'areg::WorkerThread & workerThread) final',
+                  '    {']
+        for index, worker in enumerate(automatic):
+            lines += ['        {}if (&consumer == &m{})'.format('' if index == 0 else 'else ',
+                                                             worker['name']),
+                      '        {',
+                      '            m{}Thread = &workerThread;'.format(worker['name'])]
+            if any(event['to'] == 'worker' for event in worker['events']):
+                lines.append('            m{}.add_listeners(workerThread);'.format(worker['name']))
+            lines.append('        }')
+        lines += ['    }',
+                  '']
+    for worker, event in inbound:
+        lines += ['    void {}({})'.format(event['slot'], worker_args(iface, event['params'])[0]),
+                  '    {',
+                  marker(event['slot'], 'what the provider does with {} from {}, on its own '
+                         'thread'.format(event['name'], worker['name'])),
                   '    }',
                   '']
     if timers:
         lines += ['    void process_timer(areg::Timer & timer) final',
                   '    {']
-        for index, timer in enumerate(timers):
+        pooled = [timer for timer in timers if timer['instances'] > 1]
+        single = [timer for timer in timers if timer['instances'] == 1]
+        for timer in pooled:
+            lines += ['        for (uint32_t i = 0; i < {}; ++i)'.format(timer['instances']),
+                      '        {',
+                      '            if (&timer == &{}[i])'.format(timer['member']),
+                      '            {',
+                      '                {}Busy[i] = false;'.format(timer['member']),
+                      '                [[maybe_unused]] const uint32_t key = {}Key[i];'
+                      .format(timer['member']),
+                      marker(timer['slot'], 'what happens when {} fires for key, the one {}() '
+                             'took; a request answered here passes as key its session, from '
+                             'unblock_current_request(), and answers with if '
+                             '(prepare_response(key)) response_<name>(...)'
+                             .format(timer['name'], timer['start']), 16),
+                      '                return;',
+                      '            }',
+                      '        }']
+        for index, timer in enumerate(single):
             lines += ['        {}if (&timer == &{})'.format('' if index == 0 else 'else ',
                                                           timer['member']),
                       '        {',
@@ -1853,8 +2510,7 @@ def provider_class(iface, cls, machine=None, timers=()):
                 machine.spell('condition', name),
                 machine.generated_params('condition', name)))
             lines += ['    {',
-                      marker('condition_' + name,
-                             'answer the question this guard asks'),
+                      marker('condition_' + name, ASK),
                       placeholder('        return {};'
                                   .format(default_expr(machine, returns))),
                       '    }',
@@ -1868,30 +2524,74 @@ def provider_class(iface, cls, machine=None, timers=()):
             lines.append('    void {}({}) final'.format(spelled,
                                                         machine.generated_params('action', name)))
             lines += ['    {',
-                      marker(spelled, 'perform the effect' + runs_on(machine, name)),
+                      marker(spelled, 'perform the effect' + runs_on(machine, name)
+                             + set_first(machine, name) + answers_on(machine, iface, name)),
                       '    }',
                       '']
         lines += hosted_overrides(machine)
 
     for timer in timers:
+        if timer['instances'] > 1:
+            lines += pooled_timer_helpers(timer)
+            continue
         every = 'every {} ms until stopped'.format(timer['timeout']) \
             if timer['count'].endswith('CONTINUOUSLY') \
             else 'once, {} ms after the call'.format(timer['timeout']) \
             if timer['count'] == '1' \
             else '{} times, every {} ms'.format(timer['count'], timer['timeout'])
-        lines += ['    //! Starts {} again from now: it fires {}.'.format(timer['name'], every),
-                  '    inline void {}()'.format(timer['start']),
+        lines += ['    //! Starts {} again from now: it fires {}; an ms passed replaces the {}.'
+                  .format(timer['name'], every, timer['timeout']),
+                  '    inline void {}(uint32_t ms = {})'.format(timer['start'], timer['timeout']),
                   '    {',
                   '        {}.stop_timer();'.format(timer['member']),
-                  '        {0}.start_timer({1}, static_cast<areg::DispatcherThread &>'
-                  '(master_thread()), {2});'.format(timer['member'], timer['timeout'],
-                                                    timer['count']),
+                  '        {0}.start_timer(ms, static_cast<areg::DispatcherThread &>'
+                  '(master_thread()), {1});'.format(timer['member'], timer['count']),
                   '    }',
                   '',
                   '    //! Stops {}; safe whether or not it runs.'.format(timer['name']),
                   '    inline void {}()'.format(timer['stop']),
                   '    {',
                   '        {}.stop_timer();'.format(timer['member']),
+                  '    }',
+                  '']
+    for worker in manual:
+        listens = any(event['to'] == 'worker' for event in worker['events'])
+        lines += ['    //! Starts {}\'s thread; false when it runs already or did not start.'
+                  .format(worker['name']),
+                  '    inline bool {}()'.format(worker['start']),
+                  '    {',
+                  '        if (m{}Thread != nullptr)'.format(worker['name']),
+                  '            return false;',
+                  '        m{0}Thread = create_worker_thread(m{0}.consumer_name(), m{0}, '
+                  'master_thread());'.format(worker['name'])]
+        if listens:
+            lines += ['        if (m{}Thread != nullptr)'.format(worker['name']),
+                      '            m{0}.add_listeners(*m{0}Thread);'.format(worker['name'])]
+        lines += ['        return (m{}Thread != nullptr);'.format(worker['name']),
+                  '    }',
+                  '',
+                  '    //! Releases {0}, stops its thread and waits until its current handler '
+                  'returns; {1}() then starts a new one.'.format(worker['name'], worker['start']),
+                  '    inline void {}()'.format(worker['stop']),
+                  '    {',
+                  '        if (m{}Thread == nullptr)'.format(worker['name']),
+                  '            return;',
+                  '        m{}.release();'.format(worker['name'])]
+        if listens:
+            lines.append('        m{0}.remove_listeners(*m{0}Thread);'.format(worker['name']))
+        lines += ['        m{}Thread = nullptr;'.format(worker['name']),
+                  '        delete_worker_thread(m{}.consumer_name());'.format(worker['name']),
+                  '    }',
+                  '']
+    for worker, event in outbound:
+        signature, init = worker_args(iface, event['params'])
+        lines += ['    //! Sends {} to {}, whose on_{} runs on its thread; false before it '
+                  'started.'.format(event['name'], worker['name'], event['name']),
+                  '    inline bool send_{}({})'.format(event['name'], signature),
+                  '    {',
+                  '        return (m{0}Thread != nullptr) && {1}::send_event({2}{3}, '
+                  'static_cast<areg::DispatcherThread &>(*m{0}Thread));'
+                  .format(worker['name'], event['event'], event['data'], init),
                   '    }',
                   '']
     lines += ['private:',
@@ -1903,9 +2603,27 @@ def provider_class(iface, cls, machine=None, timers=()):
         lines += ['    {}FSM  mFsm;    //!< The state machine this component drives.'
                   .format(machine.name), '']
     for timer in timers:
-        lines += ['    areg::Timer {};    //!< {}'.format(
-            timer['member'], timer['description'] or 'The timer "{}".'.format(timer['name'])),
+        count = '[{}]'.format(timer['instances']) if timer['instances'] > 1 else ''
+        lines += ['    areg::Timer {}{};    //!< {}'.format(
+            timer['member'], count,
+            timer['description'] or 'The timer "{}".'.format(timer['name'])),
             '']
+        if count:
+            lines += ['    uint32_t {}Key{}{{}};    //!< The key each instance runs for.'
+                      .format(timer['member'], count),
+                      '',
+                      '    bool {}Busy{}{{}};    //!< True while an instance runs.'
+                      .format(timer['member'], count),
+                      '']
+    for worker, event in inbound:
+        lines += ['    {}<{}> m{};    //!< Receives {} from {} on this thread.'.format(
+            event['sink'], cls, event['sink'], event['name'], worker['name']), '']
+    for worker in workers:
+        lines += ['    {0} m{0};    //!< The worker thread consumer {0}.'.format(worker['name']),
+                  '',
+                  '    areg::WorkerThread * m{}Thread{{ nullptr }};    //!< Its thread, once it started.'
+                  .format(worker['name']),
+                  '']
     lines += ['    {}() = delete;'.format(cls),
               '    AREG_NOCOPY_NOMOVE({});'.format(cls),
               '};']
@@ -1928,8 +2646,22 @@ def pascal(name):
     return ''.join(part[:1].upper() + part[1:] for part in name.split('_') if part)
 
 
+# The Step values the driver declares itself.
+STEP_SENTINELS = ('Start', 'Done')
+
+
+def step_enum(name):
+    """The Step value of a step: its name in PascalCase, with "Step" added to Start or Done."""
+    value = pascal(name)
+    return value + 'Step' if value.lower() in (s.lower() for s in STEP_SENTINELS) else value
+
+
 # The document types whose values are written in C++ as a quoted literal.
 TEXT_TYPES = ('String', 'WideString')
+
+# A text value spelt as a C++ string constructor: String("bolt"), areg::String{"bolt"}.
+TEXT_CONSTRUCTOR = re.compile(
+    r'^\s*(?:(?:areg|std)::)?(?:W?String|w?string)\s*[({]\s*("(?:[^"\\]|\\.)*")\s*[)}]\s*$')
 
 
 def cpp_value(value, type_name=None, iface=None, where=''):
@@ -1942,11 +2674,18 @@ def cpp_value(value, type_name=None, iface=None, where=''):
     """
     if isinstance(value, bool):
         return 'true' if value else 'false'
+    if isinstance(value, (dict, list)):
+        fail('{} gives {} for a "{}": a value is a number, a text or an enumeration '
+             'field, and "raw:<c++>" passes C++ through'
+             .format(where or 'a step', json.dumps(value), type_name))
     text = str(value)
     for prefix in ('raw:', 'expr:'):
         if text.startswith(prefix):
             return text[len(prefix):]
     if type_name in TEXT_TYPES and isinstance(value, str):
+        constructed = TEXT_CONSTRUCTOR.match(text)
+        if constructed:
+            return constructed.group(1)
         if len(text) > 1 and text.startswith('"') and text.endswith('"'):
             return text
         return '"{}"'.format(text.replace('\\', '\\\\').replace('"', '\\"'))
@@ -1982,7 +2721,7 @@ def enum_value(text, type_name, iface, where):
 def driver_of(specs, iface):
     """The driver settings the specs declare for this service, every key present."""
     import gen_docs
-    settings = dict(gen_docs.DRIVER_DEFAULTS)
+    settings = gen_docs.driver_of({})
     for path in specs:
         spec, _skipped = gen_docs.load_spec(path)
         for entry in spec.get('interfaces') or []:
@@ -2000,7 +2739,7 @@ def timers_of(specs, iface):
     """The timers the specs give this service's provider, in declaration order.
 
     Each is a dict: name, member, slot, start and stop (helper names), timeout (ms),
-    count (C++ text) and autostart.
+    count (C++ text), autostart and instances (more than 1: one timer per key).
     """
     import gen_docs
     declared = []
@@ -2019,8 +2758,228 @@ def timers_of(specs, iface):
                        'count': 'areg::TimerBase::CONTINUOUSLY' if repeat == 0
                        else str(repeat),
                        'autostart': bool(entry.get('start')),
+                       'instances': entry.get('instances', 1),
                        'description': entry.get('description') or ''})
     return timers
+
+
+def workers_of(specs, iface):
+    """The worker threads the specs give this service's provider, in declaration order.
+
+    Each is a dict: name (its class), slot (its state section), tick (its timer section,
+    or None), period (ms or None), description, and events, each a dict: name, to
+    ('provider' or 'worker'), params [(name, type)], data, event, consumer and sink (the
+    C++ names), slot (its on_ section). A worker with "start": false is manual: no model
+    entry, and start, stop and release name its two helpers and its release section.
+    """
+    import gen_docs
+    declared = []
+    for path in specs:
+        spec, _skipped = gen_docs.load_spec(path)
+        for entry in spec.get('interfaces') or []:
+            if isinstance(entry, dict) and entry.get('name') == iface.name:
+                declared = entry.get('workers') or []
+    workers = []
+    for entry in declared:
+        name = entry['name']
+        events = []
+        for event in entry.get('events') or []:
+            stem = name + pascal(event['name'])
+            events.append({'name': event['name'], 'to': event['to'],
+                           'params': [(p['name'], p['type']) for p in event.get('params') or []],
+                           'data': stem + 'Data', 'event': stem + 'Event',
+                           'consumer': stem + 'EventConsumer', 'sink': stem + 'Sink',
+                           'slot': 'on_' + event['name'],
+                           'description': event.get('description') or ''})
+        period = entry.get('period_ms')
+        manual = entry.get('start') is False
+        workers.append({'name': name, 'slot': snake(name) + '_state',
+                        'tick': snake(name) + '_tick' if period else None,
+                        'period': period, 'description': entry.get('description') or '',
+                        'events': events, 'manual': manual,
+                        'start': 'start_' + snake(name) if manual else None,
+                        'stop': 'stop_' + snake(name) if manual else None,
+                        'release': snake(name) + '_release' if manual else None})
+    return workers
+
+
+def worker_args(iface, params):
+    """The parameter list and the brace initialiser of one worker event's data."""
+    return (iface.signature(params).strip(),
+            '{{ {} }}'.format(', '.join(name for name, _ in params)) if params else '{}')
+
+
+def worker_prelude(iface, worker):
+    """What the worker header declares before the class: each event's data, the event,
+    and for each event to the provider, the sink the provider holds."""
+    lines = []
+    for event in worker['events']:
+        lines += ['//! What {} carries{}.'.format(
+                      event['name'], ' from {} to the provider'.format(worker['name'])
+                      if event['to'] == 'provider' else
+                      ' from the provider to {}'.format(worker['name'])),
+                  'struct {}'.format(event['data']), '{']
+        lines += ['    {} {}{{}};'.format(iface.cpp_type(type_name)[0], name)
+                  for name, type_name in event['params']]
+        lines += ['};', '',
+                  'AREG_DECLARE_EVENT({}, {}, {})'.format(event['data'], event['event'],
+                                                          event['consumer']), '']
+    for event in worker['events']:
+        if event['to'] != 'provider':
+            continue
+        call = ', '.join('data.' + name for name, _ in event['params'])
+        lines += ['//! Receives {} on the thread its listener was added for, and calls'
+                  .format(event['name']),
+                  '//! on_{}() of the owner there.'.format(event['name']),
+                  'template <class Owner>',
+                  'class {} final : public {}'.format(event['sink'], event['consumer']),
+                  '{',
+                  'public:',
+                  '    explicit {}(Owner & owner)'.format(event['sink']),
+                  '        : {}()'.format(event['consumer']),
+                  '        , mOwner(owner)',
+                  '    {   }',
+                  '',
+                  'protected:',
+                  '    void process_event(const {} & {}) final'.format(
+                      event['data'], 'data' if event['params'] else '/*data*/'),
+                  '    {{   mOwner.{}({}); }}'.format(event['slot'], call),
+                  '',
+                  'private:',
+                  '    Owner & mOwner;',
+                  '};', '']
+    return lines
+
+
+def worker_class(iface, worker):
+    """The worker thread consumer: its timer, the events it receives, and a helper per
+    event it sends to the provider."""
+    cls = worker['name']
+    inbound = [event for event in worker['events'] if event['to'] == 'worker']
+    outbound = [event for event in worker['events'] if event['to'] == 'provider']
+    pad = ' ' * (len(cls) + 13)
+    lines = ['class {} final : public    areg::WorkerThreadConsumer'.format(cls)]
+    if worker['period']:
+        lines.append('{}, private   areg::TimerConsumer'.format(pad))
+    lines += ['{}, protected {}'.format(pad, event['consumer']) for event in inbound]
+    lines += ['{',
+              'public:',
+              '    {}(const areg::String & name, areg::ComponentThread & owner)'.format(cls),
+              '        : areg::WorkerThreadConsumer(name)']
+    if worker['period']:
+        lines.append('        , areg::TimerConsumer()')
+    lines += ['        , {}()'.format(event['consumer']) for event in inbound]
+    lines.append('        , mOwner(owner)')
+    if worker['period']:
+        lines.append('        , mTick(static_cast<areg::TimerConsumer &>(self()), "{}Tick")'
+                     .format(cls))
+    lines += ['    {   }', '']
+    if worker['manual']:
+        lines += ['    //! Makes a handler of this worker that waits on an object of its own return.',
+                  '    void release()',
+                  '    {',
+                  marker(worker['release'], 'what makes a handler of {} that waits on an '
+                         'object of its own return (an areg::SyncEvent member, unsignaled and auto-reset by default, it lock()s on: '
+                         'set_signaled() here); {}() calls it on the provider\'s thread '
+                         'before it stops the thread, so it touches only what is safe across '
+                         'threads, or one // line when no handler waits'
+                         .format(cls, worker['stop'])),
+                  '    }',
+                  '']
+    if inbound:
+        for verb, call in (('Adds', 'add_listener'), ('Removes', 'remove_listener')):
+            lines += ['    //! {} the listener of every event this worker receives, for its thread.'
+                      .format(verb),
+                      '    inline void {}s(areg::WorkerThread & thread)'.format(call),
+                      '    {']
+            lines += ['        {}::{}(static_cast<{} &>(self()), static_cast<areg::DispatcherThread &>'
+                      '(thread));'.format(event['event'], call, event['consumer'])
+                      for event in inbound]
+            lines += ['    }', '']
+    lines += ['protected:']
+    if worker['period']:
+        lines += ['    void register_event_consumers(areg::WorkerThread & workThread, '
+                  'areg::ComponentThread & /*masterThread*/) final',
+                  '    {',
+                  '        mTick.start_timer({}, static_cast<areg::DispatcherThread &>(workThread), '
+                  'areg::TimerBase::CONTINUOUSLY);'.format(worker['period']),
+                  '    }',
+                  '',
+                  '    void unregister_event_consumers(areg::WorkerThread & /*workThread*/) final',
+                  '    {',
+                  '        mTick.stop_timer();',
+                  '    }',
+                  '',
+                  '    void process_timer(areg::Timer & timer) final',
+                  '    {',
+                  marker(worker['tick'], 'what {} does every {} ms on its own thread{}'.format(
+                      cls, worker['period'], ': read, then {} to the provider'.format(
+                          ' or '.join('send_{}(...)'.format(event['name']) for event in outbound))
+                      if outbound else '')),
+                  '    }',
+                  '']
+    for event in inbound:
+        call = ', '.join('data.' + name for name, _ in event['params'])
+        lines += ['    void process_event(const {} & {}) final'.format(
+                      event['data'], 'data' if event['params'] else '/*data*/'),
+                  '    {',
+                  '        {}({});'.format(event['slot'], call),
+                  '    }',
+                  '',
+                  '    void {}({})'.format(event['slot'], worker_args(iface, event['params'])[0]),
+                  '    {',
+                  marker(event['slot'], 'what {} does with {} from the provider, on its own '
+                         'thread'.format(cls, event['name'])),
+                  '    }',
+                  '']
+    for event in outbound:
+        signature, init = worker_args(iface, event['params'])
+        lines += ['    //! Sends {} to the provider, whose on_{} runs on its thread; false once it '
+                  'stopped listening.'.format(event['name'], event['name']),
+                  '    inline bool send_{}({})'.format(event['name'], signature),
+                  '    {',
+                  '        return {}::send_event({}{}, static_cast<areg::DispatcherThread &>(mOwner));'
+                  .format(event['event'], event['data'], init),
+                  '    }',
+                  '']
+    lines += ['private:',
+              '    //! This worker as a reference, for a member initialiser that takes one.',
+              '    inline {} & self()'.format(cls),
+              '    {   return (*this); }',
+              '',
+              '    areg::ComponentThread & mOwner;    //!< The provider\'s thread, where events to it go.',
+              '']
+    if worker['period']:
+        lines += ['    areg::Timer mTick;    //!< Fires every {} ms on this worker\'s thread.'
+                  .format(worker['period']), '']
+    lines += ['    {}() = delete;'.format(cls),
+              '    AREG_NOCOPY_NOMOVE({});'.format(cls),
+              '};']
+    return lines
+
+
+WORKER_INCLUDES = ['#include "areg/component/EventTemplate.hpp"',
+                   '#include "areg/component/WorkerThread.hpp"',
+                   '#include "areg/component/WorkerThreadConsumer.hpp"']
+
+
+def worker_files(iface, worker, include_root, own=False):
+    """The .hpp and .cpp of one worker thread consumer; own adds an includes marker."""
+    lines = worker_class(iface, worker)
+    includes = WORKER_INCLUDES + timer_includes(lines) + \
+        ['', '#include "{}/{}.hpp"'.format(include_root, iface.name)] + \
+        ([includes_marker(worker['slot'], 'worker')] if own else [])
+    return component_files(worker['name'], worker['description'] or
+                           'A worker thread of the {} provider.'.format(iface.name),
+                           includes, lines, worker['slot'], worker_prelude(iface, worker),
+                           state_hint='the members this worker keeps between its calls, '
+                                      'or one // line saying none is needed')
+
+
+def worker_registration(workers, pad):
+    """The model lines that declare each worker thread of one provider component."""
+    return [pad + 'REGISTER_WORKER_THREAD("{0}Thread", "{0}")'.format(worker['name'])
+            for worker in workers if not worker['manual']]
 
 
 def awaitable(iface):
@@ -2038,11 +2997,13 @@ def awaitable(iface):
     return '; '.join(said) if said else 'nothing: it declares none'
 
 
-def steps_of(specs, iface):
+def steps_of(specs, iface, used=None, driven_role=None):
     """The steps the specs declare for this service, resolved against its document.
 
     Each is a dict: name, enum, send (a request or None), args (C++ text in parameter
-    order), awaits ((kind, name) or None) and wait (milliseconds, 0 for none).
+    order), awaits ((kind, name) or None), wait (milliseconds, 0 for none), role (the
+    used provider role it sends to and awaits, or None) and source (that service).
+    used maps a used role to (its Interface, the member holding its client).
     """
     import gen_docs
     declared = []
@@ -2051,45 +3012,213 @@ def steps_of(specs, iface):
         for entry in spec.get('interfaces') or []:
             if isinstance(entry, dict) and entry.get('name') == iface.name:
                 declared = entry.get('steps') or []
-    requests = dict(iface.requests)
-    kinds = {}
-    for kind, entries in (('update', iface.attributes), ('broadcast', iface.broadcasts),
-                          ('response', iface.responses)):
-        for name, _ in entries:
-            kinds[name] = kind
     steps = []
     for step in declared:
         name, send = step.get('name'), step.get('send')
         where = 'step "{}"'.format(name)
+        role, source, prefix = step.get('role'), iface, ''
+        if role == driven_role:
+            role = None
+        if role is not None:
+            if role not in (used or {}):
+                fail('{} names role "{}", which this driver does not use. It uses: {}'
+                     .format(where, role, ', '.join(sorted(used or {})) or 'none'))
+            source, member = used[role]
+            prefix = member + '.'
+        requests = dict(source.requests)
+        kinds = {}
+        for kind, entries in (('update', source.attributes),
+                              ('broadcast', source.broadcasts),
+                              ('response', source.responses)):
+            for entry_name, _ in entries:
+                kinds[entry_name] = kind
         if send is not None and send not in requests:
             fail('{} sends "{}", which {} does not declare as a request. It sends one '
-                 'of: {}'.format(where, send, iface.name,
+                 'of: {}'.format(where, send, source.name,
                                  ', '.join(requests) or 'nothing: it declares none'))
         args = step.get('args') or {}
         values = []
         for param, param_type in requests.get(send, []):
             if param not in args:
                 fail('{} gives no value for "{}" of request "{}"'.format(where, param, send))
-            values.append(cpp_value(args[param], param_type, iface, where))
+            values.append(cpp_value(args[param], param_type, source, where))
         target, wait = step.get('await'), step.get('wait') or 0
         if target is None and send is not None and not wait:
-            target = iface.response_of.get(send)
-        elif target in iface.response_of:
-            target = iface.response_of[target]
+            target = source.response_of.get(send)
+        elif target in source.response_of:
+            target = source.response_of[target]
         if target is not None and target not in kinds:
             fail('{} awaits "{}", which is no response, broadcast or attribute of {}. '
                  'It awaits one of: {}'
-                 .format(where, target, iface.name, awaitable(iface)))
-        steps.append({'name': name, 'enum': pascal(name), 'send': send,
-                      'call': iface.spell('request', send) if send is not None else None,
+                 .format(where, target, source.name, awaitable(source)))
+        until = until_of(step.get('until'), target, kinds, source, where)
+        steps.append({'name': name, 'enum': step_enum(name), 'send': send,
+                      'call': prefix + source.spell('request', send) if send is not None
+                      else None,
                       'args': values,
                       'awaits': (kinds[target], target) if target is not None else None,
-                      'wait': wait})
+                      'wait': wait,
+                      'until': ['({} == {})'.format(param, value) for param, value in until],
+                      'until_pairs': until,
+                      'role': role, 'source': source, 'call_member': prefix})
+    mark_collectors(steps)
     return steps
+
+
+def mark_collectors(steps):
+    """Sets "collects" on a step that only awaits an answer and takes several still owed:
+    the names of the steps that sent them with "wait", as gen_docs.py counts them."""
+    owed = {}
+    for index, step in enumerate(steps):
+        source = step['source']
+        mine = source.response_of.get(step['send']) if step['send'] is not None else None
+        awaits = step['awaits'][1] if step['awaits'] else None
+        pending = owed.setdefault(id(source), {})
+        if mine is not None and awaits == mine:
+            pending.pop(mine, None)
+        elif awaits is not None and pending.get(awaits):
+            take = 1
+            if step['send'] is None and not step['until']:
+                rest = 0
+                for each in steps[index + 1:]:
+                    if each['send'] is not None or each['wait'] or each['source'] is not source \
+                            or each['awaits'] != step['awaits']:
+                        break
+                    rest += 1
+                take = max(1, len(pending[awaits]) - rest)
+            if take > 1:
+                step['collects'] = pending[awaits][:take]
+            del pending[awaits][:take]
+        elif awaits is not None:
+            pending.clear()
+        if mine is not None and step['wait'] and step['awaits'] is None:
+            pending.setdefault(mine, []).append(step['name'])
+
+
+def await_key(step):
+    """What a step awaits, told apart by the used role it comes from."""
+    return step['awaits'] + (step['role'],) if step.get('role') else step['awaits']
+
+
+def role_method(step):
+    """The driver's method that runs the checks of what a used role sends, for one step."""
+    kind, name = step['awaits']
+    source = step['source']
+    handler = source.spell('attribute', name, 'on_update') if kind == 'update' \
+        else source.spell(kind, name)
+    return '{}_{}'.format(step['role'], handler)
+
+
+def role_params(step):
+    """The parameters of a role method: the handler's, an update without its state."""
+    kind, name = step['awaits']
+    source = step['source']
+    if kind == 'update':
+        params = source.generated_params('attribute', name, 'on_update').strip()
+        return re.sub(r',\s*(const\s+)?areg::DataState\s*&?\s*\w+\s*$', '', params)
+    return source.generated_params(kind, name).strip()
+
+
+def until_of(until, target, kinds, iface, where):
+    """(parameter, C++ value) of a step's "until", all of which must hold."""
+    if not until:
+        return []
+    if not isinstance(until, dict):
+        fail('{} has "until" {!r}: it is an object, {{parameter: value}}'.format(where, until))
+    if target is None:
+        fail('{} has "until" and awaits nothing. "until" holds the step until what it '
+             'awaits arrives with these values'.format(where))
+    kind = kinds[target]
+    if kind == 'update':
+        params = [(target, dict(iface.attributes)[target])]
+    else:
+        params = dict(iface.broadcasts if kind == 'broadcast' else iface.responses)[target]
+    types = dict(params)
+    conditions = []
+    for key, value in until.items():
+        param, type_name = until_operand(key, types, iface)
+        if param is None:
+            fail('{} holds until "{}", which is no parameter of {} {}. It has: {}'
+                 .format(where, key, kind, target, until_choices(types, iface)))
+        if isinstance(value, dict) and type_name in iface.struct_fields:
+            for field, field_value in value.items():
+                operand, field_type = until_operand('{}.{}'.format(param, field),
+                                                    {param: type_name}, iface)
+                if operand is None or '.' not in operand:
+                    fail('{} holds until "{}" field "{}", which {} does not have. It has: {}'
+                         .format(where, key, field, type_name,
+                                 until_choices({param: type_name}, iface)))
+                conditions.append((operand, cpp_value(field_value, field_type, iface, where)))
+            continue
+        conditions.append((param, cpp_value(value, type_name, iface, where)))
+    return conditions
+
+
+def until_operand(key, types, iface):
+    """(C++ operand, type) an "until" key names, or (None, None).
+
+    The key is a parameter, or a field of a structure parameter, written alone or as
+    "parameter.field". A parameter comes before a field and the exact spelling before
+    another letter case; a key two candidates of one tier match is refused.
+    """
+    params = list(types.items())
+    fields = [('{}.{}'.format(param, field), field_type)
+              for param, type_name in params
+              for field, field_type in iface.struct_fields.get(type_name, [])]
+    for exact in (True, False):
+        for candidates in (params, fields):
+            found = [(operand, type_name) for operand, type_name in candidates
+                     if until_names(key, operand, exact)]
+            if len(found) == 1:
+                return found[0]
+            if found:
+                return None, None
+    return None, None
+
+
+def until_names(key, operand, exact):
+    """True if an "until" key names the operand "param" or "param.field"."""
+    names = [operand] + ([operand.split('.', 1)[1]] if '.' in operand else [])
+    if exact:
+        return key in names
+    return key.lower() in [name.lower() for name in names]
+
+
+def until_choices(types, iface):
+    """The parameters an "until" may name, each structure with its fields."""
+    choices = []
+    for param, type_name in types.items():
+        fields = [field for field, _ in iface.struct_fields.get(type_name, [])]
+        choices.append('{} (fields {})'.format(param, ', '.join(fields)) if fields else param)
+    return ', '.join(choices) or 'none'
 
 
 STEP_CHECK = {'response': 'check this answer', 'broadcast': 'check this broadcast',
               'update': 'check the new value'}
+
+# Appended to the check of a step with "role", formatted with the role.
+ROLE_ORDER = '; it comes from {}, in no order against what the driven service sends'
+
+# Appended to the check of a step that sends and awaits an update.
+SENT_UPDATE = "; one sent before this step's request may arrive first: stay() on it"
+
+# Appended to the check of a step with "until": the generated test above it holds the step.
+UNTIL_HELD = '; it runs only on the arrival its "until" names, the earlier ones already stay()'
+
+# Appended to the check of a step that collects several answers, with their steps and count.
+COLLECTS = ('; it collects the answers to {}: record each by an answer field that names it '
+            'and stay() until all {} are in')
+
+def subscribe_order(attributes, steps, roles):
+    """The attribute names of one provider in subscription order: declaration order, with
+    the one the first step awaiting an update of these roles names moved last."""
+    names = [attr for attr, _ in attributes]
+    first = next((each['awaits'][1] for each in steps if each['awaits']
+                  and each['awaits'][0] == 'update' and each.get('role') in roles), None)
+    if first in names:
+        names.remove(first)
+        names.append(first)
+    return names
 
 
 def step_said(step):
@@ -2099,9 +3228,25 @@ def step_said(step):
         said.append('sent {}({})'.format(step['call'], ', '.join(step['args'])))
     if step['awaits']:
         said.append('awaits {} {}'.format(*step['awaits']))
+        if step.get('role'):
+            said[-1] += ' of {}'.format(step['role'])
+        if step.get('until'):
+            said[-1] += ' with {}'.format(' && '.join(step['until']))
     elif step['wait']:
         said.append('waits {} ms'.format(step['wait']))
     return ' and '.join(said) if said else 'waits for nothing'
+
+
+def step_kept(step):
+    """Why a step whose check ran is still waiting, as a C++ string literal's contents."""
+    kind, name = step['awaits']
+    if step.get('until'):
+        return ('. {} {} arrived, and none had the values its \\"until\\" names, or the '
+                'step_{} body called stay() on the one that had them.'
+                .format(kind.capitalize(), name, step['name']))
+    return ('. {} {} arrived and the step_{} body ran on it and called stay(): what that '
+            'body compared did not match what arrived.'
+            .format(kind.capitalize(), name, step['name']))
 
 
 def step_detail(step):
@@ -2140,29 +3285,96 @@ def late_latches(iface, steps):
     for step in steps:
         if step['send'] is not None or step['awaits'] is None \
                 or step['awaits'][0] not in ('update', 'broadcast') \
-                or step['awaits'] in latches:
+                or await_key(step) in latches:
             continue
         kind, name = step['awaits']
-        flag = 'mLate' + pascal(name)
+        source = step.get('source') or iface
+        flag = 'mLate' + pascal(step.get('role') or '') + pascal(name)
         args = []
         if kind == 'broadcast':
             args = [(flag + pascal(param), held, param) for held, param in
-                    generated_values(iface.generated_params('broadcast', name))]
-        latches[step['awaits']] = {'flag': flag, 'args': args}
+                    generated_values(source.generated_params('broadcast', name))]
+        elif not step.get('role'):
+            args = [(flag + 'Value', held, param) for held, param in
+                    generated_values(source.generated_params('attribute', name,
+                                                             'on_update'))[:1]]
+        latches[await_key(step)] = {'flag': flag, 'args': args}
+        if step.get('role'):
+            latches[await_key(step)]['method'] = role_method(step)
+    latches.update(answer_queues(iface, steps))
     return latches
 
 
-def step_dispatch(steps, kind, name, indent, latch=None):
+def answer_queues(iface, steps):
+    """What the driver keeps of the answers of requests sent by a step that waits a time.
+
+    Keyed by the step's await_key(), when a later step collects that answer of the same
+    role without sending its request: the struct, the array and its count, sized by the
+    number of such sends, and the fields as (field, type, parameter).
+    """
+    sizes = {}
+    for step in steps:
+        source = step.get('source') or iface
+        answer = source.response_of.get(step['send']) if step['send'] else None
+        if answer is not None and step['wait'] and step['awaits'] is None:
+            key = (answer, step.get('role'))
+            sizes[key] = sizes.get(key, 0) + 1
+    queues = {}
+    for step in steps:
+        if step['awaits'] is None or step['awaits'][0] != 'response':
+            continue
+        source = step.get('source') or iface
+        name, role = step['awaits'][1], step.get('role')
+        if (name, role) not in sizes or source.response_of.get(step['send']) == name:
+            continue
+        member = 'mLate' + pascal(role or '') + pascal(name)
+        queues[await_key(step)] = {
+            'queue': sizes[(name, role)], 'type': 'Late' + pascal(role or '') + pascal(name),
+            'member': member, 'count': member + 'Count',
+            'args': [(param, held, param) for held, param in
+                     generated_values(source.generated_params('response', name))]}
+        if role:
+            queues[await_key(step)]['method'] = role_method(step)
+    return queues
+
+
+def flag_latches(latches, role=False):
+    """The latches of updates and broadcasts: one flag each. With a role (None for the
+    driven service), only those of what that role sends."""
+    return dict((key, latch) for key, latch in latches.items() if 'flag' in latch
+                and (role is False or (key[2] if len(key) > 2 else None) == role))
+
+
+def forget_name(role):
+    """The helper forgetting what one role, or the driven service with None, sent."""
+    return 'forget_late' + ('_' + role if role else '')
+
+
+def collects(step, latches, iface):
+    """True when the step takes a kept answer: it awaits one that is queued and did not
+    send its request itself."""
+    latch = latches.get(await_key(step)) if step['awaits'] else None
+    return bool(latch) and 'queue' in latch \
+        and (step.get('source') or iface).response_of.get(step['send']) != step['awaits'][1]
+
+
+def step_dispatch(steps, kind, name, indent, latch=None, role=None):
     """The check of every step waiting on this handler, then the end of that step.
 
     With a latch, an arrival no step checks is kept for a later step that awaits it.
+    With a role, the steps awaiting what that used role sends.
     """
-    waiting = [step for step in steps if step['awaits'] == (kind, name)]
+    waiting = [step for step in steps if step['awaits'] == (kind, name)
+               and step.get('role') == role]
+    pad = ' ' * indent
+    what = '{} {}{}'.format(kind, name, ' of ' + role if role else '')
+    fresh = fresh_flag(name) if kind == 'update' and not role else None
     if not waiting:
         return []
-    pad = ' ' * indent
     lines = ['' if kind != 'response' else None,
-             pad + '{} = false;'.format(latch['flag']) if latch else None,
+             pad + '{} = false;'.format(latch['flag']) if latch and 'flag' in latch else None,
+             pad + 'Arrival arrival(*this, "{}"{});'.format(what, ', ' + fresh if fresh else ''),
+             pad + '{} = false;'.format(fresh) if fresh else None,
              pad + 'mHeld = false;', pad + 'mJumped = false;',
              pad + 'switch (mStep)', pad + '{']
     lines = [line for line in lines if line is not None]
@@ -2172,20 +3384,100 @@ def step_dispatch(steps, kind, name, indent, latch=None):
     for step in waiting:
         lines += [pad + 'case Step::{}:'.format(step['enum']),
                   pad + '    {',
-                  pad + '        StepEnd ending(*this);',
-                  marker('step_' + step['name'], STEP_CHECK[kind], indent + 8),
+                  pad + '        StepEnd ending(*this);']
+        if step.get('until'):
+            lines += [pad + '        if (!({}))'.format(' && '.join(step['until'])),
+                      pad + '        {']
+            if latch and 'queue' in latch \
+                    and step['source'].response_of.get(step['send']) != name:
+                lines += [pad + '            ' + line for line in keep_answer(latch, kind, name)]
+            lines += [pad + '            stay();',
+                      pad + '            break;',
+                      pad + '        }']
+        lines += [marker('step_' + step['name'], STEP_CHECK[kind] + (
+                      UNTIL_HELD if step.get('until') else
+                      SENT_UPDATE if kind == 'update' and step.get('send') else '') + (
+                      COLLECTS.format(', '.join('"{}"'.format(each) for each in step['collects']),
+                                      len(step['collects'])) if step.get('collects') else '') + (
+                      ROLE_ORDER.format(role) if role else ''),
+                  indent + 8),
                   pad + '    }',
                   pad + '    break;']
     # A message arriving on a step with no case for it is not an error: most steps
     # ignore most messages. It is remembered rather than reported, because the step
     # that did want it waits for ever and the stall report is where that is answered.
+    if latch and 'queue' in latch:
+        return lines + [pad + 'default:'] \
+            + [pad + '    ' + line for line in keep_answer(latch, kind, name, role)] \
+            + [pad + '    break;', pad + '}']
     lines += [pad + 'default:',
-              pad + '    dropped("{} {}");'.format(kind, name)]
+              pad + '    dropped();']
     if latch:
         lines.append(pad + '    {} = true;'.format(latch['flag']))
         lines += [pad + '    {} = {};'.format(member, param)
                   for member, _, param in latch['args']]
+        lines.append(pad + '    mark("held, unchecked, for a step that awaits it");')
     lines += [pad + '    break;', pad + '}']
+    return lines
+
+
+def record_only(steps, kind, name, indent):
+    """The trail entry of a message of the driven service that no step awaits."""
+    if not steps:
+        return []
+    pad = ' ' * indent
+    fresh = fresh_flag(name) if kind == 'update' else None
+    lines = [pad + 'Arrival arrival(*this, "{} {}"{});'.format(kind, name,
+                                                             ', ' + fresh if fresh else '')]
+    if fresh:
+        lines.append(pad + '{} = false;'.format(fresh))
+    return lines + [pad + 'mark("no step awaits it");']
+
+
+def fresh_flag(name):
+    """The member that is true until the first value of this attribute after subscribing."""
+    return 'mFresh' + pascal(name)
+
+
+def fresh_attributes(steps, iface):
+    """The attributes of the driven service, when steps drive it."""
+    return sorted(name for name, _ in iface.attributes) if steps else []
+
+
+def keep_answer(latch, kind, name, role=None):
+    """Puts an answer at the end of its queue for a later step, or reports it dropped."""
+    values = ', '.join(param for _, _, param in latch['args'])
+    return ['if ({} < {})'.format(latch['count'], latch['queue']),
+            '{',
+            '    {}[{}++] = {}{{ {} }};'.format(latch['member'], latch['count'],
+                                             latch['type'], values),
+            '    mark("queued for a later step that collects it");',
+            '}',
+            'else',
+            '{',
+            '    dropped();',
+            '}']
+
+
+def role_methods(steps, latches):
+    """One method per message of a used role a step awaits: the checks of those steps.
+
+    The client of that role calls it from its own handler.
+    """
+    lines, done = [], set()
+    for step in steps:
+        if not step.get('role') or not step['awaits'] or await_key(step) in done:
+            continue
+        done.add(await_key(step))
+        kind, name = step['awaits']
+        dispatch = step_dispatch(steps, kind, name, 8, latches.get(await_key(step)),
+                                 step['role'])
+        while dispatch and dispatch[0] == '':
+            dispatch.pop(0)
+        lines += ['    //! The checks of the steps awaiting {} {} of {}.'.format(kind, name,
+                                                                          step['role']),
+                  '    void {}({})'.format(role_method(step), role_params(step)),
+                  '    {'] + dispatch + ['    }', '']
     return lines
 
 
@@ -2193,10 +3485,10 @@ def driver_lines(steps, holds, cls, iface=None, latches=None):
     """The helpers that run the steps: begin one, end one, stay in one, jump to one."""
     latches = latches or {}
     lines = ['    //! Ends the current step when a check body is left, by falling off',
-             '    //! its end, by return, or by break. stay(), go_to() and fail() all',
-             '    //! take effect in complete(), so every path reaches it. A body that',
-             '    //! calls complete() itself ends the step there, and leaving it does',
-             '    //! not end a second one.',
+             '    //! its end, by return, or by break. stay() and go_to() take effect in',
+             '    //! complete(), so every path reaches it; fail() ends the run, not the',
+             '    //! body. A body that calls complete() itself ends the step there, and',
+             '    //! leaving it does not end a second one.',
              '    struct StepEnd',
              '    {',
              '        explicit StepEnd({} & owner)'.format(cls),
@@ -2215,6 +3507,33 @@ def driver_lines(steps, holds, cls, iface=None, latches=None):
              '        {} & mOwner;'.format(cls),
              '    };',
              '',
+             '    //! Records one arrival in the trail and, when its handler returns,',
+             '    //! what became of it.',
+             '    struct Arrival',
+             '    {',
+             '        Arrival({} & owner, const char * what, bool first = false)'.format(cls),
+             '            : mOwner(owner), mWhat(what), mAt(owner.mTrailCount++)',
+             '            , mBefore(owner.mStep), mFirst(first)',
+             '        {',
+             '            const uint32_t slot{ mAt % cTrailMost };',
+             '            mOwner.mTrailWhat[slot] = what;',
+             '            mOwner.mTrailStep[slot] = mOwner.step_slot();',
+             '            mOwner.mTrailDone[slot] = nullptr;',
+             '            mOwner.mTrailFirst[slot] = first;',
+             '            mOwner.mTrailLate[slot] = {};'.format(
+                 'mOwner.mReplaying' if latches else 'false'),
+             '        }',
+             '        ~Arrival(void) { mOwner.settle(mAt, mBefore, mWhat, mFirst); }',
+             '        Arrival(void) = delete;',
+             '        AREG_NOCOPY_NOMOVE(Arrival);',
+             '    private:',
+             '        {} & mOwner;'.format(cls),
+             '        const char * const mWhat;',
+             '        const uint32_t mAt;',
+             '        const Step mBefore;',
+             '        const bool mFirst;',
+             '    };',
+             '',
              '    //! Begins a step: sends its request or starts its wait. A step that',
              '    //! waits for nothing ends at once.',
              '    void begin(Step step)',
@@ -2231,13 +3550,11 @@ def driver_lines(steps, holds, cls, iface=None, latches=None):
         if step.get('hold'):
             lines += ['        case Step::{}:'.format(step['enum']),
                       '            if (mHoldOnce)',
-                      '            {',
-                      '                mHoldOnce = false;',
-                      '                std::cout << "step {}" << std::endl;'.format(step['name']),
-                      '                mHold.stop_timer();',
-                      '                mHold.start_timer({}, static_cast<areg::DispatcherThread &>'
-                      '(master_thread()),'.format(step['wait']),
-                      '                                  areg::TimerBase::ONE_TIME);',
+                      '            {']
+            if not step.get('keep'):
+                lines.append('                mHoldOnce = false;')
+            lines += ['                GLOBAL_INFO("step {}");'.format(step['name']),
+                      '                hold({});'.format(step['wait']),
                       '            }',
                       '            else',
                       '            {',
@@ -2246,24 +3563,29 @@ def driver_lines(steps, holds, cls, iface=None, latches=None):
                       '            break;']
             continue
         lines += ['        case Step::{}:'.format(step['enum']),
-                  '            std::cout << "step {}" << std::endl;'.format(step['name'])]
+                  '            GLOBAL_INFO("step {}");'.format(step['name'])]
         if step['send']:
-            if latches:
-                lines.append('            forget_late();')
+            if flag_latches(latches, step.get('role')):
+                lines.append('            {}();'.format(forget_name(step.get('role'))))
             lines.append('            {}({});'.format(step['call'],
                                                   ', '.join(step['args'])))
-        elif step['awaits'] in latches:
-            lines += ['            if ({})'.format(latches[step['awaits']]['flag']),
+        if collects(step, latches, iface):
+            lines += ['            if ({} != 0)'.format(latches[await_key(step)]['count']),
+                      '            {',
+                      '                mLate.start_timer(1, static_cast<areg::DispatcherThread &>'
+                      '(master_thread()),',
+                      '                                  areg::TimerBase::ONE_TIME);',
+                      '            }']
+        elif not step['send'] and step['awaits'] and \
+                await_key(step) in flag_latches(latches):
+            lines += ['            if ({})'.format(latches[await_key(step)]['flag']),
                       '            {',
                       '                mLate.start_timer(1, static_cast<areg::DispatcherThread &>'
                       '(master_thread()),',
                       '                                  areg::TimerBase::ONE_TIME);',
                       '            }']
         if step['wait']:
-            lines += ['            mHold.stop_timer();',
-                      '            mHold.start_timer({}, static_cast<areg::DispatcherThread &>'
-                      '(master_thread()),'.format(step['wait']),
-                      '                              areg::TimerBase::ONE_TIME);']
+            lines.append('            hold({});'.format(step['wait']))
         elif step['awaits'] is None:
             lines.append('            complete();')
         lines.append('            break;')
@@ -2292,7 +3614,7 @@ def driver_lines(steps, holds, cls, iface=None, latches=None):
               '        begin(mJumped ? mNext : static_cast<Step>(static_cast<uint32_t>(mStep) + 1));',
               '    }',
               '',
-              '    //! Keeps the current step for the next answer, broadcast or update.',
+              '    //! Keeps the current step for the next arrival it awaits.',
               '    void stay()',
               '    {   mHeld = true; }',
               '',
@@ -2308,42 +3630,128 @@ def driver_lines(steps, holds, cls, iface=None, latches=None):
               '    bool  mEnding{ false };       //!< True until the running check ends its step.',
               '']
     if holds:
-        lines += ['    areg::Timer  mHold;   //!< Ends a step that waits for a time.', '']
+        lines += ['    //! Starts the wait of the current step, in milliseconds.',
+                  '    void hold(uint32_t ms)',
+                  '    {',
+                  '        mHoldMs = ms;',
+                  '        mHold.stop_timer();',
+                  '        mHold.start_timer(ms, static_cast<areg::DispatcherThread &>'
+                  '(master_thread()),',
+                  '                          areg::TimerBase::ONE_TIME);',
+                  '    }',
+                  '',
+                  '    areg::Timer  mHold;   //!< Ends a step that waits for a time.',
+                  '    uint32_t     mHoldMs{ 0 };   //!< The wait mHold runs, 0 when none.',
+                  '']
     if any(step.get('hold') for step in steps):
         lines += ['    bool  mHoldOnce{{ hold_requested() }};   //!< True until the hold step '
                   'has held, when main() was given {}.'.format(HOLD_FLAG), '']
     if latches:
-        lines += late_lines(steps, iface, latches)
+        lines += late_lines(steps, iface, latches, holds)
     return lines
 
 
-def late_lines(steps, iface, latches):
+def late_lines(steps, iface, latches, holds=False):
     """The replay of an update or broadcast that arrived before the step awaiting it."""
-    lines = ['    //! Runs the check of the current step once on what arrived before it.',
+    lines = ['    //! Runs the check of the current step on each arrival kept before it, in turn.',
              '    void replay_late()',
              '    {',
              '        mReplaying = true;',
              '        switch (mStep)',
              '        {']
+    flags = flag_latches(latches)
     for step in steps:
-        if step['send'] is not None or step['awaits'] not in latches:
+        if collects(step, latches, iface) and step.get('until'):
+            latch = latches[await_key(step)]
+            lines += ['        case Step::{}:'.format(step['enum']),
+                      '            for (uint32_t at = 0; at < {}; ++at)'.format(latch['count']),
+                      '            {',
+                      '                if (!({}))'.format(' && '.join(
+                          '({}[at].{} == {})'.format(latch['member'], param, value)
+                          for param, value in step['until_pairs'])),
+                      '                {',
+                      '                    continue;',
+                      '                }',
+                      '',
+                      '                const {} late{{ {}[at] }};'.format(latch['type'],
+                                                                      latch['member']),
+                      '                for (uint32_t index = at + 1; index < {}; ++index)'
+                      .format(latch['count']),
+                      '                {',
+                      '                    {0}[index - 1] = {0}[index];'.format(latch['member']),
+                      '                }',
+                      '                --{};'.format(latch['count']),
+                      '                {}({});'.format(
+                          latch.get('method') or iface.spell('response', step['awaits'][1]),
+                          ', '.join('late.' + field for field, _, _ in latch['args'])),
+                      '                break;',
+                      '            }',
+                      '            break;']
+            continue
+        if collects(step, latches, iface):
+            latch = latches[await_key(step)]
+            lines += ['        case Step::{}:'.format(step['enum']),
+                      '            if ({} != 0)'.format(latch['count']),
+                      '            {',
+                      '                const {} late{{ {}[0] }};'.format(latch['type'],
+                                                                     latch['member']),
+                      '                for (uint32_t index = 1; index < {}; ++index)'
+                      .format(latch['count']),
+                      '                {',
+                      '                    {0}[index - 1] = {0}[index];'.format(latch['member']),
+                      '                }',
+                      '                --{};'.format(latch['count']),
+                      '                {}({});'.format(
+                          latch.get('method') or iface.spell('response', step['awaits'][1]),
+                          ', '.join('late.' + field for field, _, _ in latch['args'])),
+                      '                if ((mStep == Step::{}) && ({} != 0))'
+                      .format(step['enum'], latch['count']),
+                      '                {',
+                      '                    mLate.start_timer(1, static_cast<areg::DispatcherThread &>'
+                      '(master_thread()),',
+                      '                                      areg::TimerBase::ONE_TIME);',
+                      '                }',
+                      '            }',
+                      '            break;']
+            continue
+        if step['send'] is not None or step['awaits'] is None or await_key(step) not in flags:
             continue
         kind, name = step['awaits']
-        flag = latches[step['awaits']]['flag']
+        latch = latches[await_key(step)]
+        flag = latch['flag']
         lines += ['        case Step::{}:'.format(step['enum']),
                   '            if ({})'.format(flag),
                   '            {',
                   '                {} = false;'.format(flag)]
-        if kind == 'update':
+        if step.get('role') and kind == 'update':
             lines += ['                areg::DataState lateState{ areg::DataState::DataIsInvalid };',
-                      '                const auto lateValue = {}(lateState);'.format(
+                      '                const auto lateValue = {}{}(lateState);'.format(
+                          step['call_member'], step['source'].spell('attribute', name, 'get')),
+                      '                if (lateState == areg::DataState::DataIsOK)',
+                      '                {',
+                      '                    {}(lateValue);'.format(latch['method']),
+                      '                }']
+        elif step.get('role'):
+            lines.append('                {}({});'.format(
+                latch['method'], ', '.join(member for member, _, _ in latch['args'])))
+        elif kind == 'update':
+            lines += ['                if (mSettling)',
+                      '                {',
+                      '                    {}({}, areg::DataState::DataIsOK);'.format(
+                          iface.spell('attribute', name, 'on_update'), latch['args'][0][0]),
+                      '                }',
+                      '                else',
+                      '                {',
+                      '                    areg::DataState lateState{ areg::DataState::DataIsInvalid };',
+                      '                    const auto lateValue = {}(lateState);'.format(
                           iface.spell('attribute', name, 'get')),
-                      '                {}(lateValue, lateState);'.format(
-                          iface.spell('attribute', name, 'on_update'))]
+                      '                    {}(lateValue, lateState);'.format(
+                          iface.spell('attribute', name, 'on_update')),
+                      '                }']
         else:
             lines.append('                {}({});'.format(
                 iface.spell('broadcast', name),
-                ', '.join(member for member, _, _ in latches[step['awaits']]['args'])))
+                ', '.join(member for member, _, _ in latch['args'])))
         lines += ['            }',
                   '            break;']
     lines += ['        default:',
@@ -2351,21 +3759,114 @@ def late_lines(steps, iface, latches):
               '        }',
               '        mReplaying = false;',
               '    }',
-              '',
-              '    //! Forgets every update and broadcast that arrived before a request.',
-              '    void forget_late()',
-              '    {']
-    lines += ['        {} = false;'.format(latch['flag']) for latch in latches.values()]
-    lines += ['    }',
-              '',
-              '    areg::Timer  mLate;   //!< Starts replay_late() once the step has begun.',
-              '    bool  mReplaying{ false };   //!< True while replay_late() runs a check.']
-    for (kind, name), latch in latches.items():
-        lines.append('    bool  {}{{ false }};   //!< True once {} {} arrived unchecked.'
-                     .format(latch['flag'], kind, name))
+              '']
+    lines += settle_lines(steps, iface, latches, holds)
+    sending = set(step.get('role') or '' for step in steps if step['send'])
+    for role in sorted(set(key[2] if len(key) > 2 else '' for key in flags) & sending):
+        sent = flag_latches(latches, role or None)
+        lines += ['    //! Forgets every update and broadcast {} sent before a request to it.'
+                  .format(role or 'the driven service'),
+                  '    void {}()'.format(forget_name(role)),
+                  '    {']
+        lines += ['        {} = false;'.format(latch['flag']) for latch in sent.values()]
+        lines += ['    }',
+                  '']
+    lines += ['    areg::Timer  mLate;   //!< Starts replay_late() once the step has begun.',
+              '    bool  mReplaying{ false };   //!< True while replay_late() runs a check.',
+              '    bool  mSettling{ false };   //!< True while settle() runs.']
+    for key, latch in latches.items():
+        kind, name = key[:2]
+        if 'queue' in latch:
+            lines += ['',
+                      '    //! An answer of {} that arrived before the step collecting it.'
+                      .format(name),
+                      '    struct {}'.format(latch['type']),
+                      '    {']
+            lines += ['        {}  {}{{}};'.format(held, field) for field, held, _ in latch['args']]
+            lines += ['    };',
+                      '    {}  {}[{}]{{}};   //!< Kept answers of {}, oldest first.'
+                      .format(latch['type'], latch['member'], latch['queue'], name),
+                      '    uint32_t  {}{{ 0 }};   //!< How many answers of {} are kept.'
+                      .format(latch['count'], name)]
+            continue
+        lines.append('    bool  {}{{ false }};   //!< True once {} {}{} arrived unchecked.'
+                     .format(latch['flag'], kind, name,
+                             ' of ' + key[2] if len(key) > 2 else ''))
         lines += ['    {}  {}{{}};   //!< The {} it carried.'.format(held, member, param)
                   for member, held, param in latch['args']]
     lines.append('')
+    return lines
+
+
+def settle_lines(steps, iface, latches, holds):
+    """kept() and settle(): the checks of what arrived before the provider was lost."""
+    lines = ['    //! How many arrivals are kept for that step.',
+             '    uint32_t kept(Step step) const',
+             '    {',
+             '        switch (step)',
+             '        {']
+    most = 2
+    for step in steps:
+        if not step['awaits'] or await_key(step) not in latches:
+            continue
+        latch = latches[await_key(step)]
+        if collects(step, latches, iface):
+            lines += ['        case Step::{}:'.format(step['enum']),
+                      '            return {};'.format(latch['count'])]
+            most += latch['queue']
+        elif not step['send'] and 'flag' in latch:
+            lines += ['        case Step::{}:'.format(step['enum']),
+                      '            return ({} ? 1u : 0u);'.format(latch['flag'])]
+            most += 1
+        else:
+            continue
+        most += 1
+    lines += ['        default:',
+              '            return 0u;',
+              '        }',
+              '    }',
+              '',
+              '    //! Runs the checks of what arrived before the provider was lost.',
+              '    void settle()',
+              '    {',
+              '        mSettling = true;',
+              '        for (uint32_t turn = 0; (turn < {}) && (is_quitting() == false); ++turn)'
+              .format(most),
+              '        {',
+              '            const Step at{ mStep };']
+    if holds:
+        held = ''.join('(mStep == Step::{}) || '.format(step['enum'])
+                       for step in steps if step.get('hold'))
+        lines += ['            if (mHoldMs != 0)',
+                  '            {',
+                  '                if ({}(kept(mJumped ? mNext : static_cast<Step>('
+                  'static_cast<uint32_t>(mStep) + 1)) == 0))'.format(held),
+                  '                {',
+                  '                    break;',
+                  '                }',
+                  '',
+                  '                mHold.stop_timer();',
+                  '                mHoldMs = 0;',
+                  '                complete();',
+                  '                continue;',
+                  '            }',
+                  '']
+    lines += ['            const uint32_t before{ kept(at) };',
+              '            if (before == 0)',
+              '            {',
+              '                break;',
+              '            }',
+              '',
+              '            replay_late();',
+              '            if ((mStep == at) && (kept(at) == before))',
+              '            {',
+              '                break;',
+              '            }',
+              '        }',
+              '',
+              '        mSettling = false;',
+              '    }',
+              '']
     return lines
 
 
@@ -2383,7 +3884,7 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
     the driver gives up after come from the spec, so no marker asks for one.
     """
     import gen_docs
-    driver = dict(gen_docs.DRIVER_DEFAULTS) if driver is None else driver
+    driver = gen_docs.driver_of({}) if driver is None else driver
     stepped = steps_scenario(iface) or bool(steps)
     holds = any(step['wait'] for step in steps) or hold is not None
     latches = late_latches(iface, steps)
@@ -2435,26 +3936,32 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
     if iface.attributes or iface.broadcasts:
         lines.append('                // Subscriptions are made here, and again after '
                      'every reconnection.')
-        for attr_name, _ in iface.attributes:
+        for attr_name in subscribe_order(iface.attributes, steps, (None,)):
             lines.append('                {}(true);'.format(
                 iface.spell('attribute', attr_name, 'notify')))
         for name, _ in iface.broadcasts:
             lines.append('                {}(true);'.format(
                 iface.spell('broadcast', name, 'notify')))
+        lines += ['                {} = true;'.format(fresh_flag(name))
+                  for name in fresh_attributes(steps, iface)]
     # A generated application that waits forever is not one that runs as written.
     # The first request that carries a response completes a round trip, and the
     # response handler below quits, so the program starts and ends on its own.
     if steps:
         lines += ['',
-                  '                // The stall watchdog ticks from here; the steps begin once.',
-                  '                mPace.stop_timer();',
-                  '                mPace.start_timer({}, static_cast<areg::DispatcherThread &>'
-                  '(master_thread()),'.format(STEP_INTERVAL_MS),
-                  '                                  areg::TimerBase::CONTINUOUSLY);',
+                  '                // The stall watchdog counts from here; the steps begin once.',
+                  '                resume_pace();',
                   '                if (mStep == Step::Start)',
                   '                {',
                   '                    begin(Step::{});'.format(steps[0]['enum']),
                   '                }']
+        if holds:
+            lines += ['                else if (mHoldMs != 0)',
+                      '                {',
+                      '                    // The wait the loss stopped starts again.',
+                      '                    progressed();',
+                      '                    hold(mHoldMs);',
+                      '                }']
     else:
         answered_first = next((entry for entry in iface.requests
                                if entry[0] in set(n for n, _ in iface.responses)), None)
@@ -2469,10 +3976,7 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
         if stepped:
             lines += ['',
                       '                // One step of the scenario per tick.',
-                      '                mPace.stop_timer();',
-                      '                mPace.start_timer({}, static_cast<areg::DispatcherThread &>'
-                      '(master_thread()),'.format(STEP_INTERVAL_MS),
-                      '                                  areg::TimerBase::CONTINUOUSLY);']
+                      '                resume_pace();']
         # Nothing answers the first request, and no attribute update arrives to end on.
         if not answered_first and (iface.requests or not iface.attributes):
             lines.append('                // placeholder(you): the scenario ends here until '
@@ -2485,13 +3989,21 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
               '                     (status == areg::ServiceConnectionState::ConnectionLost))',
               '            {',
               '                // The provider went away. The framework reconnects and',
-              '                // calls this again; the reconnect deadline is the exit.',
-              '                if (is_quitting() == false)',
+              '                // calls this again; the reconnect deadline is the exit.']
+    if stepped and latches:
+        lines.append('                settle();')
+    lines += ['                if (is_quitting() == false)',
               '                {',
               marker('peer_lost',
                      'what losing the provider means to this scenario', 20),
-              '                    arm_deadline(cReconnectSeconds);',
-              '                }',
+              '                    arm_deadline(cReconnectSeconds);']
+    if stepped:
+        lines.append('                    mPace.stop_timer();')
+    if holds:
+        lines.append('                    mHold.stop_timer();')
+    if latches:
+        lines.append('                    mLate.stop_timer();')
+    lines += ['                }',
               '            }',
               '            else if ((status == areg::ServiceConnectionState::Rejected) ||',
               '                     (status == areg::ServiceConnectionState::Shutdown))',
@@ -2501,8 +4013,7 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
               marker('service_refused',
                      'what a refused or shut-down service means here', 16),
               '                mDeadline.stop_timer();',
-              '                std::cerr << "service is " << areg::as_string(status)',
-              '                          << ", giving up" << std::endl;']
+              '                GLOBAL_ERR("service is %s, giving up", areg::as_string(status));']
     if stepped:
         lines.append('                mPace.stop_timer();')
     lines += ['                quit_with(1);',
@@ -2530,6 +4041,7 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
     if holds:
         lines += ['        if (&timer == &mHold)',
                   '        {',
+                  '            mHoldMs = 0;',
                   '            complete();',
                   '            return;',
                   '        }',
@@ -2562,7 +4074,8 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
                                                     iface.generated_params('response', name)))
         lines.append('    {')
         # A step that awaits this answer checks it, so a second marker would be empty.
-        if not any(step['awaits'] == ('response', name) for step in steps):
+        if not any(step['awaits'] == ('response', name) and not step.get('role')
+                   for step in steps):
             lines.append(marker(iface.spell('response', name),
                                 'what this answer means for the scenario'))
         if first and not steps:
@@ -2572,7 +4085,8 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
                 lines.append(placeholder('        mPace.stop_timer();'))
             lines.append(placeholder('        quit_with(0);'))
             first = False
-        lines += step_dispatch(steps, 'response', name, 8)
+        lines += step_dispatch(steps, 'response', name, 8, latches.get(('response', name))) \
+            or record_only(steps, 'response', name, 8)
         lines.append('    }')
         lines.append('')
 
@@ -2580,9 +4094,7 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
         lines.append('    void {}({}) final'.format(
             iface.spell('request', name, 'failed'),
             iface.generated_params('request', name, 'failed').strip()))
-        lines += ['    {',
-                  '        std::cerr << "request {} failed, reason " '
-                  '<< static_cast<int>(reason) << std::endl;'.format(name)]
+        lines += ['    {'] + request_failed_report(name)
         if stepped:
             lines.append('        mPace.stop_timer();')
         lines += ['        quit_with(1);',
@@ -2593,12 +4105,16 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
         lines.append('    void {}({}) final'.format(iface.spell('broadcast', name),
                                                     iface.generated_params('broadcast', name)))
         latch = latches.get(('broadcast', name))
-        said = marker(iface.spell('broadcast', name),
-                      'what this broadcast means in every step' if steps else
-                      'what this broadcast means for the scenario', 12 if latch else 8)
+        dispatch = step_dispatch(steps, 'broadcast', name, 8, latch)
+        hint = 'what this broadcast means for the scenario'
+        if steps:
+            hint = 'what this broadcast means in every step'
+        if dispatch:
+            hint += '; it runs before the step_ check of the same broadcast'
+        said = marker(iface.spell('broadcast', name), hint, 12 if latch else 8)
         lines.append('    {')
         lines += replayed(said, 8) if latch else [said]
-        lines += step_dispatch(steps, 'broadcast', name, 8, latch)
+        lines += dispatch or record_only(steps, 'broadcast', name, 8)
         lines += ['    }',
                   '']
 
@@ -2613,16 +4129,21 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
         lines += ['    {',
                   '        if (state == areg::DataState::DataIsOK)',
                   '        {']
-        said = marker('update_' + iface.spell('attribute', attr_name, 'get'),
-                      'the new value is ready to use', 16 if latch else 12)
+        dispatch = step_dispatch(steps, 'update', attr_name, 12, latch)
+        hint = 'the new value is ready to use'
+        if dispatch:
+            hint += '; ' + UPDATE_CHECKED
+        said = marker('update_' + iface.spell('attribute', attr_name, 'get'), hint,
+                      16 if latch else 12)
         lines += replayed(said, 12) if latch else [said]
         # With no request, the first update the provider's initial value sends ends it.
         if not steps and not iface.requests and attr_name == iface.attributes[0][0]:
             lines.append(placeholder('            quit_with(0);'))
-        lines += step_dispatch(steps, 'update', attr_name, 12, latch)
+        lines += dispatch or record_only(steps, 'update', attr_name, 12)
         lines += ['        }',
                   '    }',
                   '']
+    lines += role_methods(steps, latches)
     lines += ['private:',
               '    //! This component as a reference, for a member initialiser that takes one.',
               '    inline {} & self()'.format(cls),
@@ -2633,11 +4154,17 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
                   '    //! scenario is on.',
                   '    const char * step_slot()',
                   '    {',
-                  '        switch (mStep)',
+                  '        return step_slot(mStep);',
+                  '    }',
+                  '',
+                  '    //! The worksheet section holding the check of one step.',
+                  '    const char * step_slot(Step step)',
+                  '    {',
+                  '        switch (step)',
                   '        {']
         lines += ['        case Step::{}:  return "step_{}";'.format(step['enum'],
                                                                     step['name'])
-                  for step in steps]
+                  for step in with_hold(steps, hold)]
         lines += ['        default:  return "no step";',
                   '        }',
                   '    }',
@@ -2649,8 +4176,19 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
                   '        {']
         lines += ['        case Step::{}:  return "{}";'.format(step['enum'],
                                                                 step_detail(step))
-                  for step in steps]
+                  for step in with_hold(steps, hold)]
         lines += ['        default:  return "waits for nothing";',
+                  '        }',
+                  '    }',
+                  '',
+                  '    //! What kept the step the scenario is on once its check ran.',
+                  '    const char * step_kept()',
+                  '    {',
+                  '        switch (mStep)',
+                  '        {']
+        lines += ['        case Step::{}:  return "{}";'.format(step['enum'], step_kept(step))
+                  for step in steps if step['awaits']]
+        lines += ['        default:  return ". Its check ran and kept the step.";',
                   '        }',
                   '    }',
                   '',
@@ -2658,49 +4196,115 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
                   '    //! step waits for and the latest messages an earlier step discarded.',
                   '    void stalled()',
                   '    {',
-                  '        fail("the scenario stopped making progress");',
-                  '        std::cerr << "  " << step_slot() << " " << step_detail()',
-                  '                  << (mRan ? ". Its check ran and kept the step."',
-                  '                           : ". Nothing arrived.") << std::endl;',
-                  '        const uint32_t shown = mDroppedCount < cDroppedMost ? mDroppedCount : cDroppedMost;',
-                  '        if (mDroppedCount > shown)',
-                  '        {',
-                  '            std::cerr << "  dropped: " << (mDroppedCount - shown)',
-                  '                      << " earlier, not listed." << std::endl;',
-                  '        }',
-                  '        for (uint32_t index = mDroppedCount - shown; index < mDroppedCount; ++ index)',
-                  '        {',
-                  '            std::cerr << "  dropped: " << mDroppedWhat[index % cDroppedMost]',
-                  '                      << " arrived on " << mDroppedStep[index % cDroppedMost]',
-                  '                      << ", which has no check for it."',
-                  '                      << std::endl;',
-                  '        }',
+                  '        GLOBAL_ERR("FAIL [%s]: the scenario stopped making progress", step_slot());',
+                  '        GLOBAL_ERR("  %s %s%s", step_slot(), step_detail(),',
+                  '                   mRan ? step_kept() : ". Nothing arrived for it.");',
+                  '        fail(nullptr);',
                   '    }',
                   '',
-                  '    //! Remembers a message that arrived on a step with no check',
-                  '    //! for it. The stall report names the latest ones.',
-                  '    void dropped(const char * what)',
+                  '    //! Marks the arrival being handled as one no step checks.',
+                  '    void dropped()',
                   '    {',
-                  '        mDroppedWhat[mDroppedCount % cDroppedMost] = what;',
-                  '        mDroppedStep[mDroppedCount % cDroppedMost] = step_slot();',
-                  '        ++ mDroppedCount;',
+                  '        mark("no step checks it, dropped");',
                   '    }',
                   '',
-                  '    //! How many discarded messages the stall report names.',
-                  '    static constexpr uint32_t cDroppedMost{ 4 };',
-                  '    const char * mDroppedWhat[cDroppedMost]{};   //!< What each was.',
-                  '    const char * mDroppedStep[cDroppedMost]{};   //!< Where each was.',
-                  '    uint32_t     mDroppedCount{ 0 };   //!< How many there were.',
-                  '']
+                  '    //! Sets what became of the arrival being handled.',
+                  '    void mark(const char * done)',
+                  '    {',
+                  '        if (mTrailCount != 0)',
+                  '        {',
+                  '            mTrailDone[(mTrailCount - 1) % cTrailMost] = done;',
+                  '        }',
+                  '    }',
+                  '',
+                  '    //! Completes the trail entry of one arrival once its handler returned,',
+                  '    //! and records it as what ended the step it arrived on.',
+                  '    void settle(uint32_t at, Step before, const char * what, bool first)',
+                  '    {',
+                  '        if (mStep != before)',
+                  '        {',
+                  '            mEndedBy[static_cast<uint32_t>(before)] = what;',
+                  '            mEndedFirst[static_cast<uint32_t>(before)] = first;',
+                  '        }',
+                  '',
+                  '        const uint32_t slot{ at % cTrailMost };',
+                  '        if ((at + cTrailMost < mTrailCount) || (mTrailDone[slot] != nullptr))',
+                  '        {',
+                  '            return;',
+                  '        }',
+                  '',
+                  '        mTrailDone[slot] = is_quitting() ? "its check took it and failed"',
+                  '                         : mStep != before ? "its check took it and ended the step"',
+                  '                         : "its check took it and kept the step waiting";',
+                  '    }',
+                  '',
+                  '    //! Logs what ended each step so far, then the latest arrivals and',
+                  '    //! what became of each.',
+                  '    void print_trail()',
+                  '    {',
+                  '        const uint32_t current{ static_cast<uint32_t>(mStep) };',
+                  '        if (current > static_cast<uint32_t>(Step::Start) + 1)',
+                  '        {',
+                  '            GLOBAL_ERR("  how each step ended:");',
+                  '        }',
+                  '',
+                  '        for (uint32_t index = static_cast<uint32_t>(Step::Start) + 1; index < current; ++ index)',
+                  '        {',
+                  '            if (mEndedBy[index] != nullptr)',
+                  '            {',
+                  '                GLOBAL_ERR("    %s: ended by %s%s", step_slot(static_cast<Step>(index)), mEndedBy[index],',
+                  '                           mEndedFirst[index] ? " (the value it already had on subscribing, before any request)" : "");',
+                  '            }',
+                  '            else',
+                  '            {',
+                  '                GLOBAL_ERR("    %s: ended by its wait, or ran no check", step_slot(static_cast<Step>(index)));',
+                  '            }',
+                  '        }',
+                  '',
+                  '        const uint32_t shown{ mTrailCount < cTrailMost ? mTrailCount : cTrailMost };',
+                  '        if (shown == 0)',
+                  '        {',
+                  '            return;',
+                  '        }',
+                  '',
+                  '        GLOBAL_ERR("  the last %u arrivals, oldest first:", static_cast<unsigned int>(shown));',
+                  '        for (uint32_t index = mTrailCount - shown; index < mTrailCount; ++ index)',
+                  '        {',
+                  '            const uint32_t slot{ index % cTrailMost };',
+                  '            GLOBAL_ERR("    %s%s%s on %s: %s", mTrailWhat[slot],',
+                  '                       mTrailFirst[slot] ? " (the value it already had on subscribing, before any request)" : "",',
+                  '                       mTrailLate[slot] ? " (kept earlier, replayed)" : "",',
+                  '                       mTrailStep[slot],',
+                  '                       mTrailDone[slot] != nullptr ? mTrailDone[slot] : "its check was running");',
+                  '        }',
+                  '    }',
+                  '',
+                  '    //! How many of the latest arrivals the trail keeps.',
+                  '    static constexpr uint32_t cTrailMost{ 8 };',
+                  '    const char * mTrailWhat[cTrailMost]{};   //!< What each arrival was.',
+                  '    const char * mTrailStep[cTrailMost]{};   //!< The step each arrived on.',
+                  '    const char * mTrailDone[cTrailMost]{};   //!< What became of each.',
+                  '    bool         mTrailFirst[cTrailMost]{};  //!< True for a value from subscribing.',
+                  '    bool         mTrailLate[cTrailMost]{};   //!< True for a kept one replayed.',
+                  '    uint32_t     mTrailCount{ 0 };   //!< How many arrived so far.',
+                  '    const char * mEndedBy[static_cast<uint32_t>(Step::Done) + 1]{};   //!< What ended each step.',
+                  '    bool         mEndedFirst[static_cast<uint32_t>(Step::Done) + 1]{};   //!< True when that was a value from subscribing.']
+        lines += ['    bool         {}{{ false }};   //!< True for the value subscribing delivers.'
+                  .format(fresh_flag(name)) for name in fresh_attributes(steps, iface)]
+        lines += ['']
     lines += ['    //! Ends the scenario as a failure, naming what went wrong and the',
               '    //! step the scenario was on.',
               '    void fail(const char * why)',
               '    {']
     if steps:
-        lines += ['        std::cerr << "FAIL [" << step_slot() << "]: " << why',
-                  '                  << std::endl;']
+        lines += ['        if (why != nullptr)',
+                  '        {',
+                  '            GLOBAL_ERR("FAIL [%s]: %s", step_slot(), why);',
+                  '        }',
+                  '',
+                  '        print_trail();']
     else:
-        lines.append('        std::cerr << "FAIL: " << why << std::endl;')
+        lines.append('        GLOBAL_ERR("FAIL: %s", why);')
     lines += ['        mDeadline.stop_timer();']
     if stepped:
         lines.append('        mPace.stop_timer();')
@@ -2742,6 +4346,20 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
                   '    void progressed()',
                   '    {   mIdleTicks = 0; }',
                   '',
+                  '    //! Starts the pace and the stall watchdog from zero while the provider',
+                  '    //! is connected. A lost provider stops both.',
+                  '    void resume_pace()',
+                  '    {',
+                  '        mPace.stop_timer();',
+                  '        if (is_connected())',
+                  '        {',
+                  '            progressed();',
+                  '            mPace.start_timer({}, static_cast<areg::DispatcherThread &>'
+                  '(master_thread()),'.format(STEP_INTERVAL_MS),
+                  '                              areg::TimerBase::CONTINUOUSLY);',
+                  '        }',
+                  '    }',
+                  '',
                   '    areg::Timer  mPace;   //!< Spaces the requests of the scenario.',
                   '',
                   '    //! Ticks of no progress that end the run, one tick a second.',
@@ -2761,7 +4379,60 @@ def consumer_class(iface, cls, steps=(), driver=None, hold=None):
 # application storage, which outlives them. Generating this is what stops an
 # application inventing a global for its exit code: a scenario that asserts a non-zero
 # exit passes falsely when nothing ever sets one.
-EXIT_CODE = ['constexpr char const _exitCode[]{ "exitCode" };',
+# The project's own configuration file, which the generator writes once and every
+# generated main() names in setup(). areg's build copies its own areg.init into the
+# same folder on every build, so the project's file has a name of its own.
+CONFIG_NAME = 'project.init'
+CONFIG_TEXT = '''# The configuration of this project's programs; main() reads it in Application::setup().
+# A relative path is resolved against the folder of the executable.
+config::*::version          = 2.0.0
+router::*::service          = mtrouter
+router::*::connect          = tcpip
+router::*::enable::tcpip    = true
+router::*::address::tcpip   = localhost
+router::*::port::tcpip      = 8181
+log::*::version             = 2.0.0
+log::*::enable              = true
+log::*::target              = file
+log::*::enable::file        = true
+log::*::enable::remote      = false
+log::*::enable::debug       = false
+log::*::file::location      = ./logs/%appname%_%time%.log
+log::*::file::append        = false
+log::*::layout::message     = %d: [ %t  %p >>> ] %m%n
+log::*::scope::areg_*       = NOTSET ;
+log::*::scope::src_services_* = NOTSET ;
+log::*::scope::*            = DEBUG ;
+'''
+CONFIG_CMAKE = ('configure_file("${{CMAKE_CURRENT_SOURCE_DIR}}/../config/{0}" '
+                '"${{CMAKE_RUNTIME_OUTPUT_DIRECTORY}}/config/{0}" COPYONLY)'.format(CONFIG_NAME))
+
+
+def ensure_config(out):
+    """Writes config/project.init beside out once, and the line of out/CMakeLists.txt
+    that copies it next to the executables. Returns the paths written."""
+    written = []
+    path = os.path.join(os.path.dirname(os.path.abspath(out)), 'config', CONFIG_NAME)
+    if not os.path.isfile(path):
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, 'w', encoding='utf-8') as handle:
+            handle.write(CONFIG_TEXT)
+        written.append(path)
+    cmake = os.path.join(out, 'CMakeLists.txt')
+    if os.path.isfile(cmake):
+        with open(cmake, encoding='utf-8') as handle:
+            text = handle.read()
+        if CONFIG_CMAKE not in text:
+            with open(cmake, 'w', encoding='utf-8') as handle:
+                handle.write(text.rstrip('\n') + '\n' + CONFIG_CMAKE + '\n')
+            written.append(cmake)
+    return written
+
+
+EXIT_CODE = ['//! The configuration file this program reads, in its executable\'s folder.',
+             'constexpr char const _configFile[]{{ "./config/{}" }};'.format(CONFIG_NAME),
+             '',
+             'constexpr char const _exitCode[]{ "exitCode" };',
              '',
              '//! Ends the application with this exit code, in storage that outlives',
              '//! the components.',
@@ -2781,9 +4452,31 @@ EXIT_CODE = ['constexpr char const _exitCode[]{ "exitCode" };',
              '}',
              '']
 
+def main_top(program=''):
+    """The log scope and the file-scope section of a main.cpp: its includes and helpers."""
+    return ['GLOBAL_LOG_SCOPE({}_main, log);'.format(program or 'app'), '',
+            marker('main_top' + ('_' + program if program else ''),
+                   'the includes and helpers this main.cpp needs, at file scope, or one '
+                   '// line', 0), '']
+
+
+def main_run(body, program=''):
+    """The main() lines with the section for what the program starts once its model is
+    loaded and before it waits to quit."""
+    slot = 'main_run' + ('_' + program if program else '')
+    lines = []
+    for line in body:
+        lines.append(line)
+        if '::load_model(' in line:
+            lines.append(marker(slot, 'what this program starts once its model is loaded, '
+                                'before it waits to quit: a thread, an event loop, a reader; '
+                                'quit_with(code) ends the program. Or one // line', 4))
+    return lines
+
+
 EXIT_MAIN = ['int main()',
              '{',
-             '    areg::Application::setup();',
+             '    areg::Application::setup(true, true, true, true, false, _configFile);',
              '    areg::Application::load_model(_modelName);',
              '    areg::Application::wait_quit(areg::WAIT_INFINITE);',
              '    areg::Application::unload_model(_modelName);',
@@ -2797,6 +4490,9 @@ EXIT_MAIN = ['int main()',
 HOLD_FLAG = '--hold'
 HOLD_NAME = 'peer_lost_hold'
 HOLD_MS = 1000
+# The silent hold before it, so work the provider started shows before the loss.
+HOLD_LEAD_NAME = 'peer_lost_lead'
+HOLD_LEAD_MS = 500
 
 HOLD_CODE = ['constexpr char const _hold[]{ "hold" };',
              '',
@@ -2809,7 +4505,7 @@ HOLD_CODE = ['constexpr char const _hold[]{ "hold" };',
 
 HOLD_MAIN = ['int main(int argc, char * argv[])',
              '{',
-             '    areg::Application::setup();',
+             '    areg::Application::setup(true, true, true, true, false, _configFile);',
              '',
              '    // "{}" makes the steps hold once, so a scenario can take the provider away.'
              .format(HOLD_FLAG),
@@ -2823,39 +4519,6 @@ HOLD_MAIN = ['int main(int argc, char * argv[])',
              '',
              '    areg::Application::load_model(_modelName);'] + EXIT_MAIN[4:]
 
-# The console quit path, asked of nearly every task. End of input is not a quit
-# request: a process started without a console is handed a stream nothing is ever
-# written to, so the loop blocks there and the service keeps running.
-CONSOLE_INCLUDES = ['#include <iostream>', '#include <string>']
-
-MAIN_BODY = ['int main()',
-             '{',
-             '    areg::Application::setup();',
-             '    areg::Application::load_model(_modelName);',
-             '',
-             '    // Quits on "-q" or "--quit" from the console. Any other input is',
-             '    // ignored, and end of input keeps the service running.',
-             '    bool quitRequested{ false };',
-             '    std::string line;',
-             '    while (std::getline(std::cin, line))',
-             '    {',
-             '        if ((line == "-q") || (line == "--quit"))',
-             '        {',
-             '            quitRequested = true;',
-             '            break;',
-             '        }',
-             '    }',
-             '    if (quitRequested == false)',
-             '    {',
-             '        areg::Application::wait_quit(areg::WAIT_INFINITE);',
-             '    }',
-             '',
-             '    areg::Application::unload_model(_modelName);',
-             '    areg::Application::release();',
-             '    return 0;',
-             '}',
-             '']
-
 def provider_name(iface):
     """The provider component: named after the service, like its generated base."""
     return iface.name + 'Provider'
@@ -2866,21 +4529,22 @@ def consumer_name(iface):
     return iface.name + 'Consumer'
 
 
-def provider_registration(iface, indent):
+def provider_registration(iface, indent, workers=()):
     pad = ' ' * indent
     cls = provider_name(iface)
     return [pad + 'BEGIN_REGISTER_THREAD("ProviderThread")',
             pad + '    BEGIN_REGISTER_COMPONENT("{}", {})'.format(cls, cls),
             pad + '        REGISTER_IMPLEMENT_SERVICE({}::ServiceName, {}::InterfaceVersion)'
-            .format(iface.name, iface.name),
-            pad + '    END_REGISTER_COMPONENT("{}")'.format(cls),
+            .format(iface.name, iface.name)] + \
+        worker_registration(workers, pad + '        ') + \
+           [pad + '    END_REGISTER_COMPONENT("{}")'.format(cls),
             pad + 'END_REGISTER_THREAD("ProviderThread")']
 
 
 def class_includes(iface, machine=None):
     """The framework headers the types of these documents need."""
     wanted = set()
-    hosted = [inner for inner, _, _ in machine.imports] if machine else []
+    hosted = [inner for inner, _, _ in machine.all_imports()] if machine else []
     for document in [iface, machine] + hosted:
         if document is None:
             continue
@@ -3004,7 +4668,11 @@ def component_files(cls, brief, includes, class_lines, state_slot, prelude=(),
     """The .hpp and the .cpp of one component, named after its class."""
     declaration, definitions = split_class(cls, class_lines)
     private = declaration.index('private:')
-    declaration.insert(private + 1, marker(state_slot, 'private: ' + state_hint, 4))
+    declaration[private + 1:private + 1] = [
+        '    //! The log scope of GLOBAL_INFO, GLOBAL_WARN and GLOBAL_ERR in this class.',
+        '    static areg::ScopeMessage & _global_scope();',
+        '',
+        marker(state_slot, 'private: ' + state_hint, 4)]
     guard = cls.upper() + '_HPP'
     header = ['/**',
               ' * \\file    {}.hpp'.format(cls),
@@ -3015,7 +4683,8 @@ def component_files(cls, brief, includes, class_lines, state_slot, prelude=(),
               '',
               '#include "areg/base/areg_global.h"',
               '#include "areg/component/Component.hpp"',
-              '#include "areg/component/ComponentThread.hpp"']
+              '#include "areg/component/ComponentThread.hpp"',
+              '#include "areg/logging/areg_log.h"']
     header += includes + ['']
     header += list(prelude)
     header += declaration + ['', '#endif // {}'.format(guard), '']
@@ -3025,15 +4694,24 @@ def component_files(cls, brief, includes, class_lines, state_slot, prelude=(),
               ' **/',
               '#include "{}.hpp"'.format(cls),
               '',
-              '#include <iostream>',
-              '',
               '#include "areg/appbase/Application.hpp"',
+              '#include "areg/logging/areg_log.h"',
+              '',
+              '// GLOBAL_INFO, GLOBAL_WARN and GLOBAL_ERR anywhere in this file log in this scope.',
+              'GLOBAL_LOG_SCOPE({}, log);'.format(cls),
+              '',
+              '#if AREG_LOGGING',
+              'areg::ScopeMessage & {}::_global_scope()'.format(cls),
+              '{',
+              '    return ::_global_scope();',
+              '}',
+              '#endif  // AREG_LOGGING',
               '']
     source += unused_allowed(definitions)
     return [(cls + '.hpp', '\n'.join(header)), (cls + '.cpp', '\n'.join(source))]
 
 
-# The consumer ends the application through this; main() defines it, next to the
+# A component ends the application through this; main() defines it, next to the
 # storage it writes.
 QUIT_DECLARATION = ['//! Ends the application with this exit code, in storage that outlives',
                     '//! the components. Defined next to main().',
@@ -3052,7 +4730,8 @@ HOLD_DECLARATION = ['//! True when main() was given "{}". Defined next to main()
 MAIN_INCLUDES = ['#include "areg/base/areg_global.h"',
                  '#include "areg/appbase/Application.hpp"',
                  '#include "areg/base/String.hpp"',
-                 '#include "areg/component/ComponentLoader.hpp"']
+                 '#include "areg/component/ComponentLoader.hpp"',
+                 '#include "areg/logging/areg_log.h"']
 
 
 # The task of a two-process application asks for the two programs in separate
@@ -3061,13 +4740,58 @@ MAIN_INCLUDES = ['#include "areg/base/areg_global.h"',
 PROVIDER_DIR = {'ipc': 'provider/', 'local': ''}
 CONSUMER_DIR = {'ipc': 'consumer/', 'local': ''}
 
+
+# The hint of a header design.json "sources" names, which holds no generated class.
+OWN_HEADER = 'the whole header ('
+
+
+def own_sources(specs, folders):
+    """The files design.json "sources" names, as [(path under src/, text)], each one
+    marker that is the whole file. folders are the directories a program compiles."""
+    import gen_docs
+    entries = []
+    for path in specs or []:
+        spec, _skipped = gen_docs.load_spec(path)
+        entries += [entry for entry in spec.get('sources') or [] if isinstance(entry, dict)]
+    produced = []
+    names = set(entry.get('file', '') for entry in entries)
+    for entry in entries:
+        name = entry.get('file', '')
+        folder = name.rsplit('/', 1)[0] + '/' if '/' in name else ''
+        if folder not in folders:
+            fail('"sources" names "{}", and no program compiles src/{}. A file goes in one '
+                 'of: {}'.format(name, folder or '(the top)', ', '.join(
+                     'src/' + each for each in sorted(folders)) or 'src/'))
+        stem, ext = os.path.splitext(os.path.basename(name))
+        marker = '{}_{}'.format(stem, ext[1:])
+        what = (entry.get('description') or 'a file of your own').strip().rstrip('.')
+        if ext == '.cpp':
+            own = os.path.splitext(name)[0] + '.hpp'
+            own = own if own in names else ''
+            text = ('#include "areg/logging/areg_log.h"\n{include}\nGLOBAL_LOG_SCOPE({stem}, log);\n\n'
+                    '// TODO(you) {marker}: the whole source ({what}) below its log scope{has}; '
+                    'it logs with GLOBAL_INFO(...) and declares no scope of its own\n').format(
+                        stem=stem, marker=marker, what=what,
+                        include='#include "src/{}"\n'.format(own) if own else '',
+                        has=' and its own header' if own else '')
+        else:
+            guard = '{}_{}'.format(stem.upper(), ext[1:].upper())
+            text = ('#ifndef {guard}\n#define {guard}\n\n'
+                    '// TODO(you) {marker}: ' + OWN_HEADER + '{what}), included as '
+                    '"src/{name}"\n\n#endif // {guard}\n').format(
+                        guard=guard, marker=marker, what=what, name=name)
+        produced.append((name, text))
+    return produced
+
+
 # What the scaffold's CMakeLists.txt names, and what it becomes once the
 # application is written into its folders.
 SCAFFOLD_MAINS = {'provider.cpp': 'provider/main.cpp',
                   'consumer.cpp': 'consumer/main.cpp'}
 
 
-def app_files(iface, mode, include_root, machine=None, steps=(), driver=None, timers=()):
+def app_files(iface, mode, include_root, machine=None, steps=(), driver=None, timers=(),
+              workers=(), own=()):
     """The whole application: one .hpp and .cpp per component, and the model with main().
 
     Returns a list of (file name, text). The result compiles and runs as written;
@@ -3081,20 +4805,26 @@ def app_files(iface, mode, include_root, machine=None, steps=(), driver=None, ti
                           '#include "{}/{}FSM.hpp"'.format(include_root, machine.name)]
         provider_base += ['#include "{}/{}ActionHandler.hpp"'.format(
             os.path.dirname(document).replace('\\', '/'), inner.name)
-            for inner, document, _ in machine.imports]
+            for inner, document, _ in machine.all_imports()]
     consumer_base = ['#include "{}/{}ConsumerBase.hpp"'.format(include_root, iface.name)]
 
-    provider_lines = provider_class(iface, provider_cls, machine, timers)
+    provider_lines = provider_class(iface, provider_cls, machine, timers, workers)
+    provider_base += ['#include "{}.hpp"'.format(worker['name']) for worker in workers]
     hold = peer_hold(steps) if mode == 'ipc' else None
     consumer_lines = consumer_class(iface, consumer_cls, steps, driver, hold)
     produced = [(PROVIDER_DIR[mode] + name, text) for name, text in component_files(
         provider_cls, 'Provider of the {} service.'.format(iface.name),
         class_includes(iface, machine) + timer_includes(provider_lines) + ['']
-        + provider_base,
-        provider_lines, 'provider_state')]
+        + provider_base + [marker('includes', INCLUDES_HINT, 0)],
+        provider_lines, 'provider_state', QUIT_DECLARATION)]
+    for worker in workers:
+        produced += [(PROVIDER_DIR[mode] + name, text)
+                     for name, text in worker_files(iface, worker, include_root,
+                                                   PROVIDER_DIR[mode] in own)]
     produced += [(CONSUMER_DIR[mode] + name, text) for name, text in component_files(
         consumer_cls, 'Consumer of the {} service.'.format(iface.name),
-        class_includes(iface) + timer_includes(consumer_lines) + [''] + consumer_base,
+        class_includes(iface) + timer_includes(consumer_lines) + [''] + consumer_base
+        + ([includes_marker('consumer_state', 'consumer')] if CONSUMER_DIR[mode] in own else []),
         consumer_lines, 'consumer_state',
         QUIT_DECLARATION + (HOLD_DECLARATION if hold else []),
         'the members and helpers your checks need, defined here, or one // line saying '
@@ -3117,12 +4847,12 @@ def app_files(iface, mode, include_root, machine=None, steps=(), driver=None, ti
                      .format(iface.name))
         lines += ['#include "{}.hpp"'.format(provider_cls),
                   '#include "{}.hpp"'.format(consumer_cls), '']
-        lines += EXIT_CODE
+        lines += EXIT_CODE + main_top()
         lines += ['constexpr char const _modelName[]{{ "{}Model" }};'.format(iface.name),
                   '',
                   'BEGIN_MODEL(_modelName)',
                   '']
-        lines += provider_registration(iface, 4)
+        lines += provider_registration(iface, 4, workers)
         lines += ['',
                   '    BEGIN_REGISTER_THREAD("ConsumerThread")',
                   '        BEGIN_REGISTER_COMPONENT("{}", {})'.format(consumer_cls, consumer_cls),
@@ -3132,25 +4862,25 @@ def app_files(iface, mode, include_root, machine=None, steps=(), driver=None, ti
                   '',
                   'END_MODEL(_modelName)',
                   '']
-        lines += EXIT_MAIN
+        lines += main_run(EXIT_MAIN)
         return produced + [('main.cpp', '\n'.join(lines))]
 
     provider = head(PROVIDER_DIR[mode] + 'main.cpp',
                     'The process that provides the {} service.'.format(iface.name))
-    provider += CONSOLE_INCLUDES + ['']
     provider += ['#include "{}.hpp"'.format(provider_cls), '']
+    provider += EXIT_CODE + main_top('provider')
     provider += ['constexpr char const _modelName[]{ "ProviderModel" };',
                  '',
                  'BEGIN_MODEL(_modelName)']
-    provider += provider_registration(iface, 4)
+    provider += provider_registration(iface, 4, workers)
     provider += ['END_MODEL(_modelName)', '']
-    provider += MAIN_BODY
+    provider += main_run(EXIT_MAIN, 'provider')
 
     consumer = head(CONSUMER_DIR[mode] + 'main.cpp',
                     'The process that consumes the {} service.'.format(iface.name))
     consumer += (['#include <cstring>', ''] if hold else [])
     consumer += ['#include "{}.hpp"'.format(consumer_cls), '']
-    consumer += EXIT_CODE + (HOLD_CODE if hold else [])
+    consumer += EXIT_CODE + (HOLD_CODE if hold else []) + main_top('consumer')
     consumer += ['constexpr char const _modelName[]{ "ConsumerModel" };',
                  '',
                  '// A unique role name lets several consumer processes run at the same time.',
@@ -3164,7 +4894,7 @@ def app_files(iface, mode, include_root, machine=None, steps=(), driver=None, ti
                  '    END_REGISTER_THREAD("ConsumerThread")',
                  'END_MODEL(_modelName)',
                  '']
-    consumer += HOLD_MAIN if hold else EXIT_MAIN
+    consumer += main_run(HOLD_MAIN if hold else EXIT_MAIN, 'consumer')
     return produced + [(PROVIDER_DIR[mode] + 'main.cpp', '\n'.join(provider)),
                        (CONSUMER_DIR[mode] + 'main.cpp', '\n'.join(consumer))]
 
@@ -3212,7 +4942,7 @@ def app_sources(produced, mode):
     if mode == 'local':
         return {'main.cpp': components}
     return {PROVIDER_DIR[mode] + 'main.cpp':
-            [n for n in components if n.endswith('Provider.cpp')],
+            [n for n in components if n.startswith(PROVIDER_DIR[mode])],
             CONSUMER_DIR[mode] + 'main.cpp':
             [n for n in components if n.endswith('Consumer.cpp')]}
 
@@ -3298,15 +5028,11 @@ def update_cmake(path, sources=None, documents=None, prune=None):
     return changed
 
 
-# What a process is expected to print, until the rule that prints it is written.
+# What a process is expected to write, until the rule that writes it is written.
 # It is a regular expression that matches nothing, so a scenario left unfilled fails
 # and says which line is missing rather than passing on no evidence at all.
 SCENARIO_TODO = ('TODO(you) {}: one regular expression per line, each a line this '
-                 'process prints that proves a requirement')
-
-# The scenario that proves the generated console quit loop. It expects no output, so
-# it holds no hole and passes as written.
-QUIT_SCENARIO = 'quit'
+                 'process writes that proves a requirement')
 
 # The scenario that proves the generated reconnect deadline: the provider is killed
 # while it serves the consumer, and the consumer exits 1. Its one hole is the line
@@ -3332,40 +5058,56 @@ def held_step(steps):
 def peer_hold(steps):
     """The hold step the generated consumer carries, or None when it has no place.
 
-    It follows the first step that awaits an answer, else the first that sends or
-    awaits anything, and only when a step comes after that one. Its name is one no
-    declared step has.
+    It follows the last step that sends before the first step awaiting a broadcast,
+    else the first step that awaits an answer, else the first that sends or awaits
+    anything, and only when a step comes after that one. A silent lead step of
+    HOLD_LEAD_MS comes before it. Their names are ones no declared step has.
     """
     steps = list(steps)
+    finished = [index for index, step in enumerate(steps)
+                if step['awaits'] and step['awaits'][0] == 'broadcast'
+                and not step.get('role')]
+    started = [index for index in range(finished[0]) if steps[index]['send']
+               and not steps[index].get('role')] if finished else []
     answered = [index for index, step in enumerate(steps)
-                if step['awaits'] and step['awaits'][0] == 'response']
+                if step['awaits'] and step['awaits'][0] == 'response'
+                and not step.get('role')]
     acting = [index for index, step in enumerate(steps) if step['awaits'] or step['send']]
-    after = (answered or acting or [None])[0]
+    after = (started[-1:] or answered or acting or [None])[0]
     if after is None or after >= len(steps) - 1:
         return None
     taken = set(step['name'] for step in steps) | set(step['enum'] for step in steps)
-    name, suffix = HOLD_NAME, 1
-    while name in taken or pascal(name) in taken:
-        suffix += 1
-        name = '{}{}'.format(HOLD_NAME, suffix)
-    return {'name': name, 'enum': pascal(name), 'send': None, 'call': None, 'args': [],
-            'awaits': None, 'wait': HOLD_MS, 'hold': True, 'after': after}
+
+    def free(base):
+        name, suffix = base, 1
+        while name in taken or step_enum(name) in taken:
+            suffix += 1
+            name = '{}{}'.format(base, suffix)
+        taken.add(name)
+        return name
+
+    name, lead = free(HOLD_NAME), free(HOLD_LEAD_NAME)
+    return {'name': name, 'enum': step_enum(name), 'send': None, 'call': None, 'args': [],
+            'awaits': None, 'wait': HOLD_MS, 'hold': True, 'after': after,
+            'lead': {'name': lead, 'enum': step_enum(lead), 'send': None, 'call': None,
+                     'args': [], 'awaits': None, 'wait': HOLD_LEAD_MS, 'hold': True,
+                     'keep': True}}
 
 
 def with_hold(steps, hold):
-    """The steps the driver runs: the declared ones, and the hold after its step."""
+    """The steps the driver runs: the declared ones, and the lead and hold after its step."""
     steps = list(steps)
     if hold is None:
         return steps
-    return steps[:hold['after'] + 1] + [hold] + steps[hold['after'] + 1:]
-STOP_TODO = 'TODO(you) {}: a line the lead prints while the provider serves it'
-STOP_HINT = ('one line "{lead}" prints in scenario "{scenario}", matched against the '
-             'output of "{lead}" only. "{target}" is killed when it appears, and the '
+    return steps[:hold['after'] + 1] + [hold['lead'], hold] + steps[hold['after'] + 1:]
+STOP_TODO = 'TODO(you) {}: a line the lead writes while the provider serves it'
+STOP_HINT = ('one line "{lead}" writes in scenario "{scenario}", matched against the '
+             'lines of "{lead}" only. "{target}" is killed when it appears, and the '
              'kill lands about 50 ms later: a send that is answered at once finishes '
-             'sooner than that. Pick a line printed after the first answer and before '
+             'sooner than that. Pick a line written after the first answer and before '
              'something that takes time. A design with steps holds the lead still by '
              'adding a {{"name": "...", "wait": 300}} step right after the step that '
-             'prints it; one without steps picks a line the lead prints while it is '
+             'writes it; one without steps picks a line the lead writes while it is '
              'still being served. A regular expression, one line.')
 
 
@@ -3414,8 +5156,9 @@ def update_scenarios(path, mode, iface, steps=(), reconnect=0):
         print('  kept   {} -- its expectations are yours, not the scaffold\'s'
               .format(path))
         return
+    # With steps the lead prints what each step saw, so it alone holds a hole.
     for index, spec in enumerate(procs):
-        spec['expect'] = [SCENARIO_TODO.format(
+        spec['expect'] = [] if steps and index < len(procs) - 1 else [SCENARIO_TODO.format(
             expect_slot(scenarios[0].get('name', 'scenario'), spec))]
         if index == len(procs) - 1:
             spec['exit'] = 0
@@ -3425,22 +5168,6 @@ def update_scenarios(path, mode, iface, steps=(), reconnect=0):
     # raised to cover the whole sequence.
     scenarios[0]['timeout'] = max(int(scenarios[0].get('timeout', 60)),
                                   60 + len(iface.requests) * STEP_INTERVAL_MS // 1000)
-
-    # The provider's main() carries the console quit loop, so the scenario that
-    # proves it is written here too. "stdin" is fed the moment the process starts,
-    # which is why the provider leads a scenario of its own.
-    quit_written = False
-    if mode == 'ipc' and not any(s.get('name') == QUIT_SCENARIO for s in scenarios):
-        lead = procs[0]
-        scenarios.append({'name': QUIT_SCENARIO,
-                          'timeout': 30,
-                          'router': scenarios[0].get('router', True),
-                          'procs': [{'binary': lead['binary'],
-                                     'name': proc_label(lead),
-                                     'lead': True,
-                                     'stdin': ['-q'],
-                                     'exit': 0}]})
-        quit_written = True
 
     # A consumer that loses its provider exits 1 through the generated reconnect
     # deadline. With no deadline there is no exit to check.
@@ -3474,17 +5201,8 @@ def update_scenarios(path, mode, iface, steps=(), reconnect=0):
     print('wrote  {}'.format(path))
     print('  {} process(es), router {}. Each "expect" hole is a section of the'
           .format(len(procs), 'on' if scenarios[0].get('router') else 'off'))
-    print('  worksheet, one regular expression per line. Two more keys exist and no')
-    print('  page is needed for them.')
-    print('  "stdin": ["-q"] is written the moment the process starts, so it goes')
-    print('  on the lead of a scenario of its own; on any other process it quits that')
-    print('  process before its peers are served. A scenario-level')
+    print('  worksheet, one regular expression per line. A scenario-level')
     print('  "stop": {"proc": "<name>", "after": "<regex>"} takes a peer away.')
-    if quit_written:
-        print('  A "{}" scenario was added: the provider alone, fed "-q", exit 0. It'
-              .format(QUIT_SCENARIO))
-        print('  proves the console quit path the generated main() already carries,')
-        print('  and it needs nothing from you.')
     if lost_written:
         print('  A "{}" scenario was added: {} is killed while it serves, and {} has to'
               .format(PEER_LOST_SCENARIO, proc_label(procs[0]), proc_label(procs[-1])))
@@ -3563,6 +5281,9 @@ def report_todos(out, mode):
 
 
 def main():
+    if '--programs' in sys.argv[1:]:
+        import gen_programs
+        return gen_programs.main([arg for arg in sys.argv[1:] if arg != '--programs'])
     parser = argparse.ArgumentParser(
         description='Write the components a .siml or .fsml document needs.')
     parser.add_argument('--doc', required=True, help='the .siml or .fsml document')
@@ -3648,7 +5369,10 @@ def main():
                      'machine.'.format(machine.name))
         steps = steps_of(args.spec, iface)
         produced = app_files(iface, args.mode, include_root, machine, steps,
-                             driver_of(args.spec, iface), timers_of(args.spec, iface))
+                             driver_of(args.spec, iface), timers_of(args.spec, iface),
+                             workers_of(args.spec, iface), own_headers(args.spec))
+        folders = set((PROVIDER_DIR[args.mode], CONSUMER_DIR[args.mode]))
+        produced += own_sources(args.spec, folders)
         retained = [(file_name,
                      write(os.path.join(args.out, file_name), text, args.force))
                     for file_name, text in produced]
@@ -3667,11 +5391,18 @@ def main():
             documents.append(('addStateMachine',
                               os.path.relpath(args.machine).replace('\\', '/')))
             documents += [('addStateMachine', os.path.normpath(document).replace('\\', '/'))
-                          for _, document, _ in machine.imports]
-        changed = update_cmake(os.path.join(args.out, 'CMakeLists.txt'),
-                               app_sources(produced, args.mode), documents)
+                          for _, document, _ in machine.all_imports()]
+        sources = app_sources(produced, args.mode)
+        for file_name, _ in own_sources(args.spec, folders):
+            folder = file_name.rsplit('/', 1)[0] + '/' if '/' in file_name else ''
+            listed = sources.setdefault(folder + 'main.cpp', [])
+            if file_name.endswith('.cpp') and file_name not in listed:
+                listed.append(file_name)
+        changed = update_cmake(os.path.join(args.out, 'CMakeLists.txt'), sources, documents)
         for change in changed or []:
             print('  {}/CMakeLists.txt: {}'.format(args.out.replace('\\', '/'), change))
+        for path in ensure_config(args.out):
+            print('wrote  {}'.format(os.path.relpath(path).replace('\\', '/')))
         update_scenarios(args.scenarios, args.mode, iface, steps,
                          driver_of(args.spec, iface)['reconnect_seconds'])
         first = not os.path.isfile(WORKSHEET)

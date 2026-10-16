@@ -8,9 +8,9 @@
 #   python3 tools/agent/api_help.py DataState       # a scoped enumeration
 #   python3 tools/agent/api_help.py --search timer  # names holding a word
 #
-# --full adds the documentation block a declaration carries. Everything printed
-# is read from the headers at run time and nothing is written down here, so an
-# answer cannot disagree with the framework it describes.
+# A member answer of a few declarations carries their briefs; --full adds them to every
+# answer, uncut. Everything printed is read from the headers at run time and nothing is
+# written down here, so an answer cannot disagree with the framework it describes.
 #
 # Reading a header instead costs 20 KB to 60 KB, carried in context and re-sent
 # on every later request. This answers in a few lines.
@@ -22,10 +22,30 @@ import json
 import os
 import re
 import sys
+import textwrap
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 FRAMEWORK = os.path.join(ROOT, 'framework', 'areg')
+
+sys.path.insert(0, HERE)
+from gen_skeleton import CLASSES as DESIGN_CLASSES, CLASS_HEADERS, WORKSHEET  # noqa: E402
+
+# The methods the generator writes for a service of the design, by the shape of the name.
+GENERATED = (
+    (re.compile(r'^notify_on_broadcast_(\w+)$'),
+     'a public method the generator writes on the consumer and on every client of the '
+     'service that declares broadcast "{0}": void {1}(bool notify = true). true '
+     'subscribes and its broadcast_{0} section runs on every one sent after; false '
+     'unsubscribes.'),
+    (re.compile(r'^notify_on_(\w+)_update$'),
+     'a public method the generator writes on the consumer and on every client of the '
+     'service that declares the attribute "{0}": void {1}(bool notify = true). true '
+     'subscribes, and the value the provider holds arrives at once in its update '
+     'section, then every change; false unsubscribes. The getter reads the value held.'),
+    (re.compile(r'^(?:request|response|broadcast|set)_(\w+)$'),
+     'a method the generator writes for "{0}" of a service of the design.'),
+)
 
 BLOCK_COMMENT = re.compile(r'/\*.*?\*/', re.S)
 LINE_COMMENT = re.compile(r'//[^\n]*')
@@ -40,6 +60,10 @@ ENUMERATOR = re.compile(r'^([A-Za-z_]\w*)')
 
 # One declaration: an optional return type, the name, and the parameter list.
 DECLARATION = re.compile(r'^(.*?\b)([A-Za-z_~]\w*)\s*\((.*)$', re.S)
+
+# "bool operator == (const String& other) const" and "operator bool() const".
+OPERATOR = re.compile(r'^(.*?)\boperator\s*(\(\)|\[\]|[^\w\s(]+|[A-Za-z_][\w:\s\*&]*?)'
+                      r'\s*\((.*)$', re.S)
 
 # "constexpr CharPos START_POS { areg::FIRST_INDEX };" and "const int SIZE = 8;".
 # A constant carries no parameter list, so DECLARATION never matches one.
@@ -58,6 +82,10 @@ noexcept explicit operator delete new
 
 
 MEMBERS = os.path.join(ROOT, 'docs', 'agent', 'members.json')
+
+# A member answer of at most this many declarations prints each one's brief, cut to BRIEF_CHARS.
+BRIEF_DECLARATIONS = 4
+BRIEF_CHARS = 200
 
 
 def catalogued(name):
@@ -128,6 +156,7 @@ class Header(object):
         self.classes = {}        #!< class name -> [signature]
         self.enums = {}          #!< enumeration name -> [enumerator]
         self.constants = {}      #!< constant name -> (owner, signature, doc)
+        self.bases = {}          #!< class name -> [public base class name]
         self.seen = set()
         self._parse()
 
@@ -148,6 +177,7 @@ class Header(object):
             head = CLASS_HEAD.match(line)
             if head and '(' not in line.split(head.group(1))[0]:
                 pending = head.group(1)
+                self._bases(pending, line, lines[number + 1:number + 4])
             if buffer or ('(' in line and ';' not in line.split('(')[0]):
                 if not buffer:
                     start = number
@@ -171,6 +201,31 @@ class Header(object):
                     owners.pop()
                 depth = max(0, depth - 1)
 
+    def _bases(self, name, line, following):
+        """Records the public base classes a class head names."""
+        text = line[CLASS_HEAD.match(line).end():]
+        for extra in following:
+            if '{' in text or ';' in text:
+                break
+            text += ' ' + extra
+        text = re.sub(r'^final\b', '', text.split('{')[0].split(';')[0].strip()).strip()
+        if not text.startswith(':') or text.startswith('::'):
+            return
+        text = text[1:]
+        while '<' in text:
+            shorter = re.sub(r'<[^<>]*>', '', text)
+            if shorter == text:
+                break
+            text = shorter
+        is_struct = line.lstrip().startswith('struct')
+        for part in text.split(','):
+            words = part.split()
+            if not words or 'private' in words or 'protected' in words:
+                continue
+            if 'public' not in words and not is_struct:
+                continue
+            self.bases.setdefault(name, []).append(words[-1].split('::')[-1])
+
     def _declaration(self, statement, owners, raw_lines, start):
         statement = ' '.join(statement.split())
         if not statement.endswith((';', '{', '}')) and '{' not in statement:
@@ -181,12 +236,18 @@ class Header(object):
         statement = statement.rstrip(';').strip()
         if not statement or statement.startswith('#') or '##' in statement:
             return
-        found = DECLARATION.match(statement)
-        if not found:
-            return
-        name = found.group(2)
-        if name in NOT_A_NAME or found.group(1).rstrip().endswith('operator'):
-            return
+        found = OPERATOR.match(statement)
+        if found:
+            symbol = ' '.join(found.group(2).split())
+            name = ('operator ' + symbol if symbol[:1].isalpha() or symbol[:1] == '_'
+                    else 'operator' + symbol.replace(' ', ''))
+        else:
+            found = DECLARATION.match(statement)
+            if not found:
+                return
+            name = found.group(2)
+            if name in NOT_A_NAME or found.group(1).rstrip().endswith('operator'):
+                return
         prefix = found.group(1).rstrip()
         if '=' in prefix or ')' in prefix:
             return
@@ -294,15 +355,27 @@ def answer_member(headers, name, full):
     if not groups:
         return False
     total = sum(len(v) for v in groups.values())
+    briefs = full or total <= BRIEF_DECLARATIONS
     print('{} -- {} declaration(s)'.format(name, total))
     for (owner, path), entries in sorted(groups.items()):
         print('')
         print('{}  ({})'.format(owner, path))
         for signature, doc in entries:
             print('  {}'.format(signature))
-            if full and doc:
-                print('      {}'.format(doc))
+            if briefs and doc:
+                print('      {}'.format(doc if full else short_brief(doc)))
+    if not briefs:
+        print('')
+        print('--full adds what each one does.')
     return True
+
+
+def short_brief(doc):
+    """The brief cut to BRIEF_CHARS, at the last sentence end inside it when there is one."""
+    if len(doc) <= BRIEF_CHARS:
+        return doc
+    cut = doc.rfind('. ', 0, BRIEF_CHARS)
+    return doc[:cut + 1] if cut > 0 else doc[:BRIEF_CHARS].rstrip() + '...'
 
 
 def answer_constant(headers, name):
@@ -319,6 +392,31 @@ def answer_constant(headers, name):
         print('  {}'.format(signature))
         found = True
     return found
+
+
+def answer_macro(headers, name):
+    """The first definition of a macro of this name, with its header and brief."""
+    pattern = re.compile(r'^\s*#\s*define\s+' + re.escape(name) + r'(\([^)]*\))?[ \t]+\S')
+    for header in headers:
+        with open(header.path, encoding='utf-8', errors='ignore') as handle:
+            lines = handle.read().splitlines()
+        for number, line in enumerate(lines):
+            hit = pattern.match(line)
+            if hit is None:
+                continue
+            brief = ''
+            for back in range(number - 1, max(number - 8, -1), -1):
+                found = re.search(r'\\brief\s+(.*)', lines[back])
+                if found:
+                    brief = found.group(1).strip()
+                    break
+                if not lines[back].strip().startswith(('*', '/**')):
+                    break
+            print('{}{} -- a macro  ({})'.format(name, hit.group(1) or '', header.relative))
+            if brief:
+                print('  {}'.format(brief))
+            return True
+    return False
 
 
 def role_in(signature, name):
@@ -368,8 +466,30 @@ def mentioned(headers, name):
     return None
 
 
+def lineage(headers, name):
+    """The class and every public base above it, nearest first."""
+    chain = [name]
+    for current in chain:
+        for header in headers:
+            for base in header.bases.get(current, []):
+                if base not in chain:
+                    chain.append(base)
+    return chain
+
+
+def inherited(headers, base, below):
+    """The names a base declares that a class below it inherits: no constructor, destructor
+    or assignment, which every class declares for itself."""
+    hidden = set(below) | {base}
+    return [(member, header) for header in headers
+            for member, owner, _signature, _doc in header.members
+            if owner == base and member not in hidden and member.lstrip('~') not in hidden
+            and member != 'operator=']
+
+
 def answer_class(headers, name, full):
-    """What one class declares, in the order the header declares it."""
+    """What one class declares, in the order the header declares it, then what it
+    inherits from each public base."""
     found = False
     for header in headers:
         if name not in header.classes:
@@ -380,7 +500,46 @@ def answer_class(headers, name, full):
               .format(name, header.relative, len(entries)))
         for signature in entries:
             print('  {}'.format(signature))
+    if found:
+        chain = lineage(headers, name)
+        for index, base in enumerate(chain[1:], 1):
+            entries = inherited(headers, base, chain[:index])
+            if not entries:
+                continue
+            names = list(dict.fromkeys(member for member, _header in entries))
+            print('inherited from areg::{}  ({}) -- {} name(s); {}::<name> gives the '
+                  'signatures'.format(base, entries[0][1].relative, len(names), name))
+            print(textwrap.fill(', '.join(names), width=96, initial_indent='  ',
+                                subsequent_indent='  ', break_on_hyphens=False))
     return found
+
+
+def answer_qualified(headers, name, full):
+    """Class::member, answered from the class and every public base above it."""
+    owner, _, member = name.rpartition('::')
+    owner = owner.split('::')[-1]
+    if not owner or owner == 'areg':
+        return answer_member(headers, member, full)
+    chain = lineage(headers, owner)
+    groups = []
+    for base in chain:
+        for header in headers:
+            entries = [(signature, doc) for found, cls, signature, doc in header.members
+                       if found == member and cls == base]
+            if entries:
+                groups.append((base, header.relative, entries))
+    if not groups:
+        return False
+    print('{} -- {} declaration(s)'.format(name, sum(len(g[2]) for g in groups)))
+    for base, path, entries in groups:
+        print('')
+        print('areg::{}  ({}){}'.format(base, path, '' if base == owner else
+                                         ', inherited by areg::' + owner))
+        for signature, doc in entries:
+            print('  {}'.format(signature))
+            if full and doc:
+                print('      {}'.format(doc))
+    return True
 
 
 def answer_enum(headers, name):
@@ -394,6 +553,12 @@ def answer_enum(headers, name):
             return True
     return False
 
+
+# The functions gen_skeleton.py defines beside main(), which no header declares.
+SCAFFOLD_NAMES = {
+    'quit_with': 'void quit_with(int code);   // ends this program with that exit code',
+    'is_quitting': 'bool is_quitting();         // true once quit_with() has run',
+}
 
 # The spellings agents write from memory, and what areg calls each one. These are the
 # names 40-base-api.md lists as the ones most often borrowed from std::string and
@@ -437,6 +602,28 @@ def search(headers, word):
     return bool(members or classes or enums or constants)
 
 
+def answer_generated(name):
+    """What a name the generator writes is, and its lines in the project's worksheet."""
+    for pattern, text in GENERATED:
+        match = pattern.match(name)
+        if match:
+            break
+    else:
+        return False
+    print('"{}" is not in the areg headers: it is {}'.format(name, text.format(match.group(1), name)))
+    try:
+        with open(WORKSHEET, encoding='utf-8') as handle:
+            lines = [line.rstrip() for line in handle if name in line]
+    except OSError:
+        lines = []
+    if lines:
+        print('')
+        print('{} names it:'.format(WORKSHEET))
+        for line in lines[:4]:
+            print('  ' + line.lstrip('#| ').strip())
+    return True
+
+
 def main():
     parser = argparse.ArgumentParser(
         description='What one framework name is, from the public areg headers.')
@@ -463,16 +650,35 @@ def main():
     for index, name in enumerate(args.names):
         if index:
             print('')
+        if name in DESIGN_CLASSES:
+            cpp = DESIGN_CLASSES[name]
+            print('"{}" is the design type; the generated C++ spells it {} ({}).'
+                  .format(name, cpp, CLASS_HEADERS[cpp]))
+            print('')
+            if not answer_class(headers, cpp.split('::')[-1], args.full):
+                missing += 1
+            continue
         if args.as_class:
             answered = answer_class(headers, name, args.full)
+        elif '::' in name and not args.enum:
+            answered = answer_qualified(headers, name, args.full)
         elif args.enum:
             answered = answer_enum(headers, name)
         else:
             answered = (answer_member(headers, name, args.full)
                         or answer_class(headers, name, args.full)
                         or answer_enum(headers, name)
-                        or answer_constant(headers, name))
+                        or answer_constant(headers, name)
+                        or answer_macro(headers, name))
         if not answered:
+            if answer_generated(name):
+                continue
+            if name in SCAFFOLD_NAMES:
+                print('"{}" is not in the areg headers: gen_skeleton.py writes it into '
+                      'the main.cpp of every program it generates.'.format(name))
+                print('')
+                print('  {}'.format(SCAFFOLD_NAMES[name]))
+                continue
             if catalogued(name):
                 print('"{}" is a member of the framework -- docs/agent/members.json '
                       'lists it -- but no header declares it on a line this reader '
@@ -506,7 +712,7 @@ def main():
                                         'namespace areg', path))
                 print('  {}'.format(signature))
                 continue
-            print('"{}" is not a member, a class, an enumeration or a constant in the '
+            print('"{}" is not a member, a class, an enumeration, a constant or a macro in the '
                   'public areg headers, and appears in no declaration they carry.'
                   .format(name))
             instead = REPLACED_BY.get(name)
@@ -515,11 +721,9 @@ def main():
             if instead and declares(headers, instead):
                 print('It is a spelling borrowed from another library. areg calls it '
                       '"{}": look that up.'.format(instead))
-            print('Operators are reached through the type and are not members, so '
-                  'this says nothing about + or ==, and no name holds it either.'
-                  if not search(headers, name) else
-                  'Operators are reached through the type and are not members, so '
-                  'this says nothing about + or ==.')
+            if not search(headers, name):
+                print('No name holds it either.')
+            print('An operator is listed by its class: api_help.py <Class> --class.')
             missing += 1
     return 1 if missing else 0
 

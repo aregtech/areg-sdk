@@ -2,7 +2,6 @@
  * \file    main.cpp
  * \brief   Publishing an attribute and sending a broadcast, with one subscriber.
  **/
-#include <iostream>
 
 #include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
@@ -12,6 +11,9 @@
 
 #include "src/services/MonitorProviderBase.hpp"
 #include "src/services/MonitorConsumerBase.hpp"
+#include "areg/logging/areg_log.h"
+
+GLOBAL_LOG_SCOPE(monitor_main, log);
 
 constexpr uint32_t ALARM_LIMIT{ 40u };
 
@@ -78,22 +80,22 @@ protected:
     {
         if (state == areg::DataState::DataIsOK)
         {
-            std::cout << "consumer: temperature is " << Temperature << std::endl;
+            GLOBAL_INFO("consumer: temperature is %u", static_cast<unsigned int>(Temperature));
         }
         else
         {
-            std::cout << "consumer: temperature not available" << std::endl;
+            GLOBAL_INFO("consumer: temperature not available");
         }
     }
 
     void broadcast_alarm_raised(uint32_t level) final
     {
-        std::cout << "consumer: alarm at " << level << std::endl;
+        GLOBAL_INFO("consumer: alarm at %u", static_cast<unsigned int>(level));
     }
 
     void response_measure(bool taken) final
     {
-        std::cout << "consumer: measurement " << (taken ? "taken" : "refused") << std::endl;
+        GLOBAL_INFO("consumer: measurement %s", taken ? "taken" : "refused");
         areg::Application::signal_quit();
     }
 };
@@ -118,7 +120,7 @@ END_MODEL(_modelName)
 
 int main()
 {
-    areg::Application::setup();
+    areg::Application::setup(true, true, true, true, false, "./config/project.init");
     areg::Application::load_model(_modelName);
     areg::Application::wait_quit(areg::WAIT_INFINITE);
     areg::Application::unload_model(_modelName);

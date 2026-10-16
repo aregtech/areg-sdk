@@ -3,7 +3,6 @@
  * \brief   A worker thread doing the slow part of a request, a custom event in
  *          each direction, a watchdog on the component thread, and logging.
  **/
-#include <iostream>
 
 #include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
@@ -17,6 +16,9 @@
 
 #include "src/services/ScanServiceProviderBase.hpp"
 #include "src/services/ScanServiceConsumerBase.hpp"
+#include "areg/logging/areg_log.h"
+
+GLOBAL_LOG_SCOPE(scan_main, log);
 
 DEF_LOG_SCOPE(scan_Scanner, request_scan);
 DEF_LOG_SCOPE(scan_ScanWorker, process_event);
@@ -79,13 +81,6 @@ public:
     { }
 
 protected:
-    void register_event_consumers(areg::WorkerThread & /*workThread*/,
-                                  areg::ComponentThread & /*masterThread*/) final
-    { }
-
-    void unregister_event_consumers(areg::WorkerThread & /*workThread*/) final
-    { }
-
     void process_event(const ScanRequestData & data) final
     {
         LOG_SCOPE(scan_ScanWorker, process_event);
@@ -98,7 +93,7 @@ protected:
             steps.write(reinterpret_cast<const uint8_t *>(&square), sizeof(square));
         }
         LOG_INFO("scan of depth %u found %u", data.depth(), found);
-        std::cout << "worker: scanned depth " << data.depth() << std::endl;
+        GLOBAL_INFO("worker: scanned depth %u", data.depth());
         ScanResultEvent::send_event(ScanResultData(found, steps, data.session()));
     }
 };
@@ -115,7 +110,11 @@ public:
         // The model stores the consumer name qualified by the role name, so take
         // it from the entry rather than repeating the literal.
         , mWorker(entry.mWorkerThreads[0].mConsumerName)
-    { }
+    {
+        // Added before the worker exists, so no result it sends comes early.
+        ScanResultEvent::add_listener(static_cast<ScanResultEventConsumer &>(self()),
+                                      static_cast<areg::DispatcherThread &>(owner));
+    }
 
     static constexpr std::string_view ThreadName  { "ScanWorkerThread" };
     static constexpr std::string_view ConsumerName{ "ScanWorkerConsumer" };
@@ -130,13 +129,6 @@ protected:
             mWorkerThread = &workerThread;
             ScanRequestEvent::add_listener(mWorker, workerThread);
         }
-    }
-
-    void startup_component(areg::ComponentThread & comThread) final
-    {
-        ScanResultEvent::add_listener(static_cast<ScanResultEventConsumer &>(self()),
-                                      static_cast<areg::DispatcherThread &>(comThread));
-        areg::Component::startup_component(comThread);
     }
 
     void shutdown_component(areg::ComponentThread & comThread) final
@@ -170,7 +162,7 @@ protected:
         LOG_SCOPE(scan_Scanner, request_scan);
         const areg::SessionID session{ unblock_current_request() };
         LOG_DBG("handing depth %u to the worker thread, session %u", depth, session);
-        std::cout << "scanner: asked for depth " << depth << std::endl;
+        GLOBAL_INFO("scanner: asked for depth %u", static_cast<unsigned int>(depth));
         ScanRequestEvent::send_event(ScanRequestData(depth, session));
     }
 
@@ -188,8 +180,7 @@ protected:
             ++ counted;
         }
 
-        std::cout << "scanner: " << counted << " steps arrived in "
-                  << data.steps().size_used() << " bytes" << std::endl;
+        GLOBAL_INFO("scanner: %u steps arrived in %u bytes", counted, data.steps().size_used());
 
         if (prepare_response(data.session()))
         {
@@ -233,7 +224,7 @@ protected:
 
     void response_scan(unsigned int found) final
     {
-        std::cout << "client: found " << found << std::endl;
+        GLOBAL_INFO("client: found %u", found);
         areg::Application::signal_quit();
     }
 };
@@ -243,7 +234,7 @@ constexpr char const _modelName[]{ "ScanModel" };
 BEGIN_MODEL(_modelName)
 
     // The watchdog restarts this thread if one event takes longer than 5 seconds.
-    // It does nothing unless setup() is called with startWatchdog true.
+    // The service manager that setup() starts also starts the watchdog.
     BEGIN_REGISTER_THREAD_EX("ScannerThread", 5000)
         BEGIN_REGISTER_COMPONENT("Scanner", Scanner)
             REGISTER_IMPLEMENT_SERVICE(ScanService::ServiceName, ScanService::InterfaceVersion)

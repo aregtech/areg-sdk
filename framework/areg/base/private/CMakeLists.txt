@@ -2,6 +2,7 @@
 macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/base/private/DateTime.cpp
 	areg/base/private/DebugDefs.cpp
+	areg/base/private/FatalError.cpp
 	areg/base/private/MessageEnvelope.cpp
 	areg/base/private/File.cpp
 	areg/base/private/FileBase.cpp

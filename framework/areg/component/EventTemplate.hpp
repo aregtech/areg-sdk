@@ -2,9 +2,9 @@
 #define AREG_COMPONENT_EVENTTEMPLATE_HPP
 /************************************************************************
  * This file is part of the Areg SDK core engine.
- * Areg SDK is dual-licensed under Free open source (Apache version 2.0
- * License) and Commercial (with various pricing models) licenses, depending
- * on the nature of the project (commercial, research, academic or free).
+ * Areg SDK is dual-licensed under Free open source (Apache version 2.0 License)
+ * and Commercial (with various pricing models) licenses, depending on the
+ * nature of the project (commercial, research, academic or free).
  * You should have received a copy of the Areg SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
@@ -115,12 +115,12 @@
 /**
  * \brief   Declares Event and Consumer classes. Standard version, without registering Consumer in the thread.
  *          Do not call. Use AREG_DECLARE_EVENT or AREG_DECLARE_EVENT_EX instead.
- * \param   DATA_CLASS      The name of data object type. Can be any class and should have assigning operator available.
+ * \param   DataClass       The name of data object type. Can be any class and should have assigning operator available.
  * \param   EventClass      The event class name.
  * \param   ConsumerClass   The event consumer class name.
  * \param   EventKind       The type of event to create.
  **/
-#define AREG_DEFINE_EVENT_STANDARD(DATA_CLASS, EventClass, ConsumerClass, EventKind)                                  \
+#define AREG_DEFINE_EVENT_STANDARD(DataClass, EventClass, ConsumerClass, EventKind)                                   \
 template <class DATA_CLASS> class AregImpl_##EventClass;                                                                \
 template <class DATA_CLASS> class AregImpl_##ConsumerClass;                                                             \
 template <class DATA_CLASS> class AregImpl_##ConsumerClass##Extended;                                                   \
@@ -240,7 +240,7 @@ private:                                                                        
     /** Sets internal1 (DispatcherThread*) then delivers the event. Named lvalue required.       **/                      \
     static bool _send(areg::DispatcherThread& dispThread, AregImpl_##EventClass<DATA_CLASS>& event);                    \
 };                                                                                                                      \
-using EventClass = AregImpl_##EventClass<DATA_CLASS>;                                                                   \
+using EventClass = AregImpl_##EventClass<DataClass>;                                                                     \
 AREG_IMPLEMENT_EVENT_REGISTRATION_TEMPLATE(template <class DATA_CLASS>, AregImpl_##EventClass<DATA_CLASS>)              \
 template <class DATA_CLASS>                                                                                             \
 void AregImpl_##ConsumerClass<DATA_CLASS>::start_event_processing(areg::Event& eventElem)                               \
@@ -468,7 +468,10 @@ inline bool AregImpl_##EventClass<DATA_CLASS>::send_event(AregImpl_##EventClass<
 template <class DATA_CLASS>                                                                                             \
 inline bool AregImpl_##EventClass<DATA_CLASS>::add_listener(AregImpl_##ConsumerClass<DATA_CLASS>& listener,             \
                                                              const areg::String& whichThread)                           \
-{   return areg::Event::add_listener(AregImpl_##EventClass<DATA_CLASS>::CLASS_ID, listener, whichThread); }             \
+{                                                                                                                       \
+    return areg::Event::add_listener(AregImpl_##EventClass<DATA_CLASS>::CLASS_ID, listener,                             \
+                                     static_cast<uint32_t>(areg::ThreadAddress(whichThread)));                          \
+}                                                                                                                       \
 template <class DATA_CLASS>                                                                                             \
 inline bool AregImpl_##EventClass<DATA_CLASS>::add_listener(AregImpl_##ConsumerClass<DATA_CLASS>& listener,             \
                                                              areg::DispatcherThread& dispThread)                        \
@@ -476,7 +479,10 @@ inline bool AregImpl_##EventClass<DATA_CLASS>::add_listener(AregImpl_##ConsumerC
 template <class DATA_CLASS>                                                                                             \
 inline bool AregImpl_##EventClass<DATA_CLASS>::remove_listener(AregImpl_##ConsumerClass<DATA_CLASS>& listener,          \
                                                                 const areg::String& whichThread)                        \
-{   return areg::Event::remove_listener(AregImpl_##EventClass<DATA_CLASS>::CLASS_ID, listener, whichThread); }          \
+{                                                                                                                       \
+    return areg::Event::remove_listener(AregImpl_##EventClass<DATA_CLASS>::CLASS_ID, listener,                          \
+                                        static_cast<uint32_t>(areg::ThreadAddress(whichThread)));                       \
+}                                                                                                                       \
 template <class DATA_CLASS>                                                                                             \
 inline bool AregImpl_##EventClass<DATA_CLASS>::remove_listener(AregImpl_##ConsumerClass<DATA_CLASS>& listener,          \
                                                                 areg::DispatcherThread& dispThread)                     \
@@ -544,7 +550,7 @@ template <class DATA_CLASS>                                                     
 AregImpl_##ConsumerClass##Extended<DATA_CLASS>::AregImpl_##ConsumerClass##Extended()                                            \
     : AregImpl_##ConsumerClass<DATA_CLASS> ( )                                                                                  \
 {                                                                                                                               \
-    areg::DispatcherThread& dispThread = areg::DispatcherThread::dispatcher_thread(ConsumerThreadName);                         \
+    areg::DispatcherThread& dispThread = areg::DispatcherThread::dispatcher_thread(areg::ThreadAddress(ConsumerThreadName));    \
     VERIFY( dispThread.register_event_consumer(AregImpl_##EventClass<DATA_CLASS>::CLASS_ID, self()) );                          \
 }                                                                                                                               \
 

@@ -2,9 +2,9 @@
 #define AREG_BASE_AREG_MACROS_H
 /************************************************************************
  * This file is part of the Areg SDK core engine.
- * Areg SDK is dual-licensed under Free open source (Apache version 2.0
- * License) and Commercial (with various pricing models) licenses, depending
- * on the nature of the project (commercial, research, academic or free).
+ * Areg SDK is dual-licensed under Free open source (Apache version 2.0 License)
+ * and Commercial (with various pricing models) licenses, depending on the
+ * nature of the project (commercial, research, academic or free).
  * You should have received a copy of the Areg SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
@@ -53,8 +53,8 @@
   **/
 #ifndef DECLARE_NOCOPY_TEMPLATE
 #define DECLARE_NOCOPY_TEMPLATE(ClassName, Typenames)                                               \
-        ClassName( const ClassName##Typenames & /*src*/ ) = delete;                                 \
-        ClassName##Typenames & operator = ( const ClassName##Typenames & /*src*/ ) = delete
+        ClassName( const ClassName Typenames & /*src*/ ) = delete;                                 \
+        ClassName Typenames & operator = ( const ClassName Typenames & /*src*/ ) = delete
 #endif // !DECLARE_NOCOPY_TEMPLATE
 
   /**
@@ -65,8 +65,8 @@
    **/
 #ifndef DECLARE_NOMOVE_TEMPLATE
 #define DECLARE_NOMOVE_TEMPLATE(ClassName, Typenames)                                               \
-            ClassName( ClassName##Typenames && /*src*/ ) noexcept = delete;                         \
-            ClassName##Typenames & operator = ( ClassName##Typenames && /*src*/ ) noexcept = delete
+            ClassName( ClassName Typenames && /*src*/ ) noexcept = delete;                         \
+            ClassName Typenames & operator = ( ClassName Typenames && /*src*/ ) noexcept = delete
 #endif // !DECLARE_NOMOVE_TEMPLATE
 
 #ifndef DECLARE_NOCOPY_NOMOVE_TEMPLATE

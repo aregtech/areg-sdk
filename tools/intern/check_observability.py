@@ -227,7 +227,11 @@ def main():
         if result.returncode != 0:
             print('FAIL  the consumer exited {}'.format(result.returncode))
             return 1
-        if 'consumer: greeted' not in (result.stdout + result.stderr):
+        logged = ''
+        for path in glob.glob(os.path.join(root, 'logs', 'consumer*.log')):
+            with open(path, encoding='utf-8', errors='replace') as handle:
+                logged += handle.read()
+        if 'consumer: greeted' not in (result.stdout + result.stderr + logged):
             print('FAIL  the two processes did not reach each other')
             return 1
 

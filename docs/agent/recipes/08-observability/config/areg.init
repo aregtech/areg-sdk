@@ -5,10 +5,11 @@ config::*::version              = 2.0.0
 
 log::*::version                 = 2.0.0
 log::*::enable                  = true
-log::*::target                  = remote
+log::*::target                  = remote | file
 log::*::enable::remote          = true
 log::*::enable::debug           = false
-log::*::enable::file            = false
+log::*::file::location          = ./logs/%appname%.log
+log::*::enable::file            = true
 log::*::remote::service         = logger
 
 # Everything off, then this application's own scopes on.

@@ -4,8 +4,9 @@
 #
 # Runs the project an agent built, after the agent has finished, against the
 # requirements every task prompt states. Each probe is generated from the
-# project's own scenarios.json and assumes no framework. The snapshot the agent
-# reads does not contain this file.
+# project's own scenarios.json and assumes no framework. The note "checked" reads
+# the step bodies of bodies.txt and is not scored. The snapshot the agent reads does
+# not contain this file.
 #
 #   python3 examples/ai-benchmark/verify_run.py <run directory>
 #   python3 examples/ai-benchmark/verify_run.py <run directory> --sanitize
@@ -17,6 +18,7 @@ import argparse
 import copy
 import json
 import os
+import re
 import statistics
 import subprocess
 import sys
@@ -25,11 +27,6 @@ import time
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.normpath(os.path.join(HERE, '..', '..', 'tools', 'agent')))
 import run_scenarios  # noqa: E402
-
-try:
-    import resource
-except ImportError:
-    resource = None
 
 START_DELAY = 3.0
 # The deadline the task asks the application to respect.
@@ -40,11 +37,35 @@ WAIT_LIMIT = 20.0
 # the limit is not refused for the seconds it did not spend waiting.
 WAIT_MARGIN = 10.0
 LOSS_POINTS = (0.25, 0.5, 0.75)
+# Seconds from the kill to the lead seeing the loss: the runner polls every 50 ms,
+# and the router then reports the closed connection. A lead that exits 0 inside
+# this window may have finished before the loss reached it.
+LOSS_LATENCY = 0.25
+# Seconds a process that gave up after a loss may take to end: areg's teardown and the
+# runner's poll. Unlike WAIT_MARGIN, no start-up falls inside a loss.
+LOSS_TEARDOWN = 3.0
 # Lines of the lead's own output a failed loss point keeps as its evidence.
 LOSS_TAIL_LINES = 8
-CPU_LIMIT = 0.5
+CPU_LIMIT = run_scenarios.CPU_LIMIT
+# The least time, in seconds, a normal run of a task with stated timing can take: half
+# of what its own waits add up to, so only a run that skips the timed work falls below.
+# Keyed by the prompt's file name; kept here and not in the prompt, so it cannot be met
+# by a sleep.
+MIN_SECONDS = {
+    'prompt-washer.md':        6.3,    # 12.6 s: every fill, stage, spin and failed attempt
+    'prompt-elevator.md':      4.2,    # 8.4 s: the floors travelled and four door sequences
+    'prompt-tempalarm.md':     2.2,    # 4.4 s: 22 readings of 200 ms up to the clear
+    'prompt-sensorgateway.md': 1.25,   # 2.5 s: 20 sets of 100 ms and 500 ms of silence
+    'prompt-greenhouse.md':    0.7,    # 1.4 s: five and then two degrees of 200 ms
+    'prompt-orderdesk.md':     0.45,   # 0.9 s: three charges of 300 ms in sequence
+    'prompt-chargepoint.md':   1.95,   # 3.9 s: bay 2's 30 kWh session, then bay 3's 2 kWh
+    'prompt-camera.md':        0.75,   # 1.5 s: 20 frames of 50 ms, 300 ms away, 20 more
+}
 SANITIZE_FLAGS = '-fsanitize=address,undefined -fno-omit-frame-pointer'
 SANITIZER_MARKS = ('ERROR: AddressSanitizer', 'runtime error:')
+
+# Probes reported with their evidence and left out of the score.
+NOTES = ('checked',)
 
 REQUIREMENTS = {
     'repeat':      'the scenario exits 0, every time it is run',
@@ -53,27 +74,294 @@ REQUIREMENTS = {
                    'never arrives',
     'peer-loss':   'if one side goes away mid-scenario, the other exits non-zero',
     'cpu':         'no busy-waiting',
+    'programs':    'as many separate programs as the task asks for, all in the normal run',
+    'lines':       'every line the task says its programs print, in the normal run',
+    'checked':     'a printed task line states only values its steps compared',
+    'timing':      'the timed work the task states takes its time in the normal run',
     'sanitize':    'no memory or undefined-behaviour defect (not a checklist item)',
 }
 
 
-def child_cpu():
-    """CPU seconds of every finished child process, or None where not measurable."""
-    if resource is None:
+# How a task names its programs, and how an agent reports its checklist.
+PROGRAMS_RE = re.compile(r'\b(two|three|four|five)\s+separate\s+programs\b', re.IGNORECASE)
+PROGRAM_COUNT = {'two': 2, 'three': 3, 'four': 4, 'five': 5}
+CLAIM_RE = re.compile(r'acceptance items passing\s*\|([^|\n]*)', re.IGNORECASE)
+COUNT_RE = re.compile(r'(\d+)\s+of\s+(?:the\s+)?(\d+)')
+# The lines a task says its programs print: a fenced block with the info string "lines".
+LINES_RE = re.compile(r'^```lines[ \t]*\n(.*?)^```', re.MULTILINE | re.DOTALL)
+PLACEHOLDER_RE = re.compile(r'<[^<>]+>')
+
+
+def task_file(run_dir):
+    """The path of the task prompt the run was given, from meta.txt, or ''."""
+    try:
+        with open(os.path.join(run_dir, 'meta.txt'), encoding='utf-8') as handle:
+            for line in handle:
+                key, _, value = line.partition(' ')
+                if key == 'task':
+                    return value.strip()
+    except OSError:
+        pass
+    return ''
+
+
+def min_seconds(run_dir):
+    """The least normal-run time of the run's task: by the prompt's file name, else by
+    the benchmark prompt with the same text, as a staged task.md is a copy of one."""
+    path = task_file(run_dir)
+    if os.path.basename(path) in MIN_SECONDS:
+        return MIN_SECONDS[os.path.basename(path)]
+    text = task_text(run_dir)
+    for name, seconds in MIN_SECONDS.items():
+        try:
+            with open(os.path.join(HERE, name), encoding='utf-8') as prompt:
+                if text and prompt.read() == text:
+                    return seconds
+        except OSError:
+            pass
+    return None
+
+
+def task_text(run_dir):
+    """The task prompt the run was given, or '' when it cannot be read."""
+    path = task_file(run_dir)
+    try:
+        with open(path, encoding='utf-8') as task:
+            return task.read()
+    except OSError:
+        return ''
+
+
+def probe_programs(scenario, run_dir):
+    """The normal scenario runs as many distinct programs as the task asks for."""
+    found = PROGRAMS_RE.search(task_text(run_dir))
+    if found is None:
+        return result('programs', None, 'the task names no number of separate programs')
+    need = PROGRAM_COUNT[found.group(1).lower()]
+    have = sorted(set(proc.get('binary') for proc in scenario.get('procs') or []))
+    return result('programs', len(have) >= need,
+                  '{} asked, {} in the normal run: {}'.format(need, len(have), ', '.join(have)))
+
+
+def task_lines(text):
+    """Every line of the task's "lines" blocks, in order."""
+    return [line.strip() for block in LINES_RE.findall(text)
+            for line in block.splitlines() if line.strip()]
+
+
+def line_pattern(line):
+    """A printed line ending with this text, any case and spacing; <name> is any value."""
+    parts = []
+    for index, piece in enumerate(PLACEHOLDER_RE.split(line)):
+        if index:
+            parts.append('.+?')
+        parts += [r'\s+' if token.isspace() else re.escape(token)
+                  for token in re.split(r'(\s+)', piece) if token]
+    return re.compile(r'(?<![0-9a-z])' + ''.join(parts) + r'\s*$', re.IGNORECASE)
+
+
+def judge_lines(wanted, outputs):
+    """Every wanted line is printed by some process of the normal run."""
+    if not wanted:
+        return result('lines', None, 'the task names no printed lines')
+    printed = [line for text in outputs.values() for line in text.splitlines()]
+    missing = [want for want in wanted
+               if not any(line_pattern(want).search(line) for line in printed)]
+    evidence = '{} of {} printed'.format(len(wanted) - len(missing), len(wanted))
+    if missing:
+        evidence += '; missing: ' + '; '.join('"{}"'.format(want) for want in missing)
+    return result('lines', not missing, evidence)
+
+
+# A section of bodies.txt, its C++ strings and comments, and a number in text or code.
+SECTION_RE = re.compile(r'^== (\S+)[ \t]*$', re.MULTILINE)
+STRING_RE = re.compile(r'"((?:[^"\\\n]|\\.)*)"')
+COMMENT_RE = re.compile(r'//[^\n]*|/\*.*?\*/', re.DOTALL)
+CODE_NUMBER_RE = re.compile(r'(?<![\w.])(\d+(?:\.\d+)?)[uUlLfF]*(?![\w.])')
+TEXT_NUMBER_RE = re.compile(r'(?:([A-Za-z_]+)\s+)?(?<![\w.])(\d+(?:\.\d+)?)(?![\w.])')
+SECONDS_RE = re.compile(r'\s*seconds?\b', re.IGNORECASE)
+STEP_PREFIX_RE = re.compile(r'\bstep\s+\d+\s*:', re.IGNORECASE)
+# A statement that prints, and a string a statement compares against.
+OUTPUT_RE = re.compile(r'\bcout\b|\bprintf\s*\(|\bputs\s*\(|\b(?:GLOBAL|LOG)_[A-Z]+\s*\(')
+COMPARED_STRING_RE = re.compile(
+    r'(?:==|!=)\s*(?:[\w:]+\s*[({]\s*)?"((?:[^"\\\n]|\\.)*)"'
+    r'|"((?:[^"\\\n]|\\.)*)"\s*[)}]?\s*(?:==|!=)'
+    r'|\b(?:find\w*|compare|starts_with|ends_with|contains)\s*\(\s*"((?:[^"\\\n]|\\.)*)"')
+
+
+def body_sections(text):
+    """{section name: body} of a bodies.txt, file prefix kept; a later one wins."""
+    sections = {}
+    marks = list(SECTION_RE.finditer(text))
+    for index, mark in enumerate(marks):
+        end = marks[index + 1].start() if index + 1 < len(marks) else len(text)
+        sections[mark.group(1)] = text[mark.end():end]
+    return sections
+
+
+def step_order(design):
+    """[(step name, its until and args values and its role)] of every interface's steps."""
+    return [(step.get('name', ''),
+             [str(value) for key in ('until', 'args') for value in (step.get(key) or {}).values()]
+             + ([str(step['role'])] if step.get('role') else []))
+            for spec in design.get('interfaces') or [] for step in spec.get('steps') or []]
+
+
+def number(text):
+    """A number as one spelling: 12, 12.0 and 12.00 are the same."""
+    return text.rstrip('0').rstrip('.') if '.' in text else text
+
+
+def stated_values(body, wanted):
+    """[(word, number)] a body prints as fixed text inside a task line, without step N:."""
+    pieces = [piece.lower() for line in wanted for piece in PLACEHOLDER_RE.split(line)]
+    body = COMMENT_RE.sub('', body)
+    masked = STRING_RE.sub(lambda found: '"' + 'x' * len(found.group(1)) + '"', body)
+    stated = []
+    for found in STRING_RE.finditer(body):
+        start = masked.rfind(';', 0, found.start()) + 1
+        end = masked.find(';', found.end())
+        if not OUTPUT_RE.search(masked[start:end if end >= 0 else len(masked)]):
+            continue
+        text = re.sub(r'\\[nrt]', ' ', found.group(1).replace('\\"', '"')).strip()
+        if len(text) < 6 or not any(text.lower() in piece for piece in pieces):
+            continue
+        text = STEP_PREFIX_RE.sub('', text)
+        for found_number in TEXT_NUMBER_RE.finditer(text):
+            word, value = found_number.group(1) or '', number(found_number.group(2))
+            seconds = SECONDS_RE.match(text, found_number.end()) and value.isdigit()
+            stated.append((word, value) + ((str(int(value) * 1000),) if seconds else ()))
+    return stated
+
+
+def compared_values(bodies, untils):
+    """Every number these bodies' code or compared strings hold, and every step value."""
+    found = []
+    for body in bodies:
+        body = COMMENT_RE.sub('', body)
+        code = STRING_RE.sub('""', body)
+        found += [number(value) for value in CODE_NUMBER_RE.findall(code)]
+        for groups in COMPARED_STRING_RE.findall(body):
+            found += [number(value) for text in groups
+                      for _, value in TEXT_NUMBER_RE.findall(text)]
+    return found + [number(value) for text in untils
+                    for value in re.findall(r'\d+(?:\.\d+)?', text)]
+
+
+def read_text(path):
+    """The text of a file, or None when it cannot be read."""
+    try:
+        with open(path, encoding='utf-8') as handle:
+            return handle.read()
+    except OSError:
         return None
-    usage = resource.getrusage(resource.RUSAGE_CHILDREN)
-    return usage.ru_utime + usage.ru_stime
+
+
+def read_json(path):
+    """A JSON file's object, or {} when it cannot be read."""
+    try:
+        with open(path, encoding='utf-8') as handle:
+            return json.load(handle)
+    except (OSError, ValueError):
+        return {}
+
+
+def judge_checked(wanted, bodies_text, design):
+    """Each fixed value a printed task line states is sent or compared by the steps it ends."""
+    if not wanted:
+        return result('checked', None, 'the task names no printed lines')
+    if bodies_text is None:
+        return result('checked', None, 'no bodies.txt: the step bodies cannot be read')
+    sections = body_sections(bodies_text)
+    order = step_order(design)
+    position = {'step_' + name: index for index, (name, _) in enumerate(order)}
+    short = {name: name.rpartition(':')[2] for name in sections}
+    printing = sorted((name for name in sections if stated_values(sections[name], wanted)),
+                      key=lambda name: position.get(short[name], -1))
+    shared = [body for name, body in sections.items() if short[name] == 'consumer_state']
+    unchecked = []
+    begin = 0
+    for name in printing:
+        if short[name] in position:
+            span = order[begin:position[short[name]] + 1]
+            begin = position[short[name]] + 1
+            steps = set('step_' + step for step, _ in span)
+            bodies = shared + [body for other, body in sections.items() if short[other] in steps]
+            untils = [value for _, values in span for value in values]
+        else:
+            bodies, untils = list(sections.values()), []
+        have = compared_values(bodies, untils)
+        missing = []
+        for word, value, *millis in stated_values(sections[name], wanted):
+            near = [value] + millis + ([str(int(value) - 1), str(int(value) + 1)]
+                                       if value.isdigit() and int(value) >= 10 else [])
+            match = next((one for one in near if one in have), None)
+            if match is not None:
+                have.remove(match)
+            else:
+                missing.append((word + ' ' + value).strip())
+        if missing:
+            unchecked.append('{} prints {} unchecked'.format(name, ', '.join(missing)))
+    if not printing:
+        return result('checked', True, 'no task line is printed as fixed text with a value')
+    evidence = '{} of {} printing bodies compare every value they print'.format(
+        len(printing) - len(unchecked), len(printing))
+    if unchecked:
+        evidence += '; ' + '; '.join(unchecked)
+    return result('checked', not unchecked, evidence)
+
+
+def judge_timing(least, lead_time):
+    """The normal run took at least the least time its task's stated waits allow."""
+    if least is None:
+        return result('timing', None, 'the task states no timing')
+    if not lead_time:
+        return result('timing', None, 'no passing normal run to time')
+    return result('timing', lead_time >= least,
+                  'a normal run takes {:.2f}s; the timing the task states needs at least '
+                  '{:.2f}s'.format(lead_time, least))
+
+
+def claim_counts(cell):
+    """("n of m" shown by output, "c of k" of the (code) items or None) of one report
+    cell, or None when it holds no count."""
+    counts = list(COUNT_RE.finditer(cell))
+    if not counts:
+        return None
+    code = next((found for found in counts[1:]
+                 if 'code' in cell[max(found.start() - 24, counts[0].end()):
+                                   found.end() + 24].lower()), None)
+    return ('{} of {}'.format(*counts[0].groups()),
+            '{} of {}'.format(*code.groups()) if code else None)
+
+
+def claimed(run_dir):
+    """The last acceptance counts the agent reported, as claim_counts gives them, or
+    (None, None).
+
+    Reported beside the probes and not scored: an agent counts an item it did not
+    observe as not passing, so a correct run can claim less than all.
+    """
+    claims = []
+    for name in ('run.out', 'transcript.jsonl'):
+        try:
+            with open(os.path.join(run_dir, name), encoding='utf-8', errors='replace') as handle:
+                claims += [found for found in map(claim_counts, CLAIM_RE.findall(
+                    handle.read().replace('\\n', '\n'))) if found]
+        except OSError:
+            continue
+    return claims[-1] if claims else (None, None)
 
 
 def run(scenario, build_dirs):
     """Runs one scenario. Returns (passed, detail, observed, wall, cpu)."""
     observed = {}
-    before = child_cpu()
+    before = run_scenarios.child_cpu()
     started = time.time()
     passed, _, detail = run_scenarios.run_scenario(scenario, build_dirs, False, True,
                                                    observed)
     wall = time.time() - started
-    cpu = None if before is None else child_cpu() - before
+    cpu = None if before is None else run_scenarios.child_cpu() - before
     return passed, detail, observed, wall, cpu
 
 
@@ -136,12 +424,18 @@ def progress(text):
 
 
 def probe_repeat(scenario, build_dirs, count):
-    """The normal scenario, count times. Returns (result, lead times, CPU loads)."""
-    passes, leads, loads, first = 0, [], [], None
+    """The normal scenario, count times.
+
+    Returns (result, lead times, CPU loads, the outputs of the first passing run, or
+    of the first run when none passed).
+    """
+    passes, leads, loads, first, outputs = 0, [], [], None, None
     for index in range(count):
         progress('repeat: run {} of {}{}'.format(
             index + 1, count, ', {:.0f}s each'.format(leads[-1]) if leads else ''))
         passed, detail, observed, wall, cpu = run(scenario, build_dirs)
+        if outputs is None or (passed and not passes):
+            outputs = observed.get('outputs') or {}
         if not passed:
             first = first or detail
             continue
@@ -153,7 +447,7 @@ def probe_repeat(scenario, build_dirs, count):
     evidence = '{} of {} passed'.format(passes, count)
     if first:
         evidence += '; first failure: ' + first
-    return result('repeat', passes == count, evidence), leads, loads
+    return result('repeat', passes == count, evidence), leads, loads, outputs or {}
 
 
 def probe_start_order(scenario, build_dirs):
@@ -197,7 +491,12 @@ def probe_no_peer(scenario, build_dirs):
 
 
 def judge_loss_point(label, at, name, observed):
-    """One kill point. Returns (the loss was reached, it failed, the evidence)."""
+    """One kill point. Returns (the loss was reached, it failed, the evidence).
+
+    Every process the kill left running exits non-zero, each within WAIT_LIMIT and
+    LOSS_TEARDOWN of the loss or of the survivor that exited before it: a process
+    that waits on another survivor learns of the loss only when that one gives up.
+    """
     if timed_out(observed):
         return True, True, '{} hung'.format(label)
     code = observed.get('exits', {}).get(name)
@@ -205,22 +504,49 @@ def judge_loss_point(label, at, name, observed):
     if code is None or elapsed is None:
         return True, True, '{} did not run: {}'.format(
             label, observed.get('verdict') or 'no exit code')
-    if elapsed < at:
-        # The kill never reached a living process, so this point proves nothing --
-        # unless the process died on its own, which is a failure of its own.
-        if code == 0:
-            return False, False, '{} finished at {:.1f}s, before the loss at {:.1f}s' \
-                .format(label, elapsed, at)
-        return True, True, '{} exited {} at {:.1f}s, before the loss at {:.1f}s' \
-            .format(label, code, elapsed, at)
-    if code == 0:
-        return True, True, '{} exit 0 {:.1f}s after the loss'.format(label, elapsed - at)
-    return True, False, '{} exit {} {:.1f}s after the loss'.format(label, code,
-                                                                  elapsed - at)
+    fired = [action.get('fired_at') for action in observed.get('actions') or []]
+    killed = fired[0] if fired and fired[0] is not None else at
+    if code == 0 and elapsed < killed + LOSS_LATENCY:
+        # The loss never reached the process before it finished its work, so this
+        # point proves nothing.
+        return False, False, '{} finished at {:.2f}s, before the loss at {:.2f}s ' \
+            'reached it'.format(label, elapsed, killed)
+    stopped = set(observed.get('stopped') or [])
+    ended_at = observed.get('ended_at') or {name: elapsed}
+    survivors = sorted((who for who in ended_at if who not in stopped),
+                       key=lambda who: (ended_at[who] is None, ended_at[who] or 0))
+    allowed = WAIT_LIMIT + LOSS_TEARDOWN
+    said, bad, since = [], False, killed
+    for who in survivors:
+        when, code = ended_at[who], observed.get('exits', {}).get(who)
+        who = who if len(survivors) > 1 else ''
+        if when is None:
+            bad = True
+            said.append('{} never exited'.format(who).strip())
+            continue
+        if when < killed:
+            bad = True
+            said.append('{} exited {} at {:.2f}s, before the loss at {:.2f}s'
+                        .format(who, code, when, killed).strip())
+        elif code == 0:
+            bad = True
+            said.append('{} exit 0 {:.2f}s after the loss'.format(who, when - killed).strip())
+        elif when - since > allowed:
+            bad = True
+            said.append('{} exit {} {:.2f}s after the loss, over the {:.0f}s allowed'
+                        .format(who, code, when - killed, allowed).strip())
+        else:
+            said.append('{} exit {} {:.2f}s after the loss'
+                        .format(who, code, when - killed).strip())
+        since = max(since, when)
+    return True, bad, '{} {}'.format(label, ', '.join(said))
 
 
 def probe_peer_loss(scenario, build_dirs, lead_time):
-    """The normal scenario with the first other process killed at several points."""
+    """The normal scenario with the first other process killed at several points.
+
+    The first process is the one the others need, as every task lists it.
+    """
     if not lead_time:
         return result('peer-loss', False, 'no passing normal run to time the loss against')
     points, failures, reached = [], 0, 0
@@ -228,11 +554,12 @@ def probe_peer_loss(scenario, build_dirs, lead_time):
         progress('peer-loss: the peer is killed at {:.0%} of a normal run'.format(fraction))
         procs, lead = processes(scenario, keep_checks=False)
         peer = next(p for p in procs if p is not lead)
-        at = round(fraction * lead_time, 1)
+        at = round(fraction * lead_time, 2)
         stop = {'proc': peer['name'], 'after': at, 'signal': 'kill'}
-        timeout = at + WAIT_LIMIT + WAIT_MARGIN
-        _, _, observed, _, _ = run(variant(scenario, 'peer-loss', procs, timeout, stop),
-                                   build_dirs)
+        timeout = at + (WAIT_LIMIT + LOSS_TEARDOWN) * (len(procs) - 1) + LOSS_TEARDOWN
+        observed = {}
+        run_scenarios.run_scenario(variant(scenario, 'peer-loss', procs, timeout, stop),
+                                   build_dirs, False, True, observed, wait_all=True)
         hit, bad, text = judge_loss_point('{:.0%}'.format(fraction), at,
                                           lead['name'], observed)
         reached += 1 if hit else 0
@@ -242,6 +569,9 @@ def probe_peer_loss(scenario, build_dirs, lead_time):
             text += ' [last lines of {}: {}]'.format(
                 lead['name'], ' | '.join(said.splitlines()[-LOSS_TAIL_LINES:]) or 'none')
         points.append(text)
+    if lead_time < 1:
+        points.insert(0, 'a normal run takes {:.2f}s, so a point within {:.2f}s of its '
+                         'end is not reached'.format(lead_time, LOSS_LATENCY))
     if reached == 0:
         return result('peer-loss', None, 'not evaluated: no run reached the loss; '
                                          + '; '.join(points))
@@ -332,13 +662,138 @@ SELF_TEST_NO_PEER = (
 )
 
 SELF_TEST_LOSS = (
-    ('exited after the loss', {'exits': {'p': 1}, 'elapsed': 13.0}, (True, False)),
-    ('audit: crashed before the loss', {'exits': {'p': 1}, 'elapsed': 0.1}, (True, True)),
-    ('finished its work before the loss', {'exits': {'p': 0}, 'elapsed': 5.0},
+    ('exited after the loss', 12.0, {'exits': {'p': 1}, 'elapsed': 13.0}, (True, False)),
+    ('audit: crashed before the loss', 12.0, {'exits': {'p': 1}, 'elapsed': 0.1},
+     (True, True)),
+    ('finished its work before the loss', 12.0, {'exits': {'p': 0}, 'elapsed': 5.0},
      (False, False)),
-    ('survived the loss and exited 0', {'exits': {'p': 0}, 'elapsed': 13.0}, (True, True)),
-    ('hung', {'verdict': 'timed out after 40s'}, (True, True)),
-    ('never ran', {'exits': {}, 'verdict': 'binary not found: x'}, (True, True)),
+    ('survived the loss and exited 0', 12.0, {'exits': {'p': 0}, 'elapsed': 13.0},
+     (True, True)),
+    ('hung', 12.0, {'verdict': 'timed out after 40s'}, (True, True)),
+    ('never ran', 12.0, {'exits': {}, 'verdict': 'binary not found: x'}, (True, True)),
+    ('audit: a 0.18s run killed at 75%, done as the kill landed', 0.14,
+     {'exits': {'p': 0}, 'elapsed': 0.18, 'actions': [{'fired_at': 0.15}]}, (False, False)),
+    ('a 0.18s run, the kill time unknown', 0.14, {'exits': {'p': 0}, 'elapsed': 0.18},
+     (False, False)),
+    ('exited 0 two seconds after the kill', 0.14,
+     {'exits': {'p': 0}, 'elapsed': 2.15, 'actions': [{'fired_at': 0.15}]}, (True, True)),
+    ('audit: 07b, the only survivor 29.7s after the loss', 1.0,
+     {'exits': {'w': -9, 'p': 1}, 'elapsed': 30.7, 'stopped': ['w'],
+      'ended_at': {'w': 1.0, 'p': 30.7}}, (True, True)),
+    ('audit: 07b, a survivor that never exits', 1.0,
+     {'exits': {'w': -9, 'd': -15, 'p': 1}, 'elapsed': 21.3, 'stopped': ['w'],
+      'ended_at': {'w': 1.0, 'd': None, 'p': 21.3}}, (True, True)),
+    ('07a, every survivor exits after the loss', 1.0,
+     {'exits': {'w': -9, 'd': 1, 'p': 1}, 'elapsed': 21.6, 'stopped': ['w'],
+      'ended_at': {'w': 1.0, 'd': 21.4, 'p': 21.6}}, (True, False)),
+    ('a survivor waiting on another survivor exits after it', 1.0,
+     {'exits': {'w': -9, 'd': 1, 'p': 1}, 'elapsed': 42.0, 'stopped': ['w'],
+      'ended_at': {'w': 1.0, 'd': 21.4, 'p': 42.0}}, (True, False)),
+    ('a survivor exits 0 after the loss', 1.0,
+     {'exits': {'w': -9, 'd': 0, 'p': 1}, 'elapsed': 21.6, 'stopped': ['w'],
+      'ended_at': {'w': 1.0, 'd': 21.4, 'p': 21.6}}, (True, True)),
+)
+
+# Printed lines against the wanted ones: (name, wanted, printed, verdict).
+SELF_TEST_LINES = (
+    ('every line, after a prefix and in another case',
+     ['step 1: refused, insufficient credit', 'step 4: Cappuccino finished, credit 20'],
+     'user: Step 1: Refused, insufficient credit\n[4]  step 4:  Cappuccino finished, '
+     'credit 20  \n', True),
+    ('a longer number is not the wanted one', ['step 4: credit 20'],
+     'step 4: credit 200\n', False),
+    ('the wanted text inside a longer word', ['step 1: done'], 'substep 1: done\n', False),
+    ('the wanted text with more after it', ['step 1: done'], 'step 1: done twice\n', False),
+    ('a placeholder takes the value', ['step 3: paused in <stage>, resumed in the same stage'],
+     'step 3: paused in Frothing milk, resumed in the same stage\n', True),
+    ('a placeholder takes something', ['step 5: halted at floor <floor>'],
+     'step 5: halted at floor \n', False),
+    ('audit: a partial run, every probe passing', ['step 2: Cappuccino accepted',
+     'step 6: refilled, Latte finished'], 'step 2: Cappuccino accepted\n', False),
+    ('no lines asked', [], 'anything\n', None),
+)
+
+# (case, least seconds or None, median lead time or None, expected verdict)
+# Bodies against the task lines: (name, wanted, bodies.txt, steps, expected verdict).
+CHECK_LINE = ['step 1: bolt 10, nut 5, gear 3']
+SELF_TEST_CHECKED = (
+    ('seconds printed, milliseconds compared', ['step 7: 100 frames within 1 second'],
+     '== step_burst\nif (count != 100 || ms >= 1000) { fail("x"); return; }\n'
+     'GLOBAL_INFO("step 7: 100 frames within 1 second");\n', [{'name': 'burst'}], True),
+    ('a count checked as the last index of a range', ['step 4: 10 frames intact'],
+     '== step_more\nif (last < first + 9) { stay(); return; }\nGLOBAL_INFO("step 4: 10 frames intact");\n',
+     [{'name': 'more'}], True),
+    ('a name with a number awaited by until and role', ['step 7: bay 2 done, bay 3 idle'],
+     '== step_done\nGLOBAL_INFO("step 7: bay 2 done, bay 3 idle");\n',
+     [{'name': 'done', 'until': {'bay': 'bay 2'}, 'role': 'bay_3'}], True),
+    ('values printed as fixed text with a newline', CHECK_LINE,
+     '== step_start\nstd::printf("step 1: bolt 10, nut 5, gear 3\\n"); std::fflush(stdout);\n',
+     [{'name': 'start'}], False),
+    ('values logged as fixed text', CHECK_LINE,
+     '== step_start\nGLOBAL_INFO("step 1: bolt 10, nut 5, gear 3");\n',
+     [{'name': 'start'}], False),
+    ('values logged after a comparison', CHECK_LINE,
+     '== step_start\nif (bolt != 10u || nut != 5 || gear != 3) { fail("step 1"); return; }\n'
+     'GLOBAL_INFO("step 1: bolt 10, nut 5, gear 3");\n',
+     [{'name': 'start'}], True),
+    ('one of three values compared', CHECK_LINE,
+     '== step_start\nif (bolt != 10) fail("bolt");\n'
+     'else std::cout << "step 1: bolt 10, nut 5, gear 3" << std::endl;\n',
+     [{'name': 'start'}], False),
+    ('every value compared', CHECK_LINE,
+     '== step_start\nif (bolt != 10u || nut != 5 || gear != 3) { fail("step 1"); return; }\n'
+     'std::cout << "step 1: bolt 10, nut 5, gear 3" << std::endl;\n',
+     [{'name': 'start'}], True),
+    ('compared in an earlier step and an until', CHECK_LINE,
+     '== step_first\nif (bolt != 10) fail("x");\n== step_last\n'
+     'if (nut != 5) fail("x"); else std::cout << "step 1: bolt 10, nut 5, gear 3";\n',
+     [{'name': 'first'}, {'name': 'last', 'until': {'gear': 3}}], True),
+    ('a value the step sent', ['step 1: refused, hysteresis 0'],
+     '== step_send\nif (accepted) fail("x"); else std::cout << "step 1: refused, hysteresis 0";\n',
+     [{'name': 'send', 'args': {'hysteresis': 0}}], True),
+    ('a semicolon inside the printed text', ['step 5: order 4 accepted; order 6 refused'],
+     '== step_all\nif (count != 3) fail("x"); '
+     'else std::cout << "step 5: order 4 accepted; order 6 refused" << std::endl;\n',
+     [{'name': 'all'}], False),
+    ('printed by a helper, compared in a handler', CHECK_LINE,
+     '== consumer_state\nvoid show() { std::cout << "step 1: bolt 10, nut 5, gear 3"; }\n'
+     '== Client.cpp:update_stock\nif (bolt == 10 && nut == 5 && gear == 3) mOwner.show();\n',
+     [], True),
+    ('a name compared as a string', ['step 2: normal done: rinse 1'],
+     '== step_done\nif (stage != "rinse 1") fail("x"); '
+     'else std::cout << "step 2: normal done: rinse 1";\n', [{'name': 'done'}], True),
+    ('a name compared as a constructed string', ['step 4: bay 1 done, 5 kWh'],
+     '== step_done\nif ((bay != areg::String("bay 1")) || (energy != 5)) fail("x"); '
+     'else GLOBAL_INFO("step 4: bay 1 done, 5 kWh");\n', [{'name': 'done'}], True),
+    ('only the step number is a number', ['step 6: done'],
+     '== step_end\nstd::cout << "step 6: done" << std::endl;\n', [{'name': 'end'}], True),
+    ('the value printed from a variable', CHECK_LINE,
+     '== step_start\nstd::cout << "step 1: bolt " << bolt << ", nut " << nut << ", gear "'
+     ' << gear;\n', [{'name': 'start'}], True),
+    ('a string in a fail message is no check', CHECK_LINE,
+     '== step_start\nif (bolt != 10) fail("nut 5 gear 3");\n'
+     'std::cout << "step 1: bolt 10, nut 5, gear 3";\n', [{'name': 'start'}], False),
+    ('no bodies.txt', CHECK_LINE, None, [], None),
+)
+
+SELF_TEST_TIMING = (
+    ('the task states no timing', None, 0.05, None),
+    ('no passing run', 6.3, None, None),
+    ('the timed work skipped: 06f-washer', 6.3, 0.05, False),
+    ('the timed work done: 06e-washer', 6.3, 13.5, True),
+    ('at the least time', 0.45, 0.45, True),
+)
+
+# (case, report cell, expected claim_counts)
+SELF_TEST_CLAIMS = (
+    ('the old row', ' 14 of 18. Not observed: x |', ('14 of 18', None)),
+    ('both counts', ' 12 of 13 shown by the output; 5 of 5 (code) items, in src/a.cpp ',
+     ('12 of 13', '5 of 5')),
+    ('the code count named before its number', ' 12 of 13; code items 5 of 5 ',
+     ('12 of 13', '5 of 5')),
+    ('"of the" between the numbers', ' 14 of the 14 unmarked items. 3 of the 3 (code) items ',
+     ('14 of 14', '3 of 3')),
+    ('no count', ' none |', None),
 )
 
 SELF_TEST_RAN = (
@@ -356,16 +811,37 @@ def self_test():
         if got is not expected:
             failures.append('no-peer, {}: {} expected, got {}'
                             .format(name, expected, got))
-    for name, observed, expected in SELF_TEST_LOSS:
-        hit, bad, _ = judge_loss_point('50%', 12.0, 'p', observed)
+    for name, at, observed, expected in SELF_TEST_LOSS:
+        hit, bad, _ = judge_loss_point('50%', at, 'p', observed)
         if (hit, bad) != expected:
             failures.append('peer-loss, {}: {} expected, got {}'
                             .format(name, expected, (hit, bad)))
+    for name, wanted, printed, expected in SELF_TEST_LINES:
+        got = judge_lines(wanted, {'p': printed})['passed']
+        if got is not expected:
+            failures.append('lines, {}: {} expected, got {}'.format(name, expected, got))
+    blocks = task_lines('text\n```lines\nstep 1: a\n\nstep 2: b\n```\n```\nx\n```\n')
+    if blocks != ['step 1: a', 'step 2: b']:
+        failures.append('lines, the task block: {} read'.format(blocks))
+    for name, wanted, bodies, steps, expected in SELF_TEST_CHECKED:
+        got = judge_checked(wanted, bodies, {'interfaces': [{'steps': steps}]})['passed']
+        if got is not expected:
+            failures.append('checked, {}: {} expected, got {}'.format(name, expected, got))
+    for name, least, lead_time, expected in SELF_TEST_TIMING:
+        got = judge_timing(least, lead_time)['passed']
+        if got is not expected:
+            failures.append('timing, {}: {} expected, got {}'.format(name, expected, got))
+    for name, cell, expected in SELF_TEST_CLAIMS:
+        if claim_counts(cell) != expected:
+            failures.append('claimed, {}: {} expected, got {}'.format(
+                name, expected, claim_counts(cell)))
     for name, observed, expected in SELF_TEST_RAN:
         if ran(observed) is not expected:
             failures.append('sanitize, {}: {} expected, got {}'
                             .format(name, expected, ran(observed)))
-    cases = len(SELF_TEST_NO_PEER) + len(SELF_TEST_LOSS) + len(SELF_TEST_RAN)
+    cases = (len(SELF_TEST_NO_PEER) + len(SELF_TEST_LOSS) + len(SELF_TEST_LINES) + 1
+             + len(SELF_TEST_CHECKED) + len(SELF_TEST_TIMING) + len(SELF_TEST_RAN)
+             + len(SELF_TEST_CLAIMS))
     for line in failures:
         print('   FAIL  ' + line)
     print('verify_run --self-test: {} case(s), {} failure(s)'.format(cases, len(failures)))
@@ -413,24 +889,37 @@ def main():
     def report(item):
         progress('')
         state = {True: 'PASS', False: 'FAIL', None: 'SKIP'}[item['passed']]
+        if item['probe'] in NOTES:
+            state = 'NOTE'
         print('   {:5} {:12} {}'.format(state, item['probe'], item['requirement']))
         print('   {:5} {:12} {}'.format('', '', item['evidence']))
         sys.stdout.flush()
         results.append(item)
 
-    repeat, leads, loads = probe_repeat(scenario, build_dirs, args.repeat)
+    repeat, leads, loads, outputs = probe_repeat(scenario, build_dirs, args.repeat)
     report(repeat)
     report(probe_start_order(scenario, build_dirs))
     report(probe_no_peer(scenario, build_dirs))
     report(probe_peer_loss(scenario, build_dirs,
                            statistics.median(leads) if leads else None))
     report(probe_cpu(loads))
+    report(probe_programs(scenario, run_dir))
+    report(judge_lines(task_lines(task_text(run_dir)), outputs))
+    report(judge_checked(task_lines(task_text(run_dir)), read_text('bodies.txt'),
+                         read_json('design.json')))
+    report(judge_timing(min_seconds(run_dir),
+                        statistics.median(leads) if leads else None))
     if args.sanitize:
         report(probe_sanitize(run_dir, work, scenario, document))
 
-    scored = [item for item in results if item['passed'] is not None]
-    skipped = [item['probe'] for item in results if item['passed'] is None]
+    scored = [item for item in results
+              if item['passed'] is not None and item['probe'] not in NOTES]
+    skipped = [item['probe'] for item in results
+               if item['passed'] is None and item['probe'] not in NOTES]
     passed = sum(1 for item in scored if item['passed'])
+    claim, claim_code = claimed(run_dir)
+    print('   agent claims     {} acceptance item(s) passing{}'.format(
+        claim or 'no count of', ', {} (code) item(s)'.format(claim_code) if claim_code else ''))
     print('   probes passed    {} of {}{}'.format(
         passed, len(scored),
         ', {} not evaluated: {}'.format(len(skipped), ', '.join(skipped))
@@ -440,7 +929,8 @@ def main():
     name = 'verify-sanitize.json' if args.sanitize else 'verify.json'
     with open(os.path.join(run_dir, name), 'w', encoding='utf-8') as handle:
         json.dump({'scenario': scenario.get('name'), 'passed': passed,
-                   'scored': len(scored), 'skipped': skipped,
+                   'scored': len(scored), 'skipped': skipped, 'notes': list(NOTES),
+                   'claimed': claim, 'claimed_code': claim_code,
                    'repeat': args.repeat, 'sanitize': args.sanitize,
                    'verified': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
                    'results': results},

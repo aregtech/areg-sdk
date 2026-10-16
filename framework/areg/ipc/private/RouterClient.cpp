@@ -1,8 +1,8 @@
 /************************************************************************
  * This file is part of the Areg SDK core engine.
- * Areg SDK is dual-licensed under Free open source (Apache version 2.0
- * License) and Commercial (with various pricing models) licenses, depending
- * on the nature of the project (commercial, research, academic or free).
+ * Areg SDK is dual-licensed under Free open source (Apache version 2.0 License)
+ * and Commercial (with various pricing models) licenses, depending on the
+ * nature of the project (commercial, research, academic or free).
  * You should have received a copy of the Areg SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
@@ -66,6 +66,16 @@ RouterClient::RouterClient(ConnectionConsumer& connectionConsumer, RegistrationC
 
     , mRegisterConsumer     (registerConsumer)
 {
+}
+
+void RouterClient::on_message_received(const MessageEnvelope& msgReceived)
+{
+    ASSERT(areg::is_executable_id(static_cast<uint32_t>(msgReceived.message_id())));
+    MessageEnvelope routable{ msgReceived };
+    if (!RemoteEventFactory::route_incoming_message(routable, mChannel))
+    {
+        failed_process_message(msgReceived);
+    }
 }
 
 bool RouterClient::connect_service_host()
@@ -286,15 +296,17 @@ namespace
         LOG_SCOPE( areg_ipc_private_RouterClient, report_duplicate_role );
 
         const StubAddress stub(*msgReceived.header());
-        const StubBase * local{ StubBase::find_stub(stub) };
-        const StubAddress & named{ local != nullptr ? local->address() : stub };
         areg::ConnectedInstance other{ };
         msgReceived >> other;
+#if AREG_LOGGING
+        const StubBase * local{ StubBase::find_stub(stub) };
+        const StubAddress & named{ local != nullptr ? local->address() : stub };
         LOG_ERR("Duplicate role name [ %s ] of service [ %s ]: process [ %s ] (%s) registers the same public role name. A role name is unique in the network; only the first registration is served"
                     , named.role_name().as_string()
                     , named.service_name().as_string()
                     , other.ciInstance.c_str()
                     , other.ciLocation.c_str());
+#endif  // AREG_LOGGING
     }
 }
 

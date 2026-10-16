@@ -46,21 +46,12 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Triggered by Worker Thread when starts running.
-     *          Make initializations and add event consumers in this
-     *          method to start receiving events.
+     * \brief   Runs on the worker thread when it starts: the console session that reads patient
+     *          information and passes it to the service, until the user quits.
      * \param   workThread      The Worker Thread object to notify startup
      * \param   masterThread    The component thread, which owns worker thread.
      **/
     void register_event_consumers( areg::WorkerThread & workThread, areg::ComponentThread & masterThread ) final;
-
-    /**
-     * \brief   Triggered by Worker Thread when stops running.
-     *          Make cleanups and remove event consumers in this
-     *          method to stop receiving events.
-     * \param   workThread  The Worker Thread object to notify stop
-     **/
-    void unregister_event_consumers( areg::WorkerThread & workThread ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Private members.

@@ -48,11 +48,20 @@ job -- a job that jammed has to be requested again from the start.
 To keep the run repeatable, jams are **not random**. The operator program can arm
 the **next** print or scan job to jam after a specified number of completed pages.
 
-**Structure -- the reason for this task.** Printing and scanning are each one
-piece of behaviour, written once and used from more than one place: a print job
-and the print half of a copy are the same behaviour, and so are a scan job and
-the scan half of a copy. A copy runs the scan behaviour and then the print
-behaviour as a single job.
+**Structure -- the reason for this task. The device is a state machine, declared.**
+Whatever it is written in, the device's behaviour -- idle, each job and its stages,
+the jam and the standing fault -- is expressed as named states and named transitions
+between them, in one place, and the code that runs them is generated or driven from
+that declaration. If the framework offers no way to declare a state machine, write
+one explicitly -- a state enumeration with a transition table that every input goes
+through -- and say in the report that you had to.
+
+**Printing and scanning are each one piece of that machine, declared once and
+entered from more than one place**: a print job and the print half of a copy enter
+the same print piece, and a scan job and the scan half of a copy enter the same scan
+piece. A copy enters the scan piece and then the print piece as a single job. Two
+copies of the same states, or one copy with a flag saying which job it is serving,
+are both the thing this task exists to avoid.
 
 **Stopping and timing out.** The device runs until it is stopped: it accepts `-q`
 or `--quit` typed at its console and exits cleanly. Neither program may wait
@@ -85,6 +94,20 @@ step to the console so a person can read what happened:
 8. clear the fault and run one more small print job of **1** page -- expect it
    to succeed, proving the device fully recovered
 
+Once a step's expectation has held, the operator prints its line below, with this
+exact wording, alone or at the end of a line, nothing after it; `<reason>` is the reason given:
+
+```lines
+step 1: scan finished, 3 pages
+step 2: print refused, <reason>
+step 3: print finished, 4 pages
+step 4: copy finished, 2 pages scanned, then 2 printed
+step 5: printer fault after 2 pages, next job refused
+step 6: fault cleared, idle
+step 7: scanner fault after 1 page
+step 8: print finished, 1 page, recovered
+```
+
 Then exit. **Exit code 0 if every expectation held, non-zero otherwise**, printing
 which step failed. The operator program must survive the device being started after
 it.
@@ -102,7 +125,9 @@ they need a second run of their own:
 
 **An acceptance item counts as passing only when the output of one of those runs shows
 it.** An item you believe you implemented but never observed is reported as not
-passing: naming the ones you could not prove is worth more than a full score.
+passing: naming the ones you could not prove is worth more than a full score. An item
+marked (code) is one no output can show: count it apart, as present only where you can
+name the file and the class or function that does it.
 
 ### Acceptance checklist
 
@@ -123,14 +148,17 @@ framework, against this list:
 - [ ] a jam during a scan job is reported the same way, naming the scanner
 - [ ] no new job is accepted while a fault stands
 - [ ] clearing the fault returns the device to idle and it accepts jobs again
-- [ ] jams are injected deterministically for the next named job, not randomly
-- [ ] the print behaviour and the scan behaviour are each written once and reused
-      by the copy job, not duplicated
+- [ ] (code) jams are injected deterministically for the next named job, not randomly
+- [ ] (code) the device's states and transitions are declared in one place, by name, and
+      the running code follows that declaration rather than restating it
+- [ ] (code) printing and scanning are each one nested piece of the machine, entered from
+      its own job and from the copy job -- not two copies and not one copy steered
+      by a flag
 - [ ] the device accepts `-q` / `--quit` at its console and exits cleanly
 - [ ] neither program waits more than 20 seconds for something that never arrives
 - [ ] if one side goes away mid-scenario, the other reports it and exits non-zero
 - [ ] the scenario exits 0, and non-zero when an expectation fails
-- [ ] no busy-waiting and no sleeping inside a message handler
+- [ ] (code) no busy-waiting and no sleeping inside a message handler
 
 ---
 
@@ -140,8 +168,11 @@ framework, against this list:
 project. Nothing outside the project directory, nothing added to the framework's own
 build, and no IDE or editor project files.
 
-**Printing and scanning are each written once** and reused by the copy job: a copy
-runs the scan behaviour and then the print behaviour, as one job.
+**The device's behaviour is a declared state machine.** States, transitions, guards
+and the actions each transition runs are named in one declaration, and the code that
+executes them comes from it. Printing and scanning are each declared once, as a nested
+piece entered from its own job and from the copy job: a copy enters the scan piece and
+then the print piece, as one job.
 
 **The contract between the two programs is declared once**, in whatever form the
 framework declares an interface, and the code that carries it over the connection is
@@ -165,7 +196,7 @@ End with this table and nothing longer.
 |---|---|
 | build-and-fix cycles | |
 | run-and-fix cycles | |
-| acceptance items passing | n of the checklist above, and which failed |
+| acceptance items passing | n of the unmarked items shown by the output, and which were not; c of the (code) items, each with where |
 | checker findings, first run | name the checker, or "none run" |
 | files you opened that the documentation did not route you to | names, or "none" |
 
@@ -177,6 +208,7 @@ already have is left out, not guessed.
 
 Then three sentences at most: what the documentation answered well, what you had to
 guess or discover the hard way, and which page you wish had said something it did not.
+Say whether declaring the machine saved you work or cost you work, and where.
 Say plainly wherever you had to search for an answer instead of being routed to one
 -- that is the finding this exercise is really after, and it is worth more than the
 table.

@@ -17,22 +17,13 @@ HardwareWorkerConsumer::HardwareWorkerConsumer(const char * consumerName)
 {
 }
 
-inline HardwareWorkerConsumer & HardwareWorkerConsumer::self()
+void HardwareWorkerConsumer::register_event_consumers(areg::WorkerThread & /* workThread */, areg::ComponentThread & /* masterThread */ )
 {
-    return (*this);
-}
-
-void HardwareWorkerConsumer::register_event_consumers(areg::WorkerThread & workThread, areg::ComponentThread & /* masterThread */ )
-{
-    PatientInfoEvent::add_listener( static_cast<IEPatientInfoEventConsumer &>(self()), static_cast<areg::DispatcherThread &>(workThread) );
-
     printf("Example Hardware is initialized .....\n\n");
 }
 
-void HardwareWorkerConsumer::unregister_event_consumers(areg::WorkerThread & workThread)
+void HardwareWorkerConsumer::unregister_event_consumers(areg::WorkerThread & /* workThread */)
 {
-    PatientInfoEvent::remove_listener( static_cast<IEPatientInfoEventConsumer &>(self()), static_cast<areg::DispatcherThread &>(workThread) );
-
     printf("Example Hardware is uninitialized .....\n\n");
 }
 

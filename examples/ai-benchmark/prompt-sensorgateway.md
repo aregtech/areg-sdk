@@ -44,14 +44,15 @@ process, and the serving side does everything else.
 - **The health**, published: one of starting, normal, degraded, fault, together with
   the list of sensors that are silent.
 
-**The health is one state machine, driven from two threads.** The reading thread
-drives it with what the hardware does: the first full set of readings moves it from
+**The health is one state machine, with inputs from two threads.** What the hardware
+does comes from the reading thread: the first full set of readings moves it from
 starting to normal; in normal, a sensor that has given no reading for **500 ms** moves
 it to degraded; the last silent sensor coming back moves it back to normal. In
-starting, a silent sensor keeps it in starting until a full set arrives. The serving side drives it
-with what the monitor asks: a **reset** moves degraded or fault back to starting. Both
-inputs go through the **same** machine instance, each is applied whole, and neither
-thread may see the machine half-changed by the other.
+starting, a silent sensor keeps it in starting until a full set arrives. What the
+monitor asks comes from the serving side: a **reset** moves degraded or fault back to
+starting. Both inputs reach the **same** machine instance, each is applied whole, and
+no input from one thread is lost or seen half-applied because of the other. How an
+input crosses from the reading thread to the machine is the implementation's choice.
 
 **Requests that depend on the health.** A **calibrate** request is accepted only in
 normal, and answered with the sensor it calibrated. In any other state it is refused
@@ -77,7 +78,8 @@ step to the console so a person can read what happened:
 2. wait for the health to become **normal**
 3. collect **20** sets of readings -- expect every set to hold all three sensors,
    every value to match the table for its reading number, and no reading number
-   skipped or repeated within a sensor
+   skipped or repeated within a sensor, counted from the first set the monitor
+   receives: it may join after the gateway has started
 4. ask for the summary of sensor 1 -- expect lowest **20**, highest **24**, and an
    average within 0.5 of **22**
 5. calibrate sensor 1 -- expect it accepted
@@ -90,6 +92,22 @@ step to the console so a person can read what happened:
    **starting**, and not to normal until sensor 3 is restored; restore it and expect
    **normal**
 10. reset once more -- expect a refusal naming the normal state
+
+Once a step's expectation has held, the monitor prints its line below, with this
+exact wording, alone or at the end of a line, nothing after it; `<average>` is the average:
+
+```lines
+step 1: 3 sensors listed
+step 2: health normal
+step 3: 20 sets received, every value matches the table
+step 4: sensor 1 lowest 20, highest 24, average <average>
+step 5: sensor 1 calibrated
+step 6: health degraded, sensor 2 silent, readings from sensors 1 and 3
+step 7: calibrate refused, degraded
+step 8: health normal, sensor 2 back
+step 9: reset to starting, normal only after sensor 3 restored
+step 10: reset refused, normal
+```
 
 Then exit. **Exit code 0 if every expectation held, non-zero otherwise**, printing
 which step failed. The monitor must survive the gateway being started after it.
@@ -106,7 +124,9 @@ they need a second run of their own:
 
 **An acceptance item counts as passing only when the output of one of those runs shows
 it.** An item you believe you implemented but never observed is reported as not
-passing: naming the ones you could not prove is worth more than a full score.
+passing: naming the ones you could not prove is worth more than a full score. An item
+marked (code) is one no output can show: count it apart, as present only where you can
+name the file and the class or function that does it.
 
 ### Acceptance checklist
 
@@ -114,9 +134,9 @@ The run is a success when all of these hold. Score any implementation, in any
 framework, against this list:
 
 - [ ] two separate programs, talking over the connection only
-- [ ] the sensors are read on a thread of the gateway's own, which hands its readings
+- [ ] (code) the sensors are read on a thread of the gateway's own, which hands its readings
       to the serving side as messages and shares no data with it
-- [ ] a reading is one record type carrying id, kind, value, number and quality; the
+- [ ] (code) a reading is one record type carrying id, kind, value, number and quality; the
       kind and the quality are enumerations; the set of readings and the silent
       sensors are lists; all are declared once and shared by both programs
 - [ ] the sensor list names all three sensors with their kinds
@@ -127,15 +147,15 @@ framework, against this list:
       the health back to normal
 - [ ] calibrate is accepted in normal and refused elsewhere, naming the state
 - [ ] reset moves degraded back to starting, and is refused in normal naming the reason
-- [ ] **the health is one state machine instance, driven both from the reading thread
-      and from the serving side, and no input from one thread is lost or applied
-      half-way because of the other**
+- [ ] (code) **the health is one state machine instance that takes inputs originating on the
+      reading thread and on the serving side, and no input from one thread is lost or
+      applied half-way because of the other**
 - [ ] the gateway accepts `-q` / `--quit` at its console and exits cleanly, stopping
       the reading thread first
 - [ ] neither program waits more than 20 seconds for something that never arrives
 - [ ] if one side goes away mid-scenario, the other reports it and exits non-zero
 - [ ] the scenario exits 0, and non-zero when an expectation fails
-- [ ] no busy-waiting and no sleeping inside a message handler
+- [ ] (code) no busy-waiting and no sleeping inside a message handler
 
 ---
 
@@ -174,7 +194,7 @@ End with this table and nothing longer.
 |---|---|
 | build-and-fix cycles | |
 | run-and-fix cycles | |
-| acceptance items passing | n of the checklist above, and which failed |
+| acceptance items passing | n of the unmarked items shown by the output, and which were not; c of the (code) items, each with where |
 | checker findings, first run | name the checker, or "none run" |
 | files you opened that the documentation did not route you to | names, or "none" |
 

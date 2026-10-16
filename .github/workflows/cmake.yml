@@ -17,6 +17,8 @@ permissions:
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
+  # A Lock or ScopedLock that could not take its object ends the test process (FatalError.hpp).
+  AREG_LOCK_FAILURE_FATAL: 1
 
 jobs:
   invariants:
@@ -38,6 +40,10 @@ jobs:
 
       - name: Check every seeded defect still applies to exactly one place
         run: python3 tools/intern/check_invariants.py --dry-run
+
+      # areg is a shared library: an inline virtual method can leave a client unable to link (bug 418).
+      - name: Check no non-template class defines a virtual method inline
+        run: python3 tools/intern/check_inline_virtuals.py
 
   build-tests:
     name: ${{matrix.config.name}}

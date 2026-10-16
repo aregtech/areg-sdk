@@ -28,13 +28,18 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, HERE)
 import codegen_names  # noqa: E402
-DEFAULT_API = os.path.join(ROOT, 'docs', 'agent', 'api.json')
+# A clone keeps docs/ two levels above tools/agent; an installation keeps it under
+# share/areg/sdk beside tools/.
+DEFAULT_API = next((path for path in (
+    os.path.join(ROOT, 'docs', 'agent', 'api.json'),
+    os.path.join(ROOT, os.pardir, 'share', 'areg', 'sdk', 'docs', 'agent', 'api.json'))
+    if os.path.isfile(path)), os.path.join(ROOT, 'docs', 'agent', 'api.json'))
 
 # A nested Final carrying an operation is registered in the rule catalogue the generator and the editor
 # share, so it is reported under the number they report it under rather than under a
-# second identity of its own. tools/schema/rules.xml is the only place that number is
+# second identity of its own. schema/rules.xml beside agent/ is the only place that number is
 # decided; there is no copy of it here to fall out of step.
-RULES_XML = os.path.join(ROOT, 'tools', 'schema', 'rules.xml')
+RULES_XML = os.path.join(os.path.dirname(HERE), 'schema', 'rules.xml')
 FINAL_ENTRY_RULE = 'RULE_FINAL_ENTRY_ORDER'
 STATE_NAME_RULE = 'RULE_STATE_NAME'
 ERROR_BAND = 0
@@ -201,20 +206,20 @@ BANNER_LINES = 20
 LOG_MACRO_RE = re.compile(r'\b(?:LOG|TRACE)_(?:DBG|INFO|WARN|ERR|FATAL|SCOPE)\s*\(')
 
 # P-10. A watchdog timeout is registered per thread; it does nothing unless the
-# watchdog manager is running, and the manager is off by default.
+# watchdog manager runs, and the manager starts with the service manager.
 WATCHDOG_MACRO_RE = re.compile(
     r'\b(BEGIN_REGISTER_THREAD_EX2?|REGISTER_WORKER_THREAD_EX2?)\s*\(')
 WATCHDOG_TIMEOUT_ARG = {'BEGIN_REGISTER_THREAD_EX': 1,
                         'BEGIN_REGISTER_THREAD_EX2': 1,
                         'REGISTER_WORKER_THREAD_EX': 2,
                         'REGISTER_WORKER_THREAD_EX2': 2}
-WATCHDOG_ON_RE = re.compile(r'\bstart_watchdog_manager\s*\(')
+WATCHDOG_ON_RE = re.compile(r'\bstart_(?:watchdog|service)_manager\s*\(')
 SETUP_RE = re.compile(r'\bApplication\s*::\s*setup\s*\(')
 
-# P-11. The consumer name in the model is matched against the string the component
-# answers to in worker_thread_consumer(). A mismatch is silent: the worker thread
-# starts and never runs a consumer.
+# P-11. The model qualifies a worker consumer name by the component's role, and the
+# component is asked for that qualified name. A mismatch is silent: no worker starts.
 WORKER_MACRO_RE = re.compile(r'\b(REGISTER_WORKER_THREAD(?:_EX2?)?)\s*\(')
+WORKER_ENTRY_RE = re.compile(r'\bmWorkerThreads\s*\[|\bcreate_component_item_name\s*\(')
 
 # B8. Any finding can be silenced on the offending line or the line above. A
 # checker that cannot be quieted on a correct edge case gets switched off wholesale.
@@ -237,7 +242,7 @@ CHECKS = [
     ('P-08', 'error',   'throw, try or catch'),
     ('P-09', 'error',   'two components with one role name in one model'),
     ('P-10', 'advice',  'a watchdog timeout registered while the watchdog is off'),
-    ('P-11', 'advice',  'a worker thread consumer name nothing answers to'),
+    ('P-11', 'advice',  'a worker consumer name answered without its role'),
     ('P-12', 'error',   'a broadcast or attribute handled but never subscribed to'),
     ('P-13', 'error',   'a response deferred without releasing the request'),
     (FINAL_ENTRY_CODE, 'advice',
@@ -450,13 +455,14 @@ EXIT_DEFINITION = re.compile(r'\bvoid\s+quit_with\s*\(\s*int\b')
 SIGNAL_QUIT = re.compile(r'\bApplication::signal_quit\s*\(')
 
 
-def exit_body(sources, read):
-    """The file and line range of the quit_with() definition, or None.
+def exit_bodies(sources, read):
+    """The file and line range of every quit_with() definition, one per program.
 
     A prototype is not the definition: the header of a scaffolded project declares
-    quit_with() beside the class, and main.cpp defines it. Only the definition's own
+    quit_with() beside the class, and each main.cpp defines it. Only a definition's own
     body may reach signal_quit().
     """
+    found = []
     for path in sources:
         text = read(path)
         if text is None:
@@ -465,8 +471,8 @@ def exit_body(sources, read):
         for number, line in enumerate(lines):
             if EXIT_DEFINITION.search(line) is None or ';' in line:
                 continue
-            return path, number, body_range(lines, number)
-    return None
+            found.append((path, number, body_range(lines, number)))
+    return found
 
 
 # A class and the bases it derives from, and one entry of a constructor's
@@ -535,10 +541,10 @@ def check_single_exit(sources, findings, read):
     The rule applies only where quit_with() is defined, so a program that ends itself
     directly and returns its own code is not touched.
     """
-    where = exit_body(sources, read)
-    if where is None:
+    bodies = exit_bodies(sources, read)
+    if not bodies:
         return
-    holder, first, last = where
+    holder = bodies[0][0]
     for path in sources:
         text = read(path)
         if text is None:
@@ -546,7 +552,8 @@ def check_single_exit(sources, findings, read):
         for number, line in enumerate(text.splitlines()):
             if SIGNAL_QUIT.search(line) is None:
                 continue
-            if path == holder and first <= number <= last:
+            if any(path == where and first <= number <= last
+                   for where, first, last in bodies):
                 continue
             findings.append(Finding(
                 'P-18', 'error', path, number + 1,
@@ -768,7 +775,26 @@ def body_range(lines, start):
     return len(lines) - 1
 
 
-def check_file(path, lines, known, findings):
+# A class built on a generated base: a provider, a consumer or a client of a service.
+SERVICE_BASE_RE = re.compile(r'\b\w+(?:ProviderBase|ConsumerBase|Stub|ClientBase)\b')
+
+
+def serves_service(path, text, read):
+    """Whether a source or the header of the same name names a generated base."""
+    if SERVICE_BASE_RE.search(text):
+        return True
+    stem = os.path.splitext(path)[0]
+    for suffix in ('.hpp', '.h'):
+        if os.path.isfile(stem + suffix):
+            header = read(stem + suffix)
+            if header and SERVICE_BASE_RE.search(header):
+                return True
+    return False
+
+
+def check_file(path, lines, known, findings, serves=True):
+    """serves: the file or its header names a generated base, so its own members are
+    the ones the service documents generate."""
     in_model = False
     model_roles = {}
     handled = set()
@@ -921,7 +947,7 @@ def check_file(path, lines, known, findings):
                         'log macro needs %s.as_string() for %%s' % (var, var)))
                     break
 
-        if known:
+        if known and serves:
             match = OVERRIDE_RE.search(line) or QUALIFIED_RE.search(line)
             if match and GENERATED_RE.match(match.group(1)) \
                     and match.group(1) not in known:
@@ -969,9 +995,8 @@ def check_file(path, lines, known, findings):
                 if bad and 'ConsumerBase' not in body:
                     findings.append(Finding(
                         'P-04', 'error', path, inner + 1,
-                        '"%s" runs before the service is connected; the first '
-                        'legal moment is inside service_connected() once '
-                        'areg::is_service_connected(status) is true'
+                        '"%s" runs in a constructor, where nothing is connected; '
+                        'send it from service_connected() or any later handler'
                         % bad.group(1)))
             handled.update(range(number, end + 1))
             continue
@@ -1082,7 +1107,7 @@ def check_subscriptions(sources, findings, read):
                 % (member, subscription)))
 
 
-def check_deferred_responses(sources, findings, read):
+def check_deferred_responses(sources, findings, read, allow_todo=False):
     """P-13. A response answered later, with the request never released.
 
     A request handler holds its request until it returns. A provider that answers
@@ -1096,8 +1121,10 @@ def check_deferred_responses(sources, findings, read):
     that answers are usually in different files. prepare_response() is reported only
     when unblock_current_request() appears nowhere at all -- there is no other way to
     obtain a session id, so a project that calls one and not the other is wrong.
+    With allow_todo, a request handler still open leaves it undecided.
     """
     released = False
+    pending = False
     deferred = []
     for path in sources:
         text = read(path)
@@ -1107,17 +1134,168 @@ def check_deferred_responses(sources, findings, read):
             line = strip_noise(raw)
             if 'unblock_current_request' in line:
                 released = True
+            marker = TODO_MARKER_RE.search(raw)
+            if marker and marker.group(1).startswith('request_'):
+                pending = True
             if re.search(r'\bprepare_response\s*\(', line):
                 deferred.append((path, number + 1))
 
-    if released:
-        return
-    for path, number in deferred:
-        findings.append(Finding(
-            'P-13', 'error', path, number,
-            'prepare_response() answers a request that was deferred, but nothing '
-            'calls unblock_current_request(); without the release the request stays '
-            'busy and a second client is refused with RequestBusy'))
+    if not released and not (allow_todo and pending):
+        for path, number in deferred:
+            findings.append(Finding(
+                'P-13', 'error', path, number,
+                'prepare_response() answers a request that was deferred, but nothing '
+                'calls unblock_current_request(); without the release the request stays '
+                'busy and a second client is refused with RequestBusy'))
+    check_late_responses(sources, findings, read)
+
+
+# The keywords whose parenthesised head opens a block that is not a function.
+NOT_FUNCTIONS = {'if', 'for', 'while', 'switch', 'catch', 'return', 'sizeof',
+                 'decltype', 'alignof', 'static_assert'}
+FUNCTION_HEAD_RE = re.compile(r'(~?\w+)\s*\(')
+CLASS_HEAD_RE = re.compile(r'\b(?:class|struct)\s+(\w+)(?:\s+final)?\s*(?::[^;{}()]*)?$')
+FUNCTION_TAIL_RE = re.compile(r'\)\s*(?:(?:const|noexcept|override|final|volatile)\s*)*$')
+CALLED_NAME_RE = re.compile(r'\b(\w+)\s*\(')
+RESPONSE_CALL_RE = re.compile(r'\bresponse_(\w+)\s*\(')
+# The callbacks areg dispatches to a component, each one its own event.
+DISPATCH_RE = re.compile(r'(?:process_timer|process_event|service_connected|request_\w+'
+                         r'|response_\w+|broadcast_\w+|on_\w+_update)$')
+DEFINITION_BEFORE_RE = re.compile(r'\bvoid\s+(?:\w+\s*::\s*)*$')
+
+
+def code_text(text):
+    """The text with comments and string contents removed, line breaks kept."""
+    text = '\n'.join(strip_noise(line) for line in text.splitlines())
+    return re.sub(r'/\*.*?\*/', lambda m: '\n' * m.group(0).count('\n'), text,
+                  flags=re.DOTALL)
+
+
+def function_bodies(code):
+    """(name, start, end, owner) of every function body in code, end exclusive.
+
+    A brace opens a function body when the text since the last ';', '{' or '}'
+    ends with a parameter list, and a class body when it follows class or struct.
+    owner is the class a body belongs to, by its qualifier or by the class body
+    around it, or None. Every other brace is a block of its enclosing body.
+    """
+    found = []
+    stack = []
+    last = 0
+    for index, char in enumerate(code):
+        if char == '{':
+            head = code[last:index]
+            kind, name, owner = 'block', None, None
+            match = CLASS_HEAD_RE.search(head)
+            if match:
+                kind, name = 'class', match.group(1)
+            else:
+                match = FUNCTION_HEAD_RE.search(head)
+                if match and FUNCTION_TAIL_RE.search(head) \
+                        and match.group(1) not in NOT_FUNCTIONS:
+                    kind, name = 'function', match.group(1)
+                    qualified = re.search(r'(\w+)\s*::\s*' + re.escape(name) + r'\s*\(', head)
+                    if qualified:
+                        owner = qualified.group(1)
+                    else:
+                        owner = next((entry[1] for entry in reversed(stack)
+                                      if entry[0] == 'class'), None)
+            stack.append((kind, name, owner, index))
+            last = index + 1
+        elif char == '}':
+            if stack:
+                kind, name, owner, start = stack.pop()
+                if kind == 'function':
+                    found.append((name, start, index + 1, owner))
+            last = index + 1
+        elif char == ';':
+            last = index + 1
+    return found
+
+
+def check_late_responses(sources, findings, read):
+    """P-13. A response sent after its request handler returned, with no release.
+
+    A response_<name>() sent from a timer, an event or another callback answers a
+    request whose handler has already returned. Unless request_<name>() released
+    it with unblock_current_request(), directly or through a function it calls,
+    the request stays busy and the next caller is refused with RequestBusy.
+    A sender is reported only when the project's own calls reach it from such a
+    callback and not from request_<name>(): a call made through generated code,
+    such as a state machine action, is not followed. A sending function that
+    calls prepare_response() is left to the rule above.
+    """
+    files = []
+    bodies = {}
+    owned = set()
+    for path in sources:
+        text = read(path)
+        if text is None:
+            continue
+        code = code_text(text)
+        spans = function_bodies(code)
+        files.append((path, text, code, spans))
+        for name, start, end, owner in spans:
+            bodies.setdefault(name, []).append(code[start:end])
+            owned.add((owner, name))
+
+    def reached_from(names):
+        seen = set(names)
+        pending = list(names)
+        while pending:
+            for body in bodies.get(pending.pop(), []):
+                for called in CALLED_NAME_RE.findall(body):
+                    if called in bodies and called not in seen \
+                            and not DISPATCH_RE.match(called):
+                        seen.add(called)
+                        pending.append(called)
+        return seen
+
+    def releases(names):
+        return any('unblock_current_request' in body
+                   for name in names for body in bodies.get(name, []))
+
+    reach = {}
+    reported = set()
+    for path, text, code, spans in files:
+        lines = text.splitlines()
+        for match in RESPONSE_CALL_RE.finditer(code):
+            if DEFINITION_BEFORE_RE.search(code[max(0, match.start() - 200):match.start()]):
+                continue
+            request = 'request_' + match.group(1)
+            if request not in bodies:
+                continue
+            enclosing = [s for s in spans if s[1] < match.start() < s[2]]
+            if not enclosing:
+                continue
+            sender, start, end, owner = min(enclosing, key=lambda s: s[2] - s[1])
+            if 'prepare_response' in code[start:end]:
+                continue
+            before = code[max(0, match.start() - 40):match.start()]
+            if not OBJECT_CALL_RE.search(before) \
+                    and (owner, match.group(0).rstrip('( ')) in owned:
+                continue
+            if request not in reach:
+                roots = [name for name in bodies
+                         if name != request and DISPATCH_RE.match(name)]
+                reach[request] = (reached_from([request]), reached_from(roots))
+            inside, late = reach[request]
+            if sender in inside or sender not in late or releases(inside) \
+                    or (path, start, request) in reported:
+                continue
+            number = code.count('\n', 0, match.start()) + 1
+            if suppressed(lines, number, 'P-13'):
+                continue
+            reported.add((path, start, request))
+            findings.append(Finding(
+                'P-13', 'error', path, number,
+                '%s() is sent from %s(), after %s() has returned, but %s() never '
+                'calls unblock_current_request(); the request stays busy and the '
+                'next caller is refused with RequestBusy. In %s(): const '
+                'areg::SessionID session{ unblock_current_request() }; keep it, and '
+                'answer with: if (prepare_response(session)) %s(...);'
+                % (match.group(0).rstrip('( '), sender, request, request, request,
+                   match.group(0).rstrip('( '))))
 
 
 # P-15. macro_declare_executable takes the source files after the target name. A
@@ -1207,16 +1385,17 @@ def check_threads(sources, findings, read):
     """P-10 and P-11, both of which need the whole project to decide.
 
     P-10. A watchdog timeout is a per thread number in the model. It is enforced
-    only while the watchdog manager runs, and the manager is off unless asked for:
-    Application::setup() takes startWatchdog as its fifth argument and defaults it
-    to false. A timeout registered with the manager off is a guard that never
-    fires, which reads in the model as though the thread is protected.
+    only while the watchdog manager runs. Application::setup() starts it with the
+    service manager (startServicing, second argument, true by default), or alone
+    when startWatchdog, the fifth argument, is true. A timeout registered while
+    every setup() passes startServicing false and no startWatchdog is a guard that
+    never fires, which reads in the model as though the thread is protected.
 
-    P-11. REGISTER_WORKER_THREAD names the consumer the component must answer to
-    from worker_thread_consumer(). The base implementation returns nullptr for a
-    name it does not know, so a misspelling starts the thread and runs nothing.
-    The name may be a constant, so it is reported only when its exact text appears
-    nowhere else in the project -- the same tolerance P-03 uses.
+    P-11. The model stores a REGISTER_WORKER_THREAD consumer name as
+    "<role>:<name>" (areg::create_component_item_name), and worker_thread_consumer()
+    is asked for that name; one it does not answer starts no worker thread, silently.
+    A project answers it only through ComponentEntry::mWorkerThreads or
+    create_component_item_name(); without either, every registration is reported.
 
     The plan asked P-11 to catch an event sent to a thread name that no thread
     answers to. That is not detectable: send_event takes a DispatcherThread
@@ -1225,8 +1404,9 @@ def check_threads(sources, findings, read):
     """
     timeouts = []
     watchdog_on = False
+    setup_seen = False
     consumers = []
-    literals = set()
+    from_entry = False
 
     for path in sources:
         text = read(path)
@@ -1240,8 +1420,10 @@ def check_threads(sources, findings, read):
                 watchdog_on = True
             setup = SETUP_RE.search(line)
             if setup:
-                args = split_args(line, line.index('(', setup.end() - 1))
-                if args and len(args) >= 5 and args[4].strip() == 'true':
+                setup_seen = True
+                args = split_args(line, line.index('(', setup.end() - 1)) or []
+                servicing = len(args) < 2 or args[1].strip() != 'false'
+                if servicing or (len(args) >= 5 and args[4].strip() == 'true'):
                     watchdog_on = True
 
             match = WATCHDOG_MACRO_RE.search(line)
@@ -1256,33 +1438,35 @@ def check_threads(sources, findings, read):
 
             worker = WORKER_MACRO_RE.search(raw)
             if worker:
-                # The literal is the point of this rule, so the arguments are read
-                # from the raw line, before strip_noise() blanks its strings.
+                # The name is read from the raw line, before strip_noise() blanks its
+                # strings, so the report can show it.
                 args = split_args(raw, worker.end() - 1)
                 if args and len(args) >= 2:
                     name = args[1].strip()
                     if len(name) > 1 and name.startswith('"') and name.endswith('"'):
-                        consumers.append((name[1:-1], path, number + 1))
-            else:
-                literals.update(LITERAL_RE.findall(raw))
+                        name = name[1:-1]
+                    consumers.append((name, path, number + 1))
+            if WORKER_ENTRY_RE.search(line):
+                from_entry = True
 
-    if timeouts and not watchdog_on:
+    if timeouts and setup_seen and not watchdog_on:
         value, path, number = timeouts[0]
         findings.append(Finding(
             'P-10', 'advice', path, number,
-            'a watchdog timeout of %s is registered but the watchdog manager is '
-            'never started, so nothing enforces it. Call '
-            'areg::Application::setup() with its fifth argument, startWatchdog, '
-            'set to true, or register the thread with no timeout' % value))
+            'a watchdog timeout of %s is registered but the watchdog manager '
+            'never starts: setup() starts no service manager and is not asked for '
+            'the watchdog. Pass true as its fifth argument, startWatchdog, or '
+            'register the thread with no timeout' % value))
 
     for name, path, number in consumers:
-        if name not in literals:
+        if not from_entry:
             findings.append(Finding(
                 'P-11', 'advice', path, number,
-                'nothing in the project answers to the worker thread consumer '
-                'name "%s". The component returns it from '
-                'worker_thread_consumer(); a name it does not recognise yields '
-                'nullptr and the worker thread runs nothing' % name))
+                'the model qualifies the worker consumer name %s by the role, so '
+                'worker_thread_consumer() is asked for "<role>:%s", and nothing in the '
+                'project answers that name: no worker thread starts. Construct the '
+                'consumer with entry.mWorkerThreads[i].mConsumerName, or '
+                'areg::create_component_item_name(role, name)' % (name, name.strip('"'))))
 
 
 # P-02. A generated member called by its bare document name: open_valve(...) where
@@ -1777,12 +1961,13 @@ def main():
         text = read(path)
         if text is None:
             continue
-        check_file(path, text.splitlines(), known, findings)
+        check_file(path, text.splitlines(), known, findings,
+                   serves_service(path, text, read))
     check_roles(sources, findings, read)
     check_threads(sources, findings, read)
     check_sources_declared(base, sources, findings, read)
     check_subscriptions(sources, findings, read)
-    check_deferred_responses(sources, findings, read)
+    check_deferred_responses(sources, findings, read, args.allow_todo)
     check_bare_calls(generated, sources, findings, read)
     check_timer_dispatch(sources, findings, read)
     check_generate_target(base, findings, read)

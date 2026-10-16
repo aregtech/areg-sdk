@@ -40,12 +40,13 @@ MARKER = re.compile(r'//\s*TODO\(you\)\s+([A-Za-z_][\w]*)\s*:\s*(.*?)\s*$')
 
 # A filled body keeps its name. These two lines stand where the marker stood, so the
 # same section of the worksheet addresses the body again after it is written.
-BODY_OPEN = re.compile(r'//\s*body\(you\)\s+([A-Za-z_][\w]*)\s*$')
-BODY_END = re.compile(r'//\s*end\(you\)\s+([A-Za-z_][\w]*)\s*$')
+BODY_OPEN = re.compile(r'//\s*body\(you\)\s+(?:[\w.]+:)?([A-Za-z_][\w]*)\s*$')
+BODY_END = re.compile(r'//\s*end\(you\)\s+(?:[\w.]+:)?([A-Za-z_][\w]*)\s*$')
 
 
 def anchored(body, pad, slot):
-    """The body between the two lines that name it."""
+    """The body between the two lines that name it, by its marker name alone."""
+    slot = slot.rpartition(':')[2]
     return ([pad + '// body(you) {}'.format(slot)] + list(body) +
             [pad + '// end(you) {}'.format(slot)])
 
@@ -63,6 +64,9 @@ REPEATED = []
 
 # The repair file, beside the bodies file unless --fix names another.
 FIX_FILE = 'fix.txt'
+
+# A call on the owner a client forwards an arrival to.
+OWNER_CALL = re.compile(r'\bmOwner\s*\.\s*([A-Za-z_]\w*)\s*\(')
 
 
 def fail(message):
@@ -305,6 +309,53 @@ def write_expectations(path, filled):
         handle.write('\n')
 
 
+STACK_OUTPUT = re.compile(r'\b(?:GLOBAL|LOG)_[A-Z]+\s*\(|\bprintf\s*\(|\bputs\s*\(|\bcout\b')
+STACK_BRANCH = re.compile(r'\b(?:if|else|case|switch|fail|stay|return|go_to)\b|\?')
+STACK_STRING = re.compile(r'"((?:[^"\\\n]|\\.)*)"')
+STACK_LEAST = 4
+
+
+def all_expectations(path, filled):
+    """Every regular expression the scenario file holds once this pass has written."""
+    patterns = []
+    try:
+        with open(path, encoding='utf-8') as handle:
+            scenarios = json.load(handle)['scenarios']
+    except (ValueError, OSError, KeyError, TypeError):
+        return patterns
+    for outer, scenario in enumerate(scenarios):
+        for inner, spec in enumerate(scenario.get('procs', [])):
+            for text in filled.get((outer, inner), spec.get('expect', [])):
+                try:
+                    patterns.append(re.compile(text))
+                except (re.error, TypeError):
+                    pass
+    return patterns
+
+
+def stacked_lines(sections, patterns):
+    """[(section, count)] of sections, startup and main() aside, that log STACK_LEAST or
+    more expected lines as fixed text one after another, with no branch or check between."""
+    found = []
+    for name, body in sections:
+        if re.match(r'(?:main_|startup|initial_values|expect_)', name.rpartition(':')[2]):
+            continue
+        run, most = set(), 0
+        code = '\n'.join(line.split('//')[0] for line in body)
+        for statement in re.split(r'[;{}]', code):
+            text = STACK_STRING.search(statement)
+            hits = [index for index, pattern in enumerate(patterns)
+                    if text and '%' not in text.group(1) and pattern.search(text.group(1))]
+            if hits and STACK_OUTPUT.search(statement) and not STACK_BRANCH.search(statement):
+                run.add(hits[0])
+                most = max(most, len(run))
+            elif statement.strip():
+                run = set()
+        if most >= STACK_LEAST:
+            found.append((name, most))
+    return found
+
+
 def held_expectations(path, place):
     """The regular expressions a process or a stop holds now, as a list."""
     with open(path, encoding='utf-8') as handle:
@@ -319,6 +370,10 @@ def resolve(name, markers, where):
     to say it."""
     wanted, _, bare = name.rpartition(':')
     places = markers.get(bare or name)
+    if not places and '.' in name and ':' not in name:
+        fail('{} names "{}", a file: it holds only "== <section>" lines, each followed by '
+             'its code. The "== <file>" and SEARCH/REPLACE form goes after --edit, not '
+             '--write'.format(where, name))
     if not places:
         near = difflib.get_close_matches(bare or name, sorted(markers), 3, 0.6)
         fail('{} names "{}", which is neither an open marker of this project nor a '
@@ -340,6 +395,46 @@ def resolve(name, markers, where):
                                   ', '.join(os.path.basename(p[0]) for p in places),
                                   bare or name))
     return places[0]
+
+
+def owner_calls_after(lines, index, extra):
+    """The owner calls the generated code makes after the marker at `index`, up to the
+    end of its function, other bodies left out: {method: {statement without spaces}}."""
+    calls = {}
+    inside = False
+    for line in lines[index + 1 + extra:]:
+        if line.startswith('}'):
+            break
+        if BODY_OPEN.search(line) or BODY_END.search(line):
+            inside = bool(BODY_OPEN.search(line))
+            continue
+        if inside:
+            continue
+        code = line.split('//')[0]
+        for method in OWNER_CALL.findall(code):
+            calls.setdefault(method, set()).add(''.join(code.split()))
+    return calls
+
+
+def without_trailing_call(body, after):
+    """(method, the body without it) when the body's last statement is exactly a call
+    the generated code makes after it, outside every brace of the body; else None."""
+    code = [(number, text.split('//')[0].strip()) for number, text in enumerate(body)]
+    code = [(number, text) for number, text in code if text]
+    if not code:
+        return None
+    number, last = code[-1]
+    methods = OWNER_CALL.findall(last)
+    if len(methods) != 1 or ''.join(last.split()) not in after.get(methods[0], ()):
+        return None
+    if sum(text.count('{') - text.count('}') for _, text in code[:-1]) != 0:
+        return None
+    if any(methods[0] in OWNER_CALL.findall(text) for _, text in code[:-1]):
+        return None
+    kept = body[:number] + body[number + 1:]
+    if not any(text.split('//')[0].strip() or '//' in text for text in kept):
+        kept = ['// mOwner.{}() follows this body'.format(methods[0])]
+    return methods[0], trim(kept)
 
 
 def indent_of(line):
@@ -419,6 +514,9 @@ def main():
     # exactly as it was rather than half filled.
     planned = []
     claimed = {}
+    sources = {}
+    doubled = []
+    forwarded = []
     expected = {}
     replaced = []
     changed = []
@@ -427,6 +525,8 @@ def main():
         if name in expectations:
             expected[expectations[name]] = [text.strip() for text in body
                                             if text.strip()]
+            if expected[expectations[name]] == ['[]'] and expectations[name][1] is not None:
+                expected[expectations[name]] = []
             if expectations[name][1] is None and len(expected[expectations[name]]) != 1:
                 fail('{}: section "{}" is the line that triggers a stop, so it takes '
                      'exactly one regular expression, not {}. Nothing was written'
@@ -443,6 +543,19 @@ def main():
             fail('{} fills the same marker twice, as "{}" and as "{}"'
                  .format(args.bodies, claimed[(path, index)], name))
         claimed[(path, index)] = name
+        if path.endswith('.cpp') and path not in sources:
+            with open(path, encoding='utf-8') as handle:
+                sources[path] = handle.read().splitlines()
+        after = (owner_calls_after(sources[path], index, extra) if path in sources
+                 else {})
+        shorter = without_trailing_call(body, after)
+        if shorter is not None:
+            forwarded.append('"{}" ends with mOwner.{}()'.format(name, shorter[0]))
+            body = shorter[1]
+        twice = sorted(set(OWNER_CALL.findall('\n'.join(text.split('//')[0]
+                                                        for text in body))) & set(after))
+        if twice:
+            doubled.append('"{}" calls mOwner.{}()'.format(name, twice[0]))
         again = any(where[:2] == (path, index) for where in written.get(name, ()))
         if again:
             replaced.append(name)
@@ -450,6 +563,23 @@ def main():
             dropped += extra
         planned.append((path, index, extra, name,
                         anchored(place(body, line), indent_of(line), name)))
+
+    if doubled:
+        fail('{}: {}. The generated code makes that call right after the body, so '
+             'every arrival would reach the owner twice. Leave the call out: the body '
+             'holds only what the arrival means to the owner. Nothing was written'
+             .format(args.bodies, '; '.join(doubled)))
+    stacked = stacked_lines(sections, all_expectations(args.scenarios, expected))
+    if stacked:
+        fail('{}: section "{}" logs {} lines of scenarios.json\'s expectations one after '
+             'another, with nothing compared between them. A line proves its requirement '
+             'only when the check that compared it prints it: give each its own step '
+             '(design.json "steps") or its own check, and print it after that check. '
+             'Nothing was written'.format(args.bodies, stacked[0][0], stacked[0][1]))
+    if forwarded:
+        print('  {} body(ies) end with the mOwner call the generated code makes right '
+              'after the body; that last line is left out of each, so every arrival '
+              'reaches the owner once: {}'.format(len(forwarded), '; '.join(forwarded)))
 
     if expected and not args.dry_run:
         write_expectations(args.scenarios, expected)
@@ -508,6 +638,11 @@ def main():
                 'replaced {}'.format(', '.join(folded[1])) if folded[1] else '',
                 'added {}'.format(', '.join(folded[2])) if folded[2] else '') if part)
             or 'no section with code'))
+        unread = [name for name, text in blocks_of(fixes)[1:] if name.startswith('expect_')
+                  and not any(line.strip() and not note(line) for line in text[1:])]
+        if unread:
+            print('{} kept as it was: a section with no line changes nothing; the one '
+                  'line [] makes it expect nothing'.format(', '.join(unread)))
 
     filled = set(claimed)
     left = [(name, path) for name, places in sorted(markers.items())
@@ -541,13 +676,13 @@ def main():
         return 0
     named = set(name for name, _ in sections) | set(blank)
     orphans = [entry for entry in left if entry[0] not in named]
-    print('  {} marker(s) still open; {} carries a section for {} of them'
-          .format(len(left), args.bodies.replace(os.sep, '/'), len(left) - len(orphans)))
     for name, path in orphans[:SHOWN]:
         print('  no section for: {} in {}'.format(name, path.replace(os.sep, '/')))
     if len(orphans) > SHOWN:
-        print('  and {} more the worksheet does not name; gen_skeleton.py --todos '
-              'lists them'.format(len(orphans) - SHOWN))
+        print('  and {} more; gen_skeleton.py --todos lists them'
+              .format(len(orphans) - SHOWN))
+    print('  {} marker(s) still open; {} carries a section for {} of them'
+          .format(len(left), args.bodies.replace(os.sep, '/'), len(left) - len(orphans)))
     return 0
 
 

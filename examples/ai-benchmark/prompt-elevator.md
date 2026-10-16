@@ -46,6 +46,7 @@ refused naming the reason. When the stop is **released**, the car **continues fr
 exact step it was halted in**: toward the same target if it was travelling, without
 re-announcing the floor it is at; or with the same door step if the doors were moving
 or open. Nothing is restarted from the beginning, and the target is not forgotten.
+What the car is doing once it continues is published like any other change.
 
 **What the controller publishes.** The car's current floor, its direction (up, down,
 none), and what it is doing (idle, travelling, doors opening, doors open, doors
@@ -67,8 +68,9 @@ non-zero.
 
 A second client that watches the controller and does nothing else. It prints one line
 per change of floor and one per change of what the car is doing, so a person can
-follow the car from the display alone. When the controller announces it is out of
-service, the display prints that and exits 0. If the controller goes away without that
+follow the car from the display alone, as `display: floor <n>` or `display: <what the
+car is doing>` in the words of the list above. When the controller announces it is out
+of service, the display prints that and exits 0. If the controller goes away without that
 announcement, the display reports the loss and exits non-zero.
 
 ### The simulated passenger
@@ -90,9 +92,35 @@ step to the console so a person can read what happened:
    with no floor announced twice and none skipped, then the door sequence at 0 and idle
 8. call the car to floor **1**; when the doors at floor 1 are **open**, press the
    emergency stop -- expect the doors to stay open and the car halted at floor 1
-9. release the stop -- expect the doors to close, not to open again, and the car idle
-   at floor 1
+9. release the stop -- expect the doors to stay open, then close without opening again:
+   what the car is doing goes from halted to doors open, then doors closing, never doors
+   opening, and the car is idle at floor 1
 10. take the car out of service -- expect the announcement
+
+Once a step's expectation has held, the passenger prints its line below, with this
+exact wording, alone or at the end of a line, nothing after it; `<floor>` is the floor's number:
+
+```lines
+step 1: doors opened and closed at floor 0, no floor announced
+step 2: floors 1, 2, 3, 4 announced, idle at floor 4
+step 3: refused, busy
+step 4: refused, out of range
+step 5: halted at floor <floor>
+step 6: refused, halted
+step 7: continued to floor 0, no floor announced twice or skipped
+step 8: halted at floor 1, doors open
+step 9: doors closed without opening again, idle at floor 1
+step 10: out of service
+```
+
+In the same run the display prints, among its other lines:
+
+```lines
+display: floor 4
+display: doors open
+display: halted
+display: out of service
+```
 
 Then exit. **Exit code 0 if every expectation held, non-zero otherwise**, printing
 which step failed. The passenger program must survive the controller being started
@@ -112,7 +140,9 @@ they need a second run of their own:
 
 **An acceptance item counts as passing only when the output of one of those runs shows
 it.** An item you believe you implemented but never observed is reported as not
-passing: naming the ones you could not prove is worth more than a full score.
+passing: naming the ones you could not prove is worth more than a full score. An item
+marked (code) is one no output can show: count it apart, as present only where you can
+name the file and the class or function that does it.
 
 ### Acceptance checklist
 
@@ -125,7 +155,7 @@ framework, against this list:
       the door sequence
 - [ ] a call to the current floor runs the door sequence with no movement and no floor
       announced
-- [ ] the door sequence after a journey and after a call to the current floor is one
+- [ ] (code) the door sequence after a journey and after a call to the current floor is one
       piece of logic, entered at a different step, not two copies
 - [ ] a call while busy, a call out of range and a call while halted are each refused,
       naming the reason
@@ -133,17 +163,17 @@ framework, against this list:
       target from the floor reached: no floor announced twice, none skipped**
 - [ ] **an emergency stop with the doors open, once released, closes them without
       opening them again**
-- [ ] all timing is kept by the controller; no client sends ticks or waits to pace it
+- [ ] (code) all timing is kept by the controller; no client sends ticks or waits to pace it
 - [ ] the display shows every floor change and every change of what the car is doing,
       and a display started late receives the current values at once
-- [ ] the controller's behaviour is a state machine: named states, and the door
+- [ ] (code) the controller's behaviour is a state machine: named states, and the door
       sequence and the journey are each declared once
 - [ ] out of service is announced to every client; the display exits 0 on it
 - [ ] the controller accepts `-q` / `--quit` at its console and exits cleanly
 - [ ] no program waits more than 20 seconds for something that never arrives
 - [ ] if one side goes away mid-scenario, the other reports it and exits non-zero
 - [ ] the scenario exits 0, and non-zero when an expectation fails
-- [ ] no busy-waiting and no sleeping inside a message handler
+- [ ] (code) no busy-waiting and no sleeping inside a message handler
 
 ---
 
@@ -180,7 +210,7 @@ End with this table and nothing longer.
 |---|---|
 | build-and-fix cycles | |
 | run-and-fix cycles | |
-| acceptance items passing | n of the checklist above, and which failed |
+| acceptance items passing | n of the unmarked items shown by the output, and which were not; c of the (code) items, each with where |
 | checker findings, first run | name the checker, or "none run" |
 | files you opened that the documentation did not route you to | names, or "none" |
 

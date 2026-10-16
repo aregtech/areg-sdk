@@ -350,12 +350,13 @@ def run_processes(task, project, found):
                                             stdout=subprocess.DEVNULL,
                                             stderr=subprocess.DEVNULL))
         time.sleep(1.0)
+        since = time.time() - 1
         result = run([lead] + list(task.get('args') or []), cwd=project, timeout=90)
         if result is None:
             return False, '{} did not finish'.format(spec['lead'])
         if result.returncode != 0:
             return False, '{} exited {}'.format(spec['lead'], result.returncode)
-        output = result.stdout + result.stderr
+        output = result.stdout + result.stderr + logged(lead, since)
         missing = [text for text in task.get('expect', []) if text not in output]
         if missing:
             return False, 'output did not contain: ' + '; '.join(missing)
@@ -438,6 +439,16 @@ def restore(project, kept):
             os.remove(path)
 
 
+def logged(binary, since):
+    """The log files written beside binary after since, as one text."""
+    text = ''
+    for path in sorted(glob.glob(os.path.join(os.path.dirname(binary), 'logs', '*.log'))):
+        if os.path.getmtime(path) >= since:
+            with open(path, encoding='utf-8', errors='replace') as handle:
+                text += handle.read()
+    return text
+
+
 def _grade(task, project):
     """Grades a project already built."""
     found = binaries_of(project)
@@ -453,13 +464,14 @@ def _grade(task, project):
     if not expect:
         return True, 'built {} executable(s); no output asserted'.format(len(found))
 
+    since = time.time() - 1
     result = run([found[0]] + list(task.get('args') or []), cwd=project, timeout=90)
     if result is None:
         return False, 'the application did not finish'
     if result.returncode != 0:
         return False, 'exit code {}'.format(result.returncode)
 
-    output = result.stdout + result.stderr
+    output = result.stdout + result.stderr + logged(found[0], since)
     missing = [text for text in expect if text not in output]
     if missing:
         return False, 'output did not contain: ' + '; '.join(missing)
@@ -489,12 +501,10 @@ def self_check(tasks, args):
         else:
             SERVICE_DIRS[:] = [os.path.join(prefix, 'tools', 'areg'),
                                os.path.join(prefix, 'bin')]
-            # The installed services name the library without a path to it.
-            for variable, folder in (('LD_LIBRARY_PATH', 'lib'), ('DYLD_LIBRARY_PATH', 'lib'),
-                                     ('PATH', 'bin')):
-                os.environ[variable] = os.pathsep.join(
-                    [os.path.join(prefix, folder)]
-                    + [part for part in [os.environ.get(variable)] if part])
+            # A Windows application built against the installation loads its DLL from bin.
+            os.environ['PATH'] = os.pathsep.join(
+                [os.path.join(prefix, 'bin')]
+                + [part for part in [os.environ.get('PATH')] if part])
     each = max(1, args.jobs // len(groups)) + 1 if groups else args.jobs
     print('grading {} task(s) on {} recipe(s), built together at -j {} each, {}.'.format(
         sum(len(group) for group in groups.values()), len(groups), each, how), flush=True)

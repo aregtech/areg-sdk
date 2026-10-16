@@ -1,7 +1,7 @@
 # Working with the AREG SDK
 
-AREG is a framework for service-oriented applications. Describe a service once in a
-`.siml` document; the generator writes the communication code and you implement only
+AREG is a framework for service-oriented applications. Describe a service interface once
+in a `.siml` document; the generator writes the communication code and you implement only
 the service logic. The same code runs in one thread, many threads, many processes or
 many machines: what changes is where a component is registered, not what it does.
 
@@ -38,14 +38,14 @@ Find your task, open that one file, and do not search the repository.
 |---|---|
 | **Anything ordinary** | `docs/agent/00-cheatsheet.md` -- what the tools do not write |
 | **Build a new application** | `docs/agent/01-runbook.md`, the golden path of section 4. Without Python, copy a recipe from `docs/agent/recipes/`, do not read it; `recipes/README.md` maps them |
-| **Decide what the services are** | `docs/agent/05-design.md`, after the scaffold |
+| **Decide the services and their interfaces** | `design.json` rules; `docs/agent/05-design.md` for a doubt they leave |
 | Start a new project by hand | `docs/agent/10-new-project.md` |
 | Define an interface; what to override, what to call | `docs/agent/20-service-interface.md` (section 3: the names) |
-| Implement a provider, a consumer, or the model | no page: `tools/agent/gen_skeleton.py --app` wrote all three, compiling and running, and your code is the bodies its worksheet asks for. Open `docs/agent/30-provider.md`, `docs/agent/31-consumer.md` or `docs/agent/32-model.md` only where `docs/agent/05-design.md` or `docs/agent/51-debug.md` cites a numbered section of one |
-| Watchdog, worker thread, model built at run time | copy `docs/agent/recipes/07-worker-events/`; `docs/agent/37-threads.md` |
+| Implement a provider, a consumer, or the model | no page: `tools/agent/gen_skeleton.py --app` wrote all three, compiling and running, and your code is the bodies its worksheet asks for. Open `docs/agent/30-provider.md`, `docs/agent/31-consumer.md` or `docs/agent/32-model.md` only where `docs/agent/05-design.md` or `docs/agent/51-debug.md` cites a numbered section of one; several services in one component: `docs/agent/24-component.md` |
+| Worker thread, or a plain one (which: `docs/agent/37-threads.md` section 2); watchdog, model built at run time | a provider's: `workers` of its service in design.json, `"start": false` if started on request; otherwise copy `docs/agent/recipes/07-worker-events/`; `docs/agent/38-workers.md`; `docs/agent/37-threads.md` |
 | Send a custom event between threads | `docs/agent/23-events.md` |
 | Do periodic or delayed work | `docs/agent/33-timers.md` |
-| Log from code; collect several processes' logs | `docs/agent/34-logging.md` |
+| Log from code; read a program's log | `docs/agent/34-logging.md` |
 | Understand the seven core concepts | `CODEBASE.md` section 1 |
 | Data types: C++ spelling, struct, enum, `.dtml` | `docs/agent/21-data-types.md` |
 | Add a state machine | `docs/agent/22-state-machine.md` -- a `"machines"` block of `design.json`, never a recipe copied over a project you already have |
@@ -55,7 +55,9 @@ Find your task, open that one file, and do not search the repository.
 | Integrate areg into an existing CMake project | `docs/wiki/02b-cmake-integrate.md` |
 | Work out why it does not work | `docs/agent/51-debug.md` |
 | Test the application, or a component on its own | copy `docs/agent/recipes/12-testing/`; `docs/agent/52-testing.md` |
-| A `scenarios.json` key `--app` did not write; `mtrouter` by hand. In ipc it writes the `-q` scenario, and peer loss for a design with steps | `docs/agent/50-running.md` |
+| A `scenarios.json` key `--app` did not write | `docs/agent/53-scenarios.md` |
+| `mtrouter`, `logcollector`, `logobserver` by hand; collect logs | `docs/agent/50-running.md` |
+| A console program: read a command, print a result | `docs/agent/39-console.md` |
 | Read or query a `.sqlog` log database | `docs/agent/35-sqlog.md` |
 | Set the router address, ports, anything in `areg.init` | `docs/agent/36-config.md` |
 | See a complete working application | `docs/agent/recipes/02-ipc-two-processes/`, which is always present |
@@ -149,8 +151,8 @@ redesign, not an edit; know them first.
   from the document: `docs/agent/20-service-interface.md`.
 - **A consumer's `REGISTER_DEPENDENCY` string must equal the provider's component
   role name, character for character.** A mismatch compiles cleanly and never connects.
-- **Never call a request before the service is connected.** The first legal call is
-  inside `service_connected()` once `areg::is_service_connected(status)` is true.
+- **Never call a request in a constructor.** Any later handler may send one; sent before
+  the service is connected, it gets no answer and no `request_<name>_failed`.
 - **Never treat a disconnect as fatal.** `Disconnected`, `ConnectionLost` and `Failed`
   reconnect on their own; only `Rejected` and `Shutdown` are terminal.
 - **Never block inside a request, response, broadcast or update handler.** Blocking a
@@ -161,8 +163,8 @@ redesign, not an edit; know them first.
   `std::optional`, or an error code.
 
 The other eleven are one-line fixes: a `REGISTER_WORKER_THREAD` consumer name the
-component does not answer to, two
-components sharing a role name (in one process; a public one in the network), a header taken from a `private/`
+component does not answer to, two components sharing a role name (in one process;
+a public one in the network), a header taken from a `private/`
 folder, a watchdog timeout on a thread whose watchdog never starts, a response sent
 after its handler returned, an operation on a nested `.fsml` `Final` state, a
 hand-written source file no `macro_declare_executable` names, a timer told apart
@@ -188,4 +190,3 @@ cannot catch and allows no unfilled marker. Silence a false positive with
 
 A multi-process application starts `mtrouter` first, then the provider, then the
 consumer. A consumer that starts first is not an error: it waits.
-

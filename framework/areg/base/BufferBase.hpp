@@ -2,9 +2,9 @@
 #define AREG_BASE_BUFFERBASE_HPP
 /************************************************************************
  * This file is part of the Areg SDK core engine.
- * Areg SDK is dual-licensed under Free open source (Apache version 2.0
- * License) and Commercial (with various pricing models) licenses, depending
- * on the nature of the project (commercial, research, academic or free).
+ * Areg SDK is dual-licensed under Free open source (Apache version 2.0 License)
+ * and Commercial (with various pricing models) licenses, depending on the
+ * nature of the project (commercial, research, academic or free).
  * You should have received a copy of the Areg SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
@@ -152,7 +152,7 @@ public:
      *          buffer is not valid.
      **/
     [[nodiscard]]
-    inline uint32_t position() const noexcept override;
+    uint32_t position() const noexcept override;
 
     /**
      * \brief   Repositions the read cursor and returns the new position.
@@ -176,20 +176,20 @@ public:
     /**
      * \brief   Appends raw bytes at the end of written data.
      **/
-    inline uint32_t write(const uint8_t* buf, uint32_t size) override;
+    uint32_t write(const uint8_t* buf, uint32_t size) override;
 
     /**
      * \brief   Appends a null-terminated ASCII string (includes NUL terminator).
      **/
-    inline uint32_t write(const String& ascii) override;
+    uint32_t write(const String& ascii) override;
 
     /**
      * \brief   Appends a null-terminated wide string (includes NUL terminator).
      **/
-    inline uint32_t write(const WideString& wide) override;
+    uint32_t write(const WideString& wide) override;
 
     /** No-op for in-memory buffers. **/
-    inline void flush() noexcept override;
+    void flush() noexcept override;
 
     /**
      * \brief   Reserve and ensure additional size to the existing. If the free space of the stream to write
@@ -198,7 +198,7 @@ public:
      * \param   addSize     The size to add if required.
      * \return  Returns true if the stream has enough space to write the data.
      **/
-    inline bool ensure_size(uint32_t addSize) override;
+    bool ensure_size(uint32_t addSize) override;
 
 //////////////////////////////////////////////////////////////////////////
 // InStream interface overrides
@@ -223,12 +223,12 @@ public:
     /**
      * \brief   Copies bytes from the current read position into buf.
      **/
-    inline uint32_t read(uint8_t* buf, uint32_t size) const noexcept override;
+    uint32_t read(uint8_t* buf, uint32_t size) const noexcept override;
 
     /**
      * \brief   Resets the read cursor to the beginning of the buffer.
      **/
-    inline void reset() const noexcept override;
+    void reset() const noexcept override;
 
 //////////////////////////////////////////////////////////////////////////
 // BufferBase API
@@ -474,13 +474,13 @@ protected:
      * \brief   Returns bytes available to read from the current read position.
      **/
     [[nodiscard]]
-    inline uint32_t size_readable() const noexcept override;
+    uint32_t size_readable() const noexcept override;
 
     /**
      * \brief   Returns bytes available to write (capacity minus written data).
      **/
     [[nodiscard]]
-    inline uint32_t size_writable() const noexcept override;
+    uint32_t size_writable() const noexcept override;
 
 //////////////////////////////////////////////////////////////////////////
 // BufferBase protected overrides
@@ -634,54 +634,13 @@ inline bool BufferBase::operator != (const BufferBase& other) const noexcept
 // Cursor overrides
 //////////////////////////////////////////////////////////////////////////
 
-inline uint32_t BufferBase::position() const noexcept
-{
-    return is_valid() ? mPosition : areg::Cursor::INVALID_CURSOR_POSITION;
-}
-
 //////////////////////////////////////////////////////////////////////////
 // OutStream overrides
 //////////////////////////////////////////////////////////////////////////
 
-inline uint32_t BufferBase::write(const uint8_t* buf, uint32_t size)
-{
-    return write_data(buf, size);
-}
-
-inline uint32_t BufferBase::write(const String& ascii)
-{
-    return write_data(reinterpret_cast<const uint8_t*>(ascii.as_string()), ascii.space());
-}
-
-inline uint32_t BufferBase::write(const WideString& wide)
-{
-    return write_data(reinterpret_cast<const uint8_t*>(wide.as_string()), wide.space());
-}
-
-inline void BufferBase::flush() noexcept
-{
-    // No-op: in-memory buffer, nothing to flush.
-}
-
-inline bool BufferBase::ensure_size(uint32_t addSize)
-{
-    uint32_t newSize = size_used() + addSize;
-    return (reserve(newSize, true) == newSize);
-}
-
 //////////////////////////////////////////////////////////////////////////
 // InStream overrides
 //////////////////////////////////////////////////////////////////////////
-
-inline uint32_t BufferBase::read(uint8_t* buf, uint32_t size) const noexcept
-{
-    return read_data(buf, size);
-}
-
-inline void BufferBase::reset() const noexcept
-{
-    mPosition = 0u;
-}
 
 inline void BufferBase::invalidate() noexcept
 {
@@ -819,21 +778,6 @@ inline uint8_t* BufferBase::buffer_to_write() noexcept
 //////////////////////////////////////////////////////////////////////////
 // IOStream protected overrides
 //////////////////////////////////////////////////////////////////////////
-
-inline uint32_t BufferBase::size_readable() const noexcept
-{
-    if (!is_valid())
-        return 0u;
-    const uint32_t limit = mByteBuffer->bufHeader.biUsed;
-    return (mPosition < limit ? limit - mPosition : 0u);
-}
-
-inline uint32_t BufferBase::size_writable() const noexcept
-{
-    if (!is_valid())
-        return 0u;
-    return mByteBuffer->bufHeader.biLength - mByteBuffer->bufHeader.biUsed;
-}
 
 
 //////////////////////////////////////////////////////////////////////////

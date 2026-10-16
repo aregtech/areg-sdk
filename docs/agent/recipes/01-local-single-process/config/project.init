@@ -1,0 +1,20 @@
+# The configuration of this project's programs; main() reads it in Application::setup().
+# A relative path is resolved against the folder of the executable.
+config::*::version          = 2.0.0
+router::*::service          = mtrouter
+router::*::connect          = tcpip
+router::*::enable::tcpip    = true
+router::*::address::tcpip   = localhost
+router::*::port::tcpip      = 8181
+log::*::version             = 2.0.0
+log::*::enable              = true
+log::*::target              = file
+log::*::enable::file        = true
+log::*::enable::remote      = false
+log::*::enable::debug       = false
+log::*::file::location      = ./logs/%appname%_%time%.log
+log::*::file::append        = false
+log::*::layout::message     = %d: [ %t  %p >>> ] %m%n
+log::*::scope::areg_*       = NOTSET ;
+log::*::scope::src_services_* = NOTSET ;
+log::*::scope::*            = DEBUG ;

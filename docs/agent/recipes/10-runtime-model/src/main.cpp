@@ -5,9 +5,6 @@
  **/
 #include <atomic>
 #include <cstdlib>
-#include <iostream>
-#include <mutex>
-#include <sstream>
 
 #include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
@@ -18,6 +15,9 @@
 
 #include "src/services/HelloServiceProviderBase.hpp"
 #include "src/services/HelloServiceConsumerBase.hpp"
+#include "areg/logging/areg_log.h"
+
+GLOBAL_LOG_SCOPE(runtime_main, log);
 
 namespace
 {
@@ -36,15 +36,6 @@ namespace
 
     std::atomic_uint    theAnswered     { 0 };
 
-    std::mutex          theOutputLock;
-
-    //! Writes one whole line. Four threads share std::cout here, and a chain of
-    //! << from two of them at once interleaves and tears the line in half.
-    void say( const std::string & line )
-    {
-        const std::lock_guard<std::mutex> lock( theOutputLock );
-        std::cout << line << std::endl;
-    }
 }
 
 class ServiceProvider final : public    areg::Component
@@ -59,9 +50,7 @@ public:
 protected:
     void request_hello_service(const areg::String & client) final
     {
-        std::ostringstream line;
-        line << "provider: hello, " << client;
-        say( line.str() );
+        GLOBAL_INFO("provider: hello, %s", client.as_string());
         response_hello_service(true);
     }
 
@@ -98,9 +87,7 @@ protected:
     void response_hello_service(bool /*success*/) final
     {
         const uint32_t answered{ theAnswered.fetch_add(1) + 1 };
-        std::ostringstream line;
-        line << "consumer: greeted " << answered;
-        say( line.str() );
+        GLOBAL_INFO("consumer: greeted %u", answered);
         if (answered == theExpected.load())
         {
             areg::Application::signal_quit();
@@ -113,7 +100,7 @@ int main(int argc, char ** argv)
     const uint32_t consumers{ consumer_count(argc, argv) };
     theExpected.store(consumers);
 
-    areg::Application::setup();
+    areg::Application::setup(true, true, true, true, false, "./config/project.init");
 
     // Nothing below is a macro. These are the same classes BEGIN_MODEL fills in.
     areg::Model model("RuntimeModel");

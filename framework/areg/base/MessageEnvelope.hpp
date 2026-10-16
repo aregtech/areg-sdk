@@ -2,9 +2,9 @@
 #define AREG_BASE_MESSAGEENVELOPE_HPP
 /************************************************************************
  * This file is part of the Areg SDK core engine.
- * Areg SDK is dual-licensed under Free open source (Apache version 2.0
- * License) and Commercial (with various pricing models) licenses, depending
- * on the nature of the project (commercial, research, academic or free).
+ * Areg SDK is dual-licensed under Free open source (Apache version 2.0 License)
+ * and Commercial (with various pricing models) licenses, depending on the
+ * nature of the project (commercial, research, academic or free).
  * You should have received a copy of the Areg SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
@@ -649,20 +649,20 @@ protected:
      * \brief   A MessageEnvelope is always an owner (never a zero-copy view), so it is always writable.
      **/
     [[nodiscard]]
-    inline bool can_write() const noexcept final { return true; }
+    bool can_write() const noexcept final;
 
     /**
      * \brief   Returns the byte offset at which the payload begins.
      *          Equal to offsetof(areg::RawEnvelope, envData) = sizeof(areg::EventHeader) = 120.
      **/
     [[nodiscard]]
-    inline uint32_t data_offset() const noexcept final;
+    uint32_t data_offset() const noexcept final;
 
     /**
      * \brief   Returns the size of the heap layout struct: sizeof(areg::RawEnvelope) = 124.
      **/
     [[nodiscard]]
-    inline uint32_t header_size() const noexcept final;
+    uint32_t header_size() const noexcept final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden helpers
@@ -1197,16 +1197,6 @@ inline const uint8_t* MessageEnvelope::payload_ptr() const noexcept
 //////////////////////////////////////////////////////////////////////////
 // Protected overrides
 //////////////////////////////////////////////////////////////////////////
-
-inline uint32_t MessageEnvelope::data_offset() const noexcept
-{
-    return offsetof(areg::RawEnvelope, envData);
-}
-
-inline uint32_t MessageEnvelope::header_size() const noexcept
-{
-    return sizeof(areg::RawEnvelope);
-}
 
 /************************************************************************/
 // SharedBuffer interop operators

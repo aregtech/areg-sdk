@@ -2,9 +2,9 @@
 #define AREG_BASE_PRIVATE_POSIX_WAITABLEEVENTIX_HPP
 /************************************************************************
  * This file is part of the Areg SDK core engine.
- * Areg SDK is dual-licensed under Free open source (Apache version 2.0
- * License) and Commercial (with various pricing models) licenses, depending
- * on the nature of the project (commercial, research, academic or free).
+ * Areg SDK is dual-licensed under Free open source (Apache version 2.0 License)
+ * and Commercial (with various pricing models) licenses, depending on the
+ * nature of the project (commercial, research, academic or free).
  * You should have received a copy of the Areg SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
@@ -64,10 +64,9 @@ public:
     inline areg::os::ResetMode  reset_info() const noexcept;
 
     /**
-     * \brief   Resets the event to non-signaled state. Only manual-reset events can be manually
-     *          reset; calls on auto-reset events are ignored.
+     * \brief   Resets the event to non-signaled state, of a manual-reset or an auto-reset event.
      *
-     * \return  Returns true if operation succeeded; false if the event is auto-reset.
+     * \return  Returns true if operation succeeded; false if the event is not valid.
      **/
     inline bool reset() noexcept;
 
@@ -96,7 +95,7 @@ public:
      * \param   contextThread       The thread ID where the lock and wait happened. Not used for waitable events.
      * \return  Returns true if the object is signaled; false otherwise.
      **/
-    inline bool check_signaled( pthread_t contextThread ) const final;
+    bool check_signaled( pthread_t contextThread ) const final;
 
     /**
      * \brief   Callback triggered when a waiting thread is released to continue. Waitable events
@@ -105,12 +104,12 @@ public:
      * \param   ownerThread     The POSIX thread ID that completed the wait.
      * \return  Always returns true.
      **/
-    inline bool notify_request_ownership( pthread_t ownerThread ) final;
+    bool notify_request_ownership( pthread_t ownerThread ) final;
 
     /**
      * \brief   Returns true to indicate that the event can signal multiple threads simultaneously.
      **/
-    inline bool can_signal_threads() const noexcept final;
+    bool can_signal_threads() const noexcept final;
 
     /**
      * \brief   Notifies the event of how many threads were released when the event was in signaled state
@@ -118,7 +117,7 @@ public:
      * \param   numThreads      The number of threads released when the event was signaled. Zero
      *                          means no thread was released.
      **/
-    inline void notify_released_threads( int32_t numThreads ) final;
+    void notify_released_threads( int32_t numThreads ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -171,34 +170,6 @@ inline bool WaitableEventPosix::reset() noexcept
 
     mIsSignaled.store(false, std::memory_order_release);
     return true;
-}
-
-inline bool WaitableEventPosix::check_signaled(pthread_t /*contextThread*/) const
-{
-    return mIsSignaled.load(std::memory_order_acquire);
-}
-
-inline bool WaitableEventPosix::notify_request_ownership(pthread_t /* ownerThread */)
-{
-    if (mEventReset == areg::os::ResetMode::Automatic)
-    {
-        // Atomically take ownership
-        bool expected{ true };
-        return mIsSignaled.compare_exchange_strong(expected, false, std::memory_order_acq_rel, std::memory_order_relaxed);
-    }
-
-    return true;
-}
-
-inline bool WaitableEventPosix::can_signal_threads() const noexcept
-{
-    return true;
-}
-
-inline void WaitableEventPosix::notify_released_threads(int32_t numThreads)
-{
-    // Auto-reset is handled atomically in notify_request_ownership(), no need to reset here.
-    AREG_OUTPUT_DBG("There were [ %d ] released threads from waitable event [ %p ].", numThreads, this);
 }
 
 } // namespace areg::os

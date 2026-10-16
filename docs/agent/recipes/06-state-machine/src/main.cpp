@@ -2,8 +2,6 @@
  * \file    main.cpp
  * \brief   A service whose logic is a state machine, and its consumer.
  **/
-#include <iostream>
-#include <sstream>
 
 #include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
@@ -15,16 +13,9 @@
 #include "src/services/GateServiceConsumerBase.hpp"
 #include "src/services/GateActionHandler.hpp"
 #include "src/services/GateFSM.hpp"
+#include "areg/logging/areg_log.h"
 
-//! Writes one line with a single insertion. Two dispatcher threads printing with
-//! chained << interleave their characters, and a line split in two matches nothing.
-template<typename... Parts>
-void print_line(Parts &&... parts)
-{
-    std::ostringstream line;
-    (line << ... << parts) << '\n';
-    std::cout << line.str() << std::flush;
-}
+GLOBAL_LOG_SCOPE(gate_main, log);
 
 //! The provider owns the machine, implements the actions and hears it finish.
 class GateProvider final    : public    areg::Component
@@ -74,43 +65,43 @@ protected:
     //! An action performs an effect. It asks the machine nothing.
     void action_on_opening() final
     {
-        print_line("provider: gate opening");
+        GLOBAL_INFO("provider: gate opening");
         broadcast_gate_stage("opening");
     }
 
     void action_on_open() final
     {
-        print_line("provider: gate open to ", mFsm.width());
+        GLOBAL_INFO("provider: gate open to %u", static_cast<unsigned int>(mFsm.width()));
         broadcast_gate_stage("open");
     }
 
     void action_on_held() final
     {
-        print_line("provider: gate held");
+        GLOBAL_INFO("provider: gate held");
         broadcast_gate_stage("held");
     }
 
     void action_on_closed() final
     {
-        print_line("provider: gate closed");
+        GLOBAL_INFO("provider: gate closed");
         broadcast_gate_stage("closed");
     }
 
     void action_on_refused(uint32_t asked) final
     {
-        print_line("provider: gate refused ", asked);
+        GLOBAL_INFO("provider: gate refused %u", static_cast<unsigned int>(asked));
         broadcast_gate_stage("refused");
     }
 
     void action_on_stopped() final
     {
-        print_line("provider: gate stopped");
+        GLOBAL_INFO("provider: gate stopped");
         broadcast_gate_stage("stopped");
     }
 
     void on_fsm_final(GateFSM & /*machine*/, const char * const finalState) final
     {
-        print_line("provider: machine finished in ", finalState);
+        GLOBAL_INFO("provider: machine finished in %s", finalState);
     }
 
 private:
@@ -151,7 +142,7 @@ protected:
 
     void broadcast_gate_stage(const areg::String & stage) final
     {
-        print_line("consumer: gate ", stage);
+        GLOBAL_INFO("consumer: gate %s", stage.as_string());
         if (stage == "opening")
         {
             ++ mOpenings;
@@ -172,16 +163,16 @@ protected:
             {
                 // One opening only: resume named the history marker, so it re-entered
                 // the stage the hold interrupted instead of starting the cycle again.
-                print_line("consumer: opening ran ", mOpenings,
-                           ", so resume re-entered open");
+                GLOBAL_INFO("consumer: opening ran %u, so resume re-entered open",
+                            static_cast<unsigned int>(mOpenings));
                 request_open_gate(60);
             }
             else
             {
                 // A second opening: this order named the composite and not its marker,
                 // so it descended the Start chain and began a new cycle.
-                print_line("consumer: opening ran ", mOpenings,
-                           ", so a fresh order started at the beginning");
+                GLOBAL_INFO("consumer: opening ran %u, so a fresh order started at the beginning",
+                            static_cast<unsigned int>(mOpenings));
                 request_open_gate(250);
             }
         }
@@ -217,7 +208,7 @@ END_MODEL(_modelName)
 
 int main()
 {
-    areg::Application::setup();
+    areg::Application::setup(true, true, true, true, false, "./config/project.init");
     areg::Application::load_model(_modelName);
     areg::Application::wait_quit(areg::WAIT_INFINITE);
     areg::Application::unload_model(_modelName);

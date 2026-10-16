@@ -4,7 +4,7 @@ Use one when the reaction to an input depends on what happened before. A service
 handlers are a chain of `if (mPhase == ...)` is a state machine written by hand.
 
 The machine is described in a `.fsml` document. The generator turns it into code the
-same way it turns a `.siml` into a service. You write the actions, never the machine.
+same way it turns a `.siml` into an interface's base classes. You write the actions, never the machine.
 
 A working project that shows every piece: `recipes/06-state-machine/`. One machine that
 builds and runs, carrying a history marker, a guard, an internal transition, an event
@@ -71,8 +71,8 @@ machine that is never initialised accepts no stimulus and runs nothing.
 
 **The division of work.** A request handler converts the call into a stimulus and
 decides nothing. An action performs an effect and asks the machine nothing. Every
-decision lives in the document. An action does not know which trigger ran it, so two
-requests that answer differently each get their own action.
+decision lives in the document. An action does not know which trigger ran it, so each
+request gets its own action, a refusal too: each request has its own response.
 
 ## Writing the document
 
@@ -82,8 +82,8 @@ the same build command.
 The spec's `"machines"` names states, triggers, timers, events, guards and transitions;
 the tool assigns every `ID`, resolves every `To`, binds every guard operand to the
 declaration it means, and refuses a name that is not declared. The same spec writes the
-`.siml` and the `.dtml`, so a type or an attribute the service and the machine share is
-declared once. Only `Overview` and `StateList` are required, so no `Layout` block is
+`.siml` and the `.dtml`, so a type the service and the machine share is declared
+once. Only `Overview` and `StateList` are required, so no `Layout` block is
 needed; `fsml_layout.py <document>` adds one for the editor.
 
 Everything this page describes has a field: `"submachines"` and a state's
@@ -113,13 +113,13 @@ of them are optional:
 | `"types"` | any `"type"`; spelled as in `21-data-types.md` |
 | `"attributes"` | a `"set"` key, and an attribute operand of a guard |
 | `"events"` | `"on"` of an event, `{"send": ...}`, `"final_event"` |
-| `"timers"` | `"on"` of a timer, `"start X"` / `"stop X"` |
+| `"timers"` | `"on"` of a timer, `"start X"` (fires `"repeat"` times, default 1; 0 if its state stays and leaves on it) / `"stop X"` |
 | `"triggers"`, `"actions"`, `"conditions"` | `"on"` of a trigger, `{"call": ...}`, a guard's `{"call": ...}` |
 | `"constants"` | a constant operand of a guard |
 | `"states"` | every `"to"` |
 
 A name used but not declared is `error[46/RULE_UNRESOLVED_ELEMENT]`, and the message
-names the kind it was looked up as, which names the list it is missing from.
+names the list it is missing from.
 
 `gen_docs.py --example` prints a whole machine in this shape -- timers, triggers,
 actions, conditions, guards, a composite level and a final state. What is still yours
@@ -128,8 +128,8 @@ is the rule below.
 **A transition's target must be a sibling of the state that declares it.** A transition cannot reach into or out of a composite: to leave a subtree,
 put the transition on the composite, whose transitions fire from anywhere inside it.
 A `Kind="History"` marker is the one exception and exists for it -- a transition from
-outside a composite may name a marker in that composite's `StateList`, which is how a
-resume re-enters where it left off. See "Re-entering a composite where it left off".
+a state beside a composite may name a marker in that composite's `StateList`, which is how
+a resume re-enters where it left off. See "Re-entering a composite where it left off".
 
 ### The pieces
 
@@ -141,7 +141,7 @@ resume re-enters where it left off. See "Re-entering a composite where it left o
 | a transition with `"to"` another state | leaves the state, runs its exit, then the target's entry |
 | a transition without `"to"`, or to its own state | runs its steps in place; the state is not left or re-entered |
 | `"on"` | the trigger, timer or event that fires it, read from those lists so it is never spelled twice |
-| `"do"` and `"set"` | run between the exit and the entry; `"set"` first, so an action sees it |
+| `"do"` and `"set"` | between exit and entry, `"set"` first: a guard reads old values, `"do"` new |
 
 `"initial"` becomes the level's start marker and the transition out of it.
 
@@ -179,7 +179,7 @@ marker, not on the entry of the stage being resumed.
 
 **A phase a consumer watches is published from each state's `entry` by one action
 that takes it**: `{"call": "publish_phase", "args": {"phase": "lit:<Enum>::<Value>"}}`,
-whose one body calls the attribute's `set_`. A resume re-runs that entry; under
+whose one body sets the service attribute on the provider. A resume re-runs that entry; under
 `OnChange` the consumer hears it only if the value changed in between.
 
 ### Leaving a level when it finishes: `OnFinal`
@@ -193,9 +193,7 @@ The `OPENING` state of `gen_docs.py --example` is that shape, whole: its own
 `"initial"`, its substates, a `"kind": "final"` and the `"final_event"` the transition
 out of it carries.
 
-Without `OnFinal` a finished level simply stops and nothing follows. The nested marker
-the tool writes for the nested level is named after the composite, because the top
-level already has a `Start` and the two levels share one enumeration.
+Without `OnFinal` a finished level simply stops and nothing follows.
 
 **Keep the nested `Final` empty.** The self-event runs only after the step that reached
 the `Final` has settled, so an operation on the nested `Final` runs while the machine is
@@ -214,20 +212,20 @@ substate a transition on it to `B2`.
 ### Reusing a whole machine: `Submachine`
 
 A state may host another machine instead of owning nested states, never both. The
-hosted machine is in the same design, or is a `.fsml` the project already holds and is
-not repeated in `"machines"`. The host names it by its path from the project root:
+hosted machine is either another entry of `"machines"` in the same design, or a `.fsml`
+the project already holds, named by `"path"` from the project root and not repeated in
+`"machines"`:
 
 ```json
-"submachines": [{"name": "Inner", "path": "src/services/Inner.fsml", "version": "1.0.0"}],
+"submachines": [{"name": "Inner", "version": "1.0.0"}],
 "states": [{"name": "RUNNING", "submachine": "Inner", "final_event": "RunDone"},
            {"name": "RETRYING", "submachine": "Inner", "final_event": "RetryDone"}]
 ```
 
-The build command is the same.
-
 - **Each hosting state runs its own instance**, started at its initial state on entry
-  and stopped on exit. Its attributes keep their value between visits, so a count is
-  reset on its initial path.
+  and stopped on exit. Its attributes keep their value between visits: to count per
+  visit, the `entry` of its initial state sends an event, and a transition of that
+  state on it, with no `to`, sets the count to `lit:0`. A host transition cannot.
 - **Its triggers are called on the host**: `mFsm.<trigger>(...)` reaches the active
   instance, `mFsm.<trigger>_<state>(...)` one state's, as the worksheet spells them. A
   host declaring the same trigger keeps only the second form.
@@ -238,24 +236,24 @@ The build command is the same.
   host's; one body serves every instance. What differs between places belongs to the
   host's transitions.
 
-A hosted document whose major version moves past the pinned `"version"` no longer
-compiles.
+A hosted major version past the pinned `"version"` does not compile.
 
-Working project, hosting one machine from two states: `recipes/13-submachine/`.
+Timed, hosted from two states, run N times: `gen_docs.py --example submachine`;
+`recipes/13-submachine/`.
 
 ### Where a piece of data lives
 
-Decide this once, per value, before writing the spec. Who reads it decides:
+Decide it per value before the spec: who reads it decides.
 
 | Read by | Declared in | Reached as |
 |---|---|---|
-| a guard, a condition or an action of the machine | the `.fsml` `"attributes"` | `mAttrX` inside the machine, `x()` / `set_x()` on it |
-| the other process -- a consumer or a provider of the service | the `.siml` `"attributes"` | `set_x()` on the provider, `notify_on_x_update` on the consumer |
+| a guard, a condition or an action of the machine, set by its own `"set"` | the `.fsml` `"attributes"` | `mAttrX` inside the machine, `x()` / `set_x()` on it |
+| a hosted or host condition, set by the host, a request or a hosted action (a job's size, an armed fault, how it ended) | nothing. A provider member | the condition's body reads it, never changes it |
+| another process | the `.siml` `"attributes"` | pages 30 and 31 |
 | neither: only the component that computes it | nothing. A plain C++ member | itself |
 
-A value read by both is declared in both: the `.siml` attribute is what the peer
-sees, and the provider sets it from the machine. Nothing is copied into the machine
-that no guard, condition or action reads -- that member belongs to the component.
+A machine attribute is a member of the machine: `x()` reads it with no parameter,
+`set_x()` writes it, and a change notifies nobody.
 
 ### Guarding a transition
 
@@ -276,10 +274,10 @@ allowed. The guard is an expression tree, not text:
 ```
 
 which generates `const bool isEligible = (mAttrOpened == false);` and takes the
-transition only when it holds. **Transitions that share one trigger are tried in
-document order, and the first whose guard holds is the one taken**; write the
+transition only when it holds. **Transitions that share one trigger are tried
+innermost state first, then in document order, and the first whose guard holds is the one taken**; write the
 guarded ones first and the unguarded fallback last. A refused transition is not an
-error: the trigger returns `false`, exactly as it does for a state with no
+error: the trigger returns `false`, as it does for a state with no
 transition at all. Nest with
 `{"all": [...]}`, `{"any": [...]}` and `{"not": ...}`; call a declared `"conditions"`
 entry with `{"call": "is_ready"}`.
@@ -309,45 +307,16 @@ taking the same arguments. `build_project.py --spec` writes both.
 
 - Never keep phase state in the component beside the machine. Two sources of truth
   disagree the first time a transition is added.
-- Never raise a stimulus from inside an action. The machine is already dispatching:
-  it logs an error and asserts. The single exception is `send_event()`, which queues
-  the event instead of dispatching it, and is the one call an action may make back
-  into the machine.
+- Never raise a stimulus of a machine from inside one of its own actions; a machine it
+  hosts, and the one hosting it, count as its own. That machine is mid-transition: it
+  logs an error and asserts. The single exception is `send_event()`, which queues the
+  event instead of dispatching it. A request, a response, a broadcast or a trigger of
+  another machine is allowed.
 - Never raise a stimulus before `init_fsm()`. That asserts as well.
 - Never edit `*FSM.*`, `*ActionHandler.*` or `*Defs.*`. Change the `.fsml`.
 - Never target a `Kind="Start"`, nor a `Kind="History"` from inside its own level.
-- Never give two states one name, however deeply apart they sit. The commonest case is
-  a nested level whose `Kind="Start"` marker is also called `Start`.
-- Never expect `State/@History` to tell a fresh entry from a resume. It is on the state
-  and applies to both; a `Kind="History"` marker is what tells them apart.
-- Never give an `Internal` transition a `To`, and never leave one off an `External`.
 - Never leave a trigger that carries a request without a transition in a state the
   machine can be in. The stimulus is dropped, no action answers the caller, and the
   consumer waits until its deadline for a response that was never sent. A state that
-  should turn the request down still needs its own transition, calling the action that
-  sends the refusal.
-
-## The spelling, after a refusal
-
-Only once `gen_docs.py` has refused a document over a name. You do not write a `.fsml`
--- `gen_docs.py` writes it from `design.json` -- so before a refusal there is nothing
-here to ask about. After one, `schema_help.py` answers one name out of
-`../../tools/schema/fsml.xsd`. Ask it; never read the 50 KB schema.
-
-```bash
-python3 <areg-sdk>/tools/schema_help.py State --document fsml
-python3 <areg-sdk>/tools/schema_help.py State/@Kind --document fsml
-python3 <areg-sdk>/tools/schema_help.py --full tStateKind --document fsml
-python3 <areg-sdk>/tools/schema_help.py --list --document fsml
-```
-
-On Windows the interpreter is `python`, not `python3`.
-
-The first gives where the element goes, every attribute with the values it accepts,
-and the children in order; the second one attribute; `--full` on a type name adds what
-the values mean; `--list` names every element. A bare attribute name (`Source`,
-`MethodType`, `HistoryDepth`, `Threading`) is answered with the elements that carry it,
-and `--search <word>` finds a name from a word in it.
-
-A refused document is `explain_rule.py <number> --at <Element>/@<Attribute>`: it gives
-the rule and the values that attribute accepts in one call.
+  should turn the request down still needs its own transition, calling that request's
+  own refusal action.

@@ -9,7 +9,6 @@
  *          value; the alarm is a broadcast because it is an event with no value
  *          to read back; the summary is a request because it has an answer.
  **/
-#include <iostream>
 
 #include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
@@ -23,6 +22,9 @@
 #include "src/services/WorkerServiceConsumerBase.hpp"
 #include "src/services/MonitorServiceProviderBase.hpp"
 #include "src/services/MonitorServiceConsumerBase.hpp"
+#include "areg/logging/areg_log.h"
+
+GLOBAL_LOG_SCOPE(monitored_main, log);
 
 namespace
 {
@@ -121,7 +123,7 @@ public:
     {
         if (state == Stalled)
         {
-            std::cout << "monitor: alarm from " << worker << std::endl;
+            GLOBAL_INFO("monitor: alarm from %s", worker.as_string());
             broadcast_alarm(worker);
         }
     }
@@ -212,7 +214,7 @@ protected:
 
     void broadcast_alarm(const areg::String & worker) final
     {
-        std::cout << "operator: " << worker << " raised an alarm" << std::endl;
+        GLOBAL_INFO("operator: %s raised an alarm", worker.as_string());
         request_summary();
     }
 
@@ -224,7 +226,7 @@ protected:
             return;
         }
 
-        std::cout << "operator: " << alive << " of " << total << " alive" << std::endl;
+        GLOBAL_INFO("operator: %u of %u alive", alive, total);
         areg::Application::signal_quit();
     }
 };
@@ -264,7 +266,7 @@ END_MODEL(_modelName)
 
 int main()
 {
-    areg::Application::setup();
+    areg::Application::setup(true, true, true, true, false, "./config/project.init");
     areg::Application::load_model(_modelName);
     areg::Application::wait_quit(areg::WAIT_INFINITE);
     areg::Application::unload_model(_modelName);

@@ -3,7 +3,6 @@
  * \brief   A consumer tested against a scripted provider, in one process.
  **/
 #include <atomic>
-#include <iostream>
 
 #include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
@@ -13,6 +12,9 @@
 
 #include "src/services/HelloServiceProviderBase.hpp"
 #include "src/services/HelloServiceConsumerBase.hpp"
+#include "areg/logging/areg_log.h"
+
+GLOBAL_LOG_SCOPE(testing_main, log);
 
 namespace
 {
@@ -26,10 +28,10 @@ namespace
     std::atomic<bool> gGood     { false };
     std::atomic<bool> gBad      { true };
 
-    //! Prints one verdict line and counts the failures.
+    //! Logs one verdict line and counts the failures.
     void check( const char * name, bool passed )
     {
-        std::cout << "test: " << name << (passed ? " ... PASS" : " ... FAIL") << std::endl;
+        GLOBAL_INFO("test: %s%s", name, passed ? " ... PASS" : " ... FAIL");
         if ( passed == false )
         {
             gFailed.fetch_add( 1 );
@@ -119,8 +121,7 @@ private:
     {
         check( "a scripted success reaches the consumer", gGood.load() );
         check( "a scripted refusal reaches the consumer", gBad.load() == false );
-        std::cout << "tests: " << (_expected - gFailed.load()) << " passed, "
-                  << gFailed.load() << " failed" << std::endl;
+        GLOBAL_INFO("tests: %d passed, %d failed", _expected - gFailed.load(), gFailed.load());
         areg::Application::signal_quit();
     }
 };
@@ -151,7 +152,7 @@ END_MODEL(_modelName)
 
 int main()
 {
-    areg::Application::setup();
+    areg::Application::setup(true, true, true, true, false, "./config/project.init");
     areg::Application::load_model(_modelName);
     areg::Application::wait_quit(areg::WAIT_INFINITE);
     areg::Application::unload_model(_modelName);

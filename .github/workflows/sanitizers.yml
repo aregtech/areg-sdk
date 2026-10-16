@@ -40,6 +40,10 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  # A Lock or ScopedLock that could not take its object ends the test process (FatalError.hpp).
+  AREG_LOCK_FAILURE_FATAL: 1
+
 jobs:
   sanitizers-linux:
     name: ${{matrix.mode}} ${{matrix.config}} (unit tests)

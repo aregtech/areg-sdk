@@ -6,9 +6,8 @@ what the software must do; `<project>` is a C identifier naming the project; `<m
 `local` for one process or `ipc` for two; `pubsub` is `local` whose interface
 adds attributes and broadcasts.
 
-On Windows: `python` for `python3`, `build\bin\x.exe` for `./build/bin/x.elf`,
-`start "" prog` for `prog &`. Nothing else differs. `build_project.py` passes the
-`-j8` that `AGENTS.md` requires everywhere, so no command here carries one.
+On Windows, read commands as `AGENTS.md` section 4 says. `build_project.py` passes
+`-j8`, so no command here carries one.
 
 ---
 
@@ -24,8 +23,15 @@ and say so** rather than writing into it.
 ## 2. Scaffold, before you open a documentation page
 
 ```
-python3 <areg-sdk>/tools/agent/setup_project.py --name <project> --root . --mode <mode> --sdk-root <areg-sdk>
+python3 <areg-sdk>/tools/agent/setup_project.py --name <project> --root . --mode <mode> --sdk-root <areg-sdk> --features <list>
 ```
+
+`<list>`, comma-separated or `""`: what the design needs beyond services and data types,
+`machine` (an answer depends on what came before), `timers` (a provider's delayed or
+periodic work), `workers` (a provider's thread for slow, periodic or many tasks, or one started on
+request), `steps` (a program that drives a sequence and exits), `sources` (files of your
+own, a class no feature writes). `design.json` holds
+only those; `gen_docs.py --rules <name>` prints the rules of one left out.
 
 That writes a project that already builds and runs:
 
@@ -37,19 +43,22 @@ That writes a project that already builds and runs:
 | `src/provider.cpp`, `src/consumer.cpp` | placeholders section 5 replaces |
 | `design.json` | your design, empty: section 3 fills it |
 | `areg-project.json` | the spec a later build reuses |
-| `scenarios.json` | what to run, and the output that proves it worked |
+| `config/project.init` | router and log settings; `main()` reads it |
+| `scenarios.json` | what to run, and the lines that prove it |
 | `run.sh`, `run.bat` | starts the router and both applications |
 | `AGENTS.md` | the guide of a later session that starts here |
 
-It restates this page and the SDK's `AGENTS.md`; a run following this page skips it.
+It restates this page and the SDK's `AGENTS.md`: skip it.
 
 ## 3. Design
 
-From the task, decide the requests, responses, broadcasts, attributes and data types.
-Right after the scaffold, in one request, read `design.json`, run
-`gen_docs.py --example` and open `05-design.md`, plus `22-state-machine.md` when an
-answer depends on what came before. Open nothing else before `design.json` is
-written: `20` and `21` describe the XML the generator writes for you.
+Decide the requests, responses, broadcasts, attributes and data types.
+After the scaffold, in one request, each its own call: read `design.json`, run
+`gen_docs.py --example service`, adding `programs` when the task has more than two
+programs, more than one service or parts on threads of their own, and `submachine`
+when a machine hosts another (the service example already holds a machine), plus
+`22-state-machine.md` when an answer depends on what came before; `05-design.md` only
+for a doubt the rules in `design.json` leave. Open nothing else before it is written.
 
 **A provider reads its own attributes back.** An attribute gives the provider a getter
 as well as a setter, so state the service already carries needs no shadow member beside
@@ -75,16 +84,15 @@ every key present and empty, each section with a `#|` note on what its values ma
 Fill the values and keep the keys; no XML, `ID` or `To` is written by hand. A sample
 left as written is skipped and an empty value is absent, so delete only a section the
 task does not need. A key the generator does not read is refused by name.
-`gen_docs.py --example` prints a finished design of another application, 189 lines
+`gen_docs.py --example` prints a finished design of another application, 196 lines
 read in one call: do not page it. It is the shape, and the `#|` notes are the rules:
 with both read, write `design.json` whole and build it in one call: section 5's
 command with `--write design.json`. `gen_docs.py` ignores the notes.
-A consumer that drives a scenario and exits lists it as `"steps"`, branching included:
-the generator writes the step machine, and each check may `stay()`, `go_to(Step::Name)`
-or `fail("why")`. Writing that machine by hand is the largest avoidable cost here.
-The template's `steps` note says how many steps to write, and what each awaits.
-What it gives up after is `"driver"` of the same interface, which the template's own
-note explains; the generator declares all three, so no marker asks for one.
+A consumer that drives a scenario and exits lists it as `"steps"`, branching included,
+and what it gives up after as `"driver"`: the generator writes them as
+plain consumer code, no `.fsml`, and declares `stay()`, `go_to(Step::Name)` and
+`fail("why")` for each check. Its template notes say what makes a step and what each
+awaits. Writing that by hand is the largest avoidable cost here.
 
 The spec holds `"datatypes"` (one `.dtml`, when two documents share a type),
 `"interfaces"` (a `.siml` each) and `"machines"` (a `.fsml` each). Everything is named:
@@ -92,18 +100,17 @@ a state names its target state, a guard names an attribute, a parameter names it
 and the tool refuses a name that was never declared.
 A large project splits the spec across files and passes each with its own `--spec`.
 
-- **A service contract, a `.siml`. Always.** The interface between the two programs.
+- **A service interface, a `.siml`. Always.** The interface between the two programs.
 - **A state machine, a `.fsml`, only if** behaviour depends on what happened before
   and a chain of `if` cannot express it cleanly: pausing and resuming mid-sequence, a
   retry count with a limit, a mode that changes what the same input means. If the
-  task says the logic must be a state machine, write one. If it does not and plain
-  code is enough, do not. Where the task says the same behaviour is reached from more
-  than one place, model it once as a nested sub-machine entered from each place,
-  never as duplicated states.
+  task says the logic must be a state machine, write one. If it rules one out, or
+  plain code is enough, do not. In a machine, behaviour reached from more than one
+  place is one machine, hosted by a `"submachine"` state in each, never duplicated
+  states.
 
-**Only after the generator refuses a document over a name.** Until then there is nothing
-to ask: you write `design.json`, and `gen_docs.py` writes every name in it. Then ask
-the grammar. `<areg-sdk>/tools/schema_help.py`
+**Only after the generator refuses a document over a name, ask the grammar**: until
+then `gen_docs.py` writes every name of `design.json`. `<areg-sdk>/tools/schema_help.py`
 answers one name out of the schemas the generator validates against -- an element, an
 attribute (`State/@Kind`), a type (`tStateKind`) or a bare attribute name -- in a few
 lines:
@@ -114,13 +121,7 @@ python3 <areg-sdk>/tools/schema_help.py --list --document siml
 ```
 
 `--full` on a type name adds what its values mean and `--search <word>` finds a name.
-Never open `siml.xsd`, `dtml.xsd` or `fsml.xsd` themselves: 20 KB to 50 KB carried in
-context is re-sent on every turn for the rest of the task.
-
-`src/CMakeLists.txt` is not yours to edit for these: the command below names every
-document of the spec and every source it generates. A source you add yourself goes on
-its executable's `macro_declare_executable` line, relative to `src/`; a header is
-included as `"src/<dir>/Name.hpp"` from anywhere in `src/`.
+Never open a `.xsd`: 20-50 KB each, re-sent with every later request.
 
 ## 5. Documents, application and build -- one command
 
@@ -135,36 +136,38 @@ python3 <areg-sdk>/tools/agent/build_project.py --spec design.json --write desig
 AREG_EOF
 ```
 
-`--write <file>` saves standard input to that file first: a file and its build are one
-call. A shell with no here-document writes the file and runs this in the same message.
+`--write <file>` makes this a bulk-edit tool: it saves standard input to that file
+and builds in one call, even if a harness prefers its editor. A shell with no
+here-document writes the file and runs this in one message.
+`--edit` instead changes lines of your files in the same call: `== <file>`,
+`<<<<<<< SEARCH`, the old lines, `=======`, the new lines, `>>>>>>> REPLACE`.
 
-Six steps with no decision in any of them: it writes the documents from the spec,
-writes the application from them, applies `bodies.txt`, checks the contract -- which
-catches the mistakes that compile cleanly and fail later -- configures and builds. It
-stops at the first failure and names the step, so nothing is hidden. Pass `--spec`
+Six steps, none a decision: the documents from the spec, the application from them,
+`bodies.txt` applied, the contract checked (mistakes that compile cleanly and fail
+later), configure, build. It stops at the first failure and names the step. Pass `--spec`
 once per spec file. `--regenerate` writes the application again, **discarding what
-`bodies.txt` does not carry**; without it a second run keeps `src/` and only rebuilds,
-so this is also the command for every later build, which takes seconds.
+`bodies.txt` does not carry**; without it a run rebuilds, and writes `src/` again only
+after a `design.json` change. Every later build is this one, in seconds.
 
 **A state machine is folded into the provider automatically** when the spec declares
 one: the action handler is a base, every action is declared, and there is no separate
 host component to write, merge or delete.
 
-The application is the **whole** of `src/`: every component in its own `.hpp` and
-`.cpp`, named after its class, plus a `main.cpp` holding only the model and `main()`.
-Two processes get a folder each -- `src/provider/` and `src/consumer/`, each with its
-own `main.cpp`; one process keeps `src/` flat. The mode comes from `scenarios.json`,
-so it is never given twice.
+The application is the whole of `src/`: each component in a `.hpp` and `.cpp` named
+after its class, and a `main.cpp` holding only the model and `main()`, in a folder per
+process (`src/provider/`, `src/consumer/`) or flat for one. The mode comes from
+`scenarios.json`, so it is never given twice.
 
 **It compiles and runs as written.** The model, `main()`, the connection test and
-every `notify_on_*` subscription are already correct, so none of them needs a page. A
-consumer that makes more than one request also gets a stepping timer, because
-responses arrive asynchronously and a straight-line sequence races them.
+every `notify_on_*` subscription are already correct, so none of them needs a page.
 `scenarios.json` is pointed at what was generated.
 
 Every place a rule of yours belongs is one line: `// TODO(you) <name>: <what>`, and
-the command prints all of them. **Do not rewrite these files and do not read them
-back.** `gen_skeleton.py --doc <document> --todos` reprints whichever are left.
+the command prints all of them; `gen_skeleton.py --doc <document> --todos` reprints
+whichever are left. **These files are yours, not generated:** `bodies.txt` fills their
+markers and none is reread; add what the tool writes no shape for -- a consumer's worker
+thread -- as files of your own, registered in `main.cpp` (`37`, `32`, `10`): no workaround. Each is a design.json `"sources"` entry, compiled, its
+whole text one worksheet section. `--regenerate` drops what lies outside markers.
 
 `gen_skeleton.py --doc <document> --contract` prints every signature and every
 generated data type in a few hundred tokens and writes no file. Read that instead of
@@ -180,8 +183,8 @@ each generated class already carries, and the contract every body is written aga
 `bodies.txt` -- each `== <marker>` line with the code under it -- and run it in one
 call: section 7's command with `--write bodies.txt` applies it before it compiles.
 
-**That is the whole implementation, in two requests.** One edit per body and a full
-rewrite are the two most expensive shapes a run has.
+**The whole implementation is two requests.** One edit per body or a full rewrite
+costs most.
 
 A line tagged `// placeholder(you)` stands only until the marker above it is filled --
 a default `response_`, a `return false;`. The filler takes it away with that marker. An
@@ -194,11 +197,9 @@ change, sent with `--write fix.txt` on section 7's command. It is folded into
 change is the one the failure printed: the fix is one call, and no generated file is
 opened.
 
-`30-provider.md`, `31-consumer.md` and `32-model.md` describe the code the tool has
-already written. Do not open them to fill a marker, and do not open them while
-designing either: nothing in them changes what the spec should say. The one exception
-is a numbered section `51-debug.md` or `05-design.md` names -- open that section, not
-the page.
+`30-provider.md`, `31-consumer.md` and `32-model.md` describe code the tool already
+wrote: open them only to add what it does not write, or for a numbered section
+`51-debug.md` or `05-design.md` names -- that section, not the page.
 
 The worksheet lists the `areg::String` calls bodies use, a floor, not a limit. Open
 `40-base-api.md` only for a container or a call it lacks, and for a single framework
@@ -221,36 +222,33 @@ python3 <areg-sdk>/tools/agent/build_project.py --spec design.json --write bodie
 AREG_EOF
 ```
 
-The section 5 command with `--run`: it builds as it did there, then starts the router,
-the provider and the consumer and checks their output. Exit 0 is a pass. **Run it after
+The section 5 command with `--run`: it builds, then starts the router and every
+process and checks the lines each one logs. Exit 0 is a pass. **Run it after
 every fix too** -- worksheet, build and run are one request.
 
-**A console quit and the peer going away are scenarios too**, not terminal work: the
-quit is `"stdin": ["-q"]` on that process, leading a scenario of its own, and the loss
-a scenario-level `"stop"`. The generator writes both for a stepped two-process project;
-a trigger it cannot pick is a worksheet section. One run then prints the line each
-expectation matched, and that output is the evidence for the report.
+**The peer going away is a scenario too**, not terminal work: a scenario-level
+`"stop"`. The generator writes it for a stepped project of programs; a trigger it cannot
+pick is a worksheet section. One run then prints the line each expectation matched, and
+that output is the evidence for the report.
 
-**Never start the processes by hand.** No `prog &`, no `sleep`, no `pkill`, no `ps`.
-It is slower, it is not repeatable, it leaves background processes behind, and a
-command ending in `pkill` or `grep` that matches nothing exits non-zero, which most
-harnesses show as a failed tool call with no output -- a trap that can cost a dozen
-turns. The project's run.sh exists for a human watching it; a scenario is what you run.
+**Never start the processes by hand** (`prog &`, `sleep`, `pkill`, `ps`): it is not
+repeatable, it leaves processes behind, and a `pkill` or `grep` that matches nothing
+exits non-zero, which a harness shows as a failed call with no output. `run.sh` is for
+a human watching; a scenario is what you run.
 
 **When you need the raw output of a run, ask the runner for it, not the shell.**
 `--verbose` prints every line each process wrote, which is where a temporary
 diagnostic printout comes back; `--only <name>` runs one scenario. Together they are
 the whole of ad-hoc debugging, and they leave nothing running.
 
-**Every request re-sends the whole conversation**, so the bill is the number of
-requests multiplied by how much each one carries. Never pour a log into it: anything
-that can print hundreds of lines -- `find`, `ls -R`, a raw compiler run -- is piped
-through `grep` or `head` before you ask for it.
+**Every request re-sends the whole conversation**, so the bill is the requests times
+what each one carries. Never pour a log into it: anything that can print hundreds of
+lines -- `find`, `ls -R`, a raw compiler run -- is piped through `grep` or `head`.
 
 ## 8. Fix -- bounded, then stop
 
-You are finished when it builds **and** the scenario exits 0. Keep going until it
-does, within:
+You are finished when it builds **and** the scenario exits 0, every requirement of
+the task printed by the check that compared it. Keep going until it does, within:
 
 - at most **3 build-and-fix cycles**
 - at most **3 run-and-fix cycles**
@@ -283,7 +281,8 @@ not converge" is a useful result; a half-built application is not.
 
 ## 10. Stop immediately if
 
-- **The task is too large to do well.** Say which part defeated it, and stop.
+Never for size: markers, programs and steps are the tools' job.
+
 - **The generator produces wrong or broken code from your document.** It is not
   exercised for every feature and its output can genuinely be defective. Never edit a
   generated file and never work around the defect by hand. Stop and report exactly:

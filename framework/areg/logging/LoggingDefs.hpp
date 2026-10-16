@@ -2,9 +2,9 @@
 #define AREG_LOGGING_LOGGINGDEFS_HPP
 /************************************************************************
  * This file is part of the Areg SDK core engine.
- * Areg SDK is dual-licensed under Free open source (Apache version 2.0
- * License) and Commercial (with various pricing models) licenses, depending
- * on the nature of the project (commercial, research, academic or free).
+ * Areg SDK is dual-licensed under Free open source (Apache version 2.0 License)
+ * and Commercial (with various pricing models) licenses, depending on the
+ * nature of the project (commercial, research, academic or free).
  * You should have received a copy of the Areg SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
@@ -875,7 +875,8 @@ AREG_IMPLEMENT_STREAMABLE(areg::LogMessageType)
 inline const InStream & operator >> (const InStream& stream, areg::LogEntry& input)
 {
     stream.read(reinterpret_cast<uint8_t *>(&input), offsetof(LogEntry, logMessage));
-    stream.read(reinterpret_cast<uint8_t *>(input.logMessage), input.logMessageLen + 1);
+    stream.read(reinterpret_cast<uint8_t *>(input.logMessage), areg::log_message_size(input) + 1);
+    input.logMessage[areg::log_message_size(input)] = '\0';
     return stream;
 }
 
@@ -887,7 +888,7 @@ inline const InStream & operator >> (const InStream& stream, areg::LogEntry& inp
 inline OutStream& operator << (OutStream& stream, const areg::LogEntry& output)
 {
     stream.write(reinterpret_cast<const uint8_t *>(&output), offsetof(LogEntry, logMessage));
-    stream.write(reinterpret_cast<const uint8_t *>(output.logMessage), output.logMessageLen + 1);
+    stream.write(reinterpret_cast<const uint8_t *>(output.logMessage), areg::log_message_size(output) + 1);
     return stream;
 }
 

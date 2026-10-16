@@ -1,8 +1,8 @@
 # Custom events between threads
 
-A custom event carries one data object from the thread that sends it to a consumer
-running in another dispatcher thread of the **same process**. It is how a worker
-thread reports back to its component, and it is the only message the framework
+A custom event carries one data object from the thread that sends it, any thread of the
+**same process**, to a consumer running in a dispatcher thread. It is how a worker or a
+plain thread reports back to its component, and it is the only message the framework
 delivers that no service interface describes.
 
 **Reach for a service first.** Anything that has a caller and an answer, anything a
@@ -64,7 +64,7 @@ ReadingEvent::remove_listener(consumer, thread);
 
 Register when the owner starts and unregister when it stops. In a component that is
 `startup_component` / `shutdown_component`. A worker thread's listener is added by its
-component, before the service starts: `37-threads.md` section 2.
+component, before the service starts: `38-workers.md`.
 
 ## 2. Sending
 
@@ -97,8 +97,8 @@ thread instead of ahead of it.
 - **Never send a custom event to another process.** It has no wire format and
   `mtrouter` never sees it. Traffic that crosses a process boundary is a `Public`
   service, and nothing else.
-- **Never block in `process_event`.** It is a dispatcher handler like any other, so
-  it stops every component of that thread while it runs.
+- **Never block in `process_event` on a component thread.** It stops every component
+  of that thread; a wait belongs on a worker (`38`).
 - **Never send before the consumer is registered.** The event is dropped and
   `send_event` returns `false`; nothing else reports it.
 - **Never keep a reference to the data after `process_event` returns.** Copy what

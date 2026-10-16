@@ -1,27 +1,24 @@
 # Logging from an application
 
-AREG logs through scopes. A scope is declared once per file and entered once per
-function; its messages carry its name, and it can be switched on and off by name at
-run time without rebuilding.
+areg logs through scopes, to a file, a debugger or a log collector, as its configuration
+file says. It works the same in a service, a GUI application, a library and a test, and
+it is how an application reports what it did.
 
 ```cpp
 #include "areg/component/Timer.hpp"
-
 #include "areg/logging/areg_log.h"
 
-// One declaration per function that logs. The first argument groups, the second names.
-DEF_LOG_SCOPE(myapp_Worker, process_timer);
+// Once per .cpp file, at file scope: every GLOBAL_* call in the file logs in it.
+GLOBAL_LOG_SCOPE(myapp_Worker, log);
 
 void Worker::process_timer(areg::Timer & timer)
 {
-    LOG_SCOPE(myapp_Worker, process_timer);      // enters the scope for this call
-    LOG_INFO("timer [ %s ] fired", timer.name().as_string());
+    GLOBAL_INFO("timer [ %s ] fired", timer.name().as_string());
 }
 ```
 
-`DEF_LOG_SCOPE` goes at file scope, outside any function. `LOG_SCOPE` goes as the
-first line of the function and takes the same two arguments. A `LOG_*` call without a
-`LOG_SCOPE` in the same function does not compile.
+**`gen_skeleton.py` declares the scope in every `.cpp` it writes**: a body just logs.
+**A scope is a static, created before `main()`:** one built at run time is not supported.
 
 ---
 
@@ -29,169 +26,100 @@ first line of the function and takes the same two arguments. A `LOG_*` call with
 
 | Macro | Use |
 |---|---|
-| `DEF_LOG_SCOPE(group, name)` | Declares a scope. File scope, once per function that logs. |
-| `LOG_SCOPE(group, name)` | Enters it. First line of the function. |
-| `LOG_DBG(fmt, ...)` | Detail useful while developing |
-| `LOG_INFO(fmt, ...)` | Normal progress worth keeping |
-| `LOG_WARN(fmt, ...)` | Something unexpected that was handled |
-| `LOG_ERR(fmt, ...)` | A failure |
-| `LOG_FATAL(fmt, ...)` | A failure the application cannot continue past |
-| `LOG_*_IF(cond, ...)` | The same, only when the condition holds: `LOG_DBG_IF`, `LOG_INFO_IF`, `LOG_WARN_IF`, `LOG_ERR_IF`, `LOG_FATAL_IF` |
+| `GLOBAL_LOG_SCOPE(group, name)` | Declares the scope of a file. File scope, once per `.cpp`, never in a header |
+| `GLOBAL_DBG(fmt, ...)` | Detail useful while developing |
+| `GLOBAL_INFO(fmt, ...)` | Normal progress worth keeping |
+| `GLOBAL_WARN(fmt, ...)` | Something unexpected that was handled |
+| `GLOBAL_ERR(fmt, ...)` | A failure |
+| `GLOBAL_FATAL(fmt, ...)` | A failure the application cannot continue past |
 
-The format string is `printf` style. An `areg::String` is passed with
-`.as_string()`, never directly.
+The format string is `printf` style. An `areg::String` is passed with `.as_string()`,
+never directly; a `uint32_t` is `%u`, a `bool` is `%s` with `flag ? "true" : "false"`.
 
----
+A scope per function instead: `DEF_LOG_SCOPE(group, method)` at file scope, and
+`LOG_SCOPE(group, method)` as the function's first line; then `LOG_DBG` ... `LOG_FATAL`
+and their `_IF(cond, ...)` forms, which do not compile without it. `SCOPE` priority
+adds its enter and exit lines.
 
-## 2. Cost when logging is off
-
-Every macro tests whether its priority is enabled before building the message, and a
-build with logging disabled compiles them all to nothing. A `LOG_DBG` on a hot path
-is cheap, but the arguments are still evaluated, so never put work inside the call:
+A disabled priority builds no message, but the arguments are still evaluated, so never
+put work inside the call:
 
 ```cpp
-LOG_DBG("state %s", expensive_dump().as_string());   // WRONG: always computed
+GLOBAL_DBG("state %s", expensive_dump().as_string());   // WRONG: always computed
 ```
 
 ---
 
-## 3. Turning scopes on
+## 2. Where it goes: the configuration file
 
-Nothing is written until a configuration file says so. **A correct `LOG_INFO` that
-prints nothing is almost always a missing or unread configuration file, not a bug in
-the code.**
+Nothing is written until the configuration file says so. **A correct `GLOBAL_INFO`
+that writes nothing is almost always a configuration file that is missing or was not
+read, not a bug in the code.**
 
-The framework reads `config/areg.init` **relative to the executable's own folder**,
-so for a project that builds into `build/bin/` that path is
-`build/bin/config/areg.init` -- inside `config/`, not beside the executable. Getting
-the file there, and everything in it that is not logging, is `36-config.md`.
-
-Copy `<areg-sdk>/framework/areg/resources/areg.init` and edit it, or write the
-minimum by hand:
+`areg::Application::setup()` reads `config/areg.init`, or the file its sixth argument
+names, relative to the executable's folder. A project made by `gen_skeleton.py` has its
+own `config/project.init`, copied to `build/bin/config/` by its CMake file and named by
+every generated `main()`:
 
 ```ini
-log::*::version         = 2.0.0
-log::*::enable          = true              # master switch; false silences everything
-log::*::target          = debug | file      # where output goes
-log::*::enable::debug   = true              # console / debugger output
-log::*::enable::file    = true
-log::*::file::location  = ./logs/%appname%_%time%.log
-
-log::*::scope::areg_*   = NOTSET ;          # silence the framework's own scopes
-log::myapp::scope::*    = DEBUG | SCOPE ;   # everything in the 'myapp' executable
+log::*::version             = 2.0.0
+log::*::enable              = true
+log::*::target              = file
+log::*::enable::file        = true
+log::*::enable::remote      = false
+log::*::enable::debug       = false
+log::*::file::location      = ./logs/%appname%_%time%.log
+log::*::layout::message     = %d: [ %t  %p >>> ] %m%n
+log::*::scope::areg_*       = NOTSET ;
+log::*::scope::src_services_* = NOTSET ;
+log::*::scope::*            = DEBUG ;
 ```
+
+So each program writes `build/bin/logs/<program>_<time>.log`, one plain-text line per
+message. A key written twice keeps its first value: change a line, never add a second.
+Everything in the file that is not logging is `36-config.md`.
+
 ### The scope key
 
 ```
 log::<module>::scope::<scope-pattern> = <priority>
 ```
 
-| Part | Meaning |
-|---|---|
-| `<module>` | the **executable** name without extension, or `*` for every application |
-| `<scope-pattern>` | a scope name, with `*` as a trailing wildcard |
-| `<priority>` | `FATAL`, `ERROR`, `WARN`, `INFO`, `DEBUG`, `SCOPE`, `NOTSET`; combine with `|` |
-| `;` | an **optional** value terminator. The parser strips it, so it changes nothing; the shipped file writes one on every scope line, and matching that is the tidier habit |
-
-`DEBUG` includes the more severe priorities. `SCOPE` adds the enter/exit lines and is
-normally combined: `DEBUG | SCOPE`. `NOTSET` silences, and is how you quieten a noisy
-group while leaving a wildcard on.
-
-### What a scope is called
-
-`DEF_LOG_SCOPE(group, method)` names the scope **`group.method`** -- joined with a
-dot, not an underscore. So this declaration:
-
-```cpp
-DEF_LOG_SCOPE(myapp_Worker, process_timer);
-```
-
-is addressed by any of:
+`<module>` is the executable name without extension, or `*`; `<scope-pattern>` a scope
+name, `*` a trailing wildcard; `<priority>` `FATAL`, `ERROR`, `WARN`, `INFO`, `DEBUG`,
+`SCOPE` or `NOTSET`, combined with `|`. `DEBUG` includes the more severe priorities. `SCOPE` adds the enter and exit lines of
+`LOG_SCOPE`. `NOTSET` silences, which is how a noisy group is quietened under a
+wildcard. `DEF_LOG_SCOPE(group, method)` and `GLOBAL_LOG_SCOPE(group, method)` name the
+scope **`group.method`**, joined with a dot:
 
 ```ini
-log::myapp::scope::myapp_Worker.process_timer = DEBUG | SCOPE ;   # exactly this one
+log::myapp::scope::myapp_Worker.process_timer = DEBUG | SCOPE ;   # this one
 log::myapp::scope::myapp_Worker*              = DEBUG | SCOPE ;   # the whole class
-log::myapp::scope::*                          = DEBUG | SCOPE ;   # the application
 ```
 
-Turning one scope on answers "did this handler ever run". If the scope never
-entered, the message never arrived and the fault is in the wiring; if it entered,
-the fault is in the logic.
+`areg_*` are the framework's scopes, `src_services_*` the generated code's.
 
-Layout formats and the database target: `../wiki/04a-logging-config.md`.
-
----
-
-## 4. Collecting the logs of several processes
-
-A project with this wired: `recipes/08-observability/`.
-
-A multi-process application writes to as many consoles as it has processes.
-`logcollector` gathers them into one place and `logobserver` displays them.
-Both are built into the same `build/bin/` as the application, so nothing needs
-installing.
-
-This is opt-in, and it is configuration only -- **the application source does not
-change.** Add the remote target to `config/areg.init`:
-
-```ini
-log::*::target            = remote | debug   # keep 'debug' to also see logs locally
-log::*::enable::remote    = true
-log::*::remote::service   = logger        # the section that holds the address below
-
-logger::*::service        = logcollector
-logger::*::connect        = tcpip
-logger::*::enable::tcpip  = true
-logger::*::address::tcpip = localhost     # the machine running logcollector
-logger::*::port::tcpip    = 8282          # logcollector's port
-```
-
-`target` is a single list, not a set of lines to accumulate: writing it twice means
-the last one wins. Add `remote` to the list you already have rather than pasting a
-second `target` line under the one from section 3.
-
-**8282 is logcollector. 8181 is `mtrouter`.** They are different services on
-different ports; a router that is running says nothing about whether logs are being
-collected.
-
-Start `logcollector` before the applications, then `logobserver` to watch them.
-Both commands, their Windows form, the `--log=db` option that persists a SQLite
-`.sqlog` instead of only displaying, and the console commands that change a scope's
-priority live are one table in `50-running.md`. Reading the file back, with the
-schema and ready-made queries, is `35-sqlog.md`.
-
-Two things about this path are worth knowing before it surprises you:
-
-- `logobserver` **displays; it does not store.** Persisting is the collector's job
-  and is off unless it was started with `--log=db`.
-- An application whose collector is not running still runs normally: remote logging
-  fails quietly and is retried. **A silent `logobserver` is not evidence that the
-  application is broken** -- check that `logcollector` is up and that both sides
-  agree on port 8282 first.
+The layout writes `%d` time, `%t` thread, `%p` priority, `%m` the message and `%n` the
+line end. Every other token and key: `../wiki/04a-logging-config.md`.
 
 ---
 
-## 5. Logging versus printing
+## 3. Reading it
 
-They answer different questions and both belong in an application.
+A log file is plain text: `grep`, `tail` and a scenario's `expect` read it as it is
+written. A log the collector stored in a SQLite `.sqlog` is queried as `35-sqlog.md`
+says. Collecting the logs of several processes in one place is `logcollector`:
+`50-running.md`.
 
-| | Use |
-|---|---|
-| `LOG_*` | What the program did, for diagnosis. Off by default, collectable, queryable. |
-| `std::cout` | The result the user or a test harness reads. Always visible. |
-
-The recipes print with `std::cout` so a scenario can check their output. A real
-application prints its result and logs its reasoning. Collected logs are plain SQLite:
-`35-sqlog.md`, or `../wiki/04e-log-database-format.md`.
+A process that ends through `Application::release()` writes every line it logged; one
+killed abruptly loses at most its last few milliseconds.
 
 ---
 
-## 6. Before you move on
+## 4. Before you move on
 
-- [ ] Every function that logs has a `DEF_LOG_SCOPE` at file scope and a matching
-      `LOG_SCOPE` as its first line.
-- [ ] No `LOG_*` argument does work that would be wasted when logging is off.
+- [ ] Every `.cpp` that logs has one `GLOBAL_LOG_SCOPE` at file scope, or each function a
+      `DEF_LOG_SCOPE` and a matching `LOG_SCOPE`.
+- [ ] No argument does work that is wasted when logging is off.
 - [ ] `areg::String` arguments are passed with `.as_string()`.
-- [ ] Results a test checks go to `std::cout`, not to the log.
-- [ ] The configuration file is at `build/bin/config/areg.init`, not beside the
-      executable.
+- [ ] The configuration file the application names is in `build/bin/config/`.

@@ -2,9 +2,9 @@
 #define AREG_BASE_PRIVATE_POSIX_MUTEXPOSIX_HPP
 /************************************************************************
  * This file is part of the Areg SDK core engine.
- * Areg SDK is dual-licensed under Free open source (Apache version 2.0
- * License) and Commercial (with various pricing models) licenses, depending
- * on the nature of the project (commercial, research, academic or free).
+ * Areg SDK is dual-licensed under Free open source (Apache version 2.0 License)
+ * and Commercial (with various pricing models) licenses, depending on the
+ * nature of the project (commercial, research, academic or free).
  * You should have received a copy of the Areg SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
@@ -98,12 +98,12 @@ public:
      * \brief   Returns true if the synchronization object is valid.
      **/
     [[nodiscard]]
-    inline bool is_valid() const noexcept final;
+    bool is_valid() const noexcept final;
 
     /**
      * \brief   Releases all resources held by the synchronization object. Called when the object is being destroyed.
      **/
-    inline void free_resources() final;
+    void free_resources() final;
 
 //////////////////////////////////////////////////////////////////////////
 // MutexPosix class implementation
@@ -217,16 +217,6 @@ inline bool MutexPosix::try_lock() const noexcept
 }
 
 inline void MutexPosix::unlock() const noexcept
-{
-    pthread_mutex_unlock(&mPosixMutex);
-}
-
-inline bool MutexPosix::is_valid() const noexcept
-{
-    return (mMutexValid && mMutexAttrValid);
-}
-
-inline void MutexPosix::free_resources()
 {
     pthread_mutex_unlock(&mPosixMutex);
 }

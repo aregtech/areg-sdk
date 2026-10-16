@@ -1,8 +1,8 @@
 /************************************************************************
  * This file is part of the Areg SDK core engine.
- * Areg SDK is dual-licensed under Free open source (Apache version 2.0
- * License) and Commercial (with various pricing models) licenses, depending
- * on the nature of the project (commercial, research, academic or free).
+ * Areg SDK is dual-licensed under Free open source (Apache version 2.0 License)
+ * and Commercial (with various pricing models) licenses, depending on the
+ * nature of the project (commercial, research, academic or free).
  * You should have received a copy of the Areg SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
@@ -20,6 +20,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/SyncPrimitives.hpp"
+#include "areg/base/FatalError.hpp"
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/base/private/WaitWord.hpp"
@@ -74,6 +75,11 @@ void SyncObject::_os_destroy()
 void Mutex::_os_create_mutex( bool initLock )
 {
     SYNCHANDLE syncObj = static_cast<SYNCHANDLE>(CreateMutex( nullptr, initLock ? TRUE : FALSE, nullptr ));
+    if ( syncObj == nullptr )
+    {
+        areg::fatal_error( "CreateMutex failed, a Mutex cannot be created" );
+    }
+
     mSyncObject = syncObj;
     if ( initLock )
     {
@@ -85,8 +91,15 @@ bool Mutex::_os_lock_mutex( uint32_t timeout )
 {
     bool result = false;
 
-    if (WaitForSingleObject(static_cast<HANDLE>(mSyncObject), timeout) == WAIT_OBJECT_0)
+    const DWORD waited{ WaitForSingleObject(static_cast<HANDLE>(mSyncObject), timeout) };
+    if ((waited == WAIT_OBJECT_0) || (waited == WAIT_ABANDONED))
     {
+        // WAIT_ABANDONED: the owner ended without releasing it, and this thread owns it now.
+        if (waited == WAIT_ABANDONED)
+        {
+            AREG_OUTPUT_WARN("Mutex [ %p ] was abandoned by a thread that ended holding it, the data it guards may be inconsistent", static_cast<void *>(this));
+        }
+
         mOwnerThreadId.store( Thread::current_thread_id( ) );
         result = true;
     }
@@ -113,6 +126,10 @@ bool Mutex::_os_unlock_mutex()
 void SyncEvent::_os_create_event( bool initLock )
 {
     mSyncObject = static_cast<void *>(CreateEvent( nullptr, mAutoReset ? FALSE : TRUE, initLock ? FALSE : TRUE, nullptr ));
+    if ( mSyncObject == nullptr )
+    {
+        areg::fatal_error( "CreateEvent failed, a SyncEvent cannot be created" );
+    }
 }
 
 bool SyncEvent::_os_unlock_event( void * /* eventHandle */ ) noexcept
@@ -165,6 +182,10 @@ int32_t SyncEvent::_os_wait_any( SyncEvent** events, int32_t count, uint32_t tim
 void Semaphore::_os_create_semaphore()
 {
     mSyncObject= static_cast<void *>(CreateSemaphore(nullptr, mCurrCount.load(), mMaxCount, nullptr));
+    if ( mSyncObject == nullptr )
+    {
+        areg::fatal_error( "CreateSemaphore failed, a Semaphore cannot be created" );
+    }
 }
 
 void Semaphore::_os_release_semaphore()
@@ -235,6 +256,17 @@ void SyncTimer::_os_create_timer( bool isSteady )
     }
 
     mSyncObject = static_cast<SYNCHANDLE>(::CreateWaitableTimerEx(nullptr, nullptr, flag, TIMER_ALL_ACCESS));
+    if ((mSyncObject == nullptr) && ((flag & CREATE_WAITABLE_TIMER_HIGH_RESOLUTION) != 0))
+    {
+        // Windows before 10 version 1803 has no high resolution waitable timers.
+        flag &= ~static_cast<DWORD>(CREATE_WAITABLE_TIMER_HIGH_RESOLUTION);
+        mSyncObject = static_cast<SYNCHANDLE>(::CreateWaitableTimerEx(nullptr, nullptr, flag, TIMER_ALL_ACCESS));
+    }
+
+    if (mSyncObject == nullptr)
+    {
+        areg::fatal_error("CreateWaitableTimerEx failed, a SyncTimer cannot be created");
+    }
 }
 
 void SyncTimer::_os_release_time()
@@ -278,11 +310,20 @@ int32_t MultiLock::_os_lock( uint32_t timeout /* = areg::WAIT_INFINITE */, bool 
     int32_t index = MultiLock::LOCK_INDEX_INVALID;
     uint32_t maxEvent= static_cast<uint32_t>(WAIT_OBJECT_0) + static_cast<uint32_t>(mSizeCount);
     uint32_t result  = mSizeCount > 0 ? WaitForMultipleObjectsEx(static_cast<uint32_t>(mSizeCount), static_cast<HANDLE *>(syncHandles), waitForAll ? TRUE : FALSE, timeout, isAlertable ? TRUE : FALSE) : WAIT_FAILED;
-    if (result < maxEvent)
+    // WAIT_ABANDONED_0 + i: a mutex whose owner ended without releasing it; this thread owns it now.
+    const uint32_t maxAbandoned{ static_cast<uint32_t>(WAIT_ABANDONED_0) + static_cast<uint32_t>(mSizeCount) };
+    const bool abandoned{ (result >= static_cast<uint32_t>(WAIT_ABANDONED_0)) && (result < maxAbandoned) };
+    if (abandoned)
     {
+        AREG_OUTPUT_WARN("MultiLock [ %p ] took a mutex abandoned by a thread that ended holding it, the data it guards may be inconsistent", static_cast<void *>(this));
+    }
+
+    if ((result < maxEvent) || abandoned)
+    {
+        const uint32_t first{ abandoned ? static_cast<uint32_t>(WAIT_ABANDONED_0) : static_cast<uint32_t>(WAIT_OBJECT_0) };
         if (waitForAll == false)
         {
-            index = static_cast<int32_t>(result - WAIT_OBJECT_0);
+            index = static_cast<int32_t>(result - first);
             ASSERT((index >= 0) && index < mSizeCount);
             mLockedStates[index] = MultiLock::LockState::Locked;
         }
@@ -315,6 +356,16 @@ int32_t MultiLock::_os_lock( uint32_t timeout /* = areg::WAIT_INFINITE */, bool 
 void Wait::_os_init_timer()
 {
     mTimer = ::CreateWaitableTimerEx( nullptr, nullptr, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS );
+    if ( mTimer == nullptr )
+    {
+        // Windows before 10 version 1803 has no high resolution waitable timers.
+        mTimer = ::CreateWaitableTimerEx( nullptr, nullptr, 0, TIMER_ALL_ACCESS );
+    }
+
+    if ( mTimer == nullptr )
+    {
+        areg::fatal_error( "CreateWaitableTimerEx failed, a Wait cannot be created" );
+    }
 }
 
 void Wait::_os_release_timer()

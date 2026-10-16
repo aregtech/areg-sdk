@@ -50,11 +50,13 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     DateTimeTest.cpp
     EventEnvelopeTest.cpp
     EventQueueTest.cpp
+    FatalErrorTest.cpp
     FileTest.cpp
     FixedArrayTest.cpp
     HashMapTest.cpp
     KeyValuePairTest.cpp
     LinkedListTest.cpp
+    ListenerDispatchTest.cpp
     LockWaitTest.cpp
     LogMessageLengthTest.cpp
     LogScopesTest.cpp
@@ -62,6 +64,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     MultiLockTest.cpp
     OptionParserTest.cpp
     RingStackTest.cpp
+    ScopedLockTest.cpp
     SendBacklogTest.cpp
     SharedBufferTest.cpp
     SocketKeepAliveTest.cpp
@@ -69,6 +72,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     SocketMultiplexerTest.cpp
     SocketWouldBlockTest.cpp
     SortedLinkedListTest.cpp
+    StreamExtractTest.cpp
     StackTest.cpp
     StringDefsTest.cpp
     StringDefsTest2.cpp
@@ -77,4 +81,5 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     StringTest.cpp
     StringUtilsTest.cpp
     ThreadTest.cpp
+    WorkerThreadTest.cpp
 )

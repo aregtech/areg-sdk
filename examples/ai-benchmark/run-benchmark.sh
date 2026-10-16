@@ -46,6 +46,10 @@ One cold agent run, measured, against a clean snapshot of this checkout.
                      Claude's --effort, Copilot's --reasoning-effort or Codex's
                      model_reasoning_effort. Gemini has no such setting and refuses it
                        (default: medium for Claude; the CLI default otherwise)
+  --cache-ttl TTL    1h | 5m, Claude only: the prompt-cache TTL the run writes at.
+                     Unpinned, Claude Code picks 1h on a subscription and 5m on an
+                     API key, and a 1h write costs 60% more, so runs made on two
+                     plans would not compare                (default: 1h)
   --attempts N       the build-and-fix and run-and-fix bound (default: 15, which is
                      what every published run used; the runbook's own bound is 3).
                      Any number other than the runbook's adds one rule to the prompt,
@@ -254,7 +258,7 @@ main()
     local FRAMEWORK="areg" TASK="examples/ai-benchmark/prompt-coffeemachine.md" WRAPPER=""
     local PROJECT="" MODE="ipc" AGENT="claude" MODEL="" EFFORT=""
     local ATTEMPTS="15" DEBRIEF="" DEBUG="" RECIPES="none" LABEL="" DRY="" ALLOW_INSTALLED=""
-    local REPEAT="1"
+    local REPEAT="1" CACHE_TTL=""
     local VERIFY="probes" SDK_OPT="" GRPC_OPT="" WEB=""
 
     # A bare first word is the label. Anything starting with a dash is an option.
@@ -278,6 +282,7 @@ main()
             --model)     need "$@"; [ -n "$2" ] || die "--model needs a non-empty value"; MODEL="$2"; shift 2 ;;
             --effort)    need "$@"; EFFORT="$2";    shift 2 ;;
             --attempts)  need "$@"; ATTEMPTS="$2";  shift 2 ;;
+            --cache-ttl) need "$@"; CACHE_TTL="$2"; shift 2 ;;
             --repeat)    need "$@"; REPEAT="$2";    shift 2 ;;
             --recipes)   need "$@"; RECIPES="$2";   shift 2 ;;
             --sdk)       need "$@"; SDK_OPT="$2";   shift 2 ;;
@@ -300,8 +305,11 @@ main()
     case "${MODE}"     in ipc|local|pubsub) ;; *) die "--mode must be ipc, local or pubsub, not '${MODE}'" ;; esac
     case "${AGENT}"    in claude|copilot|codex|gemini) ;; *) die "--agent must be claude, copilot, codex or gemini, not '${AGENT}'" ;; esac
     case "${EFFORT}"   in ''|low|medium|high) ;; *) die "--effort must be low, medium or high, not '${EFFORT}'" ;; esac
+    case "${CACHE_TTL}" in ''|1h|5m) ;; *) die "--cache-ttl must be 1h or 5m, not '${CACHE_TTL}'" ;; esac
     if [ "${AGENT}" = "claude" ]; then
-        MODEL="${MODEL:-sonnet}"; EFFORT="${EFFORT:-medium}"
+        MODEL="${MODEL:-sonnet}"; EFFORT="${EFFORT:-medium}"; CACHE_TTL="${CACHE_TTL:-1h}"
+    elif [ -n "${CACHE_TTL}" ]; then
+        die "--cache-ttl is supported by Claude Code only; omit it"
     elif [ "${AGENT}" = "gemini" ] && [ -n "${EFFORT}" ]; then
         die "--effort is not supported by Gemini CLI; omit it"
     fi
@@ -521,20 +529,13 @@ ${stray}"
 Additionally, for this run only: a review of the documentation, written last, after
 the report. It must not change what you built.
 
-- **The documents you read or fetched, in order**, each with what pointed to it: a
-  line of the task, another document, a command's output, or nothing.
 - **Every fact the task needed that no document stated** -- a name, a signature, a
   rule -- and where you expected to find it.
 - **Every place two sources disagree**, naming both, and which one you followed.
 - **Anything you searched for and did not find** -- a signature, a rule, an example
   -- and where you searched first.
-- **Every file under the project's own src/ or build/ you read or searched**, the
-  question it answered, and whether your .proto or the stubs generated from it
-  already answered it.
-- **Every document you read before the first build**, and the line of the task that
-  pointed to it.
-- **Every command you ran to look up a syntax, a name or a signature**, and whether
-  its output was enough.
+- **Every file under the project's own src/ or build/ you read**, for a question your
+  .proto or the stubs generated from it did not answer.
 
 Be specific and short: a list, not prose."
     elif [ -n "${DEBRIEF}" ]; then
@@ -543,20 +544,14 @@ Be specific and short: a list, not prose."
 Additionally, for this run only: a review of the documentation, written last, after
 the report. It must not change what you built.
 
-- **The pages you read, in order**, each with the routing-table row or tool output
-  that pointed to it, or \"none\".
 - **Every fact the task needed that no page stated** -- a name, a signature, a rule
   -- and the page that should have stated it.
 - **Every place two sources disagree**, naming both, and which one you followed.
 - **Every marker whose one-line hint was not enough**, and what it should say.
 - **Anything you searched for and did not find** -- a signature, a rule, an example
   -- and where you searched first.
-- **Every file under the project's src/ or build/ you read or searched**, the
-  question it answered, and whether worksheet.txt already answered it.
-- **Every page you read before the first build_project.py call**, and the line of
-  the task or AGENTS.md that pointed to it.
-- **Every tool you ran to look up a syntax, a name or a signature**, and whether its
-  output was enough.
+- **Every file under the project's src/ or build/ you read**, for a question
+  worksheet.txt did not answer.
 
 Be specific and short: a list, not prose."
     fi
@@ -589,6 +584,7 @@ Be specific and short: a list, not prose."
       echo "model    ${MODEL:-agent-default}"; echo "effort   ${EFFORT:-agent-default}"
       echo "task     ${TASK_RUN}"; echo "mode     ${MODE}"; echo "recipes  ${RECIPES}"
       echo "attempts ${ATTEMPTS}"; echo "debrief  ${DEBRIEF:-no}"
+      echo "cachettl ${CACHE_TTL:-agent-default}"
       if [ "${FRAMEWORK}" = "grpc" ]; then echo "staged   ${SNAP}"
       else echo "source   ${SDK}"; echo "sdk      ${SNAP}"; fi
       echo "files    ${copied}"
@@ -667,6 +663,7 @@ ${leak}
     [ "${AGENT}" != "codex" ] || agent_args+=(-)
     # Claude's first build can outlast its default command timeout.
     BASH_DEFAULT_TIMEOUT_MS=600000 BASH_MAX_TIMEOUT_MS=900000 \
+    CLAUDE_CODE_PROMPT_CACHE_TTL="${CACHE_TTL}" \
         "${AGENT}" "${agent_args[@]}" \
         < "${RUN}/prompt.txt" > "${RESULT}" 2> "${RUN}/run.err" || code=$?
     { date -u +"end      %Y-%m-%dT%H:%M:%SZ"; echo "exit     ${code}"; } >> "${RUN}/meta.txt"

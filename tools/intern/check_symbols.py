@@ -74,6 +74,7 @@ DEFINE_RE = re.compile(r'^\s*#\s*define\s+([A-Za-z_][A-Za-z0-9_]*)')
 DECL_RES = (
     re.compile(r'\b(?:class|struct|union|enum(?:\s+class)?|namespace)\s+'
                r'(?:[A-Z_]+_API\s+)?([A-Za-z_][A-Za-z0-9_]*)'),
+    re.compile(r'\bnamespace\s+(?:[A-Za-z_][A-Za-z0-9_]*::)+([A-Za-z_][A-Za-z0-9_]*)'),
     re.compile(r'\busing\s+([A-Za-z_][A-Za-z0-9_]*)\s*='),
     re.compile(r'\btypedef\b[^;]*?\b([A-Za-z_][A-Za-z0-9_]*)\s*;'),
     re.compile(r'\bconstexpr\b[^;=()]*?\b([A-Za-z_][A-Za-z0-9_]*)\s*(?:=|\{)'),

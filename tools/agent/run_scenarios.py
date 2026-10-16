@@ -14,7 +14,11 @@
 # Exit code 0 when every scenario passed, 1 otherwise, 2 on a bad file.
 # ===========================================================================
 import argparse
+import contextlib
+import difflib
+import glob
 import importlib.util
+import io
 import json
 import os
 import platform
@@ -26,6 +30,11 @@ import sys
 import tempfile
 import threading
 import time
+
+try:
+    import resource
+except ImportError:                                 # Windows: no CPU accounting
+    resource = None
 
 SCHEMA = """Scenario file: {"scenarios": [ { ... }, ... ]}
 
@@ -41,15 +50,13 @@ Process: {"binary": "myapp", "args": [], "expect": ["regex"], "exit": 0}
   binary   Name without a platform suffix; looked up in the build directory.
   name     Label for this process, for reports and for "stop". Default: binary.
   args     Command line arguments.
-  expect   Regular expressions that all have to match the captured output.
-  reject   Regular expressions that must not match the captured output.
+  expect   Regular expressions that all have to match the lines the process wrote:
+           the messages of its log file under logs/ beside the executable, without
+           their time, thread and priority, and its standard output.
+  reject   Regular expressions that must not match those lines.
   stdin    Lines written to the process's standard input once it has started;
-           the stream is closed after the last one. This is how a "-q" quit path
-           is exercised, on the lead of a scenario of its own: on any other process
-           the quit is read at once and it ends before its peers are served.
-           WITHOUT this key the process still gets its own standard
-           input and nothing ever writes to it or closes it, so a console loop
-           waits there instead of reading end of input at once.
+           the stream is closed after the last one. Without this key the process
+           still gets its own standard input, which nothing writes to or closes.
   exit     Required exit code. Omit or null to accept any.
   lead     true to make this the process the scenario waits for. Default: the
            last one in the list.
@@ -58,18 +65,17 @@ Process: {"binary": "myapp", "args": [], "expect": ["regex"], "exit": 0}
 Stop: {"proc": "provider", "after": "consumer: ready", "signal": "term"}
   proc     The process to stop, by its name.
   after    A regular expression: the process is stopped once this matches the
-           lead's output. A number instead waits that many seconds. Omitted, the
+           lead's lines. A number instead waits that many seconds. Omitted, the
            process is stopped as soon as it is running.
   signal   "term" (default) or "kill". "kill" is an abrupt loss of the peer.
   A list of these runs them in order.
 
-The output of a failing process is printed with the verdict, and a passing
+The lines of a failing process are printed with the verdict, and a passing
 scenario prints the line every expectation matched and the last 150 lines of the
-lead's output, so one run is the whole evidence. --quiet prints only the verdict.
+lead, so one run is the whole evidence. --quiet prints only the verdict.
 
-Two acceptance items recur in nearly every task and both are keys here, so
-neither needs a shell: the console quit path is "stdin", and the peer going away
-is "stop". Never start the processes by hand with &, sleep, pkill or ps.
+The peer going away is the key "stop", so it needs no shell. Never start the
+processes by hand with &, sleep, pkill or ps.
 """
 
 SUFFIX = {'Windows': '.exe', 'Darwin': '.mac'}.get(platform.system(), '.elf')
@@ -94,6 +100,14 @@ OUTPUT_TAIL_LINES = 40
 PASS_TAIL_LINES = 150
 # How many unmet expectations a failed verdict names.
 MISSES_NAMED = 4
+# The most CPU a scenario's processes may use together, in cores, averaged over the
+# scenario. Programs that block until their next message stay far below it.
+CPU_LIMIT = 0.5
+# The shortest span, in seconds, the CPU is averaged over. Starting the processes costs
+# the same in a scenario of a fraction of a second, which polling does not explain.
+CPU_WINDOW = 2.0
+# How alike a printed line and a missed expectation must be for the line to be named.
+NEAREST_CUTOFF = 0.6
 
 
 def is_listening(port, host='127.0.0.1'):
@@ -109,8 +123,30 @@ def is_listening(port, host='127.0.0.1'):
         probe.close()
 
 
+# The router port line of a config/*.init file.
+PORT_RE = re.compile(r'^[ \t]*router::\*::port::tcpip[ \t]*=[ \t]*(\d+)', re.MULTILINE)
+
+
+def router_port(directories):
+    """The router port a config/*.init beside the binaries names, else ROUTER_PORT."""
+    for directory in directories:
+        for path in sorted(glob.glob(os.path.join(directory, 'config', '*.init'))):
+            try:
+                with open(path, encoding='utf-8', errors='replace') as handle:
+                    found = PORT_RE.search(handle.read())
+            except OSError:
+                continue
+            if found:
+                return int(found.group(1))
+    return ROUTER_PORT
+
+
 # The suffixes a framework service is built with, whichever system built it.
 SERVICE_SUFFIXES = ('.elf', '.exe', '.mac', '')
+
+
+# An installation keeps mtrouter in the directory above this tool.
+INSTALLED_SERVICES = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def find_service(name, directories):
@@ -360,6 +396,31 @@ def stop_handle(handle, signal_name):
 TAIL_LIMIT = 4 * 1024 * 1024
 
 
+# The layout prefix of a log line the generated project.init writes, up to the message.
+LOG_PREFIX = re.compile(r'^[^\n]*? >>> \] ')
+# Seconds a log file is read on after its process ended, for lines still being written.
+LOG_SETTLE_SECONDS = 0.5
+
+
+def log_file_of(log_dir, mark, since):
+    """The log file under log_dir started after since whose first line holds mark."""
+    try:
+        names = os.listdir(log_dir)
+    except OSError:
+        return None
+    for name in names:
+        path = os.path.join(log_dir, name)
+        try:
+            if not name.endswith('.log') or os.path.getmtime(path) < since - 2:
+                continue
+            with open(path, encoding='utf-8', errors='replace') as handle:
+                if mark in handle.readline():
+                    return path
+        except OSError:
+            continue
+    return None
+
+
 class OutputReader(object):
     """Drains one process line by line, spools it to a file and keeps the tail.
 
@@ -368,7 +429,7 @@ class OutputReader(object):
     its own work, and the scenario then reports a timeout with no cause in it.
     """
 
-    def __init__(self, handle, path):
+    def __init__(self, handle, path, log_dir=None):
         self._handle = handle
         self._path = path
         self._lines = []
@@ -379,20 +440,63 @@ class OutputReader(object):
         self._thread = threading.Thread(target=self._pump)
         self._thread.daemon = True
         self._thread.start()
+        self._follower = None
+        if log_dir:
+            self._follower = threading.Thread(target=self._follow, args=(log_dir, time.time()))
+            self._follower.daemon = True
+            self._follower.start()
 
     def _pump(self):
         for line in iter(self._handle.stdout.readline, ''):
             self._take(line)
-        for stream in (self._handle.stdout, self._spool):
-            try:
-                stream.close()
-            except (OSError, ValueError):
-                pass
+        try:
+            self._handle.stdout.close()
+        except (OSError, ValueError):
+            pass
+
+    def _follow(self, log_dir, since):
+        """Takes the lines of the log file this process writes, without their layout prefix.
+
+        The file is the one under log_dir whose first line names this process's ID. It
+        is read until the process has ended and the file has nothing more.
+        """
+        mark = 'with ID [ {} ]'.format(self._handle.pid)
+        found = None
+        while found is None:
+            found = log_file_of(log_dir, mark, since)
+            if found is None:
+                if self._handle.poll() is not None:
+                    found = log_file_of(log_dir, mark, since)
+                    if found is None:
+                        return
+                else:
+                    time.sleep(0.05)
+        idle = 0.0
+        pending = ''
+        with open(found, encoding='utf-8', errors='replace') as log:
+            while True:
+                chunk = log.readline()
+                if chunk:
+                    idle = 0.0
+                    pending += chunk
+                    if pending.endswith('\n'):
+                        if mark not in pending:
+                            self._take(LOG_PREFIX.sub('', pending, count=1))
+                        pending = ''
+                    continue
+                if self._handle.poll() is not None:
+                    idle += 0.05
+                    if idle > LOG_SETTLE_SECONDS:
+                        break
+                time.sleep(0.05)
+        if pending and mark not in pending:
+            self._take(LOG_PREFIX.sub('', pending, count=1) + '\n')
 
     def _take(self, line):
         """Spools one line and keeps it in the tail."""
         with self._lock:
-            self._spool.write(line)
+            if not self._spool.closed:
+                self._spool.write(line)
             self._lines.append(line)
             self._size += len(line)
             while self._size > TAIL_LIMIT and len(self._lines) > 1:
@@ -413,10 +517,13 @@ class OutputReader(object):
 
     def join(self, timeout):
         self._thread.join(timeout)
-        try:
-            self._spool.close()
-        except (OSError, ValueError):
-            pass
+        if self._follower is not None:
+            self._follower.join(timeout)
+        with self._lock:
+            try:
+                self._spool.close()
+            except (OSError, ValueError):
+                pass
 
 
 class LaggingReader(OutputReader):
@@ -464,12 +571,27 @@ def fire_stops(pending, started, text):
     return left
 
 
-def stops_missed(pending):
+def open_expectations(handles):
+    """Names the expectations still open, for a failure judged before any of them."""
+    slots = []
+    for spec, _ in handles:
+        for pattern in spec.get('expect', []):
+            hole = re.match(r'TODO\(you\)\s+(\w+)', pattern) \
+                if isinstance(pattern, str) else None
+            if hole and hole.group(1) not in slots:
+                slots.append(hole.group(1))
+    if not slots:
+        return ''
+    return ('; still open, and failing next once this is fixed: {}. Fill {} in the same '
+            'call'.format(', '.join(slots), 'it' if len(slots) == 1 else 'them'))
+
+
+def stops_missed(pending, lead=None, code=None, output=''):
     """Why the scenario proves nothing, when a stop it declared never fired.
 
     A stop is the experiment the scenario exists to run. Cleanup terminates every
     process whether it fired or not, so without this the scenario passes having
-    never injected the fault it names.
+    never injected the fault it names. A lead that exited non-zero failed on its own.
     """
     entry = pending[0]
     after = entry['after']
@@ -485,6 +607,13 @@ def stops_missed(pending):
         why = 'the run ended before {}s'.format(after)
     else:
         why = 'nothing matched {!r}'.format(after)
+    if code:
+        last = [line.strip() for line in output.splitlines() if line.strip()]
+        return ('the stop on {} never fired: {}, and {} exited {} before it with nothing '
+                'taken away, so it failed on its own (last line: {!r}). Fix that '
+                'failure first; it is the same one the normal run reports. A hold '
+                'step does not help a lead that fails'
+                .format(entry['proc'], why, lead, code, last[-1] if last else ''))
     # The lead outrunning the match is the common cause and the remedy is a step,
     # not a sleep: a run that reaches for pkill or a shell sleep here has lost the
     # scenario file as the one place the experiment is written down.
@@ -523,7 +652,17 @@ def printed_by(pattern, index, handles, outputs):
         if found is not None:
             return ' ({} printed it, line {})'.format(
                 proc_name(spec), output.count('\n', 0, found.start()) + 1)
-    return ''
+    return nearest_line(pattern, outputs.get(index) or '')
+
+
+def nearest_line(pattern, output):
+    """The line of the output most like an expectation it did not match, and where."""
+    lines = output.splitlines()
+    text = re.sub(r'\\(.)', r'\1', pattern).strip('^$')
+    close = difflib.get_close_matches(text, lines, n=1, cutoff=NEAREST_CUTOFF)
+    if not close:
+        return ''
+    return ' (nearest: {!r}, line {})'.format(close[0].strip(), lines.index(close[0]) + 1)
 
 
 def kept_spool(keep, name):
@@ -536,8 +675,38 @@ def kept_spool(keep, name):
     return folder
 
 
+def child_cpu():
+    """CPU seconds of every finished child process, or None where not measurable."""
+    if resource is None:
+        return None
+    usage = resource.getrusage(resource.RUSAGE_CHILDREN)
+    return usage.ru_utime + usage.ru_stime
+
+
+def busy_verdict(cpu, wall, outputs):
+    """Why a passing scenario kept the CPU busy, or None when it did not."""
+    span = max(wall, CPU_WINDOW)
+    if cpu is None or wall <= 0 or cpu / span < CPU_LIMIT:
+        return None
+    verdict = ('its processes used {:.2f} cores on average over {:.1f} s, the limit is '
+               '{}: a program that waits for its next message uses almost none, one that '
+               'sends again at once or polls keeps a core busy'
+               .format(cpu / span, span, CPU_LIMIT))
+    counted = []
+    for name, text in (outputs or {}).items():
+        lines = [line.strip() for line in text.splitlines() if line.strip()]
+        if lines:
+            line = max(set(lines), key=lines.count)
+            counted.append((lines.count(line), name, line))
+    if counted:
+        times, name, line = max(counted)
+        if times > 1:
+            verdict += '. {} printed "{}" {} times'.format(name, line[:80], times)
+    return verdict
+
+
 def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_class=None,
-                 keep=None):
+                 keep=None, wait_all=False):
     reader_class = reader_class or OutputReader
     name = scenario.get('name', 'unnamed')
     timeout = float(scenario.get('timeout', 60))
@@ -546,11 +715,19 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
         return False, name, 'no processes listed'
 
     router_handle = None
-    if scenario.get('router'):
-        router = find_service('mtrouter', build_dirs)
+    port = router_port(build_dirs)
+    # A router port another process already serves is used as it is; no second
+    # router is started.
+    foreign = bool(scenario.get('router')) and is_listening(port)
+    if foreign and not quiet:
+        sys.stdout.write('      port {} is already served by a process this run did not '
+                         'start; the scenario uses it\n'.format(port))
+    if scenario.get('router') and not foreign:
+        searched = list(build_dirs) + [INSTALLED_SERVICES]
+        router = find_service('mtrouter', searched)
         if router is None:
-            return False, name, 'mtrouter not found in ' + ', '.join(build_dirs)
-        router_handle, why = start_service(router, ROUTER_PORT)
+            return False, name, 'mtrouter not found in ' + ', '.join(searched)
+        router_handle, why = start_service(router, port)
         if router_handle is None:
             return False, name, why
 
@@ -562,8 +739,11 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
     ended = {}
     verdict = None
     readers = {}
+    # What every other process had printed when the lead ended, before teardown.
+    at_lead_end = {}
     spool = kept_spool(keep, name) if keep else tempfile.mkdtemp(prefix='scenario-')
     actions = []
+    started = None
     try:
         for index, spec in enumerate(procs):
             binary = find_binary(spec['binary'], build_dirs)
@@ -574,7 +754,7 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
             # Every process gets its own pipe, written and closed only when the
             # scenario says so. Inheriting this runner's standard input hands the
             # process whatever the shell had -- usually end of input at once, which
-            # stops a console loop before the service has served anything.
+            # ends a process that reads its input before it has served anything.
             handle = subprocess.Popen([binary] + list(spec.get('args', [])),
                                       stdin=subprocess.PIPE,
                                       stdout=subprocess.PIPE,
@@ -583,7 +763,8 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
             launched[index] = time.time()
             handles.append((spec, handle))
             readers[index] = reader_class(
-                handle, os.path.join(spool, '{}-{}.log'.format(index, proc_name(spec))))
+                handle, os.path.join(spool, '{}-{}.log'.format(index, proc_name(spec))),
+                os.path.join(os.path.dirname(binary), 'logs'))
             if feed:
                 send_stdin(handle, feed)
             if index != lead_index or (index < len(procs) - 1 and 'delay' in spec):
@@ -599,29 +780,41 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
                 reader = readers[lead_index]
                 started = time.time()
                 deadline = started + timeout
+                lead_done = False
                 while True:
-                    pending = fire_stops(pending, started, reader.text())
+                    if not lead_done:
+                        pending = fire_stops(pending, started, reader.text())
                     for index, (_, handle) in enumerate(handles):
                         if index not in ended and handle.poll() is not None:
                             ended[index] = time.time() - launched[index]
-                    if lead.poll() is not None:
+                    if not lead_done and lead.poll() is not None:
+                        lead_done = True
                         ended.setdefault(lead_index, time.time() - launched[lead_index])
                         # The lead's last lines can still be in its reader: drain it to
                         # the end, then judge the stops on everything it printed.
                         reader.join(5)
+                        at_lead_end = dict((index, other.text())
+                                           for index, other in readers.items())
                         waiting = pending
                         pending = fire_stops(pending, started, reader.text())
                         for entry in waiting:
                             if entry not in pending:
                                 entry['late'] = True
+                    # With wait_all and every stop fired, the processes still running
+                    # after the lead are given until the deadline to end on their own.
+                    # Running is read from ended, so no exit goes unrecorded.
+                    if lead_done and not (wait_all and not pending and any(
+                            index not in ended for index in range(len(handles)))):
                         break
                     if time.time() >= deadline:
-                        lead.kill()
-                        verdict = 'timed out after {:.0f}s'.format(timeout)
+                        if not lead_done:
+                            lead.kill()
+                            verdict = 'timed out after {:.0f}s'.format(timeout)
                         break
                     time.sleep(0.05)
                 if verdict is None and pending:
-                    verdict = stops_missed(pending)
+                    verdict = stops_missed(pending, proc_name(handles[lead_index][0]),
+                                           lead.returncode, reader.text())
     finally:
         # Every process that is still running is stopped, then reaped. Its output
         # was drained by its own reader from the moment it started, so nothing here
@@ -653,6 +846,13 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
         observed['outputs'] = dict((proc_name(spec), outputs.get(index) or '')
                                    for index, (spec, _) in enumerate(handles))
         observed['elapsed'] = ended.get(lead_index)
+        # When each process ended on its own, in seconds on the clock of the stops.
+        observed['ended_at'] = dict(
+            (proc_name(spec), launched[index] + ended[index] - started
+             if index in ended and started is not None else None)
+            for index, (spec, _) in enumerate(handles))
+        observed['stopped'] = [proc_name(spec) for spec, handle in handles
+                               if getattr(handle, 'stopped_by_scenario', False)]
         observed['verdict'] = verdict
         observed['actions'] = [{'proc': entry['proc'], 'after': entry['after'],
                                 'signal': entry['signal'],
@@ -663,7 +863,13 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
         report_output(handles, outputs, quiet, full=verbose)
         report_status(handles, outputs, ended, lead_index, quiet)
         if not quiet:
-            sys.stdout.write('      full output of every process: {}\n'.format(spool))
+            logs = [reader.path() for _, reader in sorted(readers.items())]
+            sys.stdout.write('      full output of every process: {}\n'.format(
+                ', '.join(path.replace(os.sep, '/') for path in logs) or spool))
+        if foreign:
+            detail += ('; the router on port {} was not started by this run{}'.format(
+                port, '' if is_listening(port)
+                else ', and it stopped during the scenario'))
         return False, name, detail
 
     if verdict is not None:
@@ -683,10 +889,11 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
                     if 'fired_clock' in entry
                     and (entry.get('late') or exited - entry['fired_clock'] < LATE_STOP_SECONDS)]
         said = re.findall(r'^FAIL\b.*$', outputs.get(index) or '', re.MULTILINE)
-        return failed('{} exited {}, expected {}{}{}'.format(
+        return failed('{} exited {}, expected {}{}{}{}'.format(
             label, handle.returncode, wanted,
             ': "{}"'.format(said[-1].strip()) if said else '',
-            stop_too_late(late[0][0], label, late[0][1]) if late else ''))
+            stop_too_late(late[0][0], label, late[0][1]) if late else '',
+            open_expectations(handles)))
 
     evidence = []
     misses = []
@@ -718,6 +925,8 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
         # The lead's own lines are the steps it took and what each check saw.
         report_output([handles[lead_index]], {0: outputs.get(lead_index)}, quiet,
                       tail=PASS_TAIL_LINES)
+        if actions:
+            report_survivors(handles, at_lead_end, ended, lead_index)
     if not keep:
         shutil.rmtree(spool, ignore_errors=True)
     return True, name, 'ok'
@@ -741,6 +950,20 @@ def report_output(handles, outputs, quiet, full=False, tail=OUTPUT_TAIL_LINES):
             head += ' (last {} of {} lines)'.format(tail, len(lines))
             lines = lines[-tail:]
         sys.stdout.write(head + '\n' + '\n'.join(lines) + '\n')
+
+
+def report_survivors(handles, outputs, ended, lead_index):
+    """After a stop, how each process the stop left running fared by the time the lead
+    ended, and its last line then: a peer's report of the loss is evidence too."""
+    lead = proc_name(handles[lead_index][0])
+    for index, (spec, handle) in enumerate(handles):
+        if index == lead_index or getattr(handle, 'stopped_by_scenario', False):
+            continue
+        lines = (outputs.get(index) or '').strip().splitlines()
+        state = 'exited {} by {:.1f}s'.format(handle.returncode, ended[index]) \
+            if index in ended else 'running when {} ended'.format(lead)
+        sys.stdout.write('      {:<20} {}; last line: {}\n'.format(
+            proc_name(spec), state, lines[-1].strip()[:100] if lines else 'none'))
 
 
 def report_status(handles, outputs, ended, lead_index, quiet):
@@ -940,6 +1163,30 @@ def self_test():
                   .format(detail))
             return 1
 
+        # After a stop, a peer the stop left running is named with its last line.
+        watched = dict(fired, name='stop-and-a-watcher')
+        watched['procs'] = [scenario['procs'][0],
+                            {'binary': provider, 'name': 'watcher'}, scenario['procs'][1]]
+        caught = io.StringIO()
+        with contextlib.redirect_stdout(caught):
+            passed, _, detail = run_scenario(watched, [root], False, False)
+        if not passed or 'watcher              running when consumer ended; last line: ' \
+                         'provider: serving' not in caught.getvalue():
+            print('self-test FAILED: a peer the stop left running is not reported with '
+                  'its last line: {}'.format(detail if not passed else caught.getvalue()))
+            return 1
+
+        # An exit-code failure also names the expectations still open.
+        unfilled = dict(scenario, name='exit-and-open-expectation')
+        unfilled['procs'] = [dict(scenario['procs'][0],
+                                  expect=['TODO(you) expect_selftest_provider: a line']),
+                             dict(scenario['procs'][1], exit=3)]
+        passed, _, detail = run_scenario(unfilled, [root], False, True)
+        if passed or 'expect_selftest_provider' not in detail:
+            print('self-test FAILED: an exit-code failure did not name the open '
+                  'expectation: {}'.format(detail))
+            return 1
+
         # The lead prints the trigger and exits before its reader hands the line over.
         passed, _, detail = run_scenario(fired, [root], False, True,
                                          reader_class=LaggingReader)
@@ -1017,6 +1264,18 @@ def self_test():
                   'by a line it never reached: {}'.format(detail))
             return 1
 
+        # A stop that never fired because the lead failed first names that failure.
+        failing = {
+            'name': 'stop-after-a-failure', 'timeout': 15,
+            'stop': {'proc': 'provider', 'after': 'NEVER_PRINTED', 'signal': 'kill'},
+            'procs': [{'binary': provider, 'name': 'provider'},
+                      {'binary': quitter, 'name': 'consumer', 'exit': 1}]}
+        passed, _, detail = run_scenario(failing, [root], False, True)
+        if passed or 'failed on its own' not in detail or 'outruns' in detail:
+            print('self-test FAILED: a stop missed because the lead failed first asked '
+                  'for a hold: {}'.format(detail))
+            return 1
+
         # Two lines expected of the wrong process are both named, with where they are.
         misplaced = {
             'name': 'misplaced', 'timeout': 15,
@@ -1030,10 +1289,70 @@ def self_test():
                   'named with the process that printed them: {}'.format(detail))
             return 1
 
-        print('self-test ok: 9 case(s): end of input, an unfired stop, a fired stop, '
-              'a stop on the last line of an exited lead, a stop too late for the lead, '
+        # A line no process printed names the nearest one printed, and the failure
+        # names each process's log file.
+        nearly = {
+            'name': 'nearly', 'timeout': 15,
+            'procs': [{'binary': provider, 'name': 'provider',
+                       'expect': [r'provider serving\b']},
+                      {'binary': quitter, 'name': 'consumer'}]}
+        said = io.StringIO()
+        with contextlib.redirect_stdout(said):
+            passed, _, detail = run_scenario(nearly, [root], False, False)
+        if passed or "nearest: 'provider: serving', line 1" not in detail \
+                or not re.search(r'full output of every process: \S+/0-provider\.log, '
+                                 r'\S+/1-consumer\.log', said.getvalue()):
+            print('self-test FAILED: a missed line did not name the nearest printed one '
+                  'and the log files: {}'.format(detail))
+            return 1
+
+        # A router port another process serves is used, no router is started, and a
+        # failure names it, and whether it stopped.
+        global ROUTER_PORT
+        saved_port = ROUTER_PORT
+        foreign = {
+            'name': 'foreign-router', 'timeout': 15, 'router': True,
+            'procs': [{'binary': provider, 'name': 'provider',
+                       'expect': ['provider: never printed']},
+                      {'binary': quitter, 'name': 'consumer'}]}
+        try:
+            for stops in (False, True):
+                listener = socket.socket()
+                listener.bind(('127.0.0.1', 0))
+                listener.listen(4)
+                ROUTER_PORT = listener.getsockname()[1]
+                if stops:
+                    threading.Thread(target=lambda: (listener.accept()[0].close(),
+                                                     listener.close()),
+                                     daemon=True).start()
+                passed, _, detail = run_scenario(foreign, [root], False, True)
+                if not stops:
+                    listener.close()
+                stopped = ', and it stopped during the scenario' in detail
+                if passed or 'was not started by this run' not in detail \
+                        or stopped != stops:
+                    print('self-test FAILED: a router this run did not start was not '
+                          'used and named: {}'.format(detail))
+                    return 1
+        finally:
+            ROUTER_PORT = saved_port
+
+        quiet = busy_verdict(0.3, 10.0, {'a': 'step one\n'}) or \
+            busy_verdict(0.25, 0.3, {'a': 'step one\n'})
+        busy = busy_verdict(8.0, 10.0, {'a': 'x\nstep two\nstep two\n', 'b': 'y\n'})
+        if quiet is not None or busy is None or '"step two" 2 times' not in busy:
+            print('self-test FAILED: a busy scenario is not told from a quiet one: {} / {}'
+                  .format(quiet, busy))
+            return 1
+
+        print('self-test ok: 15 case(s): end of input, an unfired stop, a fired stop, '
+              'a peer left running by a stop, '
+              'an exit failure naming an open expectation, a stop on the last line of an '
+              'exited lead, a stop too late for the lead, '
               'output pressure, a scenario that asserts nothing, a lead that stopped '
-              'on its own failure, lines expected of the wrong process')
+              'on its own failure, a stop missed by a failed lead, lines expected of '
+              'the wrong process, the nearest '
+              'line to a miss, a router this run did not start, a busy scenario')
         return 0
     finally:
         shutil.rmtree(root, ignore_errors=True)
@@ -1044,7 +1363,7 @@ def newer_than_binaries(scenarios, build_dirs, root):
 
     A pass proves the binaries, not the tree. Without this the reader has to run the
     build again to find out whether the two still agree, which is a second verdict
-    for the same question.
+    for the same question. The reference is the newest binary, as in stale_binaries().
     """
     built = []
     for scenario in scenarios:
@@ -1057,20 +1376,20 @@ def newer_than_binaries(scenarios, build_dirs, root):
                     pass
     if not built:
         return []
-    oldest = min(built)
+    newest = max(built)
     changed = []
     for base, _dirs, names in os.walk(os.path.join(root, 'src')):
         for name in names:
             path = os.path.join(base, name)
             try:
-                if os.path.getmtime(path) > oldest:
+                if os.path.getmtime(path) > newest:
                     changed.append(os.path.relpath(path, root).replace(os.sep, '/'))
             except OSError:
                 pass
     for name in dialect('SPEC_FILES', ()):
         path = os.path.join(root, name)
         try:
-            if os.path.exists(path) and os.path.getmtime(path) > oldest:
+            if os.path.exists(path) and os.path.getmtime(path) > newest:
                 changed.append(name)
         except OSError:
             pass
@@ -1168,9 +1487,15 @@ def main():
         if not args.json:
             for note in lint_scenario(scenario):
                 print('note  {:24} {}'.format(scenario.get('name', 'unnamed'), note))
+        observed, before, started = {}, child_cpu(), time.time()
         passed, name, detail = run_scenario(scenario, build_dirs,
                                             args.verbose, args.quiet or args.json,
-                                            keep=args.keep)
+                                            observed, keep=args.keep)
+        busy = busy_verdict(None if before is None else child_cpu() - before,
+                            time.time() - started, observed.get('outputs')) \
+            if passed else None
+        if busy:
+            passed, detail = False, busy
         results.append({'name': name, 'passed': passed, 'detail': detail})
         if not args.json:
             print('{:5} {:24} {}'.format('PASS' if passed else 'FAIL', name, detail))

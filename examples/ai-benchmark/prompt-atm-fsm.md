@@ -108,6 +108,20 @@ to the console so a person can read what happened:
    `0000`, `1111`, `2222`; expect the card to be retained, and any further
    request on that card to be refused because there is no card in the machine
 
+Once a step's expectation has held, the customer prints its line below, with this
+exact wording, alone or at the end of a line, nothing after it:
+
+```lines
+step 1: refused twice, 2 then 1 attempts left, then logged in
+step 2: balance 500
+step 3: refused, not a multiple of the note value
+step 4: refused, over the daily limit
+step 5: withdrew 80, balance 420, withdrawn today 80
+step 6: current PIN accepted after one wrong attempt
+step 7: session ended
+step 8: card retained, further request refused: no card
+```
+
 Then exit. **Exit code 0 if every expectation held, non-zero otherwise**, printing
 which step failed. The customer program must survive the ATM being started after it.
 
@@ -124,7 +138,9 @@ they need a second run of their own:
 
 **An acceptance item counts as passing only when the output of one of those runs shows
 it.** An item you believe you implemented but never observed is reported as not
-passing: naming the ones you could not prove is worth more than a full score.
+passing: naming the ones you could not prove is worth more than a full score. An item
+marked (code) is one no output can show: count it apart, as present only where you can
+name the file and the class or function that does it.
 
 ### Acceptance checklist
 
@@ -144,11 +160,11 @@ framework, against this list:
       own attempt count, independent of any attempts already used at login
 - [ ] **three wrong PINs in any single check retain the card and end the session**
 - [ ] a retained card cannot be used again for the rest of the run
-- [ ] the login check and the PIN-change re-check run the same PIN-check logic,
+- [ ] (code) the login check and the PIN-change re-check run the same PIN-check logic,
       written once, each with its own attempt counter
-- [ ] the session's states and transitions are declared in one place, by name, and
+- [ ] (code) the session's states and transitions are declared in one place, by name, and
       the running code follows that declaration rather than restating it
-- [ ] the PIN check is one nested state entered from both places, not two copies and
+- [ ] (code) the PIN check is one nested state entered from both places, not two copies and
       not one copy steered by a flag
 - [ ] a request that arrives in a state that does not answer it is refused, and the
       refusal names the reason -- no input is silently ignored
@@ -156,7 +172,7 @@ framework, against this list:
 - [ ] neither program waits more than 20 seconds for something that never arrives
 - [ ] if one side goes away mid-scenario, the other reports it and exits non-zero
 - [ ] the scenario exits 0, and non-zero when an expectation fails
-- [ ] no busy-waiting and no sleeping inside a message handler
+- [ ] (code) no busy-waiting and no sleeping inside a message handler
 
 ---
 
@@ -196,7 +212,7 @@ End with this table and nothing longer.
 |---|---|
 | build-and-fix cycles | |
 | run-and-fix cycles | |
-| acceptance items passing | n of the checklist above, and which failed |
+| acceptance items passing | n of the unmarked items shown by the output, and which were not; c of the (code) items, each with where |
 | checker findings, first run | name the checker, or "none run" |
 | files you opened that the documentation did not route you to | names, or "none" |
 

@@ -33,11 +33,13 @@ added for you.
 """
 import argparse
 import contextlib
+import copy
 import difflib
 import json
 import os
 import re
 import sys
+import textwrap
 import xml.etree.ElementTree as ET
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -84,11 +86,17 @@ NOTE = '#|'
 
 # Every key each kind of spec object may carry. Any other key is refused.
 KEYS = {
-    'spec': ('datatypes', 'interfaces', 'machines'),
+    'spec': ('datatypes', 'interfaces', 'machines', 'programs', 'deployments', 'sources'),
+    'source': ('file', 'description'),
+    'deployment': ('name', 'description', 'place'),
+    'program': ('name', 'description', 'components'),
+    'component': ('name', 'provides', 'roles', 'drives', 'watches', 'role', 'uses', 'thread',
+                  'connect_seconds', 'description'),
+    'use': ('service', 'role', 'roles', 'connect_seconds'),
     'datatypes': ('name', 'description', 'version', 'declare', 'includes'),
     'interface': ('name', 'category', 'description', 'version', 'types', 'attributes',
                   'requests', 'responses', 'broadcasts', 'constants', 'includes',
-                  'machine', 'steps', 'driver', 'timers'),
+                  'machine', 'steps', 'driver', 'timers', 'workers'),
     'driver': ('connect_seconds', 'reconnect_seconds', 'stall_ticks'),
     'machine': ('name', 'description', 'version', 'threading', 'types', 'attributes',
                 'constants', 'triggers', 'timers', 'events', 'actions', 'conditions',
@@ -103,13 +111,15 @@ KEYS = {
     'constant': ('name', 'type', 'value', 'description'),
     'include': ('name', 'description', 'alias', 'version'),
     'timer': ('name', 'timeout', 'repeat', 'description'),
-    'service timer': ('name', 'timeout', 'repeat', 'start', 'description'),
+    'service timer': ('name', 'timeout', 'repeat', 'start', 'instances', 'description'),
+    'worker': ('name', 'period_ms', 'start', 'events', 'description'),
+    'worker event': ('name', 'to', 'params', 'description'),
     'condition': ('name', 'description', 'params', 'implement', 'body', 'return'),
     'submachine': ('name', 'path', 'version', 'description'),
     'state': ('name', 'kind', 'depth', 'description', 'entry', 'exit', 'transitions',
               'initial', 'final_event', 'states', 'submachine'),
     'transition': ('on', 'to', 'guard', 'set', 'do', 'description'),
-    'step': ('name', 'description', 'send', 'args', 'await', 'wait'),
+    'step': ('name', 'description', 'role', 'send', 'args', 'await', 'until', 'wait'),
 }
 TYPE_KEYS = {
     'Enumeration': ('name', 'kind', 'description', 'values', 'derives'),
@@ -129,13 +139,16 @@ SHAPES = dict(
         'actions', 'all', 'answer', 'any', 'attributes', 'broadcasts', 'conditions',
         'constants', 'declare', 'do', 'entry', 'events', 'exit', 'fields', 'includes',
         'interfaces', 'machines', 'params', 'requests', 'responses', 'states', 'steps',
-        'submachines', 'timers', 'transitions', 'triggers', 'types', 'values')] +
+        'submachines', 'timers', 'transitions', 'triggers', 'types', 'values',
+        'programs', 'components', 'uses', 'roles', 'deployments', 'workers', 'sources')] +
     [(key, (str, 'a string')) for key in (
         'alias', 'answer_description', 'await', 'body', 'call', 'category', 'container',
         'derives', 'description', 'final_event', 'header', 'implement', 'initial', 'key',
         'kind', 'location', 'name', 'namespace', 'notify', 'object', 'of', 'on', 'path',
-        'return', 'send', 'stop', 'threading', 'to', 'type')] +
-    [(key, (dict, 'an object, {...}')) for key in ('datatypes', 'driver', 'set')])
+        'return', 'send', 'stop', 'threading', 'to', 'type', 'provides', 'drives',
+        'watches', 'role', 'service', 'thread', 'file')] +
+    [(key, (dict, 'an object, {...}')) for key in ('datatypes', 'driver', 'set', 'until',
+                                                     'place')])
 SINGULAR = {'attributes': 'attribute', 'requests': 'request', 'responses': 'response',
             'broadcasts': 'broadcast', 'constants': 'constant', 'includes': 'include',
             'params': 'parameter', 'answer': 'answer parameter', 'declare': 'type',
@@ -143,7 +156,9 @@ SINGULAR = {'attributes': 'attribute', 'requests': 'request', 'responses': 'resp
             'timers': 'timer', 'triggers': 'trigger', 'actions': 'action',
             'conditions': 'condition', 'submachines': 'submachine', 'steps': 'step',
             'states': 'state', 'interfaces': 'service interface', 'machines': 'state machine',
-            'datatypes': 'data type document'}
+            'datatypes': 'data type document', 'programs': 'program',
+            'components': 'component', 'uses': 'used service', 'workers': 'worker',
+            'sources': 'source file'}
 
 
 # ----------------------------------------------------------------------------- shared
@@ -190,6 +205,7 @@ def build_dtml(spec):
         fail('{} declares nothing'.format(where))
     vocab = Vocabulary()
     vocab.declare(set(t['name'] for t in types))
+    vocab.own = spec['name']
 
     writer = Writer()
     writer.add(0, '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>')
@@ -331,7 +347,7 @@ def build_siml(spec, shared_space, shared_names, prefix=''):
 class Machine:
     """The machine spec, checked, with an identifier reserved for everything named."""
 
-    def __init__(self, spec, shared_space, shared_names, prefix=''):
+    def __init__(self, spec, shared_space, shared_names, prefix='', hosted=False):
         if not spec.get('name'):
             fail('every entry of "machines" needs a "name"')
         self.spec = spec
@@ -347,7 +363,7 @@ class Machine:
         self.actions = named_list(spec, 'actions', self.where)
         self.conditions = named_list(spec, 'conditions', self.where)
         self.submachines = named_list(spec, 'submachines', self.where)
-        if not self.actions and not self.conditions:
+        if not self.actions and not self.conditions and not hosted:
             fail('{} has no action, so it generates nothing to implement'.format(self.where))
 
         self.attribute_names = unique(self.attributes, self.where)
@@ -376,6 +392,8 @@ class Machine:
             fail('{} has no "states"'.format(self.where))
         self.state_names = set()
         collect_states(self.states, self.state_names, self.where)
+        self.parents, self.kinds = {}, {}
+        collect_parents(self.states, None, self.parents, self.kinds)
 
         # A "final_event" is by definition an event this machine sends to itself, so
         # declaring it twice is bookkeeping. Anything a state ends on and "events" does
@@ -419,6 +437,49 @@ def final_events(states):
         found.extend(n for n in final_events(state.get('states') or [])
                      if n not in found)
     return found
+
+
+def collect_parents(states, parent, parents, kinds):
+    """The composite holding each state, None for the top level, and each state's kind."""
+    for state in states:
+        parents[state.get('name')] = parent
+        kinds[state.get('name')] = state.get('kind')
+        collect_parents(state.get('states') or [], state.get('name'), parents, kinds)
+
+
+def ancestry(machine, name):
+    """The state and every composite holding it, innermost first."""
+    chain = [name]
+    while machine.parents.get(chain[-1]):
+        chain.append(machine.parents[chain[-1]])
+    return chain
+
+
+def target_remedy(machine, owner, target):
+    """What a "to" that names no state should be instead."""
+    name = re.split(r'[/\\]', target)[-1]
+    lead = '"to" names one state, never a path.' if name != target else ''
+    if name not in machine.state_names:
+        close = difflib.get_close_matches(name, sorted(machine.state_names), 1)
+        return ' '.join(filter(None, [lead, 'Did you mean "{}"?'.format(close[0]) if close else '']))
+    lead += ' ' if lead else ''
+    for source in ancestry(machine, owner):
+        for holder in ancestry(machine, name):
+            if machine.parents.get(source) != machine.parents.get(holder):
+                continue
+            marker = (machine.kinds.get(name) == 'history'
+                      and machine.parents.get(name) == holder)
+            if source == owner and (holder == name or marker):
+                return lead + 'Write "{}".'.format(name)
+            if holder == name:
+                return (lead + '"{0}" is not beside "{1}": to leave "{2}" from inside it, '
+                        'put this transition on "{2}", whose transitions fire from anywhere '
+                        'inside it. A transition of the state inside, on the same "on", is '
+                        'tried first.'.format(name, owner, source))
+            return (lead + 'A transition enters a composite only through the composite: '
+                    'target "{}", which holds "{}" and starts at its "initial", from a state beside '
+                    'it.'.format(holder, name))
+    return lead.strip()
 
 
 def collect_states(states, seen, where):
@@ -735,8 +796,9 @@ def write_transition(machine, writer, depth, transition, owner):
 
     target = transition.get('to')
     if target is not None and target not in machine.state_names:
-        fail('{} goes to "{}", which is not a state of {}'
-             .format(where, target, machine.where))
+        remedy = target_remedy(machine, owner, target)
+        fail('{} goes to "{}", which is not a state of {}.{}'
+             .format(where, target, machine.where, ' ' + remedy if remedy else ''))
     head = '<Transition ID="{}" Kind="{}" StimulusKind="{}" Stimulus="{}"'.format(
         writer.ident(), 'External' if target else 'Internal', kind_of, esc(stimulus_name))
     if target:
@@ -778,8 +840,11 @@ def write_state(machine, writer, depth, state):
         head += ' HistoryDepth="{}"'.format(depth_of)
     if state.get('submachine'):
         if state['submachine'] not in machine.submachine_names:
-            fail('state "{}" hosts "{}", which is not in "submachines"'
-                 .format(state['name'], state['submachine']))
+            fail('state "{}" hosts "{}", which is neither another machine of this design '
+                 'nor in "submachines". A .fsml the project holds is listed as '
+                 '"submachines": [{{"name": "{}", "version": "1.0.0", "path": "<its .fsml, '
+                 'from the project root>"}}]'
+                 .format(state['name'], state['submachine'], state['submachine']))
         head += ' Submachine="{}"'.format(esc(state['submachine']))
     if state.get('final_event'):
         if state['final_event'] not in machine.event_names:
@@ -831,8 +896,8 @@ def write_state_list(machine, writer, depth, states, initial, start_name, owner)
     writer.add(depth, '</StateList>')
 
 
-def build_fsml(spec, shared_space, shared_names, prefix=''):
-    machine = Machine(spec, shared_space, shared_names, prefix)
+def build_fsml(spec, shared_space, shared_names, prefix='', hosted=False):
+    machine = Machine(spec, shared_space, shared_names, prefix, hosted)
     writer = Writer()
     vocab = machine.vocab
 
@@ -894,7 +959,8 @@ def build_fsml(spec, shared_space, shared_names, prefix=''):
                 fail('timer "{}" of {} waits "{}"; a timeout is milliseconds, at least 1'
                      .format(entry['name'], machine.where, timeout))
             head = '<Timer ID="{}" Name="{}" Timeout="{}" Repeat="{}"'.format(
-                writer.ident(), esc(entry['name']), esc(timeout), esc(entry.get('repeat', 1)))
+                writer.ident(), esc(entry['name']), esc(timeout),
+                esc(timer_repeats(spec)[entry['name']]))
             if entry.get('description'):
                 writer.add(2, head + '>')
                 described(writer, 3, entry)
@@ -932,8 +998,9 @@ def build_fsml(spec, shared_space, shared_names, prefix=''):
     hosted = []
     for entry in machine.submachines:
         if not entry.get('path'):
-            fail('submachine "{}" of {} has no "path" naming its .fsml document'
-                 .format(entry['name'], machine.where))
+            fail('submachine "{}" of {} has no "path" naming its .fsml document, and no '
+                 'machine of this design is called "{}"'
+                 .format(entry['name'], machine.where, entry['name']))
         hosted.append({'name': entry['path'], 'alias': entry['name'],
                        'version': entry.get('version', '1.0.0'),
                        'description': entry.get('description')})
@@ -1075,6 +1142,9 @@ def check_shape(project):
                           ('constants', 'constant'), ('includes', 'include'),
                           ('steps', 'step'), ('timers', 'service timer')):
             check_list(spec, key, kind, where)
+        for worker in check_list(spec, 'workers', 'worker', where):
+            check_list(worker, 'events', 'worker event', 'worker "{}" of {}'
+                       .format(worker.get('name', '?'), where))
     for spec in project['machines']:
         if not isinstance(spec, dict):
             continue
@@ -1087,6 +1157,29 @@ def check_shape(project):
                           ('submachines', 'submachine'), ('includes', 'include')):
             check_list(spec, key, kind, where)
         check_states(spec.get('states'), where)
+    check_sources(project)
+
+
+# A file of the project's own under src/: <dir>/<Name>.hpp or .cpp, or <Name>.hpp flat.
+SOURCE_FILE = re.compile(r'^(?:[A-Za-z_]\w*/)?[A-Za-z_]\w*\.(?:hpp|h|cpp)$')
+
+
+def check_sources(project):
+    """Every "sources" entry names one file of the project's own, once."""
+    seen = set()
+    for entry in project.get('sources') or []:
+        if not isinstance(entry, dict):
+            fail('"sources" is a list of objects: {"file": "<dir>/<Name>.hpp", '
+                 '"description": "..."}')
+        check_keys(entry, KEYS['source'], 'a file of "sources"')
+        name = entry.get('file')
+        if not isinstance(name, str) or not SOURCE_FILE.match(name):
+            fail('"sources" names {}: a file is "<dir>/<Name>.hpp" or "<dir>/<Name>.cpp", '
+                 '<dir> the folder under src/ of the program that compiles it'
+                 .format(json.dumps(name)))
+        if name in seen:
+            fail('"sources" names "{}" twice'.format(name))
+        seen.add(name)
 
 
 def entry_names(owner, key):
@@ -1355,25 +1448,110 @@ def settle_start(level, owner):
         settle_start(state, state.get('name'))
 
 
+# The spacing a role written as a phrase carries where its identifier has "_".
+ROLE_SPACING = re.compile(r'[\s-]+')
+# Each role written as a phrase, by the identifier it was read as.
+RENAMED_ROLES = {}
+
+
+def role_identifier(role):
+    """A role as a C identifier: its spaces and dashes become "_"."""
+    return ROLE_SPACING.sub('_', role.strip()) if isinstance(role, str) else role
+
+
+def settle_roles(spec):
+    """Read every role of the spec as a C identifier, and record each one renamed."""
+    def one(role):
+        named = role_identifier(role)
+        if named != role:
+            RENAMED_ROLES.setdefault(named, []).append(role)
+        return named
+
+    def both(owner):
+        if isinstance(owner.get('role'), str):
+            owner['role'] = one(owner['role'])
+        if isinstance(owner.get('roles'), list):
+            owner['roles'] = [one(role) for role in owner['roles']]
+
+    for program in listed(spec, 'programs'):
+        for component in listed(program, 'components'):
+            both(component)
+            for use in listed(component, 'uses'):
+                both(use)
+    for interface in listed(spec, 'interfaces'):
+        for step in listed(interface, 'steps'):
+            both(step)
+
+
 def load_spec(path):
     """One spec file as the generator reads it, and how many samples it left untouched."""
+    twice = []
+
+    def unique(pairs):
+        keys = [key for key, _ in pairs]
+        twice.extend((dict(pairs).get('name'), key) for key in dict.fromkeys(keys)
+                     if keys.count(key) > 1)
+        return dict(pairs)
+
     try:
         with open(path, encoding='utf-8') as handle:
-            raw = json.load(handle)
+            raw = json.load(handle, object_pairs_hook=unique)
+    except json.JSONDecodeError as problem:
+        before = problem.doc[:problem.pos].rstrip('\r\n').split('\n')[-1][-60:]
+        after = problem.doc[problem.pos:problem.pos + 20].split('\n')[0]
+        fail('cannot read {}: {}, in: {}{}'.format(path, problem, before, after))
     except (OSError, ValueError) as problem:
         fail('cannot read {}: {}'.format(path, problem))
+    if twice:
+        fail('{} writes a key twice in one object: {}. JSON keeps only the last of them, '
+             'so everything under the first is lost. Write each key once, its entries '
+             'merged into one list.'
+             .format(path, '; '.join('"{}" in {}'.format(
+                 key, '"{}"'.format(name) if isinstance(name, str) else 'an object')
+                 for name, key in twice)))
     if not isinstance(raw, dict):
         fail('{} is not a spec object'.format(path))
     skipped = []
     spec = settle(raw, skipped)
+    settle_roles(spec)
     settle_awaits(spec)
     for machine in listed(spec, 'machines'):
         settle_start(machine, machine.get('name'))
+    settle_submachines(listed(spec, 'machines'))
     if NOTE in raw and not spec:
         fail('{} is still the template: nothing in it is filled. Give each document the '
              'task needs a "name" and its entries, and delete a section it does not need.'
              .format(path))
     return spec, len(skipped)
+
+
+def settle_submachines(machines):
+    """List in "submachines" every machine of these that a state of another one hosts.
+
+    The entry takes the hosted machine's version; its path is settled later, as for an
+    entry written by hand. A name that is no machine of these is left to be refused.
+    """
+    def hosts(states):
+        for state in states if isinstance(states, list) else []:
+            if isinstance(state, dict):
+                if isinstance(state.get('submachine'), str):
+                    yield state['submachine']
+                yield from hosts(state.get('states'))
+
+    designed = dict((spec['name'], spec) for spec in machines
+                    if isinstance(spec.get('name'), str))
+    for spec in machines:
+        entries = spec.get('submachines')
+        if entries is not None and not isinstance(entries, list):
+            continue
+        listed_names = set(entry.get('name') if isinstance(entry, dict) else entry
+                           for entry in entries or [] if isinstance(entry, (dict, str)))
+        for name in hosts(spec.get('states')):
+            if name in designed and name != spec.get('name') and name not in listed_names:
+                entries = spec.setdefault('submachines', [])
+                entries.append({'name': name,
+                                'version': designed[name].get('version', '1.0.0')})
+                listed_names.add(name)
 
 
 def render(node, depth=0, lead=0):
@@ -1405,8 +1583,10 @@ def render(node, depth=0, lead=0):
     return '{{\n{}\n{}}}'.format(',\n'.join(lines), pad)
 
 
-def write_template(path):
+def write_template(path, features=None):
     """Write the template to path, unless a file there already carries work.
+
+    features names the optional blocks it holds; None writes every one.
 
     Returns "wrote", or "work" for a file that is not an untouched template, which is
     never replaced.
@@ -1421,17 +1601,22 @@ def write_template(path):
             return 'work'
     os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
     with open(path, 'w', encoding='utf-8', newline='\n') as handle:
-        handle.write(render(TEMPLATE) + '\n')
+        handle.write(render(template_for(features)) + '\n')
     return 'wrote'
 
 
 def merge(specs):
     """One project from every spec file given."""
-    project = {'datatypes': None, 'interfaces': [], 'machines': []}
+    project = {'datatypes': None, 'interfaces': [], 'machines': [], 'programs': [],
+               'deployments': [], 'sources': []}
     for path, spec in specs:
         if not isinstance(spec, dict):
             fail('{} is not a spec object'.format(path))
         check_keys(spec, KEYS['spec'], path)
+        shared = spec.get('datatypes')
+        # A data type block that declares and includes nothing is the same as none.
+        if isinstance(shared, dict) and not shared.get('declare') and not shared.get('includes'):
+            spec = dict(spec, datatypes=None)
         if spec.get('datatypes'):
             if project['datatypes']:
                 fail('{} declares a second "datatypes" document; a project has one'
@@ -1439,9 +1624,336 @@ def merge(specs):
             project['datatypes'] = spec['datatypes']
         project['interfaces'].extend(spec.get('interfaces') or [])
         project['machines'].extend(spec.get('machines') or [])
+        project['programs'].extend(spec.get('programs') or [])
+        project['deployments'].extend(spec.get('deployments') or [])
+        project['sources'].extend(spec.get('sources') or [])
     if not (project['datatypes'] or project['interfaces'] or project['machines']):
         fail('the spec describes no document')
     return project
+
+
+def program_components(project):
+    """Every component of "programs", as (program, component, kind, service), in order."""
+    found = []
+    for program in listed(project, 'programs'):
+        for component in listed(program, 'components'):
+            kinds = [kind for kind in COMPONENT_KINDS if component.get(kind)]
+            found.append((program, component, kinds[0] if len(kinds) == 1 else None,
+                          component.get(kinds[0]) if len(kinds) == 1 else None))
+    return found
+
+
+# What a component of a program does with its service, exactly one per component.
+COMPONENT_KINDS = ('provides', 'drives', 'watches')
+
+
+def component_names(project):
+    """Every object a deployment can place, by name: provided roles and named components.
+
+    Each maps to (program, component, the role when it is one instance of a provider).
+    """
+    found = {}
+    for program, component, kind, service in program_components(project):
+        if kind == 'provides':
+            for role in component.get('roles') or [str(service) + 'Provider']:
+                found[role] = (program, component, role)
+        if component.get('name'):
+            found[component['name']] = (program, component, None)
+    return found
+
+
+def placement(project, deployment=None):
+    """Where every object runs in one deployment: name -> (program name, thread or None).
+
+    Without a deployment it is the "programs" block itself.
+    """
+    placed = {}
+    for name, (program, component, _) in component_names(project).items():
+        placed[name] = (program.get('name'), component.get('thread'))
+    for name, target in ((deployment or {}).get('place') or {}).items():
+        program, _, thread = str(target).partition('/')
+        placed[name] = (program, thread or None)
+    return placed
+
+
+def check_deployments(project):
+    """Every deployment names objects that exist and programs that exist."""
+    deployments = project.get('deployments') or []
+    if not deployments:
+        return
+    if not project.get('programs'):
+        fail('"deployments" moves the objects of "programs", and the design has none')
+    programs = set(p.get('name') for p in listed(project, 'programs'))
+    objects = component_names(project)
+    names = set()
+    for deployment in deployments:
+        if not isinstance(deployment, dict):
+            fail('a deployment is {"name": "...", "place": {"<role or component name>": '
+                 '"<program>" or "<program>/<thread>"}}')
+        name = deployment.get('name')
+        here = 'deployment "{}"'.format(name)
+        check_keys(deployment, KEYS['deployment'], here)
+        if not isinstance(name, str) or not IDENTIFIER.match(name) or name in names \
+                or name == 'default':
+            fail('{} needs a name of its own a C identifier can carry, other than '
+                 '"default", which is the "programs" block itself: it is what '
+                 '--deployment selects'.format(here))
+        names.add(name)
+        for moved, target in (deployment.get('place') or {}).items():
+            if moved not in objects:
+                fail('{} places "{}", which is no role a component provides and no '
+                     'component "name". It can place: {}'
+                     .format(here, moved, ', '.join(sorted(objects))))
+            program, _, thread = str(target).partition('/')
+            if program not in programs:
+                fail('{} places "{}" in "{}", which is no program. The programs: {}'
+                     .format(here, moved, target, ', '.join(sorted(programs))))
+            if thread and not THREAD_NAME.match(thread):
+                fail('{} places "{}" in the thread "{}", which a thread name cannot '
+                     'carry: letters, digits, _ and -'.format(here, moved, thread))
+
+
+def provided_roles(project):
+    """The roles each service is provided as, by service name."""
+    found = {}
+    for _, component, kind, service in program_components(project):
+        if kind == 'provides':
+            found.setdefault(service, []).extend(component.get('roles')
+                                                 or [str(service) + 'Provider'])
+    return found
+
+
+def consumed_role(project, service):
+    """The provider a consumer naming no role talks to: the one role of that service."""
+    roles = provided_roles(project).get(service) or []
+    return roles[0] if len(roles) == 1 else str(service) + 'Provider'
+
+
+def component_uses(component, project=None):
+    """The services a component uses, as (service, [roles]), a bare name as its default."""
+    found = []
+    for entry in component.get('uses') or []:
+        if isinstance(entry, str):
+            entry = {'service': entry}
+        if not isinstance(entry, dict):
+            continue
+        service = entry.get('service')
+        roles = entry.get('roles') or ([entry['role']] if entry.get('role') else
+                                       [consumed_role(project, service) if project
+                                        else str(service) + 'Provider'])
+        found.append((service, roles))
+    return found
+
+
+def connect_seconds(component):
+    """The seconds each used service's first connection is waited for, 0 for ever."""
+    found = {}
+    for entry in component.get('uses') or []:
+        if isinstance(entry, dict) and entry.get('connect_seconds'):
+            service = entry.get('service')
+            found[service] = max(found.get(service, 0), entry['connect_seconds'])
+    return found
+
+
+def check_programs(project):
+    """The "programs" block: every name resolves, and every role is provided once.
+
+    Each program and each component is checked on its own and every problem is reported
+    in one refusal. The roles are checked against each other only when every component
+    could be read, so one mistake is not reported a second time as a missing role.
+    """
+    programs = project.get('programs') or []
+    if not programs:
+        return
+    services = set(entry.get('name') for entry in project['interfaces']
+                   if isinstance(entry, dict))
+    if not isinstance(programs, list) or not all(isinstance(p, dict) for p in programs):
+        fail('"programs" is a list of objects, one per executable: '
+             '{"name": "...", "components": [...]}')
+    names, roles, provided, driven, problems = set(), {}, {}, [], []
+    read = True
+    for program in programs:
+        name = program.get('name')
+        here = 'program "{}"'.format(name)
+        with gathering(problems), contextlib.suppress(Refused):
+            check_keys(program, KEYS['program'], here)
+            if not isinstance(name, str) or not IDENTIFIER.match(name) \
+                    or name.lower() in names:
+                fail('{} needs a name of its own that a C identifier can carry: it names '
+                     'the executable and its folder under src/'.format(here))
+        names.add(str(name).lower())
+        components = program.get('components')
+        if not isinstance(components, list) or not components \
+                or not all(isinstance(c, dict) for c in components):
+            read = False
+            with gathering(problems), contextlib.suppress(Refused):
+                fail('{} lists no component. Each is {{"provides": "<Service>"}}, '
+                     '{{"drives": "<Service>"}} or {{"watches": "<Service>"}}'.format(here))
+            continue
+        for component in components:
+            with gathering(problems):
+                try:
+                    check_component(project, component, here, name, services, roles,
+                                    provided, driven, problems)
+                except Refused:
+                    read = False
+    if read:
+        for program, component, kind, service in program_components(project):
+            with gathering(problems), contextlib.suppress(Refused):
+                check_consumed_roles(project, program, component, kind, service, roles)
+    with gathering(problems), contextlib.suppress(Refused):
+        if len(driven) > 1:
+            fail('{} drive a scenario, and one component leads it. Make the others '
+                 '"watches"'.format(' and '.join(where for _, where in driven)))
+    for entry in project['interfaces'] if read else []:
+        if not isinstance(entry, dict):
+            continue
+        with gathering(problems), contextlib.suppress(Refused):
+            if entry.get('name') not in provided:
+                fail('no component of "programs" provides "{}". Every service the design '
+                     'declares runs in one program'.format(entry.get('name')))
+            if entry.get('steps') and not any(s == entry.get('name') for s, _ in driven):
+                fail('"{}" declares steps, and no component drives it. The steps run in '
+                     'the component that "drives" that service'.format(entry.get('name')))
+    if problems:
+        refuse(problems)
+
+
+def one_kind_form(component, kinds):
+    """The valid form of a component that names several of provides, drives and watches."""
+    if len(kinds) < 2:
+        return ('Another service it calls, waits on or reads goes in its "uses"')
+    keep = 'drives' if 'drives' in kinds else 'provides'
+    moved = [kind for kind in kinds if kind != keep]
+    role = component.get('role') or '<role>'
+    uses = ', '.join('{{"service": "{}", "role": "{}"}}'.format(component[kind], role)
+                     for kind in moved if kind != 'provides')
+    text = 'Keep "{}": "{}"'.format(keep, component[keep])
+    if uses:
+        text += ' and put {} in its "uses": [{}]; it calls, subscribes to and reads a used ' \
+                'service as a client'.format(' and '.join('"{}"'.format(component[kind])
+                                                          for kind in moved
+                                                          if kind != 'provides'), uses)
+    if 'provides' in moved:
+        text += ('; "{0}" gets a component of its own in this program, {{"provides": "{0}", '
+                 '"roles": [...], "thread": "..."}}, and this one names it in "uses". Its '
+                 'requests and broadcasts are the messages between the two'
+                 .format(component['provides']))
+    return text
+
+
+def check_component(project, component, here, name, services, roles, provided, driven,
+                    problems):
+    """One component of a program: its keys, its service, its roles and its "uses"."""
+    check_keys(component, KEYS['component'], 'a component of ' + here)
+    for key, pattern, kind in (('name', IDENTIFIER, 'a C identifier cannot carry'),
+                               ('thread', THREAD_NAME, 'a thread name cannot carry: '
+                                                       'letters, digits, _ and - only')):
+        value = component.get(key)
+        if value is not None and (not isinstance(value, str)
+                                  or not pattern.match(value)):
+            fail('a component of {} gives the {} {!r}, which {}'
+                 .format(here, key, value, kind))
+    kinds = [kind for kind in COMPONENT_KINDS if component.get(kind)]
+    if len(kinds) != 1:
+        fail('a component of {} names {}: each provides, drives or watches '
+             'exactly one service. {}'
+             .format(here, ' and '.join(kinds) or 'none of '
+                     '"provides", "drives" and "watches"', one_kind_form(component, kinds)))
+    kind, service = kinds[0], component[kinds[0]]
+    where = '{} "{}" of {}'.format(kind, service, here)
+    if service not in services:
+        fail('{} names a service the design does not declare. Its services: {}'
+             .format(where, ', '.join(sorted(s for s in services if s))))
+    if kind == 'provides':
+        given = component.get('roles') or [service + 'Provider']
+        if component.get('role'):
+            # Reported, and read as the instance it names, so the roles that consume it
+            # are checked in the same call.
+            problems.append('{} gives "role", which names a provider to use. A providing '
+                            'component names its own instances with "roles"'.format(where))
+            given = [component['role']]
+        if service in provided:
+            fail('{} provides it a second time, in program "{}" too. One '
+                 'component provides a service; several instances of it are '
+                 'its "roles"'.format(where, provided[service]))
+        provided[service] = name
+        for role in given:
+            if not isinstance(role, str) or not IDENTIFIER.match(role):
+                fail('{} gives the role {!r}: a role is a name a C identifier '
+                     'can carry'.format(where, role))
+            if role in roles:
+                fail('{} gives the role "{}", which {} already has. A role '
+                     'names one provider in the whole system'
+                     .format(where, role, roles[role][1]))
+            roles[role] = (service, where)
+    elif component.get('roles'):
+        fail('{} gives "roles", which names the instances a component '
+             'provides. The instance it {} is "role", and the other instances '
+             'it talks to are "uses": [{{"service": "{}", "roles": [...]}}], one '
+             'client member each'.format(where, kind, service))
+    if kind == 'drives':
+        driven.append((service, where))
+    if 'connect_seconds' in component:
+        seconds = component['connect_seconds']
+        if kind != 'watches':
+            fail('{} carries "connect_seconds", which only a component that watches takes. '
+                 'A driving component waits as its interface\'s "driver" block says; a used '
+                 'service takes it on its "uses" entry'.format(where))
+        if isinstance(seconds, bool) or not isinstance(seconds, int) or seconds < 0:
+            fail('{} gives "connect_seconds" as {!r}. It is a whole number of seconds the '
+                 'first connection is waited for, and 0 waits for ever'.format(where, seconds))
+    for entry in component.get('uses') or []:
+        if isinstance(entry, dict):
+            if 'reconnect_seconds' in entry:
+                fail('a used service of {} carries "reconnect_seconds", which is not one of '
+                     'its keys. How long every client of "{}" waits for its provider to come '
+                     'back is the "reconnect_seconds" of that interface\'s "driver" block, one '
+                     'value per service. Its keys: {}'
+                     .format(where, entry.get('service'), ', '.join(KEYS['use'])))
+            check_keys(entry, KEYS['use'], 'a used service of ' + where)
+            seconds = entry.get('connect_seconds', 0)
+            if isinstance(seconds, bool) or not isinstance(seconds, int) or seconds < 0:
+                fail('a used service of {} gives "connect_seconds" as {!r}. It is a whole '
+                     'number of seconds the first connection is waited for, and 0 waits '
+                     'for ever'.format(where, seconds))
+        elif not isinstance(entry, str):
+            fail('a used service of {} is a service name or {{"service": ..., '
+                 '"role": ...}}'.format(where))
+    for used, used_roles in component_uses(component, project):
+        if used not in services:
+            fail('{} uses "{}", which the design does not declare'
+                 .format(where, used))
+        if used == service and kind == 'provides':
+            fail('{} uses the service it provides. Another instance of it is '
+                 'consumed by another component'.format(where))
+        if used == service and (component.get('role')
+                                or consumed_role(project, service)) \
+                in used_roles:
+            fail('{} uses the role it already {}: list the other instances '
+                 'only'.format(where, kind))
+
+
+def check_consumed_roles(project, program, component, kind, service, roles):
+    """Every role a component consumes is provided, and provides the service it names."""
+    where = '{} "{}" of program "{}"'.format(kind, service, program.get('name'))
+    wanted = []
+    if kind in ('drives', 'watches'):
+        wanted.append((service, component.get('role') or consumed_role(project, service)))
+    for used, used_roles in component_uses(component, project):
+        wanted += [(used, role) for role in used_roles]
+    for used, role in wanted:
+        if role not in roles:
+            own = kind in ('drives', 'watches') and used == service \
+                and role == component.get('role')
+            fail('{} consumes the role "{}", which no component provides.{} The roles '
+                 'provided: {}'.format(where, role,
+                                       ' Its "role" is the provider instance it talks '
+                                       'to, not a name of its own.' if own else '',
+                                       ', '.join(sorted(roles)) or 'none'))
+        if roles[role][0] != used:
+            fail('{} consumes "{}" as a {}, and that role provides {}'
+                 .format(where, role, used, roles[role][0]))
 
 
 def check_final_entry(project):
@@ -1511,9 +2023,38 @@ def paired(project):
     return pairs
 
 
+def top_machines(project):
+    """The machines no other machine hosts: each runs in a provider."""
+    hosted = set(inner.get('name') if isinstance(inner, dict) else inner
+                 for entry in listed(project, 'machines')
+                 for inner in entry.get('submachines') or [])
+    return [entry for entry in listed(project, 'machines') if entry.get('name') not in hosted]
+
+
+def provided_services(project):
+    """The services a program provides, or every service of a design with no programs."""
+    names = set(service for _, _, kind, service in program_components(project)
+                if kind == 'provides')
+    return [entry for entry in listed(project, 'interfaces')
+            if not names or entry.get('name') in names]
+
+
 def cross_check(project):
     """What only a service and the machine behind it can see: one name, one meaning."""
-    for interface, machine in paired(project):
+    pairs = paired(project)
+    services = provided_services(project)
+    if project.get('programs') and len(services) > 1:
+        bound = set(machine.get('name') for _, machine in pairs)
+        for machine in top_machines(project):
+            if machine.get('name') not in bound:
+                fail('the machine "{0}" runs in no provider: this design provides the '
+                     'interfaces {1}, and none names it. Decide which service controls '
+                     'what the machine describes and add "machine": "{0}" to the interface '
+                     'it implements; that provider owns and drives the machine, and its '
+                     'actions become worksheet sections'
+                     .format(machine.get('name', '?'),
+                             ', '.join(str(entry.get('name')) for entry in services)))
+    for interface, machine in pairs:
         types = {}
         for entry in (interface, machine):
             for attribute in named_list(entry, 'attributes', entry.get('name', '?')):
@@ -1530,17 +2071,21 @@ def cross_check(project):
 # The driver declares these two steps itself, around the ones a spec lists.
 STEP_RESERVED = ('start', 'done')
 IDENTIFIER = re.compile(r'^[A-Za-z_]\w*$')
+# The characters a thread name may hold.
+THREAD_NAME = re.compile(r'^[A-Za-z_][\w-]*$')
 
 
 # One tick of a stepped consumer, in seconds. The driver's stall watchdog counts
 # these, so a tick count and a second are the same number here.
 DRIVER_TICK_SECONDS = 1
 
-DRIVER_DEFAULTS = {'connect_seconds': 10, 'reconnect_seconds': 10, 'stall_ticks': 30}
+DRIVER_DEFAULTS = {'connect_seconds': 10, 'reconnect_seconds': 10}
 
-# Ticks a default stall watchdog outlasts the reconnect deadline and the longest
-# timed step by.
-STALL_MARGIN_TICKS = 10
+# The least default stall watchdog, in ticks.
+STALL_FLOOR_TICKS = 20
+
+# Ticks a default stall watchdog outlasts the longest timed step by.
+STALL_MARGIN_TICKS = 2
 
 
 def whole(value):
@@ -1551,8 +2096,8 @@ def whole(value):
 def driver_of(spec):
     """The driver settings of one interface, every key present.
 
-    A stall watchdog the spec does not name outlasts the reconnect deadline and every
-    timed step, so the default never ends a run that is still making progress.
+    A stall watchdog the spec does not name is at least the floor and the reconnect
+    deadline, and outlasts every timed step.
     """
     settings = dict(DRIVER_DEFAULTS)
     given = spec.get('driver') if isinstance(spec, dict) else None
@@ -1560,9 +2105,9 @@ def driver_of(spec):
         settings.update((key, value) for key, value in given.items() if key != NOTE)
     if not (isinstance(given, dict) and 'stall_ticks' in given):
         reconnect = settings['reconnect_seconds']
-        floor = [settings['stall_ticks']]
+        floor = [STALL_FLOOR_TICKS]
         if whole(reconnect) and reconnect > 0:
-            floor.append(reconnect + STALL_MARGIN_TICKS)
+            floor.append(reconnect)
         steps = spec.get('steps') if isinstance(spec, dict) else None
         for step in steps if isinstance(steps, list) else []:
             wait = step.get('wait') if isinstance(step, dict) else None
@@ -1573,28 +2118,21 @@ def driver_of(spec):
 
 
 def check_drivers(project):
-    """A consumer's deadlines are whole seconds, and its watchdog outlives them."""
+    """A consumer's deadlines and its watchdog are whole numbers."""
     for spec in project['interfaces']:
         given = spec.get('driver') if isinstance(spec, dict) else None
         if given is None:
             continue
         where = 'the driver of "{}"'.format(spec.get('name', '?'))
         if not isinstance(given, dict):
-            fail('{} is an object of {}'.format(where, ', '.join(sorted(DRIVER_DEFAULTS))))
+            fail('{} is an object of {}'.format(where, ', '.join(sorted(driver_of({})))))
         settings = driver_of(spec)
-        for key in sorted(DRIVER_DEFAULTS):
+        for key in sorted(settings):
             value = settings[key]
             if isinstance(value, bool) or not isinstance(value, int) or value < 0:
                 fail('{} gives "{}" as {!r}. It is a whole number of {}, and 0 turns it '
                      'off'.format(where, key, value,
                                   'ticks' if key == 'stall_ticks' else 'seconds'))
-        stall = settings['stall_ticks'] * DRIVER_TICK_SECONDS
-        reconnect = settings['reconnect_seconds']
-        if stall and reconnect and stall <= reconnect:
-            fail('{} lets the stall watchdog fire before the reconnect deadline '
-                 '({} tick(s) against {} second(s)): a provider that goes away would be '
-                 'reported by whichever timer wins. Make stall_ticks longer than '
-                 'reconnect_seconds'.format(where, settings['stall_ticks'], reconnect))
 
 
 def check_service_timers(project):
@@ -1626,6 +2164,100 @@ def check_service_timers(project):
             if not isinstance(entry.get('start', False), bool):
                 fail('{} gives start {!r}: true starts it with the component'
                      .format(here, entry.get('start')))
+            instances = entry.get('instances', 1)
+            if not whole(instances) or not 1 <= instances <= 64:
+                fail('{} gives instances {!r}: how many run at once, 1 to 64'
+                     .format(here, instances))
+            if instances > 1 and (repeat != 1 or entry.get('start')):
+                fail('{} runs {} instances: each fires once, so it takes "repeat": 1 '
+                     'and no "start"'.format(here, instances))
+
+
+WORKER_TARGETS = ('provider', 'worker')
+SNAKE_NAME = re.compile(r'^[a-z][a-z0-9_]*$')
+
+
+def check_workers(project):
+    """A provider's worker threads: names that become classes, a period or an event to
+    run on, events that say which way they go, and types the documents declare."""
+    shared = project.get('datatypes') if isinstance(project.get('datatypes'), dict) else None
+    space = shared.get('name') if shared else None
+    shared_names = set(entry_names(shared, 'declare')) if shared else set()
+    taken = set(entry_names(project, 'interfaces')) | set(entry_names(project, 'machines'))
+    taken |= set(name + suffix for name in entry_names(project, 'interfaces')
+                 for suffix in ('Provider', 'Consumer'))
+    taken |= shared_names | ({space} if space else set())
+    for spec in listed(project, 'interfaces'):
+        taken |= set(entry_names(spec, 'types'))
+    seen = set()
+    for spec in listed(project, 'interfaces'):
+        workers = spec.get('workers')
+        if not workers:
+            continue
+        owner = spec.get('name', '?')
+        if not isinstance(workers, list):
+            fail('the workers of "{}" are a list of worker objects'.format(owner))
+        _, vocab = vocabulary_for(spec, space, shared_names, owner)
+        events = set()
+        for worker in workers:
+            name = worker.get('name') if isinstance(worker, dict) else None
+            if not isinstance(name, str) or not IDENTIFIER.match(name):
+                fail('the workers of "{}": a worker is {{"name": "<ClassName>", "period_ms": '
+                     '<ms>, "events": [...]}}; got {!r}'.format(owner, worker))
+            here = 'worker "{}" of "{}"'.format(name, owner)
+            if name in seen:
+                fail('two workers of the design are named "{}". The name is the worker\'s '
+                     'class, so it is unique in the design'.format(name))
+            if name in taken:
+                fail('{} is named like a service, a machine, a type or a generated class. '
+                     'The name is the worker\'s class: choose another, such as "{}Worker"'
+                     .format(here, name))
+            seen.add(name)
+            if worker.get('start') not in (None, True, False):
+                fail('{} gives start {!r}: true or left out, its thread runs as long as the '
+                     'provider; false, a body starts it with start_<name>() and ends or '
+                     'replaces it with stop_<name>()'.format(here, worker.get('start')))
+            helper = re.sub(r'(?<=[a-z0-9])([A-Z])', r'_\1', name).lower()
+            clash = [timer.get('name') for timer in listed(spec, 'timers')
+                     if worker.get('start') is False and timer.get('name') == helper]
+            if clash:
+                fail('{} and timer "{}" would both have start_{}() and stop_{}(). Rename '
+                     'one of them'.format(here, clash[0], helper, helper))
+            period = worker.get('period_ms')
+            if period is not None and (not whole(period) or period <= 0):
+                fail('{} gives period_ms {!r}: a whole number of milliseconds above 0, or '
+                     'leave it out for a worker that only reacts to its events'
+                     .format(here, period))
+            inbound = False
+            for event in listed(worker, 'events'):
+                ename = event.get('name')
+                there = 'event "{}" of {}'.format(ename, here)
+                if not isinstance(ename, str) or not SNAKE_NAME.match(ename):
+                    fail('{}: an event name is snake_case, such as "readings" or '
+                         '"set_rate"; it becomes send_<name>() and on_<name>()'.format(there))
+                if ename in events:
+                    fail('{}: two events of the workers of "{}" are named "{}". The provider '
+                         'carries one send_{}() or on_{}(), so the name is unique among its '
+                         'workers'.format(there, owner, ename, ename, ename))
+                events.add(ename)
+                target = event.get('to')
+                if target not in WORKER_TARGETS:
+                    fail('{} goes "to" {!r}. It is "provider": the worker sends it and the '
+                         'provider\'s on_{} runs on the provider\'s thread; or "worker": the '
+                         'provider sends it and the worker\'s on_{} runs on the worker'
+                         .format(there, target, ename, ename))
+                inbound = inbound or target == 'worker'
+                for param in listed(event, 'params'):
+                    if not isinstance(param.get('name'), str) or \
+                            not IDENTIFIER.match(param.get('name')):
+                        fail('{}: a parameter is {{"name": "<identifier>", "type": "<type>"}}; '
+                             'got {!r}'.format(there, param))
+                    vocab.check(param.get('type'), 'parameter "{}" of {}'
+                                .format(param['name'], there))
+            if period is None and not inbound:
+                fail('{} has no period_ms and no event "to": "worker", so nothing ever runs '
+                     'on it. Give it period_ms for work every N ms, or an event the provider '
+                     'sends it'.format(here))
 
 
 def awaitable(spec):
@@ -1641,6 +2273,40 @@ def awaitable(spec):
     if answered:
         said.append('the answer of request {}'.format(', '.join(answered)))
     return '; '.join(said) or 'nothing: the service declares none'
+
+
+def step_roles(project, spec):
+    """The provider roles the driver of this service uses, each with its service, and
+    the roles it drives."""
+    used, driven = {}, set()
+    for _, component, kind, service in program_components(project):
+        if kind != 'drives' or service != spec.get('name'):
+            continue
+        driven.add(component.get('role') or consumed_role(project, service))
+        for name, roles in component_uses(component, project):
+            used.update((role, name) for role in roles)
+    return used, driven
+
+
+def step_service(project, spec, step, used, driven, here):
+    """The service a step sends to and awaits: the driven one, or the one its "role" uses."""
+    role = step.get('role')
+    if role is None or role in driven:
+        return spec, 'the service'
+    if not isinstance(role, str) or role not in used:
+        fail('{} names role {}, which the component driving "{}" does not use. {}. "role" '
+             'is a provider role in that component\'s "uses": the step sends to and '
+             'awaits that service instead; leave it out for "{}" itself'
+             .format(here, json.dumps(role), spec.get('name'),
+                     'It uses: ' + ', '.join(sorted(used)) if used
+                     else 'It uses no other service',
+                     spec.get('name')))
+    found = next((entry for entry in project['interfaces']
+                  if isinstance(entry, dict) and entry.get('name') == used[role]), None)
+    if found is None:
+        fail('{} names role "{}" of "{}", which the design does not declare'
+             .format(here, role, used[role]))
+    return found, '{}, the service of role "{}"'.format(found.get('name'), role)
 
 
 def check_sequences(project):
@@ -1660,25 +2326,30 @@ def check_sequences(project):
         where = 'the steps of "{}"'.format(spec.get('name', '?'))
         if not isinstance(steps, list):
             fail('{} are a list of step objects'.format(where))
-        requests = dict((entry.get('name'), entry) for entry in listed(spec, 'requests'))
-        awaited = set(entry.get('name') for key in ('responses', 'broadcasts', 'attributes')
-                      for entry in listed(spec, key))
-        awaited |= set(name for name, entry in requests.items()
-                       if 'answer' in entry or entry.get('response'))
+        used, driven = step_roles(project, spec)
         seen = set()
-        for step in steps:
+        owed = {}
+        for index, step in enumerate(steps):
             with gathering(problems), contextlib.suppress(Refused):
                 if not isinstance(step, dict):
                     fail('{} list {!r}, which is not a step object'.format(where, step))
                 name = step.get('name')
                 here = 'step "{}" of {}'.format(name, where)
+                svc, of = step_service(project, spec, step, used, driven, here)
+                requests = dict((entry.get('name'), entry)
+                                for entry in listed(svc, 'requests'))
+                awaited = set(entry.get('name')
+                              for key in ('responses', 'broadcasts', 'attributes')
+                              for entry in listed(svc, key))
+                awaited |= set(name for name, entry in requests.items()
+                               if 'answer' in entry or entry.get('response'))
+                owe_answers(step, requests, owed.setdefault(svc.get('name'), {}), where,
+                            steps[index + 1:])
                 if not isinstance(name, str) or not IDENTIFIER.match(name):
                     fail('{} has no name a C++ identifier can carry'.format(here))
                 key = name.replace('_', '').lower()
                 if key in STEP_RESERVED:
-                    fail('{} takes a name the driver declares itself ({}, underscores and '
-                         'case aside); name it after what it does'
-                         .format(here, ', '.join(key.capitalize() for key in STEP_RESERVED)))
+                    key += 'step'
                 if key in seen:
                     fail('{} is named twice: a step name is unique, underscores and case '
                          'aside'.format(here))
@@ -1686,8 +2357,9 @@ def check_sequences(project):
                 send, target, wait = step.get('send'), step.get('await'), step.get('wait') or 0
                 args = step.get('args') or {}
                 if send is not None and send not in requests:
-                    fail('{} sends "{}", which is not a request of the service. Its requests: '
-                         '{}'.format(here, send, ', '.join(sorted(requests)) or 'none'))
+                    fail('{} sends "{}", which is not a request of {}. Its '
+                         'requests: {}'.format(here, send, of, ', '.join(sorted(requests))
+                                               or 'none'))
                 if not isinstance(args, dict):
                     fail('{}: args is an object, {{"<parameter>": <C++ value>}}'.format(here))
                 params = [entry.get('name') for entry in listed(requests.get(send), 'params')]
@@ -1725,7 +2397,7 @@ def check_sequences(project):
                             and not given.startswith(('expr:', 'raw:')):
                         declared = str(entry.get('type'))
                         spelt = declared if '::' in declared \
-                            else '{}::{}'.format(spec.get('name'), declared)
+                            else '{}::{}'.format(svc.get('name'), declared)
                         qualifier, field = given.rsplit('::', 1)
                         if qualifier != spelt and not spelt.endswith('::' + qualifier):
                             fail('{} gives "{}" for a "{}", and "{}" is not that type. C++ '
@@ -1736,6 +2408,9 @@ def check_sequences(project):
                 if target is not None and wait:
                     fail('{} awaits "{}" and also waits {} ms. A step does one of the two: '
                          'split it into two steps'.format(here, target, wait))
+                if step.get('until') and target is None and send is None:
+                    fail('{} has "until" and awaits nothing: "until" holds a step until '
+                         'what it awaits arrives with those values'.format(here))
                 stall = driver_of(spec)['stall_ticks']
                 if whole(stall) and stall and wait >= stall * DRIVER_TICK_SECONDS * 1000:
                     fail('{} waits {} ms, and the stall watchdog of the driver ends the run after '
@@ -1743,13 +2418,63 @@ def check_sequences(project):
                          'than the wait, or leave stall_ticks out and the generator makes it '
                          'longer'.format(here, wait, stall))
                 if target is not None and target not in awaited:
-                    fail('{} awaits "{}", which is no response, broadcast or attribute of the '
-                         'service. It awaits one of: {}'
-                         .format(here, target, awaitable(spec)))
+                    fail('{} awaits "{}", which is no response, broadcast or attribute of '
+                         '{}. It awaits one of: {}'
+                         .format(here, target, of, awaitable(svc)))
                 if send is None and target is None and not wait:
                     fail('{} sends nothing, awaits nothing and waits for no time'.format(here))
     if problems:
         refuse(problems)
+
+
+def answer_of(requests, name):
+    """The answer a step's "send" or "await" names, when it names a request with one."""
+    entry = requests.get(name)
+    if not isinstance(entry, dict):
+        return name
+    return entry.get('response') or (name if 'answer' in entry else None)
+
+
+def owe_answers(step, requests, owed, where, later=()):
+    """Counts the answers still to come from steps that send and wait a time, and refuses
+    a step that awaits its own answer while one of them may arrive first. Awaiting any
+    other message settles them: the provider answered before it sent that. A step that
+    only awaits one of them, with no "until", collects every one the steps only awaiting
+    it right after it leave."""
+    send, target, wait = step.get('send'), step.get('await'), step.get('wait') or 0
+    mine = answer_of(requests, send) if send in requests else None
+    awaits = mine if target is None and send is not None and not wait \
+        else answer_of(requests, target) if target is not None else None
+    if mine is not None and awaits == mine:
+        earlier = owed.get(mine)
+        if earlier:
+            many = len(earlier) > 1
+            fail('step "{}" of {} sends "{}" and awaits its answer while the {} to {} {}, '
+                 'sent before it, may still come: this step would take {}. Let {} await '
+                 'its answer, or collect {} first in steps that only await "{}"'
+                 .format(step.get('name'), where, send, 'answers' if many else 'answer',
+                         'steps' if many else 'step',
+                         ', '.join('"{}"'.format(n) for n in earlier),
+                         'one of them' if many else 'that one',
+                         'each of them' if many else 'that step',
+                         'them' if many else 'it', send))
+        return
+    if awaits is not None and owed.get(awaits):
+        take = 1
+        if send is None and not step.get('until'):
+            rest = 0
+            for each in later:
+                if not isinstance(each, dict) or each.get('send') is not None \
+                        or each.get('wait') or each.get('role') != step.get('role') \
+                        or answer_of(requests, each.get('await')) != awaits:
+                    break
+                rest += 1
+            take = max(1, len(owed[awaits]) - rest)
+        del owed[awaits][:take]
+    elif awaits is not None:
+        owed.clear()
+    if mine is not None and wait and target is None:
+        owed.setdefault(mine, []).append(step.get('name'))
 
 
 def attribute_reads(node, found):
@@ -1775,7 +2500,8 @@ def attribute_reads(node, found):
 
 
 def shared_request_actions(project, spec):
-    """Actions run on two or more triggers that each forward a request with an answer.
+    """Actions run with the same arguments on two or more triggers that each forward a
+    request with an answer.
 
     An action has no parameter naming the stimulus that ran it, so its body cannot
     tell which of those requests it is answering. A trigger forwards a request when
@@ -1800,17 +2526,64 @@ def shared_request_actions(project, spec):
                 for step in move.get('do') or []:
                     name = step if isinstance(step, str) else \
                         step.get('call') if isinstance(step, dict) else None
-                    if isinstance(name, str) and on:
-                        runs.setdefault(name, [])
-                        if on not in runs[name]:
-                            runs[name].append(on)
+                    if isinstance(name, str) and on and forwards(on):
+                        args = json.dumps(step.get('args'), sort_keys=True) \
+                            if isinstance(step, dict) else 'null'
+                        triggers = runs.setdefault(name, {}).setdefault(args, [])
+                        if on not in triggers:
+                            triggers.append(on)
             walk(state.get('states'))
 
     walk(spec.get('states'))
     actions = set(entry.get('name') for entry in spec.get('actions') or []
                   if isinstance(entry, dict))
-    return [(name, triggers) for name, triggers in runs.items()
-            if name in actions and len([on for on in triggers if forwards(on)]) > 1]
+    shared = []
+    for name, calls in runs.items():
+        alike = [triggers for triggers in calls.values() if len(triggers) > 1]
+        if name in actions and alike:
+            shared.append((name, [on for triggers in alike for on in triggers]))
+    return shared
+
+
+def hosted_accumulators(project, spec):
+    """Attributes of a hosted machine that every assignment derives from their own value."""
+    name = spec.get('name')
+    hosted = any(state.get('submachine') == name
+                 for other in project.get('machines') or [] if other is not spec
+                 for state in all_states(other.get('states')))
+    if not name or not hosted:
+        return []
+    assigned = {}
+
+    def collect(node):
+        if isinstance(node, list):
+            for item in node:
+                collect(item)
+        elif isinstance(node, dict):
+            pairs = node['set'].items() if isinstance(node.get('set'), dict) else \
+                [(node['set'], node.get('to'))] if isinstance(node.get('set'), str) else []
+            for attribute, value in pairs:
+                assigned.setdefault(attribute, []).append(spell(value))
+            for key, value in node.items():
+                if key != 'set':
+                    collect(value)
+
+    collect(spec.get('states'))
+    found = []
+    for attribute, values in assigned.items():
+        own = re.compile(r'\b(mAttr)?{}\b'.format(re.escape(attribute)))
+        if all(value == 'attr:' + attribute
+               or (value.startswith(('raw:', 'expr:')) and own.search(value))
+               for value in values):
+            found.append(attribute)
+    return found
+
+
+def all_states(states):
+    """Every state of a list, nested states included."""
+    for state in states or []:
+        yield state
+        yield from all_states(state.get('states'))
 
 
 def unread_attributes(spec):
@@ -1945,8 +2718,9 @@ def state_mirrors(project, spec):
     return found
 
 
-def trigger_coverage(spec):
-    """Which states answer each trigger, in declaration order.
+def trigger_coverage(spec, asked=()):
+    """Which states answer each trigger, in declaration order. A trigger in `asked`
+    carries a request owed an answer; a state taking it only behind guards is marked "?".
 
     A trigger has no effect in a state that declares no transition on it. Codegen
     accepts the machine, the generated call compiles, and nothing reports that it
@@ -1957,8 +2731,9 @@ def trigger_coverage(spec):
         return []
     answered = dict((name, []) for name in names)
 
-    def walk(states, entry, enters):
-        """entry: the state this level starts in. enters: this level is entered at start."""
+    def walk(states, entry, enters, sure):
+        """entry: the state this level starts in. enters: this level is entered at start.
+        sure: the triggers an enclosing state takes with no guard."""
         for state in states or []:
             label = state.get('name')
             if not label:
@@ -1966,30 +2741,152 @@ def trigger_coverage(spec):
             starts = enters and label == entry
             mark = label + ('*' if starts else '') \
                          + ('+' if state.get('states') else '')
-            seen = set()
-            for move in state.get('transitions') or []:
-                on = move.get('on')
-                if on in answered and on not in seen:
-                    seen.add(on)
-                    answered[on].append(mark)
-            walk(state.get('states'), state.get('initial'), starts)
+            moves = [move for move in state.get('transitions') or [] if isinstance(move, dict)]
+            taken = set(move.get('on') for move in moves if move.get('on') in answered)
+            unguarded = set(move.get('on') for move in moves if not move.get('guard'))
+            for on in names:
+                if on in taken:
+                    answered[on].append(mark + ('?' if on in asked and on not in unguarded | sure
+                                                else ''))
+            walk(state.get('states'), state.get('initial'), starts, sure | unguarded)
 
-    walk(spec.get('states'), spec.get('initial'), True)
+    walk(spec.get('states'), spec.get('initial'), True, set())
     return [(name, answered[name]) for name in names]
 
 
+def unanswered_requests(project, spec):
+    """The triggers of machine `spec` that carry a request with an answer of the
+    service it runs: one name for both."""
+    triggers = set(entry['name'] for entry in named_list(spec, 'triggers', spec.get('name', '?')))
+    return [request.get('name') for interface, machine in paired(project) if machine is spec
+            for request in interface.get('requests') or []
+            if ('answer' in request or request.get('response'))
+            and request.get('name') in triggers]
+
+
+def states_without(spec, trigger):
+    """The states in which `trigger` does nothing: neither they nor a state enclosing
+    them has a transition on it. A composite none of whose states takes it is named
+    once, with "+"; a final or history state is never named."""
+    def walk(states):
+        labels, whole = [], True
+        for state in states or []:
+            if not isinstance(state, dict) or not state.get('name') \
+                    or state.get('kind') in ('final', 'history'):
+                continue
+            if any(isinstance(move, dict) and move.get('on') == trigger
+                   for move in state.get('transitions') or []):
+                whole = False
+            elif state.get('states'):
+                inner, all_inside = walk(state.get('states'))
+                if all_inside:
+                    labels.append(state['name'] + '+')
+                else:
+                    labels += inner
+                    whole = False
+            else:
+                labels.append(state['name'])
+        return labels, whole and bool(labels)
+
+    return walk(spec.get('states'))[0]
+
+
+def moves_without_do(spec, trigger):
+    """Each transition on `trigger` that runs no "do", as "STATE -> TARGET"."""
+    found = []
+
+    def walk(states):
+        for state in states or []:
+            if not isinstance(state, dict):
+                continue
+            for move in state.get('transitions') or []:
+                if isinstance(move, dict) and move.get('on') == trigger \
+                        and not move.get('do'):
+                    found.append('{} -> {}'.format(state.get('name', '?'),
+                                                   move.get('to') or 'itself'))
+            walk(state.get('states'))
+
+    walk(spec.get('states'))
+    return found
+
+
+def timer_repeats(spec):
+    """Timer name -> how many times it fires, 0 until stopped.
+
+    A timer with no "repeat" fires once, except one a state both stays and leaves on
+    under a guard: it fires until stopped when only the "entry" of states that also
+    stop it on "exit" starts it.
+    """
+    timers = [timer for timer in spec.get('timers') or [] if isinstance(timer, dict)]
+    repeats = {timer.get('name'): timer.get('repeat', 1) for timer in timers}
+    every, restarted = [], set()
+
+    def steps(state, key):
+        return [step for step in state.get(key) or [] if isinstance(step, str)]
+
+    def walk(states):
+        for state in states or []:
+            every.append(state)
+            for move in state.get('transitions') or []:
+                restarted.update(step[len('start '):].strip()
+                                 for step in move.get('do') or []
+                                 if isinstance(step, str) and step.startswith('start '))
+            walk(state.get('states'))
+
+    walk(spec.get('states'))
+    for timer in timers:
+        name = timer.get('name')
+        if 'repeat' in timer or name in restarted:
+            continue
+        owners = [state for state in every if 'start ' + name in steps(state, 'entry')]
+        if not owners or any('stop ' + name not in steps(state, 'exit') for state in owners):
+            continue
+        for state in owners:
+            moves = [move for move in state.get('transitions') or [] if move.get('on') == name]
+            if any(move.get('to') for move in moves) \
+                    and any(not move.get('to') for move in moves) \
+                    and any(move.get('guard') for move in moves):
+                repeats[name] = 0
+    return repeats
+
+
 def self_transitions(spec):
-    """(state, trigger) of each transition to its own state, where that state has
-    "entry" or "exit" steps, which such a transition does not run."""
+    """(state, trigger) of each transition to its own state, where that state's "entry"
+    starts a timer that is not repeating and the transition's "do" does not start again."""
+    repeats = timer_repeats(spec)
     found = []
 
     def walk(states):
         for state in states or []:
             label = state.get('name')
-            if label and (state.get('entry') or state.get('exit')):
-                found.extend((label, move.get('on', '?'))
-                             for move in state.get('transitions') or []
-                             if move.get('to') == label)
+            started = [step[len('start '):].strip() for step in state.get('entry') or []
+                       if isinstance(step, str) and step.startswith('start ')]
+            for move in state.get('transitions') or []:
+                if label and move.get('to') == label and any(
+                        repeats.get(name, 0) != 0 and 'start ' + name not in (move.get('do') or [])
+                        for name in started):
+                    found.append((label, move.get('on', '?')))
+            walk(state.get('states'))
+
+    walk(spec.get('states'))
+    return found
+
+
+def lapsed_timers(spec):
+    """(state, timer, repeat) of each state that stays on a timer its "entry" starts,
+    where no transition staying on it starts it again and it is not repeating."""
+    repeats = timer_repeats(spec)
+    found = []
+
+    def walk(states):
+        for state in states or []:
+            for name in [step[len('start '):].strip() for step in state.get('entry') or []
+                         if isinstance(step, str) and step.startswith('start ')]:
+                stays = [move for move in state.get('transitions') or []
+                         if move.get('on') == name and not move.get('to')]
+                if stays and repeats.get(name, 0) != 0 and not any(
+                        'start ' + name in (move.get('do') or []) for move in stays):
+                    found.append((state.get('name'), name, repeats[name]))
             walk(state.get('states'))
 
     walk(spec.get('states'))
@@ -2017,19 +2914,43 @@ def check_identities(documents):
         seen[key] = name
 
 
+def settle_hosted_paths(project, prefix):
+    """A hosted machine of this design takes the path of the document written for it.
+    A path given for it that names no file is refused with the one it would take."""
+    designed = set(spec.get('name') for spec in listed(project, 'machines'))
+    for spec in listed(project, 'machines'):
+        for entry in listed(spec, 'submachines'):
+            if not isinstance(entry, dict) or entry.get('name') not in designed:
+                continue
+            path = '{}{}.fsml'.format(prefix, entry['name'])
+            given = entry.get('path')
+            if not given:
+                entry['path'] = path
+            elif os.path.normpath(given) != os.path.normpath(path) \
+                    and not os.path.isfile(given):
+                fail('machine "{}" hosts "{}", a machine of this design, from {}, which '
+                     'is no file; this design writes it to {}. Give that path, or leave '
+                     '"path" out'
+                     .format(spec.get('name', '?'), entry['name'], given, path))
+
+
 def build_all(project, prefix=''):
     """Every document of the project, as (file name, text)."""
     shared = project.get('datatypes')
     space = shared['name'] if shared else None
     names = set(t['name'] for t in named_list(shared, 'declare', 'datatypes')) if shared else set()
 
+    settle_hosted_paths(project, prefix)
     documents = []
     if shared:
         documents.append(('{}.dtml'.format(shared['name']), build_dtml(shared)))
     for spec in project['interfaces']:
         documents.append(('{}.siml'.format(spec['name']), build_siml(spec, space, names, prefix)))
+    hosted = set(entry.get('name') for spec in project['machines']
+                 for entry in listed(spec, 'submachines'))
     for spec in project['machines']:
-        documents.append(('{}.fsml'.format(spec['name']), build_fsml(spec, space, names, prefix)))
+        documents.append(('{}.fsml'.format(spec['name']),
+                          build_fsml(spec, space, names, prefix, spec['name'] in hosted)))
     return documents
 
 
@@ -2069,21 +2990,24 @@ EXAMPLE = {
             {"name": "close", "description": "Close the gate.",
              "params": [{"name": "by", "type": "String"}]}
         ],
-        "broadcasts": [{"name": "gate_moved",
-                        "params": [{"name": "reading", "type": "GateTypes::Reading"}]}],
+        "broadcasts": [{"name": "gate_moved", "description": "Sent on every move.",
+                        "params": [{"name": "width", "type": "uint32"},
+                                   {"name": "reading", "type": "GateTypes::Reading"}]}],
         "driver": {"connect_seconds": 10, "reconnect_seconds": 10},
         "steps": [{"name": "open_wide", "send": "open", "args": {"width": 1200}},
-                  {"name": "widen", "send": "widen", "args": {"by": 200}, "await": "Width"},
+                  {"name": "widen", "send": "widen", "args": {"by": 200}, "await": "Width",
+                   "until": {"Width": 1400}},
                   {"name": "widen_more", "send": "widen", "args": {"by": 100},
-                   "await": "Width",
+                   "await": "Width", "until": {"Width": 1500},
                    "description": "Wider by 300 in all: 300 is not a value of by, so it "
                                   "is two steps."},
                   {"name": "hold", "wait": 500},
                   {"name": "close_gate", "send": "close",
-                   "args": {"by": "night shift"}, "await": "Width",
+                   "args": {"by": "night shift"}, "await": "gate_moved",
+                   "until": {"width": 0},
                    "description": "A String value is written as it reads: the "
-                                  "generator quotes it. Its check calls stay() "
-                                  "until Width is 0."}]
+                                  "generator quotes it. until holds the step "
+                                  "until a gate_moved with width 0 arrives."}]
     }],
     "machines": [{
         "name": "Gate",
@@ -2149,6 +3073,163 @@ EXAMPLE = {
     }]
 }
 
+# A design of several services in several programs, printed by --example programs.
+EXAMPLE_PROGRAMS = {
+    NOTE: ["A stock service and an order desk that answers only after the stock has.",
+           "programs: one executable each, under src/<name>/. A component provides one",
+           "service (\"roles\" runs named instances of it), drives the scenario (the steps of",
+           "that service; \"role\" is the instance it talks to) or watches one, as the board",
+           "does: it reacts to updates and drives nothing. \"uses\" gives any component a",
+           "client member per used role: mStock below, called as",
+           "mStock.request_reserve(...), every answer a worksheet section. A client waits",
+           "for its first connection without limit; \"connect_seconds\": N on a use runs its",
+           "\"gone\" section and exits 1 after N seconds without one. How long a lost one",
+           "is waited for is \"reconnect_seconds\" of that interface's \"driver\" block, one",
+           "value for every client of the service. A step with \"role\"",
+           "sends to and awaits a used role: stock_left awaits the stock's Bolts, which",
+           "comes in no order against the desk's answer, until 98, the 100 it starts with",
+           "less the 2 ordered: the value from subscribing is the one from before the",
+           "order. \"thread\" puts components of one program in one thread. deployments:",
+           "named alternatives, each placing a role or a named component in another program",
+           "or program/thread; main() takes --deployment <name>. Without programs, a design",
+           "is one service."],
+    "interfaces": [
+        {"name": "StockService", "category": "Public", "description": "Items in stock.",
+         "attributes": [{"name": "Bolts", "type": "uint32", "notify": "Always"}],
+         "requests": [{"name": "reserve", "params": [{"name": "count", "type": "uint32"}],
+                       "answer": [{"name": "reserved", "type": "bool"}]}]},
+        {"name": "OrderService", "category": "Public", "description": "Orders of bolts.",
+         "requests": [{"name": "place", "params": [{"name": "count", "type": "uint32"}],
+                       "answer": [{"name": "accepted", "type": "bool"}]}],
+         "steps": [{"name": "small", "send": "place", "args": {"count": 2}},
+                   {"name": "stock_left", "role": "stock", "await": "Bolts",
+                    "until": {"Bolts": 98}},
+                   {"name": "large", "send": "place", "args": {"count": 90}}]}
+    ],
+    "programs": [
+        {"name": "warehouse", "components": [{"provides": "StockService", "roles": ["stock"]}]},
+        {"name": "desk", "components": [{"provides": "OrderService", "roles": ["desk"],
+                                         "uses": [{"service": "StockService", "role": "stock"}],
+                                         "thread": "orders"}]},
+        {"name": "customer", "components": [{"name": "buyer", "drives": "OrderService",
+                                             "role": "desk",
+                                             "uses": [{"service": "StockService",
+                                                       "role": "stock"}]}]},
+        {"name": "board", "components": [{"watches": "StockService", "role": "stock"}]}
+    ],
+    "deployments": [{"name": "together", "description": "The stock runs inside the desk.",
+                     "place": {"stock": "desk/orders"}}]
+}
+
+# A timed piece of behaviour reused by a machine, printed by --example submachine.
+EXAMPLE_ALIASES = {'machine': 'submachine'}
+EXAMPLE_MACHINE = {
+    NOTE: ["A press that feeds a part before every pass. Feed is one hosted machine, timed",
+           "and limited to two tries, used from two states of Press. Each hosting state",
+           "runs its own instance from its initial state on every entry, so a piece run N",
+           "times is a hosting state entered N times: PRESSING and REFEEDING alternate. A",
+           "transition to its own state would not restart it. A try with material ends",
+           "when FeedTimer fires; with none, FeedTimer does nothing and TryTimer, the",
+           "deadline, ends it. Feed resets Tries as each visit starts. Its final raises",
+           "the host's final_event, which carries no outcome: the action on the way to FED",
+           "records it and the condition fed reads it. The provider writes each action and",
+           "condition once, for every instance."],
+    "interfaces": [{
+        "name": "PressService", "category": "Public", "description": "A press of parts.",
+        "machine": "Press",
+        "attributes": [{"name": "Passes", "type": "uint32", "notify": "Always",
+                        "description": "Passes finished in this job."}],
+        "requests": [{"name": "press", "params": [{"name": "passes", "type": "uint32"}],
+                      "answer": [{"name": "accepted", "type": "bool"}]}],
+        "broadcasts": [{"name": "feed_failed", "params": [{"name": "attempt", "type": "uint32"}]},
+                       {"name": "job_ended", "params": [{"name": "done", "type": "bool"}]}],
+        "steps": [{"name": "press_two", "send": "press", "args": {"passes": 2},
+                   "await": "job_ended"}]
+    }],
+    "machines": [
+        {"name": "Feed",
+         "description": "One feed: a part takes 200 ms; a try with none ends at 300 ms; two tries.",
+         "attributes": [{"name": "Tries", "type": "uint32", "value": "0"}],
+         "timers": [{"name": "FeedTimer", "timeout": 200}, {"name": "TryTimer", "timeout": 300}],
+         "events": [{"name": "Begin", "description": "Starts each visit with no tries."}],
+         "actions": [{"name": "feed_ended", "params": [{"name": "fed", "type": "bool"}]},
+                     {"name": "try_failed", "params": [{"name": "attempt", "type": "uint32"}]}],
+         "conditions": [{"name": "has_material"}],
+         "initial": "FEEDING",
+         "states": [
+             {"name": "FEEDING", "entry": ["send Begin", "start FeedTimer", "start TryTimer"],
+              "exit": ["stop FeedTimer", "stop TryTimer"],
+              "transitions": [
+                  {"on": "Begin", "set": {"Tries": "lit:0"}},
+                  {"on": "FeedTimer", "to": "FED", "guard": {"call": "has_material"},
+                   "do": [{"call": "feed_ended", "args": {"fed": "lit:true"}}]},
+                  {"on": "TryTimer", "to": "FED", "guard": ["Tries", "eq", "lit:1"],
+                   "do": [{"call": "try_failed", "args": {"attempt": "lit:2"}},
+                          {"call": "feed_ended", "args": {"fed": "lit:false"}}]},
+                  {"on": "TryTimer", "set": {"Tries": "raw:mAttrTries + 1"},
+                   "do": [{"call": "try_failed", "args": {"attempt": "attr:Tries"}},
+                          "start FeedTimer", "start TryTimer"]}]},
+             {"name": "FED", "kind": "final"}]},
+        {"name": "Press", "description": "Feeds, then presses, until every pass is done.",
+         "attributes": [{"name": "Done", "type": "uint32", "value": "0"},
+                        {"name": "Wanted", "type": "uint32", "value": "0"}],
+         "submachines": [{"name": "Feed", "version": "1.0.0"}],
+         "triggers": [{"name": "press", "params": [{"name": "passes", "type": "uint32"}]}],
+         "timers": [{"name": "PassTimer", "timeout": 200}],
+         "events": [{"name": "FirstFed"}, {"name": "Refed"}],
+         "actions": [{"name": "accept"}, {"name": "refuse"},
+                     {"name": "pass_done", "params": [{"name": "passes", "type": "uint32"}]},
+                     {"name": "end_job", "params": [{"name": "done", "type": "bool"}]}],
+         "conditions": [{"name": "fed"}],
+         "initial": "IDLE",
+         "states": [
+             {"name": "IDLE",
+              "transitions": [{"on": "press", "to": "FEEDING_FIRST", "do": ["accept"],
+                               "set": {"Wanted": "param:passes", "Done": "lit:0"}}]},
+             {"name": "FEEDING_FIRST", "submachine": "Feed", "final_event": "FirstFed",
+              "transitions": [
+                  {"on": "FirstFed", "to": "PRESSING", "guard": {"call": "fed"},
+                   "set": {"Done": "raw:mAttrDone + 1"}},
+                  {"on": "FirstFed", "to": "IDLE",
+                   "do": [{"call": "end_job", "args": {"done": "lit:false"}}]},
+                  {"on": "press", "do": ["refuse"]}]},
+             {"name": "PRESSING", "entry": ["start PassTimer"], "exit": ["stop PassTimer"],
+              "transitions": [
+                  {"on": "PassTimer", "to": "IDLE", "guard": ["Done", "ge", "Wanted"],
+                   "do": [{"call": "pass_done", "args": {"passes": "attr:Done"}},
+                          {"call": "end_job", "args": {"done": "lit:true"}}]},
+                  {"on": "PassTimer", "to": "REFEEDING",
+                   "do": [{"call": "pass_done", "args": {"passes": "attr:Done"}}]},
+                  {"on": "press", "do": ["refuse"]}]},
+             {"name": "REFEEDING", "submachine": "Feed", "final_event": "Refed",
+              "transitions": [
+                  {"on": "Refed", "to": "PRESSING", "guard": {"call": "fed"},
+                   "set": {"Done": "raw:mAttrDone + 1"}},
+                  {"on": "Refed", "to": "IDLE",
+                   "do": [{"call": "end_job", "args": {"done": "lit:false"}}]},
+                  {"on": "press", "do": ["refuse"]}]}]}
+    ]
+}
+
+EXAMPLE_WORKER = {
+    "interfaces": [{
+        "name": "Meter", "category": "Public",
+        "description": "A level a worker thread reads from the device every 100 ms.",
+        "attributes": [{"name": "Level", "type": "uint32", "notify": "Always"}],
+        "requests": [{"name": "pause", "params": [{"name": "paused", "type": "bool"}]}],
+        "workers": [{
+            NOTE: ["Bodies: sampler_state (the worker's members), sampler_tick (read, then",
+                   "send_sample(level)), on_sample in the provider (set_level(level)),",
+                   "on_set_paused in the worker. request_pause calls send_set_paused(paused)."],
+            "name": "Sampler", "period_ms": 100, "description": "Reads the device.",
+            "events": [{"name": "sample", "to": "provider",
+                        "params": [{"name": "level", "type": "uint32"}]},
+                       {"name": "set_paused", "to": "worker",
+                        "params": [{"name": "paused", "type": "bool"}]}]
+        }]
+    }]
+}
+
 TEMPLATE_WIDTH = 92
 
 TEMPLATE = {
@@ -2160,24 +3241,34 @@ TEMPLATE = {
            "What goes where, when this file is written or changed. Each answer is a rule,",
            "not a preference; docs/agent/05-design.md is the same four with the reasoning.",
            "",
-           "1. WHAT IS A SERVICE. One service per contract between two parties, not one per",
-           "class, entity or file. Two tests settle most cases: who owns the state (the owner",
-           "is the provider, and if neither side owns any there is no service, only a function",
-           "call), and would a second consumer make sense (if only ever one caller, it is a",
-           "method). If both sides call each other that is two services, each with its own",
-           "provider: a service is one-directional by construction.",
+           "1. WHAT IS AN INTERFACE. A .siml is a service interface: a contract that provides",
+           "nothing. A service is a component implementing interfaces under its role name; a",
+           "consumer knows that role name and the interface it uses. One interface per",
+           "contract between two parties, not per class, entity or file. Two tests: who owns",
+           "the state (the provider; if neither side owns any there is no interface, only a",
+           "function call), and would a second consumer make sense (if only ever one caller,",
+           "it is a method). If both sides call each other that is two interfaces, one",
+           "provided by each side: an interface is one-directional by construction.",
            "",
-           "2. WHICH SHAPE. The commonest error is putting everything in requests.",
-           "  attribute -- one value a consumer must know the current state of. Kept by the",
-           "    provider, sent on subscribe and again per notify. Only an attribute has a",
-           "    validity state (areg::DataState), so a late subscriber still receives something.",
-           "  broadcast -- several values that mean something only together, at the moment it",
-           "    happened. Nothing is kept: one sent before a consumer subscribed is gone.",
-           "  request/response -- a caller wants an answer to its own call. One round trip,",
-           "    and the response goes only to that caller.",
-           "What separates them is whether the value outlives the moment it was sent, never",
-           "whether a consumer subscribes: neither arrives before it does. A consumer that",
-           "polls with a request wants an attribute. Telling everyone is a broadcast, not a",
+           "2. WHICH SHAPE. An interface is a C++ class shared between processes: attributes",
+           "are its data members, requests its methods, broadcasts its signals. The",
+           "commonest error is putting everything in requests.",
+           "  attribute -- a data member the provider owns: as many as its state has, one",
+           "    value each. A consumer subscribes to each one it needs and holds a copy it",
+           "    reads at any time as x(state). The copy arrives on subscribing (the current",
+           "    value, from before anything the consumer asks next) and again per notify.",
+           "    Only an attribute has a validity state (areg::DataState). It says what",
+           "    something is now, not that something happened: a value that leaves and",
+           "    returns (idle, busy, idle) looks unchanged.",
+           "  broadcast -- a signal: several values that mean something together, sent at",
+           "    the moment it happened (a job finished, a limit was hit). Nothing is kept:",
+           "    one sent before a consumer subscribed is gone.",
+           "  request/response -- a method call whose return value is the response, sent",
+           "    only to the caller, at once or when the work is done: a provider taking",
+           "    other calls meanwhile releases it with unblock_current_request().",
+           "One provider's messages reach a consumer in the order it sent them (set_x,",
+           "broadcast_y, response_z); two providers' in no order. A consumer that polls",
+           "with a request wants an attribute. Telling everyone is a broadcast, not a",
            "response. Where several values are reported together and a late subscriber must",
            "still learn the latest, publish that one as an attribute beside the broadcast.",
            "",
@@ -2192,7 +3283,7 @@ TEMPLATE = {
            "4. HOW MANY PROCESSES. Ask only when there is a reason to separate: independent",
            "lifetimes, isolation of a crash, different privileges, different machines.",
            "Otherwise one process. The split fixes category in every document it touches, so",
-           "set the split first. A Private service consumed from another process never",
+           "set the split first. A Private interface consumed from another process never",
            "connects and nothing reports it."],
     "datatypes": {
         NOTE: ["Types two documents share, spelled <name>::<Type> inside them. A type only one",
@@ -2209,15 +3300,24 @@ TEMPLATE = {
         ]
     },
     "interfaces": [{
-        NOTE: ["A .siml: the contract between provider and consumer. category: Public across",
+        NOTE: ["A .siml: a service interface, implemented by a service. category: Public across",
                "processes, Private inside one, Internet across machines.",
                "type: bool char uint8 int16 uint16 int32 uint32 int64 uint64 float double String",
                "WideString BinaryBuffer DateTime, a type of types, or <datatypes name>::<Type>.",
                "notify: OnChange sends a value only when it differs from the one held; Always",
-               "sends every set. A request with answer also declares its response, of the same",
-               "name; without answer it has none. A broadcast reaches every subscribed consumer.",
-               "A request, response or broadcast name is kept as written after its prefix, so",
-               "write it snake_case: open_valve is request_open_valve. Attributes are converted.",
+               "sends every set. A request with answer, even [], has a same-named response the",
+               "provider must send; with no answer key, none. Broadcasts reach every subscriber.",
+               "A provider runs one handler at a time. A request with an answer stays busy until",
+               "its response is sent: another call of it meanwhile fails with RequestBusy.",
+               "Answered inside the handler, it is free again at once, so a caller's answers come",
+               "in the order it asked. A provider that answers later (on a timer, a signal or",
+               "another service's answer) and must take the next call meanwhile releases it with",
+               "unblock_current_request(); then several are open, they may be answered in any",
+               "order, and the caller tells them apart by the answer fields: a response",
+               "carries only those, never the request's parameters.",
+               "A request, response or broadcast name is written snake_case, without the prefix",
+               "the generator adds: open_valve is request_open_valve. Attributes are converted.",
+               "Several interfaces, instances or programs: gen_docs.py --example programs.",
                "A parameter name used in several answers and broadcasts has one type in all.",
                "values: the legal values of a parameter, when they are a set and the type does",
                "not already say so. A step that sends one outside it is refused here rather",
@@ -2236,8 +3336,25 @@ TEMPLATE = {
             NOTE: ["Timers the provider owns, for periodic or delayed work it does itself;",
                    "delete it when there is none. timeout: milliseconds. repeat: how many",
                    "times it fires, 0 until stopped. start: true starts it with the component;",
-                   "otherwise a body calls start_<name>(). Each gets a timer_<name> section."],
+                   "otherwise a body calls start_<name>(). Each gets a timer_<name> section.",
+                   "Delays that overlap: \"instances\": N, N timers of repeat 1, one per key."],
             "name": "", "timeout": 1000, "repeat": 0, "start": False, "description": ""
+        }],
+        "workers": [{
+            NOTE: ["A dispatcher thread of the provider's own, told things by events, for work a",
+                   "handler must not do: a device read every N ms, a slow computation; delete it",
+                   "when there is none. start: true, it runs as long as the provider; false, a",
+                   "body calls start_<name>() and stop_<name>(), which releases it (a <name>_release",
+                   "section), stops it and waits; stop then start replaces a stuck one. The",
+                   "generator writes the thread, its events and their listeners. period_ms: its",
+                   "<name>_tick section runs every period on the worker. An event is snake_case",
+                   "and is everything that crosses: the worker never touches provider members.",
+                   "to provider: the worker calls send_<event>(...), the provider's on_<event>",
+                   "runs on the provider thread. to worker: the provider calls send_<event>(...),",
+                   "the worker's on_<event> runs on the worker."],
+            "name": "", "period_ms": 100, "start": True, "description": "",
+            "events": [{"name": "", "to": "provider", "params": [{"name": "", "type": ""}],
+                        "description": ""}]
         }],
         "driver": {
             NOTE: ["What the generated consumer gives up after. These values are the",
@@ -2245,9 +3362,9 @@ TEMPLATE = {
                    "connect_seconds: how long to wait for the provider to appear.",
                    "reconnect_seconds: how long to wait for it to come back.",
                    "0 turns either off and waits for ever.",
-                   "stall_ticks is left out on purpose: the generator makes it longer than",
-                   "reconnect_seconds and than every step's wait, one tick a second. Add it",
-                   "only to override that; shorter than either is refused."],
+                   "stall_ticks is left out on purpose: how long a step waits for what it",
+                   "awaits, one tick a second. The generator makes it the largest of 20,",
+                   "reconnect_seconds and each step's wait in seconds + 2."],
             "connect_seconds": 10, "reconnect_seconds": 10
         },
         "steps": [{
@@ -2257,15 +3374,35 @@ TEMPLATE = {
                    "send: a request, with args {parameter: C++ value}; an enum value is spelled",
                    "whole, as \"GateTypes::Quality::Good\". await: a response, a broadcast or an",
                    "attribute; a request with an answer awaits its response unless the step",
-                   "names another. wait: milliseconds, instead of await.",
+                   "names another. wait: milliseconds, instead of await. Several requests in",
+                   "flight: each sends with wait: 1, then one step that only awaits the answer",
+                   "collects them all: its check records each by an answer field that names it",
+                   "(an id the request sent or the provider gave, in the answer) and stay()s",
+                   "until every one is in.",
                    "Every step sends, awaits or waits, and one that only awaits is a step too;",
                    "a check alone is not a step.",
                    "Steps run in order and the run exits 0 after the last. A check calls fail(),",
-                   "stay() to wait for the next arrival, or go_to(Step::Name) for a loop.",
-                   "One step per thing the task asks to prove, not one per message. A step",
-                   "starting work which takes time awaits the update saying it finished, before",
-                   "a later step or a go_to() sends again."],
-            "name": "", "send": "", "args": {}, "await": "", "wait": 0, "description": ""
+                   "stay() to wait for the next arrival it awaits, or go_to(Step::Name) to loop.",
+                   "until: {parameter: value}, for what arrives more than once: the step holds",
+                   "until one arrives with those values.",
+                   "One step per request sent or change awaited in turn, not one per arrival:",
+                   "a stream of updates is one step that stay()s. A task line that acts, waits",
+                   "and acts again is several steps, and the last of them prints it, only",
+                   "after its check compared what the line states. A step",
+                   "starting work which takes time awaits what says it finished (a broadcast",
+                   "sent at its end, or an attribute until a value only that work produces)",
+                   "before a later step or a go_to() sends again.",
+                   "An attribute's first update is its value on subscribing, still the one from",
+                   "before the first step's request, so an until on a value it can hold before",
+                   "the work (idle, closed, 0) ends the step at once. Await a value only the",
+                   "work produces, its response (only after the request), or a broadcast sent",
+                   "at the work's end (on every call, several values together). One provider's",
+                   "messages arrive in the order it sent them; on subscribing, the value the first",
+                   "step awaits from it comes after its other values; two providers' in no order.",
+                   "role: a provider role this program uses; the step sends to and awaits it",
+                   "instead. A step collects the answers of one role: one per role in flight."],
+            "name": "", "role": "", "send": "", "args": {}, "await": "", "until": {}, "wait": 0,
+            "description": ""
         }]
     }],
     "machines": [{
@@ -2275,8 +3412,9 @@ TEMPLATE = {
                "starting with if (mPhase == ...) is a state machine already, written where it",
                "cannot be read. No when each request is answered from its arguments and the",
                "stored data, which most services are. Decide it here, not from the format page.",
-               "The machine lives inside one component's provider and is not part of the",
-               "contract: consumers see requests and broadcasts, never states. What it declares",
+               "The machine lives inside the provider of the interface that names it with",
+               "\"machine\": \"<its name>\" and is not part of the contract: consumers see",
+               "requests and broadcasts, never states. What it declares",
                "the bodies do not carry, so giving it up means writing the same logic by hand.",
                "The provider owns it: a request handler fires a trigger, an",
                "action performs an effect, and every decision is a guard here.",
@@ -2306,19 +3444,24 @@ TEMPLATE = {
                    "start Timer, stop Timer, send Event, or {call: action, args: {param: value}}.",
                    "kind: empty, final or history. A composite has its own initial and states;",
                    "its final substate ends the level and sends final_event, which a transition",
-                   "of the composite takes. A history substate (depth Shallow or Deep) is the",
-                   "target that resumes the level where it left off."],
+                   "of the composite takes. A history substate goes in the states of the",
+                   "composite it resumes; a transition of a state outside that composite",
+                   "targets it to resume where it left off.",
+                   "submachine: a machine of this design run inside this state instead of",
+                   "states; several states hosting it write it once (--example submachine)."],
             "name": "", "kind": "", "entry": [], "exit": [],
             "transitions": [{"on": "", "to": "", "guard": [], "set": {}, "do": []}],
-            "initial": "", "final_event": "",
+            "initial": "", "final_event": "", "submachine": "",
             "states": [{
                 NOTE: ["A substate. The composite's own \"initial\" names one of these, and a",
                        "transition of the composite fires on its \"final_event\"."],
                 "name": "", "kind": "", "entry": [], "exit": [],
                 "transitions": [{"on": "", "to": "", "guard": [], "set": {}, "do": []}]
             }, {
-                NOTE: ["kind history resumes this level where it left off, and is a target,",
-                       "never a state the machine sits in. depth Shallow or Deep."],
+                NOTE: ["kind history goes here, in the states of the composite it resumes. It is",
+                       "a target, never a state the machine sits in: a transition of a state",
+                       "outside the composite names it. depth Shallow resumes the direct",
+                       "substate, Deep also the substates below it."],
                 "name": "", "kind": "history", "depth": "Shallow"
             }, {
                 NOTE: ["kind final ends the level and sends the final_event above. It carries",
@@ -2327,10 +3470,132 @@ TEMPLATE = {
                 "name": "", "kind": "final"
             }]
         }]
+    }],
+    "sources": [{
+        NOTE: ["A file of your own beside the generated ones: a class the generator writes no",
+               "shape for, such as the data of a custom event or a plain thread blocked in a",
+               "read of its own. A part on a thread of its own that another part reaches by",
+               "messages is a component of \"programs\" with a service of its own",
+               "(gen_docs.py --example programs), not a source. file is <dir>/<Name>.hpp or",
+               ".cpp, <dir> the folder under src/ of the program that compiles it (provider",
+               "or consumer without programs, none in local mode). Each gets one worksheet",
+               "section that is the whole file, filled by the bodies call like any other; a",
+               ".cpp is compiled into that program."],
+        "file": "", "description": ""
     }]
 }
 
 SAMPLES = samples_of(TEMPLATE, set())
+
+# The optional blocks of the template, by the feature that receives them: a top-level key,
+# or a key inside every entry of a top-level list.
+FEATURES = {
+    'machine': [('machines',)],
+    'timers': [('interfaces', 'timers')],
+    'workers': [('interfaces', 'workers')],
+    'steps': [('interfaces', 'driver'), ('interfaces', 'steps')],
+    'sources': [('sources',)],
+}
+FEATURE_FILE = 'areg-project.json'
+# The names --example prints.
+EXAMPLE_NAMES = ('service', 'programs', 'submachine', 'machine', 'worker')
+
+
+def features_of(text):
+    """The feature names of a comma-separated list; an unknown name is refused."""
+    names = [name.strip() for name in text.split(',') if name.strip()]
+    unknown = [name for name in names if name not in FEATURES]
+    if unknown:
+        examples = [name for name in unknown if name in EXAMPLE_NAMES]
+        fail('unknown feature {}. The features are {}; an empty list names none.{}'.format(
+            ', '.join('"{}"'.format(name) for name in unknown), ', '.join(sorted(FEATURES)),
+            ' {} has no rules of its own: gen_docs.py --example {} prints its keys in use.'
+            .format(', '.join(examples), ' '.join(examples)) if examples else ''))
+    return sorted(set(names))
+
+
+def template_for(features=None):
+    """The template with the blocks of the named features only; None names every one."""
+    chosen = copy.deepcopy(TEMPLATE)
+    for feature, blocks in FEATURES.items():
+        if features is None or feature in features:
+            continue
+        for block in blocks:
+            if len(block) == 1:
+                chosen.pop(block[0], None)
+            else:
+                for entry in chosen.get(block[0]) or []:
+                    entry.pop(block[1], None)
+    return chosen
+
+
+def notes_in(node):
+    """Every note inside a template block, in order, as one text."""
+    texts = []
+    if isinstance(node, dict):
+        for key, value in node.items():
+            texts.append(' '.join(value) if key == NOTE else notes_in(value))
+    elif isinstance(node, list):
+        texts.extend(notes_in(value) for value in node)
+    return ' '.join(' '.join(texts).split())
+
+
+def feature_rules(feature):
+    """The notes the template carries for one feature's blocks."""
+    texts = []
+    for block in FEATURES[feature]:
+        node = TEMPLATE[block[0]]
+        texts.append(notes_in(node if len(block) == 1 else node[0][block[1]]))
+    return ' '.join(texts)
+
+
+def used_features(project):
+    """The features whose blocks a design fills."""
+    used = {'machine'} if listed(project, 'machines') else set()
+    if listed(project, 'sources'):
+        used.add('sources')
+    for interface in listed(project, 'interfaces'):
+        for feature, blocks in FEATURES.items():
+            if any(len(block) > 1 and interface.get(block[1]) for block in blocks):
+                used.add(feature)
+    return used
+
+
+def delivered_features(spec_path):
+    """The features the scaffold wrote into the template beside this spec; None for all."""
+    path = os.path.join(os.path.dirname(os.path.abspath(spec_path)), FEATURE_FILE)
+    try:
+        with open(path, encoding='utf-8') as handle:
+            named = json.load(handle).get('features')
+    except (OSError, ValueError, AttributeError):
+        return None
+    return named if isinstance(named, list) else None
+
+
+def print_rules(features):
+    """The template's rules of each feature named, wrapped."""
+    for feature in features:
+        print('== {}'.format(feature))
+        for line in textwrap.wrap(feature_rules(feature), 88):
+            print(line)
+
+
+def print_undelivered(project, spec_paths, whole):
+    """A note for each feature a design uses and its template left out: the rules
+    themselves when whole, otherwise the command that prints them."""
+    delivered = delivered_features(spec_paths[0]) if spec_paths else None
+    if delivered is None:
+        return
+    for feature in sorted(used_features(project) - set(delivered)):
+        if whole:
+            print('  note  design.json uses "{}", a feature its template left out; its rules:'
+                  .format(feature))
+            for line in textwrap.wrap(feature_rules(feature), 84):
+                print('        ' + line)
+        else:
+            print('  note  design.json uses "{}", a feature its template left out; its rules: '
+                  'python3 {} --rules {}'.format(feature, os.path.abspath(__file__)
+                                                 .replace('\\', '/'), feature))
 
 
 # A document rewritten with the same text still gets a new modification time, and a
@@ -2375,6 +3640,14 @@ def review(project, skipped):
             print('        Each of these triggers forwards a request with its own '
                   'response, and an action cannot tell which trigger ran it. Declare '
                   'one action per trigger, or pass what differs as an argument.')
+        for attribute in hosted_accumulators(project, spec):
+            print('  note  {0}: attribute "{1}" is only ever set from its own value. A '
+                  'hosted instance keeps it between visits, so it never starts again. When '
+                  'it counts per visit, reset it inside {0} as each visit starts, however '
+                  'the last one ended: the "entry" of "{2}" sends an event, and a transition '
+                  'of "{2}" on that event, with no "to", sets "{1}" to "lit:0". A '
+                  'transition of the host cannot set it.'
+                  .format(spec.get('name', '?'), attribute, spec.get('initial', '?')))
         for owner, attribute, notify, matched, missing in state_mirrors(project, spec):
             print('  note  {}: attribute "{}" of {} takes {} of this machine\'s state '
                   'names and has no value for: {}. A consumer cannot see the machine '
@@ -2397,59 +3670,104 @@ def review(project, skipped):
                   'entry starts is not started again. Put what must run again in "do", '
                   'or give such a timer "repeat": 0.'
                   .format(spec.get('name', '?'), state, trigger))
-        coverage = trigger_coverage(spec)
+        for state, timer, repeat in lapsed_timers(spec):
+            print('  note  {}: state "{}" stays on timer "{}" and never starts it again, so '
+                  'with "repeat": {} that transition runs {} time(s) per visit. To run it on '
+                  'every tick, add "start {}" to its "do", or give the timer "repeat": 0.'
+                  .format(spec.get('name', '?'), state, timer, repeat, repeat, timer))
+        coverage = trigger_coverage(spec, unanswered_requests(project, spec))
         if coverage:
             print('  table {}: which states answer each trigger (* the initial state, '
-                  '+ also while inside it). The document is written and this asks for '
-                  'no change: it is here to read, because a trigger called in a state '
+                  '+ also while inside it, ? a request answered only while a guard holds). The document is '
+                  'written and this asks for no change: it is here to read, because a '
+                  'trigger called in a state '
                   'not listed beside it does nothing and nothing reports it.'
                   .format(spec.get('name', '?')))
             width = max(len(name) for name, _ in coverage)
             for name, states in coverage:
                 print('          {}  {}'.format(name.ljust(width),
                                                 ', '.join(states) or 'NO STATE'))
+            for name in unanswered_requests(project, spec):
+                where = states_without(spec, name)
+                if where:
+                    print('  note  {0}: request "{1}" reaches it through {1}(), and no '
+                          'transition takes it in {2}: sent there, it is never answered '
+                          'unless request_{1} answers when {1}() returns false. Give it '
+                          'a transition in those states, a refusal too.'
+                          .format(spec.get('name', '?'), name, ', '.join(where)))
     # The documents are legitimate, so this is a note and not a refusal. It is said
     # in the words build_project.py refuses with, several steps later, and it is said
     # on both paths: build_project.py passes --chained, so a note only the bare call
     # prints is a note the documented path never shows.
-    for what, found, option in (('service', project.get('interfaces') or [], '--doc'),
-                                ('state machine', project.get('machines') or [],
-                                 '--machine')):
-        if len(found) > 1:
-            print('  note  this design describes {} {}s. build_project.py writes one '
-                  'application, of one service and at most one machine: name the one '
-                  'to build with {}, and write the others with gen_skeleton.py --app '
-                  'into their own directories.'.format(len(found), what, option))
+    services = [entry for entry in project.get('interfaces') or [] if isinstance(entry, dict)]
+    if len(services) > 1 and not project.get('programs'):
+        print('  note  this design describes {} services. Declare which program runs which '
+              'in "programs", and build_project.py writes every program; '
+              'gen_docs.py --example programs prints the shape.'.format(len(services)))
+    hosted = set(inner.get('name') if isinstance(inner, dict) else inner
+                 for entry in project.get('machines') or [] if isinstance(entry, dict)
+                 for inner in entry.get('submachines') or [])
+    top = [entry.get('name') for entry in project.get('machines') or []
+           if isinstance(entry, dict) and entry.get('name') not in hosted]
+    if len(top) > 1 and len(paired(project)) < len(top):
+        print('  note  this design describes {} state machines no other machine hosts: {}. '
+              'Declare on each service the machine its provider runs: "machine".'
+              .format(len(top), ', '.join(str(name) for name in top)))
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument('--spec', action='append', default=[],
                         help='a JSON description; pass it once per spec file')
     parser.add_argument('--outdir', help='the directory the documents are written to')
-    parser.add_argument('--example', action='store_true',
-                        help='print a whole spec to copy, and write nothing')
+    parser.add_argument('--example', nargs='*', action='extend',
+                        choices=['service', 'programs', 'submachine', 'machine', 'worker'],
+                        help='print a whole spec to copy, and write nothing; several names '
+                             'print several in one call, "service" when none is named. '
+                             '"programs" prints one of several services in several '
+                             'programs: roles, uses, threads and deployments. "submachine" '
+                             '("machine" too) prints a timed machine hosted from two states '
+                             'and run N times; "service" already holds a machine. "worker" '
+                             'prints a provider with a worker thread')
     parser.add_argument('--template', metavar='PATH',
                         help='write a spec with every key present and empty, each section '
                              'with its note, to fill in. A file there that carries work is '
                              'never replaced')
+    parser.add_argument('--features', metavar='LIST',
+                        help='with --template, the optional blocks it holds, comma-separated: '
+                             'machine, timers, workers, steps, sources; an empty list writes '
+                             'none and leaving it out writes every one')
+    parser.add_argument('--rules', metavar='LIST',
+                        help='print the template\'s rules of these features, comma-separated, '
+                             'and write nothing')
     parser.add_argument('--review', action='store_true',
                         help='check the design and print every note it earns, writing '
-                             'nothing. Answers what a build would say about the design '
-                             'before any document, source or scenario file exists')
+                             'nothing. build_project.py --spec prints the same notes '
+                             'and builds in the same call: a review before it is a '
+                             'request more')
     parser.add_argument('--force', action='store_true', help='overwrite existing documents')
     parser.add_argument('--chained', action='store_true',
                         help='run by build_project.py, which does the next steps itself: '
                              'do not print them')
     args = parser.parse_args()
 
-    if args.example:
+    if args.example is not None:
         # The same renderer the template uses: every value that fits stays on its
         # line. The page tells the agent to read this in one call, and one value per
         # line makes that call twice the size for nothing.
-        print(render(EXAMPLE))
+        names = list(dict.fromkeys(EXAMPLE_ALIASES.get(name, name)
+                                   for name in args.example or ['service']))
+        for name in names:
+            if len(names) > 1:
+                print('== gen_docs.py --example {}'.format(name))
+            print(render({'service': EXAMPLE, 'programs': EXAMPLE_PROGRAMS,
+                          'submachine': EXAMPLE_MACHINE, 'worker': EXAMPLE_WORKER}[name]))
+        return 0
+    if args.rules is not None:
+        print_rules(features_of(args.rules) or sorted(FEATURES))
         return 0
     if args.template:
-        if write_template(args.template) == 'work':
+        features = None if args.features is None else features_of(args.features)
+        if write_template(args.template, features) == 'work':
             fail('{} already carries a design, and a template never replaces one. Fill '
                  'that file, or name another path.'.format(args.template))
         print('wrote {}: every key of a design, empty. Fill the values and keep the keys; '
@@ -2470,14 +3788,26 @@ def main():
         specs.append((path, spec))
         skipped += count
 
+    if RENAMED_ROLES:
+        print('  note  a role is a C identifier, so {}; the client looked up by role name '
+              'takes either spelling'.format(', '.join(
+                  '"{}" is {}'.format(phrase, named)
+                  for named, phrases in sorted(RENAMED_ROLES.items())
+                  for phrase in sorted(set(phrases)))))
     project = merge(specs)
+    print_undelivered(project, args.spec, args.review)
+    settle_submachines(listed(project, 'machines'))
     check_shape(project)
     check_unique_names(project)
     cross_check(project)
-    check_sequences(project)
-    check_drivers(project)
-    check_service_timers(project)
-    check_final_entry(project)
+    problems = []
+    for check in (check_sequences, check_drivers, check_service_timers, check_workers,
+                  check_final_entry, check_programs):
+        with gathering(problems), contextlib.suppress(Refused):
+            check(project)
+    if problems:
+        refuse(problems)
+    check_deployments(project)
     # An include names a document the way the project root spells it, which is the
     # directory the documents are written to.
     prefix = '' if os.path.isabs(args.outdir) else \

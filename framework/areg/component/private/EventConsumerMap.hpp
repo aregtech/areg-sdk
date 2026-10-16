@@ -2,9 +2,9 @@
 #define AREG_COMPONENT_PRIVATE_EVENTCONSUMERMAP_HPP
 /************************************************************************
  * This file is part of the Areg SDK core engine.
- * Areg SDK is dual-licensed under Free open source (Apache version 2.0
- * License) and Commercial (with various pricing models) licenses, depending
- * on the nature of the project (commercial, research, academic or free).
+ * Areg SDK is dual-licensed under Free open source (Apache version 2.0 License)
+ * and Commercial (with various pricing models) licenses, depending on the
+ * nature of the project (commercial, research, academic or free).
  * You should have received a copy of the Areg SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
@@ -166,9 +166,10 @@ public:
 using MapConsumer = IntegerHashMap<EventConsumerList>;
 
 /**
- * \brief   The Map of the list, where the key is a magic number and values are list of proxies.
+ * \brief   The map of event consumer lists, keyed by event class ID. Not locked: the owning
+ *          EventDispatcherBase guards it.
  **/
-using EventConsumerMap = ConcurrentResourceListMap<uint32_t, EventConsumer*, EventConsumerList, MapConsumer, ImplConsumerMap>;
+using EventConsumerMap = ResourceListMap<uint32_t, EventConsumer*, EventConsumerList, MapConsumer, ImplConsumerMap>;
 
 //////////////////////////////////////////////////////////////////////////
 // Inline functions implementation

@@ -2,9 +2,9 @@
 #define AREG_BASE_SYNCPRIMITIVES_HPP
 /************************************************************************
  * This file is part of the Areg SDK core engine.
- * Areg SDK is dual-licensed under Free open source (Apache version 2.0
- * License) and Commercial (with various pricing models) licenses, depending
- * on the nature of the project (commercial, research, academic or free).
+ * Areg SDK is dual-licensed under Free open source (Apache version 2.0 License)
+ * and Commercial (with various pricing models) licenses, depending on the
+ * nature of the project (commercial, research, academic or free).
  * You should have received a copy of the Areg SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
@@ -32,9 +32,11 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/base/SyncObject.hpp"
+#include "areg/base/FatalError.hpp"
 
 #include <atomic>
 #include <chrono>
+#include <type_traits>
 
 namespace areg {
 
@@ -133,11 +135,13 @@ friend class MultiLock;
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Creates and optionally initializes the mutex with ownership.
+     * \brief   Creates the mutex, free by default, and optionally owned by the current thread.
      *
      * \param   initLock    If true, the current thread acquires ownership on initialization.
+     *                      False by default, so that a mutex created by one thread, for example
+     *                      the lock of a container, is free for every thread.
      **/
-    explicit Mutex( bool initLock = true );
+    explicit Mutex( bool initLock = false );
 
     virtual ~Mutex();
 
@@ -151,21 +155,21 @@ public:
      * \param   timeout     Timeout in milliseconds; WAIT_INFINITE to wait indefinitely.
      * \return  Returns true if ownership was acquired.
      **/
-    inline bool lock( uint32_t timeout = areg::WAIT_INFINITE ) final;
+    bool lock( uint32_t timeout = areg::WAIT_INFINITE ) final;
 
     /**
      * \brief   Releases mutex ownership. Caller must own the mutex.
      *
      * \return  Returns true if successful.
      **/
-    inline bool unlock() final;
+    bool unlock() final;
 
     /**
      * \brief   Attempts to acquire mutex ownership without blocking.
      *
      * \return  Returns true if acquired or already owned by current thread; false if owned by another.
      **/
-    inline bool try_lock() final;
+    bool try_lock() final;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -275,14 +279,14 @@ public:
      * \return  Returns true if the event was signaled before or during the timeout; false if
      *          timeout expired.
      **/
-    inline bool lock( uint32_t timeout = areg::WAIT_INFINITE ) final;
+    bool lock( uint32_t timeout = areg::WAIT_INFINITE ) final;
 
     /**
      * \brief   Sets the event to signaled state.
      *
      * \return  Returns true if successfully set the event to signaled.
      **/
-    inline bool unlock() final;
+    bool unlock() final;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations / Attributes
@@ -295,7 +299,7 @@ public:
     inline bool set_signaled() noexcept;
 
     /**
-     * \brief   Resets the event to non-signaled state. Only manual-reset events can be manually reset.
+     * \brief   Resets the event to non-signaled state, of a manual-reset or an auto-reset event.
      * \return  Returns true if operation succeeded.
      **/
     inline bool reset() noexcept;
@@ -705,6 +709,12 @@ public:
      **/
     bool try_lock() final;
 
+    /**
+     * \brief   Returns true if the calling thread holds the spin-lock.
+     **/
+    [[nodiscard]]
+    bool is_held_by_current() const noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -728,6 +738,53 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     AREG_NOCOPY_NOMOVE( SpinLock );
+};
+
+//////////////////////////////////////////////////////////////////////////
+// PlainSpinLock class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Non-recursive spin-lock without an owner: one CAS to lock, one atomic operation to
+ *          unlock. A contended lock re-checks 64 times, then sleeps on the word like SpinLock.
+ *          The thread holding it must not lock it again. Satisfies std BasicLockable.
+ **/
+class AREG_API PlainSpinLock
+{
+public:
+    PlainSpinLock() noexcept = default;
+    ~PlainSpinLock() = default;
+
+    /**
+     * \brief   Acquires the lock, sleeping while another thread holds it.
+     **/
+    inline void lock() noexcept;
+
+    /**
+     * \brief   Releases the lock and wakes one sleeping thread, if any.
+     **/
+    inline void unlock() noexcept;
+
+private:
+    //!< Takes the lock that another thread holds.
+    void _lock_contended() noexcept;
+    //!< Wakes one thread sleeping on the lock.
+    void _wake_sleeper() noexcept;
+
+    //!< The lowest bit of the word: the lock is taken; bit 16 and above: sleeping threads.
+    static constexpr uint32_t   SLEEPER_SHIFT   { 16u };
+
+#if defined(_MSC_VER)
+    #pragma warning(push)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+
+    std::atomic<uint32_t>   mWord{ 0u };    //!< 1 while held, plus the sleepers in the high bits.
+
+#if defined(_MSC_VER)
+    #pragma warning(pop)
+#endif  // _MSC_VER
+
+    AREG_NOCOPY_NOMOVE( PlainSpinLock );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -771,19 +828,19 @@ public:
      * \brief   No-op lock operation with timeout (timeout is ignored).
      * \return  Always returns true.
      **/
-    inline bool lock( uint32_t /*timeout = areg::WAIT_INFINITE*/ ) final;
+    bool lock( uint32_t /*timeout = areg::WAIT_INFINITE*/ ) final;
 
     /**
      * \brief   No-op unlock operation.
      * \return  Always returns true.
      **/
-    inline bool unlock() final;
+    bool unlock() final;
 
     /**
      * \brief   No-op try-lock operation.
      * \return  Always returns true.
      **/
-    inline bool try_lock() final;
+    bool try_lock() final;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -831,14 +888,14 @@ public:
      *                      areg::WAIT_INFINITE to wait indefinitely.
      * \return  Returns true if the timer fired before timeout.
      **/
-    inline bool lock( uint32_t timeout = areg::WAIT_INFINITE ) final;
+    bool lock( uint32_t timeout = areg::WAIT_INFINITE ) final;
 
     /**
      * \brief   Activates the timer. The timer will fire at the due time specified in the constructor.
      *
      * \return  Returns true if the timer was successfully activated.
      **/
-    inline bool unlock() final;
+    bool unlock() final;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations / Attributes
@@ -1042,6 +1099,62 @@ private:
     Lock() = delete;
     AREG_NOCOPY_NOMOVE( Lock );
 };
+
+//////////////////////////////////////////////////////////////////////////
+// ScopedLock class template declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   RAII lock of a synchronization object whose type is known at compile time. Locks in the
+ *          constructor and unlocks in the destructor with direct calls, no virtual dispatch: with
+ *          SpinLock it calls SpinLock, with NolockSyncObject it compiles to nothing. Use Lock to
+ *          lock an object chosen at run time through a SyncObject reference.
+ *
+ * \tparam  LOCKABLE    A final synchronization type, such as SpinLock, Mutex or NolockSyncObject.
+ * \example ScopedLock
+ * \code[.cpp]
+ *          mutable SpinLock mLock;
+ *          void MyClass::foo() const
+ *          {
+ *              ScopedLock lock(mLock);
+ *              // perform actions here
+ *          }
+ * \endcode
+ **/
+template <class LOCKABLE>
+class ScopedLock
+{
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Locks the synchronization object, waiting as long as it is needed.
+     * \param   syncObj     The synchronization object to lock. It must outlive this lock.
+     **/
+    explicit inline ScopedLock( LOCKABLE & syncObj );
+
+    /**
+     * \brief   Unlocks the synchronization object.
+     **/
+    inline ~ScopedLock();
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+    LOCKABLE &  mSyncObject;    //!< The locked synchronization object.
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden / Forbidden method calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    ScopedLock() = delete;
+    AREG_NOCOPY_NOMOVE( ScopedLock );
+};
+
+//!< Deduces the lock type from the object, e.g. ScopedLock lock(mSpinLock).
+template <class LOCKABLE>
+ScopedLock( LOCKABLE & ) -> ScopedLock<LOCKABLE>;
 
 //////////////////////////////////////////////////////////////////////////
 // MultiLock class declaration
@@ -1346,23 +1459,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Mutex class inline functions
 //////////////////////////////////////////////////////////////////////////
-inline bool Mutex::lock( uint32_t timeout /* = areg::WAIT_INFINITE */ )
-{
-    ASSERT( mSyncObject != nullptr );
-    return _os_lock_mutex( timeout );
-}
-
-inline bool Mutex::try_lock()
-{
-    return lock( areg::DO_NOT_WAIT );
-}
-
-inline bool Mutex::unlock()
-{
-    ASSERT( mSyncObject != nullptr );
-    return _os_unlock_mutex( );
-}
-
 inline bool Mutex::is_locked() const noexcept
 {
     return (mOwnerThreadId.load() != 0);
@@ -1386,16 +1482,6 @@ inline int32_t SyncEvent::wait_any( SyncEvent& ev0, SyncEvent& ev1, uint32_t tim
 {
     SyncEvent* events[2]{ &ev0, &ev1 };
     return wait_any(events, 2, timeout);
-}
-
-inline bool SyncEvent::unlock()
-{
-    return (mSyncObject != nullptr ? _os_unlock_event(mSyncObject) : false);
-}
-
-inline bool SyncEvent::lock( uint32_t timeout /* = areg::WAIT_INFINITE */ )
-{
-    return (mSyncObject != nullptr ? _os_lock_event(timeout) : false);
 }
 
 inline bool SyncEvent::set_signaled() noexcept
@@ -1433,24 +1519,6 @@ inline uint32_t Semaphore::current_count() const noexcept
 // CriticalSection class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline bool CriticalSection::lock( uint32_t  /*timeout = areg::WAIT_INFINITE */ )
-{
-    ASSERT( mSyncObject != nullptr );
-    return _os_lock( );
-}
-
-inline bool CriticalSection::unlock()
-{
-    ASSERT( mSyncObject != nullptr );
-    return _os_unlock( );
-}
-
-inline bool CriticalSection::try_lock()
-{
-    ASSERT( mSyncObject != nullptr );
-    return _os_try_lock( );
-}
-
 inline bool CriticalSection::lock()
 {
     return lock( areg::WAIT_INFINITE );
@@ -1465,6 +1533,27 @@ inline bool SpinLock::lock()
     return lock(areg::WAIT_INFINITE);
 }
 
+//////////////////////////////////////////////////////////////////////////
+// PlainSpinLock class inline functions
+//////////////////////////////////////////////////////////////////////////
+
+inline void PlainSpinLock::lock() noexcept
+{
+    uint32_t expected{ 0u };
+    if (mWord.compare_exchange_strong(expected, 1u, std::memory_order_acquire, std::memory_order_relaxed) == false)
+    {
+        _lock_contended();
+    }
+}
+
+inline void PlainSpinLock::unlock() noexcept
+{
+    if ((mWord.fetch_sub(1u, std::memory_order_release) >> SLEEPER_SHIFT) != 0u)
+    {
+        _wake_sleeper();
+    }
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 // NolockSyncObject class inline functions
@@ -1475,36 +1564,9 @@ inline bool NolockSyncObject::lock()
     return true;
 }
 
-inline bool NolockSyncObject::lock( uint32_t /*timeout = areg::WAIT_INFINITE*/ )
-{
-    return true;
-}
-
-inline bool NolockSyncObject::unlock()
-{
-    return true;
-}
-
-inline bool NolockSyncObject::try_lock()
-{
-    return true;
-}
-
 //////////////////////////////////////////////////////////////////////////
 // SyncTimer class inline functions
 //////////////////////////////////////////////////////////////////////////
-
-inline bool SyncTimer::lock( uint32_t timeout /* = areg::WAIT_INFINITE */ )
-{
-    ASSERT( mSyncObject != nullptr );
-    return _os_lock( timeout );
-}
-
-inline bool SyncTimer::unlock()
-{
-    ASSERT( mSyncObject != nullptr );
-    return _os_cancel_timer( );
-}
 
 inline bool SyncTimer::set_timer()
 {
@@ -1543,17 +1605,17 @@ inline Lock::Lock(SyncObject& syncObj, bool autoLock /* = true */)
     : mSyncObject(syncObj)
     , mAutoLock  (autoLock)
 {
-    if (mAutoLock && mSyncObject.is_valid())
+    if (mAutoLock && (mSyncObject.lock() == false))
     {
-        mSyncObject.lock();
+        areg::report_lock_failure("Lock could not take its synchronization object");
     }
 }
 
 inline Lock::~Lock()
 {
-    if (mAutoLock && mSyncObject.is_valid())
+    if (mAutoLock)
     {
-        mSyncObject.unlock();
+        static_cast<void>(mSyncObject.unlock());
     }
 }
 
@@ -1565,6 +1627,31 @@ inline bool Lock::lock(uint32_t timeout /* = areg::WAIT_INFINITE */)
 inline bool Lock::unlock()
 {
     return mSyncObject.unlock();
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ScopedLock class template inline functions
+//////////////////////////////////////////////////////////////////////////
+template <class LOCKABLE>
+inline ScopedLock<LOCKABLE>::ScopedLock( LOCKABLE & syncObj )
+    : mSyncObject( syncObj )
+{
+    if constexpr ( std::is_same_v<std::remove_cv_t<LOCKABLE>, NolockSyncObject> == false )
+    {
+        if ( mSyncObject.lock( areg::WAIT_INFINITE ) == false )
+        {
+            areg::report_lock_failure( "ScopedLock could not take its synchronization object" );
+        }
+    }
+}
+
+template <class LOCKABLE>
+inline ScopedLock<LOCKABLE>::~ScopedLock()
+{
+    if constexpr ( std::is_same_v<std::remove_cv_t<LOCKABLE>, NolockSyncObject> == false )
+    {
+        static_cast<void>(mSyncObject.unlock( ));
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////

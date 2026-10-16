@@ -69,6 +69,8 @@ else()
         list(APPEND AREG_COMPILER_OPTIONS ${AREG_OPTIMIZATION} -ffunction-sections -fdata-sections)
         if (NOT CYGWIN)
             list(APPEND AREG_COMPILER_OPTIONS -fvisibility=hidden "$<$<COMPILE_LANGUAGE:CXX>:-fvisibility-inlines-hidden>")
+            # Calls between the exported functions of one shared library bind directly, not through the PLT.
+            list(APPEND AREG_COMPILER_OPTIONS -fno-semantic-interposition)
         endif()
         if (NOT CMAKE_CROSSCOMPILING AND NOT CYGWIN)
             if (AREG_ARCH_NATIVE)
@@ -84,6 +86,12 @@ else()
         # LTO is disabled on Cygwin.
         if (NOT CYGWIN)
             set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+            # GCC 13.3 and 14.2 with LTO fold identical functions of different types, then optimize
+            # the merged body by the types of the one kept: a lock taken by one instantiation is
+            # dropped, a deque loop reads a stale element. Seen in CI binaries; GCC 15 not shown free of it.
+            list(APPEND AREG_COMPILER_OPTIONS -fno-ipa-icf)
+            list(APPEND AREG_LDFLAGS -fno-ipa-icf)
+            message(STATUS "AREG: GCC ${CMAKE_CXX_COMPILER_VERSION} with LTO, identical code folding is switched off")
             # GCC 13 and earlier emit wrong code for a speculatively devirtualized call
             # when link time optimization inlines the target. Fixed in GCC 14.
             if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 14)

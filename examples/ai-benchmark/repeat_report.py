@@ -18,6 +18,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import analyze_run  # noqa: E402
+import measure  # noqa: E402
 
 
 def measured(run):
@@ -28,6 +29,8 @@ def measured(run):
             report = json.load(handle)
     except (OSError, ValueError):
         return None
+    if measure.copilot_usage(report) is not None:
+        return copilot_measured(run, report)
     usage = report.get('usage') or {}
     details = usage.get('output_tokens_details') or {}
     cost = report.get('total_cost_usd')
@@ -41,6 +44,32 @@ def measured(run):
         'thinking': details.get('thinking_tokens') or 0,
         'requests': cold[1] if cold else None,
         'reason': report.get('terminal_reason') or report.get('stop_reason') or '',
+    }
+
+
+def copilot_measured(run, report):
+    """The same row from Copilot's usage file: AI credits converted at measure.AIC_USD."""
+    nano = report.get('totalNanoAiu')
+    cost = (float(measure.AIC_USD) * nano / 1e9
+            if isinstance(nano, int) and not isinstance(nano, bool) else None)
+    output = thinking = 0
+    requests = None
+    for entry in (report.get('modelMetrics') or {}).values():
+        usage = entry.get('usage') or {}
+        output += usage.get('outputTokens') or 0
+        thinking += usage.get('reasoningTokens') or 0
+        count = (entry.get('requests') or {}).get('count')
+        if isinstance(count, int):
+            requests = (requests or 0) + count
+    return {
+        'label': os.path.basename(run.rstrip(os.sep)),
+        'cost': cost,
+        'billed': True,
+        'bill': cost,
+        'output': output,
+        'thinking': thinking,
+        'requests': requests,
+        'reason': '',
     }
 
 
@@ -111,9 +140,10 @@ def band(rows, total):
     ordered = sorted(costs)
     half = len(ordered) // 2
     median = ordered[half] if len(ordered) % 2 else (ordered[half - 1] + ordered[half]) / 2
-    print('   cost, cold @1h: total {}   median {}   mean {}   band {} to {}   spread {:.0f}%'
-          .format(money(sum(costs)), money(median), money(mean), money(low), money(high),
-                  spread))
+    basis = 'billed' if all(row['billed'] for row in rows) else 'cold @1h'
+    print('   cost, {}: total {}   median {}   mean {}   band {} to {}   spread {:.0f}%'
+          .format(basis, money(sum(costs)), money(median), money(mean), money(low),
+                  money(high), spread))
     if len(costs) < 2:
         print('   one run is a draw, not a measurement: nothing here is a band')
     else:

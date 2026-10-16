@@ -2,9 +2,9 @@
 #define AREG_BASE_STACK_HPP
 /************************************************************************
  * This file is part of the Areg SDK core engine.
- * Areg SDK is dual-licensed under Free open source (Apache version 2.0
- * License) and Commercial (with various pricing models) licenses, depending
- * on the nature of the project (commercial, research, academic or free).
+ * Areg SDK is dual-licensed under Free open source (Apache version 2.0 License)
+ * and Commercial (with various pricing models) licenses, depending on the
+ * nature of the project (commercial, research, academic or free).
  * You should have received a copy of the Areg SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
@@ -513,30 +513,30 @@ inline StackBase<VALUE, SYNC> & StackBase<VALUE, SYNC>::operator = ( StackBase<V
 template <typename VALUE, typename SYNC>
 inline const VALUE& StackBase<VALUE, SYNC>::operator [] (STACKPOS atPosition) const noexcept
 {
-    Lock lock(mSyncObject);
+    ScopedLock lock(mSyncObject);
     return (*atPosition);
 }
 
 template <typename VALUE, typename SYNC>
 inline VALUE& StackBase<VALUE, SYNC>::operator [] (STACKPOS atPosition) noexcept
 {
-    Lock lock(mSyncObject);
+    ScopedLock lock(mSyncObject);
     return (*atPosition);
 }
 
 template <typename VALUE, typename SYNC>
 inline bool StackBase<VALUE, SYNC>::operator == (const StackBase<VALUE, SYNC>& other) const noexcept
 {
-    Lock lock(mSyncObject);
-    Lock lockOther(other.mSyncObject);
+    ScopedLock lock(mSyncObject);
+    ScopedLock lockOther(other.mSyncObject);
     return (mValueList == other.mValueList);
 }
 
 template <typename VALUE, typename SYNC>
 inline bool StackBase<VALUE, SYNC>::operator != (const StackBase<VALUE, SYNC>& other) const noexcept
 {
-    Lock lock(mSyncObject);
-    Lock lockOther(other.mSyncObject);
+    ScopedLock lock(mSyncObject);
+    ScopedLock lockOther(other.mSyncObject);
     return (mValueList != other.mValueList);
 }
 
@@ -544,7 +544,7 @@ template <typename VALUE, typename SYNC>
 template <typename SYNC2>
 inline bool StackBase<VALUE, SYNC>::operator == (const StackBase<VALUE, SYNC2>& other) const noexcept
 {
-    Lock lock(mSyncObject);
+    ScopedLock lock(mSyncObject);
     return (mValueList == other.data());
 }
 
@@ -552,42 +552,42 @@ template <typename VALUE, typename SYNC>
 template <typename SYNC2>
 inline bool StackBase<VALUE, SYNC>::operator != (const StackBase<VALUE, SYNC2>& other) const noexcept
 {
-    Lock lock(mSyncObject);
+    ScopedLock lock(mSyncObject);
     return (mValueList != other.data());
 }
 
 template <typename VALUE, typename SYNC>
 inline uint32_t StackBase<VALUE, SYNC>::size() const noexcept
 {
-    Lock lock( mSyncObject );
+    ScopedLock lock( mSyncObject );
     return static_cast<uint32_t>(mValueList.size());
 }
 
 template <typename VALUE, typename SYNC>
 inline bool StackBase<VALUE, SYNC>::is_empty() const noexcept
 {
-    Lock lock( mSyncObject );
+    ScopedLock lock( mSyncObject );
     return mValueList.empty();
 }
 
 template <typename VALUE, typename SYNC>
 inline bool StackBase<VALUE, SYNC>::is_first_position(STACKPOS pos) const noexcept
 {
-    Lock lock(mSyncObject);
+    ScopedLock lock(mSyncObject);
     return (pos == mValueList.begin());
 }
 
 template <typename VALUE, typename SYNC>
 inline bool StackBase<VALUE, SYNC>::is_last_position(STACKPOS pos) const noexcept
 {
-    Lock lock(mSyncObject);
+    ScopedLock lock(mSyncObject);
     return (mValueList.empty() == false) && (pos == --mValueList.end());
 }
 
 template <typename VALUE, typename SYNC>
 inline typename StackBase<VALUE, SYNC>::STACKPOS StackBase<VALUE, SYNC>::invalid_position() const noexcept
 {
-    Lock lock(mSyncObject);
+    ScopedLock lock(mSyncObject);
     auto end = mValueList.end();
     return Constless<std::deque<VALUE>>::iter(mValueList, end);
 }
@@ -595,14 +595,14 @@ inline typename StackBase<VALUE, SYNC>::STACKPOS StackBase<VALUE, SYNC>::invalid
 template <typename VALUE, typename SYNC>
 inline bool StackBase<VALUE, SYNC>::is_valid_position(STACKPOS pos) const noexcept
 {
-    Lock lock(mSyncObject);
+    ScopedLock lock(mSyncObject);
     return (pos != mValueList.end());
 }
 
 template <typename VALUE, typename SYNC>
 inline bool StackBase<VALUE, SYNC>::check_position(STACKPOS pos) const noexcept
 {
-    Lock lock(mSyncObject);
+    ScopedLock lock(mSyncObject);
     auto it = mValueList.begin();
     while ((it != mValueList.end()) && (it != pos))
         ++it;
@@ -632,21 +632,21 @@ inline const std::deque<VALUE>& StackBase<VALUE, SYNC>::data() const noexcept
 template <typename VALUE, typename SYNC>
 inline void StackBase<VALUE, SYNC>::clear() noexcept
 {
-    Lock lock(mSyncObject);
+    ScopedLock lock(mSyncObject);
     mValueList.clear();
 }
 
 template <typename VALUE, typename SYNC>
 inline void StackBase<VALUE, SYNC>::free_extra()
 {
-    Lock lock(mSyncObject);
+    ScopedLock lock(mSyncObject);
     areg::shrink_to_fit( mValueList );
 }
 
 template <typename VALUE, typename SYNC>
 inline void StackBase<VALUE, SYNC>::release()
 {
-    Lock lock(mSyncObject);
+    ScopedLock lock(mSyncObject);
     mValueList.clear();
     areg::shrink_to_fit( mValueList );
 }
@@ -666,29 +666,29 @@ inline bool StackBase<VALUE, SYNC>::unlock() const
 template <typename VALUE, typename SYNC>
 inline void StackBase<VALUE, SYNC>::resize(uint32_t newSize)
 {
-    Lock lock(mSyncObject);
+    ScopedLock lock(mSyncObject);
     mValueList.resize(newSize > areg::MAX_CONTAINER_SIZE ? areg::MAX_CONTAINER_SIZE : newSize);
 }
 
 template <typename VALUE, typename SYNC>
 inline const VALUE & StackBase<VALUE, SYNC>::first_entry() const noexcept
 {
-    Lock lock(mSyncObject);
+    ScopedLock lock(mSyncObject);
     return mValueList.front();
 }
 
 template <typename VALUE, typename SYNC>
 inline const VALUE & StackBase<VALUE, SYNC>::last_entry() const noexcept
 {
-    Lock lock(mSyncObject);
+    ScopedLock lock(mSyncObject);
     return mValueList.back();
 }
 
 template <typename VALUE, typename SYNC>
 inline uint32_t StackBase<VALUE, SYNC>::copy( const StackBase<VALUE, SYNC> & source )
 {
-    Lock lock(mSyncObject);
-    Lock lockSource(source.mSyncObject);
+    ScopedLock lock(mSyncObject);
+    ScopedLock lockSource(source.mSyncObject);
 
     mValueList = source.mValueList;
     return static_cast<uint32_t>(mValueList.size());
@@ -697,8 +697,8 @@ inline uint32_t StackBase<VALUE, SYNC>::copy( const StackBase<VALUE, SYNC> & sou
 template <typename VALUE, typename SYNC>
 inline uint32_t StackBase<VALUE, SYNC>::move( StackBase<VALUE, SYNC> && source ) noexcept
 {
-    Lock lock(mSyncObject);
-    Lock lockSource(source.mSyncObject);
+    ScopedLock lock(mSyncObject);
+    ScopedLock lockSource(source.mSyncObject);
 
     mValueList = std::move(source.mValueList);
     return static_cast<uint32_t>(mValueList.size());
@@ -707,7 +707,7 @@ inline uint32_t StackBase<VALUE, SYNC>::move( StackBase<VALUE, SYNC> && source )
 template <typename VALUE, typename SYNC>
 inline uint32_t StackBase<VALUE, SYNC>::push_last( const VALUE & newElement )
 {
-    Lock lock(mSyncObject);
+    ScopedLock lock(mSyncObject);
     mValueList.push_back(newElement);
     return static_cast<uint32_t>(mValueList.size());
 }
@@ -715,7 +715,7 @@ inline uint32_t StackBase<VALUE, SYNC>::push_last( const VALUE & newElement )
 template <typename VALUE, typename SYNC>
 inline uint32_t StackBase<VALUE, SYNC>::push_last(VALUE && newElement)
 {
-    Lock lock(mSyncObject);
+    ScopedLock lock(mSyncObject);
     mValueList.push_back(std::move(newElement));
     return static_cast<uint32_t>(mValueList.size());
 }
@@ -723,7 +723,7 @@ inline uint32_t StackBase<VALUE, SYNC>::push_last(VALUE && newElement)
 template <typename VALUE, typename SYNC>
 inline uint32_t StackBase<VALUE, SYNC>::push_first( const VALUE & newElement )
 {
-    Lock lock(mSyncObject);
+    ScopedLock lock(mSyncObject);
     mValueList.push_front(newElement);
     return static_cast<uint32_t>(mValueList.size());
 }
@@ -731,7 +731,7 @@ inline uint32_t StackBase<VALUE, SYNC>::push_first( const VALUE & newElement )
 template <typename VALUE, typename SYNC>
 inline uint32_t StackBase<VALUE, SYNC>::push_first(VALUE && newElement)
 {
-    Lock lock(mSyncObject);
+    ScopedLock lock(mSyncObject);
     mValueList.push_front(std::move(newElement));
     return static_cast<uint32_t>(mValueList.size());
 }
@@ -739,7 +739,7 @@ inline uint32_t StackBase<VALUE, SYNC>::push_first(VALUE && newElement)
 template <typename VALUE, typename SYNC>
 VALUE StackBase<VALUE, SYNC>::pop_first() noexcept
 {
-    Lock lock(mSyncObject);
+    ScopedLock lock(mSyncObject);
 
     VALUE result = std::move(mValueList.front());
     mValueList.pop_front();
@@ -749,7 +749,7 @@ VALUE StackBase<VALUE, SYNC>::pop_first() noexcept
 template <typename VALUE, typename SYNC>
 inline typename StackBase<VALUE, SYNC>::STACKPOS StackBase<VALUE, SYNC>::find(const VALUE& Value) const noexcept
 {
-    Lock lock(mSyncObject);
+    ScopedLock lock(mSyncObject);
     auto it = std::find(mValueList.begin(), mValueList.end(), Value);
     return Constless<std::deque<VALUE>>::iter(mValueList, it);
 }
@@ -757,7 +757,7 @@ inline typename StackBase<VALUE, SYNC>::STACKPOS StackBase<VALUE, SYNC>::find(co
 template <typename VALUE, typename SYNC>
 inline typename StackBase<VALUE, SYNC>::STACKPOS StackBase<VALUE, SYNC>::find(const VALUE & Value, STACKPOS searchAfter ) const noexcept
 {
-    Lock lock(mSyncObject);
+    ScopedLock lock(mSyncObject);
     typename std::deque<VALUE>::iterator endIt{ Constless<std::deque<VALUE>>::iter(mValueList, mValueList.end()) };
     if (searchAfter == endIt)
         return endIt;
@@ -769,7 +769,7 @@ inline typename StackBase<VALUE, SYNC>::STACKPOS StackBase<VALUE, SYNC>::find(co
 template <typename VALUE, typename SYNC>
 inline typename StackBase<VALUE, SYNC>::STACKPOS StackBase<VALUE, SYNC>::first_position() const noexcept
 {
-    Lock lock(mSyncObject);
+    ScopedLock lock(mSyncObject);
     auto it = mValueList.begin();
     return Constless<std::deque<VALUE>>::iter(mValueList, it);
 }
@@ -777,7 +777,7 @@ inline typename StackBase<VALUE, SYNC>::STACKPOS StackBase<VALUE, SYNC>::first_p
 template <typename VALUE, typename SYNC>
 inline const VALUE & StackBase<VALUE, SYNC>::value_at( const STACKPOS atPosition ) const noexcept
 {
-    Lock lock( mSyncObject );
+    ScopedLock lock( mSyncObject );
 
     ASSERT( atPosition != mValueList.end( ) );
     return (*atPosition);
@@ -786,7 +786,7 @@ inline const VALUE & StackBase<VALUE, SYNC>::value_at( const STACKPOS atPosition
 template <typename VALUE, typename SYNC>
 inline VALUE & StackBase<VALUE, SYNC>::value_at( STACKPOS atPosition ) noexcept
 {
-    Lock lock( mSyncObject );
+    ScopedLock lock( mSyncObject );
 
     ASSERT( atPosition != mValueList.end( ) );
     return (*atPosition);
@@ -795,7 +795,7 @@ inline VALUE & StackBase<VALUE, SYNC>::value_at( STACKPOS atPosition ) noexcept
 template <typename VALUE, typename SYNC>
 inline typename StackBase<VALUE, SYNC>::STACKPOS StackBase<VALUE, SYNC>::next_position( STACKPOS pos ) const noexcept
 {
-    Lock lock(mSyncObject);
+    ScopedLock lock(mSyncObject);
 
     ASSERT(pos != mValueList.end());
     return (++pos);
@@ -838,14 +838,14 @@ Lockable& StackBase<VALUE, SYNC>::lockable() const  noexcept
 template<typename V, typename S>
 const areg::InStream & operator >> ( const areg::InStream & stream, areg::StackBase<V, S> & input )
 {
-    areg::Lock lock(input.mSyncObject);
+    ScopedLock lock(input.mSyncObject);
     return (stream >> input.mValueList);
 }
 
 template<typename V, typename S>
 areg::OutStream & operator << (areg::OutStream & stream, const areg::StackBase<V, S> & output )
 {
-    areg::Lock lock(output.mSyncObject);
+    ScopedLock lock(output.mSyncObject);
     return (stream << output.mValueList);
 }
 

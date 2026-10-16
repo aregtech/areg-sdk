@@ -87,6 +87,20 @@ protected:
      **/
     areg::WorkerThreadConsumer * worker_thread_consumer( const areg::String & consumerName, const areg::String & workerThreadName ) final;
 
+    /**
+     * \brief   Adds the listener of the events the hardware worker thread receives. Runs on the
+     *          component thread once the worker accepts events, before the component starts.
+     * \param   consumer        The consumer of the worker thread that started.
+     * \param   workerThread    The worker thread that started.
+     **/
+    void notify_thread_started( areg::WorkerThreadConsumer & consumer, areg::WorkerThread & workerThread ) final;
+
+    /**
+     * \brief   Removes the listener of the hardware worker thread, then shuts the component down.
+     * \param   comThread   The component thread.
+     **/
+    void shutdown_component( areg::ComponentThread & comThread ) final;
+
 private:
     /**
      * \brief   Wrapper of this pointer.
@@ -98,6 +112,11 @@ private:
      * \brief   The Worker Thread consumer object
      **/
     HardwareWorkerConsumer  mHwWorker;
+
+    /**
+     * \brief   The hardware worker thread, once it started.
+     **/
+    areg::WorkerThread *    mHwThread;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
