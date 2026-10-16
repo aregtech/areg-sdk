@@ -196,7 +196,12 @@ void BM_ConcurrentStack_Contended(benchmark::State& state)
         benchmark::DoNotOptimize(stack.pop_first());
     }
 }
+#if defined(CODSPEED_ANALYSIS)
+// The CodSpeed simulation runs one thread at a time, so it measures only the uncontended case.
+BENCHMARK(BM_ConcurrentStack_Contended);
+#else   // defined(CODSPEED_ANALYSIS)
 BENCHMARK(BM_ConcurrentStack_Contended)->Threads(1)->Threads(2)->Threads(4)->Threads(8)->UseRealTime();
+#endif  // defined(CODSPEED_ANALYSIS)
 
 //!< ConcurrentResourceMap, a lookup in 1024 entries.
 void BM_ConcurrentResourceMap_Find(benchmark::State& state)

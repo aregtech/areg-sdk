@@ -185,17 +185,17 @@ shape `38-workers.md` and `recipes/07-worker-events/` teach.
 | `lock()` | `bool lock(uint32_t timeout = areg::WAIT_INFINITE)` | `SyncPrimitives.hpp:158` |
 | `unlock()` | `bool unlock()` | `SyncPrimitives.hpp:165` |
 | `areg::Lock` | `explicit Lock(SyncObject & syncObj, bool autoLock = true)` | `SyncPrimitives.hpp:1056` |
-| `areg::ScopedLock` | `explicit ScopedLock(LOCKABLE & syncObj)`, the type deduced: `ScopedLock lock(mLock);` | `SyncPrimitives.hpp:1134` |
-| `areg::SyncEvent` | `explicit SyncEvent(bool initLock = true, bool autoReset = true)` | `SyncPrimitives.hpp:264` |
+| `areg::ScopedLock` | the type deduced by `ScopedLock lock(mLock);` from `explicit ScopedLock(LOCKABLE & syncObj)` | `SyncPrimitives.hpp:1134` |
+| `areg::SyncEvent` | `explicit SyncEvent(bool initLock = true, bool autoReset = true)` | `SyncPrimitives.hpp:258` |
 | `set_signaled()` | `bool set_signaled() noexcept` | `SyncPrimitives.hpp:299` |
 | `reset()` | `bool reset() noexcept` | `SyncPrimitives.hpp:305` |
 | `areg::SpinLock` | `SpinLock()`, for a hold of a few instructions | `SyncPrimitives.hpp:668` |
-| `areg::set_fatal_handler` | `FatalHandler set_fatal_handler(FatalHandler handler) noexcept`, `nullptr` restores the default | `FatalError.hpp:42` |
+| `areg::set_fatal_handler` | `nullptr` restores the default: `FatalHandler set_fatal_handler(FatalHandler handler) noexcept` | `FatalError.hpp:42` |
 
 `areg::Lock` is the RAII scope lock: it takes any of the others and unlocks on the way
 out. `areg::ScopedLock` does the same for a lock whose type is known, a member `SpinLock`
 for example, with direct calls instead of virtual ones. When the system cannot create a lock, areg calls
-`areg::fatal_error()` (`FatalError.hpp:50`), whose default writes the reason and aborts; an
+`areg::fatal_error(reason)` (`FatalError.hpp:50`), whose default writes the reason and aborts; an
 embedded application installs a handler that reaches a safe state instead. A `Lock` or `ScopedLock` that
 could not take its object reports it through `areg::report_lock_failure()`
 (`FatalError.hpp:60`) and continues; with the environment variable `AREG_LOCK_FAILURE_FATAL=1`,
