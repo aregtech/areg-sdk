@@ -2405,7 +2405,8 @@ SHUTDOWN_HINT = 'what it stops before the service stops, or one // line'
 STARTUP_HINT_MACHINE = ('; the generated lines after this body call mFsm.init_fsm(&comThread), '
                         'and a second call asserts')
 SHUTDOWN_HINT_MACHINE = '; the generated lines after this body call mFsm.release_fsm()'
-INCLUDES_HINT = 'the headers of your own files this provider uses, or one // line'
+INCLUDES_HINT = ('the #include lines of your own files or of the standard library this '
+                 'provider uses, or one // line')
 
 
 def includes_marker(state_slot, what):

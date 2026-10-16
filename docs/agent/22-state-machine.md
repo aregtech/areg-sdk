@@ -94,8 +94,8 @@ Everything this page describes has a field: `"submachines"` and a state's
 `param:`/`attr:`/`const:`/`lit:`/`raw:` when it has to be spelled out, as is a `"set"`
 value: `"raw:mAttrTries + 1"` counts.
 
-This page is what a machine *means*. The rest of it still applies -- the spec has a
-field for each of these -- and a document you were handed is read with the same rules.
+This page is what a machine *means*. The rest of it still applies, and a document you
+were handed is read with the same rules.
 
 **State names are unique across the whole document, not per level.** Every level is
 flattened into one C++ enumeration, so a substate of one composite collides with a
@@ -118,12 +118,11 @@ of them are optional:
 | `"constants"` | a constant operand of a guard |
 | `"states"` | every `"to"` |
 
-A name used but not declared is `error[46/RULE_UNRESOLVED_ELEMENT]`, and the message
-names the list it is missing from.
+A name used but not declared is `error[46/RULE_UNRESOLVED_ELEMENT]`, naming the
+list it is missing from.
 
 `gen_docs.py --example` prints a whole machine in this shape -- timers, triggers,
-actions, conditions, guards, a composite level and a final state. What is still yours
-is the rule below.
+actions, conditions, guards, a composite level and a final state.
 
 **A transition's target must be a sibling of the state that declares it.** A transition cannot reach into or out of a composite: to leave a subtree,
 put the transition on the composite, whose transitions fire from anywhere inside it.
@@ -179,8 +178,10 @@ marker, not on the entry of the stage being resumed.
 
 **A phase a consumer watches is published from each state's `entry` by one action
 that takes it**: `{"call": "publish_phase", "args": {"phase": "lit:<Enum>::<Value>"}}`,
-whose one body sets the service attribute on the provider. A resume re-runs that entry; under
-`OnChange` the consumer hears it only if the value changed in between.
+whose one body sets the service attribute. A resume re-runs that entry; under `OnChange`
+the consumer hears it only if the value changed in between. A response sent in `"do"`
+arrives before that publish; one sent by a transition on an event `"do"` sends arrives
+after it, the request still open.
 
 ### Leaving a level when it finishes: `OnFinal`
 
@@ -198,8 +199,8 @@ Without `OnFinal` a finished level simply stops and nothing follows.
 **Keep the nested `Final` empty.** The self-event runs only after the step that reached
 the `Final` has settled, so an operation on the nested `Final` runs while the machine is
 still inside the composite. Put the work on the transition out. The wrong placement is rule `108`, reported by `check_contract.py`
-before the build and by the generator while generating; `explain_rule.py 108` gives the
-whole rule. Working project, both kinds in one document: `recipes/06-state-machine/`.
+and by the generator; `explain_rule.py 108` gives the whole rule. Working project, both
+kinds in one document: `recipes/06-state-machine/`.
 
 ### Events the machine sends itself; entering a nested state
 
