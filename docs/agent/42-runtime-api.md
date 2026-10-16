@@ -4,8 +4,7 @@ The process and the threads it runs in: the application, a component's own ident
 threads, timers, time, files and buffers.
 
 Every method is `snake_case` and every public type is in `namespace areg`. Every
-signature was read from the header cited beside it, and the `Header.hpp:line` is
-checked against that header on every push.
+`Header.hpp:line` is checked against that header on every push.
 
 | Looking for | Section |
 |---|---|
@@ -16,7 +15,8 @@ checked against that header on every push.
 | now, formatting, elapsed time | 5, `areg::DateTime` |
 | reading and writing a file, paths | 6, `areg::File` |
 | carrying bytes through an event | 7, `areg::SharedBuffer` |
-| a name nothing else in the process has | 8, unique names |
+| a lock shared with a worker thread, a fatal error | 8, synchronization |
+| a name nothing else in the process has | 9, unique names |
 
 ---
 
@@ -174,10 +174,9 @@ always the larger. Working project: `recipes/07-worker-events/`.
 
 `#include "areg/base/SyncPrimitives.hpp"`
 
-**Read this row first.** Every handler of one component runs on that component's own
-thread, one at a time, so state a component owns alone needs no lock at all. Reach for
-one only where a worker thread you started shares state with a component, which is the
-shape `38-workers.md` and `recipes/07-worker-events/` teach.
+**Read this first.** A component's handlers run one at a time on its own thread, so
+state the component owns alone needs no lock. Lock only state that a worker thread you
+started shares with a component: `38-workers.md`, `recipes/07-worker-events/`.
 
 | Call | Signature | Header |
 |---|---|---|
@@ -185,23 +184,22 @@ shape `38-workers.md` and `recipes/07-worker-events/` teach.
 | `lock()` | `bool lock(uint32_t timeout = areg::WAIT_INFINITE)` | `SyncPrimitives.hpp:158` |
 | `unlock()` | `bool unlock()` | `SyncPrimitives.hpp:165` |
 | `areg::Lock` | `explicit Lock(SyncObject & syncObj, bool autoLock = true)` | `SyncPrimitives.hpp:1056` |
-| `areg::ScopedLock` | the type deduced by `ScopedLock lock(mLock);` from `explicit ScopedLock(LOCKABLE & syncObj)` | `SyncPrimitives.hpp:1134` |
+| `areg::ScopedLock` | `explicit ScopedLock(LOCKABLE & syncObj)`, type deduced | `SyncPrimitives.hpp:1134` |
 | `areg::SyncEvent` | `explicit SyncEvent(bool initLock = true, bool autoReset = true)` | `SyncPrimitives.hpp:258` |
 | `set_signaled()` | `bool set_signaled() noexcept` | `SyncPrimitives.hpp:299` |
 | `reset()` | `bool reset() noexcept` | `SyncPrimitives.hpp:305` |
 | `areg::SpinLock` | `SpinLock()`, for a hold of a few instructions | `SyncPrimitives.hpp:668` |
-| `areg::set_fatal_handler` | `nullptr` restores the default: `FatalHandler set_fatal_handler(FatalHandler handler) noexcept` | `FatalError.hpp:42` |
+| `areg::set_fatal_handler` | `FatalHandler set_fatal_handler(FatalHandler handler) noexcept`, null restores the default | `FatalError.hpp:42` |
 
-`areg::Lock` is the RAII scope lock: it takes any of the others and unlocks on the way
-out. `areg::ScopedLock` does the same for a lock whose type is known, a member `SpinLock`
-for example, with direct calls instead of virtual ones. When the system cannot create a lock, areg calls
-`areg::fatal_error(reason)` (`FatalError.hpp:50`), whose default writes the reason and aborts; an
-embedded application installs a handler that reaches a safe state instead. A `Lock` or `ScopedLock` that
-could not take its object reports it through `areg::report_lock_failure()`
-(`FatalError.hpp:60`) and continues; with the environment variable `AREG_LOCK_FAILURE_FATAL=1`,
-which CI sets, it ends the process instead. `std::mutex` is not prohibited; the areg types are what the framework's own waits
-and timeouts are written against. Never wait on any of them inside a handler --
-`AGENTS.md` section 6 forbids blocking there.
+`areg::Lock` is the RAII scope lock for any of them; `areg::ScopedLock` is the same for a
+lock of known type, a member `SpinLock` for example, without virtual calls. A lock the
+system cannot create calls `areg::fatal_error(reason)` (`FatalError.hpp:50`): the default
+writes the reason and aborts, and an embedded application installs a handler that reaches
+a safe state. A `Lock` or `ScopedLock` that cannot take its object calls
+`areg::report_lock_failure(reason)` (`FatalError.hpp:60`) and continues, or ends the
+process when the environment sets `AREG_LOCK_FAILURE_FATAL=1`. `std::mutex` is allowed;
+the framework's own waits and timeouts use the areg types. Never wait on any of them in a
+handler: `AGENTS.md` section 6 forbids blocking there.
 
 ---
 
