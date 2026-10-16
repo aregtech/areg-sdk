@@ -27,6 +27,7 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <netinet/in.h>
+#include <poll.h>
 #include <sys/socket.h>
 #include <sys/uio.h>
 #include <unistd.h>
@@ -121,18 +122,13 @@ namespace
         return ( ( flags != -1 ) && ( ( flags & O_NONBLOCK ) != 0 ) );
     }
 
-    //!< Writes into the socket until its send buffer is full. Restores the blocking mode it found.
-    bool fill( int sock )
+    //!< Sends 'chunk' sized pieces until the socket refuses one. Returns false on an error other than EAGAIN.
+    bool send_until_full( int sock, size_t chunk, uint64_t & total )
     {
-        const bool wasNonBlocking{ is_nonblocking( sock ) };
-        if ( ( wasNonBlocking == false ) && ( set_nonblocking( sock, true ) == false ) )
-            return false;
-
-        std::vector<uint8_t> chunk( 64u * 1024u, 0x5Au );
-        uint64_t total{ 0u };
+        std::vector<uint8_t> data( chunk, 0x5Au );
         for ( ;; )
         {
-            const ssize_t written{ ::send( sock, chunk.data( ), chunk.size( ), 0 ) };
+            const ssize_t written{ ::send( sock, data.data( ), data.size( ), 0 ) };
             if ( written > 0 )
             {
                 total += static_cast<uint64_t>(written);
@@ -142,10 +138,41 @@ namespace
             if ( ( written < 0 ) && ( errno == EINTR ) )
                 continue;
 
-            break;
+            return ( ( written < 0 ) && ( ( errno == EAGAIN ) || ( errno == EWOULDBLOCK ) ) );
+        }
+    }
+
+    //!< Writes into the socket until its send buffer is full. Restores the blocking mode it found.
+    //!< Queued data keeps moving to the peer after the first EAGAIN, so the fill is repeated with
+    //!< ever smaller pieces until the socket stays not writable for SETTLE_MS.
+    bool fill( int sock )
+    {
+        constexpr int       SETTLE_MS   { 50 };
+        constexpr uint32_t  MAX_ROUNDS  { 50u };
+
+        const bool wasNonBlocking{ is_nonblocking( sock ) };
+        if ( ( wasNonBlocking == false ) && ( set_nonblocking( sock, true ) == false ) )
+            return false;
+
+        uint64_t total{ 0u };
+        bool full{ false };
+        for ( uint32_t round = 0u; ( full == false ) && ( round < MAX_ROUNDS ); ++ round )
+        {
+            bool sent{ true };
+            for ( const size_t chunk : { size_t{ 64u * 1024u }, size_t{ 4096u }, size_t{ 256u }, size_t{ 1u } } )
+            {
+                sent = sent && send_until_full( sock, chunk, total );
+            }
+
+            if ( sent == false )
+                break;
+
+            pollfd ready{ };
+            ready.fd     = sock;
+            ready.events = POLLOUT;
+            full = ( ::poll( &ready, 1, SETTLE_MS ) == 0 );
         }
 
-        const bool full{ ( errno == EAGAIN ) || ( errno == EWOULDBLOCK ) };
         if ( wasNonBlocking == false )
             static_cast<void>(set_nonblocking( sock, false ));
 
@@ -231,6 +258,8 @@ TEST( SocketWouldBlockTest, TrySendOnFullSocketReturnsAtOnce )
     ASSERT_TRUE( open_pair( pair ) );
     ASSERT_TRUE( areg::set_send_timeout( static_cast<SOCKETHANDLE>(pair.client), SEND_TIMEOUT_MS ) );
     ASSERT_FALSE( is_nonblocking( pair.client ) );
+    // Fixed sizes switch off buffer autotuning, which otherwise makes room again after the fill.
+    shrink_buffers( pair );
     ASSERT_TRUE( fill( pair.client ) );
 
     uint8_t message[64]{ };
