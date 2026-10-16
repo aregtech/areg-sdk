@@ -258,18 +258,27 @@ TEST( SocketWouldBlockTest, TrySendOnFullSocketReturnsAtOnce )
     ASSERT_TRUE( open_pair( pair ) );
     ASSERT_TRUE( areg::set_send_timeout( static_cast<SOCKETHANDLE>(pair.client), SEND_TIMEOUT_MS ) );
     ASSERT_FALSE( is_nonblocking( pair.client ) );
-    // Fixed sizes switch off buffer autotuning, which otherwise makes room again after the fill.
     shrink_buffers( pair );
-    ASSERT_TRUE( fill( pair.client ) );
 
+    // The receive buffer of the peer can still grow after a fill (macOS), so a try-send may find
+    // room. Sending all of it at once is then correct; the unread data stays and the fill repeats.
+    constexpr uint32_t MAX_ATTEMPTS{ 10u };
     uint8_t message[64]{ };
     const areg::IoBuffer buffer{ message, sizeof( message ) };
-    const Clock::time_point start{ Clock::now( ) };
-    const int32_t sent{ areg::try_send_data_v( static_cast<SOCKETHANDLE>(pair.client), &buffer, 1u, sizeof( message ) ) };
-    const int64_t took{ elapsed_ms( start ) };
+    int32_t sent{ -1 };
+    for ( uint32_t attempt = 0u; ( sent != 0 ) && ( attempt < MAX_ATTEMPTS ); ++ attempt )
+    {
+        ASSERT_TRUE( fill( pair.client ) );
+
+        const Clock::time_point start{ Clock::now( ) };
+        sent = areg::try_send_data_v( static_cast<SOCKETHANDLE>(pair.client), &buffer, 1u, sizeof( message ) );
+        const int64_t took{ elapsed_ms( start ) };
+
+        EXPECT_LT( took, PROMPT_MS ) << "the try-send blocked for " << took << " ms";
+        ASSERT_TRUE( ( sent == 0 ) || ( sent == static_cast<int32_t>(sizeof( message )) ) ) << "sent " << sent;
+    }
 
     EXPECT_EQ( sent, 0 );
-    EXPECT_LT( took, PROMPT_MS ) << "the try-send blocked for " << took << " ms";
 
     close_pair( pair );
 }

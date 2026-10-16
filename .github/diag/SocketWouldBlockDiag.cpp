@@ -11,6 +11,8 @@
  * SettledFill         - candidate: chunks down to 1 byte, refilled until the socket stays
  *                       non-writable for SETTLE_MS.
  * SettledFillFixedBuf - candidate: as SettledFill, with SO_SNDBUF / SO_RCVBUF set first.
+ * RetryFixedBuf       - the fixed test: as SettledFillFixedBuf, filled again while the try-send
+ *                       finds room. Prints the attempts it needed.
  ************************************************************************/
 #include "units/GUnitTest.hpp"
 #include "areg/base/SocketDefs.hpp"
@@ -268,9 +270,52 @@ namespace
         close_pair( pair );
     }
 
+    //!< The method of the fixed test: fixed buffers, settled fill, refill while the try-send finds room.
+    void run_retry( uint32_t & iter, uint32_t & hits )
+    {
+        constexpr uint32_t MAX_ATTEMPTS{ 10u };
+
+        Pair pair;
+        ASSERT_TRUE( open_pair( pair ) );
+        ASSERT_TRUE( areg::set_send_timeout( static_cast<SOCKETHANDLE>(pair.client), SEND_TIMEOUT_MS ) );
+        set_buffers( pair );
+
+        uint8_t message[64]{ };
+        const areg::IoBuffer buffer{ message, sizeof( message ) };
+        int32_t sent{ -1 };
+        int64_t maxTook{ 0 };
+        uint32_t attempts{ 0u };
+        Snapshot filled;
+        while ( ( sent != 0 ) && ( attempts < MAX_ATTEMPTS ) )
+        {
+            ++ attempts;
+            uint32_t rounds{ 0u };
+            ASSERT_GT( fill_settled( pair.client, rounds ), 0 );
+            filled = snap( pair );
+
+            const Clock::time_point start{ Clock::now( ) };
+            sent = areg::try_send_data_v( static_cast<SOCKETHANDLE>(pair.client), &buffer, 1u, sizeof( message ) );
+            const int64_t took{ std::chrono::duration_cast<std::chrono::microseconds>( Clock::now( ) - start ).count( ) };
+            maxTook = ( took > maxTook ) ? took : maxTook;
+        }
+
+        ++ iter;
+        if ( sent != 0 )
+            ++ hits;
+
+        std::printf( "DIAG150 RetryFixedBuf done iter=%u attempts=%u sent=%d max_took_us=%lld\n"
+                   , iter, attempts, sent, static_cast<long long>(maxTook) );
+        if ( attempts > 1u )
+            print( "RetryFixedBuf", "filled ", iter, filled );
+
+        EXPECT_EQ( sent, 0 );
+        close_pair( pair );
+    }
+
     uint32_t gOriginalIter{ 0u }, gOriginalHits{ 0u };
     uint32_t gSettledIter{ 0u }, gSettledHits{ 0u };
     uint32_t gFixedIter{ 0u }, gFixedHits{ 0u };
+    uint32_t gRetryIter{ 0u }, gRetryHits{ 0u };
 }
 
 TEST( SocketWouldBlockDiag, OriginalFill )
@@ -286,6 +331,11 @@ TEST( SocketWouldBlockDiag, SettledFill )
 TEST( SocketWouldBlockDiag, SettledFillFixedBuf )
 {
     run_case( "SettledFillFixedBuf", Fill::SettledFixedBuffers, gFixedIter, gFixedHits );
+}
+
+TEST( SocketWouldBlockDiag, RetryFixedBuf )
+{
+    run_retry( gRetryIter, gRetryHits );
 }
 
 #endif  // defined(_POSIX)

@@ -310,12 +310,14 @@ void ServiceManagerEventProcessor::_unregister_provider( const StubAddress & whi
     {
         if ( reason == areg::DisconnectReason::ProviderRejected )
         {
+#if AREG_LOGGING
             // Rejected in the network only: the consumers of this process keep the local provider.
             const StubBase * local{ StubBase::find_stub( whichServer ) };
             const StubAddress & named{ local != nullptr ? local->address( ) : whichServer };
             LOG_ERR( "The provider of role name [ %s ], service [ %s ] is rejected in the network: another process already provides this public role name. It serves only the consumers of this process"
                        , named.role_name( ).as_string( )
                        , named.service_name( ).as_string( ) );
+#endif  // AREG_LOGGING
             return;
         }
 

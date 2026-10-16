@@ -282,8 +282,8 @@ jobs:
         continue-on-error: true
         run: |
           rc=0
-          "${BIN}" --gtest_filter='SocketWouldBlockTest.TrySendOnFullSocketReturnsAtOnce' --gtest_repeat=500 > original-inprocess.log 2>&1 || rc=$?
-          echo "original, one process : $(grep -c '^\[  FAILED  \] SocketWouldBlockTest.TrySendOnFullSocketReturnsAtOnce (' original-inprocess.log) of 500 failed" | tee -a summary.txt
+          "${BIN}" --gtest_filter='SocketWouldBlockTest.TrySendOnFullSocketReturnsAtOnce' --gtest_repeat=3000 > original-inprocess.log 2>&1 || rc=$?
+          echo "original, one process : $(grep -c '^\[  FAILED  \] SocketWouldBlockTest.TrySendOnFullSocketReturnsAtOnce (' original-inprocess.log) of 3000 failed" | tee -a summary.txt
           exit ${rc}
 
       - name: Repeat the failing test, one process per run
@@ -297,16 +297,18 @@ jobs:
           echo "original, per process : ${failed} of 200 failed" | tee -a summary.txt
           [ "${failed}" = "0" ]
 
+      # Evidence only: the old fills are expected to find room, so this step does not gate the job.
       - name: Run the diagnostic
         id: diag
         continue-on-error: true
         run: |
-          rc=0
-          "${BIN}" --gtest_filter='SocketWouldBlockDiag.*' --gtest_repeat=500 > diag.log 2>&1 || rc=$?
+          "${BIN}" --gtest_filter='SocketWouldBlockDiag.*' --gtest_repeat=500 > diag.log 2>&1 || true
           for t in OriginalFill SettledFill SettledFillFixedBuf; do
             echo "diag ${t} : $(grep -c "DIAG150 ${t} HIT" diag.log) of 500 found room" | tee -a summary.txt
           done
-          exit ${rc}
+          echo "diag RetryFixedBuf : $(grep -c 'DIAG150 RetryFixedBuf done .* sent=[^0]' diag.log) of 500 never reached a full socket" | tee -a summary.txt
+          echo "diag RetryFixedBuf attempts needed (count attempts):" | tee -a summary.txt
+          grep -o 'DIAG150 RetryFixedBuf done .*attempts=[0-9]*' diag.log | grep -o 'attempts=[0-9]*' | sort | uniq -c | tee -a summary.txt
 
       - name: Summary
         if: always()
@@ -335,4 +337,4 @@ jobs:
       - name: Fail the job when a check failed
         if: always()
         run: |
-          [ "${{steps.inproc.outcome}}" != "failure" ] && [ "${{steps.perproc.outcome}}" != "failure" ] && [ "${{steps.diag.outcome}}" != "failure" ]
+          [ "${{steps.inproc.outcome}}" != "failure" ] && [ "${{steps.perproc.outcome}}" != "failure" ]
