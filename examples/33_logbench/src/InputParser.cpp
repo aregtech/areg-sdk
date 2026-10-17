@@ -1,7 +1,29 @@
 #include "src/InputParser.hpp"
 #include <unordered_set>
+#include <optional>
+#include <charconv>
+#include <iostream>
 
-BenchmarkConfig InputParser::parseInput(int argc, char* argv[]) {
+
+static std::optional<int> parseInt(std::string_view input)
+{
+    int value{};
+
+    const auto [ptr, error] = std::from_chars(
+        input.data(),
+        input.data() + input.size(),
+        value
+    );
+
+    if (error != std::errc{} || ptr != input.data() + input.size())
+    {
+        return std::nullopt;
+    }
+
+    return value;
+}
+
+std::optional<BenchmarkConfig> InputParser::parseInput(int argc, char* argv[]) {
     std::vector<std::string> args;
     for (int i = 1; i < argc; i++) {
             if (argv[i][0] != '-' || argv[i][1] < 'a' || argv[i][1] > 'z') {
@@ -30,80 +52,75 @@ BenchmarkConfig InputParser::parseInput(int argc, char* argv[]) {
     return buildConfig(pList);
 }
 
-BenchmarkConfig InputParser::buildConfig(std::vector<ParsedArg> pList) {
+std::optional<BenchmarkConfig> InputParser::buildConfig(std::vector<ParsedArg> pList) {
     BenchmarkConfig cfg;
+    std::unordered_set<std::string> numericalFlags = {"l", "w", "t", "a", "af", "ad", "as", "sl"};
+    int argVal{};
     for (ParsedArg p : pList) {
-        int argVal;
-        std::unordered_set<std::string> numericalFlags = {"l", "w", "t", "a", "af", "ad", "as", "sl"};
         if (numericalFlags.find(p.flag) != numericalFlags.end()) {
-            try {
-                argVal = stoi(p.value);
-            } catch (const std::invalid_argument&) {
-                throw std::invalid_argument("Flag value must be an integer!");
-            } catch (const std::out_of_range&) {
-                throw std::invalid_argument("Integer is too large!");
+            std::optional<int> optArgVal = parseInt(p.value);
+
+            if (optArgVal.has_value()) {
+                argVal = optArgVal.value();
+            } else {
+                std::cerr << "Argument value has to be a valid integer\n";
+                return std::nullopt;
             }
         }
         if (p.flag == "l") {
             if (argVal < 1000 || argVal > 100000) {
-                throw std::out_of_range("Number of loops must be between 1000 and 100,000!");
+                std::cerr << "Number of loops must be between 1000 and 100,000!\n";
+                return std::nullopt;
             }
             cfg.nSamples = argVal;
         
         } else if (p.flag == "w") {
             if (argVal < 0 || argVal > 100) {
-                throw std::out_of_range(
-                    "Number of warm-up sessions must be between 0 and 100!"
-                );
+                std::cerr << "Number of warm-up sessions must be between 0 and 100!\n";
+                return std::nullopt;
             }
             cfg.nWarmUps = argVal;
 
         } else if (p.flag == "t") {
             if (argVal != 1 && argVal != 2 && argVal != 4 &&
                 argVal != 8 && argVal != 16) {
-                throw std::out_of_range(
-                    "Number of threads must be 1, 2, 4, 8, or 16!"
-                );
+                std::cerr << "Number of threads must be 1, 2, 4, 8, or 16!\n";
+                return std::nullopt;
             }
             cfg.nThreads = argVal;
 
         } else if (p.flag == "a") {
             if (argVal < 1 || argVal > 12) {
-                throw std::out_of_range(
-                    "Max number of arguments must be between 1 and 12!"
-                );
+                std::cerr << "Max number of arguments must be between 1 and 12!\n";
+                return std::nullopt;
             }
             cfg.maxArgs = argVal;
 
         } else if (p.flag == "af") {
             if (argVal < 0 || argVal > 12) {
-                throw std::out_of_range(
-                    "Number of floating-point arguments must be between 0 and 12!"
-                );
+                std::cerr << "Number of floating-point arguments must be between 0 and 12!\n";
+                return std::nullopt;
             }
             cfg.nFloatArgs = argVal;
 
         } else if (p.flag == "ad") {
             if (argVal < 0 || argVal > 12) {
-                throw std::out_of_range(
-                    "Number of integer arguments must be between 0 and 12!"
-                );
+                std::cerr << "Number of integer arguments must be between 0 and 12!\n";
+                return std::nullopt;
             }
             cfg.nIntArgs = argVal;
 
         } else if (p.flag == "as") {
             if (argVal < 0 || argVal > 12) {
-                throw std::out_of_range(
-                    "Number of string arguments must be between 0 and 12!"
-                );
+                std::cerr << "Number of string arguments must be between 0 and 12!\n";
+                return std::nullopt;
             }
             cfg.nStringArgs = argVal;
 
         } else if (p.flag == "sl") {
             if (argVal < 4 || argVal > 64) {
-                throw std::out_of_range(
-                    "String length must be between 4 and 64!"
-                );
+                std::cerr << "String length must be between 4 and 64!\n";
+                return std::nullopt;
             }
             cfg.strArgLen= argVal;
 
@@ -118,16 +135,19 @@ BenchmarkConfig InputParser::buildConfig(std::vector<ParsedArg> pList) {
             } else if (p.value == "all") {
                 cfg.logDest = LogDestination::All;
             } else {
-                throw std::invalid_argument("Unknown output destination!");
+                std::cerr << "Unknown output destination!\n";
+                return std::nullopt;
             }
 
         } else {
-            throw std::invalid_argument("Unknown flag found!");
+            std::cerr << "Unknown flag found!\n";
+            return std::nullopt;
         }
     }    
 
     if (cfg.nFloatArgs + cfg.nIntArgs + cfg.nStringArgs > cfg.maxArgs) {
-        throw std::out_of_range("Number of arguments exceed max arguments!");
+        std::cerr << "Number of arguments exceed max arguments!\n";
+        return std::nullopt;
     }
 
     return cfg;

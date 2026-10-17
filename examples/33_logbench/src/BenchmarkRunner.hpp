@@ -46,8 +46,6 @@ public:
 
     void run_dynamic_log_session();
 
-    void log_int();
-
     // Sample Functions
 private:
 
@@ -97,19 +95,19 @@ private:
     uint64_t bench_dbg_dynamic();
 
     // Templates for generating and benchmarking dynamic logging call
-    template <int NI, int NS, int NF>
+    template <int NIntArgs, int NStrArgs, int NFltArgs>
     std::string makeFormat() {
         int count = 0;
         std::string out = "";
-        for (int i = 0; i < NI; i++) {
+        for (int i = 0; i < NIntArgs; i++) {
             count++;
             out.append("Arg " + std::to_string(count) + ": %d, ");
         }
-        for (int i = 0; i < NS; i++) {
+        for (int i = 0; i < NStrArgs; i++) {
             count++;
             out.append("Arg " + std::to_string(count) + ": %s, ");
         }
-        for (int i = 0; i < NF; i++) {
+        for (int i = 0; i < NFltArgs; i++) {
             count++;
             out.append("Arg " + std::to_string(count) + ": %.2f, ");
         }
@@ -117,58 +115,58 @@ private:
     };
 
 
-    template <int NI, int NS, int NF, typename LoggingCall>
-    void dispatchNF(int nFlt, LoggingCall&& logCall) {
-        if (nFlt == NF) {
-            std::string formatStr = makeFormat<NI,NS,NF>();
+    template <int NIntArgs, int NStrArgs, int NFltArgs, typename LoggingCall>
+    void dispatch_n_flt_args(int nFlt, LoggingCall&& logCall) {
+        if (nFlt == NFltArgs) {
+            std::string formatStr = makeFormat<NIntArgs,NStrArgs,NFltArgs>();
             bench_dyn_log(std::make_index_sequence<3>{}, std::make_index_sequence<3>{}, std::make_index_sequence<3>{}, makeFormat<3,3,3>(), logCall);
             
             return;
         }
-        if constexpr (NF < MAX_ARG) {
-            dispatchNF<NI,NS,NF+1>(nFlt,logCall);
+        if constexpr (NFltArgs < MAX_ARG) {
+            dispatch_n_flt_args<NIntArgs,NStrArgs,NFltArgs+1>(nFlt,logCall);
         }
 
     }
 
-    template <int NI, int NS, typename LoggingCall>
-    void dispatchNS(int nStr, int nFlt, LoggingCall&& logCall) {
-        if (nStr == NS) {
-            dispatchNF<NI, NS, 0>(nFlt, logCall);
+    template <int NIntArgs, int NStrArgs, typename LoggingCall>
+    void dispatch_n_str_args(int nStr, int nFlt, LoggingCall&& logCall) {
+        if (nStr == NStrArgs) {
+            dispatch_n_flt_args<NIntArgs, NStrArgs, 0>(nFlt, logCall);
             return;
         }
-        if constexpr (NS < MAX_ARG) {
-            dispatchNS<NI,NS+1>(nStr, nFlt, logCall);
+        if constexpr (NStrArgs < MAX_ARG) {
+            dispatch_n_str_args<NIntArgs,NStrArgs+1>(nStr, nFlt, logCall);
         }
         
 
     }
 
-    template <int NI, typename LoggingCall>
-    void dispatchNI(int nInt, int nStr, int nFlt, LoggingCall&& logCall) {
-        if (nInt == NI) {
-            dispatchNS<NI,0>(nStr,nFlt,logCall);
+    template <int NIntArgs, typename LoggingCall>
+    void dispatch_n_int_args(int nInt, int nStr, int nFlt, LoggingCall&& logCall) {
+        if (nInt == NIntArgs) {
+            dispatch_n_str_args<NIntArgs,0>(nStr,nFlt,logCall);
             return;
         }
 
-        if constexpr (NI < MAX_ARG) {
-            dispatchNI<NI+1>(nInt, nStr, nFlt, logCall);
+        if constexpr (NIntArgs < MAX_ARG) {
+            dispatch_n_int_args<NIntArgs+1>(nInt, nStr, nFlt, logCall);
         }
     }
 
 
-    template <size_t... NI, size_t... NS, size_t... NF, typename LoggingCall>
+    template <size_t... NIntArgs, size_t... NStrArgs, size_t... NFltArgs, typename LoggingCall>
     void bench_dyn_log(
-        std::index_sequence<NI...>, 
-        std::index_sequence<NS...>, 
-        std::index_sequence<NF...>, 
+        std::index_sequence<NIntArgs...>, 
+        std::index_sequence<NStrArgs...>, 
+        std::index_sequence<NFltArgs...>, 
         const std::string& formatString, 
         LoggingCall&& logCall
     ) 
     {
         for (int i = 0; i < mCfg.nSamples; i++) {
             uint64_t begin = now_ns();
-            logCall(formatString.c_str(), ((void)NI, 42)..., ((void)NS, "Hello")..., ((void)NF, 3.14)...);
+            logCall(formatString.c_str(), ((void)NIntArgs, 42)..., ((void)NStrArgs, "Hello")..., ((void)NFltArgs, 3.14)...);
             uint64_t end = now_ns();
             uint64_t sample = end - begin;
             mSamples.push_back(sample);

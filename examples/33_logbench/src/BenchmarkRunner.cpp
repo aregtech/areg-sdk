@@ -132,13 +132,13 @@ void BenchmarkRunner::run_benchmark() {
 void BenchmarkRunner::run_dynamic_log_session() {
     LOGGING_CONFIGURE_AND_START(nullptr, true);
     LOG_SCOPE(logging_bench, test_dynamic_log);
-    auto makeLogCall = [&](const char* format, auto&&... args)
+    auto make_log_call = [&](const char* format, auto&&... args)
     {
         LOG_DBG(format, args...);
     };
 
     // Starts runtime dispatch to find the right template function that matches number of specified arguments
-    dispatchNI<0>(mCfg.nIntArgs,mCfg.nStringArgs,mCfg.nFloatArgs,makeLogCall);
+    dispatch_n_int_args<0>(mCfg.nIntArgs, mCfg.nStringArgs, mCfg.nFloatArgs, make_log_call);
 
     LOGGING_STOP();
 }
