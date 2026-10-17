@@ -2518,31 +2518,40 @@ def shared_request_actions(project, spec):
                    for name in answered)
 
     runs = {}
+    moves = []
 
     def walk(states):
         for state in states or []:
             for move in state.get('transitions') or []:
                 on = move.get('on')
+                called = set()
                 for step in move.get('do') or []:
                     name = step if isinstance(step, str) else \
                         step.get('call') if isinstance(step, dict) else None
                     if isinstance(name, str) and on and forwards(on):
+                        called.add(name)
                         args = json.dumps(step.get('args'), sort_keys=True) \
                             if isinstance(step, dict) else 'null'
                         triggers = runs.setdefault(name, {}).setdefault(args, [])
                         if on not in triggers:
                             triggers.append(on)
+                if called:
+                    moves.append((on, called))
             walk(state.get('states'))
 
     walk(spec.get('states'))
     actions = set(entry.get('name') for entry in spec.get('actions') or []
                   if isinstance(entry, dict))
-    shared = []
+    alike = {}
     for name, calls in runs.items():
-        alike = [triggers for triggers in calls.values() if len(triggers) > 1]
-        if name in actions and alike:
-            shared.append((name, [on for triggers in alike for on in triggers]))
-    return shared
+        lists = [triggers for triggers in calls.values() if len(triggers) > 1]
+        if name in actions and lists:
+            alike[name] = [on for triggers in lists for on in triggers]
+    # A transition that also runs an action of its own trigger alone answers through it.
+    own = actions - set(alike)
+    return [(name, triggers) for name, triggers in alike.items()
+            if any(on in triggers and name in called and not (called & own - {name})
+                   for on, called in moves)]
 
 
 def hosted_accumulators(project, spec):
@@ -3079,7 +3088,9 @@ EXAMPLE_PROGRAMS = {
            "programs: one executable each, under src/<name>/. A component provides one",
            "service (\"roles\" runs named instances of it), drives the scenario (the steps of",
            "that service; \"role\" is the instance it talks to) or watches one, as the board",
-           "does: it reacts to updates and drives nothing. \"uses\" gives any component a",
+           "does: it reacts to updates and drives nothing. A role is a C identifier in code",
+           "and at run time, each space or dash in it as \"_\": role_name(), the log and an",
+           "expect pattern say a_b for \"a b\". \"uses\" gives any component a",
            "client member per used role: mStock below, called as",
            "mStock.request_reserve(...), every answer a worksheet section. A client waits",
            "for its first connection without limit; \"connect_seconds\": N on a use runs its",
@@ -3428,7 +3439,7 @@ TEMPLATE = {
         "attributes": [{"name": "", "type": "", "value": "", "description": ""}],
         "constants": [{"name": "", "type": "", "value": "", "description": ""}],
         "triggers": [{"name": "", "description": "", "params": [{"name": "", "type": ""}]}],
-        "timers": [{"name": "", "timeout": 300, "description": ""}],
+        "timers": [{"name": "", "timeout": 300, "repeat": 1, "description": ""}],
         "events": [{"name": "", "description": "", "params": [{"name": "", "type": ""}]}],
         "actions": [{"name": "", "description": "", "params": [{"name": "", "type": ""}]}],
         "conditions": [{"name": "", "description": "", "params": [{"name": "", "type": ""}]}],
@@ -3486,6 +3497,18 @@ TEMPLATE = {
 }
 
 SAMPLES = samples_of(TEMPLATE, set())
+
+
+def earlier_template():
+    """The template as it was before its machine timer carried "repeat"."""
+    earlier = copy.deepcopy(TEMPLATE)
+    for timer in earlier['machines'][0]['timers']:
+        timer.pop('repeat', None)
+    return earlier
+
+
+# A sample an earlier template wrote also reads as untouched.
+SAMPLES |= samples_of(earlier_template(), set())
 
 # The optional blocks of the template, by the feature that receives them: a top-level key,
 # or a key inside every entry of a top-level list.

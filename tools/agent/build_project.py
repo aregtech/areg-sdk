@@ -30,6 +30,7 @@ import re
 import shutil
 import subprocess
 import sys
+import threading
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PYTHON = sys.executable or 'python3'
@@ -42,6 +43,8 @@ import gen_skeleton  # noqa: E402
 # A fixed job count is right on every machine the corpus has to describe, and it
 # costs no page: $(nproc) is absent on macOS and spelled differently on Windows.
 DEFAULT_JOBS = 8
+# Seconds standard input may stay silent before --write or --edit stops waiting for it.
+INPUT_WAIT = 10
 
 # Where a --run keeps every process's whole output, a pass included.
 KEPT_OUTPUT = '{build}/scenarios/'
@@ -206,6 +209,25 @@ def fail(message):
     sys.stdout.flush()
     sys.stderr.write('error: {}\n'.format(message))
     sys.exit(2)
+
+
+def read_input(flag):
+    """Returns standard input whole, or fails when it sends nothing within INPUT_WAIT seconds."""
+    if sys.stdin is None or sys.stdin.isatty():
+        return ''
+    peek = getattr(getattr(sys.stdin, 'buffer', None), 'peek', None)
+    if peek is not None:
+        waiter = threading.Thread(target=peek, daemon=True)
+        waiter.start()
+        waiter.join(INPUT_WAIT)
+        if waiter.is_alive():
+            sys.stdout.flush()
+            sys.stderr.write('error: {} reads standard input and nothing came in {} s: send it '
+                             'as a here-document, or drop {} to use the files as they are on '
+                             'disk\n'.format(flag, INPUT_WAIT, flag))
+            sys.stderr.flush()
+            os._exit(2)
+    return sys.stdin.read()
 
 
 def write_input(root, target, text):
@@ -1027,7 +1049,8 @@ def source_bodies(pristine, current):
     """{marker: (body lines, first, end, pad)} found in current where pristine holds the
     marker, first and end bounding an unanchored body in current (None when anchored),
     pad the marker's indentation; and the count of pristine lines changed outside any
-    marker."""
+    marker. A body the generator wrote filled counts as a marker, and is found only
+    once it differs from what the generator wrote."""
     lines = current.splitlines()
     plain = pristine.splitlines()
     mapped = {}
@@ -1038,10 +1061,14 @@ def source_bodies(pristine, current):
                 mapped[i1 + offset] = j1 + offset
     bodies, inside = {}, set()
     for index, line in enumerate(plain):
-        hit = fill_markers.MARKER.search(line)
+        hit = fill_markers.MARKER.search(line) or fill_markers.BODY_OPEN.search(line)
         if not hit:
             continue
         last = index
+        written = bool(fill_markers.BODY_OPEN.search(line))
+        if written:
+            last = next((end for end in range(index + 1, len(plain))
+                         if fill_markers.BODY_END.search(plain[end])), index)
         while last + 1 < len(plain) and fill_markers.PLACEHOLDER.search(plain[last + 1]):
             last += 1
         inside.update(range(index, last + 1))
@@ -1057,6 +1084,8 @@ def source_bodies(pristine, current):
             continue
         else:
             span = (before + 1, after)
+        if written and dedent(body) == dedent(plain[index + 1:last]):
+            continue
         bodies[hit.group(1)] = (dedent(body), span, fill_markers.indent_of(line))
     edited = sum(1 for index in range(len(plain))
                  if index not in mapped and index not in inside)
@@ -1101,7 +1130,9 @@ def read_back(root, build, bodies, regenerate=False):
     owners = {}
     for rel, where in pristine.items():
         with open(where, encoding='utf-8') as handle:
-            for name in set(hit.group(1) for hit in map(fill_markers.MARKER.search, handle)
+            for name in set(hit.group(1) for hit in
+                            (fill_markers.MARKER.search(line) or
+                             fill_markers.BODY_OPEN.search(line) for line in handle)
                             if hit):
                 owners.setdefault(name, []).append(rel)
     clean, taken, both = True, [], []
@@ -1227,12 +1258,17 @@ def worksheet_sections(path):
             lines = handle.read().splitlines()
     except (IOError, OSError):
         return None
-    sections, name = {'': [1, []]}, ''
+    sections, name, where = {'': [1, []]}, '', ''
     for number, line in enumerate(lines, 1):
         if line.startswith('== '):
             name = line[3:].strip()
             sections[name] = [number, []]
-        elif not line.startswith('#| ---- '):
+        elif line.startswith('#| ---- '):
+            where = line[8:].strip()
+        elif line.startswith('#| ' + gen_skeleton.FILLED_HEAD):
+            name = 'the filled list of ' + where
+            sections[name] = [number, [line]]
+        else:
             sections[name][1].append(WORKSHEET_COUNT.sub('', line))
     return sections
 
@@ -1370,10 +1406,10 @@ def main():
     made.append((args.build.replace(os.sep, '/'), 'the build'))
     appendable = (fill_markers.FIX_FILE, args.bodies.replace(os.sep, '/'))
     if args.edit:
-        text = '' if sys.stdin is None or sys.stdin.isatty() else sys.stdin.read()
+        text = read_input('--edit')
         apply_edits(root, text, made, appendable)
     for target in args.write:
-        text = '' if sys.stdin is None or sys.stdin.isatty() else sys.stdin.read()
+        text = read_input('--write')
         if os.path.basename(target) in appendable:
             text = apply_file_blocks(root, target, text, made, appendable)
             if not text.strip():

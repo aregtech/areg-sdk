@@ -58,6 +58,18 @@ def marker(slot, what, indent=8):
     return '{}// TODO(you) {}: {}.'.format(' ' * indent, slot, what)
 
 
+# A slot written filled: FILLED_LINE between the two lines fill_markers.py writes around
+# a body, so a section of its name replaces it.
+FILLED_LINE = '// nothing to do here'
+FILLED = re.compile(r'^\s*//\s*body\(you\)\s+([A-Za-z_]\w*)\s*$')
+
+
+def filled(slot, indent=8):
+    """The lines of a slot written filled with FILLED_LINE, named after the slot."""
+    pad = ' ' * indent
+    return [pad + '// body(you) ' + slot, pad + FILLED_LINE, pad + '// end(you) ' + slot]
+
+
 def runs_on(machine, action, most=4):
     """Where an action runs, as the tail of its marker, or nothing for one place."""
     places = machine.runs_on.get(action) or []
@@ -441,6 +453,32 @@ def worksheet_sections(produced, out):
     return found
 
 
+# The line under a file's heading that names its slots written filled, before the names.
+FILLED_HEAD = ('filled with a // line already, which does nothing. A section of the same '
+               'name replaces only that line, and any step_ check after it still runs: ')
+
+
+def filled_sections(produced, out):
+    """Every slot written filled, as (name, path, file), in file order."""
+    found = []
+    for file_name, text in produced:
+        path = os.path.join(out, file_name).replace('\\', '/')
+        for line in text.splitlines():
+            hit = FILLED.match(line)
+            if hit:
+                found.append((hit.group(1), path, file_name))
+    return found
+
+
+def filled_names(text):
+    """The section names a worksheet's text lists as written filled."""
+    names = []
+    for line in text.splitlines():
+        if line.startswith('#| ' + FILLED_HEAD):
+            names += [name for name in line[3 + len(FILLED_HEAD):].split(', ') if name]
+    return names
+
+
 def enclosing(lines, index):
     """The signature the marker at this line sits inside, or '' when it sits in none.
 
@@ -680,7 +718,7 @@ CONNECT_ONLY = ['service_connected() is generated and runs before any body below
 UPDATE_NOTE = ['an update_ body runs on every arrival, whatever step is current, and',
                'before the step_ check of the same update. That check runs while its',
                'step is current, and once as it begins if one arrived since the last',
-               'request to its service.',
+               'request to its service; the body does not run again.',
                'Both run inside the check the generated handler makes, so the value is',
                'valid and no test of state is needed:',
                '    if (state == areg::DataState::DataIsOK)',
@@ -784,13 +822,14 @@ def first_sections(sections):
     return first
 
 
-def section_notes(sections, driven=(), connected=None, stepless=(), fresh=()):
+def section_notes(sections, driven=(), connected=None, stepless=(), fresh=(), steps=()):
     """The warnings that belong to one section, keyed by its marker name.
 
     "driven" is what driven_body() quoted and "connected" the files with a generated
     service_connected(): both name a body no section covers, and the note that points
-    at it goes on the first section of its own file. "stepless" are the files no step
-    reaches, whose notes say nothing of steps.
+    at it goes on the first section of its own file, once per worksheet. "stepless"
+    are the files no step reaches, whose notes say nothing of steps. "steps" carry the
+    note of an awaited update when no update_ section is left to carry it.
     """
     notes = {}
     # Keyed by file as well: one attribute name can be awaited in one file and not in
@@ -821,6 +860,13 @@ def section_notes(sections, driven=(), connected=None, stepless=(), fresh=()):
         if signature not in seen:
             seen.add(signature)
             notes[name] = STEP_BRIEF
+    if not any(name.startswith('update_') and UPDATE_CHECKED in hint
+               for name, hint, _, _, _ in sections):
+        waits = [name for name in ('step_' + step['name'] for step in steps
+                                   if step.get('awaits') and step['awaits'][0] == 'update')
+                 if name in dict(checks)]
+        if waits:
+            notes[waits[0]] = notes.get(waits[0], []) + UPDATE_NOTE
     for name, hint, _, file_name, _ in sections:
         if (name.startswith('response_') and 'before the step_ check' not in hint
                 and file_name not in stepless):
@@ -830,7 +876,8 @@ def section_notes(sections, driven=(), connected=None, stepless=(), fresh=()):
     for name, hint, _, file_name, _ in sections:
         if file_name.endswith('.hpp') and not name.split(':')[-1].endswith('includes') \
                 and not hint.startswith(OWN_HEADER):
-            notes[name] = STATE_NOTE
+            notes[(file_name, name)] = STATE_NOTE
+            break
     names = [name for name, _, _, _, _ in sections]
     if 'peer_lost' in names:
         notes['peer_lost'] = PEER_LOST_NOTE
@@ -846,13 +893,17 @@ def section_notes(sections, driven=(), connected=None, stepless=(), fresh=()):
     quoted = {}
     for cls, wanted, _ in driven:
         quoted.setdefault(cls, []).append(wanted + '()')
+    told = set()
     for cls, (name, file_name) in first_sections(sections).items():
         said = []
         if cls in quoted:
-            said += textwrap.wrap(DRIVEN_POINTER.format(
-                spelt(quoted[cls]), 'is' if len(quoted[cls]) < 2 else 'are'), 74)
+            said.append(tuple(textwrap.wrap(DRIVEN_POINTER.format(
+                spelt(quoted[cls]), 'is' if len(quoted[cls]) < 2 else 'are'), 74)))
         if file_name in (connected or {}):
-            said += connected[file_name]
+            said.append(tuple(connected[file_name]))
+        said = [note for note in said if note not in told]
+        told.update(said)
+        said = [line for note in said for line in note]
         if said:
             notes[(file_name, name)] = notes.get((file_name, name),
                                                  notes.get(name, [])) + said
@@ -1062,7 +1113,10 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
             for line in textwrap.wrap(
                     'A check while such a step runs, a wait, goes in the section of what it '
                     'watches, testing mStep == Step::<Name>; a client of the driver tests '
-                    'mOwner.mStep == {}::Step::<Name>.'.format(driver_cls), 74):
+                    'mOwner.mStep == {}::Step::<Name>.{}'.format(
+                        driver_cls, ' No section runs as a wait ends: what follows it goes in '
+                        'the next step_ section.' if any(step['wait'] and not step['awaits']
+                                                         for step in steps) else ''), 74):
                 lines.append('#| ' + line)
         lines.append('#|')
         listed = with_hold(steps, hold)
@@ -1078,7 +1132,18 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
     driven = driven_body(produced)
     if driven:
         lines.append(DRIVEN_HEAD)
+        shown = []
         for cls, _, body in driven:
+            same = next(((other, pair) for other, quoted in shown
+                         for pair in [renamed(quoted, other, body, cls)] if pair is not None),
+                        None)
+            if same:
+                lines.append('#|   {} is {}\'s above{}'.format(
+                    body[0].strip(), same[0], ', {} in place of {}'.format(
+                        same[1][1], same[1][0]) if same[1] else ''))
+                lines.append('#|')
+                continue
+            shown.append((cls, body))
             for line in body:
                 lines.append(('#|   ' + line).rstrip())
             lines.append('#|')
@@ -1103,14 +1168,24 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
                  '#| (true); resuming an attribute delivers its current value at once:\n#|')
     # A type or a rule two documents share is listed under the first.
     listed = set()
+    names = set(name for name, _, _, _, _ in sections)
     for spec, doc in contracts or ((iface, document), (machine, machine_doc)):
         if spec is None:
             continue
+        folded = False
         for line in contract_lines(spec, doc):
             if len(line) >= 30 and line.startswith('  '):
                 if line in listed:
                     continue
                 listed.add(line)
+            hit = OVERRIDE.match(line)
+            if hit and (hit.group(2) if hit.group(1) == 'void' else
+                        'condition_' + hit.group(2)) in names:
+                if not folded:
+                    lines.append('#| ' + OVERRIDE_FOLDED)
+                    folded = True
+                continue
+            folded = folded and not line.startswith('document:')
             lines.append(('#| ' + line).rstrip())
     lines.append('#|')
     if extra:
@@ -1126,19 +1201,36 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
                    if 'Step::' not in body and 'client_connected()' not in body)
     fresh = set(file_name for file_name, body in produced
                 if file_name.endswith('.cpp') and 'mFresh' in body)
-    notes = section_notes(sections, driven, connecting(produced), stepless, fresh)
+    notes = section_notes(sections, driven, connecting(produced), stepless, fresh, steps)
     falls = fall_through(steps, hold)
-    current = None
+    prefilled = filled_sections(produced, out)
     # A name more than one file carries is addressed through its file.
     counts = {}
-    for name, _, _, _, _ in sections:
+    for name in [entry[0] for entry in sections] + [entry[0] for entry in prefilled]:
         counts[name] = counts.get(name, 0) + 1
+
+    def address(name, file_name):
+        return name if counts[name] == 1 else '{}:{}'.format(os.path.basename(file_name), name)
+
+    written = {}
+    for name, path, file_name in prefilled:
+        written.setdefault(path, []).append(address(name, file_name))
+    paths = [os.path.join(out, file_name).replace('\\', '/') for file_name, _ in produced]
+    for path in written:
+        if not any(path == entry[2] for entry in sections):
+            sections.append((None, None, path, None, None))
+    sections.sort(key=lambda entry: paths.index(entry[2]) if entry[2] in paths else len(paths))
+    current = None
     for name, hint, path, file_name, signature in sections:
         if path != current:
             lines.append('\n#| ---- {}'.format(path))
             current = path
-        lines.append('== {}'.format(name if counts[name] == 1 else
-                                     '{}:{}'.format(os.path.basename(file_name), name)))
+            if path in written:
+                lines.append('#| {}{}'.format(FILLED_HEAD, ', '.join(written[path])))
+                lines.append('')
+        if name is None:
+            continue
+        lines.append('== {}'.format(address(name, file_name)))
         lines.append('#| {}'.format(hint))
         if signature:
             lines.append('#| in: {}'.format(signature))
@@ -1226,7 +1318,7 @@ def write_worksheet(produced, out, iface, document, machine, machine_doc,
     if os.path.exists(WORKSHEET):
         with open(WORKSHEET, encoding='utf-8', errors='replace') as handle:
             text = handle.read()
-        before, known = fall_lines(text), set(section_names(text))
+        before, known = fall_lines(text), set(section_names(text) + filled_names(text))
     after = fall_lines('\n'.join(lines))
     added = [name for name in section_names('\n'.join(lines))
              if known is not None and name not in known]
@@ -1244,10 +1336,10 @@ def write_worksheet(produced, out, iface, document, machine, machine_doc,
 
 
 def kept_sections(text, scenarios):
-    """The sections a body may still name: the worksheet's, and each expectation and
-    stop of the scenario file, filled or open."""
+    """The sections a body may still name: the worksheet's, the slots it lists as
+    written filled, and each expectation and stop of the scenario file, filled or open."""
     import fill_markers
-    kept = section_names(text)
+    kept = section_names(text) + filled_names(text)
     if scenarios:
         kept += list(fill_markers.expectations_of(scenarios)[0])
     return kept
@@ -2040,6 +2132,28 @@ HOST_NOTE = ('  {name} is a standalone component that owns the machine. Delete b
              '  provider is what drives it.')
 
 
+# A machine override whose section below spells it, and the one line all of them fold to.
+OVERRIDE = re.compile(r'^  override (\w+) (\w+)\(')
+OVERRIDE_FOLDED = '  override each action_ and condition_ section below, as its "in:" line spells it'
+
+
+def renamed(first, first_cls, second, second_cls):
+    """The (name, name) pair that turns the first quoted body into the second, () when
+    they match with their own class names aside, or None when they differ otherwise."""
+    if len(first) != len(second):
+        return None
+    pairs = set()
+    for one, two in zip(first, second):
+        one = re.split(r'(\W+)', re.sub(r'\b{}\b'.format(re.escape(first_cls)), '\0', one))
+        two = re.split(r'(\W+)', re.sub(r'\b{}\b'.format(re.escape(second_cls)), '\0', two))
+        if len(one) != len(two):
+            return None
+        pairs.update((a, b) for a, b in zip(one, two) if a != b)
+    if len(pairs) > 1 or any(not re.match(r'^\w+$', a + b) for a, b in pairs):
+        return None
+    return next(iter(pairs), ())
+
+
 def contract_lines(iface, document):
     """The names a document generates, and nothing about how it was written.
 
@@ -2294,7 +2408,8 @@ SHUTDOWN_HINT = 'what it stops before the service stops, or one // line'
 STARTUP_HINT_MACHINE = ('; the generated lines after this body call mFsm.init_fsm(&comThread), '
                         'and a second call asserts')
 SHUTDOWN_HINT_MACHINE = '; the generated lines after this body call mFsm.release_fsm()'
-INCLUDES_HINT = 'the headers of your own files this provider uses, or one // line'
+INCLUDES_HINT = ('the #include lines of your own files or of the standard library this '
+                 'provider uses, or one // line')
 
 
 def includes_marker(state_slot, what):
@@ -2460,7 +2575,8 @@ def provider_class(iface, cls, machine=None, timers=(), workers=()):
                       marker(timer['slot'], 'what happens when {} fires for key, the one {}() '
                              'took; a request answered here passes as key its session, from '
                              'unblock_current_request(), and answers with if '
-                             '(prepare_response(key)) response_<name>(...)'
+                             '(prepare_response(key)) response_<name>(...) after the set_ '
+                             'calls the answer reports'
                              .format(timer['name'], timer['start']), 16),
                       '                return;',
                       '            }',
@@ -3416,7 +3532,8 @@ def step_dispatch(steps, kind, name, indent, latch=None, role=None):
         lines.append(pad + '    {} = true;'.format(latch['flag']))
         lines += [pad + '    {} = {};'.format(member, param)
                   for member, _, param in latch['args']]
-        lines.append(pad + '    mark("held, unchecked, for a step that awaits it");')
+        lines.append(pad + '    mark("kept unchecked for a step that awaits it{}");'.format(
+            '; its getter already returns it' if kind == 'update' else ''))
     lines += [pad + '    break;', pad + '}']
     return lines
 
@@ -4635,8 +4752,9 @@ def parameter_list(head):
 
 
 def unused_allowed(definitions):
-    """The definitions, with each parameter of one whose body holds a marker, and
-    that no generated line other than a placeholder reads, written [[maybe_unused]]."""
+    """The definitions, with each parameter of one whose body holds a marker or a slot
+    written filled, and that no generated line other than a placeholder reads, written
+    [[maybe_unused]]."""
     lines = list(definitions)
     for index, line in enumerate(lines[:-1]):
         if not line or line[0].isspace() or lines[index + 1] != '{':
@@ -4646,10 +4764,12 @@ def unused_allowed(definitions):
             end += 1
         body = lines[index + 2:end]
         found = parameter_list(line)
-        if found is None or not any(MARKER.search(text) for text in body):
+        slots = [text for text in body if MARKER.search(text) or FILLED.match(text) or
+                 text.strip() == FILLED_LINE or text.strip().startswith('// end(you) ')]
+        if found is None or not slots:
             continue
         code = re.sub(r'"(?:\\.|[^"\\])*"', '""',
-                      '\n'.join(text for text in body if not MARKER.search(text) and
+                      '\n'.join(text for text in body if text not in slots and
                                 not text.rstrip().endswith(PLACEHOLDER_TAG.strip())))
         before, parts, after = found
         marked = []
