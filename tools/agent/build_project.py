@@ -30,6 +30,7 @@ import re
 import shutil
 import subprocess
 import sys
+import threading
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PYTHON = sys.executable or 'python3'
@@ -42,6 +43,8 @@ import gen_skeleton  # noqa: E402
 # A fixed job count is right on every machine the corpus has to describe, and it
 # costs no page: $(nproc) is absent on macOS and spelled differently on Windows.
 DEFAULT_JOBS = 8
+# Seconds standard input may stay silent before --write or --edit stops waiting for it.
+INPUT_WAIT = 10
 
 # Where a --run keeps every process's whole output, a pass included.
 KEPT_OUTPUT = '{build}/scenarios/'
@@ -206,6 +209,25 @@ def fail(message):
     sys.stdout.flush()
     sys.stderr.write('error: {}\n'.format(message))
     sys.exit(2)
+
+
+def read_input(flag):
+    """Returns standard input whole, or fails when it sends nothing within INPUT_WAIT seconds."""
+    if sys.stdin is None or sys.stdin.isatty():
+        return ''
+    peek = getattr(getattr(sys.stdin, 'buffer', None), 'peek', None)
+    if peek is not None:
+        waiter = threading.Thread(target=peek, daemon=True)
+        waiter.start()
+        waiter.join(INPUT_WAIT)
+        if waiter.is_alive():
+            sys.stdout.flush()
+            sys.stderr.write('error: {} reads standard input and nothing came in {} s: send it '
+                             'as a here-document, or drop {} to use the files as they are on '
+                             'disk\n'.format(flag, INPUT_WAIT, flag))
+            sys.stderr.flush()
+            os._exit(2)
+    return sys.stdin.read()
 
 
 def write_input(root, target, text):
@@ -1384,10 +1406,10 @@ def main():
     made.append((args.build.replace(os.sep, '/'), 'the build'))
     appendable = (fill_markers.FIX_FILE, args.bodies.replace(os.sep, '/'))
     if args.edit:
-        text = '' if sys.stdin is None or sys.stdin.isatty() else sys.stdin.read()
+        text = read_input('--edit')
         apply_edits(root, text, made, appendable)
     for target in args.write:
-        text = '' if sys.stdin is None or sys.stdin.isatty() else sys.stdin.read()
+        text = read_input('--write')
         if os.path.basename(target) in appendable:
             text = apply_file_blocks(root, target, text, made, appendable)
             if not text.strip():

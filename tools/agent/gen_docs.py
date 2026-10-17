@@ -2518,31 +2518,40 @@ def shared_request_actions(project, spec):
                    for name in answered)
 
     runs = {}
+    moves = []
 
     def walk(states):
         for state in states or []:
             for move in state.get('transitions') or []:
                 on = move.get('on')
+                called = set()
                 for step in move.get('do') or []:
                     name = step if isinstance(step, str) else \
                         step.get('call') if isinstance(step, dict) else None
                     if isinstance(name, str) and on and forwards(on):
+                        called.add(name)
                         args = json.dumps(step.get('args'), sort_keys=True) \
                             if isinstance(step, dict) else 'null'
                         triggers = runs.setdefault(name, {}).setdefault(args, [])
                         if on not in triggers:
                             triggers.append(on)
+                if called:
+                    moves.append((on, called))
             walk(state.get('states'))
 
     walk(spec.get('states'))
     actions = set(entry.get('name') for entry in spec.get('actions') or []
                   if isinstance(entry, dict))
-    shared = []
+    alike = {}
     for name, calls in runs.items():
-        alike = [triggers for triggers in calls.values() if len(triggers) > 1]
-        if name in actions and alike:
-            shared.append((name, [on for triggers in alike for on in triggers]))
-    return shared
+        lists = [triggers for triggers in calls.values() if len(triggers) > 1]
+        if name in actions and lists:
+            alike[name] = [on for triggers in lists for on in triggers]
+    # A transition that also runs an action of its own trigger alone answers through it.
+    own = actions - set(alike)
+    return [(name, triggers) for name, triggers in alike.items()
+            if any(on in triggers and name in called and not (called & own - {name})
+                   for on, called in moves)]
 
 
 def hosted_accumulators(project, spec):
