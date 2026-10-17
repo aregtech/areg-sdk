@@ -1006,6 +1006,25 @@ def asserts_nothing(scenario):
     return True
 
 
+def unnamed_programs(scenarios):
+    """One refusal per process that names no "binary", with where it went wrong."""
+    found = []
+    for scenario in scenarios:
+        for index, spec in enumerate(scenario.get('procs') or []):
+            if isinstance(spec, dict) and spec.get('binary'):
+                continue
+            where = 'scenario "{}", process {}'.format(scenario.get('name', 'unnamed'), index + 1)
+            if isinstance(spec, dict) and 'procs' in spec:
+                found.append('{} is a scenario of its own ("{}"), written inside "procs": '
+                             'move it to the top-level "scenarios" list'
+                             .format(where, spec.get('name', 'unnamed')))
+            else:
+                keys = ', '.join('"{}"'.format(k) for k in spec) if isinstance(spec, dict) else 'none'
+                found.append('{} names no "binary" (its keys: {}): every process is '
+                             '{{"binary": "<program>", ...}}'.format(where, keys))
+    return found
+
+
 def lint_scenario(scenario):
     """Mistakes in a scenario that show up only as a hang, said before it runs."""
     procs = scenario.get('procs') or []
@@ -1234,6 +1253,15 @@ def self_test():
             print('self-test FAILED: vacuity: a declared exit code is an assertion')
             return 1
 
+        # A process with no program, or a scenario nested in "procs", is named by place.
+        nested = [{'name': 'outer', 'procs': [{'binary': consumer},
+                                             {'name': 'quit', 'procs': [{'binary': provider}]}]}]
+        said = unnamed_programs(nested)
+        if len(said) != 1 or 'a scenario of its own ("quit")' not in said[0] \
+                or 'process 2' not in said[0] or unnamed_programs(vacuous):
+            print('self-test FAILED: a process without "binary" is not named: {}'.format(said))
+            return 1
+
         # A stop that fires only after the lead exited injected its fault too late,
         # and the exit the lead was held to has to say so.
         too_late = dict(fired, name='stop-after-the-lead', procs=[
@@ -1457,6 +1485,10 @@ def main():
              .format(named,
                      'asserts' if len(vacuous) == 1 else 'assert',
                      'it passes' if len(vacuous) == 1 else 'they pass'))
+
+    misplaced = unnamed_programs(scenarios)
+    if misplaced:
+        fail('{}: {}'.format(args.file, '; '.join(misplaced)))
 
     build_dirs = args.build or [os.path.join('build', 'bin'), 'build']
 

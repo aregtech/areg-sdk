@@ -7,9 +7,10 @@ The benchmark asks one question: **can an agent that has never seen a framework 
 correct application from that framework's own documentation, and what does it cost?**
 areg is measured against a framework the model already knows from training (gRPC): the
 same requirements, the same agent, the same model and the same effort. The current
-comparisons are [`baseline-2026-10-05.md`](baseline-2026-10-05.md), GPT-5.6 Terra on
-four tasks, and [`baseline-2026-09-29.md`](baseline-2026-09-29.md), Claude Sonnet 5.5 on
-the coffee machine; the first measured pair, with Sonnet 5, is
+comparisons are [`baseline-2026-10-17.md`](baseline-2026-10-17.md), Claude Sonnet 5.5 at
+low effort on three tasks, [`baseline-2026-10-05.md`](baseline-2026-10-05.md), GPT-5.6
+Terra on four tasks, and [`baseline-2026-09-29.md`](baseline-2026-09-29.md), Claude
+Sonnet 5.5 on the coffee machine; the first measured pair, with Sonnet 5, is
 [`baseline-2026-09-13.md`](baseline-2026-09-13.md).
 
 - [Quick start](#quick-start)
@@ -76,6 +77,7 @@ run-benchmark.sh --task examples/ai-benchmark/prompt-elevator.md --dry-run
 | `verify_run.py` | the hidden acceptance probes, run on the finished project; the agent never sees it | nobody |
 | `build_config.py` | records the configuration a run actually built (Debug or Release) as one line of `meta.txt` | nobody |
 | `INSTALL-grpc.md` | installing the gRPC toolchain, before the first gRPC run | **you**, once |
+| `baseline-2026-10-17.md` | the current comparison with Claude Sonnet 5.5 at low effort: camera, charge point, sensor gateway, 2-7 areg runs and 1-2 gRPC runs each, and a table across all baselines | -- |
 | `baseline-2026-10-05.md` | the current comparison with GitHub Copilot and GPT-5.6 Terra: four tasks, 3 areg and 2 gRPC runs each | -- |
 | `baseline-2026-09-29.md` | the current comparison with Claude Sonnet 5.5: 4 runs per framework on the coffee machine | -- |
 | `baseline-2026-09-13.md` | the first areg and gRPC pair, side by side, with Sonnet 5 | -- |

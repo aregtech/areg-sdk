@@ -181,20 +181,19 @@ coffee machine, ATM, elevator, greenhouse -- and watch it design, generate and b
 service from nothing; the same harness scores it against hidden checks and runs the
 identical task on gRPC to compare.
 
-In our runs, agents finished the task on Areg as reliably as on gRPC: 57 of 57 runs
-passed every hidden probe over 3 days, on 4 tasks and 3 model families, and so did all
-10 of the latest runs of both frameworks. With Claude Code and Sonnet 5.5, on the coffee
-machine, an agent on Areg wrote about 3x less C++ by hand than on gRPC (386-420 lines
-against 1,252-1,411), used 37% fewer output tokens and 34% less model time, with no
-filesystem searches, and cost a median of $0.71 against $0.80 -- within $0.03 from run to
-run, where gRPC runs varied by a third. Both needed about 9 API requests. With the earlier
-Sonnet 5 the gap was wider: Areg needed about half the API requests of gRPC (median 26
-against 55.5). With GitHub Copilot and GPT-5.6 Terra, on four tasks, all 12 Areg runs
-passed every hidden probe (7 of 8 on gRPC), with fewer API requests on every task (medians
-7-16 against 12.5-20), 2-4x less hand-written C++, and AI credits at parity on one task
-and 9-22% lower on three. Agent runs vary: ranges and method for
-[Sonnet 5.5](./examples/ai-benchmark/baseline-2026-09-29.md) and
-[GPT-5.6 Terra](./examples/ai-benchmark/baseline-2026-10-05.md).
+Measured against gRPC, which the models already know from training: since Sonnet 5.5,
+every Areg run passed every hidden check, and the agent wrote **2-4x less C++ by hand**.
+
+- **Correct on the first build:** most runs need no fix cycle.
+- **Predictable:** the same steps every run; one gRPC task varied in cost up to 2.5x.
+- **Sturdier programs:** threading, reconnection and logging come from the framework.
+- **Less code to review:** the generator writes the plumbing, the agent only the behaviour.
+- **Faster with Claude Code:** 10-50% less time on every task measured.
+- **The current API, any agent:** the guide and tools ship with each release and work
+  with Claude Code, GitHub Copilot CLI or any agent with a shell, offline too.
+
+The cost lands between 26% below and 2% above gRPC, depending on the task and the model.
+How it works, every result and the method: [Agentic coding](./docs/wiki/09a-agentic-coding.md).
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
