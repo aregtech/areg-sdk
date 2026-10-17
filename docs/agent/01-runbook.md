@@ -1,10 +1,9 @@
 # Runbook: building an application on areg
 
-The procedure for building an application on this framework, start to finish. Four
-values run through it: `<areg-sdk>` is the SDK checkout, read only; the **task** is
-what the software must do; `<project>` is a C identifier naming the project; `<mode>` is
-`local` for one process or `ipc` for two; `pubsub` is `local` whose interface
-adds attributes and broadcasts.
+The procedure, start to finish. Four values run through it: `<areg-sdk>` is the SDK
+checkout, read only; the **task** is what the software must do; `<project>` is a C
+identifier naming the project; `<mode>` is `local` for one process or `ipc` for two;
+`pubsub` is `local` whose interface adds attributes and broadcasts.
 
 On Windows, read commands as `AGENTS.md` section 4 says. `build_project.py` passes
 `-j8`, so no command here carries one.
@@ -53,12 +52,13 @@ It restates this page and the SDK's `AGENTS.md`: skip it.
 ## 3. Design
 
 Decide the requests, responses, broadcasts, attributes and data types.
-After the scaffold, in one request, each its own call: read `design.json`, run
-`gen_docs.py --example service`, adding `programs` when the task has more than two
-programs, more than one service or parts on threads of their own, and `submachine`
-when a machine hosts another (the service example already holds a machine), plus
-`22-state-machine.md` when an answer depends on what came before; `05-design.md` only
-for a doubt the rules in `design.json` leave. Open nothing else before it is written.
+After the scaffold, in one request, each its own call, as chained output is cut: read
+`design.json`, run `gen_docs.py --example service`, adding `programs` when the task has
+more than two programs, more than one service or parts on threads of their own, and
+`submachine` when a machine hosts another (the service example already holds a
+machine), plus `22-state-machine.md` when an answer depends on what came before;
+`05-design.md` only for a doubt the rules in `design.json` leave. Open nothing else
+before it is written.
 
 **A provider reads its own attributes back.** An attribute gives the provider a getter
 as well as a setter, so state the service already carries needs no shadow member beside

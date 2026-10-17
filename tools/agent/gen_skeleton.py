@@ -718,7 +718,7 @@ CONNECT_ONLY = ['service_connected() is generated and runs before any body below
 UPDATE_NOTE = ['an update_ body runs on every arrival, whatever step is current, and',
                'before the step_ check of the same update. That check runs while its',
                'step is current, and once as it begins if one arrived since the last',
-               'request to its service.',
+               'request to its service; the body does not run again.',
                'Both run inside the check the generated handler makes, so the value is',
                'valid and no test of state is needed:',
                '    if (state == areg::DataState::DataIsOK)',
