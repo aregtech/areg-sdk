@@ -1,7 +1,7 @@
 # A console application on areg
 
 `areg` has no console: an application may be a service, a GUI, a library or a console
-program. This page is for the last: reading a command typed at the console, and
+program. This page is for the last: reading a console command and
 printing a result. Diagnostics stay in the log (`34-logging.md`).
 
 ---
@@ -9,7 +9,7 @@ printing a result. Diagnostics stay in the log (`34-logging.md`).
 ## 1. Reading a quit command
 
 A thread of its own reads the console; no component thread blocks on input. Both parts
-are worksheet sections of the program's `main.cpp`, so they live in `bodies.txt`:
+are worksheet sections of the program's `main.cpp`, written in `bodies.txt`:
 
 ```text
 == main_top_station
@@ -38,8 +38,8 @@ std::thread(read_console).detach();
 std::atexit([]() { std::fflush(stdout); std::_Exit(areg::Application::stored_element(_exitCode).valInt.mElement); });
 ```
 
-The command is the application's choice; one program per section pair. `quit_with()` and
-`_exitCode` come from the generated `main.cpp`.
+The command and its spellings are the application's choice; one program per section
+pair. `quit_with()` and `_exitCode` come from the generated `main.cpp`.
 
 - **End of input is not a quit request.** A process started without a terminal is handed
   a stream nothing is ever written to, or one already at its end. A loop that quits

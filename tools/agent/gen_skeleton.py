@@ -1113,7 +1113,10 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
             for line in textwrap.wrap(
                     'A check while such a step runs, a wait, goes in the section of what it '
                     'watches, testing mStep == Step::<Name>; a client of the driver tests '
-                    'mOwner.mStep == {}::Step::<Name>.'.format(driver_cls), 74):
+                    'mOwner.mStep == {}::Step::<Name>.{}'.format(
+                        driver_cls, ' No section runs as a wait ends: what follows it goes in '
+                        'the next step_ section.' if any(step['wait'] and not step['awaits']
+                                                         for step in steps) else ''), 74):
                 lines.append('#| ' + line)
         lines.append('#|')
         listed = with_hold(steps, hold)
@@ -2572,7 +2575,8 @@ def provider_class(iface, cls, machine=None, timers=(), workers=()):
                       marker(timer['slot'], 'what happens when {} fires for key, the one {}() '
                              'took; a request answered here passes as key its session, from '
                              'unblock_current_request(), and answers with if '
-                             '(prepare_response(key)) response_<name>(...)'
+                             '(prepare_response(key)) response_<name>(...) after the set_ '
+                             'calls the answer reports'
                              .format(timer['name'], timer['start']), 16),
                       '                return;',
                       '            }',
@@ -3528,7 +3532,8 @@ def step_dispatch(steps, kind, name, indent, latch=None, role=None):
         lines.append(pad + '    {} = true;'.format(latch['flag']))
         lines += [pad + '    {} = {};'.format(member, param)
                   for member, _, param in latch['args']]
-        lines.append(pad + '    mark("held, unchecked, for a step that awaits it");')
+        lines.append(pad + '    mark("kept unchecked for a step that awaits it{}");'.format(
+            '; its getter already returns it' if kind == 'update' else ''))
     lines += [pad + '    break;', pad + '}']
     return lines
 
