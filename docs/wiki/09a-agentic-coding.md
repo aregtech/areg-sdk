@@ -45,10 +45,17 @@ The golden path, in [`docs/agent/01-runbook.md`](./../agent/01-runbook.md):
 
 ## 3. What a developer gets
 
+**In one line: for the same money as gRPC, the agent on Areg delivers more.** In the six-task
+GPT-5.6 Terra comparison the cost summed to $2.63 against gRPC's $2.66, while the Areg runs had
+the stricter task (every step's exact output line, a declared state machine with nested pieces),
+ran a generated state machine instead of hand-written `switch` tables and threads, passed every
+hidden check (14 of 14 runs, gRPC 9 of 11) and needed 40% fewer agent requests.
+
 - **Correct on the first build.** Since 2026-09-29 every Areg run in the published
   baselines passed every hidden probe: repeated runs, either start order, a lost peer, no
   peer at all, no busy-waiting. Most Areg runs needed no build-and-fix or run-and-fix
-  cycle; the gRPC runs in the Claude Code baselines needed 1-19.
+  cycle; the gRPC runs in the Claude Code baselines needed 1-19. With GPT-5.6 Terra on six
+  tasks: 1.9 fix cycles per Areg run, 7.3 per gRPC run.
 - **Predictable.** An Areg run takes the same steps every time: declare, generate, write
   the bodies, prove. With Claude models, the cost of one task on one revision stayed
   within 1.6x across runs, and in some sets within 5%. The cost of one gRPC task varied up to
@@ -56,14 +63,21 @@ The golden path, in [`docs/agent/01-runbook.md`](./../agent/01-runbook.md):
   with GPT-5.4 (from its token counts; Copilot recorded no credits for those runs),
   because the length of its fix loop varies. On the charge point with
   Sonnet 5.5, two gRPC runs were 32% apart, six Areg runs 15%. With GPT-5.6 Terra both
-  frameworks varied about equally (1.2-2x).
+  frameworks varied about equally: 9-48% per task for Areg, 16-70% for gRPC.
 - **Sturdier programs.** Threading, reconnection, start-order independence and
   distributed logging come from the framework, not from code the agent writes. Areg
   programs used 0.01-0.03 CPU cores over a normal run, the gRPC programs of the same tasks
   0.02-0.11 (measured side by side), two of them polling on a 200-250 ms timer. One gRPC
-  charge-point run left its manager running forever after the driver was killed. In
+  charge-point run left its manager running forever after the driver was killed; with
+  GPT-5.6 Terra, one gRPC coffee machine charged a cancelled drink when it started after
+  the user, and one gRPC elevator reported a wrong floor once in ten runs. In
   development runs with GPT-5.4 on the same task (not a published baseline), none of 3
   gRPC runs passed every probe both arms share, against 9 of 11 Areg runs.
+- **A real state machine, not a hand-rolled one.** The agent declares states and
+  transitions in `.fsml` and runs the generated machine: an elevator's door sequence as a
+  composite state with deep history, a printer's print and scan as nested pieces entered
+  from two places. Lusan draws it, so a reviewer checks the logic as a diagram. The gRPC
+  agents wrote enum tables, worker threads and condition variables for the same behaviour.
 - **Less code to review.** The generator writes the plumbing; the agent writes 2-4x fewer
   lines of C++ by hand than on gRPC.
 - **Fewer scans of the code.** The pages and the generated worksheet carry what a task
@@ -74,8 +88,8 @@ The golden path, in [`docs/agent/01-runbook.md`](./../agent/01-runbook.md):
 - **Faster, with Claude Code.** Less wall time on every task measured: 10-17% on the
   camera, charge point and sensor gateway, about 20-35% on the coffee machine, about half on
   the temperature alarm. With GPT-5.6 Terra the model's own time was lower or equal on all 6
-  tasks measured, but the wall time was mixed (Areg faster on 2, about equal on 1, slower on 3):
-  the difference lies outside the model, where the Areg arm also compiles the framework
+  tasks measured (23% less in sum), but the wall time was longer on 4 of them: the
+  difference lies outside the model, where the Areg arm also compiles the framework
   from source inside the run. With GPT-5.4 the times were about equal.
 - **The current API, not a remembered one.** The guide, the API contract and the tools
   ship with each release, and CI keeps them equal to the code.
@@ -94,11 +108,13 @@ agent never sees.
 | Claude Code, Sonnet 5.5 | coffee machine, temperature alarm | all, every run / all, every run | about 3x less | -10%, -26% |
 | Copilot CLI, GPT-5.6 Terra | 4 tasks | 12 of 12 runs / 7 of 8 runs | 2-4x less | parity to -22% |
 | Claude Code, Sonnet 5.5, low effort | camera, charge point, sensor gateway | all, every run / 3 of 4 runs | 2.3-4x less | +2%, -4%, +0.5% |
+| Copilot CLI, GPT-5.6 Terra, current tree | 6 tasks, the Areg task stricter | 14 of 14 runs / 9 of 11 runs | 2-3.5x less | -1% in sum; -18% to +26% per task |
 
 - **What holds:** the code an agent does not have to write, in every comparison;
   correctness, in every comparison since Sonnet 5.5 (the one Sonnet 5 run missed a probe).
 - **What does not hold is a fixed cost ratio.** It ranges from 26% below gRPC to 2%
-  above, depending on the task and the model. One task on one tree has varied by 12-50%
+  above, depending on the task and the model (to 26% above on one task with Terra, where
+  the Areg prompt had grown since the gRPC runs). One task on one tree has varied by 12-50%
   between runs, so none of the cost differences is significant yet.
 - **Where the money goes is opposite in the two arms.** Areg pays to load its knowledge
   into the context (on the charge point, 50-67K more tokens written to the cache);
@@ -108,7 +124,8 @@ Ranges, setup and method for each row:
 [Sonnet 5](./../../examples/ai-benchmark/baseline-2026-09-13.md),
 [Sonnet 5.5](./../../examples/ai-benchmark/baseline-2026-09-29.md),
 [GPT-5.6 Terra](./../../examples/ai-benchmark/baseline-2026-10-05.md),
-[Sonnet 5.5 at low effort](./../../examples/ai-benchmark/baseline-2026-10-17.md).
+[Sonnet 5.5 at low effort](./../../examples/ai-benchmark/baseline-2026-10-17.md),
+[GPT-5.6 Terra, six tasks](./../../examples/ai-benchmark/baseline-2026-10-18.md).
 
 ## 5. Try it, or reproduce it
 
@@ -125,12 +142,20 @@ mkdir -p ~/runs && cd ~/runs
 The [benchmark README](./../../examples/ai-benchmark/README.md) covers every option, the
 agents it drives, and how to read a run.
 
+**Share what you got.** Post your run, your prompt and your model in
+[Agentic coding with Areg: try it, break it, send me the run](https://github.com/aregtech/areg-sdk/discussions/800),
+passed or failed. A failed run is worth the most: every failure points at a page, a
+generator or a framework path that gets fixed. A prompt of your own is just as welcome:
+the prompts name no framework, so the same task runs on Areg and on gRPC.
+
 ## 6. Limits
 
 - The tasks were written by the Areg side: multi-process services, several with a state
   machine. That is Areg's target domain, not every gRPC user's.
 - gRPC has 1-4 runs per task in these baselines, Areg 1-7. Differences smaller than the
   ranges are not results.
+- In the six-task Terra comparison the gRPC runs are older and their prompts asked less;
+  that favours gRPC on cost and cannot favour it on correctness.
 - The same tasks on a plain Areg repository, without the agent layer, have not been
   measured yet; the gain over that baseline is the next measurement.
 - Results are per model and per agent harness, and both change every few months.

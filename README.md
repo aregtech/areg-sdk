@@ -168,32 +168,45 @@ examples use. Details: [Service interface guide](./docs/wiki/06e-lusan-service-i
 
 ## Agentic coding[![](./docs/img/pin.svg)](#agentic-coding)
 
-Areg is built to be learned by coding agents while they work. The repository is the
-course: [`AGENTS.md`](./AGENTS.md) routes an agent to the one page its task needs. An
-agent that has never seen Areg learns to write a service interface (`.siml`), a state
-machine (`.fsml`) and a data type (`.dtml`), and wire them into a running project -- not
-an API it half-remembers from training.
+Areg is built to be learned by coding agents while they work. [`AGENTS.md`](./AGENTS.md)
+routes the agent to the one page its task needs; the agent declares services (`.siml`),
+state machines (`.fsml`) and data types (`.dtml`), generators write the plumbing, a
+checker catches invented API names, and one command builds, runs and proves every program.
+No API half-remembered from training, no guess-compile-fail loop.
 
 <div align="center"><img src="./docs/img/screenshot-fsm-ai.png" alt="A state machine an agent generated for the coffee-machine task, opened in Lusan" width="700"/></div>
 
-**Try it:** point your agent at [one of ten ready prompts](./examples/ai-benchmark/) --
-coffee machine, ATM, elevator, greenhouse -- and watch it design, generate and build a
-service from nothing; the same harness scores it against hidden checks and runs the
-identical task on gRPC to compare.
+**Measured against gRPC**, which every model already knows from training: same task, same
+agent, same model, scored afterwards by hidden checks the agent never sees (peer loss,
+either start order, no busy-wait, repeated runs).
 
-Measured against gRPC, which the models already know from training: since Sonnet 5.5,
-every Areg run passed every hidden check, and the agent wrote **2-4x less C++ by hand**.
+| Current baselines | Areg | gRPC |
+|---|---|---|
+| runs passing every hidden check | **26 of 26** | 12 of 15 |
+| C++ written by hand | **2-4x less** | reference |
+| agent requests (GPT-5.6 Terra, 6 tasks) | **40% fewer** | reference |
+| fix cycles per run (GPT-5.6 Terra) | **1.9** | 7.3 |
+| wall time (Claude Code, Sonnet 5.5) | **10-50% less** | reference |
+| cost | **the same**: -1% summed over 6 tasks | reference |
 
-- **Correct on the first build:** most runs need no fix cycle.
-- **Predictable:** the same steps every run; one gRPC task varied in cost up to 2.5x.
-- **Sturdier programs:** threading, reconnection and logging come from the framework.
-- **Less code to review:** the generator writes the plumbing, the agent only the behaviour.
-- **Faster with Claude Code:** 10-50% less time on every task measured.
-- **The current API, any agent:** the guide and tools ship with each release and work
-  with Claude Code, GitHub Copilot CLI or any agent with a shell, offline too.
+**Same money, more done:** the Areg runs had the stricter task (exact output lines, a
+declared state machine), ran a real generated state machine instead of hand-written
+`switch` tables and threads, and passed every check. What Areg pays for is reading: the
+agent loads the guide and a generated worksheet up front, then opens no framework source file.
 
-The cost lands between 26% below and 2% above gRPC, depending on the task and the model.
-How it works, every result and the method: [Agentic coding](./docs/wiki/09a-agentic-coding.md).
+**Try it** with your agent (Claude Code, Copilot CLI, Codex, Gemini, or any agent by hand)
+on [one of twelve ready prompts](./examples/ai-benchmark/): coffee machine, ATM, elevator,
+print/scan device, charge point and more. Add `--framework grpc` to run the same task on gRPC.
+
+```bash
+mkdir -p ~/runs && cd ~/runs
+/path/to/areg-sdk/examples/ai-benchmark/run-benchmark.sh --task examples/ai-benchmark/prompt-elevator.md
+```
+
+**Share your run**, passed or failed, with your prompt and model, in
+[Agentic coding: try it, break it, send me the run](https://github.com/aregtech/areg-sdk/discussions/800).
+A failed run is the most useful one. Every result and the method:
+[Agentic coding](./docs/wiki/09a-agentic-coding.md).
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
