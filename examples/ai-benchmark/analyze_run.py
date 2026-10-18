@@ -280,6 +280,11 @@ def span_minutes(path):
     return (last - first).total_seconds() / 60.0
 
 
+def wall_minutes(result, path):
+    """Wall time: the harness's duration, or the transcript's span when that is longer."""
+    return max((result.get("duration_ms") or 0) / 60000.0, span_minutes(path))
+
+
 CLASS_DEF = re.compile(r"^(?:class|struct)\s+(\w+)(?:\s+final)?\s*(?::[^;]*)?$", re.M)
 
 
@@ -660,7 +665,7 @@ def print_brief(run, sdk, tr, result, meta, facts, requests, tot, cost, normal):
     model = ", ".join(result.get("modelUsage") or {}) or meta.get("model") or "unknown"
     code = code_facts(run, sdk)
     hand = "unknown" if code["hand"] is None else code["hand"]
-    wall = (result.get("duration_ms") or 0) / 60000.0
+    wall = wall_minutes(result, tr)
     print("== %s" % run)
     if facts["stop"] != "completed":
         print("   INCOMPLETE: the run stopped on %s; its price is not a price point"
@@ -681,7 +686,7 @@ def print_brief(run, sdk, tr, result, meta, facts, requests, tot, cost, normal):
     if ttl_mismatch(meta, facts):
         print("   %-16s %s" % ("CACHE TTL", ttl_mismatch(meta, facts)))
     print("   %-16s %.1f min, %.1f min of it in the model" % (
-        "time", wall or span_minutes(tr),
+        "time", wall,
         (result.get("duration_api_ms") or 0) / 60000.0))
     hits = dict((name, len(found)) for name, found, _, _ in events(requests))
     print("   %-16s %d build-and-fix, %d run-and-fix" % (
@@ -861,9 +866,10 @@ def main():
             why.append("a warm prefix of %s tokens" % format(requests[0]["cr"], ","))
         print("   %-26s $%.4f  (+$%.4f, %s: compare runs here)"
               % ("cost, cold @1h", normal, normal - cost, "; ".join(why)))
-    wall = (result.get("duration_ms") or 0) / 60000.0
-    print("   %-26s %.1f min%s" % ("wall", wall or span_minutes(tr),
-                                   "" if wall else "   (from transcript timestamps)"))
+    harness = (result.get("duration_ms") or 0) / 60000.0
+    wall = wall_minutes(result, tr)
+    print("   %-26s %.1f min%s" % ("wall", wall,
+                                   "" if wall == harness else "   (from transcript timestamps)"))
     print("   %-26s %s" % ("permission denials", result.get("permission_denials")))
     print("   %-26s $%.4f  (normalised)" % ("cost per request", normal / len(requests)))
     print("\n== tool calls by name")

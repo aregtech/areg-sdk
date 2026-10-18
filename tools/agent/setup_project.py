@@ -711,7 +711,7 @@ def main():
                              'attributes and broadcasts.')
     parser.add_argument('--sdk-root', default=None,
                         help='use this local SDK copy instead of fetching from GitHub')
-    parser.add_argument('--tag', default=DEFAULT_TAG,
+    parser.add_argument('--tag', default=None,
                         help='SDK git tag to fetch (default: {})'.format(DEFAULT_TAG))
     parser.add_argument('--features', metavar='LIST', default=None,
                         help='the optional blocks design.json holds, comma-separated: '
@@ -798,7 +798,8 @@ def main():
     for cmake in (os.path.join(root, 'CMakeLists.txt'),
                   os.path.join(root, 'src', 'CMakeLists.txt')):
         substitute(cmake, tokens)
-    rewrite_top_cmake(os.path.join(root, 'CMakeLists.txt'), name, sdk_root, args.tag)
+    rewrite_top_cmake(os.path.join(root, 'CMakeLists.txt'), name, sdk_root,
+                      args.tag or DEFAULT_TAG)
 
     binaries = [b.format(name=name) for b in MODES[mode]['binaries']]
     if not args.no_agents:
@@ -826,6 +827,11 @@ def main():
 
     tools = HERE.replace('\\', '/')
     print('created {} ({} mode)'.format(root, mode))
+    if not sdk_root and not args.tag and os.path.isfile(os.path.join(SDK_ROOT, 'areg.cmake')):
+        print('  The first build fetches areg "{}" from GitHub, not the SDK this tool runs from.'
+              .format(DEFAULT_TAG))
+        print('  To build against this SDK, offline, run this command again with --force')
+        print('  --sdk-root {}'.format(SDK_ROOT.replace('\\', '/')))
     print('  The sources under src/ are a placeholder: build_project.py replaces them with')
     print('  the application of your own design.json, and writes src/CMakeLists.txt.')
     if template == 'work':

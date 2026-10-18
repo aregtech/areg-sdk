@@ -195,11 +195,18 @@ Areg SDK is built on a performance mandate: **latency, throughput, stability, an
 - **[areg-sdk Framework Rankings](./08d-areg-framework-rankings.md)** – Competitive position across latency, message rate, and data rate versus all known frameworks with cited sources.
 - **[Embedded Ready](./08e-embedded-ready.md)** – What "embedded ready" means for areg-sdk: measured flash and RAM footprint, the supported Embedded Linux target classes, and where the line is.
 
-> 📁 *Prefix note:* These files use the `08` prefix alongside examples, since benchmarks run via examples 23 and 30. If additional benchmark documents are added, a dedicated `09` prefix is recommended.
+> 📁 *Prefix note:* These files use the `08` prefix alongside examples, since benchmarks run via examples 23 and 30. If additional benchmark documents are added, a dedicated `10` prefix is recommended (`09` is agentic coding).
 
 **Reproduce the results:**
 - **[30_publatency](../../examples/30_publatency)** – Run latency measurements on your machine
 - **[23_pubdatarate](../../examples/23_pubdatarate)** – Run throughput measurements on your machine
+
+---
+
+### 🤖 Agentic Coding
+
+- **[Agentic Coding](./09a-agentic-coding.md)** – How a coding agent builds correctly on Areg without having seen it: the agent layer, the golden path, and results measured against gRPC.
+- **[AI benchmark](../../examples/ai-benchmark/)** – Ready task prompts and the harness that runs an agent on Areg or gRPC and scores the result with hidden probes.
 
 ---
 

@@ -168,33 +168,45 @@ examples use. Details: [Service interface guide](./docs/wiki/06e-lusan-service-i
 
 ## Agentic coding[![](./docs/img/pin.svg)](#agentic-coding)
 
-Areg is built to be learned by coding agents while they work. The repository is the
-course: [`AGENTS.md`](./AGENTS.md) routes an agent to the one page its task needs. An
-agent that has never seen Areg learns to write a service interface (`.siml`), a state
-machine (`.fsml`) and a data type (`.dtml`), and wire them into a running project -- not
-an API it half-remembers from training.
+Areg is built to be learned by coding agents while they work. [`AGENTS.md`](./AGENTS.md)
+routes the agent to the one page its task needs; the agent declares services (`.siml`),
+state machines (`.fsml`) and data types (`.dtml`), generators write the plumbing, a
+checker catches invented API names, and one command builds, runs and proves every program.
+No API half-remembered from training, no guess-compile-fail loop.
 
 <div align="center"><img src="./docs/img/screenshot-fsm-ai.png" alt="A state machine an agent generated for the coffee-machine task, opened in Lusan" width="700"/></div>
 
-**Try it:** point your agent at [one of ten ready prompts](./examples/ai-benchmark/) --
-coffee machine, ATM, elevator, greenhouse -- and watch it design, generate and build a
-service from nothing; the same harness scores it against hidden checks and runs the
-identical task on gRPC to compare.
+**Measured against gRPC**, which every model already knows from training: same task, same
+agent, same model, scored afterwards by hidden checks the agent never sees (peer loss,
+either start order, no busy-wait, repeated runs).
 
-In our runs, agents finished the task on Areg as reliably as on gRPC: 57 of 57 runs
-passed every hidden probe over 3 days, on 4 tasks and 3 model families, and so did all
-10 of the latest runs of both frameworks. With Claude Code and Sonnet 5.5, on the coffee
-machine, an agent on Areg wrote about 3x less C++ by hand than on gRPC (386-420 lines
-against 1,252-1,411), used 37% fewer output tokens and 34% less model time, with no
-filesystem searches, and cost a median of $0.71 against $0.80 -- within $0.03 from run to
-run, where gRPC runs varied by a third. Both needed about 9 API requests. With the earlier
-Sonnet 5 the gap was wider: Areg needed about half the API requests of gRPC (median 26
-against 55.5). With GitHub Copilot and GPT-5.6 Terra, on four tasks, all 12 Areg runs
-passed every hidden probe (7 of 8 on gRPC), with fewer API requests on every task (medians
-7-16 against 12.5-20), 2-4x less hand-written C++, and AI credits at parity on one task
-and 9-22% lower on three. Agent runs vary: ranges and method for
-[Sonnet 5.5](./examples/ai-benchmark/baseline-2026-09-29.md) and
-[GPT-5.6 Terra](./examples/ai-benchmark/baseline-2026-10-05.md).
+| Current baselines | Areg | gRPC |
+|---|---|---|
+| runs passing every hidden check | **26 of 26** | 12 of 15 |
+| C++ written by hand | **2-4x less** | reference |
+| agent requests (GPT-5.6 Terra, 6 tasks) | **40% fewer** | reference |
+| fix cycles per run (GPT-5.6 Terra) | **1.9** | 7.3 |
+| wall time (Claude Code, Sonnet 5.5) | **10-50% less** | reference |
+| cost | **the same**: -1% summed over 6 tasks | reference |
+
+**Same money, more done:** the Areg runs had the stricter task (exact output lines, a
+declared state machine), ran a real generated state machine instead of hand-written
+`switch` tables and threads, and passed every check. What Areg pays for is reading: the
+agent loads the guide and a generated worksheet up front, then opens no framework source file.
+
+**Try it** with your agent (Claude Code, Copilot CLI, Codex, Gemini, or any agent by hand)
+on [one of twelve ready prompts](./examples/ai-benchmark/): coffee machine, ATM, elevator,
+print/scan device, charge point and more. Add `--framework grpc` to run the same task on gRPC.
+
+```bash
+mkdir -p ~/runs && cd ~/runs
+/path/to/areg-sdk/examples/ai-benchmark/run-benchmark.sh --task examples/ai-benchmark/prompt-elevator.md
+```
+
+**Share your run**, passed or failed, with your prompt and model, in
+[Agentic coding: try it, break it, send me the run](https://github.com/aregtech/areg-sdk/discussions/800).
+A failed run is the most useful one. Every result and the method:
+[Agentic coding](./docs/wiki/09a-agentic-coding.md).
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 

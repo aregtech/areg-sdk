@@ -404,6 +404,10 @@ the API requests, where Sonnet 5.5 needs about the same number on both:
 [AI benchmark](../../examples/ai-benchmark/baseline-2026-09-29.md). With GPT-5.6 Terra on
 four tasks it needed fewer API requests than gRPC on every task and 2-4x less
 hand-written C++: [baseline](../../examples/ai-benchmark/baseline-2026-10-05.md).
+With Sonnet 5.5 at low effort on three newer tasks, every Areg run passed every hidden
+probe (3 of 4 gRPC runs did), the agent wrote 2.3-4x less C++ by hand, and the cost was
+within 4% of gRPC on all three:
+[baseline](../../examples/ai-benchmark/baseline-2026-10-17.md).
 
 **Start an agent project:**
 ```bash

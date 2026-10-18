@@ -630,6 +630,11 @@ def write_operation(machine, writer, depth, step, stimulus, where):
         writer.add(depth, '<Timer{} ID="{}" Timer="{}"/>'.format(
             'Start' if verb == 'start' else 'Stop', writer.ident(), esc(name)))
     elif 'set' in step:
+        if not isinstance(step['set'], str):
+            fail('{} has "set": {} in "do": a step sets one attribute, {{"set": "<attribute>", '
+                 '"to": <value>}}; several at once are the transition\'s own "set": '
+                 '{{"<attribute>": <value>, ...}}, which runs before "do"'
+                 .format(where, json.dumps(step['set'])))
         write_assignment(machine, writer, depth, step['set'], step.get('to'), stimulus, where)
     else:
         fail('{} runs {!r}: a step calls, sends, starts, stops or sets'.format(where, step))
