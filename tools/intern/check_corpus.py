@@ -1241,7 +1241,8 @@ RUNNER_GUARDS = ('the gRPC arm staged more than the scenario runner',
                  'COLD_START_BAN',
                  'is not a cold start -- it names what it exists not to know',
                  'examples/ai-benchmark/verify_run.py',
-                 'is inside the checkout; a run must not write where it reads')
+                 'is inside the checkout; a run must not write where it reads',
+                 'the run without the agent layer still')
 
 
 def check_runner_parity(report):

@@ -70,6 +70,8 @@ run-benchmark.sh --task examples/ai-benchmark/prompt-elevator.md --dry-run
 | `grpc-ai-prompt-template.txt` | the gRPC wrapper for any task | **you**, three values at the top, when running by hand |
 | `grpc-coffeemachine-prompt.txt` | the gRPC wrapper for `prompt-coffeemachine.md`, the one the published pair used | as above |
 | `grpc-scenario-dialect.py` | the scenario runner's remedies in gRPC words, staged into the gRPC arm | nobody |
+| `areg-nolayer-prompt-template.txt` | the areg wrapper for a run without the agent layer, `--layer off` | nobody |
+| `strip_layer.py` | removes the agent layer from the snapshot of a `--layer off` run, and lists what that layer is | nobody |
 | `runbook-demo.md` | what a measured areg run adds to `docs/agent/01-runbook.md` | nobody |
 | `run-benchmark.sh` | one cold, isolated, measured run in one command: Linux, macOS, WSL | nobody |
 | `run-benchmark.ps1` | the same for Windows PowerShell 5.1 and PowerShell 7: the same options and the same run directory | nobody |
@@ -415,6 +417,57 @@ contain "areg": `~/runs` is fine, `~/areg-runs` is refused.
 beside it -- `tools/agent/scenario_dialect.py` for areg, `grpc-scenario-dialect.py`
 staged under that name for gRPC.
 
+### Without the agent layer
+
+What does the layer itself buy? `--layer off` runs the areg arm on the framework as a
+plain checkout gives it: the sources, the human documentation, the examples and the code
+generator. Everything written for a coding agent is removed from the snapshot
+(`AGENTS.md`, `docs/agent/`, `tools/agent/` and the rest; `strip_layer.py` holds the
+list). So are `examples/33_tempalarm` and `examples/34_coffeemachine`, which an agent
+built from two of these tasks. The task and the scenario runner are staged as the gRPC
+arm gets them, and the prompt is `areg-nolayer-prompt-template.txt`, which names none of
+the layer. As in the gRPC arm, the script refuses to start if the prompt or a staged file
+names the layer, and the provenance goes to `provenance/`.
+
+```bash
+run-benchmark.sh   --layer off --agent copilot --model gpt-5.6-terra --effort medium \
+                   --task examples/ai-benchmark/prompt-tempalarm.md
+.\run-benchmark.ps1 --layer off --agent copilot --model gpt-5.6-terra --effort medium `
+                   --task examples/ai-benchmark/prompt-tempalarm.md
+```
+
+> [!CAUTION]
+> **A run without the layer can cost several dollars where a run with it costs tens of
+> cents, and it may never finish.** The agent learns the framework by trial, and every
+> failed build is paid for. Always keep `--attempts` bounded, and watch the spend while
+> it runs.
+
+Measured with GitHub Copilot and GPT-5.6 Terra at medium effort, one run per task,
+against the runs of the same tree with the layer:
+
+| Task | Without the layer | With the layer |
+|---|---|---|
+| temperature alarm (no state machine) | $0.61, 25 requests, 10 fix cycles, every hidden probe passed | $0.23-0.34, 7-14 requests, 2 fix cycles, every probe passed |
+| coffee machine (one state machine) | **$2.09, 71 requests, 31 fix cycles; it stopped at the bound of 15 and the program does not work** (1 of 6 probes) | $0.32-0.46, 7-12 requests, 2-4 fix cycles, every probe passed |
+
+The small task cost about twice as much without the layer. The task with a state machine
+cost five times as much, and nothing usable came out of it. No run of that task with the
+layer, on the current tree, has come near the bound. The larger tasks were not tried
+without the layer.
+
+**Where would the coffee machine have ended?** Nobody knows: it stopped at the bound. If
+you want to find out, run it with a higher bound, and share the run, the cost and the
+verdict in
+[the discussion](https://github.com/aregtech/areg-sdk/discussions/800):
+
+```bash
+run-benchmark.sh --layer off --agent copilot --model gpt-5.6-terra --effort medium \
+                 --task examples/ai-benchmark/prompt-coffeemachine.md --attempts 30
+```
+
+Set the bound before you start, and watch the spend: `--attempts 0` removes the bound,
+and a run without the layer and without a bound has no ceiling.
+
 ### Another areg tree: `--sdk`
 
 Measure a branch, a fork, or a clone with uncommitted changes, without touching the
@@ -493,6 +546,7 @@ either, so neither agent is sent looking for the other framework.
 | `--debug` | the full analysis after the run: every event, page read and request. Without it the run ends with a short headline: cost, requests, tokens, time, lines of C++ | off | `--debug` |
 | `--verify` | the hidden probes after the run: `none`, `probes`, or `sanitize` for an ASan and UBSan rebuild as well | `probes` | `--verify sanitize` |
 | `--recipes` | areg only: whether a documented recipe may be copied, `none` or `copy` | `none` | `--recipes copy` |
+| `--layer` | areg only: `off` removes the agent layer, [see above](#without-the-agent-layer) | `on` | `--layer off` |
 | `--web` | whether the agent may search and fetch pages | `off` areg, `on` gRPC | `--web on` |
 | `--sdk` | the areg-sdk checkout, [see above](#what-each-path-option-expects) | this checkout | `--sdk ~/src/areg-sdk` |
 | `--grpc` | the gRPC tools or prefix, [see above](#what-each-path-option-expects) | the `PATH` | `--grpc /usr/local` |

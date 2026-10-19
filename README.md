@@ -194,6 +194,11 @@ declared state machine), ran a real generated state machine instead of hand-writ
 `switch` tables and threads, and passed every check. What Areg pays for is reading: the
 agent loads the guide and a generated worksheet up front, then opens no framework source file.
 
+**Without the agentic layer** it costs far more: with GPT-5.6 Terra, the coffee machine on a plain
+Areg checkout cost 5x as much (**$2.09 against $0.39**), hit its retry limit and stopped with a
+program that did not work. Every run **with** the agentic layer passed.
+[How to run it, and what it may cost](./examples/ai-benchmark/README.md#without-the-agent-layer).
+
 **Try it** with your agent (Claude Code, Copilot CLI, Codex, Gemini, or any agent by hand)
 on [one of twelve ready prompts](./examples/ai-benchmark/): coffee machine, ATM, elevator,
 print/scan device, charge point and more. Add `--framework grpc` to run the same task on gRPC.

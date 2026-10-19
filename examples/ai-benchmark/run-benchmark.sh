@@ -71,6 +71,13 @@ One cold agent run, measured, against a clean snapshot of this checkout.
   --recipes MODE     none | copy, areg only               (default: none)
                        none: no example source may be copied; every file is written
                        or generated. copy: a documented recipe may be copied.
+  --layer MODE       on | off, areg only                  (default: on)
+                       off: the snapshot is the framework as a plain checkout gives
+                       it, without any file written for a coding agent and without
+                       the two examples built from these tasks (strip_layer.py lists
+                       them); the prompt is areg-nolayer-prompt-template.txt. Such a
+                       run can cost several times one with the layer, and may not
+                       finish: keep --attempts bounded.
   --web MODE         on | off: whether the agent may search and fetch pages
                        (default: off for areg, on for grpc)
                      areg ships its documentation in the snapshot, and that snapshot
@@ -112,6 +119,7 @@ One cold agent run, measured, against a clean snapshot of this checkout.
     run-benchmark.sh --agent codex --model gpt-5.4 --effort high
     run-benchmark.sh --agent gemini --model gemini-2.5-flash
     run-benchmark.sh --verify sanitize                areg, probes and sanitizers
+    run-benchmark.sh --layer off --agent copilot --model gpt-5.6-terra
 
   The run directory is made in the current directory, so start the run where the
   measurements should land, and never inside the checkout. It holds meta.txt,
@@ -131,6 +139,9 @@ need() { [ $# -ge 2 ] || die "$1 needs a value"; }
 # The gRPC arm is a cold start against gRPC alone. These are the words that would
 # tell it otherwise: the SDK's name, its tools, its documents and its file types.
 # Nothing the agent can reach may carry one, the prompt and the paths included.
+# The words of the agent layer that a run with --layer off may not be given.
+LAYER_BAN='AGENTS\.md|docs/agent|tools/agent|runbook|worksheet|bodies\.txt|design\.json|33_tempalarm|34_coffeemachine'
+
 COLD_START_BAN='areg|AGENTS\.md|build_project|gen_skeleton|gen_docs|setup_project|check_contract|check_corpus|run_evals|explain_rule|schema_help|api_help|worksheet|bodies\.txt|design\.json|\.siml|\.fsml|\.dtml|docs/agent|runbook'
 
 # A path is never searched for. It is given, inherited, found where this script sits,
@@ -258,7 +269,7 @@ main()
     local FRAMEWORK="areg" TASK="examples/ai-benchmark/prompt-coffeemachine.md" WRAPPER=""
     local PROJECT="" MODE="ipc" AGENT="claude" MODEL="" EFFORT=""
     local ATTEMPTS="15" DEBRIEF="" DEBUG="" RECIPES="none" LABEL="" DRY="" ALLOW_INSTALLED=""
-    local REPEAT="1" CACHE_TTL=""
+    local REPEAT="1" CACHE_TTL="" LAYER="on"
     local VERIFY="probes" SDK_OPT="" GRPC_OPT="" WEB=""
 
     # A bare first word is the label. Anything starting with a dash is an option.
@@ -285,6 +296,7 @@ main()
             --cache-ttl) need "$@"; CACHE_TTL="$2"; shift 2 ;;
             --repeat)    need "$@"; REPEAT="$2";    shift 2 ;;
             --recipes)   need "$@"; RECIPES="$2";   shift 2 ;;
+            --layer)     need "$@"; LAYER="$2";     shift 2 ;;
             --sdk)       need "$@"; SDK_OPT="$2";   shift 2 ;;
             --grpc)      need "$@"; GRPC_OPT="$2";  shift 2 ;;
             --verify)    need "$@"; VERIFY="$2";    shift 2 ;;
@@ -315,6 +327,12 @@ main()
     fi
     case "${RECIPES}"  in none|copy) ;; *) die "--recipes must be none or copy, not '${RECIPES}'" ;; esac
     case "${VERIFY}"   in none|probes|sanitize) ;; *) die "--verify must be none, probes or sanitize, not '${VERIFY}'" ;; esac
+    case "${LAYER}"    in on|off) ;; *) die "--layer must be on or off, not '${LAYER}'" ;; esac
+    if [ "${LAYER}" = "off" ]; then
+        [ "${FRAMEWORK}" = "areg" ] || die "--layer off is for the areg arm; the gRPC arm has no layer"
+        [ "${RECIPES}" = "none" ] || die "--layer off removes the recipes; omit --recipes"
+        [ -z "${DEBRIEF}" ] || die "--layer off has no pages to debrief on; omit --debrief"
+    fi
     case "${WEB}"      in ''|on|off) ;; *) die "--web must be on or off, not '${WEB}'" ;; esac
     # Each arm gets its own framework's documentation, in the place that documentation
     # lives: the snapshot for areg, the web for gRPC.
@@ -340,7 +358,9 @@ main()
     case "${TASK}" in /*) TASK_ABS="${TASK}" ;; *) TASK_ABS="${SDK}/${TASK}" ;; esac
     [ -f "${TASK_ABS}" ] || die "no such task file: ${TASK_ABS}"
 
-    if [ -z "${WRAPPER}" ]; then
+    if [ -z "${WRAPPER}" ] && [ "${LAYER}" = "off" ]; then
+        WRAPPER="${HERE}/areg-nolayer-prompt-template.txt"
+    elif [ -z "${WRAPPER}" ]; then
         WRAPPER="$(dirname "${TASK_ABS}")/${FRAMEWORK}-${KEY}-prompt.txt"
         if [ ! -f "${WRAPPER}" ]; then
             WRAPPER="${HERE}/${FRAMEWORK}-ai-prompt-template.txt"
@@ -426,6 +446,12 @@ one_run()
         BEFOREF="${RUN}/provenance/before.txt"
         MD5F="${RUN}/provenance/md5.txt"
         echo "${SDK}" > "${RUN}/provenance/source.txt"
+    elif [ "${LAYER}" = "off" ]; then
+        # The checkout carries the layer, so nothing beside the work directory names it.
+        mkdir -p "${RUN}/provenance"
+        HEADF="${RUN}/provenance/head.txt"
+        BEFOREF="${RUN}/provenance/before.txt"
+        MD5F="${RUN}/provenance/md5.txt"
     fi
     mkdir -p "${WORK}"
 
@@ -457,15 +483,25 @@ one_run()
 ${stray}"
     else
         copied="$(snapshot "${SDK}" "${SNAP}")"
+        if [ "${LAYER}" = "off" ]; then
+            local stripped
+            stripped="$(python3 "${HERE}/strip_layer.py" "${SDK}" "${SNAP}")" \
+                || die "the run without the agent layer still carries it: ${stripped}"
+            copied=$(( copied - stripped ))
+        fi
         # The agent may read the snapshot and nothing else, so a task the snapshot
         # does not carry -- outside the checkout, or ignored by git -- is copied into it.
         local TASK_OWN=""
         case "${TASK_ABS}" in "${SDK}/"*) [ -f "${SNAP}/${TASK_ABS#"${SDK}/"}" ] || TASK_OWN=1 ;; *) TASK_OWN=1 ;; esac
         [ -z "${TASK_OWN}" ] || cp "${TASK_ABS}" "${SNAP}/task.md"
-        ( cd "${SNAP}" && md5sum AGENTS.md docs/agent/*.md docs/agent/*.json docs/agent/.budgets \
-                               tools/agent/*.py tools/intern/evals/tasks.json \
-                               conf/cmake/functions.cmake examples/ai-benchmark/*.md \
-                               examples/ai-benchmark/*.txt ${TASK_OWN:+task.md} ) > "${MD5F}"
+        if [ "${LAYER}" = "off" ]; then
+            ( cd "${SNAP}" && md5sum scenario-runner/*.py conf/cmake/functions.cmake task.md ) > "${MD5F}"
+        else
+            ( cd "${SNAP}" && md5sum AGENTS.md docs/agent/*.md docs/agent/*.json docs/agent/.budgets \
+                                   tools/agent/*.py tools/intern/evals/tasks.json \
+                                   conf/cmake/functions.cmake examples/ai-benchmark/*.md \
+                                   examples/ai-benchmark/*.txt ${TASK_OWN:+task.md} ) > "${MD5F}"
+        fi
     fi
 
     # A task is read from the snapshot: where the checkout has it, or as task.md.
@@ -477,7 +513,7 @@ ${stray}"
     # What the prompt may call the procedure. The gRPC arm has no runbook and may
     # not be told that one exists anywhere.
     local GUIDE="the runbook"
-    [ "${FRAMEWORK}" != "grpc" ] || GUIDE="the task file"
+    [ "${FRAMEWORK}" != "grpc" ] && [ "${LAYER}" != "off" ] || GUIDE="the task file"
     local ADD_DIR="${SNAP}" RULES=""
     if [ "${FRAMEWORK}" = "grpc" ]; then
         # The task and runner share the isolated directory granted to the agent.
@@ -488,6 +524,9 @@ ${stray}"
         { protoc --version; grpc_cpp_plugin --version 2>&1 | head -1
           pkg-config --modversion grpc++ 2>/dev/null || echo "grpc++ pkg-config: none"
           cmake --version | head -1; } > "${RUN}/toolchain.txt"
+    elif [ "${LAYER}" = "off" ]; then
+        # The wrapper carries every rule of this arm.
+        RULES=""
     elif [ "${RECIPES}" = "none" ]; then
         RULES="- **You have the tools and the documentation. You do not have example source.**
   Treat ${SNAP}/docs/agent/recipes/ and the applications under ${SNAP}/examples/ as
@@ -565,6 +604,7 @@ Be specific and short: a list, not prose."
     BODY="${BODY//<areg-sdk>/${SNAP}}"
     local RUNNER="${SNAP}/tools/agent/run_scenarios.py"
     [ "${FRAMEWORK}" != "grpc" ] || RUNNER="${SNAP}/run_scenarios.py"
+    [ "${LAYER}" != "off" ] || RUNNER="${SNAP}/scenario-runner/run_scenarios.py"
     BODY="${BODY//<runner>/${RUNNER}}"
     BODY="${BODY//<task>/${TASK_RUN}}"
     BODY="${BODY//<project>/${PROJECT}}"
@@ -583,9 +623,10 @@ Be specific and short: a list, not prose."
     { echo "framework ${FRAMEWORK}"; echo "agent    ${AGENT}"
       echo "model    ${MODEL:-agent-default}"; echo "effort   ${EFFORT:-agent-default}"
       echo "task     ${TASK_RUN}"; echo "mode     ${MODE}"; echo "recipes  ${RECIPES}"
-      echo "attempts ${ATTEMPTS}"; echo "debrief  ${DEBRIEF:-no}"
+      echo "attempts ${ATTEMPTS}"; echo "debrief  ${DEBRIEF:-no}"; echo "layer    ${LAYER}"
       echo "cachettl ${CACHE_TTL:-agent-default}"
       if [ "${FRAMEWORK}" = "grpc" ]; then echo "staged   ${SNAP}"
+      elif [ "${LAYER}" = "off" ]; then echo "sdk      ${SNAP}"
       else echo "source   ${SDK}"; echo "sdk      ${SNAP}"; fi
       echo "files    ${copied}"
       echo "head     $(cat "${HEADF}")"
@@ -607,6 +648,16 @@ Be specific and short: a list, not prose."
 ${leak}
   Nothing the agent can reach may carry these words. Check ${WRAPPER_ABS}, the task
   file, and the directory the run was started in."
+    fi
+
+    # Without the layer, nothing the agent is handed may name it: the prompt, the task
+    # and the staged runner. The snapshot itself was checked by strip_layer.py.
+    if [ "${LAYER}" = "off" ]; then
+        local named
+        named="$(grep -rniE "${LAYER_BAN}" "${RUN}/prompt.txt" "${SNAP}/task.md" \
+                     "${SNAP}/scenario-runner" 2>/dev/null | head -8)"
+        [ -z "${named}" ] || die "the run without the agent layer still names it:
+${named}"
     fi
 
     if [ -n "${DRY}" ]; then
