@@ -32,14 +32,14 @@ public internet endpoints.
 // Provider thread or process: answer the request
 void ServiceProvider::request_hello_service(const areg::String & client)
 {
-    std::cout << "provider: hello, " << client << std::endl;
+    GLOBAL_INFO("provider: hello, %s", client.as_string());
     response_hello_service(true);
 }
 
 // Consumer thread or process: receive the answer, asynchronously
 void ServiceConsumer::response_hello_service(bool success)
 {
-    std::cout << "consumer: " << (success ? "greeted" : "failed") << std::endl;
+    GLOBAL_INFO("consumer: %s", success ? "greeted" : "failed");
 }
 ```
 
@@ -65,7 +65,8 @@ Full working code: [one process](./docs/agent/recipes/01-local-single-process/) 
 
 ## Quick start[![](./docs/img/pin.svg)](#quick-start)
 
-You can setup and start your own project, replace `myapp` with your real project name:
+Create a project of your own and run it, with `myapp` replaced by your project's name:
+
 ```bash
 git clone https://github.com/aregtech/areg-sdk.git
 sh areg-sdk/tools/setup-project.sh --name myapp --root myapp --mode local --sdk-root areg-sdk
@@ -76,16 +77,18 @@ cmake --build build -j
 
 On Windows without a POSIX shell, run `areg-sdk\tools\setup-project.bat` with the same options.
 
-Run `myapp` from `build/bin/` (the file name carries a platform suffix). It prints
-`provider: hello, ServiceConsumer` and `consumer: greeted`, then exits.
+Run `myapp` from `build/bin/` (the file name carries a platform suffix). It exits after
+one round trip and writes `provider: hello, ServiceConsumer` and `consumer: greeted` to
+its log, `build/bin/logs/myapp_<time>.log`: areg logging, not the console.
 
 Needs a C++17 compiler, CMake 3.20+ and Java 17+, which runs the code generator during the build.
 
 If Areg saves you work, a ⭐ helps other C++ developers find it.
 
 > [!NOTE]
-> 🤖 **Coding with an AI agent?** Areg ships a guide, generators and checkers so an agent
-> that has never seen the `areg` framework can still build on it correctly. [Agentic coding](#agentic-coding)
+> 🤖 **Coding with an AI agent?** Models barely know Areg, yet with the guide, generators
+> and checkers it ships, every agent run in the current baselines passed every hidden
+> check: 26 of 26, against 12 of 15 on gRPC, which models know from training. [Agentic coding](#agentic-coding)
 
 ---
 
@@ -115,8 +118,8 @@ If Areg saves you work, a ⭐ helps other C++ developers find it.
 - **Less infrastructure code:** threading, IPC, service discovery and reconnection come
   from the framework and the generator instead of being rebuilt in every project.
   *([Estimated time savings](./docs/wiki/08d-areg-framework-rankings.md#10-development-time-savings-with-areg-sdk))*
-- **No locks needed in component code:** its calls run only in the thread that owns it;
-  raw bytes route to that thread before any deserialization.
+- **No locks needed in component code:** a component's calls run only in the thread that
+  owns it; raw bytes route to that thread before any deserialization.
 - **No startup-order logic:** services find each other by name, wherever they run, with
   no retry loops.
 - **Recovery built in:** the watchdog restarts a stuck component thread; consumers are
@@ -174,7 +177,12 @@ state machines (`.fsml`) and data types (`.dtml`), generators write the plumbing
 checker catches invented API names, and one command builds, runs and proves every program.
 No API half-remembered from training, no guess-compile-fail loop.
 
-<div align="center"><img src="./docs/img/screenshot-fsm-ai.png" alt="A state machine an agent generated for the coffee-machine task, opened in Lusan" width="700"/></div>
+**No human drew this state machine.** An agent was given the coffee-machine task, wrote
+the `.fsml` itself, and Lusan opened it as is: every state, trigger and transition valid,
+ready for the generator to turn into C++ that builds and runs. Only the layout is rough;
+box positions never reach the generated code.
+
+<div align="center"><img src="./docs/img/screenshot-fsm-ai.png" alt="A state machine an agent wrote for the coffee-machine task, opened unedited in Lusan" width="700"/></div>
 
 **Measured against gRPC**, which every model already knows from training: same task, same
 agent, same model, scored afterwards by hidden checks the agent never sees (peer loss,
@@ -482,8 +490,8 @@ Libraries: `areg` (core framework), `aregextend` (extended utilities, SQLite wra
 |---|---|
 | **Build** | [![CMake build](https://github.com/aregtech/areg-sdk/actions/workflows/cmake.yml/badge.svg)](https://github.com/aregtech/areg-sdk/actions/workflows/cmake.yml) [![MS Build](https://github.com/aregtech/areg-sdk/actions/workflows/msbuild.yml/badge.svg)](https://github.com/aregtech/areg-sdk/actions/workflows/msbuild.yml) |
 | **Quality** | [![CodeQL](https://github.com/aregtech/areg-sdk/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/aregtech/areg-sdk/actions/workflows/codeql-analysis.yml) [![Sanitizers](https://github.com/aregtech/areg-sdk/actions/workflows/sanitizers.yml/badge.svg)](https://github.com/aregtech/areg-sdk/actions/workflows/sanitizers.yml) [![Agent docs](https://github.com/aregtech/areg-sdk/actions/workflows/agent-docs.yml/badge.svg)](https://github.com/aregtech/areg-sdk/actions/workflows/agent-docs.yml) |
-| **Release** | [![Latest release](https://img.shields.io/github/v/release/aregtech/areg-sdk?style=flat-square)](https://github.com/aregtech/areg-sdk/releases/latest) |
-| **Supported** | 2.0.0 and newer. 1.5.0 and earlier use a different API and are not supported. |
+| **Release** | 2.0.0 is in preparation: build from `master`, which has the 2.0 API. The last tagged release, [1.5.0](https://github.com/aregtech/areg-sdk/releases/tag/v1.5.0), uses a different API. |
+| **Supported** | `master`, and 2.0.0 and newer once released. 1.5.0 and earlier are not supported. |
 | **Platforms** | Linux, macOS, Windows · x86, x86_64, arm32, arm64 · GCC, Clang, MSVC, MinGW, Cygwin |
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
