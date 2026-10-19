@@ -6,6 +6,7 @@
 **Write a C++ service once. Run it in a thread, a process, or across the network.**
 
 [![CMake build](https://github.com/aregtech/areg-sdk/actions/workflows/cmake.yml/badge.svg?branch=master)](https://github.com/aregtech/areg-sdk/actions/workflows/cmake.yml)
+[![Release](https://img.shields.io/github/v/release/aregtech/areg-sdk?include_prereleases&style=flat-square)](https://github.com/aregtech/areg-sdk/releases)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue?style=flat-square)](./LICENSE.txt)
 [![C++17](https://img.shields.io/badge/C%2B%2B-17-blue?style=flat-square)](#getting-started)
 [![Linux | macOS | Windows](https://img.shields.io/badge/OS-Linux%20%7C%20macOS%20%7C%20Windows-blue?style=flat-square)](#getting-started)
@@ -20,9 +21,9 @@ serialization and the dispatch. The framework finds services by name and deliver
 call to the thread that owns the component. You write the logic: no socket code, no
 startup-order handling, no locks around a component's own state.
 
-| **~9.9 µs** | **~6.5 GB/s** | **288 KB** | **26 of 26** |
+| **~9.9 µs** | **~6.5 GB/s** | **288 KB** | **100%** |
 |:---:|:---:|:---:|:---:|
-| one-way latency, P50 | sustained throughput | code of a static service on ARMv7 | AI-agent runs pass every hidden check (gRPC: 12 of 15) |
+| one-way latency, P50 | sustained throughput | code of a static service on ARMv7 | of apps built by AI agents pass every hidden test (gRPC: 80%) |
 
 <sub>Latency and throughput: full service dispatch over TCP loopback, laptop Core i7, Linux.
 [Performance](#performance) · [Embedded ready](#embedded-ready) · [Agentic coding](#agentic-coding)</sub>
@@ -33,6 +34,9 @@ services or public internet endpoints.
 **You write the logic.** The generated base classes deliver each call to the component's thread:
 
 ```cpp
+// Consumer: send the request once the provider is connected, wherever it runs
+request_hello_service(role_name());
+
 // Provider thread or process: answer the request
 void ServiceProvider::request_hello_service(const areg::String & client)
 {
@@ -59,9 +63,11 @@ model.add_thread("ConsumerThread")
      .add_dependency_service("ServiceProvider");
 ```
 
-**Move it, don't rewrite it.** [`03_helloservice`](./examples/03_helloservice/) runs the same
-provider and consumer classes in one thread, in two threads and in two processes; only the
-model changes. Full working code: [one process](./docs/agent/recipes/01-local-single-process/) ·
+**Move it, don't rewrite it.** [`03_helloservice`](./examples/03_helloservice/) builds the same
+provider and consumer classes into one thread, two threads, and two processes connected
+through `mtrouter`; only the model in `main.cpp` differs. To run the processes on different
+machines, set the router address in `areg.init`.
+Full working code: [one process](./docs/agent/recipes/01-local-single-process/) ·
 [two processes](./docs/agent/recipes/02-ipc-two-processes/) ·
 [model in plain C++](./docs/agent/recipes/10-runtime-model/) · [How it works](#how-it-works)
 
@@ -168,14 +174,8 @@ addServiceInterface(MyServiceLib ./services/MyService.siml)
 | request, response and broadcast routing | the model: which component runs in which thread |
 | watchdog, connection loss and reconnection | |
 
-The provider and consumer classes are the same in every deployment. What changes:
-
-| Deployment                     | Transport          | What changes |
-|--------------------------------|--------------------|--------------|
-| Multithreaded (same process)   | direct dispatch    | only the model |
-| Multiprocessing (same machine) | TCP via `mtrouter` | the model per process; the interface is `Public` |
-| Multi-device (network)         | TCP via `mtrouter` | as above, plus the router address in the configuration |
-
+The provider and consumer classes are the same in every deployment. Across processes and
+machines the interface is `Public`, and `mtrouter` carries the calls over TCP.
 The model can be written in plain C++, as above, or with the `BEGIN_MODEL` macros the
 examples use. Details: [Service interface guide](./docs/wiki/06e-lusan-service-interface.md) ·
 [Code generator](./docs/wiki/06b-code-generator.md).
@@ -188,28 +188,23 @@ examples use. Details: [Service interface guide](./docs/wiki/06e-lusan-service-i
 
 Measured on **mobile-class consumer hardware** with the full stack active:
 serialization, event dispatching and multithreading. These are not raw socket numbers.
-Raw output and methodology are published for independent verification:
-[current latency dataset](./docs/wiki/areg-latency-benchmark-20260705.csv) (bare TTY) ·
-[earlier round](./docs/wiki/areg-latency-benchmark-20260629.txt) (`gnome-terminal`).
+Raw data is published: [latency dataset](./docs/wiki/areg-latency-benchmark-20260705.csv).
 
 ### Throughput: TCP `localhost`, 1:1, measured at `mtrouter`
 
 | Platform       | CPU              | ~3 MB, GB/s              | ~0.5 KB, msg/s            |
 |----------------|------------------|--------------------------|---------------------------|
-| Linux Ubuntu ¹ | i7-13700H (DDR4) | ~6.5 sust. / ~8.0 peak   | ~2.0M sust. / ~2.5M peak  |
-| macOS native ² | M3 Pro (LPDDR5)  | ~6.5 sust. / ~7.0 peak   | ~2.5M sust. / ~3.0M peak  |
-| Windows 11 ³   | i7-13700H (DDR4) | ~2.7                     | ~2.5M+                    |
+| Linux Ubuntu   | i7-13700H (DDR4) | ~6.5 sust. / ~8.0 peak   | ~2.0M sust. / ~2.5M peak  |
+| macOS native   | M3 Pro (LPDDR5)  | ~6.5 sust. / ~7.0 peak   | ~2.5M sust. / ~3.0M peak  |
+| Windows 11     | i7-13700H (DDR4) | ~2.7                     | ~2.5M+                    |
 
-¹ Ubuntu 26.04, `Performance` power mode. Peak = best short run; sustained = 5+ min run.
-² No network tuning.
-³ Latest runs; sustained and peak are not reported separately.
+<sub>Sustained = 5+ min run; peak = best short run.</sub>
 
 ### Latency: TCP `localhost`, full stack, 204-byte messages
 
-Timestamps span the full call path, from before serialization at the sender to after
-dispatch at the receiver. OWT = one-way (2 hops). RTT = round trip through `mtrouter`
-(4 hops). Linux runs from a bare TTY with `mtrouter`, provider and consumer each pinned to
-a core ([methodology](./docs/wiki/08b-areg-sdk-performance-benchmarks.md#21-measurement-environment-terminal-restart-protocol-and-absolute-floor)).
+From before serialization at the sender to after dispatch at the receiver. OWT = one-way
+(2 hops); RTT = round trip through `mtrouter` (4 hops).
+[Methodology](./docs/wiki/08b-areg-sdk-performance-benchmarks.md#21-measurement-environment-terminal-restart-protocol-and-absolute-floor).
 
 | Platform       | CPU               | OWT Min    | OWT P50     | RTT Min     | RTT P50      |
 |----------------|-------------------|------------|-------------|-------------|--------------|
@@ -246,13 +241,8 @@ ARMv7 cross-compiled with the toolchain files the SDK ships:
 | a service binary against the shared framework | 43 KB | 42 KB | 26 KB |
 | `mtrouter` | 285 KB | 255 KB | 171 KB |
 
-RAM, read from `/proc` on `x86_64`:
-
-| What a process holds | Shared, logging on | Static, logging off |
-|---|---|---|
-| a service, resident | 6.6 MB, 7 threads | **5.6 MB**, 6 threads |
-| `mtrouter`, resident | 6.5 MB, 9 threads | 5.7 MB, 8 threads |
-| each connected client | **~7 KB** -- ten clients cost under 1% of an idle router | ~6 KB |
+RAM on `x86_64`: a service holds **5.6 MB** resident, and each client connected to
+`mtrouter` adds **~7 KB** ([RAM details](./docs/wiki/08e-embedded-ready.md#4-ram-what-a-process-holds)).
 
 **Scope today:** embedded Linux only. Bare metal, RTOS and 16-bit targets are not
 supported; Zephyr is planned after 2.0.0. ARM RAM is not published until it is measured
@@ -303,20 +293,19 @@ start order, no busy-wait, repeated runs).
 
 | | Areg | gRPC |
 |---|---|---|
-| runs passing every hidden check | **26 of 26** | 12 of 15 |
-| C++ written by hand | **2-4x less** | reference |
-| agent requests (GPT-5.6 Terra, 6 tasks) | **40% fewer** | reference |
-| fix cycles per run (GPT-5.6 Terra) | **1.9** | 7.3 |
-| wall time (Claude Code, Sonnet 5.5) | **10-50% less** | reference |
+| apps passing every hidden test | **100%** | 80% |
+| C++ written by hand | **50-75% less** | reference |
+| agent requests | **35% fewer** | reference |
+| fix cycles per run | **over 80% fewer** | reference |
+| price | **same**, with more requirements met | reference |
 
-<sub>Pass counts sum the two current baselines: [Claude Code, Sonnet 5.5](./examples/ai-benchmark/baseline-2026-10-17.md)
-(Areg 12 of 12, gRPC 3 of 4) and [Copilot CLI, GPT-5.6 Terra](./examples/ai-benchmark/baseline-2026-10-18.md)
-(Areg 14 of 14, gRPC 9 of 11).</sub>
+<sub>9 tasks, both current baselines merged: [Claude Code, Sonnet 5.5](./examples/ai-benchmark/baseline-2026-10-17.md)
+and [Copilot CLI, GPT-5.6 Terra](./examples/ai-benchmark/baseline-2026-10-18.md); 28 of 28 Areg runs
+and 12 of 15 gRPC runs passed. In the Terra runs the Areg tasks also had to print exact
+output lines and declare a state machine.</sub>
 
-**Every run correct, at gRPC's price:** over the six GPT-5.6 Terra tasks the summed cost
-was the same, although the Areg tasks were stricter (exact output lines, a declared state machine).
-The guide is what makes it work: on a plain checkout without it, the coffee-machine task
-cost 5x as much ($2.09 against $0.39) and stopped with a program that did not work
+**The guide is what makes it work.** On a plain checkout without it, the coffee-machine task
+cost 5x as much and stopped with a program that did not work
 ([how to run it, and what it may cost](./examples/ai-benchmark/README.md#without-the-agent-layer)).
 
 **No human drew this state machine.** An agent wrote the `.fsml` for the coffee-machine
@@ -375,14 +364,18 @@ A failed run is the most useful one. Every result and the method:
 
 ### Learning path
 
-1. **[01_minimalrpc](./examples/01_minimalrpc/)**: multithreading. Provider and consumer in two threads, one process, no `mtrouter`.
-2. **[02_minimalipc](./examples/02_minimalipc/)**: IPC. The same components in two processes through `mtrouter`.
-3. **[03_helloservice](./examples/03_helloservice/)**: one thread, then separate threads, then separate processes.
-4. **[16_pubmesh](./examples/16_pubmesh/)**: a mesh of local and public services discovering each other.
-5. **[23_pubdatarate](./examples/23_pubdatarate/)** and **[30_publatency](./examples/30_publatency/)**: throughput and latency benchmarks on your hardware.
-6. **[33_tempalarm](./examples/33_tempalarm/)**: **built by an AI agent**. A monitor and an operator in two processes, attributes and broadcasts.
-7. **[34_coffeemachine](./examples/34_coffeemachine/)**: **built by an AI agent**. A service driven by a generated state machine, in two processes.
-8. **[All examples](./examples/README.md)**
+**Start with three examples. Together they show the whole idea:**
+
+1. **[01_minimalrpc](./examples/01_minimalrpc/)**: a provider and a consumer in two threads of one process.
+2. **[02_minimalipc](./examples/02_minimalipc/)**: the same pair in two processes, through `mtrouter`.
+3. **[03_helloservice](./examples/03_helloservice/)**: the same classes in one thread, two threads and two processes; only the model changes.
+
+**Then continue with:**
+
+- [16_pubmesh](./examples/16_pubmesh/): a mesh of local and public services discovering each other.
+- [23_pubdatarate](./examples/23_pubdatarate/) and [30_publatency](./examples/30_publatency/): throughput and latency on your hardware.
+- [33_tempalarm](./examples/33_tempalarm/) and [34_coffeemachine](./examples/34_coffeemachine/): **built by an AI agent**, with attributes, broadcasts and a generated state machine.
+- [All examples](./examples/README.md)
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -431,8 +424,8 @@ Libraries: `areg` (core framework), `aregextend` (extended utilities, SQLite wra
 |---|---|
 | **Build** | [![CMake build](https://github.com/aregtech/areg-sdk/actions/workflows/cmake.yml/badge.svg)](https://github.com/aregtech/areg-sdk/actions/workflows/cmake.yml) [![MS Build](https://github.com/aregtech/areg-sdk/actions/workflows/msbuild.yml/badge.svg)](https://github.com/aregtech/areg-sdk/actions/workflows/msbuild.yml) |
 | **Quality** | [![CodeQL](https://github.com/aregtech/areg-sdk/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/aregtech/areg-sdk/actions/workflows/codeql-analysis.yml) [![Sanitizers](https://github.com/aregtech/areg-sdk/actions/workflows/sanitizers.yml/badge.svg)](https://github.com/aregtech/areg-sdk/actions/workflows/sanitizers.yml) [![Agent docs](https://github.com/aregtech/areg-sdk/actions/workflows/agent-docs.yml/badge.svg)](https://github.com/aregtech/areg-sdk/actions/workflows/agent-docs.yml) |
-| **Release** | The first 2.0 release candidate, `v2.0.0-rc1`, is coming soon; until then build from `master`, which has the 2.0 API. The last tagged release, [1.5.0](https://github.com/aregtech/areg-sdk/releases/tag/v1.5.0), uses a different API. |
-| **Supported** | `master`, and 2.0.0 and newer once released. 1.5.0 and earlier are not supported. |
+| **Release** | [`v2.0.0-rc1`](https://github.com/aregtech/areg-sdk/releases/tag/v2.0.0-rc1), the first 2.0 release candidate. Release 1.5.0 and earlier use a different API. |
+| **Supported** | 2.0.0-rc1 and newer, and `master`. 1.5.0 and earlier are not supported. |
 | **Packages** | Build from source, or let CMake fetch Areg. |
 | **Security** | `mtrouter` connections are plain TCP, with no encryption or authentication today: run Areg in trusted networks. Optional TLS is on the [roadmap](#roadmap). |
 | **Platforms** | Linux, macOS, Windows · x86, x86_64, arm32, arm64 · GCC, Clang, MSVC, MinGW, Cygwin |
@@ -444,7 +437,7 @@ Libraries: `areg` (core framework), `aregextend` (extended utilities, SQLite wra
 ## Roadmap[![](./docs/img/pin.svg)](#roadmap)
 
 **Next:**
-- 2.0.0-rc1, then the 2.0.0 release and the vcpkg port
+- The 2.0.0 release and the vcpkg port
 - RTOS platform support, starting with Zephyr
 
 **Planned:**
@@ -463,17 +456,9 @@ Libraries: `areg` (core framework), `aregextend` (extended utilities, SQLite wra
 
 ## Documentation[![](./docs/img/pin.svg)](#documentation)
 
-- **[Installation and build](./docs/wiki/README.md#-installation-and-build)**: cross-platform builds, toolchains, packages
-- **[Integration and configuration](./docs/wiki/README.md#-integration-and-configuration)**: CMake integration, FetchContent, build options
-- **[Networking and communication](./docs/wiki/README.md#-networking-and-communication)**: router setup, IPC, low-latency messaging
-- **[Logging and monitoring](./docs/wiki/README.md#-logging-and-monitoring)**: distributed logging for debugging
-- **[Persistence](./docs/wiki/README.md#-persistence)**: local data storage
-- **[Development tools](./docs/wiki/README.md#-development-tools)**: code generator, Lusan, testing utilities
-- **[Troubleshooting](./docs/wiki/README.md#-troubleshooting)**: common issues and solutions
-- **[Examples and demos](./docs/wiki/README.md#-examples-and-demos)**: sample projects catalog
-- **[Performance and benchmarks](./docs/wiki/README.md#-performance-and-benchmarks)**: methodology, datasets, rankings
-- **[HOWTO guide](./docs/HOWTO.md)**: practical development tasks
-- **[AI agent guide](./AGENTS.md)**: building an application with a coding agent
+The **[Wiki](./docs/wiki/README.md)** covers building and integration, networking, logging,
+tools, troubleshooting and benchmarks. Practical tasks: **[HOWTO](./docs/HOWTO.md)**.
+Building with a coding agent: **[AGENTS.md](./AGENTS.md)**.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 

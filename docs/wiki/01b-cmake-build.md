@@ -589,7 +589,7 @@ cmake -B ./build -G "Visual Studio 17 2022"
 **Build Guides:**
 - [CMake Configuration Options](./02d-cmake-config.md) - Complete configuration reference
 - [CMake Integration Guide](./02b-cmake-integrate.md) - Using Areg SDK in your projects
-- [vcpkg Installation](./02d-cmake-vcpkg.md) - Alternative installation method
+- [Installing as a Package](./01a-areg-package.md) - Install once, use with `find_package`
 
 **Troubleshooting:**
 - [Linux Build Troubleshooting](./07b-troubleshooting-cmake-linux-builds.md)

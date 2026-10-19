@@ -97,14 +97,13 @@ java -version      # Should be 17+
 
 ## Integration Methods
 
-Four methods to integrate Areg SDK:
+Three methods to integrate Areg SDK:
 
 | Method                                             | Best For          | Complexity   | Build Time            |
 |----------------------------------------------------|-------------------|--------------|-----------------------|
 | [Project Setup Tool](./02a-quick-project-setup.md) | New projects      | Very Low     | 30 sec                |
 | [FetchContent](#method-2-fetchcontent)             | New projects      | Low          | First build: 3-8 min  |
-| [vcpkg](#method-3-vcpkg-package)                   | Existing projects | Medium       | Pre-built, instant    |
-| [Git Submodule](#method-4-git-submodule)           | Source control    | Medium       | First build: 3-8 min  |
+| [Git Submodule](#method-3-git-submodule)           | Source control    | Medium       | First build: 3-8 min  |
 
 
 ### Method 1: Project Setup Tool (Fastest - 30 seconds)
@@ -226,93 +225,7 @@ Hello from Areg SDK!
 
 ---
 
-### Method 3: vcpkg Package
-
-**Advantages:**
-- ✅ Pre-built binaries (fast)
-- ✅ Version management
-- ✅ Multi-project sharing
-- ✅ Automatic dependency resolution
-
-**Disadvantages:**
-- ❌ Requires vcpkg installation
-- ❌ Additional setup step
-
-> [!NOTE]
-> vcpkg support available starting with Areg SDK 2.0.
-
-#### Step 1: Install vcpkg
-
-Follow [vcpkg installation guide](https://github.com/microsoft/vcpkg#quick-start):
-
-```bash
-git clone https://github.com/microsoft/vcpkg.git
-cd vcpkg
-./bootstrap-vcpkg.sh    # Linux/macOS
-# or
-.\bootstrap-vcpkg.bat   # Windows
-```
-
-#### Step 2: Install Areg SDK Package
-
-```bash
-vcpkg install areg
-```
-
-**Platform-specific:**
-```bash
-vcpkg install areg:x64-linux    # 64-bit Linux
-vcpkg install areg:x86-linux    # 32-bit Linux
-vcpkg install areg:x64-osx      # 64-bit macOS
-vcpkg install areg:x64-windows  # 64-bit Windows
-vcpkg install areg:x86-windows  # 32-bit Windows
-```
-
-#### Step 3: Integrate vcpkg
-
-```bash
-vcpkg integrate install
-```
-
-**Save the CMake toolchain path** shown in output:
-```
-CMake projects should use: "-DCMAKE_TOOLCHAIN_FILE=/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake"
-```
-
-#### Step 4: Create CMakeLists.txt
-
-```cmake
-cmake_minimum_required(VERSION 3.20)
-project(myapp)
-
-# Find Areg SDK package
-find_package(areg CONFIG REQUIRED)
-
-# Create executable
-add_executable(myapp main.cpp)
-target_link_libraries(myapp PRIVATE areg::areg)
-```
-
-#### Step 5: Build with Toolchain
-
-Replace `<vcpkg-root>` with your vcpkg installation path:
-
-```bash
-cmake -B ./build -DCMAKE_TOOLCHAIN_FILE=<vcpkg-root>/scripts/buildsystems/vcpkg.cmake
-cmake --build ./build
-./build/myapp
-```
-
-**Build time:** ~10 seconds (using pre-built binaries)
-
-> [!TIP]
-> For detailed vcpkg setup, see [Installing Areg SDK with vcpkg](./01a-areg-package.md).
-
-<div align="right"><kbd><a href="#integration-methods">↑ Back to methods ↑</a></kbd></div>
-
----
-
-### Method 4: Git Submodule
+### Method 3: Git Submodule
 
 **Advantages:**
 - ✅ Source code in your repository
@@ -562,13 +475,13 @@ For detailed cross-compilation guide, see [CMake Build Guide - Cross-Compilation
 
 ### Complete Integration Example
 
-**Hybrid approach** (tries vcpkg, falls back to FetchContent):
+**Hybrid approach** (tries an installed package, falls back to FetchContent):
 
 ```cmake
 cmake_minimum_required(VERSION 3.20)
 project(myapp)
 
-# Try to find Areg SDK package (vcpkg or system installation)
+# Try to find an installed Areg SDK package
 find_package(areg CONFIG)
 
 if(NOT areg_FOUND)
@@ -618,12 +531,6 @@ macro_declare_executable(myapp main.cpp)
 
 **Problem:** `find_package(areg CONFIG REQUIRED)` fails.  
 **Solution:**  
-*For vcpkg:*
-```bash
-# Ensure toolchain file is set
-cmake -B ./build -DCMAKE_TOOLCHAIN_FILE=<vcpkg-root>/scripts/buildsystems/vcpkg.cmake
-```
-*For system installation:*
 ```bash
 # Specify installation prefix
 cmake -B ./build -DCMAKE_PREFIX_PATH=/opt/areg
@@ -727,7 +634,7 @@ option(AREG_EXAMPLES "Build examples" OFF)  # Too late
 
 **Integration Guides:**
 - [Project Setup Tool](./02a-quick-project-setup.md) - Create new project in 30 sec
-- [vcpkg Installation](./01a-areg-package.md) - Detailed vcpkg setup
+- [Installing as a Package](./01a-areg-package.md) - Install once, use with `find_package`
 - [CMake Configuration](./02d-cmake-config.md) - All configuration options
 - [CMake Functions](./02e-cmake-functions.md) - Helper functions reference
 - [CMake Build Guide](./01b-cmake-build.md) - Building from source

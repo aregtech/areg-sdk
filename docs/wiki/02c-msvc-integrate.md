@@ -22,55 +22,27 @@ This guide covers integrating Areg Framework into Microsoft Visual Studio projec
 
 ## Quick Start
 
-### Fastest Integration (vcpkg)
+### Fastest Start: a CMake Project in Visual Studio
 
-**Prerequisites:** Visual Studio 2019+ installed
+**Prerequisites:** Visual Studio 2019+ with the C++ desktop workload, Git, Java 17+
 
-**Step 1: Install vcpkg**
-
-```powershell
-git clone https://github.com/microsoft/vcpkg.git
-cd vcpkg
-.\bootstrap-vcpkg.bat
-.\vcpkg integrate install
-```
-
-**Step 2: Install Areg SDK**
+**Step 1: Create the project**
 
 ```powershell
-.\vcpkg install areg:x64-windows
+git clone https://github.com/aregtech/areg-sdk.git
+areg-sdk\tools\setup-project.bat --name myapp --root myapp --mode local --sdk-root areg-sdk
 ```
 
-**Step 3: Create Visual Studio Project**
+**Step 2: Open it in Visual Studio**
 
-1. Open Visual Studio
-2. Create new **Console App** project named `MyApp`
-3. Replace `MyApp.cpp` content:
+- **File → Open → Folder**, and select `myapp`. Visual Studio configures the CMake project.
+- **Build → Build All**, then run `myapp.exe` from **Select Startup Item**.
 
-```cpp
-#include "areg/base/String.hpp"
-#include <iostream>
+The program makes one round trip between a provider and a consumer and exits; its log is
+in `logs` beside the executable. With `--mode ipc` the tool creates two processes and a
+`run.bat` that also starts `mtrouter`. All options: [Quick Project Setup](./02a-quick-project-setup.md).
 
-#pragma comment(lib, "areg")
-
-int main() {
-    String greeting("Hello from Areg SDK!");
-    std::cout << greeting.data() << std::endl;
-    return 0;
-}
-```
-
-**Step 4: Build and Run**
-
-- **Build → Build Solution** (`Ctrl+Shift+B`)
-- **Debug → Start Without Debugging** (`Ctrl+F5`)
-
-**Expected output:**
-```
-Hello from Areg SDK!
-```
-
-**Build time:** ~5 seconds (using pre-built binaries)
+For a native `.vcxproj` solution, use the [Git submodule](#method-1-git-submodule) method.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -108,153 +80,16 @@ Should output version 17 or higher.
 
 ## Integration Methods
 
-Two methods to integrate Areg SDK:
+Two ways to use Areg SDK in Visual Studio:
 
 | Method | Best For | Complexity | Setup Time |
 |--------|----------|------------|------------|
-| [vcpkg](#method-1-vcpkg-package) | Quick setup | Low | 5-10 minutes |
-| [Git Submodule](#method-2-git-submodule) | Source control | Medium | 15-20 minutes |
+| [CMake project](#quick-start) | New projects | Low | 1-2 minutes |
+| [Git Submodule](#method-1-git-submodule) | Source control | Medium | 15-20 minutes |
 
 ---
 
-### Method 1: vcpkg Package
-
-**Advantages:**
-- ✅ Pre-built binaries (instant)
-- ✅ Automatic updates via vcpkg
-- ✅ Minimal configuration
-- ✅ Zero project setup
-
-**Disadvantages:**
-- ❌ Requires vcpkg installation
-- ❌ Less control over build options
-
-> [!IMPORTANT]
-> vcpkg support available starting with Areg SDK 2.0.
-
-#### Step 1: Install vcpkg
-
-**Clone and bootstrap:**
-
-```powershell
-git clone https://github.com/microsoft/vcpkg.git
-cd vcpkg
-.\bootstrap-vcpkg.bat
-```
-
-**Expected output:**
-```
-Downloading vcpkg-glibc...
-Building vcpkg.exe...
-vcpkg package management program version ...
-```
-
-**Installation time:** 2-3 minutes
-
-#### Step 2: Integrate with Visual Studio
-
-```powershell
-.\vcpkg integrate install
-```
-
-**Expected output:**
-```
-Applied user-wide integration for this vcpkg root.
-
-All MSBuild C++ projects can now #include any installed libraries.
-Linking will be handled automatically.
-Installing new libraries will make them instantly available.
-```
-
-> [!IMPORTANT]
-> Close Visual Studio before running `vcpkg integrate install` if it's open. Restart Visual Studio after integration.
-
-#### Step 3: Install Areg SDK
-
-**For 64-bit Windows (recommended):**
-```powershell
-.\vcpkg install areg:x64-windows
-```
-
-**For 32-bit Windows:**
-```powershell
-.\vcpkg install areg:x86-windows
-```
-
-**Installation time:** 5-10 minutes (downloads and extracts pre-built binaries)
-
-**Verify installation:**
-```powershell
-.\vcpkg list | findstr areg
-```
-
-**Expected output:**
-```
-areg:x64-windows    1.5.0    Areg SDK - Object RPC framework
-```
-
-#### Step 4: Create Visual Studio Project
-
-**Create new project:**
-
-1. Open Visual Studio
-2. **File → New → Project**
-3. Select **Console App**
-4. Name: `MyAregApp`
-5. Click **Create**
-
-**Add Areg SDK code:**
-
-Replace content of `MyAregApp.cpp`:
-
-```cpp
-#include "areg/base/String.hpp"
-#include <iostream>
-
-// Link with Areg library
-#pragma comment(lib, "areg")
-
-int main() {
-    String greeting("Hello from Areg SDK!");
-    std::cout << greeting.data() << std::endl;
-    return 0;
-}
-```
-
-> [!NOTE]
-> `#pragma comment(lib, "areg")` automatically links the Areg library. Without this pragma, you need to add `areg.lib` to **Linker → Input → Additional Dependencies**.
-
-#### Step 5: Build and Run
-
-**Build:**
-- **Build → Build Solution** (or `Ctrl+Shift+B`)
-
-**Expected build output:**
-```
-1>------ Build started: Project: MyAregApp, Configuration: Debug x64 ------
-1>MyAregApp.cpp
-1>MyAregApp.vcxproj -> C:\Projects\MyAregApp\x64\Debug\MyAregApp.exe
-========== Build: 1 succeeded, 0 failed, 0 up-to-date, 0 skipped ==========
-```
-
-**Run:**
-- **Debug → Start Without Debugging** (or `Ctrl+F5`)
-
-**Expected output:**
-```
-Hello from Areg SDK!
-```
-
-**Build time:** ~5 seconds (first build), ~2 seconds (rebuilds)
-
-> [!TIP]
-> For detailed vcpkg setup, see [Installing Areg SDK with vcpkg](./02e-cmake-vcpkg.md).
-
-<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
-
----
-
-### Method 2: Git Submodule
+### Method 1: Git Submodule
 
 **Advantages:**
 - ✅ Source code in your repository
@@ -548,35 +383,11 @@ echo Service interfaces generated
 
 ## Troubleshooting
 
-### vcpkg Integration Not Working
-
-**Problem:** Visual Studio doesn't find Areg SDK headers after vcpkg installation.  
-**Solution:**  
-*1. Verify integration:*
-```powershell
-vcpkg integrate install
-```
-*2. Restart Visual Studio*  
-*3. Check integration status:*
-```powershell
-vcpkg integrate remove
-vcpkg integrate install
-```
-*4. Verify package installation:*
-```powershell
-vcpkg list | findstr areg
-```
-
----
-
 ### Build Fails with "Cannot open include file"
 
 **Problem:** Error C1083: Cannot open include file: 'areg/base/String.hpp'  
 **Solution:**  
-*For vcpkg method:*
-- Ensure vcpkg integration is active
-- Restart Visual Studio
-*For submodule method:*
+*For the submodule method:*
 1. Check **Additional Include Directories** contains `$(AregFramework)`
 2. Verify `msvc_setup.props` is properly configured
 3. Check `<AregSdkRoot>` path in `msvc_setup.props`
@@ -671,7 +482,7 @@ Verify `msvc_setup.props` doesn't override command-line options.
 ## Additional Resources
 
 **Integration Guides:**
-- [vcpkg Installation](./02e-cmake-vcpkg.md) - Detailed vcpkg setup
+- [Quick Project Setup](./02a-quick-project-setup.md) - A new CMake project in one command
 - [CMake Integration](./02b-cmake-integrate.md) - Alternative integration method
 - [MSBuild Build Guide](./01c-msvc-build.md) - MSBuild options
 

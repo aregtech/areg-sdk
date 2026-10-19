@@ -62,7 +62,7 @@ hidden check (14 of 14 runs, gRPC 9 of 11) and needed 40% fewer agent requests.
   2.5x: $1.37-3.36 on the coffee machine with Sonnet 5, and about 2.4x on the charge point
   with GPT-5.4 (from its token counts; Copilot recorded no credits for those runs),
   because the length of its fix loop varies. On the charge point with
-  Sonnet 5.5, two gRPC runs were 32% apart, six Areg runs 15%. With GPT-5.6 Terra both
+  Sonnet 5.5, two gRPC runs were 32% apart, seven Areg runs 15%. With GPT-5.6 Terra both
   frameworks varied about equally: 9-48% per task for Areg, 16-70% for gRPC.
 - **Sturdier programs.** Threading, reconnection, start-order independence and
   distributed logging come from the framework, not from code the agent writes. Areg
@@ -107,7 +107,7 @@ agent never sees.
 | Claude Code, Sonnet 5 | coffee machine | 4 of 5 / 5 of 5 | 449 vs 1,257 lines | -26% |
 | Claude Code, Sonnet 5.5 | coffee machine, temperature alarm | all, every run / all, every run | about 3x less | -10%, -26% |
 | Copilot CLI, GPT-5.6 Terra | 4 tasks | 12 of 12 runs / 7 of 8 runs | 2-4x less | parity to -22% |
-| Claude Code, Sonnet 5.5, low effort | camera, charge point, sensor gateway | all, every run / 3 of 4 runs | 2.3-4x less | +2%, -4%, +0.5% |
+| Claude Code, Sonnet 5.5, low effort | camera, charge point, sensor gateway | all, every run / 3 of 4 runs | 2.3-4x less | +1%, -6%, +0.5% |
 | Copilot CLI, GPT-5.6 Terra, current tree | 6 tasks, the Areg task stricter | 14 of 14 runs / 9 of 11 runs | 2-3.5x less | -1% in sum; -18% to +26% per task |
 
 - **What holds:** the code an agent does not have to write, in every comparison;
