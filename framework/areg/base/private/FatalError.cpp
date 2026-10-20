@@ -18,8 +18,25 @@
 #include <cstdio>
 #include <cstdlib>
 
+#ifdef _WIN32
+    #include <windows.h>
+#endif  // _WIN32
+
 namespace
 {
+    //!< Returns true if the environment variable is set and its value starts with '1'.
+    bool _is_env_on( const char * name ) noexcept
+    {
+#ifdef _WIN32
+        char value[16]{ };
+        const DWORD length{ ::GetEnvironmentVariableA( name, value, static_cast<DWORD>(sizeof( value )) ) };
+        return ( length > 0u ) && ( length < sizeof( value ) ) && ( value[0] == '1' );
+#else   // _WIN32
+        const char * value{ std::getenv( name ) };
+        return ( value != nullptr ) && ( value[0] == '1' );
+#endif  // _WIN32
+    }
+
     //!< Writes the reason to the standard error output and aborts.
     void _default_fatal_handler( const char * reason ) noexcept
     {
@@ -48,8 +65,7 @@ AREG_API_IMPL void areg::fatal_error( const char * reason ) noexcept
 
 AREG_API_IMPL void areg::report_lock_failure( const char * reason ) noexcept
 {
-    const char * fatal{ std::getenv( "AREG_LOCK_FAILURE_FATAL" ) };
-    if ( ( fatal != nullptr ) && ( fatal[0] == '1' ) )
+    if ( _is_env_on( "AREG_LOCK_FAILURE_FATAL" ) )
     {
         areg::fatal_error( reason );
     }

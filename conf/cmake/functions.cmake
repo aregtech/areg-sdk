@@ -241,9 +241,26 @@ macro(macro_check_module_architect path_module target_name target_proc var_compa
             endif()
 
         elseif (EXISTS "${_objdump}")
+            # A GNU ld script (INPUT or GROUP) is text; check the first library it names instead.
+            set(_module_binary "${path_module}")
+            file(READ "${path_module}" _module_head LIMIT 512)
+            if ("${_module_head}" MATCHES "(INPUT|GROUP)[ \t]*\\([ \t]*([^ \t\r\n()]+)")
+                set(_script_lib "${CMAKE_MATCH_2}")
+                if (NOT "${_script_lib}" MATCHES "^-l")
+                    if (NOT IS_ABSOLUTE "${_script_lib}")
+                        get_filename_component(_script_dir "${path_module}" DIRECTORY)
+                        set(_script_lib "${_script_dir}/${_script_lib}")
+                    endif()
+                    if (EXISTS "${_script_lib}")
+                        set(_module_binary "${_script_lib}")
+                        message(STATUS "Areg: >>> '${path_module}' is a linker script, validating '${_module_binary}'")
+                    endif()
+                endif()
+            endif()
+
             set(_tool_exists TRUE)
             execute_process(
-                COMMAND bash -c "${_objdump} -f ${path_module} | grep ^architecture | cut -d' ' -f2 | sort -u"
+                COMMAND bash -c "${_objdump} -f ${_module_binary} | grep ^architecture | cut -d' ' -f2 | sort -u"
                 OUTPUT_VARIABLE _data
                 OUTPUT_STRIP_TRAILING_WHITESPACE
                 ERROR_QUIET

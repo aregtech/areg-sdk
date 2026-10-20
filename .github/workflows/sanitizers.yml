@@ -180,12 +180,21 @@ jobs:
           compression-level: 0
 
   ubsan-linux:
-    name: ubsan (examples)
+    name: ubsan (examples${{ matrix.arch == 'x86' && ', x86' || '' }})
     # The undefined behaviour sanitizer over the example suite. A report from
     # framework/ fails the job; a report from an example is a warning, because an
     # example is teaching material and is allowed to be corrected on its own schedule.
+    # The x86 leg builds 32-bit, where size_t and pointers are 32 bits wide.
     runs-on: ubuntu-latest
     timeout-minutes: 120
+
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [ x64, x86 ]
+
+    env:
+      UBSAN_CACHE: ./product/cache/ubsan${{ matrix.arch == 'x86' && '-x86' || '' }}
 
     steps:
 
@@ -199,10 +208,17 @@ jobs:
           java-package: jre
           distribution: temurin
 
+      - name: Install the 32-bit compiler and libraries
+        if: matrix.arch == 'x86'
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq gcc-multilib g++-multilib libncurses-dev:i386
+
       - name: Configure CMake with the undefined behaviour sanitizer
         working-directory: ${{github.workspace}}
         run: |
-          cmake -B ./product/cache/ubsan -DAREG_COMPILER_FAMILY=gnu -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+          cmake -B ${{env.UBSAN_CACHE}} ${{ matrix.arch == 'x86' && '-DAREG_ARCH=x86' || '' }} -DAREG_COMPILER_FAMILY=gnu -DCMAKE_BUILD_TYPE=RelWithDebInfo \
                 -DAREG_LIB_TYPE=static -DAREG_EXTENDED:BOOL=ON -DAREG_LOGGING:BOOL=ON \
                 -DAREG_EXAMPLES:BOOL=ON -DAREG_TESTS:BOOL=OFF \
                 -DCMAKE_CXX_FLAGS="-fsanitize=undefined -fno-omit-frame-pointer -g" \
@@ -212,7 +228,7 @@ jobs:
 
       - name: Build with CMake
         working-directory: ${{github.workspace}}
-        run: cmake --build ./product/cache/ubsan -j16
+        run: cmake --build ${{env.UBSAN_CACHE}} -j16
 
       - name: Run the examples under the sanitizer
         working-directory: ${{github.workspace}}
@@ -269,7 +285,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: ubsan-linux
+          name: ubsan-linux${{ matrix.arch == 'x86' && '-x86' || '' }}
           path: ./ubsan/
 
   teardown-stress:

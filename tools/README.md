@@ -36,6 +36,7 @@ The two places a developer might reach for Python have a Python-free equivalent:
 |---|---|---|
 | create a project | `setup-project.sh` / `.bat` / `.ps1` | `agent/setup_project.py`, which also writes the agent files |
 | generate from a document | `codegenerate.sh` / `.bat`, or `addServiceInterface()` in CMake | -- |
+| install the build tools | `setup-environment.sh` / `.bat` / `.ps1` | -- |
 | check the environment | `check-env.sh` / `.bat` | -- |
 
 ---
@@ -50,6 +51,9 @@ The two places a developer might reach for Python have a Python-free equivalent:
 | `schema/*.xsd` | -- | Grammars of the service, state machine and data type documents | [2](#2-document-schemas-and-the-rule-registry) |
 | `schema/rules.xml` | -- | The registry of validation rule numbers, shared with Lusan | [2](#2-document-schemas-and-the-rule-registry) |
 | `explain_rule.py` | Python | Explains a generator validation finding, by number or `--search` | [2](#2-document-schemas-and-the-rule-registry) |
+| `setup-environment.sh` | -- | Installs the compiler, CMake, Java, Git and optional tools from a menu; Linux and macOS | [5](#5-project-setup-scripts-quick-start) |
+| `setup-environment.ps1` | -- | The same on Windows, with winget | [5](#5-project-setup-scripts-quick-start) |
+| `setup-environment.bat` | -- | Runs `setup-environment.ps1` | [5](#5-project-setup-scripts-quick-start) |
 | `check-env.sh` | -- | Reports whether CMake, Java and a compiler are present | [5](#5-project-setup-scripts-quick-start) |
 | `check-env.bat` | -- | The same check on Windows | [5](#5-project-setup-scripts-quick-start) |
 | `setup-project.sh` | -- | Creates a ready-to-build project; no interpreter | [5](#5-project-setup-scripts-quick-start) |
@@ -330,6 +334,10 @@ If your system has multiple processes:
 ---
 
 ## 5. Project Setup Scripts (Quick Start)
+
+Before the first project, `setup-environment.sh` (`setup-environment.bat` on Windows)
+installs the build tools from a menu; `--dry-run` prints its commands only. `check-env.sh`
+(`.bat`) checks the result.
 
 Three tools create the same ready-to-build project. Each copies a recipe from
 `docs/agent/recipes/` and renames it after the project, so a new project starts from code

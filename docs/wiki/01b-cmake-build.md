@@ -46,6 +46,7 @@ This guide covers building Areg SDK on Linux, macOS, Windows, and Cygwin using C
 - **SQLite3** - For database features (or use bundled version in `thirdparty/`)
 
 > [!TIP]
+> Setting up a machine from scratch, on any OS: [Build Environment](./01e-build-environment.md).
 > If dependencies are already installed, skip to [Quick Start](#quick-start).
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
