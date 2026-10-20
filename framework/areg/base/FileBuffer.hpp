@@ -183,11 +183,10 @@ public:
     bool remove() override;
 
     /**
-     * \brief   Returns the current valid length of file data in bytes, or INVALID_SIZE if no data.
-     *
-     * \return  Length in bytes, or INVALID_SIZE.
+     * \brief   Returns the length of valid data in bytes, or INVALID_SIZE if the buffer is not open.
      **/
-    uint32_t length() const noexcept override;
+    [[nodiscard]]
+    uint64_t length() const noexcept override;
 
     /**
      * \brief   Returns true if the file is currently open.

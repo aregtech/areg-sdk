@@ -176,7 +176,7 @@ bool FileBuffer::remove()
     return true;
 }
 
-uint32_t FileBuffer::length() const noexcept
+uint64_t FileBuffer::length() const noexcept
 {
     return (is_opened() ? mSharedBuffer.size_used() : areg::INVALID_SIZE);
 }

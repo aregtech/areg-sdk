@@ -121,7 +121,7 @@ int main()
     areg::File binary("./Debug/binary.dat", mode & ~static_cast<uint32_t>(areg::FileBase::OpenMode::Text));
     if (binary.open())
     {
-        binary.write(buffer.data_buffer(), buffer.length());
+        binary.write(buffer.data_buffer(), static_cast<uint32_t>(buffer.length()));
         dump_text(binary);
         binary.reserve(789);
     }

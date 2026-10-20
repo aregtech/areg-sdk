@@ -450,7 +450,7 @@ uint32_t File::position() const noexcept
     return (is_opened() ? _os_file_position() : Cursor::INVALID_CURSOR_POSITION);
 }
 
-uint32_t File::length() const noexcept
+uint64_t File::length() const noexcept
 {
     return (is_opened() ? _os_file_length() : 0u);
 }

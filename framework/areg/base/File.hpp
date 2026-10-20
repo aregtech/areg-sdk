@@ -196,10 +196,10 @@ public:
     uint32_t position() const noexcept override;
 
     /**
-     * \brief   Returns the current size of file data in bytes, or INVALID_SIZE if not open.
+     * \brief   Returns the size of the file in bytes, or 0 if the file is not open or the size is unknown.
      **/
     [[nodiscard]]
-    uint32_t length() const noexcept override;
+    uint64_t length() const noexcept override;
 
     /**
      * \brief   Returns true if the file is currently open.
@@ -606,11 +606,11 @@ private:
     void _os_flush_file() noexcept;
 
     /**
-     * \brief   OS-specific implementation to return the number of bytes that can be read from the
-     *          current position to the end of file; returns 0 if not open.
+     * \brief   OS-specific implementation to return the size of the opened file in bytes; returns 0
+     *          on failure.
      **/
     [[nodiscard]]
-    uint32_t _os_file_length() const noexcept;
+    uint64_t _os_file_length() const noexcept;
 
     /**
      * \brief   OS-specific implementation to generate a temporary file name; returns the length of

@@ -348,12 +348,12 @@ void File::_os_flush_file() noexcept
     fsync(file.fd);
 }
 
-uint32_t File::_os_file_length() const noexcept
+uint64_t File::_os_file_length() const noexcept
 {
     ASSERT(mFileHandle != _os_invalid_handle());
     PosixFile file{ mFileHandle };
     struct stat st {};
-    return (::fstat(file.fd, &st) == 0) ? static_cast<uint32_t>(st.st_size) : 0u;
+    return (::fstat(file.fd, &st) == 0) ? static_cast<uint64_t>(st.st_size) : 0u;
 }
 
 //////////////////////////////////////////////////////////////////////////
