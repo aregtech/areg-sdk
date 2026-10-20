@@ -99,9 +99,10 @@ CALL_RE = re.compile(
 # A call on another object: a machine's trigger, a helper's method. Only self()
 # and this reach the members the service documents generate.
 OBJECT_CALL_RE = re.compile(r'(?<!\bself\(\))(?<!\bthis)\s*(?:\.|->)\s*$')
-ROLE_RE = re.compile(r'BEGIN_REGISTER_COMPONENT\s*\(\s*"([^"]+)"')
-DEP_RE = re.compile(r'REGISTER_DEPENDENCY\s*\(\s*"([^"]+)"')
-MODEL_BEGIN_RE = re.compile(r'\bBEGIN_MODEL\s*\(')
+# A model is declared with the macros or with areg::Model in plain C++.
+ROLE_RE = re.compile(r'(?:BEGIN_REGISTER_COMPONENT\s*\(|\badd_component\s*<[^>]*>\s*\()\s*"([^"]+)"')
+DEP_RE = re.compile(r'(?:REGISTER_DEPENDENCY|\badd_dependency_service)\s*\(\s*"([^"]+)"')
+MODEL_BEGIN_RE = re.compile(r'\bBEGIN_MODEL\s*\(|\bareg::Model\s+\w+\s*[({]')
 MODEL_END_RE = re.compile(r'\bEND_MODEL\s*\(')
 CTOR_RE = re.compile(r'^\s*(?:explicit\s+)?(?:\w+::)?(\w+)\s*\('
                      r'[^;]*areg::ComponentEntry[^;]*\)')

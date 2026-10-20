@@ -56,6 +56,8 @@ else()
     # POSIX API
     set(AREG_DEVELOP_ENV "Posix")
     add_definitions(-DPOSIX)
+    # 64-bit file sizes and inode numbers in 32-bit builds.
+    add_definitions(-D_FILE_OFFSET_BITS=64)
     # GNU compile options
     if (CYGWIN)
         list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -MMD ${AREG_USER_DEFINES})

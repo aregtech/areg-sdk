@@ -556,7 +556,7 @@ again, and look for codegen errors in the build output.
 ## Next Steps
 
 **Integration:**
-- [CMake Integration](./02b-cmake-integrate.md): FetchContent, vcpkg, submodule
+- [CMake Integration](./02b-cmake-integrate.md): FetchContent, submodule
 - [Visual Studio Integration](./02c-msvc-integrate.md): MSVC-specific setup
 - [CMake Configuration Options](./02d-cmake-config.md) and [CMake Functions Reference](./02e-cmake-functions.md)
 

@@ -64,6 +64,13 @@ One cold agent run, measured, against a clean snapshot of this checkout.
   --recipes MODE     none | copy, areg only               (default: none)
                        none: no example source may be copied; every file is written
                        or generated. copy: a documented recipe may be copied.
+  --layer MODE       on | off, areg only                  (default: on)
+                       off: the snapshot is the framework as a plain checkout gives
+                       it, without any file written for a coding agent and without
+                       the two examples built from these tasks (strip_layer.py lists
+                       them); the prompt is areg-nolayer-prompt-template.txt. Such a
+                       run can cost several times one with the layer, and may not
+                       finish: keep --attempts bounded.
   --web MODE         on | off: whether the agent may search and fetch pages
                        (default: off for areg, on for grpc)
                      areg ships its documentation in the snapshot, and that snapshot
@@ -105,6 +112,7 @@ One cold agent run, measured, against a clean snapshot of this checkout.
     .\run-benchmark.ps1 --agent codex --model gpt-5.4 --effort high
     .\run-benchmark.ps1 --agent gemini --model gemini-2.5-flash
     .\run-benchmark.ps1 --verify sanitize               areg, probes and sanitizers
+    .\run-benchmark.ps1 --layer off --agent copilot --model gpt-5.6-terra
 
   The run directory is made in the current directory, so start the run where the
   measurements should land, and never inside the checkout. It holds meta.txt,
@@ -215,6 +223,10 @@ function Resolve-Sdk([string]$Given)
 $COLD_START_BAN = 'areg|AGENTS\.md|build_project|gen_skeleton|gen_docs|setup_project' +
                   '|check_contract|check_corpus|run_evals|explain_rule|schema_help|api_help' +
                   '|worksheet|bodies\.txt|design\.json|\.siml|\.fsml|\.dtml|docs/agent|runbook'
+
+# The words of the agent layer that a run with --layer off may not be given.
+$LAYER_BAN = 'AGENTS\.md|docs/agent|tools/agent|runbook|worksheet|bodies\.txt|design\.json' +
+             '|33_tempalarm|34_coffeemachine'
 
 # protoc and grpc_cpp_plugin, and the prefix its headers and libraries are under.
 function Resolve-Grpc([string]$Given)
@@ -345,7 +357,7 @@ function Main([string[]]$Arguments)
     $Framework = 'areg'; $Task = 'examples/ai-benchmark/prompt-coffeemachine.md'; $Wrapper = ''
     $Project = ''; $Mode = 'ipc'; $Agent = 'claude'; $Model = ''; $Effort = ''
     $Attempts = '15'; $Debrief = $false; $Debug = $false; $Recipes = 'none'; $Label = ''; $Dry = $false
-    $Repeat = '1'; $CacheTtl = ''
+    $Repeat = '1'; $CacheTtl = ''; $Layer = 'on'
     $AllowInstalled = $false; $Verify = 'probes'
     $SdkOpt = ''; $GrpcOpt = ''; $Web = ''
 
@@ -359,7 +371,7 @@ function Main([string[]]$Arguments)
     while ($index -lt $Arguments.Count) {
         $option = $Arguments[$index]
         $valued = '--framework', '--agent', '--task', '--wrapper', '--project', '--mode', '--model',
-                  '--effort', '--attempts', '--cache-ttl', '--repeat', '--recipes', '--sdk', '--grpc', '--verify', '--web'
+                  '--effort', '--attempts', '--cache-ttl', '--repeat', '--recipes', '--layer', '--sdk', '--grpc', '--verify', '--web'
         if ($option -cin $valued) {
             if ($index + 1 -ge $Arguments.Count) { Stop-Run "$option needs a value" }
             $value = $Arguments[$index + 1]
@@ -379,6 +391,7 @@ function Main([string[]]$Arguments)
                 '--cache-ttl' { $CacheTtl = $value }
                 '--repeat'    { $Repeat = $value }
                 '--recipes'   { $Recipes = $value }
+                '--layer'     { $Layer = $value }
                 '--sdk'       { $SdkOpt = $value }
                 '--grpc'      { $GrpcOpt = $value }
                 '--verify'    { $Verify = $value }
@@ -419,6 +432,12 @@ function Main([string[]]$Arguments)
     elseif ($Agent -eq 'gemini' -and $Effort) { Stop-Run '--effort is not supported by Gemini CLI; omit it' }
     if ($Recipes -cnotin 'none', 'copy') { Stop-Run "--recipes must be none or copy, not '$Recipes'" }
     if ($Verify -cnotin 'none', 'probes', 'sanitize') { Stop-Run "--verify must be none, probes or sanitize, not '$Verify'" }
+    if ($Layer -cnotin 'on', 'off') { Stop-Run "--layer must be on or off, not '$Layer'" }
+    if ($Layer -eq 'off') {
+        if ($Framework -ne 'areg') { Stop-Run '--layer off is for the areg arm; the gRPC arm has no layer' }
+        if ($Recipes -ne 'none') { Stop-Run '--layer off removes the recipes; omit --recipes' }
+        if ($Debrief) { Stop-Run '--layer off has no pages to debrief on; omit --debrief' }
+    }
     if ($Web -cnotin '', 'on', 'off') { Stop-Run "--web must be on or off, not '$Web'" }
     # Each arm gets its own framework's documentation, in the place that documentation
     # lives: the snapshot for areg, the web for gRPC.
@@ -443,7 +462,10 @@ function Main([string[]]$Arguments)
     $TaskAbs = Resolve-InSdk $Task
     if (-not (Test-Path -LiteralPath $TaskAbs -PathType Leaf)) { Stop-Run "no such task file: $TaskAbs" }
 
-    if (-not $Wrapper) {
+    if (-not $Wrapper -and $Layer -eq 'off') {
+        $Wrapper = Join-Path $HERE 'areg-nolayer-prompt-template.txt'
+    }
+    elseif (-not $Wrapper) {
         $Wrapper = Join-Path (Split-Path $TaskAbs -Parent) "$Framework-$Key-prompt.txt"
         if (-not (Test-Path -LiteralPath $Wrapper -PathType Leaf)) {
             $Wrapper = Join-Path $HERE "$Framework-ai-prompt-template.txt"
@@ -530,6 +552,11 @@ function Invoke-OneRun
         New-Item -ItemType Directory -Force -Path $Prov | Out-Null
         Write-Text (Join-Path $Prov 'source.txt') "$SDK`n"
     }
+    elseif ($Layer -eq 'off') {
+        # The checkout carries the layer, so nothing beside the work directory names it.
+        $Prov = Join-Path $Run 'provenance'
+        New-Item -ItemType Directory -Force -Path $Prov | Out-Null
+    }
     New-Item -ItemType Directory -Force -Path $Work | Out-Null
 
     $script:HelperPath = Join-Path ([IO.Path]::GetTempPath()) ("run-benchmark-helper-$PID.py")
@@ -537,9 +564,10 @@ function Invoke-OneRun
 
     # What was measured: the revision, the uncommitted state, and the copy itself.
     $head = ((& git -C $SDK rev-parse HEAD) -join '').Trim()
-    $headName   = if ($Framework -eq 'grpc') { 'head.txt' }   else { 'sdk-head.txt' }
-    $beforeName = if ($Framework -eq 'grpc') { 'before.txt' } else { 'sdk-before.txt' }
-    $md5Name    = if ($Framework -eq 'grpc') { 'md5.txt' }    else { 'sdk-md5.txt' }
+    $hidden     = $Framework -eq 'grpc' -or $Layer -eq 'off'
+    $headName   = if ($hidden) { 'head.txt' }   else { 'sdk-head.txt' }
+    $beforeName = if ($hidden) { 'before.txt' } else { 'sdk-before.txt' }
+    $md5Name    = if ($hidden) { 'md5.txt' }    else { 'sdk-md5.txt' }
     Write-Text (Join-Path $Prov $headName) "$head`n"
     $status = @(& git -C $SDK status --porcelain)
     Write-Text (Join-Path $Prov $beforeName) ($(if ($status.Count) { ($status -join "`n") + "`n" } else { '' }))
@@ -566,6 +594,11 @@ function Invoke-OneRun
     }
     else {
         $copied = (Invoke-Helper snapshot $SDK $Snap).Trim()
+        if ($Layer -eq 'off') {
+            $stripped = (Invoke-Python (Join-Path $HERE 'strip_layer.py') $SDK $Snap).Trim()
+            if ($script:PythonCode -ne 0) { Stop-Run "the run without the agent layer still carries it: $stripped" }
+            $copied = "$([int]$copied - [int]$stripped)"
+        }
         # The agent may read the snapshot and nothing else, so a task the snapshot
         # does not carry -- outside the checkout, or ignored by git -- is copied into it.
         $taskOwn = @('task.md')
@@ -575,6 +608,9 @@ function Invoke-OneRun
         $patterns = @('AGENTS.md', 'docs/agent/*.md', 'docs/agent/*.json', 'docs/agent/.budgets',
                       'tools/agent/*.py', 'tools/intern/evals/tasks.json', 'conf/cmake/functions.cmake',
                       'examples/ai-benchmark/*.md', 'examples/ai-benchmark/*.txt') + $taskOwn
+        if ($Layer -eq 'off') {
+            $patterns = @('scenario-runner/*.py', 'conf/cmake/functions.cmake') + $taskOwn
+        }
         Invoke-Helper manifest $Snap $manifestPath @patterns | Out-Null
     }
 
@@ -590,7 +626,7 @@ function Invoke-OneRun
     $AddDir = $Snap
     # What the prompt may call the procedure. The gRPC arm has no runbook and may
     # not be told that one exists anywhere.
-    $Guide = if ($Framework -eq 'grpc') { 'the task file' } else { 'the runbook' }
+    $Guide = if ($Framework -eq 'grpc' -or $Layer -eq 'off') { 'the task file' } else { 'the runbook' }
     $Rules = ''
     if ($Framework -eq 'grpc') {
         # The task and runner share the isolated directory granted to the agent.
@@ -610,6 +646,10 @@ function Invoke-OneRun
         }
         $toolchain += (& cmake --version 2>&1 | ForEach-Object { "$_" } | Select-Object -First 1)
         Write-Text (Join-Path $Run 'toolchain.txt') (($toolchain -join "`n") + "`n")
+    }
+    elseif ($Layer -eq 'off') {
+        # The wrapper carries every rule of this arm.
+        $Rules = ''
     }
     elseif ($Recipes -eq 'none') {
         $Rules = @"
@@ -708,6 +748,7 @@ Be specific and short: a list, not prose.
     }
     if (-not $body) { Stop-Run "$WrapperAbs has no '--- PROMPT BEGINS BELOW THIS LINE' marker" }
     $runnerPath = if ($Framework -eq 'grpc') { "$SnapF/run_scenarios.py" } else { "$SnapF/tools/agent/run_scenarios.py" }
+    if ($Layer -eq 'off') { $runnerPath = "$SnapF/scenario-runner/run_scenarios.py" }
     $body = $body.Replace('<areg-sdk>', $SnapF).Replace('<runner>', $runnerPath)
     $body = $body.Replace('<task>', $TaskRun).Replace('<project>', $Project).Replace('<mode>', $Mode)
     $promptPath = Join-Path $Run 'prompt.txt'
@@ -751,13 +792,24 @@ Be specific and short: a list, not prose.
     Write-Text $meta (@(
         "framework $Framework", "agent    $Agent", "model    $modelLabel", "effort   $effortLabel", "task     $TaskRun",
         "mode     $Mode", "recipes  $Recipes", "attempts $Attempts",
-        "debrief  $(if ($Debrief) { '1' } else { 'no' })",
+        "debrief  $(if ($Debrief) { '1' } else { 'no' })", "layer    $Layer",
         "cachettl $(if ($CacheTtl) { $CacheTtl } else { 'agent-default' })",
-        $(if ($Framework -eq 'grpc') { "staged   $Snap" } else { "source   $SDK"; "sdk      $Snap" }),
+        $(if ($Framework -eq 'grpc') { "staged   $Snap" } elseif ($Layer -eq 'off') { "sdk      $Snap" } else { "source   $SDK"; "sdk      $Snap" }),
         "files    $copied", "head     $head",
         "web      $Web", "isolation $isolation",
         "start    $(Get-Utc 'yyyy-MM-ddTHH:mm:ssZ')") -join "`n") + "`n"
     & $coldStartCheck
+    # Without the layer, nothing the agent is handed may name it: the prompt, the task
+    # and the staged runner. The snapshot itself was checked by strip_layer.py.
+    if ($Layer -eq 'off') {
+        $handed = @($promptPath, (Join-Path $Snap 'task.md')) +
+                  @(Get-ChildItem -LiteralPath (Join-Path $Snap 'scenario-runner') -File |
+                    ForEach-Object { $_.FullName })
+        $named = @(Select-String -LiteralPath $handed -Pattern $LAYER_BAN -AllMatches |
+                   Select-Object -First 8 |
+                   ForEach-Object { "$($_.Path):$($_.LineNumber): $($_.Line.Trim())" })
+        if ($named.Count) { Stop-Run ("the run without the agent layer still names it:`n" + ($named -join "`n")) }
+    }
 
     if ($Dry) {
         Write-Output "staged $Run ($copied files in the snapshot)"

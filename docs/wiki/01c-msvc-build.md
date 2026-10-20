@@ -365,7 +365,7 @@ MSBuild /m /t:Rebuild /v:minimal /property:Configuration=Release /property:Platf
 **Integration Guides:**
 - [Integrating Areg with Visual Studio](./02c-msvc-integrate.md) - Using Areg SDK in your projects
 - [CMake Build Guide](./01b-cmake-build.md) - Alternative build method
-- [vcpkg Installation](./02e-cmake-vcpkg.md) - Package manager installation
+- [Installing as a Package](./01a-areg-package.md) - Install once, use with `find_package`
 
 **Microsoft Documentation:**
 - [MSBuild Command-Line Reference](https://learn.microsoft.com/en-us/visualstudio/msbuild/msbuild-command-line-reference)

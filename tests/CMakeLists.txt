@@ -130,6 +130,9 @@ if (AREG_TESTS)
         include(${AREG_TESTS_DIR}/fatal-create/CMakeLists.txt)
     endif()
 
+    # A 32-bit and a 64-bit build exchanging every data kind; driven by bitness.sh and bitness.ps1.
+    include(${AREG_TESTS_DIR}/bitness/CMakeLists.txt)
+
     # Built, not registered with ctest: it needs root and a packet filter.
     include(${AREG_TESTS_DIR}/keepalive-probe/CMakeLists.txt)
 

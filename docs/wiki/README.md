@@ -13,11 +13,12 @@ Welcome to the **Areg SDK Technical Documentation**. This wiki provides comprehe
 
 **Never used Areg SDK?** Start here:
 
-1. **[Quick Project Setup](./02a-quick-project-setup.md)** ⭐ Create a working project in 30 seconds
-2. **[Build Areg SDK](./01b-cmake-build.md)** - Build from source (5-10 minutes)
-3. **[Install with vcpkg](./01a-areg-package.md)** - Use package manager (fastest)
-4. **[Examples and Tests](./08a-examples-and-tests.md)** - Run sample applications
-5. **[Performance Benchmarks](./08b-areg-sdk-performance-benchmarks.md)** - Measured latency, throughput, and data rate across platforms
+1. **[Build Environment](./01e-build-environment.md)** - Install the compiler, CMake, Java and Python
+2. **[Quick Project Setup](./02a-quick-project-setup.md)** ⭐ Create a working project in 30 seconds
+3. **[Build Areg SDK](./01b-cmake-build.md)** - Build from source (5-10 minutes)
+4. **[Install as a Package](./01a-areg-package.md)** - Install once, use with `find_package`
+5. **[Examples and Tests](./08a-examples-and-tests.md)** - Run sample applications
+6. **[Performance Benchmarks](./08b-areg-sdk-performance-benchmarks.md)** - Measured latency, throughput, and data rate across platforms
 
 **Already familiar?** Jump to: [Documentation by Topic](#documentation-by-topic) | [Search by Task](#quick-navigation-by-task) | [Search by Role](#quick-navigation-by-role)
 
@@ -68,8 +69,9 @@ Get Areg SDK running on your system:
 
 | Guide | Platform | Method | Time |
 |-------|----------|--------|------|
+| **[Build Environment](./01e-build-environment.md)** | All | Compiler, CMake, Java, Python | 10 min |
 | **[Quick Project Setup](./02a-quick-project-setup.md)** ⭐ | All | Interactive tool | 30 sec |
-| **[vcpkg Installation](./01a-areg-package.md)** | All | Package manager | 5 min |
+| **[Install as a Package](./01a-areg-package.md)** | All | `cmake --install` | 10 min |
 | **[CMake Build](./01b-cmake-build.md)** | Linux, Windows, macOS | Source build | 10 min |
 | **[MSVC Build](./01c-msvc-build.md)** | Windows | Visual Studio | 5 min |
 | **[WSL Build](./01d-wsl-build.md)** | Windows | Linux on Windows | 10 min |
@@ -220,7 +222,8 @@ Areg SDK is built on a performance mandate: **latency, throughput, stability, an
 → **[Run First Example](./08a-examples-and-tests.md)**
 
 ### ...install Areg SDK
-→ **[vcpkg Installation](./01a-areg-package.md)** (package manager)  
+→ **[Build Environment](./01e-build-environment.md)** (the tools, first)  
+→ **[Install as a Package](./01a-areg-package.md)** (`find_package`)  
 → **[CMake Build](./01b-cmake-build.md)** (from source)  
 → **[MSVC Build](./01c-msvc-build.md)** (Visual Studio)
 
@@ -447,7 +450,6 @@ Help improve the documentation:
 ### External Tools
 
 - **[Lusan (areg-sdk-tools)](https://github.com/aregtech/areg-sdk-tools)** - Professional GUI tool
-- **[vcpkg Package](https://vcpkg.io/)** - Package manager support
 
 ### Documentation
 

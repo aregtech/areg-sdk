@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 336" width="960" height="336" role="img" aria-labelledby="t d">
+  <title id="t">One code, three deployments</title>
+  <desc id="d">A service interface is generated into base classes. The same ServiceProvider and ServiceConsumer classes run in one thread, in two threads, or in two processes or machines connected by mtrouter. Only the model in main.cpp changes.</desc>
+  <defs>
+    <marker id="ah" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L8,4 L0,8 z" fill="#57606a"/>
+    </marker>
+    <marker id="ahf" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="#8c959f"/>
+    </marker>
+    <style>
+      text { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; fill: #1f2328; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+      .h { font-size: 14px; font-weight: 600; }
+      .s { font-size: 12px; }
+      .xs { font-size: 11px; fill: #57606a; }
+      .cap { font-size: 12px; fill: #57606a; font-style: italic; }
+      .gen { fill: #ddf4ff; stroke: #54aeff; }
+      .own { fill: #fff8c5; stroke: #d4a72c; }
+      .prov { fill: #dafbe1; stroke: #4ac26b; }
+      .cons { fill: #fbefff; stroke: #c297ff; }
+      .proc { fill: #f6f8fa; stroke: #8c959f; }
+      .thr { fill: none; stroke: #8c959f; stroke-dasharray: 4 3; }
+      .rt { fill: #1f2328; stroke: #1f2328; }
+      .link { stroke: #57606a; stroke-width: 1.6; fill: none; }
+      .fan { stroke: #8c959f; stroke-width: 1.2; stroke-dasharray: 5 4; fill: none; }
+      .model { fill: #f6f8fa; stroke: #d0d7de; }
+    </style>
+  </defs>
+
+  <rect x="1" y="1" width="958" height="334" rx="12" fill="#ffffff" stroke="#d0d7de"/>
+
+  <!-- Interface, generated code, your code -->
+  <rect class="gen" x="24" y="16" width="160" height="40" rx="6"/>
+  <text class="s mono" x="104" y="40" text-anchor="middle">HelloService.siml</text>
+  <path class="link" d="M184,36 H238" marker-end="url(#ah)"/>
+  <text class="xs" x="211" y="29" text-anchor="middle">codegen</text>
+  <rect class="gen" x="240" y="16" width="276" height="40" rx="6"/>
+  <text class="s" x="378" y="40" text-anchor="middle">generated base classes, proxies, dispatch</text>
+  <path class="link" d="M516,36 H578" marker-end="url(#ah)"/>
+  <text class="xs" x="547" y="29" text-anchor="middle">inherit</text>
+  <rect class="own" x="580" y="16" width="356" height="40" rx="6"/>
+  <text class="s" x="758" y="40" text-anchor="middle"><tspan font-weight="600">your</tspan> ServiceProvider and ServiceConsumer, written once</text>
+
+  <!-- The same classes go everywhere -->
+  <path class="fan" d="M700,56 C640,78 300,74 172,96" marker-end="url(#ahf)"/>
+  <path class="fan" d="M740,56 C700,74 520,78 480,96" marker-end="url(#ahf)"/>
+  <path class="fan" d="M780,56 C790,72 790,84 788,96" marker-end="url(#ahf)"/>
+
+  <line x1="326" y1="104" x2="326" y2="282" stroke="#d0d7de"/>
+  <line x1="634" y1="104" x2="634" y2="282" stroke="#d0d7de"/>
+
+  <!-- 1: one thread -->
+  <text class="h" x="172" y="116" text-anchor="middle">One thread</text>
+  <rect class="proc" x="40" y="126" width="264" height="94" rx="8"/>
+  <text class="xs" x="50" y="141">process</text>
+  <rect class="thr" x="52" y="148" width="240" height="62" rx="6"/>
+  <text class="xs" x="60" y="161">thread</text>
+  <rect class="prov" x="64" y="166" width="90" height="34" rx="6"/>
+  <text class="s" x="109" y="187" text-anchor="middle">Provider</text>
+  <rect class="cons" x="190" y="166" width="90" height="34" rx="6"/>
+  <text class="s" x="235" y="187" text-anchor="middle">Consumer</text>
+  <path class="link" d="M156,183 H188" marker-start="url(#ah)" marker-end="url(#ah)"/>
+  <text class="cap" x="172" y="238" text-anchor="middle">calls queue as events in that thread</text>
+  <rect class="model" x="32" y="250" width="280" height="26" rx="5"/>
+  <text class="xs" x="40" y="267">model</text>
+  <text class="s mono" x="182" y="267" text-anchor="middle">T1: Provider, Consumer</text>
+
+  <!-- 2: two threads -->
+  <text class="h" x="480" y="116" text-anchor="middle">Two threads</text>
+  <rect class="proc" x="348" y="126" width="264" height="94" rx="8"/>
+  <text class="xs" x="358" y="141">process</text>
+  <rect class="thr" x="360" y="148" width="112" height="62" rx="6"/>
+  <text class="xs" x="368" y="161">thread 1</text>
+  <rect class="prov" x="371" y="166" width="90" height="34" rx="6"/>
+  <text class="s" x="416" y="187" text-anchor="middle">Provider</text>
+  <rect class="thr" x="488" y="148" width="112" height="62" rx="6"/>
+  <text class="xs" x="496" y="161">thread 2</text>
+  <rect class="cons" x="499" y="166" width="90" height="34" rx="6"/>
+  <text class="s" x="544" y="187" text-anchor="middle">Consumer</text>
+  <path class="link" d="M463,183 H497" marker-start="url(#ah)" marker-end="url(#ah)"/>
+  <text class="cap" x="480" y="238" text-anchor="middle">each call runs in its owner's thread, no locks</text>
+  <rect class="model" x="340" y="250" width="280" height="26" rx="5"/>
+  <text class="xs" x="348" y="267">model</text>
+  <text class="s mono" x="490" y="267" text-anchor="middle">T1: Provider &#183; T2: Consumer</text>
+
+  <!-- 3: two processes or machines -->
+  <text class="h" x="788" y="116" text-anchor="middle">Two processes or machines</text>
+  <rect class="proc" x="642" y="126" width="102" height="94" rx="8"/>
+  <text class="xs" x="652" y="141">process A</text>
+  <rect class="prov" x="648" y="166" width="90" height="34" rx="6"/>
+  <text class="s" x="693" y="187" text-anchor="middle">Provider</text>
+  <rect class="rt" x="750" y="166" width="76" height="34" rx="17"/>
+  <text class="s mono" x="788" y="187" text-anchor="middle" fill="#ffffff" style="fill:#ffffff">mtrouter</text>
+  <rect class="proc" x="832" y="126" width="102" height="94" rx="8"/>
+  <text class="xs" x="842" y="141">process B</text>
+  <rect class="cons" x="838" y="166" width="90" height="34" rx="6"/>
+  <text class="s" x="883" y="187" text-anchor="middle">Consumer</text>
+  <path class="link" d="M739,183 H749" marker-start="url(#ah)"/>
+  <path class="link" d="M827,183 H837" marker-end="url(#ah)"/>
+  <text class="cap" x="788" y="238" text-anchor="middle">TCP through mtrouter, found by name</text>
+  <rect class="model" x="648" y="250" width="280" height="26" rx="5"/>
+  <text class="xs" x="656" y="267">model</text>
+  <text class="s mono" x="798" y="267" text-anchor="middle">A: Provider &#183; B: Consumer</text>
+
+  <!-- Bottom line -->
+  <text class="s" x="480" y="310" text-anchor="middle"><tspan font-weight="600">Same classes in all three.</tspan> Only the model in main.cpp changes; across machines, areg.init names the router.</text>
+</svg>

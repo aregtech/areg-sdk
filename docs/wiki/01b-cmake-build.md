@@ -46,6 +46,7 @@ This guide covers building Areg SDK on Linux, macOS, Windows, and Cygwin using C
 - **SQLite3** - For database features (or use bundled version in `thirdparty/`)
 
 > [!TIP]
+> Setting up a machine from scratch, on any OS: [Build Environment](./01e-build-environment.md).
 > If dependencies are already installed, skip to [Quick Start](#quick-start).
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
@@ -589,7 +590,7 @@ cmake -B ./build -G "Visual Studio 17 2022"
 **Build Guides:**
 - [CMake Configuration Options](./02d-cmake-config.md) - Complete configuration reference
 - [CMake Integration Guide](./02b-cmake-integrate.md) - Using Areg SDK in your projects
-- [vcpkg Installation](./02d-cmake-vcpkg.md) - Alternative installation method
+- [Installing as a Package](./01a-areg-package.md) - Install once, use with `find_package`
 
 **Troubleshooting:**
 - [Linux Build Troubleshooting](./07b-troubleshooting-cmake-linux-builds.md)

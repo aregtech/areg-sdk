@@ -616,7 +616,7 @@ When integrating Areg SDK into other projects:
 - In Areg SDK project, defaults to `CMAKE_CURRENT_LIST_DIR`
 
 **AREG_FRAMEWORK:**
-- When using Areg as package (e.g., vcpkg), set to include directory
+- When using an installed Areg package, set to its include directory
 - Required for header file locations
 
 **Example:**
@@ -703,7 +703,7 @@ target_link_libraries(myapp PRIVATE areg::areg)
 - In Areg SDK project, `AREG_SDK_ROOT` defaults to `CMAKE_CURRENT_LIST_DIR` (i.e., `<areg-sdk root>`)
 
 **Integrating as Package:**
-- When using Areg via package manager (e.g., vcpkg), set `AREG_SDK_ROOT` to package's `share` directory
+- When using an installed Areg package, set `AREG_SDK_ROOT` to the package's `share` directory
 - Set `AREG_FRAMEWORK` to `include` directory for headers
 
 **Compiler Configuration:**
@@ -729,7 +729,7 @@ target_link_libraries(myapp PRIVATE areg::areg)
 **Build Guides:**
 - [CMake Build Guide](./01b-cmake-build.md) - Step-by-step build instructions
 - [CMake Integration](./02b-cmake-integrate.md) - Using Areg in your projects
-- [vcpkg Installation](./02e-cmake-vcpkg.md) - Package manager installation
+- [Installing as a Package](./01a-areg-package.md) - Install once, use with `find_package`
 
 **Configuration Files:**
 - [user.cmake](../../conf/cmake/user.cmake) - Default configuration values

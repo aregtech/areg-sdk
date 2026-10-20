@@ -34,13 +34,14 @@ bool Console::_os_setup() noexcept
 {
     if (mIsReady == false)
     {
-        mContext = reinterpret_cast<ptr_type>(initscr());
-        if (mContext != 0)
+        if (::newterm(nullptr, stdout, stdin) != nullptr)
         {
+            mContext = reinterpret_cast<ptr_type>(stdscr);
             clear();
             cbreak();
-            mIsReady = true;
         }
+
+        mIsReady = true;
     }
 
     return mIsReady;
@@ -50,22 +51,21 @@ void Console::_os_release() noexcept
 {
     if (mIsReady)
     {
-        // Ensure cursor is visible before tearing down ncurses.
-        curs_set(1);
-
         if (mContext != 0)
         {
+            // Ensure cursor is visible before tearing down ncurses.
+            curs_set(1);
             delwin(reinterpret_cast<WINDOW *>(mContext));
+            endwin();
+            refresh();
+
+            const int finalRow = static_cast<int>(mMaxUsedRow + 2);
+            printf("\x1B[%d;1H\n", finalRow);
+            ::fflush(stdout);
         }
 
-        endwin();
-        refresh();
         mContext = 0;
         mIsReady = false;
-
-        const int finalRow = static_cast<int>(mMaxUsedRow + 2);
-        printf("\x1B[%d;1H\n", finalRow);
-        ::fflush(stdout);
     }
 }
 
@@ -160,7 +160,9 @@ void Console::_os_set_cursor_cur_position(Console::Coord pos) const noexcept
 bool Console::_os_wait_input_string(char* buffer, uint32_t size)
 {
     ASSERT(buffer != nullptr);
-    if ((stdscr == nullptr) || (getnstr(buffer, static_cast<int32_t>(size)) != OK))
+    const bool ok{ stdscr != nullptr ? getnstr(buffer, static_cast<int32_t>(size)) == OK
+                                     : ::fgets(buffer, static_cast<int32_t>(size), stdin) != nullptr };
+    if (ok == false)
         return false;
 
     areg::trim_all<char>(buffer);
@@ -252,15 +254,21 @@ void Console::_os_restore_cursor_position() const noexcept
 void Console::_os_move_cursor_one_line_up() const noexcept
 {
     Lock lock(mLock);
-    Console::Coord pos = _os_get_cursor_position();
-    mvcur(pos.posY, pos.posX, pos.posY - 1, 1);
+    if (mContext != 0)
+    {
+        Console::Coord pos = _os_get_cursor_position();
+        mvcur(pos.posY, pos.posX, pos.posY - 1, 1);
+    }
 }
 
 void Console::_os_move_cursor_one_line_down() const noexcept
 {
     Lock lock(mLock);
-    Console::Coord pos = _os_get_cursor_position();
-    mvcur(pos.posY, pos.posX, pos.posY + 1, 1);
+    if (mContext != 0)
+    {
+        Console::Coord pos = _os_get_cursor_position();
+        mvcur(pos.posY, pos.posX, pos.posY + 1, 1);
+    }
 }
 
 } // namespace areg::ext

@@ -42,16 +42,33 @@ namespace
 #endif  // defined(_WIN32)
     }
 
+    //!< Returns true and copies the value if the environment variable is set.
+    bool get_variable( const char * name, std::string & value )
+    {
+#if defined(_WIN32)
+        char * buffer{ nullptr };
+        std::size_t length{ 0 };
+        const bool found{ (::_dupenv_s( &buffer, &length, name ) == 0) && (buffer != nullptr) };
+        if ( found )
+            value = buffer;
+        std::free( buffer );
+        return found;
+#else   // defined(_WIN32)
+        const char * found{ std::getenv( name ) };
+        if ( found != nullptr )
+            value = found;
+        return (found != nullptr);
+#endif  // defined(_WIN32)
+    }
+
     //!< Clears AREG_LOCK_FAILURE_FATAL while it exists and restores it after, as CI sets it.
     class NotFatal
     {
     public:
         NotFatal( )
             : mSaved( )
-            , mWasSet( std::getenv( LOCK_FATAL_VARIABLE ) != nullptr )
+            , mWasSet( get_variable( LOCK_FATAL_VARIABLE, mSaved ) )
         {
-            if ( mWasSet )
-                mSaved = std::getenv( LOCK_FATAL_VARIABLE );
             set_variable( LOCK_FATAL_VARIABLE, nullptr );
         }
 

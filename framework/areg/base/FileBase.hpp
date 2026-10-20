@@ -825,10 +825,10 @@ public:
     virtual bool remove() = 0;
 
     /**
-     * \brief   Returns the current valid length of file data; INVALID_SIZE on failure.
+     * \brief   Returns the length of file data in bytes.
      **/
     [[nodiscard]]
-    virtual uint32_t length() const noexcept = 0;
+    virtual uint64_t length() const noexcept = 0;
 
     /**
      * \brief   Returns true if the file is currently open.
@@ -1078,7 +1078,7 @@ inline bool FileBase::is_shared_write() const noexcept
 inline bool FileBase::is_eof() const noexcept
 {
     ASSERT(is_opened());
-    return ( position() < length() );
+    return ( position() >= length() );
 }
 
 inline bool FileBase::can_write() const noexcept

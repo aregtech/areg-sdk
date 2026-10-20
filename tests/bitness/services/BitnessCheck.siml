@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="BitnessCheck" Version="1.0.0" Category="Public">
+        <Description>Carries every kind of data a service can send, so that a 32-bit and a 64-bit process can prove they read each other's values exactly.</Description>
+    </Overview>
+    <DataTypeList>
+        <DataType ID="2" Name="Level" Type="Enumeration" Values="default">
+            <Description>An enumeration with a value close to the 32-bit limit.</Description>
+            <FieldList>
+                <EnumEntry ID="3" Name="First"><Value>0</Value></EnumEntry>
+                <EnumEntry ID="4" Name="Second"><Value>1</Value></EnumEntry>
+                <EnumEntry ID="5" Name="Large"><Value>2147483000</Value></EnumEntry>
+            </FieldList>
+        </DataType>
+        <DataType ID="6" Name="Inner" Type="Structure">
+            <Description>A structure nested in another.</Description>
+            <FieldList>
+                <Field ID="7" Name="tag" DataType="String"/>
+                <Field ID="8" Name="value" DataType="int64"/>
+            </FieldList>
+        </DataType>
+        <DataType ID="10" Name="Int64Array" Type="Container">
+            <Description>An array of 64-bit values.</Description>
+            <Container>Array</Container>
+            <BaseTypeValue>int64</BaseTypeValue>
+        </DataType>
+        <DataType ID="12" Name="CountMap" Type="Container">
+            <Description>A map from a name to a 64-bit count.</Description>
+            <Container>Map</Container>
+            <BaseTypeKey>String</BaseTypeKey>
+            <BaseTypeValue>uint64</BaseTypeValue>
+        </DataType>
+        <DataType ID="20" Name="Sample" Type="Structure">
+            <Description>One field of every kind.</Description>
+            <FieldList>
+                <Field ID="21" Name="small" DataType="uint8"/>
+                <Field ID="22" Name="signed16" DataType="int16"/>
+                <Field ID="23" Name="unsigned16" DataType="uint16"/>
+                <Field ID="24" Name="signed32" DataType="int32"/>
+                <Field ID="25" Name="unsigned32" DataType="uint32"/>
+                <Field ID="26" Name="signed64" DataType="int64"/>
+                <Field ID="27" Name="unsigned64" DataType="uint64"/>
+                <Field ID="28" Name="real32" DataType="float"/>
+                <Field ID="29" Name="real64" DataType="double"/>
+                <Field ID="30" Name="flag" DataType="bool"/>
+                <Field ID="31" Name="letter" DataType="char"/>
+                <Field ID="32" Name="level" DataType="Level"/>
+                <Field ID="33" Name="text" DataType="String"/>
+                <Field ID="34" Name="blob" DataType="BinaryBuffer"/>
+                <Field ID="35" Name="list" DataType="Int64Array"/>
+                <Field ID="36" Name="counts" DataType="CountMap"/>
+                <Field ID="37" Name="inner" DataType="Inner"/>
+            </FieldList>
+        </DataType>
+    </DataTypeList>
+    <AttributeList>
+        <Attribute ID="40" Name="Latest" DataType="Sample" Notify="OnChange">
+            <Description>The last sample the provider received.</Description>
+        </Attribute>
+    </AttributeList>
+    <MethodList>
+        <Method ID="50" Name="published" MethodType="Broadcast">
+            <Description>Sends the sample to every subscriber.</Description>
+            <ParamList>
+                <Parameter ID="51" Name="sample" DataType="Sample"/>
+            </ParamList>
+        </Method>
+        <Method ID="60" Name="echo" MethodType="Request" Response="echo">
+            <Description>Sends a sample to the provider, which checks it and returns it.</Description>
+            <ParamList>
+                <Parameter ID="61" Name="sample" DataType="Sample"/>
+            </ParamList>
+        </Method>
+        <Method ID="62" Name="echo" MethodType="Response">
+            <Description>Returns the sample and the field the provider found different, or an empty string.</Description>
+            <ParamList>
+                <Parameter ID="63" Name="sample" DataType="Sample"/>
+                <Parameter ID="64" Name="mismatch" DataType="String"/>
+            </ParamList>
+        </Method>
+    </MethodList>
+</ServiceInterface>

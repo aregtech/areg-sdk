@@ -335,3 +335,65 @@ TEST( FileTest, file_read_and_write_in_subfolder )
 
     ASSERT_TRUE( areg::File::has_file(fileNameWrite) );
 }
+
+/**
+ * \brief   The test checks that is_eof() is false before the end of file and true at the end.
+ **/
+TEST( FileTest, is_eof_at_end_of_file )
+{
+    const std::filesystem::path path{ std::filesystem::temp_directory_path() / "areg_is_eof_test.bin" };
+    {
+        std::ofstream out( path, std::ios::binary | std::ios::trunc );
+        out << "0123456789";
+    }
+
+    constexpr uint32_t mode { static_cast<uint32_t>(areg::File::OpenMode::Read)
+                            | static_cast<uint32_t>(areg::File::OpenMode::Binary)
+                            | static_cast<uint32_t>(areg::File::OpenMode::Exist)
+                            | static_cast<uint32_t>(areg::File::OpenMode::ShareRead) };
+    areg::File file( areg::String( path.string().c_str() ), mode );
+    ASSERT_TRUE( file.open( ) );
+    ASSERT_EQ( file.length( ), static_cast<uint64_t>(10) );
+    ASSERT_FALSE( file.is_eof( ) );
+
+    file.set_position( 0, areg::Cursor::SeekOrigin::End );
+    ASSERT_TRUE( file.is_eof( ) );
+
+    file.close( );
+    std::filesystem::remove( path );
+}
+
+#ifdef POSIX
+/**
+ * \brief   The test checks that length() returns the size of a sparse file larger than 4 GB.
+ **/
+TEST( FileTest, length_beyond_4gb )
+{
+    constexpr uint64_t fileSize{ 5ull * 1024ull * 1024ull * 1024ull };
+    const std::filesystem::path path{ std::filesystem::temp_directory_path() / "areg_length_5gb_test.bin" };
+    {
+        std::ofstream out( path, std::ios::binary | std::ios::trunc );
+    }
+
+    std::error_code err;
+    std::filesystem::resize_file( path, fileSize, err );
+    if (err)
+    {
+        std::filesystem::remove( path );
+        GTEST_SKIP( ) << "Cannot create a sparse file of 5 GB: " << err.message( );
+    }
+
+    constexpr uint32_t mode { static_cast<uint32_t>(areg::File::OpenMode::Read)
+                            | static_cast<uint32_t>(areg::File::OpenMode::Binary)
+                            | static_cast<uint32_t>(areg::File::OpenMode::Exist)
+                            | static_cast<uint32_t>(areg::File::OpenMode::ShareRead) };
+    areg::File file( areg::String( path.string().c_str() ), mode );
+    const bool opened{ file.open( ) };
+    const uint64_t length{ opened ? file.length( ) : 0u };
+    file.close( );
+    std::filesystem::remove( path );
+
+    ASSERT_TRUE( opened );
+    ASSERT_EQ( length, fileSize );
+}
+#endif // POSIX

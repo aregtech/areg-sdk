@@ -256,11 +256,11 @@ void File::_os_flush_file() noexcept
     ::FlushFileBuffers(static_cast<HANDLE>(mFileHandle));
 }
 
-uint32_t File::_os_file_length() const noexcept
+uint64_t File::_os_file_length() const noexcept
 {
     ASSERT(mFileHandle != _os_invalid_handle());
     LARGE_INTEGER size{};
-    return ::GetFileSizeEx(static_cast<HANDLE>(mFileHandle), &size) ? static_cast<uint32_t>(size.QuadPart) : 0u;
+    return ::GetFileSizeEx(static_cast<HANDLE>(mFileHandle), &size) ? static_cast<uint64_t>(size.QuadPart) : 0u;
 }
 
 //////////////////////////////////////////////////////////////////////////

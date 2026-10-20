@@ -62,7 +62,7 @@ hidden check (14 of 14 runs, gRPC 9 of 11) and needed 40% fewer agent requests.
   2.5x: $1.37-3.36 on the coffee machine with Sonnet 5, and about 2.4x on the charge point
   with GPT-5.4 (from its token counts; Copilot recorded no credits for those runs),
   because the length of its fix loop varies. On the charge point with
-  Sonnet 5.5, two gRPC runs were 32% apart, six Areg runs 15%. With GPT-5.6 Terra both
+  Sonnet 5.5, two gRPC runs were 32% apart, seven Areg runs 15%. With GPT-5.6 Terra both
   frameworks varied about equally: 9-48% per task for Areg, 16-70% for gRPC.
 - **Sturdier programs.** Threading, reconnection, start-order independence and
   distributed logging come from the framework, not from code the agent writes. Areg
@@ -107,7 +107,7 @@ agent never sees.
 | Claude Code, Sonnet 5 | coffee machine | 4 of 5 / 5 of 5 | 449 vs 1,257 lines | -26% |
 | Claude Code, Sonnet 5.5 | coffee machine, temperature alarm | all, every run / all, every run | about 3x less | -10%, -26% |
 | Copilot CLI, GPT-5.6 Terra | 4 tasks | 12 of 12 runs / 7 of 8 runs | 2-4x less | parity to -22% |
-| Claude Code, Sonnet 5.5, low effort | camera, charge point, sensor gateway | all, every run / 3 of 4 runs | 2.3-4x less | +2%, -4%, +0.5% |
+| Claude Code, Sonnet 5.5, low effort | camera, charge point, sensor gateway | all, every run / 3 of 4 runs | 2.3-4x less | +1%, -6%, +0.5% |
 | Copilot CLI, GPT-5.6 Terra, current tree | 6 tasks, the Areg task stricter | 14 of 14 runs / 9 of 11 runs | 2-3.5x less | -1% in sum; -18% to +26% per task |
 
 - **What holds:** the code an agent does not have to write, in every comparison;
@@ -142,6 +142,28 @@ mkdir -p ~/runs && cd ~/runs
 The [benchmark README](./../../examples/ai-benchmark/README.md) covers every option, the
 agents it drives, and how to read a run.
 
+**Without the agent layer.** To see what the layer itself buys, run the same task on Areg
+as a plain checkout gives it: `--layer off` removes everything written for a coding agent
+and the two examples an agent built from these tasks, and keeps the framework, its
+documentation, its examples and the code generator.
+
+```bash
+/path/to/areg-sdk/examples/ai-benchmark/run-benchmark.sh --layer off --task examples/ai-benchmark/prompt-tempalarm.md
+```
+
+> [!CAUTION]
+> **A run without the layer can cost several dollars instead of tens of cents, and it may
+> never finish.** The agent learns the framework by trial, and every failed build is paid
+> for. Keep `--attempts` bounded and watch the spend while it runs.
+
+Measured with GPT-5.6 Terra, one run per task: the temperature alarm cost $0.61 without
+the layer against $0.23-0.34 with it, and both were correct. The coffee machine, which
+has a state machine, cost $2.09 against $0.32-0.46. It went past the bound of 15
+build-and-fix cycles (31 fix cycles in all), stopped, and the program did not work: 1 of
+6 hidden probes passed, where every run with the layer passed all of them. Where would it
+have ended? Nobody knows. If you run it with a higher bound, share what you got in the
+discussion below.
+
 **Share what you got.** Post your run, your prompt and your model in
 [Agentic coding with Areg: try it, break it, send me the run](https://github.com/aregtech/areg-sdk/discussions/800),
 passed or failed. A failed run is worth the most: every failure points at a page, a
@@ -156,6 +178,6 @@ the prompts name no framework, so the same task runs on Areg and on gRPC.
   ranges are not results.
 - In the six-task Terra comparison the gRPC runs are older and their prompts asked less;
   that favours gRPC on cost and cannot favour it on correctness.
-- The same tasks on a plain Areg repository, without the agent layer, have not been
-  measured yet; the gain over that baseline is the next measurement.
+- Without the agent layer, Areg was measured on two tasks only, one run each (section 5);
+  the larger tasks were not run without it.
 - Results are per model and per agent harness, and both change every few months.
