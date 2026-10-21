@@ -13,6 +13,8 @@
  *   local-many     the same from several senders and from short-lived threads that end
  *   local-churn    local-many while another thread is created and ended again and again
  *   worker-unload  events posted by thread number to a worker thread that is loaded and unloaded
+ *   watchdog-restart  events posted by thread number to a component thread that its watchdog
+ *                  terminates and starts again
  ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
@@ -75,6 +77,9 @@ namespace
     constexpr char const    _workerThread[]     { "WorkerTeardownThread" };
     constexpr char const    _workerConsumer[]   { "WorkerTeardownConsumer" };
     constexpr char const    _churnThread[]      { "TeardownChurnThread" };
+    constexpr char const    _watchModel[]       { "WatchdogTeardownModel" };
+    constexpr char const    _watchRole[]        { "WatchdogTeardownBlocker" };
+    constexpr char const    _watchThread[]      { "WatchdogTeardownThread" };
     constexpr areg::Version _version            { 1, 0, 0 };
 
     constexpr uint32_t      LOAD_ROUNDS         { 200 };
@@ -88,6 +93,9 @@ namespace
     constexpr uint32_t      RECREATE_ROUNDS     { 2000 };
     constexpr uint32_t      RESPONSE_BURST      { 32 };
     constexpr uint32_t      SHORT_BURST         { 64 };
+    constexpr uint32_t      WATCH_TIMEOUT       { 50 };
+    constexpr uint32_t      WATCH_BLOCK         { 2000 };
+    constexpr uint32_t      WATCH_RESTARTS      { 10 };
 
     constexpr uint32_t      _requestList[]      { areg::REQUEST_ID_FIRST };
     constexpr uint32_t      _noResponse[]       { areg::RESPONSE_ID_NONE };
@@ -147,10 +155,13 @@ namespace
     std::atomic_uint32_t    gShortLived { 0 };
     std::atomic_uint32_t    gChurned    { 0 };
     std::atomic_uint32_t    gWorkerNumber{ 0 };
+    std::atomic_uint32_t    gWatchNumber{ 0 };
+    std::atomic_bool        gWatchCalm  { false };
 
     Gate                    gStarted;
     Gate                    gRoutedGate;
     Gate                    gRecreated;
+    Gate                    gCalmStart;
 
     std::mutex              gAddressLock;
     areg::ProxyAddress      gProxyAddress;
@@ -531,6 +542,69 @@ protected:
     }
 };
 
+class BlockData
+{
+public:
+    BlockData() = default;
+    BlockData(const BlockData & /*src*/) = default;
+    BlockData & operator = (const BlockData & /*src*/) = default;
+};
+
+AREG_DECLARE_EVENT(BlockData, BlockEvent, BlockConsumer);
+
+//!< Blocks its thread past the watchdog timeout on every start, and counts the events posted to it.
+class WatchdogBlocker final : public    areg::Component
+                            , public    WorkConsumer
+                            , public    BlockConsumer
+{
+public:
+    WatchdogBlocker(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
+        : areg::Component   ( entry, owner )
+        , WorkConsumer      ( )
+        , BlockConsumer     ( )
+    {
+        gCreated.fetch_add(1);
+    }
+
+    ~WatchdogBlocker() override
+    {
+        gDeleted.fetch_add(1);
+    }
+
+    void startup_component(areg::ComponentThread & comThread) override
+    {
+        areg::Component::startup_component(comThread);
+        static_cast<void>(WorkEvent::add_listener(static_cast<WorkConsumer &>(*this), comThread));
+        static_cast<void>(BlockEvent::add_listener(static_cast<BlockConsumer &>(*this), comThread));
+        gWatchNumber.store(static_cast<uint32_t>(comThread.address()));
+
+        if (gWatchCalm.load())
+        {
+            gCalmStart.advance();
+            return;
+        }
+
+        BlockEvent block(BlockData{ });
+        if (block.register_for_thread(&comThread))
+        {
+            block.deliver_event();
+        }
+
+        gStarted.advance();
+    }
+
+protected:
+    void process_event(const WorkData & /*data*/) override
+    {
+        gHandled.fetch_add(1);
+    }
+
+    void process_event(const BlockData & /*data*/) override
+    {
+        static_cast<void>(areg::Thread::wait_exit(WATCH_BLOCK));
+    }
+};
+
 //!< A thread consumer that returns at once.
 class ChurnConsumer final : public areg::ThreadConsumer
 {
@@ -571,6 +645,17 @@ BEGIN_MODEL(_hostModel)
         END_REGISTER_COMPONENT(_hostRole)
     END_REGISTER_THREAD(_hostThread)
 END_MODEL(_hostModel)
+}
+
+
+namespace watch_model
+{
+BEGIN_MODEL(_watchModel)
+    BEGIN_REGISTER_THREAD_EX(_watchThread, WATCH_TIMEOUT)
+        BEGIN_REGISTER_COMPONENT(_watchRole, WatchdogBlocker)
+        END_REGISTER_COMPONENT(_watchRole)
+    END_REGISTER_THREAD(_watchThread)
+END_MODEL(_watchModel)
 }
 
 
@@ -747,9 +832,43 @@ static void post_to_worker()
     }
 }
 
+//!< Posts events by its number to the thread the watchdog restarts.
+static void post_to_watched()
+{
+    while (gStop.load() == false)
+    {
+        WorkEvent work(WorkData{ });
+        if (work.register_for_thread(static_cast<UniqueNumber>(gWatchNumber.load())))
+        {
+            work.deliver_event();
+            _count_routed();
+        }
+    }
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Cases
 //////////////////////////////////////////////////////////////////////////
+
+//!< Lets the watchdog restart the thread while another thread posts to it.
+static uint32_t watchdog_restarts(uint32_t restarts)
+{
+    gRound.store(1);
+    if (areg::Application::load_model(_watchModel) == false)
+        return 0;
+
+    gStarted.wait_for(1);
+    std::thread poster(&post_to_watched);
+    gStarted.wait_for(restarts + 1);
+    gStop.store(true);
+    poster.join();
+
+    // Unloads after a start that does not block, while no restart runs.
+    gWatchCalm.store(true);
+    gCalmStart.wait_for(1);
+    areg::Application::unload_model(_watchModel);
+    return restarts;
+}
 
 //!< Loads and unloads the model while every routine runs on a thread of its own.
 static uint32_t load_unload(const char * modelName, uint32_t rounds, std::initializer_list<void (*)()> routines)
@@ -802,7 +921,8 @@ int main(int argc, char * argv[])
     setvbuf(stdout, nullptr, _IONBF, 0);
 
     const char * name{ argc > 1 ? argv[1] : "stub-request" };
-    areg::Application::setup(false, true, false, true, false, nullptr);
+    const bool watchdog{ std::strcmp(name, "watchdog-restart") == 0 };
+    areg::Application::setup(false, true, false, true, watchdog, nullptr);
 
     uint32_t expected{ 0 };
     uint32_t rounds{ 0 };
@@ -842,6 +962,12 @@ int main(int argc, char * argv[])
         expected = MANY_ROUNDS;
         rounds = load_unload(_workerModel, expected, { &post_to_worker, &post_to_worker, &post_to_worker, &post_to_worker, &churn_registry });
     }
+    else if (watchdog)
+    {
+        expected = WATCH_RESTARTS;
+        rounds = watchdog_restarts(expected);
+        created = false;
+    }
     else if (std::strcmp(name, "proxy-free") == 0)
     {
         expected = RECREATE_ROUNDS;
@@ -861,7 +987,7 @@ int main(int argc, char * argv[])
     const uint32_t numDeleted{ gDeleted.load() };
     const uint32_t handled{ gHandled.load() };
     const uint64_t routed{ gRouted.load() };
-    const bool counted{ std::strcmp(name, "stub-address") == 0 ? (gNamed.load() > 0) && (gWrongName.load() == 0) : (handled > 0) };
+    const bool counted{ watchdog || (std::strcmp(name, "stub-address") == 0 ? (gNamed.load() > 0) && (gWrongName.load() == 0) : (handled > 0)) };
 
     printf("case .....................: %s\n", name);
     printf("rounds ...................: %u\n", rounds);
@@ -874,6 +1000,7 @@ int main(int argc, char * argv[])
 
     const bool ok{ (rounds == expected)
                 && ((created == false) || ((numCreated == expected) && (numDeleted == numCreated)))
+                && ((watchdog == false) || ((numCreated > expected) && (numDeleted == numCreated)))
                 && (routed >= expected)
                 && counted };
 

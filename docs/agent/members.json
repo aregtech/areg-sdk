@@ -198,6 +198,7 @@
   "create_service_available",
   "create_socket",
   "create_socket_fd",
+  "create_undelivered_response",
   "create_waitable_timer",
   "create_worker_thread",
   "current_component",

@@ -64,6 +64,7 @@ class AREG_API StubBase    : public StubEventConsumer
 // friend classes
 //////////////////////////////////////////////////////////////////////////
     friend class RemoteEventFactory;
+    friend class StubEventConsumer;
 
 //////////////////////////////////////////////////////////////////////////
 // Internal constants and definitions
@@ -702,6 +703,17 @@ private:
      **/
     [[nodiscard]]
     static MapProviderResource& map_providers() noexcept;
+
+    /**
+     * \brief   Creates the response that tells a consumer its request was not delivered.
+     *
+     * \param   proxy   The address of the consumer proxy that sent the request.
+     * \param   msgId   The ID of the refused request.
+     * \param   seqNr   The sequence number of the refused request.
+     * \return  A MessageUndelivered response; invalid if msgId is not a request ID.
+     **/
+    [[nodiscard]]
+    ServiceResponseEvent create_undelivered_response( const ProxyAddress & proxy, uint32_t msgId, const SequenceNumber & seqNr ) const;
 
     /**
      * \brief   Removes one listener matching toRemove from the sub-vector for msgId using

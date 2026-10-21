@@ -387,6 +387,8 @@ void ProxyBase::service_connection_updated( const StubAddress & server, const Ch
 
     ProxyListenerList connectListeners;
     ArrayList<uint32_t> notifyIds;
+    ArrayList<uint32_t> pendingIds;
+    ProxyListenerList pendingRequests;
     {
         Lock lock(mListenerLock);
         ProxyListenerMap::MAPPOS mapPos = mListenerMap.find(CONNECTION_ID);
@@ -400,6 +402,31 @@ void ProxyBase::service_connection_updated( const StubAddress & server, const Ch
                 if ((mapPos->first != CONNECTION_ID) && has_notification_listener(mapPos->first))
                     notifyIds.add(mapPos->first);
             }
+        }
+        else if (wasConnected && (nowConnected == false))
+        {
+            for (mapPos = mListenerMap.first_position(); mListenerMap.is_valid_position(mapPos); mapPos = mListenerMap.next_position(mapPos))
+            {
+                const ProxyListenerList & subVec = mapPos->second;
+                for (uint32_t i = 0u; i < subVec.size(); ++i)
+                {
+                    if (subVec.value_at(i).mSequenceNr != areg::SEQUENCE_NUMBER_NOTIFY)
+                    {
+                        pendingIds.add(mapPos->first);
+                        pendingRequests.add(subVec.value_at(i));
+                    }
+                }
+            }
+        }
+    }
+
+    // Fails every pending request; the failures are dispatched after the connection callbacks below.
+    for (uint32_t i = 0u; i < pendingIds.size(); ++i)
+    {
+        ServiceResponseEvent failure{ create_request_failed(mProxyAddress, pendingIds[i], areg::ResultType::ServiceUnavailable, pendingRequests[i].mSequenceNr) };
+        if (failure.is_valid())
+        {
+            failure.deliver_event();
         }
     }
 
@@ -635,16 +662,18 @@ void ProxyBase::send_request_event(ServiceRequestEvent& reqEvent, NotificationCo
         seqNr = mSequenceCount;
     }
 
-    if (mProxyAddress.deliver_service_event(reqEvent) == false)
+    const bool connected{ mIsConnected };
+    if ((connected == false) || (mProxyAddress.deliver_service_event(reqEvent) == false))
     {
-        // The provider is gone
-        LOG_WARN("Failed to deliver request [ %u ] of proxy [ %s ]%s"
+        LOG_WARN("Failed to deliver request [ %u ] of proxy [ %s ]%s%s"
                     , msgId
                     , ProxyAddress::to_path(mProxyAddress).as_string()
+                    , connected ? "" : ", not connected"
                     , hasResponse ? ", failing it" : ", it expects no response");
         if (hasResponse)
         {
-            ServiceResponseEvent failure{ create_request_failed(mProxyAddress, msgId, areg::ResultType::MessageUndelivered, seqNr) };
+            const areg::ResultType reason{ connected ? areg::ResultType::MessageUndelivered : areg::ResultType::ServiceUnavailable };
+            ServiceResponseEvent failure{ create_request_failed(mProxyAddress, msgId, reason, seqNr) };
             if (failure.is_valid())
             {
                 failure.deliver_event();

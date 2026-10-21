@@ -72,7 +72,8 @@ public:
      *          If no thread by give name was found, it returns NullDispatcher Thread, which will
      *          ignore (destroy) any event passed to thread.
      *
-     * \param   threadNumber    The unique number of dispatching thread.
+     * \param   threadNumber    The unique number of dispatching thread. areg::IGNORE_VALUE means
+     *                          the calling thread, as current_dispatcher_thread() returns it.
      * \return  If found, returns valid Dispatcher thread. Otherwise, returns NullDispather object,
      *          which destroys any event passed to thread.
      **/
@@ -357,8 +358,11 @@ private:
 
 inline DispatcherThread & DispatcherThread::dispatcher_thread( const UniqueNumber threadNumber ) noexcept
 {
+    if (threadNumber == static_cast<UniqueNumber>(areg::IGNORE_VALUE))
+        return DispatcherThread::current_dispatcher_thread();
+
     DispatcherThread * dispThread = DispatcherThread::_find_dispatcher_thread(threadNumber);
-    return ( dispThread != nullptr ? *dispThread : DispatcherThread::current_dispatcher_thread() );
+    return ( dispThread != nullptr ? *dispThread : DispatcherThread::_null_dispather_thread() );
 }
 
 inline DispatcherThread & DispatcherThread::dispatcher_thread(const ThreadAddress & threadAddr ) noexcept

@@ -14,7 +14,7 @@ addExecutableEx(${AREG_STUB_TEARDOWN_PROJECT} ""
     "${AREG_TESTS_DIR}/stub-teardown/stub_teardown_test.cpp"
     "")
 
-foreach(_teardown_case stub-request stub-address proxy-unload proxy-free local-unload local-many local-churn worker-unload)
+foreach(_teardown_case stub-request stub-address proxy-unload proxy-free local-unload local-many local-churn worker-unload watchdog-restart)
     add_test(NAME ${AREG_STUB_TEARDOWN_PROJECT}.${_teardown_case} COMMAND ${AREG_STUB_TEARDOWN_PROJECT} ${_teardown_case})
     set_tests_properties(${AREG_STUB_TEARDOWN_PROJECT}.${_teardown_case} PROPERTIES TIMEOUT 180)
 endforeach()

@@ -134,6 +134,8 @@ bool RemoteEventFactory::route_incoming_message( MessageEnvelope & src, const Ch
         hdr = evt.header();
 
         EventDispatcherBase * dispatcher{ nullptr };
+        MessageEnvelope refusal{ };
+        bool refused{ false };
         {
             MapLock<StubBase::MapProviderResource> lock(providers);
             StubBase * stub = providers.find_resource_object(stubKey);
@@ -156,11 +158,24 @@ bool RemoteEventFactory::route_incoming_message( MessageEnvelope & src, const Ch
 
             dispatcher = &static_cast<EventDispatcherBase &>(stub->component_thread().event_dispatcher());
             const EventQueue::PushResult result{ dispatcher->try_queue_event(evt) };
-            if (result != EventQueue::PushResult::MustWait)
-                return (result == EventQueue::PushResult::Queued);
+            if (result == EventQueue::PushResult::Queued)
+                return true;
+
+            refused = (result == EventQueue::PushResult::Refused);
+            if (refused && (eventType == areg::EventType::EventRemoteRequest))
+                refusal = stub->create_undelivered_response(ProxyAddress(*hdr), hdr->messageId, hdr->sequenceNr).envelope();
         }
 
-        return dispatcher->wait_queue_event(evt);
+        if (refused == false)
+            return dispatcher->wait_queue_event(evt);
+
+        // The refusal reply is sent to the channel the request came from.
+        if (refusal.is_valid() == false)
+            return false;
+
+        Event reply(std::move(refusal));
+        reply.deliver_event();
+        return true;
     }
 
     case areg::EventType::EventRemoteResponse:

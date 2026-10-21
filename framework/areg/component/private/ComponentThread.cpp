@@ -247,7 +247,7 @@ bool ComponentThread::terminate_self()
 
     _detach_thread_proxies();
 
-    delete this;
+    DispatcherThread::release_shared(this);
     return true;
 }
 

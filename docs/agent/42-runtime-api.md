@@ -98,11 +98,11 @@ a handler** - it blocks every component on that dispatcher thread.
 
 | Call | Signature | Header |
 |---|---|---|
-| `sleep()` | `static void sleep(uint32_t msTimeout)` | `Thread.hpp:376` |
-| `current_thread()` | `static Thread * current_thread() noexcept` | `Thread.hpp:448` |
-| `current_thread_name()` | `static String current_thread_name() noexcept` | `Thread.hpp:454` |
-| `current_thread_id()` | `static id_type current_thread_id() noexcept` | `Thread.hpp:442` |
-| `switch_thread()` | `static void switch_thread() noexcept` | `Thread.hpp:427` |
+| `sleep()` | `static void sleep(uint32_t msTimeout)` | `Thread.hpp:390` |
+| `current_thread()` | `static Thread * current_thread() noexcept` | `Thread.hpp:462` |
+| `current_thread_name()` | `static String current_thread_name() noexcept` | `Thread.hpp:468` |
+| `current_thread_id()` | `static id_type current_thread_id() noexcept` | `Thread.hpp:456` |
+| `switch_thread()` | `static void switch_thread() noexcept` | `Thread.hpp:441` |
 
 ---
 

@@ -113,7 +113,7 @@ bool WorkerThread::terminate_self()
         return false;
     }
 
-    delete this;
+    DispatcherThread::release_shared(this);
     return true;
 }
 

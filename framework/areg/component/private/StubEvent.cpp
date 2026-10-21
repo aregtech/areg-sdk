@@ -52,10 +52,8 @@ inline void StubEventConsumer::_refuse_request(ServiceRequestEvent& reqEvent)
     LOG_WARN("Provider [ %s ] is not ready, refusing request [ %u ]"
                 , StubAddress::to_path(mStubAddress).as_string(), reqEvent.request_id());
 
-    ServiceResponseEvent failure{ ProxyBase::request_failure_event( reqEvent.event_source()
-                                                                 , reqEvent.request_id()
-                                                                 , areg::ResultType::MessageUndelivered
-                                                                 , reqEvent.sequence_number()) };
+    const StubBase & stub{ *static_cast<const StubBase *>(this) };
+    ServiceResponseEvent failure{ stub.create_undelivered_response(reqEvent.event_source(), reqEvent.request_id(), reqEvent.sequence_number()) };
     if (failure.is_valid())
     {
         failure.deliver_event();

@@ -86,8 +86,8 @@ the model. With several dependencies, index them in the order they are declared.
 
 ## 2. `service_connected` is where work starts
 
-Never call a request in the constructor. Later, any handler may send one; before the
-service is connected it gets no answer and no `request_<name>_failed`.
+Never call a request in the constructor. Later, any handler may send one; sent before
+the service connects, or open when it leaves, it fails: `ServiceUnavailable`.
 
 The pattern above is the correct one, and its three parts all matter:
 

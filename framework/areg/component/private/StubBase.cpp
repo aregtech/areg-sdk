@@ -717,6 +717,20 @@ ServiceResponseEvent StubBase::create_response_event( const ProxyAddress &  /* p
     return ServiceResponseEvent(MessageEnvelope{});  // invalid; derived stubs override to produce real events
 }
 
+ServiceResponseEvent StubBase::create_undelivered_response( const ProxyAddress & proxy, uint32_t msgId, const SequenceNumber & seqNr ) const
+{
+    if (!areg::is_request_id(msgId))
+        return ServiceResponseEvent(MessageEnvelope{});
+
+    ServiceResponseEvent failure{ create_response(proxy, msgId, areg::ResultType::MessageUndelivered, SharedBuffer{}) };
+    if (failure.is_valid())
+    {
+        failure.set_sequence_number(seqNr);
+    }
+
+    return failure;
+}
+
 ServiceResponseEvent StubBase::prepare_response_event( uint32_t respId, areg::ResultType result, uint32_t reserve, StubBase::StubListenerList & listeners )
 {
     collect_and_strip_response_listeners(respId, listeners);
