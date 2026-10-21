@@ -165,25 +165,34 @@ bool RemoteEventFactory::route_incoming_message( MessageEnvelope & src, const Ch
 
     case areg::EventType::EventRemoteResponse:
     {
-        UniqueNumber proxyId = hdr->consumer.number;
-        const std::shared_ptr<ProxyBase> proxy = ProxyBase::find_proxy(proxyId);
-        if ( !proxy )
-            return false;
-
-        DispatcherThread& thread{ proxy->proxy_dispatcher_thread() };
-        ASSERT(thread.is_valid());
-
-        const Channel chTarget(proxy->proxy_address().channel());
-
-        // Route response to proxy's local thread
-        hdr->target          = chTarget.cookie();
-        hdr->channel         = chTarget.target();
-        hdr->consumer.id     = chTarget.cookie();
-        hdr->consumer.thread = chTarget.source();
-        hdr->internal2 = areg::to_num<uint64_t, EventConsumer*>(proxy.get());
-
+        ProxyBase::MapProxyResource & proxies{ ProxyBase::map_proxies() };
+        const uint32_t proxyKey{ hdr->consumer.number };
         Event evt(std::move(src));
-        return thread.event_dispatcher().post_event(evt);
+        hdr = evt.header();
+
+        EventDispatcherBase * dispatcher{ nullptr };
+        {
+            MapLock<ProxyBase::MapProxyResource> lock(proxies);
+            const std::shared_ptr<ProxyBase> proxy{ proxies.find_resource_object(proxyKey) };
+            if ( !proxy )
+                return false;
+
+            const Channel chTarget(proxy->proxy_address().channel());
+
+            // Route response to proxy's local thread
+            hdr->target          = chTarget.cookie();
+            hdr->channel         = chTarget.target();
+            hdr->consumer.id     = chTarget.cookie();
+            hdr->consumer.thread = chTarget.source();
+            hdr->internal2       = 0u;
+
+            dispatcher = &static_cast<EventDispatcherBase &>(proxy->proxy_dispatcher_thread().event_dispatcher());
+            const EventQueue::PushResult result{ dispatcher->try_queue_event(evt) };
+            if (result != EventQueue::PushResult::MustWait)
+                return (result == EventQueue::PushResult::Queued);
+        }
+
+        return dispatcher->wait_queue_event(evt);
     }
 
     case areg::EventType::EventRemoteProviderConnect:   // fall through

@@ -153,10 +153,11 @@ WorkerThread* Component::create_worker_thread(  const String & threadName
     workThread = new WorkerThread(threadName, self(), consumer, watchdogTimeout, stackSizeKb, maxQeueue, dropOnFull, waitMs);
     if (workThread == nullptr)
         return nullptr;
-    
+
+    workThread->share_with_lookups();
     if (!workThread->start(areg::WAIT_INFINITE))
     {
-        delete workThread;
+        DispatcherThread::release_shared(workThread);
         return nullptr;
     }
 
@@ -166,7 +167,7 @@ WorkerThread* Component::create_worker_thread(  const String & threadName
         if (!workThread->is_running())
         {
             workThread->shutdown(areg::WAIT_INFINITE);
-            delete workThread;
+            DispatcherThread::release_shared(workThread);
             return nullptr;
         }
     }
@@ -182,7 +183,7 @@ void Component::delete_worker_thread( const String & threadName )
     {
         workThread->shutdown(areg::WAIT_INFINITE);
         mComponentInfo.unregister_worker_thread(*workThread);
-        delete workThread;
+        DispatcherThread::release_shared(workThread);
     }
 }
 

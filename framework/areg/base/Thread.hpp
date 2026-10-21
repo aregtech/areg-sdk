@@ -130,6 +130,20 @@ public:
     static constexpr id_type            INVALID_THREAD_ID       { 0 };
 
 
+/************************************************************************/
+// Protected constants
+/************************************************************************/
+protected:
+
+    //!< Life State flag, set while this object is present in the thread maps.
+    static constexpr uint32_t   LIFE_REGISTERED     { 1u };
+    //!< Life State flag, set while an exit is requested for this thread.
+    static constexpr uint32_t   LIFE_EXIT_REQUESTED { 2u };
+    //!< Life State amount of one share of the object.
+    static constexpr uint32_t   LIFE_SHARE          { 4u };
+    //!< Life State bits that count the shares.
+    static constexpr uint32_t   LIFE_SHARES         { ~(LIFE_SHARE - 1u) };
+
 private:
 /************************************************************************/
 // Private constants
@@ -553,6 +567,24 @@ protected:
      **/
     static Thread * next_thread( id_type & threadId ) noexcept;
 
+    /**
+     * \brief   Returns the registered thread with the specified number. If the object is shared
+     *          and is not the calling thread, adds a hold on it under the registry lock.
+     *
+     * \param   threadNumber    The unique number of the thread to search.
+     * \param[out] held         On output, true if a hold was added.
+     * \return  The thread object, or nullptr if no thread with that number is registered.
+     **/
+    [[nodiscard]]
+    static Thread * _find_and_hold( UniqueNumber threadNumber, bool & held ) noexcept;
+
+    /**
+     * \brief   Drops one hold of a shared thread object and deletes the object if it was the last.
+     *
+     * \param   thread      The shared thread object to release.
+     **/
+    static void _drop_hold( Thread * thread ) noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -584,13 +616,15 @@ protected:
 #endif  // _MSC_VER
     //!< The state of the thread routine, a Thread::RunState value; waiters sleep on this word.
     std::atomic<uint32_t>   mRunState;
+    //!< The thread stack size in kilobytes.
+    uint32_t                mStackSizeKB;
+    //!< LIFE_REGISTERED and LIFE_EXIT_REQUESTED, plus one LIFE_SHARE per share of the object.
+    std::atomic<uint32_t>   mLifeState;
+    //!< Counts every thread registration and unregistration, see registry_generation().
+    static std::atomic<uint32_t> mRegistryGeneration;
 #if defined(_MSC_VER)
     #pragma warning(pop)
 #endif  // _MSC_VER
-    /**
-     * \brief   The thread stack size in kilobytes.
-     **/
-    uint32_t                mStackSizeKB;
     /**
      * \brief   Object to synchronize data access
      **/
@@ -605,19 +639,6 @@ protected:
     SyncEvent               mWaitForExit;
     //!< Manual reset event, signaled while an exit is requested for this thread.
     SyncEvent               mExitRequest;
-#if defined(_MSC_VER)
-    #pragma warning(push)
-    #pragma warning(disable: 4251)
-#endif  // _MSC_VER
-    //!< The state of mExitRequest, readable without entering the event object.
-    std::atomic<bool>       mExitRequested;
-    //!< True while this object is present in the thread maps.
-    std::atomic<bool>       mRegistered;
-    //!< Counts every thread registration and unregistration, see registry_generation().
-    static std::atomic<uint32_t> mRegistryGeneration;
-#if defined(_MSC_VER)
-    #pragma warning(pop)
-#endif  // _MSC_VER
     //!< The number of shutdown() calls that own the running thread, guarded by mSyncObject.
     uint8_t                 mStopCount;
 
@@ -963,7 +984,7 @@ inline Thread::RunState Thread::_run_state() const noexcept
 inline Thread * Thread::current_thread() noexcept
 {
     Thread * result{ Thread::_self_thread() };
-    return ((result != nullptr) && result->mRegistered.load(std::memory_order_acquire)
+    return ((result != nullptr) && ((result->mLifeState.load(std::memory_order_acquire) & LIFE_REGISTERED) != 0u)
                 ? result
                 : Thread::find_by_id(Thread::_os_thread_id()));
 }
@@ -996,7 +1017,7 @@ inline uint32_t Thread::stack_size() const noexcept
 
 inline bool Thread::is_exit_requested() const noexcept
 {
-    return mExitRequested.load(std::memory_order_acquire);
+    return ((mLifeState.load(std::memory_order_acquire) & LIFE_EXIT_REQUESTED) != 0u);
 }
 
 inline void Thread::switch_thread() noexcept

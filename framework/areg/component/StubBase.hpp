@@ -301,6 +301,16 @@ public:
     [[nodiscard]]
     static inline StubBase * find_stub( const UniqueNumber stubId ) noexcept;
 
+    /**
+     * \brief   Returns a copy of the address of the registered stub that has the key of the
+     *          specified address, taken under the registry lock.
+     *
+     * \param   address     The address whose key is searched.
+     * \return  Returns the address of the registered stub; otherwise a copy of \a address.
+     **/
+    [[nodiscard]]
+    static StubAddress registered_address( const StubAddress & address );
+
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////

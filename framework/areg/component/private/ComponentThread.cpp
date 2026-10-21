@@ -361,6 +361,7 @@ int32_t ComponentThread::on_exit()
     shutdown_components();
     wait_components_completion();
     destroy_components();
+    _detach_thread_proxies();
 
     return DispatcherThread::on_exit( );
 }

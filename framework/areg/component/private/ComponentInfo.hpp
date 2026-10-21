@@ -274,8 +274,7 @@ inline WorkerThread* ComponentInfo::find_worker_thread( const ThreadAddress& thr
 
 inline WorkerThread* ComponentInfo::find_worker_thread( const String & threadName ) const noexcept
 {
-    Thread* targetThread = Thread::find_by_number(static_cast<uint32_t>(threadName));
-    return (targetThread != nullptr ? find_worker_thread(targetThread->address()) : nullptr);
+    return find_worker_thread(ThreadAddress(threadName));
 }
 
 inline WorkerThread* ComponentInfo::find_thread( const String & componentPath ) const noexcept

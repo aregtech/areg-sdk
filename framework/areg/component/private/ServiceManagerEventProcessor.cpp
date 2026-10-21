@@ -312,8 +312,7 @@ void ServiceManagerEventProcessor::_unregister_provider( const StubAddress & whi
         {
 #if AREG_LOGGING
             // Rejected in the network only: the consumers of this process keep the local provider.
-            const StubBase * local{ StubBase::find_stub( whichServer ) };
-            const StubAddress & named{ local != nullptr ? local->address( ) : whichServer };
+            const StubAddress named{ StubBase::registered_address( whichServer ) };
             LOG_ERR( "The provider of role name [ %s ], service [ %s ] is rejected in the network: another process already provides this public role name. It serves only the consumers of this process"
                        , named.role_name( ).as_string( )
                        , named.service_name( ).as_string( ) );
@@ -490,7 +489,8 @@ void ServiceManagerEventProcessor::_start_component_thread( const String & threa
     if ( entry.is_valid( ) && (thread == nullptr) )
     {
         ComponentThread * compThread = new ComponentThread( entry.mThreadName, entry.mWatchdogTimeout );
-        if ( (compThread != nullptr) && compThread->start( areg::WAIT_INFINITE ) )
+        compThread->share_with_lookups();
+        if ( compThread->start( areg::WAIT_INFINITE ) )
         {
             LOG_DBG( "Succeeded to create and start component thread [ %s ]", threadName.as_string( ) );
         }

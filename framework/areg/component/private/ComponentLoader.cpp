@@ -424,11 +424,11 @@ bool ComponentLoader::load_model( areg::Model & whichModel ) const
         if (thrObject == nullptr)
             result = false;
 
-        
+        thrObject->share_with_lookups();
         if ( thrObject->start( areg::WAIT_INFINITE ) == false )
         {
             thrObject->shutdown( areg::DO_NOT_WAIT );
-            delete thrObject;
+            DispatcherThread::release_shared(thrObject);
             result = false;
         }
     }
@@ -619,7 +619,7 @@ void ComponentLoader::_shutdown_threads( const ThreadList & threadList ) const
             continue;
         }
 
-        delete thrObject;
+        DispatcherThread::release_shared(thrObject);
     }
 }
 

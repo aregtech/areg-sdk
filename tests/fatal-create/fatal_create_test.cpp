@@ -54,6 +54,11 @@ int main( )
     {
         ::dup2( pipeFds[1], STDERR_FILENO );
         ::close( pipeFds[0] );
+
+        // Restores the default SIGABRT action, which a sanitizer replaces with its own report.
+        struct sigaction defaultAbort{ };
+        defaultAbort.sa_handler = SIG_DFL;
+        ::sigaction( SIGABRT, &defaultAbort, nullptr );
         gFailMutexInit = true;
         areg::Mutex mutex;
         static_cast<void>(mutex.lock( ));

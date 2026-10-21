@@ -178,14 +178,13 @@ Thread::Thread(ThreadConsumer &threadConsumer, const String & threadName, uint32
     , mThreadId         (Thread::INVALID_THREAD_ID)
     , mThreadAddress    (threadName.is_empty() == false ? threadName : areg::generate_name(DEFAULT_THREAD_PREFIX.data()))
     , mThreadPriority   (Thread::ThreadPriority::Undefined)
-    , mRunState         ( static_cast<uint32_t>(Thread::RunState::NotRunning) )
+    , mRunState         (static_cast<uint32_t>(Thread::RunState::NotRunning))
     , mStackSizeKB      ( stackSizeKb )
+    , mLifeState        (0u)
     , mSyncObject       ( )
     , mWaitForRun       (false, false)
     , mWaitForExit      (false, false)
     , mExitRequest      (true, false)
-    , mExitRequested    ( false )
-    , mRegistered       ( false )
     , mStopCount        ( 0u )
 {
     mWaitForExit.set_signaled();
@@ -200,12 +199,11 @@ Thread::Thread( areg::NullTag, ThreadConsumer & threadConsumer, const String & t
     , mThreadPriority   ( Thread::ThreadPriority::Undefined )
     , mRunState         ( static_cast<uint32_t>(Thread::RunState::NotRunning) )
     , mStackSizeKB      ( 0u )
+    , mLifeState        ( 0u )
     , mSyncObject       ( )
     , mWaitForRun       ( areg::NullTag{} )
     , mWaitForExit      ( areg::NullTag{} )
     , mExitRequest      ( areg::NullTag{} )
-    , mExitRequested    ( false )
-    , mRegistered       ( false )
     , mStopCount        ( 0u )
 {
     // Null thread: not registered in thread maps, no OS handle, no sync events allocated.
@@ -247,7 +245,7 @@ bool Thread::start(uint32_t waitForStartMs /* = areg::DO_NOT_WAIT */)
         }
 
         // Clears the exit request of the previous run.
-        mExitRequested.store(false, std::memory_order_release);
+        mLifeState.fetch_and(~LIFE_EXIT_REQUESTED, std::memory_order_release);
         mExitRequest.reset();
         _set_run_state(Thread::RunState::Starting);
         result = _os_create();
@@ -274,7 +272,7 @@ bool Thread::start(uint32_t waitForStartMs /* = areg::DO_NOT_WAIT */)
 
 void Thread::request_exit() noexcept
 {
-    mExitRequested.store(true, std::memory_order_release);
+    mLifeState.fetch_or(LIFE_EXIT_REQUESTED, std::memory_order_release);
     mExitRequest.set_signaled();
 }
 
@@ -485,7 +483,7 @@ bool Thread::_register_thread()
 {
     Thread::_map_thread_name().register_resource_object(static_cast<uint32_t>(mThreadAddress), this);
     Thread::_map_thread_id().register_resource_object(mThreadId, this);
-    mRegistered.store(true, std::memory_order_release);
+    mLifeState.fetch_or(LIFE_REGISTERED, std::memory_order_release);
     Thread::_bump_registry_generation();
 
     _os_set_name(mThreadId, mThreadAddress.name());
@@ -495,7 +493,7 @@ bool Thread::_register_thread()
 void Thread::_unregister_thread()
 {
     // Once per run: the maps are keyed by name, which a restarted thread reuses.
-    if (mRegistered.exchange(false, std::memory_order_acq_rel) == false)
+    if ((mLifeState.fetch_and(~LIFE_REGISTERED, std::memory_order_acq_rel) & LIFE_REGISTERED) == 0u)
     {
         return;
     }
@@ -542,6 +540,29 @@ Thread * Thread::first_thread( id_type & threadId ) noexcept
 Thread * Thread::next_thread( id_type & threadId ) noexcept
 {
     return _map_thread_id().resource_next_key( threadId );
+}
+
+Thread * Thread::_find_and_hold( const UniqueNumber threadNumber, bool & held ) noexcept
+{
+    // A thread never holds its own object: the owner deletes it only after the thread ended.
+    Thread::MapThreadNameResource & threads{ Thread::_map_thread_name() };
+    Lock lock(threads.lockable());
+    Thread * thread{ threads.find_resource_object(threadNumber) };
+    held = (thread != nullptr) && (thread != Thread::_self_thread()) && ((thread->mLifeState.load(std::memory_order_relaxed) & LIFE_SHARES) != 0u);
+    if (held)
+    {
+        thread->mLifeState.fetch_add(LIFE_SHARE, std::memory_order_relaxed);
+    }
+
+    return thread;
+}
+
+void Thread::_drop_hold( Thread * thread ) noexcept
+{
+    if ((thread->mLifeState.fetch_sub(LIFE_SHARE, std::memory_order_acq_rel) & LIFE_SHARES) == LIFE_SHARE)
+    {
+        delete thread;
+    }
 }
 
 #ifdef  DEBUG

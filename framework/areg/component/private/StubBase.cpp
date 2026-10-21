@@ -95,6 +95,14 @@ StubBase::~StubBase()
     map_providers().unregister_resource_object(static_cast<uint32_t>(mAddress));
 }
 
+StubAddress StubBase::registered_address( const StubAddress & address )
+{
+    MapProviderResource & providers{ map_providers() };
+    Lock lock(providers.lockable());
+    const StubBase * stub{ providers.find_resource_object(static_cast<uint32_t>(address)) };
+    return (stub != nullptr ? stub->mAddress : address);
+}
+
 void StubBase::detach_from_registry()
 {
     // removing a key that is already gone is a no-op
