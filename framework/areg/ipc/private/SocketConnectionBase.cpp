@@ -37,6 +37,11 @@ int32_t SocketConnectionBase::receive_message(MessageEnvelope & message, const S
     if (evtHeader.bufHeader.biUsed > areg::MAX_BUF_LENGTH)
         return 0;
 
+    // The local-only fields never take the values of the peer.
+    evtHeader.internal1 = 0u;
+    evtHeader.internal2 = 0u;
+    evtHeader.custom    = 0u;
+
     uint8_t * buffer = message.init_envelope(evtHeader, evtHeader.bufHeader.biUsed);
     int32_t result{ buffer != nullptr ? static_cast<int32_t>(sizeof(areg::EventHeader)) : 0 };
     if ((evtHeader.bufHeader.biUsed != 0u) && (result != 0))
@@ -47,7 +52,7 @@ int32_t SocketConnectionBase::receive_message(MessageEnvelope & message, const S
     }
 
     message.move_to_begin();
-    return (message.is_checksum_valid() ? result : 0);
+    return result;
 }
 
 } // namespace areg

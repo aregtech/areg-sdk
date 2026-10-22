@@ -152,7 +152,7 @@ redesign, not an edit; know them first.
 - **A consumer's `REGISTER_DEPENDENCY` string must equal the provider's component
   role name, character for character.** A mismatch compiles cleanly and never connects.
 - **Never call a request in a constructor.** Any later handler may send one; sent before
-  the service is connected, it gets no answer and no `request_<name>_failed`.
+  connecting, it fails at once: `request_<name>_failed(ServiceUnavailable)`.
 - **Never treat a disconnect as fatal.** `Disconnected`, `ConnectionLost` and `Failed`
   reconnect on their own; only `Rejected` and `Shutdown` are terminal.
 - **Never block inside a request, response, broadcast or update handler.** Blocking a

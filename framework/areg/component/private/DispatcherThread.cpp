@@ -37,8 +37,7 @@ namespace {
     constexpr uint32_t                  DISPATCHER_CACHE_SIZE{ 8u };
 
     /**
-     * \brief   One resolved dispatcher thread, valid while mGeneration matches
-     *          Thread::registry_generation().
+     * \brief   One resolved dispatcher thread, valid while mGeneration matches Thread::registry_generation().
      **/
     struct DispatcherCacheEntry
     {
@@ -49,6 +48,10 @@ namespace {
 
     //!< The resolved dispatcher threads of the calling thread; private to it, so it needs no lock.
     AREG_THREAD_LOCAL DispatcherCacheEntry  _dispatcherCache[DISPATCHER_CACHE_SIZE]{};
+
+    //!< Bit i is set while _dispatcherCache[i] holds a share of its thread.
+    AREG_THREAD_LOCAL uint32_t              _dispatcherHeld{ 0u };
+    static_assert(DISPATCHER_CACHE_SIZE <= 32u, "One bit of _dispatcherHeld per cache entry");
 } // namespace
 
 namespace areg {
@@ -204,17 +207,106 @@ DispatcherThread & DispatcherThread::_null_dispather_thread() noexcept
 DispatcherThread * DispatcherThread::_find_dispatcher_thread( const UniqueNumber threadNumber ) noexcept
 {
     const uint32_t generation{ Thread::registry_generation() };
-    DispatcherCacheEntry & entry{ _dispatcherCache[threadNumber & (DISPATCHER_CACHE_SIZE - 1u)] };
+    const DispatcherCacheEntry & entry{ _dispatcherCache[threadNumber & (DISPATCHER_CACHE_SIZE - 1u)] };
     if ((entry.mGeneration != generation) || (entry.mNumber != threadNumber))
     {
-        // The counter is advanced before a thread leaves the maps, so a cached pointer can
-        // never outlive its thread object.
-        entry.mThread       = AREG_RUNTIME_CAST(Thread::find_by_number(threadNumber), DispatcherThread);
-        entry.mNumber       = threadNumber;
-        entry.mGeneration   = generation;
+        DispatcherThread::_refresh_cache_entry(threadNumber, generation);
     }
 
     return entry.mThread;
+}
+
+struct DispatcherThread::CacheGuard
+{
+    ~CacheGuard()
+    {
+        DispatcherThread::_drop_cache_holds();
+    }
+};
+
+void DispatcherThread::_refresh_cache_entry( const UniqueNumber threadNumber, const uint32_t generation ) noexcept
+{
+    bool held{ false };
+    Thread * found{ Thread::_find_and_hold(threadNumber, held) };
+    DispatcherThread * dispatcher{ AREG_RUNTIME_CAST(found, DispatcherThread) };
+    if (held && (dispatcher == nullptr))
+    {
+        Thread::_drop_hold(found);
+        held = false;
+    }
+
+    // The stale shares are dropped after the new one is taken, so a thread found again stays allocated.
+    DispatcherThread * stale[DISPATCHER_CACHE_SIZE]{ };
+    uint32_t count{ 0u };
+    const uint32_t index{ threadNumber & (DISPATCHER_CACHE_SIZE - 1u) };
+    uint32_t heldMask{ _dispatcherHeld };
+    for (uint32_t i = 0u; i < DISPATCHER_CACHE_SIZE; ++ i)
+    {
+        DispatcherCacheEntry & cached{ _dispatcherCache[i] };
+        if (((heldMask & (1u << i)) != 0u) && ((cached.mGeneration != generation) || (i == index)))
+        {
+            stale[count ++] = cached.mThread;
+            cached.mThread  = nullptr;
+            heldMask       &= ~(1u << i);
+        }
+    }
+
+    DispatcherCacheEntry & entry{ _dispatcherCache[index] };
+    entry.mNumber       = threadNumber;
+    entry.mGeneration   = generation;
+    entry.mThread       = dispatcher;
+    _dispatcherHeld     = held ? (heldMask | (1u << index)) : heldMask;
+    if (held)
+    {
+        static thread_local CacheGuard _guard;
+        static_cast<void>(_guard);
+    }
+
+    for (uint32_t i = 0u; i < count; ++ i)
+    {
+        Thread::_drop_hold(stale[i]);
+    }
+}
+
+void DispatcherThread::_drop_cache_holds() noexcept
+{
+    for (uint32_t i = 0u; i < DISPATCHER_CACHE_SIZE; ++ i)
+    {
+        const uint32_t bit{ 1u << i };
+        DispatcherThread * dispatcher{ (_dispatcherHeld & bit) != 0u ? _dispatcherCache[i].mThread : nullptr };
+        _dispatcherHeld    &= ~bit;
+        _dispatcherCache[i] = DispatcherCacheEntry{ };
+        if (dispatcher != nullptr)
+        {
+            Thread::_drop_hold(dispatcher);
+        }
+    }
+}
+
+void DispatcherThread::release_shared( DispatcherThread * dispatcher ) noexcept
+{
+    if (dispatcher == nullptr)
+        return;
+
+    const uint32_t life{ dispatcher->mLifeState.load(std::memory_order_acquire) };
+    ASSERT((life & LIFE_REGISTERED) == 0u);
+    if ((life & LIFE_SHARES) == 0u)
+    {
+        delete dispatcher;
+    }
+    else
+    {
+        Thread::_drop_hold(dispatcher);
+    }
+}
+
+void DispatcherThread::share_with_lookups() noexcept
+{
+    ASSERT(is_running() == false);
+    if ((mLifeState.load(std::memory_order_relaxed) & LIFE_SHARES) == 0u)
+    {
+        mLifeState.fetch_add(LIFE_SHARE, std::memory_order_relaxed);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////

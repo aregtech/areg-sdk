@@ -289,6 +289,11 @@ void ProxyBase::free_proxy( ProxyListener & connect )
                    , static_cast<NotificationConsumer *>(&connect));
 
     std::shared_ptr<ProxyBase> proxy = ProxyBase::find_proxy( mProxyAddress );
+    if (proxy.get() != this)
+    {
+        // The entry of this address belongs to another proxy.
+        proxy.reset();
+    }
 
     if ((proxy.use_count() == 1) || (mProxyInstCount == 1))
     {
@@ -309,8 +314,11 @@ void ProxyBase::free_proxy( ProxyListener & connect )
         mIsStopped   = true;
 
         mProxyInstCount = 0;
-        map_proxies().unregister_resource_object(static_cast<uint32_t>(mProxyAddress));
-        thread_proxies().unregister_resource_object( static_cast<uint32_t>(mDispatcherThread.address( )), proxy, true );
+        if (proxy.get() != nullptr)
+        {
+            map_proxies().unregister_resource_object(static_cast<uint32_t>(mProxyAddress));
+            thread_proxies().unregister_resource_object( static_cast<uint32_t>(mDispatcherThread.address( )), proxy, true );
+        }
     }
     else if ( mProxyInstCount > 0 )
     {
@@ -318,33 +326,31 @@ void ProxyBase::free_proxy( ProxyListener & connect )
     }
 }
 
-void ProxyBase::terminate_self()
-{
-    {
-        Lock lock(mListenerLock);
-        mListenerMap.clear();
-    }
-
-    if (!mIsStopped)
-    {
-        ServiceManager::request_unregister_consumer(proxy_address(), areg::DisconnectReason::ConsumerDisconnected );
-    }
-
-    set_connection_status( areg::ServiceConnectionState::Disconnected );
-    mIsStopped      = true;
-    mProxyInstCount = 0;
-    mListConnect.clear();
-
-    detach_from_registry();
-}
-
 void ProxyBase::detach_from_registry()
 {
     std::shared_ptr<ProxyBase> proxy{ ProxyBase::find_proxy(mProxyAddress) };
-    if (proxy.get() != nullptr)
+    if (proxy.get() == this)
     {
         map_proxies().unregister_resource_object(static_cast<uint32_t>(mProxyAddress));
         thread_proxies().unregister_resource_object( static_cast<uint32_t>(mDispatcherThread.address( )), proxy, true );
+    }
+}
+
+void ProxyBase::_detach_thread_proxies( const ArrayList<String> & threads )
+{
+    MapProxyResource & proxies{ map_proxies() };
+    for (uint32_t i = 0; i < threads.size(); ++ i)
+    {
+        const ThreadProxyList list{ thread_proxies().unregister_resource( static_cast<uint32_t>(ThreadAddress(threads[i])) ) };
+        for (uint32_t j = 0; j < list.size(); ++ j)
+        {
+            const std::shared_ptr<ProxyBase> & proxy{ list[j] };
+            Lock lock(proxies.lockable());
+            if (proxies.find_resource_object(static_cast<uint32_t>(proxy->mProxyAddress)) == proxy)
+            {
+                proxies.unregister_resource_object(static_cast<uint32_t>(proxy->mProxyAddress));
+            }
+        }
     }
 }
 
@@ -387,6 +393,8 @@ void ProxyBase::service_connection_updated( const StubAddress & server, const Ch
 
     ProxyListenerList connectListeners;
     ArrayList<uint32_t> notifyIds;
+    ArrayList<uint32_t> pendingIds;
+    ProxyListenerList pendingRequests;
     {
         Lock lock(mListenerLock);
         ProxyListenerMap::MAPPOS mapPos = mListenerMap.find(CONNECTION_ID);
@@ -400,6 +408,31 @@ void ProxyBase::service_connection_updated( const StubAddress & server, const Ch
                 if ((mapPos->first != CONNECTION_ID) && has_notification_listener(mapPos->first))
                     notifyIds.add(mapPos->first);
             }
+        }
+        else if (wasConnected && (nowConnected == false))
+        {
+            for (mapPos = mListenerMap.first_position(); mListenerMap.is_valid_position(mapPos); mapPos = mListenerMap.next_position(mapPos))
+            {
+                const ProxyListenerList & subVec = mapPos->second;
+                for (uint32_t i = 0u; i < subVec.size(); ++i)
+                {
+                    if (subVec.value_at(i).mSequenceNr != areg::SEQUENCE_NUMBER_NOTIFY)
+                    {
+                        pendingIds.add(mapPos->first);
+                        pendingRequests.add(subVec.value_at(i));
+                    }
+                }
+            }
+        }
+    }
+
+    // Fails every pending request; the failures are dispatched after the connection callbacks below.
+    for (uint32_t i = 0u; i < pendingIds.size(); ++i)
+    {
+        ServiceResponseEvent failure{ create_request_failed(mProxyAddress, pendingIds[i], areg::ResultType::ServiceUnavailable, pendingRequests[i].mSequenceNr) };
+        if (failure.is_valid())
+        {
+            failure.deliver_event();
         }
     }
 
@@ -635,16 +668,18 @@ void ProxyBase::send_request_event(ServiceRequestEvent& reqEvent, NotificationCo
         seqNr = mSequenceCount;
     }
 
-    if (mProxyAddress.deliver_service_event(reqEvent) == false)
+    const bool connected{ mIsConnected };
+    if ((connected == false) || (mProxyAddress.deliver_service_event(reqEvent) == false))
     {
-        // The provider is gone
-        LOG_WARN("Failed to deliver request [ %u ] of proxy [ %s ]%s"
+        LOG_WARN("Failed to deliver request [ %u ] of proxy [ %s ]%s%s"
                     , msgId
                     , ProxyAddress::to_path(mProxyAddress).as_string()
+                    , connected ? "" : ", not connected"
                     , hasResponse ? ", failing it" : ", it expects no response");
         if (hasResponse)
         {
-            ServiceResponseEvent failure{ create_request_failed(mProxyAddress, msgId, areg::ResultType::MessageUndelivered, seqNr) };
+            const areg::ResultType reason{ connected ? areg::ResultType::MessageUndelivered : areg::ResultType::ServiceUnavailable };
+            ServiceResponseEvent failure{ create_request_failed(mProxyAddress, msgId, reason, seqNr) };
             if (failure.is_valid())
             {
                 failure.deliver_event();

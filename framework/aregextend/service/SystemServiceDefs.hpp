@@ -37,7 +37,7 @@ namespace areg::ext {
     /**
      * \brief   Batch-send entry used by server-side send threads.
      *          MessageEnvelope msg holds the wire-ready IPC message (O(1) shared_ptr copy).
-     *          internal1/2/custom are zeroed before the envelope is stored here.
+     *          internal1/2 are zeroed before the envelope is stored here.
      **/
     struct PendingSend
     {

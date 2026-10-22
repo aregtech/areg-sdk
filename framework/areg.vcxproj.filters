@@ -417,6 +417,9 @@
     <ClCompile Include="areg\component\private\ServiceManagerEventProcessor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="areg\component\private\SystemController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="areg\logging\private\LogEventProcessor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -975,6 +978,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\component\private\ServiceManagerEventProcessor.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\component\private\SystemController.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\component\private\UserStateEvent.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\logging\private\LogEventProcessor.hpp">

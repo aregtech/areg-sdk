@@ -1122,9 +1122,9 @@ def wiring(programs, components, deployments=()):
                   'bool {}.is_connected() tells, and a request sent through a member not yet'
                   .format(member_of(next(r for c in components if c.kind == 'provides'
                                          for _, rs, _ in c.clients for r in rs))),
-                  'connected is never answered and never reported failed. Not connected yet',
-                  'is not lost: hold such a request for that client\'s connected section,',
-                  'answer the caller with an error, or retry later, as the application needs.']
+                  'connected fails at once: request_<name>_failed(ServiceUnavailable). Hold',
+                  'such a request for that client\'s connected section, answer the caller',
+                  'with an error, or retry later, as the application needs.']
     return lines
 
 

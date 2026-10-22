@@ -145,19 +145,11 @@ int main()
 {
     std::cout << "Demo: timers in binding thread context ..." << std::endl;
 
-    areg::Application::start_logging(true);
+    // logging and the timer manager, no service manager, no router, no watchdog
+    areg::Application::setup(true, false, false, true, false);
     do
     {
         LOG_SCOPE( timer_main, main );
-
-        if (!areg::Application::start_timer_manager())
-        {
-            LOG_ERR("Failed to start timer manager");
-        }
-        else
-        {
-            LOG_INFO("Timer manager started successfully");
-        }
 
         TimerDispatcher t1("TimerThread_1");
         TimerDispatcher t2("TimerThread_2");
@@ -170,11 +162,9 @@ int main()
 
         stop_timer_thread(t1);
         stop_timer_thread(t2);
-
-        areg::Application::stop_timer_manager();
     } while (false);
-    
-    areg::Application::stop_logging();
+
+    areg::Application::release();
 
     std::cout << "Exit application, check logs for details!" << std::endl;
     return 0;

@@ -23,6 +23,8 @@
 
 #include "areg/base/MessageEnvelope.hpp"
 #include "areg/base/SocketClient.hpp"
+
+#include <atomic>
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -67,7 +69,7 @@ public:
      * \brief   Returns the connection cookie identifier set by server.
      **/
     [[nodiscard]]
-    inline const ITEM_ID & cookie() const noexcept;
+    inline ITEM_ID cookie() const noexcept;
 
     /**
      * \brief   Sets the connection cookie identifier.
@@ -98,10 +100,17 @@ public:
     inline void set_address( const areg::SocketAddress & newAddress );
 
     /**
-     * \brief   Returns true if socket descriptor is valid.
+     * \brief   Returns true if the socket is created and neither interrupted nor closed.
      **/
     [[nodiscard]]
     inline bool is_valid() const noexcept;
+
+    /**
+     * \brief   Returns the socket descriptor while the socket is usable, or an invalid one once it is
+     *          interrupted or closed. Any thread may call it.
+     **/
+    [[nodiscard]]
+    inline SOCKETHANDLE live_handle() const noexcept;
 
     /**
      * \brief   Returns reference to the underlying socket object.
@@ -141,14 +150,21 @@ public:
 
     /**
      * \brief   Blocking TCP connect using the socket FD created by create_socket_fd(). On failure
-     *          the socket is closed and the cookie is reset to COOKIE_UNKNOWN.
+     *          the socket is interrupted and the cookie is reset to COOKIE_UNKNOWN.
      *
      * \return  Returns true if connection succeeded.
      **/
     inline bool connect_socket();
 
     /**
-     * \brief   Closes the socket and disconnects from remote server.
+     * \brief   Shuts the socket down without closing it: a blocked send or receive returns, and the
+     *          socket is no longer valid. Any thread may call it.
+     **/
+    void interrupt_socket();
+
+    /**
+     * \brief   Closes the socket. Call it only on the thread that owns the connection, once the
+     *          receive and the send thread stopped; it waits for a write in progress to end.
      **/
     void close_socket();
 
@@ -165,18 +181,17 @@ public:
     inline int32_t send_messages_batch(const areg::IoBuffer* ioBuffer, uint32_t count, uint32_t totalSize = 0) const;
 
     /**
-     * \brief   Receives message data via socket connection. Validates checksum after receiving.
-     *          Returns bytes received, zero if invalid checksum, or negative on failure.
+     * \brief   Receives message data via socket connection.
+     *          Returns bytes received, zero if the data is too long or incomplete, or negative on failure.
      *
-     * \param[in,out] out_message     MessageEnvelope to receive into; checksum validated after receiving.
-     * \return  Returns length in bytes of data received; zero if checksum invalid or buffer empty;
+     * \param[in,out] out_message     MessageEnvelope to receive into.
+     * \return  Returns length in bytes of data received; zero if the data is too long or incomplete;
      *          negative if socket invalid or receive failed.
      **/
     inline int32_t receive_message( MessageEnvelope & out_message ) const;
 
     /**
      * \brief   Sends an MessageEnvelope over the socket connection via scatter/gather I/O.
-     *          Calls buffer_completion_fix() before sending to ensure checksum is computed.
      *
      * \param   env     The envelope to send.
      * \return  Returns bytes sent on success, or 0 / negative on failure.
@@ -224,10 +239,22 @@ private:
      **/
     SocketClient    mClientSocket;
 
+#if defined(_MSC_VER)
+    #pragma warning(push)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
     /**
-     * \brief   Client connection cookie
+     * \brief   Client connection cookie, read by every thread that sends a remote event.
      **/
-    ITEM_ID         mCookie;
+    std::atomic<ITEM_ID> mCookie;
+
+    /**
+     * \brief   The socket descriptor while the socket is usable, read by every thread that sends.
+     **/
+    std::atomic<SOCKETHANDLE> mLiveHandle;
+#if defined(_MSC_VER)
+    #pragma warning(pop)
+#endif  // _MSC_VER
 
     /**
      * \brief   SO_SNDBUF size applied after create_socket() succeeds.
@@ -255,14 +282,14 @@ private:
 // ClientConnection class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline const ITEM_ID & ClientConnection::cookie() const noexcept
+inline ITEM_ID ClientConnection::cookie() const noexcept
 {
-    return mCookie;
+    return mCookie.load(std::memory_order_relaxed);
 }
 
 inline void ClientConnection::set_cookie(const ITEM_ID & newCookie ) noexcept
 {
-    mCookie = newCookie;
+    mCookie.store(newCookie, std::memory_order_relaxed);
 }
 
 inline const areg::SocketAddress & ClientConnection::address() const noexcept
@@ -282,7 +309,12 @@ inline void ClientConnection::set_address( const areg::SocketAddress & newAddres
 
 inline bool ClientConnection::is_valid() const noexcept
 {
-    return mClientSocket.is_valid();
+    return areg::is_valid_socket(mLiveHandle.load(std::memory_order_acquire));
+}
+
+inline SOCKETHANDLE ClientConnection::live_handle() const noexcept
+{
+    return mLiveHandle.load(std::memory_order_acquire);
 }
 
 inline bool ClientConnection::disable_send()
@@ -312,9 +344,9 @@ inline int32_t ClientConnection::receive_message(MessageEnvelope & out_message) 
 
 inline bool ClientConnection::connect_socket()
 {
-    if ( !mClientSocket.connect_to() )
+    if ( !mClientSocket.connect_to() || !is_valid() )
     {
-        set_cookie(areg::COOKIE_UNKNOWN);
+        interrupt_socket();
         return false;
     }
 
@@ -327,7 +359,6 @@ inline int32_t ClientConnection::send_message(const MessageEnvelope & env) const
     if (hdr == nullptr)
         return 0;
 
-    env.buffer_completion_fix();
     const uint32_t wireSize{ static_cast<uint32_t>(sizeof(areg::EventHeader)) + hdr->bufHeader.biUsed };
     areg::IoBuffer ioBuffer{ reinterpret_cast<const uint8_t *>(hdr), wireSize };
     return send_messages_batch(&ioBuffer, 1u, wireSize);

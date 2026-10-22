@@ -53,6 +53,7 @@
     <ClCompile Include="units\MultiLockTest.cpp" />
     <ClCompile Include="units\SharedBufferTest.cpp" />
     <ClCompile Include="units\SocketMultiplexerTest.cpp" />
+    <ClCompile Include="units\SocketInterruptTest.cpp" />
     <ClCompile Include="units\SocketWouldBlockTest.cpp" />
     <ClCompile Include="units\StringDefsTest.cpp" />
     <ClCompile Include="units\OptionParserTest.cpp" />
@@ -72,6 +73,7 @@
     <ClCompile Include="units\MapTest.cpp" />
     <ClCompile Include="units\KeyValuePairTest.cpp" />
     <ClCompile Include="units\FatalErrorTest.cpp" />
+    <ClCompile Include="units\ReceivedHeaderTest.cpp" />
     <ClCompile Include="units\RingStackTest.cpp" />
     <ClCompile Include="units\ScopedLockTest.cpp" />
     <ClCompile Include="units\SortedLinkedListTest.cpp" />

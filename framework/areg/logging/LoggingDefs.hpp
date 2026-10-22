@@ -213,7 +213,7 @@ namespace areg {
     /**
      * \brief   Returns the cookie of the log collector.
      **/
-    AREG_API const ITEM_ID & cookie() noexcept;
+    AREG_API ITEM_ID cookie() noexcept;
 
     /**
      * \brief   areg::HAS_MESSAGE_PRIORITY

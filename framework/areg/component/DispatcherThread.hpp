@@ -72,7 +72,8 @@ public:
      *          If no thread by give name was found, it returns NullDispatcher Thread, which will
      *          ignore (destroy) any event passed to thread.
      *
-     * \param   threadNumber    The unique number of dispatching thread.
+     * \param   threadNumber    The unique number of dispatching thread. areg::IGNORE_VALUE means
+     *                          the calling thread, as current_dispatcher_thread() returns it.
      * \return  If found, returns valid Dispatcher thread. Otherwise, returns NullDispather object,
      *          which destroys any event passed to thread.
      **/
@@ -121,6 +122,16 @@ public:
      **/
     [[nodiscard]]
     static DispatcherThread * find_consumer_thread(uint32_t whichClass) noexcept;
+
+    /**
+     * \brief   Releases the owner's share of a thread object that share_with_lookups() prepared,
+     *          or deletes an object that was not prepared. A prepared object is deleted at once,
+     *          or later by the last lookup of another thread that still holds it.
+     *
+     * \param   dispatcher      The heap allocated thread to release, which has stopped and left
+     *                          the thread registry. Ignored if nullptr.
+     **/
+    static void release_shared( DispatcherThread * dispatcher ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -188,6 +199,13 @@ public:
 // Operations and overrides.
 //////////////////////////////////////////////////////////////////////////
 
+    /**
+     * \brief   Lets the dispatcher lookups of other threads keep this heap allocated object until
+     *          they let it go. Call it once, before the thread starts. The object is then freed
+     *          only by release_shared(), never by delete.
+     **/
+    void share_with_lookups() noexcept;
+
 /************************************************************************/
 // Thread overrides
 /************************************************************************/
@@ -207,8 +225,8 @@ public:
     void trigger_exit_drained();
 
     /**
-     * \brief   Shuts down the thread and frees resources. If waiting timeout is not 'DO_NOT_WAIT
-     *          and it expires, the function terminates the thread. The shutdown thread can be
+     * \brief   Shuts down the thread and frees resources. A thread that does not stop within the
+     *          waiting timeout is not killed and the result is Stuck. The shutdown thread can be
      *          re-created again. The calling thread (current thread) may be blocked until target
      *          thread completes the job.
      *
@@ -219,7 +237,7 @@ public:
      *                              the job. - Set any other value in milliseconds to specify
      *                              waiting time until thread completes the job or timeout expires.
      * \return  Returns the thread completion status. The following statuses are defined:
-     *          Thread::Terminated -- The waiting timeout expired and thread was terminated;
+     *          Thread::Stuck -- The waiting timeout expired and the thread keeps running;
      *          Thread::Completed -- The thread was valid and completed normally; Thread::Invalid --
      *          The thread was not valid and was not running, nothing was done.
      **/
@@ -282,7 +300,8 @@ private:
     /**
      * \brief   Searches the dispatcher thread that owns the given unique CRC32 thread number.
      *          The result is cached per calling thread and is reused only while
-     *          Thread::registry_generation() is unchanged.
+     *          Thread::registry_generation() is unchanged. A cached shared thread stays allocated
+     *          until the entry is searched again or the calling thread ends.
      *
      * \param   threadNumber    The unique CRC32 number of the thread to search.
      * \return  The dispatcher thread with this number, or nullptr when the process has no such
@@ -290,6 +309,23 @@ private:
      **/
     [[nodiscard]]
     static DispatcherThread * _find_dispatcher_thread( const UniqueNumber threadNumber ) noexcept;
+
+    /**
+     * \brief   Searches the thread again for the cache entry of the given number, holds it if it is
+     *          shared, and drops the holds of the entries that the generation made stale.
+     *
+     * \param   threadNumber    The unique CRC32 number of the thread to search.
+     * \param   generation      The value of Thread::registry_generation() read before the search.
+     **/
+    static void _refresh_cache_entry( UniqueNumber threadNumber, uint32_t generation ) noexcept;
+
+    /**
+     * \brief   Drops every hold of the cache of the calling thread. Called when the thread ends.
+     **/
+    static void _drop_cache_holds() noexcept;
+
+    //!< Calls _drop_cache_holds() when the thread that holds a cache entry ends.
+    struct CacheGuard;
 
     /**
      * \brief   Returns reference to self object.
@@ -322,8 +358,11 @@ private:
 
 inline DispatcherThread & DispatcherThread::dispatcher_thread( const UniqueNumber threadNumber ) noexcept
 {
+    if (threadNumber == static_cast<UniqueNumber>(areg::IGNORE_VALUE))
+        return DispatcherThread::current_dispatcher_thread();
+
     DispatcherThread * dispThread = DispatcherThread::_find_dispatcher_thread(threadNumber);
-    return ( dispThread != nullptr ? *dispThread : DispatcherThread::current_dispatcher_thread() );
+    return ( dispThread != nullptr ? *dispThread : DispatcherThread::_null_dispather_thread() );
 }
 
 inline DispatcherThread & DispatcherThread::dispatcher_thread(const ThreadAddress & threadAddr ) noexcept

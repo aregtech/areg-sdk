@@ -179,6 +179,10 @@ void backlog_os_signal(SendBacklogWaitOs * wait) noexcept
     } while ((result < 0) && (errno == EINTR));
 }
 
+void backlog_os_poll(SendBacklogWaitOs * /*wait*/) noexcept
+{
+}
+
 bool backlog_os_wait(SendBacklogWaitOs * wait, const SOCKETHANDLE * sockets, uint32_t count, uint32_t timeoutMs) noexcept
 {
     std::vector<struct pollfd> & fds{ wait->fds };

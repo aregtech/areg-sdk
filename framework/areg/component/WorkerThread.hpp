@@ -95,22 +95,7 @@ public:
     [[nodiscard]]
     ComponentThread & binding_component_thread() const;
 
-    /**
-     * \brief   Stops the worker thread and deletes the thread object.
-     *
-     * \return  True if the thread stopped and the object was deleted.
-     *          False if it could not be stopped: it keeps running and is not released.
-     **/
-    bool terminate_self();
 
-    /**
-     * \brief   Takes this worker thread out of the thread maps and stops its watchdog, without
-     *          waiting for it and without deleting it. After the call its name is free and it
-     *          answers no lookup, while the thread itself keeps running.
-     *
-     * \see     ComponentThread::terminate_self, Thread::detach_from_registry
-     **/
-    void detach_from_registry();
 
     /**
      * \brief   Returns the watchdog timeout in milliseconds; 0 means watchdog is disabled.

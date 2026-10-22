@@ -150,5 +150,17 @@ namespace areg {
         , Failure       //!< Application is failure state and cannot be continued
     };
 
+    /**
+     * \brief   areg::RouterState
+     *          The state of the connection to the message router (mtrouter).
+     **/
+    enum class RouterState : uint8_t
+    {
+          NotConfigured //!< The configuration enables no router connection.
+        , Disconnected  //!< The router is configured and not connected.
+        , Connecting    //!< The connection is requested and not established yet.
+        , Connected     //!< The application is connected to the router.
+    };
+
 } // namespace areg
 #endif // AREG_APPBASE_APPDEFS_HPP

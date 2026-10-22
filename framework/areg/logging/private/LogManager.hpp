@@ -150,6 +150,12 @@ public:
     static bool start_logging( const char * configFile = nullptr );
 
     /**
+     * \brief   Starts the timer manager and the signal handlers that logging needs, if not running.
+     * \return  Returns true if the timer manager runs.
+     **/
+    static bool start_timer_manager();
+
+    /**
      * \brief   Saves the current logging configuration state to a file.
      *
      * \param   configFile      Path to the configuration file (relative or absolute). If nullptr,
@@ -289,7 +295,7 @@ public:
     /**
      * \brief   Returns the connection cookie of the log collector service.
      **/
-    inline static const ITEM_ID & connection_cookie() noexcept;
+    inline static ITEM_ID connection_cookie() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
@@ -547,7 +553,7 @@ inline void LogManager::activate_log_scope(LogScope& scope)
     instance().mScopeController.activate_scope(scope);
 }
 
-inline const ITEM_ID & LogManager::connection_cookie() noexcept
+inline ITEM_ID LogManager::connection_cookie() noexcept
 {
     return LogManager::instance().mLoggerTcp.connection_cookie();
 }

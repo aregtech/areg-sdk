@@ -90,11 +90,11 @@ Application & Application::instance()
 
 Application::Application()
     : mAppState     ( areg::AppState::Stopped )
+    , mStorage      ( )
     , mSetup        ( false )
     , mConfigManager( )
     , mAppQuit      (false, false)
     , mLock         ( )
-    , mStorage      ( )
 {
 }
 
@@ -115,7 +115,7 @@ void Application::setup( bool startTracing   /*= true */
 
     if (startTimer)
     {
-        Application::start_timer_manager();
+        Application::_start_timer_manager();
     }
 
     if (startTracing)
@@ -130,15 +130,15 @@ void Application::setup( bool startTracing   /*= true */
 
     if ( startServicing )
     {
-        Application::start_service_manager();
+        Application::_start_service_manager();
     }
 
     if (startRouting)
     {
-        Application::start_message_routing(static_cast<uint32_t>(areg::ConnectionType::Tcpip));
+        Application::connect_router();
     }
 
-    if (Application::instance().mAppState == areg::AppState::Initializing)
+    if (Application::instance().mAppState.load() == areg::AppState::Initializing)
     {
         Application::_set_app_state(areg::AppState::Ready);
     }
@@ -150,15 +150,16 @@ void Application::release()
 {
     Application::_set_app_state(areg::AppState::Releasing);
 
+    // Unloads the models while the timer and watchdog managers still run.
+    ComponentLoader::unload_component_model(true, String::EmptyString);
+
+    // The service manager stops its router client; the managers it depends on stop after it.
+    ServiceManager::_stop_service_manager(false);
+    ServiceManager::_wait_service_manager();
     WatchdogManager::stop_watchdog_manager(false);
     TimerManager::stop_timer_manager(false);
-    ComponentLoader::unload_component_model(false, String::EmptyString);
-
     WatchdogManager::wait_watchdog_manager();
     TimerManager::wait_timer_manager();
-    ComponentLoader::wait_model_unload(String::EmptyString);
-    ServiceManager::_stop_service_manager(false); // the message routing client is automatically stopped.
-    ServiceManager::_wait_service_manager();
     // Stop the last to collect logs.
     areg::stop_logging(false); 
     areg::wait_logging_end();
@@ -167,9 +168,9 @@ void Application::release()
     Application::_os_release_handlers();
 }
 
-bool Application::load_model(const char * modelName /*= nullptr */)
+bool Application::load_model(const char * modelName /*= nullptr */, bool waitComponents /*= false*/)
 {
-    return ComponentLoader::load_component_model( modelName );
+    return ComponentLoader::load_component_model( modelName, waitComponents );
 }
 
 void Application::unload_model(const char * modelName /*= nullptr */)
@@ -180,6 +181,16 @@ void Application::unload_model(const char * modelName /*= nullptr */)
 bool Application::is_model_loaded(const char * modelName)
 {
     return ComponentLoader::is_model_loaded(modelName);
+}
+
+areg::ModelState Application::model_state(const char * modelName)
+{
+    return ComponentLoader::model_state(modelName);
+}
+
+areg::ThreadState Application::thread_state(const char * threadName)
+{
+    return ServiceManager::thread_state(threadName);
 }
 
 const areg::Model & Application::find_model( const char * modelName )
@@ -203,19 +214,7 @@ void Application::stop_logging()
     areg::stop_logging(true);
 }
 
-void Application::stop_service_manager()
-{
-    Application::_set_app_state(areg::AppState::Releasing);
-    
-    if ( ServiceManager::is_manager_started() )
-    {
-        ServiceManager::_stop_service_manager(true);
-    }
-    
-    Application::_set_app_state(areg::AppState::Stopped);
-}
-
-bool Application::start_service_manager()
+bool Application::_start_service_manager()
 {
     Application::_set_app_state(areg::AppState::Initializing);
 
@@ -225,7 +224,7 @@ bool Application::start_service_manager()
     {
         if (ServiceManager::_start_service_manager( ))
         {
-            Application::start_timer_manager();
+            Application::_start_timer_manager();
             Application::start_watchdog_manager();
             result = true;
             Application::_set_app_state(areg::AppState::Ready);
@@ -244,16 +243,10 @@ bool Application::start_service_manager()
     return result;
 }
 
-bool Application::start_timer_manager()
+bool Application::_start_timer_manager()
 {
     Application::_os_setup_handlers();
     return (TimerManager::is_manager_started() || TimerManager::start_timer_manager());
-}
-
-void Application::stop_timer_manager()
-{
-    Application::_os_release_handlers();
-    TimerManager::stop_timer_manager(true);
 }
 
 bool Application::start_watchdog_manager()
@@ -266,48 +259,47 @@ void Application::stop_watchdog_manager()
     WatchdogManager::stop_watchdog_manager(true);
 }
 
-bool Application::start_message_routing(uint32_t connectTypes)
+bool Application::connect_router()
 {
-    return  Application::start_timer_manager() &&
-            Application::is_service_manager_started() && 
-            (ServiceManager::_is_routing_started() || ServiceManager::_routing_service_start(connectTypes));
+    if ((ServiceManager::is_manager_started() == false) || (Application::router_state() == areg::RouterState::NotConfigured))
+        return false;
+
+    return ( ServiceManager::_is_routing_started()
+          || ServiceManager::_is_routing_pending()
+          || ServiceManager::_routing_service_start(static_cast<uint32_t>(areg::ConnectionType::Tcpip)) );
 }
 
-bool Application::config_message_routing()
-{
-    return (ServiceManager::_is_routing_started() || ServiceManager::_routing_service_configure());
-}
-
-bool Application::start_message_routing( const char * ipAddress, uint16_t portNr )
-{
-    return  Application::start_timer_manager() && 
-            Application::start_service_manager() && 
-            (ServiceManager::_is_routing_started() || ServiceManager::_routing_service_start(ipAddress, portNr));
-}
-
-void Application::stop_message_routing()
+void Application::disconnect_router()
 {
     ServiceManager::_routing_service_stop();
 }
 
-bool Application::is_service_manager_started()
+areg::RouterState Application::router_state()
 {
-    return ServiceManager::is_manager_started();
+    if (ServiceManager::_is_routing_started())
+        return areg::RouterState::Connected;
+    else if (ServiceManager::_is_routing_pending())
+        return areg::RouterState::Connecting;
+
+    const ConfigManager & config{ Application::instance().mConfigManager };
+    const bool configured{ config.remote_service_enable(areg::RemoteServiceKind::Router, areg::ConnectionType::Tcpip)
+                        && (config.remote_service_address(areg::RemoteServiceKind::Router, areg::ConnectionType::Tcpip).is_empty() == false) };
+    return (configured ? areg::RouterState::Disconnected : areg::RouterState::NotConfigured);
 }
 
-bool Application::is_router_connected()
+areg::AppState Application::system_state()
 {
-    return ServiceManager::_is_routing_started();
+    return Application::instance().mAppState.load();
 }
 
-bool Application::is_router_connection_pending()
+void Application::set_user_state( uint32_t userState )
 {
-    return ServiceManager::_is_routing_pending();
+    ServiceManager::request_user_state(userState);
 }
 
-bool Application::is_message_routing_configured()
+uint32_t Application::user_state()
 {
-    return ServiceManager::_is_routing_configured();
+    return SystemController::user_state();
 }
 
 bool Application::start_router_service()

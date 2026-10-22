@@ -137,7 +137,7 @@ AREG_API_IMPL areg::MessageEnvelope areg::router_unregister_consumer( const areg
 AREG_API_IMPL bool areg::is_server_hello(const areg::MessageEnvelope & msg)
 {
     bool result = false;
-    if ( msg.is_checksum_valid() )
+    if ( msg.header() != nullptr )
     {
         result = (msg.message_id() == static_cast<uint32_t>(areg::FuncIdRange::SystemServiceConnect)) &&
                  (msg.source()    == static_cast<uint32_t>(areg::COOKIE_UNKNOWN));
@@ -149,7 +149,7 @@ AREG_API_IMPL bool areg::is_server_hello(const areg::MessageEnvelope & msg)
 AREG_API_IMPL bool areg::is_server_bye(const areg::MessageEnvelope & msg)
 {
     bool result = false;
-    if ( msg.is_checksum_valid() )
+    if ( msg.header() != nullptr )
     {
         result = (msg.message_id() == static_cast<uint32_t>(areg::FuncIdRange::SystemServiceDisconnect)) &&
                  (msg.source()     != static_cast<uint32_t>(areg::COOKIE_UNKNOWN));
@@ -161,7 +161,7 @@ AREG_API_IMPL bool areg::is_server_bye(const areg::MessageEnvelope & msg)
 AREG_API_IMPL bool areg::is_notify_client(const areg::MessageEnvelope & msg)
 {
     bool result = false;
-    if ( msg.is_checksum_valid() )
+    if ( msg.header() != nullptr )
     {
         result = (msg.message_id() == static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyConnection)) &&
                  (msg.source()     == static_cast<uint32_t>(areg::COOKIE_ROUTER));
@@ -173,7 +173,7 @@ AREG_API_IMPL bool areg::is_notify_client(const areg::MessageEnvelope & msg)
 AREG_API_IMPL bool areg::is_register_message(const areg::MessageEnvelope & msg)
 {
     bool result = false;
-    if ( msg.is_checksum_valid() )
+    if ( msg.header() != nullptr )
     {
         result = (msg.message_id() == static_cast<uint32_t>(areg::FuncIdRange::SystemServiceRequestRegister)) &&
                  (msg.source()     != static_cast<uint32_t>(areg::COOKIE_UNKNOWN)) &&

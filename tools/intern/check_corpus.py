@@ -504,7 +504,7 @@ TOOLS = ['setup_project.py', 'gen_skeleton.py', 'fsml_layout.py', 'run_scenarios
 # set growing one locally-justified paragraph at a time: raising this number is a
 # deliberate edit in a reviewed file, and the commit that raises it says what it bought.
 # The headroom is deliberately small: a ceiling with room in it ratchets nothing.
-CORPUS_CEILING = 203496
+CORPUS_CEILING = 203648
 
 PAGE_CEILING = 8 * KB
 # The stop the exception mechanism did not have. An entry in .budgets raises the

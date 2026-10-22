@@ -239,6 +239,16 @@ void backlog_os_signal(SendBacklogWaitOs * wait) noexcept
     static_cast<void>(::PostQueuedCompletionStatus(wait->port, 0u, 0u, nullptr));
 }
 
+void backlog_os_poll(SendBacklogWaitOs * wait) noexcept
+{
+    // A write on a socket of the port is marked completed only when its report is taken.
+    OVERLAPPED_ENTRY entries[PORT_ENTRIES];
+    ULONG taken{ PORT_ENTRIES };
+    while ((taken == PORT_ENTRIES) && (::GetQueuedCompletionStatusEx(wait->port, entries, PORT_ENTRIES, &taken, 0u, FALSE) != FALSE))
+    {
+    }
+}
+
 bool backlog_os_wait(SendBacklogWaitOs * wait, const SOCKETHANDLE * /*sockets*/, uint32_t /*count*/, uint32_t timeoutMs) noexcept
 {
     // The port only wakes the thread; HasOverlappedIoCompleted() tells which write ended.

@@ -36,6 +36,7 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/component/private/StubBase.cpp
 	areg/component/private/StubConnectEvent.cpp
 	areg/component/private/StubEvent.cpp
+	areg/component/private/SystemController.cpp
 	areg/component/private/Timer.cpp
 	areg/component/private/TimerBase.cpp
 	areg/component/private/TimerConsumer.cpp

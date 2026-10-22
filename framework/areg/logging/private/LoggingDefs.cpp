@@ -35,7 +35,6 @@ namespace {
     inline areg::EventHeader _make_log_header(uint32_t messageId) noexcept
     {
         areg::EventHeader hdr{};
-        hdr.checksum   = areg::CHECKSUM_INVALID;
         hdr.target     = static_cast<uint32_t>(areg::COOKIE_LOGGER);
         hdr.messageId  = messageId;
         hdr.eventType  = static_cast<uint16_t>(areg::EventType::EventRemoteConnection);
@@ -185,7 +184,7 @@ areg::LogEntry & areg::LogEntry::operator = (const areg::LogEntry & src)
 
 AREG_API_IMPL bool areg::start_logging(const char * fileConfig /*= nullptr */ )
 {
-    return (Application::start_timer_manager() && LogManager::start_logging(fileConfig));
+    return (LogManager::start_timer_manager() && LogManager::start_logging(fileConfig));
 }
 
 AREG_API_IMPL void areg::stop_logging(bool waitComplete)
@@ -591,12 +590,12 @@ AREG_API_IMPL bool areg::force_start_logging()
 {
     LogManager::set_default_configuration(false);
     LogManager::force_enable_logging();
-    return (Application::start_timer_manager() && LogManager::force_activate_logging());
+    return (LogManager::start_timer_manager() && LogManager::force_activate_logging());
 }
 
 AREG_API_IMPL bool areg::init_logging(const char * fileConfig /*= nullptr */, bool force /*= false */)
 {
-    Application::start_timer_manager();
+    LogManager::start_timer_manager();
 
     if (LogManager::read_log_config(fileConfig) && !force)
     {
@@ -610,7 +609,7 @@ AREG_API_IMPL bool areg::init_logging(const char * fileConfig /*= nullptr */, bo
     return false;
 }
 
-AREG_API_IMPL const ITEM_ID & areg::cookie() noexcept
+AREG_API_IMPL ITEM_ID areg::cookie() noexcept
 {
     return LogManager::connection_cookie();
 }
@@ -800,7 +799,7 @@ AREG_API_IMPL bool areg::init_logging(const char * /*fileConfig = nullptr */, bo
     return true;
 }
 
-AREG_API_IMPL const ITEM_ID& areg::cookie() noexcept
+AREG_API_IMPL ITEM_ID areg::cookie() noexcept
 {
     return areg::COOKIE_UNKNOWN;
 }

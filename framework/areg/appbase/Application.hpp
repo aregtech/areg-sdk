@@ -25,12 +25,16 @@
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/persist/ConfigManager.hpp"
 
+#include <atomic>
+
 /************************************************************************
  * Dependencies.
  ************************************************************************/
 namespace areg {
     class ConfigListener;
     class Model;
+    enum class ModelState : uint8_t;
+    enum class ThreadState : uint8_t;
 } // namespace areg
 
 namespace areg {
@@ -48,6 +52,8 @@ namespace areg {
  **/
 class AREG_API Application
 {
+    friend class LogManager;
+
 //////////////////////////////////////////////////////////////////////////
 // Internal types
 //////////////////////////////////////////////////////////////////////////
@@ -115,9 +121,11 @@ public:
 
     /**
      * \brief   Loads and starts a registered model. If modelName is nullptr or empty, loads all
-     *          registered models.
+     *          registered models. Returns once the threads of the model started, or, if
+     *          waitComponents is true, once their components started.
      *
      * \param   modelName       Unique name of the model to load, or nullptr to load all models.
+     * \param   waitComponents  If true, waits until the components started; otherwise until the threads started.
      * \return  Returns true if the specified model was loaded successfully.
       *
       * \example     Start Model
@@ -125,7 +133,7 @@ public:
       *          Application::setup();
       *          Application::load_model();
      **/
-    static bool load_model( const char * modelName = nullptr );
+    static bool load_model( const char * modelName = nullptr, bool waitComponents = false );
 
     /**
      * \brief   Stops and unloads a model. If modelName is nullptr or empty, unloads all models.
@@ -152,6 +160,27 @@ public:
      **/
     [[nodiscard]]
     static bool is_model_loaded( const char * modelName );
+
+    /**
+     * \brief   Returns the state of the model: Unloaded, Loading, Loaded or Unloading. Only areg
+     *          changes it; the value is a snapshot. Include "areg/component/Model.hpp" to compare it.
+     *
+     * \param   modelName       Unique name of the model.
+     * \return  The state of the model; areg::ModelState::Unloaded if there is no model of the name.
+     **/
+    [[nodiscard]]
+    static areg::ModelState model_state( const char * modelName );
+
+    /**
+     * \brief   Returns the state of the component thread: Starting, Running, Stopping or
+     *          Abandoned. Only areg changes it; the value is a snapshot. Include
+     *          "areg/component/Model.hpp" to compare it.
+     *
+     * \param   threadName      Unique name of the component thread.
+     * \return  The state of the thread; areg::ThreadState::Unknown if no component thread has the name.
+     **/
+    [[nodiscard]]
+    static areg::ThreadState thread_state( const char * threadName );
 
     /**
      * \brief   Searches for a model by name.
@@ -186,30 +215,6 @@ public:
     static void stop_logging();
 
     /**
-     * \brief   Starts the Service Manager thread. Does not trigger Router Service client connection.
-     *
-     * \return  Returns true if Service Manager started successfully or is already running.
-     **/
-    static bool start_service_manager();
-
-    /**
-     * \brief   Stops the Service Manager. Automatically stops the Routing Service connection.
-     **/
-    static void stop_service_manager();
-
-    /**
-     * \brief   Starts the timer manager, enabling components to trigger timers.
-     *
-     * \return  Returns true if the timer manager is running.
-     **/
-    static bool start_timer_manager();
-
-    /**
-     * \brief   Stops the timer manager.
-     **/
-    static void stop_timer_manager();
-
-    /**
      * \brief   Starts the watchdog manager, enabling components to monitor thread health.
      *
      * \return  Returns true if the watchdog manager is running.
@@ -222,50 +227,49 @@ public:
     static void stop_watchdog_manager();
 
     /**
-     * \brief   Returns true if the Service Manager is started.
-     *
-     * \return  Returns true if the Service Manager is started; false otherwise.
+     * \brief   Connects the application to the message router (mtrouter), with the router address
+     *          and port the configuration holds at the moment of the call. To use another address,
+     *          set it first through config_manager(), for example as a temporary value.
+     *          Requires setup() with servicing. A connection already started is kept.
+     * \return  Returns true if the connection is requested or already started; false if no router
+     *          is configured or the service manager does not run.
+     **/
+    static bool connect_router();
+
+    /**
+     * \brief   Disconnects the application from the message router. The remote services become
+     *          unavailable; local services go on.
+     **/
+    static void disconnect_router();
+
+    /**
+     * \brief   Returns the state of the router connection: NotConfigured, Disconnected,
+     *          Connecting or Connected. The value is a snapshot.
      **/
     [[nodiscard]]
-    static bool is_service_manager_started();
+    static areg::RouterState router_state();
 
     /**
-     * \brief   Configures the message routing service.
-     *
-     * \return  Returns true if message routing was configured successfully.
-     **/
-    static bool config_message_routing();
-
-    /**
-     * \brief   Starts the Message Router client. Starts the Service Manager first if not already running.
-     *
-     * \param   connectTypes    Bitwise set of connection types to establish. Currently only TCP/IP is supported.
-     * \return  Returns true if the Message Router client started successfully.
-     **/
-    static bool start_message_routing(uint32_t connectTypes);
-
-    /**
-     * \brief   Starts the Message Router client with specified remote server address and port.
-     *          Starts the Service Manager first if not already running. Overwrites IP address and
-     *          port from configuration file.
-     *
-     * \param   ipAddress       Valid IP address of the remote Router Service.
-     * \param   portNr          Valid port number of the remote Router Service.
-     * \return  Returns true if the Message Router client started successfully.
-     * \note    Move overload. Overwrites configuration file settings.
-     **/
-    static bool start_message_routing( const char * ipAddress, uint16_t portNr );
-
-    /**
-     * \brief   Stops the Message Router client.
-     **/
-    static void stop_message_routing();
-
-    /**
-     * \brief   Returns true if the Message Router client is configured; false otherwise.
+     * \brief   Returns the state of the system: Stopped, Initializing, Ready, Releasing or Failure.
+     *          Only areg changes it; the value is a snapshot.
      **/
     [[nodiscard]]
-    static bool is_message_routing_configured();
+    static areg::AppState system_state();
+
+    /**
+     * \brief   Sets the user state, a value the application defines (for example a pause). areg
+     *          stores it and calls Component::on_user_state(previous, current) of every component
+     *          on its own thread; it changes nothing else. The call does not wait.
+     *
+     * \param   userState   The new user state. The initial value is 0.
+     **/
+    static void set_user_state( uint32_t userState );
+
+    /**
+     * \brief   Returns the user state; 0 until set_user_state() sets one.
+     **/
+    [[nodiscard]]
+    static uint32_t user_state();
 
     /**
      * \brief   Starts the routing service on the local machine. Requires appropriate access rights.
@@ -281,24 +285,7 @@ public:
      **/
     static bool start_logging_service();
 
-    /**
-     * \brief   Returns true if the application is connected to the Message Routing Service and can
-     *          register or request remote services.
-     *
-     * \return  Returns true if connected to the Message Routing Service; false otherwise.
-     **/
-    [[nodiscard]]
-    static bool is_router_connected();
 
-
-    /**
-     * \brief   Returns true if the application has triggered connection to the Message Routing
-     *          Service but the connection is not yet established.
-     *
-     * \return  Returns true if connection is pending; false otherwise.
-     **/
-    [[nodiscard]]
-    static bool is_router_connection_pending();
 
     /**
      * \brief   Returns true if an element with the given name exists in application storage.
@@ -449,10 +436,22 @@ public:
 // Hidden members
 //////////////////////////////////////////////////////////////////////////
 private:
+#if defined(_MSC_VER)
+    #pragma warning(push)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
     /**
      * \brief   The state of application.
      **/
-    areg::AppState    mAppState;
+    std::atomic<areg::AppState> mAppState;
+    /**
+     * \brief   The application named storage.
+     **/
+    MapAppStorage   mStorage;
+#if defined(_MSC_VER)
+    #pragma warning(pop)
+#endif  // _MSC_VER
+
     /**
      * \brief   Flag, indicating application basic handling is setup. In Linux setup signal handling.
      */
@@ -469,18 +468,6 @@ private:
      * \brief   Synchronization object
      **/
     ResourceLock    mLock;
-#if defined(_MSC_VER)
-    #pragma warning(push)
-    #pragma warning(disable: 4251)
-#endif  // _MSC_VER
-    /**
-     * \brief   The application named storage.
-     **/
-    MapAppStorage   mStorage;
-#if defined(_MSC_VER)
-    #pragma warning(pop)
-#endif  // _MSC_VER
-
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
@@ -503,6 +490,18 @@ private:
      * \return  Returns true if the application state was changed successfully.
      **/
     static bool _set_app_state(areg::AppState newState);
+
+    /**
+     * \brief   Starts the service manager, and with it the timer and watchdog managers.
+     * \return  Returns true if the service manager runs.
+     **/
+    static bool _start_service_manager();
+
+    /**
+     * \brief   Starts the timer manager and the OS signal handlers.
+     * \return  Returns true if the timer manager runs.
+     **/
+    static bool _start_timer_manager();
 
     /**
      * \brief   OS-specific implementation to start a local service. Does nothing if the service is

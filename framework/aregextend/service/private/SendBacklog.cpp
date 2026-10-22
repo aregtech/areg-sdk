@@ -210,6 +210,11 @@ bool SendBacklog::pump(SendBacklog::Owner & owner)
     if (is_empty())
         return false;
 
+    if (mWait != nullptr)
+    {
+        backlog_os_poll(mWait.get());
+    }
+
     mPumpList.clear();
     {
         std::lock_guard<std::mutex> lock(mLock);
@@ -307,6 +312,10 @@ uint32_t SendBacklog::prepare_wait(bool & overCap)
                 {
                     overCap = true;
                     deadline = std::min(deadline, entry.progressMs + SendBacklog::CAP_PROGRESS_MS);
+                }
+                else if (entry.bytes > cap * SendBacklog::CAP_CEILING)
+                {
+                    overCap = true;
                 }
             }
         }

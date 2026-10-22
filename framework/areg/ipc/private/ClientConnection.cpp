@@ -39,6 +39,7 @@ ClientConnection::ClientConnection()
     : SocketConnectionBase  ( )
     , mClientSocket         ( )
     , mCookie               ( areg::COOKIE_UNKNOWN )
+    , mLiveHandle           ( areg::InvalidSocketHandle )
     , mSockSendBuf          ( areg::SOCKET_SEND_BUFFER_SIZE )
     , mSockRecvBuf          ( areg::SOCKET_RECV_BUFFER_SIZE )
     , mSockSendTimeoutMs    ( areg::SOCKET_SEND_TIMEOUT_MS )
@@ -49,6 +50,7 @@ ClientConnection::ClientConnection(const String & hostName, uint16_t portNr)
     : SocketConnectionBase  ( )
     , mClientSocket         ( hostName, portNr )
     , mCookie               ( areg::COOKIE_UNKNOWN )
+    , mLiveHandle           ( areg::InvalidSocketHandle )
     , mSockSendBuf          ( areg::SOCKET_SEND_BUFFER_SIZE )
     , mSockRecvBuf          ( areg::SOCKET_RECV_BUFFER_SIZE )
     , mSockSendTimeoutMs    ( areg::SOCKET_SEND_TIMEOUT_MS )
@@ -59,6 +61,7 @@ ClientConnection::ClientConnection(const areg::SocketAddress & remoteAddress)
     : SocketConnectionBase  ( )
     , mClientSocket         ( remoteAddress )
     , mCookie               ( areg::COOKIE_UNKNOWN )
+    , mLiveHandle           ( areg::InvalidSocketHandle )
     , mSockSendBuf          ( areg::SOCKET_SEND_BUFFER_SIZE )
     , mSockRecvBuf          ( areg::SOCKET_RECV_BUFFER_SIZE )
     , mSockSendTimeoutMs    ( areg::SOCKET_SEND_TIMEOUT_MS )
@@ -78,6 +81,7 @@ bool ClientConnection::create_socket(const String & hostName, uint16_t portNr)
         areg::socket_set_no_delay(mClientSocket.handle());
     }
 
+    mLiveHandle.store(mClientSocket.handle(), std::memory_order_release);
     return mClientSocket.is_valid();
 }
 
@@ -93,6 +97,7 @@ bool ClientConnection::create_socket()
         areg::socket_set_no_delay(mClientSocket.handle());
     }
 
+    mLiveHandle.store(mClientSocket.handle(), std::memory_order_release);
     return mClientSocket.is_valid();
 }
 
@@ -107,12 +112,29 @@ bool ClientConnection::create_socket_fd()
         areg::set_send_refusal(mClientSocket.handle(), _unacked_limit_ms(mSockSendTimeoutMs));
     }
 
+    mLiveHandle.store(mClientSocket.handle(), std::memory_order_release);
     return mClientSocket.is_valid();
+}
+
+void ClientConnection::interrupt_socket()
+{
+    set_cookie(areg::COOKIE_UNKNOWN);
+    areg::socket_interrupt(mLiveHandle.exchange(areg::InvalidSocketHandle, std::memory_order_acq_rel));
 }
 
 void ClientConnection::close_socket()
 {
     set_cookie(areg::COOKIE_UNKNOWN);
+    mLiveHandle.store(areg::InvalidSocketHandle, std::memory_order_release);
+    const SOCKETHANDLE hSocket{ mClientSocket.handle() };
+    if (areg::is_valid_socket(hSocket))
+    {
+        // A thread that writes holds the writer lock; the socket is closed after it left.
+        areg::SocketWriter & writer{ areg::SocketWriter::writer_of(hSocket) };
+        writer.acquire();
+        writer.release();
+    }
+
     mClientSocket.close();
 }
 

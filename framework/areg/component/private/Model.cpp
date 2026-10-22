@@ -784,6 +784,8 @@ areg::ComponentThreadEntry::ComponentThreadEntry()
     , mMaxQueue         (areg::IGNORE_VALUE)
     , mDropOnFull       (areg::Bool::Undefined)
     , mQueueTimeout     (areg::WAIT_INFINITE)
+    , mLifecycleTimeout (areg::LIFECYCLE_TIMEOUT_DEFAULT)
+    , mFailurePolicy    (areg::FailurePolicy::Exit)
 {
 }
 
@@ -800,6 +802,8 @@ areg::ComponentThreadEntry::ComponentThreadEntry( const String & threadName
     , mMaxQueue         (maxQueue)
     , mDropOnFull       (queueDropEvent)
     , mQueueTimeout     (queueTimeout)
+    , mLifecycleTimeout (areg::LIFECYCLE_TIMEOUT_DEFAULT)
+    , mFailurePolicy    (areg::FailurePolicy::Exit)
 {
 }
 
@@ -817,6 +821,8 @@ areg::ComponentThreadEntry::ComponentThreadEntry( const String & threadName
     , mMaxQueue         (maxQueue)
     , mDropOnFull       (queueDropEvent)
     , mQueueTimeout     (queueTimeout)
+    , mLifecycleTimeout (areg::LIFECYCLE_TIMEOUT_DEFAULT)
+    , mFailurePolicy    (areg::FailurePolicy::Exit)
 {
 }
 
@@ -953,7 +959,8 @@ bool areg::ComponentThreadList::is_valid() const noexcept
 areg::Model::Model()
     : mModelName    ( )
     , mModelThreads ( )
-    , mLoadState    ( Model::ModelState::Initialized )
+    , mLoadState    ( areg::ModelState::Unloaded )
+    , mWasLoaded    ( false )
     , mAliveDuration( )
 {
 }
@@ -961,7 +968,8 @@ areg::Model::Model()
 areg::Model::Model( const String & modelName )
     : mModelName    (modelName)
     , mModelThreads ( )
-    , mLoadState    ( Model::ModelState::Initialized )
+    , mLoadState    ( areg::ModelState::Unloaded )
+    , mWasLoaded    ( false )
     , mAliveDuration( )
 {
 }
@@ -969,7 +977,8 @@ areg::Model::Model( const String & modelName )
 areg::Model::Model( const String & modelName, const ComponentThreadList & threadList  )
     : mModelName    (modelName)
     , mModelThreads (threadList)
-    , mLoadState    ( Model::ModelState::Initialized )
+    , mLoadState    ( areg::ModelState::Unloaded )
+    , mWasLoaded    ( false )
     , mAliveDuration( )
 {
 }
@@ -1075,34 +1084,27 @@ bool areg::Model::has_registered_component( const String & roleName ) const noex
 
 bool areg::Model::is_model_loaded() const noexcept
 {
-    return (mLoadState == areg::Model::ModelState::Loaded);
+    return (mLoadState == areg::ModelState::Loaded);
 }
 
 bool areg::Model::is_model_unloading() const noexcept
 {
-    return (mLoadState == areg::Model::ModelState::Unloading);
+    return (mLoadState == areg::ModelState::Unloading);
 }
 
-void areg::Model::mark_model_loaded( bool isLoaded /*= true */ ) noexcept
+void areg::Model::set_model_state( areg::ModelState newState ) noexcept
 {
-    mLoadState = isLoaded ? Model::ModelState::Loaded : Model::ModelState::Unloaded;
-}
-
-void areg::Model::mark_model_unloading() noexcept
-{
-    mLoadState = Model::ModelState::Unloading;
-}
-
-void areg::Model::mark_model_alive( bool is_alive ) noexcept
-{
-    if ( is_alive )
+    if ((newState == areg::ModelState::Loaded) && (mLoadState != areg::ModelState::Loaded))
     {
+        mWasLoaded = true;
         mAliveDuration.start( );
     }
-    else
+    else if ((newState != areg::ModelState::Loaded) && (mLoadState == areg::ModelState::Loaded))
     {
         mAliveDuration.stop( );
     }
+
+    mLoadState = newState;
 }
 
 const areg::ComponentThreadList & areg::Model::thread_list() const noexcept
@@ -1140,4 +1142,57 @@ bool areg::Model::reset(const String& roleName) noexcept
     }
 
     return result;
+}
+
+const char * areg::as_string( areg::FailurePolicy policy ) noexcept
+{
+    switch (policy)
+    {
+    case areg::FailurePolicy::Exit:
+        return "areg::FailurePolicy::Exit";
+    case areg::FailurePolicy::Restart:
+        return "areg::FailurePolicy::Restart";
+    case areg::FailurePolicy::Ignore:
+        return "areg::FailurePolicy::Ignore";
+    default:
+        return "ERR: Invalid areg::FailurePolicy value!";
+    }
+}
+
+const char * areg::as_string( areg::ModelState state ) noexcept
+{
+    switch (state)
+    {
+    case areg::ModelState::Unloaded:
+        return "areg::ModelState::Unloaded";
+    case areg::ModelState::Loading:
+        return "areg::ModelState::Loading";
+    case areg::ModelState::Loaded:
+        return "areg::ModelState::Loaded";
+    case areg::ModelState::Unloading:
+        return "areg::ModelState::Unloading";
+    default:
+        return "ERR: Invalid areg::ModelState value!";
+    }
+}
+
+const char * areg::as_string( areg::ThreadState state ) noexcept
+{
+    switch (state)
+    {
+    case areg::ThreadState::Unknown:
+        return "areg::ThreadState::Unknown";
+    case areg::ThreadState::Starting:
+        return "areg::ThreadState::Starting";
+    case areg::ThreadState::Running:
+        return "areg::ThreadState::Running";
+    case areg::ThreadState::Stopping:
+        return "areg::ThreadState::Stopping";
+    case areg::ThreadState::Stopped:
+        return "areg::ThreadState::Stopped";
+    case areg::ThreadState::Abandoned:
+        return "areg::ThreadState::Abandoned";
+    default:
+        return "ERR: Invalid areg::ThreadState value!";
+    }
 }

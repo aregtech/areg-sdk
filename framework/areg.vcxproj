@@ -133,6 +133,7 @@
     <ClCompile Include="areg\component\private\ServiceItem.cpp" />
     <ClCompile Include="areg\component\private\StubConnectEvent.cpp" />
     <ClCompile Include="areg\component\private\StubEvent.cpp" />
+    <ClCompile Include="areg\component\private\SystemController.cpp" />
     <ClCompile Include="areg\component\private\ComponentInfo.cpp" />
     <ClCompile Include="areg\component\private\ComponentLoader.cpp" />
     <ClCompile Include="areg\component\private\ComponentThread.cpp" />
@@ -246,6 +247,8 @@
     <ClInclude Include="areg\appbase\Application.hpp" />
     <ClInclude Include="areg\appbase\AppDefs.hpp" />
     <ClInclude Include="areg\component\private\ServiceManagerEventProcessor.hpp" />
+    <ClInclude Include="areg\component\private\SystemController.hpp" />
+    <ClInclude Include="areg\component\private\UserStateEvent.hpp" />
     <ClInclude Include="areg\component\private\TimerManagerBase.hpp" />
     <ClInclude Include="areg\component\private\TimerManagerEvent.hpp" />
     <ClInclude Include="areg\component\private\Watchdog.hpp" />

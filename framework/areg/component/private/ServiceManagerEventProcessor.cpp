@@ -23,6 +23,7 @@
 #include "areg/component/ComponentThread.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/component/ProxyAddress.hpp"
+#include "areg/component/ProxyBase.hpp"
 #include "areg/component/StubAddress.hpp"
 #include "areg/component/StubBase.hpp"
 #include "areg/component/private/ProxyConnectEvent.hpp"
@@ -39,8 +40,7 @@ DEF_LOG_SCOPE(areg_component_private_ServiceManagerEventProcessor, _register_con
 DEF_LOG_SCOPE(areg_component_private_ServiceManagerEventProcessor, _unregister_consumer);
 DEF_LOG_SCOPE(areg_component_private_ServiceManagerEventProcessor, _send_connected);
 DEF_LOG_SCOPE(areg_component_private_ServiceManagerEventProcessor, _send_disconnected);
-DEF_LOG_SCOPE(areg_component_private_ServiceManagerEventProcessor, _terminate_component_thread);
-DEF_LOG_SCOPE(areg_component_private_ServiceManagerEventProcessor, _start_component_thread);
+DEF_LOG_SCOPE(areg_component_private_ServiceManagerEventProcessor, unregister_thread_services);
 
 namespace areg {
 
@@ -246,25 +246,6 @@ void ServiceManagerEventProcessor::process_service_event( ServiceManagerEventDat
         }
         break;
 
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_TerminateComponentThread:
-        {
-            String threadName;
-            stream >> threadName;
-            if ( _terminate_component_thread( threadName ) )
-            {
-                ServiceManager::_request_create_thread( threadName );
-            }
-        }
-        break;
-
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_StartComponentThread:
-        {
-            String threadName;
-            stream >> threadName;
-            _start_component_thread( threadName );
-        }
-        break;
-
     default:
         ASSERT( false );
         break;
@@ -274,6 +255,13 @@ void ServiceManagerEventProcessor::process_service_event( ServiceManagerEventDat
 void ServiceManagerEventProcessor::_register_provider( const StubAddress & whichServer, RegistrationProvider& registerProvider)
 {
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor, _register_provider);
+
+    if ( whichServer.is_local_address( ) && (StubBase::find_stub( whichServer ) == nullptr) )
+    {
+        // Ignores a local provider that has no object any more.
+        LOG_WARN( "Ignoring the registration of the provider [ %s ] that has no object", StubAddress::to_path( whichServer ).as_string( ) );
+        return;
+    }
 
     if ( whichServer.is_local_address( ) && whichServer.is_service_public( ) )
     {
@@ -312,8 +300,7 @@ void ServiceManagerEventProcessor::_unregister_provider( const StubAddress & whi
         {
 #if AREG_LOGGING
             // Rejected in the network only: the consumers of this process keep the local provider.
-            const StubBase * local{ StubBase::find_stub( whichServer ) };
-            const StubAddress & named{ local != nullptr ? local->address( ) : whichServer };
+            const StubAddress named{ StubBase::registered_address( whichServer ) };
             LOG_ERR( "The provider of role name [ %s ], service [ %s ] is rejected in the network: another process already provides this public role name. It serves only the consumers of this process"
                        , named.role_name( ).as_string( )
                        , named.service_name( ).as_string( ) );
@@ -351,6 +338,13 @@ void ServiceManagerEventProcessor::_unregister_provider( const StubAddress & whi
 void ServiceManagerEventProcessor::_register_consumer( const ProxyAddress & whichClient, RegistrationProvider& registerProvider)
 {
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor, _register_consumer);
+
+    if ( whichClient.is_local_address( ) && (ProxyBase::find_proxy( whichClient ) == nullptr) )
+    {
+        // Ignores a local consumer that has no object any more.
+        LOG_WARN( "Ignoring the registration of the consumer [ %s ] that has no object", ProxyAddress::to_path( whichClient ).as_string( ) );
+        return;
+    }
 
     if ( whichClient.is_local_address( ) && whichClient.is_service_public( ) )
     {
@@ -459,49 +453,49 @@ void ServiceManagerEventProcessor::_send_disconnected( const ProxyAddress & clie
     }
 }
 
-bool ServiceManagerEventProcessor::_terminate_component_thread( const String & threadName )
+void ServiceManagerEventProcessor::unregister_thread_services( const ArrayList<String> & threads, areg::DisconnectReason reason, RegistrationProvider & registerProvider )
 {
-    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor, _terminate_component_thread );
+    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor, unregister_thread_services );
 
-    bool result{ false };
-
-    Thread * thread = Thread::find_by_address(ThreadAddress(threadName));
-    ComponentThread * compThread = AREG_RUNTIME_CAST( thread, ComponentThread );
-    if ( compThread != nullptr )
+    // The addresses in the registry carry the thread by its number.
+    ArrayList<ThreadAddress> addresses;
+    for ( uint32_t i = 0; i < threads.size( ); ++ i )
     {
-        LOG_WARN( "Terminating component thread [ %s ]", compThread->name( ).as_string( ) );
-        result = true;
-        static_cast<void>(compThread->terminate_self( ));
-    }
-    else
-    {
-        LOG_INFO( "Was not able to find component thread [ %s ] to terminate", threadName.as_string( ) );
+        addresses.add( ThreadAddress( threads[ i ] ) );
     }
 
-    return result;
-}
-
-void ServiceManagerEventProcessor::_start_component_thread( const String & threadName )
-{
-    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor, _start_component_thread );
-
-    const areg::ComponentThreadEntry & entry = ComponentLoader::find_thread_entry( threadName );
-    Thread * thread = Thread::find_by_address(ThreadAddress(threadName));
-    if ( entry.is_valid( ) && (thread == nullptr) )
+    // Snapshot to copies; removing from live lists would invalidate iterators.
+    ArrayList<StubAddress> stubList;
+    ArrayList<ProxyAddress> proxyList;
+    for ( ServerList::MAPPOS posMap = mServerList.first_position( ); mServerList.is_valid_position( posMap ); posMap = mServerList.next_position( posMap ) )
     {
-        ComponentThread * compThread = new ComponentThread( entry.mThreadName, entry.mWatchdogTimeout );
-        if ( (compThread != nullptr) && compThread->start( areg::WAIT_INFINITE ) )
+        const StubAddress & server = mServerList.key_at( posMap ).address( );
+        const ClientList & clientList = mServerList.value_at( posMap );
+        if ( server.is_valid( ) && server.is_local_address( ) && addresses.contains( server.thread( ) ) )
         {
-            LOG_DBG( "Succeeded to create and start component thread [ %s ]", threadName.as_string( ) );
+            stubList.add( server );
         }
-        else
+
+        for ( ClientList::LISTPOS pos = clientList.first_position( ); clientList.is_valid_position( pos ); pos = clientList.next_position( pos ) )
         {
-            LOG_WARN( "Failed to create and start component thread [ %s ]", threadName.as_string( ) );
+            const ProxyAddress & proxy = clientList.value_at( pos ).address( );
+            if ( proxy.is_valid( ) && proxy.is_local_address( ) && addresses.contains( proxy.thread( ) ) )
+            {
+                proxyList.add( proxy );
+            }
         }
     }
-    else
+
+    LOG_WARN( "Unregistering [ %u ] providers and [ %u ] consumers of [ %u ] abandoned threads", stubList.size( ), proxyList.size( ), threads.size( ) );
+
+    for ( uint32_t i = 0; i < stubList.size( ); ++ i )
     {
-        LOG_ERR( "The thread [ %s ] is registered in the system, ignoring to create seconds instance of the thread", threadName.as_string( ) );
+        _unregister_provider( stubList[ i ], reason, registerProvider );
+    }
+
+    for ( uint32_t i = 0; i < proxyList.size( ); ++ i )
+    {
+        _unregister_consumer( proxyList[ i ], reason, registerProvider );
     }
 }
 

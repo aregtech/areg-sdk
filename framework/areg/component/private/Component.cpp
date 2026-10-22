@@ -131,7 +131,13 @@ Component::Component( const String & roleName )
 
 Component::~Component()
 {
-    Component::resource_map().unregister_resource_object(mMagicNum);
+    // Removes the entry only if it is this component.
+    MapComponentResource & components{ Component::resource_map() };
+    Lock lock(components.lockable());
+    if (components.find_resource_object(mMagicNum) == this)
+    {
+        components.unregister_resource_object(mMagicNum);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -153,10 +159,11 @@ WorkerThread* Component::create_worker_thread(  const String & threadName
     workThread = new WorkerThread(threadName, self(), consumer, watchdogTimeout, stackSizeKb, maxQeueue, dropOnFull, waitMs);
     if (workThread == nullptr)
         return nullptr;
-    
+
+    workThread->share_with_lookups();
     if (!workThread->start(areg::WAIT_INFINITE))
     {
-        delete workThread;
+        DispatcherThread::release_shared(workThread);
         return nullptr;
     }
 
@@ -166,7 +173,7 @@ WorkerThread* Component::create_worker_thread(  const String & threadName
         if (!workThread->is_running())
         {
             workThread->shutdown(areg::WAIT_INFINITE);
-            delete workThread;
+            DispatcherThread::release_shared(workThread);
             return nullptr;
         }
     }
@@ -182,7 +189,7 @@ void Component::delete_worker_thread( const String & threadName )
     {
         workThread->shutdown(areg::WAIT_INFINITE);
         mComponentInfo.unregister_worker_thread(*workThread);
-        delete workThread;
+        DispatcherThread::release_shared(workThread);
     }
 }
 
@@ -221,52 +228,23 @@ void Component::notify_component_shutdown( ComponentThread& /*comThread */ )
     }
 }
 
-void Component::terminate_self()
+void Component::_detach_thread_components( const ComponentThread & owner )
 {
-    _shutdown_services();
-
-    ThreadAddress threadAddress;
-
-    while (mComponentInfo.has_worker_threads())
+    MapComponentResource & components{ Component::resource_map() };
+    Lock lock(components.lockable());
+    ArrayList<uint32_t> keys;
+    for (const auto & entry : components.data())
     {
-        WorkerThread* workThread = mComponentInfo.remove_worker_thread(threadAddress);
-        ASSERT(workThread != nullptr);
-        workThread->terminate_self();
+        if (&entry.second->master_thread() == &owner)
+        {
+            keys.add(entry.first);
+        }
     }
 
-    // Destroyed through the delete function of the model, like the normal exit path does.
-    const areg::ComponentEntry & entry = ComponentLoader::find_component_entry(role_name(), master_thread().name());
-    if (entry.is_valid() && (entry.mFuncDelete != nullptr))
+    for (uint32_t i = 0; i < keys.size(); ++ i)
     {
-        Component::unload_component(*this, entry);
+        components.unregister_resource_object(keys[i]);
     }
-    else
-    {
-        delete this;
-    }
-}
-
-void Component::detach_from_registry()
-{
-    for (ListServers::LISTPOS pos = mServerList.first_position(); mServerList.is_valid_position(pos); pos = mServerList.next_position(pos))
-    {
-        StubBase * stub = mServerList.value_at(pos);
-        ASSERT(stub != nullptr);
-        stub->detach_from_registry();
-    }
-
-    // The worker threads of an abandoned component are abandoned too, and taken off the
-    // component list so that nothing walks them afterwards.
-    ThreadAddress threadAddress;
-    while (mComponentInfo.has_worker_threads())
-    {
-        WorkerThread * workThread = mComponentInfo.remove_worker_thread(threadAddress);
-        ASSERT(workThread != nullptr);
-        workThread->detach_from_registry();
-    }
-
-    // Idempotent with the destructor, which may still run later if the thread ever finishes.
-    Component::resource_map().unregister_resource_object(mMagicNum);
 }
 
 StubBase* Component::find_provider( const String & serviceName ) noexcept
@@ -306,6 +284,10 @@ void Component::notify_thread_started(WorkerThreadConsumer& /*consumer*/, Worker
 {
 }
 
+void Component::on_user_state( uint32_t /*previous*/, uint32_t /*current*/ )
+{
+}
+
 uint32_t Component::_magic_number(Component & comp) noexcept
 {
     return ( comp.address().is_valid() ? areg::crc32_calculate(comp.role_name().as_string()) : areg::CHECKSUM_IGNORE );
@@ -323,6 +305,8 @@ inline void Component::_shutdown_services()
         ASSERT(stub != nullptr);
 
         stub->shutdown_service_interface(self());
+        // Takes the provider out of the registry before its component is destroyed.
+        stub->_leave_registry();
         ServiceManager::request_unregister_provider(stub->address(), reason);
     }
 }

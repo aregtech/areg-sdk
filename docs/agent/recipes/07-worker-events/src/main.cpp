@@ -233,8 +233,8 @@ constexpr char const _modelName[]{ "ScanModel" };
 
 BEGIN_MODEL(_modelName)
 
-    // The watchdog restarts this thread if one event takes longer than 5 seconds.
-    // The service manager that setup() starts also starts the watchdog.
+    // The watchdog ends the process if one event takes longer than 5 seconds: the default
+    // failure policy is Exit. The service manager that setup() starts also starts the watchdog.
     BEGIN_REGISTER_THREAD_EX("ScannerThread", 5000)
         BEGIN_REGISTER_COMPONENT("Scanner", Scanner)
             REGISTER_IMPLEMENT_SERVICE(ScanService::ServiceName, ScanService::InterfaceVersion)

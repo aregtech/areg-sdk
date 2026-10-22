@@ -44,7 +44,7 @@ namespace areg {
  *            - Provider endpoint     : provider_id/number/thread/version_*
  *            - Shared service fields : service_role/item
  *            - Event routing fields  : target, source, channel, message_id, sequence,
- *                                      result, event_type, call_type, priority, checksum
+ *                                      result, event_type, call_type, priority
  *
  *          MessageEnvelope is NOT final: Event and its subclasses extend it.
  **/
@@ -565,34 +565,10 @@ public:
      **/
     inline void set_event_id(uint32_t eventId) noexcept;
 
-    /**
-     * \brief   Returns the checksum stored in the EventHeader, or areg::CHECKSUM_INVALID.
-     **/
-    [[nodiscard]]
-    inline uint32_t checksum() const noexcept;
-
-    /**
-     * \brief   Returns true if the stored checksum is a computed value (not areg::CHECKSUM_INVALID).
-     **/
-    [[nodiscard]]
-    inline bool is_checksum_valid() const noexcept;
-
-    /**
-     * \brief   Returns true if the checksum is set to the ignore sentinel (areg::CHECKSUM_IGNORE).
-     **/
-    [[nodiscard]]
-    inline bool is_checksum_ignore() const noexcept;
-
 //////////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////////
 public:
-
-    /**
-     * \brief   Updates the buffer header length and computes the checksum. Call once
-     *          the payload has been fully serialised, before sending.
-     **/
-    void buffer_completion_fix() const;
 
     /**
      * \brief   Fast-path initialisation from an existing EventHeader. Reuses the current
@@ -679,9 +655,6 @@ private:
 
     [[nodiscard]]
     inline areg::RawEnvelope& _raw_envelope() noexcept;
-
-    [[nodiscard]]
-    static uint32_t _checksum_calculate(const areg::RawEnvelope& rawEnvelope) noexcept;
 };
 
 inline MessageEnvelope::MessageEnvelope(uint16_t eventType, uint8_t prio, uint32_t reserveSize /*= 0*/, uint32_t blockSize /*= areg::BLOCK_SIZE*/)
@@ -1161,23 +1134,6 @@ inline void MessageEnvelope::set_event_id(uint32_t eventId) noexcept
     areg::RawEnvelope* env{ reinterpret_cast<areg::RawEnvelope*>(byte_buffer()) };
     if (env != nullptr)
         env->envHeader.eventId = eventId;
-}
-
-inline uint32_t MessageEnvelope::checksum() const noexcept
-{
-    const areg::RawEnvelope* env{ raw_envelope() };
-    return (env != nullptr ? env->envHeader.checksum : areg::CHECKSUM_INVALID);
-}
-
-inline bool MessageEnvelope::is_checksum_valid() const noexcept
-{
-    const areg::RawEnvelope* env{ raw_envelope() };
-    return (env != nullptr) && (env->envHeader.checksum != areg::CHECKSUM_INVALID);
-}
-
-inline bool MessageEnvelope::is_checksum_ignore() const noexcept
-{
-    return checksum() == areg::CHECKSUM_IGNORE;
 }
 
 //////////////////////////////////////////////////////////////////////////

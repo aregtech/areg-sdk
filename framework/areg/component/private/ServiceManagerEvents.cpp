@@ -129,19 +129,44 @@ ServiceManagerEventData ServiceManagerEventData::lost_connection(const Channel &
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::terminate_component_thread(const String& threadName)
+ServiceManagerEventData ServiceManagerEventData::model_request(bool load, const String & modelName, uint64_t request)
 {
-    ServiceManagerEventData data(ServiceManagerEventData::ServiceManagerCommand::CMD_TerminateComponentThread);
-    OutStream& stream = data.write_stream();
-    stream << threadName;
+    ServiceManagerEventData data( load ? ServiceManagerEventData::ServiceManagerCommand::CMD_LoadModel : ServiceManagerEventData::ServiceManagerCommand::CMD_UnloadModel );
+    OutStream & stream = data.write_stream();
+    stream << modelName;
+    stream << request;
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::create_component_thread(const String& threadName)
+ServiceManagerEventData ServiceManagerEventData::thread_report(bool running, const String & threadName, uint64_t instance)
 {
-    ServiceManagerEventData data(ServiceManagerEventData::ServiceManagerCommand::CMD_StartComponentThread);
-    OutStream& stream = data.write_stream();
+    ServiceManagerEventData data( running ? ServiceManagerEventData::ServiceManagerCommand::CMD_ThreadRunning : ServiceManagerEventData::ServiceManagerCommand::CMD_ThreadStopped );
+    OutStream & stream = data.write_stream();
     stream << threadName;
+    stream << instance;
+    return data;
+}
+
+ServiceManagerEventData ServiceManagerEventData::watchdog_expired(const String & threadName, uint64_t instance, const String & guardedName)
+{
+    ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_WatchdogExpired );
+    OutStream & stream = data.write_stream();
+    stream << threadName;
+    stream << instance;
+    stream << guardedName;
+    return data;
+}
+
+ServiceManagerEventData ServiceManagerEventData::deadline_expired()
+{
+    return ServiceManagerEventData( ServiceManagerEventData::ServiceManagerCommand::CMD_DeadlineExpired );
+}
+
+ServiceManagerEventData ServiceManagerEventData::user_state(uint32_t userState)
+{
+    ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_UserState );
+    OutStream & stream = data.write_stream();
+    stream << userState;
     return data;
 }
 

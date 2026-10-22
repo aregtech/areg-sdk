@@ -92,14 +92,51 @@ StubBase::StubBase( Component & masterComp, const areg::InterfaceData & siData )
 
 StubBase::~StubBase()
 {
-    map_providers().unregister_resource_object(static_cast<uint32_t>(mAddress));
+    _leave_registry();
 }
 
-void StubBase::detach_from_registry()
+void StubBase::_leave_registry()
 {
-    // removing a key that is already gone is a no-op
-    map_providers().unregister_resource_object(static_cast<uint32_t>(mAddress));
-    ServiceManager::request_unregister_provider(mAddress, areg::DisconnectReason::ProviderDisconnected);
+    // Removes the entry only if it is this provider.
+    MapProviderResource & providers{ map_providers() };
+    Lock lock(providers.lockable());
+    if (providers.find_resource_object(static_cast<uint32_t>(mAddress)) == this)
+    {
+        providers.unregister_resource_object(static_cast<uint32_t>(mAddress));
+    }
+}
+
+StubAddress StubBase::registered_address( const StubAddress & address )
+{
+    MapProviderResource & providers{ map_providers() };
+    Lock lock(providers.lockable());
+    const StubBase * stub{ providers.find_resource_object(static_cast<uint32_t>(address)) };
+    return (stub != nullptr ? stub->mAddress : address);
+}
+
+void StubBase::_detach_thread_providers( const ArrayList<String> & threads )
+{
+    ArrayList<ThreadAddress> addresses;
+    for (uint32_t i = 0; i < threads.size(); ++ i)
+    {
+        addresses.add(ThreadAddress(threads[i]));
+    }
+
+    MapProviderResource & providers{ map_providers() };
+    Lock lock(providers.lockable());
+    ArrayList<uint32_t> keys;
+    for (const auto & entry : providers.data())
+    {
+        if (addresses.contains(entry.second->mAddress.thread()))
+        {
+            keys.add(entry.first);
+        }
+    }
+
+    for (uint32_t i = 0; i < keys.size(); ++ i)
+    {
+        providers.unregister_resource_object(keys[i]);
+    }
 }
 
 bool StubBase::is_busy( uint32_t reqId ) const noexcept
@@ -707,6 +744,20 @@ ServiceResponseEvent StubBase::create_response_event( const ProxyAddress &  /* p
                                                     , uint32_t              /* reserve */ ) const
 {
     return ServiceResponseEvent(MessageEnvelope{});  // invalid; derived stubs override to produce real events
+}
+
+ServiceResponseEvent StubBase::create_undelivered_response( const ProxyAddress & proxy, uint32_t msgId, const SequenceNumber & seqNr ) const
+{
+    if (!areg::is_request_id(msgId))
+        return ServiceResponseEvent(MessageEnvelope{});
+
+    ServiceResponseEvent failure{ create_response(proxy, msgId, areg::ResultType::MessageUndelivered, SharedBuffer{}) };
+    if (failure.is_valid())
+    {
+        failure.set_sequence_number(seqNr);
+    }
+
+    return failure;
 }
 
 ServiceResponseEvent StubBase::prepare_response_event( uint32_t respId, areg::ResultType result, uint32_t reserve, StubBase::StubListenerList & listeners )

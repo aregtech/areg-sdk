@@ -76,9 +76,9 @@ protected:
     /**
      * \brief   Receives a message by reading EventHeader first, then payload.
      *
-     * \param[out]  message     MessageEnvelope to populate; checksum validated after receiving.
+     * \param[out]  message     MessageEnvelope to populate.
      * \param       socket      A socket for communication (client or server-side accepted socket). Must be valid.
-     * \return  Returns bytes received on success; zero if checksum invalid or buffer empty; negative on socket error.
+     * \return  Returns bytes received on success; zero if the data is too long or incomplete; negative on socket error.
      **/
     int32_t receive_message( MessageEnvelope & message, const Socket & socket ) const;
 

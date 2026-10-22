@@ -95,7 +95,7 @@ public:
 
     /**
      * \brief   Blocking TCP connect to the stored remote address. Must be called after create_fd().
-     *          On failure the socket is closed and invalidated. On success applies TCP_NODELAY.
+     *          On failure the socket stays open, for its owner to close. On success applies TCP_NODELAY.
      *
      * \return  Returns true if the connection was established.
      **/

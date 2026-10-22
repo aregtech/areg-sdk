@@ -28,6 +28,7 @@
 
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/component/private/ServiceManagerEventProcessor.hpp"
+#include "areg/component/private/SystemController.hpp"
 #include "areg/ipc/private/RouterClient.hpp"
 namespace areg {
 
@@ -57,6 +58,7 @@ class ServiceManager final  : private   DispatcherThread
 {
     friend class Application;
     friend class ServiceManagerEventProcessor;
+    friend class SystemController;
 //////////////////////////////////////////////////////////////////////////
 // Declare Runtime
 //////////////////////////////////////////////////////////////////////////
@@ -103,13 +105,62 @@ public:
      **/
     static void request_unregister_consumer( const ProxyAddress & whichClient, const areg::DisconnectReason reason );
 
+/************************************************************************/
+// Lifecycle of the models and of the component threads
+/************************************************************************/
+
     /**
-     * \brief   Terminates and restarts a component thread, stopping all associated workers,
-     *          components, services, and proxies.
-     *
-     * \param   whichThread     The component thread to recreate.
+     * \brief   Asks the system controller to load the model, or all models if the name is empty,
+     *          and waits for the result. Called from a thread of the model or from the service
+     *          manager thread, the request is posted and not waited for.
+     * \param   modelName       The name of the model.
+     * \param   waitComponents  If true, waits until the components started; otherwise until the threads started.
+     * \return  True if the model is loaded, or the request was posted without waiting.
      **/
-    static void request_recreate_thread( const ComponentThread & whichThread );
+    static bool request_load_model( const String & modelName, bool waitComponents );
+
+    /**
+     * \brief   Asks the system controller to unload the model, or all models if the name is empty.
+     * \param   modelName       The name of the model.
+     * \param   waitComplete    If true, waits until the model is unloaded. Called from a thread
+     *                          of the model or from the service manager thread, it never waits.
+     **/
+    static void request_unload_model( const String & modelName, bool waitComplete );
+
+    /**
+     * \brief   Reports that the components of the component thread started.
+     **/
+    static void report_thread_running( const ComponentThread & whichThread );
+
+    /**
+     * \brief   Reports that the component thread exited. Called as its last act.
+     **/
+    static void report_thread_stopped( const ComponentThread & whichThread );
+
+    /**
+     * \brief   Reports that the watchdog of a component thread or of one of its workers expired.
+     * \param   threadName  The name of the component thread.
+     * \param   instance    The address of the component thread object.
+     * \param   guardedName The name of the thread whose event took too long.
+     **/
+    static void report_watchdog_expired( const String & threadName, uint64_t instance, const String & guardedName );
+
+    /**
+     * \brief   Reports that the lifecycle deadline guard expired.
+     **/
+    static void report_deadline_expired();
+
+    /**
+     * \brief   Returns the state of the component thread of the name.
+     **/
+    [[nodiscard]]
+    static areg::ThreadState thread_state( const String & threadName );
+
+    /**
+     * \brief   Asks the system controller to set the user state and to announce it to every
+     *          component thread. Without a running service manager the value is only stored.
+     **/
+    static void request_user_state( uint32_t userState );
 
     /**
      * \brief   Returns true if Service Manager is running and ready to process events.
@@ -209,27 +260,11 @@ private:
 /************************************************************************/
 
     /**
-     * \brief   Configures the routing service client for remote connections.
-     *
-     * \return  Returns true if configuration succeeded; false otherwise.
-     **/
-    static bool _routing_service_configure();
-
-    /**
      * \brief   Starts the routing service client connection.
      *
      * \return  Returns true if routing service client started successfully.
      **/
     static bool _routing_service_start(uint32_t connectTypes);
-
-    /**
-     * \brief   Starts connection to a remote routing service at the specified address.
-     *
-     * \param   ipAddress       The IP address of the remote routing service.
-     * \param   portNr          The port number of the remote routing service.
-     * \return  Returns true if routing service client started successfully.
-     **/
-    static bool _routing_service_start( const String & ipAddress, uint16_t portNr );
 
     /**
      * \brief   Stops the routing service client.
@@ -248,18 +283,11 @@ private:
     [[nodiscard]]
     static bool _is_routing_pending() noexcept;
 
-    /**
-     * \brief   Returns true if routing service client is configured and ready to start.
-     **/
-    [[nodiscard]]
-    static bool _is_routing_configured() noexcept;
 
     /**
-     * \brief   Generates an event to create and start a component thread. Internal use only.
-     *
-     * \param   componentThread     The name of the thread to create and start.
+     * \brief   Posts a lifecycle event to the service manager thread.
      **/
-    static void _request_create_thread( const String & componentThread );
+    static bool _post_lifecycle_event( const ServiceManagerEventData & data );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -414,6 +442,10 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     ServiceManagerEventProcessor    mEventProcessor;
+    /**
+     * \brief   The owner of the models and of the component threads.
+     **/
+    SystemController                mController;
     /**
      * \brief   The connection service.
      **/

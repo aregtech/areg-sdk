@@ -55,12 +55,12 @@ void process_timer(areg::Timer & timer) final;      // TimerConsumer.hpp:73
 
 | Call | Signature | Header |
 |---|---|---|
-| `setup()` | `static void setup(bool startTracing = true, bool startServicing = true, bool startRouting = true, bool startTimer = true, bool startWatchdog = false, const char * configFile = areg::DEFAULT_CONFIG_FILE.data(), ConfigListener * configListener = nullptr)` | `Application.hpp:103` |
-| `load_model()` | `static bool load_model(const char * modelName = nullptr)` | `Application.hpp:128` |
-| `wait_quit()` | `static bool wait_quit(uint32_t waitTimeout = areg::WAIT_INFINITE)` | `Application.hpp:338` |
-| `signal_quit()` | `static void signal_quit()` | `Application.hpp:344` |
-| `unload_model()` | `static void unload_model(const char * modelName = nullptr)` | `Application.hpp:145` |
-| `release()` | `static void release()` | `Application.hpp:114` |
+| `setup()` | `static void setup(bool startTracing = true, bool startServicing = true, bool startRouting = true, bool startTimer = true, bool startWatchdog = false, const char * configFile = areg::DEFAULT_CONFIG_FILE.data(), ConfigListener * configListener = nullptr)` | `Application.hpp:109` |
+| `load_model()` | `static bool load_model(const char * modelName = nullptr, bool waitComponents = false)` | `Application.hpp:136` |
+| `wait_quit()` | `static bool wait_quit(uint32_t waitTimeout = areg::WAIT_INFINITE)` | `Application.hpp:325` |
+| `signal_quit()` | `static void signal_quit()` | `Application.hpp:331` |
+| `unload_model()` | `static void unload_model(const char * modelName = nullptr)` | `Application.hpp:153` |
+| `release()` | `static void release()` | `Application.hpp:120` |
 
 Every argument of `setup()` has a default, so `setup()` alone is the normal call.
 Nothing ends the application until something ends it. In a scaffolded project that is
@@ -75,17 +75,18 @@ past it is reported as P-18. A program with no `quit_with()` calls `signal_quit(
 
 | Call | Signature | Header |
 |---|---|---|
-| constructor used by the model | `Component(const areg::ComponentEntry & regEntry, ComponentThread & ownerThread)` | `Component.hpp:167` |
-| constructor by role name | `Component(const String & roleName, ComponentThread & ownerThread)` | `Component.hpp:159` |
-| own role name | `const String & role_name() const noexcept` | `Component.hpp:321` |
-| own address | `const ComponentAddress & address() const noexcept` | `Component.hpp:327` |
-| owning thread | `ComponentThread & master_thread() noexcept` | `Component.hpp:315` |
+| constructor used by the model | `Component(const areg::ComponentEntry & regEntry, ComponentThread & ownerThread)` | `Component.hpp:169` |
+| constructor by role name | `Component(const String & roleName, ComponentThread & ownerThread)` | `Component.hpp:161` |
+| own role name | `const String & role_name() const noexcept` | `Component.hpp:319` |
+| own address | `const ComponentAddress & address() const noexcept` | `Component.hpp:325` |
+| owning thread | `ComponentThread & master_thread() noexcept` | `Component.hpp:313` |
 
 Optional lifecycle overrides:
-`startup_component(ComponentThread &)` (`Component.hpp:191`),
-`shutdown_component(ComponentThread &)` (`:199`),
-`notify_component_shutdown(ComponentThread &)` (`:207`),
-`wait_component_completion(uint32_t)`.
+`startup_component(ComponentThread &)` (`Component.hpp:193`),
+`shutdown_component(ComponentThread &)` (`:201`),
+`notify_component_shutdown(ComponentThread &)` (`:209`),
+`wait_component_completion(uint32_t)`, and `on_user_state(uint32_t previous, uint32_t current)`
+(`:247`), called on the component's thread by `Application::set_user_state(value)`.
 
 ---
 
@@ -98,11 +99,11 @@ a handler** - it blocks every component on that dispatcher thread.
 
 | Call | Signature | Header |
 |---|---|---|
-| `sleep()` | `static void sleep(uint32_t msTimeout)` | `Thread.hpp:376` |
-| `current_thread()` | `static Thread * current_thread() noexcept` | `Thread.hpp:448` |
-| `current_thread_name()` | `static String current_thread_name() noexcept` | `Thread.hpp:454` |
-| `current_thread_id()` | `static id_type current_thread_id() noexcept` | `Thread.hpp:442` |
-| `switch_thread()` | `static void switch_thread() noexcept` | `Thread.hpp:427` |
+| `sleep()` | `static void sleep(uint32_t msTimeout)` | `Thread.hpp:389` |
+| `current_thread()` | `static Thread * current_thread() noexcept` | `Thread.hpp:461` |
+| `current_thread_name()` | `static String current_thread_name() noexcept` | `Thread.hpp:467` |
+| `current_thread_id()` | `static id_type current_thread_id() noexcept` | `Thread.hpp:455` |
+| `switch_thread()` | `static void switch_thread() noexcept` | `Thread.hpp:440` |
 
 ---
 

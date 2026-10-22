@@ -68,10 +68,10 @@ DEFECTS = [
         'file': 'framework/areg/base/MemoryDefs.hpp',
         'find': "    uint64_t            custom      { 0 };  "
                 "//!< [120..127] LOCAL-ONLY: DATA_CLASS cleanup hook -- "
-                "zeroed on IPC wire; see struct docs\n};",
+                "0 on IPC wire; see struct docs\n};",
         'replace': "    uint64_t            custom      { 0 };  "
                    "//!< [120..127] LOCAL-ONLY: DATA_CLASS cleanup hook -- "
-                   "zeroed on IPC wire; see struct docs\n"
+                   "0 on IPC wire; see struct docs\n"
                    "    uint32_t            seeded      { 0 };\n};",
         'detector': 'compiler',
     },

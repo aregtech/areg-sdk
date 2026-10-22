@@ -147,6 +147,11 @@ areg::LogSourceState LogManager::source_state()
     return logManager.mLoggerTcp.is_paused() ? areg::LogSourceState::Paused : areg::LogSourceState::Active;
 }
 
+bool LogManager::start_timer_manager()
+{
+    return Application::_start_timer_manager();
+}
+
 bool LogManager::start_logging(const char* configFile /*= nullptr*/ )
 {
     Application::load_configuration(configFile);

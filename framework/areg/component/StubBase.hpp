@@ -64,6 +64,9 @@ class AREG_API StubBase    : public StubEventConsumer
 // friend classes
 //////////////////////////////////////////////////////////////////////////
     friend class RemoteEventFactory;
+    friend class StubEventConsumer;
+    friend class SystemController;
+    friend class Component;
 
 //////////////////////////////////////////////////////////////////////////
 // Internal constants and definitions
@@ -232,17 +235,6 @@ protected:
 public:
 
     /**
-     * \brief   Takes this provider out of every global registry, without releasing anything.
-     *
-     *          Only global registries are touched. The internal state of the stub is left
-     *          alone on purpose: the abandoned thread may be inside a request handler, and
-     *          rewriting its listener maps from another thread would be a data race for no gain.
-     *
-     * \see     ComponentThread::terminate_self
-     **/
-    void detach_from_registry();
-
-    /**
      * \brief   Returns the component thread that owns this stub.
      **/
     [[nodiscard]]
@@ -300,6 +292,16 @@ public:
      **/
     [[nodiscard]]
     static inline StubBase * find_stub( const UniqueNumber stubId ) noexcept;
+
+    /**
+     * \brief   Returns a copy of the address of the registered stub that has the key of the
+     *          specified address, taken under the registry lock.
+     *
+     * \param   address     The address whose key is searched.
+     * \return  Returns the address of the registered stub; otherwise a copy of \a address.
+     **/
+    [[nodiscard]]
+    static StubAddress registered_address( const StubAddress & address );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -692,6 +694,29 @@ private:
      **/
     [[nodiscard]]
     static MapProviderResource& map_providers() noexcept;
+
+    /**
+     * \brief   Takes the providers of the threads out of the registry, under its lock. The
+     *          objects are not touched; a provider removes only its own entry when it is deleted.
+     * \param   threads     The names of the threads.
+     **/
+    static void _detach_thread_providers( const ArrayList<String> & threads );
+
+    /**
+     * \brief   Removes this provider from the registry, if the entry is this provider.
+     **/
+    void _leave_registry();
+
+    /**
+     * \brief   Creates the response that tells a consumer its request was not delivered.
+     *
+     * \param   proxy   The address of the consumer proxy that sent the request.
+     * \param   msgId   The ID of the refused request.
+     * \param   seqNr   The sequence number of the refused request.
+     * \return  A MessageUndelivered response; invalid if msgId is not a request ID.
+     **/
+    [[nodiscard]]
+    ServiceResponseEvent create_undelivered_response( const ProxyAddress & proxy, uint32_t msgId, const SequenceNumber & seqNr ) const;
 
     /**
      * \brief   Removes one listener matching toRemove from the sub-vector for msgId using

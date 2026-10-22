@@ -121,6 +121,8 @@ namespace
         std::atomic<uint32_t>       pumps   { 0u };
         std::atomic<uint64_t>       sent    { 0u };
         std::atomic<bool>           closed  { false };
+        SendBacklog::Reason         reason  { SendBacklog::Reason::SocketError };
+        uint64_t                    kept    { 0u };
 
         SOCKETHANDLE backlog_socket(ITEM_ID /*cookie*/) override
         {
@@ -133,8 +135,10 @@ namespace
             sent.fetch_add(bytes, std::memory_order_relaxed);
         }
 
-        void backlog_close(const SendBacklog::Entry & /*entry*/, SendBacklog::Reason /*reason*/) override
+        void backlog_close(const SendBacklog::Entry & entry, SendBacklog::Reason why) override
         {
+            reason  = why;
+            kept    = entry.bytes;
             closed.store(true, std::memory_order_relaxed);
         }
     };
@@ -225,6 +229,28 @@ namespace
         }
 
         return wire_bytes(messages) - written;
+    }
+
+    //!< Writes the messages [first, first + count) into the backlog, and the bytes that left into
+    //!< \a moved if given. Returns false on a failure.
+    bool write_range(SendBacklog & backlog, const Pair & pair, const std::vector<areg::MessageEnvelope> & messages, uint32_t first, uint32_t count, uint64_t * moved = nullptr)
+    {
+        std::vector<const areg::MessageEnvelope *> pointers;
+        for (uint32_t i = first; i < first + count; ++i)
+        {
+            pointers.push_back(&messages[i]);
+        }
+
+        uint64_t bytesDone{ 0u };
+        uint32_t msgsDone{ 0u };
+        areg::SocketWriteGuard guard{ pair.server };
+        const bool result{ backlog.write(COOKIE, pair.server, pointers.data(), count, bytesDone, msgsDone) != SendBacklog::Result::Failed };
+        if (moved != nullptr)
+        {
+            *moved = bytesDone;
+        }
+
+        return result;
     }
 
     //!< Reads \a total bytes from the client end.
@@ -381,4 +407,139 @@ TEST(SendBacklogTest, exit_ends_the_wait)
 
     EXPECT_GE(returnedMs.load(), 0);
     EXPECT_LE(returnedMs.load(), PROMPT_MS);
+}
+
+// A paused peer past twice its cap holds new messages back, and is closed only after the stall limit.
+TEST(SendBacklogTest, paused_peer_past_twice_its_cap_holds_back_until_closed)
+{
+    constexpr uint64_t CAP{ 4u * MESSAGE_BYTES };
+    Pair pair{ };
+    ASSERT_TRUE(pair.open());
+    areg::SendQueueGate gate{ };
+    SendBacklog backlog{ gate };
+    Owner owner{ };
+    owner.socket = pair.server;
+    backlog.set_limits(CAP, SendBacklog::UNLIMITED, 60'000u);
+    static_cast<void>(backlog.attach(pair.server));
+    std::vector<areg::MessageEnvelope> messages{ make_messages() };
+
+    // The start of the last backlog call that moved bytes; the backlog's own progress is not earlier.
+    Clock::time_point lastMoved{ Clock::now() };
+    const auto pump{ [&backlog, &owner, &lastMoved]()
+    {
+        const Clock::time_point before{ Clock::now() };
+        const uint64_t sent{ owner.sent.load() };
+        static_cast<void>(backlog.pump(owner));
+        if (owner.sent.load() != sent)
+        {
+            lastMoved = before;
+        }
+    } };
+
+    // Above the cap, below twice the cap.
+    ASSERT_TRUE(write_range(backlog, pair, messages, 0u, 6u));
+
+    // The kernel still moves some bytes after a write: wait until a whole interval moved none.
+    uint64_t sentBefore{ 0u };
+    for (uint32_t i = 0u; (i == 0u) || ((sentBefore != owner.sent.load()) && (i < 20u)); ++i)
+    {
+        sentBefore = owner.sent.load();
+        pump();
+        std::this_thread::sleep_for(std::chrono::milliseconds(SendBacklog::CAP_PROGRESS_MS + 20u));
+        pump();
+    }
+
+    ASSERT_EQ(sentBefore, owner.sent.load());
+
+    // The send thread takes new messages while prepare_wait() lets it, as serve_backlog() does.
+    bool overCap{ false };
+    uint32_t next{ 6u };
+    static_cast<void>(backlog.prepare_wait(overCap));
+    EXPECT_FALSE(overCap);
+    while ((overCap == false) && (owner.closed.load() == false) && (next < MESSAGE_COUNT))
+    {
+        const Clock::time_point before{ Clock::now() };
+        uint64_t moved{ 0u };
+        ASSERT_TRUE(write_range(backlog, pair, messages, next++, 1u, &moved));
+        if (moved != 0u)
+        {
+            lastMoved = before;
+        }
+
+        pump();
+        static_cast<void>(backlog.prepare_wait(overCap));
+    }
+
+    EXPECT_TRUE(overCap);
+    EXPECT_FALSE(owner.closed.load());
+    const uint64_t written{ static_cast<uint64_t>(next) * (sizeof(areg::EventHeader) + MESSAGE_BYTES) };
+    EXPECT_LE(written - owner.sent.load(), 2u * CAP + 2u * (sizeof(areg::EventHeader) + MESSAGE_BYTES));
+
+    // Held back, the backlog does not grow; the connection is closed once the stall limit passed.
+    const Clock::time_point held{ Clock::now() };
+    while ((owner.closed.load() == false) && (elapsed_ms(held) < 3'000))
+    {
+        pump();
+        if (owner.closed.load() == false)
+        {
+            static_cast<void>(backlog.prepare_wait(overCap));
+            EXPECT_TRUE(overCap);
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+    }
+
+    ASSERT_TRUE(owner.closed.load());
+    EXPECT_EQ(owner.reason, SendBacklog::Reason::OverCap);
+    EXPECT_LE(owner.kept, 2u * CAP + 2u * (sizeof(areg::EventHeader) + MESSAGE_BYTES));
+    EXPECT_GE(elapsed_ms(lastMoved) + 1, static_cast<int64_t>(SendBacklog::CAP_STALL_MS));
+    EXPECT_TRUE(backlog.is_empty());
+
+    std::deque<SOCKETHANDLE> cut;
+    backlog.release_all(cut);
+    pair.close();
+}
+
+// A reading peer is seen to take data by pump() alone and is not closed, however far one batch
+// is past the cap.
+TEST(SendBacklogTest, reading_peer_is_kept_past_twice_its_cap)
+{
+    constexpr uint64_t CAP{ MESSAGE_BYTES };
+    Pair pair{ };
+    ASSERT_TRUE(pair.open());
+    areg::SendQueueGate gate{ };
+    SendBacklog backlog{ gate };
+    Owner owner{ };
+    owner.socket = pair.server;
+    backlog.set_limits(CAP, SendBacklog::UNLIMITED, 60'000u);
+    static_cast<void>(backlog.attach(pair.server));
+    std::vector<areg::MessageEnvelope> messages{ make_messages() };
+
+    ASSERT_TRUE(write_range(backlog, pair, messages, 0u, MESSAGE_COUNT));
+    static_cast<void>(backlog.pump(owner));
+    EXPECT_FALSE(owner.closed.load());
+
+    std::thread reader([&]
+    {
+        EXPECT_TRUE(read_all(pair, wire_bytes(messages)));
+    });
+
+    const Clock::time_point started{ Clock::now() };
+    while ((backlog.is_empty() == false) && (owner.closed.load() == false) && (elapsed_ms(started) < 10'000))
+    {
+        static_cast<void>(backlog.pump(owner));
+        std::this_thread::yield();
+    }
+
+    if (owner.closed.load())
+    {
+        pair.close();
+    }
+
+    reader.join();
+    EXPECT_FALSE(owner.closed.load()) << "reason " << static_cast<int>(owner.reason) << ", sent " << owner.sent.load();
+    EXPECT_TRUE(backlog.is_empty());
+
+    std::deque<SOCKETHANDLE> cut;
+    backlog.release_all(cut);
+    pair.close();
 }

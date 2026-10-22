@@ -299,8 +299,7 @@ namespace
         areg::ConnectedInstance other{ };
         msgReceived >> other;
 #if AREG_LOGGING
-        const StubBase * local{ StubBase::find_stub(stub) };
-        const StubAddress & named{ local != nullptr ? local->address() : stub };
+        const StubAddress named{ StubBase::registered_address(stub) };
         LOG_ERR("Duplicate role name [ %s ] of service [ %s ]: process [ %s ] (%s) registers the same public role name. A role name is unique in the network; only the first registration is served"
                     , named.role_name().as_string()
                     , named.service_name().as_string()
