@@ -231,8 +231,9 @@ namespace
         return wire_bytes(messages) - written;
     }
 
-    //!< Writes the messages [first, first + count) into the backlog. Returns false on a failure.
-    bool write_range(SendBacklog & backlog, const Pair & pair, const std::vector<areg::MessageEnvelope> & messages, uint32_t first, uint32_t count)
+    //!< Writes the messages [first, first + count) into the backlog, and the bytes that left into
+    //!< \a moved if given. Returns false on a failure.
+    bool write_range(SendBacklog & backlog, const Pair & pair, const std::vector<areg::MessageEnvelope> & messages, uint32_t first, uint32_t count, uint64_t * moved = nullptr)
     {
         std::vector<const areg::MessageEnvelope *> pointers;
         for (uint32_t i = first; i < first + count; ++i)
@@ -243,7 +244,13 @@ namespace
         uint64_t bytesDone{ 0u };
         uint32_t msgsDone{ 0u };
         areg::SocketWriteGuard guard{ pair.server };
-        return (backlog.write(COOKIE, pair.server, pointers.data(), count, bytesDone, msgsDone) != SendBacklog::Result::Failed);
+        const bool result{ backlog.write(COOKIE, pair.server, pointers.data(), count, bytesDone, msgsDone) != SendBacklog::Result::Failed };
+        if (moved != nullptr)
+        {
+            *moved = bytesDone;
+        }
+
+        return result;
     }
 
     //!< Reads \a total bytes from the client end.
@@ -416,6 +423,19 @@ TEST(SendBacklogTest, paused_peer_past_twice_its_cap_holds_back_until_closed)
     static_cast<void>(backlog.attach(pair.server));
     std::vector<areg::MessageEnvelope> messages{ make_messages() };
 
+    // The start of the last backlog call that moved bytes; the backlog's own progress is not earlier.
+    Clock::time_point lastMoved{ Clock::now() };
+    const auto pump{ [&backlog, &owner, &lastMoved]()
+    {
+        const Clock::time_point before{ Clock::now() };
+        const uint64_t sent{ owner.sent.load() };
+        static_cast<void>(backlog.pump(owner));
+        if (owner.sent.load() != sent)
+        {
+            lastMoved = before;
+        }
+    } };
+
     // Above the cap, below twice the cap.
     ASSERT_TRUE(write_range(backlog, pair, messages, 0u, 6u));
 
@@ -424,9 +444,9 @@ TEST(SendBacklogTest, paused_peer_past_twice_its_cap_holds_back_until_closed)
     for (uint32_t i = 0u; (i == 0u) || ((sentBefore != owner.sent.load()) && (i < 20u)); ++i)
     {
         sentBefore = owner.sent.load();
-        static_cast<void>(backlog.pump(owner));
+        pump();
         std::this_thread::sleep_for(std::chrono::milliseconds(SendBacklog::CAP_PROGRESS_MS + 20u));
-        static_cast<void>(backlog.pump(owner));
+        pump();
     }
 
     ASSERT_EQ(sentBefore, owner.sent.load());
@@ -438,8 +458,15 @@ TEST(SendBacklogTest, paused_peer_past_twice_its_cap_holds_back_until_closed)
     EXPECT_FALSE(overCap);
     while ((overCap == false) && (owner.closed.load() == false) && (next < MESSAGE_COUNT))
     {
-        ASSERT_TRUE(write_range(backlog, pair, messages, next++, 1u));
-        static_cast<void>(backlog.pump(owner));
+        const Clock::time_point before{ Clock::now() };
+        uint64_t moved{ 0u };
+        ASSERT_TRUE(write_range(backlog, pair, messages, next++, 1u, &moved));
+        if (moved != 0u)
+        {
+            lastMoved = before;
+        }
+
+        pump();
         static_cast<void>(backlog.prepare_wait(overCap));
     }
 
@@ -452,7 +479,7 @@ TEST(SendBacklogTest, paused_peer_past_twice_its_cap_holds_back_until_closed)
     const Clock::time_point held{ Clock::now() };
     while ((owner.closed.load() == false) && (elapsed_ms(held) < 3'000))
     {
-        static_cast<void>(backlog.pump(owner));
+        pump();
         if (owner.closed.load() == false)
         {
             static_cast<void>(backlog.prepare_wait(overCap));
@@ -464,7 +491,7 @@ TEST(SendBacklogTest, paused_peer_past_twice_its_cap_holds_back_until_closed)
     ASSERT_TRUE(owner.closed.load());
     EXPECT_EQ(owner.reason, SendBacklog::Reason::OverCap);
     EXPECT_LE(owner.kept, 2u * CAP + 2u * (sizeof(areg::EventHeader) + MESSAGE_BYTES));
-    EXPECT_GE(elapsed_ms(held) + 2 * static_cast<int64_t>(SendBacklog::CAP_PROGRESS_MS + 20u), static_cast<int64_t>(SendBacklog::CAP_STALL_MS));
+    EXPECT_GE(elapsed_ms(lastMoved) + 1, static_cast<int64_t>(SendBacklog::CAP_STALL_MS));
     EXPECT_TRUE(backlog.is_empty());
 
     std::deque<SOCKETHANDLE> cut;

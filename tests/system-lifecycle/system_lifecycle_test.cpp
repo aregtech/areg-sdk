@@ -30,6 +30,7 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/component/ComponentThread.hpp"
 #include "areg/component/EventTemplate.hpp"
+#include "areg/base/Process.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/logging/ScopeMessage.hpp"
 #include "examples/02_minimalipc/services/HelloServiceConsumerBase.hpp"
@@ -567,12 +568,10 @@ END_MODEL("SlRefuseModel")
 
 namespace
 {
-    std::string gSelf;  //!< The path of this executable.
-
     //!< Runs this executable with the given case and returns its exit code, or -1.
     int _run_child(const char * childCase, uint32_t & elapsedMs)
     {
-        const std::string command{ "\"" + gSelf + "\" " + childCase };
+        const std::string command{ std::string("\"") + areg::Process::instance().full_path().as_string() + "\" " + childCase };
         const auto start{ std::chrono::steady_clock::now() };
         const int status{ std::system(command.c_str()) };
         elapsedMs = _elapsed_ms(start);
@@ -954,7 +953,6 @@ int main(int argc, char * argv[])
     // Unbuffered: what the run printed before a crash still reaches the log.
     setvbuf(stdout, nullptr, _IONBF, 0);
 
-    gSelf = argv[0];
     const char * name{ argc > 1 ? argv[1] : "" };
     bool ok{ false };
 
