@@ -16,7 +16,8 @@ DEF_LOG_SCOPE(logging_bench, bench_dbg_10_mixed);
 DEF_LOG_SCOPE(logging_bench, bench_long_string);
 DEF_LOG_SCOPE(logging_bench, bench_dbg_dynamic);
 
-namespace {
+namespace 
+{
 
 void visualise_header()
 {
@@ -102,11 +103,13 @@ BenchmarkRunner::BenchmarkRunner(BenchmarkConfig mCfg)
     mClockSpeedNs = measure_clock_cost(1000u);
 }
 
-void BenchmarkRunner::init_benchmark() {
+void BenchmarkRunner::init_benchmark() 
+{
     mSamples = {};
 }
 
-void BenchmarkRunner::run_benchmark() {
+void BenchmarkRunner::run_benchmark() 
+{
     std::cout << "Overhead latency test: " << std::endl;
     visualise_header();
     for (int i = 0; i < mCfg.nWarmUps; i++) {
@@ -129,7 +132,8 @@ void BenchmarkRunner::run_benchmark() {
     visualise_footer();
 }
 
-void BenchmarkRunner::run_dynamic_log_session() {
+void BenchmarkRunner::run_dynamic_log_session() 
+{
     LOGGING_CONFIGURE_AND_START(nullptr, true);
     LOG_SCOPE(logging_bench, test_dynamic_log);
     auto make_log_call = [&](const char* format, auto&&... args)
@@ -143,7 +147,8 @@ void BenchmarkRunner::run_dynamic_log_session() {
     LOGGING_STOP();
 }
 
-void BenchmarkRunner::run_single_session(SampleType sampleType) {
+void BenchmarkRunner::run_single_session(SampleType sampleType) 
+{
     LOGGING_CONFIGURE_AND_START(nullptr, true);
     for (int i = 0; i < mCfg.nSamples; i++) {
         uint64_t sampleTime = run_sample(sampleType);
@@ -153,7 +158,8 @@ void BenchmarkRunner::run_single_session(SampleType sampleType) {
     
 }
 
-uint64_t BenchmarkRunner::run_sample(SampleType sampleType) {
+uint64_t BenchmarkRunner::run_sample(SampleType sampleType) 
+{
     uint64_t sample = 0;
     switch (sampleType)
     {
@@ -192,7 +198,8 @@ uint64_t BenchmarkRunner::run_sample(SampleType sampleType) {
 
 
 
-uint64_t BenchmarkRunner::bench_log_scope() {
+uint64_t BenchmarkRunner::bench_log_scope() 
+{
     uint64_t begin = now_ns();
     LOG_SCOPE(logging_bench, bench_log_scope);
     uint64_t end = now_ns();

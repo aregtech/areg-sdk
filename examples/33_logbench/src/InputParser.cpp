@@ -23,7 +23,8 @@ static std::optional<int> parseInt(std::string_view input)
     return value;
 }
 
-std::optional<BenchmarkConfig> InputParser::parseInput(int argc, char* argv[]) {
+std::optional<BenchmarkConfig> InputParser::parseInput(int argc, char* argv[]) 
+{
     std::vector<std::string> args;
     for (int i = 1; i < argc; i++) {
             if (argv[i][0] != '-' || argv[i][1] < 'a' || argv[i][1] > 'z') {
@@ -52,11 +53,11 @@ std::optional<BenchmarkConfig> InputParser::parseInput(int argc, char* argv[]) {
     return buildConfig(pList);
 }
 
-std::optional<BenchmarkConfig> InputParser::buildConfig(std::vector<ParsedArg> pList) {
+std::optional<BenchmarkConfig> InputParser::buildConfig(std::vector<ParsedArg> argList) {
     BenchmarkConfig cfg;
     std::unordered_set<std::string> numericalFlags = {"l", "w", "t", "a", "af", "ad", "as", "sl"};
     int argVal{};
-    for (ParsedArg p : pList) {
+    for (ParsedArg p : argList) {
         if (numericalFlags.find(p.flag) != numericalFlags.end()) {
             std::optional<int> optArgVal = parseInt(p.value);
 

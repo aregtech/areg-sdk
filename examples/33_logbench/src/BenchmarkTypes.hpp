@@ -4,8 +4,10 @@
 
 #include <vector>
 #include <cstdint>
+
 /**
- * Indicates the sampling function to use
+ * @brief   Indicates which sampling test to use for the current benchmark session
+ * 
  */
 enum class SampleType
 {
@@ -20,6 +22,10 @@ enum class SampleType
 
 };
 
+/**
+ * @brief   Indicates the set destination for logging messages to go
+ * 
+ */
 enum class LogDestination
 {
     File,
@@ -29,7 +35,8 @@ enum class LogDestination
 };
 
 /**
- * Contains the settings of the benchmark, used in the construction of the BenchmarkRunner object
+ * @brief   Holds the configuration used for the benchmark
+ * 
  */
 struct BenchmarkConfig 
 {
@@ -47,7 +54,8 @@ struct BenchmarkConfig
 
 
 /**
- * Stores stats from a single session
+ * @brief   Stores the results from a single benchmark session
+ * 
  */
 struct SessionResult
 {

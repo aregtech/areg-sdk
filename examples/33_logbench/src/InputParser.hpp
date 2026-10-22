@@ -5,6 +5,10 @@
 
 #include <vector>
 
+/**
+ * @brief   Holds the flag and its user given value
+ * 
+ */
 struct ParsedArg
 {
     std::string flag;
@@ -13,18 +17,32 @@ struct ParsedArg
 
 
 /**
- * Converts the input arguments into a config object for the benchmarker
+ * @brief Parses parameter flags from the user's input into a benchmark configuration
+ * 
  */
 class InputParser 
 {
 
 public:
-
+    /**
+     * @brief   Converts user input flags into a benchmark configuration
+     * 
+     * @param argc   Number of arguments
+     * @param argv   List of input string arguments
+     * 
+     * @return   Returns a benchmark configuration if the parse was valid
+     */
     static std::optional<BenchmarkConfig> parseInput(int argc, char* argv[]);
 
 private:
-
-    static std::optional<BenchmarkConfig> buildConfig(std::vector<ParsedArg> pList);
+    /**
+     * @brief   Converts a list of parsed arguments into a benchmark configuration 
+     * 
+     * @param argList   List of parsed arguments
+     * 
+     * @return   Returns a benchmark configuration if the argument values were valid
+     */
+    static std::optional<BenchmarkConfig> buildConfig(std::vector<ParsedArg> argList);
 
 };
 

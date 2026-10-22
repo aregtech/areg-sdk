@@ -5,8 +5,6 @@
 
 int main(int argc, char * argv[]) 
 {
-    
-    
     std::optional<BenchmarkConfig> cfg = InputParser::parseInput(argc, argv);
     if (!cfg.has_value()) {
         return 1;
