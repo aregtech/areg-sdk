@@ -88,7 +88,7 @@ void PageBrokerSetup::OnBnClickedBrokerDisconnect( )
         }
 
         areg::Application::unload_model( chat::MODEL_NAME_CENTRAL_SERVER );
-        areg::Application::stop_message_routing();
+        areg::Application::disconnect_router();
         mIsConnected = false;
     }
 }

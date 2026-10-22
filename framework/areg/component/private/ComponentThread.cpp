@@ -20,18 +20,10 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/component/Model.hpp"
 #include "areg/component/private/ServiceManager.hpp"
+#include "areg/component/private/UserStateEvent.hpp"
 #include "areg/logging/areg_log.h"
 
-namespace {
-
-//!< Time given to a component thread to leave before it is declared unable to stop.
-constexpr uint32_t  TERMINATE_WAIT_MS   { areg::TIMEOUT_500_MS };
-
-}
-
 namespace areg {
-
-DEF_LOG_SCOPE(areg_component_ComponentThread, terminate_self);
 
 //////////////////////////////////////////////////////////////////////////
 // ComponentThread class implementation
@@ -80,7 +72,9 @@ ComponentThread::ComponentThread( const String & threadName
 
     , mCurrentComponent ( nullptr )
     , mWatchdog         ( self(), watchdogTimeout )
+    , mComponentEntries ( )
     , mIsRestarting     ( false )
+    , mLifecycleState   ( areg::ThreadState::Starting )
     , mListComponent    ( )
 {
 }
@@ -98,6 +92,7 @@ bool ComponentThread::run_dispatcher()
     // Mark startup phase: proxy registration is deferred until start_components() completes.
     set_startup_phase(true);
     ready_for_events(true);
+    UserStateNotifier userState(self());
 
     if (create_components() == 0)
     {
@@ -109,27 +104,31 @@ bool ComponentThread::run_dispatcher()
     start_components();
 
     // All components are started. Now register all proxies accumulated during startup
-    ArrayList<std::shared_ptr<ProxyBase>> proxyList;
-    ProxyBase::find_thread_proxies(self(), proxyList);
-    for (uint32_t i = 0; i < proxyList.size(); ++i)
+    if (is_abandoned() == false)
     {
-        ServiceManager::request_register_consumer(proxyList[i]->proxy_address());
+        ArrayList<std::shared_ptr<ProxyBase>> proxyList;
+        ProxyBase::find_thread_proxies(self(), proxyList);
+        for (uint32_t i = 0; i < proxyList.size(); ++i)
+        {
+            ServiceManager::request_register_consumer(proxyList[i]->proxy_address());
+        }
     }
 
     set_startup_phase(false);
+    ServiceManager::report_thread_running(self());
     return DispatcherThread::run_dispatcher();
 }
 
 int32_t ComponentThread::create_components()
 {
-    const areg::ComponentList& comList = ComponentLoader::find_component_list(name());
-    if (!comList.is_valid())
+    mComponentEntries = ComponentLoader::find_component_list(name());
+    if (!mComponentEntries.is_valid())
         return 0;
     
     int32_t result{ 0 };
-    for (uint32_t i = 0; i < comList.mListComponents.size(); ++ i)
+    for (uint32_t i = 0; i < mComponentEntries.mListComponents.size(); ++ i)
     {
-        const areg::ComponentEntry& entry = comList.mListComponents[i];
+        const areg::ComponentEntry& entry = mComponentEntries.mListComponents[i];
         if (!entry.is_valid() || (entry.mFuncCreate == nullptr))
             continue;
         
@@ -157,7 +156,7 @@ void ComponentThread::destroy_components()
         if (!doomed.remove_last(comObj) || (comObj == nullptr))
             break;
 
-        const areg::ComponentEntry& entry = ComponentLoader::find_component_entry(comObj->role_name(), name());
+        const areg::ComponentEntry& entry = _find_component_entry(comObj->role_name());
         if (entry.is_valid() && entry.mFuncDelete != nullptr)
         {
             Component::unload_component(*comObj, entry);
@@ -218,61 +217,12 @@ DispatcherThread* ComponentThread::event_consumer_thread( const uint32_t whichCl
     return result;
 }
 
-bool ComponentThread::terminate_self()
-{
-    LOG_SCOPE( areg_component_ComponentThread, terminate_self );
-
-    mIsRestarting = true;
-    mHasStarted = false;
-    remove_all_events();
-    signal_exit_event();
-
-    // The thread is stopped first and its objects are released only afterwards.
-    const Thread::ThreadCompletion status{ DispatcherThread::shutdown(TERMINATE_WAIT_MS) };
-    if (status == Thread::ThreadCompletion::Stuck)
-    {
-        // The thread runs on and keeps using its objects, none of them may be released.
-        // A ghost must answer no lookup and must receive no event
-        _detach_abandoned_objects();
-        LOG_ERR("The component thread [ %s ] did not stop. Its components are unregistered and abandoned, not deleted"
-                    , name().as_string());
-        return false;
-    }
-
-    // A thread killed by the OS never ran its exit sequence, so its objects are released here.
-    if (status == Thread::ThreadCompletion::Terminated)
-    {
-        _release_abandoned_objects();
-    }
-
-    _detach_thread_proxies();
-
-    DispatcherThread::release_shared(this);
-    return true;
-}
-
-inline void ComponentThread::_detach_abandoned_objects()
-{
-    // The consumers of this thread go first
-    _detach_thread_proxies();
-
-    ListComponent abandoned;
-    _detach_components(abandoned);
-    while (abandoned.is_empty() == false)
-    {
-        Component * component{ nullptr };
-        if (!abandoned.remove_last(component) || (component == nullptr))
-            break;
-
-        component->detach_from_registry();
-    }
-
-    // The watchdog of a thread nobody controls must never fire again
-    mWatchdog.disarm();
-}
-
 inline void ComponentThread::_detach_thread_proxies()
 {
+    // An abandoned thread does not look up the registry by its name.
+    if (is_abandoned())
+        return;
+
     ArrayList<std::shared_ptr<ProxyBase>> proxyList;
     ProxyBase::find_thread_proxies(self(), proxyList);
     for (uint32_t i = 0; i < proxyList.size(); ++i)
@@ -282,30 +232,11 @@ inline void ComponentThread::_detach_thread_proxies()
     }
 }
 
-inline void ComponentThread::_release_abandoned_objects()
-{
-    ArrayList<std::shared_ptr<ProxyBase>> proxyList;
-    ProxyBase::find_thread_proxies(self(), proxyList);
-    for (uint32_t i = 0; i < proxyList.size(); ++i)
-    {
-        ASSERT(proxyList[i] != nullptr);
-        proxyList[i]->terminate_self();
-    }
-
-    ListComponent doomed;
-    _detach_components(doomed);
-    while (doomed.is_empty() == false)
-    {
-        Component * component{ nullptr };
-        if (!doomed.remove_last(component) || (component == nullptr))
-            break;
-
-        component->terminate_self();
-    }
-}
-
 inline void ComponentThread::_shutdown_proxies()
 {
+    if (is_abandoned())
+        return;
+
     ArrayList<std::shared_ptr<ProxyBase>> proxyList;
     ProxyBase::find_thread_proxies(self(), proxyList);
     for (uint32_t i = 0; i < proxyList.size(); ++i)
@@ -363,7 +294,32 @@ int32_t ComponentThread::on_exit()
     destroy_components();
     _detach_thread_proxies();
 
-    return DispatcherThread::on_exit( );
+    const int32_t result{ DispatcherThread::on_exit( ) };
+    ServiceManager::report_thread_stopped(self());
+    return result;
+}
+
+void ComponentThread::_notify_user_state( uint32_t previous, uint32_t current )
+{
+    ListComponent::LISTPOS pos = mListComponent.first_position();
+    while (mListComponent.is_valid_position(pos))
+    {
+        Component* comObj = mListComponent.next(pos);
+        ASSERT(comObj != nullptr);
+        comObj->on_user_state(previous, current);
+    }
+}
+
+const areg::ComponentEntry & ComponentThread::_find_component_entry( const String & roleName ) const noexcept
+{
+    for (uint32_t i = 0; i < mComponentEntries.mListComponents.size(); ++ i)
+    {
+        const areg::ComponentEntry & entry = mComponentEntries.mListComponents[i];
+        if (entry.mRoleName == roleName)
+            return entry;
+    }
+
+    return areg::invalid_component_entry();
 }
 
 bool ComponentThread::dispatch_event(Event& eventElem)
@@ -373,6 +329,40 @@ bool ComponentThread::dispatch_event(Event& eventElem)
     mWatchdog.stop_guard();
 
     return result;
+}
+
+} // namespace areg
+
+namespace areg {
+
+//////////////////////////////////////////////////////////////////////////
+// UserStateNotifier class implementation
+//////////////////////////////////////////////////////////////////////////
+
+UserStateNotifier::UserStateNotifier( ComponentThread & thread )
+    : UserStateConsumer ( )
+    , mThread           ( thread )
+{
+    static_cast<void>(UserStateEvent::add_listener(static_cast<UserStateConsumer &>(*this), static_cast<DispatcherThread &>(mThread)));
+}
+
+UserStateNotifier::~UserStateNotifier()
+{
+    UserStateEvent::remove_listener(static_cast<UserStateConsumer &>(*this), static_cast<DispatcherThread &>(mThread));
+}
+
+void UserStateNotifier::announce( ComponentThread & thread, uint32_t previous, uint32_t current )
+{
+    UserStateEvent event(UserStateData{ previous, current });
+    if (event.register_for_thread(&thread))
+    {
+        event.deliver_event();
+    }
+}
+
+void UserStateNotifier::process_event( const UserStateData & data )
+{
+    mThread._notify_user_state(data.mPrevious, data.mCurrent);
 }
 
 } // namespace areg

@@ -152,7 +152,8 @@ int main()
     {
         LOG_SCOPE( threads_main, main );
 
-        areg::Application::start_timer_manager();
+        // the timer manager only: no service manager, no router, no watchdog
+        areg::Application::setup(false, false, false, true, false);
 
         HelloThread helloThread;
         helloThread.start(areg::WAIT_INFINITE);
@@ -169,7 +170,7 @@ int main()
         helloThread.shutdown(areg::WAIT_INFINITE);
     } while (false);
 
-    LOGGING_STOP();
+    areg::Application::release();
     std::cout << "Exit application, check logs for details!" << std::endl;
     return 0;
 }

@@ -87,13 +87,6 @@ bool SocketClient::connect_to()
         return false;
 
     if (!areg::client_connect_fd(hSocket, mAddress))
-    {
-        close();
-        return false;
-    }
-
-    // Another thread closes the socket to abort a blocked connect.
-    if (!is_valid())
         return false;
 
     mSendSize = areg::max_send_size(hSocket);

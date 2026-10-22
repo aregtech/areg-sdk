@@ -328,6 +328,18 @@ namespace areg {
     constexpr uint32_t  SHUTDOWN_DRAIN_TIMEOUT      { WAIT_1_SECOND };
 
     /**
+     * \brief   areg::LIFECYCLE_TIMEOUT_DEFAULT
+     *          How long a component thread may take to start, and to stop after its drain.
+     **/
+    constexpr uint32_t  LIFECYCLE_TIMEOUT_DEFAULT   { 10 * WAIT_1_SECOND };
+
+    /**
+     * \brief   areg::LIFECYCLE_FAILURE_EXIT_CODE
+     *          The exit code of a process ended by the failure policy Exit.
+     **/
+    constexpr int       LIFECYCLE_FAILURE_EXIT_CODE { 70 };
+
+    /**
      * \brief   areg::TIMEOUT_1_MIN
      *          Timeout 1 minute
      **/

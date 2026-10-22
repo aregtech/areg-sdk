@@ -92,7 +92,18 @@ StubBase::StubBase( Component & masterComp, const areg::InterfaceData & siData )
 
 StubBase::~StubBase()
 {
-    map_providers().unregister_resource_object(static_cast<uint32_t>(mAddress));
+    _leave_registry();
+}
+
+void StubBase::_leave_registry()
+{
+    // Removes the entry only if it is this provider.
+    MapProviderResource & providers{ map_providers() };
+    Lock lock(providers.lockable());
+    if (providers.find_resource_object(static_cast<uint32_t>(mAddress)) == this)
+    {
+        providers.unregister_resource_object(static_cast<uint32_t>(mAddress));
+    }
 }
 
 StubAddress StubBase::registered_address( const StubAddress & address )
@@ -103,11 +114,29 @@ StubAddress StubBase::registered_address( const StubAddress & address )
     return (stub != nullptr ? stub->mAddress : address);
 }
 
-void StubBase::detach_from_registry()
+void StubBase::_detach_thread_providers( const ArrayList<String> & threads )
 {
-    // removing a key that is already gone is a no-op
-    map_providers().unregister_resource_object(static_cast<uint32_t>(mAddress));
-    ServiceManager::request_unregister_provider(mAddress, areg::DisconnectReason::ProviderDisconnected);
+    ArrayList<ThreadAddress> addresses;
+    for (uint32_t i = 0; i < threads.size(); ++ i)
+    {
+        addresses.add(ThreadAddress(threads[i]));
+    }
+
+    MapProviderResource & providers{ map_providers() };
+    Lock lock(providers.lockable());
+    ArrayList<uint32_t> keys;
+    for (const auto & entry : providers.data())
+    {
+        if (addresses.contains(entry.second->mAddress.thread()))
+        {
+            keys.add(entry.first);
+        }
+    }
+
+    for (uint32_t i = 0; i < keys.size(); ++ i)
+    {
+        providers.unregister_resource_object(keys[i]);
+    }
 }
 
 bool StubBase::is_busy( uint32_t reqId ) const noexcept

@@ -110,9 +110,8 @@ inline void send_pending_groups( areg::ext::PendingSend * batch
         for ( uint32_t k{ 0u }; k < groupSize; ++k )
         {
             // PendingSend::msg is the wire-ready IPC envelope; header + payload sent verbatim.
-            // internal1/internal2/custom were zeroed by the send thread before storage here.
+            // internal1/internal2 were zeroed by the send thread before storage here.
             const areg::MessageEnvelope & env{ batch[i + k].msg };
-            env.buffer_completion_fix(); // compute checksum if still CHECKSUM_INVALID (e.g. connect/register messages)
             const areg::EventHeader* ipcHdr{ env.header() };
             if (ipcHdr == nullptr)
                 continue;
@@ -244,7 +243,7 @@ inline void run_send_batch( ThreadT & thread
     ASSERT( hdr0 != nullptr );
     hdr0->internal1 = 0u;
     hdr0->internal2 = 0u;
-    hdr0->custom    = 0u;
+    ASSERT( hdr0->custom == 0u );
 
     uint32_t batchCount{ 0u };
 
@@ -273,7 +272,7 @@ inline void run_send_batch( ThreadT & thread
         ASSERT( hdr != nullptr );
         hdr->internal1 = 0u;
         hdr->internal2 = 0u;
-        hdr->custom    = 0u;
+        ASSERT( hdr->custom == 0u );
 
         context.targets[batchCount]      = static_cast<ITEM_ID>(hdr->target);
         context.batch[batchCount].socket = areg::InvalidSocketHandle;

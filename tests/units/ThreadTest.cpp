@@ -310,7 +310,7 @@ TEST(ThreadTest, RestartsAfterExitRequestWithoutShutdown)
 
 /**
  * \brief   After a shutdown() that timed out, start() creates no second routine on the object:
- *          Windows terminates the thread and restarts at once, POSIX refuses until it has left.
+ *          the thread is not killed, and start() is refused until the thread has left.
  **/
 TEST(ThreadTest, StartAfterTimedOutShutdown)
 {
@@ -321,9 +321,6 @@ TEST(ThreadTest, StartAfterTimedOutShutdown)
     ASSERT_TRUE(thread.start(areg::WAIT_INFINITE));
     const Thread::ThreadCompletion result{ thread.shutdown(50u) };
 
-#ifdef WINDOWS
-    EXPECT_EQ(result, Thread::ThreadCompletion::Terminated);
-#else   // WINDOWS
     EXPECT_EQ(result, Thread::ThreadCompletion::Stuck);
     EXPECT_FALSE(thread.start(areg::DO_NOT_WAIT));
     const auto deadline{ std::chrono::steady_clock::now() + std::chrono::milliseconds(DEAF_MS * 2u) };
@@ -334,7 +331,6 @@ TEST(ThreadTest, StartAfterTimedOutShutdown)
     }
 
     EXPECT_EQ(thread.shutdown(areg::WAIT_INFINITE), Thread::ThreadCompletion::Completed);
-#endif  // WINDOWS
 
     ASSERT_TRUE(thread.start(areg::WAIT_INFINITE));
     EXPECT_EQ(thread.shutdown(areg::WAIT_INFINITE), Thread::ThreadCompletion::Completed);

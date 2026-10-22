@@ -144,6 +144,7 @@ if (AREG_TESTS)
     # Reuses the generated service interface of example 02, so it needs the examples.
     if (AREG_EXAMPLES AND TARGET 02_generated)
         include(${AREG_TESTS_DIR}/request-failure/CMakeLists.txt)
+        include(${AREG_TESTS_DIR}/system-lifecycle/CMakeLists.txt)
     endif()
 
     # Reuses the generated service interfaces of examples 25 and 32; driven by conn_scenario.py.

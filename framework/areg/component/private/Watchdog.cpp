@@ -33,7 +33,7 @@ Watchdog::Watchdog(ComponentThread& thread, uint32_t msTimeout /*= areg::WATCHDO
     , mGuardId          (_generate_id())
     , mDisarmed         (false)
     , mSequence         (0u)
-    , mComponentThread  (thread)
+    , mComponentThread  (&thread)
 {
 }
 
@@ -42,7 +42,16 @@ Watchdog::Watchdog(WorkerThread& thread, uint32_t msTimeout /*= areg::WATCHDOG_I
     , mGuardId          (_generate_id())
     , mDisarmed         (false)
     , mSequence         (0u)
-    , mComponentThread  (thread.binding_component_thread())
+    , mComponentThread  (&thread.binding_component_thread())
+{
+}
+
+Watchdog::Watchdog(const String & name)
+    : TimerBase         (TimerBase::TimerType::WatchdogTimer, name, areg::LIFECYCLE_TIMEOUT_DEFAULT, TimerBase::ONE_TIME)
+    , mGuardId          (_generate_id())
+    , mDisarmed         (false)
+    , mSequence         (0u)
+    , mComponentThread  (nullptr)
 {
 }
 
@@ -71,6 +80,16 @@ void Watchdog::stop_guard()
         mActive = false;
         WatchdogManager::stop_timer(*this);
     }
+}
+
+bool Watchdog::arm(uint32_t msTimeout)
+{
+    Lock lock(mLock);
+    if (mHandle == nullptr)
+        return false;
+
+    mActive = WatchdogManager::rearm_timer(*this, (msTimeout != 0u ? msTimeout : 1u));
+    return mActive;
 }
 
 void Watchdog::disarm()

@@ -79,6 +79,7 @@ namespace areg {
 class AREG_API ProxyBase  : public    ProxyEventConsumer
 {
     friend class RemoteEventFactory;
+    friend class SystemController;
 
     static constexpr uint32_t CONNECTION_ID{ static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection) };
 
@@ -547,16 +548,12 @@ public:
     void stop_proxy();
 
     /**
-     * \brief   Forces immediate termination of the proxy. The proxy becomes inoperable after this call.
-     **/
-    void terminate_self();
-
-    /**
      * \brief   Removes this proxy from the proxy map and from the thread proxy map, so that
      *          acquire_proxy() can no longer hand it out. Called when the owner dispatcher
      *          thread is released: mDispatcherThread is a reference to it, and a proxy left
      *          in the maps would carry a released thread behind it. Does nothing if the
-     *          proxy is not registered. The last shared reference destroys the object.
+     *          proxy is not registered, or if another proxy is registered with its address.
+     *          The last shared reference destroys the object.
      **/
     void detach_from_registry();
 
@@ -1017,6 +1014,13 @@ private:
      **/
     [[nodiscard]]
     static MapThreadProxyList&   thread_proxies() noexcept;
+
+    /**
+     * \brief   Takes the proxies of the threads out of the proxy map and of the thread proxy map.
+     *          The objects are not touched; their consumers release them.
+     * \param   threads     The names of the threads.
+     **/
+    static void _detach_thread_proxies( const ArrayList<String> & threads );
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

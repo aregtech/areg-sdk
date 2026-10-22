@@ -36,6 +36,8 @@ BEGIN_MODEL(_modelName)
 
     // define component thread
     BEGIN_REGISTER_THREAD_EX( "TestServiceThread", HelloWatchdog::TimeoutWatchdog)
+        // replace the thread with a new instance when its watchdog expires
+        THREAD_FAILURE_POLICY(areg::FailurePolicy::Restart)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( watchdog::ServiceRoleName, ServicingComponent )
             // register HelloWorld service implementation.

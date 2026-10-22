@@ -31,8 +31,9 @@ class ComponentThread;
 class WorkerThread;
 
 /**
- * \brief   Guards thread execution by monitoring event processing; terminates and restarts threads
- *          that exceed timeout thresholds.
+ * \brief   Guards thread execution by monitoring event processing. An expiry is reported to the
+ *          system controller, which applies the failure policy of the thread. A watchdog created
+ *          without a thread is the deadline guard of the system controller.
  **/
 class AREG_API Watchdog final : public TimerBase
 {
@@ -92,6 +93,12 @@ public:
      **/
     Watchdog(WorkerThread& thread, uint32_t msTimeout = areg::WATCHDOG_IGNORE);
 
+    /**
+     * \brief   Creates the deadline guard of the system controller, bound to no thread.
+     * \param   name    The name of the guard.
+     **/
+    explicit Watchdog(const String & name);
+
     virtual ~Watchdog();
 
 //////////////////////////////////////////////////////////////////////////
@@ -113,6 +120,19 @@ public:
      *          later start_guard() a no-op, so the guard can never fire again.
      **/
     void disarm();
+
+    /**
+     * \brief   Arms the deadline guard to expire once after the timeout; an armed guard is re-armed.
+     * \param   msTimeout   The timeout in milliseconds.
+     * \return  True if the watchdog manager runs and the guard is armed.
+     **/
+    bool arm(uint32_t msTimeout);
+
+    /**
+     * \brief   Returns true if this is the deadline guard of the system controller.
+     **/
+    [[nodiscard]]
+    inline bool is_deadline_guard() const noexcept;
 
     /**
      * \brief   Returns true if the watchdog is valid and enabled (timeout is not zero).
@@ -208,9 +228,10 @@ private:
      */
     SEQUENCE_ID         mSequence;
     /**
-     * \brief   The valid instance of the component thread to trigger restart if timeout expired.
+     * \brief   The component thread whose failure policy applies when the watchdog expires;
+     *          nullptr for the deadline guard.
      **/
-    ComponentThread &   mComponentThread;
+    ComponentThread *   mComponentThread;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -241,7 +262,13 @@ inline Watchdog::SEQUENCE_ID Watchdog::sequence() const noexcept
 
 inline const ComponentThread& Watchdog::component_thread() const noexcept
 {
-    return mComponentThread;
+    ASSERT(mComponentThread != nullptr);
+    return *mComponentThread;
+}
+
+inline bool Watchdog::is_deadline_guard() const noexcept
+{
+    return (mComponentThread == nullptr);
 }
 
 inline Watchdog::WATCHDOG_ID Watchdog::watchdog_id() const noexcept

@@ -114,6 +114,15 @@ public:
      **/
     static void stop_timer(Watchdog& watchdog);
 
+    /**
+     * \brief   Arms the watchdog once with a new timeout and a new sequence, set under the lock
+     *          of the registered watchdogs.
+     * \param   watchdog    The watchdog to arm.
+     * \param   msTimeout   The timeout in milliseconds.
+     * \return  Returns true if the watchdog manager runs and the watchdog is armed.
+     **/
+    static bool rearm_timer(Watchdog& watchdog, uint32_t msTimeout);
+
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
@@ -179,6 +188,12 @@ private:
      * \param   watchdog    The watchdog to unregister.
      **/
     inline void _unregister_watchdog( Watchdog & watchdog );
+
+    /**
+     * \brief   Returns true if the watchdog object is registered. Call it with the lock taken;
+     *          the pointer is compared, the object is not read.
+     **/
+    inline bool _is_registered( const Watchdog * watchdog ) const;
 
 //////////////////////////////////////////////////////////////////////////
 //  OS specific hidden methods

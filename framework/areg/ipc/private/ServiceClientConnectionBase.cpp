@@ -60,13 +60,15 @@ static bool _wait_io_thread_ready( DispatcherThread & ioThread )
 }
 
 /**
- * \brief   Stops the send thread and waits for it, under the lock that also guards its start.
+ * \brief   Stops the send thread, waits for it and closes the socket, under the lock that also
+ *          guards the start of the send thread. The receive thread must be stopped before.
  *
  * \param   startLock   The lock of the send thread's start and stop.
  * \param   sendThread  The send thread to stop.
+ * \param   connection  The connection whose socket is closed.
  * \param   closing     True to discard what the thread still holds.
  **/
-static void _stop_send_thread( Mutex & startLock, ClientSendThread & sendThread, bool closing )
+static void _close_connection( Mutex & startLock, ClientSendThread & sendThread, ClientConnection & connection, bool closing )
 {
     Lock lock( startLock );
     if ( closing )
@@ -75,6 +77,7 @@ static void _stop_send_thread( Mutex & startLock, ClientSendThread & sendThread,
     }
 
     sendThread.shutdown( areg::WAIT_INFINITE );
+    connection.close_socket();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -152,7 +155,7 @@ bool ServiceClientConnectionBase::try_send_inline( MessageEnvelope & data )
     if ( wireSize > areg::INLINE_SEND_MAX_BYTES )
         return false;
 
-    const SOCKETHANDLE hSocket{ mClientConnection.socket().handle() };
+    const SOCKETHANDLE hSocket{ mClientConnection.live_handle() };
     if ( areg::is_valid_socket(hSocket) == false )
         return false;
 
@@ -163,10 +166,16 @@ bool ServiceClientConnectionBase::try_send_inline( MessageEnvelope & data )
     if ( writer.try_acquire() == false )
         return false;
 
+    // The socket is closed only after the writer lock is released.
+    if ( mClientConnection.live_handle() != hSocket )
+    {
+        writer.release();
+        return false;
+    }
+
     hdr->internal1 = 0u;
     hdr->internal2 = 0u;
-    hdr->custom    = 0u;
-    data.buffer_completion_fix();
+    ASSERT( hdr->custom == 0u );
 
     int32_t sent{ 0 };
     {
@@ -175,21 +184,22 @@ bool ServiceClientConnectionBase::try_send_inline( MessageEnvelope & data )
         sent = areg::try_send_data_v(hSocket, &ioBuffer, 1u, wireSize);
     }
 
-    writer.release();
-
     if ( sent > 0 )
     {
+        writer.release();
         mThreadSend.accumulate_sent(static_cast<uint64_t>(sent), 1u);
         return true;
     }
     else if ( sent == 0 )
     {
+        writer.release();
         return false;
     }
 
     // A negative result may follow a partial write: the first bytes are already on the wire,
     // so the message cannot be queued again and the connection has to go.
     mThreadSend.report_failed_send(data, mClientConnection.socket());
+    writer.release();
     return true;
 }
 
@@ -414,11 +424,12 @@ void ServiceClientConnectionBase::on_service_stop()
             mThreadSend.wait_completion( areg::WAIT_INFINITE );
         }
 
-        mClientConnection.close_socket( );
-        mThreadSend.shutdown( areg::DO_NOT_WAIT );
+        mThreadSend.shutdown( areg::WAIT_INFINITE );
     } while (false);
 
+    mClientConnection.interrupt_socket( );
     mThreadReceive.shutdown( areg::WAIT_INFINITE );
+    _close_connection( mSendStartLock, mThreadSend, mClientConnection, true );
 
     mMessageDispatcher.remove_event_type( ServiceClientEvent::CLASS_ID );
 
@@ -476,7 +487,7 @@ void ServiceClientConnectionBase::on_connection_stopped()
     cancel_connection( );
 
     mThreadReceive.shutdown( areg::WAIT_INFINITE );
-    _stop_send_thread( mSendStartLock, mThreadSend, false );
+    _close_connection( mSendStartLock, mThreadSend, mClientConnection, false );
     mConnectionConsumer.on_service_channel_disconnected( channel );
 
     if ( is_connection_allowed( ) && (prevState != ConnectionPhase::ConnectionStopping) )
@@ -506,6 +517,10 @@ void ServiceClientConnectionBase::on_connection_lost()
     Channel channel = mChannel;
     mChannel.invalidate();
 
+    // The socket is interrupted; it is closed once both I/O threads stopped.
+    mThreadReceive.shutdown( areg::WAIT_INFINITE );
+    _close_connection( mSendStartLock, mThreadSend, mClientConnection, false );
+
     if (!is_connection_allowed() || !mTimerConnect.is_stopped() ||
         (prevState == ConnectionPhase::ConnectionStopping))
     {
@@ -514,8 +529,6 @@ void ServiceClientConnectionBase::on_connection_lost()
     }
 
     LOG_DBG( "Restarting lost connection with remote service" );
-    mThreadReceive.shutdown( areg::WAIT_INFINITE );
-    _stop_send_thread( mSendStartLock, mThreadSend, false );
     mConnectionConsumer.on_service_channel_lost( channel );
     if (!mTimerConnect.start_timer(areg::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1))
     {
@@ -563,17 +576,21 @@ bool ServiceClientConnectionBase::start_connection()
     ASSERT(!mClientConnection.is_valid());
     ASSERT(!mThreadReceive.is_running());
 
-    // The send thread may still run, started by a message sent while the previous connection was
-    // already gone. Whatever it holds is addressed to a closed socket, so it is stopped here.
-    if ( mThreadSend.is_running() )
-    {
-        LOG_DBG("The send thread was started while the connection was down, stopping it before the new one");
-        _stop_send_thread( mSendStartLock, mThreadSend, true );
-    }
-
     mTimerConnect.stop_timer();
 
-    if ( !mClientConnection.create_socket_fd() )
+    // The send thread may still run, started by a message sent while the previous connection was
+    // already gone. It is stopped, and the new socket is created before it can start again.
+    bool created{ false };
+    do
+    {
+        Lock lock( mSendStartLock );
+        mThreadSend.set_closing();
+        mThreadSend.shutdown( areg::WAIT_INFINITE );
+        mClientConnection.close_socket();
+        created = mClientConnection.create_socket_fd();
+    } while (false);
+
+    if ( !created )
     {
         LOG_WARN("Client service failed to create socket FD, going to repeat in [ %u ] ms on thread [ %u : %s ]"
                 , areg::DEFAULT_RETRY_CONNECT_TIMEOUT
@@ -609,11 +626,10 @@ bool ServiceClientConnectionBase::start_connection()
                 , mMessageDispatcher.number()
                 , mMessageDispatcher.name().as_string());
 
-        // Close the socket first: it aborts blocked socket calls, so the shutdown barriers below
-        // are bounded and no exiting I/O thread can overlap the next connection attempt.
-        mClientConnection.close_socket();
+        // The interrupt ends blocked socket calls, so the shutdown barriers below are bounded.
+        mClientConnection.interrupt_socket();
         mThreadReceive.shutdown( areg::WAIT_INFINITE );
-        _stop_send_thread( mSendStartLock, mThreadSend, false );
+        _close_connection( mSendStartLock, mThreadSend, mClientConnection, false );
         if (!mTimerConnect.start_timer(areg::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1))
         {
             LOG_WARN("Failed to start reconnect timer, retrying connection immediately.");
@@ -630,9 +646,8 @@ void ServiceClientConnectionBase::cancel_connection()
     LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, cancel_connection );
     LOG_WARN("Canceling client service connection");
 
-    // Closing the socket aborts blocked receive / send calls of the I/O threads.
-    mClientConnection.close_socket();
-    mClientConnection.set_cookie( areg::COOKIE_UNKNOWN );
+    // The interrupt ends blocked receive / send calls of the I/O threads.
+    mClientConnection.interrupt_socket();
 
     mThreadReceive.trigger_exit();
     mThreadSend.trigger_exit();
@@ -640,7 +655,7 @@ void ServiceClientConnectionBase::cancel_connection()
 
 void ServiceClientConnectionBase::notify_connection_lost( areg::EventPriority eventPrio )
 {
-    // Close the socket BEFORE queuing the lost-connection command
+    // Interrupt the socket BEFORE queuing the lost-connection command
     cancel_connection();
     send_command( ServiceEventData::ServiceCommand::CMD_ServiceLost, eventPrio );
 }

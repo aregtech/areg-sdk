@@ -53,7 +53,6 @@ TEST(EventEnvelopeTest, init_construction)
     EXPECT_EQ(env.source(), 0u);
     EXPECT_EQ(env.message_id(), 0u);
     EXPECT_EQ(env.result(), 0u);
-    EXPECT_EQ(env.checksum(), 0u);
     EXPECT_EQ(env.event_id(), 0u);
 }
 
@@ -509,36 +508,6 @@ TEST(EventEnvelopeTest, event_id_roundtrip)
     constexpr uint32_t cid { 0x99999999u };
     env.set_event_id(cid);
     EXPECT_EQ(env.event_id(), cid);
-}
-
-/**
- * \brief   checksum() returns correct value after buffer_completion_fix().
- **/
-TEST(EventEnvelopeTest, checksum_after_completion)
-{
-    areg::MessageEnvelope env(true);
-    env.set_message_id(100u);
-    env.set_target(200u);
-    
-    env.buffer_completion_fix();
-    EXPECT_TRUE(env.is_checksum_valid() || env.is_checksum_ignore());
-}
-
-/**
- * \brief   is_checksum_ignore() returns true when checksum is areg::CHECKSUM_IGNORE.
- *          The default EventHeader::checksum is 0 == areg::CHECKSUM_IGNORE.
- *          buffer_completion_fix() only computes a checksum when checksum == CHECKSUM_INVALID;
- *          it is a no-op when the checksum is already CHECKSUM_IGNORE.
- **/
-TEST(EventEnvelopeTest, checksum_ignore_flag)
-{
-    areg::MessageEnvelope env(true);
-    // Default-constructed checksum is 0 == CHECKSUM_IGNORE, not CHECKSUM_INVALID
-    EXPECT_TRUE(env.is_checksum_ignore());
-
-    env.buffer_completion_fix();
-    // buffer_completion_fix() is a no-op when checksum != CHECKSUM_INVALID, so it remains CHECKSUM_IGNORE
-    EXPECT_TRUE(env.is_checksum_valid() || env.is_checksum_ignore());
 }
 
 //////////////////////////////////////////////////////////////////////////

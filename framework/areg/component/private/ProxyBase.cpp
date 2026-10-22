@@ -289,6 +289,11 @@ void ProxyBase::free_proxy( ProxyListener & connect )
                    , static_cast<NotificationConsumer *>(&connect));
 
     std::shared_ptr<ProxyBase> proxy = ProxyBase::find_proxy( mProxyAddress );
+    if (proxy.get() != this)
+    {
+        // The entry of this address belongs to another proxy.
+        proxy.reset();
+    }
 
     if ((proxy.use_count() == 1) || (mProxyInstCount == 1))
     {
@@ -309,8 +314,11 @@ void ProxyBase::free_proxy( ProxyListener & connect )
         mIsStopped   = true;
 
         mProxyInstCount = 0;
-        map_proxies().unregister_resource_object(static_cast<uint32_t>(mProxyAddress));
-        thread_proxies().unregister_resource_object( static_cast<uint32_t>(mDispatcherThread.address( )), proxy, true );
+        if (proxy.get() != nullptr)
+        {
+            map_proxies().unregister_resource_object(static_cast<uint32_t>(mProxyAddress));
+            thread_proxies().unregister_resource_object( static_cast<uint32_t>(mDispatcherThread.address( )), proxy, true );
+        }
     }
     else if ( mProxyInstCount > 0 )
     {
@@ -318,33 +326,31 @@ void ProxyBase::free_proxy( ProxyListener & connect )
     }
 }
 
-void ProxyBase::terminate_self()
-{
-    {
-        Lock lock(mListenerLock);
-        mListenerMap.clear();
-    }
-
-    if (!mIsStopped)
-    {
-        ServiceManager::request_unregister_consumer(proxy_address(), areg::DisconnectReason::ConsumerDisconnected );
-    }
-
-    set_connection_status( areg::ServiceConnectionState::Disconnected );
-    mIsStopped      = true;
-    mProxyInstCount = 0;
-    mListConnect.clear();
-
-    detach_from_registry();
-}
-
 void ProxyBase::detach_from_registry()
 {
     std::shared_ptr<ProxyBase> proxy{ ProxyBase::find_proxy(mProxyAddress) };
-    if (proxy.get() != nullptr)
+    if (proxy.get() == this)
     {
         map_proxies().unregister_resource_object(static_cast<uint32_t>(mProxyAddress));
         thread_proxies().unregister_resource_object( static_cast<uint32_t>(mDispatcherThread.address( )), proxy, true );
+    }
+}
+
+void ProxyBase::_detach_thread_proxies( const ArrayList<String> & threads )
+{
+    MapProxyResource & proxies{ map_proxies() };
+    for (uint32_t i = 0; i < threads.size(); ++ i)
+    {
+        const ThreadProxyList list{ thread_proxies().unregister_resource( static_cast<uint32_t>(ThreadAddress(threads[i])) ) };
+        for (uint32_t j = 0; j < list.size(); ++ j)
+        {
+            const std::shared_ptr<ProxyBase> & proxy{ list[j] };
+            Lock lock(proxies.lockable());
+            if (proxies.find_resource_object(static_cast<uint32_t>(proxy->mProxyAddress)) == proxy)
+            {
+                proxies.unregister_resource_object(static_cast<uint32_t>(proxy->mProxyAddress));
+            }
+        }
     }
 }
 

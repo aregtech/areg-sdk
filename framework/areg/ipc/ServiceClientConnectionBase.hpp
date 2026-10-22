@@ -19,6 +19,8 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/areg_global.h"
+
+#include <atomic>
 #include "areg/ipc/ConnectionProvider.hpp"
 #include "areg/ipc/ServiceEventConsumer.hpp"
 
@@ -119,7 +121,7 @@ public:
      * \brief   Returns the connection cookie identifier.
      **/
     [[nodiscard]]
-    inline const ITEM_ID & connection_cookie() const noexcept;
+    inline ITEM_ID connection_cookie() const noexcept;
 
 
     /**
@@ -394,8 +396,8 @@ protected:
      *          - the writer lock of the socket is free, see areg::SocketWriter;
      *          - the socket takes the whole message without waiting.
      *
-     * \param   data    The message to write. Its local-only header fields are cleared and its
-     *                  checksum is computed before the write, as the send thread does.
+     * \param   data    The message to write. Its local-only header fields are cleared before
+     *                  the write, as the send thread does.
      * \return  True when the message has been dealt with and must not be queued. False when the
      *          caller must queue the message for the send thread.
      **/
@@ -528,10 +530,17 @@ protected:
      **/
     areg::Channel                   mChannel;
 
+#if defined(_MSC_VER)
+    #pragma warning(push)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
     /**
-     * \brief   The current connection state.
+     * \brief   The current connection state, read by the receive and the send threads.
      **/
-    ConnectionPhase                 mConnectionState;
+    std::atomic<ConnectionPhase>    mConnectionState;
+#if defined(_MSC_VER)
+    #pragma warning(pop)
+#endif  // _MSC_VER
 
     /**
      * \brief   The Client Service event consumer
@@ -593,7 +602,7 @@ inline ServiceClientConnectionBase & ServiceClientConnectionBase::self() noexcep
     return (*this);
 }
 
-inline const ITEM_ID & ServiceClientConnectionBase::connection_cookie() const noexcept
+inline ITEM_ID ServiceClientConnectionBase::connection_cookie() const noexcept
 {
     return mClientConnection.cookie();
 }
@@ -623,17 +632,17 @@ inline bool ServiceClientConnectionBase::is_data_rate_enabled() const noexcept
 
 inline bool ServiceClientConnectionBase::is_connect_state() const noexcept
 {
-    return has_phase_bit(mConnectionState, ConnectionPhase::ConnectState);
+    return has_phase_bit(mConnectionState.load(std::memory_order_acquire), ConnectionPhase::ConnectState);
 }
 
 inline bool ServiceClientConnectionBase::is_connected_state() const noexcept
 {
-    return (mConnectionState == ConnectionPhase::ConnectionStarted);
+    return (mConnectionState.load(std::memory_order_acquire) == ConnectionPhase::ConnectionStarted);
 }
 
 inline bool ServiceClientConnectionBase::is_disconnect_state() const noexcept
 {
-    return has_phase_bit(mConnectionState, ConnectionPhase::DisconnectState);
+    return has_phase_bit(mConnectionState.load(std::memory_order_acquire), ConnectionPhase::DisconnectState);
 }
 
 inline void ServiceClientConnectionBase::register_consumer_commands()
@@ -680,12 +689,12 @@ inline bool ServiceClientConnectionBase::is_connection_started() const noexcept
 
 inline void ServiceClientConnectionBase::set_connection_state(const ServiceClientConnectionBase::ConnectionPhase newState)
 {
-    mConnectionState = newState;
+    mConnectionState.store(newState, std::memory_order_release);
 }
 
 inline ServiceClientConnectionBase::ConnectionPhase ServiceClientConnectionBase::connection_state() const noexcept
 {
-    return mConnectionState;
+    return mConnectionState.load(std::memory_order_acquire);
 }
 
 inline void ServiceClientConnectionBase::send_command( ServiceEventData::ServiceCommand cmd

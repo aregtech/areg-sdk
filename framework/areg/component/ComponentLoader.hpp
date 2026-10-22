@@ -102,6 +102,22 @@
             BEGIN_REGISTER_THREAD_EX((thread_name), areg::WATCHDOG_IGNORE)
 
 /**
+ * \brief   Sets the lifecycle timeout of the component thread, in milliseconds: how long it may
+ *          take to start, and to stop after its drain. Use it between BEGIN_REGISTER_THREAD and
+ *          END_REGISTER_THREAD. The default is areg::LIFECYCLE_TIMEOUT_DEFAULT (10 seconds).
+ **/
+#define THREAD_LIFECYCLE_TIMEOUT(timeout_ms)                                                                \
+            thrEntry.mLifecycleTimeout = (timeout_ms);
+
+/**
+ * \brief   Sets what areg does when the component thread misses its watchdog, its start or its
+ *          stop deadline: areg::FailurePolicy::Exit (the default), Restart or Ignore. Use it
+ *          between BEGIN_REGISTER_THREAD and END_REGISTER_THREAD.
+ **/
+#define THREAD_FAILURE_POLICY(policy)                                                                       \
+            thrEntry.mFailurePolicy = (policy);
+
+/**
  * \brief   Closes component thread registration.
  **/
 #define END_REGISTER_THREAD(thread_name)                                                                    \
@@ -362,6 +378,7 @@ class AREG_API ComponentLoader
 /************************************************************************/
     friend class ModelDataCreator;
     friend class ComponentThread;
+    friend class SystemController;
 
 //////////////////////////////////////////////////////////////////////////
 // Local types and constants
@@ -372,12 +389,6 @@ private:
      *          Linked List of Model objects
      **/
     using ModelList     = ArrayList<areg::Model>;
-
-    /**
-     * \brief   ComponentLoader::ThreadList
-     *          Array of component threads.
-     **/
-    using ThreadList    = ArrayList<ComponentThread *>;
 
 //////////////////////////////////////////////////////////////////////////
 // Static members
@@ -390,27 +401,36 @@ public:
     static ComponentLoader & instance() noexcept;
 
     /**
-     * \brief   Starts instantiating registered objects in the specified model.
+     * \brief   Asks areg to load the model and start its threads and components, and waits until
+     *          the threads started, or until the components started. Called from a thread of the
+     *          model, the request is not waited for.
      *
      * \param   modelName       The name of the model to load; if empty, loads all unloaded models.
-     * \return  Returns true if the model is loaded or was already loaded; false if not found or
-     *          loading failed.
+     * \param   waitComponents  If true, waits until the components started; otherwise until the threads started.
+     * \return  Returns true if the model is loading or loaded; false if not found, refused (the
+     *          model is unloading) or loading failed.
      **/
-    static bool load_component_model( const String & modelName );
+    static bool load_component_model( const String & modelName, bool waitComponents = false );
 
     /**
-     * \brief   Shuts down and destroys instantiated objects in the specified model.
+     * \brief   Asks areg to stop the threads of the model and destroy its components.
      *
-     * \param   waitComplete    If true, waits for Component Loader to complete jobs and exit
-     *                          threads. Otherwise, triggers exit and returns immediately.
+     * \param   waitComplete    If true, waits until the model is unloaded. Called from a thread of
+     *                          the model, the request is never waited for.
      * \param   modelName       The name of the model to unload; if empty, unloads all loaded models.
      **/
     static void unload_component_model( bool waitComplete, const String & modelName );
 
     /**
-     * \brief   Blocks the calling thread until Component Loader completes jobs and exits.
+     * \brief   Asks areg to unload the model, if it is not unloaded yet, and waits until it is.
      **/
     static void wait_model_unload(const String & modelName);
+
+    /**
+     * \brief   Returns the state of the model; areg::ModelState::Unloaded if there is no model of the name.
+     **/
+    [[nodiscard]]
+    static areg::ModelState model_state( const String & modelName );
 
     /**
      * \brief   Unloads components and removes the model from the registry.
@@ -514,62 +534,6 @@ private:
 protected:
 
     /**
-     * \brief   Loads all registered but unloaded models.
-     *
-     * \return  Returns the number of models loaded.
-     **/
-    int32_t load_all_models();
-
-    /**
-     * \brief   Loads the specified model and starts its threads and components.
-     *
-     * \param   modelName       The name of the model to load; if empty, loads all unloaded models.
-     * \return  Returns the number of models loaded.
-     **/
-    int32_t load_model( const String & modelName);
-
-    /**
-     * \brief   Loads the specified model and starts its threads and components.
-     *
-     * \param   whichModel      The model object to load.
-     * \return  Returns true if the model loaded successfully; false otherwise.
-     **/
-    bool load_model( areg::Model & whichModel ) const;
-    /**
-     * \brief   Unloads the specified model, deletes components, and stops threads.
-     *
-     * \param   waitComplete    If true, waits for Component Loader to complete jobs and exit
-     *                          threads. Otherwise, triggers exit and returns immediately.
-     * \param   modelName       The name of the model to unload; if empty, unloads all loaded
-     *                          models.
-     **/
-    void unload_model( bool waitComplete, const String & modelName );
-
-    /**
-     * \brief   Unloads the specified model, deletes components, and stops threads.
-     *
-     * \param   waitComplete    If true, waits for Component Loader to complete jobs and exit threads.
-     *                          Otherwise, triggers exit and returns immediately and
-     *                          the model stays loaded until wait_threads() joins the threads.
-     * \param   whichModel      The model object to unload.
-     **/
-    void unload_model( bool waitComplete, areg::Model & whichModel );
-
-    /**
-     * \brief   Blocks until component threads of the specified model complete and exit.
-     *
-     * \param   modelName       The name of the model; if empty, waits for all model threads.
-     **/
-    void wait_threads(const String & modelName);
-
-    /**
-     * \brief   Blocks until component threads of the specified model complete and exit.
-     *
-     * \param   whichModel      The model object whose threads should complete.
-     **/
-    void wait_threads(areg::Model & whichModel);
-
-    /**
      * \brief   Searches for a model by name and returns a pointer if found.
      *
      * \param   modelName       The name of the model to search; must be globally unique.
@@ -601,27 +565,6 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Triggers exit events for threads, stopping components and worker threads.
-     *
-     * \param   threadList      The list of threads to stop.
-     **/
-    void _exit_threads( const ThreadList & threadList ) const noexcept;
-
-    /**
-     * \brief   Blocks until all threads in the list complete and exit.
-     *
-     * \param   threadList      The list of threads to wait for.
-     **/
-    void _wait_threads( const ThreadList & threadList ) const;
-
-    /**
-     * \brief   Closes all threads in the list.
-     *
-     * \param   threadList      The list of threads to close.
-     **/
-    void _shutdown_threads( const ThreadList & threadList ) const;
-
-    /**
      * \brief   Adds a new model with globally unique names for the model, threads, and components.
      *
      * \param   newModel    The model to add; all names must be globally unique.
@@ -643,11 +586,6 @@ private:
      * \brief   The list of models
      **/
     ModelList       mModelList;
-
-    /**
-     * \brief   Threads that were asked to exit without waiting
-     **/
-    ThreadList      mExitingThreads;
 
 #if defined(_MSC_VER)
     #pragma warning(pop)

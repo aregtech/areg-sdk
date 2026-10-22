@@ -65,6 +65,8 @@ class AREG_API StubBase    : public StubEventConsumer
 //////////////////////////////////////////////////////////////////////////
     friend class RemoteEventFactory;
     friend class StubEventConsumer;
+    friend class SystemController;
+    friend class Component;
 
 //////////////////////////////////////////////////////////////////////////
 // Internal constants and definitions
@@ -231,17 +233,6 @@ protected:
 // Operations. Public
 //////////////////////////////////////////////////////////////////////////
 public:
-
-    /**
-     * \brief   Takes this provider out of every global registry, without releasing anything.
-     *
-     *          Only global registries are touched. The internal state of the stub is left
-     *          alone on purpose: the abandoned thread may be inside a request handler, and
-     *          rewriting its listener maps from another thread would be a data race for no gain.
-     *
-     * \see     ComponentThread::terminate_self
-     **/
-    void detach_from_registry();
 
     /**
      * \brief   Returns the component thread that owns this stub.
@@ -703,6 +694,18 @@ private:
      **/
     [[nodiscard]]
     static MapProviderResource& map_providers() noexcept;
+
+    /**
+     * \brief   Takes the providers of the threads out of the registry, under its lock. The
+     *          objects are not touched; a provider removes only its own entry when it is deleted.
+     * \param   threads     The names of the threads.
+     **/
+    static void _detach_thread_providers( const ArrayList<String> & threads );
+
+    /**
+     * \brief   Removes this provider from the registry, if the entry is this provider.
+     **/
+    void _leave_registry();
 
     /**
      * \brief   Creates the response that tells a consumer its request was not delivered.

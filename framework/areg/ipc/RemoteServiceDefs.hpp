@@ -349,7 +349,6 @@ AREG_IMPLEMENT_STREAMABLE(areg::RemoteConnectionState);
 constexpr areg::EventHeader areg::message_hello_server() noexcept
 {
     areg::EventHeader hdr{};
-    hdr.checksum  = areg::CHECKSUM_INVALID;
     hdr.target    = static_cast<uint32_t>(areg::COOKIE_ROUTER);
     hdr.messageId = static_cast<uint32_t>(areg::FuncIdRange::SystemServiceConnect);
     hdr.eventType = static_cast<uint16_t>(areg::EventType::EventRemoteConnection);
@@ -361,7 +360,6 @@ constexpr areg::EventHeader areg::message_hello_server() noexcept
 constexpr areg::EventHeader areg::message_bye_server() noexcept
 {
     areg::EventHeader hdr{};
-    hdr.checksum  = areg::CHECKSUM_INVALID;
     hdr.target    = static_cast<uint32_t>(areg::COOKIE_ROUTER);
     hdr.messageId = static_cast<uint32_t>(areg::FuncIdRange::SystemServiceDisconnect);
     hdr.eventType = static_cast<uint16_t>(areg::EventType::EventRemoteConnection);
@@ -373,7 +371,6 @@ constexpr areg::EventHeader areg::message_bye_server() noexcept
 constexpr areg::EventHeader areg::notify_client_connection() noexcept
 {
     areg::EventHeader hdr{};
-    hdr.checksum  = areg::CHECKSUM_INVALID;
     hdr.source    = static_cast<uint32_t>(areg::COOKIE_ROUTER);
     hdr.messageId = static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyConnection);
     hdr.eventType = static_cast<uint16_t>(areg::EventType::EventRemoteConnection);
@@ -385,7 +382,6 @@ constexpr areg::EventHeader areg::notify_client_connection() noexcept
 constexpr areg::EventHeader areg::message_register_service() noexcept
 {
     areg::EventHeader hdr{};
-    hdr.checksum  = areg::CHECKSUM_INVALID;
     hdr.target    = static_cast<uint32_t>(areg::COOKIE_ROUTER);
     hdr.messageId = static_cast<uint32_t>(areg::FuncIdRange::SystemServiceRequestRegister);
     hdr.eventType = static_cast<uint16_t>(areg::EventType::EventRemoteConnection);
@@ -397,7 +393,6 @@ constexpr areg::EventHeader areg::message_register_service() noexcept
 constexpr areg::EventHeader areg::message_query_instances() noexcept
 {
     areg::EventHeader hdr{};
-    hdr.checksum  = areg::CHECKSUM_INVALID;
     hdr.target = static_cast<uint32_t>(areg::COOKIE_ROUTER);
     hdr.messageId = static_cast<uint32_t>(areg::FuncIdRange::SystemServiceQueryInstances);
     hdr.eventType = static_cast<uint16_t>(areg::EventType::EventRemoteConnection);
@@ -409,7 +404,6 @@ constexpr areg::EventHeader areg::message_query_instances() noexcept
 constexpr areg::EventHeader areg::message_notify_instances() noexcept
 {
     areg::EventHeader hdr{};
-    hdr.checksum  = areg::CHECKSUM_INVALID;
     hdr.target    = static_cast<uint32_t>(areg::COOKIE_ROUTER);
     hdr.messageId = static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyInstances);
     hdr.eventType = static_cast<uint16_t>(areg::EventType::EventRemoteConnection);
@@ -421,7 +415,6 @@ constexpr areg::EventHeader areg::message_notify_instances() noexcept
 constexpr areg::EventHeader areg::message_register_notify() noexcept
 {
     areg::EventHeader hdr{};
-    hdr.checksum  = areg::CHECKSUM_INVALID;
     hdr.source    = static_cast<uint32_t>(areg::COOKIE_ROUTER);
     hdr.messageId = static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyRegister);
     hdr.eventType = static_cast<uint16_t>(areg::EventType::EventRemoteConnection);
@@ -433,7 +426,6 @@ constexpr areg::EventHeader areg::message_register_notify() noexcept
 constexpr areg::EventHeader areg::message_duplicate_notify() noexcept
 {
     areg::EventHeader hdr{};
-    hdr.checksum  = areg::CHECKSUM_INVALID;
     hdr.source    = static_cast<uint32_t>(areg::COOKIE_ROUTER);
     hdr.messageId = static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyDuplicate);
     hdr.eventType = static_cast<uint16_t>(areg::EventType::EventRemoteConnection);

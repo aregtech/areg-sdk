@@ -80,6 +80,30 @@ bool WatchdogManager::start_timer(Watchdog& watchdog)
     return result;
 }
 
+bool WatchdogManager::rearm_timer(Watchdog& watchdog, uint32_t msTimeout)
+{
+    WatchdogManager& watchdogManager = instance();
+    if (watchdogManager.is_ready() == false)
+        return false;
+
+    watchdogManager.mWatchdogResource.lock();
+    WatchdogManager::_os_timer_stop(watchdog.handle());
+    watchdog.mTimeoutInMs = msTimeout;
+    ++ watchdog.mSequence;
+    watchdogManager._register_watchdog(watchdog);
+    watchdogManager.mWatchdogResource.unlock();
+
+    const bool result{ TimerManagerEvent::send_event( TimerManagerEventData(&watchdog)
+                                                    , static_cast<TimerManagerEventConsumer&>(watchdogManager)
+                                                    , static_cast<DispatcherThread&>(watchdogManager)) };
+    if (!result)
+    {
+        watchdogManager._unregister_watchdog(watchdog);
+    }
+
+    return result;
+}
+
 void WatchdogManager::stop_timer(Watchdog& watchdog)
 {
     WatchdogManager& watchdogManager = instance();
@@ -114,6 +138,18 @@ inline void WatchdogManager::_register_watchdog(Watchdog & watchdog)
     mWatchdogResource.register_resource_object(watchdog.id(), &watchdog);
 }
 
+inline bool WatchdogManager::_is_registered(const Watchdog * watchdog) const
+{
+    Watchdog::GUARD_ID key{ 0u };
+    for (Watchdog * entry = mWatchdogResource.resource_first_key(key); entry != nullptr; entry = mWatchdogResource.resource_next_key(key))
+    {
+        if (entry == watchdog)
+            return true;
+    }
+
+    return false;
+}
+
 inline void WatchdogManager::_unregister_watchdog(Watchdog& watchdog)
 {
     mWatchdogResource.unregister_resource_object(watchdog.id());
@@ -145,38 +181,52 @@ void WatchdogManager::process_event(const TimerManagerEventData & data)
 {
     Watchdog* watchdog = static_cast<Watchdog*>(data.timer());
     ASSERT(watchdog != nullptr);
-    if (mWatchdogResource.exist(watchdog->id()))
+    // A watchdog unregisters under this lock before it is destroyed.
+    mWatchdogResource.lock();
+    if (_is_registered(watchdog) && (WatchdogManager::_os_timer_start(*watchdog) == false))
     {
-        if (!WatchdogManager::_os_timer_start(*watchdog))
-        {
-            _unregister_watchdog(*watchdog);
-
-            Lock lock(watchdog->mLock);
-            watchdog->mActive = false;
-        }
+        _unregister_watchdog(*watchdog);
     }
+
+    mWatchdogResource.unlock();
 }
 
 void WatchdogManager::_process_expired_timer(Watchdog* watchdog, Watchdog::WATCHDOG_ID watchdog_id, uint32_t /* hiBytes */, uint32_t /* loBytes */)
 {
     LOG_SCOPE( areg_component_private_WatchdogManager, _process_expired_timer);
 
-    const ComponentThread* componentThread{ nullptr };
+    bool expired{ false };
+    bool deadline{ false };
+    String threadName;
+    String guardedName;
+    uint64_t instance{ 0u };
 
     mWatchdogResource.lock();
 
     const Watchdog::SEQUENCE_ID sequence = Watchdog::make_sequence_id(watchdog_id);
-    if ((watchdog != nullptr) && (watchdog->sequence() == sequence))
+    if ((watchdog != nullptr) && mWatchdogResource.exist(watchdog->id()) && (watchdog->sequence() == sequence))
     {
-        componentThread = &watchdog->component_thread();
-        LOG_WARN("The watchdog [ %s ] has expired, terminating component thread [ %s ]", watchdog->name().as_string(), componentThread->name().as_string());
+        expired = true;
+        deadline = watchdog->is_deadline_guard();
+        if (deadline == false)
+        {
+            const ComponentThread & componentThread{ watchdog->component_thread() };
+            threadName  = componentThread.name();
+            guardedName = watchdog->name();
+            instance    = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(&componentThread));
+            LOG_WARN("The watchdog [ %s ] of component thread [ %s ] has expired", guardedName.as_string(), threadName.as_string());
+        }
     }
 
     mWatchdogResource.unlock();
 
-    if (componentThread != nullptr)
+    if (deadline)
     {
-        ServiceManager::request_recreate_thread(*componentThread);
+        ServiceManager::report_deadline_expired();
+    }
+    else if (expired)
+    {
+        ServiceManager::report_watchdog_expired(threadName, instance, guardedName);
     }
 }
 

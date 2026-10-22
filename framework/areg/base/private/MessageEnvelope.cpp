@@ -34,30 +34,6 @@ const SequenceNumber MessageEnvelope::_INVALID_SEQUENCE { areg::SEQUENCE_NUMBER_
 const areg::Endpoint MessageEnvelope::_INVALID_ENDPOINT { };
 const areg::RawService MessageEnvelope::_INVALID_SERVICE{ };
 
-uint32_t MessageEnvelope::_checksum_calculate(const areg::RawEnvelope& env) noexcept
-{
-    const areg::EventHeader& hdr{ env.envHeader };
-    const uint32_t buffer[] =
-    {
-          hdr.bufHeader.biOffset
-        , static_cast<uint32_t>(hdr.bufHeader.biBufType)
-        , hdr.bufHeader.biUsed
-        , hdr.rawService.role
-        , hdr.consumer.thread
-        , hdr.rawService.service
-        , hdr.provider.thread
-        , hdr.channel
-        , areg::hi_dword(static_cast<uint64_t>(hdr.sequenceNr))
-        , areg::lo_dword(static_cast<uint64_t>(hdr.sequenceNr))
-        , hdr.messageId
-        , hdr.result
-        , areg::make32(hdr.eventType, areg::make16(hdr.callType, hdr.priority))
-        , hdr.eventId
-    };
-
-    return areg::crc32_calculate(reinterpret_cast<const uint8_t*>(buffer), static_cast<int32_t>(sizeof(buffer)));
-}
-
 MessageEnvelope::MessageEnvelope(const areg::EventHeader& evtHeader, uint32_t reserve, uint32_t blockSize)
     : BufferBase(blockSize)
 {
@@ -125,18 +101,6 @@ uint32_t MessageEnvelope::init_buffer(uint8_t* newBuffer, uint32_t bufLength, bo
 
     std::memcpy(envDst->envData, envSrc->envData, srcCount);
     return hdrDst.bufHeader.biUsed;
-}
-
-void MessageEnvelope::buffer_completion_fix() const
-{
-    const areg::EventHeader* hdr{ header() };
-    if (hdr == nullptr)
-        return;
-
-    if (hdr->checksum != areg::CHECKSUM_INVALID)
-        return;
-
-    const_cast<areg::EventHeader*>(hdr)->checksum = MessageEnvelope::_checksum_calculate(reinterpret_cast<const areg::RawEnvelope&>(*hdr));
 }
 
 uint8_t* MessageEnvelope::init_envelope(const areg::EventHeader& evtHeader, uint32_t reserve /*= 0*/)

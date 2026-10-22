@@ -210,6 +210,11 @@ bool SendBacklog::pump(SendBacklog::Owner & owner)
     if (is_empty())
         return false;
 
+    if (mWait != nullptr)
+    {
+        backlog_os_poll(mWait.get());
+    }
+
     mPumpList.clear();
     {
         std::lock_guard<std::mutex> lock(mLock);
@@ -614,7 +619,9 @@ bool SendBacklog::check_limits(const Entry & entry, uint64_t nowMs, Reason & rea
         return false;
     }
 
-    if ((entry.bytes > mCapBytes.load(std::memory_order_relaxed)) && (stalledMs >= SendBacklog::CAP_STALL_MS))
+    const uint64_t cap{ mCapBytes.load(std::memory_order_relaxed) };
+    if ( (entry.bytes > cap) &&
+         ((stalledMs >= SendBacklog::CAP_STALL_MS) || ((stalledMs >= SendBacklog::CAP_PROGRESS_MS) && (entry.bytes > cap * SendBacklog::CAP_CEILING))) )
     {
         reason = Reason::OverCap;
         return false;

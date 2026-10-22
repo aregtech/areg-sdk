@@ -657,8 +657,7 @@ bool ServiceCommunicationBase::try_send_inline( areg::MessageEnvelope & data, SO
 
     hdr->internal1 = 0u;
     hdr->internal2 = 0u;
-    hdr->custom    = 0u;
-    data.buffer_completion_fix();
+    ASSERT( hdr->custom == 0u );
 
     int32_t result{ 0 };
     {
@@ -913,12 +912,11 @@ void ServiceCommunicationBase::process_received_message(areg::MessageEnvelope & 
         instance.ciCookie = cookie;
         add_instance(cookie, instance);
         areg::MessageEnvelope msgConnect{ connect_message(mServerConnection.channel_id(), cookie, areg::MessageSource::SourceService) };
-        DEBUG_LOG_DBG("Received request connect message, sending response [ %s ] of id [ %u ], to new target [ %u ], connection socket [ %u ], checksum [ %u ]"
+        DEBUG_LOG_DBG("Received request connect message, sending response [ %s ] of id [ %u ], to new target [ %u ], connection socket [ %u ]"
                     , areg::as_string( static_cast<areg::FuncIdRange>(msgConnect.message_id()))
                     , msgConnect.message_id()
                     , msgConnect.target()
-                    , static_cast<uint32_t>(whichSource.handle())
-                    , msgConnect.checksum());
+                    , static_cast<uint32_t>(whichSource.handle()));
 
         send_message( msgConnect );
     }

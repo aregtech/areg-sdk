@@ -50,6 +50,8 @@ namespace areg {
  **/
 class AREG_API Component   : public    RuntimeObject
 {
+    friend class SystemController;
+
 //////////////////////////////////////////////////////////////////////////
 // Predefined types. Fol local use
 //////////////////////////////////////////////////////////////////////////
@@ -234,6 +236,16 @@ public:
      **/
     virtual void notify_thread_started(WorkerThreadConsumer& consumer, WorkerThread & workerThread);
 
+    /**
+     * \brief   Called on the component thread when the application changes the user state with
+     *          Application::set_user_state(). areg defines no value and does nothing else: the
+     *          component decides what the state means for it. The default does nothing.
+     *
+     * \param   previous    The user state before the change.
+     * \param   current     The new user state.
+     **/
+    virtual void on_user_state( uint32_t previous, uint32_t current );
+
 /************************************************************************/
 // Component operations
 /************************************************************************/
@@ -267,20 +279,6 @@ public:
      * \param   threadName      The name of the worker thread to delete.
      **/
     void delete_worker_thread( const String & threadName );
-
-    /**
-     * \brief   Terminates the component, deletes all worker threads, and cleans up resources.
-     **/
-    void terminate_self();
-
-    /**
-     * \brief   Takes this component, its providers and its worker threads out of every global
-     *          registry, and releases nothing. The internal state of the objects is never
-     *          touched, because an abandoned thread may be using it at the same moment.
-     *
-     * \see     ComponentThread::terminate_self, StubBase::detach_from_registry
-     **/
-    void detach_from_registry();
 
     /**
      * \brief   Registers a stub (service provider) object with this component.
@@ -364,6 +362,13 @@ private:
      **/
     [[nodiscard]]
     static Component::MapComponentResource& resource_map() noexcept;
+
+    /**
+     * \brief   Takes the components of the thread out of the registry, under its lock. The
+     *          objects are not touched; a component removes only its own entry when it is deleted.
+     * \param   owner   The component thread of the components.
+     **/
+    static void _detach_thread_components( const ComponentThread & owner );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members

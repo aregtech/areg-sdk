@@ -1070,7 +1070,7 @@ int main()
     areg::wait_timeout(1000); // Wait 1 second
     
     // Check if connected
-    if (areg::Application::is_router_connected())
+    if (areg::Application::router_state() == areg::RouterState::Connected)
     {
         std::cout << "Connected to mtrouter" << std::endl;
     }

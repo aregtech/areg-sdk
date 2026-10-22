@@ -743,9 +743,9 @@ AREG_API bool disable_receive(SOCKETHANDLE hSocket) noexcept;
  *
  * \details Unlike socket_close(), this call is thread-safe by POSIX: it
  *          is defined to interrupt blocked I/O on the same descriptor from
- *          another thread.  Use this to unblock a send/receive thread before
- *          waiting for it to exit, then call socket_close() afterward from
- *          the owning thread.
+ *          another thread. On Windows it also cancels the pending I/O of the socket.
+ *          Use this to unblock a send/receive thread before waiting for it to exit,
+ *          then call socket_close() afterward from the owning thread.
  **/
 AREG_API void socket_interrupt(SOCKETHANDLE hSocket) noexcept;
 

@@ -66,8 +66,13 @@ public:
         , CMD_UnregisterConnection      //!< Requested to unregister connection
         , CMD_LostConnection            //!< Requested to send notifications to components that connection is lost.
         , CMD_ShutdownService           //!< Request to shutdown service.
-        , CMD_TerminateComponentThread  //!< Request to terminate component thread.
-        , CMD_StartComponentThread      //!< Request to start component thread.
+        , CMD_LoadModel                 //!< Request to load a model, or all models.
+        , CMD_UnloadModel               //!< Request to unload a model, or all models.
+        , CMD_ThreadRunning             //!< A component thread reports that its components started.
+        , CMD_ThreadStopped             //!< A component thread reports that it exited.
+        , CMD_WatchdogExpired           //!< The watchdog of a thread expired.
+        , CMD_DeadlineExpired           //!< The lifecycle deadline guard expired.
+        , CMD_UserState                 //!< Request to set the user state.
     };
 
     /**
@@ -172,18 +177,42 @@ public:
     static ServiceManagerEventData lost_connection( const Channel & channel );
 
     /**
-     * \brief   Creates event data to terminate a component thread.
+     * \brief   Creates event data to load or unload a model.
      *
-     * \param   threadName      The name of the component thread to terminate.
+     * \param   load        True to load the model, false to unload it.
+     * \param   modelName   The name of the model; empty for all models.
+     * \param   request     The address of the request the caller waits for, or 0 if it does not wait.
      **/
-    static ServiceManagerEventData terminate_component_thread( const String & threadName );
+    static ServiceManagerEventData model_request( bool load, const String & modelName, uint64_t request );
 
     /**
-     * \brief   Creates event data to create a component thread.
+     * \brief   Creates event data of a component thread that reports its state.
      *
-     * \param   threadName      The name of the component thread to create.
+     * \param   running     True if the thread runs, false if it exited.
+     * \param   threadName  The name of the component thread.
+     * \param   instance    The address of the component thread object.
      **/
-    static ServiceManagerEventData create_component_thread( const String & threadName );
+    static ServiceManagerEventData thread_report( bool running, const String & threadName, uint64_t instance );
+
+    /**
+     * \brief   Creates event data of an expired watchdog.
+     *
+     * \param   threadName  The name of the component thread the watchdog belongs to.
+     * \param   instance    The address of the component thread object.
+     * \param   guardedName The name of the thread whose event took too long: the component thread or its worker.
+     **/
+    static ServiceManagerEventData watchdog_expired( const String & threadName, uint64_t instance, const String & guardedName );
+
+    /**
+     * \brief   Creates event data of the expired lifecycle deadline guard.
+     **/
+    static ServiceManagerEventData deadline_expired();
+
+    /**
+     * \brief   Creates event data to set the user state.
+     * \param   userState   The new user state.
+     **/
+    static ServiceManagerEventData user_state( uint32_t userState );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -337,10 +366,20 @@ inline constexpr const char * ServiceManagerEventData::as_string( ServiceManager
         return "ServiceManagerEventData::ServiceManagerCommand::CMD_LostConnection";
     case ServiceManagerEventData::ServiceManagerCommand::CMD_ShutdownService:
         return "ServiceManagerEventData::ServiceManagerCommand::CMD_ShutdownService";
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_TerminateComponentThread:
-        return "ServiceManagerEventData::ServiceManagerCommand::CMD_TerminateComponentThread";
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_StartComponentThread:
-        return "ServiceManagerEventData::ServiceManagerCommand::CMD_StartComponentThread";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_LoadModel:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_LoadModel";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_UnloadModel:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_UnloadModel";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_ThreadRunning:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_ThreadRunning";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_ThreadStopped:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_ThreadStopped";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_WatchdogExpired:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_WatchdogExpired";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_DeadlineExpired:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_DeadlineExpired";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_UserState:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_UserState";
     default:
         return "ERR: undefined ServiceManagerEventData::ServiceManagerCommand value!!!";
     }

@@ -18,7 +18,7 @@ The **22_pubwatchdog** project demonstrates the use of a **Watchdog** in a distr
 
 ## How It Works
 
-The project consists of a public service provider and consumer applications communicating via `mtrouter`. The provider runs service threads monitored by the Watchdog. If a thread becomes unresponsive, the Watchdog terminates it, sends a **service disconnected** notification to all consumers, restarts the thread, and sends a **service connected** notification. Consumers automatically resume communication with the restarted service.
+The project consists of a public service provider and consumer applications communicating via `mtrouter`. The provider runs service threads monitored by the Watchdog. If a thread becomes unresponsive, Areg applies its failure policy, here `THREAD_FAILURE_POLICY(areg::FailurePolicy::Restart)`: the consumers get a **service disconnected** notification, a new instance of the thread starts, and they get a **service connected** notification. The default policy, `Exit`, would end the process instead. Consumers automatically resume communication with the restarted service.
 
 The Areg Framework automates service discovery using `service_connected()` and manages inter-process communication (IPC) reliably, regardless of the startup order of the processes.
 
@@ -31,7 +31,7 @@ The Areg Framework automates service discovery using `service_connected()` and m
    - Public Service Consumer that sends requests to the provider, simulating delayed responses to trigger the Watchdog timeout mechanism.
 
 3. **[22_pubservice](./pubservice/)**:  
-   - Public Service Provider where threads, controlled by the Watchdog, handle incoming requests. Unresponsive threads are terminated, restarted, and consumers are notified automatically.
+   - Public Service Provider where threads, controlled by the Watchdog, handle incoming requests. Unresponsive threads are replaced by a new instance, and consumers are notified automatically.
 
 ## Use Cases
 

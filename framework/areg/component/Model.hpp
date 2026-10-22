@@ -118,6 +118,62 @@ using FuncDeleteComponent   = std::function<void (areg::Component& /*comp*/, con
  **/
 namespace areg {
 
+/**
+ * \brief   areg::FailurePolicy
+ *          What areg does with a component thread that misses a deadline: its watchdog, its
+ *          start or its stop. Set per thread in the model, THREAD_FAILURE_POLICY().
+ **/
+enum class FailurePolicy : uint8_t
+{
+      Exit      //!< Ends the process with areg::LIFECYCLE_FAILURE_EXIT_CODE. The default.
+    , Restart   //!< On a watchdog expiry, replaces the thread with a new instance; otherwise as Ignore.
+    , Ignore    //!< Abandons the thread: it receives nothing, it is freed if it returns, the process goes on.
+};
+
+/**
+ * \brief   areg::ModelState
+ *          The state of a model. Only areg changes it.
+ **/
+enum class ModelState : uint8_t
+{
+      Unloaded  //!< No thread of the model runs.
+    , Loading   //!< The threads of the model are starting.
+    , Loaded    //!< The threads of the model run.
+    , Unloading //!< The threads of the model are stopping.
+};
+
+/**
+ * \brief   areg::ThreadState
+ *          The state of a component thread. Only areg changes it.
+ **/
+enum class ThreadState : uint8_t
+{
+      Unknown   //!< There is no component thread of that name.
+    , Starting  //!< The thread is created and its components start.
+    , Running   //!< The components started and the thread processes events.
+    , Stopping  //!< The thread is asked to stop: it drains and its components shut down.
+    , Stopped   //!< The thread has exited.
+    , Abandoned //!< The thread missed a deadline: it is unregistered, receives nothing and is freed if it returns.
+};
+
+/**
+ * \brief   Returns the name of the failure policy.
+ **/
+[[nodiscard]]
+AREG_API const char * as_string( areg::FailurePolicy policy ) noexcept;
+
+/**
+ * \brief   Returns the name of the model state.
+ **/
+[[nodiscard]]
+AREG_API const char * as_string( areg::ModelState state ) noexcept;
+
+/**
+ * \brief   Returns the name of the thread state.
+ **/
+[[nodiscard]]
+AREG_API const char * as_string( areg::ThreadState state ) noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // areg::ServiceEntry class declaration
 //////////////////////////////////////////////////////////////////////////
@@ -1390,6 +1446,16 @@ public:
      *          Meaningful only if `mDropOnFull` is `True`. Otherwise, ignored.
      **/
     uint32_t        mQueueTimeout;
+
+    /**
+     * \brief   The time in milliseconds the thread may take to start, and to stop after its drain.
+     **/
+    uint32_t        mLifecycleTimeout;
+
+    /**
+     * \brief   What areg does when the thread misses its watchdog, start or stop deadline.
+     **/
+    areg::FailurePolicy mFailurePolicy;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -1510,14 +1576,7 @@ class AREG_API Model
 // areg::Model class, Friend classes
 //////////////////////////////////////////////////////////////////////////
     friend class ComponentLoader;
-
-    enum class ModelState : uint8_t
-    {
-          Initialized
-        , Loaded
-        , Unloading   //!< Threads were asked to exit, none of them is joined yet.
-        , Unloaded
-    };
+    friend class SystemController;
 
 //////////////////////////////////////////////////////////////////////////
 // areg::Model class, Constructors / Destructor
@@ -1593,48 +1652,29 @@ public:
     bool has_registered_component( const String & roleName ) const noexcept;
 
     /**
-     * \brief   Returns true if the model is loaded; false otherwise. A model whose threads
-     *          were asked to exit is no longer loaded, even before they are all joined.
+     * \brief   Returns true if the model is loaded: its threads run. A model whose threads are
+     *          starting or stopping is not loaded.
      **/
     [[nodiscard]]
     bool is_model_loaded() const noexcept;
 
     /**
-     * \brief   Returns true if the threads of the model were asked to exit and are not
-     *          joined yet, which is the state between a unload that does not wait and the
-     *          call that waits for it.
+     * \brief   Returns true if the threads of the model are stopping.
      **/
     [[nodiscard]]
     bool is_model_unloading() const noexcept;
+
+    /**
+     * \brief   Returns the state of the model.
+     **/
+    [[nodiscard]]
+    inline areg::ModelState model_state() const noexcept;
 
     /**
      * \brief   Returns the list of thread entries registered in the model.
      **/
      [[nodiscard]]
    const areg::ComponentThreadList & thread_list() const noexcept;
-
-    /**
-     * \brief   Marks the model as loaded or unloaded.
-     *
-     * \param   isLoaded    If true, marks the model as loaded; if false, marks it as unloaded.
-     **/
-    void mark_model_loaded( bool isLoaded = true ) noexcept;
-
-    /**
-     * \brief   Marks the model as unloading. Use it when the threads were asked to exit but
-     *          none of them is joined yet, so that the model is no longer reported as loaded
-     *          while the call that waits for the threads still has work to do.
-     **/
-    void mark_model_unloading() noexcept;
-
-    /**
-     * \brief   Marks the model as alive and starts the timer, or stops the timer when no longer
-     *          alive to calculate the duration.
-     *
-     * \param   is_alive     If true, marks the model as alive and starts the timer; if false,
-     *                      stops the timer.
-     **/
-    void mark_model_alive( bool is_alive) noexcept;
 
     /**
      * \brief   Adds a thread entry to the model. The entry must have a globally unique name.
@@ -1717,6 +1757,18 @@ public:
     inline TIME64 alive_duration() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
+// areg::Model class, Hidden methods
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Sets the state of the model. The alive duration starts when the model becomes
+     *          loaded and stops when it starts unloading.
+     *
+     * \param   newState    The new state of the model.
+     **/
+    void set_model_state( areg::ModelState newState ) noexcept;
+
+//////////////////////////////////////////////////////////////////////////
 // areg::Model class, Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
@@ -1731,9 +1783,14 @@ private:
     ComponentThreadList     mModelThreads;
 
     /**
-     * \brief   The Flag, indicating whether model is loaded or not.
+     * \brief   The state of the model.
      **/
-    ModelState             mLoadState;
+    areg::ModelState        mLoadState;
+
+    /**
+     * \brief   True once the model was loaded the first time.
+     **/
+    bool                    mWasLoaded;
 
     /**
      * \brief   The duration of time where model was loaded and alive.
@@ -1843,7 +1900,12 @@ inline const areg::ComponentThreadEntry& areg::ComponentThreadList::operator [] 
 
 inline TIME64 areg::Model::alive_duration() const noexcept
 {
-    return (mLoadState == ModelState::Initialized ? 0 : mAliveDuration.duration_since_start());
+    return (mWasLoaded ? mAliveDuration.duration_since_start() : 0);
+}
+
+inline areg::ModelState areg::Model::model_state() const noexcept
+{
+    return mLoadState;
 }
 
 template<typename ComponentType>

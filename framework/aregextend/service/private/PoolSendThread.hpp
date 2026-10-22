@@ -171,7 +171,7 @@ private:
 
     /**
      * \brief   Receives IPC outbound events and exit signals dispatched to this send thread.
-     *          Zeros internal1/internal2/custom before wire transmission.
+     *          Zeros internal1/internal2 before wire transmission.
      *          Exits on is_exit_prio().
      **/
     void start_event_processing( areg::Event & eventElem ) final;

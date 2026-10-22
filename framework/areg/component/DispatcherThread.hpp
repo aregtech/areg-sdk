@@ -225,8 +225,8 @@ public:
     void trigger_exit_drained();
 
     /**
-     * \brief   Shuts down the thread and frees resources. If waiting timeout is not 'DO_NOT_WAIT
-     *          and it expires, the function terminates the thread. The shutdown thread can be
+     * \brief   Shuts down the thread and frees resources. A thread that does not stop within the
+     *          waiting timeout is not killed and the result is Stuck. The shutdown thread can be
      *          re-created again. The calling thread (current thread) may be blocked until target
      *          thread completes the job.
      *
@@ -237,7 +237,7 @@ public:
      *                              the job. - Set any other value in milliseconds to specify
      *                              waiting time until thread completes the job or timeout expires.
      * \return  Returns the thread completion status. The following statuses are defined:
-     *          Thread::Terminated -- The waiting timeout expired and thread was terminated;
+     *          Thread::Stuck -- The waiting timeout expired and the thread keeps running;
      *          Thread::Completed -- The thread was valid and completed normally; Thread::Invalid --
      *          The thread was not valid and was not running, nothing was done.
      **/

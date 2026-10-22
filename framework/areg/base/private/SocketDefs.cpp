@@ -1122,6 +1122,8 @@ AREG_API_IMPL void areg::socket_interrupt(SOCKETHANDLE hSocket) noexcept
     {
 #ifdef _WIN32
         ::shutdown(static_cast<SOCKET>(hSocket), SD_BOTH);
+        // A blocked receive returns only when its pending operation is canceled.
+        static_cast<void>(::CancelIoEx(reinterpret_cast<HANDLE>(hSocket), nullptr));
 #else
         ::shutdown(static_cast<int>(hSocket), SHUT_RDWR);
 #endif

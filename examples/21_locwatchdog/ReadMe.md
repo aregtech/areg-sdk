@@ -15,7 +15,9 @@ The **21_locwatchdog** project demonstrates the use of a **Watchdog** within a *
 
 ## How It Works
 
-The project contains a **Local Service** that runs entirely within a single process, with separate threads for the **Service Provider** and **Service Consumer**. A **Watchdog** monitors all threads, and if any thread exceeds its allowed response time, the watchdog terminates and restarts it. The **Service Consumer** logs these events, offering visibility into thread health and recovery.
+The project contains a **Local Service** that runs entirely within a single process, with separate threads for the **Service Provider** and **Service Consumer**. A **Watchdog** guards the provider thread: if one event takes longer than its timeout, Areg applies the thread's failure policy. The model sets `THREAD_FAILURE_POLICY(areg::FailurePolicy::Restart)`: the thread gets 500 ms to stop, then a new instance with new components starts (a thread that does not stop is abandoned, never killed). The **Service Consumer** sees the service disconnect and connect again, and logs these events.
+
+The other policies are `Exit`, the default, which ends the process with exit code 70 so that the OS supervisor restarts it, and `Ignore`, which abandons the thread and lets the process go on.
 
 Generated code from [HelloWatchdog.siml](./services/HelloWatchdog.siml) automates **Object RPC** communication between service components, ensuring smooth interaction within the multithreaded environment. The project demonstrates robust internal communication without requiring external network connections.
 

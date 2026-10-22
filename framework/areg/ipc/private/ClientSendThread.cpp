@@ -56,7 +56,7 @@ void ClientSendThread::ready_for_events( bool is_ready )
     else
     {
         DispatcherThread::ready_for_events( false );
-        mConnection.close_socket( );
+        mConnection.interrupt_socket( );
     }
 }
 
@@ -66,7 +66,7 @@ void ClientSendThread::start_event_processing( Event & eventElem )
 
     if ( eventElem.is_exit_prio() )
     {
-        mConnection.close_socket();
+        mConnection.interrupt_socket();
         trigger_exit();
         return;
     }
@@ -76,8 +76,7 @@ void ClientSendThread::start_event_processing( Event & eventElem )
     ASSERT( hdr0 != nullptr );
     hdr0->internal1 = 0u;
     hdr0->internal2 = 0u;
-    hdr0->custom    = 0u;
-    eventElem.envelope().buffer_completion_fix(); // compute checksum now; zeroed fields are not covered by checksum
+    ASSERT( hdr0->custom == 0u );
 
     uint32_t bufCount  { 0u };
     uint64_t totalSize { 0u };  // 64-bit: sum of up to DEFAULT_DRAIN_LIMIT wire sizes cannot overflow.
@@ -99,7 +98,7 @@ void ClientSendThread::start_event_processing( Event & eventElem )
                 mDrain[i].reset();
 
             mSendGate.leave(bufCount);
-            mConnection.close_socket();
+            mConnection.interrupt_socket();
             trigger_exit();
             return;
         }
@@ -108,8 +107,7 @@ void ClientSendThread::start_event_processing( Event & eventElem )
         ASSERT( hdr != nullptr );
         hdr->internal1 = 0u;
         hdr->internal2 = 0u;
-        hdr->custom    = 0u;
-        evt.envelope().buffer_completion_fix(); // compute checksum now; zeroed fields are not covered by checksum
+        ASSERT( hdr->custom == 0u );
 
         const uint32_t wireSize{ static_cast<uint32_t>(sizeof(areg::EventHeader)) + hdr->bufHeader.biUsed };
         mIoBuffer[bufCount] = { reinterpret_cast<const uint8_t*>(hdr), wireSize };

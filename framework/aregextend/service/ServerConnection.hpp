@@ -111,7 +111,7 @@ public:
      *
      * \param   in_message      The envelope to send.
      * \param   clientSocket    The accepted socket object.
-     * \return  Bytes sent on success; zero on invalid checksum; negative on error.
+     * \return  Bytes sent on success; zero if nothing was sent; negative on error.
      **/
     inline int32_t send_message( const MessageEnvelope & in_message, const SocketAccepted & clientSocket ) const;
 
@@ -120,7 +120,7 @@ public:
      *
      * \param   in_message  The envelope to send.
      * \param   hSocket     Raw OS socket handle of the target client.
-     * \return  Bytes sent on success; zero on invalid checksum; negative on error.
+     * \return  Bytes sent on success; zero if nothing was sent; negative on error.
      **/
     inline int32_t send_message( const MessageEnvelope & in_message, SOCKETHANDLE hSocket ) const;
 
@@ -130,11 +130,11 @@ public:
 
     /**
      * \brief   Receives message data via socket connection into an MessageEnvelope.
-     *          Returns bytes received, zero if invalid checksum, or negative on failure.
+     *          Returns bytes received, zero if the data is too long or incomplete, or negative on failure.
      *
      * \param[in,out] out_message     MessageEnvelope to receive into.
      * \param   clientSocket          The accepted socket object.
-     * \return  Returns length in bytes of data received; zero if checksum invalid; negative on failure.
+     * \return  Returns length in bytes of data received; zero if the data is too long or incomplete; negative on failure.
      **/
     inline int32_t receive_message( MessageEnvelope & out_message, const SocketAccepted & clientSocket ) const;
 
@@ -185,7 +185,6 @@ inline int32_t ServerConnection::send_message(const MessageEnvelope & in_message
     if (hdr == nullptr)
         return 0;
 
-    in_message.buffer_completion_fix();
     const uint32_t wireSize{ static_cast<uint32_t>(sizeof(areg::EventHeader)) + hdr->bufHeader.biUsed };
     areg::IoBuffer ioBuffer{ reinterpret_cast<const uint8_t*>(hdr), wireSize };
     return SocketConnectionBase::send_messages_batch(&ioBuffer, 1u, hSocket, wireSize);

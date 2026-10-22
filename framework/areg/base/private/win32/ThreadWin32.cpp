@@ -126,31 +126,8 @@ Thread::ThreadCompletion Thread::_os_destroy_thread(uint32_t waitForStopMs)
 
         if (mWaitForExit.lock(waitForStopMs == areg::DO_NOT_WAIT ? 0u : waitForStopMs) == false)
         {
-            // ::SuspendThread(handle);    // <== uncomment to inspect where the thread is stuck
-            // ASSERT(false);
-
-#ifdef _MSC_VER
-    #pragma warning(disable: 6258)
-#endif // _MSC_VER
-            // TerminateThread does not unwind and releases nothing the victim holds.
-            ::TerminateThread(static_cast<HANDLE>(handle), static_cast<DWORD>(ThreadConsumer::ExitCode::Terminated));
-
-            // TerminateThread is asynchronous, so the death is confirmed on the handle.
-            constexpr DWORD TERMINATE_CONFIRM_MS{ 1000u };
-            if (::WaitForSingleObject(static_cast<HANDLE>(handle), TERMINATE_CONFIRM_MS) == WAIT_OBJECT_0)
-            {
-                result = Thread::ThreadCompletion::Terminated;
-                this->mWaitForRun.reset();
-                this->mWaitForExit.set_signaled();
-                this->_set_not_running();
-            }
-            else
-            {
-                result = Thread::ThreadCompletion::Stuck;
-            }
-#ifdef _MSC_VER
-    #pragma warning(default: 6258)
-#endif // _MSC_VER
+            // A thread that does not return within the timeout keeps running.
+            result = Thread::ThreadCompletion::Stuck;
         }
         else
         {

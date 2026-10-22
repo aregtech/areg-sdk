@@ -94,6 +94,8 @@ public:
     static constexpr uint32_t   CAP_STALL_MS        { 1'000u };
     //!< A backlog above its cap holds new messages back only if it moved within these milliseconds.
     static constexpr uint32_t   CAP_PROGRESS_MS     { 50u };
+    //!< A backlog above this many times its cap closes the connection once it did not move for CAP_PROGRESS_MS.
+    static constexpr uint32_t   CAP_CEILING         { 2u };
     //!< Longest wait, in milliseconds, of a send thread without its wait objects (fallback mode).
     static constexpr uint32_t   RECHECK_MS          { 10u };
     //!< Longest wait, in milliseconds, between two liveness checks of an unlimited backlog.
@@ -235,7 +237,8 @@ public:
      * \param   overCap On return, true if a connection keeps more than its cap while its peer
      *                  still takes data, within CAP_PROGRESS_MS. The send thread then stops
      *                  taking new messages until it is below. A peer that takes nothing holds no
-     *                  one back; it is closed instead.
+     *                  one back; it is closed instead, after CAP_STALL_MS or as soon as its
+     *                  backlog passes CAP_CEILING times the cap.
      * \return  The milliseconds wait() may block.
      **/
     [[nodiscard]]
@@ -404,6 +407,12 @@ bool backlog_os_attach(SendBacklogWaitOs * wait, SOCKETHANDLE hSocket) noexcept;
  * \brief   Ends the current or the next backlog_os_wait(). Called from any thread.
  **/
 void backlog_os_signal(SendBacklogWaitOs * wait) noexcept;
+
+/**
+ * \brief   Takes the reports of ended writes without waiting. Where the operating system marks a
+ *          write completed only once its report is taken, backlog_os_collect() then sees it.
+ **/
+void backlog_os_poll(SendBacklogWaitOs * wait) noexcept;
 
 /**
  * \brief   Blocks until one of \a sockets can take data or a write completes, the wait is

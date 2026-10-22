@@ -66,6 +66,8 @@ namespace areg {
  **/
 class AREG_API Thread  : public RuntimeObject
 {
+    friend class SystemController;
+
 /************************************************************************/
 // Internal class declaration
 /************************************************************************/
@@ -86,7 +88,6 @@ public:
     {
           Stuck      = -2   //!< The waiting timeout expired and the thread could NOT be stopped.
                             //!< It keeps running and using its objects, no way to terminate it.
-        , Terminated = -1   //!< The waiting timeout expired and the thread was forcibly killed.
         , Completed  = 0    //!< The thread was valid and normally completed
         , Invalid    = 1    //!< The thread handle is invalid and is not running, nothing to do
     };
@@ -223,17 +224,15 @@ public:
      *          removed from the resource maps in every case, so nothing reaches it afterwards,
      *          and a shut down thread object can be started again.
      *
-     *          If the waiting timeout expires the thread is terminated where the platform can do it,
-     *          which is Windows only. The returned status says which of the three outcomes happened.
+     *          A thread is never killed: if the waiting timeout expires it keeps running, and the
+     *          returned status is Stuck. The returned status says which outcome happened.
      *
      * \param   waitForStopMs       Waiting timeout in milliseconds until the target thread finishes.
      *                              WAIT_INFINITE (the default) asks and waits until the thread is out.
-     *                              DO_NOT_WAIT asks and does not wait, which terminates the thread
-     *                              at once where the platform can and reports Stuck where it cannot.
-     *                              Other values are a specific timeout with the same two outcomes.
+     *                              DO_NOT_WAIT asks and does not wait, and reports Stuck if the
+     *                              thread has not finished yet. Other values are a specific timeout.
      * \return  Thread completion status: 
      *              - Completed if the thread completed normally;
-     *              - Terminated if the timeout expired and the thread was forcibly killed;
      *              - Stuck if the timeout expired and the thread could not be stopped;
      *              - Invalid if the thread was not valid and not running.
      *

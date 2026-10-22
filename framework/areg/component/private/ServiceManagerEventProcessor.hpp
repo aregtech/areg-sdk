@@ -79,6 +79,15 @@ public:
      **/
     inline const ServerList& registered_service_list() const;
 
+    /**
+     * \brief   Unregisters every local provider and consumer whose address names one of the
+     *          threads, and notifies their peers that they are disconnected.
+     * \param   threads             The names of the threads.
+     * \param   reason              The disconnect reason sent to the peers.
+     * \param   registerProvider    The provider to send notification.
+     **/
+    void unregister_thread_services( const ArrayList<String> & threads, areg::DisconnectReason reason, RegistrationProvider & registerProvider );
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls
 //////////////////////////////////////////////////////////////////////////
@@ -134,21 +143,6 @@ private:
      * \param   status      The service connection status.
      **/
     void _send_disconnected( const ProxyAddress & client, const StubAddress & server, const areg::ServiceConnectionState status ) const;
-
-    /**
-     * \brief   Terminates the component thread. Returns true if successful.
-     *
-     * \param   threadName      The thread name to terminate.
-     * \return  Returns true if thread was terminated.
-     **/
-    bool _terminate_component_thread( const String & threadName );
-
-    /**
-     * \brief   Restarts component thread and all related components and workers.
-     *
-     * \param   threadName      The thread name to restart.
-     **/
-    void _start_component_thread( const String & threadName );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

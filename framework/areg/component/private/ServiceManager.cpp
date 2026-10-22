@@ -37,7 +37,8 @@ DEF_LOG_SCOPE(areg_component_private_ServiceManager, request_register_provider);
 DEF_LOG_SCOPE(areg_component_private_ServiceManager, request_unregister_provider);
 DEF_LOG_SCOPE(areg_component_private_ServiceManager, request_register_consumer);
 DEF_LOG_SCOPE(areg_component_private_ServiceManager, request_unregister_consumer);
-DEF_LOG_SCOPE(areg_component_private_ServiceManager, request_recreate_thread);
+DEF_LOG_SCOPE(areg_component_private_ServiceManager, request_load_model);
+DEF_LOG_SCOPE(areg_component_private_ServiceManager, request_unload_model);
 DEF_LOG_SCOPE(areg_component_private_ServiceManager, extract_service_addresses);
 
 //////////////////////////////////////////////////////////////////////////
@@ -106,6 +107,9 @@ const Channel& ServiceManager::connection_channel() noexcept
 
 void ServiceManager::request_register_provider( const StubAddress & whichServer )
 {
+    if ( SystemController::is_caller_abandoned( ) )
+        return;
+
     LOG_SCOPE( areg_component_private_ServiceManager, request_register_provider);
     LOG_DBG("Request to register server [ %s ] of interface [ %s ]", whichServer.role_name().as_string(), whichServer.service_name().as_string());
 
@@ -119,6 +123,9 @@ void ServiceManager::request_register_provider( const StubAddress & whichServer 
 
 void ServiceManager::request_unregister_provider( const StubAddress & whichServer, const areg::DisconnectReason reason )
 {
+    if ( SystemController::is_caller_abandoned( ) )
+        return;
+
     LOG_SCOPE( areg_component_private_ServiceManager, request_unregister_provider);
     LOG_DBG( "Request to unregister server [ %s ] of interface [ %s ]", whichServer.role_name( ).as_string( ), whichServer.service_name( ).as_string( ) );
     
@@ -132,6 +139,9 @@ void ServiceManager::request_unregister_provider( const StubAddress & whichServe
 
 void ServiceManager::request_register_consumer( const ProxyAddress & whichClient )
 {
+    if ( SystemController::is_caller_abandoned( ) )
+        return;
+
     LOG_SCOPE( areg_component_private_ServiceManager, request_register_consumer);
 
     LOG_DBG( "Request to register proxy [ %s ] of interface [ %s ]", whichClient.role_name( ).as_string( ), whichClient.service_name( ).as_string( ) );
@@ -146,6 +156,9 @@ void ServiceManager::request_register_consumer( const ProxyAddress & whichClient
 
 void ServiceManager::request_unregister_consumer( const ProxyAddress & whichClient, const areg::DisconnectReason reason )
 {
+    if ( SystemController::is_caller_abandoned( ) )
+        return;
+
     LOG_SCOPE( areg_component_private_ServiceManager, request_unregister_consumer);
     LOG_DBG( "Request to unregister proxy [ %s ] of interface [ %s ]", whichClient.role_name( ).as_string( ), whichClient.service_name( ).as_string( ) );
     
@@ -157,24 +170,97 @@ void ServiceManager::request_unregister_consumer( const ProxyAddress & whichClie
                                   , static_cast<DispatcherThread &>(serviceManager));
 }
 
-void ServiceManager::request_recreate_thread(const ComponentThread& whichThread)
+bool ServiceManager::request_load_model( const String & modelName, bool waitComponents )
 {
-    LOG_SCOPE( areg_component_private_ServiceManager, request_recreate_thread );
-    LOG_DBG("Request to re-create component thread [ %s ]", whichThread.name().as_string());
+    LOG_SCOPE( areg_component_private_ServiceManager, request_load_model );
 
     ServiceManager & serviceManager = ServiceManager::instance();
-    ServiceManagerEvent::send_event(ServiceManagerEventData::terminate_component_thread(whichThread.name())
-                                  , static_cast<ServiceManagerEventConsumer &>(serviceManager)
-                                  , static_cast<DispatcherThread &>(serviceManager));
+    if ( serviceManager.is_ready( ) == false )
+    {
+        LOG_ERR( "The service manager does not run, the model [ %s ] is not loaded", modelName.as_string( ) );
+        return false;
+    }
+
+    if ( (Thread::current_thread( ) == static_cast<Thread *>(&serviceManager)) || SystemController::is_caller_in_model( modelName ) )
+    {
+        // A caller that belongs to the model does not wait.
+        return ServiceManager::_post_lifecycle_event( ServiceManagerEventData::model_request( true, modelName, 0u ) );
+    }
+
+    std::shared_ptr<SystemController::Request> request{ std::make_shared<SystemController::Request>( waitComponents ) };
+    std::shared_ptr<SystemController::Request> * holder{ new std::shared_ptr<SystemController::Request>( request ) };
+    if ( ServiceManager::_post_lifecycle_event( ServiceManagerEventData::model_request( true, modelName, static_cast<uint64_t>(reinterpret_cast<uintptr_t>(holder)) ) ) == false )
+    {
+        delete holder;
+        return false;
+    }
+
+    return request->wait( );
 }
 
-bool ServiceManager::_routing_service_configure()
+void ServiceManager::request_unload_model( const String & modelName, bool waitComplete )
+{
+    LOG_SCOPE( areg_component_private_ServiceManager, request_unload_model );
+
+    ServiceManager & serviceManager = ServiceManager::instance();
+    if ( serviceManager.is_ready( ) == false )
+        return;
+
+    if ( (waitComplete == false) || (Thread::current_thread( ) == static_cast<Thread *>(&serviceManager)) || SystemController::is_caller_in_model( modelName ) )
+    {
+        static_cast<void>(ServiceManager::_post_lifecycle_event( ServiceManagerEventData::model_request( false, modelName, 0u ) ));
+        return;
+    }
+
+    std::shared_ptr<SystemController::Request> request{ std::make_shared<SystemController::Request>( ) };
+    std::shared_ptr<SystemController::Request> * holder{ new std::shared_ptr<SystemController::Request>( request ) };
+    if ( ServiceManager::_post_lifecycle_event( ServiceManagerEventData::model_request( false, modelName, static_cast<uint64_t>(reinterpret_cast<uintptr_t>(holder)) ) ) == false )
+    {
+        delete holder;
+        return;
+    }
+
+    static_cast<void>(request->wait( ));
+}
+
+void ServiceManager::report_thread_running( const ComponentThread & whichThread )
+{
+    static_cast<void>(ServiceManager::_post_lifecycle_event( ServiceManagerEventData::thread_report( true, whichThread.name( ), static_cast<uint64_t>(reinterpret_cast<uintptr_t>(&whichThread)) ) ));
+}
+
+void ServiceManager::report_thread_stopped( const ComponentThread & whichThread )
+{
+    static_cast<void>(ServiceManager::_post_lifecycle_event( ServiceManagerEventData::thread_report( false, whichThread.name( ), static_cast<uint64_t>(reinterpret_cast<uintptr_t>(&whichThread)) ) ));
+}
+
+void ServiceManager::report_watchdog_expired( const String & threadName, uint64_t instance, const String & guardedName )
+{
+    static_cast<void>(ServiceManager::_post_lifecycle_event( ServiceManagerEventData::watchdog_expired( threadName, instance, guardedName ) ));
+}
+
+void ServiceManager::report_deadline_expired()
+{
+    static_cast<void>(ServiceManager::_post_lifecycle_event( ServiceManagerEventData::deadline_expired( ) ));
+}
+
+areg::ThreadState ServiceManager::thread_state( const String & threadName )
+{
+    return ServiceManager::instance( ).mController.thread_state( threadName );
+}
+
+void ServiceManager::request_user_state( uint32_t userState )
+{
+    if ( (ServiceManager::instance( ).is_ready( ) == false) || (ServiceManager::_post_lifecycle_event( ServiceManagerEventData::user_state( userState ) ) == false) )
+    {
+        SystemController::store_user_state( userState );
+    }
+}
+
+bool ServiceManager::_post_lifecycle_event( const ServiceManagerEventData & data )
 {
     ServiceManager & serviceManager = ServiceManager::instance();
-    ServiceManagerEventData data(ServiceManagerEventData::configure_connection(areg::RemoteServiceKind::Router, static_cast<uint32_t>(areg::ConnectionType::Tcpip)));
-
     return ServiceManagerEvent::send_event( data
-                                         , static_cast<ServiceManagerEventConsumer &>(serviceManager) 
+                                         , static_cast<ServiceManagerEventConsumer &>(serviceManager)
                                          , static_cast<DispatcherThread &>(serviceManager));
 }
 
@@ -185,19 +271,6 @@ bool ServiceManager::_routing_service_start( uint32_t connectTypes )
     return ServiceManagerEvent::send_event( data
                                          , static_cast<ServiceManagerEventConsumer &>(serviceManager)
                                          , static_cast<DispatcherThread &>(serviceManager));
-}
-
-bool ServiceManager::_routing_service_start( const String & ipAddress, uint16_t portNr )
-{
-    bool result = false;
-    if ( !ipAddress.is_empty() && (portNr != areg::InvalidPort) )
-    {
-        ServiceManager & serviceManager = ServiceManager::instance( );
-        result = ServiceManagerEvent::send_event( ServiceManagerEventData::start_net_connection( ipAddress, portNr )
-                                              , static_cast<ServiceManagerEventConsumer &>(serviceManager)
-                                              , static_cast<DispatcherThread &>(serviceManager) );
-    }
-    return result;
 }
 
 void ServiceManager::_routing_service_stop()
@@ -218,19 +291,6 @@ bool ServiceManager::_is_routing_pending() noexcept
     return ServiceManager::instance().service_connection_provider().is_host_pending();
 }
 
-bool ServiceManager::_is_routing_configured() noexcept
-{
-    return ServiceManager::instance().service_connection_provider().is_host_setup( );
-}
-
-void ServiceManager::_request_create_thread(const String& componentThread)
-{
-    ServiceManager& serviceManager = ServiceManager::instance();
-    ServiceManagerEvent::send_event( ServiceManagerEventData::create_component_thread(componentThread)
-                                  , static_cast<ServiceManagerEventConsumer&>(serviceManager)
-                                  , static_cast<DispatcherThread&>(serviceManager) );
-}
-
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
@@ -241,6 +301,7 @@ ServiceManager::ServiceManager()
     , RegistrationConsumer       ( )
 
     , mEventProcessor   ( self() )
+    , mController       ( )
     , mServiceClient    ( static_cast<ConnectionConsumer&>(self()), static_cast<RegistrationConsumer&>(self()) )
     , mLock             (  )
 {
@@ -256,7 +317,82 @@ void ServiceManager::process_event( const ServiceManagerEventData & data )
     ServiceManagerEventData::ServiceManagerCommand cmdService { data.command( ) };
     LOG_DBG( "Service Manager is going to execute command [ %s ]", ServiceManagerEventData::as_string( cmdService ) );
 
-    mEventProcessor.process_service_event( cmdService, data.read_stream( ), service_connection_provider( ), service_register_provider() );
+    const InStream & stream{ data.read_stream( ) };
+    switch ( cmdService )
+    {
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_LoadModel:
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_UnloadModel:
+        {
+            String modelName;
+            uint64_t holder{ 0u };
+            stream >> modelName;
+            stream >> holder;
+
+            std::shared_ptr<SystemController::Request> request;
+            if ( holder != 0u )
+            {
+                std::shared_ptr<SystemController::Request> * owned{ reinterpret_cast<std::shared_ptr<SystemController::Request> *>(static_cast<uintptr_t>(holder)) };
+                request = *owned;
+                delete owned;
+            }
+
+            if ( cmdService == ServiceManagerEventData::ServiceManagerCommand::CMD_LoadModel )
+            {
+                mController.load_model( modelName, request );
+            }
+            else
+            {
+                mController.unload_model( modelName, request );
+            }
+        }
+        break;
+
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_ThreadRunning:
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_ThreadStopped:
+        {
+            String threadName;
+            uint64_t instance{ 0u };
+            stream >> threadName;
+            stream >> instance;
+            if ( cmdService == ServiceManagerEventData::ServiceManagerCommand::CMD_ThreadRunning )
+            {
+                mController.thread_running( threadName, instance );
+            }
+            else
+            {
+                mController.thread_stopped( threadName, instance );
+            }
+        }
+        break;
+
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_WatchdogExpired:
+        {
+            String threadName;
+            String guardedName;
+            uint64_t instance{ 0u };
+            stream >> threadName;
+            stream >> instance;
+            stream >> guardedName;
+            mController.watchdog_expired( threadName, instance, guardedName );
+        }
+        break;
+
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_DeadlineExpired:
+        mController.deadline_expired( );
+        break;
+
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_UserState:
+        {
+            uint32_t userState{ 0u };
+            stream >> userState;
+            mController.set_user_state( userState );
+        }
+        break;
+
+    default:
+        mEventProcessor.process_service_event( cmdService, stream, service_connection_provider( ), service_register_provider() );
+        break;
+    }
 }
 
 bool ServiceManager::post_event(Event & eventElem)
@@ -272,6 +408,7 @@ void ServiceManager::ready_for_events( bool is_ready )
     }
     else
     {
+        mController.stop( );
         ServiceManagerEvent::remove_listener( static_cast<ServiceManagerEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )) );
     }
 

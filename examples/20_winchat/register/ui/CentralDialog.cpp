@@ -85,7 +85,11 @@ bool CentralDialog::StartConnection( const areg::String & ipAddress, uint16_t po
 
     if ( dlg != nullptr )
     {
-        if ( areg::Application::start_message_routing(ipAddress, portNr) )
+        // the router address of this run only, then the connection
+        areg::ConfigManager & config{ areg::Application::config_manager( ) };
+        config.set_service_address( areg::RemoteServiceKind::Router, areg::ConnectionType::Tcpip, ipAddress, true );
+        config.set_service_port( areg::RemoteServiceKind::Router, areg::ConnectionType::Tcpip, portNr, true );
+        if ( areg::Application::connect_router( ) )
         {
             CString nickName    = chat::SERVER_NAME;
             CString dateStart( areg::DateTime::now().format_time().as_string() );

@@ -14,7 +14,7 @@
  *   local-churn    local-many while another thread is created and ended again and again
  *   worker-unload  events posted by thread number to a worker thread that is loaded and unloaded
  *   watchdog-restart  events posted by thread number to a component thread that its watchdog
- *                  terminates and starts again
+ *                  replaces with a new instance (failure policy Restart)
  ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
@@ -652,6 +652,7 @@ namespace watch_model
 {
 BEGIN_MODEL(_watchModel)
     BEGIN_REGISTER_THREAD_EX(_watchThread, WATCH_TIMEOUT)
+        THREAD_FAILURE_POLICY(areg::FailurePolicy::Restart)
         BEGIN_REGISTER_COMPONENT(_watchRole, WatchdogBlocker)
         END_REGISTER_COMPONENT(_watchRole)
     END_REGISTER_THREAD(_watchThread)

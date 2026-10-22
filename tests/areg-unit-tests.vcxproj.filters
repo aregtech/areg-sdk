@@ -76,6 +76,9 @@
     <ClCompile Include="units\FatalErrorTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="units\ReceivedHeaderTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="units\RingStackTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -110,6 +113,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="units\SocketMultiplexerTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\SocketInterruptTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="units\SocketWouldBlockTest.cpp">

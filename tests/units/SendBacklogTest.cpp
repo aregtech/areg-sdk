@@ -60,6 +60,7 @@ namespace
     {
         SOCKETHANDLE    client{ areg::InvalidSocketHandle };
         SOCKETHANDLE    server{ areg::InvalidSocketHandle };
+        uint32_t        bufferBytes{ 64u * 1024u };
 
         bool open()
         {
@@ -77,7 +78,7 @@ namespace
                     client = address.resolve_address(areg::String("127.0.0.1"), port, false) ? areg::socket_create() : areg::InvalidSocketHandle;
                     if (areg::is_valid_socket(client))
                     {
-                        static_cast<void>(areg::set_recv_size(client, 64u * 1024u));
+                        static_cast<void>(areg::set_recv_size(client, bufferBytes));
                         if (areg::client_connect_fd(client, address) == false)
                         {
                             areg::socket_close(client);
@@ -92,7 +93,7 @@ namespace
                 areg::socket_close(listener);
                 if (areg::is_valid_socket(server))
                 {
-                    static_cast<void>(areg::set_send_size(server, 64u * 1024u));
+                    static_cast<void>(areg::set_send_size(server, bufferBytes));
                     return true;
                 }
 
@@ -121,6 +122,8 @@ namespace
         std::atomic<uint32_t>       pumps   { 0u };
         std::atomic<uint64_t>       sent    { 0u };
         std::atomic<bool>           closed  { false };
+        SendBacklog::Reason         reason  { SendBacklog::Reason::SocketError };
+        uint64_t                    kept    { 0u };
 
         SOCKETHANDLE backlog_socket(ITEM_ID /*cookie*/) override
         {
@@ -133,8 +136,10 @@ namespace
             sent.fetch_add(bytes, std::memory_order_relaxed);
         }
 
-        void backlog_close(const SendBacklog::Entry & /*entry*/, SendBacklog::Reason /*reason*/) override
+        void backlog_close(const SendBacklog::Entry & entry, SendBacklog::Reason why) override
         {
+            reason  = why;
+            kept    = entry.bytes;
             closed.store(true, std::memory_order_relaxed);
         }
     };
@@ -225,6 +230,21 @@ namespace
         }
 
         return wire_bytes(messages) - written;
+    }
+
+    //!< Writes the messages [first, first + count) into the backlog. Returns false on a failure.
+    bool write_range(SendBacklog & backlog, const Pair & pair, const std::vector<areg::MessageEnvelope> & messages, uint32_t first, uint32_t count)
+    {
+        std::vector<const areg::MessageEnvelope *> pointers;
+        for (uint32_t i = first; i < first + count; ++i)
+        {
+            pointers.push_back(&messages[i]);
+        }
+
+        uint64_t bytesDone{ 0u };
+        uint32_t msgsDone{ 0u };
+        areg::SocketWriteGuard guard{ pair.server };
+        return (backlog.write(COOKIE, pair.server, pointers.data(), count, bytesDone, msgsDone) != SendBacklog::Result::Failed);
     }
 
     //!< Reads \a total bytes from the client end.
@@ -382,3 +402,137 @@ TEST(SendBacklogTest, exit_ends_the_wait)
     EXPECT_GE(returnedMs.load(), 0);
     EXPECT_LE(returnedMs.load(), PROMPT_MS);
 }
+
+// A paused peer whose backlog grows past twice its cap is closed at once, before the stall limit.
+TEST(SendBacklogTest, paused_peer_is_closed_past_twice_its_cap)
+{
+    constexpr uint64_t CAP{ 4u * MESSAGE_BYTES };
+    Pair pair{ };
+    ASSERT_TRUE(pair.open());
+    areg::SendQueueGate gate{ };
+    SendBacklog backlog{ gate };
+    Owner owner{ };
+    owner.socket = pair.server;
+    backlog.set_limits(CAP, SendBacklog::UNLIMITED, 60'000u);
+    static_cast<void>(backlog.attach(pair.server));
+    std::vector<areg::MessageEnvelope> messages{ make_messages() };
+
+    // Above the cap, below twice the cap: kept while the peer pauses.
+    ASSERT_TRUE(write_range(backlog, pair, messages, 0u, 6u));
+    // The kernel still moves some bytes after a write: wait until a whole interval moved none.
+    uint64_t sentBefore{ 0u };
+    for (uint32_t i = 0u; (i == 0u) || ((sentBefore != owner.sent.load()) && (i < 20u)); ++i)
+    {
+        sentBefore = owner.sent.load();
+        static_cast<void>(backlog.pump(owner));
+        std::this_thread::sleep_for(std::chrono::milliseconds(SendBacklog::CAP_PROGRESS_MS + 20u));
+        static_cast<void>(backlog.pump(owner));
+    }
+
+    const Clock::time_point stalled{ Clock::now() };
+    ASSERT_EQ(sentBefore, owner.sent.load());
+    EXPECT_FALSE(owner.closed.load());
+
+    uint32_t next{ 6u };
+    while ((owner.closed.load() == false) && (next < MESSAGE_COUNT))
+    {
+        ASSERT_TRUE(write_range(backlog, pair, messages, next++, 1u));
+        static_cast<void>(backlog.pump(owner));
+    }
+
+    const int64_t closedMs{ elapsed_ms(stalled) };
+    ASSERT_TRUE(owner.closed.load());
+    EXPECT_EQ(owner.reason, SendBacklog::Reason::OverCap);
+    EXPECT_GT(owner.kept, 2u * CAP);
+    EXPECT_LE(owner.kept, 2u * CAP + sizeof(areg::EventHeader) + MESSAGE_BYTES);
+    EXPECT_LT(closedMs, static_cast<int64_t>(SendBacklog::CAP_STALL_MS));
+    EXPECT_TRUE(backlog.is_empty());
+
+    std::deque<SOCKETHANDLE> cut;
+    backlog.release_all(cut);
+    pair.close();
+}
+
+// A reading peer is seen to take data by pump() alone and is not closed, however far one batch
+// is past the cap.
+TEST(SendBacklogTest, reading_peer_is_kept_past_twice_its_cap)
+{
+    constexpr uint64_t CAP{ MESSAGE_BYTES };
+    Pair pair{ };
+    ASSERT_TRUE(pair.open());
+    areg::SendQueueGate gate{ };
+    SendBacklog backlog{ gate };
+    Owner owner{ };
+    owner.socket = pair.server;
+    backlog.set_limits(CAP, SendBacklog::UNLIMITED, 60'000u);
+    static_cast<void>(backlog.attach(pair.server));
+    std::vector<areg::MessageEnvelope> messages{ make_messages() };
+
+    ASSERT_TRUE(write_range(backlog, pair, messages, 0u, MESSAGE_COUNT));
+    static_cast<void>(backlog.pump(owner));
+    EXPECT_FALSE(owner.closed.load());
+
+    std::thread reader([&]
+    {
+        EXPECT_TRUE(read_all(pair, wire_bytes(messages)));
+    });
+
+    const Clock::time_point started{ Clock::now() };
+    while ((backlog.is_empty() == false) && (owner.closed.load() == false) && (elapsed_ms(started) < 10'000))
+    {
+        static_cast<void>(backlog.pump(owner));
+        std::this_thread::yield();
+    }
+
+    if (owner.closed.load())
+    {
+        pair.close();
+    }
+
+    reader.join();
+    EXPECT_FALSE(owner.closed.load()) << "reason " << static_cast<int>(owner.reason) << ", sent " << owner.sent.load();
+    EXPECT_TRUE(backlog.is_empty());
+
+    std::deque<SOCKETHANDLE> cut;
+    backlog.release_all(cut);
+    pair.close();
+}
+
+static void DBG_gaps(uint32_t bufferBytes)
+{
+    Pair pair{ };
+    pair.bufferBytes = bufferBytes;
+    ASSERT_TRUE(pair.open());
+    areg::SendQueueGate gate{ };
+    SendBacklog backlog{ gate };
+    Owner owner{ };
+    owner.socket = pair.server;
+    backlog.set_limits(8u * 1024u * 1024u, SendBacklog::UNLIMITED, 60'000u);
+    static_cast<void>(backlog.attach(pair.server));
+    std::vector<areg::MessageEnvelope> messages{ make_messages() };
+    ASSERT_TRUE(write_range(backlog, pair, messages, 0u, MESSAGE_COUNT));
+    const Clock::time_point started{ Clock::now() };
+    std::thread reader([&] { static_cast<void>(read_all(pair, wire_bytes(messages))); });
+    uint64_t last{ 0u };
+    Clock::time_point lastAt{ started };
+    int64_t maxGap{ 0 };
+    while ((backlog.is_empty() == false) && (elapsed_ms(started) < 20'000))
+    {
+        static_cast<void>(backlog.pump(owner));
+        if (owner.sent.load() != last)
+        {
+            maxGap = std::max(maxGap, elapsed_ms(lastAt));
+            last = owner.sent.load();
+            lastAt = Clock::now();
+        }
+        std::this_thread::yield();
+    }
+    reader.join();
+    printf("DBGGAP buf=%u maxGap=%lld total=%lld\n", bufferBytes, (long long)maxGap, (long long)elapsed_ms(started));
+    std::deque<SOCKETHANDLE> cut;
+    backlog.release_all(cut);
+    pair.close();
+}
+
+TEST(SendBacklogTest, DBG_gaps_small) { for (int i = 0; i < 20; ++i) DBG_gaps(64u * 1024u); }
+TEST(SendBacklogTest, DBG_gaps_router) { for (int i = 0; i < 20; ++i) DBG_gaps(8u * 1024u * 1024u); }
