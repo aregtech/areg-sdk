@@ -313,6 +313,10 @@ uint32_t SendBacklog::prepare_wait(bool & overCap)
                     overCap = true;
                     deadline = std::min(deadline, entry.progressMs + SendBacklog::CAP_PROGRESS_MS);
                 }
+                else if (entry.bytes > cap * SendBacklog::CAP_CEILING)
+                {
+                    overCap = true;
+                }
             }
         }
     }
@@ -619,9 +623,7 @@ bool SendBacklog::check_limits(const Entry & entry, uint64_t nowMs, Reason & rea
         return false;
     }
 
-    const uint64_t cap{ mCapBytes.load(std::memory_order_relaxed) };
-    if ( (entry.bytes > cap) &&
-         ((stalledMs >= SendBacklog::CAP_STALL_MS) || ((stalledMs >= SendBacklog::CAP_PROGRESS_MS) && (entry.bytes > cap * SendBacklog::CAP_CEILING))) )
+    if ((entry.bytes > mCapBytes.load(std::memory_order_relaxed)) && (stalledMs >= SendBacklog::CAP_STALL_MS))
     {
         reason = Reason::OverCap;
         return false;

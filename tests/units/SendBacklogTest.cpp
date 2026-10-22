@@ -60,7 +60,6 @@ namespace
     {
         SOCKETHANDLE    client{ areg::InvalidSocketHandle };
         SOCKETHANDLE    server{ areg::InvalidSocketHandle };
-        uint32_t        bufferBytes{ 64u * 1024u };
 
         bool open()
         {
@@ -78,7 +77,7 @@ namespace
                     client = address.resolve_address(areg::String("127.0.0.1"), port, false) ? areg::socket_create() : areg::InvalidSocketHandle;
                     if (areg::is_valid_socket(client))
                     {
-                        static_cast<void>(areg::set_recv_size(client, bufferBytes));
+                        static_cast<void>(areg::set_recv_size(client, 64u * 1024u));
                         if (areg::client_connect_fd(client, address) == false)
                         {
                             areg::socket_close(client);
@@ -93,7 +92,7 @@ namespace
                 areg::socket_close(listener);
                 if (areg::is_valid_socket(server))
                 {
-                    static_cast<void>(areg::set_send_size(server, bufferBytes));
+                    static_cast<void>(areg::set_send_size(server, 64u * 1024u));
                     return true;
                 }
 
@@ -403,8 +402,8 @@ TEST(SendBacklogTest, exit_ends_the_wait)
     EXPECT_LE(returnedMs.load(), PROMPT_MS);
 }
 
-// A paused peer whose backlog grows past twice its cap is closed at once, before the stall limit.
-TEST(SendBacklogTest, paused_peer_is_closed_past_twice_its_cap)
+// A paused peer past twice its cap holds new messages back, and is closed only after the stall limit.
+TEST(SendBacklogTest, paused_peer_past_twice_its_cap_holds_back_until_closed)
 {
     constexpr uint64_t CAP{ 4u * MESSAGE_BYTES };
     Pair pair{ };
@@ -417,8 +416,9 @@ TEST(SendBacklogTest, paused_peer_is_closed_past_twice_its_cap)
     static_cast<void>(backlog.attach(pair.server));
     std::vector<areg::MessageEnvelope> messages{ make_messages() };
 
-    // Above the cap, below twice the cap: kept while the peer pauses.
+    // Above the cap, below twice the cap.
     ASSERT_TRUE(write_range(backlog, pair, messages, 0u, 6u));
+
     // The kernel still moves some bytes after a write: wait until a whole interval moved none.
     uint64_t sentBefore{ 0u };
     for (uint32_t i = 0u; (i == 0u) || ((sentBefore != owner.sent.load()) && (i < 20u)); ++i)
@@ -429,23 +429,42 @@ TEST(SendBacklogTest, paused_peer_is_closed_past_twice_its_cap)
         static_cast<void>(backlog.pump(owner));
     }
 
-    const Clock::time_point stalled{ Clock::now() };
     ASSERT_EQ(sentBefore, owner.sent.load());
-    EXPECT_FALSE(owner.closed.load());
 
+    // The send thread takes new messages while prepare_wait() lets it, as serve_backlog() does.
+    bool overCap{ false };
     uint32_t next{ 6u };
-    while ((owner.closed.load() == false) && (next < MESSAGE_COUNT))
+    static_cast<void>(backlog.prepare_wait(overCap));
+    EXPECT_FALSE(overCap);
+    while ((overCap == false) && (owner.closed.load() == false) && (next < MESSAGE_COUNT))
     {
         ASSERT_TRUE(write_range(backlog, pair, messages, next++, 1u));
         static_cast<void>(backlog.pump(owner));
+        static_cast<void>(backlog.prepare_wait(overCap));
     }
 
-    const int64_t closedMs{ elapsed_ms(stalled) };
+    EXPECT_TRUE(overCap);
+    EXPECT_FALSE(owner.closed.load());
+    const uint64_t written{ static_cast<uint64_t>(next) * (sizeof(areg::EventHeader) + MESSAGE_BYTES) };
+    EXPECT_LE(written - owner.sent.load(), 2u * CAP + 2u * (sizeof(areg::EventHeader) + MESSAGE_BYTES));
+
+    // Held back, the backlog does not grow; the connection is closed once the stall limit passed.
+    const Clock::time_point held{ Clock::now() };
+    while ((owner.closed.load() == false) && (elapsed_ms(held) < 3'000))
+    {
+        static_cast<void>(backlog.pump(owner));
+        if (owner.closed.load() == false)
+        {
+            static_cast<void>(backlog.prepare_wait(overCap));
+            EXPECT_TRUE(overCap);
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+    }
+
     ASSERT_TRUE(owner.closed.load());
     EXPECT_EQ(owner.reason, SendBacklog::Reason::OverCap);
-    EXPECT_GT(owner.kept, 2u * CAP);
-    EXPECT_LE(owner.kept, 2u * CAP + sizeof(areg::EventHeader) + MESSAGE_BYTES);
-    EXPECT_LT(closedMs, static_cast<int64_t>(SendBacklog::CAP_STALL_MS));
+    EXPECT_LE(owner.kept, 2u * CAP + 2u * (sizeof(areg::EventHeader) + MESSAGE_BYTES));
+    EXPECT_GE(elapsed_ms(held) + 2 * static_cast<int64_t>(SendBacklog::CAP_PROGRESS_MS + 20u), static_cast<int64_t>(SendBacklog::CAP_STALL_MS));
     EXPECT_TRUE(backlog.is_empty());
 
     std::deque<SOCKETHANDLE> cut;
@@ -497,42 +516,3 @@ TEST(SendBacklogTest, reading_peer_is_kept_past_twice_its_cap)
     backlog.release_all(cut);
     pair.close();
 }
-
-static void DBG_gaps(uint32_t bufferBytes)
-{
-    Pair pair{ };
-    pair.bufferBytes = bufferBytes;
-    ASSERT_TRUE(pair.open());
-    areg::SendQueueGate gate{ };
-    SendBacklog backlog{ gate };
-    Owner owner{ };
-    owner.socket = pair.server;
-    backlog.set_limits(8u * 1024u * 1024u, SendBacklog::UNLIMITED, 60'000u);
-    static_cast<void>(backlog.attach(pair.server));
-    std::vector<areg::MessageEnvelope> messages{ make_messages() };
-    ASSERT_TRUE(write_range(backlog, pair, messages, 0u, MESSAGE_COUNT));
-    const Clock::time_point started{ Clock::now() };
-    std::thread reader([&] { static_cast<void>(read_all(pair, wire_bytes(messages))); });
-    uint64_t last{ 0u };
-    Clock::time_point lastAt{ started };
-    int64_t maxGap{ 0 };
-    while ((backlog.is_empty() == false) && (elapsed_ms(started) < 20'000))
-    {
-        static_cast<void>(backlog.pump(owner));
-        if (owner.sent.load() != last)
-        {
-            maxGap = std::max(maxGap, elapsed_ms(lastAt));
-            last = owner.sent.load();
-            lastAt = Clock::now();
-        }
-        std::this_thread::yield();
-    }
-    reader.join();
-    printf("DBGGAP buf=%u maxGap=%lld total=%lld\n", bufferBytes, (long long)maxGap, (long long)elapsed_ms(started));
-    std::deque<SOCKETHANDLE> cut;
-    backlog.release_all(cut);
-    pair.close();
-}
-
-TEST(SendBacklogTest, DBG_gaps_small) { for (int i = 0; i < 20; ++i) DBG_gaps(64u * 1024u); }
-TEST(SendBacklogTest, DBG_gaps_router) { for (int i = 0; i < 20; ++i) DBG_gaps(8u * 1024u * 1024u); }
