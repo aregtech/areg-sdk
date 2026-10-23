@@ -111,10 +111,11 @@ public:
 // EventRouter interface overrides.
 /************************************************************************/
     /**
-     * \brief   Posts an event for delivery; fails and destroys the event if the addressee is not
-     *          the master component or if it is internal.
+     * \brief   Posts an event for delivery. Accepts custom events and the events of the proxies
+     *          that live in this thread; fails for an event addressed to a service provider.
      *
      * \param   eventElem       Event to post.
+     * \return  Returns true if the event was queued.
      **/
     bool post_event( Event & eventElem ) final;
 
@@ -126,8 +127,8 @@ protected:
     /**
      * \brief   On enable: opens the event queue, signals that the dispatcher started, then calls
      *          WorkerThreadConsumer::register_event_consumers().
-     *          On disable: calls WorkerThreadConsumer::unregister_event_consumers(), then closes
-     *          the queue.
+     *          On disable: calls WorkerThreadConsumer::unregister_event_consumers(), stops and
+     *          detaches the proxies of this thread, then closes the queue.
      *
      * \param   is_ready    True to enable event dispatching, false to disable.
      **/

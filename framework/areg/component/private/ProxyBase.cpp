@@ -47,6 +47,21 @@ DEF_LOG_SCOPE(areg_component_ProxyBase, process_available_event);
 DEF_LOG_SCOPE(areg_component_ProxyBase, stop_proxy);
 DEF_LOG_SCOPE(areg_component_ProxyBase, send_request_event);
 
+namespace
+{
+    //!< Returns true if the client is in the list of clients notified of the connection.
+    inline bool _is_notified(const ArrayList<ProxyListener *> & listConnect, const NotificationConsumer * consumer) noexcept
+    {
+        for (uint32_t i = 0u; i < listConnect.size(); ++i)
+        {
+            if (static_cast<const NotificationConsumer *>(listConnect.value_at(i)) == consumer)
+                return true;
+        }
+
+        return false;
+    }
+}
+
 //////////////////////////////////////////////////////////////////////////
 // ProxyBase::ImplProxyMap class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -56,10 +71,15 @@ DEF_LOG_SCOPE(areg_component_ProxyBase, send_request_event);
 //////////////////////////////////////////////////////////////////////////
 
 ProxyBase::ServiceAvailableEvent::ServiceAvailableEvent( NotificationConsumer & consumer )
-    : Event ( areg::EventType::EventCustomExternal )
+    : Event ( areg::EventType::EventCustomExternal, static_cast<uint32_t>(sizeof(NotificationConsumer *)) )
 {
-    set_event_consumer(&consumer);
-    set_call_type( 0u );
+    // The client is in the payload; the event consumer is the proxy that processes the event.
+    uint8_t * data{ payload_ptr() };
+    if (data != nullptr)
+    {
+        *reinterpret_cast<NotificationConsumer **>(data) = &consumer;
+        set_size_used(static_cast<uint32_t>(sizeof(NotificationConsumer *)));
+    }
 }
 
 
@@ -117,6 +137,14 @@ std::shared_ptr<ProxyBase> ProxyBase::acquire_proxy( const String & roleName
         return proxy;
     }
 
+    if (ownerThread.id() != Thread::current_thread_id())
+    {
+        // A client and its proxy are created in the same thread.
+        LOG_ERR("Refused to create the proxy [ %s ] of thread [ %s ] from another thread", roleName.as_string(), ownerThread.name().as_string());
+        ASSERT( false );
+        return proxy;
+    }
+
     MapProxyResource& mapProxies{ map_proxies() };
     ProxyAddress Key(serviceIfData, roleName, ownerThread.name() );
     proxy = mapProxies.find_resource_object(static_cast<uint32_t>(Key));
@@ -145,7 +173,6 @@ std::shared_ptr<ProxyBase> ProxyBase::acquire_proxy( const String & roleName
     }
 
     LOG_DBG("Add Service Connect notification for client [ %p ]", &connect);
-    proxy->mListConnect.add_if_unique(&connect);
     static_cast<void>(proxy->add_listener( CONNECTION_ID, areg::SEQUENCE_NUMBER_NOTIFY, static_cast<NotificationConsumer *>(&connect), true ));
     ++ proxy->mProxyInstCount;
     proxy->mIsStopped = false;
@@ -276,6 +303,8 @@ void ProxyBase::unregister_service_listeners() noexcept
 
 void ProxyBase::free_proxy( ProxyListener & connect )
 {
+    // A client and its proxy are deleted in the thread that created them.
+    ASSERT(mDispatcherThread.id() == Thread::current_thread_id());
     int32_t exists = mListConnect.find(&connect, 0);
     if ( exists >= 0 )
     {
@@ -637,22 +666,21 @@ void ProxyBase::process_proxy_event( [[maybe_unused]] ProxyEvent& eventElem )
 
 void ProxyBase::process_generic_event( Event& eventElem )
 {
-    const areg::EventHeader* hdr{ eventElem.header() };
-    if (hdr != nullptr)
+    const MessageEnvelope& envelope{ eventElem.envelope() };
+    if (envelope.size_used() == static_cast<uint32_t>(sizeof(NotificationConsumer *)))
     {
-        NotificationConsumer* consumer{ static_cast<NotificationConsumer*>(eventElem.event_consumer()) };
-        const uint32_t delay{ static_cast<uint32_t>(hdr->callType) * 10u };
+        NotificationConsumer* consumer{ *reinterpret_cast<NotificationConsumer * const *>(envelope.payload_ptr()) };
         if (consumer != nullptr)
-            process_available_event(*consumer, delay);
+            process_available_event(*consumer);
     }
 }
 
-void ProxyBase::send_request_event(ServiceRequestEvent& reqEvent, NotificationConsumer* caller)
+SequenceNumber ProxyBase::send_request_event(ServiceRequestEvent& reqEvent, NotificationConsumer* caller)
 {
     LOG_SCOPE( areg_component_ProxyBase, send_request_event );
 
     if (!reqEvent.is_valid())
-        return;
+        return areg::SEQUENCE_NUMBER_ANY;
 
     const uint32_t msgId{ reqEvent.message_id() };
     const uint32_t respId{ proxy_data().response_id(msgId) };
@@ -686,6 +714,8 @@ void ProxyBase::send_request_event(ServiceRequestEvent& reqEvent, NotificationCo
             }
         }
     }
+
+    return seqNr;
 }
 
 void ProxyBase::send_notify_request( uint32_t msgId, areg::RequestType reqType )
@@ -735,20 +765,17 @@ bool ProxyBase::is_listener_registered( NotificationConsumer & caller ) const
     return false;
 }
 
-void ProxyBase::process_available_event( NotificationConsumer & consumer, uint32_t delayEvent)
+void ProxyBase::process_available_event( NotificationConsumer & consumer )
 {
     LOG_SCOPE(areg_component_ProxyBase, process_available_event);
-    if (is_connected() && is_listener_registered( consumer ) )
+
+    // A client is notified once, and only while it is registered.
+    if (is_connected() && is_listener_registered( consumer ) && (_is_notified(mListConnect, &consumer) == false))
     {
         LOG_DBG("Notifying client [ %p ] the service connection status [ %s ]", &consumer, areg::as_string(connection_status()));
-        // An ordering delay, not a sleep. if this thread is asked to leave while it waits
-        if ((delayEvent != areg::DO_NOT_WAIT) && (Thread::wait_exit(delayEvent) == false))
-        {
-            LOG_DBG("The thread was asked to exit while delaying the notification, dropping it");
-            return;
-        }
-
-        static_cast<ProxyListener&>(consumer).service_connected(connection_status(), self());
+        ProxyListener& listener{ static_cast<ProxyListener&>(consumer) };
+        mListConnect.add(&listener);
+        listener.service_connected(connection_status(), self());
     }
 }
 

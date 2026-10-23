@@ -144,6 +144,15 @@ private:
      **/
     void _send_disconnected( const ProxyAddress & client, const StubAddress & server, const areg::ServiceConnectionState status ) const;
 
+    /**
+     * \brief   Sends the client disconnected notification event to the server only.
+     *
+     * \param   client      The client address.
+     * \param   server      The server address.
+     * \param   status      The service connection status.
+     **/
+    void _send_provider_disconnected( const ProxyAddress & client, const StubAddress & server, const areg::ServiceConnectionState status ) const;
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////

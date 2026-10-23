@@ -195,7 +195,11 @@ void ComponentThread::start_components()
 
 void ComponentThread::shutdown_components()
 {
-    _shutdown_proxies();
+    if (is_abandoned() == false)
+    {
+        shutdown_proxies();
+    }
+
     _shutdown_components();
 }
 
@@ -215,36 +219,6 @@ DispatcherThread* ComponentThread::event_consumer_thread( const uint32_t whichCl
     }
 
     return result;
-}
-
-inline void ComponentThread::_detach_thread_proxies()
-{
-    // An abandoned thread does not look up the registry by its name.
-    if (is_abandoned())
-        return;
-
-    ArrayList<std::shared_ptr<ProxyBase>> proxyList;
-    ProxyBase::find_thread_proxies(self(), proxyList);
-    for (uint32_t i = 0; i < proxyList.size(); ++i)
-    {
-        ASSERT(proxyList[i] != nullptr);
-        proxyList[i]->detach_from_registry();
-    }
-}
-
-inline void ComponentThread::_shutdown_proxies()
-{
-    if (is_abandoned())
-        return;
-
-    ArrayList<std::shared_ptr<ProxyBase>> proxyList;
-    ProxyBase::find_thread_proxies(self(), proxyList);
-    for (uint32_t i = 0; i < proxyList.size(); ++i)
-    {
-        std::shared_ptr<ProxyBase> proxy = proxyList[i];
-        ASSERT(proxy != nullptr);
-        proxy->stop_proxy();
-    }
 }
 
 inline void ComponentThread::_shutdown_components()
@@ -292,7 +266,12 @@ int32_t ComponentThread::on_exit()
     shutdown_components();
     wait_components_completion();
     destroy_components();
-    _detach_thread_proxies();
+
+    // An abandoned thread does not look up the registry by its name.
+    if (is_abandoned() == false)
+    {
+        detach_proxies();
+    }
 
     const int32_t result{ DispatcherThread::on_exit( ) };
     ServiceManager::report_thread_stopped(self());

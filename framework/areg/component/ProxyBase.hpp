@@ -257,22 +257,6 @@ private:
 
 protected:
     //////////////////////////////////////////////////////////////////////////
-    // ProxyBase::ServiceAvailableEvent constants
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   Internal constant defining the minimum delay in milliseconds
-     *          when processing service available event. The event delay is used
-     *          in the cases if a thread already has a proxy, and the new instance
-     *          of a client is created in other thread, but for the thread
-     *          where the proxy runs. This triggers service available event, which may
-     *          processed earlier than the client object is created, so that the
-     *          wrong service available method can be called.
-     **/
-    static constexpr uint32_t MINIMAL_DELAY_TIME_MS { areg::WAIT_10_MILLISECONDS };
-
-    static constexpr uint32_t MAXIMAL_DELAY_TIME_MS { 250 * 10 };
-
-    //////////////////////////////////////////////////////////////////////////
     // ProxyBase::ServiceAvailableEvent internal class declaration
     //////////////////////////////////////////////////////////////////////////
     /**
@@ -301,33 +285,10 @@ protected:
     //////////////////////////////////////////////////////////////////////////
     public:
         /**
-         * \brief   Returns the notification consumer to receive the event.
+         * \brief   Returns the client to notify of the service availability.
          **/
         [[nodiscard]]
         inline NotificationConsumer& consumer() const noexcept;
-
-        /**
-         * \brief   Sets the delay before the service available event is processed.
-         *
-         * \param   msDelay     Delay in milliseconds. Minimum is 10ms (MINIMAL_DELAY_TIME_MS)
-         *                      and the maximum delay is 2500ms / 2.5s (MAXIMAL_DELAY_TIME_MS).
-         *                      Use 0 for no delay. The delay allows the client object to be fully created.
-         *                      The delay is computed to modulo 10. Meaning, 11ms delay is computed to 10,
-         *                      19ms delay is computed 10ms.
-         **/
-        inline void set_event_delay(uint32_t msDelay) noexcept;
-
-        /**
-         * \brief   Returns the service available event delay timeout in milliseconds.
-         **/
-        [[nodiscard]]
-        inline uint32_t event_delay() const noexcept;
-
-        /**
-         * \brief   Returns true if the service available event should be delayed.
-         **/
-        [[nodiscard]]
-        inline bool should_delay_event() const noexcept;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
@@ -699,12 +660,11 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Processes a service availability notification for a client with optional delay.
+     * \brief   Processes a service availability notification for a client.
      *
      * \param   consumer        The consumer to notify of service availability.
-     * \param   delayEvent      The delay in milliseconds before processing the availability event.
      **/
-    virtual void process_available_event( NotificationConsumer & consumer, uint32_t delayEvent );
+    virtual void process_available_event( NotificationConsumer & consumer );
 
     /**
      * \brief   Removes a listener and all its associated notifications. Notifies the stub to stop
@@ -863,8 +823,9 @@ protected:
      * \param   args        The buffer containing serialized request arguments. Can be empty if the request has no parameters.
      * \param   caller      The consumer to receive the response. Must be non-null if the request
      *                      has a response; can be null if the request is one-way.
+     * \return  The sequence number of the request, or areg::SEQUENCE_NUMBER_ANY if it has no response.
      **/
-    inline void send_request_event( uint32_t reqId, const areg::SharedBuffer & args, NotificationConsumer * caller );
+    inline SequenceNumber send_request_event( uint32_t reqId, const areg::SharedBuffer & args, NotificationConsumer * caller );
 
     /**
      * \brief   Sends a request event to the stub with serialized arguments and an optional response listener.
@@ -872,8 +833,9 @@ protected:
      * \param   reqEvent    The prepared request event to send.
      * \param   caller      The consumer to receive the response. Must be non-null if the request
      *                      has a response; can be null if the request is one-way.
+     * \return  The sequence number of the request, or areg::SEQUENCE_NUMBER_ANY if it has no response.
      **/
-    void send_request_event(ServiceRequestEvent& reqEvent, NotificationConsumer* caller);
+    SequenceNumber send_request_event(ServiceRequestEvent& reqEvent, NotificationConsumer* caller);
 
     /**
      * \brief   Builds an empty, ready-to-fill request event in a single heap allocation
@@ -1075,22 +1037,7 @@ inline constexpr bool ProxyBase::Listener::operator != (const ProxyBase::Listene
 //////////////////////////////////////////////////////////////////////////
 inline NotificationConsumer& ProxyBase::ServiceAvailableEvent::consumer() const noexcept
 {
-    return *reinterpret_cast<NotificationConsumer *>(event_consumer());
-}
-
-inline void ProxyBase::ServiceAvailableEvent::set_event_delay(uint32_t msDelay) noexcept
-{
-    set_call_type((msDelay == 0u) || (msDelay >= MINIMAL_DELAY_TIME_MS) ? static_cast<uint8_t>(msDelay / 10u) : static_cast<uint8_t>(MINIMAL_DELAY_TIME_MS / 10u));
-}
-
-inline uint32_t ProxyBase::ServiceAvailableEvent::event_delay() const noexcept
-{
-    return (call_type() * 10u);
-}
-
-inline bool ProxyBase::ServiceAvailableEvent::should_delay_event() const noexcept
-{
-    return (call_type() != 0u);
+    return **reinterpret_cast<NotificationConsumer * const *>(payload_ptr());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1220,10 +1167,10 @@ inline ServiceRequestEvent ProxyBase::create_request_event(uint32_t reqId, uint3
     return create_request(reqId, reserve);
 }
 
-inline void ProxyBase::send_request_event(uint32_t reqId, const SharedBuffer& args, NotificationConsumer* caller)
+inline SequenceNumber ProxyBase::send_request_event(uint32_t reqId, const SharedBuffer& args, NotificationConsumer* caller)
 {
     ServiceRequestEvent reqEvent{ create_request(args, reqId) };
-    send_request_event(reqEvent, caller);
+    return send_request_event(reqEvent, caller);
 }
 
 #ifdef DEBUG

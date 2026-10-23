@@ -285,6 +285,22 @@ protected:
     [[nodiscard]]
     virtual DispatcherThread * event_consumer_thread( const uint32_t whichClass ) noexcept;
 
+/************************************************************************/
+// DispatcherThread proxy operations
+/************************************************************************/
+
+    /**
+     * \brief   Stops every proxy owned by this thread. Called in this thread before it exits.
+     **/
+    void shutdown_proxies();
+
+    /**
+     * \brief   Removes the proxies of this thread from the proxy registries, so that none of
+     *          them survives with a reference to this thread object after it is deleted.
+     *          Called in this thread before it exits.
+     **/
+    void detach_proxies();
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
 //////////////////////////////////////////////////////////////////////////

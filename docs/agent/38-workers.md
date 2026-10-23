@@ -8,8 +8,9 @@ one included, the watchdog and a model built at run time are `37-threads.md`.
 
 ## 1. The rules
 
-- **A worker talks by custom events and timers only** (`23-events.md`). It never calls the
-  component's members; state both touch needs a lock (`42-runtime-api.md` section 8).
+- **A worker talks by custom events, timers and its own service clients** (`23-events.md`).
+  It never calls the component's members; state both touch needs a lock (`42-runtime-api.md`
+  section 8). Its clients are created and deleted on the worker thread; callbacks run there.
 - **Its consumer.** Every worker is bound to a named `areg::WorkerThreadConsumer`; for a
   worker declared in the model, the component returns it from `worker_thread_consumer()`.
   One consumer may serve several workers: the `areg::WorkerThread &` each call passes

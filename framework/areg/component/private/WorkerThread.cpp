@@ -56,7 +56,12 @@ WorkerThread::WorkerThread( const String & threadName
 //////////////////////////////////////////////////////////////////////////
 bool WorkerThread::post_event( Event& eventElem )
 {
-    return areg::is_custom(eventElem.event_type()) && EventDispatcher::post_event(eventElem);
+    const areg::EventType eventType{ eventElem.event_type() };
+    const bool accepted{ areg::is_custom(eventType)
+                      || areg::is_notify_client(eventType)
+                      || (areg::is_to_consumer(eventType) && (areg::is_to_provider(eventType) == false)) };
+
+    return accepted && EventDispatcher::post_event(eventElem);
 }
 
 void WorkerThread::ready_for_events( bool is_ready )
@@ -71,6 +76,8 @@ void WorkerThread::ready_for_events( bool is_ready )
     else
     {
         mWorkerThreadConsumer.unregister_event_consumers( self( ) );
+        shutdown_proxies();
+        detach_proxies();
         DispatcherThread::ready_for_events( false );
     }
 }
