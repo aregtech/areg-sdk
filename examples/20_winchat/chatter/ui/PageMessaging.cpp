@@ -4,6 +4,7 @@
 #include "chatter/res/stdafx.h"
 #include "chatter/ui/PageMessaging.hpp"
 #include "chatter/services/CentralMessaging.hpp"
+#include "chatter/services/ConnectionService.hpp"
 #include "chatter/DistrbutedApp.hpp"
 #include "chatter/DistributedAppDefs.hpp"
 #include "areg/base/areg_global.h"
@@ -67,7 +68,7 @@ void PageMessaging::OnClientRegistration( bool isRegistered, areg::DispatcherThr
     {
         if ( (mCentralMessage == nullptr) && (dispThread != nullptr) )
         {
-            mCentralMessage = DEBUG_NEW CentralMessaging( chat::COMP_NAME_CENTRAL_SERVER, *dispThread, mConnectionHandler);
+            mCentralMessage = ConnectionService::CreateClient<CentralMessaging>( chat::COMP_NAME_CENTRAL_SERVER, *dispThread, mConnectionHandler);
             if ( mCentralMessage != nullptr )
             {
                 UpdateData( TRUE );
@@ -121,6 +122,7 @@ void PageMessaging::OnUpdateConnection()
 void PageMessaging::OnDisconnectTriggered()
 {
     outputMessage( mConnectionHandler.GetNickName( ), "Disconnects system", mConnectionHandler.GetTimeConnect( ), mConnectionHandler.GetTimeConnected( ), mConnectionHandler.GetCookie( ) );
+    cleanService( );
 }
 
 void PageMessaging::setHeaders()
@@ -157,8 +159,7 @@ void PageMessaging::cleanService()
     if (mCentralMessage != nullptr)
     {
         mCentralMessage->clear_all_notifications();
-        delete mCentralMessage;
-        mCentralMessage = nullptr;
+        ConnectionService::DeleteClient( mCentralMessage );
     }
 }
 
