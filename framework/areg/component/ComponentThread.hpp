@@ -310,20 +310,9 @@ private:
     static inline ComponentThread * _current_component_thread() noexcept;
 
     /**
-     * \brief   Called to shutdown proxies registered in the thread.
-     **/
-    inline void _shutdown_proxies();
-
-    /**
      * \brief   Called to shutdown components registered in the thread.
      **/
     inline void _shutdown_components();
-
-    /**
-     * \brief   Removes the proxies of this thread from the proxy registries, so that none of
-     *          them survives with a reference to this thread object after it is deleted.
-     **/
-    inline void _detach_thread_proxies();
 
     /**
      * \brief   Returns the entry of the component with the role name, from the entries the thread

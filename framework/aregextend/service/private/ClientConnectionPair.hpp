@@ -26,6 +26,7 @@
 #include "areg/base/SocketAccepted.hpp"
 #include "aregextend/service/private/PoolSendThread.hpp"
 #include "aregextend/service/private/PoolReceiveThread.hpp"
+#include "aregextend/service/private/SocketHandover.hpp"
 
 namespace areg::ext {
 
@@ -42,17 +43,29 @@ namespace areg::ext {
  *          and destroyed at server stop.  Async cleanup paths (connection_lost,
  *          failed_receive_message) do not extend the pair's lifetime -- they only
  *          remove a single socket from the pair's multiplexer, not stop the pair.
+ *          The pair serves the sockets of its slot: a closed connection is given back to it
+ *          by release_socket(), and its receive thread drops it.
  **/
-class ClientConnectionPair
+class ClientConnectionPair final  : public SocketRelease
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   The container of socket handles where the keys are cookie values.
+     * \brief   An accepted socket of the slot, with its handle read without touching the
+     *          reference counter of the socket.
      **/
-    using MapCookieToConnection = OrderedMap<ITEM_ID, SocketAccepted>;
+    struct SlotSocket
+    {
+        SOCKETHANDLE    socket  { areg::InvalidSocketHandle };  //!< The socket handle.
+        SocketAccepted  client  { };                            //!< The accepted socket.
+    };
+
+    /**
+     * \brief   The container of the sockets of the slot where the keys are cookie values.
+     **/
+    using MapCookieToConnection = OrderedMap<ITEM_ID, SlotSocket>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -76,7 +89,7 @@ public:
                         , std::string_view sendName
                         , std::string_view recvName );
 
-    ~ClientConnectionPair() = default;
+    ~ClientConnectionPair() override = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -119,16 +132,13 @@ public:
     inline void add_socket( const areg::SocketAccepted & clientSocket, const ITEM_ID cookie );
 
     /**
-     * \brief   Removes the client identified by \a cookie from the local connection
-     *          map and queues its socket handle for removal from the receive thread's
-     *          multiplexer.  The receive thread processes the removal at the next
-     *          loop iteration.
+     * \brief   Removes the client of \a cookie from the connection map of the slot and queues
+     *          its socket for the receive thread, which unregisters and drops it.
      *
-     * \param   cookie  The cookie assigned to the client being disconnected.
-     *                  The cookie is already known at every call site (connection_lost),
-     *                  so passing it directly avoids an O(N) reverse-lookup scan.
+     * \param   cookie  The cookie of the closed connection.
+     * \param   socket  The socket of the closed connection.
      **/
-    inline void remove_socket(ITEM_ID cookie);
+    void release_socket(ITEM_ID cookie, areg::SocketAccepted && socket) override;
 
     /**
      * \brief   Returns a reference to the send thread for event posting.
@@ -140,19 +150,28 @@ public:
     inline SOCKETHANDLE socket_by_cookie(const ITEM_ID& cookie) const noexcept;
 
     /**
-     * \brief   Resolves all \a count cookies to socket handles in one lock window.
-     *          Mirrors ServerConnectionBase::batch_handles_by_cookies for the per-slot map.
+     * \brief   Returns a reference to the socket of \a cookie, or an empty one if the slot has
+     *          no such client. The socket stays open while the returned copy exists.
+     **/
+    [[nodiscard]]
+    inline areg::Socket::SocketHandle hold_by_cookie(const ITEM_ID& cookie) const noexcept;
+
+    /**
+     * \brief   Resolves all \a count cookies to socket handles in one lock window, and keeps one
+     *          reference to each socket found in \a holds.
+     *          Mirrors ServerConnection::batch_handles_by_cookies for the per-slot map.
      *
      * \param   cookies     Array of \a count cookie values to look up.
      * \param   handles     Output array, same size as \a cookies.
      * \param   count       Number of entries to resolve.
+     * \param   holds       Output array of the distinct sockets found; at least \a count elements.
+     * \param   holdCount   On output, the number of entries of \a holds.
      **/
     inline void batch_sockets_by_cookies( const ITEM_ID * cookies
                                         , SOCKETHANDLE  * handles
-                                        , uint32_t        count ) const noexcept;
-
-    [[nodiscard]]
-    inline SocketAccepted client_by_cookie(const ITEM_ID& cookie) const noexcept;
+                                        , uint32_t        count
+                                        , HeldSocket * holds
+                                        , uint32_t & holdCount ) const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden mehods
@@ -195,28 +214,39 @@ inline PoolSendThread & ClientConnectionPair::send_thread() noexcept
 inline SOCKETHANDLE ClientConnectionPair::socket_by_cookie(const ITEM_ID& cookie) const noexcept
 {
     Lock lock(mLock);
-    SocketAccepted client;
-    return (mConnections.find(cookie, client) ? client.handle() : areg::InvalidSocketHandle);
+    MapCookieToConnection::MAPPOS pos{ mConnections.find(cookie) };
+    return (mConnections.is_valid_position(pos) ? mConnections.value_at(pos).socket : areg::InvalidSocketHandle);
+}
+
+inline areg::Socket::SocketHandle ClientConnectionPair::hold_by_cookie(const ITEM_ID& cookie) const noexcept
+{
+    Lock lock(mLock);
+    MapCookieToConnection::MAPPOS pos{ mConnections.find(cookie) };
+    return (mConnections.is_valid_position(pos) ? mConnections.value_at(pos).client.shared_handle() : areg::Socket::SocketHandle());
 }
 
 inline void ClientConnectionPair::batch_sockets_by_cookies( const ITEM_ID * cookies
                                                            , SOCKETHANDLE  * handles
-                                                           , uint32_t        count ) const noexcept
+                                                           , uint32_t        count
+                                                           , HeldSocket * holds
+                                                           , uint32_t & holdCount ) const noexcept
 {
+    holdCount = 0u;
     Lock lock(mLock);
     for (uint32_t i = 0u; i < count; ++i)
     {
-        SocketAccepted client;
-        handles[i] = mConnections.find(cookies[i], client) ? client.handle() : areg::InvalidSocketHandle;
+        MapCookieToConnection::MAPPOS pos{ mConnections.find(cookies[i]) };
+        if (mConnections.is_valid_position(pos))
+        {
+            const SlotSocket & socket{ mConnections.value_at(pos) };
+            handles[i] = socket.socket;
+            areg::ext::hold_socket(socket.socket, socket.client.shared_handle(), holds, holdCount);
+        }
+        else
+        {
+            handles[i] = areg::InvalidSocketHandle;
+        }
     }
-}
-
-inline SocketAccepted ClientConnectionPair::client_by_cookie(const ITEM_ID& cookie) const noexcept
-{
-    Lock lock(mLock);
-    SocketAccepted client;
-    mConnections.find(cookie, client);
-    return client;
 }
 
 inline void ClientConnectionPair::stop_threads()
@@ -234,19 +264,8 @@ inline void ClientConnectionPair::shutdown_threads(uint32_t timeout)
 inline void ClientConnectionPair::add_socket(const areg::SocketAccepted& clientSocket, const ITEM_ID cookie)
 {
     Lock lock(mLock);
-    mConnections[cookie] = clientSocket;
+    mConnections[cookie] = SlotSocket{ clientSocket.handle(), clientSocket };
     mReceiveThread.add_socket(clientSocket);
-}
-
-inline void ClientConnectionPair::remove_socket(ITEM_ID cookie)
-{
-    Lock lock(mLock);
-    SocketAccepted client;
-    if ( mConnections.find(cookie, client) )
-    {
-        mReceiveThread.remove_socket(client.handle());
-        mConnections.remove_at(cookie);
-    }
 }
 
 } // namespace areg::ext

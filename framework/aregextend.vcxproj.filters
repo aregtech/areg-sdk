@@ -57,6 +57,9 @@
     <ClCompile Include="aregextend\service\private\SendBacklog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="aregextend\service\private\SocketHandover.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="aregextend\service\private\posix\SendBacklogPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -140,6 +143,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="aregextend\service\private\SendBacklog.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="aregextend\service\private\SocketHandover.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="aregextend\service\ServiceCommunicationBase.hpp">

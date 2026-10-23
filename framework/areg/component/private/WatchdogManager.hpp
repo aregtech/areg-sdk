@@ -190,10 +190,11 @@ private:
     inline void _unregister_watchdog( Watchdog & watchdog );
 
     /**
-     * \brief   Returns true if the watchdog object is registered. Call it with the lock taken;
-     *          the pointer is compared, the object is not read.
+     * \brief   Returns the registered watchdog at the given timer address, or nullptr if none is
+     *          registered there. Call it with the lock taken; the pointer is compared, the object
+     *          is not read.
      **/
-    inline bool _is_registered( const Watchdog * watchdog ) const;
+    inline Watchdog * _find_registered( const TimerBase * timer ) const;
 
 //////////////////////////////////////////////////////////////////////////
 //  OS specific hidden methods

@@ -54,9 +54,19 @@ protected:
     using MapSocketToObject 	= HashMap<SOCKETHANDLE, SocketAccepted>;
 
     /**
-     * \brief   The container of socket handles where the keys are cookie values.
+     * \brief   The socket of a cookie: the handle, read without touching the reference counter,
+     *          and the reference that a writer copies to keep the socket open.
      **/
-    using MapCookieToSocket		= HashMap<ITEM_ID, SOCKETHANDLE>;
+    struct CookieSocket
+    {
+        SOCKETHANDLE            socket  { areg::InvalidSocketHandle };  //!< The socket handle.
+        Socket::SocketHandle    hold    { };                            //!< The reference to the socket.
+    };
+
+    /**
+     * \brief   The container of the sockets where the keys are cookie values.
+     **/
+    using MapCookieToSocket		= HashMap<ITEM_ID, CookieSocket>;
 
     /**
      * \brief   The container of cookie values where the keys are socket handles.
@@ -184,16 +194,13 @@ public:
     inline SOCKETHANDLE handle_by_cookie_nolock(const ITEM_ID& clientCookie) const noexcept;
 
     /**
-     * \brief   Resolves \a count cookie values to socket handles in a single shared-lock window.
-     *          Invalid (disconnected) cookies are written as areg::InvalidSocketHandle.
+     * \brief   Returns a reference to the socket of the specified cookie, or an empty one if not
+     *          found. The socket stays open while the returned copy exists.
      *
-     * \param   cookies     Array of \a count cookie values to look up.
-     * \param   handles     Output array; must hold at least \a count elements.
-     * \param   count       Number of entries to resolve.
+     * \param   clientCookie    The client cookie.
      **/
-    inline void batch_handles_by_cookies( const ITEM_ID * cookies
-                                        , SOCKETHANDLE  * handles
-                                        , uint32_t        count ) const noexcept;
+    [[nodiscard]]
+    inline Socket::SocketHandle hold_by_cookie( const ITEM_ID & clientCookie ) const noexcept;
 
     [[nodiscard]]
     inline bool cookie_exist(const ITEM_ID& clientCookie) const noexcept;
@@ -303,19 +310,6 @@ public:
      **/
     bool accept_connection( SocketAccepted & clientConnection );
 
-    /**
-     * \brief   Closes the specified client connection.
-     *
-     * \param   clientConnection    The client to close connection.
-     **/
-    void close_connection( SocketAccepted & clientConnection );
-
-    /**
-     * \brief   Closes connection identified by cookie.
-     *
-     * \param   cookie      The cookie of client set by routing service.
-     **/
-    void close_connection(const ITEM_ID & cookie);
 
     /**
      * \brief   Interrupts all accepted client connections by calling socket_interrupt() on each,
@@ -323,7 +317,7 @@ public:
      *
      * Use this during graceful shutdown to unblock any thread stuck in send() or recv()
      * on an unresponsive client, while keeping the routing maps intact so that connection
-     * cleanup (close_connection, close_socket) can proceed normally afterwards.
+     * cleanup (closing the connections, close_socket) can proceed normally afterwards.
      **/
     void interrupt_connections() noexcept;
 
@@ -377,6 +371,22 @@ public:
     inline void lock_resource() noexcept;
 
     inline void unlock_resource() noexcept;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden methods
+//////////////////////////////////////////////////////////////////////////
+protected:
+    /**
+     * \brief   Removes the accepted socket from the connection maps and shuts it down. The caller
+     *          holds mLock for writing. The multiplexer is not changed and the socket is not
+     *          closed: it is closed when the last reference to it, the returned one included, is
+     *          released.
+     *
+     * \param   hSocket     The socket of the connection.
+     * \param   cookie      On output, the cookie the connection had, or areg::COOKIE_UNKNOWN.
+     * \return  The removed connection, or an invalid object if the socket was not accepted.
+     **/
+    SocketAccepted detach_connection_nolock( SOCKETHANDLE hSocket, ITEM_ID & cookie );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -517,32 +527,26 @@ inline SocketAccepted ServerConnectionBase::client_by_cookie(const ITEM_ID & cli
 {
     std::shared_lock<std::shared_mutex> lock( mLock );
     MapCookieToSocket::MAPPOS pos = mCookieToSocket.find(clientCookie);
-    return (mCookieToSocket.is_valid_position(pos) ? client_by_handle_nolock( mCookieToSocket.value_at(pos) ) : SocketAccepted());
+    return (mCookieToSocket.is_valid_position(pos) ? client_by_handle_nolock( mCookieToSocket.value_at(pos).socket ) : SocketAccepted());
 }
 
 inline SOCKETHANDLE ServerConnectionBase::handle_by_cookie( const ITEM_ID & clientCookie ) const noexcept
 {
     std::shared_lock<std::shared_mutex> lock( mLock );
-    MapCookieToSocket::MAPPOS pos = mCookieToSocket.find(clientCookie);
-    return (mCookieToSocket.is_valid_position(pos) ? mCookieToSocket.value_at(pos) : areg::InvalidSocketHandle);
+    return handle_by_cookie_nolock(clientCookie);
 }
 
 inline SOCKETHANDLE ServerConnectionBase::handle_by_cookie_nolock(const ITEM_ID& clientCookie) const noexcept
 {
     MapCookieToSocket::MAPPOS pos = mCookieToSocket.find(clientCookie);
-    return (mCookieToSocket.is_valid_position(pos) ? mCookieToSocket.value_at(pos) : areg::InvalidSocketHandle);
+    return (mCookieToSocket.is_valid_position(pos) ? mCookieToSocket.value_at(pos).socket : areg::InvalidSocketHandle);
 }
 
-inline void ServerConnectionBase::batch_handles_by_cookies( const ITEM_ID  * cookies
-                                                           , SOCKETHANDLE   * handles
-                                                           , uint32_t         count ) const noexcept
+inline Socket::SocketHandle ServerConnectionBase::hold_by_cookie( const ITEM_ID & clientCookie ) const noexcept
 {
     std::shared_lock<std::shared_mutex> lock( mLock );
-    for (uint32_t i = 0u; i < count; ++i)
-    {
-        MapCookieToSocket::MAPPOS pos = mCookieToSocket.find(cookies[i]);
-        handles[i] = mCookieToSocket.is_valid_position(pos) ? mCookieToSocket.value_at(pos) : areg::InvalidSocketHandle;
-    }
+    MapCookieToSocket::MAPPOS pos = mCookieToSocket.find(clientCookie);
+    return (mCookieToSocket.is_valid_position(pos) ? mCookieToSocket.value_at(pos).hold : Socket::SocketHandle());
 }
 
 inline bool ServerConnectionBase::cookie_exist(const ITEM_ID& clientCookie) const noexcept

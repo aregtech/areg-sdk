@@ -35,6 +35,7 @@ namespace
     std::atomic_uint32_t    gChurnCallbacks { 0 };
     std::atomic_uint32_t    gLiveConnects   { 0 };
     std::atomic_uint32_t    gLiveDisconnects{ 0 };
+    std::atomic_uint32_t    gLateConnects   { 0 };
     std::atomic_bool        gChurnDone      { false };
 }
 
@@ -72,6 +73,24 @@ public:
     }
 };
 
+//!< Client attached to the proxy after it is connected. Stays until the consumer is unloaded.
+class LateClient final : public HelloServiceConsumerBase
+{
+public:
+    LateClient(const areg::String & roleName, areg::DispatcherThread & ownerThread)
+        : HelloServiceConsumerBase(roleName, ownerThread)
+    {
+    }
+
+    bool service_connected(areg::ServiceConnectionState status, areg::ProxyBase & proxy) override
+    {
+        if (areg::is_service_connected(status))
+            gLateConnects.fetch_add(1);
+
+        return HelloServiceConsumerBase::service_connected(status, proxy);
+    }
+};
+
 //!< Long living client. Stays for the whole run and drives the churn.
 class ChurnComponent final : public    areg::Component
                            , protected HelloServiceConsumerBase
@@ -82,7 +101,13 @@ public:
         , HelloServiceConsumerBase  ( entry.mDependencyServices[0].mRoleName, owner )
         , mRoleName                 ( entry.mDependencyServices[0].mRoleName )
         , mChurnedOnline            ( false )
+        , mLateClient               ( nullptr )
     {
+    }
+
+    virtual ~ChurnComponent() override
+    {
+        delete mLateClient;
     }
 
     virtual void startup_component(areg::ComponentThread & comThread) override
@@ -101,6 +126,7 @@ public:
             {
                 mChurnedOnline = true;
                 run_churn();    // service is up here
+                mLateClient = new LateClient(mRoleName, static_cast<areg::DispatcherThread &>(master_thread()));
                 gChurnDone.store(true);
             }
         }
@@ -129,6 +155,7 @@ private:
 
     areg::String    mRoleName;
     bool            mChurnedOnline;
+    LateClient *    mLateClient;
 };
 
 BEGIN_MODEL("ConsumerModel")
@@ -160,12 +187,14 @@ int main()
     const uint32_t callbacks{ gChurnCallbacks.load() };
     const uint32_t connects { gLiveConnects.load() };
     const uint32_t discos   { gLiveDisconnects.load() };
+    const uint32_t late     { gLateConnects.load() };
 
     std::printf("churn clients created ....: %u\n", created);
     std::printf("churn clients deleted ....: %u\n", deleted);
     std::printf("churn client callbacks ...: %u\n", callbacks);
     std::printf("live client connects .....: %u\n", connects);
     std::printf("live client disconnects ..: %u\n", discos);
+    std::printf("late client connects .....: %u\n", late);
 
     areg::Application::unload_model("ConsumerModel");
     areg::Application::release();
@@ -173,7 +202,8 @@ int main()
     const bool ok{ (created == deleted)
                 && (created == (CHURN_ROUNDS * CHURN_CLIENTS * 2))
                 && (connects >= 1)
-                && (discos >= 1) };
+                && (discos >= 1)
+                && (late == 1) };
 
     std::printf("%s\n", ok ? "RESULT: PASS" : "RESULT: FAIL");
     return ok ? 0 : 1;

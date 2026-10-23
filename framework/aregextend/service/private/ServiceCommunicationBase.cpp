@@ -124,7 +124,6 @@ ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
     , mSendFn           ( )
     , mSendMoveFn       ( )
     , mAcceptFn         ( )
-    , mLostFn           ( )
 {
     update_dispatch_mode();
 }
@@ -136,14 +135,12 @@ void ServiceCommunicationBase::update_dispatch_mode()
         mSendFn     = [this](const areg::MessageEnvelope & d, areg::EventPriority p)  { return do_send_shared(d, p); };
         mSendMoveFn = [this](areg::MessageEnvelope && d,     areg::EventPriority p)  { return do_send_shared(std::move(d), p); };
         mAcceptFn   = [this](areg::SocketAccepted & s)                             { return do_accept_client_shared(s); };
-        mLostFn     = [this](ITEM_ID c)                                            { do_client_lost_shared(c); };
     }
     else
     {
         mSendFn     = [this](const areg::MessageEnvelope & d, areg::EventPriority p)  { return do_send_pool(d, p); };
         mSendMoveFn = [this](areg::MessageEnvelope && d,     areg::EventPriority p)   { return do_send_pool(std::move(d), p); };
         mAcceptFn   = [this](areg::SocketAccepted & s)                        { return do_accept_client_pool(s); };
-        mLostFn     = [this](ITEM_ID c)                                       { do_client_lost_pool(c); };
     }
 }
 
@@ -327,7 +324,6 @@ void ServiceCommunicationBase::connection_lost( SocketAccepted & clientSocket )
                         , static_cast<int>(clientSocket.handle())
                         , static_cast<uint32_t>(cookie));
 
-        mLostFn(cookie);
         remove_instance(cookie);
         areg::MessageEnvelope msgDisconnect{ areg::create_disconnect_request(cookie, channel) };
         send_received_message(std::move(msgDisconnect), areg::EventPriority::HighPrio);
@@ -536,6 +532,9 @@ void ServiceCommunicationBase::stop_connection()
 
     mServerConnection.interrupt_connections();
 
+    // The receive thread reads the listening socket: it stops before the socket is closed.
+    mThreadReceive.shutdown( areg::WAIT_INFINITE );
+
     // Queue graceful disconnect notifications while sockets are still alive.
     disconnect_services();
 
@@ -608,7 +607,12 @@ bool ServiceCommunicationBase::do_accept_client_pool( SocketAccepted & clientSoc
     mServerConnection.unregister_from_multiplexer(clientSocket.handle());
 
     const uint32_t idx = static_cast<uint32_t>(cookie) % mNumPairs;
-    mClientPairs[idx]->add_socket(clientSocket, cookie);
+    ClientConnectionPair & pair{ *mClientPairs[idx] };
+    if ( mServerConnection.move_serving(clientSocket, pair, [&pair, &clientSocket, cookie]() { pair.add_socket(clientSocket, cookie); }) == false )
+    {
+        LOG_WARN("do_accept_client_pool: socket [ %u ] was closed before it reached its pool pair", static_cast<uint32_t>(clientSocket.handle()));
+        return true;
+    }
 
     LOG_DBG("Pool mode: routed socket [ %u ] (cookie [ %u ]) to pool pair [ %u ]"
                 , static_cast<uint32_t>(clientSocket.handle())
@@ -618,28 +622,16 @@ bool ServiceCommunicationBase::do_accept_client_pool( SocketAccepted & clientSoc
     return true;
 }
 
-void ServiceCommunicationBase::do_client_lost_shared( ITEM_ID /*cookie*/ )
-{
-}
-
-void ServiceCommunicationBase::do_client_lost_pool( ITEM_ID cookie )
-{
-    if ( mClientPairs.empty() )
-        return;
-
-    const uint32_t idx = static_cast<uint32_t>(cookie) % mNumPairs;
-    mClientPairs[idx]->remove_socket(cookie);
-}
-
 bool ServiceCommunicationBase::do_send_shared( const areg::MessageEnvelope & data, areg::EventPriority prio )
 {
     areg::MessageEnvelope copy{ data };
     return do_send_shared(std::move(copy), prio);
 }
 
-bool ServiceCommunicationBase::try_send_inline( areg::MessageEnvelope & data, SOCKETHANDLE hSocket, areg::SendQueueGate & gate, SendBacklog & backlog, bool & wakeSender )
+bool ServiceCommunicationBase::try_send_inline( areg::MessageEnvelope & data, const areg::Socket::SocketHandle & hold, areg::SendQueueGate & gate, SendBacklog & backlog, bool & wakeSender )
 {
     wakeSender = false;
+    const SOCKETHANDLE hSocket{ hold.value() };
     if ( (areg::is_valid_socket(hSocket) == false) || (gate.is_clear() == false) )
         return false;
 
@@ -662,7 +654,7 @@ bool ServiceCommunicationBase::try_send_inline( areg::MessageEnvelope & data, SO
     int32_t result{ 0 };
     {
         AREG_LT_SCOPE(areg::LtStage::SendSyscall);
-        result = backlog.write_inline(static_cast<ITEM_ID>(data.target()), hSocket, data);
+        result = backlog.write_inline(static_cast<ITEM_ID>(data.target()), hSocket, data, hold);
     }
 
     writer.release();
@@ -699,7 +691,7 @@ bool ServiceCommunicationBase::try_forward_inline( areg::MessageEnvelope & data 
     if ( mClientPairs.empty() )
     {
         areg::SendQueueGate & gate{ mThreadSend.send_gate() };
-        const bool result{ gate.is_clear() && try_send_inline(data, mServerConnection.handle_by_cookie(target), gate, mThreadSend.backlog(), wakeSender) };
+        const bool result{ gate.is_clear() && try_send_inline(data, mServerConnection.hold_by_cookie(target), gate, mThreadSend.backlog(), wakeSender) };
         if ( wakeSender )
         {
             wake_send_thread(mThreadSend);
@@ -711,7 +703,7 @@ bool ServiceCommunicationBase::try_forward_inline( areg::MessageEnvelope & data 
     ClientConnectionPair & pair{ *mClientPairs[data.target() % mNumPairs] };
     PoolSendThread & sendThread{ pair.send_thread() };
     areg::SendQueueGate & gate{ sendThread.send_gate() };
-    const bool result{ gate.is_clear() && try_send_inline(data, pair.socket_by_cookie(target), gate, sendThread.backlog(), wakeSender) };
+    const bool result{ gate.is_clear() && try_send_inline(data, pair.hold_by_cookie(target), gate, sendThread.backlog(), wakeSender) };
     if ( wakeSender )
     {
         wake_send_thread(sendThread);

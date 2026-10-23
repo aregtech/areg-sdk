@@ -69,6 +69,7 @@ void ServerSendThread::start_event_processing( areg::Event & eventElem )
                                              , mEvents.data()
                                              , mTargets.data()
                                              , mSockets.data()
+                                             , mHolds.data()
                                              , &mSendGate
                                              , &mConnection
                                              , &mRemoteService
@@ -77,9 +78,9 @@ void ServerSendThread::start_event_processing( areg::Event & eventElem )
     areg::ext::run_send_batch( *this
                              , eventElem
                              , context
-                             , [this]( ITEM_ID * targets, SOCKETHANDLE * sockets, uint32_t count )
+                             , [this]( ITEM_ID * targets, SOCKETHANDLE * sockets, uint32_t count, areg::ext::HeldSocket * holds, uint32_t & holdCount )
                                {
-                                   mConnection.batch_handles_by_cookies(targets, sockets, count);
+                                   mConnection.batch_handles_by_cookies(targets, sockets, count, holds, holdCount);
                                }
                              , [this]( uint64_t bytes, uint32_t msgs )
                                {
@@ -124,22 +125,18 @@ void ServerSendThread::backlog_close(const SendBacklog::Entry & entry, SendBackl
     mBacklog.log_close(entry, reason);
     if ( mConnection.is_interrupted() == false )
     {
-        areg::SocketAccepted client{ mConnection.client_by_handle(entry.socket) };
+        areg::SocketAccepted client{ mConnection.client_by_cookie(entry.cookie) };
         mRemoteService.failed_send_message(entry.messages.front(), client);
     }
 }
 
 void ServerSendThread::release_backlog()
 {
-    std::deque<SOCKETHANDLE> cutSockets;
-    mBacklog.release_all(cutSockets);
-    for ( const SOCKETHANDLE hSocket : cutSockets )
+    std::deque<ITEM_ID> cutCookies;
+    mBacklog.release_all(cutCookies);
+    for ( const ITEM_ID cookie : cutCookies )
     {
-        areg::SocketAccepted client{ mConnection.client_by_handle(hSocket) };
-        if ( client.is_valid() )
-        {
-            mConnection.close_connection(client);
-        }
+        mConnection.close_connection(cookie);
     }
 }
 

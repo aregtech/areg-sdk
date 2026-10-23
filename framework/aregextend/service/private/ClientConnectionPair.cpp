@@ -45,6 +45,16 @@ bool ClientConnectionPair::start()
     return true;
 }
 
+void ClientConnectionPair::release_socket(ITEM_ID cookie, areg::SocketAccepted && socket)
+{
+    {
+        Lock lock(mLock);
+        mConnections.remove_at(cookie);
+    }
+
+    mReceiveThread.release_socket(std::move(socket));
+}
+
 void ClientConnectionPair::stop()
 {
     mConnections.clear();

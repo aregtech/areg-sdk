@@ -84,7 +84,6 @@ private:
     using SendCopyFn = std::function<bool(const areg::MessageEnvelope &, areg::EventPriority)>;
     using SendMoveFn = std::function<bool(areg::MessageEnvelope &&,     areg::EventPriority)>;
     using AcceptFn   = std::function<bool(areg::SocketAccepted &)>;
-    using LostFn     = std::function<void(ITEM_ID)>;
 
 public:
     /**
@@ -608,7 +607,8 @@ private:
      *
      * \param   data        The message to write. Its local-only header fields are cleared before
      *                      the write, because the message goes to the wire.
-     * \param   hSocket     The socket of the target, already resolved by the caller.
+     * \param   hold        A reference to the socket of the target, already resolved by the caller.
+     *                      It keeps the socket open while it is written.
      * \param   gate        The gate of the send queue that serves this target.
      * \param   backlog     The writer of the send thread that serves this target.
      * \param   wakeSender  On return, true if a rest went to the backlog and the send thread
@@ -616,7 +616,7 @@ private:
      * \return  True when the message has been dealt with and must not be queued, either because
      *          it was written or because the socket failed. False when the caller must queue it.
      **/
-    bool try_send_inline(areg::MessageEnvelope & data, SOCKETHANDLE hSocket, areg::SendQueueGate & gate, SendBacklog & backlog, bool & wakeSender);
+    bool try_send_inline(areg::MessageEnvelope & data, const areg::Socket::SocketHandle & hold, areg::SendQueueGate & gate, SendBacklog & backlog, bool & wakeSender);
 
     /**
      * \brief   Forwards a received message to its target on the receive thread, instead of
@@ -644,18 +644,7 @@ private:
     bool do_accept_client_pool(areg::SocketAccepted & clientSocket);
 
     /**
-     * \brief   Client-lost cleanup for shared-thread path -- no-op.
-     **/
-    void do_client_lost_shared(ITEM_ID cookie);
-
-    /**
-     * \brief   Client-lost cleanup for pool path.
-     *          Removes the socket from its owning pool pair's multiplexer.
-     **/
-    void do_client_lost_pool(ITEM_ID cookie);
-
-    /**
-     * \brief   Assigns mSendFn / mSendMoveFn / mAcceptFn / mLostFn based on mNumPairs.
+     * \brief   Assigns mSendFn / mSendMoveFn / mAcceptFn based on mNumPairs.
      *          Called from the constructor and from setup_connection_data() when the
      *          config overrides the constructor's pair count.
      **/
@@ -692,7 +681,6 @@ protected:
     SendCopyFn      mSendFn;        //!< Routes const-ref send to shared or pool path; set in constructor.
     SendMoveFn      mSendMoveFn;    //!< Routes move-send to shared or pool path; set in constructor.
     AcceptFn        mAcceptFn;      //!< Routes new-client accept to shared or pool path; set in constructor.
-    LostFn          mLostFn;        //!< Routes client-lost cleanup to shared or pool path; set in constructor.
 
 //////////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

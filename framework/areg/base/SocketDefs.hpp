@@ -48,7 +48,8 @@ namespace areg {
 /**
  * \brief   Stores an IPv4 address and port number for a socket endpoint.
  *          Resolves host names to IP addresses and extracts peer addresses
- *          from connected sockets.
+ *          from connected sockets. An address given or received as an IP keeps
+ *          that IP as its host name: no reverse lookup is made.
  **/
 class AREG_API SocketAddress
 {
@@ -138,7 +139,8 @@ public:
     inline const String& host_address() const noexcept;
 
     /**
-     * \brief   Returns the resolved host name string.
+     * \brief   Returns the host name: the name the address was resolved from, or the
+     *          IP address when it was given or received as an IP.
      **/
     [[nodiscard]]
     inline const String& host_name() const noexcept;
@@ -166,7 +168,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 private:
     String   mIpAddr;   //!< Numeric IPv4 address string.
-    String   mHostName; //!< Resolved host name string.
+    String   mHostName; //!< Host name, or the IP address when no name was given.
     uint16_t mPortNr;   //!< Port number; InvalidPort when not set.
 };
 
@@ -709,6 +711,28 @@ AREG_API int32_t receive_data_window(SOCKETHANDLE hSocket, uint8_t* dataBuffer, 
  * \return  Bytes available in the thread-local cache for this socket (>= 0).
  **/
 AREG_API uint32_t recv_data_available(SOCKETHANDLE hSocket) noexcept;
+
+/**
+ * \brief   Moves the bytes the calling thread's read-ahead cache holds for \a hSocket to the
+ *          start of the cache and reads into the free part what the socket has now, without
+ *          waiting. Meant for a thread that serves many sockets and must never block on one.
+ *
+ * \param   hSocket     Socket whose cache is filled.
+ * \return  The bytes added: 0 if the socket has nothing now or the cache is full; negative if
+ *          the connection ended or failed.
+ **/
+AREG_API int32_t recv_fill_nowait(SOCKETHANDLE hSocket) noexcept;
+
+/**
+ * \brief   Copies into \a dataBuffer what the calling thread's read-ahead cache holds for
+ *          \a hSocket, then what the socket has now, up to \a dataLength bytes, without waiting.
+ *
+ * \param   hSocket     Valid connected socket descriptor.
+ * \param   dataBuffer  Buffer to fill.
+ * \param   dataLength  Capacity of \a dataBuffer in bytes.
+ * \return  The bytes copied, 0 if nothing is there now; negative if the connection ended or failed.
+ **/
+AREG_API int32_t receive_data_nowait(SOCKETHANDLE hSocket, uint8_t* dataBuffer, uint32_t dataLength) noexcept;
 
 /**
  * \brief   Sets SO_SNDTIMEO on \a hSocket so that a blocking send() cannot hang 

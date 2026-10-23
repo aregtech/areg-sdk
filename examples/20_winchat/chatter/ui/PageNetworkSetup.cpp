@@ -5,6 +5,7 @@
 #include "chatter/DistrbutedApp.hpp"
 #include "chatter/DistributedAppDefs.hpp"
 #include "chatter/services/ChatPrticipantHandler.hpp"
+#include "chatter/services/ConnectionService.hpp"
 #include "chatter/services/NetworkSetup.hpp"
 #include "chatter/ui/PageNetworkSetup.hpp"
 #include "chatter/ui/DistributedDialog.hpp"
@@ -55,9 +56,7 @@ void PageNetworkSetup::cleanService()
     if (mNetworkSetup != nullptr)
     {
         mNetworkSetup->DisconnectServicing( );
-
-        delete mNetworkSetup;
-        mNetworkSetup = nullptr;
+        ConnectionService::DeleteClient( mNetworkSetup );
     }
 }
 
@@ -73,13 +72,11 @@ void PageNetworkSetup::OnServiceStartup( bool isStarted, areg::Component * owner
     if ( isStarted )
     {
         if ( (mNetworkSetup == nullptr) && (owner != nullptr) )
-            mNetworkSetup = DEBUG_NEW NetworkSetup( chat::COMP_NAME_CENTRAL_SERVER, *owner, mConnectionHandler );
+            mNetworkSetup = ConnectionService::CreateClient<NetworkSetup>( chat::COMP_NAME_CENTRAL_SERVER, *owner, mConnectionHandler );
     }
     else
     {
-        if ( mNetworkSetup != nullptr )
-            delete mNetworkSetup;
-        mNetworkSetup = nullptr;
+        ConnectionService::DeleteClient( mNetworkSetup );
     }
 }
 
@@ -143,8 +140,7 @@ void PageNetworkSetup::OnDisconnectTriggered()
     if ( mNetworkSetup != nullptr )
     {
         mNetworkSetup->request_disconnect(mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie(), mConnectionHandler.GetTimeConnect());
-        delete mNetworkSetup;
-        mNetworkSetup = nullptr;
+        ConnectionService::DeleteClient( mNetworkSetup );
     }
 }
 
@@ -408,8 +404,7 @@ void PageNetworkSetup::OnDestroy( )
     if ( mNetworkSetup != nullptr )
     {
         mNetworkSetup->request_disconnect( mConnectionHandler.GetNickName( ), mConnectionHandler.GetCookie( ), mConnectionHandler.GetTimeConnect( ) );
-        delete mNetworkSetup;
-        mNetworkSetup = nullptr;
+        ConnectionService::DeleteClient( mNetworkSetup );
     }
 }
 

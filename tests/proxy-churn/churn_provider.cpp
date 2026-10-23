@@ -17,17 +17,13 @@ class ChurnProvider final : public    areg::Component
 public:
     ChurnProvider(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
         : areg::Component           ( entry, owner )
-        , HelloServiceProviderBase  ( static_cast<areg::Component &>(self()) )
+        , HelloServiceProviderBase  ( static_cast<areg::Component &>(*this) )
     {
     }
 
     void request_hello_service() final
     {
     }
-
-private:
-    inline ChurnProvider & self()
-    {   return (*this); }
 };
 
 BEGIN_MODEL("ProviderModel")

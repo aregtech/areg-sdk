@@ -17,6 +17,7 @@
 
 #include "areg/component/Event.hpp"
 #include "areg/component/ExitEvent.hpp"
+#include "areg/component/ProxyBase.hpp"
 #include "areg/logging/areg_log.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -395,6 +396,28 @@ DispatcherThread * DispatcherThread::find_consumer_thread( const uint32_t whichC
     }
 
     return result;
+}
+
+void DispatcherThread::shutdown_proxies()
+{
+    ArrayList<std::shared_ptr<ProxyBase>> proxyList;
+    ProxyBase::find_thread_proxies(self(), proxyList);
+    for (uint32_t i = 0; i < proxyList.size(); ++i)
+    {
+        ASSERT(proxyList[i] != nullptr);
+        proxyList[i]->stop_proxy();
+    }
+}
+
+void DispatcherThread::detach_proxies()
+{
+    ArrayList<std::shared_ptr<ProxyBase>> proxyList;
+    ProxyBase::find_thread_proxies(self(), proxyList);
+    for (uint32_t i = 0; i < proxyList.size(); ++i)
+    {
+        ASSERT(proxyList[i] != nullptr);
+        proxyList[i]->detach_from_registry();
+    }
 }
 
 } // namespace areg

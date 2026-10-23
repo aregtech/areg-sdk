@@ -8,6 +8,7 @@ macro_add_source(aregextend_SRC "${AREG_FRAMEWORK}"
     aregextend/service/private/ServerConnection.cpp
     aregextend/service/private/ServerReceiveThread.cpp
     aregextend/service/private/SendBacklog.cpp
+    aregextend/service/private/SocketHandover.cpp
     aregextend/service/private/ServerSendThread.cpp
     aregextend/service/private/ServiceApplicationBase.cpp
     aregextend/service/private/ServiceCommunicationBase.cpp

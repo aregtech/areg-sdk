@@ -494,6 +494,23 @@ static int32_t _recv_cached(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t d
     return static_cast<int32_t>(total);
 }
 
+int32_t _os_recv_nowait(SOCKETHANDLE hSocket, uint8_t* dataBuffer, uint32_t dataLength)
+{
+    ASSERT(areg::is_valid_socket(hSocket));
+    ASSERT((dataBuffer != nullptr) && (dataLength > 0u));
+
+    for (;;)
+    {
+        const ssize_t received = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer), static_cast<size_t>(dataLength), MSG_DONTWAIT);
+        if (received > 0)
+            return static_cast<int32_t>(received);
+        else if (received == 0)
+            return -1;
+        else if (errno != EINTR)
+            return ((errno == EAGAIN) || (errno == EWOULDBLOCK)) ? 0 : -1;
+    }
+}
+
 int32_t _os_recv_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength)
 {
     ASSERT(areg::is_valid_socket(hSocket));

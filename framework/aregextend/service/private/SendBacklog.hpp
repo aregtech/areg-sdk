@@ -22,6 +22,7 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/base/MessageEnvelope.hpp"
+#include "areg/base/Socket.hpp"
 #include "areg/base/SocketDefs.hpp"
 #include "areg/base/private/SocketLiveness.hpp"
 #include "areg/component/private/EventQueue.hpp"
@@ -127,6 +128,7 @@ public:
     {
         ITEM_ID                             cookie      { 0u };     //!< The connection.
         SOCKETHANDLE                        socket      { areg::InvalidSocketHandle };  //!< Its socket.
+        areg::Socket::SocketHandle          hold        { };        //!< Keeps the socket open while the entry exists.
         std::deque<areg::MessageEnvelope>   messages    { };        //!< Not completed, in order.
         uint32_t                            headDone    { 0u };     //!< Completed bytes of the first message.
         uint64_t                            bytes       { 0u };     //!< Bytes not completed.
@@ -178,9 +180,10 @@ public:
      * \param   count       The number of messages.
      * \param   bytesDone   On return, the bytes the socket took now.
      * \param   msgsDone    On return, the messages the socket took whole now.
+     * \param   hold        A reference to the socket, kept while a backlog exists.
      * \return  What happened to the messages.
      **/
-    Result write(ITEM_ID cookie, SOCKETHANDLE hSocket, const areg::MessageEnvelope * const * messages, uint32_t count, uint64_t & bytesDone, uint32_t & msgsDone);
+    Result write(ITEM_ID cookie, SOCKETHANDLE hSocket, const areg::MessageEnvelope * const * messages, uint32_t count, uint64_t & bytesDone, uint32_t & msgsDone, const areg::Socket::SocketHandle & hold = areg::Socket::SocketHandle());
 
     /**
      * \brief   Writes one message from a thread that is not the send thread. Nothing is written
@@ -190,8 +193,9 @@ public:
      *
      * \return  -1 if the socket failed, 0 if nothing was written and the message has to be queued,
      *          1 if it was written whole, 2 if a part was written and the rest kept.
+     *          \a hold is a reference to the socket, kept while a backlog exists.
      **/
-    int32_t write_inline(ITEM_ID cookie, SOCKETHANDLE hSocket, const areg::MessageEnvelope & message);
+    int32_t write_inline(ITEM_ID cookie, SOCKETHANDLE hSocket, const areg::MessageEnvelope & message, const areg::Socket::SocketHandle & hold = areg::Socket::SocketHandle());
 
     /**
      * \brief   The send thread that owns the backlog: it knows the connections and closes them.
@@ -268,11 +272,11 @@ public:
     void log_close(const Entry & entry, Reason reason) const;
 
     /**
-     * \brief   Releases every backlog and returns the sockets whose first message was cut,
+     * \brief   Releases every backlog and returns the connections whose first message was cut,
      *          which must be closed before anything else is written into them.
      *          Called by the send thread when it stops.
      **/
-    void release_all(std::deque<SOCKETHANDLE> & cutSockets);
+    void release_all(std::deque<ITEM_ID> & cutCookies);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls

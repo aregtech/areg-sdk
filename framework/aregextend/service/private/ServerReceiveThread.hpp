@@ -21,6 +21,8 @@
 #include "areg/base/areg_global.h"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/ipc/DataRateStats.hpp"
+#include "aregextend/service/private/ServiceThreadHelper.hpp"
+#include "aregextend/service/private/SocketHandover.hpp"
 
 #include <vector>
 
@@ -47,6 +49,7 @@ namespace areg::ext {
  * \brief   The IPC message receiving thread of server socket.
  **/
 class ServerReceiveThread final : public    DispatcherThread
+                                , public    SocketRelease
 {
     //!< Number of retries to accept socket connection
     static constexpr uint32_t RETRY_COUNT   { 5 };
@@ -123,6 +126,16 @@ protected:
     bool post_event( areg::Event & eventElem ) final;
 
 /************************************************************************/
+// SocketRelease overrides
+/************************************************************************/
+
+    /**
+     * \brief   Queues the socket of a closed connection for this thread, which unregisters it,
+     *          drops what it received from it and releases it.
+     **/
+    void release_socket(ITEM_ID cookie, areg::SocketAccepted && socket) override;
+
+/************************************************************************/
 // DispatcherThread overrides
 /************************************************************************/
 
@@ -138,6 +151,17 @@ protected:
 // Hidden helpers
 //////////////////////////////////////////////////////////////////////////
 private:
+
+    /**
+     * \brief   Unregisters and drops the sockets of the closed connections handed over by
+     *          release_socket(), with what this thread received from them.
+     **/
+    void _release_handed_over();
+
+    /**
+     * \brief   Unregisters the socket and drops what this thread received from it.
+     **/
+    void _drop_socket(SOCKETHANDLE hSocket);
 
     /**
      * \brief   Processes one socket event identified by \a hSocket.
@@ -201,6 +225,20 @@ private:
      *          dispatching thread only.
      **/
     std::vector<SOCKETHANDLE>       mCachedPending;
+    /**
+     * \brief   The sockets of closed connections, handed over by other threads.
+     **/
+    SocketHandover                  mHandover;
+    /**
+     * \brief   Reused lists of the sockets taken from mHandover. Used by the dispatching thread only.
+     **/
+    std::vector<areg::SocketAccepted>   mAdded;
+    std::vector<areg::SocketAccepted>   mReleased;
+    /**
+     * \brief   The messages being received that do not fit the read-ahead cache. Used by the
+     *          dispatching thread only.
+     **/
+    ReceiveParts                    mParts;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

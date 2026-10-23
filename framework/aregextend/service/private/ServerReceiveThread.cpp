@@ -39,7 +39,29 @@ ServerReceiveThread::ServerReceiveThread( ConnectionHandler & connectHandler, Re
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
     , mRecvStats        ( )
+    , mCachedPending    ( )
+    , mHandover         ( connection.multiplexer() )
+    , mAdded            ( )
+    , mReleased         ( )
+    , mParts            ( )
 {
+}
+
+void ServerReceiveThread::release_socket(ITEM_ID /*cookie*/, areg::SocketAccepted && socket)
+{
+    mHandover.release(std::move(socket));
+}
+
+void ServerReceiveThread::_release_handed_over()
+{
+    mHandover.take(mAdded, mReleased);
+    for ( const areg::SocketAccepted & sock : mReleased )
+    {
+        _drop_socket(sock.handle());
+    }
+
+    mAdded.clear();
+    mReleased.clear();
 }
 
 void ServerReceiveThread::_process_connection_event(SOCKETHANDLE hSocket, const areg::SocketAddress & addrAccepted, areg::MessageEnvelope & msgReceived)
@@ -62,7 +84,9 @@ void ServerReceiveThread::_process_connection_event(SOCKETHANDLE hSocket, const 
                         , clientSocket.address().host_address().as_string()
                         , clientSocket.address().host_port());
 
-            mConnection.accept_connection(clientSocket);
+            if ( mConnection.accept_connection(clientSocket, static_cast<SocketRelease &>(*this)) == false )
+                return;
+
             if ( mConnectHandler.on_client_accepted(clientSocket) )
                 return;
         }
@@ -94,60 +118,37 @@ void ServerReceiveThread::_process_connection_event(SOCKETHANDLE hSocket, const 
                 , clientSocket.address().host_address().as_string()
                 , clientSocket.address().host_port());
 
-    const int32_t sizeReceived = mConnection.receive_message(msgReceived, clientSocket);
-
-#if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-    const areg::SocketAddress& addSocket = clientSocket.address();
-    DEBUG_LOG_DBG("Received [ %d ] bytes from socket [ %u ]", sizeReceived, static_cast<uint32_t>(clientSocket.handle()));
-#endif   // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-
-    if (sizeReceived > 0)
+    int32_t received{ 0 };
     {
-        accumulate_received(static_cast<uint64_t>(sizeReceived), 1u);
-
-        DEBUG_LOG_DBG("Received [ %d ] bytes of message [ %u ] from source [ %u ], client [ %s : %d ], message size [ %u ]"
-                    , sizeReceived
-                    , static_cast<uint32_t>(msgReceived.message_id())
-                    , static_cast<uint32_t>(msgReceived.source())
-                    , addSocket.host_address().as_string()
-                    , addSocket.host_port()
-                    , msgReceived.size_used());
-
-        {
-            AREG_LT_SCOPE(areg::LtStage::RecvNode);  // router inline route+forward
-            mRemoteService.process_received_message(msgReceived, clientSocket);
-        }
-
-        constexpr uint32_t MAX_DRAIN{ areg::DEFAULT_DRAIN_LIMIT - 1u };
-        const int32_t drained{ areg::ext::drain_recv_cache(mConnection, mRemoteService, MAX_DRAIN, clientSocket,
-                msgReceived, [this](uint64_t bytes, uint32_t msgs) { accumulate_received(bytes, msgs); }) };
-
-        if (drained < 0)
-        {
-            mConnection.unregister_from_multiplexer(clientSocket.handle());
-            mRemoteService.failed_receive_message(clientSocket);
-            areg::thread_rx_cache_release(clientSocket.handle());
-            _forget_cached_socket(clientSocket.handle());
-        }
-        else if (drained == static_cast<int32_t>(MAX_DRAIN))
-        {
-            // The ceiling stopped the drain, so the cache may still hold messages.
-            _remember_cached_socket(clientSocket.handle());
-        }
+        AREG_LT_SCOPE(areg::LtStage::RecvNode);  // router inline route+forward
+        received = areg::ext::receive_ready_socket(mConnection, mRemoteService, areg::DEFAULT_DRAIN_LIMIT, clientSocket,
+                msgReceived, mParts, [this](uint64_t bytes, uint32_t msgs) { accumulate_received(bytes, msgs); });
     }
-    else
+
+    if (received < 0)
     {
         DEBUG_LOG_WARN("Failed to receive message from client socket [ %s : %d ], socket [ %u ], server valid [ %s ]. Going to close connection"
-                        , addSocket.host_address().as_string()
-                        , addSocket.host_port()
+                        , clientSocket.address().host_address().as_string()
+                        , clientSocket.address().host_port()
                         , clientSocket.handle()
                         , mConnection.is_valid() ? "YES" : "NO");
 
-        mConnection.unregister_from_multiplexer(clientSocket.handle());
         mRemoteService.failed_receive_message(clientSocket);
-        areg::thread_rx_cache_release(clientSocket.handle());
-        _forget_cached_socket(clientSocket.handle());
+        _drop_socket(clientSocket.handle());
     }
+    else if (received == static_cast<int32_t>(areg::DEFAULT_DRAIN_LIMIT))
+    {
+        // The ceiling stopped the drain, so the cache may still hold messages.
+        _remember_cached_socket(clientSocket.handle());
+    }
+}
+
+void ServerReceiveThread::_drop_socket(SOCKETHANDLE hSocket)
+{
+    mConnection.unregister_from_multiplexer(hSocket);
+    _forget_cached_socket(hSocket);
+    areg::thread_rx_cache_release(hSocket);
+    mParts.drop(hSocket);
 }
 
 void ServerReceiveThread::_remember_cached_socket(SOCKETHANDLE hSocket)
@@ -191,9 +192,8 @@ void ServerReceiveThread::_service_cached_socket(areg::MessageEnvelope & msgRece
 
     if (drained < 0)
     {
-        mConnection.unregister_from_multiplexer(hSocket);
         mRemoteService.failed_receive_message(clientSocket);
-        areg::thread_rx_cache_release(hSocket);
+        _drop_socket(hSocket);
     }
     else if (drained == static_cast<int32_t>(MAX_DRAIN))
     {
@@ -210,6 +210,7 @@ bool ServerReceiveThread::run_dispatcher()
 
     // This thread object outlives a run and is started again on a reconnect.
     mCachedPending.clear();
+    mParts.clear();
 
     ready_for_events(true);
     bool isExit{ false };   // stays false if server_listen() fails (failure return); set on a clean ExitEvent
@@ -220,6 +221,11 @@ bool ServerReceiveThread::run_dispatcher()
         uint32_t retryCount = 0;
         do
         {
+            if ( mHandover.has_pending() )
+            {
+                _release_handed_over();
+            }
+
             if ( !mExternalEvents.has_pending() )
             {
                 areg::SocketAddress addrAccepted;

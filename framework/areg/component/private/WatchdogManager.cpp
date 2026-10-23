@@ -138,16 +138,16 @@ inline void WatchdogManager::_register_watchdog(Watchdog & watchdog)
     mWatchdogResource.register_resource_object(watchdog.id(), &watchdog);
 }
 
-inline bool WatchdogManager::_is_registered(const Watchdog * watchdog) const
+inline Watchdog * WatchdogManager::_find_registered(const TimerBase * timer) const
 {
     Watchdog::GUARD_ID key{ 0u };
     for (Watchdog * entry = mWatchdogResource.resource_first_key(key); entry != nullptr; entry = mWatchdogResource.resource_next_key(key))
     {
-        if (entry == watchdog)
-            return true;
+        if (static_cast<const TimerBase *>(entry) == timer)
+            return entry;
     }
 
-    return false;
+    return nullptr;
 }
 
 inline void WatchdogManager::_unregister_watchdog(Watchdog& watchdog)
@@ -179,11 +179,11 @@ void WatchdogManager::_remove_all_watchdogs()
 
 void WatchdogManager::process_event(const TimerManagerEventData & data)
 {
-    Watchdog* watchdog = static_cast<Watchdog*>(data.timer());
-    ASSERT(watchdog != nullptr);
+    ASSERT(data.timer() != nullptr);
     // A watchdog unregisters under this lock before it is destroyed.
     mWatchdogResource.lock();
-    if (_is_registered(watchdog) && (WatchdogManager::_os_timer_start(*watchdog) == false))
+    Watchdog * watchdog = _find_registered(data.timer());
+    if ((watchdog != nullptr) && (WatchdogManager::_os_timer_start(*watchdog) == false))
     {
         _unregister_watchdog(*watchdog);
     }

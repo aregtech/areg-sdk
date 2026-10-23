@@ -8,6 +8,7 @@
 
 #include "chatter/services/DirectConnectionService.hpp"
 #include "chatter/services/ConnectionList.hpp"
+#include "chatter/services/ConnectionService.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/base/areg_global.h"
 #include "areg/logging/areg_log.h"
@@ -85,7 +86,7 @@ void PageConnections::OnServiceNetwork( bool isConnected, areg::DispatcherThread
         if ( mConnectionHandler.IsValid( ) && (mConnectionHandler.GetRegistered( ) == false) && (mClientConnections == nullptr) )
         {
             LOG_DBG("Create client object to get connections");
-            mClientConnections = DEBUG_NEW ConnectionList( chat::COMP_NAME_CENTRAL_SERVER, *ownerThread, mConnectionHandler );
+            mClientConnections = ConnectionService::CreateClient<ConnectionList>( chat::COMP_NAME_CENTRAL_SERVER, *ownerThread, mConnectionHandler );
         }
     }
 }
@@ -106,9 +107,7 @@ void PageConnections::OnServiceConnection( bool isConnected, areg::DispatcherThr
     }
     else
     {
-        if ( mClientConnections != nullptr )
-            delete mClientConnections;
-        mClientConnections = nullptr;
+        ConnectionService::DeleteClient( mClientConnections );
     }
 }
 
@@ -124,7 +123,7 @@ void PageConnections::OnClientConnection( bool isConnected, areg::DispatcherThre
             LOG_DBG("There is no connection client, creates one");
             ASSERT( mConnectionHandler.IsValid() == true );
             ASSERT( mConnectionHandler.GetRegistered() == false );
-            mClientConnections = DEBUG_NEW ConnectionList( chat::COMP_NAME_CENTRAL_SERVER, *dispThread, mConnectionHandler );
+            mClientConnections = ConnectionService::CreateClient<ConnectionList>( chat::COMP_NAME_CENTRAL_SERVER, *dispThread, mConnectionHandler );
         }
     }
     else
@@ -344,11 +343,7 @@ inline bool PageConnections::is_service_connected() const
 
 inline void PageConnections::cleanService()
 {
-    if ( mClientConnections != nullptr )
-    {
-        delete mClientConnections;
-        mClientConnections = nullptr;
-    }
+    ConnectionService::DeleteClient( mClientConnections );
     if ( mDirectConnectModel.is_empty( ) == false )
     {
         areg::ComponentLoader::remove_component_model( mDirectConnectModel );

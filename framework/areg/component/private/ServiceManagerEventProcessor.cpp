@@ -40,6 +40,7 @@ DEF_LOG_SCOPE(areg_component_private_ServiceManagerEventProcessor, _register_con
 DEF_LOG_SCOPE(areg_component_private_ServiceManagerEventProcessor, _unregister_consumer);
 DEF_LOG_SCOPE(areg_component_private_ServiceManagerEventProcessor, _send_connected);
 DEF_LOG_SCOPE(areg_component_private_ServiceManagerEventProcessor, _send_disconnected);
+DEF_LOG_SCOPE(areg_component_private_ServiceManagerEventProcessor, _send_provider_disconnected);
 DEF_LOG_SCOPE(areg_component_private_ServiceManagerEventProcessor, unregister_thread_services);
 
 namespace areg {
@@ -386,10 +387,10 @@ void ServiceManagerEventProcessor::_unregister_consumer( const ProxyAddress & wh
                , StubAddress::to_path( server.address( ) ).as_string( )
                , areg::as_string( client.connection_status( ) ) );
 
-    // Unregister client first, then send event that client does not receive notification
+    // The client is gone, only the server is told.
     if ( client.is_connected( ) )
     {
-        _send_disconnected( client.address(), server.address( ), areg::service_connection( reason ) );
+        _send_provider_disconnected( client.address(), server.address( ), areg::service_connection( reason ) );
     }
     else
     {
@@ -431,6 +432,24 @@ void ServiceManagerEventProcessor::_send_disconnected( const ProxyAddress & clie
 {
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor, _send_disconnected);
 
+    _send_provider_disconnected( client, server, status );
+    if ( client.is_local_address( ) )
+    {
+        LOG_DBG( "Sending to Proxy [ %s ] notification of disconnection from server [ %s ]"
+                   , ProxyAddress::to_path( client ).as_string( )
+                   , StubAddress::to_path( server ).as_string( ) );
+
+        ProxyConnectEvent proxyConnect(client, server, status);
+        client.deliver_service_event(proxyConnect);
+    }
+}
+
+void ServiceManagerEventProcessor::_send_provider_disconnected( const ProxyAddress & client
+                                                              , const StubAddress & server
+                                                              , const areg::ServiceConnectionState status ) const
+{
+    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor, _send_provider_disconnected);
+
     if ( server.is_local_address( ) && server.source( ) != areg::SOURCE_UNKNOWN )
     {
         LOG_DBG( "Sending to Stub [ %s ] notification of disconnected client [ %s ]"
@@ -440,16 +459,6 @@ void ServiceManagerEventProcessor::_send_disconnected( const ProxyAddress & clie
         StubConnectEvent clientConnect(client, server, status);
         clientConnect.set_event_priority(areg::EventPriority::HighPrio);
         server.deliver_service_event(clientConnect);
-    }
-
-    if ( client.is_local_address( ) )
-    {
-        LOG_DBG( "Sending to Proxy [ %s ] notification of disconnection from server [ %s ]"
-                   , ProxyAddress::to_path( client ).as_string( )
-                   , StubAddress::to_path( server ).as_string( ) );
-
-        ProxyConnectEvent proxyConnect(client, server, status);
-        client.deliver_service_event(proxyConnect);
     }
 }
 

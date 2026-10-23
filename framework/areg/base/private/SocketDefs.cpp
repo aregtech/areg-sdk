@@ -104,6 +104,13 @@ namespace areg::os {
     int32_t _os_recv_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength);
 
     /**
+     * \brief   OS specific receive of what the socket has now, without waiting.
+     * \return  The bytes received; 0 if the socket has nothing now; negative if the connection
+     *          ended or failed.
+     **/
+    int32_t _os_recv_nowait(SOCKETHANDLE hSocket, uint8_t* dataBuffer, uint32_t dataLength);
+
+    /**
      * \brief   Receives exactly \a dataLength bytes from \a hSocket in windowed chunks
      *          of at most DEFAULT_THREAD_CACHE bytes per recv() call.
      *          Loops until all bytes are received; no cache involvement.
@@ -210,7 +217,7 @@ areg::SocketAddress::SocketAddress(const areg::String& address, uint16_t portNr)
     if (areg::is_ip_address(address))
     {
         mIpAddr     = address;
-        mHostName   = areg::ip_to_host(address);
+        mHostName   = address;
     }
     else
     {
@@ -283,7 +290,7 @@ void areg::SocketAddress::from_sockaddr(const struct sockaddr_in & addrHost)
 {
     mPortNr     = areg::extract_port_number(addrHost);
     mIpAddr     = areg::extract_ip_address(addrHost);
-    mHostName   = areg::ip_to_host(mIpAddr);
+    mHostName   = mIpAddr;
 }
 
 bool areg::SocketAddress::resolve_socket(SOCKETHANDLE hSocket)
@@ -364,7 +371,7 @@ bool areg::SocketAddress::resolve_address( const String& hostName, uint16_t port
     {
         mPortNr     = portNr;
         mIpAddr     = host;
-        mHostName   = areg::ip_to_host(mIpAddr);
+        mHostName   = host;
         result      = true;
     }
 
@@ -1074,6 +1081,69 @@ AREG_API_IMPL int32_t areg::receive_data_window(SOCKETHANDLE hSocket, uint8_t* d
         return 0;
 
     return areg::os::_os_recv_data_window(hSocket, dataBuffer, static_cast<int32_t>(dataLength));
+}
+
+AREG_API_IMPL int32_t areg::recv_fill_nowait(SOCKETHANDLE hSocket) noexcept
+{
+    if (!areg::is_valid_socket(hSocket))
+        return -1;
+
+    areg::ThreadCache& tc = areg::thread_rx_cache(hSocket);
+    uint8_t* const cache = tc.cache();
+    if (cache == nullptr)
+        return -1;
+
+    if ((tc.head != 0u) && (tc.unread != 0u))
+    {
+        ::memmove(cache, cache + tc.head, tc.unread);
+    }
+
+    tc.head = 0u;
+    if (tc.unread >= tc.space)
+        return 0;
+
+    const int32_t filled{ areg::os::_os_recv_nowait(hSocket, cache + tc.unread, tc.space - tc.unread) };
+    if (filled > 0)
+    {
+        tc.unread += static_cast<uint32_t>(filled);
+    }
+
+    return filled;
+}
+
+AREG_API_IMPL int32_t areg::receive_data_nowait(SOCKETHANDLE hSocket, uint8_t* dataBuffer, uint32_t dataLength) noexcept
+{
+    if (!areg::is_valid_socket(hSocket))
+        return -1;
+
+    if ((dataBuffer == nullptr) || (dataLength == 0u))
+        return 0;
+
+    uint32_t copied{ 0u };
+    if (areg::receive_mode() != areg::ReceiveMode::NoCache)
+    {
+        areg::ThreadCache& tc = areg::thread_rx_cache(hSocket);
+        if (tc.unread != 0u)
+        {
+            copied = (tc.unread < dataLength) ? tc.unread : dataLength;
+            ::memcpy(dataBuffer, tc.buffer.get() + tc.head, copied);
+            tc.head   += copied;
+            tc.unread -= copied;
+            if (tc.unread == 0u)
+            {
+                tc.head = 0u;
+            }
+
+            if (copied == dataLength)
+                return static_cast<int32_t>(copied);
+        }
+    }
+
+    const int32_t received{ areg::os::_os_recv_nowait(hSocket, dataBuffer + copied, dataLength - copied) };
+    if (received < 0)
+        return (copied != 0u ? static_cast<int32_t>(copied) : -1);
+
+    return static_cast<int32_t>(copied) + received;
 }
 
 AREG_API_IMPL uint32_t areg::recv_data_available(SOCKETHANDLE hSocket) noexcept

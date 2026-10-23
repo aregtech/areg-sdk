@@ -110,6 +110,7 @@ TEST(ReceivedHeaderTest, LocalFieldsOfPeerAreCleared)
     using HookFn = void(*)(void *) noexcept;
     const HookFn hook{ &probe_hook };
     areg::EventHeader sent{ };
+    sent.eventType  = static_cast<uint16_t>(areg::EventType::EventRemoteRequest);
     sent.internal1  = 0x1111'1111u;
     sent.internal2  = 0x2222'2222u;
     std::memcpy(&sent.custom, &hook, sizeof(hook));
@@ -146,6 +147,7 @@ TEST(ReceivedHeaderTest, ReservedFieldIsIgnored)
     ASSERT_TRUE(open_pair(client, server));
 
     areg::EventHeader sent{ };
+    sent.eventType  = static_cast<uint16_t>(areg::EventType::EventRemoteRequest);
     sent.reserved   = 0xFFFF'FFFFu;
     sent.messageId  = 0x1234u;
     ASSERT_EQ(areg::send_data(server, reinterpret_cast<const uint8_t *>(&sent), static_cast<uint32_t>(sizeof(sent))), static_cast<int32_t>(sizeof(sent)));
@@ -156,6 +158,31 @@ TEST(ReceivedHeaderTest, ReservedFieldIsIgnored)
         areg::MessageEnvelope received;
         EXPECT_EQ(receiver.receive_message(received, socket), static_cast<int32_t>(sizeof(areg::EventHeader)));
         EXPECT_EQ(received.message_id(), 0x1234u);
+    }
+
+    areg::socket_close(server);
+}
+
+/**
+ * \brief   A header without an event type is refused: nothing is received from it.
+ **/
+TEST(ReceivedHeaderTest, HeaderWithoutEventTypeIsRefused)
+{
+    ASSERT_TRUE(areg::socket_initialize());
+    SOCKETHANDLE client{ areg::InvalidSocketHandle };
+    SOCKETHANDLE server{ areg::InvalidSocketHandle };
+    ASSERT_TRUE(open_pair(client, server));
+
+    areg::EventHeader sent{ };
+    sent.messageId  = 0x1234u;
+    ASSERT_EQ(areg::send_data(server, reinterpret_cast<const uint8_t *>(&sent), static_cast<uint32_t>(sizeof(sent))), static_cast<int32_t>(sizeof(sent)));
+
+    {
+        const ConnectedSocket socket(client);
+        const Receiver receiver;
+        areg::MessageEnvelope received;
+        EXPECT_EQ(receiver.receive_message(received, socket), 0);
+        EXPECT_FALSE(received.is_valid());
     }
 
     areg::socket_close(server);

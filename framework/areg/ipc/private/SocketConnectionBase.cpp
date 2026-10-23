@@ -18,6 +18,7 @@
 #include "areg/base/MessageEnvelope.hpp"
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/base/SocketDefs.hpp"
+#include "areg/component/EventDefs.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
 
 #include "areg/logging/areg_log.h"
@@ -28,21 +29,26 @@ SocketConnectionBase::SocketConnectionBase() noexcept
 {
 }
 
+uint8_t * SocketConnectionBase::prepare_message(MessageEnvelope & message, areg::EventHeader & header)
+{
+    if ((header.bufHeader.biUsed > areg::MAX_BUF_LENGTH) || (areg::is_valid(static_cast<areg::EventType>(header.eventType)) == false))
+        return nullptr;
+
+    // The local-only fields never take the values of the peer.
+    header.internal1 = 0u;
+    header.internal2 = 0u;
+    header.custom    = 0u;
+
+    return message.init_envelope(header, header.bufHeader.biUsed);
+}
+
 int32_t SocketConnectionBase::receive_message(MessageEnvelope & message, const Socket & socket) const
 {
     areg::EventHeader evtHeader{};
     if (socket.receive(reinterpret_cast<uint8_t*>(&evtHeader), sizeof(areg::EventHeader)) != static_cast<int32_t>(sizeof(areg::EventHeader)))
         return 0;
 
-    if (evtHeader.bufHeader.biUsed > areg::MAX_BUF_LENGTH)
-        return 0;
-
-    // The local-only fields never take the values of the peer.
-    evtHeader.internal1 = 0u;
-    evtHeader.internal2 = 0u;
-    evtHeader.custom    = 0u;
-
-    uint8_t * buffer = message.init_envelope(evtHeader, evtHeader.bufHeader.biUsed);
+    uint8_t * buffer = SocketConnectionBase::prepare_message(message, evtHeader);
     int32_t result{ buffer != nullptr ? static_cast<int32_t>(sizeof(areg::EventHeader)) : 0 };
     if ((evtHeader.bufHeader.biUsed != 0u) && (result != 0))
     {

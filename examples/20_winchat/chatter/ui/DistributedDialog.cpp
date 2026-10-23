@@ -27,7 +27,7 @@
 #define new DEBUG_NEW
 #endif
 
-#define FIRST_MESSAGE       (WM_USER + 12 + static_cast<uint32_t>(NEDistributedApp::WindowCommand::CmdFirst))
+#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<uint32_t>(NEDistributedApp::WindowCommand::CmdFirst))
 #define MAKE_MESSAGE(elem)  (static_cast<uint32_t>(elem) + FIRST_MESSAGE)
 
 
