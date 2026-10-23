@@ -47,6 +47,21 @@ protected:
     virtual ~SocketConnectionBase() = default;
 
 //////////////////////////////////////////////////////////////////////////
+// Static operations
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Checks a header received from a peer, clears its local-only fields and prepares
+     *          \a message for its body.
+     *
+     * \param[out]      message     The message the body is received into.
+     * \param[in,out]   header      The received header. Its local-only fields are cleared.
+     * \return  The buffer of the body, or nullptr if the header has no event type, declares a
+     *          body larger than areg::MAX_BUF_LENGTH, or there is no memory for the body.
+     **/
+    static uint8_t * prepare_message( MessageEnvelope & message, areg::EventHeader & header );
+
+//////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
 protected:

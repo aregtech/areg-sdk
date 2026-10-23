@@ -115,6 +115,9 @@
     <ClCompile Include="units\SocketMultiplexerTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="units\SocketAddressTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="units\SocketInterruptTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

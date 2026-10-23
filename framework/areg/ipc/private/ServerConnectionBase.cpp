@@ -21,7 +21,7 @@
 namespace areg {
 
 DEF_LOG_SCOPE(areg_ipc_ServerConnectionBase, accept_connection);
-DEF_LOG_SCOPE(areg_ipc_ServerConnectionBase, close_connection_cookie);
+DEF_LOG_SCOPE(areg_ipc_ServerConnectionBase, detach_connection_nolock);
 
 ServerConnectionBase::ServerConnectionBase()
     : mServerSocket         ( )
@@ -177,7 +177,7 @@ bool ServerConnectionBase::accept_connection(SocketAccepted & clientConnection)
             ASSERT(cookie >= areg::COOKIE_REMOTE_SERVICE);
 
             mAcceptedConnections.set_value_at(hSocket, clientConnection);
-            mCookieToSocket.set_value_at(cookie, hSocket);
+            mCookieToSocket.set_value_at(cookie, CookieSocket{ hSocket, clientConnection.shared_handle() });
             mSocketToCookie.set_value_at(hSocket, cookie);
             result = true;
 
@@ -199,59 +199,28 @@ bool ServerConnectionBase::accept_connection(SocketAccepted & clientConnection)
     return result;
 }
 
-void ServerConnectionBase::close_connection(SocketAccepted & clientConnection)
+SocketAccepted ServerConnectionBase::detach_connection_nolock(SOCKETHANDLE hSocket, ITEM_ID & cookie)
 {
-    std::unique_lock<std::shared_mutex> lock( mLock );
+    LOG_SCOPE(areg_ipc_ServerConnectionBase, detach_connection_nolock);
 
-    SOCKETHANDLE hSocket{ clientConnection.handle() };
-    MapSocketToCookie::MAPPOS pos{ mSocketToCookie.find(hSocket) };
-    ITEM_ID cookie{ mSocketToCookie.is_valid_position(pos) ? static_cast<ITEM_ID>(mSocketToCookie.value_at(pos)) : areg::COOKIE_UNKNOWN };
-
-    mMultiplexer.unregister_socket(hSocket);
-    mSocketToCookie.remove_at(hSocket);
-    mCookieToSocket.remove_at(cookie);
-    mAcceptedConnections.remove_at(hSocket);
-
-    clientConnection.close();
-}
-
-void ServerConnectionBase::close_connection( const ITEM_ID & cookie )
-{
-    LOG_SCOPE(areg_ipc_ServerConnectionBase, close_connection_cookie);
-    std::unique_lock<std::shared_mutex> lock(mLock);
-
-    MapCookieToSocket::MAPPOS posCookie = mCookieToSocket.find( cookie );
-    if (mCookieToSocket.is_valid_position(posCookie))
+    cookie = areg::COOKIE_UNKNOWN;
+    SocketAccepted result;
+    if (mAcceptedConnections.find(hSocket, result))
     {
-        SOCKETHANDLE hSocket = mCookieToSocket.value_at(posCookie);
-        MapSocketToObject::MAPPOS posClient = mAcceptedConnections.find(hSocket);
-
-        mMultiplexer.unregister_socket(hSocket);
-        // Shut down I/O immediately.
+        MapSocketToCookie::MAPPOS pos{ mSocketToCookie.find(hSocket) };
+        cookie = mSocketToCookie.is_valid_position(pos) ? static_cast<ITEM_ID>(mSocketToCookie.value_at(pos)) : areg::COOKIE_UNKNOWN;
         areg::socket_interrupt(hSocket);
-        mCookieToSocket.remove_at( posCookie );
-        mSocketToCookie.remove_at( hSocket );
-        if (mAcceptedConnections.is_valid_position(posClient))
-        {
-            SocketAccepted client(mAcceptedConnections.value_at(posClient));
-            mAcceptedConnections.remove_at(posClient);
-            client.close();
-        }
-        else
-        {
-            // The socket fd is not owned by any SocketAccepted, close it directly.
-            areg::socket_close(hSocket);
-        }
+        mSocketToCookie.remove_at(hSocket);
+        mCookieToSocket.remove_at(cookie);
+        mAcceptedConnections.remove_at(hSocket);
 
         LOG_INFO("Closed connection for cookie [ %u ], socket [ %u ], remaining accepted [ %u ]"
                     , static_cast<uint32_t>(cookie)
                     , static_cast<uint32_t>(hSocket)
                     , mAcceptedConnections.size());
     }
-    else
-    {
-        LOG_WARN("close_connection called for unknown cookie [ %u ] -- already closed or never registered", static_cast<uint32_t>(cookie));
-    }
+
+    return result;
 }
 
 } // namespace areg

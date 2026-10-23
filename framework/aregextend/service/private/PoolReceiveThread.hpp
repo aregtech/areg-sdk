@@ -29,6 +29,8 @@
 #include "areg/base/SocketAccepted.hpp"
 #include "areg/base/SocketMultiplexer.hpp"
 #include "areg/base/SyncPrimitives.hpp"
+#include "aregextend/service/private/ServiceThreadHelper.hpp"
+#include "aregextend/service/private/SocketHandover.hpp"
 
 #include <atomic>
 #include <string_view>
@@ -98,13 +100,13 @@ public:
     void add_socket( const areg::SocketAccepted & clientSocket );
 
     /**
-     * \brief   Queues a socket for removal from this pool slot's multiplexer
-     *          and delivers a soft wakeup() so the receive thread processes the
-     *          removal at the top of its next loop iteration.
+     * \brief   Queues the socket of a closed connection and delivers a soft wakeup(). At the top
+     *          of its next loop iteration the receive thread unregisters it, drops what it
+     *          received from it and releases it.
      *
-     * \param   hSocket     Handle of the socket to stop monitoring.
+     * \param   clientSocket    The socket of the closed connection.
      **/
-    void remove_socket( SOCKETHANDLE hSocket );
+    void release_socket( areg::SocketAccepted && clientSocket );
 
     /**
      * \brief   Signals the thread to stop: triggers the exit event and resets
@@ -144,12 +146,21 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Drains the pending-add and pending-remove queues under mPendingLock
-     *          and applies the changes to mMux.  Called at the top of each loop
-     *          iteration before entering wait().  Uses mHasPending as a fast-path
-     *          guard so the lock is not taken when no socket changes are queued.
+     * \brief   Takes the sockets queued by add_socket() and release_socket() and applies them to
+     *          mMux. Called at the top of each loop iteration before entering wait().
      **/
     void _process_pending_sockets();
+
+    /**
+     * \brief   Receives what the ready socket has now and dispatches every complete message.
+     *          Closes the connection if the socket ended or failed.
+     **/
+    void _receive_ready_socket( SOCKETHANDLE hSocket, areg::MessageEnvelope & msgReceived );
+
+    /**
+     * \brief   Unregisters the socket and drops what this thread received from it.
+     **/
+    void _drop_socket( SOCKETHANDLE hSocket );
 
     /**
      * \brief   Services one socket whose read-ahead cache still holds messages.
@@ -182,11 +193,11 @@ private:
     ServerConnection &                  mConnection;        //!< Server connection (for receive API).
     ServerReceiveThread &               mGlobalStats;       //!< Global counters accumulated here.
     areg::SocketMultiplexer             mMux;               //!< Per-slot socket readiness monitor.
-    mutable std::atomic<bool>           mHasPending;        //!< True when mPendingAdd or mPendingRemove is non-empty.
-    mutable ResourceLock                mPendingLock;       //!< Guards the two pending queues below.
-    std::vector<areg::SocketAccepted>   mPendingAdd;        //!< Sockets queued for registration.
-    std::vector<SOCKETHANDLE>           mPendingRemove;     //!< Socket handles queued for unregistration.
+    SocketHandover                      mHandover;          //!< Sockets queued for registration and release by other threads.
+    std::vector<areg::SocketAccepted>   mAdded;             //!< Reused list of the sockets taken for registration. Dispatching thread only.
+    std::vector<areg::SocketAccepted>   mReleased;          //!< Reused list of the sockets taken for release. Dispatching thread only.
     std::vector<SOCKETHANDLE>           mCachedPending;     //!< Sockets whose read-ahead cache still holds messages. Dispatching thread only.
+    ReceiveParts                        mParts;             //!< Messages being received that do not fit the read-ahead cache. Dispatching thread only.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

@@ -80,8 +80,8 @@ SendBacklog::SendBacklog(areg::SendQueueGate & gate)
 
 SendBacklog::~SendBacklog()
 {
-    std::deque<SOCKETHANDLE> cutSockets;
-    release_all(cutSockets);
+    std::deque<ITEM_ID> cutCookies;
+    release_all(cutCookies);
 }
 
 void SendBacklog::set_limits(uint64_t capBytes, uint32_t refuseMs, uint32_t keepaliveMs) noexcept
@@ -91,7 +91,7 @@ void SendBacklog::set_limits(uint64_t capBytes, uint32_t refuseMs, uint32_t keep
     mKeepaliveMs.store(keepaliveMs != 0u ? keepaliveMs : areg::SOCKET_KEEPALIVE_SEC * 1'000u, std::memory_order_relaxed);
 }
 
-SendBacklog::Result SendBacklog::write(ITEM_ID cookie, SOCKETHANDLE hSocket, const areg::MessageEnvelope * const * messages, uint32_t count, uint64_t & bytesDone, uint32_t & msgsDone)
+SendBacklog::Result SendBacklog::write(ITEM_ID cookie, SOCKETHANDLE hSocket, const areg::MessageEnvelope * const * messages, uint32_t count, uint64_t & bytesDone, uint32_t & msgsDone, const areg::Socket::SocketHandle & hold)
 {
     ASSERT((messages != nullptr) && (count != 0u) && (count <= areg::DEFAULT_DRAIN_LIMIT));
     bytesDone = 0u;
@@ -150,6 +150,7 @@ SendBacklog::Result SendBacklog::write(ITEM_ID cookie, SOCKETHANDLE hSocket, con
     Entry prepared{ };
     prepared.cookie     = cookie;
     prepared.socket     = hSocket;
+    prepared.hold       = hold;
     prepared.sinceMs    = nowMs;
     prepared.os         = std::move(os);
     for (uint32_t i = 0u; i < count; ++i)
@@ -163,7 +164,7 @@ SendBacklog::Result SendBacklog::write(ITEM_ID cookie, SOCKETHANDLE hSocket, con
     return Result::Kept;
 }
 
-int32_t SendBacklog::write_inline(ITEM_ID cookie, SOCKETHANDLE hSocket, const areg::MessageEnvelope & message)
+int32_t SendBacklog::write_inline(ITEM_ID cookie, SOCKETHANDLE hSocket, const areg::MessageEnvelope & message, const areg::Socket::SocketHandle & hold)
 {
     if ((is_empty() == false) && (find(cookie, hSocket) != nullptr))
         return 0;
@@ -196,6 +197,7 @@ int32_t SendBacklog::write_inline(ITEM_ID cookie, SOCKETHANDLE hSocket, const ar
     Entry prepared{ };
     prepared.cookie     = cookie;
     prepared.socket     = hSocket;
+    prepared.hold       = hold;
     prepared.sinceMs    = nowMs;
     prepared.os         = std::move(os);
     prepared.messages.push_back(message);
@@ -356,7 +358,7 @@ void SendBacklog::wake() noexcept
     }
 }
 
-void SendBacklog::release_all(std::deque<SOCKETHANDLE> & cutSockets)
+void SendBacklog::release_all(std::deque<ITEM_ID> & cutCookies)
 {
     std::unordered_map<ITEM_ID, Entry> entries;
     {
@@ -373,7 +375,7 @@ void SendBacklog::release_all(std::deque<SOCKETHANDLE> & cutSockets)
         Entry & entry{ pair.second };
         if ((entry.headDone != 0u) || (backlog_os_in_flight(entry.os.get()) != 0u))
         {
-            cutSockets.push_back(entry.socket);
+            cutCookies.push_back(entry.cookie);
         }
 
         release_entry(entry);

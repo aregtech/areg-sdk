@@ -295,7 +295,7 @@ namespace
 
         ~Fixture()
         {
-            std::deque<SOCKETHANDLE> cut;
+            std::deque<ITEM_ID> cut;
             backlog.release_all(cut);
             pair.close();
         }
@@ -494,7 +494,7 @@ TEST(SendBacklogTest, paused_peer_past_twice_its_cap_holds_back_until_closed)
     EXPECT_GE(elapsed_ms(lastMoved) + 1, static_cast<int64_t>(SendBacklog::CAP_STALL_MS));
     EXPECT_TRUE(backlog.is_empty());
 
-    std::deque<SOCKETHANDLE> cut;
+    std::deque<ITEM_ID> cut;
     backlog.release_all(cut);
     pair.close();
 }
@@ -539,7 +539,7 @@ TEST(SendBacklogTest, reading_peer_is_kept_past_twice_its_cap)
     EXPECT_FALSE(owner.closed.load()) << "reason " << static_cast<int>(owner.reason) << ", sent " << owner.sent.load();
     EXPECT_TRUE(backlog.is_empty());
 
-    std::deque<SOCKETHANDLE> cut;
+    std::deque<ITEM_ID> cut;
     backlog.release_all(cut);
     pair.close();
 }

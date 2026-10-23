@@ -377,6 +377,42 @@ static inline int32_t _recv_cached(SOCKETHANDLE hSocket, uint8_t* dataBuffer, in
     return static_cast<int32_t>(total);
 }
 
+int32_t _os_recv_nowait(SOCKETHANDLE hSocket, uint8_t* dataBuffer, uint32_t dataLength)
+{
+    ASSERT(areg::is_valid_socket(hSocket));
+    ASSERT((dataBuffer != nullptr) && (dataLength > 0u));
+
+    // A blocking socket is read only for what it holds: the pending count, or the end of stream
+    // or an error the zero-timeout poll reports.
+    u_long pending{ 0u };
+    if (::ioctlsocket(hSocket, static_cast<long>(FIONREAD), &pending) != RETURNED_OK)
+        return -1;
+
+    if (pending == 0u)
+    {
+        WSAPOLLFD entry{ };
+        entry.fd     = hSocket;
+        entry.events = POLLRDNORM;
+        const int ready{ ::WSAPoll(&entry, 1u, 0) };
+        if (ready < 0)
+            return -1;
+        else if ((ready == 0) || ((entry.revents & (POLLRDNORM | POLLHUP | POLLERR | POLLNVAL)) == 0))
+            return 0;
+
+        pending = static_cast<u_long>(dataLength);
+    }
+
+    const int32_t length{ static_cast<int32_t>(pending < static_cast<u_long>(dataLength) ? pending : dataLength) };
+    const int32_t received{ ::recv(hSocket, reinterpret_cast<char*>(dataBuffer), length, 0) };
+    if (received > 0)
+        return received;
+    else if (received == 0)
+        return -1;
+
+    const int error{ ::WSAGetLastError() };
+    return ((error == WSAEWOULDBLOCK) || (error == WSAEINTR)) ? 0 : -1;
+}
+
 int32_t _os_recv_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength)
 {
     ASSERT(areg::is_valid_socket(hSocket));

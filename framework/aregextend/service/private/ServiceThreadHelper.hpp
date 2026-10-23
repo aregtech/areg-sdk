@@ -30,11 +30,14 @@
 #include "areg/base/SocketAccepted.hpp"
 #include "areg/base/SocketDefs.hpp"
 #include "areg/ipc/RemoteMessageHandler.hpp"
+#include "areg/ipc/SocketConnectionBase.hpp"
 #include "aregextend/service/ServerConnection.hpp"
 #include "aregextend/service/SystemServiceDefs.hpp"
 #include "aregextend/service/private/SendBacklog.hpp"
 
 #include <algorithm>
+#include <cstring>
+#include <unordered_map>
 
 namespace areg::ext {
 
@@ -76,6 +79,8 @@ inline void sort_pending_sends(areg::ext::PendingSend * batch, uint32_t count) n
  *
  * \param   batch   Sorted ascending by socket handle batch.
  * \param   count   Number of valid entries in \a batch.
+ * \param   holds   The references to the sockets of the batch, kept until the batch is released.
+ * \param   holdCount   Number of entries in \a holds.
  * \param   conn    Server connection (client-lookup API).
  * \param   handler Remote message handler (failure callback).
  * \param   backlog The writer of the send thread.
@@ -85,6 +90,8 @@ inline void sort_pending_sends(areg::ext::PendingSend * batch, uint32_t count) n
 template<typename AccumFn>
 inline void send_pending_groups( areg::ext::PendingSend * batch
                                , uint32_t count
+                               , const areg::ext::HeldSocket * holds
+                               , uint32_t holdCount
                                , ServerConnection & conn
                                , areg::RemoteMessageHandler & handler
                                , SendBacklog & backlog
@@ -98,10 +105,8 @@ inline void send_pending_groups( areg::ext::PendingSend * batch
             ++j;
 
         const uint32_t groupSize{ j - i };
-
-        // Single writer per socket: the writes below belong to one message group and must not
-        // be split by another thread writing into the same socket.
-        areg::SocketWriteGuard writeGuard{ hSocket };
+        const areg::Socket::SocketHandle * hold{ areg::ext::find_hold(hSocket, holds, holdCount) };
+        ASSERT(hold != nullptr);
 
         const areg::MessageEnvelope * messages[areg::DEFAULT_DRAIN_LIMIT];
         uint64_t sizes[areg::DEFAULT_DRAIN_LIMIT];
@@ -123,37 +128,44 @@ inline void send_pending_groups( areg::ext::PendingSend * batch
 
         // One write never carries more than MAX_SEND_BATCH_BYTES; a single message always fits.
         const ITEM_ID cookie{ static_cast<ITEM_ID>(batch[i].msg.target()) };
-        for ( uint32_t start{ 0u }; start < bufCount; )
+        bool failed{ false };
         {
-            uint32_t end       { start };
-            uint64_t batchBytes{ 0u };
-            do
+            // Single writer per socket: the writes below belong to one message group and must not
+            // be split by another thread writing into the same socket.
+            areg::SocketWriteGuard writeGuard{ hSocket };
+            for ( uint32_t start{ 0u }; start < bufCount; )
             {
-                batchBytes += sizes[end];
-                ++end;
-            }
-            while ( (end < bufCount) && (sizes[end] <= (areg::MAX_SEND_BATCH_BYTES - batchBytes)) );
-
-            uint64_t bytesDone{ 0u };
-            uint32_t msgsDone { 0u };
-            const SendBacklog::Result result{ backlog.write(cookie, hSocket, messages + start, end - start, bytesDone, msgsDone) };
-            if ( bytesDone != 0u )
-            {
-                accum(bytesDone, msgsDone);
-            }
-
-            if ( result == SendBacklog::Result::Failed )
-            {
-                if ( !conn.is_interrupted() )
+                uint32_t end       { start };
+                uint64_t batchBytes{ 0u };
+                do
                 {
-                    areg::SocketAccepted client{ conn.client_by_handle(hSocket) };
-                    handler.failed_send_message(batch[i].msg, client);
+                    batchBytes += sizes[end];
+                    ++end;
+                }
+                while ( (end < bufCount) && (sizes[end] <= (areg::MAX_SEND_BATCH_BYTES - batchBytes)) );
+
+                uint64_t bytesDone{ 0u };
+                uint32_t msgsDone { 0u };
+                const SendBacklog::Result result{ backlog.write(cookie, hSocket, messages + start, end - start, bytesDone, msgsDone, *hold) };
+                if ( bytesDone != 0u )
+                {
+                    accum(bytesDone, msgsDone);
                 }
 
-                break;
-            }
+                if ( result == SendBacklog::Result::Failed )
+                {
+                    failed = true;
+                    break;
+                }
 
-            start = end;
+                start = end;
+            }
+        }
+
+        if ( failed && (conn.is_interrupted() == false) )
+        {
+            areg::SocketAccepted client{ conn.client_by_handle(hSocket) };
+            handler.failed_send_message(batch[i].msg, client);
         }
 
         i = j;
@@ -200,6 +212,7 @@ struct SendBatchContext
     areg::Event *                   events;     //!< Drain window handed to pop_events().
     ITEM_ID *                       targets;    //!< Target cookie of every batch entry.
     SOCKETHANDLE *                  sockets;    //!< Socket resolved for every target cookie.
+    areg::ext::HeldSocket *         holds;      //!< One reference to each distinct socket of the batch.
     areg::SendQueueGate *           gate;       //!< The gate of the send queue of the thread.
     ServerConnection *              connection; //!< The connection the groups are written into.
     areg::RemoteMessageHandler *    handler;    //!< Notified when a group cannot be written.
@@ -215,8 +228,10 @@ struct SendBatchContext
  * \param   thread      The send thread, used for pop_events() and trigger_exit().
  * \param   eventElem   The event that started this processing round.
  * \param   context     The working set of the thread, see SendBatchContext.
- * \param   resolve     Callable(ITEM_ID * targets, SOCKETHANDLE * sockets, uint32_t count) that
- *                      resolves the cookies of the whole batch in one lock window.
+ * \param   resolve     Callable(ITEM_ID * targets, SOCKETHANDLE * sockets, uint32_t count,
+ *                      HeldSocket * holds, uint32_t & holdCount) that resolves the
+ *                      cookies of the whole batch in one lock window and keeps a reference to
+ *                      each socket found, so none is closed while the batch writes it.
  * \param   accumulate  Callable(uint64_t bytes, uint32_t msgs), counts what left the socket.
  * \param   onExit      Callable() invoked before the thread leaves, to close what it owns.
  * \param   onDiscard   Callable(uint32_t messageId, ITEM_ID target) for a message whose target
@@ -282,7 +297,8 @@ inline void run_send_batch( ThreadT & thread
     }
 
     // Phase 2: resolve all cookies in one lock window.
-    resolve(context.targets, context.sockets, batchCount);
+    uint32_t holdCount{ 0u };
+    resolve(context.targets, context.sockets, batchCount, context.holds, holdCount);
 
     // Phase 3: compact + insertion-sort by socket handle in one pass. A message whose target is
     // gone is dropped, there is no socket left to write it into.
@@ -315,13 +331,16 @@ inline void run_send_batch( ThreadT & thread
     {
         // Phase 4: the batch is sorted, send the same-socket groups directly.
         AREG_LT_SCOPE(areg::LtStage::SendSyscall);  // isolate the ::send() from resolve + sort
-        areg::ext::send_pending_groups( context.batch, validCount, *context.connection, *context.handler
+        areg::ext::send_pending_groups( context.batch, validCount, context.holds, holdCount, *context.connection, *context.handler
                                       , *context.backlog, std::forward<AccumFn>(accumulate) );
     }
 
-    // Phase 5: release every wire buffer, including the entries discarded in phase 3.
+    // Phase 5: release every wire buffer, including the entries discarded in phase 3, and the sockets.
     for ( uint32_t i{ 0u }; i < batchCount; ++i )
         context.batch[i].msg.destroy_event();
+
+    for ( uint32_t i{ 0u }; i < holdCount; ++i )
+        context.holds[i].hold.reset();
 
     // The gate opens only after the write, never before it.
     context.gate->leave(batchCount);
@@ -375,6 +394,151 @@ inline int32_t drain_recv_cache( ServerConnection & conn
     }
 
     return static_cast<int32_t>(drain);
+}
+
+/**
+ * \brief   The messages a receive thread is receiving that do not fit the read-ahead cache of a
+ *          socket, one per socket at most. Each has its whole body allocated and is filled as its
+ *          bytes arrive. Used by the receive thread that serves the sockets only.
+ **/
+class ReceiveParts
+{
+public:
+    //!< A message being received.
+    struct Part
+    {
+        areg::MessageEnvelope   msg;    //!< The message, its body allocated in full.
+        uint8_t *               body;   //!< The body buffer of the message.
+        uint32_t                size;   //!< The size of the body.
+        uint32_t                done;   //!< The bytes of the body received so far.
+    };
+
+    //!< Returns the message being received from the socket, or nullptr if there is none.
+    inline Part * find(SOCKETHANDLE hSocket) noexcept
+    {
+        if (mParts.empty())
+            return nullptr;
+
+        auto pos{ mParts.find(hSocket) };
+        return (pos != mParts.end() ? &pos->second : nullptr);
+    }
+
+    //!< Starts a message of the socket.
+    inline Part & start(SOCKETHANDLE hSocket)
+    {
+        return mParts[hSocket];
+    }
+
+    //!< Drops the message of the socket, if any.
+    inline void drop(SOCKETHANDLE hSocket) noexcept
+    {
+        if (mParts.empty() == false)
+            mParts.erase(hSocket);
+    }
+
+    //!< Drops every message.
+    inline void clear() noexcept
+    {
+        mParts.clear();
+    }
+
+private:
+    std::unordered_map<SOCKETHANDLE, Part>  mParts; //!< The messages, by socket.
+};
+
+/**
+ * \brief   Receives what a ready socket has now, without waiting, and dispatches every message
+ *          that is complete. A message that is not complete stays in the read-ahead cache, or in
+ *          \a parts when it does not fit the cache, until the rest arrives.
+ *
+ * \param   conn            Server connection (receive API).
+ * \param   handler         Remote message handler (process callback).
+ * \param   maxDrain        Maximum number of messages to dispatch.
+ * \param   clientSocket    The ready socket.
+ * \param   msgReceived     Reusable message buffer; overwritten on each message.
+ * \param   parts           The messages of the thread that do not fit the cache.
+ * \param   accum           Callable(uint64_t bytes, uint32_t msgs) on each message.
+ * \return  The number of messages dispatched, or -1 if the connection ended, failed or sent a
+ *          header that is not valid. A return equal to \a maxDrain means the cache may still hold
+ *          messages, see drain_recv_cache().
+ **/
+template<typename AccumFn>
+inline int32_t receive_ready_socket( ServerConnection & conn
+                                   , areg::RemoteMessageHandler & handler
+                                   , uint32_t maxDrain
+                                   , areg::SocketAccepted & clientSocket
+                                   , areg::MessageEnvelope & msgReceived
+                                   , ReceiveParts & parts
+                                   , AccumFn && accum )
+{
+    const SOCKETHANDLE hSocket{ clientSocket.handle() };
+    int32_t completed{ 0 };
+
+    // Moves a part on with what the socket has; dispatches it when it is complete.
+    auto receivePart = [&](ReceiveParts::Part & part) -> bool
+    {
+        const int32_t received{ areg::receive_data_nowait(hSocket, part.body + part.done, part.size - part.done) };
+        if ( received < 0 )
+            return false;
+
+        part.done += static_cast<uint32_t>(received);
+        if ( part.done == part.size )
+        {
+            msgReceived = std::move(part.msg);
+            msgReceived.set_size_used(part.size);
+            msgReceived.move_to_begin();
+            const uint64_t bytes{ static_cast<uint64_t>(sizeof(areg::EventHeader)) + part.size };
+            parts.drop(hSocket);
+            handler.process_received_message(msgReceived, clientSocket);
+            accum(bytes, 1u);
+            ++completed;
+        }
+
+        return true;
+    };
+
+    ReceiveParts::Part * part{ parts.find(hSocket) };
+    if ( part != nullptr )
+    {
+        if ( receivePart(*part) == false )
+            return -1;
+        else if ( completed == 0 )
+            return 0;
+    }
+
+    // A cache that holds a complete message is drained before it is filled.
+    const bool ended{ (areg::recv_data_available(hSocket) == 0u) && (areg::recv_fill_nowait(hSocket) < 0) };
+    const uint32_t ceiling{ maxDrain - static_cast<uint32_t>(completed) };
+    const int32_t drained{ areg::ext::drain_recv_cache(conn, handler, ceiling, clientSocket, msgReceived, accum) };
+    if ( drained < 0 )
+        return -1;
+
+    completed += drained;
+    if ( static_cast<uint32_t>(drained) == ceiling )
+        return completed;
+
+    const areg::ThreadCache & tc{ areg::thread_rx_cache(hSocket) };
+    if ( tc.unread >= static_cast<uint32_t>(sizeof(areg::EventHeader)) )
+    {
+        areg::EventHeader header{ };
+        std::memcpy(&header, tc.buffer.get() + tc.head, sizeof(areg::EventHeader));
+        if ( (static_cast<uint64_t>(sizeof(areg::EventHeader)) + header.bufHeader.biUsed) > tc.space )
+        {
+            // A message larger than the cache is received into its own buffer.
+            static_cast<void>(areg::receive_data_nowait(hSocket, reinterpret_cast<uint8_t *>(&header), sizeof(areg::EventHeader)));
+            ReceiveParts::Part & started{ parts.start(hSocket) };
+            started.body = areg::SocketConnectionBase::prepare_message(started.msg, header);
+            started.size = header.bufHeader.biUsed;
+            started.done = 0u;
+            if ( (started.body == nullptr) || (receivePart(started) == false) )
+            {
+                parts.drop(hSocket);
+                return -1;
+            }
+        }
+    }
+
+    return (ended ? -1 : completed);
 }
 
 } // namespace areg::ext

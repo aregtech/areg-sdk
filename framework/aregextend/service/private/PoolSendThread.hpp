@@ -205,6 +205,7 @@ private:
     //!< Reused scratch: per-slot target cookies and resolved socket handles (POD; off the stack).
     std::array<ITEM_ID, areg::DEFAULT_DRAIN_LIMIT>       mTargets;
     std::array<SOCKETHANDLE, areg::DEFAULT_DRAIN_LIMIT>  mSockets;
+    std::array<areg::ext::HeldSocket, areg::DEFAULT_DRAIN_LIMIT>     mHolds;   //!< One reference to each distinct socket of the batch being written.
     //!< Reusable single-window drain buffer (pop_events); constructed once.
     std::array<areg::Event, areg::DEFAULT_DRAIN_LIMIT>   mEvents;
     //!< Tells the producers whether this queue still owes a message to a socket.

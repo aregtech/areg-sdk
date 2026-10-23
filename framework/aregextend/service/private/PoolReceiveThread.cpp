@@ -35,6 +35,7 @@
 namespace areg::ext {
 
 DEBUG_DEF_LOG_SCOPE(areg_aregextend_service_PoolReceiveThread, run_dispatcher);
+DEBUG_DEF_LOG_SCOPE(areg_aregextend_service_PoolReceiveThread, _receive_ready_socket);
 
 PoolReceiveThread::PoolReceiveThread( areg::RemoteMessageHandler & remoteService
                                     , ServerConnection & connection
@@ -46,35 +47,22 @@ PoolReceiveThread::PoolReceiveThread( areg::RemoteMessageHandler & remoteService
     , mConnection       ( connection )
     , mGlobalStats      ( globalStats )
     , mMux              ( areg::DEFAULT_CONNECTIONS )
-    , mHasPending       ( false )
-    , mPendingLock      ( )
-    , mPendingAdd       ( )
-    , mPendingRemove    ( )
+    , mHandover         ( mMux )
+    , mAdded            ( )
+    , mReleased         ( )
     , mCachedPending    ( )
+    , mParts            ( )
 {
 }
 
 void PoolReceiveThread::add_socket( const areg::SocketAccepted & clientSocket )
 {
-    {
-        Lock lock(mPendingLock);
-        mPendingAdd.push_back(clientSocket);
-        mHasPending.store(true, std::memory_order_release);
-    }
-
-    // Interrupt any blocked wait() to pick up new socket.
-    mMux.wakeup();
+    mHandover.add(clientSocket);
 }
 
-void PoolReceiveThread::remove_socket( SOCKETHANDLE hSocket )
+void PoolReceiveThread::release_socket( areg::SocketAccepted && clientSocket )
 {
-    {
-        Lock lock(mPendingLock);
-        mPendingRemove.push_back(hSocket);
-        mHasPending.store(true, std::memory_order_release);
-    }
-
-    mMux.wakeup();
+    mHandover.release(std::move(clientSocket));
 }
 
 void PoolReceiveThread::request_stop()
@@ -85,26 +73,64 @@ void PoolReceiveThread::request_stop()
 
 void PoolReceiveThread::_process_pending_sockets()
 {
-    if ( !mHasPending.load(std::memory_order_acquire) )
+    if ( mHandover.has_pending() == false )
         return;
 
-    Lock lock(mPendingLock);
-    mHasPending.store(false, std::memory_order_relaxed);
-
-    for ( SOCKETHANDLE hRemove : mPendingRemove )
-    {
-        mMux.unregister_socket(hRemove);
-        _forget_cached_socket(hRemove);
-    }
-
-    mPendingRemove.clear();
-    for ( const areg::SocketAccepted & sock : mPendingAdd )
+    mHandover.take(mAdded, mReleased);
+    for ( const areg::SocketAccepted & sock : mAdded )
     {
         if ( sock.is_valid() )
             mMux.register_socket(sock.handle(), true);
     }
 
-    mPendingAdd.clear();
+    for ( const areg::SocketAccepted & sock : mReleased )
+    {
+        _drop_socket(sock.handle());
+    }
+
+    mAdded.clear();
+    mReleased.clear();
+}
+
+void PoolReceiveThread::_receive_ready_socket( SOCKETHANDLE hSocket, areg::MessageEnvelope & msgReceived )
+{
+    DEBUG_LOG_SCOPE(areg_aregextend_service_PoolReceiveThread, _receive_ready_socket);
+    areg::SocketAccepted clientSocket{ mConnection.client_by_handle(hSocket) };
+    if ( !clientSocket.is_valid() )
+    {
+        _drop_socket(hSocket);
+        return;
+    }
+
+    int32_t received{ 0 };
+    {
+        AREG_LT_SCOPE(areg::LtStage::RecvNode);  // router inline route+forward
+        received = areg::ext::receive_ready_socket(mConnection, mRemoteService, areg::DEFAULT_DRAIN_LIMIT, clientSocket,
+                msgReceived, mParts, [this](uint64_t bytes, uint32_t msgs) { mGlobalStats.accumulate_received(bytes, msgs); });
+    }
+
+    if ( received < 0 )
+    {
+        DEBUG_LOG_WARN("Pool receive thread [ %s ]: receive failed on socket [ %u ], notifying connection_lost"
+                        , name().as_string()
+                        , static_cast<uint32_t>(hSocket));
+
+        mRemoteService.failed_receive_message(clientSocket);
+        _drop_socket(hSocket);
+    }
+    else if ( received == static_cast<int32_t>(areg::DEFAULT_DRAIN_LIMIT) )
+    {
+        // The ceiling stopped the drain, so the cache may still hold messages.
+        _remember_cached_socket(hSocket);
+    }
+}
+
+void PoolReceiveThread::_drop_socket( SOCKETHANDLE hSocket )
+{
+    mMux.unregister_socket(hSocket);
+    _forget_cached_socket(hSocket);
+    areg::thread_rx_cache_release(hSocket);
+    mParts.drop(hSocket);
 }
 
 void PoolReceiveThread::_remember_cached_socket( SOCKETHANDLE hSocket )
@@ -150,9 +176,8 @@ void PoolReceiveThread::_service_cached_socket( areg::MessageEnvelope & msgRecei
 
     if ( drained < 0 )
     {
-        mMux.unregister_socket(hSocket);
         mRemoteService.failed_receive_message(clientSocket);
-        areg::thread_rx_cache_release(hSocket);
+        _drop_socket(hSocket);
     }
     else if ( drained == static_cast<int32_t>(MAX_DRAIN) )
     {
@@ -167,6 +192,7 @@ bool PoolReceiveThread::run_dispatcher()
 
     areg::set_receive_mode(areg::ReceiveMode::MultiCache);
     mCachedPending.clear();
+    mParts.clear();
     ready_for_events(true);
 
     areg::MessageEnvelope msgReceived;
@@ -209,116 +235,15 @@ bool PoolReceiveThread::run_dispatcher()
         }
         else
         {
-            areg::SocketAccepted clientSocket = mConnection.client_by_handle(hReady);
-            if ( !clientSocket.is_valid() )
-            {
-                mMux.unregister_socket(hReady);
-                _forget_cached_socket(hReady);
-                continue;
-            }
-
-            const int32_t received = mConnection.receive_message(msgReceived, clientSocket);
-            if ( received > 0 )
-            {
-                mGlobalStats.accumulate_received(static_cast<uint64_t>(received), 1u);
-                {
-                    AREG_LT_SCOPE(areg::LtStage::RecvNode);  // router inline route+forward
-                    mRemoteService.process_received_message(msgReceived, clientSocket);
-                }
-
-                // Drain bytes cached by _os_recv_data read-ahead.
-                constexpr uint32_t MAX_DRAIN{ areg::DEFAULT_DRAIN_LIMIT - 1u };
-                const int32_t drained{ areg::ext::drain_recv_cache(mConnection, mRemoteService, MAX_DRAIN, clientSocket,
-                        msgReceived, [this](uint64_t bytes, uint32_t msgs) { mGlobalStats.accumulate_received(bytes, msgs); }) };
-
-                if (drained < 0)
-                {
-                    mMux.unregister_socket(hReady);
-                    mRemoteService.failed_receive_message(clientSocket);
-                    areg::thread_rx_cache_release(hReady);
-                    _forget_cached_socket(hReady);
-                }
-                else if (drained == static_cast<int32_t>(MAX_DRAIN))
-                {
-                    // The ceiling stopped the drain, so the cache may still hold messages.
-                    _remember_cached_socket(hReady);
-                }
-            }
-            else
-            {
-                DEBUG_LOG_WARN("Pool receive thread [ %s ]: receive failed on socket [ %u ], notifying connection_lost"
-                                , name().as_string()
-                                , static_cast<uint32_t>(hReady));
-
-                mMux.unregister_socket(hReady);
-                mRemoteService.failed_receive_message(clientSocket);
-                areg::thread_rx_cache_release(hReady);
-                _forget_cached_socket(hReady);
-            }
-
-#if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-            uint32_t drainCount{ 0 };
-#endif  // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
+            _receive_ready_socket(hReady, msgReceived);
             for ( uint32_t drain = 0; drain < areg::DEFAULT_DRAIN_LIMIT; ++drain )
             {
                 const SOCKETHANDLE hDrain = mMux.wait(0);
                 if ( (hDrain == areg::InvalidSocketHandle) || (hDrain == areg::FailedSocketHandle) )
                     break;
 
-#if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-                ++drainCount;
-#endif  // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-                areg::SocketAccepted drainSocket = mConnection.client_by_handle(hDrain);
-                if ( !drainSocket.is_valid() )
-                {
-                    mMux.unregister_socket(hDrain);
-                    _forget_cached_socket(hDrain);
-                    continue;
-                }
-
-                const int32_t drainReceived = mConnection.receive_message(msgReceived, drainSocket);
-                if ( drainReceived > 0 )
-                {
-                    mGlobalStats.accumulate_received(static_cast<uint64_t>(drainReceived), 1u);
-                    {
-                        AREG_LT_SCOPE(areg::LtStage::RecvNode);  // router inline route+forward
-                        mRemoteService.process_received_message(msgReceived, drainSocket);
-                    }
-
-                    // Drain read-ahead cache for this socket too.
-                    constexpr uint32_t MAX_DRAIN{ areg::DEFAULT_DRAIN_LIMIT - 1u };
-                    const int32_t drained{ areg::ext::drain_recv_cache(mConnection, mRemoteService, MAX_DRAIN, drainSocket,
-                            msgReceived, [this](uint64_t bytes, uint32_t msgs) { mGlobalStats.accumulate_received(bytes, msgs); }) };
-
-                    if (drained < 0)
-                    {
-                        mMux.unregister_socket(hDrain);
-                        mRemoteService.failed_receive_message(drainSocket);
-                        areg::thread_rx_cache_release(hDrain);
-                        _forget_cached_socket(hDrain);
-                    }
-                    else if (drained == static_cast<int32_t>(MAX_DRAIN))
-                    {
-                        // The ceiling stopped the drain, so the cache may still hold messages.
-                        _remember_cached_socket(hDrain);
-                    }
-                }
-                else
-                {
-                    DEBUG_LOG_WARN("Pool receive thread [ %s ]: receive failed on drain socket [ %u ], notifying connection_lost", name().as_string(), static_cast<uint32_t>(hDrain));
-                    mMux.unregister_socket(hDrain);
-                    mRemoteService.failed_receive_message(drainSocket);
-                    areg::thread_rx_cache_release(hDrain);
-                    _forget_cached_socket(hDrain);
-                }
+                _receive_ready_socket(hDrain, msgReceived);
             }
-
-#if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-            if (drainCount >= areg::DEFAULT_DRAIN_LIMIT)
-            {
-                DEBUG_LOG_WARN("Receive drain loop exhausted thread drain limit (%d) -- inbound event queue is growing", areg::DEFAULT_DRAIN_LIMIT);
-            }
-#endif   // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
         }
 
     } while ( !isExit );

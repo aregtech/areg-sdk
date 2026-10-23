@@ -21,6 +21,7 @@
 #include "areg/base/areg_global.h"
 
 #include "areg/base/MessageEnvelope.hpp"
+#include "areg/base/Socket.hpp"
 #include "areg/base/StringDefs.hpp"
 #include "aregextend/console/Console.hpp"
 #include "aregextend/console/OptionParser.hpp"
@@ -44,6 +45,51 @@ namespace areg::ext {
         SOCKETHANDLE    socket; //!< Resolved socket handle for this message.
         MessageEnvelope   msg;    //!< Wire-ready IPC envelope; header + payload sent verbatim.
     };
+
+    /**
+     * \brief   A socket a send batch writes, and the reference that keeps it open meanwhile.
+     **/
+    struct HeldSocket
+    {
+        SOCKETHANDLE                socket  { areg::InvalidSocketHandle };  //!< The socket.
+        areg::Socket::SocketHandle  hold    { };                            //!< Keeps the socket open.
+    };
+
+    /**
+     * \brief   Keeps one reference to the socket in \a holds, unless the array has one already.
+     *
+     * \param   hSocket The socket to keep open.
+     * \param   hold    A reference to it, copied only if the array has none.
+     * \param   holds   The sockets of a send batch.
+     * \param   count   The number of entries of \a holds, increased when one is added.
+     **/
+    inline void hold_socket(SOCKETHANDLE hSocket, const areg::Socket::SocketHandle & hold, HeldSocket * holds, uint32_t & count) noexcept
+    {
+        for (uint32_t i = count; i > 0u; --i)
+        {
+            if (holds[i - 1u].socket == hSocket)
+                return;
+        }
+
+        holds[count].socket = hSocket;
+        holds[count].hold   = hold;
+        ++count;
+    }
+
+    /**
+     * \brief   Returns the reference of \a hSocket in \a holds, or nullptr if the array has none.
+     **/
+    [[nodiscard]]
+    inline const areg::Socket::SocketHandle * find_hold(SOCKETHANDLE hSocket, const HeldSocket * holds, uint32_t count) noexcept
+    {
+        for (uint32_t i = 0u; i < count; ++i)
+        {
+            if (holds[i].socket == hSocket)
+                return &holds[i].hold;
+        }
+
+        return nullptr;
+    }
 
     /**
      * \brief   areg::ext::ServiceOption

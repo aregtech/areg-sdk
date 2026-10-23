@@ -46,11 +46,11 @@ namespace areg {
  **/
 class AREG_API Socket
 {
-protected:
+public:
     /**
      * \brief   Reference-counted SOCKETHANDLE. Stores the handle directly in the
      *          object; allocates only an atomic int32_t on the heap as the shared
-     *          reference counter.
+     *          reference counter. The socket is closed when the last copy is released.
      **/
     using SocketHandle = SharedPrimitive<SOCKETHANDLE, areg::InvalidSocketHandle, areg::socket_close>;
 
@@ -153,6 +153,13 @@ public:
      **/
     [[nodiscard]]
     inline SOCKETHANDLE handle() const noexcept;
+
+    /**
+     * \brief   Returns the reference-counted handle of the socket. A copy keeps the socket open
+     *          until the copy is released, even after this object is closed or destroyed.
+     **/
+    [[nodiscard]]
+    inline const SocketHandle & shared_handle() const noexcept;
 
     /**
      * \brief   Returns true if socket descriptor is valid.
@@ -304,6 +311,11 @@ protected:
 inline SOCKETHANDLE Socket::handle() const noexcept
 {
     return mSocket.value();
+}
+
+inline const Socket::SocketHandle & Socket::shared_handle() const noexcept
+{
+    return mSocket;
 }
 
 inline const areg::SocketAddress & Socket::address() const noexcept
