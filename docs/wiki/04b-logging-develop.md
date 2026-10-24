@@ -289,15 +289,17 @@ int main()
     // Initialize without logging
     Application::setup(false, true, false, true, false);
     
-    // Start logging later with specific config
-    Application::start_logging("./config/areg.init", true);
+    // Start logging later; 'true' uses the defaults when no configuration is found
+    Application::start_logging(true);
     
     // Application code
     Application::load_model("MyModel");
-    Application::wait_quit(areg::WAIT_INFINITE);
     
-    // Stop logging before cleanup
+    // Stop and start logging again at any time, for example to apply a new configuration
     Application::stop_logging();
+    Application::start_logging(true);
+    
+    Application::wait_quit(areg::WAIT_INFINITE);
     Application::release();
     
     return 0;
@@ -305,10 +307,12 @@ int main()
 ```
 
 **Methods:**
-- `Application::start_logging(configFile, force)` - Start logging
-  - `configFile` - Path to configuration file
-  - `force` - Force restart if already running
+- `Application::start_logging(force)` - Start logging with the loaded configuration
+  - `force` - Use the logging defaults when no configuration is found
 - `Application::stop_logging()` - Stop logging
+
+Both can be called at any time while the application runs, as often as needed.
+`Application::release()` stops logging as well.
 
 ---
 
@@ -348,6 +352,11 @@ int main()
 
 > [!IMPORTANT]
 > If compiled with `AREG_LOGGING=OFF`, these macros are no-ops and do nothing.
+
+> [!NOTE]
+> Without `Application::setup()` only the local targets run: file, debug output and database.
+> Remote logging to `logcollector` needs the system up: `Application::setup()` starts it, also for
+> logging that was started before.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 

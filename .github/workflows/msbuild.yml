@@ -25,8 +25,42 @@ permissions:
   contents: read
 
 jobs:
+  plan:
+    name: plan
+    # Sets 'run' when the change touches a file this workflow checks.
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      run: ${{ steps.plan.outputs.run }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - id: plan
+        shell: bash
+        env:
+          EVENT: ${{ github.event_name }}
+          PATTERN: '^(framework|examples|tests|thirdparty|conf)/|(^|/)CMakeLists\.txt$|\.cmake$|^tools/(codegen\.jar|schema/)|^tools/intern/(run-all-examples\.py|hang-watchdog\.sh|report-ctest\.py|check_invariants\.py|check_inline_virtuals\.py)$|^\.github/(ci/|workflows/msbuild\.yml)|\.(sln|vcxproj|filters|props|targets)$|(^|/)packages\.config$'
+          MATRIX: ''
+        run: |
+          case "${EVENT}" in
+            pull_request) BASE="${{ github.event.pull_request.base.sha }}" ;;
+            push)         BASE="${{ github.event.before }}" ;;
+            *)            BASE="" ;;
+          esac
+          RUN=true
+          if [ -n "${BASE}" ] && git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
+            git diff --name-only "${BASE}" "${GITHUB_SHA}" | grep -qE "${PATTERN}" || RUN=false
+          fi
+          echo "run=${RUN}" >> "${GITHUB_OUTPUT}"
+          if [ -n "${MATRIX}" ]; then
+            echo "matrix=$(jq -c --arg ev "${EVENT}" '[.[] | select($ev != "push" or .master == true)]' "${MATRIX}")" >> "${GITHUB_OUTPUT}"
+          fi
+
   build-tests:
     name: ${{matrix.config.name}}
+    needs: plan
+    if: needs.plan.outputs.run == 'true'
     # Pinned to windows-2022 (Visual Studio 2022) on purpose
     runs-on: windows-2022
 
@@ -36,19 +70,7 @@ jobs:
         config: # Create matrix with combinations
           # Compile for 32-bit platform, enabled Areg extensions and logs
           - {name: MSBuild-Win32-ext-log,     platform: Win32,  extend: 1,  logs: 1}
-          # Compile for 32-bit platform, enabled Areg extensions and no logs
-          - {name: MSBuild-Win32-ext-nolog,   platform: Win32,  extend: 1,  logs: 0}
-          # Compile for 32-bit platform, disable Areg extensions and logs
-          - {name: MSBuild-Win32-noext-log,   platform: Win32,  extend: 0,  logs: 1}
-          # Compile for 32-bit platform, disable Areg extensions and no logs
-          - {name: MSBuild-Win32-noext-nolog, platform: Win32,  extend: 0,  logs: 0}
-          # Compile for 32-bit platform, enabled Areg extensions and logs
-          - {name: MSBuild-x64-ext-log,       platform: x64,    extend: 1,  logs: 1}
-          # Compile for 32-bit platform, enabled Areg extensions and no logs
-          - {name: MSBuild-x64-ext-nolog,     platform: x64,    extend: 1,  logs: 0}
-          # Compile for 32-bit platform, disable Areg extensions and logs
-          - {name: MSBuild-x64-noext-log,     platform: x64,    extend: 0,  logs: 1}
-          # Compile for 32-bit platform, disable Areg extensions and no logs
+          # Compile for 64-bit platform, disabled Areg extensions and no logs
           - {name: MSBuild-x64-noext-nolog,   platform: x64,    extend: 0,  logs: 0}
 
     steps:
@@ -74,3 +96,15 @@ jobs:
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
       run: msbuild /m /property:Configuration=${{env.BUILD_CONFIGURATION}} /property:Platform=${{matrix.config.platform}} /property:AregExtended=${{matrix.config.extend}} /property:AregLogs=${{matrix.config.logs}} ${{env.SOLUTION_FILE_PATH}} -t:restore,build -p:RestorePackagesConfig=true
+
+  result:
+    name: MSBuild result
+    if: always()
+    needs: [plan, build-tests]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Fail when a needed job failed or was cancelled
+        run: |
+          echo '${{ toJSON(needs.*.result) }}'
+          test "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" = "false"

@@ -5,30 +5,8 @@ name: Platforms
 on:
   push:
     branches: [ master ]
-    paths:
-      - 'framework/**'
-      - 'conf/**'
-      - 'examples/**'
-      - 'tests/**'
-      - 'thirdparty/**'
-      - 'tools/codegen.jar'
-      - 'tools/intern/run-all-examples.py'
-      - '**/CMakeLists.txt'
-      - '*.cmake'
-      - '.github/workflows/platforms.yml'
   pull_request:
     branches: [ master ]
-    paths:
-      - 'framework/**'
-      - 'conf/**'
-      - 'examples/**'
-      - 'tests/**'
-      - 'thirdparty/**'
-      - 'tools/codegen.jar'
-      - 'tools/intern/run-all-examples.py'
-      - '**/CMakeLists.txt'
-      - '*.cmake'
-      - '.github/workflows/platforms.yml'
   workflow_dispatch:
 
 concurrency:
@@ -44,10 +22,44 @@ env:
   AREG_LOCK_FAILURE_FATAL: 1
 
 jobs:
+  plan:
+    name: plan
+    # Sets 'run' when the change touches a file this workflow checks.
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      run: ${{ steps.plan.outputs.run }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - id: plan
+        shell: bash
+        env:
+          EVENT: ${{ github.event_name }}
+          PATTERN: '^(framework|examples|tests|thirdparty|conf)/|(^|/)CMakeLists\.txt$|\.cmake$|^tools/(codegen\.jar|schema/)|^tools/intern/(run-all-examples\.py|hang-watchdog\.sh|report-ctest\.py|check_invariants\.py|check_inline_virtuals\.py)$|^\.github/(ci/|workflows/platforms\.yml)|^tests/bitness/'
+          MATRIX: ''
+        run: |
+          case "${EVENT}" in
+            pull_request) BASE="${{ github.event.pull_request.base.sha }}" ;;
+            push)         BASE="${{ github.event.before }}" ;;
+            *)            BASE="" ;;
+          esac
+          RUN=true
+          if [ -n "${BASE}" ] && git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
+            git diff --name-only "${BASE}" "${GITHUB_SHA}" | grep -qE "${PATTERN}" || RUN=false
+          fi
+          echo "run=${RUN}" >> "${GITHUB_OUTPUT}"
+          if [ -n "${MATRIX}" ]; then
+            echo "matrix=$(jq -c --arg ev "${EVENT}" '[.[] | select($ev != "push" or .master == true)]' "${MATRIX}")" >> "${GITHUB_OUTPUT}"
+          fi
+
   linux-x86:
     # 32-bit x86 Linux, selected with AREG_ARCH=x86. Builds, runs every example and the
     # unit tests on the x86_64 runner.
     name: linux-gnu-x86-shared-all-test
+    needs: plan
+    if: needs.plan.outputs.run == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 120
 
@@ -167,6 +179,8 @@ jobs:
     # 32-bit ARM Linux (armhf), cross-compiled with the toolchain file the SDK ships.
     # Builds the libraries and the service binaries, then prints their sizes.
     name: linux-gnu-arm32-cross-${{matrix.config.logs == 'ON' && 'log' || 'nolog'}}
+    needs: plan
+    if: needs.plan.outputs.run == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
@@ -219,3 +233,15 @@ jobs:
           file "${BIN_DIR}/libareg.so"
           file "${BIN_DIR}/libareg.so" | grep -q 'ARM' || { echo "libareg.so is not an ARM binary" >&2; exit 1; }
           arm-linux-gnueabihf-size "${BIN_DIR}"/*.so "${BIN_DIR}"/*.elf
+
+  result:
+    name: Platforms result
+    if: always()
+    needs: [plan, linux-x86, cross-arm32]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Fail when a needed job failed or was cancelled
+        run: |
+          echo '${{ toJSON(needs.*.result) }}'
+          test "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" = "false"

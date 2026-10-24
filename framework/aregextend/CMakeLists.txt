@@ -10,5 +10,5 @@ if ((${AREG_DEVELOP_ENV} MATCHES "Win32") AND (NOT MINGW))
 endif()
 
 # build areg extended static library
-addStaticLibEx(aregextend ${AREG_PACKAGE_NAME} "${aregextend_SRC}" "")
+addStaticLibEx(aregextend ${AREG_PACKAGE_NAME} "${aregextend_SRC}" "${AREG_SQLITE_LIB_REF}")
 target_compile_options(aregextend PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")

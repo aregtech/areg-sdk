@@ -54,6 +54,11 @@ option(AREG_LOGGING            "Areg logging enable flag"          @AREG_LOGGING
 # Specify whether to use installed or compiled SQLite3 package
 option(AREG_SYSTEM_SQLITE  "Use installed SQLite3 library"     @AREG_SYSTEM_SQLITE@)
 
+# The system SQLite3 package, which 'aregextend' links
+if (@USE_SQLITE_PACKAGE@)
+    find_dependency(SQLite3)
+endif()
+
 # include the exported targets
 include("${CMAKE_CURRENT_LIST_DIR}/@AREG_PACKAGE_NAME@-targets.cmake")
 check_required_components("@AREG_PACKAGE_NAME@")

@@ -8,24 +8,8 @@ name: Agent docs
 on:
   push:
     branches: [ master ]
-    paths:
-      - 'framework/**'
-      - 'tools/**'
-      - 'docs/agent/**'
-      - 'conf/cmake/**'
-      - 'AGENTS.md'
-      - 'CODEBASE.md'
-      - '.github/workflows/agent-docs.yml'
   pull_request:
     branches: [ master ]
-    paths:
-      - 'framework/**'
-      - 'tools/**'
-      - 'docs/agent/**'
-      - 'conf/cmake/**'
-      - 'AGENTS.md'
-      - 'CODEBASE.md'
-      - '.github/workflows/agent-docs.yml'
   workflow_dispatch:
 
 concurrency:
@@ -36,10 +20,46 @@ permissions:
   contents: read
 
 jobs:
-  references:
-    name: documentation references
+  plan:
+    name: plan
+    # Sets 'run' when the change touches the agent corpus, the tools or the framework.
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
+    outputs:
+      run: ${{ steps.plan.outputs.run }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - id: plan
+        shell: bash
+        env:
+          EVENT: ${{ github.event_name }}
+          PATTERN: '^(framework|tools|docs/agent|conf/cmake)/|^AGENTS\.md$|^CODEBASE\.md$|^\.github/workflows/agent-docs\.yml$'
+          MATRIX: ''
+        run: |
+          case "${EVENT}" in
+            pull_request) BASE="${{ github.event.pull_request.base.sha }}" ;;
+            push)         BASE="${{ github.event.before }}" ;;
+            *)            BASE="" ;;
+          esac
+          RUN=true
+          if [ -n "${BASE}" ] && git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
+            git diff --name-only "${BASE}" "${GITHUB_SHA}" | grep -qE "${PATTERN}" || RUN=false
+          fi
+          echo "run=${RUN}" >> "${GITHUB_OUTPUT}"
+          if [ -n "${MATRIX}" ]; then
+            echo "matrix=$(jq -c --arg ev "${EVENT}" '[.[] | select($ev != "push" or .master == true)]' "${MATRIX}")" >> "${GITHUB_OUTPUT}"
+          fi
+
+  windows:
+    name: the Windows column of the documented commands
+    needs: plan
+    if: needs.plan.outputs.run == 'true' && github.event_name != 'push'
+    runs-on: windows-latest
+    # Two framework builds now: the recipe's, and the scaffolded project's. Each is
+    # a full MSVC compile of areg, so the bound is the sum of them and not the one.
+    timeout-minutes: 110
     steps:
       - uses: actions/checkout@v7
 
@@ -47,9 +67,6 @@ jobs:
         with:
           python-version: '3.11'
 
-      # check_mutations.py derives the generated names by running the jar, and
-      # judges nothing that rests on them without it. No runner image is promised
-      # to carry a JDK, so the job installs its own.
       - name: Setup Java JDK to run code generator
         uses: actions/setup-java@v6.0.1
         with:
@@ -57,76 +74,93 @@ jobs:
           java-package: jre
           distribution: temurin
 
-      # Every path named in the documentation must resolve, relative and repository
-      # form alike. A broken one makes an agent fail its first tool call.
-      - name: Check documented paths
-        run: python3 tools/intern/check_agent_docs.py
+      # The first command AGENTS.md prescribes, in its Windows form. It needs no
+      # interpreter, which is the point of it.
+      - name: Check the environment
+        run: tools\check-env.bat
+        shell: cmd
 
-      - name: Check documented areg names against the framework
-        run: python3 tools/intern/check_symbols.py
+      # run_scenarios.py carries a whole Windows branch: .bat fixtures instead of
+      # shell scripts, "set /p" for a read that blocks, "ping" where POSIX sleeps.
+      # It was written for this platform and had never run on it.
+      - name: Check the scenario runner on its own fixtures
+        run: python tools\agent\run_scenarios.py --self-test
 
-      # A path that resolves is not a command that runs. This splits every fenced and
-      # inline command out of the agent pages, fails on one naming a script that is
-      # not there, and executes the read-only tools so a misspelled flag is a red step
-      # rather than a dead instruction a reader discovers by following it.
-      #
-      # --deep also runs the commands that need a project: it scaffolds throw-away
-      # ones in a temporary directory and gives each command a private copy of the
-      # state its precondition names. Those are the commands a run actually pastes,
-      # and checking their flags against --help does not notice one that parses and
-      # no longer works. Half a minute, nothing compiled, nothing written outside
-      # that directory.
+      # Every command the corpus gives, discovered, flag-checked and -- where it is
+      # safe -- run, in throw-away projects this scaffolds. Each page promises a
+      # Windows form of its commands; until now nothing read one here.
       - name: Check the documented commands
-        run: python3 tools/intern/check_commands.py --deep
+        run: python tools\intern\check_commands.py --deep
 
-      - name: Check the removed-name lists still match the framework
-        run: python3 tools/agent/check_contract.py --audit-legacy framework
-
-      # AGENTS.md section 6 tells an agent that check_contract.py detects every
-      # prohibition it lists. The same hand writes the bullet, the api.json entry
-      # and the rule, and the three have drifted apart before: a bullet with no
-      # rule reads as enforced and is not.
-      - name: Check the prohibition lists agree
-        run: python3 tools/agent/check_contract.py --audit-prohibitions
-
-      # Every recipe is copied before it is read, so a recipe that breaks a rule
-      # teaches the rule broken. The checker must also stay quiet on code that is
-      # correct, and the recipes are the only corpus that proves it.
-      - name: Check recipes against the agent contract
+      - name: Check project setup
         run: |
-          for recipe in docs/agent/recipes/*/; do
-            python3 tools/agent/check_contract.py "$recipe" --strict
-          done
+          python tools\agent\setup_project.py --name citest --root "${{ runner.temp }}\citest" --mode local --sdk-root "${{ github.workspace }}"
+          if (-not (Test-Path "${{ runner.temp }}\citest\AGENTS.md")) { exit 1 }
+          if (-not (Test-Path "${{ runner.temp }}\citest\src\main.cpp")) { exit 1 }
+          python tools\agent\check_contract.py "${{ runner.temp }}\citest" --strict
 
-      # Breaks a good recipe the way the eval bank says and asserts the documented
-      # diagnostic still reports it. A rule that stops firing is otherwise invisible:
-      # the suite stays green because nothing was checking the checker.
-      - name: Check the checkers still catch the defects
-        run: python3 tools/intern/check_mutations.py --static
+      # The generator is the one tool an application cannot do without, and it is
+      # a jar: it must run the same from a Windows checkout.
+      - name: Run the code generator on a recipe
+        run: |
+          Copy-Item -Recurse docs\agent\recipes\01-local-single-process "${{ runner.temp }}\gentest"
+          java -jar tools\codegen.jar --root="${{ runner.temp }}\gentest" --doc=src/services/HelloService.siml --target=generated
+          if (-not (Test-Path "${{ runner.temp }}\gentest\generated\src\services\HelloServiceProviderBase.hpp")) { exit 1 }
 
-      # The seeded framework defects anchor to exact lines of framework code. A
-      # refactor moves the anchor and the seed silently stops applying, so the
-      # full run measures nothing. This costs a second and says so.
-      - name: Check the seeded invariants still anchor to real code
-        run: python3 tools/intern/check_invariants.py --dry-run
+      # tools/intern/check_recipes.py drives a GCC style command line, so it cannot compile a
+      # recipe here. This step uses the path the recipe itself documents instead: plain
+      # CMake with the default Visual Studio generator, which is the MSVC toolchain
+      # (cl.exe through vcvars, set up by the generator). Until this ran, every recipe
+      # was proven on one compiler family only, and addServiceInterface() and
+      # macro_declare_executable() were never executed by msvc from a recipe.
+      # FETCHCONTENT_SOURCE_DIR_AREG points the recipe at this checkout instead of
+      # cloning master, so what is built is the change under review.
+      - name: Build a recipe with the MSVC toolchain
+        shell: pwsh
+        run: |
+          cmake -S "${{ runner.temp }}\gentest" -B "${{ runner.temp }}\gentest\build" `
+                -DCMAKE_BUILD_TYPE=Release `
+                -DFETCHCONTENT_SOURCE_DIR_AREG="${{ github.workspace }}"
+          cmake --build "${{ runner.temp }}\gentest\build" --config Release
+          $binary = Get-ChildItem -Path "${{ runner.temp }}\gentest\build" -Recurse -Filter hello_local.exe | Select-Object -First 1
+          if (-not $binary) { throw "the recipe built no hello_local.exe" }
+          $logs = Join-Path $binary.DirectoryName "logs"
+          Remove-Item -Recurse -Force $logs -ErrorAction SilentlyContinue
+          $output = & $binary.FullName 2>&1 | Out-String
+          if (Test-Path $logs) { $output += Get-ChildItem -Path $logs -Filter *.log | Get-Content -Raw | Out-String }
+          Write-Host $output
+          if ($output -notmatch 'consumer: greeted') { throw "the recipe ran and did not log what it promises" }
 
-      # The three scores, held at the value measured when this line was written.
-      # Raise a floor when the work that earns it lands; never lower one.
-      #
-      # Friendliness read lower on 2026-09-01 than the day before, and nothing had
-      # regressed: an independent audit showed F2 and F4 were scoring presence rather
-      # than execution, so both were rewritten to ask whether a checker runs the thing.
-      #
-      # Every rule the corpus rests on, asked as a rule: does a page answer each
-      # feature, does every self-claim hold, is every prohibition detected and proven
-      # to still fire, does each page show the includes its own code needs. A finding
-      # names what broke. Nothing here is weighted and no total is printed: a total
-      # needs weights, and a moved total says something broke without saying what.
-      - name: Check the agent corpus
-        run: python3 tools/intern/check_corpus.py --verbose
+      # The five-step chain, through the MSVC toolchain. The recipe above is written
+      # by hand; this is the path an agent actually takes -- a scaffold, a design,
+      # and one command that writes the documents, writes the application, checks it
+      # against the contract, configures and builds. The design is the corpus's own
+      # --example, so nothing here is a fixture to keep in step.
+      - name: Scaffold a project and give it the example design
+        run: |
+          python tools\agent\setup_project.py --name gatecheck --root "${{ runner.temp }}\gatecheck" --mode ipc --sdk-root "${{ github.workspace }}"
+          python tools\agent\gen_docs.py --example | Set-Content -Encoding ascii "${{ runner.temp }}\gatecheck\design.json"
+
+      - name: Run the chain
+        working-directory: ${{ runner.temp }}\gatecheck
+        env:
+          TOOLS: ${{ github.workspace }}\tools\agent
+        run: python $env:TOOLS\build_project.py --spec design.json
+
+      # Starts a real binary: the consumer alone, ended by its generated connect
+      # deadline with exit 1.
+      - name: Run the consumer alone to its connect deadline
+        working-directory: ${{ runner.temp }}\gatecheck
+        env:
+          TOOLS: ${{ github.workspace }}\tools\agent
+        run: |
+          python -c "import json;p='scenarios.json';d=json.load(open(p));d['scenarios'].append(dict(name='alone',router=True,timeout=60,procs=[dict(binary='gatecheck_consumer',lead=True,exit=1,expect=['no provider connected within the connect deadline'])]));json.dump(d,open(p,'w'),indent=2)"
+          python $env:TOOLS\run_scenarios.py --build build\bin --only alone
 
   recipes:
     name: recipes build and run
+    needs: plan
+    if: needs.plan.outputs.run == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -225,6 +259,8 @@ jobs:
 
   evals:
     name: evaluation bank
+    needs: plan
+    if: needs.plan.outputs.run == 'true' && github.event_name != 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -250,6 +286,8 @@ jobs:
 
   chain:
     name: the five-step chain, end to end
+    needs: plan
+    if: needs.plan.outputs.run == 'true' && github.event_name != 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -298,8 +336,95 @@ jobs:
           python3 -c "import json;p='scenarios.json';d=json.load(open(p));d['scenarios'].append(dict(name='alone',router=True,timeout=60,procs=[dict(binary='gatecheck_consumer',lead=True,exit=1,expect=['no provider connected within the connect deadline'])]));json.dump(d,open(p,'w'),indent=2)"
           python3 $TOOLS/run_scenarios.py --build build/bin --only alone
 
+  references:
+    name: documentation references
+    needs: plan
+    if: needs.plan.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+
+      # check_mutations.py derives the generated names by running the jar, and
+      # judges nothing that rests on them without it. No runner image is promised
+      # to carry a JDK, so the job installs its own.
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v6.0.1
+        with:
+          java-version: 17
+          java-package: jre
+          distribution: temurin
+
+      # Every path named in the documentation must resolve, relative and repository
+      # form alike. A broken one makes an agent fail its first tool call.
+      - name: Check documented paths
+        run: python3 tools/intern/check_agent_docs.py
+
+      - name: Check documented areg names against the framework
+        run: python3 tools/intern/check_symbols.py
+
+      # A path that resolves is not a command that runs. This splits every fenced and
+      # inline command out of the agent pages, fails on one naming a script that is
+      # not there, and executes the read-only tools so a misspelled flag is a red step
+      # rather than a dead instruction a reader discovers by following it.
+      #
+      # --deep also runs the commands that need a project: it scaffolds throw-away
+      # ones in a temporary directory and gives each command a private copy of the
+      # state its precondition names. Those are the commands a run actually pastes,
+      # and checking their flags against --help does not notice one that parses and
+      # no longer works. Half a minute, nothing compiled, nothing written outside
+      # that directory.
+      - name: Check the documented commands
+        run: python3 tools/intern/check_commands.py --deep
+
+      - name: Check the removed-name lists still match the framework
+        run: python3 tools/agent/check_contract.py --audit-legacy framework
+
+      # AGENTS.md section 6 tells an agent that check_contract.py detects every
+      # prohibition it lists. The same hand writes the bullet, the api.json entry
+      # and the rule, and the three have drifted apart before: a bullet with no
+      # rule reads as enforced and is not.
+      - name: Check the prohibition lists agree
+        run: python3 tools/agent/check_contract.py --audit-prohibitions
+
+      # Every recipe is copied before it is read, so a recipe that breaks a rule
+      # teaches the rule broken. The checker must also stay quiet on code that is
+      # correct, and the recipes are the only corpus that proves it.
+      - name: Check recipes against the agent contract
+        run: |
+          for recipe in docs/agent/recipes/*/; do
+            python3 tools/agent/check_contract.py "$recipe" --strict
+          done
+
+      # Breaks a good recipe the way the eval bank says and asserts the documented
+      # diagnostic still reports it. A rule that stops firing is otherwise invisible:
+      # the suite stays green because nothing was checking the checker.
+      - name: Check the checkers still catch the defects
+        run: python3 tools/intern/check_mutations.py --static
+
+      # The three scores, held at the value measured when this line was written.
+      # Raise a floor when the work that earns it lands; never lower one.
+      #
+      # Friendliness read lower on 2026-09-01 than the day before, and nothing had
+      # regressed: an independent audit showed F2 and F4 were scoring presence rather
+      # than execution, so both were rewritten to ask whether a checker runs the thing.
+      #
+      # Every rule the corpus rests on, asked as a rule: does a page answer each
+      # feature, does every self-claim hold, is every prohibition detected and proven
+      # to still fire, does each page show the includes its own code needs. A finding
+      # names what broke. Nothing here is weighted and no total is printed: a total
+      # needs weights, and a moved total says something broke without saying what.
+      - name: Check the agent corpus
+        run: python3 tools/intern/check_corpus.py --verbose
+
   macos:
     name: the macOS branch of the tools
+    needs: plan
+    if: needs.plan.outputs.run == 'true' && github.event_name != 'push'
     runs-on: macos-latest
     timeout-minutes: 30
     steps:
@@ -326,12 +451,6 @@ jobs:
       - name: Check the scenario runner on its own fixtures
         run: python3 tools/agent/run_scenarios.py --self-test
 
-      - name: Check documented paths and the checkers
-        run: |
-          python3 tools/intern/check_agent_docs.py
-          python3 tools/intern/check_mutations.py --static
-          python3 tools/intern/check_commands.py
-
       # setup_project.py writes the same Darwin branch into the run.sh it plants for
       # a multi-process project. Building one here would cost a second framework
       # compile for one line, so the script is parsed rather than run, and the branch
@@ -352,113 +471,14 @@ jobs:
           grep "^case " "${RUNNER_TEMP}/maccheck/run.sh" > "${RUNNER_TEMP}/sfx.sh"
           bash -c '. "${RUNNER_TEMP}/sfx.sh"; test "$SFX" = .mac'
 
-  windows:
-    name: the Windows column of the documented commands
-    runs-on: windows-latest
-    # Two framework builds now: the recipe's, and the scaffolded project's. Each is
-    # a full MSVC compile of areg, so the bound is the sum of them and not the one.
-    timeout-minutes: 110
+  result:
+    name: Agent docs result
+    if: always()
+    needs: [plan, windows, recipes, evals, chain, references, macos]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v7
-
-      - uses: actions/setup-python@v7
-        with:
-          python-version: '3.11'
-
-      - name: Setup Java JDK to run code generator
-        uses: actions/setup-java@v6.0.1
-        with:
-          java-version: 17
-          java-package: jre
-          distribution: temurin
-
-      # The first command AGENTS.md prescribes, in its Windows form. It needs no
-      # interpreter, which is the point of it.
-      - name: Check the environment
-        run: tools\check-env.bat
-        shell: cmd
-
-      # On Windows the interpreter is python, not python3. Half of the documented
-      # commands differ only in that, and nothing else executed them until now.
-      - name: Check documented paths and the checkers
+      - name: Fail when a needed job failed or was cancelled
         run: |
-          python tools\intern\check_agent_docs.py
-          python tools\intern\check_mutations.py --static
-          python tools\intern\check_symbols.py
-
-      # run_scenarios.py carries a whole Windows branch: .bat fixtures instead of
-      # shell scripts, "set /p" for a read that blocks, "ping" where POSIX sleeps.
-      # It was written for this platform and had never run on it.
-      - name: Check the scenario runner on its own fixtures
-        run: python tools\agent\run_scenarios.py --self-test
-
-      # Every command the corpus gives, discovered, flag-checked and -- where it is
-      # safe -- run, in throw-away projects this scaffolds. Each page promises a
-      # Windows form of its commands; until now nothing read one here.
-      - name: Check the documented commands
-        run: python tools\intern\check_commands.py --deep
-
-      - name: Check project setup
-        run: |
-          python tools\agent\setup_project.py --name citest --root "${{ runner.temp }}\citest" --mode local --sdk-root "${{ github.workspace }}"
-          if (-not (Test-Path "${{ runner.temp }}\citest\AGENTS.md")) { exit 1 }
-          if (-not (Test-Path "${{ runner.temp }}\citest\src\main.cpp")) { exit 1 }
-          python tools\agent\check_contract.py "${{ runner.temp }}\citest" --strict
-
-      # The generator is the one tool an application cannot do without, and it is
-      # a jar: it must run the same from a Windows checkout.
-      - name: Run the code generator on a recipe
-        run: |
-          Copy-Item -Recurse docs\agent\recipes\01-local-single-process "${{ runner.temp }}\gentest"
-          java -jar tools\codegen.jar --root="${{ runner.temp }}\gentest" --doc=src/services/HelloService.siml --target=generated
-          if (-not (Test-Path "${{ runner.temp }}\gentest\generated\src\services\HelloServiceProviderBase.hpp")) { exit 1 }
-
-      # tools/intern/check_recipes.py drives a GCC style command line, so it cannot compile a
-      # recipe here. This step uses the path the recipe itself documents instead: plain
-      # CMake with the default Visual Studio generator, which is the MSVC toolchain
-      # (cl.exe through vcvars, set up by the generator). Until this ran, every recipe
-      # was proven on one compiler family only, and addServiceInterface() and
-      # macro_declare_executable() were never executed by msvc from a recipe.
-      # FETCHCONTENT_SOURCE_DIR_AREG points the recipe at this checkout instead of
-      # cloning master, so what is built is the change under review.
-      - name: Build a recipe with the MSVC toolchain
-        shell: pwsh
-        run: |
-          cmake -S "${{ runner.temp }}\gentest" -B "${{ runner.temp }}\gentest\build" `
-                -DCMAKE_BUILD_TYPE=Release `
-                -DFETCHCONTENT_SOURCE_DIR_AREG="${{ github.workspace }}"
-          cmake --build "${{ runner.temp }}\gentest\build" --config Release
-          $binary = Get-ChildItem -Path "${{ runner.temp }}\gentest\build" -Recurse -Filter hello_local.exe | Select-Object -First 1
-          if (-not $binary) { throw "the recipe built no hello_local.exe" }
-          $logs = Join-Path $binary.DirectoryName "logs"
-          Remove-Item -Recurse -Force $logs -ErrorAction SilentlyContinue
-          $output = & $binary.FullName 2>&1 | Out-String
-          if (Test-Path $logs) { $output += Get-ChildItem -Path $logs -Filter *.log | Get-Content -Raw | Out-String }
-          Write-Host $output
-          if ($output -notmatch 'consumer: greeted') { throw "the recipe ran and did not log what it promises" }
-
-      # The five-step chain, through the MSVC toolchain. The recipe above is written
-      # by hand; this is the path an agent actually takes -- a scaffold, a design,
-      # and one command that writes the documents, writes the application, checks it
-      # against the contract, configures and builds. The design is the corpus's own
-      # --example, so nothing here is a fixture to keep in step.
-      - name: Scaffold a project and give it the example design
-        run: |
-          python tools\agent\setup_project.py --name gatecheck --root "${{ runner.temp }}\gatecheck" --mode ipc --sdk-root "${{ github.workspace }}"
-          python tools\agent\gen_docs.py --example | Set-Content -Encoding ascii "${{ runner.temp }}\gatecheck\design.json"
-
-      - name: Run the chain
-        working-directory: ${{ runner.temp }}\gatecheck
-        env:
-          TOOLS: ${{ github.workspace }}\tools\agent
-        run: python $env:TOOLS\build_project.py --spec design.json
-
-      # Starts a real binary: the consumer alone, ended by its generated connect
-      # deadline with exit 1.
-      - name: Run the consumer alone to its connect deadline
-        working-directory: ${{ runner.temp }}\gatecheck
-        env:
-          TOOLS: ${{ github.workspace }}\tools\agent
-        run: |
-          python -c "import json;p='scenarios.json';d=json.load(open(p));d['scenarios'].append(dict(name='alone',router=True,timeout=60,procs=[dict(binary='gatecheck_consumer',lead=True,exit=1,expect=['no provider connected within the connect deadline'])]));json.dump(d,open(p,'w'),indent=2)"
-          python $env:TOOLS\run_scenarios.py --build build\bin --only alone
+          echo '${{ toJSON(needs.*.result) }}'
+          test "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" = "false"
