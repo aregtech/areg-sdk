@@ -57,8 +57,8 @@ void process_timer(areg::Timer & timer) final;      // TimerConsumer.hpp:73
 |---|---|---|
 | `setup()` | `static void setup(bool startTracing = true, bool startServicing = true, bool startRouting = true, bool startTimer = true, bool startWatchdog = false, const char * configFile = areg::DEFAULT_CONFIG_FILE.data(), ConfigListener * configListener = nullptr)` | `Application.hpp:109` |
 | `load_model()` | `static bool load_model(const char * modelName = nullptr, bool waitComponents = false)` | `Application.hpp:136` |
-| `wait_quit()` | `static bool wait_quit(uint32_t waitTimeout = areg::WAIT_INFINITE)` | `Application.hpp:325` |
-| `signal_quit()` | `static void signal_quit()` | `Application.hpp:331` |
+| `wait_quit()` | `static bool wait_quit(uint32_t waitTimeout = areg::WAIT_INFINITE)` | `Application.hpp:329` |
+| `signal_quit()` | `static void signal_quit()` | `Application.hpp:335` |
 | `unload_model()` | `static void unload_model(const char * modelName = nullptr)` | `Application.hpp:153` |
 | `release()` | `static void release()` | `Application.hpp:120` |
 
