@@ -21,398 +21,58 @@ env:
   AREG_LOCK_FAILURE_FATAL: 1
 
 jobs:
-  invariants:
-    name: the framework invariants still have anchors
-    # tools/intern/check_invariants.py seeds a defect per documented invariant, rebuilds and
-    # asserts something goes red. The seeding needs a build per defect and is run by hand;
-    # what rots first is the seed set itself, because a refactor moves the line it anchors to.
-    # This step is that check, and it needs no compiler.
+  plan:
+    name: plan
+    # Sets 'run' when the change touches a file this workflow builds, and 'matrix' to the
+    # legs of .github/ci/cmake-matrix.json this event runs.
     runs-on: ubuntu-latest
     timeout-minutes: 5
-
+    outputs:
+      run: ${{ steps.plan.outputs.run }}
+      matrix: ${{ steps.plan.outputs.matrix }}
     steps:
-      - name: Checkout Areg SDK source codes
-        uses: actions/checkout@v7
-
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@v7
         with:
-          python-version: '3.11'
+          fetch-depth: 0
+      - id: plan
+        shell: bash
+        env:
+          EVENT: ${{ github.event_name }}
+          PATTERN: '^(framework|examples|tests|thirdparty|conf)/|(^|/)CMakeLists\.txt$|\.cmake$|^tools/(codegen\.jar|schema/)|^tools/intern/(run-all-examples\.py|hang-watchdog\.sh|report-ctest\.py|check_invariants\.py|check_inline_virtuals\.py)$|^\.github/(ci/|workflows/cmake\.yml)'
+          MATRIX: '.github/ci/cmake-matrix.json'
+        run: |
+          case "${EVENT}" in
+            pull_request) BASE="${{ github.event.pull_request.base.sha }}" ;;
+            push)         BASE="${{ github.event.before }}" ;;
+            *)            BASE="" ;;
+          esac
+          RUN=true
+          if [ -n "${BASE}" ] && git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
+            git diff --name-only "${BASE}" "${GITHUB_SHA}" | grep -qE "${PATTERN}" || RUN=false
+          fi
+          echo "run=${RUN}" >> "${GITHUB_OUTPUT}"
+          if [ -n "${MATRIX}" ]; then
+            echo "matrix=$(jq -c --arg ev "${EVENT}" '[.[] | select($ev != "push" or .master == true)]' "${MATRIX}")" >> "${GITHUB_OUTPUT}"
+          fi
 
-      - name: Check every seeded defect still applies to exactly one place
-        run: python3 tools/intern/check_invariants.py --dry-run
-
-      # areg is a shared library: an inline virtual method can leave a client unable to link (bug 418).
-      - name: Check no non-template class defines a virtual method inline
-        run: python3 tools/intern/check_inline_virtuals.py
-
+  # The legs are in .github/ci/cmake-matrix.json, longest first. A pull request runs all of
+  # them, a push to master the legs marked 'master: true'.
+  # '*-all-test' builds and runs the examples and the unit tests; 'norun: ON' builds them only.
+  # 'bench: ON' also runs the benchmarks on a pull request; one shared library build per OS.
+  # '*-nolog' and '*-noext' build and install only, with AREG_LOGGING=OFF or AREG_EXTENDED=OFF.
+  # 'noexc: ON' compiles the framework without exceptions and RTTI.
+  # 'btype' replaces BUILD_TYPE: MinSizeRel and RelWithDebInfo.
   build-tests:
     name: ${{matrix.config.name}}
+    needs: plan
+    if: needs.plan.outputs.run == 'true'
     runs-on: ${{matrix.config.os}}
     timeout-minutes: 120
 
     strategy:
       fail-fast: false
       matrix:
-        # '*-all-test' builds and runs the examples and the unit tests.
-        # 'bench: ON' also runs the benchmarks; one shared library build per OS.
-        # '*-nolog' and '*-noext' build and install only: no '*-all-test' entry compiles
-        # AREG_LOGGING=OFF or AREG_EXTENDED=OFF, and both remove code from the framework.
-        config: # Create matrix with combinations
-
-          - { name  : linux-gnu-static-all-test,
-              os    : ubuntu-latest,
-              lib   : static,
-              family: gnu,
-              cxx   : g++,
-              cc    : gcc,
-              extend: ON,
-              logs  : ON,
-              test  : ON
-            }
-
-          - { name  : linux-gnu-shared-all-test,
-              os    : ubuntu-latest,
-              lib   : shared,
-              family: gnu,
-              cxx   : g++,
-              cc    : gcc,
-              extend: ON,
-              logs  : ON,
-              test  : ON,
-              bench : ON
-            }
-
-          - { name  : linux-gnu-arm64-shared-all-test,
-              os    : ubuntu-24.04-arm,
-              lib   : shared,
-              family: gnu,
-              cxx   : g++,
-              cc    : gcc,
-              extend: ON,
-              logs  : ON,
-              test  : ON
-            }
-
-          - { name  : linux-gnu-shared-ext-nolog,
-              os    : ubuntu-latest,
-              lib   : shared,
-              family: gnu,
-              cxx   : g++,
-              cc    : gcc,
-              extend: ON,
-              logs  : OFF,
-              test  : OFF
-            }
-
-          - { name  : linux-gnu-shared-noext-nolog,
-              os    : ubuntu-latest,
-              lib   : shared,
-              family: gnu,
-              cxx   : g++,
-              cc    : gcc,
-              extend: OFF,
-              logs  : OFF,
-              test  : OFF
-            }
-
-          - { name  : linux-clang-static-all-test,
-              os    : ubuntu-latest,
-              lib   : static,
-              family: llvm,
-              cxx   : clang++,
-              cc    : clang,
-              extend: ON,
-              logs  : ON,
-              test  : ON
-            }
-
-          - { name  : linux-clang-shared-all-test,
-              os    : ubuntu-latest,
-              lib   : shared,
-              family: llvm,
-              cxx   : clang++,
-              cc    : clang,
-              extend: ON,
-              logs  : ON,
-              test  : ON
-            }
-
-          - { name  : linux-clang-shared-ext-nolog,
-              os    : ubuntu-latest,
-              lib   : shared,
-              family: llvm,
-              cxx   : clang++,
-              cc    : clang,
-              extend: ON,
-              logs  : OFF,
-              test  : OFF
-            }
-
-          - { name  : linux-clang-shared-noext-nolog,
-              os    : ubuntu-latest,
-              lib   : shared,
-              family: llvm,
-              cxx   : clang++,
-              cc    : clang,
-              extend: OFF,
-              logs  : OFF,
-              test  : OFF
-            }
-
-          # The framework uses no exceptions, no dynamic_cast and no typeid. These entries
-          # compile it with both disabled, so a newly added one fails the build, and the three
-          # Linux ones run the suite as well: without exceptions the standard library declines
-          # to shrink a container, and a build-only entry does not notice that.
-          - { name  : linux-gnu-shared-noexcept,
-              os    : ubuntu-latest,
-              lib   : shared,
-              family: gnu,
-              cxx   : g++,
-              cc    : gcc,
-              extend: ON,
-              logs  : ON,
-              test  : ON,
-              noexc : ON
-            }
-
-          - { name  : linux-clang-shared-noexcept,
-              os    : ubuntu-latest,
-              lib   : shared,
-              family: llvm,
-              cxx   : clang++,
-              cc    : clang,
-              extend: ON,
-              logs  : ON,
-              test  : ON,
-              noexc : ON
-            }
-
-          - { name  : linux-gnu-static-noexcept,
-              os    : ubuntu-latest,
-              lib   : static,
-              family: gnu,
-              cxx   : g++,
-              cc    : gcc,
-              extend: ON,
-              logs  : ON,
-              test  : ON,
-              noexc : ON
-            }
-
-          - { name  : macos-clang-shared-noexcept,
-              os    : macos-latest,
-              lib   : shared,
-              family: llvm,
-              cxx   : clang++,
-              cc    : clang,
-              extend: ON,
-              logs  : ON,
-              test  : OFF,
-              noexc : ON
-            }
-
-          # MinSizeRel and RelWithDebInfo are optimized configurations and carry the sections
-          - { name  : linux-gnu-shared-minsizerel,
-              os    : ubuntu-latest,
-              lib   : shared,
-              family: gnu,
-              cxx   : g++,
-              cc    : gcc,
-              extend: ON,
-              logs  : ON,
-              test  : ON,
-              btype : MinSizeRel
-            }
-
-          - { name  : linux-gnu-shared-relwithdebinfo,
-              os    : ubuntu-latest,
-              lib   : shared,
-              family: gnu,
-              cxx   : g++,
-              cc    : gcc,
-              extend: ON,
-              logs  : ON,
-              test  : ON,
-              btype : RelWithDebInfo
-            }
-
-          - { name  : macos-clang-shared-noext,
-              os    : macos-latest,
-              lib   : shared,
-              family: llvm,
-              cxx   : clang++,
-              cc    : clang,
-              extend: OFF,
-              logs  : ON,
-              test  : ON,
-              bench : ON
-            }
-
-          - { name  : macos-clang-shared-noext-nolog,
-              os    : macos-latest,
-              lib   : shared,
-              family: llvm,
-              cxx   : clang++,
-              cc    : clang,
-              extend: OFF,
-              logs  : OFF,
-              test  : ON
-            }
-
-          - { name  : macos-clang-static-noext,
-              os    : macos-latest,
-              lib   : static,
-              family: llvm,
-              cxx   : clang++,
-              cc    : clang,
-              extend: OFF,
-              logs  : ON,
-              test  : ON
-            }
-
-          - { name  : macos-clang-static-noext-nolog,
-              os    : macos-latest,
-              lib   : static,
-              family: llvm,
-              cxx   : clang++,
-              cc    : clang,
-              extend: OFF,
-              logs  : OFF,
-              test  : ON
-            }
-
-          - { name  : win-cygwin-static-all-test,
-              os    : windows-latest,
-              lib   : static,
-              family: cygwin,
-              cxx   : g++,
-              cc    : gcc,
-              extend: ON,
-              logs  : ON,
-              test  : ON
-            }
-
-          - { name  : win-cygwin-shared-all-test,
-              os    : windows-latest,
-              lib   : shared,
-              family: cygwin,
-              cxx   : g++,
-              cc    : gcc,
-              extend: ON,
-              logs  : ON,
-              test  : ON
-            }
-
-          - { name  : win-cygwin-shared-ext-nolog,
-              os    : windows-latest,
-              lib   : shared,
-              family: cygwin,
-              cxx   : g++,
-              cc    : gcc,
-              extend: ON,
-              logs  : OFF,
-              test  : OFF
-            }
-
-          - { name  : win-cygwin-shared-noext-nolog,
-              os    : windows-latest,
-              lib   : shared,
-              family: cygwin,
-              cxx   : g++,
-              cc    : gcc,
-              extend: OFF,
-              logs  : OFF,
-              test  : OFF
-            }
-
-          - { name  : win-clang-static-all-test,
-              os    : windows-latest,
-              lib   : static,
-              family: llvm,
-              cxx   : clang-cl,
-              cc    : clang-cl,
-              extend: ON,
-              logs  : ON,
-              test  : ON
-            }
-
-          - { name  : win-clang-shared-all-test,
-              os    : windows-latest,
-              lib   : shared,
-              family: llvm,
-              cxx   : clang-cl,
-              cc    : clang-cl,
-              extend: ON,
-              logs  : ON,
-              test  : ON
-            }
-
-          - { name  : win-clang-shared-ext-nolog,
-              os    : windows-latest,
-              lib   : shared,
-              family: llvm,
-              cxx   : clang-cl,
-              cc    : clang-cl,
-              extend: ON,
-              logs  : OFF,
-              test  : OFF
-            }
-
-          - { name  : win-clang-shared-noext-nolog,
-              os    : windows-latest,
-              lib   : shared,
-              family: llvm,
-              cxx   : clang-cl,
-              cc    : clang-cl,
-              extend: OFF,
-              logs  : OFF,
-              test  : OFF
-            }
-
-          - { name  : win-msvc-static-all-test,
-              os    : windows-latest,
-              lib   : static,
-              family: msvc,
-              cxx   : cl,
-              cc    : cl,
-              extend: ON,
-              logs  : ON,
-              test  : ON
-            }
-
-          - { name  : win-msvc-shared-all-test,
-              os    : windows-latest,
-              lib   : shared,
-              family: msvc,
-              cxx   : cl,
-              cc    : cl,
-              extend: ON,
-              logs  : ON,
-              test  : ON,
-              bench : ON
-            }
-
-          - { name  : win-msvc-shared-ext-nolog,
-              os    : windows-latest,
-              lib   : shared,
-              family: msvc,
-              cxx   : cl,
-              cc    : cl,
-              extend: ON,
-              logs  : OFF,
-              test  : OFF
-            }
-
-          - { name  : win-msvc-shared-noext-nolog,
-              os    : windows-latest,
-              lib   : shared,
-              family: msvc,
-              cxx   : cl,
-              cc    : cl,
-              extend: OFF,
-              logs  : OFF,
-              test  : OFF
-            }
+        config: ${{ fromJSON(needs.plan.outputs.matrix) }}
 
     steps:
 
@@ -556,7 +216,7 @@ jobs:
 
       - name: Build with CMake
         working-directory: ${{github.workspace}}
-        run: cmake --build ${{env.CACHE_DEST}} --config ${{env.BUILD_TYPE}} -j16
+        run: cmake --build ${{env.CACHE_DEST}} --config ${{matrix.config.btype || env.BUILD_TYPE}} -j16
 
       - name: Locate the build output directory
         working-directory: ${{github.workspace}}
@@ -603,12 +263,12 @@ jobs:
 
       - name: Install with CMake
         working-directory: ${{github.workspace}}
-        run: cmake --install ${{env.CACHE_DEST}} --config ${{env.BUILD_TYPE}}
+        run: cmake --install ${{env.CACHE_DEST}} --config ${{matrix.config.btype || env.BUILD_TYPE}}
 
       - name: Write core dumps into the workspace
         # A crash leaves a core next to the binaries. ptrace_scope is lowered so the
         # driver can attach gdb to a hung process that is not its own descendant.
-        if: runner.os == 'Linux' && matrix.config.test == 'ON'
+        if: runner.os == 'Linux' && matrix.config.test == 'ON' && matrix.config.norun != 'ON'
         working-directory: ${{github.workspace}}
         shell: bash
         run: |
@@ -619,7 +279,7 @@ jobs:
           which gdb || sudo apt-get install -y -qq gdb || true
 
       - name: Run example applications. Ignore if examples are not compiled
-        if: matrix.config.test == 'ON'
+        if: matrix.config.test == 'ON' && matrix.config.norun != 'ON'
         working-directory: ${{github.workspace}}
         shell: bash
         timeout-minutes: 25
@@ -631,16 +291,16 @@ jobs:
                   --out-dir "./example-results/${{matrix.config.name}}"
 
       - name: Run Unit Tests. Ignore if unit tests are not compiled
-        if: matrix.config.test == 'ON' && runner.os != 'macOS'
+        if: matrix.config.test == 'ON' && matrix.config.norun != 'ON' && runner.os != 'macOS'
         working-directory: ${{github.workspace}}
         timeout-minutes: 30
         # '-C' is required on Windows: no generator is named. The Windows runners get
         # the multi configuration Visual Studio generator, where a test registered without
         # a configuration has no command and ctest exits 8 without running anything.
-        run: ctest --test-dir ${{env.CACHE_DEST}} -C ${{env.BUILD_TYPE}} --timeout 180 --output-on-failure --output-junit test_results.xml
+        run: ctest --test-dir ${{env.CACHE_DEST}} -C ${{matrix.config.btype || env.BUILD_TYPE}} --timeout 180 --output-on-failure --output-junit test_results.xml
 
       - name: Run Unit Tests, watched (macOS)
-        if: matrix.config.test == 'ON' && runner.os == 'macOS'
+        if: matrix.config.test == 'ON' && matrix.config.norun != 'ON' && runner.os == 'macOS'
         working-directory: ${{github.workspace}}
         shell: bash
         timeout-minutes: 30
@@ -650,7 +310,7 @@ jobs:
           rm -f product/unittests.done
           bash tools/intern/hang-watchdog.sh product/unittests.done 120 areg-unit-tests &
           rc=0
-          ctest --test-dir ${{env.CACHE_DEST}} -C ${{env.BUILD_TYPE}} --timeout 180 --output-on-failure --output-junit test_results.xml || rc=$?
+          ctest --test-dir ${{env.CACHE_DEST}} -C ${{matrix.config.btype || env.BUILD_TYPE}} --timeout 180 --output-on-failure --output-junit test_results.xml || rc=$?
           touch product/unittests.done
           wait
           exit ${rc}
@@ -661,8 +321,8 @@ jobs:
         # without an artifact, and a slow number never fails the step.
         # The step does fail when an application of a scenario crashes, hangs or does not
         # print what it must, because that is a defect and not a measurement.
-        # Runs once per OS, in the shared library build marked 'bench'.
-        if: matrix.config.test == 'ON' && matrix.config.bench == 'ON'
+        # Runs once per OS on a pull request, in the shared library build marked 'bench'.
+        if: matrix.config.test == 'ON' && matrix.config.norun != 'ON' && matrix.config.bench == 'ON' && github.event_name != 'push'
         working-directory: ${{github.workspace}}
         shell: bash
         timeout-minutes: 40
@@ -675,7 +335,7 @@ jobs:
       - name: Report the failed unit tests
         # The job log needs a credential to read, an annotation does not. This step runs
         # because something else already failed, so it must never fail itself.
-        if: failure() && matrix.config.test == 'ON'
+        if: failure() && matrix.config.test == 'ON' && matrix.config.norun != 'ON'
         working-directory: ${{github.workspace}}
         shell: bash
         continue-on-error: true
@@ -684,7 +344,7 @@ jobs:
 
       - name: Collect the macOS crash reports
         # macOS writes a crash report per process instead of a core file.
-        if: failure() && runner.os == 'macOS' && matrix.config.test == 'ON'
+        if: failure() && runner.os == 'macOS' && matrix.config.test == 'ON' && matrix.config.norun != 'ON'
         working-directory: ${{github.workspace}}
         shell: bash
         run: |
@@ -695,7 +355,7 @@ jobs:
           ls -l ./cores/ || true
 
       - name: Copy test artifacts if tests fail. Ignore if tests are not compiled
-        if: failure() && matrix.config.test == 'ON'
+        if: failure() && matrix.config.test == 'ON' && matrix.config.norun != 'ON'
         working-directory: ${{github.workspace}}
         shell: bash
         # Saves whatever evidence exists and must never fail. When the build itself
@@ -715,8 +375,46 @@ jobs:
           find "${DEST}" -maxdepth 2 | head -n 40
 
       - name: Upload artifacts if tests fail. Ignore if unit tests are not compiled
-        if: failure() && matrix.config.test == 'ON'
+        if: failure() && matrix.config.test == 'ON' && matrix.config.norun != 'ON'
         uses: actions/upload-artifact@v7
         with:
           name: ${{matrix.config.name}}
           path: ./${{matrix.config.name}}/
+
+  invariants:
+    name: the framework invariants still have anchors
+    # tools/intern/check_invariants.py seeds a defect per documented invariant, rebuilds and
+    # asserts something goes red. The seeding needs a build per defect and is run by hand;
+    # what rots first is the seed set itself, because a refactor moves the line it anchors to.
+    # This step is that check, and it needs no compiler.
+    needs: plan
+    if: needs.plan.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout Areg SDK source codes
+        uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+
+      - name: Check every seeded defect still applies to exactly one place
+        run: python3 tools/intern/check_invariants.py --dry-run
+
+      # areg is a shared library: an inline virtual method can leave a client unable to link (bug 418).
+      - name: Check no non-template class defines a virtual method inline
+        run: python3 tools/intern/check_inline_virtuals.py
+
+  result:
+    name: CMake result
+    if: always()
+    needs: [plan, build-tests, invariants]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Fail when a needed job failed or was cancelled
+        run: |
+          echo '${{ toJSON(needs.*.result) }}'
+          test "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" = "false"

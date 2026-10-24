@@ -16,6 +16,7 @@
 //============================================================================
 
 #include "areg/base/areg_global.h"
+#include "areg/appbase/Application.hpp"
 #include "areg/base/ThreadConsumer.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/Thread.hpp"
@@ -65,6 +66,8 @@ int main()
 
     // Forces to start logging with default settings (logs go to appropriate "logs" subfolder)
     LOGGING_CONFIGURE_AND_START(nullptr, true);
+    // Starts the timer manager; logging then also sends to the log collector
+    areg::Application::setup(false, false, false, true, false);
 
     do
     {
@@ -83,8 +86,8 @@ int main()
 
     } while (false);
 
-    // Stop logging
-    LOGGING_STOP();
+    // Stops the timer manager and logging
+    areg::Application::release();
 
     std::cout << "Exit application!" << std::endl;
     return 0;

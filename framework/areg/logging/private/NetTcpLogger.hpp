@@ -170,17 +170,6 @@ public:
 private:
 
 /************************************************************************/
-// ServiceClientConnectionBase overrides
-/************************************************************************/
-
-    /**
-     * \brief   Returns true: the connection to the log collector does not depend on the state
-     *          of the application.
-     **/
-    [[nodiscard]]
-    bool is_connection_allowed() const final;
-
-/************************************************************************/
 // ConnectionConsumer overrides
 /************************************************************************/
 

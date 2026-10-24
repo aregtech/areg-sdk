@@ -11,8 +11,42 @@ on:
   workflow_dispatch:
 
 jobs:
+  plan:
+    name: plan
+    # Sets 'run' when the change touches a file this workflow checks.
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      run: ${{ steps.plan.outputs.run }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - id: plan
+        shell: bash
+        env:
+          EVENT: ${{ github.event_name }}
+          PATTERN: '^(framework|examples|tests|thirdparty|conf)/|(^|/)CMakeLists\.txt$|\.cmake$|^tools/(codegen\.jar|schema/)|^tools/intern/(run-all-examples\.py|hang-watchdog\.sh|report-ctest\.py|check_invariants\.py|check_inline_virtuals\.py)$|^\.github/(ci/|workflows/codeql-analysis\.yml)'
+          MATRIX: ''
+        run: |
+          case "${EVENT}" in
+            pull_request) BASE="${{ github.event.pull_request.base.sha }}" ;;
+            push)         BASE="${{ github.event.before }}" ;;
+            *)            BASE="" ;;
+          esac
+          RUN=true
+          if [ -n "${BASE}" ] && git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
+            git diff --name-only "${BASE}" "${GITHUB_SHA}" | grep -qE "${PATTERN}" || RUN=false
+          fi
+          echo "run=${RUN}" >> "${GITHUB_OUTPUT}"
+          if [ -n "${MATRIX}" ]; then
+            echo "matrix=$(jq -c --arg ev "${EVENT}" '[.[] | select($ev != "push" or .master == true)]' "${MATRIX}")" >> "${GITHUB_OUTPUT}"
+          fi
+
   analyze:
     name: Analyze
+    needs: plan
+    if: needs.plan.outputs.run == 'true'
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -54,3 +88,15 @@ jobs:
     # https://git.io/JvXDl
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v4.38.2
+
+  result:
+    name: CodeQL result
+    if: always()
+    needs: [plan, analyze]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Fail when a needed job failed or was cancelled
+        run: |
+          echo '${{ toJSON(needs.*.result) }}'
+          test "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" = "false"

@@ -61,6 +61,10 @@ void LogEventProcessor::process_log_event( const LoggingEventData & data )
         _logging_log_message( data );
         break;
 
+    case LoggingEventData::LogAction::OpenRemote:
+        _logging_open_remote( );
+        break;
+
     case LoggingEventData::LogAction::UpdateScopes:   // fall through
     case LoggingEventData::LogAction::QueryScopes:    // fall through
     case LoggingEventData::LogAction::Undefined:      // fall through
@@ -72,6 +76,11 @@ void LogEventProcessor::process_log_event( const LoggingEventData & data )
 inline void LogEventProcessor::_logging_start_logs()
 {
     mLogManager.start_logs( );
+}
+
+inline void LogEventProcessor::_logging_open_remote()
+{
+    mLogManager.open_remote_logs( );
 }
 
 inline void LogEventProcessor::_logging_stop_logs()

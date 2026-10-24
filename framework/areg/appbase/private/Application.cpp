@@ -118,10 +118,22 @@ void Application::setup( bool startTracing   /*= true */
         Application::_start_timer_manager();
     }
 
+#if AREG_LOGGING
+    const bool logsBefore{ LogManager::is_logging_started() };
+#endif  // AREG_LOGGING
+
     if (startTracing)
     {
         Application::start_logging(true);
     }
+
+#if AREG_LOGGING
+    if (logsBefore)
+    {
+        // Logging started before setup() runs its local targets only.
+        LogManager::open_remote_logger();
+    }
+#endif  // AREG_LOGGING
 
     if ( startWatchdog )
     {
