@@ -86,11 +86,6 @@ void NetTcpLogger::notify_source_state(areg::LogSourceState previous, const ITEM
     }
 }
 
-bool NetTcpLogger::is_connection_allowed() const
-{
-    return true;
-}
-
 void NetTcpLogger::close_logger()
 {
     mRingStack.release();

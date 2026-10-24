@@ -147,9 +147,15 @@ areg::LogSourceState LogManager::source_state()
     return logManager.mLoggerTcp.is_paused() ? areg::LogSourceState::Paused : areg::LogSourceState::Active;
 }
 
-bool LogManager::start_timer_manager()
+void LogManager::open_remote_logger()
 {
-    return Application::_start_timer_manager();
+    if (LogManager::is_logging_started())
+    {
+        LogManager& logManager = LogManager::instance();
+        logManager.mRemoteOpened.reset();
+        logManager.send_log_event(LoggingEventData(LoggingEventData::LogAction::OpenRemote));
+        logManager.mRemoteOpened.lock(areg::LIFECYCLE_TIMEOUT_DEFAULT);
+    }
 }
 
 bool LogManager::start_logging(const char* configFile /*= nullptr*/ )
@@ -304,6 +310,7 @@ LogManager::LogManager()
     , mEventProcessor   ( self() )
 
     , mLogStarted       ( false, false )
+    , mRemoteOpened     ( false, false )
     , mLock             ( )
 {
 }
@@ -438,7 +445,8 @@ void LogManager::start_logs()
         }
 #endif // !defined(OUTPUT_DEBUG)
 
-        if (!mLoggerTcp.is_logger_opened())
+        // The remote target opens only while the system is up; the local targets always open.
+        if (!mLoggerTcp.is_logger_opened() && Application::is_servicing_available())
         {
             mLoggerTcp.open_logger();
         }
@@ -459,6 +467,16 @@ void LogManager::start_logs()
 
     mIsStarted.store(true, std::memory_order_release);
     mLogStarted.set_signaled( );
+}
+
+void LogManager::open_remote_logs()
+{
+    if (mLogConfig.is_logging_enabled() && !mLoggerTcp.is_logger_opened() && Application::is_servicing_available())
+    {
+        mLoggerTcp.open_logger();
+    }
+
+    mRemoteOpened.set_signaled();
 }
 
 void LogManager::stop_logs()

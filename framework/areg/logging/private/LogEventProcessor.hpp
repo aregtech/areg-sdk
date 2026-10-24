@@ -87,6 +87,11 @@ private:
     void _logging_stop_logs();
 
     /**
+     * \brief   Opens the remote logger.
+     **/
+    void _logging_open_remote();
+
+    /**
      * \brief   Enables or disables logs.
      *
      * \param   logsEnable      True to enable logs, false to disable.

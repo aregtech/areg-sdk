@@ -1,0 +1,6 @@
+[
+  { "mode": "asan", "config": "RelWithDebInfo", "master": true },
+  { "mode": "tsan", "config": "Debug", "master": false },
+  { "mode": "tsan", "config": "RelWithDebInfo", "master": true },
+  { "mode": "asan", "config": "Debug", "master": false }
+]

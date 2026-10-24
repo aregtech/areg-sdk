@@ -150,10 +150,10 @@ public:
     static bool start_logging( const char * configFile = nullptr );
 
     /**
-     * \brief   Starts the timer manager and the signal handlers that logging needs, if not running.
-     * \return  Returns true if the timer manager runs.
+     * \brief   Opens the remote logger of a running logging thread when the system is up.
+     *          Returns when the logging thread processed the request, or after the lifecycle timeout.
      **/
-    static bool start_timer_manager();
+    static void open_remote_logger();
 
     /**
      * \brief   Saves the current logging configuration state to a file.
@@ -427,6 +427,11 @@ private:
     void start_logs();
 
     /**
+     * \brief   Opens the remote logger if logging is enabled, the system is up and it is not open.
+     **/
+    void open_remote_logs();
+
+    /**
      * \brief   Deactivates all scopes to prevent logging.
      **/
     void stop_logs();
@@ -512,6 +517,10 @@ private:
      * \brief   An event, indicating that the logging has been started.
      */
     SyncEvent           mLogStarted;
+    /**
+     * \brief   An event, signaled when the logging thread processed the request to open the remote logger.
+     */
+    SyncEvent           mRemoteOpened;
     /**
      * \brief   Synchronization object used to synchronize data access.
      **/

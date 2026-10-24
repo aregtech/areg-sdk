@@ -200,7 +200,8 @@ public:
 
     /**
      * \brief   Starts logging. If force is true, loads the default configuration file or uses
-     *          logging defaults.
+     *          logging defaults. Can be called at any time while the application runs, also
+     *          after stop_logging().
      *
      * \param   force       If true, forces loading the default configuration file
      *                      (areg::DEFAULT_CONFIG_FILE) or uses logging default settings.
@@ -210,19 +211,22 @@ public:
     static bool start_logging( bool force = false );
 
     /**
-     * \brief   Stops logging.
+     * \brief   Stops logging. Can be called at any time; start_logging() starts it again.
      **/
     static void stop_logging();
 
     /**
      * \brief   Starts the watchdog manager, enabling components to monitor thread health.
+     *          Can be called at any time while the application runs, also after
+     *          stop_watchdog_manager().
      *
      * \return  Returns true if the watchdog manager is running.
      **/
     static bool start_watchdog_manager();
 
     /**
-     * \brief   Stops the watchdog manager.
+     * \brief   Stops the watchdog manager. Can be called at any time, for example while
+     *          debugging; no watchdog timeout is checked until start_watchdog_manager().
      **/
     static void stop_watchdog_manager();
 

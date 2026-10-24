@@ -56,6 +56,7 @@ public:
         , LogMessage    //!< Action to output logging message
         , UpdateScopes  //!< Action to update scope priorities
         , QueryScopes   //!< Action to send the list of scopes.
+        , OpenRemote    //!< Action to open the remote logger once the system is up.
     };
 
     /**
@@ -198,6 +199,8 @@ inline constexpr const char * LoggingEventData::as_string( LoggingEventData::Log
         return "LoggingEventData::LogAction::UpdateScopes";
     case LoggingEventData::LogAction::QueryScopes:
         return "LoggingEventData::LogAction::QueryScopes";
+    case LoggingEventData::LogAction::OpenRemote:
+        return "LoggingEventData::LogAction::OpenRemote";
     default:
         ASSERT(false);
         return "ERR: Undefined LoggingEventData::LogAction value!";
