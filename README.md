@@ -439,3 +439,6 @@ Areg SDK is released under the **[Apache License 2.0](./LICENSE.txt)**, a permis
 ---
 
 *Areg (Արեգ) – Old Armenian: the Sun.*
+
+
+<!-- Automated fix for issue #824: Watchdog recovery of a stuck thread -->
