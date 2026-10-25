@@ -338,6 +338,26 @@ TEST(LogSqliteDatabaseTest, test_closedFileIsOnePlainFile)
 }
 
 /**
+ * \brief   A writer destroyed without `disconnect()` leaves one plain file, as a disconnected one does.
+ **/
+TEST(LogSqliteDatabaseTest, test_destroyedWriterLeavesOnePlainFile)
+{
+    const std::string path{ _db_path("t2destroyed.sqlog") };
+    {
+        LogDb writer;
+        ASSERT_TRUE(writer.connect(areg::String(path.c_str()), false));
+        ASSERT_TRUE(_write_rows(writer, 100u, 1000));
+        ASSERT_TRUE(writer.begin());
+        ASSERT_TRUE(writer.log_message(_entry(5000, 0u, 1u, areg::LogPriority::PrioInfo)));
+    }
+
+    EXPECT_FALSE(_exists(path + "-wal"));
+    EXPECT_FALSE(_exists(path + "-shm"));
+    EXPECT_EQ(_query_text(path, "PRAGMA journal_mode;"), "delete");
+    EXPECT_EQ(_query_text(path, "SELECT COUNT(*) FROM logs;"), "102");
+}
+
+/**
  * \brief   The windows that continue from a place seek it in the time index; the first and the last
  *          window read the index in order. None sorts the rows again.
  **/
@@ -428,6 +448,33 @@ TEST(LogSqliteDatabaseTest, test_preparedAgainFreesThePrevious)
 
         stmt.finalize();
         db.disconnect();
+    }
+
+    EXPECT_EQ(sqlite3_memory_used(), before);
+}
+
+/**
+ * \brief   A database closed while a statement is still prepared closes its connection once the
+ *          statement is finalized, and leaves no SQLite memory behind.
+ **/
+TEST(LogSqliteDatabaseTest, test_closedWithPreparedStatementFreesTheConnection)
+{
+    const std::string path{ _db_path("leak2.sqlog") };
+    {
+        LogDb warmup;
+        ASSERT_TRUE(warmup.connect(areg::String(path.c_str()), false));
+        warmup.disconnect();
+    }
+
+    const sqlite3_int64 before{ sqlite3_memory_used() };
+    {
+        LogDb db;
+        ASSERT_TRUE(db.connect(areg::String(path.c_str()), true));
+        areg::ext::SqliteStatement stmt(db.database());
+        EXPECT_TRUE(db.setup_statement_read_window(stmt, LogDb::LogPosition{}, 10));
+        db.disconnect();
+        EXPECT_FALSE(db.is_operable());
+        stmt.finalize();
     }
 
     EXPECT_EQ(sqlite3_memory_used(), before);
@@ -588,6 +635,79 @@ TEST(LogSqliteDatabaseTest, test_filteredWindowsEqualTheFilteredSet)
         EXPECT_EQ(backward, expected) << "instance " << instId;
         stmt.finalize();
     }
+
+    db.disconnect();
+}
+
+/**
+ * \brief   A window read at a row number holds the rows the keyset windows read at that number,
+ *          plain and filtered, and reads the time index in order.
+ **/
+TEST(LogSqliteDatabaseTest, test_windowAtRowNumberEqualsTheKeysetSlice)
+{
+    _capture_connections();
+    const std::string path{ _db_path("t4at.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), false));
+    sqlite3* conn{ _lastDb };
+    _write_mixed(db);
+
+    const auto sweep = [&](ITEM_ID instId, bool filtered) -> std::vector<uint32_t>
+    {
+        areg::ext::SqliteStatement stmt(db.database());
+        std::vector<uint32_t> ids;
+        LogDb::LogPosition pos{};
+        for (int32_t read = 1, rounds = 0; (read > 0) && (rounds < 1000); ++rounds)
+        {
+            const bool ready{ filtered ? db.setup_statement_read_filter_window(stmt, instId, pos, 100) : db.setup_statement_read_window(stmt, pos, 100) };
+            EXPECT_TRUE(ready);
+            std::vector<areg::SharedBuffer> logs;
+            read = LogDb::fill_log_window(logs, stmt, 100, pos, ids);
+        }
+
+        return ids;
+    };
+
+    const auto check = [&](ITEM_ID instId, bool filtered)
+    {
+        const std::vector<uint32_t> all{ sweep(instId, filtered) };
+        ASSERT_GT(all.size(), 1000u);
+        areg::ext::SqliteStatement stmt(db.database());
+        for (const uint32_t offset : { 0u, 1u, 99u, 4321u, static_cast<uint32_t>(all.size()) - 50u, static_cast<uint32_t>(all.size()) + 5u })
+        {
+            const bool ready{ filtered ? db.setup_statement_read_filter_window_at(stmt, instId, offset, 100) : db.setup_statement_read_window_at(stmt, offset, 100) };
+            ASSERT_TRUE(ready);
+            EXPECT_TRUE(_uses_time_index(_newest_plan(conn), false)) << _newest_plan(conn);
+
+            std::vector<areg::SharedBuffer> logs;
+            std::vector<uint32_t> ids;
+            LogDb::LogPosition last{};
+            const int32_t read{ LogDb::fill_log_window(logs, stmt, 100, last, ids) };
+            const size_t from{ std::min<size_t>(offset, all.size()) };
+            const size_t to{ std::min<size_t>(from + 100u, all.size()) };
+            EXPECT_EQ(static_cast<size_t>(read), to - from) << "offset " << offset;
+            EXPECT_TRUE(std::equal(ids.begin(), ids.end(), all.begin() + static_cast<std::ptrdiff_t>(from), all.begin() + static_cast<std::ptrdiff_t>(to))) << "offset " << offset;
+            EXPECT_EQ(_active_statements(conn), 0);
+        }
+
+        stmt.finalize();
+    };
+
+    check(areg::TARGET_ALL, false);
+
+    areg::ArrayList<LogDb::RefusedSpan> spans;
+    spans.add(LogDb::RefusedSpan{ 2u, static_cast<ITEM_ID>(1u), 0, 0 });
+    spans.add(LogDb::RefusedSpan{ 4u, static_cast<ITEM_ID>(2u), 1200, 1300 });
+    ASSERT_TRUE(db.set_refused_spans(spans));
+    check(areg::TARGET_ALL, false);
+    ASSERT_TRUE(db.set_refused_spans(areg::ArrayList<LogDb::RefusedSpan>{ }));
+
+    areg::ArrayList<LogDb::ScopeFilter> filter;
+    filter.add(LogDb::ScopeFilter{ 1u, static_cast<uint32_t>(areg::LogPriority::PrioError) });
+    filter.add(LogDb::ScopeFilter{ 3u, 0u });
+    ASSERT_GT(db.setup_filter_logs(areg::TARGET_ALL, filter), 0u);
+    check(areg::TARGET_ALL, true);
+    check(static_cast<ITEM_ID>(2u), true);
 
     db.disconnect();
 }

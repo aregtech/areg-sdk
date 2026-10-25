@@ -386,6 +386,33 @@ namespace {
         "ORDER BY time_created DESC, id DESC LIMIT ?;"
     };
 
+    //! Forward from a row number.
+    constexpr std::string_view _sqlWindowAt
+    {
+        "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, "
+        "time_created, time_received, time_duration, scope_id, session_id, "
+        "msg_log, msg_thread, msg_module, msg_len, id FROM logs "
+        "WHERE NOT EXISTS (SELECT 1 FROM refused_spans r "
+        "WHERE r.scope_id = logs.scope_id AND r.target_id = logs.cookie_id "
+        "AND logs.time_created >= r.from_ts AND (r.to_ts = 0 OR logs.time_created < r.to_ts)) "
+        "ORDER BY time_created, id LIMIT ? OFFSET ?;"
+    };
+
+    //! Forward from a row number, when no stretch of time is left out.
+    constexpr std::string_view _sqlWindowAtAll
+    {
+        "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, "
+        "time_created, time_received, time_duration, scope_id, session_id, "
+        "msg_log, msg_thread, msg_module, msg_len, id FROM logs "
+        "ORDER BY time_created, id LIMIT ? OFFSET ?;"
+    };
+
+    //! Answers 1 if a stretch of time is left out of the reading.
+    constexpr std::string_view _sqlHasRefused
+    {
+        "SELECT EXISTS (SELECT 1 FROM refused_spans);"
+    };
+
     //! Filtered windows, forward from the first log and from a given place: rows of no scope and
     //! rows the filter rules pass. `%s` is the condition of one instance, or empty.
     constexpr std::string_view _sqlFilterWindowFirst
@@ -429,6 +456,17 @@ namespace {
         "WHERE r.scope_id = l.scope_id AND r.target_id = l.cookie_id AND (l.msg_prio & r.log_mask) != 0))%s "
         "AND (l.time_created, l.id) < (?, ?) "
         "ORDER BY l.time_created DESC, l.id DESC LIMIT ?;"
+    };
+
+    //! Filtered window forward from a row number of the filtered rows.
+    constexpr std::string_view _sqlFilterWindowAt
+    {
+        "SELECT l.msg_type, l.msg_prio, l.cookie_id, l.msg_module_id, l.msg_thread_id, "
+        "l.time_created, l.time_received, l.time_duration, l.scope_id, l.session_id, "
+        "l.msg_log, l.msg_thread, l.msg_module, l.msg_len, l.id FROM logs AS l "
+        "WHERE (l.scope_id = 0 OR EXISTS (SELECT 1 FROM filter_rules r "
+        "WHERE r.scope_id = l.scope_id AND r.target_id = l.cookie_id AND (l.msg_prio & r.log_mask) != 0))%s "
+        "ORDER BY l.time_created, l.id LIMIT ? OFFSET ?;"
     };
 
     //! The condition that keeps the rows of one instance, bound to its cookie.
@@ -758,6 +796,7 @@ LogSqliteDatabase::LogSqliteDatabase()
 
 LogSqliteDatabase::~LogSqliteDatabase()
 {
+    disconnect();
     mStmtLogs.finalize();
     mDatabase.disconnect();
     mIsInitialized = false;
@@ -1962,6 +2001,51 @@ bool LogSqliteDatabase::setup_statement_read_filter_window_back(SqliteStatement&
 {
     Lock lock(mLock);
     return _setup_filter_window(stmt, instId, before, limit, before.timeCreated == 0 ? _sqlFilterWindowLast : _sqlFilterWindowBefore);
+}
+
+bool LogSqliteDatabase::setup_statement_read_window_at(SqliteStatement& stmt, uint32_t offset, int32_t limit)
+{
+    Lock lock(mLock);
+    stmt.reset();
+    if ((mDatabase.is_operable() == false) || (table_exists("refused_spans", _temp) == false))
+        return false;
+
+    bool refused{ true };
+    {
+        SqliteStatement query(mDatabase, _sqlHasRefused);
+        if (query.next() == SqliteStatement::QueryResult::HasMore)
+        {
+            refused = query.as_uint32(0) != 0u;
+        }
+    }
+
+    return stmt.prepare(refused ? _sqlWindowAt : _sqlWindowAtAll)
+        && stmt.bind_int32 (0, limit)
+        && stmt.bind_uint32(1, offset);
+}
+
+bool LogSqliteDatabase::setup_statement_read_filter_window_at(SqliteStatement& stmt, ITEM_ID instId, uint32_t offset, int32_t limit)
+{
+    Lock lock(mLock);
+    stmt.reset();
+    if ((mDatabase.is_operable() == false) || (table_exists("filter_rules", _temp) == false))
+        return false;
+
+    const bool oneInstance{ instId != areg::TARGET_ALL };
+    const String sql{ _with_condition(_sqlFilterWindowAt, oneInstance ? _sqlInstanceCondition : std::string_view{ }) };
+    if (stmt.prepare(sql) == false)
+        return false;
+
+    int32_t index{ 0 };
+    bool result{ true };
+    if (oneInstance)
+    {
+        result = stmt.bind_uint32(index++, static_cast<uint32_t>(instId));
+    }
+
+    return result
+        && stmt.bind_int32 (index, limit)
+        && stmt.bind_uint32(index + 1, offset);
 }
 
 inline bool LogSqliteDatabase::_setup_filter_window(SqliteStatement& stmt, ITEM_ID instId, const LogPosition& place, int32_t limit, std::string_view sqlFormat)

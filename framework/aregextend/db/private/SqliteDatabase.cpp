@@ -104,7 +104,7 @@ inline void SqliteDatabase::_close() noexcept
 {
     if (mDbObject != nullptr)
     {
-        ::sqlite3_close(_sqlite(mDbObject));
+        ::sqlite3_close_v2(_sqlite(mDbObject));
         mDbObject = nullptr;
     }
 }

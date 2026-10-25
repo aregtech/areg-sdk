@@ -820,6 +820,31 @@ public:
     bool setup_statement_read_filter_window_back(SqliteStatement& stmt, ITEM_ID instId, const LogPosition& before, int32_t limit);
 
     /**
+     * \brief   Prepares a statement that reads one window of logs at a row number, in the order
+     *          the window methods read. A jump far away reads its window here once, then the
+     *          place of the last row read continues by keyset. The query skips `offset` rows,
+     *          so it costs as much as the rows before the window.
+     *
+     * \param   stmt    The statement to prepare. Read it with `fill_log_window()`.
+     * \param   offset  The number of the first row of the window, counted from 0.
+     * \param   limit   The greatest number of rows the window holds.
+     * \return  Returns true if the statement is ready to be read.
+     **/
+    bool setup_statement_read_window_at(SqliteStatement& stmt, uint32_t offset, int32_t limit);
+
+    /**
+     * \brief   Prepares a statement that reads one window of filtered logs at a row number of the
+     *          filtered rows, in the order `setup_statement_read_filter_window()` reads.
+     *
+     * \param   stmt    The statement to prepare. Read it with `fill_log_window()`.
+     * \param   instId  The instance to read. `areg::TARGET_ALL` reads all instances.
+     * \param   offset  The number of the first filtered row of the window, counted from 0.
+     * \param   limit   The greatest number of rows the window holds.
+     * \return  Returns true if the statement is ready to be read. Returns false if no filter is set.
+     **/
+    bool setup_statement_read_filter_window_at(SqliteStatement& stmt, ITEM_ID instId, uint32_t offset, int32_t limit);
+
+    /**
      * \brief   Prepares a statement that reads the log rows that have a marker of the given levels,
      *          in the order they were generated, with the columns of a window. If a filter is set
      *          by `setup_filter_logs()`, only the rows it passes are read.
