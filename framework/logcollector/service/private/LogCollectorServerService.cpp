@@ -291,8 +291,11 @@ void LogCollectorServerService::on_message_received(const areg::MessageEnvelope 
 
     case areg::FuncIdRange::ServiceLogMessage:
         // Forward first, the database write is queued and handled by the writer thread.
-        mLoggerProcessor.log_message(msgReceived);
-        mDatabase.save_log_message(msgReceived);
+        if (areg::is_log_entry_valid(msgReceived))
+        {
+            mLoggerProcessor.log_message(msgReceived);
+            mDatabase.save_log_message(msgReceived);
+        }
         break;
 
     case areg::FuncIdRange::SystemServiceConnect:

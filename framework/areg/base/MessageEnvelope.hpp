@@ -629,7 +629,7 @@ protected:
 
     /**
      * \brief   Returns the byte offset at which the payload begins.
-     *          Equal to offsetof(areg::RawEnvelope, envData) = sizeof(areg::EventHeader) = 120.
+     *          Equal to offsetof(areg::RawEnvelope, envData) = sizeof(areg::EventHeader) = 128.
      **/
     [[nodiscard]]
     uint32_t data_offset() const noexcept final;

@@ -687,16 +687,16 @@ inline void LogSqliteDatabase::_copy_log_message(SqliteStatement& stmt, SharedBu
     String thread       = stmt.as_text(11);
     String module       = stmt.as_text(12);
 
-    // msg_len holds the length before the cut. A database written before the column
-    // existed reads back as zero, so fall back to the stored text length.
-    uint32_t storedLen  = static_cast<uint32_t>(stmt.as_uint32(13));
-    log->logMessageLen  = storedLen != 0u ? storedLen : static_cast<uint32_t>(msg.length());
-    log->logThreadLen   = static_cast<uint32_t>(thread.length());
-    log->logModuleLen   = static_cast<uint32_t>(module.length());
+    const uint32_t copied{ areg::mem_copy(log->logMessage, areg::LOG_MSG_SIZE - 1u, msg.as_string(), static_cast<uint32_t>(msg.length())) };
+    log->logThreadLen   = areg::mem_copy(log->logThread, areg::LOG_NAME_SIZE - 1u, thread.as_string(), static_cast<uint32_t>(thread.length()));
+    log->logModuleLen   = areg::mem_copy(log->logModule, areg::LOG_NAME_SIZE - 1u, module.as_string(), static_cast<uint32_t>(module.length()));
+    log->logMessage[copied] = String::EmptyChar;
+    log->logThread[log->logThreadLen] = String::EmptyChar;
+    log->logModule[log->logModuleLen] = String::EmptyChar;
 
-    areg::copy_string_fast(log->logMessage, msg.as_string(), msg.length());
-    areg::copy_string_fast(log->logThread, thread.as_string(), thread.length());
-    areg::copy_string_fast(log->logModule, module.as_string(), module.length());
+    // msg_len holds the length before the cut; it is kept only when the stored text was cut.
+    const uint32_t storedLen{ static_cast<uint32_t>(stmt.as_uint32(13)) };
+    log->logMessageLen  = ((copied == areg::LOG_MSG_SIZE - 1u) && (storedLen > copied)) ? storedLen : copied;
 
     buf.set_size_used(areg::log_entry_size(*log));
 }

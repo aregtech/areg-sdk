@@ -39,9 +39,9 @@ LoggerClient::LoggerClient()
                                  , LoggerClient::SERVICE_TYPE
                                  , static_cast<uint32_t>(CONNECT_TYPE)
                                  , LoggerClient::SOURCE_TYPE
-                                 , static_cast<ConnectionConsumer &>(self())
-                                 , static_cast<RemoteMessageHandler &>(self())
-                                 , static_cast<DispatcherThread &>(self())
+                                 , static_cast<ConnectionConsumer &>(*this)
+                                 , static_cast<RemoteMessageHandler &>(*this)
+                                 , static_cast<DispatcherThread &>(*this)
                                  , LoggerClient::THREAD_PREFIX)
     , ConfigListener    ( )
     , DispatcherThread           ( LoggerClient::THREAD_NAME, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_DEFAULT_RING_CAPACITY )

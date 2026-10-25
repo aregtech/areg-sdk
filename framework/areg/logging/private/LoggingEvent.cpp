@@ -18,7 +18,6 @@
  ************************************************************************/
 #include "areg/logging/private/LoggingEvent.hpp"
 
-#include <utility>
 
 #if AREG_LOGGING
 
@@ -26,39 +25,33 @@ namespace areg {
 
 LoggingEventData::LoggingEventData() noexcept
     : mAction   ( LoggingEventData::LogAction::Undefined )
-    , mMessage  ( )
 {
 }
 
 LoggingEventData::LoggingEventData( LoggingEventData::LogAction action ) noexcept
     : mAction   ( action )
-    , mMessage  ( )
 {
 }
 
 LoggingEventData::LoggingEventData( const LoggingEventData & src ) noexcept
     : mAction   ( src.mAction )
-    , mMessage  ( src.mMessage )
 {
 }
 
 LoggingEventData::LoggingEventData( LoggingEventData && src ) noexcept
     : mAction   ( src.mAction )
-    , mMessage  ( std::move(src.mMessage) )
 {
 }
 
 LoggingEventData & LoggingEventData::operator = (const LoggingEventData & src) noexcept
 {
     mAction     = src.mAction;
-    mMessage    = src.mMessage;
     return (*this);
 }
 
 LoggingEventData & LoggingEventData::operator = ( LoggingEventData && src ) noexcept
 {
     mAction     = src.mAction;
-    mMessage    = std::move(src.mMessage);
     return (*this);
 }
 

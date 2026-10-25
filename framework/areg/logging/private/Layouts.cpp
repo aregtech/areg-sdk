@@ -15,7 +15,6 @@
 
 #include "areg/base/DateTime.hpp"
 #include "areg/base/Process.hpp"
-#include "areg/base/Thread.hpp"
 #include "areg/base/UtilityDefs.hpp"
 
 #include "areg/logging/private/LogManager.hpp"
@@ -349,24 +348,9 @@ ThreadNameLayout::ThreadNameLayout( ThreadNameLayout && /*src*/ ) noexcept
 
 void ThreadNameLayout::log_message( const areg::LogEntry & msgLog, OutStream & stream ) const
 {
-    const char* name{ nullptr };
-    uint32_t len{ 0 };
-
-    if (msgLog.logDataType == areg::LogDataType::Local)
+    if (msgLog.logThreadLen != 0)
     {
-        const String thread{ Thread::thread_name(static_cast<id_type>(msgLog.logThreadId)) };
-        name = thread.as_string();
-        len  = static_cast<uint32_t>(thread.length());
-    }
-    else
-    {
-        name = msgLog.logThread;
-        len = msgLog.logThreadLen;
-    }
-
-    if (len != 0)
-    {
-        stream.write(reinterpret_cast<const uint8_t*>(name), len);
+        stream.write(reinterpret_cast<const uint8_t*>(msgLog.logThread), msgLog.logThreadLen);
     }
     else
     {

@@ -35,6 +35,7 @@ uint8_t * SocketConnectionBase::prepare_message(MessageEnvelope & message, areg:
         return nullptr;
 
     // The local-only fields never take the values of the peer.
+    header.bufHeader.biBufType = areg::BufferType::Remote;
     header.internal1 = 0u;
     header.internal2 = 0u;
     header.custom    = 0u;
@@ -45,16 +46,16 @@ uint8_t * SocketConnectionBase::prepare_message(MessageEnvelope & message, areg:
 int32_t SocketConnectionBase::receive_message(MessageEnvelope & message, const Socket & socket) const
 {
     areg::EventHeader evtHeader{};
-    if (socket.receive(reinterpret_cast<uint8_t*>(&evtHeader), sizeof(areg::EventHeader)) != static_cast<int32_t>(sizeof(areg::EventHeader)))
+    if (socket.receive(areg::wire_header(evtHeader), areg::WIRE_HEADER_SIZE) != static_cast<int32_t>(areg::WIRE_HEADER_SIZE))
         return 0;
 
     uint8_t * buffer = SocketConnectionBase::prepare_message(message, evtHeader);
-    int32_t result{ buffer != nullptr ? static_cast<int32_t>(sizeof(areg::EventHeader)) : 0 };
+    int32_t result{ buffer != nullptr ? static_cast<int32_t>(areg::WIRE_HEADER_SIZE) : 0 };
     if ((evtHeader.bufHeader.biUsed != 0u) && (result != 0))
     {
         const int32_t rest = socket.receive(buffer, static_cast<int32_t>(evtHeader.bufHeader.biUsed));
         message.set_size_used(evtHeader.bufHeader.biUsed);
-        result = rest > 0 ? (static_cast<int32_t>(sizeof(areg::EventHeader)) + rest) : 0;
+        result = rest > 0 ? (static_cast<int32_t>(areg::WIRE_HEADER_SIZE) + rest) : 0;
     }
 
     message.move_to_begin();

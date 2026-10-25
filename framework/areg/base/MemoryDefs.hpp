@@ -130,7 +130,7 @@ enum class BufferType : int16_t
       Unknown   = -1    //!< Unknown buffer type, not used
     , Internal  =  0    //!< Buffer type for internal communication
     , Remote    =  2    //!< Buffer type for remote communication
-    , Custom    =  3
+    , Custom    =  3    //!< Reserved for a custom buffer, currently not used
 };
 /**
  * \brief   Returns string representation of areg::BufferType enumeration value.
@@ -582,6 +582,41 @@ static_assert(offsetof(areg::EventHeader, provider)  == 24  , "EventHeader.provi
 static_assert(offsetof(areg::EventHeader, consumer)  == 44  , "EventHeader.consumer must be at offset 44");
 static_assert(offsetof(areg::EventHeader, rawService)== 64  , "EventHeader.rawService must be at offset 64");
 static_assert(offsetof(areg::EventHeader, channel)   == 72  , "EventHeader.channel must be at offset 72");
+
+//!< Offset of the first header byte on the wire: the header is sent from 'biUsed' on.
+constexpr uint32_t  WIRE_HEADER_OFFSET  { static_cast<uint32_t>(offsetof(areg::BufferHeader, biUsed)) };
+//!< The size of the header on the wire.
+constexpr uint32_t  WIRE_HEADER_SIZE    { static_cast<uint32_t>(sizeof(areg::EventHeader)) - WIRE_HEADER_OFFSET };
+static_assert(offsetof(areg::EventHeader, bufHeader) == 0, "EventHeader.bufHeader must be at offset 0");
+static_assert(WIRE_HEADER_OFFSET == 12, "The wire header must start at BufferHeader.biUsed");
+static_assert(offsetof(areg::BufferHeader, biRefCount) < WIRE_HEADER_OFFSET, "The reference count must never be sent");
+
+/**
+ * \brief   Returns the first byte of the message to send.
+ **/
+[[nodiscard]]
+inline const uint8_t * wire_data(const areg::EventHeader & header) noexcept
+{
+    return reinterpret_cast<const uint8_t *>(&header) + WIRE_HEADER_OFFSET;
+}
+
+/**
+ * \brief   Returns the number of bytes the message takes on the wire, header and data.
+ **/
+[[nodiscard]]
+inline uint32_t wire_size(const areg::EventHeader & header) noexcept
+{
+    return WIRE_HEADER_SIZE + header.bufHeader.biUsed;
+}
+
+/**
+ * \brief   Returns the place in the header where the header received from the wire is stored.
+ **/
+[[nodiscard]]
+inline uint8_t * wire_header(areg::EventHeader & header) noexcept
+{
+    return reinterpret_cast<uint8_t *>(&header) + WIRE_HEADER_OFFSET;
+}
 
 // Portability guard: BufferHeader, RawBuffer, EventHeader and RawEnvelope are all
 // placement-constructed into plain `new uint8_t[]` heap blocks.
@@ -1200,6 +1235,8 @@ inline constexpr const char * as_string(areg::BufferType val ) noexcept
         return "areg::Internal";
     case areg::BufferType::Remote:
         return "areg::Remote";
+    case areg::BufferType::Custom:
+        return "areg::Custom";
     default:
         return "ERR: Invalid areg::BufferType value!!!";
     }

@@ -263,6 +263,9 @@ void ObserverMessageProcessor::notify_log_update_scopes(const areg::MessageEnvel
 
 uint32_t ObserverMessageProcessor::notify_log_message(const areg::MessageEnvelope& msgReceived)
 {
+    if (areg::is_log_entry_valid(msgReceived) == false)
+        return 0u;
+
     uint32_t logId{ 0 };
     FuncLogMessage callback{ nullptr };
     FuncLogMessageEx callbackEx{ nullptr };

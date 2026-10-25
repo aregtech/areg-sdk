@@ -44,12 +44,12 @@ namespace
     inline uint64_t wire_size(const areg::MessageEnvelope & message) noexcept
     {
         const areg::EventHeader * header{ message.header() };
-        return (header != nullptr ? static_cast<uint64_t>(sizeof(areg::EventHeader)) + header->bufHeader.biUsed : 0u);
+        return (header != nullptr ? static_cast<uint64_t>(areg::wire_size(*header)) : 0u);
     }
 
     inline const uint8_t * wire_data(const areg::MessageEnvelope & message) noexcept
     {
-        return reinterpret_cast<const uint8_t *>(message.header());
+        return areg::wire_data(*message.header());
     }
 }
 

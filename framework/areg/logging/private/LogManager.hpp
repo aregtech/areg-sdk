@@ -77,6 +77,22 @@ private:
     //!< Reconnect timeout in milliseconds
     static constexpr uint32_t       LOG_RECONNECT_TIMEOUT       { areg::TIMEOUT_1_SEC * 5 };
 
+    //!< Receives the log messages, which are posted to the logging thread as events.
+    class LogMessageConsumer final : public EventConsumer
+    {
+    public:
+        explicit LogMessageConsumer(LogManager & logManager) noexcept
+            : mLogManager   ( logManager )
+        {
+        }
+
+        //!< Outputs the log message the event carries.
+        void start_event_processing( Event & eventElem ) override;
+
+    private:
+        LogManager &    mLogManager;    //!< The logging manager that outputs the messages.
+    };
+
 public:
 
     /**
@@ -87,11 +103,9 @@ public:
     static void log_message( const areg::LogEntry & logData );
 
     /**
-     * \brief   Triggers a log event from a pre-built message. This is the primary hot path.
-     *          If remote logging is enabled, calls finalize_log_message() on the calling thread
-     *          before queuing, avoiding any work on the LogManager thread.
+     * \brief   Posts a message built by make_log_message() to the logging thread, without a copy.
      *
-     * \param   msg     A pre-built message from make_log_message(); moved into the event.
+     * \param   msg     The message to output.
      **/
     static void log_message( areg::MessageEnvelope && msg );
 
@@ -438,12 +452,15 @@ private:
 
     /**
      * \brief   Dispatches a log message to all registered loggers.
-     *          Uses the pre-built remote message in data for TCP if available (is_valid()),
-     *          otherwise falls back to constructing it on the LogManager thread.
      *
-     * \param   data    The logging event data containing the log entry and optional pre-built remote message.
+     * \param   msg     The log message.
      **/
-    void write_log_message( const LoggingEventData & data );
+    void write_log_message( areg::MessageEnvelope & msg );
+
+    /**
+     * \brief   Posts the log message to the logging thread.
+     **/
+    void post_log_message( areg::MessageEnvelope && msg );
 
     /**
      * \brief   Sends a logging event with the specified priority.
@@ -513,6 +530,10 @@ private:
      * \brief   The log event processor helper object.
      **/
     LogEventProcessor   mEventProcessor;
+    /**
+     * \brief   Receives the log messages posted to the logging thread.
+     **/
+    LogMessageConsumer  mMessageConsumer;
     /**
      * \brief   An event, indicating that the logging has been started.
      */

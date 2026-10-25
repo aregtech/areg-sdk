@@ -1155,12 +1155,12 @@ AREG_API_IMPL uint32_t areg::recv_data_available(SOCKETHANDLE hSocket) noexcept
     if (tc.unread == 0u)
         return 0u;
 
-    if (tc.unread < static_cast<uint32_t>(sizeof(areg::EventHeader)))
+    if (tc.unread < areg::WIRE_HEADER_SIZE)
         return 0u;
 
-    areg::BufferHeader bufHeader{ };
-    std::memcpy(&bufHeader, tc.buffer.get() + tc.head, sizeof(areg::BufferHeader));
-    const uint32_t msg_total = static_cast<uint32_t>(sizeof(areg::EventHeader)) + bufHeader.biUsed;
+    areg::EventHeader header{ };
+    std::memcpy(areg::wire_header(header), tc.buffer.get() + tc.head, sizeof(header.bufHeader.biUsed));
+    const uint32_t msg_total = areg::wire_size(header);
     return (tc.unread >= msg_total) ? tc.unread : 0u;
 }
 

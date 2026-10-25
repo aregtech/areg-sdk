@@ -178,6 +178,18 @@ areg::LogEntry & areg::LogEntry::operator = (const areg::LogEntry & src)
     return (*this);
 }
 
+AREG_API_IMPL bool areg::is_log_entry_valid(const areg::MessageEnvelope & msg) noexcept
+{
+    const uint32_t used{ msg.size_used() };
+    const areg::LogEntry * log{ reinterpret_cast<const areg::LogEntry *>(msg.buffer()) };
+    return (log != nullptr)
+        && (used >= areg::log_entry_head())
+        && (used == areg::log_entry_size(*log))
+        && (log->logMessage[areg::log_message_size(*log)] == String::EmptyChar)
+        && (log->logThreadLen < areg::LOG_NAME_SIZE) && (log->logThread[log->logThreadLen] == String::EmptyChar)
+        && (log->logModuleLen < areg::LOG_NAME_SIZE) && (log->logModule[log->logModuleLen] == String::EmptyChar);
+}
+
 //////////////////////////////////////////////////////////////////////////
 #if AREG_LOGGING
 //////////////////////////////////////////////////////////////////////////
@@ -279,9 +291,12 @@ AREG_API_IMPL areg::MessageEnvelope areg::make_log_message( areg::LogMessageType
         log->logDuration    = scopeStamp != 0u ? static_cast<uint32_t>(now - scopeStamp) : 0u;
         log->logScopeId     = scopeId;
         log->logSessionId   = sessionId;
-        log->logThreadLen   = 0u;
         log->logModuleLen   = 0u;
         log->logModuleId    = 0u;
+
+        const Thread * self{ Thread::current_thread() };
+        log->logThreadLen   = (self != nullptr) ? areg::mem_copy(log->logThread, areg::LOG_NAME_SIZE - 1u, self->name().as_string(), static_cast<uint32_t>(self->name().length())) : 0u;
+        log->logThread[log->logThreadLen] = String::EmptyChar;
 
         const uint32_t space{ entrySize - areg::log_entry_head() - 1u };
         uint32_t len = areg::mem_copy(log->logMessage, space, message, msgLen);
@@ -310,23 +325,17 @@ AREG_API_IMPL void areg::finalize_log_message(areg::MessageEnvelope& msg, areg::
         log->logCookie    = areg::COOKIE_LOCAL;
         log->logModuleId  = 0u;
         log->logModuleLen = 0u;
-        log->logThreadLen = 0u;
         log->logModule[0] = String::EmptyChar;
-        log->logThread[0] = String::EmptyChar;
     }
     else
     {
         const String& moduleName{ Process::instance().app_name() };
-        const String threadName{ Thread::thread_name(static_cast<id_type>(log->logThreadId)) };
 
         msg.set_source(static_cast<uint32_t>(srcCookie));
         log->logCookie    = srcCookie;
         log->logModuleId  = static_cast<ITEM_ID>(Process::instance().id());
         log->logModuleLen = areg::mem_copy(log->logModule, areg::LOG_NAME_SIZE - 1u, moduleName.as_string(), static_cast<uint32_t>(moduleName.length()));
-        log->logThreadLen = areg::mem_copy(log->logThread, areg::LOG_NAME_SIZE - 1u, threadName.as_string(), static_cast<uint32_t>(threadName.length()));
-
         log->logModule[log->logModuleLen] = String::EmptyChar;
-        log->logThread[log->logThreadLen] = String::EmptyChar;
     }
 }
 

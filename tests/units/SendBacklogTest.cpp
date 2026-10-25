@@ -200,7 +200,7 @@ namespace
         uint64_t result{ 0u };
         for (const areg::MessageEnvelope & message : messages)
         {
-            result += sizeof(areg::EventHeader) + message.header()->bufHeader.biUsed;
+            result += areg::wire_size(*message.header());
         }
 
         return result;
@@ -472,8 +472,8 @@ TEST(SendBacklogTest, paused_peer_past_twice_its_cap_holds_back_until_closed)
 
     EXPECT_TRUE(overCap);
     EXPECT_FALSE(owner.closed.load());
-    const uint64_t written{ static_cast<uint64_t>(next) * (sizeof(areg::EventHeader) + MESSAGE_BYTES) };
-    EXPECT_LE(written - owner.sent.load(), 2u * CAP + 2u * (sizeof(areg::EventHeader) + MESSAGE_BYTES));
+    const uint64_t written{ static_cast<uint64_t>(next) * (areg::WIRE_HEADER_SIZE + MESSAGE_BYTES) };
+    EXPECT_LE(written - owner.sent.load(), 2u * CAP + 2u * (areg::WIRE_HEADER_SIZE + MESSAGE_BYTES));
 
     // Held back, the backlog does not grow; the connection is closed once the stall limit passed.
     const Clock::time_point held{ Clock::now() };
@@ -490,7 +490,7 @@ TEST(SendBacklogTest, paused_peer_past_twice_its_cap_holds_back_until_closed)
 
     ASSERT_TRUE(owner.closed.load());
     EXPECT_EQ(owner.reason, SendBacklog::Reason::OverCap);
-    EXPECT_LE(owner.kept, 2u * CAP + 2u * (sizeof(areg::EventHeader) + MESSAGE_BYTES));
+    EXPECT_LE(owner.kept, 2u * CAP + 2u * (areg::WIRE_HEADER_SIZE + MESSAGE_BYTES));
     EXPECT_GE(elapsed_ms(lastMoved) + 1, static_cast<int64_t>(SendBacklog::CAP_STALL_MS));
     EXPECT_TRUE(backlog.is_empty());
 

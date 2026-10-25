@@ -639,7 +639,7 @@ bool ServiceCommunicationBase::try_send_inline( areg::MessageEnvelope & data, co
     if ( hdr == nullptr )
         return false;
 
-    const uint32_t wireSize{ static_cast<uint32_t>(sizeof(areg::EventHeader)) + hdr->bufHeader.biUsed };
+    const uint32_t wireSize{ areg::wire_size(*hdr) };
     if ( wireSize > areg::INLINE_SEND_MAX_BYTES )
         return false;
 
