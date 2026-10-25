@@ -108,6 +108,7 @@ void ObserverMessageProcessor::notify_log_register_scopes(const areg::MessageEnv
     do
     {
         Lock lock(mLoggerClient.mLock);
+        mLoggerClient.begin_database_batch();
         callback = mLoggerClient.mCallbacks != nullptr ? mLoggerClient.mCallbacks->evtLogRegisterScopes : nullptr;
         mLoggerClient.mLogDatabase.log_scopes_deactivate(cookie, now);
         msgReceived >> count;
@@ -134,7 +135,7 @@ void ObserverMessageProcessor::notify_log_register_scopes(const areg::MessageEnv
         text.format("Log observer registered %u scopes of instance %u.", count, cookie);
         add_local_log(areg::COOKIE_LOGGER, areg::LogPriority::PrioAny, now, text.as_string());
 
-        mLoggerClient.mLogDatabase.commit(true);
+        mLoggerClient.commit_database_batch();
 
     } while (false);
 
@@ -220,6 +221,7 @@ void ObserverMessageProcessor::notify_log_update_scopes(const areg::MessageEnvel
     do
     {
         Lock lock(mLoggerClient.mLock);
+        mLoggerClient.begin_database_batch();
         callback = mLoggerClient.mCallbacks != nullptr ? mLoggerClient.mCallbacks->evtLogUpdatedScopes : nullptr;
         mLoggerClient.mLogDatabase.log_scopes_deactivate(cookie, now);
         msgReceived >> count;
@@ -242,7 +244,7 @@ void ObserverMessageProcessor::notify_log_update_scopes(const areg::MessageEnvel
             mLoggerClient.mLogDatabase.log_scope_activate(scopeName, scopeId, scopePrio, cookie, now);
         }
 
-        mLoggerClient.mLogDatabase.commit(true);
+        mLoggerClient.commit_database_batch();
 
     } while (false);
 
@@ -279,10 +281,11 @@ uint32_t ObserverMessageProcessor::notify_log_message(const areg::MessageEnvelop
         const areg::LogEntry* msgRemote = reinterpret_cast<const areg::LogEntry*>(msgReceived.buffer());
         ASSERT(msgRemote != nullptr);
         const_cast<areg::LogEntry*>(msgRemote)->logReceived = static_cast<TIME64>(now);
+        mLoggerClient.begin_database_batch();
         if (mLoggerClient.mLogDatabase.log_message(*msgRemote))
         {
             logId = mLoggerClient.mLogDatabase.last_log_id();
-            mLoggerClient.mLogDatabase.commit(true);
+            mLoggerClient.count_database_batch();
         }
 
         if (LogObserverBase::_theLogObserver != nullptr)
@@ -352,10 +355,11 @@ uint32_t ObserverMessageProcessor::add_local_log(ITEM_ID cookie, areg::LogPriori
 bool ObserverMessageProcessor::remove_log(uint32_t logId)
 {
     Lock lock(mLoggerClient.mLock);
+    mLoggerClient.begin_database_batch();
     bool result{ mLoggerClient.mLogDatabase.remove_log(logId) };
     if (result)
     {
-        mLoggerClient.mLogDatabase.commit(true);
+        mLoggerClient.commit_database_batch();
     }
 
     return result;
@@ -375,6 +379,7 @@ void ObserverMessageProcessor::_clients_connected(const areg::MessageEnvelope& m
     do
     {
         Lock lock(mLoggerClient.mLock);
+        mLoggerClient.begin_database_batch();
         DateTime now(DateTime::now());
 
         if (LogObserverBase::_theLogObserver != nullptr)
@@ -396,7 +401,7 @@ void ObserverMessageProcessor::_clients_connected(const areg::MessageEnvelope& m
                 }
             }
 
-            mLoggerClient.mLogDatabase.commit(true);
+            mLoggerClient.commit_database_batch();
         }
         else
         {
@@ -431,7 +436,7 @@ void ObserverMessageProcessor::_clients_connected(const areg::MessageEnvelope& m
                 }
             }
 
-            mLoggerClient.mLogDatabase.commit(true);
+            mLoggerClient.commit_database_batch();
         }
     } while (false);
 
@@ -464,6 +469,7 @@ void ObserverMessageProcessor::_clients_disconnected(const areg::MessageEnvelope
     do
     {
         Lock lock(mLoggerClient.mLock);
+        mLoggerClient.begin_database_batch();
 
         if (LogObserverBase::_theLogObserver == nullptr)
         {
@@ -496,7 +502,7 @@ void ObserverMessageProcessor::_clients_disconnected(const areg::MessageEnvelope
                 }
             }
 
-            mLoggerClient.mLogDatabase.commit(true);
+            mLoggerClient.commit_database_batch();
         }
     } while (false);
 

@@ -53,7 +53,48 @@ LoggerClient::LoggerClient()
     , mIsPaused                  ( false )
     , mInstances                 ( )
     , mLogDatabase               ( )
+    , mCommitConsumer            ( *this )
+    , mCommitTimer               ( static_cast<TimerConsumer &>(mCommitConsumer), "LogObserverCommitTimer" )
+    , mBatchMessages             ( 0u )
+    , mBatchOpen                 ( false )
+    , mBatchUntimed              ( false )
 {
+}
+
+void LoggerClient::CommitTimerConsumer::process_timer(Timer & /* timer */)
+{
+    Lock lock(mClient.mLock);
+    mClient.commit_database_batch();
+}
+
+void LoggerClient::begin_database_batch()
+{
+    if (mBatchOpen || (mLogDatabase.is_operable() == false))
+        return;
+
+    mBatchOpen      = mLogDatabase.begin();
+    mBatchMessages  = 0u;
+    mBatchUntimed   = mBatchOpen && (mCommitTimer.start_timer(DB_BATCH_TIMEOUT, static_cast<DispatcherThread &>(*this), 1u) == false);
+}
+
+void LoggerClient::count_database_batch()
+{
+    if (mBatchOpen && (mBatchUntimed || (++mBatchMessages >= DB_BATCH_MESSAGES)))
+    {
+        commit_database_batch();
+    }
+}
+
+void LoggerClient::commit_database_batch()
+{
+    if (mBatchOpen == false)
+        return;
+
+    mBatchOpen      = false;
+    mBatchMessages  = 0u;
+    mBatchUntimed   = false;
+    mCommitTimer.stop_timer();
+    static_cast<void>(mLogDatabase.commit(true));
 }
 
 bool LoggerClient::start_logger_client(const String & address /*= String::EmptyString*/, uint16_t portNr /*= areg::InvalidPort*/)
@@ -84,6 +125,7 @@ void LoggerClient::stop_logger_client()
     {
         Lock lock(mLock);
         mIsPaused = false;
+        commit_database_batch();
     } while (false);
 
     disconnect_service_host();
@@ -293,6 +335,8 @@ bool LoggerClient::open_logging_database(const char* dbPath /*= nullptr*/)
 
 void LoggerClient::close_logging_database()
 {
+    Lock lock(mLock);
+    commit_database_batch();
     mLogDatabase.disconnect();
 }
 

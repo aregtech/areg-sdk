@@ -7,6 +7,8 @@
 //               receives the messages of 35_logsource through the log
 //               collector, counts them and measures the time from the
 //               LOG_DBG call in the source until the message arrives here.
+//               With -d it also saves every message in a database file,
+//               as logobserver does.
 //============================================================================
 
 #include "areg/base/areg_global.h"
@@ -98,15 +100,20 @@ namespace
 int main(int argc, char ** argv)
 {
     uint32_t expected{ 0u };
+    const char * database{ nullptr };
     for (int i = 1; i < argc; ++i)
     {
         if (std::strncmp(argv[i], "-c=", 3) == 0)
         {
             expected = static_cast<uint32_t>(std::strtoul(argv[i] + 3, nullptr, 10));
         }
+        else if ((std::strncmp(argv[i], "-d=", 3) == 0) && (argv[i][3] != '\0'))
+        {
+            database = argv[i] + 3;
+        }
         else
         {
-            std::printf("Usage: 35_logsink [-c=<messages that end the run>]\n");
+            std::printf("Usage: 35_logsink [-c=<messages that end the run>] [-d=<database file to save the messages>]\n");
             return 1;
         }
     }
@@ -123,7 +130,12 @@ int main(int argc, char ** argv)
         return 2;
     }
 
-    static_cast<void>(log_observer_connect_logger(nullptr, nullptr, 0u));
+    if (database != nullptr)
+    {
+        static_cast<void>(std::remove(database));
+    }
+
+    static_cast<void>(log_observer_connect_logger(database, nullptr, 0u));
     {
         std::unique_lock<std::mutex> guard(_run.lock);
         if (_run.changed.wait_for(guard, std::chrono::milliseconds(FIRST_MS), [] { return _run.connected; }) == false)
@@ -164,9 +176,9 @@ int main(int argc, char ** argv)
     }
 
     const uint64_t spanUs{ _run.lastUs > _run.firstUs ? _run.lastUs - _run.firstUs : 1u };
-    std::printf("35 logsink   | received %u | lost %u | rate %.0f msg/s\n"
+    std::printf("35 logsink   | received %u | lost %u | rate %.0f msg/s | database %s\n"
                , received, (expected > received) ? expected - received : 0u
-               , static_cast<double>(received) * 1e6 / static_cast<double>(spanUs));
+               , static_cast<double>(received) * 1e6 / static_cast<double>(spanUs), (database != nullptr) ? "on" : "off");
     std::printf("35 log trip  | P50 %.0f us | P90 %.0f us | P99 %.0f us | P99.9 %.0f us | max %.0f us | mean %.0f us\n"
                , percentile(latencies, 0.50), percentile(latencies, 0.90), percentile(latencies, 0.99)
                , percentile(latencies, 0.999), static_cast<double>(latencies.back()), sum / static_cast<double>(latencies.size()));

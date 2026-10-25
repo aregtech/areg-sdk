@@ -388,10 +388,12 @@ inline void LogCollectorMessageProcessor::_forward_message_to_observers(const ar
         }
         else if (target == areg::TARGET_ALL)
         {
+            // Every observer but the last gets a copy; the last one gets the received buffer.
+            uint32_t remaining{ observers.size() };
             for (const auto& observer : observers.data())
             {
                 ASSERT(is_log_observer(observer.second.ciSource));
-                areg::MessageEnvelope msg{ msgReceived.clone() };
+                areg::MessageEnvelope msg{ (--remaining != 0u) ? msgReceived.clone() : msgReceived };
                 msg.set_source(static_cast<uint32_t>(source));
                 msg.set_target(static_cast<uint32_t>(observer.first));
                 mLoggerService.send_message(msg);

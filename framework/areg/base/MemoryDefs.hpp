@@ -24,6 +24,7 @@
 #include "areg/base/MathDefs.hpp"
 
 #include <algorithm>
+#include <atomic>
 #include <new>
 #include <string.h>
 
@@ -285,15 +286,17 @@ inline uint16_t atomic_dec16(uint16_t & ref) noexcept
 }
 
 /**
- * \brief   Atomically loads a 16-bit reference counter (relaxed). Returns an approximate
- *          snapshot, matching std::shared_ptr::use_count() semantics.
+ * \brief   Atomically loads a 16-bit reference counter with acquire ordering. A count of 1 is
+ *          ordered after the release of every other owner, so the caller may reuse the block.
  **/
 inline uint16_t atomic_load16(const uint16_t & ref) noexcept
 {
 #if defined(_MSC_VER)
-    return static_cast<uint16_t>(*reinterpret_cast<const volatile short *>(&ref));
+    const uint16_t result{ static_cast<uint16_t>(*reinterpret_cast<const volatile short *>(&ref)) };
+    std::atomic_thread_fence(std::memory_order_acquire);
+    return result;
 #else   // !_MSC_VER
-    return __atomic_load_n(&ref, __ATOMIC_RELAXED);
+    return __atomic_load_n(&ref, __ATOMIC_ACQUIRE);
 #endif  // _MSC_VER
 }
 

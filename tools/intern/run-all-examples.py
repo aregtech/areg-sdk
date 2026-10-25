@@ -356,6 +356,7 @@ SCENARIOS = [
     #
     #   full  = one thread writes as fast as it can: the shortest call and where drops start.
     #   paced = a timer writes one message per millisecond: the trip of a single message.
+#   db    = full speed, the sink saves into a database file: the logobserver path.
     {'name': '35_logfull', 'tier': 'perf', 'timeout': 300, 'measure': 'loglatency',
      'router': False,
      'procs': [proc('logcollector', args=['--console'], must_exit=False, quit=['-q']),
@@ -369,6 +370,13 @@ SCENARIOS = [
                proc('35_logsink', args=['-c=5100'], expect=[r'35 log trip']),
                proc('35_logsource', args=['-c=5000', '-w=100', '-p=1'],
                     expect=[r'35 log call'])]},
+
+    # The sink also saves every message in a database file, as logobserver does.
+    {'name': '35_logdb', 'tier': 'perf', 'timeout': 300, 'measure': 'loglatency',
+     'router': False,
+     'procs': [proc('logcollector', args=['--console'], must_exit=False, quit=['-q']),
+               proc('35_logsink', args=['-c=20000', '-d=35_logdb.sqlog'], expect=[r'35 log trip']),
+               proc('35_logsource', args=['-c=20000', '-w=0'], expect=[r'35 log call'])]},
 ]
 
 # Exit codes that mean the process was terminated abnormally.

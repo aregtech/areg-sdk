@@ -332,6 +332,26 @@ void LogCollectorServerService::process_timer(areg::Timer& /* timer */ )
 {
 }
 
+void LogCollectorServerService::process_received_message(areg::MessageEnvelope & msgReceived, areg::Socket & whichSource)
+{
+    const uint32_t msgId{ msgReceived.message_id() };
+    const bool isService{ msgReceived.is_valid() && whichSource.is_valid()
+                        && (areg::is_executable_id(msgId) == false)
+                        && (msgId != static_cast<uint32_t>(areg::FuncIdRange::SystemServiceConnect))
+                        && (msgId != static_cast<uint32_t>(areg::FuncIdRange::SystemServiceDisconnect)) };
+
+    if (isService && (msgReceived.source() == static_cast<uint32_t>(mServerConnection.cookie(whichSource.handle()))))
+    {
+        // The receiving thread gets a new buffer for the next message.
+        const areg::MessageEnvelope msg{ std::move(msgReceived) };
+        on_message_received(msg);
+    }
+    else
+    {
+        areg::ext::ServiceCommunicationBase::process_received_message(msgReceived, whichSource);
+    }
+}
+
 void LogCollectorServerService::on_message_send(const areg::MessageEnvelope &msgSend)
 {
     LOG_SCOPE( logcollector_service_LogCollectorServerService, on_message_send );

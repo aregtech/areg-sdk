@@ -7,7 +7,7 @@
 //               and measures how long one LOG_DBG call takes. The messages
 //               go to the log collector, where 35_logsink receives them.
 //               By default each thread writes as fast as it can; with -p a
-//               timer writes one message per period.
+//               timer writes -b messages per period.
 //============================================================================
 
 #include "areg/base/areg_global.h"
@@ -54,7 +54,8 @@ namespace
         uint32_t    threads { 1u };         //!< Threads that write logs at the same time.
         uint32_t    strings { 3u };         //!< Strings in one message, 0 to 5.
         uint32_t    numbers { 3u };         //!< Numbers in one message, 0 to 5.
-        uint32_t    period  { 0u };         //!< Milliseconds between two messages, 0 for no pause.
+        uint32_t    period  { 0u };         //!< Milliseconds between two timer events, 0 for no pause.
+        uint32_t    burst   { 1u };         //!< Messages written on each timer event.
     };
 
     //!< Reads the value of an option like "-c=1000". Returns false if the argument is another option.
@@ -75,9 +76,10 @@ namespace
             const char * arg{ argv[i] };
             if ( !read_option(arg, "-c", opt.count)   && !read_option(arg, "-w", opt.warmup)
               && !read_option(arg, "-t", opt.threads) && !read_option(arg, "-s", opt.strings)
-              && !read_option(arg, "-n", opt.numbers) && !read_option(arg, "-p", opt.period) )
+              && !read_option(arg, "-n", opt.numbers) && !read_option(arg, "-p", opt.period)
+              && !read_option(arg, "-b", opt.burst) )
             {
-                std::printf("Usage: 35_logsource [-c=<count>] [-w=<warmup>] [-t=<threads>] [-s=<strings 0..5>] [-n=<numbers 0..5>] [-p=<period ms>]\n");
+                std::printf("Usage: 35_logsource [-c=<count>] [-w=<warmup>] [-t=<threads>] [-s=<strings 0..5>] [-n=<numbers 0..5>] [-p=<period ms>] [-b=<messages per period>]\n");
                 return false;
             }
         }
@@ -85,6 +87,7 @@ namespace
         opt.threads = (opt.period != 0u) ? 1u : std::max(opt.threads, 1u);
         opt.strings = std::min(opt.strings, MAX_ARGS);
         opt.numbers = std::min(opt.numbers, MAX_ARGS);
+        opt.burst   = std::max(opt.burst, 1u);
         return (opt.count != 0u);
     }
 
@@ -193,7 +196,7 @@ namespace
         const uint32_t  mWarmup;    //!< Messages written before the measured part.
     };
 
-    //!< A dispatcher thread that writes one log message on each timer event.
+    //!< A dispatcher thread that writes a burst of log messages on each timer event.
     class PacedLogger final : public areg::DispatcherThread, private areg::TimerConsumer, public LogSamples
     {
     public:
@@ -204,6 +207,7 @@ namespace
             , mTimer                ( static_cast<areg::TimerConsumer &>(*this), "PacedLoggerTimer" )
             , mPeriod               ( opt.period )
             , mWarmup               ( opt.warmup )
+            , mBurst                ( opt.burst )
             , mFired                ( 0u )
             , mBegin                ( )
             , mDone                 ( true, false )
@@ -225,30 +229,33 @@ namespace
         void process_timer(areg::Timer & /* timer */) override
         {
             LOG_SCOPE(examples_35_logsource_PacedLogger, process_timer);
-            const uint32_t index{ mFired++ };
-            const uint32_t seq{ next_sequence() };
-            if (index < mWarmup)
+            for (uint32_t i = 0u; i < mBurst; ++i)
             {
+                const uint32_t index{ mFired++ };
+                const uint32_t seq{ next_sequence() };
+                if (index < mWarmup)
+                {
+                    LOG_DBG(mFormat.c_str(), "alpha", "bravo", "charlie", "delta", "echo", seq, mNumbers[1], mNumbers[2], mNumbers[3], mNumbers[4]);
+                    continue;
+                }
+
+                const uint32_t measured{ index - mWarmup };
+                if (measured >= static_cast<uint32_t>(mSamples.size()))
+                    return;
+
+                const Clock::time_point start{ Clock::now() };
+                if (measured == 0u)
+                {
+                    mBegin = start;
+                }
+
                 LOG_DBG(mFormat.c_str(), "alpha", "bravo", "charlie", "delta", "echo", seq, mNumbers[1], mNumbers[2], mNumbers[3], mNumbers[4]);
-                return;
-            }
-
-            const uint32_t measured{ index - mWarmup };
-            if (measured >= static_cast<uint32_t>(mSamples.size()))
-                return;
-
-            const Clock::time_point start{ Clock::now() };
-            if (measured == 0u)
-            {
-                mBegin = start;
-            }
-
-            LOG_DBG(mFormat.c_str(), "alpha", "bravo", "charlie", "delta", "echo", seq, mNumbers[1], mNumbers[2], mNumbers[3], mNumbers[4]);
-            mSamples[measured] = elapsed_ns(start);
-            if ((measured + 1u) == static_cast<uint32_t>(mSamples.size()))
-            {
-                mDurationNs = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(Clock::now() - mBegin).count());
-                mDone.set_signaled();
+                mSamples[measured] = elapsed_ns(start);
+                if ((measured + 1u) == static_cast<uint32_t>(mSamples.size()))
+                {
+                    mDurationNs = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(Clock::now() - mBegin).count());
+                    mDone.set_signaled();
+                }
             }
         }
 
@@ -261,7 +268,8 @@ namespace
         areg::Timer         mTimer;     //!< The timer that paces the messages.
         const uint32_t      mPeriod;    //!< Milliseconds between two messages.
         const uint32_t      mWarmup;    //!< Messages written before the measured part.
-        uint32_t            mFired;     //!< Timer events processed so far.
+        const uint32_t      mBurst;     //!< Messages written on each timer event.
+        uint32_t            mFired;     //!< Messages written so far.
         Clock::time_point   mBegin;     //!< The start of the measured part.
         areg::SyncEvent     mDone;      //!< Signaled when the last measured message is written.
     };
@@ -379,8 +387,8 @@ int main(int argc, char ** argv)
     }
 
     const double rate{ durationNs != 0u ? static_cast<double>(all.size()) * 1e9 / static_cast<double>(durationNs) : 0.0 };
-    std::printf("35 logsource | threads %u | strings %u | numbers %u | period %u ms | messages %u | clock %.1f ns\n"
-               , opt.threads, opt.strings, opt.numbers, opt.period, static_cast<uint32_t>(all.size()), clock_cost_ns());
+    std::printf("35 logsource | threads %u | strings %u | numbers %u | period %u ms | burst %u | messages %u | clock %.1f ns\n"
+               , opt.threads, opt.strings, opt.numbers, opt.period, opt.burst, static_cast<uint32_t>(all.size()), clock_cost_ns());
     std::printf("35 log call  | P50 %.0f ns | P90 %.0f ns | P99 %.0f ns | P99.9 %.0f ns | max %.0f ns | mean %.0f ns | rate %.0f msg/s\n"
                , percentile(all, 0.50), percentile(all, 0.90), percentile(all, 0.99), percentile(all, 0.999)
                , static_cast<double>(all.back()), sum / static_cast<double>(all.size()), rate);

@@ -22,6 +22,8 @@
 #include "areglogger/client/LogObserverSwitches.h"
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/component/DispatcherThread.hpp"
+#include "areg/component/Timer.hpp"
+#include "areg/component/TimerConsumer.hpp"
 #include "areg/ipc/ServiceClientConnectionBase.hpp"
 #include "areg/ipc/ConnectionConsumer.hpp"
 #include "areg/ipc/RemoteMessageHandler.hpp"
@@ -79,6 +81,28 @@ private:
 
     //!< The message source. It is marked as an observer.
     static constexpr areg::MessageSource          SOURCE_TYPE { areg::MessageSource::SourceObserver };
+
+    //!< The most log messages one database transaction holds.
+    static constexpr uint32_t                       DB_BATCH_MESSAGES   { 1'000u };
+
+    //!< The most milliseconds a database transaction stays open.
+    static constexpr uint32_t                       DB_BATCH_TIMEOUT    { 100u };
+
+    //!< Commits the open database transaction when its time is over.
+    class CommitTimerConsumer final : public TimerConsumer
+    {
+    public:
+        explicit CommitTimerConsumer(LoggerClient & client) noexcept
+            : mClient   ( client )
+        {
+        }
+
+        //!< Commits the open database transaction.
+        void process_timer(Timer & timer) override;
+
+    private:
+        LoggerClient &  mClient;    //!< The client that owns the database.
+    };
 
 //////////////////////////////////////////////////////////////////////////
 // Static methods.
@@ -596,6 +620,23 @@ private:
     [[nodiscard]]
     inline LoggerClient& self();
 
+    /**
+     * \brief   Opens a database transaction if none is open. Called with mLock taken, before a log
+     *          message is written to the database.
+     **/
+    void begin_database_batch();
+
+    /**
+     * \brief   Counts a log message written in the open transaction and commits the transaction
+     *          when it holds DB_BATCH_MESSAGES messages. Called with mLock taken.
+     **/
+    void count_database_batch();
+
+    /**
+     * \brief   Commits the open database transaction, if any. Called with mLock taken.
+     **/
+    void commit_database_batch();
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables.
 //////////////////////////////////////////////////////////////////////////
@@ -626,6 +667,32 @@ private:
      * \brief   The logging database engine.
      **/
     areg::ext::LogSqliteDatabase    mLogDatabase;
+
+    /**
+     * \brief   Receives the event of the commit timer.
+     **/
+    CommitTimerConsumer             mCommitConsumer;
+
+    /**
+     * \brief   Commits the open database transaction after DB_BATCH_TIMEOUT milliseconds.
+     **/
+    Timer                           mCommitTimer;
+
+    /**
+     * \brief   The log messages written in the open database transaction.
+     **/
+    uint32_t                        mBatchMessages;
+
+    /**
+     * \brief   True while a database transaction is open.
+     **/
+    bool                            mBatchOpen;
+
+    /**
+     * \brief   True if the open transaction is committed after every message, because the commit
+     *          timer could not start.
+     **/
+    bool                            mBatchUntimed;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

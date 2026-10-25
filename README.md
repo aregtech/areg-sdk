@@ -190,7 +190,9 @@ Full API call: from before serialization at the sender to after dispatch at the 
 Latency is payload-insensitive up to 4 KB: Min rises 1.0 µs across a 20× size increase.
 For context only (third-party, 2021, different hardware): gRPC C++ sequential RTT ~116–167 µs over a Unix domain socket ([MPI-HD, F. Werner](https://www.mpi-hd.mpg.de/personalhomes/fwerner/research/2021/09/grpc-for-ipc/)).
 
-📊 Measure your own hardware: [`23_pubdatarate`](./examples/23_pubdatarate/) (throughput) · [`30_publatency`](./examples/30_publatency/) (latency)
+**Logging:** a log call takes ~0.3 µs in the application; 150K logs/s reach a log observer over TCP and are saved to SQLite without loss (Linux in WSL2), 50K/s on Windows 11. [Details](./docs/wiki/04f-logging-performance.md)
+
+📊 Measure your own hardware: [`23_pubdatarate`](./examples/23_pubdatarate/) (throughput) · [`30_publatency`](./examples/30_publatency/) (latency) · [`35_loglatency`](./examples/35_loglatency/) (logging)
 📈 [Full data and methodology](./docs/wiki/08b-areg-sdk-performance-benchmarks.md) · [vs ZMQ/NanoMsg/NNG](./docs/wiki/08c-areg-vs-hitachi-benchmark.md) · [Framework rankings](./docs/wiki/08d-areg-framework-rankings.md)
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
