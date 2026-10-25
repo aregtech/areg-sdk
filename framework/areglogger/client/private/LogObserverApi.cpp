@@ -122,7 +122,13 @@ LOGGER_API_IMPL bool log_observer_initialize(const ObserverEvents * callbacks, c
         theObserver.losState = ObserverState::ObserverDisconnected;
         _set_callbacks(theObserver.losEvents, callbacks);
         client.set_callbacks(&theObserver.losEvents);
+        const bool configured{ areg::Application::is_configured() };
         areg::Application::setup(false, false, false, true, false, configFilePath, static_cast<areg::ConfigListener *>(&client));
+        if (configured)
+        {
+            // Reports the configuration that an earlier setup() of the application has loaded.
+            static_cast<areg::ConfigListener &>(client).post_read_configuration(areg::Application::config_manager());
+        }
     }
 
     return _is_initialized(theObserver.losState);

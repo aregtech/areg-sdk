@@ -29,9 +29,11 @@
 #endif  // defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
 
 #include <algorithm>
+#include <chrono>
 #include <cstring>
 #include <filesystem>
 #include <string>
+#include <thread>
 #include <vector>
 
 namespace
@@ -39,18 +41,24 @@ namespace
     namespace fs = std::filesystem;
     using LogDb = areg::ext::LogSqliteDatabase;
 
-    //! The last connection SQLite opened in this process.
+    //! The first connection SQLite opened since the last _capture_connections(). A writer opens its
+    //! own connection first, then the one of its background checkpoint.
     sqlite3* _lastDb{ nullptr };
 
     int _capture_db(sqlite3* db, const char** /*errMsg*/, const sqlite3_api_routines* /*api*/)
     {
-        _lastDb = db;
+        if (_lastDb == nullptr)
+        {
+            _lastDb = db;
+        }
+
         return SQLITE_OK;
     }
 
-    //! Makes SQLite report every connection it opens to _capture_db().
+    //! Makes SQLite report the next connection it opens to _capture_db().
     void _capture_connections()
     {
+        _lastDb = nullptr;
         sqlite3_auto_extension(reinterpret_cast<void (*)(void)>(&_capture_db));
     }
 
@@ -355,6 +363,59 @@ TEST(LogSqliteDatabaseTest, test_destroyedWriterLeavesOnePlainFile)
     EXPECT_FALSE(_exists(path + "-shm"));
     EXPECT_EQ(_query_text(path, "PRAGMA journal_mode;"), "delete");
     EXPECT_EQ(_query_text(path, "SELECT COUNT(*) FROM logs;"), "102");
+}
+
+/**
+ * \brief   A writer that commits batch after batch without a pause keeps its write-ahead log short:
+ *          the log starts over instead of growing with every batch.
+ **/
+TEST(LogSqliteDatabaseTest, test_continuousWriterKeepsTheLogShort)
+{
+    const std::string path{ _db_path("t2continuous.sqlog") };
+    LogDb writer;
+    ASSERT_TRUE(writer.connect(areg::String(path.c_str()), false));
+
+    constexpr uint32_t batches{ 200u };
+    constexpr uint32_t rows{ 1000u };
+    std::uintmax_t largestLog{ 0u };
+    for (uint32_t b = 0; b < batches; ++b)
+    {
+        ASSERT_TRUE(_write_rows(writer, rows, static_cast<TIME64>(1000u + b * rows)));
+        std::error_code err;
+        const std::uintmax_t size{ fs::file_size(path + "-wal", err) };
+        largestLog = err ? largestLog : std::max(largestLog, size);
+    }
+
+    EXPECT_GT(largestLog, 0u);
+    EXPECT_LT(largestLog, static_cast<std::uintmax_t>(24u * 1024u * 1024u));
+    writer.disconnect();
+    EXPECT_EQ(_query_text(path, "SELECT COUNT(*) FROM logs;"), std::to_string(1u + batches * rows));
+    EXPECT_FALSE(_exists(path + "-wal"));
+}
+
+/**
+ * \brief   A few rows committed by a writer reach the database file within seconds, while the writer
+ *          stays open and writes nothing more.
+ **/
+TEST(LogSqliteDatabaseTest, test_idleWriterRowsReachTheFile)
+{
+    const std::string path{ _db_path("t2idle.sqlog") };
+    LogDb writer;
+    ASSERT_TRUE(writer.connect(areg::String(path.c_str()), false));
+    std::error_code err;
+    const std::uintmax_t emptySize{ fs::file_size(path, err) };
+    ASSERT_FALSE(err);
+
+    ASSERT_TRUE(_write_rows(writer, 500u, 1000));
+    std::uintmax_t size{ emptySize };
+    for (int i = 0; (i < 50) && (size == emptySize); ++i)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        size = fs::file_size(path, err);
+    }
+
+    EXPECT_GT(size, emptySize);
+    writer.disconnect();
 }
 
 /**

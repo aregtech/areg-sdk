@@ -27,10 +27,15 @@
 #include "areg/base/String.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 
+#include <memory>
 #include <string_view>
 #include <vector>
 
+struct sqlite3;
+
 namespace areg::ext {
+
+class LogDbCheckpointer;
 
 //////////////////////////////////////////////////////////////////////////
 // LogSqliteDatabase class declaration
@@ -975,6 +980,28 @@ private:
      **/
     inline static int32_t _fill_window(std::vector<areg::SharedBuffer>& logs, SqliteStatement& stmt, int32_t maxEntries, LogPosition& lastRead, std::vector<uint32_t>* rowIds);
 
+    /**
+     * \brief   Starts the background checkpoint of a writing connection and moves the write-ahead
+     *          log checkpoints of the commits to it. Without it the commits checkpoint themselves.
+     **/
+    inline void _start_checkpointer();
+
+    /**
+     * \brief   Stops the background checkpoint and returns the checkpoints to the commits.
+     **/
+    inline void _stop_checkpointer();
+
+    /**
+     * \brief   Called by SQLite on the writing thread after each commit.
+     *
+     * \param   context     The background checkpoint of the connection.
+     * \param   db          The writing connection.
+     * \param   dbName      The name of the committed database.
+     * \param   walPages    The number of pages in the write-ahead log.
+     * \return  Returns 0 (SQLITE_OK).
+     **/
+    static int _on_wal_commit(void* context, ::sqlite3* db, const char* dbName, int walPages);
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
 //////////////////////////////////////////////////////////////////////////
@@ -996,6 +1023,9 @@ protected:
 
     //!< Mutex to protect database operations.
     areg::Mutex     mLock;
+
+    //!< The background checkpoint of a writing connection, null when the commits checkpoint themselves.
+    std::unique_ptr<LogDbCheckpointer>  mCheckpointer;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

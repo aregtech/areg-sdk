@@ -24,6 +24,7 @@
 #include "areg/base/MathDefs.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/Thread.hpp"
+#include "areg/base/ThreadConsumer.hpp"
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/logging/LoggingDefs.hpp"
 
@@ -33,6 +34,7 @@
     #include "sqlite3/amalgamation/sqlite3.h"
 #endif  // defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
 
+#include <atomic>
 #include <string>
 #include <string_view>
 
@@ -759,9 +761,194 @@ namespace {
 
     constexpr char const _master[]   { "sqlite_master" };
     constexpr char const _temp[]     { "sqlite_temp_master" };
+
+    //! Copies the committed pages of the write-ahead log into the database file without waiting for anyone.
+    constexpr std::string_view  _sqlCheckpointPassive   { "PRAGMA wal_checkpoint(PASSIVE);" };
+
+    //! The number given to the next checkpoint thread, so that each thread has its own name.
+    std::atomic<uint32_t>       _checkpointThreadSeq    { 0u };
 } // namespace
 
 namespace areg::ext {
+
+//////////////////////////////////////////////////////////////////////////
+// LogDbCheckpointer class declaration and implementation.
+//////////////////////////////////////////////////////////////////////////
+
+/**
+ * \brief   Copies the write-ahead log of a writing connection into the database file on its own
+ *          thread and its own connection, so that a commit of the writer never runs a checkpoint.
+ *          It checkpoints at once when the log reaches CHECKPOINT_PAGES, and IDLE_CHECKPOINT_MS
+ *          after a commit that left pages to copy. It waits without a timeout while nothing is
+ *          left to copy. From REWIND_PAGES on it is not woken, and the writer copies the pages left
+ *          itself, so that the log starts over from its beginning.
+ **/
+class LogDbCheckpointer final : private ThreadConsumer
+{
+public:
+    //!< The size of the write-ahead log in pages that starts a checkpoint at once.
+    static constexpr int        CHECKPOINT_PAGES        { 1000 };
+
+    //!< The size of the write-ahead log in pages at which the writer copies the rest itself.
+    static constexpr int        REWIND_PAGES            { 4000 };
+
+    //!< The time in milliseconds after which the committed pages not copied yet are checkpointed.
+    static constexpr uint32_t   IDLE_CHECKPOINT_MS      { 1000u };
+
+    LogDbCheckpointer();
+
+    ~LogDbCheckpointer() override;
+
+    /**
+     * \brief   Opens the own connection to the database file and starts the checkpoint thread.
+     *
+     * \param   dbPath  The path of the database file the writer opened.
+     * \return  Returns true if the checkpoint thread runs.
+     **/
+    bool start(const String& dbPath);
+
+    /**
+     * \brief   Stops the checkpoint thread and closes the own connection.
+     **/
+    void stop();
+
+    /**
+     * \brief   Called on the writing thread after each commit of the writer.
+     *
+     * \param   walPages    The number of pages in the write-ahead log.
+     **/
+    inline void on_commit(int walPages) noexcept;
+
+private:
+    /**
+     * \brief   The loop of the checkpoint thread.
+     **/
+    void on_run() override;
+
+    /**
+     * \brief   Runs one passive checkpoint and remembers whether pages are left to copy.
+     **/
+    inline void _checkpoint() noexcept;
+
+private:
+    //!< The own connection to the database file.
+    SqliteDatabase      mDatabase;
+
+    //!< The prepared checkpoint statement of the own connection.
+    SqliteStatement     mStatement;
+
+    //!< The checkpoint thread.
+    Thread              mThread;
+
+    //!< Wakes the checkpoint thread.
+    SyncEvent           mWakeEvent;
+
+    //!< Set to stop the checkpoint thread.
+    std::atomic_bool    mQuit;
+
+    //!< True while the write-ahead log holds committed pages not copied yet.
+    std::atomic_bool    mPending;
+
+    //!< True when the write-ahead log reached CHECKPOINT_PAGES since the last checkpoint.
+    std::atomic_bool    mRequested;
+};
+
+LogDbCheckpointer::LogDbCheckpointer()
+    : ThreadConsumer( )
+    , mDatabase     ( )
+    , mStatement    ( mDatabase )
+    , mThread       ( static_cast<ThreadConsumer &>(*this)
+                    , String("LogDbCheckpoint_") + String::make_string(_checkpointThreadSeq.fetch_add(1u, std::memory_order_relaxed))
+                    , areg::SYSTEM_THREAD_STACK_NORMAL )
+    , mWakeEvent    ( true, true )
+    , mQuit         ( false )
+    , mPending      ( false )
+    , mRequested    ( false )
+{
+}
+
+LogDbCheckpointer::~LogDbCheckpointer()
+{
+    stop();
+}
+
+bool LogDbCheckpointer::start(const String& dbPath)
+{
+    if (mDatabase.connect(dbPath, false) == false)
+        return false;
+
+    mQuit.store(false, std::memory_order_relaxed);
+    mPending.store(false, std::memory_order_relaxed);
+    mRequested.store(false, std::memory_order_relaxed);
+    if (mStatement.prepare(_sqlCheckpointPassive) && mThread.start(areg::WAIT_INFINITE))
+        return true;
+
+    mStatement.finalize();
+    mDatabase.disconnect();
+    return false;
+}
+
+void LogDbCheckpointer::stop()
+{
+    mQuit.store(true, std::memory_order_release);
+    mWakeEvent.set_signaled();
+    mThread.shutdown(areg::WAIT_INFINITE);
+    mStatement.finalize();
+    mDatabase.disconnect();
+}
+
+inline void LogDbCheckpointer::on_commit(int walPages) noexcept
+{
+    if (walPages >= LogDbCheckpointer::REWIND_PAGES)
+        return;
+
+    const bool wasPending{ mPending.exchange(true, std::memory_order_acq_rel) };
+    if ((walPages >= LogDbCheckpointer::CHECKPOINT_PAGES) && (mRequested.exchange(true, std::memory_order_acq_rel) == false))
+    {
+        mWakeEvent.set_signaled();
+    }
+    else if (wasPending == false)
+    {
+        mWakeEvent.set_signaled();
+    }
+}
+
+void LogDbCheckpointer::on_run()
+{
+    while (mQuit.load(std::memory_order_acquire) == false)
+    {
+        const uint32_t timeout{ mPending.load(std::memory_order_acquire) ? LogDbCheckpointer::IDLE_CHECKPOINT_MS : areg::WAIT_INFINITE };
+        const bool signaled{ mWakeEvent.lock(timeout) };
+        if (mQuit.load(std::memory_order_acquire))
+            break;
+
+        if (mRequested.load(std::memory_order_acquire) || ((signaled == false) && mPending.load(std::memory_order_acquire)))
+        {
+            _checkpoint();
+        }
+    }
+}
+
+inline void LogDbCheckpointer::_checkpoint() noexcept
+{
+    mRequested.store(false, std::memory_order_release);
+    mPending.store(false, std::memory_order_release);
+
+    int64_t logPages{ 0 };
+    int64_t copiedPages{ 0 };
+    const bool done{ mStatement.next() == SqliteStatement::QueryResult::HasMore };
+    if (done)
+    {
+        logPages    = mStatement.as_int64(1);
+        copiedPages = mStatement.as_int64(2);
+    }
+
+    mStatement.reset();
+    if ((done == false) || (logPages > copiedPages))
+    {
+        mPending.store(true, std::memory_order_release);
+    }
+}
 
 //////////////////////////////////////////////////////////////////////////
 // LogSqliteDatabase class implementation.
@@ -791,15 +978,57 @@ LogSqliteDatabase::LogSqliteDatabase()
     , mIsInitialized        ( false )
     , mDbLogEnabled         ( true )
     , mLock                 ( false )
+    , mCheckpointer         ( )
 {
 }
 
 LogSqliteDatabase::~LogSqliteDatabase()
 {
     disconnect();
+    _stop_checkpointer();
     mStmtLogs.finalize();
     mDatabase.disconnect();
     mIsInitialized = false;
+}
+
+inline void LogSqliteDatabase::_start_checkpointer()
+{
+    ASSERT(mCheckpointer == nullptr);
+    std::unique_ptr<LogDbCheckpointer> checkpointer{ new (std::nothrow) LogDbCheckpointer() };
+    if ((checkpointer != nullptr) && checkpointer->start(mDatabase.path()))
+    {
+        mCheckpointer = std::move(checkpointer);
+        ::sqlite3_wal_hook(static_cast<sqlite3 *>(mDatabase.mDbObject), &LogSqliteDatabase::_on_wal_commit, mCheckpointer.get());
+    }
+}
+
+inline void LogSqliteDatabase::_stop_checkpointer()
+{
+    if (mCheckpointer == nullptr)
+        return;
+
+    if (mDatabase.mDbObject != nullptr)
+    {
+        ::sqlite3_wal_hook(static_cast<sqlite3 *>(mDatabase.mDbObject), nullptr, nullptr);
+    }
+
+    mCheckpointer->stop();
+    mCheckpointer.reset();
+}
+
+int LogSqliteDatabase::_on_wal_commit(void* context, ::sqlite3* db, const char* dbName, int walPages)
+{
+    if (walPages >= LogDbCheckpointer::REWIND_PAGES)
+    {
+        ::sqlite3_wal_checkpoint_v2(db, dbName, SQLITE_CHECKPOINT_PASSIVE, nullptr, nullptr);
+    }
+
+    if (context != nullptr)
+    {
+        static_cast<LogDbCheckpointer *>(context)->on_commit(walPages);
+    }
+
+    return SQLITE_OK;
 }
 
 inline bool LogSqliteDatabase::_open(const String& dbPath, bool readOnly)
@@ -808,6 +1037,7 @@ inline bool LogSqliteDatabase::_open(const String& dbPath, bool readOnly)
         return false;
 
     bool result{ true };
+    _stop_checkpointer();
     mDatabase.disconnect();
     mIsInitialized = false;
     if (dbPath.is_empty() == false)
@@ -824,6 +1054,7 @@ inline bool LogSqliteDatabase::_open(const String& dbPath, bool readOnly)
     else if (readOnly == false)
     {
         mDatabase.execute(_sqlWriteMode);
+        _start_checkpointer();
     }
 
     return result;
@@ -987,6 +1218,7 @@ bool LogSqliteDatabase::connect(const String& dbPath, bool readOnly)
 void LogSqliteDatabase::disconnect()
 {
     Lock lock(mLock);
+    _stop_checkpointer();
     if ((mDatabase.is_operable() == false) || (mIsInitialized == false))
         return;
 
