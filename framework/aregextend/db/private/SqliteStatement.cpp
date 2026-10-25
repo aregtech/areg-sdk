@@ -64,6 +64,7 @@ SqliteStatement::~SqliteStatement() noexcept
 
 bool SqliteStatement::prepare(const String& sql)
 {
+    finalize();
     mRowPos = 0; // Reset row position
     if ((mDatabase.is_operable() == false) || sql.is_empty())
         return false;

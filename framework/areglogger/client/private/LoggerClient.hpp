@@ -281,6 +281,33 @@ public:
     bool remove_log(uint32_t logId);
 
     /**
+     * \brief   Returns the database ID of the log message being delivered to the observer callback
+     *          on the calling thread. Valid only inside the callback; 0 if the database is off or
+     *          the message was not saved.
+     **/
+    [[nodiscard]]
+    uint32_t delivered_log_id() const noexcept;
+
+    /**
+     * \brief   Sets a marker on a log row of the logging database, inside the open batch of logs.
+     *
+     * \param   masterId    The ID of the log row to mark.
+     * \param   level       The marker level, one of the `PrioMarker*` priorities.
+     * \param   author      The one who sets the marker. Can be empty.
+     * \param   note        The note of the marker. Can be empty.
+     * \return  The ID of the new marker, or 0 if it was not set.
+     **/
+    uint32_t add_marker(uint32_t masterId, areg::LogPriority level, const String& author, const String& note);
+
+    /**
+     * \brief   Removes a marker from the logging database, inside the open batch of logs.
+     *
+     * \param   markerId    The ID of the marker, as returned by `add_marker()`.
+     * \return  Returns true if the marker was removed; false otherwise.
+     **/
+    bool remove_marker(uint32_t markerId);
+
+    /**
      * \brief   Creates or opens the logging database. If no path is specified, uses the location
      *          from configuration file.
      *
@@ -633,7 +660,9 @@ private:
     void count_database_batch();
 
     /**
-     * \brief   Commits the open database transaction, if any. Called with mLock taken.
+     * \brief   Commits the open database transaction, if any. If the commit fails, the batch stays
+     *          open and the commit timer starts again, so the timer or the next full batch
+     *          retries it. Called with mLock taken.
      **/
     void commit_database_batch();
 

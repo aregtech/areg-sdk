@@ -87,7 +87,8 @@ public:
     bool is_operable() const noexcept final;
 
     /**
-     * \brief   Connects to the specified SQLite database.
+     * \brief   Connects to the specified SQLite database. A call on the connection waits up to
+     *          1 second for a lock that another connection holds.
      *
      * \param   dbPath      The path to the database. May be a file path, URL, or contain
      *                      authentication. If empty, uses the path from the 'areg.init' configuration file.

@@ -28,6 +28,9 @@
 #endif  // defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
 
 namespace {
+    //! The longest time in milliseconds a call waits for a lock held by another connection.
+    constexpr int   BUSY_TIMEOUT_MS { 1000 };
+
     inline sqlite3* _sqlite(void* dbObject)
     {
         return reinterpret_cast<sqlite3*>(dbObject);
@@ -88,6 +91,10 @@ inline bool SqliteDatabase::_open(const String& dbPath)
     {
         _close();
         result = false;
+    }
+    else
+    {
+        ::sqlite3_busy_timeout(_sqlite(mDbObject), BUSY_TIMEOUT_MS);
     }
 
     return result;

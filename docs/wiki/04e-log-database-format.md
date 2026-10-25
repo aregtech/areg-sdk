@@ -50,8 +50,9 @@ All three use the same writer, so the schema below is identical in every case.
 ```bash
 # What is in the file?
 sqlite3 ./logs/logcollector_2026_08_18_11_20_35_120.sqlog ".tables"
-# instances  logs  scopes  sqlite_sequence  version
-# (sqlite_sequence is created by SQLite itself, it is not part of the log data)
+# instances  logs  markers  scopes  sqlite_sequence  version
+# (sqlite_sequence is created by SQLite itself, it is not part of the log data;
+#  a file written before markers existed has no markers table)
 
 # Which applications were recorded?
 sqlite3 ./logs/logcollector_2026_08_18_11_20_35_120.sqlog \
@@ -178,6 +179,30 @@ Index: `idx_logs` on `(scope_id, msg_prio, cookie_id)`.
 > `msg_module`, `msg_thread` and `cookie_id` always identify the **application that produced the log**, never the recorder. A log written by `myapp` keeps the name `myapp` in a file written by `logcollector`.
 
 **The first row** of every file is written by the recorder itself and reads `Starting database logging...`, with priority `1024` (ignore). Filter it out when you count messages.
+
+### Markers: table `markers`
+
+A marker belongs to one log row, its **master**, and is nothing alone: a viewer shows it with the master row wherever sorting or filtering puts that row, every time the file is opened. A marker is set (level and note) and removed, never changed. A file written before markers existed has no `markers` table; the first marker creates it.
+
+| Column | Type | Content |
+|---|---|---|
+| `id` | INTEGER | Primary key, auto increment. |
+| `master_id` | INTEGER | The `logs.id` of the master row. |
+| `marker_prio` | INTEGER | The level: `0x0401` marker, `0x0501` info, `0x0481` warning, `0x0441` error. |
+| `author` | TEXT | Who set the marker, up to 63 bytes. |
+| `note` | TEXT | The note, up to 1023 bytes. |
+| `time_set` | INTEGER | When the marker was set, in microseconds. |
+
+Index: `idx_markers_master` on `(master_id)`. Removing a log row through the observer API removes its markers with it.
+
+A file has one writer. A viewer of a live session sets markers through the log observer that writes the file (`LogObserverBase::add_marker()`, `log_observer_add_marker()`), never through a second connection of its own.
+
+```sql
+-- Every marked message with its markers, in the order the messages were made
+SELECT l.id, datetime(l.time_created / 1000000, 'unixepoch') AS ts, l.msg_log, m.marker_prio, m.note
+FROM markers m JOIN logs l ON l.id = m.master_id
+ORDER BY l.time_created, l.id, m.id;
+```
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -335,7 +360,9 @@ ORDER BY time_connected;
 - **`scope_id` is unique per application only.** Always join `scopes` on `scope_id` **and** `cookie_id`. Joining on `scope_id` alone mixes the scopes of different applications.
 - **A `filter_rules` table may appear** while a file is open in Lusan or the log observer. It is a temporary working table for view filtering and is not part of a closed file.
 - **No retention or rotation is built in.** The file grows until the recorder is stopped. Because the shipped file names contain the `%time%` mask, each start creates a new file, which is the intended way to keep files small.
-- **Reading while writing is allowed**, but a reader sees only what the writer has already committed. The log collector commits in batches, so the newest messages may be a moment behind.
+- **Reading while writing is allowed**, and a reader never blocks the writer. A reader sees only what the writer has already committed. The recorders commit in batches, so the newest messages may be a moment behind.
+- **WAL while open, one plain file after close.** A recorder writes in WAL mode (`journal_mode=WAL`, `synchronous=NORMAL`): while the file is open, the files `<name>-wal` and `<name>-shm` sit beside it. On a clean close the recorder moves the log into the file and switches it back to `journal_mode=DELETE`, so a closed file is one file that also opens read only. If another program still has the file open at that moment, the file stays in WAL mode until the next writer closes it. A power loss may lose the last commits; a crash of the recorder loses nothing it committed.
+- **Page by key, not by offset.** To read the logs window by window, continue from the last row of the previous window with a row value: `WHERE (time_created, id) > (?, ?) ORDER BY time_created, id LIMIT 1000`. It seeks `idx_logs_time` and costs the same anywhere in the file. `LIMIT ? OFFSET ?` gets slower the farther the offset, and the form `time_created > ? OR (time_created = ? AND id > ?)` makes SQLite scan the index from the start.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 

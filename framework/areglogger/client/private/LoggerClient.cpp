@@ -90,11 +90,19 @@ void LoggerClient::commit_database_batch()
     if (mBatchOpen == false)
         return;
 
-    mBatchOpen      = false;
     mBatchMessages  = 0u;
-    mBatchUntimed   = false;
     mCommitTimer.stop_timer();
-    static_cast<void>(mLogDatabase.commit(true));
+    if (mLogDatabase.commit(true) || (mLogDatabase.is_operable() == false))
+    {
+        mBatchOpen      = false;
+        mBatchUntimed   = false;
+    }
+    else
+    {
+        // Opens a transaction only if the failed commit ended the old one.
+        static_cast<void>(mLogDatabase.begin());
+        mBatchUntimed   = (mCommitTimer.start_timer(DB_BATCH_TIMEOUT, static_cast<DispatcherThread &>(*this), 1u) == false);
+    }
 }
 
 bool LoggerClient::start_logger_client(const String & address /*= String::EmptyString*/, uint16_t portNr /*= areg::InvalidPort*/)
@@ -300,6 +308,37 @@ uint32_t LoggerClient::add_log(const ITEM_ID & cookie, areg::LogPriority prio, T
 bool LoggerClient::remove_log(uint32_t logId)
 {
     return mMessageProcessor.remove_log(logId);
+}
+
+uint32_t LoggerClient::delivered_log_id() const noexcept
+{
+    return ObserverMessageProcessor::delivered_log_id();
+}
+
+uint32_t LoggerClient::add_marker(uint32_t masterId, areg::LogPriority level, const String& author, const String& note)
+{
+    Lock lock(mLock);
+    begin_database_batch();
+    const uint32_t result{ mLogDatabase.add_marker(masterId, level, author, note) };
+    if (result != 0u)
+    {
+        count_database_batch();
+    }
+
+    return result;
+}
+
+bool LoggerClient::remove_marker(uint32_t markerId)
+{
+    Lock lock(mLock);
+    begin_database_batch();
+    const bool result{ mLogDatabase.remove_marker(markerId) };
+    if (result)
+    {
+        count_database_batch();
+    }
+
+    return result;
 }
 
 bool LoggerClient::open_logging_database(const char* dbPath /*= nullptr*/)
@@ -561,21 +600,28 @@ void LoggerClient::disconnect_service_host()
 {
     if (is_running())
     {
-        FuncInstancesDisconnect callback{ mCallbacks != nullptr ? mCallbacks->evtInstDisconnected : nullptr };
+        FuncInstancesDisconnect callback{ nullptr };
+        areg::MapInstances instances;
+        do
+        {
+            // The receive thread changes the instances under the same lock.
+            Lock lock(mLock);
+            callback = mCallbacks != nullptr ? mCallbacks->evtInstDisconnected : nullptr;
+            instances = std::move(mInstances);
+            mInstances.clear();
+        } while (false);
+
         if (LogObserverBase::_theLogObserver != nullptr)
         {
             LogObserverBase::_theLogObserver->on_log_service_disconnected();
         }
         else if (callback != nullptr)
         {
-
-            for (const auto& entry : mInstances.data())
+            for (const auto& entry : instances.data())
             {
                 callback(&entry.first, 1);
             }
         }
-
-        mInstances.clear();
 
         ServiceClientConnectionBase::disconnect_service_host();
         wait_completion(areg::WAIT_INFINITE);

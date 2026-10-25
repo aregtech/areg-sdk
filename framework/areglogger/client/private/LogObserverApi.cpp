@@ -446,6 +446,40 @@ LOGGER_API_IMPL bool log_observer_remove_log(uint32_t logId)
     return result;
 }
 
+LOGGER_API_IMPL uint32_t log_observer_delivered_log_id(void)
+{
+    return areg::logger::LoggerClient::instance().delivered_log_id();
+}
+
+LOGGER_API_IMPL uint32_t log_observer_add_marker(uint32_t masterId, uint16_t level, const char * author, const char * note)
+{
+    LogObserverStruct& theObserver { log_observer_data() };
+    uint32_t result{ 0 };
+    areg::Lock lock(theObserver.losLock);
+    if (_is_initialized(theObserver.losState))
+    {
+        result = areg::logger::LoggerClient::instance().add_marker( masterId
+                                                                  , static_cast<areg::LogPriority>(level)
+                                                                  , areg::String(author)
+                                                                  , areg::String(note));
+    }
+
+    return result;
+}
+
+LOGGER_API_IMPL bool log_observer_remove_marker(uint32_t markerId)
+{
+    LogObserverStruct& theObserver { log_observer_data() };
+    bool result{ false };
+    areg::Lock lock(theObserver.losLock);
+    if (_is_initialized(theObserver.losState))
+    {
+        result = areg::logger::LoggerClient::instance().remove_marker(markerId);
+    }
+
+    return result;
+}
+
 LOGGER_API_IMPL int32_t log_observer_active_database_path(char* dbPath, int32_t space)
 {
     areg::String path{ areg::logger::LoggerClient::instance().active_database_path() };

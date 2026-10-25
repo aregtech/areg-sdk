@@ -543,6 +543,40 @@ LOGGER_API uint32_t log_observer_add_log(ITEM_ID cookie, uint16_t prio, uint64_t
 LOGGER_API bool log_observer_remove_log(uint32_t logId);
 
 /**
+ * \brief   Call inside the `evtLogMessage` or `evtLogMessageEx` callback to get the ID the delivered
+ *          log message got in the logging database, which is needed to set a marker on it. Valid
+ *          only inside the callback, on the thread that calls it. The call takes no lock.
+ * \return  Returns the database ID of the delivered log message. Returns 0 outside the callback,
+ *          if the database is off, or if the message was not saved.
+ **/
+LOGGER_API uint32_t log_observer_delivered_log_id(void);
+
+/**
+ * \brief   Call to set a marker on a log message of the logging database. The marker belongs to the
+ *          message, its master: a viewer shows it with the message wherever sorting or filtering
+ *          puts the message. The observer writes the marker in its open batch of logs.
+ *
+ * \param   masterId    The database ID of the log message to mark, as returned by
+ *                      `log_observer_add_log()` or `log_observer_delivered_log_id()`.
+ * \param   level       The marker level: 0x0401 (marker), 0x0501 (info marker), 0x0481 (warning
+ *                      marker) or 0x0441 (error marker).
+ * \param   author      The one who sets the marker, cut to 63 bytes. Can be null for none.
+ * \param   note        The note of the marker, cut to 1023 bytes. Can be null for none.
+ * \return  Returns the ID of the new marker, which is needed to remove it. Returns 0 if the level
+ *          is not a marker level, the log message does not exist, or the database is not open.
+ **/
+LOGGER_API uint32_t log_observer_add_marker(uint32_t masterId, uint16_t level, const char * author, const char * note);
+
+/**
+ * \brief   Call to remove a marker from the logging database. A marker is never changed: remove it
+ *          and set a new one.
+ *
+ * \param   markerId    The ID of the marker, as returned by `log_observer_add_marker()`.
+ * \return  Returns true if the marker was removed. Otherwise, returns false.
+ **/
+LOGGER_API bool log_observer_remove_marker(uint32_t markerId);
+
+/**
  * \brief   Call to get active database full path.
  * \param   dbPath  The buffer to write the full path of the active database.
  * \param   space   The length of the buffer to write the database path, inclusive the null-terminated character at the end.

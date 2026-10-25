@@ -116,6 +116,14 @@ public:
     uint32_t notify_log_message(const areg::MessageEnvelope& msgReceived);
 
     /**
+     * \brief   Returns the database identifier of the log message that `notify_log_message()`
+     *          is delivering on the calling thread, or 0 outside a delivery, with the database
+     *          off, or if the message was not saved.
+     **/
+    [[nodiscard]]
+    static uint32_t delivered_log_id() noexcept;
+
+    /**
      * \brief   Makes a log message on the observer side and passes it through the same path as a
      *          message received from a remote source. This is the single point of adding a log.
      *

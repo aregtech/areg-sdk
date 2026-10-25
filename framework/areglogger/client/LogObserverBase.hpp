@@ -365,6 +365,40 @@ public:
      **/
     void log_messages(std::vector<areg::SharedBuffer>& messages, ITEM_ID instId, uint32_t scopeId);
 
+    /**
+     * \brief   Returns the database ID of the log message being delivered to `on_log_message()`.
+     *          Valid only inside `on_log_message()`, on the thread that calls it. Returns 0 if the
+     *          database is off or the message was not saved.
+     **/
+    [[nodiscard]]
+    uint32_t delivered_log_id() const noexcept;
+
+    /**
+     * \brief   Sets a marker on a log row of the logging database. The marker belongs to the row,
+     *          its master: a viewer shows it with the row wherever sorting or filtering puts the
+     *          row. The observer writes the marker in its open batch of logs, so the file keeps
+     *          one writer. Can be called inside `on_log_message()`.
+     *
+     * \param   masterId    The database ID of the log row to mark, for example
+     *                      `delivered_log_id()` inside `on_log_message()`.
+     * \param   level       The marker level: `areg::LogPriority::PrioMarker`, `PrioMarkerInfo`,
+     *                      `PrioMarkerWarning` or `PrioMarkerError`.
+     * \param   author      The one who sets the marker, cut to 63 bytes. Can be empty.
+     * \param   note        The note of the marker, cut to 1023 bytes. Can be empty.
+     * \return  Returns the ID of the new marker. Returns 0 if the level is not a marker level,
+     *          the log row does not exist, or the database is not open.
+     **/
+    uint32_t add_marker(uint32_t masterId, areg::LogPriority level, const std::string& author, const std::string& note);
+
+    /**
+     * \brief   Removes a marker from the logging database. A marker is never changed: remove it and
+     *          set a new one.
+     *
+     * \param   markerId    The ID of the marker, as returned by `add_marker()`.
+     * \return  Returns true if the marker was removed; false otherwise.
+     **/
+    bool remove_marker(uint32_t markerId);
+
 //////////////////////////////////////////////////////////////////////////
 // Actions
 //////////////////////////////////////////////////////////////////////////

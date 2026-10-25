@@ -29,6 +29,11 @@
 #include "areglogger/client/private/LoggerClient.hpp"
 #include "areglogger/client/LogObserverBase.hpp"
 
+namespace {
+    //! The database ID of the log message delivered on this thread, 0 outside a delivery.
+    thread_local uint32_t _deliveredLogId{ 0u };
+}
+
 namespace areg::logger {
 
 ObserverMessageProcessor::ObserverMessageProcessor(LoggerClient& loggerClient)
@@ -269,6 +274,7 @@ uint32_t ObserverMessageProcessor::notify_log_message(const areg::MessageEnvelop
         return 0u;
 
     uint32_t logId{ 0 };
+    const uint32_t outerLogId{ _deliveredLogId };
     FuncLogMessage callback{ nullptr };
     FuncLogMessageEx callbackEx{ nullptr };
     const uint8_t* logBuffer{ nullptr };
@@ -288,6 +294,7 @@ uint32_t ObserverMessageProcessor::notify_log_message(const areg::MessageEnvelop
             mLoggerClient.count_database_batch();
         }
 
+        _deliveredLogId = logId;
         if (LogObserverBase::_theLogObserver != nullptr)
         {
             LogObserverBase::_theLogObserver->on_log_message(msgReceived);
@@ -333,7 +340,13 @@ uint32_t ObserverMessageProcessor::notify_log_message(const areg::MessageEnvelop
         callbackEx(logBuffer, size);
     }
 
+    _deliveredLogId = outerLogId;
     return logId;
+}
+
+uint32_t ObserverMessageProcessor::delivered_log_id() noexcept
+{
+    return _deliveredLogId;
 }
 
 uint32_t ObserverMessageProcessor::add_local_log(ITEM_ID cookie, areg::LogPriority prio, TIME64 timestamp, const char * message)

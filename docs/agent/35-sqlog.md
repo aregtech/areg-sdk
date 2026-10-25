@@ -11,8 +11,7 @@ How to produce one, and the rest of the logging configuration, is in `34-logging
 sqlite3 ./logs/logcollector_20260831_2130.sqlog
 ```
 
-Copy the file before querying a session that is still running: the collector holds it
-open, and a reader that locks it can stall the writer.
+A running session can be read in place; a reader does not stall the collector.
 
 ---
 A complete project that produces one -- two processes, `mtrouter`, `logcollector` and
@@ -20,10 +19,10 @@ the `areg.init` that points them at each other -- is `recipes/08-observability/`
 `query_sqlog.py` beside it reads the file back by process or by scope. CI runs both,
 so both stay true.
 
-## 1. The four tables
+## 1. The five tables
 
-A file at rest holds these four tables and no others of its own. `sqlite_master`
-lists a fifth, `sqlite_sequence`: SQLite creates it for the `AUTOINCREMENT` on
+A file at rest holds these five tables and no others of its own. `sqlite_master`
+lists a sixth, `sqlite_sequence`: SQLite creates it for the `AUTOINCREMENT` on
 `logs.id` and it is not part of the schema -- skip it rather than treat it as
 drift. Two more, `filter_rules` and `refused_spans`, are `CREATE TEMP TABLE` --
 they belong to a live viewer and vanish with the connection, so **never expect them
@@ -35,6 +34,7 @@ in a file** and never join against them.
 | `instances` | a process that connected to the collector |
 | `scopes` | a scope of a connected process, per priority change |
 | `logs` | a log message |
+| `markers` | optional; a marker on log row `master_id` |
 
 ### `logs` -- the one that matters
 
@@ -95,7 +95,7 @@ scope enter/exit and is the viewer's default mask. Errors and worse is `96`
 ### Rows the collector wrote
 
 The collector writes rows of its own: the header row opening the file, a note per
-instance connecting or disconnecting, and any marker a viewer stored. They
+instance connecting or disconnecting. They
 carry `IGNORE` (`0x0400`), their `scope_id` is `0`, and their `cookie_id` is the
 collector's, so they join neither `scopes` nor `instances`. No application priority
 carries that bit, which makes it the filter -- count them apart, or a count of log

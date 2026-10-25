@@ -60,6 +60,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     LockWaitTest.cpp
     LogMessageLengthTest.cpp
     LogScopesTest.cpp
+    LogSqliteDatabaseTest.cpp
     MapTest.cpp
     MultiLockTest.cpp
     OptionParserTest.cpp
@@ -86,3 +87,6 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     ThreadTest.cpp
     WorkerThreadTest.cpp
 )
+
+# The log database tests use the SQLite wrappers of aregextend.
+target_link_libraries("${AREG_UNIT_TEST_PROJECT}" PRIVATE aregextend ${AREG_SQLITE_LIB_REF})
