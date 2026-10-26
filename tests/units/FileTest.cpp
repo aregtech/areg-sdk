@@ -397,3 +397,49 @@ TEST( FileTest, length_beyond_4gb )
     ASSERT_EQ( length, fileSize );
 }
 #endif // POSIX
+
+/**
+ * \brief   Every temporary name is a new file that no other call returns.
+ **/
+TEST( FileTest, temp_name_is_unique )
+{
+    const areg::String first{ areg::File::temp_name( ) };
+    const areg::String second{ areg::File::temp_name( ) };
+    const bool firstExists{ areg::File::has_file( first ) };
+    const bool secondExists{ areg::File::has_file( second ) };
+    areg::File::delete_file( first );
+    areg::File::delete_file( second );
+
+    EXPECT_NE( first, second );
+    EXPECT_TRUE( firstExists );
+    EXPECT_TRUE( secondExists );
+}
+
+/**
+ * \brief   A file is locked and unlocked, and an exclusive lock needs write access.
+ **/
+TEST( FileTest, lock_file_needs_matching_access )
+{
+    const std::filesystem::path path{ std::filesystem::temp_directory_path( ) / "areg_lock_file_test.lock" };
+    constexpr uint32_t modeWrite{ static_cast<uint32_t>(areg::File::OpenMode::ShareWrite)
+                                | static_cast<uint32_t>(areg::File::OpenMode::OpenAlways) };
+    constexpr uint32_t modeRead { static_cast<uint32_t>(areg::File::OpenMode::Read)
+                                | static_cast<uint32_t>(areg::File::OpenMode::Exist) };
+    {
+        areg::File file( areg::String( path.string( ).c_str( ) ), modeWrite );
+        ASSERT_TRUE( file.open( ) );
+        EXPECT_TRUE( file.lock_file( true ) );
+        file.unlock_file( );
+        EXPECT_TRUE( file.lock_file( false ) );
+        file.unlock_file( );
+    }
+    {
+        areg::File file( areg::String( path.string( ).c_str( ) ), modeRead );
+        ASSERT_TRUE( file.open( ) );
+        EXPECT_FALSE( file.lock_file( true ) );
+        EXPECT_TRUE( file.lock_file( false ) );
+        file.unlock_file( );
+    }
+
+    std::filesystem::remove( path );
+}

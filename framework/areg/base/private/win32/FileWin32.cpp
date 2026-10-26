@@ -256,6 +256,20 @@ void File::_os_flush_file() noexcept
     ::FlushFileBuffers(static_cast<HANDLE>(mFileHandle));
 }
 
+bool File::_os_lock_file(bool exclusive) noexcept
+{
+    ASSERT(mFileHandle != _os_invalid_handle());
+    OVERLAPPED region{};
+    return (::LockFileEx(static_cast<HANDLE>(mFileHandle), exclusive ? LOCKFILE_EXCLUSIVE_LOCK : 0u, 0u, MAXDWORD, MAXDWORD, &region) != FALSE);
+}
+
+void File::_os_unlock_file() noexcept
+{
+    ASSERT(mFileHandle != _os_invalid_handle());
+    OVERLAPPED region{};
+    ::UnlockFileEx(static_cast<HANDLE>(mFileHandle), 0u, MAXDWORD, MAXDWORD, &region);
+}
+
 uint64_t File::_os_file_length() const noexcept
 {
     ASSERT(mFileHandle != _os_invalid_handle());
@@ -267,13 +281,14 @@ uint64_t File::_os_file_length() const noexcept
 // Static methods
 //////////////////////////////////////////////////////////////////////////
 
-uint32_t File::_os_temp_name(char* buffer, const char* folder, const char* prefix, uint32_t unique) noexcept
+uint32_t File::_os_temp_name(char* buffer, const char* folder, const char* prefix) noexcept
 {
     ASSERT(buffer != nullptr);
     ASSERT(folder != nullptr);
     ASSERT(prefix != nullptr);
 
-    return static_cast<uint32_t>(::GetTempFileNameA(folder, prefix, unique, buffer) != 0 ? strlen(buffer) : 0u);
+    // A zero number lets the system pick a free name and create the file.
+    return static_cast<uint32_t>(::GetTempFileNameA(folder, prefix, 0u, buffer) != 0 ? strlen(buffer) : 0u);
 }
 
 /**

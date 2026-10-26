@@ -57,9 +57,10 @@ If the file is missing, applications fall back to the hard-coded compile-time de
 
 Every key is `section :: module :: property [:: position]`. The **module** field decides scope:
 
-- `module = *` → **read-only global default**, shared by all processes.
-- `module = <process-name>` → **writable, process-specific** value that overrides the global default for that one executable.
+- `module = *` → **global default**, shared by all processes.
+- `module = <process-name>` → **process-specific** value that overrides the global default for that one executable.
 - A process loads only its own module entries plus the `*` entries; entries for *other* modules are ignored.
+- `areg.init` is read-only: a process saves its changes to `<process-name>.init` in the same directory, and those values win over `areg.init` on the next start.
 
 ```text
 log::*::scope::*           = DEBUG | SCOPE   # default for every application
@@ -377,7 +378,7 @@ log::*::layout::exit    = %d: [ %t  %x.%z: Exit <-- ]%n
 | Token | Meaning | Example |
 |------|---------|---------|
 | `%a` | Logging object ID (assigned by collector) | `0x1234` |
-| `%c` | Tick-count since process start | `123456` |
+| `%c` | Monotonic clock in milliseconds, unspecified start point | `123456` |
 | `%d` | Date and time (full timestamp) | `2026-06-16 14:32:45` |
 | `%e` | Module (process) ID | `5678` |
 | `%m` | Message text (mutually exclusive with `%z`) | `Connection established` |

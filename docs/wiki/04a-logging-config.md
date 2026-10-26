@@ -369,7 +369,7 @@ log::*::layout::exit = %d: [ %t  %x.%z: Exit <-- ]%n
 | Specifier | Description            | Example Output            |
 | --------- | ---------------------- | ------------------------- |
 | `%a`      | Logging object ID      | `0x12345678`              |
-| `%c`      | Tick count since start | `1234567`                 |
+| `%c`      | Monotonic clock in ms, unspecified start | `1234567` |
 | `%d`      | Date and time          | `2026-01-27 10:30:45.123` |
 | `%e`      | Module (process) ID    | `12345`                   |
 | `%m`      | Log message text       | `Application started`     |

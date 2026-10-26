@@ -173,7 +173,7 @@ String File::temp_name(const String& prefix, bool unique, bool inTempFolder)
     if (inTempFolder)
     {
         String dir = File::temp_dir();
-        uint32_t len = _os_temp_name(buffer, dir.as_string(), name.as_string(), unique);
+        uint32_t len = _os_temp_name(buffer, dir.as_string(), name.as_string());
         if (len != 0)
         {
             name.assign(buffer, static_cast<areg::CharCount>(len));
@@ -492,6 +492,19 @@ void File::flush() noexcept
     if (is_opened())
     {
         _os_flush_file();
+    }
+}
+
+bool File::lock_file(bool exclusive)
+{
+    return (is_opened() && (!exclusive || can_write()) && _os_lock_file(exclusive));
+}
+
+void File::unlock_file()
+{
+    if (is_opened())
+    {
+        _os_unlock_file();
     }
 }
 

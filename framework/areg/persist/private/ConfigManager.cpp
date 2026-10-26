@@ -21,11 +21,33 @@
 #include "areg/appbase/AppDefs.hpp"
 #include "areg/base/File.hpp"
 #include "areg/base/Process.hpp"
+#include "areg/base/Thread.hpp"
 #include "areg/component/EventDefs.hpp"     // QUEUE_DEFAULT_RING_CAPACITY / QUEUE_DEFAULT_FULL_WAIT_MS
 #include "areg/persist/ConfigListener.hpp"
 
+#include <filesystem>
+
 namespace
 {
+    //!< The extension of the configuration file of a process.
+    constexpr std::string_view  PROCESS_CONFIG_EXT  { ".init" };
+
+    //!< The extension of the file that the saves of one configuration file lock.
+    constexpr std::string_view  CONFIG_LOCK_EXT     { ".lock" };
+
+    //!< The extension of the file that a save writes before it replaces the configuration file.
+    constexpr std::string_view  CONFIG_TEMP_EXT     { ".tmp" };
+
+    //!< The mode to read an existing configuration file.
+    constexpr uint32_t  CONFIG_READ_MODE{ static_cast<uint32_t>(areg::File::OpenMode::Read)
+                                        | static_cast<uint32_t>(areg::File::OpenMode::Text)
+                                        | static_cast<uint32_t>(areg::File::OpenMode::Exist)
+                                        | static_cast<uint32_t>(areg::File::OpenMode::ShareRead) };
+
+    //!< The mode to open the lock file of a configuration file, created if missing.
+    constexpr uint32_t  CONFIG_LOCK_MODE{ static_cast<uint32_t>(areg::File::OpenMode::ShareWrite)
+                                        | static_cast<uint32_t>(areg::File::OpenMode::OpenAlways) };
+
     [[nodiscard]]
     inline uint32_t _find_position( const areg::ArrayList<areg::Property>& propList
                                  , uint32_t startAt
@@ -57,6 +79,23 @@ namespace
         return result;
     }
 
+    //!< Returns the position of an entry that applies to all modules, skipping module entries.
+    [[nodiscard]]
+    inline uint32_t _find_all_modules_position( const areg::ArrayList<areg::Property>& propList
+                                              , const areg::String& section
+                                              , const areg::String& propName
+                                              , const areg::String& position
+                                              , areg::ConfigEntry configKey) noexcept
+    {
+        uint32_t pos{ _find_position(propList, 0, section, areg::SYNTAX_ALL_MODULES, propName, position, false, configKey) };
+        while ((pos != areg::INVALID_POSITION) && (propList[pos].key().is_all_modules() == false))
+        {
+            pos = _find_position(propList, pos + 1, section, areg::SYNTAX_ALL_MODULES, propName, position, false, configKey);
+        }
+
+        return pos;
+    }
+
     template <typename Type>
     inline void _set_position_value(areg::ArrayList<areg::Property>& writeList
                                  , const areg::ArrayList<areg::Property>& readList
@@ -68,7 +107,12 @@ namespace
                                  , const Type& newValue
                                  , bool isTemporary)
     {
-        uint32_t readPos  = _find_position(readList , 0, section, areg::SYNTAX_ALL_MODULES, propName, position, false, confKey);
+        uint32_t readPos  = _find_position(readList , 0, section, module, propName, position, true, confKey);
+        if (readPos == areg::INVALID_POSITION)
+        {
+            readPos = _find_all_modules_position(readList, section, propName, position, confKey);
+        }
+
         uint32_t writePos = _find_position(writeList, 0, section, module, propName, position, true , confKey);
 
         while ((writePos != areg::INVALID_POSITION) && (writeList[writePos].is_temporary() != isTemporary))
@@ -123,7 +167,70 @@ namespace
         return (elemPos != areg::INVALID_POSITION ? &list[elemPos] : nullptr);
     }
 
-    uint32_t _read_config(const areg::FileBase& file, areg::ListProperties& listWritable, areg::ListProperties& listReadonly, const areg::String& module)
+    //!< Returns the entry of the module, searched in the process list, then in the shared list.
+    [[nodiscard]]
+    inline const areg::Property* _get_module_property( const areg::ListProperties& process
+                                                     , const areg::ListProperties& shared
+                                                     , const areg::String& section
+                                                     , const areg::String& module
+                                                     , const areg::String& propName
+                                                     , const areg::String& position
+                                                     , areg::ConfigEntry keyType) noexcept
+    {
+        const areg::Property* result{ _get_property(process, section, module, propName, position, keyType, true) };
+        return (result != nullptr ? result : _get_property(shared, section, module, propName, position, keyType, true));
+    }
+
+    //!< Returns the entry of the shared list that applies to all modules.
+    [[nodiscard]]
+    inline const areg::Property* _get_all_modules_property( const areg::ListProperties& shared
+                                                          , const areg::String& section
+                                                          , const areg::String& propName
+                                                          , const areg::String& position
+                                                          , areg::ConfigEntry keyType) noexcept
+    {
+        ASSERT(keyType != areg::ConfigEntry::Invalid);
+
+        const uint32_t elemPos{ _find_all_modules_position(shared, section, propName, position, keyType) };
+        return (elemPos != areg::INVALID_POSITION ? &shared[elemPos] : nullptr);
+    }
+
+    //!< Returns true if both paths name the same file, existing or not.
+    [[nodiscard]]
+    bool _is_same_file(const areg::String& left, const areg::String& right)
+    {
+        if (left.is_empty() || right.is_empty())
+            return false;
+
+        std::error_code err;
+        if (std::filesystem::equivalent(left.as_string(), right.as_string(), err))
+            return true;
+
+        const std::string lhs{ std::filesystem::path(left.as_string()).lexically_normal().string() };
+        const std::string rhs{ std::filesystem::path(right.as_string()).lexically_normal().string() };
+#if defined(_WIN32)
+        return (areg::compare_ignore_case<char, char>(lhs.c_str(), rhs.c_str()) == areg::Ordering::Equal);
+#else   // !defined(_WIN32)
+        return (lhs == rhs);
+#endif  // defined(_WIN32)
+    }
+
+    //!< Returns the full path of the default shared configuration file.
+    [[nodiscard]]
+    inline areg::String _default_shared_config()
+    {
+        return areg::File::file_full_path(areg::File::normalize_path(areg::String(areg::DEFAULT_CONFIG_FILE)));
+    }
+
+    //!< Returns true if the path names the shared configuration file, which is never written.
+    [[nodiscard]]
+    inline bool _is_shared_config(const areg::String& filePath, const areg::String& sharedPath)
+    {
+        return _is_same_file(filePath, sharedPath) || _is_same_file(filePath, _default_shared_config());
+    }
+
+    //!< Reads the entries of the module and, if allModules is true, the entries for all modules.
+    uint32_t _read_config(const areg::FileBase& file, areg::ListProperties& list, const areg::String& module, bool allModules)
     {
         if (!file.is_opened())
             return 0u;
@@ -139,16 +246,10 @@ namespace
             if (!newProperty.parse(line))
                 continue;
             
-            // add new entry if unique. otherwise, update existing.
-            const areg::PropertyKey& Key = newProperty.key();
-            if (Key.is_all_modules())
+            const areg::PropertyKey& key = newProperty.key();
+            if ((allModules && key.is_all_modules()) || (key.module() == module))
             {
-                listReadonly.add(newProperty);
-                ++result;
-            }
-            else if (newProperty.is_module_property(module))
-            {
-                listWritable.add(newProperty);
+                list.add(newProperty);
                 ++result;
             }
 
@@ -165,12 +266,10 @@ namespace
                            , areg::FileBase& dstFile
                            , bool saveAll)
     {
-        if (!srcFile.can_read() && dstFile.can_write())
+        if (!dstFile.is_opened() || !dstFile.can_write())
             return false;
 
-        
         uint32_t count{ 0 };
-        srcFile.move_to_begin();
         dstFile.move_to_begin();
 
         if (saveAll)
@@ -179,7 +278,10 @@ namespace
             for (uint32_t i = 0; i < count; ++ i)
             {
                 const auto& prop = listReadonly[i];
-                if (prop.is_temporary() == false)
+                const areg::PropertyKey& key{ prop.key() };
+                const bool overridden{ (key.is_all_modules() == false) &&
+                                       (_find_position(listWritable, 0, key.section(), module, key.property(), key.position(), true, key.key_type()) != areg::INVALID_POSITION) };
+                if ((prop.is_temporary() == false) && (overridden == false))
                 {
                     dstFile.write_line(prop.to_string());
                 }
@@ -200,7 +302,13 @@ namespace
             areg::String line;
             areg::Property newProperty;
 
-            while (srcFile.read_line(line) > 0)
+            const bool hasSource{ srcFile.is_opened() && srcFile.can_read() };
+            if (hasSource)
+            {
+                srcFile.move_to_begin();
+            }
+
+            while (hasSource && (srcFile.read_line(line) > 0))
             {
                 if ((newProperty.parse(line) == false) || (newProperty.key().module() != module))
                 {
@@ -288,8 +396,16 @@ areg::ListProperties ConfigManager::section_properties(const String& section) co
 
     for (const auto& prop : mReadonlyProperties.data())
     {
-        const String& propSec = prop.key().section();
-        if ((section == propSec) && (section == areg::SYNTAX_ANY_VALUE) && (propSec == areg::SYNTAX_ANY_VALUE))
+        const PropertyKey& key{ prop.key() };
+        const String& propSec = key.section();
+        if ((section == propSec) && (key.module() == mModule))
+        {
+            if (_find_position(mWritableProperties, 0, propSec, mModule, key.property(), key.position(), true, key.key_type()) == areg::INVALID_POSITION)
+            {
+                result.add(prop);
+            }
+        }
+        else if ((section == propSec) && (section == areg::SYNTAX_ANY_VALUE) && (propSec == areg::SYNTAX_ANY_VALUE))
         {
             result.add_if_unique(prop, false);
         }
@@ -306,8 +422,8 @@ const Property* ConfigManager::property( const String& section
     Lock lock(mLock);
 
     keyType = (keyType == areg::ConfigEntry::Invalid) ? areg::ConfigEntry::AnyKey : keyType;
-    const Property* result{ _get_property(mWritableProperties, section, mModule, propName, position, keyType, true) };
-    return (result != nullptr ? result : _get_property(mReadonlyProperties, section, areg::SYNTAX_ALL_MODULES, propName, position, keyType, false));
+    const Property* result{ _get_module_property(mWritableProperties, mReadonlyProperties, section, mModule, propName, position, keyType) };
+    return (result != nullptr ? result : _get_all_modules_property(mReadonlyProperties, section, propName, position, keyType));
 }
 
 const Property * ConfigManager::module_property( const String& section
@@ -408,15 +524,12 @@ bool ConfigManager::read_config(const String& filePath /*= String::EmptyString*/
     }
 
     path = File::file_full_path(File::normalize_path(path));
-    File fileConfig(path, static_cast<uint32_t>(File::OpenMode::Exist) 
-                        | static_cast<uint32_t>(File::OpenMode::Read)
-                        | static_cast<uint32_t>(File::OpenMode::Text)
-                        | static_cast<uint32_t>(File::OpenMode::ShareRead));
+    File fileConfig(path, CONFIG_READ_MODE);
     if (fileConfig.open() && read_config(fileConfig, listener))
     {
         mFilePath = fileConfig.name();
+        read_process_config();
     }
-    
 
     return mIsConfigured;
 }
@@ -426,7 +539,7 @@ bool ConfigManager::read_config(const FileBase& file, ConfigListener * listener 
     Lock lock(mLock);
     if (mIsConfigured)
         return true;
-    
+
     mWritableProperties.clear();
     mReadonlyProperties.clear();
     if (listener != nullptr)
@@ -434,7 +547,7 @@ bool ConfigManager::read_config(const FileBase& file, ConfigListener * listener 
         listener->prepare_read_configuration(*this);
     }
 
-    mIsConfigured = _read_config(file, mWritableProperties, mReadonlyProperties, mModule) != 0;
+    mIsConfigured = _read_config(file, mReadonlyProperties, mModule, true) != 0;
     if (listener != nullptr)
     {
         listener->post_read_configuration(*this);
@@ -446,56 +559,80 @@ bool ConfigManager::read_config(const FileBase& file, ConfigListener * listener 
 bool ConfigManager::save_config(const String& filePath, ConfigListener * listener /*= nullptr*/)
 {
     Lock lock(mLock);
-    bool result{ false };
 
-    constexpr uint32_t modeRead { static_cast<uint32_t>(File::OpenMode::Read)
-                                | static_cast<uint32_t>(File::OpenMode::Text)
-                                | static_cast<uint32_t>(File::OpenMode::Exist)
-                                | static_cast<uint32_t>(File::OpenMode::ShareRead)};
     constexpr uint32_t modeWrite{ static_cast<uint32_t>(File::OpenMode::Read)
                                 | static_cast<uint32_t>(File::OpenMode::Text)
                                 | static_cast<uint32_t>(File::OpenMode::Create)
                                 | static_cast<uint32_t>(File::OpenMode::Write) };
-    bool saveAll{ false };
 
-    String srcPath, dstPath;
-    String tempFile = File::temp_name();
-    
-    if (filePath.is_empty() == false)
-    {
-        dstPath = filePath;
-    }
-    else if (mFilePath.is_empty() == false)
-    {
-        dstPath = mFilePath;
-    }
-    else
-    {
-        dstPath = areg::DEFAULT_CONFIG_FILE;
-        saveAll = true;
-    }
+    const String dstPath{ filePath.is_empty() ? process_config_file() : File::file_full_path(File::normalize_path(filePath)) };
+    if (_is_shared_config(dstPath, mFilePath))
+        return false;
 
-    dstPath = File::file_full_path( File::normalize_path(dstPath) );
-    srcPath = mFilePath.is_empty() ? dstPath : mFilePath;
-
-    String dstDir = File::file_directory(dstPath);
+    const String dstDir{ File::file_directory(dstPath) };
     if ((dstDir.is_empty() == false) && (File::has_dir(dstDir) == false))
     {
         File::create_dir_cascaded(dstDir);
     }
 
-    File srcFile(srcPath, modeRead );
-    File dstFile(tempFile, modeWrite);
+    // Saves of one file wait for each other, also in other processes.
+    File lockFile(dstPath + CONFIG_LOCK_EXT, CONFIG_LOCK_MODE);
+    if ((lockFile.open() == false) || (lockFile.lock_file(true) == false))
+        return false;
 
-    if (srcFile.open() && dstFile.open())
+    const String tempPath{ dstPath
+                         + "." + String::make_string(static_cast<uint64_t>(Process::instance().id()))
+                         + "." + String::make_string(static_cast<uint64_t>(Thread::current_thread_id()))
+                         + CONFIG_TEMP_EXT };
+    File srcFile(dstPath, CONFIG_READ_MODE);
+    File dstFile(tempPath, modeWrite);
+    bool result{ false };
+    if (dstFile.open())
     {
-        if (save_config(srcFile, dstFile, saveAll, listener))
+        static_cast<void>(srcFile.open());
+        result = save_config(srcFile, dstFile, false, listener);
+        dstFile.flush();
+        dstFile.close();
+        srcFile.close();
+
+        result = result && File::move_file(tempPath, dstPath);
+        if (result == false)
         {
-            srcFile.close();
-            dstFile.close();
-            result = File::copy_file(tempFile, dstPath, true);
-            File::delete_file(tempFile);
+            File::delete_file(tempPath);
         }
+    }
+
+    lockFile.unlock_file();
+    return result;
+}
+
+String ConfigManager::process_config_file() const
+{
+    Lock lock(mLock);
+    const String sharedPath{ mFilePath.is_empty() ? _default_shared_config() : mFilePath };
+    return File::make_full_path(File::file_directory(sharedPath), mModule + PROCESS_CONFIG_EXT);
+}
+
+bool ConfigManager::read_process_config()
+{
+    Lock lock(mLock);
+
+    mWritableProperties.clear();
+    const String filePath{ process_config_file() };
+    if (_is_shared_config(filePath, mFilePath) || (File::has_file(filePath) == false))
+        return false;
+
+    // Reads without the lock if the lock file cannot be opened.
+    File lockFile(filePath + CONFIG_LOCK_EXT, CONFIG_LOCK_MODE);
+    const bool locked{ lockFile.open() && lockFile.lock_file(false) };
+
+    File file(filePath, CONFIG_READ_MODE);
+    const bool result{ file.open() && (_read_config(file, mWritableProperties, mModule, false) != 0) };
+    file.close();
+
+    if (locked)
+    {
+        lockFile.unlock_file();
     }
 
     return result;
@@ -731,28 +868,39 @@ uint32_t ConfigManager::module_log_scopes(std::vector<Property>& scopeList) cons
 {
     Lock lock(mLock);
 
-    const auto& listRead{ mReadonlyProperties.data() };
-    for (const auto& entry : listRead)
+    std::vector<Property> moduleScopes;
+    std::vector<Property> processScopes;
+    log_scope_layers(processScopes, moduleScopes, scopeList);
+    scopeList.insert(scopeList.end(), moduleScopes.begin(), moduleScopes.end());
+    scopeList.insert(scopeList.end(), processScopes.begin(), processScopes.end());
+
+    return static_cast<uint32_t>(scopeList.size());
+}
+
+void ConfigManager::log_scope_layers( std::vector<Property>& processScopes
+                                    , std::vector<Property>& moduleScopes
+                                    , std::vector<Property>& sharedScopes) const
+{
+    Lock lock(mLock);
+
+    for (const auto& entry : mReadonlyProperties.data())
     {
         const PropertyKey& key = entry.key();
-        if ((key.key_type() == areg::ConfigEntry::LogScope) && key.is_all_modules())
+        if (key.key_type() == areg::ConfigEntry::LogScope)
         {
-            scopeList.push_back(entry);
+            (key.is_all_modules() ? sharedScopes : moduleScopes).push_back(entry);
         }
     }
 
-    const auto& listWrite{ mWritableProperties.data() };
-    for (const auto& entry : listWrite)
+    for (const auto& entry : mWritableProperties.data())
     {
         const PropertyKey& key = entry.key();
         if (key.key_type() == areg::ConfigEntry::LogScope)
         {
             ASSERT(key.module() == mModule);
-            scopeList.push_back(entry);
+            processScopes.push_back(entry);
         }
     }
-
-    return static_cast<uint32_t>(scopeList.size());
 }
 
 void ConfigManager::add_log_scopes(const std::vector<Property>& scopeList, bool search)
@@ -1016,14 +1164,14 @@ bool ConfigManager::queue_drop_on_full(const String& whichModule /*= areg::Empty
     const String& mod{ whichModule.is_empty() ? mModule : whichModule };
     if (!mod.is_empty())
     {
-        const Property* prop = _get_property(mWritableProperties, key.section, mod, key.property, key.position, confKey, true);
+        const Property* prop = _get_module_property(mWritableProperties, mReadonlyProperties, key.section, mod, key.property, key.position, confKey);
         if (prop != nullptr)
             return prop->value().as_boolean();
     }
 
     // Step 2: wildcard "*" entry.
     {
-        const Property* prop = _get_property(mReadonlyProperties, key.section, String(areg::SYNTAX_ALL_MODULES), key.property, key.position, confKey, false);
+        const Property* prop = _get_all_modules_property(mReadonlyProperties, key.section, key.property, key.position, confKey);
         if (prop != nullptr)
             return prop->value().as_boolean();
     }
@@ -1044,14 +1192,14 @@ uint32_t ConfigManager::network_sndbuf(const String& module /*= areg::EmptyStrin
     const String& mod{ module.is_empty() ? mModule : module };
     if (!mod.is_empty())
     {
-        const Property* prop = _get_property(mWritableProperties, key.section, mod, transport, key.position, confKey, true);
+        const Property* prop = _get_module_property(mWritableProperties, mReadonlyProperties, key.section, mod, transport, key.position, confKey);
         if (prop != nullptr)
             return static_cast<uint32_t>(prop->value().as_integer()) * 1024u;
     }
 
     // Step 2: wildcard "*" entry
     {
-        const Property* prop = _get_property(mReadonlyProperties, key.section, String(areg::SYNTAX_ALL_MODULES), transport, key.position, confKey, false);
+        const Property* prop = _get_all_modules_property(mReadonlyProperties, key.section, transport, key.position, confKey);
         if (prop != nullptr)
             return static_cast<uint32_t>(prop->value().as_integer()) * 1024u;
     }
@@ -1083,14 +1231,14 @@ uint32_t ConfigManager::network_rcvbuf(const String& module /*= areg::EmptyStrin
     const String& mod{ module.is_empty() ? mModule : module };
     if (!mod.is_empty())
     {
-        const Property* prop = _get_property(mWritableProperties, key.section, mod, transport, key.position, confKey, true);
+        const Property* prop = _get_module_property(mWritableProperties, mReadonlyProperties, key.section, mod, transport, key.position, confKey);
         if (prop != nullptr)
             return static_cast<uint32_t>(prop->value().as_integer()) * 1024u;
     }
 
     // Step 2: wildcard "*" entry
     {
-        const Property* prop = _get_property(mReadonlyProperties, key.section, String(areg::SYNTAX_ALL_MODULES), transport, key.position, confKey, false);
+        const Property* prop = _get_all_modules_property(mReadonlyProperties, key.section, transport, key.position, confKey);
         if (prop != nullptr)
             return static_cast<uint32_t>(prop->value().as_integer()) * 1024u;
     }
@@ -1120,13 +1268,13 @@ uint32_t ConfigManager::network_drain_limit(const String& module, const String& 
     const String& mod{ module.is_empty() ? mModule : module };
     if (!mod.is_empty())
     {
-        const Property* prop = _get_property(mWritableProperties, key.section, mod, transport, key.position, confKey, true);
+        const Property* prop = _get_module_property(mWritableProperties, mReadonlyProperties, key.section, mod, transport, key.position, confKey);
         if (prop != nullptr)
             return static_cast<uint32_t>(prop->value().as_integer());
     }
 
     {
-        const Property* prop = _get_property(mReadonlyProperties, key.section, String(areg::SYNTAX_ALL_MODULES), transport, key.position, confKey, false);
+        const Property* prop = _get_all_modules_property(mReadonlyProperties, key.section, transport, key.position, confKey);
         if (prop != nullptr)
             return static_cast<uint32_t>(prop->value().as_integer());
     }
@@ -1144,13 +1292,13 @@ uint32_t ConfigManager::network_pool_pairs(const String& module, const String& c
     const String& mod{ module.is_empty() ? mModule : module };
     if (!mod.is_empty())
     {
-        const Property* prop = _get_property(mWritableProperties, key.section, mod, transport, key.position, confKey, true);
+        const Property* prop = _get_module_property(mWritableProperties, mReadonlyProperties, key.section, mod, transport, key.position, confKey);
         if (prop != nullptr)
             return static_cast<uint32_t>(prop->value().as_integer());
     }
 
     {
-        const Property* prop = _get_property(mReadonlyProperties, key.section, String(areg::SYNTAX_ALL_MODULES), transport, key.position, confKey, false);
+        const Property* prop = _get_all_modules_property(mReadonlyProperties, key.section, transport, key.position, confKey);
         if (prop != nullptr)
             return static_cast<uint32_t>(prop->value().as_integer());
     }
@@ -1170,14 +1318,14 @@ uint32_t ConfigManager::network_timeout(const String& module, const String& conn
     const String& mod{ module.is_empty() ? mModule : module };
     if (!mod.is_empty())
     {
-        const Property* prop = _get_property(mWritableProperties, key.section, mod, transport, key.position, confKey, true);
+        const Property* prop = _get_module_property(mWritableProperties, mReadonlyProperties, key.section, mod, transport, key.position, confKey);
         if ((prop != nullptr) && (prop->value().as_integer() > 0))
             return static_cast<uint32_t>(prop->value().as_integer());
     }
 
     // Step 2: wildcard "*" entry
     {
-        const Property* prop = _get_property(mReadonlyProperties, key.section, String(areg::SYNTAX_ALL_MODULES), transport, key.position, confKey, false);
+        const Property* prop = _get_all_modules_property(mReadonlyProperties, key.section, transport, key.position, confKey);
         if ((prop != nullptr) && (prop->value().as_integer() > 0))
             return static_cast<uint32_t>(prop->value().as_integer());
     }
@@ -1198,14 +1346,14 @@ uint32_t ConfigManager::network_cache(const String& module, const String& connec
     const String& mod{ module.is_empty() ? mModule : module };
     if (!mod.is_empty())
     {
-        const Property* prop = _get_property(mWritableProperties, key.section, mod, transport, key.position, confKey, true);
+        const Property* prop = _get_module_property(mWritableProperties, mReadonlyProperties, key.section, mod, transport, key.position, confKey);
         if ((prop != nullptr) && (prop->value().as_integer() > 0))
             return static_cast<uint32_t>(prop->value().as_integer()) * areg::ONE_KILOBYTE;
     }
 
     // Step 2: wildcard "*" entry
     {
-        const Property* prop = _get_property(mReadonlyProperties, key.section, String(areg::SYNTAX_ALL_MODULES), transport, key.position, confKey, false);
+        const Property* prop = _get_all_modules_property(mReadonlyProperties, key.section, transport, key.position, confKey);
         if ((prop != nullptr) && (prop->value().as_integer() > 0))
             return static_cast<uint32_t>(prop->value().as_integer()) * areg::ONE_KILOBYTE;
     }
@@ -1226,14 +1374,14 @@ uint32_t ConfigManager::network_keepalive(const String& module, const String& co
     const String& mod{ module.is_empty() ? mModule : module };
     if (!mod.is_empty())
     {
-        const Property* prop = _get_property(mWritableProperties, key.section, mod, transport, key.position, confKey, true);
+        const Property* prop = _get_module_property(mWritableProperties, mReadonlyProperties, key.section, mod, transport, key.position, confKey);
         if ((prop != nullptr) && (prop->value().as_integer() > 0))
             return static_cast<uint32_t>(prop->value().as_integer());
     }
 
     // Step 2: wildcard "*" entry
     {
-        const Property* prop = _get_property(mReadonlyProperties, key.section, String(areg::SYNTAX_ALL_MODULES), transport, key.position, confKey, false);
+        const Property* prop = _get_all_modules_property(mReadonlyProperties, key.section, transport, key.position, confKey);
         if ((prop != nullptr) && (prop->value().as_integer() > 0))
             return static_cast<uint32_t>(prop->value().as_integer());
     }

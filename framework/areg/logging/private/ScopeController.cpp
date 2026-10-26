@@ -179,8 +179,7 @@ void ScopeController::reset()
         scope->set_priority(static_cast<uint32_t>(areg::LogPriority::PrioNotset));
     }
 
-    mConfigScopeList.clear();
-    mConfigScopeGroup.clear();
+    clear_config_scopes();
     discard_saved_scopes();
 }
 
@@ -210,8 +209,7 @@ bool ScopeController::resume_scopes()
         return false;
 
     mIsStopped = false;
-    uint32_t defaultPrio{ areg::DEFAULT_LOG_PRIORITY };
-    mConfigScopeGroup.find(areg::LOG_SCOPES_GROUP, defaultPrio);
+    const uint32_t defaultPrio{ _default_priority() };
 
     for (auto pos = mMapLogScope.first_position(); mMapLogScope.is_valid_position(pos); pos = mMapLogScope.next_position(pos))
     {
@@ -243,21 +241,26 @@ bool ScopeController::discard_saved_scopes()
 
 void ScopeController::activate_defaults()
 {
+    ListScopes & sharedGroup{ mConfigScopeGroup[static_cast<uint32_t>(ScopeLayer::Shared)] };
     for (const auto& entry : areg::DEFAULT_LOG_ENABLED_SCOPES)
     {
-        mConfigScopeGroup.set_value_at(entry.first, entry.second);
+        sharedGroup.set_value_at(entry.first, entry.second);
     }
 }
 
 void ScopeController::force_activate_scopes(bool activate /*= true*/)
 {
-    mConfigScopeGroup.clear();
-    mConfigScopeGroup.set_value_at(areg::SYNTAX_GROUP, activate
+    for (ListScopes & group : mConfigScopeGroup)
+    {
+        group.clear();
+    }
+
+    mConfigScopeGroup[static_cast<uint32_t>(ScopeLayer::Shared)].set_value_at(areg::SYNTAX_GROUP, activate
             ? static_cast<uint32_t>(areg::LogPriority::PrioScope) | static_cast<uint32_t>(areg::LogPriority::PrioDebug)
             : static_cast<uint32_t>(areg::LogPriority::PrioNotset));
 }
 
-void ScopeController::configure_scopes( const Property & prop )
+void ScopeController::configure_scopes( const Property & prop, ScopeLayer layer /*= ScopeLayer::Process*/ )
 {
     const PropertyKey & Key = prop.key( );
     const PropertyValue & Value = prop.value( );
@@ -265,50 +268,76 @@ void ScopeController::configure_scopes( const Property & prop )
     ASSERT( Key.key_type() == areg::ConfigEntry::LogScope );
 
     uint32_t prio = Value.identifier( areg::LogScopePriorityIndentifiers );
-    configure_scopes(Key.position(), prio);
+    configure_scopes(Key.position(), prio, layer);
 }
 
-void ScopeController::configure_scopes( const String & scopeName, uint32_t scopePrio )
+void ScopeController::configure_scopes( const String & scopeName, uint32_t scopePrio, ScopeLayer layer /*= ScopeLayer::Process*/ )
 {
+    const uint32_t index{ static_cast<uint32_t>(layer) };
+    ASSERT(index < SCOPE_LAYER_COUNT);
     if ( _is_scope_group( scopeName ) )
     {
-        mConfigScopeGroup.set_value_at( scopeName, scopePrio );
+        mConfigScopeGroup[index].set_value_at( scopeName, scopePrio );
     }
     else
     {
-        mConfigScopeList.set_value_at( scopeName, scopePrio );
+        mConfigScopeList[index].set_value_at( scopeName, scopePrio );
     }
 }
 
 void ScopeController::configure_scopes()
 {
-    std::vector<Property> scopes;
-    Application::config_manager().module_log_scopes(scopes);
-    for (const Property& prop : scopes)
+    std::vector<Property> processScopes;
+    std::vector<Property> moduleScopes;
+    std::vector<Property> sharedScopes;
+    Application::config_manager().log_scope_layers(processScopes, moduleScopes, sharedScopes);
+
+    for (const Property& prop : processScopes)
     {
-        configure_scopes(prop);
+        configure_scopes(prop, ScopeLayer::Process);
+    }
+
+    for (const Property& prop : moduleScopes)
+    {
+        configure_scopes(prop, ScopeLayer::Module);
+    }
+
+    for (const Property& prop : sharedScopes)
+    {
+        configure_scopes(prop, ScopeLayer::Shared);
     }
 }
 
 void ScopeController::activate_scope( LogScope & logScope )
 {
-    uint32_t logPrio{ areg::DEFAULT_LOG_PRIORITY };
-    mConfigScopeGroup.find(areg::LOG_SCOPES_GROUP, logPrio );
-    activate_scope( logScope, logPrio );
+    activate_scope( logScope, _default_priority() );
 }
 
 void ScopeController::activate_scope( LogScope & logScope, uint32_t defaultPrio )
 {
-    const String & scopeName = logScope.name( );
     uint32_t scopePrio{ defaultPrio };
-
-    if ( mConfigScopeList.find( scopeName, scopePrio ) )
+    for (uint32_t layer = 0u; layer < SCOPE_LAYER_COUNT; ++layer)
     {
-        logScope.set_priority( scopePrio );     // exact match
-        return;
+        if (_find_priority(logScope.name(), layer, scopePrio))
+        {
+            logScope.set_priority( scopePrio );
+            return;
+        }
     }
 
     logScope.set_priority( defaultPrio );
+}
+
+bool ScopeController::_find_priority( const String & scopeName, uint32_t layer, uint32_t & scopePrio ) const
+{
+    const ListScopes & scopeList{ mConfigScopeList[layer] };
+    const ListScopes & scopeGroup{ mConfigScopeGroup[layer] };
+
+    if ( scopeList.find( scopeName, scopePrio ) )
+        return true;
+
+    if ( scopeGroup.is_empty( ) )
+        return false;
 
     String groupName( scopeName );
     areg::CharPos pos = areg::END_POS;
@@ -320,11 +349,8 @@ void ScopeController::activate_scope( LogScope & logScope, uint32_t defaultPrio 
     {
         // Build "path.*" and check it.
         groupName.set_at( areg::LOG_SCOPES_GROUP[0], dotPos + 1 ).resize( dotPos + 2 );
-        if ( mConfigScopeGroup.find( groupName, scopePrio ) )
-        {
-            logScope.set_priority( scopePrio );
-            return;
-        }
+        if ( scopeGroup.find( groupName, scopePrio ) )
+            return true;
 
         // Reduce groupName to the path portion only (before the dot) for '_' traversal.
         groupName.substring( 0, dotPos );
@@ -345,21 +371,31 @@ void ScopeController::activate_scope( LogScope & logScope, uint32_t defaultPrio 
             groupName = areg::LOG_SCOPES_GROUP;
         }
 
-        if ( mConfigScopeGroup.find( groupName, scopePrio ) )
-        {
-            logScope.set_priority( scopePrio );
-            break;
-        }
+        if ( scopeGroup.find( groupName, scopePrio ) )
+            return true;
 
     } while ( pos != areg::INVALID_POS );
+
+    return false;
+}
+
+uint32_t ScopeController::_default_priority() const
+{
+    uint32_t result{ areg::DEFAULT_LOG_PRIORITY };
+    for (const ListScopes & group : mConfigScopeGroup)
+    {
+        if (group.find(areg::LOG_SCOPES_GROUP, result))
+            break;
+    }
+
+    return result;
 }
 
 void ScopeController::set_scope_activity( bool makeActive )
 {
     if ( makeActive )
     {
-        uint32_t defaultPrio = areg::DEFAULT_LOG_PRIORITY;
-        mConfigScopeGroup.find( areg::LOG_SCOPES_GROUP, defaultPrio );
+        const uint32_t defaultPrio{ _default_priority() };
 
         for ( auto pos = mMapLogScope.first_position( ); mMapLogScope.is_valid_position( pos ); pos = mMapLogScope.next_position( pos ) )
         {
@@ -380,7 +416,7 @@ void ScopeController::set_scope_activity( const String & scopeName, uint32_t sco
     if ( _is_scope_group( scopeName ) )
     {
         set_group_priority( scopeName, logPrio );
-        mConfigScopeGroup.set_value_at( scopeName, logPrio );
+        mConfigScopeGroup[static_cast<uint32_t>(ScopeLayer::Process)].set_value_at( scopeName, logPrio );
     }
     else
     {
@@ -393,7 +429,7 @@ void ScopeController::set_scope_activity( const String & scopeName, uint32_t sco
             set_scope_priority(scopeName, logPrio);
         }
 
-        mConfigScopeList.set_value_at( scopeName, logPrio );
+        mConfigScopeList[static_cast<uint32_t>(ScopeLayer::Process)].set_value_at( scopeName, logPrio );
     }
 }
 

@@ -22,6 +22,7 @@
 
 #include "areg/logging/LoggingDefs.hpp"
 
+#include <array>
 #include <string_view>
 
 #if AREG_LOGGING
@@ -44,6 +45,18 @@ using LogScopeMap   = HashMap<uint32_t, LogScope *>;
 
 //!< The hash map of scope IDs to the priorities saved before the scopes were stopped.
 using ScopePrioMap  = HashMap<uint32_t, uint32_t>;
+
+//!< The sources of the scope configuration. A scope takes its priority from the first source
+//!< that has a matching entry, by name or by group.
+enum class ScopeLayer : uint32_t
+{
+      Process   = 0u    //!< The configuration file of the process and the changes made at run time.
+    , Module    = 1u    //!< The entries for this process in the shared configuration file.
+    , Shared    = 2u    //!< The entries for all processes in the shared configuration file.
+};
+
+//!< The number of scope configuration sources.
+inline constexpr uint32_t SCOPE_LAYER_COUNT { 3u };
 
 //!< Initial reservation for the scope map to avoid rehashing during static initialization.
 inline constexpr uint32_t SCOPE_MAP_INITIAL_RESERVE { 512u };
@@ -330,16 +343,18 @@ public:
      * \brief   Configures a scope or scope group priority from a property.
      *
      * \param   prop    The property containing the scope name and priority information.
+     * \param   layer   The source of the configuration entry.
      **/
-    void configure_scopes( const Property & prop );
+    void configure_scopes( const Property & prop, ScopeLayer layer = ScopeLayer::Process );
 
     /**
      * \brief   Sets the logging priority for a scope or scope group.
      *
      * \param   scopeName       The name of a single scope or scope group ending with '*'.
      * \param   scopePrio       The priority to set.
+     * \param   layer           The source of the configuration entry.
      **/
-    void configure_scopes( const String & scopeName, uint32_t scopePrio );
+    void configure_scopes( const String & scopeName, uint32_t scopePrio, ScopeLayer layer = ScopeLayer::Process );
 
     /**
      * \brief   Applies configured priorities from the internal configuration to all scopes.
@@ -400,14 +415,32 @@ private:
     [[nodiscard]]
     inline LogScope* _find(uint32_t scopeId) const noexcept;
 
+    /**
+     * \brief   Finds the configured priority of a scope in one layer: the exact name first, then
+     *          the closest group.
+     *
+     * \param   scopeName       The name of the scope.
+     * \param   layer           The index of the layer to search.
+     * \param[out] scopePrio    Receives the priority if found.
+     * \return  Returns true if the layer has an entry for the scope.
+     **/
+    bool _find_priority( const String & scopeName, uint32_t layer, uint32_t & scopePrio ) const;
+
+    /**
+     * \brief   Returns the priority of the group of all scopes from the first layer that has it,
+     *          or areg::DEFAULT_LOG_PRIORITY.
+     **/
+    [[nodiscard]]
+    uint32_t _default_priority() const;
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
 //////////////////////////////////////////////////////////////////////////
 private:
-    //!< The list of scopes read out from configuration file.
-    ListScopes          mConfigScopeList;
-    //!< The list of scope groups read out from configuration file
-    ListScopes          mConfigScopeGroup;
+    //!< The scopes read out from the configuration, one list per layer.
+    std::array<ListScopes, SCOPE_LAYER_COUNT>   mConfigScopeList;
+    //!< The scope groups read out from the configuration, one list per layer.
+    std::array<ListScopes, SCOPE_LAYER_COUNT>   mConfigScopeGroup;
     //!< The map of registered log scope objects.
     LogScopeMap         mMapLogScope;
     //!< The scope priorities saved by stop_scopes(), empty when the scopes are not stopped.
@@ -518,8 +551,11 @@ inline int32_t ScopeController::remove_group_priority( const String & scopeGroup
 
 inline void ScopeController::clear_config_scopes()
 {
-    mConfigScopeList.clear( );
-    mConfigScopeGroup.clear( );
+    for (uint32_t layer = 0u; layer < SCOPE_LAYER_COUNT; ++layer)
+    {
+        mConfigScopeList[layer].clear( );
+        mConfigScopeGroup[layer].clear( );
+    }
 }
 
 inline LogScope* ScopeController::_find(uint32_t scopeId) const noexcept

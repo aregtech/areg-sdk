@@ -177,13 +177,15 @@ public:
     static inline void now( areg::CalendarTime & timeData, bool localTime ) noexcept;
 
     /**
-     * \brief   Returns milliseconds elapsed since system startup.
+     * \brief   Returns the milliseconds of a monotonic clock that starts at an unspecified point.
+     *          Same value as process_tick_count().
      **/
     [[nodiscard]]
     static inline uint64_t system_tick_count() noexcept;
 
     /**
-     * \brief   Returns milliseconds elapsed since current process started.
+     * \brief   Returns the milliseconds of a monotonic clock that starts at an unspecified point.
+     *          Same value as system_tick_count().
      **/
     [[nodiscard]]
     static inline uint64_t process_tick_count() noexcept;

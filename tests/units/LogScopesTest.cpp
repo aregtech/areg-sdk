@@ -39,6 +39,21 @@ namespace {
         return areg::String("./logs/") + ::testing::UnitTest::GetInstance()->current_test_info()->name() + ".init";
     }
 
+    //!< Returns the entries of the running process that a configuration read from its file.
+    areg::ListProperties module_entries(const areg::ConfigManager& config)
+    {
+        areg::ListProperties result;
+        for (const auto& prop : config.readonly_properties().data())
+        {
+            if (prop.key().is_all_modules() == false)
+            {
+                result.add(prop);
+            }
+        }
+
+        return result;
+    }
+
     class TestConfigListener final : public areg::ConfigListener
     {
 
@@ -164,7 +179,7 @@ TEST( LogScopeTest, load_saved_log_configuration_part1 )
     {
         areg::ConfigManager config;
         config.read_config(testConfig);
-        areg::Application::config_manager().replace_module_property(config.module_properties());
+        areg::Application::config_manager().replace_module_property(module_entries(config));
 
         if ( LOGGING_START( testConfig ) || !AREG_LOGGING)
         {
@@ -441,7 +456,7 @@ TEST( LogScopeTest, scope_priority_groupping )
 
     areg::ConfigManager config;
     config.read_config(testConfig);
-    areg::Application::config_manager().replace_module_property(config.module_properties());
+    areg::Application::config_manager().replace_module_property(module_entries(config));
 
     LOGGING_START( testConfig );
 

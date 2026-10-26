@@ -348,6 +348,33 @@ void File::_os_flush_file() noexcept
     fsync(file.fd);
 }
 
+bool File::_os_lock_file(bool exclusive) noexcept
+{
+    ASSERT(mFileHandle != _os_invalid_handle());
+    PosixFile file{ mFileHandle };
+    struct flock region{};
+    region.l_type   = static_cast<short>(exclusive ? F_WRLCK : F_RDLCK);
+    region.l_whence = SEEK_SET;
+
+    int rc{ -1 };
+    do
+    {
+        rc = ::fcntl(file.fd, F_SETLKW, &region);
+    } while ((rc == -1) && (errno == EINTR));
+
+    return (rc == 0);
+}
+
+void File::_os_unlock_file() noexcept
+{
+    ASSERT(mFileHandle != _os_invalid_handle());
+    PosixFile file{ mFileHandle };
+    struct flock region{};
+    region.l_type   = F_UNLCK;
+    region.l_whence = SEEK_SET;
+    ::fcntl(file.fd, F_SETLK, &region);
+}
+
 uint64_t File::_os_file_length() const noexcept
 {
     ASSERT(mFileHandle != _os_invalid_handle());
@@ -360,25 +387,29 @@ uint64_t File::_os_file_length() const noexcept
 // Static methods
 //////////////////////////////////////////////////////////////////////////
 
-uint32_t File::_os_temp_name(char* buffer, const char* folder, const char* prefix, uint32_t /*unique*/) noexcept
+uint32_t File::_os_temp_name(char* buffer, const char* folder, const char* prefix) noexcept
 {
     ASSERT(buffer != nullptr);
     ASSERT(folder != nullptr);
     ASSERT(prefix != nullptr);
 
     constexpr char fmtFileName[]{ "%s%c%sXXXXXX" };
-    constexpr char fmtFdName[]{ "/proc/self/fd/%d" };
-    sprintf(buffer, fmtFileName, folder, File::PATH_SEPARATOR, prefix);
-    int fno = ::mkstemp(buffer);
-    if (fno > 1)
+    const int len = snprintf(buffer, File::MAXIMUM_PATH, fmtFileName, folder, File::PATH_SEPARATOR, prefix);
+    if ((len <= 0) || (len >= static_cast<int>(File::MAXIMUM_PATH)))
     {
-        char temp[128];
-        sprintf(temp, fmtFdName, fno);
-        int count = readlink(temp, buffer, File::MAXIMUM_PATH);
-        buffer[count > 0 ? count : 0] = String::EmptyChar;
-        ::close(fno);
+        buffer[0] = String::EmptyChar;
+        return 0u;
     }
 
+    // mkstemp creates the file and writes its name into the buffer.
+    const int fno = ::mkstemp(buffer);
+    if (fno < 0)
+    {
+        buffer[0] = String::EmptyChar;
+        return 0u;
+    }
+
+    ::close(fno);
     return static_cast<uint32_t>(strlen(buffer));
 }
 

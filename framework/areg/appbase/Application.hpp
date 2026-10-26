@@ -410,10 +410,11 @@ public:
 
     /**
      * \brief   Saves current configuration to the specified file. Only writable properties are
-     *          saved; the read-only global configuration is unchanged.
+     *          saved; the shared configuration file is never written.
      *
-     * \param   fileName    Relative or absolute path to the configuration file. If nullptr, saves
-     *                      to the previously loaded file or default './config/areg.init'.
+     * \param   fileName    Relative or absolute path to the file to write. If nullptr, saves to
+     *                      the configuration file of the process, '<process name>.init' beside
+     *                      the shared configuration file.
      * \param   listener    Optional listener notified before and after saving, or on failure. No
      *                      notifications if nullptr.
      * \return  Returns true if configuration was saved successfully; false otherwise.

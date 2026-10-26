@@ -71,19 +71,21 @@ public:
     inline bool is_configured() const noexcept;
 
     /**
-     * \brief   Returns the path of the configuration file.
+     * \brief   Returns the path of the shared configuration file.
      **/
     [[nodiscard]]
     inline const String& config_file() const;
 
     /**
-     * \brief   Returns the list of read-only global configuration properties.
+     * \brief   Returns the list of read-only properties of the shared configuration file: the
+     *          entries for all modules and the entries for this process.
      **/
     [[nodiscard]]
     inline const areg::ListProperties & readonly_properties() const;
 
     /**
-     * \brief   Returns the list of application-specific writable configuration properties.
+     * \brief   Returns the list of writable properties of this process: the entries of the
+     *          configuration file of the process and the changes made at run time.
      **/
     [[nodiscard]]
     inline const areg::ListProperties & module_properties() const;
@@ -361,19 +363,20 @@ public:
     void remove_section_properties(const String& section);
 
     /**
-     * \brief   Reads configuration from the specified file. If filePath is empty, uses the default
-     *          configuration file path.
+     * \brief   Reads the shared configuration file, then the configuration file of the process in
+     *          the same directory (see process_config_file()). A value of the process file wins
+     *          over the shared file, and the shared file wins over the framework defaults.
      *
-     * \param   filePath    The relative or full path to the configuration file. If empty, uses
-     *                      areg::DEFAULT_CONFIG_FILE.
+     * \param   filePath    The relative or full path to the shared configuration file. If empty,
+     *                      uses areg::DEFAULT_CONFIG_FILE.
      * \param   listener    Optional pointer to a ConfigListener to notify before and after reading.
      *                      If nullptr, no notification is sent.
-     * \return  Returns true if the configuration was successfully read and initialized.
+     * \return  Returns true if the shared configuration file was read.
      **/
     bool read_config(const String& filePath = String::EmptyString, ConfigListener * listener = nullptr) noexcept;
 
     /**
-     * \brief   Reads configuration from the specified file object opened for reading.
+     * \brief   Reads the shared configuration from the specified file object opened for reading.
      *
      * \param   file        The file object opened for reading.
      * \param   listener    Optional pointer to a ConfigListener to notify before and after reading.
@@ -383,15 +386,35 @@ public:
     bool read_config(const FileBase& file, ConfigListener * listener = nullptr) noexcept;
 
     /**
-     * \brief   Saves the current configuration to the specified file, preserving existing entries
-     *          and only updating module-specific entries not marked as temporary.
+     * \brief   Replaces the writable properties with the entries of the configuration file of the
+     *          process. Called by read_config(); call it after set_configuration() to apply the
+     *          file of the process over other settings.
      *
-     * \param   filePath    The relative or full path to the configuration file to write. If empty,
-     *                      uses the previously opened file path or
-     *                      areg::DEFAULT_CONFIG_FILE if no file was previously opened.
+     * \return  Returns true if the file exists and has entries of this process. If the file does
+     *          not exist, the writable properties are left empty.
+     **/
+    bool read_process_config();
+
+    /**
+     * \brief   Returns the full path of the configuration file of the process: the process name
+     *          with the extension '.init', in the directory of the shared configuration file, or
+     *          in the directory of areg::DEFAULT_CONFIG_FILE if no shared file was read.
+     **/
+    [[nodiscard]]
+    String process_config_file() const;
+
+    /**
+     * \brief   Saves the writable properties that are not temporary, keeping the other lines of
+     *          the target file. The target is replaced in one step, and saves of the same file
+     *          in other processes wait for each other, so the file always holds one complete save.
+     *          The shared configuration file is never written.
+     *
+     * \param   filePath    The relative or full path of the file to write. If empty, writes the
+     *                      configuration file of the process (see process_config_file()).
      * \param   listener    Optional pointer to a ConfigListener to notify before and after saving.
      *                      If nullptr, no notification is sent.
-     * \return  Returns true if the configuration was successfully saved.
+     * \return  Returns true if the configuration was saved. Returns false if the target is the
+     *          shared configuration file or areg::DEFAULT_CONFIG_FILE.
      **/
     bool save_config(const String& filePath = String::EmptyString, ConfigListener * listener = nullptr);
 
@@ -399,11 +422,13 @@ public:
      * \brief   Saves the current configuration to a destination file opened for writing, reading
      *          from a source file.
      *
-     * \param   srcFile     The source file containing configuration information.
+     * \param   srcFile     The source file containing configuration information. If it is not
+     *                      opened for reading, nothing is copied from it.
      * \param[in,out] dstFile     The destination file opened for writing where configuration will
      *                            be saved.
-     * \param   saveAll     If true, saves all entries including temporary ones. If false, temporary
-     *                      entries are excluded.
+     * \param   saveAll     If true, writes the read-only and the writable properties. If false,
+     *                      copies the lines of srcFile that are not writable properties, then
+     *                      writes the writable properties. Temporary entries are never written.
      * \param   listener    Optional pointer to a ConfigListener to notify before and after saving.
      *                      If nullptr, no notification is sent.
      * \return  Returns true if the configuration was successfully saved.
@@ -620,12 +645,27 @@ public:
     inline std::vector<Property> module_log_scopes() const;
 
     /**
-     * \brief   Gets the list of log scope properties for the module.
+     * \brief   Gets the list of log scope properties for the module: first the entries for all
+     *          modules, then the entries for this process in the shared file, then the writable
+     *          entries.
      *
      * \param[out] scopeList       The vector to be filled with the module's log scope properties.
      * \return  Returns the number of scopes in the list.
      **/
     uint32_t module_log_scopes(std::vector<Property>& scopeList) const noexcept;
+
+    /**
+     * \brief   Gets the log scope properties of the module split by where they come from. A scope
+     *          that matches an entry of a list, by name or by group, takes its priority from the
+     *          first such list: processScopes, then moduleScopes, then sharedScopes.
+     *
+     * \param[out] processScopes   Receives the writable entries of the process.
+     * \param[out] moduleScopes    Receives the entries for this process in the shared file.
+     * \param[out] sharedScopes    Receives the entries for all modules in the shared file.
+     **/
+    void log_scope_layers( std::vector<Property>& processScopes
+                         , std::vector<Property>& moduleScopes
+                         , std::vector<Property>& sharedScopes) const;
 
     /**
      * \brief   Adds log scope properties to the module's list, optionally replacing existing scopes
@@ -971,12 +1011,12 @@ private:
 #endif  // _MSC_VER
 
     /**
-     * \brief   The list of writable properties of the configuration, which can be modified for current process.
+     * \brief   The writable properties of the process: its configuration file and the changes at run time.
      **/
     areg::ListProperties   mWritableProperties;
 
     /**
-     * \brief   The list of read-only properties of the configuration, which cannot be modified.
+     * \brief   The read-only properties of the shared configuration file or of the framework defaults.
      **/
     areg::ListProperties  mReadonlyProperties;
 
@@ -990,7 +1030,7 @@ private:
     bool            mIsConfigured;
 
     /**
-     * \brief   The path of the configuration file.
+     * \brief   The path of the shared configuration file.
      **/
     String          mFilePath;
 

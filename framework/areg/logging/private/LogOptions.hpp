@@ -52,7 +52,7 @@ namespace areg {
         , AnyText       = 1     //!< Create any text layout to output message without formating
 
         , CookieId      = 'a'   //!< Create layout to output the cookie id of the log message source module
-        , TickCount     = 'c'   //!< Create layout to output tick-count value since process start
+        , TickCount     = 'c'   //!< Create layout to output the milliseconds of the monotonic clock
         , DayTime       = 'd'   //!< Create layout to output day and time data
         , ExecutableId  = 'e'   //!< Create layout to output module ID
         , Message       = 'm'   //!< Create layout to output logging message

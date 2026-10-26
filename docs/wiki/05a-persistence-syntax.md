@@ -125,24 +125,28 @@ log::myapp::scope::*        = DEBUG | SCOPE     # Override for 'myapp'
 
 ## 4. Storage Model: Read-Only, Writable, Temporary
 
-When `ConfigManager` reads a file, it sorts every property into one of two in-memory lists **based solely on the `module` field**, relative to the current process name:
+A process reads **two files**. The shared file `areg.init` is read-only for every process. Each process has its own file `<process>.init` in the same directory (for example `./config/myapp.init` beside `./config/areg.init`), and that is the only file it ever writes:
 
 ```
-                 ┌──────────────────────────────────────────────┐
-  areg.init  ──▶ │  for each property line                       │
-                 │    module == "*"            ─▶ READ-ONLY list  │
-                 │    module == <this process> ─▶ WRITABLE list   │
-                 │    module == <other process>─▶ DISCARDED       │
-                 └──────────────────────────────────────────────┘
+                   ┌───────────────────────────────────────────────────┐
+  areg.init    ──▶ │  module == "*"             ─▶ READ-ONLY list       │
+                   │  module == <this process>  ─▶ READ-ONLY list       │
+                   │  module == <other process> ─▶ DISCARDED            │
+                   └───────────────────────────────────────────────────┘
+                   ┌───────────────────────────────────────────────────┐
+  myapp.init   ──▶ │  module == <this process>  ─▶ WRITABLE list        │
+                   │  any other line            ─▶ ignored, kept on save│
+                   └───────────────────────────────────────────────────┘
 ```
 
 This is the single most important rule of the model:
 
-- **Read-only properties** (`module = *`) are global defaults shared by every process. They are never modified or written back. Conceptually they are the immutable "factory settings".
-- **Writable properties** (`module =` the running process's name) are this process's own values. They override the global defaults and can be changed at runtime and saved back to the file.
+- **`areg.init` is shared and never written.** Its `*` entries are the global defaults; its `<this process>` entries are defaults for one executable. A save refuses to write `areg.init`, whatever path it is given, and returns `false`.
+- **Writable properties** are the entries of `<process>.init` plus the changes made at run time. They win over everything in `areg.init`, and a save writes them to `<process>.init`.
 - **Properties addressed to a *different* module are dropped at load time** — process `myapp` never holds `log::server::scope::*` in memory. This keeps each process's view small and prevents one application from mutating another's settings.
+- **Without `areg.init`** the framework defaults take its place; `<process>.init` still applies on top of them, and `areg.init` is never created.
 
-> The exact split happens while `ConfigManager::read_config()` parses the file (the `_read_config` helper in [ConfigManager.cpp](./../../framework/areg/persist/private/ConfigManager.cpp)): `key.is_all_modules()` → read-only; `is_module_property(currentModule)` → writable; otherwise ignored.
+> The split happens while `ConfigManager::read_config()` parses the shared file, then `ConfigManager::read_process_config()` reads the process file (both in [ConfigManager.cpp](./../../framework/areg/persist/private/ConfigManager.cpp)). `ConfigManager::process_config_file()` returns the path of the process file.
 
 ### The "temporary" attribute
 
@@ -155,9 +159,9 @@ Use it for runtime-only state — a debug toggle you flip for the current sessio
 
 | | Read-only | Writable (persistent) | Writable (temporary) |
 |---|---|---|---|
-| Key module field | `*` | this process | this process |
+| Comes from | `areg.init` (`*` or this process) | `<process>.init`, or set at run time | set at run time |
 | Modifiable at runtime | No | Yes | Yes |
-| Saved to file | Yes (unchanged) | Yes | **No** |
+| Saved | Never | Yes, to `<process>.init` | **No** |
 | Survives restart | Yes | Yes | No |
 | Typical use | shared defaults | per-app settings | session-only state |
 
@@ -167,19 +171,24 @@ Use it for runtime-only state — a debug toggle you flip for the current sessio
 
 ## 5. Wildcard Resolution
 
-When the application queries a key, `ConfigManager` resolves it in two tiers:
+When the application queries a key, `ConfigManager` resolves it in three tiers. The first tier that has the key wins:
 
-1. **Writable list** — look for an *exact* entry for the current process module.
-2. **Read-only list** — if not found, fall back to the `*` (wildcard) entry.
+1. **`<process>.init` and run-time changes** — the writable list.
+2. **`areg.init`, this process** — an entry with the current process name as module.
+3. **`areg.init`, all processes** — the `*` (wildcard) entry. Without it, the framework default applies.
 
 ```text
-log::*::scope::areg_*       = NOTSET    # all apps: disable scopes starting with 'areg_'
-log::*::scope::*            = WARN      # all apps: default WARN for everything else
-log::myapp::scope::*        = DEBUG     # 'myapp' only: override to DEBUG
+# areg.init
+log::*::scope::*            = WARN      # all apps: default WARN
+log::myapp::scope::*        = INFO      # 'myapp' only
+
+# myapp.init
+log::myapp::scope::*        = DEBUG     # saved by 'myapp', wins over both lines above
 ```
 
-→ `myapp` resolving `log::myapp::scope::*` gets `DEBUG` (writable wins).  
-→ any other app resolving `log::*::scope::*` gets `WARN` (read-only default).
+→ `myapp` gets `DEBUG`; without `myapp.init` it gets `INFO`; any other app gets `WARN`.
+
+**Log scopes resolve by tier first, then by name.** A scope takes its priority from the first tier that has *any* entry matching it, exact name or group. Inside that tier the exact name wins, then the closest group. So `log::myapp::scope::abc_* = INFO` in `myapp.init` sets `abc_x` to `INFO` even if `areg.init` names `abc_x` exactly.
 
 **Position wildcards.** A `*` (or a `prefix_*`) in the *position* field matches a family of keys. For example, `log::*::scope::areg_*` applies to every scope whose name begins with `areg_`. Pattern matching of scope names is hierarchical and is described in the [Areg Configuration Reference — `log` section](./05b-areg-configuration-file.md#5-log-section--logging).
 
@@ -205,12 +214,18 @@ This keeps the writable list — and therefore the saved file — minimal: only 
 ```cpp
 ConfigManager& config = Application::config_manager();
 
-config.read_config("./config/areg.init");   // empty path => areg::DEFAULT_CONFIG_FILE
+config.read_config("./config/areg.init");   // also reads ./config/<process>.init
 // ... read / modify properties ...
-config.save_config();                        // writes back to the same file
+config.save_config();                        // writes ./config/<process>.init
 ```
 
-`read_config()` and `save_config()` accept an optional [`ConfigListener*`](./../../framework/areg/persist/ConfigListener.hpp) that is notified before and after the operation, letting components reload derived state. `save_config()` rewrites only this process's non-temporary writable entries and leaves all other lines of the source file intact.
+`read_config()` and `save_config()` accept an optional [`ConfigListener*`](./../../framework/areg/persist/ConfigListener.hpp) that is notified before and after the operation, letting components reload derived state. `save_config()` writes only this process's non-temporary writable entries and keeps the other lines of the target file.
+
+A save is safe when several processes save at the same time, also two instances of one executable writing the same `<process>.init`:
+
+- Saves of one file take turns through a lock file beside it (`<process>.init.lock`). The operating system releases the lock if a process ends.
+- The new content is written to a temporary file in the same directory, flushed, and then replaces the target in one step. A reader sees the old file or the new one, never a mix, and a crash never leaves a half-written file.
+- Two instances that save one file leave the content of the save that finished last; each instance keeps its own values in memory until it restarts.
 
 ### Reading a value
 
@@ -258,7 +273,7 @@ The persistence module is not limited to the framework's predefined keys — you
 ```text
 # In areg.init (or your own .init file)
 app::*::theme              = dark            # shared default for all processes
-app::myeditor::theme       = solarized       # 'myeditor' override (writable for that process)
+app::myeditor::theme       = solarized       # 'myeditor' default (read-only, in areg.init)
 app::myeditor::recent::0   = /home/me/a.txt
 app::myeditor::recent::1   = /home/me/b.txt
 ```
@@ -278,9 +293,9 @@ config.set_module_property("app", "theme", "", "monokai");
 config.save_config();
 ```
 
-Because the module field drives storage, the same line gives every process a sensible shared default (`app::*::theme`) while letting each process keep its own persisted override — with no extra files and no merge logic on your side.
+The shared file gives every process a sensible default (`app::*::theme`) and a per-process default (`app::myeditor::theme`), while the saved `monokai` goes to `myeditor.init` and wins on the next start — with no merge logic on your side.
 
-If you do not want to share the framework's `areg.init`, point `read_config()`/`save_config()` at your own file path; the syntax and behavior are identical.
+`save_config()` writes to `<process>.init` by default. Give it another path to save a copy elsewhere; the syntax and behavior are identical, and only the shared `areg.init` is refused.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -303,8 +318,8 @@ If you do not want to share the framework's `areg.init`, point `read_config()`/`
 
 ### Choosing storage scope
 
-- **Read-only (`module = *`)** — shared defaults that rarely change: framework endpoints, layouts, baseline scopes.
-- **Writable (per-module)** — values a process may change and must remember across restarts.
+- **Read-only (`areg.init`)** — shared defaults that rarely change: framework endpoints, layouts, baseline scopes. Edit the file by hand; no process writes it.
+- **Writable (`<process>.init`)** — values a process may change and must remember across restarts.
 - **Temporary (writable + flag)** — session-only state that must never touch disk; cheap, no file I/O.
 
 ### Performance
@@ -312,7 +327,7 @@ If you do not want to share the framework's `areg.init`, point `read_config()`/`
 - Files are parsed once at startup — keep them small (well under 100 KB) for sub-millisecond parsing.
 - Read-only properties have no runtime cost after load.
 - Prefer temporary properties for frequently changing values to avoid repeated file writes.
-- Persisting (`save_config`) rewrites the file — call it deliberately, not on every change.
+- Persisting (`save_config`) rewrites `<process>.init` — call it deliberately, not on every change.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
