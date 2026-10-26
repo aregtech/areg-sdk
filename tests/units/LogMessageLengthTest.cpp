@@ -116,6 +116,8 @@ TEST(LogMessageLengthTest, test_clampedLengthAlwaysFits)
     }
 }
 
+#if AREG_LOGGING
+
 namespace
 {
     //! Builds a log message as a log source sends it.
@@ -235,3 +237,5 @@ TEST(LogMessageLengthTest, test_messageCarriesThreadName)
     EXPECT_STREQ(_entry(msg).logThread, "NamedLogThread");
     EXPECT_EQ(_entry(msg).logThreadLen, 14u);
 }
+
+#endif  // AREG_LOGGING

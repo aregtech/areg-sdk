@@ -875,6 +875,8 @@ TEST(LogSqliteDatabaseTest, test_fileWithoutMarkersTable)
     db.disconnect();
 }
 
+#if AREG_LOGGING
+
 //////////////////////////////////////////////////////////////////////////
 // The writer thread: identifiers given when queued, drops, markers in order, stop saves all.
 //////////////////////////////////////////////////////////////////////////
@@ -1062,3 +1064,5 @@ TEST(LogSqliteDatabaseTest, test_writerCommitsALoneRow)
     writer.stop();
     db.disconnect();
 }
+
+#endif  // AREG_LOGGING
