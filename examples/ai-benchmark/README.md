@@ -103,8 +103,8 @@ Codex's `model_reasoning_effort`; Gemini refuses it. The levels are not equal ac
 |---|---|---|---|
 | `claude` (default) | `sonnet`, `medium` | `analyze_run.py`, automatic | six-tool allowlist, skills and MCP off, web tools withheld |
 | `copilot` | the CLI's (`--model auto`, `gpt-5.6-terra`, `claude-sonnet-5`, ...) | `measure.py`, in AI credits (AIC, converted once at USD 0.01) | `ask_user` off, built-in MCP off, web tools excluded; a one-word prompt already bills ~22 500 input tokens |
-| `codex` | the CLI's | none; native `result.jsonl` | `workspace-write`, approvals off |
-| `gemini` | the CLI's | none; native `result.json` | `yolo` |
+| `codex` | the CLI's | none; native `result.jsonl` | `workspace-write`, approvals off; `--web` not enforced |
+| `gemini` | the CLI's | none; native `result.json` | `yolo`; `--web` not enforced |
 
 ```bash
 run-benchmark.sh --task examples/ai-benchmark/prompt-tempalarm.md --attempts 15
@@ -119,6 +119,11 @@ settles most questions, 4 is the ceiling.
 Run only in a disposable environment with trusted prompts: a snapshot is not a security sandbox.
 Allow the build commands -- every permission denial costs the agent a turn.
 
+**Your own CLI configuration still loads.** Claude Code reads your user-level settings and
+`~/.claude/CLAUDE.md`; Codex and Gemini read their user configuration and instruction files; Copilot
+is started with `--no-custom-instructions`. Personal instructions change what the agent does, so
+measure from a profile without them, and never compare runs made under different ones.
+
 ---
 
 ## areg, gRPC, and areg without the agent layer
@@ -131,7 +136,9 @@ Allow the build commands -- every permission denial costs the agent a turn.
 | the run directory | `<date><label>-<project>` | `<date><label>-grpc-<project>` |
 
 **The fair setting is each framework's documentation where it lives:** areg ships it in the snapshot
-under test, gRPC on the web. `--web on|off` overrides either side, and `meta.txt` records it.
+under test, gRPC on the web. `--web on|off` overrides either side, and `meta.txt` records it. Only
+`claude` and `copilot` are held to it; `codex` and `gemini` reach what their own sandbox allows, and
+`meta.txt` says so.
 
 **`--sdk`** must be the root of an areg-sdk **git checkout** (the directory holding `AGENTS.md`), not a
 build or an install. Tracked and untracked-but-not-ignored files are copied, so an uncommitted change
@@ -149,7 +156,8 @@ the run path carries an areg name. Run it from a directory whose path does not c
 documentation, examples and code generator, with everything written for a coding agent removed
 (`strip_layer.py` holds the list).
 
-Measured with GitHub Copilot and GPT-5.6 Terra at medium effort, one run per task:
+Measured with GitHub Copilot and GPT-5.6 Terra at medium effort, one run per task
+([Agentic Coding](../../docs/wiki/09a-agentic-coding.md)):
 
 | Task | Without the layer | With the layer |
 |---|---|---|
@@ -185,14 +193,15 @@ A third framework needs a value in both scripts, its staging and its cold-start 
 | `--verify` | the hidden probes: `none`, `probes`, or `sanitize` (ASan and UBSan as well) | `probes` |
 | `--cache-ttl` | Claude only: the prompt-cache TTL, `1h` or `5m` | `1h` |
 | `--recipes`, `--layer` | areg only: whether a recipe may be copied; `off` removes the agent layer | `none`, `on` |
-| `--web` | whether the agent may search and fetch pages | `off` areg, `on` gRPC |
+| `--web` | whether the agent may search and fetch pages; `claude` and `copilot` only | `off` areg, `on` gRPC |
 | `--sdk`, `--grpc` | the areg checkout; the gRPC tools or prefix | this checkout; the `PATH` |
 | `--dry-run` | stage and print the prompt, start no agent | off |
 | `--allow-installed-areg` | measure an installed areg package on purpose | off |
 
 **Exit code:** `0` the agent finished; `2` the script refused to start, and says why; `3` the agent
-changed a file it was measured against, so the run is not valid; `4` no output, or the usage report
-failed. Acceptance is in `verify.json`, never implied by a zero exit.
+changed a file it was measured against, so the run is not valid; `4` the agent returned no output;
+any other value is the agent CLI's own exit code. The usage report and the probes never change it.
+Acceptance is in `verify.json`, never implied by a zero exit.
 
 ---
 
@@ -224,6 +233,8 @@ the project's own `scenarios.json`, assume no framework, and the agent never see
 python3 examples/ai-benchmark/analyze_run.py ./20260921c-coffeemachine
 python3 examples/ai-benchmark/verify_run.py  ./20260921c-coffeemachine --sanitize
 ```
+
+On Windows, call `python` or `py` instead of `python3`, which there often starts the Microsoft Store.
 
 **How to compare runs:**
 

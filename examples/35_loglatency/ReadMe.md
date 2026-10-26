@@ -20,9 +20,10 @@ Two load profiles:
 - **As fast as possible** (default): each source thread writes its messages in
   a loop. Shows the shortest call time and the highest rate, and where messages
   start to drop.
-- **Paced** (`-p=<ms>`, `-b=<n>`): a timer writes `n` messages per period. Shows
-  the call time and the trip time of a system that is not saturated, and whether
-  a steady rate is delivered without loss.
+- **Paced** (`-p=<ms>`, `-b=<n>`): each thread writes `n` messages per period,
+  woken by a high resolution timer. Shows the call time and the trip time of a
+  system that is not saturated, and whether a steady rate is delivered without
+  loss.
 
 With `-d=<file>` the sink also saves every message in a database file, the way
 `logobserver` does, so the numbers include the database write of a log observer.
@@ -83,11 +84,11 @@ expected number of messages arrived, or 3 seconds after the last one.
 |:-------|:-------:|:--------|
 | `-c=<n>` | 100000 | messages each thread measures |
 | `-w=<n>` | 1000 | messages each thread writes before it measures |
-| `-t=<n>` | 1 | threads that write at the same time (ignored with `-p`) |
+| `-t=<n>` | 1 | threads that write at the same time |
 | `-s=<n>` | 3 | strings in a message, 0 to 5 |
 | `-n=<n>` | 3 | numbers in a message, 0 to 5 |
-| `-p=<ms>` | 0 | a timer writes the messages, one burst per period; 0 writes as fast as possible |
-| `-b=<n>` | 1 | messages in each burst of `-p`; `-p=1 -b=50` holds 50 000 messages per second |
+| `-p=<ms>` | 0 | pacing period; 0 writes as fast as possible |
+| `-b=<n>` | 1 | messages each thread writes per period; `-p=1 -b=50` is 50 000 messages per second |
 
 **35_logsink**
 
@@ -116,11 +117,13 @@ expected number of messages arrived, or 3 seconds after the last one.
 - `lost` is the expected count minus the received count.
 - At full speed the trip time is mostly time spent waiting in queues. Use `-p`
   for the trip time of a single message.
-- On Windows the clock steps by 100 ns, and a timer period is at least about
-  16 ms, so `-p=1` writes about 60 bursts per second there; `-p=10 -b=800` holds
-  50 000 messages per second. The source prints the rate it reached.
+- On each timer tick a paced thread writes every message due by then, so a
+  late tick makes one larger burst, not a lower rate. The source prints the
+  rate it reached.
+- On Windows the clock steps by 100 ns.
 - A burst larger than about 1000 messages can overflow the queue of the logging
-  thread, which drops messages instead of blocking the application.
+  thread, which drops messages instead of blocking the application. Keep `-b`
+  below that, and use a shorter period or several sources for a higher rate.
 
 The scope `examples_35_logsource_*` must be enabled for `DEBUG` in `areg.init`,
 which is the default configuration.

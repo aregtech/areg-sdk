@@ -8,12 +8,11 @@ A .sqlog file is an SQLite database. Nothing special is needed to read it: the
 questions are 'msg_module', the process the record came from, and 'msg_log', the
 text. The scope name is part of the text.
 
-Not every row came from an application. The collector writes rows of its own --
-the header row it opens the file with, and a note for every instance that
-connects or disconnects -- and a viewer can store a marker. Those rows carry the
-PrioIgnore bit (0x0400) in 'msg_prio' and no scope, they belong to no process
-under test, and they are left out unless '--collector' asks for them. Filtering
-them in SQL is 'where (msg_prio & 1024) = 0'.
+Not every row came from an application. The writer adds rows of its own: the
+header row it opens the file with, a 'Dropped [ N ]' row when it could not keep
+up, and, in a file logobserver wrote, its notes. They carry no scope, belong to
+no process under test, and are left out unless '--collector' asks for them.
+Filtering them in SQL is 'where (msg_prio & 1024) = 0 and cookie_id <> 1'.
 
 Produce one, from this recipe's directory:
 
@@ -40,10 +39,14 @@ import argparse
 import sqlite3
 import sys
 
-# The bit the collector sets on the rows it writes itself. No application
+# The bit on the header row and on the notes of logobserver. No application
 # priority carries it: NOTSET, SCOPE, FATAL, ERROR, WARNING, INFO and DEBUG are
 # all below 0x0400.
 PRIO_IGNORE = 0x0400
+
+# The cookie of the writer itself, on the header row and on a 'Dropped' row.
+# Applications get cookies of 256 and above.
+COOKIE_WRITER = 1
 
 # Every column, named by none of them: a file written by an older collector is
 # missing the ones added since, and a reader that lists columns fails on it.
@@ -51,8 +54,9 @@ LOGS_QUERY = 'select * from logs order by time_created, id'
 
 
 def is_collector_row(row):
-    """True when the collector wrote the row itself rather than an application."""
-    return ((row['msg_prio'] or 0) & PRIO_IGNORE) != 0
+    """True when the writer added the row itself rather than an application."""
+    return (((row['msg_prio'] or 0) & PRIO_IGNORE) != 0
+            or row['cookie_id'] == COOKIE_WRITER)
 
 
 def all_rows(database):
@@ -89,7 +93,7 @@ def main():
     parser.add_argument('--module', help='only rows from this process')
     parser.add_argument('--scope', help='only rows whose text holds this scope')
     parser.add_argument('--collector', action='store_true',
-                        help="include the collector's own rows")
+                        help="include the rows the writer added itself")
     args = parser.parse_args()
 
     found = rows(args.database, args.module, args.scope, args.collector)

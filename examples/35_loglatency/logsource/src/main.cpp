@@ -6,8 +6,8 @@
 // Description : Log source of the logging benchmark. It writes log messages
 //               and measures how long one LOG_DBG call takes. The messages
 //               go to the log collector, where 35_logsink receives them.
-//               By default each thread writes as fast as it can; with -p a
-//               timer writes -b messages per period.
+//               By default each thread writes as fast as it can; with -p each
+//               thread writes -b messages per period, paced by a timer.
 //============================================================================
 
 #include "areg/base/areg_global.h"
@@ -15,9 +15,6 @@
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/base/ThreadConsumer.hpp"
-#include "areg/component/DispatcherThread.hpp"
-#include "areg/component/Timer.hpp"
-#include "areg/component/TimerConsumer.hpp"
 #include "areg/logging/areg_log.h"
 
 #include <algorithm>
@@ -35,7 +32,7 @@
 #endif // _MSC_VER
 
 DEF_LOG_SCOPE(examples_35_logsource_LogThread, generate);
-DEF_LOG_SCOPE(examples_35_logsource_PacedLogger, process_timer);
+DEF_LOG_SCOPE(examples_35_logsource_PacedThread, generate);
 
 namespace
 {
@@ -54,8 +51,8 @@ namespace
         uint32_t    threads { 1u };         //!< Threads that write logs at the same time.
         uint32_t    strings { 3u };         //!< Strings in one message, 0 to 5.
         uint32_t    numbers { 3u };         //!< Numbers in one message, 0 to 5.
-        uint32_t    period  { 0u };         //!< Milliseconds between two timer events, 0 for no pause.
-        uint32_t    burst   { 1u };         //!< Messages written on each timer event.
+        uint32_t    period  { 0u };         //!< Milliseconds of one pacing period, 0 for no pause.
+        uint32_t    burst   { 1u };         //!< Messages each thread writes per period.
     };
 
     //!< Reads the value of an option like "-c=1000". Returns false if the argument is another option.
@@ -84,7 +81,7 @@ namespace
             }
         }
 
-        opt.threads = (opt.period != 0u) ? 1u : std::max(opt.threads, 1u);
+        opt.threads = std::max(opt.threads, 1u);
         opt.strings = std::min(opt.strings, MAX_ARGS);
         opt.numbers = std::min(opt.numbers, MAX_ARGS);
         opt.burst   = std::max(opt.burst, 1u);
@@ -196,82 +193,67 @@ namespace
         const uint32_t  mWarmup;    //!< Messages written before the measured part.
     };
 
-    //!< A dispatcher thread that writes a burst of log messages on each timer event.
-    class PacedLogger final : public areg::DispatcherThread, private areg::TimerConsumer, public LogSamples
+    //!< A thread that writes -b messages per -p milliseconds. A high resolution timer wakes it,
+    //!< and on each tick it writes every message due by then, so a late tick does not lower the rate.
+    class PacedThread final : public areg::Thread, protected areg::ThreadConsumer, public LogSamples
     {
     public:
-        PacedLogger(const Options & opt, const std::string & format)
-            : areg::DispatcherThread( "PacedLogger", areg::DEFAULT_BLOCK_SIZE, areg::IGNORE_VALUE )
-            , areg::TimerConsumer   ( )
-            , LogSamples            ( opt, format )
-            , mTimer                ( static_cast<areg::TimerConsumer &>(*this), "PacedLoggerTimer" )
-            , mPeriod               ( opt.period )
-            , mWarmup               ( opt.warmup )
-            , mBurst                ( opt.burst )
-            , mFired                ( 0u )
-            , mBegin                ( )
-            , mDone                 ( true, false )
+        PacedThread(const std::string & name, const Options & opt, const std::string & format)
+            : areg::Thread  ( *this, name.c_str() )
+            , LogSamples    ( opt, format )
+            , mPeriod       ( opt.period )
+            , mWarmup       ( opt.warmup )
+            , mBurst        ( opt.burst )
         {
-        }
-
-        //!< Starts the timer and waits until the last message is written.
-        void run()
-        {
-            if (mTimer.start_timer(mPeriod, static_cast<areg::DispatcherThread &>(*this), areg::Timer::CONTINUOUSLY))
-            {
-                static_cast<void>(mDone.lock(areg::WAIT_INFINITE));
-            }
-
-            mTimer.stop_timer();
         }
 
     protected:
-        void process_timer(areg::Timer & /* timer */) override
+        void on_run() override
         {
-            LOG_SCOPE(examples_35_logsource_PacedLogger, process_timer);
-            for (uint32_t i = 0u; i < mBurst; ++i)
+            LOG_SCOPE(examples_35_logsource_PacedThread, generate);
+            const char * format{ mFormat.c_str() };
+            const uint64_t total{ static_cast<uint64_t>(mWarmup) + mSamples.size() };
+            const uint64_t periodNs{ static_cast<uint64_t>(mPeriod) * 1'000'000u };
+            areg::SyncTimer tick(mPeriod, true);
+            if (tick.set_timer() == false)
+                return;
+
+            const Clock::time_point begin{ Clock::now() };
+            Clock::time_point measured{ begin };
+            uint64_t written{ 0u };
+            while (written < total)
             {
-                const uint32_t index{ mFired++ };
-                const uint32_t seq{ next_sequence() };
-                if (index < mWarmup)
+                static_cast<void>(tick.lock(areg::WAIT_INFINITE));
+                const uint64_t elapsed{ static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(Clock::now() - begin).count()) };
+                const uint64_t due{ std::min(total, elapsed * mBurst / periodNs) };
+                for ( ; written < due; ++written)
                 {
-                    LOG_DBG(mFormat.c_str(), "alpha", "bravo", "charlie", "delta", "echo", seq, mNumbers[1], mNumbers[2], mNumbers[3], mNumbers[4]);
-                    continue;
-                }
+                    const uint32_t seq{ next_sequence() };
+                    if (written < mWarmup)
+                    {
+                        LOG_DBG(format, "alpha", "bravo", "charlie", "delta", "echo", seq, mNumbers[1], mNumbers[2], mNumbers[3], mNumbers[4]);
+                        continue;
+                    }
 
-                const uint32_t measured{ index - mWarmup };
-                if (measured >= static_cast<uint32_t>(mSamples.size()))
-                    return;
+                    const Clock::time_point start{ Clock::now() };
+                    if (written == mWarmup)
+                    {
+                        measured = start;
+                    }
 
-                const Clock::time_point start{ Clock::now() };
-                if (measured == 0u)
-                {
-                    mBegin = start;
-                }
-
-                LOG_DBG(mFormat.c_str(), "alpha", "bravo", "charlie", "delta", "echo", seq, mNumbers[1], mNumbers[2], mNumbers[3], mNumbers[4]);
-                mSamples[measured] = elapsed_ns(start);
-                if ((measured + 1u) == static_cast<uint32_t>(mSamples.size()))
-                {
-                    mDurationNs = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(Clock::now() - mBegin).count());
-                    mDone.set_signaled();
+                    LOG_DBG(format, "alpha", "bravo", "charlie", "delta", "echo", seq, mNumbers[1], mNumbers[2], mNumbers[3], mNumbers[4]);
+                    mSamples[static_cast<std::size_t>(written - mWarmup)] = elapsed_ns(start);
                 }
             }
-        }
 
-        bool post_event(areg::Event & eventElem) override
-        {
-            return areg::EventDispatcher::post_event(eventElem);
+            static_cast<void>(tick.cancel_timer());
+            mDurationNs = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(Clock::now() - measured).count());
         }
 
     private:
-        areg::Timer         mTimer;     //!< The timer that paces the messages.
-        const uint32_t      mPeriod;    //!< Milliseconds between two messages.
-        const uint32_t      mWarmup;    //!< Messages written before the measured part.
-        const uint32_t      mBurst;     //!< Messages written on each timer event.
-        uint32_t            mFired;     //!< Messages written so far.
-        Clock::time_point   mBegin;     //!< The start of the measured part.
-        areg::SyncEvent     mDone;      //!< Signaled when the last measured message is written.
+        const uint32_t  mPeriod;    //!< Milliseconds of one pacing period.
+        const uint32_t  mWarmup;    //!< Messages written before the measured part.
+        const uint32_t  mBurst;     //!< Messages written per period.
     };
 
     //!< Returns the sample at the given fraction of the sorted samples.
@@ -308,13 +290,14 @@ namespace
         return false;
     }
 
-    //!< Writes the messages as fast as possible from the given number of threads.
+    //!< Writes the messages from the given number of threads of type WriterThread.
+    template<class WriterThread>
     void run_threads(const Options & opt, const std::string & format, std::vector<uint32_t> & all, uint64_t & durationNs)
     {
-        std::vector<std::unique_ptr<LogThread>> threads;
+        std::vector<std::unique_ptr<WriterThread>> threads;
         for (uint32_t i = 0u; i < opt.threads; ++i)
         {
-            threads.emplace_back(std::make_unique<LogThread>("LogSource_" + std::to_string(i), opt, format));
+            threads.emplace_back(std::make_unique<WriterThread>("LogSource_" + std::to_string(i), opt, format));
         }
 
         for (auto & thread : threads)
@@ -327,20 +310,6 @@ namespace
             static_cast<void>(thread->shutdown(areg::WAIT_INFINITE));
             all.insert(all.end(), thread->samples().begin(), thread->samples().end());
             durationNs = std::max(durationNs, thread->duration_ns());
-        }
-    }
-
-    //!< Writes one message per period from a timer.
-    void run_paced(const Options & opt, const std::string & format, std::vector<uint32_t> & all, uint64_t & durationNs)
-    {
-        PacedLogger paced(opt, format);
-        if (paced.start(areg::WAIT_INFINITE))
-        {
-            paced.run();
-            paced.trigger_exit();
-            static_cast<void>(paced.shutdown(areg::WAIT_INFINITE));
-            all.insert(all.end(), paced.samples().begin(), paced.samples().end());
-            durationNs = paced.duration_ns();
         }
     }
 }
@@ -365,11 +334,11 @@ int main(int argc, char ** argv)
     uint64_t durationNs{ 0u };
     if (opt.period != 0u)
     {
-        run_paced(opt, format, all, durationNs);
+        run_threads<PacedThread>(opt, format, all, durationNs);
     }
     else
     {
-        run_threads(opt, format, all, durationNs);
+        run_threads<LogThread>(opt, format, all, durationNs);
     }
 
     if (all.empty())
