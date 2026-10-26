@@ -276,4 +276,24 @@ void LogObserverBase::log_messages(std::vector<SharedBuffer>& messages, ITEM_ID 
     LoggerClient::instance().log_messages(messages, instId, scopeId);
 }
 
+uint32_t LogObserverBase::delivered_log_id() const noexcept
+{
+    return LoggerClient::instance().delivered_log_id();
+}
+
+uint32_t LogObserverBase::add_marker(uint32_t masterId, areg::LogPriority level, const std::string& author, const std::string& note)
+{
+    return LoggerClient::instance().add_marker(masterId, level, String(author), String(note));
+}
+
+bool LogObserverBase::remove_marker(uint32_t markerId)
+{
+    return LoggerClient::instance().remove_marker(markerId);
+}
+
+bool LogObserverBase::queue_state(LogQueueState& state) const noexcept
+{
+    return log_observer_queue_state(&state);
+}
+
 } // namespace areg::logger

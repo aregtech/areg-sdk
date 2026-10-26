@@ -258,6 +258,7 @@ Projects like `xx_generate` are created from **Service Interface** document file
 | **Data- & Message-Rate**  | Performance Benchmark Test    | 23_pubdatarate                                |
 | **Latency Measurement**   | Latency Benchmark Test        | 30_publatency, 31_loclatency                  |
 | **Mixed Traffic**         | Bulk vs small-message latency | 32_pubmixed                                   |
+| **Logging Rate**          | Logs per second and log latency | 35_loglatency ([results](./04f-logging-performance.md)) |
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 

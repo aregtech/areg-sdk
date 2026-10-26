@@ -17,7 +17,6 @@
 #include "areg/base/DateTime.hpp"
 #include "areg/base/File.hpp"
 #include "areg/base/MemoryDefs.hpp"
-#include "areg/base/Process.hpp"
 #include "areg/logging/LogConfiguration.hpp"
 
 //////////////////////////////////////////////////////////////////////////
@@ -91,7 +90,7 @@ bool LogCollectorDatabase::start(const areg::String & dbPath)
         return false;
 
     mDatabase.set_database_logging_enabled(true);
-    if (mDatabase.connect(path, false) == false)
+    if (mDatabase.connect(path, areg::DatabaseRole::Recorder) == false)
     {
         mDatabase.disconnect();
         return false;
@@ -321,22 +320,5 @@ void LogCollectorDatabase::_write_scopes(DbRecord & record)
 
 void LogCollectorDatabase::_write_dropped(uint32_t dropped)
 {
-    const areg::String & module{ areg::Process::instance().app_name() };
-    const TIME64 now{ static_cast<TIME64>(areg::DateTime::now()) };
-
-    mScratch = areg::LogEntry(areg::LogMessageType::MessageText);
-    mScratch.logDataType    = areg::LogDataType::Local;
-    mScratch.logMessagePrio = areg::LogPriority::PrioError;
-    mScratch.logCookie      = areg::COOKIE_LOCAL;
-    mScratch.logModuleId    = static_cast<ITEM_ID>(areg::Process::instance().id());
-    mScratch.logTimestamp   = now;
-    mScratch.logReceived    = now;
-    mScratch.logMessageLen  = static_cast<uint32_t>(areg::String::format_string( mScratch.logMessage
-                                                                               , areg::LOG_MSG_SIZE
-                                                                               , "Dropped [ %u ] log messages, the logging database cannot keep up with the incoming data rate."
-                                                                               , dropped));
-    mScratch.logModuleLen   = areg::mem_copy(mScratch.logModule, areg::LOG_NAME_SIZE - 1u, module.as_string(), static_cast<uint32_t>(module.length()));
-    mScratch.logModule[mScratch.logModuleLen] = areg::String::EmptyChar;
-
-    mDatabase.log_message(mScratch);
+    mDatabase.log_dropped_messages(dropped, 0u);
 }

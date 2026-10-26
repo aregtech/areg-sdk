@@ -120,6 +120,9 @@ Centralized logging for distributed systems:
 **Recorded Logs:**
 - **[Log Database Format (`.sqlog`)](./04e-log-database-format.md)** - Schema of the recorded log files and ready made SQL queries
 
+**Performance:**
+- **[Logging Performance](./04f-logging-performance.md)** - Logs per second, log call time and loss, measured with `35_loglatency`
+
 ---
 
 ### 💾 Persistence

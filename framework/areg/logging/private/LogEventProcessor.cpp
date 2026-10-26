@@ -57,10 +57,6 @@ void LogEventProcessor::process_log_event( const LoggingEventData & data )
         _logging_save_scopes( );
         break;
 
-    case LoggingEventData::LogAction::LogMessage:
-        _logging_log_message( data );
-        break;
-
     case LoggingEventData::LogAction::OpenRemote:
         _logging_open_remote( );
         break;
@@ -96,11 +92,6 @@ inline void LogEventProcessor::_set_logging_enabled( bool logsEnable )
 inline void LogEventProcessor::_logging_save_scopes()
 {
     mLogManager.mLogConfig.save_configuration( );
-}
-
-inline void LogEventProcessor::_logging_log_message( const LoggingEventData & data )
-{
-    mLogManager.write_log_message( data );
 }
 
 inline void LogEventProcessor::_change_scope_priority( const SharedBuffer & stream, uint32_t scopeCount )

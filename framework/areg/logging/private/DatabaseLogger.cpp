@@ -55,7 +55,7 @@ bool DatabaseLogger::open_logger()
     
     String fileName(mLogConfiguration.database_full_path());
     String dbFile = File::normalize_path(fileName.as_string());
-    return mDatabase->connect(dbFile, false);
+    return mDatabase->connect(dbFile, areg::DatabaseRole::Recorder);
 }
 
 void DatabaseLogger::close_logger()

@@ -28,6 +28,7 @@
 #include "areg/persist/ConfigListener.hpp"
 
 #include "areg/logging/LoggingDefs.hpp"
+#include "aregextend/db/LogDbWriter.hpp"
 #include "aregextend/db/LogSqliteDatabase.hpp"
 
 #include "areglogger/client/private/ObserverMessageProcessor.hpp"
@@ -79,6 +80,9 @@ private:
 
     //!< The message source. It is marked as an observer.
     static constexpr areg::MessageSource          SOURCE_TYPE { areg::MessageSource::SourceObserver };
+
+    //!< The position of the key `log::<module>::db::queue`, the size of the queue of the logs in megabytes.
+    static constexpr std::string_view               CONFIG_QUEUE_POSITION   { "queue" };
 
 //////////////////////////////////////////////////////////////////////////
 // Static methods.
@@ -249,12 +253,48 @@ public:
     uint32_t add_log(const ITEM_ID & cookie, areg::LogPriority prio, TIME64 timestamp, const char * message);
 
     /**
-     * \brief   Deletes one log message from the logging database.
+     * \brief   Queues the deletion of one log message from the logging database, in order with the
+     *          logs.
      *
      * \param   logId   The ID of the log message, as returned by `add_log()`.
-     * \return  Returns true if the message was deleted; false otherwise.
+     * \return  Returns true if the deletion is queued; false otherwise.
      **/
     bool remove_log(uint32_t logId);
+
+    /**
+     * \brief   Returns the database ID of the log message being delivered to the observer callback
+     *          on the calling thread. Valid only inside the callback; 0 if the database is off or
+     *          the message was not saved.
+     **/
+    [[nodiscard]]
+    uint32_t delivered_log_id() const noexcept;
+
+    /**
+     * \brief   Queues a marker of a log row of the logging database. The marker is saved in order
+     *          with the logs, after every log queued before it.
+     *
+     * \param   masterId    The ID of the log row to mark.
+     * \param   level       The marker level, one of the `PrioMarker*` priorities.
+     * \param   author      The one who sets the marker. Can be empty.
+     * \param   note        The note of the marker. Can be empty.
+     * \return  The ID of the new marker, or 0 if the database is not open, the level is not a
+     *          marker level, or no log with that ID was saved.
+     **/
+    uint32_t add_marker(uint32_t masterId, areg::LogPriority level, const String& author, const String& note);
+
+    /**
+     * \brief   Queues the removal of a marker from the logging database, in order with the logs.
+     *
+     * \param   markerId    The ID of the marker, as returned by `add_marker()`.
+     * \return  Returns true if the removal is queued; false if the database is not open.
+     **/
+    bool remove_marker(uint32_t markerId);
+
+    /**
+     * \brief   Returns the state of the queue of the logs waiting to be saved. Takes no lock.
+     **/
+    [[nodiscard]]
+    inline areg::ext::LogDbWriter::QueueState queue_state() const noexcept;
 
     /**
      * \brief   Creates or opens the logging database. If no path is specified, uses the location
@@ -596,6 +636,13 @@ private:
     [[nodiscard]]
     inline LoggerClient& self();
 
+    /**
+     * \brief   Returns the size of the queue of the logs waiting to be saved, in megabytes, from
+     *          the configuration key `log::<module>::db::queue`. Zero if the key is not set.
+     **/
+    [[nodiscard]]
+    static uint32_t _config_queue_mb();
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables.
 //////////////////////////////////////////////////////////////////////////
@@ -626,6 +673,11 @@ private:
      * \brief   The logging database engine.
      **/
     areg::ext::LogSqliteDatabase    mLogDatabase;
+
+    /**
+     * \brief   Saves the logs in the database on its own thread.
+     **/
+    areg::ext::LogDbWriter          mDbWriter;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -691,6 +743,11 @@ inline void LoggerClient::log_scope_messages(std::vector<SharedBuffer>& messages
 inline void LoggerClient::log_messages(std::vector<SharedBuffer>& messages, ITEM_ID instId, uint32_t scopeId)
 {
     mLogDatabase.log_messages(messages, instId, scopeId);
+}
+
+inline areg::ext::LogDbWriter::QueueState LoggerClient::queue_state() const noexcept
+{
+    return mDbWriter.queue_state();
 }
 
 inline LoggerClient& LoggerClient::self()

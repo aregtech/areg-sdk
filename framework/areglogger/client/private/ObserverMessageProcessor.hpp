@@ -27,8 +27,11 @@
 namespace areg {
     struct LogEntry;
     class MessageEnvelope;
+    class DateTime;
     enum class LogPriority : uint16_t;
 } // namespace areg
+
+struct ScopeInfo;
 
 namespace areg::logger {
     class LoggerClient;
@@ -108,12 +111,20 @@ public:
     /**
      * \brief   Handles a log message notification. Every log message, received from a remote
      *          source or made locally, passes through this method: it is the only place that
-     *          saves a log in the database and hands it to the observer.
+     *          queues a log for the database and hands it to the observer.
      *
      * \param   msgReceived     Buffer containing the log message.
-     * \return  The identifier the log message got in the database, or 0 if it was not saved.
+     * \return  The identifier the log message gets in the database, or 0 if it is not saved.
      **/
     uint32_t notify_log_message(const areg::MessageEnvelope& msgReceived);
+
+    /**
+     * \brief   Returns the database identifier of the log message that `notify_log_message()`
+     *          is delivering on the calling thread, or 0 outside a delivery, with the database
+     *          off, or if the message was not saved.
+     **/
+    [[nodiscard]]
+    static uint32_t delivered_log_id() noexcept;
 
     /**
      * \brief   Makes a log message on the observer side and passes it through the same path as a
@@ -128,11 +139,11 @@ public:
     uint32_t add_local_log(ITEM_ID cookie, areg::LogPriority prio, TIME64 timestamp, const char * message);
 
     /**
-     * \brief   Deletes one log message from the database. This is the single point of removing a
-     *          log.
+     * \brief   Queues the deletion of one log message from the database, in order with the logs.
+     *          This is the single point of removing a log.
      *
      * \param   logId   The identifier of the log message to delete.
-     * \return  Returns true if the statement ran.
+     * \return  Returns true if the deletion is queued.
      **/
     bool remove_log(uint32_t logId);
 
@@ -153,6 +164,17 @@ private:
      * \param   msgReceived     Buffer containing disconnected client data.
      **/
     void _clients_disconnected(const areg::MessageEnvelope& msgReceived);
+
+    /**
+     * \brief   Reads the list of scopes of a scope message and queues it for the database.
+     *
+     * \param   msgReceived     The message with the number of scopes and the scopes.
+     * \param   cookie          The instance the scopes belong to.
+     * \param   now             The moment to save with the scopes.
+     * \param[out] scopes       The scopes read, to pass to the observer. The caller deletes it.
+     * \return  The number of scopes read.
+     **/
+    uint32_t _save_scopes(const areg::MessageEnvelope& msgReceived, ITEM_ID cookie, const areg::DateTime& now, ScopeInfo*& scopes);
 
     //!< Initializes the local log message with default values.
     void _init_local_log_message(areg::LogEntry& log, ITEM_ID cookie, TIME64 timestamp = 0) const;

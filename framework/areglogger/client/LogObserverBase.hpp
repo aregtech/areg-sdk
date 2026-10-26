@@ -365,6 +365,53 @@ public:
      **/
     void log_messages(std::vector<areg::SharedBuffer>& messages, ITEM_ID instId, uint32_t scopeId);
 
+    /**
+     * \brief   Returns the database ID of the log message being delivered to `on_log_message()`.
+     *          Valid only inside `on_log_message()`, on the thread that calls it. Returns 0 if the
+     *          database is off or the message was not saved.
+     **/
+    [[nodiscard]]
+    uint32_t delivered_log_id() const noexcept;
+
+    /**
+     * \brief   Sets a marker on a log row of the logging database. The marker belongs to the row,
+     *          its master: a viewer shows it with the row wherever sorting or filtering puts the
+     *          row. The observer saves the marker in order with the logs, so the file keeps one
+     *          writer and a marker of a row not saved yet is saved after it. Can be called inside
+     *          `on_log_message()`.
+     *
+     * \param   masterId    The database ID of the log row to mark, for example
+     *                      `delivered_log_id()` inside `on_log_message()`.
+     * \param   level       The marker level: `areg::LogPriority::PrioMarker`, `PrioMarkerInfo`,
+     *                      `PrioMarkerWarning` or `PrioMarkerError`.
+     * \param   author      The one who sets the marker, cut to 63 bytes. Can be empty.
+     * \param   note        The note of the marker, cut to 1023 bytes. Can be empty.
+     * \return  Returns the ID of the new marker. Returns 0 if the level is not a marker level,
+     *          no row with this ID was queued, or the database is not open. A marker of a row
+     *          deleted before the marker is saved is not saved.
+     **/
+    uint32_t add_marker(uint32_t masterId, areg::LogPriority level, const std::string& author, const std::string& note);
+
+    /**
+     * \brief   Removes a marker from the logging database. A marker is never changed: remove it and
+     *          set a new one. The removal is saved in order with the logs.
+     *
+     * \param   markerId    The ID of the marker, as returned by `add_marker()`.
+     * \return  Returns true if the removal is queued; false otherwise.
+     **/
+    bool remove_marker(uint32_t markerId);
+
+    /**
+     * \brief   Reads the state of the queue of the logs that wait to be saved in the database: the
+     *          logs dropped because the queue was full, the logs not saved yet and the bytes they
+     *          hold. Takes no lock, so it can be called while the observer saves the rest of the
+     *          queue on disconnect.
+     *
+     * \param[out] state    The state of the queue.
+     * \return  Returns true if the observer saves the logs in a database now.
+     **/
+    bool queue_state(LogQueueState& state) const noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Actions
 //////////////////////////////////////////////////////////////////////////

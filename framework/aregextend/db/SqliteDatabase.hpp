@@ -33,6 +33,7 @@ namespace areg::ext {
 class SqliteDatabase final : public DatabaseEngine
 {
     friend class SqliteStatement;
+    friend class LogSqliteDatabase;
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
@@ -87,14 +88,16 @@ public:
     bool is_operable() const noexcept final;
 
     /**
-     * \brief   Connects to the specified SQLite database.
+     * \brief   Connects to the specified SQLite database. A call on the connection waits up to
+     *          1 second for a lock that another connection holds.
      *
      * \param   dbPath      The path to the database. May be a file path, URL, or contain
      *                      authentication. If empty, uses the path from the 'areg.init' configuration file.
-     * \param   readOnly    If true, connects in read-only mode; if false, connects in read-write mode.
+     * \param   role        What the connection does with the database. Both roles open the file
+     *                      for reading and writing.
      * \return  True if the connection succeeded; false otherwise.
      **/
-    bool connect(const String& dbPath, bool readOnly) final;
+    bool connect(const String& dbPath, areg::DatabaseRole role) final;
 
     /**
      * \brief   Disconnects from the database and releases resources.

@@ -180,8 +180,8 @@ namespace
     std::vector<uint8_t> wire_of(areg::MessageEnvelope & message)
     {
         const areg::EventHeader * hdr{ message.header() };
-        const uint8_t * bytes{ reinterpret_cast<const uint8_t *>(hdr) };
-        return std::vector<uint8_t>(bytes, bytes + sizeof(areg::EventHeader) + hdr->bufHeader.biUsed);
+        const uint8_t * bytes{ areg::wire_data(*hdr) };
+        return std::vector<uint8_t>(bytes, bytes + areg::wire_size(*hdr));
     }
 
     //!< The wire bytes of a data message from source to target with a payload of the given size.
@@ -193,8 +193,8 @@ namespace
         hdr.target              = static_cast<uint32_t>(target);
         hdr.messageId           = DATA_MESSAGE;
         hdr.eventType           = static_cast<uint16_t>(areg::EventType::EventRemoteRequest);
-        std::vector<uint8_t> result(sizeof(areg::EventHeader) + size, fill);
-        std::memcpy(result.data(), &hdr, sizeof(hdr));
+        std::vector<uint8_t> result(areg::wire_size(hdr), fill);
+        std::memcpy(result.data(), areg::wire_data(hdr), areg::WIRE_HEADER_SIZE);
         return result;
     }
 
@@ -246,7 +246,7 @@ namespace
         //!< Reads one message and keeps its header. The payload is read and dropped.
         bool read_message(areg::EventHeader & hdr, int32_t timeoutMs)
         {
-            if (read_exact(socket, reinterpret_cast<uint8_t *>(&hdr), sizeof(hdr), timeoutMs) == false)
+            if (read_exact(socket, areg::wire_header(hdr), areg::WIRE_HEADER_SIZE, timeoutMs) == false)
                 return false;
 
             std::vector<uint8_t> payload(hdr.bufHeader.biUsed);
@@ -296,7 +296,7 @@ namespace
         areg::MessageEnvelope bye{ areg::create_disconnect_request(first.cookie, areg::COOKIE_ROUTER) };
         std::vector<uint8_t> bytes{ wire_of(bye) };
         const std::vector<uint8_t> half{ data_message(first.cookie, areg::TARGET_UNKNOWN, 64u, 0x5Au) };
-        bytes.insert(bytes.end(), half.begin(), half.begin() + sizeof(areg::EventHeader) + 20u);
+        bytes.insert(bytes.end(), half.begin(), half.begin() + areg::WIRE_HEADER_SIZE + 20u);
         result = result && check(first.send(bytes), "first client sent its disconnect and half of a message");
         result = result && check(sees_end(first.socket, ANSWER_MS), "the router closed the first client");
 
@@ -360,7 +360,10 @@ namespace
         result = result && check(target.create() && target.connect() && target.handshake(), "target connected");
 
         std::vector<uint8_t> bytes{ data_message(sender.cookie, target.cookie, 16u, 0x44u) };
-        reinterpret_cast<areg::EventHeader *>(bytes.data())->eventType = 0u;
+        areg::EventHeader hdr{ };
+        std::memcpy(areg::wire_header(hdr), bytes.data(), areg::WIRE_HEADER_SIZE);
+        hdr.eventType = 0u;
+        std::memcpy(bytes.data(), areg::wire_data(hdr), areg::WIRE_HEADER_SIZE);
         result = result && check(sender.send(bytes), "sender sent a message without an event type");
         result = result && check(sees_end(sender.socket, ANSWER_MS), "the router closed the sender");
 
@@ -387,7 +390,7 @@ namespace
         }
 
         const std::vector<uint8_t> message{ inBody ? data_message(stalled.cookie, areg::TARGET_UNKNOWN, 1'000u, 0x11u) : data_message(0u, 0u, 0u, 0u) };
-        const uint32_t cut{ inBody ? static_cast<uint32_t>(sizeof(areg::EventHeader)) + 10u : 10u };
+        const uint32_t cut{ inBody ? areg::WIRE_HEADER_SIZE + 10u : 10u };
         result = result && check(write_all(stalled.socket, message.data(), cut), inBody ? "stalled client sent a header and 10 bytes of its body" : "stalled client sent 10 bytes of a header");
 
         Client other;
@@ -415,9 +418,9 @@ namespace
         result = result && huge.create() && huge.connect() && huge.handshake();
         const std::vector<uint8_t> header{ data_message(huge.cookie, first.cookie, 0u, 0u) };
         areg::EventHeader hdr{ };
-        std::memcpy(&hdr, header.data(), sizeof(hdr));
+        std::memcpy(areg::wire_header(hdr), header.data(), areg::WIRE_HEADER_SIZE);
         hdr.bufHeader.biUsed = 768u << 20;
-        result = result && check(write_all(huge.socket, reinterpret_cast<const uint8_t *>(&hdr), sizeof(hdr)), "a client sent a header of a 768 MB message");
+        result = result && check(write_all(huge.socket, areg::wire_data(hdr), areg::WIRE_HEADER_SIZE), "a client sent a header of a 768 MB message");
         result = result && check(sees_end(huge.socket, ANSWER_MS), "the router closed that client");
 
         static_cast<void>(::setrlimit(RLIMIT_AS, &previous));

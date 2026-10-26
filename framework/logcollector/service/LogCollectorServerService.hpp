@@ -164,6 +164,16 @@ protected:
      **/
     void failed_process_message( const areg::MessageEnvelope & msgUnprocessed ) final;
 
+    /**
+     * \brief   Processes a service message of a connected source or observer at once, on the
+     *          receiving thread, so the messages of one connection keep their order. Other
+     *          messages are processed by the base class.
+     *
+     * \param   msgReceived     The received message.
+     * \param   whichSource     The socket that received the message.
+     **/
+    void process_received_message( areg::MessageEnvelope & msgReceived, areg::Socket & whichSource ) final;
+
 /************************************************************************/
 // ServiceEventConsumer overrides
 /************************************************************************/

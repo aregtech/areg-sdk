@@ -27,9 +27,15 @@
 #include "areg/base/String.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 
+#include <memory>
+#include <string_view>
 #include <vector>
 
+struct sqlite3;
+
 namespace areg::ext {
+
+class LogDbCheckpointer;
 
 //////////////////////////////////////////////////////////////////////////
 // LogSqliteDatabase class declaration
@@ -73,6 +79,21 @@ public:
         TIME64      toTime      { 0 };  //!< The moment it started being read again, zero while still open.
     };
 
+    /**
+     * \brief   A marker of one log row, its master. A marker has no place of its own: it shows with
+     *          its master wherever sorting or filtering puts the master. It is set and removed,
+     *          never changed.
+     **/
+    struct LogMarker
+    {
+        uint32_t            markerId    { 0u };     //!< The ID of the marker.
+        uint32_t            masterId    { 0u };     //!< The ID of the log row the marker belongs to.
+        areg::LogPriority   level       { areg::LogPriority::PrioInvalid }; //!< One of the `PrioMarker*` priorities.
+        TIME64              timeSet     { 0 };      //!< The moment the marker was set.
+        areg::String        author      { };        //!< The one who set the marker.
+        areg::String        note        { };        //!< The note of the marker.
+    };
+
 //////////////////////////////////////////////////////////////////////////
 // Static methods
 //////////////////////////////////////////////////////////////////////////
@@ -93,6 +114,13 @@ public:
      * \brief   Returns the SQL query to read all log messages from the database.
      **/
     static String read_all_log_messages_query();
+
+    /**
+     * \brief   Returns true if the priority is one of the marker levels: `PrioMarker`,
+     *          `PrioMarkerInfo`, `PrioMarkerWarning` or `PrioMarkerError`.
+     **/
+    [[nodiscard]]
+    static constexpr bool is_marker_level(areg::LogPriority level) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -197,10 +225,12 @@ public:
      *                      path and initialize the connection. If the parameter is empty, it should
      *                      take the data from the 'areg.init' configuration file.
      * 
-     * \param   readOnly    If true, the database engine should connect in read-only mode.
+     * \param   role        The recorder writes the logs: it sets the write mode of the file,
+     *                      prepares the insert statement and copies the write-ahead log in the
+     *                      background. A viewer does none of that and may still write markers.
      * \return  Returns true if succeeded to connect. Otherwise, returns false.
      **/
-    bool connect(const String& dbPath, bool readOnly) final;
+    bool connect(const String& dbPath, areg::DatabaseRole role) final;
 
     /**
      * \brief   Disconnects connected SqliteDatabase.
@@ -258,12 +288,94 @@ public:
     uint32_t last_log_id() const noexcept;
 
     /**
-     * \brief   Deletes one log message from the database.
+     * \brief   Saves the log message with the given identifier. Used by a writer that gives the
+     *          identifiers itself, before the rows reach the database.
+     *
+     * \param   message     The structure of the message to log.
+     * \param   logId       The identifier of the row. Zero lets the database choose it.
+     * \return  Returns true if succeeded to save the log in the database.
+     **/
+    bool log_message(const areg::LogEntry & message, uint32_t logId);
+
+    /**
+     * \brief   Saves a log row that reports how many log messages were dropped because the
+     *          database could not keep up with the incoming rate. The text starts with "Dropped".
+     *
+     * \param   dropped     The number of the dropped log messages.
+     * \param   logId       The identifier of the row. Zero lets the database choose it.
+     * \return  Returns true if succeeded to save the row.
+     **/
+    bool log_dropped_messages(uint32_t dropped, uint32_t logId);
+
+    /**
+     * \brief   Returns the greatest identifier in the logs table, or 0 if the table is empty.
+     **/
+    [[nodiscard]]
+    uint32_t max_log_id();
+
+    /**
+     * \brief   Returns the greatest identifier in the markers table, or 0 if the file has no
+     *          markers.
+     **/
+    [[nodiscard]]
+    uint32_t max_marker_id();
+
+    /**
+     * \brief   Deletes one log message and its markers from the database, together.
      *
      * \param   logId   The identifier of the log message, as returned by `last_log_id()`.
-     * \return  Returns true if the statement ran. A missing identifier is not an error.
+     * \return  Returns true if the statements ran. A missing identifier is not an error.
      **/
     bool remove_log(uint32_t logId);
+
+    /**
+     * \brief   Sets a marker on an existing log row. The first marker of a file that has no
+     *          markers table creates the table. The author is cut to `areg::LOG_NAME_SIZE - 1`
+     *          bytes and the note to 1023 bytes. On a connection that writes logs, call it inside
+     *          the open transaction of the logs, so that the file has one writer.
+     *
+     * \param   masterId    The identifier of the log row to mark, as returned by `last_log_id()`
+     *                      or read by `fill_log_window()`.
+     * \param   level       The level of the marker: `PrioMarker`, `PrioMarkerInfo`,
+     *                      `PrioMarkerWarning` or `PrioMarkerError`.
+     * \param   author      The one who sets the marker. Can be empty.
+     * \param   note        The note of the marker. Can be empty.
+     * \return  Returns the identifier of the new marker. Returns 0 if the level is not a marker
+     *          level, the log row does not exist, or the marker was not saved.
+     **/
+    uint32_t add_marker(uint32_t masterId, areg::LogPriority level, const areg::String& author, const areg::String& note);
+
+    /**
+     * \brief   Sets a marker with the given identifier on an existing log row, as `add_marker()`
+     *          does. Used by a writer that gives the identifiers itself.
+     *
+     * \param   markerId    The identifier of the marker.
+     * \param   masterId    The identifier of the log row to mark.
+     * \param   level       The level of the marker, one of the `PrioMarker*` priorities.
+     * \param   author      The one who sets the marker. Can be empty.
+     * \param   note        The note of the marker. Can be empty.
+     * \param   timeSet     The moment the marker was set.
+     * \return  Returns true if the marker was saved. Returns false if the level is not a marker
+     *          level or the log row does not exist.
+     **/
+    bool insert_marker(uint32_t markerId, uint32_t masterId, areg::LogPriority level, const areg::String& author, const areg::String& note, TIME64 timeSet);
+
+    /**
+     * \brief   Removes one marker. A marker is never changed; set a new one instead.
+     *
+     * \param   markerId    The identifier of the marker, as returned by `add_marker()`.
+     * \return  Returns true if the statement ran. A missing identifier is not an error. Returns
+     *          false if the file has no markers table.
+     **/
+    bool remove_marker(uint32_t markerId);
+
+    /**
+     * \brief   Reads all markers of the file, in the order they were set.
+     *
+     * \param[out] markers The list to fill. It is cleared first.
+     * \return  Returns the number of markers. Returns 0 if the file has no markers table.
+     **/
+    uint32_t read_markers(std::vector<LogMarker>& markers);
 
     /**
      * \brief   Called when need to log information about log source instance.
@@ -745,6 +857,70 @@ public:
     bool setup_statement_read_window_back(SqliteStatement& stmt, const LogPosition& before, int32_t limit);
 
     /**
+     * \brief   Prepares a statement that reads one window of filtered logs in the order they were
+     *          generated, starting after the given place. A row passes when it has no scope, or
+     *          when the rules set by `setup_filter_logs()` pass its scope and priority.
+     *
+     * \param   stmt    The statement to prepare.
+     * \param   instId  The instance to read. `areg::TARGET_ALL` reads all instances.
+     * \param   after   The place to continue from. A zeroed place starts at the first log.
+     * \param   limit   The greatest number of rows the window holds.
+     * \return  Returns true if the statement is ready to be read. Returns false if no filter is set.
+     **/
+    bool setup_statement_read_filter_window(SqliteStatement& stmt, ITEM_ID instId, const LogPosition& after, int32_t limit);
+
+    /**
+     * \brief   Prepares a statement that reads one window of filtered logs backwards, ending before
+     *          the given place. The rows come back newest first, so the caller reverses them.
+     *
+     * \param   stmt    The statement to prepare.
+     * \param   instId  The instance to read. `areg::TARGET_ALL` reads all instances.
+     * \param   before  The place to read back from. A zeroed place starts at the last log.
+     * \param   limit   The greatest number of rows the window holds.
+     * \return  Returns true if the statement is ready to be read. Returns false if no filter is set.
+     **/
+    bool setup_statement_read_filter_window_back(SqliteStatement& stmt, ITEM_ID instId, const LogPosition& before, int32_t limit);
+
+    /**
+     * \brief   Prepares a statement that reads one window of logs at a row number, in the order
+     *          the window methods read. A jump far away reads its window here once, then the
+     *          place of the last row read continues by keyset. The query skips `offset` rows,
+     *          so it costs as much as the rows before the window.
+     *
+     * \param   stmt    The statement to prepare. Read it with `fill_log_window()`.
+     * \param   offset  The number of the first row of the window, counted from 0.
+     * \param   limit   The greatest number of rows the window holds.
+     * \return  Returns true if the statement is ready to be read.
+     **/
+    bool setup_statement_read_window_at(SqliteStatement& stmt, uint32_t offset, int32_t limit);
+
+    /**
+     * \brief   Prepares a statement that reads one window of filtered logs at a row number of the
+     *          filtered rows, in the order `setup_statement_read_filter_window()` reads.
+     *
+     * \param   stmt    The statement to prepare. Read it with `fill_log_window()`.
+     * \param   instId  The instance to read. `areg::TARGET_ALL` reads all instances.
+     * \param   offset  The number of the first filtered row of the window, counted from 0.
+     * \param   limit   The greatest number of rows the window holds.
+     * \return  Returns true if the statement is ready to be read. Returns false if no filter is set.
+     **/
+    bool setup_statement_read_filter_window_at(SqliteStatement& stmt, ITEM_ID instId, uint32_t offset, int32_t limit);
+
+    /**
+     * \brief   Prepares a statement that reads the log rows that have a marker of the given levels,
+     *          in the order they were generated, with the columns of a window. If a filter is set
+     *          by `setup_filter_logs()`, only the rows it passes are read.
+     *
+     * \param   stmt        The statement to prepare. Read it with `fill_log_window()`.
+     * \param   instId      The instance to read. `areg::TARGET_ALL` reads all instances.
+     * \param   levelMask   The bits of the marker levels to read. A row is read when one of its
+     *                      markers has `(level & levelMask) != 0`; `PrioMarker` reads every marker.
+     * \return  Returns the number of rows the statement reads. Returns 0 and leaves the statement
+     *          empty if the file has no markers table.
+     **/
+    uint32_t setup_statement_read_marked_logs(SqliteStatement& stmt, ITEM_ID instId, uint16_t levelMask);
+
+    /**
      * \brief   Replaces the stretches of time the reading leaves out. The stretches live in
      *          the temporary database, so they are dropped when the connection closes and
      *          they never touch the log file, including a file opened read only.
@@ -756,15 +932,30 @@ public:
 
     /**
      * \brief   Reads rows of a prepared window into the given list and reports the place of
-     *          the last row read, which is where the next window continues from.
+     *          the last row read, which is where the next window continues from. The statement
+     *          is reset when the call returns: a window is one query, and the connection holds
+     *          no read after it.
      *
      * \param   logs        The list to append the rows to.
      * \param   stmt        The statement prepared by one of the window methods.
-     * \param   maxEntries  The greatest number of rows to read.
+     * \param   maxEntries  The greatest number of rows to read. A negative value reads all rows.
      * \param   lastRead    On return, the place of the last row read.
      * \return  Returns the number of rows read.
      **/
     static int32_t fill_log_window(std::vector<areg::SharedBuffer>& logs, SqliteStatement& stmt, int32_t maxEntries, LogPosition& lastRead);
+
+    /**
+     * \brief   Reads rows of a prepared window as the method above does, and appends the database
+     *          identifier of every row read, in the same order as the rows.
+     *
+     * \param   logs        The list to append the rows to.
+     * \param   stmt        The statement prepared by one of the window methods.
+     * \param   maxEntries  The greatest number of rows to read. A negative value reads all rows.
+     * \param   lastRead    On return, the place of the last row read.
+     * \param   rowIds      The list to append the identifiers of the rows to.
+     * \return  Returns the number of rows read.
+     **/
+    static int32_t fill_log_window(std::vector<areg::SharedBuffer>& logs, SqliteStatement& stmt, int32_t maxEntries, LogPosition& lastRead, std::vector<uint32_t>& rowIds);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -776,10 +967,24 @@ private:
      *          it may as contain the mask.
      *
      * \param   dbPath      The relative or absolute path the database file.
-     * \param   readOnly    If true, the database engine should connect in read-only mode.
+     * \param   role        What the connection does with the database.
      * \return  Returns true if succeeded to open or create the database file.
      **/
-    inline bool _open(const areg::String& dbPath, bool readOnly);
+    inline bool _open(const areg::String& dbPath, areg::DatabaseRole role);
+
+    /**
+     * \brief   Inserts a marker on an existing log row. Called with mLock taken.
+     *
+     * \param   markerId    The identifier of the marker. Zero lets the database choose it.
+     * \return  Returns the identifier of the saved marker, or 0 if it was not saved.
+     **/
+    inline uint32_t _insert_marker(uint32_t markerId, uint32_t masterId, areg::LogPriority level, const areg::String& author, const areg::String& note, TIME64 timeSet);
+
+    /**
+     * \brief   Returns the greatest value of the `id` column of the given table, or 0. Called
+     *          with mLock taken.
+     **/
+    inline uint32_t _max_id(std::string_view sql);
 
     /**
      * \brief   In the opened database file, creates the tables required to save logs.
@@ -834,6 +1039,40 @@ private:
      **/
     inline bool _create_temp_refused() noexcept;
 
+    /**
+     * \brief   Prepares a filtered window from one of the filtered window queries and binds the
+     *          instance, the place and the limit. Called with mLock taken.
+     **/
+    inline bool _setup_filter_window(SqliteStatement& stmt, ITEM_ID instId, const LogPosition& place, int32_t limit, std::string_view sqlFormat);
+
+    /**
+     * \brief   Reads the rows of a window, appends their identifiers if `rowIds` is not null, and
+     *          resets the statement.
+     **/
+    inline static int32_t _fill_window(std::vector<areg::SharedBuffer>& logs, SqliteStatement& stmt, int32_t maxEntries, LogPosition& lastRead, std::vector<uint32_t>* rowIds);
+
+    /**
+     * \brief   Starts the background checkpoint of a writing connection and moves the write-ahead
+     *          log checkpoints of the commits to it. Without it the commits checkpoint themselves.
+     **/
+    inline void _start_checkpointer();
+
+    /**
+     * \brief   Stops the background checkpoint and returns the checkpoints to the commits.
+     **/
+    inline void _stop_checkpointer();
+
+    /**
+     * \brief   Called by SQLite on the writing thread after each commit.
+     *
+     * \param   context     The background checkpoint of the connection.
+     * \param   db          The writing connection.
+     * \param   dbName      The name of the committed database.
+     * \param   walPages    The number of pages in the write-ahead log.
+     * \return  Returns 0 (SQLITE_OK).
+     **/
+    static int _on_wal_commit(void* context, ::sqlite3* db, const char* dbName, int walPages);
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
 //////////////////////////////////////////////////////////////////////////
@@ -856,6 +1095,9 @@ protected:
     //!< Mutex to protect database operations.
     areg::Mutex     mLock;
 
+    //!< The background checkpoint of a writing connection, null when the commits checkpoint themselves.
+    std::unique_ptr<LogDbCheckpointer>  mCheckpointer;
+
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
@@ -866,6 +1108,14 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // LogSqliteDatabase class inline methods.
 //////////////////////////////////////////////////////////////////////////
+
+constexpr bool LogSqliteDatabase::is_marker_level(areg::LogPriority level) noexcept
+{
+    return (level == areg::LogPriority::PrioMarker)
+        || (level == areg::LogPriority::PrioMarkerInfo)
+        || (level == areg::LogPriority::PrioMarkerWarning)
+        || (level == areg::LogPriority::PrioMarkerError);
+}
 
 bool LogSqliteDatabase::is_database_logging_enabled() const noexcept
 {

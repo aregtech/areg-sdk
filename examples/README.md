@@ -97,6 +97,7 @@ MSBuild ./areg-sdk.sln
 | [32_pubmixed](./32_pubmixed/)          | 🚀 Multiprocessing | Mixed Traffic, Head-of-Line Latency   | Runs a bulk stream and small request/response on the **same** connection and measures what the bulk costs the small messages. Shows how `queue::capacity` bounds both memory and small-message latency. |
 | [33_tempalarm](./33_tempalarm/)        | 🚀 Multiprocessing | AI-built, Attributes, Broadcasts      | Built entirely by an AI agent: a temperature monitor publishes readings and raises a threshold alarm; an operator process subscribes and reacts. |
 | [34_coffeemachine](./34_coffeemachine/)| 🚀 Multiprocessing | AI-built, State Machine               | Built entirely by an AI agent: a coffee machine service driven by a generated state machine (`.fsml`), with a simulated user in a second process. |
+| [35_loglatency](./35_loglatency/)      | 🚀 Multiprocessing | Logging Benchmark, Call Time, Trip    | Measures the cost of logging: the time of one `LOG_DBG` call in the application, and the trip of a message through `logcollector` to a log observer, at full speed and paced. |
 
 
 ---

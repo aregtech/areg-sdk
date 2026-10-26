@@ -39,9 +39,9 @@ LoggerClient::LoggerClient()
                                  , LoggerClient::SERVICE_TYPE
                                  , static_cast<uint32_t>(CONNECT_TYPE)
                                  , LoggerClient::SOURCE_TYPE
-                                 , static_cast<ConnectionConsumer &>(self())
-                                 , static_cast<RemoteMessageHandler &>(self())
-                                 , static_cast<DispatcherThread &>(self())
+                                 , static_cast<ConnectionConsumer &>(*this)
+                                 , static_cast<RemoteMessageHandler &>(*this)
+                                 , static_cast<DispatcherThread &>(*this)
                                  , LoggerClient::THREAD_PREFIX)
     , ConfigListener    ( )
     , DispatcherThread           ( LoggerClient::THREAD_NAME, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_DEFAULT_RING_CAPACITY )
@@ -53,7 +53,14 @@ LoggerClient::LoggerClient()
     , mIsPaused                  ( false )
     , mInstances                 ( )
     , mLogDatabase               ( )
+    , mDbWriter                  ( mLogDatabase )
 {
+}
+
+uint32_t LoggerClient::_config_queue_mb()
+{
+    const String value{ Application::config_manager().log_database_property(String(LoggerClient::CONFIG_QUEUE_POSITION)) };
+    return (value.is_empty() ? 0u : value.to_uint32());
 }
 
 bool LoggerClient::start_logger_client(const String & address /*= String::EmptyString*/, uint16_t portNr /*= areg::InvalidPort*/)
@@ -87,6 +94,7 @@ void LoggerClient::stop_logger_client()
     } while (false);
 
     disconnect_service_host();
+    mDbWriter.stop();
 }
 
 void LoggerClient::set_callbacks(const ObserverEvents* callbacks)
@@ -260,6 +268,24 @@ bool LoggerClient::remove_log(uint32_t logId)
     return mMessageProcessor.remove_log(logId);
 }
 
+uint32_t LoggerClient::delivered_log_id() const noexcept
+{
+    return ObserverMessageProcessor::delivered_log_id();
+}
+
+uint32_t LoggerClient::add_marker(uint32_t masterId, areg::LogPriority level, const String& author, const String& note)
+{
+    return mDbWriter.queue_marker(masterId, level, author, note);
+}
+
+bool LoggerClient::remove_marker(uint32_t markerId)
+{
+    return (markerId != 0u) && mDbWriter.queue_task([markerId](areg::ext::LogSqliteDatabase& database)
+        {
+            database.remove_marker(markerId);
+        });
+}
+
 bool LoggerClient::open_logging_database(const char* dbPath /*= nullptr*/)
 {
     String filePath (dbPath);
@@ -277,7 +303,13 @@ bool LoggerClient::open_logging_database(const char* dbPath /*= nullptr*/)
         }
     }
 
-    bool result{ mLogDatabase.connect(filePath, false) };
+    bool result{ mLogDatabase.connect(filePath, areg::DatabaseRole::Recorder) };
+    if (result && (mDbWriter.start(LoggerClient::_config_queue_mb()) == false))
+    {
+        mLogDatabase.disconnect();
+        result = false;
+    }
+
     FuncLogDbCreated callback{ mLogDatabase.is_operable() && (mCallbacks != nullptr) ? mCallbacks->evtLogDbCreated  : nullptr};
     if (LogObserverBase::_theLogObserver != nullptr)
     {
@@ -293,6 +325,7 @@ bool LoggerClient::open_logging_database(const char* dbPath /*= nullptr*/)
 
 void LoggerClient::close_logging_database()
 {
+    mDbWriter.stop();
     mLogDatabase.disconnect();
 }
 
@@ -517,21 +550,28 @@ void LoggerClient::disconnect_service_host()
 {
     if (is_running())
     {
-        FuncInstancesDisconnect callback{ mCallbacks != nullptr ? mCallbacks->evtInstDisconnected : nullptr };
+        FuncInstancesDisconnect callback{ nullptr };
+        areg::MapInstances instances;
+        do
+        {
+            // The receive thread changes the instances under the same lock.
+            Lock lock(mLock);
+            callback = mCallbacks != nullptr ? mCallbacks->evtInstDisconnected : nullptr;
+            instances = std::move(mInstances);
+            mInstances.clear();
+        } while (false);
+
         if (LogObserverBase::_theLogObserver != nullptr)
         {
             LogObserverBase::_theLogObserver->on_log_service_disconnected();
         }
         else if (callback != nullptr)
         {
-
-            for (const auto& entry : mInstances.data())
+            for (const auto& entry : instances.data())
             {
                 callback(&entry.first, 1);
             }
         }
-
-        mInstances.clear();
 
         ServiceClientConnectionBase::disconnect_service_host();
         wait_completion(areg::WAIT_INFINITE);

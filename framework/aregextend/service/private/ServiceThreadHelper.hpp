@@ -121,7 +121,7 @@ inline void send_pending_groups( areg::ext::PendingSend * batch
             if (ipcHdr == nullptr)
                 continue;
 
-            const uint64_t wireSize{ static_cast<uint64_t>(sizeof(areg::EventHeader)) + ipcHdr->bufHeader.biUsed };
+            const uint64_t wireSize{ areg::wire_size(*ipcHdr) };
             messages[bufCount] = &env;
             sizes[bufCount++]  = wireSize;
         }
@@ -487,7 +487,7 @@ inline int32_t receive_ready_socket( ServerConnection & conn
             msgReceived = std::move(part.msg);
             msgReceived.set_size_used(part.size);
             msgReceived.move_to_begin();
-            const uint64_t bytes{ static_cast<uint64_t>(sizeof(areg::EventHeader)) + part.size };
+            const uint64_t bytes{ static_cast<uint64_t>(areg::WIRE_HEADER_SIZE) + part.size };
             parts.drop(hSocket);
             handler.process_received_message(msgReceived, clientSocket);
             accum(bytes, 1u);
@@ -518,14 +518,14 @@ inline int32_t receive_ready_socket( ServerConnection & conn
         return completed;
 
     const areg::ThreadCache & tc{ areg::thread_rx_cache(hSocket) };
-    if ( tc.unread >= static_cast<uint32_t>(sizeof(areg::EventHeader)) )
+    if ( tc.unread >= areg::WIRE_HEADER_SIZE )
     {
         areg::EventHeader header{ };
-        std::memcpy(&header, tc.buffer.get() + tc.head, sizeof(areg::EventHeader));
-        if ( (static_cast<uint64_t>(sizeof(areg::EventHeader)) + header.bufHeader.biUsed) > tc.space )
+        std::memcpy(areg::wire_header(header), tc.buffer.get() + tc.head, areg::WIRE_HEADER_SIZE);
+        if ( static_cast<uint64_t>(areg::wire_size(header)) > tc.space )
         {
             // A message larger than the cache is received into its own buffer.
-            static_cast<void>(areg::receive_data_nowait(hSocket, reinterpret_cast<uint8_t *>(&header), sizeof(areg::EventHeader)));
+            static_cast<void>(areg::receive_data_nowait(hSocket, areg::wire_header(header), areg::WIRE_HEADER_SIZE));
             ReceiveParts::Part & started{ parts.start(hSocket) };
             started.body = areg::SocketConnectionBase::prepare_message(started.msg, header);
             started.size = header.bufHeader.biUsed;

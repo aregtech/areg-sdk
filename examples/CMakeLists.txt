@@ -43,6 +43,10 @@ if(AREG_EXAMPLES)
     include(${AREG_EXAMPLES_DIR}/32_pubmixed/CMakeLists.txt)
     include(${AREG_EXAMPLES_DIR}/33_tempalarm/CMakeLists.txt)
     include(${AREG_EXAMPLES_DIR}/34_coffeemachine/CMakeLists.txt)
+    if (AREG_LOGGING)
+        # Built only when logging is compiled in.
+        include(${AREG_EXAMPLES_DIR}/35_loglatency/CMakeLists.txt)
+    endif()
 
     if (AREG_DEVELOP_ENV MATCHES "Win32")
         # This projects are based either on MFC (Microsoft Foundation Classes)

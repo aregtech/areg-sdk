@@ -114,7 +114,7 @@ TEST(ReceivedHeaderTest, LocalFieldsOfPeerAreCleared)
     sent.internal1  = 0x1111'1111u;
     sent.internal2  = 0x2222'2222u;
     std::memcpy(&sent.custom, &hook, sizeof(hook));
-    ASSERT_EQ(areg::send_data(server, reinterpret_cast<const uint8_t *>(&sent), static_cast<uint32_t>(sizeof(sent))), static_cast<int32_t>(sizeof(sent)));
+    ASSERT_EQ(areg::send_data(server, areg::wire_data(sent), areg::wire_size(sent)), static_cast<int32_t>(areg::wire_size(sent)));
 
     gHookCalls.store(0u);
     {
@@ -150,13 +150,13 @@ TEST(ReceivedHeaderTest, ReservedFieldIsIgnored)
     sent.eventType  = static_cast<uint16_t>(areg::EventType::EventRemoteRequest);
     sent.reserved   = 0xFFFF'FFFFu;
     sent.messageId  = 0x1234u;
-    ASSERT_EQ(areg::send_data(server, reinterpret_cast<const uint8_t *>(&sent), static_cast<uint32_t>(sizeof(sent))), static_cast<int32_t>(sizeof(sent)));
+    ASSERT_EQ(areg::send_data(server, areg::wire_data(sent), areg::wire_size(sent)), static_cast<int32_t>(areg::wire_size(sent)));
 
     {
         const ConnectedSocket socket(client);
         const Receiver receiver;
         areg::MessageEnvelope received;
-        EXPECT_EQ(receiver.receive_message(received, socket), static_cast<int32_t>(sizeof(areg::EventHeader)));
+        EXPECT_EQ(receiver.receive_message(received, socket), static_cast<int32_t>(areg::WIRE_HEADER_SIZE));
         EXPECT_EQ(received.message_id(), 0x1234u);
     }
 
@@ -175,7 +175,7 @@ TEST(ReceivedHeaderTest, HeaderWithoutEventTypeIsRefused)
 
     areg::EventHeader sent{ };
     sent.messageId  = 0x1234u;
-    ASSERT_EQ(areg::send_data(server, reinterpret_cast<const uint8_t *>(&sent), static_cast<uint32_t>(sizeof(sent))), static_cast<int32_t>(sizeof(sent)));
+    ASSERT_EQ(areg::send_data(server, areg::wire_data(sent), areg::wire_size(sent)), static_cast<int32_t>(areg::wire_size(sent)));
 
     {
         const ConnectedSocket socket(client);

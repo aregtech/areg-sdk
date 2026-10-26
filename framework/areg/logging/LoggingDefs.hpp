@@ -513,6 +513,15 @@ namespace areg {
     }
 
     /**
+     * \brief   Returns true if the message holds one whole log entry: its size is the size of
+     *          the entry, and the names and the text end where the entry says they end.
+     *
+     * \param   msg     The log message to check, as it was received.
+     **/
+    [[nodiscard]]
+    AREG_API bool is_log_entry_valid(const MessageEnvelope & msg) noexcept;
+
+    /**
      * \brief   Generates an ID for the given scope name.
      *
      * \param   scopeName       The name of the scope.

@@ -12,7 +12,3 @@
 # Benign stats counters updated without a lock for telemetry only:
 #race:accumulate_sent
 #race:accumulate_received
-
-# The wire header includes BufferHeader with its live reference count, which another
-# thread changes while sendmsg copies the bytes. The receiver overwrites the field.
-race:areg::ext::backlog_os_start

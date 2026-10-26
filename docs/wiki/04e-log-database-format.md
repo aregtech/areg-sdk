@@ -50,8 +50,9 @@ All three use the same writer, so the schema below is identical in every case.
 ```bash
 # What is in the file?
 sqlite3 ./logs/logcollector_2026_08_18_11_20_35_120.sqlog ".tables"
-# instances  logs  scopes  sqlite_sequence  version
-# (sqlite_sequence is created by SQLite itself, it is not part of the log data)
+# instances  logs  markers  scopes  sqlite_sequence  version
+# (sqlite_sequence is created by SQLite itself, it is not part of the log data;
+#  a file written before markers existed has no markers table)
 
 # Which applications were recorded?
 sqlite3 ./logs/logcollector_2026_08_18_11_20_35_120.sqlog \
@@ -157,27 +158,60 @@ The log messages. This is the table that grows.
 
 | Column | Type | Content |
 |---|---|---|
-| `id` | INTEGER | Primary key, auto increment. Row order equals write order. |
+| `id` | INTEGER | Primary key, unique, numbered by the recorder in the order it writes. Row order equals write order. |
 | `cookie_id` | INTEGER | The application that produced the message. |
 | `scope_id` | INTEGER | The scope that produced the message. `0` when the message has no scope. |
-| `session_id` | INTEGER | Session ID of the message. Set only for remote logs. |
+| `session_id` | INTEGER | One entry into a scope: the scope enter row, the messages logged inside and the scope exit row share it. |
 | `msg_type` | INTEGER | Scope enter, message, or scope exit. See [Value Reference](#7-value-reference). |
 | `msg_prio` | INTEGER | Priority of the message. See [Value Reference](#7-value-reference). |
 | `msg_module_id` | INTEGER | Process ID of the application. |
 | `msg_thread_id` | INTEGER | Thread ID that produced the message. |
 | `msg_log` | TEXT | The message text. For a scope enter or exit row this is the scope name. |
+| `msg_len` | INTEGER | Length of the message text. |
 | `msg_thread` | TEXT | Name of the thread. |
 | `msg_module` | TEXT | Name of the application. |
 | `time_created` | NUMERIC | When the application produced the message. |
 | `time_received` | NUMERIC | When the recorder received it. The difference to `time_created` is the transport delay. |
-| `time_duration` | NUMERIC | For a scope exit row, the time spent in the scope, in microseconds. `0` otherwise. |
+| `time_duration` | NUMERIC | Microseconds since the scope was entered: the whole scope on an exit row, the time so far on a message inside a scope, `0` on an enter row and outside a scope. |
 
-Index: `idx_logs` on `(scope_id, msg_prio, cookie_id)`.
+Indexes: `idx_logs_cookie` on `(cookie_id, time_created)` for the logs of one application, `idx_logs_time` on `(time_created, id)` for the logs of all of them. Files from earlier versions carry other indexes; every query here works on them.
 
 > [!IMPORTANT]
-> `msg_module`, `msg_thread` and `cookie_id` always identify the **application that produced the log**, never the recorder. A log written by `myapp` keeps the name `myapp` in a file written by `logcollector`.
+> `msg_module`, `msg_thread` and `cookie_id` identify the **application that produced the log**, not the recorder. A log written by `myapp` keeps the name `myapp` in a file written by `logcollector`.
 
-**The first row** of every file is written by the recorder itself and reads `Starting database logging...`, with priority `1024` (ignore). Filter it out when you count messages.
+**Rows the recorder writes itself.** They have no scope and join no application in `instances`:
+
+| Row | `msg_prio` | `cookie_id` | Written by |
+|---|---|---|---|
+| `Starting database logging...`, the first row | `1024` | `1` | every recorder |
+| A note on a connection or on registered scopes | `4080` (`0x0FF0`, every bit set) | not an application's | `logobserver` and Lusan |
+| `Dropped [ N ] log messages, ...` | `64` (error) | `1` | a recorder that could not keep up |
+
+Applications get cookies of 256 and above. To count or list application messages only, use `WHERE (msg_prio & 1024) = 0 AND cookie_id <> 1`. The value `4080` includes the error bits, so a priority filter without `(msg_prio & 1024) = 0` also returns the notes of the log observer.
+
+### Markers: table `markers`
+
+A marker belongs to one log row, its **master**, and is nothing alone: a viewer shows it with the master row wherever sorting or filtering puts that row, every time the file is opened. A marker is set (level and note) and removed, never changed. A file written before markers existed has no `markers` table; the first marker creates it.
+
+| Column | Type | Content |
+|---|---|---|
+| `id` | INTEGER | Primary key, auto increment. |
+| `master_id` | INTEGER | The `logs.id` of the master row. |
+| `marker_prio` | INTEGER | The level: `0x0401` marker, `0x0501` info, `0x0481` warning, `0x0441` error. |
+| `author` | TEXT | Who set the marker, up to 63 bytes. |
+| `note` | TEXT | The note, up to 1023 bytes. |
+| `time_set` | INTEGER | When the marker was set, in microseconds. |
+
+Index: `idx_markers_master` on `(master_id)`. Removing a log row through the observer API removes its markers with it.
+
+A file has one writer. A viewer of a live session sets markers through the log observer that writes the file (`LogObserverBase::add_marker()`, `log_observer_add_marker()`), never through a second connection of its own.
+
+```sql
+-- Every marked message with its markers, in the order the messages were made
+SELECT l.id, datetime(l.time_created / 1000000, 'unixepoch') AS ts, l.msg_log, m.marker_prio, m.note
+FROM markers m JOIN logs l ON l.id = m.master_id
+ORDER BY l.time_created, l.id, m.id;
+```
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -198,11 +232,11 @@ The value is a **bit mask**. A scope priority usually combines a level with the 
 | `WARN` | `0x0080` | 128 | Warning |
 | `INFO` | `0x0100` | 256 | Information |
 | `DEBUG` | `0x0200` | 512 | Debug |
-| *(ignore)* | `0x0400` | 1024 | Internal message of the recorder, not produced by an application |
+| *(ignore)* | `0x0400` | 1024 | Set on rows of the recorder, never by an application |
 
 ```sql
--- Errors and fatals only
-SELECT msg_module, msg_log FROM logs WHERE (msg_prio & 96) != 0;   -- 96 = FATAL | ERROR
+-- Errors and fatals only, without the recorder's notes
+SELECT msg_module, msg_log FROM logs WHERE (msg_prio & 96) != 0 AND (msg_prio & 1024) = 0;   -- 96 = FATAL | ERROR
 ```
 
 ### Message type: `logs.msg_type`
@@ -283,7 +317,7 @@ ORDER BY l.id;
 SELECT l.msg_module, s.scope_name, l.msg_log
 FROM logs AS l LEFT JOIN scopes AS s
      ON l.scope_id = s.scope_id AND l.cookie_id = s.cookie_id AND s.scope_is_active = 1
-WHERE (l.msg_prio & 224) != 0          -- 224 = FATAL | ERROR | WARN
+WHERE (l.msg_prio & 224) != 0 AND (l.msg_prio & 1024) = 0   -- 224 = FATAL | ERROR | WARN
 ORDER BY l.id;
 ```
 
@@ -333,9 +367,12 @@ ORDER BY time_connected;
 
 - **The file is a normal SQLite database.** You may copy, compress, or archive it. Copy it only while the recorder is stopped, or use `sqlite3 <file> ".backup copy.sqlog"`.
 - **`scope_id` is unique per application only.** Always join `scopes` on `scope_id` **and** `cookie_id`. Joining on `scope_id` alone mixes the scopes of different applications.
-- **A `filter_rules` table may appear** while a file is open in Lusan or the log observer. It is a temporary working table for view filtering and is not part of a closed file.
+- **Viewing filters never touch the file.** Lusan and the log observer keep their filter rules (`filter_rules`) and refused time spans (`refused_spans`) in temporary tables of their own connection. They are never written to the file and are gone when the connection closes.
 - **No retention or rotation is built in.** The file grows until the recorder is stopped. Because the shipped file names contain the `%time%` mask, each start creates a new file, which is the intended way to keep files small.
-- **Reading while writing is allowed**, but a reader sees only what the writer has already committed. The log collector commits in batches, so the newest messages may be a moment behind.
+- **Reading while writing is allowed**, and a reader never blocks the writer. A reader sees only what the writer has already committed. The recorders commit in batches, so the newest messages may be a moment behind. The log observer saves from a queue of its own, so under heavy load the file may be further behind; everything queued is saved before the file closes.
+- **WAL while open, one plain file after close.** A recorder writes in WAL mode (`journal_mode=WAL`, `synchronous=NORMAL`): while the file is open, the files `<name>-wal` and `<name>-shm` sit beside it. On a clean close the recorder moves the log into the file and switches it back to `journal_mode=DELETE`, so a closed file is one file that also opens read only. If another program still has the file open at that moment, the file stays in WAL mode until the next writer closes it. A power loss may lose the last commits; a crash of the recorder loses nothing it committed.
+- **Keep reads short.** Once writing pauses, committed rows reach the main file within about one second. A reader that holds one read open for a long time keeps the `-wal` file growing, so read in windows and end each read.
+- **Page by key, not by offset.** To read the logs window by window, continue from the last row of the previous window with a row value: `WHERE (time_created, id) > (?, ?) ORDER BY time_created, id LIMIT 1000`. It seeks `idx_logs_time` and costs the same anywhere in the file. `LIMIT ? OFFSET ?` gets slower the farther the offset, and the form `time_created > ? OR (time_created = ? AND id > ?)` makes SQLite scan the index from the start. For a jump far away, such as a scrollbar drag, read one window with `OFFSET` and continue by key from its last row.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 

@@ -28,6 +28,9 @@
 #endif  // defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
 
 namespace {
+    //! The longest time in milliseconds a call waits for a lock held by another connection.
+    constexpr int   BUSY_TIMEOUT_MS { 1000 };
+
     inline sqlite3* _sqlite(void* dbObject)
     {
         return reinterpret_cast<sqlite3*>(dbObject);
@@ -89,6 +92,10 @@ inline bool SqliteDatabase::_open(const String& dbPath)
         _close();
         result = false;
     }
+    else
+    {
+        ::sqlite3_busy_timeout(_sqlite(mDbObject), BUSY_TIMEOUT_MS);
+    }
 
     return result;
 }
@@ -97,7 +104,7 @@ inline void SqliteDatabase::_close() noexcept
 {
     if (mDbObject != nullptr)
     {
-        ::sqlite3_close(_sqlite(mDbObject));
+        ::sqlite3_close_v2(_sqlite(mDbObject));
         mDbObject = nullptr;
     }
 }
@@ -112,7 +119,7 @@ uint32_t SqliteDatabase::last_inserted_id() const noexcept
     return (mDbObject != nullptr ? static_cast<uint32_t>(sqlite3_last_insert_rowid(_sqlite(mDbObject))) : 0u);
 }
 
-bool SqliteDatabase::connect(const String& dbPath, bool /*readOnly*/)
+bool SqliteDatabase::connect(const String& dbPath, areg::DatabaseRole /*role*/)
 {
     return _open(dbPath);
 }

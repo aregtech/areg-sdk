@@ -53,7 +53,6 @@ public:
         , EnableLogs    //!< Action to notify to enable logging
         , DisableLogs   //!< Action to notify to stop logging
         , SaveScopes    //!< Action to notify to save scope list
-        , LogMessage    //!< Action to output logging message
         , UpdateScopes  //!< Action to update scope priorities
         , QueryScopes   //!< Action to send the list of scopes.
         , OpenRemote    //!< Action to open the remote logger once the system is up.
@@ -109,33 +108,11 @@ public:
      **/
     inline void set_action( LoggingEventData::LogAction action ) noexcept;
 
-    /**
-     * \brief   Returns a pointer to the LogEntry embedded in the message buffer.
-     *          Valid only for LogMessage events -- returns nullptr if the message is not allocated.
-     **/
-    [[nodiscard]]
-    inline const areg::LogEntry* log_entry() const noexcept;
-
-    /**
-     * \brief   Returns a mutable reference to the pre-built event envelope.
-     *          Valid (is_valid() == true) only for LogMessage events.
-     **/
-    [[nodiscard]]
-    inline areg::MessageEnvelope & message() noexcept;
-
-    /**
-     * \brief   Returns the pre-built event envelope for forwarding to NetTcpLogger.
-     *          Valid (is_valid() == true) only for LogMessage events.
-     **/
-    [[nodiscard]]
-    inline const areg::MessageEnvelope & message() const noexcept;
-
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
     LoggingEventData::LogAction     mAction;    //!< The action to perform.
-    areg::MessageEnvelope           mMessage;   //!< Pre-built log message; invalid (null buffer) for non-LogMessage events.
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -162,21 +139,6 @@ inline void LoggingEventData::set_action( LoggingEventData::LogAction action ) n
     mAction = action;
 }
 
-inline const areg::LogEntry* LoggingEventData::log_entry() const noexcept
-{
-    return mMessage.is_valid() ? reinterpret_cast<const areg::LogEntry*>(mMessage.buffer()) : nullptr;
-}
-
-inline areg::MessageEnvelope & LoggingEventData::message() noexcept
-{
-    return mMessage;
-}
-
-inline const areg::MessageEnvelope & LoggingEventData::message() const noexcept
-{
-    return mMessage;
-}
-
 inline constexpr const char * LoggingEventData::as_string( LoggingEventData::LogAction action ) noexcept
 {
     switch ( action )
@@ -193,8 +155,6 @@ inline constexpr const char * LoggingEventData::as_string( LoggingEventData::Log
         return "LoggingEventData::LogAction::DisableLogs";
     case LoggingEventData::LogAction::SaveScopes:
         return "LoggingEventData::LogAction::SaveScopes";
-    case LoggingEventData::LogAction::LogMessage:
-        return "LoggingEventData::LogAction::LogMessage";
     case LoggingEventData::LogAction::UpdateScopes:
         return "LoggingEventData::LogAction::UpdateScopes";
     case LoggingEventData::LogAction::QueryScopes:

@@ -348,6 +348,35 @@ SCENARIOS = [
                     args=['-t=cross', '-m=bc0,pp0,bc64,pp64,bc1024,pp1024',
                           '-c=20000', '-w=2000'],
                     expect=[r'cross\s+\|\s+bc0'])]},
+
+    # ---- logging, source -> logcollector -> log observer ------------------------
+    # The collector is a helper that runs until it is told to quit. The sink is a log
+    # observer that ends when the expected messages arrived, or when they stop. The source
+    # writes the messages and leads the scenario. The sink counts the warm-up messages too.
+    #
+    #   full  = one thread writes as fast as it can: the shortest call and where drops start.
+    #   paced = a timer writes one message per millisecond: the trip of a single message.
+#   db    = full speed, the sink saves into a database file: the logobserver path.
+    {'name': '35_logfull', 'tier': 'perf', 'timeout': 300, 'measure': 'loglatency',
+     'router': False,
+     'procs': [proc('logcollector', args=['--console'], must_exit=False, quit=['-q']),
+               proc('35_logsink', args=['-c=101000'], expect=[r'35 log trip']),
+               proc('35_logsource', args=['-c=100000', '-w=1000'],
+                    expect=[r'35 log call'])]},
+
+    {'name': '35_logpaced', 'tier': 'perf', 'timeout': 300, 'measure': 'loglatency',
+     'router': False,
+     'procs': [proc('logcollector', args=['--console'], must_exit=False, quit=['-q']),
+               proc('35_logsink', args=['-c=5100'], expect=[r'35 log trip']),
+               proc('35_logsource', args=['-c=5000', '-w=100', '-p=1'],
+                    expect=[r'35 log call'])]},
+
+    # The sink also saves every message in a database file, as logobserver does.
+    {'name': '35_logdb', 'tier': 'perf', 'timeout': 300, 'measure': 'loglatency',
+     'router': False,
+     'procs': [proc('logcollector', args=['--console'], must_exit=False, quit=['-q']),
+               proc('35_logsink', args=['-c=20000', '-d=35_logdb.sqlog'], expect=[r'35 log trip']),
+               proc('35_logsource', args=['-c=20000', '-w=0'], expect=[r'35 log call'])]},
 ]
 
 # Exit codes that mean the process was terminated abnormally.

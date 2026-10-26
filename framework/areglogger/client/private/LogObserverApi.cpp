@@ -122,7 +122,13 @@ LOGGER_API_IMPL bool log_observer_initialize(const ObserverEvents * callbacks, c
         theObserver.losState = ObserverState::ObserverDisconnected;
         _set_callbacks(theObserver.losEvents, callbacks);
         client.set_callbacks(&theObserver.losEvents);
+        const bool configured{ areg::Application::is_configured() };
         areg::Application::setup(false, false, false, true, false, configFilePath, static_cast<areg::ConfigListener *>(&client));
+        if (configured)
+        {
+            // Reports the configuration that an earlier setup() of the application has loaded.
+            static_cast<areg::ConfigListener &>(client).post_read_configuration(areg::Application::config_manager());
+        }
     }
 
     return _is_initialized(theObserver.losState);
@@ -444,6 +450,55 @@ LOGGER_API_IMPL bool log_observer_remove_log(uint32_t logId)
     }
 
     return result;
+}
+
+LOGGER_API_IMPL uint32_t log_observer_delivered_log_id(void)
+{
+    return areg::logger::LoggerClient::instance().delivered_log_id();
+}
+
+LOGGER_API_IMPL uint32_t log_observer_add_marker(uint32_t masterId, uint16_t level, const char * author, const char * note)
+{
+    LogObserverStruct& theObserver { log_observer_data() };
+    uint32_t result{ 0 };
+    areg::Lock lock(theObserver.losLock);
+    if (_is_initialized(theObserver.losState))
+    {
+        result = areg::logger::LoggerClient::instance().add_marker( masterId
+                                                                  , static_cast<areg::LogPriority>(level)
+                                                                  , areg::String(author)
+                                                                  , areg::String(note));
+    }
+
+    return result;
+}
+
+LOGGER_API_IMPL bool log_observer_remove_marker(uint32_t markerId)
+{
+    LogObserverStruct& theObserver { log_observer_data() };
+    bool result{ false };
+    areg::Lock lock(theObserver.losLock);
+    if (_is_initialized(theObserver.losState))
+    {
+        result = areg::logger::LoggerClient::instance().remove_marker(markerId);
+    }
+
+    return result;
+}
+
+LOGGER_API_IMPL bool log_observer_queue_state(LogQueueState* state)
+{
+    if (state == nullptr)
+        return false;
+
+    const areg::ext::LogDbWriter::QueueState queue{ areg::logger::LoggerClient::instance().queue_state() };
+    state->lqDropped        = queue.dropped;
+    state->lqPendingBytes   = queue.pendingBytes;
+    state->lqPeakBytes      = queue.peakBytes;
+    state->lqLimitBytes     = queue.limitBytes;
+    state->lqPending        = queue.pending;
+    state->lqReserved       = 0u;
+    return queue.running;
 }
 
 LOGGER_API_IMPL int32_t log_observer_active_database_path(char* dbPath, int32_t space)

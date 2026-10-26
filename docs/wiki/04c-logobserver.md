@@ -439,12 +439,21 @@ log::logobserver::enable::file = true
 log::logobserver::enable::db   = true
 
 # Database settings
-log::logobserver::db::name     = sqlite3
-log::logobserver::db::location = ./logs/log_%time%.sqlite3
+log::logobserver::db::engine   = sqlite3
+log::logobserver::db::name     = log_%time%.sqlog
+log::logobserver::db::location = ./logs
+log::logobserver::db::queue    = 256        # MB of received logs waiting to be saved
 
 # File location (default)
 log::logobserver::file::location = ./logs/logobserver.log
 ```
+
+**How the database is written.** The observer hands every received log to the display or callback at once and puts it in a queue; a separate thread saves the queue in the database, up to 16 384 logs or 100 ms per transaction. A slow disk therefore never slows down receiving, and the observer never holds back the log collector or the other observers.
+
+- 📦 **Queue size:** `log::<module>::db::queue`, in megabytes (default 256). When the queue is full, a new log is dropped and counted, and the database gets a row that starts with `Dropped` and says how many were lost (see the query *Were messages lost?* in the [database format](./04e-log-database-format.md)).
+- 🔢 **Row IDs are known at once:** a log gets its database ID when it is queued, so a marker can be set on a log that is not saved yet. Markers are saved in order with the logs.
+- 💾 **Disconnect saves everything:** stopping or disconnecting the observer saves the whole queue before the file closes. An application crash loses what was still in the queue.
+- 📊 **Watch it:** `log_observer_queue_state()` (C API) or `LogObserverBase::queue_state()` returns the dropped count, the logs not saved yet and the bytes they hold, without taking a lock.
 
 ### Message Layout
 

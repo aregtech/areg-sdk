@@ -359,8 +359,8 @@ inline int32_t ClientConnection::send_message(const MessageEnvelope & env) const
     if (hdr == nullptr)
         return 0;
 
-    const uint32_t wireSize{ static_cast<uint32_t>(sizeof(areg::EventHeader)) + hdr->bufHeader.biUsed };
-    areg::IoBuffer ioBuffer{ reinterpret_cast<const uint8_t *>(hdr), wireSize };
+    const uint32_t wireSize{ areg::wire_size(*hdr) };
+    areg::IoBuffer ioBuffer{ areg::wire_data(*hdr), wireSize };
     return send_messages_batch(&ioBuffer, 1u, wireSize);
 }
 

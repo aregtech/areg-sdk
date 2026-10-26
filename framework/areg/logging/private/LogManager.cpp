@@ -56,39 +56,43 @@ void LogManager::log_message(const areg::LogEntry& logData)
                                                    , logData.logMessagePrio
                                                    , logData.logMessage
                                                    , logData.logMessageLen) };
-    if (!msg.is_valid())
-        return;
-
-    LoggingEvent ev;
-    ev.data().set_action(LoggingEventData::LogAction::LogMessage);
-    ev.data().message() = std::move(msg);
-    LoggingEvent::send_event(ev, static_cast<LoggingEventConsumer&>(mgr), static_cast<DispatcherThread&>(mgr));
+    if (msg.is_valid())
+    {
+        mgr.post_log_message(std::move(msg));
+    }
 }
 
 void LogManager::log_message(areg::MessageEnvelope&& msg)
 {
     LogManager& mgr = LogManager::instance();
-    if (mgr.is_ready() == false)
-        return;
-
-    LoggingEvent ev;
-    ev.data().set_action(LoggingEventData::LogAction::LogMessage);
-    ev.data().message() = std::move(msg);
-
-    LoggingEvent::send_event(ev, static_cast<LoggingEventConsumer&>(mgr), static_cast<DispatcherThread&>(mgr));
+    if (mgr.is_ready())
+    {
+        mgr.post_log_message(std::move(msg));
+    }
 }
 
 void LogManager::log_message(const areg::MessageEnvelope& logData)
 {
     LogManager& mgr = LogManager::instance();
-    if (mgr.is_ready() == false)
-        return;
+    if (mgr.is_ready())
+    {
+        mgr.post_log_message(areg::MessageEnvelope(logData));
+    }
+}
 
-    LoggingEvent ev;
-    ev.data().set_action(LoggingEventData::LogAction::LogMessage);
-    ev.data().message() = logData;
+inline void LogManager::post_log_message(areg::MessageEnvelope&& msg)
+{
+    Event evt(std::move(msg));
+    evt.set_event_priority(areg::EventPriority::NormalPrio);
+    evt.set_event_consumer(static_cast<EventConsumer *>(&mMessageConsumer));
+    evt.set_target_dispatcher(static_cast<DispatcherThread *>(this));
+    static_cast<void>(EventDispatcher::post_event(evt));
+}
 
-    LoggingEvent::send_event(ev, static_cast<LoggingEventConsumer&>(mgr), static_cast<DispatcherThread&>(mgr));
+void LogManager::LogMessageConsumer::start_event_processing(Event & eventElem)
+{
+    areg::MessageEnvelope msg{ eventElem.envelope() };
+    mLogManager.write_log_message(msg);
 }
 
 bool LogManager::read_log_config( const char* configFile /*= nullptr*/ )
@@ -308,6 +312,7 @@ LogManager::LogManager()
     , mLoggerTcp        ( mLogConfig, mScopeController, static_cast<DispatcherThread &>(self()) )
     , mLoggerDatabase   ( mLogConfig )
     , mEventProcessor   ( self() )
+    , mMessageConsumer  ( self() )
 
     , mLogStarted       ( false, false )
     , mRemoteOpened     ( false, false )
@@ -493,10 +498,9 @@ void LogManager::stop_logs()
     trigger_exit( );
 }
 
-void LogManager::write_log_message( const LoggingEventData & data )
+void LogManager::write_log_message( areg::MessageEnvelope & msg )
 {
-    areg::MessageEnvelope& msg = const_cast<LoggingEventData &>(data).message();
-    const areg::LogEntry* logEntry = data.log_entry();
+    const areg::LogEntry* logEntry = reinterpret_cast<const areg::LogEntry*>(msg.buffer());
     ASSERT(logEntry != nullptr);
 
     if (is_remote_logging_enabled())
@@ -510,8 +514,8 @@ void LogManager::write_log_message( const LoggingEventData & data )
 
     mLoggerFile.log_message(*logEntry);
     mLoggerDebug.log_message(*logEntry);
-    mLoggerTcp.forward_message(std::move(msg));
     mLoggerDatabase.log_message(*logEntry);
+    mLoggerTcp.forward_message(std::move(msg));
 
     if ( !has_more_events() )
     {

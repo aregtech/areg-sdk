@@ -97,7 +97,8 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Prepares the SQL statement for execution.
+     * \brief   Prepares the SQL statement for execution. A statement prepared before is finalized
+     *          first.
      *
      * \param   sql     The SQL statement to prepare.
      * \return  True if the statement was prepared successfully; false otherwise.

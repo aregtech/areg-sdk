@@ -151,7 +151,7 @@ bool ServiceClientConnectionBase::try_send_inline( MessageEnvelope & data )
     if ( hdr == nullptr )
         return false;
 
-    const uint32_t wireSize{ static_cast<uint32_t>(sizeof(areg::EventHeader)) + hdr->bufHeader.biUsed };
+    const uint32_t wireSize{ areg::wire_size(*hdr) };
     if ( wireSize > areg::INLINE_SEND_MAX_BYTES )
         return false;
 
@@ -180,7 +180,7 @@ bool ServiceClientConnectionBase::try_send_inline( MessageEnvelope & data )
     int32_t sent{ 0 };
     {
         AREG_LT_SCOPE(areg::LtStage::SendSyscall);
-        const areg::IoBuffer ioBuffer{ reinterpret_cast<const uint8_t *>(hdr), wireSize };
+        const areg::IoBuffer ioBuffer{ areg::wire_data(*hdr), wireSize };
         sent = areg::try_send_data_v(hSocket, &ioBuffer, 1u, wireSize);
     }
 

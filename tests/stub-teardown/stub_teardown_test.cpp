@@ -584,7 +584,8 @@ public:
             return;
         }
 
-        BlockEvent block(BlockData{ });
+        // High priority: queued even when the poster has already filled the queue of this thread.
+        BlockEvent block(BlockData{ }, areg::EventPriority::HighPrio);
         if (block.register_for_thread(&comThread))
         {
             block.deliver_event();

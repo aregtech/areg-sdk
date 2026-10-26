@@ -24,6 +24,7 @@
 #include "areg/base/MathDefs.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/Thread.hpp"
+#include "areg/base/ThreadConsumer.hpp"
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/logging/LoggingDefs.hpp"
 
@@ -33,11 +34,27 @@
     #include "sqlite3/amalgamation/sqlite3.h"
 #endif  // defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
 
+#include <atomic>
+#include <string>
+#include <string_view>
+
 
 namespace {
     //////////////////////////////////////////////////////////////////////////
     // Log specific SQL scripts for SQLite3 database.
     //////////////////////////////////////////////////////////////////////////
+
+    //! The file mode of a connection that writes: write-ahead log, synced at checkpoints, and a
+    //! page cache of up to 64 MB that holds the pages one transaction changes.
+    constexpr std::string_view  _sqlWriteMode
+    {
+        "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA cache_size=-65536;"
+    };
+
+    //! On close of a writing connection: no waiting, the log moved into the file, one plain file left.
+    constexpr std::string_view  _sqlCloseNoWait     { "PRAGMA busy_timeout=0;" };
+    constexpr std::string_view  _sqlCloseCheckpoint { "PRAGMA wal_checkpoint(TRUNCATE);" };
+    constexpr std::string_view  _sqlClosePlainFile  { "PRAGMA journal_mode=DELETE;" };
 
     //! Create a version table to keep information about start and stop of log observer.
     constexpr std::string_view  _sqlCreateTbVersion
@@ -149,7 +166,7 @@ namespace {
     constexpr std::string_view  _sqlCreateTbLogs
     {
         "CREATE TABLE \"logs\" ("
-            "\"id\"	                INTEGER NOT NULL UNIQUE,"
+            "\"id\"	                INTEGER NOT NULL,"
             "\"cookie_id\"	        INTEGER,"
             "\"scope_id\"	        INTEGER,"
             "\"session_id\"         INTEGER,"
@@ -164,26 +181,112 @@ namespace {
             "\"time_created\"	    NUMERIC,"
             "\"time_received\"      NUMERIC,"
             "\"time_duration\"      NUMERIC,"
-            "CONSTRAINT \"pk_msg_id\" PRIMARY KEY(\"id\" AUTOINCREMENT)"
+            "CONSTRAINT \"pk_msg_id\" PRIMARY KEY(\"id\")"
             ");"
     };
 
     //! A statement to insert a new log message in the logs table.
     //! The message, the thread name and the module name are bound, never placed in the
     //! statement: they are sent by the remote log source, see CWE-89.
+    //! The last parameter is the row id; left unbound it is NULL and the database chooses it.
     constexpr std::string_view _sqlInsertLog
     {
         "INSERT INTO logs "
-        "(cookie_id, scope_id, session_id, msg_type, msg_prio, msg_module_id, msg_thread_id, msg_log, msg_len, msg_thread, msg_module, time_created, time_received, time_duration)"
+        "(cookie_id, scope_id, session_id, msg_type, msg_prio, msg_module_id, msg_thread_id, msg_log, msg_len, msg_thread, msg_module, time_created, time_received, time_duration, id)"
         "VALUES "
-        "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"
+        "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"
     };
+
+    //! The position of the row id in _sqlInsertLog.
+    constexpr int32_t   _bindLogId  { 14 };
+
+    constexpr std::string_view _sqlMaxLogId     { "SELECT MAX(id) FROM logs;" };
+
+    constexpr std::string_view _sqlMaxMarkerId  { "SELECT MAX(id) FROM markers;" };
 
     //! A statement to delete one log message from the logs table by its identifier.
     constexpr std::string_view _sqlDeleteLog
     {
         "DELETE FROM logs WHERE id = ?;"
     };
+
+    //! The markers table. A marker belongs to the row `master_id` of the logs table and has no
+    //! place of its own; a file without the table has no markers.
+    constexpr std::string_view  _sqlCreateTbMarkers
+    {
+        "CREATE TABLE IF NOT EXISTS markers ("
+            "id             INTEGER PRIMARY KEY AUTOINCREMENT,"
+            "master_id      INTEGER NOT NULL,"
+            "marker_prio    INTEGER NOT NULL,"
+            "author         TEXT,"
+            "note           TEXT,"
+            "time_set       INTEGER"
+            ");"
+    };
+
+    constexpr std::string_view  _sqlCreateIdxMarkers
+    {
+        "CREATE INDEX IF NOT EXISTS idx_markers_master ON markers(master_id);"
+    };
+
+    constexpr std::string_view _sqlLogExists
+    {
+        "SELECT 1 FROM logs WHERE id = ?;"
+    };
+
+    //! The author and the note are bound, never placed in the statement, see CWE-89.
+    //! The last parameter is the marker id; left unbound it is NULL and the database chooses it.
+    constexpr std::string_view _sqlInsertMarker
+    {
+        "INSERT INTO markers (master_id, marker_prio, author, note, time_set, id) VALUES (?, ?, ?, ?, ?, ?);"
+    };
+
+    constexpr std::string_view _sqlDeleteMarker
+    {
+        "DELETE FROM markers WHERE id = ?;"
+    };
+
+    constexpr std::string_view _sqlDeleteMasterMarkers
+    {
+        "DELETE FROM markers WHERE master_id = ?;"
+    };
+
+    constexpr std::string_view _sqlReadMarkers
+    {
+        "SELECT id, master_id, marker_prio, time_set, author, note FROM markers ORDER BY id;"
+    };
+
+    //! The rows that have a marker of the bound levels. The two `%s` are the filter condition and
+    //! the condition of one instance, each one or empty.
+    constexpr std::string_view _sqlMarkedLogs
+    {
+        "SELECT l.msg_type, l.msg_prio, l.cookie_id, l.msg_module_id, l.msg_thread_id, "
+        "l.time_created, l.time_received, l.time_duration, l.scope_id, l.session_id, "
+        "l.msg_log, l.msg_thread, l.msg_module, l.msg_len, l.id FROM logs AS l "
+        "WHERE l.id IN (SELECT m.master_id FROM markers AS m WHERE (m.marker_prio & ?) != 0)%s%s "
+        "ORDER BY l.time_created, l.id;"
+    };
+
+    constexpr std::string_view _sqlMarkedLogsCount
+    {
+        "SELECT COUNT(*) FROM logs AS l "
+        "WHERE l.id IN (SELECT m.master_id FROM markers AS m WHERE (m.marker_prio & ?) != 0)%s%s;"
+    };
+
+    //! A row of no scope, or a row whose scope and priority the filter rules pass.
+    constexpr std::string_view _sqlFilterCondition
+    {
+        " AND (l.scope_id = 0 OR EXISTS (SELECT 1 FROM filter_rules r "
+        "WHERE r.scope_id = l.scope_id AND r.target_id = l.cookie_id AND (l.msg_prio & r.log_mask) != 0))"
+    };
+
+    //! Removes a log and its markers together, inside or outside an open transaction.
+    constexpr std::string_view _sqlSavepointRemove  { "SAVEPOINT remove_log;" };
+    constexpr std::string_view _sqlRollbackRemove   { "ROLLBACK TO remove_log;" };
+    constexpr std::string_view _sqlReleaseRemove    { "RELEASE remove_log;" };
+
+    //! The longest note of a marker in bytes.
+    constexpr uint32_t  MARKER_NOTE_LENGTH  { 1023u };
 
     //! A script to create index of the instances table.
     constexpr std::string_view  _sqlCraeteIdxCookie
@@ -197,17 +300,10 @@ namespace {
         "CREATE UNIQUE INDEX idx_scope_id ON scopes (scope_id, cookie_id, time_received, time_inactivated);"
     };
 
-    //! A script to create index of the logs table
-    constexpr std::string_view  _sqlCreateIdxLogs
+    //! An index to read the logs of one instance in the order they were generated.
+    constexpr std::string_view  _sqlCreateIdxLogsCookie
     {
-        "CREATE INDEX idx_logs ON logs(scope_id, msg_prio, cookie_id);"
-    };
-
-    //! An index to select the logs of one process, which the leading column of
-    //! idx_logs cannot serve.
-    constexpr std::string_view  _sqlCreateIdxLogsModule
-    {
-        "CREATE INDEX idx_logs_module ON logs(msg_module_id, msg_prio);"
+        "CREATE INDEX idx_logs_cookie ON logs(cookie_id, time_created);"
     };
 
     //! An index to read the logs in the order a viewer shows them, which is the order they
@@ -263,7 +359,7 @@ namespace {
         "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, "
         "time_created, time_received, time_duration, scope_id, session_id, "
         "msg_log, msg_thread, msg_module, msg_len, id FROM logs "
-        "WHERE ((time_created > ?) OR (time_created = ? AND id > ?)) AND "
+        "WHERE (time_created, id) > (?, ?) AND "
         "NOT EXISTS (SELECT 1 FROM refused_spans r "
         "WHERE r.scope_id = logs.scope_id AND r.target_id = logs.cookie_id "
         "AND logs.time_created >= r.from_ts AND (r.to_ts = 0 OR logs.time_created < r.to_ts)) "
@@ -288,11 +384,100 @@ namespace {
         "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, "
         "time_created, time_received, time_duration, scope_id, session_id, "
         "msg_log, msg_thread, msg_module, msg_len, id FROM logs "
-        "WHERE ((time_created < ?) OR (time_created = ? AND id < ?)) AND "
+        "WHERE (time_created, id) < (?, ?) AND "
         "NOT EXISTS (SELECT 1 FROM refused_spans r "
         "WHERE r.scope_id = logs.scope_id AND r.target_id = logs.cookie_id "
         "AND logs.time_created >= r.from_ts AND (r.to_ts = 0 OR logs.time_created < r.to_ts)) "
         "ORDER BY time_created DESC, id DESC LIMIT ?;"
+    };
+
+    //! Forward from a row number.
+    constexpr std::string_view _sqlWindowAt
+    {
+        "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, "
+        "time_created, time_received, time_duration, scope_id, session_id, "
+        "msg_log, msg_thread, msg_module, msg_len, id FROM logs "
+        "WHERE NOT EXISTS (SELECT 1 FROM refused_spans r "
+        "WHERE r.scope_id = logs.scope_id AND r.target_id = logs.cookie_id "
+        "AND logs.time_created >= r.from_ts AND (r.to_ts = 0 OR logs.time_created < r.to_ts)) "
+        "ORDER BY time_created, id LIMIT ? OFFSET ?;"
+    };
+
+    //! Forward from a row number, when no stretch of time is left out.
+    constexpr std::string_view _sqlWindowAtAll
+    {
+        "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, "
+        "time_created, time_received, time_duration, scope_id, session_id, "
+        "msg_log, msg_thread, msg_module, msg_len, id FROM logs "
+        "ORDER BY time_created, id LIMIT ? OFFSET ?;"
+    };
+
+    //! Answers 1 if a stretch of time is left out of the reading.
+    constexpr std::string_view _sqlHasRefused
+    {
+        "SELECT EXISTS (SELECT 1 FROM refused_spans);"
+    };
+
+    //! Filtered windows, forward from the first log and from a given place: rows of no scope and
+    //! rows the filter rules pass. `%s` is the condition of one instance, or empty.
+    constexpr std::string_view _sqlFilterWindowFirst
+    {
+        "SELECT l.msg_type, l.msg_prio, l.cookie_id, l.msg_module_id, l.msg_thread_id, "
+        "l.time_created, l.time_received, l.time_duration, l.scope_id, l.session_id, "
+        "l.msg_log, l.msg_thread, l.msg_module, l.msg_len, l.id FROM logs AS l "
+        "WHERE (l.scope_id = 0 OR EXISTS (SELECT 1 FROM filter_rules r "
+        "WHERE r.scope_id = l.scope_id AND r.target_id = l.cookie_id AND (l.msg_prio & r.log_mask) != 0))%s "
+        "ORDER BY l.time_created, l.id LIMIT ?;"
+    };
+
+    constexpr std::string_view _sqlFilterWindowAfter
+    {
+        "SELECT l.msg_type, l.msg_prio, l.cookie_id, l.msg_module_id, l.msg_thread_id, "
+        "l.time_created, l.time_received, l.time_duration, l.scope_id, l.session_id, "
+        "l.msg_log, l.msg_thread, l.msg_module, l.msg_len, l.id FROM logs AS l "
+        "WHERE (l.scope_id = 0 OR EXISTS (SELECT 1 FROM filter_rules r "
+        "WHERE r.scope_id = l.scope_id AND r.target_id = l.cookie_id AND (l.msg_prio & r.log_mask) != 0))%s "
+        "AND (l.time_created, l.id) > (?, ?) "
+        "ORDER BY l.time_created, l.id LIMIT ?;"
+    };
+
+    //! Backward from the last log, and backward from a given place, newest first.
+    constexpr std::string_view _sqlFilterWindowLast
+    {
+        "SELECT l.msg_type, l.msg_prio, l.cookie_id, l.msg_module_id, l.msg_thread_id, "
+        "l.time_created, l.time_received, l.time_duration, l.scope_id, l.session_id, "
+        "l.msg_log, l.msg_thread, l.msg_module, l.msg_len, l.id FROM logs AS l "
+        "WHERE (l.scope_id = 0 OR EXISTS (SELECT 1 FROM filter_rules r "
+        "WHERE r.scope_id = l.scope_id AND r.target_id = l.cookie_id AND (l.msg_prio & r.log_mask) != 0))%s "
+        "ORDER BY l.time_created DESC, l.id DESC LIMIT ?;"
+    };
+
+    constexpr std::string_view _sqlFilterWindowBefore
+    {
+        "SELECT l.msg_type, l.msg_prio, l.cookie_id, l.msg_module_id, l.msg_thread_id, "
+        "l.time_created, l.time_received, l.time_duration, l.scope_id, l.session_id, "
+        "l.msg_log, l.msg_thread, l.msg_module, l.msg_len, l.id FROM logs AS l "
+        "WHERE (l.scope_id = 0 OR EXISTS (SELECT 1 FROM filter_rules r "
+        "WHERE r.scope_id = l.scope_id AND r.target_id = l.cookie_id AND (l.msg_prio & r.log_mask) != 0))%s "
+        "AND (l.time_created, l.id) < (?, ?) "
+        "ORDER BY l.time_created DESC, l.id DESC LIMIT ?;"
+    };
+
+    //! Filtered window forward from a row number of the filtered rows.
+    constexpr std::string_view _sqlFilterWindowAt
+    {
+        "SELECT l.msg_type, l.msg_prio, l.cookie_id, l.msg_module_id, l.msg_thread_id, "
+        "l.time_created, l.time_received, l.time_duration, l.scope_id, l.session_id, "
+        "l.msg_log, l.msg_thread, l.msg_module, l.msg_len, l.id FROM logs AS l "
+        "WHERE (l.scope_id = 0 OR EXISTS (SELECT 1 FROM filter_rules r "
+        "WHERE r.scope_id = l.scope_id AND r.target_id = l.cookie_id AND (l.msg_prio & r.log_mask) != 0))%s "
+        "ORDER BY l.time_created, l.id LIMIT ? OFFSET ?;"
+    };
+
+    //! The condition that keeps the rows of one instance, bound to its cookie.
+    constexpr std::string_view _sqlInstanceCondition
+    {
+        " AND l.cookie_id = ?"
     };
 
     //! A script to extract the names of connected log instances
@@ -534,11 +719,231 @@ namespace {
         return result;
     }
 
+    /**
+     * \brief   Returns the statement with its first `%s` replaced by the given condition. The
+     *          condition is one of the constant texts of this file, never a value.
+     **/
+    inline areg::String _with_condition(std::string_view sql, std::string_view condition)
+    {
+        std::string result{ sql };
+        const std::string::size_type pos{ result.find("%s") };
+        if (pos != std::string::npos)
+        {
+            result.replace(pos, 2u, condition);
+        }
+
+        return areg::String(std::move(result));
+    }
+
+    /**
+     * \brief   Returns the text cut to at most `maxLength` bytes, never inside a UTF-8 sequence.
+     **/
+    inline areg::String _cut_text(const areg::String& text, uint32_t maxLength)
+    {
+        uint32_t length{ static_cast<uint32_t>(text.length()) };
+        if (length <= maxLength)
+            return text;
+
+        const char* data{ text.as_string() };
+        length = maxLength;
+        while ((length > 0u) && ((static_cast<unsigned char>(data[length]) & 0xC0u) == 0x80u))
+        {
+            --length;
+        }
+
+        return areg::String(data, length);
+    }
+
     constexpr char const _master[]   { "sqlite_master" };
     constexpr char const _temp[]     { "sqlite_temp_master" };
+
+    //! Copies the committed pages of the write-ahead log into the database file without waiting for anyone.
+    constexpr std::string_view  _sqlCheckpointPassive   { "PRAGMA wal_checkpoint(PASSIVE);" };
+
+    //! The number given to the next checkpoint thread, so that each thread has its own name.
+    std::atomic<uint32_t>       _checkpointThreadSeq    { 0u };
 } // namespace
 
 namespace areg::ext {
+
+//////////////////////////////////////////////////////////////////////////
+// LogDbCheckpointer class declaration and implementation.
+//////////////////////////////////////////////////////////////////////////
+
+/**
+ * \brief   Copies the write-ahead log of a writing connection into the database file on its own
+ *          thread and its own connection, so that a commit of the writer never runs a checkpoint.
+ *          It checkpoints at once when the log reaches CHECKPOINT_PAGES, and IDLE_CHECKPOINT_MS
+ *          after a commit that left pages to copy. It waits without a timeout while nothing is
+ *          left to copy. From REWIND_PAGES on it is not woken, and the writer copies the pages left
+ *          itself, so that the log starts over from its beginning.
+ **/
+class LogDbCheckpointer final : private ThreadConsumer
+{
+public:
+    //!< The size of the write-ahead log in pages that starts a checkpoint at once.
+    static constexpr int        CHECKPOINT_PAGES        { 1000 };
+
+    //!< The size of the write-ahead log in pages at which the writer copies the rest itself.
+    static constexpr int        REWIND_PAGES            { 4000 };
+
+    //!< The time in milliseconds after which the committed pages not copied yet are checkpointed.
+    static constexpr uint32_t   IDLE_CHECKPOINT_MS      { 1000u };
+
+    LogDbCheckpointer();
+
+    ~LogDbCheckpointer() override;
+
+    /**
+     * \brief   Opens the own connection to the database file and starts the checkpoint thread.
+     *
+     * \param   dbPath  The path of the database file the writer opened.
+     * \return  Returns true if the checkpoint thread runs.
+     **/
+    bool start(const String& dbPath);
+
+    /**
+     * \brief   Stops the checkpoint thread and closes the own connection.
+     **/
+    void stop();
+
+    /**
+     * \brief   Called on the writing thread after each commit of the writer.
+     *
+     * \param   walPages    The number of pages in the write-ahead log.
+     **/
+    inline void on_commit(int walPages) noexcept;
+
+private:
+    /**
+     * \brief   The loop of the checkpoint thread.
+     **/
+    void on_run() override;
+
+    /**
+     * \brief   Runs one passive checkpoint and remembers whether pages are left to copy.
+     **/
+    inline void _checkpoint() noexcept;
+
+private:
+    //!< The own connection to the database file.
+    SqliteDatabase      mDatabase;
+
+    //!< The prepared checkpoint statement of the own connection.
+    SqliteStatement     mStatement;
+
+    //!< The checkpoint thread.
+    Thread              mThread;
+
+    //!< Wakes the checkpoint thread.
+    SyncEvent           mWakeEvent;
+
+    //!< Set to stop the checkpoint thread.
+    std::atomic_bool    mQuit;
+
+    //!< True while the write-ahead log holds committed pages not copied yet.
+    std::atomic_bool    mPending;
+
+    //!< True when the write-ahead log reached CHECKPOINT_PAGES since the last checkpoint.
+    std::atomic_bool    mRequested;
+};
+
+LogDbCheckpointer::LogDbCheckpointer()
+    : ThreadConsumer( )
+    , mDatabase     ( )
+    , mStatement    ( mDatabase )
+    , mThread       ( static_cast<ThreadConsumer &>(*this)
+                    , String("LogDbCheckpoint_") + String::make_string(_checkpointThreadSeq.fetch_add(1u, std::memory_order_relaxed))
+                    , areg::SYSTEM_THREAD_STACK_NORMAL )
+    , mWakeEvent    ( true, true )
+    , mQuit         ( false )
+    , mPending      ( false )
+    , mRequested    ( false )
+{
+}
+
+LogDbCheckpointer::~LogDbCheckpointer()
+{
+    stop();
+}
+
+bool LogDbCheckpointer::start(const String& dbPath)
+{
+    if (mDatabase.connect(dbPath, areg::DatabaseRole::Viewer) == false)
+        return false;
+
+    mQuit.store(false, std::memory_order_relaxed);
+    mPending.store(false, std::memory_order_relaxed);
+    mRequested.store(false, std::memory_order_relaxed);
+    if (mStatement.prepare(_sqlCheckpointPassive) && mThread.start(areg::WAIT_INFINITE))
+        return true;
+
+    mStatement.finalize();
+    mDatabase.disconnect();
+    return false;
+}
+
+void LogDbCheckpointer::stop()
+{
+    mQuit.store(true, std::memory_order_release);
+    mWakeEvent.set_signaled();
+    mThread.shutdown(areg::WAIT_INFINITE);
+    mStatement.finalize();
+    mDatabase.disconnect();
+}
+
+inline void LogDbCheckpointer::on_commit(int walPages) noexcept
+{
+    if (walPages >= LogDbCheckpointer::REWIND_PAGES)
+        return;
+
+    const bool wasPending{ mPending.exchange(true, std::memory_order_acq_rel) };
+    if ((walPages >= LogDbCheckpointer::CHECKPOINT_PAGES) && (mRequested.exchange(true, std::memory_order_acq_rel) == false))
+    {
+        mWakeEvent.set_signaled();
+    }
+    else if (wasPending == false)
+    {
+        mWakeEvent.set_signaled();
+    }
+}
+
+void LogDbCheckpointer::on_run()
+{
+    while (mQuit.load(std::memory_order_acquire) == false)
+    {
+        const uint32_t timeout{ mPending.load(std::memory_order_acquire) ? LogDbCheckpointer::IDLE_CHECKPOINT_MS : areg::WAIT_INFINITE };
+        const bool signaled{ mWakeEvent.lock(timeout) };
+        if (mQuit.load(std::memory_order_acquire))
+            break;
+
+        if (mRequested.load(std::memory_order_acquire) || ((signaled == false) && mPending.load(std::memory_order_acquire)))
+        {
+            _checkpoint();
+        }
+    }
+}
+
+inline void LogDbCheckpointer::_checkpoint() noexcept
+{
+    mRequested.store(false, std::memory_order_release);
+    mPending.store(false, std::memory_order_release);
+
+    int64_t logPages{ 0 };
+    int64_t copiedPages{ 0 };
+    const bool done{ mStatement.next() == SqliteStatement::QueryResult::HasMore };
+    if (done)
+    {
+        logPages    = mStatement.as_int64(1);
+        copiedPages = mStatement.as_int64(2);
+    }
+
+    mStatement.reset();
+    if ((done == false) || (logPages > copiedPages))
+    {
+        mPending.store(true, std::memory_order_release);
+    }
+}
 
 //////////////////////////////////////////////////////////////////////////
 // LogSqliteDatabase class implementation.
@@ -568,22 +973,66 @@ LogSqliteDatabase::LogSqliteDatabase()
     , mIsInitialized        ( false )
     , mDbLogEnabled         ( true )
     , mLock                 ( false )
+    , mCheckpointer         ( )
 {
 }
 
 LogSqliteDatabase::~LogSqliteDatabase()
 {
+    disconnect();
+    _stop_checkpointer();
     mStmtLogs.finalize();
     mDatabase.disconnect();
     mIsInitialized = false;
 }
 
-inline bool LogSqliteDatabase::_open(const String& dbPath, bool readOnly)
+inline void LogSqliteDatabase::_start_checkpointer()
+{
+    ASSERT(mCheckpointer == nullptr);
+    std::unique_ptr<LogDbCheckpointer> checkpointer{ new (std::nothrow) LogDbCheckpointer() };
+    if ((checkpointer != nullptr) && checkpointer->start(mDatabase.path()))
+    {
+        mCheckpointer = std::move(checkpointer);
+        ::sqlite3_wal_hook(static_cast<sqlite3 *>(mDatabase.mDbObject), &LogSqliteDatabase::_on_wal_commit, mCheckpointer.get());
+    }
+}
+
+inline void LogSqliteDatabase::_stop_checkpointer()
+{
+    if (mCheckpointer == nullptr)
+        return;
+
+    if (mDatabase.mDbObject != nullptr)
+    {
+        ::sqlite3_wal_hook(static_cast<sqlite3 *>(mDatabase.mDbObject), nullptr, nullptr);
+    }
+
+    mCheckpointer->stop();
+    mCheckpointer.reset();
+}
+
+int LogSqliteDatabase::_on_wal_commit(void* context, ::sqlite3* db, const char* dbName, int walPages)
+{
+    if (walPages >= LogDbCheckpointer::REWIND_PAGES)
+    {
+        ::sqlite3_wal_checkpoint_v2(db, dbName, SQLITE_CHECKPOINT_PASSIVE, nullptr, nullptr);
+    }
+
+    if (context != nullptr)
+    {
+        static_cast<LogDbCheckpointer *>(context)->on_commit(walPages);
+    }
+
+    return SQLITE_OK;
+}
+
+inline bool LogSqliteDatabase::_open(const String& dbPath, areg::DatabaseRole role)
 {
     if (mDbLogEnabled == false)
         return false;
 
     bool result{ true };
+    _stop_checkpointer();
     mDatabase.disconnect();
     mIsInitialized = false;
     if (dbPath.is_empty() == false)
@@ -591,11 +1040,16 @@ inline bool LogSqliteDatabase::_open(const String& dbPath, bool readOnly)
         mDbInitPath = dbPath;
     }
 
-    if (mDatabase.connect(mDbInitPath, readOnly) == false)
+    if (mDatabase.connect(mDbInitPath, role) == false)
     {
         mDatabase.disconnect();
         mIsInitialized = false;
         result = false;
+    }
+    else if (role == areg::DatabaseRole::Recorder)
+    {
+        mDatabase.execute(_sqlWriteMode);
+        _start_checkpointer();
     }
 
     return result;
@@ -607,15 +1061,16 @@ inline void LogSqliteDatabase::_create_tables() noexcept
     VERIFY(mDatabase.execute(_sqlCreateTbInstances));
     VERIFY(mDatabase.execute(_sqlCreateTbScopes));
     VERIFY(mDatabase.execute(_sqlCreateTbLogs));
+    VERIFY(mDatabase.execute(_sqlCreateTbMarkers));
 }
 
 inline void LogSqliteDatabase::_create_indexes() noexcept
 {
     VERIFY(mDatabase.execute(_sqlCraeteIdxCookie));
     VERIFY(mDatabase.execute(_sqlCreateIdxScopes));
-    VERIFY(mDatabase.execute(_sqlCreateIdxLogs));
-    VERIFY(mDatabase.execute(_sqlCreateIdxLogsModule));
+    VERIFY(mDatabase.execute(_sqlCreateIdxLogsCookie));
     VERIFY(mDatabase.execute(_sqlCreateIdxLogsTime));
+    VERIFY(mDatabase.execute(_sqlCreateIdxMarkers));
 }
 
 inline void LogSqliteDatabase::_initialize() noexcept
@@ -687,16 +1142,16 @@ inline void LogSqliteDatabase::_copy_log_message(SqliteStatement& stmt, SharedBu
     String thread       = stmt.as_text(11);
     String module       = stmt.as_text(12);
 
-    // msg_len holds the length before the cut. A database written before the column
-    // existed reads back as zero, so fall back to the stored text length.
-    uint32_t storedLen  = static_cast<uint32_t>(stmt.as_uint32(13));
-    log->logMessageLen  = storedLen != 0u ? storedLen : static_cast<uint32_t>(msg.length());
-    log->logThreadLen   = static_cast<uint32_t>(thread.length());
-    log->logModuleLen   = static_cast<uint32_t>(module.length());
+    const uint32_t copied{ areg::mem_copy(log->logMessage, areg::LOG_MSG_SIZE - 1u, msg.as_string(), static_cast<uint32_t>(msg.length())) };
+    log->logThreadLen   = areg::mem_copy(log->logThread, areg::LOG_NAME_SIZE - 1u, thread.as_string(), static_cast<uint32_t>(thread.length()));
+    log->logModuleLen   = areg::mem_copy(log->logModule, areg::LOG_NAME_SIZE - 1u, module.as_string(), static_cast<uint32_t>(module.length()));
+    log->logMessage[copied] = String::EmptyChar;
+    log->logThread[log->logThreadLen] = String::EmptyChar;
+    log->logModule[log->logModuleLen] = String::EmptyChar;
 
-    areg::copy_string_fast(log->logMessage, msg.as_string(), msg.length());
-    areg::copy_string_fast(log->logThread, thread.as_string(), thread.length());
-    areg::copy_string_fast(log->logModule, module.as_string(), module.length());
+    // msg_len holds the length before the cut; it is kept only when the stored text was cut.
+    const uint32_t storedLen{ static_cast<uint32_t>(stmt.as_uint32(13)) };
+    log->logMessageLen  = ((copied == areg::LOG_MSG_SIZE - 1u) && (storedLen > copied)) ? storedLen : copied;
 
     buf.set_size_used(areg::log_entry_size(*log));
 }
@@ -723,14 +1178,14 @@ bool LogSqliteDatabase::is_operable() const noexcept
     return mDatabase.is_operable();
 }
 
-bool LogSqliteDatabase::connect(const String& dbPath, bool readOnly)
+bool LogSqliteDatabase::connect(const String& dbPath, areg::DatabaseRole role)
 {
     Lock lock(mLock);
     if (mDbLogEnabled && mDatabase.is_operable() == false)
     {
         bool exists = File::has_file(dbPath);
         ASSERT(mIsInitialized == false);
-        if (_open(dbPath, readOnly))
+        if (_open(dbPath, role))
         {
             if (exists == false)
             {
@@ -744,7 +1199,7 @@ bool LogSqliteDatabase::connect(const String& dbPath, bool readOnly)
             // The temporary table always exists, so that a window read can be prepared before
             // anything is refused. It costs nothing while it is empty.
             _create_temp_refused();
-            if (readOnly == false)
+            if (role == areg::DatabaseRole::Recorder)
             {
                 mStmtLogs.prepare(_sqlInsertLog);
             }
@@ -757,14 +1212,24 @@ bool LogSqliteDatabase::connect(const String& dbPath, bool readOnly)
 void LogSqliteDatabase::disconnect()
 {
     Lock lock(mLock);
+    _stop_checkpointer();
     if ((mDatabase.is_operable() == false) || (mIsInitialized == false))
         return;
 
-    if (mStmtLogs.is_valid())
+    // Only a connection opened to write has the insert statement.
+    const bool writes{ mStmtLogs.is_valid() };
+    if (writes)
         mStmtLogs.finalize();
 
     drop_table("filter_rules");
     mDatabase.commit(true);
+    if (writes)
+    {
+        mDatabase.execute(_sqlCloseNoWait);
+        mDatabase.execute(_sqlCloseCheckpoint);
+        mDatabase.execute(_sqlClosePlainFile);
+    }
+
     mDatabase.disconnect();
     mIsInitialized = false;
 }
@@ -794,6 +1259,11 @@ bool LogSqliteDatabase::tables_initialized() const noexcept
 
 bool LogSqliteDatabase::log_message(const areg::LogEntry& message)
 {
+    return log_message(message, 0u);
+}
+
+bool LogSqliteDatabase::log_message(const areg::LogEntry& message, uint32_t logId)
+{
     Lock lock(mLock);
     if (mStmtLogs.is_valid() == false)
     {
@@ -815,6 +1285,10 @@ bool LogSqliteDatabase::log_message(const areg::LogEntry& message)
     mStmtLogs.bind_uint64(11, static_cast<uint64_t>(message.logTimestamp));
     mStmtLogs.bind_uint64(12, static_cast<uint64_t>(message.logReceived));
     mStmtLogs.bind_uint32(13, static_cast<uint32_t>(message.logDuration));
+    if (logId != 0u)
+    {
+        mStmtLogs.bind_uint32(_bindLogId, logId);
+    }
 
     bool result{ mStmtLogs.next() == SqliteStatement::QueryResult::HasNoMore };
     mStmtLogs.reset();
@@ -827,6 +1301,50 @@ uint32_t LogSqliteDatabase::last_log_id() const noexcept
     return mDatabase.last_inserted_id();
 }
 
+bool LogSqliteDatabase::log_dropped_messages(uint32_t dropped, uint32_t logId)
+{
+    Process& proc{ Process::instance() };
+    const String& module{ proc.app_name() };
+    const TIME64 now{ static_cast<TIME64>(DateTime::now()) };
+
+    areg::LogEntry entry(areg::LogMessageType::MessageText);
+    entry.logDataType    = areg::LogDataType::Local;
+    entry.logMessagePrio = areg::LogPriority::PrioError;
+    entry.logCookie      = areg::COOKIE_LOCAL;
+    entry.logModuleId    = static_cast<ITEM_ID>(proc.id());
+    entry.logTimestamp   = now;
+    entry.logReceived    = now;
+    entry.logMessageLen  = static_cast<uint32_t>(String::format_string( entry.logMessage
+                                                                     , areg::LOG_MSG_SIZE
+                                                                     , "Dropped [ %u ] log messages, the logging database cannot keep up with the incoming data rate."
+                                                                     , dropped));
+    entry.logModuleLen   = areg::mem_copy(entry.logModule, areg::LOG_NAME_SIZE - 1u, module.as_string(), static_cast<uint32_t>(module.length()));
+    entry.logModule[entry.logModuleLen] = String::EmptyChar;
+
+    return log_message(entry, logId);
+}
+
+uint32_t LogSqliteDatabase::max_log_id()
+{
+    Lock lock(mLock);
+    return _max_id(_sqlMaxLogId);
+}
+
+uint32_t LogSqliteDatabase::max_marker_id()
+{
+    Lock lock(mLock);
+    return (table_exists("markers") ? _max_id(_sqlMaxMarkerId) : 0u);
+}
+
+inline uint32_t LogSqliteDatabase::_max_id(std::string_view sql)
+{
+    if (mDatabase.is_operable() == false)
+        return 0u;
+
+    SqliteStatement stmt(mDatabase, sql);
+    return (stmt.next() == SqliteStatement::QueryResult::HasMore ? stmt.as_uint32(0) : 0u);
+}
+
 bool LogSqliteDatabase::remove_log(uint32_t logId)
 {
     Lock lock(mLock);
@@ -835,9 +1353,147 @@ bool LogSqliteDatabase::remove_log(uint32_t logId)
         return false;
     }
 
-    SqliteStatement stmt(mDatabase, _sqlDeleteLog);
-    stmt.bind_uint32(0, logId);
-    return (stmt.next() == SqliteStatement::QueryResult::HasNoMore);
+    const bool hasMarkers{ table_exists("markers") };
+    if (mDatabase.execute(_sqlSavepointRemove) == false)
+    {
+        return false;
+    }
+
+    bool result{ true };
+    if (hasMarkers)
+    {
+        SqliteStatement stmt(mDatabase, _sqlDeleteMasterMarkers);
+        result = stmt.bind_uint32(0, logId) && (stmt.next() == SqliteStatement::QueryResult::HasNoMore);
+    }
+
+    if (result)
+    {
+        SqliteStatement stmt(mDatabase, _sqlDeleteLog);
+        result = stmt.bind_uint32(0, logId) && (stmt.next() == SqliteStatement::QueryResult::HasNoMore);
+    }
+
+    if (result == false)
+    {
+        mDatabase.execute(_sqlRollbackRemove);
+    }
+
+    mDatabase.execute(_sqlReleaseRemove);
+    return result;
+}
+
+uint32_t LogSqliteDatabase::add_marker(uint32_t masterId, areg::LogPriority level, const String& author, const String& note)
+{
+    Lock lock(mLock);
+    return _insert_marker(0u, masterId, level, author, note, static_cast<TIME64>(DateTime::now().time()));
+}
+
+bool LogSqliteDatabase::insert_marker(uint32_t markerId, uint32_t masterId, areg::LogPriority level, const String& author, const String& note, TIME64 timeSet)
+{
+    Lock lock(mLock);
+    return ((markerId != 0u) && (_insert_marker(markerId, masterId, level, author, note, timeSet) != 0u));
+}
+
+inline uint32_t LogSqliteDatabase::_insert_marker(uint32_t markerId, uint32_t masterId, areg::LogPriority level, const String& author, const String& note, TIME64 timeSet)
+{
+    if ((masterId == 0u) || (LogSqliteDatabase::is_marker_level(level) == false) || (mDatabase.is_operable() == false))
+    {
+        return 0u;
+    }
+
+    {
+        SqliteStatement stmt(mDatabase, _sqlLogExists);
+        if ((stmt.bind_uint32(0, masterId) == false) || (stmt.next() != SqliteStatement::QueryResult::HasMore))
+        {
+            return 0u;
+        }
+    }
+
+    if ((mDatabase.execute(_sqlCreateTbMarkers) == false) || (mDatabase.execute(_sqlCreateIdxMarkers) == false))
+    {
+        return 0u;
+    }
+
+    SqliteStatement stmt(mDatabase, _sqlInsertMarker);
+    const bool result = stmt.bind_uint32(0, masterId)
+                     && stmt.bind_uint32(1, static_cast<uint32_t>(level))
+                     && stmt.bind_text(  2, _cut_text(author, areg::LOG_NAME_SIZE - 1u))
+                     && stmt.bind_text(  3, _cut_text(note, MARKER_NOTE_LENGTH))
+                     && stmt.bind_uint64(4, static_cast<uint64_t>(timeSet))
+                     && ((markerId == 0u) || stmt.bind_uint32(5, markerId))
+                     && stmt.execute();
+
+    return (result ? mDatabase.last_inserted_id() : 0u);
+}
+
+bool LogSqliteDatabase::remove_marker(uint32_t markerId)
+{
+    Lock lock(mLock);
+    if ((markerId == 0u) || (mDatabase.is_operable() == false) || (table_exists("markers") == false))
+    {
+        return false;
+    }
+
+    SqliteStatement stmt(mDatabase, _sqlDeleteMarker);
+    return stmt.bind_uint32(0, markerId) && stmt.execute();
+}
+
+uint32_t LogSqliteDatabase::read_markers(std::vector<LogMarker>& markers)
+{
+    Lock lock(mLock);
+    markers.clear();
+    if ((mDatabase.is_operable() == false) || (table_exists("markers") == false))
+    {
+        return 0u;
+    }
+
+    SqliteStatement stmt(mDatabase, _sqlReadMarkers);
+    while (stmt.next() == SqliteStatement::QueryResult::HasMore)
+    {
+        LogMarker marker;
+        marker.markerId = stmt.as_uint32(0);
+        marker.masterId = stmt.as_uint32(1);
+        marker.level    = static_cast<areg::LogPriority>(stmt.as_uint32(2));
+        marker.timeSet  = static_cast<TIME64>(stmt.as_uint64(3));
+        marker.author   = stmt.as_text(4);
+        marker.note     = stmt.as_text(5);
+        markers.push_back(marker);
+    }
+
+    return static_cast<uint32_t>(markers.size());
+}
+
+uint32_t LogSqliteDatabase::setup_statement_read_marked_logs(SqliteStatement& stmt, ITEM_ID instId, uint16_t levelMask)
+{
+    Lock lock(mLock);
+    stmt.finalize();
+    if ((mDatabase.is_operable() == false) || (table_exists("markers") == false))
+    {
+        return 0u;
+    }
+
+    const bool oneInstance{ instId != areg::TARGET_ALL };
+    const std::string_view filter{ table_exists("filter_rules", _temp) ? _sqlFilterCondition : std::string_view{ } };
+    const std::string_view instance{ oneInstance ? _sqlInstanceCondition : std::string_view{ } };
+
+    uint32_t result{ 0u };
+    {
+        SqliteStatement count(mDatabase, _with_condition(_with_condition(_sqlMarkedLogsCount, filter).as_string(), instance));
+        if (count.bind_uint32(0, levelMask) && ((oneInstance == false) || count.bind_uint32(1, static_cast<uint32_t>(instId))) &&
+            (count.next() == SqliteStatement::QueryResult::HasMore))
+        {
+            result = count.as_uint32(0);
+        }
+    }
+
+    if ((stmt.prepare(_with_condition(_with_condition(_sqlMarkedLogs, filter).as_string(), instance)) == false) ||
+        (stmt.bind_uint32(0, levelMask) == false) ||
+        (oneInstance && (stmt.bind_uint32(1, static_cast<uint32_t>(instId)) == false)))
+    {
+        stmt.finalize();
+        result = 0u;
+    }
+
+    return result;
 }
 
 bool LogSqliteDatabase::log_instance_connected(const areg::ConnectedInstance& instance, const DateTime& timestamp)
@@ -1604,9 +2260,8 @@ bool LogSqliteDatabase::setup_statement_read_window(SqliteStatement& stmt, const
 
     return stmt.prepare(_sqlWindowAfter)
         && stmt.bind_uint64(0, static_cast<uint64_t>(after.timeCreated))
-        && stmt.bind_uint64(1, static_cast<uint64_t>(after.timeCreated))
-        && stmt.bind_uint64(2, after.rowId)
-        && stmt.bind_int32 (3, limit);
+        && stmt.bind_uint64(1, after.rowId)
+        && stmt.bind_int32 (2, limit);
 }
 
 bool LogSqliteDatabase::setup_statement_read_window_back(SqliteStatement& stmt, const LogPosition& before, int32_t limit)
@@ -1623,9 +2278,93 @@ bool LogSqliteDatabase::setup_statement_read_window_back(SqliteStatement& stmt, 
 
     return stmt.prepare(_sqlWindowBefore)
         && stmt.bind_uint64(0, static_cast<uint64_t>(before.timeCreated))
-        && stmt.bind_uint64(1, static_cast<uint64_t>(before.timeCreated))
-        && stmt.bind_uint64(2, before.rowId)
-        && stmt.bind_int32 (3, limit);
+        && stmt.bind_uint64(1, before.rowId)
+        && stmt.bind_int32 (2, limit);
+}
+
+bool LogSqliteDatabase::setup_statement_read_filter_window(SqliteStatement& stmt, ITEM_ID instId, const LogPosition& after, int32_t limit)
+{
+    Lock lock(mLock);
+    return _setup_filter_window(stmt, instId, after, limit, after.timeCreated == 0 ? _sqlFilterWindowFirst : _sqlFilterWindowAfter);
+}
+
+bool LogSqliteDatabase::setup_statement_read_filter_window_back(SqliteStatement& stmt, ITEM_ID instId, const LogPosition& before, int32_t limit)
+{
+    Lock lock(mLock);
+    return _setup_filter_window(stmt, instId, before, limit, before.timeCreated == 0 ? _sqlFilterWindowLast : _sqlFilterWindowBefore);
+}
+
+bool LogSqliteDatabase::setup_statement_read_window_at(SqliteStatement& stmt, uint32_t offset, int32_t limit)
+{
+    Lock lock(mLock);
+    stmt.reset();
+    if ((mDatabase.is_operable() == false) || (table_exists("refused_spans", _temp) == false))
+        return false;
+
+    bool refused{ true };
+    {
+        SqliteStatement query(mDatabase, _sqlHasRefused);
+        if (query.next() == SqliteStatement::QueryResult::HasMore)
+        {
+            refused = query.as_uint32(0) != 0u;
+        }
+    }
+
+    return stmt.prepare(refused ? _sqlWindowAt : _sqlWindowAtAll)
+        && stmt.bind_int32 (0, limit)
+        && stmt.bind_uint32(1, offset);
+}
+
+bool LogSqliteDatabase::setup_statement_read_filter_window_at(SqliteStatement& stmt, ITEM_ID instId, uint32_t offset, int32_t limit)
+{
+    Lock lock(mLock);
+    stmt.reset();
+    if ((mDatabase.is_operable() == false) || (table_exists("filter_rules", _temp) == false))
+        return false;
+
+    const bool oneInstance{ instId != areg::TARGET_ALL };
+    const String sql{ _with_condition(_sqlFilterWindowAt, oneInstance ? _sqlInstanceCondition : std::string_view{ }) };
+    if (stmt.prepare(sql) == false)
+        return false;
+
+    int32_t index{ 0 };
+    bool result{ true };
+    if (oneInstance)
+    {
+        result = stmt.bind_uint32(index++, static_cast<uint32_t>(instId));
+    }
+
+    return result
+        && stmt.bind_int32 (index, limit)
+        && stmt.bind_uint32(index + 1, offset);
+}
+
+inline bool LogSqliteDatabase::_setup_filter_window(SqliteStatement& stmt, ITEM_ID instId, const LogPosition& place, int32_t limit, std::string_view sqlFormat)
+{
+    stmt.reset();
+    if ((mDatabase.is_operable() == false) || (table_exists("filter_rules", _temp) == false))
+        return false;
+
+    const bool oneInstance{ instId != areg::TARGET_ALL };
+    const String sql{ _with_condition(sqlFormat, oneInstance ? _sqlInstanceCondition : std::string_view{ }) };
+    if (stmt.prepare(sql) == false)
+        return false;
+
+    int32_t index{ 0 };
+    bool result{ true };
+    if (oneInstance)
+    {
+        result = stmt.bind_uint32(index++, static_cast<uint32_t>(instId));
+    }
+
+    if (place.timeCreated != 0)
+    {
+        result = result
+              && stmt.bind_uint64(index++, static_cast<uint64_t>(place.timeCreated))
+              && stmt.bind_uint64(index++, place.rowId);
+    }
+
+    return result && stmt.bind_int32(index, limit);
 }
 
 bool LogSqliteDatabase::set_refused_spans(const ArrayList<RefusedSpan>& spans)
@@ -1661,6 +2400,16 @@ bool LogSqliteDatabase::set_refused_spans(const ArrayList<RefusedSpan>& spans)
 
 int32_t LogSqliteDatabase::fill_log_window(std::vector<SharedBuffer>& logs, SqliteStatement& stmt, int32_t maxEntries, LogPosition& lastRead)
 {
+    return _fill_window(logs, stmt, maxEntries, lastRead, nullptr);
+}
+
+int32_t LogSqliteDatabase::fill_log_window(std::vector<SharedBuffer>& logs, SqliteStatement& stmt, int32_t maxEntries, LogPosition& lastRead, std::vector<uint32_t>& rowIds)
+{
+    return _fill_window(logs, stmt, maxEntries, lastRead, &rowIds);
+}
+
+inline int32_t LogSqliteDatabase::_fill_window(std::vector<SharedBuffer>& logs, SqliteStatement& stmt, int32_t maxEntries, LogPosition& lastRead, std::vector<uint32_t>* rowIds)
+{
     int32_t result{ 0 };
     if (stmt.is_valid() == false)
         return result;
@@ -1674,12 +2423,17 @@ int32_t LogSqliteDatabase::fill_log_window(std::vector<SharedBuffer>& logs, Sqli
         // The place of the last row read is where the next window continues from.
         lastRead.timeCreated = static_cast<TIME64>(stmt.as_uint64(5));
         lastRead.rowId       = stmt.as_uint64(14);
+        if (rowIds != nullptr)
+        {
+            rowIds->push_back(static_cast<uint32_t>(lastRead.rowId));
+        }
 
         ++result;
         if ((maxEntries > 0) && (result >= maxEntries))
             break;
     }
 
+    stmt.reset();
     return result;
 }
 

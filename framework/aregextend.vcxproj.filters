@@ -75,6 +75,9 @@
     <ClCompile Include="aregextend\db\private\SqliteDatabase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="aregextend\db\private\LogDbWriter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="aregextend\db\private\LogSqliteDatabase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -155,6 +158,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="aregextend\db\SqliteDatabase.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="aregextend\db\LogDbWriter.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="aregextend\db\LogSqliteDatabase.hpp">

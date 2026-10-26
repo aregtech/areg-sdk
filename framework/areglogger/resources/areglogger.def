@@ -28,3 +28,4 @@ EXPORTS
     log_observer_config_database_name
     log_observer_set_config_database_name
     log_observer_config_update
+    log_observer_queue_state

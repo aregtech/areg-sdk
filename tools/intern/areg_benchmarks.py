@@ -22,6 +22,9 @@ What is measured
                              The difference between the two is the price of one thread
                              wake-up; the difference to example 30 is the price of
                              leaving the process.
+35_loglatency   log call     the time of one LOG_DBG call on the writing thread, P50/P90/P99
+                log trip     from the LOG_DBG call to the log observer, through logcollector
+                delivered    the messages that arrived; logging drops when a queue is full
 
 Nothing here is specific to a machine or a checkout: every path is derived from the
 arguments, and the module is imported, never executed on its own.
@@ -94,6 +97,19 @@ for _index, _names in enumerate((('Byte', 'Bytes', 'B', 'byte', 'bytes'),
                                  ('TByte', 'TBytes', 'TB'))):
     for _name in _names:
         _UNITS[_name] = 1024.0 ** _index
+
+
+# 35_loglatency, one line from each side:
+#   "35 log call  | P50 %.0f ns | P90 %.0f ns | P99 %.0f ns | P99.9 %.0f ns | max %.0f ns | mean %.0f ns | rate %.0f msg/s"
+#   "35 logsink   | received %u | lost %u | rate %.0f msg/s"
+#   "35 log trip  | P50 %.0f us | P90 %.0f us | P99 %.0f us | P99.9 %.0f us | max %.0f us | mean %.0f us"
+_LOG_CALL = re.compile(
+    r'35 log call\s+\|\s+P50 ([0-9.]+) ns\s+\|\s+P90 ([0-9.]+) ns\s+\|\s+P99 ([0-9.]+) ns'
+    r'\s+\|\s+P99\.9 ([0-9.]+) ns\s+\|\s+max ([0-9.]+) ns\s+\|\s+mean ([0-9.]+) ns\s+\|\s+rate ([0-9.]+) msg/s')
+_LOG_SINK = re.compile(r'35 logsink\s+\|\s+received (\d+)\s+\|\s+lost (\d+)\s+\|\s+rate ([0-9.]+) msg/s')
+_LOG_TRIP = re.compile(
+    r'35 log trip\s+\|\s+P50 ([0-9.]+) us\s+\|\s+P90 ([0-9.]+) us\s+\|\s+P99 ([0-9.]+) us'
+    r'\s+\|\s+P99\.9 ([0-9.]+) us\s+\|\s+max ([0-9.]+) us\s+\|\s+mean ([0-9.]+) us')
 
 
 def _plain(data):
@@ -271,6 +287,33 @@ def _extract_loclatency(logs, scenario):
     return out
 
 
+def _extract_loglatency(logs, scenario):
+    """The call time of the source, and the trip time and the delivered count of the sink."""
+    out = []
+    for _, data in logs:
+        text = _plain(data)
+        for p50, p90, p99, p999, mx, mean, rate in _LOG_CALL.findall(text):
+            out.append(_measure(scenario, 'log call P50', 'ns', float(p50), '%s ns' % p50))
+            out.append(_measure(scenario, 'log call P99', 'ns', float(p99), '%s ns' % p99))
+            out.append(_measure(scenario, 'log call P90/P99.9/max/mean', 'ns', float(mean),
+                                'p90 %s / p99.9 %s / max %s / mean %s ns' % (p90, p999, mx, mean)))
+            out.append(_measure(scenario, 'log write rate', 'msg/sec', float(rate),
+                                human_count(float(rate)) + ' msg/sec'))
+        for received, lost, rate in _LOG_SINK.findall(text):
+            total = int(received) + int(lost)
+            share = (100.0 * int(received) / total) if total else 0.0
+            out.append(_measure(scenario, 'log delivered', 'count', float(received),
+                                '%s of %d (%.1f%%)' % (received, total, share)))
+            out.append(_measure(scenario, 'log arrival rate', 'msg/sec', float(rate),
+                                human_count(float(rate)) + ' msg/sec'))
+        for p50, p90, p99, p999, mx, mean in _LOG_TRIP.findall(text):
+            out.append(_measure(scenario, 'log trip P50', 'us', float(p50), '%s us' % p50))
+            out.append(_measure(scenario, 'log trip P99', 'us', float(p99), '%s us' % p99))
+            out.append(_measure(scenario, 'log trip P90/P99.9/max/mean', 'us', float(mean),
+                                'p90 %s / p99.9 %s / max %s / mean %s us' % (p90, p999, mx, mean)))
+    return out
+
+
 def _derive_ladder(measures):
     """
     Adds the two numbers this whole set of benchmarks exists for.
@@ -311,6 +354,7 @@ _EXTRACTORS = {
     'datarate': _extract_datarate,
     'latency': _extract_latency,
     'loclatency': _extract_loclatency,
+    'loglatency': _extract_loglatency,
 }
 
 

@@ -17,9 +17,12 @@
  ************************************************************************/
 #include "units/GUnitTest.hpp"
 #include "areg/base/String.hpp"
+#include "areg/base/Thread.hpp"
+#include "areg/base/ThreadConsumer.hpp"
 #include "areg/logging/LoggingDefs.hpp"
 
 #include <cstdarg>
+#include <future>
 #include <string>
 
 namespace
@@ -112,3 +115,127 @@ TEST(LogMessageLengthTest, test_clampedLengthAlwaysFits)
         EXPECT_LE(areg::log_message_size(entry), maxLen) << "clamped length escaped the buffer for " << value;
     }
 }
+
+#if AREG_LOGGING
+
+namespace
+{
+    //! Builds a log message as a log source sends it.
+    areg::MessageEnvelope _make_sent(const std::string & text)
+    {
+        areg::MessageEnvelope msg{ areg::make_log_message( areg::LogMessageType::MessageText, 1u, 0u, 0u
+                                                         , areg::LogPriority::PrioDebug, text.c_str()
+                                                         , static_cast<uint32_t>(text.length())) };
+        areg::finalize_log_message(msg, areg::LogDataType::Remote, areg::COOKIE_REMOTE_SERVICE);
+        return msg;
+    }
+
+    areg::LogEntry & _entry(areg::MessageEnvelope & msg)
+    {
+        return *reinterpret_cast<areg::LogEntry *>(msg.buffer());
+    }
+}
+
+/**
+ * \brief   A message built by a log source is a whole log entry, short or cut.
+ **/
+TEST(LogMessageLengthTest, test_sentMessageIsValid)
+{
+    EXPECT_TRUE(areg::is_log_entry_valid(_make_sent("")));
+    EXPECT_TRUE(areg::is_log_entry_valid(_make_sent("a short message")));
+    EXPECT_TRUE(areg::is_log_entry_valid(_make_sent(std::string(areg::LOG_MSG_SIZE + 100u, 'c'))));
+}
+
+/**
+ * \brief   A message whose size is not the size of its entry is not a log entry.
+ **/
+TEST(LogMessageLengthTest, test_sizeMustMatchTheEntry)
+{
+    areg::MessageEnvelope msg{ _make_sent("a short message") };
+    const uint32_t size{ msg.size_used() };
+
+    msg.set_size_used(size - 1u);
+    EXPECT_FALSE(areg::is_log_entry_valid(msg));
+
+    msg.set_size_used(areg::log_entry_head() - 1u);
+    EXPECT_FALSE(areg::is_log_entry_valid(msg));
+
+    msg.set_size_used(size);
+    _entry(msg).logMessageLen += 1u;
+    EXPECT_FALSE(areg::is_log_entry_valid(msg));
+}
+
+/**
+ * \brief   The text and the names must end where the entry says they end.
+ **/
+TEST(LogMessageLengthTest, test_stringsMustEnd)
+{
+    {
+        areg::MessageEnvelope msg{ _make_sent("text") };
+        _entry(msg).logMessage[areg::log_message_size(_entry(msg))] = 'x';
+        EXPECT_FALSE(areg::is_log_entry_valid(msg));
+    }
+
+    {
+        areg::MessageEnvelope msg{ _make_sent("text") };
+        _entry(msg).logThreadLen = areg::LOG_NAME_SIZE;
+        EXPECT_FALSE(areg::is_log_entry_valid(msg));
+    }
+
+    {
+        areg::MessageEnvelope msg{ _make_sent("text") };
+        areg::LogEntry & entry{ _entry(msg) };
+        entry.logModule[entry.logModuleLen] = 'x';
+        EXPECT_FALSE(areg::is_log_entry_valid(msg));
+    }
+}
+
+namespace
+{
+    //! A thread that builds one log message while it runs.
+    class NamedLogThread final : public areg::Thread, protected areg::ThreadConsumer
+    {
+    public:
+        NamedLogThread()
+            : areg::Thread  ( *this, "NamedLogThread" )
+            , mMessage      ( )
+            , mBuilt        ( )
+        {
+        }
+
+        //! Waits until the thread built the message, then returns it.
+        areg::MessageEnvelope & message()
+        {
+            mBuilt.get_future().wait();
+            return mMessage;
+        }
+
+    protected:
+        void on_run() override
+        {
+            mMessage = _make_sent("from a named thread");
+            mBuilt.set_value();
+        }
+
+    private:
+        areg::MessageEnvelope   mMessage;   //!< The message built in the thread.
+        std::promise<void>      mBuilt;     //!< Set when the message is built.
+    };
+}
+
+/**
+ * \brief   A message carries the name of the thread that built it.
+ **/
+TEST(LogMessageLengthTest, test_messageCarriesThreadName)
+{
+    NamedLogThread thread;
+    ASSERT_TRUE(thread.start(areg::WAIT_INFINITE));
+    areg::MessageEnvelope & msg{ thread.message() };
+    static_cast<void>(thread.shutdown(areg::WAIT_INFINITE));
+
+    ASSERT_TRUE(areg::is_log_entry_valid(msg));
+    EXPECT_STREQ(_entry(msg).logThread, "NamedLogThread");
+    EXPECT_EQ(_entry(msg).logThreadLen, 14u);
+}
+
+#endif  // AREG_LOGGING

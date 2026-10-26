@@ -104,13 +104,6 @@ private:
     void _logging_save_scopes();
 
     /**
-     * \brief   Writes the log message to all registered loggers.
-     *
-     * \param   data    The logging event data containing the log entry.
-     **/
-    void _logging_log_message( const LoggingEventData & data );
-
-    /**
      * \brief   Changes the priority of the scopes. The streaming object contains the list of scopes
      *          with priority to change. Each scope entry can be either a single scope or scope
      *          group. In case of scope group, the scope ID is ignored (should be 0).

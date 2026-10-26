@@ -81,8 +81,8 @@ void ClientSendThread::start_event_processing( Event & eventElem )
     uint32_t bufCount  { 0u };
     uint64_t totalSize { 0u };  // 64-bit: sum of up to DEFAULT_DRAIN_LIMIT wire sizes cannot overflow.
     {
-        const uint32_t wireSize{ static_cast<uint32_t>(sizeof(areg::EventHeader)) + hdr0->bufHeader.biUsed };
-        mIoBuffer[bufCount++] = { reinterpret_cast<const uint8_t*>(hdr0), wireSize };
+        const uint32_t wireSize{ areg::wire_size(*hdr0) };
+        mIoBuffer[bufCount++] = { areg::wire_data(*hdr0), wireSize };
         totalSize += wireSize;
     }
 
@@ -109,8 +109,8 @@ void ClientSendThread::start_event_processing( Event & eventElem )
         hdr->internal2 = 0u;
         ASSERT( hdr->custom == 0u );
 
-        const uint32_t wireSize{ static_cast<uint32_t>(sizeof(areg::EventHeader)) + hdr->bufHeader.biUsed };
-        mIoBuffer[bufCount] = { reinterpret_cast<const uint8_t*>(hdr), wireSize };
+        const uint32_t wireSize{ areg::wire_size(*hdr) };
+        mIoBuffer[bufCount] = { areg::wire_data(*hdr), wireSize };
         totalSize += wireSize;
         mDrain[bufCount] = evt.envelope().share_buffer();  // retain buffer; raw pointer hdr stays valid through writev
         evt.destroy_event();                               // release the mEvents slot; mDrain keeps the buffer alive
@@ -193,7 +193,7 @@ void ClientSendThread::report_failed_batch(Event & first, uint32_t from, uint32_
         else
         {
             // The failure event is built from the header alone.
-            const areg::MessageEnvelope failed{ *reinterpret_cast<const areg::EventHeader *>(mIoBuffer[i].data), 0u };
+            const areg::MessageEnvelope failed{ *reinterpret_cast<const areg::EventHeader *>(mDrain[i].get()), 0u };
             mRemoteService.failed_send_message( failed, mConnection.socket() );
         }
     }
