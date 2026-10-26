@@ -325,7 +325,7 @@ constexpr uint32_t      MIN_CONNECTIONS         { 32u };
 constexpr uint32_t      MAX_CONNECTIONS         { 10000u };
 
 //!< Maximum number of events queued in any send thread (ServerSendThread, PoolSendThread, areg::ClientSendThread).
-//!< 0 = unlimited: the queue grows without bound and never drops messages.
+//!< 0 takes the configured ring capacity, config::*::queue::capacity; a full ring blocks the producer.
 constexpr uint32_t          SEND_THREAD_QUEUE_LIMIT { 0u };
 
 //!< Default send/drain batch size; configurable via net::*::tcpip::drain in areg.init.

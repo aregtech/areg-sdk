@@ -115,6 +115,13 @@ public:
      **/
     static String read_all_log_messages_query();
 
+    /**
+     * \brief   Returns true if the priority is one of the marker levels: `PrioMarker`,
+     *          `PrioMarkerInfo`, `PrioMarkerWarning` or `PrioMarkerError`.
+     **/
+    [[nodiscard]]
+    static constexpr bool is_marker_level(areg::LogPriority level) noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
@@ -218,10 +225,12 @@ public:
      *                      path and initialize the connection. If the parameter is empty, it should
      *                      take the data from the 'areg.init' configuration file.
      * 
-     * \param   readOnly    If true, the database engine should connect in read-only mode.
+     * \param   role        The recorder writes the logs: it sets the write mode of the file,
+     *                      prepares the insert statement and copies the write-ahead log in the
+     *                      background. A viewer does none of that and may still write markers.
      * \return  Returns true if succeeded to connect. Otherwise, returns false.
      **/
-    bool connect(const String& dbPath, bool readOnly) final;
+    bool connect(const String& dbPath, areg::DatabaseRole role) final;
 
     /**
      * \brief   Disconnects connected SqliteDatabase.
@@ -279,6 +288,39 @@ public:
     uint32_t last_log_id() const noexcept;
 
     /**
+     * \brief   Saves the log message with the given identifier. Used by a writer that gives the
+     *          identifiers itself, before the rows reach the database.
+     *
+     * \param   message     The structure of the message to log.
+     * \param   logId       The identifier of the row. Zero lets the database choose it.
+     * \return  Returns true if succeeded to save the log in the database.
+     **/
+    bool log_message(const areg::LogEntry & message, uint32_t logId);
+
+    /**
+     * \brief   Saves a log row that reports how many log messages were dropped because the
+     *          database could not keep up with the incoming rate. The text starts with "Dropped".
+     *
+     * \param   dropped     The number of the dropped log messages.
+     * \param   logId       The identifier of the row. Zero lets the database choose it.
+     * \return  Returns true if succeeded to save the row.
+     **/
+    bool log_dropped_messages(uint32_t dropped, uint32_t logId);
+
+    /**
+     * \brief   Returns the greatest identifier in the logs table, or 0 if the table is empty.
+     **/
+    [[nodiscard]]
+    uint32_t max_log_id();
+
+    /**
+     * \brief   Returns the greatest identifier in the markers table, or 0 if the file has no
+     *          markers.
+     **/
+    [[nodiscard]]
+    uint32_t max_marker_id();
+
+    /**
      * \brief   Deletes one log message and its markers from the database, together.
      *
      * \param   logId   The identifier of the log message, as returned by `last_log_id()`.
@@ -302,6 +344,21 @@ public:
      *          level, the log row does not exist, or the marker was not saved.
      **/
     uint32_t add_marker(uint32_t masterId, areg::LogPriority level, const areg::String& author, const areg::String& note);
+
+    /**
+     * \brief   Sets a marker with the given identifier on an existing log row, as `add_marker()`
+     *          does. Used by a writer that gives the identifiers itself.
+     *
+     * \param   markerId    The identifier of the marker.
+     * \param   masterId    The identifier of the log row to mark.
+     * \param   level       The level of the marker, one of the `PrioMarker*` priorities.
+     * \param   author      The one who sets the marker. Can be empty.
+     * \param   note        The note of the marker. Can be empty.
+     * \param   timeSet     The moment the marker was set.
+     * \return  Returns true if the marker was saved. Returns false if the level is not a marker
+     *          level or the log row does not exist.
+     **/
+    bool insert_marker(uint32_t markerId, uint32_t masterId, areg::LogPriority level, const areg::String& author, const areg::String& note, TIME64 timeSet);
 
     /**
      * \brief   Removes one marker. A marker is never changed; set a new one instead.
@@ -910,10 +967,24 @@ private:
      *          it may as contain the mask.
      *
      * \param   dbPath      The relative or absolute path the database file.
-     * \param   readOnly    If true, the database engine should connect in read-only mode.
+     * \param   role        What the connection does with the database.
      * \return  Returns true if succeeded to open or create the database file.
      **/
-    inline bool _open(const areg::String& dbPath, bool readOnly);
+    inline bool _open(const areg::String& dbPath, areg::DatabaseRole role);
+
+    /**
+     * \brief   Inserts a marker on an existing log row. Called with mLock taken.
+     *
+     * \param   markerId    The identifier of the marker. Zero lets the database choose it.
+     * \return  Returns the identifier of the saved marker, or 0 if it was not saved.
+     **/
+    inline uint32_t _insert_marker(uint32_t markerId, uint32_t masterId, areg::LogPriority level, const areg::String& author, const areg::String& note, TIME64 timeSet);
+
+    /**
+     * \brief   Returns the greatest value of the `id` column of the given table, or 0. Called
+     *          with mLock taken.
+     **/
+    inline uint32_t _max_id(std::string_view sql);
 
     /**
      * \brief   In the opened database file, creates the tables required to save logs.
@@ -1037,6 +1108,14 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // LogSqliteDatabase class inline methods.
 //////////////////////////////////////////////////////////////////////////
+
+constexpr bool LogSqliteDatabase::is_marker_level(areg::LogPriority level) noexcept
+{
+    return (level == areg::LogPriority::PrioMarker)
+        || (level == areg::LogPriority::PrioMarkerInfo)
+        || (level == areg::LogPriority::PrioMarkerWarning)
+        || (level == areg::LogPriority::PrioMarkerError);
+}
 
 bool LogSqliteDatabase::is_database_logging_enabled() const noexcept
 {

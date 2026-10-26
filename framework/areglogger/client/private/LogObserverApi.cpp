@@ -486,6 +486,21 @@ LOGGER_API_IMPL bool log_observer_remove_marker(uint32_t markerId)
     return result;
 }
 
+LOGGER_API_IMPL bool log_observer_queue_state(LogQueueState* state)
+{
+    if (state == nullptr)
+        return false;
+
+    const areg::ext::LogDbWriter::QueueState queue{ areg::logger::LoggerClient::instance().queue_state() };
+    state->lqDropped        = queue.dropped;
+    state->lqPendingBytes   = queue.pendingBytes;
+    state->lqPeakBytes      = queue.peakBytes;
+    state->lqLimitBytes     = queue.limitBytes;
+    state->lqPending        = queue.pending;
+    state->lqReserved       = 0u;
+    return queue.running;
+}
+
 LOGGER_API_IMPL int32_t log_observer_active_database_path(char* dbPath, int32_t space)
 {
     areg::String path{ areg::logger::LoggerClient::instance().active_database_path() };

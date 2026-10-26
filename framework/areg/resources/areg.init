@@ -266,6 +266,7 @@ log::logobserver::enable::remote    = false                         # Log observ
 log::logobserver::db::engine        = sqlite3                       # Database engine: SQLite 3
 log::logobserver::db::name          = log_%time%.sqlog              # Database file name with timestamp mask
 log::logobserver::db::location      = ./logs                        # Database file directory
+log::logobserver::db::queue         = 256                           # Megabytes of received logs waiting to be saved; when full, new logs are dropped and counted
 
 # ---------------------------------------------------------------------------
 # Service-Specific Logging Overrides

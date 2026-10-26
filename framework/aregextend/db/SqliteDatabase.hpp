@@ -93,10 +93,11 @@ public:
      *
      * \param   dbPath      The path to the database. May be a file path, URL, or contain
      *                      authentication. If empty, uses the path from the 'areg.init' configuration file.
-     * \param   readOnly    If true, connects in read-only mode; if false, connects in read-write mode.
+     * \param   role        What the connection does with the database. Both roles open the file
+     *                      for reading and writing.
      * \return  True if the connection succeeded; false otherwise.
      **/
-    bool connect(const String& dbPath, bool readOnly) final;
+    bool connect(const String& dbPath, areg::DatabaseRole role) final;
 
     /**
      * \brief   Disconnects from the database and releases resources.

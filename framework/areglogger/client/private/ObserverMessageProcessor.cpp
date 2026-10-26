@@ -85,64 +85,37 @@ void ObserverMessageProcessor::notify_service_connection(const areg::MessageEnve
 void ObserverMessageProcessor::notify_connected_clients(const areg::MessageEnvelope& msgReceived)
 {
     areg::RemoteConnectionState remConnect{ areg::RemoteConnectionState::Disconnected };
+    msgReceived >> remConnect;
 
-    do
+    if (remConnect == areg::RemoteConnectionState::Connected)
     {
-        Lock lock(mLoggerClient.mLock);
-        msgReceived >> remConnect;
-
-        if (remConnect == areg::RemoteConnectionState::Connected)
-        {
-            _clients_connected(msgReceived);
-        }
-        else
-        {
-            _clients_disconnected(msgReceived);
-        }
-    } while (false);
+        _clients_connected(msgReceived);
+    }
+    else
+    {
+        _clients_disconnected(msgReceived);
+    }
 }
-
 void ObserverMessageProcessor::notify_log_register_scopes(const areg::MessageEnvelope& msgReceived)
 {
     FuncLogRegisterScopes callback{ nullptr };
-    ITEM_ID cookie{ msgReceived.source() };
-    ScopeInfo* scopes{ nullptr };
-    uint32_t count{ 0 };
-    DateTime now(DateTime::now());
+    const ITEM_ID cookie{ msgReceived.source() };
+    const DateTime now(DateTime::now());
 
     do
     {
         Lock lock(mLoggerClient.mLock);
-        mLoggerClient.begin_database_batch();
         callback = mLoggerClient.mCallbacks != nullptr ? mLoggerClient.mCallbacks->evtLogRegisterScopes : nullptr;
-        mLoggerClient.mLogDatabase.log_scopes_deactivate(cookie, now);
-        msgReceived >> count;
-        scopes = count != 0 ? new ScopeInfo[count] : nullptr;
-        if (scopes == nullptr)
-        {
-            count = 0;
-            break;
-        }
+    } while (false);
 
-        for (uint32_t i = 0; i < count; ++i)
-        {
-            const uint32_t scopeId   { msgReceived.read32_bits() };
-            const uint32_t scopePrio { msgReceived.read32_bits() };
-            String         scopeName (msgReceived);
-            ScopeInfo &    entry     { scopes[i] };
-            entry.lsId   = scopeId;
-            entry.lsPrio = scopePrio;
-            areg::mem_copy(entry.lsName, LENGTH_SCOPE, scopeName.as_string(), static_cast<uint32_t>(scopeName.length()) + 1u);
-            mLoggerClient.mLogDatabase.log_scope_activate(scopeName, scopeId, scopePrio, cookie, now);
-        }
-
+    ScopeInfo* scopes{ nullptr };
+    const uint32_t count{ _save_scopes(msgReceived, cookie, now, scopes) };
+    if (count != 0u)
+    {
         String text;
         text.format("Log observer registered %u scopes of instance %u.", count, cookie);
         add_local_log(areg::COOKIE_LOGGER, areg::LogPriority::PrioAny, now, text.as_string());
-
-        mLoggerClient.commit_database_batch();
-
-    } while (false);
+    }
 
     if (LogObserverBase::_theLogObserver != nullptr)
     {
@@ -158,7 +131,6 @@ void ObserverMessageProcessor::notify_log_register_scopes(const areg::MessageEnv
         delete[] scopes;
     }
 }
-
 void ObserverMessageProcessor::notify_log_source_state(const areg::MessageEnvelope& msgReceived)
 {
     FuncLogSourceState callback{ nullptr };
@@ -218,40 +190,17 @@ void ObserverMessageProcessor::notify_log_configuration_restored(const areg::Mes
 void ObserverMessageProcessor::notify_log_update_scopes(const areg::MessageEnvelope& msgReceived)
 {
     FuncLogUpdateScopes callback{ nullptr };
-    ITEM_ID cookie{ msgReceived.source() };
-    ScopeInfo* scopes{ nullptr };
-    uint32_t count{ 0 };
-    DateTime now(DateTime::now());
+    const ITEM_ID cookie{ msgReceived.source() };
+    const DateTime now(DateTime::now());
 
     do
     {
         Lock lock(mLoggerClient.mLock);
-        mLoggerClient.begin_database_batch();
         callback = mLoggerClient.mCallbacks != nullptr ? mLoggerClient.mCallbacks->evtLogUpdatedScopes : nullptr;
-        mLoggerClient.mLogDatabase.log_scopes_deactivate(cookie, now);
-        msgReceived >> count;
-        scopes = count != 0 ? new ScopeInfo[count] : nullptr;
-        if (scopes == nullptr)
-        {
-            count = 0;
-            break;
-        }
-
-        for (uint32_t i = 0; i < count; ++i)
-        {
-            const uint32_t scopeId   { msgReceived.read32_bits() };
-            const uint32_t scopePrio { msgReceived.read32_bits() };
-            String         scopeName (msgReceived);
-            ScopeInfo &    entry     { scopes[i] };
-            entry.lsId   = scopeId;
-            entry.lsPrio = scopePrio;
-            areg::mem_copy(entry.lsName, LENGTH_SCOPE, scopeName.as_string(), static_cast<uint32_t>(scopeName.length()) + 1u);
-            mLoggerClient.mLogDatabase.log_scope_activate(scopeName, scopeId, scopePrio, cookie, now);
-        }
-
-        mLoggerClient.commit_database_batch();
-
     } while (false);
+
+    ScopeInfo* scopes{ nullptr };
+    const uint32_t count{ _save_scopes(msgReceived, cookie, now, scopes) };
 
     if (LogObserverBase::_theLogObserver != nullptr)
     {
@@ -267,54 +216,38 @@ void ObserverMessageProcessor::notify_log_update_scopes(const areg::MessageEnvel
         delete[] scopes;
     }
 }
-
 uint32_t ObserverMessageProcessor::notify_log_message(const areg::MessageEnvelope& msgReceived)
 {
     if (areg::is_log_entry_valid(msgReceived) == false)
         return 0u;
 
-    uint32_t logId{ 0 };
     const uint32_t outerLogId{ _deliveredLogId };
     FuncLogMessage callback{ nullptr };
     FuncLogMessageEx callbackEx{ nullptr };
-    const uint8_t* logBuffer{ nullptr };
-    uint32_t size{ 0 };
-    DateTime now{ DateTime::now() };
 
-    do
+    const areg::LogEntry* msgRemote = reinterpret_cast<const areg::LogEntry*>(msgReceived.buffer());
+    ASSERT(msgRemote != nullptr);
+    const_cast<areg::LogEntry*>(msgRemote)->logReceived = static_cast<TIME64>(DateTime::now());
+    const uint32_t logId{ mLoggerClient.mDbWriter.queue_log(msgReceived) };
+
+    if (LogObserverBase::_theLogObserver == nullptr)
     {
         Lock lock(mLoggerClient.mLock);
-        const areg::LogEntry* msgRemote = reinterpret_cast<const areg::LogEntry*>(msgReceived.buffer());
-        ASSERT(msgRemote != nullptr);
-        const_cast<areg::LogEntry*>(msgRemote)->logReceived = static_cast<TIME64>(now);
-        mLoggerClient.begin_database_batch();
-        if (mLoggerClient.mLogDatabase.log_message(*msgRemote))
-        {
-            logId = mLoggerClient.mLogDatabase.last_log_id();
-            mLoggerClient.count_database_batch();
-        }
-
-        _deliveredLogId = logId;
-        if (LogObserverBase::_theLogObserver != nullptr)
-        {
-            LogObserverBase::_theLogObserver->on_log_message(msgReceived);
-        }
-        else if (mLoggerClient.mCallbacks != nullptr)
+        if (mLoggerClient.mCallbacks != nullptr)
         {
             callback   = mLoggerClient.mCallbacks->evtLogMessage;
             callbackEx = callback == nullptr ? mLoggerClient.mCallbacks->evtLogMessageEx : nullptr;
-            if (callbackEx != nullptr)
-            {
-                logBuffer = msgReceived.buffer();
-                size      = msgReceived.size_used();
-            }
         }
-    } while (false);
+    }
 
-    if (callback != nullptr)
+    _deliveredLogId = logId;
+    if (LogObserverBase::_theLogObserver != nullptr)
+    {
+        LogObserverBase::_theLogObserver->on_log_message(msgReceived);
+    }
+    else if (callback != nullptr)
     {
         // Built here, not above: the record is large and only this callback receives it.
-        const areg::LogEntry* msgRemote = reinterpret_cast<const areg::LogEntry*>(msgReceived.buffer());
         LogRecord msgLog{ };
 
         msgLog.msgType      = static_cast<LogType>(msgRemote->logMsgType);
@@ -337,13 +270,12 @@ uint32_t ObserverMessageProcessor::notify_log_message(const areg::MessageEnvelop
     }
     else if (callbackEx != nullptr)
     {
-        callbackEx(logBuffer, size);
+        callbackEx(msgReceived.buffer(), msgReceived.size_used());
     }
 
     _deliveredLogId = outerLogId;
     return logId;
 }
-
 uint32_t ObserverMessageProcessor::delivered_log_id() noexcept
 {
     return _deliveredLogId;
@@ -367,17 +299,43 @@ uint32_t ObserverMessageProcessor::add_local_log(ITEM_ID cookie, areg::LogPriori
 
 bool ObserverMessageProcessor::remove_log(uint32_t logId)
 {
-    Lock lock(mLoggerClient.mLock);
-    mLoggerClient.begin_database_batch();
-    bool result{ mLoggerClient.mLogDatabase.remove_log(logId) };
-    if (result)
-    {
-        mLoggerClient.commit_database_batch();
-    }
-
-    return result;
+    return (logId != 0u) && mLoggerClient.mDbWriter.queue_task([logId](areg::ext::LogSqliteDatabase& database)
+        {
+            database.remove_log(logId);
+        });
 }
 
+uint32_t ObserverMessageProcessor::_save_scopes(const areg::MessageEnvelope& msgReceived, ITEM_ID cookie, const DateTime& now, ScopeInfo*& scopes)
+{
+    uint32_t count{ 0u };
+    msgReceived >> count;
+    scopes = count != 0u ? new ScopeInfo[count] : nullptr;
+    if (scopes == nullptr)
+    {
+        count = 0u;
+    }
+
+    areg::ScopeNames names(count);
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        const uint32_t scopeId   { msgReceived.read32_bits() };
+        const uint32_t scopePrio { msgReceived.read32_bits() };
+        String         scopeName (msgReceived);
+        ScopeInfo &    entry     { scopes[i] };
+        entry.lsId   = scopeId;
+        entry.lsPrio = scopePrio;
+        areg::mem_copy(entry.lsName, LENGTH_SCOPE, scopeName.as_string(), static_cast<uint32_t>(scopeName.length()) + 1u);
+        names.add(areg::ScopeEntry(scopeName, scopeId, scopePrio));
+    }
+
+    mLoggerClient.mDbWriter.queue_task([names = std::move(names), cookie, now](areg::ext::LogSqliteDatabase& database)
+        {
+            database.log_scopes_deactivate(cookie, now);
+            database.log_scopes_activate(names, cookie, now);
+        });
+
+    return count;
+}
 void ObserverMessageProcessor::_clients_connected(const areg::MessageEnvelope& msgReceived)
 {
     ArrayList< areg::ConnectedInstance > listConnected;
@@ -389,69 +347,56 @@ void ObserverMessageProcessor::_clients_connected(const areg::MessageEnvelope& m
     if (size == 0)
         return;
 
+    const bool toObject{ LogObserverBase::_theLogObserver != nullptr };
+    const DateTime now(DateTime::now());
+    std::vector<String> texts;
+
     do
     {
         Lock lock(mLoggerClient.mLock);
-        mLoggerClient.begin_database_batch();
-        DateTime now(DateTime::now());
-
-        if (LogObserverBase::_theLogObserver != nullptr)
-        {
-            for (int i = 0; i < size; ++i)
-            {
-                const areg::ConnectedInstance& client{ listConnected[static_cast<uint32_t>(i)] };
-                auto added = mLoggerClient.mInstances.add_if_unique(client.ciCookie, client, false);
-                if (added.second)
-                {
-                    mLoggerClient.mLogDatabase.log_instance_connected(client, now);
-
-                    String text;
-                    text.format( "Log observer have got %u-bit %s (%u) client connection event, ready to receive logs."
-                               , static_cast<uint32_t>(client.ciBitness)
-                               , client.ciInstance.c_str()
-                               , client.ciCookie);
-                    add_local_log(areg::COOKIE_LOGGER, areg::LogPriority::PrioAny, now, text.as_string());
-                }
-            }
-
-            mLoggerClient.commit_database_batch();
-        }
-        else
+        if (toObject == false)
         {
             callback = mLoggerClient.mCallbacks != nullptr ? mLoggerClient.mCallbacks->evtInstConnected : nullptr;
             listInstances = new LogInstance[static_cast<size_t>(size)];
+        }
 
-            for (int i = 0; i < size; ++i)
+        for (int i = 0; i < size; ++i)
+        {
+            const areg::ConnectedInstance& client{ listConnected[static_cast<uint32_t>(i)] };
+            auto added = mLoggerClient.mInstances.add_if_unique(client.ciCookie, client, false);
+            if (added.second)
             {
-                const areg::ConnectedInstance& client{ listConnected[static_cast<uint32_t>(i)] };
-                auto added = mLoggerClient.mInstances.add_if_unique(client.ciCookie, client, false);
-                if (added.second)
-                {
-                    mLoggerClient.mLogDatabase.log_instance_connected(client, now);
+                mLoggerClient.mDbWriter.queue_task([client, now](areg::ext::LogSqliteDatabase& database)
+                    {
+                        database.log_instance_connected(client, now);
+                    });
 
-                    String text;
-                    text.format( "Log observer have got %u-bit %s (%u) client connection event, starts receiving logs."
-                               , static_cast<uint32_t>(client.ciBitness)
-                               , client.ciInstance.c_str()
-                               , client.ciCookie);
-                    add_local_log(areg::COOKIE_LOGGER, areg::LogPriority::PrioAny, now, text.as_string());
-                }
-
-                if (listInstances != nullptr)
-                {
-                    LogInstance& inst{ listInstances[i] };
-                    inst.liSource = static_cast<uint32_t>(client.ciSource);
-                    inst.liBitness = static_cast<uint32_t>(client.ciBitness);
-                    inst.liCookie = client.ciCookie;
-                    inst.liTimestamp = client.ciTimestamp;
-                    areg::mem_copy(inst.liName    , static_cast<uint32_t>(LENGTH_NAME)    , client.ciInstance.c_str(), static_cast<uint32_t>(client.ciInstance.length()) + 1);
-                    areg::mem_copy(inst.liLocation, static_cast<uint32_t>(LENGTH_LOCATION), client.ciLocation.c_str(), static_cast<uint32_t>(client.ciLocation.length()) + 1);
-                }
+                String text;
+                text.format( toObject ? "Log observer have got %u-bit %s (%u) client connection event, ready to receive logs."
+                                      : "Log observer have got %u-bit %s (%u) client connection event, starts receiving logs."
+                           , static_cast<uint32_t>(client.ciBitness)
+                           , client.ciInstance.c_str()
+                           , client.ciCookie);
+                texts.push_back(text);
             }
 
-            mLoggerClient.commit_database_batch();
+            if (listInstances != nullptr)
+            {
+                LogInstance& inst{ listInstances[i] };
+                inst.liSource = static_cast<uint32_t>(client.ciSource);
+                inst.liBitness = static_cast<uint32_t>(client.ciBitness);
+                inst.liCookie = client.ciCookie;
+                inst.liTimestamp = client.ciTimestamp;
+                areg::mem_copy(inst.liName    , static_cast<uint32_t>(LENGTH_NAME)    , client.ciInstance.c_str(), static_cast<uint32_t>(client.ciInstance.length()) + 1);
+                areg::mem_copy(inst.liLocation, static_cast<uint32_t>(LENGTH_LOCATION), client.ciLocation.c_str(), static_cast<uint32_t>(client.ciLocation.length()) + 1);
+            }
         }
     } while (false);
+
+    for (const String& text : texts)
+    {
+        add_local_log(areg::COOKIE_LOGGER, areg::LogPriority::PrioAny, now, text.as_string());
+    }
 
     if (LogObserverBase::_theLogObserver != nullptr)
     {
@@ -482,17 +427,14 @@ void ObserverMessageProcessor::_clients_disconnected(const areg::MessageEnvelope
     do
     {
         Lock lock(mLoggerClient.mLock);
-        mLoggerClient.begin_database_batch();
-
         if (LogObserverBase::_theLogObserver == nullptr)
         {
             callback = mLoggerClient.mCallbacks != nullptr ? mLoggerClient.mCallbacks->evtInstDisconnected : nullptr;
         }
 
-
         if (size > 0)
         {
-            DateTime now(DateTime::now());
+            const DateTime now(DateTime::now());
             listInstances = new ITEM_ID[static_cast<size_t>(size)];
 
             for (int i = 0; i < size; ++i)
@@ -504,7 +446,11 @@ void ObserverMessageProcessor::_clients_disconnected(const areg::MessageEnvelope
                     listDisconnected.add(instance);
                     if (mLoggerClient.mInstances.remove_at(client))
                     {
-                        mLoggerClient.mLogDatabase.log_instance_disconnected(client, now);
+                        const ITEM_ID cookie{ client };
+                        mLoggerClient.mDbWriter.queue_task([cookie, now](areg::ext::LogSqliteDatabase& database)
+                            {
+                                database.log_instance_disconnected(cookie, now);
+                            });
                     }
 
                     if (listInstances != nullptr)
@@ -514,11 +460,8 @@ void ObserverMessageProcessor::_clients_disconnected(const areg::MessageEnvelope
                     }
                 }
             }
-
-            mLoggerClient.commit_database_batch();
         }
     } while (false);
-
 
     if (LogObserverBase::_theLogObserver != nullptr)
     {

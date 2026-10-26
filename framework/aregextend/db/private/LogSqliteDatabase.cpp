@@ -44,10 +44,11 @@ namespace {
     // Log specific SQL scripts for SQLite3 database.
     //////////////////////////////////////////////////////////////////////////
 
-    //! The file mode of a connection that writes: write-ahead log, synced at checkpoints.
+    //! The file mode of a connection that writes: write-ahead log, synced at checkpoints, and a
+    //! page cache of up to 64 MB that holds the pages one transaction changes.
     constexpr std::string_view  _sqlWriteMode
     {
-        "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL;"
+        "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA cache_size=-65536;"
     };
 
     //! On close of a writing connection: no waiting, the log moved into the file, one plain file left.
@@ -165,7 +166,7 @@ namespace {
     constexpr std::string_view  _sqlCreateTbLogs
     {
         "CREATE TABLE \"logs\" ("
-            "\"id\"	                INTEGER NOT NULL UNIQUE,"
+            "\"id\"	                INTEGER NOT NULL,"
             "\"cookie_id\"	        INTEGER,"
             "\"scope_id\"	        INTEGER,"
             "\"session_id\"         INTEGER,"
@@ -187,13 +188,21 @@ namespace {
     //! A statement to insert a new log message in the logs table.
     //! The message, the thread name and the module name are bound, never placed in the
     //! statement: they are sent by the remote log source, see CWE-89.
+    //! The last parameter is the row id; left unbound it is NULL and the database chooses it.
     constexpr std::string_view _sqlInsertLog
     {
         "INSERT INTO logs "
-        "(cookie_id, scope_id, session_id, msg_type, msg_prio, msg_module_id, msg_thread_id, msg_log, msg_len, msg_thread, msg_module, time_created, time_received, time_duration)"
+        "(cookie_id, scope_id, session_id, msg_type, msg_prio, msg_module_id, msg_thread_id, msg_log, msg_len, msg_thread, msg_module, time_created, time_received, time_duration, id)"
         "VALUES "
-        "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"
+        "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"
     };
+
+    //! The position of the row id in _sqlInsertLog.
+    constexpr int32_t   _bindLogId  { 14 };
+
+    constexpr std::string_view _sqlMaxLogId     { "SELECT MAX(id) FROM logs;" };
+
+    constexpr std::string_view _sqlMaxMarkerId  { "SELECT MAX(id) FROM markers;" };
 
     //! A statement to delete one log message from the logs table by its identifier.
     constexpr std::string_view _sqlDeleteLog
@@ -226,9 +235,10 @@ namespace {
     };
 
     //! The author and the note are bound, never placed in the statement, see CWE-89.
+    //! The last parameter is the marker id; left unbound it is NULL and the database chooses it.
     constexpr std::string_view _sqlInsertMarker
     {
-        "INSERT INTO markers (master_id, marker_prio, author, note, time_set) VALUES (?, ?, ?, ?, ?);"
+        "INSERT INTO markers (master_id, marker_prio, author, note, time_set, id) VALUES (?, ?, ?, ?, ?, ?);"
     };
 
     constexpr std::string_view _sqlDeleteMarker
@@ -751,14 +761,6 @@ namespace {
         return areg::String(data, length);
     }
 
-    inline bool _is_marker_level(areg::LogPriority level)
-    {
-        return (level == areg::LogPriority::PrioMarker)
-            || (level == areg::LogPriority::PrioMarkerInfo)
-            || (level == areg::LogPriority::PrioMarkerWarning)
-            || (level == areg::LogPriority::PrioMarkerError);
-    }
-
     constexpr char const _master[]   { "sqlite_master" };
     constexpr char const _temp[]     { "sqlite_temp_master" };
 
@@ -874,7 +876,7 @@ LogDbCheckpointer::~LogDbCheckpointer()
 
 bool LogDbCheckpointer::start(const String& dbPath)
 {
-    if (mDatabase.connect(dbPath, false) == false)
+    if (mDatabase.connect(dbPath, areg::DatabaseRole::Viewer) == false)
         return false;
 
     mQuit.store(false, std::memory_order_relaxed);
@@ -1031,7 +1033,7 @@ int LogSqliteDatabase::_on_wal_commit(void* context, ::sqlite3* db, const char* 
     return SQLITE_OK;
 }
 
-inline bool LogSqliteDatabase::_open(const String& dbPath, bool readOnly)
+inline bool LogSqliteDatabase::_open(const String& dbPath, areg::DatabaseRole role)
 {
     if (mDbLogEnabled == false)
         return false;
@@ -1045,13 +1047,13 @@ inline bool LogSqliteDatabase::_open(const String& dbPath, bool readOnly)
         mDbInitPath = dbPath;
     }
 
-    if (mDatabase.connect(mDbInitPath, readOnly) == false)
+    if (mDatabase.connect(mDbInitPath, role) == false)
     {
         mDatabase.disconnect();
         mIsInitialized = false;
         result = false;
     }
-    else if (readOnly == false)
+    else if (role == areg::DatabaseRole::Recorder)
     {
         mDatabase.execute(_sqlWriteMode);
         _start_checkpointer();
@@ -1184,14 +1186,14 @@ bool LogSqliteDatabase::is_operable() const noexcept
     return mDatabase.is_operable();
 }
 
-bool LogSqliteDatabase::connect(const String& dbPath, bool readOnly)
+bool LogSqliteDatabase::connect(const String& dbPath, areg::DatabaseRole role)
 {
     Lock lock(mLock);
     if (mDbLogEnabled && mDatabase.is_operable() == false)
     {
         bool exists = File::has_file(dbPath);
         ASSERT(mIsInitialized == false);
-        if (_open(dbPath, readOnly))
+        if (_open(dbPath, role))
         {
             if (exists == false)
             {
@@ -1205,7 +1207,7 @@ bool LogSqliteDatabase::connect(const String& dbPath, bool readOnly)
             // The temporary table always exists, so that a window read can be prepared before
             // anything is refused. It costs nothing while it is empty.
             _create_temp_refused();
-            if (readOnly == false)
+            if (role == areg::DatabaseRole::Recorder)
             {
                 mStmtLogs.prepare(_sqlInsertLog);
             }
@@ -1265,6 +1267,11 @@ bool LogSqliteDatabase::tables_initialized() const noexcept
 
 bool LogSqliteDatabase::log_message(const areg::LogEntry& message)
 {
+    return log_message(message, 0u);
+}
+
+bool LogSqliteDatabase::log_message(const areg::LogEntry& message, uint32_t logId)
+{
     Lock lock(mLock);
     if (mStmtLogs.is_valid() == false)
     {
@@ -1286,6 +1293,10 @@ bool LogSqliteDatabase::log_message(const areg::LogEntry& message)
     mStmtLogs.bind_uint64(11, static_cast<uint64_t>(message.logTimestamp));
     mStmtLogs.bind_uint64(12, static_cast<uint64_t>(message.logReceived));
     mStmtLogs.bind_uint32(13, static_cast<uint32_t>(message.logDuration));
+    if (logId != 0u)
+    {
+        mStmtLogs.bind_uint32(_bindLogId, logId);
+    }
 
     bool result{ mStmtLogs.next() == SqliteStatement::QueryResult::HasNoMore };
     mStmtLogs.reset();
@@ -1296,6 +1307,50 @@ bool LogSqliteDatabase::log_message(const areg::LogEntry& message)
 uint32_t LogSqliteDatabase::last_log_id() const noexcept
 {
     return mDatabase.last_inserted_id();
+}
+
+bool LogSqliteDatabase::log_dropped_messages(uint32_t dropped, uint32_t logId)
+{
+    Process& proc{ Process::instance() };
+    const String& module{ proc.app_name() };
+    const TIME64 now{ static_cast<TIME64>(DateTime::now()) };
+
+    areg::LogEntry entry(areg::LogMessageType::MessageText);
+    entry.logDataType    = areg::LogDataType::Local;
+    entry.logMessagePrio = areg::LogPriority::PrioError;
+    entry.logCookie      = areg::COOKIE_LOCAL;
+    entry.logModuleId    = static_cast<ITEM_ID>(proc.id());
+    entry.logTimestamp   = now;
+    entry.logReceived    = now;
+    entry.logMessageLen  = static_cast<uint32_t>(String::format_string( entry.logMessage
+                                                                     , areg::LOG_MSG_SIZE
+                                                                     , "Dropped [ %u ] log messages, the logging database cannot keep up with the incoming data rate."
+                                                                     , dropped));
+    entry.logModuleLen   = areg::mem_copy(entry.logModule, areg::LOG_NAME_SIZE - 1u, module.as_string(), static_cast<uint32_t>(module.length()));
+    entry.logModule[entry.logModuleLen] = String::EmptyChar;
+
+    return log_message(entry, logId);
+}
+
+uint32_t LogSqliteDatabase::max_log_id()
+{
+    Lock lock(mLock);
+    return _max_id(_sqlMaxLogId);
+}
+
+uint32_t LogSqliteDatabase::max_marker_id()
+{
+    Lock lock(mLock);
+    return (table_exists("markers") ? _max_id(_sqlMaxMarkerId) : 0u);
+}
+
+inline uint32_t LogSqliteDatabase::_max_id(std::string_view sql)
+{
+    if (mDatabase.is_operable() == false)
+        return 0u;
+
+    SqliteStatement stmt(mDatabase, sql);
+    return (stmt.next() == SqliteStatement::QueryResult::HasMore ? stmt.as_uint32(0) : 0u);
 }
 
 bool LogSqliteDatabase::remove_log(uint32_t logId)
@@ -1337,7 +1392,18 @@ bool LogSqliteDatabase::remove_log(uint32_t logId)
 uint32_t LogSqliteDatabase::add_marker(uint32_t masterId, areg::LogPriority level, const String& author, const String& note)
 {
     Lock lock(mLock);
-    if ((masterId == 0u) || (_is_marker_level(level) == false) || (mDatabase.is_operable() == false))
+    return _insert_marker(0u, masterId, level, author, note, static_cast<TIME64>(DateTime::now().time()));
+}
+
+bool LogSqliteDatabase::insert_marker(uint32_t markerId, uint32_t masterId, areg::LogPriority level, const String& author, const String& note, TIME64 timeSet)
+{
+    Lock lock(mLock);
+    return ((markerId != 0u) && (_insert_marker(markerId, masterId, level, author, note, timeSet) != 0u));
+}
+
+inline uint32_t LogSqliteDatabase::_insert_marker(uint32_t markerId, uint32_t masterId, areg::LogPriority level, const String& author, const String& note, TIME64 timeSet)
+{
+    if ((masterId == 0u) || (LogSqliteDatabase::is_marker_level(level) == false) || (mDatabase.is_operable() == false))
     {
         return 0u;
     }
@@ -1360,7 +1426,8 @@ uint32_t LogSqliteDatabase::add_marker(uint32_t masterId, areg::LogPriority leve
                      && stmt.bind_uint32(1, static_cast<uint32_t>(level))
                      && stmt.bind_text(  2, _cut_text(author, areg::LOG_NAME_SIZE - 1u))
                      && stmt.bind_text(  3, _cut_text(note, MARKER_NOTE_LENGTH))
-                     && stmt.bind_uint64(4, static_cast<uint64_t>(DateTime::now().time()))
+                     && stmt.bind_uint64(4, static_cast<uint64_t>(timeSet))
+                     && ((markerId == 0u) || stmt.bind_uint32(5, markerId))
                      && stmt.execute();
 
     return (result ? mDatabase.last_inserted_id() : 0u);

@@ -16,10 +16,12 @@
  * Include files.
  ************************************************************************/
 #include "units/GUnitTest.hpp"
+#include "aregextend/db/LogDbWriter.hpp"
 #include "aregextend/db/LogSqliteDatabase.hpp"
 #include "aregextend/db/SqliteStatement.hpp"
 #include "areg/base/DateTime.hpp"
 #include "areg/base/Process.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 #include "areg/logging/LoggingDefs.hpp"
 
 #if defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
@@ -271,7 +273,7 @@ TEST(LogSqliteDatabaseTest, test_commitWhileReaderHoldsStatement)
 {
     const std::string path{ _db_path("t1.sqlog") };
     LogDb writer;
-    ASSERT_TRUE(writer.connect(areg::String(path.c_str()), false));
+    ASSERT_TRUE(writer.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
 
     sqlite3* reader{ nullptr };
     sqlite3_stmt* stmt{ nullptr };
@@ -316,7 +318,7 @@ TEST(LogSqliteDatabaseTest, test_closedFileIsOnePlainFile)
     _capture_connections();
     const std::string path{ _db_path("t2.sqlog") };
     LogDb writer;
-    ASSERT_TRUE(writer.connect(areg::String(path.c_str()), false));
+    ASSERT_TRUE(writer.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
     sqlite3* writerDb{ _lastDb };
     ASSERT_TRUE(_write_rows(writer, 100u, 1000));
 
@@ -353,7 +355,7 @@ TEST(LogSqliteDatabaseTest, test_destroyedWriterLeavesOnePlainFile)
     const std::string path{ _db_path("t2destroyed.sqlog") };
     {
         LogDb writer;
-        ASSERT_TRUE(writer.connect(areg::String(path.c_str()), false));
+        ASSERT_TRUE(writer.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
         ASSERT_TRUE(_write_rows(writer, 100u, 1000));
         ASSERT_TRUE(writer.begin());
         ASSERT_TRUE(writer.log_message(_entry(5000, 0u, 1u, areg::LogPriority::PrioInfo)));
@@ -373,7 +375,7 @@ TEST(LogSqliteDatabaseTest, test_continuousWriterKeepsTheLogShort)
 {
     const std::string path{ _db_path("t2continuous.sqlog") };
     LogDb writer;
-    ASSERT_TRUE(writer.connect(areg::String(path.c_str()), false));
+    ASSERT_TRUE(writer.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
 
     constexpr uint32_t batches{ 200u };
     constexpr uint32_t rows{ 1000u };
@@ -401,7 +403,7 @@ TEST(LogSqliteDatabaseTest, test_idleWriterRowsReachTheFile)
 {
     const std::string path{ _db_path("t2idle.sqlog") };
     LogDb writer;
-    ASSERT_TRUE(writer.connect(areg::String(path.c_str()), false));
+    ASSERT_TRUE(writer.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
     std::error_code err;
     const std::uintmax_t emptySize{ fs::file_size(path, err) };
     ASSERT_FALSE(err);
@@ -427,7 +429,7 @@ TEST(LogSqliteDatabaseTest, test_windowPlansUseTheTimeIndex)
     _capture_connections();
     const std::string path{ _db_path("t4plan.sqlog") };
     LogDb db;
-    ASSERT_TRUE(db.connect(areg::String(path.c_str()), false));
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
     sqlite3* conn{ _lastDb };
     _write_mixed(db);
 
@@ -463,7 +465,7 @@ TEST(LogSqliteDatabaseTest, test_windowEndsWithStatementReset)
     _capture_connections();
     const std::string path{ _db_path("t5reset.sqlog") };
     LogDb db;
-    ASSERT_TRUE(db.connect(areg::String(path.c_str()), false));
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
     sqlite3* conn{ _lastDb };
     ASSERT_TRUE(_write_rows(db, 1000u, 1000));
 
@@ -493,14 +495,14 @@ TEST(LogSqliteDatabaseTest, test_preparedAgainFreesThePrevious)
     const std::string path{ _db_path("leak.sqlog") };
     {
         LogDb warmup;
-        ASSERT_TRUE(warmup.connect(areg::String(path.c_str()), false));
+        ASSERT_TRUE(warmup.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
         warmup.disconnect();
     }
 
     const sqlite3_int64 before{ sqlite3_memory_used() };
     {
         LogDb db;
-        ASSERT_TRUE(db.connect(areg::String(path.c_str()), false));
+        ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
         areg::ext::SqliteStatement stmt(db.database());
         for (int i = 0; i < 3; ++i)
         {
@@ -523,14 +525,14 @@ TEST(LogSqliteDatabaseTest, test_closedWithPreparedStatementFreesTheConnection)
     const std::string path{ _db_path("leak2.sqlog") };
     {
         LogDb warmup;
-        ASSERT_TRUE(warmup.connect(areg::String(path.c_str()), false));
+        ASSERT_TRUE(warmup.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
         warmup.disconnect();
     }
 
     const sqlite3_int64 before{ sqlite3_memory_used() };
     {
         LogDb db;
-        ASSERT_TRUE(db.connect(areg::String(path.c_str()), true));
+        ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Viewer));
         areg::ext::SqliteStatement stmt(db.database());
         EXPECT_TRUE(db.setup_statement_read_window(stmt, LogDb::LogPosition{}, 10));
         db.disconnect();
@@ -553,7 +555,7 @@ TEST(LogSqliteDatabaseTest, test_windowReportsRowIds)
     _capture_connections();
     const std::string path{ _db_path("t5ids.sqlog") };
     LogDb db;
-    ASSERT_TRUE(db.connect(areg::String(path.c_str()), false));
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
     sqlite3* conn{ _lastDb };
     _write_mixed(db);
     const std::vector<uint32_t> expected{ _ids(_rows_in_time_order(path)) };
@@ -581,7 +583,7 @@ TEST(LogSqliteDatabaseTest, test_keysetWindowsCoverEveryRowOnce)
 {
     const std::string path{ _db_path("t4.sqlog") };
     LogDb db;
-    ASSERT_TRUE(db.connect(areg::String(path.c_str()), false));
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
     _write_mixed(db);
     const std::vector<uint32_t> expected{ _ids(_rows_in_time_order(path)) };
     ASSERT_EQ(expected.size(), 10001u);
@@ -626,7 +628,7 @@ TEST(LogSqliteDatabaseTest, test_filteredWindowsEqualTheFilteredSet)
     _capture_connections();
     const std::string path{ _db_path("t4filter.sqlog") };
     LogDb db;
-    ASSERT_TRUE(db.connect(areg::String(path.c_str()), false));
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
     sqlite3* conn{ _lastDb };
     _write_mixed(db);
     const std::vector<Row> all{ _rows_in_time_order(path) };
@@ -709,7 +711,7 @@ TEST(LogSqliteDatabaseTest, test_windowAtRowNumberEqualsTheKeysetSlice)
     _capture_connections();
     const std::string path{ _db_path("t4at.sqlog") };
     LogDb db;
-    ASSERT_TRUE(db.connect(areg::String(path.c_str()), false));
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
     sqlite3* conn{ _lastDb };
     _write_mixed(db);
 
@@ -781,7 +783,7 @@ TEST(LogSqliteDatabaseTest, test_markersAttachedToTheirMaster)
 {
     const std::string path{ _db_path("t3.sqlog") };
     LogDb db;
-    ASSERT_TRUE(db.connect(areg::String(path.c_str()), false));
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
     ASSERT_TRUE(_write_rows(db, 5u, 1000));
 
     std::vector<LogDb::LogMarker> markers;
@@ -848,14 +850,14 @@ TEST(LogSqliteDatabaseTest, test_fileWithoutMarkersTable)
     const std::string path{ _db_path("t3old.sqlog") };
     {
         LogDb db;
-        ASSERT_TRUE(db.connect(areg::String(path.c_str()), false));
+        ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
         ASSERT_TRUE(_write_rows(db, 3u, 1000));
         ASSERT_TRUE(db.execute("DROP TABLE IF EXISTS markers;"));
         db.disconnect();
     }
 
     LogDb db;
-    ASSERT_TRUE(db.connect(areg::String(path.c_str()), false));
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
     EXPECT_FALSE(db.table_exists("markers"));
     std::vector<LogDb::LogMarker> markers;
     EXPECT_EQ(db.read_markers(markers), 0u);
@@ -869,5 +871,193 @@ TEST(LogSqliteDatabaseTest, test_fileWithoutMarkersTable)
     EXPECT_EQ(db.read_markers(markers), 1u);
 
     stmt.finalize();
+    db.disconnect();
+}
+
+//////////////////////////////////////////////////////////////////////////
+// The writer thread: identifiers given when queued, drops, markers in order, stop saves all.
+//////////////////////////////////////////////////////////////////////////
+
+namespace
+{
+    using LogWriter = areg::ext::LogDbWriter;
+
+    //! The cookie of the rows the writer tests queue, other than the one of the header row.
+    constexpr ITEM_ID _writerCookie{ 77u };
+
+    areg::MessageEnvelope _envelope(uint32_t i)
+    {
+        return areg::create_log_message(_entry(static_cast<TIME64>(1000u + i), 0u, _writerCookie, areg::LogPriority::PrioInfo), areg::LogDataType::Remote, _writerCookie);
+    }
+
+    //! Queues a task that holds the writer thread until the gate opens.
+    void _hold_writer(LogWriter& writer, areg::SyncEvent& gate)
+    {
+        ASSERT_TRUE(writer.queue_task([&gate](LogDb& /*database*/) { gate.lock(areg::WAIT_INFINITE); }));
+    }
+}
+
+/**
+ * \brief   A queued row gets its identifier at once, and the file holds the rows with exactly those identifiers.
+ **/
+TEST(LogSqliteDatabaseTest, test_writerGivesIdsWhenQueued)
+{
+    const std::string path{ _db_path("w1ids.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    const uint32_t first{ db.max_log_id() + 1u };
+    LogWriter writer(db);
+    ASSERT_TRUE(writer.start(0u));
+
+    std::vector<uint32_t> queued;
+    for (uint32_t i = 0; i < 2500u; ++i)
+    {
+        queued.push_back(writer.queue_log(_envelope(i)));
+    }
+
+    writer.stop();
+    db.disconnect();
+
+    for (uint32_t i = 0; i < 2500u; ++i)
+    {
+        ASSERT_EQ(queued[i], first + i);
+    }
+
+    std::vector<uint32_t> saved;
+    for (const Row& row : _rows_in_time_order(path))
+    {
+        if (row.cookie == static_cast<uint32_t>(_writerCookie))
+        {
+            saved.push_back(row.id);
+        }
+    }
+
+    EXPECT_EQ(saved, queued);
+}
+
+/**
+ * \brief   A full queue drops new rows and counts them; the file gets the accepted rows and one row
+ *          that reports the drops, and no identifier is used twice.
+ **/
+TEST(LogSqliteDatabaseTest, test_writerDropsAndReportsWhenFull)
+{
+    const std::string path{ _db_path("w2drop.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    LogWriter writer(db);
+    ASSERT_TRUE(writer.start(1u));
+
+    areg::SyncEvent gate(true, false);
+    _hold_writer(writer, gate);
+
+    uint32_t accepted{ 0u };
+    uint32_t dropped{ 0u };
+    for (uint32_t i = 0; (i < 1'000'000u) && (dropped < 25u); ++i)
+    {
+        if (writer.queue_log(_envelope(i)) != 0u)
+        {
+            ++accepted;
+        }
+        else
+        {
+            ++dropped;
+        }
+    }
+
+    const LogWriter::QueueState state{ writer.queue_state() };
+    gate.set_signaled();
+    writer.stop();
+    db.disconnect();
+
+    ASSERT_EQ(dropped, 25u);
+    EXPECT_EQ(state.dropped, 25u);
+    EXPECT_EQ(state.pending, accepted);
+    EXPECT_LE(state.pendingBytes, state.limitBytes);
+    EXPECT_EQ(state.limitBytes, 1024u * 1024u);
+    EXPECT_EQ(_query_text(path, "SELECT COUNT(*) FROM logs WHERE cookie_id = 77;"), std::to_string(accepted));
+    EXPECT_EQ(_query_text(path, "SELECT COUNT(DISTINCT id) = COUNT(*) FROM logs;"), "1");
+    EXPECT_EQ(_query_text(path, "SELECT msg_log FROM logs WHERE msg_log LIKE 'Dropped%';").rfind("Dropped [ 25 ]", 0), 0u);
+}
+
+/**
+ * \brief   A marker of a row still in the queue is saved after the row and attached to it; a marker
+ *          of a row never queued, or with a level that is no marker level, gets no identifier.
+ **/
+TEST(LogSqliteDatabaseTest, test_writerSavesMarkerOfQueuedRow)
+{
+    const std::string path{ _db_path("w3mark.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    LogWriter writer(db);
+    ASSERT_TRUE(writer.start(0u));
+
+    areg::SyncEvent gate(true, false);
+    _hold_writer(writer, gate);
+    const uint32_t logId{ writer.queue_log(_envelope(1u)) };
+    ASSERT_NE(logId, 0u);
+    const uint32_t markerId{ writer.queue_marker(logId, areg::LogPriority::PrioMarkerWarning, "tester", "queued row") };
+    EXPECT_NE(markerId, 0u);
+    EXPECT_EQ(writer.queue_marker(logId + 5u, areg::LogPriority::PrioMarker, "", ""), 0u);
+    EXPECT_EQ(writer.queue_marker(logId, areg::LogPriority::PrioInfo, "", ""), 0u);
+
+    gate.set_signaled();
+    writer.stop();
+
+    std::vector<LogDb::LogMarker> markers;
+    ASSERT_EQ(db.read_markers(markers), 1u);
+    EXPECT_EQ(markers[0].markerId, markerId);
+    EXPECT_EQ(markers[0].masterId, logId);
+    EXPECT_EQ(markers[0].level, areg::LogPriority::PrioMarkerWarning);
+    db.disconnect();
+}
+
+/**
+ * \brief   Stopping the writer saves every row that was queued before the stop.
+ **/
+TEST(LogSqliteDatabaseTest, test_writerStopSavesTheQueue)
+{
+    const std::string path{ _db_path("w4stop.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    LogWriter writer(db);
+    ASSERT_TRUE(writer.start(0u));
+
+    areg::SyncEvent gate(true, false);
+    _hold_writer(writer, gate);
+    for (uint32_t i = 0; i < 5000u; ++i)
+    {
+        ASSERT_NE(writer.queue_log(_envelope(i)), 0u);
+    }
+
+    gate.set_signaled();
+    writer.stop();
+    EXPECT_EQ(writer.queue_log(_envelope(0u)), 0u);
+    EXPECT_EQ(writer.queue_state().pending, 0u);
+    db.disconnect();
+
+    EXPECT_EQ(_query_text(path, "SELECT COUNT(*) FROM logs WHERE cookie_id = 77;"), "5000");
+}
+
+/**
+ * \brief   A single row is committed without more rows coming, so another connection reads it soon.
+ **/
+TEST(LogSqliteDatabaseTest, test_writerCommitsALoneRow)
+{
+    const std::string path{ _db_path("w5lone.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    LogWriter writer(db);
+    ASSERT_TRUE(writer.start(0u));
+    ASSERT_NE(writer.queue_log(_envelope(1u)), 0u);
+
+    std::string count;
+    for (int i = 0; (i < 40) && (count != "1"); ++i)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        count = _query_text(path, "SELECT COUNT(*) FROM logs WHERE cookie_id = 77;");
+    }
+
+    EXPECT_EQ(count, "1");
+    writer.stop();
     db.disconnect();
 }

@@ -119,7 +119,7 @@ uint32_t SqliteDatabase::last_inserted_id() const noexcept
     return (mDbObject != nullptr ? static_cast<uint32_t>(sqlite3_last_insert_rowid(_sqlite(mDbObject))) : 0u);
 }
 
-bool SqliteDatabase::connect(const String& dbPath, bool /*readOnly*/)
+bool SqliteDatabase::connect(const String& dbPath, areg::DatabaseRole /*role*/)
 {
     return _open(dbPath);
 }

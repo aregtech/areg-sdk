@@ -291,4 +291,9 @@ bool LogObserverBase::remove_marker(uint32_t markerId)
     return LoggerClient::instance().remove_marker(markerId);
 }
 
+bool LogObserverBase::queue_state(LogQueueState& state) const noexcept
+{
+    return log_observer_queue_state(&state);
+}
+
 } // namespace areg::logger

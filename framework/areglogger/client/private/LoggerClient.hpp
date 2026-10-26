@@ -22,14 +22,13 @@
 #include "areglogger/client/LogObserverSwitches.h"
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/component/DispatcherThread.hpp"
-#include "areg/component/Timer.hpp"
-#include "areg/component/TimerConsumer.hpp"
 #include "areg/ipc/ServiceClientConnectionBase.hpp"
 #include "areg/ipc/ConnectionConsumer.hpp"
 #include "areg/ipc/RemoteMessageHandler.hpp"
 #include "areg/persist/ConfigListener.hpp"
 
 #include "areg/logging/LoggingDefs.hpp"
+#include "aregextend/db/LogDbWriter.hpp"
 #include "aregextend/db/LogSqliteDatabase.hpp"
 
 #include "areglogger/client/private/ObserverMessageProcessor.hpp"
@@ -82,27 +81,8 @@ private:
     //!< The message source. It is marked as an observer.
     static constexpr areg::MessageSource          SOURCE_TYPE { areg::MessageSource::SourceObserver };
 
-    //!< The most log messages one database transaction holds.
-    static constexpr uint32_t                       DB_BATCH_MESSAGES   { 1'000u };
-
-    //!< The most milliseconds a database transaction stays open.
-    static constexpr uint32_t                       DB_BATCH_TIMEOUT    { 100u };
-
-    //!< Commits the open database transaction when its time is over.
-    class CommitTimerConsumer final : public TimerConsumer
-    {
-    public:
-        explicit CommitTimerConsumer(LoggerClient & client) noexcept
-            : mClient   ( client )
-        {
-        }
-
-        //!< Commits the open database transaction.
-        void process_timer(Timer & timer) override;
-
-    private:
-        LoggerClient &  mClient;    //!< The client that owns the database.
-    };
+    //!< The position of the key `log::<module>::db::queue`, the size of the queue of the logs in megabytes.
+    static constexpr std::string_view               CONFIG_QUEUE_POSITION   { "queue" };
 
 //////////////////////////////////////////////////////////////////////////
 // Static methods.
@@ -273,10 +253,11 @@ public:
     uint32_t add_log(const ITEM_ID & cookie, areg::LogPriority prio, TIME64 timestamp, const char * message);
 
     /**
-     * \brief   Deletes one log message from the logging database.
+     * \brief   Queues the deletion of one log message from the logging database, in order with the
+     *          logs.
      *
      * \param   logId   The ID of the log message, as returned by `add_log()`.
-     * \return  Returns true if the message was deleted; false otherwise.
+     * \return  Returns true if the deletion is queued; false otherwise.
      **/
     bool remove_log(uint32_t logId);
 
@@ -289,23 +270,31 @@ public:
     uint32_t delivered_log_id() const noexcept;
 
     /**
-     * \brief   Sets a marker on a log row of the logging database, inside the open batch of logs.
+     * \brief   Queues a marker of a log row of the logging database. The marker is saved in order
+     *          with the logs, after every log queued before it.
      *
      * \param   masterId    The ID of the log row to mark.
      * \param   level       The marker level, one of the `PrioMarker*` priorities.
      * \param   author      The one who sets the marker. Can be empty.
      * \param   note        The note of the marker. Can be empty.
-     * \return  The ID of the new marker, or 0 if it was not set.
+     * \return  The ID of the new marker, or 0 if the database is not open, the level is not a
+     *          marker level, or no log with that ID was saved.
      **/
     uint32_t add_marker(uint32_t masterId, areg::LogPriority level, const String& author, const String& note);
 
     /**
-     * \brief   Removes a marker from the logging database, inside the open batch of logs.
+     * \brief   Queues the removal of a marker from the logging database, in order with the logs.
      *
      * \param   markerId    The ID of the marker, as returned by `add_marker()`.
-     * \return  Returns true if the marker was removed; false otherwise.
+     * \return  Returns true if the removal is queued; false if the database is not open.
      **/
     bool remove_marker(uint32_t markerId);
+
+    /**
+     * \brief   Returns the state of the queue of the logs waiting to be saved. Takes no lock.
+     **/
+    [[nodiscard]]
+    inline areg::ext::LogDbWriter::QueueState queue_state() const noexcept;
 
     /**
      * \brief   Creates or opens the logging database. If no path is specified, uses the location
@@ -648,23 +637,11 @@ private:
     inline LoggerClient& self();
 
     /**
-     * \brief   Opens a database transaction if none is open. Called with mLock taken, before a log
-     *          message is written to the database.
+     * \brief   Returns the size of the queue of the logs waiting to be saved, in megabytes, from
+     *          the configuration key `log::<module>::db::queue`. Zero if the key is not set.
      **/
-    void begin_database_batch();
-
-    /**
-     * \brief   Counts a log message written in the open transaction and commits the transaction
-     *          when it holds DB_BATCH_MESSAGES messages. Called with mLock taken.
-     **/
-    void count_database_batch();
-
-    /**
-     * \brief   Commits the open database transaction, if any. If the commit fails, the batch stays
-     *          open and the commit timer starts again, so the timer or the next full batch
-     *          retries it. Called with mLock taken.
-     **/
-    void commit_database_batch();
+    [[nodiscard]]
+    static uint32_t _config_queue_mb();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables.
@@ -698,30 +675,9 @@ private:
     areg::ext::LogSqliteDatabase    mLogDatabase;
 
     /**
-     * \brief   Receives the event of the commit timer.
+     * \brief   Saves the logs in the database on its own thread.
      **/
-    CommitTimerConsumer             mCommitConsumer;
-
-    /**
-     * \brief   Commits the open database transaction after DB_BATCH_TIMEOUT milliseconds.
-     **/
-    Timer                           mCommitTimer;
-
-    /**
-     * \brief   The log messages written in the open database transaction.
-     **/
-    uint32_t                        mBatchMessages;
-
-    /**
-     * \brief   True while a database transaction is open.
-     **/
-    bool                            mBatchOpen;
-
-    /**
-     * \brief   True if the open transaction is committed after every message, because the commit
-     *          timer could not start.
-     **/
-    bool                            mBatchUntimed;
+    areg::ext::LogDbWriter          mDbWriter;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -787,6 +743,11 @@ inline void LoggerClient::log_scope_messages(std::vector<SharedBuffer>& messages
 inline void LoggerClient::log_messages(std::vector<SharedBuffer>& messages, ITEM_ID instId, uint32_t scopeId)
 {
     mLogDatabase.log_messages(messages, instId, scopeId);
+}
+
+inline areg::ext::LogDbWriter::QueueState LoggerClient::queue_state() const noexcept
+{
+    return mDbWriter.queue_state();
 }
 
 inline LoggerClient& LoggerClient::self()

@@ -21,6 +21,16 @@
 #include "areg/base/String.hpp"
 namespace areg {
 
+/**
+ * \brief   What a connection does with the database it opens. Both roles open the database for
+ *          reading and writing.
+ **/
+enum class DatabaseRole : uint8_t
+{
+      Recorder  //!< The one connection that writes the data as it comes, in bulk.
+    , Viewer    //!< Reads the data and may change a few rows, never in bulk.
+};
+
 //////////////////////////////////////////////////////////////////////////
 // DatabaseEngine class declaration
 //////////////////////////////////////////////////////////////////////////
@@ -57,11 +67,10 @@ public:
      * \param   dbPath      The path to the database. The path may contain a file path, URL, user
      *                      name, and password. If empty, the engine reads the connection details
      *                      from the 'areg.init' configuration file.
-     * \param   readOnly    If true, the database engine connects in read-only mode; otherwise, in
-     *                      read-write mode.
+     * \param   role        What the connection does with the database.
      * \return  Returns true if the connection succeeds; false otherwise.
      **/
-    virtual bool connect(const String & dbPath, bool readOnly) = 0;
+    virtual bool connect(const String & dbPath, areg::DatabaseRole role) = 0;
 
     /**
      * \brief   Disconnects from the database.

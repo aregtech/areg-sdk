@@ -195,7 +195,7 @@ def main():
                                len(fresh['enumerations']), headers))
         return 0
 
-    with open(TARGET, 'w', encoding='utf-8') as handle:
+    with open(TARGET, 'w', encoding='utf-8', newline='\n') as handle:
         json.dump(fresh, handle, indent=1)
         handle.write('\n')
     print('wrote {}: {} names and {} enumeration(s) from {} headers'

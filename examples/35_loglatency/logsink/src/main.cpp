@@ -157,7 +157,11 @@ int main(int argc, char ** argv)
         }
     }
 
+    const auto stopStart{ std::chrono::steady_clock::now() };
     log_observer_disconnect_logger();
+    const double stopMs{ std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - stopStart).count() };
+    LogQueueState queue{ };
+    static_cast<void>(log_observer_queue_state(&queue));
     log_observer_release();
 
     std::vector<uint32_t> & latencies{ _run.latencies };
@@ -182,6 +186,15 @@ int main(int argc, char ** argv)
     std::printf("35 log trip  | P50 %.0f us | P90 %.0f us | P99 %.0f us | P99.9 %.0f us | max %.0f us | mean %.0f us\n"
                , percentile(latencies, 0.50), percentile(latencies, 0.90), percentile(latencies, 0.99)
                , percentile(latencies, 0.999), static_cast<double>(latencies.back()), sum / static_cast<double>(latencies.size()));
+    if (database != nullptr)
+    {
+        std::printf("35 log queue | dropped %llu | peak %.1f MB of %.0f MB | disconnect %.0f ms\n"
+                   , static_cast<unsigned long long>(queue.lqDropped)
+                   , static_cast<double>(queue.lqPeakBytes) / (1024.0 * 1024.0)
+                   , static_cast<double>(queue.lqLimitBytes) / (1024.0 * 1024.0)
+                   , stopMs);
+    }
+
     std::fflush(stdout);
     return 0;
 }

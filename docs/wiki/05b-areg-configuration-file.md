@@ -101,6 +101,7 @@ The `*` module is used for almost every key in the shipped file. You add process
 | `log::logobserver::db::engine` | engine name | `sqlite3` | Engine of the observer database |
 | `log::logobserver::db::name` | file name + masks | `log_%time%.sqlog` | File name of the observer database |
 | `log::logobserver::db::location` | path | `./logs` | Directory of the observer database |
+| `log::logobserver::db::queue` | MB | `256` | Received logs that may wait to be saved; when full, new logs are dropped and counted |
 | `log::*::layout::enter` | format string | see §5.8 | Scope-entry line format |
 | `log::*::layout::message` | format string | see §5.8 | Message line format |
 | `log::*::layout::exit` | format string | see §5.8 | Scope-exit line format |

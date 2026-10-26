@@ -53,56 +53,14 @@ LoggerClient::LoggerClient()
     , mIsPaused                  ( false )
     , mInstances                 ( )
     , mLogDatabase               ( )
-    , mCommitConsumer            ( *this )
-    , mCommitTimer               ( static_cast<TimerConsumer &>(mCommitConsumer), "LogObserverCommitTimer" )
-    , mBatchMessages             ( 0u )
-    , mBatchOpen                 ( false )
-    , mBatchUntimed              ( false )
+    , mDbWriter                  ( mLogDatabase )
 {
 }
 
-void LoggerClient::CommitTimerConsumer::process_timer(Timer & /* timer */)
+uint32_t LoggerClient::_config_queue_mb()
 {
-    Lock lock(mClient.mLock);
-    mClient.commit_database_batch();
-}
-
-void LoggerClient::begin_database_batch()
-{
-    if (mBatchOpen || (mLogDatabase.is_operable() == false))
-        return;
-
-    mBatchOpen      = mLogDatabase.begin();
-    mBatchMessages  = 0u;
-    mBatchUntimed   = mBatchOpen && (mCommitTimer.start_timer(DB_BATCH_TIMEOUT, static_cast<DispatcherThread &>(*this), 1u) == false);
-}
-
-void LoggerClient::count_database_batch()
-{
-    if (mBatchOpen && (mBatchUntimed || (++mBatchMessages >= DB_BATCH_MESSAGES)))
-    {
-        commit_database_batch();
-    }
-}
-
-void LoggerClient::commit_database_batch()
-{
-    if (mBatchOpen == false)
-        return;
-
-    mBatchMessages  = 0u;
-    mCommitTimer.stop_timer();
-    if (mLogDatabase.commit(true) || (mLogDatabase.is_operable() == false))
-    {
-        mBatchOpen      = false;
-        mBatchUntimed   = false;
-    }
-    else
-    {
-        // Opens a transaction only if the failed commit ended the old one.
-        static_cast<void>(mLogDatabase.begin());
-        mBatchUntimed   = (mCommitTimer.start_timer(DB_BATCH_TIMEOUT, static_cast<DispatcherThread &>(*this), 1u) == false);
-    }
+    const String value{ Application::config_manager().log_database_property(String(LoggerClient::CONFIG_QUEUE_POSITION)) };
+    return (value.is_empty() ? 0u : value.to_uint32());
 }
 
 bool LoggerClient::start_logger_client(const String & address /*= String::EmptyString*/, uint16_t portNr /*= areg::InvalidPort*/)
@@ -133,10 +91,10 @@ void LoggerClient::stop_logger_client()
     {
         Lock lock(mLock);
         mIsPaused = false;
-        commit_database_batch();
     } while (false);
 
     disconnect_service_host();
+    mDbWriter.stop();
 }
 
 void LoggerClient::set_callbacks(const ObserverEvents* callbacks)
@@ -317,28 +275,15 @@ uint32_t LoggerClient::delivered_log_id() const noexcept
 
 uint32_t LoggerClient::add_marker(uint32_t masterId, areg::LogPriority level, const String& author, const String& note)
 {
-    Lock lock(mLock);
-    begin_database_batch();
-    const uint32_t result{ mLogDatabase.add_marker(masterId, level, author, note) };
-    if (result != 0u)
-    {
-        count_database_batch();
-    }
-
-    return result;
+    return mDbWriter.queue_marker(masterId, level, author, note);
 }
 
 bool LoggerClient::remove_marker(uint32_t markerId)
 {
-    Lock lock(mLock);
-    begin_database_batch();
-    const bool result{ mLogDatabase.remove_marker(markerId) };
-    if (result)
-    {
-        count_database_batch();
-    }
-
-    return result;
+    return (markerId != 0u) && mDbWriter.queue_task([markerId](areg::ext::LogSqliteDatabase& database)
+        {
+            database.remove_marker(markerId);
+        });
 }
 
 bool LoggerClient::open_logging_database(const char* dbPath /*= nullptr*/)
@@ -358,7 +303,13 @@ bool LoggerClient::open_logging_database(const char* dbPath /*= nullptr*/)
         }
     }
 
-    bool result{ mLogDatabase.connect(filePath, false) };
+    bool result{ mLogDatabase.connect(filePath, areg::DatabaseRole::Recorder) };
+    if (result && (mDbWriter.start(LoggerClient::_config_queue_mb()) == false))
+    {
+        mLogDatabase.disconnect();
+        result = false;
+    }
+
     FuncLogDbCreated callback{ mLogDatabase.is_operable() && (mCallbacks != nullptr) ? mCallbacks->evtLogDbCreated  : nullptr};
     if (LogObserverBase::_theLogObserver != nullptr)
     {
@@ -374,8 +325,7 @@ bool LoggerClient::open_logging_database(const char* dbPath /*= nullptr*/)
 
 void LoggerClient::close_logging_database()
 {
-    Lock lock(mLock);
-    commit_database_batch();
+    mDbWriter.stop();
     mLogDatabase.disconnect();
 }
 
