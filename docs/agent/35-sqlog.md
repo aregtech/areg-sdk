@@ -22,10 +22,10 @@ so both stay true.
 ## 1. The five tables
 
 A file at rest holds these five tables and no others of its own. `sqlite_master`
-lists a sixth, `sqlite_sequence`: SQLite creates it for the `AUTOINCREMENT` on
-`logs.id` and it is not part of the schema -- skip it rather than treat it as
-drift. Two more, `filter_rules` and `refused_spans`, are `CREATE TEMP TABLE` --
-they belong to a live viewer and vanish with the connection, so **never expect them
+lists a sixth, `sqlite_sequence`: SQLite creates it for an `AUTOINCREMENT` column
+and it is not part of the schema -- skip it rather than treat it as drift. Two
+more, `filter_rules` and `refused_spans`, are `CREATE TEMP TABLE` -- they belong
+to a live viewer and vanish with the connection, so **never expect them
 in a file** and never join against them.
 
 | Table | One row per |

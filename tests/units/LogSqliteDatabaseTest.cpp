@@ -216,11 +216,11 @@ namespace
         return plan;
     }
 
-    //! Returns true if the plan reads the logs through the time index without sorting them again.
-    bool _uses_time_index(const std::string& plan, bool seek)
+    //! Returns true if the plan reads the logs through the given time ordered index without sorting them again.
+    bool _uses_time_index(const std::string& plan, bool seek, const std::string& index = "idx_logs_time")
     {
-        const bool viaIndex{ plan.find("USING INDEX idx_logs_time") != std::string::npos ||
-                             plan.find("USING COVERING INDEX idx_logs_time") != std::string::npos };
+        const bool viaIndex{ plan.find("USING INDEX " + index) != std::string::npos ||
+                             plan.find("USING COVERING INDEX " + index) != std::string::npos };
         const bool seeks{ (plan.find("SEARCH logs USING") != std::string::npos) || (plan.find("SEARCH l USING") != std::string::npos) };
         const bool sorts{ plan.find("TEMP B-TREE") != std::string::npos };
         return viaIndex && (sorts == false) && ((seek == false) || seeks);
@@ -668,6 +668,7 @@ TEST(LogSqliteDatabaseTest, test_filteredWindowsEqualTheFilteredSet)
 
         ASSERT_GT(expected.size(), 1000u);
         ASSERT_LT(expected.size(), all.size());
+        const std::string index{ instId == areg::TARGET_ALL ? "idx_logs_time" : "idx_logs_cookie" };
 
         areg::ext::SqliteStatement stmt(db.database());
         std::vector<uint32_t> forward;
@@ -676,7 +677,7 @@ TEST(LogSqliteDatabaseTest, test_filteredWindowsEqualTheFilteredSet)
         {
             ASSERT_LT(rounds, 1000);
             ASSERT_TRUE(db.setup_statement_read_filter_window(stmt, instId, pos, 100));
-            EXPECT_TRUE(_uses_time_index(_newest_plan(conn), pos.timeCreated != 0)) << _newest_plan(conn);
+            EXPECT_TRUE(_uses_time_index(_newest_plan(conn), pos.timeCreated != 0, index)) << _newest_plan(conn);
             std::vector<areg::SharedBuffer> logs;
             read = LogDb::fill_log_window(logs, stmt, 100, pos, forward);
         }
@@ -689,7 +690,7 @@ TEST(LogSqliteDatabaseTest, test_filteredWindowsEqualTheFilteredSet)
         {
             ASSERT_LT(rounds, 1000);
             ASSERT_TRUE(db.setup_statement_read_filter_window_back(stmt, instId, pos, 100));
-            EXPECT_TRUE(_uses_time_index(_newest_plan(conn), pos.timeCreated != 0)) << _newest_plan(conn);
+            EXPECT_TRUE(_uses_time_index(_newest_plan(conn), pos.timeCreated != 0, index)) << _newest_plan(conn);
             std::vector<areg::SharedBuffer> logs;
             read = LogDb::fill_log_window(logs, stmt, 100, pos, backward);
         }
@@ -740,7 +741,7 @@ TEST(LogSqliteDatabaseTest, test_windowAtRowNumberEqualsTheKeysetSlice)
         {
             const bool ready{ filtered ? db.setup_statement_read_filter_window_at(stmt, instId, offset, 100) : db.setup_statement_read_window_at(stmt, offset, 100) };
             ASSERT_TRUE(ready);
-            EXPECT_TRUE(_uses_time_index(_newest_plan(conn), false)) << _newest_plan(conn);
+            EXPECT_TRUE(_uses_time_index(_newest_plan(conn), false, filtered && (instId != areg::TARGET_ALL) ? "idx_logs_cookie" : "idx_logs_time")) << _newest_plan(conn);
 
             std::vector<areg::SharedBuffer> logs;
             std::vector<uint32_t> ids;

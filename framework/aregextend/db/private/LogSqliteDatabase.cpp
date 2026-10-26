@@ -181,7 +181,7 @@ namespace {
             "\"time_created\"	    NUMERIC,"
             "\"time_received\"      NUMERIC,"
             "\"time_duration\"      NUMERIC,"
-            "CONSTRAINT \"pk_msg_id\" PRIMARY KEY(\"id\" AUTOINCREMENT)"
+            "CONSTRAINT \"pk_msg_id\" PRIMARY KEY(\"id\")"
             ");"
     };
 
@@ -300,17 +300,10 @@ namespace {
         "CREATE UNIQUE INDEX idx_scope_id ON scopes (scope_id, cookie_id, time_received, time_inactivated);"
     };
 
-    //! A script to create index of the logs table
-    constexpr std::string_view  _sqlCreateIdxLogs
+    //! An index to read the logs of one instance in the order they were generated.
+    constexpr std::string_view  _sqlCreateIdxLogsCookie
     {
-        "CREATE INDEX idx_logs ON logs(scope_id, msg_prio, cookie_id);"
-    };
-
-    //! An index to select the logs of one process, which the leading column of
-    //! idx_logs cannot serve.
-    constexpr std::string_view  _sqlCreateIdxLogsModule
-    {
-        "CREATE INDEX idx_logs_module ON logs(msg_module_id, msg_prio);"
+        "CREATE INDEX idx_logs_cookie ON logs(cookie_id, time_created);"
     };
 
     //! An index to read the logs in the order a viewer shows them, which is the order they
@@ -1075,8 +1068,7 @@ inline void LogSqliteDatabase::_create_indexes() noexcept
 {
     VERIFY(mDatabase.execute(_sqlCraeteIdxCookie));
     VERIFY(mDatabase.execute(_sqlCreateIdxScopes));
-    VERIFY(mDatabase.execute(_sqlCreateIdxLogs));
-    VERIFY(mDatabase.execute(_sqlCreateIdxLogsModule));
+    VERIFY(mDatabase.execute(_sqlCreateIdxLogsCookie));
     VERIFY(mDatabase.execute(_sqlCreateIdxLogsTime));
     VERIFY(mDatabase.execute(_sqlCreateIdxMarkers));
 }

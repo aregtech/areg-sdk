@@ -158,7 +158,7 @@ The log messages. This is the table that grows.
 
 | Column | Type | Content |
 |---|---|---|
-| `id` | INTEGER | Primary key, auto increment. Row order equals write order. |
+| `id` | INTEGER | Primary key, unique, numbered by the recorder in the order it writes. Row order equals write order. |
 | `cookie_id` | INTEGER | The application that produced the message. |
 | `scope_id` | INTEGER | The scope that produced the message. `0` when the message has no scope. |
 | `session_id` | INTEGER | Session ID of the message. Set only for remote logs. |
@@ -173,7 +173,7 @@ The log messages. This is the table that grows.
 | `time_received` | NUMERIC | When the recorder received it. The difference to `time_created` is the transport delay. |
 | `time_duration` | NUMERIC | For a scope exit row, the time spent in the scope, in microseconds. `0` otherwise. |
 
-Indexes: `idx_logs` on `(scope_id, msg_prio, cookie_id)`, `idx_logs_module` on `(msg_module_id, msg_prio)`, `idx_logs_time` on `(time_created, id)`.
+Indexes: `idx_logs_cookie` on `(cookie_id, time_created)` for the logs of one application, `idx_logs_time` on `(time_created, id)` for the logs of all of them. A file written by an older version has `idx_logs` on `(scope_id, msg_prio, cookie_id)` and `idx_logs_module` on `(msg_module_id, msg_prio)` instead of `idx_logs_cookie`; every query works on both.
 
 > [!IMPORTANT]
 > `msg_module`, `msg_thread` and `cookie_id` always identify the **application that produced the log**, never the recorder. A log written by `myapp` keeps the name `myapp` in a file written by `logcollector`.
