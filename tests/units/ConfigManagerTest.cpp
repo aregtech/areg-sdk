@@ -244,6 +244,7 @@ TEST(ConfigManagerTest, scope_priority_comes_from_first_matching_layer)
     constexpr uint32_t prioWarn { static_cast<uint32_t>(areg::LogPriority::PrioWarning) };
 
     areg::ConfigManager& config{ areg::Application::config_manager() };
+    const bool wasConfigured{ config.is_configured() };
     const areg::ListProperties oldShared{ config.readonly_properties() };
     const areg::ListProperties oldProcess{ config.module_properties() };
 
@@ -273,6 +274,12 @@ TEST(ConfigManagerTest, scope_priority_comes_from_first_matching_layer)
 
     config.set_configuration(oldShared, oldProcess);
     areg::restore_logging();
+
+    // A process that was not configured before reads its configuration file again at the next start.
+    if (wasConfigured == false)
+    {
+        config.release_properties();
+    }
 }
 
 #endif  // AREG_LOGGING

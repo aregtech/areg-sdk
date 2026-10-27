@@ -210,6 +210,16 @@ public:
     bool bind_text(int32_t index, const String& value) noexcept;
 
     /**
+     * \brief   Binds a null-terminated text to the specified parameter without copying it. The text
+     *          must stay valid until the statement is reset and its bindings are cleared or bound again.
+     *
+     * \param   index       The 0-based parameter index.
+     * \param   value       The text to bind. A null pointer binds NULL.
+     * \return  True if binding was successful; false otherwise.
+     **/
+    bool bind_text_static(int32_t index, const char* value) noexcept;
+
+    /**
      * \brief   Binds a NULL value to the specified parameter.
      *
      * \param   index       The 0-based parameter index.

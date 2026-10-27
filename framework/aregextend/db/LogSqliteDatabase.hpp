@@ -1092,8 +1092,8 @@ protected:
     //!< Flag, indicating whether the database logging is enabled or not.
     bool            mDbLogEnabled;
 
-    //!< Mutex to protect database operations.
-    areg::Mutex     mLock;
+    //!< Protects the database operations.
+    areg::CriticalSection   mLock;
 
     //!< The background checkpoint of a writing connection, null when the commits checkpoint themselves.
     std::unique_ptr<LogDbCheckpointer>  mCheckpointer;
