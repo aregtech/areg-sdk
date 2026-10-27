@@ -1,41 +1,35 @@
 #!/bin/bash
 # ---------------------------------------------------------------------------
-# hang-watchdog.sh -- reports and stops a CI step that does not finish.
+# hang-watchdog.sh -- reports and stops a process of a CI step that hangs.
 #
-# Usage: hang-watchdog.sh <done-file> <limit-seconds> <name> [<name> ...]
+# Usage: hang-watchdog.sh <done-file> <limit-seconds> <pattern> [<pattern> ...]
 #
-# Waits until <done-file> exists or <limit-seconds> pass. On the limit, prints
-# every process, the thread stacks of each process whose executable is one of
-# <name>, with or without its extension, kills those processes and exits 1. The
-# report is also written to <done-file>.report. Runs on Linux, macOS and Cygwin,
-# with bash 3.2.
+# Watches until <done-file> exists. A process whose executable name, with or
+# without its extension, matches one of the shell patterns and runs longer
+# than <limit-seconds> gets every process and its thread stacks printed, and
+# is then killed. Quote a pattern that has a wildcard. The report is also
+# written to <done-file>.report. Exits 1 if a process was killed. Runs on
+# Linux, macOS and Cygwin, with bash 3.2.
 # ---------------------------------------------------------------------------
 
 done_file="$1"
 limit="$2"
 shift 2
-names="$*"
+patterns="$*"
 report="${done_file}.report"
 
-if [ -z "${done_file}" ] || [ -z "${limit}" ] || [ -z "${names}" ]; then
-    echo "usage: $0 <done-file> <limit-seconds> <name> [<name> ...]" >&2
+if [ -z "${done_file}" ] || [ -z "${limit}" ] || [ -z "${patterns}" ]; then
+    echo "usage: $0 <done-file> <limit-seconds> <pattern> [<pattern> ...]" >&2
     exit 2
 fi
 
-waited=0
-while [ "${waited}" -lt "${limit}" ]; do
-    if [ -e "${done_file}" ]; then
-        exit 0
-    fi
-    sleep 1
-    waited=$((waited + 1))
-done
-
-if [ -e "${done_file}" ]; then
-    exit 0
-fi
+# The patterns are matched by 'case', never expanded against files.
+set -f
 
 platform="$(uname -s)"
+case "${platform}" in
+    CYGWIN*) patterns="$(echo "${patterns}" | tr '[:upper:]' '[:lower:]')" ;;
+esac
 
 # Runs a command and kills it after the given seconds.
 bounded() {
@@ -56,31 +50,33 @@ bounded() {
     wait "${pid}" 2>/dev/null
 }
 
-# Prints the PID of every process whose executable name is one of the names.
+# Prints the PID of every process whose executable name matches one of the patterns.
 matching_pids() {
+    local pid cmd base pattern
     case "${platform}" in
         CYGWIN*)
-            ps -aW | awk -v names=" ${names} " 'NR > 1 {
+            ps -aW | awk 'NR > 1 {
                 cmd = $8
                 for (i = 9; i <= NF; ++i) cmd = cmd " " $i
                 sub(/.*[\\\/]/, "", cmd)
-                cmd = tolower(cmd)
-                base = cmd
-                sub(/\.[^.]*$/, "", base)
-                if (index(tolower(names), " " cmd " ") > 0 || index(tolower(names), " " base " ") > 0) print $1
+                print $1 "\t" tolower(cmd)
             }'
             ;;
         *)
-            ps -axo pid=,comm= | awk -v names=" ${names} " '{
+            ps -axo pid=,comm= | awk '{
                 cmd = $2
                 for (i = 3; i <= NF; ++i) cmd = cmd " " $i
                 sub(/.*\//, "", cmd)
-                base = cmd
-                sub(/\.[^.]*$/, "", base)
-                if (index(names, " " cmd " ") > 0 || index(names, " " base " ") > 0) print $1
+                print $1 "\t" cmd
             }'
             ;;
-    esac
+    esac | while IFS=$'\t' read -r pid cmd; do
+        base="${cmd%.*}"
+        for pattern in ${patterns}; do
+            case "${cmd}" in ${pattern}) echo "${pid}"; break ;; esac
+            case "${base}" in ${pattern}) echo "${pid}"; break ;; esac
+        done
+    done
 }
 
 # Prints the thread stacks of one process.
@@ -104,28 +100,53 @@ stop_process() {
     esac
 }
 
-pids="$(matching_pids)"
-
-{
-    echo "::error::[hang-watchdog] still running after ${limit} s: ${names}"
-    echo "[hang-watchdog] ---- processes ----"
-    case "${platform}" in
-        CYGWIN*)
-            ps -aW
-            bounded 30 tasklist
-            ;;
-        *)
-            ps -axo pid,ppid,etime,stat,command
-            ;;
-    esac
-    for pid in ${pids}; do
+# Prints every process and the stacks of the hung one, then kills it.
+report_hang() {
+    local pid="$1"
+    local age="$2"
+    {
+        echo "::error::[hang-watchdog] PID ${pid} still running after ${age} s: ${patterns}"
+        echo "[hang-watchdog] ---- processes ----"
+        case "${platform}" in
+            CYGWIN*)
+                ps -aW
+                bounded 30 tasklist
+                ;;
+            *)
+                ps -axo pid,ppid,etime,stat,command
+                ;;
+        esac
         print_stacks "${pid}"
-    done
-    echo "[hang-watchdog] ---- stopping: ${pids} ----"
-} 2>&1 | tee "${report}"
-
-for pid in ${pids}; do
+        echo "[hang-watchdog] ---- stopping: ${pid} ----"
+    } 2>&1 | tee -a "${report}"
     stop_process "${pid}"
+}
+
+# Each entry of 'seen' is ' <pid>:<second it was first seen>'.
+seen=""
+stopped=0
+while [ ! -e "${done_file}" ]; do
+    now=${SECONDS}
+    current=""
+    for pid in $(matching_pids); do
+        case "${seen} " in
+            *" ${pid}:"*)
+                start="${seen#* ${pid}:}"
+                start="${start%% *}"
+                ;;
+            *)
+                start=${now}
+                ;;
+        esac
+        if [ $((now - start)) -ge "${limit}" ]; then
+            report_hang "${pid}" "$((now - start))"
+            stopped=1
+        else
+            current="${current} ${pid}:${start}"
+        fi
+    done
+    seen="${current}"
+    sleep 1
 done
 
-exit 1
+exit ${stopped}

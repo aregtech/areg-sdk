@@ -148,10 +148,14 @@ namespace
         return static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - since).count());
     }
 
-    //!< Sleeps without looking at the exit request: a thread that does not answer.
+    //!< Sleeps at least ms by the steady clock without looking at the exit request: a thread that does not answer.
     void _hang(uint32_t ms)
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+        const auto until{ std::chrono::steady_clock::now() + std::chrono::milliseconds(ms) };
+        for (auto now{ std::chrono::steady_clock::now() }; now < until; now = std::chrono::steady_clock::now())
+        {
+            std::this_thread::sleep_for(until - now);
+        }
     }
 }
 
