@@ -19,6 +19,7 @@
 #include "areg/component/ExitEvent.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/base/private/DebugDefs.hpp"
+#include "areg/logging/areg_log.h"
 
 #include <chrono>
 #include <cstddef>
@@ -29,8 +30,36 @@
 static_assert(std::is_nothrow_copy_constructible_v<areg::Event>, "Event copy must be noexcept for noexcept pop_event()");
 static_assert(std::is_nothrow_move_assignable_v<areg::Event>, "Event move must be noexcept for the ring hand-off");
 
+DEF_LOG_SCOPE(areg_component_private_EventQueue, _report_own_full);
+
 namespace
 {
+#if AREG_LOGGING
+    //!< Set while the calling thread reports a dropped post to its own queue.
+    inline bool & _reporting_own_full() noexcept
+    {
+        static thread_local bool _reporting{ false };
+        return _reporting;
+    }
+
+    /**
+     * \brief   Logs that the consumer thread posted an event to its own full queue and the event
+     *          is dropped. A post of that log message to the same full queue is not reported again.
+     **/
+    void _report_own_full(const areg::Event & eventElem)
+    {
+        bool & reporting{ _reporting_own_full() };
+        if (reporting)
+            return;
+
+        reporting = true;
+        LOG_SCOPE(areg_component_private_EventQueue, _report_own_full);
+        LOG_ERR("The thread [ %s ] posted the event [ %u ] to its own full queue, the event is dropped"
+                    , areg::Thread::current_thread_name().as_string(), eventElem.event_id());
+        reporting = false;
+    }
+#endif  // AREG_LOGGING
+
     /**
      * \brief   Inserts the event into the priority lane behind every event of the same or a
      *          higher priority. The lane is searched from the tail, so an event of the lowest
@@ -59,6 +88,7 @@ EventQueue::EventQueue(uint32_t maxQueue, bool dropOnFull /*= false*/, uint32_t 
     , mWaitMs           ( waitMs )
     , mRing             ( nullptr )
     , mWaiter           ( nullptr )
+    , mConsumerId       ( Thread::INVALID_THREAD_ID )
     , mEnqueuePos       ( 0u )
     , mDequeuePos       ( 0u )
     , mPrioLock         ( )
@@ -80,6 +110,7 @@ EventQueue::EventQueue( areg::NullTag ) noexcept
     , mWaitMs           ( 0u )
     , mRing             ( nullptr )
     , mWaiter           ( nullptr )
+    , mConsumerId       ( Thread::INVALID_THREAD_ID )
     , mEnqueuePos       ( 0u )
     , mDequeuePos       ( 0u )
     , mPrioLock         ( )
@@ -100,8 +131,9 @@ EventQueue::~EventQueue()
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Winvalid-offsetof"
 #endif  // defined(__GNUC__)
-    // mWaiter lives in the padding of the first line; the cursors keep their offsets.
+    // mWaiter and mConsumerId live in the padding of the first line; the cursors keep their offsets.
     static_assert(offsetof(EventQueue, mWaiter) + sizeof(mWaiter) <= AREG_MPSC_CACHE_LINE_SIZE, "mWaiter must stay in the first cache line");
+    static_assert(offsetof(EventQueue, mConsumerId) + sizeof(mConsumerId) <= AREG_MPSC_CACHE_LINE_SIZE, "mConsumerId must stay in the first cache line");
     static_assert(offsetof(EventQueue, mEnqueuePos) == AREG_MPSC_CACHE_LINE_SIZE, "mEnqueuePos must start the second cache line");
     static_assert(offsetof(EventQueue, mDequeuePos) == 2u * AREG_MPSC_CACHE_LINE_SIZE, "mDequeuePos must start the third cache line");
 #if defined(__GNUC__)
@@ -655,11 +687,13 @@ bool EventQueue::_ring_wait_registered(Cell* ring, Event& eventElem) noexcept
     // Lossless: block up to mWaitMs for a free slot; abortable by exit.
     const auto waitBegin{ std::chrono::steady_clock::now() };
     const auto deadline{ waitBegin + std::chrono::milliseconds(mWaitMs) };
+    // The consumer thread does not wait for a slot of its own queue.
+    const bool ownThread{ mConsumerId.load(std::memory_order_relaxed) == Thread::current_thread_id() };
     bool enqueued{ false };
     for (;;)
     {
-        // Only the immediate exit or a close aborts the wait.
-        if (is_exit_triggered() || is_closed())
+        // Only a push of the consumer, the immediate exit or a close aborts the wait.
+        if (ownThread || is_exit_triggered() || is_closed())
             break;
         if (_ring_try_enqueue(ring, eventElem))
         {
@@ -675,6 +709,12 @@ bool EventQueue::_ring_wait_registered(Cell* ring, Event& eventElem) noexcept
     {
         _wake_consumer();
     }
+#if AREG_LOGGING
+    else if (ownThread)
+    {
+        _report_own_full(eventElem);
+    }
+#endif  // AREG_LOGGING
 
     // Only recorded, never logged here: this queue also serves the log manager.
     const uint32_t waited{ static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::milliseconds>(

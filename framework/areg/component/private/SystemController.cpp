@@ -79,6 +79,7 @@ DEF_LOG_SCOPE(areg_component_private_SystemController, _free_thread);
 DEF_LOG_SCOPE(areg_component_private_SystemController, _start_thread);
 DEF_LOG_SCOPE(areg_component_private_SystemController, _start_load);
 DEF_LOG_SCOPE(areg_component_private_SystemController, _start_instance);
+DEF_LOG_SCOPE(areg_component_private_SystemController, _start_replacement);
 DEF_LOG_SCOPE(areg_component_private_SystemController, _start_deferred);
 DEF_LOG_SCOPE(areg_component_private_SystemController, deadline_expired);
 
@@ -381,15 +382,7 @@ void SystemController::deadline_expired()
             const String name{ record.mName };
             const String model{ record.mModel };
             _abandon_thread(i, areg::DisconnectReason::ProviderRestarting);
-            if (_count_abandoned(name) >= MAX_HUNG_INSTANCES)
-            {
-                LOG_ERR("Two instances of the component thread [ %s ] hang, the new instance starts when one returns", name.as_string());
-                mDeferred.push_back(Deferred{ name, model });
-            }
-            else
-            {
-                _start_instance(name, model);
-            }
+            _start_replacement(name, model);
         }
         else
         {
@@ -606,6 +599,21 @@ void SystemController::_start_instance( const String & threadName, const String 
     }
 }
 
+void SystemController::_start_replacement( const String & threadName, const String & modelName )
+{
+    LOG_SCOPE( areg_component_private_SystemController, _start_replacement );
+
+    if (_count_abandoned(threadName) >= MAX_HUNG_INSTANCES)
+    {
+        LOG_ERR("Two instances of the component thread [ %s ] hang, the new instance starts when one returns", threadName.as_string());
+        mDeferred.push_back(Deferred{ threadName, modelName });
+    }
+    else
+    {
+        _start_instance(threadName, modelName);
+    }
+}
+
 void SystemController::_start_deferred( const String & threadName )
 {
     LOG_SCOPE( areg_component_private_SystemController, _start_deferred );
@@ -748,6 +756,23 @@ void SystemController::_apply_policy( uint32_t index, const char * what )
     if (record.mPolicy == areg::FailurePolicy::Exit)
     {
         _exit_process(static_cast<int32_t>(index), what);
+    }
+    else if ((record.mPolicy == areg::FailurePolicy::Restart) && (record.mState == areg::ThreadState::Starting) && (_model_state(record.mModel) == areg::ModelState::Loaded))
+    {
+        // A new instance of a loaded model that hangs in its start is replaced too.
+        const String name{ record.mName };
+        const String model{ record.mModel };
+        _abandon_thread(index, areg::DisconnectReason::ProviderRestarting);
+        _start_replacement(name, model);
+    }
+    else if ((record.mPolicy == areg::FailurePolicy::Restart) && (record.mState == areg::ThreadState::Starting) && (_model_state(record.mModel) == areg::ModelState::Loading))
+    {
+        // A thread that hangs in its first start fails the load of its model.
+        const String model{ record.mModel };
+        _abandon_thread(index, areg::DisconnectReason::ProviderDisconnected);
+        LOG_ERR("Failed to load the model [ %s ]", model.as_string());
+        mFailedLoads.push_back(model);
+        _start_unload(model);
     }
     else
     {

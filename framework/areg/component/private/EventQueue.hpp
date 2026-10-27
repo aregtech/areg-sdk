@@ -246,6 +246,13 @@ public:
     void release_lanes() noexcept;
 
     /**
+     * \brief   Sets the thread that pops the events. A push of that thread to a full ring
+     *          fails at once, since no other thread frees a slot.
+     * \param   consumerId  The ID of the consumer thread, or Thread::INVALID_THREAD_ID.
+     **/
+    inline void set_consumer(id_type consumerId) noexcept;
+
+    /**
      * \brief   Returns true if the consumer has something to pop: a queued event
      *          or a pending exit. Non-blocking; safe from any thread.
      **/
@@ -485,6 +492,8 @@ private:
     std::atomic<Cell*>      mRing;
     //!< The armed wait object of the consumer, or nullptr.
     std::atomic<QueueWaiter*> mWaiter;
+    //!< The thread that pops the events, Thread::INVALID_THREAD_ID if none.
+    std::atomic<id_type>    mConsumerId;
 
     //!< Producer-written enqueue cursor - own cache line.
     alignas(AREG_MPSC_CACHE_LINE_SIZE) std::atomic<size_t> mEnqueuePos;
@@ -546,6 +555,11 @@ inline uint32_t EventQueue::extract_max_wait_ms() noexcept
     return (mMaxWaitMs.load(std::memory_order_relaxed) != 0u)
                 ? mMaxWaitMs.exchange(0u, std::memory_order_relaxed)
                 : 0u;
+}
+
+inline void EventQueue::set_consumer(id_type consumerId) noexcept
+{
+    mConsumerId.store(consumerId, std::memory_order_relaxed);
 }
 
 inline bool EventQueue::is_exit_triggered() const noexcept

@@ -117,8 +117,7 @@ public:
 
     /**
      * \brief   Hands one outbound message to this send thread and reports whether the queue took
-     *          it. Producers use it instead of Event::deliver_event(), which discards that
-     *          answer. When it returns false the message never reaches the socket, so the caller
+     *          it. When it returns false the message never reaches the socket, so the caller
      *          must release what it reserved for it and report the failure onwards.
      *
      * \param   eventElem   The event to queue. Its target dispatcher must already be this thread.

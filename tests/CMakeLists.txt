@@ -146,6 +146,7 @@ if (AREG_TESTS)
     # Reuses the generated service interface of example 02, so it needs the examples.
     if (AREG_EXAMPLES AND TARGET 02_generated)
         include(${AREG_TESTS_DIR}/request-failure/CMakeLists.txt)
+        include(${AREG_TESTS_DIR}/same-thread/CMakeLists.txt)
         include(${AREG_TESTS_DIR}/system-lifecycle/CMakeLists.txt)
     endif()
 

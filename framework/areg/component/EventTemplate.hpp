@@ -499,8 +499,7 @@ bool AregImpl_##EventClass<DATA_CLASS>::_send(areg::DispatcherThread& dispThread
 {                                                                                                                       \
     if (!event.register_for_thread(&dispThread))                                                                        \
     {   return false;   }                                                                                               \
-    event.deliver_event();                                                                                              \
-    return true;                                                                                                        \
+    return event.deliver_event();                                                                                       \
 }
 
 /**
