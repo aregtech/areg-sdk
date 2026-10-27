@@ -418,12 +418,13 @@ Lusan enables dynamic control of logging behavior without restarting application
 2. Click **Save log settings** toolbar button
 3. Lusan collects scope priority information from each application
 4. Sends configuration change request to applications
-5. Applications save configuration to `areg.init`
+5. Each application saves its configuration to `<application>.init` beside `areg.init`
 6. On next start, applications use saved priorities
 
 **Configuration Persistence**:
-- Scope priorities saved in `areg.init` file
+- Scope priorities saved in `<application>.init`; the shared `areg.init` is never written
 - Settings persist across application restarts
+- Two running instances of one application save to the same file; the last save wins
 - Can be version-controlled with project configuration
 
 #### Logging Priority Behavior

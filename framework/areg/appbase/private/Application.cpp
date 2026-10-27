@@ -424,10 +424,10 @@ bool Application::load_configuration(const char* fileName /*= nullptr*/, ConfigL
     return result;
 }
 
-bool Application::save_configuration(const char* fileName /*= nullptr*/, ConfigListener * /*listener*/ /*= nullptr*/)
+bool Application::save_configuration(const char* fileName /*= nullptr*/, ConfigListener * listener /*= nullptr*/)
 {
     Application& theApp = Application::instance();
-    return theApp.mConfigManager.save_config(fileName);
+    return theApp.mConfigManager.save_config(fileName, listener);
 }
 
 void Application::setup_default_configuration(ConfigListener * listener /*= nullptr*/)
@@ -442,16 +442,16 @@ void Application::setup_default_configuration(ConfigListener * listener /*= null
         defReadonly.add(Property(entry.configKey.section, entry.configKey.module, entry.configKey.property, entry.configKey.position, entry.configValue, String::EmptyString));
     }
 
-    areg::ListProperties defWritable;
     for (const auto& entry : _defaultLogScopesConfig)
     {
         if (module == entry.configKey.module)
         {
-            defWritable.add(Property(entry.configKey.section, entry.configKey.module, entry.configKey.property, entry.configKey.position, entry.configValue, String::EmptyString, false));
+            defReadonly.add(Property(entry.configKey.section, entry.configKey.module, entry.configKey.property, entry.configKey.position, entry.configValue, String::EmptyString, false));
         }
     }
 
-    theApp.mConfigManager.set_configuration(defReadonly, defWritable, listener);
+    theApp.mConfigManager.set_configuration(defReadonly, areg::ListProperties(), listener);
+    theApp.mConfigManager.read_process_config();
 }
 
 bool Application::is_configured()

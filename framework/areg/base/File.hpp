@@ -300,6 +300,29 @@ public:
      **/
     bool ensure_size(uint32_t addSize) override;
 
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Locks the whole opened file against other processes. Blocks while another process
+     *          holds a lock that conflicts. The lock ends with unlock_file(), with the close of the
+     *          file, or with the end of the process.
+     *
+     * \param   exclusive   If true, takes a write lock, which needs the file opened for writing and
+     *                      excludes every other lock. If false, takes a read lock, which other
+     *                      read locks may share.
+     * \return  Returns true if the lock is taken.
+     * \note    On POSIX the lock belongs to the process: closing any other handle of the same
+     *          file in this process releases it.
+     **/
+    bool lock_file(bool exclusive);
+
+    /**
+     * \brief   Releases the lock taken by lock_file().
+     **/
+    void unlock_file();
+
 protected:
 /************************************************************************/
 // InStream interface overrides
@@ -402,16 +425,17 @@ public:
      * \brief   Generates a temporary file name with the given prefix; returns absolute path if
      *          inTempFolder is true, otherwise relative.
      *
-     * \param   prefix          File name prefix; if nullptr uses TEMP_FILE_PREFIX ("_cz").
-     * \param   unique          If true, generates a system-guaranteed unique name; if false, uses
-     *                          tick count (non-unique).
-     * \param   inTempFolder    If true, places file in system temp folder; if false, places in
-     *                          current folder (relative path).
+     * \param   prefix          File name prefix; if empty uses the process name.
+     * \param   unique          If true, the name holds the process ID and the current time.
+     * \param   inTempFolder    If true, the system creates a new empty file with a name no other
+     *                          file has in the system temp folder, and returns its path. If false,
+     *                          returns a path in the current folder and creates no file.
      **/
     [[nodiscard]]
     static String temp_name(const String& prefix, bool unique, bool inTempFolder);
     /**
-     * \brief   Generates a unique temporary file name in the system temp folder with default prefix.
+     * \brief   Creates a new empty file with a unique name in the system temp folder and returns
+     *          its path.
      **/
     [[nodiscard]]
     static String temp_name();
@@ -606,6 +630,18 @@ private:
     void _os_flush_file() noexcept;
 
     /**
+     * \brief   OS-specific implementation to lock the whole opened file; returns true if locked.
+     *
+     * \param   exclusive   If true, takes a write lock; otherwise a shared read lock.
+     **/
+    bool _os_lock_file(bool exclusive) noexcept;
+
+    /**
+     * \brief   OS-specific implementation to release the lock of the whole opened file.
+     **/
+    void _os_unlock_file() noexcept;
+
+    /**
      * \brief   OS-specific implementation to return the size of the opened file in bytes; returns 0
      *          on failure.
      **/
@@ -613,16 +649,15 @@ private:
     uint64_t _os_file_length() const noexcept;
 
     /**
-     * \brief   OS-specific implementation to generate a temporary file name; returns the length of
-     *          the name written to buffer.
+     * \brief   OS-specific implementation to create a new empty file with a unique name; returns
+     *          the length of the name written to buffer, or 0 on failure.
      *
      * \param[out] buffer   Buffer to receive the generated temp file name (max
      *                      File::MAXIMUM_PATH chars including null terminator).
      * \param   folder      Directory path where temp file should be located.
      * \param   prefix      Prefix string to prepend to the generated file name.
-     * \param   unique      If non-zero, generates a system-guaranteed unique name.
      **/
-    static uint32_t _os_temp_name(char* buffer, const char* folder, const char * prefix, uint32_t unique) noexcept;
+    static uint32_t _os_temp_name(char* buffer, const char* folder, const char * prefix) noexcept;
 
     /**
      * \brief   OS-specific implementation to retrieve the path of a special system directory;

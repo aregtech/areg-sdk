@@ -32,6 +32,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cstdio>
 #include <cstring>
 #include <filesystem>
 #include <string>
@@ -83,6 +84,17 @@ namespace
     {
         std::error_code err;
         return fs::exists(path, err);
+    }
+
+    //! Returns the checkpoint sequence in the header of an open write-ahead log, which grows each time
+    //! the log starts over from its beginning. Returns 0 if the header cannot be read.
+    uint32_t _log_sequence(std::FILE* wal)
+    {
+        unsigned char header[16]{ };
+        if ((wal == nullptr) || (std::fseek(wal, 0, SEEK_SET) != 0) || (std::fread(header, 1u, sizeof(header), wal) != sizeof(header)))
+            return 0u;
+
+        return (static_cast<uint32_t>(header[12]) << 24) | (static_cast<uint32_t>(header[13]) << 16) | (static_cast<uint32_t>(header[14]) << 8) | static_cast<uint32_t>(header[15]);
     }
 
     areg::LogEntry _entry(TIME64 timeCreated, uint32_t scopeId, ITEM_ID cookie, areg::LogPriority prio)
@@ -369,7 +381,7 @@ TEST(LogSqliteDatabaseTest, test_destroyedWriterLeavesOnePlainFile)
 
 /**
  * \brief   A writer that commits batch after batch without a pause keeps its write-ahead log short:
- *          the log starts over instead of growing with every batch.
+ *          the log starts over again and again instead of growing with every batch.
  **/
 TEST(LogSqliteDatabaseTest, test_continuousWriterKeepsTheLogShort)
 {
@@ -377,22 +389,71 @@ TEST(LogSqliteDatabaseTest, test_continuousWriterKeepsTheLogShort)
     LogDb writer;
     ASSERT_TRUE(writer.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
 
-    constexpr uint32_t batches{ 200u };
+    constexpr uint32_t maxBatches{ 600u };
+    constexpr uint32_t restarts{ 3u };
     constexpr uint32_t rows{ 1000u };
-    std::uintmax_t largestLog{ 0u };
-    for (uint32_t b = 0; b < batches; ++b)
+    uint32_t batches{ 0u };
+    uint32_t seen{ 0u };
+    std::FILE* wal{ std::fopen((path + "-wal").c_str(), "rb") };
+    ASSERT_NE(wal, nullptr);
+    std::setvbuf(wal, nullptr, _IONBF, 0u);
+    uint32_t lastSeq{ _log_sequence(wal) };
+    for (; (batches < maxBatches) && (seen < restarts); ++batches)
     {
-        ASSERT_TRUE(_write_rows(writer, rows, static_cast<TIME64>(1000u + b * rows)));
-        std::error_code err;
-        const std::uintmax_t size{ fs::file_size(path + "-wal", err) };
-        largestLog = err ? largestLog : std::max(largestLog, size);
+        ASSERT_TRUE(_write_rows(writer, rows, static_cast<TIME64>(1000u + batches * rows)));
+        const uint32_t seq{ _log_sequence(wal) };
+        seen += (seq != lastSeq) ? 1u : 0u;
+        lastSeq = seq;
     }
 
-    EXPECT_GT(largestLog, 0u);
-    EXPECT_LT(largestLog, static_cast<std::uintmax_t>(24u * 1024u * 1024u));
+    // Closes the log before the writer deletes it.
+    std::fclose(wal);
+    EXPECT_EQ(seen, restarts) << "batches written: " << batches;
     writer.disconnect();
     EXPECT_EQ(_query_text(path, "SELECT COUNT(*) FROM logs;"), std::to_string(1u + batches * rows));
     EXPECT_FALSE(_exists(path + "-wal"));
+}
+
+/**
+ * \brief   The rows of a writer that goes idle reach the database file within seconds, also after the
+ *          write-ahead log passed the size at which the writer copies the rest itself. A reader holds
+ *          the log while the writer passes that size.
+ **/
+TEST(LogSqliteDatabaseTest, test_idleWriterAfterLongLogReachesTheFile)
+{
+    const std::string path{ _db_path("t2idlelong.sqlog") };
+    LogDb writer;
+    ASSERT_TRUE(writer.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+
+    sqlite3* reader{ nullptr };
+    sqlite3_stmt* stmt{ nullptr };
+    ASSERT_EQ(sqlite3_open_v2(path.c_str(), &reader, SQLITE_OPEN_READONLY, nullptr), SQLITE_OK);
+    ASSERT_EQ(sqlite3_prepare_v2(reader, "SELECT id FROM logs;", -1, &stmt, nullptr), SQLITE_OK);
+    ASSERT_EQ(sqlite3_step(stmt), SQLITE_ROW);
+
+    // 4200 frames of 4 KB pages: past the size at which the writer copies the rest itself.
+    constexpr std::uintmax_t longLog{ 4200u * (4096u + 24u) };
+    std::error_code err;
+    for (uint32_t b = 0; (b < 400u) && (fs::file_size(path + "-wal", err) < longLog); ++b)
+    {
+        ASSERT_TRUE(_write_rows(writer, 1000u, static_cast<TIME64>(1000u + b * 1000u)));
+    }
+
+    ASSERT_GE(fs::file_size(path + "-wal", err), longLog);
+    sqlite3_finalize(stmt);
+    sqlite3_close(reader);
+
+    const std::uintmax_t pageSize{ std::stoull(_query_text(path, "PRAGMA page_size;")) };
+    const std::uintmax_t expected{ pageSize * std::stoull(_query_text(path, "PRAGMA page_count;")) };
+    std::uintmax_t size{ fs::file_size(path, err) };
+    for (int i = 0; (i < 50) && (size != expected); ++i)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        size = fs::file_size(path, err);
+    }
+
+    EXPECT_EQ(size, expected);
+    writer.disconnect();
 }
 
 /**

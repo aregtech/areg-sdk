@@ -451,7 +451,8 @@ namespace areg {
     AREG_API void make_tm_local( struct tm & utcTime ) noexcept;
 
     /**
-     * \brief   Returns the tick counts information in milliseconds since process has started.
+     * \brief   Returns the milliseconds of a monotonic clock. The clock starts at an unspecified
+     *          point, so only the difference of two values is meaningful.
      **/
     AREG_API TIME64 tick_count() noexcept;
 

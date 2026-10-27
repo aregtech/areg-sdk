@@ -619,10 +619,12 @@ namespace areg {
     AREG_API bool initialize_logging( const char * fileConfig );
 
     /**
-     * \brief   Saves the current logging configuration state to a file.
+     * \brief   Saves the current logging configuration state to a file. The shared configuration
+     *          file is never written.
      *
-     * \param   configFile      Path to the configuration file. If nullptr, uses the currently
-     *                          active configuration file.
+     * \param   configFile      Path to the file to write. If nullptr, writes the configuration
+     *                          file of the process, '<process name>.init' beside the shared
+     *                          configuration file.
      * \return  Returns true if succeeded to save the configuration.
      **/
     AREG_API bool save_logging( const char * configFile = nullptr );

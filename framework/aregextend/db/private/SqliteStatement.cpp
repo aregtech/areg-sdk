@@ -147,6 +147,11 @@ bool SqliteStatement::bind_text(int32_t index, const String& value) noexcept
     return (txt != nullptr ? (index >= 0) && is_valid() && (sqlite3_bind_text(_sqlite_stmt(mStatement), index + 1, txt, value.length(), SQLITE_TRANSIENT) == SQLITE_OK) : bind_null(index));
 }
 
+bool SqliteStatement::bind_text_static(int32_t index, const char* value) noexcept
+{
+    return (value != nullptr ? (index >= 0) && is_valid() && (sqlite3_bind_text(_sqlite_stmt(mStatement), index + 1, value, -1, SQLITE_STATIC) == SQLITE_OK) : bind_null(index));
+}
+
 bool SqliteStatement::bind_null(int32_t index) noexcept
 {
     return ((index >= 0) && is_valid() && (sqlite3_bind_null(_sqlite_stmt(mStatement), index + 1) == SQLITE_OK));

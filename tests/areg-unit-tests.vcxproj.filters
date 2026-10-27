@@ -25,6 +25,9 @@
     <ClCompile Include="units\LogScopesTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="units\ConfigManagerTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="units\FileTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

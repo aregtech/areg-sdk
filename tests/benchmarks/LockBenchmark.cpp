@@ -20,6 +20,7 @@
 #include <benchmark/benchmark.h>
 
 #include "areg/base/ResourceMap.hpp"
+#include "areg/base/SocketDefs.hpp"
 #include "areg/base/Stack.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 
@@ -69,6 +70,23 @@ namespace
     {
         int value{ 0 };
     };
+
+    //!< A short dependency chain, the work done while a lock is held.
+    inline uint64_t short_work(uint64_t value)
+    {
+        for (int i = 0; i < 16; ++i)
+        {
+            value = value * 6364136223846793005ull + 1442695040888963407ull;
+        }
+
+        return value;
+    }
+
+    //!< The socket whose writer lock the benchmarks take; no socket is opened.
+    constexpr SOCKETHANDLE  BENCH_SOCKET    { static_cast<SOCKETHANDLE>(91) };
+
+    //!< The socket whose writer lock the contended benchmark takes.
+    constexpr SOCKETHANDLE  CONTENDED_SOCKET{ static_cast<SOCKETHANDLE>(93) };
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -154,6 +172,110 @@ void BM_StdMutex(benchmark::State& state)
     }
 }
 BENCHMARK(BM_StdMutex);
+
+//!< CriticalSection locked and unlocked by direct calls.
+void BM_CriticalSection_Direct(benchmark::State& state)
+{
+    SecondThread second;
+    areg::CriticalSection section;
+    for (auto _ : state)
+    {
+        section.lock();
+        section.unlock();
+    }
+}
+BENCHMARK(BM_CriticalSection_Direct);
+
+//!< SocketWriter taken and released by its owner.
+void BM_SocketWriter_Acquire(benchmark::State& state)
+{
+    SecondThread second;
+    areg::SocketWriter & writer{ areg::SocketWriter::writer_of(BENCH_SOCKET) };
+    for (auto _ : state)
+    {
+        writer.acquire();
+        writer.release();
+    }
+}
+BENCHMARK(BM_SocketWriter_Acquire);
+
+//!< SocketWriter taken by try_acquire() while it is free.
+void BM_SocketWriter_TryAcquire(benchmark::State& state)
+{
+    SecondThread second;
+    areg::SocketWriter & writer{ areg::SocketWriter::writer_of(BENCH_SOCKET) };
+    for (auto _ : state)
+    {
+        if (writer.try_acquire())
+        {
+            writer.release();
+        }
+    }
+}
+BENCHMARK(BM_SocketWriter_TryAcquire);
+
+//////////////////////////////////////////////////////////////////////////
+// One lock shared by several threads
+//////////////////////////////////////////////////////////////////////////
+
+//!< One SpinLock shared by all threads, held for a short piece of work.
+void BM_SpinLock_Contended(benchmark::State& state)
+{
+    SecondThread second;
+    static areg::SpinLock spin;
+    static uint64_t shared{ 1u };
+    for (auto _ : state)
+    {
+        spin.lock(areg::WAIT_INFINITE);
+        shared = short_work(shared);
+        spin.unlock();
+    }
+
+    benchmark::DoNotOptimize(shared);
+}
+
+//!< One CriticalSection shared by all threads, held for a short piece of work.
+void BM_CriticalSection_Contended(benchmark::State& state)
+{
+    SecondThread second;
+    static areg::CriticalSection section;
+    static uint64_t shared{ 1u };
+    for (auto _ : state)
+    {
+        section.lock();
+        shared = short_work(shared);
+        section.unlock();
+    }
+
+    benchmark::DoNotOptimize(shared);
+}
+
+//!< One SocketWriter shared by all threads, held for a short piece of work.
+void BM_SocketWriter_Contended(benchmark::State& state)
+{
+    SecondThread second;
+    static uint64_t shared{ 1u };
+    areg::SocketWriter & writer{ areg::SocketWriter::writer_of(CONTENDED_SOCKET) };
+    for (auto _ : state)
+    {
+        writer.acquire();
+        shared = short_work(shared);
+        writer.release();
+    }
+
+    benchmark::DoNotOptimize(shared);
+}
+
+#if defined(CODSPEED_ANALYSIS)
+// The CodSpeed simulation runs one thread at a time, so it measures only the uncontended case.
+BENCHMARK(BM_SpinLock_Contended);
+BENCHMARK(BM_CriticalSection_Contended);
+BENCHMARK(BM_SocketWriter_Contended);
+#else   // defined(CODSPEED_ANALYSIS)
+BENCHMARK(BM_SpinLock_Contended)->Threads(1)->Threads(2)->Threads(4)->Threads(8)->UseRealTime();
+BENCHMARK(BM_CriticalSection_Contended)->Threads(1)->Threads(2)->Threads(4)->Threads(8)->UseRealTime();
+BENCHMARK(BM_SocketWriter_Contended)->Threads(1)->Threads(2)->Threads(4)->Threads(8)->UseRealTime();
+#endif  // defined(CODSPEED_ANALYSIS)
 
 //////////////////////////////////////////////////////////////////////////
 // Locking containers

@@ -43,6 +43,7 @@
     <Text Include="units\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="units\ConfigManagerTest.cpp" />
     <ClCompile Include="units\DateTimeTest.cpp" />
     <ClCompile Include="units\EventQueueTest.cpp" />
     <ClCompile Include="units\GUnitTest.cpp" />

@@ -47,6 +47,7 @@ endmacro(macro_add_unit_test)
 macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     GUnitTest.cpp
     ArrayListTest.cpp
+    ConfigManagerTest.cpp
     DateTimeTest.cpp
     EventEnvelopeTest.cpp
     EventQueueTest.cpp

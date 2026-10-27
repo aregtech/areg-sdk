@@ -67,8 +67,8 @@ public:
     static constexpr uint32_t   ONE_TIME    { static_cast<uint32_t>(1u) };
 
     /**
-     * \brief   Returns the system uptime in milliseconds since startup, wrapping after
-     *          approximately 49.7 days.
+     * \brief   Returns the milliseconds of a monotonic clock that starts at an unspecified point,
+     *          cut to 32 bits, so the value wraps after about 49.7 days.
      **/
     static uint32_t tick_count();
 

@@ -115,7 +115,7 @@ a handler** - it blocks every component on that dispatcher thread.
 |---|---|---|
 | now, as an object | `static DateTime now() noexcept` | `DateTime.hpp:163` |
 | now, as a raw stamp | `static TIME64 timestamp() noexcept` | `DateTime.hpp:169` |
-| format | `String format_time(std::string_view formatName = areg::DEFAULT_TIME_FORMAT_OUTPUT) const` | `DateTime.hpp:210` |
+| format | `String format_time(std::string_view formatName = areg::DEFAULT_TIME_FORMAT_OUTPUT) const` | `DateTime.hpp:212` |
 
 ```cpp
 // areg-check: ignore
