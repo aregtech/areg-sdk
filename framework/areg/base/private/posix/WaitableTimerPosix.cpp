@@ -359,7 +359,7 @@ bool TimerServicePosix::_start_thread() noexcept
     // The timer thread starts with every signal blocked, so no process signal is delivered to it.
     sigset_t allSignals;
     sigset_t oldSignals;
-    ::sigfillset(&allSignals);
+    sigfillset(&allSignals);
     ::pthread_sigmask(SIG_SETMASK, &allSignals, &oldSignals);
 
     ++ mGeneration;

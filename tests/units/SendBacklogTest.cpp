@@ -452,16 +452,18 @@ TEST(SendBacklogTest, connection_is_held_above_cap_until_half_drained)
     EXPECT_TRUE(backlog.hold_wait(COOKIE, waiter));
 
     // Drain in steps: held while above half the cap, released once at or below it.
+    // The peer reads at most one buffer per step, so no step drains the cap at once.
     bool sawHeldBelowCap{ false };
     uint64_t left{ written - moved };
-    std::thread reader([&pair, written]()
-    {
-        EXPECT_TRUE(read_all(pair, written));
-    });
+    uint64_t readBytes{ 0u };
+    std::vector<uint8_t> buffer(64u * 1024u);
 
     const Clock::time_point started{ Clock::now() };
     while ((backlog.is_empty() == false) && (elapsed_ms(started) < 10'000))
     {
+        const int32_t received{ areg::receive_data_nowait(pair.client, buffer.data(), static_cast<uint32_t>(buffer.size())) };
+        ASSERT_GE(received, 0);
+        readBytes += static_cast<uint64_t>(received);
         static_cast<void>(backlog.pump(owner));
         left = written - moved - owner.sent.load();
         const bool held{ backlog.is_held(COOKIE) };
@@ -478,7 +480,7 @@ TEST(SendBacklogTest, connection_is_held_above_cap_until_half_drained)
         std::this_thread::yield();
     }
 
-    reader.join();
+    EXPECT_TRUE(read_all(pair, written - readBytes));
     EXPECT_TRUE(backlog.is_empty());
     EXPECT_TRUE(sawHeldBelowCap);
     EXPECT_FALSE(backlog.is_held(COOKIE));
