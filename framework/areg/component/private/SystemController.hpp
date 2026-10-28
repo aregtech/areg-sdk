@@ -227,6 +227,8 @@ private:
     bool _start_thread( const areg::ComponentThreadEntry & entry, const String & modelName );
     //!< Starts a new instance of the thread if its model is loaded and no instance of it is live.
     void _start_instance( const String & threadName, const String & modelName );
+    //!< Starts a new instance of the abandoned thread, or defers it while two instances hang.
+    void _start_replacement( const String & threadName, const String & modelName );
     //!< Starts the deferred new instance of the thread, if there is one.
     void _start_deferred( const String & threadName );
     //!< Asks the thread to stop after its queue is drained, and arms the drain deadline.

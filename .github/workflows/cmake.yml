@@ -180,8 +180,8 @@ jobs:
         working-directory: ${{github.workspace}}
         shell: pwsh
         timeout-minutes: 15
-        # cmake runs from pwsh as in the step above. A configure that outlives 300 s gets its
-        # processes and the stacks of cmake, java and cygpath printed, and is then stopped.
+        # cmake runs from pwsh as in the step above. A cmake, java or cygpath process that runs
+        # longer than 300 s gets its processes and its stacks printed, and is then stopped.
         run: |
           New-Item -ItemType Directory -Force product | Out-Null
           Remove-Item -Force -ErrorAction SilentlyContinue product/configure.done
@@ -304,11 +304,11 @@ jobs:
         working-directory: ${{github.workspace}}
         shell: bash
         timeout-minutes: 30
-        # A run that outlives 120 s gets its processes and the stacks of the unit tests printed,
-        # and is then stopped.
+        # A test executable that runs longer than 120 s gets its processes and its stacks
+        # printed, and is then stopped. ctest's own timeout would stop it without stacks.
         run: |
           rm -f product/unittests.done
-          bash tools/intern/hang-watchdog.sh product/unittests.done 120 areg-unit-tests &
+          bash tools/intern/hang-watchdog.sh product/unittests.done 120 'areg-*' &
           rc=0
           ctest --test-dir ${{env.CACHE_DEST}} -C ${{matrix.config.btype || env.BUILD_TYPE}} --timeout 180 --output-on-failure --output-junit test_results.xml || rc=$?
           touch product/unittests.done

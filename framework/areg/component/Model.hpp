@@ -126,7 +126,7 @@ namespace areg {
 enum class FailurePolicy : uint8_t
 {
       Exit      //!< Ends the process with areg::LIFECYCLE_FAILURE_EXIT_CODE. The default.
-    , Restart   //!< On a watchdog expiry, replaces the thread with a new instance; otherwise as Ignore.
+    , Restart   //!< Replaces the thread on a watchdog expiry or a missed restart; a missed first start fails the load; else as Ignore.
     , Ignore    //!< Abandons the thread: it receives nothing, it is freed if it returns, the process goes on.
 };
 

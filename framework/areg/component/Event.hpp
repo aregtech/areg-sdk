@@ -232,8 +232,9 @@ public:
 
     /**
      * \brief   Delivers this event to its target thread.
+     * \return  true if the queue of the target thread took the event, false if it did not.
      **/
-    void deliver_event();
+    bool deliver_event();
 
     /**
      * \brief   Registers a consumer for this event in the target thread.

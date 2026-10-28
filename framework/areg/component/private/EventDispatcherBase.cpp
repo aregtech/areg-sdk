@@ -361,6 +361,7 @@ bool EventDispatcherBase::run_dispatcher()
 void EventDispatcherBase::ready_for_events( bool is_ready )
 {
     mExternalEvents.lock_queue( );
+    mExternalEvents.set_consumer( is_ready ? Thread::current_thread_id( ) : Thread::INVALID_THREAD_ID );
     if ( is_ready )
     {
         mExternalEvents.acquire_lanes( );

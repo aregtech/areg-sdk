@@ -73,11 +73,10 @@ ReadingEvent::send_event(ReadingData(42));                   // to the registere
 ReadingEvent::send_event(ReadingData(42), consumer, thread); // to one consumer in one thread
 ```
 
-`send_event` returns `bool` and returns immediately: the event is queued on the
-target thread and dispatched there. It is not a call, so there is no return value to
-wait for and no ordering with anything except other events of the same thread. A
-`false` return means the event was not queued, normally because no consumer is
-registered.
+`send_event` returns `bool` once the event is queued on the target thread, which
+dispatches it. It is not a call, so there is no return value to wait for and no
+ordering with anything except other events of the same thread. `false` means not
+queued: no consumer, the thread does not run, or its queue is full (`37-threads.md`).
 
 ## 3. Which macro
 

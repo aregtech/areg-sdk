@@ -14,7 +14,7 @@
  *              Covers single-threaded correctness (push/pop, priority lanes,
  *              capacity, exit state, doorbell polling) and multi-threaded
  *              stress (many producers, single consumer) verifying no event loss
- *              and no lost wake-up.
+ *              and no lost wake-up, and a dispatcher posting to its own full queue.
  ************************************************************************/
 
 /************************************************************************
@@ -25,9 +25,13 @@
 #include "areg/component/private/SimpleEvent.hpp"
 #include "areg/component/Event.hpp"
 #include "areg/component/EventDefs.hpp"
+#include "areg/component/DispatcherThread.hpp"
+#include "areg/component/EventTemplate.hpp"
+#include "areg/base/Thread.hpp"
 
 #include <atomic>
 #include <chrono>
+#include <future>
 #include <thread>
 #include <vector>
 
@@ -402,6 +406,63 @@ TEST(EventQueueTest, capacity_overflow_returns_event)
     queue.push_event(overflow, &removed);
     ASSERT_TRUE(removed.is_valid());
     EXPECT_EQ(removed.event_id(), 999u);
+}
+
+TEST(EventQueueTest, consumer_push_to_full_ring_fails_at_once)
+{
+    // A long block timeout: a wait for a slot would show as a delay.
+    ReadyQueue queue(areg::QUEUE_MIN_RING_CAPACITY, false, 10000u);
+    queue.set_consumer(areg::Thread::current_thread_id());
+    for (uint32_t i = 0u; i < areg::QUEUE_MIN_RING_CAPACITY; ++i)
+    {
+        Event evt = makeEvent(i);
+        ASSERT_TRUE(queue.push_event(evt));
+    }
+
+    const auto start{ std::chrono::steady_clock::now() };
+
+    Event single = makeEvent(100u);
+    Event removed;
+    EXPECT_FALSE(queue.push_event(single, &removed));
+    ASSERT_TRUE(removed.is_valid());
+    EXPECT_EQ(removed.event_id(), 100u);
+
+    Event deferred = makeEvent(101u);
+    ASSERT_EQ(queue.try_push_event(deferred), EventQueue::PushResult::MustWait);
+    EXPECT_FALSE(queue.wait_push_event(deferred));
+
+    Event batch[2]{ makeEvent(102u), makeEvent(103u) };
+    EXPECT_EQ(queue.push_events(batch, 2u), 2u);
+
+    const auto waited{ std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() };
+    EXPECT_LT(waited, 1000);
+    EXPECT_EQ(queue.extract_max_wait_ms(), 0u);
+}
+
+TEST(EventQueueTest, other_thread_push_to_full_ring_waits_for_the_consumer)
+{
+    ReadyQueue queue(areg::QUEUE_MIN_RING_CAPACITY, false, 10000u);
+    queue.set_consumer(areg::Thread::current_thread_id());
+    for (uint32_t i = 0u; i < areg::QUEUE_MIN_RING_CAPACITY; ++i)
+    {
+        Event evt = makeEvent(i);
+        ASSERT_TRUE(queue.push_event(evt));
+    }
+
+    std::atomic<bool> done{ false };
+    std::atomic<bool> result{ false };
+    std::thread producer([&]
+    {
+        Event evt = makeEvent(1000u);
+        result.store(queue.push_event(evt), std::memory_order_release);
+        done.store(true, std::memory_order_release);
+    });
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    EXPECT_FALSE(done.load(std::memory_order_acquire));
+    EXPECT_TRUE(queue.pop_event().is_valid());
+    producer.join();
+    EXPECT_TRUE(result.load(std::memory_order_acquire));
 }
 
 TEST(EventQueueTest, remove_all_events_empties_queue)
@@ -900,4 +961,162 @@ TEST(EventQueueTest, mpsc_stress_across_lane_cycle)
 
     queue.acquire_lanes();
     EXPECT_EQ(oneRound(), TOTAL);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// A dispatcher thread posting to its own full queue
+//////////////////////////////////////////////////////////////////////////
+
+//!< The value of an event posted to the self-posting dispatcher.
+class SpData
+{
+public:
+    SpData() = default;
+    explicit SpData(int value) : mValue(value) {}
+    SpData(const SpData & src) = default;
+    SpData & operator = (const SpData & src) = default;
+
+    inline int value() const { return mValue; }
+
+private:
+    int mValue{ 0 };
+};
+
+AREG_DECLARE_EVENT(SpData, SpEvent, SpEventConsumer);
+
+namespace
+{
+    //!< How long a producer blocks on the full ring of the test dispatcher.
+    constexpr uint32_t                  _selfWaitMs{ 2000u };
+
+    //!< A post that returns later than this has waited for a slot.
+    constexpr long long                 _selfLimitMs{ 500 };
+
+    //!< A call that makes no progress for this long fails the test.
+    constexpr std::chrono::seconds      _selfWaitLimit{ 10 };
+
+    //!< Milliseconds since the given point.
+    long long _since_ms(const std::chrono::steady_clock::time_point & start)
+    {
+        return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
+    }
+
+    //!< A dispatcher thread with the smallest ring that blocks a producer when it is full.
+    class SpDispatcher : public areg::DispatcherThread
+    {
+    public:
+        explicit SpDispatcher(const char * name)
+            : areg::DispatcherThread(name, areg::DEFAULT_STACK_SIZE, areg::QUEUE_MIN_RING_CAPACITY, areg::Bool::False, _selfWaitMs)
+        {
+        }
+
+        bool post_event(areg::Event & eventElem) override
+        {
+            return areg::EventDispatcher::post_event(eventElem);
+        }
+
+        //! Starts the thread and waits until it accepts events.
+        bool start_ready()
+        {
+            if (start(areg::WAIT_INFINITE) == false)
+                return false;
+
+            const auto until{ std::chrono::steady_clock::now() + _selfWaitLimit };
+            while ((is_ready() == false) && (std::chrono::steady_clock::now() < until))
+            {
+                std::this_thread::yield();
+            }
+
+            return is_ready();
+        }
+    };
+
+    //!< On the event with value 0, fills its own ring, posts once more, then keeps the ring full.
+    class SpListener : public SpEventConsumer
+    {
+    public:
+        explicit SpListener(SpDispatcher & dispatcher, std::shared_future<void> release)
+            : mDispatcher   ( dispatcher )
+            , mRelease      ( release )
+        {
+        }
+
+        std::atomic<uint32_t>   mOwn        { 0u };
+        std::atomic<uint32_t>   mForeign    { 0u };
+        std::atomic<long long>  mPostMs     { -1 };
+        std::atomic<uint32_t>   mFilled     { 0u };
+        std::atomic<bool>       mPosted     { true };
+        std::promise<void>      mFull;
+
+        void process_event(const SpData & data) final
+        {
+            if (data.value() == 1)
+            {
+                mOwn.fetch_add(1u);
+                return;
+            }
+            else if (data.value() == 2)
+            {
+                mForeign.fetch_add(1u);
+                return;
+            }
+
+            for (uint32_t i = 0u; i < areg::QUEUE_MIN_RING_CAPACITY; ++i)
+            {
+                mFilled.fetch_add(SpEvent::send_event(SpData(1), *this, mDispatcher) ? 1u : 0u);
+            }
+
+            const auto start{ std::chrono::steady_clock::now() };
+            mPosted = SpEvent::send_event(SpData(1), *this, mDispatcher);
+            mPostMs = _since_ms(start);
+            mFull.set_value();
+            static_cast<void>(mRelease.wait_for(_selfWaitLimit));
+        }
+
+    private:
+        SpDispatcher &              mDispatcher;
+        std::shared_future<void>    mRelease;
+    };
+}
+
+/**
+ * \brief   A dispatcher thread that posts to its own full queue fails at once and send_event
+ *          returns false, while another thread posting to the same full queue still waits.
+ **/
+TEST(EventQueueTest, dispatcher_post_to_own_full_queue_fails_at_once)
+{
+    SpDispatcher dispatcher("EqTest_selfpost");
+    ASSERT_TRUE(dispatcher.start_ready());
+
+    std::promise<void> release;
+    SpListener listener(dispatcher, release.get_future().share());
+    std::future<void> full{ listener.mFull.get_future() };
+
+    ASSERT_TRUE(SpEvent::send_event(SpData(0), listener, dispatcher));
+    ASSERT_EQ(full.wait_for(_selfWaitLimit), std::future_status::ready);
+    EXPECT_LT(listener.mPostMs.load(), _selfLimitMs);
+    EXPECT_EQ(listener.mFilled.load(), areg::QUEUE_MIN_RING_CAPACITY);
+    EXPECT_FALSE(listener.mPosted.load());
+
+    auto foreign = std::async(std::launch::async, [&listener, &dispatcher]()
+        {
+            return SpEvent::send_event(SpData(2), listener, dispatcher);
+        });
+
+    EXPECT_EQ(foreign.wait_for(std::chrono::milliseconds(100)), std::future_status::timeout);
+    release.set_value();
+    ASSERT_EQ(foreign.wait_for(_selfWaitLimit), std::future_status::ready);
+    EXPECT_TRUE(foreign.get());
+
+    // The foreign event is queued behind the own ones, so its arrival means all of them were delivered.
+    const auto until{ std::chrono::steady_clock::now() + _selfWaitLimit };
+    while ((listener.mForeign.load() == 0u) && (std::chrono::steady_clock::now() < until))
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+
+    EXPECT_EQ(listener.mForeign.load(), 1u);
+    EXPECT_EQ(listener.mOwn.load(), areg::QUEUE_MIN_RING_CAPACITY);
+
+    dispatcher.shutdown(areg::WAIT_INFINITE);
 }

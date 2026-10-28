@@ -77,6 +77,8 @@ namespace
     constexpr uint32_t      DOUBLE_ROUNDS       { 200 };
     constexpr uint32_t      LOG_TOGGLES         { 50 };
     constexpr uint32_t      LOG_WRITERS         { 4 };
+    constexpr uint32_t      SELF_QUEUE_WAIT_MS  { 2000 };
+    constexpr uint32_t      SELF_POST_LIMIT_MS  { 500 };
 
     //!< A counter a thread waits on, with a deadline, until it reaches a value.
     class Gate
@@ -111,7 +113,9 @@ namespace
         bool        hangEveryone    { false };  //!< Every instance hangs, not only the first.
         uint32_t    blockMs         { 0 };      //!< The blocker blocks this long in its event.
         bool        blockOnExit     { true };   //!< The blocker returns when asked to exit.
+        uint32_t    blockInstance   { 0 };      //!< The only instance that blocks, 0 for every one.
         uint32_t    startupMs       { 0 };      //!< The component sleeps this long in its startup.
+        uint32_t    startupInstance { 0 };      //!< The only instance that sleeps in its startup, 0 for every one.
         uint32_t    shutdownMs      { 0 };      //!< The component sleeps this long in its shutdown.
         const char* selfUnload      { nullptr };//!< The model a component unloads from its own thread.
     };
@@ -125,6 +129,7 @@ namespace
     std::atomic_uint32_t    gFailures       { 0 };
     std::atomic_uint32_t    gCustomDeletes  { 0 };
     std::atomic_uint32_t    gSelfUnloadMs   { 0 };
+    std::atomic_uint32_t    gSelfPostMs     { 0 };
 
     Gate                    gStarted;
     Gate                    gDeletedGate;
@@ -143,10 +148,14 @@ namespace
         return static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - since).count());
     }
 
-    //!< Sleeps without looking at the exit request: a thread that does not answer.
+    //!< Sleeps at least ms by the steady clock without looking at the exit request: a thread that does not answer.
     void _hang(uint32_t ms)
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+        const auto until{ std::chrono::steady_clock::now() + std::chrono::milliseconds(ms) };
+        for (auto now{ std::chrono::steady_clock::now() }; now < until; now = std::chrono::steady_clock::now())
+        {
+            std::this_thread::sleep_for(until - now);
+        }
     }
 }
 
@@ -187,7 +196,7 @@ public:
     void startup_component(areg::ComponentThread & comThread) override
     {
         areg::Component::startup_component(comThread);
-        if (gBehaviour.startupMs != 0)
+        if ((gBehaviour.startupMs != 0) && ((gBehaviour.startupInstance == 0) || (gBehaviour.startupInstance == mInstance)))
         {
             _hang(gBehaviour.startupMs);
         }
@@ -312,6 +321,11 @@ public:
 protected:
     void process_event(const BlockData & /*data*/) override
     {
+        if ((gBehaviour.blockInstance != 0) && (gBehaviour.blockInstance != mInstance))
+        {
+            return;
+        }
+
         if (gBehaviour.selfUnload != nullptr)
         {
             const auto start{ std::chrono::steady_clock::now() };
@@ -360,6 +374,46 @@ private:
     uint32_t    mPrevious;  //!< The user state this component got last.
 };
 #endif  // THREAD_FAILURE_POLICY
+
+//!< Posts one event more than its queue holds to its own thread at startup.
+class SlSelfFiller final : public    SlCounted
+                         , public    BlockConsumer
+{
+public:
+    SlSelfFiller(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
+        : SlCounted     ( entry, owner )
+        , BlockConsumer ( )
+    {
+    }
+
+    void startup_component(areg::ComponentThread & comThread) override
+    {
+        static_cast<void>(BlockEvent::add_listener(static_cast<BlockConsumer &>(*this), comThread));
+        const auto start{ std::chrono::steady_clock::now() };
+        for (uint32_t i = 0; i <= areg::QUEUE_MIN_RING_CAPACITY; ++ i)
+        {
+            BlockEvent block(BlockData{ });
+            if (block.register_for_thread(&comThread))
+            {
+                block.deliver_event();
+            }
+        }
+
+        gSelfPostMs.store(_elapsed_ms(start));
+        SlCounted::startup_component(comThread);
+    }
+
+    void shutdown_component(areg::ComponentThread & comThread) override
+    {
+        BlockEvent::remove_listener(static_cast<BlockConsumer &>(*this), comThread);
+        SlCounted::shutdown_component(comThread);
+    }
+
+protected:
+    void process_event(const BlockData & /*data*/) override
+    {
+    }
+};
 
 //!< Does nothing but count.
 class SlPlain final : public SlCounted
@@ -526,6 +580,40 @@ BEGIN_MODEL("SlBoundModel")
 END_MODEL("SlBoundModel")
 }
 
+namespace model_15
+{
+BEGIN_MODEL("SlStartRestartModel")
+    BEGIN_REGISTER_THREAD_EX("SlStartRestartThread", WATCH_MS)
+        SL_LIFECYCLE(LIFECYCLE_MS)
+        SL_POLICY(areg::FailurePolicy::Restart)
+        BEGIN_REGISTER_COMPONENT("SlStartRestartBlocker", SlBlocker)
+        END_REGISTER_COMPONENT("SlStartRestartBlocker")
+    END_REGISTER_THREAD("SlStartRestartThread")
+END_MODEL("SlStartRestartModel")
+}
+
+namespace model_17
+{
+BEGIN_MODEL("SlStartLoadModel")
+    BEGIN_REGISTER_THREAD("SlStartLoadThread")
+        SL_LIFECYCLE(LIFECYCLE_MS)
+        SL_POLICY(areg::FailurePolicy::Restart)
+        BEGIN_REGISTER_COMPONENT("SlStartLoadPlain", SlPlain)
+        END_REGISTER_COMPONENT("SlStartLoadPlain")
+    END_REGISTER_THREAD("SlStartLoadThread")
+END_MODEL("SlStartLoadModel")
+}
+
+namespace model_16
+{
+BEGIN_MODEL("SlSelfPostModel")
+    BEGIN_REGISTER_THREAD_EX2("SlSelfPostThread", 0, areg::DEFAULT_STACK_SIZE, areg::QUEUE_MIN_RING_CAPACITY, areg::Bool::False, SELF_QUEUE_WAIT_MS)
+        BEGIN_REGISTER_COMPONENT("SlSelfPostFiller", SlSelfFiller)
+        END_REGISTER_COMPONENT("SlSelfPostFiller")
+    END_REGISTER_THREAD("SlSelfPostThread")
+END_MODEL("SlSelfPostModel")
+}
+
 #ifdef THREAD_FAILURE_POLICY
 namespace model_user
 {
@@ -612,6 +700,24 @@ namespace
     {
 #ifdef THREAD_FAILURE_POLICY
         return (areg::Application::thread_state(threadName) == areg::ThreadState::Abandoned);
+#else   // THREAD_FAILURE_POLICY
+        printf("thread_state() does not exist on this tree\n");
+        static_cast<void>(threadName);
+        return false;
+#endif  // THREAD_FAILURE_POLICY
+    }
+
+    //!< True once the thread of the given name has a running instance, where the tree can tell.
+    bool _wait_running(const char * threadName)
+    {
+#ifdef THREAD_FAILURE_POLICY
+        const auto until{ std::chrono::steady_clock::now() + std::chrono::milliseconds(WAIT_MS) };
+        while ((areg::Application::thread_state(threadName) != areg::ThreadState::Running) && (std::chrono::steady_clock::now() < until))
+        {
+            _hang(10);
+        }
+
+        return (areg::Application::thread_state(threadName) == areg::ThreadState::Running);
 #else   // THREAD_FAILURE_POLICY
         printf("thread_state() does not exist on this tree\n");
         static_cast<void>(threadName);
@@ -745,6 +851,62 @@ static bool start_hang_ignore()
     _print_counts();
     printf("loaded %d after %u ms, abandoned %d, freed before unload %d\n", loaded ? 1 : 0, loadMs, abandoned ? 1 : 0, freed ? 1 : 0);
     return loaded && (loadMs >= LIFECYCLE_MS) && (loadMs < HANG_MS) && abandoned && freed && (gDeleted.load() == 1);
+}
+
+//!< The instance a restart created hangs in its startup; policy Restart: it is replaced as well.
+static bool start_hang_restart()
+{
+    // The first instance blocks until its watchdog restarts it, the second one hangs in its startup.
+    gBehaviour.blockMs = LONG_HANG_MS;
+    gBehaviour.blockInstance = 1;
+    gBehaviour.startupMs = HANG_MS;
+    gBehaviour.startupInstance = 2;
+    areg::Application::setup(false, true, false, true, true, nullptr);
+    bool ok{ areg::Application::load_model("SlStartRestartModel") };
+    ok = ok && gStarted.wait_for(3);
+    const bool running{ _wait_running("SlStartRestartThread") };
+    areg::Application::unload_model("SlStartRestartModel");
+    ok = ok && gDeletedGate.wait_for(gCreated.load(), WAIT_MS);
+    areg::Application::release();
+    _print_counts();
+    printf("started %d, running instance %d\n", ok ? 1 : 0, running ? 1 : 0);
+    return ok && running && (gCreated.load() == 3) && (gDeleted.load() == 3);
+}
+
+//!< The first startup hangs past the lifecycle timeout; policy Restart: the load fails, nothing replaces it.
+static bool start_hang_load()
+{
+    gBehaviour.startupMs = HANG_MS;
+    areg::Application::setup(false, true, false, true, true, nullptr);
+    const auto start{ std::chrono::steady_clock::now() };
+#ifdef THREAD_FAILURE_POLICY
+    const bool loaded{ areg::Application::load_model("SlStartLoadModel", true) };
+#else   // THREAD_FAILURE_POLICY
+    const bool loaded{ areg::Application::load_model("SlStartLoadModel") };
+#endif  // THREAD_FAILURE_POLICY
+    const uint32_t loadMs{ _elapsed_ms(start) };
+    // The abandoned instance is freed once its startup returns; no new one is created.
+    const bool freed{ gDeletedGate.wait_for(1) };
+    _hang(LIFECYCLE_MS);
+    areg::Application::unload_model("SlStartLoadModel");
+    areg::Application::release();
+    _print_counts();
+    printf("loaded %d after %u ms, freed %d\n", loaded ? 1 : 0, loadMs, freed ? 1 : 0);
+    return (loaded == false) && (loadMs >= LIFECYCLE_MS) && (loadMs < HANG_MS) && freed && (gCreated.load() == 1) && (gDeleted.load() == 1);
+}
+
+//!< A component posts to its own full queue at startup; the post fails at once instead of waiting.
+static bool start_self_post()
+{
+    areg::Application::setup(false, true, false, true, true, nullptr);
+    bool ok{ areg::Application::load_model("SlSelfPostModel") };
+    ok = ok && gStarted.wait_for(1);
+    areg::Application::unload_model("SlSelfPostModel");
+    ok = ok && gDeletedGate.wait_for(1);
+    areg::Application::release();
+    _print_counts();
+    printf("posts at startup took %u ms (limit %u ms, queue wait %u ms)\n", gSelfPostMs.load(), SELF_POST_LIMIT_MS, SELF_QUEUE_WAIT_MS);
+    return ok && (gSelfPostMs.load() < SELF_POST_LIMIT_MS);
 }
 
 //!< The shutdown hangs past the drain and the lifecycle timeout; policy Ignore: the unload returns.
@@ -1013,6 +1175,18 @@ int main(int argc, char * argv[])
     else if (std::strcmp(name, "start-hang-ignore") == 0)
     {
         ok = start_hang_ignore();
+    }
+    else if (std::strcmp(name, "start-hang-restart") == 0)
+    {
+        ok = start_hang_restart();
+    }
+    else if (std::strcmp(name, "start-hang-load") == 0)
+    {
+        ok = start_hang_load();
+    }
+    else if (std::strcmp(name, "start-self-post") == 0)
+    {
+        ok = start_self_post();
     }
     else if (std::strcmp(name, "stop-hang-ignore") == 0)
     {

@@ -195,6 +195,8 @@ default of 1024 suits small messages; a service streaming megabyte blocks usuall
 ### `config::*::queue::timeout`
 How long (in milliseconds) a producer blocks waiting for a free slot when the event queue is full, in **lossless** mode (`queue::drop = false`). After this timeout the producer is unblocked and the event is dropped as a last resort.
 
+A thread that posts to **its own** full queue does not wait: only that thread frees a slot, so the event is dropped at once, an error is logged and `send_event` returns `false`. To post to your own thread when the queue may be full, use a high-priority event, which never waits for the ring.
+
 - Shipped default: `0`.
 - `0` → use the framework's built-in default: **10000 ms in a release build**, and effectively
   unlimited (~24 days) in a **debug** build, so that pausing a thread in the debugger cannot make

@@ -720,8 +720,7 @@ inline bool ServiceClientConnectionBase::send_received_message( areg::MessageEnv
     evt.set_event_priority(eventPrio);
     evt.set_event_consumer(static_cast<areg::EventConsumer *>(&mMessageConsumer));
     evt.set_target_dispatcher(static_cast<areg::DispatcherThread *>(&mMessageDispatcher));
-    evt.deliver_event();
-    return true;
+    return evt.deliver_event();
 }
 
 inline bool ServiceClientConnectionBase::send_message(const MessageEnvelope & data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
@@ -745,7 +744,6 @@ inline bool ServiceClientConnectionBase::send_message(MessageEnvelope && data, a
     evt.set_event_consumer(static_cast<areg::EventConsumer *>(&mThreadSend));
     evt.set_target_dispatcher(static_cast<areg::DispatcherThread *>(&mThreadSend));
 
-    // queue_message(), not deliver_event(): the latter discards whether the queue took it.
     const bool queued{ mThreadSend.queue_message(evt) };
     if ( queued == false )
     {

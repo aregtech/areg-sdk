@@ -769,8 +769,7 @@ inline bool ServiceCommunicationBase::send_received_message( areg::MessageEnvelo
     evt.set_event_priority(eventPrio);
     evt.set_event_consumer(static_cast<areg::EventConsumer *>(&mMessageConsumer));
     evt.set_target_dispatcher(static_cast<areg::DispatcherThread *>(this));
-    evt.deliver_event();
-    return true;
+    return evt.deliver_event();
 }
 
 inline DataRateHelper& ServiceCommunicationBase::data_rate_helper() const noexcept

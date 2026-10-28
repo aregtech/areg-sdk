@@ -80,22 +80,22 @@ EventDispatcher& Event::dispatcher() const noexcept
     return (dt != nullptr ? dt->event_dispatcher() : DispatcherThread::current_dispatcher());
 }
 
-void Event::deliver_event()
+bool Event::deliver_event()
 {
     DispatcherThread* dt{ target_dispatcher() };
     if (dt != nullptr)
     {
-        dt->event_dispatcher().post_event(*this);
+        return dt->event_dispatcher().post_event(*this);
     }
-    else
+
+    DispatcherThread& thread = DispatcherThread::dispatcher_thread(static_cast<UniqueNumber>(consumer_thread()));
+    if (thread.is_running())
     {
-        DispatcherThread& thread = DispatcherThread::dispatcher_thread(static_cast<UniqueNumber>(consumer_thread()));
-        if (thread.is_running())
-        {
-            register_for_thread(&thread);
-            thread.event_dispatcher().post_event(*this);
-        }
+        register_for_thread(&thread);
+        return thread.event_dispatcher().post_event(*this);
     }
+
+    return false;
 }
 
 bool Event::register_for_thread( UniqueNumber threadNum )
