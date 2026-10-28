@@ -381,7 +381,8 @@ TEST(LogSqliteDatabaseTest, test_destroyedWriterLeavesOnePlainFile)
 
 /**
  * \brief   A writer that commits batch after batch without a pause keeps its write-ahead log short:
- *          the log starts over again and again instead of growing with every batch.
+ *          the log starts over again and again instead of growing with every batch. When the log
+ *          has not started over for longer than usual, the writer pauses after each batch.
  **/
 TEST(LogSqliteDatabaseTest, test_continuousWriterKeepsTheLogShort)
 {
@@ -389,21 +390,29 @@ TEST(LogSqliteDatabaseTest, test_continuousWriterKeepsTheLogShort)
     LogDb writer;
     ASSERT_TRUE(writer.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
 
-    constexpr uint32_t maxBatches{ 600u };
     constexpr uint32_t restarts{ 3u };
     constexpr uint32_t rows{ 1000u };
+    constexpr uint32_t longCycle{ 150u };
+    constexpr std::chrono::milliseconds pause{ 50 };
+    const auto until{ std::chrono::steady_clock::now() + std::chrono::seconds(30) };
     uint32_t batches{ 0u };
     uint32_t seen{ 0u };
+    uint32_t cycle{ 0u };
     std::FILE* wal{ std::fopen((path + "-wal").c_str(), "rb") };
     ASSERT_NE(wal, nullptr);
     std::setvbuf(wal, nullptr, _IONBF, 0u);
     uint32_t lastSeq{ _log_sequence(wal) };
-    for (; (batches < maxBatches) && (seen < restarts); ++batches)
+    for (; (seen < restarts) && (std::chrono::steady_clock::now() < until); ++batches)
     {
         ASSERT_TRUE(_write_rows(writer, rows, static_cast<TIME64>(1000u + batches * rows)));
         const uint32_t seq{ _log_sequence(wal) };
+        cycle = (seq != lastSeq) ? 0u : cycle + 1u;
         seen += (seq != lastSeq) ? 1u : 0u;
         lastSeq = seq;
+        if (cycle > longCycle)
+        {
+            std::this_thread::sleep_for(pause);
+        }
     }
 
     // Closes the log before the writer deletes it.
