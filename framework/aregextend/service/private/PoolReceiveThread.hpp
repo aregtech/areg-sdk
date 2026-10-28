@@ -212,6 +212,7 @@ private:
     std::vector<areg::SocketAccepted>   mReleased;          //!< Reused list of the sockets taken for release. Dispatching thread only.
     std::vector<SOCKETHANDLE>           mCachedPending;     //!< Sockets whose read-ahead cache still holds messages. Dispatching thread only.
     ReceiveParts                        mParts;             //!< Messages being received that do not fit the read-ahead cache. Dispatching thread only.
+    ServedSockets                       mServed;            //!< Client sockets this thread serves. Dispatching thread only.
     PausedSources                       mPaused;            //!< Sockets not read while a connection their messages go to is held. Dispatching thread only.
 
 //////////////////////////////////////////////////////////////////////////

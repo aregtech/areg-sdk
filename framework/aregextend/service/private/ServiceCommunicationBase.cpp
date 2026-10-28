@@ -869,23 +869,6 @@ void ServiceCommunicationBase::process_received_message(areg::MessageEnvelope & 
     {
         if ( target != static_cast<uint32_t>(areg::TARGET_UNKNOWN) )
         {
-#if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-            // Log every 100k forwarded messages.
-            static uint32_t s_fwdCount{ 0u };
-            static uint32_t s_fwdBytes{ 0u };
-            ++s_fwdCount;
-            s_fwdBytes += msgReceived.size_used();
-            if ((s_fwdCount % 100000u) == 0u)
-            {
-                DEBUG_LOG_INFO("Fast-path forward milestone: [ %u ] messages, [ %u ] bytes total (last msg: id=%u src=%u tgt=%u)"
-                            , s_fwdCount
-                            , s_fwdBytes
-                            , static_cast<uint32_t>(msgId)
-                            , source
-                            , target);
-            }
-#endif  // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-
             // Only the last message of a receive burst goes inline: while more input waits, the
             // send thread joins it into one write, which is worth more than the wake-up.
             const bool burstPending{ (areg::receive_mode() == areg::ReceiveMode::NoCache) ||

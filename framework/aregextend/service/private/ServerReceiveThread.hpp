@@ -254,6 +254,10 @@ private:
      **/
     ReceiveParts                    mParts;
     /**
+     * \brief   The client sockets this thread serves. Used by the dispatching thread only.
+     **/
+    ServedSockets                   mServed;
+    /**
      * \brief   The sockets not read while a connection their messages go to is held. Used by the
      *          dispatching thread only.
      **/

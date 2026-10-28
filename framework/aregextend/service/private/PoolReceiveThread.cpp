@@ -52,6 +52,7 @@ PoolReceiveThread::PoolReceiveThread( areg::RemoteMessageHandler & remoteService
     , mReleased         ( )
     , mCachedPending    ( )
     , mParts            ( )
+    , mServed           ( )
     , mPaused           ( mMux )
 {
 }
@@ -80,8 +81,8 @@ void PoolReceiveThread::_process_pending_sockets()
     mHandover.take(mAdded, mReleased);
     for ( const areg::SocketAccepted & sock : mAdded )
     {
-        if ( sock.is_valid() )
-            mMux.register_socket(sock.handle(), true);
+        if ( sock.is_valid() && mMux.register_socket(sock.handle(), true) )
+            mServed.add(sock);
     }
 
     for ( const areg::SocketAccepted & sock : mReleased )
@@ -96,12 +97,16 @@ void PoolReceiveThread::_process_pending_sockets()
 void PoolReceiveThread::_receive_ready_socket( SOCKETHANDLE hSocket, areg::MessageEnvelope & msgReceived )
 {
     DEBUG_LOG_SCOPE(areg_aregextend_service_PoolReceiveThread, _receive_ready_socket);
-    areg::SocketAccepted clientSocket{ mConnection.client_by_handle(hSocket) };
-    if ( !clientSocket.is_valid() )
+    _process_pending_sockets();
+
+    areg::SocketAccepted * served{ mServed.find(hSocket) };
+    if ( served == nullptr )
     {
         _drop_socket(hSocket);
         return;
     }
+
+    areg::SocketAccepted & clientSocket{ *served };
 
     int32_t received{ 0 };
     {
@@ -133,6 +138,7 @@ void PoolReceiveThread::_drop_socket( SOCKETHANDLE hSocket )
     mPaused.drop(hSocket);
     areg::thread_rx_cache_release(hSocket);
     mParts.drop(hSocket);
+    mServed.drop(hSocket);
 }
 
 void PoolReceiveThread::_after_drain( SOCKETHANDLE hSocket, bool ceilingHit )
@@ -160,7 +166,7 @@ void PoolReceiveThread::_resume_paused( )
 {
     mPaused.resume([this](SOCKETHANDLE hSocket)
     {
-        if ( mConnection.client_by_handle(hSocket).is_valid() && mMux.register_socket(hSocket, true) )
+        if ( mConnection.handle_exist(hSocket) && mMux.register_socket(hSocket, true) )
         {
             _remember_cached_socket(hSocket);
         }
@@ -200,18 +206,18 @@ void PoolReceiveThread::_service_cached_socket( areg::MessageEnvelope & msgRecei
     if ( !mMux.is_registered(hSocket) || (areg::recv_data_available(hSocket) == 0u) )
         return;
 
-    areg::SocketAccepted clientSocket{ mConnection.client_by_handle(hSocket) };
-    if ( !clientSocket.is_valid() )
+    areg::SocketAccepted * clientSocket{ mServed.find(hSocket) };
+    if ( clientSocket == nullptr )
         return;
 
     constexpr uint32_t MAX_DRAIN{ areg::DEFAULT_DRAIN_LIMIT - 1u };
-    const int32_t drained{ areg::ext::drain_recv_cache(mConnection, mRemoteService, MAX_DRAIN, clientSocket,
+    const int32_t drained{ areg::ext::drain_recv_cache(mConnection, mRemoteService, MAX_DRAIN, *clientSocket,
             msgReceived, [this](uint64_t bytes, uint32_t msgs) { mGlobalStats.accumulate_received(bytes, msgs); }) };
 
     if ( drained < 0 )
     {
         PausedSources::discard();
-        mRemoteService.failed_receive_message(clientSocket);
+        mRemoteService.failed_receive_message(*clientSocket);
         _drop_socket(hSocket);
     }
     else
@@ -228,6 +234,7 @@ bool PoolReceiveThread::run_dispatcher()
     areg::set_receive_mode(areg::ReceiveMode::MultiCache);
     mCachedPending.clear();
     mParts.clear();
+    mServed.clear();
     mPaused.clear();
     ready_for_events(true);
 
@@ -290,6 +297,7 @@ bool PoolReceiveThread::run_dispatcher()
     } while ( !isExit );
 
     mPaused.clear();
+    mServed.clear();
     ready_for_events(false);
     remove_all_events();
 

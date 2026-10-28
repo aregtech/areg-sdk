@@ -445,6 +445,42 @@ private:
 };
 
 /**
+ * \brief   The sockets a receive thread serves, each with a reference that keeps it open while
+ *          the thread serves it. Used by the receive thread that serves the sockets only.
+ **/
+class ServedSockets
+{
+public:
+    //!< Returns the served socket, or nullptr if the thread does not serve it.
+    inline areg::SocketAccepted * find(SOCKETHANDLE hSocket) noexcept
+    {
+        auto pos{ mSockets.find(hSocket) };
+        return (pos != mSockets.end() ? &pos->second : nullptr);
+    }
+
+    //!< Starts serving the socket and returns the served object.
+    inline areg::SocketAccepted & add(const areg::SocketAccepted & socket)
+    {
+        return (mSockets[socket.handle()] = socket);
+    }
+
+    //!< Stops serving the socket and drops the reference to it.
+    inline void drop(SOCKETHANDLE hSocket) noexcept
+    {
+        mSockets.erase(hSocket);
+    }
+
+    //!< Stops serving every socket.
+    inline void clear() noexcept
+    {
+        mSockets.clear();
+    }
+
+private:
+    std::unordered_map<SOCKETHANDLE, areg::SocketAccepted>  mSockets;   //!< The served sockets, by handle.
+};
+
+/**
  * \brief   Receives what a ready socket has now, without waiting, and dispatches every message
  *          that is complete. A message that is not complete stays in the read-ahead cache, or in
  *          \a parts when it does not fit the cache, until the rest arrives.
