@@ -240,7 +240,10 @@ void SyncTimer::_os_create_timer( bool /* isSteady */ )
 
 void SyncTimer::_os_release_time()
 {
-    reinterpret_cast<areg::os::WaitableTimerPosix *>(mSyncObject)->cancel_timer( );
+    areg::os::WaitableTimerPosix * timer = reinterpret_cast<areg::os::WaitableTimerPosix *>(mSyncObject);
+    timer->cancel_timer( );
+    timer->free_resources( );
+    delete timer;
 }
 
 bool SyncTimer::_os_lock( uint32_t timeout )
@@ -262,7 +265,7 @@ bool SyncTimer::_os_cancel_timer()
 // MultiLock class implementation
 //////////////////////////////////////////////////////////////////////////
 
-int32_t MultiLock::_os_lock(uint32_t timeout /* = areg::WAIT_INFINITE */, bool waitForAll /* = false */, bool isAlertable /*= false*/)
+int32_t MultiLock::_os_lock(uint32_t timeout /* = areg::WAIT_INFINITE */, bool waitForAll /* = false */, bool /* isAlertable */ /*= false*/)
 {
     areg::os::WaitablePosix * syncHandles[areg::MAXIMUM_WAITING_OBJECTS];
     for ( int i = 0; i < mSizeCount; ++ i )
@@ -283,18 +286,6 @@ int32_t MultiLock::_os_lock(uint32_t timeout /* = areg::WAIT_INFINITE */, bool w
             {
                 mLockedStates[i] = MultiLock::LockState::Locked;
             }
-            break;
-
-        case static_cast<int32_t>(areg::os::SyncSignal::AsyncSignal):
-                if (isAlertable)
-                {
-                    index = MultiLock::LOCK_INDEX_COMPLETION;
-                }
-                else
-                {
-                    index = MultiLock::LOCK_INDEX_INVALID;
-                    continue;
-                }
             break;
 
         case static_cast<int32_t>(areg::os::SyncSignal::Timeout):

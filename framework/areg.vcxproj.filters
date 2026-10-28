@@ -489,9 +489,6 @@
     <ClCompile Include="areg\base\private\macos\SocketMultiplexerMacOS.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\macos\WaitableTimerMacOS.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\component\private\EventQueue.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1056,9 +1053,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\ipc\DataRateStats.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\base\private\posix\WaitAnyRegistry.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\BufferBase.hpp">

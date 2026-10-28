@@ -158,6 +158,13 @@ public:
     inline bool is_paused() const noexcept;
 
     /**
+     * \brief   Returns true if the logger is opened for remote logging, so that messages are
+     *          finalized as remote messages.
+     **/
+    [[nodiscard]]
+    inline bool is_remote_enabled() const noexcept;
+
+    /**
      * \brief   Sets or clears the paused state and keeps the other states untouched.
      *
      * \param   paused  If true, the produced log messages are dropped instead of being sent.
@@ -256,6 +263,20 @@ private:
      **/
     void notify_source_state(areg::LogSourceState previous, const ITEM_ID & byObserver);
 
+    /**
+     * \brief   Queues a log message in the ring stack and counts the oldest one it overwrites.
+     *
+     * \param   msg     The log message to queue.
+     **/
+    void queue_pending(areg::MessageEnvelope && msg);
+
+    /**
+     * \brief   Sends one log row with the number of log messages lost before the connection, and resets the count.
+     *
+     * \param   cookie  The cookie of the connection.
+     **/
+    void send_dropped_notice(const ITEM_ID & cookie);
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -266,6 +287,8 @@ private:
     std::atomic<uint32_t> mFlags;
     //!< The ring stack to queue log messages if the connection setup did not complete yet.
     PendingQueue        mRingStack;
+    //!< The log messages lost while not connected: overwritten in the ring stack or not queued.
+    uint64_t            mRingDropped;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -287,6 +310,11 @@ inline NetTcpLogger& NetTcpLogger::self()
 inline bool NetTcpLogger::is_enabled() const noexcept
 {
     return (mFlags.load(std::memory_order_acquire) & NetTcpLogger::FLAG_ENABLED) != 0u;
+}
+
+inline bool NetTcpLogger::is_remote_enabled() const noexcept
+{
+    return is_enabled();
 }
 
 inline bool NetTcpLogger::is_paused() const noexcept

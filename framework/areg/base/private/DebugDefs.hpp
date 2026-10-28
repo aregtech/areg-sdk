@@ -73,6 +73,7 @@
     // Included only for the diagnostic trace, so that an ordinary build of the
     // 15 sources that include this header does not pay for them.
     #include "areg/base/Process.hpp"
+    #include <chrono>
     #include <cstdarg>
 #endif  // defined(AREG_DIAGNOSE_TRACE) && (AREG_DIAGNOSE_TRACE)
 
@@ -653,6 +654,14 @@ inline void trace(const char* format, ...) noexcept
 
     std::fprintf(stderr, "\r\n%s %s\r\n", areg::DIAGNOSE_TRACE_MARKER.data(), message);
     std::fflush(stderr);
+}
+
+/**
+ * \brief   Returns the steady clock in microseconds, to stamp a diagnostic line.
+ **/
+inline unsigned long long trace_now_us() noexcept
+{
+    return static_cast<unsigned long long>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now().time_since_epoch()).count());
 }
 
 #else   // defined(AREG_DIAGNOSE_TRACE) && (AREG_DIAGNOSE_TRACE)

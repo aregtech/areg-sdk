@@ -67,6 +67,29 @@ void _os_configure_accepted_socket(SOCKETHANDLE hSocket) noexcept
     static_cast<void>(hSocket);
 }
 
+SOCKETHANDLE _os_create_socket() noexcept
+{
+    const SOCKET result{ ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP) };
+    if (result != INVALID_SOCKET)
+    {
+        ::SetHandleInformation(reinterpret_cast<HANDLE>(result), HANDLE_FLAG_INHERIT, 0);
+    }
+
+    return static_cast<SOCKETHANDLE>(result);
+}
+
+SOCKETHANDLE _os_accept_socket(SOCKETHANDLE serverSocket, struct sockaddr_in& acceptAddr) noexcept
+{
+    int len{ static_cast<int>(sizeof(sockaddr_in)) };
+    const SOCKET result{ ::accept(static_cast<SOCKET>(serverSocket), reinterpret_cast<sockaddr *>(&acceptAddr), &len) };
+    if (result != INVALID_SOCKET)
+    {
+        ::SetHandleInformation(reinterpret_cast<HANDLE>(result), HANDLE_FLAG_INHERIT, 0);
+    }
+
+    return static_cast<SOCKETHANDLE>(result);
+}
+
 void _os_configure_connected_socket(SOCKETHANDLE hSocket, int32_t keepIdle, int32_t keepInterval, int32_t keepCount) noexcept
 {
     ASSERT(areg::is_valid_socket(hSocket));

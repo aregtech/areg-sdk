@@ -185,6 +185,20 @@ private:
      **/
     void _forget_cached_socket( SOCKETHANDLE hSocket );
 
+    /**
+     * \brief   Called after the socket was served. Stops reading it if a message handler asked
+     *          for it, see PausedSources, or remembers it if its cache may still hold messages.
+     *
+     * \param   hSocket     The socket that was served.
+     * \param   ceilingHit  True if the drain ceiling stopped the drain.
+     **/
+    void _after_drain( SOCKETHANDLE hSocket, bool ceilingHit );
+
+    /**
+     * \brief   Reads again the paused sockets whose connection is released.
+     **/
+    void _resume_paused( );
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -198,6 +212,7 @@ private:
     std::vector<areg::SocketAccepted>   mReleased;          //!< Reused list of the sockets taken for release. Dispatching thread only.
     std::vector<SOCKETHANDLE>           mCachedPending;     //!< Sockets whose read-ahead cache still holds messages. Dispatching thread only.
     ReceiveParts                        mParts;             //!< Messages being received that do not fit the read-ahead cache. Dispatching thread only.
+    PausedSources                       mPaused;            //!< Sockets not read while a connection their messages go to is held. Dispatching thread only.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

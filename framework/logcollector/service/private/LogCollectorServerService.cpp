@@ -38,8 +38,11 @@ LogCollectorServerService::LogCollectorServerService()
     , mLoggerProcessor          ( self() )
     , mObservers                ( )
     , mSaveTimer                ( static_cast<areg::TimerConsumer &>(self()), "ConfigSaveTimer", LogCollectorServerService::TIMEOUT_SAVE_CONFIG)
+    , mDropTimer                ( static_cast<areg::TimerConsumer &>(self()), "DropNoticeTimer", LogCollectorServerService::TIMEOUT_DROP_NOTICE)
     , mDatabase                 ( )
 {
+    // A slow observer misses log rows instead of being closed.
+    set_close_stalled(false);
 }
 
 areg::String LogCollectorServerService::database_path() const
@@ -328,8 +331,21 @@ void LogCollectorServerService::on_message_received(const areg::MessageEnvelope 
     }
 }
 
-void LogCollectorServerService::process_timer(areg::Timer& /* timer */ )
+void LogCollectorServerService::process_timer(areg::Timer& timer)
 {
+    if (&timer == &mDropTimer)
+    {
+        areg::Lock lock(mLock);
+        if (mLoggerProcessor.notify_dropped_rows())
+        {
+            mDropTimer.start_timer(LogCollectorServerService::TIMEOUT_DROP_NOTICE, static_cast<areg::DispatcherThread &>(self()), 1);
+        }
+    }
+    else if (&timer == &mSaveTimer)
+    {
+        areg::Lock lock(mLock);
+        mLoggerProcessor.save_config_timeout();
+    }
 }
 
 void LogCollectorServerService::process_received_message(areg::MessageEnvelope & msgReceived, areg::Socket & whichSource)

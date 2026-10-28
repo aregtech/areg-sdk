@@ -49,6 +49,15 @@ inline uint32_t compact_batch( SOCKETHANDLE * fds, uint32_t * flags, uint32_t id
 
     return kept;
 }
+
+// Adds the wakeup eventfd to the epoll set, level triggered.
+inline bool watch_wakeup(int epollFd, int wakeupFd) noexcept
+{
+    struct epoll_event ev;
+    ev.events  = EPOLLIN;
+    ev.data.fd = wakeupFd;
+    return (::epoll_ctl(epollFd, EPOLL_CTL_ADD, wakeupFd, &ev) == areg::RETURNED_OK);
+}
 } // namespace
 
 // -----------------------------------------------------------------------
@@ -57,10 +66,10 @@ inline uint32_t compact_batch( SOCKETHANDLE * fds, uint32_t * flags, uint32_t id
 //   reset() writes 1 to the eventfd  ->  epoll_wait() wakes immediately.
 //   wait()  reads the eventfd counter to drain it, returns FailedSocketHandle.
 //
-// WHY mSockets[] IS TRACKED ALONGSIDE THE KERNEL EPOLL SET:
-//   reset() must not close mEpollFd while another thread is inside epoll_wait().
-//   Closing a watched epoll fd from a different thread is undefined behavior.
-//   Instead, reset() removes every real socket via epoll_ctl(DEL) and then signals the eventfd.
+// RESET:
+//   reset() only raises mIsReset and signals the eventfd; it never touches mEpollFd.
+//   The thread that calls wait() replaces the epoll set on its next wait() or
+//   register_socket(), which drops every registration of the previous cycle.
 // -----------------------------------------------------------------------
 
 areg::SocketMultiplexer::SocketMultiplexer(uint32_t maxConnections /*= areg::DEFAULT_CONNECTIONS*/) noexcept
@@ -88,10 +97,7 @@ areg::SocketMultiplexer::SocketMultiplexer(uint32_t maxConnections /*= areg::DEF
     mWakeupReadFd  = static_cast<SOCKETHANDLE>(efd);
     mWakeupWriteFd = static_cast<SOCKETHANDLE>(efd);
 
-    struct epoll_event ev;
-    ev.events  = EPOLLIN;
-    ev.data.fd = efd;
-    if (::epoll_ctl(static_cast<int>(mEpollFd), EPOLL_CTL_ADD, efd, &ev) != areg::RETURNED_OK)
+    if (watch_wakeup(static_cast<int>(mEpollFd), efd) == false)
     {
         ::close(efd);
         mWakeupReadFd  = areg::InvalidSocketHandle;
@@ -178,12 +184,28 @@ bool areg::SocketMultiplexer::unregister_socket(SOCKETHANDLE hSocket) noexcept
 
 void areg::SocketMultiplexer::_drop_registrations() const noexcept
 {
-    if (mEpollFd != areg::InvalidSocketHandle)
+    if ((mEpollFd != areg::InvalidSocketHandle) && (mSockets.empty() == false))
     {
-        for (SOCKETHANDLE s : mSockets)
+        // A new epoll set has no registration, also none of a socket that another process still holds open.
+        const int fresh{ ::epoll_create1(EPOLL_CLOEXEC) };
+        const bool hasWakeup{ mWakeupReadFd != areg::InvalidSocketHandle };
+        if ((fresh != -1) && ((hasWakeup == false) || watch_wakeup(fresh, static_cast<int>(mWakeupReadFd))))
         {
-            struct epoll_event ev{};
-            ::epoll_ctl(static_cast<int>(mEpollFd), EPOLL_CTL_DEL, static_cast<int>(s), &ev);
+            ::close(static_cast<int>(mEpollFd));
+            mEpollFd = static_cast<SOCKETHANDLE>(fresh);
+        }
+        else
+        {
+            if (fresh != -1)
+            {
+                ::close(fresh);
+            }
+
+            for (SOCKETHANDLE s : mSockets)
+            {
+                struct epoll_event ev{};
+                ::epoll_ctl(static_cast<int>(mEpollFd), EPOLL_CTL_DEL, static_cast<int>(s), &ev);
+            }
         }
     }
 

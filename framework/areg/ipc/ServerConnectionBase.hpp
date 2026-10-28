@@ -302,6 +302,12 @@ public:
     SOCKETHANDLE wait_connection_nowait(areg::SocketAddress & out_addrNewAccepted);
 
     /**
+     * \brief   Returns true if a socket made ready by the last wait is not returned yet.
+     **/
+    [[nodiscard]]
+    inline bool has_ready_connection() const noexcept;
+
+    /**
      * \brief   Accepts pending connection and updates clientConnection object to accepted state.
      *
      * \param[in,out] clientConnection    Connection to accept. If object is valid, on output this
@@ -484,6 +490,11 @@ inline const areg::SocketAddress & ServerConnectionBase::address() const noexcep
 {
     std::shared_lock<std::shared_mutex> lock(mLock);
     return mServerSocket.address();
+}
+
+inline bool ServerConnectionBase::has_ready_connection() const noexcept
+{
+    return mMultiplexer.has_ready();
 }
 
 inline bool ServerConnectionBase::is_valid() const noexcept

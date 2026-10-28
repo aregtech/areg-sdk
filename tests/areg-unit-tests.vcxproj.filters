@@ -37,6 +37,9 @@
     <ClCompile Include="units\StringUtilsTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="units\SyncTimerTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="units\ThreadTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -113,6 +116,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="units\LogMessageLengthTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\LogProtocolTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\LogRingTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="units\SocketMultiplexerTest.cpp">

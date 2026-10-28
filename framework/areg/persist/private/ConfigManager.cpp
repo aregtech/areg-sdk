@@ -96,6 +96,47 @@ namespace
         return pos;
     }
 
+    //!< Returns the position of the module entry with the given temporary flag.
+    [[nodiscard]]
+    inline uint32_t _find_write_position( const areg::ArrayList<areg::Property>& writeList
+                                        , const areg::String& section
+                                        , const areg::String& module
+                                        , const areg::String& propName
+                                        , const areg::String& position
+                                        , areg::ConfigEntry confKey
+                                        , bool isTemporary) noexcept
+    {
+        uint32_t pos{ _find_position(writeList, 0, section, module, propName, position, true, confKey) };
+        while ((pos != areg::INVALID_POSITION) && (writeList[pos].is_temporary() != isTemporary))
+        {
+            pos = _find_position(writeList, pos + 1, section, module, propName, position, true, confKey);
+        }
+
+        return pos;
+    }
+
+    //!< Removes every module entry of the key, temporary or not, and returns how many were removed.
+    inline uint32_t _remove_write_positions( areg::ArrayList<areg::Property>& writeList
+                                           , const areg::String& section
+                                           , const areg::String& module
+                                           , const areg::String& propName
+                                           , const areg::String& position
+                                           , areg::ConfigEntry confKey) noexcept
+    {
+        uint32_t result{ 0u };
+        uint32_t pos{ _find_position(writeList, 0, section, module, propName, position, true, confKey) };
+        while (pos != areg::INVALID_POSITION)
+        {
+            writeList.remove_at(pos, 1u);
+            ++ result;
+            pos = _find_position(writeList, pos, section, module, propName, position, true, confKey);
+        }
+
+        return result;
+    }
+
+    //!< Sets the module entry; the last value set is the one in force, and only a non-temporary one is saved.
+    //!< A temporary entry stays in front of the saved entry of the same key.
     template <typename Type>
     inline void _set_position_value(areg::ArrayList<areg::Property>& writeList
                                  , const areg::ArrayList<areg::Property>& readList
@@ -113,42 +154,61 @@ namespace
             readPos = _find_all_modules_position(readList, section, propName, position, confKey);
         }
 
-        uint32_t writePos = _find_position(writeList, 0, section, module, propName, position, true , confKey);
+        const uint32_t tempPos{ _find_write_position(writeList, section, module, propName, position, confKey, true) };
+        uint32_t savedPos{ _find_write_position(writeList, section, module, propName, position, confKey, false) };
 
-        while ((writePos != areg::INVALID_POSITION) && (writeList[writePos].is_temporary() != isTemporary))
+        if (isTemporary)
         {
-            writePos = _find_position(writeList, writePos + 1, section, module, propName, position, true, confKey);
-        }
-
-        if (readPos == areg::INVALID_POSITION)
-        {
-            if (writePos != areg::INVALID_POSITION)
+            const areg::PropertyValue* below{ savedPos != areg::INVALID_POSITION ? &writeList[savedPos].value()
+                                            : (readPos != areg::INVALID_POSITION ? &readList[readPos].value() : nullptr) };
+            if ((below != nullptr) && (newValue == static_cast<const Type&>(*below)))
             {
-                writeList[writePos].value() = newValue;
+                if (tempPos != areg::INVALID_POSITION)
+                {
+                    writeList.remove_at(tempPos);
+                }
+            }
+            else if (tempPos != areg::INVALID_POSITION)
+            {
+                writeList[tempPos].value() = newValue;
+                if ((savedPos != areg::INVALID_POSITION) && (tempPos > savedPos))
+                {
+                    const areg::Property entry{ writeList.remove_at(tempPos) };
+                    writeList.insert_at(savedPos, entry);
+                }
             }
             else
             {
-                writeList.add(areg::Property(areg::PropertyKey(section, module, propName, position, confKey), areg::PropertyValue(newValue), areg::String::EmptyString, isTemporary));
+                const uint32_t insertAt{ savedPos != areg::INVALID_POSITION ? savedPos : writeList.size() };
+                writeList.insert_at(insertAt, areg::Property(areg::PropertyKey(section, module, propName, position, confKey), areg::PropertyValue(newValue), areg::String::EmptyString, true));
             }
+
+            return;
+        }
+
+        if (tempPos != areg::INVALID_POSITION)
+        {
+            writeList.remove_at(tempPos);
+            if ((savedPos != areg::INVALID_POSITION) && (savedPos > tempPos))
+            {
+                -- savedPos;
+            }
+        }
+
+        if ((readPos != areg::INVALID_POSITION) && (newValue == static_cast<const Type&>(readList[readPos].value())))
+        {
+            if (savedPos != areg::INVALID_POSITION)
+            {
+                writeList.remove_at(savedPos);
+            }
+        }
+        else if (savedPos != areg::INVALID_POSITION)
+        {
+            writeList[savedPos].value() = newValue;
         }
         else
         {
-            const areg::PropertyValue& readValue = readList[readPos].value();
-            if (newValue != static_cast<const Type&>(readValue))
-            {
-                if ((writePos != areg::INVALID_POSITION) && (writeList[writePos].is_temporary() == isTemporary))
-                {
-                    writeList[writePos].value() = newValue;
-                }
-                else
-                {
-                    writeList.add(areg::Property(areg::PropertyKey(section, module, propName, position, confKey), areg::PropertyValue(newValue), areg::String::EmptyString, isTemporary));
-                }
-            }
-            else if (writePos != areg::INVALID_POSITION)
-            {
-                writeList.remove_at(writePos);
-            }
+            writeList.add(areg::Property(areg::PropertyKey(section, module, propName, position, confKey), areg::PropertyValue(newValue), areg::String::EmptyString, false));
         }
     }
 
@@ -453,11 +513,7 @@ void ConfigManager::set_module_property( const String& section
 void ConfigManager::remove_module_property(const String& section, const String& propName, const String& position, areg::ConfigEntry keyType)
 {
     Lock lock(mLock);
-    const uint32_t elemPos{ _find_position(mWritableProperties, 0, section, mModule, propName, position, true, keyType) };
-    if (elemPos != areg::INVALID_POSITION)
-    {
-        mWritableProperties.remove_at(elemPos);
-    }
+    static_cast<void>(_remove_write_positions(mWritableProperties, section, mModule, propName, position, keyType));
 }
 
 int32_t ConfigManager::remove_module_properties(const String& section, const String& propName, areg::ConfigEntry keyType)
@@ -525,10 +581,24 @@ bool ConfigManager::read_config(const String& filePath /*= String::EmptyString*/
 
     path = File::file_full_path(File::normalize_path(path));
     File fileConfig(path, CONFIG_READ_MODE);
-    if (fileConfig.open() && read_config(fileConfig, listener))
+    if (fileConfig.open() == false)
+        return mIsConfigured;
+
+    if (listener != nullptr)
+    {
+        listener->prepare_read_configuration(*this);
+    }
+
+    if (read_config(fileConfig, nullptr))
     {
         mFilePath = fileConfig.name();
         read_process_config();
+    }
+
+    // The listener sees both files and its values win over them.
+    if (listener != nullptr)
+    {
+        listener->post_read_configuration(*this);
     }
 
     return mIsConfigured;
@@ -943,13 +1013,7 @@ bool ConfigManager::remove_scope(const String& scopeName)
 
     constexpr areg::ConfigEntry confKey{ areg::ConfigEntry::LogScope };
     const areg::ConfigKey& key{ areg::log_scope() };
-    const uint32_t pos{ _find_position(mWritableProperties, 0, key.section, mModule, key.property, scopeName, true, confKey) };
-
-    if (pos == areg::INVALID_POSITION)
-        return false;
-
-    mWritableProperties.remove_at(pos);
-    return true;
+    return (_remove_write_positions(mWritableProperties, key.section, mModule, key.property, scopeName, confKey) != 0u);
 }
 
 int32_t ConfigManager::remove_module_scopes()

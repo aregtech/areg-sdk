@@ -870,8 +870,8 @@ public:
      *                          otherwise, it fires once.
      * \param   isAutoReset     If true, the timer is auto-reset (synchronization timer);
      *                          otherwise, it is manual-reset.
-     * \param   isSteady        If true, uses a steady high-resolution timer; otherwise, uses a
-     *                          system clock.
+     * \param   isSteady        If true, uses a high-resolution timer where the system has one.
+     *                          The timeout never follows changes of the system time.
      **/
     SyncTimer( uint32_t msTimeout, bool is_periodic = false, bool isAutoReset = true, bool isSteady = true );
 
@@ -891,9 +891,9 @@ public:
     bool lock( uint32_t timeout = areg::WAIT_INFINITE ) final;
 
     /**
-     * \brief   Activates the timer. The timer will fire at the due time specified in the constructor.
+     * \brief   Cancels the timer. Same as cancel_timer().
      *
-     * \return  Returns true if the timer was successfully activated.
+     * \return  Returns true if the timer was cancelled.
      **/
     bool unlock() final;
 
@@ -909,10 +909,11 @@ public:
     inline bool set_timer();
 
     /**
-     * \brief   Stops the timer without changing its signaled state. Threads waiting on the timer
-     *          will remain waiting until timeout or reactivation.
+     * \brief   Stops the timer and signals it once, as if it expired now. An auto-reset timer
+     *          releases one waiting thread, a manual-reset timer releases all of them and stays
+     *          signaled until set_timer() is called. The timer can be set again.
      *
-     * \return  Returns true if successfully stopped.
+     * \return  Returns true if the timer was cancelled.
      **/
     inline bool cancel_timer();
 
@@ -941,7 +942,7 @@ private:
     /**
      * \brief   OS-specific implementation to create the synchronization timer.
      *
-     * \param   isSteady    If true, uses a steady high-resolution timer; otherwise, uses a system clock.
+     * \param   isSteady    If true, uses a high-resolution timer where the system has one.
      **/
     void _os_create_timer( bool isSteady );
 

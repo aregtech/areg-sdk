@@ -49,6 +49,8 @@
     <ClCompile Include="units\GUnitTest.cpp" />
     <ClCompile Include="units\FileTest.cpp" />
     <ClCompile Include="units\LogMessageLengthTest.cpp" />
+    <ClCompile Include="units\LogProtocolTest.cpp" />
+    <ClCompile Include="units\LogRingTest.cpp" />
     <ClCompile Include="units\LogScopesTest.cpp" />
     <ClCompile Include="units\EventEnvelopeTest.cpp" />
     <ClCompile Include="units\MultiLockTest.cpp" />
@@ -63,6 +65,7 @@
     <ClCompile Include="units\StringDefsTest3.cpp" />
     <ClCompile Include="units\StringTest.cpp" />
     <ClCompile Include="units\StringUtilsTest.cpp" />
+    <ClCompile Include="units\SyncTimerTest.cpp" />
     <ClCompile Include="units\ThreadTest.cpp" />
     <ClCompile Include="units\WorkerThreadTest.cpp" />
     <ClCompile Include="units\SocketKeepAliveTest.cpp" />

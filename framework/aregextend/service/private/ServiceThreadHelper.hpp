@@ -33,6 +33,7 @@
 #include "areg/ipc/SocketConnectionBase.hpp"
 #include "aregextend/service/ServerConnection.hpp"
 #include "aregextend/service/SystemServiceDefs.hpp"
+#include "aregextend/service/private/PausedSources.hpp"
 #include "aregextend/service/private/SendBacklog.hpp"
 
 #include <algorithm>
@@ -173,11 +174,9 @@ inline void send_pending_groups( areg::ext::PendingSend * batch
 }
 
 /**
- * \brief   Moves the backlog of a send thread on after a batch. While a connection keeps more
- *          than its cap, new messages wait: the thread takes nothing from its queue and wakes
- *          only for its sockets, an exit or a deadline. Otherwise the thread returns as soon as
- *          a message is queued, and while the queue is empty it waits for whichever comes
- *          first: a socket that takes data, a queued message, an exit or the nearest deadline.
+ * \brief   Moves the backlog of a send thread on after a batch. The thread returns as soon as a
+ *          message is queued, and while the queue is empty it waits for whichever comes first:
+ *          a socket that takes data, a queued message, an exit or the nearest deadline.
  *
  * \param   thread  The send thread: has_queued_events(), wait_backlog(), is_exit_requested().
  * \param   backlog The writer of the thread.
@@ -189,15 +188,10 @@ inline void serve_backlog(ThreadT & thread, SendBacklog & backlog, SendBacklog::
     while ( backlog.is_empty() == false )
     {
         static_cast<void>(backlog.pump(owner));
-        if ( backlog.is_empty() || thread.is_exit_requested() )
+        if ( backlog.is_empty() || thread.is_exit_requested() || thread.has_queued_events() )
             break;
 
-        bool overCap{ false };
-        const uint32_t timeoutMs{ backlog.prepare_wait(overCap) };
-        if ( (overCap == false) && thread.has_queued_events() )
-            break;
-
-        thread.wait_backlog(overCap == false, timeoutMs);
+        thread.wait_backlog(backlog.prepare_wait());
     }
 }
 
@@ -364,6 +358,8 @@ inline void run_send_batch( ThreadT & thread
  *          A return value equal to \a maxDrain means the ceiling stopped the
  *          drain and the cache may still hold messages. The caller has to come
  *          back to the socket: the multiplexer cannot see a user space buffer.
+ *          The same holds when a handler asked to pause the socket, see
+ *          is_receive_paused().
  *
  * \param   conn            Server connection (receive API).
  * \param   handler         Remote message handler (process callback).
@@ -391,6 +387,8 @@ inline int32_t drain_recv_cache( ServerConnection & conn
         handler.process_received_message(msgReceived, clientSocket);
         accum(static_cast<uint64_t>(cached), 1u);
         ++drain;
+        if ( is_receive_paused() )
+            break;
     }
 
     return static_cast<int32_t>(drain);
@@ -460,7 +458,8 @@ private:
  * \param   accum           Callable(uint64_t bytes, uint32_t msgs) on each message.
  * \return  The number of messages dispatched, or -1 if the connection ended, failed or sent a
  *          header that is not valid. A return equal to \a maxDrain means the cache may still hold
- *          messages, see drain_recv_cache().
+ *          messages, see drain_recv_cache(). After a pause request it returns at once, and the
+ *          cache may hold messages too.
  **/
 template<typename AccumFn>
 inline int32_t receive_ready_socket( ServerConnection & conn
@@ -502,8 +501,8 @@ inline int32_t receive_ready_socket( ServerConnection & conn
     {
         if ( receivePart(*part) == false )
             return -1;
-        else if ( completed == 0 )
-            return 0;
+        else if ( (completed == 0) || is_receive_paused() )
+            return completed;
     }
 
     // A cache that holds a complete message is drained before it is filled.
@@ -514,7 +513,7 @@ inline int32_t receive_ready_socket( ServerConnection & conn
         return -1;
 
     completed += drained;
-    if ( static_cast<uint32_t>(drained) == ceiling )
+    if ( (static_cast<uint32_t>(drained) == ceiling) || is_receive_paused() )
         return completed;
 
     const areg::ThreadCache & tc{ areg::thread_rx_cache(hSocket) };

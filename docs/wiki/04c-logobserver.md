@@ -450,6 +450,8 @@ log::logobserver::file::location = ./logs/logobserver.log
 
 **How the database is written.** The observer hands every received log to the display or callback at once and puts it in a queue; a separate thread saves the queue in the database, up to 16 384 logs or 100 ms per transaction. A slow disk therefore never slows down receiving, and the observer never holds back the log collector or the other observers.
 
+**When an observer falls behind.** If an observer reads slower than the logs arrive, for example over a slow network, the log collector drops log rows for that observer only and keeps serving the log sources and the other observers at full rate. When the observer catches up, it receives a warning row from the log collector: *The log collector dropped N log messages for this observer, it read slower than the logs arrived.* The observer stays connected, and messages other than log rows are never dropped.
+
 - 📦 **Queue size:** `log::<module>::db::queue`, in megabytes (default 256). When the queue is full, a new log is dropped and counted, and the database gets a row that starts with `Dropped` and says how many were lost (see the query *Were messages lost?* in the [database format](./04e-log-database-format.md)).
 - 🔢 **Row IDs are known at once:** a log gets its database ID when it is queued, so a marker can be set on a log that is not saved yet. Markers are saved in order with the logs.
 - 💾 **Disconnect saves everything:** stopping or disconnecting the observer saves the whole queue before the file closes. An application crash loses what was still in the queue.

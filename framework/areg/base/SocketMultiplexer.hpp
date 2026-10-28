@@ -205,11 +205,18 @@ public:
     [[nodiscard]]
     inline bool is_registered(SOCKETHANDLE hSocket) const noexcept;
 
+    /**
+     * \brief   Returns true if a ready handle of the last OS poll is still waiting to be returned by wait().
+     **/
+    [[nodiscard]]
+    inline bool has_ready() const noexcept;
+
 private:
     /**
      * \brief   Removes every registered socket from the OS readiness object and
      *          empties the registered set and the batch cursor. Runs only on the
      *          thread that calls wait(), which is the only writer of both.
+     *          On Linux it replaces the epoll instance.
      **/
     void _drop_registrations() const noexcept;
 
@@ -232,7 +239,7 @@ private:
 #endif  // _MSC_VER
 
 #if defined(__linux__)
-    SOCKETHANDLE    mEpollFd;       //!< epoll instance fd (not a socket; POSIX int fd).
+    mutable SOCKETHANDLE    mEpollFd;   //!< epoll instance fd (not a socket); replaced by the deferred drop of reset().
 #elif defined(__APPLE__)
     SOCKETHANDLE    mKqueueFd;      //!< kqueue instance fd (macOS/BSD; POSIX int fd).
 #endif
@@ -269,6 +276,11 @@ private:
 inline bool areg::SocketMultiplexer::is_registered(SOCKETHANDLE hSocket) const noexcept
 {
     return std::find(mSockets.begin(), mSockets.end(), hSocket) != mSockets.end();
+}
+
+inline bool areg::SocketMultiplexer::has_ready() const noexcept
+{
+    return (mBatchIdx < mBatchCount);
 }
 
 } // namespace areg

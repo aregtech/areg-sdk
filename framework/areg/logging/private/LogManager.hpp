@@ -311,6 +311,12 @@ public:
      **/
     inline static ITEM_ID connection_cookie() noexcept;
 
+    /**
+     * \brief   Returns the cookie of the log collector service once the remote logs are sent directly,
+     *          and areg::COOKIE_UNKNOWN before.
+     **/
+    inline static ITEM_ID started_cookie() noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
 //////////////////////////////////////////////////////////////////////////
@@ -586,6 +592,12 @@ inline void LogManager::activate_log_scope(LogScope& scope)
 inline ITEM_ID LogManager::connection_cookie() noexcept
 {
     return LogManager::instance().mLoggerTcp.connection_cookie();
+}
+
+inline ITEM_ID LogManager::started_cookie() noexcept
+{
+    const NetTcpLogger & logger{ LogManager::instance().mLoggerTcp };
+    return (logger.is_connected_state() ? logger.connection_cookie() : areg::COOKIE_UNKNOWN);
 }
 
 inline const HashMap<uint32_t, LogScope *> & LogManager::scope_list() const

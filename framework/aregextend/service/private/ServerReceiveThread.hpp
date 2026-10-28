@@ -200,6 +200,20 @@ private:
      **/
     void _forget_cached_socket(SOCKETHANDLE hSocket);
 
+    /**
+     * \brief   Called after the socket was served. Stops reading it if a message handler asked
+     *          for it, see PausedSources, or remembers it if its cache may still hold messages.
+     *
+     * \param   hSocket     The socket that was served.
+     * \param   ceilingHit  True if the drain ceiling stopped the drain.
+     **/
+    void _after_drain(SOCKETHANDLE hSocket, bool ceilingHit);
+
+    /**
+     * \brief   Reads again the paused sockets whose connection is released.
+     **/
+    void _resume_paused();
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -239,6 +253,11 @@ private:
      *          dispatching thread only.
      **/
     ReceiveParts                    mParts;
+    /**
+     * \brief   The sockets not read while a connection their messages go to is held. Used by the
+     *          dispatching thread only.
+     **/
+    PausedSources                   mPaused;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

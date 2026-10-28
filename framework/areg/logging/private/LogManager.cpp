@@ -503,7 +503,7 @@ void LogManager::write_log_message( areg::MessageEnvelope & msg )
     const areg::LogEntry* logEntry = reinterpret_cast<const areg::LogEntry*>(msg.buffer());
     ASSERT(logEntry != nullptr);
 
-    if (is_remote_logging_enabled())
+    if (mLoggerTcp.is_remote_enabled())
     {
         areg::finalize_log_message(msg, areg::LogDataType::Remote, LogManager::connection_cookie());
     }

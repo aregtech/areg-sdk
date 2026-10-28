@@ -60,6 +60,8 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     ListenerDispatchTest.cpp
     LockWaitTest.cpp
     LogMessageLengthTest.cpp
+    LogProtocolTest.cpp
+    LogRingTest.cpp
     LogScopesTest.cpp
     LogSqliteDatabaseTest.cpp
     MapTest.cpp
@@ -85,6 +87,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     StringDefsTest4.cpp 
     StringTest.cpp
     StringUtilsTest.cpp
+    SyncTimerTest.cpp
     ThreadTest.cpp
     WorkerThreadTest.cpp
 )

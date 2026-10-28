@@ -124,6 +124,11 @@ public:
     inline void shutdown_threads(uint32_t timeout);
 
     /**
+     * \brief   Waits for the receive thread to exit, after stop_threads().
+     **/
+    inline void shutdown_receive(uint32_t timeout);
+
+    /**
      * \brief   Queues an accepted socket for registration with the receive thread's
      *          multiplexer.  The receive thread picks it up at the next loop iteration.
      *
@@ -258,6 +263,11 @@ inline void ClientConnectionPair::stop_threads()
 inline void ClientConnectionPair::shutdown_threads(uint32_t timeout)
 {
     mSendThread.shutdown(timeout);
+    mReceiveThread.shutdown(timeout);
+}
+
+inline void ClientConnectionPair::shutdown_receive(uint32_t timeout)
+{
     mReceiveThread.shutdown(timeout);
 }
 

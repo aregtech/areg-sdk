@@ -161,6 +161,21 @@ namespace areg::os {
      **/
     void _os_configure_accepted_socket(SOCKETHANDLE hSocket) noexcept;
 
+    /**
+     * \brief   Creates a TCP socket that a child process does not inherit.
+     * \return  The socket handle, or areg::InvalidSocketHandle on failure.
+     **/
+    SOCKETHANDLE _os_create_socket() noexcept;
+
+    /**
+     * \brief   Accepts a pending connection of the server socket. A child process does not
+     *          inherit the accepted socket.
+     * \param   serverSocket    The listening server socket.
+     * \param   acceptAddr      On output, the address of the connected peer.
+     * \return  The accepted socket handle, or areg::InvalidSocketHandle on failure.
+     **/
+    SOCKETHANDLE _os_accept_socket(SOCKETHANDLE serverSocket, struct sockaddr_in& acceptAddr) noexcept;
+
 } // namespace areg::os
 
 namespace
@@ -491,7 +506,7 @@ AREG_API_IMPL uint32_t areg::send_batch_limit() noexcept
 
 AREG_API_IMPL SOCKETHANDLE areg::socket_create() noexcept
 {
-    return static_cast<SOCKETHANDLE>( socket(AF_INET, SOCK_STREAM, IPPROTO_TCP) );
+    return areg::os::_os_create_socket();
 }
 
 AREG_API_IMPL uint32_t areg::max_send_size( SOCKETHANDLE hSocket ) noexcept
@@ -814,10 +829,9 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept(areg::SocketMultiplexer & multipl
         // New client connection pending.
         struct sockaddr_in acceptAddr;
         areg::mem_zero(&acceptAddr, sizeof(sockaddr_in));
-        socklen_t len = sizeof(sockaddr_in);
 
         DEBUG_LOG_DBG("... server waiting for new connection event ...");
-        SOCKETHANDLE result = ::accept(serverSocket, reinterpret_cast<sockaddr *>(&acceptAddr), &len);
+        SOCKETHANDLE result = areg::os::_os_accept_socket(serverSocket, acceptAddr);
         DEBUG_LOG_DBG("Server accepted new connection of client socket [ %u ]", static_cast<uint32_t>(result));
 
         if (result != areg::InvalidSocketHandle)
@@ -876,10 +890,9 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept(SOCKETHANDLE serverSocket, const 
             // New client connection pending.
             struct sockaddr_in acceptAddr;
             areg::mem_zero(&acceptAddr, sizeof(sockaddr_in));
-            socklen_t len = sizeof(sockaddr_in);
 
             DEBUG_LOG_DBG("... server waiting for new connection event ...");
-            result = ::accept(serverSocket, reinterpret_cast<sockaddr *>(&acceptAddr), &len);
+            result = areg::os::_os_accept_socket(serverSocket, acceptAddr);
             DEBUG_LOG_DBG("Server accepted new connection of client socket [ %u ]", static_cast<uint32_t>(result));
 
             if (result != areg::InvalidSocketHandle)

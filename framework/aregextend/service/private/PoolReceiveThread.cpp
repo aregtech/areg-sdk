@@ -52,6 +52,7 @@ PoolReceiveThread::PoolReceiveThread( areg::RemoteMessageHandler & remoteService
     , mReleased         ( )
     , mCachedPending    ( )
     , mParts            ( )
+    , mPaused           ( mMux )
 {
 }
 
@@ -111,6 +112,7 @@ void PoolReceiveThread::_receive_ready_socket( SOCKETHANDLE hSocket, areg::Messa
 
     if ( received < 0 )
     {
+        PausedSources::discard();
         DEBUG_LOG_WARN("Pool receive thread [ %s ]: receive failed on socket [ %u ], notifying connection_lost"
                         , name().as_string()
                         , static_cast<uint32_t>(hSocket));
@@ -118,10 +120,9 @@ void PoolReceiveThread::_receive_ready_socket( SOCKETHANDLE hSocket, areg::Messa
         mRemoteService.failed_receive_message(clientSocket);
         _drop_socket(hSocket);
     }
-    else if ( received == static_cast<int32_t>(areg::DEFAULT_DRAIN_LIMIT) )
+    else
     {
-        // The ceiling stopped the drain, so the cache may still hold messages.
-        _remember_cached_socket(hSocket);
+        _after_drain(hSocket, received == static_cast<int32_t>(areg::DEFAULT_DRAIN_LIMIT));
     }
 }
 
@@ -129,8 +130,41 @@ void PoolReceiveThread::_drop_socket( SOCKETHANDLE hSocket )
 {
     mMux.unregister_socket(hSocket);
     _forget_cached_socket(hSocket);
+    mPaused.drop(hSocket);
     areg::thread_rx_cache_release(hSocket);
     mParts.drop(hSocket);
+}
+
+void PoolReceiveThread::_after_drain( SOCKETHANDLE hSocket, bool ceilingHit )
+{
+    if ( is_receive_paused() )
+    {
+        if ( mPaused.pause(hSocket) )
+        {
+            mMux.unregister_socket(hSocket);
+            _forget_cached_socket(hSocket);
+            return;
+        }
+
+        // The drain stopped before the cache was empty.
+        ceilingHit = true;
+    }
+
+    if ( ceilingHit )
+    {
+        _remember_cached_socket(hSocket);
+    }
+}
+
+void PoolReceiveThread::_resume_paused( )
+{
+    mPaused.resume([this](SOCKETHANDLE hSocket)
+    {
+        if ( mConnection.client_by_handle(hSocket).is_valid() && mMux.register_socket(hSocket, true) )
+        {
+            _remember_cached_socket(hSocket);
+        }
+    });
 }
 
 void PoolReceiveThread::_remember_cached_socket( SOCKETHANDLE hSocket )
@@ -176,12 +210,13 @@ void PoolReceiveThread::_service_cached_socket( areg::MessageEnvelope & msgRecei
 
     if ( drained < 0 )
     {
+        PausedSources::discard();
         mRemoteService.failed_receive_message(clientSocket);
         _drop_socket(hSocket);
     }
-    else if ( drained == static_cast<int32_t>(MAX_DRAIN) )
+    else
     {
-        mCachedPending.push_back(hSocket);
+        _after_drain(hSocket, drained == static_cast<int32_t>(MAX_DRAIN));
     }
 }
 
@@ -193,6 +228,7 @@ bool PoolReceiveThread::run_dispatcher()
     areg::set_receive_mode(areg::ReceiveMode::MultiCache);
     mCachedPending.clear();
     mParts.clear();
+    mPaused.clear();
     ready_for_events(true);
 
     areg::MessageEnvelope msgReceived;
@@ -201,6 +237,11 @@ bool PoolReceiveThread::run_dispatcher()
     do
     {
         _process_pending_sockets();
+
+        if ( mPaused.has_released() )
+        {
+            _resume_paused();
+        }
 
         if ( mExternalEvents.has_pending() )
         {
@@ -248,6 +289,7 @@ bool PoolReceiveThread::run_dispatcher()
 
     } while ( !isExit );
 
+    mPaused.clear();
     ready_for_events(false);
     remove_all_events();
 

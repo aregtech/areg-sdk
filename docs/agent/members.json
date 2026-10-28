@@ -389,6 +389,8 @@
   "has_phase_bit",
   "has_position",
   "has_property",
+  "has_ready",
+  "has_ready_connection",
   "has_registered_component",
   "has_section",
   "has_value",

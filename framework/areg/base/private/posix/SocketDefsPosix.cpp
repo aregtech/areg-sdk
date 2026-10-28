@@ -145,6 +145,37 @@ void _os_configure_accepted_socket(SOCKETHANDLE hSocket) noexcept
 #endif  // defined(__APPLE__)
 }
 
+SOCKETHANDLE _os_create_socket() noexcept
+{
+#if defined(SOCK_CLOEXEC)
+    return static_cast<SOCKETHANDLE>(::socket(AF_INET, SOCK_STREAM | SOCK_CLOEXEC, IPPROTO_TCP));
+#else   // defined(SOCK_CLOEXEC)
+    const int fd{ ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP) };
+    if (fd != -1)
+    {
+        ::fcntl(fd, F_SETFD, FD_CLOEXEC);
+    }
+
+    return static_cast<SOCKETHANDLE>(fd);
+#endif  // defined(SOCK_CLOEXEC)
+}
+
+SOCKETHANDLE _os_accept_socket(SOCKETHANDLE serverSocket, struct sockaddr_in& acceptAddr) noexcept
+{
+    socklen_t len{ static_cast<socklen_t>(sizeof(sockaddr_in)) };
+#if defined(__linux__)
+    return static_cast<SOCKETHANDLE>(::accept4(static_cast<int>(serverSocket), reinterpret_cast<sockaddr *>(&acceptAddr), &len, SOCK_CLOEXEC));
+#else   // defined(__linux__)
+    const int fd{ ::accept(static_cast<int>(serverSocket), reinterpret_cast<sockaddr *>(&acceptAddr), &len) };
+    if (fd != -1)
+    {
+        ::fcntl(fd, F_SETFD, FD_CLOEXEC);
+    }
+
+    return static_cast<SOCKETHANDLE>(fd);
+#endif  // defined(__linux__)
+}
+
 void _os_release_socket()
 {
 }

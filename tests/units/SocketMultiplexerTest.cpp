@@ -326,4 +326,46 @@ TEST( SocketMultiplexerTest, cached_data_is_invisible_to_the_multiplexer )
     close_pair( pair );
 }
 
+/**
+ * \brief   A reset forgets every socket of the previous cycle. The socket is closed while a
+ *          duplicate keeps it open, as a child process does, and its number goes to a new socket.
+ **/
+TEST( SocketMultiplexerTest, reset_forgets_socket_held_open_elsewhere )
+{
+    SocketMultiplexer mux;
+    Pair stale;
+    ASSERT_TRUE( open_pair( stale ) );
+    const int number{ stale.sock };
+    const int held{ ::dup( stale.sock ) };
+    ASSERT_NE( held, -1 );
+    ASSERT_TRUE( mux.register_socket( static_cast<SOCKETHANDLE>(number), true ) );
+
+    mux.reset();
+    ::close( stale.sock );
+    stale.sock = -1;
+
+    Pair fresh;
+    ASSERT_TRUE( open_pair( fresh ) );
+    if ( fresh.sock != number )
+    {
+        ASSERT_EQ( ::dup2( fresh.sock, number ), number );
+        ::close( fresh.sock );
+        fresh.sock = number;
+    }
+    ASSERT_TRUE( mux.register_socket( static_cast<SOCKETHANDLE>(number), true ) );
+
+    // The peer of the old socket leaves; the new socket has nothing to read.
+    ::close( stale.peer );
+    stale.peer = -1;
+    const SOCKETHANDLE ready{ mux.wait( 100 ) };
+    EXPECT_FALSE( is_handle( ready ) ) << "an event of the closed socket was reported as socket " << ready;
+
+    ASSERT_TRUE( feed( fresh ) );
+    EXPECT_EQ( mux.wait( WAIT_MS ), static_cast<SOCKETHANDLE>(number) );
+
+    mux.reset();
+    ::close( held );
+    close_pair( fresh );
+}
+
 #endif  // defined(_POSIX)

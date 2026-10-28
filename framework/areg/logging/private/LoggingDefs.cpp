@@ -28,8 +28,6 @@
 
 #include <string.h>
 
-#if AREG_LOGGING
-
 namespace {
     //!< Builds the event header shared by every logging message.
     inline areg::EventHeader _make_log_header(uint32_t messageId) noexcept
@@ -68,8 +66,6 @@ namespace {
         }
     }
 } // namespace
-#endif // AREG_LOGGING
-
 
 areg::LogEntry::LogEntry(areg::LogMessageType msgType)
     : logTimestamp  { DateTime::INVALID_TIME }
@@ -339,6 +335,172 @@ AREG_API_IMPL void areg::finalize_log_message(areg::MessageEnvelope& msg, areg::
     }
 }
 
+AREG_API_IMPL void areg::log_message(const MessageEnvelope& message)
+{
+    return LogManager::log_message(message);
+}
+
+AREG_API_IMPL void areg::log_local(const areg::LogEntry& logMessage)
+{
+    LogManager::log_message(logMessage);
+}
+
+AREG_API_IMPL void areg::log_any_message(const areg::LogEntry& logMessage)
+{
+    LogManager::log_message(logMessage);
+}
+
+AREG_API_IMPL void areg::set_db_engine(LogDatabaseEngine * dbEngine)
+{
+    LogManager::set_db_engine(dbEngine);
+}
+
+AREG_API_IMPL bool areg::force_start_logging()
+{
+    LogManager::set_default_configuration(false);
+    LogManager::force_enable_logging();
+    return LogManager::force_activate_logging();
+}
+
+AREG_API_IMPL bool areg::init_logging(const char * fileConfig /*= nullptr */, bool force /*= false */)
+{
+    if (LogManager::read_log_config(fileConfig) && !force)
+    {
+        return LogManager::start_logging(nullptr);
+    }
+    else if (force)
+    {
+        return LogManager::force_activate_logging();
+    }
+
+    return false;
+}
+
+AREG_API_IMPL ITEM_ID areg::cookie() noexcept
+{
+    return LogManager::started_cookie();
+}
+
+//////////////////////////////////////////////////////////////////////////
+#else   // !AREG_LOGGING
+//////////////////////////////////////////////////////////////////////////
+
+AREG_API_IMPL bool areg::start_logging(const char * /*fileConfig*/ /*= nullptr */ )
+{
+    return true;
+}
+
+AREG_API_IMPL void areg::stop_logging(bool /*waitComplete*/)
+{
+}
+
+AREG_API_IMPL void areg::wait_logging_end()
+{
+}
+
+AREG_API_IMPL void areg::activate_scope(LogScope & /*logScope*/)
+{
+}
+
+AREG_API_IMPL bool areg::is_started()
+{
+    return true;
+}
+
+AREG_API_IMPL bool areg::is_configured()
+{
+    return true;
+}
+
+AREG_API_IMPL bool areg::initialize_logging(const char * /*fileConfig*/)
+{
+    return true;
+}
+
+AREG_API_IMPL bool areg::is_enabled()
+{
+    return true;
+}
+
+AREG_API_IMPL bool areg::save_logging( const char * /*configFile*/ )
+{
+    return true;
+}
+
+AREG_API_IMPL bool areg::restore_logging()
+{
+    return true;
+}
+
+AREG_API_IMPL areg::LogSourceState areg::set_source_state( areg::LogSourceState /*state*/ )
+{
+    return areg::LogSourceState::Undefined;
+}
+
+AREG_API_IMPL areg::LogSourceState areg::source_state()
+{
+    return areg::LogSourceState::Undefined;
+}
+
+AREG_API_IMPL uint32_t areg::set_scope_priority( const char * /*scopeName*/, uint32_t /*newPrio*/ )
+{
+    return true;
+}
+
+AREG_API_IMPL uint32_t areg::scope_priority( const char * /*scopeName*/ )
+{
+    return static_cast<uint32_t>(areg::LogPriority::PrioInvalid);
+}
+
+AREG_API_IMPL areg::MessageEnvelope areg::make_log_message(areg::LogMessageType, uint32_t, uint32_t, TIME64, areg::LogPriority, const char*, uint32_t)
+{
+    return areg::MessageEnvelope{};
+}
+
+AREG_API_IMPL void areg::finalize_log_message(areg::MessageEnvelope&, areg::LogDataType, const ITEM_ID&)
+{
+}
+
+AREG_API_IMPL void areg::log_message(const areg::MessageEnvelope& /*message*/)
+{
+}
+
+AREG_API_IMPL void areg::log_local(const areg::LogEntry & /*logMessage*/)
+{
+}
+
+AREG_API_IMPL void areg::log_any_message(const areg::LogEntry & /*logMessage*/)
+{
+}
+
+AREG_API_IMPL void areg::set_db_engine(areg::LogDatabaseEngine * /*dbEngine*/)
+{
+}
+
+AREG_API_IMPL bool areg::force_start_logging()
+{
+    return true;
+}
+
+AREG_API_IMPL bool areg::init_logging(const char * /*fileConfig = nullptr */, bool /*force = false */)
+{
+    return true;
+}
+
+AREG_API_IMPL ITEM_ID areg::cookie() noexcept
+{
+    return areg::COOKIE_UNKNOWN;
+}
+
+//////////////////////////////////////////////////////////////////////////
+#endif  // AREG_LOGGING
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// The log protocol, built in every configuration: the log collector and
+// the log observer exchange these messages whether this build logs or not.
+//////////////////////////////////////////////////////////////////////////
+
 AREG_API_IMPL areg::MessageEnvelope areg::create_log_message(const areg::LogEntry& logMessage, areg::LogDataType dataType, const ITEM_ID& srcCookie)
 {
     const uint32_t entrySize{ areg::log_entry_size(logMessage) };
@@ -379,11 +541,6 @@ AREG_API_IMPL areg::MessageEnvelope areg::create_log_message(const areg::LogEntr
     return msgLog;
 }
 
-AREG_API_IMPL void areg::log_message(const MessageEnvelope& message)
-{
-    return LogManager::log_message(message);
-}
-
 AREG_API_IMPL areg::MessageEnvelope areg::message_register_scopes(const ITEM_ID & source, const ITEM_ID & target, const areg::ScopeList & scopeList)
 {
     MessageEnvelope msgScope;
@@ -397,11 +554,6 @@ AREG_API_IMPL areg::MessageEnvelope areg::message_register_scopes(const ITEM_ID 
     }
 
     return msgScope;
-}
-
-AREG_API_IMPL void areg::log_local(const areg::LogEntry& logMessage)
-{
-    LogManager::log_message(logMessage);
 }
 
 AREG_API_IMPL areg::MessageEnvelope areg::message_update_scopes(const ITEM_ID& source, const ITEM_ID& target, const areg::ScopeNames& scopeNames)
@@ -423,11 +575,6 @@ AREG_API_IMPL areg::MessageEnvelope areg::message_update_scopes(const ITEM_ID& s
     }
 
     return msgScope;
-}
-
-AREG_API_IMPL void areg::log_any_message(const areg::LogEntry& logMessage)
-{
-    LogManager::log_message(logMessage);
 }
 
 AREG_API_IMPL areg::MessageEnvelope areg::message_update_scope(const ITEM_ID& source, const ITEM_ID& target, const String& scopeName, uint32_t scopeId, uint32_t scopePrio)
@@ -590,37 +737,6 @@ AREG_API_IMPL areg::MessageEnvelope areg::message_source_state_updated( const IT
     return msgScope;
 }
 
-AREG_API_IMPL void areg::set_db_engine(LogDatabaseEngine * dbEngine)
-{
-    LogManager::set_db_engine(dbEngine);
-}
-
-AREG_API_IMPL bool areg::force_start_logging()
-{
-    LogManager::set_default_configuration(false);
-    LogManager::force_enable_logging();
-    return LogManager::force_activate_logging();
-}
-
-AREG_API_IMPL bool areg::init_logging(const char * fileConfig /*= nullptr */, bool force /*= false */)
-{
-    if (LogManager::read_log_config(fileConfig) && !force)
-    {
-        return LogManager::start_logging(nullptr);
-    }
-    else if (force)
-    {
-        return LogManager::force_activate_logging();
-    }
-
-    return false;
-}
-
-AREG_API_IMPL ITEM_ID areg::cookie() noexcept
-{
-    return LogManager::connection_cookie();
-}
-
 AREG_API_IMPL areg::String areg::make_prio_string(uint32_t priorities)
 {
     return Identifier::to_string(priorities, areg::LogScopePriorityIndentifiers, static_cast<uint32_t>(areg::LogPriority::PrioNotset));
@@ -632,195 +748,3 @@ AREG_API_IMPL uint32_t areg::make_priorities(const String& prioString)
     return static_cast<uint32_t>(static_cast<areg::LogPriority>(id));
 }
 
-//////////////////////////////////////////////////////////////////////////
-#else   // !AREG_LOGGING
-//////////////////////////////////////////////////////////////////////////
-
-AREG_API_IMPL bool areg::start_logging(const char * /*fileConfig*/ /*= nullptr */ )
-{
-    return true;
-}
-
-AREG_API_IMPL void areg::stop_logging(bool /*waitComplete*/)
-{
-}
-
-AREG_API_IMPL void areg::wait_logging_end()
-{
-}
-
-AREG_API_IMPL void areg::activate_scope(LogScope & /*logScope*/)
-{
-}
-
-AREG_API_IMPL bool areg::is_started()
-{
-    return true;
-}
-
-AREG_API_IMPL bool areg::is_configured()
-{
-    return true;
-}
-
-AREG_API_IMPL bool areg::initialize_logging(const char * /*fileConfig*/)
-{
-    return true;
-}
-
-AREG_API_IMPL bool areg::is_enabled()
-{
-    return true;
-}
-
-AREG_API_IMPL bool areg::save_logging( const char * /*configFile*/ )
-{
-    return true;
-}
-
-AREG_API_IMPL bool areg::restore_logging()
-{
-    return true;
-}
-
-AREG_API_IMPL areg::LogSourceState areg::set_source_state( areg::LogSourceState /*state*/ )
-{
-    return areg::LogSourceState::Undefined;
-}
-
-AREG_API_IMPL areg::LogSourceState areg::source_state()
-{
-    return areg::LogSourceState::Undefined;
-}
-
-AREG_API_IMPL uint32_t areg::set_scope_priority( const char * /*scopeName*/, uint32_t /*newPrio*/ )
-{
-    return true;
-}
-
-AREG_API_IMPL uint32_t areg::scope_priority( const char * /*scopeName*/ )
-{
-    return static_cast<uint32_t>(areg::LogPriority::PrioInvalid);
-}
-
-AREG_API_IMPL areg::MessageEnvelope areg::make_log_message(areg::LogMessageType, uint32_t, uint32_t, TIME64, areg::LogPriority, const char*, uint32_t)
-{
-    return areg::MessageEnvelope{};
-}
-
-AREG_API_IMPL void areg::finalize_log_message(areg::MessageEnvelope&, areg::LogDataType, const ITEM_ID&)
-{
-}
-
-AREG_API_IMPL areg::MessageEnvelope areg::create_log_message(const areg::LogEntry & /*logMessage*/, areg::LogDataType /*dataType*/, const ITEM_ID & /*srcCookie*/)
-{
-    return areg::MessageEnvelope{};
-}
-
-AREG_API_IMPL void areg::log_message(const areg::MessageEnvelope& /*message*/)
-{
-}
-
-AREG_API_IMPL areg::MessageEnvelope areg::message_register_scopes(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/, const areg::ScopeList & /*scopeList*/)
-{
-    return areg::MessageEnvelope{};
-}
-
-AREG_API_IMPL void areg::log_local(const areg::LogEntry & /*logMessage*/)
-{
-}
-
-AREG_API_IMPL areg::MessageEnvelope areg::message_update_scopes(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/, const areg::ScopeNames & /*scopeNames*/)
-{
-    return areg::MessageEnvelope{};
-}
-
-AREG_API_IMPL void areg::log_any_message(const areg::LogEntry & /*logMessage*/)
-{
-}
-
-AREG_API_IMPL areg::MessageEnvelope areg::message_update_scope(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/, const String & /*scopeName*/, uint32_t /*scopeId*/, uint32_t /*scopePrio*/)
-{
-    return areg::MessageEnvelope{};
-}
-
-AREG_API_IMPL areg::MessageEnvelope areg::message_query_instances(const ITEM_ID& /*source*/, const ITEM_ID & /*target*/)
-{
-    return areg::MessageEnvelope{};
-}
-
-AREG_API_IMPL areg::MessageEnvelope areg::message_query_scopes(const ITEM_ID& /*source*/, const ITEM_ID & /*target*/)
-{
-    return areg::MessageEnvelope{};
-}
-
-AREG_API_IMPL areg::MessageEnvelope areg::message_scopes_updated(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/, const areg::ScopeList & /*scopeList*/)
-{
-    return areg::MessageEnvelope{};
-}
-
-AREG_API_IMPL areg::MessageEnvelope areg::message_save_configuration(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/)
-{
-    return areg::MessageEnvelope{};
-}
-
-AREG_API_IMPL areg::MessageEnvelope areg::message_configuration_saved()
-{
-    return areg::MessageEnvelope{};
-}
-
-AREG_API_IMPL areg::MessageEnvelope areg::message_restore_configuration(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/)
-{
-    return areg::MessageEnvelope{};
-}
-
-AREG_API_IMPL areg::MessageEnvelope areg::message_configuration_restored()
-{
-    return areg::MessageEnvelope{};
-}
-
-AREG_API_IMPL areg::MessageEnvelope areg::message_update_source_state(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/, areg::LogSourceState /*state*/)
-{
-    return areg::MessageEnvelope{};
-}
-
-AREG_API_IMPL areg::MessageEnvelope areg::message_source_state_updated( const ITEM_ID & /*source*/
-                                                                      , const ITEM_ID & /*target*/
-                                                                      , areg::LogSourceState /*state*/
-                                                                      , const ITEM_ID & /*byObserver*/)
-{
-    return areg::MessageEnvelope{};
-}
-
-AREG_API_IMPL void areg::set_db_engine(areg::LogDatabaseEngine * /*dbEngine*/)
-{
-}
-
-AREG_API_IMPL bool areg::force_start_logging()
-{
-    return true;
-}
-
-AREG_API_IMPL bool areg::init_logging(const char * /*fileConfig = nullptr */, bool /*force = false */)
-{
-    return true;
-}
-
-AREG_API_IMPL ITEM_ID areg::cookie() noexcept
-{
-    return areg::COOKIE_UNKNOWN;
-}
-
-AREG_API_IMPL areg::String areg::make_prio_string(uint32_t /*priorities*/)
-{
-    return areg::PRIO_NOTSET_STR;
-}
-
-AREG_API_IMPL uint32_t areg::make_priorities(const areg::String& /*prioString*/)
-{
-    return static_cast<uint32_t>(areg::LogPriority::PrioNotset);
-}
-
-//////////////////////////////////////////////////////////////////////////
-#endif  // AREG_LOGGING
-//////////////////////////////////////////////////////////////////////////

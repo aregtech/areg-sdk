@@ -111,6 +111,8 @@ ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
     , mSendCapBytes     ( areg::SOCKET_SEND_BUFFER_SIZE )
     , mSendRefusalMs    ( areg::send_refusal_ms(0u, areg::SOCKET_KEEPALIVE_SEC) )
     , mKeepaliveMs      ( areg::SOCKET_KEEPALIVE_SEC * 1'000u )
+    , mHeldTargets      ( 0u )
+    , mCloseStalled     ( true )
     , mShuttingDown     ( false )
     , mDataRateHelper   ( self() , areg::ext::DEFAULT_VERBOSE)
     , mWhiteList        ( )
@@ -125,6 +127,7 @@ ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
     , mSendMoveFn       ( )
     , mAcceptFn         ( )
 {
+    mThreadSend.backlog().set_hold_counter(&mHeldTargets);
     update_dispatch_mode();
 }
 
@@ -189,7 +192,7 @@ bool ServiceCommunicationBase::setup_connection_data(areg::RemoteServiceKind ser
     mSendCapBytes  = config.socket_send_buffer() != 0u ? config.socket_send_buffer() : areg::SOCKET_SEND_BUFFER_SIZE;
     mSendRefusalMs = config.socket_refusal_timeout();
     mKeepaliveMs   = keepaliveSec * 1'000u;
-    mThreadSend.backlog().set_limits(mSendCapBytes, mSendRefusalMs, mKeepaliveMs);
+    mThreadSend.backlog().set_limits(mSendCapBytes, mSendRefusalMs, mKeepaliveMs, mCloseStalled);
 
     const uint32_t configPairs{ config.pool_pairs() };
     if (configPairs != mNumPairs)
@@ -431,7 +434,8 @@ bool ServiceCommunicationBase::start_connection()
                                 , sendName.as_string()
                                 , recvName.as_string() );
 
-                pair->send_thread().backlog().set_limits(mSendCapBytes, mSendRefusalMs, mKeepaliveMs);
+                pair->send_thread().backlog().set_hold_counter(&mHeldTargets);
+                pair->send_thread().backlog().set_limits(mSendCapBytes, mSendRefusalMs, mKeepaliveMs, mCloseStalled);
                 if ( !pair->start() )
                 {
                     LOG_ERR("Failed to start pool pair [ %u ], aborting pool creation", i);
@@ -516,13 +520,7 @@ void ServiceCommunicationBase::stop_connection()
 
     mShuttingDown.store(true, std::memory_order_release);
     mThreadReceive.trigger_exit();
-    ClientPairList pairsToStop;
-    {
-        Lock lock(mLock);
-        pairsToStop = std::move(mClientPairs);
-    }
-
-    for ( auto & pair : pairsToStop )
+    for ( auto & pair : mClientPairs )
     {
         if ( pair )
         {
@@ -532,8 +530,21 @@ void ServiceCommunicationBase::stop_connection()
 
     mServerConnection.interrupt_connections();
 
-    // The receive thread reads the listening socket: it stops before the socket is closed.
+    // The receive threads read the pair list and the listening socket: they stop before either changes.
     mThreadReceive.shutdown( areg::WAIT_INFINITE );
+    for ( auto & pair : mClientPairs )
+    {
+        if ( pair )
+        {
+            pair->shutdown_receive( areg::WAIT_INFINITE );
+        }
+    }
+
+    ClientPairList pairsToStop;
+    {
+        Lock lock(mLock);
+        pairsToStop = std::move(mClientPairs);
+    }
 
     // Queue graceful disconnect notifications while sockets are still alive.
     disconnect_services();
@@ -712,6 +723,20 @@ bool ServiceCommunicationBase::try_forward_inline( areg::MessageEnvelope & data 
     return result;
 }
 
+SendBacklog & ServiceCommunicationBase::backlog_of(ITEM_ID target) noexcept
+{
+    return (mClientPairs.empty() ? mThreadSend.backlog() : mClientPairs[static_cast<uint32_t>(target) % mNumPairs]->send_thread().backlog());
+}
+
+void ServiceCommunicationBase::pause_if_held(ITEM_ID target) noexcept
+{
+    SendBacklog & backlog{ backlog_of(target) };
+    if ( backlog.is_held(target) )
+    {
+        receive_pause() = ReceivePause{ &backlog, target };
+    }
+}
+
 bool ServiceCommunicationBase::do_send_shared( areg::MessageEnvelope && data, areg::EventPriority prio )
 {
     mThreadSend.send_gate().enter();
@@ -869,6 +894,11 @@ void ServiceCommunicationBase::process_received_message(areg::MessageEnvelope & 
             if ( burstPending || (try_forward_inline(msgReceived) == false) )
             {
                 send_message(std::move(msgReceived));
+            }
+
+            if ( mHeldTargets.load(std::memory_order_relaxed) != 0u )
+            {
+                pause_if_held(static_cast<ITEM_ID>(target));
             }
         }
 
