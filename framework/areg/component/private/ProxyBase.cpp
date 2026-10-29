@@ -32,6 +32,12 @@
 #include "areg/component/private/ServiceManager.hpp"
 
 #include "areg/logging/areg_log.h"
+
+#include <cstring>
+#include <functional>
+#include <memory>
+#include <unordered_map>
+
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -59,6 +65,258 @@ namespace
         }
 
         return false;
+    }
+
+    //!< The message ID of the service connection listeners.
+    constexpr uint32_t  CONNECTION_MSG_ID   { static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection) };
+    //!< The payload of a queued client notification: the event data, then the client.
+    constexpr uint32_t  NOTIFY_CLIENT_OFFSET{ static_cast<uint32_t>(sizeof(NotificationEventData)) };
+    constexpr uint32_t  NOTIFY_PAYLOAD_SIZE { NOTIFY_CLIENT_OFFSET + static_cast<uint32_t>(sizeof(NotificationConsumer *)) };
+    //!< The number of listeners a snapshot holds without a heap allocation.
+    constexpr uint32_t  SNAPSHOT_INLINE     { 8u };
+
+    //!< A listener copied out of the listener map; nullptr once its client is removed.
+    struct SnapshotEntry
+    {
+        SequenceNumber          seqNr;      //!< The sequence number of the listener.
+        NotificationConsumer *  client;     //!< The client to call, or nullptr.
+    };
+
+    //!< The listeners a notification loop calls, visible to the thread that runs the loop.
+    struct Snapshot
+    {
+        const ProxyBase *   proxy   { nullptr };    //!< The proxy that notifies.
+        uint32_t            msgId   { 0u };         //!< The message ID of the notification.
+        SnapshotEntry *     entries { nullptr };    //!< The copied listeners.
+        uint32_t            count   { 0u };         //!< The number of copied listeners.
+        Snapshot *          previous{ nullptr };    //!< The snapshot of an enclosing loop.
+    };
+
+    //!< The innermost notification loop of this thread.
+    thread_local Snapshot * _snapshots{ nullptr };
+
+    //!< The storage of a snapshot: inline up to SNAPSHOT_INLINE listeners, on the heap above.
+    class SnapshotBuffer
+    {
+    public:
+        SnapshotBuffer() = default;
+
+        //!< Returns storage for 'count' listeners.
+        SnapshotEntry * reserve(uint32_t count)
+        {
+            if (count <= SNAPSHOT_INLINE)
+                return mInline;
+
+            mHeap.reset(new SnapshotEntry[count]);
+            return mHeap.get();
+        }
+
+    private:
+        SnapshotEntry                       mInline[SNAPSHOT_INLINE];   //!< The inline storage.
+        std::unique_ptr<SnapshotEntry[]>    mHeap;                      //!< The heap storage, if used.
+
+        SnapshotBuffer(const SnapshotBuffer &) = delete;
+        SnapshotBuffer & operator = (const SnapshotBuffer &) = delete;
+    };
+
+    //!< Publishes a snapshot to its thread while the loop that calls its listeners runs.
+    class SnapshotScope
+    {
+    public:
+        explicit SnapshotScope(Snapshot & snapshot) noexcept
+            : mHead     (_snapshots)
+            , mSnapshot (snapshot)
+        {
+            mSnapshot.previous = mHead;
+            mHead = &mSnapshot;
+        }
+
+        ~SnapshotScope()
+        {
+            mHead = mSnapshot.previous;
+        }
+
+    private:
+        Snapshot * &    mHead;      //!< The innermost snapshot of this thread.
+        Snapshot &      mSnapshot;  //!< The published snapshot.
+
+        SnapshotScope(const SnapshotScope &) = delete;
+        SnapshotScope & operator = (const SnapshotScope &) = delete;
+    };
+
+    //!< Which snapshots of a proxy a removed client is cleared from.
+    enum class RetractScope
+    {
+          Message           //!< the snapshots of one message ID, entries of one sequence number
+        , Notifications     //!< every snapshot except the service connection one
+        , All               //!< every snapshot
+    };
+
+    //!< Clears the client in the snapshots of the proxy that this thread is running.
+    void _retract(const ProxyBase & proxy, const NotificationConsumer * client, RetractScope scope, uint32_t msgId = 0u, const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_ANY) noexcept
+    {
+        for (Snapshot * snapshot{ _snapshots }; snapshot != nullptr; snapshot = snapshot->previous)
+        {
+            if ((snapshot->proxy != &proxy)
+                || ((scope == RetractScope::Message) && (snapshot->msgId != msgId))
+                || ((scope == RetractScope::Notifications) && (snapshot->msgId == CONNECTION_MSG_ID)))
+            {
+                continue;
+            }
+
+            for (uint32_t i = 0u; i < snapshot->count; ++i)
+            {
+                SnapshotEntry & entry{ snapshot->entries[i] };
+                if ((entry.client == client) && ((scope != RetractScope::Message) || (entry.seqNr == seqNr)))
+                {
+                    entry.client = nullptr;
+                }
+            }
+        }
+    }
+
+    //!< The queued client notifications not delivered yet, counted per proxy, client and message ID.
+    class PendingNotifications
+    {
+    public:
+        PendingNotifications() = default;
+
+        //!< Counts one more queued notification.
+        void raise(const ProxyBase * proxy, const NotificationConsumer * client, uint32_t msgId)
+        {
+            Lock lock(mLock);
+            ++ mCounts[Key{ proxy, client, msgId }];
+        }
+
+        //!< Takes one queued notification. Returns false if none is pending.
+        bool consume(const ProxyBase * proxy, const NotificationConsumer * client, uint32_t msgId)
+        {
+            Lock lock(mLock);
+            auto pos{ mCounts.find(Key{ proxy, client, msgId }) };
+            if (pos == mCounts.end())
+                return false;
+
+            if (-- pos->second == 0u)
+            {
+                mCounts.erase(pos);
+            }
+
+            return true;
+        }
+
+        //!< Drops the queued notifications of the client and message ID.
+        void remove(const ProxyBase * proxy, const NotificationConsumer * client, uint32_t msgId)
+        {
+            Lock lock(mLock);
+            if (mCounts.empty() == false)
+            {
+                mCounts.erase(Key{ proxy, client, msgId });
+            }
+        }
+
+        //!< Drops the queued notifications of every client of the proxy.
+        void remove_proxy(const ProxyBase * proxy)
+        {
+            Lock lock(mLock);
+            for (auto pos{ mCounts.begin() }; pos != mCounts.end(); )
+            {
+                pos = (pos->first.proxy == proxy) ? mCounts.erase(pos) : std::next(pos);
+            }
+        }
+
+    private:
+        struct Key
+        {
+            const ProxyBase *               proxy;  //!< The proxy that queued the notification.
+            const NotificationConsumer *    client; //!< The client to notify.
+            uint32_t                        msgId;  //!< The message ID of the notification.
+
+            bool operator == (const Key & other) const noexcept
+            {
+                return (proxy == other.proxy) && (client == other.client) && (msgId == other.msgId);
+            }
+        };
+
+        struct KeyHash
+        {
+            std::size_t operator () (const Key & key) const noexcept
+            {
+                return std::hash<const void *>{}(key.proxy) ^ (std::hash<const void *>{}(key.client) << 1) ^ (std::hash<uint32_t>{}(key.msgId) << 2);
+            }
+        };
+
+        SpinLock                                    mLock;      //!< Guards the counts.
+        std::unordered_map<Key, uint32_t, KeyHash>  mCounts;    //!< The number of queued notifications per key.
+    };
+
+    //!< Returns the queued client notifications of the process. Never destroyed.
+    PendingNotifications & _pending_notifications()
+    {
+        static PendingNotifications * _pending{ new PendingNotifications() };
+        return *_pending;
+    }
+
+    //!< Delivers a queued client notification to its client only while the notification is pending.
+    class NotificationRelay final : public EventConsumer
+    {
+    public:
+        NotificationRelay() = default;
+
+        void start_event_processing(Event & eventElem) override
+        {
+            const MessageEnvelope & envelope{ eventElem.envelope() };
+            if (envelope.size_used() != NOTIFY_PAYLOAD_SIZE)
+                return;
+
+            const uint8_t * payload{ envelope.payload_ptr() };
+            const NotificationEventData & data{ *reinterpret_cast<const NotificationEventData *>(payload) };
+            NotificationConsumer * client{ nullptr };
+            std::memcpy(&client, payload + NOTIFY_CLIENT_OFFSET, sizeof(client));
+            if ((client != nullptr) && _pending_notifications().consume(data.service_proxy(), client, data.notify_id()))
+            {
+                eventElem.dispatch_self(static_cast<EventConsumer *>(client));
+            }
+        }
+    };
+
+    //!< Returns the consumer of every queued client notification. Never destroyed.
+    EventConsumer & _notification_relay()
+    {
+        static NotificationRelay * _relay{ new NotificationRelay() };
+        return *_relay;
+    }
+
+    //!< The payload of a queued service available event: the client, then the proxy ID.
+    constexpr uint32_t  SERVICE_PROXY_OFFSET{ static_cast<uint32_t>(sizeof(NotificationConsumer *)) };
+    constexpr uint32_t  SERVICE_PAYLOAD_SIZE{ SERVICE_PROXY_OFFSET + static_cast<uint32_t>(sizeof(uint32_t)) };
+
+    //!< Delivers a queued service available event to its proxy only while the proxy is registered.
+    class ServiceRelay final : public EventConsumer
+    {
+    public:
+        ServiceRelay() = default;
+
+        void start_event_processing(Event & eventElem) override
+        {
+            const MessageEnvelope & envelope{ eventElem.envelope() };
+            if (envelope.size_used() != SERVICE_PAYLOAD_SIZE)
+                return;
+
+            uint32_t proxyId{ 0u };
+            std::memcpy(&proxyId, envelope.payload_ptr() + SERVICE_PROXY_OFFSET, sizeof(proxyId));
+            const std::shared_ptr<ProxyBase> proxy{ ProxyBase::find_proxy(proxyId) };
+            if (proxy.get() != nullptr)
+            {
+                eventElem.dispatch_self(static_cast<EventConsumer *>(proxy.get()));
+            }
+        }
+    };
+
+    //!< Returns the consumer of every queued service available event. Never destroyed.
+    EventConsumer & _service_relay()
+    {
+        static ServiceRelay * _relay{ new ServiceRelay() };
+        return *_relay;
     }
 }
 
@@ -289,6 +547,12 @@ void ProxyBase::remove_listener( uint32_t msgId, const SequenceNumber & seqNr, N
     ProxyListenerMap::MAPPOS pos = mListenerMap.find(msgId);
     if (mListenerMap.is_valid_position(pos))
         static_cast<void>(pos->second.remove_elem(ProxyBase::Listener{ seqNr, caller }));
+
+    if (caller != nullptr)
+    {
+        _pending_notifications().remove(this, caller, msgId);
+        _retract(self(), caller, RetractScope::Message, msgId, seqNr);
+    }
 }
 
 void ProxyBase::register_service_listeners()
@@ -305,6 +569,7 @@ void ProxyBase::free_proxy( ProxyListener & connect )
 {
     // A client and its proxy are deleted in the thread that created them.
     ASSERT(mDispatcherThread.id() == Thread::current_thread_id());
+    _retract(self(), static_cast<NotificationConsumer *>(&connect), RetractScope::All);
     int32_t exists = mListConnect.find(&connect, 0);
     if ( exists >= 0 )
     {
@@ -333,6 +598,7 @@ void ProxyBase::free_proxy( ProxyListener & connect )
             {
                 Lock lock(mListenerLock);
                 mListenerMap.clear();
+                _pending_notifications().remove_proxy(this);
             }
 
             ServiceManager::request_unregister_consumer( proxy_address( ), areg::DisconnectReason::ConsumerDisconnected );
@@ -420,7 +686,8 @@ void ProxyBase::service_connection_updated( const StubAddress & server, const Ch
         mProxyData.reset();
     }
 
-    ProxyListenerList connectListeners;
+    SnapshotBuffer connectBuffer;
+    Snapshot connectListeners{ this, CONNECTION_ID };
     ArrayList<uint32_t> notifyIds;
     ArrayList<uint32_t> pendingIds;
     ProxyListenerList pendingRequests;
@@ -428,7 +695,16 @@ void ProxyBase::service_connection_updated( const StubAddress & server, const Ch
         Lock lock(mListenerLock);
         ProxyListenerMap::MAPPOS mapPos = mListenerMap.find(CONNECTION_ID);
         if (mListenerMap.is_valid_position(mapPos))
-            connectListeners = mapPos->second;
+        {
+            const ProxyListenerList & subVec = mapPos->second;
+            connectListeners.entries = connectBuffer.reserve(subVec.size());
+            for (uint32_t i = 0u; i < subVec.size(); ++i)
+            {
+                connectListeners.entries[i] = SnapshotEntry{ subVec.value_at(i).mSequenceNr, subVec.value_at(i).mListener };
+            }
+
+            connectListeners.count = subVec.size();
+        }
 
         if (nowConnected && (wasConnected == false))
         {
@@ -471,9 +747,14 @@ void ProxyBase::service_connection_updated( const StubAddress & server, const Ch
         start_notification(notifyIds[i]);
     }
 
-    for (uint32_t i = 0u; i < connectListeners.size(); ++i)
+    // A client removed by an earlier callback is cleared in the snapshot and skipped.
+    SnapshotScope scope(connectListeners);
+    for (uint32_t i = 0u; i < connectListeners.count; ++i)
     {
-        ProxyListener* connect = static_cast<ProxyListener*>(connectListeners[i].mListener);
+        ProxyListener* connect = static_cast<ProxyListener*>(connectListeners.entries[i].client);
+        if (connect == nullptr)
+            continue;
+
         if (nowConnected)
         {
             mListConnect.add_if_unique(connect);
@@ -585,13 +866,18 @@ void ProxyBase::unregister_listener( NotificationConsumer *consumer )
                 subVec.remove_at(last);
             }
 
-            if (removed && !has_notification_listener(msgId))  // recursive lock: safe
-                stopIds.add(msgId);
+            if (removed)
+            {
+                _pending_notifications().remove(this, consumer, msgId);
+                if (!has_notification_listener(msgId))  // recursive lock: safe
+                    stopIds.add(msgId);
+            }
 
             mapPos = subVec.is_empty() ? mListenerMap.remove_at(mapPos) : mListenerMap.next_position(mapPos);
         }
     }
 
+    _retract(self(), consumer, RetractScope::Notifications);
     for (uint32_t i = 0; i < stopIds.size(); ++i)
     {
         stop_notification(stopIds.value_at(i));
@@ -639,24 +925,86 @@ uint32_t ProxyBase::prepare_listeners( ProxyBase::ProxyListenerList& out_listene
 
 void ProxyBase::notify_listeners( uint32_t respId, areg::ResultType result, const SequenceNumber & seqNrToSearch )
 {
-    ProxyBase::ProxyListenerList listenerList;
-    prepare_listeners(listenerList, respId, seqNrToSearch);
-    for (uint32_t i = 0; i < listenerList.size(); ++ i)
+    SnapshotBuffer buffer;
+    Snapshot listeners{ this, respId };
     {
-        const ProxyBase::Listener & elem = listenerList.value_at(i);
-        if (elem.mListener != nullptr)
+        Lock lock(mListenerLock);
+        ProxyListenerMap::MAPPOS pos = mListenerMap.find(respId);
+        if (!mListenerMap.is_valid_position(pos))
+            return;
+
+        ProxyListenerList & subVec = pos->second;
+        listeners.entries = buffer.reserve(subVec.size());
+        for (uint32_t i = 0; i < subVec.size(); )
         {
-            elem.mListener->process_notification(respId, result, seqNrToSearch);
+            const ProxyBase::Listener & elem = subVec.value_at(i);
+            if (elem.mSequenceNr == areg::SEQUENCE_NUMBER_NOTIFY)
+            {
+                listeners.entries[listeners.count ++] = SnapshotEntry{ elem.mSequenceNr, elem.mListener };
+                ++i;
+            }
+            else if (elem.mSequenceNr == seqNrToSearch)
+            {
+                listeners.entries[listeners.count ++] = SnapshotEntry{ elem.mSequenceNr, elem.mListener };
+                subVec.remove_at(i);
+            }
+            else
+            {
+                ++i;
+            }
+        }
+    }
+
+    // A client removed by an earlier callback is cleared in the snapshot and skipped.
+    SnapshotScope scope(listeners);
+    for (uint32_t i = 0; i < listeners.count; ++ i)
+    {
+        NotificationConsumer * client{ listeners.entries[i].client };
+        if (client != nullptr)
+        {
+            client->process_notification(respId, result, seqNrToSearch);
         }
     }
 }
 
 void ProxyBase::send_notification_event( uint32_t msgId, areg::ResultType resType, const SequenceNumber & seqNr, NotificationConsumer* caller )
 {
+    if (caller == nullptr)
+        return;
+
+    // The relay delivers the event to the client named in the payload.
     NotificationEventData data(self(), resType, msgId, seqNr);
     NotificationEvent eventElem{ create_client_notification(data) };
-    eventElem.set_event_consumer(static_cast<EventConsumer*>(caller));
-    mDispatcherThread.event_dispatcher().post_event(eventElem);
+    areg::EventHeader * header{ eventElem.header() };
+    if ((header == nullptr) || (header->bufHeader.biLength < NOTIFY_PAYLOAD_SIZE))
+        return;
+
+    std::memcpy(reinterpret_cast<uint8_t *>(header) + header->bufHeader.biOffset + NOTIFY_CLIENT_OFFSET, &caller, sizeof(caller));
+    header->bufHeader.biUsed = NOTIFY_PAYLOAD_SIZE;
+    eventElem.set_event_consumer(&_notification_relay());
+    {
+        Lock lock(mListenerLock);
+        bool listening{ false };
+        ProxyListenerMap::MAPPOS pos = mListenerMap.find(msgId);
+        if (mListenerMap.is_valid_position(pos))
+        {
+            const ProxyListenerList & subVec = pos->second;
+            for (uint32_t i = 0u; (i < subVec.size()) && (listening == false); ++i)
+            {
+                listening = (subVec.value_at(i).mListener == caller);
+            }
+        }
+
+        if (listening == false)
+            return;
+
+        _pending_notifications().raise(this, caller, msgId);
+    }
+
+    if (mDispatcherThread.event_dispatcher().post_event(eventElem) == false)
+    {
+        static_cast<void>(_pending_notifications().consume(this, caller, msgId));
+    }
 }
 
 void ProxyBase::process_proxy_event( [[maybe_unused]] ProxyEvent& eventElem )
@@ -667,7 +1015,7 @@ void ProxyBase::process_proxy_event( [[maybe_unused]] ProxyEvent& eventElem )
 void ProxyBase::process_generic_event( Event& eventElem )
 {
     const MessageEnvelope& envelope{ eventElem.envelope() };
-    if (envelope.size_used() == static_cast<uint32_t>(sizeof(NotificationConsumer *)))
+    if ((envelope.size_used() == SERVICE_PAYLOAD_SIZE) || (envelope.size_used() == SERVICE_PROXY_OFFSET))
     {
         NotificationConsumer* consumer{ *reinterpret_cast<NotificationConsumer * const *>(envelope.payload_ptr()) };
         if (consumer != nullptr)
@@ -741,7 +1089,20 @@ void ProxyBase::send_service_event( ProxyBase::ServiceAvailableEvent& eventInsta
             eventInstance.add_listener(eventInstance.event_id(), self(), mDispatcherThread);
         }
 
-        eventInstance.set_event_consumer(this);
+        // The relay delivers the event to the proxy whose ID is in the payload.
+        areg::EventHeader * header{ eventInstance.header() };
+        if ((header != nullptr) && (header->bufHeader.biUsed == SERVICE_PROXY_OFFSET) && (header->bufHeader.biLength >= SERVICE_PAYLOAD_SIZE))
+        {
+            const uint32_t proxyId{ static_cast<uint32_t>(mProxyAddress) };
+            std::memcpy(reinterpret_cast<uint8_t *>(header) + header->bufHeader.biOffset + SERVICE_PROXY_OFFSET, &proxyId, sizeof(proxyId));
+            header->bufHeader.biUsed = SERVICE_PAYLOAD_SIZE;
+            eventInstance.set_event_consumer(&_service_relay());
+        }
+        else
+        {
+            eventInstance.set_event_consumer(this);
+        }
+
         // Drop-on-failure is handled by the caller-owned eventInstance destructor.
         if (eventInstance.register_for_thread(&mDispatcherThread))
             mDispatcherThread.event_dispatcher().post_event(eventInstance);
@@ -787,17 +1148,33 @@ void ProxyBase::stop_proxy()
         return;
     
     LOG_WARN("Going to stop proxy [ %s ]", ProxyAddress::to_path(mProxyAddress).as_string());
+    SnapshotBuffer buffer;
+    Snapshot connected{ this, CONNECTION_ID };
     if ( mIsConnected )
     {
+        connected.entries = buffer.reserve(mListConnect.size());
         for (uint32_t i = 0 ; i < mListConnect.size(); ++ i)
         {
-            ProxyListener * listener = mListConnect.value_at(i);
-            ASSERT(listener != nullptr);
-            listener->service_connected( areg::ServiceConnectionState::Disconnected, *this);
+            ASSERT(mListConnect.value_at(i) != nullptr);
+            connected.entries[i] = SnapshotEntry{ areg::SEQUENCE_NUMBER_NOTIFY, static_cast<NotificationConsumer *>(mListConnect.value_at(i)) };
         }
+
+        connected.count = mListConnect.size();
     }
 
     mListConnect.clear();
+    {
+        // A client removed by an earlier callback is cleared in the snapshot and skipped.
+        SnapshotScope scope(connected);
+        for (uint32_t i = 0 ; i < connected.count; ++ i)
+        {
+            ProxyListener * listener = static_cast<ProxyListener *>(connected.entries[i].client);
+            if (listener != nullptr)
+            {
+                listener->service_connected( areg::ServiceConnectionState::Disconnected, *this);
+            }
+        }
+    }
 
     set_connection_status( areg::ServiceConnectionState::Disconnected );
     mIsStopped = true;
@@ -807,6 +1184,7 @@ void ProxyBase::stop_proxy()
     {
         Lock lock(mListenerLock);
         mListenerMap.clear();
+        _pending_notifications().remove_proxy(this);
     }
 
     ServiceManager::request_unregister_consumer( proxy_address( ), areg::DisconnectReason::ConsumerDisconnected );

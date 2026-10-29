@@ -100,8 +100,8 @@ DEFECTS = [
                      'dispatched inline, or a handler that triggers teardown '
                      'runs inside the dispatcher loop',
         'file': 'framework/areg/component/private/ProxyBase.cpp',
-        'find': '    mDispatcherThread.event_dispatcher().post_event(eventElem);',
-        'replace': '    static_cast<void>(eventElem);',
+        'find': '    if (mDispatcherThread.event_dispatcher().post_event(eventElem) == false)',
+        'replace': '    if (false)',
         'detector': 'ctest',
     },
     {
