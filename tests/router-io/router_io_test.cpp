@@ -160,17 +160,7 @@ namespace
     //!< Writes all bytes. Returns false on error.
     bool write_all(SOCKETHANDLE hSocket, const uint8_t * buffer, uint32_t length)
     {
-        uint32_t done{ 0u };
-        while (done < length)
-        {
-            const int sent{ static_cast<int>(::send(hSocket, reinterpret_cast<const char *>(buffer + done), static_cast<int>(length - done), 0)) };
-            if (sent <= 0)
-                return false;
-
-            done += static_cast<uint32_t>(sent);
-        }
-
-        return true;
+        return (areg::send_data(hSocket, buffer, length) == static_cast<int32_t>(length));
     }
 
     //!< Returns true when the peer closed the connection within the timeout.

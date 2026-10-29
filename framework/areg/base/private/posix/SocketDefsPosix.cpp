@@ -42,6 +42,30 @@
 
 namespace {
 
+#if defined(__CYGWIN__)
+    //!< On Cygwin a send on a full socket returns EAGAIN instead of waiting for space itself.
+    constexpr int   SEND_NOWAIT     { MSG_DONTWAIT };
+    //!< The longest wait for space in a full socket before the send is tried again.
+    constexpr int   SEND_RECHECK_MS { 50 };
+#else   // defined(__CYGWIN__)
+    constexpr int   SEND_NOWAIT     { 0 };
+#endif  // defined(__CYGWIN__)
+
+    //!< Returns the timeout in socket option \a timeoutName in milliseconds, or -1 if none is set.
+    int _option_timeout_ms(SOCKETHANDLE hSocket, int timeoutName) noexcept
+    {
+        int timeoutMs{ -1 };
+        struct timeval tv { };
+        socklen_t len{ sizeof(tv) };
+        if ((::getsockopt(static_cast<int>(hSocket), SOL_SOCKET, timeoutName, &tv, &len) == 0) && ((tv.tv_sec != 0) || (tv.tv_usec != 0)))
+        {
+            const int64_t ms{ static_cast<int64_t>(tv.tv_sec) * 1000 + (static_cast<int64_t>(tv.tv_usec) + 999) / 1000 };
+            timeoutMs = static_cast<int>(ms < static_cast<int64_t>(INT_MAX) ? ms : static_cast<int64_t>(INT_MAX));
+        }
+
+        return timeoutMs;
+    }
+
     /**
      * \brief   After a call failed with EAGAIN on a non-blocking socket, waits until the socket is
      *          ready for \a events or the timeout in socket option \a timeoutName expires.
@@ -57,15 +81,7 @@ namespace {
         if ((flags == -1) || ((flags & O_NONBLOCK) == 0))
             return false;
 
-        int timeoutMs{ -1 };
-        struct timeval tv { };
-        socklen_t len{ sizeof(tv) };
-        if ((::getsockopt(static_cast<int>(hSocket), SOL_SOCKET, timeoutName, &tv, &len) == 0) && ((tv.tv_sec != 0) || (tv.tv_usec != 0)))
-        {
-            const int64_t ms{ static_cast<int64_t>(tv.tv_sec) * 1000 + (static_cast<int64_t>(tv.tv_usec) + 999) / 1000 };
-            timeoutMs = static_cast<int>(ms < static_cast<int64_t>(INT_MAX) ? ms : static_cast<int64_t>(INT_MAX));
-        }
-
+        const int timeoutMs{ _option_timeout_ms(hSocket, timeoutName) };
         struct pollfd ready { };
         ready.fd     = static_cast<int>(hSocket);
         ready.events = events;
@@ -76,6 +92,45 @@ namespace {
         } while ((result < 0) && (errno == EINTR));
 
         return (result > 0);
+    }
+
+    /**
+     * \brief   After a send failed, waits until it may be repeated. On Cygwin it waits for space
+     *          at most SEND_RECHECK_MS at a time, until the socket send timeout passes with no byte
+     *          written. Elsewhere it is _wait_would_block().
+     * \param   hSocket     The socket of the failed send.
+     * \param   waitedMs    [in, out] Milliseconds waited since the last byte was written.
+     * \return  Returns true if the send may be repeated.
+     **/
+    bool _wait_send(SOCKETHANDLE hSocket, [[maybe_unused]] int32_t & waitedMs) noexcept
+    {
+#if defined(__CYGWIN__)
+        if ((errno != EAGAIN) && (errno != EWOULDBLOCK))
+            return false;
+
+        const int timeoutMs{ _option_timeout_ms(hSocket, SO_SNDTIMEO) };
+        int sliceMs{ SEND_RECHECK_MS };
+        if (timeoutMs >= 0)
+        {
+            if (waitedMs >= timeoutMs)
+                return false;
+
+            sliceMs = (timeoutMs - waitedMs) < sliceMs ? (timeoutMs - waitedMs) : sliceMs;
+        }
+
+        struct pollfd ready { };
+        ready.fd     = static_cast<int>(hSocket);
+        ready.events = POLLOUT;
+        const int result{ ::poll(&ready, 1, sliceMs) };
+        if (result == 0)
+        {
+            waitedMs += sliceMs;
+        }
+
+        return (result >= 0) || (errno == EINTR);
+#else   // defined(__CYGWIN__)
+        return _wait_would_block(hSocket, POLLOUT, SO_SNDTIMEO);
+#endif  // defined(__CYGWIN__)
     }
 
 } // namespace
@@ -195,23 +250,29 @@ int32_t _os_send_data_window(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, in
     ASSERT((dataBuffer != nullptr) && (dataLength > 0));
 
 #if defined(MSG_NOSIGNAL)
-    constexpr int sendFlags = MSG_NOSIGNAL;
+    constexpr int sendFlags = MSG_NOSIGNAL | SEND_NOWAIT;
 #else
-    constexpr int sendFlags = 0;
+    constexpr int sendFlags = SEND_NOWAIT;
 #endif
 
     constexpr int32_t WINDOW{ static_cast<int32_t>(areg::DEFAULT_THREAD_CACHE) };
 
     int32_t total{ 0 };
+    int32_t waitedMs{ 0 };
     do
     {
         const int32_t remaining = dataLength - total;
         const int32_t chunk = remaining < WINDOW ? remaining : WINDOW;
         const ssize_t written = ::send(hSocket, reinterpret_cast<const char*>(dataBuffer + total), static_cast<size_t>(chunk), sendFlags);
         if (written > 0)
+        {
             total += static_cast<int32_t>(written);
-        else if ((errno != EINTR) && (_wait_would_block(hSocket, POLLOUT, SO_SNDTIMEO) == false))
+            waitedMs = 0;
+        }
+        else if ((errno != EINTR) && (_wait_send(hSocket, waitedMs) == false))
+        {
             return -1;
+        }
     } while (total < dataLength);
 
     return total;
@@ -223,19 +284,25 @@ int32_t _os_send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t d
     ASSERT((dataBuffer != nullptr) && (dataLength > 0));
 
 #if defined(MSG_NOSIGNAL)
-    constexpr int sendFlags = MSG_NOSIGNAL;
+    constexpr int sendFlags = MSG_NOSIGNAL | SEND_NOWAIT;
 #else
-    constexpr int sendFlags = 0;
+    constexpr int sendFlags = SEND_NOWAIT;
 #endif
 
     int32_t total = 0;
+    int32_t waitedMs{ 0 };
     do
     {
         const ssize_t written = ::send(hSocket, reinterpret_cast<const char*>(dataBuffer + total), static_cast<size_t>(dataLength - total), sendFlags);
         if (written > 0)
+        {
             total += static_cast<int32_t>(written);
-        else if ((errno != EINTR) && (_wait_would_block(hSocket, POLLOUT, SO_SNDTIMEO) == false))
+            waitedMs = 0;
+        }
+        else if ((errno != EINTR) && (_wait_send(hSocket, waitedMs) == false))
+        {
             return -1;
+        }
     } while (total < dataLength);
 
     return total;
@@ -342,17 +409,26 @@ int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uin
         }
 
         uint32_t idx = 0u;  // first region not yet fully sent
+        int32_t waitedMs{ 0 };
         while (idx < count)
         {
+#if defined(__CYGWIN__)
+            struct msghdr msg { };
+            msg.msg_iov     = &iov[idx];
+            msg.msg_iovlen  = static_cast<int>(count - idx);
+            const ssize_t written = ::sendmsg(static_cast<int>(hSocket), &msg, MSG_NOSIGNAL | SEND_NOWAIT);
+#else   // defined(__CYGWIN__)
             const ssize_t written = ::writev(static_cast<int>(hSocket), &iov[idx], static_cast<int>(count - idx));
+#endif  // defined(__CYGWIN__)
             if (written < 0)
             {
-                if ((errno == EINTR) || _wait_would_block(hSocket, POLLOUT, SO_SNDTIMEO))
+                if ((errno == EINTR) || _wait_send(hSocket, waitedMs))
                     continue;
                 return -1;
             }
 
             result += static_cast<int32_t>(written);
+            waitedMs = 0;
 
             size_t advance = static_cast<size_t>(written);
             while ((idx < count) && (advance >= iov[idx].iov_len))
