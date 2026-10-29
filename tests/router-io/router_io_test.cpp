@@ -42,10 +42,13 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cerrno>
 #include <chrono>
+#include <condition_variable>
 #include <cstdio>
 #include <cstring>
 #include <fstream>
+#include <mutex>
 #include <sstream>
 #include <string>
 #include <thread>
@@ -328,7 +331,8 @@ namespace
         }
 
         //!< Sends batches of data messages to the target until stop is set or a write fails.
-        void send_until(ITEM_ID target, uint32_t size, const std::atomic<bool> & stop)
+        //!< Returns true when stop ended it, false when a write failed.
+        bool send_until(ITEM_ID target, uint32_t size, const std::atomic<bool> & stop)
         {
             constexpr uint32_t PER_WRITE{ 64u };
             std::vector<uint8_t> bytes;
@@ -338,9 +342,13 @@ namespace
                 bytes.insert(bytes.end(), one.begin(), one.end());
             }
 
-            while ((stop.load(std::memory_order_relaxed) == false) && send(bytes))
+            while (stop.load(std::memory_order_relaxed) == false)
             {
+                if (send(bytes) == false)
+                    return false;
             }
+
+            return true;
         }
 
         //!< Reads messages until the connection ends or nothing arrives within the timeout. Returns the count.
@@ -588,6 +596,161 @@ namespace
         return result;
     }
 
+    //!< The error of the last failed socket call of this thread.
+    int32_t last_socket_error()
+    {
+#if defined(_WIN32)
+        return static_cast<int32_t>(::WSAGetLastError());
+#else
+        return static_cast<int32_t>(errno);
+#endif
+    }
+
+    //!< The local port of a socket, or 0.
+    uint16_t local_port(SOCKETHANDLE hSocket)
+    {
+        sockaddr_in bound{ };
+        socklen_t length{ sizeof(bound) };
+        return (::getsockname(hSocket, reinterpret_cast<sockaddr *>(&bound), &length) == 0) ? ntohs(bound.sin_port) : 0u;
+    }
+
+    //!< Tracks where the threads of one flooding round are, and prints it if the round has not ended in time.
+    class RoundProbe
+    {
+    public:
+        enum class Phase : uint32_t { Connecting, Flooding, Restarting, Joining };
+
+        //!< Milliseconds after the start of a round when a round that has not ended is printed.
+        static constexpr int32_t REPORT_MS{ 30'000 };
+
+        //!< A sender state that is not a socket error.
+        static constexpr int32_t SENDING{ -1 };
+        static constexpr int32_t STOPPED{ -2 };
+
+        //!< A reader state that is not a message count.
+        static constexpr int32_t READING{ -1 };
+
+        RoundProbe(uint32_t round, uint32_t clients)
+            : mRound    ( round )
+            , mPorts    ( clients )
+            , mCookies  ( clients )
+            , mSenders  ( clients )
+            , mReaders  ( clients )
+        {
+            for (uint32_t i = 0u; i < clients; ++i)
+            {
+                mPorts[i].store(0u);
+                mCookies[i].store(0u);
+                mSenders[i].store(SENDING);
+                mReaders[i].store(READING);
+            }
+
+            mWatcher = std::thread([this]() { watch(); });
+        }
+
+        ~RoundProbe()
+        {
+            {
+                std::lock_guard<std::mutex> lock(mMutex);
+                mEnded = true;
+            }
+
+            mEndedEvent.notify_all();
+            mWatcher.join();
+        }
+
+        void set_phase(Phase phase)
+        {
+            mPhase.store(static_cast<uint32_t>(phase));
+        }
+
+        void set_restart(bool result)
+        {
+            mRestart.store(result ? 1 : 0);
+        }
+
+        void joined_one()
+        {
+            mJoined.fetch_add(1u);
+        }
+
+        void connected(uint32_t index, SOCKETHANDLE hSocket, ITEM_ID cookie)
+        {
+            mPorts[index].store(local_port(hSocket));
+            mCookies[index].store(static_cast<uint64_t>(cookie));
+        }
+
+        void sender_done(uint32_t index, bool stopped, int32_t error)
+        {
+            mSenders[index].store(stopped ? STOPPED : error);
+        }
+
+        void reader_done(uint32_t index, uint32_t count)
+        {
+            mReaders[index].store(static_cast<int32_t>(count));
+        }
+
+    private:
+        void watch()
+        {
+            std::unique_lock<std::mutex> lock(mMutex);
+            if (mEndedEvent.wait_for(lock, std::chrono::milliseconds(REPORT_MS), [this]() { return mEnded; }))
+                return;
+
+            static const char * const phases[]{ "connecting", "flooding", "restarting", "joining" };
+            const int32_t restart{ mRestart.load() };
+            std::printf("probe: round %u has not ended in %d ms, port %u, main thread %s, %u of %u threads joined, restart call %s\n"
+                        , mRound
+                        , REPORT_MS
+                        , static_cast<uint32_t>(_port)
+                        , phases[mPhase.load() & 3u]
+                        , mJoined.load()
+                        , static_cast<uint32_t>(mSenders.size() * 2u)
+                        , restart < 0 ? "not made" : (restart != 0 ? "returned true" : "returned false"));
+
+            for (uint32_t i = 0u; i < static_cast<uint32_t>(mSenders.size()); ++i)
+            {
+                const int32_t sender{ mSenders[i].load() };
+                const int32_t reader{ mReaders[i].load() };
+                char sent[48];
+                char read[48];
+                if (sender == SENDING)
+                    std::snprintf(sent, sizeof(sent), "sending");
+                else if (sender == STOPPED)
+                    std::snprintf(sent, sizeof(sent), "stopped by the flag");
+                else
+                    std::snprintf(sent, sizeof(sent), "write failed, error %d", sender);
+
+                if (reader == READING)
+                    std::snprintf(read, sizeof(read), "reading");
+                else
+                    std::snprintf(read, sizeof(read), "read %d messages", reader);
+
+                std::printf("probe:   client %u port %u cookie %llu: sender %s, reader %s\n"
+                            , i
+                            , static_cast<uint32_t>(mPorts[i].load())
+                            , static_cast<unsigned long long>(mCookies[i].load())
+                            , sent
+                            , read);
+            }
+
+            std::fflush(stdout);
+        }
+
+        const uint32_t                      mRound;                 //!< The round index.
+        std::vector<std::atomic<uint16_t>>  mPorts;                 //!< The local port of each client.
+        std::vector<std::atomic<uint64_t>>  mCookies;               //!< The cookie of each client.
+        std::vector<std::atomic<int32_t>>   mSenders;               //!< SENDING, STOPPED or the socket error of the failed write.
+        std::vector<std::atomic<int32_t>>   mReaders;               //!< READING or the count of messages read.
+        std::atomic<uint32_t>               mPhase  { 0u };         //!< The phase of the main thread.
+        std::atomic<uint32_t>               mJoined { 0u };         //!< The client threads joined.
+        std::atomic<int32_t>                mRestart{ -1 };         //!< -1 before the restart call, else its result.
+        std::mutex                          mMutex;                 //!< Guards mEnded.
+        std::condition_variable             mEndedEvent;            //!< Signaled when the round ends.
+        bool                                mEnded  { false };      //!< The round has ended.
+        std::thread                         mWatcher;               //!< Prints the round if it has not ended in time.
+    };
+
     //!< The router restarts while its clients flood each other, and serves new clients after each restart.
     bool case_stop_while_flooding(RouterServerService & router, uint32_t pairs)
     {
@@ -600,9 +763,11 @@ namespace
         for (uint32_t round = 0u; result && (round < ROUNDS); ++round)
         {
             std::vector<Client> ring(clients);
-            for (Client & client : ring)
+            RoundProbe probe(round, clients);
+            for (uint32_t i = 0u; i < clients; ++i)
             {
-                result = result && join_when_listening(client);
+                result = result && join_when_listening(ring[i]);
+                probe.connected(i, ring[i].socket, ring[i].cookie);
             }
 
             if (check(result, "every client of the round connected") == false)
@@ -615,16 +780,30 @@ namespace
             {
                 Client & client{ ring[i] };
                 const ITEM_ID target{ ring[(i + 1u) % clients].cookie };
-                threads.emplace_back([&client, target, &stop]() { client.send_until(target, SIZE, stop); });
-                threads.emplace_back([&client, &received, i]() { received[i] = client.read_until_end(); });
+                threads.emplace_back([&client, target, &stop, &probe, i]()
+                {
+                    const bool stopped{ client.send_until(target, SIZE, stop) };
+                    probe.sender_done(i, stopped, stopped ? 0 : last_socket_error());
+                });
+
+                threads.emplace_back([&client, &received, &probe, i]()
+                {
+                    received[i] = client.read_until_end();
+                    probe.reader_done(i, received[i]);
+                });
             }
 
+            probe.set_phase(RoundProbe::Phase::Flooding);
             std::this_thread::sleep_for(std::chrono::milliseconds(20 + 7 * (round % 5u)));
+            probe.set_phase(RoundProbe::Phase::Restarting);
             result = router.reconnect_service_host();
+            probe.set_restart(result);
             stop.store(true);
+            probe.set_phase(RoundProbe::Phase::Joining);
             for (std::thread & thread : threads)
             {
                 thread.join();
+                probe.joined_one();
             }
 
             for (uint32_t count : received)

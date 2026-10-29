@@ -47,8 +47,11 @@ jobs:
           esac
           RUN=true
           echo "run=${RUN}" >> "${GITHUB_OUTPUT}"
+          # Hunting the cygwin hang of stop-while-flooding: the cygwin test leg runs the whole
+          # suite as before, and four 'hunt' legs loop that one case. 'head' builds this
+          # commit, 'base' puts back the framework of 51f4bcae4, the commit that hung.
           if [ -n "${MATRIX}" ]; then
-            echo "matrix=$(jq -c '[.[] | select(.master == true or .name == "macos-clang-shared-noexcept")]' "${MATRIX}")" >> "${GITHUB_OUTPUT}"
+            echo "matrix=$(jq -c '[.[] | select(.name == "win-cygwin-shared-all-test")] | . + [.[0] as $c | ("head", "base") as $v | (1, 2) as $l | $c + {name: "win-cygwin-hunt-\($v)-\($l)", hunt: $v, norun: "ON"}]' "${MATRIX}")" >> "${GITHUB_OUTPUT}"
           fi
 
   # The legs are in .github/ci/cmake-matrix.json, longest first. A pull request runs all of
@@ -74,6 +77,14 @@ jobs:
 
       - name: Checkout Areg SDK source codes
         uses: actions/checkout@v7
+
+      - name: Put back the framework of 51f4bcae4
+        if: matrix.config.hunt == 'base'
+        shell: bash
+        run: |
+          git fetch --no-tags --depth=1 origin 51f4bcae437658e69423a1a2667b7edcf01fb210
+          git checkout 51f4bcae437658e69423a1a2667b7edcf01fb210 -- framework
+          git status --short
 
       - name: Setup Java JDK to run code generator
         uses: actions/setup-java@v6.0.1
@@ -182,7 +193,7 @@ jobs:
           New-Item -ItemType Directory -Force product | Out-Null
           Remove-Item -Force -ErrorAction SilentlyContinue product/configure.done
           Start-Process -NoNewWindow -FilePath C:\cygwin\bin\bash.exe -ArgumentList 'tools/intern/hang-watchdog.sh product/configure.done 300 cmake java cygpath'
-          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DCMAKE_BUILD_TYPE=${{matrix.config.btype || env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_NO_EXCEPTIONS:BOOL=${{matrix.config.noexc || 'OFF'}} -DAREG_INSTALL:BOOL=ON -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
+          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DCMAKE_BUILD_TYPE=${{matrix.config.btype || env.BUILD_TYPE}} -DCMAKE_CXX_FLAGS=-g -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_NO_EXCEPTIONS:BOOL=${{matrix.config.noexc || 'OFF'}} -DAREG_INSTALL:BOOL=ON -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
           $rc = $LASTEXITCODE
           New-Item -ItemType File -Force product/configure.done | Out-Null
           exit $rc
@@ -212,7 +223,7 @@ jobs:
 
       - name: Build with CMake
         working-directory: ${{github.workspace}}
-        run: cmake --build ${{env.CACHE_DEST}} --config ${{matrix.config.btype || env.BUILD_TYPE}} -j16
+        run: cmake --build ${{env.CACHE_DEST}} --config ${{matrix.config.btype || env.BUILD_TYPE}} -j16 ${{ matrix.config.hunt && '--target areg-router-io-test' || '' }}
 
       - name: Locate the build output directory
         working-directory: ${{github.workspace}}
@@ -258,6 +269,7 @@ jobs:
           echo "OK: no exception tables, no RTTI"
 
       - name: Install with CMake
+        if: ${{ !matrix.config.hunt }}
         working-directory: ${{github.workspace}}
         run: cmake --install ${{env.CACHE_DEST}} --config ${{matrix.config.btype || env.BUILD_TYPE}}
 
@@ -287,7 +299,7 @@ jobs:
                   --out-dir "./example-results/${{matrix.config.name}}"
 
       - name: Run Unit Tests. Ignore if unit tests are not compiled
-        if: matrix.config.test == 'ON' && matrix.config.norun != 'ON' && runner.os != 'macOS'
+        if: matrix.config.test == 'ON' && matrix.config.norun != 'ON' && runner.os != 'macOS' && matrix.config.family != 'cygwin'
         working-directory: ${{github.workspace}}
         timeout-minutes: 30
         # '-C' is required on Windows: no generator is named. The Windows runners get
@@ -310,6 +322,39 @@ jobs:
           touch product/unittests.done
           wait
           exit ${rc}
+
+      - name: Run Unit Tests, watched (cygwin)
+        if: matrix.config.test == 'ON' && matrix.config.norun != 'ON' && matrix.config.family == 'cygwin'
+        working-directory: ${{github.workspace}}
+        shell: pwsh
+        timeout-minutes: 30
+        # A test executable that runs longer than 90 s gets its processes and its stacks
+        # printed, and is then stopped, before the ctest timeout of 120 s stops it without stacks.
+        run: |
+          New-Item -ItemType Directory -Force product | Out-Null
+          Remove-Item -Force -ErrorAction SilentlyContinue product/unittests.done, product/unittests.done.report
+          Start-Process -NoNewWindow -FilePath C:\cygwin\bin\bash.exe -ArgumentList 'tools/intern/hang-watchdog.sh product/unittests.done 90 "areg-*"'
+          ctest --test-dir ${{env.CACHE_DEST}} -C ${{matrix.config.btype || env.BUILD_TYPE}} --timeout 180 --output-on-failure --output-junit test_results.xml
+          $rc = $LASTEXITCODE
+          New-Item -ItemType File -Force product/unittests.done | Out-Null
+          Start-Sleep -Seconds 3
+          exit $rc
+
+      - name: Hunt the stop-while-flooding hang (cygwin)
+        if: matrix.config.hunt
+        working-directory: ${{github.workspace}}
+        shell: pwsh
+        timeout-minutes: 75
+        run: |
+          C:\cygwin\bin\bash.exe .github/ci/tmp-flood-hunt.sh "${{env.BUILD_DEST}}/bin" product/hunt 60 4 90
+          exit $LASTEXITCODE
+
+      - name: Upload the hunt results
+        if: always() && matrix.config.hunt
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{matrix.config.name}}
+          path: ./product/hunt/
 
       - name: Run the benchmarks and publish the measured rates
         # The measured rates are a trend line, not an acceptance criterion: a shared build
@@ -368,6 +413,7 @@ jobs:
           cp -R ./example-results/${{matrix.config.name}}/          "${DEST}/example-results/"            || true
           cp -R ./example-results/${{matrix.config.name}}-benchmarks/ "${DEST}/example-results-benchmarks/" || true
           cp -R ./cores/                                   "${DEST}/cores/"            || true
+          cp ./product/*.report                            "${DEST}/"                  || true
           find "${DEST}" -maxdepth 2 | head -n 40
 
       - name: Upload artifacts if tests fail. Ignore if unit tests are not compiled
