@@ -97,7 +97,7 @@ namespace
     };
 
     //!< The process-wide store of full and empty magazines of one class.
-    struct alignas(64) Depot
+    struct Depot
     {
         areg::PlainSpinLock lock    { };
         Magazine *  full            { nullptr };
