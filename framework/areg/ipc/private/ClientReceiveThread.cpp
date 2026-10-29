@@ -62,6 +62,7 @@ bool ClientReceiveThread::run_dispatcher()
         mHandshakeMsg.invalidate();
     }
 
+    areg::ThreadCache & rxCache{ areg::thread_rx_cache(mConnection.socket().handle()) };
     MessageEnvelope msgReceived;
     bool isExit{ false };
 
@@ -74,7 +75,9 @@ bool ClientReceiveThread::run_dispatcher()
         const bool hasControl{ (drainCount == 0u) && mExternalEvents.has_pending() };
         if ( !hasControl )
         {
-            int32_t sizeReceive = mConnection.receive_message( msgReceived );
+            const int32_t sizeReceive{ (areg::recv_data_available(rxCache) != 0u)
+                                       ? SocketConnectionBase::receive_cached_message(msgReceived, rxCache)
+                                       : mConnection.receive_message(msgReceived) };
             if ( sizeReceive <= 0 )
             {
                 mRemoteService.failed_receive_message( mConnection.socket() );

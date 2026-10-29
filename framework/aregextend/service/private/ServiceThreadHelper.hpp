@@ -341,44 +341,6 @@ inline void run_send_batch( ThreadT & thread
 }
 
 /**
- * \brief   Takes the first message out of the read-ahead cache \a rxCache, which must hold it
- *          complete (see areg::recv_data_available()).
- *
- * \param   msgReceived     Reusable message buffer; overwritten.
- * \param   rxCache         The read-ahead cache of the socket in the calling thread.
- * \return  The bytes taken, header and data, or 0 if the header is not valid or the message
- *          is not complete.
- **/
-inline int32_t receive_cached_message( areg::MessageEnvelope & msgReceived, areg::ThreadCache & rxCache )
-{
-    if ( rxCache.unread < areg::WIRE_HEADER_SIZE )
-        return 0;
-
-    const uint8_t * const data{ rxCache.buffer.get() + rxCache.head };
-    areg::EventHeader header{ };
-    std::memcpy(areg::wire_header(header), data, areg::WIRE_HEADER_SIZE);
-    const uint32_t used{ header.bufHeader.biUsed };
-    const uint32_t total{ areg::wire_size(header) };
-    if ( rxCache.unread < total )
-        return 0;
-
-    uint8_t * const body{ areg::SocketConnectionBase::prepare_message(msgReceived, header) };
-    if ( body == nullptr )
-        return 0;
-
-    if ( used != 0u )
-    {
-        std::memcpy(body, data + areg::WIRE_HEADER_SIZE, used);
-        msgReceived.set_size_used(used);
-    }
-
-    msgReceived.move_to_begin();
-    rxCache.unread -= total;
-    rxCache.head    = (rxCache.unread != 0u) ? (rxCache.head + total) : 0u;
-    return static_cast<int32_t>(total);
-}
-
-/**
  * \brief   Drains the read-ahead receive cache for \a clientSocket.
  *
  *          A fill of the cache may pull more than one message from the socket.
@@ -417,7 +379,7 @@ inline int32_t drain_recv_cache( areg::RemoteMessageHandler & handler
     uint32_t drain{ 0u };
     while ( (drain < maxDrain) && (areg::recv_data_available(rxCache) != 0u) )
     {
-        const int32_t cached{ areg::ext::receive_cached_message(msgReceived, rxCache) };
+        const int32_t cached{ areg::SocketConnectionBase::receive_cached_message(msgReceived, rxCache) };
         if ( cached <= 0 )
             return -1;
 

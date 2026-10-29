@@ -239,7 +239,7 @@ TEST( ReceiveCacheTest, CachedMessageTakesOneMessage )
         load_cache( cache, wire );
 
         areg::MessageEnvelope received;
-        EXPECT_EQ( areg::ext::receive_cached_message( received, cache ), static_cast<int32_t>(first) );
+        EXPECT_EQ( areg::SocketConnectionBase::receive_cached_message( received, cache ), static_cast<int32_t>(first) );
         ASSERT_TRUE( received.is_valid() );
         EXPECT_EQ( received.header()->bufHeader.biUsed, 24u );
         EXPECT_EQ( received.header()->eventType, static_cast<uint16_t>(areg::EventType::EventRemoteRequest) );
@@ -254,11 +254,11 @@ TEST( ReceiveCacheTest, CachedMessageTakesOneMessage )
         EXPECT_EQ( cache.unread, second );
         EXPECT_EQ( areg::recv_data_available( cache ), second );
 
-        EXPECT_EQ( areg::ext::receive_cached_message( received, cache ), static_cast<int32_t>(second) );
+        EXPECT_EQ( areg::SocketConnectionBase::receive_cached_message( received, cache ), static_cast<int32_t>(second) );
         EXPECT_EQ( received.header()->eventType, static_cast<uint16_t>(areg::EventType::EventRemoteResponse) );
         EXPECT_EQ( cache.head, 0u );
         EXPECT_EQ( cache.unread, 0u );
-        EXPECT_EQ( areg::ext::receive_cached_message( received, cache ), 0 );
+        EXPECT_EQ( areg::SocketConnectionBase::receive_cached_message( received, cache ), 0 );
 
         areg::thread_rx_cache_release( SOCKET_ONE );
     });
@@ -276,7 +276,7 @@ TEST( ReceiveCacheTest, CachedMessageRefusesBadHeader )
         load_cache( cache, wire );
 
         areg::MessageEnvelope received;
-        EXPECT_EQ( areg::ext::receive_cached_message( received, cache ), 0 );
+        EXPECT_EQ( areg::SocketConnectionBase::receive_cached_message( received, cache ), 0 );
         EXPECT_EQ( cache.head, 0u );
         EXPECT_EQ( cache.unread, static_cast<uint32_t>(wire.size()) );
 
@@ -284,7 +284,7 @@ TEST( ReceiveCacheTest, CachedMessageRefusesBadHeader )
         append_message( wire, areg::EventType::EventRemoteRequest, 8u, 0x22u );
         wire.pop_back();
         load_cache( cache, wire );
-        EXPECT_EQ( areg::ext::receive_cached_message( received, cache ), 0 );
+        EXPECT_EQ( areg::SocketConnectionBase::receive_cached_message( received, cache ), 0 );
         EXPECT_EQ( cache.unread, static_cast<uint32_t>(wire.size()) );
 
         areg::thread_rx_cache_release( SOCKET_ONE );

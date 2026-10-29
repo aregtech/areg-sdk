@@ -26,6 +26,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <new>
 
 namespace areg {
 
@@ -299,14 +300,11 @@ uint32_t BufferBase::reserve(uint32_t size, bool copy)
     {
         uint32_t payload{ sizeBuffer - static_cast<uint32_t>(sizeof(areg::EventHeader)) };
         buffer = areg::envelope_block_alloc(payload);
-        if (buffer == nullptr)
-            throw std::bad_alloc();
-
         sizeBuffer = payload + static_cast<uint32_t>(sizeof(areg::EventHeader));
     }
     else
     {
-        buffer = new uint8_t[sizeBuffer];
+        buffer = new (std::nothrow) uint8_t[sizeBuffer];
     }
 
     const uint32_t position = init_buffer(buffer, sizeBuffer, preserveData);

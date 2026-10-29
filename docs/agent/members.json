@@ -975,6 +975,7 @@
   "readonly_properties",
   "ready_for_events",
   "receive",
+  "receive_cached_message",
   "receive_data",
   "receive_data_nowait",
   "receive_data_window",

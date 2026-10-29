@@ -32,6 +32,10 @@
 #include <signal.h>
 #include <unistd.h>
 
+#ifdef __APPLE__
+    #include <sys/event.h>
+#endif  // __APPLE__
+
 namespace areg::os {
 
 //////////////////////////////////////////////////////////////////////////
@@ -118,14 +122,47 @@ private:
      **/
     static uint64_t _now_ns() noexcept;
 
+#ifdef __APPLE__
+    /**
+     * \brief   Creates the kernel queue of the thread and adds its wake event to it.
+     *
+     * \return  Returns true if the queue is usable.
+     **/
+    bool _open_queue() noexcept;
+
+    /**
+     * \brief   Releases the lock, sleeps on the kernel queue and takes the lock again.
+     *
+     * \param   waitNs  The longest sleep in nanoseconds, 0 to sleep until woken.
+     **/
+    void _queue_sleep( uint64_t waitNs ) noexcept;
+
+    /**
+     * \brief   Wakes the thread sleeping on the kernel queue.
+     **/
+    void _queue_wake() noexcept;
+#endif  // __APPLE__
+
 private:
     //!< The stack size of the timer thread.
     static constexpr size_t     STACK_SIZE  { 64u * 1024u };
 
+#ifdef __APPLE__
+    //!< The identifier of the deadline timer in the kernel queue.
+    static constexpr uint64_t   QUEUE_TIMER { 1u };
+    //!< The identifier of the wake event in the kernel queue.
+    static constexpr uint64_t   QUEUE_WAKE  { 2u };
+#endif  // __APPLE__
+
     //!< Guards every field of the service and the armed fields of the timers.
     pthread_mutex_t         mLock;
+#ifdef __APPLE__
+    //!< The kernel queue the thread sleeps on until the earliest deadline. Its timer is not coalesced.
+    int                     mQueue;
+#else   // !__APPLE__
     //!< The thread sleeps on it until the earliest deadline. Uses the monotonic clock.
     pthread_cond_t          mWakeCond;
+#endif  // __APPLE__
     //!< A disarming thread waits on it until the running expiration returns.
     pthread_cond_t          mDoneCond;
     //!< The armed timer with the earliest deadline.
@@ -159,7 +196,11 @@ TimerServicePosix & TimerServicePosix::instance() noexcept
 
 TimerServicePosix::TimerServicePosix() noexcept
     : mLock         ( )
+#ifdef __APPLE__
+    , mQueue        ( -1 )
+#else   // !__APPLE__
     , mWakeCond     ( )
+#endif  // __APPLE__
     , mDoneCond     ( )
     , mHead         ( nullptr )
     , mFiring       ( nullptr )
@@ -173,9 +214,7 @@ TimerServicePosix::TimerServicePosix() noexcept
     ::pthread_mutex_init(&mLock, nullptr);
 
 #ifdef __APPLE__
-    // macOS sleeps with a relative timeout, which no clock change moves.
-    mIsValid =  (areg::RETURNED_OK == ::pthread_cond_init(&mWakeCond, nullptr)) &&
-                (areg::RETURNED_OK == ::pthread_cond_init(&mDoneCond, nullptr));
+    mIsValid =  (areg::RETURNED_OK == ::pthread_cond_init(&mDoneCond, nullptr)) && _open_queue();
 #else   // !__APPLE__
     pthread_condattr_t attr;
     if (areg::RETURNED_OK == ::pthread_condattr_init(&attr))
@@ -210,7 +249,11 @@ void TimerServicePosix::detach() noexcept
         ++ mGeneration;
         thread = mThread;
         join = true;
+#ifdef __APPLE__
+        _queue_wake();
+#else   // !__APPLE__
         ::pthread_cond_broadcast(&mWakeCond);
+#endif  // __APPLE__
     }
 
     ::pthread_mutex_unlock(&mLock);
@@ -246,7 +289,11 @@ bool TimerServicePosix::arm(WaitableTimerPosix & timer, uint32_t msTimeout, bool
         _link(timer);
         if (mHead == &timer)
         {
+#ifdef __APPLE__
+            _queue_wake();
+#else   // !__APPLE__
             ::pthread_cond_signal(&mWakeCond);
+#endif  // __APPLE__
         }
     }
 
@@ -292,7 +339,11 @@ void TimerServicePosix::_run(uint32_t generation) noexcept
         WaitableTimerPosix * timer{ mHead };
         if (timer == nullptr)
         {
+#ifdef __APPLE__
+            _queue_sleep(0u);
+#else   // !__APPLE__
             ::pthread_cond_wait(&mWakeCond, &mLock);
+#endif  // __APPLE__
             continue;
         }
 
@@ -300,16 +351,12 @@ void TimerServicePosix::_run(uint32_t generation) noexcept
         if (timer->mDeadlineNs > now)
         {
 #ifdef __APPLE__
-            const uint64_t waitNs{ timer->mDeadlineNs - now };
+            _queue_sleep(timer->mDeadlineNs - now);
 #else   // !__APPLE__
             const uint64_t waitNs{ timer->mDeadlineNs };
-#endif  // __APPLE__
             struct timespec due;
             due.tv_sec  = static_cast<time_t>(waitNs / static_cast<uint64_t>(areg::SEC_TO_NS));
             due.tv_nsec = static_cast<long>(waitNs % static_cast<uint64_t>(areg::SEC_TO_NS));
-#ifdef __APPLE__
-            ::pthread_cond_timedwait_relative_np(&mWakeCond, &mLock, &due);
-#else   // !__APPLE__
             ::pthread_cond_timedwait(&mWakeCond, &mLock, &due);
 #endif  // __APPLE__
             continue;
@@ -444,6 +491,10 @@ void TimerServicePosix::_fork_child() noexcept
     service.mDoneWaiters = 0u;
     service.mIsRunning   = false;
     ++ service.mGeneration;
+#ifdef __APPLE__
+    // A child process does not inherit the kernel queue.
+    service.mIsValid     = service.mIsValid && service._open_queue();
+#endif  // __APPLE__
     ::pthread_mutex_unlock(&service.mLock);
 }
 
@@ -453,6 +504,40 @@ uint64_t TimerServicePosix::_now_ns() noexcept
     ::clock_gettime(CLOCK_MONOTONIC, &now);
     return (static_cast<uint64_t>(now.tv_sec) * static_cast<uint64_t>(areg::SEC_TO_NS) + static_cast<uint64_t>(now.tv_nsec));
 }
+
+#ifdef __APPLE__
+
+bool TimerServicePosix::_open_queue() noexcept
+{
+    mQueue = ::kqueue();
+    if (mQueue < 0)
+        return false;
+
+    struct kevent64_s change { };
+    EV_SET64(&change, QUEUE_WAKE, EVFILT_USER, EV_ADD | EV_CLEAR, 0u, 0, 0u, 0u, 0u);
+    return (::kevent64(mQueue, &change, 1, nullptr, 0, 0u, nullptr) == 0);
+}
+
+void TimerServicePosix::_queue_sleep(uint64_t waitNs) noexcept
+{
+    // A critical timer has no coalescing delay, also in a throttled process.
+    struct kevent64_s change { };
+    struct kevent64_s event { };
+    EV_SET64(&change, QUEUE_TIMER, EVFILT_TIMER, EV_ADD | EV_ONESHOT, NOTE_NSECONDS | NOTE_CRITICAL, static_cast<int64_t>(waitNs), 0u, 0u, 0u);
+    const int queue{ mQueue };
+    ::pthread_mutex_unlock(&mLock);
+    ::kevent64(queue, &change, waitNs != 0u ? 1 : 0, &event, 1, 0u, nullptr);
+    ::pthread_mutex_lock(&mLock);
+}
+
+void TimerServicePosix::_queue_wake() noexcept
+{
+    struct kevent64_s change { };
+    EV_SET64(&change, QUEUE_WAKE, EVFILT_USER, 0u, NOTE_TRIGGER, 0, 0u, 0u, 0u);
+    ::kevent64(mQueue, &change, 1, nullptr, 0, 0u, nullptr);
+}
+
+#endif  // __APPLE__
 
 //////////////////////////////////////////////////////////////////////////
 // WaitableTimerPosix class implementation

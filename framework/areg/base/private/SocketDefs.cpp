@@ -22,6 +22,7 @@
 
 #include "areg/logging/areg_log.h"
 
+#include <atomic>
 #include <cstring>
 
 #ifdef   _WIN32
@@ -616,17 +617,16 @@ AREG_API_IMPL uint32_t areg::set_recv_size(SOCKETHANDLE hSocket, uint32_t recvSi
     ::setsockopt(hSocket, SOL_SOCKET, SO_RCVBUFFORCE, reinterpret_cast<const char*>(&recvSize), len);
 
     {
-        static bool _rcvBufWarned{ false };
-        if (!_rcvBufWarned)
+        static std::atomic<bool> _rcvBufWarned{ false };
+        if (!_rcvBufWarned.load(std::memory_order_relaxed))
         {
             unsigned long actual{ 0u };
             socklen_t actualLen{ static_cast<socklen_t>(sizeof(actual)) };
             if (::getsockopt(hSocket, SOL_SOCKET, SO_RCVBUF, reinterpret_cast<char*>(&actual), &actualLen) == RETURNED_OK)
             {
                 const uint32_t effective = static_cast<uint32_t>(actual / 2u);
-                if (effective < (recvSize / 4u))
+                if ((effective < (recvSize / 4u)) && !_rcvBufWarned.exchange(true, std::memory_order_relaxed))
                 {
-                    _rcvBufWarned = true;
                     LOG_SCOPE(areg_base_areg, set_recv_size);
                     LOG_WARN("SO_RCVBUF capped at %u KB (requested %u KB). Raise via: sudo sysctl -w net.core.rmem_max=%u",
                              effective / 1024u, recvSize / 1024u, recvSize);
