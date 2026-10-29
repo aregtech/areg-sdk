@@ -15,10 +15,6 @@
 #include "logcollector/service/LogCollectorServerService.hpp"
 
 #include "areg/ipc/private/ConnectionDefs.hpp"
-#include "areg/logging/areg_log.h"
-
-DEF_LOG_SCOPE(logcollector_service_LogCollectorServerService, on_message_received);
-DEF_LOG_SCOPE(logcollector_service_LogCollectorServerService, on_message_send);
 
 //////////////////////////////////////////////////////////////////////////
 // LogCollectorServerService class implementation
@@ -232,17 +228,9 @@ void LogCollectorServerService::dispatch_and_forward_logger_message(const areg::
 
 void LogCollectorServerService::on_message_received(const areg::MessageEnvelope &msgReceived)
 {
-    LOG_SCOPE( logcollector_service_LogCollectorServerService, on_message_received );
-
     areg::Lock lock(mLock);
     ASSERT( msgReceived.is_valid() );
     areg::FuncIdRange msgId = static_cast<areg::FuncIdRange>( msgReceived.message_id() );
-
-    LOG_DBG("Processing received valid message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
-                    , areg::as_string(msgId)
-                    , static_cast<uint32_t>(msgId)
-                    , msgReceived.source()
-                    , msgReceived.target());
 
     switch (msgId)
     {
@@ -325,7 +313,6 @@ void LogCollectorServerService::on_message_received(const areg::MessageEnvelope 
     case areg::FuncIdRange::AttributeLastId:                  // fall through
     case areg::FuncIdRange::ServiceLastId:                    // fall through
     default:
-        LOG_ERR("Unexpected Log Collector service message!");
         ASSERT(false);
         break;
     }
@@ -370,14 +357,7 @@ void LogCollectorServerService::process_received_message(areg::MessageEnvelope &
 
 void LogCollectorServerService::on_message_send(const areg::MessageEnvelope &msgSend)
 {
-    LOG_SCOPE( logcollector_service_LogCollectorServerService, on_message_send );
-
     areg::FuncIdRange msgId = static_cast<areg::FuncIdRange>( msgSend.message_id() );
-    LOG_DBG("Sending message [ %s ] of id [ 0x%X ] is going to send to target [ %u ] from source [ %u ]"
-                    , areg::as_string(msgId)
-                    , static_cast<uint32_t>(msgId)
-                    , msgSend.target()
-                    , msgSend.source());
 
     if ( areg::is_executable_id( static_cast<uint32_t>(msgId)) )
     {
@@ -388,7 +368,6 @@ void LogCollectorServerService::on_message_send(const areg::MessageEnvelope &msg
     }
     else
     {
-        LOG_ERR("The message [ %u ] is neither executable, nor router notification. Ignoring sending message", static_cast<uint32_t>(msgId));
         ASSERT(false);
     }
 }

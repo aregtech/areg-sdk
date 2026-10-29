@@ -16,12 +16,8 @@
 
 #include "areg/base/SocketDefs.hpp"
 #include "areg/component/ServiceDefs.hpp"
-#include "areg/logging/areg_log.h"
 
 namespace areg {
-
-DEF_LOG_SCOPE(areg_ipc_ServerConnectionBase, accept_connection);
-DEF_LOG_SCOPE(areg_ipc_ServerConnectionBase, detach_connection_nolock);
 
 ServerConnectionBase::ServerConnectionBase()
     : mServerSocket         ( )
@@ -146,7 +142,6 @@ SOCKETHANDLE ServerConnectionBase::wait_connection_nowait(areg::SocketAddress & 
 
 bool ServerConnectionBase::accept_connection(SocketAccepted & clientConnection)
 {
-    LOG_SCOPE(areg_ipc_ServerConnectionBase, accept_connection);
     std::unique_lock<std::shared_mutex> lock(mLock);
     bool result = false;
 
@@ -180,18 +175,10 @@ bool ServerConnectionBase::accept_connection(SocketAccepted & clientConnection)
             mCookieToSocket.set_value_at(cookie, CookieSocket{ hSocket, clientConnection.shared_handle() });
             mSocketToCookie.set_value_at(hSocket, cookie);
             result = true;
-
-            LOG_INFO("Accepted new connection: socket [ %u ] assigned cookie [ %u ], total accepted [ %u ]"
-                        , static_cast<uint32_t>(hSocket)
-                        , static_cast<uint32_t>(cookie)
-                        , mAcceptedConnections.size());
         }
         else
         {
             ASSERT(mSocketToCookie.contains(hSocket));
-            LOG_WARN("Connection on socket [ %u ] already accepted (duplicate accept call), total accepted [ %u ]"
-                        , static_cast<uint32_t>(hSocket)
-                        , mAcceptedConnections.size());
             result = true;
         }
     }
@@ -201,8 +188,6 @@ bool ServerConnectionBase::accept_connection(SocketAccepted & clientConnection)
 
 SocketAccepted ServerConnectionBase::detach_connection_nolock(SOCKETHANDLE hSocket, ITEM_ID & cookie)
 {
-    LOG_SCOPE(areg_ipc_ServerConnectionBase, detach_connection_nolock);
-
     cookie = areg::COOKIE_UNKNOWN;
     SocketAccepted result;
     if (mAcceptedConnections.find(hSocket, result))
@@ -213,11 +198,6 @@ SocketAccepted ServerConnectionBase::detach_connection_nolock(SOCKETHANDLE hSock
         mSocketToCookie.remove_at(hSocket);
         mCookieToSocket.remove_at(cookie);
         mAcceptedConnections.remove_at(hSocket);
-
-        LOG_INFO("Closed connection for cookie [ %u ], socket [ %u ], remaining accepted [ %u ]"
-                    , static_cast<uint32_t>(cookie)
-                    , static_cast<uint32_t>(hSocket)
-                    , mAcceptedConnections.size());
     }
 
     return result;

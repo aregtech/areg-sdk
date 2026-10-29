@@ -49,6 +49,8 @@ namespace
         std::mutex              lock        { };            //!< Guards the wake-up of the main thread.
         std::condition_variable changed     { };            //!< Signalled for every message and at the end.
         bool                    connected   { false };      //!< True when the observer is connected to the log collector.
+        uint32_t                notices     { 0u };         //!< Rows of the source that report dropped messages.
+        uint64_t                dropped     { 0u };         //!< Messages the source reported as dropped.
     };
 
     Run _run;
@@ -61,6 +63,19 @@ namespace
         const areg::LogEntry & entry{ *reinterpret_cast<const areg::LogEntry *>(logBuffer) };
         if ((entry.logMsgType != areg::LogMessageType::MessageText) || (entry.logDataType != areg::LogDataType::Remote))
             return;
+
+        // A row without a scope is a notice of the framework, not a message of the source.
+        if (entry.logScopeId == areg::LOG_SCOPE_ID_NONE)
+        {
+            unsigned long long count{ 0u };
+            if (std::sscanf(entry.logMessage, "Dropped [ %llu ]", &count) == 1)
+            {
+                ++_run.notices;
+                _run.dropped += count;
+            }
+
+            return;
+        }
 
         const uint64_t now{ static_cast<uint64_t>(areg::DateTime::now()) };
         const uint64_t sent{ static_cast<uint64_t>(entry.logTimestamp) };
@@ -183,6 +198,11 @@ int main(int argc, char ** argv)
     std::printf("35 logsink   | received %u | lost %u | rate %.0f msg/s | database %s\n"
                , received, (expected > received) ? expected - received : 0u
                , static_cast<double>(received) * 1e6 / static_cast<double>(spanUs), (database != nullptr) ? "on" : "off");
+    if (_run.notices != 0u)
+    {
+        std::printf("35 logsink   | dropped notices %u | dropped messages %llu\n", _run.notices, static_cast<unsigned long long>(_run.dropped));
+    }
+
     std::printf("35 log trip  | P50 %.0f us | P90 %.0f us | P99 %.0f us | P99.9 %.0f us | max %.0f us | mean %.0f us\n"
                , percentile(latencies, 0.50), percentile(latencies, 0.90), percentile(latencies, 0.99)
                , percentile(latencies, 0.999), static_cast<double>(latencies.back()), sum / static_cast<double>(latencies.size()));

@@ -19,7 +19,6 @@
 
 #include "areg/component/Timer.hpp"
 #include "areg/base/UtilityDefs.hpp"
-#include "areg/logging/areg_log.h"
 
 #include <atomic>
 
@@ -30,11 +29,6 @@ namespace
     //!< True while the timer manager singleton exists.
     std::atomic_bool _theManagerAlive{ false };
 }
-
-DEF_LOG_SCOPE(areg_component_private_TimerManager, start_timer);
-DEF_LOG_SCOPE(areg_component_private_TimerManager, process_event);
-DEF_LOG_SCOPE(areg_component_private_TimerManager, _register_timer);
-DEF_LOG_SCOPE(areg_component_private_TimerManager, _process_expired_timer);
 
 //////////////////////////////////////////////////////////////////////////
 // TimerManager class implementation
@@ -77,32 +71,20 @@ bool TimerManager::start_timer( Timer &timer )
 
 bool TimerManager::start_timer(Timer &timer, const DispatcherThread & whichThread)
 {
-    LOG_SCOPE( areg_component_private_TimerManager, start_timer );
-
     TimerManager & timerManager = instance();
     bool result = false;
     if ( timerManager.is_ready() )
     {
         if ( timerManager._register_timer( timer, whichThread ) )
         {
-            LOG_DBG( "Registered timer [ %s ] for thread [ %p ], sending event to start timer", timer.name( ).as_string( ), whichThread.id( ) );
             result = TimerManagerEvent::send_event( TimerManagerEventData(&timer)
                                                  , static_cast<TimerManagerEventConsumer &>(timerManager)
                                                  , static_cast<DispatcherThread &>(timerManager) );
             if (!result)
             {
-                LOG_ERR("Failed to post start event for timer [ %s ]", timer.name().as_string());
                 timerManager._unregister_timer(timer);
             }
         }
-        else
-        {
-            LOG_ERR("Failed to register timer [ %s ]", timer.name().as_string());
-        }
-    }
-    else
-    {
-        LOG_ERR("The Timer manager service is not running, cannot start and process the timer.");
     }
 
     return result;
@@ -141,8 +123,6 @@ TimerManager::~TimerManager()
 
 bool TimerManager::_register_timer(Timer &timer, const DispatcherThread & whichThread)
 {
-    LOG_SCOPE( areg_component_private_TimerManager, _register_timer );
-
     Lock resourceLock(mTimerResource.lockable());
     Lock timerLock(timer.mLock);
     bool result = false;
@@ -151,17 +131,8 @@ bool TimerManager::_register_timer(Timer &timer, const DispatcherThread & whichT
         TIMERHANDLE timerHandle = timer.handle();
         ASSERT(timerHandle != nullptr);
         mTimerResource.register_resource_object(timerHandle, &timer);
-        LOG_DBG("Registered timer [ %s ]", timer.name().as_string());
         result = true;
     }
-#ifdef DEBUG
-    else
-    {
-        LOG_ERR("Either times [ %s ] is not valid or thread [ %s ] is not running, cancel timer."
-                        , timer.name().as_string()
-                        , whichThread.name().as_string());
-    }
-#endif // DEBUG
 
     return result;
 }
@@ -192,16 +163,13 @@ void TimerManager::_remove_all_timers()
 
 void TimerManager::process_event( const TimerManagerEventData & data )
 {
-    LOG_SCOPE( areg_component_private_TimerManager, process_event );
     Lock resourceLock(mTimerResource.lockable());
     Timer* timer = mTimerResource.find_resource_object(data.handle());
     if ((timer != nullptr) && (timer == data.timer()))
     {
         Lock timerLock(timer->mLock);
-        LOG_DBG( "Starting timer [ %s ] with timeout [ %u ] ms.", timer->name( ).as_string( ), timer->timeout( ) );
         if (TimerManager::_os_timer_start(*timer) == false)
         {
-            LOG_ERR("Failed to start OS timer [ %s ]", timer->name().as_string());
             _unregister_timer(*timer);
 
             timer->mStarted        = false;
@@ -209,20 +177,11 @@ void TimerManager::process_event( const TimerManagerEventData & data )
             timer->mDispatchThread = nullptr;
         }
     }
-#ifdef DEBUG
-    else
-    {
-        LOG_WARN("The timer handle [ %p ] is not registered, ignoring to start.", data.handle());
-    }
-#endif // DEBUG
 }
 
 void TimerManager::_process_expired_timer(Timer * timer, TIMERHANDLE handle, uint32_t hiBytes, uint32_t loBytes)
 {
-    LOG_SCOPE( areg_component_private_TimerManager, _process_expired_timer );
-
     bool    shouldStop{ false };    // the timer left the map and its OS timer must be disarmed
-    bool    noTarget  { false };    // the timer had no dispatcher thread to deliver the event to
 
     Lock resourceLock(mTimerResource.lockable());
 
@@ -230,7 +189,7 @@ void TimerManager::_process_expired_timer(Timer * timer, TIMERHANDLE handle, uin
     {
         Lock timerLock(timer->mLock);
         ASSERT(timer->handle() == handle);
-        noTarget = (timer->mDispatchThread == nullptr);
+        const bool noTarget{ timer->mDispatchThread == nullptr };
 
         shouldStop = noTarget || (timer->timer_is_expired(hiBytes, loBytes, reinterpret_cast<ptr_type>(handle)) == false);
 
@@ -238,15 +197,6 @@ void TimerManager::_process_expired_timer(Timer * timer, TIMERHANDLE handle, uin
         {
             mTimerResource.unregister_resource_object(handle);
             timer->mStarted = false;
-
-            if (noTarget)
-            {
-                LOG_WARN("Timer [ %s ] target thread is not running, going to unregister timer", timer->name().as_string());
-            }
-            else
-            {
-                LOG_INFO("Timer [ %s ] should be stopped and unregistered, it should not be active anymore", timer->name().as_string());
-            }
         }
         else
         {

@@ -20,24 +20,10 @@
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
-#include "areg/logging/areg_log.h"
 
 #include "areg/base/private/DebugDefs.hpp"
 
 namespace areg {
-
-DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, on_reconnect_timer);
-DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, on_service_start);
-DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, on_service_stop);
-DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, on_connection_started);
-DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, on_connection_stopped);
-DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, on_connection_lost);
-DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, on_channel_connected);
-DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, service_connection_event);
-DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, start_connection);
-DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, cancel_connection);
-DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, ensure_send_thread);
-
 //////////////////////////////////////////////////////////////////////////
 // Local helper methods
 //////////////////////////////////////////////////////////////////////////
@@ -123,23 +109,13 @@ ServiceClientConnectionBase::~ServiceClientConnectionBase()
 
 void ServiceClientConnectionBase::ensure_send_thread()
 {
-    LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, ensure_send_thread );
-
     Lock lock( mSendStartLock );
     if ( mThreadSend.is_running() )
         return;
 
-    // The readiness poll stays inside the lock, so that a second producer finds the thread
-    // ready, not merely created.
-    if ( mThreadSend.start( areg::WAIT_INFINITE ) && _wait_io_thread_ready( mThreadSend ) )
-    {
-        LOG_DBG( "The send thread is started on demand by the message it could not send inline" );
-    }
-    else
-    {
-        // Nothing is torn down here: the receive side restarts the connection.
-        LOG_ERR( "Failed to start the send thread on demand" );
-    }
+    // The readiness poll stays inside the lock, so a second producer finds the thread ready.
+    // On failure nothing is torn down: the receive side restarts the connection.
+    static_cast<void>(mThreadSend.start( areg::WAIT_INFINITE ) && _wait_io_thread_ready( mThreadSend ));
 }
 
 bool ServiceClientConnectionBase::try_send_inline( MessageEnvelope & data )
@@ -205,14 +181,11 @@ bool ServiceClientConnectionBase::try_send_inline( MessageEnvelope & data )
 
 void ServiceClientConnectionBase::service_connection_event(const MessageEnvelope& msgReceived)
 {
-    LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, service_connection_event );
-
     msgReceived.move_to_begin();
     ITEM_ID cookie{ areg::COOKIE_UNKNOWN };
     areg::ServiceConnectionState connection{ areg::ServiceConnectionState::Unknown };
     msgReceived >> cookie;
     msgReceived >> connection;
-    LOG_DBG("Remote service connection notification: status [ %s ], cookie [ %u ]", areg::as_string(connection), cookie);
 
     switch (connection)
     {
@@ -351,37 +324,24 @@ MessageEnvelope ServiceClientConnectionBase::disconnect_message(const ITEM_ID & 
 
 void ServiceClientConnectionBase::on_reconnect_timer()
 {
-    LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, on_reconnect_timer );
-    LOG_DBG("Reconnect timer expired, attempting to restart service connection, thread [ %s ]", Thread::current_thread_name().as_string());
-
     mTimerConnect.stop_timer( );
     on_service_start( );
 }
 
 void ServiceClientConnectionBase::on_service_start()
 {
-    LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, on_service_start );
-
     if (connection_state() == ConnectionPhase::ConnectionStopping)
     {
-        LOG_WARN("Ignoring start event: the connection is stopping.");
         return;
     }
 
     if (!is_connection_allowed())
     {
         // The application did not reach the servicing state yet. Retry later
-        LOG_WARN("The application cannot service yet, retrying to start the connection later.");
         mTimerConnect.stop_timer();
-        if (!mTimerConnect.start_timer(areg::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1))
-        {
-            LOG_ERR("Failed to start the retry timer, the remote connection stays down.");
-        }
-
+        static_cast<void>(mTimerConnect.start_timer(areg::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1));
         return;
     }
-
-    LOG_DBG("Starting remote servicing, kind [ %s ]", areg::as_string(mService));
 
     mChannel.set_cookie( areg::COOKIE_LOCAL );
     mChannel.set_source( areg::SOURCE_UNKNOWN );
@@ -394,9 +354,6 @@ void ServiceClientConnectionBase::on_service_start()
 
 void ServiceClientConnectionBase::on_service_stop()
 {
-    LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, on_service_stop );
-    LOG_DBG("Stopping remote servicing");
-
     set_connection_state(ConnectionPhase::ConnectionStopping);
 
     mTimerConnect.stop_timer( );
@@ -419,7 +376,6 @@ void ServiceClientConnectionBase::on_service_stop()
         mThreadSend.trigger_exit_drained();
         if (!mThreadSend.wait_completion( areg::SEND_QUEUE_FLUSH_TIMEOUT ))
         {
-            LOG_WARN("The outgoing messages did not leave within [ %u ] ms, closing the connection", areg::SEND_QUEUE_FLUSH_TIMEOUT);
             mThreadSend.trigger_exit();
             mThreadSend.wait_completion( areg::WAIT_INFINITE );
         }
@@ -445,8 +401,6 @@ void ServiceClientConnectionBase::on_service_restart()
 
 void ServiceClientConnectionBase::on_connection_started()
 {
-    LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, on_connection_started );
-
     Channel channel;
     do
     {
@@ -455,11 +409,8 @@ void ServiceClientConnectionBase::on_connection_started()
         // The connection may be canceled between the handshake acknowledgment and this event;
         if ( !is_connection_started() )
         {
-            LOG_WARN("The connection is canceled before the start completed, ignoring start event.");
             return;
         }
-
-        LOG_DBG("Succeeded to start router service client, cookie [ %u ]", mClientConnection.cookie());
 
         mChannel.set_cookie( mClientConnection.cookie() );
         mChannel.set_source( mMessageDispatcher.number() );
@@ -473,9 +424,6 @@ void ServiceClientConnectionBase::on_connection_started()
 
 void ServiceClientConnectionBase::on_connection_stopped()
 {
-    LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, on_connection_stopped );
-    LOG_DBG("Client service is stopped. Resetting cookie");
-
     // Capture the state before changing it
     const ConnectionPhase prevState{ connection_state() };
     set_connection_state(ConnectionPhase::ConnectionStopped);
@@ -494,7 +442,6 @@ void ServiceClientConnectionBase::on_connection_stopped()
     {
         if (!mTimerConnect.start_timer(areg::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1))
         {
-            LOG_WARN("Failed to start reconnect timer, retrying connection immediately.");
             send_command(ServiceEventData::ServiceCommand::CMD_StartService);
         }
     }
@@ -502,13 +449,8 @@ void ServiceClientConnectionBase::on_connection_stopped()
 
 void ServiceClientConnectionBase::on_connection_lost()
 {
-    LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, on_connection_lost );
-    LOG_WARN("Client service lost connection. Resetting cookie and trying to restart, current connection state [ %s ]"
-                , ServiceClientConnectionBase::as_string(connection_state()));
-
     if (mClientConnection.is_valid())
     {
-        LOG_WARN("Ignoring stale lost connection event, a new connection attempt is in progress.");
         return;
     }
 
@@ -524,15 +466,12 @@ void ServiceClientConnectionBase::on_connection_lost()
     if (!is_connection_allowed() || !mTimerConnect.is_stopped() ||
         (prevState == ConnectionPhase::ConnectionStopping))
     {
-        LOG_WARN("Ignoring lost connection event, either servicing state is not allowed, or application is closing.");
         return;
     }
 
-    LOG_DBG( "Restarting lost connection with remote service" );
     mConnectionConsumer.on_service_channel_lost( channel );
     if (!mTimerConnect.start_timer(areg::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1))
     {
-        LOG_WARN("Failed to start reconnect timer, retrying connection immediately.");
         send_command(ServiceEventData::ServiceCommand::CMD_StartService);
     }
 }
@@ -552,12 +491,10 @@ void ServiceClientConnectionBase::on_message_send( const MessageEnvelope & /* ms
 
 void ServiceClientConnectionBase::on_channel_connected(const ITEM_ID& cookie)
 {
-    LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, on_channel_connected );
     Lock lock(mLock);
 
     if (cookie < areg::COOKIE_REMOTE_SERVICE)
     {
-        LOG_INFO("Disconnecting remote channel [ source = %u, target = %u, cookie = %u ]", mChannel.source(), mChannel.target(), mChannel.cookie());
         mChannel.invalidate();
         return;
     }
@@ -565,13 +502,10 @@ void ServiceClientConnectionBase::on_channel_connected(const ITEM_ID& cookie)
     mChannel.set_cookie(cookie);
     mChannel.set_source( mMessageDispatcher.number() );
     mChannel.set_target(mTarget);
-    LOG_DBG("Connected remote channel [ source = %u, target = %u, cookie = %u ]", mChannel.source(), mChannel.target(), mChannel.cookie());
 }
 
 bool ServiceClientConnectionBase::start_connection()
 {
-    LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, start_connection );
-
     ASSERT(mClientConnection.address().is_valid());
     ASSERT(!mClientConnection.is_valid());
     ASSERT(!mThreadReceive.is_running());
@@ -592,14 +526,8 @@ bool ServiceClientConnectionBase::start_connection()
 
     if ( !created )
     {
-        LOG_WARN("Client service failed to create socket FD, going to repeat in [ %u ] ms on thread [ %u : %s ]"
-                , areg::DEFAULT_RETRY_CONNECT_TIMEOUT
-                , mMessageDispatcher.number()
-                , mMessageDispatcher.name().as_string());
-
         if (!mTimerConnect.start_timer(areg::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1))
         {
-            LOG_WARN("Failed to start reconnect timer, retrying connection immediately.");
             if (is_connection_allowed())
                 send_command(ServiceEventData::ServiceCommand::CMD_StartService);
         }
@@ -615,24 +543,14 @@ bool ServiceClientConnectionBase::start_connection()
     bool result{ mThreadReceive.start(areg::WAIT_INFINITE) &&
                  _wait_io_thread_ready(mThreadReceive) };
 
-    if (result)
+    if (!result)
     {
-        LOG_DBG("Client service threads started; receive thread will connect asynchronously.");
-    }
-    else
-    {
-        LOG_WARN("Client service failed to start I/O threads, going to repeat in [ %u ] ms on thread [ %u : %s ]"
-                , areg::DEFAULT_RETRY_CONNECT_TIMEOUT
-                , mMessageDispatcher.number()
-                , mMessageDispatcher.name().as_string());
-
         // The interrupt ends blocked socket calls, so the shutdown barriers below are bounded.
         mClientConnection.interrupt_socket();
         mThreadReceive.shutdown( areg::WAIT_INFINITE );
         _close_connection( mSendStartLock, mThreadSend, mClientConnection, false );
         if (!mTimerConnect.start_timer(areg::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1))
         {
-            LOG_WARN("Failed to start reconnect timer, retrying connection immediately.");
             if (is_connection_allowed())
                 send_command(ServiceEventData::ServiceCommand::CMD_StartService);
         }
@@ -643,9 +561,6 @@ bool ServiceClientConnectionBase::start_connection()
 
 void ServiceClientConnectionBase::cancel_connection()
 {
-    LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, cancel_connection );
-    LOG_WARN("Canceling client service connection");
-
     // The interrupt ends blocked receive / send calls of the I/O threads.
     mClientConnection.interrupt_socket();
 

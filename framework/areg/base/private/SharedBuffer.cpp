@@ -22,6 +22,44 @@
 #include "areg/base/WideString.hpp"
 
 #include <algorithm>
+#include <cstring>
+
+namespace
+{
+    //!< Returns true if a wide character can be read in place at the address.
+    inline bool _is_wide_aligned(const uint8_t* src) noexcept
+    {
+        return (reinterpret_cast<uintptr_t>(src) % alignof(wchar_t)) == 0u;
+    }
+
+    //!< Returns the wide character at the index, copied out of memory of any alignment.
+    inline wchar_t _wide_at(const uint8_t* src, uint32_t index) noexcept
+    {
+        wchar_t ch{ L'\0' };
+        ::memcpy(&ch, src + static_cast<size_t>(index) * sizeof(wchar_t), sizeof(wchar_t));
+        return ch;
+    }
+
+    //!< Sets the string to the wide characters at the address, which may have any alignment.
+    inline void _assign_wide(areg::WideString& wide, const uint8_t* src, uint32_t count)
+    {
+        wide.clear();
+        if (count == 0u)
+            return;
+
+        if (_is_wide_aligned(src))
+        {
+            wide.assign(reinterpret_cast<const wchar_t*>(src), static_cast<areg::CharCount>(count));
+            return;
+        }
+
+        wide.reserve(static_cast<areg::CharCount>(count));
+        for (uint32_t i = 0u; i < count; ++i)
+        {
+            wide.append(_wide_at(src, i));
+        }
+    }
+}
 
 namespace areg {
 
@@ -451,14 +489,23 @@ uint32_t SharedBuffer::read(WideString& wide) const
         return 0u;
 
     // Bounded scan: find NUL within the view/buffer window to prevent overrun.
-    const wchar_t* const src = reinterpret_cast<const wchar_t*>(areg::buffer_data_read(raw) + mPosition);
-    const wchar_t* const nul = static_cast<const wchar_t*>(std::wmemchr(src, L'\0', max_chars));
-    const uint32_t       len = (nul != nullptr) ? static_cast<uint32_t>(nul - src) : max_chars;
+    const uint8_t* const src = areg::buffer_data_read(raw) + mPosition;
+    uint32_t len{ 0u };
+    if (_is_wide_aligned(src))
+    {
+        const wchar_t* const chars = reinterpret_cast<const wchar_t*>(src);
+        const wchar_t* const nul = static_cast<const wchar_t*>(std::wmemchr(chars, L'\0', max_chars));
+        len = (nul != nullptr) ? static_cast<uint32_t>(nul - chars) : max_chars;
+    }
+    else
+    {
+        while ((len < max_chars) && (_wide_at(src, len) != L'\0'))
+            ++len;
+    }
 
-    if (len > 0u)
-        wide.assign(src, static_cast<areg::CharCount>(len));
+    _assign_wide(wide, src, len);
 
-    const uint32_t advance = (nul != nullptr) ? (len + 1u) * static_cast<uint32_t>(sizeof(wchar_t)) : len * static_cast<uint32_t>(sizeof(wchar_t));
+    const uint32_t advance = (len < max_chars) ? (len + 1u) * static_cast<uint32_t>(sizeof(wchar_t)) : len * static_cast<uint32_t>(sizeof(wchar_t));
     mPosition += advance;
     return advance;
 }
@@ -586,8 +633,7 @@ uint32_t SharedBuffer::read_string_bin(WideString& str) const noexcept
         return 0u;
     }
 
-    const wchar_t* src = reinterpret_cast<const wchar_t*>(areg::buffer_data_read(raw) + mPosition);
-    str.assign(src, static_cast<areg::CharCount>(char_count));
+    _assign_wide(str, areg::buffer_data_read(raw) + mPosition, char_count);
     mPosition += byte_count;
     return sizeof(uint32_t) + byte_count;
 }

@@ -20,15 +20,11 @@
 #include "aregextend/service/private/SendBacklog.hpp"
 
 #include "areg/base/private/SocketLiveness.hpp"
-#include "areg/logging/areg_log.h"
 
 #include <algorithm>
 #include <chrono>
 #include <limits>
 #include <new>
-
-DEF_LOG_SCOPE(areg_aregextend_service_SendBacklog, log_close);
-DEF_LOG_SCOPE(areg_aregextend_service_SendBacklog, enter_fallback);
 
 namespace areg::ext {
 
@@ -79,7 +75,7 @@ SendBacklog::SendBacklog(areg::SendQueueGate & gate)
 {
     if (mWait == nullptr)
     {
-        enter_fallback("no wait object");
+        enter_fallback();
     }
 }
 
@@ -288,7 +284,7 @@ bool SendBacklog::attach(SOCKETHANDLE hSocket) noexcept
     if ((mWait != nullptr) && backlog_os_attach(mWait.get(), hSocket))
         return true;
 
-    enter_fallback("a socket could not be attached");
+    enter_fallback();
     return false;
 }
 
@@ -384,39 +380,6 @@ void SendBacklog::release_all(std::deque<ITEM_ID> & cutCookies)
         }
 
         release_entry(entry);
-    }
-}
-
-void SendBacklog::log_close(const Entry & entry, Reason reason) const
-{
-    LOG_SCOPE(areg_aregextend_service_SendBacklog, log_close);
-
-    switch (reason)
-    {
-    case Reason::Refused:
-        LOG_WARN("Client [ %u ] took no data for [ %u ] ms, the limit of net::*::tcpip::timeout; closing the connection"
-                    , static_cast<uint32_t>(entry.cookie)
-                    , mRefuseMs.load(std::memory_order_relaxed));
-        break;
-
-    case Reason::OverCap:
-        LOG_ERR("Client [ %u ] takes no data and keeps [ %llu ] bytes, more than net::*::tcpip::sndbuf allows; closing the connection. Raise sndbuf to keep a paused client longer"
-                    , static_cast<uint32_t>(entry.cookie)
-                    , static_cast<unsigned long long>(entry.bytes));
-        break;
-
-    case Reason::Unreachable:
-        LOG_WARN("Client [ %u ] stopped answering for [ %u ] ms, net::*::tcpip::keepalive; closing the connection"
-                    , static_cast<uint32_t>(entry.cookie)
-                    , mKeepaliveMs.load(std::memory_order_relaxed));
-        break;
-
-    case Reason::SocketError:
-    default:
-        LOG_WARN("Failed to write to client [ %u ], socket [ %u ]; closing the connection"
-                    , static_cast<uint32_t>(entry.cookie)
-                    , static_cast<uint32_t>(entry.socket));
-        break;
     }
 }
 
@@ -523,15 +486,9 @@ bool SendBacklog::cancel_writes(SendBacklogOsPtr & os, SOCKETHANDLE hSocket) noe
     return false;
 }
 
-void SendBacklog::enter_fallback(const char * what) noexcept
+void SendBacklog::enter_fallback() noexcept
 {
-    if (mFallback.exchange(true, std::memory_order_acq_rel))
-        return;
-
-    LOG_SCOPE(areg_aregextend_service_SendBacklog, enter_fallback);
-    LOG_WARN("Send backlog: %s, a slow connection is now served every [ %u ] ms"
-                , what
-                , SendBacklog::RECHECK_MS);
+    mFallback.store(true, std::memory_order_release);
 }
 
 uint32_t SendBacklog::complete(Entry & entry, uint64_t bytes, uint64_t nowMs)

@@ -20,7 +20,6 @@
 #include "areg/base/private/WaitWord.hpp"
 #include "areg/appbase/Application.hpp"
 
-#include "areg/logging/areg_log.h"
 
 #include <atomic>
 #include <cstring>
@@ -508,9 +507,6 @@ bool areg::UserData::is_valid() const noexcept
 //////////////////////////////////////////////////////////////////////////
 // Socket functions implementation
 //////////////////////////////////////////////////////////////////////////
-DEF_LOG_SCOPE(areg_base_areg, client_connect);
-DEF_LOG_SCOPE(areg_base_areg, server_connect);
-DEF_LOG_SCOPE(areg_base_areg, set_recv_size);
 
 AREG_API_IMPL uint32_t areg::thread_cache_size() noexcept
 {
@@ -615,25 +611,6 @@ AREG_API_IMPL uint32_t areg::set_recv_size(SOCKETHANDLE hSocket, uint32_t recvSi
 
 #if defined(__linux__)
     ::setsockopt(hSocket, SOL_SOCKET, SO_RCVBUFFORCE, reinterpret_cast<const char*>(&recvSize), len);
-
-    {
-        static std::atomic<bool> _rcvBufWarned{ false };
-        if (!_rcvBufWarned.load(std::memory_order_relaxed))
-        {
-            unsigned long actual{ 0u };
-            socklen_t actualLen{ static_cast<socklen_t>(sizeof(actual)) };
-            if (::getsockopt(hSocket, SOL_SOCKET, SO_RCVBUF, reinterpret_cast<char*>(&actual), &actualLen) == RETURNED_OK)
-            {
-                const uint32_t effective = static_cast<uint32_t>(actual / 2u);
-                if ((effective < (recvSize / 4u)) && !_rcvBufWarned.exchange(true, std::memory_order_relaxed))
-                {
-                    LOG_SCOPE(areg_base_areg, set_recv_size);
-                    LOG_WARN("SO_RCVBUF capped at %u KB (requested %u KB). Raise via: sudo sysctl -w net.core.rmem_max=%u",
-                             effective / 1024u, recvSize / 1024u, recvSize);
-                }
-            }
-        }
-    }
 #endif  // __linux__
 
     return (rc == areg::RETURNED_OK ? recvSize : areg::PACKET_MIN_SIZE);
@@ -641,12 +618,7 @@ AREG_API_IMPL uint32_t areg::set_recv_size(SOCKETHANDLE hSocket, uint32_t recvSi
 
 AREG_API_IMPL SOCKETHANDLE areg::client_connect(const String& hostName, uint16_t portNr, areg::SocketAddress * socketAddr /*= nullptr*/)
 {
-    LOG_SCOPE( areg_base_areg, client_connect );
-
     const String host{ hostName.is_empty() ? areg::LocalHost : hostName };
-
-    LOG_DBG("Creating client socket to connect remote host [ %s ] and port number [ %u ]", host.as_string(), static_cast<uint32_t>(portNr));
-
     if (socketAddr != nullptr)
     {
         socketAddr->reset();
@@ -662,18 +634,12 @@ AREG_API_IMPL SOCKETHANDLE areg::client_connect(const String& hostName, uint16_t
             *socketAddr = sockAddress;
         }
     }
-    else
-    {
-        LOG_ERR("FAILED to resolve IP address for remote host name [ %s ] and port [ %u ], cannot create client socket", host.as_string(), static_cast<uint32_t>(portNr));
-    }
 
     return result;
 }
 
 AREG_API_IMPL SOCKETHANDLE areg::client_connect(const SocketAddress & peerAddr)
 {
-    LOG_SCOPE( areg_base_areg, client_connect );
-
     SOCKETHANDLE result   = areg::InvalidSocketHandle;
     if ( peerAddr.is_valid() )
     {
@@ -685,34 +651,14 @@ AREG_API_IMPL SOCKETHANDLE areg::client_connect(const SocketAddress & peerAddr)
             areg::socket_configure(result);
             if (!areg::os::_os_connect_socket(result, &remoteAddr, sizeof(sockaddr_in), SOCKET_CONNECT_TIMEOUT_MS))
             {
-                LOG_ERR("Client failed to connect to remote host [ %s ] and port number [ %u ]. Closing socket [ %u ]"
-                            , static_cast<const char *>(peerAddr.host_address())
-                            , static_cast<uint32_t>(peerAddr.host_port())
-                            , static_cast<uint32_t>(result));
-
                 areg::socket_close(result);
                 result = areg::InvalidSocketHandle;
             }
             else
             {
                 areg::socket_set_no_delay(result);
-
-#ifdef DEBUG
-                LOG_DBG("Client socket [ %u ] succeeded to connect to remote host [ %s ] and port number [ %u ]"
-                            , static_cast<uint32_t>(result)
-                            , static_cast<const char *>(peerAddr.host_address())
-                            , static_cast<uint32_t>(peerAddr.host_port()));
-#endif  // DEBUG
             }
         }
-        else
-        {
-            LOG_ERR("Failed to create socket, cannot create client!");
-        }
-    }
-    else
-    {
-        LOG_ERR("Address [ %s ] or port number [ %u ] is not valid. No client is created", static_cast<const char *>(peerAddr.host_address()), peerAddr.host_port());
     }
 
     return result;
@@ -736,13 +682,7 @@ AREG_API_IMPL bool areg::client_connect_fd(SOCKETHANDLE hSocket, const SocketAdd
 
 AREG_API_IMPL SOCKETHANDLE areg::server_connect(const areg::String& hostName, uint16_t portNr, areg::SocketAddress * socketAddr /*= nullptr */)
 {
-    LOG_SCOPE( areg_base_areg, server_connect );
-
     String host = hostName.is_empty() ? areg::LocalHost : hostName;
-
-    LOG_DBG("Creating server socket on host [ %s ] and port number [ %u ]", host.as_string(), static_cast<uint32_t>(portNr));
-
-
     if (socketAddr != nullptr)
     {
         socketAddr->reset();
@@ -759,18 +699,12 @@ AREG_API_IMPL SOCKETHANDLE areg::server_connect(const areg::String& hostName, ui
             *socketAddr = sockAddress;
         }
     }
-    else
-    {
-        LOG_ERR("FAILED to resolve IP address for host name [ %s ] and port [ %u ], cannot create server socket", host.as_string(), static_cast<uint32_t>(portNr));
-    }
 
     return result;
 }
 
 AREG_API_IMPL SOCKETHANDLE areg::server_connect(const areg::SocketAddress & peerAddr)
 {
-    LOG_SCOPE( areg_base_areg, server_connect );
-
     SOCKETHANDLE result   = areg::InvalidSocketHandle;
     if ( peerAddr.is_valid() )
     {
@@ -791,33 +725,10 @@ AREG_API_IMPL SOCKETHANDLE areg::server_connect(const areg::SocketAddress & peer
 #endif  // _WIN32
             if (areg::RETURNED_OK != bind(result, reinterpret_cast<sockaddr *>(&serverAddr), sizeof(sockaddr_in)) )
             {
-                LOG_ERR("Server failed to bind on host [ %s ] and port number [ %u ]. Closing socket [ %u ]"
-                            , static_cast<const char *>(peerAddr.host_address())
-                            , static_cast<uint32_t>(peerAddr.host_port())
-                            , static_cast<uint32_t>(result));
-
                 areg::socket_close( result );
                 result = areg::InvalidSocketHandle;
             }
-#ifdef  DEBUG
-            else
-            {
-                LOG_DBG("Server socket [ %u ] succeeded to bind on host [ %s ] and port number [ %u ]. Ready to listen."
-                          , static_cast<uint32_t>(result)
-                          , static_cast<const char *>(peerAddr.host_address())
-                          , static_cast<uint32_t>(peerAddr.host_port()));
-
-            }
-#endif  // DEBUG
         }
-        else
-        {
-            LOG_ERR("Failed to create socket, cannot create server!");
-        }
-    }
-    else
-    {
-        LOG_ERR("Address [ %s ] or port number [ %u ] is not valid. No server is created", static_cast<const char *>(peerAddr.host_address()), peerAddr.host_port());
     }
 
     return result;
@@ -828,16 +739,10 @@ AREG_API_IMPL bool areg::server_listen(SOCKETHANDLE serverSocket, int32_t maxQue
     return ( (serverSocket != areg::InvalidSocketHandle) && (areg::RETURNED_OK == ::listen(serverSocket, maxQueueSize)) );
 }
 
-
-DEBUG_DEF_LOG_SCOPE(areg_base_areg, server_accept);
 AREG_API_IMPL SOCKETHANDLE areg::server_accept(areg::SocketMultiplexer & multiplexer, SOCKETHANDLE serverSocket, areg::SocketAddress * socketAddr /*= nullptr*/, int32_t timeoutMs /*= static_cast<int32_t>(areg::WAIT_INFINITE)*/)
 {
-    DEBUG_LOG_SCOPE( areg_base_areg, server_accept );
-    DEBUG_LOG_DBG("Checking server socket event (persistent mux), server socket handle [ %u ]", static_cast<uint32_t>(serverSocket));
-
     if (serverSocket == areg::InvalidSocketHandle)
     {
-        DEBUG_LOG_WARN("Invalid server socket, cannot accept connection");
         return areg::InvalidSocketHandle;
     }
 
@@ -853,9 +758,7 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept(areg::SocketMultiplexer & multipl
         struct sockaddr_in acceptAddr;
         areg::mem_zero(&acceptAddr, sizeof(sockaddr_in));
 
-        DEBUG_LOG_DBG("... server waiting for new connection event ...");
         SOCKETHANDLE result = areg::os::_os_accept_socket(serverSocket, acceptAddr);
-        DEBUG_LOG_DBG("Server accepted new connection of client socket [ %u ]", static_cast<uint32_t>(result));
 
         if (result != areg::InvalidSocketHandle)
         {
@@ -872,7 +775,6 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept(areg::SocketMultiplexer & multipl
     }
     else if (readable != areg::InvalidSocketHandle && readable != areg::FailedSocketHandle)
     {
-        DEBUG_LOG_DBG("Server selected event of existing client socket [ %u ] connection", static_cast<uint32_t>(readable));
         return readable;
     }
     else if (readable == areg::InvalidSocketHandle)
@@ -881,20 +783,15 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept(areg::SocketMultiplexer & multipl
     }
     else
     {
-        DEBUG_LOG_ERR("Failed to wait for connection. The server socket [ %u ] might be closed and not valid anymore", static_cast<uint32_t>(serverSocket));
         return areg::FailedSocketHandle;
     }
 }
 
 AREG_API_IMPL SOCKETHANDLE areg::server_accept(SOCKETHANDLE serverSocket, const SOCKETHANDLE * masterList, int32_t entriesCount, areg::SocketAddress * socketAddr /*= nullptr*/)
 {
-    DEBUG_LOG_SCOPE( areg_base_areg, server_accept );
-    DEBUG_LOG_DBG("Checking server socket event, server socket handle [ %u ]", static_cast<uint32_t>(serverSocket));
-
     SOCKETHANDLE result = areg::InvalidSocketHandle;
     if (masterList == nullptr)
     {
-        DEBUG_LOG_ERR("Invalid list of sockets, cannot accept connection");
         return result;
     }
 
@@ -905,8 +802,6 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept(SOCKETHANDLE serverSocket, const 
 
     if ( serverSocket != areg::InvalidSocketHandle )
     {
-        DEBUG_LOG_DBG("Waiting for socket event on server socket [ %u ] with [ %d ] client(s)", static_cast<uint32_t>(serverSocket), entriesCount);
-
         const SOCKETHANDLE readable = areg::SocketMultiplexer{}.wait(serverSocket, masterList, entriesCount);
         if (readable == serverSocket)
         {
@@ -914,9 +809,7 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept(SOCKETHANDLE serverSocket, const 
             struct sockaddr_in acceptAddr;
             areg::mem_zero(&acceptAddr, sizeof(sockaddr_in));
 
-            DEBUG_LOG_DBG("... server waiting for new connection event ...");
             result = areg::os::_os_accept_socket(serverSocket, acceptAddr);
-            DEBUG_LOG_DBG("Server accepted new connection of client socket [ %u ]", static_cast<uint32_t>(result));
 
             if (result != areg::InvalidSocketHandle)
             {
@@ -933,17 +826,14 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept(SOCKETHANDLE serverSocket, const 
         {
             // Existing client has data (or connection closed).
             result = readable;
-            DEBUG_LOG_DBG("Server selected event of existing client socket [ %u ] connection", static_cast<uint32_t>(result));
         }
         else
         {
-            DEBUG_LOG_ERR("Failed to wait for connection. The server socket [ %u ] might be closed and not valid anymore", static_cast<uint32_t>(serverSocket));
             result = areg::FailedSocketHandle;
         }
     }
     else
     {
-        DEBUG_LOG_WARN("Found broken connection of socket [ %u ]", static_cast<size_t>(result));
         return result;
     }
 

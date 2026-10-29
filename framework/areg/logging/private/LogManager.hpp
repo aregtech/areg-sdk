@@ -464,6 +464,19 @@ private:
     void write_log_message( areg::MessageEnvelope & msg );
 
     /**
+     * \brief   Writes the log message to the file, debug, database and remote loggers.
+     *
+     * \param   msg     The log message.
+     **/
+    void _dispatch_log_message( areg::MessageEnvelope & msg );
+
+    /**
+     * \brief   Writes one error message with the number of log messages dropped on a full queue,
+     *          if any were dropped since the last such message.
+     **/
+    void _write_dropped_notice();
+
+    /**
      * \brief   Posts the log message to the logging thread.
      **/
     void post_log_message( areg::MessageEnvelope && msg );
@@ -512,6 +525,10 @@ private:
      *          so the accesses are atomic.
      **/
     std::atomic_bool    mIsStarted;
+    /**
+     * \brief   Log messages dropped since the last notice because the logging queue was full.
+     **/
+    std::atomic<uint32_t>   mQueueDropped;
     /**
      * \brief   Logging configuration
      **/

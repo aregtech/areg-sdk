@@ -55,8 +55,6 @@ namespace areg {
     constexpr uint32_t  QUEUE_DEFAULT_FULL_WAIT_MS  { areg::QUEUE_FULL_WAIT_RELEASE_MS }; //!< Default lossless block timeout.
 #endif  // DEBUG
 
-    //!< A producer that waited at least this long for a free slot is reported.
-    constexpr uint32_t  QUEUE_WAIT_WARN_MS          { areg::WAIT_1_SECOND };
     constexpr bool      QUEUE_DROP_WHEN_FULL        {               false };    //!< Default action if queue is full, wait for free slot.
 
 /************************************************************************

@@ -22,11 +22,8 @@
 
 #include "areg/base/private/DebugDefs.hpp"
 
-#include "areg/logging/areg_log.h"
 
 namespace areg {
-
-DEF_LOG_SCOPE(areg_ipc_private_ClientReceiveThread, run_dispatcher);
 
 ClientReceiveThread::ClientReceiveThread(RemoteMessageHandler& remoteService, ClientConnection & connection, const String & namePrefix)
     : DispatcherThread  (namePrefix + areg::CLIENT_RECEIVE_MESSAGE_THREAD, areg::SYSTEM_THREAD_STACK_BIG, areg::QUEUE_CONTROL_RING_CAPACITY)
@@ -38,9 +35,6 @@ ClientReceiveThread::ClientReceiveThread(RemoteMessageHandler& remoteService, Cl
 
 bool ClientReceiveThread::run_dispatcher()
 {
-    LOG_SCOPE( areg_ipc_private_ClientReceiveThread, run_dispatcher );
-    LOG_DBG("Starting client service dispatcher thread [ %s ]", name().as_string());
-
     // Client receive thread serves one socket.
     areg::set_receive_mode(areg::ReceiveMode::MonoCache);
 
@@ -48,7 +42,6 @@ bool ClientReceiveThread::run_dispatcher()
 
     if ( !mConnection.connect_socket() )
     {
-        LOG_WARN("Client receive thread failed to connect. Notifying handler.");
         mRemoteService.failed_receive_message( mConnection.socket() );
         ready_for_events( false );
         remove_all_events();
@@ -113,10 +106,6 @@ bool ClientReceiveThread::run_dispatcher()
 
     ready_for_events(false);
     remove_all_events( );
-
-    LOG_DBG("Exiting client service dispatcher thread [ %s ] with result [ %s ]"
-                , name().as_string()
-                , isExit ? "SUCCESS" : "FAILURE");
 
     return isExit;
 }

@@ -313,12 +313,6 @@ public:
     void wake() noexcept override;
 
     /**
-     * \brief   Logs why the connection of \a entry is closed, naming the configuration key
-     *          that sets the limit.
-     **/
-    void log_close(const Entry & entry, Reason reason) const;
-
-    /**
      * \brief   Releases every backlog and returns the connections whose first message was cut,
      *          which must be closed before anything else is written into them.
      *          Called by the send thread when it stops.
@@ -344,8 +338,8 @@ private:
     //!< Cancels the writes in progress. Returns false if one did not end and its buffers must not be freed.
     bool cancel_writes(SendBacklogOsPtr & os, SOCKETHANDLE hSocket) noexcept;
 
-    //!< Enters fallback mode once and logs why.
-    void enter_fallback(const char * what) noexcept;
+    //!< Enters fallback mode: a slow connection is served every RECHECK_MS.
+    void enter_fallback() noexcept;
 
     //!< Completes \a bytes of the entry and returns the number of messages completed.
     uint32_t complete(Entry & entry, uint64_t bytes, uint64_t nowMs);

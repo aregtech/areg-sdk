@@ -18,7 +18,6 @@
 #include "areg/component/Event.hpp"
 #include "areg/component/ExitEvent.hpp"
 #include "areg/component/ProxyBase.hpp"
-#include "areg/logging/areg_log.h"
 
 //////////////////////////////////////////////////////////////////////////
 // class NullDispatcherThread declarations
@@ -188,9 +187,6 @@ int32_t NullDispatcherThread::on_exit()
 // DispatcherThread class implementation
 //////////////////////////////////////////////////////////////////////////
 
-DEF_LOG_SCOPE(areg_component_private_DispatcherThread, destroy_thread);
-DEF_LOG_SCOPE(areg_component_private_DispatcherThread, trigger_exit);
-
 //////////////////////////////////////////////////////////////////////////
 // DispatcherThread class runtime implementation
 //////////////////////////////////////////////////////////////////////////
@@ -332,12 +328,6 @@ DispatcherThread::DispatcherThread( areg::NullTag, const String & threadName ) n
 //////////////////////////////////////////////////////////////////////////
 void DispatcherThread::trigger_exit()
 {
-    LOG_SCOPE( areg_component_private_DispatcherThread, trigger_exit );
-    LOG_DBG( "Requesting to exit thread [ %s ] with ID [ %p ] and status [ %s ]."
-               , name( ).as_string( )
-               , static_cast<id_type>(id( ))
-               , mHasStarted.load() ? "STARTED" : "NOT STARTED" );
-
     stop_dispatcher();
 }
 
@@ -348,12 +338,6 @@ void DispatcherThread::trigger_exit_drained()
 
 Thread::ThreadCompletion DispatcherThread::shutdown( uint32_t waitForStopMs /*= areg::WAIT_INFINITE*/ )
 {
-    LOG_SCOPE( areg_component_private_DispatcherThread, destroy_thread );
-    LOG_DBG("Shutting down the thread [ %s ] with ID [ %p ]. The current state is [ %s ]"
-                , name().as_string( )
-                , static_cast<id_type>(id( ))
-                , is_running() ? "RUNNING" : "NOT RUNNING" );
-
     stop_dispatcher( );
     Thread::ThreadCompletion result = Thread::shutdown(waitForStopMs);
     remove_all_events( );

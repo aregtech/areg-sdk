@@ -21,12 +21,7 @@
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/base/DateTime.hpp"
 #include "areg/base/MathDefs.hpp"
-#include "areg/logging/areg_log.h"
 namespace areg {
-
-DEF_LOG_SCOPE(areg_component_Timer, start_timer);
-
-
 //////////////////////////////////////////////////////////////////////////
 // Timer class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -67,8 +62,6 @@ bool Timer::start_timer( uint32_t timeoutInMs, uint32_t eventCount /*= Timer::CO
 
 bool Timer::start_timer(uint32_t timeoutInMs, DispatcherThread & whichThread, uint32_t eventCount /*= Timer::CONTINUOUSLY*/)
 {
-    LOG_SCOPE( areg_component_Timer, start_timer );
-
     bool active = false;
     {
         Lock lock(mLock);
@@ -77,13 +70,11 @@ bool Timer::start_timer(uint32_t timeoutInMs, DispatcherThread & whichThread, ui
 
     if (active)
     {
-        LOG_WARN("The timer [ %s ] is still active, going to stop first.", mName.as_string());
         TimerManager::stop_timer(self());
     }
 
     if (eventCount == 0)
     {
-        LOG_WARN("Ignoring to start a timer [ %s ] with either 0 timeout or 0 event count", mName.as_string());
         Lock lock(mLock);
         mTimeoutInMs = timeoutInMs;
         mEventsCount = 0;
@@ -95,11 +86,6 @@ bool Timer::start_timer(uint32_t timeoutInMs, DispatcherThread & whichThread, ui
     bool canStart = false;
     {
         Lock lock(mLock);
-        LOG_DBG("Starting [ %s ] with timeout [ %u ] ms and event count [ %d ], target thread [ %s ]"
-            , mName.as_string()
-            , timeoutInMs
-            , eventCount
-            , whichThread.is_running() ? "RUNNING" : "NOT RUNNING");
 
         mTimeoutInMs    = timeoutInMs;
         mEventsCount    = eventCount;
@@ -112,10 +98,6 @@ bool Timer::start_timer(uint32_t timeoutInMs, DispatcherThread & whichThread, ui
 
     if (canStart == false)
     {
-        LOG_WARN("The target thread [ %s ] is not running or failed to create a timer [ %s ]"
-            , whichThread.name().as_string()
-            , mName.as_string());
-
         return false;
     }
 

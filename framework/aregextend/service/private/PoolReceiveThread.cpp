@@ -22,7 +22,6 @@
 #include "areg/component/private/EventDispatcherBase.hpp"
 #include "areg/ipc/RemoteMessageHandler.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
-#include "areg/logging/areg_log.h"
 
 #include "aregextend/service/ConnectionHandler.hpp"
 #include "aregextend/service/ServerConnection.hpp"
@@ -33,10 +32,6 @@
 #include "areg/base/private/DebugDefs.hpp"
 
 namespace areg::ext {
-
-DEBUG_DEF_LOG_SCOPE(areg_aregextend_service_PoolReceiveThread, run_dispatcher);
-DEBUG_DEF_LOG_SCOPE(areg_aregextend_service_PoolReceiveThread, _receive_ready_socket);
-
 PoolReceiveThread::PoolReceiveThread( areg::RemoteMessageHandler & remoteService
                                     , ServerConnection & connection
                                     , ServerReceiveThread & globalStats
@@ -96,7 +91,6 @@ void PoolReceiveThread::_process_pending_sockets()
 
 void PoolReceiveThread::_receive_ready_socket( SOCKETHANDLE hSocket, areg::MessageEnvelope & msgReceived )
 {
-    DEBUG_LOG_SCOPE(areg_aregextend_service_PoolReceiveThread, _receive_ready_socket);
     _process_pending_sockets();
 
     areg::SocketAccepted * served{ mServed.find(hSocket) };
@@ -118,9 +112,6 @@ void PoolReceiveThread::_receive_ready_socket( SOCKETHANDLE hSocket, areg::Messa
     if ( received < 0 )
     {
         PausedSources::discard();
-        DEBUG_LOG_WARN("Pool receive thread [ %s ]: receive failed on socket [ %u ], notifying connection_lost"
-                        , name().as_string()
-                        , static_cast<uint32_t>(hSocket));
 
         mRemoteService.failed_receive_message(clientSocket);
         _drop_socket(hSocket);
@@ -232,9 +223,6 @@ void PoolReceiveThread::_service_cached_socket( areg::MessageEnvelope & msgRecei
 
 bool PoolReceiveThread::run_dispatcher()
 {
-    DEBUG_LOG_SCOPE(areg_aregextend_service_PoolReceiveThread, run_dispatcher);
-    DEBUG_LOG_DBG("Pool receive thread [ %s ] starting", name().as_string());
-
     areg::set_receive_mode(areg::ReceiveMode::MultiCache);
     mCachedPending.clear();
     mParts.clear();
@@ -304,8 +292,6 @@ bool PoolReceiveThread::run_dispatcher()
     mServed.clear();
     ready_for_events(false);
     remove_all_events();
-
-    DEBUG_LOG_DBG("Pool receive thread [ %s ] stopped", name().as_string());
 
     return isExit;
 }
