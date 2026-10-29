@@ -108,7 +108,7 @@ public:
         gDeleted.fetch_add(1u);
     }
 
-    static void * operator new(std::size_t size)
+    static void * operator new(std::size_t size) noexcept
     {
         if (size <= SLOT_SIZE)
         {
@@ -122,7 +122,7 @@ public:
             }
         }
 
-        throw std::bad_alloc();
+        return nullptr;
     }
 
     static void operator delete(void * block, std::size_t size)
