@@ -45,6 +45,7 @@
     #include <unistd.h>
 #endif
 
+#include <type_traits>
 #include <unordered_map>
 
 namespace areg::os {
@@ -180,10 +181,21 @@ namespace areg::os {
 
 namespace
 {
-    inline areg::ReceiveMode& _thread_receive_mode(void) noexcept
+    //!< Receive state of a thread: its receive mode and the last RX cache handed out.
+    //!< Constant initialized and trivially destructible, so an access has no init guard.
+    struct RxThreadState
     {
-        static thread_local areg::ReceiveMode _mode{ areg::ReceiveMode::NoCache };
-        return _mode;
+        areg::ReceiveMode   mode  { areg::ReceiveMode::NoCache };   //!< Receive mode of the thread.
+        SOCKETHANDLE        socket{ areg::InvalidSocketHandle };    //!< Socket of the remembered cache.
+        areg::ThreadCache * entry { nullptr };                      //!< Remembered cache, nullptr if none.
+    };
+
+    static_assert(std::is_trivially_destructible_v<RxThreadState>, "RxThreadState must need no TLS destructor");
+
+    inline RxThreadState& _rx_state(void) noexcept
+    {
+        static thread_local RxThreadState _state;
+        return _state;
     }
 
     inline std::unordered_map<SOCKETHANDLE, areg::ThreadCache>& _thread_local_cache()
@@ -192,19 +204,28 @@ namespace
         return _rx_caches;
     }
 
-    //!< Last cache handed out by thread_rx_cache(), so a repeated ask for the same socket
-    //!< skips the hash. References to unordered_map elements survive a rehash, so an erase
-    //!< is the only thing that invalidates the entry pointer.
-    struct RxCacheMemo
+    inline areg::ThreadCache& _thread_mono_cache() noexcept
     {
-        SOCKETHANDLE        socket{ areg::InvalidSocketHandle };
-        areg::ThreadCache * entry { nullptr };
-    };
+        static thread_local areg::ThreadCache _rx_cache;
+        return _rx_cache;
+    }
 
-    inline RxCacheMemo& _thread_cache_memo()
+    //!< Finds the RX cache of the socket in the thread's storage and remembers it in the state.
+    areg::ThreadCache& _rx_cache_lookup(RxThreadState& state, SOCKETHANDLE hSocket) noexcept
     {
-        static thread_local RxCacheMemo _memo;
-        return _memo;
+        areg::ThreadCache& tc = (state.mode == areg::ReceiveMode::MonoCache)
+                              ? _thread_mono_cache()
+                              : _thread_local_cache()[hSocket];
+        tc.socket    = hSocket;
+        state.socket = hSocket;
+        state.entry  = &tc;
+        return tc;
+    }
+
+    //!< Returns the RX cache of the socket, the remembered one without a lookup.
+    inline areg::ThreadCache& _rx_cache(RxThreadState& state, SOCKETHANDLE hSocket) noexcept
+    {
+        return ((state.entry != nullptr) && (state.socket == hSocket)) ? *state.entry : _rx_cache_lookup(state, hSocket);
     }
 }
 
@@ -1101,7 +1122,7 @@ AREG_API_IMPL int32_t areg::recv_fill_nowait(SOCKETHANDLE hSocket) noexcept
     if (!areg::is_valid_socket(hSocket))
         return -1;
 
-    areg::ThreadCache& tc = areg::thread_rx_cache(hSocket);
+    areg::ThreadCache& tc = _rx_cache(_rx_state(), hSocket);
     uint8_t* const cache = tc.cache();
     if (cache == nullptr)
         return -1;
@@ -1133,9 +1154,10 @@ AREG_API_IMPL int32_t areg::receive_data_nowait(SOCKETHANDLE hSocket, uint8_t* d
         return 0;
 
     uint32_t copied{ 0u };
-    if (areg::receive_mode() != areg::ReceiveMode::NoCache)
+    RxThreadState& state = _rx_state();
+    if (state.mode != areg::ReceiveMode::NoCache)
     {
-        areg::ThreadCache& tc = areg::thread_rx_cache(hSocket);
+        areg::ThreadCache& tc = _rx_cache(state, hSocket);
         if (tc.unread != 0u)
         {
             copied = (tc.unread < dataLength) ? tc.unread : dataLength;
@@ -1161,10 +1183,11 @@ AREG_API_IMPL int32_t areg::receive_data_nowait(SOCKETHANDLE hSocket, uint8_t* d
 
 AREG_API_IMPL uint32_t areg::recv_data_available(SOCKETHANDLE hSocket) noexcept
 {
-    if (areg::receive_mode() == areg::ReceiveMode::NoCache)
+    RxThreadState& state = _rx_state();
+    if (state.mode == areg::ReceiveMode::NoCache)
         return 0u;
 
-    const areg::ThreadCache& tc = areg::thread_rx_cache(hSocket);
+    const areg::ThreadCache& tc = _rx_cache(state, hSocket);
     if (tc.unread == 0u)
         return 0u;
 
@@ -1344,48 +1367,31 @@ AREG_API_IMPL areg::ThreadCache& areg::thread_tx_cache() noexcept
 
 AREG_API_IMPL areg::ThreadCache& areg::thread_rx_cache(SOCKETHANDLE hSocket) noexcept
 {
-    if (receive_mode() == ReceiveMode::MonoCache)
-    {
-        static thread_local areg::ThreadCache _rx_cache;
-        _rx_cache.socket = hSocket;
-        return _rx_cache;
-    }
-    else
-    {
-        RxCacheMemo& memo = _thread_cache_memo();
-        if ((memo.entry != nullptr) && (memo.socket == hSocket))
-            return *memo.entry;
-
-        std::unordered_map<SOCKETHANDLE, areg::ThreadCache>& map = _thread_local_cache();
-        areg::ThreadCache& tc = map[hSocket];
-        tc.socket = hSocket;
-
-        memo.socket = hSocket;
-        memo.entry  = &tc;
-        return tc;
-    }
+    return _rx_cache(_rx_state(), hSocket);
 }
 
 AREG_API_IMPL void areg::thread_rx_cache_release(SOCKETHANDLE hSocket) noexcept
 {
-    // Dropped unconditionally: an erase is the one thing that can leave the memo pointing
-    // at a destroyed entry, and a release is rare enough that the extra miss costs nothing.
-    RxCacheMemo& memo = _thread_cache_memo();
-    memo.socket = areg::InvalidSocketHandle;
-    memo.entry  = nullptr;
+    // The remembered cache is forgotten before any entry is erased.
+    RxThreadState& state = _rx_state();
+    state.socket = areg::InvalidSocketHandle;
+    state.entry  = nullptr;
 
     std::unordered_map<SOCKETHANDLE, areg::ThreadCache>& map = _thread_local_cache();
     auto found = map.find(hSocket);
     if (found != map.end())
-        map.erase(hSocket);
+        map.erase(found);
 }
 
 AREG_API_IMPL void areg::set_receive_mode(ReceiveMode mode) noexcept
 {
-    _thread_receive_mode() = mode;
+    RxThreadState& state = _rx_state();
+    state.mode   = mode;
+    state.socket = areg::InvalidSocketHandle;
+    state.entry  = nullptr;
 }
 
 AREG_API_IMPL areg::ReceiveMode areg::receive_mode() noexcept
 {
-    return _thread_receive_mode();
+    return _rx_state().mode;
 }

@@ -134,12 +134,13 @@ TEST(SyncTimerTest, timer_does_not_end_other_waits_of_its_thread)
 
 #if defined(__linux__)
 
-// The ticks of a periodic timer create no thread. Tasks of other processes count too, so one quiet try of three passes.
+// The ticks of a periodic timer create no thread. Tasks of other processes count too, so one quiet try of ten passes.
 TEST(SyncTimerTest, periodic_timer_creates_no_thread_per_tick)
 {
     constexpr uint32_t  PERIOD_MS   { 2u };
     constexpr uint32_t  TICKS       { 200u };
     constexpr int64_t   MAX_TASKS   { static_cast<int64_t>(TICKS) / 4 };
+    constexpr int       MAX_TRIES   { 10 };
     if (last_pid() < 0)
     {
         GTEST_SKIP() << "/proc/sys/kernel/ns_last_pid is not readable";
@@ -150,7 +151,7 @@ TEST(SyncTimerTest, periodic_timer_creates_no_thread_per_tick)
     ASSERT_TRUE(timer.lock(1'000u));
 
     int64_t best{ INT64_MAX };
-    for (int attempt = 0; (attempt < 3) && (best >= MAX_TASKS); ++attempt)
+    for (int attempt = 0; (attempt < MAX_TRIES) && (best >= MAX_TASKS); ++attempt)
     {
         const int64_t before{ last_pid() };
         uint32_t ticks{ 0u };

@@ -82,6 +82,9 @@
     <ClCompile Include="units\FatalErrorTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="units\ReceiveCacheTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="units\ReceivedHeaderTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
