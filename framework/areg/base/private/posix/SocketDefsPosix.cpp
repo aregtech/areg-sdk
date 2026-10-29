@@ -526,7 +526,7 @@ static int32_t _recv_exact(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t da
 //  - Phase 3:  small request (needed < cache capacity) -- fills the cache greedily:
 //              recv(flag=0) returns as soon as ANY bytes arrive in the kernel buffer
 //              (not waiting for a full cache), so no idle-period block occurs.
-static int32_t _recv_cached(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength)
+static int32_t _recv_cached(SOCKETHANDLE hSocket, areg::ThreadCache& tc, uint8_t* dataBuffer, int32_t dataLength)
 {
 #ifdef MSG_WAITALL
     constexpr int recvExact = MSG_WAITALL;
@@ -534,7 +534,6 @@ static int32_t _recv_cached(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t d
     constexpr int recvExact = 0;
 #endif
 
-    areg::ThreadCache& tc = areg::thread_rx_cache(hSocket);
     uint8_t* const cache = tc.cache();
     if ((cache == nullptr) || (tc.space == 0u))
         return _recv_exact(hSocket, dataBuffer, dataLength);
@@ -618,14 +617,14 @@ int32_t _os_recv_nowait(SOCKETHANDLE hSocket, uint8_t* dataBuffer, uint32_t data
     }
 }
 
-int32_t _os_recv_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength)
+int32_t _os_recv_data(SOCKETHANDLE hSocket, areg::ThreadCache* rxCache, uint8_t* dataBuffer, int32_t dataLength)
 {
     ASSERT(areg::is_valid_socket(hSocket));
     ASSERT((dataBuffer != nullptr) && (dataLength > 0));
 
-    return (areg::receive_mode() == areg::ReceiveMode::NoCache)
+    return (rxCache == nullptr)
          ? _recv_exact(hSocket, dataBuffer, dataLength)
-         : _recv_cached(hSocket, dataBuffer, dataLength);
+         : _recv_cached(hSocket, *rxCache, dataBuffer, dataLength);
 }
 
 int32_t _os_recv_data_window(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength)

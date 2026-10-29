@@ -172,6 +172,8 @@ TEST(SyncTimerTest, periodic_timer_creates_no_thread_per_tick)
 TEST(SyncTimerTest, many_timers_share_one_thread)
 {
     constexpr uint32_t  COUNT   { 50u };
+    // Starts the helper thread a sanitizer creates on the first thread start, so it is in the baseline.
+    std::thread([]() {}).join();
     const int64_t before{ thread_count() };
     if (before < 0)
     {

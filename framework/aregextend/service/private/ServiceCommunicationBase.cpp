@@ -871,8 +871,7 @@ void ServiceCommunicationBase::process_received_message(areg::MessageEnvelope & 
         {
             // Only the last message of a receive burst goes inline: while more input waits, the
             // send thread joins it into one write, which is worth more than the wake-up.
-            const bool burstPending{ (areg::receive_mode() == areg::ReceiveMode::NoCache) ||
-                                     (areg::recv_data_available(whichSource.handle()) != 0u) };
+            const bool burstPending{ areg::recv_burst_pending(whichSource.handle()) };
 
             if ( burstPending || (try_forward_inline(msgReceived) == false) )
             {

@@ -255,6 +255,9 @@ private:
     //!< Returns true if the network logging is enabled and the source is not paused.
     inline bool is_sending() const noexcept;
 
+    //!< Returns the cookie the router gave the connection, or COOKIE_UNKNOWN if it is not connected.
+    inline ITEM_ID connected_cookie() const noexcept;
+
     /**
      * \brief   Sends the state of the log source to the observers if it differs from the given one.
      *
@@ -326,6 +329,16 @@ inline bool NetTcpLogger::is_sending() const noexcept
 {
     // The acquire pairs with the release store in open_logger(), which publishes the ring stack.
     return (mFlags.load(std::memory_order_acquire) & NetTcpLogger::FLAGS_STATE_MASK) == NetTcpLogger::FLAGS_SENDING;
+}
+
+inline ITEM_ID NetTcpLogger::connected_cookie() const noexcept
+{
+    // The state is read first: its acquire makes the cookie of the same connection visible.
+    if (!is_connected_state())
+        return areg::COOKIE_UNKNOWN;
+
+    const ITEM_ID cookie{ connection_cookie() };
+    return (cookie >= areg::COOKIE_REMOTE_SERVICE ? cookie : areg::COOKIE_UNKNOWN);
 }
 
 inline void NetTcpLogger::set_paused(bool paused) noexcept

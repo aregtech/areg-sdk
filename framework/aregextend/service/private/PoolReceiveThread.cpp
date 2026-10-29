@@ -111,7 +111,7 @@ void PoolReceiveThread::_receive_ready_socket( SOCKETHANDLE hSocket, areg::Messa
     int32_t received{ 0 };
     {
         AREG_LT_SCOPE(areg::LtStage::RecvNode);  // router inline route+forward
-        received = areg::ext::receive_ready_socket(mConnection, mRemoteService, areg::DEFAULT_DRAIN_LIMIT, clientSocket,
+        received = areg::ext::receive_ready_socket(mRemoteService, areg::DEFAULT_DRAIN_LIMIT, clientSocket,
                 msgReceived, mParts, [this](uint64_t bytes, uint32_t msgs) { mGlobalStats.accumulate_received(bytes, msgs); });
     }
 
@@ -203,7 +203,11 @@ void PoolReceiveThread::_service_cached_socket( areg::MessageEnvelope & msgRecei
 
     // A socket this thread no longer monitors may already belong to another pool
     // thread under the same handle value. Only the multiplexer says who owns it.
-    if ( !mMux.is_registered(hSocket) || (areg::recv_data_available(hSocket) == 0u) )
+    if ( !mMux.is_registered(hSocket) )
+        return;
+
+    areg::ThreadCache & rxCache{ areg::thread_rx_cache(hSocket) };
+    if ( areg::recv_data_available(rxCache) == 0u )
         return;
 
     areg::SocketAccepted * clientSocket{ mServed.find(hSocket) };
@@ -211,7 +215,7 @@ void PoolReceiveThread::_service_cached_socket( areg::MessageEnvelope & msgRecei
         return;
 
     constexpr uint32_t MAX_DRAIN{ areg::DEFAULT_DRAIN_LIMIT - 1u };
-    const int32_t drained{ areg::ext::drain_recv_cache(mConnection, mRemoteService, MAX_DRAIN, *clientSocket,
+    const int32_t drained{ areg::ext::drain_recv_cache(mRemoteService, MAX_DRAIN, *clientSocket, rxCache,
             msgReceived, [this](uint64_t bytes, uint32_t msgs) { mGlobalStats.accumulate_received(bytes, msgs); }) };
 
     if ( drained < 0 )

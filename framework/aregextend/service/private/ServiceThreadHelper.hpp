@@ -341,12 +341,49 @@ inline void run_send_batch( ThreadT & thread
 }
 
 /**
+ * \brief   Takes the first message out of the read-ahead cache \a rxCache, which must hold it
+ *          complete (see areg::recv_data_available()).
+ *
+ * \param   msgReceived     Reusable message buffer; overwritten.
+ * \param   rxCache         The read-ahead cache of the socket in the calling thread.
+ * \return  The bytes taken, header and data, or 0 if the header is not valid or the message
+ *          is not complete.
+ **/
+inline int32_t receive_cached_message( areg::MessageEnvelope & msgReceived, areg::ThreadCache & rxCache )
+{
+    if ( rxCache.unread < areg::WIRE_HEADER_SIZE )
+        return 0;
+
+    const uint8_t * const data{ rxCache.buffer.get() + rxCache.head };
+    areg::EventHeader header{ };
+    std::memcpy(areg::wire_header(header), data, areg::WIRE_HEADER_SIZE);
+    const uint32_t used{ header.bufHeader.biUsed };
+    const uint32_t total{ areg::wire_size(header) };
+    if ( rxCache.unread < total )
+        return 0;
+
+    uint8_t * const body{ areg::SocketConnectionBase::prepare_message(msgReceived, header) };
+    if ( body == nullptr )
+        return 0;
+
+    if ( used != 0u )
+    {
+        std::memcpy(body, data + areg::WIRE_HEADER_SIZE, used);
+        msgReceived.set_size_used(used);
+    }
+
+    msgReceived.move_to_begin();
+    rxCache.unread -= total;
+    rxCache.head    = (rxCache.unread != 0u) ? (rxCache.head + total) : 0u;
+    return static_cast<int32_t>(total);
+}
+
+/**
  * \brief   Drains the read-ahead receive cache for \a clientSocket.
  *
- *          After a successful recv_message() call, _os_recv_data may have
- *          pulled extra bytes into a thread-local cache. Those bytes are
- *          invisible to the kernel multiplexer (epoll / kqueue / WSAPoll),
- *          so they must be consumed before returning to the wait loop.
+ *          A fill of the cache may pull more than one message from the socket.
+ *          Those bytes are invisible to the kernel multiplexer (epoll / kqueue /
+ *          WSAPoll), so they must be consumed before returning to the wait loop.
  *
  *          For each cached message, process_received_message() is called and
  *          \a accum is invoked with the byte and message counts.
@@ -361,26 +398,26 @@ inline void run_send_batch( ThreadT & thread
  *          The same holds when a handler asked to pause the socket, see
  *          is_receive_paused().
  *
- * \param   conn            Server connection (receive API).
  * \param   handler         Remote message handler (process callback).
  * \param   maxDrain        Maximum number of cached messages to drain.
  * \param   clientSocket    Socket whose read-ahead cache to drain.
+ * \param   rxCache         The read-ahead cache of \a clientSocket in the calling thread.
  * \param   msgReceived     Reusable message buffer; overwritten on each call.
  * \param   accum           Callable(uint64_t bytes, uint32_t msgs) on success.
  * \return  The number of messages drained, or -1 on receive failure.
  **/
 template<typename AccumFn>
-inline int32_t drain_recv_cache( ServerConnection & conn
-                               , areg::RemoteMessageHandler & handler
+inline int32_t drain_recv_cache( areg::RemoteMessageHandler & handler
                                , uint32_t maxDrain
                                , areg::SocketAccepted & clientSocket
+                               , areg::ThreadCache & rxCache
                                , areg::MessageEnvelope & msgReceived
                                , AccumFn && accum )
 {
     uint32_t drain{ 0u };
-    while ( (areg::recv_data_available(clientSocket.handle()) != 0u) && (drain < maxDrain) )
+    while ( (drain < maxDrain) && (areg::recv_data_available(rxCache) != 0u) )
     {
-        const int32_t cached{ conn.receive_message(msgReceived, clientSocket) };
+        const int32_t cached{ areg::ext::receive_cached_message(msgReceived, rxCache) };
         if ( cached <= 0 )
             return -1;
 
@@ -485,7 +522,6 @@ private:
  *          that is complete. A message that is not complete stays in the read-ahead cache, or in
  *          \a parts when it does not fit the cache, until the rest arrives.
  *
- * \param   conn            Server connection (receive API).
  * \param   handler         Remote message handler (process callback).
  * \param   maxDrain        Maximum number of messages to dispatch.
  * \param   clientSocket    The ready socket.
@@ -498,8 +534,7 @@ private:
  *          cache may hold messages too.
  **/
 template<typename AccumFn>
-inline int32_t receive_ready_socket( ServerConnection & conn
-                                   , areg::RemoteMessageHandler & handler
+inline int32_t receive_ready_socket( areg::RemoteMessageHandler & handler
                                    , uint32_t maxDrain
                                    , areg::SocketAccepted & clientSocket
                                    , areg::MessageEnvelope & msgReceived
@@ -507,6 +542,7 @@ inline int32_t receive_ready_socket( ServerConnection & conn
                                    , AccumFn && accum )
 {
     const SOCKETHANDLE hSocket{ clientSocket.handle() };
+    areg::ThreadCache & rxCache{ areg::thread_rx_cache(hSocket) };
     int32_t completed{ 0 };
 
     // Moves a part on with what the socket has; dispatches it when it is complete.
@@ -542,9 +578,9 @@ inline int32_t receive_ready_socket( ServerConnection & conn
     }
 
     // A cache that holds a complete message is drained before it is filled.
-    const bool ended{ (areg::recv_data_available(hSocket) == 0u) && (areg::recv_fill_nowait(hSocket) < 0) };
+    const bool ended{ (areg::recv_data_available(rxCache) == 0u) && (areg::recv_fill_nowait(hSocket, rxCache) < 0) };
     const uint32_t ceiling{ maxDrain - static_cast<uint32_t>(completed) };
-    const int32_t drained{ areg::ext::drain_recv_cache(conn, handler, ceiling, clientSocket, msgReceived, accum) };
+    const int32_t drained{ areg::ext::drain_recv_cache(handler, ceiling, clientSocket, rxCache, msgReceived, accum) };
     if ( drained < 0 )
         return -1;
 
@@ -552,12 +588,11 @@ inline int32_t receive_ready_socket( ServerConnection & conn
     if ( (static_cast<uint32_t>(drained) == ceiling) || is_receive_paused() )
         return completed;
 
-    const areg::ThreadCache & tc{ areg::thread_rx_cache(hSocket) };
-    if ( tc.unread >= areg::WIRE_HEADER_SIZE )
+    if ( rxCache.unread >= areg::WIRE_HEADER_SIZE )
     {
         areg::EventHeader header{ };
-        std::memcpy(areg::wire_header(header), tc.buffer.get() + tc.head, areg::WIRE_HEADER_SIZE);
-        if ( static_cast<uint64_t>(areg::wire_size(header)) > tc.space )
+        std::memcpy(areg::wire_header(header), rxCache.buffer.get() + rxCache.head, areg::WIRE_HEADER_SIZE);
+        if ( static_cast<uint64_t>(areg::wire_size(header)) > rxCache.space )
         {
             // A message larger than the cache is received into its own buffer.
             static_cast<void>(areg::receive_data_nowait(hSocket, areg::wire_header(header), areg::WIRE_HEADER_SIZE));

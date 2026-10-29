@@ -131,7 +131,7 @@ void ServerReceiveThread::_process_connection_event(SOCKETHANDLE hSocket, const 
     int32_t received{ 0 };
     {
         AREG_LT_SCOPE(areg::LtStage::RecvNode);  // router inline route+forward
-        received = areg::ext::receive_ready_socket(mConnection, mRemoteService, areg::DEFAULT_DRAIN_LIMIT, clientSocket,
+        received = areg::ext::receive_ready_socket(mRemoteService, areg::DEFAULT_DRAIN_LIMIT, clientSocket,
                 msgReceived, mParts, [this](uint64_t bytes, uint32_t msgs) { accumulate_received(bytes, msgs); });
     }
 
@@ -223,7 +223,8 @@ void ServerReceiveThread::_service_cached_socket(areg::MessageEnvelope & msgRece
     const SOCKETHANDLE hSocket{ mCachedPending.front() };
     mCachedPending.erase(mCachedPending.begin());
 
-    if (areg::recv_data_available(hSocket) == 0u)
+    areg::ThreadCache & rxCache{ areg::thread_rx_cache(hSocket) };
+    if (areg::recv_data_available(rxCache) == 0u)
         return;
 
     areg::SocketAccepted * clientSocket{ mServed.find(hSocket) };
@@ -231,7 +232,7 @@ void ServerReceiveThread::_service_cached_socket(areg::MessageEnvelope & msgRece
         return;
 
     constexpr uint32_t MAX_DRAIN{ areg::DEFAULT_DRAIN_LIMIT - 1u };
-    const int32_t drained{ areg::ext::drain_recv_cache(mConnection, mRemoteService, MAX_DRAIN, *clientSocket,
+    const int32_t drained{ areg::ext::drain_recv_cache(mRemoteService, MAX_DRAIN, *clientSocket, rxCache,
             msgReceived, [this](uint64_t bytes, uint32_t msgs) { accumulate_received(bytes, msgs); }) };
 
     if (drained < 0)

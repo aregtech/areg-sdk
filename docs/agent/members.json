@@ -981,6 +981,7 @@
   "receive_message",
   "receive_mode",
   "reconnect_service_host",
+  "recv_burst_pending",
   "recv_data_available",
   "recv_fill_nowait",
   "register_consumer_commands",

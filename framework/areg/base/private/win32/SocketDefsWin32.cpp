@@ -329,9 +329,8 @@ static inline int32_t _recv_exact(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int
 }
 
 // Greedy cached read -- 3-phase strategy.
-static inline int32_t _recv_cached(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength)
+static inline int32_t _recv_cached(SOCKETHANDLE hSocket, areg::ThreadCache& tc, uint8_t* dataBuffer, int32_t dataLength)
 {
-    areg::ThreadCache& tc = areg::thread_rx_cache(hSocket);
     uint8_t* const cache = tc.cache();
     if (cache == nullptr)
     {
@@ -436,14 +435,14 @@ int32_t _os_recv_nowait(SOCKETHANDLE hSocket, uint8_t* dataBuffer, uint32_t data
     return ((error == WSAEWOULDBLOCK) || (error == WSAEINTR)) ? 0 : -1;
 }
 
-int32_t _os_recv_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength)
+int32_t _os_recv_data(SOCKETHANDLE hSocket, areg::ThreadCache* rxCache, uint8_t* dataBuffer, int32_t dataLength)
 {
     ASSERT(areg::is_valid_socket(hSocket));
     ASSERT((dataBuffer != nullptr) && (dataLength > 0));
 
-    return (areg::receive_mode() == areg::ReceiveMode::NoCache)
+    return (rxCache == nullptr)
              ? _recv_exact(hSocket, dataBuffer, dataLength)
-             : _recv_cached(hSocket, dataBuffer, dataLength);
+             : _recv_cached(hSocket, *rxCache, dataBuffer, dataLength);
 }
 
 bool _os_connect_socket(SOCKETHANDLE hSocket, const void* addr, uint32_t addrLen, uint32_t timeoutMs)

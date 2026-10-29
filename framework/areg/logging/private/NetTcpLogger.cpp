@@ -84,7 +84,7 @@ void NetTcpLogger::notify_source_state(areg::LogSourceState previous, const ITEM
     const areg::LogSourceState current{ LogManager::source_state() };
     if (current != previous)
     {
-        send_message(areg::message_source_state_updated(mChannel.cookie(), areg::COOKIE_LOGGER, current, byObserver));
+        send_message(areg::message_source_state_updated(connection_cookie(), areg::COOKIE_LOGGER, current, byObserver));
     }
 }
 
@@ -102,13 +102,14 @@ void NetTcpLogger::log_message(const areg::LogEntry& logMessage)
     if (!is_sending())
         return;
 
-    if (mChannel.is_valid() && is_connected_state())
+    const ITEM_ID cookie{ connected_cookie() };
+    if (cookie != areg::COOKIE_UNKNOWN)
     {
-        send_message(areg::create_log_message(logMessage, areg::LogDataType::Remote, mChannel.cookie()), areg::EventPriority::NormalPrio);
+        send_message(areg::create_log_message(logMessage, areg::LogDataType::Remote, cookie), areg::EventPriority::NormalPrio);
     }
     else if (mRingStack.capacity() != 0)
     {
-        queue_pending(areg::create_log_message(logMessage, areg::LogDataType::Remote, mChannel.cookie()));
+        queue_pending(areg::create_log_message(logMessage, areg::LogDataType::Remote, cookie));
     }
     else
     {
@@ -122,7 +123,7 @@ void NetTcpLogger::forward_message(const areg::MessageEnvelope& msg)
     if (!is_sending())
         return;
 
-    if (mChannel.is_valid() && is_connected_state())
+    if (connected_cookie() != areg::COOKIE_UNKNOWN)
     {
         send_message(msg, areg::EventPriority::NormalPrio);
     }
@@ -142,7 +143,7 @@ void NetTcpLogger::forward_message(areg::MessageEnvelope&& msg)
     if (!is_sending())
         return;
 
-    if (mChannel.is_valid() && is_connected_state())
+    if (connected_cookie() != areg::COOKIE_UNKNOWN)
     {
         send_message(std::move(msg), areg::EventPriority::NormalPrio);
     }
@@ -279,7 +280,7 @@ void NetTcpLogger::process_received_message(MessageEnvelope & msgReceived, Socke
             if (scopeCount != 0)
             {
                 const areg::ScopeList& scopes{ static_cast<const areg::ScopeList&>(mScopeController.scope_list()) };
-                send_message(areg::message_scopes_updated(mChannel.cookie(), areg::COOKIE_LOGGER, scopes));
+                send_message(areg::message_scopes_updated(connection_cookie(), areg::COOKIE_LOGGER, scopes));
                 notify_source_state(before, static_cast<ITEM_ID>(msgReceived.source()));
             }
         }
@@ -289,7 +290,7 @@ void NetTcpLogger::process_received_message(MessageEnvelope & msgReceived, Socke
         {
             const areg::ScopeList & scopes{ static_cast<const areg::ScopeList &>(mScopeController.scope_list()) };
             const ITEM_ID targetId{ static_cast<ITEM_ID>(msgReceived.source()) };
-            send_message(areg::message_register_scopes(mChannel.cookie(), targetId, scopes));
+            send_message(areg::message_register_scopes(connection_cookie(), targetId, scopes));
         }
         break;
 
@@ -307,7 +308,7 @@ void NetTcpLogger::process_received_message(MessageEnvelope & msgReceived, Socke
             const areg::ScopeList& scopes{ static_cast<const areg::ScopeList&>(mScopeController.scope_list()) };
             send_message(areg::message_configuration_restored());
             // The observers hold the priorities, so they are sent the list the file restored.
-            send_message(areg::message_scopes_updated(mChannel.cookie(), areg::COOKIE_LOGGER, scopes));
+            send_message(areg::message_scopes_updated(connection_cookie(), areg::COOKIE_LOGGER, scopes));
             notify_source_state(before, static_cast<ITEM_ID>(msgReceived.source()));
         }
         break;
@@ -325,12 +326,12 @@ void NetTcpLogger::process_received_message(MessageEnvelope & msgReceived, Socke
             {
                 const ITEM_ID byObserver{ static_cast<ITEM_ID>(msgReceived.source()) };
                 const areg::LogSourceState taken{ LogManager::set_source_state(state) };
-                send_message(areg::message_source_state_updated(mChannel.cookie(), areg::COOKIE_LOGGER, taken, byObserver));
+                send_message(areg::message_source_state_updated(connection_cookie(), areg::COOKIE_LOGGER, taken, byObserver));
                 if (taken != areg::LogSourceState::Stopped)
                 {
                     // Leaving the stopped state sets the priorities back, so the list is sent.
                     const areg::ScopeList& scopes{ static_cast<const areg::ScopeList&>(mScopeController.scope_list()) };
-                    send_message(areg::message_scopes_updated(mChannel.cookie(), areg::COOKIE_LOGGER, scopes));
+                    send_message(areg::message_scopes_updated(connection_cookie(), areg::COOKIE_LOGGER, scopes));
                 }
             }
         }

@@ -100,9 +100,11 @@ namespace areg::os {
     /**
      * \brief   OS specific receive data implementation. All checkups and validations should
      *          be done before calling the method.
+     * \param   rxCache     The read-ahead cache of the socket in the calling thread, or nullptr
+     *                      to receive without a cache.
      * \return  Returns number of bytes received via network.
      **/
-    int32_t _os_recv_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength);
+    int32_t _os_recv_data(SOCKETHANDLE hSocket, areg::ThreadCache* rxCache, uint8_t* dataBuffer, int32_t dataLength);
 
     /**
      * \brief   OS specific receive of what the socket has now, without waiting.
@@ -1103,7 +1105,9 @@ AREG_API_IMPL int32_t areg::receive_data(SOCKETHANDLE hSocket, uint8_t* dataBuff
     if ((dataBuffer == nullptr) || (dataLength == 0u))
         return 0;
 
-    return areg::os::_os_recv_data(hSocket, dataBuffer, static_cast<int32_t>(dataLength));
+    RxThreadState& state = _rx_state();
+    areg::ThreadCache* const rxCache{ (state.mode != areg::ReceiveMode::NoCache) ? &_rx_cache(state, hSocket) : nullptr };
+    return areg::os::_os_recv_data(hSocket, rxCache, dataBuffer, static_cast<int32_t>(dataLength));
 }
 
 AREG_API_IMPL int32_t areg::receive_data_window(SOCKETHANDLE hSocket, uint8_t* dataBuffer, uint32_t dataLength) noexcept
@@ -1122,7 +1126,14 @@ AREG_API_IMPL int32_t areg::recv_fill_nowait(SOCKETHANDLE hSocket) noexcept
     if (!areg::is_valid_socket(hSocket))
         return -1;
 
-    areg::ThreadCache& tc = _rx_cache(_rx_state(), hSocket);
+    return areg::recv_fill_nowait(hSocket, _rx_cache(_rx_state(), hSocket));
+}
+
+AREG_API_IMPL int32_t areg::recv_fill_nowait(SOCKETHANDLE hSocket, areg::ThreadCache& tc) noexcept
+{
+    if (!areg::is_valid_socket(hSocket))
+        return -1;
+
     uint8_t* const cache = tc.cache();
     if (cache == nullptr)
         return -1;
@@ -1187,17 +1198,13 @@ AREG_API_IMPL uint32_t areg::recv_data_available(SOCKETHANDLE hSocket) noexcept
     if (state.mode == areg::ReceiveMode::NoCache)
         return 0u;
 
-    const areg::ThreadCache& tc = _rx_cache(state, hSocket);
-    if (tc.unread == 0u)
-        return 0u;
+    return areg::recv_data_available(_rx_cache(state, hSocket));
+}
 
-    if (tc.unread < areg::WIRE_HEADER_SIZE)
-        return 0u;
-
-    areg::EventHeader header{ };
-    std::memcpy(areg::wire_header(header), tc.buffer.get() + tc.head, sizeof(header.bufHeader.biUsed));
-    const uint32_t msg_total = areg::wire_size(header);
-    return (tc.unread >= msg_total) ? tc.unread : 0u;
+AREG_API_IMPL bool areg::recv_burst_pending(SOCKETHANDLE hSocket) noexcept
+{
+    RxThreadState& state = _rx_state();
+    return (state.mode == areg::ReceiveMode::NoCache) || (areg::recv_data_available(_rx_cache(state, hSocket)) != 0u);
 }
 
 AREG_API_IMPL bool areg::disable_send(SOCKETHANDLE hSocket) noexcept

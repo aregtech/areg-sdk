@@ -28,6 +28,7 @@
 #include "areg/base/String.hpp"
 
 #include <atomic>
+#include <cstring>
 #include <memory>
 #include <string_view>
 
@@ -713,6 +714,16 @@ AREG_API int32_t receive_data_window(SOCKETHANDLE hSocket, uint8_t* dataBuffer, 
 AREG_API uint32_t recv_data_available(SOCKETHANDLE hSocket) noexcept;
 
 /**
+ * \brief   Returns the number of bytes cached in \a rxCache, if it holds at least one complete
+ *          message, otherwise 0. Does not look up the cache of the calling thread.
+ *
+ * \param   rxCache     A read-ahead cache of the calling thread, see thread_rx_cache().
+ * \return  Bytes available in the cache, or 0 if it holds no complete message.
+ **/
+[[nodiscard]]
+inline uint32_t recv_data_available(const ThreadCache& rxCache) noexcept;
+
+/**
  * \brief   Moves the bytes the calling thread's read-ahead cache holds for \a hSocket to the
  *          start of the cache and reads into the free part what the socket has now, without
  *          waiting. Meant for a thread that serves many sockets and must never block on one.
@@ -722,6 +733,26 @@ AREG_API uint32_t recv_data_available(SOCKETHANDLE hSocket) noexcept;
  *          the connection ended or failed.
  **/
 AREG_API int32_t recv_fill_nowait(SOCKETHANDLE hSocket) noexcept;
+
+/**
+ * \brief   The same as recv_fill_nowait(SOCKETHANDLE), with the read-ahead cache of \a hSocket
+ *          given by the caller instead of looked up.
+ *
+ * \param   hSocket     Socket whose cache is filled.
+ * \param   rxCache     The cache of \a hSocket in the calling thread, see thread_rx_cache().
+ * \return  The bytes added: 0 if the socket has nothing now or the cache is full; negative if
+ *          the connection ended or failed.
+ **/
+AREG_API int32_t recv_fill_nowait(SOCKETHANDLE hSocket, ThreadCache& rxCache) noexcept;
+
+/**
+ * \brief   Returns true if the calling thread receives without a read-ahead cache, or if its
+ *          cache of \a hSocket holds a complete message. False means nothing is known to wait.
+ *
+ * \param   hSocket     Socket whose cache is queried.
+ **/
+[[nodiscard]]
+AREG_API bool recv_burst_pending(SOCKETHANDLE hSocket) noexcept;
 
 /**
  * \brief   Copies into \a dataBuffer what the calling thread's read-ahead cache holds for
@@ -990,6 +1021,16 @@ inline bool areg::SocketAddress::is_valid() const noexcept
 inline bool areg::is_valid_socket(SOCKETHANDLE hSocket) noexcept
 {
     return (hSocket != areg::InvalidSocketHandle) && (hSocket != areg::FailedSocketHandle);
+}
+
+inline uint32_t areg::recv_data_available(const areg::ThreadCache& rxCache) noexcept
+{
+    if (rxCache.unread < areg::WIRE_HEADER_SIZE)
+        return 0u;
+
+    areg::EventHeader header{ };
+    std::memcpy(areg::wire_header(header), rxCache.buffer.get() + rxCache.head, sizeof(header.bufHeader.biUsed));
+    return (rxCache.unread >= areg::wire_size(header)) ? rxCache.unread : 0u;
 }
 
 inline bool areg::is_local_address(const areg::String& address) noexcept
