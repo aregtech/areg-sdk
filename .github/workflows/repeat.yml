@@ -1,0 +1,185 @@
+name: Repeat tests
+
+# Repeats the timing and teardown tests that one pass of the suite runs only once, and
+# checks that every log message an observer missed was reported as dropped.
+# 'ref' selects the commit under test; the scripts always come from this workflow's commit.
+#
+#   gh workflow run repeat.yml --ref <branch> [-f ref=<commit>] [-f rounds=30] [-f log_runs=20]
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Commit, branch or tag to test (empty: the selected branch)'
+        required: false
+        default: ''
+      rounds:
+        description: 'Rounds of the repeated ctest cases'
+        required: false
+        default: '30'
+      log_runs:
+        description: 'Runs per log delivery profile'
+        required: false
+        default: '20'
+  # Once per pull request: when it is opened, reopened or marked ready, never on a push to it.
+  pull_request:
+    branches: [ master ]
+    types: [ opened, reopened, ready_for_review ]
+
+concurrency:
+  group: ${{github.workflow}}-${{github.ref}}-${{inputs.ref}}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  BUILD_TYPE: Release
+  ROUNDS: ${{ inputs.rounds || '30' }}
+  LOG_RUNS: ${{ inputs.log_runs || '20' }}
+
+jobs:
+  plan:
+    name: plan
+    # Sets 'run' when the pull request is not a draft and touches a file the tests build or run.
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      run: ${{ steps.plan.outputs.run }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - id: plan
+        shell: bash
+        env:
+          EVENT: ${{ github.event_name }}
+          DRAFT: ${{ github.event.pull_request.draft || false }}
+          PATTERN: '^(framework|tests|conf)/|^examples/35_loglatency/|(^|/)CMakeLists\.txt$|\.cmake$|^tools/(codegen\.jar|schema/)|^tools/intern/(repeat-ctest\.py|check-log-delivery\.py|sanitize\.sh)$|^\.github/workflows/repeat\.yml$'
+        run: |
+          RUN=true
+          if [ "${EVENT}" = "pull_request" ]; then
+            BASE="${{ github.event.pull_request.base.sha }}"
+            if [ "${DRAFT}" = "true" ]; then
+              RUN=false
+            elif git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
+              git diff --name-only "${BASE}" "${GITHUB_SHA}" | grep -qE "${PATTERN}" || RUN=false
+            fi
+          fi
+          echo "run=${RUN}" >> "${GITHUB_OUTPUT}"
+
+  # One job per OS, longest first; the three checks share one build of the targets they need.
+  repeat:
+    name: repeat ${{matrix.os}}
+    needs: plan
+    if: needs.plan.outputs.run == 'true'
+    runs-on: ${{matrix.os}}
+    timeout-minutes: 60
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: windows-latest, cmake: '-DAREG_COMPILER_FAMILY=msvc' }
+          - { os: macos-latest,   cmake: '-DAREG_COMPILER=clang' }
+          - { os: ubuntu-latest,  cmake: '-DAREG_COMPILER_FAMILY=gnu' }
+
+    steps:
+
+      - name: Checkout the commit under test
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+          path: src
+
+      - name: Checkout the scripts
+        uses: actions/checkout@v7
+        with:
+          path: harness
+          sparse-checkout: tools/intern
+
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v6.0.1
+        with:
+          java-version: 17
+          java-package: jre
+          distribution: temurin
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+
+      - name: Configure
+        shell: bash
+        run: |
+          echo "commit under test: $(git -C src rev-parse HEAD)"
+          cmake -S src -B build ${{matrix.cmake}} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_LIB_TYPE=shared \
+                -DAREG_EXTENDED:BOOL=OFF -DAREG_LOGGING:BOOL=ON -DAREG_EXAMPLES:BOOL=ON -DAREG_TESTS:BOOL=ON \
+                -DAREG_INSTALL:BOOL=OFF -DAREG_OUTPUT_LAYOUT:BOOL=OFF
+
+      - name: Build the tests and the log benchmark
+        shell: bash
+        run: |
+          cmake --build build --config ${{env.BUILD_TYPE}} --parallel 4 \
+                --target areg-unit-tests areg-router-io-test logcollector 35_logsink 35_logsource
+          BIN="$(find build -type f \( -name logcollector.exe -o -name logcollector.elf -o -name logcollector.mac \) | head -n 1)"
+          if [ -z "${BIN}" ]; then echo "logcollector not found under build" >&2; exit 1; fi
+          echo "BIN_DIR=$(dirname "${BIN}")" >> "${GITHUB_ENV}"
+
+      - name: Repeat the SyncTimer tests
+        if: ${{ !cancelled() }}
+        shell: bash
+        timeout-minutes: 20
+        run: |
+          python harness/tools/intern/repeat-ctest.py build --config ${{env.BUILD_TYPE}} \
+                 --regex '^SyncTimerTest\.' --repeat ${{env.ROUNDS}} --timeout 60 \
+                 --title "SyncTimer, ${{matrix.os}}" --summary "${GITHUB_STEP_SUMMARY}"
+
+      - name: Repeat the router stop while flooding
+        if: ${{ !cancelled() }}
+        shell: bash
+        timeout-minutes: 15
+        run: |
+          python harness/tools/intern/repeat-ctest.py build --config ${{env.BUILD_TYPE}} \
+                 --regex '^areg-router-io-test\.stop-while-flooding\.' --repeat ${{env.ROUNDS}} --timeout 120 \
+                 --title "Router stop while flooding, ${{matrix.os}}" --summary "${GITHUB_STEP_SUMMARY}"
+
+      - name: Check the log delivery
+        if: ${{ !cancelled() && env.BIN_DIR != '' }}
+        shell: bash
+        timeout-minutes: 20
+        run: |
+          python harness/tools/intern/check-log-delivery.py "${BIN_DIR}" --runs ${{env.LOG_RUNS}} \
+                 --summary "${GITHUB_STEP_SUMMARY}"
+
+  tsan-router-io:
+    name: tsan router stop while flooding
+    needs: plan
+    if: needs.plan.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+
+      - name: Checkout the commit under test
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v6.0.1
+        with:
+          java-version: 17
+          java-package: jre
+          distribution: temurin
+
+      - name: Make room for the sanitizer shadow mapping
+        run: sudo sysctl -w vm.mmap_rnd_bits=28 || true
+
+      - name: Repeat under TSan RelWithDebInfo
+        shell: bash
+        timeout-minutes: 50
+        run: |
+          echo "commit under test: $(git rev-parse HEAD)"
+          tools/intern/sanitize.sh tsan --config RelWithDebInfo --repeat ${{env.ROUNDS}} \
+              --run 'ctest:areg-router-io-test\.stop-while-flooding\.'

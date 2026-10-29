@@ -66,13 +66,8 @@ DEFECTS = [
         'invariant': 'EventHeader is exactly 128 bytes and every field sits at a '
                      'fixed offset, because the header crosses the wire',
         'file': 'framework/areg/base/MemoryDefs.hpp',
-        'find': "    uint64_t            custom      { 0 };  "
-                "//!< [120..127] LOCAL-ONLY: DATA_CLASS cleanup hook -- "
-                "0 on IPC wire; see struct docs\n};",
-        'replace': "    uint64_t            custom      { 0 };  "
-                   "//!< [120..127] LOCAL-ONLY: DATA_CLASS cleanup hook -- "
-                   "0 on IPC wire; see struct docs\n"
-                   "    uint32_t            seeded      { 0 };\n};",
+        'find': "    uint64_t            custom      { 0 };",
+        'replace': "    uint32_t            seeded      { 0 }; uint64_t custom { 0 };",
         'detector': 'compiler',
     },
     {
@@ -108,10 +103,14 @@ DEFECTS = [
         'id': 'priority-lane-not-drained',
         'invariant': 'the priority lane is always drained before the ring',
         'file': 'framework/areg/component/private/EventQueue.cpp',
-        'find': '    // Priority lane: always drained before the ring.\n'
-                '    if (mPrioCount.load(std::memory_order_relaxed) != 0u)',
-        'replace': '    // Priority lane: always drained before the ring.\n'
-                   '    if (false)',
+        'find': '    if (mPrioCount.load(std::memory_order_relaxed) != 0u)\n'
+                '    {\n'
+                '        Lock lock(mPrioLock);\n'
+                '        if (mPrioQueue.has_value() && !mPrioQueue->empty())\n',
+        'replace': '    if (false)\n'
+                   '    {\n'
+                   '        Lock lock(mPrioLock);\n'
+                   '        if (mPrioQueue.has_value() && !mPrioQueue->empty())\n',
         'detector': 'ctest',
     },
     {
@@ -128,11 +127,9 @@ DEFECTS = [
         'invariant': 'Timer::is_stopped() lies after a natural expiry, so '
                      'on_reconnect_timer() stops the timer before restarting',
         'file': 'framework/areg/ipc/private/ServiceClientConnectionBase.cpp',
-        'find': '    LOG_DBG("Reconnect timer expired, attempting to restart service '
-                'connection, thread [ %s ]", Thread::current_thread_name().as_string());\n'
-                '\n    mTimerConnect.stop_timer( );',
-        'replace': '    LOG_DBG("Reconnect timer expired, attempting to restart service '
-                   'connection, thread [ %s ]", Thread::current_thread_name().as_string());\n',
+        'find': 'void ServiceClientConnectionBase::on_reconnect_timer()\n{\n'
+                '    mTimerConnect.stop_timer( );\n',
+        'replace': 'void ServiceClientConnectionBase::on_reconnect_timer()\n{\n',
         'detector': 'ctest',
     },
     {

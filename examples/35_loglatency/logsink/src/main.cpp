@@ -49,8 +49,8 @@ namespace
         std::mutex              lock        { };            //!< Guards the wake-up of the main thread.
         std::condition_variable changed     { };            //!< Signalled for every message and at the end.
         bool                    connected   { false };      //!< True when the observer is connected to the log collector.
-        uint32_t                notices     { 0u };         //!< Rows of the source that report dropped messages.
-        uint64_t                dropped     { 0u };         //!< Messages the source reported as dropped.
+        uint32_t                notices     { 0u };         //!< Rows of the source or the collector that report dropped messages.
+        uint64_t                dropped     { 0u };         //!< Messages the source or the collector reported as dropped.
     };
 
     Run _run;
@@ -68,7 +68,8 @@ namespace
         if (entry.logScopeId == areg::LOG_SCOPE_ID_NONE)
         {
             unsigned long long count{ 0u };
-            if (std::sscanf(entry.logMessage, "Dropped [ %llu ]", &count) == 1)
+            if ((std::sscanf(entry.logMessage, "Dropped [ %llu ]", &count) == 1) ||
+                (std::sscanf(entry.logMessage, "The log collector dropped %llu", &count) == 1))
             {
                 ++_run.notices;
                 _run.dropped += count;
