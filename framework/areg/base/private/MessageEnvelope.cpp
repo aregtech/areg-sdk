@@ -18,6 +18,7 @@
 
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/base/MathDefs.hpp"
+#include "areg/base/private/EnvelopeCache.hpp"
 #include "areg/logging/areg_log.h"
 
 #include <algorithm>
@@ -41,8 +42,7 @@ MessageEnvelope::MessageEnvelope(const areg::EventHeader& evtHeader, uint32_t re
     uint32_t sizeUsed{ std::max(evtHeader.bufHeader.biUsed, reserve != 0u ? reserve : 1u) };
     sizeUsed = areg::align_size(sizeUsed, block_size());
 
-    const uint32_t sizeBuffer{ sizeUsed + static_cast<uint32_t>(sizeof(areg::EventHeader)) };
-    uint8_t* result{ new (std::nothrow) uint8_t[sizeBuffer] };
+    uint8_t* result{ areg::envelope_block_alloc(sizeUsed) };
     if (result != nullptr)
     {
         areg::RawEnvelope* env{ reinterpret_cast<areg::RawEnvelope*>(result) };
@@ -132,8 +132,7 @@ uint8_t* MessageEnvelope::init_envelope(const areg::EventHeader& evtHeader, uint
     // allocate a new block.
     invalidate();
 
-    const uint32_t sizeBuffer{ sizeUsed + static_cast<uint32_t>(sizeof(areg::EventHeader)) };
-    uint8_t* result{ new (std::nothrow) uint8_t[sizeBuffer] };
+    uint8_t* result{ areg::envelope_block_alloc(sizeUsed) };
     if (result == nullptr)
         return nullptr;
 

@@ -158,6 +158,13 @@ public:
     inline bool is_paused() const noexcept;
 
     /**
+     * \brief   Returns true if the logger is opened for remote logging, so that messages are
+     *          finalized as remote messages.
+     **/
+    [[nodiscard]]
+    inline bool is_remote_enabled() const noexcept;
+
+    /**
      * \brief   Sets or clears the paused state and keeps the other states untouched.
      *
      * \param   paused  If true, the produced log messages are dropped instead of being sent.
@@ -248,6 +255,9 @@ private:
     //!< Returns true if the network logging is enabled and the source is not paused.
     inline bool is_sending() const noexcept;
 
+    //!< Returns the cookie the router gave the connection, or COOKIE_UNKNOWN if it is not connected.
+    inline ITEM_ID connected_cookie() const noexcept;
+
     /**
      * \brief   Sends the state of the log source to the observers if it differs from the given one.
      *
@@ -255,6 +265,20 @@ private:
      * \param   byObserver  The ID of the observer that triggered the operation.
      **/
     void notify_source_state(areg::LogSourceState previous, const ITEM_ID & byObserver);
+
+    /**
+     * \brief   Queues a log message in the ring stack and counts the oldest one it overwrites.
+     *
+     * \param   msg     The log message to queue.
+     **/
+    void queue_pending(areg::MessageEnvelope && msg);
+
+    /**
+     * \brief   Sends one log row with the number of log messages lost before the connection, and resets the count.
+     *
+     * \param   cookie  The cookie of the connection.
+     **/
+    void send_dropped_notice(const ITEM_ID & cookie);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -266,6 +290,8 @@ private:
     std::atomic<uint32_t> mFlags;
     //!< The ring stack to queue log messages if the connection setup did not complete yet.
     PendingQueue        mRingStack;
+    //!< The log messages lost while not connected: overwritten in the ring stack or not queued.
+    uint64_t            mRingDropped;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -289,6 +315,11 @@ inline bool NetTcpLogger::is_enabled() const noexcept
     return (mFlags.load(std::memory_order_acquire) & NetTcpLogger::FLAG_ENABLED) != 0u;
 }
 
+inline bool NetTcpLogger::is_remote_enabled() const noexcept
+{
+    return is_enabled();
+}
+
 inline bool NetTcpLogger::is_paused() const noexcept
 {
     return (mFlags.load(std::memory_order_acquire) & NetTcpLogger::FLAG_PAUSED) != 0u;
@@ -298,6 +329,16 @@ inline bool NetTcpLogger::is_sending() const noexcept
 {
     // The acquire pairs with the release store in open_logger(), which publishes the ring stack.
     return (mFlags.load(std::memory_order_acquire) & NetTcpLogger::FLAGS_STATE_MASK) == NetTcpLogger::FLAGS_SENDING;
+}
+
+inline ITEM_ID NetTcpLogger::connected_cookie() const noexcept
+{
+    // The state is read first: its acquire makes the cookie of the same connection visible.
+    if (!is_connected_state())
+        return areg::COOKIE_UNKNOWN;
+
+    const ITEM_ID cookie{ connection_cookie() };
+    return (cookie >= areg::COOKIE_REMOTE_SERVICE ? cookie : areg::COOKIE_UNKNOWN);
 }
 
 inline void NetTcpLogger::set_paused(bool paused) noexcept

@@ -28,36 +28,12 @@
 #include "areg/base/Identifier.hpp"
 #include "areg/base/private/SocketLiveness.hpp"
 #include "areg/persist/ConfigManager.hpp"
-#include "areg/logging/areg_log.h"
 
 #include "aregextend/service/SystemServiceDefs.hpp"
 
 #include "areg/base/private/DebugDefs.hpp"
 
 namespace areg::ext {
-
-DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, connect_service_host);
-DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, reconnect_service_host);
-DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, disconnect_service_host);
-DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, connection_lost);
-
-DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, on_service_start);
-DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, on_service_stop);
-DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, on_service_restart);
-DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, on_service_exit);
-
-DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, start_connection);
-DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, restart_connection);
-DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, stop_connection);
-
-DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, failed_send_message);
-DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, failed_receive_message);
-
-DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, connection_failure);
-DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, do_accept_client_pool);
-
-DEBUG_DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, process_received_message);
-
 namespace
 {
     //!< Queues a message for no connection, so that the send thread wakes up and moves its backlog on.
@@ -111,6 +87,8 @@ ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
     , mSendCapBytes     ( areg::SOCKET_SEND_BUFFER_SIZE )
     , mSendRefusalMs    ( areg::send_refusal_ms(0u, areg::SOCKET_KEEPALIVE_SEC) )
     , mKeepaliveMs      ( areg::SOCKET_KEEPALIVE_SEC * 1'000u )
+    , mHeldTargets      ( 0u )
+    , mCloseStalled     ( true )
     , mShuttingDown     ( false )
     , mDataRateHelper   ( self() , areg::ext::DEFAULT_VERBOSE)
     , mWhiteList        ( )
@@ -125,6 +103,7 @@ ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
     , mSendMoveFn       ( )
     , mAcceptFn         ( )
 {
+    mThreadSend.backlog().set_hold_counter(&mHeldTargets);
     update_dispatch_mode();
 }
 
@@ -189,7 +168,7 @@ bool ServiceCommunicationBase::setup_connection_data(areg::RemoteServiceKind ser
     mSendCapBytes  = config.socket_send_buffer() != 0u ? config.socket_send_buffer() : areg::SOCKET_SEND_BUFFER_SIZE;
     mSendRefusalMs = config.socket_refusal_timeout();
     mKeepaliveMs   = keepaliveSec * 1'000u;
-    mThreadSend.backlog().set_limits(mSendCapBytes, mSendRefusalMs, mKeepaliveMs);
+    mThreadSend.backlog().set_limits(mSendCapBytes, mSendRefusalMs, mKeepaliveMs, mCloseStalled);
 
     const uint32_t configPairs{ config.pool_pairs() };
     if (configPairs != mNumPairs)
@@ -208,8 +187,6 @@ void ServiceCommunicationBase::apply_connection_data(const String & hostName, ui
 
 bool ServiceCommunicationBase::connect_service_host()
 {
-    LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, connect_service_host );
-
     Lock lock(mLock);
 
     bool result{ false };
@@ -220,8 +197,6 @@ bool ServiceCommunicationBase::connect_service_host()
             result = true;
             send_command( ServiceEventData::ServiceCommand::CMD_StartService );
         }
-
-        LOG_DBG( "Created remote servicing thread with [ %s ]", result ? "SUCCESS" : "FAIL" );
     }
     else
     {
@@ -234,8 +209,6 @@ bool ServiceCommunicationBase::connect_service_host()
 
 bool ServiceCommunicationBase::reconnect_service_host()
 {
-    LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, reconnect_service_host );
-
     Lock lock(mLock);
     bool result = true;
     if (is_running() == false)
@@ -244,12 +217,9 @@ bool ServiceCommunicationBase::reconnect_service_host()
         {
             result = send_command( ServiceEventData::ServiceCommand::CMD_RestartService );
         }
-
-        LOG_DBG("Created remote servicing thread with [ %s ]", result ? "SUCCESS" : "FAIL");
     }
     else
     {
-        LOG_WARN("The servicing thread is running, restarting servicing.");
         result = send_command( ServiceEventData::ServiceCommand::CMD_RestartService );
     }
 
@@ -258,7 +228,6 @@ bool ServiceCommunicationBase::reconnect_service_host()
 
 void ServiceCommunicationBase::disconnect_service_host()
 {
-    LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, disconnect_service_host );
     if ( is_running() )
     {
         send_command( ServiceEventData::ServiceCommand::CMD_ServiceExit, areg::EventPriority::HighPrio );
@@ -301,22 +270,13 @@ bool ServiceCommunicationBase::can_accept_connection(const SocketAccepted & clie
 
 void ServiceCommunicationBase::connection_lost( SocketAccepted & clientSocket )
 {
-    LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, connection_lost );
-
     if ( mShuttingDown.load(std::memory_order_relaxed) )
     {
-        LOG_DBG("Ignoring connection_lost during shutdown for socket [ %u ]", static_cast<uint32_t>(clientSocket.handle()));
         return;
     }
 
     const ITEM_ID & cookie { mServerConnection.cookie(clientSocket) };
     const ITEM_ID & channel{ mServerConnection.channel_id() };
-
-    LOG_WARN("Client lost connection: cookie [ %u ], socket [ %d ], host [ %s : %d ], closing connection"
-                , static_cast<uint32_t>(cookie)
-                , clientSocket.handle()
-                , clientSocket.address().host_address().as_string()
-                , clientSocket.address().host_port());
 
     if ( cookie != areg::COOKIE_UNKNOWN )
     {
@@ -339,9 +299,6 @@ void ServiceCommunicationBase::connection_lost( SocketAccepted & clientSocket )
 
 void ServiceCommunicationBase::connection_failure()
 {
-    LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, connection_failure);
-    LOG_WARN("Host is [ %s ]", is_host_connected() ? "CONNECTED, reconnect service host" : "DISCONNECTED, doing nothing");
-
     if (is_host_connected())
     {
         reconnect_service_host();
@@ -360,27 +317,23 @@ void ServiceCommunicationBase::on_reconnect_timer()
 
 void ServiceCommunicationBase::on_service_start()
 {
-    LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, on_service_start );
     mEventSendStop.reset();
     start_connection();
 }
 
 void ServiceCommunicationBase::on_service_stop()
 {
-    LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, on_service_stop);
     stop_connection();
     mEventSendStop.set_signaled();
 }
 
 void ServiceCommunicationBase::on_service_restart()
 {
-    LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, on_service_restart );
     restart_connection();
 }
 
 void ServiceCommunicationBase::on_service_exit()
 {
-    LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, on_service_exit );
     on_service_stop( );
     trigger_exit( );
 }
@@ -391,12 +344,6 @@ void ServiceCommunicationBase::on_channel_connected(const ITEM_ID& /*cookie*/)
 
 bool ServiceCommunicationBase::start_connection()
 {
-    LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, start_connection );
-    LOG_DBG("Going to start connection. Address [ %s ], port [ %d ]"
-                , mServerConnection.address().host_address().as_string()
-                , mServerConnection.address().host_port());
-
-
     ASSERT(mServerConnection.address().is_valid());
     ASSERT(mServerConnection.is_valid() == false);
     ASSERT(mThreadReceive.is_running() == false);
@@ -407,8 +354,6 @@ bool ServiceCommunicationBase::start_connection()
 
     if ( mServerConnection.create_socket() )
     {
-        LOG_DBG("Created socket [ %d ], going to create send-receive threads", static_cast<uint32_t>(mServerConnection.socket_handle()));
-
         // Pool mode: pre-start dedicated thread pairs before the global send/receive threads
         if ( mNumPairs > 0 )
         {
@@ -431,10 +376,10 @@ bool ServiceCommunicationBase::start_connection()
                                 , sendName.as_string()
                                 , recvName.as_string() );
 
-                pair->send_thread().backlog().set_limits(mSendCapBytes, mSendRefusalMs, mKeepaliveMs);
+                pair->send_thread().backlog().set_hold_counter(&mHeldTargets);
+                pair->send_thread().backlog().set_limits(mSendCapBytes, mSendRefusalMs, mKeepaliveMs, mCloseStalled);
                 if ( !pair->start() )
                 {
-                    LOG_ERR("Failed to start pool pair [ %u ], aborting pool creation", i);
                     poolOk = false;
                     break;
                 }
@@ -453,23 +398,17 @@ bool ServiceCommunicationBase::start_connection()
                 mClientPairs.clear();
                 mServerConnection.close_socket();
 
-                LOG_WARN("Remote servicing failed (pool creation), trigger timer with [ %u ] ms timeout to retry", areg::DEFAULT_RETRY_CONNECT_TIMEOUT);
                 mTimerConnect.start_timer(areg::DEFAULT_RETRY_CONNECT_TIMEOUT, static_cast<DispatcherThread &>(self()), 1);
                 return false;
             }
-
-            LOG_DBG("Started [ %u ] pool thread pairs successfully", mNumPairs);
         }
 
         if ( start_send_thread( ) && start_receive_thread( ) )
         {
             result = true;
-            LOG_DBG( "The threads are created. Ready to send-receive messages." );
         }
         else
         {
-            LOG_ERR( "Failed to create send-receive threads, cannot communicate. Stop remote service" );
-
             // Stop any pool pairs that were already started.
             for ( auto & p : mClientPairs )
             {
@@ -480,14 +419,9 @@ bool ServiceCommunicationBase::start_connection()
             mServerConnection.close_socket( );
         }
     }
-    else
-    {
-        LOG_ERR("Failed to create remote servicing socket.");
-    }
 
     if ( !result )
     {
-        LOG_WARN("Remote servicing failed, trigger timer with [ %u ] ms timeout to re-establish remote servicing", areg::DEFAULT_RETRY_CONNECT_TIMEOUT);
         mTimerConnect.start_timer( areg::DEFAULT_RETRY_CONNECT_TIMEOUT, static_cast<DispatcherThread &>(self()), 1);
     }
 
@@ -496,33 +430,15 @@ bool ServiceCommunicationBase::start_connection()
 
 bool ServiceCommunicationBase::restart_connection()
 {
-    LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, restart_connection );
-    LOG_DBG("Going to start connection. Address [ %s ], port [ %d ]"
-                , mServerConnection.address().host_address().as_string()
-                , mServerConnection.address().host_port());
-
     stop_connection();
     return start_connection();
 }
 
 void ServiceCommunicationBase::stop_connection()
 {
-    LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, stop_connection );
-    LOG_WARN("Stopping remote servicing connection: connected instances [ %u ], send-thread running [ %s ], recv-thread running [ %s ], pool pairs [ %u ]"
-                , mInstanceMap.size()
-                , mThreadSend.is_running() ? "YES" : "NO"
-                , mThreadReceive.is_running() ? "YES" : "NO"
-                , static_cast<uint32_t>(mClientPairs.size()));
-
     mShuttingDown.store(true, std::memory_order_release);
     mThreadReceive.trigger_exit();
-    ClientPairList pairsToStop;
-    {
-        Lock lock(mLock);
-        pairsToStop = std::move(mClientPairs);
-    }
-
-    for ( auto & pair : pairsToStop )
+    for ( auto & pair : mClientPairs )
     {
         if ( pair )
         {
@@ -532,8 +448,21 @@ void ServiceCommunicationBase::stop_connection()
 
     mServerConnection.interrupt_connections();
 
-    // The receive thread reads the listening socket: it stops before the socket is closed.
+    // The receive threads read the pair list and the listening socket: they stop before either changes.
     mThreadReceive.shutdown( areg::WAIT_INFINITE );
+    for ( auto & pair : mClientPairs )
+    {
+        if ( pair )
+        {
+            pair->shutdown_receive( areg::WAIT_INFINITE );
+        }
+    }
+
+    ClientPairList pairsToStop;
+    {
+        Lock lock(mLock);
+        pairsToStop = std::move(mClientPairs);
+    }
 
     // Queue graceful disconnect notifications while sockets are still alive.
     disconnect_services();
@@ -542,7 +471,6 @@ void ServiceCommunicationBase::stop_connection()
     constexpr uint32_t DISCONNECT_TIMEOUT_MS{ 2500u };
     if ( !mThreadSend.wait_completion(DISCONNECT_TIMEOUT_MS) )
     {
-        LOG_WARN("Send thread did not finish within %u ms -- interrupting connections to unblock", DISCONNECT_TIMEOUT_MS);
         mServerConnection.interrupt_connections();
     }
 
@@ -583,24 +511,19 @@ bool ServiceCommunicationBase::do_accept_client_shared( SocketAccepted & /*clien
 
 bool ServiceCommunicationBase::do_accept_client_pool( SocketAccepted & clientSocket )
 {
-    LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, do_accept_client_pool);
-
     if ( mShuttingDown.load(std::memory_order_acquire) )
     {
-        LOG_WARN("do_accept_client_pool during shutdown for socket [ %u ], rejecting", static_cast<uint32_t>(clientSocket.handle()));
         return false;
     }
 
     const ITEM_ID cookie{ mServerConnection.cookie(clientSocket) };
     if ( cookie == areg::COOKIE_UNKNOWN )
     {
-        LOG_WARN("do_accept_client_pool: no cookie assigned to socket [ %u ], falling back to shared path", static_cast<uint32_t>(clientSocket.handle()));
         return false;
     }
 
     if ( mClientPairs.empty() )
     {
-        LOG_WARN("do_accept_client_pool: pool is empty (stopped?), falling back to shared path");
         return false;
     }
 
@@ -608,17 +531,7 @@ bool ServiceCommunicationBase::do_accept_client_pool( SocketAccepted & clientSoc
 
     const uint32_t idx = static_cast<uint32_t>(cookie) % mNumPairs;
     ClientConnectionPair & pair{ *mClientPairs[idx] };
-    if ( mServerConnection.move_serving(clientSocket, pair, [&pair, &clientSocket, cookie]() { pair.add_socket(clientSocket, cookie); }) == false )
-    {
-        LOG_WARN("do_accept_client_pool: socket [ %u ] was closed before it reached its pool pair", static_cast<uint32_t>(clientSocket.handle()));
-        return true;
-    }
-
-    LOG_DBG("Pool mode: routed socket [ %u ] (cookie [ %u ]) to pool pair [ %u ]"
-                , static_cast<uint32_t>(clientSocket.handle())
-                , static_cast<uint32_t>(cookie)
-                , idx);
-
+    static_cast<void>(mServerConnection.move_serving(clientSocket, pair, [&pair, &clientSocket, cookie]() { pair.add_socket(clientSocket, cookie); }));
     return true;
 }
 
@@ -712,6 +625,20 @@ bool ServiceCommunicationBase::try_forward_inline( areg::MessageEnvelope & data 
     return result;
 }
 
+SendBacklog & ServiceCommunicationBase::backlog_of(ITEM_ID target) noexcept
+{
+    return (mClientPairs.empty() ? mThreadSend.backlog() : mClientPairs[static_cast<uint32_t>(target) % mNumPairs]->send_thread().backlog());
+}
+
+void ServiceCommunicationBase::pause_if_held(ITEM_ID target) noexcept
+{
+    SendBacklog & backlog{ backlog_of(target) };
+    if ( backlog.is_held(target) )
+    {
+        receive_pause() = ReceivePause{ &backlog, target };
+    }
+}
+
 bool ServiceCommunicationBase::do_send_shared( areg::MessageEnvelope && data, areg::EventPriority prio )
 {
     mThreadSend.send_gate().enter();
@@ -791,18 +718,12 @@ void ServiceCommunicationBase::failed_send_message(const areg::MessageEnvelope &
 void ServiceCommunicationBase::failed_send_message(const areg::MessageEnvelope& /*msgFailed*/, Socket& whichTarget)
 #endif // DEBUG
 {
-    LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, failed_send_message );
-
 #ifdef DEBUG
 
     SocketAccepted target{ mServerConnection.target_client(msgFailed) };
     ASSERT( !whichTarget.is_valid() || !target.is_valid() || (whichTarget.handle( ) == target.handle()) );
 
 #endif // DEBUG
-
-    LOG_WARN("Failed to send message to [ %s ] client [ %d ], probably the connection is lost, closing connection"
-                    , whichTarget.is_valid() ? "VALID" : "INVALID"
-                    , static_cast<int32_t>(whichTarget.handle()));
 
     if ( whichTarget.is_valid())
     {
@@ -812,13 +733,7 @@ void ServiceCommunicationBase::failed_send_message(const areg::MessageEnvelope& 
 
 void ServiceCommunicationBase::failed_receive_message(Socket & whichSource)
 {
-    LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, failed_receive_message );
-
     SocketAccepted client = mServerConnection.client_by_handle(whichSource.handle());
-    LOG_WARN("Failed to receive message from [ %s ] client [ %d ], probably the connection with socket [ %d ] is lost, closing connection"
-                        , client.is_valid() ? "VALID" : "INVALID"
-                        , static_cast<int32_t>(client.handle())
-                        , static_cast<int32_t>(whichSource.handle()));
 
     if (client.is_valid())
     {
@@ -828,11 +743,8 @@ void ServiceCommunicationBase::failed_receive_message(Socket & whichSource)
 
 void ServiceCommunicationBase::process_received_message(areg::MessageEnvelope & msgReceived, Socket & whichSource)
 {
-    DEBUG_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, process_received_message);
-
     if (!msgReceived.is_valid())
     {
-        DEBUG_LOG_WARN("Received invalid message from source [ %u ], ignoring to process", msgReceived.source());
         return;
     }
 
@@ -844,31 +756,18 @@ void ServiceCommunicationBase::process_received_message(areg::MessageEnvelope & 
     {
         if ( target != static_cast<uint32_t>(areg::TARGET_UNKNOWN) )
         {
-#if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-            // Log every 100k forwarded messages.
-            static uint32_t s_fwdCount{ 0u };
-            static uint32_t s_fwdBytes{ 0u };
-            ++s_fwdCount;
-            s_fwdBytes += msgReceived.size_used();
-            if ((s_fwdCount % 100000u) == 0u)
-            {
-                DEBUG_LOG_INFO("Fast-path forward milestone: [ %u ] messages, [ %u ] bytes total (last msg: id=%u src=%u tgt=%u)"
-                            , s_fwdCount
-                            , s_fwdBytes
-                            , static_cast<uint32_t>(msgId)
-                            , source
-                            , target);
-            }
-#endif  // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-
             // Only the last message of a receive burst goes inline: while more input waits, the
             // send thread joins it into one write, which is worth more than the wake-up.
-            const bool burstPending{ (areg::receive_mode() == areg::ReceiveMode::NoCache) ||
-                                     (areg::recv_data_available(whichSource.handle()) != 0u) };
+            const bool burstPending{ areg::recv_burst_pending(whichSource.handle()) };
 
             if ( burstPending || (try_forward_inline(msgReceived) == false) )
             {
                 send_message(std::move(msgReceived));
+            }
+
+            if ( mHeldTargets.load(std::memory_order_relaxed) != 0u )
+            {
+                pause_if_held(static_cast<ITEM_ID>(target));
             }
         }
 
@@ -877,14 +776,6 @@ void ServiceCommunicationBase::process_received_message(areg::MessageEnvelope & 
 
     // Slow path: system messages need the connection cookie.
     const ITEM_ID cookie{ mServerConnection.cookie(whichSource.handle()) };
-    DEBUG_LOG_DBG("Received message [ %s ] of id [ %u ] from source [ %u ] ( connection cookie = %u ) of client host [ %s : %d ] for target [ %u ]"
-                    , areg::as_string(msgId)
-                    , static_cast<uint32_t>(msgId)
-                    , source
-                    , static_cast<uint32_t>(cookie)
-                    , static_cast<const char *>(whichSource.address().host_address())
-                    , static_cast<int32_t>(whichSource.address().host_port( ))
-                    , target);
 
     if ( (source == static_cast<uint32_t>(cookie)) && (msgId != areg::FuncIdRange::SystemServiceConnect) )
     {
@@ -904,20 +795,8 @@ void ServiceCommunicationBase::process_received_message(areg::MessageEnvelope & 
         instance.ciCookie = cookie;
         add_instance(cookie, instance);
         areg::MessageEnvelope msgConnect{ connect_message(mServerConnection.channel_id(), cookie, areg::MessageSource::SourceService) };
-        DEBUG_LOG_DBG("Received request connect message, sending response [ %s ] of id [ %u ], to new target [ %u ], connection socket [ %u ]"
-                    , areg::as_string( static_cast<areg::FuncIdRange>(msgConnect.message_id()))
-                    , msgConnect.message_id()
-                    , msgConnect.target()
-                    , static_cast<uint32_t>(whichSource.handle()));
 
         send_message( msgConnect );
-    }
-    else
-    {
-        DEBUG_LOG_WARN("Ignoring to process message [ %s ] of id [ %u ] from source [ %u ]"
-                    , areg::as_string(msgId)
-                    , static_cast<uint32_t>(msgId)
-                    , source);
     }
 }
 

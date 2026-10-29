@@ -21,11 +21,8 @@
 #include "areg/base/MessageEnvelope.hpp"
 
 #include "areg/base/private/DebugDefs.hpp"
-#include "areg/logging/areg_log.h"
 
 namespace areg {
-
-DEF_LOG_SCOPE(areg_ipc_private_ClientSendThread, report_producer_wait);
 
 ClientSendThread::ClientSendThread(RemoteMessageHandler& remoteService, ClientConnection & connection, const String& namePrefix )
     : DispatcherThread  ( namePrefix + areg::CLIENT_SEND_MESSAGE_THREAD, areg::SYSTEM_THREAD_STACK_BIG, areg::SEND_THREAD_QUEUE_LIMIT )
@@ -170,13 +167,6 @@ void ClientSendThread::start_event_processing( Event & eventElem )
 
     // The gate opens only after the write, never before it.
     mSendGate.leave(bufCount);
-
-    const uint32_t waitedMs{ extract_max_producer_wait_ms() };
-    if ( waitedMs >= areg::QUEUE_WAIT_WARN_MS )
-    {
-        LOG_SCOPE(areg_ipc_private_ClientSendThread, report_producer_wait);
-        LOG_WARN("Send queue was full: a producer waited [ %u ] ms for a free slot", waitedMs);
-    }
 }
 
 void ClientSendThread::report_failed_batch(Event & first, uint32_t from, uint32_t count)

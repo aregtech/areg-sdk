@@ -50,7 +50,7 @@ When `AREG_EXTENDED` is enabled, the build links against `ncurses` for enhanced 
 
 ### macOS
 
-- Uses `dispatch_source` for timers instead of `timer_create`
+- `SyncTimer` uses the same per-process timer thread as Linux (`pthread_cond_timedwait_relative_np` for the sleep)
 - Thread naming via `pthread_setname_np` (macOS variant)
 - System services managed by launchd
 - Links against `libc++` (not `libstdc++`)

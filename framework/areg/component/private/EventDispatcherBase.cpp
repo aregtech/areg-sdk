@@ -23,6 +23,7 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/persist/ConfigManager.hpp"
 #include "areg/base/private/DebugDefs.hpp"
+#include "areg/base/private/EnvelopeCache.hpp"
 #include "areg/base/private/WaitWord.hpp"
 
 #include <atomic>
@@ -38,11 +39,12 @@ namespace
     constexpr uint32_t      HEAP_TRIM_EVENT_THRESHOLD   { 100000u };    //!< events drained since last trim
     constexpr uint32_t      HEAP_TRIM_IDLE_TIMEOUT_MS   { 100u };       //!< idle time that must pass before a due trim runs
 
-    //!< Returns freed heap pages to the OS.
+    //!< Returns the cached envelope blocks and freed heap pages to the OS.
     //!< glibc keeps a slow consumer's drained backlog mapped at the RSS high-water mark (per-arena retention);
     //!< malloc_trim(0) releases it. Calls from different threads are serialized.
     inline void _release_heap( void ) noexcept
     {
+        areg::envelope_cache_trim();
 #if defined(__GLIBC__)
         static std::mutex _trimLock;
         std::lock_guard<std::mutex> guard( _trimLock );

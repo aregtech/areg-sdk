@@ -23,6 +23,8 @@
 
 #include "areg/logging/areg_log.h"
 
+#include <cstring>
+
 namespace areg {
 
 SocketConnectionBase::SocketConnectionBase() noexcept
@@ -41,6 +43,35 @@ uint8_t * SocketConnectionBase::prepare_message(MessageEnvelope & message, areg:
     header.custom    = 0u;
 
     return message.init_envelope(header, header.bufHeader.biUsed);
+}
+
+int32_t SocketConnectionBase::receive_cached_message(MessageEnvelope & message, areg::ThreadCache & rxCache)
+{
+    if (rxCache.unread < areg::WIRE_HEADER_SIZE)
+        return 0;
+
+    const uint8_t * const data{ rxCache.buffer.get() + rxCache.head };
+    areg::EventHeader header{ };
+    std::memcpy(areg::wire_header(header), data, areg::WIRE_HEADER_SIZE);
+    const uint32_t used{ header.bufHeader.biUsed };
+    const uint32_t total{ areg::wire_size(header) };
+    if (rxCache.unread < total)
+        return 0;
+
+    uint8_t * const body{ SocketConnectionBase::prepare_message(message, header) };
+    if (body == nullptr)
+        return 0;
+
+    if (used != 0u)
+    {
+        std::memcpy(body, data + areg::WIRE_HEADER_SIZE, used);
+        message.set_size_used(used);
+    }
+
+    message.move_to_begin();
+    rxCache.unread -= total;
+    rxCache.head    = (rxCache.unread != 0u) ? (rxCache.head + total) : 0u;
+    return static_cast<int32_t>(total);
 }
 
 int32_t SocketConnectionBase::receive_message(MessageEnvelope & message, const Socket & socket) const

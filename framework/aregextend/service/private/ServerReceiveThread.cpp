@@ -20,7 +20,6 @@
 #include "areg/component/ExitEvent.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
 #include "areg/ipc/RemoteMessageHandler.hpp"
-#include "areg/logging/areg_log.h"
 
 #include "aregextend/service/ConnectionHandler.hpp"
 #include "aregextend/service/ServerConnection.hpp"
@@ -29,10 +28,6 @@
 #include "areg/base/private/DebugDefs.hpp"
 
 namespace areg::ext {
-
-DEBUG_DEF_LOG_SCOPE(areg_aregextend_service_ServerReceiveThread, run_dispatcher);
-DEBUG_DEF_LOG_SCOPE(areg_aregextend_service_ServerReceiveThread, _process_connection_event);
-
 ServerReceiveThread::ServerReceiveThread( ConnectionHandler & connectHandler, RemoteMessageHandler & remoteService, ServerConnection & connection )
     : DispatcherThread  ( areg::SERVER_RECEIVE_MESSAGE_THREAD, areg::SYSTEM_THREAD_STACK_BIG, areg::QUEUE_CONTROL_RING_CAPACITY )
     , mConnectHandler   ( connectHandler )
@@ -44,6 +39,8 @@ ServerReceiveThread::ServerReceiveThread( ConnectionHandler & connectHandler, Re
     , mAdded            ( )
     , mReleased         ( )
     , mParts            ( )
+    , mServed           ( )
+    , mPaused           ( connection.multiplexer() )
 {
 }
 
@@ -66,80 +63,62 @@ void ServerReceiveThread::_release_handed_over()
 
 void ServerReceiveThread::_process_connection_event(SOCKETHANDLE hSocket, const areg::SocketAddress & addrAccepted, areg::MessageEnvelope & msgReceived)
 {
-    DEBUG_LOG_SCOPE( areg_aregextend_service_ServerReceiveThread, _process_connection_event );
-    SocketAccepted clientSocket;
-    if (!mConnection.is_connection_accepted(hSocket, clientSocket))
+    if ( mHandover.has_pending() )
+    {
+        _release_handed_over();
+    }
+
+    SocketAccepted * served{ mServed.find(hSocket) };
+    if (served == nullptr)
     {
         if ( !addrAccepted.is_valid() )
         {
-            DEBUG_LOG_WARN("Socket [ %u ] is no longer registered, it was deregistered while still in the event queue. Ignoring.", hSocket);
             return;
         }
 
-        clientSocket = SocketAccepted(hSocket, std::move(addrAccepted));
-        if (mConnectHandler.can_accept_connection(clientSocket))
+        SocketAccepted newSocket(hSocket, addrAccepted);
+        if (mConnectHandler.can_accept_connection(newSocket))
         {
-            DEBUG_LOG_INFO("Accepting new connection of socket [ %u ], client [ %s : %d ]"
-                        , hSocket
-                        , clientSocket.address().host_address().as_string()
-                        , clientSocket.address().host_port());
-
-            if ( mConnection.accept_connection(clientSocket, static_cast<SocketRelease &>(*this)) == false )
+            if ( mConnection.accept_connection(newSocket, static_cast<SocketRelease &>(*this)) == false )
                 return;
 
-            if ( mConnectHandler.on_client_accepted(clientSocket) )
+            if ( mConnectHandler.on_client_accepted(newSocket) )
                 return;
+
+            served = &mServed.add(newSocket);
         }
-        else if (clientSocket.is_alive())
+        else if (newSocket.is_alive())
         {
-            DEBUG_LOG_WARN("Rejecting new connection of socket [ %u ], client [ %s : %d ]"
-                            , hSocket
-                            , clientSocket.address().host_address().as_string()
-                            , clientSocket.address().host_port());
-
-            mConnection.reject_connection(clientSocket);
-            clientSocket.close();
+            mConnection.reject_connection(newSocket);
+            newSocket.close();
             return;
         }
         else
         {
-            DEBUG_LOG_WARN("The connection of socket [ %u ] is not alive anymore, client [ %s : %d ], ignore connection."
-                            , hSocket
-                            , clientSocket.address().host_address().as_string()
-                            , clientSocket.address().host_port());
-
-            mConnection.close_connection(clientSocket);
+            mConnection.close_connection(newSocket);
             return;
         }
     }
 
-    DEBUG_LOG_DBG("Received connection event of socket [ %u ], client [ %s : %d ]"
-                , hSocket
-                , clientSocket.address().host_address().as_string()
-                , clientSocket.address().host_port());
+    SocketAccepted & clientSocket{ *served };
 
     int32_t received{ 0 };
     {
         AREG_LT_SCOPE(areg::LtStage::RecvNode);  // router inline route+forward
-        received = areg::ext::receive_ready_socket(mConnection, mRemoteService, areg::DEFAULT_DRAIN_LIMIT, clientSocket,
+        received = areg::ext::receive_ready_socket(mRemoteService, areg::DEFAULT_DRAIN_LIMIT, clientSocket,
                 msgReceived, mParts, [this](uint64_t bytes, uint32_t msgs) { accumulate_received(bytes, msgs); });
     }
 
     if (received < 0)
     {
-        DEBUG_LOG_WARN("Failed to receive message from client socket [ %s : %d ], socket [ %u ], server valid [ %s ]. Going to close connection"
-                        , clientSocket.address().host_address().as_string()
-                        , clientSocket.address().host_port()
-                        , clientSocket.handle()
-                        , mConnection.is_valid() ? "YES" : "NO");
+        PausedSources::discard();
 
         mRemoteService.failed_receive_message(clientSocket);
-        _drop_socket(clientSocket.handle());
+        _drop_socket(hSocket);
     }
-    else if (received == static_cast<int32_t>(areg::DEFAULT_DRAIN_LIMIT))
+    else
     {
-        // The ceiling stopped the drain, so the cache may still hold messages.
-        _remember_cached_socket(clientSocket.handle());
+        _after_drain(hSocket, received == static_cast<int32_t>(areg::DEFAULT_DRAIN_LIMIT));
     }
 }
 
@@ -147,8 +126,42 @@ void ServerReceiveThread::_drop_socket(SOCKETHANDLE hSocket)
 {
     mConnection.unregister_from_multiplexer(hSocket);
     _forget_cached_socket(hSocket);
+    mPaused.drop(hSocket);
     areg::thread_rx_cache_release(hSocket);
     mParts.drop(hSocket);
+    mServed.drop(hSocket);
+}
+
+void ServerReceiveThread::_after_drain(SOCKETHANDLE hSocket, bool ceilingHit)
+{
+    if (is_receive_paused())
+    {
+        if (mPaused.pause(hSocket))
+        {
+            mConnection.unregister_from_multiplexer(hSocket);
+            _forget_cached_socket(hSocket);
+            return;
+        }
+
+        // The drain stopped before the cache was empty.
+        ceilingHit = true;
+    }
+
+    if (ceilingHit)
+    {
+        _remember_cached_socket(hSocket);
+    }
+}
+
+void ServerReceiveThread::_resume_paused()
+{
+    mPaused.resume([this](SOCKETHANDLE hSocket)
+    {
+        if (mConnection.handle_exist(hSocket) && mConnection.multiplexer().register_socket(hSocket, true))
+        {
+            _remember_cached_socket(hSocket);
+        }
+    });
 }
 
 void ServerReceiveThread::_remember_cached_socket(SOCKETHANDLE hSocket)
@@ -179,44 +192,46 @@ void ServerReceiveThread::_service_cached_socket(areg::MessageEnvelope & msgRece
     const SOCKETHANDLE hSocket{ mCachedPending.front() };
     mCachedPending.erase(mCachedPending.begin());
 
-    if (areg::recv_data_available(hSocket) == 0u)
+    areg::ThreadCache & rxCache{ areg::thread_rx_cache(hSocket) };
+    if (areg::recv_data_available(rxCache) == 0u)
         return;
 
-    areg::SocketAccepted clientSocket{ mConnection.client_by_handle(hSocket) };
-    if (!clientSocket.is_valid())
+    areg::SocketAccepted * clientSocket{ mServed.find(hSocket) };
+    if (clientSocket == nullptr)
         return;
 
     constexpr uint32_t MAX_DRAIN{ areg::DEFAULT_DRAIN_LIMIT - 1u };
-    const int32_t drained{ areg::ext::drain_recv_cache(mConnection, mRemoteService, MAX_DRAIN, clientSocket,
+    const int32_t drained{ areg::ext::drain_recv_cache(mRemoteService, MAX_DRAIN, *clientSocket, rxCache,
             msgReceived, [this](uint64_t bytes, uint32_t msgs) { accumulate_received(bytes, msgs); }) };
 
     if (drained < 0)
     {
-        mRemoteService.failed_receive_message(clientSocket);
+        PausedSources::discard();
+        mRemoteService.failed_receive_message(*clientSocket);
         _drop_socket(hSocket);
     }
-    else if (drained == static_cast<int32_t>(MAX_DRAIN))
+    else
     {
-        mCachedPending.push_back(hSocket);
+        _after_drain(hSocket, drained == static_cast<int32_t>(MAX_DRAIN));
     }
 }
 
 bool ServerReceiveThread::run_dispatcher()
 {
-    DEBUG_LOG_SCOPE( areg_aregextend_service_ServerReceiveThread, run_dispatcher );
-    DEBUG_LOG_DBG("Starting dispatcher [ %s ]", name().as_string());
-
     areg::set_receive_mode(areg::ReceiveMode::MultiCache);
 
     // This thread object outlives a run and is started again on a reconnect.
     mCachedPending.clear();
     mParts.clear();
+    mServed.clear();
+    mPaused.clear();
 
     ready_for_events(true);
     bool isExit{ false };   // stays false if server_listen() fails (failure return); set on a clean ExitEvent
     if ( mConnection.server_listen( areg::MAXIMUM_LISTEN_QUEUE_SIZE) )
     {
         areg::MessageEnvelope msgReceived;
+        areg::SocketAddress addrAccepted;
         areg::SocketAddress addrDrain;
         uint32_t retryCount = 0;
         do
@@ -226,10 +241,13 @@ bool ServerReceiveThread::run_dispatcher()
                 _release_handed_over();
             }
 
+            if ( mPaused.has_released() )
+            {
+                _resume_paused();
+            }
+
             if ( !mExternalEvents.has_pending() )
             {
-                areg::SocketAddress addrAccepted;
-
                 // A socket whose cache still holds messages is invisible to the
                 // multiplexer, so it is serviced here and the wait never blocks
                 // while one is outstanding.
@@ -246,7 +264,6 @@ bool ServerReceiveThread::run_dispatcher()
 
                 if (!mConnection.is_valid())
                 {
-                    DEBUG_LOG_WARN("The server socket is not valid anymore, should quit receive thread!");
                     if (areg::is_valid_socket(hSocket))
                     {
                         areg::socket_close(hSocket);
@@ -261,8 +278,6 @@ bool ServerReceiveThread::run_dispatcher()
                         mConnectHandler.connection_failure();
                         isExit = true;
                     }
-
-                    DEBUG_LOG_WARN("Failed selecting server socket, going to retry [ %d ] times before restart.", (RETRY_COUNT - retryCount));
                 }
                 else if ( hSocket != areg::InvalidSocketHandle )
                 {
@@ -270,10 +285,7 @@ bool ServerReceiveThread::run_dispatcher()
                     _process_connection_event(hSocket, addrAccepted, msgReceived);
                     // msgReceived.invalidate();
 
-#if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-                    uint32_t drainCount{ 0 };
-#endif  // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-                    for (uint32_t drain = 0; drain < areg::DEFAULT_DRAIN_LIMIT; ++drain)
+                    for (uint32_t drain = 0; (drain < areg::DEFAULT_DRAIN_LIMIT) && mConnection.has_ready_connection(); ++drain)
                     {
                         const SOCKETHANDLE hDrain = mConnection.wait_connection_nowait(addrDrain);
                         if ( !areg::is_valid_socket(hDrain) )
@@ -281,19 +293,9 @@ bool ServerReceiveThread::run_dispatcher()
                             break;
                         }
 
-#if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-                        ++drainCount;
-#endif  // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
                         _process_connection_event(hDrain, addrDrain, msgReceived);
                         // msgReceived.invalidate();
                     }
-
-#if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-                    if (drainCount >= areg::DEFAULT_DRAIN_LIMIT)
-                    {
-                        DEBUG_LOG_WARN("Receive drain loop exhausted thread drain limit (%d) -- inbound event queue is growing", areg::DEFAULT_DRAIN_LIMIT);
-                    }
-#endif   // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
                 }
             }
             else
@@ -306,10 +308,11 @@ bool ServerReceiveThread::run_dispatcher()
         } while ( !isExit );
     }
 
+    mPaused.clear();
+    mServed.clear();
     ready_for_events(false);
     remove_all_events();
 
-    DEBUG_LOG_DBG("Dispatcher [ %s ] completed job and stopping running.", mDispatcherName.as_string());
     return isExit;
 }
 

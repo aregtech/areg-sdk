@@ -16,13 +16,18 @@
 
 #include "logcollector/app/LogCollector.hpp"
 #include "logcollector/service/LogCollectorServerService.hpp"
+#include "areg/base/DateTime.hpp"
+#include "areg/base/Thread.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
+#include "areg/logging/LoggingDefs.hpp"
 
 LogCollectorMessageProcessor::LogCollectorMessageProcessor(LogCollectorServerService & loggerService)
     : mLoggerService    ( loggerService )
     , mListSaveConfig   ( )
     , mPendingSave      ( areg::COOKIE_UNKNOWN )
+    , mPendingSince     ( )
     , mPausedSources    ( )
+    , mDroppedRows      ( )
 {
 }
 
@@ -211,9 +216,20 @@ void LogCollectorMessageProcessor::process_next_save_config()
     if (mListSaveConfig.is_empty() == false)
     {
         mPendingSave = mListSaveConfig[0u];
+        mPendingSince = std::chrono::steady_clock::now();
         mListSaveConfig.remove_at(0u, 1u);
         mLoggerService.send_message(areg::message_save_configuration(areg::COOKIE_LOGGER, mPendingSave));
         mLoggerService.mSaveTimer.start_timer(LogCollectorServerService::TIMEOUT_SAVE_CONFIG, static_cast<areg::DispatcherThread &>(mLoggerService), 1);
+    }
+}
+
+void LogCollectorMessageProcessor::save_config_timeout()
+{
+    // An expiry queued before the pending request was sent belongs to an earlier one.
+    const auto waited{ std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - mPendingSince).count() };
+    if ((mPendingSave != areg::COOKIE_UNKNOWN) && (waited >= static_cast<int64_t>(LogCollectorServerService::TIMEOUT_SAVE_CONFIG)))
+    {
+        process_next_save_config();
     }
 }
 
@@ -221,6 +237,7 @@ void LogCollectorMessageProcessor::client_disconnected(const ITEM_ID& cookie)
 {
     // A source that reconnects comes back sending, so its mark goes away with the connection.
     mPausedSources.remove_at(cookie);
+    mDroppedRows.remove_at(cookie);
     if ((cookie > areg::TARGET_ALL) && (mPendingSave == cookie))
     {
         process_next_save_config();
@@ -231,7 +248,7 @@ void LogCollectorMessageProcessor::log_message(const areg::MessageEnvelope & msg
 {
     ASSERT(msgReceived.message_id() == static_cast<uint32_t>(areg::FuncIdRange::ServiceLogMessage));
     ASSERT(areg::LogDataType::Remote == reinterpret_cast<const areg::LogEntry *>(msgReceived.buffer())->logDataType);
-    _forward_message_to_observers(msgReceived);
+    _forward_message_to_observers(msgReceived, true);
 }
 
 bool LogCollectorMessageProcessor::is_log_source(areg::MessageSource msgSource)
@@ -368,7 +385,71 @@ inline void LogCollectorMessageProcessor::_forward_message_to_log_sources(const 
     }
 }
 
-inline void LogCollectorMessageProcessor::_forward_message_to_observers(const areg::MessageEnvelope& msgReceived) const
+inline bool LogCollectorMessageProcessor::_can_deliver_row(const ITEM_ID & observer) const
+{
+    if (mLoggerService.is_target_held(observer))
+    {
+        if (mDroppedRows.is_empty())
+        {
+            mLoggerService.mDropTimer.start_timer(LogCollectorServerService::TIMEOUT_DROP_NOTICE, static_cast<areg::DispatcherThread &>(mLoggerService), 1);
+        }
+
+        ++ mDroppedRows[observer];
+        return false;
+    }
+
+    if (mDroppedRows.is_empty() == false)
+    {
+        auto pos{ mDroppedRows.find(observer) };
+        if (mDroppedRows.is_valid_position(pos))
+        {
+            const uint32_t dropped{ mDroppedRows.value_at(pos) };
+            mDroppedRows.remove_at(pos);
+            _notify_dropped_rows(observer, dropped);
+        }
+    }
+
+    return true;
+}
+
+bool LogCollectorMessageProcessor::notify_dropped_rows()
+{
+    for (auto pos = mDroppedRows.first_position(); mDroppedRows.is_valid_position(pos); )
+    {
+        const ITEM_ID observer{ mDroppedRows.key_at(pos) };
+        if (mLoggerService.is_target_held(observer))
+        {
+            pos = mDroppedRows.next_position(pos);
+            continue;
+        }
+
+        const uint32_t dropped{ mDroppedRows.value_at(pos) };
+        pos = mDroppedRows.remove_at(pos);
+        _notify_dropped_rows(observer, dropped);
+    }
+
+    return (mDroppedRows.is_empty() == false);
+}
+
+void LogCollectorMessageProcessor::_notify_dropped_rows(const ITEM_ID & observer, uint32_t dropped) const
+{
+    areg::LogEntry log{ areg::LogMessageType::MessageText };
+    log.logMessagePrio  = areg::LogPriority::PrioWarning;
+    log.logSource       = areg::COOKIE_LOGGER;
+    log.logTarget       = observer;
+    log.logThreadId     = static_cast<ITEM_ID>(areg::Thread::current_thread_id());
+    log.logTimestamp    = static_cast<TIME64>(areg::DateTime::now());
+    log.logMessageLen   = static_cast<uint32_t>(areg::String::format_string( log.logMessage
+                                                                           , static_cast<int32_t>(areg::LOG_MSG_SIZE)
+                                                                           , "The log collector dropped %u log messages for this observer, it read slower than the logs arrived."
+                                                                           , dropped));
+
+    areg::MessageEnvelope msg{ areg::create_log_message(log, areg::LogDataType::Remote, areg::COOKIE_LOGGER) };
+    msg.set_target(static_cast<uint32_t>(observer));
+    mLoggerService.send_message(std::move(msg));
+}
+
+inline void LogCollectorMessageProcessor::_forward_message_to_observers(const areg::MessageEnvelope& msgReceived, bool isLogRow /*= false*/) const
 {
     const auto& observers = mLoggerService.observers();
     if (observers.is_empty())
@@ -384,7 +465,10 @@ inline void LogCollectorMessageProcessor::_forward_message_to_observers(const ar
     {
         if (instances.is_valid_position(dstPos) && is_log_observer(instances.value_at(dstPos).ciSource))
         {
-            mLoggerService.send_message(msgReceived);
+            if ((isLogRow == false) || _can_deliver_row(target))
+            {
+                mLoggerService.send_message(msgReceived);
+            }
         }
         else if (target == areg::TARGET_ALL)
         {
@@ -393,7 +477,11 @@ inline void LogCollectorMessageProcessor::_forward_message_to_observers(const ar
             for (const auto& observer : observers.data())
             {
                 ASSERT(is_log_observer(observer.second.ciSource));
-                areg::MessageEnvelope msg{ (--remaining != 0u) ? msgReceived.clone() : msgReceived };
+                -- remaining;
+                if (isLogRow && (_can_deliver_row(observer.first) == false))
+                    continue;
+
+                areg::MessageEnvelope msg{ (remaining != 0u) ? msgReceived.clone() : msgReceived };
                 msg.set_source(static_cast<uint32_t>(source));
                 msg.set_target(static_cast<uint32_t>(observer.first));
                 mLoggerService.send_message(msg);

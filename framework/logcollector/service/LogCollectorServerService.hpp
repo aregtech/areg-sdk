@@ -50,6 +50,9 @@ private:
     //!< The timeout waiting to save config.
     static constexpr uint32_t   TIMEOUT_SAVE_CONFIG{ areg::WAIT_1_SECOND };
 
+    //!< Milliseconds between two checks of the observers that log rows were dropped for.
+    static constexpr uint32_t   TIMEOUT_DROP_NOTICE{ 250u };
+
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
@@ -234,6 +237,8 @@ private:
     areg::MapInstances              mObservers;
     //!< The timer used when trigger multiple requests to save configuration.
     areg::Timer                     mSaveTimer;
+    //!< Runs while log rows were dropped for an observer that has not been told yet.
+    areg::Timer                     mDropTimer;
     //!< Saves the collected logs in the logging database file.
     LogCollectorDatabase            mDatabase;
 

@@ -20,15 +20,11 @@
 #include "aregextend/service/private/SendBacklog.hpp"
 
 #include "areg/base/private/SocketLiveness.hpp"
-#include "areg/logging/areg_log.h"
 
 #include <algorithm>
 #include <chrono>
 #include <limits>
 #include <new>
-
-DEF_LOG_SCOPE(areg_aregextend_service_SendBacklog, log_close);
-DEF_LOG_SCOPE(areg_aregextend_service_SendBacklog, enter_fallback);
 
 namespace areg::ext {
 
@@ -71,10 +67,15 @@ SendBacklog::SendBacklog(areg::SendQueueGate & gate)
     , mFallback     ( false )
     , mPumpList     ( )
     , mWaitSockets  ( )
+    , mHeld         ( )
+    , mHoldWaiters  ( )
+    , mHeldCount    ( 0u )
+    , mHeldTotal    ( nullptr )
+    , mCloseStalled ( true )
 {
     if (mWait == nullptr)
     {
-        enter_fallback("no wait object");
+        enter_fallback();
     }
 }
 
@@ -84,8 +85,9 @@ SendBacklog::~SendBacklog()
     release_all(cutCookies);
 }
 
-void SendBacklog::set_limits(uint64_t capBytes, uint32_t refuseMs, uint32_t keepaliveMs) noexcept
+void SendBacklog::set_limits(uint64_t capBytes, uint32_t refuseMs, uint32_t keepaliveMs, bool closeStalled /*= true*/) noexcept
 {
+    mCloseStalled.store(closeStalled, std::memory_order_relaxed);
     mCapBytes.store(capBytes != 0u ? capBytes : static_cast<uint64_t>(areg::SOCKET_SEND_BUFFER_SIZE), std::memory_order_relaxed);
     mRefuseMs.store(refuseMs != 0u ? refuseMs : SendBacklog::UNLIMITED, std::memory_order_relaxed);
     mKeepaliveMs.store(keepaliveMs != 0u ? keepaliveMs : areg::SOCKET_KEEPALIVE_SEC * 1'000u, std::memory_order_relaxed);
@@ -109,6 +111,7 @@ SendBacklog::Result SendBacklog::write(ITEM_ID cookie, SOCKETHANDLE hSocket, con
         const uint32_t before{ static_cast<uint32_t>(entry->messages.size()) };
         const bool result{ start_writes(*entry, bytesDone) };
         msgsDone = before - static_cast<uint32_t>(entry->messages.size());
+        update_hold(*entry);
         return (result ? Result::Kept : Result::Failed);
     }
 
@@ -160,6 +163,7 @@ SendBacklog::Result SendBacklog::write(ITEM_ID cookie, SOCKETHANDLE hSocket, con
 
     prepared.bytes = total;
     msgsDone = complete(prepared, bytesDone, nowMs);
+    update_hold(prepared);
     insert(std::move(prepared));
     return Result::Kept;
 }
@@ -203,6 +207,7 @@ int32_t SendBacklog::write_inline(ITEM_ID cookie, SOCKETHANDLE hSocket, const ar
     prepared.messages.push_back(message);
     prepared.bytes      = size;
     complete(prepared, static_cast<uint64_t>(written), nowMs);
+    update_hold(prepared);
     insert(std::move(prepared));
     return 2;
 }
@@ -249,6 +254,7 @@ bool SendBacklog::pump(SendBacklog::Owner & owner)
             if ((failed == false) && (entry->messages.empty() == false))
             {
                 failed = (check_limits(*entry, now_ms(), reason) == false);
+                update_hold(*entry);
             }
         }
 
@@ -278,14 +284,14 @@ bool SendBacklog::attach(SOCKETHANDLE hSocket) noexcept
     if ((mWait != nullptr) && backlog_os_attach(mWait.get(), hSocket))
         return true;
 
-    enter_fallback("a socket could not be attached");
+    enter_fallback();
     return false;
 }
 
-uint32_t SendBacklog::prepare_wait(bool & overCap)
+uint32_t SendBacklog::prepare_wait()
 {
     const uint64_t nowMs{ now_ms() };
-    const uint64_t cap{ mCapBytes.load(std::memory_order_relaxed) };
+    const uint64_t cap{ mCloseStalled.load(std::memory_order_relaxed) ? mCapBytes.load(std::memory_order_relaxed) : std::numeric_limits<uint64_t>::max() };
     const uint32_t refuseMs{ mRefuseMs.load(std::memory_order_relaxed) };
     uint64_t deadline{ std::numeric_limits<uint64_t>::max() };
     if (refuseMs == SendBacklog::UNLIMITED)
@@ -294,7 +300,6 @@ uint32_t SendBacklog::prepare_wait(bool & overCap)
         deadline = nowMs + std::max(1u, std::min(SendBacklog::TICK_MS, keepaliveMs / 5u));
     }
 
-    overCap = false;
     mWaitSockets.clear();
     {
         std::lock_guard<std::mutex> lock(mLock);
@@ -310,15 +315,6 @@ uint32_t SendBacklog::prepare_wait(bool & overCap)
             if (entry.bytes > cap)
             {
                 deadline = std::min(deadline, entry.progressMs + SendBacklog::CAP_STALL_MS);
-                if ((nowMs - entry.progressMs) < SendBacklog::CAP_PROGRESS_MS)
-                {
-                    overCap = true;
-                    deadline = std::min(deadline, entry.progressMs + SendBacklog::CAP_PROGRESS_MS);
-                }
-                else if (entry.bytes > cap * SendBacklog::CAP_CEILING)
-                {
-                    overCap = true;
-                }
             }
         }
     }
@@ -368,6 +364,11 @@ void SendBacklog::release_all(std::deque<ITEM_ID> & cutCookies)
         {
             mGate.leave(1u);
         }
+
+        while (mHeld.empty() == false)
+        {
+            release_hold_locked(mHeld.back());
+        }
     }
 
     for (auto & pair : entries)
@@ -379,39 +380,6 @@ void SendBacklog::release_all(std::deque<ITEM_ID> & cutCookies)
         }
 
         release_entry(entry);
-    }
-}
-
-void SendBacklog::log_close(const Entry & entry, Reason reason) const
-{
-    LOG_SCOPE(areg_aregextend_service_SendBacklog, log_close);
-
-    switch (reason)
-    {
-    case Reason::Refused:
-        LOG_WARN("Client [ %u ] took no data for [ %u ] ms, the limit of net::*::tcpip::timeout; closing the connection"
-                    , static_cast<uint32_t>(entry.cookie)
-                    , mRefuseMs.load(std::memory_order_relaxed));
-        break;
-
-    case Reason::OverCap:
-        LOG_ERR("Client [ %u ] takes no data and keeps [ %llu ] bytes, more than net::*::tcpip::sndbuf allows; closing the connection. Raise sndbuf to keep a paused client longer"
-                    , static_cast<uint32_t>(entry.cookie)
-                    , static_cast<unsigned long long>(entry.bytes));
-        break;
-
-    case Reason::Unreachable:
-        LOG_WARN("Client [ %u ] stopped answering for [ %u ] ms, net::*::tcpip::keepalive; closing the connection"
-                    , static_cast<uint32_t>(entry.cookie)
-                    , mKeepaliveMs.load(std::memory_order_relaxed));
-        break;
-
-    case Reason::SocketError:
-    default:
-        LOG_WARN("Failed to write to client [ %u ], socket [ %u ]; closing the connection"
-                    , static_cast<uint32_t>(entry.cookie)
-                    , static_cast<uint32_t>(entry.socket));
-        break;
     }
 }
 
@@ -448,6 +416,11 @@ void SendBacklog::remove(ITEM_ID cookie)
         if (mCount.fetch_sub(1u, std::memory_order_acq_rel) == 1u)
         {
             mGate.leave(1u);
+        }
+
+        if (removed.held)
+        {
+            release_hold_locked(cookie);
         }
     }
 
@@ -513,15 +486,9 @@ bool SendBacklog::cancel_writes(SendBacklogOsPtr & os, SOCKETHANDLE hSocket) noe
     return false;
 }
 
-void SendBacklog::enter_fallback(const char * what) noexcept
+void SendBacklog::enter_fallback() noexcept
 {
-    if (mFallback.exchange(true, std::memory_order_acq_rel))
-        return;
-
-    LOG_SCOPE(areg_aregextend_service_SendBacklog, enter_fallback);
-    LOG_WARN("Send backlog: %s, a slow connection is now served every [ %u ] ms"
-                , what
-                , SendBacklog::RECHECK_MS);
+    mFallback.store(true, std::memory_order_release);
 }
 
 uint32_t SendBacklog::complete(Entry & entry, uint64_t bytes, uint64_t nowMs)
@@ -625,7 +592,7 @@ bool SendBacklog::check_limits(const Entry & entry, uint64_t nowMs, Reason & rea
         return false;
     }
 
-    if ((entry.bytes > mCapBytes.load(std::memory_order_relaxed)) && (stalledMs >= SendBacklog::CAP_STALL_MS))
+    if ((stalledMs >= SendBacklog::CAP_STALL_MS) && (entry.bytes > mCapBytes.load(std::memory_order_relaxed)) && mCloseStalled.load(std::memory_order_relaxed))
     {
         reason = Reason::OverCap;
         return false;
@@ -646,6 +613,77 @@ bool SendBacklog::check_limits(const Entry & entry, uint64_t nowMs, Reason & rea
     }
 
     return true;
+}
+
+void SendBacklog::update_hold(Entry & entry)
+{
+    // Held above the cap, released at half of it.
+    const uint64_t cap{ mCapBytes.load(std::memory_order_relaxed) };
+    const bool held{ entry.bytes > (entry.held ? (cap >> 1) : cap) };
+    if (held == entry.held)
+        return;
+
+    entry.held = held;
+    std::lock_guard<std::mutex> lock(mLock);
+    if (held)
+    {
+        mHeld.push_back(entry.cookie);
+        mHeldCount.fetch_add(1u, std::memory_order_acq_rel);
+        if (mHeldTotal != nullptr)
+        {
+            mHeldTotal->fetch_add(1u, std::memory_order_acq_rel);
+        }
+    }
+    else
+    {
+        release_hold_locked(entry.cookie);
+    }
+}
+
+void SendBacklog::release_hold_locked(ITEM_ID cookie) noexcept
+{
+    auto pos{ std::find(mHeld.begin(), mHeld.end(), cookie) };
+    if (pos == mHeld.end())
+        return;
+
+    *pos = mHeld.back();
+    mHeld.pop_back();
+    mHeldCount.fetch_sub(1u, std::memory_order_acq_rel);
+    if (mHeldTotal != nullptr)
+    {
+        mHeldTotal->fetch_sub(1u, std::memory_order_acq_rel);
+    }
+
+    for (HoldWaiter * waiter : mHoldWaiters)
+    {
+        waiter->hold_released();
+    }
+
+    mHoldWaiters.clear();
+}
+
+bool SendBacklog::hold_wait(ITEM_ID cookie, HoldWaiter & waiter)
+{
+    std::lock_guard<std::mutex> lock(mLock);
+    if (std::find(mHeld.begin(), mHeld.end(), cookie) == mHeld.end())
+        return false;
+
+    if (std::find(mHoldWaiters.begin(), mHoldWaiters.end(), &waiter) == mHoldWaiters.end())
+    {
+        mHoldWaiters.push_back(&waiter);
+    }
+
+    return true;
+}
+
+void SendBacklog::hold_cancel(HoldWaiter & waiter) noexcept
+{
+    std::lock_guard<std::mutex> lock(mLock);
+    auto pos{ std::find(mHoldWaiters.begin(), mHoldWaiters.end(), &waiter) };
+    if (pos != mHoldWaiters.end())
+    {
+        mHoldWaiters.erase(pos);
+    }
 }
 
 } // namespace areg::ext

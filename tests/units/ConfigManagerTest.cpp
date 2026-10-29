@@ -19,6 +19,7 @@
 #include "units/GUnitTest.hpp"
 #include "areg/appbase/AppDefs.hpp"
 #include "areg/base/Process.hpp"
+#include "areg/persist/ConfigListener.hpp"
 #include "areg/persist/ConfigManager.hpp"
 
 #include "areg/appbase/Application.hpp"
@@ -139,6 +140,116 @@ TEST(ConfigManagerTest, process_file_wins_over_shared_file)
 
     write_file(process_file(dir), { module_entry("file::location = ./logs/process.log") });
     EXPECT_EQ(file_location(shared), std::string("./logs/process.log"));
+}
+
+/**
+ * \brief   A value a listener sets after the read is kept: reading the files of the process does not drop it.
+ **/
+TEST(ConfigManagerTest, listener_value_survives_the_read)
+{
+    class LocationListener final : public areg::ConfigListener
+    {
+    protected:
+        void prepare_save_configuration(areg::ConfigManager& /*config*/) final
+        {
+        }
+
+        void post_save_configuration(areg::ConfigManager& /*config*/) final
+        {
+        }
+
+        void prepare_read_configuration(areg::ConfigManager& /*config*/) final
+        {
+        }
+
+        void on_setup_configuration(const areg::ListProperties& /*listReadonly*/, const areg::ListProperties& /*listWritable*/, areg::ConfigManager& /*config*/) final
+        {
+        }
+
+        void post_read_configuration(areg::ConfigManager& config) final
+        {
+            config.set_file_location("./logs/listener.log", true);
+        }
+    };
+
+    const fs::path dir{ test_dir() };
+    const fs::path shared{ dir / "areg.init" };
+    write_file(shared, { "log::*::file::location = ./logs/all.log" });
+
+    LocationListener listener;
+    areg::ConfigManager config;
+    ASSERT_TRUE(config.read_config(areg::String(shared.string()), &listener));
+    EXPECT_EQ(std::string(config.log_file_location().as_string()), std::string("./logs/listener.log"));
+}
+
+/**
+ * \brief   A temporary value wins over the value saved in the process file, and the save keeps the saved value.
+ **/
+TEST(ConfigManagerTest, temporary_value_wins_over_saved_value)
+{
+    const fs::path dir{ test_dir() };
+    const fs::path shared{ dir / "areg.init" };
+    write_file(shared, { "log::*::file::location = ./logs/all.log" });
+    write_file(process_file(dir), { module_entry("file::location = ./logs/process.log") });
+
+    areg::ConfigManager config;
+    ASSERT_TRUE(config.read_config(areg::String(shared.string())));
+    config.set_file_location("./logs/temporary.log", true);
+    EXPECT_EQ(std::string(config.log_file_location().as_string()), std::string("./logs/temporary.log"));
+
+    ASSERT_TRUE(config.save_config());
+    const std::string saved{ read_file(process_file(dir)) };
+    EXPECT_NE(saved.find("./logs/process.log"), std::string::npos);
+    EXPECT_EQ(saved.find("./logs/temporary.log"), std::string::npos);
+    EXPECT_EQ(file_location(shared), std::string("./logs/process.log"));
+}
+
+/**
+ * \brief   The last value set is in force, temporary or not; only a non-temporary value is saved.
+ **/
+TEST(ConfigManagerTest, last_set_value_wins)
+{
+    const fs::path dir{ test_dir() };
+    const fs::path shared{ dir / "areg.init" };
+    write_file(shared, { "log::*::file::location = ./logs/all.log" });
+    write_file(process_file(dir), { module_entry("file::location = ./logs/process.log") });
+
+    areg::ConfigManager config;
+    ASSERT_TRUE(config.read_config(areg::String(shared.string())));
+
+    config.set_file_location("./logs/temporary.log", true);
+    config.set_file_location("./logs/saved.log", false);
+    EXPECT_EQ(std::string(config.log_file_location().as_string()), std::string("./logs/saved.log"));
+
+    config.set_file_location("./logs/again.log", true);
+    EXPECT_EQ(std::string(config.log_file_location().as_string()), std::string("./logs/again.log"));
+
+    config.set_file_location("./logs/saved.log", true);
+    EXPECT_EQ(std::string(config.log_file_location().as_string()), std::string("./logs/saved.log"));
+
+    ASSERT_TRUE(config.save_config());
+    EXPECT_EQ(file_location(shared), std::string("./logs/saved.log"));
+
+    config.set_file_location("./logs/again.log", true);
+    const areg::ConfigKey& key{ areg::log_file_location() };
+    config.remove_module_property(areg::String(key.section), areg::String(key.property), areg::String(key.position), areg::ConfigEntry::LogFileLocation);
+    EXPECT_EQ(std::string(config.log_file_location().as_string()), std::string("./logs/all.log"));
+}
+
+/**
+ * \brief   A temporary entry given after the saved entry of the same key still wins once it is set again.
+ **/
+TEST(ConfigManagerTest, temporary_value_set_again_wins_whatever_its_place)
+{
+    const std::string key{ module_entry("file::location") };
+    areg::ListProperties writable;
+    writable.add(areg::Property(key.c_str(), "./logs/saved.log"));
+    writable.add(areg::Property(key.c_str(), "./logs/temporary.log", nullptr, true));
+
+    areg::ConfigManager config;
+    config.set_configuration(areg::ListProperties(), writable);
+    config.set_file_location("./logs/again.log", true);
+    EXPECT_EQ(std::string(config.log_file_location().as_string()), std::string("./logs/again.log"));
 }
 
 /**

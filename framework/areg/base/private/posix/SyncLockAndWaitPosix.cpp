@@ -313,20 +313,11 @@ int32_t SyncLockAndWaitPosix::_wait_any_new(WaitablePosix** listWaitables, int32
             remaining = static_cast<uint32_t>(ms <= 0 ? 1 : ms);
         }
 
-        WaitAnyRegistryMap& mapAny{ SyncLockAndWaitPosix::_map_wait_any_ids() };
-        mapAny.register_resource_object(to_num<ptr_type>(self), &firedWord);
         const uint32_t woken{ _wait_any_sleep(firedWord, remaining) };
-        mapAny.unregister_resource_object(to_num<ptr_type>(self));
 
         if (woken == SYNC_FIRE_INVALID)
         {
             resultCode = static_cast<int32_t>(areg::os::SyncSignal::Timeout);
-            break;
-        }
-
-        if (woken == static_cast<uint32_t>(areg::os::SyncSignal::AsyncSignal))
-        {
-            resultCode = static_cast<int32_t>(areg::os::SyncSignal::AsyncSignal);
             break;
         }
 
@@ -346,22 +337,6 @@ int32_t SyncLockAndWaitPosix::_wait_any_new(WaitablePosix** listWaitables, int32
 //////////////////////////////////////////////////////////////////////////
 // SyncLockAndWaitPosix class implementation
 //////////////////////////////////////////////////////////////////////////
-
-SyncLockAndWaitPosix::MapWaitIDResource & SyncLockAndWaitPosix::_map_wait_ids() noexcept
-{
-    static SyncLockAndWaitPosix::MapWaitIDResource _mapWaitIdResource;
-    return _mapWaitIdResource;
-}
-
-#if defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
-
-SyncLockAndWaitPosix::WaitAnyRegistryMap & SyncLockAndWaitPosix::_map_wait_any_ids() noexcept
-{
-    static SyncLockAndWaitPosix::WaitAnyRegistryMap _mapWaitAnyIds;
-    return _mapWaitAnyIds;
-}
-
-#endif  // defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
 
 SyncLockAndWaitPosix::SyncResourceMapIX & SyncLockAndWaitPosix::_map_sync_resources() noexcept
 {
@@ -405,9 +380,6 @@ int32_t SyncLockAndWaitPosix::wait_multiple( WaitablePosix ** listWaitables, int
 
         if ( !lockAndWait._is_empty() && lockAndWait._lock( ) )
         {
-            SyncLockAndWaitPosix::MapWaitIDResource & mapWaitIds { SyncLockAndWaitPosix::_map_wait_ids() };
-            mapWaitIds.register_resource_object(reinterpret_cast<ptr_type>(lockAndWait.mContext), &lockAndWait);
-
             int32_t waitResult { ENOLCK };
             while ( lockAndWait._no_event_fired( ) )
             {
@@ -421,8 +393,6 @@ int32_t SyncLockAndWaitPosix::wait_multiple( WaitablePosix ** listWaitables, int
                     break;
                 }
             }
-
-            mapWaitIds.unregister_resource_object(reinterpret_cast<ptr_type>(lockAndWait.mContext));
 
             lockAndWait._unlock( );
         }
@@ -553,54 +523,6 @@ void SyncLockAndWaitPosix::event_failed( WaitablePosix & syncWaitable ) noexcept
         lockAndWait->mFiredEntry.store(index + static_cast<int32_t>(areg::os::SyncSignal::FirstError), std::memory_order_release);
         lockAndWait->_notify_event();
     }
-}
-
-bool SyncLockAndWaitPosix::notify_async_signal( id_type threadId ) noexcept
-{
-    const ptr_type key{ static_cast<ptr_type>(threadId) };
-
-#if defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
-    // Check lock-free WaitAny registry first (no mutex needed).
-    {
-        WaitAnyRegistryMap& mapAny{ SyncLockAndWaitPosix::_map_wait_any_ids() };
-        std::atomic<uint32_t>* firedWord{ mapAny.find_resource_object(key) };
-        if (firedWord != nullptr)
-        {
-            uint32_t expected{ SYNC_FIRE_INVALID };
-            if (firedWord->compare_exchange_strong(
-                    expected,
-                    static_cast<uint32_t>(areg::os::SyncSignal::AsyncSignal),
-                    std::memory_order_acq_rel,
-                    std::memory_order_relaxed))
-            {
-                // Wake the sleeping thread.
-#if defined(__linux__)
-                ::syscall(SYS_futex, firedWord, FUTEX_WAKE_PRIVATE, 1, nullptr, nullptr, 0);
-#elif defined(__APPLE__)
-                ::__ulock_wake(areg::os::APPLE_ULOCK_COMPARE_AND_WAIT, firedWord, 0u);
-#else  // Cygwin
-                ::WakeByAddressSingle(firedWord);
-#endif
-            }
-            return true;  // thread was registered in WaitAny registry
-        }
-    }
-#endif  // defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
-
-    // Fallback: WaitAll map
-    {
-        SyncLockAndWaitPosix::MapWaitIDResource & mapWaitIds { SyncLockAndWaitPosix::_map_wait_ids() };
-        Lock wait(mapWaitIds.lockable());
-
-        SyncLockAndWaitPosix * lockAndWait = mapWaitIds.find_resource_object(key);
-        if (lockAndWait != nullptr)
-        {
-            lockAndWait->mFiredEntry.store(static_cast<int32_t>(areg::os::SyncSignal::AsyncSignal), std::memory_order_release);
-            return lockAndWait->_notify_event();
-        }
-    }
-
-    return false;
 }
 
 //////////////////////////////////////////////////////////////////////////

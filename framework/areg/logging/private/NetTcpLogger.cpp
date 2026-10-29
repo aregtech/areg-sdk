@@ -46,6 +46,7 @@ NetTcpLogger::NetTcpLogger(LogConfiguration & logConfig, ScopeController & scope
     , mScopeController  ( scopeController )
     , mFlags            ( NetTcpLogger::FLAG_NONE )
     , mRingStack        ( 0, areg::OverlapPolicy::Shift )
+    , mRingDropped      ( 0u )
 {
 }
 
@@ -62,6 +63,7 @@ bool NetTcpLogger::open_logger()
         if (!mLogConfiguration.is_remote_logging_enabled())
         {
             mRingStack.release();
+            mRingDropped = 0u;
             return false;
         }
 
@@ -82,13 +84,14 @@ void NetTcpLogger::notify_source_state(areg::LogSourceState previous, const ITEM
     const areg::LogSourceState current{ LogManager::source_state() };
     if (current != previous)
     {
-        send_message(areg::message_source_state_updated(mChannel.cookie(), areg::COOKIE_LOGGER, current, byObserver));
+        send_message(areg::message_source_state_updated(connection_cookie(), areg::COOKIE_LOGGER, current, byObserver));
     }
 }
 
 void NetTcpLogger::close_logger()
 {
     mRingStack.release();
+    mRingDropped = 0u;
     on_service_exit();
     unregister_consumer_commands();
 }
@@ -99,13 +102,18 @@ void NetTcpLogger::log_message(const areg::LogEntry& logMessage)
     if (!is_sending())
         return;
 
-    if (mChannel.is_valid() && is_connected_state())
+    const ITEM_ID cookie{ connected_cookie() };
+    if (cookie != areg::COOKIE_UNKNOWN)
     {
-        send_message(areg::create_log_message(logMessage, areg::LogDataType::Remote, mChannel.cookie()), areg::EventPriority::NormalPrio);
+        send_message(areg::create_log_message(logMessage, areg::LogDataType::Remote, cookie), areg::EventPriority::NormalPrio);
     }
     else if (mRingStack.capacity() != 0)
     {
-        mRingStack.push(areg::create_log_message(logMessage, areg::LogDataType::Remote, mChannel.cookie()));
+        queue_pending(areg::create_log_message(logMessage, areg::LogDataType::Remote, cookie));
+    }
+    else
+    {
+        ++mRingDropped;
     }
 }
 
@@ -115,13 +123,17 @@ void NetTcpLogger::forward_message(const areg::MessageEnvelope& msg)
     if (!is_sending())
         return;
 
-    if (mChannel.is_valid() && is_connected_state())
+    if (connected_cookie() != areg::COOKIE_UNKNOWN)
     {
         send_message(msg, areg::EventPriority::NormalPrio);
     }
     else if (mRingStack.capacity() != 0)
     {
-        mRingStack.push(msg);
+        queue_pending(areg::MessageEnvelope(msg));
+    }
+    else
+    {
+        ++mRingDropped;
     }
 }
 
@@ -131,13 +143,17 @@ void NetTcpLogger::forward_message(areg::MessageEnvelope&& msg)
     if (!is_sending())
         return;
 
-    if (mChannel.is_valid() && is_connected_state())
+    if (connected_cookie() != areg::COOKIE_UNKNOWN)
     {
         send_message(std::move(msg), areg::EventPriority::NormalPrio);
     }
     else if (mRingStack.capacity() != 0)
     {
-        mRingStack.push(std::move(msg));
+        queue_pending(std::move(msg));
+    }
+    else
+    {
+        ++mRingDropped;
     }
 }
 
@@ -159,6 +175,7 @@ void NetTcpLogger::on_service_channel_connected(const Channel & channel)
 
     const areg::ScopeList& scopes{ static_cast<const areg::ScopeList&>(mScopeController.scope_list()) };
     send_message(areg::message_register_scopes(cookie, areg::COOKIE_LOGGER, scopes));
+    send_dropped_notice(cookie);
 
     while (mRingStack.is_empty() == false)
     {
@@ -190,10 +207,38 @@ void NetTcpLogger::failed_send_message(const MessageEnvelope & msgFailed, Socket
     ASSERT(is_enabled());
     if (mLogConfiguration.stack_size() > 0)
     {
-        mRingStack.push(msgFailed);
+        queue_pending(areg::MessageEnvelope(msgFailed));
     }
 
     notify_connection_lost();
+}
+
+void NetTcpLogger::queue_pending(areg::MessageEnvelope && msg)
+{
+    if (mRingStack.is_full())
+    {
+        ++mRingDropped;
+    }
+
+    mRingStack.push(std::move(msg));
+}
+
+void NetTcpLogger::send_dropped_notice(const ITEM_ID & cookie)
+{
+    if (mRingDropped == 0u)
+        return;
+
+    areg::LogEntry log(areg::LogMessageType::MessageText, areg::LOG_SCOPE_ID_NONE, 0u, 0u, areg::LogPriority::PrioError, nullptr, 0u);
+    const int32_t len{ String::format_string( log.logMessage
+                                            , static_cast<int32_t>(areg::LOG_MSG_SIZE)
+                                            , "Dropped [ %llu ] log messages, the application was not connected to the log collector and its remote log queue (log::*::remote::queue) was full."
+                                            , static_cast<unsigned long long>(mRingDropped)) };
+    log.logMessageLen = static_cast<uint32_t>(len > 0 ? len : 0);
+    mRingDropped = 0u;
+
+    areg::MessageEnvelope msg{ areg::create_log_message(log, areg::LogDataType::Remote, cookie) };
+    areg::finalize_log_message(msg, areg::LogDataType::Remote, cookie);
+    send_message(std::move(msg), areg::EventPriority::NormalPrio);
 }
 
 void NetTcpLogger::failed_receive_message(Socket & /* whichSource */)
@@ -235,7 +280,7 @@ void NetTcpLogger::process_received_message(MessageEnvelope & msgReceived, Socke
             if (scopeCount != 0)
             {
                 const areg::ScopeList& scopes{ static_cast<const areg::ScopeList&>(mScopeController.scope_list()) };
-                send_message(areg::message_scopes_updated(mChannel.cookie(), areg::COOKIE_LOGGER, scopes));
+                send_message(areg::message_scopes_updated(connection_cookie(), areg::COOKIE_LOGGER, scopes));
                 notify_source_state(before, static_cast<ITEM_ID>(msgReceived.source()));
             }
         }
@@ -245,7 +290,7 @@ void NetTcpLogger::process_received_message(MessageEnvelope & msgReceived, Socke
         {
             const areg::ScopeList & scopes{ static_cast<const areg::ScopeList &>(mScopeController.scope_list()) };
             const ITEM_ID targetId{ static_cast<ITEM_ID>(msgReceived.source()) };
-            send_message(areg::message_register_scopes(mChannel.cookie(), targetId, scopes));
+            send_message(areg::message_register_scopes(connection_cookie(), targetId, scopes));
         }
         break;
 
@@ -263,7 +308,7 @@ void NetTcpLogger::process_received_message(MessageEnvelope & msgReceived, Socke
             const areg::ScopeList& scopes{ static_cast<const areg::ScopeList&>(mScopeController.scope_list()) };
             send_message(areg::message_configuration_restored());
             // The observers hold the priorities, so they are sent the list the file restored.
-            send_message(areg::message_scopes_updated(mChannel.cookie(), areg::COOKIE_LOGGER, scopes));
+            send_message(areg::message_scopes_updated(connection_cookie(), areg::COOKIE_LOGGER, scopes));
             notify_source_state(before, static_cast<ITEM_ID>(msgReceived.source()));
         }
         break;
@@ -281,12 +326,12 @@ void NetTcpLogger::process_received_message(MessageEnvelope & msgReceived, Socke
             {
                 const ITEM_ID byObserver{ static_cast<ITEM_ID>(msgReceived.source()) };
                 const areg::LogSourceState taken{ LogManager::set_source_state(state) };
-                send_message(areg::message_source_state_updated(mChannel.cookie(), areg::COOKIE_LOGGER, taken, byObserver));
+                send_message(areg::message_source_state_updated(connection_cookie(), areg::COOKIE_LOGGER, taken, byObserver));
                 if (taken != areg::LogSourceState::Stopped)
                 {
                     // Leaving the stopped state sets the priorities back, so the list is sent.
                     const areg::ScopeList& scopes{ static_cast<const areg::ScopeList&>(mScopeController.scope_list()) };
-                    send_message(areg::message_scopes_updated(mChannel.cookie(), areg::COOKIE_LOGGER, scopes));
+                    send_message(areg::message_scopes_updated(connection_cookie(), areg::COOKIE_LOGGER, scopes));
                 }
             }
         }

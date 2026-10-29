@@ -29,6 +29,7 @@
 #include "areg/component/private/SimpleEvent.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
 
+#include <algorithm>
 #include <atomic>
 #include <deque>
 #include <memory>
@@ -71,6 +72,24 @@ using SendBacklogWaitOsPtr = std::unique_ptr<SendBacklogWaitOs, SendBacklogWaitO
 class SendBacklog;
 
 /**
+ * \brief   Waits for a held connection of a backlog to be released, see SendBacklog::hold_wait().
+ **/
+class HoldWaiter
+{
+public:
+    /**
+     * \brief   Called once after a held connection of the backlog was released or closed, by the
+     *          thread that released it and with the lock of the backlog held: it must only signal.
+     *          The waiter is no longer registered when it is called.
+     **/
+    virtual void hold_released() noexcept = 0;
+
+protected:
+    HoldWaiter() = default;
+    ~HoldWaiter() = default;
+};
+
+/**
  * \brief   The backlog of all connections one send thread writes. A message is written whole or
  *          the connection is closed: once its first byte is in a socket, the next bytes of that
  *          socket are the rest of it.
@@ -82,6 +101,10 @@ class SendBacklog;
  *          It is also the wait object of its send thread: the thread arms it in its event
  *          queue and blocks in wait() until a socket takes data, a queued event or an exit
  *          calls wake(), or the nearest deadline of a backlog is due.
+ *
+ *          A connection that keeps more than its cap is held until it is down to half of it.
+ *          The send thread never stops taking its queue for it: whoever produces the messages
+ *          asks is_held() and holds back, or drops, only what goes to that connection.
  **/
 class SendBacklog final : public areg::QueueWaiter
 {
@@ -93,10 +116,6 @@ public:
     static constexpr uint32_t   WRITE_CHUNK         { 256u * 1024u };
     //!< Milliseconds without progress after which a backlog above its cap closes the connection.
     static constexpr uint32_t   CAP_STALL_MS        { 1'000u };
-    //!< A backlog above its cap holds new messages back only if it moved within these milliseconds.
-    static constexpr uint32_t   CAP_PROGRESS_MS     { 50u };
-    //!< A backlog above this many times its cap holds new messages back, whether it moves or not.
-    static constexpr uint32_t   CAP_CEILING         { 2u };
     //!< Longest wait, in milliseconds, of a send thread without its wait objects (fallback mode).
     static constexpr uint32_t   RECHECK_MS          { 10u };
     //!< Longest wait, in milliseconds, between two liveness checks of an unlimited backlog.
@@ -134,7 +153,8 @@ public:
         uint64_t                            bytes       { 0u };     //!< Bytes not completed.
         uint64_t                            sinceMs     { 0u };     //!< When the backlog started.
         uint64_t                            progressMs  { 0u };     //!< When a byte was last completed.
-        SendBacklogOsPtr      os          { };        //!< Writes in progress.
+        SendBacklogOsPtr                    os          { };        //!< Writes in progress.
+        bool                                held        { false };  //!< True while the connection is held, see is_held().
     };
 
 //////////////////////////////////////////////////////////////////////////
@@ -157,17 +177,50 @@ public:
     /**
      * \brief   Sets the limits. Thread safe, applied by the next pump().
      *
-     * \param   capBytes    The most a connection may keep, in bytes.
-     * \param   refuseMs    Milliseconds a peer may take nothing before it is closed; UNLIMITED never.
-     * \param   keepaliveMs Milliseconds a silent peer is given.
+     * \param   capBytes        The bytes above which a connection is held, see is_held().
+     * \param   refuseMs        Milliseconds a peer may take nothing before it is closed; UNLIMITED never.
+     * \param   keepaliveMs     Milliseconds a silent peer is given.
+     * \param   closeStalled    If true, a connection above its cap whose peer takes nothing for
+     *                          CAP_STALL_MS is closed. Set it where producers wait for a held
+     *                          connection, clear it where they drop what goes to it.
      **/
-    void set_limits(uint64_t capBytes, uint32_t refuseMs, uint32_t keepaliveMs) noexcept;
+    void set_limits(uint64_t capBytes, uint32_t refuseMs, uint32_t keepaliveMs, bool closeStalled = true) noexcept;
+
+    /**
+     * \brief   Sets the counter of held connections shared by several backlogs, or nullptr.
+     *          Call it before the backlog is used; the counter must outlive the backlog.
+     **/
+    inline void set_hold_counter(std::atomic<uint32_t> * counter) noexcept;
 
     /**
      * \brief   Returns true if no connection has a backlog. Lock free.
      **/
     [[nodiscard]]
     inline bool is_empty() const noexcept;
+
+    /**
+     * \brief   Returns true if the connection is held: it keeps more than its cap, and stays held
+     *          until it is down to half of it. Lock free while no connection is held. Thread safe.
+     *
+     * \param   cookie  The connection.
+     **/
+    [[nodiscard]]
+    inline bool is_held(ITEM_ID cookie) const noexcept;
+
+    /**
+     * \brief   Registers \a waiter for the release of the connection if it is held. Thread safe.
+     *          The check and the registration are one step, so no release is missed.
+     *
+     * \param   cookie  The connection.
+     * \param   waiter  Called once when a held connection of this backlog is released.
+     * \return  True if the connection is held and the waiter is registered.
+     **/
+    bool hold_wait(ITEM_ID cookie, HoldWaiter & waiter);
+
+    /**
+     * \brief   Unregisters \a waiter. After the call it is not called any more. Thread safe.
+     **/
+    void hold_cancel(HoldWaiter & waiter) noexcept;
 
     /**
      * \brief   Writes the messages to the connection without waiting. If the connection has a
@@ -235,18 +288,12 @@ public:
     /**
      * \brief   Prepares the next wait() in one pass over the backlogs: collects their sockets and
      *          returns the milliseconds until the nearest deadline, a limit that closes a
-     *          connection, the end of the over cap state, or a liveness check.
-     *          Called by the send thread only.
+     *          connection, or a liveness check. Called by the send thread only.
      *
-     * \param   overCap On return, true if a connection keeps more than its cap while its peer
-     *                  still takes data, within CAP_PROGRESS_MS, or more than CAP_CEILING times
-     *                  its cap. The send thread then stops taking new messages until it is below.
-     *                  Below the ceiling a peer that takes nothing holds no one back. A peer above
-     *                  its cap that takes nothing for CAP_STALL_MS is closed.
      * \return  The milliseconds wait() may block.
      **/
     [[nodiscard]]
-    uint32_t prepare_wait(bool & overCap);
+    uint32_t prepare_wait();
 
     /**
      * \brief   Makes the next wake() end the next wait(). Call it before arming the backlog in
@@ -264,12 +311,6 @@ public:
      * \brief   Ends the wait of the send thread. Called by its event queue from any thread.
      **/
     void wake() noexcept override;
-
-    /**
-     * \brief   Logs why the connection of \a entry is closed, naming the configuration key
-     *          that sets the limit.
-     **/
-    void log_close(const Entry & entry, Reason reason) const;
 
     /**
      * \brief   Releases every backlog and returns the connections whose first message was cut,
@@ -297,8 +338,8 @@ private:
     //!< Cancels the writes in progress. Returns false if one did not end and its buffers must not be freed.
     bool cancel_writes(SendBacklogOsPtr & os, SOCKETHANDLE hSocket) noexcept;
 
-    //!< Enters fallback mode once and logs why.
-    void enter_fallback(const char * what) noexcept;
+    //!< Enters fallback mode: a slow connection is served every RECHECK_MS.
+    void enter_fallback() noexcept;
 
     //!< Completes \a bytes of the entry and returns the number of messages completed.
     uint32_t complete(Entry & entry, uint64_t bytes, uint64_t nowMs);
@@ -312,6 +353,12 @@ private:
 
     //!< Applies the limits to one entry and returns false with the reason if it must be closed.
     bool check_limits(const Entry & entry, uint64_t nowMs, Reason & reason) const noexcept;
+
+    //!< Holds or releases the connection of the entry after its bytes changed.
+    void update_hold(Entry & entry);
+
+    //!< Releases a held connection and calls the waiters. Call it with the map lock held.
+    void release_hold_locked(ITEM_ID cookie) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -343,6 +390,16 @@ private:
     std::vector<Entry *>                    mPumpList;
     //!< The sockets of one wait(), reused.
     std::vector<SOCKETHANDLE>               mWaitSockets;
+    //!< The held connections. Guarded by the map lock.
+    std::vector<ITEM_ID>                    mHeld;
+    //!< The waiters for a release. Guarded by the map lock.
+    std::vector<HoldWaiter *>               mHoldWaiters;
+    //!< The number of held connections, read without the lock.
+    std::atomic<uint32_t>                   mHeldCount;
+    //!< The counter of held connections shared with other backlogs, or nullptr.
+    std::atomic<uint32_t> *                 mHeldTotal;
+    //!< True if a stalled connection above its cap is closed.
+    std::atomic<bool>                       mCloseStalled;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -438,6 +495,20 @@ inline bool SendBacklog::is_empty() const noexcept
 inline void SendBacklog::reset_wake() noexcept
 {
     mWoken.store(false, std::memory_order_relaxed);
+}
+
+inline void SendBacklog::set_hold_counter(std::atomic<uint32_t> * counter) noexcept
+{
+    mHeldTotal = counter;
+}
+
+inline bool SendBacklog::is_held(ITEM_ID cookie) const noexcept
+{
+    if (mHeldCount.load(std::memory_order_acquire) == 0u)
+        return false;
+
+    std::lock_guard<std::mutex> lock(mLock);
+    return (std::find(mHeld.begin(), mHeld.end(), cookie) != mHeld.end());
 }
 
 } // namespace areg::ext

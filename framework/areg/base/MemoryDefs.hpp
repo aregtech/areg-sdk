@@ -300,6 +300,14 @@ inline uint16_t atomic_load16(const uint16_t & ref) noexcept
 #endif  // _MSC_VER
 }
 
+/**
+ * \brief   Frees a RawBuffer block whose last owner released it. A message envelope block of a
+ *          cached size goes to the calling thread's envelope cache, any other block to `delete[]`.
+ *
+ * \param   buffer  A `new uint8_t[]` block reinterpreted as RawBuffer*, not nullptr.
+ **/
+AREG_API void release_raw_buffer(RawBuffer * buffer) noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // areg::RawBufferPtr class declaration
 //////////////////////////////////////////////////////////////////////////
@@ -313,11 +321,11 @@ inline uint16_t atomic_load16(const uint16_t & ref) noexcept
  *          needed a SECOND allocation for its separate control block.
  *
  *          Copy semantics mirror std::shared_ptr exactly: copy = atomic increment, destroy /
- *          reset = atomic decrement, free (delete[]) when the count reaches 0. Move transfers
- *          ownership without touching the count.
+ *          reset = atomic decrement, free (areg::release_raw_buffer) when the count reaches 0.
+ *          Move transfers ownership without touching the count.
  *
  * \note    The block must have been allocated as `new uint8_t[]` and reinterpreted as
- *          RawBuffer* / RawEnvelope*; release frees it with the matching `delete[]`.
+ *          RawBuffer* / RawEnvelope*; areg::release_raw_buffer caches it or frees it with `delete[]`.
  *          ThreadSafe for the reference count only; the pointed-to buffer is not thread-safe.
  **/
 class RawBufferPtr
@@ -446,7 +454,7 @@ private:
     {
         if ((mBuffer != nullptr) && (areg::atomic_dec16(mBuffer->bufHeader.biRefCount) == 0u))
         {
-            delete [] reinterpret_cast<uint8_t *>(mBuffer);
+            areg::release_raw_buffer(mBuffer);
         }
     }
 

@@ -156,6 +156,11 @@ if (AREG_TESTS)
         include(${AREG_TESTS_DIR}/worker-proxy/CMakeLists.txt)
     endif()
 
+    # Reuses the generated service interface of example 25, so it needs the examples.
+    if (AREG_EXAMPLES AND TARGET 25_generated)
+        include(${AREG_TESTS_DIR}/consumer-delete/CMakeLists.txt)
+    endif()
+
     # Reuses the generated service interfaces of examples 25 and 32; driven by conn_scenario.py.
     if (AREG_EXAMPLES AND TARGET 32_generated AND TARGET 25_generated)
         include(${AREG_TESTS_DIR}/conn-scenario/CMakeLists.txt)

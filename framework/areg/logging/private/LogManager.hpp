@@ -311,6 +311,12 @@ public:
      **/
     inline static ITEM_ID connection_cookie() noexcept;
 
+    /**
+     * \brief   Returns the cookie of the log collector service once the remote logs are sent directly,
+     *          and areg::COOKIE_UNKNOWN before.
+     **/
+    inline static ITEM_ID started_cookie() noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
 //////////////////////////////////////////////////////////////////////////
@@ -458,6 +464,19 @@ private:
     void write_log_message( areg::MessageEnvelope & msg );
 
     /**
+     * \brief   Writes the log message to the file, debug, database and remote loggers.
+     *
+     * \param   msg     The log message.
+     **/
+    void _dispatch_log_message( areg::MessageEnvelope & msg );
+
+    /**
+     * \brief   Writes one error message with the number of log messages dropped on a full queue,
+     *          if any were dropped since the last such message.
+     **/
+    void _write_dropped_notice();
+
+    /**
      * \brief   Posts the log message to the logging thread.
      **/
     void post_log_message( areg::MessageEnvelope && msg );
@@ -506,6 +525,10 @@ private:
      *          so the accesses are atomic.
      **/
     std::atomic_bool    mIsStarted;
+    /**
+     * \brief   Log messages dropped since the last notice because the logging queue was full.
+     **/
+    std::atomic<uint32_t>   mQueueDropped;
     /**
      * \brief   Logging configuration
      **/
@@ -586,6 +609,12 @@ inline void LogManager::activate_log_scope(LogScope& scope)
 inline ITEM_ID LogManager::connection_cookie() noexcept
 {
     return LogManager::instance().mLoggerTcp.connection_cookie();
+}
+
+inline ITEM_ID LogManager::started_cookie() noexcept
+{
+    const NetTcpLogger & logger{ LogManager::instance().mLoggerTcp };
+    return (logger.is_connected_state() ? logger.connection_cookie() : areg::COOKIE_UNKNOWN);
 }
 
 inline const HashMap<uint32_t, LogScope *> & LogManager::scope_list() const

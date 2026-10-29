@@ -20,8 +20,8 @@
 #include "areg/base/private/WaitWord.hpp"
 #include "areg/appbase/Application.hpp"
 
-#include "areg/logging/areg_log.h"
 
+#include <atomic>
 #include <cstring>
 
 #ifdef   _WIN32
@@ -45,6 +45,7 @@
     #include <unistd.h>
 #endif
 
+#include <type_traits>
 #include <unordered_map>
 
 namespace areg::os {
@@ -99,9 +100,11 @@ namespace areg::os {
     /**
      * \brief   OS specific receive data implementation. All checkups and validations should
      *          be done before calling the method.
+     * \param   rxCache     The read-ahead cache of the socket in the calling thread, or nullptr
+     *                      to receive without a cache.
      * \return  Returns number of bytes received via network.
      **/
-    int32_t _os_recv_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength);
+    int32_t _os_recv_data(SOCKETHANDLE hSocket, areg::ThreadCache* rxCache, uint8_t* dataBuffer, int32_t dataLength);
 
     /**
      * \brief   OS specific receive of what the socket has now, without waiting.
@@ -161,14 +164,40 @@ namespace areg::os {
      **/
     void _os_configure_accepted_socket(SOCKETHANDLE hSocket) noexcept;
 
+    /**
+     * \brief   Creates a TCP socket that a child process does not inherit.
+     * \return  The socket handle, or areg::InvalidSocketHandle on failure.
+     **/
+    SOCKETHANDLE _os_create_socket() noexcept;
+
+    /**
+     * \brief   Accepts a pending connection of the server socket. A child process does not
+     *          inherit the accepted socket.
+     * \param   serverSocket    The listening server socket.
+     * \param   acceptAddr      On output, the address of the connected peer.
+     * \return  The accepted socket handle, or areg::InvalidSocketHandle on failure.
+     **/
+    SOCKETHANDLE _os_accept_socket(SOCKETHANDLE serverSocket, struct sockaddr_in& acceptAddr) noexcept;
+
 } // namespace areg::os
 
 namespace
 {
-    inline areg::ReceiveMode& _thread_receive_mode(void) noexcept
+    //!< Receive state of a thread: its receive mode and the last RX cache handed out.
+    //!< Constant initialized and trivially destructible, so an access has no init guard.
+    struct RxThreadState
     {
-        static thread_local areg::ReceiveMode _mode{ areg::ReceiveMode::NoCache };
-        return _mode;
+        areg::ReceiveMode   mode  { areg::ReceiveMode::NoCache };   //!< Receive mode of the thread.
+        SOCKETHANDLE        socket{ areg::InvalidSocketHandle };    //!< Socket of the remembered cache.
+        areg::ThreadCache * entry { nullptr };                      //!< Remembered cache, nullptr if none.
+    };
+
+    static_assert(std::is_trivially_destructible_v<RxThreadState>, "RxThreadState must need no TLS destructor");
+
+    inline RxThreadState& _rx_state(void) noexcept
+    {
+        static thread_local RxThreadState _state;
+        return _state;
     }
 
     inline std::unordered_map<SOCKETHANDLE, areg::ThreadCache>& _thread_local_cache()
@@ -177,19 +206,28 @@ namespace
         return _rx_caches;
     }
 
-    //!< Last cache handed out by thread_rx_cache(), so a repeated ask for the same socket
-    //!< skips the hash. References to unordered_map elements survive a rehash, so an erase
-    //!< is the only thing that invalidates the entry pointer.
-    struct RxCacheMemo
+    inline areg::ThreadCache& _thread_mono_cache() noexcept
     {
-        SOCKETHANDLE        socket{ areg::InvalidSocketHandle };
-        areg::ThreadCache * entry { nullptr };
-    };
+        static thread_local areg::ThreadCache _rx_cache;
+        return _rx_cache;
+    }
 
-    inline RxCacheMemo& _thread_cache_memo()
+    //!< Finds the RX cache of the socket in the thread's storage and remembers it in the state.
+    areg::ThreadCache& _rx_cache_lookup(RxThreadState& state, SOCKETHANDLE hSocket) noexcept
     {
-        static thread_local RxCacheMemo _memo;
-        return _memo;
+        areg::ThreadCache& tc = (state.mode == areg::ReceiveMode::MonoCache)
+                              ? _thread_mono_cache()
+                              : _thread_local_cache()[hSocket];
+        tc.socket    = hSocket;
+        state.socket = hSocket;
+        state.entry  = &tc;
+        return tc;
+    }
+
+    //!< Returns the RX cache of the socket, the remembered one without a lookup.
+    inline areg::ThreadCache& _rx_cache(RxThreadState& state, SOCKETHANDLE hSocket) noexcept
+    {
+        return ((state.entry != nullptr) && (state.socket == hSocket)) ? *state.entry : _rx_cache_lookup(state, hSocket);
     }
 }
 
@@ -469,9 +507,6 @@ bool areg::UserData::is_valid() const noexcept
 //////////////////////////////////////////////////////////////////////////
 // Socket functions implementation
 //////////////////////////////////////////////////////////////////////////
-DEF_LOG_SCOPE(areg_base_areg, client_connect);
-DEF_LOG_SCOPE(areg_base_areg, server_connect);
-DEF_LOG_SCOPE(areg_base_areg, set_recv_size);
 
 AREG_API_IMPL uint32_t areg::thread_cache_size() noexcept
 {
@@ -491,7 +526,7 @@ AREG_API_IMPL uint32_t areg::send_batch_limit() noexcept
 
 AREG_API_IMPL SOCKETHANDLE areg::socket_create() noexcept
 {
-    return static_cast<SOCKETHANDLE>( socket(AF_INET, SOCK_STREAM, IPPROTO_TCP) );
+    return areg::os::_os_create_socket();
 }
 
 AREG_API_IMPL uint32_t areg::max_send_size( SOCKETHANDLE hSocket ) noexcept
@@ -576,26 +611,6 @@ AREG_API_IMPL uint32_t areg::set_recv_size(SOCKETHANDLE hSocket, uint32_t recvSi
 
 #if defined(__linux__)
     ::setsockopt(hSocket, SOL_SOCKET, SO_RCVBUFFORCE, reinterpret_cast<const char*>(&recvSize), len);
-
-    {
-        static bool _rcvBufWarned{ false };
-        if (!_rcvBufWarned)
-        {
-            unsigned long actual{ 0u };
-            socklen_t actualLen{ static_cast<socklen_t>(sizeof(actual)) };
-            if (::getsockopt(hSocket, SOL_SOCKET, SO_RCVBUF, reinterpret_cast<char*>(&actual), &actualLen) == RETURNED_OK)
-            {
-                const uint32_t effective = static_cast<uint32_t>(actual / 2u);
-                if (effective < (recvSize / 4u))
-                {
-                    _rcvBufWarned = true;
-                    LOG_SCOPE(areg_base_areg, set_recv_size);
-                    LOG_WARN("SO_RCVBUF capped at %u KB (requested %u KB). Raise via: sudo sysctl -w net.core.rmem_max=%u",
-                             effective / 1024u, recvSize / 1024u, recvSize);
-                }
-            }
-        }
-    }
 #endif  // __linux__
 
     return (rc == areg::RETURNED_OK ? recvSize : areg::PACKET_MIN_SIZE);
@@ -603,12 +618,7 @@ AREG_API_IMPL uint32_t areg::set_recv_size(SOCKETHANDLE hSocket, uint32_t recvSi
 
 AREG_API_IMPL SOCKETHANDLE areg::client_connect(const String& hostName, uint16_t portNr, areg::SocketAddress * socketAddr /*= nullptr*/)
 {
-    LOG_SCOPE( areg_base_areg, client_connect );
-
     const String host{ hostName.is_empty() ? areg::LocalHost : hostName };
-
-    LOG_DBG("Creating client socket to connect remote host [ %s ] and port number [ %u ]", host.as_string(), static_cast<uint32_t>(portNr));
-
     if (socketAddr != nullptr)
     {
         socketAddr->reset();
@@ -624,18 +634,12 @@ AREG_API_IMPL SOCKETHANDLE areg::client_connect(const String& hostName, uint16_t
             *socketAddr = sockAddress;
         }
     }
-    else
-    {
-        LOG_ERR("FAILED to resolve IP address for remote host name [ %s ] and port [ %u ], cannot create client socket", host.as_string(), static_cast<uint32_t>(portNr));
-    }
 
     return result;
 }
 
 AREG_API_IMPL SOCKETHANDLE areg::client_connect(const SocketAddress & peerAddr)
 {
-    LOG_SCOPE( areg_base_areg, client_connect );
-
     SOCKETHANDLE result   = areg::InvalidSocketHandle;
     if ( peerAddr.is_valid() )
     {
@@ -647,34 +651,14 @@ AREG_API_IMPL SOCKETHANDLE areg::client_connect(const SocketAddress & peerAddr)
             areg::socket_configure(result);
             if (!areg::os::_os_connect_socket(result, &remoteAddr, sizeof(sockaddr_in), SOCKET_CONNECT_TIMEOUT_MS))
             {
-                LOG_ERR("Client failed to connect to remote host [ %s ] and port number [ %u ]. Closing socket [ %u ]"
-                            , static_cast<const char *>(peerAddr.host_address())
-                            , static_cast<uint32_t>(peerAddr.host_port())
-                            , static_cast<uint32_t>(result));
-
                 areg::socket_close(result);
                 result = areg::InvalidSocketHandle;
             }
             else
             {
                 areg::socket_set_no_delay(result);
-
-#ifdef DEBUG
-                LOG_DBG("Client socket [ %u ] succeeded to connect to remote host [ %s ] and port number [ %u ]"
-                            , static_cast<uint32_t>(result)
-                            , static_cast<const char *>(peerAddr.host_address())
-                            , static_cast<uint32_t>(peerAddr.host_port()));
-#endif  // DEBUG
             }
         }
-        else
-        {
-            LOG_ERR("Failed to create socket, cannot create client!");
-        }
-    }
-    else
-    {
-        LOG_ERR("Address [ %s ] or port number [ %u ] is not valid. No client is created", static_cast<const char *>(peerAddr.host_address()), peerAddr.host_port());
     }
 
     return result;
@@ -698,13 +682,7 @@ AREG_API_IMPL bool areg::client_connect_fd(SOCKETHANDLE hSocket, const SocketAdd
 
 AREG_API_IMPL SOCKETHANDLE areg::server_connect(const areg::String& hostName, uint16_t portNr, areg::SocketAddress * socketAddr /*= nullptr */)
 {
-    LOG_SCOPE( areg_base_areg, server_connect );
-
     String host = hostName.is_empty() ? areg::LocalHost : hostName;
-
-    LOG_DBG("Creating server socket on host [ %s ] and port number [ %u ]", host.as_string(), static_cast<uint32_t>(portNr));
-
-
     if (socketAddr != nullptr)
     {
         socketAddr->reset();
@@ -721,18 +699,12 @@ AREG_API_IMPL SOCKETHANDLE areg::server_connect(const areg::String& hostName, ui
             *socketAddr = sockAddress;
         }
     }
-    else
-    {
-        LOG_ERR("FAILED to resolve IP address for host name [ %s ] and port [ %u ], cannot create server socket", host.as_string(), static_cast<uint32_t>(portNr));
-    }
 
     return result;
 }
 
 AREG_API_IMPL SOCKETHANDLE areg::server_connect(const areg::SocketAddress & peerAddr)
 {
-    LOG_SCOPE( areg_base_areg, server_connect );
-
     SOCKETHANDLE result   = areg::InvalidSocketHandle;
     if ( peerAddr.is_valid() )
     {
@@ -753,33 +725,10 @@ AREG_API_IMPL SOCKETHANDLE areg::server_connect(const areg::SocketAddress & peer
 #endif  // _WIN32
             if (areg::RETURNED_OK != bind(result, reinterpret_cast<sockaddr *>(&serverAddr), sizeof(sockaddr_in)) )
             {
-                LOG_ERR("Server failed to bind on host [ %s ] and port number [ %u ]. Closing socket [ %u ]"
-                            , static_cast<const char *>(peerAddr.host_address())
-                            , static_cast<uint32_t>(peerAddr.host_port())
-                            , static_cast<uint32_t>(result));
-
                 areg::socket_close( result );
                 result = areg::InvalidSocketHandle;
             }
-#ifdef  DEBUG
-            else
-            {
-                LOG_DBG("Server socket [ %u ] succeeded to bind on host [ %s ] and port number [ %u ]. Ready to listen."
-                          , static_cast<uint32_t>(result)
-                          , static_cast<const char *>(peerAddr.host_address())
-                          , static_cast<uint32_t>(peerAddr.host_port()));
-
-            }
-#endif  // DEBUG
         }
-        else
-        {
-            LOG_ERR("Failed to create socket, cannot create server!");
-        }
-    }
-    else
-    {
-        LOG_ERR("Address [ %s ] or port number [ %u ] is not valid. No server is created", static_cast<const char *>(peerAddr.host_address()), peerAddr.host_port());
     }
 
     return result;
@@ -790,16 +739,10 @@ AREG_API_IMPL bool areg::server_listen(SOCKETHANDLE serverSocket, int32_t maxQue
     return ( (serverSocket != areg::InvalidSocketHandle) && (areg::RETURNED_OK == ::listen(serverSocket, maxQueueSize)) );
 }
 
-
-DEBUG_DEF_LOG_SCOPE(areg_base_areg, server_accept);
 AREG_API_IMPL SOCKETHANDLE areg::server_accept(areg::SocketMultiplexer & multiplexer, SOCKETHANDLE serverSocket, areg::SocketAddress * socketAddr /*= nullptr*/, int32_t timeoutMs /*= static_cast<int32_t>(areg::WAIT_INFINITE)*/)
 {
-    DEBUG_LOG_SCOPE( areg_base_areg, server_accept );
-    DEBUG_LOG_DBG("Checking server socket event (persistent mux), server socket handle [ %u ]", static_cast<uint32_t>(serverSocket));
-
     if (serverSocket == areg::InvalidSocketHandle)
     {
-        DEBUG_LOG_WARN("Invalid server socket, cannot accept connection");
         return areg::InvalidSocketHandle;
     }
 
@@ -814,11 +757,8 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept(areg::SocketMultiplexer & multipl
         // New client connection pending.
         struct sockaddr_in acceptAddr;
         areg::mem_zero(&acceptAddr, sizeof(sockaddr_in));
-        socklen_t len = sizeof(sockaddr_in);
 
-        DEBUG_LOG_DBG("... server waiting for new connection event ...");
-        SOCKETHANDLE result = ::accept(serverSocket, reinterpret_cast<sockaddr *>(&acceptAddr), &len);
-        DEBUG_LOG_DBG("Server accepted new connection of client socket [ %u ]", static_cast<uint32_t>(result));
+        SOCKETHANDLE result = areg::os::_os_accept_socket(serverSocket, acceptAddr);
 
         if (result != areg::InvalidSocketHandle)
         {
@@ -835,7 +775,6 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept(areg::SocketMultiplexer & multipl
     }
     else if (readable != areg::InvalidSocketHandle && readable != areg::FailedSocketHandle)
     {
-        DEBUG_LOG_DBG("Server selected event of existing client socket [ %u ] connection", static_cast<uint32_t>(readable));
         return readable;
     }
     else if (readable == areg::InvalidSocketHandle)
@@ -844,20 +783,15 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept(areg::SocketMultiplexer & multipl
     }
     else
     {
-        DEBUG_LOG_ERR("Failed to wait for connection. The server socket [ %u ] might be closed and not valid anymore", static_cast<uint32_t>(serverSocket));
         return areg::FailedSocketHandle;
     }
 }
 
 AREG_API_IMPL SOCKETHANDLE areg::server_accept(SOCKETHANDLE serverSocket, const SOCKETHANDLE * masterList, int32_t entriesCount, areg::SocketAddress * socketAddr /*= nullptr*/)
 {
-    DEBUG_LOG_SCOPE( areg_base_areg, server_accept );
-    DEBUG_LOG_DBG("Checking server socket event, server socket handle [ %u ]", static_cast<uint32_t>(serverSocket));
-
     SOCKETHANDLE result = areg::InvalidSocketHandle;
     if (masterList == nullptr)
     {
-        DEBUG_LOG_ERR("Invalid list of sockets, cannot accept connection");
         return result;
     }
 
@@ -868,19 +802,14 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept(SOCKETHANDLE serverSocket, const 
 
     if ( serverSocket != areg::InvalidSocketHandle )
     {
-        DEBUG_LOG_DBG("Waiting for socket event on server socket [ %u ] with [ %d ] client(s)", static_cast<uint32_t>(serverSocket), entriesCount);
-
         const SOCKETHANDLE readable = areg::SocketMultiplexer{}.wait(serverSocket, masterList, entriesCount);
         if (readable == serverSocket)
         {
             // New client connection pending.
             struct sockaddr_in acceptAddr;
             areg::mem_zero(&acceptAddr, sizeof(sockaddr_in));
-            socklen_t len = sizeof(sockaddr_in);
 
-            DEBUG_LOG_DBG("... server waiting for new connection event ...");
-            result = ::accept(serverSocket, reinterpret_cast<sockaddr *>(&acceptAddr), &len);
-            DEBUG_LOG_DBG("Server accepted new connection of client socket [ %u ]", static_cast<uint32_t>(result));
+            result = areg::os::_os_accept_socket(serverSocket, acceptAddr);
 
             if (result != areg::InvalidSocketHandle)
             {
@@ -897,17 +826,14 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept(SOCKETHANDLE serverSocket, const 
         {
             // Existing client has data (or connection closed).
             result = readable;
-            DEBUG_LOG_DBG("Server selected event of existing client socket [ %u ] connection", static_cast<uint32_t>(result));
         }
         else
         {
-            DEBUG_LOG_ERR("Failed to wait for connection. The server socket [ %u ] might be closed and not valid anymore", static_cast<uint32_t>(serverSocket));
             result = areg::FailedSocketHandle;
         }
     }
     else
     {
-        DEBUG_LOG_WARN("Found broken connection of socket [ %u ]", static_cast<size_t>(result));
         return result;
     }
 
@@ -1069,7 +995,9 @@ AREG_API_IMPL int32_t areg::receive_data(SOCKETHANDLE hSocket, uint8_t* dataBuff
     if ((dataBuffer == nullptr) || (dataLength == 0u))
         return 0;
 
-    return areg::os::_os_recv_data(hSocket, dataBuffer, static_cast<int32_t>(dataLength));
+    RxThreadState& state = _rx_state();
+    areg::ThreadCache* const rxCache{ (state.mode != areg::ReceiveMode::NoCache) ? &_rx_cache(state, hSocket) : nullptr };
+    return areg::os::_os_recv_data(hSocket, rxCache, dataBuffer, static_cast<int32_t>(dataLength));
 }
 
 AREG_API_IMPL int32_t areg::receive_data_window(SOCKETHANDLE hSocket, uint8_t* dataBuffer, uint32_t dataLength) noexcept
@@ -1088,7 +1016,14 @@ AREG_API_IMPL int32_t areg::recv_fill_nowait(SOCKETHANDLE hSocket) noexcept
     if (!areg::is_valid_socket(hSocket))
         return -1;
 
-    areg::ThreadCache& tc = areg::thread_rx_cache(hSocket);
+    return areg::recv_fill_nowait(hSocket, _rx_cache(_rx_state(), hSocket));
+}
+
+AREG_API_IMPL int32_t areg::recv_fill_nowait(SOCKETHANDLE hSocket, areg::ThreadCache& tc) noexcept
+{
+    if (!areg::is_valid_socket(hSocket))
+        return -1;
+
     uint8_t* const cache = tc.cache();
     if (cache == nullptr)
         return -1;
@@ -1120,9 +1055,10 @@ AREG_API_IMPL int32_t areg::receive_data_nowait(SOCKETHANDLE hSocket, uint8_t* d
         return 0;
 
     uint32_t copied{ 0u };
-    if (areg::receive_mode() != areg::ReceiveMode::NoCache)
+    RxThreadState& state = _rx_state();
+    if (state.mode != areg::ReceiveMode::NoCache)
     {
-        areg::ThreadCache& tc = areg::thread_rx_cache(hSocket);
+        areg::ThreadCache& tc = _rx_cache(state, hSocket);
         if (tc.unread != 0u)
         {
             copied = (tc.unread < dataLength) ? tc.unread : dataLength;
@@ -1148,20 +1084,17 @@ AREG_API_IMPL int32_t areg::receive_data_nowait(SOCKETHANDLE hSocket, uint8_t* d
 
 AREG_API_IMPL uint32_t areg::recv_data_available(SOCKETHANDLE hSocket) noexcept
 {
-    if (areg::receive_mode() == areg::ReceiveMode::NoCache)
+    RxThreadState& state = _rx_state();
+    if (state.mode == areg::ReceiveMode::NoCache)
         return 0u;
 
-    const areg::ThreadCache& tc = areg::thread_rx_cache(hSocket);
-    if (tc.unread == 0u)
-        return 0u;
+    return areg::recv_data_available(_rx_cache(state, hSocket));
+}
 
-    if (tc.unread < areg::WIRE_HEADER_SIZE)
-        return 0u;
-
-    areg::EventHeader header{ };
-    std::memcpy(areg::wire_header(header), tc.buffer.get() + tc.head, sizeof(header.bufHeader.biUsed));
-    const uint32_t msg_total = areg::wire_size(header);
-    return (tc.unread >= msg_total) ? tc.unread : 0u;
+AREG_API_IMPL bool areg::recv_burst_pending(SOCKETHANDLE hSocket) noexcept
+{
+    RxThreadState& state = _rx_state();
+    return (state.mode == areg::ReceiveMode::NoCache) || (areg::recv_data_available(_rx_cache(state, hSocket)) != 0u);
 }
 
 AREG_API_IMPL bool areg::disable_send(SOCKETHANDLE hSocket) noexcept
@@ -1331,48 +1264,31 @@ AREG_API_IMPL areg::ThreadCache& areg::thread_tx_cache() noexcept
 
 AREG_API_IMPL areg::ThreadCache& areg::thread_rx_cache(SOCKETHANDLE hSocket) noexcept
 {
-    if (receive_mode() == ReceiveMode::MonoCache)
-    {
-        static thread_local areg::ThreadCache _rx_cache;
-        _rx_cache.socket = hSocket;
-        return _rx_cache;
-    }
-    else
-    {
-        RxCacheMemo& memo = _thread_cache_memo();
-        if ((memo.entry != nullptr) && (memo.socket == hSocket))
-            return *memo.entry;
-
-        std::unordered_map<SOCKETHANDLE, areg::ThreadCache>& map = _thread_local_cache();
-        areg::ThreadCache& tc = map[hSocket];
-        tc.socket = hSocket;
-
-        memo.socket = hSocket;
-        memo.entry  = &tc;
-        return tc;
-    }
+    return _rx_cache(_rx_state(), hSocket);
 }
 
 AREG_API_IMPL void areg::thread_rx_cache_release(SOCKETHANDLE hSocket) noexcept
 {
-    // Dropped unconditionally: an erase is the one thing that can leave the memo pointing
-    // at a destroyed entry, and a release is rare enough that the extra miss costs nothing.
-    RxCacheMemo& memo = _thread_cache_memo();
-    memo.socket = areg::InvalidSocketHandle;
-    memo.entry  = nullptr;
+    // The remembered cache is forgotten before any entry is erased.
+    RxThreadState& state = _rx_state();
+    state.socket = areg::InvalidSocketHandle;
+    state.entry  = nullptr;
 
     std::unordered_map<SOCKETHANDLE, areg::ThreadCache>& map = _thread_local_cache();
     auto found = map.find(hSocket);
     if (found != map.end())
-        map.erase(hSocket);
+        map.erase(found);
 }
 
 AREG_API_IMPL void areg::set_receive_mode(ReceiveMode mode) noexcept
 {
-    _thread_receive_mode() = mode;
+    RxThreadState& state = _rx_state();
+    state.mode   = mode;
+    state.socket = areg::InvalidSocketHandle;
+    state.entry  = nullptr;
 }
 
 AREG_API_IMPL areg::ReceiveMode areg::receive_mode() noexcept
 {
-    return _thread_receive_mode();
+    return _rx_state().mode;
 }

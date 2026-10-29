@@ -245,3 +245,149 @@ TEST(StreamExtractTest, log_entry_length_beyond_buffer)
     EXPECT_EQ(in.logMessage[areg::LOG_MSG_SIZE - 1u], '\0');
     EXPECT_EQ(std::strlen(in.logMessage), static_cast<size_t>(areg::LOG_MSG_SIZE - 1u));
 }
+
+namespace
+{
+    constexpr uint32_t  PAGE_BYTES      { 4096u };  //!< The size of a memory page.
+    constexpr uint32_t  BEFORE_PAGE_END { 23u };    //!< The data starts this many bytes before a page end, at an odd address.
+    constexpr uint32_t  MARKER          { 42u };    //!< The field written after the string.
+
+    /**
+     * \brief   Reserves the buffer and returns the number of bytes to write first, so that the next byte
+     *          sits BEFORE_PAGE_END bytes before a page end. The address is odd, so no wchar_t is aligned there.
+     **/
+    uint32_t prefix_before_page_end(areg::SharedBuffer & buf)
+    {
+        buf.reserve(3u * PAGE_BYTES, false);
+        const uintptr_t base{ reinterpret_cast<uintptr_t>(buf.buffer()) };
+        uintptr_t pageEnd{ (base + PAGE_BYTES) & ~static_cast<uintptr_t>(PAGE_BYTES - 1u) };
+        if ((pageEnd - base) < BEFORE_PAGE_END)
+        {
+            pageEnd += PAGE_BYTES;
+        }
+
+        return static_cast<uint32_t>(pageEnd - base) - BEFORE_PAGE_END;
+    }
+
+    //!< Writes \a count filler bytes.
+    void write_prefix(areg::SharedBuffer & buf, uint32_t count)
+    {
+        const uint8_t fill{ 0x5Au };
+        for (uint32_t i = 0u; i < count; ++i)
+        {
+            buf.write(&fill, 1u);
+        }
+    }
+
+    //!< Moves the read position to the data written after \a prefix filler bytes.
+    void skip_prefix(areg::SharedBuffer & buf, uint32_t prefix)
+    {
+        buf.move_to_begin();
+        buf.set_position(static_cast<int32_t>(prefix), areg::Cursor::SeekOrigin::Begin);
+    }
+
+    //!< Returns true if the data written after \a prefix filler bytes starts at an odd address before a page end.
+    bool is_odd_before_page_end(const areg::SharedBuffer & buf, uint32_t prefix)
+    {
+        const uintptr_t at{ reinterpret_cast<uintptr_t>(buf.buffer()) + prefix };
+        return ((at % PAGE_BYTES) == (PAGE_BYTES - BEFORE_PAGE_END)) && ((at % alignof(wchar_t)) != 0u);
+    }
+}
+
+/**
+ * \brief   A std::wstring at an odd address just before a page end is read back whole, followed by the next field.
+ **/
+TEST(StreamExtractTest, std_wide_string_at_odd_address_before_page_end)
+{
+    areg::SharedBuffer buf;
+    const uint32_t prefix{ prefix_before_page_end(buf) };
+    write_prefix(buf, prefix);
+    buf << std::wstring(L"wide") << MARKER;
+    ASSERT_TRUE(is_odd_before_page_end(buf, prefix));
+
+    skip_prefix(buf, prefix);
+    std::wstring text;
+    uint32_t last{ 0u };
+    buf >> text >> last;
+
+    EXPECT_EQ(text, L"wide");
+    EXPECT_EQ(last, MARKER);
+}
+
+/**
+ * \brief   A WideString at an odd address just before a page end is read back whole, followed by the next field.
+ **/
+TEST(StreamExtractTest, areg_wide_string_at_odd_address_before_page_end)
+{
+    areg::SharedBuffer buf;
+    const uint32_t prefix{ prefix_before_page_end(buf) };
+    write_prefix(buf, prefix);
+    buf.write(areg::WideString(L"wide"));
+    buf << MARKER;
+    ASSERT_TRUE(is_odd_before_page_end(buf, prefix));
+
+    skip_prefix(buf, prefix);
+    areg::WideString text;
+    uint32_t last{ 0u };
+    buf.read(text);
+    buf >> last;
+
+    EXPECT_EQ(text.data(), std::wstring(L"wide"));
+    EXPECT_EQ(last, MARKER);
+}
+
+/**
+ * \brief   A length-prefixed wide string at an odd address just before a page end is read back whole.
+ **/
+TEST(StreamExtractTest, binary_wide_string_at_odd_address_before_page_end)
+{
+    areg::SharedBuffer buf;
+    const uint32_t prefix{ prefix_before_page_end(buf) };
+    write_prefix(buf, prefix);
+    buf.write_string_bin(areg::WideString(L"wide"));
+    buf << MARKER;
+    ASSERT_TRUE(is_odd_before_page_end(buf, prefix));
+
+    skip_prefix(buf, prefix);
+    areg::WideString text;
+    uint32_t last{ 0u };
+    EXPECT_NE(buf.read_string_bin(text), 0u);
+    buf >> last;
+
+    EXPECT_EQ(text.data(), std::wstring(L"wide"));
+    EXPECT_EQ(last, MARKER);
+}
+
+/**
+ * \brief   Wide strings start at every byte offset and are read back whole by each of the three readers.
+ **/
+TEST(StreamExtractTest, wide_strings_at_every_byte_offset)
+{
+    const std::wstring longText{ L"abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ" };
+    for (uint32_t offset = 0u; offset < 8u; ++offset)
+    {
+        areg::SharedBuffer buf;
+        write_prefix(buf, offset);
+        buf << longText;
+        buf.write(areg::WideString(L"wide"));
+        buf.write_string_bin(areg::WideString(L"binary"));
+        buf << std::wstring() << MARKER;
+
+        skip_prefix(buf, offset);
+        std::wstring first;
+        areg::WideString second;
+        areg::WideString third;
+        std::wstring empty{ L"x" };
+        uint32_t last{ 0u };
+        buf >> first;
+        buf.read(second);
+        EXPECT_NE(buf.read_string_bin(third), 0u) << "offset " << offset;
+        buf >> empty >> last;
+
+        EXPECT_EQ(first, longText) << "offset " << offset;
+        EXPECT_EQ(second.data(), std::wstring(L"wide")) << "offset " << offset;
+        EXPECT_EQ(third.data(), std::wstring(L"binary")) << "offset " << offset;
+        EXPECT_TRUE(empty.empty()) << "offset " << offset;
+        EXPECT_EQ(last, MARKER) << "offset " << offset;
+    }
+}

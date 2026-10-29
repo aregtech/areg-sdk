@@ -18,17 +18,12 @@
 #include "areg/component/ExitEvent.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
 #include "areg/ipc/RemoteMessageHandler.hpp"
-#include "areg/logging/areg_log.h"
 #include "aregextend/service/ServerConnection.hpp"
 #include "aregextend/service/private/ServiceThreadHelper.hpp"
 
 #include "areg/base/private/DebugDefs.hpp"
 
 namespace areg::ext {
-
-DEBUG_DEF_LOG_SCOPE(areg_aregextend_service_ServerSendThread, start_event_processing);
-DEF_LOG_SCOPE(areg_aregextend_service_ServerSendThread, backlog_close);
-
 ServerSendThread::ServerSendThread(RemoteMessageHandler& remoteService, ServerConnection & connection)
     : DispatcherThread  ( areg::SERVER_SEND_MESSAGE_THREAD, areg::SYSTEM_THREAD_STACK_BIG, areg::SEND_THREAD_QUEUE_LIMIT )
     , EventConsumer     ( )
@@ -62,7 +57,6 @@ void ServerSendThread::ready_for_events( bool is_ready )
 
 void ServerSendThread::start_event_processing( areg::Event & eventElem )
 {
-    DEBUG_LOG_SCOPE(areg_aregextend_service_ServerSendThread, start_event_processing);
     AREG_LT_SCOPE(areg::LtStage::SendNode);     // drain + resolve + sort + writev
 
     const areg::ext::SendBatchContext context{ mBatch.data()
@@ -90,7 +84,6 @@ void ServerSendThread::start_event_processing( areg::Event & eventElem )
                                {
                                    // This thread owns the listening socket of the service, so it
                                    // takes the whole connection down with it.
-                                   DEBUG_LOG_DBG("Going to quit send message thread");
                                    release_backlog();
                                    mConnection.close_all_connections();
                                    mConnection.close_socket();
@@ -100,10 +93,6 @@ void ServerSendThread::start_event_processing( areg::Event & eventElem )
                                    AREG_DT_TRACE("send batch: no socket for target [ %u ], message [ %u ] is dropped"
                                                    , static_cast<uint32_t>(target)
                                                    , messageId);
-
-                                   DEBUG_LOG_WARN("Discarding message (ID = [ %u ]) for disconnected target [ %u ]"
-                                                   , messageId
-                                                   , static_cast<uint32_t>(target));
                                } );
 
     areg::ext::serve_backlog(*this, mBacklog, static_cast<SendBacklog::Owner &>(*this));
@@ -119,10 +108,8 @@ void ServerSendThread::backlog_sent(uint64_t bytes, uint32_t msgs)
     accumulate_sent(bytes, msgs);
 }
 
-void ServerSendThread::backlog_close(const SendBacklog::Entry & entry, SendBacklog::Reason reason)
+void ServerSendThread::backlog_close(const SendBacklog::Entry & entry, SendBacklog::Reason /* reason */)
 {
-    LOG_SCOPE(areg_aregextend_service_ServerSendThread, backlog_close);
-    mBacklog.log_close(entry, reason);
     if ( mConnection.is_interrupted() == false )
     {
         areg::SocketAccepted client{ mConnection.client_by_cookie(entry.cookie) };

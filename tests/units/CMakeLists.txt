@@ -49,6 +49,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     ArrayListTest.cpp
     ConfigManagerTest.cpp
     DateTimeTest.cpp
+    EnvelopeCacheTest.cpp
     EventEnvelopeTest.cpp
     EventQueueTest.cpp
     FatalErrorTest.cpp
@@ -60,11 +61,14 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     ListenerDispatchTest.cpp
     LockWaitTest.cpp
     LogMessageLengthTest.cpp
+    LogProtocolTest.cpp
+    LogRingTest.cpp
     LogScopesTest.cpp
     LogSqliteDatabaseTest.cpp
     MapTest.cpp
     MultiLockTest.cpp
     OptionParserTest.cpp
+    ReceiveCacheTest.cpp
     ReceivedHeaderTest.cpp
     RingStackTest.cpp
     ScopedLockTest.cpp
@@ -85,6 +89,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     StringDefsTest4.cpp 
     StringTest.cpp
     StringUtilsTest.cpp
+    SyncTimerTest.cpp
     ThreadTest.cpp
     WorkerThreadTest.cpp
 )

@@ -972,29 +972,43 @@ inline const SharedBuffer& operator >> (const SharedBuffer& stream, std::basic_s
     if (max_chars == 0u)
         return stream;
 
-    const CharType* const src = reinterpret_cast<const CharType*>(stream.buffer() + pos);
+    const uint8_t* const src = stream.buffer() + pos;
+    constexpr uint32_t single = static_cast<uint32_t>(sizeof(CharType));
+    const bool aligned = (reinterpret_cast<uintptr_t>(src) % alignof(CharType)) == 0u;
 
     uint32_t len = 0u;
     if constexpr (std::is_same_v<CharType, char>)
     {
         const void* nul = ::memchr(src, '\0', max_chars);
         len = (nul != nullptr)
-            ? static_cast<uint32_t>(static_cast<const char*>(nul) - src)
+            ? static_cast<uint32_t>(static_cast<const uint8_t*>(nul) - src)
             : max_chars;
     }
-    else if constexpr (std::is_same_v<CharType, wchar_t>)
+    else if (std::is_same_v<CharType, wchar_t> && aligned)
     {
-        const wchar_t* nul = static_cast<const wchar_t*>(std::wmemchr(src, L'\0', max_chars));
-        len = (nul != nullptr) ? static_cast<uint32_t>(nul - src) : max_chars;
+        const wchar_t* const wide = reinterpret_cast<const wchar_t*>(src);
+        const wchar_t* nul = static_cast<const wchar_t*>(std::wmemchr(wide, L'\0', max_chars));
+        len = (nul != nullptr) ? static_cast<uint32_t>(nul - wide) : max_chars;
     }
     else
     {
-        while ((len < max_chars) && (src[len] != static_cast<CharType>('\0')))
+        // The characters may start at any byte offset, so each one is copied out, not read in place.
+        CharType ch{ };
+        while (len < max_chars)
+        {
+            ::memcpy(&ch, src + len * single, single);
+            if (ch == static_cast<CharType>('\0'))
+                break;
+
             ++len;
+        }
     }
 
     if (len > 0u)
-        input.assign(src, len);
+    {
+        input.resize(len);
+        ::memcpy(input.data(), src, static_cast<size_t>(len) * single);
+    }
 
     // Advance past the characters read + the NUL terminator (if present).
     const bool has_nul    = (len < max_chars);

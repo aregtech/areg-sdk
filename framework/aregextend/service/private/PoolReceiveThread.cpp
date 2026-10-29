@@ -22,7 +22,6 @@
 #include "areg/component/private/EventDispatcherBase.hpp"
 #include "areg/ipc/RemoteMessageHandler.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
-#include "areg/logging/areg_log.h"
 
 #include "aregextend/service/ConnectionHandler.hpp"
 #include "aregextend/service/ServerConnection.hpp"
@@ -33,10 +32,6 @@
 #include "areg/base/private/DebugDefs.hpp"
 
 namespace areg::ext {
-
-DEBUG_DEF_LOG_SCOPE(areg_aregextend_service_PoolReceiveThread, run_dispatcher);
-DEBUG_DEF_LOG_SCOPE(areg_aregextend_service_PoolReceiveThread, _receive_ready_socket);
-
 PoolReceiveThread::PoolReceiveThread( areg::RemoteMessageHandler & remoteService
                                     , ServerConnection & connection
                                     , ServerReceiveThread & globalStats
@@ -52,6 +47,8 @@ PoolReceiveThread::PoolReceiveThread( areg::RemoteMessageHandler & remoteService
     , mReleased         ( )
     , mCachedPending    ( )
     , mParts            ( )
+    , mServed           ( )
+    , mPaused           ( mMux )
 {
 }
 
@@ -79,8 +76,8 @@ void PoolReceiveThread::_process_pending_sockets()
     mHandover.take(mAdded, mReleased);
     for ( const areg::SocketAccepted & sock : mAdded )
     {
-        if ( sock.is_valid() )
-            mMux.register_socket(sock.handle(), true);
+        if ( sock.is_valid() && mMux.register_socket(sock.handle(), true) )
+            mServed.add(sock);
     }
 
     for ( const areg::SocketAccepted & sock : mReleased )
@@ -94,34 +91,34 @@ void PoolReceiveThread::_process_pending_sockets()
 
 void PoolReceiveThread::_receive_ready_socket( SOCKETHANDLE hSocket, areg::MessageEnvelope & msgReceived )
 {
-    DEBUG_LOG_SCOPE(areg_aregextend_service_PoolReceiveThread, _receive_ready_socket);
-    areg::SocketAccepted clientSocket{ mConnection.client_by_handle(hSocket) };
-    if ( !clientSocket.is_valid() )
+    _process_pending_sockets();
+
+    areg::SocketAccepted * served{ mServed.find(hSocket) };
+    if ( served == nullptr )
     {
         _drop_socket(hSocket);
         return;
     }
 
+    areg::SocketAccepted & clientSocket{ *served };
+
     int32_t received{ 0 };
     {
         AREG_LT_SCOPE(areg::LtStage::RecvNode);  // router inline route+forward
-        received = areg::ext::receive_ready_socket(mConnection, mRemoteService, areg::DEFAULT_DRAIN_LIMIT, clientSocket,
+        received = areg::ext::receive_ready_socket(mRemoteService, areg::DEFAULT_DRAIN_LIMIT, clientSocket,
                 msgReceived, mParts, [this](uint64_t bytes, uint32_t msgs) { mGlobalStats.accumulate_received(bytes, msgs); });
     }
 
     if ( received < 0 )
     {
-        DEBUG_LOG_WARN("Pool receive thread [ %s ]: receive failed on socket [ %u ], notifying connection_lost"
-                        , name().as_string()
-                        , static_cast<uint32_t>(hSocket));
+        PausedSources::discard();
 
         mRemoteService.failed_receive_message(clientSocket);
         _drop_socket(hSocket);
     }
-    else if ( received == static_cast<int32_t>(areg::DEFAULT_DRAIN_LIMIT) )
+    else
     {
-        // The ceiling stopped the drain, so the cache may still hold messages.
-        _remember_cached_socket(hSocket);
+        _after_drain(hSocket, received == static_cast<int32_t>(areg::DEFAULT_DRAIN_LIMIT));
     }
 }
 
@@ -129,8 +126,42 @@ void PoolReceiveThread::_drop_socket( SOCKETHANDLE hSocket )
 {
     mMux.unregister_socket(hSocket);
     _forget_cached_socket(hSocket);
+    mPaused.drop(hSocket);
     areg::thread_rx_cache_release(hSocket);
     mParts.drop(hSocket);
+    mServed.drop(hSocket);
+}
+
+void PoolReceiveThread::_after_drain( SOCKETHANDLE hSocket, bool ceilingHit )
+{
+    if ( is_receive_paused() )
+    {
+        if ( mPaused.pause(hSocket) )
+        {
+            mMux.unregister_socket(hSocket);
+            _forget_cached_socket(hSocket);
+            return;
+        }
+
+        // The drain stopped before the cache was empty.
+        ceilingHit = true;
+    }
+
+    if ( ceilingHit )
+    {
+        _remember_cached_socket(hSocket);
+    }
+}
+
+void PoolReceiveThread::_resume_paused( )
+{
+    mPaused.resume([this](SOCKETHANDLE hSocket)
+    {
+        if ( mConnection.handle_exist(hSocket) && mMux.register_socket(hSocket, true) )
+        {
+            _remember_cached_socket(hSocket);
+        }
+    });
 }
 
 void PoolReceiveThread::_remember_cached_socket( SOCKETHANDLE hSocket )
@@ -163,36 +194,40 @@ void PoolReceiveThread::_service_cached_socket( areg::MessageEnvelope & msgRecei
 
     // A socket this thread no longer monitors may already belong to another pool
     // thread under the same handle value. Only the multiplexer says who owns it.
-    if ( !mMux.is_registered(hSocket) || (areg::recv_data_available(hSocket) == 0u) )
+    if ( !mMux.is_registered(hSocket) )
         return;
 
-    areg::SocketAccepted clientSocket{ mConnection.client_by_handle(hSocket) };
-    if ( !clientSocket.is_valid() )
+    areg::ThreadCache & rxCache{ areg::thread_rx_cache(hSocket) };
+    if ( areg::recv_data_available(rxCache) == 0u )
+        return;
+
+    areg::SocketAccepted * clientSocket{ mServed.find(hSocket) };
+    if ( clientSocket == nullptr )
         return;
 
     constexpr uint32_t MAX_DRAIN{ areg::DEFAULT_DRAIN_LIMIT - 1u };
-    const int32_t drained{ areg::ext::drain_recv_cache(mConnection, mRemoteService, MAX_DRAIN, clientSocket,
+    const int32_t drained{ areg::ext::drain_recv_cache(mRemoteService, MAX_DRAIN, *clientSocket, rxCache,
             msgReceived, [this](uint64_t bytes, uint32_t msgs) { mGlobalStats.accumulate_received(bytes, msgs); }) };
 
     if ( drained < 0 )
     {
-        mRemoteService.failed_receive_message(clientSocket);
+        PausedSources::discard();
+        mRemoteService.failed_receive_message(*clientSocket);
         _drop_socket(hSocket);
     }
-    else if ( drained == static_cast<int32_t>(MAX_DRAIN) )
+    else
     {
-        mCachedPending.push_back(hSocket);
+        _after_drain(hSocket, drained == static_cast<int32_t>(MAX_DRAIN));
     }
 }
 
 bool PoolReceiveThread::run_dispatcher()
 {
-    DEBUG_LOG_SCOPE(areg_aregextend_service_PoolReceiveThread, run_dispatcher);
-    DEBUG_LOG_DBG("Pool receive thread [ %s ] starting", name().as_string());
-
     areg::set_receive_mode(areg::ReceiveMode::MultiCache);
     mCachedPending.clear();
     mParts.clear();
+    mServed.clear();
+    mPaused.clear();
     ready_for_events(true);
 
     areg::MessageEnvelope msgReceived;
@@ -201,6 +236,11 @@ bool PoolReceiveThread::run_dispatcher()
     do
     {
         _process_pending_sockets();
+
+        if ( mPaused.has_released() )
+        {
+            _resume_paused();
+        }
 
         if ( mExternalEvents.has_pending() )
         {
@@ -248,10 +288,10 @@ bool PoolReceiveThread::run_dispatcher()
 
     } while ( !isExit );
 
+    mPaused.clear();
+    mServed.clear();
     ready_for_events(false);
     remove_all_events();
-
-    DEBUG_LOG_DBG("Pool receive thread [ %s ] stopped", name().as_string());
 
     return isExit;
 }

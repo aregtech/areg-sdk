@@ -292,7 +292,11 @@ bool SyncTimer::_os_set_timer()
 
 bool SyncTimer::_os_cancel_timer()
 {
-    return (CancelWaitableTimer( static_cast<HANDLE>(mSyncObject) ) != FALSE);
+    // A due time in the past signals the timer at once, as one expiration.
+    LARGE_INTEGER due_time{};
+    due_time.QuadPart = 0;
+    ::CancelWaitableTimer( static_cast<HANDLE>(mSyncObject) );
+    return (::SetWaitableTimer( static_cast<HANDLE>(mSyncObject), &due_time, 0, nullptr, nullptr, FALSE ) != FALSE);
 }
 
 //////////////////////////////////////////////////////////////////////////

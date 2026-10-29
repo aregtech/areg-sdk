@@ -240,6 +240,27 @@ public:
     [[nodiscard]]
     inline bool is_data_rate_enabled() const noexcept;
 
+    /**
+     * \brief   Returns true if the client connection keeps more unwritten data than its send
+     *          buffer limit, net::*::tcpip::sndbuf, and has not drained to half of it yet. Messages
+     *          forwarded to a held client stop the reading of their sender until it is released.
+     *          Lock free while no client is held.
+     *
+     * \param   target  The cookie of the client connection.
+     **/
+    [[nodiscard]]
+    inline bool is_target_held(const ITEM_ID & target) noexcept;
+
+protected:
+    /**
+     * \brief   Sets whether a client that keeps more than its send buffer limit and takes no data
+     *          for a second is closed. True by default; a service that drops what goes to a held
+     *          client, instead of waiting for it, sets false. Call it before the connection starts.
+     **/
+    inline void set_close_stalled(bool closeStalled) noexcept;
+
+public:
+
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
@@ -644,6 +665,17 @@ private:
     bool do_accept_client_pool(areg::SocketAccepted & clientSocket);
 
     /**
+     * \brief   Returns the writer of the send thread that serves the target.
+     **/
+    SendBacklog & backlog_of(ITEM_ID target) noexcept;
+
+    /**
+     * \brief   Asks the calling receive thread to stop reading the sender if the target of its
+     *          message is held, see is_target_held().
+     **/
+    void pause_if_held(ITEM_ID target) noexcept;
+
+    /**
      * \brief   Assigns mSendFn / mSendMoveFn / mAcceptFn based on mNumPairs.
      *          Called from the constructor and from setup_connection_data() when the
      *          config overrides the constructor's pair count.
@@ -667,6 +699,8 @@ protected:
     uint64_t                        mSendCapBytes;      //!< The most a client connection may keep unwritten, in bytes.
     uint32_t                        mSendRefusalMs;     //!< Milliseconds a client may take no data before it is closed.
     uint32_t                        mKeepaliveMs;       //!< Milliseconds a silent client is given.
+    std::atomic<uint32_t>           mHeldTargets;       //!< The number of held client connections of all send threads.
+    bool                            mCloseStalled;      //!< True if a held client that takes no data is closed.
     std::atomic_bool                mShuttingDown;      //!< True during stop_connection() -- suppresses spurious disconnect callbacks.
     DataRateHelper                  mDataRateHelper;    //!< The helper object to query information of sent and receive bytes.
     StringArray                     mWhiteList;         //!< The list of enabled fixed client hosts.
@@ -697,6 +731,16 @@ private:
 inline ServiceCommunicationBase & ServiceCommunicationBase::self()
 {
     return (*this);
+}
+
+inline bool ServiceCommunicationBase::is_target_held(const ITEM_ID & target) noexcept
+{
+    return (mHeldTargets.load(std::memory_order_acquire) != 0u) && backlog_of(target).is_held(target);
+}
+
+inline void ServiceCommunicationBase::set_close_stalled(bool closeStalled) noexcept
+{
+    mCloseStalled = closeStalled;
 }
 
 inline bool ServiceCommunicationBase::is_address_in_white_list(const areg::SocketAddress & addrClient) const

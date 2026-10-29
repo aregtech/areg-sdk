@@ -25,6 +25,8 @@
 #include "areg/logging/LoggingDefs.hpp"
 #include "aregextend/service/ServiceCommunicationBase.hpp"
 
+#include <chrono>
+
 /************************************************************************
  * Dependencies
  ************************************************************************/
@@ -225,6 +227,18 @@ public:
     void process_next_save_config();
 
     /**
+     * \brief   Called when the save timer expires: asks the next log source if the pending one
+     *          did not answer within LogCollectorServerService::TIMEOUT_SAVE_CONFIG.
+     **/
+    void save_config_timeout();
+
+    /**
+     * \brief   Sends a warning row to every observer that log rows were dropped for and that is
+     *          no longer held. Returns true if an observer is still held and has to be told later.
+     **/
+    bool notify_dropped_rows();
+
+    /**
      * \brief   Called when an instance of a log source is disconnected.
      *
      * \param   cookie      The ID of disconnected application.
@@ -272,8 +286,24 @@ private:
      *          is areg::TARGET_ALL, the message is sent to all observers.
      *
      * \param   msgReceived     The remote message received from a client.
+     * \param   isLogRow        True if the message is a log row: an observer that is held, see
+     *                          LogCollectorServerService::is_target_held(), does not get it, and
+     *                          the row is counted for the observer.
      **/
-    inline void _forward_message_to_observers(const areg::MessageEnvelope& msgReceived) const;
+    inline void _forward_message_to_observers(const areg::MessageEnvelope& msgReceived, bool isLogRow = false) const;
+
+    /**
+     * \brief   Returns false, and counts the row, if the observer is held. Otherwise, if rows were
+     *          dropped for the observer, sends it a warning row with their number first.
+     *
+     * \param   observer    The observer that gets the next log row.
+     **/
+    inline bool _can_deliver_row(const ITEM_ID & observer) const;
+
+    /**
+     * \brief   Sends the observer a warning row with the number of log rows dropped for it.
+     **/
+    void _notify_dropped_rows(const ITEM_ID & observer, uint32_t dropped) const;
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -294,8 +324,14 @@ private:
     //!< The ID of an application pending to save the configuration.
     ITEM_ID                     mPendingSave;
 
+    //!< When the save request of the pending application was sent.
+    std::chrono::steady_clock::time_point   mPendingSince;
+
     //!< A log source that is not sending, mapped to its state and the observer that asked for it.
     areg::OrderedMap<ITEM_ID, SourceState>  mPausedSources;
+
+    //!< An observer that log rows were dropped for, mapped to their number.
+    mutable areg::OrderedMap<ITEM_ID, uint32_t> mDroppedRows;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

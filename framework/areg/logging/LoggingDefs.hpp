@@ -211,7 +211,9 @@ namespace areg {
     inline bool is_disabling_log( areg::LogPriority prio ) noexcept;
 
     /**
-     * \brief   Returns the cookie of the log collector.
+     * \brief   Returns the cookie the log collector assigned to this process once the logs are sent to it
+     *          directly, and areg::COOKIE_UNKNOWN before that and while disconnected.
+     *          A log written after a valid cookie is returned is never queued for a later send.
      **/
     AREG_API ITEM_ID cookie() noexcept;
 

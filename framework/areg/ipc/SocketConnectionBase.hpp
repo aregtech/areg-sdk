@@ -61,6 +61,17 @@ public:
      **/
     static uint8_t * prepare_message( MessageEnvelope & message, areg::EventHeader & header );
 
+    /**
+     * \brief   Takes the first message out of the read-ahead cache \a rxCache, which must hold it
+     *          complete (see areg::recv_data_available()).
+     *
+     * \param[out]      message     The message to fill; overwritten.
+     * \param[in,out]   rxCache     The read-ahead cache of the socket in the calling thread.
+     * \return  The bytes taken, header and data, or 0 if the header is not valid or the message
+     *          is not complete.
+     **/
+    static int32_t receive_cached_message( MessageEnvelope & message, areg::ThreadCache & rxCache );
+
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////

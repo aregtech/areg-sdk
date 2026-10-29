@@ -312,6 +312,22 @@ TEST( SocketWouldBlockTest, AcceptedSocketNeverBlocksItsWriter )
 }
 
 /**
+ * \brief   A child process inherits neither a created nor an accepted socket.
+ **/
+TEST( SocketWouldBlockTest, SocketsAreClosedOnExec )
+{
+    const SOCKETHANDLE created{ areg::socket_create( ) };
+    ASSERT_TRUE( areg::is_valid_socket( created ) );
+    EXPECT_NE( ::fcntl( static_cast<int>(created), F_GETFD ) & FD_CLOEXEC, 0 );
+    areg::socket_close( created );
+
+    Pair pair;
+    ASSERT_TRUE( open_pair( pair ) );
+    EXPECT_NE( ::fcntl( pair.server, F_GETFD ) & FD_CLOEXEC, 0 );
+    close_pair( pair );
+}
+
+/**
  * \brief   The blocking sends deliver everything on a non-blocking socket to a slow reader.
  **/
 TEST( SocketWouldBlockTest, BlockingSendsCompleteOnNonBlockingSocket )
@@ -444,4 +460,59 @@ TEST( SocketWouldBlockTest, NonBlockingSendStillTimesOut )
     close_pair( pair );
 }
 
-#endif  // defined(_POSIX)
+#elif defined(WINDOWS)
+
+#include <WinSock2.h>
+
+#ifdef _MSC_VER
+    #pragma comment(lib, "ws2_32")
+#endif  // _MSC_VER
+
+namespace
+{
+    //!< Returns true if a child process would inherit the socket.
+    bool is_inherited( SOCKETHANDLE hSocket )
+    {
+        DWORD flags{ 0 };
+        return ( ::GetHandleInformation( reinterpret_cast<HANDLE>(hSocket), &flags ) != FALSE ) && ( ( flags & HANDLE_FLAG_INHERIT ) != 0 );
+    }
+}
+
+/**
+ * \brief   A child process inherits neither a created nor an accepted socket.
+ **/
+TEST( SocketWouldBlockTest, SocketsAreClosedOnExec )
+{
+    ASSERT_TRUE( areg::socket_initialize( ) );
+    const SOCKETHANDLE created{ areg::socket_create( ) };
+    ASSERT_TRUE( areg::is_valid_socket( created ) );
+    EXPECT_FALSE( is_inherited( created ) );
+    areg::socket_close( created );
+
+    const SOCKET listener{ ::socket( AF_INET, SOCK_STREAM, IPPROTO_TCP ) };
+    ASSERT_NE( listener, INVALID_SOCKET );
+    sockaddr_in addr{ };
+    addr.sin_family         = AF_INET;
+    addr.sin_addr.s_addr    = ::htonl( INADDR_LOOPBACK );
+    addr.sin_port           = 0;
+    int len{ static_cast<int>(sizeof( addr )) };
+    ASSERT_EQ( ::bind( listener, reinterpret_cast<sockaddr *>(&addr), sizeof( addr ) ), 0 );
+    ASSERT_EQ( ::listen( listener, 1 ), 0 );
+    ASSERT_EQ( ::getsockname( listener, reinterpret_cast<sockaddr *>(&addr), &len ), 0 );
+
+    const SOCKET client{ ::socket( AF_INET, SOCK_STREAM, IPPROTO_TCP ) };
+    ASSERT_NE( client, INVALID_SOCKET );
+    ASSERT_EQ( ::connect( client, reinterpret_cast<sockaddr *>(&addr), sizeof( addr ) ), 0 );
+
+    const SOCKETHANDLE none{ areg::InvalidSocketHandle };
+    const SOCKETHANDLE accepted{ areg::server_accept( static_cast<SOCKETHANDLE>(listener), &none, 0 ) };
+    ASSERT_TRUE( areg::is_valid_socket( accepted ) );
+    EXPECT_FALSE( is_inherited( accepted ) );
+
+    areg::socket_close( accepted );
+    ::closesocket( client );
+    ::closesocket( listener );
+    areg::socket_release( );
+}
+
+#endif  // defined(_POSIX) / defined(WINDOWS)

@@ -86,7 +86,10 @@ inline void LogManager::post_log_message(areg::MessageEnvelope&& msg)
     evt.set_event_priority(areg::EventPriority::NormalPrio);
     evt.set_event_consumer(static_cast<EventConsumer *>(&mMessageConsumer));
     evt.set_target_dispatcher(static_cast<DispatcherThread *>(this));
-    static_cast<void>(EventDispatcher::post_event(evt));
+    if (EventDispatcher::post_event(evt) == false)
+    {
+        mQueueDropped.fetch_add(1u, std::memory_order_relaxed);
+    }
 }
 
 void LogManager::LogMessageConsumer::start_event_processing(Event & eventElem)
@@ -305,6 +308,7 @@ LogManager::LogManager()
 
     , mScopeController  ( )
 	, mIsStarted		( false )
+    , mQueueDropped     ( 0u )
     , mLogConfig        ( )
 
     , mLoggerFile       ( mLogConfig )
@@ -491,6 +495,7 @@ void LogManager::stop_logs()
 
     mIsStarted.store(false, std::memory_order_release);
 
+    _write_dropped_notice();
     mLoggerDebug.close_logger( );
     mLoggerFile.close_logger( );
     mLoggerTcp.close_logger( );
@@ -500,10 +505,50 @@ void LogManager::stop_logs()
 
 void LogManager::write_log_message( areg::MessageEnvelope & msg )
 {
+    _dispatch_log_message(msg);
+
+    if ( !has_more_events() )
+    {
+        if (mQueueDropped.load(std::memory_order_relaxed) != 0u)
+        {
+            _write_dropped_notice();
+        }
+
+        mLoggerFile.flush_logs();
+        mLoggerDatabase.flush_logs();
+    }
+}
+
+void LogManager::_write_dropped_notice()
+{
+    const uint32_t dropped{ mQueueDropped.exchange(0u, std::memory_order_relaxed) };
+    if (dropped == 0u)
+        return;
+
+    char text[areg::LOG_MSG_SIZE];
+    const int32_t len{ String::format_string( text
+                                            , static_cast<int32_t>(areg::LOG_MSG_SIZE)
+                                            , "Dropped [ %u ] log messages, the logging queue was full."
+                                            , dropped) };
+    areg::MessageEnvelope msg{ areg::make_log_message( areg::LogMessageType::MessageText
+                                                   , areg::LOG_SCOPE_ID_NONE
+                                                   , 0u
+                                                   , 0u
+                                                   , areg::LogPriority::PrioError
+                                                   , text
+                                                   , static_cast<uint32_t>(len > 0 ? len : 0)) };
+    if (msg.is_valid())
+    {
+        _dispatch_log_message(msg);
+    }
+}
+
+void LogManager::_dispatch_log_message( areg::MessageEnvelope & msg )
+{
     const areg::LogEntry* logEntry = reinterpret_cast<const areg::LogEntry*>(msg.buffer());
     ASSERT(logEntry != nullptr);
 
-    if (is_remote_logging_enabled())
+    if (mLoggerTcp.is_remote_enabled())
     {
         areg::finalize_log_message(msg, areg::LogDataType::Remote, LogManager::connection_cookie());
     }
@@ -516,12 +561,6 @@ void LogManager::write_log_message( areg::MessageEnvelope & msg )
     mLoggerDebug.log_message(*logEntry);
     mLoggerDatabase.log_message(*logEntry);
     mLoggerTcp.forward_message(std::move(msg));
-
-    if ( !has_more_events() )
-    {
-        mLoggerFile.flush_logs();
-        mLoggerDatabase.flush_logs();
-    }
 }
 
 bool LogManager::post_event(Event & eventElem)

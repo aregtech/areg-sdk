@@ -33,7 +33,6 @@
 #include "areg/base/FixedArray.hpp"
 #include "areg/base/ResourceMap.hpp"
 #include "areg/base/ResourceListMap.hpp"
-#include "areg/base/private/posix/WaitAnyRegistry.hpp"
 
 #include <pthread.h>
 namespace areg::os {
@@ -115,23 +114,6 @@ class SyncLockAndWaitPosix
     using SyncResourceMapIX = ConcurrentResourceListMap<WaitablePosix *, SyncLockAndWaitPosix *, ListLockAndWait, MapLockAndWait, ImplResourceListMap>;
 
 //////////////////////////////////////////////////////////////////////////
-// Resource maps keyed by thread ID (for notify_async_signal)
-//////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   Map for WaitAll path
-     **/
-    using MapWaitID          = IdHashMap<SyncLockAndWaitPosix *>;
-    using ImplWaitIDResource = ResourceMapImpl<ptr_type, SyncLockAndWaitPosix *>;
-    using MapWaitIDResource  = ConcurrentResourceMap<ptr_type, SyncLockAndWaitPosix *, MapWaitID, ImplWaitIDResource>;
-
-#if defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
-    /**
-     * \brief   Lock-free registry for the WaitAny path
-     **/
-    using WaitAnyRegistryMap = WaitAnyRegistry<256>;
-#endif  // defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
-
-//////////////////////////////////////////////////////////////////////////
 // Friend classes
 //////////////////////////////////////////////////////////////////////////
     friend class TimerManager;
@@ -194,7 +176,7 @@ public:
      *          SyncSignal::All (if waitAll=true and all signaled), SyncSignal::Timeout (expired),
      *          SyncSignal::Interrupted (interrupted), or SyncSignal::FirstError + N (error on object N).
      **/
-    static int32_t wait_multiple( WaitablePosix ** listWaitables, int32_t count, bool waitAll = false, uint32_t msTimeout = areg::WAIT_INFINITE);
+    static int32_t wait_multiple( WaitablePosix ** listWaitables, int32_t count, bool waitAll = false, uint32_t msTimeout = areg::WAIT_INFINITE );
 
     /**
      * \brief   Called by waitable object to indicate it is in signaled state.
@@ -228,15 +210,6 @@ public:
     [[nodiscard]]
     static inline bool is_waitable_registered( WaitablePosix & syncWaitable ) noexcept;
 
-    /**
-     * \brief   Breaks waiting in a locked thread to process asynchronous execution. Thread can lock
-     *          again after finishing.
-     *
-     * \param   threadId    The ID of the thread to interrupt.
-     * \return  Returns true if operation succeeded; false if thread is not locked.
-     **/
-    static bool notify_async_signal( id_type threadId ) noexcept;
-
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructor / destructor
 //////////////////////////////////////////////////////////////////////////
@@ -257,17 +230,7 @@ private:
 // Hidden operations and attributes
 //////////////////////////////////////////////////////////////////////////
 
-    /**
-     * \brief   Returns static map of thread-ID.
-     **/
-    static SyncLockAndWaitPosix::MapWaitIDResource& _map_wait_ids() noexcept;
-
 #if defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
-    /**
-     * \brief   Returns static lock-free WaitAny registry (thread-ID -> firedWord pointer).
-     **/
-    static SyncLockAndWaitPosix::WaitAnyRegistryMap& _map_wait_any_ids() noexcept;
-
     /**
      * \brief   WaitAny implementation: stack-allocates WaiterNodes, registers them in each
      *          waitable's intrusive list, sleeps on a per-call fire word via the platform

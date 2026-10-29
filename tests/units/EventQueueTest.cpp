@@ -436,7 +436,6 @@ TEST(EventQueueTest, consumer_push_to_full_ring_fails_at_once)
 
     const auto waited{ std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() };
     EXPECT_LT(waited, 1000);
-    EXPECT_EQ(queue.extract_max_wait_ms(), 0u);
 }
 
 TEST(EventQueueTest, other_thread_push_to_full_ring_waits_for_the_consumer)

@@ -20,11 +20,13 @@
 #include "areg/base/String.hpp"
 #include "areg/base/StringDefs.hpp"
 #include "areg/base/WideString.hpp"
+#include "areg/base/private/EnvelopeCache.hpp"
 
 #include "areg/appbase/Application.hpp"
 
 #include <algorithm>
 #include <atomic>
+#include <new>
 
 namespace areg {
 
@@ -291,8 +293,20 @@ uint32_t BufferBase::reserve(uint32_t size, bool copy)
     }
 
     total = areg::align_size(total, block_size());
-    const uint32_t sizeBuffer = header_size() + total;
-    uint8_t* buffer = new uint8_t[sizeBuffer];
+    const uint32_t headerSize = header_size();
+    uint32_t sizeBuffer = headerSize + total;
+    uint8_t* buffer{ nullptr };
+    if (headerSize == static_cast<uint32_t>(sizeof(areg::RawEnvelope)))
+    {
+        uint32_t payload{ sizeBuffer - static_cast<uint32_t>(sizeof(areg::EventHeader)) };
+        buffer = areg::envelope_block_alloc(payload);
+        sizeBuffer = payload + static_cast<uint32_t>(sizeof(areg::EventHeader));
+    }
+    else
+    {
+        buffer = new (std::nothrow) uint8_t[sizeBuffer];
+    }
+
     const uint32_t position = init_buffer(buffer, sizeBuffer, preserveData);
     if (position != Cursor::INVALID_CURSOR_POSITION)
     {

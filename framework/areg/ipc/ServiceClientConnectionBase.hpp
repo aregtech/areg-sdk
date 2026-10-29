@@ -74,11 +74,6 @@ protected:
     };
 
     /**
-     * \brief   Returns the string representation of a ConnectionPhase value.
-     **/
-    static inline constexpr const char * as_string(ServiceClientConnectionBase::ConnectionPhase val);
-
-    /**
      * \brief   Returns true if the given state has the specified phase bit set.
      *          Used to test the DisconnectState and ConnectState bitmask bits.
      **/
@@ -658,27 +653,6 @@ inline void ServiceClientConnectionBase::unregister_consumer_commands()
 inline constexpr bool ServiceClientConnectionBase::has_phase_bit(ConnectionPhase state, ConnectionPhase mask) noexcept
 {
     return (static_cast<uint16_t>(state) & static_cast<uint16_t>(mask)) != 0;
-}
-
-inline constexpr const char * ServiceClientConnectionBase::as_string(ServiceClientConnectionBase::ConnectionPhase val)
-{
-    switch (val)
-    {
-    case ServiceClientConnectionBase::ConnectionPhase::DisconnectState:
-        return "ServiceClientConnectionBase::DisconnectState";
-    case ServiceClientConnectionBase::ConnectionPhase::ConnectionStopped:
-        return "ServiceClientConnectionBase::ConnectionStopped";
-    case ServiceClientConnectionBase::ConnectionPhase::ConnectionStarting:
-        return "ServiceClientConnectionBase::ConnectionStarting";
-    case ServiceClientConnectionBase::ConnectionPhase::ConnectionStarted:
-        return "ServiceClientConnectionBase::ConnectionStarted";
-    case ServiceClientConnectionBase::ConnectionPhase::ConnectionStopping:
-        return "ServiceClientConnectionBase::ConnectionStopping";
-    case ServiceClientConnectionBase::ConnectionPhase::ConnectState:
-        return "ServiceClientConnectionBase::ConnectState";
-    default:
-        return "ERR: Invalid value of ServiceClientConnectionBase::ConnectionPhase type";
-    }
 }
 
 inline bool ServiceClientConnectionBase::is_connection_started() const noexcept

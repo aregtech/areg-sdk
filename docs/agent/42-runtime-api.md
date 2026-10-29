@@ -184,8 +184,8 @@ started shares with a component: `38-workers.md`, `recipes/07-worker-events/`.
 | `areg::Mutex` | `explicit Mutex(bool initLock = false)` | `SyncPrimitives.hpp:144` |
 | `lock()` | `bool lock(uint32_t timeout = areg::WAIT_INFINITE)` | `SyncPrimitives.hpp:158` |
 | `unlock()` | `bool unlock()` | `SyncPrimitives.hpp:165` |
-| `areg::Lock` | `explicit Lock(SyncObject & syncObj, bool autoLock = true)` | `SyncPrimitives.hpp:1056` |
-| `areg::ScopedLock` | `explicit ScopedLock(LOCKABLE & syncObj)`, type deduced | `SyncPrimitives.hpp:1134` |
+| `areg::Lock` | `explicit Lock(SyncObject & syncObj, bool autoLock = true)` | `SyncPrimitives.hpp:1057` |
+| `areg::ScopedLock` | `explicit ScopedLock(LOCKABLE & syncObj)`, type deduced | `SyncPrimitives.hpp:1135` |
 | `areg::SyncEvent` | `explicit SyncEvent(bool initLock = true, bool autoReset = true)` | `SyncPrimitives.hpp:258` |
 | `set_signaled()` | `bool set_signaled() noexcept` | `SyncPrimitives.hpp:299` |
 | `reset()` | `bool reset() noexcept` | `SyncPrimitives.hpp:305` |

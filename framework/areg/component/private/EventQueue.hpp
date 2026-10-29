@@ -264,18 +264,6 @@ public:
     inline bool is_exit_triggered() const noexcept;
 
     /**
-     * \brief   Returns the longest time, in milliseconds, that any producer had to wait for a
-     *          free slot since this was last called, and resets the record to zero.
-     *
-     * \note    The queue only records the wait, the caller reports it. This queue also serves
-     *          the log manager, so logging from here could feed its queue and recurse.
-     *
-     * \return  The longest wait in milliseconds, or 0 if no producer had to wait.
-     **/
-    [[nodiscard]]
-    inline uint32_t extract_max_wait_ms() noexcept;
-
-    /**
      * \brief   Requests exit. The queue refuses every new event from this call on and
      *          wakes the consumer and any producer blocked on a full ring. The exit
      *          is sticky until reset_exit() is called.
@@ -517,8 +505,6 @@ private:
 
     //!< Producer wake-up (auto-reset): signalled by the consumer when a slot is freed.
     SimpleEvent             mSlotEvent;
-    //!< Longest producer wait, in milliseconds, since it was last read.
-    std::atomic<uint32_t>   mMaxWaitMs;
     //!< Number of producers blocked on a full ring (so the consumer signals only when needed).
     std::atomic<uint32_t>   mProducersWaiting;
 
@@ -546,15 +532,6 @@ inline void EventQueue::lock_queue() noexcept
 inline void EventQueue::unlock_queue() noexcept
 {
     mPrioLock.unlock();
-}
-
-inline uint32_t EventQueue::extract_max_wait_ms() noexcept
-{
-    // While no producer waits this is a plain load and the cache line stays shared. The
-    // read-modify-write, which dirties it, happens only after a producer really had to wait.
-    return (mMaxWaitMs.load(std::memory_order_relaxed) != 0u)
-                ? mMaxWaitMs.exchange(0u, std::memory_order_relaxed)
-                : 0u;
 }
 
 inline void EventQueue::set_consumer(id_type consumerId) noexcept

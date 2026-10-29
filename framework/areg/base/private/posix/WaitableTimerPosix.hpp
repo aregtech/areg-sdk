@@ -25,15 +25,12 @@
 
 #include "areg/base/private/posix/WaitablePosix.hpp"
 #include "areg/base/private/posix/MutexPosix.hpp"
-#include <time.h>
-
-#ifdef __APPLE__
-    #include <dispatch/dispatch.h>
-#else   // !__APPLE__
-    using signal_value = union sigval;
-#endif  // !__APPLE__
+#include <stdint.h>
 
 namespace areg::os {
+
+class TimerServicePosix;
+
 //////////////////////////////////////////////////////////////////////////
 // WaitableTimer class declaration.
 //////////////////////////////////////////////////////////////////////////
@@ -44,18 +41,7 @@ namespace areg::os {
  **/
 class WaitableTimerPosix final  : public WaitablePosix
 {
-//////////////////////////////////////////////////////////////////////////
-// Statics and constants
-//////////////////////////////////////////////////////////////////////////
-private:
-#ifndef __APPLE__
-    /**
-     * \brief   Static callback routine invoked when the POSIX timer expires.
-     *
-     * \param   si      Signal information structure containing data for the timer handler.
-     **/
-    static void _posix_timer_routine(signal_value si);
-#endif  // !__APPLE__
+    friend class TimerServicePosix;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -84,16 +70,11 @@ public:
     bool set_timer( uint32_t msTimeout, bool is_periodic );
 
     /**
-     * \brief   Stops the running timer.
+     * \brief   Stops the timer and signals it once, as if it expired now. An automatic reset
+     *          timer releases one waiting thread, a manual reset timer releases all of them and
+     *          stays signaled until it is set again. The timer can be set again.
      *
-     * \return  Returns true if successfully stopped.
-     **/
-    bool stop_timer() noexcept;
-
-    /**
-     * \brief   Cancels and releases the running timer.
-     *
-     * \return  Returns true if successfully cancelled.
+     * \return  Returns true.
      **/
     bool cancel_timer() noexcept;
 
@@ -123,20 +104,23 @@ protected:
     bool check_signaled( pthread_t contextThread ) const final;
 
     /**
-     * \brief   Callback invoked when a waiting thread is released due to timer expiration.
+     * \brief   Called by a waiting thread that found the timer signaled. An automatic reset
+     *          timer is reset here, so only one waiter takes one expiration.
      *
      * \param   ownerThread     The POSIX thread ID that completed waiting.
-     * \return  Returns true if the thread successfully took ownership.
+     * \return  Returns true if the thread took the expiration, false if another one took it.
      **/
     bool notify_request_ownership( pthread_t ownerThread ) final;
 
     /**
-     * \brief   Returns false to indicate that the timer can signal only one thread at a time.
+     * \brief   Returns true: an expiration wakes every waiter, and an automatic reset timer is
+     *          taken by one of them.
      **/
     bool can_signal_threads() const noexcept final;
 
     /**
      * \brief   Notifies the timer that threads were released when it was in signaled state.
+     *          Does nothing: the waiter resets the timer when it takes the expiration.
      *
      * \param   numThreads      The number of threads released. Zero means no thread was released.
      **/
@@ -152,17 +136,16 @@ protected:
     //!< Waitable timer reset information. Either manual- or auto-reset.
     const areg::os::ResetMode   mResetInfo;
 
-#ifdef __APPLE__
-
-    //!< GCD dispatch timer source for macOS.
-    dispatch_source_t   mTimerSource;
-    //!< GCD dispatch queue for timer.
-    dispatch_queue_t    mTimerQueue;
-#else   // !__APPLE__
-
-    //!< POSIX timer ID.
-    timer_t         mTimerId;
-#endif  // __APPLE__
+    //!< Next armed timer in deadline order. Guarded by the timer service lock.
+    WaitableTimerPosix *    mNextArmed;
+    //!< Previous armed timer in deadline order. Guarded by the timer service lock.
+    WaitableTimerPosix *    mPrevArmed;
+    //!< Monotonic expiration time in nanoseconds. Guarded by the timer service lock.
+    uint64_t                mDeadlineNs;
+    //!< Period in nanoseconds, 0 for a one-shot timer. Guarded by the timer service lock.
+    uint64_t                mPeriodNs;
+    //!< Flag, indicates whether the timer is in the armed list. Guarded by the timer service lock.
+    bool                    mIsArmed;
 
     //!< Timeout is milliseconds to run.
     uint32_t        mTimeout;
@@ -170,25 +153,19 @@ protected:
     bool            mIsSignaled;
     //!< Counts how many times the timer was fired. Used by periodic timers.
     uint32_t        mFiredCount;
-    //!< POSIX timer structure.
-    struct timespec mDueTime;
-    //!< The ID of thread that triggered the timer. Used to notify the asynchronous call when waitable timer expired.
-    id_type         mThreadId;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Stops and deletes the timer.
-     **/
-    void _reset_timer() noexcept;
-    /**
      * \brief   Internal callback invoked when the timer expires.
+     *
+     * \param   expirations     The number of periods elapsed since the previous call.
      **/
-    void _timer_expired() noexcept;
+    void _timer_expired( uint32_t expirations ) noexcept;
     /**
-     * \brief   Internal method to stop the running timer.
+     * \brief   Internal method to reset the timeout and the expiration count.
      **/
     void _stop_timer() noexcept;
 

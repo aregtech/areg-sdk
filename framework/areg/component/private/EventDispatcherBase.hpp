@@ -245,14 +245,6 @@ public:
     uint32_t pop_events(Event* listEvents, uint32_t count) noexcept;
 
     /**
-     * \brief   Returns the longest time, in milliseconds, that any producer had to wait for a
-     *          free slot in the external queue since this was last called, and resets it.
-     *          Returns 0 when nobody had to wait.
-     **/
-    [[nodiscard]]
-    inline uint32_t extract_max_producer_wait_ms() noexcept;
-
-    /**
      * \brief   Picks up a single Event from the external queue.
      *          Returns an invalid Event (is_valid() == false) when the queue is empty.
      *          The ExitEvent is returned as a value copy (check with is_exit_prio()).
@@ -449,11 +441,6 @@ inline uint32_t EventDispatcherBase::queue_events(Event* listEvents, uint32_t co
 inline bool EventDispatcherBase::wait_queue_event(Event& eventElem) noexcept
 {
     return mExternalEvents.wait_push_event(eventElem);
-}
-
-inline uint32_t EventDispatcherBase::extract_max_producer_wait_ms() noexcept
-{
-    return mExternalEvents.extract_max_wait_ms();
 }
 
 inline uint32_t EventDispatcherBase::pop_events(Event* listEvents, uint32_t count) noexcept

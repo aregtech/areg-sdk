@@ -155,6 +155,8 @@ There is no separate "temporary list". **Temporary is a boolean flag on a writab
 - participates in lookups exactly like any other writable entry, **but**
 - is **excluded when the configuration is saved** (`save_config`), so it never reaches the file.
 
+When a key has both a persistent and a temporary value, **the value set last is in force**: a temporary set overrides the value loaded from `<process>.init`, and a later persistent set replaces the temporary one. A save always writes the persistent value. Removing the key removes both.
+
 Use it for runtime-only state — a debug toggle you flip for the current session, a counter, an ephemeral override — that should vanish on the next start. Persistent writable entries (the default, `temporary = false`) *are* written back and survive restarts.
 
 | | Read-only | Writable (persistent) | Writable (temporary) |
@@ -219,7 +221,7 @@ config.read_config("./config/areg.init");   // also reads ./config/<process>.ini
 config.save_config();                        // writes ./config/<process>.init
 ```
 
-`read_config()` and `save_config()` accept an optional [`ConfigListener*`](./../../framework/areg/persist/ConfigListener.hpp) that is notified before and after the operation, letting components reload derived state. `save_config()` writes only this process's non-temporary writable entries and keeps the other lines of the target file.
+`read_config()` and `save_config()` accept an optional [`ConfigListener*`](./../../framework/areg/persist/ConfigListener.hpp) that is notified before and after the operation, letting components reload derived state. `post_read_configuration()` runs after both files are read, so a value the listener sets there wins over both. `save_config()` writes only this process's non-temporary writable entries and keeps the other lines of the target file.
 
 A save is safe when several processes save at the same time, also two instances of one executable writing the same `<process>.init`:
 
