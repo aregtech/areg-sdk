@@ -49,6 +49,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     ArrayListTest.cpp
     ConfigManagerTest.cpp
     DateTimeTest.cpp
+    EnvelopeCacheTest.cpp
     EventEnvelopeTest.cpp
     EventQueueTest.cpp
     FatalErrorTest.cpp

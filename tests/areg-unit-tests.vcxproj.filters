@@ -109,6 +109,9 @@
     <ClCompile Include="units\SharedBufferTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="units\EnvelopeCacheTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="units\EventEnvelopeTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

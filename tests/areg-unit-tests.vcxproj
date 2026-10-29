@@ -52,6 +52,7 @@
     <ClCompile Include="units\LogProtocolTest.cpp" />
     <ClCompile Include="units\LogRingTest.cpp" />
     <ClCompile Include="units\LogScopesTest.cpp" />
+    <ClCompile Include="units\EnvelopeCacheTest.cpp" />
     <ClCompile Include="units\EventEnvelopeTest.cpp" />
     <ClCompile Include="units\MultiLockTest.cpp" />
     <ClCompile Include="units\SharedBufferTest.cpp" />

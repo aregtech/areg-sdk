@@ -998,6 +998,7 @@
   "release",
   "release_module_properties",
   "release_properties",
+  "release_raw_buffer",
   "release_shared",
   "remote_queue_size",
   "remote_service_address",
