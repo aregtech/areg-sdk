@@ -62,8 +62,8 @@ static form writes into a buffer you own. Both exist and both are correct.
 
 | Call | Signature | Header |
 |---|---|---|
-| `format(...)` | `String & format(const char * format, ...)` | `StringBase.hpp:1196` |
-| `format_list(...)` | `String & format_list(const char * format, va_list argptr)` | `StringBase.hpp:1205` |
+| `format(...)` | `String & format(const char * format, ...)` | `StringBase.hpp:1197` |
+| `format_list(...)` | `String & format_list(const char * format, va_list argptr)` | `StringBase.hpp:1207` |
 | `String::format_string(...)` | `static int32_t format_string(char * strDst, int32_t count, const char * format, ...)` | `StringBase.hpp:1160` |
 
 ```cpp
