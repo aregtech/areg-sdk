@@ -75,8 +75,6 @@ namespace
     constexpr int           FAILURE_EXIT_CODE   { 70 };
     constexpr uint32_t      UNLOAD_ROUNDS       { 20 };
     constexpr uint32_t      DOUBLE_ROUNDS       { 200 };
-    constexpr uint32_t      LOG_TOGGLES         { 50 };
-    constexpr uint32_t      LOG_WRITERS         { 4 };
     constexpr uint32_t      SELF_QUEUE_WAIT_MS  { 2000 };
     constexpr uint32_t      SELF_POST_LIMIT_MS  { 500 };
 
@@ -1049,6 +1047,8 @@ static bool load_wait()
 static bool logging_toggle()
 {
 #if AREG_LOGGING
+    constexpr uint32_t LOG_TOGGLES{ 50 };
+    constexpr uint32_t LOG_WRITERS{ 4 };
     areg::Application::setup(true, false, false, true, false, nullptr);
     std::atomic_bool stop{ false };
     std::atomic_uint32_t sent{ 0 };

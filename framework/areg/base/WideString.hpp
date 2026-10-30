@@ -66,12 +66,6 @@ public:
      **/
     static const WideString & empty_string();
 
-    /**
-     * \brief   WideString::EmptyString
-     *          The empty wide string.
-     **/
-    static constexpr wchar_t EmptyString[ ]{ L"" };
-
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////

@@ -145,6 +145,16 @@ jobs:
           tools/intern/sanitize.sh ${{matrix.mode}} --config ${{matrix.config}} --keep --repeat 25 \
               --run 'ctest:areg-(release-unload|timer-churn|internal-events|stub-teardown)-test'
 
+      - name: Repeat the router stop while flooding under ${{matrix.mode}} ${{matrix.config}}
+        if: always() && github.event_name != 'push' && matrix.mode == 'tsan' && matrix.config == 'RelWithDebInfo'
+        working-directory: ${{github.workspace}}
+        shell: bash
+        timeout-minutes: 15
+        run: |
+          ulimit -c unlimited
+          tools/intern/sanitize.sh ${{matrix.mode}} --config ${{matrix.config}} --keep --repeat 30 \
+              --run 'ctest:areg-router-io-test\.stop-while-flooding\.'
+
       # Everything needed to open the crash on another machine: the cores, the binaries
       # they came from, and what the runner was, so a local build can be matched to it.
       - name: Collect the post-mortem
@@ -163,7 +173,7 @@ jobs:
             echo "options  : ASAN_OPTIONS/TSAN_OPTIONS are printed by the driver above"
           } > "${OUT}/provenance.txt"
           BIN_DIR="./build-${{matrix.mode}}/product/bin"
-          for t in areg-release-unload-test areg-timer-churn-test areg-internal-events-test areg-stub-teardown-test; do
+          for t in areg-release-unload-test areg-timer-churn-test areg-internal-events-test areg-stub-teardown-test areg-router-io-test; do
             [[ -f "${BIN_DIR}/${t}.elf" ]] || continue
             cp "${BIN_DIR}/${t}.elf" "${OUT}/bin/"
             echo "--- ldd ${t} ---" >> "${OUT}/provenance.txt"

@@ -36,13 +36,13 @@ declared on that base. That is an implementation detail; you call them all on a
 
 | Call | Signature | Header |
 |---|---|---|
-| `as_string()` | `const char * as_string() const noexcept` | `StringBase.hpp:381` |
-| `is_empty()` | `bool is_empty() const noexcept` | `StringBase.hpp:346` |
-| `clear()` | `void clear() noexcept` | `StringBase.hpp:421` |
-| `length()` | `areg::CharCount length() const noexcept` | `StringBase.hpp:352` |
-| `compare(...)` | `areg::Ordering compare(const String & other, bool caseSensitive = true) const noexcept` | `StringBase.hpp:565` |
-| `find_first(...)` | `areg::CharPos find_first(const char * phrase, areg::CharPos startPos = areg::START_POS, bool caseSensitive = true, bool wholeWord = false) const noexcept` | `StringBase.hpp:489` |
-| `find_last(...)` | `areg::CharPos find_last(const char * phrase, areg::CharPos startPos = areg::END_POS, bool caseSensitive = true) const noexcept` | `StringBase.hpp:538` |
+| `as_string()` | `const char * as_string() const noexcept` | `StringBase.hpp:386` |
+| `is_empty()` | `bool is_empty() const noexcept` | `StringBase.hpp:351` |
+| `clear()` | `void clear() noexcept` | `StringBase.hpp:426` |
+| `length()` | `areg::CharCount length() const noexcept` | `StringBase.hpp:357` |
+| `compare(...)` | `areg::Ordering compare(const String & other, bool caseSensitive = true) const noexcept` | `StringBase.hpp:570` |
+| `find_first(...)` | `areg::CharPos find_first(const char * phrase, areg::CharPos startPos = areg::START_POS, bool caseSensitive = true, bool wholeWord = false) const noexcept` | `StringBase.hpp:494` |
+| `find_last(...)` | `areg::CharPos find_last(const char * phrase, areg::CharPos startPos = areg::END_POS, bool caseSensitive = true) const noexcept` | `StringBase.hpp:543` |
 
 Overloads of `compare`, `find_first` and `find_last` also take a single `char`,
 `std::string` and `std::string_view`, and so do `==` and `!=`. **This is the substring
@@ -62,9 +62,9 @@ static form writes into a buffer you own. Both exist and both are correct.
 
 | Call | Signature | Header |
 |---|---|---|
-| `format(...)` | `String & format(const char * format, ...)` | `StringBase.hpp:1197` |
-| `format_list(...)` | `String & format_list(const char * format, va_list argptr)` | `StringBase.hpp:1207` |
-| `String::format_string(...)` | `static int32_t format_string(char * strDst, int32_t count, const char * format, ...)` | `StringBase.hpp:1160` |
+| `format(...)` | `String & format(const char * format, ...)` | `StringBase.hpp:1202` |
+| `format_list(...)` | `String & format_list(const char * format, va_list argptr)` | `StringBase.hpp:1212` |
+| `String::format_string(...)` | `static int32_t format_string(char * strDst, int32_t count, const char * format, ...)` | `StringBase.hpp:1165` |
 
 ```cpp
 areg::String reason;

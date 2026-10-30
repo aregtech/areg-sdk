@@ -39,7 +39,7 @@
 #endif  // defined(_WIN32)
 
 #include <cstddef>
-#include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <string>
 #include <vector>
@@ -163,6 +163,18 @@ namespace
         return std::string(text, ::strnlen(text, payload.size() - textAt));
     }
 
+    //!< Reads the decimal number that follows 'prefix' at the start of 'text'. Returns false if there is none.
+    bool read_number(const std::string & text, const char * prefix, unsigned long long & number)
+    {
+        const std::size_t length{ std::strlen(prefix) };
+        if (text.compare(0, length, prefix) != 0)
+            return false;
+
+        char * end{ nullptr };
+        number = std::strtoull(text.c_str() + length, &end, 10);
+        return (end != text.c_str() + length);
+    }
+
     //!< A listening socket of the loopback interface on a free port.
     struct Listener
     {
@@ -253,16 +265,15 @@ TEST(LogRingTest, logs_before_the_start_are_counted_and_reported)
             }
 
             const std::string text{ row_text(hdr, payload) };
-            unsigned long long count{ 0u };
-            uint32_t number{ 0u };
-            if (std::sscanf(text.c_str(), "Dropped [ %llu ]", &count) == 1)
+            unsigned long long number{ 0u };
+            if (read_number(text, "Dropped [ ", number))
             {
                 scopesFirst = scopes && kept.empty();
-                dropped = count;
+                dropped = number;
             }
-            else if (std::sscanf(text.c_str(), "ring row %u", &number) == 1)
+            else if (read_number(text, "ring row ", number))
             {
-                kept.push_back(number);
+                kept.push_back(static_cast<uint32_t>(number));
             }
         }
 

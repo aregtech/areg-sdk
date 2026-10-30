@@ -170,17 +170,17 @@ namespace
         void on_run() override
         {
             LOG_SCOPE(examples_35_logsource_LogThread, generate);
-            const char * format{ mFormat.c_str() };
+            [[maybe_unused]] const char * format{ mFormat.c_str() };
             for (uint32_t i = 0u; i < mWarmup; ++i)
             {
-                const uint32_t seq{ next_sequence() };
+                [[maybe_unused]] const uint32_t seq{ next_sequence() };
                 LOG_DBG(format, "alpha", "bravo", "charlie", "delta", "echo", seq, mNumbers[1], mNumbers[2], mNumbers[3], mNumbers[4]);
             }
 
             const Clock::time_point begin{ Clock::now() };
             for (uint32_t & sample : mSamples)
             {
-                const uint32_t seq{ next_sequence() };
+                [[maybe_unused]] const uint32_t seq{ next_sequence() };
                 const Clock::time_point start{ Clock::now() };
                 LOG_DBG(format, "alpha", "bravo", "charlie", "delta", "echo", seq, mNumbers[1], mNumbers[2], mNumbers[3], mNumbers[4]);
                 sample = elapsed_ns(start);
@@ -211,7 +211,7 @@ namespace
         void on_run() override
         {
             LOG_SCOPE(examples_35_logsource_PacedThread, generate);
-            const char * format{ mFormat.c_str() };
+            [[maybe_unused]] const char * format{ mFormat.c_str() };
             const uint64_t total{ static_cast<uint64_t>(mWarmup) + mSamples.size() };
             const uint64_t periodNs{ static_cast<uint64_t>(mPeriod) * 1'000'000u };
             areg::SyncTimer tick(mPeriod, true);
@@ -228,7 +228,7 @@ namespace
                 const uint64_t due{ std::min(total, elapsed * mBurst / periodNs) };
                 for ( ; written < due; ++written)
                 {
-                    const uint32_t seq{ next_sequence() };
+                    [[maybe_unused]] const uint32_t seq{ next_sequence() };
                     if (written < mWarmup)
                     {
                         LOG_DBG(format, "alpha", "bravo", "charlie", "delta", "echo", seq, mNumbers[1], mNumbers[2], mNumbers[3], mNumbers[4]);

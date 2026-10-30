@@ -16,9 +16,9 @@ only the processes it started. Profiles of the source:
     full   -c=100000 -w=1000            one thread writes as fast as it can
     burst  -c=200000 -w=0 -p=10 -b=400  400 messages every 10 ms, from the first moment
 
-A run passes when the sink's 'lost' equals its 'dropped messages': a message may be
-dropped, but never without a notice. '--summary' appends a Markdown table, for
-GITHUB_STEP_SUMMARY. Exits 1 when a run fails.
+A run passes when the sink's 'lost' plus its 'scope rows lost' equals its 'dropped
+messages': a message or a scope row may be dropped, but never without a notice.
+'--summary' appends a Markdown table, for GITHUB_STEP_SUMMARY. Exits 1 when a run fails.
 """
 
 import argparse
@@ -39,6 +39,7 @@ RUN_TIMEOUT = 300
 CONNECT_TIMEOUT = 20.0
 RE_RECEIVED = re.compile(r'received (\d+) \| lost (\d+)')
 RE_DROPPED = re.compile(r'dropped messages (\d+)')
+RE_SCOPES = re.compile(r'scope rows lost (\d+)')
 
 
 def executable(bin_dir, name):
@@ -124,6 +125,8 @@ def one_run(bins, profile, port):
     received, lost = int(got.group(1)), int(got.group(2))
     match = RE_DROPPED.search(text)
     dropped = int(match.group(1)) if match else 0
+    match = RE_SCOPES.search(text)
+    lost += int(match.group(1)) if match else 0
     if lost == dropped:
         verdict = 'ok' if lost == 0 else 'ok, dropped and reported'
     elif lost > dropped:

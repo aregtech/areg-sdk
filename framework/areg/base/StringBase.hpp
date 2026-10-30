@@ -75,6 +75,11 @@ public:
     static constexpr CharType   EmptyChar       { static_cast<CharType>(areg::EndOfString) };
 
     /**
+     * \brief   The empty string.
+     **/
+    static constexpr CharType   EmptyString[1]  { static_cast<CharType>(areg::EndOfString) };
+
+    /**
      * \brief   New line constant
      **/
     static constexpr CharType   NewLine         { static_cast<CharType>(areg::EndOfLine) };
@@ -4225,7 +4230,7 @@ inline int32_t StringBase<CharType, Derived>::_format_buffer(CharType* buffer, i
         }
 #else   // !defined(_WIN32)
         errno = 0;
-        needed = std::vswprintf(buffer, static_cast<size_t>(count), format, argptr);
+        needed = areg::str::wide_vprintf(buffer, static_cast<size_t>(count), format, argptr);
         if ((needed < 0) && (errno != EILSEQ))
         {
             // The text is cut and its full length is unknown.

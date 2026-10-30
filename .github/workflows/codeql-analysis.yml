@@ -52,6 +52,9 @@ jobs:
       actions: read
       contents: read
       security-events: write
+    env:
+      # A traced C++ build cannot make an overlay database; CodeQL builds the full one.
+      CODEQL_OVERLAY_DATABASE_MODE: none
 
     strategy:
       fail-fast: false
@@ -77,15 +80,15 @@ jobs:
       uses: github/codeql-action/init@v4.38.2
       with:
         languages: ${{ matrix.language }}
-        # By default, queries listed here will override any specified in a config file.
+        build-mode: manual
 
-    # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
-    # If this step fails, then you should remove it and run the build manually (see below)
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v4.38.2
+    # The default configuration of Areg SDK, the one a plain 'cmake -B build' gives.
+    - name: Build with CMake
+      shell: bash
+      run: |
+        cmake -B ./build -DCMAKE_BUILD_TYPE=Release
+        cmake --build ./build -j"$(nproc)"
 
-    # Command-line programs to run using the OS shell.
-    # https://git.io/JvXDl
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v4.38.2
 

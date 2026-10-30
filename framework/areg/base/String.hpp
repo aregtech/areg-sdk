@@ -66,12 +66,6 @@ public:
      **/
     static const String & empty_string();
 
-    /**
-     * \brief   String::EmptyString
-     *          The empty string.
-     **/
-    static constexpr char EmptyString[ ]{ "" };
-
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
