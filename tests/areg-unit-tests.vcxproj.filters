@@ -142,6 +142,9 @@
     <ClCompile Include="units\SocketWouldBlockTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="units\StringCommonTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="units\StringTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

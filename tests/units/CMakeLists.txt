@@ -87,6 +87,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     StringDefsTest2.cpp
     StringDefsTest3.cpp
     StringDefsTest4.cpp 
+    StringCommonTest.cpp
     StringTest.cpp
     StringUtilsTest.cpp
     SyncTimerTest.cpp

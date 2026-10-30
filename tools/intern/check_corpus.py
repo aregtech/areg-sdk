@@ -3339,8 +3339,12 @@ def check_api_class_complete(report, tools=None):
         return done.returncode, done.stdout
 
     wanted = (
-        (('String', '--class'), r'bool operator == \(const String& other\) const;',
-         'String --class lists no operator == of String'),
+        (('String', '--class'), r'String & operator = \(const String & src\) = default;',
+         'String --class lists no operator = of String'),
+        (('String', '--class'), r'constructors inherited from areg::StringBase .*\n(?:  .*\n)*?.*const CharType \* source \);',
+         'String --class does not list the constructors it inherits from StringBase'),
+        (('String::operator+',), r'areg::StringBase .*inherited by areg::String\n(?:  .*\n)*?.*operator \+ \(const Derived& lhs, const Derived& rhs\);',
+         'String::operator+ is not answered from the base that declares it'),
         (('String', '--class'), r'inherited from areg::StringBase .*\n(?:  .*\n)*?.*\bcompare\b',
          'String --class does not name what it inherits from StringBase'),
         (('Timer', '--class'), r'inherited from areg::TimerBase',

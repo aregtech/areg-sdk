@@ -121,7 +121,7 @@ bool ServiceApplicationBase::_os_create_service()
         TCHAR szPath[MAX_PATH];
         if (::GetModuleFileName(nullptr, szPath, MAX_PATH))
         {
-            StringBase<TCHAR> modulePath{ _T('\"') };
+            std::basic_string<TCHAR> modulePath(1, _T('\"'));
             modulePath += szPath;
             modulePath += _T("\" --service");
 
@@ -134,7 +134,7 @@ bool ServiceApplicationBase::_os_create_service()
 #endif  // defined(DEVELOPMENT_PENDING) && (DEVELOPMENT_PENDING != 0)
 
             mSvcHandle = reinterpret_cast<void*>(::CreateService( reinterpret_cast<SC_HANDLE>(mSeMHandle), service_name(), getServiceDisplayName(), SERVICE_ALL_ACCESS
-                                                                , SERVICE_WIN32_OWN_PROCESS, startType, SERVICE_ERROR_NORMAL, modulePath.as_string()
+                                                                , SERVICE_WIN32_OWN_PROCESS, startType, SERVICE_ERROR_NORMAL, modulePath.c_str()
                                                                 , nullptr, nullptr, nullptr, nullptr, nullptr));
             if (mSvcHandle != nullptr)
             {

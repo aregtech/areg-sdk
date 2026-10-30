@@ -64,6 +64,7 @@
     <ClCompile Include="units\OptionParserTest.cpp" />
     <ClCompile Include="units\StringDefsTest2.cpp" />
     <ClCompile Include="units\StringDefsTest3.cpp" />
+    <ClCompile Include="units\StringCommonTest.cpp" />
     <ClCompile Include="units\StringTest.cpp" />
     <ClCompile Include="units\StringUtilsTest.cpp" />
     <ClCompile Include="units\SyncTimerTest.cpp" />

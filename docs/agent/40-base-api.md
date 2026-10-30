@@ -30,19 +30,19 @@ checked against that header on every push.
 
 `#include "areg/base/String.hpp"`
 
-`areg::String` derives from `areg::StringBase<char>`, and most of what you call is
+`areg::String` derives from `areg::StringBase<char, String>`, and most of what you call is
 declared on that base. That is an implementation detail; you call them all on a
 `String`.
 
 | Call | Signature | Header |
 |---|---|---|
-| `as_string()` | `const char * as_string() const noexcept` | `StringBase.hpp:289` |
-| `is_empty()` | `bool is_empty() const noexcept` | `StringBase.hpp:254` |
-| `clear()` | `void clear() noexcept` | `StringBase.hpp:329` |
-| `length()` | `areg::CharCount length() const noexcept` | `StringBase.hpp:260` |
-| `compare(...)` | `areg::Ordering compare(const StringBase<char> & other, bool caseSensitive = true) const noexcept` | `StringBase.hpp:473` |
-| `find_first(...)` | `areg::CharPos find_first(const char * phrase, areg::CharPos startPos = areg::START_POS, bool caseSensitive = true, bool wholeWord = false) const noexcept` | `StringBase.hpp:397` |
-| `find_last(...)` | `areg::CharPos find_last(const char * phrase, areg::CharPos startPos = areg::END_POS, bool caseSensitive = true) const noexcept` | `StringBase.hpp:446` |
+| `as_string()` | `const char * as_string() const noexcept` | `StringBase.hpp:381` |
+| `is_empty()` | `bool is_empty() const noexcept` | `StringBase.hpp:346` |
+| `clear()` | `void clear() noexcept` | `StringBase.hpp:421` |
+| `length()` | `areg::CharCount length() const noexcept` | `StringBase.hpp:352` |
+| `compare(...)` | `areg::Ordering compare(const String & other, bool caseSensitive = true) const noexcept` | `StringBase.hpp:565` |
+| `find_first(...)` | `areg::CharPos find_first(const char * phrase, areg::CharPos startPos = areg::START_POS, bool caseSensitive = true, bool wholeWord = false) const noexcept` | `StringBase.hpp:489` |
+| `find_last(...)` | `areg::CharPos find_last(const char * phrase, areg::CharPos startPos = areg::END_POS, bool caseSensitive = true) const noexcept` | `StringBase.hpp:538` |
 
 Overloads of `compare`, `find_first` and `find_last` also take a single `char`,
 `std::string` and `std::string_view`, and so do `==` and `!=`. **This is the substring
@@ -62,9 +62,9 @@ static form writes into a buffer you own. Both exist and both are correct.
 
 | Call | Signature | Header |
 |---|---|---|
-| `format(...)` | `String & format(const char * format, ...)` | `String.hpp:403` |
-| `format_list(...)` | `String & format_list(const char * format, va_list argptr)` | `String.hpp:412` |
-| `String::format_string(...)` | `static int32_t format_string(char * strDst, int32_t count, const char * format, ...)` | `String.hpp:364` |
+| `format(...)` | `String & format(const char * format, ...)` | `StringBase.hpp:1196` |
+| `format_list(...)` | `String & format_list(const char * format, va_list argptr)` | `StringBase.hpp:1205` |
+| `String::format_string(...)` | `static int32_t format_string(char * strDst, int32_t count, const char * format, ...)` | `StringBase.hpp:1160` |
 
 ```cpp
 areg::String reason;

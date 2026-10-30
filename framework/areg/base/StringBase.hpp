@@ -24,9 +24,16 @@
 #include "areg/base/MathDefs.hpp"
 
 #include <algorithm>
+#include <cerrno>
+#include <cstdarg>
+#include <cstdio>
+#include <cstdlib>
+#include <cwchar>
 #include <iostream>
 #include <locale>
 #include <string>
+#include <string_view>
+#include <type_traits>
 #include <vector>
 namespace areg {
 
@@ -41,17 +48,27 @@ class OutStream;
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   The basic string class template, which contains basic operations
- *          to set, append, insert, search and replace string, as well to get substring.
+ *          to set, append, insert, search and replace string, as well to get substring,
+ *          to convert numbers and to format text. Every operation that returns a string
+ *          returns the derived string type.
  *
- * \tparam  CharType    The type of character. Normally, either 8-bit character or 16-bit wide character.
+ * \tparam  CharType    The type of character, either 'char' or 'wchar_t'.
+ * \tparam  Derived     The string class derived from this template.
  **/
-template<typename CharType>
+template<typename CharType, typename Derived>
 class StringBase
 {
+    static_assert(std::is_same_v<CharType, char> || std::is_same_v<CharType, wchar_t>, "StringBase supports only char and wchar_t");
+
 //////////////////////////////////////////////////////////////////////////
-// Public constants
+// Public constants and types
 //////////////////////////////////////////////////////////////////////////
 public:
+    /**
+     * \brief   The character type of the string with the other character width.
+     **/
+    using OtherCharType = std::conditional_t<std::is_same_v<CharType, char>, wchar_t, char>;
+
     /**
      * \brief   Empty character constant
      **/
@@ -68,11 +85,11 @@ public:
     static constexpr CharType   NewLineDos[2]   {static_cast<CharType>('\r'), static_cast<CharType>('\n')};
 
 //////////////////////////////////////////////////////////////////////////
-// Protected constructor / destructor
+// Constructors / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
 
-    inline StringBase();
+    inline StringBase() noexcept;
 
     inline StringBase( const CharType source );
 
@@ -80,16 +97,34 @@ public:
 
     inline StringBase( const std::basic_string<CharType>& source );
 
-    inline StringBase( const std::basic_string_view<CharType>& source );
+    inline StringBase( std::basic_string_view<CharType> source );
 
     inline StringBase( const CharType * source, areg::CharCount count );
 
-    inline StringBase( const StringBase<CharType> & source );
+    inline StringBase( const StringBase & source );
 
-    inline StringBase( StringBase<CharType> && source ) noexcept;
+    inline StringBase( StringBase && source ) noexcept;
 
     inline StringBase( std::basic_string<CharType>&& source ) noexcept;
 
+    /**
+     * \brief   Initializes the string from characters of the other width. A narrow character is
+     *          widened as an unsigned value; a wide character is narrowed by truncation.
+     **/
+    inline StringBase( const OtherCharType * source );
+
+    inline StringBase( const OtherCharType * source, areg::CharCount count );
+
+    inline StringBase( const std::basic_string<OtherCharType>& source );
+
+    template<typename OtherDerived>
+    inline StringBase( const StringBase<OtherCharType, OtherDerived>& source );
+
+    /**
+     * \brief   Reserves space for a specified number of characters without modifying the size.
+     *
+     * \param   count       The number of characters to reserve. Size remains zero.
+     **/
     explicit inline StringBase(uint32_t count);
 
     ~StringBase() = default;
@@ -105,107 +140,164 @@ public:
     inline operator const CharType* () const noexcept;
 
     /**
+     * \brief   Converts string to a 32-bit unsigned integer hash value.
+     **/
+    explicit inline operator uint32_t() const noexcept;
+
+    /**
      * \brief   Returns character at the given valid zero-based position. The position should not be neither
      *          negative, nor more than the string length.
      **/
     inline const CharType operator [] (int32_t index) const noexcept;
 
-    inline StringBase<CharType>& operator = (const StringBase<CharType>& src);
-    inline StringBase<CharType>& operator = (const std::basic_string<CharType>& src);
-    inline StringBase<CharType>& operator = (const std::basic_string_view<CharType>& src);
-    inline StringBase<CharType>& operator = (const CharType* src);
-    inline StringBase<CharType>& operator = (StringBase<CharType>&& src) noexcept;
-    inline StringBase<CharType>& operator = (std::basic_string<CharType>&& src) noexcept;
-    inline StringBase<CharType>& operator = (const CharType src);
+    inline Derived& operator = (const StringBase& src);
+    inline Derived& operator = (const std::basic_string<CharType>& src);
+    inline Derived& operator = (const std::basic_string_view<CharType>& src);
+    inline Derived& operator = (const CharType* src);
+    inline Derived& operator = (StringBase&& src) noexcept;
+    inline Derived& operator = (std::basic_string<CharType>&& src) noexcept;
+    inline Derived& operator = (const CharType src);
+    inline Derived& operator = (const OtherCharType* src);
+    inline Derived& operator = (const std::basic_string<OtherCharType>& src);
+    inline Derived& operator = (const OtherCharType src);
+    template<typename OtherDerived>
+    inline Derived& operator = (const StringBase<OtherCharType, OtherDerived>& src);
 
-    [[nodiscard]] inline bool operator == (const StringBase<CharType>& other) const noexcept;
+    [[nodiscard]] inline bool operator == (const StringBase& other) const noexcept;
     [[nodiscard]] inline bool operator == (const std::basic_string<CharType>& other) const noexcept;
     [[nodiscard]] inline bool operator == (const std::basic_string_view<CharType>& other) const noexcept;
     [[nodiscard]] inline bool operator == (const CharType* other) const noexcept;
     [[nodiscard]] inline bool operator == (const CharType ch ) const noexcept;
+    [[nodiscard]] inline bool operator == (const OtherCharType* other) const noexcept;
+    [[nodiscard]] inline bool operator == (const std::basic_string<OtherCharType>& other) const noexcept;
+    template<typename OtherDerived>
+    [[nodiscard]] inline bool operator == (const StringBase<OtherCharType, OtherDerived>& other) const noexcept;
 
-    [[nodiscard]] inline bool operator != (const StringBase<CharType>& other) const noexcept;
+    [[nodiscard]] inline bool operator != (const StringBase& other) const noexcept;
     [[nodiscard]] inline bool operator != (const std::basic_string<CharType>& other) const noexcept;
     [[nodiscard]] inline bool operator != (const std::basic_string_view<CharType>& other) const noexcept;
     [[nodiscard]] inline bool operator != (const CharType* other) const noexcept;
     [[nodiscard]] inline bool operator != (const CharType ch) const noexcept;
+    [[nodiscard]] inline bool operator != (const OtherCharType* other) const noexcept;
+    [[nodiscard]] inline bool operator != (const std::basic_string<OtherCharType>& other) const noexcept;
+    template<typename OtherDerived>
+    [[nodiscard]] inline bool operator != (const StringBase<OtherCharType, OtherDerived>& other) const noexcept;
 
-    [[nodiscard]] inline bool operator > (const StringBase<CharType>& other) const noexcept;
+    [[nodiscard]] inline bool operator > (const StringBase& other) const noexcept;
     [[nodiscard]] inline bool operator > (const std::basic_string<CharType>& other) const noexcept;
     [[nodiscard]] inline bool operator > (const std::basic_string_view<CharType>& other) const noexcept;
     [[nodiscard]] inline bool operator > (const CharType* other) const noexcept;
 
-    [[nodiscard]] inline bool operator < (const StringBase<CharType>& other) const noexcept;
+    [[nodiscard]] inline bool operator < (const StringBase& other) const noexcept;
     [[nodiscard]] inline bool operator < (const CharType* other) const noexcept;
     [[nodiscard]] inline bool operator < (const std::basic_string<CharType>& other) const noexcept;
     [[nodiscard]] inline bool operator < (const std::basic_string_view<CharType>& other) const noexcept;
 
-    [[nodiscard]] inline bool operator >= (const StringBase<CharType>& other) const noexcept;
+    [[nodiscard]] inline bool operator >= (const StringBase& other) const noexcept;
     [[nodiscard]] inline bool operator >= (const CharType* other) const noexcept;
     [[nodiscard]] inline bool operator >= (const std::basic_string<CharType>& other) const noexcept;
     [[nodiscard]] inline bool operator >= (const std::basic_string_view<CharType>& other) const noexcept;
 
-    [[nodiscard]] inline bool operator <= (const StringBase<CharType>& other) const noexcept;
+    [[nodiscard]] inline bool operator <= (const StringBase& other) const noexcept;
     [[nodiscard]] inline bool operator <= (const CharType* other) const noexcept;
     [[nodiscard]] inline bool operator <= (const std::basic_string<CharType>& other) const noexcept;
     [[nodiscard]] inline bool operator <= (const std::basic_string_view<CharType>& other) const noexcept;
 
-    inline StringBase<CharType>& operator += (const StringBase<CharType>& src);
-    inline StringBase<CharType>& operator += (const std::basic_string<CharType>& src);
-    inline StringBase<CharType>& operator += (const std::basic_string_view<CharType>& src);
-    inline StringBase<CharType>& operator += (const CharType* src);
-    inline StringBase<CharType>& operator += (const CharType chSource);
+    inline Derived& operator += (const StringBase& src);
+    inline Derived& operator += (const std::basic_string<CharType>& src);
+    inline Derived& operator += (const std::basic_string_view<CharType>& src);
+    inline Derived& operator += (const CharType* src);
+    inline Derived& operator += (const CharType chSource);
+    inline Derived& operator += (const OtherCharType* src);
+    inline Derived& operator += (const std::basic_string<OtherCharType>& src);
+    inline Derived& operator += (const OtherCharType chSource);
+    template<typename OtherDerived>
+    inline Derived& operator += (const StringBase<OtherCharType, OtherDerived>& src);
 
-    template<typename CT>
-    friend inline StringBase<CT> operator + (const StringBase<CT>& lhs, const StringBase<CT>& rhs);
-    template<typename CT>
-    friend inline StringBase<CT> operator + (const StringBase<CT>& lhs, const std::basic_string<CT>& rhs);
-    template<typename CT>
-    friend inline StringBase<CT> operator + (const StringBase<CT>& lhs, const std::basic_string_view<CT>& rhs);
-    template<typename CT>
-    friend inline StringBase<CT> operator + (const StringBase<CT>& lhs, const CT* rhs);
-    template<typename CT>
-    friend inline StringBase<CT> operator + (const StringBase<CT>& lhs, const CT rhs);
-    template<typename CT>
-    friend inline StringBase<CT> operator + (const std::basic_string<CT>& lhs, const StringBase<CT>& rhs);
-    template<typename CT>
-    friend inline StringBase<CT> operator + (const std::basic_string_view<CT>& lhs, const StringBase<CT>& rhs);
-    template<typename CT>
-    friend inline StringBase<CT> operator + (const CT* lhs, const StringBase<CT>& rhs);
-    template<typename CT>
-    friend inline StringBase<CT> operator + (const CT lhs, const StringBase<CT>& rhs);
+/************************************************************************/
+// Friend operators. Each concatenation allocates the result once.
+/************************************************************************/
+
+    friend inline Derived operator + (const Derived& lhs, const Derived& rhs)
+    {
+        return _concat(lhs.mData.data(), lhs.mData.length(), rhs.mData.data(), rhs.mData.length());
+    }
+
+    friend inline Derived operator + (const Derived& lhs, const std::basic_string<CharType>& rhs)
+    {
+        return _concat(lhs.mData.data(), lhs.mData.length(), rhs.data(), rhs.length());
+    }
+
+    friend inline Derived operator + (const Derived& lhs, std::basic_string_view<CharType> rhs)
+    {
+        return _concat(lhs.mData.data(), lhs.mData.length(), rhs.data(), rhs.length());
+    }
+
+    friend inline Derived operator + (const Derived& lhs, const CharType* rhs)
+    {
+        return _concat(lhs.mData.data(), lhs.mData.length(), rhs, _length(rhs));
+    }
+
+    friend inline Derived operator + (const Derived& lhs, const CharType rhs)
+    {
+        return _concat(lhs.mData.data(), lhs.mData.length(), &rhs, 1u);
+    }
+
+    friend inline Derived operator + (const std::basic_string<CharType>& lhs, const Derived& rhs)
+    {
+        return _concat(lhs.data(), lhs.length(), rhs.mData.data(), rhs.mData.length());
+    }
+
+    friend inline Derived operator + (std::basic_string_view<CharType> lhs, const Derived& rhs)
+    {
+        return _concat(lhs.data(), lhs.length(), rhs.mData.data(), rhs.mData.length());
+    }
+
+    friend inline Derived operator + (const CharType* lhs, const Derived& rhs)
+    {
+        return _concat(lhs, _length(lhs), rhs.mData.data(), rhs.mData.length());
+    }
+
+    friend inline Derived operator + (const CharType lhs, const Derived& rhs)
+    {
+        return _concat(&lhs, 1u, rhs.mData.data(), rhs.mData.length());
+    }
+
+    friend inline Derived operator + (const Derived& lhs, const OtherCharType* rhs)
+    {
+        Derived result(static_cast<uint32_t>(lhs.mData.length() + _length(rhs)));
+        result.mData.append(lhs.mData);
+        result._append_other(rhs, static_cast<areg::CharCount>(_length(rhs)));
+        return result;
+    }
+
+    friend inline Derived operator + (const OtherCharType* lhs, const Derived& rhs)
+    {
+        Derived result(static_cast<uint32_t>(_length(lhs) + rhs.mData.length()));
+        result._append_other(lhs, static_cast<areg::CharCount>(_length(lhs)));
+        result.mData.append(rhs.mData);
+        return result;
+    }
 
     /**
-     * \brief   Streams to input object, i.e. reads data from streaming object to string, initialize string data.
+     * \brief   Writes the string to the standard output stream of the same character type.
      *
      * \return  Reference to stream object.
      **/
-    template<typename CT>
-    friend inline const InStream & operator >> (const InStream & stream, StringBase<CT> & input);
+    friend inline std::basic_ostream<CharType> & operator << ( std::basic_ostream<CharType> & stream, const StringBase & output )
+    {
+        return (stream << output.mData);
+    }
 
     /**
-     * \brief   Streams from output object, i.e. write data from string to streaming object.
+     * \brief   Reads a whitespace-delimited word from the standard input stream of the same character type.
      *
      * \return  Reference to stream object.
      **/
-    template<typename CT>
-    friend inline OutStream & operator << (OutStream & stream, const StringBase<CT> & output);
-
-    /**
-     * \brief   Prints string message to the standard output stream.
-     *
-     * \return  Reference to stream object.
-     **/
-    template<typename CT>
-    friend inline std::ostream & operator << ( std::ostream & stream, const StringBase<CT> & output );
-
-    /**
-     * \brief   Reads string message from the standard input stream.
-     *
-     * \return  Reference to stream object.
-     **/
-    template<typename CT>
-    friend inline const std::istream & operator >> ( const std::istream & stream, StringBase<CT> & input );
+    friend inline std::basic_istream<CharType> & operator >> ( std::basic_istream<CharType> & stream, StringBase & input )
+    {
+        return (stream >> input.mData);
+    }
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -356,7 +448,7 @@ public:
      *          are surrounded by other symbols (whitespace, comma, dot, etc), or if it starts at
      *          the beginning or end of the string.
      **/
-    void extract_word(StringBase<CharType>& word, areg::CharPos& startAt, areg::CharPos& endAt) const;
+    void extract_word(StringBase& word, areg::CharPos& startAt, areg::CharPos& endAt) const;
 
     /**
      * \brief   Find the first occurrence of any of the characters in string buffer 'chars'. The
@@ -407,7 +499,7 @@ public:
      *          areg::INVALID_POS value.
      **/
     [[nodiscard]]
-    areg::CharPos find_first( const StringBase<CharType> & phrase, areg::CharPos startPos = areg::START_POS, bool caseSensitive = true, bool wholeWord = false ) const noexcept;
+    areg::CharPos find_first( const StringBase & phrase, areg::CharPos startPos = areg::START_POS, bool caseSensitive = true, bool wholeWord = false ) const noexcept;
 
     /**
      * \brief   Find the last occurrence of given character in the string. If found, returns valid
@@ -454,7 +546,7 @@ public:
      *          areg::INVALID_POS value.
      **/
     [[nodiscard]]
-    inline areg::CharPos find_last( const StringBase<CharType> & phrase, areg::CharPos startPos = areg::END_POS, bool caseSensitive = true ) const noexcept;
+    inline areg::CharPos find_last( const StringBase & phrase, areg::CharPos startPos = areg::END_POS, bool caseSensitive = true ) const noexcept;
 
     /**
      * \brief   Compares the given string. The comparing is done by certain position, certain amount
@@ -470,7 +562,7 @@ public:
     areg::Ordering compare( const CharType * strOther, areg::CharPos startAt = areg::START_POS, areg::CharCount count = areg::COUNT_ALL, bool caseSensitive = true) const noexcept;
 
     [[nodiscard]]
-    inline areg::Ordering compare(const StringBase<CharType> & strOther, bool caseSensitive = true) const noexcept;
+    inline areg::Ordering compare(const StringBase & strOther, bool caseSensitive = true) const noexcept;
 
     [[nodiscard]]
     inline areg::Ordering compare(const std::basic_string<CharType>& strOther, bool caseSensitive = true) const noexcept;
@@ -479,7 +571,7 @@ public:
     inline areg::Ordering compare(const std::basic_string_view<CharType>& strOther, bool caseSensitive = true) const noexcept;
 
     [[nodiscard]]
-    inline areg::Ordering compare( const StringBase<CharType>& strOther
+    inline areg::Ordering compare( const StringBase& strOther
                                  , areg::CharPos startAt
                                  , areg::CharCount count = areg::COUNT_ALL
                                  , bool caseSensitive = true) const noexcept;
@@ -502,7 +594,7 @@ public:
     template<typename PosType>
     [[nodiscard]]
     inline std::enable_if_t<std::is_integral_v<PosType> && !std::is_same_v<PosType, bool>, areg::Ordering>
-        compare(const StringBase<CharType>& strOther, PosType startAt, areg::CharCount count = areg::COUNT_ALL, bool caseSensitive = true) const noexcept;
+        compare(const StringBase& strOther, PosType startAt, areg::CharCount count = areg::COUNT_ALL, bool caseSensitive = true) const noexcept;
 
     template<typename PosType>
     [[nodiscard]]
@@ -526,12 +618,12 @@ public:
      *
      * \return  Returns truncated string.
      **/
-    inline StringBase<CharType>& substring(areg::CharPos startPos, areg::CharCount count = areg::COUNT_ALL);
+    inline Derived& substring(areg::CharPos startPos, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Extracts the substring starting at startPos given number of characters.
      **/
-    inline void substring( StringBase<CharType> & outResult, areg::CharPos startPos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL ) const;
+    inline void substring( StringBase & outResult, areg::CharPos startPos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL ) const;
 
     /**
      * \brief   Searches given phrase in the string starting from given position until the end of
@@ -557,11 +649,11 @@ public:
      *  next = test.substr(result, " ", next);      // results: next == areg::INVALID_POS, result == "0123"
      * \endcode
      **/
-    inline areg::CharPos substring(StringBase<CharType>& outResult, const CharType* strPhrase, areg::CharPos startPos = areg::START_POS) const;
+    inline areg::CharPos substring(StringBase& outResult, const CharType* strPhrase, areg::CharPos startPos = areg::START_POS) const;
 
-    inline areg::CharPos substring(StringBase<CharType>& outResult, const StringBase<CharType>& strPhrase, areg::CharPos startPos = areg::START_POS) const;
+    inline areg::CharPos substring(StringBase& outResult, const StringBase& strPhrase, areg::CharPos startPos = areg::START_POS) const;
 
-    inline areg::CharPos substring(StringBase<CharType>& outResult, const std::basic_string<CharType>& strPhrase, areg::CharPos startPos = areg::START_POS) const;
+    inline areg::CharPos substring(StringBase& outResult, const std::basic_string<CharType>& strPhrase, areg::CharPos startPos = areg::START_POS) const;
 
     /**
      * \brief   Searches given symbol in the string starting from given position until end of
@@ -574,47 +666,47 @@ public:
      *          the end; - areg::END_POS if found the symbol at end of string; -
      *          areg::INVALID_POS if could not find the phrase.
      **/
-    areg::CharPos substring( StringBase<CharType> & outResult, CharType chSymbol, areg::CharPos startPos = areg::START_POS ) const;
+    areg::CharPos substring( StringBase & outResult, CharType chSymbol, areg::CharPos startPos = areg::START_POS ) const;
 
     /**
      * \brief   Returns left side (begin) substring of length 'charCount'.
      **/
     [[nodiscard]]
-    inline StringBase<CharType> left_side(areg::CharCount charCount) const;
+    inline Derived left_side(areg::CharCount charCount) const;
 
     /**
      * \brief   Returns right side (end) substring of length 'charCount'.
      **/
     [[nodiscard]]
-    inline StringBase<CharType> right_side(areg::CharCount charCount) const;
+    inline Derived right_side(areg::CharCount charCount) const;
 
     /**
      * \brief   Copies given amount of characters of given string returns the amount of copied characters.
      *          If string has not enough space to copy characters, it will reallocate the space.
      **/
-    inline StringBase<CharType>& assign(const CharType * source, areg::CharCount count = areg::COUNT_ALL );
+    inline Derived& assign(const CharType * source, areg::CharCount count = areg::COUNT_ALL );
 
-    inline StringBase<CharType>& assign(const std::basic_string<CharType> & source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
+    inline Derived& assign(const std::basic_string<CharType> & source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
-    inline StringBase<CharType>& assign(const std::basic_string_view<CharType>& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
+    inline Derived& assign(const std::basic_string_view<CharType>& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
-    inline StringBase<CharType>& assign(const StringBase<CharType>& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
+    inline Derived& assign(const StringBase& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
-    inline StringBase<CharType>& assign(CharType ch);
+    inline Derived& assign(CharType ch);
 
     /**
      * \brief   Appends given string at the end. The given string can be limited by zero-based valid
      *          position by amount of characters to append.
      **/
-    inline StringBase<CharType>& append(const CharType * source, areg::CharCount count = areg::COUNT_ALL);
+    inline Derived& append(const CharType * source, areg::CharCount count = areg::COUNT_ALL);
 
-    inline StringBase<CharType>& append(const std::basic_string<CharType>& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
+    inline Derived& append(const std::basic_string<CharType>& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
-    inline StringBase<CharType>& append(const std::basic_string_view<CharType>& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
+    inline Derived& append(const std::basic_string_view<CharType>& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
-    inline StringBase<CharType>& append(const StringBase<CharType>& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
+    inline Derived& append(const StringBase& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
-    inline StringBase<CharType>& append(CharType ch);
+    inline Derived& append(CharType ch);
 
     /**
      * \brief   Moves data inside string buffer starting at specified position. It moves left if
@@ -625,27 +717,27 @@ public:
      *                      negative, moves string to left side. String buffer is not reallocated.
      *                      If positive, moves string to right. if zero, no change happens.
      **/
-    StringBase<CharType>& move_to(areg::CharPos startPos, int32_t move_to);
+    Derived& move_to(areg::CharPos startPos, int32_t move_to);
 
     /**
      * \brief   Inserts given source of character at given valid zero-based position in the string.
      *          The character can be inserted at any position, including begin of string or at the
      *          end of string (areg::END_POS).
      **/
-    inline StringBase<CharType>& insert_at( CharType source, areg::CharPos atPos, areg::CharCount count = 1 );
+    inline Derived& insert_at( CharType source, areg::CharPos atPos, areg::CharCount count = 1 );
 
     /**
      * \brief   Inserts given source at given valid zero-based position in the string. The character
      *          can be inserted at any position, including begin of string or at the end of string
      *          (areg::END_POS).
      **/
-    inline StringBase<CharType>& insert_at( const CharType * source, areg::CharPos atDstPos, areg::CharCount count = areg::COUNT_ALL );
+    inline Derived& insert_at( const CharType * source, areg::CharPos atDstPos, areg::CharCount count = areg::COUNT_ALL );
 
-    inline StringBase<CharType>& insert_at(const std::basic_string<CharType>& source, areg::CharPos atDstPos, areg::CharPos atSrcPos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
+    inline Derived& insert_at(const std::basic_string<CharType>& source, areg::CharPos atDstPos, areg::CharPos atSrcPos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
-    inline StringBase<CharType>& insert_at(const std::basic_string_view<CharType>& source, areg::CharPos atDstPos, areg::CharPos atSrcPos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
+    inline Derived& insert_at(const std::basic_string_view<CharType>& source, areg::CharPos atDstPos, areg::CharPos atSrcPos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
-    inline StringBase<CharType>& insert_at(const StringBase<CharType>& source, areg::CharPos atDstPos, areg::CharPos atSrcPos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
+    inline Derived& insert_at(const StringBase& source, areg::CharPos atDstPos, areg::CharPos atSrcPos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Searches replaces given character by another character. The search replacement
@@ -656,35 +748,35 @@ public:
      * \param   replaceAll      If true, replaces all matches in the string. Otherwise, replace
      *                          first match.
      **/
-    StringBase<CharType>& replace( CharType chSearch, CharType chReplace, areg::CharPos startPos = areg::START_POS, bool replaceAll = true );
+    Derived& replace( CharType chSearch, CharType chReplace, areg::CharPos startPos = areg::START_POS, bool replaceAll = true );
 
     /**
      * \brief   Searches replaces given string by another string. The search replacement starts at
      *          given position. The method either replaces only first match or all matches.
      **/
-    StringBase<CharType>& replace( const CharType * strSearch, const CharType * strReplace, areg::CharPos startPos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL, bool replaceAll = true );
+    Derived& replace( const CharType * strSearch, const CharType * strReplace, areg::CharPos startPos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL, bool replaceAll = true );
 
-    StringBase<CharType>& replace(const std::basic_string<CharType>& strSearch, const std::basic_string<CharType>& strReplace, areg::CharPos startPos = areg::START_POS, bool replaceAll = true);
+    Derived& replace(const std::basic_string<CharType>& strSearch, const std::basic_string<CharType>& strReplace, areg::CharPos startPos = areg::START_POS, bool replaceAll = true);
 
-    StringBase<CharType>& replace(const std::basic_string_view<CharType>& strSearch, const std::basic_string_view<CharType>& strReplace, areg::CharPos startPos = areg::START_POS, bool replaceAll = true);
+    Derived& replace(const std::basic_string_view<CharType>& strSearch, const std::basic_string_view<CharType>& strReplace, areg::CharPos startPos = areg::START_POS, bool replaceAll = true);
 
-    inline StringBase<CharType>& replace(const StringBase<CharType>& strSearch, const StringBase<CharType>& strReplace, areg::CharPos startPos = areg::START_POS, bool replaceAll = true);
+    inline Derived& replace(const StringBase& strSearch, const StringBase& strReplace, areg::CharPos startPos = areg::START_POS, bool replaceAll = true);
 
     /**
      * \brief   At the given position of the string removes specified amount of characters replaces
      *          by the given string.position after replacing string.
      **/
-    inline StringBase<CharType>& replace(areg::CharPos startPos, areg::CharCount charsRemove, const CharType* strReplace, areg::CharCount count = areg::COUNT_ALL);
+    inline Derived& replace(areg::CharPos startPos, areg::CharCount charsRemove, const CharType* strReplace, areg::CharCount count = areg::COUNT_ALL);
 
-    inline StringBase<CharType>& replace(areg::CharPos startPos, areg::CharCount charsRemove, const std::basic_string<CharType>& strReplace);
+    inline Derived& replace(areg::CharPos startPos, areg::CharCount charsRemove, const std::basic_string<CharType>& strReplace);
 
-    inline StringBase<CharType>& replace(areg::CharPos startPos, areg::CharCount charsRemove, const StringBase<CharType>& strReplace);
+    inline Derived& replace(areg::CharPos startPos, areg::CharCount charsRemove, const StringBase& strReplace);
 
     /**
      * \brief   Removes specified amount of characters in string at specified starting position. If
      *          'count' is areg::COUNT_ALL, it will remove all characters until end of the string.
      **/
-    StringBase<CharType>& remove(areg::CharPos startPos, areg::CharCount count = areg::COUNT_ALL);
+    Derived& remove(areg::CharPos startPos, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Starting from the given valid zero-based position searches removes specified
@@ -695,18 +787,18 @@ public:
      * \param   removeAll       If true, will remove all matches. Otherwise, removes first match of
      *                          the character.
      **/
-    StringBase<CharType>& remove(const CharType chRemove, areg::CharPos startPos = areg::START_POS, bool removeAll = true);
+    Derived& remove(const CharType chRemove, areg::CharPos startPos = areg::START_POS, bool removeAll = true);
 
     /**
      * \brief   Starting from the given valid zero-based position searches removes given phrase of
      *          string. The search starts at given position. If 'removedAll' parameter is true,
      *          removes all matches in the string. Otherwise, it removes only first match.
      **/
-    inline StringBase<CharType>& remove( const CharType * strRemove, areg::CharPos startPos = areg::START_POS, bool removeAll = true );
+    inline Derived& remove( const CharType * strRemove, areg::CharPos startPos = areg::START_POS, bool removeAll = true );
 
-    inline StringBase<CharType>& remove(const StringBase<CharType>& strRemove, areg::CharPos startPos = areg::START_POS, bool removeAll = true);
+    inline Derived& remove(const StringBase& strRemove, areg::CharPos startPos = areg::START_POS, bool removeAll = true);
 
-    StringBase<CharType>& remove(const std::basic_string<CharType> & strRemove, areg::CharPos startPos = areg::START_POS, bool removeAll = true);
+    Derived& remove(const std::basic_string<CharType> & strRemove, areg::CharPos startPos = areg::START_POS, bool removeAll = true);
 
     /**
      * \brief   Resizes the string to contain count characters. If the current size is less than
@@ -715,20 +807,20 @@ public:
      *
      * \param   chFill      The characters to fill if new size if longer than the current length.
      **/
-    inline StringBase<CharType>& resize(areg::CharCount count, CharType chFill = static_cast<CharType>('\0'));
+    inline Derived& resize(areg::CharCount count, CharType chFill = static_cast<CharType>('\0'));
 
     /**
      * \brief   If the length of string is bigger than the 'maxChars', it truncated the string. If
      *          'maxChars' is zero, empties the string. If the length of the string is smaller than
      *          the 'maxChars', nothing happens.
      **/
-    inline StringBase<CharType>& truncate(areg::CharCount maxChars);
+    inline Derived& truncate(areg::CharCount maxChars);
 
     /**
      * \brief   Reserves the space for the string. Unlike 'resize' this operation does not change
      *          the current length of the string.
      **/
-    inline StringBase<CharType>& reserve(areg::CharCount newCapacity);
+    inline Derived& reserve(areg::CharCount newCapacity);
 
     /**
      * \brief   Returns character at specified valid zero-based position.
@@ -739,19 +831,19 @@ public:
     /**
      * \brief   Sets character at specified valid zero-based position.
      **/
-    inline StringBase<CharType>& set_at( CharType ch, areg::CharPos atPos = areg::END_POS ) noexcept;
+    inline Derived& set_at( CharType ch, areg::CharPos atPos = areg::END_POS ) noexcept;
 
     /**
      * \brief   Removes whitespace characters from left side, i.e. from the begin of the string
      *          returns the actual modified string.
      **/
-    inline StringBase<CharType>& trim_left() noexcept;
+    inline Derived& trim_left() noexcept;
 
     /**
      * \brief   Copies data into given string without trailing whitespace at the begin of the
      *          string. The existing string remain unmodified.
      **/
-    inline void trim_left( StringBase<CharType> & strResult ) const;
+    inline void trim_left( StringBase & strResult ) const;
 
     inline void trim_left(std::basic_string<CharType>& strResult) const;
 
@@ -759,13 +851,13 @@ public:
      * \brief   Removes whitespace characters from right side, i.e. from end of the string returns
      *          the actual modified string.
      **/
-    inline StringBase<CharType>& trim_right() noexcept;
+    inline Derived& trim_right() noexcept;
 
     /**
      * \brief   Copies data into given string without trailing whitespace at the end of the string.
      *          The existing string remain unmodified.
      **/
-    inline void trim_right( StringBase<CharType> & strResult ) const;
+    inline void trim_right( StringBase & strResult ) const;
 
     inline void trim_right(std::basic_string<CharType>& strResult) const;
 
@@ -773,13 +865,13 @@ public:
      * \brief   Removes whitespace characters from left right sides, i.e. from the begin end of the
      *          string returns the actual modified string.
      **/
-    StringBase<CharType>& trim_all() noexcept;
+    Derived& trim_all() noexcept;
 
     /**
      * \brief   Copies data into given string without trailing whitespace at the begin end of the
      *          string. The existing string remain unmodified.
      **/
-    inline void trim_all( StringBase<CharType> & strResult ) const;
+    inline void trim_all( StringBase & strResult ) const;
 
     void trim_all(std::basic_string<CharType>& strResult) const;
 
@@ -787,13 +879,13 @@ public:
      * \brief   Converts the string, makes all letters to lower case returns the instance of
      *          converted string.
      **/
-    inline StringBase<CharType> & make_lower() noexcept;
+    inline Derived& make_lower() noexcept;
 
     /**
      * \brief   Converts the string, makes all letters to upper case returns the instance of
      *          converted string.
      **/
-    inline StringBase<CharType> & make_upper() noexcept;
+    inline Derived& make_upper() noexcept;
 
     /**
      * \brief   Reads the string starting from specified position until end of line, copies the
@@ -805,7 +897,7 @@ public:
      * \note    If after reading the line there are still empty new lines. The returned position
      *          value escapes followed empty new lines.
      **/
-    inline areg::CharPos read_line(StringBase<CharType>& strResult, areg::CharPos startPos = areg::START_POS) const;
+    inline areg::CharPos read_line(StringBase& strResult, areg::CharPos startPos = areg::START_POS) const;
 
     areg::CharPos read_line(std::basic_string<CharType>& strResult, areg::CharPos startPos = areg::START_POS) const;
 
@@ -814,14 +906,14 @@ public:
      *
      * \return  Returns new length of string after making alphanumeric
      **/
-    inline StringBase<CharType>& make_alphanumeric() noexcept;
+    inline Derived& make_alphanumeric() noexcept;
 
     /**
      * \brief   Checks returns true if the string starts with the given phrase. Valid only the first
      *          256 characters based on UTF-8 code page.
      **/
     [[nodiscard]]
-    inline bool starts_with(const StringBase<CharType>& phrase, bool isCaseSensitive = true) const noexcept;
+    inline bool starts_with(const StringBase& phrase, bool isCaseSensitive = true) const noexcept;
 
     [[nodiscard]]
     inline bool starts_with(const std::basic_string<CharType>& phrase, bool isCaseSensitive = true) const noexcept;
@@ -837,7 +929,7 @@ public:
      *          256 characters based on UTF-8 code page.
      **/
     [[nodiscard]]
-    inline bool ends_with(const StringBase<CharType>& phrase, bool isCaseSensitive = true) const noexcept;
+    inline bool ends_with(const StringBase& phrase, bool isCaseSensitive = true) const noexcept;
 
     [[nodiscard]]
     inline bool ends_with(const std::basic_string<CharType>& phrase, bool isCaseSensitive = true) const noexcept;
@@ -872,10 +964,352 @@ public:
      * \return  Returns list of strings that are split be specified delimiter.
      **/
     [[nodiscard]]
-    inline std::vector<StringBase<CharType>> split(CharType delim) const;
+    inline std::vector<Derived> split(CharType delim) const;
 
     [[nodiscard]]
-    inline std::vector<StringBase<CharType>> split(const StringBase<CharType> & delim) const;
+    inline std::vector<Derived> split(const StringBase & delim) const;
+
+    /**
+     * \brief   Assigns characters of the other width. A narrow character is widened as an
+     *          unsigned value; a wide character is narrowed by truncation.
+     *
+     * \param   source      The source string.
+     * \param   count       The number of characters to copy; defaults to all characters.
+     **/
+    inline Derived& assign(const OtherCharType* source, areg::CharCount count = areg::COUNT_ALL);
+
+    /**
+     * \brief   Appends characters of the other width, converted as in assign().
+     *
+     * \param   source      The source string.
+     * \param   count       The number of characters to append; defaults to all characters.
+     **/
+    inline Derived& append(const OtherCharType* source, areg::CharCount count = areg::COUNT_ALL);
+
+/************************************************************************/
+// Conversion and formatting
+/************************************************************************/
+
+    /**
+     * \brief   Extracts substring up to the specified phrase in a string buffer.
+     *
+     * \param   src             The source string buffer to search.
+     * \param   strPhrase       The phrase to search for in the string.
+     * \param[out] out_next     If not nullptr, receives pointer to the position after the phrase
+     *                          in the source string, or nullptr if phrase not found.
+     * \return  Returns the substring up to the matched phrase.
+     *
+     * \example substr
+     *
+     *  String test("0123 456 789 0123");
+     *
+     *  const char * next = static_cast<const char *>(test);          // next == "0123 456 789 0123"
+     *  String result1 = String::substr( next, "0123", &next);        // result1 == ""          , next == " 456 789 0123"
+     *  String result2 = String::substr( next, "0123", &next);        // result2 == " 456 789 " , next == ""
+     *  String result3 = String::substr( next, "0123", &next);        // result3 == ""          , next == nullptr;
+     *
+     *  next = static_cast<const char *>(test);                       // next == "0123 456 789 0123"
+     *  String result4 = String::substr( next, " ", &next);           // result4 == "0123"      , next == "456 789 0123"
+     *  String result5 = String::substr( next, " ", &next);           // result5 == "456"       , next == "789 0123"
+     *  String result6 = String::substr( next, " ", &next);           // result6 == "789"       , next == "0123";
+     *  String result7 = String::substr( next, " ", &next);           // result7 == "0123"      , next == nullptr;
+     **/
+    static Derived substr( const CharType * src, const CharType * strPhrase, const CharType ** out_next = nullptr );
+
+    /**
+     * \brief   Converts a string of digits to a 32-bit signed integer.
+     *
+     * \param   strDigit    The string with digits. Can contain optional negative or positive sign.
+     * \param   radix       The base for conversion.
+     * \param[out] end      If not nullptr, receives pointer to the next character after the numerical value.
+     * \return  Returns the 32-bit signed integer.
+     **/
+    static int32_t make_int32( const CharType * strDigit, areg::Radix radix = areg::Radix::Decimal, const CharType ** end = nullptr ) noexcept;
+
+    /**
+     * \brief   Converts a string of digits to a 32-bit unsigned integer.
+     *
+     * \param   strDigit    The string with digits.
+     * \param   radix       The base for conversion.
+     * \param[out] end      If not nullptr, receives pointer to the next character after the numerical value.
+     * \return  Returns the 32-bit unsigned integer.
+     **/
+    static uint32_t make_uint32( const CharType * strDigit, areg::Radix radix = areg::Radix::Decimal, const CharType ** end = nullptr ) noexcept;
+
+    /**
+     * \brief   Converts a string of digits to a 64-bit signed integer.
+     *
+     * \param   strDigit    The string with digits. Can contain optional negative or positive sign.
+     * \param   radix       The base for conversion.
+     * \param[out] end      If not nullptr, receives pointer to the next character after the numerical value.
+     * \return  Returns the 64-bit signed integer.
+     **/
+    static int64_t make_int64( const CharType * strDigit, areg::Radix radix = areg::Radix::Decimal, const CharType ** end = nullptr ) noexcept;
+
+    /**
+     * \brief   Converts a string of digits to a 64-bit unsigned integer.
+     *
+     * \param   strDigit    The string with digits.
+     * \param   radix       The base for conversion.
+     * \param[out] end      If not nullptr, receives pointer to the next character after the numerical value.
+     * \return  Returns the 64-bit unsigned integer.
+     **/
+    static uint64_t make_uint64( const CharType * strDigit, areg::Radix radix = areg::Radix::Decimal, const CharType ** end = nullptr ) noexcept;
+
+    /**
+     * \brief   Converts a string of digits to a 32-bit floating-point number.
+     *
+     * \param   strDigit    The string with digits.
+     * \param[out] end      If not nullptr, receives pointer to the next character after the numerical value.
+     * \return  Returns the 32-bit floating-point number.
+     **/
+    static float make_float( const CharType * strDigit, const CharType ** end = nullptr ) noexcept;
+
+    /**
+     * \brief   Converts a string of digits to a 64-bit floating-point number.
+     *
+     * \param   strDigit    The string with digits.
+     * \param[out] end      If not nullptr, receives pointer to the next character after the numerical value.
+     * \return  Returns the 64-bit floating-point number.
+     **/
+    static double make_double( const CharType * strDigit, const CharType ** end = nullptr ) noexcept;
+
+    /**
+     * \brief   Converts a string to a boolean value.
+     *
+     * \param   strBoolean  The string to convert. Recognized as true if equal to "true" (case-insensitive).
+     * \param[out] end      If not nullptr, receives pointer to the next character after the value.
+     * \return  Returns true if string matches "true"; false otherwise.
+     **/
+    static bool make_bool( const CharType * strBoolean, const CharType ** end = nullptr ) noexcept;
+
+    /**
+     * \brief   Converts a 32-bit signed integer to a string.
+     *
+     * \param   number      The number to convert.
+     * \param   radix       The base for conversion; defaults to decimal. Octal has 11 and
+     *                      hexadecimal 8 digits at least, hexadecimal is prefixed by "0x".
+     * \return  Returns the converted string. A negative number has a minus sign in every base.
+     **/
+    static Derived make_string( int32_t number, areg::Radix radix = areg::Radix::Decimal );
+
+    /**
+     * \brief   Converts a 32-bit unsigned integer to a string.
+     *
+     * \param   number      The number to convert.
+     * \param   radix       The base for conversion; defaults to decimal. Octal has 11 and
+     *                      hexadecimal 8 digits at least, hexadecimal is prefixed by "0x".
+     * \return  Returns the converted string.
+     **/
+    static Derived make_string( uint32_t number, areg::Radix radix = areg::Radix::Decimal );
+
+    /**
+     * \brief   Converts a 64-bit signed integer to a string.
+     *
+     * \param   number      The number to convert.
+     * \param   radix       The base for conversion; defaults to decimal. Octal has 22 and
+     *                      hexadecimal 16 digits at least, hexadecimal is prefixed by "0x".
+     * \return  Returns the converted string. A negative number has a minus sign in every base.
+     **/
+    static Derived make_string( int64_t number, areg::Radix radix = areg::Radix::Decimal );
+
+    /**
+     * \brief   Converts a 64-bit unsigned integer to a string.
+     *
+     * \param   number      The number to convert.
+     * \param   radix       The base for conversion; defaults to decimal. Octal has 22 and
+     *                      hexadecimal 16 digits at least, hexadecimal is prefixed by "0x".
+     * \return  Returns the converted string.
+     **/
+    static Derived make_string( uint64_t number, areg::Radix radix = areg::Radix::Decimal );
+
+    /**
+     * \brief   Converts a 32-bit floating-point number to a string, formatted as "%f".
+     *
+     * \param   number      The floating-point number to convert.
+     * \return  Returns the converted string.
+     **/
+    static Derived make_string( float number );
+
+    /**
+     * \brief   Converts a 64-bit floating-point number to a string, formatted as "%g".
+     *
+     * \param   number      The floating-point number to convert.
+     * \return  Returns the converted string.
+     **/
+    static Derived make_string( double number );
+
+    /**
+     * \brief   Converts a boolean value to a string.
+     *
+     * \param   value       The boolean value to convert.
+     * \return  Returns "true" or "false".
+     **/
+    static Derived make_string( bool value );
+
+    /**
+     * \brief   Formats a string using printf-like formatting rules.
+     *          The buffer is never written past its end and is always null-terminated.
+     *
+     * \param[out] strDst   The destination buffer for the formatted string.
+     * \param   count       The size of the destination buffer, including the null-character.
+     * \param   format      The format string, followed by arguments to format.
+     * \return  Returns the number of characters copied, never more than 'count - 1';
+     *          negative if 'strDst' is nullptr.
+     **/
+    static int32_t format_string( CharType * strDst, int32_t count, const CharType * format, ... );
+
+    /**
+     * \brief   Formats a string using printf-like formatting rules and a va_list.
+     *          The buffer is never written past its end and is always null-terminated.
+     *
+     * \param[out] strDst   The destination buffer for the formatted string.
+     * \param   count       The size of the destination buffer, including the null-character.
+     * \param   format      The format string.
+     * \param   argptr      The variable argument list.
+     * \return  Returns the number of characters copied, never more than 'count - 1';
+     *          negative if 'strDst' is nullptr.
+     **/
+    static int32_t format_string_list( CharType * strDst, int32_t count, const CharType * format, va_list argptr );
+
+    /**
+     * \brief   Formats a string using printf-like formatting rules and a va_list, and
+     *          reports how long the formatted text is when it does not fit the buffer.
+     *          The buffer is never written past its end and is always null-terminated.
+     *
+     * \param[out]  strDst      The destination buffer for the formatted string.
+     * \param       count       The size of the destination buffer, including the null-character.
+     * \param       format      The format string.
+     * \param       argptr      The variable argument list.
+     * \param[out]  required    The number of characters the formatted text needs, without the
+     *                          null-character. A value of 'count' or more means the text was cut.
+     * \return  Returns the number of characters copied, never more than 'count - 1';
+     *          negative if 'strDst' is nullptr.
+     **/
+    static int32_t format_string_list( CharType * strDst, int32_t count, const CharType * format, va_list argptr, int32_t & required );
+
+    /**
+     * \brief   Formats this string using printf-like formatting rules.
+     *
+     * \param   format      The format string, followed by arguments to format.
+     **/
+    Derived& format(const CharType* format, ...);
+
+    /**
+     * \brief   Formats this string using printf-like formatting rules and a va_list.
+     *          The string receives the whole formatted text.
+     *
+     * \param   format      The format string.
+     * \param   argptr      The variable argument list.
+     **/
+    inline Derived& format_list(const CharType* format, va_list argptr);
+
+    /**
+     * \brief   Converts this string to a 32-bit signed integer.
+     *
+     * \param   radix       The base for conversion; defaults to decimal.
+     * \return  Returns the 32-bit signed integer.
+     **/
+    [[nodiscard]]
+    inline int32_t to_int32( areg::Radix radix = areg::Radix::Decimal ) const noexcept;
+
+    /**
+     * \brief   Converts string to a 32-bit unsigned integer.
+     *
+     * \param   radix       The base for conversion; defaults to decimal.
+     * \return  Returns the 32-bit unsigned integer.
+     **/
+    [[nodiscard]]
+    inline uint32_t to_uint32( areg::Radix radix = areg::Radix::Decimal ) const noexcept;
+
+    /**
+     * \brief   Converts string to a 64-bit signed integer.
+     *
+     * \param   radix       The base for conversion; defaults to decimal.
+     * \return  Returns the 64-bit signed integer.
+     **/
+    [[nodiscard]]
+    inline int64_t to_int64( areg::Radix radix = areg::Radix::Decimal ) const noexcept;
+
+    /**
+     * \brief   Converts string to a 64-bit unsigned integer.
+     *
+     * \param   radix       The base for conversion; defaults to decimal.
+     * \return  Returns the 64-bit unsigned integer.
+     **/
+    [[nodiscard]]
+    inline uint64_t to_uint64( areg::Radix radix = areg::Radix::Decimal ) const noexcept;
+
+    /**
+     * \brief   Converts string to a 32-bit floating-point number.
+     *
+     * \return  Returns the 32-bit floating-point number.
+     **/
+    [[nodiscard]]
+    inline float to_float() const noexcept;
+
+    /**
+     * \brief   Converts string to a 64-bit floating-point number.
+     *
+     * \return  Returns the 64-bit floating-point number.
+     **/
+    [[nodiscard]]
+    inline double to_double() const noexcept;
+
+    /**
+     * \brief   Converts string to a boolean value.
+     *
+     * \return  Returns false if the string is empty or equals "false" (case-insensitive); true otherwise.
+     **/
+    [[nodiscard]]
+    inline bool to_bool() const noexcept;
+
+    /**
+     * \brief   Converts a 32-bit signed integer to this string, as make_string() does.
+     *
+     * \param   value       The integer value to convert.
+     * \param   radix       The base for conversion; defaults to decimal.
+     **/
+    inline Derived & from_int32( int32_t value, areg::Radix radix = areg::Radix::Decimal );
+
+    /**
+     * \brief   Converts a 32-bit unsigned integer to this string, as make_string() does.
+     *
+     * \param   value       The unsigned integer value to convert.
+     * \param   radix       The base for conversion; defaults to decimal.
+     **/
+    inline Derived & from_uint32( uint32_t value, areg::Radix radix = areg::Radix::Decimal );
+
+    /**
+     * \brief   Converts a 64-bit signed integer to this string, as make_string() does.
+     *
+     * \param   value       The integer value to convert.
+     * \param   radix       The base for conversion; defaults to decimal.
+     **/
+    inline Derived & from_int64( int64_t value, areg::Radix radix = areg::Radix::Decimal );
+
+    /**
+     * \brief   Converts a 64-bit unsigned integer to this string, as make_string() does.
+     *
+     * \param   value       The unsigned integer value to convert.
+     * \param   radix       The base for conversion; defaults to decimal.
+     **/
+    inline Derived & from_uint64( uint64_t value, areg::Radix radix = areg::Radix::Decimal );
+
+    /**
+     * \brief   Converts a 32-bit floating-point number to this string.
+     **/
+    inline Derived & from_float( float value );
+
+    /**
+     * \brief   Converts a 64-bit floating-point number to this string.
+     **/
+    inline Derived & from_double( double value );
+
+    /**
+     * \brief   Converts a boolean value to this string.
+     **/
+    inline Derived & from_bool( bool value );
 
 /************************************************************************/
 // Protected methods, can be assessed only from derived class
@@ -962,7 +1396,7 @@ protected:
      *          characters, digits symbols like '_'.
      **/
     [[nodiscard]]
-    static inline bool is_name_char(const CharType checkChar, std::locale& loc) noexcept;
+    static bool is_name_char(const CharType checkChar, std::locale& loc) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -975,6 +1409,58 @@ private:
      **/
     [[nodiscard]]
     inline bool _has_phrase(const CharType* fullString, const CharType* phrase, areg::CharCount count, const char* locale) const noexcept;
+
+    /**
+     * \brief   Returns the length of a null-terminated string, zero for nullptr.
+     **/
+    template<typename CharSrc>
+    static size_t _length(const CharSrc* str) noexcept;
+
+    /**
+     * \brief   Returns a new string made of two character sequences, allocated once.
+     **/
+    static Derived _concat(const CharType* lhs, size_t lhsLen, const CharType* rhs, size_t rhsLen);
+
+    /**
+     * \brief   Returns the character as a wide character, a narrow one widened as unsigned value.
+     **/
+    static constexpr wchar_t _widen(char ch) noexcept;
+    static constexpr wchar_t _widen(wchar_t ch) noexcept;
+
+    /**
+     * \brief   Appends 'count' characters of the other width.
+     **/
+    inline void _append_other(const OtherCharType* source, areg::CharCount count);
+
+    /**
+     * \brief   Returns true if the string has exactly the 'count' characters of the other width.
+     **/
+    inline bool _is_equal_other(const OtherCharType* other, size_t count) const noexcept;
+
+    /**
+     * \brief   Returns the number written with digits of the given base, at least 'minDigits'.
+     **/
+    template<uint32_t Base, typename UInt>
+    static Derived _make_integer(UInt magnitude, bool negative, int32_t minDigits, bool prefix);
+
+    /**
+     * \brief   Returns the unsigned number written in the given radix.
+     **/
+    template<typename UInt>
+    static Derived _make_unsigned(UInt magnitude, bool negative, areg::Radix radix);
+
+    /**
+     * \brief   Formats into the buffer of 'count' characters, never past its end, always null-terminated.
+     *          'required' receives the characters needed; 'count' or more means the text was cut.
+     *          Returns the characters written.
+     **/
+    static int32_t _format_buffer(CharType* buffer, int32_t count, const CharType* format, va_list argptr, int32_t& required) noexcept;
+
+    /**
+     * \brief   Returns the object as the derived string type.
+     **/
+    inline Derived& self() noexcept;
+    inline const Derived& self() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected member variables
@@ -989,104 +1475,140 @@ protected:
 // StringBase class template implementation
 //////////////////////////////////////////////////////////////////////////
 
-template<typename CharType>
-inline StringBase<CharType>::StringBase()
-    : mData  (&EmptyChar)
+template<typename CharType, typename Derived>
+inline StringBase<CharType, Derived>::StringBase() noexcept
+    : mData  ( )
 {
 }
 
-template<typename CharType>
-inline StringBase<CharType>::StringBase(const CharType source)
+template<typename CharType, typename Derived>
+inline StringBase<CharType, Derived>::StringBase(const CharType source)
     : mData  ( &source, 1 )
 {
 }
 
-template<typename CharType>
-inline StringBase<CharType>::StringBase(const CharType* source)
+template<typename CharType, typename Derived>
+inline StringBase<CharType, Derived>::StringBase(const CharType* source)
     : mData  ( source != nullptr ? source : &EmptyChar )
 {
 }
 
-template<typename CharType>
-inline StringBase<CharType>::StringBase(const std::basic_string<CharType>& source)
+template<typename CharType, typename Derived>
+inline StringBase<CharType, Derived>::StringBase(const std::basic_string<CharType>& source)
     : mData  ( source )
 {
 }
 
-template<typename CharType>
-inline StringBase<CharType>::StringBase(std::basic_string<CharType>&& source) noexcept
+template<typename CharType, typename Derived>
+inline StringBase<CharType, Derived>::StringBase(std::basic_string<CharType>&& source) noexcept
     : mData  ( std::move(source) )
 {
 }
 
-template<typename CharType>
-inline StringBase<CharType>::StringBase(const std::basic_string_view<CharType>& source)
+template<typename CharType, typename Derived>
+inline StringBase<CharType, Derived>::StringBase(std::basic_string_view<CharType> source)
     : mData  ( source.data(), source.length() )
 {
 }
 
-template<typename CharType>
-inline StringBase<CharType>::StringBase(const CharType* source, areg::CharCount count)
-    : mData  ( source != nullptr ? source : &EmptyChar, static_cast<uint32_t>(count != areg::COUNT_ALL ? count : areg::string_length(source)) )
+template<typename CharType, typename Derived>
+inline StringBase<CharType, Derived>::StringBase(const CharType* source, areg::CharCount count)
+    : mData  ( source != nullptr ? source : &EmptyChar
+             , source != nullptr ? static_cast<uint32_t>(count != areg::COUNT_ALL ? count : areg::string_length(source)) : 0u )
 {
 }
 
-template<typename CharType>
-inline StringBase<CharType>::StringBase(const StringBase<CharType>& source)
+template<typename CharType, typename Derived>
+inline StringBase<CharType, Derived>::StringBase(const StringBase& source)
     : mData  ( source.mData )
 {
 }
 
-template<typename CharType>
-inline StringBase<CharType>::StringBase(StringBase<CharType>&& source) noexcept
+template<typename CharType, typename Derived>
+inline StringBase<CharType, Derived>::StringBase(StringBase&& source) noexcept
     : mData  ( std::move(source.mData) )
 {
 }
 
-template<typename CharType>
-inline StringBase<CharType>::StringBase(uint32_t count)
+template<typename CharType, typename Derived>
+inline StringBase<CharType, Derived>::StringBase(const OtherCharType* source)
+    : mData  ( )
+{
+    _append_other(source, static_cast<areg::CharCount>(_length(source)));
+}
+
+template<typename CharType, typename Derived>
+inline StringBase<CharType, Derived>::StringBase(const OtherCharType* source, areg::CharCount count)
+    : mData  ( )
+{
+    _append_other(source, count != areg::COUNT_ALL ? count : static_cast<areg::CharCount>(_length(source)));
+}
+
+template<typename CharType, typename Derived>
+inline StringBase<CharType, Derived>::StringBase(const std::basic_string<OtherCharType>& source)
+    : mData  ( )
+{
+    _append_other(source.data(), static_cast<areg::CharCount>(source.length()));
+}
+
+template<typename CharType, typename Derived>
+template<typename OtherDerived>
+inline StringBase<CharType, Derived>::StringBase(const StringBase<OtherCharType, OtherDerived>& source)
+    : mData  ( )
+{
+    _append_other(source.as_string(), source.length());
+}
+
+template<typename CharType, typename Derived>
+inline StringBase<CharType, Derived>::StringBase(uint32_t count)
     : mData  ( )
 {
     mData.reserve(count);
 }
 
-template<typename CharType>
-inline StringBase<CharType>::operator const CharType* () const noexcept
+template<typename CharType, typename Derived>
+inline StringBase<CharType, Derived>::operator const CharType* () const noexcept
 {
     return mData.c_str();
 }
 
-template<typename CharType>
-inline const CharType StringBase<CharType>::operator [] (int32_t index) const noexcept
+template<typename CharType, typename Derived>
+inline StringBase<CharType, Derived>::operator uint32_t() const noexcept
+{
+    return areg::crc32_calculate(mData.c_str());
+}
+
+template<typename CharType, typename Derived>
+inline const CharType StringBase<CharType, Derived>::operator [] (int32_t index) const noexcept
 {
     ASSERT((mData.c_str() != nullptr) && (index < static_cast<int32_t>(mData.length())));
     return mData.c_str()[index];
 }
 
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::operator = (const StringBase<CharType>& src)
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::operator = (const StringBase& src)
 {
     mData = src.mData;
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::operator = (const std::basic_string<CharType>& src)
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::operator = (const std::basic_string<CharType>& src)
 {
     mData = src;
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::operator = (const std::basic_string_view<CharType>& src)
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::operator = (const std::basic_string_view<CharType>& src)
 {
     mData.assign( src.data(), src.length() );
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::operator = (const CharType* src)
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::operator = (const CharType* src)
 {
     if (src != nullptr)
     {
@@ -1097,228 +1619,319 @@ inline StringBase<CharType>& StringBase<CharType>::operator = (const CharType* s
         mData.clear();
     }
 
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::operator = (const CharType chSource)
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::operator = (const CharType chSource)
 {
     mData = chSource;
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::operator = (std::basic_string<CharType>&& src) noexcept
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::operator = (std::basic_string<CharType>&& src) noexcept
 {
     mData = std::move(src);
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::operator = (StringBase<CharType>&& src) noexcept
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::operator = (StringBase&& src) noexcept
 {
     mData = std::move(src.mData);
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::operator == (const StringBase<CharType>& other) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::operator == (const StringBase& other) const noexcept
 {
     return (mData == other.mData);
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::operator == (const std::basic_string<CharType>& other) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::operator == (const std::basic_string<CharType>& other) const noexcept
 {
     return (mData == other);
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::operator == (const std::basic_string_view<CharType>& other) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::operator == (const std::basic_string_view<CharType>& other) const noexcept
 {
     return (mData == other);
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::operator == (const CharType* other) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::operator == (const CharType* other) const noexcept
 {
     return (mData == other);
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::operator == ( const CharType ch) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::operator == ( const CharType ch) const noexcept
 {
     return ((mData.length() == 1) && (mData[0] == ch));
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::operator != (const StringBase<CharType>& other) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::operator != (const StringBase& other) const noexcept
 {
     return (mData != other.mData);
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::operator != (const std::basic_string<CharType>& other) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::operator != (const std::basic_string<CharType>& other) const noexcept
 {
     return (mData != other);
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::operator != (const std::basic_string_view<CharType>& other) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::operator != (const std::basic_string_view<CharType>& other) const noexcept
 {
     return (mData != other);
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::operator != (const CharType* other) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::operator != (const CharType* other) const noexcept
 {
     return (mData != other);
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::operator != ( const CharType ch ) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::operator != ( const CharType ch ) const noexcept
 {
     return ((mData.length( ) != 1) || (mData[0] != ch));
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::operator > (const StringBase<CharType>& other) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::operator > (const StringBase& other) const noexcept
 {
     return (mData > other.mData);
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::operator > (const std::basic_string<CharType>& other) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::operator > (const std::basic_string<CharType>& other) const noexcept
 {
     return (mData > other);
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::operator > (const std::basic_string_view<CharType>& other) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::operator > (const std::basic_string_view<CharType>& other) const noexcept
 {
     return (mData > other);
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::operator > (const CharType* other) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::operator > (const CharType* other) const noexcept
 {
     return (mData > other);
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::operator < (const StringBase<CharType>& other) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::operator < (const StringBase& other) const noexcept
 {
     return (mData < other.mData);
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::operator < (const std::basic_string<CharType>& other) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::operator < (const std::basic_string<CharType>& other) const noexcept
 {
     return (mData < other);
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::operator < (const std::basic_string_view<CharType>& other) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::operator < (const std::basic_string_view<CharType>& other) const noexcept
 {
     return (mData < other);
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::operator < (const CharType* other) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::operator < (const CharType* other) const noexcept
 {
     return (mData < other);
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::operator >= (const StringBase<CharType>& other) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::operator >= (const StringBase& other) const noexcept
 {
     return (mData >= other.mData);
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::operator >= (const std::basic_string<CharType>& other) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::operator >= (const std::basic_string<CharType>& other) const noexcept
 {
     return (mData >= other);
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::operator >= (const std::basic_string_view<CharType>& other) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::operator >= (const std::basic_string_view<CharType>& other) const noexcept
 {
     return (mData >= other);
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::operator >= (const CharType* other) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::operator >= (const CharType* other) const noexcept
 {
     return (mData >= other);
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::operator <= (const StringBase<CharType>& other) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::operator <= (const StringBase& other) const noexcept
 {
     return (mData <= other.mData);
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::operator <= (const std::basic_string<CharType>& other) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::operator <= (const std::basic_string<CharType>& other) const noexcept
 {
     return (mData <= other);
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::operator <= (const std::basic_string_view<CharType>& other) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::operator <= (const std::basic_string_view<CharType>& other) const noexcept
 {
     return (mData <= other);
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::operator <= (const CharType* other) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::operator <= (const CharType* other) const noexcept
 {
     return (mData <= other);
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::operator += (const StringBase<CharType>& src)
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::operator += (const StringBase& src)
 {
     mData += src.mData;
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::operator += (const std::basic_string<CharType>& src)
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::operator += (const std::basic_string<CharType>& src)
 {
     mData += src;
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::operator += (const std::basic_string_view<CharType>& src)
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::operator += (const std::basic_string_view<CharType>& src)
 {
     mData.append(src.data(), src.length());
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::operator += (const CharType* src)
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::operator += (const CharType* src)
 {
     if (!areg::is_empty(src))
         mData += src;
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::operator += (const CharType chSource)
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::operator += (const CharType chSource)
 {
     mData += chSource;
-    return (*this);
+    return self();
+}
+
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::operator = (const OtherCharType* src)
+{
+    return assign(src, areg::COUNT_ALL);
+}
+
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::operator = (const std::basic_string<OtherCharType>& src)
+{
+    return assign(src.data(), static_cast<areg::CharCount>(src.length()));
+}
+
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::operator = (const OtherCharType src)
+{
+    return assign(&src, 1);
+}
+
+template<typename CharType, typename Derived>
+template<typename OtherDerived>
+inline Derived& StringBase<CharType, Derived>::operator = (const StringBase<OtherCharType, OtherDerived>& src)
+{
+    return assign(src.as_string(), src.length());
+}
+
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::operator == (const OtherCharType* other) const noexcept
+{
+    return (other != nullptr ? _is_equal_other(other, _length(other)) : mData.empty());
+}
+
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::operator == (const std::basic_string<OtherCharType>& other) const noexcept
+{
+    return _is_equal_other(other.data(), other.length());
+}
+
+template<typename CharType, typename Derived>
+template<typename OtherDerived>
+inline bool StringBase<CharType, Derived>::operator == (const StringBase<OtherCharType, OtherDerived>& other) const noexcept
+{
+    return _is_equal_other(other.as_string(), static_cast<size_t>(other.length()));
+}
+
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::operator != (const OtherCharType* other) const noexcept
+{
+    return (operator == (other) == false);
+}
+
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::operator != (const std::basic_string<OtherCharType>& other) const noexcept
+{
+    return (operator == (other) == false);
+}
+
+template<typename CharType, typename Derived>
+template<typename OtherDerived>
+inline bool StringBase<CharType, Derived>::operator != (const StringBase<OtherCharType, OtherDerived>& other) const noexcept
+{
+    return (operator == (other) == false);
+}
+
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::operator += (const OtherCharType* src)
+{
+    return append(src, areg::COUNT_ALL);
+}
+
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::operator += (const std::basic_string<OtherCharType>& src)
+{
+    _append_other(src.data(), static_cast<areg::CharCount>(src.length()));
+    return self();
+}
+
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::operator += (const OtherCharType chSource)
+{
+    _append_other(&chSource, 1);
+    return self();
+}
+
+template<typename CharType, typename Derived>
+template<typename OtherDerived>
+inline Derived& StringBase<CharType, Derived>::operator += (const StringBase<OtherCharType, OtherDerived>& src)
+{
+    _append_other(src.as_string(), src.length());
+    return self();
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
 //////////////////////////////////////////////////////////////////////////
 
-template<typename CharType>
-inline bool StringBase<CharType>::validate(const CharType* validityList) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::validate(const CharType* validityList) const noexcept
 {
     if (mData.empty() || areg::is_empty<CharType>(validityList))
         return false;
@@ -1327,8 +1940,8 @@ inline bool StringBase<CharType>::validate(const CharType* validityList) const n
     return mData.find_first_not_of(validityList) == std::basic_string<CharType>::npos;
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::is_numeric(bool signIgnore /*= true*/) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::is_numeric(bool signIgnore /*= true*/) const noexcept
 {
     bool result = false;
     const CharType* src = mData.c_str();
@@ -1349,8 +1962,8 @@ inline bool StringBase<CharType>::is_numeric(bool signIgnore /*= true*/) const n
     return result;
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::is_alphanumeric() const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::is_alphanumeric() const noexcept
 {
     const CharType* src = mData.c_str();
     while (areg::is_alphanumeric<CharType>(*src))
@@ -1359,16 +1972,16 @@ inline bool StringBase<CharType>::is_alphanumeric() const noexcept
     return (*src == EmptyChar); // reached end of the string.
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::is_name_char(const CharType checkChar) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::is_name_char(const CharType checkChar) const noexcept
 {
     // initialize list of symbols for the valid names.
     constexpr CharType symbols[] = { '_', '\0'};
     return areg::is_alphanumeric<CharType>(checkChar) || areg::is_one_of<CharType>(checkChar, symbols);
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::is_valid_name() const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::is_valid_name() const noexcept
 {
     if (mData.empty())
         return false;
@@ -1380,103 +1993,103 @@ inline bool StringBase<CharType>::is_valid_name() const noexcept
     return (*src == EmptyChar);
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::is_empty() const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::is_empty() const noexcept
 {
     return mData.empty();
 }
 
-template<typename CharType>
-inline areg::CharCount StringBase<CharType>::length() const noexcept
+template<typename CharType, typename Derived>
+inline areg::CharCount StringBase<CharType, Derived>::length() const noexcept
 {
     return static_cast<areg::CharCount>(mData.length());
 }
 
-template<typename CharType>
-inline areg::CharCount StringBase<CharType>::capacity() const noexcept
+template<typename CharType, typename Derived>
+inline areg::CharCount StringBase<CharType, Derived>::capacity() const noexcept
 {
     return static_cast<areg::CharCount>(mData.capacity());
 }
 
-template<typename CharType>
-inline uint32_t StringBase<CharType>::space() const noexcept
+template<typename CharType, typename Derived>
+inline uint32_t StringBase<CharType, Derived>::space() const noexcept
 {
     return static_cast<uint32_t>((mData.length() + 1) * sizeof(CharType));
 }
 
-template<typename CharType>
-inline const CharType* StringBase<CharType>::buffer(areg::CharPos startAt /*= areg::START_POS*/) const noexcept
+template<typename CharType, typename Derived>
+inline const CharType* StringBase<CharType, Derived>::buffer(areg::CharPos startAt /*= areg::START_POS*/) const noexcept
 {
     areg::CharCount len = static_cast<areg::CharCount>(mData.size());
     startAt = (startAt == areg::END_POS) || (startAt > len) ? len : startAt;
     return (mData.c_str() + startAt);
 }
 
-template<typename CharType>
-inline CharType* StringBase<CharType>::buffer(areg::CharPos startAt /*= areg::START_POS*/) noexcept
+template<typename CharType, typename Derived>
+inline CharType* StringBase<CharType, Derived>::buffer(areg::CharPos startAt /*= areg::START_POS*/) noexcept
 {
     areg::CharCount len = static_cast<areg::CharCount>(mData.size());
     startAt = (startAt == areg::END_POS) || (startAt > len) ? len : startAt;
     return (mData.data() + startAt);
 }
 
-template<typename CharType>
-inline const CharType* StringBase<CharType>::as_string() const noexcept
+template<typename CharType, typename Derived>
+inline const CharType* StringBase<CharType, Derived>::as_string() const noexcept
 {
     return mData.c_str();
 }
 
-template<typename CharType>
-inline const std::basic_string<CharType>& StringBase<CharType>::data() const noexcept
+template<typename CharType, typename Derived>
+inline const std::basic_string<CharType>& StringBase<CharType, Derived>::data() const noexcept
 {
     return mData;
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::is_valid_position(areg::CharPos pos) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::is_valid_position(areg::CharPos pos) const noexcept
 {
     return (pos >= areg::START_POS) && (pos < static_cast<areg::CharPos>(mData.length()));
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::is_invalid_position(areg::CharPos pos) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::is_invalid_position(areg::CharPos pos) const noexcept
 {
     return (pos < areg::START_POS) || (pos > static_cast<areg::CharPos>(mData.length()));
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::is_last_position(areg::CharPos pos) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::is_last_position(areg::CharPos pos) const noexcept
 {
     return (pos == areg::END_POS) || (pos >= static_cast<areg::CharPos>(mData.length()));
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::is_first_position(areg::CharPos pos) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::is_first_position(areg::CharPos pos) const noexcept
 {
     return (!mData.empty() && (pos == areg::START_POS));
 }
 
-template<typename CharType>
-inline void StringBase<CharType>::clear() noexcept
+template<typename CharType, typename Derived>
+inline void StringBase<CharType, Derived>::clear() noexcept
 {
     mData.clear();
 }
 
-template<typename CharType>
-inline void StringBase<CharType>::free_extra()
+template<typename CharType, typename Derived>
+inline void StringBase<CharType, Derived>::free_extra()
 {
     areg::shrink_to_fit( mData );
 }
 
-template<typename CharType>
-inline void StringBase<CharType>::release()
+template<typename CharType, typename Derived>
+inline void StringBase<CharType, Derived>::release()
 {
     mData.clear();
     areg::shrink_to_fit( mData );
 }
 
-template<typename CharType>
-void StringBase<CharType>::find_word(areg::CharPos& startAt, areg::CharPos& endAt) const  noexcept
+template<typename CharType, typename Derived>
+void StringBase<CharType, Derived>::find_word(areg::CharPos& startAt, areg::CharPos& endAt) const  noexcept
 {
     areg::CharPos pos = startAt;
 
@@ -1509,8 +2122,8 @@ void StringBase<CharType>::find_word(areg::CharPos& startAt, areg::CharPos& endA
     endAt = (*buf != EmptyChar) ? static_cast<areg::CharPos>(buf - base) : areg::END_POS;
 }
 
-template<typename CharType>
-void StringBase<CharType>::extract_word(StringBase<CharType>& word, areg::CharPos& startAt, areg::CharPos& endAt) const
+template<typename CharType, typename Derived>
+void StringBase<CharType, Derived>::extract_word(StringBase& word, areg::CharPos& startAt, areg::CharPos& endAt) const
 {
     find_word(startAt, endAt);
     if (startAt != areg::END_POS)
@@ -1524,8 +2137,8 @@ void StringBase<CharType>::extract_word(StringBase<CharType>& word, areg::CharPo
     }
 }
 
-template<typename CharType>
-areg::CharPos StringBase<CharType>::find_one_of( const CharType* chars, areg::CharPos startPos /*= areg::START_POS*/) const noexcept
+template<typename CharType, typename Derived>
+areg::CharPos StringBase<CharType, Derived>::find_one_of( const CharType* chars, areg::CharPos startPos /*= areg::START_POS*/) const noexcept
 {
     if (is_invalid_position(startPos) || areg::is_empty<CharType>(chars))
         return areg::INVALID_POS;
@@ -1535,8 +2148,8 @@ areg::CharPos StringBase<CharType>::find_one_of( const CharType* chars, areg::Ch
     return (pos != std::basic_string<CharType>::npos ? static_cast<areg::CharPos>(pos) : areg::END_POS);
 }
 
-template<typename CharType>
-areg::CharPos StringBase<CharType>::find_first( CharType chSearch
+template<typename CharType, typename Derived>
+areg::CharPos StringBase<CharType, Derived>::find_first( CharType chSearch
                                                , areg::CharPos startPos /*= areg::START_POS*/
                                                , bool caseSensitive /*= true*/) const noexcept
 {
@@ -1562,8 +2175,8 @@ areg::CharPos StringBase<CharType>::find_first( CharType chSearch
     return (*str != EmptyChar ? static_cast<areg::CharPos>(str - as_string()) : areg::END_POS);
 }
 
-template<typename CharType>
-areg::CharPos StringBase<CharType>::find_first( const CharType* phrase
+template<typename CharType, typename Derived>
+areg::CharPos StringBase<CharType, Derived>::find_first( const CharType* phrase
                                                , areg::CharPos startPos /*= areg::START_POS*/
                                                , bool caseSensitive   /*= true*/
                                                , bool wholeWord       /*= false*/) const noexcept
@@ -1585,8 +2198,8 @@ areg::CharPos StringBase<CharType>::find_first( const CharType* phrase
     }
 }
 
-template<typename CharType>
-areg::CharPos StringBase<CharType>::find_first( const StringBase<CharType> & phrase
+template<typename CharType, typename Derived>
+areg::CharPos StringBase<CharType, Derived>::find_first( const StringBase & phrase
                                                , areg::CharPos startPos /*= areg::START_POS*/
                                                , bool caseSensitive         /*= true*/
                                                , bool wholeWord             /*= false*/) const noexcept
@@ -1608,8 +2221,8 @@ areg::CharPos StringBase<CharType>::find_first( const StringBase<CharType> & phr
     }
 }
 
-template<typename CharType>
-areg::CharPos StringBase<CharType>::find_last(CharType chSearch, areg::CharPos startPos /*= areg::END_POS*/, bool caseSensitive /*= true*/) const noexcept
+template<typename CharType, typename Derived>
+areg::CharPos StringBase<CharType, Derived>::find_last(CharType chSearch, areg::CharPos startPos /*= areg::END_POS*/, bool caseSensitive /*= true*/) const noexcept
 {
     if (mData.empty())
         return areg::INVALID_POS;
@@ -1637,8 +2250,8 @@ areg::CharPos StringBase<CharType>::find_last(CharType chSearch, areg::CharPos s
     return (end >= begin ? static_cast<areg::CharPos>(end - begin) : areg::END_POS);
 }
 
-template<typename CharType>
-inline areg::CharPos StringBase<CharType>::find_last(const CharType* phrase, areg::CharCount phraseCount, areg::CharPos startPos, bool caseSensitive) const noexcept
+template<typename CharType, typename Derived>
+inline areg::CharPos StringBase<CharType, Derived>::find_last(const CharType* phrase, areg::CharCount phraseCount, areg::CharPos startPos, bool caseSensitive) const noexcept
 {
     if (((startPos != areg::END_POS) && is_invalid_position(startPos)) || areg::is_empty<CharType>(phrase) || (phraseCount == 0))
         return areg::INVALID_POS;
@@ -1671,20 +2284,20 @@ inline areg::CharPos StringBase<CharType>::find_last(const CharType* phrase, are
     return areg::END_POS;
 }
 
-template<typename CharType>
-inline areg::CharPos StringBase<CharType>::find_last(const CharType* phrase, areg::CharPos startPos /*= areg::END_POS*/, bool caseSensitive /*= true*/) const noexcept
+template<typename CharType, typename Derived>
+inline areg::CharPos StringBase<CharType, Derived>::find_last(const CharType* phrase, areg::CharPos startPos /*= areg::END_POS*/, bool caseSensitive /*= true*/) const noexcept
 {
     return find_last(phrase, areg::string_length<CharType>(phrase), startPos, caseSensitive);
 }
 
-template<typename CharType>
-inline areg::CharPos StringBase<CharType>::find_last(const StringBase<CharType> & phrase, areg::CharPos startPos /*= areg::END_POS*/, bool caseSensitive /*= true*/) const noexcept
+template<typename CharType, typename Derived>
+inline areg::CharPos StringBase<CharType, Derived>::find_last(const StringBase & phrase, areg::CharPos startPos /*= areg::END_POS*/, bool caseSensitive /*= true*/) const noexcept
 {
     return find_last(phrase, phrase.length(), startPos, caseSensitive);
 }
 
-template<typename CharType>
-areg::Ordering StringBase<CharType>::compare( const CharType* what
+template<typename CharType, typename Derived>
+areg::Ordering StringBase<CharType, Derived>::compare( const CharType* what
                                             , areg::CharPos startAt /*= areg::START_POS*/
                                             , areg::CharCount count /*= areg::COUNT_ALL*/
                                             , bool caseSensitive /*= true*/) const noexcept
@@ -1732,26 +2345,26 @@ areg::Ordering StringBase<CharType>::compare( const CharType* what
     return result;
 }
 
-template<typename CharType>
-inline areg::Ordering StringBase<CharType>::compare(const StringBase<CharType>& other, bool caseSensitive /*= true*/) const noexcept
+template<typename CharType, typename Derived>
+inline areg::Ordering StringBase<CharType, Derived>::compare(const StringBase& other, bool caseSensitive /*= true*/) const noexcept
 {
     return compare(other.mData, caseSensitive);
 }
 
-template<typename CharType>
-inline areg::Ordering StringBase<CharType>::compare(const std::basic_string<CharType>& other, bool caseSensitive /*= true*/) const noexcept
+template<typename CharType, typename Derived>
+inline areg::Ordering StringBase<CharType, Derived>::compare(const std::basic_string<CharType>& other, bool caseSensitive /*= true*/) const noexcept
 {
     return compare(other.c_str(), areg::START_POS, static_cast<areg::CharCount>(other.length()), caseSensitive);
 }
 
-template<typename CharType>
-inline areg::Ordering StringBase<CharType>::compare(const std::basic_string_view<CharType>& other, bool caseSensitive /*= true*/) const noexcept
+template<typename CharType, typename Derived>
+inline areg::Ordering StringBase<CharType, Derived>::compare(const std::basic_string_view<CharType>& other, bool caseSensitive /*= true*/) const noexcept
 {
     return compare(other.data(), areg::START_POS, static_cast<areg::CharCount>(other.length()), caseSensitive);
 }
 
-template<typename CharType>
-inline areg::Ordering StringBase<CharType>::compare( const StringBase<CharType>& other
+template<typename CharType, typename Derived>
+inline areg::Ordering StringBase<CharType, Derived>::compare( const StringBase& other
                                                    , areg::CharPos startPos
                                                    , areg::CharCount count  /*= areg::COUNT_ALL*/
                                                    , bool caseSensitive         /*= true*/) const noexcept
@@ -1759,8 +2372,8 @@ inline areg::Ordering StringBase<CharType>::compare( const StringBase<CharType>&
     return compare(other.mData, startPos, count, caseSensitive);
 }
 
-template<typename CharType>
-inline areg::Ordering StringBase<CharType>::compare( const std::basic_string<CharType>& other
+template<typename CharType, typename Derived>
+inline areg::Ordering StringBase<CharType, Derived>::compare( const std::basic_string<CharType>& other
                                                    , areg::CharPos startAt
                                                    , areg::CharCount count  /*= areg::COUNT_ALL*/
                                                    , bool caseSensitive         /*= true*/) const noexcept
@@ -1768,10 +2381,10 @@ inline areg::Ordering StringBase<CharType>::compare( const std::basic_string<Cha
     return compare(other.c_str(), startAt, count, caseSensitive);
 }
 
-template<typename CharType>
+template<typename CharType, typename Derived>
 template<typename PosType>
 inline std::enable_if_t<std::is_integral_v<PosType> && !std::is_same_v<PosType, bool>, areg::Ordering>
-StringBase<CharType>::compare( const CharType* other
+StringBase<CharType, Derived>::compare( const CharType* other
                              , PosType startAt
                              , areg::CharCount count    /*= areg::COUNT_ALL*/
                              , bool caseSensitive       /*= true*/) const noexcept
@@ -1779,10 +2392,10 @@ StringBase<CharType>::compare( const CharType* other
     return compare(other, static_cast<areg::CharPos>(startAt), count, caseSensitive);
 }
 
-template<typename CharType>
+template<typename CharType, typename Derived>
 template<typename PosType>
 inline std::enable_if_t<std::is_integral_v<PosType> && !std::is_same_v<PosType, bool>, areg::Ordering>
-StringBase<CharType>::compare( const StringBase<CharType>& other
+StringBase<CharType, Derived>::compare( const StringBase& other
                              , PosType startAt
                              , areg::CharCount count    /*= areg::COUNT_ALL*/
                              , bool caseSensitive       /*= true*/) const noexcept
@@ -1790,10 +2403,10 @@ StringBase<CharType>::compare( const StringBase<CharType>& other
     return compare(other.mData.c_str(), static_cast<areg::CharPos>(startAt), count, caseSensitive);
 }
 
-template<typename CharType>
+template<typename CharType, typename Derived>
 template<typename PosType>
 inline std::enable_if_t<std::is_integral_v<PosType> && !std::is_same_v<PosType, bool>, areg::Ordering>
-StringBase<CharType>::compare( const std::basic_string<CharType>& other
+StringBase<CharType, Derived>::compare( const std::basic_string<CharType>& other
                              , PosType startAt
                              , areg::CharCount count    /*= areg::COUNT_ALL*/
                              , bool caseSensitive       /*= true*/) const noexcept
@@ -1801,10 +2414,10 @@ StringBase<CharType>::compare( const std::basic_string<CharType>& other
     return compare(other.c_str(), static_cast<areg::CharPos>(startAt), count, caseSensitive);
 }
 
-template<typename CharType>
+template<typename CharType, typename Derived>
 template<typename PosType>
 inline std::enable_if_t<std::is_integral_v<PosType> && !std::is_same_v<PosType, bool>, areg::Ordering>
-StringBase<CharType>::compare( const std::basic_string_view<CharType>& other
+StringBase<CharType, Derived>::compare( const std::basic_string_view<CharType>& other
                              , PosType startAt
                              , areg::CharCount count    /*= areg::COUNT_ALL*/
                              , bool caseSensitive       /*= true*/) const noexcept
@@ -1814,23 +2427,23 @@ StringBase<CharType>::compare( const std::basic_string_view<CharType>& other
     return compare(other.data(), static_cast<areg::CharPos>(startAt), count, caseSensitive);
 }
 
-template<typename CharType>
+template<typename CharType, typename Derived>
 template<typename BoolType>
 inline std::enable_if_t<std::is_same_v<BoolType, bool>, areg::Ordering>
-StringBase<CharType>::compare(const CharType* other, BoolType caseSensitive) const noexcept
+StringBase<CharType, Derived>::compare(const CharType* other, BoolType caseSensitive) const noexcept
 {
     return compare(other, areg::START_POS, areg::COUNT_ALL, caseSensitive);
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::substring(areg::CharPos startPos, areg::CharCount count /*= areg::COUNT_ALL*/)
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::substring(areg::CharPos startPos, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     mData = mData.substr(static_cast<uint32_t>(startPos), count == areg::COUNT_ALL ? std::basic_string<CharType>::npos : static_cast<uint32_t>(count));
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline void StringBase<CharType>::substring(StringBase<CharType>& outResult, areg::CharPos startPos /* = areg::START_POS */, areg::CharCount count /*= areg::COUNT_ALL*/) const
+template<typename CharType, typename Derived>
+inline void StringBase<CharType, Derived>::substring(StringBase& outResult, areg::CharPos startPos /* = areg::START_POS */, areg::CharCount count /*= areg::COUNT_ALL*/) const
 {
     if (is_valid_position(startPos))
     {
@@ -1838,20 +2451,20 @@ inline void StringBase<CharType>::substring(StringBase<CharType>& outResult, are
     }
 }
 
-template<typename CharType>
-inline areg::CharPos StringBase<CharType>::substring(StringBase<CharType>& outResult, const CharType* strPhrase, areg::CharPos startPos /*= areg::START_POS*/) const
+template<typename CharType, typename Derived>
+inline areg::CharPos StringBase<CharType, Derived>::substring(StringBase& outResult, const CharType* strPhrase, areg::CharPos startPos /*= areg::START_POS*/) const
 {
     return substring(outResult, std::basic_string<CharType>(strPhrase == nullptr ? &EmptyChar : strPhrase), startPos);
 }
 
-template<typename CharType>
-inline areg::CharPos StringBase<CharType>::substring(StringBase<CharType>& outResult, const StringBase<CharType>& strPhrase, areg::CharPos startPos /*= areg::START_POS*/) const
+template<typename CharType, typename Derived>
+inline areg::CharPos StringBase<CharType, Derived>::substring(StringBase& outResult, const StringBase& strPhrase, areg::CharPos startPos /*= areg::START_POS*/) const
 {
     return substring(outResult, strPhrase.mData, startPos);
 }
 
-template<typename CharType>
-inline areg::CharPos StringBase<CharType>::substring(StringBase<CharType>& outResult, const std::basic_string<CharType>& strPhrase, areg::CharPos startPos /*= areg::START_POS*/) const
+template<typename CharType, typename Derived>
+inline areg::CharPos StringBase<CharType, Derived>::substring(StringBase& outResult, const std::basic_string<CharType>& strPhrase, areg::CharPos startPos /*= areg::START_POS*/) const
 {
     outResult.mData.clear();
 
@@ -1876,8 +2489,8 @@ inline areg::CharPos StringBase<CharType>::substring(StringBase<CharType>& outRe
     }
 }
 
-template<typename CharType>
-areg::CharPos StringBase<CharType>::substring(StringBase<CharType>& outResult, CharType chSymbol, areg::CharPos startPos /* = areg::START_POS */) const
+template<typename CharType, typename Derived>
+areg::CharPos StringBase<CharType, Derived>::substring(StringBase& outResult, CharType chSymbol, areg::CharPos startPos /* = areg::START_POS */) const
 {
     if (is_invalid_position(startPos))
     {
@@ -1898,18 +2511,18 @@ areg::CharPos StringBase<CharType>::substring(StringBase<CharType>& outResult, C
     }
 }
 
-template<typename CharType>
-inline StringBase<CharType> StringBase<CharType>::left_side(areg::CharCount charCount) const
+template<typename CharType, typename Derived>
+inline Derived StringBase<CharType, Derived>::left_side(areg::CharCount charCount) const
 {
-    StringBase<CharType> result;
-    StringBase<CharType>::substring(result, areg::START_POS, charCount);
+    Derived result;
+    StringBase<CharType, Derived>::substring(result, areg::START_POS, charCount);
     return result;
 }
 
-template<typename CharType>
-inline StringBase<CharType> StringBase<CharType>::right_side(areg::CharCount charCount) const
+template<typename CharType, typename Derived>
+inline Derived StringBase<CharType, Derived>::right_side(areg::CharCount charCount) const
 {
-    StringBase<CharType> result;
+    Derived result;
 
     areg::CharCount len = length();
     areg::CharPos pos = charCount < len ? len - charCount : areg::START_POS;
@@ -1918,8 +2531,8 @@ inline StringBase<CharType> StringBase<CharType>::right_side(areg::CharCount cha
     return result;
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::assign(const CharType* source, areg::CharCount count /*= areg::COUNT_ALL */)
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::assign(const CharType* source, areg::CharCount count /*= areg::COUNT_ALL */)
 {
     if ( source != nullptr )
     {
@@ -1930,74 +2543,74 @@ inline StringBase<CharType>& StringBase<CharType>::assign(const CharType* source
         mData.clear( );
     }
 
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::assign(const std::basic_string<CharType>& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::assign(const std::basic_string<CharType>& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     mData.assign(source, static_cast<uint32_t>(pos), count == areg::COUNT_ALL ? std::basic_string<CharType>::npos : static_cast<uint32_t>(count));
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::assign(const std::basic_string_view<CharType>& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::assign(const std::basic_string_view<CharType>& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     assign(source.data() + pos, count == areg::COUNT_ALL ? static_cast<areg::CharCount>(source.length() - static_cast<uint32_t>(pos)) : count);
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::assign(const StringBase<CharType>& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::assign(const StringBase& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     assign(source.mData, pos, count);
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::assign( CharType ch )
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::assign( CharType ch )
 {
     mData = ch;
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::append(const CharType* source, areg::CharCount count /*= areg::COUNT_ALL*/)
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::append(const CharType* source, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     count = count == areg::COUNT_ALL ? areg::string_length<CharType>(source) : count;
     mData.append(source, static_cast<uint32_t>(count));
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::append( const std::basic_string<CharType>& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::append( const std::basic_string<CharType>& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     mData.append(source, static_cast<uint32_t>(pos), count == areg::COUNT_ALL ? std::basic_string<CharType>::npos : static_cast<uint32_t>(count));
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::append(const std::basic_string_view<CharType>& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::append(const std::basic_string_view<CharType>& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     append(source.data() + pos, count == areg::COUNT_ALL ? static_cast<areg::CharCount>(source.length() - static_cast<uint32_t>(pos)) : count);
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::append( const StringBase<CharType>& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::append( const StringBase& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     return append(source.mData, pos, count);
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::append( CharType ch )
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::append( CharType ch )
 {
     mData += ch;
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-StringBase<CharType>& StringBase<CharType>::move_to(areg::CharPos startPos, int32_t move_to)
+template<typename CharType, typename Derived>
+Derived& StringBase<CharType, Derived>::move_to(areg::CharPos startPos, int32_t move_to)
 {
     if (move_to < 0)
     {
@@ -2010,29 +2623,29 @@ StringBase<CharType>& StringBase<CharType>::move_to(areg::CharPos startPos, int3
         mData.insert(static_cast<uint32_t>(startPos), static_cast<uint32_t>(move_to), '@');
     }
 
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::insert_at(CharType source, areg::CharPos atPos, areg::CharCount count /*= 1*/)
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::insert_at(CharType source, areg::CharPos atPos, areg::CharCount count /*= 1*/)
 {
     mData.insert(static_cast<uint32_t>(atPos), static_cast<uint32_t>(count), source);
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::insert_at(const CharType* source, areg::CharPos atPos, areg::CharCount count /*= areg::COUNT_ALL*/)
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::insert_at(const CharType* source, areg::CharPos atPos, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     if (source != nullptr && is_valid_position(atPos))
     {
         mData.insert(static_cast<uint32_t>(atPos), source, count == areg::COUNT_ALL ? static_cast<uint32_t>(areg::string_length(source)) : static_cast<uint32_t>(count));
     }
 
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::insert_at( const std::basic_string<CharType>& source
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::insert_at( const std::basic_string<CharType>& source
                                                        , areg::CharPos atDstPos
                                                        , areg::CharPos atSrcPos /*= areg::START_POS*/
                                                        , areg::CharCount count  /*= areg::COUNT_ALL*/)
@@ -2043,11 +2656,11 @@ inline StringBase<CharType>& StringBase<CharType>::insert_at( const std::basic_s
         mData.insert(static_cast<uint32_t>(atDstPos), source, static_cast<uint32_t>(atSrcPos), static_cast<uint32_t>(count));
     }
 
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::insert_at( const std::basic_string_view<CharType>& source
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::insert_at( const std::basic_string_view<CharType>& source
                                                        , areg::CharPos atDstPos
                                                        , areg::CharPos atSrcPos /*= areg::START_POS*/
                                                        , areg::CharCount count  /*= areg::COUNT_ALL*/)
@@ -2058,11 +2671,11 @@ inline StringBase<CharType>& StringBase<CharType>::insert_at( const std::basic_s
         mData.insert(static_cast<uint32_t>(atDstPos), source, static_cast<uint32_t>(atSrcPos), static_cast<uint32_t>(count));
     }
 
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::insert_at( const StringBase<CharType>& source
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::insert_at( const StringBase& source
                                                             , areg::CharPos atDstPos
                                                             , areg::CharPos atSrcPos /*= areg::START_POS*/
                                                             , areg::CharCount count /*= areg::COUNT_ALL*/)
@@ -2070,11 +2683,11 @@ inline StringBase<CharType>& StringBase<CharType>::insert_at( const StringBase<C
     return insert_at(source.mData, atDstPos, atSrcPos, count);
 }
 
-template<typename CharType>
-StringBase<CharType>& StringBase<CharType>::replace(CharType chSearch, CharType chReplace, areg::CharPos startPos /*= areg::START_POS*/, bool replaceAll /*= true*/)
+template<typename CharType, typename Derived>
+Derived& StringBase<CharType, Derived>::replace(CharType chSearch, CharType chReplace, areg::CharPos startPos /*= areg::START_POS*/, bool replaceAll /*= true*/)
 {
     if (!is_valid_position(startPos))
-        return (*this);
+        return self();
 
     CharType* dst = mData.data() + startPos;
     while (*dst != EmptyChar)
@@ -2089,18 +2702,18 @@ StringBase<CharType>& StringBase<CharType>::replace(CharType chSearch, CharType 
         ++dst;
     }
 
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-StringBase<CharType>& StringBase<CharType>::replace( const CharType* strSearch
+template<typename CharType, typename Derived>
+Derived& StringBase<CharType, Derived>::replace( const CharType* strSearch
                                                    , const CharType* strReplace
                                                    , areg::CharPos startPos   /*= areg::START_POS*/
                                                    , areg::CharCount count    /*= areg::COUNT_ALL*/
                                                    , bool replaceAll              /*= true*/)
 {
     if (!is_valid_position(startPos) || areg::is_empty(strSearch))
-        return (*this);
+        return self();
 
     areg::CharPos lenSearch  = areg::string_length<CharType>(strSearch);
     areg::CharPos lenReplace = areg::string_length<CharType>(strReplace);
@@ -2127,17 +2740,17 @@ StringBase<CharType>& StringBase<CharType>::replace( const CharType* strSearch
         pos = static_cast<uint32_t>(mData.find(strSearch, pos));
     }
 
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::replace( const std::basic_string_view<CharType>& strSearch
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::replace( const std::basic_string_view<CharType>& strSearch
                                                           , const std::basic_string_view<CharType>& strReplace
                                                           , areg::CharPos startPos  /*= areg::START_POS*/
                                                           , bool replaceAll             /*= true*/)
 {
     if (!is_valid_position(startPos) || strSearch.empty())
-        return (*this);
+        return self();
     
     areg::CharPos lenSearch  = static_cast<areg::CharPos>(strSearch.length());
     areg::CharPos lenReplace = static_cast<areg::CharPos>(strReplace.length());
@@ -2162,27 +2775,27 @@ inline StringBase<CharType>& StringBase<CharType>::replace( const std::basic_str
         pos = static_cast<uint32_t>(mData.find(strSearch, pos));
     }
 
-    return (*this);
+    return self();
 }
 
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::replace( const StringBase<CharType>& strSearch
-                                                          , const StringBase<CharType>& strReplace
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::replace( const StringBase& strSearch
+                                                          , const StringBase& strReplace
                                                           , areg::CharPos startPos /*= areg::START_POS*/
                                                           , bool replaceAll /*= true*/)
 {
     return replace(strSearch.mData, strReplace.mData, startPos, replaceAll);
 }
 
-template<typename CharType>
-StringBase<CharType>& StringBase<CharType>::replace( const std::basic_string<CharType>& strSearch
+template<typename CharType, typename Derived>
+Derived& StringBase<CharType, Derived>::replace( const std::basic_string<CharType>& strSearch
                                                    , const std::basic_string<CharType>& strReplace
                                                    , areg::CharPos startPos /*= areg::START_POS*/
                                                    , bool replaceAll /*= true*/)
 {
     if (!is_valid_position(startPos) || strSearch.empty())
-        return (*this);
+        return self();
     
     areg::CharPos lenSearch = static_cast<areg::CharPos>(strSearch.length());
     areg::CharPos lenReplace = static_cast<areg::CharPos>(strReplace.length());
@@ -2207,11 +2820,11 @@ StringBase<CharType>& StringBase<CharType>::replace( const std::basic_string<Cha
         pos = static_cast<uint32_t>(mData.find(strSearch, pos));
     }
 
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::replace( areg::CharPos startPos
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::replace( areg::CharPos startPos
                                                           , areg::CharCount charsRemove
                                                           , const CharType* strReplace
                                                           , areg::CharCount count /*= areg::COUNT_ALL*/)
@@ -2222,31 +2835,31 @@ inline StringBase<CharType>& StringBase<CharType>::replace( areg::CharPos startP
         mData.replace(static_cast<uint32_t>(startPos), static_cast<uint32_t>(charsRemove), strReplace, (count == areg::COUNT_ALL) || (count > lenReplace) ? static_cast<uint32_t>(lenReplace) : static_cast<uint32_t>(count));
     }
 
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::replace( areg::CharPos startPos, areg::CharCount charsRemove, const StringBase<CharType>& strReplace)
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::replace( areg::CharPos startPos, areg::CharCount charsRemove, const StringBase& strReplace)
 {
     return replace(startPos, charsRemove, strReplace.mData);
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::replace( areg::CharPos startPos, areg::CharCount charsRemove, const std::basic_string<CharType>& strReplace)
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::replace( areg::CharPos startPos, areg::CharCount charsRemove, const std::basic_string<CharType>& strReplace)
 {
     if (is_valid_position(startPos))
     {
         mData.replace(static_cast<uint32_t>(startPos), static_cast<uint32_t>(charsRemove), strReplace);
     }
 
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-StringBase<CharType>& StringBase<CharType>::remove(areg::CharPos startPos, areg::CharCount count /*= areg::COUNT_ALL*/)
+template<typename CharType, typename Derived>
+Derived& StringBase<CharType, Derived>::remove(areg::CharPos startPos, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     if (!is_valid_position(startPos))
-        return (*this);
+        return self();
 
     if (count == areg::COUNT_ALL)
     {
@@ -2257,14 +2870,14 @@ StringBase<CharType>& StringBase<CharType>::remove(areg::CharPos startPos, areg:
         mData.erase(static_cast<uint32_t>(startPos), static_cast<uint32_t>(count));
     }
 
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-StringBase<CharType>& StringBase<CharType>::remove(const CharType chRemove, areg::CharPos startPos /*= areg::START_POS*/, bool removeAll /*= true*/)
+template<typename CharType, typename Derived>
+Derived& StringBase<CharType, Derived>::remove(const CharType chRemove, areg::CharPos startPos /*= areg::START_POS*/, bool removeAll /*= true*/)
 {
     if (!is_valid_position(startPos))
-        return (*this);
+        return self();
 
     uint32_t pos = static_cast<uint32_t>(mData.find(chRemove, static_cast<uint32_t>(startPos)));
     for ( ; pos != static_cast<uint32_t>(std::basic_string<CharType>::npos); pos = static_cast<uint32_t>(mData.find(chRemove, static_cast<uint32_t>(pos))))
@@ -2274,23 +2887,23 @@ StringBase<CharType>& StringBase<CharType>::remove(const CharType chRemove, areg
             break;
     }
 
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::remove( const CharType* strRemove, areg::CharPos startPos /*= areg::START_POS*/, bool removeAll /*= true*/)
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::remove( const CharType* strRemove, areg::CharPos startPos /*= areg::START_POS*/, bool removeAll /*= true*/)
 {
     if (!areg::is_empty<CharType>(strRemove))
         remove(std::basic_string<CharType>(strRemove), startPos, removeAll);
 
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-StringBase<CharType>& StringBase<CharType>::remove( const std::basic_string<CharType>& strRemove, areg::CharPos startPos /*= areg::START_POS*/, bool removeAll /*= true*/)
+template<typename CharType, typename Derived>
+Derived& StringBase<CharType, Derived>::remove( const std::basic_string<CharType>& strRemove, areg::CharPos startPos /*= areg::START_POS*/, bool removeAll /*= true*/)
 {
     if (!is_valid_position(startPos))
-        return (*this);
+        return self();
     
     uint32_t len = static_cast<uint32_t>(strRemove.length());
     uint32_t pos = static_cast<uint32_t>(mData.find(strRemove, static_cast<uint32_t>(startPos)));
@@ -2303,24 +2916,24 @@ StringBase<CharType>& StringBase<CharType>::remove( const std::basic_string<Char
         }
     }
 
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::remove( const StringBase<CharType>& strRemove, areg::CharPos startPos /*= areg::START_POS*/, bool removeAll /*= true*/)
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::remove( const StringBase& strRemove, areg::CharPos startPos /*= areg::START_POS*/, bool removeAll /*= true*/)
 {
     return remove(strRemove.mData, startPos, removeAll);
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::resize(areg::CharCount count, CharType chFill /*= static_cast<CharType>('\0')*/)
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::resize(areg::CharCount count, CharType chFill /*= static_cast<CharType>('\0')*/)
 {
     mData.resize(static_cast<uint32_t>(count), chFill);
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::truncate(areg::CharCount maxChars)
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::truncate(areg::CharCount maxChars)
 {
     if (maxChars == 0)
     {
@@ -2331,24 +2944,24 @@ inline StringBase<CharType>& StringBase<CharType>::truncate(areg::CharCount maxC
         mData.erase(static_cast<uint32_t>(maxChars));
     }
 
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::reserve(areg::CharCount newCapacity)
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::reserve(areg::CharCount newCapacity)
 {
     mData.reserve( static_cast<uint32_t>(newCapacity));
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline CharType StringBase<CharType>::at(areg::CharPos atPos) const noexcept
+template<typename CharType, typename Derived>
+inline CharType StringBase<CharType, Derived>::at(areg::CharPos atPos) const noexcept
 {
     return (is_valid_position(atPos) ? mData.at(static_cast<uint32_t>(atPos)) : static_cast<CharType>(areg::EndOfString));
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::set_at(CharType ch, areg::CharPos atPos /*= areg::END_POS*/) noexcept
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::set_at(CharType ch, areg::CharPos atPos /*= areg::END_POS*/) noexcept
 {
     if ((atPos >= areg::START_POS) && (atPos < static_cast<areg::CharPos>(mData.size())))
     {
@@ -2359,14 +2972,14 @@ inline StringBase<CharType>& StringBase<CharType>::set_at(CharType ch, areg::Cha
         mData.append(1, ch);
     }
 
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::trim_left() noexcept
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::trim_left() noexcept
 {
     if (mData.empty())
-        return (*this);
+        return self();
 
     uint32_t count = 0;
     for (const auto& ch : mData)
@@ -2382,17 +2995,17 @@ inline StringBase<CharType>& StringBase<CharType>::trim_left() noexcept
         mData.erase(0, count);
     }
 
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline void StringBase<CharType>::trim_left(StringBase<CharType>& strResult) const
+template<typename CharType, typename Derived>
+inline void StringBase<CharType, Derived>::trim_left(StringBase& strResult) const
 {
     trim_left(strResult.mData);
 }
 
-template<typename CharType>
-inline void StringBase<CharType>::trim_left(std::basic_string<CharType>& strResult) const
+template<typename CharType, typename Derived>
+inline void StringBase<CharType, Derived>::trim_left(std::basic_string<CharType>& strResult) const
 {
     strResult.clear();
     if (mData.empty())
@@ -2413,11 +3026,11 @@ inline void StringBase<CharType>::trim_left(std::basic_string<CharType>& strResu
     }
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::trim_right() noexcept
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::trim_right() noexcept
 {
     if (mData.empty())
-        return (*this);
+        return self();
 
     uint32_t count = 0;
     for (auto cit = mData.crbegin(); cit != mData.crend(); ++cit)
@@ -2433,17 +3046,17 @@ inline StringBase<CharType>& StringBase<CharType>::trim_right() noexcept
         mData.erase(mData.length() - count, std::basic_string<CharType>::npos);
     }
 
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline void StringBase<CharType>::trim_right(StringBase<CharType>& strResult) const
+template<typename CharType, typename Derived>
+inline void StringBase<CharType, Derived>::trim_right(StringBase& strResult) const
 {
     trim_right(strResult.mData);
 }
 
-template<typename CharType>
-inline void StringBase<CharType>::trim_right(std::basic_string<CharType>& strResult) const
+template<typename CharType, typename Derived>
+inline void StringBase<CharType, Derived>::trim_right(std::basic_string<CharType>& strResult) const
 {
     strResult.clear();
     if (mData.empty())
@@ -2464,11 +3077,11 @@ inline void StringBase<CharType>::trim_right(std::basic_string<CharType>& strRes
     }
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::trim_all() noexcept
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::trim_all() noexcept
 {
     if (mData.empty())
-        return (*this);
+        return self();
 
     uint32_t length = static_cast<uint32_t>(mData.length());
     uint32_t left = 0;
@@ -2498,17 +3111,17 @@ inline StringBase<CharType>& StringBase<CharType>::trim_all() noexcept
         mData.clear();
     }
 
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline void StringBase<CharType>::trim_all(StringBase<CharType>& strResult) const
+template<typename CharType, typename Derived>
+inline void StringBase<CharType, Derived>::trim_all(StringBase& strResult) const
 {
     trim_all(strResult.mData);
 }
 
-template<typename CharType>
-inline void StringBase<CharType>::trim_all(std::basic_string<CharType>& strResult) const
+template<typename CharType, typename Derived>
+inline void StringBase<CharType, Derived>::trim_all(std::basic_string<CharType>& strResult) const
 {
     strResult.clear();
     if (mData.empty())
@@ -2539,36 +3152,36 @@ inline void StringBase<CharType>::trim_all(std::basic_string<CharType>& strResul
     }
 }
 
-template<typename CharType>
-inline StringBase<CharType> & StringBase<CharType>::make_lower() noexcept
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::make_lower() noexcept
 {
-    for (CharType * src = mData.data(); *src != StringBase<CharType>::EmptyChar; ++src)
+    for (CharType * src = mData.data(); *src != StringBase<CharType, Derived>::EmptyChar; ++src)
     {
         *src = areg::make_lower<CharType>(*src);
     }
 
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline StringBase<CharType> & StringBase<CharType>::make_upper() noexcept
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::make_upper() noexcept
 {
-    for (CharType * src = mData.data(); *src != StringBase<CharType>::EmptyChar; ++src)
+    for (CharType * src = mData.data(); *src != StringBase<CharType, Derived>::EmptyChar; ++src)
     {
         *src = areg::make_upper<CharType>(*src);
     }
 
-    return (*this);
+    return self();
 }
 
-template<typename CharType>
-inline areg::CharPos StringBase<CharType>::read_line(StringBase<CharType>& strResult, areg::CharPos startPos /*= areg::START_POS*/) const
+template<typename CharType, typename Derived>
+inline areg::CharPos StringBase<CharType, Derived>::read_line(StringBase& strResult, areg::CharPos startPos /*= areg::START_POS*/) const
 {
     return read_line(strResult.mData, startPos);
 }
 
-template<typename CharType>
-areg::CharPos StringBase<CharType>::read_line(std::basic_string<CharType>& strResult, areg::CharPos startPos /*= areg::START_POS*/) const
+template<typename CharType, typename Derived>
+areg::CharPos StringBase<CharType, Derived>::read_line(std::basic_string<CharType>& strResult, areg::CharPos startPos /*= areg::START_POS*/) const
 {
     if (!is_valid_position(startPos))
         return areg::END_POS;
@@ -2596,11 +3209,11 @@ areg::CharPos StringBase<CharType>::read_line(std::basic_string<CharType>& strRe
     return (*str == EmptyChar ? areg::END_POS : static_cast<areg::CharPos>(str - mData.c_str()));
 }
 
-template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::make_alphanumeric() noexcept
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::make_alphanumeric() noexcept
 {
     if (mData.empty())
-        return (*this);
+        return self();
 
     CharType* begin = buffer(areg::START_POS);
     CharType* dst = begin;
@@ -2613,15 +3226,15 @@ inline StringBase<CharType>& StringBase<CharType>::make_alphanumeric() noexcept
     *dst = static_cast<CharType>(areg::EndOfString);
     mData.resize(static_cast<uint32_t>(dst - begin));
 
-    return (*this);
+    return self();
 }
 
 //////////////////////////////////////////////////////////////////////////////
 // Template class StringBase Helper
 //////////////////////////////////////////////////////////////////////////
 
-template<typename CharType>
-inline areg::Ordering StringBase<CharType>::compare( areg::CharPos   startPos
+template<typename CharType, typename Derived>
+inline areg::Ordering StringBase<CharType, Derived>::compare( areg::CharPos   startPos
                                                    , const CharType* strOther
                                                    , areg::CharCount count          /*= areg::COUNT_ALL */
                                                    , bool            caseSensitive  /*= true            */ ) const noexcept
@@ -2636,8 +3249,8 @@ inline areg::Ordering StringBase<CharType>::compare( areg::CharPos   startPos
     }
 }
 
-template<typename CharType>
-inline areg::Ordering StringBase<CharType>::compare_exact( areg::CharPos   startPos
+template<typename CharType, typename Derived>
+inline areg::Ordering StringBase<CharType, Derived>::compare_exact( areg::CharPos   startPos
                                                          , const CharType* strOther
                                                          , areg::CharCount count    /*= areg::COUNT_ALL */ ) const noexcept
 {
@@ -2655,8 +3268,8 @@ inline areg::Ordering StringBase<CharType>::compare_exact( areg::CharPos   start
     return result;
 }
 
-template<typename CharType>
-inline areg::Ordering StringBase<CharType>::compare_ignore_case( areg::CharPos   startPos
+template<typename CharType, typename Derived>
+inline areg::Ordering StringBase<CharType, Derived>::compare_ignore_case( areg::CharPos   startPos
                                                                , const CharType* strOther
                                                                , areg::CharCount count      /*= areg::COUNT_ALL */ ) const noexcept
 {
@@ -2692,8 +3305,8 @@ inline areg::Ordering StringBase<CharType>::compare_ignore_case( areg::CharPos  
         return areg::Ordering::Smaller;
 }
 
-template<typename CharType>
-inline areg::CharPos StringBase<CharType>::replace_with( areg::CharPos   startPos
+template<typename CharType, typename Derived>
+inline areg::CharPos StringBase<CharType, Derived>::replace_with( areg::CharPos   startPos
                                                        , areg::CharCount count
                                                        , const CharType *    strReplace
                                                        , areg::CharCount lenReplace )
@@ -2710,8 +3323,8 @@ inline areg::CharPos StringBase<CharType>::replace_with( areg::CharPos   startPo
     return (endPos + diff);
 }
 
-template<typename CharType>
-inline areg::CharPos StringBase<CharType>::replace_with( const CharType * strOrigin
+template<typename CharType, typename Derived>
+inline areg::CharPos StringBase<CharType, Derived>::replace_with( const CharType * strOrigin
                                                        , areg::CharCount lenOrigin
                                                        , const CharType * strReplace
                                                        , areg::CharCount lenReplace
@@ -2720,8 +3333,8 @@ inline areg::CharPos StringBase<CharType>::replace_with( const CharType * strOri
     return replace_with( find_first( strOrigin, startPos, true ), lenOrigin, strReplace, lenReplace);
 }
 
-template<typename CharType>
-inline areg::CharPos StringBase<CharType>::find_first_phrase( const CharType* phrase
+template<typename CharType, typename Derived>
+inline areg::CharPos StringBase<CharType, Derived>::find_first_phrase( const CharType* phrase
                                                             , areg::CharCount count     /* = areg::COUNT_ALL */
                                                             , areg::CharPos startPos    /* = areg::START_POS */) const noexcept
 {
@@ -2735,8 +3348,8 @@ inline areg::CharPos StringBase<CharType>::find_first_phrase( const CharType* ph
     return (pos != static_cast<uint32_t>(std::basic_string<CharType>::npos) ? static_cast<areg::CharPos>(pos) : areg::END_POS);
 }
 
-template<typename CharType>
-inline areg::CharPos StringBase<CharType>::find_phrase(const CharType* phrase, areg::CharPos startPos /*= areg::START_POS*/) const noexcept
+template<typename CharType, typename Derived>
+inline areg::CharPos StringBase<CharType, Derived>::find_phrase(const CharType* phrase, areg::CharPos startPos /*= areg::START_POS*/) const noexcept
 {
     if (phrase == nullptr || is_invalid_position(startPos) || mData.empty())
         return areg::INVALID_POS;
@@ -2760,8 +3373,8 @@ inline areg::CharPos StringBase<CharType>::find_phrase(const CharType* phrase, a
     return (it != mData.end() ? static_cast<areg::CharPos>(std::distance(mData.begin(), it)) : areg::END_POS);
 }
 
-template<typename CharType>
-inline areg::CharPos StringBase<CharType>::find_phrase(const std::basic_string<CharType>& phrase, areg::CharPos startPos /*= areg::START_POS*/) const noexcept
+template<typename CharType, typename Derived>
+inline areg::CharPos StringBase<CharType, Derived>::find_phrase(const std::basic_string<CharType>& phrase, areg::CharPos startPos /*= areg::START_POS*/) const noexcept
 {
     if (is_invalid_position(startPos) || phrase.empty())
         return areg::INVALID_POS;
@@ -2778,14 +3391,14 @@ inline areg::CharPos StringBase<CharType>::find_phrase(const std::basic_string<C
     return (it != mData.end() ? static_cast<areg::CharPos>(std::distance(mData.begin(), it)) : areg::END_POS);
 }
 
-template<typename CharType>
-inline areg::CharPos StringBase<CharType>::find_first_word(const CharType* word, bool caseSensitive, areg::CharPos startPos /*= areg::START_POS*/) const noexcept
+template<typename CharType, typename Derived>
+inline areg::CharPos StringBase<CharType, Derived>::find_first_word(const CharType* word, bool caseSensitive, areg::CharPos startPos /*= areg::START_POS*/) const noexcept
 {
     return (word != nullptr ? find_first_word(std::basic_string<CharType>(word), caseSensitive, startPos) : areg::INVALID_POS);
 }
 
-template<typename CharType>
-inline areg::CharPos StringBase<CharType>::find_first_word(const std::basic_string<CharType>& word, bool caseSensitive, areg::CharPos startPos /*= areg::START_POS*/) const noexcept
+template<typename CharType, typename Derived>
+inline areg::CharPos StringBase<CharType, Derived>::find_first_word(const std::basic_string<CharType>& word, bool caseSensitive, areg::CharPos startPos /*= areg::START_POS*/) const noexcept
 {
     if (is_invalid_position(startPos) || word.empty())
         return areg::INVALID_POS;
@@ -2832,17 +3445,17 @@ inline areg::CharPos StringBase<CharType>::find_first_word(const std::basic_stri
     return result;
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::is_name_char(const CharType checkChar, std::locale& loc) noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::is_name_char(const CharType checkChar, std::locale& loc) noexcept
 {
     constexpr CharType symbols[] = { '_', '\0' };
     return std::isalnum(checkChar, loc) || areg::is_one_of<CharType>(checkChar, symbols);
 }
 
-template<typename CharType>
-inline std::vector<StringBase<CharType>> StringBase<CharType>::split(CharType delimiter) const
+template<typename CharType, typename Derived>
+inline std::vector<Derived> StringBase<CharType, Derived>::split(CharType delimiter) const
 {
-    std::vector<StringBase<CharType>> result;
+    std::vector<Derived> result;
     size_t start{ 0 };
     const size_t len{ mData.length() };
     while (start < len)
@@ -2850,12 +3463,12 @@ inline std::vector<StringBase<CharType>> StringBase<CharType>::split(CharType de
         size_t pos = mData.find(delimiter, start);
         if (pos != std::basic_string<CharType>::npos)
         {
-            result.push_back(StringBase<CharType>(mData.c_str() + start, static_cast<areg::CharCount>(pos - start)));
+            result.emplace_back(mData.c_str() + start, static_cast<areg::CharCount>(pos - start));
             start = pos + 1;
         }
         else
         {
-            result.push_back(StringBase<CharType>(mData.c_str() + start, static_cast<areg::CharCount>(len - start)));
+            result.emplace_back(mData.c_str() + start, static_cast<areg::CharCount>(len - start));
             break;
         }
     }
@@ -2863,13 +3476,13 @@ inline std::vector<StringBase<CharType>> StringBase<CharType>::split(CharType de
     return result;
 }
 
-template<typename CharType>
-inline std::vector<StringBase<CharType>> StringBase<CharType>::split(const StringBase<CharType> & delimiter) const
+template<typename CharType, typename Derived>
+inline std::vector<Derived> StringBase<CharType, Derived>::split(const StringBase & delimiter) const
 {
-    std::vector<StringBase<CharType>> result;
+    std::vector<Derived> result;
     if (delimiter.is_empty())
     {
-        result.push_back(*this);
+        result.push_back(self());
     }
     else
     {
@@ -2879,40 +3492,40 @@ inline std::vector<StringBase<CharType>> StringBase<CharType>::split(const Strin
         size_t pos = mData.find(delimiter.mData, start);
         while (pos != std::basic_string<CharType>::npos)
         {
-            result.push_back(StringBase<CharType>(mData.c_str() + start, static_cast<areg::CharCount>(pos - start)));
+            result.emplace_back(mData.c_str() + start, static_cast<areg::CharCount>(pos - start));
             start = pos + skip;
             pos = (start < len ? mData.find(delimiter.mData, start) : std::basic_string<CharType>::npos);
         }
 
         if (start < len)
         {
-            result.push_back(StringBase<CharType>(mData.c_str() + start, static_cast<areg::CharCount>(len - start)));
+            result.emplace_back(mData.c_str() + start, static_cast<areg::CharCount>(len - start));
         }
     }
 
     return result;
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::starts_with(const StringBase<CharType>& phrase, bool isCaseSensitive /*= true*/) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::starts_with(const StringBase& phrase, bool isCaseSensitive /*= true*/) const noexcept
 {
     return starts_with(phrase.mData, isCaseSensitive);
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::starts_with(const std::basic_string<CharType>& phrase, bool isCaseSensitive /*= true*/) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::starts_with(const std::basic_string<CharType>& phrase, bool isCaseSensitive /*= true*/) const noexcept
 {
     return (phrase.length() <= mData.length() ? starts_with(phrase.c_str(), isCaseSensitive, static_cast<areg::CharCount>(phrase.length())) : false);
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::starts_with(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive /*= true*/) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::starts_with(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive /*= true*/) const noexcept
 {
     return (phrase.length() <= mData.length() ? starts_with(phrase.data(), isCaseSensitive, static_cast<areg::CharCount>(phrase.length())) : false);
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::starts_with(const CharType* phrase, bool isCaseSensitive /*= true*/, areg::CharCount count /*= areg::COUNT_ALL*/) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::starts_with(const CharType* phrase, bool isCaseSensitive /*= true*/, areg::CharCount count /*= areg::COUNT_ALL*/) const noexcept
 {
     count = count != areg::COUNT_ALL ? count : areg::string_length<CharType>(phrase);
     if (areg::is_empty<CharType>(phrase) || (count == 0) || (count > static_cast<areg::CharCount>(mData.length())))
@@ -2925,26 +3538,26 @@ inline bool StringBase<CharType>::starts_with(const CharType* phrase, bool isCas
     }
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::ends_with(const StringBase<CharType>& phrase, bool isCaseSensitive /*= true*/) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::ends_with(const StringBase& phrase, bool isCaseSensitive /*= true*/) const noexcept
 {
     return ends_with(phrase.mData, isCaseSensitive);
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::ends_with(const std::basic_string<CharType>& phrase, bool isCaseSensitive /*= true*/) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::ends_with(const std::basic_string<CharType>& phrase, bool isCaseSensitive /*= true*/) const noexcept
 {
     return (phrase.length() <= mData.length() ? ends_with(phrase.c_str(), isCaseSensitive, static_cast<areg::CharCount>(phrase.length())) : false);
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::ends_with(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive /*= true*/) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::ends_with(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive /*= true*/) const noexcept
 {
     return (phrase.length() <= mData.length() ? ends_with(phrase.data(), isCaseSensitive, static_cast<areg::CharCount>(phrase.length())) : false);
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::ends_with(const CharType* phrase, bool isCaseSensitive /*= true*/, areg::CharCount count /*= areg::COUNT_ALL*/) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::ends_with(const CharType* phrase, bool isCaseSensitive /*= true*/, areg::CharCount count /*= areg::COUNT_ALL*/) const noexcept
 {
     count = count != areg::COUNT_ALL ? count : areg::string_length<CharType>(phrase);
     if (areg::is_empty<CharType>(phrase) || (count == 0) || (count > static_cast<areg::CharCount>(mData.length())))
@@ -2959,8 +3572,8 @@ inline bool StringBase<CharType>::ends_with(const CharType* phrase, bool isCaseS
     }
 }
 
-template<typename CharType>
-inline bool StringBase<CharType>::_has_phrase(const CharType* fullString, const CharType* phrase, areg::CharCount count, const char* locale) const noexcept
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::_has_phrase(const CharType* fullString, const CharType* phrase, areg::CharCount count, const char* locale) const noexcept
 {
     ASSERT((fullString != nullptr) && (phrase != nullptr));
 
@@ -2971,7 +3584,7 @@ inline bool StringBase<CharType>::_has_phrase(const CharType* fullString, const 
     }
     else
     {
-        for (; *phrase != StringBase<CharType>::EmptyChar; ++phrase, ++fullString)
+        for (; *phrase != StringBase<CharType, Derived>::EmptyChar; ++phrase, ++fullString)
         {
             if (areg::make_lower<CharType>(*phrase) != areg::make_lower<CharType>(*fullString))
             {
@@ -2985,93 +3598,613 @@ inline bool StringBase<CharType>::_has_phrase(const CharType* fullString, const 
 }
 
 //////////////////////////////////////////////////////////////////////////
-// StringBase friend operators
+// StringBase conversion and formatting
 //////////////////////////////////////////////////////////////////////////
-template<typename CT>
-inline StringBase<CT> operator + (const StringBase<CT>& lhs, const StringBase<CT>& rhs)
+
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::assign(const OtherCharType* source, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
-    StringBase<CT> result(lhs);
-    return (result += rhs);
+    mData.clear();
+    _append_other(source, count != areg::COUNT_ALL ? count : static_cast<areg::CharCount>(_length(source)));
+    return self();
 }
 
-template<typename CT>
-inline StringBase<CT> operator + (const StringBase<CT>& lhs, const std::basic_string<CT>& rhs)
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::append(const OtherCharType* source, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
-    StringBase<CT> result(lhs);
-    return (result += rhs);
+    _append_other(source, count != areg::COUNT_ALL ? count : static_cast<areg::CharCount>(_length(source)));
+    return self();
 }
 
-template<typename CT>
-inline StringBase<CT> operator + (const StringBase<CT>& lhs, const std::basic_string_view<CT>& rhs)
+template<typename CharType, typename Derived>
+inline Derived StringBase<CharType, Derived>::substr(const CharType* src, const CharType* strPhrase, const CharType** out_next /*= nullptr*/)
 {
-    StringBase<CT> result(lhs);
-    return (result += rhs);
+    Derived result;
+    if (out_next != nullptr)
+    {
+        *out_next = nullptr;
+    }
+
+    if (areg::is_empty<CharType>(src) == false)
+    {
+        areg::CharPos pos = areg::find_first<CharType>(strPhrase, src, areg::START_POS, true, out_next);
+        result.assign(src, areg::is_position_valid(pos) ? pos : areg::COUNT_ALL);
+    }
+
+    return result;
 }
 
-template<typename CT>
-inline StringBase<CT> operator + (const StringBase<CT>& lhs, const CT* rhs)
+template<typename CharType, typename Derived>
+inline int32_t StringBase<CharType, Derived>::make_int32(const CharType* strDigit, areg::Radix radix /*= areg::Radix::Decimal*/, const CharType** end /*= nullptr*/) noexcept
 {
-    StringBase<CT> result(lhs);
-    return (result += rhs);
+    CharType* next{ nullptr };
+    int32_t result{ 0 };
+    if (areg::is_empty<CharType>(strDigit) == false)
+    {
+        if constexpr (std::is_same_v<CharType, char>)
+            result = static_cast<int32_t>(std::strtol(strDigit, &next, static_cast<int32_t>(radix)));
+        else
+            result = static_cast<int32_t>(std::wcstol(strDigit, &next, static_cast<int32_t>(radix)));
+    }
+
+    if (end != nullptr)
+    {
+        *end = next != nullptr ? next : strDigit;
+    }
+
+    return result;
 }
 
-template<typename CT>
-inline StringBase<CT> operator + (const StringBase<CT>& lhs, const CT rhs)
+template<typename CharType, typename Derived>
+inline uint32_t StringBase<CharType, Derived>::make_uint32(const CharType* strDigit, areg::Radix radix /*= areg::Radix::Decimal*/, const CharType** end /*= nullptr*/) noexcept
 {
-    StringBase<CT> result(lhs);
-    return (result += rhs);
+    CharType* next{ nullptr };
+    uint32_t result{ 0 };
+    if (areg::is_empty<CharType>(strDigit) == false)
+    {
+        if constexpr (std::is_same_v<CharType, char>)
+            result = static_cast<uint32_t>(std::strtoul(strDigit, &next, static_cast<int32_t>(radix)));
+        else
+            result = static_cast<uint32_t>(std::wcstoul(strDigit, &next, static_cast<int32_t>(radix)));
+    }
+
+    if (end != nullptr)
+    {
+        *end = next != nullptr ? next : strDigit;
+    }
+
+    return result;
 }
 
-template<typename CT>
-inline StringBase<CT> operator + (const std::basic_string<CT>& lhs, const StringBase<CT>& rhs)
+template<typename CharType, typename Derived>
+inline int64_t StringBase<CharType, Derived>::make_int64(const CharType* strDigit, areg::Radix radix /*= areg::Radix::Decimal*/, const CharType** end /*= nullptr*/) noexcept
 {
-    StringBase<CT> result(lhs);
-    return (result += rhs);
+    CharType* next{ nullptr };
+    int64_t result{ 0 };
+    if (areg::is_empty<CharType>(strDigit) == false)
+    {
+        if constexpr (std::is_same_v<CharType, char>)
+            result = static_cast<int64_t>(std::strtoll(strDigit, &next, static_cast<int32_t>(radix)));
+        else
+            result = static_cast<int64_t>(std::wcstoll(strDigit, &next, static_cast<int32_t>(radix)));
+    }
+
+    if (end != nullptr)
+    {
+        *end = next != nullptr ? next : strDigit;
+    }
+
+    return result;
 }
 
-template<typename CT>
-inline StringBase<CT> operator + (const std::basic_string_view<CT>& lhs, const StringBase<CT>& rhs)
+template<typename CharType, typename Derived>
+inline uint64_t StringBase<CharType, Derived>::make_uint64(const CharType* strDigit, areg::Radix radix /*= areg::Radix::Decimal*/, const CharType** end /*= nullptr*/) noexcept
 {
-    StringBase<CT> result(lhs);
-    return (result += rhs);
+    CharType* next{ nullptr };
+    uint64_t result{ 0 };
+    if (areg::is_empty<CharType>(strDigit) == false)
+    {
+        if constexpr (std::is_same_v<CharType, char>)
+            result = static_cast<uint64_t>(std::strtoull(strDigit, &next, static_cast<int32_t>(radix)));
+        else
+            result = static_cast<uint64_t>(std::wcstoull(strDigit, &next, static_cast<int32_t>(radix)));
+    }
+
+    if (end != nullptr)
+    {
+        *end = next != nullptr ? next : strDigit;
+    }
+
+    return result;
 }
 
-template<typename CT>
-inline StringBase<CT> operator + (const CT* lhs, const StringBase<CT>& rhs)
+template<typename CharType, typename Derived>
+inline float StringBase<CharType, Derived>::make_float(const CharType* strDigit, const CharType** end /*= nullptr*/) noexcept
 {
-    StringBase<CT> result(lhs);
-    return (result += rhs);
+    CharType* next{ nullptr };
+    float result{ 0.0f };
+    if (areg::is_empty<CharType>(strDigit) == false)
+    {
+        if constexpr (std::is_same_v<CharType, char>)
+            result = std::strtof(strDigit, &next);
+        else
+            result = std::wcstof(strDigit, &next);
+    }
+
+    if (end != nullptr)
+    {
+        *end = next != nullptr ? next : strDigit;
+    }
+
+    return result;
 }
 
-template<typename CT>
-inline StringBase<CT> operator + (const CT lhs, const StringBase<CT>& rhs)
+template<typename CharType, typename Derived>
+inline double StringBase<CharType, Derived>::make_double(const CharType* strDigit, const CharType** end /*= nullptr*/) noexcept
 {
-    StringBase<CT> result(lhs);
-    return (result += rhs);
+    CharType* next{ nullptr };
+    double result{ 0.0 };
+    if (areg::is_empty<CharType>(strDigit) == false)
+    {
+        if constexpr (std::is_same_v<CharType, char>)
+            result = std::strtod(strDigit, &next);
+        else
+            result = std::wcstod(strDigit, &next);
+    }
+
+    if (end != nullptr)
+    {
+        *end = next != nullptr ? next : strDigit;
+    }
+
+    return result;
 }
 
-template<typename CT>
-inline const InStream& operator >> (const InStream& stream, StringBase<CT>& input)
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::make_bool(const CharType* strBoolean, const CharType** end /*= nullptr*/) noexcept
 {
-    return (stream >> input.mData);
+    bool result{ false };
+    int32_t lenSkip{ 0 };
+    const int32_t lenTrue{ static_cast<int32_t>(areg::BOOLEAN_TRUE.length()) };
+    const int32_t lenFalse{ static_cast<int32_t>(areg::BOOLEAN_FALSE.length()) };
+    if (areg::compare_strings<CharType, char>(strBoolean, areg::BOOLEAN_TRUE.data(), lenTrue, false) == areg::Ordering::Equal)
+    {
+        result = true;
+        lenSkip = lenTrue;
+    }
+    else if (areg::compare_strings<CharType, char>(strBoolean, areg::BOOLEAN_FALSE.data(), lenFalse, false) == areg::Ordering::Equal)
+    {
+        result = false;
+        lenSkip = lenFalse;
+    }
+
+    if (end != nullptr)
+    {
+        *end = strBoolean + lenSkip;
+    }
+
+    return result;
 }
 
-template<typename CT>
-inline OutStream& operator << (OutStream& stream, const StringBase<CT>& output)
+template<typename CharType, typename Derived>
+inline Derived StringBase<CharType, Derived>::make_string(int32_t number, areg::Radix radix /*= areg::Radix::Decimal*/)
 {
-    return (stream << output.mData);
+    const bool negative{ number < 0 };
+    const uint32_t magnitude{ negative ? 0u - static_cast<uint32_t>(number) : static_cast<uint32_t>(number) };
+    return _make_unsigned<uint32_t>(magnitude, negative, radix);
 }
 
-template<typename CT>
-inline std::ostream & operator << ( std::ostream & stream, const StringBase<CT> & output )
+template<typename CharType, typename Derived>
+inline Derived StringBase<CharType, Derived>::make_string(uint32_t number, areg::Radix radix /*= areg::Radix::Decimal*/)
 {
-    return (stream << output.data( ));
+    return _make_unsigned<uint32_t>(number, false, radix);
 }
 
-template<typename CT>
-inline const std::istream & operator >> ( const std::istream & stream, StringBase<CT> & input )
+template<typename CharType, typename Derived>
+inline Derived StringBase<CharType, Derived>::make_string(int64_t number, areg::Radix radix /*= areg::Radix::Decimal*/)
 {
-    return (stream >> input.data( ));
+    const bool negative{ number < 0 };
+    const uint64_t magnitude{ negative ? 0u - static_cast<uint64_t>(number) : static_cast<uint64_t>(number) };
+    return _make_unsigned<uint64_t>(magnitude, negative, radix);
+}
+
+template<typename CharType, typename Derived>
+inline Derived StringBase<CharType, Derived>::make_string(uint64_t number, areg::Radix radix /*= areg::Radix::Decimal*/)
+{
+    return _make_unsigned<uint64_t>(number, false, radix);
+}
+
+template<typename CharType, typename Derived>
+inline Derived StringBase<CharType, Derived>::make_string(float number)
+{
+    char buffer[areg::MSG_MIN_BUF_SIZE];
+    const int32_t count{ std::snprintf(buffer, areg::MSG_MIN_BUF_SIZE, "%f", static_cast<double>(number)) };
+    return Derived(buffer, count > 0 ? std::min(count, areg::MSG_MIN_BUF_SIZE - 1) : 0);
+}
+
+template<typename CharType, typename Derived>
+inline Derived StringBase<CharType, Derived>::make_string(double number)
+{
+    char buffer[areg::MSG_MIN_BUF_SIZE];
+    const int32_t count{ std::snprintf(buffer, areg::MSG_MIN_BUF_SIZE, "%g", number) };
+    return Derived(buffer, count > 0 ? std::min(count, areg::MSG_MIN_BUF_SIZE - 1) : 0);
+}
+
+template<typename CharType, typename Derived>
+inline Derived StringBase<CharType, Derived>::make_string(bool value)
+{
+    const std::string_view & text{ value ? areg::BOOLEAN_TRUE : areg::BOOLEAN_FALSE };
+    return Derived(text.data(), static_cast<areg::CharCount>(text.length()));
+}
+
+template<typename CharType, typename Derived>
+int32_t StringBase<CharType, Derived>::format_string(CharType* strDst, int32_t count, const CharType* format, ...)
+{
+    if (strDst == nullptr)
+        return -1;
+
+    va_list argptr;
+    va_start(argptr, format);
+    int32_t required{ 0 };
+    const int32_t result{ _format_buffer(strDst, count, format, argptr, required) };
+    va_end(argptr);
+    return result;
+}
+
+template<typename CharType, typename Derived>
+inline int32_t StringBase<CharType, Derived>::format_string_list(CharType* strDst, int32_t count, const CharType* format, va_list argptr)
+{
+    int32_t required{ 0 };
+    return (strDst != nullptr ? _format_buffer(strDst, count, format, argptr, required) : -1);
+}
+
+template<typename CharType, typename Derived>
+inline int32_t StringBase<CharType, Derived>::format_string_list(CharType* strDst, int32_t count, const CharType* format, va_list argptr, int32_t& required)
+{
+    required = 0;
+    return (strDst != nullptr ? _format_buffer(strDst, count, format, argptr, required) : -1);
+}
+
+template<typename CharType, typename Derived>
+Derived& StringBase<CharType, Derived>::format(const CharType* format, ...)
+{
+    va_list argptr;
+    va_start(argptr, format);
+    format_list(format, argptr);
+    va_end(argptr);
+    return self();
+}
+
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::format_list(const CharType* format, va_list argptr)
+{
+    // The largest buffer tried for a cut text whose length the C library does not report.
+    constexpr int32_t maxGrowth{ areg::MSG_EXTRA_BUF_SIZE * 64 };
+
+    mData.clear();
+    if (format == nullptr)
+        return self();
+
+    CharType buffer[areg::MSG_BUF_SIZE];
+    int32_t required{ 0 };
+    va_list args;
+    va_copy(args, argptr);
+    int32_t count{ _format_buffer(buffer, areg::MSG_BUF_SIZE, format, args, required) };
+    va_end(args);
+
+    if (required < areg::MSG_BUF_SIZE)
+    {
+        mData.assign(buffer, static_cast<size_t>(count));
+        return self();
+    }
+
+    int32_t size{ required + 1 };
+    for ( ; ; )
+    {
+        mData.resize(static_cast<size_t>(size));
+        va_copy(args, argptr);
+        count = _format_buffer(mData.data(), size, format, args, required);
+        va_end(args);
+        if ((required < size) || (size >= maxGrowth))
+            break;
+
+        size = std::min(size * 2, maxGrowth);
+    }
+
+    mData.resize(static_cast<size_t>(count));
+    return self();
+}
+
+template<typename CharType, typename Derived>
+inline int32_t StringBase<CharType, Derived>::to_int32(areg::Radix radix /*= areg::Radix::Decimal*/) const noexcept
+{
+    return make_int32(mData.c_str(), radix, nullptr);
+}
+
+template<typename CharType, typename Derived>
+inline uint32_t StringBase<CharType, Derived>::to_uint32(areg::Radix radix /*= areg::Radix::Decimal*/) const noexcept
+{
+    return make_uint32(mData.c_str(), radix, nullptr);
+}
+
+template<typename CharType, typename Derived>
+inline int64_t StringBase<CharType, Derived>::to_int64(areg::Radix radix /*= areg::Radix::Decimal*/) const noexcept
+{
+    return make_int64(mData.c_str(), radix, nullptr);
+}
+
+template<typename CharType, typename Derived>
+inline uint64_t StringBase<CharType, Derived>::to_uint64(areg::Radix radix /*= areg::Radix::Decimal*/) const noexcept
+{
+    return make_uint64(mData.c_str(), radix, nullptr);
+}
+
+template<typename CharType, typename Derived>
+inline float StringBase<CharType, Derived>::to_float() const noexcept
+{
+    return make_float(mData.c_str(), nullptr);
+}
+
+template<typename CharType, typename Derived>
+inline double StringBase<CharType, Derived>::to_double() const noexcept
+{
+    return make_double(mData.c_str(), nullptr);
+}
+
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::to_bool() const noexcept
+{
+    return ((mData.empty() == false) && (areg::compare_ignore_case<CharType, char>(mData.c_str(), areg::BOOLEAN_FALSE.data()) != areg::Ordering::Equal));
+}
+
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::from_int32(int32_t value, areg::Radix radix /*= areg::Radix::Decimal*/)
+{
+    return (*this = make_string(value, radix));
+}
+
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::from_uint32(uint32_t value, areg::Radix radix /*= areg::Radix::Decimal*/)
+{
+    return (*this = make_string(value, radix));
+}
+
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::from_int64(int64_t value, areg::Radix radix /*= areg::Radix::Decimal*/)
+{
+    return (*this = make_string(value, radix));
+}
+
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::from_uint64(uint64_t value, areg::Radix radix /*= areg::Radix::Decimal*/)
+{
+    return (*this = make_string(value, radix));
+}
+
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::from_float(float value)
+{
+    return (*this = make_string(value));
+}
+
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::from_double(double value)
+{
+    return (*this = make_string(value));
+}
+
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::from_bool(bool value)
+{
+    return (*this = make_string(value));
+}
+
+//////////////////////////////////////////////////////////////////////////
+// StringBase hidden helpers
+//////////////////////////////////////////////////////////////////////////
+
+template<typename CharType, typename Derived>
+template<typename CharSrc>
+inline size_t StringBase<CharType, Derived>::_length(const CharSrc* str) noexcept
+{
+    return (str != nullptr ? std::char_traits<CharSrc>::length(str) : 0u);
+}
+
+template<typename CharType, typename Derived>
+inline Derived StringBase<CharType, Derived>::_concat(const CharType* lhs, size_t lhsLen, const CharType* rhs, size_t rhsLen)
+{
+    Derived result;
+    result.mData.reserve(lhsLen + rhsLen);
+    if (lhsLen != 0)
+        result.mData.append(lhs, lhsLen);
+    if (rhsLen != 0)
+        result.mData.append(rhs, rhsLen);
+
+    return result;
+}
+
+template<typename CharType, typename Derived>
+constexpr wchar_t StringBase<CharType, Derived>::_widen(char ch) noexcept
+{
+    return static_cast<wchar_t>(static_cast<unsigned char>(ch));
+}
+
+template<typename CharType, typename Derived>
+constexpr wchar_t StringBase<CharType, Derived>::_widen(wchar_t ch) noexcept
+{
+    return ch;
+}
+
+template<typename CharType, typename Derived>
+inline void StringBase<CharType, Derived>::_append_other(const OtherCharType* source, areg::CharCount count)
+{
+    if ((source == nullptr) || (count <= 0))
+        return;
+
+    const size_t length{ mData.length() };
+    mData.resize(length + static_cast<size_t>(count));
+    CharType* dst{ mData.data() + length };
+    for (areg::CharCount i = 0; i < count; ++i)
+    {
+        if constexpr (std::is_same_v<CharType, wchar_t>)
+            dst[i] = _widen(source[i]);
+        else
+            dst[i] = static_cast<CharType>(source[i]);
+    }
+}
+
+template<typename CharType, typename Derived>
+inline bool StringBase<CharType, Derived>::_is_equal_other(const OtherCharType* other, size_t count) const noexcept
+{
+    if (mData.length() != count)
+        return false;
+
+    const CharType* mine{ mData.data() };
+    for (size_t i = 0; i < count; ++i)
+    {
+        if (_widen(mine[i]) != _widen(other[i]))
+            return false;
+    }
+
+    return true;
+}
+
+template<typename CharType, typename Derived>
+template<uint32_t Base, typename UInt>
+inline Derived StringBase<CharType, Derived>::_make_integer(UInt magnitude, bool negative, int32_t minDigits, bool prefix)
+{
+    constexpr char digits[]{ "0123456789ABCDEF" };
+    constexpr int32_t bufSize{ static_cast<int32_t>(sizeof(UInt) * 8 + 4) };
+
+    CharType buffer[bufSize];
+    CharType* const end{ buffer + bufSize };
+    CharType* pos{ end };
+    do
+    {
+        *(--pos) = static_cast<CharType>(digits[magnitude % Base]);
+        magnitude /= Base;
+        --minDigits;
+    } while (magnitude != 0);
+
+    for ( ; minDigits > 0; --minDigits)
+    {
+        *(--pos) = static_cast<CharType>('0');
+    }
+
+    if (prefix)
+    {
+        *(--pos) = static_cast<CharType>('x');
+        *(--pos) = static_cast<CharType>('0');
+    }
+
+    if (negative)
+    {
+        *(--pos) = static_cast<CharType>('-');
+    }
+
+    return Derived(pos, static_cast<areg::CharCount>(end - pos));
+}
+
+template<typename CharType, typename Derived>
+template<typename UInt>
+inline Derived StringBase<CharType, Derived>::_make_unsigned(UInt magnitude, bool negative, areg::Radix radix)
+{
+    constexpr int32_t digitsOctal{ sizeof(UInt) == sizeof(uint32_t) ? 11 : 22 };
+    constexpr int32_t digitsHex{ static_cast<int32_t>(sizeof(UInt) * 2) };
+
+    switch (radix)
+    {
+    case areg::Radix::Binary:
+        return _make_integer<2u, UInt>(magnitude, negative, 1, false);
+
+    case areg::Radix::Octal:
+        return _make_integer<8u, UInt>(magnitude, negative, digitsOctal, false);
+
+    case areg::Radix::Hexadecimal:
+        return _make_integer<16u, UInt>(magnitude, negative, digitsHex, true);
+
+    case areg::Radix::Decimal:      // fall through
+    case areg::Radix::Automatic:    // fall through
+    default:
+        return _make_integer<10u, UInt>(magnitude, negative, 1, false);
+    }
+}
+
+template<typename CharType, typename Derived>
+inline int32_t StringBase<CharType, Derived>::_format_buffer(CharType* buffer, int32_t count, const CharType* format, va_list argptr, int32_t& required) noexcept
+{
+    required = 0;
+    if ((buffer == nullptr) || (count <= 0))
+        return 0;
+
+    buffer[0] = EmptyChar;
+    if (format == nullptr)
+        return 0;
+
+    int32_t needed{ -1 };
+
+#if defined(__clang__)
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wformat-nonliteral"
+#elif defined(__GNUC__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
+
+    if constexpr (std::is_same_v<CharType, char>)
+    {
+        needed = std::vsnprintf(buffer, static_cast<size_t>(count), format, argptr);
+    }
+    else
+    {
+#if defined(_WIN32)
+        va_list args;
+        va_copy(args, argptr);
+        needed = ::_vscwprintf(format, args);
+        va_end(args);
+        if (needed >= 0)
+        {
+            ::_vsnwprintf_s(buffer, static_cast<size_t>(count), _TRUNCATE, format, argptr);
+        }
+#else   // !defined(_WIN32)
+        errno = 0;
+        needed = std::vswprintf(buffer, static_cast<size_t>(count), format, argptr);
+        if ((needed < 0) && (errno != EILSEQ))
+        {
+            // The text is cut and its full length is unknown.
+            buffer[count - 1] = EmptyChar;
+            required = count;
+            return static_cast<int32_t>(std::wcslen(buffer));
+        }
+#endif  // defined(_WIN32)
+    }
+
+#if defined(__clang__)
+    #pragma clang diagnostic pop
+#elif defined(__GNUC__)
+    #pragma GCC diagnostic pop
+#endif
+
+    if (needed < 0)
+    {
+        buffer[0] = EmptyChar;
+        return 0;
+    }
+
+    required = needed;
+    return (needed < count ? needed : count - 1);
+}
+
+template<typename CharType, typename Derived>
+inline Derived& StringBase<CharType, Derived>::self() noexcept
+{
+    return static_cast<Derived&>(*this);
+}
+
+template<typename CharType, typename Derived>
+inline const Derived& StringBase<CharType, Derived>::self() const noexcept
+{
+    return static_cast<const Derived&>(*this);
 }
 
 } // namespace areg
