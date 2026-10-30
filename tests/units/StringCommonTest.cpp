@@ -316,7 +316,12 @@ TYPED_TEST(StringCommonConstruct, CopyAndMove)
     S original(TXT("Copy Me, a string long enough to be on the heap"));
     const S copy(original);
     EXPECT_EQ(copy, original);
-    EXPECT_NE(copy.as_string(), original.as_string());
+
+    S modified(original);
+    modified += TXT("!");
+    EXPECT_STREQ(modified.as_string(), TXT("Copy Me, a string long enough to be on the heap!"));
+    EXPECT_STREQ(original.as_string(), TXT("Copy Me, a string long enough to be on the heap"));
+    EXPECT_STREQ(copy.as_string(), TXT("Copy Me, a string long enough to be on the heap"));
 
     const S moved(std::move(original));
     EXPECT_STREQ(moved.as_string(), TXT("Copy Me, a string long enough to be on the heap"));
