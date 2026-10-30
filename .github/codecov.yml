@@ -1,0 +1,71 @@
+# Codecov settings of areg-sdk. The reports are made and uploaded by
+# .github/workflows/coverage.yml: one per flag, each measured on framework/ only.
+#   unit     -- the unit tests (ctest).
+#   examples -- the example applications (tools/intern/run-all-examples.py).
+# The project total and the README badge are the union of both flags.
+
+codecov:
+  # Codecov reports as soon as the coverage job uploads, whatever the other workflows say.
+  require_ci_to_pass: false
+
+coverage:
+  precision: 2
+  round: down
+  range: "50...90"
+  status:
+    # Reported on every pull request, never blocking it.
+    project:
+      default:
+        informational: true
+    patch:
+      default:
+        informational: true
+
+comment:
+  layout: "header, diff, flags, components"
+  behavior: default
+  require_changes: false
+
+flag_management:
+  default_rules:
+    carryforward: false
+  individual_flags:
+    - name: unit
+      paths:
+        - framework/
+    - name: examples
+      paths:
+        - framework/
+
+component_management:
+  individual_components:
+    - component_id: areg
+      name: areg
+      paths:
+        - framework/areg/**
+    - component_id: aregextend
+      name: aregextend
+      paths:
+        - framework/aregextend/**
+    - component_id: areglogger
+      name: areglogger
+      paths:
+        - framework/areglogger/**
+    - component_id: logcollector
+      name: logcollector
+      paths:
+        - framework/logcollector/**
+    - component_id: logobserver
+      name: logobserver
+      paths:
+        - framework/logobserver/**
+    - component_id: mtrouter
+      name: mtrouter
+      paths:
+        - framework/mtrouter/**
+
+ignore:
+  - "examples/**"
+  - "tests/**"
+  - "thirdparty/**"
+  - "product/**"
