@@ -29,6 +29,8 @@
 #if defined(__linux__)
     #include <fstream>
     #include <string>
+    #include <sys/syscall.h>
+    #include <unistd.h>
 #endif  // defined(__linux__)
 
 namespace
@@ -61,6 +63,42 @@ namespace
         }
 
         return -1;
+    }
+
+    // Returns the ID of the calling thread in the kernel.
+    pid_t thread_id()
+    {
+        return static_cast<pid_t>(::syscall(SYS_gettid));
+    }
+
+    // Waits up to 'timeoutMs' until the thread 'tid' of this process is gone. Returns false if it is still there.
+    // The kernel removes a joined thread from the process a moment after the join returns.
+    bool thread_gone(pid_t tid, int64_t timeoutMs)
+    {
+        const std::string task{ "/proc/self/task/" + std::to_string(tid) };
+        const Clock::time_point start{ Clock::now() };
+        bool gone{ ::access(task.c_str(), F_OK) != 0 };
+        while ((gone == false) && (elapsed_ms(start) < timeoutMs))
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            gone = (::access(task.c_str(), F_OK) != 0);
+        }
+
+        return gone;
+    }
+
+    // Returns the number of threads once it falls to 'expected', or the last count read after 'timeoutMs'.
+    int64_t thread_count_reaching(int64_t expected, int64_t timeoutMs)
+    {
+        const Clock::time_point start{ Clock::now() };
+        int64_t count{ thread_count() };
+        while ((count > expected) && (elapsed_ms(start) < timeoutMs))
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            count = thread_count();
+        }
+
+        return count;
     }
 #endif  // defined(__linux__)
 }
@@ -173,7 +211,9 @@ TEST(SyncTimerTest, many_timers_share_one_thread)
 {
     constexpr uint32_t  COUNT   { 50u };
     // Starts the helper thread a sanitizer creates on the first thread start, so it is in the baseline.
-    std::thread([]() {}).join();
+    pid_t first{ 0 };
+    std::thread([&first]() { first = thread_id(); }).join();
+    ASSERT_TRUE(thread_gone(first, 1'000)) << "the first thread outlived its join";
     const int64_t before{ thread_count() };
     if (before < 0)
     {
@@ -200,7 +240,7 @@ TEST(SyncTimerTest, many_timers_share_one_thread)
 
     timers.clear();
     EXPECT_LE(most - before, 1) << COUNT << " timers ran on " << (most - before) << " extra threads";
-    EXPECT_EQ(thread_count(), before) << "the timer thread outlived the last timer";
+    EXPECT_EQ(thread_count_reaching(before, 1'000), before) << "the timer thread outlived the last timer";
 }
 
 #endif  // defined(__linux__)

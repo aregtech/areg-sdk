@@ -540,7 +540,11 @@ void SystemController::_start_unload( const String & modelName )
 {
     _set_model_state(modelName, areg::ModelState::Unloading);
     mUnloadAfterLoad.erase(std::remove(mUnloadAfterLoad.begin(), mUnloadAfterLoad.end(), modelName), mUnloadAfterLoad.end());
-    mDeferred.erase(std::remove_if(mDeferred.begin(), mDeferred.end(), [&modelName](const Deferred & deferred) { return (deferred.mModel == modelName); }), mDeferred.end());
+    for (auto pos = mDeferred.begin(); pos != mDeferred.end(); )
+    {
+        pos = (pos->mModel == modelName) ? mDeferred.erase(pos) : pos + 1;
+    }
+
     for (ThreadRecord & record : mThreads)
     {
         if (record.mModel == modelName)
@@ -873,7 +877,7 @@ void SystemController::_complete_pending()
     }
 }
 
-void SystemController::_exit_process( int32_t culprit, const char * reason )
+void SystemController::_exit_process( int32_t culprit, [[maybe_unused]] const char * reason )
 {
     LOG_SCOPE( areg_component_private_SystemController, _exit_process );
     LOG_ERR("The failure policy Exit ends the process: %s", reason);

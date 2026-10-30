@@ -167,7 +167,7 @@ inline bool _writeLine(FileBase& file, const CharType* buffer)
         return false;
 
     const uint32_t byteLen = static_cast<uint32_t>(areg::string_line_length<CharType>(buffer)) * sizeof(CharType);
-    return (file.write(reinterpret_cast<const uint8_t*>(buffer), byteLen) == byteLen) && file.write_char(StringBase<CharType>::NewLine);
+    return (file.write(reinterpret_cast<const uint8_t*>(buffer), byteLen) == byteLen) && file.write_char(static_cast<CharType>(areg::EndOfLine));
 }
 
 template<typename CharType>

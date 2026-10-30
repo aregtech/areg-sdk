@@ -44,4 +44,9 @@
     #include "gtest/gtest.h"
 #endif  // defined(_MSC_VER) && (_MSC_VER > 1200)
 
+// The typed test suite macro of a googletest older than 1.10.
+#if !defined(TYPED_TEST_SUITE)
+    #define TYPED_TEST_SUITE TYPED_TEST_CASE
+#endif  // !defined(TYPED_TEST_SUITE)
+
 #endif // !AREG_TESTS_UNITS_GUNITTESTS_HPP

@@ -87,6 +87,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     StringDefsTest2.cpp
     StringDefsTest3.cpp
     StringDefsTest4.cpp 
+    StringCommonTest.cpp
     StringTest.cpp
     StringUtilsTest.cpp
     SyncTimerTest.cpp
@@ -94,5 +95,5 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     WorkerThreadTest.cpp
 )
 
-# The log database tests use the SQLite wrappers of aregextend.
-target_link_libraries("${AREG_UNIT_TEST_PROJECT}" PRIVATE aregextend ${AREG_SQLITE_LIB_REF})
+# The log database tests use the SQLite wrappers of aregextend, which every executable links.
+target_link_libraries("${AREG_UNIT_TEST_PROJECT}" PRIVATE ${AREG_SQLITE_LIB_REF})

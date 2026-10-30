@@ -155,6 +155,10 @@ command -v "${CXX_BIN}" >/dev/null 2>&1 || die "Compiler '${CXX_BIN}' not found 
 COMMON_DBG="-g -O1 -fno-omit-frame-pointer -fno-optimize-sibling-calls"
 ASAN_FLAGS="-fsanitize=address,undefined -fsanitize-address-use-after-scope ${COMMON_DBG}"
 TSAN_FLAGS="-fsanitize=thread ${COMMON_DBG}"
+# GCC reports every atomic_thread_fence, which ThreadSanitizer does not model.
+if [[ "${FAMILY}" == "gnu" ]]; then
+    TSAN_FLAGS="${TSAN_FLAGS} -Wno-tsan"
+fi
 UBSAN_FLAGS="-fsanitize=undefined -fno-sanitize-recover=all ${COMMON_DBG}"
 
 # --------------------------------------------------------------------------

@@ -51,9 +51,23 @@ namespace
         bool                    connected   { false };      //!< True when the observer is connected to the log collector.
         uint32_t                notices     { 0u };         //!< Rows of the source or the collector that report dropped messages.
         uint64_t                dropped     { 0u };         //!< Messages the source or the collector reported as dropped.
+        uint32_t                enters      { 0u };         //!< Scope enter rows of the source.
+        uint32_t                exits       { 0u };         //!< Scope exit rows of the source.
     };
 
     Run _run;
+
+    //!< Reads the decimal number that follows 'prefix' at the start of 'text'. Returns false if there is none.
+    bool read_number(const char * text, const char * prefix, unsigned long long & number)
+    {
+        const size_t length{ std::strlen(prefix) };
+        if (std::strncmp(text, prefix, length) != 0)
+            return false;
+
+        char * end{ nullptr };
+        number = std::strtoull(text + length, &end, 10);
+        return (end != text + length);
+    }
 
     void on_log_message(const unsigned char * logBuffer, uint32_t size)
     {
@@ -61,15 +75,27 @@ namespace
             return;
 
         const areg::LogEntry & entry{ *reinterpret_cast<const areg::LogEntry *>(logBuffer) };
-        if ((entry.logMsgType != areg::LogMessageType::MessageText) || (entry.logDataType != areg::LogDataType::Remote))
+        if (entry.logDataType != areg::LogDataType::Remote)
             return;
+
+        // A scope row of the source passes the same logging queue as its messages.
+        if (entry.logMsgType != areg::LogMessageType::MessageText)
+        {
+            if (entry.logScopeId != areg::LOG_SCOPE_ID_NONE)
+            {
+                _run.enters += (entry.logMsgType == areg::LogMessageType::ScopeEnter) ? 1u : 0u;
+                _run.exits  += (entry.logMsgType == areg::LogMessageType::ScopeExit)  ? 1u : 0u;
+            }
+
+            return;
+        }
 
         // A row without a scope is a notice of the framework, not a message of the source.
         if (entry.logScopeId == areg::LOG_SCOPE_ID_NONE)
         {
             unsigned long long count{ 0u };
-            if ((std::sscanf(entry.logMessage, "Dropped [ %llu ]", &count) == 1) ||
-                (std::sscanf(entry.logMessage, "The log collector dropped %llu", &count) == 1))
+            if (read_number(entry.logMessage, "Dropped [ ", count) ||
+                read_number(entry.logMessage, "The log collector dropped ", count))
             {
                 ++_run.notices;
                 _run.dropped += count;
@@ -201,7 +227,10 @@ int main(int argc, char ** argv)
                , static_cast<double>(received) * 1e6 / static_cast<double>(spanUs), (database != nullptr) ? "on" : "off");
     if (_run.notices != 0u)
     {
-        std::printf("35 logsink   | dropped notices %u | dropped messages %llu\n", _run.notices, static_cast<unsigned long long>(_run.dropped));
+        // An enter row without its exit row, or the other way round, is a scope row that was dropped.
+        const uint32_t scopesLost{ (_run.enters > _run.exits) ? _run.enters - _run.exits : _run.exits - _run.enters };
+        std::printf("35 logsink   | dropped notices %u | dropped messages %llu | scope rows lost %u\n"
+                   , _run.notices, static_cast<unsigned long long>(_run.dropped), scopesLost);
     }
 
     std::printf("35 log trip  | P50 %.0f us | P90 %.0f us | P99 %.0f us | P99.9 %.0f us | max %.0f us | mean %.0f us\n"

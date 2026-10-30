@@ -271,7 +271,7 @@ void PropertyKey::set_values(const String& section, const String& property, cons
 
 inline void PropertyKey::_parse_key(const String& key)
 {
-    std::vector<StringBase<char>> list = key.split(areg::SYNTAX_OBJECT_SEPARATOR);
+    std::vector<String> list = key.split(areg::SYNTAX_OBJECT_SEPARATOR);
     reset();
 
     if (list.size() != 0)

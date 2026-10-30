@@ -34,6 +34,9 @@
 
 #include <stdarg.h>
 #include <wchar.h>
+#if defined(__APPLE__)
+    #include <xlocale.h>
+#endif  // defined(__APPLE__)
 
 /**
  * \brief   String namespace to work with null-terminated strings.
@@ -1336,6 +1339,31 @@ namespace areg::str {
         }
     }
 
+    /**
+     * \brief   Formats a wide text as 'vswprintf' does; on macOS through a UTF-8 locale.
+     **/
+    inline int wide_vprintf(wchar_t* buffer, size_t count, const wchar_t* format, va_list argptr) noexcept
+    {
+#if defined(__clang__)
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wformat-nonliteral"
+#elif defined(__GNUC__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
+#if defined(__APPLE__)
+        static const locale_t _utf8{ ::newlocale(LC_CTYPE_MASK, "UTF-8", nullptr) };
+        return ::vswprintf_l(buffer, count, _utf8, format, argptr);
+#else   // !defined(__APPLE__)
+        return std::vswprintf(buffer, count, format, argptr);
+#endif  // defined(__APPLE__)
+#if defined(__clang__)
+    #pragma clang diagnostic pop
+#elif defined(__GNUC__)
+    #pragma GCC diagnostic pop
+#endif
+    }
+
 } // namespace
 
 //////////////////////////////////////////////////////////////////////////
@@ -1552,20 +1580,7 @@ inline bool areg::is_buffer_fit( const wchar_t * format, va_list argptr ) noexce
     wchar_t buf[ size ]{ 0 };
     va_list argcopy;
     va_copy( argcopy, argptr );
-    // format is intentionally a runtime parameter, suppress -Wformat-nonliteral
-#if defined(__clang__)
-    #pragma clang diagnostic push
-    #pragma clang diagnostic ignored "-Wformat-nonliteral"
-#elif defined(__GNUC__)
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wformat-nonliteral"
-#endif
-    int32_t charCount = vswprintf( buf, size, format, argcopy );
-#if defined(__clang__)
-    #pragma clang diagnostic pop
-#elif defined(__GNUC__)
-    #pragma GCC diagnostic pop
-#endif
+    int32_t charCount = areg::str::wide_vprintf( buf, static_cast<size_t>(size), format, argcopy );
     va_end( argcopy );
 
     return (charCount >= 0) && (charCount < size);

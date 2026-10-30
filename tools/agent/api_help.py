@@ -75,6 +75,12 @@ CONSTANT = re.compile(r'^\s*(?:inline\s+|static\s+)*'
 # A deleted constructor, the copy guard and the self() helper are shape, not API.
 BOILERPLATE = re.compile(r'=\s*delete|AREG_NOCOPY|\bself\s*\(')
 
+# The owner of a brace that opens a function body: nothing inside one is a declaration.
+BODY = '{body}'
+
+# "using Base::Base;" and "using Base::operator =;" inside a class.
+USING = re.compile(r'^\s*using\s+(?:[\w:]*::)?(\w+)::(operator\s*=|\w+)\s*;')
+
 NOT_A_NAME = frozenset("""
 if for while switch return catch sizeof alignof decltype static_assert throw
 noexcept explicit operator delete new
@@ -157,6 +163,7 @@ class Header(object):
         self.enums = {}          #!< enumeration name -> [enumerator]
         self.constants = {}      #!< constant name -> (owner, signature, doc)
         self.bases = {}          #!< class name -> [public base class name]
+        self.usings = {}         #!< class name -> {'constructors', 'operator='} it takes from a base
         self.seen = set()
         self._parse()
 
@@ -174,21 +181,34 @@ class Header(object):
         start = 0
         lines = text.splitlines()
         for number, line in enumerate(lines):
+            in_body = pending == BODY or any(entry[1] == BODY for entry in owners)
             head = CLASS_HEAD.match(line)
-            if head and '(' not in line.split(head.group(1))[0]:
+            if head and not in_body and '(' not in line.split(head.group(1))[0]:
                 pending = head.group(1)
                 self._bases(pending, line, lines[number + 1:number + 4])
-            if buffer or ('(' in line and ';' not in line.split('(')[0]):
+            used = USING.match(line) if not in_body else None
+            if used:
+                cls = next((entry[1] for entry in reversed(owners) if entry[1] and entry[1] != BODY), None)
+                taken = ('constructors' if used.group(1) == used.group(2)
+                         else 'operator=' if used.group(2).startswith('operator') else None)
+                if cls and taken:
+                    self.usings.setdefault(cls, set()).add(taken)
+            if not in_body and (buffer or ('(' in line and ';' not in line.split('(')[0])):
                 if not buffer:
                     start = number
                 buffer += ' ' + line.strip()
                 if buffer.count('(') <= buffer.count(')'):
                     statement = buffer.strip()
                     buffer = ''
-                    # A constructor whose initializer list starts on the next line.
+                    # A constructor whose initializer list, or a friend whose body,
+                    # starts on the next line.
                     following = lines[number + 1].strip() if number + 1 < len(lines) else ''
                     if following.startswith(':') and not following.startswith('::'):
                         statement += ' {'
+                    elif following.startswith('{') and statement.startswith('friend '):
+                        statement += ' {'
+                    if '{' in statement and not statement.endswith(';'):
+                        pending = BODY
                     self._declaration(statement, owners, raw_lines, start)
             opened = line.count('{')
             closed = line.count('}')
@@ -260,7 +280,7 @@ class Header(object):
             return
         if BOILERPLATE.search(statement) or name.startswith('_'):
             return
-        owner = next((entry[1] for entry in reversed(owners) if entry[1]), None)
+        owner = next((entry[1] for entry in reversed(owners) if entry[1] and entry[1] != BODY), None)
         doc = doc_before(raw_lines, start)
         signature = statement + ';'
         if (name, owner, signature) in self.seen:
@@ -477,14 +497,20 @@ def lineage(headers, name):
     return chain
 
 
-def inherited(headers, base, below):
+def usings(headers, name):
+    """What a class takes from its base by a using-declaration: 'constructors', 'operator='."""
+    return set().union(*(header.usings.get(name, set()) for header in headers))
+
+
+def inherited(headers, base, below, assignment=False):
     """The names a base declares that a class below it inherits: no constructor, destructor
-    or assignment, which every class declares for itself."""
+    or assignment, which every class declares for itself, unless it takes the assignment
+    by a using-declaration."""
     hidden = set(below) | {base}
     return [(member, header) for header in headers
             for member, owner, _signature, _doc in header.members
             if owner == base and member not in hidden and member.lstrip('~') not in hidden
-            and member != 'operator=']
+            and (assignment or member != 'operator=')]
 
 
 def answer_class(headers, name, full):
@@ -502,8 +528,18 @@ def answer_class(headers, name, full):
             print('  {}'.format(signature))
     if found:
         chain = lineage(headers, name)
+        taken = usings(headers, name)
+        if 'constructors' in taken and len(chain) > 1:
+            constructors = [signature for header in headers
+                            for member, owner, signature, _doc in header.members
+                            if owner == chain[1] and member == chain[1] and '~' not in signature
+                            and not re.search(r'\(\s*(?:const\s+)?' + chain[1] + r'\s*&', signature)]
+            print('constructors inherited from areg::{} -- {} declaration(s), called as {}(...)'
+                  .format(chain[1], len(constructors), name))
+            for signature in constructors:
+                print('  {}'.format(signature))
         for index, base in enumerate(chain[1:], 1):
-            entries = inherited(headers, base, chain[:index])
+            entries = inherited(headers, base, chain[:index], index == 1 and 'operator=' in taken)
             if not entries:
                 continue
             names = list(dict.fromkeys(member for member, _header in entries))

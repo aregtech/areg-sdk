@@ -74,7 +74,7 @@ uint32_t PropertyValue::identifier( const std::vector<Identifier> & idList ) con
         return Identifier::BAD_IDENTIFIER_VALUE;
     
     uint32_t result = Identifier::BAD_IDENTIFIER_VALUE;
-    std::vector<StringBase<char>> list { mValue.split(areg::SYNTAX_VALUE_LIST_DELIMITER) };
+    std::vector<String> list { mValue.split(areg::SYNTAX_VALUE_LIST_DELIMITER) };
     for (auto& entry : list)
     {
         String value{ entry.trim_all() };
@@ -103,7 +103,7 @@ ArrayList<Identifier> PropertyValue::identifier_list(const std::vector<Identifie
     ArrayList<Identifier> result;
     if ((lookupList.empty() == false) && (mValue.is_empty() == false))
     {
-        std::vector<StringBase<char>> list{ mValue.split(areg::SYNTAX_VALUE_LIST_DELIMITER) };
+        std::vector<String> list{ mValue.split(areg::SYNTAX_VALUE_LIST_DELIMITER) };
         for (auto& entry : list)
         {
             String value{ entry.trim_all() };
@@ -162,7 +162,7 @@ ArrayList<String> PropertyValue::value_list(bool makeUnique /*= false*/) const
     ArrayList<String> result;
     if (mValue.is_empty() == false)
     {
-        std::vector<StringBase<char>> list{ mValue.split(areg::SYNTAX_VALUE_LIST_DELIMITER) };
+        std::vector<String> list{ mValue.split(areg::SYNTAX_VALUE_LIST_DELIMITER) };
         for (auto& entry : list)
         {
             String value{ entry.trim_all() };

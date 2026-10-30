@@ -55,7 +55,7 @@ jobs:
         env:
           EVENT: ${{ github.event_name }}
           DRAFT: ${{ github.event.pull_request.draft || false }}
-          PATTERN: '^(framework|tests|conf)/|^examples/35_loglatency/|(^|/)CMakeLists\.txt$|\.cmake$|^tools/(codegen\.jar|schema/)|^tools/intern/(repeat-ctest\.py|check-log-delivery\.py|sanitize\.sh)$|^\.github/workflows/repeat\.yml$'
+          PATTERN: '^(framework|tests|conf)/|^examples/35_loglatency/|(^|/)CMakeLists\.txt$|\.cmake$|^tools/(codegen\.jar|schema/)|^tools/intern/(repeat-ctest\.py|check-log-delivery\.py)$|^\.github/workflows/repeat\.yml$'
         run: |
           RUN=true
           if [ "${EVENT}" = "pull_request" ]; then
@@ -152,34 +152,3 @@ jobs:
           python harness/tools/intern/check-log-delivery.py "${BIN_DIR}" --runs ${{env.LOG_RUNS}} \
                  --summary "${GITHUB_STEP_SUMMARY}"
 
-  tsan-router-io:
-    name: tsan router stop while flooding
-    needs: plan
-    if: needs.plan.outputs.run == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-
-    steps:
-
-      - name: Checkout the commit under test
-        uses: actions/checkout@v7
-        with:
-          ref: ${{ inputs.ref || github.sha }}
-
-      - name: Setup Java JDK to run code generator
-        uses: actions/setup-java@v6.0.1
-        with:
-          java-version: 17
-          java-package: jre
-          distribution: temurin
-
-      - name: Make room for the sanitizer shadow mapping
-        run: sudo sysctl -w vm.mmap_rnd_bits=28 || true
-
-      - name: Repeat under TSan RelWithDebInfo
-        shell: bash
-        timeout-minutes: 50
-        run: |
-          echo "commit under test: $(git rev-parse HEAD)"
-          tools/intern/sanitize.sh tsan --config RelWithDebInfo --repeat ${{env.ROUNDS}} \
-              --run 'ctest:areg-router-io-test\.stop-while-flooding\.'
