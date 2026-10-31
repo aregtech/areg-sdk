@@ -60,7 +60,7 @@ void DateTime::format_time(const DateTime& dateTime, String& result, std::string
     }
     else
     {
-        result = String::EmptyChar;
+        result.clear();
     }
 }
 

@@ -96,8 +96,12 @@ String ServiceItem::to_string() const
 {
     String result(static_cast<uint32_t>(0xFF));
 
-    result.append(mServiceName.is_empty() ? String::make_string(mMagicNum) : mServiceName)
-          .append(areg::COMPONENT_PATH_SEPARATOR)
+    if (mServiceName.is_empty())
+        result.append(areg::ADDRESS_NUMBER_MARKER).append(String::make_string(mMagicNum));
+    else
+        result.append(mServiceName);
+
+    result.append(areg::COMPONENT_PATH_SEPARATOR)
           .append(mServiceVersion.to_string())
           .append(areg::COMPONENT_PATH_SEPARATOR)
           .append(String::make_string(static_cast<int32_t>(mServiceType), areg::Radix::Decimal));
@@ -112,7 +116,10 @@ void ServiceItem::from_string(  const char* pathService, const char** nextPart /
     mServiceVersion     = String::substr(strSource, areg::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
     String serviceType  = String::substr(strSource, areg::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
     mServiceType        = static_cast<areg::ServiceType>(serviceType.to_int32());
-    mMagicNum           = mServiceName.is_numeric() ? mServiceName.to_uint32() : ServiceItem::_magic_number(*this);
+    if (areg::parse_address_number(mServiceName.data(), mMagicNum))
+        mServiceName.clear();
+    else
+        mMagicNum = ServiceItem::_magic_number(*this);
 
     if (nextPart != nullptr)
         *nextPart = strSource;

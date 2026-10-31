@@ -295,7 +295,7 @@ public:
      *
      * \param[out] sysTime     Calendar time structure to receive broken-down date and time values.
      **/
-    inline void date_time(areg::CalendarTime& sysTime) noexcept;
+    inline void date_time(areg::CalendarTime& sysTime) const noexcept;
 
     /**
      * \brief   Sets date and time from calendar time structure, converting to microseconds since Unix epoch.
@@ -309,7 +309,7 @@ public:
      *
      * \param[out] time    tm structure to receive broken-down date and time values.
      **/
-    inline void date_time(struct tm& time) noexcept;
+    inline void date_time(struct tm& time) const noexcept;
 
     /**
      * \brief   Sets date and time from tm structure, converting to microseconds since Unix epoch.
@@ -325,11 +325,11 @@ private:
     /**
      * \brief   Broken-down date components for shared use by calendar extraction methods.
      **/
-    struct DateParts { uint32_t years; uint32_t month; uint32_t day; };
+    struct DateParts { uint32_t year; uint32_t month; uint32_t day; uint32_t dayOfYear; };
 
     /**
-     * \brief   Decomposes the stored microsecond value into broken-down date components.
-     * \return  DateParts with approximate years since Unix epoch, month (1-12) and day of month (1-31).
+     * \brief   Decomposes the stored microsecond value into the UTC calendar date.
+     * \return  DateParts with the calendar year, month (1-12), day of month (1-31) and day of year (1-366).
      **/
     [[nodiscard]]
     inline constexpr DateParts _decompose() const noexcept;
@@ -463,27 +463,25 @@ inline constexpr bool DateTime::is_valid() const noexcept
 
 inline constexpr uint32_t DateTime::year() const noexcept
 {
-    constexpr double   _secsInYear{ 60.0 * 60.0 * 24.0 * 365.25 };
-    constexpr uint32_t _unixEpoch{ 1970 };
-
-    uint64_t secs{ mDateTime / areg::SEC_TO_MICROSECS };
-    return static_cast<uint32_t>(static_cast<double>(secs) / _secsInYear) + _unixEpoch;
+    return _decompose().year;
 }
 
 inline constexpr DateTime::DateParts DateTime::_decompose() const noexcept
 {
-    constexpr uint32_t _DAYS_IN_MONTH[]{ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-    uint32_t days       = static_cast<uint32_t>(mDateTime / areg::DAY_TO_MICROSECS);
-    uint32_t years      = days / 365u;
-    uint32_t remainDays = (days % 365u) - ((years + 1u) / 4u);
-    uint32_t month      = 1u;
-    while (remainDays >= _DAYS_IN_MONTH[month - 1u])
-    {
-        remainDays -= _DAYS_IN_MONTH[month - 1u];
-        ++month;
-    }
+    // Days counted from 0000-03-01, in 400-year eras of 146097 days; a year starts on 1 March.
+    const uint32_t days { static_cast<uint32_t>(mDateTime / areg::DAY_TO_MICROSECS) + 719468u };
+    const uint32_t era  { days / 146097u };
+    const uint32_t doe  { days - era * 146097u };
+    const uint32_t yoe  { (doe - doe / 1460u + doe / 36524u - doe / 146096u) / 365u };
+    const uint32_t doy  { doe - (365u * yoe + yoe / 4u - yoe / 100u) };
+    const uint32_t mp   { (5u * doy + 2u) / 153u };
+    const uint32_t day  { doy - (153u * mp + 2u) / 5u + 1u };
+    const uint32_t month{ mp < 10u ? mp + 3u : mp - 9u };
+    const uint32_t year { yoe + era * 400u + (month <= 2u ? 1u : 0u) };
+    const uint32_t leap { ((year % 4u == 0u) && ((year % 100u != 0u) || (year % 400u == 0u))) ? 1u : 0u };
+    const uint32_t dayOfYear{ month > 2u ? doy + 60u + leap : doy - 305u };
 
-    return { years, month, remainDays + 1u };
+    return { year, month, day, dayOfYear };
 }
 
 inline constexpr uint32_t DateTime::month() const noexcept
@@ -529,24 +527,16 @@ inline constexpr uint32_t DateTime::microseconds() const noexcept
 
 inline constexpr uint32_t DateTime::day_of_year() const noexcept
 {
-    constexpr uint32_t _DAYS_IN_MONTH[]{ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-    const DateParts p = _decompose();
-    uint32_t dayOfYear = 0u;
-    for (uint32_t i = 0u; i < p.month - 1u; ++i)
-        dayOfYear += _DAYS_IN_MONTH[i];
-
-    return (dayOfYear + p.day);
+    return _decompose().dayOfYear;
 }
 
 inline constexpr uint32_t DateTime::day_of_week() const noexcept
 {
-    const DateParts p   = _decompose();
-    const uint32_t  dow = (p.day + ((13u * (p.month + 1u)) / 5u) + p.years
-                        + (p.years / 4u) - (p.years / 100u) + (p.years / 400u)) % 7u;
-    return (dow + 6u) % 7u;
+    // 1970-01-01 is a Thursday, which is 3 when Monday is 0.
+    return static_cast<uint32_t>((mDateTime / areg::DAY_TO_MICROSECS + 3u) % 7u);
 }
 
-inline void DateTime::date_time(areg::CalendarTime& sysTime) noexcept
+inline void DateTime::date_time(areg::CalendarTime& sysTime) const noexcept
 {
     areg::to_system_time(mDateTime, sysTime);
 }
@@ -556,7 +546,7 @@ inline void DateTime::set_date_time(const areg::CalendarTime& sysTime) noexcept
     mDateTime = areg::to_time(sysTime);
 }
 
-inline void DateTime::date_time(tm& time) noexcept
+inline void DateTime::date_time(tm& time) const noexcept
 {
     areg::to_tm(mDateTime, time);
 }

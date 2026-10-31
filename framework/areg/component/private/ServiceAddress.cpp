@@ -111,7 +111,10 @@ ServiceAddress::ServiceAddress( const ServiceItem & serviceItem, const String & 
     , mRoleName     ( roleName )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
-    mMagicNum = roleName.is_numeric() ? roleName.to_uint32() : ServiceAddress::_magic_number(*this);
+    if (areg::parse_address_number(mRoleName.data(), mMagicNum))
+        mRoleName.clear();
+    else
+        mMagicNum = ServiceAddress::_magic_number(*this);
 }
 
 ServiceAddress::ServiceAddress(const ServiceItem& serviceItem, const UniqueNumber roleNum)
@@ -152,9 +155,14 @@ ServiceAddress::ServiceAddress( ServiceAddress && source ) noexcept
 
 String ServiceAddress::to_string() const
 {
-    return ServiceItem::to_string()
-                        .append(areg::COMPONENT_PATH_SEPARATOR)
-                        .append(mRoleName.is_empty() ? String::make_string(mMagicNum) : mRoleName);
+    String result{ ServiceItem::to_string() };
+    result.append(areg::COMPONENT_PATH_SEPARATOR);
+    if (mRoleName.is_empty())
+        result.append(areg::ADDRESS_NUMBER_MARKER).append(String::make_string(mMagicNum));
+    else
+        result.append(mRoleName);
+
+    return result;
 }
 
 void ServiceAddress::from_string(const char * pathService, const char** nextPart /*= nullptr */)
@@ -162,7 +170,10 @@ void ServiceAddress::from_string(const char * pathService, const char** nextPart
     const char* strSource   = pathService;
     ServiceItem::from_string(pathService, &strSource);
     mRoleName   = String::substr(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource);
-    mMagicNum   = mRoleName.is_numeric() ? static_cast<uint32_t>(mRoleName) : ServiceAddress::_magic_number(*this);
+    if (areg::parse_address_number(mRoleName.data(), mMagicNum))
+        mRoleName.clear();
+    else
+        mMagicNum = ServiceAddress::_magic_number(*this);
 
     if (nextPart != nullptr)
         *nextPart = strSource;

@@ -50,7 +50,7 @@ public:
 // Public static methods
 //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Converts a ThreadAddress object to a path string with format "<process ID>::<thread name>::".
+     * \brief   Converts a ThreadAddress object to a path string: the thread name, or '#<number>' if it has no name.
      *
      * \param   threadAddress       The thread address object to convert.
      * \return  Returns the thread path string.
@@ -142,7 +142,7 @@ public:
     bool is_valid() const noexcept;
 
     /**
-     * \brief   Converts the ThreadAddress to a path string with format "<process ID>::<thread name>::".
+     * \brief   Converts the ThreadAddress to a path string: the thread name, or '#<number>' if it has no name.
      *
      * \return  Returns the thread path string.
      **/
@@ -151,6 +151,7 @@ public:
 
     /**
      * \brief   Parses a path string to extract thread address data. Returns remaining string after address.
+     *          A '#<number>' item is the identity number; any other item is a thread name.
      *
      * \param   threadPath      The path string containing thread address data.
      * \param[out] nextPart     If not nullptr, receives the pointer to the remaining path after the address.
@@ -257,6 +258,9 @@ inline ThreadAddress::operator uint32_t() const noexcept
 
 inline String ThreadAddress::to_string() const noexcept
 {
+    if (mThreadName.is_empty())
+        return String(areg::ADDRESS_NUMBER_MARKER).append(String::make_string(mMagicNum));
+
     return mThreadName;
 }
 
@@ -273,6 +277,7 @@ inline void ThreadAddress::to_endpoint(areg::Endpoint& endPoint) const noexcept
 
 inline const InStream& ThreadAddress::from_stream(const InStream& stream) 
 {
+    mThreadName.clear();
     stream >> mMagicNum;
     return stream;
 }

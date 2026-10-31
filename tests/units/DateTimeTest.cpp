@@ -435,7 +435,7 @@ TEST(DateTimeTest, test_day_domponents)
     auto dayOW = date.day_of_week();
 
     EXPECT_EQ(dayOY, 1u);
-    EXPECT_EQ(dayOW, 2u);
+    EXPECT_EQ(dayOW, 0u);
 }
 
 /**

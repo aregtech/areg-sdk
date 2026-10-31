@@ -497,13 +497,13 @@ struct Endpoint
  *
  *  Field    Offset  Size  Description
  *  service       0     4  CRC32(service_name|service_type) = ServiceItem magic number
- *  role          4     4  CRC32(role_name)
+ *  role          4     4  service address identity: CRC32(service_name|service_type|role_name)
  *                8
  **/
 struct RawService
 {
     uint32_t    service { 0 };  //!< service item hash: CRC32(service_name|service_type)
-    uint32_t    role    { 0 };  //!< role name hash: CRC32(role_name)
+    uint32_t    role    { 0 };  //!< service address identity: CRC32(service_name|service_type|role_name)
 };                              //!< 8 bytes, no padding
 
 //////////////////////////////////////////////////////////////////////////

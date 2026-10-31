@@ -91,9 +91,17 @@ namespace areg::os {
      **/
     void _os_make_tm_local(struct tm & utcTime)
     {
-        mem_set(&utcTime, sizeof(struct tm), 0);
-        time_t timer = mktime(&utcTime);
-        _safe_localtime(timer, utcTime);
+        struct tm utc{ utcTime };
+#ifdef _WIN32
+        const time_t timer{ ::_mkgmtime(&utc) };
+#else
+        const time_t timer{ ::timegm(&utc) };
+#endif
+        struct tm local{};
+        if ((timer != static_cast<time_t>(-1)) && _safe_localtime(timer, local))
+        {
+            utcTime = local;
+        }
     }
 
     /**
@@ -221,16 +229,15 @@ AREG_API_IMPL const char * areg::generate_name(const char * prefix, char * out_b
     {
         *out_buffer = '\0';
         const char* spec = specChar != nullptr ? specChar : areg::DEFAULT_SPECIAL_CHAR.data();
-        areg::Int64Parts time{};
         auto now{ std::chrono::high_resolution_clock::now().time_since_epoch() };
-        time.quadPart = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::microseconds>(now).count());
+        const uint64_t time{ static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::microseconds>(now).count()) };
 
         String::format_string( out_buffer, length, strFormat
                             , prefix != nullptr ? prefix : areg::DEFAULT_GENERATED_NAME.data()
                             , spec
-                            , time.u.highPart
+                            , static_cast<uint32_t>(time >> 32u)
                             , spec
-                            , time.u.lowPart);
+                            , static_cast<uint32_t>(time));
     }
 
     return out_buffer;
