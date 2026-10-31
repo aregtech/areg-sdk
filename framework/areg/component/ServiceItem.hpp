@@ -48,7 +48,7 @@ protected:
 #endif  // _MSC_VER
 
     //!< The name of invalid service.
-    static constexpr std::string_view   INVALID_SERVICE         { "INVALID_SERVICE" };
+    AREG_API_CONST static constexpr std::string_view   INVALID_SERVICE         { "INVALID_SERVICE" };
 
 #if defined(_MSC_VER)
     #pragma warning(pop)

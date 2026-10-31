@@ -75,12 +75,12 @@ private:
     /**
      * \brief   Constant. Defines Invalid Session ID
      **/
-    static constexpr SessionID      INVALID_SESSION_ID  { std::numeric_limits<SessionID>::max() };
+    AREG_API_CONST static constexpr SessionID      INVALID_SESSION_ID  { std::numeric_limits<SessionID>::max() };
 
     /**
      * \brief   Constant. Defines Invalid Message ID
      */
-    static constexpr uint32_t   INVALID_MESSAGE_ID  { static_cast<uint32_t>(areg::INVALID_MESSAGE_ID) };
+    AREG_API_CONST static constexpr uint32_t   INVALID_MESSAGE_ID  { static_cast<uint32_t>(areg::INVALID_MESSAGE_ID) };
 
 protected:
     //////////////////////////////////////////////////////////////////////////

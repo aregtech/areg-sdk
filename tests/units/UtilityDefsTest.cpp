@@ -25,6 +25,7 @@
 #include <cstdint>
 #include <cstring>
 #include <ctime>
+#include <limits>
 #include <string>
 #include <string_view>
 
@@ -73,29 +74,29 @@ TEST(UtilityDefsTest, time_constants_are_consistent)
 
 TEST(UtilityDefsTest, to_seconds_of_microseconds)
 {
-    EXPECT_EQ(areg::to_seconds(static_cast<TIME64>(0)), static_cast<time_t>(0));
-    EXPECT_EQ(areg::to_seconds(static_cast<TIME64>(999'999)), static_cast<time_t>(0));
-    EXPECT_EQ(areg::to_seconds(static_cast<TIME64>(1'000'000)), static_cast<time_t>(1));
-    EXPECT_EQ(areg::to_seconds(FIXED_TIME), static_cast<time_t>(1'000'000'000));
+    EXPECT_EQ(areg::to_seconds(static_cast<TIME64>(0)), static_cast<int64_t>(0));
+    EXPECT_EQ(areg::to_seconds(static_cast<TIME64>(999'999)), static_cast<int64_t>(0));
+    EXPECT_EQ(areg::to_seconds(static_cast<TIME64>(1'000'000)), static_cast<int64_t>(1));
+    EXPECT_EQ(areg::to_seconds(FIXED_TIME), static_cast<int64_t>(1'000'000'000));
 }
 
 TEST(UtilityDefsTest, conv_microsecs_splits_seconds_millis_and_micros)
 {
-    time_t secs{ 0 };
+    int64_t secs{ 0 };
     uint16_t milli{ 0u };
     uint16_t micro{ 0u };
     areg::conv_microsecs(FIXED_TIME, secs, milli, micro);
-    EXPECT_EQ(secs, static_cast<time_t>(1'000'000'000));
+    EXPECT_EQ(secs, static_cast<int64_t>(1'000'000'000));
     EXPECT_EQ(milli, 123u);
     EXPECT_EQ(micro, 456u);
 
     areg::conv_microsecs(static_cast<TIME64>(0), secs, milli, micro);
-    EXPECT_EQ(secs, static_cast<time_t>(0));
+    EXPECT_EQ(secs, static_cast<int64_t>(0));
     EXPECT_EQ(milli, 0u);
     EXPECT_EQ(micro, 0u);
 
     areg::conv_microsecs(static_cast<TIME64>(999'999), secs, milli, micro);
-    EXPECT_EQ(secs, static_cast<time_t>(0));
+    EXPECT_EQ(secs, static_cast<int64_t>(0));
     EXPECT_EQ(milli, 999u);
     EXPECT_EQ(micro, 999u);
 }
@@ -133,7 +134,7 @@ TEST(UtilityDefsTest, calendar_time_converts_back_to_the_same_microseconds)
     areg::CalendarTime cal;
     areg::to_system_time(FIXED_TIME, cal);
     EXPECT_EQ(areg::to_time(cal), FIXED_TIME);
-    EXPECT_EQ(areg::to_seconds(cal), static_cast<time_t>(1'000'000'000));
+    EXPECT_EQ(areg::to_seconds(cal), static_cast<int64_t>(1'000'000'000));
 }
 
 TEST(UtilityDefsTest, to_tm_and_back_keep_the_fields)
@@ -223,7 +224,7 @@ TEST(UtilityDefsTest, system_time_now_in_local_time_differs_by_a_zone_offset)
     const int64_t rest{ diff % ZONE_STEP };
     const int64_t zone{ diff - rest };
     EXPECT_LE(zone < 0 ? -zone : zone, MAX_ZONE_OFFSET);
-    EXPECT_LE(rest < 0 ? -rest : rest, 5 * areg::SEC_TO_MICROSECS);
+    EXPECT_LE(rest < 0 ? -rest : rest, 5 * static_cast<int64_t>(areg::SEC_TO_MICROSECS));
 }
 
 TEST(UtilityDefsTest, local_time_keeps_milliseconds_and_microseconds)
@@ -273,7 +274,7 @@ TEST(UtilityDefsTest, to_time_reads_month_and_day_not_day_of_year)
     cal.stMicrosecs = 456;
     cal.stMillisecs = 123;
     EXPECT_EQ(areg::to_time(cal), FIXED_TIME);
-    EXPECT_EQ(areg::to_seconds(cal), static_cast<time_t>(FIXED_TIME / areg::SEC_TO_MICROSECS));
+    EXPECT_EQ(areg::to_seconds(cal), static_cast<int64_t>(FIXED_TIME / areg::SEC_TO_MICROSECS));
 
     struct tm broken{};
     broken.tm_year  = 101;
@@ -1033,26 +1034,135 @@ TEST(DateTimeFormatTest, calendar_components_of_a_time_read_at_run_time)
 
 TEST(DateTimeFormatTest, calendar_components_match_the_utc_calendar_on_every_day)
 {
+    constexpr int32_t MONTH_DAYS[]{ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+    constexpr TIME64 DAY_TIME{ (12ULL * 3600ULL + 34ULL * 60ULL + 56ULL) * 1'000'000ULL + 789'012ULL };
+
+    // The expected calendar is counted day by day from 1970-01-01, a Thursday (5 when Sunday is 1).
+    int32_t year{ 1970 };
+    int32_t month{ 1 };
+    int32_t day{ 1 };
+    int32_t dayOfYear{ 1 };
+    int32_t weekDay{ 5 };
     uint32_t wrong{ 0u };
-    for (TIME64 day = 0u; day < 29'000u; ++day)
+    for (TIME64 days = 0u; days < 160'000u; ++days)
     {
-        const TIME64 time{ rt(day * static_cast<TIME64>(areg::DAY_TO_MICROSECS) + 12ULL * static_cast<TIME64>(areg::HOUR_TO_MICROSECS)) };
+        const TIME64 time{ rt(days * static_cast<TIME64>(areg::DAY_TO_MICROSECS) + DAY_TIME) };
         areg::CalendarTime cal;
         areg::to_system_time(time, cal);
-
+        struct tm broken{};
+        areg::to_tm(time, broken);
         const areg::DateTime date(time);
-        if ((date.year() != static_cast<uint32_t>(cal.stYear)) || (date.month() != static_cast<uint32_t>(cal.stMonth))
-            || (date.day() != static_cast<uint32_t>(cal.stDay)) || (date.day_of_year() != static_cast<uint32_t>(cal.stDayOfYear)))
+
+        bool same{    (cal.stYear == year) && (cal.stMonth == month) && (cal.stDay == day) && (cal.stDayOfYear == dayOfYear)
+                   && (cal.stDayOfWeek == weekDay) && (cal.stHour == 12) && (cal.stMinute == 34) && (cal.stSecond == 56)
+                   && (cal.stMillisecs == 789) && (cal.stMicrosecs == 12) };
+        same = same && (date.year() == static_cast<uint32_t>(year)) && (date.month() == static_cast<uint32_t>(month))
+                    && (date.day() == static_cast<uint32_t>(day)) && (date.day_of_year() == static_cast<uint32_t>(dayOfYear))
+                    && (date.day_of_week() == static_cast<uint32_t>((weekDay + 5) % 7));
+        same = same && (broken.tm_year + 1900 == year) && (broken.tm_mon + 1 == month) && (broken.tm_mday == day)
+                    && (broken.tm_yday + 1 == dayOfYear) && (broken.tm_wday + 1 == weekDay) && (broken.tm_hour == 12)
+                    && (broken.tm_min == 34) && (broken.tm_sec == 56);
+
+        const int64_t secs{ areg::to_seconds(time) };
+        if (secs <= static_cast<int64_t>(std::numeric_limits<time_t>::max()))
         {
-            if (++wrong <= 3u)
+            const time_t osSecs{ static_cast<time_t>(secs) };
+            struct tm os{};
+#ifdef _WIN32
+            const bool converted{ ::gmtime_s(&os, &osSecs) == 0 };
+#else
+            const bool converted{ ::gmtime_r(&osSecs, &os) != nullptr };
+#endif
+            same = same && ((converted == false) || ((os.tm_year + 1900 == year) && (os.tm_mon + 1 == month) && (os.tm_mday == day)));
+        }
+
+        if ((same == false) && (++wrong <= 3u))
+        {
+            ADD_FAILURE() << "day " << days << ": expected " << year << "-" << month << "-" << day << " (day of year " << dayOfYear
+                          << ", weekday " << weekDay << ") but CalendarTime is " << cal.stYear << "-" << cal.stMonth << "-" << cal.stDay
+                          << " (day of year " << cal.stDayOfYear << ", weekday " << cal.stDayOfWeek << "), DateTime is "
+                          << date.year() << "-" << date.month() << "-" << date.day() << ", tm is "
+                          << broken.tm_year + 1900 << "-" << broken.tm_mon + 1 << "-" << broken.tm_mday;
+        }
+
+        const bool leap{ (year % 4 == 0) && ((year % 100 != 0) || (year % 400 == 0)) };
+        const int32_t length{ MONTH_DAYS[month - 1] + (((month == 2) && leap) ? 1 : 0) };
+        weekDay = weekDay % 7 + 1;
+        ++dayOfYear;
+        if (++day > length)
+        {
+            day = 1;
+            if (++month > 12)
             {
-                ADD_FAILURE() << "day " << day << ": " << cal.stYear << "-" << cal.stMonth << "-" << cal.stDay << " (day of year " << cal.stDayOfYear
-                              << ") but DateTime reports " << date.year() << "-" << date.month() << "-" << date.day() << " (day of year " << date.day_of_year() << ")";
+                month = 1;
+                dayOfYear = 1;
+                ++year;
             }
         }
     }
 
     EXPECT_EQ(wrong, 0u);
+}
+
+TEST(DateTimeFormatTest, date_from_days_inverts_days_since_epoch)
+{
+    static_assert(areg::days_since_epoch(2038, 1, 19) == 24855);
+    uint32_t wrong{ 0u };
+    for (int64_t days = -3 * 146097; days <= 3 * 146097; ++days)
+    {
+        int32_t year{ 0 };
+        int32_t month{ 0 };
+        int32_t day{ 0 };
+        areg::date_from_days(rt(days), year, month, day);
+        if ((month < 1) || (month > 12) || (day < 1) || (day > 31) || (areg::days_since_epoch(year, month, day) != days))
+        {
+            if (++wrong <= 3u)
+            {
+                ADD_FAILURE() << "day " << days << " gives " << year << "-" << month << "-" << day;
+            }
+        }
+    }
+
+    EXPECT_EQ(wrong, 0u);
+}
+
+TEST(DateTimeFormatTest, local_time_after_2038_is_the_utc_time_plus_a_zone_offset)
+{
+    const TIME64 times[]
+    {
+          static_cast<TIME64>(areg::days_since_epoch(2038, 1, 19)) * areg::DAY_TO_MICROSECS + 3ULL * 3600'000'000ULL + 14ULL * 60'000'000ULL + 8'000'000ULL
+        , static_cast<TIME64>(areg::days_since_epoch(2040, 2, 29)) * areg::DAY_TO_MICROSECS + 12ULL * 3600'000'000ULL + 123'456ULL
+        , static_cast<TIME64>(areg::days_since_epoch(2100, 3, 1))  * areg::DAY_TO_MICROSECS
+        , static_cast<TIME64>(areg::days_since_epoch(2400, 12, 31)) * areg::DAY_TO_MICROSECS + 23ULL * 3600'000'000ULL
+    };
+
+    for (const TIME64 utc : times)
+    {
+        areg::CalendarTime local;
+        ASSERT_TRUE(areg::to_local_time(rt(utc), local));
+        const int64_t zone{ static_cast<int64_t>(areg::to_time(local)) - static_cast<int64_t>(utc) };
+        EXPECT_EQ(zone % ZONE_STEP, 0) << "utc " << utc;
+        EXPECT_LE(zone < 0 ? -zone : zone, MAX_ZONE_OFFSET) << "utc " << utc;
+
+        areg::CalendarTime shifted;
+        areg::to_system_time(static_cast<TIME64>(static_cast<int64_t>(utc) + zone), shifted);
+        EXPECT_EQ(local.stDayOfWeek, shifted.stDayOfWeek) << "utc " << utc;
+        EXPECT_EQ(local.stDayOfYear, shifted.stDayOfYear) << "utc " << utc;
+
+        struct tm localTm{};
+        ASSERT_TRUE(areg::to_local_tm(rt(utc), localTm));
+        EXPECT_EQ(localTm.tm_year + 1900, local.stYear) << "utc " << utc;
+        EXPECT_EQ(localTm.tm_mday, local.stDay) << "utc " << utc;
+        EXPECT_EQ(localTm.tm_hour, local.stHour) << "utc " << utc;
+
+        struct tm broken{};
+        areg::to_tm(rt(utc), broken);
+        areg::make_tm_local(broken);
+        EXPECT_EQ(broken.tm_year, localTm.tm_year) << "utc " << utc;
+        EXPECT_EQ(broken.tm_yday, localTm.tm_yday) << "utc " << utc;
+        EXPECT_EQ(broken.tm_hour, localTm.tm_hour) << "utc " << utc;
+        EXPECT_EQ(broken.tm_min, localTm.tm_min) << "utc " << utc;
+    }
 }
 
 TEST(DateTimeFormatTest, day_of_week_counts_from_monday)

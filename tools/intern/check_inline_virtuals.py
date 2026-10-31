@@ -7,7 +7,8 @@
 #  Website: https://www.areg.tech
 # ===========================================================================
 """
-Finds virtual methods of non-template classes that a header defines inline.
+Finds virtual methods of non-template classes that a header defines inline, and
+static constexpr data members of AREG_API classes that lack AREG_API_CONST.
 
 areg is a shared library. A client compiler that devirtualizes a call to an inline
 virtual method may refer to the library's copy of it instead of emitting its own, and
@@ -15,6 +16,10 @@ a library built with link time optimization keeps that copy local: the client fa
 to link (bug 418, tests/client-link). A virtual method of a non-template class is
 therefore defined in its .cpp. Class templates are not checked: every client emits
 their methods itself. Virtual destructors are not checked yet.
+
+A Cygwin client imports every static data member of an AREG_API class, an inline
+constexpr one too, and the DLL exports such a member only if AREG_API_CONST marks it.
+A client that binds the member to a reference fails to link without it.
 
     python3 tools/intern/check_inline_virtuals.py           check framework/
     python3 tools/intern/check_inline_virtuals.py <dir>...  check other directories
@@ -28,7 +33,8 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-CLASS_HEAD = re.compile(r'^\s*(?:class|struct)\s+(?:AREG_API\s+|AREG_EXTEND_API\s+|LOGGER_API\s+)?([A-Za-z_]\w*)\b(?!\s*;)')
+CLASS_HEAD = re.compile(r'^\s*(?:class|struct)\s+(AREG_API\s+|AREG_EXTEND_API\s+|LOGGER_API\s+)?([A-Za-z_]\w*)\b(?!\s*;)')
+CONSTEXPR_DATA = re.compile(r'^\s*(?:AREG_API_CONST\s+)?static\s+(?:inline\s+)?constexpr\s+[^(;{}=]*?\b[A-Za-z_]\w*\s*(?:\[[^\]]*\])?\s*[{=]')
 VIRTUAL_DECL = re.compile(r'^\s*(?:inline\s+)?(?:virtual\s+)?[^;{}()~]*?\b([A-Za-z_]\w*)\s*\([^;{}]*\)[^;{}]*?\b(?:override|final)\b'
                           r'|^\s*(?:inline\s+)?virtual\s+[^;{}()~]*?\b([A-Za-z_]\w*)\s*\(')
 OUT_OF_CLASS = re.compile(r'^inline\s+[^;(]*?\b([A-Za-z_]\w*)::([A-Za-z_]\w*)\s*\(')
@@ -59,7 +65,7 @@ def strip_comments(text):
 
 
 def classes_of(lines):
-    """Returns (name, is_template, first_line, last_line) of every class body in the header."""
+    """Returns (name, is_template, is_exported, first_line, last_line) of every class body in the header."""
     result = []
     for index, line in enumerate(lines):
         match = CLASS_HEAD.match(line)
@@ -83,17 +89,18 @@ def classes_of(lines):
             depth += lines[end].count('{') - lines[end].count('}')
             if depth <= 0:
                 break
-        result.append((match.group(1), is_template, head, end))
+        is_exported = (match.group(1) or '').strip() == 'AREG_API'
+        result.append((match.group(2), is_template, is_exported, head, end))
     return result
 
 
 def check_header(path):
-    """Returns the findings of one header as (line number, text)."""
+    """Returns the findings of one header as (line number, kind, text)."""
     text = strip_comments(open(path, encoding='utf-8', errors='replace').read())
     lines = text.split('\n')
     findings = []
     virtuals = {}
-    for name, is_template, first, last in classes_of(lines):
+    for name, is_template, is_exported, first, last in classes_of(lines):
         if is_template:
             continue
         depth = 0
@@ -106,13 +113,15 @@ def check_header(path):
                     virtuals.setdefault(name, set()).add((method, arity(line[line.index(method):])))
                     body = line.split(')')[-1]
                     if re.match(r'^\s*inline\b', line) or ('{' in body):
-                        findings.append((number + 1, line.strip()))
+                        findings.append((number + 1, 'inline virtual method', line.strip()))
+                elif is_exported and CONSTEXPR_DATA.match(line) and ('AREG_API_CONST' not in line):
+                    findings.append((number + 1, 'constexpr member without AREG_API_CONST', line.strip()))
             depth += line.count('{') - line.count('}')
 
     for number, line in enumerate(lines):
         match = OUT_OF_CLASS.match(line)
         if match and ((match.group(2), arity(line[match.start(2):])) in virtuals.get(match.group(1), ())):
-            findings.append((number + 1, line.strip()))
+            findings.append((number + 1, 'inline virtual method', line.strip()))
     return findings
 
 
@@ -125,15 +134,15 @@ def main(argv):
                 if not file.endswith(('.hpp', '.h')):
                     continue
                 path = os.path.join(folder, file)
-                for number, line in check_header(path):
-                    print('%s:%d: inline virtual method: %s' % (os.path.relpath(path, ROOT), number, line))
+                for number, kind, line in check_header(path):
+                    print('%s:%d: %s: %s' % (os.path.relpath(path, ROOT), number, kind, line))
                     count += 1
 
     if count != 0:
-        print('%d inline virtual method(s); define them in the .cpp (CLAUDE.md, "No inline virtual methods")' % count)
+        print('%d finding(s); define an inline virtual method in the .cpp, prefix a constexpr member with AREG_API_CONST' % count)
         return 1
 
-    print('no inline virtual methods in non-template classes')
+    print('no inline virtual methods in non-template classes, no unmarked constexpr members in AREG_API classes')
     return 0
 
 

@@ -111,6 +111,10 @@ void RuntimeObject::operator delete(void* ptr, int32_t, const char*, int32_t)
     ::operator delete (ptr);
 }
 
+void RuntimeObject::operator delete(void* /*ptr*/, void* /*place*/)
+{
+}
+
 void RuntimeObject::operator delete[](void* ptr)
 {
     ::operator delete[](ptr);
@@ -134,6 +138,10 @@ void RuntimeObject::operator delete[](void* ptr, size_t /*size*/, std::align_val
 void RuntimeObject::operator delete[](void* ptr, int32_t, const char*, int32_t)
 {
     ::operator delete[](ptr);
+}
+
+void RuntimeObject::operator delete[](void* /*ptr*/, void* /*place*/)
+{
 }
 
 } // namespace areg

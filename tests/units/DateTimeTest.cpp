@@ -234,8 +234,8 @@ TEST( DateTimeTest, test_local_time )
     areg::to_system_time( date.time( ), utcTime );
     _checkTimeStruct( utcTime, "Areg UTC " );
 
-    time_t secs1 = areg::to_seconds(date.time());
-    time_t secs2 = areg::to_seconds(utcTime);
+    int64_t secs1 = areg::to_seconds(date.time());
+    int64_t secs2 = areg::to_seconds(utcTime);
     ASSERT_EQ(secs1, secs2);
 
     TIME64 micro = areg::to_time(utcTime);

@@ -342,12 +342,22 @@ namespace areg {
     inline constexpr int64_t days_since_epoch(int32_t year, int32_t month, int32_t day) noexcept;
 
     /**
+     * \brief   Converts the days since 1 January 1970 to a date of the proleptic Gregorian calendar.
+     *          It is the inverse of days_since_epoch().
+     * \param[in]   days    The days since Unix epoch, negative for a date before it.
+     * \param[out]  year    On output, the calendar year.
+     * \param[out]  month   On output, the month, 1 (January) to 12 (December).
+     * \param[out]  day     On output, the day of the month, starting from 1.
+     **/
+    inline constexpr void date_from_days(int64_t days, int32_t & year, int32_t & month, int32_t & day) noexcept;
+
+    /**
      * \brief   Converts time in microseconds to time in seconds.
      * \param   microsecs   The time in microseconds.
      * \return  Returns time in seconds.
      **/
     [[nodiscard]]
-    inline constexpr time_t to_seconds(const TIME64 & microsecs) noexcept;
+    inline constexpr int64_t to_seconds(const TIME64 & microsecs) noexcept;
 
     /**
      * \brief   Converts the broken time to seconds, throwing out the milliseconds and microseconds.
@@ -356,7 +366,7 @@ namespace areg {
      * \return  Returns time in seconds.
      **/
     [[nodiscard]]
-    inline constexpr time_t to_seconds(const CalendarTime& sysTime) noexcept;
+    inline constexpr int64_t to_seconds(const CalendarTime& sysTime) noexcept;
 
     /**
      * \brief   Returns current time. On output 'out_sysTime' system time contains the date-time data.
@@ -398,7 +408,7 @@ namespace areg {
      * \param[in]   timeValue   64-bit value as microseconds passed since January 1 1970.
      * \param[out]  sysTime     On output the system time parameter contains date-time of converted time.
      **/
-    AREG_API void to_system_time( const TIME64 & timeValue, CalendarTime & sysTime ) noexcept;
+    inline constexpr void to_system_time( const TIME64 & timeValue, CalendarTime & sysTime ) noexcept;
 
     /**
      * \brief   Compare 2 system-time data structures and returns result indicating equality of data.
@@ -433,7 +443,7 @@ namespace areg {
      * \param[out]  milli   On output, this contains the remaining time in milliseconds.
      * \param[out]  micro   On output, this contains the remaining time in microseconds.
      **/
-    inline constexpr void conv_microsecs(const TIME64 & time, time_t & secs, uint16_t & milli, uint16_t & micro) noexcept;
+    inline constexpr void conv_microsecs(const TIME64 & time, int64_t & secs, uint16_t & milli, uint16_t & micro) noexcept;
 
     /**
      * \brief   Converts system-time data structure to standard 'tm' type. In conversion, a milliseconds part of data will be lost.
@@ -761,9 +771,9 @@ namespace areg {
 // areg::Duration inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline constexpr time_t areg::to_seconds(const TIME64& microsecs) noexcept
+inline constexpr int64_t areg::to_seconds(const TIME64& microsecs) noexcept
 {
-    return static_cast<time_t>(microsecs / areg::SEC_TO_MICROSECS);
+    return static_cast<int64_t>(microsecs / areg::SEC_TO_MICROSECS);
 }
 
 inline constexpr int64_t areg::days_since_epoch(int32_t year, int32_t month, int32_t day) noexcept
@@ -779,9 +789,24 @@ inline constexpr int64_t areg::days_since_epoch(int32_t year, int32_t month, int
     return (era * 146097 + doe - 719468);
 }
 
-inline constexpr time_t areg::to_seconds(const areg::CalendarTime & sysTime) noexcept
+inline constexpr void areg::date_from_days(int64_t days, int32_t & year, int32_t & month, int32_t & day) noexcept
 {
-    return static_cast<time_t>(
+    // Days counted from 0000-03-01, in 400-year eras of 146097 days; a year starts on 1 March.
+    const int64_t z  { days + 719468 };
+    const int64_t era{ (z >= 0 ? z : z - 146096) / 146097 };
+    const int64_t doe{ z - era * 146097 };
+    const int64_t yoe{ (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365 };
+    const int64_t doy{ doe - (365 * yoe + yoe / 4 - yoe / 100) };
+    const int64_t mp { (5 * doy + 2) / 153 };
+    const int64_t m  { mp < 10 ? mp + 3 : mp - 9 };
+    year  = static_cast<int32_t>(yoe + era * 400 + (m <= 2 ? 1 : 0));
+    month = static_cast<int32_t>(m);
+    day   = static_cast<int32_t>(doy - (153 * mp + 2) / 5 + 1);
+}
+
+inline constexpr int64_t areg::to_seconds(const areg::CalendarTime & sysTime) noexcept
+{
+    return static_cast<int64_t>(
                   areg::days_since_epoch(sysTime.stYear, sysTime.stMonth, sysTime.stDay) * static_cast<int64_t>(areg::DAY_TO_SECS)
                 + static_cast<int64_t>(sysTime.stHour  ) * static_cast<int64_t>(areg::HOUR_TO_SECS)
                 + static_cast<int64_t>(sysTime.stMinute) * static_cast<int64_t>(areg::MIN_TO_SECS)
@@ -911,9 +936,9 @@ inline constexpr areg::Ordering areg::compare_times( const areg::CalendarTime & 
     return (lhsTm > rshTm ? areg::Ordering::Bigger : (lhsTm < rshTm ? areg::Ordering::Smaller : areg::Ordering::Equal));
 }
 
-inline constexpr void areg::conv_microsecs( const TIME64 & time, time_t & secs, uint16_t & milli, uint16_t & micro ) noexcept
+inline constexpr void areg::conv_microsecs( const TIME64 & time, int64_t & secs, uint16_t & milli, uint16_t & micro ) noexcept
 {
-    secs  = static_cast<time_t>(time / areg::SEC_TO_MICROSECS);
+    secs  = static_cast<int64_t>(time / areg::SEC_TO_MICROSECS);
     const TIME64 rest{ time % areg::SEC_TO_MICROSECS };
     milli = static_cast<uint16_t>(rest / areg::MILLISEC_TO_MICROSECS);
     micro = static_cast<uint16_t>(rest % areg::MILLISEC_TO_MICROSECS);
@@ -938,6 +963,23 @@ inline void areg::to_tm( const areg::CalendarTime & sysTime, struct tm & time ) 
         ASSERT( false );
         time = {};
     }
+}
+
+inline constexpr void areg::to_system_time( const TIME64 & timeValue, areg::CalendarTime & sysTime ) noexcept
+{
+    const int64_t days{ static_cast<int64_t>(timeValue / areg::DAY_TO_MICROSECS) };
+    const int64_t secs{ static_cast<int64_t>((timeValue / areg::SEC_TO_MICROSECS) % areg::DAY_TO_SECS) };
+    const TIME64  rest{ timeValue % areg::SEC_TO_MICROSECS };
+
+    areg::date_from_days(days, sysTime.stYear, sysTime.stMonth, sysTime.stDay);
+    // 1970-01-01 is a Thursday, which is 5 when Sunday is 1.
+    sysTime.stDayOfWeek = static_cast<int32_t>((days + 4) % 7 + 1);
+    sysTime.stDayOfYear = static_cast<int32_t>(days - areg::days_since_epoch(sysTime.stYear, 1, 1) + 1);
+    sysTime.stHour      = static_cast<int32_t>(secs / static_cast<int64_t>(areg::HOUR_TO_SECS));
+    sysTime.stMinute    = static_cast<int32_t>((secs % static_cast<int64_t>(areg::HOUR_TO_SECS)) / static_cast<int64_t>(areg::MIN_TO_SECS));
+    sysTime.stSecond    = static_cast<int32_t>(secs % static_cast<int64_t>(areg::MIN_TO_SECS));
+    sysTime.stMillisecs = static_cast<int32_t>(rest / areg::MILLISEC_TO_MICROSECS);
+    sysTime.stMicrosecs = static_cast<int32_t>(rest % areg::MILLISEC_TO_MICROSECS);
 }
 
 inline constexpr void areg::to_system_time( const struct tm & time, areg::CalendarTime & sysTime ) noexcept

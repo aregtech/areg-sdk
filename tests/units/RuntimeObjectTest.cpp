@@ -55,6 +55,11 @@ namespace
         ~RtOther() override = default;
     };
 
+#if defined(_MSC_VER)
+    #pragma warning(push)
+    #pragma warning(disable: 4324)
+#endif  // _MSC_VER
+
     //!< A runtime class that requires a bigger alignment.
     class alignas(64) RtAligned : public areg::RuntimeObject
     {
@@ -64,6 +69,10 @@ namespace
         RtAligned() = default;
         ~RtAligned() override = default;
     };
+
+#if defined(_MSC_VER)
+    #pragma warning(pop)
+#endif  // _MSC_VER
 
     //!< A class derived directly from the base of all runtime classes.
     class RtRaw : public areg::RuntimeBase

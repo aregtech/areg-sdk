@@ -50,7 +50,7 @@ public:
     /**
      * \brief   Invalid time.
      **/
-    static constexpr TIME64             INVALID_TIME                        { 0 };
+    AREG_API_CONST static constexpr TIME64             INVALID_TIME                        { 0 };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -468,20 +468,14 @@ inline constexpr uint32_t DateTime::year() const noexcept
 
 inline constexpr DateTime::DateParts DateTime::_decompose() const noexcept
 {
-    // Days counted from 0000-03-01, in 400-year eras of 146097 days; a year starts on 1 March.
-    const uint32_t days { static_cast<uint32_t>(mDateTime / areg::DAY_TO_MICROSECS) + 719468u };
-    const uint32_t era  { days / 146097u };
-    const uint32_t doe  { days - era * 146097u };
-    const uint32_t yoe  { (doe - doe / 1460u + doe / 36524u - doe / 146096u) / 365u };
-    const uint32_t doy  { doe - (365u * yoe + yoe / 4u - yoe / 100u) };
-    const uint32_t mp   { (5u * doy + 2u) / 153u };
-    const uint32_t day  { doy - (153u * mp + 2u) / 5u + 1u };
-    const uint32_t month{ mp < 10u ? mp + 3u : mp - 9u };
-    const uint32_t year { yoe + era * 400u + (month <= 2u ? 1u : 0u) };
-    const uint32_t leap { ((year % 4u == 0u) && ((year % 100u != 0u) || (year % 400u == 0u))) ? 1u : 0u };
-    const uint32_t dayOfYear{ month > 2u ? doy + 60u + leap : doy - 305u };
+    const int64_t days{ static_cast<int64_t>(mDateTime / areg::DAY_TO_MICROSECS) };
+    int32_t year { 0 };
+    int32_t month{ 0 };
+    int32_t day  { 0 };
+    areg::date_from_days(days, year, month, day);
+    const int64_t dayOfYear{ days - areg::days_since_epoch(year, 1, 1) + 1 };
 
-    return { year, month, day, dayOfYear };
+    return { static_cast<uint32_t>(year), static_cast<uint32_t>(month), static_cast<uint32_t>(day), static_cast<uint32_t>(dayOfYear) };
 }
 
 inline constexpr uint32_t DateTime::month() const noexcept

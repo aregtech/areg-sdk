@@ -20,6 +20,9 @@
     <Import Project="$(AregConfigDir)project.props" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnabled>false</VcpkgEnabled>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
     <ClCompile>
       <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;_CONSOLE;GTEST_HAS_PTHREAD=0;_HAS_EXCEPTIONS=1;STRICT;IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -91,6 +94,16 @@
     <ClCompile Include="units\ScopedLockTest.cpp" />
     <ClCompile Include="units\SortedLinkedListTest.cpp" />
     <ClCompile Include="units\StackTest.cpp" />
+    <ClCompile Include="units\DebugDefsTest.cpp" />
+    <ClCompile Include="units\EventDefsTest.cpp" />
+    <ClCompile Include="units\IdentifierTest.cpp" />
+    <ClCompile Include="units\ModelTest.cpp" />
+    <ClCompile Include="units\ProcessTest.cpp" />
+    <ClCompile Include="units\RuntimeObjectTest.cpp" />
+    <ClCompile Include="units\ServiceAddressTest.cpp" />
+    <ClCompile Include="units\ServiceDefsTest.cpp" />
+    <ClCompile Include="units\UtilityDefsTest.cpp" />
+    <ClCompile Include="units\VersionTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="units\GUnitTest.hpp" />
@@ -102,6 +115,10 @@
     </ProjectReference>
     <ProjectReference Include="$(AregSdkRoot)framework\aregextend.vcxproj">
       <Project>{fbc5beae-01b9-4943-a5cb-0d3de2067eb3}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(AregSdkRoot)thirdparty\sqlite3.vcxproj">
+      <Project>{a19d14e3-19fe-46fe-91ca-0bad1cdb91c5}</Project>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

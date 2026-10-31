@@ -44,6 +44,15 @@
     #include <share.h>
 #endif  // defined(_WIN32)
 
+// Use these options if compile for Windows with MSVC
+#ifdef _MSC_VER
+#if defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
+    #pragma comment(lib, "sqlite3")
+#else   // defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
+    #pragma comment(lib, "aregsqlite3")
+#endif  // defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
+#endif  // _MSC_VER
+
 namespace
 {
     namespace fs = std::filesystem;

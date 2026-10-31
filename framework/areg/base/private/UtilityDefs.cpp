@@ -22,25 +22,11 @@
 #include "areg/base/MemoryDefs.hpp"
 
 #include <chrono>
+#include <limits>
 #include <string>
 #include <time.h>
 
 namespace {
-
-/**
- * \brief   Platform-safe wrapper for gmtime. Converts seconds since Unix epoch to broken-down UTC time.
- * \param[in]   secs    Seconds since Unix epoch to convert.
- * \param[out]  result  Broken-down UTC time structure.
- * \return  Returns true if conversion succeeded; otherwise false.
- **/
-inline bool _safe_gmtime(time_t secs, struct tm & result) noexcept
-{
-#ifdef _WIN32
-    return ::gmtime_s(&result, &secs) == 0;
-#else
-    return ::gmtime_r(&secs, &result) != nullptr;
-#endif
-}
 
 /**
  * \brief   Platform-safe wrapper for localtime. Converts seconds since Unix epoch to broken-down local time.
@@ -57,6 +43,101 @@ inline bool _safe_localtime(time_t secs, struct tm & result) noexcept
 #endif
 }
 
+/**
+ * \brief   Returns the seconds since Unix epoch of a broken-down time read as UTC.
+ *          The date is read from tm_year, tm_mon and tm_mday.
+ **/
+constexpr int64_t _tm_seconds(const struct tm & time) noexcept
+{
+    return    areg::days_since_epoch(time.tm_year + 1900, time.tm_mon + 1, time.tm_mday) * static_cast<int64_t>(areg::DAY_TO_SECS)
+            + static_cast<int64_t>(time.tm_hour) * static_cast<int64_t>(areg::HOUR_TO_SECS)
+            + static_cast<int64_t>(time.tm_min ) * static_cast<int64_t>(areg::MIN_TO_SECS)
+            + static_cast<int64_t>(time.tm_sec );
+}
+
+/**
+ * \brief   Writes the calendar fields of the seconds since Unix epoch into a tm, the other fields are kept.
+ **/
+constexpr void _set_tm_fields(int64_t secs, struct tm & time) noexcept
+{
+    const int64_t daySecs{ static_cast<int64_t>(areg::DAY_TO_SECS) };
+    const int64_t days{ (secs >= 0 ? secs : secs - daySecs + 1) / daySecs };
+    const int64_t rest{ secs - days * daySecs };
+    int32_t year{ 0 };
+    int32_t month{ 0 };
+    int32_t day{ 0 };
+    areg::date_from_days(days, year, month, day);
+
+    time.tm_year = year - 1900;
+    time.tm_mon  = month - 1;
+    time.tm_mday = day;
+    time.tm_hour = static_cast<int32_t>(rest / static_cast<int64_t>(areg::HOUR_TO_SECS));
+    time.tm_min  = static_cast<int32_t>((rest % static_cast<int64_t>(areg::HOUR_TO_SECS)) / static_cast<int64_t>(areg::MIN_TO_SECS));
+    time.tm_sec  = static_cast<int32_t>(rest % static_cast<int64_t>(areg::MIN_TO_SECS));
+    time.tm_wday = static_cast<int32_t>(((days + 4) % 7 + 7) % 7);
+    time.tm_yday = static_cast<int32_t>(days - areg::days_since_epoch(year, 1, 1));
+}
+
+/**
+ * \brief   Returns the seconds of the same date and time in a year that time_t holds, as the given seconds
+ *          when time_t holds them. The year found has the same length and starts on the same weekday.
+ **/
+int64_t _time_t_seconds(int64_t utcSecs) noexcept
+{
+    if constexpr (sizeof(time_t) < sizeof(int64_t))
+    {
+        constexpr int32_t LAST_YEAR{ 2037 };
+        constexpr int32_t YEAR_CYCLE{ 28 };
+        if ((utcSecs >= static_cast<int64_t>(std::numeric_limits<time_t>::min())) && (utcSecs <= static_cast<int64_t>(std::numeric_limits<time_t>::max())))
+        {
+            return utcSecs;
+        }
+
+        const int64_t daySecs{ static_cast<int64_t>(areg::DAY_TO_SECS) };
+        int32_t year{ 0 };
+        int32_t month{ 0 };
+        int32_t day{ 0 };
+        areg::date_from_days((utcSecs >= 0 ? utcSecs : utcSecs - daySecs + 1) / daySecs, year, month, day);
+        const int64_t start{ areg::days_since_epoch(year, 1, 1) };
+        const int64_t length{ areg::days_since_epoch(year + 1, 1, 1) - start };
+        for (int32_t candidate = LAST_YEAR - YEAR_CYCLE + 1; candidate <= LAST_YEAR; ++candidate)
+        {
+            const int64_t other{ areg::days_since_epoch(candidate, 1, 1) };
+            if (((areg::days_since_epoch(candidate + 1, 1, 1) - other) == length) && ((((other - start) % 7) + 7) % 7 == 0))
+            {
+                return utcSecs + (other - start) * daySecs;
+            }
+        }
+    }
+
+    return utcSecs;
+}
+
+/**
+ * \brief   Converts seconds since Unix epoch to broken-down local time.
+ *          The time zone rules of an instant that time_t cannot hold are those of the year _time_t_seconds() finds.
+ * \param[in]   utcSecs     UTC time in seconds since Unix epoch.
+ * \param[out]  localTm     Receives the broken-down local time.
+ * \return  Returns true if conversion succeeded; otherwise false.
+ **/
+bool _local_tm(int64_t utcSecs, struct tm & localTm) noexcept
+{
+    const int64_t probe{ _time_t_seconds(utcSecs) };
+    struct tm result{};
+    if (_safe_localtime(static_cast<time_t>(probe), result) == false)
+    {
+        return false;
+    }
+
+    if (probe != utcSecs)
+    {
+        _set_tm_fields(_tm_seconds(result) + (utcSecs - probe), result);
+    }
+
+    localTm = result;
+    return true;
+}
+
 } // namespace
 
 namespace areg::os {
@@ -65,13 +146,6 @@ namespace areg::os {
      * \brief   Returns current date and time in UTC as microseconds since Unix epoch (1 January 1970).
      **/
     extern TIME64 _os_system_time_now();
-
-    /**
-     * \brief   Fills the calendar time structure with the current system date and time.
-     * \param[out]  sysTime     The structure to receive broken-down current date and time.
-     * \param[in]   localTime   If true, fills sysTime with local time; if false, fills with UTC time.
-     **/
-    extern void _os_system_time_now(CalendarTime & sysTime, bool localTime);
 
     /**
      * \brief   Returns milliseconds elapsed since an unspecified fixed point (monotonic clock).
@@ -85,93 +159,6 @@ namespace areg::os {
         );
     }
 
-    /**
-     * \brief   Converts a broken-down UTC time structure to local time in-place.
-     * \param[in,out]   utcTime     On input contains broken-down UTC time; on output contains local time.
-     **/
-    void _os_make_tm_local(struct tm & utcTime)
-    {
-        struct tm utc{ utcTime };
-#ifdef _WIN32
-        const time_t timer{ ::_mkgmtime(&utc) };
-#else
-        const time_t timer{ ::timegm(&utc) };
-#endif
-        struct tm local{};
-        if ((timer != static_cast<time_t>(-1)) && _safe_localtime(timer, local))
-        {
-            utcTime = local;
-        }
-    }
-
-    /**
-     * \brief   Converts UTC time in microseconds since Unix epoch to broken-down local calendar time.
-     * \param[in]   utcTime     UTC time in microseconds since Unix epoch (1 January 1970).
-     * \param[out]  localTime   Receives the broken-down local calendar time including milliseconds and microseconds.
-     * \return  Returns true if conversion succeeded; otherwise false.
-     **/
-    bool _os_to_local_time(const TIME64 & utcTime, CalendarTime & localTime)
-    {
-        time_t secs;
-        uint16_t milli, micro;
-        conv_microsecs(utcTime, secs, milli, micro);
-
-        struct tm tmLocal {};
-        if (_safe_localtime(secs, tmLocal))
-        {
-            to_system_time(tmLocal, localTime);
-            localTime.stMillisecs = milli;
-            localTime.stMicrosecs = micro;
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * \brief   Converts UTC time in microseconds since Unix epoch to broken-down local tm structure.
-     * \param[in]   utcTime     UTC time in microseconds since Unix epoch (1 January 1970).
-     * \param[out]  localTm     Receives the broken-down local time without milliseconds and microseconds.
-     * \return  Returns true if conversion succeeded; otherwise false.
-     **/
-    bool _os_to_local_tm(const TIME64 & utcTime, struct tm & localTm)
-    {
-        const time_t secs = static_cast<time_t>(utcTime / SEC_TO_MICROSECS);
-        return _safe_localtime(secs, localTm);
-    }
-
-    /**
-     * \brief   Converts UTC time in microseconds since Unix epoch to broken-down calendar time structure.
-     * \param[in]   timeValue   UTC time in microseconds since Unix epoch (1 January 1970).
-     * \param[out]  sysTime     Receives the broken-down calendar time including milliseconds and microseconds.
-     **/
-    void _os_to_system_time(const TIME64 & timeValue, CalendarTime & sysTime)
-    {
-        time_t secs;
-        uint16_t milli{ 0u };
-        uint16_t micro{ 0u };
-        conv_microsecs(timeValue, secs, milli, micro);
-
-        struct tm gmt {};
-        if (_safe_gmtime(secs, gmt))
-        {
-            to_system_time(gmt, sysTime);
-            sysTime.stMillisecs = milli;
-            sysTime.stMicrosecs = micro;
-        }
-    }
-
-    /**
-     * \brief   Converts UTC time in microseconds since Unix epoch to broken-down tm structure.
-     * \param[in]   timeValue   UTC time in microseconds since Unix epoch (1 January 1970).
-     * \param[out]  time        Receives the broken-down UTC time without milliseconds and microseconds.
-     **/
-    void _os_to_tm(const TIME64 & timeValue, struct tm & time)
-    {
-        const time_t secs = static_cast<time_t>(timeValue / SEC_TO_MICROSECS);
-        _safe_gmtime(secs, time);
-    }
-
 } // namespace areg::os
 
 /************************************************************************/
@@ -180,12 +167,17 @@ namespace areg::os {
 
 AREG_API_IMPL void areg::make_tm_local( struct tm & utcTime ) noexcept
 {
-    areg::os::_os_make_tm_local(utcTime);
+    struct tm local{};
+    if (_local_tm(_tm_seconds(utcTime), local))
+    {
+        utcTime = local;
+    }
 }
 
 AREG_API_IMPL void areg::to_tm(const TIME64& timeMicro, tm& time)
 {
-    areg::os::_os_to_tm(timeMicro, time);
+    time = tm{};
+    _set_tm_fields(areg::to_seconds(timeMicro), time);
 }
 
 AREG_API_IMPL areg::String areg::create_component_item_name( const areg::String & componentName, const areg::String & itemName )
@@ -262,27 +254,40 @@ AREG_API_IMPL bool areg::to_local_time( const areg::CalendarTime & utcTime, areg
 
 AREG_API_IMPL bool areg::to_local_time( const TIME64 & utcTime, areg::CalendarTime & localTime ) noexcept
 {
-    return areg::os::_os_to_local_time(utcTime, localTime);
+    struct tm local{};
+    if (_local_tm(areg::to_seconds(utcTime), local) == false)
+    {
+        return false;
+    }
+
+    const TIME64 rest{ utcTime % areg::SEC_TO_MICROSECS };
+    areg::to_system_time(local, localTime);
+    localTime.stMillisecs = static_cast<int32_t>(rest / areg::MILLISEC_TO_MICROSECS);
+    localTime.stMicrosecs = static_cast<int32_t>(rest % areg::MILLISEC_TO_MICROSECS);
+    return true;
 }
 
 AREG_API_IMPL bool areg::to_local_tm(const TIME64 & utcTime, tm& localTm) noexcept
 {
-    return areg::os::_os_to_local_tm(utcTime, localTm);
+    return _local_tm(areg::to_seconds(utcTime), localTm);
 }
 
 AREG_API_IMPL void areg::system_time_now(areg::CalendarTime & sysTime, bool localTime ) noexcept
 {
-    areg::os::_os_system_time_now( sysTime, localTime );
+    const TIME64 now{ areg::os::_os_system_time_now() };
+    if (localTime)
+    {
+        areg::to_local_time(now, sysTime);
+    }
+    else
+    {
+        areg::to_system_time(now, sysTime);
+    }
 }
 
 AREG_API_IMPL TIME64 areg::system_time_now() noexcept
 {
     return areg::os::_os_system_time_now();
-}
-
-AREG_API_IMPL void areg::to_system_time( const TIME64 & timeValue, areg::CalendarTime & sysTime ) noexcept
-{
-    areg::os::_os_to_system_time(timeValue, sysTime);
 }
 
 AREG_API_IMPL areg::DataLiteral areg::conv_data_size( uint64_t dataSize )

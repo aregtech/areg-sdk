@@ -263,7 +263,7 @@ TEST(ServiceItemTest, long_name_is_truncated)
 {
     const std::string longName(areg::ITEM_NAMES_MAX_LENGTH + 40u, 'x');
     const areg::ServiceItem item(areg::String(longName.c_str()), svc_version(), SVC_TYPE);
-    EXPECT_LE(item.service_name().length(), areg::ITEM_NAMES_MAX_LENGTH);
+    EXPECT_LE(item.service_name().length(), static_cast<areg::CharCount>(areg::ITEM_NAMES_MAX_LENGTH));
     EXPECT_TRUE(item.is_valid());
 }
 

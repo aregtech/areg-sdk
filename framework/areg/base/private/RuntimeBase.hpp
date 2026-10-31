@@ -55,7 +55,7 @@ private:
      * \brief   Full compile-time runtime class identifier for RuntimeBase.
      *          Single source of truth: name() and magic() both come from here.
      **/
-    static constexpr RuntimeClassID CLASS_ID { "RuntimeBase" };
+    AREG_API_CONST static constexpr RuntimeClassID CLASS_ID { "RuntimeBase" };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor

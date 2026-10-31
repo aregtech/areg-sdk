@@ -39,7 +39,7 @@ void DateTime::format_time(const DateTime& dateTime, String& result, std::string
 
     if (dateTime.mDateTime != 0)
     {
-        time_t secs;
+        int64_t secs{ 0 };
         uint16_t milli, micro;
         struct tm conv { };
         areg::conv_microsecs(dateTime.mDateTime, secs, milli, micro);
