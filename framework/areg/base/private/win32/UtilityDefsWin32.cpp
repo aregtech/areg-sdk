@@ -39,37 +39,6 @@ TIME64 _os_system_time_now()
 #endif  // _MINGW
 }
 
-void _os_system_time_now( areg::CalendarTime & sysTime, bool localTime )
-{
-    struct timespec ts { };
-    struct tm now { };
-#ifndef _MINGW
-    if (timespec_get(&ts, TIME_UTC) != 0)
-#else   // _MINGW
-    if (areg::RETURNED_OK == ::clock_gettime( CLOCK_REALTIME, &ts ))
-#endif  // _MINGW
-    {
-        if (localTime)
-        {
-            ::localtime_s(&now, &ts.tv_sec);
-        }
-        else
-        {
-            gmtime_s(&now, &ts.tv_sec);
-        }
-
-        uint16_t milli = static_cast<uint16_t>(static_cast<TIME64>(ts.tv_nsec) / MILLISEC_TO_NS);
-        uint16_t micro = static_cast<uint16_t>(static_cast<TIME64>(ts.tv_nsec) % MILLISEC_TO_NS) / MICROSEC_TO_NS;
-
-        ASSERT(milli < 1000);
-        ASSERT(micro < 1000);
-
-        to_system_time(now, sysTime);
-        sysTime.stMillisecs = milli;
-        sysTime.stMicrosecs = micro;
-    }
-}
-
 } // namespace areg::os
 
 #endif // _WIN32

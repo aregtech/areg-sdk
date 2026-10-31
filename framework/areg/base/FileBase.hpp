@@ -132,20 +132,20 @@ protected:
     };
 
 private:
-    static constexpr uint32_t   BIT_INVALID     {static_cast<uint32_t>(OpenFlag::BitNone)};
-    static constexpr uint32_t   BIT_READ        { static_cast<uint32_t>(OpenFlag::BitRead) };
-    static constexpr uint32_t   BIT_WRITE       { static_cast<uint32_t>(OpenFlag::BitWrite) };
-    static constexpr uint32_t   BIT_BINARY      { static_cast<uint32_t>(OpenFlag::BitBinary) };
-    static constexpr uint32_t   BIT_TEXT        { static_cast<uint32_t>(OpenFlag::BitText) };
-    static constexpr uint32_t   BIT_SHARE_READ  { static_cast<uint32_t>(OpenFlag::BitShareRead) };
-    static constexpr uint32_t   BIT_SHARE_WRITE { static_cast<uint32_t>(OpenFlag::BitShareWrite) };
-    static constexpr uint32_t   BIT_CREATE      { static_cast<uint32_t>(OpenFlag::BitCreateNew) };
-    static constexpr uint32_t   BIT_EXIST       { static_cast<uint32_t>(OpenFlag::BitExist) };
-    static constexpr uint32_t   BIT_TRUNCATE    { static_cast<uint32_t>(OpenFlag::BitTruncate) };
-    static constexpr uint32_t   BIT_DELETE      { static_cast<uint32_t>(OpenFlag::BitDelete) };
-    static constexpr uint32_t   BIT_DIRECT      { static_cast<uint32_t>(OpenFlag::BitDirect) };
-    static constexpr uint32_t   BIT_FILE        { static_cast<uint32_t>(OpenFlag::BitTemp) };
-    static constexpr uint32_t   BIT_OPEN_ALWAYS { static_cast<uint32_t>(OpenFlag::BitOpenAlways) };
+    AREG_API_CONST static constexpr uint32_t   BIT_INVALID     {static_cast<uint32_t>(OpenFlag::BitNone)};
+    AREG_API_CONST static constexpr uint32_t   BIT_READ        { static_cast<uint32_t>(OpenFlag::BitRead) };
+    AREG_API_CONST static constexpr uint32_t   BIT_WRITE       { static_cast<uint32_t>(OpenFlag::BitWrite) };
+    AREG_API_CONST static constexpr uint32_t   BIT_BINARY      { static_cast<uint32_t>(OpenFlag::BitBinary) };
+    AREG_API_CONST static constexpr uint32_t   BIT_TEXT        { static_cast<uint32_t>(OpenFlag::BitText) };
+    AREG_API_CONST static constexpr uint32_t   BIT_SHARE_READ  { static_cast<uint32_t>(OpenFlag::BitShareRead) };
+    AREG_API_CONST static constexpr uint32_t   BIT_SHARE_WRITE { static_cast<uint32_t>(OpenFlag::BitShareWrite) };
+    AREG_API_CONST static constexpr uint32_t   BIT_CREATE      { static_cast<uint32_t>(OpenFlag::BitCreateNew) };
+    AREG_API_CONST static constexpr uint32_t   BIT_EXIST       { static_cast<uint32_t>(OpenFlag::BitExist) };
+    AREG_API_CONST static constexpr uint32_t   BIT_TRUNCATE    { static_cast<uint32_t>(OpenFlag::BitTruncate) };
+    AREG_API_CONST static constexpr uint32_t   BIT_DELETE      { static_cast<uint32_t>(OpenFlag::BitDelete) };
+    AREG_API_CONST static constexpr uint32_t   BIT_DIRECT      { static_cast<uint32_t>(OpenFlag::BitDirect) };
+    AREG_API_CONST static constexpr uint32_t   BIT_FILE        { static_cast<uint32_t>(OpenFlag::BitTemp) };
+    AREG_API_CONST static constexpr uint32_t   BIT_OPEN_ALWAYS { static_cast<uint32_t>(OpenFlag::BitOpenAlways) };
 
 public:
     /**
@@ -184,18 +184,18 @@ public:
      * \brief   File::TIMESTAMP_FILE_MASK
      *          Mask used in file name to set time-stamp
      **/
-    static constexpr std::string_view   FILE_MASK_TIMESTAMP { "%time%" };
+    AREG_API_CONST static constexpr std::string_view   FILE_MASK_TIMESTAMP { "%time%" };
 
     /**
      * \brief   File::TIMESTAMP_FORMAT
      *          Default time-stamp format, used as yyyy_mm_dd_hh_mm_ss_ms
      **/
-    static constexpr std::string_view   TIMESTAMP_FORMAT    { "%04d_%02d_%02d_%02d_%02d_%02d_%03d" };
+    AREG_API_CONST static constexpr std::string_view   TIMESTAMP_FORMAT    { "%04d_%02d_%02d_%02d_%02d_%02d_%03d" };
 
     /**
      * \brief   The name of application to add in file name or path
      **/
-    static constexpr std::string_view   FILE_MASK_APPNAME   { "%appname%" };
+    AREG_API_CONST static constexpr std::string_view   FILE_MASK_APPNAME   { "%appname%" };
 
 #if defined(_MSC_VER)
     #pragma warning(pop)

@@ -335,7 +335,14 @@ void RouterClient::process_received_message( MessageEnvelope & msgReceived, Sock
 
     case areg::FuncIdRange::SystemServiceNotifyRegister:
     {
-        ASSERT( static_cast<uint32_t>(mClientConnection.cookie()) == msgReceived.target() );
+        const ITEM_ID cookie{ mClientConnection.cookie() };
+        if ( static_cast<uint32_t>(cookie) != msgReceived.target() )
+        {
+            // A notification for a cancelled or a previous connection is ignored.
+            DEBUG_LOG_WARN("Ignore registration notification for target [ %u ], the connection cookie is [ %u ]", msgReceived.target(), static_cast<uint32_t>(cookie));
+            break;
+        }
+
         const areg::RegistrationAction reqType{ static_cast<areg::RegistrationAction>(msgReceived.call_type()) };
         const areg::DisconnectReason reason{ static_cast<areg::DisconnectReason>(msgReceived.result()) };
         DEBUG_LOG_DBG("Remote routing service registration notification of type [ %s ]", areg::as_string(reqType));
@@ -370,7 +377,7 @@ void RouterClient::process_received_message( MessageEnvelope & msgReceived, Sock
         {
             StubAddress stub(*msgReceived.header());
             stub.set_source( mChannel.source() );
-            if ( (reason == areg::DisconnectReason::ProviderRejected) && (stub.cookie() == mClientConnection.cookie()) )
+            if ( (reason == areg::DisconnectReason::ProviderRejected) && (stub.cookie() == cookie) )
             {
                 // The rejected provider is one of this process.
                 stub.set_cookie( areg::COOKIE_LOCAL );

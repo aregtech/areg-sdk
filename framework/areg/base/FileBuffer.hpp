@@ -47,7 +47,7 @@ public:
      *          to the size of areg::BLOCK_SIZE. In case of read-only mode
      *          no buffer will be allocated and passed shared buffer will be used.
      **/
-    static constexpr uint32_t   BLOCK_SIZE  { 4 * areg::BLOCK_SIZE };
+    AREG_API_CONST static constexpr uint32_t   BLOCK_SIZE  { 4 * areg::BLOCK_SIZE };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor

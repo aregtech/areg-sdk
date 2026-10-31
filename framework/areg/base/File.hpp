@@ -64,64 +64,64 @@ public:
      *          The mask in a file path to replace with the home directory of the current user.
      *          Expanded by File::normalize_path().
      **/
-    static constexpr std::string_view   FILE_MASK_USER      { "%user%" };
+    AREG_API_CONST static constexpr std::string_view   FILE_MASK_USER      { "%user%" };
 
     /**
      * \brief   File::SPEACIAL_MASKS
      *          The list of masked names to replace with special folders.
      */
-    static constexpr std::string_view   SPEACIAL_MASKS[]    =   { "%home%", "%personal", "%appdata%", "%temp%" };
+    AREG_API_CONST static constexpr std::string_view   SPEACIAL_MASKS[]    =   { "%home%", "%personal", "%appdata%", "%temp%" };
 
     /**
      * \brief   The length of the special file name masks array.
      **/
-    static constexpr int32_t            LEN_SPECIAL_MASKS       { std::size(SPEACIAL_MASKS) };
+    AREG_API_CONST static constexpr int32_t            LEN_SPECIAL_MASKS       { std::size(SPEACIAL_MASKS) };
 
     /**
      * \brief   File::TEMP_FILE_PREFIX
      *          The default prefix for temporary file. By default it is "_areg"
      **/
-    static constexpr std::string_view   TEMP_FILE_PREFIX    { "_areg" };
+    AREG_API_CONST static constexpr std::string_view   TEMP_FILE_PREFIX    { "_areg" };
 
     /**
      * \brief   Current directory
      **/
-    static constexpr std::string_view   DIR_CURRENT         { "." };
+    AREG_API_CONST static constexpr std::string_view   DIR_CURRENT         { "." };
 
     /**
      * \brief   Parent directory
      **/
-    static constexpr std::string_view   DIR_PARENT          { ".." };
+    AREG_API_CONST static constexpr std::string_view   DIR_PARENT          { ".." };
 
     /**
      * \brief   File::EXTENSION_SEPARATOR
      *          File extension separator.
      **/
-    static constexpr char               EXTENSION_SEPARATOR { '.' };
+    AREG_API_CONST static constexpr char               EXTENSION_SEPARATOR { '.' };
 
     /**
      * \brief   File::UNIX_SEPARATOR
      *          Unix style path separator.
      **/
-    static constexpr char               UNIX_SEPARATOR      { '/' };
+    AREG_API_CONST static constexpr char               UNIX_SEPARATOR      { '/' };
 
     /**
      * \brief   File::DOS_SEPARATOR
      *          DOS style path separator.
      **/
-    static constexpr char               DOS_SEPARATOR       { '\\' };
+    AREG_API_CONST static constexpr char               DOS_SEPARATOR       { '\\' };
 
     /**
      * \brief   File::MAXIMUM_PATH
      *          The maximum path of file.
      **/
-    static constexpr int32_t            MAXIMUM_PATH        {1024};
+    AREG_API_CONST static constexpr int32_t            MAXIMUM_PATH        {1024};
 
     /**
      * \brief   File::PATH_SEPARATOR
      *          The OS dependent path separator. On POSIX it is '/' and on Windows it is '\\'.
      **/
-    static constexpr char               PATH_SEPARATOR      { std::filesystem::path::preferred_separator };
+    AREG_API_CONST static constexpr char               PATH_SEPARATOR      { std::filesystem::path::preferred_separator };
 
 #if defined(_MSC_VER)
     #pragma warning(pop)

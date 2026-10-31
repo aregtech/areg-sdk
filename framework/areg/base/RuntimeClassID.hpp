@@ -72,7 +72,7 @@ public:
     /**
      * \brief   Sentinel name used by the default-constructed (invalid) class ID.
      **/
-    static constexpr std::string_view BAD_CLASS_ID { "_BAD_RUNTIME_CLASS_ID_" };
+    AREG_API_CONST static constexpr std::string_view BAD_CLASS_ID { "_BAD_RUNTIME_CLASS_ID_" };
 #if defined(_MSC_VER)
     #pragma warning(pop)
 #endif  // _MSC_VER

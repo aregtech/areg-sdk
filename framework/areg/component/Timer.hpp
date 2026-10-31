@@ -76,13 +76,13 @@ public:
      * \brief   Timer::DEFAULT_MAXIMUM_QUEUE
      *          Default number of maximum queued number of timer events in dispatcher thread.
      **/
-    static constexpr int32_t            DEFAULT_MAXIMUM_QUEUE= static_cast<int32_t>(5);            /*0x00000005*/
+    AREG_API_CONST static constexpr int32_t            DEFAULT_MAXIMUM_QUEUE= static_cast<int32_t>(5);            /*0x00000005*/
 
     /**
      * \brief   Timer::IGNORE_TIMER_QUEUE
      *          Defined to ignore number of maximum queued timer events in dispatcher thread.
      **/
-    static constexpr int32_t            IGNORE_TIMER_QUEUE    = static_cast<int32_t>(0);            /*0x00000000*/
+    AREG_API_CONST static constexpr int32_t            IGNORE_TIMER_QUEUE    = static_cast<int32_t>(0);            /*0x00000000*/
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor

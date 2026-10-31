@@ -928,8 +928,8 @@ public:
 // Constants
 //////////////////////////////////////////////////////////////////////////
 private:
-    static constexpr uint32_t   WRITER_FREE     { 0u }; //!< No thread owns the lock.
-    static constexpr uint32_t   WRITER_OWNED    { 1u }; //!< A thread owns the lock.
+    AREG_API_CONST static constexpr uint32_t   WRITER_FREE     { 0u }; //!< No thread owns the lock.
+    AREG_API_CONST static constexpr uint32_t   WRITER_OWNED    { 1u }; //!< A thread owns the lock.
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

@@ -20,6 +20,9 @@
     <Import Project="$(AregConfigDir)project.props" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnabled>false</VcpkgEnabled>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
     <ClCompile>
       <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;_CONSOLE;GTEST_HAS_PTHREAD=0;_HAS_EXCEPTIONS=1;STRICT;IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -48,23 +51,28 @@
     <ClCompile Include="units\EventQueueTest.cpp" />
     <ClCompile Include="units\GUnitTest.cpp" />
     <ClCompile Include="units\FileTest.cpp" />
+    <ClCompile Include="units\ListenerDispatchTest.cpp" />
     <ClCompile Include="units\LogMessageLengthTest.cpp" />
     <ClCompile Include="units\LogProtocolTest.cpp" />
     <ClCompile Include="units\LogRingTest.cpp" />
     <ClCompile Include="units\LogScopesTest.cpp" />
     <ClCompile Include="units\EnvelopeCacheTest.cpp" />
     <ClCompile Include="units\EventEnvelopeTest.cpp" />
+    <ClCompile Include="units\LogSqliteDatabaseTest.cpp" />
     <ClCompile Include="units\MultiLockTest.cpp" />
+    <ClCompile Include="units\SendBacklogTest.cpp" />
     <ClCompile Include="units\SharedBufferTest.cpp" />
     <ClCompile Include="units\SocketMultiplexerTest.cpp" />
     <ClCompile Include="units\SocketAddressTest.cpp" />
     <ClCompile Include="units\SocketInterruptTest.cpp" />
     <ClCompile Include="units\SocketWouldBlockTest.cpp" />
+    <ClCompile Include="units\StreamExtractTest.cpp" />
     <ClCompile Include="units\StringDefsTest.cpp" />
     <ClCompile Include="units\OptionParserTest.cpp" />
     <ClCompile Include="units\StringDefsTest2.cpp" />
     <ClCompile Include="units\StringDefsTest3.cpp" />
     <ClCompile Include="units\StringCommonTest.cpp" />
+    <ClCompile Include="units\StringDefsTest4.cpp" />
     <ClCompile Include="units\StringTest.cpp" />
     <ClCompile Include="units\StringUtilsTest.cpp" />
     <ClCompile Include="units\SyncTimerTest.cpp" />
@@ -86,6 +94,16 @@
     <ClCompile Include="units\ScopedLockTest.cpp" />
     <ClCompile Include="units\SortedLinkedListTest.cpp" />
     <ClCompile Include="units\StackTest.cpp" />
+    <ClCompile Include="units\DebugDefsTest.cpp" />
+    <ClCompile Include="units\EventDefsTest.cpp" />
+    <ClCompile Include="units\IdentifierTest.cpp" />
+    <ClCompile Include="units\ModelTest.cpp" />
+    <ClCompile Include="units\ProcessTest.cpp" />
+    <ClCompile Include="units\RuntimeObjectTest.cpp" />
+    <ClCompile Include="units\ServiceAddressTest.cpp" />
+    <ClCompile Include="units\ServiceDefsTest.cpp" />
+    <ClCompile Include="units\UtilityDefsTest.cpp" />
+    <ClCompile Include="units\VersionTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="units\GUnitTest.hpp" />
@@ -97,6 +115,10 @@
     </ProjectReference>
     <ProjectReference Include="$(AregSdkRoot)framework\aregextend.vcxproj">
       <Project>{fbc5beae-01b9-4943-a5cb-0d3de2067eb3}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(AregSdkRoot)thirdparty\sqlite3.vcxproj">
+      <Project>{a19d14e3-19fe-46fe-91ca-0bad1cdb91c5}</Project>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

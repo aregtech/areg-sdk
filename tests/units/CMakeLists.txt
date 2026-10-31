@@ -49,13 +49,16 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     ArrayListTest.cpp
     ConfigManagerTest.cpp
     DateTimeTest.cpp
+    DebugDefsTest.cpp
     EnvelopeCacheTest.cpp
     EventEnvelopeTest.cpp
     EventQueueTest.cpp
     FatalErrorTest.cpp
     FileTest.cpp
     FixedArrayTest.cpp
+    EventDefsTest.cpp
     HashMapTest.cpp
+    IdentifierTest.cpp
     KeyValuePairTest.cpp
     LinkedListTest.cpp
     ListenerDispatchTest.cpp
@@ -66,13 +69,18 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     LogScopesTest.cpp
     LogSqliteDatabaseTest.cpp
     MapTest.cpp
+    ModelTest.cpp
     MultiLockTest.cpp
     OptionParserTest.cpp
+    ProcessTest.cpp
     ReceiveCacheTest.cpp
     ReceivedHeaderTest.cpp
     RingStackTest.cpp
+    RuntimeObjectTest.cpp
     ScopedLockTest.cpp
     SendBacklogTest.cpp
+    ServiceAddressTest.cpp
+    ServiceDefsTest.cpp
     SharedBufferTest.cpp
     SocketAddressTest.cpp
     SocketInterruptTest.cpp
@@ -91,6 +99,8 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     StringTest.cpp
     StringUtilsTest.cpp
     SyncTimerTest.cpp
+    UtilityDefsTest.cpp
+    VersionTest.cpp
     ThreadTest.cpp
     WorkerThreadTest.cpp
 )

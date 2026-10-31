@@ -44,13 +44,13 @@ public:
      * \brief   Process::CURRENT_PROCESS
      *          ID Specifying current process
      **/
-    static constexpr id_type    CURRENT_PROCESS  { 0 };
+    AREG_API_CONST static constexpr id_type    CURRENT_PROCESS  { 0 };
 
     /**
      * \brief   Process::UNKNOWN_PROCESS
      *          Unknown / invalid process ID.
      **/
-    static constexpr id_type    UNKNOWN_PROCESS { static_cast<id_type>(~0) };
+    AREG_API_CONST static constexpr id_type    UNKNOWN_PROCESS { static_cast<id_type>(~0) };
 
     /**
      * \brief   Process environment. Currently support only 32- or 64-bit processes.
