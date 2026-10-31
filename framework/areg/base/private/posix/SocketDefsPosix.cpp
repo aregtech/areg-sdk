@@ -22,6 +22,7 @@
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/areg_macros.h"
 #include "areg/base/MemoryDefs.hpp"
+#include "areg/base/private/SocketLiveness.hpp"
 #include "areg/logging/areg_log.h"
 #include "areg/ipc/private/ConnectionDefs.hpp"
 
@@ -92,6 +93,30 @@ namespace {
         } while ((result < 0) && (errno == EINTR));
 
         return (result > 0);
+    }
+
+    //!< The live handle of the connection the calling thread receives on, see areg::set_receive_live_handle().
+    thread_local const std::atomic<SOCKETHANDLE> * _recvLiveHandle{ nullptr };
+
+    /**
+     * \brief   After a receive failed, decides whether it may be repeated. A blocking socket whose
+     *          receive timeout expired waits again while the live handle of the calling thread is
+     *          the socket. A non-blocking socket waits as _wait_would_block().
+     **/
+    bool _wait_receive(SOCKETHANDLE hSocket) noexcept
+    {
+        const int error{ errno };
+        const std::atomic<SOCKETHANDLE> * live{ _recvLiveHandle };
+        if ((live != nullptr) && ((error == EAGAIN) || (error == EWOULDBLOCK)))
+        {
+            const int flags{ ::fcntl(static_cast<int>(hSocket), F_GETFL, 0) };
+            if ((flags != -1) && ((flags & O_NONBLOCK) == 0))
+                return (live->load(std::memory_order_acquire) == hSocket);
+
+            errno = error;
+        }
+
+        return _wait_would_block(hSocket, POLLIN, SO_RCVTIMEO);
     }
 
     /**
@@ -513,7 +538,7 @@ static int32_t _recv_exact(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t da
         const ssize_t received = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer + total), static_cast<size_t>(dataLength - total), recvExact);
         if (received > 0)
             total += static_cast<int32_t>(received);
-        else if ((received == 0) || ((errno != EINTR) && (_wait_would_block(hSocket, POLLIN, SO_RCVTIMEO) == false)))
+        else if ((received == 0) || ((errno != EINTR) && (_wait_receive(hSocket) == false)))
             return -1;
     } while (total < dataLength);
     return total;
@@ -566,7 +591,7 @@ static int32_t _recv_cached(SOCKETHANDLE hSocket, areg::ThreadCache& tc, uint8_t
                 total  += static_cast<uint32_t>(received);
                 needed -= static_cast<uint32_t>(received);
             }
-            else if ((received == 0) || ((errno != EINTR) && (_wait_would_block(hSocket, POLLIN, SO_RCVTIMEO) == false)))
+            else if ((received == 0) || ((errno != EINTR) && (_wait_receive(hSocket) == false)))
             {
                 return -1;
             }
@@ -584,7 +609,7 @@ static int32_t _recv_cached(SOCKETHANDLE hSocket, areg::ThreadCache& tc, uint8_t
         const ssize_t filled = ::recv(hSocket, reinterpret_cast<char*>(cache + tc.unread), static_cast<size_t>(tc.space - tc.unread), 0);
         if (filled > 0)
             tc.unread += static_cast<uint32_t>(filled);
-        else if ((filled == 0) || ((errno != EINTR) && (_wait_would_block(hSocket, POLLIN, SO_RCVTIMEO) == false)))
+        else if ((filled == 0) || ((errno != EINTR) && (_wait_receive(hSocket) == false)))
         {
             tc.head   = 0u;
             tc.unread = 0u;
@@ -647,7 +672,7 @@ int32_t _os_recv_data_window(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t 
         const ssize_t received = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer + total), static_cast<size_t>(chunk), recvExact);
         if (received > 0)
             total += static_cast<int32_t>(received);
-        else if ((received == 0) || ((errno != EINTR) && (_wait_would_block(hSocket, POLLIN, SO_RCVTIMEO) == false)))
+        else if ((received == 0) || ((errno != EINTR) && (_wait_receive(hSocket) == false)))
             return -1;
     } while (total < dataLength);
 
@@ -720,5 +745,21 @@ bool _os_get_option(SOCKETHANDLE hSocket, int32_t level, int32_t name, unsigned 
 }
 
 } // namespace areg::os
+
+AREG_API_IMPL void areg::set_receive_recheck(SOCKETHANDLE hSocket, uint32_t timeoutMs) noexcept
+{
+    if (areg::is_valid_socket(hSocket))
+    {
+        struct timeval tv { };
+        tv.tv_sec  = static_cast<decltype(tv.tv_sec)>(timeoutMs / 1000u);
+        tv.tv_usec = static_cast<decltype(tv.tv_usec)>((timeoutMs % 1000u) * 1000u);
+        static_cast<void>(::setsockopt(static_cast<int>(hSocket), SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)));
+    }
+}
+
+AREG_API_IMPL void areg::set_receive_live_handle(const std::atomic<SOCKETHANDLE> * liveHandle) noexcept
+{
+    _recvLiveHandle = liveHandle;
+}
 
 #endif  // defined(_POSIX) || defined(POSIX)

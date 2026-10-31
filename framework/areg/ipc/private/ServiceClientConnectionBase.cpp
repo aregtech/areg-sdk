@@ -358,9 +358,8 @@ void ServiceClientConnectionBase::on_service_stop()
 
     mTimerConnect.stop_timer( );
 
-    Channel channel{ mChannel };
-    mChannel.invalidate();
-
+    // The channel is cleared after the I/O threads stopped.
+    const Channel channel{ _channel_snapshot( ) };
     mThreadReceive.trigger_exit( );
 
     if ((channel.target() > areg::COOKIE_LOCAL) && (channel.target() < areg::COOKIE_REMOTE_SERVICE))
@@ -376,6 +375,8 @@ void ServiceClientConnectionBase::on_service_stop()
         mThreadSend.trigger_exit_drained();
         if (!mThreadSend.wait_completion( areg::SEND_QUEUE_FLUSH_TIMEOUT ))
         {
+            // The interrupt ends a send blocked on a peer that does not read.
+            mClientConnection.interrupt_socket( );
             mThreadSend.trigger_exit();
             mThreadSend.wait_completion( areg::WAIT_INFINITE );
         }
@@ -386,6 +387,7 @@ void ServiceClientConnectionBase::on_service_stop()
     mClientConnection.interrupt_socket( );
     mThreadReceive.shutdown( areg::WAIT_INFINITE );
     _close_connection( mSendStartLock, mThreadSend, mClientConnection, true );
+    mChannel.invalidate();
 
     mMessageDispatcher.remove_event_type( ServiceClientEvent::CLASS_ID );
 
@@ -429,13 +431,12 @@ void ServiceClientConnectionBase::on_connection_stopped()
     set_connection_state(ConnectionPhase::ConnectionStopped);
     mTimerConnect.stop_timer( );
 
-    Channel channel = mChannel;
-    mChannel.invalidate();
-
+    const Channel channel{ _channel_snapshot( ) };
     cancel_connection( );
 
     mThreadReceive.shutdown( areg::WAIT_INFINITE );
     _close_connection( mSendStartLock, mThreadSend, mClientConnection, false );
+    mChannel.invalidate();
     mConnectionConsumer.on_service_channel_disconnected( channel );
 
     if ( is_connection_allowed( ) && (prevState != ConnectionPhase::ConnectionStopping) )
@@ -456,12 +457,12 @@ void ServiceClientConnectionBase::on_connection_lost()
 
     const ConnectionPhase prevState{ connection_state() };
     set_connection_state(ConnectionPhase::ConnectionStopped);
-    Channel channel = mChannel;
-    mChannel.invalidate();
+    const Channel channel{ _channel_snapshot( ) };
 
     // The socket is interrupted; it is closed once both I/O threads stopped.
     mThreadReceive.shutdown( areg::WAIT_INFINITE );
     _close_connection( mSendStartLock, mThreadSend, mClientConnection, false );
+    mChannel.invalidate();
 
     if (!is_connection_allowed() || !mTimerConnect.is_stopped() ||
         (prevState == ConnectionPhase::ConnectionStopping))
@@ -568,7 +569,7 @@ void ServiceClientConnectionBase::cancel_connection()
     mThreadSend.trigger_exit();
 }
 
-void ServiceClientConnectionBase::notify_connection_lost( areg::EventPriority eventPrio )
+void ServiceClientConnectionBase::notify_connection_lost( areg::EventPriority eventPrio /*= areg::EventPriority::HighPrio*/ )
 {
     // Interrupt the socket BEFORE queuing the lost-connection command
     cancel_connection();

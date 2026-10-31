@@ -22,6 +22,7 @@
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/areg_macros.h"
 #include "areg/base/MemoryDefs.hpp"
+#include "areg/base/private/SocketLiveness.hpp"
 
 #ifndef WIN32_LEAN_AND_MEAN
     #define WIN32_LEAN_AND_MEAN
@@ -510,5 +511,13 @@ bool _os_get_option(SOCKETHANDLE hSocket, int32_t level, int32_t name, unsigned 
 }
 
 } // namespace areg::os
+
+AREG_API_IMPL void areg::set_receive_recheck(SOCKETHANDLE /*hSocket*/, uint32_t /*timeoutMs*/) noexcept
+{
+}
+
+AREG_API_IMPL void areg::set_receive_live_handle(const std::atomic<SOCKETHANDLE> * /*liveHandle*/) noexcept
+{
+}
 
 #endif  // _WIN32

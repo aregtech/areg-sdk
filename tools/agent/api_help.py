@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # ===========================================================================
 # Answers what one framework name is, from the public headers under
-# framework/areg. One name in, its declarations and the header out.
+# framework/areg and framework/aregextend. One name in, its declarations and the
+# header out.
 #
 #   python3 tools/agent/api_help.py start_timer     # every declaration of a member
 #   python3 tools/agent/api_help.py Timer --class   # what one class declares
@@ -27,6 +28,7 @@ import textwrap
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 FRAMEWORK = os.path.join(ROOT, 'framework', 'areg')
+EXTENSION = os.path.join(ROOT, 'framework', 'aregextend')
 
 sys.path.insert(0, HERE)
 from gen_skeleton import CLASSES as DESIGN_CLASSES, CLASS_HEADERS, WORKSHEET  # noqa: E402
@@ -102,7 +104,9 @@ def catalogued(name):
     """
     try:
         with open(MEMBERS, encoding='utf-8') as handle:
-            return name in set(json.load(handle).get('members', []))
+            document = json.load(handle)
+        extension = document.get('extension') or {}
+        return name in set(document.get('members', [])) | set(extension.get('members', []))
     except (ValueError, OSError):
         return False
 
@@ -152,6 +156,50 @@ def doc_before(lines, index):
     return ' '.join(parts)
 
 
+# "namespace areg::ext {" or "namespace ext", whose brace may open on the next line.
+NAMESPACE_HEAD = re.compile(r'^\s*namespace\s+([A-Za-z_][\w:]*)\s*(?:\{|$)')
+
+# The namespace each class, enumeration and free name is declared in, filled by load().
+SCOPE = {}
+
+
+def namespaces_by_line(lines):
+    """The enclosing namespace at the start of each line, "areg" when there is none."""
+    found = []
+    stack = []
+    depth = 0
+    pending = None
+    for line in lines:
+        found.append('::'.join(name for _depth, name in stack) or 'areg')
+        head = NAMESPACE_HEAD.match(line)
+        if head:
+            pending = head.group(1)
+        for char in line:
+            if char == '{':
+                depth += 1
+                if pending:
+                    stack.append((depth, pending))
+                    pending = None
+            elif char == '}':
+                if stack and stack[-1][0] == depth:
+                    stack.pop()
+                depth = max(0, depth - 1)
+    return found
+
+
+def qualified(name, header=None):
+    """The name with its namespace, "areg::ext::Console" for a class of aregextend."""
+    space = (header.scope.get(name) if header else None) or SCOPE.get(name, 'areg')
+    return space + '::' + name
+
+
+def where_of(owner, member, header):
+    """The class that owns a declaration with its namespace, or the namespace itself."""
+    if owner:
+        return qualified(owner)
+    return 'namespace ' + header.scope.get(member, 'areg')
+
+
 class Header(object):
     """One public header, indexed by the names it declares."""
 
@@ -164,14 +212,16 @@ class Header(object):
         self.constants = {}      #!< constant name -> (owner, signature, doc)
         self.bases = {}          #!< class name -> [public base class name]
         self.usings = {}         #!< class name -> {'constructors', 'operator='} it takes from a base
+        self.scope = {}          #!< class, enumeration or free name -> its namespace
         self.seen = set()
         self._parse()
 
     def _parse(self):
         with open(self.path, encoding='utf-8', errors='ignore') as handle:
             raw = handle.read()
-        self._parse_enums(raw)
         text = clean(raw)
+        self._spaces = namespaces_by_line(text.splitlines())
+        self._parse_enums(raw)
         self._parse_constants(text, raw.splitlines())
         raw_lines = raw.splitlines()
         depth = 0
@@ -185,6 +235,7 @@ class Header(object):
             head = CLASS_HEAD.match(line)
             if head and not in_body and '(' not in line.split(head.group(1))[0]:
                 pending = head.group(1)
+                self.scope.setdefault(pending, self._spaces[number])
                 self._bases(pending, line, lines[number + 1:number + 4])
             used = USING.match(line) if not in_body else None
             if used:
@@ -286,6 +337,8 @@ class Header(object):
         if (name, owner, signature) in self.seen:
             return
         self.seen.add((name, owner, signature))
+        if not owner:
+            self.scope.setdefault(name, self._spaces[start])
         self.members.append((name, owner, signature, doc))
         if owner:
             self.classes.setdefault(owner, []).append(signature)
@@ -300,7 +353,7 @@ class Header(object):
         depth = 0
         owners = []
         pending = None
-        for line in text.splitlines():
+        for number, line in enumerate(text.splitlines()):
             head = CLASS_HEAD.match(line)
             if head and '(' not in line.split(head.group(1))[0]:
                 pending = head.group(1)
@@ -312,6 +365,8 @@ class Header(object):
                     name = found.group(1)
                     if name not in NOT_A_NAME and not name.startswith('_'):
                         owner = next((e[1] for e in reversed(owners) if e[1]), None)
+                        if not owner:
+                            self.scope.setdefault(name, self._spaces[number])
                         self.constants.setdefault(
                             name, (owner, ' '.join(line.split()), ''))
             opened = line.count('{')
@@ -339,6 +394,8 @@ class Header(object):
                     names.append(match.group(1))
             if names:
                 self.enums[head.group(1)] = names
+                self.scope.setdefault(head.group(1),
+                                      self._spaces[text.count('\n', 0, head.start())])
 
 
 def load():
@@ -346,14 +403,20 @@ def load():
     headers = []
     if not os.path.isdir(FRAMEWORK):
         fail('framework/areg not found under {}'.format(ROOT))
-    for base, folders, files in os.walk(FRAMEWORK):
-        folders[:] = [f for f in folders if f != 'private']
-        for name in sorted(files):
-            if name.endswith(('.hpp', '.h')):
-                path = os.path.join(base, name)
-                headers.append(Header(path,
-                                      os.path.relpath(path, os.path.join(ROOT, 'framework'))
-                                      .replace('\\', '/')))
+    roots = [FRAMEWORK] + ([EXTENSION] if os.path.isdir(EXTENSION) else [])
+    for root in roots:
+        for base, folders, files in os.walk(root):
+            folders[:] = [f for f in folders if f != 'private']
+            for name in sorted(files):
+                if name.endswith(('.hpp', '.h')):
+                    path = os.path.join(base, name)
+                    headers.append(Header(path,
+                                          os.path.relpath(path,
+                                                          os.path.join(ROOT, 'framework'))
+                                          .replace('\\', '/')))
+    for header in headers:
+        for name in list(header.classes) + list(header.enums):
+            SCOPE.setdefault(name, header.scope.get(name, 'areg'))
     return headers
 
 
@@ -370,7 +433,7 @@ def answer_member(headers, name, full):
         for member, owner, signature, doc in header.members:
             if member != name:
                 continue
-            key = ('areg::' + owner if owner else 'namespace areg', header.relative)
+            key = (where_of(owner, member, header), header.relative)
             groups.setdefault(key, []).append((signature, doc))
     if not groups:
         return False
@@ -405,7 +468,7 @@ def answer_constant(headers, name):
         if name not in header.constants:
             continue
         owner, signature, _doc = header.constants[name]
-        where = 'areg::' + owner if owner else 'namespace areg'
+        where = where_of(owner, name, header)
         print('{} -- a constant'.format(name))
         print('')
         print('{}  ({})'.format(where, header.relative))
@@ -522,8 +585,8 @@ def answer_class(headers, name, full):
             continue
         found = True
         entries = header.classes[name]
-        print('areg::{}  ({}) -- {} declaration(s)'
-              .format(name, header.relative, len(entries)))
+        print('{}  ({}) -- {} declaration(s)'
+              .format(qualified(name, header), header.relative, len(entries)))
         for signature in entries:
             print('  {}'.format(signature))
     if found:
@@ -534,8 +597,8 @@ def answer_class(headers, name, full):
                             for member, owner, signature, _doc in header.members
                             if owner == chain[1] and member == chain[1] and '~' not in signature
                             and not re.search(r'\(\s*(?:const\s+)?' + chain[1] + r'\s*&', signature)]
-            print('constructors inherited from areg::{} -- {} declaration(s), called as {}(...)'
-                  .format(chain[1], len(constructors), name))
+            print('constructors inherited from {} -- {} declaration(s), called as {}(...)'
+                  .format(qualified(chain[1]), len(constructors), name))
             for signature in constructors:
                 print('  {}'.format(signature))
         for index, base in enumerate(chain[1:], 1):
@@ -543,8 +606,9 @@ def answer_class(headers, name, full):
             if not entries:
                 continue
             names = list(dict.fromkeys(member for member, _header in entries))
-            print('inherited from areg::{}  ({}) -- {} name(s); {}::<name> gives the '
-                  'signatures'.format(base, entries[0][1].relative, len(names), name))
+            print('inherited from {}  ({}) -- {} name(s); {}::<name> gives the '
+                  'signatures'.format(qualified(base), entries[0][1].relative,
+                                      len(names), name))
             print(textwrap.fill(', '.join(names), width=96, initial_indent='  ',
                                 subsequent_indent='  ', break_on_hyphens=False))
     return found
@@ -569,8 +633,8 @@ def answer_qualified(headers, name, full):
     print('{} -- {} declaration(s)'.format(name, sum(len(g[2]) for g in groups)))
     for base, path, entries in groups:
         print('')
-        print('areg::{}  ({}){}'.format(base, path, '' if base == owner else
-                                         ', inherited by areg::' + owner))
+        print('{}  ({}){}'.format(qualified(base), path, '' if base == owner else
+                                   ', inherited by ' + qualified(owner)))
         for signature, doc in entries:
             print('  {}'.format(signature))
             if full and doc:
@@ -583,8 +647,8 @@ def answer_enum(headers, name):
     for header in headers:
         if name in header.enums:
             values = header.enums[name]
-            print('enum class areg::{}  ({}) -- {} value(s)'
-                  .format(name, header.relative, len(values)))
+            print('enum class {}  ({}) -- {} value(s)'
+                  .format(qualified(name, header), header.relative, len(values)))
             print('  {}'.format(', '.join(values)))
             return True
     return False
@@ -725,7 +789,7 @@ def main():
             if seen:
                 path, owner, member, signature = seen
                 role = role_in(signature, name)
-                where = 'areg::' + owner if owner else 'namespace areg'
+                where = qualified(owner) if owner else 'namespace areg'
                 if role == 'parameter':
                     print('"{}" is the name of a parameter in the declaration below, '
                           'in {}. A parameter name is not a name to call: it is what '
@@ -744,8 +808,7 @@ def main():
                           'or a constant. It appears in {}, in the declaration below, '
                           'as a type or a qualifier.'.format(name, path))
                 print('')
-                print('{}  ({})'.format('areg::' + owner if owner else
-                                        'namespace areg', path))
+                print('{}  ({})'.format(where, path))
                 print('  {}'.format(signature))
                 continue
             print('"{}" is not a member, a class, an enumeration, a constant or a macro in the '

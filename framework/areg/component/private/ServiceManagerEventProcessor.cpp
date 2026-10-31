@@ -45,9 +45,8 @@ DEF_LOG_SCOPE(areg_component_private_ServiceManagerEventProcessor, unregister_th
 
 namespace areg {
 
-ServiceManagerEventProcessor::ServiceManagerEventProcessor( ServiceManager & serviceManager )
-    : mServiceManager   ( serviceManager )
-    , mServerList       ( )
+ServiceManagerEventProcessor::ServiceManagerEventProcessor()
+    : mServerList       ( )
 {
 }
 
@@ -62,32 +61,6 @@ void ServiceManagerEventProcessor::process_service_event( ServiceManagerEventDat
         {
             mServerList.clear( );
             connectProvider.disconnect_service_host( );
-            mServiceManager.trigger_exit_drained( );
-        }
-        break;
-
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_StopRoutingClient:
-        {
-            for ( auto mapPos = mServerList.first_position( ); mServerList.is_valid_position( mapPos ); mapPos = mServerList.next_position( mapPos ) )
-            {
-                ServerInfo si;
-                ClientList clientList;
-
-                mServerList.at_position( mapPos, si, clientList );
-                for ( auto listPos = clientList.first_position( ); clientList.is_valid_position( listPos ); listPos = clientList.next_position( listPos ) )
-                {
-                    const ClientInfo & client = clientList.value_at( listPos );
-                    if ( client.is_connected( ) )
-                    {
-                        _send_disconnected( client.address(), si.address( ), areg::ServiceConnectionState::Disconnected );
-                    }
-                }
-            }
-
-            mServerList.clear( );
-            connectProvider.disconnect_service_host( );
-            mServiceManager.remove_all_events( );
-            mServiceManager.pulse_exit( );
         }
         break;
 

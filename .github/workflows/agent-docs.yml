@@ -421,6 +421,13 @@ jobs:
       - name: Check the agent corpus
         run: python3 tools/intern/check_corpus.py --verbose
 
+      # clang parses every public header of areg and aregextend; each declaration
+      # it sees must be in the members.json inventory of its own library.
+      - name: Check the member inventory against a clang parse
+        run: |
+          clang++ --version
+          python3 tools/intern/check_members_ast.py
+
   macos:
     name: the macOS branch of the tools
     needs: plan

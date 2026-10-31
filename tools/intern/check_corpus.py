@@ -3035,7 +3035,7 @@ def check_member_inventory(report):
     if result.returncode != 0:
         report.fail('inventory', (result.stderr or result.stdout).strip().splitlines()[-1]
                     if (result.stderr or result.stdout).strip()
-                    else 'docs/agent/members.json does not match framework/areg')
+                    else 'docs/agent/members.json does not match framework/areg and framework/aregextend')
         return
     report.ok('inventory', result.stdout.strip() or
               'docs/agent/members.json matches the public headers')

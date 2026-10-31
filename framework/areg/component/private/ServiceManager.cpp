@@ -22,6 +22,7 @@
 
 #include "areg/logging/areg_log.h"
 
+#include <cstdlib>
 #include <string_view>
 
 namespace
@@ -33,6 +34,7 @@ namespace
 namespace areg {
 
 DEF_LOG_SCOPE(areg_component_private_ServiceManager, process_event);
+DEF_LOG_SCOPE(areg_component_private_ServiceManager, _wait_manager_thread);
 DEF_LOG_SCOPE(areg_component_private_ServiceManager, request_register_provider);
 DEF_LOG_SCOPE(areg_component_private_ServiceManager, request_unregister_provider);
 DEF_LOG_SCOPE(areg_component_private_ServiceManager, request_register_consumer);
@@ -288,7 +290,8 @@ bool ServiceManager::_is_routing_started() noexcept
 
 bool ServiceManager::_is_routing_pending() noexcept
 {
-    return ServiceManager::instance().service_connection_provider().is_host_pending();
+    ServiceManager & serviceManager{ ServiceManager::instance() };
+    return (serviceManager.mRouterStopping.load(std::memory_order_acquire) == false) && serviceManager.service_connection_provider().is_host_pending();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -299,10 +302,14 @@ ServiceManager::ServiceManager()
     , ServiceManagerEventConsumer( )
     , ConnectionConsumer         ( )
     , RegistrationConsumer       ( )
+    , RouterClientOwner          ( )
 
-    , mEventProcessor   ( self() )
+    , mEventProcessor   ( )
     , mController       ( )
-    , mServiceClient    ( static_cast<ConnectionConsumer&>(self()), static_cast<RegistrationConsumer&>(self()) )
+    , mServiceClient    ( static_cast<ConnectionConsumer&>(self()), static_cast<RegistrationConsumer&>(self()), static_cast<RouterClientOwner&>(self()) )
+    , mRouterStopping   ( false )
+    , mDeferredStart    ( )
+    , mExitAfterRouter  ( false )
     , mLock             (  )
 {
 }
@@ -316,6 +323,9 @@ void ServiceManager::process_event( const ServiceManagerEventData & data )
     LOG_SCOPE( areg_component_private_ServiceManager, process_event );
     ServiceManagerEventData::ServiceManagerCommand cmdService { data.command( ) };
     LOG_DBG( "Service Manager is going to execute command [ %s ]", ServiceManagerEventData::as_string( cmdService ) );
+
+    if ( _process_router_command( data ) )
+        return;
 
     const InStream & stream{ data.read_stream( ) };
     switch ( cmdService )
@@ -428,15 +438,88 @@ void ServiceManager::_stop_manager_thread(bool waitComplete)
 
     if (waitComplete)
     {
-        wait_completion(areg::WAIT_INFINITE);
-        shutdown(areg::DO_NOT_WAIT);
+        _wait_manager_thread();
     }
 }
 
 void ServiceManager::_wait_manager_thread()
 {
-    wait_completion(areg::WAIT_INFINITE);
+    LOG_SCOPE( areg_component_private_ServiceManager, _wait_manager_thread );
+    if (wait_completion(areg::LIFECYCLE_TIMEOUT_DEFAULT) == false)
+    {
+        LOG_ERR("The service manager did not stop within [ %u ] ms, the process exits with the code [ %d ]"
+                    , areg::LIFECYCLE_TIMEOUT_DEFAULT, areg::LIFECYCLE_FAILURE_EXIT_CODE);
+        areg::stop_logging(true);
+        std::_Exit(areg::LIFECYCLE_FAILURE_EXIT_CODE);
+    }
+
     shutdown(areg::DO_NOT_WAIT);
+}
+
+bool ServiceManager::_process_router_command( const ServiceManagerEventData & data )
+{
+    switch ( data.command( ) )
+    {
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_ShutdownService:
+        mDeferredStart.reset( );
+        mExitAfterRouter = true;
+        if ( mRouterStopping.load( std::memory_order_acquire ) )
+            return true;
+
+        if ( mServiceClient.is_client_running( ) )
+        {
+            // The event processor requests the stop; the stop report ends this thread.
+            mRouterStopping.store( true, std::memory_order_release );
+            return false;
+        }
+
+        mEventProcessor.process_service_event( data.command( ), data.read_stream( ), service_connection_provider( ), service_register_provider( ) );
+        trigger_exit_drained( );
+        return true;
+
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_StopConnection:
+        mDeferredStart.reset( );
+        if ( mRouterStopping.load( std::memory_order_acquire ) || (mServiceClient.is_client_running( ) == false) )
+            return true;
+
+        mRouterStopping.store( true, std::memory_order_release );
+        return false;
+
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_StartConnection:
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_StartNetConnection:
+        if ( mRouterStopping.load( std::memory_order_acquire ) == false )
+            return false;
+
+        if ( mExitAfterRouter == false )
+        {
+            mDeferredStart.emplace( data );
+        }
+
+        return true;
+
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_RouterClientStopped:
+        if ( mServiceClient.is_client_running( ) == false )
+        {
+            mServiceClient.release_client( );
+        }
+
+        mRouterStopping.store( false, std::memory_order_release );
+        if ( mExitAfterRouter )
+        {
+            trigger_exit_drained( );
+        }
+        else if ( mDeferredStart.has_value( ) )
+        {
+            const ServiceManagerEventData start{ std::move( *mDeferredStart ) };
+            mDeferredStart.reset( );
+            process_event( start );
+        }
+
+        return true;
+
+    default:
+        return false;
+    }
 }
 
 void ServiceManager::extract_service_addresses(const ITEM_ID & cookie, ArrayList<StubAddress> & listProviders, ArrayList<ProxyAddress> & listConsumers ) const
@@ -498,21 +581,32 @@ void ServiceManager::on_service_channel_connected(const Channel & channel)
 {
     ServiceManagerEvent::send_event( ServiceManagerEventData::register_connection(channel)
                                   , static_cast<ServiceManagerEventConsumer &>(self())
-                                  , static_cast<DispatcherThread &>(self()));
+                                  , static_cast<DispatcherThread &>(self())
+                                  , areg::EventPriority::HighPrio );
 }
 
 void ServiceManager::on_service_channel_disconnected(const Channel & channel)
 {
     ServiceManagerEvent::send_event( ServiceManagerEventData::unregister_connection(channel)
                                   , static_cast<ServiceManagerEventConsumer &>(self())
-                                  , static_cast<DispatcherThread &>(self()));
+                                  , static_cast<DispatcherThread &>(self())
+                                  , areg::EventPriority::HighPrio );
 }
 
 void ServiceManager::on_service_channel_lost(const Channel & channel)
 {
     ServiceManagerEvent::send_event( ServiceManagerEventData::lost_connection(channel)
                                   , static_cast<ServiceManagerEventConsumer &>(self())
-                                  , static_cast<DispatcherThread &>(self()));
+                                  , static_cast<DispatcherThread &>(self())
+                                  , areg::EventPriority::HighPrio );
+}
+
+void ServiceManager::on_router_client_stopped() noexcept
+{
+    ServiceManagerEvent::send_event( ServiceManagerEventData::router_client_stopped()
+                                  , static_cast<ServiceManagerEventConsumer &>(self())
+                                  , static_cast<DispatcherThread &>(self())
+                                  , areg::EventPriority::HighPrio );
 }
 
 } // namespace areg

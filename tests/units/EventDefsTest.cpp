@@ -395,8 +395,7 @@ TEST(ServiceManagerEventsTest, command_names)
         const char* name;
     } table[] =
     {
-          { Command::CMD_StopRoutingClient,    "ServiceManagerEventData::ServiceManagerCommand::CMD_StopRoutingClient" }
-        , { Command::CMD_RegisterProxy,        "ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterProxy" }
+          { Command::CMD_RegisterProxy,        "ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterProxy" }
         , { Command::CMD_UnregisterProxy,      "ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProxy" }
         , { Command::CMD_RegisterProvider,     "ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterProvider" }
         , { Command::CMD_UnregisterProvider,   "ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProvider" }
@@ -415,6 +414,7 @@ TEST(ServiceManagerEventsTest, command_names)
         , { Command::CMD_WatchdogExpired,      "ServiceManagerEventData::ServiceManagerCommand::CMD_WatchdogExpired" }
         , { Command::CMD_DeadlineExpired,      "ServiceManagerEventData::ServiceManagerCommand::CMD_DeadlineExpired" }
         , { Command::CMD_UserState,            "ServiceManagerEventData::ServiceManagerCommand::CMD_UserState" }
+        , { Command::CMD_RouterClientStopped,  "ServiceManagerEventData::ServiceManagerCommand::CMD_RouterClientStopped" }
     };
 
     for (const auto& row : table)
@@ -427,12 +427,12 @@ TEST(ServiceManagerEventsTest, command_names)
 
 TEST(ServiceManagerEventsTest, commands_without_payload)
 {
-    ServiceManagerEventData stopRouter = ServiceManagerEventData::stop_router_client();
+    ServiceManagerEventData stopped = ServiceManagerEventData::router_client_stopped();
     ServiceManagerEventData shutdown = ServiceManagerEventData::shutdown_service_manager();
     ServiceManagerEventData stop = ServiceManagerEventData::stop_connection();
     ServiceManagerEventData deadline = ServiceManagerEventData::deadline_expired();
 
-    EXPECT_EQ(stopRouter.command(), Command::CMD_StopRoutingClient);
+    EXPECT_EQ(stopped.command(), Command::CMD_RouterClientStopped);
     EXPECT_EQ(shutdown.command(), Command::CMD_ShutdownService);
     EXPECT_EQ(stop.command(), Command::CMD_StopConnection);
     EXPECT_EQ(deadline.command(), Command::CMD_DeadlineExpired);

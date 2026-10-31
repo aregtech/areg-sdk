@@ -78,6 +78,7 @@ bool ClientConnection::create_socket(const String & hostName, uint16_t portNr)
         areg::set_recv_size(mClientSocket.handle(), mSockRecvBuf);
         areg::set_send_timeout(mClientSocket.handle(), mSockSendTimeoutMs);
         areg::set_send_refusal(mClientSocket.handle(), _unacked_limit_ms(mSockSendTimeoutMs));
+        areg::set_receive_recheck(mClientSocket.handle(), areg::RECEIVE_RECHECK_MS);
         areg::socket_set_no_delay(mClientSocket.handle());
     }
 
@@ -94,6 +95,7 @@ bool ClientConnection::create_socket()
         areg::set_recv_size(mClientSocket.handle(), mSockRecvBuf);
         areg::set_send_timeout(mClientSocket.handle(), mSockSendTimeoutMs);
         areg::set_send_refusal(mClientSocket.handle(), _unacked_limit_ms(mSockSendTimeoutMs));
+        areg::set_receive_recheck(mClientSocket.handle(), areg::RECEIVE_RECHECK_MS);
         areg::socket_set_no_delay(mClientSocket.handle());
     }
 
@@ -110,6 +112,7 @@ bool ClientConnection::create_socket_fd()
         areg::set_recv_size(mClientSocket.handle(), mSockRecvBuf);
         areg::set_send_timeout(mClientSocket.handle(), mSockSendTimeoutMs);
         areg::set_send_refusal(mClientSocket.handle(), _unacked_limit_ms(mSockSendTimeoutMs));
+        areg::set_receive_recheck(mClientSocket.handle(), areg::RECEIVE_RECHECK_MS);
     }
 
     mLiveHandle.store(mClientSocket.handle(), std::memory_order_release);

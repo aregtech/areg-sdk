@@ -30,6 +30,10 @@
 #include "areg/component/private/ServiceManagerEventProcessor.hpp"
 #include "areg/component/private/SystemController.hpp"
 #include "areg/ipc/private/RouterClient.hpp"
+
+#include <atomic>
+#include <optional>
+
 namespace areg {
 
 /************************************************************************
@@ -55,6 +59,7 @@ class ServiceManager final  : private   DispatcherThread
                             , private   ServiceManagerEventConsumer
                             , private   ConnectionConsumer
                             , private   RegistrationConsumer
+                            , private   RouterClientOwner
 {
     friend class Application;
     friend class ServiceManagerEventProcessor;
@@ -393,6 +398,15 @@ private:
      **/
     void on_consumer_unregistered( const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) final;
 
+/************************************************************************/
+// RouterClientOwner overrides
+/************************************************************************/
+
+    /**
+     * \brief   Posts the stop report of the router client thread to the service manager thread.
+     **/
+    void on_router_client_stopped() noexcept final;
+
 //////////////////////////////////////////////////////////////////////////
 // Operations and attributes
 //////////////////////////////////////////////////////////////////////////
@@ -426,7 +440,9 @@ private:
     void _stop_manager_thread( bool waitComplete);
 
     /**
-     * \brief   Blocks the calling thread until Service Manager thread completes and exits.
+     * \brief   Blocks the calling thread until Service Manager thread completes and exits. A thread
+     *          that does not exit within areg::LIFECYCLE_TIMEOUT_DEFAULT ends the process with
+     *          areg::LIFECYCLE_FAILURE_EXIT_CODE.
      **/
     void _wait_manager_thread();
 
@@ -435,6 +451,15 @@ private:
      **/
     [[nodiscard]]
     inline ServiceManager & self() noexcept;
+
+    /**
+     * \brief   Handles a connection command of the router client without waiting for its thread.
+     *          A start that arrives while the client stops runs after its stop report.
+     *
+     * \param   data    The event data of the command.
+     * \return  Returns true if the command was handled here; false to pass it to the event processor.
+     **/
+    bool _process_router_command( const ServiceManagerEventData & data );
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -450,6 +475,25 @@ private:
      * \brief   The connection service.
      **/
     RouterClient                    mServiceClient;
+#if defined(_MSC_VER)
+    #pragma warning(push)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+    /**
+     * \brief   True from the stop request of the router client until its stop report.
+     **/
+    std::atomic_bool                mRouterStopping;
+    /**
+     * \brief   A start of the router client requested while it stops.
+     **/
+    std::optional<ServiceManagerEventData>  mDeferredStart;
+#if defined(_MSC_VER)
+    #pragma warning(pop)
+#endif  // _MSC_VER
+    /**
+     * \brief   True if the service manager exits once the router client reported its stop.
+     **/
+    bool                            mExitAfterRouter;
     /**
      * \brief   Synchronization object, for multi-threading access.
      **/

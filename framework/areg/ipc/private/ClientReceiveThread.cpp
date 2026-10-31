@@ -16,6 +16,7 @@
 
 #include "areg/base/MessageEnvelope.hpp"
 #include "areg/base/SocketDefs.hpp"
+#include "areg/base/private/SocketLiveness.hpp"
 #include "areg/ipc/ClientConnection.hpp"
 #include "areg/ipc/RemoteMessageHandler.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
@@ -37,11 +38,13 @@ bool ClientReceiveThread::run_dispatcher()
 {
     // Client receive thread serves one socket.
     areg::set_receive_mode(areg::ReceiveMode::MonoCache);
+    areg::set_receive_live_handle(&mConnection.live_handle_word());
 
     ready_for_events( true );
 
     if ( !mConnection.connect_socket() )
     {
+        areg::set_receive_live_handle(nullptr);
         mRemoteService.failed_receive_message( mConnection.socket() );
         ready_for_events( false );
         remove_all_events();
@@ -104,6 +107,7 @@ bool ClientReceiveThread::run_dispatcher()
         }
     }
 
+    areg::set_receive_live_handle(nullptr);
     ready_for_events(false);
     remove_all_events( );
 
