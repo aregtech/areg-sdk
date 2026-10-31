@@ -6,7 +6,8 @@ name: Coverage
 #   examples -- the example applications run by tools/intern/run-all-examples.py.
 # The counters are reset between the two runs, so a flag holds only what its own run reached;
 # Codecov shows their union as the project total and in the README badge.
-# The job summary holds the totals, per project and per directory. The artifact
+# The job summary holds the coverage counted like Codecov, then lines, functions and branches,
+# each as totals, per project and per directory. The artifact
 # 'coverage-report' holds the HTML report, from project to directory to file and line.
 # Codecov settings: .github/codecov.yml.
 
@@ -29,6 +30,7 @@ env:
   AREG_LOCK_FAILURE_FATAL: 1
   BUILD_DEST: ./product/coverage
   REPORT_DEST: ./product/coverage-report
+  COVERAGE_ARGS: --in-place --build ./product/coverage --out ./product/coverage-report
   GCOVR_VERSION: '8.8'
 
 jobs:
@@ -47,7 +49,7 @@ jobs:
         shell: bash
         env:
           EVENT: ${{ github.event_name }}
-          PATTERN: '^(framework|examples|tests|thirdparty|conf)/|(^|/)CMakeLists\.txt$|\.cmake$|^tools/(codegen\.jar|schema/)|^tools/intern/(run-all-examples\.py|coverage-report\.py)$|^\.github/(codecov\.yml|workflows/coverage\.yml)'
+          PATTERN: '^(framework|examples|tests|thirdparty|conf)/|(^|/)CMakeLists\.txt$|\.cmake$|^tools/(codegen\.jar|schema/)|^tools/intern/(run-all-examples\.py|coverage-report\.py|coverage\.sh|coverage_rule\.py)$|^\.github/(codecov\.yml|workflows/coverage\.yml)'
         run: |
           case "${EVENT}" in
             pull_request) BASE="${{ github.event.pull_request.base.sha }}" ;;
@@ -86,73 +88,32 @@ jobs:
       - name: Install gcovr
         run: python -m pip install --disable-pip-version-check "gcovr==${{env.GCOVR_VERSION}}"
 
-      # Debug is the only unoptimized configuration, so each line maps to its own counter.
-      # '-fprofile-update=atomic' keeps the counters exact when several threads run one line.
-      - name: Configure CMake with coverage instrumentation
-        working-directory: ${{github.workspace}}
-        timeout-minutes: 15
-        run: |
-          FLAGS="--coverage -fprofile-update=atomic"
-          cmake -B ${{env.BUILD_DEST}} -DAREG_COMPILER_FAMILY=gnu -DCMAKE_BUILD_TYPE=Debug -DAREG_LIB_TYPE=shared \
-                -DAREG_EXTENDED:BOOL=ON -DAREG_LOGGING:BOOL=ON -DAREG_EXAMPLES:BOOL=ON -DAREG_TESTS:BOOL=ON \
-                -DAREG_OUTPUT_LAYOUT:BOOL=OFF \
-                -DCMAKE_C_FLAGS="${FLAGS}" -DCMAKE_CXX_FLAGS="${FLAGS}" \
-                -DCMAKE_EXE_LINKER_FLAGS="--coverage" -DCMAKE_SHARED_LINKER_FLAGS="--coverage"
-
-      - name: Build with CMake
+      # tools/intern/coverage.sh holds the flags, filters and report commands; a local run uses it too.
+      - name: Build with coverage instrumentation
         id: build
         working-directory: ${{github.workspace}}
-        run: cmake --build ${{env.BUILD_DEST}} -j $(nproc)
+        run: bash tools/intern/coverage.sh build ${{env.COVERAGE_ARGS}} --jobs $(nproc)
 
+      # Runs ctest, collects unit.json and resets the counters.
       - name: Run the unit tests
         id: unit
         working-directory: ${{github.workspace}}
         timeout-minutes: 40
-        run: ctest --test-dir ${{env.BUILD_DEST}} --timeout 300 --output-on-failure
+        run: bash tools/intern/coverage.sh unit ${{env.COVERAGE_ARGS}}
 
-      - name: Collect the unit test coverage and reset the counters
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        working-directory: ${{github.workspace}}
-        shell: bash
-        run: |
-          mkdir -p ${{env.REPORT_DEST}}
-          gcovr --root . --filter 'framework/' -j $(nproc) \
-                --exclude-unreachable-branches --exclude-throw-branches \
-                --json ${{env.REPORT_DEST}}/unit.json \
-                ${{env.BUILD_DEST}}
-          find ${{env.BUILD_DEST}} -name '*.gcda' -delete
-
+      # Runs the example scenarios, collects examples.json and resets the counters.
       - name: Run the example applications
         id: examples
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         working-directory: ${{github.workspace}}
-        shell: bash
         timeout-minutes: 40
-        run: |
-          python tools/intern/run-all-examples.py --bin-dir ${{env.BUILD_DEST}}/bin --tier all \
-                 --out-dir ./example-results/coverage --summary ''
+        run: bash tools/intern/coverage.sh examples ${{env.COVERAGE_ARGS}}
 
-      - name: Collect the example coverage and make the reports
+      # One Cobertura file per flag, the HTML report, and the job summary.
+      - name: Make the reports
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         working-directory: ${{github.workspace}}
-        shell: bash
-        run: |
-          OUT=${{env.REPORT_DEST}}
-          gcovr --root . --filter 'framework/' -j $(nproc) \
-                --exclude-unreachable-branches --exclude-throw-branches \
-                --json ${OUT}/examples.json \
-                ${{env.BUILD_DEST}}
-          for flag in unit examples; do
-            gcovr --root . --json-add-tracefile ${OUT}/${flag}.json \
-                  --cobertura ${OUT}/${flag}.xml --json-summary ${OUT}/${flag}-summary.json
-          done
-          mkdir -p ${OUT}/html
-          gcovr --root . --json-add-tracefile ${OUT}/unit.json --json-add-tracefile ${OUT}/examples.json \
-                --html-nested ${OUT}/html/index.html --html-title 'Areg SDK framework coverage' \
-                --json-summary ${OUT}/total-summary.json --txt-summary
-          python tools/intern/coverage-report.py --unit ${OUT}/unit-summary.json \
-                 --examples ${OUT}/examples-summary.json --total ${OUT}/total-summary.json \
-                 --summary "${GITHUB_STEP_SUMMARY}" | tee ${OUT}/coverage.md
+        run: bash tools/intern/coverage.sh report ${{env.COVERAGE_ARGS}}
 
       - name: Upload the unit test coverage to Codecov
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
@@ -194,4 +155,4 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: coverage-example-results
-          path: ./example-results/coverage/
+          path: ${{env.REPORT_DEST}}/examples/

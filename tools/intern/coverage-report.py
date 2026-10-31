@@ -7,22 +7,33 @@
 # ===========================================================================
 """Writes the code coverage of framework/ as a Markdown report.
 
-    coverage-report.py --unit U.json --examples E.json --total T.json [--summary FILE]
+    coverage-report.py --unit U.json --examples E.json --total T.json --cobertura T.xml
+                       [--unit-cobertura U.xml] [--examples-cobertura E.xml] [--root DIR]
+                       [--last LAST.json] [--save] [--files REGEX] [--top N] [--summary FILE]
 
-Each input is a gcovr '--json-summary' file: the unit tests, the example applications,
-and the union of both. The report has three tables:
+The report has two parts.
 
-1. the totals of lines, functions and branches, per run and combined;
-2. the combined coverage per project, like 'areg' or 'mtrouter';
-3. the combined coverage per directory of a project, like 'areg/ipc'.
+1. The Codecov rule, the number of the badge: a line counts once whatever the number of
+   template instances or constructor variants, and a hit line with an untaken branch is
+   partial and not covered. The tables give the total, one row per run, and the combined
+   coverage per project and per directory. The input is a Cobertura report written by
+   'gcovr --merge-lines' (see coverage_rule.py); '--last' adds the change against an
+   earlier run and '--save' replaces it.
+2. The gcovr summary: lines, functions and branches, per run and combined, per project
+   and per directory. Each input is a gcovr '--json-summary' file: the unit tests, the
+   example applications, and the union of both.
 
-Tables 2 and 3 also give the line coverage of each run. The report is appended to
-'--summary' (the job summary of a build server) and printed.
+The report is appended to '--summary' (the job summary of a build server) and printed.
 """
 
 import argparse
 import json
+import os
 import sys
+import xml.etree.ElementTree as ElementTree
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import coverage_rule  # noqa: E402
 
 
 METRICS = (('line', 'Lines'), ('function', 'Functions'), ('branch', 'Branches'))
@@ -100,11 +111,40 @@ def groups_table(title, depth, total, unit, examples):
     return lines
 
 
+def rule_part(args):
+    """Returns the Markdown of the Codecov-rule tables, or None when the Cobertura report is unusable."""
+    try:
+        total = coverage_rule.read_cobertura(args.cobertura, args.root)
+        runs = []
+        for name, path in (('unit tests', args.unit_cobertura), ('examples', args.examples_cobertura)):
+            if path:
+                runs.append((name, coverage_rule.read_cobertura(path, args.root)))
+    except (OSError, ElementTree.ParseError) as error:
+        print('cannot read the Cobertura report: %s' % error, file=sys.stderr)
+        return None, None
+    if not total:
+        print('no source lines in %s' % args.cobertura, file=sys.stderr)
+        return None, None
+    last = coverage_rule.load_last(args.last)
+    text = coverage_rule.report(total, last, args.files, args.top,
+                                heading='### Codecov rule (a partial line is not covered)', runs=runs)
+    return text.rstrip('\n').split('\n'), total
+
+
 def main():
     parser = argparse.ArgumentParser(description='Writes the framework coverage as Markdown.')
     parser.add_argument('--unit', required=True, help='gcovr JSON summary of the unit tests')
     parser.add_argument('--examples', required=True, help='gcovr JSON summary of the examples')
     parser.add_argument('--total', required=True, help='gcovr JSON summary of both runs')
+    parser.add_argument('--cobertura', required=True,
+                        help="Cobertura XML of both runs, written by 'gcovr --merge-lines'")
+    parser.add_argument('--unit-cobertura', default=None, help="Cobertura XML of the unit tests, merged lines")
+    parser.add_argument('--examples-cobertura', default=None, help="Cobertura XML of the examples, merged lines")
+    parser.add_argument('--root', default='.', help="source tree the Cobertura file names are relative to")
+    parser.add_argument('--last', default=None, help='counts of an earlier run, to compare with')
+    parser.add_argument('--save', action='store_true', help="write the counts to '--last'")
+    parser.add_argument('--files', default=None, help='regular expression of files to list')
+    parser.add_argument('--top', type=int, default=0, help='number of files listed by non-hit lines')
     parser.add_argument('--summary', default=None, help='file the report is appended to')
     args = parser.parse_args()
 
@@ -113,13 +153,23 @@ def main():
     total = load(args.total)
     if total is None:
         return 1
+    rule, counts = rule_part(args)
+    if rule is None:
+        return 1
 
     report = ['## Code coverage of `framework/`', '',
               'GCC `--coverage`, Debug build, Linux. Code built only on other platforms is not counted.', '']
+    report += ['The first part counts like the Codecov badge: a line counts once whatever the number of '
+               'template instances or constructor variants, a line holding only `}` is not counted, '
+               'and a hit line with an untaken branch is partial, which is not covered.', '']
+    report += rule
+    report += ['', '### Lines, functions and branches (gcovr)', '',
+               'Each template instance and constructor variant counts on its own, and a line is covered '
+               'when it is executed once, so these numbers are higher than the badge.', '']
     report += totals_table((('unit tests', unit), ('examples', examples), ('**combined**', total)))
-    report += ['', '### Per project', '']
+    report += ['', '#### Per project', '']
     report += groups_table('Project', 1, total, unit, examples)
-    report += ['', '### Per directory', '']
+    report += ['', '#### Per directory', '']
     report += groups_table('Directory', 2, total, unit, examples)
     report += ['', 'Per file and line: the artifact `coverage-report`, `html/index.html`.', '']
     text = '\n'.join(report)
@@ -131,6 +181,8 @@ def main():
                 file.write(text + '\n')
         except OSError as error:
             print('cannot write %s: %s' % (args.summary, error), file=sys.stderr)
+    if args.save and args.last and not coverage_rule.save_last(args.last, args.cobertura, counts):
+        return 1
     return 0
 
 
