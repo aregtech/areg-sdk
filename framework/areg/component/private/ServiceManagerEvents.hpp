@@ -42,7 +42,7 @@ class String;
  * \brief   Encapsulates service manager event data with routing connection commands and associated
  *          command-specific data.
  **/
-class ServiceManagerEventData
+class AREG_API ServiceManagerEventData
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants.

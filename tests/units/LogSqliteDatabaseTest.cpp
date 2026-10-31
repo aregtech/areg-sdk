@@ -20,6 +20,7 @@
 #include "aregextend/db/LogSqliteDatabase.hpp"
 #include "aregextend/db/SqliteStatement.hpp"
 #include "areg/base/DateTime.hpp"
+#include "areg/base/StringDefs.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/logging/LoggingDefs.hpp"
@@ -38,6 +39,10 @@
 #include <string>
 #include <thread>
 #include <vector>
+
+#if defined(_WIN32)
+    #include <share.h>
+#endif  // defined(_WIN32)
 
 namespace
 {
@@ -88,6 +93,16 @@ namespace
 
     //! Returns the checkpoint sequence in the header of an open write-ahead log, which grows each time
     //! the log starts over from its beginning. Returns 0 if the header cannot be read.
+    //! Opens a file for binary reading, shared with writers.
+    std::FILE* _open_shared(const std::string& path)
+    {
+#if defined(_WIN32)
+        return ::_fsopen(path.c_str(), "rb", _SH_DENYNO);
+#else   // defined(_WIN32)
+        return std::fopen(path.c_str(), "rb");
+#endif  // defined(_WIN32)
+    }
+
     uint32_t _log_sequence(std::FILE* wal)
     {
         unsigned char header[16]{ };
@@ -105,12 +120,9 @@ namespace
         entry.logScopeId     = scopeId;
         entry.logTimestamp   = timeCreated;
         entry.logReceived    = timeCreated;
-        std::strcpy(entry.logMessage, "log database test");
-        entry.logMessageLen  = 17u;
-        std::strcpy(entry.logThread, "TestThread");
-        entry.logThreadLen   = 10u;
-        std::strcpy(entry.logModule, "areg-unit-tests");
-        entry.logModuleLen   = 15u;
+        entry.logMessageLen  = static_cast<uint32_t>(areg::copy_string(entry.logMessage, areg::LOG_MSG_SIZE, "log database test"));
+        entry.logThreadLen   = static_cast<uint32_t>(areg::copy_string(entry.logThread, areg::LOG_NAME_SIZE, "TestThread"));
+        entry.logModuleLen   = static_cast<uint32_t>(areg::copy_string(entry.logModule, areg::LOG_NAME_SIZE, "areg-unit-tests"));
         return entry;
     }
 
@@ -398,7 +410,7 @@ TEST(LogSqliteDatabaseTest, test_continuousWriterKeepsTheLogShort)
     uint32_t batches{ 0u };
     uint32_t seen{ 0u };
     uint32_t cycle{ 0u };
-    std::FILE* wal{ std::fopen((path + "-wal").c_str(), "rb") };
+    std::FILE* wal{ _open_shared(path + "-wal") };
     ASSERT_NE(wal, nullptr);
     std::setvbuf(wal, nullptr, _IONBF, 0u);
     uint32_t lastSeq{ _log_sequence(wal) };

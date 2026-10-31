@@ -614,14 +614,14 @@ namespace areg {
     AREG_API DataLiteral conv_duration( uint64_t timeDuration );
 
     /**
-     * \brief   High-resolution stopwatch for measuring elapsed time. Call start() to begin timing,
-     *          stop() to capture the end time, and accessor methods to retrieve durations in
+     * \brief   High-resolution stopwatch for measuring elapsed time. Call mark_start() to begin timing,
+     *          mark_stop() to capture the end time, and accessor methods to retrieve durations in
      *          various units.
       *
       * \example Use of areg::Duration:
       *
       *          areg::Duration stopWatch;
-      *          stopWatch.stop();
+      *          stopWatch.mark_stop();
       *          std::cout << "Time passed " << stopWatch.passed_milliseconds() << " ms" << std::endl;
       *
       *          std::cout << "Started new timer at epoch time " << stopWatch.start() << std::endl;
@@ -648,7 +648,7 @@ namespace areg {
     public:
 
         /**
-         * \brief   Starts the timer. Call stop() to calculate duration.
+         * \brief   Starts the timer. Call mark_stop() to calculate duration.
          *
          * \return  Returns the starting time in nanoseconds since epoch.
          **/
@@ -656,6 +656,8 @@ namespace areg {
 
         /**
          * \brief   Stops the timer and returns the stop time in nanoseconds since epoch.
+         *          Only the first call after mark_start() records the stop time. A stop within
+         *          the same clock tick as the start is recorded one tick after the start.
          *
          * \return  Returns the stop time in nanoseconds since epoch.
          **/
@@ -824,7 +826,8 @@ inline TIME64 areg::Duration::mark_stop() noexcept
 {
     if ( mStop == mStart )
     {
-        mStop = std::chrono::steady_clock::now( );
+        const std::chrono::steady_clock::time_point now{ std::chrono::steady_clock::now( ) };
+        mStop = (now > mStart) ? now : mStart + std::chrono::steady_clock::duration{ 1 };
     }
 
     return static_cast<TIME64>(mStop.time_since_epoch( ).count( ));
