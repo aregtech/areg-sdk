@@ -290,6 +290,11 @@ public:
      **/
     void operator delete( void * ptr, int32_t, const char *, int32_t );
 
+    /**
+     * \brief   Placement delete matching the placement new; releases nothing.
+     **/
+    void operator delete( void * /*ptr*/, void * /*place*/ );
+
     void operator delete []( void * ptr );
 
     void operator delete []( void * ptr, size_t /*size*/ );
@@ -302,6 +307,8 @@ public:
      * \brief   Debug array delete operator matching the debug array new signature.
      **/
     void operator delete []( void * ptr, int32_t, const char *, int32_t );
+
+    void operator delete []( void * /*ptr*/, void * /*place*/ );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations -- runtime cast helpers

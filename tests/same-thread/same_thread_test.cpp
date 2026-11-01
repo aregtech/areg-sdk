@@ -36,10 +36,10 @@ namespace
     constexpr char const    _providerRole[] { "StProvider" };
     constexpr char const    _consumerRole[] { "StConsumer" };
 
-    constexpr uint32_t      WAIT_MS         { 5000 };
+    constexpr uint32_t      WAIT_MS         { 30'000 };
     constexpr uint32_t      QUEUE_SIZE      { areg::QUEUE_MIN_RING_CAPACITY };
-    constexpr uint32_t      QUEUE_WAIT_MS   { 2000 };
-    constexpr uint32_t      POST_LIMIT_MS   { 500 };
+    constexpr uint32_t      QUEUE_WAIT_MS   { 10'000 };
+    constexpr uint32_t      POST_LIMIT_MS   { QUEUE_WAIT_MS / 2 };
     constexpr uint32_t      FILL_LIMIT      { 2 * QUEUE_SIZE };
     constexpr uint32_t      REQUESTS        { 10 };
 

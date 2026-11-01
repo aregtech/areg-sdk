@@ -235,7 +235,7 @@ String StubAddress::to_string() const
           .append(areg::COMPONENT_PATH_SEPARATOR)
           .append(ServiceAddress::to_string())
           .append(areg::COMPONENT_PATH_SEPARATOR)
-          .append(mThread.name())
+          .append(mThread.to_string())
           .append(areg::COMPONENT_PATH_SEPARATOR)
           .append(mChannel.to_string());
 

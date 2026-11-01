@@ -161,7 +161,7 @@ public:
      * \brief   Creates a service address from a service item and component role name.
      *
      * \param   serviceItem     The service item containing name, version, and type.
-     * \param   roleName        The role name of the component owning the service.
+     * \param   roleName        The role name of the component owning the service, or '#<number>' for the identity number.
      **/
     ServiceAddress( const ServiceItem  & serviceItem, const String & roleName );
 
@@ -259,7 +259,7 @@ public:
     /**
      * \brief   Sets the role name of the component owning the service.
      *
-     * \param   roleName    The role name to set.
+     * \param   roleName    The role name to set, or '#<number>' to set the identity number with no name.
      **/
     inline void set_role_name( const String & roleName );
 
@@ -271,12 +271,14 @@ public:
 
     /**
      * \brief   Converts the service address to its string path representation.
+     *          An empty service or role name is written as '#<number>'.
      **/
     [[nodiscard]]
     String to_string() const;
 
     /**
      * \brief   Converts a service address string path to initialize this object.
+     *          A '#<number>' item is the identity number; any other item is a name.
      *
      * \param       pathService The string path representing the service address.
      * \param[out]  nextPart    Optional output parameter that points to the next part of the string
@@ -498,7 +500,10 @@ inline const String & ServiceAddress::role_name() const noexcept
 inline void ServiceAddress::set_role_name(const String & roleName)
 {
     mRoleName = roleName;
-    mMagicNum = roleName.is_numeric() ? roleName.to_uint32() : ServiceAddress::_magic_number(*this);
+    if (areg::parse_address_number(mRoleName.data(), mMagicNum))
+        mRoleName.clear();
+    else
+        mMagicNum = ServiceAddress::_magic_number(*this);
 }
 
 inline const ServiceItem & ServiceAddress::service() const noexcept
@@ -515,12 +520,14 @@ inline void ServiceAddress::to_endpoint(areg::RawService& rawService, areg::Endp
 inline void ServiceAddress::from_endpoint(const areg::RawService& rawService, const areg::Endpoint& endPoint) noexcept
 {
     ServiceItem::from_endpoint(rawService, endPoint);
+    mRoleName.clear();
     mMagicNum = rawService.role;
 }
 
 inline const InStream& ServiceAddress::from_stream(const InStream& stream)
 {
     ServiceItem::from_stream(stream);
+    mRoleName.clear();
     stream >> mMagicNum;
     return stream;
 }

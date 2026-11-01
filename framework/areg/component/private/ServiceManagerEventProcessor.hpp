@@ -30,7 +30,6 @@ namespace areg {
  ************************************************************************/
 class ConnectionProvider;
 class RegistrationProvider;
-class ServiceManager;
 class ProxyAddress;
 class StubAddress;
 class InStream;
@@ -49,11 +48,9 @@ class ServiceManagerEventProcessor
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initializes with a service manager instance.
-     *
-     * \param   serviceManager      The service manager instance.
+     * \brief   Initializes an empty processor.
      **/
-    ServiceManagerEventProcessor( ServiceManager & serviceManager );
+    ServiceManagerEventProcessor();
     ~ServiceManagerEventProcessor() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -158,10 +155,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   The instance of service manager.
-     **/
-    ServiceManager &        mServiceManager;
-    /**
      * \brief   The Map of Server Info object as a Key and Client Info List as Values
      **/
     ServerList              mServerList;
@@ -170,10 +163,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Deleted default constructor.
-     **/
-    ServiceManagerEventProcessor() = delete;
     AREG_NOCOPY_NOMOVE( ServiceManagerEventProcessor );
 };
 

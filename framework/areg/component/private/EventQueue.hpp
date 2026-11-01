@@ -129,18 +129,18 @@ private:
 #endif
     };
 
-    static constexpr uint32_t   RING_WAIT_RECHECK_MS  { 1u };     //!< Producer block re-check interval.
+    AREG_API_CONST static constexpr uint32_t   RING_WAIT_RECHECK_MS  { 1u };     //!< Producer block re-check interval.
 
     //!< Top bit of the enqueue cursor. Set while the queue is closed, so a producer
     //!< that reloads the ticket sees the refusal in the value it already needs.
-    static constexpr size_t     RING_CLOSED   { static_cast<size_t>(1u) << ((sizeof(size_t) * 8u) - 1u) };
+    AREG_API_CONST static constexpr size_t     RING_CLOSED   { static_cast<size_t>(1u) << ((sizeof(size_t) * 8u) - 1u) };
 
-    static constexpr uint32_t   CLOSE_SPIN_PAUSES { 64u };      //!< CPU-pause spins on a slot before sleeping.
-    static constexpr uint32_t   CLOSE_WAIT_MS     { 1000u };    //!< Longest a close waits for its slots, in ms.
+    AREG_API_CONST static constexpr uint32_t   CLOSE_SPIN_PAUSES { 64u };      //!< CPU-pause spins on a slot before sleeping.
+    AREG_API_CONST static constexpr uint32_t   CLOSE_WAIT_MS     { 1000u };    //!< Longest a close waits for its slots, in ms.
 
-    static constexpr uint8_t    EXIT_NONE     { 0u };     //!< The queue keeps running.
-    static constexpr uint8_t    EXIT_NOW      { 1u };     //!< Stop at once, queued events are dropped.
-    static constexpr uint8_t    EXIT_DRAINED  { 2u };     //!< Stop when the lanes are empty.
+    AREG_API_CONST static constexpr uint8_t    EXIT_NONE     { 0u };     //!< The queue keeps running.
+    AREG_API_CONST static constexpr uint8_t    EXIT_NOW      { 1u };     //!< Stop at once, queued events are dropped.
+    AREG_API_CONST static constexpr uint8_t    EXIT_DRAINED  { 2u };     //!< Stop when the lanes are empty.
 
     //////////////////////////////////////////////////////////////////////////
     // 128 bytes separates the producer written enqueue cursor from the
@@ -149,7 +149,7 @@ private:
     // 128 bytes. Padding is conservative on 32-bit targets (wastes ~248 B)
     // but keeps the layout correct across all supported platforms.
     //////////////////////////////////////////////////////////////////////////
-    static constexpr uint32_t   AREG_MPSC_CACHE_LINE_SIZE{ 128u };
+    AREG_API_CONST static constexpr uint32_t   AREG_MPSC_CACHE_LINE_SIZE{ 128u };
 
 public:
     //!< The outcome of try_push_event().

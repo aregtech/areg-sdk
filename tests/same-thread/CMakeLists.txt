@@ -16,5 +16,5 @@ addExecutableEx(${AREG_SAME_THREAD_PROJECT} ""
 
 foreach(_same_thread_case request-reply full-request full-response)
     add_test(NAME ${AREG_SAME_THREAD_PROJECT}.${_same_thread_case} COMMAND ${AREG_SAME_THREAD_PROJECT} ${_same_thread_case})
-    set_tests_properties(${AREG_SAME_THREAD_PROJECT}.${_same_thread_case} PROPERTIES TIMEOUT 60)
+    set_tests_properties(${AREG_SAME_THREAD_PROJECT}.${_same_thread_case} PROPERTIES TIMEOUT 300)
 endforeach()

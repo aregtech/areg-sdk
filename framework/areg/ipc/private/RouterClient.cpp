@@ -51,7 +51,7 @@ DEBUG_DEF_LOG_SCOPE(areg_ipc_private_RouterClient, process_received_message);
 // RouterClient class implementation
 //////////////////////////////////////////////////////////////////////////
 
-RouterClient::RouterClient(ConnectionConsumer& connectionConsumer, RegistrationConsumer& registerConsumer)
+RouterClient::RouterClient(ConnectionConsumer& connectionConsumer, RegistrationConsumer& registerConsumer, RouterClientOwner & owner)
     : ServiceClientConnectionBase   ( areg::COOKIE_ROUTER
                                     , areg::RemoteServiceKind::Router
                                     , static_cast<uint32_t>(areg::ConnectionType::Tcpip)
@@ -65,6 +65,7 @@ RouterClient::RouterClient(ConnectionConsumer& connectionConsumer, RegistrationC
     , RemoteEventConsumer   ( )
 
     , mRegisterConsumer     (registerConsumer)
+    , mOwner                (owner)
 {
 }
 
@@ -109,9 +110,12 @@ void RouterClient::disconnect_service_host()
     if (is_running())
     {
         ServiceClientConnectionBase::disconnect_service_host();
-        wait_completion(areg::WAIT_INFINITE);
-        shutdown(areg::DO_NOT_WAIT);
     }
+}
+
+void RouterClient::release_client()
+{
+    shutdown(areg::WAIT_INFINITE);
 }
 
 void RouterClient::on_service_exit()
@@ -335,7 +339,16 @@ void RouterClient::process_received_message( MessageEnvelope & msgReceived, Sock
 
     case areg::FuncIdRange::SystemServiceNotifyRegister:
     {
-        ASSERT( static_cast<uint32_t>(mClientConnection.cookie()) == msgReceived.target() );
+        const ITEM_ID cookie{ mClientConnection.cookie() };
+        if ( (static_cast<uint32_t>(cookie) != msgReceived.target()) || (connection_state() == ConnectionPhase::ConnectionStopping) )
+        {
+            // A notification for a stopping, a cancelled or a previous connection is ignored.
+            DEBUG_LOG_WARN("Ignore registration notification for target [ %u ], the connection cookie is [ %u ]", msgReceived.target(), static_cast<uint32_t>(cookie));
+            break;
+        }
+
+        // The channel source of a connected client is the number of its dispatcher thread.
+        const ITEM_ID source{ mMessageDispatcher.number() };
         const areg::RegistrationAction reqType{ static_cast<areg::RegistrationAction>(msgReceived.call_type()) };
         const areg::DisconnectReason reason{ static_cast<areg::DisconnectReason>(msgReceived.result()) };
         DEBUG_LOG_DBG("Remote routing service registration notification of type [ %s ]", areg::as_string(reqType));
@@ -345,7 +358,7 @@ void RouterClient::process_received_message( MessageEnvelope & msgReceived, Sock
         case areg::RegistrationAction::RegisterConsumer:
         {
             ProxyAddress proxy(*msgReceived.header());
-            proxy.set_source( mChannel.source() );
+            proxy.set_source( source );
             mRegisterConsumer.on_consumer_registered(proxy);
         }
         break;
@@ -353,7 +366,7 @@ void RouterClient::process_received_message( MessageEnvelope & msgReceived, Sock
         case areg::RegistrationAction::RegisterProvider:
         {
             StubAddress stub(*msgReceived.header());
-            stub.set_source( mChannel.source() );
+            stub.set_source( source );
             mRegisterConsumer.on_provider_registered( stub );
         }
         break;
@@ -361,7 +374,7 @@ void RouterClient::process_received_message( MessageEnvelope & msgReceived, Sock
         case areg::RegistrationAction::UnregisterConsumer:
         {
             ProxyAddress proxy(*msgReceived.header());
-            proxy.set_source( mChannel.source() );
+            proxy.set_source( source );
             mRegisterConsumer.on_consumer_unregistered(proxy, reason, areg::COOKIE_ANY);
         }
         break;
@@ -369,8 +382,8 @@ void RouterClient::process_received_message( MessageEnvelope & msgReceived, Sock
         case areg::RegistrationAction::UnregisterProvider:
         {
             StubAddress stub(*msgReceived.header());
-            stub.set_source( mChannel.source() );
-            if ( (reason == areg::DisconnectReason::ProviderRejected) && (stub.cookie() == mClientConnection.cookie()) )
+            stub.set_source( source );
+            if ( (reason == areg::DisconnectReason::ProviderRejected) && (stub.cookie() == cookie) )
             {
                 // The rejected provider is one of this process.
                 stub.set_cookie( areg::COOKIE_LOCAL );
@@ -533,6 +546,12 @@ bool RouterClient::post_event(Event & eventElem)
     }
 
     return EventDispatcher::post_event(eventElem);
+}
+
+void RouterClient::on_post_exit()
+{
+    DispatcherThread::on_post_exit();
+    mOwner.on_router_client_stopped();
 }
 
 void RouterClient::ready_for_events(bool is_ready)

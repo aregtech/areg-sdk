@@ -121,6 +121,7 @@ if (AREG_TESTS)
     include(${AREG_TESTS_DIR}/internal-events/CMakeLists.txt)
     include(${AREG_TESTS_DIR}/stub-teardown/CMakeLists.txt)
     include(${AREG_TESTS_DIR}/router-io/CMakeLists.txt)
+    include(${AREG_TESTS_DIR}/client-stop/CMakeLists.txt)
     # Built only with a shared areg library.
     if (NOT "${AREG_LIB_TYPE}" STREQUAL "static")
         include(${AREG_TESTS_DIR}/client-link/CMakeLists.txt)

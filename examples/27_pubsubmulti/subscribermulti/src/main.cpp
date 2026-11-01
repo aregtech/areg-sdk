@@ -40,9 +40,7 @@ BEGIN_MODEL(_modelName)
     BEGIN_REGISTER_THREAD( "TestServiceThread" )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( _subscriber, Subscriber )
-            // register service dependency
-            REGISTER_DEPENDENCY( _serviceName )
-            // register service dependency
+            // register service dependency, used by both subscribers
             REGISTER_DEPENDENCY( _serviceName )
         // end of component description
         END_REGISTER_COMPONENT( _subscriber )

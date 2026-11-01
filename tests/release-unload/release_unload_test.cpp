@@ -10,6 +10,7 @@
 #include "areg/base/Thread.hpp"
 
 #include <atomic>
+#include <chrono>
 #include <cstdio>
 
 #ifdef _MSC_VER
@@ -72,7 +73,11 @@ int main()
     areg::Application::setup(false, true, false, true, false, nullptr);
     areg::Application::load_model(_modelName);
 
-    areg::Thread::sleep(300);
+    const auto until{ std::chrono::steady_clock::now() + std::chrono::seconds(60) };
+    while ((gAlive.load() < 2) && (std::chrono::steady_clock::now() < until))
+    {
+        areg::Thread::sleep(10);
+    }
 
     const int loaded = gAlive.load();
     printf("components alive after load        : %d\n", loaded);

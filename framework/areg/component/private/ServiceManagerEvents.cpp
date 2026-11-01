@@ -25,11 +25,6 @@ namespace areg {
 // ServiceManagerEventData class implementation
 //////////////////////////////////////////////////////////////////////////
 
-ServiceManagerEventData ServiceManagerEventData::stop_router_client()
-{
-    return ServiceManagerEventData( ServiceManagerEventData::ServiceManagerCommand::CMD_StopRoutingClient );
-}
-
 ServiceManagerEventData ServiceManagerEventData::shutdown_service_manager()
 {
     return ServiceManagerEventData( ServiceManagerEventData::ServiceManagerCommand::CMD_ShutdownService );
@@ -160,6 +155,11 @@ ServiceManagerEventData ServiceManagerEventData::watchdog_expired(const String &
 ServiceManagerEventData ServiceManagerEventData::deadline_expired()
 {
     return ServiceManagerEventData( ServiceManagerEventData::ServiceManagerCommand::CMD_DeadlineExpired );
+}
+
+ServiceManagerEventData ServiceManagerEventData::router_client_stopped()
+{
+    return ServiceManagerEventData( ServiceManagerEventData::ServiceManagerCommand::CMD_RouterClientStopped );
 }
 
 ServiceManagerEventData ServiceManagerEventData::user_state(uint32_t userState)

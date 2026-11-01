@@ -242,7 +242,9 @@ public:
 
     /**
      * \brief   Disconnects the application from the message router. The remote services become
-     *          unavailable; local services go on.
+     *          unavailable; local services go on. Returns at once: router_state() reports
+     *          Disconnected while the connection stops, and a connect_router() called meanwhile
+     *          connects once the stop is done.
      **/
     static void disconnect_router();
 

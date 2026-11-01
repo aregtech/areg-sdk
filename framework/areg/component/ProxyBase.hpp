@@ -81,7 +81,7 @@ class AREG_API ProxyBase  : public    ProxyEventConsumer
     friend class RemoteEventFactory;
     friend class SystemController;
 
-    static constexpr uint32_t CONNECTION_ID{ static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection) };
+    AREG_API_CONST static constexpr uint32_t CONNECTION_ID{ static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection) };
 
 //////////////////////////////////////////////////////////////////////////
 // Internal classes, types and constants

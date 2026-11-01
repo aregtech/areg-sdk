@@ -269,7 +269,7 @@ inline constexpr bool Version::operator < ( const Version & version ) const noex
     return  (this == &version ? false :
                 (mMajor < version.mMajor) || 
                 (mMajor == version.mMajor && mMinor < version.mMinor) ||
-                (mMajor == version.mMajor && mMinor == version.mMajor && mPatch < version.mPatch)
+                (mMajor == version.mMajor && mMinor == version.mMinor && mPatch < version.mPatch)
              );
 }
 
@@ -278,7 +278,7 @@ inline constexpr bool Version::operator > ( const Version & version ) const noex
     return  (this == &version ? false :
                 (mMajor > version.mMajor) ||
                 (mMajor == version.mMajor && mMinor > version.mMinor) ||
-                (mMajor == version.mMajor && mMinor == version.mMajor && mPatch > version.mPatch)
+                (mMajor == version.mMajor && mMinor == version.mMinor && mPatch > version.mPatch)
             );
 }
 

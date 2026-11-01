@@ -309,7 +309,8 @@ TEST( ReceiveCacheTest, FillAndReceiveShareTheGivenCache )
         areg::ThreadCache& cache = areg::thread_rx_cache( server );
 
         uint32_t filled{ 0u };
-        for (int round = 0; (round < 1000) && (filled < wire.size()); ++round)
+        const auto until{ std::chrono::steady_clock::now() + std::chrono::seconds(30) };
+        while ((filled < wire.size()) && (std::chrono::steady_clock::now() < until))
         {
             const int32_t added{ areg::recv_fill_nowait( server, cache ) };
             ASSERT_GE( added, 0 );

@@ -113,6 +113,12 @@ public:
     inline SOCKETHANDLE live_handle() const noexcept;
 
     /**
+     * \brief   Returns the atomic that holds the live handle, for the receive thread that waits on it.
+     **/
+    [[nodiscard]]
+    inline const std::atomic<SOCKETHANDLE> & live_handle_word() const noexcept;
+
+    /**
      * \brief   Returns reference to the underlying socket object.
      **/
     [[nodiscard]]
@@ -315,6 +321,11 @@ inline bool ClientConnection::is_valid() const noexcept
 inline SOCKETHANDLE ClientConnection::live_handle() const noexcept
 {
     return mLiveHandle.load(std::memory_order_acquire);
+}
+
+inline const std::atomic<SOCKETHANDLE> & ClientConnection::live_handle_word() const noexcept
+{
+    return mLiveHandle;
 }
 
 inline bool ClientConnection::disable_send()

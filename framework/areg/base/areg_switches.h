@@ -85,6 +85,16 @@
     #define AREG_API_IMPL
 #endif   // defined(WIN32) && !defined(_MINGW)
 
+/**
+ * \brief   Marks a static constexpr data member of an AREG_API class.
+ *          The Cygwin DLL then emits and exports it, as its clients import it.
+ **/
+#if defined(EXP_AREG_DLL) && defined(__CYGWIN__)
+    #define AREG_API_CONST  [[gnu::used]]
+#else   // defined(EXP_AREG_DLL) && defined(__CYGWIN__)
+    #define AREG_API_CONST
+#endif  // defined(EXP_AREG_DLL) && defined(__CYGWIN__)
+
 // By default, no Areg extended features.
 #if !defined(AREG_EXTENDED)
     #define AREG_EXTENDED   0

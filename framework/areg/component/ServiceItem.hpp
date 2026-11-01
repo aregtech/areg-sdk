@@ -48,7 +48,7 @@ protected:
 #endif  // _MSC_VER
 
     //!< The name of invalid service.
-    static constexpr std::string_view   INVALID_SERVICE         { "INVALID_SERVICE" };
+    AREG_API_CONST static constexpr std::string_view   INVALID_SERVICE         { "INVALID_SERVICE" };
 
 #if defined(_MSC_VER)
     #pragma warning(pop)
@@ -225,7 +225,7 @@ public:
     inline bool is_service_compatible( const ServiceItem & other ) const noexcept;
 
     /**
-     * \brief   Converts service item to path string.
+     * \brief   Converts service item to path string. An empty service name is written as '#<number>'.
      *
      * \return  Returns the service item as a string path.
      **/
@@ -234,6 +234,7 @@ public:
 
     /**
      * \brief   Parses service item path string and initializes from path.
+     *          A '#<number>' item is the identity number; any other item is a service name.
      *
      * \param       pathService The service path as a string.
      * \param[out]  nextPart    If not nullptr, on output points to the next part after the service item.
@@ -421,6 +422,7 @@ inline void ServiceItem::from_endpoint(const areg::RawService& rawService, const
 
 inline const InStream& ServiceItem::from_stream(const InStream& stream)
 {
+    mServiceName.clear();
     stream >> mMagicNum;
     stream >> mServiceVersion;
     stream >> mServiceType;

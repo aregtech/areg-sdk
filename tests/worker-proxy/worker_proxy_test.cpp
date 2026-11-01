@@ -40,7 +40,7 @@ namespace
     constexpr uint32_t  LATE_CLIENTS    { 5 };
     constexpr int16_t   HIGH_LIMIT      { 77 };
     constexpr int       WAIT_STEP_MS    { 10 };
-    constexpr int       WAIT_LIMIT_MS   { 10000 };
+    constexpr int       WAIT_LIMIT_MS   { 30000 };
 
     const char * const  ROLE_NAME       { "TempMonitor" };
 

@@ -21,6 +21,8 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 
+#include <atomic>
+
 #if defined(__linux__)
     #include <netinet/in.h>
     #include <netinet/tcp.h>
@@ -91,6 +93,22 @@ namespace areg
      **/
     [[nodiscard]]
     inline SocketProgress socket_progress(SOCKETHANDLE hSocket) noexcept;
+
+    //!< Milliseconds after which a blocking receive of a client connection wakes to re-check its stop.
+    constexpr uint32_t  RECEIVE_RECHECK_MS          { 500u };
+
+    /**
+     * \brief   Bounds every blocking receive of \a hSocket to \a timeoutMs. POSIX only; on
+     *          Windows an interrupted receive is cancelled instead, see socket_interrupt().
+     **/
+    AREG_API void set_receive_recheck(SOCKETHANDLE hSocket, uint32_t timeoutMs) noexcept;
+
+    /**
+     * \brief   Sets the live handle of the connection the calling thread receives on, or nullptr.
+     *          A blocking receive whose timeout expires waits again while the live handle is
+     *          its socket, and fails once it is not. POSIX only.
+     **/
+    AREG_API void set_receive_live_handle(const std::atomic<SOCKETHANDLE> * liveHandle) noexcept;
 
 } // namespace areg
 

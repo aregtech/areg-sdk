@@ -35,33 +35,6 @@ TIME64 _os_system_time_now()
             : 0LL);
 }
 
-void _os_system_time_now( areg::CalendarTime & sysTime, bool localTime )
-{
-    struct timespec ts { 0 };
-    struct tm now { 0 };
-
-    if (RETURNED_OK == ::clock_gettime( CLOCK_REALTIME, &ts ))
-    {
-        if ( localTime )
-        {
-            ::localtime_r( &ts.tv_sec, &now );
-        }
-        else
-        {
-            ::gmtime_r( &ts.tv_sec, &now );
-        }
-
-        uint16_t milli = static_cast<uint16_t>((ts.tv_nsec / MILLISEC_TO_NS));
-        uint16_t micro = static_cast<uint16_t>((ts.tv_nsec % MILLISEC_TO_NS) / MICROSEC_TO_NS);
-        ASSERT(milli < 1000);
-        ASSERT(micro < 1000);
-
-        to_system_time(now, sysTime);
-        sysTime.stMillisecs = milli;
-        sysTime.stMicrosecs = micro;
-    }
-}
-
 } // namespace areg::os
 
 #endif // defined(_POSIX) || defined(POSIX)

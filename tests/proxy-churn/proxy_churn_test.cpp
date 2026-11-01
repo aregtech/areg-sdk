@@ -37,6 +37,21 @@ namespace
     std::atomic_uint32_t    gLiveDisconnects{ 0 };
     std::atomic_uint32_t    gLateConnects   { 0 };
     std::atomic_bool        gChurnDone      { false };
+
+    //!< Waits until the condition holds, at most 60 seconds. Returns the last result of the condition.
+    template<typename Condition>
+    bool wait_until(Condition condition)
+    {
+        const auto until{ std::chrono::steady_clock::now() + std::chrono::seconds(60) };
+        bool result{ condition() };
+        while ((result == false) && (std::chrono::steady_clock::now() < until))
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            result = condition();
+        }
+
+        return result;
+    }
 }
 
 //!< Short living client. Created and deleted at runtime.
@@ -172,15 +187,12 @@ int main()
     areg::Application::load_model("ConsumerModel");
     areg::Application::load_model("ProviderModel");
 
-    for (uint32_t i = 0; (i < 200) && !gChurnDone.load(); ++ i)
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    static_cast<void>(wait_until([]() { return gChurnDone.load() && (gLateConnects.load() != 0); }));
 
     // Take the provider away. The disconnect edge walks the connection
     // listener list of the proxy, which is where a stale entry would be used.
     areg::Application::unload_model("ProviderModel");
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    static_cast<void>(wait_until([]() { return (gLiveDisconnects.load() != 0); }));
 
     const uint32_t created  { gChurnCreated.load() };
     const uint32_t deleted  { gChurnDeleted.load() };

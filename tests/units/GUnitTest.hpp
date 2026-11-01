@@ -49,4 +49,19 @@
     #define TYPED_TEST_SUITE TYPED_TEST_CASE
 #endif  // !defined(TYPED_TEST_SUITE)
 
+// The skip macro of a googletest older than 1.10: reports the reason and returns from the test body.
+#if !defined(GTEST_SKIP)
+    namespace areg_gtest
+    {
+        struct SkipSink
+        {
+            void operator = (const ::testing::Message& msg) const
+            {
+                std::cout << "[  SKIPPED ] " << msg.GetString() << std::endl;
+            }
+        };
+    }
+    #define GTEST_SKIP()    return ::areg_gtest::SkipSink() = ::testing::Message()
+#endif  // !defined(GTEST_SKIP)
+
 #endif // !AREG_TESTS_UNITS_GUNITTESTS_HPP

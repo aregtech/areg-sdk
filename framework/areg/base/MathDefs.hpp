@@ -193,6 +193,12 @@ struct AREG_API LargeInteger
     [[nodiscard]]
     inline constexpr operator uint64_t () const noexcept;
 
+    /**
+     * \brief   Returns the 64-bit value, high bits in the upper half.
+     **/
+    [[nodiscard]]
+    inline constexpr uint64_t value() const noexcept;
+
 /************************************************************************/
 // areg::LargeInteger simple math operations
 /************************************************************************/
@@ -201,7 +207,6 @@ struct AREG_API LargeInteger
 
     constexpr areg::LargeInteger& operator = ( areg::LargeInteger && src ) noexcept = default;
 
-    [[nodiscard]]
     inline constexpr areg::LargeInteger & operator = ( uint64_t src ) noexcept;
 
     [[nodiscard]]
@@ -210,10 +215,8 @@ struct AREG_API LargeInteger
     [[nodiscard]]
     inline constexpr uint64_t operator + ( uint64_t rhs ) const noexcept;
 
-    [[nodiscard]]
     inline constexpr areg::LargeInteger & operator += ( const areg::LargeInteger & rhs ) noexcept;
 
-    [[nodiscard]]
     inline constexpr areg::LargeInteger & operator += ( uint64_t rhs ) noexcept;
 
     [[nodiscard]]
@@ -222,10 +225,8 @@ struct AREG_API LargeInteger
     [[nodiscard]]
     inline constexpr uint64_t operator - ( uint64_t rhs ) const noexcept;
 
-    [[nodiscard]]
     inline constexpr areg::LargeInteger & operator -= ( const areg::LargeInteger & rhs ) noexcept;
 
-    [[nodiscard]]
     inline constexpr areg::LargeInteger & operator -= ( uint64_t rhs ) noexcept;
 
     [[nodiscard]]
@@ -239,6 +240,25 @@ struct AREG_API LargeInteger
 
     [[nodiscard]]
     inline constexpr bool operator != ( uint64_t other ) const noexcept;
+
+    /**
+     * \brief   Arithmetic and comparison with any other integer type, converted to uint64_t.
+     **/
+    template<typename Int, typename = std::enable_if_t<std::is_integral_v<Int> && !std::is_same_v<Int, bool> && !std::is_same_v<Int, uint64_t>>>
+    [[nodiscard]]
+    inline constexpr uint64_t operator + ( Int rhs ) const noexcept;
+
+    template<typename Int, typename = std::enable_if_t<std::is_integral_v<Int> && !std::is_same_v<Int, bool> && !std::is_same_v<Int, uint64_t>>>
+    [[nodiscard]]
+    inline constexpr uint64_t operator - ( Int rhs ) const noexcept;
+
+    template<typename Int, typename = std::enable_if_t<std::is_integral_v<Int> && !std::is_same_v<Int, bool> && !std::is_same_v<Int, uint64_t>>>
+    [[nodiscard]]
+    inline constexpr bool operator == ( Int other ) const noexcept;
+
+    template<typename Int, typename = std::enable_if_t<std::is_integral_v<Int> && !std::is_same_v<Int, bool> && !std::is_same_v<Int, uint64_t>>>
+    [[nodiscard]]
+    inline constexpr bool operator != ( Int other ) const noexcept;
 
 /************************************************************************/
 // areg::LargeInteger declare global operators to make streamable
@@ -1043,114 +1063,114 @@ inline constexpr T delta(T a, T b) noexcept
 /************************************************************************/
 
 inline constexpr areg::LargeInteger::LargeInteger( uint32_t hi, uint32_t lo ) noexcept
-    : hiBits ( hi ), loBits ( lo ) 
+    : hiBits ( hi ), loBits ( lo )
 {
 }
 
 inline constexpr areg::LargeInteger::LargeInteger( uint64_t num ) noexcept
-    : hiBits ( 0), loBits ( 0 ) 
+    : hiBits ( static_cast<uint32_t>(num >> 32u) ), loBits ( static_cast<uint32_t>(num) )
 {
-    Int64Parts li{};
-    li.quadPart = num;
-    hiBits = li.u.highPart;
-    loBits = li.u.lowPart;
+}
+
+inline constexpr uint64_t areg::LargeInteger::value() const noexcept
+{
+    return ((static_cast<uint64_t>(hiBits) << 32u) | static_cast<uint64_t>(loBits));
 }
 
 inline constexpr areg::LargeInteger::operator uint64_t () const noexcept
 {
-    Int64Parts li{ {hiBits, loBits} };
-    return li.quadPart;
+    return value();
 }
 
 inline constexpr areg::LargeInteger& LargeInteger::operator = (uint64_t src) noexcept
 {
-    Int64Parts li{ };
-    li.quadPart = src;
-    hiBits = li.u.highPart;
-    loBits = li.u.lowPart;
+    hiBits = static_cast<uint32_t>(src >> 32u);
+    loBits = static_cast<uint32_t>(src);
     return *this;
 }
 
 inline constexpr uint64_t areg::LargeInteger::operator + ( const areg::LargeInteger & rhs ) const noexcept
 {
-    return (static_cast<uint64_t>(*this) + static_cast<uint64_t>(rhs));
+    return (value() + rhs.value());
 }
 
 inline constexpr uint64_t areg::LargeInteger::operator + ( uint64_t rhs ) const noexcept
 {
-    return ( (static_cast<uint64_t>(*this) + rhs) );
+    return (value() + rhs);
 }
 
 inline constexpr areg::LargeInteger & areg::LargeInteger::operator += ( const areg::LargeInteger & rhs ) noexcept
 {
-    Int64Parts liLhs{ {this->hiBits, this->loBits} };
-    Int64Parts liRhs{ {rhs.hiBits, rhs.loBits} };
-    liRhs.quadPart += liRhs.quadPart;
-    this->hiBits    = liRhs.u.highPart;
-    this->loBits    = liLhs.u.lowPart;
-
-    return (*this);
+    return (*this = value() + rhs.value());
 }
 
 inline constexpr areg::LargeInteger & areg::LargeInteger::operator += ( uint64_t rhs ) noexcept
 {
-    Int64Parts li{ {this->hiBits, this->loBits} };
-    li.quadPart    += rhs;
-    this->hiBits    = li.u.highPart;
-    this->loBits    = li.u.lowPart;
-
-    return (*this);
+    return (*this = value() + rhs);
 }
 
 inline constexpr uint64_t areg::LargeInteger::operator - ( const areg::LargeInteger & rhs ) const noexcept
 {
-    return ( static_cast<uint64_t>(*this) - static_cast<uint64_t>(rhs) );
+    return (value() - rhs.value());
 }
 
 inline constexpr uint64_t areg::LargeInteger::operator - ( uint64_t rhs ) const noexcept
 {
-    return ( static_cast<uint64_t>(*this) - rhs );
+    return (value() - rhs);
 }
 
 inline constexpr areg::LargeInteger & areg::LargeInteger::operator -= ( const areg::LargeInteger & rhs ) noexcept
 {
-    Int64Parts liLhs{ {this->hiBits, this->loBits} };
-    Int64Parts liRhs{ {rhs.hiBits, rhs.loBits} };
-    liRhs.quadPart -= liRhs.quadPart;
-    this->hiBits    = liRhs.u.highPart;
-    this->loBits    = liLhs.u.lowPart;
-
-    return (*this);
+    return (*this = value() - rhs.value());
 }
 
 inline constexpr areg::LargeInteger & areg::LargeInteger::operator -= ( uint64_t rhs ) noexcept
 {
-    Int64Parts li{ {this->hiBits, this->loBits} };
-    li.quadPart -= rhs;
-    this->hiBits = li.u.highPart;
-    this->loBits = li.u.lowPart;
-
-    return (*this);
+    return (*this = value() - rhs);
 }
 
 inline constexpr bool areg::LargeInteger::operator == ( const areg::LargeInteger & other ) const noexcept
 {
-    return ((this == &other) || ((hiBits == other.hiBits) && (loBits == other.loBits)));
+    return ((hiBits == other.hiBits) && (loBits == other.loBits));
 }
 
 inline constexpr bool areg::LargeInteger::operator == ( uint64_t other ) const noexcept
 {
-    return ( static_cast<uint64_t>(*this) == other );
+    return (value() == other);
 }
 
 inline constexpr bool areg::LargeInteger::operator != (const areg::LargeInteger& other) const noexcept
 {
-    return ((this != &other) && ((hiBits != other.hiBits) || (loBits != other.loBits)));
+    return ((hiBits != other.hiBits) || (loBits != other.loBits));
 }
 
 inline constexpr bool areg::LargeInteger::operator != (uint64_t other) const noexcept
 {
-    return ( static_cast<uint64_t>(*this) != other );
+    return (value() != other);
+}
+
+template<typename Int, typename>
+inline constexpr uint64_t areg::LargeInteger::operator + ( Int rhs ) const noexcept
+{
+    return (value() + static_cast<uint64_t>(rhs));
+}
+
+template<typename Int, typename>
+inline constexpr uint64_t areg::LargeInteger::operator - ( Int rhs ) const noexcept
+{
+    return (value() - static_cast<uint64_t>(rhs));
+}
+
+template<typename Int, typename>
+inline constexpr bool areg::LargeInteger::operator == ( Int other ) const noexcept
+{
+    return (value() == static_cast<uint64_t>(other));
+}
+
+template<typename Int, typename>
+inline constexpr bool areg::LargeInteger::operator != ( Int other ) const noexcept
+{
+    return (value() != static_cast<uint64_t>(other));
 }
 
 } // namespace areg

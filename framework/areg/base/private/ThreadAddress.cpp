@@ -124,7 +124,10 @@ void ThreadAddress::from_string(const char * threadPath, const char** nextPart /
     }
 
     mThreadName  = String::substr(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource);
-    mMagicNum    = mThreadName.is_numeric() ? mThreadName.to_uint32() : ThreadAddress::_magic_number(*this);
+    if (areg::parse_address_number(mThreadName.data(), mMagicNum))
+        mThreadName.clear();
+    else
+        mMagicNum = ThreadAddress::_magic_number(*this);
 
     if (nextPart != nullptr)
     {

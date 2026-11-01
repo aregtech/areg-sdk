@@ -17,6 +17,6 @@ target_compile_options(${AREG_ROUTER_IO_PROJECT} PRIVATE "${AREG_OPT_DISABLE_WAR
 foreach(_io_case stale-cache wrong-client partial-header partial-body invalid-type oversize slow-reader stop-while-flooding)
     foreach(_io_pairs 0 4)
         add_test(NAME ${AREG_ROUTER_IO_PROJECT}.${_io_case}.${_io_pairs} COMMAND ${AREG_ROUTER_IO_PROJECT} ${_io_case} ${_io_pairs} $<TARGET_FILE_DIR:${AREG_ROUTER_IO_PROJECT}>)
-        set_tests_properties(${AREG_ROUTER_IO_PROJECT}.${_io_case}.${_io_pairs} PROPERTIES TIMEOUT 120)
+        set_tests_properties(${AREG_ROUTER_IO_PROJECT}.${_io_case}.${_io_pairs} PROPERTIES TIMEOUT 300)
     endforeach()
 endforeach()

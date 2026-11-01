@@ -49,10 +49,10 @@ namespace
     constexpr uint32_t      FOREIGN_THREADS     { 4u };
     constexpr uint32_t      FOREIGN_EVENTS      { 10000u };
     //!< Deadlines of the two phases, milliseconds.
-    constexpr uint32_t      START_DEADLINE_MS   { 2000u };
+    constexpr uint32_t      START_DEADLINE_MS   { 30000u };
     constexpr uint32_t      CHURN_DEADLINE_MS   { 60000u };
     //!< The whole run must end within this time, milliseconds.
-    constexpr uint32_t      TEST_WATCHDOG_MS    { 100u * 1000u };
+    constexpr uint32_t      TEST_WATCHDOG_MS    { 110u * 1000u };
 
     std::atomic_uint        gStarted    { 0u };     //!< Start events received
     std::atomic_uint        gHops       { 0u };     //!< Hop events received

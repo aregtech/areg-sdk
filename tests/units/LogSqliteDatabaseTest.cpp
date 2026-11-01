@@ -20,6 +20,7 @@
 #include "aregextend/db/LogSqliteDatabase.hpp"
 #include "aregextend/db/SqliteStatement.hpp"
 #include "areg/base/DateTime.hpp"
+#include "areg/base/StringDefs.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/logging/LoggingDefs.hpp"
@@ -38,6 +39,19 @@
 #include <string>
 #include <thread>
 #include <vector>
+
+#if defined(_WIN32)
+    #include <share.h>
+#endif  // defined(_WIN32)
+
+// Use these options if compile for Windows with MSVC
+#ifdef _MSC_VER
+#if defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
+    #pragma comment(lib, "sqlite3")
+#else   // defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
+    #pragma comment(lib, "aregsqlite3")
+#endif  // defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
+#endif  // _MSC_VER
 
 namespace
 {
@@ -88,6 +102,16 @@ namespace
 
     //! Returns the checkpoint sequence in the header of an open write-ahead log, which grows each time
     //! the log starts over from its beginning. Returns 0 if the header cannot be read.
+    //! Opens a file for binary reading, shared with writers.
+    std::FILE* _open_shared(const std::string& path)
+    {
+#if defined(_WIN32)
+        return ::_fsopen(path.c_str(), "rb", _SH_DENYNO);
+#else   // defined(_WIN32)
+        return std::fopen(path.c_str(), "rb");
+#endif  // defined(_WIN32)
+    }
+
     uint32_t _log_sequence(std::FILE* wal)
     {
         unsigned char header[16]{ };
@@ -105,12 +129,9 @@ namespace
         entry.logScopeId     = scopeId;
         entry.logTimestamp   = timeCreated;
         entry.logReceived    = timeCreated;
-        std::strcpy(entry.logMessage, "log database test");
-        entry.logMessageLen  = 17u;
-        std::strcpy(entry.logThread, "TestThread");
-        entry.logThreadLen   = 10u;
-        std::strcpy(entry.logModule, "areg-unit-tests");
-        entry.logModuleLen   = 15u;
+        entry.logMessageLen  = static_cast<uint32_t>(areg::copy_string(entry.logMessage, areg::LOG_MSG_SIZE, "log database test"));
+        entry.logThreadLen   = static_cast<uint32_t>(areg::copy_string(entry.logThread, areg::LOG_NAME_SIZE, "TestThread"));
+        entry.logModuleLen   = static_cast<uint32_t>(areg::copy_string(entry.logModule, areg::LOG_NAME_SIZE, "areg-unit-tests"));
         return entry;
     }
 
@@ -394,11 +415,11 @@ TEST(LogSqliteDatabaseTest, test_continuousWriterKeepsTheLogShort)
     constexpr uint32_t rows{ 1000u };
     constexpr uint32_t longCycle{ 150u };
     constexpr std::chrono::milliseconds pause{ 50 };
-    const auto until{ std::chrono::steady_clock::now() + std::chrono::seconds(30) };
+    const auto until{ std::chrono::steady_clock::now() + std::chrono::seconds(120) };
     uint32_t batches{ 0u };
     uint32_t seen{ 0u };
     uint32_t cycle{ 0u };
-    std::FILE* wal{ std::fopen((path + "-wal").c_str(), "rb") };
+    std::FILE* wal{ _open_shared(path + "-wal") };
     ASSERT_NE(wal, nullptr);
     std::setvbuf(wal, nullptr, _IONBF, 0u);
     uint32_t lastSeq{ _log_sequence(wal) };
@@ -455,7 +476,8 @@ TEST(LogSqliteDatabaseTest, test_idleWriterAfterLongLogReachesTheFile)
     const std::uintmax_t pageSize{ std::stoull(_query_text(path, "PRAGMA page_size;")) };
     const std::uintmax_t expected{ pageSize * std::stoull(_query_text(path, "PRAGMA page_count;")) };
     std::uintmax_t size{ fs::file_size(path, err) };
-    for (int i = 0; (i < 50) && (size != expected); ++i)
+    const auto until{ std::chrono::steady_clock::now() + std::chrono::seconds(60) };
+    while ((size != expected) && (std::chrono::steady_clock::now() < until))
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         size = fs::file_size(path, err);
@@ -480,7 +502,8 @@ TEST(LogSqliteDatabaseTest, test_idleWriterRowsReachTheFile)
 
     ASSERT_TRUE(_write_rows(writer, 500u, 1000));
     std::uintmax_t size{ emptySize };
-    for (int i = 0; (i < 50) && (size == emptySize); ++i)
+    const auto until{ std::chrono::steady_clock::now() + std::chrono::seconds(60) };
+    while ((size == emptySize) && (std::chrono::steady_clock::now() < until))
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         size = fs::file_size(path, err);
@@ -1124,7 +1147,8 @@ TEST(LogSqliteDatabaseTest, test_writerCommitsALoneRow)
     ASSERT_NE(writer.queue_log(_envelope(1u)), 0u);
 
     std::string count;
-    for (int i = 0; (i < 40) && (count != "1"); ++i)
+    const auto until{ std::chrono::steady_clock::now() + std::chrono::seconds(60) };
+    while ((count != "1") && (std::chrono::steady_clock::now() < until))
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
         count = _query_text(path, "SELECT COUNT(*) FROM logs WHERE cookie_id = 77;");

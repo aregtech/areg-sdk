@@ -58,13 +58,13 @@ public:
      *          This value is used to set continues Timer, which will not
      *          stop, until it is not requested to be stopped manually.
      **/
-    static constexpr uint32_t   CONTINUOUSLY{ std::numeric_limits<uint32_t>::max() };    /*0xFFFFFFFF*/
+    AREG_API_CONST static constexpr uint32_t   CONTINUOUSLY{ std::numeric_limits<uint32_t>::max() };    /*0xFFFFFFFF*/
 
     /**
      * \brief   TimerBase::ONE_TIME
      *          Timer which is fired one time.
      */
-    static constexpr uint32_t   ONE_TIME    { static_cast<uint32_t>(1u) };
+    AREG_API_CONST static constexpr uint32_t   ONE_TIME    { static_cast<uint32_t>(1u) };
 
     /**
      * \brief   Returns the milliseconds of a monotonic clock that starts at an unspecified point,

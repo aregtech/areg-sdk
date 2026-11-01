@@ -923,7 +923,7 @@ public:
     bool remove_worker_thread( const String & workerName ) noexcept;
 
     /**
-     * \brief   Adds a service dependency entry to the component.
+     * \brief   Adds a service dependency entry to the component, if its role is not listed yet.
      *
      * \param   entry       The dependency entry to add.
      **/

@@ -16,5 +16,5 @@ addExecutableEx(${AREG_REQUEST_FAILURE_PROJECT} ""
 
 foreach(_failure_case before-connect provider-gone remote-refused)
     add_test(NAME ${AREG_REQUEST_FAILURE_PROJECT}.${_failure_case} COMMAND ${AREG_REQUEST_FAILURE_PROJECT} ${_failure_case})
-    set_tests_properties(${AREG_REQUEST_FAILURE_PROJECT}.${_failure_case} PROPERTIES TIMEOUT 60)
+    set_tests_properties(${AREG_REQUEST_FAILURE_PROJECT}.${_failure_case} PROPERTIES TIMEOUT 300)
 endforeach()

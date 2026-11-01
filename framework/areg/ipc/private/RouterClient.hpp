@@ -34,6 +34,27 @@ namespace areg {
 class RegistrationConsumer;
 
 //////////////////////////////////////////////////////////////////////////
+// RouterClientOwner interface declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   The owner of a router client. It stops the client without waiting and is told when
+ *          the client's thread has done its last work.
+ **/
+class RouterClientOwner
+{
+public:
+    /**
+     * \brief   Called once on the router client's thread, as its last action before it returns.
+     *          It must only post: the owner releases the thread when it handles the report.
+     **/
+    virtual void on_router_client_stopped() noexcept = 0;
+
+protected:
+    RouterClientOwner() = default;
+    ~RouterClientOwner() = default;
+};
+
+//////////////////////////////////////////////////////////////////////////
 // RouterClient class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
@@ -60,8 +81,9 @@ public:
      *                                  handle service connection notifications.
      * \param   registerConsumer        The instance of remote service registration consumer to
      *                                  handle service register notification.
+     * \param   owner                   The owner told when the client's thread stopped.
      **/
-    RouterClient(ConnectionConsumer& connectionConsumer, RegistrationConsumer & registerConsumer);
+    RouterClient(ConnectionConsumer& connectionConsumer, RegistrationConsumer & registerConsumer, RouterClientOwner & owner);
     ~RouterClient() override = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -88,6 +110,18 @@ public:
      **/
     inline const areg::Channel& connection_channel() const noexcept;
 
+    /**
+     * \brief   Returns true while the thread of the router client runs its dispatcher.
+     **/
+    [[nodiscard]]
+    inline bool is_client_running() const noexcept;
+
+    /**
+     * \brief   Releases the thread of a router client after on_router_client_stopped(). The thread
+     *          has done its last work by then, so the call returns at once.
+     **/
+    void release_client();
+
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
@@ -105,7 +139,8 @@ protected:
     bool connect_service_host() final;
 
     /**
-     * \brief   Stops service connection and disables remote communication.
+     * \brief   Requests the stop of the service connection and returns without waiting. The owner is
+     *          told by RouterClientOwner::on_router_client_stopped() when the thread has stopped.
      **/
     void disconnect_service_host() final;
 
@@ -243,6 +278,11 @@ protected:
      **/
     void ready_for_events( bool is_ready ) final;
 
+    /**
+     * \brief   Reports the stop of the thread to the owner, as the last action of the thread.
+     **/
+    void on_post_exit() final;
+
 /************************************************************************/
 // ServiceEventConsumer interface overrides
 /************************************************************************/
@@ -273,6 +313,11 @@ private:
      **/
     RegistrationConsumer &     mRegisterConsumer;
 
+    /**
+     * \brief   The owner told when the thread stopped.
+     **/
+    RouterClientOwner &         mOwner;
+
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
@@ -298,6 +343,11 @@ inline bool RouterClient::send_raw_message(const MessageEnvelope& msg)
 inline const areg::Channel& RouterClient::connection_channel() const noexcept
 {
     return mChannel;
+}
+
+inline bool RouterClient::is_client_running() const noexcept
+{
+    return is_running();
 }
 
 } // namespace areg

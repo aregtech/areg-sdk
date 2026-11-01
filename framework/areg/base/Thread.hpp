@@ -128,7 +128,7 @@ public:
      * \brief   Thread::INVALID_THREAD_ID
      *          Invalid thread ID.
      **/
-    static constexpr id_type            INVALID_THREAD_ID       { 0 };
+    AREG_API_CONST static constexpr id_type            INVALID_THREAD_ID       { 0 };
 
 
 /************************************************************************/
@@ -137,13 +137,13 @@ public:
 protected:
 
     //!< Life State flag, set while this object is present in the thread maps.
-    static constexpr uint32_t   LIFE_REGISTERED     { 1u };
+    AREG_API_CONST static constexpr uint32_t   LIFE_REGISTERED     { 1u };
     //!< Life State flag, set while an exit is requested for this thread.
-    static constexpr uint32_t   LIFE_EXIT_REQUESTED { 2u };
+    AREG_API_CONST static constexpr uint32_t   LIFE_EXIT_REQUESTED { 2u };
     //!< Life State amount of one share of the object.
-    static constexpr uint32_t   LIFE_SHARE          { 4u };
+    AREG_API_CONST static constexpr uint32_t   LIFE_SHARE          { 4u };
     //!< Life State bits that count the shares.
-    static constexpr uint32_t   LIFE_SHARES         { ~(LIFE_SHARE - 1u) };
+    AREG_API_CONST static constexpr uint32_t   LIFE_SHARES         { ~(LIFE_SHARE - 1u) };
 
 private:
 /************************************************************************/
@@ -153,13 +153,13 @@ private:
      * \brief   Thread::INVALID_THREAD_HANDLE
      *          Thread invalid handle
      **/
-    static constexpr THREADHANDLE       INVALID_THREAD_HANDLE   { nullptr };
+    AREG_API_CONST static constexpr THREADHANDLE       INVALID_THREAD_HANDLE   { nullptr };
 
     /**
      * \brief   Thread::CURRENT_THREAD
      *          Identified Current Thread. Used for Local Storage
      **/
-    static constexpr ptr_type           CURRENT_THREAD          { static_cast<ptr_type>(std::numeric_limits<ptr_type>::max()) };
+    AREG_API_CONST static constexpr ptr_type           CURRENT_THREAD          { static_cast<ptr_type>(std::numeric_limits<ptr_type>::max()) };
 
 //////////////////////////////////////////////////////////////////////////
 // Declare Thread as runtime object

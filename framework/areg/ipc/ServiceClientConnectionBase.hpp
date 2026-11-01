@@ -362,9 +362,10 @@ protected:
      * \brief   Queues a service command event with optional priority.
      *
      * \param   cmd             The command to send and process.
-     * \param   eventPrio       The priority of the event. By default, the priority is normal.
+     * \param   eventPrio       The priority of the event. High by default: a command is never dropped
+     *                          and never waits for a full queue.
      **/
-    inline void send_command(ServiceEventData::ServiceCommand cmd, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
+    inline void send_command(ServiceEventData::ServiceCommand cmd, areg::EventPriority eventPrio = areg::EventPriority::HighPrio );
 
     /**
      * \brief   Posts a received data envelope directly to the dispatcher, bypassing the
@@ -454,9 +455,9 @@ protected:
      *          stops it via on_service_stop() / disconnect_service_host(), or when servicing becomes
      *          unavailable while the application is closing.
      *
-     * \param   eventPrio   The priority of the queued lost-connection command. Normal by default.
+     * \param   eventPrio   The priority of the queued lost-connection command. High by default.
      **/
-    void notify_connection_lost( areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
+    void notify_connection_lost( areg::EventPriority eventPrio = areg::EventPriority::HighPrio );
 
     /**
      * \brief   Sets the client socket connection state.
@@ -553,6 +554,16 @@ protected:
     mutable areg::ResourceLock      mLock;
 
 //////////////////////////////////////////////////////////////////////////
+// Hidden methods
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Returns a copy of the connection channel, taken under the lock that guards its writes.
+     **/
+    [[nodiscard]]
+    inline Channel _channel_snapshot() const;
+
+//////////////////////////////////////////////////////////////////////////
 // Hidden member variables
 //////////////////////////////////////////////////////////////////////////
 private:
@@ -595,6 +606,12 @@ private:
 inline ServiceClientConnectionBase & ServiceClientConnectionBase::self() noexcept
 {
     return (*this);
+}
+
+inline Channel ServiceClientConnectionBase::_channel_snapshot() const
+{
+    Lock lock( mLock );
+    return mChannel;
 }
 
 inline ITEM_ID ServiceClientConnectionBase::connection_cookie() const noexcept
@@ -672,7 +689,7 @@ inline ServiceClientConnectionBase::ConnectionPhase ServiceClientConnectionBase:
 }
 
 inline void ServiceClientConnectionBase::send_command( ServiceEventData::ServiceCommand cmd
-                                                    , areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
+                                                    , areg::EventPriority eventPrio /*= areg::EventPriority::HighPrio*/ )
 {
     ServiceClientEvent::send_event( ServiceEventData( cmd )
                                  , static_cast<ServiceClientEventConsumer &>(mEventConsumer)

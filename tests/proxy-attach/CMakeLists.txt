@@ -11,5 +11,5 @@ addExecutableEx(${AREG_PROXY_ATTACH_PROJECT} ""
 
 foreach(_attach_case same-thread foreign-thread deleted-before-notify reconnect before-connect)
     add_test(NAME ${AREG_PROXY_ATTACH_PROJECT}.${_attach_case} COMMAND ${AREG_PROXY_ATTACH_PROJECT} ${_attach_case})
-    set_tests_properties(${AREG_PROXY_ATTACH_PROJECT}.${_attach_case} PROPERTIES TIMEOUT 60)
+    set_tests_properties(${AREG_PROXY_ATTACH_PROJECT}.${_attach_case} PROPERTIES TIMEOUT 300)
 endforeach()

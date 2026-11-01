@@ -76,7 +76,7 @@ Version & Version::from_string( const String & version )
 
     mMajor  = major.to_uint32();
     mMinor  = minor.to_uint32();
-    mPatch  = (mMajor != 0) && (mMinor != 0) ? patch.to_uint32() : 0;
+    mPatch  = (mMajor != 0) || (mMinor != 0) ? patch.to_uint32() : 0;
 
     return (*this);
 }
@@ -88,7 +88,7 @@ Version & Version::from_string( const char * version )
 
 String Version::to_string() const
 {
-    constexpr const char * format{ "%d%c%d%c%d" };
+    constexpr const char * format{ "%u%c%u%c%u" };
 
     char buffer[ 128 ]{ 0 };
     int32_t len = String::format_string( buffer, 128, format, mMajor, areg::OBJECT_SEPARATOR, mMinor, areg::OBJECT_SEPARATOR, mPatch );

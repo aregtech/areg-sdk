@@ -58,8 +58,10 @@ areg::ParameterArray::ParameterArray( const areg::InterfaceData& ifData )
 }
 
 areg::ParameterArray::ParameterArray( const uint32_t* paramCountMap, int32_t count )
+    : mElemCount (0)
+    , mParamList(nullptr)
 {
-    construct(paramCountMap, static_cast<uint32_t>(count));
+    construct(paramCountMap, count > 0 ? static_cast<uint32_t>(count) : 0u);
 }
 
 areg::ParameterArray::ParameterArray( areg::ParameterArray && src ) noexcept
@@ -119,7 +121,7 @@ void areg::ParameterArray::construct( const uint32_t * params, uint32_t count ) 
     // space for parameters
     size += count_param_space(params, count);
 
-    uint8_t* buffer = new uint8_t[size];
+    uint8_t* buffer = new (std::nothrow) uint8_t[size];
     if (buffer == nullptr)
         return;
     

@@ -619,6 +619,10 @@ inline constexpr const char* areg::as_string(areg::EventType eventType) noexcept
         return "areg::EventType::EventLocalConsumerConnect";
     case areg::EventType::EventRemoteConsumerConnect:
         return "areg::EventType::EventRemoteConsumerConnect";
+    case areg::EventType::EventLocalConnection:
+        return "areg::EventType::EventLocalConnection";
+    case areg::EventType::EventRemoteConnection:
+        return "areg::EventType::EventRemoteConnection";
     case areg::EventType::EventCustomInternal:
         return "areg::EventType::EventCustomInternal";
     case areg::EventType::EventCustomExternal:

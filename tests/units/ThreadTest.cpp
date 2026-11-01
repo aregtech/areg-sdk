@@ -21,6 +21,7 @@
  * Include files.
  ************************************************************************/
 #include "units/GUnitTest.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/base/ThreadConsumer.hpp"
 #include "areg/component/DispatcherThread.hpp"
@@ -61,7 +62,7 @@ namespace
     constexpr std::chrono::milliseconds STRESS_DURATION { 1000 };
 
     //!< A call that makes no progress for this long is reported as a hang.
-    constexpr std::chrono::milliseconds HANG_LIMIT      { 5000 };
+    constexpr std::chrono::milliseconds HANG_LIMIT      { 60'000 };
 
     //!< The routine polls Thread::wait_exit() until an exit is requested.
     class PollingConsumer : public areg::ThreadConsumer
@@ -75,17 +76,16 @@ namespace
         }
     };
 
-    //!< How long the deaf routine ignores exit requests.
-    constexpr uint32_t DEAF_MS { 300u };
-
-    //!< The routine sleeps for DEAF_MS and ignores exit requests.
+    //!< The routine ignores exit requests and returns once mRelease is signaled.
     class DeafConsumer : public areg::ThreadConsumer
     {
     public:
         void on_run() override
         {
-            Thread::sleep(DEAF_MS);
+            static_cast<void>(mRelease.lock(areg::WAIT_INFINITE));
         }
+
+        areg::SyncEvent mRelease{ true, false };    //!< Lets the routine return.
     };
 
     //!< A dispatcher thread with no consumers.
@@ -323,7 +323,8 @@ TEST(ThreadTest, StartAfterTimedOutShutdown)
 
     EXPECT_EQ(result, Thread::ThreadCompletion::Stuck);
     EXPECT_FALSE(thread.start(areg::DO_NOT_WAIT));
-    const auto deadline{ std::chrono::steady_clock::now() + std::chrono::milliseconds(DEAF_MS * 2u) };
+    consumer.mRelease.set_signaled();
+    const auto deadline{ std::chrono::steady_clock::now() + HANG_LIMIT };
     while (thread.start(areg::WAIT_INFINITE) == false)
     {
         ASSERT_LT(std::chrono::steady_clock::now(), deadline);

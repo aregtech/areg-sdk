@@ -631,6 +631,7 @@ inline void StubAddress::from_endpoint(const areg::RawService& rawService, const
     mThread.from_endpoint(endPoint);
     mChannel.set_cookie(endPoint.id);
     mChannel.set_source(endPoint.thread);
+    mMagicNum = endPoint.number;
 }
 
 inline void StubAddress::to_endpoint(areg::RawService& rawService, areg::Endpoint& endPoint) const noexcept

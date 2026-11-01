@@ -605,7 +605,10 @@ bool areg::ComponentEntry::remove_worker_thread( const String & workerName ) noe
 
 void areg::ComponentEntry::add_dependency_service( const areg::DependencyEntry& entry )
 {
-    mDependencyServices.mListDependencies.add(entry);
+    if (find_dependency_service(entry) < 0)
+    {
+        mDependencyServices.mListDependencies.add(entry);
+    }
 }
 
 void areg::ComponentEntry::add_dependency_service( const areg::DependencyList & dependencyList )
@@ -618,8 +621,13 @@ void areg::ComponentEntry::add_dependency_service( const areg::DependencyList & 
 
 areg::DependencyEntry & areg::ComponentEntry::add_dependency_service(const String & roleName)
 {
-    int32_t index = static_cast<int32_t>(mDependencyServices.mListDependencies.size());
-    mDependencyServices.mListDependencies.add(areg::DependencyEntry(roleName));
+    int32_t index = find_dependency_service(roleName);
+    if (index == areg::INVALID_INDEX)
+    {
+        index = static_cast<int32_t>(mDependencyServices.mListDependencies.size());
+        mDependencyServices.mListDependencies.add(areg::DependencyEntry(roleName));
+    }
+
     return mDependencyServices.mListDependencies.value_at(static_cast<uint32_t>(index));
 }
 

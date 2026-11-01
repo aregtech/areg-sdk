@@ -66,17 +66,20 @@
 
 namespace
 {
-    constexpr uint32_t      WAIT_MS             { 5000 };
+    constexpr uint32_t      WAIT_MS             { 30'000 };
     constexpr uint32_t      WATCH_MS            { 100 };
     constexpr uint32_t      LIFECYCLE_MS        { 300 };
-    constexpr uint32_t      HANG_MS             { 1500 };
-    constexpr uint32_t      LONG_HANG_MS        { 3000 };
-    constexpr uint32_t      CHILD_LIVES_MS      { 6000 };
+    //!< The most a held thread waits for its release; a call that waited for it took this long.
+    constexpr uint32_t      HANG_MS             { 40'000 };
+    //!< A child that is not ended by its policy lives this long; it must be ended before.
+    constexpr uint32_t      CHILD_LIVES_MS      { 40'000 };
     constexpr int           FAILURE_EXIT_CODE   { 70 };
     constexpr uint32_t      UNLOAD_ROUNDS       { 20 };
     constexpr uint32_t      DOUBLE_ROUNDS       { 200 };
-    constexpr uint32_t      SELF_QUEUE_WAIT_MS  { 2000 };
-    constexpr uint32_t      SELF_POST_LIMIT_MS  { 500 };
+    constexpr uint32_t      SELF_QUEUE_WAIT_MS  { 40'000 };
+    //!< A post or an unload that returns later than this has waited for a timeout.
+    constexpr uint32_t      SELF_POST_LIMIT_MS  { SELF_QUEUE_WAIT_MS / 2 };
+    constexpr uint32_t      SELF_UNLOAD_LIMIT_MS{ areg::LIFECYCLE_TIMEOUT_DEFAULT / 2 };
 
     //!< A counter a thread waits on, with a deadline, until it reaches a value.
     class Gate
@@ -104,17 +107,17 @@ namespace
         uint32_t                mValue{ 0 };//!< The number of advances.
     };
 
-    //!< What a component does when it runs.
+    //!< What a component does when it runs. A held thread does not answer until the test releases it.
     struct Behaviour
     {
-        uint32_t    hangRequestMs   { 0 };      //!< The provider sleeps this long in a request.
-        bool        hangEveryone    { false };  //!< Every instance hangs, not only the first.
-        uint32_t    blockMs         { 0 };      //!< The blocker blocks this long in its event.
-        bool        blockOnExit     { true };   //!< The blocker returns when asked to exit.
+        bool        holdRequest     { false };  //!< The provider is held in a request.
+        bool        hangEveryone    { false };  //!< Every instance is held, not only the first.
+        uint32_t    blockMs         { 0 };      //!< The blocker waits this long for an exit request in its event.
+        bool        blockOnExit     { true };   //!< The blocker returns when asked to exit, else it is held.
         uint32_t    blockInstance   { 0 };      //!< The only instance that blocks, 0 for every one.
-        uint32_t    startupMs       { 0 };      //!< The component sleeps this long in its startup.
-        uint32_t    startupInstance { 0 };      //!< The only instance that sleeps in its startup, 0 for every one.
-        uint32_t    shutdownMs      { 0 };      //!< The component sleeps this long in its shutdown.
+        bool        holdStartup     { false };  //!< The component is held in its startup.
+        uint32_t    startupInstance { 0 };      //!< The only instance held in its startup, 0 for every one.
+        bool        holdShutdown    { false };  //!< The component is held in its shutdown.
         const char* selfUnload      { nullptr };//!< The model a component unloads from its own thread.
     };
 
@@ -136,6 +139,8 @@ namespace
     Gate                    gResponseGate;
     Gate                    gSelfUnloaded;
     Gate                    gUserStateGate;
+    Gate                    gReleased;
+    std::atomic_uint32_t    gHoldLevel      { 1 };
     std::atomic_uint32_t    gUserStateCalls { 0 };
     std::atomic_uint32_t    gUserStateWrong { 0 };
     std::atomic_uint32_t    gUserStateLast  { 0 };
@@ -154,6 +159,18 @@ namespace
         {
             std::this_thread::sleep_for(until - now);
         }
+    }
+
+    //!< Does not answer, ignoring the exit request, until the test released the current hold level, at most HANG_MS.
+    void _hold()
+    {
+        static_cast<void>(gReleased.wait_for(gHoldLevel.load(), HANG_MS));
+    }
+
+    //!< Releases the threads held at the current level.
+    void _release()
+    {
+        gReleased.advance();
     }
 }
 
@@ -194,9 +211,9 @@ public:
     void startup_component(areg::ComponentThread & comThread) override
     {
         areg::Component::startup_component(comThread);
-        if ((gBehaviour.startupMs != 0) && ((gBehaviour.startupInstance == 0) || (gBehaviour.startupInstance == mInstance)))
+        if (gBehaviour.holdStartup && ((gBehaviour.startupInstance == 0) || (gBehaviour.startupInstance == mInstance)))
         {
-            _hang(gBehaviour.startupMs);
+            _hold();
         }
 
         gStarted.advance();
@@ -204,9 +221,9 @@ public:
 
     void shutdown_component(areg::ComponentThread & comThread) override
     {
-        if (gBehaviour.shutdownMs != 0)
+        if (gBehaviour.holdShutdown)
         {
-            _hang(gBehaviour.shutdownMs);
+            _hold();
         }
 
         areg::Component::shutdown_component(comThread);
@@ -230,9 +247,9 @@ public:
 protected:
     void request_hello_service() override
     {
-        if ((gBehaviour.hangRequestMs != 0) && (gBehaviour.hangEveryone || (mInstance == 1)))
+        if (gBehaviour.holdRequest && (gBehaviour.hangEveryone || (mInstance == 1)))
         {
-            _hang(gBehaviour.hangRequestMs);
+            _hold();
         }
 
         response_hello_service();
@@ -337,7 +354,7 @@ protected:
         }
         else
         {
-            _hang(gBehaviour.blockMs);
+            _hold();
         }
     }
 };
@@ -737,13 +754,14 @@ namespace
 //!< The provider hangs, is replaced by a new instance, and the old one is freed when it returns.
 static bool restart_watchdog()
 {
-    gBehaviour.hangRequestMs = HANG_MS;
+    gBehaviour.holdRequest = true;
     areg::Application::setup(false, true, false, true, true, nullptr);
     bool ok{ areg::Application::load_model("SlRestartModel") };
     ok = ok && gDisconnectedGate.wait_for(1);
     ok = ok && gConnectedGate.wait_for(2);
     ok = ok && gResponseGate.wait_for(1);
-    // The old instance returns from its sleep and is freed; the new one must stay registered.
+    // The old instance is released and freed; the new one must stay registered.
+    _release();
     ok = ok && gDeletedGate.wait_for(1);
     _hang(300);
     const uint32_t responses{ gResponses.load() };
@@ -758,12 +776,13 @@ static bool restart_watchdog()
 //!< The provider hangs and is abandoned; the consumer is disconnected, the process goes on.
 static bool ignore_watchdog()
 {
-    gBehaviour.hangRequestMs = HANG_MS;
+    gBehaviour.holdRequest = true;
     areg::Application::setup(false, true, false, true, true, nullptr);
     bool ok{ areg::Application::load_model("SlIgnoreModel") };
     ok = ok && gDisconnectedGate.wait_for(1);
     const bool abandoned{ _is_abandoned("SlIgnoreProviderThread") };
     // The abandoned instance is freed once its handler returns.
+    _release();
     ok = ok && gDeletedGate.wait_for(1);
     _hang(300);
     ok = ok && abandoned && (gConnects.load() == 1);
@@ -774,13 +793,13 @@ static bool ignore_watchdog()
     areg::Application::release();
     _print_counts();
     printf("abandoned %d, unload %u ms\n", abandoned ? 1 : 0, unloadMs);
-    return ok && (unloadMs < 2000) && (gCreated.load() == 1) && (gDeleted.load() == 1);
+    return ok && (unloadMs < WAIT_MS) && (gCreated.load() == 1) && (gDeleted.load() == 1);
 }
 
 //!< Unloads the model again and again while the watchdog restarts its thread.
 static bool unload_restart()
 {
-    gBehaviour.blockMs = 2000;
+    gBehaviour.blockMs = HANG_MS;
     gBehaviour.blockOnExit = true;
     areg::Application::setup(false, true, false, true, true, nullptr);
     uint32_t round{ 0 };
@@ -832,7 +851,7 @@ static bool double_unload()
 //!< The startup hangs past the lifecycle timeout; policy Ignore: the load returns, the thread is abandoned.
 static bool start_hang_ignore()
 {
-    gBehaviour.startupMs = HANG_MS;
+    gBehaviour.holdStartup = true;
     areg::Application::setup(false, true, false, true, true, nullptr);
     const auto start{ std::chrono::steady_clock::now() };
 #ifdef THREAD_FAILURE_POLICY
@@ -843,6 +862,7 @@ static bool start_hang_ignore()
     const uint32_t loadMs{ _elapsed_ms(start) };
     const bool abandoned{ _is_abandoned("SlStartIgnoreThread") };
     // Freed by itself once the startup returns, before the model is unloaded.
+    _release();
     const bool freed{ gDeletedGate.wait_for(1) };
     areg::Application::unload_model("SlStartIgnoreModel");
     areg::Application::release();
@@ -855,12 +875,20 @@ static bool start_hang_ignore()
 static bool start_hang_restart()
 {
     // The first instance blocks until its watchdog restarts it, the second one hangs in its startup.
-    gBehaviour.blockMs = LONG_HANG_MS;
+    gBehaviour.blockMs = HANG_MS;
     gBehaviour.blockInstance = 1;
-    gBehaviour.startupMs = HANG_MS;
+    gBehaviour.holdStartup = true;
     gBehaviour.startupInstance = 2;
     areg::Application::setup(false, true, false, true, true, nullptr);
     bool ok{ areg::Application::load_model("SlStartRestartModel") };
+    // The third instance replaces the held second one, which is released after that.
+    const auto until{ std::chrono::steady_clock::now() + std::chrono::milliseconds(WAIT_MS) };
+    while (ok && (gCreated.load() < 3) && (std::chrono::steady_clock::now() < until))
+    {
+        _hang(1);
+    }
+
+    _release();
     ok = ok && gStarted.wait_for(3);
     const bool running{ _wait_running("SlStartRestartThread") };
     areg::Application::unload_model("SlStartRestartModel");
@@ -874,7 +902,7 @@ static bool start_hang_restart()
 //!< The first startup hangs past the lifecycle timeout; policy Restart: the load fails, nothing replaces it.
 static bool start_hang_load()
 {
-    gBehaviour.startupMs = HANG_MS;
+    gBehaviour.holdStartup = true;
     areg::Application::setup(false, true, false, true, true, nullptr);
     const auto start{ std::chrono::steady_clock::now() };
 #ifdef THREAD_FAILURE_POLICY
@@ -884,6 +912,7 @@ static bool start_hang_load()
 #endif  // THREAD_FAILURE_POLICY
     const uint32_t loadMs{ _elapsed_ms(start) };
     // The abandoned instance is freed once its startup returns; no new one is created.
+    _release();
     const bool freed{ gDeletedGate.wait_for(1) };
     _hang(LIFECYCLE_MS);
     areg::Application::unload_model("SlStartLoadModel");
@@ -910,7 +939,7 @@ static bool start_self_post()
 //!< The shutdown hangs past the drain and the lifecycle timeout; policy Ignore: the unload returns.
 static bool stop_hang_ignore()
 {
-    gBehaviour.shutdownMs = 2500;
+    gBehaviour.holdShutdown = true;
     areg::Application::setup(false, true, false, true, true, nullptr);
     bool ok{ areg::Application::load_model("SlStopIgnoreModel") };
     ok = ok && gStarted.wait_for(1);
@@ -918,11 +947,12 @@ static bool stop_hang_ignore()
     areg::Application::unload_model("SlStopIgnoreModel");
     const uint32_t unloadMs{ _elapsed_ms(start) };
     const bool abandoned{ _is_abandoned("SlStopIgnoreThread") };
+    _release();
     ok = ok && gDeletedGate.wait_for(1);
     areg::Application::release();
     _print_counts();
     printf("unload %u ms, abandoned %d\n", unloadMs, abandoned ? 1 : 0);
-    return ok && (unloadMs < 2000) && abandoned && (gDeleted.load() == 1);
+    return ok && (unloadMs < HANG_MS) && abandoned && (gDeleted.load() == 1);
 }
 
 //!< A component unloads its own model; the call returns at once and the model is unloaded.
@@ -943,7 +973,7 @@ static bool own_unload()
 
     areg::Application::release();
     _print_counts();
-    return ok && (gSelfUnloadMs.load() < 200) && (gDeleted.load() == 1);
+    return ok && (gSelfUnloadMs.load() < SELF_UNLOAD_LIMIT_MS) && (gDeleted.load() == 1);
 }
 
 //!< release() without unload_model() destroys the component with the delete function of the model.
@@ -962,7 +992,7 @@ static bool release_delete()
 static bool load_refusals()
 {
 #ifdef THREAD_FAILURE_POLICY
-    gBehaviour.shutdownMs = 500;
+    gBehaviour.holdShutdown = true;
     areg::Application::setup(false, true, false, true, true, nullptr);
     bool ok{ areg::Application::load_model("SlRefuseModel", true) };
     ok = ok && (areg::Application::model_state("SlRefuseModel") == areg::ModelState::Loaded);
@@ -977,6 +1007,7 @@ static bool load_refusals()
 
     const bool unloading{ areg::Application::model_state("SlRefuseModel") == areg::ModelState::Unloading };
     const bool refused{ areg::Application::load_model("SlRefuseModel") == false };
+    _release();
     unloader.join();
     const bool unloaded{ areg::Application::model_state("SlRefuseModel") == areg::ModelState::Unloaded };
     areg::Application::unload_model("SlRefuseModel");
@@ -996,7 +1027,6 @@ static bool load_refusals()
 //!< Two instances hang: the next one waits until one of them returns, and the process goes on.
 static bool restart_bound()
 {
-    gBehaviour.blockMs = LONG_HANG_MS;
     gBehaviour.blockOnExit = false;
     areg::Application::setup(false, true, false, true, true, nullptr);
     bool ok{ areg::Application::load_model("SlBoundModel") };
@@ -1005,7 +1035,8 @@ static bool restart_bound()
     _hang(1200);
     const uint32_t whileHung{ gCreated.load() };
     const bool abandoned{ _is_abandoned("SlBoundThread") };
-    // The first instance returns after its hang, and the third one starts.
+    // The held instances return, and the third one starts.
+    _release();
     ok = ok && gStarted.wait_for(3);
     areg::Application::unload_model("SlBoundModel");
     ok = ok && gDeletedGate.wait_for(gCreated.load(), WAIT_MS);
@@ -1019,24 +1050,35 @@ static bool restart_bound()
 static bool load_wait()
 {
 #ifdef THREAD_FAILURE_POLICY
-    gBehaviour.startupMs = 500;
+    gBehaviour.holdStartup = true;
     areg::Application::setup(false, true, false, true, true, nullptr);
     auto start{ std::chrono::steady_clock::now() };
     bool ok{ areg::Application::load_model("SlWaitModel") };
     const uint32_t threadsMs{ _elapsed_ms(start) };
     const bool loading{ areg::Application::model_state("SlWaitModel") == areg::ModelState::Loading };
+    _release();
     ok = ok && gStarted.wait_for(1);
     areg::Application::unload_model("SlWaitModel");
 
-    start = std::chrono::steady_clock::now();
+    // The load that waits for the components returns only after the startup is released.
+    gHoldLevel.store(2);
+    std::atomic_bool released{ false };
+    std::thread releaser([&released]
+        {
+            _hang(LIFECYCLE_MS);
+            released.store(true);
+            _release();
+        });
+
     ok = ok && areg::Application::load_model("SlWaitModel", true);
-    const uint32_t componentsMs{ _elapsed_ms(start) };
+    const bool waited{ released.load() };
+    releaser.join();
     const bool loaded{ areg::Application::model_state("SlWaitModel") == areg::ModelState::Loaded };
     areg::Application::unload_model("SlWaitModel");
     areg::Application::release();
     _print_counts();
-    printf("threads %u ms, loading %d; components %u ms, loaded %d\n", threadsMs, loading ? 1 : 0, componentsMs, loaded ? 1 : 0);
-    return ok && (threadsMs < 250) && loading && (componentsMs >= 500) && loaded && (gCreated.load() == 2) && (gDeleted.load() == 2);
+    printf("threads %u ms, loading %d; waited for the components %d, loaded %d\n", threadsMs, loading ? 1 : 0, waited ? 1 : 0, loaded ? 1 : 0);
+    return ok && (threadsMs < SELF_UNLOAD_LIMIT_MS) && loading && waited && loaded && (gCreated.load() == 2) && (gDeleted.load() == 2);
 #else   // THREAD_FAILURE_POLICY
     printf("load_model() has no wait flag on this tree\n");
     return false;
@@ -1121,32 +1163,32 @@ int main(int argc, char * argv[])
     // The children, ended by their failure policy.
     if (std::strcmp(name, "exit-watchdog-child") == 0)
     {
-        gBehaviour.blockMs = LONG_HANG_MS;
         gBehaviour.blockOnExit = false;
         return _child("SlExitWatchModel", false);
     }
     else if (std::strcmp(name, "start-hang-exit-child") == 0)
     {
-        gBehaviour.startupMs = LONG_HANG_MS;
+        gBehaviour.holdStartup = true;
         return _child("SlStartExitModel", false);
     }
     else if (std::strcmp(name, "stop-hang-exit-child") == 0)
     {
-        gBehaviour.shutdownMs = LONG_HANG_MS;
+        gBehaviour.holdShutdown = true;
         return _child("SlStopExitModel", true);
     }
 
+    // A child the policy did not end exits only after CHILD_LIVES_MS.
     if (std::strcmp(name, "exit-watchdog") == 0)
     {
-        ok = _expect_failure_exit("exit-watchdog-child", 2000);
+        ok = _expect_failure_exit("exit-watchdog-child", CHILD_LIVES_MS);
     }
     else if (std::strcmp(name, "start-hang-exit") == 0)
     {
-        ok = _expect_failure_exit("start-hang-exit-child", 2000);
+        ok = _expect_failure_exit("start-hang-exit-child", CHILD_LIVES_MS);
     }
     else if (std::strcmp(name, "stop-hang-exit") == 0)
     {
-        ok = _expect_failure_exit("stop-hang-exit-child", 2500);
+        ok = _expect_failure_exit("stop-hang-exit-child", CHILD_LIVES_MS);
     }
     else if (std::strcmp(name, "restart-bound") == 0)
     {

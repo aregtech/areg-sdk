@@ -605,6 +605,7 @@ inline void ProxyAddress::from_endpoint(const areg::RawService& rawService, cons
     mThread.from_endpoint(endPoint);
     mChannel.set_cookie(endPoint.id);
     mChannel.set_source(endPoint.thread);
+    mMagicNum = endPoint.number;
 }
 
 inline void ProxyAddress::to_endpoint(areg::RawService& rawService, areg::Endpoint& endPoint) const noexcept

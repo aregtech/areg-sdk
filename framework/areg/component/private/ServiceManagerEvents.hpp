@@ -42,7 +42,7 @@ class String;
  * \brief   Encapsulates service manager event data with routing connection commands and associated
  *          command-specific data.
  **/
-class ServiceManagerEventData
+class AREG_API ServiceManagerEventData
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants.
@@ -53,8 +53,7 @@ public:
      **/
     enum class ServiceManagerCommand    : uint16_t
     {
-          CMD_StopRoutingClient         //!< Requested to stop Service Manager client connection
-        , CMD_RegisterProxy             //!< Requested to register Proxy
+          CMD_RegisterProxy             //!< Requested to register Proxy
         , CMD_UnregisterProxy           //!< Requested to unregister Proxy
         , CMD_RegisterProvider          //!< Requested to register Provider
         , CMD_UnregisterProvider        //!< Requested to unregister Provider
@@ -73,6 +72,7 @@ public:
         , CMD_WatchdogExpired           //!< The watchdog of a thread expired.
         , CMD_DeadlineExpired           //!< The lifecycle deadline guard expired.
         , CMD_UserState                 //!< Request to set the user state.
+        , CMD_RouterClientStopped       //!< The router client thread reports that it stopped.
     };
 
     /**
@@ -84,11 +84,6 @@ public:
 // Static members
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates event data with the command to stop the router client connection.
-     **/
-    static ServiceManagerEventData stop_router_client();
-
     /**
      * \brief   Creates event data with the command to stop routing and shut down the service manager.
      **/
@@ -213,6 +208,11 @@ public:
      * \param   userState   The new user state.
      **/
     static ServiceManagerEventData user_state( uint32_t userState );
+
+    /**
+     * \brief   Creates event data of the router client thread that reports its stop.
+     **/
+    static ServiceManagerEventData router_client_stopped();
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -340,8 +340,6 @@ inline constexpr const char * ServiceManagerEventData::as_string( ServiceManager
 {
     switch ( val )
     {
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_StopRoutingClient:
-        return "ServiceManagerEventData::ServiceManagerCommand::CMD_StopRoutingClient";
     case ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterProxy:
         return "ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterProxy";
     case ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProxy:
@@ -380,6 +378,8 @@ inline constexpr const char * ServiceManagerEventData::as_string( ServiceManager
         return "ServiceManagerEventData::ServiceManagerCommand::CMD_DeadlineExpired";
     case ServiceManagerEventData::ServiceManagerCommand::CMD_UserState:
         return "ServiceManagerEventData::ServiceManagerCommand::CMD_UserState";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_RouterClientStopped:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_RouterClientStopped";
     default:
         return "ERR: undefined ServiceManagerEventData::ServiceManagerCommand value!!!";
     }

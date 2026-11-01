@@ -158,6 +158,11 @@ AREG_STATIC_CALL_RE = re.compile(r'\bareg::\w+::([A-Za-z]\w*)\s*\(')
 # docs/agent/members.json. Empty when the file is absent, which switches B-08 off.
 FRAMEWORK_MEMBERS = frozenset()
 
+# B-08. The aregextend names, and the classes whose calls may name them as well.
+EXTENSION_MEMBERS = frozenset()
+EXTENSION_CLASSES = frozenset()
+ALL_MEMBERS = frozenset()
+
 # B-09. Every enumerator each scoped areg enumeration declares, loaded from the same
 # file. Empty when the file is absent, which switches B-09 off.
 FRAMEWORK_ENUMS = {}
@@ -178,12 +183,13 @@ OTHER_DECL_RE = re.compile(
     r'(?:^|[(,;])\s*(?:const\s+|static\s+|inline\s+)*([A-Za-z_]\w*(?:::\w+)*)\s*'
     r'(?:<[^;{}]*>)?\s*(?:const\s*)?[&*]?\s+(\w+)\s*(?=[;={,):(])')
 
-# A variable whose declared type is an areg one. Reused by B-01, B-07 and
-# B-08 so that all of them fire only on framework objects. The type and the name are
+# A variable whose declared type is an areg or an areg::ext one, the kind keeping the
+# "ext::" prefix. Reused by B-01, B-07 and B-08 so that all of them fire only on
+# framework objects. The type and the name are
 # apart by a space, a & or *, or a closing template bracket, so a call such as
 # areg::as_string(x) is never read as a declaration of direct initialisation.
 AREG_DECL_RE = re.compile(
-    r'\bareg::(\w+)(?:\s*<[^;{}]*>)?(?:\s*const\b)?(?:\s*[&*]\s*|\s+|(?<=>))(\w+)\s*'
+    r'\bareg::((?:ext::)?\w+)(?:\s*<[^;{}]*>)?(?:\s*const\b)?(?:\s*[&*]\s*|\s+|(?<=>))(\w+)\s*'
     r'(?=[;={,)(])')
 
 RANGE_FOR_RE = re.compile(r'\bfor\s*\([^;()]*[^:]:\s*(\w+)\s*\)')
@@ -903,18 +909,23 @@ def check_file(path, lines, known, findings, serves=True):
             for var, method in SNAKE_CALL_RE.findall(line):
                 if var not in areg_vars or var in shadowed:
                     continue
-                if method in FRAMEWORK_MEMBERS or method in LEGACY_ACCESSORS:
+                kind = areg_vars[var]
+                extended = kind.startswith('ext::') or kind in EXTENSION_CLASSES
+                declared = ALL_MEMBERS if extended else FRAMEWORK_MEMBERS
+                if method in declared or method in LEGACY_ACCESSORS:
                     continue
                 findings.append(Finding(
                     'B-08', 'error', path, number + 1,
-                    '"%s" is an areg::%s and no public areg header declares '
-                    '%s(); the name is remembered, not real. The methods that '
-                    'exist are in docs/agent/40-base-api.md'
-                    % (var, areg_vars[var], method)))
+                    '"%s" is an areg::%s and no public %s header declares '
+                    '%s(); the name is remembered, not real. %s'
+                    % (var, kind, 'areg or aregextend' if extended else 'areg', method,
+                       'api_help.py %s --class lists the methods that exist'
+                       % kind.split('::')[-1] if extended else
+                       'The methods that exist are in docs/agent/40-base-api.md')))
                 break
             else:
                 for method in AREG_QUALIFIED_CALL_RE.findall(line):
-                    if method in FRAMEWORK_MEMBERS or method in LEGACY_ACCESSORS:
+                    if method in ALL_MEMBERS or method in LEGACY_ACCESSORS:
                         continue
                     findings.append(Finding(
                         'B-08', 'error', path, number + 1,
@@ -1537,7 +1548,7 @@ def check_bare_calls(documents, sources, findings, read):
                 continue
             for match in BARE_CALL_RE.finditer(line):
                 name = match.group(1)
-                if name not in calls or name in NOT_A_CALL or name in FRAMEWORK_MEMBERS:
+                if name not in calls or name in NOT_A_CALL or name in ALL_MEMBERS:
                     continue
                 if name in members:
                     continue
@@ -1584,6 +1595,7 @@ def load_members(api_path):
     simply does not fire.
     """
     global FRAMEWORK_MEMBERS, FRAMEWORK_ENUMS
+    global EXTENSION_MEMBERS, EXTENSION_CLASSES, ALL_MEMBERS
     path = os.path.join(os.path.dirname(os.path.abspath(api_path)), 'members.json')
     if not os.path.isfile(path):
         return None
@@ -1596,8 +1608,16 @@ def load_members(api_path):
     if not members:
         return '%s carries no member list' % path
     FRAMEWORK_MEMBERS = frozenset(members)
-    FRAMEWORK_ENUMS = dict((name, frozenset(values)) for name, values
-                           in (document.get('enumerations') or {}).items())
+    extension = document.get('extension') or {}
+    EXTENSION_MEMBERS = frozenset(extension.get('members') or [])
+    EXTENSION_CLASSES = frozenset(extension.get('classes') or [])
+    ALL_MEMBERS = FRAMEWORK_MEMBERS | EXTENSION_MEMBERS
+    enums = {}
+    for source in (document.get('enumerations') or {},
+                   extension.get('enumerations') or {}):
+        for name, values in source.items():
+            enums.setdefault(name, set()).update(values)
+    FRAMEWORK_ENUMS = dict((name, frozenset(values)) for name, values in enums.items())
     return None
 
 

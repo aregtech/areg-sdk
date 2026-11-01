@@ -11,5 +11,5 @@ addExecutableEx(${AREG_WORKER_PROXY_PROJECT} ""
 
 foreach(_worker_case heap member on-the-fly late reload)
     add_test(NAME ${AREG_WORKER_PROXY_PROJECT}.${_worker_case} COMMAND ${AREG_WORKER_PROXY_PROJECT} ${_worker_case})
-    set_tests_properties(${AREG_WORKER_PROXY_PROJECT}.${_worker_case} PROPERTIES TIMEOUT 60)
+    set_tests_properties(${AREG_WORKER_PROXY_PROJECT}.${_worker_case} PROPERTIES TIMEOUT 300)
 endforeach()

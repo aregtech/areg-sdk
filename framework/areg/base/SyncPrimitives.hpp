@@ -319,7 +319,7 @@ public:
     /**
      * \brief   Return value of wait_any() when the operation timed out or was interrupted.
      **/
-    static constexpr int32_t WAIT_ANY_TIMEOUT { -1 };
+    AREG_API_CONST static constexpr int32_t WAIT_ANY_TIMEOUT { -1 };
 
     /**
      * \brief   Waits for any one of the specified events to be signaled. Returns immediately if any
@@ -771,7 +771,7 @@ private:
     void _wake_sleeper() noexcept;
 
     //!< The lowest bit of the word: the lock is taken; bit 16 and above: sleeping threads.
-    static constexpr uint32_t   SLEEPER_SHIFT   { 16u };
+    AREG_API_CONST static constexpr uint32_t   SLEEPER_SHIFT   { 16u };
 
 #if defined(_MSC_VER)
     #pragma warning(push)
@@ -1312,15 +1312,15 @@ public:
 #endif  // _MSC_VER
 
     //!< One nanosecond duration
-    static constexpr Duration   ONE_NS      { areg::DURATION_1_NS };
+    AREG_API_CONST static constexpr Duration   ONE_NS      { areg::DURATION_1_NS };
     //!< One microsecond duration
-    static constexpr Duration   ONE_MUS     { areg::DURATION_1_MICRO };
+    AREG_API_CONST static constexpr Duration   ONE_MUS     { areg::DURATION_1_MICRO };
     //!< One millisecond duration
-    static constexpr Duration   ONE_MS      { areg::DURATION_1_MILLI };
+    AREG_API_CONST static constexpr Duration   ONE_MS      { areg::DURATION_1_MILLI };
     //!< One second duration
-    static constexpr Duration   ONE_SEC     { areg::DURATION_1_SEC };
+    AREG_API_CONST static constexpr Duration   ONE_SEC     { areg::DURATION_1_SEC };
     //!< The minimum waiting timeout
-    static constexpr Duration   MIN_WAIT    { ONE_MS  * 5 };
+    AREG_API_CONST static constexpr Duration   MIN_WAIT    { ONE_MS  * 5 };
 
 #if defined(_MSC_VER)
     #pragma warning(pop)

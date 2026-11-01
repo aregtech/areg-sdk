@@ -42,7 +42,7 @@ namespace
     constexpr char const    _model[]        { "CdModel" };
     constexpr char const    _providerRole[] { "CdProvider" };
 
-    constexpr uint32_t      WAIT_MS         { 5000 };
+    constexpr uint32_t      WAIT_MS         { 30000 };
     constexpr uint32_t      MAGIC           { 0x600DF00Du };
     constexpr uint32_t      SLOT_COUNT      { 4 };
     constexpr std::size_t   SLOT_SIZE       { 1024 };

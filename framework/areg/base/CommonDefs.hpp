@@ -20,6 +20,8 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 
+#include <cstddef>
+#include <cstdint>
 #include <string_view>
 #include <limits>
 #include <utility>
@@ -465,6 +467,42 @@ namespace areg {
      *          threads, components, proxies or stubs.
      **/
     constexpr std::string_view  COMPONENT_PATH_SEPARATOR        { "::" };
+
+    /**
+     * \brief   areg::ADDRESS_NUMBER_MARKER
+     *          Prefix of the identity number written in an address path in place of an empty name.
+     **/
+    constexpr char              ADDRESS_NUMBER_MARKER           { '#' };
+
+    /**
+     * \brief   Parses an address path item of the form '#<decimal>' whose value fits in 32 bits.
+     *
+     * \param       item    The path item to parse.
+     * \param[out]  number  Receives the number on success; unchanged otherwise.
+     * \return  Returns true if the item is a marked identity number.
+     **/
+    [[nodiscard]]
+    constexpr bool parse_address_number(std::string_view item, uint32_t& number) noexcept
+    {
+        if ((item.size() < 2u) || (item.size() > 11u) || (item.front() != ADDRESS_NUMBER_MARKER))
+            return false;
+
+        uint64_t value{ 0u };
+        for (std::size_t i = 1u; i < item.size(); ++i)
+        {
+            const char ch{ item[i] };
+            if ((ch < '0') || (ch > '9'))
+                return false;
+
+            value = value * 10u + static_cast<uint64_t>(ch - '0');
+        }
+
+        if (value > static_cast<uint64_t>(VALUE_MAX_UINT32))
+            return false;
+
+        number = static_cast<uint32_t>(value);
+        return true;
+    }
     /**
      * \brief   areg::COMPONENT_ITEM_SEPARATOR
      *          Constant. Predefined path separator of component named item.

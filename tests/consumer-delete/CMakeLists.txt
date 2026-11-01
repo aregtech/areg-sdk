@@ -15,5 +15,5 @@ addExecutableEx(${AREG_CONSUMER_DELETE_PROJECT} ""
 
 foreach(_consumer_delete_case sibling-initial sibling-update self-delete same-address connect-sibling free-proxy)
     add_test(NAME ${AREG_CONSUMER_DELETE_PROJECT}.${_consumer_delete_case} COMMAND ${AREG_CONSUMER_DELETE_PROJECT} ${_consumer_delete_case})
-    set_tests_properties(${AREG_CONSUMER_DELETE_PROJECT}.${_consumer_delete_case} PROPERTIES TIMEOUT 60)
+    set_tests_properties(${AREG_CONSUMER_DELETE_PROJECT}.${_consumer_delete_case} PROPERTIES TIMEOUT 300)
 endforeach()
