@@ -98,11 +98,24 @@ public:
 // basic operators
 /************************************************************************/
 
+    /**
+     * \brief   Returns the element at a valid zero-based index. Any integer type is accepted.
+     **/
+    template<typename Index, IfIndex<Index> = 0>
     [[nodiscard]]
-    inline VALUE & operator [] ( uint32_t index ) noexcept;
+    inline VALUE & operator [] ( const Index index ) noexcept
+    {
+        ASSERT(static_cast<uint64_t>(index) < static_cast<uint64_t>(mValueList.size()));
+        return mValueList[static_cast<std::size_t>(index)];
+    }
 
+    template<typename Index, IfIndex<Index> = 0>
     [[nodiscard]]
-    inline const VALUE & operator [] (uint32_t index ) const noexcept;
+    inline const VALUE & operator [] ( const Index index ) const noexcept
+    {
+        ASSERT(static_cast<uint64_t>(index) < static_cast<uint64_t>(mValueList.size()));
+        return mValueList[static_cast<std::size_t>(index)];
+    }
 
     inline ArrayList< VALUE > & operator = ( const ArrayList< VALUE > & src );
 
@@ -607,20 +620,6 @@ ArrayList<VALUE>::ArrayList( std::vector<VALUE> && src ) noexcept
 template<typename VALUE>
 ArrayList<VALUE>::~ArrayList()
 {
-}
-
-template<typename VALUE >
-inline VALUE& ArrayList< VALUE >::operator [] (uint32_t index) noexcept
-{
-    ASSERT(is_valid_index(index));
-    return mValueList[index];
-}
-
-template<typename VALUE >
-inline const VALUE & ArrayList< VALUE >::operator [] (uint32_t index) const noexcept
-{
-    ASSERT(is_valid_index(index));
-    return mValueList[index];
 }
 
 template<typename VALUE >

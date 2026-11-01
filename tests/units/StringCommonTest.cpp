@@ -722,7 +722,7 @@ TYPED_TEST(StringCommonCompare, NumberIsNotACharacter)
     static_assert(std::is_constructible_v<S, C>, "The character constructor.");
     static_assert(std::is_constructible_v<S, uint32_t>, "The reserving constructor.");
     static_assert(!std::is_constructible_v<S, int>, "An int is neither a character nor a capacity.");
-    static_assert(!std::is_constructible_v<S, size_t>, "A size_t is not a capacity.");
+    static_assert(std::is_same_v<size_t, uint32_t> || !std::is_constructible_v<S, size_t>, "A size_t is not a capacity.");
     static_assert(!std::is_constructible_v<S, double>, "A double is not a character.");
     static_assert(!std::is_constructible_v<S, bool>, "A bool is not a character.");
     static_assert(!std::is_constructible_v<S, OC>, "The other width character is not a character.");

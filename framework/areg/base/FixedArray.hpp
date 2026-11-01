@@ -83,18 +83,28 @@ public:
     /**
      * \brief   Returns reference to element at index for both read and write access.
      *
-     * \param   index       Zero-based index.
+     * \param   index       Zero-based index between 0 and size()-1. Any integer type is accepted.
      **/
+    template<typename Index, IfIndex<Index> = 0>
     [[nodiscard]]
-    inline VALUE& operator [] (uint32_t index);
+    inline VALUE& operator [] (const Index index) noexcept
+    {
+        ASSERT(static_cast<uint64_t>(index) < static_cast<uint64_t>(mElemCount));
+        return mValueList[static_cast<std::size_t>(index)];
+    }
 
     /**
      * \brief   Returns const reference to element at valid index for read-only access.
      *
-     * \param   index       Zero-based index between 0 and size()-1.
+     * \param   index       Zero-based index between 0 and size()-1. Any integer type is accepted.
      **/
+    template<typename Index, IfIndex<Index> = 0>
     [[nodiscard]]
-    inline const VALUE& operator [] (uint32_t index) const;
+    inline const VALUE& operator [] (const Index index) const noexcept
+    {
+        ASSERT(static_cast<uint64_t>(index) < static_cast<uint64_t>(mElemCount));
+        return mValueList[static_cast<std::size_t>(index)];
+    }
 
     /**
      * \brief   Assigns all values from source array, replacing existing contents.
@@ -357,20 +367,6 @@ template< typename VALUE >
 FixedArray<VALUE>::~FixedArray()
 {
     clear();
-}
-
-template< typename VALUE >
-inline VALUE& FixedArray<VALUE>::operator [] (uint32_t index)
-{
-    ASSERT(is_valid_index(index));
-    return mValueList[index];
-}
-
-template< typename VALUE >
-inline const VALUE& FixedArray<VALUE>::operator [] (uint32_t index) const
-{
-    ASSERT(is_valid_index(index));
-    return static_cast<const VALUE&>(mValueList[index]);
 }
 
 template< typename VALUE >

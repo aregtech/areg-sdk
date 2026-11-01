@@ -21,6 +21,8 @@
 #include "areg/base/SharedBuffer.hpp"
 
 #include <algorithm>
+#include <cstddef>
+#include <type_traits>
 
 /**
  * \brief   Test ArrayList constructors.
@@ -684,4 +686,46 @@ TEST(ArrayListTest, test_descending)
     EXPECT_NE(arr1, Array(_arr1, _len));
     EXPECT_EQ(arr1.size(), _len);
     EXPECT_EQ(arr1, res1);
+}
+
+/**
+ * \brief   The index operator takes any integer type and returns a writable element.
+ **/
+TEST(ArrayListTest, test_index_any_integer_type)
+{
+    using Array = areg::ArrayList<int>;
+    enum ePos { PosFirst, PosSecond };
+
+    constexpr int _arr[]{ 10, 20, 30, 40 };
+    constexpr uint32_t _len{ std::size(_arr) };
+
+    Array arr(_arr, _len);
+    const Array & carr{ arr };
+
+    static_assert(std::is_same_v<decltype(arr[0]), int &>, "An int index selects the member operator.");
+    static_assert(std::is_same_v<decltype(arr[std::ptrdiff_t{ 0 }]), int &>, "A ptrdiff_t index selects the member operator.");
+    static_assert(std::is_same_v<decltype(arr[std::size_t{ 0 }]), int &>, "A size_t index selects the member operator.");
+    static_assert(std::is_same_v<decltype(carr[0]), const int &>, "A const array returns a const element.");
+
+    EXPECT_EQ(arr[0], 10);
+    EXPECT_EQ(arr[1u], 20);
+    EXPECT_EQ(arr[std::size_t{ 2 }], 30);
+    EXPECT_EQ(arr[std::ptrdiff_t{ 3 }], 40);
+    EXPECT_EQ(arr[int64_t{ 0 }], 10);
+    EXPECT_EQ(arr[uint64_t{ 3 }], 40);
+    EXPECT_EQ(arr[uint8_t{ 1 }], 20);
+    EXPECT_EQ(arr[int16_t{ 2 }], 30);
+    EXPECT_EQ(arr[PosSecond], 20);
+    EXPECT_EQ(carr[0], 10);
+    EXPECT_EQ(carr[std::ptrdiff_t{ 3 }], 40);
+    EXPECT_EQ(carr[PosFirst], 10);
+
+    arr[0] = 11;
+    arr[std::ptrdiff_t{ 1 }] = 21;
+    arr[std::size_t{ 2 }] = 31;
+    arr[PosFirst] += 1;
+    EXPECT_EQ(carr[0], 12);
+    EXPECT_EQ(carr[1], 21);
+    EXPECT_EQ(carr[2], 31);
+    EXPECT_EQ(carr[3], 40);
 }

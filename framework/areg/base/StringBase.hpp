@@ -175,10 +175,15 @@ public:
     explicit inline operator uint32_t() const noexcept;
 
     /**
-     * \brief   Returns character at the given valid zero-based position. The position should not be neither
-     *          negative, nor more than the string length.
+     * \brief   Returns character at the given valid zero-based position. The position is neither
+     *          negative, nor equal to or more than the string length. Any integer type is accepted.
      **/
-    inline const CharType operator [] (int32_t index) const noexcept;
+    template<typename Index, IfIndex<Index> = 0>
+    inline CharType operator [] (const Index index) const noexcept
+    {
+        ASSERT(static_cast<uint64_t>(index) < static_cast<uint64_t>(mData.length()));
+        return mData.c_str()[static_cast<std::size_t>(index)];
+    }
 
     inline Derived& operator = (const StringBase& src);
     inline Derived& operator = (const std::basic_string<CharType>& src);
@@ -1813,13 +1818,6 @@ template<typename CharType, typename Derived>
 inline StringBase<CharType, Derived>::operator uint32_t() const noexcept
 {
     return areg::crc32_calculate(mData.c_str());
-}
-
-template<typename CharType, typename Derived>
-inline const CharType StringBase<CharType, Derived>::operator [] (int32_t index) const noexcept
-{
-    ASSERT((mData.c_str() != nullptr) && (index < static_cast<int32_t>(mData.length())));
-    return mData.c_str()[index];
 }
 
 

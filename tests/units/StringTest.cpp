@@ -23,8 +23,10 @@
 #include "areg/base/String.hpp"
 #include "areg/base/WideString.hpp"
 
+#include <cstddef>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 using areg::String;
 using areg::WideString;
@@ -244,4 +246,30 @@ TEST(StringTest, RequiredSizeStdWide)
     areg::SharedBuffer stream;
     stream << WideString(L"hello");
     EXPECT_GE(required(WideString(L"hello")), stream.size_used());
+}
+
+/**
+ * \brief   The index operator takes any integer type.
+ **/
+TEST(StringTest, IndexAnyIntegerType)
+{
+    const String str("abcd");
+    const WideString wstr(L"abcd");
+
+    static_assert(std::is_same_v<decltype(str[std::ptrdiff_t{ 0 }]), char>, "A ptrdiff_t index selects the member operator.");
+    static_assert(std::is_same_v<decltype(wstr[std::ptrdiff_t{ 0 }]), wchar_t>, "A ptrdiff_t index selects the member operator.");
+    static_assert(std::is_same_v<decltype(str[0]), char>, "An int index selects the member operator.");
+
+    EXPECT_EQ(str[0], 'a');
+    EXPECT_EQ(str[1u], 'b');
+    EXPECT_EQ(str[std::size_t{ 2 }], 'c');
+    EXPECT_EQ(str[std::ptrdiff_t{ 3 }], 'd');
+    EXPECT_EQ(str[int64_t{ 0 }], 'a');
+    EXPECT_EQ(str[uint8_t{ 1 }], 'b');
+
+    EXPECT_EQ(wstr[0], L'a');
+    EXPECT_EQ(wstr[1u], L'b');
+    EXPECT_EQ(wstr[std::size_t{ 2 }], L'c');
+    EXPECT_EQ(wstr[std::ptrdiff_t{ 3 }], L'd');
+    EXPECT_EQ(wstr[uint64_t{ 0 }], L'a');
 }
