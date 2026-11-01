@@ -156,6 +156,22 @@ def doc_before(lines, index):
     return ' '.join(parts)
 
 
+# "template<typename Ch, IfExact<Ch, CharType> = 0>" alone on its line.
+TEMPLATE_HEAD = re.compile(r'^\s*(template\s*<.*>)\s*$')
+
+# An attribute alone on its line, between a template head and the declaration.
+ATTRIBUTE_LINE = re.compile(r'^\s*\[\[[^\]]*\]\]\s*$')
+
+
+def template_head(lines, index):
+    """The template head written above a declaration and a space, or nothing."""
+    cursor = index - 1
+    while cursor >= 0 and ATTRIBUTE_LINE.match(lines[cursor]):
+        cursor -= 1
+    found = TEMPLATE_HEAD.match(lines[cursor]) if cursor >= 0 else None
+    return ' '.join(found.group(1).split()) + ' ' if found else ''
+
+
 # "namespace areg::ext {" or "namespace ext", whose brace may open on the next line.
 NAMESPACE_HEAD = re.compile(r'^\s*namespace\s+([A-Za-z_][\w:]*)\s*(?:\{|$)')
 
@@ -251,12 +267,13 @@ class Header(object):
                 if buffer.count('(') <= buffer.count(')'):
                     statement = buffer.strip()
                     buffer = ''
-                    # A constructor whose initializer list, or a friend whose body,
+                    # A constructor whose initializer list, or a function whose body,
                     # starts on the next line.
                     following = lines[number + 1].strip() if number + 1 < len(lines) else ''
                     if following.startswith(':') and not following.startswith('::'):
                         statement += ' {'
-                    elif following.startswith('{') and statement.startswith('friend '):
+                    elif (following.startswith('{') and not statement.startswith('#')
+                          and not statement.endswith('\\')):
                         statement += ' {'
                     if '{' in statement and not statement.endswith(';'):
                         pending = BODY
@@ -324,7 +341,7 @@ class Header(object):
             return
         # A call on an object, and an out-of-line definition of a member already
         # declared inside its class: neither is a declaration.
-        if prefix.endswith(('.', '->', '::')):
+        if prefix.endswith(('.', '->', '::', '::~')):
             return
         head = [word for word in prefix.split() if word != 'explicit']
         if head and head[0] in NOT_A_NAME:
@@ -333,7 +350,7 @@ class Header(object):
             return
         owner = next((entry[1] for entry in reversed(owners) if entry[1] and entry[1] != BODY), None)
         doc = doc_before(raw_lines, start)
-        signature = statement + ';'
+        signature = template_head(raw_lines, start) + statement + ';'
         if (name, owner, signature) in self.seen:
             return
         self.seen.add((name, owner, signature))

@@ -60,6 +60,19 @@ class StringBase
 {
     static_assert(std::is_same_v<CharType, char> || std::is_same_v<CharType, wchar_t>, "StringBase supports only char and wchar_t");
 
+    /**
+     * \brief   Enables a single character overload only when Ch is exactly the type Exact.
+     **/
+    template<typename Ch, typename Exact>
+    using IfExact = std::enable_if_t<std::is_same_v<Ch, Exact>, int>;
+
+    /**
+     * \brief   The type Result, only when T is a number, a bool, an enumeration or a character
+     *          of the other width.
+     **/
+    template<typename T, typename Result>
+    using IfNotChar = std::enable_if_t<(std::is_arithmetic_v<T> || std::is_enum_v<T>) && !std::is_same_v<T, CharType>, Result>;
+
 //////////////////////////////////////////////////////////////////////////
 // Public constants and types
 //////////////////////////////////////////////////////////////////////////
@@ -96,7 +109,14 @@ public:
 
     inline StringBase() noexcept;
 
-    inline StringBase( const CharType source );
+    /**
+     * \brief   Initializes the string with a single character. Only the exact character type is accepted.
+     **/
+    template<typename Ch, IfExact<Ch, CharType> = 0>
+    explicit inline StringBase( const Ch source )
+        : mData ( 1u, source )
+    {
+    }
 
     inline StringBase( const CharType * source );
 
@@ -128,9 +148,14 @@ public:
     /**
      * \brief   Reserves space for a specified number of characters without modifying the size.
      *
-     * \param   count       The number of characters to reserve. Size remains zero.
+     * \param   count       The number of characters to reserve. Size remains zero. Only uint32_t is accepted.
      **/
-    explicit inline StringBase(uint32_t count);
+    template<typename Count, IfExact<Count, uint32_t> = 0>
+    explicit inline StringBase(const Count count)
+        : mData ( )
+    {
+        mData.reserve(count);
+    }
 
     ~StringBase() = default;
 
@@ -161,18 +186,32 @@ public:
     inline Derived& operator = (const CharType* src);
     inline Derived& operator = (StringBase&& src) noexcept;
     inline Derived& operator = (std::basic_string<CharType>&& src) noexcept;
-    inline Derived& operator = (const CharType src);
     inline Derived& operator = (const OtherCharType* src);
     inline Derived& operator = (const std::basic_string<OtherCharType>& src);
-    inline Derived& operator = (const OtherCharType src);
     template<typename OtherDerived>
     inline Derived& operator = (const StringBase<OtherCharType, OtherDerived>& src);
+
+    /**
+     * \brief   Assigns a single character. Only the exact character types are accepted:
+     *          a number does not compile, use make_string() for it.
+     **/
+    template<typename Ch, IfExact<Ch, CharType> = 0>
+    inline Derived& operator = (const Ch src)
+    {
+        mData.assign(1u, src);
+        return self();
+    }
+
+    template<typename Ch, IfExact<Ch, OtherCharType> = 0>
+    inline Derived& operator = (const Ch src)
+    {
+        return assign(&src, 1);
+    }
 
     [[nodiscard]] inline bool operator == (const StringBase& other) const noexcept;
     [[nodiscard]] inline bool operator == (const std::basic_string<CharType>& other) const noexcept;
     [[nodiscard]] inline bool operator == (const std::basic_string_view<CharType>& other) const noexcept;
     [[nodiscard]] inline bool operator == (const CharType* other) const noexcept;
-    [[nodiscard]] inline bool operator == (const CharType ch ) const noexcept;
     [[nodiscard]] inline bool operator == (const OtherCharType* other) const noexcept;
     [[nodiscard]] inline bool operator == (const std::basic_string<OtherCharType>& other) const noexcept;
     template<typename OtherDerived>
@@ -182,11 +221,25 @@ public:
     [[nodiscard]] inline bool operator != (const std::basic_string<CharType>& other) const noexcept;
     [[nodiscard]] inline bool operator != (const std::basic_string_view<CharType>& other) const noexcept;
     [[nodiscard]] inline bool operator != (const CharType* other) const noexcept;
-    [[nodiscard]] inline bool operator != (const CharType ch) const noexcept;
     [[nodiscard]] inline bool operator != (const OtherCharType* other) const noexcept;
     [[nodiscard]] inline bool operator != (const std::basic_string<OtherCharType>& other) const noexcept;
     template<typename OtherDerived>
     [[nodiscard]] inline bool operator != (const StringBase<OtherCharType, OtherDerived>& other) const noexcept;
+
+    /**
+     * \brief   Returns true if the string is exactly the single character ch.
+     **/
+    template<typename Ch, IfExact<Ch, CharType> = 0>
+    [[nodiscard]] inline bool operator == (const Ch ch) const noexcept
+    {
+        return ((mData.length() == 1) && (mData[0] == ch));
+    }
+
+    template<typename Ch, IfExact<Ch, CharType> = 0>
+    [[nodiscard]] inline bool operator != (const Ch ch) const noexcept
+    {
+        return ((mData.length() != 1) || (mData[0] != ch));
+    }
 
     [[nodiscard]] inline bool operator > (const StringBase& other) const noexcept;
     [[nodiscard]] inline bool operator > (const std::basic_string<CharType>& other) const noexcept;
@@ -212,12 +265,28 @@ public:
     inline Derived& operator += (const std::basic_string<CharType>& src);
     inline Derived& operator += (const std::basic_string_view<CharType>& src);
     inline Derived& operator += (const CharType* src);
-    inline Derived& operator += (const CharType chSource);
     inline Derived& operator += (const OtherCharType* src);
     inline Derived& operator += (const std::basic_string<OtherCharType>& src);
-    inline Derived& operator += (const OtherCharType chSource);
     template<typename OtherDerived>
     inline Derived& operator += (const StringBase<OtherCharType, OtherDerived>& src);
+
+    /**
+     * \brief   Appends a single character. Only the exact character types are accepted:
+     *          a number does not compile, use make_string() for it.
+     **/
+    template<typename Ch, IfExact<Ch, CharType> = 0>
+    inline Derived& operator += (const Ch chSource)
+    {
+        mData += chSource;
+        return self();
+    }
+
+    template<typename Ch, IfExact<Ch, OtherCharType> = 0>
+    inline Derived& operator += (const Ch chSource)
+    {
+        _append_other(&chSource, 1);
+        return self();
+    }
 
 /************************************************************************/
 // Friend operators. Each concatenation allocates the result once.
@@ -243,7 +312,8 @@ public:
         return _concat(lhs.mData.data(), lhs.mData.length(), rhs, _length(rhs));
     }
 
-    friend inline Derived operator + (const Derived& lhs, const CharType rhs)
+    template<typename Ch, IfExact<Ch, CharType> = 0>
+    friend inline Derived operator + (const Derived& lhs, const Ch rhs)
     {
         return _concat(lhs.mData.data(), lhs.mData.length(), &rhs, 1u);
     }
@@ -263,10 +333,20 @@ public:
         return _concat(lhs, _length(lhs), rhs.mData.data(), rhs.mData.length());
     }
 
-    friend inline Derived operator + (const CharType lhs, const Derived& rhs)
+    template<typename Ch, IfExact<Ch, CharType> = 0>
+    friend inline Derived operator + (const Ch lhs, const Derived& rhs)
     {
         return _concat(&lhs, 1u, rhs.mData.data(), rhs.mData.length());
     }
+
+    /**
+     * \brief   A number does not concatenate with a string, convert it with make_string() first.
+     **/
+    template<typename T>
+    friend IfNotChar<T, Derived> operator + (const Derived& lhs, const T rhs) = delete;
+
+    template<typename T>
+    friend IfNotChar<T, Derived> operator + (const T lhs, const Derived& rhs) = delete;
 
     friend inline Derived operator + (const Derived& lhs, const OtherCharType* rhs)
     {
@@ -282,6 +362,135 @@ public:
         result._append_other(lhs, static_cast<areg::CharCount>(_length(lhs)));
         result.mData.append(rhs.mData);
         return result;
+    }
+
+/************************************************************************/
+// Friend comparisons with the string on the right side.
+/************************************************************************/
+
+    /**
+     * \brief   Compares a text on the left side with the string on the right side.
+     **/
+    [[nodiscard]] friend inline bool operator == (const CharType* lhs, const StringBase& rhs) noexcept
+    {
+        return rhs.operator == (lhs);
+    }
+
+    [[nodiscard]] friend inline bool operator != (const CharType* lhs, const StringBase& rhs) noexcept
+    {
+        return rhs.operator != (lhs);
+    }
+
+    [[nodiscard]] friend inline bool operator < (const CharType* lhs, const StringBase& rhs) noexcept
+    {
+        return rhs.operator > (lhs);
+    }
+
+    [[nodiscard]] friend inline bool operator > (const CharType* lhs, const StringBase& rhs) noexcept
+    {
+        return rhs.operator < (lhs);
+    }
+
+    [[nodiscard]] friend inline bool operator <= (const CharType* lhs, const StringBase& rhs) noexcept
+    {
+        return rhs.operator >= (lhs);
+    }
+
+    [[nodiscard]] friend inline bool operator >= (const CharType* lhs, const StringBase& rhs) noexcept
+    {
+        return rhs.operator <= (lhs);
+    }
+
+    [[nodiscard]] friend inline bool operator == (const std::basic_string<CharType>& lhs, const StringBase& rhs) noexcept
+    {
+        return rhs.operator == (lhs);
+    }
+
+    [[nodiscard]] friend inline bool operator != (const std::basic_string<CharType>& lhs, const StringBase& rhs) noexcept
+    {
+        return rhs.operator != (lhs);
+    }
+
+    [[nodiscard]] friend inline bool operator < (const std::basic_string<CharType>& lhs, const StringBase& rhs) noexcept
+    {
+        return rhs.operator > (lhs);
+    }
+
+    [[nodiscard]] friend inline bool operator > (const std::basic_string<CharType>& lhs, const StringBase& rhs) noexcept
+    {
+        return rhs.operator < (lhs);
+    }
+
+    [[nodiscard]] friend inline bool operator <= (const std::basic_string<CharType>& lhs, const StringBase& rhs) noexcept
+    {
+        return rhs.operator >= (lhs);
+    }
+
+    [[nodiscard]] friend inline bool operator >= (const std::basic_string<CharType>& lhs, const StringBase& rhs) noexcept
+    {
+        return rhs.operator <= (lhs);
+    }
+
+    [[nodiscard]] friend inline bool operator == (std::basic_string_view<CharType> lhs, const StringBase& rhs) noexcept
+    {
+        return rhs.operator == (lhs);
+    }
+
+    [[nodiscard]] friend inline bool operator != (std::basic_string_view<CharType> lhs, const StringBase& rhs) noexcept
+    {
+        return rhs.operator != (lhs);
+    }
+
+    [[nodiscard]] friend inline bool operator < (std::basic_string_view<CharType> lhs, const StringBase& rhs) noexcept
+    {
+        return rhs.operator > (lhs);
+    }
+
+    [[nodiscard]] friend inline bool operator > (std::basic_string_view<CharType> lhs, const StringBase& rhs) noexcept
+    {
+        return rhs.operator < (lhs);
+    }
+
+    [[nodiscard]] friend inline bool operator <= (std::basic_string_view<CharType> lhs, const StringBase& rhs) noexcept
+    {
+        return rhs.operator >= (lhs);
+    }
+
+    [[nodiscard]] friend inline bool operator >= (std::basic_string_view<CharType> lhs, const StringBase& rhs) noexcept
+    {
+        return rhs.operator <= (lhs);
+    }
+
+    [[nodiscard]] friend inline bool operator == (const OtherCharType* lhs, const StringBase& rhs) noexcept
+    {
+        return rhs.operator == (lhs);
+    }
+
+    [[nodiscard]] friend inline bool operator != (const OtherCharType* lhs, const StringBase& rhs) noexcept
+    {
+        return rhs.operator != (lhs);
+    }
+
+    [[nodiscard]] friend inline bool operator == (const std::basic_string<OtherCharType>& lhs, const StringBase& rhs) noexcept
+    {
+        return rhs.operator == (lhs);
+    }
+
+    [[nodiscard]] friend inline bool operator != (const std::basic_string<OtherCharType>& lhs, const StringBase& rhs) noexcept
+    {
+        return rhs.operator != (lhs);
+    }
+
+    template<typename Ch, IfExact<Ch, CharType> = 0>
+    [[nodiscard]] friend inline bool operator == (const Ch lhs, const StringBase& rhs) noexcept
+    {
+        return rhs.operator == (lhs);
+    }
+
+    template<typename Ch, IfExact<Ch, CharType> = 0>
+    [[nodiscard]] friend inline bool operator != (const Ch lhs, const StringBase& rhs) noexcept
+    {
+        return rhs.operator != (lhs);
     }
 
     /**
@@ -930,6 +1139,17 @@ public:
     inline bool starts_with(const CharType* phrase, bool isCaseSensitive = true, areg::CharCount count = areg::COUNT_ALL) const noexcept;
 
     /**
+     * \brief   Returns true if the first character of the string is ch. The null character never matches.
+     **/
+    template<typename Ch, IfExact<Ch, CharType> = 0>
+    [[nodiscard]]
+    inline bool starts_with(const Ch ch, bool isCaseSensitive = true) const noexcept
+    {
+        return (!mData.empty() && (ch != EmptyChar)
+                && (isCaseSensitive ? (mData.front() == ch) : (areg::make_lower<CharType>(mData.front()) == areg::make_lower<CharType>(ch))));
+    }
+
+    /**
      * \brief   Checks returns true if the string ends with the given phrase. Valid only the first
      *          256 characters based on UTF-8 code page.
      **/
@@ -944,6 +1164,17 @@ public:
 
     [[nodiscard]]
     inline bool ends_with(const CharType* phrase, bool isCaseSensitive = true, areg::CharCount count = areg::COUNT_ALL) const noexcept;
+
+    /**
+     * \brief   Returns true if the last character of the string is ch. The null character never matches.
+     **/
+    template<typename Ch, IfExact<Ch, CharType> = 0>
+    [[nodiscard]]
+    inline bool ends_with(const Ch ch, bool isCaseSensitive = true) const noexcept
+    {
+        return (!mData.empty() && (ch != EmptyChar)
+                && (isCaseSensitive ? (mData.back() == ch) : (areg::make_lower<CharType>(mData.back()) == areg::make_lower<CharType>(ch))));
+    }
 
     /**
      * \brief   Searches string if found, replace by another.
@@ -1501,12 +1732,6 @@ inline StringBase<CharType, Derived>::StringBase() noexcept
 }
 
 template<typename CharType, typename Derived>
-inline StringBase<CharType, Derived>::StringBase(const CharType source)
-    : mData  ( &source, 1 )
-{
-}
-
-template<typename CharType, typename Derived>
 inline StringBase<CharType, Derived>::StringBase(const CharType* source)
     : mData  ( source != nullptr ? source : &EmptyChar )
 {
@@ -1579,13 +1804,6 @@ inline StringBase<CharType, Derived>::StringBase(const StringBase<OtherCharType,
 }
 
 template<typename CharType, typename Derived>
-inline StringBase<CharType, Derived>::StringBase(uint32_t count)
-    : mData  ( )
-{
-    mData.reserve(count);
-}
-
-template<typename CharType, typename Derived>
 inline StringBase<CharType, Derived>::operator const CharType* () const noexcept
 {
     return mData.c_str();
@@ -1642,13 +1860,6 @@ inline Derived& StringBase<CharType, Derived>::operator = (const CharType* src)
 }
 
 template<typename CharType, typename Derived>
-inline Derived& StringBase<CharType, Derived>::operator = (const CharType chSource)
-{
-    mData = chSource;
-    return self();
-}
-
-template<typename CharType, typename Derived>
 inline Derived& StringBase<CharType, Derived>::operator = (std::basic_string<CharType>&& src) noexcept
 {
     mData = std::move(src);
@@ -1687,12 +1898,6 @@ inline bool StringBase<CharType, Derived>::operator == (const CharType* other) c
 }
 
 template<typename CharType, typename Derived>
-inline bool StringBase<CharType, Derived>::operator == ( const CharType ch) const noexcept
-{
-    return ((mData.length() == 1) && (mData[0] == ch));
-}
-
-template<typename CharType, typename Derived>
 inline bool StringBase<CharType, Derived>::operator != (const StringBase& other) const noexcept
 {
     return (mData != other.mData);
@@ -1714,12 +1919,6 @@ template<typename CharType, typename Derived>
 inline bool StringBase<CharType, Derived>::operator != (const CharType* other) const noexcept
 {
     return (mData != (other != nullptr ? other : &EmptyChar));
-}
-
-template<typename CharType, typename Derived>
-inline bool StringBase<CharType, Derived>::operator != ( const CharType ch ) const noexcept
-{
-    return ((mData.length( ) != 1) || (mData[0] != ch));
 }
 
 template<typename CharType, typename Derived>
@@ -1848,13 +2047,6 @@ inline Derived& StringBase<CharType, Derived>::operator += (const CharType* src)
 }
 
 template<typename CharType, typename Derived>
-inline Derived& StringBase<CharType, Derived>::operator += (const CharType chSource)
-{
-    mData += chSource;
-    return self();
-}
-
-template<typename CharType, typename Derived>
 inline Derived& StringBase<CharType, Derived>::operator = (const OtherCharType* src)
 {
     return assign(src, areg::COUNT_ALL);
@@ -1864,12 +2056,6 @@ template<typename CharType, typename Derived>
 inline Derived& StringBase<CharType, Derived>::operator = (const std::basic_string<OtherCharType>& src)
 {
     return assign(src.data(), static_cast<areg::CharCount>(src.length()));
-}
-
-template<typename CharType, typename Derived>
-inline Derived& StringBase<CharType, Derived>::operator = (const OtherCharType src)
-{
-    return assign(&src, 1);
 }
 
 template<typename CharType, typename Derived>
@@ -1927,13 +2113,6 @@ template<typename CharType, typename Derived>
 inline Derived& StringBase<CharType, Derived>::operator += (const std::basic_string<OtherCharType>& src)
 {
     _append_other(src.data(), static_cast<areg::CharCount>(src.length()));
-    return self();
-}
-
-template<typename CharType, typename Derived>
-inline Derived& StringBase<CharType, Derived>::operator += (const OtherCharType chSource)
-{
-    _append_other(&chSource, 1);
     return self();
 }
 

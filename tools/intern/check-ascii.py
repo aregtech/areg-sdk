@@ -71,13 +71,19 @@ SKIPPED_DIRS = {
 SKIPPED_DIR_PREFIXES = ('build-', 'build_')
 
 # Files whose content is character data, so non ASCII bytes in them are the subject and
-# not a defect. Glob patterns, matched against the path relative to the repository root.
-# A waiver applies to the ASCII rule only. '--find' ignores this list, because a control
-# character is unwanted in a character test as much as anywhere else.
+# not a defect: the string classes, the character tables and the string tests. Glob
+# patterns, matched against the path relative to the repository root. A waiver applies to
+# the ASCII rule only. '--find' ignores this list, because a control character is unwanted
+# in a character test as much as anywhere else.
 ASCII_WAIVED = (
+    'framework/areg/base/String*.hpp',
+    'framework/areg/base/WideString.hpp',
     'framework/areg/base/TableDefs.hpp',
+    'framework/areg/base/private/String*.cpp',
+    'framework/areg/base/private/WideString.cpp',
     'tests/units/String*Test*.cpp',
-    'tests/units/*Encod*Test.cpp',
+    'tests/units/WideString*Test*.cpp',
+    'tests/units/*Encod*Test*.cpp',
 )
 
 # Named byte sets accepted by '--find'.

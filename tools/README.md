@@ -641,13 +641,18 @@ machine and something else on a build server or on a user's machine in another l
 with no diagnostic, and inside a string literal that difference reaches the output of the program.
 
 Files whose content is character data are waived, because there the non ASCII bytes are the
-subject and not a defect. The list is `ASCII_WAIVED` at the top of the script and it is short on
-purpose:
+subject and not a defect: the string classes, the character tables and the string tests. The list
+is `ASCII_WAIVED` at the top of the script:
 
 ```
+framework/areg/base/String*.hpp
+framework/areg/base/WideString.hpp
 framework/areg/base/TableDefs.hpp
-tests/units/String*Test.cpp
-tests/units/*Encod*Test.cpp
+framework/areg/base/private/String*.cpp
+framework/areg/base/private/WideString.cpp
+tests/units/String*Test*.cpp
+tests/units/WideString*Test*.cpp
+tests/units/*Encod*Test*.cpp
 ```
 
 ### The byte hunt

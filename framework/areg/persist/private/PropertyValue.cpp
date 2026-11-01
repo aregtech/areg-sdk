@@ -210,10 +210,10 @@ String PropertyValue::to_string() const
 void PropertyValue::_parse_value()
 {
     mValue.trim_all();
-    int32_t len = mValue.length();
+    int32_t len = static_cast<int32_t>(mValue.length());
     while ((len != 0) && (mValue[len - 1] == areg::SYNTAX_END_COMMAND))
     {
-        len = mValue.resize(len - 1).length();
+        len = static_cast<int32_t>(mValue.resize(len - 1).trim_right().length());
     }
 }
 

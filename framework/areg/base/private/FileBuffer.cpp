@@ -188,7 +188,24 @@ bool FileBuffer::is_opened() const noexcept
 
 uint32_t FileBuffer::reserve(uint32_t newSize)
 {
-    return (is_opened() ? mSharedBuffer.reserve(newSize, false) : areg::INVALID_SIZE);
+    if (!is_opened() || !can_write())
+        return areg::INVALID_SIZE;
+
+    const uint32_t used{ mSharedBuffer.size_used() };
+    if (newSize <= used)
+    {
+        mSharedBuffer.set_size_used(newSize);
+    }
+    else if (newSize > mSharedBuffer.size_available())
+    {
+        const uint32_t position{ mSharedBuffer.position() };
+        if (mSharedBuffer.reserve(newSize - used, true) == 0u)
+            return areg::INVALID_SIZE;
+
+        mSharedBuffer.set_position(static_cast<int32_t>(position), Cursor::SeekOrigin::Begin);
+    }
+
+    return mSharedBuffer.position();
 }
 
 bool FileBuffer::truncate()
@@ -252,29 +269,19 @@ uint32_t FileBuffer::read(SharedBuffer& buffer) const
     return FileBase::read(buffer);
 }
 
-uint32_t FileBuffer::read(String & ascii) const
-{
-    return FileBase::read(ascii);
-}
-
-uint32_t FileBuffer::read(WideString & wide) const
-{
-    return FileBase::read(wide);
-}
-
 uint32_t FileBuffer::write(const SharedBuffer& buffer)
 {
     return FileBase::write(buffer);
 }
 
-uint32_t FileBuffer::write(const String & ascii)
+const uint8_t* FileBuffer::read_view(uint32_t size) const noexcept
 {
-    return FileBase::write(ascii);
+    return (is_opened() && can_read() ? mSharedBuffer.read_view(size) : nullptr);
 }
 
-uint32_t FileBuffer::write(const WideString & wide)
+uint8_t* FileBuffer::write_view(uint32_t size) noexcept
 {
-    return FileBase::write(wide);
+    return (is_opened() && can_write() ? mSharedBuffer.write_view(size) : nullptr);
 }
 
 } // namespace areg

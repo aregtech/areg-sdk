@@ -1126,6 +1126,40 @@ TEST(DateTimeFormatTest, date_from_days_inverts_days_since_epoch)
     EXPECT_EQ(wrong, 0u);
 }
 
+TEST(DateTimeFormatTest, days_before_year_zero_round_trip)
+{
+    EXPECT_EQ(areg::days_since_epoch(rt(0), 3, 1), -719468);
+    EXPECT_EQ(areg::days_since_epoch(rt(0), 3, 1) - areg::days_since_epoch(rt(0), 2, 29), 1);
+    EXPECT_EQ(areg::days_since_epoch(rt(-1), 3, 1) - areg::days_since_epoch(rt(-1), 2, 28), 1);
+    EXPECT_EQ(areg::days_since_epoch(rt(-4), 3, 1) - areg::days_since_epoch(rt(-4), 2, 29), 1);
+
+    uint32_t wrong{ 0u };
+    for (int64_t days = -719468 - 800; days <= -719468 + 800; ++days)
+    {
+        int32_t year{ 0 };
+        int32_t month{ 0 };
+        int32_t day{ 0 };
+        areg::date_from_days(rt(days), year, month, day);
+        if ((month < 1) || (month > 12) || (day < 1) || (day > 31) || (areg::days_since_epoch(year, month, day) != days))
+        {
+            if (++wrong <= 3u)
+            {
+                ADD_FAILURE() << "day " << days << " gives " << year << "-" << month << "-" << day;
+            }
+        }
+    }
+
+    EXPECT_EQ(wrong, 0u);
+
+    int32_t year{ 0 };
+    int32_t month{ 0 };
+    int32_t day{ 0 };
+    areg::date_from_days(rt(static_cast<int64_t>(-719468 - 1)), year, month, day);
+    EXPECT_EQ(year, 0);
+    EXPECT_EQ(month, 2);
+    EXPECT_EQ(day, 29);
+}
+
 TEST(DateTimeFormatTest, local_time_after_2038_is_the_utc_time_plus_a_zone_offset)
 {
     const TIME64 times[]

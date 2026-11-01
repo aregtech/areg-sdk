@@ -78,7 +78,7 @@ public:
     bool set_char( char in_value );
 
     /**
-     * \brief   Writes a 16-bit wide-character value to the output stream.
+     * \brief   Writes a wide-character value to the output stream as a 4-byte character code.
      *
      * \param   in_value    The 16-bit wide-character value to write.
      * \return  Returns true if the write succeeded.
@@ -213,25 +213,6 @@ private:
     WriteConverter() = delete;
     AREG_NOCOPY_NOMOVE( WriteConverter );
 };
-
-//////////////////////////////////////////////////////////////////////////
-// WriteConverter class inline functions implementation
-//////////////////////////////////////////////////////////////////////////
-
-inline bool WriteConverter::write_line( const char * in_value )
-{
-    return (append_string(in_value) && set_char(static_cast<char>(areg::EndOfLine)));
-}
-
-inline bool WriteConverter::write_line( const wchar_t * in_value )
-{
-    return (append_string(in_value) && set_char(static_cast<wchar_t>(areg::EndOfLine)));
-}
-
-inline bool WriteConverter::set_string_end( bool isWideChar )
-{
-    return ( isWideChar ? set_char(static_cast<wchar_t>('\0')) : set_char(static_cast<char>('\0')) );
-}
 
 } // namespace areg
 #endif  // AREG_BASE_PRIVATE_WRITECONVERTER_HPP

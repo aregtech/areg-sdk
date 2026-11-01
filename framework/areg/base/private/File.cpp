@@ -209,25 +209,18 @@ String File::name_with_extension( const String& filePath )
     if (filePath.is_empty())
         return String::empty_string();
 
-    areg::CharPos pos = filePath.length() - 1;
-    if (filePath[pos] == File::PATH_SEPARATOR)
+    if (filePath[static_cast<int32_t>(filePath.length()) - 1] == File::PATH_SEPARATOR)
         return String::empty_string();
 
-    const char* result = nullptr;
-    pos = areg::find_last<char>(File::PATH_SEPARATOR, filePath, pos - 1, true, nullptr);
-    if (areg::is_position_valid(pos))
-    {
-        result = filePath.buffer(pos + 1);
-    }
-
-    return (result != nullptr ? String(result) : String::empty_string());
+    const areg::CharPos pos = filePath.find_last(File::PATH_SEPARATOR, areg::END_POS, true);
+    return (areg::is_position_valid(pos) ? String(filePath.buffer(pos + 1)) : filePath);
 }
 
 String File::file_name( const String& filePath )
 {
     String result(File::name_with_extension(filePath));
     areg::CharPos pos = result.find_last(File::EXTENSION_SEPARATOR, areg::END_POS, true);
-    if (areg::is_position_valid(pos) && areg::is_alphanumeric<char>(result[pos + 1]) )
+    if (areg::is_position_valid(pos) && result.is_valid_position(pos + 1) && areg::is_alphanumeric<char>(result[pos + 1]))
     {
         result.substring(0, pos);
     }
@@ -240,7 +233,7 @@ String File::file_extension( const String& filePath )
     String result;
     String fileName(File::name_with_extension(filePath));
     areg::CharPos pos = fileName.find_last(File::EXTENSION_SEPARATOR, areg::END_POS, true);
-    if (areg::is_position_valid(pos) && areg::is_alphanumeric<char>(fileName[pos + 1]) )
+    if (areg::is_position_valid(pos) && fileName.is_valid_position(pos + 1) && areg::is_alphanumeric<char>(fileName[pos + 1]))
     {
         fileName.substring(result, pos, areg::COUNT_ALL);
     }
@@ -291,22 +284,22 @@ String File::normalize_path(const String& fileName)
 
     FileBase::normalize_name(result);
     std::error_code err;
-    std::filesystem::path fp = std::filesystem::absolute(result.data(), err);
-    return (!err ? fp.string() : result);
+    const std::filesystem::path fp{ std::filesystem::absolute(result.data(), err) };
+    return (!err ? fp.lexically_normal().string() : result);
 }
 
 bool File::find_parent(const char * filePath, const char ** nextPos, const char * lastPos /*= nullptr*/) noexcept
 {
-    if (areg::is_empty<char>(filePath))
-        return false;
-
-    int32_t length = 0;
     if (nextPos != nullptr)
         *nextPos = nullptr;
 
+    if (areg::is_empty<char>(filePath))
+        return false;
+
+    int32_t length{ 0 };
     if (lastPos != nullptr)
     {
-        length = lastPos == filePath ? 0 : static_cast<int32_t>(lastPos - filePath - 1);
+        length = lastPos > filePath ? static_cast<int32_t>(lastPos - filePath) : 0;
     }
     else
     {
@@ -315,19 +308,17 @@ bool File::find_parent(const char * filePath, const char ** nextPos, const char 
             --length;
     }
 
-    if (length == 0)
+    if (length <= 1)
         return false;
 
-    bool result = false;
-    int32_t pos = areg::find_last(File::PATH_SEPARATOR, filePath, areg::END_POS, nextPos);
-    if ((pos > 0) && (pos < length))
-    {
-        result = true;
-        if (nextPos != nullptr)
-            *nextPos = filePath + pos;
-    }
+    const areg::CharPos pos{ areg::find_last<char>(File::PATH_SEPARATOR, filePath, length - 1, true, nullptr) };
+    if (pos <= 0)
+        return false;
 
-    return result;
+    if (nextPos != nullptr)
+        *nextPos = filePath + pos;
+
+    return true;
 }
 
 String File::parent_dir(const String& filePath)
@@ -336,7 +327,7 @@ String File::parent_dir(const String& filePath)
     const char * end = nullptr;
     if (File::find_parent(filePath, &end))
     {
-        result.assign(filePath, static_cast<areg::CharCount>(end - filePath.as_string()) );
+        result.assign(filePath, areg::START_POS, static_cast<areg::CharCount>(end - filePath.as_string()));
     }
 
     return result;
@@ -387,16 +378,6 @@ uint32_t File::read(SharedBuffer& buffer) const
     return FileBase::read(buffer);
 }
 
-uint32_t File::read(String & ascii) const
-{
-    return FileBase::read(ascii);
-}
-
-uint32_t File::read(WideString & wide) const
-{
-    return FileBase::read(wide);
-}
-
 uint32_t File::read(uint8_t* buffer, uint32_t size) const noexcept
 {
     uint32_t result = 0;
@@ -416,16 +397,6 @@ uint32_t File::write(const SharedBuffer& buffer)
     return FileBase::write(buffer);
 }
 
-uint32_t File::write(const String & ascii)
-{
-    return FileBase::write(ascii);
-}
-
-uint32_t File::write(const WideString & wide)
-{
-    return FileBase::write(wide);
-}
-
 uint32_t File::write(const uint8_t* buffer, uint32_t size) noexcept
 {
     uint32_t result = 0;
@@ -434,6 +405,11 @@ uint32_t File::write(const uint8_t* buffer, uint32_t size) noexcept
         if ((buffer != nullptr) && (size > 0))
         {
             result = _os_write_file(buffer, size);
+            if ((result != 0u) && (result != size))
+            {
+                _os_set_position(-static_cast<int32_t>(result), Cursor::SeekOrigin::Current);
+                result = 0u;
+            }
         }
     }
 
@@ -515,7 +491,10 @@ bool File::ensure_size(uint32_t addSize)
 
     const uint32_t curPos = _os_file_position();
     const uint32_t newSize{ curPos + addSize };
-    return (newSize > length() ? reserve(newSize) == newSize : true);
+    if ((curPos == Cursor::INVALID_CURSOR_POSITION) || (newSize < curPos))
+        return false;
+
+    return (newSize > length() ? reserve(newSize) != Cursor::INVALID_CURSOR_POSITION : true);
 }
 
 //////////////////////////////////////////////////////////////////////////

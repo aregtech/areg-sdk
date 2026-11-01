@@ -50,6 +50,7 @@
     <ClCompile Include="units\DateTimeTest.cpp" />
     <ClCompile Include="units\EventQueueTest.cpp" />
     <ClCompile Include="units\GUnitTest.cpp" />
+    <ClCompile Include="units\FileBufferTest.cpp" />
     <ClCompile Include="units\FileTest.cpp" />
     <ClCompile Include="units\ListenerDispatchTest.cpp" />
     <ClCompile Include="units\LogMessageLengthTest.cpp" />
@@ -66,7 +67,10 @@
     <ClCompile Include="units\SocketAddressTest.cpp" />
     <ClCompile Include="units\SocketInterruptTest.cpp" />
     <ClCompile Include="units\SocketWouldBlockTest.cpp" />
+    <ClCompile Include="units\StreamConverterTest.cpp" />
     <ClCompile Include="units\StreamExtractTest.cpp" />
+    <ClCompile Include="units\StringStreamTest.cpp" />
+    <ClCompile Include="units\StringUnicodeTest.cpp" />
     <ClCompile Include="units\StringDefsTest.cpp" />
     <ClCompile Include="units\OptionParserTest.cpp" />
     <ClCompile Include="units\StringDefsTest2.cpp" />
@@ -99,6 +103,7 @@
     <ClCompile Include="units\IdentifierTest.cpp" />
     <ClCompile Include="units\ModelTest.cpp" />
     <ClCompile Include="units\ProcessTest.cpp" />
+    <ClCompile Include="units\PropertyTest.cpp" />
     <ClCompile Include="units\RuntimeObjectTest.cpp" />
     <ClCompile Include="units\ServiceAddressTest.cpp" />
     <ClCompile Include="units\ServiceDefsTest.cpp" />

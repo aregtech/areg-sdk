@@ -7,8 +7,9 @@ the runtime -- the application, components, threads, timers, time, files and buf
 **Operators come for free.** `String`, `WideString`, `DateTime`, `SharedBuffer` and
 every container here carry `=`, `==`, `!=` and the stream operators `>>` / `<<`
 (`areg::InStream` / `areg::OutStream`), as does every `Structure` the generator writes.
-`String` and `WideString` add `+` and `+=`, against their own type, a `const char *`,
-a single character and the matching `std::string`, in either order.
+`String` and `WideString` add `+`, `+=` with their own type, `const char *`, a
+character, `std::string`; `+` and comparisons in either order. `s + n` with a number
+fails: write `s + String::make_string(n)`.
 
 **A list here is a floor, not a limit.** It says what you may use without looking it
 up. It does not say what is missing, so never rewrite working code to route around an
@@ -36,16 +37,16 @@ declared on that base. That is an implementation detail; you call them all on a
 
 | Call | Signature | Header |
 |---|---|---|
-| `as_string()` | `const char * as_string() const noexcept` | `StringBase.hpp:386` |
-| `is_empty()` | `bool is_empty() const noexcept` | `StringBase.hpp:351` |
-| `clear()` | `void clear() noexcept` | `StringBase.hpp:426` |
-| `length()` | `areg::CharCount length() const noexcept` | `StringBase.hpp:357` |
-| `compare(...)` | `areg::Ordering compare(const String & other, bool caseSensitive = true) const noexcept` | `StringBase.hpp:570` |
-| `find_first(...)` | `areg::CharPos find_first(const char * phrase, areg::CharPos startPos = areg::START_POS, bool caseSensitive = true, bool wholeWord = false) const noexcept` | `StringBase.hpp:494` |
-| `find_last(...)` | `areg::CharPos find_last(const char * phrase, areg::CharPos startPos = areg::END_POS, bool caseSensitive = true) const noexcept` | `StringBase.hpp:543` |
+| `as_string()` | `const char * as_string() const noexcept` | `StringBase.hpp:595` |
+| `is_empty()` | `bool is_empty() const noexcept` | `StringBase.hpp:560` |
+| `clear()` | `void clear() noexcept` | `StringBase.hpp:635` |
+| `length()` | `areg::CharCount length() const noexcept` | `StringBase.hpp:566` |
+| `compare(...)` | `areg::Ordering compare(const String & other, bool caseSensitive = true) const noexcept` | `StringBase.hpp:779` |
+| `find_first(...)` | `areg::CharPos find_first(const char * phrase, areg::CharPos startPos = areg::START_POS, bool caseSensitive = true, bool wholeWord = false) const noexcept` | `StringBase.hpp:703` |
+| `find_last(...)` | `areg::CharPos find_last(const char * phrase, areg::CharPos startPos = areg::END_POS, bool caseSensitive = true) const noexcept` | `StringBase.hpp:752` |
 
-Overloads of `compare`, `find_first` and `find_last` also take a single `char`,
-`std::string` and `std::string_view`, and so do `==` and `!=`. **This is the substring
+`find_first` and `find_last` also take a `char`; `compare`, `==` and `!=` also take
+`std::string` and `std::string_view`, and `==` / `!=` a `char`. **This is the substring
 search**; `find_phrase` and `find_first_phrase` are protected and will not compile.
 
 **A search that found nothing returns `areg::END_POS`, not `areg::INVALID_POS`**, whose
@@ -62,9 +63,9 @@ static form writes into a buffer you own. Both exist and both are correct.
 
 | Call | Signature | Header |
 |---|---|---|
-| `format(...)` | `String & format(const char * format, ...)` | `StringBase.hpp:1202` |
-| `format_list(...)` | `String & format_list(const char * format, va_list argptr)` | `StringBase.hpp:1212` |
-| `String::format_string(...)` | `static int32_t format_string(char * strDst, int32_t count, const char * format, ...)` | `StringBase.hpp:1165` |
+| `format(...)` | `String & format(const char * format, ...)` | `StringBase.hpp:1433` |
+| `format_list(...)` | `String & format_list(const char * format, va_list argptr)` | `StringBase.hpp:1443` |
+| `String::format_string(...)` | `static int32_t format_string(char * strDst, int32_t count, const char * format, ...)` | `StringBase.hpp:1396` |
 
 ```cpp
 areg::String reason;

@@ -1453,3 +1453,17 @@ TEST(StringDefsTest1, make_integer_remain_pointer)
         EXPECT_EQ(areg::compare(wremain, L"end"), areg::Ordering::Equal);
     }
 }
+
+/**
+ * \brief   A case-sensitive compare of a character type other than char and wchar_t compares the characters.
+ **/
+TEST(StringDefsTest, compare_strings_of_char16_t)
+{
+    const char16_t left[]{ u"needle" };
+    const char16_t right[]{ u"absent" };
+    const char16_t same[]{ u"needle" };
+    EXPECT_EQ((areg::compare_strings<char16_t, char16_t>(left, same, 6, true)), areg::Ordering::Equal);
+    EXPECT_NE((areg::compare_strings<char16_t, char16_t>(left, right, 6, true)), areg::Ordering::Equal);
+    EXPECT_NE((areg::compare_strings<char16_t, char16_t>(left, u"NEEDLE", 6, true)), areg::Ordering::Equal);
+    EXPECT_EQ((areg::compare_strings<char16_t, char16_t>(left, u"NEEDLE", 6, false)), areg::Ordering::Equal);
+}

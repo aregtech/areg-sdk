@@ -54,6 +54,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     EventEnvelopeTest.cpp
     EventQueueTest.cpp
     FatalErrorTest.cpp
+    FileBufferTest.cpp
     FileTest.cpp
     FixedArrayTest.cpp
     EventDefsTest.cpp
@@ -73,6 +74,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     MultiLockTest.cpp
     OptionParserTest.cpp
     ProcessTest.cpp
+    PropertyTest.cpp
     ReceiveCacheTest.cpp
     ReceivedHeaderTest.cpp
     RingStackTest.cpp
@@ -89,7 +91,10 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     SocketMultiplexerTest.cpp
     SocketWouldBlockTest.cpp
     SortedLinkedListTest.cpp
+    StreamConverterTest.cpp
     StreamExtractTest.cpp
+    StringStreamTest.cpp
+    StringUnicodeTest.cpp
     StackTest.cpp
     StringDefsTest.cpp
     StringDefsTest2.cpp

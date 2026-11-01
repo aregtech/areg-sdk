@@ -152,22 +152,6 @@ uint32_t DebugOutputLogger::write(const SharedBuffer& buffer)
     return write(buffer.buffer(), buffer.size_used());
 }
 
-uint32_t DebugOutputLogger::write( const String & ascii )
-{
-#if defined(OUTPUT_DEBUG)
-    mOutputMessageA += ascii;
-#endif  // defined(OUTPUT_DEBUG)
-    return ascii.space();
-}
-
-uint32_t DebugOutputLogger::write( const WideString & wide )
-{
-#if defined(OUTPUT_DEBUG)
-    mOutputMessageA += wide;
-#endif  // !defined(OUTPUT_DEBUG)
-    return wide.space();
-}
-
 void DebugOutputLogger::flush() noexcept
 {
 #if defined(OUTPUT_DEBUG)
@@ -185,6 +169,11 @@ bool DebugOutputLogger::ensure_size(uint32_t /*addSize*/)
 uint32_t DebugOutputLogger::size_writable() const noexcept
 {
     return static_cast<uint32_t>(0xFFFF);
+}
+
+uint8_t* DebugOutputLogger::write_view(uint32_t /*size*/) noexcept
+{
+    return nullptr;
 }
 
 } // namespace areg

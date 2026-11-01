@@ -491,3 +491,39 @@ TEST(DateTimeTest, test_date_fnction)
     }
 
 }
+TEST(DateTimeTest, timestamp_is_taken_between_two_readings_of_the_system_time)
+{
+    const TIME64 before{ areg::system_time_now() };
+    const TIME64 stamp{ areg::DateTime::timestamp() };
+    const TIME64 after{ areg::system_time_now() };
+
+    EXPECT_LE(before, stamp);
+    EXPECT_LE(stamp, after);
+}
+
+TEST(DateTimeTest, now_in_utc_fills_the_calendar_between_two_readings)
+{
+    areg::CalendarTime utc;
+    const TIME64 before{ areg::system_time_now() };
+    areg::DateTime::now(utc, false);
+    const TIME64 after{ areg::system_time_now() };
+
+    _checkTimeStruct(utc, "UTC ");
+    EXPECT_LE(before, areg::to_time(utc));
+    EXPECT_LE(areg::to_time(utc), after);
+}
+
+TEST(DateTimeTest, now_in_local_time_differs_from_utc_by_a_zone_offset)
+{
+    constexpr TIME64 MAX_ZONE_OFFSET{ 15ULL * 3600ULL * 1'000'000ULL };
+
+    areg::CalendarTime local;
+    const TIME64 before{ areg::system_time_now() };
+    areg::DateTime::now(local, true);
+    const TIME64 after{ areg::system_time_now() };
+
+    _checkTimeStruct(local, "Local ");
+    const TIME64 localTime{ areg::to_time(local) };
+    EXPECT_LE(before, localTime + MAX_ZONE_OFFSET);
+    EXPECT_LE(localTime, after + MAX_ZONE_OFFSET);
+}

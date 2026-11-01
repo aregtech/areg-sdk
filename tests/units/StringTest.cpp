@@ -19,6 +19,7 @@
  * Include files.
  ************************************************************************/
 #include "units/GUnitTest.hpp"
+#include "areg/base/SharedBuffer.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/WideString.hpp"
 
@@ -194,43 +195,53 @@ TEST(StringTest, FormatLongText)
 }
 
 /**
- * \brief   required_size of the standard narrow strings.
+ * \brief   required_size of the standard narrow strings: a uint32 count and the characters,
+ *          the bytes the stream writes.
  **/
 TEST(StringTest, RequiredSizeStdNarrow)
 {
     const areg::required_size<std::string_view> requiredView;
-    EXPECT_EQ(requiredView(std::string_view("hello")), 14u);
-    EXPECT_EQ(requiredView(std::string_view("world !")), 16u);
-    EXPECT_EQ(requiredView(std::string_view("")), 9u);
-    EXPECT_EQ(requiredView(std::string_view()), 9u);
+    EXPECT_EQ(requiredView(std::string_view("hello")), 9u);
+    EXPECT_EQ(requiredView(std::string_view("world !")), 11u);
+    EXPECT_EQ(requiredView(std::string_view("")), 4u);
+    EXPECT_EQ(requiredView(std::string_view()), 4u);
 
     const areg::required_size<std::string> requiredStd;
-    EXPECT_EQ(requiredStd(std::string("hello")), 14u);
-    EXPECT_EQ(requiredStd(std::string("world !")), 16u);
-    EXPECT_EQ(requiredStd(std::string()), 9u);
+    EXPECT_EQ(requiredStd(std::string("hello")), 9u);
+    EXPECT_EQ(requiredStd(std::string("world !")), 11u);
+    EXPECT_EQ(requiredStd(std::string()), 4u);
 
     const areg::required_size<String> required;
-    EXPECT_EQ(required(String("hello")), 14u);
-    EXPECT_EQ(required(String()), 9u);
+    EXPECT_EQ(required(String("hello")), 9u);
+    EXPECT_EQ(required(String()), 4u);
+
+    areg::SharedBuffer stream;
+    stream << String("hello");
+    EXPECT_EQ(required(String("hello")), stream.size_used());
 }
 
 /**
- * \brief   required_size of the standard wide strings.
+ * \brief   required_size of the standard wide strings: a uint32 count and room for each character,
+ *          not less than the bytes the stream writes.
  **/
 TEST(StringTest, RequiredSizeStdWide)
 {
-    constexpr uint32_t header{ 2 * sizeof(uint32_t) };
+    constexpr uint32_t header{ sizeof(uint32_t) };
     constexpr uint32_t ch{ sizeof(wchar_t) };
 
     const areg::required_size<std::wstring_view> requiredView;
-    EXPECT_EQ(requiredView(std::wstring_view(L"hello")), header + 6 * ch);
-    EXPECT_EQ(requiredView(std::wstring_view()), header + ch);
+    EXPECT_EQ(requiredView(std::wstring_view(L"hello")), header + 5 * ch);
+    EXPECT_EQ(requiredView(std::wstring_view()), header);
 
     const areg::required_size<std::wstring> requiredStd;
-    EXPECT_EQ(requiredStd(std::wstring(L"world !")), header + 8 * ch);
-    EXPECT_EQ(requiredStd(std::wstring()), header + ch);
+    EXPECT_EQ(requiredStd(std::wstring(L"world !")), header + 7 * ch);
+    EXPECT_EQ(requiredStd(std::wstring()), header);
 
     const areg::required_size<WideString> required;
-    EXPECT_EQ(required(WideString(L"hello")), header + 6 * ch);
-    EXPECT_EQ(required(WideString()), header + ch);
+    EXPECT_EQ(required(WideString(L"hello")), header + 5 * ch);
+    EXPECT_EQ(required(WideString()), header);
+
+    areg::SharedBuffer stream;
+    stream << WideString(L"hello");
+    EXPECT_GE(required(WideString(L"hello")), stream.size_used());
 }

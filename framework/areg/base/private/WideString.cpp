@@ -30,14 +30,24 @@ WideString::WideString( const InStream & stream )
     from_stream(stream);
 }
 
-void WideString::from_stream(const InStream& stream)
+uint32_t WideString::from_stream(const InStream& stream)
 {
-    stream.read(*this);
+    return stream.read_text(mData);
 }
 
-void WideString::to_stream(OutStream& stream) const
+uint32_t WideString::to_stream(OutStream& stream) const
 {
-    stream.write(*this);
+    return stream.write_text(mData.data(), static_cast<uint32_t>(mData.length()));
+}
+
+uint32_t InStream::read(WideString& wide) const
+{
+    return wide.from_stream(*this);
+}
+
+uint32_t OutStream::write(const WideString& wide)
+{
+    return wide.to_stream(*this);
 }
 
 } // namespace areg

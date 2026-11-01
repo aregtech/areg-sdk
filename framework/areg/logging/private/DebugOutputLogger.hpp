@@ -120,23 +120,6 @@ protected:
     uint32_t write( const SharedBuffer& buffer ) final;
 
     /**
-     * \brief   Writes ASCII string data to output stream.
-     *
-     * \param   ascii       The string containing data to stream to output stream.
-     * \return  Returns the size in bytes of written string data.
-     **/
-    uint32_t write( const String & ascii ) final;
-
-    /**
-     * \brief   Writes wide-character string data to output stream.
-     *
-     * \param   wide    The wide string containing data to stream to output stream.
-     * \return  Returns the size in bytes of written string data.
-     * \note    Move overload. Takes ownership of the string.
-     **/
-    uint32_t write( const WideString & wide ) final;
-
-    /**
      * \brief   Flushes cached data to output stream. Implement if device has caching mechanism.
      **/
     void flush() noexcept final;
@@ -158,6 +141,12 @@ protected:
      *          to stream, the available writable size is 'n - x'.
      **/
     uint32_t size_writable() const noexcept final;
+
+    /**
+     * \brief   Returns nullptr: the logger collects text through write().
+     **/
+    [[nodiscard]]
+    uint8_t* write_view(uint32_t size) noexcept final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

@@ -93,6 +93,8 @@ void NetTcpLogger::close_logger()
     mRingStack.release();
     mRingDropped = 0u;
     on_service_exit();
+    // The stop is complete; a later open_logger() starts a new connection.
+    set_connection_state(ConnectionPhase::ConnectionStopped);
     unregister_consumer_commands();
 }
 
