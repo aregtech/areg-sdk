@@ -174,11 +174,9 @@ TEST(SocketInterruptTest, BlockedSendReturns)
  * \brief   A receive blocked in the middle of a message ends once the live handle of its connection
  *          changes, without a shutdown. POSIX only: Windows cancels a blocked receive instead.
  **/
+#if !defined(_WIN32)
 TEST(SocketInterruptTest, BlockedReceiveEndsWhenLiveHandleChanges)
 {
-#if defined(_WIN32)
-    GTEST_SKIP() << "Windows cancels a blocked receive, see socket_interrupt()";
-#else   // defined(_WIN32)
     ASSERT_TRUE(areg::socket_initialize());
     Pair pair;
     ASSERT_TRUE(pair.open());
@@ -219,8 +217,8 @@ TEST(SocketInterruptTest, BlockedReceiveEndsWhenLiveHandleChanges)
     EXPECT_TRUE(waitedAcrossRechecks);
     EXPECT_LT(elapsed, PROMPT_MS);
     EXPECT_LE(received.load(), 0);
-#endif  // defined(_WIN32)
 }
+#endif  // !defined(_WIN32)
 
 /**
  * \brief   A receive whose timeout expires while its connection is live keeps what it read and

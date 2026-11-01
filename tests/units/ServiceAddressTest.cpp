@@ -1007,7 +1007,7 @@ TEST(ComponentAddressTest, long_role_is_truncated)
 {
     const std::string longName(areg::ITEM_NAMES_MAX_LENGTH + 30u, 'r');
     const areg::ComponentAddress addr(areg::ThreadAddress(areg::String("Thr")), areg::String(longName.c_str()));
-    EXPECT_LE(addr.role_name().length(), areg::ITEM_NAMES_MAX_LENGTH);
+    EXPECT_LE(addr.role_name().length(), static_cast<areg::CharCount>(areg::ITEM_NAMES_MAX_LENGTH));
     EXPECT_TRUE(addr.is_valid());
 }
 
