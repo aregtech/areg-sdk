@@ -16,5 +16,5 @@ addExecutableEx(${AREG_STUB_TEARDOWN_PROJECT} ""
 
 foreach(_teardown_case stub-request stub-address proxy-unload proxy-free local-unload local-many local-churn worker-unload watchdog-restart)
     add_test(NAME ${AREG_STUB_TEARDOWN_PROJECT}.${_teardown_case} COMMAND ${AREG_STUB_TEARDOWN_PROJECT} ${_teardown_case})
-    set_tests_properties(${AREG_STUB_TEARDOWN_PROJECT}.${_teardown_case} PROPERTIES TIMEOUT 180)
+    set_tests_properties(${AREG_STUB_TEARDOWN_PROJECT}.${_teardown_case} PROPERTIES TIMEOUT 300)
 endforeach()

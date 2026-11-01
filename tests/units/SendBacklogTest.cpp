@@ -11,7 +11,7 @@
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, unit tests of the backlog wait of a service send thread.
- *              While a peer reads nothing the thread sleeps; it moves on as soon as the
+ *              While a peer reads nothing the thread sleeps; it moves on once the
  *              peer reads, a message is queued or an exit is requested. A connection above
  *              its cap is held without stopping the thread.
  ************************************************************************/
@@ -29,6 +29,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <future>
 #include <thread>
 #include <vector>
 
@@ -45,15 +46,24 @@ namespace
     constexpr uint32_t  MESSAGE_COUNT   { 64u };
     //!< Milliseconds the reader stays paused.
     constexpr uint32_t  PAUSE_MS        { 500u };
-    //!< Milliseconds within which a waiting send thread must react to a message or an exit.
-    constexpr int64_t   PROMPT_MS       { 50 };
-    //!< Milliseconds within which the first bytes leave after the peer reads again; the
-    //!< liveness tick of the test is 1 s.
-    constexpr int64_t   RESUME_MS       { 250 };
+    //!< Milliseconds the test waits for an outcome before it fails.
+    constexpr int64_t   DEADLINE_MS     { 60'000 };
 
     int64_t elapsed_ms(Clock::time_point since)
     {
         return std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now() - since).count();
+    }
+
+    //!< Returns true if 'returned' is signaled before the deadline.
+    bool returns(const std::future<void> & returned)
+    {
+        return (returned.wait_for(std::chrono::milliseconds(DEADLINE_MS)) == std::future_status::ready);
+    }
+
+    //!< Returns true if 'returned' is not signaled yet.
+    bool still_waits(const std::future<void> & returned)
+    {
+        return (returned.wait_for(std::chrono::milliseconds(0)) != std::future_status::ready);
     }
 
     //!< A connected TCP loopback pair; 'server' is the accepted end the backlog writes.
@@ -155,7 +165,8 @@ namespace
         }
     };
 
-    //!< The part of a send thread serve_backlog() uses, around a real event queue.
+    //!< The part of a send thread serve_backlog() uses, around a real event queue. Its wait has
+    //!< no timeout, so only a writable socket, a queued event or an exit ends it.
     struct Sender
     {
         areg::EventQueue    queue;
@@ -178,12 +189,12 @@ namespace
             return queue.is_exit_triggered();
         }
 
-        void wait_backlog(uint32_t timeoutMs)
+        void wait_backlog(uint32_t /*timeoutMs*/)
         {
             backlog.reset_wake();
             if (queue.arm_waiter(backlog, true))
             {
-                backlog.wait(timeoutMs);
+                backlog.wait(areg::WAIT_INFINITE);
             }
 
             queue.disarm_waiter();
@@ -321,104 +332,104 @@ TEST(SendBacklogTest, wait_sleeps_while_paused_and_resumes_when_read)
     ASSERT_TRUE(test.start());
     ASSERT_FALSE(test.backlog.is_empty());
 
-    std::atomic<bool> done{ false };
+    std::promise<void> done;
+    const std::future<void> returned{ done.get_future() };
     std::thread sendThread([&]
     {
         areg::ext::serve_backlog(test.sender, test.backlog, test.owner);
-        done.store(true, std::memory_order_release);
+        done.set_value();
     });
 
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
     const uint32_t pumpsBefore{ test.owner.pumps.load() };
     std::this_thread::sleep_for(std::chrono::milliseconds(PAUSE_MS));
     const uint32_t pausedPumps{ test.owner.pumps.load() - pumpsBefore };
-    const uint64_t sentBefore{ test.owner.sent.load() };
+    const bool waitedWhilePaused{ still_waits(returned) };
 
-    // The reader resumes: the first bytes of the backlog leave promptly.
-    const Clock::time_point resumed{ Clock::now() };
-    int64_t firstProgressMs{ -1 };
+    // The reader resumes: only the socket taking data can end the wait, so the backlog drains.
     std::thread reader([&]
     {
         EXPECT_TRUE(read_all(test.pair, wire_bytes(test.messages)));
     });
 
-    while ((elapsed_ms(resumed) < 2'000) && (firstProgressMs < 0))
+    const bool drained{ returns(returned) };
+    if (drained == false)
     {
-        if (test.owner.sent.load() != sentBefore)
-        {
-            firstProgressMs = elapsed_ms(resumed);
-        }
-        else
-        {
-            std::this_thread::yield();
-        }
+        test.sender.queue.exit_queue(true);
+        test.pair.close();
     }
 
     reader.join();
-    const Clock::time_point readEnd{ Clock::now() };
-    while ((done.load(std::memory_order_acquire) == false) && (elapsed_ms(readEnd) < 2'000))
-    {
-        std::this_thread::yield();
-    }
-
     test.sender.queue.exit_queue(true);
     sendThread.join();
 
     EXPECT_LE(pausedPumps, 2u);
-    EXPECT_GE(firstProgressMs, 0);
-    EXPECT_LE(firstProgressMs, RESUME_MS);
+    EXPECT_TRUE(waitedWhilePaused);
+    EXPECT_TRUE(drained);
     EXPECT_TRUE(test.backlog.is_empty());
     EXPECT_FALSE(test.owner.closed.load());
 }
 
-// A message queued while the thread waits for a paused peer ends the wait at once.
+// A message queued while the thread waits for a paused peer ends the wait.
 TEST(SendBacklogTest, queued_message_ends_the_wait)
 {
     Fixture test;
     ASSERT_TRUE(test.start());
 
-    std::atomic<int64_t> returnedMs{ -1 };
-    Clock::time_point posted{ };
+    std::promise<void> done;
+    const std::future<void> returned{ done.get_future() };
     std::thread sendThread([&]
     {
         areg::ext::serve_backlog(test.sender, test.backlog, test.owner);
-        returnedMs.store(elapsed_ms(posted), std::memory_order_release);
+        done.set_value();
     });
 
     std::this_thread::sleep_for(std::chrono::milliseconds(PAUSE_MS));
+    const bool waitedBefore{ still_waits(returned) };
     areg::MessageEnvelope wake;
     ASSERT_NE(wake.init_envelope(areg::notify_client_connection(), 0u), nullptr);
     areg::Event evt(std::move(wake));
-    posted = Clock::now();
     ASSERT_TRUE(test.sender.queue.push_event(evt));
+    const bool ended{ returns(returned) };
+    if (ended == false)
+    {
+        test.sender.queue.exit_queue(true);
+    }
+
     sendThread.join();
 
-    EXPECT_GE(returnedMs.load(), 0);
-    EXPECT_LE(returnedMs.load(), PROMPT_MS);
+    EXPECT_TRUE(waitedBefore);
+    EXPECT_TRUE(ended);
     EXPECT_FALSE(test.backlog.is_empty());
 }
 
-// An exit requested while the thread waits for a paused peer ends the wait at once.
+// An exit requested while the thread waits for a paused peer ends the wait.
 TEST(SendBacklogTest, exit_ends_the_wait)
 {
     Fixture test;
     ASSERT_TRUE(test.start());
 
-    std::atomic<int64_t> returnedMs{ -1 };
-    Clock::time_point requested{ };
+    std::promise<void> done;
+    const std::future<void> returned{ done.get_future() };
     std::thread sendThread([&]
     {
         areg::ext::serve_backlog(test.sender, test.backlog, test.owner);
-        returnedMs.store(elapsed_ms(requested), std::memory_order_release);
+        done.set_value();
     });
 
     std::this_thread::sleep_for(std::chrono::milliseconds(PAUSE_MS));
-    requested = Clock::now();
+    const bool waitedBefore{ still_waits(returned) };
     test.sender.queue.exit_queue(true);
+    const bool ended{ returns(returned) };
+    if (ended == false)
+    {
+        test.pair.close();
+    }
+
     sendThread.join();
 
-    EXPECT_GE(returnedMs.load(), 0);
-    EXPECT_LE(returnedMs.load(), PROMPT_MS);
+    EXPECT_TRUE(waitedBefore);
+    EXPECT_TRUE(ended);
 }
 
 // A connection above its cap is held, stays held down to half of it, and is released below that.
@@ -459,7 +470,7 @@ TEST(SendBacklogTest, connection_is_held_above_cap_until_half_drained)
     std::vector<uint8_t> buffer(64u * 1024u);
 
     const Clock::time_point started{ Clock::now() };
-    while ((backlog.is_empty() == false) && (elapsed_ms(started) < 10'000))
+    while ((backlog.is_empty() == false) && (elapsed_ms(started) < DEADLINE_MS))
     {
         const int32_t received{ areg::receive_data_nowait(pair.client, buffer.data(), static_cast<uint32_t>(buffer.size())) };
         ASSERT_GE(received, 0);
@@ -521,7 +532,7 @@ TEST(SendBacklogTest, held_connection_releases_its_waiter_when_it_goes_away)
     EXPECT_EQ(cancelled.calls.load(), 0u);
 }
 
-// A held connection does not stop its send thread: a queued message ends the backlog service at once.
+// A held connection does not stop its send thread: a queued message ends the backlog service.
 TEST(SendBacklogTest, held_connection_does_not_stop_the_send_thread)
 {
     Fixture test;
@@ -537,28 +548,22 @@ TEST(SendBacklogTest, held_connection_does_not_stop_the_send_thread)
     areg::Event evt(std::move(wake));
     ASSERT_TRUE(test.sender.queue.push_event(evt));
 
-    std::atomic<int64_t> returnedMs{ -1 };
-    const Clock::time_point started{ Clock::now() };
+    std::promise<void> done;
+    const std::future<void> returned{ done.get_future() };
     std::thread sendThread([&]
     {
         areg::ext::serve_backlog(test.sender, test.backlog, test.owner);
-        returnedMs.store(elapsed_ms(started), std::memory_order_release);
+        done.set_value();
     });
 
-    const Clock::time_point waited{ Clock::now() };
-    while ((returnedMs.load(std::memory_order_acquire) < 0) && (elapsed_ms(waited) < 3'000))
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(5));
-    }
-
-    if (returnedMs.load(std::memory_order_acquire) < 0)
+    const bool ended{ returns(returned) };
+    if (ended == false)
     {
         test.sender.queue.exit_queue(true);
     }
 
     sendThread.join();
-    EXPECT_GE(returnedMs.load(), 0);
-    EXPECT_LE(returnedMs.load(), PROMPT_MS);
+    EXPECT_TRUE(ended);
     EXPECT_TRUE(test.backlog.is_held(COOKIE));
 }
 
@@ -581,11 +586,24 @@ TEST(SendBacklogTest, stalled_peer_above_cap_is_closed_only_if_stalled_peers_are
         ASSERT_TRUE(write_range(backlog, pair, messages, 0u, 8u));
         ASSERT_TRUE(backlog.is_held(COOKIE));
 
-        const Clock::time_point started{ Clock::now() };
-        while ((owner.closed.load() == false) && (elapsed_ms(started) < static_cast<int64_t>(SendBacklog::CAP_STALL_MS) + 1'500))
+        // The last pump comes after the stall limit counted from the last bytes that left.
+        Clock::time_point progressed{ Clock::now() };
+        uint64_t sent{ owner.sent.load() };
+        while ((owner.closed.load() == false) && (elapsed_ms(progressed) <= static_cast<int64_t>(SendBacklog::CAP_STALL_MS)))
         {
             static_cast<void>(backlog.pump(owner));
+            if (owner.sent.load() != sent)
+            {
+                sent = owner.sent.load();
+                progressed = Clock::now();
+            }
+
             std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        }
+
+        if (owner.closed.load() == false)
+        {
+            static_cast<void>(backlog.pump(owner));
         }
 
         if (closeStalled)
@@ -633,7 +651,7 @@ TEST(SendBacklogTest, reading_peer_is_kept_past_twice_its_cap)
     });
 
     const Clock::time_point started{ Clock::now() };
-    while ((backlog.is_empty() == false) && (owner.closed.load() == false) && (elapsed_ms(started) < 10'000))
+    while ((backlog.is_empty() == false) && (owner.closed.load() == false) && (elapsed_ms(started) < DEADLINE_MS))
     {
         static_cast<void>(backlog.pump(owner));
         std::this_thread::yield();

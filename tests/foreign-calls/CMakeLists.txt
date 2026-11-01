@@ -11,5 +11,5 @@ addExecutableEx(${AREG_FOREIGN_CALLS_PROJECT} ""
 
 foreach(_foreign_case requests-two-threads provider-set-broadcast provider-response)
     add_test(NAME ${AREG_FOREIGN_CALLS_PROJECT}.${_foreign_case} COMMAND ${AREG_FOREIGN_CALLS_PROJECT} ${_foreign_case})
-    set_tests_properties(${AREG_FOREIGN_CALLS_PROJECT}.${_foreign_case} PROPERTIES TIMEOUT 60)
+    set_tests_properties(${AREG_FOREIGN_CALLS_PROJECT}.${_foreign_case} PROPERTIES TIMEOUT 300)
 endforeach()

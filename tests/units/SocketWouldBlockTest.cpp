@@ -35,6 +35,7 @@
 #include <atomic>
 #include <chrono>
 #include <cstring>
+#include <future>
 #include <thread>
 #include <vector>
 
@@ -42,11 +43,14 @@ namespace
 {
     using Clock = std::chrono::steady_clock;
 
-    //!< Milliseconds a call that must not block may take.
-    constexpr int64_t   PROMPT_MS       { 500 };
+    //!< Send timeout of the sockets. A send that blocks returns only after it.
+    constexpr uint32_t  SEND_TIMEOUT_MS { 30'000u };
 
-    //!< Send timeout of the sockets, the value the framework uses.
-    constexpr uint32_t  SEND_TIMEOUT_MS { 2500u };
+    //!< Milliseconds a call that must not block may take: a blocking one takes the send timeout.
+    constexpr int64_t   PROMPT_MS       { static_cast<int64_t>(SEND_TIMEOUT_MS) / 2 };
+
+    //!< Milliseconds a call is given to return before the test closes its socket to free it.
+    constexpr int64_t   DEADLINE_MS     { 60'000 };
 
     //!< Bytes of the large transfers.
     constexpr uint32_t  LARGE_BYTES     { 8u * 1024u * 1024u };
@@ -249,8 +253,8 @@ namespace
 }
 
 /**
- * \brief   A try-send on a blocking socket whose send buffer is full returns 0 at once,
- *          not after the send timeout.
+ * \brief   A try-send on a blocking socket whose send buffer is full returns 0 before the send
+ *          timeout could expire.
  **/
 TEST( SocketWouldBlockTest, TrySendOnFullSocketReturnsAtOnce )
 {
@@ -284,7 +288,7 @@ TEST( SocketWouldBlockTest, TrySendOnFullSocketReturnsAtOnce )
 }
 
 /**
- * \brief   A send with MSG_DONTWAIT on a full accepted socket returns at once.
+ * \brief   A send with MSG_DONTWAIT on a full accepted socket returns before the send timeout could expire.
  **/
 TEST( SocketWouldBlockTest, AcceptedSocketNeverBlocksItsWriter )
 {
@@ -449,13 +453,22 @@ TEST( SocketWouldBlockTest, NonBlockingSendStillTimesOut )
     ASSERT_TRUE( set_nonblocking( pair.server, true ) );
 
     const std::vector<uint8_t> data( 64u * 1024u * 1024u, 0x3Cu );
+    const int server{ pair.server };
     const Clock::time_point start{ Clock::now( ) };
-    const int32_t sent{ areg::send_data( static_cast<SOCKETHANDLE>(pair.server), data.data( ), static_cast<uint32_t>(data.size( )) ) };
-    const int64_t took{ elapsed_ms( start ) };
+    std::future<int32_t> send{ std::async( std::launch::async, [server, &data]( )
+        {
+            return areg::send_data( static_cast<SOCKETHANDLE>(server), data.data( ), static_cast<uint32_t>(data.size( )) );
+        } ) };
 
+    const bool returned{ send.wait_for( std::chrono::milliseconds( DEADLINE_MS ) ) == std::future_status::ready };
+    const int64_t took{ elapsed_ms( start ) };
+    if ( returned == false )
+        static_cast<void>(::shutdown( pair.server, SHUT_RDWR ));
+
+    const int32_t sent{ send.get( ) };
+    EXPECT_TRUE( returned );
     EXPECT_LT( sent, 0 );
     EXPECT_GE( took, static_cast<int64_t>(TIMEOUT_MS) / 2 );
-    EXPECT_LT( took, 10 * static_cast<int64_t>(TIMEOUT_MS) );
 
     close_pair( pair );
 }

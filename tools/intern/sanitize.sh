@@ -171,8 +171,9 @@ _detect_leaks=1
 # them a glibc assertion (arena.c, malloc.c) reaches the log as one line of text
 # and the thread that hit it is unknown.
 DEADLY_SIGNALS="handle_abort=1:handle_sigill=1:handle_sigfpe=1:handle_sigbus=1"
-export ASAN_OPTIONS="detect_leaks=${_detect_leaks}:halt_on_error=0:abort_on_error=0:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1:print_stats=1:log_threads=1:${DEADLY_SIGNALS}"
-export UBSAN_OPTIONS="print_stacktrace=1:halt_on_error=0"
+# A leak or an undefined behaviour report ends the process with a non-zero exit code.
+export ASAN_OPTIONS="detect_leaks=${_detect_leaks}:halt_on_error=1:abort_on_error=0:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1:print_stats=1:log_threads=1:${DEADLY_SIGNALS}"
+export UBSAN_OPTIONS="print_stacktrace=1:halt_on_error=1"
 export TSAN_OPTIONS="second_deadlock_stack=1:history_size=7:halt_on_error=0:${DEADLY_SIGNALS}"
 [[ -f "${SUPP_DIR}/lsan.supp" ]] && export LSAN_OPTIONS="suppressions=${SUPP_DIR}/lsan.supp:print_suppressions=0"
 [[ -f "${SUPP_DIR}/tsan.supp" ]] && export TSAN_OPTIONS="${TSAN_OPTIONS}:suppressions=${SUPP_DIR}/tsan.supp"

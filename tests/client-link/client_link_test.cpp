@@ -34,7 +34,12 @@ int main()
     values.push(1);
     static std::atomic<bool> done{ false };
     std::thread([]() { values.push(2); done = true; }).detach();
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    const auto until{ std::chrono::steady_clock::now() + std::chrono::seconds(30) };
+    while ((done.load() == false) && (std::chrono::steady_clock::now() < until))
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+
     std::printf("client link test: %s\n", done.load() ? "passed" : "FAILED");
     return (done.load() ? 0 : 1);
 }

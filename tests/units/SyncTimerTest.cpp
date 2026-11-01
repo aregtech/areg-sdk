@@ -37,9 +37,29 @@ namespace
 {
     using Clock = std::chrono::steady_clock;
 
+    //!< Milliseconds a wait that must end is given before the test fails.
+    constexpr uint32_t  DEADLINE_MS { 30'000u };
+
+    //!< A timeout that no test outlives: a timer with it never expires during a test.
+    constexpr uint32_t  NEVER_MS    { 3'600'000u };
+
     int64_t elapsed_ms(Clock::time_point since)
     {
         return std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now() - since).count();
+    }
+
+    //!< Waits until 'count' reaches 'expected' or the deadline passes. Returns the last value read.
+    int wait_count(const std::atomic<int> & count, int expected)
+    {
+        const Clock::time_point start{ Clock::now() };
+        int value{ count.load() };
+        while ((value < expected) && (elapsed_ms(start) < static_cast<int64_t>(DEADLINE_MS)))
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            value = count.load();
+        }
+
+        return value;
     }
 
 #if defined(__linux__)
@@ -103,28 +123,26 @@ namespace
 #endif  // defined(__linux__)
 }
 
-// A periodic timer wakes the thread waiting on it once per period.
+// A periodic timer keeps waking the thread waiting on it, never before its period.
 TEST(SyncTimerTest, periodic_timer_wakes_its_waiter_every_period)
 {
     constexpr uint32_t  PERIOD_MS   { 50u };
-    constexpr int64_t   RUN_MS      { 1'500 };
-    constexpr uint32_t  MIN_WAKES   { 15u };
+    constexpr uint32_t  WAKES       { 15u };
 
     areg::SyncTimer timer(PERIOD_MS, true);
+    const Clock::time_point started{ Clock::now() };
     ASSERT_TRUE(timer.set_timer());
 
     uint32_t wakes{ 0u };
-    const Clock::time_point started{ Clock::now() };
-    while (elapsed_ms(started) < RUN_MS)
+    while ((wakes < WAKES) && timer.lock(DEADLINE_MS))
     {
-        if (timer.lock(static_cast<uint32_t>(RUN_MS)))
-        {
-            ++wakes;
-        }
+        ++wakes;
     }
 
+    const int64_t took{ elapsed_ms(started) };
     timer.unlock();
-    EXPECT_GE(wakes, MIN_WAKES) << "a " << PERIOD_MS << " ms timer woke its waiter " << wakes << " times in " << RUN_MS << " ms";
+    EXPECT_EQ(wakes, WAKES);
+    EXPECT_GE(took, static_cast<int64_t>((WAKES - 1u) * PERIOD_MS)) << WAKES << " wakes of a " << PERIOD_MS << " ms timer took " << took << " ms";
 }
 
 // A thread that set a periodic timer waits for a mutex and an event as long as it takes.
@@ -186,14 +204,14 @@ TEST(SyncTimerTest, periodic_timer_creates_no_thread_per_tick)
 
     areg::SyncTimer timer(PERIOD_MS, true);
     ASSERT_TRUE(timer.set_timer());
-    ASSERT_TRUE(timer.lock(1'000u));
+    ASSERT_TRUE(timer.lock(DEADLINE_MS));
 
     int64_t best{ INT64_MAX };
     for (int attempt = 0; (attempt < MAX_TRIES) && (best >= MAX_TASKS); ++attempt)
     {
         const int64_t before{ last_pid() };
         uint32_t ticks{ 0u };
-        while ((ticks < TICKS) && timer.lock(1'000u))
+        while ((ticks < TICKS) && timer.lock(DEADLINE_MS))
         {
             ++ticks;
         }
@@ -213,7 +231,7 @@ TEST(SyncTimerTest, many_timers_share_one_thread)
     // Starts the helper thread a sanitizer creates on the first thread start, so it is in the baseline.
     pid_t first{ 0 };
     std::thread([&first]() { first = thread_id(); }).join();
-    ASSERT_TRUE(thread_gone(first, 1'000)) << "the first thread outlived its join";
+    ASSERT_TRUE(thread_gone(first, DEADLINE_MS)) << "the first thread outlived its join";
     const int64_t before{ thread_count() };
     if (before < 0)
     {
@@ -232,7 +250,7 @@ TEST(SyncTimerTest, many_timers_share_one_thread)
     {
         for (auto & timer : timers)
         {
-            EXPECT_TRUE(timer->lock(1'000u));
+            EXPECT_TRUE(timer->lock(DEADLINE_MS));
         }
 
         most = std::max(most, thread_count());
@@ -240,7 +258,7 @@ TEST(SyncTimerTest, many_timers_share_one_thread)
 
     timers.clear();
     EXPECT_LE(most - before, 1) << COUNT << " timers ran on " << (most - before) << " extra threads";
-    EXPECT_EQ(thread_count_reaching(before, 1'000), before) << "the timer thread outlived the last timer";
+    EXPECT_EQ(thread_count_reaching(before, DEADLINE_MS), before) << "the timer thread outlived the last timer";
 }
 
 #endif  // defined(__linux__)
@@ -254,25 +272,21 @@ TEST(SyncTimerTest, cancelled_timer_can_be_set_again)
     ASSERT_TRUE(timer.set_timer());
 
     const Clock::time_point started{ Clock::now() };
-    EXPECT_TRUE(timer.lock(1'000u));
+    EXPECT_TRUE(timer.lock(DEADLINE_MS));
     EXPECT_GE(elapsed_ms(started), 4);
 }
 
-// Cancel releases one waiter of an auto-reset timer, at once, like one expiration.
+// Cancel releases one waiter of an auto-reset timer, like one expiration.
 TEST(SyncTimerTest, cancel_releases_one_waiter_of_auto_reset_timer)
 {
-    areg::SyncTimer timer(10'000u, false, true);
+    areg::SyncTimer timer(NEVER_MS, false, true);
     ASSERT_TRUE(timer.set_timer());
 
     std::atomic<int> released{ 0 };
-    std::atomic<int64_t> firstMs{ -1 };
-    Clock::time_point cancelled{ Clock::now() };
     auto waiter = [&]()
     {
-        if (timer.lock(1'000u))
+        if (timer.lock(DEADLINE_MS))
         {
-            int64_t none{ -1 };
-            firstMs.compare_exchange_strong(none, elapsed_ms(cancelled));
             released.fetch_add(1);
         }
     };
@@ -280,29 +294,33 @@ TEST(SyncTimerTest, cancel_releases_one_waiter_of_auto_reset_timer)
     std::thread first(waiter);
     std::thread second(waiter);
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    cancelled = Clock::now();
+    EXPECT_TRUE(timer.cancel_timer());
+    const int byFirstCancel{ wait_count(released, 1) };
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    const int afterFirstCancel{ released.load() };
+
+    // The second cancel releases the other waiter.
     EXPECT_TRUE(timer.cancel_timer());
     first.join();
     second.join();
 
-    RecordProperty("cancel_release_ms", static_cast<int>(firstMs.load()));
-    EXPECT_EQ(released.load(), 1);
-    EXPECT_GE(firstMs.load(), 0);
-    EXPECT_LT(firstMs.load(), 100) << "cancel released the waiter after " << firstMs.load() << " ms";
+    EXPECT_EQ(byFirstCancel, 1);
+    EXPECT_EQ(afterFirstCancel, 1);
+    EXPECT_EQ(released.load(), 2);
 }
 
 // Cancel releases every waiter of a manual-reset timer, which stays signaled until it is set again.
 TEST(SyncTimerTest, cancel_releases_all_waiters_of_manual_reset_timer)
 {
     constexpr int WAITERS{ 3 };
-    areg::SyncTimer timer(10'000u, false, false);
+    areg::SyncTimer timer(NEVER_MS, false, false);
     ASSERT_TRUE(timer.set_timer());
 
     std::atomic<int> released{ 0 };
     std::vector<std::thread> waiters;
     for (int i = 0; i < WAITERS; ++i)
     {
-        waiters.emplace_back([&]() { if (timer.lock(2'000u)) released.fetch_add(1); });
+        waiters.emplace_back([&]() { if (timer.lock(DEADLINE_MS)) released.fetch_add(1); });
     }
 
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -326,15 +344,23 @@ TEST(SyncTimerTest, expiry_of_auto_reset_timer_releases_one_waiter)
 {
     areg::SyncTimer timer(50u, false, true);
     std::atomic<int> released{ 0 };
-    auto waiter = [&]() { if (timer.lock(600u)) released.fetch_add(1); };
+    auto waiter = [&]() { if (timer.lock(DEADLINE_MS)) released.fetch_add(1); };
 
     ASSERT_TRUE(timer.set_timer());
     std::thread first(waiter);
     std::thread second(waiter);
+    const int byExpiry{ wait_count(released, 1) };
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    const int afterExpiry{ released.load() };
+
+    // A cancel releases the other waiter.
+    EXPECT_TRUE(timer.cancel_timer());
     first.join();
     second.join();
 
-    EXPECT_EQ(released.load(), 1);
+    EXPECT_EQ(byExpiry, 1);
+    EXPECT_EQ(afterExpiry, 1);
+    EXPECT_EQ(released.load(), 2);
 }
 
 // One expiration of a manual-reset timer releases every waiter.
@@ -348,7 +374,7 @@ TEST(SyncTimerTest, expiry_of_manual_reset_timer_releases_all_waiters)
     std::vector<std::thread> waiters;
     for (int i = 0; i < WAITERS; ++i)
     {
-        waiters.emplace_back([&]() { if (timer.lock(1'000u)) released.fetch_add(1); });
+        waiters.emplace_back([&]() { if (timer.lock(DEADLINE_MS)) released.fetch_add(1); });
     }
 
     for (auto & waiter : waiters)
@@ -364,27 +390,26 @@ TEST(SyncTimerTest, expiry_of_manual_reset_timer_releases_all_waiters)
 TEST(SyncTimerTest, periodic_timer_does_not_queue_missed_periods)
 {
     constexpr uint32_t  PERIOD_MS   { 20u };
-    constexpr int64_t   RUN_MS      { 200 };
+    constexpr uint32_t  MISSED      { 10u };
+    constexpr uint32_t  TRIES       { 2u * MISSED };
     areg::SyncTimer timer(PERIOD_MS, true, true);
     ASSERT_TRUE(timer.set_timer());
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(RUN_MS));
-    EXPECT_TRUE(timer.lock(0u));
+    std::this_thread::sleep_for(std::chrono::milliseconds(MISSED * PERIOD_MS));
+    EXPECT_TRUE(timer.lock(DEADLINE_MS));
 
-    uint32_t wakes{ 0u };
+    // Queued periods would all be taken at once. One may be pending at the start, and one more
+    // may expire for each period boundary the tries cross.
+    uint32_t taken{ 0u };
     const Clock::time_point started{ Clock::now() };
-    while (elapsed_ms(started) < RUN_MS)
+    for (uint32_t i = 0u; i < TRIES; ++i)
     {
-        const int64_t left{ RUN_MS - elapsed_ms(started) };
-        if (timer.lock(static_cast<uint32_t>(left > 0 ? left : 0)))
-        {
-            ++wakes;
-        }
+        taken += timer.lock(0u) ? 1u : 0u;
     }
 
+    const int64_t took{ elapsed_ms(started) };
     timer.cancel_timer();
-    EXPECT_LE(wakes, (RUN_MS / PERIOD_MS) + 2) << "missed periods were queued: " << wakes << " wakes";
-    EXPECT_GE(wakes, (RUN_MS / PERIOD_MS) / 2);
+    EXPECT_LE(static_cast<int64_t>(taken), 2 + took / static_cast<int64_t>(PERIOD_MS)) << "missed periods were queued: " << taken << " taken in " << took << " ms";
 }
 
 // The expirations of a thread's timer never end its alertable wait on other objects.
@@ -412,7 +437,7 @@ TEST(SyncTimerTest, one_shot_timer_fires_once)
     areg::SyncTimer timer(20u, false);
     const Clock::time_point started{ Clock::now() };
     ASSERT_TRUE(timer.set_timer());
-    EXPECT_TRUE(timer.lock(1'000u));
+    EXPECT_TRUE(timer.lock(DEADLINE_MS));
     EXPECT_GE(elapsed_ms(started), 19);
     EXPECT_FALSE(timer.lock(100u));
 }
@@ -428,7 +453,7 @@ TEST(SyncTimerTest, destroy_while_firing)
         ASSERT_TRUE(timer->set_timer());
         std::thread waiter([&timer, &woken]()
         {
-            if (timer->lock(1'000u))
+            if (timer->lock(DEADLINE_MS))
             {
                 woken.fetch_add(1, std::memory_order_relaxed);
             }

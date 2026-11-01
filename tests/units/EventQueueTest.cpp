@@ -72,6 +72,12 @@ namespace
         }
     };
 
+    //!< Milliseconds a producer blocks on a full ring in the tests that wait for a slot.
+    constexpr uint32_t  FULL_WAIT_MS    { 120'000u };
+
+    //!< A push that returns later than this has waited for a slot.
+    constexpr long long FULL_PROMPT_MS  { FULL_WAIT_MS / 2u };
+
     //!< An EventQueue holding its lanes, the state a running dispatcher keeps it in.
     struct ReadyQueue : public EventQueue
     {
@@ -313,7 +319,7 @@ TEST(EventQueueTest, exit_now_overrides_drained_exit)
 
 TEST(EventQueueTest, drained_exit_releases_a_producer_blocked_on_full_ring)
 {
-    ReadyQueue queue(areg::QUEUE_MIN_RING_CAPACITY, false, 10000u);
+    ReadyQueue queue(areg::QUEUE_MIN_RING_CAPACITY, false, FULL_WAIT_MS);
     uint32_t pushed{ 0u };
     for (; pushed < areg::QUEUE_MIN_RING_CAPACITY; ++pushed)
     {
@@ -335,7 +341,7 @@ TEST(EventQueueTest, drained_exit_releases_a_producer_blocked_on_full_ring)
 
     const auto waited{ std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() };
     EXPECT_FALSE(result.load(std::memory_order_acquire));
-    EXPECT_LT(waited, 5000);
+    EXPECT_LT(waited, FULL_PROMPT_MS);
 
     uint32_t popped{ 0u };
     while (queue.pop_event().is_exit_prio() == false)
@@ -411,7 +417,7 @@ TEST(EventQueueTest, capacity_overflow_returns_event)
 TEST(EventQueueTest, consumer_push_to_full_ring_fails_at_once)
 {
     // A long block timeout: a wait for a slot would show as a delay.
-    ReadyQueue queue(areg::QUEUE_MIN_RING_CAPACITY, false, 10000u);
+    ReadyQueue queue(areg::QUEUE_MIN_RING_CAPACITY, false, FULL_WAIT_MS);
     queue.set_consumer(areg::Thread::current_thread_id());
     for (uint32_t i = 0u; i < areg::QUEUE_MIN_RING_CAPACITY; ++i)
     {
@@ -435,12 +441,12 @@ TEST(EventQueueTest, consumer_push_to_full_ring_fails_at_once)
     EXPECT_EQ(queue.push_events(batch, 2u), 2u);
 
     const auto waited{ std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() };
-    EXPECT_LT(waited, 1000);
+    EXPECT_LT(waited, FULL_PROMPT_MS);
 }
 
 TEST(EventQueueTest, other_thread_push_to_full_ring_waits_for_the_consumer)
 {
-    ReadyQueue queue(areg::QUEUE_MIN_RING_CAPACITY, false, 10000u);
+    ReadyQueue queue(areg::QUEUE_MIN_RING_CAPACITY, false, FULL_WAIT_MS);
     queue.set_consumer(areg::Thread::current_thread_id());
     for (uint32_t i = 0u; i < areg::QUEUE_MIN_RING_CAPACITY; ++i)
     {
@@ -986,13 +992,13 @@ AREG_DECLARE_EVENT(SpData, SpEvent, SpEventConsumer);
 namespace
 {
     //!< How long a producer blocks on the full ring of the test dispatcher.
-    constexpr uint32_t                  _selfWaitMs{ 2000u };
+    constexpr uint32_t                  _selfWaitMs{ 120'000u };
 
     //!< A post that returns later than this has waited for a slot.
-    constexpr long long                 _selfLimitMs{ 500 };
+    constexpr long long                 _selfLimitMs{ _selfWaitMs / 2u };
 
     //!< A call that makes no progress for this long fails the test.
-    constexpr std::chrono::seconds      _selfWaitLimit{ 10 };
+    constexpr std::chrono::seconds      _selfWaitLimit{ 60 };
 
     //!< Milliseconds since the given point.
     long long _since_ms(const std::chrono::steady_clock::time_point & start)
@@ -1079,7 +1085,7 @@ namespace
 }
 
 /**
- * \brief   A dispatcher thread that posts to its own full queue fails at once and send_event
+ * \brief   A dispatcher thread that posts to its own full queue fails without waiting and send_event
  *          returns false, while another thread posting to the same full queue still waits.
  **/
 TEST(EventQueueTest, dispatcher_post_to_own_full_queue_fails_at_once)

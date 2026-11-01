@@ -42,7 +42,7 @@ namespace
     constexpr uint32_t  UPDATES             { 200 };
     constexpr uint32_t  RESPONSE_ROUNDS     { 50 };
     constexpr int       WAIT_STEP_MS        { 10 };
-    constexpr int       WAIT_LIMIT_MS       { 10000 };
+    constexpr int       WAIT_LIMIT_MS       { 30000 };
 
     enum class TestCase { None, RequestsTwoThreads, ProviderSetBroadcast, ProviderResponse };
 

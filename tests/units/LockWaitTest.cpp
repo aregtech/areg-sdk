@@ -47,8 +47,8 @@ namespace
     //!< How long the owner keeps the lock while another thread waits for it.
     constexpr uint32_t  HOLD_MS         { 300u };
 
-    //!< The most processor time a waiter may use, in microseconds: a fifth of the hold.
-    constexpr uint64_t  WAIT_CPU_MAX_US { HOLD_MS * 1000u / 5u };
+    //!< A waiter may use at most one part in this many of the time it waits as processor time.
+    constexpr uint64_t  WAIT_CPU_SHARE  { 5u };
 
     //!< Threads of the contention tests.
     constexpr uint32_t  STRESS_THREADS  { 8u };
@@ -85,18 +85,31 @@ namespace
         uint64_t    wallMs  { 0u }; //!< Elapsed time of the wait.
     };
 
+    //!< Returns the most processor time in microseconds a waiter may use in a wait of 'wallMs'.
+    uint64_t wait_cpu_max_us(uint64_t wallMs)
+    {
+        return wallMs * 1000u / WAIT_CPU_SHARE;
+    }
+
     /**
-     * \brief   A holder thread takes the lock with lockFn and keeps it HOLD_MS, a waiter thread
-     *          takes it with lockFn too and measures its own processor time.
+     * \brief   A holder thread takes the lock with lockFn, a waiter thread takes it with lockFn
+     *          too and measures its own processor time. The holder keeps the lock HOLD_MS after
+     *          the waiter starts to measure.
      **/
     template<typename LockFn, typename UnlockFn>
     WaitCost measure_wait(LockFn lockFn, UnlockFn unlockFn)
     {
         std::atomic<bool> held{ false };
+        std::atomic<bool> measuring{ false };
         std::thread holder([&]()
             {
                 lockFn();
                 held.store(true);
+                while (measuring.load() == false)
+                {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                }
+
                 std::this_thread::sleep_for(std::chrono::milliseconds(HOLD_MS));
                 unlockFn();
             });
@@ -111,6 +124,7 @@ namespace
             {
                 const Clock::time_point start{ Clock::now() };
                 const uint64_t cpu{ thread_cpu_us() };
+                measuring.store(true);
                 lockFn();
                 cost.cpuUs  = thread_cpu_us() - cpu;
                 cost.wallMs = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now() - start).count());
@@ -158,7 +172,8 @@ namespace
         return counter;
     }
 
-    //!< The routine returns at once; its exit keeps the thread in the Exiting state HOLD_MS.
+    //!< The routine returns at once; its exit keeps the thread in the Exiting state HOLD_MS
+    //!< after mMeasuring is set.
     class SlowExitConsumer : public areg::ThreadConsumer
     {
     public:
@@ -169,11 +184,17 @@ namespace
         int32_t on_exit() override
         {
             mInExit.store(true);
+            while (mMeasuring.load() == false)
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            }
+
             std::this_thread::sleep_for(std::chrono::milliseconds(HOLD_MS));
             return areg::ThreadConsumer::on_exit();
         }
 
-        std::atomic<bool>   mInExit{ false };   //!< Set when on_exit() starts.
+        std::atomic<bool>   mInExit{ false };       //!< Set when on_exit() starts.
+        std::atomic<bool>   mMeasuring{ false };    //!< Set by the test once it measures.
     };
 }
 
@@ -185,8 +206,8 @@ TEST(LockWaitTest, SpinLockWaiterSleeps)
     areg::SpinLock lock;
     const WaitCost cost{ measure_wait([&]() { lock.lock(); }, [&]() { lock.unlock(); }) };
 
-    EXPECT_GE(cost.wallMs, HOLD_MS / 2u);
-    EXPECT_LT(cost.cpuUs, WAIT_CPU_MAX_US) << "the waiter used " << cost.cpuUs << " us of processor time in " << cost.wallMs << " ms";
+    EXPECT_GE(cost.wallMs, HOLD_MS);
+    EXPECT_LT(cost.cpuUs, wait_cpu_max_us(cost.wallMs)) << "the waiter used " << cost.cpuUs << " us of processor time in " << cost.wallMs << " ms";
 }
 
 /**
@@ -197,8 +218,8 @@ TEST(LockWaitTest, CriticalSectionWaiterSleeps)
     areg::CriticalSection lock;
     const WaitCost cost{ measure_wait([&]() { lock.lock(); }, [&]() { lock.unlock(); }) };
 
-    EXPECT_GE(cost.wallMs, HOLD_MS / 2u);
-    EXPECT_LT(cost.cpuUs, WAIT_CPU_MAX_US) << "the waiter used " << cost.cpuUs << " us of processor time in " << cost.wallMs << " ms";
+    EXPECT_GE(cost.wallMs, HOLD_MS);
+    EXPECT_LT(cost.cpuUs, wait_cpu_max_us(cost.wallMs)) << "the waiter used " << cost.cpuUs << " us of processor time in " << cost.wallMs << " ms";
 }
 
 /**
@@ -209,8 +230,8 @@ TEST(LockWaitTest, SocketWriterWaiterSleeps)
     areg::SocketWriter & writer{ areg::SocketWriter::writer_of(TEST_SOCKET) };
     const WaitCost cost{ measure_wait([&]() { writer.acquire(); }, [&]() { writer.release(); }) };
 
-    EXPECT_GE(cost.wallMs, HOLD_MS / 2u);
-    EXPECT_LT(cost.cpuUs, WAIT_CPU_MAX_US) << "the waiter used " << cost.cpuUs << " us of processor time in " << cost.wallMs << " ms";
+    EXPECT_GE(cost.wallMs, HOLD_MS);
+    EXPECT_LT(cost.cpuUs, wait_cpu_max_us(cost.wallMs)) << "the waiter used " << cost.cpuUs << " us of processor time in " << cost.wallMs << " ms";
 }
 
 /**
@@ -230,12 +251,13 @@ TEST(LockWaitTest, ThreadExitWaiterSleeps)
 
     const Clock::time_point start{ Clock::now() };
     const uint64_t cpu{ thread_cpu_us() };
+    consumer.mMeasuring.store(true);
     delete thread;
     const uint64_t cpuUs{ thread_cpu_us() - cpu };
     const uint64_t wallMs{ static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now() - start).count()) };
 
-    EXPECT_GE(wallMs, HOLD_MS / 2u);
-    EXPECT_LT(cpuUs, WAIT_CPU_MAX_US) << "the destructor used " << cpuUs << " us of processor time in " << wallMs << " ms";
+    EXPECT_GE(wallMs, HOLD_MS);
+    EXPECT_LT(cpuUs, wait_cpu_max_us(wallMs)) << "the destructor used " << cpuUs << " us of processor time in " << wallMs << " ms";
 }
 
 /**

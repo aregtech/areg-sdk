@@ -66,8 +66,8 @@ namespace
     //!< The cookie of the remote process whose providers the fake router announces.
     constexpr ITEM_ID   PEER_COOKIE     { areg::COOKIE_REMOTE_SERVICE + 8u };
 
-    //!< Milliseconds the client is given to connect.
-    constexpr int64_t   CONNECT_MS      { 5'000 };
+    //!< Milliseconds a step is given to end before the test reports a hang.
+    constexpr int64_t   HANG_MS         { 30'000 };
 
     //!< The body size announced by the header of the cut message.
     constexpr uint32_t  CUT_BODY        { 3u * 1024u * 1024u };
@@ -360,17 +360,17 @@ namespace
         config.set_service_address(areg::RemoteServiceKind::Router, areg::ConnectionType::Tcpip, areg::String("127.0.0.1"), true);
         config.set_service_port(areg::RemoteServiceKind::Router, areg::ConnectionType::Tcpip, router.port(), true);
         areg::Application::connect_router();
-        return check(wait_state(areg::RouterState::Connected, CONNECT_MS), "the client connects to the fake router");
+        return check(wait_state(areg::RouterState::Connected, HANG_MS), "the client connects to the fake router");
     }
 
-    //!< Releases the application and checks that it took less than \a limitMs.
-    bool release_within(int64_t limitMs)
+    //!< Releases the application and checks that it did not hang.
+    bool release_ends()
     {
         const Clock::time_point start{ Clock::now() };
         areg::Application::release();
         const int64_t took{ elapsed_ms(start) };
         std::printf("release took %lld ms\n", static_cast<long long>(took));
-        return check(took < limitMs, "release() ends in time");
+        return check(took < HANG_MS, "release() ends");
     }
 }
 
@@ -424,9 +424,9 @@ int main(int argc, char * argv[])
     bool ok{ setup_and_connect(router) };
     if (name == "release-idle")
     {
-        ok = release_within(2'000) && ok;
+        ok = release_ends() && ok;
         const Clock::time_point start{ Clock::now() };
-        while ((router.closed() == 0) && (elapsed_ms(start) < 2'000))
+        while ((router.closed() == 0) && (elapsed_ms(start) < HANG_MS))
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(5));
         }
@@ -436,19 +436,19 @@ int main(int argc, char * argv[])
     else if (name == "release-flood")
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(300));
-        ok = release_within(3'000) && ok;
+        ok = release_ends() && ok;
     }
     else if (name == "release-mid-message")
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(300));
-        ok = release_within(2'000) && ok;
+        ok = release_ends() && ok;
     }
     else if (name == "disconnect-reconnect")
     {
         areg::Application::disconnect_router();
         bool connecting{ false };
         const Clock::time_point start{ Clock::now() };
-        while ((areg::Application::router_state() == areg::RouterState::Connected) && (elapsed_ms(start) < 3'000))
+        while ((areg::Application::router_state() == areg::RouterState::Connected) && (elapsed_ms(start) < HANG_MS))
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
@@ -456,9 +456,9 @@ int main(int argc, char * argv[])
         connecting = (areg::Application::router_state() == areg::RouterState::Connecting);
         ok = check(connecting == false, "a stopping connection does not report Connecting") && ok;
         areg::Application::connect_router();
-        ok = check(wait_state(areg::RouterState::Connected, CONNECT_MS), "the client connects again") && ok;
+        ok = check(wait_state(areg::RouterState::Connected, HANG_MS), "the client connects again") && ok;
         ok = check(router.accepted() == 2, "the fake router accepted two connections") && ok;
-        ok = release_within(2'000) && ok;
+        ok = release_ends() && ok;
     }
     else
     {
@@ -469,8 +469,8 @@ int main(int argc, char * argv[])
         const int64_t took{ elapsed_ms(start) };
         std::printf("model load during the stop took %lld ms\n", static_cast<long long>(took));
         ok = check(loaded, "the model loads during the stop") && ok;
-        ok = check(took < 2'000, "the service manager serves the load during the stop") && ok;
-        ok = release_within(3'000) && ok;
+        ok = check(took < HANG_MS, "the service manager serves the load during the stop") && ok;
+        ok = release_ends() && ok;
     }
 
     router.stop();

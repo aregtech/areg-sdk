@@ -57,10 +57,10 @@
 namespace
 {
     //!< Milliseconds a client waits for an answer of the router before the case fails.
-    constexpr int32_t   ANSWER_MS       { 3'000 };
+    constexpr int32_t   ANSWER_MS       { 30'000 };
 
     //!< Milliseconds the router is given to start listening.
-    constexpr int32_t   START_MS        { 5'000 };
+    constexpr int32_t   START_MS        { 60'000 };
 
     //!< The message ID of the data messages the clients exchange: a request, forwarded as is.
     constexpr uint32_t  DATA_MESSAGE    { static_cast<uint32_t>(areg::ServiceCallType::RequestFunction) | 1u };
@@ -273,7 +273,7 @@ namespace
         bool read_numbered(uint32_t count, std::atomic<uint64_t> & bytesRead, const std::atomic<bool> & slow)
         {
             constexpr uint32_t SLOW_BATCH   { 16u };
-            constexpr int32_t  SLOW_PAUSE_MS{ 20 };
+            constexpr int32_t  SLOW_PAUSE_MS{ 100 };
             areg::EventHeader hdr{ };
             std::vector<uint8_t> payload;
             for (uint32_t next = 0u; next < count; ++next)
@@ -523,7 +523,6 @@ namespace
         constexpr uint32_t SIZE         { 1'024u };
         constexpr uint32_t SLOW_COUNT   { 8'192u };
         constexpr uint32_t FAST_COUNT   { 4'096u };
-        constexpr uint64_t SLOW_LIMIT   { 1024u * 1024u };
 
         // A small receive window makes the slow reader take only what it reads.
         Client slow;
@@ -568,6 +567,7 @@ namespace
         std::thread fastWriter([&]() { fastSent = fastSender.send_numbered(fast.cookie, FAST_COUNT, SIZE); });
         fastReader.join();
         const uint64_t slowDuring{ slowRead.load() - slowBefore };
+        const uint64_t fastDuring{ fastRead.load() };
         const auto fastMs{ std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - started).count() };
 
         // The slow reader reads at full speed now: everything its sender wrote arrives.
@@ -581,7 +581,7 @@ namespace
                     , static_cast<long long>(fastMs)
                     , static_cast<unsigned long long>(slowDuring));
         result = check(fastSent && fastOk, "the fast reader got all its messages, in order") && result;
-        result = check(slowDuring < SLOW_LIMIT, "the fast reader did not wait for the slow one") && result;
+        result = check(slowDuring < fastDuring, "the fast reader did not wait for the slow one: it read more in the same time") && result;
         result = check(slowSent && slowOk, "the slow reader got all its messages, in order, none lost") && result;
         return result;
     }

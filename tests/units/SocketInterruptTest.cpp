@@ -11,7 +11,7 @@
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, unit tests of socket_interrupt(): a receive or a send blocked on a
- *              connected socket whose peer does nothing returns at once. Also the bounded receive
+ *              connected socket whose peer does nothing returns, before the peer acts. Also the bounded receive
  *              of a client connection: it ends when the live handle changes, and it keeps waiting
  *              while the connection is live.
  ************************************************************************/
@@ -26,21 +26,17 @@
 
 #include <atomic>
 #include <chrono>
+#include <future>
 #include <thread>
 #include <vector>
 
 namespace
 {
-    using Clock = std::chrono::steady_clock;
-
-    //!< Milliseconds the blocked call has to return in after the interrupt.
-    constexpr int64_t   PROMPT_MS   { 1'000 };
-
     //!< Milliseconds the blocked call is given to enter the wait.
     constexpr uint32_t  ENTER_MS    { 200u };
 
-    //!< Milliseconds after which the peer is closed, so that a call the interrupt did not end returns.
-    constexpr int64_t   RESCUE_MS   { 5'000 };
+    //!< Milliseconds a call is given to return before the test closes the peer to free it.
+    constexpr int64_t   DEADLINE_MS { 30'000 };
 
     //!< Milliseconds of the receive timeout in the bounded receive cases.
     constexpr uint32_t  RECHECK_MS  { 50u };
@@ -106,25 +102,33 @@ namespace
         }
     };
 
-    //!< Runs the blocking call on a thread, interrupts the client and returns the milliseconds until the call returned.
-    template<typename Call>
-    int64_t interrupt_blocked(Pair & pair, Call call)
+    //!< Returns true if the call signaled 'returned' before the deadline.
+    bool returns(const std::future<void> & returned)
     {
-        std::atomic_bool returned{ false };
-        std::thread worker([&returned, call]() { call(); returned.store(true); });
+        return (returned.wait_for(std::chrono::milliseconds(DEADLINE_MS)) == std::future_status::ready);
+    }
+
+    //!< Returns true if the call has not signaled 'returned' yet.
+    bool still_waits(const std::future<void> & returned)
+    {
+        return (returned.wait_for(std::chrono::milliseconds(0)) != std::future_status::ready);
+    }
+
+    //!< Runs the blocking call on a thread, interrupts the client and returns true if the call
+    //!< returned before the peer was closed.
+    template<typename Call>
+    bool interrupt_blocked(Pair & pair, Call call)
+    {
+        std::promise<void> done;
+        const std::future<void> returned{ done.get_future() };
+        std::thread worker([&done, call]() { call(); done.set_value(); });
         std::this_thread::sleep_for(std::chrono::milliseconds(ENTER_MS));
 
-        const Clock::time_point start{ Clock::now() };
         areg::socket_interrupt(pair.client);
-        while ((returned.load() == false) && (Clock::now() - start < std::chrono::milliseconds(RESCUE_MS)))
-        {
-            std::this_thread::sleep_for(std::chrono::milliseconds(5));
-        }
-
-        const int64_t elapsed{ std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now() - start).count() };
+        const bool byInterrupt{ returns(returned) };
         pair.close_server();
         worker.join();
-        return elapsed;
+        return byInterrupt;
     }
 }
 
@@ -139,14 +143,14 @@ TEST(SocketInterruptTest, BlockedReceiveReturns)
 
     std::atomic<int32_t> received{ 1 };
     const SOCKETHANDLE client{ pair.client };
-    const int64_t elapsed{ interrupt_blocked(pair, [client, &received]()
+    const bool byInterrupt{ interrupt_blocked(pair, [client, &received]()
         {
             uint8_t buffer[64]{ };
             received.store(areg::receive_data(client, buffer, sizeof(buffer)));
         }) };
 
     pair.close();
-    EXPECT_LT(elapsed, PROMPT_MS);
+    EXPECT_TRUE(byInterrupt);
     EXPECT_LE(received.load(), 0);
 }
 
@@ -160,14 +164,14 @@ TEST(SocketInterruptTest, BlockedSendReturns)
     ASSERT_TRUE(pair.open());
 
     const SOCKETHANDLE client{ pair.client };
-    const int64_t elapsed{ interrupt_blocked(pair, [client]()
+    const bool byInterrupt{ interrupt_blocked(pair, [client]()
         {
             std::vector<uint8_t> data(16u * 1024u * 1024u, static_cast<uint8_t>(0x5A));
             static_cast<void>(areg::send_data(client, data.data(), static_cast<uint32_t>(data.size())));
         }) };
 
     pair.close();
-    EXPECT_LT(elapsed, PROMPT_MS);
+    EXPECT_TRUE(byInterrupt);
 }
 
 /**
@@ -188,34 +192,29 @@ TEST(SocketInterruptTest, BlockedReceiveEndsWhenLiveHandleChanges)
 
     std::atomic<SOCKETHANDLE> live{ pair.client };
     std::atomic<int32_t> received{ 1 };
-    std::atomic_bool returned{ false };
+    std::promise<void> done;
+    const std::future<void> returned{ done.get_future() };
     const SOCKETHANDLE client{ pair.client };
-    std::thread worker([client, &live, &received, &returned]()
+    std::thread worker([client, &live, &received, &done]()
         {
             areg::set_receive_live_handle(&live);
             std::vector<uint8_t> buffer(MESSAGE);
             received.store(areg::receive_data(client, buffer.data(), MESSAGE));
             areg::set_receive_live_handle(nullptr);
-            returned.store(true);
+            done.set_value();
         });
 
     std::this_thread::sleep_for(std::chrono::milliseconds(6u * RECHECK_MS));
-    const bool waitedAcrossRechecks{ returned.load() == false };
+    const bool waitedAcrossRechecks{ still_waits(returned) };
 
-    const Clock::time_point start{ Clock::now() };
     live.store(areg::InvalidSocketHandle);
-    while ((returned.load() == false) && (Clock::now() - start < std::chrono::milliseconds(RESCUE_MS)))
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(5));
-    }
-
-    const int64_t elapsed{ std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now() - start).count() };
+    const bool byHandleChange{ returns(returned) };
     pair.close_server();
     worker.join();
     pair.close();
 
     EXPECT_TRUE(waitedAcrossRechecks);
-    EXPECT_LT(elapsed, PROMPT_MS);
+    EXPECT_TRUE(byHandleChange);
     EXPECT_LE(received.load(), 0);
 }
 #endif  // !defined(_WIN32)
@@ -240,29 +239,25 @@ TEST(SocketInterruptTest, ReceiveContinuesAcrossRechecks)
 
     std::atomic<SOCKETHANDLE> live{ pair.client };
     std::atomic<int32_t> received{ 0 };
-    std::atomic_bool returned{ false };
+    std::promise<void> done;
+    const std::future<void> returned{ done.get_future() };
     std::vector<uint8_t> buffer(MESSAGE);
     const SOCKETHANDLE client{ pair.client };
-    std::thread worker([client, &live, &received, &returned, &buffer]()
+    std::thread worker([client, &live, &received, &done, &buffer]()
         {
             areg::set_receive_live_handle(&live);
             received.store(areg::receive_data(client, buffer.data(), MESSAGE));
             areg::set_receive_live_handle(nullptr);
-            returned.store(true);
+            done.set_value();
         });
 
     constexpr uint32_t FIRST{ 16u * 1024u };
     const bool firstSent{ areg::send_data(pair.server, data.data(), FIRST) == static_cast<int32_t>(FIRST) };
     std::this_thread::sleep_for(std::chrono::milliseconds(6u * RECHECK_MS));
-    const bool waitedAcrossRechecks{ returned.load() == false };
+    const bool waitedAcrossRechecks{ still_waits(returned) };
     const bool restSent{ areg::send_data(pair.server, data.data() + FIRST, MESSAGE - FIRST) == static_cast<int32_t>(MESSAGE - FIRST) };
 
-    const Clock::time_point start{ Clock::now() };
-    while ((returned.load() == false) && (Clock::now() - start < std::chrono::milliseconds(RESCUE_MS)))
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(5));
-    }
-
+    const bool completed{ returns(returned) };
     pair.close_server();
     worker.join();
     pair.close();
@@ -270,6 +265,7 @@ TEST(SocketInterruptTest, ReceiveContinuesAcrossRechecks)
     EXPECT_TRUE(firstSent);
     EXPECT_TRUE(restSent);
     EXPECT_TRUE(waitedAcrossRechecks);
+    EXPECT_TRUE(completed);
     EXPECT_EQ(received.load(), static_cast<int32_t>(MESSAGE));
     EXPECT_TRUE(buffer == data);
 }

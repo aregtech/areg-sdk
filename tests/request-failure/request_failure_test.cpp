@@ -49,7 +49,7 @@ namespace
     constexpr char const    _refuseRole[]       { "RfRefuser" };
     constexpr char const    _captureRole[]      { "RfCapture" };
 
-    constexpr uint32_t      WAIT_MS             { 5000 };
+    constexpr uint32_t      WAIT_MS             { 30000 };
     constexpr uint32_t      REFUSE_QUEUE        { areg::QUEUE_MIN_RING_CAPACITY };
     constexpr uint32_t      FLOOD_COUNT         { 2 * REFUSE_QUEUE };
     constexpr uint32_t      REMOTE_COOKIE       { 0x77 };

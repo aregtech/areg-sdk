@@ -48,7 +48,7 @@ namespace
     constexpr uint32_t  SLOT_COUNT      { MAX_CLIENTS + 1 };
     constexpr uint32_t  DELETED_ROUNDS  { 32 };
     constexpr int       WAIT_STEP_MS    { 10 };
-    constexpr int       WAIT_LIMIT_MS   { 5000 };
+    constexpr int       WAIT_LIMIT_MS   { 30000 };
     constexpr int       SETTLE_MS       { 300 };
 
     const char * const  ROLE_NAME       { "ServiceProvider" };

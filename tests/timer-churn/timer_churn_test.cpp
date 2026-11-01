@@ -21,6 +21,7 @@
 #include "areg/base/String.hpp"
 
 #include <atomic>
+#include <chrono>
 #include <cstdio>
 #include <cstdlib>
 #include <memory>
@@ -58,7 +59,7 @@ namespace
     constexpr uint32_t      TIMEOUT_MIN_MS      { 1u };
     constexpr uint32_t      TIMEOUT_MAX_MS      { 17u };
     //!< A phase that takes longer than this is a hang, not a slow machine.
-    constexpr uint32_t      TEST_WATCHDOG_MS    { 90u * 1000u };
+    constexpr uint32_t      TEST_WATCHDOG_MS    { 170u * 1000u };
 
     std::atomic_uint        gExpired    { 0u };      //!< expiries seen in the current cycle
     std::atomic_uint        gChurnExpired{ 0u };      //!< expiries delivered by churned timers
@@ -313,7 +314,13 @@ int main()
             churners.emplace_back(churn_thread_routine, i);
         }
 
+        // The churn runs at least CHURN_MS, and on until both kinds of timer expired at least once.
         areg::Thread::sleep(CHURN_MS);
+        const auto until{ std::chrono::steady_clock::now() + std::chrono::seconds(20) };
+        while (((gExpired.load() == 0u) || (gChurnExpired.load() == 0u)) && (std::chrono::steady_clock::now() < until))
+        {
+            areg::Thread::sleep(10u);
+        }
 
         gPhase.store(cycle * 10u + 3u);
         gChurnStop.store(true);

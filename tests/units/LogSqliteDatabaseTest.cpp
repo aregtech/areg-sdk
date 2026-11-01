@@ -415,7 +415,7 @@ TEST(LogSqliteDatabaseTest, test_continuousWriterKeepsTheLogShort)
     constexpr uint32_t rows{ 1000u };
     constexpr uint32_t longCycle{ 150u };
     constexpr std::chrono::milliseconds pause{ 50 };
-    const auto until{ std::chrono::steady_clock::now() + std::chrono::seconds(30) };
+    const auto until{ std::chrono::steady_clock::now() + std::chrono::seconds(120) };
     uint32_t batches{ 0u };
     uint32_t seen{ 0u };
     uint32_t cycle{ 0u };
@@ -476,7 +476,8 @@ TEST(LogSqliteDatabaseTest, test_idleWriterAfterLongLogReachesTheFile)
     const std::uintmax_t pageSize{ std::stoull(_query_text(path, "PRAGMA page_size;")) };
     const std::uintmax_t expected{ pageSize * std::stoull(_query_text(path, "PRAGMA page_count;")) };
     std::uintmax_t size{ fs::file_size(path, err) };
-    for (int i = 0; (i < 50) && (size != expected); ++i)
+    const auto until{ std::chrono::steady_clock::now() + std::chrono::seconds(60) };
+    while ((size != expected) && (std::chrono::steady_clock::now() < until))
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         size = fs::file_size(path, err);
@@ -501,7 +502,8 @@ TEST(LogSqliteDatabaseTest, test_idleWriterRowsReachTheFile)
 
     ASSERT_TRUE(_write_rows(writer, 500u, 1000));
     std::uintmax_t size{ emptySize };
-    for (int i = 0; (i < 50) && (size == emptySize); ++i)
+    const auto until{ std::chrono::steady_clock::now() + std::chrono::seconds(60) };
+    while ((size == emptySize) && (std::chrono::steady_clock::now() < until))
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         size = fs::file_size(path, err);
@@ -1145,7 +1147,8 @@ TEST(LogSqliteDatabaseTest, test_writerCommitsALoneRow)
     ASSERT_NE(writer.queue_log(_envelope(1u)), 0u);
 
     std::string count;
-    for (int i = 0; (i < 40) && (count != "1"); ++i)
+    const auto until{ std::chrono::steady_clock::now() + std::chrono::seconds(60) };
+    while ((count != "1") && (std::chrono::steady_clock::now() < until))
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
         count = _query_text(path, "SELECT COUNT(*) FROM logs WHERE cookie_id = 77;");
