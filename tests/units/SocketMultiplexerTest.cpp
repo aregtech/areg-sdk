@@ -30,7 +30,10 @@
 #include <unistd.h>
 
 #include <cstring>
+#include <chrono>
+#include <future>
 #include <set>
+#include <vector>
 
 namespace
 {
@@ -366,6 +369,171 @@ TEST( SocketMultiplexerTest, reset_forgets_socket_held_open_elsewhere )
     mux.reset();
     ::close( held );
     close_pair( fresh );
+}
+
+namespace
+{
+    struct ScopedMuxPair : Pair
+    {
+        ~ScopedMuxPair()
+        {
+            close_pair(*this);
+        }
+    };
+}
+
+// The multiplexer rejects invalid handles, duplicate registrations, and unknown removals.
+TEST(SocketMultiplexerCoverageTest, rejects_invalid_duplicate_and_unknown_registrations)
+{
+    SocketMultiplexer mux;
+    ScopedMuxPair pair;
+    ASSERT_TRUE(open_pair(pair));
+    EXPECT_FALSE(mux.register_socket(areg::InvalidSocketHandle, true));
+    EXPECT_FALSE(mux.register_socket(areg::FailedSocketHandle, false));
+    EXPECT_FALSE(mux.unregister_socket(pair.sock));
+    EXPECT_FALSE(mux.is_registered(pair.sock));
+    ASSERT_TRUE(mux.register_socket(pair.sock, true));
+    EXPECT_TRUE(mux.is_registered(pair.sock));
+    EXPECT_FALSE(mux.register_socket(pair.sock, true));
+    EXPECT_FALSE(mux.has_ready());
+    EXPECT_EQ(mux.wait(0), areg::InvalidSocketHandle);
+    ASSERT_TRUE(mux.unregister_socket(pair.sock));
+    EXPECT_FALSE(mux.is_registered(pair.sock));
+    EXPECT_FALSE(mux.unregister_socket(pair.sock));
+    ASSERT_TRUE(feed(pair));
+    EXPECT_EQ(mux.wait(0), areg::InvalidSocketHandle);
+}
+
+// The multiplexer enforces its connection cap and reuses a removed slot.
+TEST(SocketMultiplexerCoverageTest, connection_cap_is_enforced_and_a_removed_slot_can_be_reused)
+{
+    SocketMultiplexer mux(0u);
+    std::vector<ScopedMuxPair> pairs(areg::MIN_CONNECTIONS + 1u);
+    for (uint32_t i = 0u; i < pairs.size(); ++i)
+    {
+        ASSERT_TRUE(open_pair(pairs[i]));
+        if (i < areg::MIN_CONNECTIONS)
+        {
+            ASSERT_TRUE(mux.register_socket(pairs[i].sock, false));
+        }
+    }
+
+    EXPECT_FALSE(mux.register_socket(pairs.back().sock, false));
+    EXPECT_FALSE(mux.is_registered(pairs.back().sock));
+    ASSERT_TRUE(mux.unregister_socket(pairs.front().sock));
+    ASSERT_TRUE(mux.register_socket(pairs.back().sock, true));
+    ASSERT_TRUE(feed(pairs.back()));
+    EXPECT_EQ(mux.wait(30'000), pairs.back().sock);
+}
+
+// A soft wake ends an infinite wait without unregistering sockets.
+TEST(SocketMultiplexerCoverageTest, soft_wakeup_ends_an_infinite_wait_without_removing_sockets)
+{
+    SocketMultiplexer mux;
+    ScopedMuxPair pair;
+    ASSERT_TRUE(open_pair(pair));
+    ASSERT_TRUE(mux.register_socket(pair.sock, true));
+    std::promise<void> entered;
+    std::future<void> started{ entered.get_future() };
+    std::future<SOCKETHANDLE> waiter{ std::async(std::launch::async, [&]()
+        {
+            entered.set_value();
+            return mux.wait(-1);
+        }) };
+    started.wait();
+    mux.wakeup();
+    const bool ready{ waiter.wait_for(std::chrono::seconds(30)) == std::future_status::ready };
+    if (!ready)
+        mux.reset();
+
+    const SOCKETHANDLE result{ waiter.get() };
+    EXPECT_TRUE(ready);
+    EXPECT_EQ(result, areg::InvalidSocketHandle);
+    EXPECT_TRUE(mux.is_registered(pair.sock));
+    ASSERT_TRUE(feed(pair));
+    EXPECT_EQ(mux.wait(30'000), pair.sock);
+}
+
+// Reset wakes a blocked waiter and permits a fresh registration cycle.
+TEST(SocketMultiplexerCoverageTest, reset_ends_an_infinite_wait_and_starts_a_clean_registration_cycle)
+{
+    SocketMultiplexer mux;
+    ScopedMuxPair pair;
+    ASSERT_TRUE(open_pair(pair));
+    ASSERT_TRUE(mux.register_socket(pair.sock, true));
+    std::promise<void> entered;
+    std::future<void> started{ entered.get_future() };
+    std::future<SOCKETHANDLE> waiter{ std::async(std::launch::async, [&]()
+        {
+            entered.set_value();
+            return mux.wait(-1);
+        }) };
+    started.wait();
+    mux.reset();
+    const bool ready{ waiter.wait_for(std::chrono::seconds(30)) == std::future_status::ready };
+    if (!ready)
+        mux.wakeup();
+
+    const SOCKETHANDLE result{ waiter.get() };
+    EXPECT_TRUE(ready);
+    EXPECT_EQ(result, areg::FailedSocketHandle);
+    EXPECT_EQ(mux.wait(0), areg::FailedSocketHandle);
+    EXPECT_FALSE(mux.is_registered(pair.sock));
+    EXPECT_FALSE(mux.has_ready());
+    ASSERT_TRUE(mux.register_socket(pair.sock, true));
+    EXPECT_EQ(mux.wait(0), areg::InvalidSocketHandle);
+    ASSERT_TRUE(feed(pair));
+    EXPECT_EQ(mux.wait(30'000), pair.sock);
+}
+
+// Closing a peer wakes the waiter with the matching registered socket.
+TEST(SocketMultiplexerCoverageTest, peer_close_wakes_the_waiter_with_the_registered_socket)
+{
+    SocketMultiplexer mux;
+    ScopedMuxPair pair;
+    ASSERT_TRUE(open_pair(pair));
+    ASSERT_TRUE(mux.register_socket(pair.sock, true));
+    std::promise<void> entered;
+    std::future<void> started{ entered.get_future() };
+    std::future<SOCKETHANDLE> waiter{ std::async(std::launch::async, [&]()
+        {
+            entered.set_value();
+            return mux.wait(-1);
+        }) };
+    started.wait();
+    const int peer{ pair.peer };
+    pair.peer = -1;
+    EXPECT_EQ(::close(peer), 0);
+    const bool ready{ waiter.wait_for(std::chrono::seconds(30)) == std::future_status::ready };
+    if (!ready)
+        mux.reset();
+
+    const SOCKETHANDLE result{ waiter.get() };
+    EXPECT_TRUE(ready);
+    EXPECT_EQ(result, pair.sock);
+    uint8_t byte{};
+    EXPECT_EQ(::recv(pair.sock, &byte, sizeof(byte), 0), 0);
+    EXPECT_TRUE(mux.unregister_socket(pair.sock));
+}
+
+// Stateless waits distinguish timeout, socket readiness, and an invalid listener.
+TEST(SocketMultiplexerCoverageTest, stateless_wait_reports_timeout_readiness_and_invalid_server)
+{
+    SocketMultiplexer mux;
+    ScopedMuxPair server;
+    ScopedMuxPair client;
+    ASSERT_TRUE(open_pair(server));
+    ASSERT_TRUE(open_pair(client));
+    EXPECT_EQ(mux.wait(areg::InvalidSocketHandle, nullptr, 0, 0), areg::FailedSocketHandle);
+    EXPECT_EQ(mux.wait(server.sock, nullptr, 0, 0), areg::InvalidSocketHandle);
+    std::vector<SOCKETHANDLE> clients(areg::DEFAULT_CONNECTIONS, areg::InvalidSocketHandle);
+    clients.back() = client.sock;
+    EXPECT_EQ(mux.wait(server.sock, clients.data(), static_cast<int32_t>(clients.size()), 0), areg::InvalidSocketHandle);
+    ASSERT_TRUE(feed(client));
+    EXPECT_EQ(mux.wait(server.sock, clients.data(), static_cast<int32_t>(clients.size()), 30'000), client.sock);
+    drain(client);
+    ASSERT_TRUE(feed(server));
+    EXPECT_EQ(mux.wait(server.sock, nullptr, 0, 30'000), server.sock);
 }
 
 #endif  // defined(_POSIX)

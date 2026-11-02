@@ -717,6 +717,7 @@
   "log_scopes_deactivate",
   "log_status",
   "log_target",
+  "log_target_flag",
   "log_targets",
   "log_version",
   "log_warning",

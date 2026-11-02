@@ -56,9 +56,8 @@
  *    are asserted.
  *
  * 5) DESTINATION SIZING.
- *    The same-size copy_string() path copies min(dstSpace, srcLen) elements and then
- *    writes the terminator at strDst[result], so the destination must hold dstSpace + 1
- *    elements.  Every destination below is sized accordingly (dstSpace == size - 1).
+ *    copy_string() copies at most dstSpace - 1 elements and terminates inside dstSpace,
+ *    so dstSpace is the size of the destination buffer.
  *
  * 6) All literals are written as explicit hexadecimal byte escapes so this file stays
  *    pure ASCII: it compiles identically regardless of source code page or locale.
@@ -159,15 +158,15 @@ TEST(StringDefsTest4, large_string_length_compare_copy_find)
     EXPECT_EQ(areg::find_first<char>('Z', big.c_str()), areg::INVALID_POS);
 
     //        truncating copy 
-    // copy_string copies min(dstSpace, srcLen) elements and writes the terminator at
-    // strDst[result], so the destination must hold dstSpace + 1 elements.  Here
-    // dstSpace = 32 and the buffer is 64, which leaves room for the terminator.
+    // copy_string copies dstSpace - 1 elements and terminates inside dstSpace.
     {
-        char dst[64]{};// dst = 32, but buffer = 64 to safely hold the null terminator written at dst[result].
+        char dst[64];
+        std::memset(dst, 'X', sizeof(dst));
         areg::CharCount n = areg::copy_string<char, char>(dst, 32, big.c_str(), areg::COUNT_ALL);
-        EXPECT_EQ(n, static_cast<areg::CharCount>(32));
-        EXPECT_EQ(dst[32], '\0');
-        EXPECT_EQ(std::strncmp(dst, big.c_str(), 32), 0);
+        EXPECT_EQ(n, static_cast<areg::CharCount>(31));
+        EXPECT_EQ(dst[31], '\0');
+        EXPECT_EQ(dst[32], 'X');
+        EXPECT_EQ(std::strncmp(dst, big.c_str(), 31), 0);
     }
 
     //    full copy of the whole buffer
@@ -494,11 +493,11 @@ TEST(StringDefsTest4, mixed_large_utf8_and_emoji)
     }
 
     //   full copy preserves every byte  
-    // dstSpace is the buffer size minus one, per the destination-sizing rule above.
+    // dstSpace is the buffer size, per the destination-sizing rule above.
     {
         std::vector<char> dst(TOTAL + 1u, 0);
         areg::CharCount n = areg::copy_string<char, char>(dst.data(),
-                                                          static_cast<areg::CharCount>(TOTAL),
+                                                          static_cast<areg::CharCount>(TOTAL + 1u),
                                                           mixed.c_str(),
                                                           areg::COUNT_ALL);
         EXPECT_EQ(n, static_cast<areg::CharCount>(TOTAL));

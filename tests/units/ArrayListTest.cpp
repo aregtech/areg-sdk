@@ -22,6 +22,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <limits>
 #include <type_traits>
 
 /**
@@ -728,4 +729,101 @@ TEST(ArrayListTest, test_index_any_integer_type)
     EXPECT_EQ(carr[1], 21);
     EXPECT_EQ(carr[2], 31);
     EXPECT_EQ(carr[3], 40);
+}
+
+// A null source or zero capacity creates an empty array.
+TEST(ArrayListTest, boundary_null_source_and_zero_capacity_are_empty)
+{
+    const areg::ArrayList<int32_t> nullSource(static_cast<const int32_t*>(nullptr), 3u);
+    EXPECT_TRUE(nullSource.is_empty());
+    areg::ArrayList<int32_t> zero(0u, 0u);
+    EXPECT_TRUE(zero.is_empty());
+    EXPECT_EQ(zero.capacity(), 0u);
+    EXPECT_FALSE(zero.contains(1, 0u));
+}
+
+// Setting the next element appends it without leaving gaps.
+TEST(ArrayListTest, boundary_lvalue_set_appends_without_creating_index_gaps)
+{
+    areg::ArrayList<int32_t> list(0u, 0u);
+    const int32_t value{ 17 };
+    list.set_value_at(12u, value);
+    ASSERT_EQ(list.size(), 1u);
+    EXPECT_EQ(list[0], value);
+    list.set_value_at(0u, value);
+    EXPECT_EQ(list.size(), 1u);
+    const int32_t* values{ list };
+    EXPECT_EQ(values, list.data().data());
+    EXPECT_EQ(values[0], value);
+}
+
+// Zero-count changes leave the contents and reserved storage alone.
+TEST(ArrayListTest, boundary_zero_count_mutations_preserve_reserved_storage)
+{
+    const int32_t source[]{ 1, 2, 3 };
+    areg::ArrayList<int32_t> list(source, 3u);
+    list.reserve(16u);
+    const uint32_t capacity{ list.capacity() };
+    const int32_t* values{ list.data().data() };
+    list.insert_at(0u, 9, 0u);
+    list.insert_at(0u, static_cast<const int32_t*>(nullptr), 3u);
+    list.insert_at(0u, source, 0u);
+    list.insert_at(0u, std::vector<int32_t>{});
+    list.remove_at(list.size(), 0u);
+    list.shift(0u, 0);
+    list.shift(list.size(), 1);
+    EXPECT_EQ(list.data(), (std::vector<int32_t>{ 1, 2, 3 }));
+    EXPECT_EQ(list.capacity(), capacity);
+    EXPECT_EQ(list.data().data(), values);
+}
+
+// Shifting within reserved storage keeps the remaining elements in order.
+TEST(ArrayListTest, boundary_shift_with_reserved_space_and_clamped_removal)
+{
+    const int32_t source[]{ 1, 2, 3, 4 };
+    areg::ArrayList<int32_t> list(source, 4u);
+    list.reserve(16u);
+    const uint32_t capacity{ list.capacity() };
+    list.shift(2u, 2);
+    ASSERT_EQ(list.size(), 6u);
+    EXPECT_EQ(list[0], 1);
+    EXPECT_EQ(list[1], 2);
+    EXPECT_EQ(list[4], 3);
+    EXPECT_EQ(list[5], 4);
+    list.shift(4u, -20);
+    EXPECT_EQ(list.data(), (std::vector<int32_t>{ 3, 4 }));
+    list.remove_at(1u, 50u);
+    EXPECT_EQ(list.data(), (std::vector<int32_t>{ 3 }));
+    EXPECT_FALSE(list.remove_elem(3, list.size()));
+    EXPECT_FALSE(list.remove_elem(9));
+    EXPECT_EQ(list.capacity(), capacity);
+}
+
+// Growing during a shift must preserve the elements after the insertion point.
+TEST(ArrayListTest, DISABLED_boundary_shift_reallocation_preserves_tail)
+{
+    areg::ArrayList<int32_t> list(1u, 1u);
+    list[0] = 17;
+    const uint32_t count{ list.capacity() + 1u };
+    list.shift(0u, static_cast<int32_t>(count));
+    ASSERT_EQ(list.size(), count + 1u);
+    EXPECT_EQ(list[count], 17);
+}
+
+// The most negative shift must remove only the available prefix.
+TEST(ArrayListTest, DISABLED_boundary_minimum_negative_shift_clamps_to_prefix)
+{
+    const int32_t source[]{ 1, 2, 3 };
+    areg::ArrayList<int32_t> list(source, 3u);
+    list.shift(1u, std::numeric_limits<int32_t>::min());
+    EXPECT_EQ(list.data(), (std::vector<int32_t>{ 2, 3 }));
+}
+
+// The reported stream size matches the bytes written for the array.
+TEST(ArrayListTest, boundary_required_size_matches_serialized_values)
+{
+    const int32_t source[]{ 1, 2, 3 };
+    const areg::ArrayList<int32_t> list(source, 3u);
+    EXPECT_EQ(areg::required_size<areg::ArrayList<int32_t>>{}(list), 4u + 3u * sizeof(int32_t));
+    EXPECT_EQ(areg::required_size<std::vector<int32_t>>{}({}), 4u);
 }

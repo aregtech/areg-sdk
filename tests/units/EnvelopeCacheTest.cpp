@@ -324,3 +324,88 @@ TEST(EnvelopeCacheTest, concurrent_handoff_keeps_payload)
     EXPECT_LE(areg::envelope_cache_held(PAYLOAD), DEPOT_HELD);
     areg::envelope_cache_trim();
 }
+
+// Returning blocks in reverse order makes each available for reuse without aliasing live blocks.
+TEST(EnvelopeCacheTest, reverse_release_reuses_each_live_block_once)
+{
+    areg::envelope_cache_trim();
+    constexpr uint32_t COUNT{ 2u * LIMIT + 1u };
+    std::vector<areg::MessageEnvelope> envelopes;
+    std::set<const void*> original;
+    for (uint32_t index = 0u; index < COUNT; ++index)
+    {
+        envelopes.push_back(_make(PAYLOAD));
+        EXPECT_TRUE(original.insert(_block(envelopes.back())).second);
+    }
+
+    for (uint32_t index = COUNT; index != 0u; --index)
+    {
+        envelopes[index - 1u].invalidate();
+    }
+
+    EXPECT_EQ(areg::envelope_cache_held(PAYLOAD), COUNT);
+    std::set<const void*> reused;
+    for (uint32_t index = 0u; index < COUNT; ++index)
+    {
+        envelopes[index] = _make(PAYLOAD);
+        EXPECT_EQ(original.count(_block(envelopes[index])), 1u);
+        EXPECT_TRUE(reused.insert(_block(envelopes[index])).second);
+        EXPECT_EQ(envelopes[index].size_used(), 0u);
+        EXPECT_TRUE(envelopes[index].is_unique());
+    }
+
+    EXPECT_EQ(reused, original);
+    EXPECT_EQ(areg::envelope_cache_held(PAYLOAD), 0u);
+    envelopes.clear();
+    areg::envelope_cache_trim();
+    EXPECT_EQ(areg::envelope_cache_held(PAYLOAD), 0u);
+}
+
+// Allocations of different size classes never reuse a block that is still live.
+TEST(EnvelopeCacheTest, size_classes_do_not_reuse_live_other_class)
+{
+    areg::envelope_cache_trim();
+    constexpr uint32_t CLASSES[]{ 64u, 128u, 192u, 256u, 320u, 384u, 448u
+        , 512u, 768u, 1024u, 1536u, 2048u, 3072u, 4096u };
+    std::vector<areg::MessageEnvelope> envelopes;
+    std::vector<const void*> addresses;
+    for (const uint32_t payload : CLASSES)
+    {
+        envelopes.push_back(_make(payload));
+        addresses.push_back(_block(envelopes.back()));
+        EXPECT_EQ(_length(envelopes.back()), payload);
+    }
+
+    for (areg::MessageEnvelope& envelope : envelopes)
+    {
+        envelope.invalidate();
+    }
+
+    for (uint32_t index = 0u; index < std::size(CLASSES); ++index)
+    {
+        EXPECT_EQ(areg::envelope_cache_held(CLASSES[index]), 1u);
+        envelopes[index] = _make(CLASSES[index]);
+        EXPECT_EQ(_block(envelopes[index]), addresses[index]);
+        EXPECT_EQ(_length(envelopes[index]), CLASSES[index]);
+        EXPECT_EQ(areg::envelope_cache_held(CLASSES[index]), 0u);
+    }
+
+    envelopes.clear();
+    areg::envelope_cache_trim();
+    for (const uint32_t payload : CLASSES)
+    {
+        EXPECT_EQ(areg::envelope_cache_held(payload), 0u);
+    }
+}
+
+// Releasing an oversized block does not add it to the cache.
+TEST(EnvelopeCacheTest, uncached_large_blocks_leave_no_cached_entries)
+{
+    areg::envelope_cache_trim();
+    areg::MessageEnvelope envelope{ _make(8192u) };
+    EXPECT_GE(_length(envelope), 8192u);
+    envelope.invalidate();
+    EXPECT_EQ(areg::envelope_cache_held(8192u), 0u);
+    EXPECT_EQ(areg::envelope_cache_held(4096u), 0u);
+    areg::envelope_cache_trim();
+}

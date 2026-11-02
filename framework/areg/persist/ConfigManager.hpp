@@ -524,6 +524,24 @@ public:
     bool log_enabled( areg::LogTarget logType) const noexcept;
 
     /**
+     * \brief   Returns the enable flag of the log target as configured, ignoring the master logging switch.
+     *
+     * \param   logType     The string value of the logging target (areg::LogTarget).
+     * \return  Returns the configured flag of the target, or the default if the target is not configured.
+     **/
+    [[nodiscard]]
+    bool log_target_flag(const String& logType) const noexcept;
+
+    /**
+     * \brief   Returns the enable flag of the log target as configured, ignoring the master logging switch.
+     *
+     * \param   logType     The logging target to check.
+     * \return  Returns the configured flag of the target, or the default if the target is not configured.
+     **/
+    [[nodiscard]]
+    bool log_target_flag(areg::LogTarget logType) const noexcept;
+
+    /**
      * \brief   Sets whether logging is enabled for the specified log target.
      *
      * \param   logType         The Identifier object containing the areg::LogTarget value.

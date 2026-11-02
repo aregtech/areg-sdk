@@ -798,15 +798,7 @@ Version ConfigManager::log_version() const noexcept
 bool ConfigManager::log_enabled(const String& logType) const noexcept
 {
     Lock lock(mLock);
-
-    if (!logging_status())
-        return false;
-    
-    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::LogEnable };
-    constexpr const areg::ConfigKey& key{ areg::log_enable() };
-
-    const PropertyValue* prop = property_value(key.section, key.property, logType, confKey);
-    return (prop != nullptr ? prop->as_boolean() : areg::DEFAULT_LOG_ENABLED);
+    return (logging_status() && log_target_flag(logType));
 }
 
 bool ConfigManager::log_enabled(areg::LogTarget logType) const noexcept
@@ -815,6 +807,24 @@ bool ConfigManager::log_enabled(areg::LogTarget logType) const noexcept
                                      , areg::LogTypeIdentifiers
                                      , static_cast<uint32_t>(areg::LogTarget::Undefined));
     return log_enabled(id);
+}
+
+bool ConfigManager::log_target_flag(const String& logType) const noexcept
+{
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::LogEnable };
+    constexpr const areg::ConfigKey& key{ areg::log_enable() };
+
+    Lock lock(mLock);
+    const PropertyValue* prop = property_value(key.section, key.property, logType, confKey);
+    return (prop != nullptr ? prop->as_boolean() : areg::DEFAULT_LOG_ENABLED);
+}
+
+bool ConfigManager::log_target_flag(areg::LogTarget logType) const noexcept
+{
+    String id = Identifier::to_string( static_cast<uint32_t>(logType)
+                                     , areg::LogTypeIdentifiers
+                                     , static_cast<uint32_t>(areg::LogTarget::Undefined));
+    return log_target_flag(id);
 }
 
 void ConfigManager::set_log_enabled(areg::LogTarget logType, bool newValue, bool isTemporary /*= false*/)

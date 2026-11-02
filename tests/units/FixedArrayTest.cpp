@@ -277,3 +277,43 @@ TEST(FixedArrayTest, test_index_any_integer_type)
     EXPECT_EQ(carr[2], 31);
     EXPECT_EQ(carr[3], 40);
 }
+
+// An empty fixed array stays safe to copy, resize, and inspect through its pointer.
+TEST(FixedArrayTest, boundary_empty_copy_resize_and_pointer_conversion)
+{
+    const areg::FixedArray<int32_t> empty;
+    areg::FixedArray<int32_t> copy(empty);
+    EXPECT_TRUE(copy.is_empty());
+    EXPECT_EQ(static_cast<const int32_t*>(copy), nullptr);
+    const int32_t source[]{ 4, 5 };
+    areg::FixedArray<int32_t> values(source, 2u);
+    EXPECT_NE(values, empty);
+    EXPECT_FALSE(values == empty);
+    const int32_t* pointer{ values };
+    EXPECT_EQ(pointer, values.values());
+    values.copy(values);
+    values.move(std::move(values));
+    EXPECT_EQ(values[0], 4);
+    EXPECT_EQ(values[1], 5);
+    values.copy(empty);
+    EXPECT_TRUE(values.is_empty());
+    values.resize(0u);
+    EXPECT_EQ(static_cast<const int32_t*>(values), nullptr);
+    EXPECT_EQ(values, copy);
+    EXPECT_FALSE(values != copy);
+}
+
+// Copying an equally sized array replaces every destination value.
+TEST(FixedArrayTest, boundary_equal_size_copy_replaces_values)
+{
+    const int32_t first[]{ 1, 2 };
+    const int32_t second[]{ 3, 4 };
+    areg::FixedArray<int32_t> values(first, 2u);
+    const areg::FixedArray<int32_t> source(second, 2u);
+    EXPECT_NE(values, source);
+    values.copy(source);
+    EXPECT_EQ(values, source);
+    values.resize(1u);
+    ASSERT_EQ(values.size(), 1u);
+    EXPECT_EQ(values[0], 3);
+}

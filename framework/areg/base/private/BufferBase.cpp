@@ -30,6 +30,14 @@
 
 namespace areg {
 
+namespace {
+    // Total capacity a write grows the block to: used + needed, capped at MAX_BUF_LENGTH.
+    constexpr uint32_t grow_size(uint32_t used, uint32_t needed) noexcept
+    {
+        return (needed >= areg::MAX_BUF_LENGTH - std::min(used, areg::MAX_BUF_LENGTH)) ? areg::MAX_BUF_LENGTH : used + needed;
+    }
+}
+
 //////////////////////////////////////////////////////////////////////////
 // BufferBase class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -73,7 +81,7 @@ bool BufferBase::ensure_size(uint32_t addSize)
 
     // Grows like a write does, the data and the cursor are kept.
     const uint32_t position{ mPosition };
-    reserve(needed, true);
+    reserve(grow_size(size_used(), needed), true);
     mPosition = position;
     return ((mByteBuffer.get() != nullptr) && (needed <= mByteBuffer->bufHeader.biLength));
 }
@@ -272,8 +280,7 @@ uint32_t BufferBase::reserve(uint32_t size, bool copy)
     const bool hasView         = false;     // BufferBase never holds a view
     const bool preserveData    = copy || hasView;
     const uint32_t used        = preserveData ? size_used() : 0u;
-    uint32_t total             = (preserveData && (raw != nullptr)) ? used + size : size;
-    total = std::min(total, areg::MAX_BUF_LENGTH);
+    uint32_t total             = std::min(std::max(size, used), areg::MAX_BUF_LENGTH);
 
     if ((raw != nullptr) && !hasView && (total <= raw->bufHeader.biLength))
     {
@@ -353,13 +360,17 @@ uint32_t BufferBase::write(const SharedBuffer& buf)
 {
     if (static_cast<const BufferBase*>(this) == static_cast<const BufferBase*>(&buf))
         return size_used();
-    else if (!buf.is_valid())
-        return 0u;
 
+    // An invalid source is written as an empty one: the length prefix is always present.
     const uint32_t length = buf.size_used();  // source may be a view; size_used()/buffer() are view-aware
     const uint8_t* data   = buf.buffer();
-    reserve(mPosition + static_cast<uint32_t>(sizeof(uint32_t)) + length, true);
-    return (write_data(reinterpret_cast<const uint8_t*>(&length), sizeof(uint32_t)) == sizeof(uint32_t)) ? write_data(data, length) : 0u;
+    if (!BufferBase::ensure_size(static_cast<uint32_t>(sizeof(uint32_t)) + length))
+        return 0u;
+
+    if (write_data(reinterpret_cast<const uint8_t*>(&length), sizeof(uint32_t)) != sizeof(uint32_t))
+        return 0u;
+
+    return (length != 0u ? write_data(data, length) : 0u);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -371,22 +382,25 @@ uint32_t BufferBase::read(SharedBuffer& buf) const noexcept
     if (static_cast<const BufferBase*>(this) == static_cast<const BufferBase*>(&buf))
         return size_used();
 
+    const uint32_t start{ mPosition };
     uint32_t length = 0u;
-    if ((read_data(reinterpret_cast<uint8_t*>(&length), sizeof(uint32_t)) != sizeof(uint32_t)) || (length == 0u))
-        return 0u;
-
-    const areg::RawBuffer* const raw = mByteBuffer.get();
-    const uint32_t srcEnd = (raw != nullptr ? raw->bufHeader.biUsed : 0u);
-    if (mPosition + length > srcEnd)
+    if (read_data(reinterpret_cast<uint8_t*>(&length), sizeof(uint32_t)) != sizeof(uint32_t))
     {
-        // Not enough data, undo the 4-byte length read
-        mPosition-= sizeof(uint32_t);
+        mPosition = start;
         return 0u;
     }
 
-    if (buf.reserve(length, false) < length)
+    if (length == 0u)
     {
-        mPosition -= sizeof(uint32_t);
+        buf.invalidate();
+        return 0u;
+    }
+
+    const areg::RawBuffer* const raw = mByteBuffer.get();
+    const uint32_t srcEnd = (raw != nullptr ? raw->bufHeader.biUsed : 0u);
+    if ((mPosition > srcEnd) || (length > srcEnd - mPosition) || (buf.reserve(length, false) < length))
+    {
+        mPosition = start;
         return 0u;
     }
 
@@ -411,10 +425,13 @@ uint32_t BufferBase::insert_at(const uint8_t* buf, uint32_t size, uint32_t atPos
         return 0u;
 
     const uint32_t writeEnd = is_valid() ? mByteBuffer->bufHeader.biUsed : 0u;
+    if (size > areg::MAX_BUF_LENGTH - std::min(writeEnd, areg::MAX_BUF_LENGTH))
+        return 0u;
+
     if (!is_valid() || (atPos >= writeEnd))
     {
         const uint32_t needed = writeEnd + size;
-        reserve(needed, true);
+        reserve(grow_size(writeEnd, needed), true);
         areg::RawBuffer* const raw = mByteBuffer.get();
         if ((raw == nullptr) || (needed > raw->bufHeader.biLength))
             return 0u;
@@ -427,7 +444,7 @@ uint32_t BufferBase::insert_at(const uint8_t* buf, uint32_t size, uint32_t atPos
     else
     {
         const uint32_t needed = writeEnd + size;
-        if (reserve(needed, true) < size)
+        if (reserve(grow_size(writeEnd, needed), true) < size)
             return 0u;
 
         ASSERT(is_valid());
@@ -520,7 +537,7 @@ uint32_t BufferBase::write_data(const uint8_t* buf, uint32_t size) noexcept
     const uint32_t writePos     = mPosition;
     const uint32_t needed       = writePos + size;
 
-    if ((raw != nullptr) && (needed <= raw->bufHeader.biLength))
+    if ((raw != nullptr) && (needed <= raw->bufHeader.biLength) && (needed >= writePos))
     {
         areg::mem_copy(areg::buffer_data_write(raw) + writePos, raw->bufHeader.biLength - writePos, buf, size);
         if (needed > raw->bufHeader.biUsed)
@@ -531,8 +548,10 @@ uint32_t BufferBase::write_data(const uint8_t* buf, uint32_t size) noexcept
     }
     else
     {
-        // Slow path: grow the buffer (doubling strategy inside reserve).
-        reserve(needed, true);
+        if ((needed < writePos) || (needed > areg::MAX_BUF_LENGTH))
+            return 0u;
+
+        reserve(grow_size(size_used(), needed), true);
         areg::RawBuffer* const grownRaw = mByteBuffer.get();
         if ((grownRaw == nullptr) || (needed > grownRaw->bufHeader.biLength))
             return 0u;
@@ -591,7 +610,7 @@ uint8_t* BufferBase::write_view(uint32_t size) noexcept
     areg::RawBuffer* raw = mByteBuffer.get();
     if ((raw == nullptr) || (needed > raw->bufHeader.biLength))
     {
-        reserve(needed, true);
+        reserve(grow_size(size_used(), needed), true);
         raw = mByteBuffer.get();
         if ((raw == nullptr) || (needed > raw->bufHeader.biLength))
             return nullptr;

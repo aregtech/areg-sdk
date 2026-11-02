@@ -139,10 +139,10 @@ public:
     MessageEnvelope& operator = (MessageEnvelope&& src) noexcept = default;
 
     /**
-     * \brief   Copy-serialises src into the MessageEnvelope payload.
-     *          Appends raw bytes to the envelope's current write position.
-     *          No length prefix is written. The envelope owns its own
-     *          independent copy of the payload bytes.
+     * \brief   Serialises src into the envelope payload at the current write position:
+     *          a 32-bit length followed by the bytes of src. An invalid src is written
+     *          as length 0. The envelope owns its own copy of the bytes.
+     *          The wire format is the one of OutStream << SharedBuffer.
      *
      * \param   env     The destination envelope (mutable: payload grows).
      * \param   src     Source buffer whose payload bytes are copied in.
@@ -151,16 +151,13 @@ public:
     friend inline MessageEnvelope& operator << (MessageEnvelope& env, const SharedBuffer& src) noexcept;
 
     /**
-     * \brief   Zero-copy payload view. Exposes the MessageEnvelope's payload as a
-     *          read-only SharedBuffer view. The two objects share the same heap block
-     *          (reference-counted; no byte copy). dst.is_view() == true after this call.
-     *          The read cursor in dst is reset to the beginning of the payload.
+     * \brief   Deserialises a buffer written by operator << from the envelope's read position.
+     *          dst receives its own copy of the bytes and its cursor is at the beginning.
+     *          A length of 0 leaves dst invalid. If the length cannot be read or exceeds the
+     *          remaining payload, dst and the envelope's read position are left unchanged.
      *
-     *          If the envelope has no payload the call is a no-op and dst is left
-     *          in its current state.
-     *
-     * \param   env     Source envelope (const: only the shared_ptr refcount changes).
-     * \param   dst     Target SharedBuffer that receives the view.
+     * \param   env     Source envelope (const: only the read cursor moves).
+     * \param   dst     Target SharedBuffer that receives the copy.
      * \return  const reference to env for chaining.
      **/
     friend inline const MessageEnvelope& operator >> (const MessageEnvelope& env, SharedBuffer& dst) noexcept;
@@ -1161,28 +1158,13 @@ inline const uint8_t* MessageEnvelope::payload_ptr() const noexcept
 
   inline MessageEnvelope& operator << (MessageEnvelope& env, const SharedBuffer& src) noexcept
   {
-      const uint32_t len{ src.size_used() };
-      env.write_data(reinterpret_cast<const uint8_t*>(&len), sizeof(uint32_t));
-      if (len > 0u)
-      {
-          env.write_data(src.buffer(), len);
-      }
-
+      env.BufferBase::write(src);
       return env;
   }
 
   inline const MessageEnvelope& operator >> (const MessageEnvelope& env, SharedBuffer& dst) noexcept
   {
-      uint32_t len{ 0u };
-      uint32_t copied{ 0u };
-      if ((env.read_data(reinterpret_cast<uint8_t*>(&len), sizeof(uint32_t)) == sizeof(uint32_t)) && (len != 0u))
-      {
-          dst.reserve(len, false);
-          copied = env.read_data(dst.buffer(), len);
-      }
-
-      dst.set_size_used(copied);
-      dst.move_to_begin();
+      env.BufferBase::read(dst);
       return env;
   }
 

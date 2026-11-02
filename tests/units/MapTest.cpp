@@ -511,3 +511,59 @@ TEST(MapTest, test_streaming)
 
     EXPECT_EQ(src, dst);
 }
+
+// Looking up or removing a missing key leaves output arguments and existing entries unchanged.
+TEST(MapTest, boundary_missing_keys_preserve_outputs_and_existing_entries)
+{
+    areg::OrderedMap<int32_t, int32_t> map;
+    int32_t output{ 77 };
+    EXPECT_FALSE(map.find(1, output));
+    EXPECT_FALSE(map.remove_at(1, output));
+    EXPECT_FALSE(map.remove_at(1));
+    EXPECT_EQ(output, 77);
+    EXPECT_EQ(map.update_at(1, 9), map.invalid_position());
+    map.set_value_at(2, 20);
+    EXPECT_FALSE(map.find(1, output));
+    EXPECT_FALSE(map.remove_at(1, output));
+    EXPECT_EQ(output, 77);
+    EXPECT_TRUE(map.find(2, output));
+    EXPECT_EQ(output, 20);
+    EXPECT_TRUE(map.remove_at(2, output));
+    EXPECT_EQ(output, 20);
+    EXPECT_TRUE(map.is_empty());
+}
+
+// Updating a key through either value category keeps exactly one entry.
+TEST(MapTest, boundary_unique_lvalue_and_rvalue_updates_keep_one_entry)
+{
+    areg::OrderedMap<int32_t, int32_t> map;
+    const int32_t key{ 1 };
+    const int32_t value{ 10 };
+    const int32_t replacement{ 20 };
+    EXPECT_TRUE(map.add_if_unique(key, value).second);
+    EXPECT_FALSE(map.add_if_unique(key, replacement, false).second);
+    EXPECT_EQ(map.value_at(key), value);
+    EXPECT_FALSE(map.add_if_unique(key, replacement, true).second);
+    EXPECT_EQ(map.value_at(key), replacement);
+    EXPECT_FALSE(map.add_if_unique(1, 30, true).second);
+    const auto& constMap = map;
+    EXPECT_EQ(constMap.value_at(key), 30);
+    EXPECT_EQ(constMap.data().at(key), 30);
+    EXPECT_EQ(map.size(), 1u);
+    EXPECT_EQ((areg::required_size<areg::OrderedMap<int32_t, int32_t>>{}(map)), 4u + 2u * sizeof(int32_t));
+    EXPECT_EQ((areg::required_size<std::map<int32_t, int32_t>>{}({})), 4u);
+}
+
+// Advancing past the final map entry leaves the output key and value unchanged.
+TEST(MapTest, boundary_terminal_next_preserves_key_and_value_outputs)
+{
+    areg::OrderedMap<int32_t, int32_t> map;
+    map.set_value_at(1, 10);
+    auto position = map.first_position();
+    int32_t key{ 77 };
+    int32_t value{ 88 };
+    EXPECT_FALSE(map.next_entry(position, key, value));
+    EXPECT_EQ(position, map.invalid_position());
+    EXPECT_EQ(key, 77);
+    EXPECT_EQ(value, 88);
+}

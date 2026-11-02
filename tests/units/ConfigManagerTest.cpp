@@ -365,29 +365,29 @@ TEST(ConfigManagerTest, scope_priority_comes_from_first_matching_layer)
     const areg::ListProperties oldShared{ config.readonly_properties() };
     const areg::ListProperties oldProcess{ config.module_properties() };
 
-    areg::LogScope exact("cfgtest_abc_x");
-    areg::LogScope nested("cfgtest_abc_x_y");
-    areg::LogScope other("cfgtest_other");
+    areg::LogScope exact("cfgtest_abc_x.run");
+    areg::LogScope nested("cfgtest_abc_x_y.run");
+    areg::LogScope other("cfgtest_other.run");
 
-    std::vector<std::string> shared{ "log::*::scope::cfgtest_abc_x = DEBUG"
+    std::vector<std::string> shared{ "log::*::scope::cfgtest_abc_x.run = DEBUG"
                                    , "log::*::scope::cfgtest_abc_x_* = DEBUG"
-                                   , "log::*::scope::cfgtest_other = DEBUG" };
+                                   , "log::*::scope::cfgtest_other.run = DEBUG" };
     config.set_configuration(make_properties(shared), areg::ListProperties());
     areg::restore_logging();
-    EXPECT_EQ(areg::scope_priority("cfgtest_abc_x"), prioDebug);
-    EXPECT_EQ(areg::scope_priority("cfgtest_abc_x_y"), prioDebug);
+    EXPECT_EQ(areg::scope_priority("cfgtest_abc_x.run"), prioDebug);
+    EXPECT_EQ(areg::scope_priority("cfgtest_abc_x_y.run"), prioDebug);
 
     shared.push_back(module_entry("scope::cfgtest_abc_* = WARN"));
     config.set_configuration(make_properties(shared), areg::ListProperties());
     areg::restore_logging();
-    EXPECT_EQ(areg::scope_priority("cfgtest_abc_x"), prioWarn);
-    EXPECT_EQ(areg::scope_priority("cfgtest_abc_x_y"), prioWarn);
+    EXPECT_EQ(areg::scope_priority("cfgtest_abc_x.run"), prioWarn);
+    EXPECT_EQ(areg::scope_priority("cfgtest_abc_x_y.run"), prioWarn);
 
     config.set_configuration(make_properties(shared), make_properties({ module_entry("scope::cfgtest_abc_* = INFO") }));
     areg::restore_logging();
-    EXPECT_EQ(areg::scope_priority("cfgtest_abc_x"), prioInfo);
-    EXPECT_EQ(areg::scope_priority("cfgtest_abc_x_y"), prioInfo);
-    EXPECT_EQ(areg::scope_priority("cfgtest_other"), prioDebug);
+    EXPECT_EQ(areg::scope_priority("cfgtest_abc_x.run"), prioInfo);
+    EXPECT_EQ(areg::scope_priority("cfgtest_abc_x_y.run"), prioInfo);
+    EXPECT_EQ(areg::scope_priority("cfgtest_other.run"), prioDebug);
 
     config.set_configuration(oldShared, oldProcess);
     areg::restore_logging();

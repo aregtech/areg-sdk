@@ -170,9 +170,8 @@ std::pair<ScopeNodeBase &, bool>  ScopeNode::add_child_node( const ScopeNodeBase
 
     if ( child.is_leaf( ) )
     {
-        // Cast to ScopeLeaf so the copy constructor preserves mDotSeparator
         const ScopeLeaf & leafChild = static_cast<const ScopeLeaf &>(child);
-        auto atPos = mChildLeafs.add_if_unique( leafChild, false );
+        auto atPos = mChildLeafs.add_if_unique( leafChild, true );
         const ScopeNodeBase& leaf{ mChildLeafs.value_at(atPos.first) };
         scope = const_cast<ScopeNodeBase *>(&leaf);
         newEntry = atPos.second;
@@ -233,8 +232,6 @@ uint32_t ScopeNode::group_child_nodes()
             mGrouping |= static_cast<uint32_t>(ScopeNodeBase::Grouping::Nodes);
             result += mChildNodes.size( );
             mChildNodes.clear( );
-
-            result += remove_priority_nodes( prioNode );
         }
         else
         {
@@ -271,10 +268,18 @@ uint32_t ScopeNode::update_config_node( ConfigManager & config, const String & p
 {
     uint32_t result{ 0 };
     String thisScope = make_scope_path( parentPath );
-    if ( (mGrouping & static_cast<uint32_t>(ScopeNodeBase::Grouping::All)) != 0 )
+    constexpr uint32_t groupNodes{ static_cast<uint32_t>(ScopeNodeBase::Grouping::Nodes) };
+    constexpr uint32_t groupLeaves{ static_cast<uint32_t>(ScopeNodeBase::Grouping::Leaves) };
+    if ( (mGrouping & groupNodes) == groupNodes )
     {
         config.add_log_scope(make_config_string(parentPath), mPrioStates);
-        result = 1;
+        ++ result;
+    }
+
+    if ( (mGrouping & groupLeaves) == groupLeaves )
+    {
+        config.add_log_scope(parentPath + mNodeName + areg::SYNTAX_SCOPE_LEAF_SEPARATOR + areg::LOG_SYNTAX_GROUP, mPrioStates);
+        ++ result;
     }
 
     for ( auto pos = mChildNodes.first_position( ); mChildNodes.is_valid_position( pos ); pos = mChildNodes.next_position( pos ) )

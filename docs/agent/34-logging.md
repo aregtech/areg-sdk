@@ -86,7 +86,7 @@ log::<module>::scope::<scope-pattern> = <priority>
 ```
 
 `<module>` is the executable name without extension, or `*`; `<scope-pattern>` a scope
-name, `*` a trailing wildcard; `<priority>` `FATAL`, `ERROR`, `WARN`, `INFO`, `DEBUG`,
+name, or a group ending in `_*` (the nodes below a path), `.*` (the methods of a path) or `*` alone; `<priority>` `FATAL`, `ERROR`, `WARN`, `INFO`, `DEBUG`,
 `SCOPE` or `NOTSET`, combined with `|`. `DEBUG` includes the more severe priorities. `SCOPE` adds the enter and exit lines of
 `LOG_SCOPE`. `NOTSET` silences, which is how a noisy group is quietened under a
 wildcard. `DEF_LOG_SCOPE(group, method)` and `GLOBAL_LOG_SCOPE(group, method)` name the
@@ -94,7 +94,7 @@ scope **`group.method`**, joined with a dot:
 
 ```ini
 log::myapp::scope::myapp_Worker.process_timer = DEBUG | SCOPE ;   # this one
-log::myapp::scope::myapp_Worker*              = DEBUG | SCOPE ;   # the whole class
+log::myapp::scope::myapp_Worker.*             = DEBUG | SCOPE ;   # the whole class
 ```
 
 `areg_*` are the framework's scopes, `src_services_*` the generated code's.

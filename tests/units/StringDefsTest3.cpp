@@ -325,16 +325,14 @@ TEST(StringDefsTest3, copy_string_bounded)
         EXPECT_EQ(dst[5], '\0');   // must null-terminate
     }
 
-    // Truncation -- dstSpace smaller than source.
-    // The same-type copy path copies min(dstSpace, srcLen) chars and places null
-    // at strDst[result], which equals strDst[dstSpace] when fully filled.
-    // Use a buffer one element larger than dstSpace to safely hold the null.
+    // Truncation -- dstSpace smaller than source: dstSpace - 1 chars and the null fit in dstSpace.
     {
-        char dst[8]{};
+        char dst[8] = "XXXXXXX";
         areg::CharCount n = areg::copy_string<char, char>(dst, 4, "Hello");
-        EXPECT_EQ(n, static_cast<areg::CharCount>(4));
-        EXPECT_EQ(dst[4], '\0');   // null placed one past the copied chars
-        EXPECT_EQ(std::strncmp(dst, "Hell", 4), 0);
+        EXPECT_EQ(n, static_cast<areg::CharCount>(3));
+        EXPECT_EQ(dst[3], '\0');
+        EXPECT_EQ(dst[4], 'X');
+        EXPECT_EQ(std::strncmp(dst, "Hel", 3), 0);
     }
 
     // Explicit charsCopy smaller than source length
@@ -346,14 +344,13 @@ TEST(StringDefsTest3, copy_string_bounded)
         EXPECT_EQ(std::strncmp(dst, "Hel", 3), 0);
     }
 
-    // dstSpace == 1 -- copies 1 character and places null at dst[1].
-    // Use a 2-element buffer to safely hold the null at index 1.
+    // dstSpace == 1 -- only the null fits.
     {
         char dst[4] = "XXX";
         areg::CharCount n = areg::copy_string<char, char>(dst, 1, "Hello");
-        EXPECT_EQ(n, static_cast<areg::CharCount>(1));
-        EXPECT_EQ(dst[0], 'H');
-        EXPECT_EQ(dst[1], '\0');
+        EXPECT_EQ(n, static_cast<areg::CharCount>(0));
+        EXPECT_EQ(dst[0], '\0');
+        EXPECT_EQ(dst[1], 'X');
     }
 
     // Null destination -- must return 0 without crash

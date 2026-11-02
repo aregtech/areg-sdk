@@ -1063,3 +1063,92 @@ TEST(RingStackTest, test_streaming)
 
     EXPECT_EQ(lockStop, lockShift);
 }
+
+// Fixed-capacity overflow policies reject a push when the ring has no storage.
+TEST(RingStackTest, boundary_zero_capacity_fixed_policies_reject_push)
+{
+    for (const auto policy : { areg::OverlapPolicy::Stop, areg::OverlapPolicy::Shift })
+    {
+        areg::RingStack<int32_t> stack(0u, policy);
+        EXPECT_EQ(stack.push(7), 0u);
+        EXPECT_TRUE(stack.is_empty());
+        EXPECT_TRUE(stack.is_full());
+        EXPECT_EQ(stack.capacity(), 0u);
+        EXPECT_EQ(stack.reserve(0u), 0u);
+        stack.free_extra();
+        EXPECT_EQ(stack.capacity(), 0u);
+    }
+}
+
+// Reserving a wrapped ring preserves FIFO order and search positions.
+TEST(RingStackTest, boundary_wrapped_reserve_preserves_fifo_and_search_offsets)
+{
+    areg::RingStack<int32_t> stack(4u, areg::OverlapPolicy::Shift);
+    for (int32_t value = 1; value <= 6; ++value)
+        stack.push(value);
+    EXPECT_EQ(stack.size(), 4u);
+    EXPECT_EQ(stack[0], 3);
+    EXPECT_EQ(stack[3], 6);
+    EXPECT_FALSE(stack.contains(2));
+    EXPECT_FALSE(stack.contains(3, 1u));
+    EXPECT_EQ(stack.find(6, 4u), static_cast<uint32_t>(areg::INVALID_INDEX));
+    EXPECT_EQ(stack.reserve(8u), 8u);
+    EXPECT_EQ(stack.reserve(2u), 8u);
+    for (int32_t value = 3; value <= 6; ++value)
+        EXPECT_EQ(stack.pop(), value);
+    EXPECT_TRUE(stack.is_empty());
+    stack.free_extra();
+    EXPECT_EQ(stack.capacity(), 0u);
+}
+
+// Self-assignment and self-addition leave the ring's values intact.
+TEST(RingStackTest, boundary_self_copy_move_add_and_comparison_preserve_values)
+{
+    areg::RingStack<int32_t> stack(2u, areg::OverlapPolicy::Stop);
+    stack.push(5);
+    stack.copy(stack);
+    stack.move(std::move(stack));
+    EXPECT_EQ(stack.add(stack), 0u);
+    EXPECT_TRUE(stack == stack);
+    EXPECT_FALSE(stack != stack);
+    EXPECT_EQ(stack.size(), 1u);
+    EXPECT_EQ(stack.pop(), 5);
+}
+
+// Shrinking a wrapped ring must retain the queued values in FIFO order.
+TEST(RingStackTest, DISABLED_boundary_shrink_wrapped_ring_preserves_fifo)
+{
+    areg::RingStack<int32_t> stack(5u, areg::OverlapPolicy::Stop);
+    for (int32_t value = 1; value <= 5; ++value)
+        stack.push(value);
+    EXPECT_EQ(stack.pop(), 1);
+    EXPECT_EQ(stack.pop(), 2);
+    stack.push(6);
+    EXPECT_EQ(stack.pop(), 3);
+    stack.free_extra();
+    ASSERT_EQ(stack.capacity(), 3u);
+    for (int32_t value = 4; value <= 6; ++value)
+        EXPECT_EQ(stack.pop(), value);
+}
+
+// Copying an empty ring with larger capacity must leave usable storage.
+TEST(RingStackTest, DISABLED_boundary_copy_empty_larger_capacity_remains_usable)
+{
+    areg::RingStack<int32_t> source(4u, areg::OverlapPolicy::Stop);
+    areg::RingStack<int32_t> target(1u, areg::OverlapPolicy::Stop);
+    target.push(1);
+    target.copy(source);
+    ASSERT_TRUE(target.is_empty());
+    ASSERT_GE(target.capacity(), 4u);
+    EXPECT_EQ(target.push(17), 1u);
+    EXPECT_EQ(target.pop(), 17);
+}
+
+// Growing a zero-capacity ring must initialize its first pushed element.
+TEST(RingStackTest, DISABLED_boundary_zero_capacity_resize_initializes_first_element)
+{
+    areg::RingStack<int32_t> stack(0u, areg::OverlapPolicy::Resize);
+    ASSERT_EQ(stack.push(17), 1u);
+    EXPECT_EQ(stack[0], 17);
+    EXPECT_EQ(stack.pop(), 17);
+}

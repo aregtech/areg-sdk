@@ -31,6 +31,32 @@
 
 namespace
 {
+    struct ResourceListTracker
+    {
+        inline static uint32_t s_cleaned_lists{ 0u };
+        inline static uint32_t s_cleaned_objects{ 0u };
+
+        void impl_add_resource(areg::LinkedList<int32_t*>& list, int32_t*& resource)
+        {
+            list.push_last(resource);
+        }
+
+        bool impl_remove_resource(areg::LinkedList<int32_t*>& list, int32_t*& resource)
+        {
+            return list.remove_entry(resource);
+        }
+
+        void impl_clean_list(int32_t&, areg::LinkedList<int32_t*>& list)
+        {
+            ++s_cleaned_lists;
+            s_cleaned_objects += list.size();
+            list.clear();
+        }
+    };
+
+    using TrackedResourceLists = areg::ResourceListMap<int32_t, int32_t*, areg::LinkedList<int32_t*>
+        , areg::HashMap<int32_t, areg::LinkedList<int32_t*>>, ResourceListTracker>;
+
     //!< A recursive lock that counts its calls and every unlock by a thread that does not hold it.
     class CountingLock final : public areg::Lockable
     {
@@ -359,4 +385,104 @@ TEST( ScopedLockTest, ContainerWithMutexIsFreeForOtherThreads )
 
     other.join( );
     EXPECT_TRUE( locked ) << "the container's Mutex is held by the thread that created it";
+}
+
+// Resource-list operations keep or remove empty keys according to the requested policy.
+TEST(ScopedLockTest, boundary_resource_lists_keep_or_remove_empty_keys)
+{
+    int32_t first{ 1 };
+    int32_t second{ 2 };
+    TrackedResourceLists map;
+    EXPECT_EQ(map.find_resource(7), nullptr);
+    map.unregister_resource_object(7, &first);
+    EXPECT_TRUE(map.unregister_resource(7).is_empty());
+    EXPECT_TRUE(map.is_empty());
+    map.register_resource_object(7, &first);
+    map.register_resource_object(7, &second);
+    map.unregister_resource_object(8, &first);
+    map.unregister_resource_object(7, &first);
+    ASSERT_NE(map.find_resource(7), nullptr);
+    ASSERT_EQ(map.find_resource(7)->size(), 1u);
+    EXPECT_EQ(map.find_resource(7)->first_entry(), &second);
+    map.unregister_resource_object(7, &second, false);
+    EXPECT_TRUE(map.exist(7));
+    ASSERT_NE(map.resource(7), nullptr);
+    EXPECT_TRUE(map.resource(7)->is_empty());
+    map.unregister_resource_object(7, &second, true);
+    EXPECT_FALSE(map.exist(7));
+    EXPECT_EQ(map.resource(7), nullptr);
+}
+
+// Removing a resource key transfers its list without changing other keys.
+TEST(ScopedLockTest, boundary_resource_removal_transfers_list_and_preserves_other_keys)
+{
+    int32_t first{ 1 };
+    int32_t second{ 2 };
+    TrackedResourceLists map;
+    map.register_resource_object(7, &first);
+    map.register_resource_object(7, &second);
+    map.register_resource_object(8, &second);
+    const auto& constMap = map;
+    EXPECT_EQ(constMap.find_resource(9), nullptr);
+    ASSERT_NE(constMap.find_resource(7), nullptr);
+    EXPECT_EQ(constMap.find_resource(7)->size(), 2u);
+    EXPECT_EQ(constMap.resource(7), constMap.find_resource(7));
+    {
+        areg::ScopedLock lock(map.lockable());
+        EXPECT_EQ(map.find_resource_locked(7), map.find_resource(7));
+        EXPECT_EQ(constMap.find_resource_locked(9), nullptr);
+        EXPECT_EQ(constMap.find_resource_locked(7), constMap.resource(7));
+    }
+    auto removed = map.unregister_resource(7);
+    ASSERT_EQ(removed.size(), 2u);
+    EXPECT_EQ(removed.first_entry(), &first);
+    EXPECT_EQ(removed.last_entry(), &second);
+    EXPECT_FALSE(map.exist(7));
+    EXPECT_TRUE(map.exist(8));
+    EXPECT_EQ(map.size(), 1u);
+    EXPECT_EQ(map.data().size(), 1u);
+}
+
+// Removing an object visits every resource list and cleans up empty keys.
+TEST(ScopedLockTest, boundary_remove_object_visits_all_lists_and_cleans_empty_keys)
+{
+    int32_t first{ 1 };
+    int32_t second{ 2 };
+    TrackedResourceLists map;
+    map.register_resource_object(7, &first);
+    map.register_resource_object(8, &first);
+    map.register_resource_object(8, &second);
+    EXPECT_TRUE(map.remove_resource_object(&first, false));
+    EXPECT_EQ(map.size(), 2u);
+    ASSERT_NE(map.find_resource(7), nullptr);
+    EXPECT_TRUE(map.find_resource(7)->is_empty());
+    EXPECT_FALSE(map.remove_resource_object(&first, true));
+    EXPECT_FALSE(map.exist(7));
+    ASSERT_NE(map.find_resource(8), nullptr);
+    EXPECT_EQ(map.find_resource(8)->first_entry(), &second);
+    EXPECT_TRUE(map.remove_resource_object(&second, true));
+    EXPECT_TRUE(map.is_empty());
+}
+
+// Cleanup notifies the tracker once for each remaining resource list.
+TEST(ScopedLockTest, boundary_resource_cleanup_calls_tracker_once_per_remaining_list)
+{
+    int32_t first{ 1 };
+    int32_t second{ 2 };
+    ResourceListTracker::s_cleaned_lists = 0u;
+    ResourceListTracker::s_cleaned_objects = 0u;
+    {
+        TrackedResourceLists map;
+        map.register_resource_object(7, &first);
+        map.register_resource_object(8, &second);
+        map.remove_all_resources();
+        EXPECT_TRUE(map.is_empty());
+        EXPECT_EQ(ResourceListTracker::s_cleaned_lists, 2u);
+        EXPECT_EQ(ResourceListTracker::s_cleaned_objects, 2u);
+        map.remove_all_resources();
+        EXPECT_EQ(ResourceListTracker::s_cleaned_lists, 2u);
+        map.register_resource_object(9, &first);
+    }
+    EXPECT_EQ(ResourceListTracker::s_cleaned_lists, 3u);
+    EXPECT_EQ(ResourceListTracker::s_cleaned_objects, 3u);
 }

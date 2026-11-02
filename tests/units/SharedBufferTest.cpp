@@ -21,8 +21,14 @@
 #include "units/GUnitTest.hpp"
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/base/String.hpp"
+#include "areg/base/MessageEnvelope.hpp"
 
+#include <array>
 #include <cstring>
+#include <limits>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace
 {
@@ -669,4 +675,403 @@ TEST(SharedBufferTest, write_to_shared_buffer)
     EXPECT_EQ(original.size_used(), too_many * sizeof(uint8_t));
     EXPECT_TRUE(copy.is_valid());
     EXPECT_EQ(copy.size_used(), 0u);
+}
+
+// Logical shrinking and discarding contents retain the existing allocation.
+TEST(SharedBufferTest, shrink_and_reserve_discard_keep_allocation)
+{
+    constexpr uint8_t DATA[]{ 1u, 2u, 3u, 4u };
+    areg::SharedBuffer buffer(128u, DATA, sizeof(DATA));
+    const uint8_t* const allocation{ buffer.buffer() };
+    buffer.set_size_used(2u);
+    EXPECT_EQ(buffer.position(), 2u);
+    EXPECT_EQ(buffer.size_used(), 2u);
+    buffer.set_size_used(buffer.size_available() + 1u);
+    EXPECT_EQ(buffer.size_used(), 2u);
+    buffer.reset();
+    EXPECT_EQ(buffer.position(), 0u);
+    EXPECT_EQ(buffer.size_used(), 2u);
+    EXPECT_GT(buffer.reserve(1u, false), 0u);
+    EXPECT_EQ(buffer.buffer(), allocation);
+    EXPECT_TRUE(buffer.is_empty());
+    EXPECT_EQ(buffer.reserve(0u, false), 0u);
+    EXPECT_FALSE(buffer.is_valid());
+    EXPECT_EQ(buffer.buffer(), nullptr);
+    EXPECT_EQ(std::as_const(buffer).buffer(), nullptr);
+    buffer.set_size_used(1u);
+    EXPECT_EQ(buffer.size_available(), 0u);
+    EXPECT_TRUE(buffer.is_begin());
+    EXPECT_TRUE(buffer.is_end());
+}
+
+// Seeks stay within bounds, and a short read leaves the output tail untouched.
+TEST(SharedBufferTest, seek_clamps_and_raw_reads_leave_tail_untouched)
+{
+    constexpr uint8_t DATA[]{ 1u, 2u, 3u };
+    areg::SharedBuffer buffer(DATA, sizeof(DATA));
+    using Origin = areg::Cursor::SeekOrigin;
+    EXPECT_EQ(buffer.set_position(-10, Origin::Begin), 0u);
+    EXPECT_EQ(buffer.set_position(100, Origin::Begin), sizeof(DATA));
+    EXPECT_EQ(buffer.set_position(-100, Origin::Current), 0u);
+    EXPECT_EQ(buffer.set_position(100, Origin::Current), sizeof(DATA));
+    EXPECT_EQ(buffer.set_position(-100, Origin::End), 0u);
+    EXPECT_EQ(buffer.set_position(100, Origin::End), sizeof(DATA));
+    buffer.reset();
+    std::array<uint8_t, 5> output{ 9u, 9u, 9u, 9u, 9u };
+    EXPECT_EQ(buffer.read(nullptr, 1u), 0u);
+    EXPECT_EQ(buffer.read(output.data(), 0u), 0u);
+    EXPECT_EQ(buffer.read(output.data(), output.size()), sizeof(DATA));
+    EXPECT_EQ(output, (std::array<uint8_t, 5>{ 1u, 2u, 3u, 9u, 9u }));
+    EXPECT_EQ(buffer.position(), sizeof(DATA));
+    buffer.invalidate();
+    EXPECT_EQ(buffer.read(output.data(), 1u), 0u);
+    EXPECT_EQ(buffer.set_position(0, Origin::Begin), areg::Cursor::INVALID_CURSOR_POSITION);
+}
+
+// An assigned view keeps its slice alive after the original owner releases it.
+TEST(SharedBufferTest, view_assignment_retains_slice_after_owner_release)
+{
+    constexpr uint8_t DATA[]{ 11u, 12u, 13u };
+    areg::SharedBuffer inner(DATA, sizeof(DATA));
+    areg::SharedBuffer outer;
+    outer << VAL_C << inner << VAL_B;
+    outer.reset();
+    EXPECT_EQ(outer.read32_bits(), VAL_C);
+    areg::SharedBuffer view;
+    ASSERT_EQ(outer.read(view), sizeof(DATA));
+    const uint8_t* const slice{ std::as_const(view).buffer() };
+    areg::SharedBuffer copied;
+    copied = view;
+    areg::SharedBuffer moved;
+    moved = std::move(view);
+    EXPECT_FALSE(view.is_valid());
+    EXPECT_TRUE(view.is_owner());
+    EXPECT_TRUE(copied.is_view());
+    EXPECT_TRUE(moved.is_view());
+    EXPECT_EQ(copied.position(), 0u);
+    outer.invalidate();
+    copied.invalidate();
+    EXPECT_TRUE(moved.is_unique());
+    EXPECT_EQ(std::as_const(moved).buffer(), slice);
+    std::array<uint8_t, 5> output{};
+    EXPECT_EQ(moved.read(output.data(), output.size()), sizeof(DATA));
+    EXPECT_EQ(output, (std::array<uint8_t, 5>{ 11u, 12u, 13u, 0u, 0u }));
+    EXPECT_TRUE(moved.is_end());
+    moved.reset();
+    EXPECT_EQ(moved.position(), 0u);
+    EXPECT_EQ(moved.bounded_count(100u), sizeof(DATA));
+}
+
+// Growing a view detaches only the bytes visible through that view.
+TEST(SharedBufferTest, view_reserve_detaches_only_visible_bytes)
+{
+    constexpr uint8_t DATA[]{ 11u, 12u, 13u };
+    areg::SharedBuffer inner(DATA, sizeof(DATA));
+    areg::SharedBuffer outer;
+    outer << VAL_A << inner << VAL_B;
+    outer.reset();
+    EXPECT_EQ(outer.read32_bits(), VAL_A);
+    areg::SharedBuffer view;
+    ASSERT_EQ(outer.read(view), sizeof(DATA));
+    EXPECT_FALSE(view.ensure_size(1u));
+    EXPECT_EQ(view.insert_at(DATA, 1u, 0u), 0u);
+    EXPECT_EQ(view.position(), 0u);
+    EXPECT_GE(view.reserve(64u, false), 64u);
+    EXPECT_TRUE(view.is_owner());
+    EXPECT_FALSE(view.is_shared());
+    EXPECT_EQ(view.size_used(), sizeof(DATA));
+    EXPECT_EQ(std::memcmp(view.buffer(), DATA, sizeof(DATA)), 0);
+    view.reset();
+    const uint8_t replacement{ 99u };
+    EXPECT_EQ(view.write(&replacement, 1u), 1u);
+    outer.reset();
+    EXPECT_EQ(outer.read32_bits(), VAL_A);
+    areg::SharedBuffer unchanged;
+    ASSERT_EQ(outer.read(unchanged), sizeof(DATA));
+    EXPECT_EQ(std::as_const(unchanged).buffer()[0], DATA[0]);
+}
+
+// Seeking and direct reads cannot escape a shared-buffer slice.
+TEST(SharedBufferTest, view_seek_and_direct_reads_cannot_escape_slice)
+{
+    constexpr uint32_t DATA[]{ 21u, 22u };
+    areg::SharedBuffer inner;
+    ASSERT_EQ(inner.write_array(DATA, 2u), sizeof(DATA));
+    areg::SharedBuffer outer;
+    outer << VAL_A << inner << VAL_B;
+    outer.reset();
+    EXPECT_EQ(outer.read32_bits(), VAL_A);
+    areg::SharedBuffer view;
+    ASSERT_EQ(outer.read(view), sizeof(DATA));
+    using Origin = areg::Cursor::SeekOrigin;
+    EXPECT_EQ(view.set_position(-100, Origin::End), 0u);
+    EXPECT_EQ(view.set_position(100, Origin::Current), sizeof(DATA));
+    EXPECT_EQ(view.set_position(-4, Origin::Current), sizeof(uint32_t));
+    EXPECT_EQ(view.read_array<uint32_t>(2u), nullptr);
+    EXPECT_EQ(view.position(), sizeof(uint32_t));
+    const uint32_t* const last{ view.read_ptr<uint32_t>() };
+    ASSERT_NE(last, nullptr);
+    EXPECT_EQ(*last, DATA[1]);
+    EXPECT_EQ(view.read_ptr<uint32_t>(), nullptr);
+    EXPECT_EQ(view.position(), sizeof(DATA));
+}
+
+// A truncated nested payload restores the read position before its length field.
+TEST(SharedBufferTest, truncated_nested_payload_rolls_back_length)
+{
+    areg::SharedBuffer outer;
+    ASSERT_TRUE(outer.write32_bits(20u));
+    ASSERT_TRUE(outer.write8_bits(0xAAu));
+    outer.reset();
+    areg::SharedBuffer destination;
+    EXPECT_EQ(outer.read(destination), 0u);
+    EXPECT_EQ(outer.position(), 0u);
+    EXPECT_FALSE(destination.is_valid());
+    EXPECT_EQ(outer.read32_bits(), 20u);
+}
+
+// Self-streaming is harmless, and invalid assignments clear the buffer as specified.
+TEST(SharedBufferTest, self_streaming_and_invalid_assignments)
+{
+    areg::SharedBuffer buffer;
+    buffer << VAL_A;
+    const uint32_t position{ buffer.position() };
+    EXPECT_EQ(buffer.write(buffer), sizeof(VAL_A));
+    EXPECT_EQ(buffer.read(buffer), sizeof(VAL_A));
+    buffer << buffer;
+    buffer >> buffer;
+    areg::SharedBuffer& alias{ buffer };
+    buffer = alias;
+    buffer = std::move(alias);
+    EXPECT_EQ(buffer.position(), position);
+    EXPECT_EQ(buffer.size_used(), sizeof(VAL_A));
+    areg::SharedBuffer invalid;
+    EXPECT_EQ(buffer.write(invalid), 0u);
+    EXPECT_TRUE(buffer.is_equal(buffer));
+    EXPECT_FALSE(buffer.is_equal(invalid));
+    EXPECT_FALSE(invalid.is_equal(buffer));
+    EXPECT_TRUE(invalid.is_equal(invalid));
+    EXPECT_FALSE(invalid.clone().is_valid());
+    buffer = invalid;
+    EXPECT_FALSE(buffer.is_valid());
+    buffer << VAL_B;
+    buffer = std::move(invalid);
+    EXPECT_FALSE(buffer.is_valid());
+}
+
+// Converting between an envelope and a shared buffer retains the payload and ownership.
+TEST(SharedBufferTest, envelope_conversions_keep_payload_and_ownership)
+{
+    constexpr uint8_t DATA[]{ 31u, 32u, 33u };
+    areg::MessageEnvelope envelope(true);
+    ASSERT_EQ(envelope.write(DATA, sizeof(DATA)), sizeof(DATA));
+    const uint8_t* const allocation{ envelope.buffer() };
+    areg::SharedBuffer copied(envelope);
+    areg::SharedBuffer assigned;
+    assigned = envelope;
+    EXPECT_EQ(copied.buffer(), allocation);
+    EXPECT_EQ(assigned.buffer(), allocation);
+    EXPECT_EQ(copied.position(), 0u);
+    EXPECT_TRUE(copied.is_owner());
+    EXPECT_EQ(envelope.share_buffer().use_count(), 3u);
+    areg::SharedBuffer moved(std::move(envelope));
+    EXPECT_FALSE(envelope.is_valid());
+    EXPECT_EQ(moved.buffer(), allocation);
+    areg::MessageEnvelope second(true);
+    ASSERT_EQ(second.write(DATA, sizeof(DATA)), sizeof(DATA));
+    areg::SharedBuffer moveAssigned;
+    moveAssigned = std::move(second);
+    EXPECT_FALSE(second.is_valid());
+    EXPECT_EQ(moveAssigned.position(), 0u);
+    copied.invalidate();
+    assigned.invalidate();
+    EXPECT_TRUE(moved.is_unique());
+    EXPECT_EQ(std::memcmp(moved.buffer(), DATA, sizeof(DATA)), 0);
+    EXPECT_EQ(std::memcmp(moveAssigned.buffer(), DATA, sizeof(DATA)), 0);
+}
+
+// Assigning an invalid envelope clears a previously held slice.
+TEST(SharedBufferTest, invalid_envelope_assignment_clears_previous_slice)
+{
+    areg::SharedBuffer outer;
+    areg::SharedBuffer inner;
+    inner << VAL_A;
+    outer << inner;
+    outer.reset();
+    areg::SharedBuffer view;
+    ASSERT_EQ(outer.read(view), sizeof(VAL_A));
+    areg::MessageEnvelope empty;
+    view = empty;
+    EXPECT_FALSE(view.is_valid());
+    EXPECT_TRUE(view.is_owner());
+    view << VAL_B;
+    view = std::move(empty);
+    EXPECT_FALSE(view.is_valid());
+    EXPECT_TRUE(view.is_owner());
+    areg::SharedBuffer copied(empty);
+    areg::SharedBuffer moved(std::move(empty));
+    EXPECT_FALSE(copied.is_valid());
+    EXPECT_FALSE(moved.is_valid());
+}
+
+// Growing one shared owner leaves the other owner's bytes intact.
+TEST(SharedBufferTest, growth_releases_one_owner_without_changing_other)
+{
+    constexpr uint8_t DATA[]{ 1u, 2u, 3u };
+    areg::SharedBuffer original(DATA, sizeof(DATA));
+    areg::SharedBuffer copy(original);
+    const uint8_t* const allocation{ copy.buffer() };
+    const std::vector<uint8_t> extra(original.size_available() + 1u, 0xA5u);
+    ASSERT_EQ(original.write(extra.data(), extra.size()), extra.size());
+    EXPECT_EQ(copy.buffer(), allocation);
+    EXPECT_EQ(copy.size_used(), sizeof(DATA));
+    EXPECT_EQ(std::memcmp(copy.buffer(), DATA, sizeof(DATA)), 0);
+    EXPECT_TRUE(copy.is_unique());
+    original.invalidate();
+    EXPECT_EQ(copy.read8_bits(), DATA[0]);
+}
+
+// An empty or incomplete nested-buffer prefix reports no payload.
+TEST(SharedBufferTest, empty_and_short_nested_prefixes_report_no_payload)
+{
+    areg::SharedBuffer source;
+    areg::SharedBuffer destination;
+    EXPECT_EQ(source.read(destination), 0u);
+    EXPECT_EQ(source.read_array<uint8_t>(1u), nullptr);
+    EXPECT_EQ(source.read_array<uint8_t>(0u), nullptr);
+    EXPECT_TRUE(source.write32_bits(0u));
+    source.reset();
+    EXPECT_EQ(source.read(destination), 0u);
+    EXPECT_EQ(source.position(), sizeof(uint32_t));
+    EXPECT_FALSE(destination.is_valid());
+    source.set_size_used(2u);
+    source.reset();
+    EXPECT_EQ(source.read(destination), 0u);
+    EXPECT_EQ(source.position(), 0u);
+}
+
+// Ensuring capacity and flushing keep the stored bytes intact.
+TEST(SharedBufferTest, ensure_size_and_flush_preserve_existing_content)
+{
+    areg::SharedBuffer buffer;
+    EXPECT_TRUE(buffer.ensure_size(64u));
+    EXPECT_TRUE(buffer.is_valid());
+    EXPECT_TRUE(buffer.is_empty());
+    EXPECT_EQ(buffer.position(), 0u);
+    buffer << VAL_A << VAL_B;
+    ASSERT_EQ(buffer.set_position(1, areg::Cursor::SeekOrigin::Begin), 1u);
+    const uint8_t* const allocation{ buffer.buffer() };
+    EXPECT_TRUE(buffer.ensure_size(1u));
+    EXPECT_EQ(buffer.buffer(), allocation);
+    EXPECT_TRUE(buffer.ensure_size(buffer.size_available() + 1u));
+    EXPECT_EQ(buffer.position(), 1u);
+    EXPECT_EQ(buffer.size_used(), 2u * sizeof(uint32_t));
+    buffer.flush();
+    EXPECT_EQ(buffer.position(), 1u);
+    buffer.reset();
+    EXPECT_EQ(buffer.read32_bits(), VAL_A);
+    EXPECT_EQ(buffer.read32_bits(), VAL_B);
+}
+
+// Text parsing through a view cannot read bytes beyond its slice.
+TEST(SharedBufferTest, view_text_parser_cannot_read_trailing_owner_bytes)
+{
+    areg::SharedBuffer inner;
+    ASSERT_TRUE(inner.write32_bits(6u));
+    constexpr uint8_t DATA[]{ 'a', 'b', 'c' };
+    ASSERT_EQ(inner.write(DATA, sizeof(DATA)), sizeof(DATA));
+    areg::SharedBuffer outer;
+    outer << VAL_A << inner << VAL_B;
+    outer.reset();
+    EXPECT_EQ(outer.read32_bits(), VAL_A);
+    areg::SharedBuffer view;
+    ASSERT_EQ(outer.read(view), inner.size_used());
+    std::string text{ "unchanged" };
+    EXPECT_EQ(view.read_text(text), sizeof(uint32_t) + sizeof(DATA));
+    EXPECT_TRUE(text.empty());
+    EXPECT_EQ(view.position(), view.size_used());
+    EXPECT_TRUE(view.is_end());
+    EXPECT_EQ(outer.read32_bits(), VAL_B);
+}
+
+// Reserving an already available total capacity must not reallocate the buffer.
+TEST(SharedBufferTest, reserve_total_capacity_does_not_grow_sufficient_storage)
+{
+    areg::SharedBuffer buffer;
+    buffer << VAL_A;
+    const uint8_t* const allocation{ buffer.buffer() };
+    const uint32_t capacity{ buffer.size_available() };
+    EXPECT_EQ(buffer.reserve(capacity, true), capacity - sizeof(VAL_A));
+    EXPECT_EQ(buffer.size_available(), capacity);
+    EXPECT_EQ(buffer.buffer(), allocation);
+}
+
+// An overflowing nested-buffer length must be rejected before creating a view.
+TEST(SharedBufferTest, nested_length_overflow_is_rejected)
+{
+    areg::SharedBuffer stream;
+    ASSERT_TRUE(stream.write32_bits(std::numeric_limits<uint32_t>::max()));
+    stream.reset();
+    areg::SharedBuffer destination;
+    ASSERT_EQ(stream.read(destination), 0u);
+    EXPECT_FALSE(destination.is_valid());
+    EXPECT_EQ(stream.position(), 0u);
+}
+
+// A typed-array read must reject an element count whose byte size overflows.
+TEST(SharedBufferTest, direct_array_rejects_overflowing_element_count)
+{
+    constexpr uint32_t VALUE{ 42u };
+    areg::SharedBuffer buffer;
+    ASSERT_EQ(buffer.write_pod(VALUE), sizeof(VALUE));
+    buffer.reset();
+    EXPECT_EQ(buffer.read_array<uint32_t>(0x40000000u), nullptr);
+    EXPECT_EQ(buffer.position(), 0u);
+    EXPECT_EQ(buffer.write_array(&VALUE, 0x40000001u), 0u);
+    EXPECT_EQ(buffer.position(), 0u);
+}
+
+// A nested length that fits 32 bits but exceeds the data is rejected.
+TEST(SharedBufferTest, nested_length_beyond_data_is_rejected)
+{
+    areg::SharedBuffer stream;
+    ASSERT_TRUE(stream.write32_bits(5u));
+    ASSERT_TRUE(stream.write32_bits(VAL_A));
+    stream.reset();
+    areg::SharedBuffer destination;
+    EXPECT_EQ(stream.read(destination), 0u);
+    EXPECT_FALSE(destination.is_valid());
+    EXPECT_EQ(stream.position(), 0u);
+}
+
+// An empty nested buffer replaces stale destination content.
+TEST(SharedBufferTest, empty_nested_buffer_clears_destination)
+{
+    areg::SharedBuffer empty;
+    areg::SharedBuffer stream;
+    stream << VAL_A << empty << VAL_B;
+    EXPECT_EQ(stream.size_used(), 3u * sizeof(uint32_t));
+    stream.reset();
+    EXPECT_EQ(stream.read32_bits(), VAL_A);
+    areg::SharedBuffer destination;
+    destination << VAL_C;
+    stream >> destination;
+    EXPECT_FALSE(destination.is_valid());
+    EXPECT_EQ(stream.read32_bits(), VAL_B);
+}
+
+// A view cannot be the target of a nested write.
+TEST(SharedBufferTest, view_rejects_nested_write)
+{
+    areg::SharedBuffer inner;
+    inner << VAL_A;
+    areg::SharedBuffer outer;
+    outer << inner;
+    outer.reset();
+    areg::SharedBuffer view;
+    ASSERT_EQ(outer.read(view), sizeof(VAL_A));
+    ASSERT_TRUE(view.is_view());
+    EXPECT_EQ(view.write(inner), 0u);
+    EXPECT_TRUE(view.is_view());
+    EXPECT_EQ(view.size_used(), sizeof(VAL_A));
 }

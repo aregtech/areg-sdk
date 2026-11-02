@@ -240,7 +240,7 @@ public:
     using BufferBase::write;
 
 
-    /** Serialises a SharedBuffer (length prefix + data) into this buffer. **/
+    /** Serialises buf as a 32-bit length + data; an invalid buf as length 0. Returns the data bytes written. **/
     uint32_t write(const SharedBuffer& buf) final;
 
     /** Appends raw bytes at the end of written data. **/
@@ -265,7 +265,7 @@ public:
     using BufferBase::read;
 
 
-    /** Deserialises a length-prefixed byte sequence into a SharedBuffer. **/
+    /** Reads a length-prefixed sequence into buf as a view; length 0 invalidates buf, a failure changes nothing. **/
     uint32_t read(SharedBuffer& buf) const noexcept final;
 
     /** Copies bytes from the current read position into buf. **/
@@ -857,13 +857,13 @@ inline const T* SharedBuffer::read_array(uint32_t count) noexcept
     if (raw == nullptr)
         return nullptr;
 
-    const uint32_t sz{ static_cast<uint32_t>(sizeof(T)) * count };
     const uint32_t limit = (mViewEnd != 0u ? mViewEnd : raw->bufHeader.biUsed);
-    if (mPosition + sz > limit)
+    const uint64_t end{ static_cast<uint64_t>(mPosition) + static_cast<uint64_t>(sizeof(T)) * count };
+    if (end > limit)
         return nullptr;
 
     const T* result = reinterpret_cast<const T*>(buffer_to_read());
-    mPosition += sz;
+    mPosition = static_cast<uint32_t>(end);
     return result;
 }
 
@@ -878,7 +878,7 @@ template <typename T>
 inline uint32_t SharedBuffer::write_array(const T* data, uint32_t count) noexcept
 {
     static_assert(std::is_trivially_copyable_v<T>, "write_array<T>() requires trivially-copyable T");
-    if ((data == nullptr) || (count == 0u))
+    if ((data == nullptr) || (count == 0u) || (count > areg::MAX_BUF_LENGTH / static_cast<uint32_t>(sizeof(T))))
         return 0u;
 
     return write_data(reinterpret_cast<const uint8_t*>(data), static_cast<uint32_t>(sizeof(T)) * count);

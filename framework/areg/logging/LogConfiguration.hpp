@@ -220,6 +220,13 @@ public:
      **/
     void set_module_scopes(const std::vector<Property>& scopeList);
 
+    /**
+     * \brief   Sets the module-specific priority of the listed scopes.
+     *
+     * \param   scopeNames  The names of the scopes or scope groups.
+     * \param   enable      If true, sets SCOPE and DEBUG priorities. If false, sets NOTSET.
+     * \param   isTemporary If true, the change is temporary and is not saved.
+     **/
     void enable_scopes(const std::vector<String>& scopeNames, bool enable = true, bool isTemporary = false);
 
     /**

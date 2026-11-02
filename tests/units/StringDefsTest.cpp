@@ -1467,3 +1467,121 @@ TEST(StringDefsTest, compare_strings_of_char16_t)
     EXPECT_NE((areg::compare_strings<char16_t, char16_t>(left, u"NEEDLE", 6, true)), areg::Ordering::Equal);
     EXPECT_EQ((areg::compare_strings<char16_t, char16_t>(left, u"NEEDLE", 6, false)), areg::Ordering::Equal);
 }
+
+// Narrow-string searches return the correct next pointer at text boundaries.
+TEST(StringDefsTest1, boundary_search_next_pointer_boundaries)
+{
+    const char source[]{ "aBa" };
+    const char* next{ source };
+    EXPECT_EQ(areg::find_first('a', source, 2, true, &next), 2);
+    EXPECT_EQ(next, nullptr);
+    EXPECT_EQ(areg::find_first('b', source, 0, false, &next), 1);
+    EXPECT_EQ(next, source + 2);
+    EXPECT_EQ(areg::find_first("BA", source, 0, false, &next), 1);
+    EXPECT_EQ(next, nullptr);
+    EXPECT_EQ(areg::find_first("a", source, 0, false, &next), 0);
+    EXPECT_EQ(next, source + 1);
+    EXPECT_EQ(areg::find_last('A', source, 1, false, &next), 0);
+    EXPECT_EQ(next, source);
+    EXPECT_EQ(areg::find_last('z', source, areg::END_POS, true, &next), areg::INVALID_POS);
+    EXPECT_EQ(next, nullptr);
+    EXPECT_EQ(areg::find_first('a', source, 3, false, &next), areg::INVALID_POS);
+    EXPECT_EQ(next, nullptr);
+    EXPECT_EQ(areg::find_last('a', source, areg::INVALID_POS, true, &next), areg::INVALID_POS);
+    EXPECT_EQ(next, nullptr);
+}
+
+// Wide-string searches return the correct next pointer at text boundaries.
+TEST(StringDefsTest1, boundary_wide_search_next_pointer_boundaries)
+{
+    const wchar_t source[]{ L"aBa" };
+    const wchar_t* next{ source };
+    EXPECT_EQ(areg::find_first(L'b', source, 0, false, &next), 1);
+    EXPECT_EQ(next, source + 2);
+    EXPECT_EQ(areg::find_first(L"BA", source, 0, false, &next), 1);
+    EXPECT_EQ(next, nullptr);
+    EXPECT_EQ(areg::find_last(L'A', source, 1, false, &next), 0);
+    EXPECT_EQ(next, source);
+    EXPECT_EQ(areg::find_last(L'z', source, areg::END_POS, true, &next), areg::INVALID_POS);
+    EXPECT_EQ(next, nullptr);
+}
+
+// A failed reverse search must not form a pointer before the input.
+TEST(StringDefsTest1, DISABLED_boundary_reverse_search_misses_do_not_cross_begin)
+{
+    const char source[]{ "abc" };
+    const char* next{ source };
+    EXPECT_EQ(areg::find_last('Z', source, areg::END_POS, false, &next), areg::INVALID_POS);
+    EXPECT_EQ(next, nullptr);
+    EXPECT_EQ(areg::find_last("Z", source, areg::END_POS, false, &next), areg::INVALID_POS);
+    EXPECT_EQ(next, nullptr);
+    EXPECT_EQ(areg::find_last("A", source, areg::END_POS, false, &next), 0);
+    EXPECT_EQ(next, source);
+}
+
+// Trimming handles explicit empty ranges and one-character output buffers safely.
+TEST(StringDefsTest1, boundary_trim_explicit_empty_ranges_and_single_slot_outputs)
+{
+    char output[]{ 'x', 'y' };
+    areg::trim_all<char, char>(output, 2, "abc", 0);
+    EXPECT_EQ(output[0], '\0');
+    EXPECT_EQ(output[1], 'y');
+    output[0] = 'x';
+    areg::trim_left<char, char>(output, 1, " abc");
+    EXPECT_EQ(output[0], '\0');
+    EXPECT_EQ(output[1], 'y');
+    wchar_t wide[]{ L'x', L'y' };
+    areg::trim_right<wchar_t, char>(wide, 1, "abc ");
+    EXPECT_EQ(wide[0], L'\0');
+    EXPECT_EQ(wide[1], L'y');
+    areg::trim_left<wchar_t>(wide, 0);
+    EXPECT_EQ(wide[1], L'y');
+}
+
+// A printable search with no input clears its next-position output.
+TEST(StringDefsTest1, boundary_printable_zero_count_and_terminator_clear_next)
+{
+    char source[]{ "abc" };
+    char* next{ source };
+    EXPECT_EQ(areg::printable(source, 0, &next), nullptr);
+    EXPECT_EQ(next, nullptr);
+    EXPECT_STREQ(source, "abc");
+    EXPECT_EQ(areg::printable(source, areg::COUNT_ALL, &next), source);
+    EXPECT_EQ(next, nullptr);
+    EXPECT_STREQ(source, "abc");
+    wchar_t wide[]{ L"abc" };
+    wchar_t* wideNext{ wide };
+    EXPECT_EQ(areg::printable(wide, 0, &wideNext), nullptr);
+    EXPECT_EQ(wideNext, nullptr);
+    EXPECT_STREQ(wide, L"abc");
+}
+
+// A copy never writes past the destination space and always terminates it.
+TEST(StringDefsTest1, copy_string_keeps_terminator_inside_destination_space)
+{
+    char buffer[8];
+    std::memset(buffer, '#', sizeof(buffer));
+    EXPECT_EQ((areg::copy_string<char, char>(buffer, 4, "abcdefgh", areg::COUNT_ALL)), 3);
+    EXPECT_STREQ(buffer, "abc");
+    EXPECT_EQ(buffer[4], '#');
+
+    std::memset(buffer, '#', sizeof(buffer));
+    EXPECT_EQ((areg::copy_string<char, char>(buffer, 4, "abcdefgh", 4)), 3);
+    EXPECT_STREQ(buffer, "abc");
+    EXPECT_EQ(buffer[4], '#');
+
+    std::memset(buffer, '#', sizeof(buffer));
+    EXPECT_EQ((areg::copy_string<char, char>(buffer, 4, "abc", areg::COUNT_ALL)), 3);
+    EXPECT_STREQ(buffer, "abc");
+
+    std::memset(buffer, '#', sizeof(buffer));
+    EXPECT_EQ((areg::copy_string<char, char>(buffer, 0, "abc", areg::COUNT_ALL)), 0);
+    EXPECT_EQ(buffer[0], '#');
+    EXPECT_EQ((areg::copy_string<char, wchar_t>(buffer, 0, L"abc", areg::COUNT_ALL)), 0);
+    EXPECT_EQ(buffer[0], '#');
+
+    EXPECT_EQ((areg::copy_string<char, char>(buffer, 4, static_cast<const char*>(nullptr), areg::COUNT_ALL)), 0);
+    EXPECT_EQ(buffer[0], '\0');
+    EXPECT_EQ((areg::copy_string<char, char>(buffer, 4, "abc", -5)), 0);
+    EXPECT_EQ(buffer[0], '\0');
+}

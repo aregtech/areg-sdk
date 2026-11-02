@@ -67,7 +67,7 @@ void LogConfiguration::set_log_enabled(areg::LogTarget logType, bool isEnabled)
         mConfigMan.set_logging_status(true);
     }
 
-    if (mConfigMan.log_enabled(logType) != isEnabled)
+    if (mConfigMan.log_target_flag(logType) != isEnabled)
     {
         mConfigMan.set_log_enabled(logType, isEnabled);
     }

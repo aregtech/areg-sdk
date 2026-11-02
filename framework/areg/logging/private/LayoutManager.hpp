@@ -100,6 +100,15 @@ public:
 private:
 
     /**
+     * \brief   Copies the layout format to a writable buffer and creates layout objects from it.
+     *
+     * \param   layoutFormat    The layout string to parse.
+     * \param   len             The length of the layout string without the end-of-string character.
+     * \return  Returns true if the layout manager contains at least one layout object.
+     **/
+    bool _parse_layouts(const char* layoutFormat, uint32_t len);
+
+    /**
      * \brief   Instantiates and creates layout objects from layout format string.
      *
      * \param   layoutFormat    The layout string to parse and create objects.

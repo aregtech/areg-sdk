@@ -273,6 +273,8 @@ log::logobserver::db::queue         = 256                           # Megabytes 
 # ---------------------------------------------------------------------------
 # Disable logging for framework services to reduce noise in production.
 # These services handle logging infrastructure and should remain silent.
+# The log collector switches its own logging off in code; the database of the
+# collected logs below does not depend on it.
 # ---------------------------------------------------------------------------
 log::logcollector::enable::file     = false     # Log Collector: disable file output
 log::logcollector::enable::debug    = false     # Log Collector: disable debug console output

@@ -21,6 +21,7 @@
  ************************************************************************/
 #include "units/GUnitTest.hpp"
 #include "areg/base/SocketDefs.hpp"
+#include "areg/base/SocketMultiplexer.hpp"
 
 #if defined(_POSIX)
 
@@ -34,6 +35,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <csignal>
 #include <cstring>
 #include <future>
 #include <thread>
@@ -472,6 +474,222 @@ TEST( SocketWouldBlockTest, NonBlockingSendStillTimesOut )
 
     close_pair( pair );
 }
+
+namespace
+{
+    struct ScopedPair : Pair
+    {
+        ~ScopedPair()
+        {
+            close_pair(*this);
+        }
+    };
+
+    class ScopedReceiveMode
+    {
+    public:
+        explicit ScopedReceiveMode(areg::ReceiveMode mode)
+            : mSaved(areg::receive_mode())
+        {
+            areg::set_receive_mode(mode);
+        }
+
+        ~ScopedReceiveMode()
+        {
+            areg::set_receive_mode(mSaved);
+        }
+
+    private:
+        areg::ReceiveMode mSaved;
+    };
+}
+
+// Mixed scatter/gather buffers arrive in order without an explicit total-size hint.
+TEST(SocketWouldBlockCoverageTest, mixed_scatter_gather_buffers_arrive_in_order_without_a_size_hint)
+{
+    ScopedPair pair;
+    ASSERT_TRUE(open_pair(pair));
+    ASSERT_TRUE(areg::set_send_timeout(pair.server, 30'000u));
+    ASSERT_NE(areg::thread_tx_cache().cache(), nullptr);
+    const uint32_t large{ areg::thread_tx_cache().space + 1u };
+    const std::vector<uint8_t> data{ make_pattern(large + 8u) };
+    const areg::IoBuffer buffers[]
+    {
+          { data.data(), 3u }
+        , { data.data() + 3u, large }
+        , { data.data() + large + 3u, 5u }
+    };
+    std::vector<uint8_t> received(data.size());
+    std::future<int32_t> reader{ std::async(std::launch::async, [&]()
+        {
+            return areg::receive_data_window(pair.client, received.data(), static_cast<uint32_t>(received.size()));
+        }) };
+    const int32_t sent{ areg::send_data_v(pair.server, buffers, 3u) };
+    if (sent != static_cast<int32_t>(data.size()))
+        areg::socket_interrupt(pair.client);
+
+    const bool ready{ reader.wait_for(std::chrono::seconds(30)) == std::future_status::ready };
+    if (!ready)
+        areg::socket_interrupt(pair.client);
+
+    const int32_t got{ reader.get() };
+    EXPECT_TRUE(ready);
+    EXPECT_EQ(sent, static_cast<int32_t>(data.size()));
+    EXPECT_EQ(got, sent);
+    EXPECT_EQ(received, data);
+}
+
+// Nonblocking scatter/gather sends deliver the complete large payload.
+TEST(SocketWouldBlockCoverageTest, try_scatter_gather_completes_the_entire_large_payload)
+{
+    ScopedPair pair;
+    ASSERT_TRUE(open_pair(pair));
+    ASSERT_TRUE(areg::set_send_timeout(pair.server, 30'000u));
+    ASSERT_EQ(areg::set_send_size(pair.server, areg::PACKET_MIN_SIZE), areg::PACKET_MIN_SIZE);
+    const std::vector<uint8_t> data{ make_pattern(LARGE_BYTES) };
+    const areg::IoBuffer buffers[]
+    {
+          { data.data(), 4096u }
+        , { data.data() + 4096u, LARGE_BYTES / 2u }
+        , { data.data() + 4096u + LARGE_BYTES / 2u, LARGE_BYTES / 2u - 4096u }
+    };
+    std::vector<uint8_t> received(data.size());
+    std::future<int32_t> reader{ std::async(std::launch::async, [&]()
+        {
+            return areg::receive_data_window(pair.client, received.data(), LARGE_BYTES);
+        }) };
+    const int32_t sent{ areg::try_send_data_v(pair.server, buffers, 3u) };
+    if (sent != static_cast<int32_t>(data.size()))
+        areg::socket_interrupt(pair.client);
+
+    const bool ready{ reader.wait_for(std::chrono::seconds(30)) == std::future_status::ready };
+    if (!ready)
+        areg::socket_interrupt(pair.client);
+
+    const int32_t got{ reader.get() };
+    EXPECT_TRUE(ready);
+    EXPECT_EQ(sent, static_cast<int32_t>(data.size()));
+    EXPECT_EQ(got, sent);
+    EXPECT_EQ(received, data);
+}
+
+// A nonblocking receive drains cached bytes before reporting the peer's close.
+TEST(SocketWouldBlockCoverageTest, nowait_receive_preserves_cached_bytes_when_the_peer_closes)
+{
+    ScopedReceiveMode mode(areg::ReceiveMode::MultiCache);
+    ScopedPair pair;
+    ASSERT_TRUE(open_pair(pair));
+    areg::SocketMultiplexer mux;
+    ASSERT_TRUE(mux.register_socket(pair.server, true));
+    uint8_t received[16]{};
+    EXPECT_EQ(areg::receive_data_nowait(pair.server, received, sizeof(received)), 0);
+    EXPECT_EQ(areg::recv_fill_nowait(pair.server), 0);
+    const uint8_t data[]{ 0u, 1u, 2u, 3u, 4u, 5u, 6u, 255u };
+    ASSERT_EQ(areg::send_data(pair.client, data, sizeof(data)), static_cast<int32_t>(sizeof(data)));
+    areg::ThreadCache& cache{ areg::thread_rx_cache(pair.server) };
+    for (uint32_t attempt = 0u; (cache.unread < sizeof(data)) && (attempt < sizeof(data)); ++attempt)
+    {
+        ASSERT_EQ(mux.wait(30'000), pair.server);
+        ASSERT_GT(areg::recv_fill_nowait(pair.server), 0);
+    }
+
+    ASSERT_EQ(cache.unread, sizeof(data));
+    ASSERT_EQ(areg::receive_data_nowait(pair.server, received, 3u), 3);
+    EXPECT_EQ(std::memcmp(received, data, 3u), 0);
+    EXPECT_EQ(cache.unread, 5u);
+    ASSERT_TRUE(areg::disable_send(pair.client));
+    ASSERT_EQ(mux.wait(30'000), pair.server);
+    ASSERT_EQ(areg::receive_data_nowait(pair.server, received + 3u, 8u), 5);
+    EXPECT_EQ(std::memcmp(received, data, sizeof(data)), 0);
+    EXPECT_EQ(cache.head, 0u);
+    EXPECT_EQ(cache.unread, 0u);
+    EXPECT_LT(areg::receive_data_nowait(pair.server, received, sizeof(received)), 0);
+}
+
+// Refilling the receive cache compacts unread bytes without exceeding capacity.
+TEST(SocketWouldBlockCoverageTest, nowait_fill_compacts_unread_bytes_and_respects_the_cache_capacity)
+{
+    ScopedPair pair;
+    ASSERT_TRUE(open_pair(pair));
+    areg::ThreadCache cache;
+    cache.space = 8u;
+    cache.buffer.reset(new (std::nothrow) uint8_t[cache.space]);
+    ASSERT_NE(cache.buffer, nullptr);
+    cache.head = 3u;
+    cache.unread = 3u;
+    cache.buffer[3] = 1u;
+    cache.buffer[4] = 2u;
+    cache.buffer[5] = 3u;
+    const uint8_t tail[]{ 4u, 5u, 6u, 7u, 8u };
+    ASSERT_EQ(areg::send_data(pair.client, tail, sizeof(tail)), static_cast<int32_t>(sizeof(tail)));
+    areg::SocketMultiplexer mux;
+    ASSERT_TRUE(mux.register_socket(pair.server, true));
+    for (uint32_t attempt = 0u; (cache.unread < cache.space) && (attempt < sizeof(tail)); ++attempt)
+    {
+        ASSERT_EQ(mux.wait(30'000), pair.server);
+        ASSERT_GT(areg::recv_fill_nowait(pair.server, cache), 0);
+    }
+
+    ASSERT_EQ(cache.unread, cache.space);
+    EXPECT_EQ(cache.head, 0u);
+    const uint8_t expected[]{ 1u, 2u, 3u, 4u, 5u, 6u, 7u, 8u };
+    EXPECT_EQ(std::memcmp(cache.buffer.get(), expected, sizeof(expected)), 0);
+    EXPECT_EQ(areg::recv_fill_nowait(pair.server, cache), 0);
+    EXPECT_EQ(cache.unread, cache.space);
+}
+
+// A receive cache must never expose bytes belonging to another live connection.
+TEST(SocketWouldBlockCoverageTest, DISABLED_mono_cache_does_not_expose_another_live_connections_bytes)
+{
+    ScopedReceiveMode mode(areg::ReceiveMode::MonoCache);
+    ScopedPair first;
+    ScopedPair second;
+    ASSERT_TRUE(open_pair(first));
+    ASSERT_TRUE(open_pair(second));
+    areg::ThreadCache& cache{ areg::thread_rx_cache(first.server) };
+    cache.head = 0u;
+    cache.unread = 0u;
+    const uint8_t data[]{ 0x11u, 0x22u, 0x33u, 0x44u };
+    ASSERT_EQ(areg::send_data(first.client, data, sizeof(data)), static_cast<int32_t>(sizeof(data)));
+    areg::SocketMultiplexer mux;
+    ASSERT_TRUE(mux.register_socket(first.server, true));
+    for (uint32_t attempt = 0u; (cache.unread < sizeof(data)) && (attempt < sizeof(data)); ++attempt)
+    {
+        ASSERT_EQ(mux.wait(30'000), first.server);
+        ASSERT_GT(areg::recv_fill_nowait(first.server), 0);
+    }
+
+    ASSERT_EQ(cache.unread, sizeof(data));
+    uint8_t received[sizeof(data)]{};
+    const int32_t got{ areg::receive_data_nowait(second.server, received, sizeof(received)) };
+    cache.head = 0u;
+    cache.unread = 0u;
+    EXPECT_EQ(got, 0);
+}
+
+#if GTEST_HAS_DEATH_TEST
+// Sending a large scatter/gather payload to a closed peer must report an error without SIGPIPE.
+TEST(SocketWouldBlockCoverageTest, DISABLED_large_scatter_gather_send_reports_error_instead_of_sigpipe)
+{
+    ScopedPair pair;
+    ASSERT_TRUE(open_pair(pair));
+    ASSERT_TRUE(areg::disable_send(pair.server));
+    const std::vector<uint8_t> data(2u * areg::MIN_BIG_BLOCK, 0x5Au);
+    const areg::IoBuffer buffers[]
+    {
+          { data.data(), areg::MIN_BIG_BLOCK }
+        , { data.data() + areg::MIN_BIG_BLOCK, areg::MIN_BIG_BLOCK }
+    };
+    ASSERT_EXIT(
+        {
+            std::signal(SIGPIPE, SIG_DFL);
+            const int32_t sent{ areg::send_data_v(pair.server, buffers, 2u, static_cast<uint32_t>(data.size())) };
+            ::_exit(sent < 0 ? 0 : 1);
+        }
+        , testing::ExitedWithCode(0)
+        , "");
+}
+#endif
 
 #elif defined(WINDOWS)
 
