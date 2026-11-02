@@ -64,10 +64,11 @@ TEST( StringUnicodeTest, utf8_string_keeps_its_bytes )
     ASSERT_EQ( text.length( ), static_cast<areg::CharCount>(sizeof( UTF8_TEXT )) );
     EXPECT_EQ( std::memcmp( text.as_string( ), UTF8_TEXT, sizeof( UTF8_TEXT ) ), 0 );
 
+    const areg::String check( u8"✓" );
     areg::String copy( text );
     copy += u8" ✓";
     EXPECT_TRUE( copy.starts_with( text ) );
-    EXPECT_TRUE( copy.ends_with( u8"✓" ) );
+    EXPECT_TRUE( copy.ends_with( check ) );
     EXPECT_EQ( copy.length( ), text.length( ) + 4u );
 }
 
@@ -77,15 +78,21 @@ TEST( StringUnicodeTest, utf8_string_keeps_its_bytes )
 TEST( StringUnicodeTest, utf8_search_and_compare )
 {
     const areg::String text( u8"Привет, 世界 😀" );
-    EXPECT_EQ( text.find_first( u8"世界" ), 14 );
-    EXPECT_EQ( text.find_first( u8"😀" ), 21 );
-    EXPECT_EQ( text.find_first( u8"мир" ), areg::END_POS );
-    EXPECT_EQ( text.compare( u8"Привет, 世界 😀" ), areg::Ordering::Equal );
-    EXPECT_NE( text.compare( u8"Привет, 世界" ), areg::Ordering::Equal );
+    const char * const world{ u8"世界" };
+    const char * const smile{ u8"😀" };
+    const char * const peace{ u8"мир" };
+    const char * const same{ u8"Привет, 世界 😀" };
+    const char * const shorter{ u8"Привет, 世界" };
+    const areg::String hello( u8"Привет" );
+    EXPECT_EQ( text.find_first( world ), 14 );
+    EXPECT_EQ( text.find_first( smile ), 21 );
+    EXPECT_EQ( text.find_first( peace ), areg::END_POS );
+    EXPECT_EQ( text.compare( same ), areg::Ordering::Equal );
+    EXPECT_NE( text.compare( shorter ), areg::Ordering::Equal );
 
     areg::String part;
     text.substring( part, 0, 12 );
-    EXPECT_EQ( part, areg::String( u8"Привет" ) );
+    EXPECT_EQ( part, hello );
 }
 
 /**
@@ -93,9 +100,10 @@ TEST( StringUnicodeTest, utf8_search_and_compare )
  **/
 TEST( StringUnicodeTest, utf8_format )
 {
+    const areg::String expected( u8"Ж — 5 €" );
     areg::String text;
     text.format( u8"%s — %d €", u8"Ж", 5 );
-    EXPECT_EQ( text, areg::String( u8"Ж — 5 €" ) );
+    EXPECT_EQ( text, expected );
 }
 
 /**
@@ -103,8 +111,9 @@ TEST( StringUnicodeTest, utf8_format )
  **/
 TEST( StringUnicodeTest, utf8_string_on_the_stream )
 {
+    const areg::String text( u8"Привет, 世界 😀" );
     areg::SharedBuffer buf;
-    buf << areg::String( u8"Привет, 世界 😀" ) << int32_t{ 3 };
+    buf << text << int32_t{ 3 };
     std::vector<uint8_t> expected{ counted( static_cast<uint32_t>(sizeof( UTF8_TEXT )), UTF8_TEXT, sizeof( UTF8_TEXT ) ) };
     expected.insert( expected.end( ), { 3, 0, 0, 0 } );
     EXPECT_EQ( bytes_of( buf ), expected );
@@ -113,7 +122,7 @@ TEST( StringUnicodeTest, utf8_string_on_the_stream )
     areg::String back;
     int32_t value{ 0 };
     buf >> back >> value;
-    EXPECT_EQ( back, areg::String( u8"Привет, 世界 😀" ) );
+    EXPECT_EQ( back, text );
     EXPECT_EQ( value, 3 );
 }
 
@@ -123,11 +132,13 @@ TEST( StringUnicodeTest, utf8_string_on_the_stream )
 TEST( StringUnicodeTest, wide_text_on_the_stream )
 {
     const areg::WideString text( L"Привет, 世界" );
+    const areg::WideString world( L"世界" );
+    const std::wstring hedgehogText( L"Ёж" );
     EXPECT_EQ( text.length( ), 10u );
-    EXPECT_EQ( text.find_first( L"世界" ), 8 );
+    EXPECT_EQ( text.find_first( world ), 8 );
 
     areg::SharedBuffer buf;
-    buf << text << std::wstring( L"Ёж" );
+    buf << text << hedgehogText;
     std::vector<uint8_t> expected{ counted( 10u, UTF16_TEXT, sizeof( UTF16_TEXT ) ) };
     const uint8_t second[ ]{ 0x01, 0x04, 0x36, 0x04 };
     const std::vector<uint8_t> tail{ counted( 2u, second, sizeof( second ) ) };
@@ -139,7 +150,7 @@ TEST( StringUnicodeTest, wide_text_on_the_stream )
     std::wstring hedgehog;
     buf >> back >> hedgehog;
     EXPECT_EQ( back, text );
-    EXPECT_EQ( hedgehog, std::wstring( L"Ёж" ) );
+    EXPECT_EQ( hedgehog, hedgehogText );
 }
 
 /**
@@ -147,15 +158,16 @@ TEST( StringUnicodeTest, wide_text_on_the_stream )
  **/
 TEST( StringUnicodeTest, wide_emoji_is_a_surrogate_pair )
 {
+    const std::wstring text( L"a😀b" );
     areg::SharedBuffer buf;
-    buf << std::wstring( L"a😀b" );
+    buf << text;
     const uint8_t units[ ]{ 'a', 0, 0x3D, 0xD8, 0x00, 0xDE, 'b', 0 };
     EXPECT_EQ( bytes_of( buf ), counted( 4u, units, sizeof( units ) ) );
 
     buf.move_to_begin( );
     std::wstring back;
     buf >> back;
-    EXPECT_EQ( back, std::wstring( L"a😀b" ) );
+    EXPECT_EQ( back, text );
 }
 
 /**
@@ -163,12 +175,16 @@ TEST( StringUnicodeTest, wide_emoji_is_a_surrogate_pair )
  **/
 TEST( StringUnicodeTest, wide_latin1_case )
 {
+    const areg::WideString lower( L"äöü äöü" );
+    const areg::WideString upper( L"ÄÖÜ ÄÖÜ" );
+    const areg::WideString street( L"Straße" );
+    const wchar_t * const streetUpper{ L"STRAßE" };
     areg::WideString text( L"ÄÖÜ äöü" );
     text.make_lower( );
-    EXPECT_EQ( text, areg::WideString( L"äöü äöü" ) );
+    EXPECT_EQ( text, lower );
     text.make_upper( );
-    EXPECT_EQ( text, areg::WideString( L"ÄÖÜ ÄÖÜ" ) );
-    EXPECT_EQ( areg::WideString( L"Straße" ).compare( L"STRAßE", areg::START_POS, areg::COUNT_ALL, false ), areg::Ordering::Equal );
+    EXPECT_EQ( text, upper );
+    EXPECT_EQ( street.compare( streetUpper, areg::START_POS, areg::COUNT_ALL, false ), areg::Ordering::Equal );
 }
 
 /**
@@ -177,20 +193,23 @@ TEST( StringUnicodeTest, wide_latin1_case )
  **/
 TEST( StringUnicodeTest, file_keeps_non_ascii_text )
 {
+    const areg::String narrowText( u8"Grüße 世界" );
+    const areg::WideString wideText( L"Привет" );
     areg::FileBuffer file;
     ASSERT_TRUE( file.open( ) );
-    file << areg::String( u8"Grüße 世界" ) << areg::WideString( L"Привет" );
+    file << narrowText << wideText;
     ASSERT_TRUE( file.move_to_begin( ) );
     areg::String narrow;
     areg::WideString wide;
     file >> narrow >> wide;
-    EXPECT_EQ( narrow, areg::String( u8"Grüße 世界" ) );
-    EXPECT_EQ( wide, areg::WideString( L"Привет" ) );
+    EXPECT_EQ( narrow, narrowText );
+    EXPECT_EQ( wide, wideText );
 
     constexpr uint32_t textMode{ static_cast<uint32_t>(areg::FileBase::OpenMode::Write) | static_cast<uint32_t>(areg::FileBase::OpenMode::Text) };
     areg::FileBuffer text( textMode );
     ASSERT_TRUE( text.open( ) );
-    ASSERT_TRUE( text.write_string( L"Привет, 世界" ) );
+    const wchar_t * const line{ L"Привет, 世界" };
+    ASSERT_TRUE( text.write_string( line ) );
     ASSERT_EQ( text.length( ), static_cast<uint32_t>(sizeof( UTF16_TEXT )) );
     ASSERT_TRUE( text.move_to_begin( ) );
     uint8_t bytes[ sizeof( UTF16_TEXT ) ]{ };

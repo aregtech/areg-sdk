@@ -21,9 +21,14 @@
 #include "areg/base/FatalError.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 
+#include <csignal>
 #include <cstdio>
 #include <cstdlib>
 #include <string>
+
+#if !defined(_WIN32)
+    #include <sys/resource.h>
+#endif  // !defined(_WIN32)
 
 namespace
 {
@@ -107,6 +112,16 @@ namespace
         }
     };
 
+    //!< Makes an expected death end by SIGABRT without a sanitizer report and without a core file.
+    void expect_quiet_abort( )
+    {
+        static_cast<void>(std::signal( SIGABRT, SIG_DFL ));
+#if !defined(_WIN32)
+        const struct rlimit noCore{ 0, 0 };
+        static_cast<void>(::setrlimit( RLIMIT_CORE, &noCore ));
+#endif  // !defined(_WIN32)
+    }
+
     //!< A handler that writes a marker and returns, as a faulty application handler could.
     void returning_handler( const char * reason ) noexcept
     {
@@ -153,7 +168,7 @@ TEST( FatalErrorTest, FailedLockIsReported )
 TEST( FatalErrorTest, DefaultHandlerWritesTheReasonAndAborts )
 {
     ::testing::GTEST_FLAG( death_test_style ) = "threadsafe";
-    EXPECT_DEATH( areg::fatal_error( "unit test reason" ), "areg fatal error: unit test reason" );
+    EXPECT_DEATH( { expect_quiet_abort( ); areg::fatal_error( "unit test reason" ); }, "areg fatal error: unit test reason" );
 }
 
 /**
@@ -162,7 +177,7 @@ TEST( FatalErrorTest, DefaultHandlerWritesTheReasonAndAborts )
 TEST( FatalErrorTest, ProcessEndsWhenTheHandlerReturns )
 {
     ::testing::GTEST_FLAG( death_test_style ) = "threadsafe";
-    EXPECT_DEATH( { static_cast<void>(areg::set_fatal_handler( &returning_handler )); areg::fatal_error( "custom" ); }
+    EXPECT_DEATH( { expect_quiet_abort( ); static_cast<void>(areg::set_fatal_handler( &returning_handler )); areg::fatal_error( "custom" ); }
                 , "returning handler: custom" );
 }
 
@@ -173,9 +188,9 @@ TEST( FatalErrorTest, FailedLockIsFatalWhenRequested )
 {
     ::testing::GTEST_FLAG( death_test_style ) = "threadsafe";
     FailingLock failing;
-    EXPECT_DEATH( { set_variable( LOCK_FATAL_VARIABLE, "1" ); areg::Lock lock( failing ); }
+    EXPECT_DEATH( { expect_quiet_abort( ); set_variable( LOCK_FATAL_VARIABLE, "1" ); areg::Lock lock( failing ); }
                 , "areg fatal error: Lock could not take its synchronization object" );
-    EXPECT_DEATH( { set_variable( LOCK_FATAL_VARIABLE, "1" ); areg::ScopedLock lock( failing ); }
+    EXPECT_DEATH( { expect_quiet_abort( ); set_variable( LOCK_FATAL_VARIABLE, "1" ); areg::ScopedLock lock( failing ); }
                 , "areg fatal error: ScopedLock could not take its synchronization object" );
 }
 
