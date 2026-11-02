@@ -214,6 +214,9 @@ public:
 // InStream interface overrides
 /************************************************************************/
 
+    using FileBase::read;
+    using FileBase::write;
+
     /**
      * \brief   Reads data from the buffer and copies into the provided SharedBuffer object.
      *
@@ -221,22 +224,6 @@ public:
      * \return  The number of bytes copied.
      **/
     uint32_t read(SharedBuffer& buffer ) const override;
-
-    /**
-     * \brief   Reads string data from the buffer and copies into the provided ASCII String.
-     *
-     * \param[out] ascii       The ASCII String to receive the data.
-     * \return  The number of bytes copied.
-     **/
-    uint32_t read( String & ascii ) const override;
-
-    /**
-     * \brief   Reads string data from the buffer and copies into the provided WideString.
-     *
-     * \param[out] wide    The WideString to receive the data.
-     * \return  The number of bytes copied.
-     **/
-    uint32_t read( WideString & wide ) const override;
 
     /**
      * \brief   Reads data from the buffer and copies into the provided byte array.
@@ -257,22 +244,6 @@ public:
      * \return  The number of bytes written.
      **/
     uint32_t write( const SharedBuffer& buffer ) override;
-
-    /**
-     * \brief   Writes string data from the ASCII String object to the file buffer.
-     *
-     * \param   ascii       The ASCII String to read from.
-     * \return  The number of bytes written.
-     **/
-    uint32_t write( const String & ascii ) override;
-
-    /**
-     * \brief   Writes string data from the WideString object to the file buffer.
-     *
-     * \param   wide    The WideString to read from.
-     * \return  The number of bytes written.
-     **/
-    uint32_t write( const WideString & wide ) override;
 
     /**
      * \brief   Writes data from the given byte array to the file buffer.
@@ -334,6 +305,20 @@ protected:
      **/
     [[nodiscard]]
     uint32_t size_writable() const noexcept override;
+
+    /**
+     * \brief   Returns the address of 'size' bytes at the read position of the opened buffer and moves
+     *          past them; nullptr if the buffer is not readable or fewer bytes are left.
+     **/
+    [[nodiscard]]
+    const uint8_t* read_view(uint32_t size) const noexcept override;
+
+    /**
+     * \brief   Returns the address of 'size' writable bytes at the write position of the opened buffer
+     *          and moves past them; nullptr if the buffer is not writable.
+     **/
+    [[nodiscard]]
+    uint8_t* write_view(uint32_t size) noexcept override;
 
 /************************************************************************/
 // Other overrides

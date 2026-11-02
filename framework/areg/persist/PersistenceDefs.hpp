@@ -217,7 +217,7 @@ namespace areg {
     /**
      * \brief   The list of property key structures supported by Areg
      **/
-    constexpr ConfigKey   DefaultPropertyKeys[]
+    inline constexpr ConfigKey   DefaultPropertyKeys[]
         {
               {"config" , "*"   , "version" , ""                }   //! 0   , The configuration version property structure.
 

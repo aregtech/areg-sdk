@@ -931,7 +931,8 @@ BASE_API = [
     '  s.find_first(phrase)         areg::CharPos; the substring search',
     '  s.is_valid_position(pos)     bool; a search that found nothing returns areg::END_POS',
     '  s.compare(other)             areg::Ordering: Smaller, Equal, Bigger; s == x, s != x are bool',
-    '  s = x, s += x, s + x         assign, append; x is a String, a const char * or a char',
+    '  s = x, s += x, s + x         assign, append; x is a String, a const char * or a char,',
+    '                               never a number: s + areg::String::make_string(n)',
     '  s.format(fmt, ...)           String &, printf rules, fills this string and chains',
     '  s.to_int32()                 int32_t; to_uint32, to_int64, to_uint64, to_float, to_double, to_bool alike',
     '  s.from_int32(n)              String &, a member that fills s and chains; from_uint32 and the rest alike',
@@ -946,7 +947,8 @@ QUIT_NOTE = ['quit_with(code) ends this program with that exit code once the han
 
 # The names of BASE_API, for the check that holds this copy and the page together.
 BASE_API_NAMES = ('as_string', 'is_empty', 'clear', 'length', 'find_first',
-                  'is_valid_position', 'compare', 'format', 'to_int32', 'from_int32')
+                  'is_valid_position', 'compare', 'format', 'to_int32', 'from_int32',
+                  'make_string')
 
 # The container spellings, printed under BASE_API when a contract below names a container.
 BASE_API_CONTAINERS = [

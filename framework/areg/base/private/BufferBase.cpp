@@ -57,16 +57,6 @@ uint32_t BufferBase::write(const uint8_t* buf, uint32_t size)
     return write_data(buf, size);
 }
 
-uint32_t BufferBase::write(const String& ascii)
-{
-    return write_data(reinterpret_cast<const uint8_t*>(ascii.as_string()), ascii.space());
-}
-
-uint32_t BufferBase::write(const WideString& wide)
-{
-    return write_data(reinterpret_cast<const uint8_t*>(wide.as_string()), wide.space());
-}
-
 void BufferBase::flush() noexcept
 {
     // No-op: in-memory buffer, nothing to flush.
@@ -74,8 +64,18 @@ void BufferBase::flush() noexcept
 
 bool BufferBase::ensure_size(uint32_t addSize)
 {
-    uint32_t newSize = size_used() + addSize;
-    return (reserve(newSize, true) == newSize);
+    if (!can_write() || (addSize > areg::MAX_BUF_LENGTH - mPosition))
+        return false;
+
+    const uint32_t needed{ mPosition + addSize };
+    if ((mByteBuffer.get() != nullptr) && (needed <= mByteBuffer->bufHeader.biLength))
+        return true;
+
+    // Grows like a write does, the data and the cursor are kept.
+    const uint32_t position{ mPosition };
+    reserve(needed, true);
+    mPosition = position;
+    return ((mByteBuffer.get() != nullptr) && (needed <= mByteBuffer->bufHeader.biLength));
 }
 
 uint32_t BufferBase::read(uint8_t* buf, uint32_t size) const noexcept
@@ -142,8 +142,7 @@ BufferBase::BufferBase(const char* textString, uint32_t blockSize /* = areg::BLO
     , mByteBuffer   ( )
     , mPosition     ( 0u )
 {
-    const uint32_t size = (static_cast<uint32_t>(areg::string_length<char>(textString)) + 1u) * sizeof(char);
-    write_data(reinterpret_cast<const uint8_t*>(textString != nullptr ? textString : areg::EmptyStringA.data()), size);
+    write_text(textString, static_cast<uint32_t>(areg::string_length<char>(textString)));
 }
 
 BufferBase::BufferBase(const wchar_t* textString, uint32_t blockSize /* = areg::BLOCK_SIZE */)
@@ -153,8 +152,7 @@ BufferBase::BufferBase(const wchar_t* textString, uint32_t blockSize /* = areg::
     , mByteBuffer   ( )
     , mPosition     ( 0u )
 {
-    const uint32_t size = (static_cast<uint32_t>(areg::string_length<wchar_t>(textString)) + 1u) * sizeof(wchar_t);
-    write_data(reinterpret_cast<const uint8_t*>(textString != nullptr ? textString : areg::EmptyStringW.data()), size);
+    write_text(textString, static_cast<uint32_t>(areg::string_length<wchar_t>(textString)));
 }
 
 BufferBase::BufferBase(const BufferBase& src) noexcept
@@ -400,60 +398,6 @@ uint32_t BufferBase::read(SharedBuffer& buf) const noexcept
     return length;
 }
 
-uint32_t BufferBase::read(String& ascii) const
-{
-    ascii.clear();
-
-    const areg::RawBuffer* const raw = mByteBuffer.get();
-    if (raw == nullptr)
-        return 0u;
-
-    const uint32_t limit = raw->bufHeader.biUsed;
-    if (mPosition >= limit)
-        return 0u;
-
-    const char* const src   = reinterpret_cast<const char*>(areg::buffer_data_read(raw) + mPosition);
-    const uint32_t    avail = limit - mPosition;
-    const char* const nul   = static_cast<const char*>(::memchr(src, '\0', avail));
-    const uint32_t    len   = (nul != nullptr) ? static_cast<uint32_t>(nul - src) : avail;
-
-    if (len > 0u)
-        ascii.assign(src, static_cast<areg::CharCount>(len));
-
-    const uint32_t advance = (nul != nullptr) ? len + 1u : len;
-    mPosition += advance;
-    return advance;
-}
-
-uint32_t BufferBase::read(WideString& wide) const
-{
-    wide.clear();
-
-    const areg::RawBuffer* const raw = mByteBuffer.get();
-    if (raw == nullptr)
-        return 0u;
-
-    const uint32_t limit = raw->bufHeader.biUsed;
-    if (mPosition >= limit)
-        return 0u;
-
-    const uint32_t     avail      = limit - mPosition;
-    const uint32_t     max_chars  = avail / static_cast<uint32_t>(sizeof(wchar_t));
-    if (max_chars == 0u)
-        return 0u;
-
-    const wchar_t* const src = reinterpret_cast<const wchar_t*>(areg::buffer_data_read(raw) + mPosition);
-    const wchar_t* const nul = static_cast<const wchar_t*>(std::wmemchr(src, L'\0', max_chars));
-    const uint32_t       len = (nul != nullptr) ? static_cast<uint32_t>(nul - src) : max_chars;
-
-    if (len > 0u)
-        wide.assign(src, static_cast<areg::CharCount>(len));
-
-    const uint32_t advance = (nul != nullptr) ? (len + 1u) * static_cast<uint32_t>(sizeof(wchar_t)) : len * static_cast<uint32_t>(sizeof(wchar_t));
-    mPosition += advance;
-    return advance;
-}
-
 //////////////////////////////////////////////////////////////////////////
 // Additional streaming operations
 //////////////////////////////////////////////////////////////////////////
@@ -619,73 +563,47 @@ uint32_t BufferBase::read_data(uint8_t* buf, uint32_t size) const noexcept
     return result;
 }
 
-uint32_t BufferBase::read_string_bin(String& str) const noexcept
+const uint8_t* BufferBase::read_view(uint32_t size) const noexcept
 {
-    str.clear();
-
-    uint32_t byte_count = 0u;
-    if (read_data(reinterpret_cast<uint8_t*>(&byte_count), sizeof(uint32_t)) != sizeof(uint32_t))
-        return 0u;
-
-    if (byte_count == 0u)
-        return sizeof(uint32_t);
-
     const areg::RawBuffer* const raw = mByteBuffer.get();
-    if (raw == nullptr)
-    {
-        mPosition -= sizeof(uint32_t);
-        return 0u;
-    }
+    if ((raw == nullptr) || (size == 0u))
+        return nullptr;
 
     const uint32_t limit = raw->bufHeader.biUsed;
-    if (mPosition + byte_count > limit)
-    {
-        mPosition -= sizeof(uint32_t);
-        return 0u;
-    }
+    if ((mPosition > limit) || (size > (limit - mPosition)))
+        return nullptr;
 
-    const char* src = reinterpret_cast<const char*>(areg::buffer_data_read(raw) + mPosition);
-    str.assign(src, static_cast<areg::CharCount>(byte_count));
-    mPosition += byte_count;
-    return sizeof(uint32_t) + byte_count;
+    const uint8_t* const result = areg::buffer_data_read(raw) + mPosition;
+    mPosition += size;
+    return result;
 }
 
-uint32_t BufferBase::read_string_bin(WideString& str) const noexcept
+uint8_t* BufferBase::write_view(uint32_t size) noexcept
 {
-    str.clear();
+    if ((size == 0u) || !can_write())
+        return nullptr;
 
-    uint32_t byte_count = 0u;
-    if (read_data(reinterpret_cast<uint8_t*>(&byte_count), sizeof(uint32_t)) != sizeof(uint32_t))
-        return 0u;
+    const uint32_t writePos = mPosition;
+    if (size > (0xFFFFFFFFu - writePos))
+        return nullptr;
 
-    if (byte_count == 0u)
-        return sizeof(uint32_t);
-
-    const uint32_t char_count = byte_count / static_cast<uint32_t>(sizeof(wchar_t));
-    if (char_count == 0u)
+    const uint32_t needed = writePos + size;
+    areg::RawBuffer* raw = mByteBuffer.get();
+    if ((raw == nullptr) || (needed > raw->bufHeader.biLength))
     {
-        mPosition -= sizeof(uint32_t);
-        return 0u;
+        reserve(needed, true);
+        raw = mByteBuffer.get();
+        if ((raw == nullptr) || (needed > raw->bufHeader.biLength))
+            return nullptr;
     }
 
-    const areg::RawBuffer* const raw = mByteBuffer.get();
-    if (raw == nullptr)
+    if (needed > raw->bufHeader.biUsed)
     {
-        mPosition -= sizeof(uint32_t);
-        return 0u;
+        raw->bufHeader.biUsed = needed;
     }
 
-    const uint32_t limit = raw->bufHeader.biUsed;
-    if (mPosition + byte_count > limit)
-    {
-        mPosition -= sizeof(uint32_t);
-        return 0u;
-    }
-
-    const wchar_t* src = reinterpret_cast<const wchar_t*>(areg::buffer_data_read(raw) + mPosition);
-    str.assign(src, static_cast<areg::CharCount>(char_count));
-    mPosition += byte_count;
-    return sizeof(uint32_t) + byte_count;
+    mPosition = needed;
+    return areg::buffer_data_write(raw) + writePos;
 }
 
 } // namespace areg

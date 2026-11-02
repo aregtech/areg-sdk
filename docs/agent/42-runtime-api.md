@@ -135,16 +135,15 @@ LOG_INFO("at %s", stamp.as_string());
 | `open()` | `bool open()` | `File.hpp:158` |
 | `open(name, mode)` | `bool open(const String & fileName, uint32_t mode)` | `File.hpp:168` |
 | `close()` | `void close()` | `File.hpp:174` |
-| `read(String &)` | `uint32_t read(String & ascii) const` | `File.hpp:240` |
-| `read(bytes)` | `uint32_t read(uint8_t * buffer, uint32_t size) const noexcept` | `File.hpp:255` |
-| `write(String)` | `uint32_t write(const String & ascii)` | `File.hpp:272` |
-| `write(bytes)` | `uint32_t write(const uint8_t * buffer, uint32_t size) noexcept` | `File.hpp:287` |
-| `flush()` | `void flush() noexcept` | `File.hpp:292` |
+| `read(bytes)` | `uint32_t read(uint8_t * buffer, uint32_t size) const noexcept` | `File.hpp:244` |
+| `write(bytes)` | `uint32_t write(const uint8_t * buffer, uint32_t size) noexcept` | `File.hpp:264` |
+| `flush()` | `void flush() noexcept` | `File.hpp:269` |
 | `remove()` | `bool remove()` | `File.hpp:179` |
 | `is_opened()` | `bool is_opened() const noexcept override` | `File.hpp:208` |
 
-`read` and `write` also take a `SharedBuffer` and a `WideString`. File input and
-output blocks; do it on a worker thread, never in a handler.
+`read` and `write` also take a `String`, a `WideString` and a `SharedBuffer`, as `<<`
+does; for text use `read_line`, `write_line`, `read_string` and `write_string`. File
+input and output blocks; do it on a worker thread, never in a handler.
 
 ---
 
@@ -156,14 +155,14 @@ Serialize with `<<` and `>>`; the members below are the rest.
 
 | Call | Signature | Header |
 |---|---|---|
-| `buffer()` | `const uint8_t * buffer() const` | `SharedBuffer.hpp:333` |
+| `buffer()` | `const uint8_t * buffer() const` | `SharedBuffer.hpp:323` |
 | `write(bytes)` | `uint32_t write(const uint8_t * buf, uint32_t size)` | `SharedBuffer.hpp:247` |
-| `read(bytes)` | `uint32_t read(uint8_t * buf, uint32_t size) const noexcept` | `SharedBuffer.hpp:282` |
-| `reset()` | `void reset() const noexcept` | `SharedBuffer.hpp:285` |
-| `size_used()` | `uint32_t size_used() const noexcept` | `SharedBuffer.hpp:320` |
-| `block_size()` | `uint32_t block_size() const noexcept` | `SharedBuffer.hpp:429` |
-| `is_end()` | `bool is_end() const noexcept` | `SharedBuffer.hpp:425` |
-| `clone()` | `SharedBuffer clone() const` | `SharedBuffer.hpp:436` |
+| `read(bytes)` | `uint32_t read(uint8_t * buf, uint32_t size) const noexcept` | `SharedBuffer.hpp:272` |
+| `reset()` | `void reset() const noexcept` | `SharedBuffer.hpp:275` |
+| `size_used()` | `uint32_t size_used() const noexcept` | `SharedBuffer.hpp:310` |
+| `block_size()` | `uint32_t block_size() const noexcept` | `SharedBuffer.hpp:419` |
+| `is_end()` | `bool is_end() const noexcept` | `SharedBuffer.hpp:415` |
+| `clone()` | `SharedBuffer clone() const` | `SharedBuffer.hpp:426` |
 
 `reset()` rewinds the read position; call it before reading back what you just wrote.
 **`size_used()` is the bytes in the buffer; `block_size()` is the bytes allocated** and

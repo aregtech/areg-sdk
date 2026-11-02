@@ -30,14 +30,24 @@ String::String( const InStream & stream )
     from_stream(stream);
 }
 
-void String::from_stream(const InStream& stream)
+uint32_t String::from_stream(const InStream& stream)
 {
-    stream.read(*this);
+    return stream.read_text(mData);
 }
 
-void String::to_stream(OutStream& stream) const
+uint32_t String::to_stream(OutStream& stream) const
 {
-    stream.write(*this);
+    return stream.write_text(mData.data(), static_cast<uint32_t>(mData.length()));
+}
+
+uint32_t InStream::read(String& ascii) const
+{
+    return ascii.from_stream(*this);
+}
+
+uint32_t OutStream::write(const String& ascii)
+{
+    return ascii.to_stream(*this);
 }
 
 } // namespace areg

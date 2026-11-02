@@ -20,6 +20,7 @@
  ************************************************************************/
 #include "units/GUnitTest.hpp"
 #include "areg/base/SharedBuffer.hpp"
+#include "areg/base/String.hpp"
 
 #include <cstring>
 
@@ -81,7 +82,7 @@ TEST(SharedBufferTest, raw_bytes_construction)
 }
 
 /**
- * \brief   String constructor includes NUL terminator in size_used().
+ * \brief   String constructor writes the stream string format: a uint32 count and the characters.
  **/
 TEST(SharedBufferTest, string_construction)
 {
@@ -89,7 +90,12 @@ TEST(SharedBufferTest, string_construction)
     areg::SharedBuffer buf(text);
     EXPECT_TRUE(buf.is_valid());
     EXPECT_FALSE(buf.is_empty());
-    EXPECT_EQ(buf.size_used(), static_cast<uint32_t>(std::strlen(text) + 1u));
+    EXPECT_EQ(buf.size_used(), static_cast<uint32_t>(sizeof(uint32_t) + std::strlen(text)));
+
+    areg::String read;
+    buf.move_to_begin();
+    buf >> read;
+    EXPECT_EQ(read, text);
 }
 
 //////////////////////////////////////////////////////////////////////////

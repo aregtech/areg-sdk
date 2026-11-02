@@ -80,6 +80,19 @@ namespace
         {
         }
 
+        //!< Sets the logger values of the test in the configuration.
+        void apply(areg::ConfigManager& config) const
+        {
+            config.set_service_enable(areg::RemoteServiceKind::Router, areg::ConnectionType::Tcpip, false, true);
+            config.set_service_enable(areg::RemoteServiceKind::Logger, areg::ConnectionType::Tcpip, true, true);
+            config.set_service_address(areg::RemoteServiceKind::Logger, areg::ConnectionType::Tcpip, areg::String("127.0.0.1"), true);
+            config.set_service_port(areg::RemoteServiceKind::Logger, areg::ConnectionType::Tcpip, _port, true);
+            config.set_log_enabled(areg::LogTarget::Remote, true, true);
+            config.set_log_enabled(areg::LogTarget::File, false, true);
+            config.set_log_enabled(areg::LogTarget::Database, true, true);
+            config.set_remote_queue_size(mQueueSize, true);
+        }
+
     protected:
         void prepare_save_configuration(areg::ConfigManager& /*config*/) final
         {
@@ -99,14 +112,7 @@ namespace
 
         void post_read_configuration(areg::ConfigManager& config) final
         {
-            config.set_service_enable(areg::RemoteServiceKind::Router, areg::ConnectionType::Tcpip, false, true);
-            config.set_service_enable(areg::RemoteServiceKind::Logger, areg::ConnectionType::Tcpip, true, true);
-            config.set_service_address(areg::RemoteServiceKind::Logger, areg::ConnectionType::Tcpip, areg::String("127.0.0.1"), true);
-            config.set_service_port(areg::RemoteServiceKind::Logger, areg::ConnectionType::Tcpip, _port, true);
-            config.set_log_enabled(areg::LogTarget::Remote, true, true);
-            config.set_log_enabled(areg::LogTarget::File, false, true);
-            config.set_log_enabled(areg::LogTarget::Database, true, true);
-            config.set_remote_queue_size(mQueueSize, true);
+            apply(config);
         }
 
     private:
@@ -354,6 +360,12 @@ namespace
     //!< Starts the logger of the process, accepts its connection and reads its handshake.
     bool start_source(Listener & listener, RowsHandled & database, RingConfigListener & config)
     {
+        // A process configured by an earlier test does not read the configuration again.
+        if (areg::Application::is_configured())
+        {
+            config.apply(areg::Application::config_manager());
+        }
+
         areg::set_db_engine(&database);
         areg::Application::setup(true, true, false, true, false, nullptr, &config);
 

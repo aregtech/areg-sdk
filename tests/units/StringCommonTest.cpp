@@ -141,6 +141,44 @@ namespace
         using S::is_name_char;
     };
 
+    //!< True if the expression L + R compiles.
+    template<typename L, typename R, typename = void>
+    struct CanAdd : std::false_type {};
+    template<typename L, typename R>
+    struct CanAdd<L, R, std::void_t<decltype(std::declval<L>() + std::declval<R>())>> : std::true_type {};
+
+    //!< True if the expression L += R compiles.
+    template<typename L, typename R, typename = void>
+    struct CanAddAssign : std::false_type {};
+    template<typename L, typename R>
+    struct CanAddAssign<L, R, std::void_t<decltype(std::declval<L&>() += std::declval<R>())>> : std::true_type {};
+
+    //!< True if the expression L = R compiles.
+    template<typename L, typename R, typename = void>
+    struct CanAssign : std::false_type {};
+    template<typename L, typename R>
+    struct CanAssign<L, R, std::void_t<decltype(std::declval<L&>() = std::declval<R>())>> : std::true_type {};
+
+    //!< True if the expression L == R compiles.
+    template<typename L, typename R, typename = void>
+    struct CanEqual : std::false_type {};
+    template<typename L, typename R>
+    struct CanEqual<L, R, std::void_t<decltype(std::declval<L>() == std::declval<R>())>> : std::true_type {};
+
+    //!< True if the expression L < R compiles.
+    template<typename L, typename R, typename = void>
+    struct CanLess : std::false_type {};
+    template<typename L, typename R>
+    struct CanLess<L, R, std::void_t<decltype(std::declval<L>() < std::declval<R>())>> : std::true_type {};
+
+    //!< True if the method call starts_with(R) compiles.
+    template<typename L, typename R, typename = void>
+    struct CanStartWith : std::false_type {};
+    template<typename L, typename R>
+    struct CanStartWith<L, R, std::void_t<decltype(std::declval<const L&>().starts_with(std::declval<R>()))>> : std::true_type {};
+
+    enum PlainEnum { PlainValue = 1 };
+
     struct StringTypeName
     {
         template<typename T>
@@ -605,6 +643,95 @@ TYPED_TEST(StringCommonCompare, OrderingOperators)
 }
 
 /**
+ * \brief   A text on the left side compares the content, with the same result as the other order.
+ **/
+TYPED_TEST(StringCommonCompare, TextOnTheLeftSide)
+{
+    using S = TypeParam;
+    using C = CharOf<S>;
+    using Std = std::basic_string<C>;
+    using View = std::basic_string_view<C>;
+    using OC = CharOf<OtherOf<S>>;
+    const S str(TXT("abc"));
+
+    // A pointer to the same text at an address other than the string buffer.
+    const Std copy(TXT("abc"));
+    const C* text{ copy.c_str() };
+    const C* null{ nullptr };
+
+    EXPECT_TRUE(TXT("abc") == str);
+    EXPECT_FALSE(TXT("abd") == str);
+    EXPECT_TRUE(text == str);
+    EXPECT_FALSE(text != str);
+    EXPECT_TRUE(TXT("abd") != str);
+    EXPECT_TRUE(null == S());
+    EXPECT_FALSE(null == str);
+    EXPECT_TRUE(null != str);
+
+    EXPECT_TRUE(TXT("abb") < str);
+    EXPECT_FALSE(TXT("abd") < str);
+    EXPECT_TRUE(TXT("abd") > str);
+    EXPECT_FALSE(TXT("abb") > str);
+    EXPECT_TRUE(TXT("abc") <= str);
+    EXPECT_FALSE(TXT("abd") <= str);
+    EXPECT_TRUE(TXT("abc") >= str);
+    EXPECT_FALSE(TXT("abb") >= str);
+    EXPECT_TRUE(null < str);
+
+    EXPECT_TRUE(Std(TXT("abc")) == str);
+    EXPECT_TRUE(Std(TXT("abd")) != str);
+    EXPECT_TRUE(Std(TXT("abb")) < str);
+    EXPECT_TRUE(Std(TXT("abd")) > str);
+    EXPECT_TRUE(Std(TXT("abc")) <= str);
+    EXPECT_TRUE(Std(TXT("abc")) >= str);
+
+    EXPECT_TRUE(View(TXT("abcd"), 3) == str);
+    EXPECT_TRUE(View(TXT("abcd")) != str);
+    EXPECT_TRUE(View(TXT("ab")) < str);
+    EXPECT_TRUE(View(TXT("abd")) > str);
+    EXPECT_TRUE(View(TXT("abc")) <= str);
+    EXPECT_TRUE(View(TXT("abc")) >= str);
+
+    EXPECT_TRUE(OTXT("abc") == str);
+    EXPECT_TRUE(OTXT("abd") != str);
+    EXPECT_TRUE(std::basic_string<OC>(OTXT("abc")) == str);
+    EXPECT_TRUE(std::basic_string<OC>(OTXT("ab")) != str);
+
+    EXPECT_TRUE(CH('a') == S(TXT("a")));
+    EXPECT_FALSE(CH('b') == S(TXT("a")));
+    EXPECT_FALSE(CH('a') == str);
+    EXPECT_TRUE(CH('a') != str);
+    EXPECT_FALSE(CH('a') != S(TXT("a")));
+}
+
+/**
+ * \brief   A number, a bool or an enumeration is not taken for a character.
+ **/
+TYPED_TEST(StringCommonCompare, NumberIsNotACharacter)
+{
+    using S = TypeParam;
+    using C = CharOf<S>;
+    using OC = CharOf<OtherOf<S>>;
+
+    static_assert(CanEqual<const S&, C>::value && CanEqual<C, const S&>::value, "A character compares.");
+    static_assert(!CanEqual<const S&, int>::value && !CanEqual<int, const S&>::value, "An int does not compare.");
+    static_assert(!CanEqual<const S&, bool>::value && !CanEqual<bool, const S&>::value, "A bool does not compare.");
+    static_assert(!CanEqual<const S&, OC>::value && !CanEqual<OC, const S&>::value, "The other width character does not compare.");
+    static_assert(!CanLess<const S&, int>::value && !CanLess<int, const S&>::value, "An int does not order.");
+
+    static_assert(std::is_constructible_v<S, C>, "The character constructor.");
+    static_assert(std::is_constructible_v<S, uint32_t>, "The reserving constructor.");
+    static_assert(!std::is_constructible_v<S, int>, "An int is neither a character nor a capacity.");
+    static_assert(std::is_same_v<size_t, uint32_t> || !std::is_constructible_v<S, size_t>, "A size_t is not a capacity.");
+    static_assert(!std::is_constructible_v<S, double>, "A double is not a character.");
+    static_assert(!std::is_constructible_v<S, bool>, "A bool is not a character.");
+    static_assert(!std::is_constructible_v<S, OC>, "The other width character is not a character.");
+
+    static_assert(CanStartWith<S, C>::value, "starts_with takes a character.");
+    static_assert(!CanStartWith<S, int>::value, "starts_with does not take an int.");
+}
+
+/**
  * \brief   The compare method, case-sensitive and not, of the whole string.
  **/
 TYPED_TEST(StringCommonCompare, CompareWholeString)
@@ -803,6 +930,42 @@ TYPED_TEST(StringCommonConcat, BinaryPlus)
     EXPECT_EQ((lhs + OTXT("cd")).data(), joined);
     EXPECT_EQ((OTXT("ab") + rhs).data(), joined);
     EXPECT_EQ((TXT("a") + S(TXT("b")) + TXT("c") + CH('d')).data(), joined);
+}
+
+/**
+ * \brief   A number does not concatenate, assign or append as a character code; make_string() converts it.
+ **/
+TYPED_TEST(StringCommonConcat, NumberIsNotACharacter)
+{
+    using S = TypeParam;
+    using C = CharOf<S>;
+    using OC = CharOf<OtherOf<S>>;
+
+    static_assert(CanAdd<const S&, C>::value && CanAdd<C, const S&>::value, "A character concatenates.");
+    static_assert(!CanAdd<const S&, int>::value && !CanAdd<int, const S&>::value, "An int does not concatenate.");
+    static_assert(!CanAdd<const S&, uint8_t>::value && !CanAdd<uint8_t, const S&>::value, "A byte does not concatenate.");
+    static_assert(!CanAdd<const S&, double>::value && !CanAdd<double, const S&>::value, "A double does not concatenate.");
+    static_assert(!CanAdd<const S&, bool>::value && !CanAdd<bool, const S&>::value, "A bool does not concatenate.");
+    static_assert(!CanAdd<const S&, PlainEnum>::value && !CanAdd<PlainEnum, const S&>::value, "An enumeration does not concatenate.");
+    static_assert(!CanAdd<const S&, OC>::value && !CanAdd<OC, const S&>::value, "The other width character does not concatenate.");
+
+    static_assert(CanAddAssign<S, C>::value && CanAddAssign<S, OC>::value, "Both character widths append.");
+    static_assert(!CanAddAssign<S, int>::value && !CanAddAssign<S, uint8_t>::value, "A number does not append.");
+    static_assert(!CanAddAssign<S, bool>::value, "A bool does not append.");
+
+    static_assert(CanAssign<S, C>::value && CanAssign<S, OC>::value, "Both character widths assign.");
+    static_assert(!CanAssign<S, int>::value && !CanAssign<S, double>::value, "A number does not assign.");
+
+    const S text{ S(TXT("n=")) + S::make_string(66) };
+    EXPECT_EQ(text.data(), expected<C>("n=66"));
+
+    S str;
+    str = CH('x');
+    EXPECT_EQ(str.data(), expected<C>("x"));
+    str = static_cast<OC>('y');
+    EXPECT_EQ(str.data(), expected<C>("y"));
+    str += static_cast<OC>('z');
+    EXPECT_EQ(str.data(), expected<C>("yz"));
 }
 
 /**
@@ -1828,6 +1991,20 @@ TYPED_TEST(StringCommonValidate, StartsAndEndsWith)
     EXPECT_TRUE(str.ends_with(CH('d')));
     EXPECT_FALSE(str.ends_with(TXT("")));
     EXPECT_FALSE(str.ends_with(TXT("more Hello World")));
+
+    EXPECT_TRUE(str.starts_with(CH('H')));
+    EXPECT_FALSE(str.starts_with(CH('h')));
+    EXPECT_TRUE(str.starts_with(CH('h'), false));
+    EXPECT_FALSE(str.starts_with(CH('e')));
+    EXPECT_FALSE(str.ends_with(CH('l')));
+    EXPECT_FALSE(str.ends_with(CH('D')));
+    EXPECT_TRUE(str.ends_with(CH('D'), false));
+    EXPECT_FALSE(str.starts_with(CH('\0')));
+    EXPECT_FALSE(str.ends_with(CH('\0')));
+    EXPECT_FALSE(S().starts_with(CH('a')));
+    EXPECT_FALSE(S().ends_with(CH('a')));
+    EXPECT_TRUE(S(TXT("x")).starts_with(CH('x')));
+    EXPECT_TRUE(S(TXT("x")).ends_with(CH('x')));
 }
 
 /**
@@ -1924,7 +2101,11 @@ TYPED_TEST(StringCommonStream, HashAndRequiredSize)
     EXPECT_EQ(set.count(S(TXT("b"))), 1u);
 
     const areg::required_size<S> required;
-    const uint32_t header{ static_cast<uint32_t>(2 * sizeof(uint32_t)) };
-    EXPECT_EQ(required(hello), header + static_cast<uint32_t>(6 * sizeof(C)));
-    EXPECT_EQ(required(S()), header + static_cast<uint32_t>(sizeof(C)));
+    const uint32_t header{ static_cast<uint32_t>(sizeof(uint32_t)) };
+    EXPECT_EQ(required(hello), header + static_cast<uint32_t>(5 * sizeof(C)));
+    EXPECT_EQ(required(S()), header);
+
+    areg::SharedBuffer stream;
+    stream << hello;
+    EXPECT_GE(required(hello), stream.size_used());
 }

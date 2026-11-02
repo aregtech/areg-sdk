@@ -102,6 +102,9 @@ namespace areg {
  *                            File systems avoid writing data back to mass storage if sufficient cache memory is available,
  *                            because an application deletes a temporary file after a handle is closed.
  *                            In that case, the system can entirely avoid writing the data.
+ *
+ *         Wide text is stored as UTF-16LE on every platform: the text functions convert a
+ *         4-byte wchar_t, and the stream operators use the stream string format of IOStream.
  **/
 class AREG_API FileBase : public IOStream
                         , public Cursor
@@ -208,68 +211,6 @@ protected:
     FileBase();
 
     virtual ~FileBase() = default;
-
-//////////////////////////////////////////////////////////////////////////
-// Operators
-//////////////////////////////////////////////////////////////////////////
-public:
-
-    /**
-     * \brief   Writes ASCII string to the file, handling null-termination based on file mode.
-     *
-     * \param   stream  The file stream to write to.
-     * \param   ascii   The ASCII string to write.
-     * \return  Reference to the file stream.
-     **/
-    friend inline FileBase & operator << (FileBase & stream, const char * ascii );
-
-    /**
-     * \brief   Writes ASCII string to the file, handling null-termination based on file mode.
-     *
-     * \param   stream  The file stream to write to.
-     * \param   ascii   The ASCII string to write.
-     * \return  Reference to the file stream.
-     * \note    String overload.
-     **/
-    friend inline FileBase & operator << (FileBase & stream, const String & ascii );
-
-    /**
-     * \brief   Writes wide-char string to the file, handling null-termination based on file mode.
-     *
-     * \param   stream  The file stream to write to.
-     * \param   wide    The wide-char string to write.
-     * \return  Reference to the file stream.
-     **/
-    friend inline FileBase & operator << (FileBase & stream, const wchar_t * wide );
-
-    /**
-     * \brief   Writes wide-char string to the file, handling null-termination based on file mode.
-     *
-     * \param   stream  The file stream to write to.
-     * \param   wide    The wide-char string to write.
-     * \return  Reference to the file stream.
-     * \note    WideString overload.
-     **/
-    friend inline FileBase & operator << (FileBase & stream, const WideString & wide );
-
-    /**
-     * \brief   Reads file data as ASCII string, stopping at end of file or first unprintable character.
-     *
-     * \param    stream     The file stream to read from.
-     * \param[out] ascii    On output, contains the ASCII string data read.
-     * \return  Reference to the file stream.
-     **/
-    friend inline const FileBase & operator >> ( const FileBase & stream, String & ascii );
-
-    /**
-     * \brief   Reads file data as wide-char string, stopping at end of file or first unprintable character.
-     *
-     * \param   stream      The file stream to read from.
-     * \param[out] wide     On output, contains the wide-char string data read.
-     * \return  Reference to the file stream.
-     * \note    WideString overload.
-     **/
-    friend inline const FileBase & operator >> ( const FileBase & stream, WideString & wide );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -450,8 +391,8 @@ public:
     inline bool read_char(char & Value) const;
 
     /**
-     * \brief   Reads two bytes and converts to wide char; returns true on success; file pointer
-     *          position unchanged on failure.
+     * \brief   Reads a 4-byte character code as a wide char; a 2-byte wchar_t receives U+FFFD for a
+     *          code above U+FFFF. Returns true on success; file pointer position unchanged on failure.
      *
      * \param[out] Value       On output, contains the wide char value read.
      * \note    Wide char overload.
@@ -515,8 +456,8 @@ public:
     inline bool write_char(char inValue);
 
     /**
-     * \brief   Writes two bytes of wide char data and returns true on success; file pointer
-     *          position unchanged on failure.
+     * \brief   Writes the wide char as a 4-byte character code and returns true on success; file
+     *          pointer position unchanged on failure.
      *
      * \param   inValue     The wide char value to write.
      * \note    Wide char overload.
@@ -861,6 +802,9 @@ public:
      * \param   size        The size in bytes of the available buffer.
      * \return  Returns the number of bytes read.
      **/
+    using IOStream::read;
+    using IOStream::write;
+
     uint32_t read( uint8_t * buffer, uint32_t size ) const noexcept override = 0;
 
     /**
@@ -884,24 +828,6 @@ public:
      **/
     uint32_t read(SharedBuffer& buffer ) const override;
 
-    /**
-     * \brief   Reads string data from the file into the ASCII String and returns the number of bytes read.
-     *
-     * \param[out] ascii       On output, contains the string data read from the file.
-     * \return  Returns the number of bytes read.
-     * \note    String overload.
-     **/
-    uint32_t read( String & ascii ) const override;
-
-    /**
-     * \brief   Reads string data from the file into the WideString and returns the number of bytes read.
-     *
-     * \param[out] wide    On output, contains the wide-char string data read from the file.
-     * \return  Returns the number of bytes read.
-     * \note    WideString overload.
-     **/
-    uint32_t read( WideString & wide ) const override;
-
 /************************************************************************/
 // OutStream interface overrides
 /************************************************************************/
@@ -913,25 +839,6 @@ public:
      * \note    SharedBuffer overload.
      **/
     uint32_t write( const SharedBuffer& buffer ) override;
-
-    /**
-     * \brief   Writes string data from the String to the file and returns the number of bytes written.
-     *
-     * \param   ascii       The String containing data to write.
-     * \return  Returns the number of bytes written.
-     * \note    String overload.
-     **/
-    uint32_t write( const String & ascii ) override;
-
-    /**
-     * \brief   Writes wide-char string data from the WideString to the file and returns the number
-     *          of bytes written.
-     *
-     * \param   wide    The WideString containing data to write.
-     * \return  Returns the number of bytes written.
-     * \note    WideString overload.
-     **/
-    uint32_t write( const WideString & wide ) override;
 
     /**
      * \brief   Flushes all buffered data to the file.
@@ -962,6 +869,19 @@ protected:
      * \param[in,out] name    On output, contains the normalized file name.
      **/
     static void normalize_name( String & name );
+
+protected:
+    /**
+     * \brief   Returns nullptr: a file gives no direct access to its data.
+     **/
+    [[nodiscard]]
+    const uint8_t* read_view(uint32_t size) const noexcept override;
+
+    /**
+     * \brief   Returns nullptr: a file gives no direct access to its data.
+     **/
+    [[nodiscard]]
+    uint8_t* write_view(uint32_t size) noexcept override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -1205,42 +1125,6 @@ inline bool FileBase::write_float( float inValue )
 inline bool FileBase::write_double( double inValue )
 {
     return mWriteConvert.set_double(inValue);
-}
-
-inline FileBase & operator << ( FileBase & stream, const char * ascii )
-{
-    stream.write(ascii);
-    return stream;
-}
-
-inline FileBase & operator << ( FileBase & stream, const String & ascii )
-{
-    stream.write( ascii );
-    return stream;
-}
-
-inline FileBase & operator << ( FileBase & stream, const wchar_t * wide )
-{
-    stream.write( wide );
-    return stream;
-}
-
-inline FileBase & operator << ( FileBase & stream, const WideString & wide )
-{
-    stream.write( wide );
-    return stream;
-}
-
-inline const FileBase & operator >> ( const FileBase & stream, String & ascii )
-{
-    stream.read(ascii);
-    return stream;
-}
-
-inline const FileBase & operator >> ( const FileBase & stream, WideString & wide )
-{
-    stream.read(wide);
-    return stream;
 }
 
 } // namespace areg

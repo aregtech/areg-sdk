@@ -118,7 +118,7 @@ bool File::_os_open_file() noexcept
             mFileMode = normalize_mode(mFileMode);
             unsigned long access    = 0;
             unsigned long shared    = 0;
-            unsigned long creation  = 0;
+            unsigned long creation  = OPEN_EXISTING;
             unsigned long attributes= FILE_ATTRIBUTE_NORMAL;
 
             if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitRead)) != 0)
@@ -133,18 +133,14 @@ bool File::_os_open_file() noexcept
             if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitShareWrite)) != 0)
                 shared |= FILE_SHARE_WRITE;
             
+            // The creation disposition is one value, not a set of bits.
             if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitCreateNew)) != 0)
-                creation |= CREATE_ALWAYS;
-            
-            if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitOpenAlways)) != 0)
-                creation |= OPEN_ALWAYS;
+                creation = CREATE_ALWAYS;
+            else if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitOpenAlways)) != 0)
+                creation = OPEN_ALWAYS;
+            else if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitTruncate)) != 0)
+                creation = TRUNCATE_EXISTING;
 
-            if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitExist)) != 0)
-                creation |= OPEN_EXISTING;
-            
-            if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitTruncate)) != 0)
-                creation |= TRUNCATE_EXISTING;
-            
             if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitTemp)) != 0)
                 attributes = FILE_ATTRIBUTE_TEMPORARY;
             
@@ -247,7 +243,7 @@ bool File::_os_reserve(uint32_t newSize) noexcept
     ASSERT(mFileHandle != _os_invalid_handle());
     // Move the pointer to the target size then mark it as the new end-of-file.
     DWORD moved = ::SetFilePointer(static_cast<HANDLE>(mFileHandle), static_cast<LONG>(newSize), nullptr, FILE_BEGIN);
-    return ((moved == INVALID_SET_FILE_POINTER) && static_cast<bool>(::SetEndOfFile(static_cast<HANDLE>(mFileHandle))));
+    return ((moved != INVALID_SET_FILE_POINTER) && static_cast<bool>(::SetEndOfFile(static_cast<HANDLE>(mFileHandle))));
 }
 
 void File::_os_flush_file() noexcept
@@ -287,8 +283,50 @@ uint32_t File::_os_temp_name(char* buffer, const char* folder, const char* prefi
     ASSERT(folder != nullptr);
     ASSERT(prefix != nullptr);
 
-    // A zero number lets the system pick a free name and create the file.
-    return static_cast<uint32_t>(::GetTempFileNameA(folder, prefix, 0u, buffer) != 0 ? strlen(buffer) : 0u);
+    // Keeps the whole prefix and adds 6 symbols, like mkstemp; the file is created only if no file has the name.
+    constexpr char      symbols[]{ "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ" };
+    constexpr uint32_t  countSymbols{ static_cast<uint32_t>(sizeof(symbols) - 1u) };
+    constexpr uint32_t  lenSuffix{ 6u };
+    constexpr uint32_t  maxAttempts{ 100u };
+
+    const std::size_t lenFolder{ ::strlen(folder) };
+    const bool hasSeparator{ (lenFolder != 0u) && ((folder[lenFolder - 1u] == '\\') || (folder[lenFolder - 1u] == '/')) };
+    const char* separator{ hasSeparator ? "" : "\\" };
+
+    LARGE_INTEGER counter{ };
+    ::QueryPerformanceCounter(&counter);
+    uint32_t seed{ static_cast<uint32_t>(counter.QuadPart) ^ (static_cast<uint32_t>(::GetCurrentProcessId()) << 16u) };
+
+    for (uint32_t attempt = 0u; attempt < maxAttempts; ++attempt)
+    {
+        char suffix[lenSuffix + 1u]{ };
+        uint32_t value{ seed };
+        for (uint32_t i = 0u; i < lenSuffix; ++i)
+        {
+            suffix[i] = symbols[value % countSymbols];
+            value /= countSymbols;
+        }
+
+        const int len{ ::snprintf(buffer, File::MAXIMUM_PATH, "%s%s%s%s", folder, separator, prefix, suffix) };
+        if ((len <= 0) || (len >= static_cast<int>(File::MAXIMUM_PATH)))
+            break;
+
+        HANDLE file{ ::CreateFileA(buffer, GENERIC_WRITE, 0u, nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr) };
+        if (file != INVALID_HANDLE_VALUE)
+        {
+            ::CloseHandle(file);
+            return static_cast<uint32_t>(len);
+        }
+
+        const DWORD error{ ::GetLastError() };
+        if ((error != ERROR_FILE_EXISTS) && (error != ERROR_ALREADY_EXISTS))
+            break;
+
+        seed = seed * 1664525u + 1013904223u;
+    }
+
+    buffer[0] = String::EmptyChar;
+    return 0u;
 }
 
 /**

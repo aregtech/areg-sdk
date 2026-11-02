@@ -281,14 +281,13 @@ uint32_t File::_os_write_file(const uint8_t* buffer, uint32_t size) noexcept
     ASSERT((buffer != nullptr) && (size != 0));
 
     PosixFile file{ mFileHandle };
-    int32_t result = ::write(file.fd, buffer, size);
-    if (result != static_cast<int32_t>(size))
+    const ssize_t result = ::write(file.fd, buffer, size);
+    if (result != static_cast<ssize_t>(size))
     {
         AREG_OUTPUT_ERR("Failed to write [ %d ] bytes of data to file [ %s ]. Error code [ %p ].", size, mFileName.as_string(), static_cast<id_type>(errno));
-        result = 0;
     }
 
-    return result;
+    return (result > 0 ? static_cast<uint32_t>(result) : 0u);
 }
 
 uint32_t File::_os_set_position(int32_t offset, Cursor::SeekOrigin startAt) const noexcept
