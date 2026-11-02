@@ -138,8 +138,9 @@ public:
      *
      * \param[in,out] buffer    The buffer to fill with received data from remote target.
      * \param   length          The length in bytes of allocated space in buffer.
-     * \return  Returns number of bytes received from remote target. Returns negative number if
-     *          socket is invalid or failed to receive data.
+     * \return  Returns number of bytes received from remote target. Returns 0 if the peer closed
+     *          the connection before any byte arrived. Returns negative number if socket is
+     *          invalid, the buffer is empty, the peer closed it in the middle or receive failed.
      **/
     virtual int32_t receive(uint8_t * buffer, int32_t length ) const;
 
@@ -168,7 +169,8 @@ public:
     inline bool is_valid() const noexcept;
 
     /**
-     * \brief   Returns true if socket is alive and not closed.
+     * \brief   Returns true if socket is alive: no pending error, and the peer has not closed
+     *          the connection, unless unread data is still waiting.
      **/
     [[nodiscard]]
     inline bool is_alive() const noexcept;

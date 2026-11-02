@@ -371,7 +371,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait( SOCKETHANDLE            serverSocket
                                            , int32_t                count
                                            , int32_t                timeoutMs ) const
 {
-    if (serverSocket == areg::InvalidSocketHandle)
+    if ((serverSocket == areg::InvalidSocketHandle) || (count < 0) || ((clientSockets == nullptr) && (count != 0)))
         return areg::FailedSocketHandle;
 
     const INT total = static_cast<INT>(count + 1);

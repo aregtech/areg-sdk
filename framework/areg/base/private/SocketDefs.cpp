@@ -135,6 +135,14 @@ namespace areg::os {
     bool _os_get_option(SOCKETHANDLE hSocket, int32_t level, int32_t name, unsigned long & value);
 
     /**
+     * \brief   Checks without waiting that the socket has no pending error and that the peer has
+     *          not ended the stream, unless unread data is still waiting. Consumes nothing.
+     * \param   hSocket     A valid socket handle.
+     * \return  Returns true if the socket is connected.
+     **/
+    bool _os_socket_alive(SOCKETHANDLE hSocket) noexcept;
+
+    /**
      * \brief   OS specific non-blocking connect with timeout.
      *          Sets the socket to non-blocking mode, initiates a connect, then waits
      *          up to timeoutMs milliseconds for the connection to complete.
@@ -213,11 +221,18 @@ namespace
     }
 
     //!< Finds the RX cache of the socket in the thread's storage and remembers it in the state.
+    //!< The single cache of MonoCache drops the unread bytes of another socket.
     areg::ThreadCache& _rx_cache_lookup(RxThreadState& state, SOCKETHANDLE hSocket) noexcept
     {
         areg::ThreadCache& tc = (state.mode == areg::ReceiveMode::MonoCache)
                               ? _thread_mono_cache()
                               : _thread_local_cache()[hSocket];
+        if (tc.socket != hSocket)
+        {
+            tc.head   = 0u;
+            tc.unread = 0u;
+        }
+
         tc.socket    = hSocket;
         state.socket = hSocket;
         state.entry  = &tc;
@@ -739,27 +754,15 @@ AREG_API_IMPL bool areg::server_listen(SOCKETHANDLE serverSocket, int32_t maxQue
     return ( (serverSocket != areg::InvalidSocketHandle) && (areg::RETURNED_OK == ::listen(serverSocket, maxQueueSize)) );
 }
 
-AREG_API_IMPL SOCKETHANDLE areg::server_accept(areg::SocketMultiplexer & multiplexer, SOCKETHANDLE serverSocket, areg::SocketAddress * socketAddr /*= nullptr*/, int32_t timeoutMs /*= static_cast<int32_t>(areg::WAIT_INFINITE)*/)
+namespace
 {
-    if (serverSocket == areg::InvalidSocketHandle)
+    //!< Accepts the pending connection of the server socket, configures it and sets its address.
+    SOCKETHANDLE _accept_pending(SOCKETHANDLE serverSocket, areg::SocketAddress * socketAddr)
     {
-        return areg::InvalidSocketHandle;
-    }
-
-    if (socketAddr != nullptr)
-    {
-        socketAddr->reset();
-    }
-
-    const SOCKETHANDLE readable = multiplexer.wait(timeoutMs);
-    if (readable == serverSocket)
-    {
-        // New client connection pending.
         struct sockaddr_in acceptAddr;
         areg::mem_zero(&acceptAddr, sizeof(sockaddr_in));
 
-        SOCKETHANDLE result = areg::os::_os_accept_socket(serverSocket, acceptAddr);
-
+        const SOCKETHANDLE result{ areg::os::_os_accept_socket(serverSocket, acceptAddr) };
         if (result != areg::InvalidSocketHandle)
         {
             areg::socket_configure(result);
@@ -773,77 +776,48 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept(areg::SocketMultiplexer & multipl
 
         return result;
     }
-    else if (readable != areg::InvalidSocketHandle && readable != areg::FailedSocketHandle)
-    {
-        return readable;
-    }
-    else if (readable == areg::InvalidSocketHandle)
-    {
-        return areg::InvalidSocketHandle;
-    }
-    else
-    {
-        return areg::FailedSocketHandle;
-    }
 }
 
-AREG_API_IMPL SOCKETHANDLE areg::server_accept(SOCKETHANDLE serverSocket, const SOCKETHANDLE * masterList, int32_t entriesCount, areg::SocketAddress * socketAddr /*= nullptr*/)
+AREG_API_IMPL SOCKETHANDLE areg::server_accept(areg::SocketMultiplexer & multiplexer, SOCKETHANDLE serverSocket, areg::SocketAddress * socketAddr /*= nullptr*/, int32_t timeoutMs /*= static_cast<int32_t>(areg::WAIT_INFINITE)*/)
 {
-    SOCKETHANDLE result = areg::InvalidSocketHandle;
-    if (masterList == nullptr)
-    {
-        return result;
-    }
-
     if (socketAddr != nullptr)
     {
         socketAddr->reset();
     }
 
-    if ( serverSocket != areg::InvalidSocketHandle )
+    if (serverSocket == areg::InvalidSocketHandle)
     {
-        const SOCKETHANDLE readable = areg::SocketMultiplexer{}.wait(serverSocket, masterList, entriesCount);
-        if (readable == serverSocket)
-        {
-            // New client connection pending.
-            struct sockaddr_in acceptAddr;
-            areg::mem_zero(&acceptAddr, sizeof(sockaddr_in));
-
-            result = areg::os::_os_accept_socket(serverSocket, acceptAddr);
-
-            if (result != areg::InvalidSocketHandle)
-            {
-                areg::socket_configure(result);
-                areg::socket_set_no_delay(result);
-                areg::os::_os_configure_accepted_socket(result);
-                if (socketAddr != nullptr)
-                {
-                    socketAddr->from_sockaddr(acceptAddr);
-                }
-            }
-        }
-        else if (readable != areg::InvalidSocketHandle && readable != areg::FailedSocketHandle)
-        {
-            // Existing client has data (or connection closed).
-            result = readable;
-        }
-        else
-        {
-            result = areg::FailedSocketHandle;
-        }
-    }
-    else
-    {
-        return result;
+        return areg::FailedSocketHandle;
     }
 
-    return result;
+    const SOCKETHANDLE readable = multiplexer.wait(timeoutMs);
+    return (readable == serverSocket ? _accept_pending(serverSocket, socketAddr) : readable);
+}
+
+AREG_API_IMPL SOCKETHANDLE areg::server_accept(SOCKETHANDLE serverSocket, const SOCKETHANDLE * masterList, int32_t entriesCount, areg::SocketAddress * socketAddr /*= nullptr*/)
+{
+    if (socketAddr != nullptr)
+    {
+        socketAddr->reset();
+    }
+
+    if ((serverSocket == areg::InvalidSocketHandle) || (entriesCount < 0) || ((masterList == nullptr) && (entriesCount != 0)))
+    {
+        return areg::FailedSocketHandle;
+    }
+
+    const SOCKETHANDLE readable = areg::SocketMultiplexer{}.wait(serverSocket, masterList, entriesCount);
+    if (readable == serverSocket)
+    {
+        return _accept_pending(serverSocket, socketAddr);
+    }
+
+    return (readable == areg::InvalidSocketHandle ? areg::FailedSocketHandle : readable);
 }
 
 AREG_API_IMPL bool areg::is_socket_alive(SOCKETHANDLE hSocket) noexcept
 {
-    unsigned long error = 0;
-    return (areg::is_valid_socket(hSocket) && areg::os::_os_get_option(hSocket, SOL_SOCKET, SO_ERROR, error) && (error == 0));
+    return (areg::is_valid_socket(hSocket) && areg::os::_os_socket_alive(hSocket));
 }
 
 AREG_API_IMPL uint32_t areg::pending_read(SOCKETHANDLE hSocket) noexcept
@@ -989,11 +963,8 @@ AREG_API_IMPL void areg::SocketWriter::release() noexcept
 
 AREG_API_IMPL int32_t areg::receive_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, uint32_t dataLength) noexcept
 {
-    if (!areg::is_valid_socket(hSocket))
+    if (!areg::is_valid_socket(hSocket) || (dataBuffer == nullptr) || (dataLength == 0u))
         return -1;
-
-    if ((dataBuffer == nullptr) || (dataLength == 0u))
-        return 0;
 
     RxThreadState& state = _rx_state();
     areg::ThreadCache* const rxCache{ (state.mode != areg::ReceiveMode::NoCache) ? &_rx_cache(state, hSocket) : nullptr };
@@ -1273,6 +1244,14 @@ AREG_API_IMPL void areg::thread_rx_cache_release(SOCKETHANDLE hSocket) noexcept
     RxThreadState& state = _rx_state();
     state.socket = areg::InvalidSocketHandle;
     state.entry  = nullptr;
+
+    areg::ThreadCache& mono = _thread_mono_cache();
+    if (mono.socket == hSocket)
+    {
+        mono.socket = areg::InvalidSocketHandle;
+        mono.head   = 0u;
+        mono.unread = 0u;
+    }
 
     std::unordered_map<SOCKETHANDLE, areg::ThreadCache>& map = _thread_local_cache();
     auto found = map.find(hSocket);

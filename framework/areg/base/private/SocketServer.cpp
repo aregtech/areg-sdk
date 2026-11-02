@@ -68,17 +68,17 @@ bool SocketServer::listen(int32_t maxQueueSize)
 
 SOCKETHANDLE SocketServer::wait_connection_event(areg::SocketMultiplexer & multiplexer, areg::SocketAddress & addrAccepted)
 {
-    return ( is_valid() ? areg::server_accept(multiplexer, mSocket.value(), &addrAccepted) : areg::InvalidSocketHandle );
+    return areg::server_accept(multiplexer, is_valid() ? mSocket.value() : areg::InvalidSocketHandle, &addrAccepted);
 }
 
 SOCKETHANDLE SocketServer::wait_connection_nowait(areg::SocketMultiplexer & multiplexer, areg::SocketAddress & addrAccepted)
 {
-    return ( is_valid() ? areg::server_accept(multiplexer, mSocket.value(), &addrAccepted, 0) : areg::InvalidSocketHandle );
+    return areg::server_accept(multiplexer, is_valid() ? mSocket.value() : areg::InvalidSocketHandle, &addrAccepted, 0);
 }
 
 SOCKETHANDLE SocketServer::wait_connection_event(areg::SocketAddress & addrAccepted, const SOCKETHANDLE * masterList, int32_t entriesCount)
 {
-    return ( is_valid() ? areg::server_accept(mSocket.value(), masterList, entriesCount, &addrAccepted) : areg::InvalidSocketHandle );
+    return areg::server_accept(is_valid() ? mSocket.value() : areg::InvalidSocketHandle, masterList, entriesCount, &addrAccepted);
 }
 
 } // namespace areg

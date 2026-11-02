@@ -639,7 +639,7 @@ TEST(SocketWouldBlockCoverageTest, nowait_fill_compacts_unread_bytes_and_respect
 }
 
 // A receive cache must never expose bytes belonging to another live connection.
-TEST(SocketWouldBlockCoverageTest, DISABLED_mono_cache_does_not_expose_another_live_connections_bytes)
+TEST(SocketWouldBlockCoverageTest, mono_cache_does_not_expose_another_live_connections_bytes)
 {
     ScopedReceiveMode mode(areg::ReceiveMode::MonoCache);
     ScopedPair first;
@@ -667,9 +667,36 @@ TEST(SocketWouldBlockCoverageTest, DISABLED_mono_cache_does_not_expose_another_l
     EXPECT_EQ(got, 0);
 }
 
+// Releasing the socket of the mono cache drops its unread bytes, so a reused handle starts empty.
+TEST(SocketWouldBlockCoverageTest, mono_cache_release_drops_the_unread_bytes_of_the_socket)
+{
+    ScopedReceiveMode mode(areg::ReceiveMode::MonoCache);
+    ScopedPair pair;
+    ASSERT_TRUE(open_pair(pair));
+    areg::ThreadCache& cache{ areg::thread_rx_cache(pair.server) };
+    cache.head = 0u;
+    cache.unread = 0u;
+    const uint8_t data[]{ 0x11u, 0x22u };
+    ASSERT_EQ(areg::send_data(pair.client, data, sizeof(data)), static_cast<int32_t>(sizeof(data)));
+    areg::SocketMultiplexer mux;
+    ASSERT_TRUE(mux.register_socket(pair.server, true));
+    for (uint32_t attempt = 0u; (cache.unread < sizeof(data)) && (attempt < sizeof(data)); ++attempt)
+    {
+        ASSERT_EQ(mux.wait(30'000), pair.server);
+        ASSERT_GT(areg::recv_fill_nowait(pair.server), 0);
+    }
+
+    ASSERT_EQ(cache.unread, sizeof(data));
+    areg::thread_rx_cache_release(pair.server);
+    EXPECT_EQ(cache.unread, 0u);
+    EXPECT_EQ(areg::recv_data_available(pair.server), 0u);
+    uint8_t received[sizeof(data)]{};
+    EXPECT_EQ(areg::receive_data_nowait(pair.server, received, sizeof(received)), 0);
+}
+
 #if GTEST_HAS_DEATH_TEST
 // Sending a large scatter/gather payload to a closed peer must report an error without SIGPIPE.
-TEST(SocketWouldBlockCoverageTest, DISABLED_large_scatter_gather_send_reports_error_instead_of_sigpipe)
+TEST(SocketWouldBlockCoverageTest, large_scatter_gather_send_reports_error_instead_of_sigpipe)
 {
     ScopedPair pair;
     ASSERT_TRUE(open_pair(pair));

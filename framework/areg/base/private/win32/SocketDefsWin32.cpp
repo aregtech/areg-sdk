@@ -322,7 +322,9 @@ static inline int32_t _recv_exact(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int
         const int32_t received = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer + total), dataLength - total, MSG_WAITALL);
         if (received > 0)
             total += received;
-        else if (received == 0 || ::WSAGetLastError() != WSAEINTR)
+        else if (received == 0)
+            return (total == 0 ? 0 : -1);
+        else if (::WSAGetLastError() != WSAEINTR)
             return -1;
     } while (total < dataLength);
 
@@ -366,7 +368,11 @@ static inline int32_t _recv_cached(SOCKETHANDLE hSocket, areg::ThreadCache& tc, 
                 total  += static_cast<uint32_t>(received);
                 needed -= static_cast<uint32_t>(received);
             }
-            else if (received == 0 || ::WSAGetLastError() != WSAEINTR)
+            else if (received == 0)
+            {
+                return (total == 0u ? 0 : -1);
+            }
+            else if (::WSAGetLastError() != WSAEINTR)
             {
                 return -1;
             }
@@ -386,9 +392,10 @@ static inline int32_t _recv_cached(SOCKETHANDLE hSocket, areg::ThreadCache& tc, 
             tc.unread += static_cast<uint32_t>(filled);
         else if (filled == 0 || ::WSAGetLastError() != WSAEINTR)
         {
+            const bool endOfStream{ (filled == 0) && (total == 0u) && (tc.unread == 0u) };
             tc.head   = 0u;
             tc.unread = 0u;
-            return -1;
+            return (endOfStream ? 0 : -1);
         }
     }
 
@@ -455,46 +462,34 @@ bool _os_connect_socket(SOCKETHANDLE hSocket, const void* addr, uint32_t addrLen
     if (::ioctlsocket(hSocket, static_cast<long>(FIONBIO), &mode) != RETURNED_OK)
         return false;
 
-    const int result = ::connect(hSocket, static_cast<const sockaddr*>(addr), static_cast<int>(addrLen));
-    if (result == RETURNED_OK)
+    bool connected{ ::connect(hSocket, static_cast<const sockaddr*>(addr), static_cast<int>(addrLen)) == RETURNED_OK };
+    if ((connected == false) && (::WSAGetLastError() == WSAEWOULDBLOCK))
     {
-        // Connected immediately
-        mode = 0u;
-        ::ioctlsocket(hSocket, static_cast<long>(FIONBIO), &mode);
-        return true;
+        // Wait up to timeoutMs for the connection to complete.
+        fd_set writeSet;
+        fd_set exceptSet;
+        FD_ZERO(&writeSet);
+        FD_ZERO(&exceptSet);
+        FD_SET(hSocket, &writeSet);
+        FD_SET(hSocket, &exceptSet);
+
+        struct timeval tv;
+        tv.tv_sec  = static_cast<decltype(tv.tv_sec)>(timeoutMs / 1000u);
+        tv.tv_usec = static_cast<decltype(tv.tv_usec)>((timeoutMs % 1000u) * 1000u);
+        const int selectResult = ::select(0, nullptr, &writeSet, &exceptSet, &tv);  // First arg ignored on Windows
+
+        int connError{ 0 };
+        int errLen{ static_cast<int>(sizeof(connError)) };
+        connected = (selectResult > 0)
+                 && (FD_ISSET(hSocket, &exceptSet) == 0)
+                 && (::getsockopt(hSocket, static_cast<int>(SOL_SOCKET), static_cast<int>(SO_ERROR), reinterpret_cast<char*>(&connError), &errLen) == RETURNED_OK)
+                 && (connError == 0);
     }
 
-    if (::WSAGetLastError() != WSAEWOULDBLOCK)
-    {
-        // Hard failure, no need to wait
-        return false;
-    }
-
-    // Wait up to timeoutMs for the connection to complete
-    fd_set writeSet;
-    fd_set exceptSet;
-    FD_ZERO(&writeSet);
-    FD_ZERO(&exceptSet);
-    FD_SET(hSocket, &writeSet);
-    FD_SET(hSocket, &exceptSet);
-
-    struct timeval tv;
-    tv.tv_sec  = static_cast<decltype(tv.tv_sec)>(timeoutMs / 1000u);
-    tv.tv_usec = static_cast<decltype(tv.tv_usec)>((timeoutMs % 1000u) * 1000u);
-    const int selectResult = ::select(0, nullptr, &writeSet, &exceptSet, &tv);  // First arg ignored on Windows
-
-    if (selectResult <= 0 || FD_ISSET(hSocket, &exceptSet))
-        return false;   // Timeout or exceptional condition
-
-    int connError{ 0 };
-    int errLen{ static_cast<int>(sizeof(connError)) };
-    if (::getsockopt(hSocket, static_cast<int>(SOL_SOCKET), static_cast<int>(SO_ERROR), reinterpret_cast<char*>(&connError), &errLen) != RETURNED_OK || connError != 0)
-        return false;
-
-    // Restore blocking mode for normal I/O
+    // Restores blocking mode on every path.
     mode = 0u;
     ::ioctlsocket(hSocket, static_cast<long>(FIONBIO), &mode);
-    return true;
+    return connected;
 }
 
 bool _os_control(SOCKETHANDLE hSocket, int32_t cmd, unsigned long& arg)
@@ -508,6 +503,25 @@ bool _os_get_option(SOCKETHANDLE hSocket, int32_t level, int32_t name, unsigned 
     ASSERT(areg::is_valid_socket(hSocket));
     int32_t len{ sizeof(unsigned long) };
     return (RETURNED_OK == ::getsockopt(static_cast<SOCKET>(hSocket), level, name, reinterpret_cast<char*>(&value), &len));
+}
+
+bool _os_socket_alive(SOCKETHANDLE hSocket) noexcept
+{
+    ASSERT(areg::is_valid_socket(hSocket));
+
+    WSAPOLLFD entry{ };
+    entry.fd     = hSocket;
+    entry.events = POLLRDNORM;
+    const int ready{ ::WSAPoll(&entry, 1u, 0) };
+    if ((ready < 0) || ((entry.revents & (POLLERR | POLLNVAL)) != 0))
+        return false;
+    else if ((entry.revents & (POLLRDNORM | POLLHUP)) == 0)
+        return true;
+
+    // Readable: a peeked byte is unread data, 0 is the end of stream.
+    char peek{ 0 };
+    const int received{ ::recv(hSocket, &peek, 1, MSG_PEEK) };
+    return (received > 0) || ((received < 0) && (::WSAGetLastError() == WSAEWOULDBLOCK));
 }
 
 } // namespace areg::os

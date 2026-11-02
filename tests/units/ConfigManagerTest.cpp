@@ -285,7 +285,8 @@ TEST(ConfigManagerTest, scope_entries_split_by_source)
 }
 
 /**
- * \brief   Parallel saves of one file all succeed, and the file holds one complete save.
+ * \brief   Saves from many threads through the one configuration manager of a process all succeed,
+ *          and the file holds one complete save.
  **/
 TEST(ConfigManagerTest, parallel_saves_of_one_file_all_succeed)
 {
@@ -297,17 +298,18 @@ TEST(ConfigManagerTest, parallel_saves_of_one_file_all_succeed)
     const fs::path target{ dir / "parallel.init" };
     write_file(shared, { "log::*::file::location = ./logs/all.log" });
 
+    areg::ConfigManager config;
+    ASSERT_TRUE(config.read_config(areg::String(shared.string())));
+
     std::atomic<uint32_t> failed{ 0u };
     std::vector<std::thread> threads;
     for (uint32_t i = 0u; i < THREADS; ++i)
     {
-        threads.emplace_back([&shared, &target, &failed, i]()
+        threads.emplace_back([&config, &target, &failed, i]()
             {
-                areg::ConfigManager config;
-                config.read_config(areg::String(shared.string()));
-                config.set_file_location(areg::String("./logs/saver") + areg::String::make_string(i) + ".log");
                 for (uint32_t round = 0u; round < ROUNDS; ++round)
                 {
+                    config.set_file_location(areg::String("./logs/saver") + areg::String::make_string(i) + ".log");
                     if (config.save_config(areg::String(target.string())) == false)
                     {
                         failed.fetch_add(1u);
@@ -327,6 +329,7 @@ TEST(ConfigManagerTest, parallel_saves_of_one_file_all_succeed)
     saved.read_config(areg::String(target.string()));
     EXPECT_EQ(saved.readonly_properties().size(), 1u);
     EXPECT_EQ(std::string(saved.log_file_location().as_string()).rfind("./logs/saver", 0), 0u);
+    EXPECT_EQ(saved.log_file_location(), config.log_file_location());
 }
 
 #if AREG_LOGGING

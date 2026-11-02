@@ -378,9 +378,9 @@ TEST_F(SocketLoopbackTest, invalid_handles_and_unconfigured_objects_report_failu
     areg::SocketAddress peer;
     EXPECT_FALSE(server.create());
     EXPECT_FALSE(server.listen(0));
-    EXPECT_EQ(server.wait_connection_event(mux, peer), areg::InvalidSocketHandle);
-    EXPECT_EQ(server.wait_connection_nowait(mux, peer), areg::InvalidSocketHandle);
-    EXPECT_EQ(server.wait_connection_event(peer, nullptr, 0), areg::InvalidSocketHandle);
+    EXPECT_EQ(server.wait_connection_event(mux, peer), areg::FailedSocketHandle);
+    EXPECT_EQ(server.wait_connection_nowait(mux, peer), areg::FailedSocketHandle);
+    EXPECT_EQ(server.wait_connection_event(peer, nullptr, 0), areg::FailedSocketHandle);
     EXPECT_FALSE(areg::server_listen(areg::InvalidSocketHandle));
     EXPECT_EQ(areg::client_connect(peer), areg::InvalidSocketHandle);
     EXPECT_EQ(areg::server_connect(peer), areg::InvalidSocketHandle);
@@ -647,7 +647,7 @@ TEST_F(SocketLoopbackTest, connected_options_and_buffer_sizes_match_native_readb
 }
 
 // An orderly peer close must return zero in every receive mode.
-TEST_F(SocketLoopbackTest, DISABLED_orderly_peer_close_returns_zero_in_every_receive_mode)
+TEST_F(SocketLoopbackTest, orderly_peer_close_returns_zero_in_every_receive_mode)
 {
     OwnedSocket listener;
     areg::SocketAddress address;
@@ -665,39 +665,70 @@ TEST_F(SocketLoopbackTest, DISABLED_orderly_peer_close_returns_zero_in_every_rec
     }
 }
 
+// A peer close in the middle of a requested block is an error in every receive mode.
+TEST_F(SocketLoopbackTest, peer_close_inside_a_block_is_an_error_in_every_receive_mode)
+{
+    OwnedSocket listener;
+    areg::SocketAddress address;
+    ASSERT_TRUE(bind_loopback(listener, address));
+    for (const auto mode : { areg::ReceiveMode::NoCache, areg::ReceiveMode::MonoCache, areg::ReceiveMode::MultiCache })
+    {
+        ReceiveModeGuard guard(mode);
+        const OwnedSocket client(areg::client_connect(address));
+        ASSERT_TRUE(areg::is_valid_socket(client.value()));
+        const OwnedSocket accepted(accept_pending(listener.value()));
+        ASSERT_TRUE(areg::is_valid_socket(accepted.value()));
+        const std::array<uint8_t, 3> sent{ 1u, 2u, 3u };
+        ASSERT_EQ(areg::send_data(client.value(), sent.data(), 3u), 3);
+        ASSERT_TRUE(areg::disable_send(client.value()));
+        std::array<uint8_t, 8> received{};
+        EXPECT_LT(areg::receive_data(accepted.value(), received.data(), 8u), 0) << static_cast<int32_t>(mode);
+        areg::thread_rx_cache_release(accepted.value());
+    }
+}
+
 // Legacy accept must allow a null pointer when there are no client sockets.
-TEST_F(SocketLoopbackTest, DISABLED_legacy_accept_allows_null_for_an_empty_client_list)
+TEST_F(SocketLoopbackTest, legacy_accept_allows_null_for_an_empty_client_list)
 {
     OwnedSocket listener;
     areg::SocketAddress address;
     ASSERT_TRUE(bind_loopback(listener, address));
     const OwnedSocket client(areg::client_connect(address));
     ASSERT_TRUE(areg::is_valid_socket(client.value()));
-    const OwnedSocket accepted(areg::server_accept(listener.value(), nullptr, 0));
+    areg::SocketAddress peer;
+    EXPECT_EQ(areg::server_accept(listener.value(), nullptr, 1, &peer), areg::FailedSocketHandle);
+    EXPECT_EQ(areg::server_accept(listener.value(), nullptr, -1, &peer), areg::FailedSocketHandle);
+    EXPECT_FALSE(peer.is_valid());
+    const OwnedSocket accepted(areg::server_accept(listener.value(), nullptr, 0, &peer));
     EXPECT_TRUE(areg::is_valid_socket(accepted.value()));
+    EXPECT_TRUE(peer.is_valid());
+    EXPECT_EQ(areg::SocketMultiplexer{}.wait(listener.value(), nullptr, 2, 0), areg::FailedSocketHandle);
 }
 
 // Accepting on an invalid listener must report a failed handle, not a timeout.
-TEST_F(SocketLoopbackTest, DISABLED_accept_reports_invalid_listener_as_failed_handle)
+TEST_F(SocketLoopbackTest, accept_reports_invalid_listener_as_failed_handle)
 {
     areg::SocketMultiplexer mux;
-    EXPECT_EQ(areg::server_accept(mux, areg::InvalidSocketHandle, nullptr, 0), areg::FailedSocketHandle);
+    areg::SocketAddress peer(areg::String(LOOPBACK), 1u);
+    EXPECT_EQ(areg::server_accept(mux, areg::InvalidSocketHandle, &peer, 0), areg::FailedSocketHandle);
+    EXPECT_FALSE(peer.is_valid());
     const SOCKETHANDLE none{ areg::InvalidSocketHandle };
     EXPECT_EQ(areg::server_accept(areg::InvalidSocketHandle, &none, 0), areg::FailedSocketHandle);
 }
 
 // Receiving into an empty buffer must report an error.
-TEST_F(SocketLoopbackTest, DISABLED_empty_receive_buffer_reports_an_error)
+TEST_F(SocketLoopbackTest, empty_receive_buffer_reports_an_error)
 {
     const OwnedSocket socket(areg::socket_create());
     ASSERT_TRUE(areg::is_valid_socket(socket.value()));
     uint8_t byte{ 0xA5u };
     EXPECT_LT(areg::receive_data(socket.value(), &byte, 0u), 0);
+    EXPECT_LT(areg::receive_data(socket.value(), nullptr, 1u), 0);
     EXPECT_EQ(byte, 0xA5u);
 }
 
 // A peer that has reached EOF must no longer be reported alive.
-TEST_F(SocketLoopbackTest, DISABLED_closed_peer_is_not_reported_alive_after_eof)
+TEST_F(SocketLoopbackTest, closed_peer_is_not_reported_alive_after_eof)
 {
     OwnedSocket listener;
     areg::SocketAddress address;
@@ -706,14 +737,39 @@ TEST_F(SocketLoopbackTest, DISABLED_closed_peer_is_not_reported_alive_after_eof)
     ASSERT_TRUE(areg::is_valid_socket(client.value()));
     const OwnedSocket accepted(accept_pending(listener.value()));
     ASSERT_TRUE(areg::is_valid_socket(accepted.value()));
+    EXPECT_TRUE(areg::is_socket_alive(accepted.value()));
     client.reset();
     uint8_t byte{};
     EXPECT_LT(areg::receive_data_window(accepted.value(), &byte, 1u), 0);
     EXPECT_FALSE(areg::is_socket_alive(accepted.value()));
 }
 
-// Readiness on an existing client must leave the accept-address output unchanged.
-TEST_F(SocketLoopbackTest, DISABLED_existing_client_readiness_preserves_the_accept_address)
+// A closed peer stays alive while its unread data waits, and the query consumes none of it.
+TEST_F(SocketLoopbackTest, closed_peer_with_unread_data_stays_alive_until_read)
+{
+    OwnedSocket listener;
+    areg::SocketAddress address;
+    ASSERT_TRUE(bind_loopback(listener, address));
+    OwnedSocket client(areg::client_connect(address));
+    ASSERT_TRUE(areg::is_valid_socket(client.value()));
+    const OwnedSocket accepted(accept_pending(listener.value()));
+    ASSERT_TRUE(areg::is_valid_socket(accepted.value()));
+    const uint8_t sent{ 0x5Au };
+    ASSERT_EQ(areg::send_data(client.value(), &sent, 1u), 1);
+    client.reset();
+    areg::SocketMultiplexer mux;
+    ASSERT_TRUE(mux.register_socket(accepted.value(), true));
+    ASSERT_EQ(mux.wait(SOCKET_DEADLINE_MS), accepted.value());
+    EXPECT_TRUE(areg::is_socket_alive(accepted.value()));
+    uint8_t byte{};
+    ASSERT_EQ(areg::receive_data_window(accepted.value(), &byte, 1u), 1);
+    EXPECT_EQ(byte, sent);
+    EXPECT_EQ(areg::receive_data(accepted.value(), &byte, 1u), 0);
+    EXPECT_FALSE(areg::is_socket_alive(accepted.value()));
+}
+
+// Readiness on an existing client returns that client and an invalid accept address.
+TEST_F(SocketLoopbackTest, existing_client_readiness_invalidates_the_accept_address)
 {
     OwnedSocket listener;
     areg::SocketAddress address;
@@ -729,12 +785,16 @@ TEST_F(SocketLoopbackTest, DISABLED_existing_client_readiness_preserves_the_acce
     ASSERT_EQ(areg::send_data(client.value(), &byte, 1u), 1);
     areg::SocketAddress output(address);
     EXPECT_EQ(areg::server_accept(mux, listener.value(), &output, SOCKET_DEADLINE_MS), accepted.value());
-    EXPECT_EQ(output, address);
+    EXPECT_FALSE(output.is_valid());
+    output = address;
+    const SOCKETHANDLE clients[]{ accepted.value() };
+    EXPECT_EQ(areg::server_accept(listener.value(), clients, 1, &output), accepted.value());
+    EXPECT_FALSE(output.is_valid());
 }
 
 #if defined(_POSIX)
 // A refused connection must restore the socket's original blocking flags.
-TEST_F(SocketLoopbackTest, DISABLED_refused_connect_restores_the_original_blocking_flags)
+TEST_F(SocketLoopbackTest, refused_connect_restores_the_original_blocking_flags)
 {
     OwnedSocket listener;
     areg::SocketAddress address;

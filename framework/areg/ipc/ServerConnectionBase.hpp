@@ -277,12 +277,12 @@ public:
 
     /**
      * \brief   Blocking call that waits for connection event (new connection, data, or closure).
-     *          Returns valid socket handle; address output parameter is updated only for new connections.
+     *          Returns valid socket handle; the address output is valid only for a new connection.
      *
      * \param[in,out] out_addrNewAccepted     On output, if new connection is accepted, this
      *                                        parameter contain address of new accepted socket. In
      *                                        all other cases, when client sends data or close
-     *                                        socket, this parameter remains unchanged.
+     *                                        socket, it is an invalid address.
      * \return  Returns valid socket handle if successful; invalid if failed.
      **/
     SOCKETHANDLE wait_connection(areg::SocketAddress & out_addrNewAccepted);
@@ -294,7 +294,7 @@ public:
      *          reducing the number of epoll/kqueue/WSAPoll syscalls under high load.
      *
      * \param[in,out] out_addrNewAccepted    On output, receives the address of a newly accepted
-     *                                       client. Unchanged when an existing client sends data.
+     *                                       client, otherwise an invalid address.
      * \return  Valid socket handle if a socket is immediately ready;
      *          InvalidSocketHandle if nothing is ready (normal drain-loop termination);
      *          FailedSocketHandle on error or after reset().
