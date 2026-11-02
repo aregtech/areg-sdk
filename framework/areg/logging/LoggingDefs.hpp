@@ -293,8 +293,9 @@ namespace areg {
      * \brief   Converts a string to its corresponding log priority value.
      *
      * \param   prio    The priority string value to convert. Case-insensitive. Valid values:
-     *                  NOTSET, SCOPE, FATAL, ERROR, WARNING, INFO, DEBUG.
-     * \return  The log priority value corresponding to the string.
+     *                  NOTSET, SCOPE, FATAL, ERROR, WARN, INFO, DEBUG.
+     * \return  The log priority value corresponding to the string, or PrioIgnoreLayout if the
+     *          string is not a priority name.
      **/
     inline areg::LogPriority string_to_priority(const String& prio);
 
@@ -308,9 +309,10 @@ namespace areg {
 
     /**
      * \brief   Converts a human-readable string with priorities separated by '|' to a bitwise set.
+     *          The names are case-insensitive, spaces around them are ignored and unknown names are skipped.
      *
      * \param   prio    The human-readable string with priorities separated by '|' to convert.
-     * \return  The converted integer value with priorities set bitwise.
+     * \return  The converted integer value with priorities set bitwise. PrioInvalid if no name is known.
      **/
     AREG_API uint32_t make_priorities(const String& prio);
 
@@ -1119,7 +1121,7 @@ inline areg::StringArray areg::priority_to_string_list(uint32_t prios)
 
     if ((prios == static_cast<uint32_t>(areg::LogPriority::PrioNotset)) && result.is_empty())
     {
-        result.add(areg::PRIO_FATAL_STR);
+        result.add(areg::PRIO_NOTSET_STR);
     }
 
     return result;
@@ -1128,19 +1130,24 @@ inline areg::StringArray areg::priority_to_string_list(uint32_t prios)
 
 inline areg::LogPriority areg::string_to_priority(const String& prio)
 {
-    if (areg::PRIO_DEBUG_STR == prio)
+    const auto is = [&prio](const String& name) noexcept -> bool
+        {
+            return (prio.compare(name, false) == areg::Ordering::Equal);
+        };
+
+    if (is(areg::PRIO_DEBUG_STR))
         return areg::LogPriority::PrioDebug;
-    else if (areg::PRIO_INFO_STR == prio)
+    else if (is(areg::PRIO_INFO_STR))
         return areg::LogPriority::PrioInfo;
-    else if (areg::PRIO_WARNING_STR == prio)
+    else if (is(areg::PRIO_WARNING_STR))
         return areg::LogPriority::PrioWarning;
-    else if (areg::PRIO_ERROR_STR == prio)
+    else if (is(areg::PRIO_ERROR_STR))
         return areg::LogPriority::PrioError;
-    else if (areg::PRIO_FATAL_STR == prio)
+    else if (is(areg::PRIO_FATAL_STR))
         return areg::LogPriority::PrioFatal;
-    else if (areg::PRIO_SCOPE_STR == prio)
+    else if (is(areg::PRIO_SCOPE_STR))
         return areg::LogPriority::PrioScope;
-    else if (areg::PRIO_NOTSET_STR == prio)
+    else if (is(areg::PRIO_NOTSET_STR))
         return areg::LogPriority::PrioNotset;
     else
         return areg::LogPriority::PrioIgnoreLayout;

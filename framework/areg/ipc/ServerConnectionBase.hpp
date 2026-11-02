@@ -277,12 +277,12 @@ public:
 
     /**
      * \brief   Blocking call that waits for connection event (new connection, data, or closure).
-     *          Returns valid socket handle; address output parameter is updated only for new connections.
+     *          Returns valid socket handle; the address output is valid only for a new connection.
      *
      * \param[in,out] out_addrNewAccepted     On output, if new connection is accepted, this
      *                                        parameter contain address of new accepted socket. In
      *                                        all other cases, when client sends data or close
-     *                                        socket, this parameter remains unchanged.
+     *                                        socket, it is an invalid address.
      * \return  Returns valid socket handle if successful; invalid if failed.
      **/
     SOCKETHANDLE wait_connection(areg::SocketAddress & out_addrNewAccepted);
@@ -294,7 +294,7 @@ public:
      *          reducing the number of epoll/kqueue/WSAPoll syscalls under high load.
      *
      * \param[in,out] out_addrNewAccepted    On output, receives the address of a newly accepted
-     *                                       client. Unchanged when an existing client sends data.
+     *                                       client, otherwise an invalid address.
      * \return  Valid socket handle if a socket is immediately ready;
      *          InvalidSocketHandle if nothing is ready (normal drain-loop termination);
      *          FailedSocketHandle on error or after reset().
@@ -336,14 +336,6 @@ public:
     inline bool disable_send( const SocketAccepted & clientConnection );
 
     /**
-     * \brief   Sets socket to write-only mode, disabling message receiving.
-     *
-     * \param   clientConnection    The connected client socket to set in write-only mode.
-     * \return  Returns true if operation succeeds.
-     **/
-    inline bool disable_receive( const SocketAccepted & clientConnection );
-
-    /**
      * \brief   Configures the socket-buffer sizes applied to every socket accepted by
      *          this server (overrides the platform defaults set by socket_configure()).
      *          Call before the first accept_connection() to take effect.
@@ -368,11 +360,6 @@ public:
      * \brief   Sets all sockets to read-only mode, disabling message sending.
      **/
     inline void disable_send();
-
-    /**
-     * \brief   Sets all sockets to write-only mode, disabling message receiving.
-     **/
-    inline void disable_receive();
 
     inline void lock_resource() noexcept;
 
@@ -610,26 +597,12 @@ inline bool ServerConnectionBase::disable_send( const SocketAccepted & clientCon
     return clientConnection.disable_send();
 }
 
-inline bool ServerConnectionBase::disable_receive( const SocketAccepted & clientConnection )
-{
-    return clientConnection.disable_receive();
-}
-
 inline void ServerConnectionBase::disable_send()
 {
     std::unique_lock<std::shared_mutex> lock(mLock);
     for ( MapSocketToObject::MAPPOS pos = mAcceptedConnections.first_position( ); mAcceptedConnections.is_valid_position( pos ); pos = mAcceptedConnections.next_position( pos ) )
     {
         mAcceptedConnections.value_at( pos ).disable_send( );
-    }
-}
-
-inline void ServerConnectionBase::disable_receive()
-{
-    std::unique_lock<std::shared_mutex> lock(mLock);
-    for ( MapSocketToObject::MAPPOS pos = mAcceptedConnections.first_position( ); mAcceptedConnections.is_valid_position( pos ); pos = mAcceptedConnections.next_position( pos ) )
-    {
-        mAcceptedConnections.value_at( pos ).disable_receive( );
     }
 }
 

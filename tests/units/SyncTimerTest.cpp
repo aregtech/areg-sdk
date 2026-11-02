@@ -27,7 +27,9 @@
 #include <vector>
 
 #if defined(__linux__)
+    #include <dirent.h>
     #include <fstream>
+    #include <set>
     #include <string>
     #include <sys/syscall.h>
     #include <unistd.h>
@@ -63,12 +65,53 @@ namespace
     }
 
 #if defined(__linux__)
-    // Returns the last PID allocated in the PID namespace, or -1 if it cannot be read.
-    int64_t last_pid()
+    // Adds the IDs of the threads of this process to 'tids'. Returns false if they cannot be read.
+    bool collect_thread_ids(std::set<long>& tids)
     {
-        std::ifstream file("/proc/sys/kernel/ns_last_pid");
-        int64_t pid{ -1 };
-        return (file >> pid) ? pid : -1;
+        DIR* dir{ ::opendir("/proc/self/task") };
+        if (dir == nullptr)
+            return false;
+
+        for (const dirent* entry{ ::readdir(dir) }; entry != nullptr; entry = ::readdir(dir))
+        {
+            if (entry->d_name[0] != '.')
+            {
+                tids.insert(std::atol(entry->d_name));
+            }
+        }
+
+        ::closedir(dir);
+        return true;
+    }
+
+    // Runs 'work' while another thread records every thread of this process. Returns the threads that were not there before.
+    template<typename Work>
+    std::set<long> threads_created_during(Work work)
+    {
+        std::set<long> before;
+        EXPECT_TRUE(collect_thread_ids(before));
+        std::set<long> seen;
+        std::atomic<bool> stop{ false };
+        std::atomic<long> samplerId{ 0 };
+        std::thread sampler([&]()
+            {
+                samplerId = static_cast<long>(::syscall(SYS_gettid));
+                while (stop.load() == false)
+                {
+                    collect_thread_ids(seen);
+                }
+            });
+
+        work();
+        stop = true;
+        sampler.join();
+        seen.erase(samplerId.load());
+        for (long tid : before)
+        {
+            seen.erase(tid);
+        }
+
+        return seen;
     }
 
     // Returns the number of threads of this process, or -1 if it cannot be read.
@@ -190,38 +233,43 @@ TEST(SyncTimerTest, timer_does_not_end_other_waits_of_its_thread)
 
 #if defined(__linux__)
 
-// The ticks of a periodic timer create no thread. Tasks of other processes count too, so one quiet try of ten passes.
+// The ticks of a periodic timer create no thread in this process.
 TEST(SyncTimerTest, periodic_timer_creates_no_thread_per_tick)
 {
     constexpr uint32_t  PERIOD_MS   { 2u };
     constexpr uint32_t  TICKS       { 200u };
-    constexpr int64_t   MAX_TASKS   { static_cast<int64_t>(TICKS) / 4 };
-    constexpr int       MAX_TRIES   { 10 };
-    if (last_pid() < 0)
-    {
-        GTEST_SKIP() << "/proc/sys/kernel/ns_last_pid is not readable";
-    }
 
     areg::SyncTimer timer(PERIOD_MS, true);
     ASSERT_TRUE(timer.set_timer());
     ASSERT_TRUE(timer.lock(DEADLINE_MS));
 
-    int64_t best{ INT64_MAX };
-    for (int attempt = 0; (attempt < MAX_TRIES) && (best >= MAX_TASKS); ++attempt)
-    {
-        const int64_t before{ last_pid() };
-        uint32_t ticks{ 0u };
-        while ((ticks < TICKS) && timer.lock(DEADLINE_MS))
+    uint32_t ticks{ 0u };
+    const std::set<long> created{ threads_created_during([&]()
         {
-            ++ticks;
-        }
-
-        ASSERT_EQ(ticks, TICKS);
-        best = std::min(best, last_pid() - before);
-    }
+            while ((ticks < TICKS) && timer.lock(DEADLINE_MS))
+            {
+                ++ticks;
+            }
+        }) };
 
     timer.cancel_timer();
-    EXPECT_LT(best, MAX_TASKS) << TICKS << " ticks created " << best << " tasks";
+    EXPECT_EQ(ticks, TICKS);
+    EXPECT_TRUE(created.empty()) << TICKS << " ticks created " << created.size() << " threads";
+}
+
+// Control: the thread sampler sees threads that live only for one short step each.
+TEST(SyncTimerTest, thread_sampler_sees_short_lived_threads)
+{
+    constexpr uint32_t  STEPS   { 200u };
+    const std::set<long> created{ threads_created_during([]()
+        {
+            for (uint32_t i = 0u; i < STEPS; ++i)
+            {
+                std::thread([]() { std::this_thread::sleep_for(std::chrono::milliseconds(1)); }).join();
+            }
+        }) };
+
+    EXPECT_FALSE(created.empty());
 }
 
 // Many armed timers are served by at most one extra thread.

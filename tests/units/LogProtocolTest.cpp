@@ -62,7 +62,7 @@ TEST(LogProtocolTest, log_row_is_built)
     EXPECT_STREQ(row->logMessage, text);
 }
 
-// A scope update names the scope, its ID and its new priority.
+// A scope update decodes as the scope entry the log source reads.
 TEST(LogProtocolTest, scope_update_carries_the_scope)
 {
     const areg::MessageEnvelope msg{ areg::message_update_scope(SOURCE, TARGET, areg::String("area_scope"), 42u, static_cast<uint32_t>(areg::LogPriority::PrioDebug)) };
@@ -70,14 +70,12 @@ TEST(LogProtocolTest, scope_update_carries_the_scope)
 
     msg.move_to_begin();
     uint32_t count{ 0u };
-    areg::String name;
-    uint32_t id{ 0u };
-    uint32_t prio{ 0u };
-    msg >> count >> name >> id >> prio;
+    areg::ScopeEntry entry{};
+    msg >> count >> entry;
     EXPECT_EQ(count, 1u);
-    EXPECT_EQ(name, "area_scope");
-    EXPECT_EQ(id, 42u);
-    EXPECT_EQ(prio, static_cast<uint32_t>(areg::LogPriority::PrioDebug));
+    EXPECT_EQ(entry.scopeName, "area_scope");
+    EXPECT_EQ(entry.scopeId, 42u);
+    EXPECT_EQ(entry.scopePrio, static_cast<uint32_t>(areg::LogPriority::PrioDebug));
 }
 
 // The requests of an observer name their target.

@@ -178,8 +178,7 @@ public:
      * \note    This method may create a new entry if the key does not exist, so it should be used with caution.
      *          If you want to only retrieve without creating, use find_resource() instead.
      **/
-    [[nodiscard]]
-    inline ResourceList& resource_at( const RESOURCE_KEY & Key ) const;
+    inline ResourceList& resource_at( const RESOURCE_KEY & Key );
 
     /**
      * \brief   Removes the resource list for the given key and returns a copy. Returns an empty
@@ -464,11 +463,11 @@ template < typename RESOURCE_KEY
          , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
          , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline ResourceList& ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, ResourceList, MapContainer, Tracker>::resource_at( const RESOURCE_KEY & Key ) const
+inline ResourceList& ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, ResourceList, MapContainer, Tracker>::resource_at( const RESOURCE_KEY & Key )
 {
     ScopedLock lock( mSyncObj );
 
-    return MapContainer::value_at(Key);
+    return MapContainer::operator [] (Key);
 }
 
 template < typename RESOURCE_KEY

@@ -45,11 +45,14 @@ macro(macro_add_unit_test test_project)
 endmacro(macro_add_unit_test)
 
 macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
+    ContainersTest.cpp
+    MemoryDefsTest.cpp
     GUnitTest.cpp
     ArrayListTest.cpp
     ConfigManagerTest.cpp
     DateTimeTest.cpp
     DebugDefsTest.cpp
+    BufferBaseTest.cpp
     EnvelopeCacheTest.cpp
     EventEnvelopeTest.cpp
     EventQueueTest.cpp
@@ -64,6 +67,8 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     LinkedListTest.cpp
     ListenerDispatchTest.cpp
     LockWaitTest.cpp
+    LayoutTest.cpp
+    LogConfigurationTest.cpp
     LogMessageLengthTest.cpp
     LogProtocolTest.cpp
     LogRingTest.cpp
@@ -112,3 +117,15 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
 
 # The log database tests use the SQLite wrappers of aregextend, which every executable links.
 target_link_libraries("${AREG_UNIT_TEST_PROJECT}" PRIVATE ${AREG_SQLITE_LIB_REF})
+
+# Private logging helpers are not exported by the shared library.
+if (AREG_LIB_TYPE STREQUAL "shared")
+    target_sources("${AREG_UNIT_TEST_PROJECT}" PRIVATE
+        "${CMAKE_CURRENT_LIST_DIR}/../../framework/areg/logging/private/Layouts.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/../../framework/areg/logging/private/LayoutManager.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/../../framework/areg/logging/private/ScopeController.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/../../framework/areg/logging/private/ScopeNodeBase.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/../../framework/areg/logging/private/ScopeNodes.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/../../framework/areg/logging/private/LoggingEvent.cpp"
+    )
+endif()

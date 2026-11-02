@@ -288,8 +288,7 @@ uint32_t SharedBuffer::reserve(uint32_t size, bool copy)
     const bool hasView         = (mViewEnd != 0u);
     const bool preserveData    = copy || hasView;
     const uint32_t used        = preserveData ? size_used() : 0u;
-    uint32_t total             = (preserveData && (raw != nullptr)) ? used + size : size;
-    total = std::min(total, areg::MAX_BUF_LENGTH);
+    uint32_t total             = std::min(std::max(size, used), areg::MAX_BUF_LENGTH);
 
     if ((raw != nullptr) && !hasView && (total <= raw->bufHeader.biLength))
     {
@@ -355,15 +354,7 @@ uint32_t SharedBuffer::init_buffer(uint8_t* newBuffer, uint32_t bufLength, bool 
 
 uint32_t SharedBuffer::write(const SharedBuffer& buf)
 {
-    if (static_cast<const SharedBuffer*>(this) == static_cast<const SharedBuffer*>(&buf))
-        return size_used();
-    else if (!buf.is_valid())
-        return 0u;
-
-    const uint32_t length = buf.size_used();  // view-aware: mViewEnd-mViewStart or biUsed
-    const uint8_t* data   = areg::buffer_data_read(buf.mByteBuffer.get()) + buf.mViewStart;
-    reserve(mPosition + static_cast<uint32_t>(sizeof(uint32_t)) + length, true);
-    return (write_data(reinterpret_cast<const uint8_t*>(&length), sizeof(uint32_t)) == sizeof(uint32_t)) ? write_data(data, length) : 0u;
+    return BufferBase::write(buf);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -375,16 +366,25 @@ uint32_t SharedBuffer::read(SharedBuffer& buf) const noexcept
     if (static_cast<const SharedBuffer*>(this) == static_cast<const SharedBuffer*>(&buf))
         return size_used();
 
+    const uint32_t start{ mPosition };
     uint32_t length = 0u;
-    if ((read_data(reinterpret_cast<uint8_t*>(&length), sizeof(uint32_t)) != sizeof(uint32_t)) || (length == 0u))
+    if (read_data(reinterpret_cast<uint8_t*>(&length), sizeof(uint32_t)) != sizeof(uint32_t))
+    {
+        mPosition = start;
         return 0u;
+    }
+
+    if (length == 0u)
+    {
+        buf.invalidate();
+        return 0u;
+    }
 
     const areg::RawBuffer* const raw = mByteBuffer.get();
     const uint32_t srcEnd = (mViewEnd > 0u ? mViewEnd : (raw != nullptr ? raw->bufHeader.biUsed : 0u));
-    if (mPosition + length > srcEnd)
+    if ((mPosition > srcEnd) || (length > srcEnd - mPosition))
     {
-        // Not enough data, undo the 4-byte length read
-        mPosition-= sizeof(uint32_t);
+        mPosition = start;
         return 0u;
     }
 

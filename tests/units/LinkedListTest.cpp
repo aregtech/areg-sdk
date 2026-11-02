@@ -591,6 +591,56 @@ TEST(LinkedListTest, test_ascending)
     EXPECT_EQ(areg::mem_compare(_dat1, _res1, _len), areg::Ordering::Equal);
 }
 
+// Removing from an empty list leaves the caller's output unchanged.
+TEST(LinkedListTest, boundary_empty_removals_preserve_output)
+{
+    areg::LinkedList<int32_t> list;
+    int32_t output{ 77 };
+    EXPECT_FALSE(list.remove_first(output));
+    EXPECT_FALSE(list.remove_last(output));
+    EXPECT_EQ(list.remove_at(list.invalid_position(), output), list.invalid_position());
+    EXPECT_EQ(output, 77);
+    EXPECT_FALSE(list.contains(1, list.invalid_position()));
+    EXPECT_EQ(list.find(1, list.invalid_position()), list.invalid_position());
+    EXPECT_FALSE(list.is_last_position(list.invalid_position()));
+    EXPECT_EQ(list.last_position(), list.invalid_position());
+}
+
+// Inserting after an invalid position appends, and exporting respects the requested bound.
+TEST(LinkedListTest, boundary_invalid_insert_after_appends_and_bounded_export)
+{
+    areg::LinkedList<int32_t> list;
+    const int32_t first{ 11 };
+    const auto inserted = list.insert_after(list.invalid_position(), first);
+    EXPECT_EQ(inserted, list.last_position());
+    list.insert_after(list.invalid_position(), 22);
+    EXPECT_EQ(list.size(), 2u);
+    EXPECT_EQ(list.last_entry(), 22);
+    int32_t output[]{ -1, -2, -3 };
+    EXPECT_EQ(list.elements(output, 1u), 1u);
+    EXPECT_EQ(output[0], 11);
+    EXPECT_EQ(output[1], -2);
+    EXPECT_EQ(list.elements(output, 3u), 2u);
+    EXPECT_EQ(output[1], 22);
+    EXPECT_EQ(output[2], -3);
+}
+
+// Exporting zero elements must leave the destination untouched.
+TEST(LinkedListTest, boundary_zero_count_export_does_not_write)
+{
+    areg::LinkedList<int32_t> list;
+    list.push_last(11);
+    list.push_last(22);
+    int32_t output[]{ -1, -2 };
+    EXPECT_EQ(list.elements(output, 0u), 0u);
+    EXPECT_EQ(output[0], -1);
+    EXPECT_EQ(output[1], -2);
+    EXPECT_EQ(list.elements(nullptr, 2u), 0u);
+    EXPECT_EQ(list.elements(output, 2u), 2u);
+    EXPECT_EQ(output[0], 11);
+    EXPECT_EQ(output[1], 22);
+}
+
 /**
  * \brief   Test LinkedList streaming operators.
  **/

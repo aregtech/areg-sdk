@@ -199,7 +199,7 @@ uint32_t FileBuffer::reserve(uint32_t newSize)
     else if (newSize > mSharedBuffer.size_available())
     {
         const uint32_t position{ mSharedBuffer.position() };
-        if (mSharedBuffer.reserve(newSize - used, true) == 0u)
+        if (mSharedBuffer.reserve(newSize, true) == 0u)
             return areg::INVALID_SIZE;
 
         mSharedBuffer.set_position(static_cast<int32_t>(position), Cursor::SeekOrigin::Begin);

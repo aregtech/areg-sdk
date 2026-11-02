@@ -30,6 +30,7 @@
 #include "areg/base/MathDefs.hpp"
 
 #include <algorithm>
+#include <new>
 namespace areg {
 
 /************************************************************************
@@ -613,7 +614,7 @@ template <typename VALUE>
 RingStackBase<VALUE>::RingStackBase( Lockable & syncObject, uint32_t initCapacity /*= 0*/, areg::OverlapPolicy onOverlap /*= areg::OverlapPolicy::Stop*/ )
     : mSyncObj  ( syncObject )
     , mOnOverlap( onOverlap )
-    , mStackList( initCapacity != 0 ? reinterpret_cast<VALUE*>(new uint8_t[initCapacity * sizeof(VALUE)]) : nullptr )
+    , mStackList( initCapacity != 0 ? reinterpret_cast<VALUE*>(new (std::nothrow) uint8_t[initCapacity * sizeof(VALUE)]) : nullptr )
     , mElemCount( 0u )
     , mCapacity ( mStackList != nullptr ? initCapacity : 0 )
     , mHeadPos  ( 0u )
@@ -828,16 +829,17 @@ void RingStackBase<VALUE>::release()
 template<typename VALUE>
 void RingStackBase<VALUE>::free_extra()
 {
+    Lock lock(mSyncObj);
     if (mCapacity == mElemCount)
         return;
 
     uint32_t capacity = mElemCount;
-    VALUE* newList = capacity != 0 ? reinterpret_cast<VALUE*>(new uint8_t[capacity * sizeof(VALUE)]) : nullptr;
+    VALUE* newList = capacity != 0 ? reinterpret_cast<VALUE*>(new (std::nothrow) uint8_t[capacity * sizeof(VALUE)]) : nullptr;
     if (newList != nullptr)
     {
         if (mStackList != nullptr)
         {
-            _copy_elems(newList, mStackList, mHeadPos, mTailPos, mElemCount, capacity);
+            _copy_elems(newList, mStackList, mHeadPos, mTailPos, mElemCount, mCapacity);
             _empty_stack();
             delete[] reinterpret_cast<uint8_t*>(mStackList);
         }
@@ -866,29 +868,7 @@ uint32_t RingStackBase<VALUE>::push( const VALUE& newElement )
 {
     Lock lock(mSyncObj);
 
-    if ( mElemCount < mCapacity )
-    {
-        ASSERT( (mHeadPos != mTailPos) || (mElemCount <= 1u) );
-        ASSERT( (mCapacity != 0u) && (mStackList != nullptr) );
-
-        VALUE* block = nullptr;
-        if (mElemCount == 0u)
-        {
-            block = mStackList;
-            mHeadPos = 0u;
-            mTailPos = 0u;
-        }
-        else
-        {
-            mTailPos = (mTailPos + 1u) % mCapacity;
-            block = mStackList + mTailPos;
-        }
-
-        areg::construct_elems<VALUE>(static_cast<void *>(block), 1);
-        *block = newElement;
-        ++mElemCount;
-    }
-    else
+    if ( mElemCount >= mCapacity )
     {
         switch ( mOnOverlap )
         {
@@ -903,32 +883,43 @@ uint32_t RingStackBase<VALUE>::push( const VALUE& newElement )
                 areg::construct_elems<VALUE>(block, 1);
                 *block = newElement;
             }
-            // else capacity == 0 => nothing to do
-            break;
+            return mElemCount;
 
         case areg::OverlapPolicy::Resize:
-            // grow buffer (double or at least 1)
-            if ( reserve(static_cast<uint32_t>(mCapacity != 0 ? mCapacity : 1) * 2) >= (mElemCount + 1) )
-            {
-                ASSERT(mCapacity >= mElemCount + 1u);
-                mTailPos = (mTailPos + 1u) % mCapacity;
-                VALUE * block = mStackList + mTailPos;
-                areg::construct_elems<VALUE>(block, 1);
-                *block = newElement;
-                ++ mElemCount;
-            }
+            if ( reserve(static_cast<uint32_t>(mCapacity != 0 ? mCapacity : 1) * 2) < (mElemCount + 1) )
+                return mElemCount;
             break;
 
         case areg::OverlapPolicy::Stop:
             AREG_OUTPUT_WARN("The new element is not set in Ring Stack, there is no more free space for new element");
-            break;  // do nothing
+            return mElemCount;
 
         default:
             AREG_OUTPUT_ERR("Invalid Overlap action in RingStackBase::push()");
             ASSERT(false);
-            break;
+            return mElemCount;
         }
     }
+
+    ASSERT( (mHeadPos != mTailPos) || (mElemCount <= 1u) );
+    ASSERT( (mCapacity != 0u) && (mStackList != nullptr) );
+
+    VALUE* block = nullptr;
+    if (mElemCount == 0u)
+    {
+        block = mStackList;
+        mHeadPos = 0u;
+        mTailPos = 0u;
+    }
+    else
+    {
+        mTailPos = (mTailPos + 1u) % mCapacity;
+        block = mStackList + mTailPos;
+    }
+
+    areg::construct_elems<VALUE>(static_cast<void *>(block), 1);
+    *block = newElement;
+    ++mElemCount;
 
     return mElemCount;
 }
@@ -985,7 +976,7 @@ uint32_t RingStackBase<VALUE>::reserve(uint32_t newCapacity )
     if (mCapacity >= newCapacity)
         return mCapacity;
 
-    VALUE* newList = newCapacity != 0 ? reinterpret_cast<VALUE*>(new uint8_t[newCapacity * sizeof(VALUE)]) : nullptr;
+    VALUE* newList = newCapacity != 0 ? reinterpret_cast<VALUE*>(new (std::nothrow) uint8_t[newCapacity * sizeof(VALUE)]) : nullptr;
     if (newList == nullptr)
         return mCapacity;
 
@@ -1140,25 +1131,21 @@ template <typename VALUE>
 void RingStackBase<VALUE>::_copy_stack(const RingStackBase<VALUE>& source)
 {
     _empty_stack();
-    uint32_t srcCapacity{ source.mCapacity };
-    VALUE*   newList    { mStackList };
-
-    if (mCapacity < srcCapacity)
+    if (mCapacity < source.mCapacity)
     {
+        VALUE* newList{ reinterpret_cast<VALUE*>(new (std::nothrow) uint8_t[source.mCapacity * sizeof(VALUE)]) };
+        if (newList == nullptr)
+            return;
+
         delete[] reinterpret_cast<uint8_t*>(mStackList);
-        mStackList  = nullptr;
-        newList     = srcCapacity != 0 ? reinterpret_cast<VALUE*>(new uint8_t[srcCapacity * sizeof(VALUE)]) : nullptr;
-        mCapacity   = srcCapacity;
+        mStackList  = newList;
+        mCapacity   = source.mCapacity;
     }
 
-    if ((newList != nullptr) && (source.mElemCount != 0))
+    if (source.mElemCount != 0)
     {
-        if (source.mStackList != nullptr)
-        {
-            _copy_elems(newList, source.mStackList, source.mHeadPos, source.mTailPos, source.mElemCount, srcCapacity);
-        }
-
-        mStackList  = newList;
+        ASSERT((mStackList != nullptr) && (source.mStackList != nullptr));
+        _copy_elems(mStackList, source.mStackList, source.mHeadPos, source.mTailPos, source.mElemCount, source.mCapacity);
         mElemCount  = source.mElemCount;
         mHeadPos    = 0u;
         mTailPos    = source.mElemCount - 1;

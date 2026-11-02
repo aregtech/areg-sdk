@@ -232,7 +232,7 @@ jobs:
         # The folder name is built from the compiler and the platform, so it is taken
         # from the build that just finished rather than spelled out per runner.
         run: |
-          BIN_DIR="$(find ./product/build -type d -name bin 2>/dev/null | head -n 1)"
+          BIN_DIR="$(find ./product/build -type d -name bin -print -quit 2>/dev/null || true)"
           if [ -n "${BIN_DIR}" ]; then
             echo "BUILD_DEST=$(dirname "${BIN_DIR}")" >> "${GITHUB_ENV}"
           else
@@ -368,19 +368,31 @@ jobs:
         shell: bash
         # Saves whatever evidence exists and must never fail. When the build itself
         # failed, BUILD_DEST was never set and the binary directory is looked up again.
+        # Only a directory inside the workspace is copied.
         run: |
           DEST="./${{matrix.config.name}}"
           mkdir -p "${DEST}"
-          BIN_DIR="${{env.BUILD_DEST}}/bin"
-          if [ ! -d "${BIN_DIR}" ]; then
-            BIN_DIR="$(find ./product/build -type d -name bin 2>/dev/null | head -n 1)"
+          WORKSPACE="$(pwd -P)"
+          BIN_DIR=""
+          if [ -n "${BUILD_DEST:-}" ] && [ -d "${BUILD_DEST}/bin" ]; then
+            case "$(cd "${BUILD_DEST}/bin" && pwd -P)/" in
+              "${WORKSPACE}/"*) BIN_DIR="${BUILD_DEST}/bin" ;;
+              *) echo "ignored ${BUILD_DEST}/bin: not inside the workspace" ;;
+            esac
           fi
-          if [ -n "${BIN_DIR}" ] && [ -d "${BIN_DIR}" ]; then cp -R "${BIN_DIR}/" "${DEST}/bin/" || true; fi
+          if [ -z "${BIN_DIR}" ] && [ -d ./product/build ]; then
+            BIN_DIR="$(find ./product/build -type d -name bin -print -quit 2>/dev/null || true)"
+          fi
+          if [ -n "${BIN_DIR}" ]; then
+            cp -R "${BIN_DIR}/" "${DEST}/bin/" || echo "could not copy ${BIN_DIR}"
+          else
+            echo "no build output directory to copy"
+          fi
           cp -R ./${{env.INSTALL_DEST}}/                   "${DEST}/"                  || true
           cp -R ./example-results/${{matrix.config.name}}/          "${DEST}/example-results/"            || true
           cp -R ./example-results/${{matrix.config.name}}-benchmarks/ "${DEST}/example-results-benchmarks/" || true
           cp -R ./cores/                                   "${DEST}/cores/"            || true
-          find "${DEST}" -maxdepth 2 | head -n 40
+          find "${DEST}" -maxdepth 2 | sed -n '1,40p'
 
       - name: Upload artifacts if tests fail. Ignore if unit tests are not compiled
         if: failure() && matrix.config.test == 'ON' && matrix.config.norun != 'ON'

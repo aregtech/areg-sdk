@@ -982,17 +982,13 @@ inline void mem_move( void * memDst, const void * memSrc, uint32_t count ) noexc
 inline uint32_t mem_copy( void * memDst, uint32_t dstSpace, const void * memSrc, uint32_t count ) noexcept
 {
     uint32_t result = 0u;
-    if (memDst != memSrc)
+    if ((memDst != nullptr) && (memSrc != nullptr))
     {
-        if ((memDst != nullptr) && (memSrc != nullptr) && (count > 0) && (dstSpace > 0))
+        result = std::min(dstSpace, count);
+        if ((memDst != memSrc) && (result != 0u))
         {
-            result = std::min(dstSpace, count);
             ::memcpy(memDst, memSrc, result);
         }
-    }
-    else
-    {
-        result = count;
     }
 
     return result;

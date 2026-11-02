@@ -48,8 +48,15 @@ namespace {
     constexpr int   SEND_NOWAIT     { MSG_DONTWAIT };
     //!< The longest wait for space in a full socket before the send is tried again.
     constexpr int   SEND_RECHECK_MS { 50 };
+    //!< On Cygwin a receive with MSG_WAITALL spins forever once the peer has closed its side.
+    constexpr int   RECV_WAITALL    { 0 };
 #else   // defined(__CYGWIN__)
     constexpr int   SEND_NOWAIT     { 0 };
+    #if defined(MSG_WAITALL)
+    constexpr int   RECV_WAITALL    { MSG_WAITALL };
+    #else   // defined(MSG_WAITALL)
+    constexpr int   RECV_WAITALL    { 0 };
+    #endif  // defined(MSG_WAITALL)
 #endif  // defined(__CYGWIN__)
 
     //!< Returns the timeout in socket option \a timeoutName in milliseconds, or -1 if none is set.
@@ -433,18 +440,20 @@ int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uin
             iov[i].iov_len  = buffers[i].size;
         }
 
+#if defined(MSG_NOSIGNAL)
+        constexpr int sendFlags = MSG_NOSIGNAL | SEND_NOWAIT;
+#else
+        constexpr int sendFlags = SEND_NOWAIT;
+#endif
+
         uint32_t idx = 0u;  // first region not yet fully sent
         int32_t waitedMs{ 0 };
         while (idx < count)
         {
-#if defined(__CYGWIN__)
             struct msghdr msg { };
             msg.msg_iov     = &iov[idx];
-            msg.msg_iovlen  = static_cast<int>(count - idx);
-            const ssize_t written = ::sendmsg(static_cast<int>(hSocket), &msg, MSG_NOSIGNAL | SEND_NOWAIT);
-#else   // defined(__CYGWIN__)
-            const ssize_t written = ::writev(static_cast<int>(hSocket), &iov[idx], static_cast<int>(count - idx));
-#endif  // defined(__CYGWIN__)
+            msg.msg_iovlen  = count - idx;
+            const ssize_t written = ::sendmsg(static_cast<int>(hSocket), &msg, sendFlags);
             if (written < 0)
             {
                 if ((errno == EINTR) || _wait_send(hSocket, waitedMs))
@@ -526,19 +535,15 @@ int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uin
 // MSG_WAITALL, no speculative buffering, no cache access.
 static int32_t _recv_exact(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength)
 {
-#ifdef MSG_WAITALL
-    constexpr int recvExact = MSG_WAITALL;
-#else
-    constexpr int recvExact = 0;
-#endif
-
     int32_t total = 0;
     do
     {
-        const ssize_t received = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer + total), static_cast<size_t>(dataLength - total), recvExact);
+        const ssize_t received = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer + total), static_cast<size_t>(dataLength - total), RECV_WAITALL);
         if (received > 0)
             total += static_cast<int32_t>(received);
-        else if ((received == 0) || ((errno != EINTR) && (_wait_receive(hSocket) == false)))
+        else if (received == 0)
+            return (total == 0 ? 0 : -1);
+        else if ((errno != EINTR) && (_wait_receive(hSocket) == false))
             return -1;
     } while (total < dataLength);
     return total;
@@ -553,12 +558,6 @@ static int32_t _recv_exact(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t da
 //              (not waiting for a full cache), so no idle-period block occurs.
 static int32_t _recv_cached(SOCKETHANDLE hSocket, areg::ThreadCache& tc, uint8_t* dataBuffer, int32_t dataLength)
 {
-#ifdef MSG_WAITALL
-    constexpr int recvExact = MSG_WAITALL;
-#else
-    constexpr int recvExact = 0;
-#endif
-
     uint8_t* const cache = tc.cache();
     if ((cache == nullptr) || (tc.space == 0u))
         return _recv_exact(hSocket, dataBuffer, dataLength);
@@ -585,13 +584,17 @@ static int32_t _recv_cached(SOCKETHANDLE hSocket, areg::ThreadCache& tc, uint8_t
     {
         while (needed > 0u)
         {
-            const ssize_t received = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer + total), static_cast<size_t>(needed), recvExact);
+            const ssize_t received = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer + total), static_cast<size_t>(needed), RECV_WAITALL);
             if (received > 0)
             {
                 total  += static_cast<uint32_t>(received);
                 needed -= static_cast<uint32_t>(received);
             }
-            else if ((received == 0) || ((errno != EINTR) && (_wait_receive(hSocket) == false)))
+            else if (received == 0)
+            {
+                return (total == 0u ? 0 : -1);
+            }
+            else if ((errno != EINTR) && (_wait_receive(hSocket) == false))
             {
                 return -1;
             }
@@ -611,9 +614,10 @@ static int32_t _recv_cached(SOCKETHANDLE hSocket, areg::ThreadCache& tc, uint8_t
             tc.unread += static_cast<uint32_t>(filled);
         else if ((filled == 0) || ((errno != EINTR) && (_wait_receive(hSocket) == false)))
         {
+            const bool endOfStream{ (filled == 0) && (total == 0u) && (tc.unread == 0u) };
             tc.head   = 0u;
             tc.unread = 0u;
-            return -1;
+            return (endOfStream ? 0 : -1);
         }
     }
 
@@ -657,19 +661,13 @@ int32_t _os_recv_data_window(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t 
     ASSERT(areg::is_valid_socket(hSocket));
     ASSERT((dataBuffer != nullptr) && (dataLength > 0));
 
-#ifdef MSG_WAITALL
-    constexpr int recvExact = MSG_WAITALL;
-#else
-    constexpr int recvExact = 0;
-#endif
-
     constexpr int32_t WINDOW{ static_cast<int32_t>(areg::DEFAULT_THREAD_CACHE) };
     int32_t total{ 0 };
     do
     {
         const int32_t remaining = dataLength - total;
         const int32_t chunk = remaining < WINDOW ? remaining : WINDOW;
-        const ssize_t received = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer + total), static_cast<size_t>(chunk), recvExact);
+        const ssize_t received = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer + total), static_cast<size_t>(chunk), RECV_WAITALL);
         if (received > 0)
             total += static_cast<int32_t>(received);
         else if ((received == 0) || ((errno != EINTR) && (_wait_receive(hSocket) == false)))
@@ -686,49 +684,33 @@ bool _os_connect_socket(SOCKETHANDLE hSocket, const void* addr, uint32_t addrLen
 
     // Save current socket flags and switch to non-blocking mode.
     const int savedFlags = ::fcntl(hSocket, F_GETFL, 0);
-    if (savedFlags == -1)
+    if ((savedFlags == -1) || (::fcntl(hSocket, F_SETFL, savedFlags | O_NONBLOCK) == -1))
         return false;
 
-    if (::fcntl(hSocket, F_SETFL, savedFlags | O_NONBLOCK) == -1)
-        return false;
-
-    const int result = ::connect(hSocket, static_cast<const sockaddr*>(addr), static_cast<socklen_t>(addrLen));
-    if (result == RETURNED_OK)
+    bool connected{ ::connect(hSocket, static_cast<const sockaddr*>(addr), static_cast<socklen_t>(addrLen)) == RETURNED_OK };
+    if ((connected == false) && (errno == EINPROGRESS))
     {
-        // Connected immediately
-        ::fcntl(hSocket, F_SETFL, savedFlags);
-        return true;
+        // Wait up to timeoutMs for the connection to complete.
+        struct pollfd ready { };
+        ready.fd     = static_cast<int>(hSocket);
+        ready.events = POLLOUT;
+        const int waitMs{ timeoutMs < static_cast<uint32_t>(INT_MAX) ? static_cast<int>(timeoutMs) : INT_MAX };
+        int result{ 0 };
+        do
+        {
+            result = ::poll(&ready, 1, waitMs);
+        } while ((result < 0) && (errno == EINTR));
+
+        int connError{ 0 };
+        socklen_t errLen{ sizeof(connError) };
+        connected = (result > 0)
+                 && (::getsockopt(hSocket, SOL_SOCKET, SO_ERROR, &connError, &errLen) == RETURNED_OK)
+                 && (connError == 0);
     }
 
-    if (errno != EINPROGRESS)
-    {
-        return false;   // Hard failure
-    }
-
-    // Wait up to timeoutMs for the connection to complete
-    fd_set writeSet;
-    fd_set exceptSet;
-    FD_ZERO(&writeSet);
-    FD_ZERO(&exceptSet);
-    FD_SET(hSocket, &writeSet);
-    FD_SET(hSocket, &exceptSet);
-
-    struct timeval tv;
-    tv.tv_sec  = static_cast<decltype(tv.tv_sec)>(timeoutMs / 1000u);
-    tv.tv_usec = static_cast<decltype(tv.tv_usec)>((timeoutMs % 1000u) * 1000u);
-    const int selectResult = ::select(static_cast<int>(hSocket) + 1, nullptr, &writeSet, &exceptSet, &tv);
-
-    if ((selectResult <= 0) || FD_ISSET(hSocket, &exceptSet))
-        return false;   // Timeout or exceptional condition
-
-    int connError{ 0 };
-    socklen_t errLen{ sizeof(connError) };
-    if ((::getsockopt(hSocket, SOL_SOCKET, SO_ERROR, &connError, &errLen) != RETURNED_OK) || (connError != 0))
-        return false;
-
-    // Restore blocking mode for normal I/O
+    // Restores the original flags on every path.
     ::fcntl(hSocket, F_SETFL, savedFlags);
-    return true;
+    return connected;
 }
 
 bool _os_control(SOCKETHANDLE hSocket, int32_t cmd, unsigned long& arg)
@@ -742,6 +724,35 @@ bool _os_get_option(SOCKETHANDLE hSocket, int32_t level, int32_t name, unsigned 
     ASSERT(areg::is_valid_socket(hSocket));
     socklen_t len{ sizeof(unsigned long) };
     return (RETURNED_OK == ::getsockopt(static_cast<int>(hSocket), level, name, reinterpret_cast<char*>(&value), &len));
+}
+
+bool _os_socket_alive(SOCKETHANDLE hSocket) noexcept
+{
+    ASSERT(areg::is_valid_socket(hSocket));
+
+    struct pollfd ready { };
+    ready.fd     = static_cast<int>(hSocket);
+    ready.events = POLLIN;
+    int result{ 0 };
+    do
+    {
+        result = ::poll(&ready, 1, 0);
+    } while ((result < 0) && (errno == EINTR));
+
+    if ((result < 0) || ((ready.revents & (POLLERR | POLLNVAL)) != 0))
+        return false;
+    else if ((ready.revents & (POLLIN | POLLHUP)) == 0)
+        return true;
+
+    // Readable: a peeked byte is unread data, 0 is the end of stream.
+    uint8_t peek{ 0u };
+    ssize_t received{ 0 };
+    do
+    {
+        received = ::recv(static_cast<int>(hSocket), &peek, 1u, MSG_PEEK | MSG_DONTWAIT);
+    } while ((received < 0) && (errno == EINTR));
+
+    return (received > 0) || ((received < 0) && ((errno == EAGAIN) || (errno == EWOULDBLOCK)));
 }
 
 } // namespace areg::os

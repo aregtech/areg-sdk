@@ -266,12 +266,14 @@ inline CharCount string_line_length(const CharType* theString) noexcept;
  * \brief   Copies characters from source to destination buffer without reallocating destination space.
  *
  * \param   strDst          The destination string buffer.
- * \param   dstSpace        The space available in the destination string buffer.
+ * \param   dstSpace        The space available in the destination string buffer, including
+ *                          the end-of-string character.
  * \param   strSrc          The source string.
  * \param   charsCopy       The number of characters to copy. By default, copies the entire
  *                          string if space permits.
- * \return  Returns the number of characters copied, which is the minimum of available
- *          destination space and characters to copy. Returns zero if no characters were copied.
+ * \return  Returns the number of characters copied, which is the minimum of `dstSpace - 1`
+ *          and characters to copy. The destination is always terminated if `dstSpace` is positive.
+ *          Returns zero if no characters were copied.
  **/
 template<typename CharDst, typename CharSrc>
 CharCount copy_string( CharDst*       strDst
@@ -1234,14 +1236,14 @@ namespace areg::str {
         }
         else
         {
-            for (const CharType* p = strSource + pos; p >= strSource; --p)
+            for (areg::CharPos i = pos; i >= 0; --i)
             {
-                if (areg::str::char_eq<CaseSensitive, CharType>(*p, ch))
+                if (areg::str::char_eq<CaseSensitive, CharType>(strSource[i], ch))
                 {
                     if (next != nullptr)
-                        *next = p;
+                        *next = strSource + i;
 
-                    return static_cast<areg::CharPos>(p - strSource);
+                    return i;
                 }
             }
 
@@ -1271,30 +1273,23 @@ namespace areg::str {
         }
         else
         {
-            const CharType* end = strSource + pos - 1;
-            const CharType* phrase = strPhrase + lenPhr - 1;
-
-            for (; end >= strSource; --end)
+            for (areg::CharPos start = pos - lenPhr; start >= 0; --start)
             {
-                if (areg::str::char_eq<CaseSensitive, CharType>(*end, *phrase))
+                areg::CharPos remain = lenPhr;
+                while ((remain > 0) && areg::str::char_eq<CaseSensitive, CharType>(strSource[start + remain - 1], strPhrase[remain - 1]))
                 {
-                    const CharType* one = end - 1;
-                    const CharType* two = phrase - 1;
-                    while ((one >= strSource) && (two >= strPhrase) && areg::str::char_eq<CaseSensitive, CharType>(*one, *two))
-                    {
-                        --one; --two;
-                    }
+                    --remain;
+                }
 
-                    if (two < strPhrase)
-                    {
-                        ++one;
-                        if (next != nullptr)
-                            *next = one;
+                if (remain == 0)
+                {
+                    if (next != nullptr)
+                        *next = strSource + start;
 
-                        return static_cast<areg::CharPos>(one - strSource);
-                    }
+                    return start;
                 }
             }
+
             return areg::INVALID_POS;
         }
     }
@@ -1707,7 +1702,7 @@ constexpr areg::CharPos areg::find_last( const CharType*   strPhrase
 
     const areg::CharPos lenSrc = areg::string_length<CharType>(strSource);
     const areg::CharPos lenPhr = areg::string_length<CharType>(strPhrase);
-    const areg::CharPos pos    = (startPos == areg::END_POS) ? lenSrc : startPos;
+    const areg::CharPos pos    = (startPos == areg::END_POS || startPos > lenSrc) ? lenSrc : startPos;
 
     if (pos <= areg::START_POS || lenPhr <= areg::START_POS)
         return areg::INVALID_POS;
@@ -2333,14 +2328,21 @@ areg::CharCount areg::copy_string( CharDst*          strDst
                                  , const CharSrc*    strSrc
                                  , areg::CharCount   charsCopy /*= areg::COUNT_ALL*/ ) noexcept
 {
-    if (strDst == nullptr)
+    if ((strDst == nullptr) || (dstSpace <= 0))
         return 0;
+
+    if (strSrc == nullptr)
+    {
+        strDst[0] = static_cast<CharDst>(areg::EndOfString);
+        return 0;
+    }
 
     if constexpr (sizeof(CharSrc) == sizeof(CharDst))
     {
         charsCopy = (charsCopy == areg::COUNT_ALL) ? areg::string_length<CharSrc>(strSrc) : charsCopy;
+        charsCopy = std::min(dstSpace - 1, std::max(charsCopy, static_cast<areg::CharCount>(0)));
         const uint32_t result = areg::mem_copy( strDst
-                                              , static_cast<uint32_t>(static_cast<uint32_t>(dstSpace)  * sizeof(CharDst))
+                                              , static_cast<uint32_t>(static_cast<uint32_t>(charsCopy) * sizeof(CharDst))
                                               , strSrc
                                               , static_cast<uint32_t>(static_cast<uint32_t>(charsCopy) * sizeof(CharSrc))) / static_cast<uint32_t>(sizeof(CharDst));
         strDst[result] = static_cast<CharDst>(areg::EndOfString);
@@ -2348,12 +2350,6 @@ areg::CharCount areg::copy_string( CharDst*          strDst
     }
     else
     {
-        if (dstSpace <= 0 || strSrc == nullptr)
-        {
-            strDst[0] = static_cast<CharDst>(areg::EndOfString);
-            return 0;
-        }
-
         charsCopy = (charsCopy == areg::COUNT_ALL) ? std::numeric_limits<areg::CharCount>::max() : charsCopy;
         charsCopy = std::min(dstSpace - 1, charsCopy);
 

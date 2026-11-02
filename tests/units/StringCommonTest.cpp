@@ -2109,3 +2109,111 @@ TYPED_TEST(StringCommonStream, HashAndRequiredSize)
     stream << hello;
     EXPECT_GE(required(hello), stream.size_used());
 }
+
+// Reverse phrase searches respect the requested count and starting position.
+TYPED_TEST(StringCommonSearch, boundary_reverse_phrase_count_and_start_boundaries)
+{
+    using S = TypeParam;
+    using C = CharOf<S>;
+    const S text(TXT("aBc--ABC"));
+    EXPECT_EQ(text.find_last(TXT("abc"), 3, 0, false), 0);
+    EXPECT_EQ(text.find_last(TXT("abc"), 3, 6, false), 5);
+    EXPECT_EQ(text.find_last(TXT("xyz"), 3, areg::END_POS, false), areg::END_POS);
+    EXPECT_EQ(text.find_last(TXT("abc"), 0, areg::END_POS, false), areg::INVALID_POS);
+    EXPECT_EQ(text.find_last(TXT("abc"), 3, areg::INVALID_POS, false), areg::INVALID_POS);
+    EXPECT_EQ(text.find_last(static_cast<const C*>(nullptr), 1, areg::END_POS, false), areg::INVALID_POS);
+}
+
+// Phrase helpers reject empty phrases and remainders too short to match.
+TYPED_TEST(StringCommonSearch, boundary_phrase_helpers_reject_empty_and_short_remainders)
+{
+    using S = TypeParam;
+    using C = CharOf<S>;
+    using Std = std::basic_string<C>;
+    StringProbe<S> text;
+    text.assign(TXT("ab"));
+    EXPECT_EQ(text.find_phrase(TXT("")), areg::INVALID_POS);
+    EXPECT_EQ(text.find_phrase(TXT("abc")), areg::END_POS);
+    EXPECT_EQ(text.find_phrase(Std(TXT("abc"))), areg::END_POS);
+    EXPECT_EQ(text.find_phrase(Std()), areg::INVALID_POS);
+    EXPECT_EQ(text.find_phrase(Std(TXT("a")), areg::INVALID_POS), areg::INVALID_POS);
+    EXPECT_EQ(text.find_first_word(Std(TXT("abc")), true), areg::END_POS);
+    EXPECT_EQ(text.find_first_word(Std(), false), areg::INVALID_POS);
+    EXPECT_EQ(text.find_first_word(Std(TXT("a")), true, areg::INVALID_POS), areg::INVALID_POS);
+    text.clear();
+    EXPECT_EQ(text.find_phrase(Std(TXT("a"))), areg::END_POS);
+    EXPECT_EQ(text.find_first_word(Std(TXT("a")), false), areg::END_POS);
+}
+
+// Invalid insertions and empty replacement phrases leave the string unchanged.
+TYPED_TEST(StringCommonModify, boundary_invalid_insertions_and_empty_replacements_are_noops)
+{
+    using S = TypeParam;
+    using C = CharOf<S>;
+    using Std = std::basic_string<C>;
+    using View = std::basic_string_view<C>;
+    S text(TXT("abc"));
+    text.insert_at(CH('x'), 1, 0);
+    text.insert_at(Std(TXT("x")), areg::INVALID_POS);
+    text.insert_at(View(TXT("x")), 20);
+    text.insert_at(TXT("x"), areg::INVALID_POS);
+    text.replace(Std(), Std(TXT("x")));
+    text.replace(View(), View(TXT("x")));
+    text.replace(Std(TXT("a")), Std(TXT("x")), 20);
+    text.replace(View(TXT("a")), View(TXT("x")), 20);
+    EXPECT_EQ(text.data(), expected<C>("abc"));
+}
+
+// Replacing text stops safely at the string's updated end.
+TYPED_TEST(StringCommonModify, boundary_replacements_stop_at_new_end)
+{
+    using S = TypeParam;
+    using C = CharOf<S>;
+    using Std = std::basic_string<C>;
+    using View = std::basic_string_view<C>;
+    EXPECT_EQ(S(TXT("aaa")).replace(Std(TXT("a")), Std()).data(), expected<C>(""));
+    EXPECT_EQ(S(TXT("aaa")).replace(View(TXT("a")), View()).data(), expected<C>(""));
+    EXPECT_EQ(S(TXT("abc")).replace(1, 1, TXT("XYZ"), 20).data(), expected<C>("aXYZc"));
+    EXPECT_EQ(S(TXT("abc")).remove(1, 0).data(), expected<C>("abc"));
+    EXPECT_EQ(S(TXT("abc")).remove(CH('a'), 20).data(), expected<C>("abc"));
+}
+
+// Trimming empty input clears an output that previously held text.
+TYPED_TEST(StringCommonTrim, boundary_empty_input_clears_prepopulated_outputs)
+{
+    using S = TypeParam;
+    using C = CharOf<S>;
+    S empty;
+    EXPECT_TRUE(empty.trim_left().is_empty());
+    EXPECT_TRUE(empty.trim_right().is_empty());
+    EXPECT_TRUE(empty.trim_all().is_empty());
+    std::basic_string<C> output(TXT("stale"));
+    empty.trim_left(output);
+    EXPECT_TRUE(output.empty());
+    output = TXT("stale");
+    empty.trim_right(output);
+    EXPECT_TRUE(output.empty());
+    output = TXT("stale");
+    empty.trim_all(output);
+    EXPECT_TRUE(output.empty());
+}
+
+// Bounded prefix and suffix checks reject mismatches and oversized phrases.
+TYPED_TEST(StringCommonValidate, boundary_bounded_affix_mismatches_and_oversized_phrases)
+{
+    using S = TypeParam;
+    using C = CharOf<S>;
+    using Std = std::basic_string<C>;
+    using View = std::basic_string_view<C>;
+    const S text(TXT("AbC"));
+    EXPECT_FALSE(text.starts_with(CH('z'), false));
+    EXPECT_FALSE(text.ends_with(CH('z'), false));
+    EXPECT_FALSE(text.starts_with(TXT("aZ"), false));
+    EXPECT_FALSE(text.ends_with(TXT("zC"), false));
+    EXPECT_FALSE(text.starts_with(TXT("A"), true, 0));
+    EXPECT_FALSE(text.ends_with(TXT("C"), true, 0));
+    EXPECT_FALSE(text.starts_with(Std(TXT("AbCd"))));
+    EXPECT_FALSE(text.ends_with(Std(TXT("zAbC"))));
+    EXPECT_FALSE(text.starts_with(View(TXT("AbCd"))));
+    EXPECT_FALSE(text.ends_with(View(TXT("zAbC"))));
+}

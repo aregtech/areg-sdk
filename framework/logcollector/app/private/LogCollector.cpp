@@ -297,12 +297,12 @@ areg::ConnectionType LogCollector::connection_type() const
 
 void LogCollector::post_read_configuration(ConfigManager& config)
 {
-    _enable_local_logs(config, false);
+    _disable_local_logs(config);
 }
 
 void LogCollector::on_setup_configuration(const areg::ListProperties& /* listReadonly */, const areg::ListProperties& /* listWritable */, ConfigManager& config)
 {
-    _enable_local_logs(config, false);
+    _disable_local_logs(config);
 }
 
 void LogCollector::print_help( bool isCmdLine )
@@ -922,15 +922,8 @@ void LogCollector::_process_unsave_logs()
     }
 }
 
-inline void LogCollector::_enable_local_logs(ConfigManager& config, bool enable)
+inline void LogCollector::_disable_local_logs(ConfigManager& config)
 {
-    constexpr areg::ConfigEntry prioConfKey{ areg::ConfigEntry::LogScope };
-    const areg::ConfigKey& keyPrio{ areg::log_scope() };
-    uint32_t prios = enable
-                ? static_cast<uint32_t>(areg::LogPriority::PrioNotset) | static_cast<uint32_t>(areg::LogPriority::PrioNotset)
-                : static_cast<uint32_t>(areg::LogPriority::PrioNotset);
-    const String prio{ areg::make_prio_string(prios) };
-
-    config.set_module_property(keyPrio.section, keyPrio.property, String(areg::SYNTAX_ANY_VALUE), prio, prioConfKey, true);
+    config.set_logging_status(false, true);
     config.set_log_enabled(areg::LogTarget::Remote, false, true);
 }

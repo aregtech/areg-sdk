@@ -259,12 +259,12 @@ private:
     inline LogCollector& self();
 
     /**
-     * \brief   Enables or disables local log messages by setting priority to NOTSET when enabled.
+     * \brief   Temporarily switches off the own logs of the log collector: the master logging switch
+     *          and the remote target. The collected logs are not affected.
      *
-     * \param   config      The configuration manager instance to control log messages.
-     * \param   enable      If true, enable logs; otherwise disable them.
+     * \param   config      The configuration manager of the log collector.
      **/
-    inline void _enable_local_logs(areg::ConfigManager& config, bool enable);
+    inline void _disable_local_logs(areg::ConfigManager& config);
 
     /**
      * \brief   Returns true if the command is recognized as a valid console command.

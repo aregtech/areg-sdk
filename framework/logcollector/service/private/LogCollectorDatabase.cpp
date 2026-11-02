@@ -14,6 +14,7 @@
  ************************************************************************/
 #include "logcollector/service/private/LogCollectorDatabase.hpp"
 
+#include "areg/appbase/Application.hpp"
 #include "areg/base/DateTime.hpp"
 #include "areg/base/File.hpp"
 #include "areg/base/MemoryDefs.hpp"
@@ -25,10 +26,10 @@
 
 bool LogCollectorDatabase::is_configured()
 {
-    areg::LogConfiguration config;
-    if (config.is_db_logging_enabled() == false)
+    if (areg::Application::config_manager().log_target_flag(areg::LogTarget::Database) == false)
         return false;
 
+    areg::LogConfiguration config;
     const areg::String engine{ config.database_engine() };
     return (engine.is_empty() || (engine == areg::LOGDB_ENGINE_NAME));
 }

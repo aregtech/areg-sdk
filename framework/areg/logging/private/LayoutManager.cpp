@@ -17,6 +17,10 @@
 #include "areg/logging/private/Layouts.hpp"
 #include "areg/logging/private/LogOptions.hpp"
 #include "areg/base/UtilityDefs.hpp"
+
+#include <memory>
+#include <new>
+
 #if AREG_LOGGING
 
 namespace areg {
@@ -28,31 +32,30 @@ LayoutManager::~LayoutManager() noexcept
 
 bool LayoutManager::create_layouts( const char * layoutFormat )
 {
-    delete_layouts();
-    int32_t len = !areg::is_empty<char>(layoutFormat) ? areg::string_length<char>( layoutFormat ) : 0;
-    char * strFormat = len > 0 ? new char[ static_cast<uint32_t>(len) + 1u ] : nullptr;
-
-    if ( strFormat != nullptr )
-    {
-        areg::copy_string<char, char>( strFormat, len + 1, layoutFormat, len );
-        _create_layouts(strFormat);
-        delete [] strFormat;
-    }
-
-    return (!mLayoutList.is_empty());
+    const areg::CharCount len{ areg::string_length<char>(layoutFormat) };
+    return _parse_layouts(layoutFormat, static_cast<uint32_t>(len));
 }
 
 bool LayoutManager::create_layouts(const String& layoutFormat)
 {
-    constexpr uint32_t fmt_len{ 512 };
+    return _parse_layouts(layoutFormat.as_string(), layoutFormat.length());
+}
+
+bool LayoutManager::_parse_layouts(const char* layoutFormat, uint32_t len)
+{
+    constexpr uint32_t STACK_LEN{ 512 };
     delete_layouts();
-    uint32_t len  = static_cast<uint32_t>(layoutFormat.length());
-    char fmt[fmt_len] = { 0 };
-    ASSERT(len < fmt_len);
+    if (len == 0)
+        return false;
 
-    areg::copy_string<char, char>(fmt, static_cast<areg::CharCount>(len + 1), layoutFormat.as_string(), static_cast<areg::CharCount>(len));
-    _create_layouts(fmt);
+    char stackFormat[STACK_LEN];
+    std::unique_ptr<char[]> heapFormat{ len < STACK_LEN ? nullptr : new (std::nothrow) char[len + 1u] };
+    char* format{ len < STACK_LEN ? stackFormat : heapFormat.get() };
+    if (format == nullptr)
+        return false;
 
+    areg::copy_string<char, char>(format, static_cast<areg::CharCount>(len + 1u), layoutFormat, static_cast<areg::CharCount>(len));
+    _create_layouts(format);
     return (!mLayoutList.is_empty());
 }
 
@@ -88,6 +91,7 @@ inline void LayoutManager::_create_layouts(char* layoutFormat)
     ASSERT(layoutFormat != nullptr);
 
     bool hasExclusive{ false };
+    bool dropToken{ false };
     char* pos = layoutFormat;
     const char* pos1 = pos;
     LogLayout* anyText{ nullptr };
@@ -117,6 +121,10 @@ inline void LayoutManager::_create_layouts(char* layoutFormat)
                 {
                     newLayout = new MessageLayout();
                     hasExclusive = true;
+                }
+                else
+                {
+                    dropToken = true;
                 }
                 break;
 
@@ -150,6 +158,10 @@ inline void LayoutManager::_create_layouts(char* layoutFormat)
                     newLayout = new ScopeNameLayout();
                     hasExclusive = true;
                 }
+                else
+                {
+                    dropToken = true;
+                }
                 break;
 
             case areg::LayoutToken::CookieId:
@@ -172,7 +184,7 @@ inline void LayoutManager::_create_layouts(char* layoutFormat)
                 break;
             }
 
-            if (newLayout != nullptr)
+            if ((newLayout != nullptr) || dropToken)
             {
                 *pos = String::EmptyChar;
                 anyText = pos1 != pos ? new AnyTextLayout(pos1) : nullptr;
@@ -181,7 +193,12 @@ inline void LayoutManager::_create_layouts(char* layoutFormat)
                     mLayoutList.add(anyText);
                 }
 
-                mLayoutList.add(newLayout);
+                if (newLayout != nullptr)
+                {
+                    mLayoutList.add(newLayout);
+                }
+
+                dropToken = false;
                 *(++pos) = String::EmptyChar;
                 pos1 = ++pos;
             }

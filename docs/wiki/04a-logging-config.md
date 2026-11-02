@@ -382,7 +382,7 @@ log::*::layout::exit = %d: [ %t  %x.%z: Exit <-- ]%n
 | `%z`      | Scope name             | `main::initialize`        |
 
 > [!NOTE]
-> `%m` (message) and `%z` (scope name) are mutually exclusive in the same layout.
+> `%m` (message) and `%z` (scope name) are mutually exclusive in the same layout. The first one is used; a repeated or second one is ignored.
 
 ---
 

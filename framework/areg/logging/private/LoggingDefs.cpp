@@ -587,8 +587,8 @@ AREG_API_IMPL areg::MessageEnvelope areg::message_update_scope(const ITEM_ID& so
         msgScope.set_message_id(static_cast<uint32_t>(areg::FuncIdRange::ServiceLogUpdateScopes));
         msgScope.set_target(static_cast<uint32_t>(target));
         msgScope.set_source(static_cast<uint32_t>(source));
-        msgScope << 1u;
-        msgScope << scopeName << scopeId << scopePrio;
+        msgScope << static_cast<uint32_t>(1u);
+        msgScope << scopeId << scopePrio << scopeName;
     }
 
     return msgScope;
@@ -739,12 +739,41 @@ AREG_API_IMPL areg::MessageEnvelope areg::message_source_state_updated( const IT
 
 AREG_API_IMPL areg::String areg::make_prio_string(uint32_t priorities)
 {
-    return Identifier::to_string(priorities, areg::LogScopePriorityIndentifiers, static_cast<uint32_t>(areg::LogPriority::PrioNotset));
+    const std::vector<Identifier>& ids{ areg::LogScopePriorityIndentifiers };
+    for (const Identifier& entry : ids)
+    {
+        if (entry.value() == priorities)
+            return entry.name();
+    }
+
+    String result;
+    for (const Identifier& entry : ids)
+    {
+        if ((entry.value() != 0u) && ((priorities & entry.value()) == entry.value()))
+        {
+            if (!result.is_empty())
+                result += areg::SYNTAX_VALUE_LIST_DELIMITER;
+
+            result += entry.name();
+        }
+    }
+
+    return (result.is_empty() ? areg::PRIO_NOTSET_STR : result);
 }
 
 AREG_API_IMPL uint32_t areg::make_priorities(const String& prioString)
 {
-    uint16_t id = static_cast<uint16_t>(Identifier::from_string(prioString, areg::LogScopePriorityIndentifiers, static_cast<uint32_t>(areg::LogPriority::PrioInvalid)));
-    return static_cast<uint32_t>(static_cast<areg::LogPriority>(id));
+    uint32_t result{ static_cast<uint32_t>(areg::LogPriority::PrioInvalid) };
+    std::vector<String> names{ prioString.split(areg::SYNTAX_VALUE_LIST_DELIMITER) };
+    for (String& name : names)
+    {
+        const areg::LogPriority prio{ areg::string_to_priority(name.trim_all()) };
+        if (prio != areg::LogPriority::PrioIgnoreLayout)
+        {
+            result |= static_cast<uint32_t>(prio);
+        }
+    }
+
+    return result;
 }
 

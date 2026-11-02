@@ -485,3 +485,62 @@ TEST(SortedLinkedListTest, test_streaming)
 
     EXPECT_EQ(src, dst);
 }
+
+// Removing from an empty sorted list or searching past its end leaves outputs unchanged.
+TEST(SortedLinkedListTest, boundary_empty_removals_and_end_search_preserve_output)
+{
+    areg::SortedLinkedList<int32_t> list(false);
+    int32_t output{ 77 };
+    EXPECT_FALSE(list.remove_first(output));
+    EXPECT_FALSE(list.remove_last(output));
+    EXPECT_EQ(output, 77);
+    EXPECT_FALSE(list.is_last_position(list.invalid_position()));
+    EXPECT_EQ(list.find(1, list.invalid_position()), list.invalid_position());
+    EXPECT_FALSE(list.contains(1, list.invalid_position()));
+}
+
+// Descending unique insertion keeps order, and iteration stops at the last entry.
+TEST(SortedLinkedListTest, boundary_descending_unique_insertion_and_terminal_next)
+{
+    areg::SortedLinkedList<int32_t> list(false);
+    const int32_t first{ 5 };
+    const int32_t smaller{ 2 };
+    EXPECT_TRUE(list.add_if_unique(first).second);
+    EXPECT_TRUE(list.add_if_unique(smaller).second);
+    EXPECT_TRUE(list.add_if_unique(9).second);
+    EXPECT_FALSE(list.add_if_unique(smaller, false).second);
+    EXPECT_FALSE(list.add_if_unique(smaller, true).second);
+    EXPECT_FALSE(list.add_if_unique(5, true).second);
+    ASSERT_EQ(list.size(), 3u);
+    EXPECT_EQ(list.first_entry(), 9);
+    EXPECT_EQ(list.last_entry(), 2);
+    int32_t output[]{ -1, -2, -3, -4 };
+    EXPECT_EQ(list.elements(output, 2u), 2u);
+    EXPECT_EQ(output[0], 9);
+    EXPECT_EQ(output[1], 5);
+    EXPECT_EQ(output[2], -3);
+    auto position = list.last_position();
+    int32_t next{ 77 };
+    EXPECT_FALSE(list.next_entry(position, next));
+    EXPECT_EQ(position, list.invalid_position());
+    EXPECT_EQ(next, 77);
+    const auto remaining = list.remove_at(list.first_position());
+    EXPECT_EQ(remaining, list.first_position());
+    EXPECT_EQ(list.size(), 2u);
+}
+
+// Exporting zero elements must leave the destination untouched.
+TEST(SortedLinkedListTest, boundary_zero_count_export_does_not_write)
+{
+    areg::SortedLinkedList<int32_t> list;
+    list.add(11);
+    list.add(22);
+    int32_t output[]{ -1, -2 };
+    EXPECT_EQ(list.elements(output, 0u), 0u);
+    EXPECT_EQ(output[0], -1);
+    EXPECT_EQ(output[1], -2);
+    EXPECT_EQ(list.elements(nullptr, 2u), 0u);
+    EXPECT_EQ(list.elements(output, 2u), 2u);
+    EXPECT_EQ(output[0], 11);
+    EXPECT_EQ(output[1], 22);
+}

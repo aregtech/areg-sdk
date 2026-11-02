@@ -26,6 +26,8 @@
 #include "areg/base/MemoryDefs.hpp"
 
 #include <cstring>
+#include <array>
+#include <utility>
 
 //////////////////////////////////////////////////////////////////////////
 // 1. Initialization
@@ -739,4 +741,342 @@ TEST(EventEnvelopeTest, all_fields_survive_clone)
     
     EXPECT_EQ(cloned.service_role(), 0xABCDu);
     EXPECT_EQ(cloned.service_item(), 0x1234u);
+}
+
+// Reading an empty envelope returns the documented sentinel values.
+TEST(EventEnvelopeTest, empty_header_accessors_return_sentinels)
+{
+    const areg::MessageEnvelope envelope;
+    EXPECT_EQ(envelope.header(), nullptr);
+    EXPECT_EQ(envelope.raw_envelope(), nullptr);
+    EXPECT_EQ(envelope.payload_ptr(), nullptr);
+    EXPECT_EQ(envelope.consumer().id, 0u);
+    EXPECT_EQ(envelope.consumer().number, 0u);
+    EXPECT_EQ(envelope.consumer().thread, 0u);
+    EXPECT_EQ(envelope.consumer().major, 0u);
+    EXPECT_EQ(envelope.consumer().minor, 0u);
+    EXPECT_EQ(envelope.consumer().patch, 0u);
+    EXPECT_EQ(envelope.consumer().type, 0u);
+    EXPECT_EQ(envelope.provider().id, 0u);
+    EXPECT_EQ(envelope.provider().number, 0u);
+    EXPECT_EQ(envelope.provider().thread, 0u);
+    EXPECT_EQ(envelope.provider().major, 0u);
+    EXPECT_EQ(envelope.provider().minor, 0u);
+    EXPECT_EQ(envelope.provider().patch, 0u);
+    EXPECT_EQ(envelope.provider().type, 0u);
+    EXPECT_EQ(envelope.raw_service().role, 0u);
+    EXPECT_EQ(envelope.raw_service().service, 0u);
+    EXPECT_EQ(envelope.consumer_id(), 0u);
+    EXPECT_EQ(envelope.consumer_number(), 0u);
+    EXPECT_EQ(envelope.consumer_thread(), 0u);
+    EXPECT_EQ(envelope.consumer_version_major(), 0u);
+    EXPECT_EQ(envelope.consumer_version_minor(), 0u);
+    EXPECT_EQ(envelope.consumer_version_patch(), 0u);
+    EXPECT_EQ(envelope.consumer_type(), 0u);
+    EXPECT_EQ(envelope.provider_id(), 0u);
+    EXPECT_EQ(envelope.provider_number(), 0u);
+    EXPECT_EQ(envelope.provider_thread(), 0u);
+    EXPECT_EQ(envelope.provider_version_major(), 0u);
+    EXPECT_EQ(envelope.provider_version_minor(), 0u);
+    EXPECT_EQ(envelope.provider_version_patch(), 0u);
+    EXPECT_EQ(envelope.provider_type(), 0u);
+    EXPECT_EQ(envelope.service_role(), 0u);
+    EXPECT_EQ(envelope.service_item(), 0u);
+    EXPECT_EQ(envelope.target(), 0u);
+    EXPECT_EQ(envelope.source(), 0u);
+    EXPECT_EQ(envelope.channel(), 0u);
+    EXPECT_EQ(envelope.message_id(), areg::INVALID_MESSAGE_ID);
+    EXPECT_EQ(envelope.sequence(), areg::SEQUENCE_NUMBER_ANY);
+    EXPECT_EQ(envelope.result(), areg::INVALID_VALUE);
+    EXPECT_EQ(envelope.event_type(), 0u);
+    EXPECT_EQ(envelope.call_type(), 0u);
+    EXPECT_EQ(envelope.priority(), 0u);
+    EXPECT_EQ(envelope.event_id(), areg::CHECKSUM_IGNORE);
+    EXPECT_FALSE(envelope.clone().is_valid());
+}
+
+// Setting header fields on an empty envelope does not allocate storage.
+TEST(EventEnvelopeTest, empty_header_setters_do_not_allocate)
+{
+    areg::MessageEnvelope envelope;
+    areg::Endpoint endpoint{};
+    endpoint.id = 99u;
+    areg::RawService service{};
+    service.role = 88u;
+    envelope.set_consumer(endpoint);
+    envelope.set_provider(endpoint);
+    envelope.set_raw_service(service);
+    envelope.set_consumer_id(1u);
+    envelope.set_consumer_number(2u);
+    envelope.set_consumer_thread(3u);
+    envelope.set_consumer_version_major(4u);
+    envelope.set_consumer_version_minor(5u);
+    envelope.set_consumer_version_patch(6u);
+    envelope.set_consumer_type(7u);
+    envelope.set_provider_id(8u);
+    envelope.set_provider_number(9u);
+    envelope.set_provider_thread(10u);
+    envelope.set_provider_version_major(11u);
+    envelope.set_provider_version_minor(12u);
+    envelope.set_provider_version_patch(13u);
+    envelope.set_provider_type(14u);
+    envelope.set_service_role(15u);
+    envelope.set_service_item(16u);
+    envelope.set_target(17u);
+    envelope.set_source(18u);
+    envelope.set_channel(19u);
+    envelope.set_message_id(20u);
+    envelope.set_sequence(21u);
+    envelope.set_result(22u);
+    envelope.set_event_type(23u);
+    envelope.set_call_type(24u);
+    envelope.set_priority(25u);
+    envelope.set_event_id(26u);
+    EXPECT_EQ(envelope.header(), nullptr);
+    EXPECT_EQ(envelope.payload_ptr(), nullptr);
+    EXPECT_FALSE(envelope.is_valid());
+    EXPECT_EQ(envelope.message_id(), areg::INVALID_MESSAGE_ID);
+    EXPECT_EQ(envelope.result(), areg::INVALID_VALUE);
+    EXPECT_EQ(envelope.sequence(), areg::SEQUENCE_NUMBER_ANY);
+}
+
+// Constructors without initialized storage leave the envelope empty.
+TEST(EventEnvelopeTest, uninitialized_constructors_leave_envelope_empty)
+{
+    areg::MessageEnvelope notInitialized(false);
+    areg::MessageEnvelope noType(uint16_t{ 0u }, uint8_t{ 3u });
+    areg::MessageEnvelope noReservation(0u, areg::BLOCK_SIZE);
+    EXPECT_FALSE(notInitialized.is_valid());
+    EXPECT_FALSE(noType.is_valid());
+    EXPECT_FALSE(noReservation.is_valid());
+    notInitialized.destroy_event();
+    EXPECT_FALSE(notInitialized.is_valid());
+}
+
+// Growing an envelope keeps its header fields and payload intact.
+TEST(EventEnvelopeTest, growth_preserves_header_and_payload)
+{
+    areg::EventHeader header{};
+    header.target = 17u;
+    header.source = 29u;
+    header.messageId = 41u;
+    header.eventId = 53u;
+    areg::MessageEnvelope envelope(header, 64u);
+    constexpr uint8_t DATA[]{ 3u, 5u, 7u };
+    ASSERT_EQ(envelope.write(DATA, sizeof(DATA)), sizeof(DATA));
+    const uint32_t capacity{ envelope.size_available() };
+    EXPECT_GE(envelope.reserve(capacity + 1u, true), capacity + 1u - sizeof(DATA));
+    ASSERT_NE(envelope.header(), nullptr);
+    EXPECT_EQ(envelope.target(), header.target);
+    EXPECT_EQ(envelope.source(), header.source);
+    EXPECT_EQ(envelope.message_id(), header.messageId);
+    EXPECT_EQ(envelope.event_id(), header.eventId);
+    EXPECT_EQ(envelope.size_used(), sizeof(DATA));
+    EXPECT_EQ(envelope.position(), sizeof(DATA));
+    EXPECT_EQ(std::memcmp(std::as_const(envelope).payload_ptr(), DATA, sizeof(DATA)), 0);
+    EXPECT_EQ(envelope.header()->bufHeader.biOffset, sizeof(areg::EventHeader));
+    EXPECT_EQ(envelope.header()->bufHeader.biLength, envelope.size_available());
+}
+
+// Reinitializing a shared envelope leaves the other owner's data unchanged.
+TEST(EventEnvelopeTest, reinitialize_shared_envelope_keeps_old_owner_intact)
+{
+    areg::EventHeader first{};
+    first.target = 10u;
+    areg::MessageEnvelope envelope(first, 64u);
+    constexpr uint8_t DATA[]{ 8u, 6u, 4u, 2u };
+    ASSERT_EQ(envelope.write(DATA, sizeof(DATA)), sizeof(DATA));
+    areg::MessageEnvelope retained(envelope);
+    const uint8_t* const allocation{ retained.buffer() };
+    areg::EventHeader second{};
+    second.target = 20u;
+    second.source = 30u;
+    ASSERT_NE(envelope.init_envelope(second, 64u), nullptr);
+    EXPECT_NE(envelope.buffer(), allocation);
+    EXPECT_EQ(envelope.target(), 20u);
+    EXPECT_EQ(envelope.source(), 30u);
+    EXPECT_EQ(envelope.size_used(), 0u);
+    EXPECT_EQ(envelope.position(), 0u);
+    EXPECT_TRUE(envelope.is_unique());
+    EXPECT_TRUE(retained.is_unique());
+    EXPECT_EQ(retained.target(), 10u);
+    EXPECT_EQ(retained.size_used(), sizeof(DATA));
+    EXPECT_EQ(std::memcmp(retained.buffer(), DATA, sizeof(DATA)), 0);
+}
+
+// Reinitialization reuses a unique block when it fits and grows it when needed.
+TEST(EventEnvelopeTest, reinitialize_reuses_unique_block_or_grows)
+{
+    areg::EventHeader header{};
+    areg::MessageEnvelope envelope(header, 64u);
+    const uint8_t* const allocation{ envelope.buffer() };
+    const uint32_t capacity{ envelope.size_available() };
+    header.target = 42u;
+    ASSERT_EQ(envelope.init_envelope(header, 1u), allocation);
+    EXPECT_EQ(envelope.target(), 42u);
+    EXPECT_EQ(envelope.size_available(), capacity);
+    EXPECT_TRUE(envelope.is_unique());
+    header.target = 99u;
+    ASSERT_NE(envelope.init_envelope(header, capacity + 1u), nullptr);
+    EXPECT_GT(envelope.size_available(), capacity);
+    EXPECT_EQ(envelope.target(), 99u);
+    EXPECT_EQ(envelope.size_used(), 0u);
+    EXPECT_EQ(envelope.position(), 0u);
+}
+
+// Cloning replaces both endpoints and gives the payload independent storage.
+TEST(EventEnvelopeTest, payload_clone_overrides_both_endpoints_without_aliasing)
+{
+    areg::MessageEnvelope envelope(true);
+    constexpr uint8_t DATA[]{ 2u, 4u, 6u, 8u };
+    ASSERT_EQ(envelope.write(DATA, sizeof(DATA)), sizeof(DATA));
+    envelope.set_consumer_id(11u);
+    envelope.set_provider_id(22u);
+    areg::Endpoint consumer{};
+    consumer.id = 33u;
+    areg::Endpoint provider{};
+    provider.id = 44u;
+    areg::MessageEnvelope cloned{ envelope.clone(&consumer, &provider) };
+    EXPECT_EQ(cloned.consumer_id(), 33u);
+    EXPECT_EQ(cloned.provider_id(), 44u);
+    EXPECT_EQ(envelope.consumer_id(), 11u);
+    EXPECT_EQ(envelope.provider_id(), 22u);
+    EXPECT_EQ(cloned.size_used(), sizeof(DATA));
+    EXPECT_EQ(cloned.position(), 0u);
+    EXPECT_NE(cloned.buffer(), envelope.buffer());
+    EXPECT_EQ(std::memcmp(cloned.buffer(), DATA, sizeof(DATA)), 0);
+    cloned.buffer()[0] = 99u;
+    EXPECT_EQ(envelope.buffer()[0], DATA[0]);
+}
+
+// Payload cleanup runs only when the last envelope owner is destroyed.
+TEST(EventEnvelopeTest, destroy_event_cleans_payload_only_for_last_owner)
+{
+    uint32_t calls{ 0u };
+    const auto cleanup = +[](void* payload) noexcept
+    {
+        uint32_t* counter{ nullptr };
+        std::memcpy(&counter, payload, sizeof(counter));
+        ++*counter;
+    };
+    areg::MessageEnvelope envelope(true);
+    uint32_t* const counter{ &calls };
+    ASSERT_EQ(envelope.write(reinterpret_cast<const uint8_t*>(&counter), sizeof(counter)), sizeof(counter));
+    static_assert(sizeof(cleanup) <= sizeof(envelope.header()->custom));
+    std::memcpy(&envelope.header()->custom, &cleanup, sizeof(cleanup));
+    areg::MessageEnvelope shared(envelope);
+    envelope.destroy_event();
+    EXPECT_FALSE(envelope.is_valid());
+    EXPECT_EQ(calls, 0u);
+    shared.destroy_event();
+    EXPECT_FALSE(shared.is_valid());
+    EXPECT_EQ(calls, 1u);
+    shared.destroy_event();
+    EXPECT_EQ(calls, 1u);
+}
+
+// A truncated payload cannot be read beyond the bytes that remain.
+TEST(EventEnvelopeTest, truncated_payload_read_is_bounded)
+{
+    constexpr uint8_t DATA[]{ 0x10u, 0x20u, 0x30u };
+    areg::MessageEnvelope envelope(DATA, sizeof(DATA));
+    envelope.reset();
+    std::array<uint8_t, 5> output{ 9u, 9u, 9u, 9u, 9u };
+    EXPECT_EQ(envelope.read(output.data(), output.size()), sizeof(DATA));
+    EXPECT_EQ(output, (std::array<uint8_t, 5>{ 0x10u, 0x20u, 0x30u, 9u, 9u }));
+    EXPECT_EQ(envelope.read(output.data(), 1u), 0u);
+    EXPECT_EQ(envelope.position(), sizeof(DATA));
+}
+
+// Inserting a payload writes the 32-bit length, then the bytes.
+TEST(EventEnvelopeTest, payload_insertion_writes_length_prefix)
+{
+    constexpr uint8_t DATA[]{ 1u, 2u, 3u };
+    areg::SharedBuffer source(DATA, sizeof(DATA));
+    areg::MessageEnvelope envelope(true);
+    envelope << source;
+    ASSERT_EQ(envelope.size_used(), sizeof(uint32_t) + sizeof(DATA));
+    uint32_t length{ 0u };
+    std::memcpy(&length, envelope.buffer(), sizeof(length));
+    EXPECT_EQ(length, sizeof(DATA));
+    EXPECT_EQ(std::memcmp(envelope.buffer() + sizeof(uint32_t), DATA, sizeof(DATA)), 0);
+}
+
+// The explicit envelope operator writes the same bytes as the generic stream operator.
+TEST(EventEnvelopeTest, payload_insertion_matches_generic_stream)
+{
+    constexpr uint8_t DATA[]{ 1u, 2u, 3u };
+    areg::SharedBuffer source(DATA, sizeof(DATA));
+    const areg::SharedBuffer invalid;
+    areg::MessageEnvelope direct(true);
+    direct << source << invalid;
+    areg::MessageEnvelope generic(true);
+    areg::OutStream& out{ generic };
+    out << source << invalid;
+    ASSERT_EQ(direct.size_used(), generic.size_used());
+    EXPECT_EQ(std::memcmp(direct.buffer(), generic.buffer(), direct.size_used()), 0);
+}
+
+// Extracting a payload gives the destination its own copy.
+TEST(EventEnvelopeTest, payload_extraction_copies_payload)
+{
+    constexpr uint8_t DATA[]{ 1u, 2u, 3u };
+    areg::SharedBuffer source(DATA, sizeof(DATA));
+    areg::MessageEnvelope envelope(true);
+    envelope << source;
+    envelope.reset();
+    areg::SharedBuffer destination;
+    envelope >> destination;
+    EXPECT_FALSE(destination.is_view());
+    EXPECT_NE(destination.share_buffer().get(), envelope.share_buffer().get());
+    ASSERT_EQ(destination.size_used(), sizeof(DATA));
+    EXPECT_EQ(destination.position(), 0u);
+    EXPECT_EQ(std::memcmp(destination.buffer(), DATA, sizeof(DATA)), 0);
+    EXPECT_EQ(envelope.position(), sizeof(uint32_t) + sizeof(DATA));
+}
+
+// An empty buffer round-trips as empty and replaces stale destination content.
+TEST(EventEnvelopeTest, empty_payload_round_trip_clears_destination)
+{
+    const areg::SharedBuffer empty;
+    areg::MessageEnvelope envelope(true);
+    envelope << empty;
+    EXPECT_EQ(envelope.size_used(), sizeof(uint32_t));
+    envelope.reset();
+    constexpr uint8_t STALE[]{ 4u, 5u };
+    areg::SharedBuffer destination(STALE, sizeof(STALE));
+    envelope >> destination;
+    EXPECT_FALSE(destination.is_valid());
+    EXPECT_EQ(envelope.position(), sizeof(uint32_t));
+}
+
+// A length beyond the payload leaves the destination and the envelope cursor unchanged.
+TEST(EventEnvelopeTest, truncated_payload_extraction_keeps_destination)
+{
+    constexpr uint8_t DATA[]{ 1u, 2u, 3u };
+    areg::SharedBuffer source(DATA, sizeof(DATA));
+    areg::MessageEnvelope envelope(true);
+    envelope << source;
+    envelope.set_size_used(envelope.size_used() - 1u);
+    envelope.reset();
+    constexpr uint8_t STALE[]{ 4u, 5u };
+    areg::SharedBuffer destination(STALE, sizeof(STALE));
+    envelope >> destination;
+    EXPECT_EQ(envelope.position(), 0u);
+    ASSERT_EQ(destination.size_used(), sizeof(STALE));
+    EXPECT_EQ(std::memcmp(destination.buffer(), STALE, sizeof(STALE)), 0);
+}
+
+// Extracting from an envelope without payload leaves the destination unchanged.
+TEST(EventEnvelopeTest, empty_payload_extraction_keeps_destination)
+{
+    const areg::MessageEnvelope empty;
+    constexpr uint8_t DATA[]{ 1u, 2u, 3u };
+    areg::SharedBuffer destination(DATA, sizeof(DATA));
+    const uint8_t* const allocation{ destination.buffer() };
+    empty >> destination;
+    EXPECT_EQ(destination.buffer(), allocation);
+    EXPECT_EQ(destination.size_used(), sizeof(DATA));
+    EXPECT_EQ(destination.position(), sizeof(DATA));
+    EXPECT_EQ(std::memcmp(destination.buffer(), DATA, sizeof(DATA)), 0);
 }

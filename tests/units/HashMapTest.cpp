@@ -556,3 +556,51 @@ TEST(HashMapTest, test_streaming)
 
     EXPECT_EQ(src, dst);
 }
+
+// Looking up or removing a missing key leaves output arguments and existing entries unchanged.
+TEST(HashMapTest, boundary_missing_keys_preserve_outputs_and_existing_entries)
+{
+    areg::HashMap<int32_t, int32_t> map;
+    int32_t output{ 77 };
+    EXPECT_FALSE(map.contains(1));
+    EXPECT_FALSE(map.find(1, output));
+    EXPECT_EQ(map.find(1), map.invalid_position());
+    EXPECT_EQ(map.update_at(1, 9), map.invalid_position());
+    EXPECT_FALSE(map.remove_at(1));
+    EXPECT_FALSE(map.remove_at(1, output));
+    EXPECT_EQ(map.elements(nullptr, nullptr, 0u), 0u);
+    map.set_value_at(2, 20);
+    EXPECT_EQ(map.elements(nullptr, nullptr, 0u), 0u);
+    EXPECT_FALSE(map.contains(1));
+    EXPECT_FALSE(map.find(1, output));
+    EXPECT_FALSE(map.remove_at(1, output));
+    EXPECT_EQ(map.update_at(1, 9), map.invalid_position());
+    EXPECT_EQ(output, 77);
+    EXPECT_TRUE(map.remove_at(2, output));
+    EXPECT_EQ(output, 20);
+    EXPECT_TRUE(map.is_empty());
+}
+
+// Updating a key through either value category keeps exactly one entry.
+TEST(HashMapTest, boundary_unique_lvalue_and_rvalue_updates_keep_one_entry)
+{
+    areg::HashMap<int32_t, int32_t> map;
+    const int32_t key{ 1 };
+    const int32_t value{ 10 };
+    const int32_t replacement{ 20 };
+    EXPECT_TRUE(map.add_if_unique(key, value).second);
+    EXPECT_FALSE(map.add_if_unique(key, replacement, false).second);
+    EXPECT_EQ(map.value_at(key), value);
+    EXPECT_FALSE(map.add_if_unique(key, replacement, true).second);
+    EXPECT_EQ(map.value_at(key), replacement);
+    EXPECT_FALSE(map.add_if_unique(1, 30, true).second);
+    EXPECT_EQ(map.value_at(key), 30);
+    EXPECT_EQ(map.size(), 1u);
+    int32_t keys[]{ -1, -2 };
+    int32_t values[]{ -3, -4 };
+    EXPECT_EQ(map.elements(keys, values, 1u), 1u);
+    EXPECT_EQ(keys[0], 1);
+    EXPECT_EQ(values[0], 30);
+    EXPECT_EQ(keys[1], -2);
+    EXPECT_EQ(values[1], -4);
+}

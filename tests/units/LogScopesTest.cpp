@@ -21,8 +21,18 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/persist/ConfigListener.hpp"
 #include "areg/persist/ConfigManager.hpp"
+#include "areg/base/SharedBuffer.hpp"
+#include "areg/base/StringDefs.hpp"
+#include "areg/logging/private/LoggingEvent.hpp"
+#include "areg/logging/private/ScopeController.hpp"
+#include "areg/logging/private/ScopeNodes.hpp"
 
+#include <algorithm>
+#include <cstring>
+#include <string>
 #include <string_view>
+#include <utility>
+#include <vector>
 
 //!< Test-local macros for changing/querying scope priorities (moved from areg_log.h).
 #if AREG_LOGGING
@@ -646,6 +656,529 @@ TEST( LogScopeTest, source_state_rejects_undefined )
 
     LOGGING_STOP( );
     LOG_TEST_RELEASE( );
+}
+
+// Known priority names convert correctly, while unknown names return the invalid value.
+TEST(LoggingCoreTest, canonical_priorities_convert_and_unknown_names_are_explicit)
+{
+    const struct
+    {
+        areg::LogPriority priority;
+        const char* name;
+    } cases[]
+    {
+          { areg::LogPriority::PrioNotset, "NOTSET" }
+        , { areg::LogPriority::PrioScope, "SCOPE" }
+        , { areg::LogPriority::PrioFatal, "FATAL" }
+        , { areg::LogPriority::PrioError, "ERROR" }
+        , { areg::LogPriority::PrioWarning, "WARN" }
+        , { areg::LogPriority::PrioInfo, "INFO" }
+        , { areg::LogPriority::PrioDebug, "DEBUG" }
+    };
+    for (const auto& entry : cases)
+    {
+        EXPECT_EQ(areg::priority_to_string(entry.priority), entry.name);
+        EXPECT_EQ(areg::string_to_priority(areg::String(entry.name)), entry.priority);
+        EXPECT_EQ(areg::make_priorities(areg::String(entry.name)), static_cast<uint32_t>(entry.priority));
+        EXPECT_EQ(areg::make_prio_string(static_cast<uint32_t>(entry.priority)), entry.name);
+    }
+    EXPECT_EQ(areg::string_to_priority(areg::String("unknown")), areg::LogPriority::PrioIgnoreLayout);
+    EXPECT_EQ(areg::make_priorities(areg::String("unknown")), static_cast<uint32_t>(areg::LogPriority::PrioInvalid));
+    EXPECT_TRUE(areg::priority_to_string(areg::LogPriority::PrioIgnoreLayout).is_empty());
+    EXPECT_TRUE(areg::priority_to_string(areg::LogPriority::PrioInvalid).is_empty());
+}
+
+// Formatting a priority mask retains its enabled bits in severity order.
+TEST(LoggingCoreTest, priority_list_preserves_all_enabled_bits_in_severity_order)
+{
+    const auto list{ areg::priority_to_string_list(static_cast<uint32_t>(areg::LogPriority::PrioScopeLogs)) };
+    const char* expected[]{ "SCOPE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL" };
+    ASSERT_EQ(list.size(), 6u);
+    for (uint32_t index{ 0u }; index < list.size(); ++index)
+    {
+        EXPECT_EQ(list[index], expected[index]);
+    }
+    EXPECT_TRUE(areg::priority_to_string_list(0u).is_empty());
+    EXPECT_TRUE(areg::is_valid_priority(areg::LogPriority::PrioDebug));
+    EXPECT_FALSE(areg::is_valid_priority(areg::LogPriority::PrioInvalid));
+    EXPECT_TRUE(areg::is_log_priority(areg::LogPriority::PrioInfo));
+    EXPECT_FALSE(areg::is_log_priority(areg::LogPriority::PrioIgnoreLayout));
+    EXPECT_TRUE(areg::is_enabling_log(areg::LogPriority::PrioFatal));
+    EXPECT_FALSE(areg::is_enabling_log(areg::LogPriority::PrioScope));
+    EXPECT_TRUE(areg::is_log_scope(areg::LogPriority::PrioScope));
+    EXPECT_FALSE(areg::is_log_scope(areg::LogPriority::PrioDebug));
+    EXPECT_TRUE(areg::is_disabling_log(areg::LogPriority::PrioNotset));
+    EXPECT_TRUE(areg::is_disabling_log(areg::LogPriority::PrioInvalid));
+    EXPECT_FALSE(areg::is_disabling_log(areg::LogPriority::PrioFatal));
+}
+
+// Scope identifiers and serialized entries retain their names, IDs, and priorities.
+TEST(LoggingCoreTest, scope_ids_and_scope_entry_round_trip_preserve_identity)
+{
+    areg::LogScope scope{ "loggingcore_identity.method", areg::LogPriority::PrioInfo };
+    EXPECT_EQ(scope.id(), areg::make_id("loggingcore_identity.method"));
+    EXPECT_EQ(scope.id(), areg::make_scope_id_ex("loggingcore_identity.method"));
+    EXPECT_EQ(areg::make_scope_id_ex("loggingcore_identity.*"), areg::CHECKSUM_IGNORE);
+    EXPECT_NE(scope.id(), areg::make_id("loggingcore_identity.other"));
+    areg::SharedBuffer buffer;
+    buffer << scope;
+    buffer.move_to_begin();
+    areg::ScopeEntry entry;
+    buffer >> entry;
+    EXPECT_EQ(entry.scopeId, scope.id());
+    EXPECT_EQ(entry.scopePrio, scope.priority());
+    EXPECT_EQ(entry.scopeName, scope.name().data());
+    EXPECT_EQ(buffer.position(), buffer.size_used());
+    areg::SharedBuffer encoded;
+    encoded << entry;
+    encoded.move_to_begin();
+    areg::ScopeEntry decoded;
+    encoded >> decoded;
+    EXPECT_EQ(decoded.scopeId, entry.scopeId);
+    EXPECT_EQ(decoded.scopePrio, entry.scopePrio);
+    EXPECT_EQ(decoded.scopeName, entry.scopeName);
+}
+
+// Scope batches survive serialization in order, including an empty batch.
+TEST(LoggingCoreTest, scope_batch_round_trip_preserves_entry_order_and_empty_lists)
+{
+    areg::ScopeNames scopes;
+    scopes.add(areg::ScopeEntry("loggingcore_batch.first", 123u, static_cast<uint32_t>(areg::LogPriority::PrioInfo)));
+    scopes.add(areg::ScopeEntry("loggingcore_batch.*", 0u, static_cast<uint32_t>(areg::LogPriority::PrioWarning)));
+    const areg::MessageEnvelope message{ areg::message_update_scopes(1001u, 1002u, scopes) };
+    ASSERT_TRUE(message.is_valid());
+    message.move_to_begin();
+    uint32_t count{ 0u };
+    message >> count;
+    ASSERT_EQ(count, scopes.size());
+    for (uint32_t index{ 0u }; index < count; ++index)
+    {
+        areg::ScopeEntry entry;
+        message >> entry;
+        EXPECT_EQ(entry.scopeId, scopes[index].scopeId);
+        EXPECT_EQ(entry.scopePrio, scopes[index].scopePrio);
+        EXPECT_EQ(entry.scopeName, scopes[index].scopeName);
+    }
+    EXPECT_EQ(message.position(), message.size_used());
+    const auto empty{ areg::message_update_scopes(1001u, 1002u, areg::ScopeNames()) };
+    ASSERT_TRUE(empty.is_valid());
+    empty.move_to_begin();
+    empty >> count;
+    EXPECT_EQ(count, 0u);
+    EXPECT_EQ(empty.position(), empty.size_used());
+}
+
+// A scope update with an unknown endpoint is rejected.
+TEST(LoggingCoreTest, scope_update_rejects_unknown_endpoints)
+{
+    const areg::ScopeNames scopes;
+    EXPECT_FALSE(areg::message_update_scopes(areg::COOKIE_UNKNOWN, 1002u, scopes).is_valid());
+    EXPECT_FALSE(areg::message_update_scopes(1001u, areg::COOKIE_UNKNOWN, scopes).is_valid());
+    EXPECT_FALSE(areg::message_update_scope(areg::COOKIE_UNKNOWN, 1002u, "scope", 1u, 1u).is_valid());
+    EXPECT_FALSE(areg::message_update_scope(1001u, areg::COOKIE_UNKNOWN, "scope", 1u, 1u).is_valid());
+}
+
+// Reading a truncated scope entry stays within the available bytes.
+TEST(LoggingCoreTest, truncated_scope_entry_never_reads_beyond_available_data)
+{
+    areg::SharedBuffer buffer;
+    buffer << 123u << static_cast<uint32_t>(areg::LogPriority::PrioInfo) << 8u;
+    const uint8_t name[]{ 'n', 'a', 'm', 'e' };
+    ASSERT_EQ(buffer.write(name, sizeof(name)), sizeof(name));
+    buffer.move_to_begin();
+    areg::ScopeEntry entry;
+    entry.scopeName = "stale";
+    buffer >> entry;
+    EXPECT_EQ(entry.scopeId, 123u);
+    EXPECT_EQ(entry.scopePrio, static_cast<uint32_t>(areg::LogPriority::PrioInfo));
+    EXPECT_TRUE(entry.scopeName.is_empty());
+    EXPECT_LE(buffer.position(), buffer.size_used());
+    EXPECT_EQ(buffer.position(), buffer.size_used());
+}
+
+// Exact and wildcard priority changes affect only the scopes they match.
+TEST(LoggingCoreTest, controller_exact_and_group_changes_affect_only_matching_scopes)
+{
+    areg::LogScope first{ "loggingcore_group.first", areg::LogPriority::PrioInfo };
+    areg::LogScope second{ "loggingcore_group.second", areg::LogPriority::PrioInfo };
+    areg::LogScope other{ "loggingcore_other.first", areg::LogPriority::PrioInfo };
+    areg::ScopeController controller;
+    controller.register_scope(first);
+    controller.register_scope(second);
+    controller.register_scope(other);
+    EXPECT_TRUE(controller.is_scope_registered(first.id()));
+    EXPECT_TRUE(controller.is_scope_registered(first.name().data()));
+    EXPECT_EQ(controller.scope(first.id()), &first);
+    EXPECT_EQ(controller.scope(first.name().data()), &first);
+    EXPECT_EQ(controller.scope("loggingcore_missing.first"), nullptr);
+    controller.set_scope_priority(areg::String(first.name().data()), areg::String("ERROR"));
+    EXPECT_EQ(first.priority(), static_cast<uint32_t>(areg::LogPriority::PrioError));
+    EXPECT_EQ(second.priority(), static_cast<uint32_t>(areg::LogPriority::PrioInfo));
+    EXPECT_EQ(controller.set_group_priority("loggingcore_group.*", "WARN"), 2);
+    EXPECT_EQ(first.priority(), static_cast<uint32_t>(areg::LogPriority::PrioWarning));
+    EXPECT_EQ(second.priority(), first.priority());
+    EXPECT_EQ(other.priority(), static_cast<uint32_t>(areg::LogPriority::PrioInfo));
+    EXPECT_EQ(controller.add_group_priority("loggingcore_group.*", "SCOPE"), 2);
+    EXPECT_EQ(first.priority(), static_cast<uint32_t>(areg::LogPriority::PrioWarning) | static_cast<uint32_t>(areg::LogPriority::PrioScope));
+    EXPECT_EQ(controller.remove_group_priority("loggingcore_group.*", "SCOPE"), 2);
+    EXPECT_EQ(first.priority(), static_cast<uint32_t>(areg::LogPriority::PrioWarning));
+    EXPECT_EQ(controller.set_group_priority("", 0u), 0);
+    EXPECT_EQ(controller.add_group_priority("", areg::LogPriority::PrioScope), 0);
+    EXPECT_EQ(controller.remove_group_priority("", areg::LogPriority::PrioScope), 0);
+    EXPECT_EQ(controller.set_group_priority("loggingcore_group*", 0u), 0);
+    EXPECT_EQ(controller.set_group_priority("loggingcore_absent.*", 0u), 0);
+    EXPECT_EQ(controller.set_group_priority("loggingcore_*", static_cast<uint32_t>(areg::LogPriority::PrioFatal)), 3);
+    EXPECT_EQ(other.priority(), static_cast<uint32_t>(areg::LogPriority::PrioFatal));
+    controller.add_scope_priority(first.id(), areg::LogPriority::PrioScope);
+    EXPECT_TRUE((first.priority() & static_cast<uint32_t>(areg::LogPriority::PrioScope)) != 0u);
+    controller.remove_scope_priority(first.id(), areg::LogPriority::PrioScope);
+    EXPECT_EQ(first.priority(), other.priority());
+    controller.set_scope_priority(areg::make_id("missing"), 0u);
+    controller.add_scope_priority(areg::make_id("missing"), areg::LogPriority::PrioScope);
+    controller.remove_scope_priority(areg::make_id("missing"), areg::LogPriority::PrioScope);
+    controller.unregister_scope(first);
+    EXPECT_FALSE(controller.is_scope_registered(first.id()));
+    EXPECT_EQ(controller.scope_list().size(), 2u);
+}
+
+// Configured priorities resolve exact names and wildcard prefixes in the intended order.
+TEST(LoggingCoreTest, configured_exact_method_and_prefix_priorities_have_defined_precedence)
+{
+    areg::LogScope exact{ "loggingcore_config.exact" };
+    areg::LogScope method{ "loggingcore_config.other" };
+    areg::LogScope prefix{ "loggingcore_sibling.method" };
+    areg::LogScope unmatched{ "unmatchedlogging.method" };
+    areg::ScopeController controller;
+    for (areg::LogScope* scope : { &exact, &method, &prefix, &unmatched })
+    {
+        controller.register_scope(*scope);
+    }
+    controller.configure_scopes("*", static_cast<uint32_t>(areg::LogPriority::PrioFatal), areg::ScopeLayer::Shared);
+    controller.configure_scopes("loggingcore_*", static_cast<uint32_t>(areg::LogPriority::PrioWarning), areg::ScopeLayer::Module);
+    controller.configure_scopes("loggingcore_config.*", static_cast<uint32_t>(areg::LogPriority::PrioInfo));
+    controller.configure_scopes("loggingcore_config.exact", static_cast<uint32_t>(areg::LogPriority::PrioDebug));
+    controller.set_scope_activity(true);
+    EXPECT_EQ(exact.priority(), static_cast<uint32_t>(areg::LogPriority::PrioDebug));
+    EXPECT_EQ(method.priority(), static_cast<uint32_t>(areg::LogPriority::PrioInfo));
+    EXPECT_EQ(prefix.priority(), static_cast<uint32_t>(areg::LogPriority::PrioWarning));
+    EXPECT_EQ(unmatched.priority(), static_cast<uint32_t>(areg::LogPriority::PrioFatal));
+    controller.set_scope_activity("loggingcore_config.exact", 0u, static_cast<uint32_t>(areg::LogPriority::PrioError));
+    EXPECT_EQ(exact.priority(), static_cast<uint32_t>(areg::LogPriority::PrioError));
+    controller.set_scope_activity("loggingcore_config.*", 0u, static_cast<uint32_t>(areg::LogPriority::PrioWarning));
+    EXPECT_EQ(method.priority(), static_cast<uint32_t>(areg::LogPriority::PrioWarning));
+    controller.set_scope_activity(false);
+    EXPECT_EQ(exact.priority(), static_cast<uint32_t>(areg::LogPriority::PrioNotset));
+    controller.reset();
+    controller.activate_defaults();
+    controller.set_scope_activity(true);
+    EXPECT_EQ(method.priority(), static_cast<uint32_t>(areg::LogPriority::PrioNotset));
+    controller.force_activate_scopes();
+    controller.set_scope_activity(true);
+    EXPECT_EQ(method.priority(), static_cast<uint32_t>(areg::LogPriority::PrioScope) | static_cast<uint32_t>(areg::LogPriority::PrioDebug));
+    controller.force_activate_scopes(false);
+    controller.set_scope_activity(true);
+    EXPECT_EQ(method.priority(), static_cast<uint32_t>(areg::LogPriority::PrioNotset));
+}
+
+// Scope-tree children are sorted without splitting a leaf's dotted name.
+TEST(LoggingCoreTest, tree_children_are_sorted_and_dot_leaf_names_remain_intact)
+{
+    areg::ScopeRoot root;
+    areg::String last{ "zeta.last" };
+    areg::String second{ "alpha.second_part" };
+    areg::String first{ "alpha.first" };
+    EXPECT_EQ(root.add_child_recursive(last, static_cast<uint32_t>(areg::LogPriority::PrioFatal)), 2u);
+    EXPECT_EQ(root.add_child_recursive(second, static_cast<uint32_t>(areg::LogPriority::PrioWarning)), 2u);
+    EXPECT_EQ(root.add_child_recursive(first, static_cast<uint32_t>(areg::LogPriority::PrioInfo)), 2u);
+    ASSERT_EQ(root.nodes().size(), 2u);
+    EXPECT_EQ(root.nodes()[0u].node_name(), "alpha");
+    EXPECT_EQ(root.nodes()[1u].node_name(), "zeta");
+    const auto& alpha{ root.nodes()[0u] };
+    ASSERT_EQ(alpha.leafs().size(), 2u);
+    EXPECT_EQ(alpha.leafs()[0u].node_name(), "first");
+    EXPECT_EQ(alpha.leafs()[1u].node_name(), "second_part");
+    areg::ConfigManager config;
+    EXPECT_EQ(root.update_config_node(config, ""), 3u);
+    const auto scopes{ config.module_log_scopes() };
+    ASSERT_EQ(scopes.size(), 3u);
+    EXPECT_EQ(scopes[0].key().position(), "alpha.first");
+    EXPECT_EQ(scopes[1].key().position(), "alpha.second_part");
+    EXPECT_EQ(scopes[2].key().position(), "zeta.last");
+}
+
+// Copying, moving, and grouping a scope tree preserve its state, including empty paths.
+TEST(LoggingCoreTest, tree_copy_move_grouping_and_empty_paths_preserve_state)
+{
+    areg::ScopeNode node;
+    node.set_node_name("branch");
+    areg::String first{ ".first" };
+    areg::String second{ ".second" };
+    ASSERT_TRUE(node.add_child_node(first, static_cast<uint32_t>(areg::LogPriority::PrioInfo)).second);
+    ASSERT_TRUE(node.add_child_node(second, static_cast<uint32_t>(areg::LogPriority::PrioInfo)).second);
+    areg::ScopeNode copied{ node };
+    areg::ScopeNode moved{ std::move(copied) };
+    areg::ScopeNode assigned;
+    assigned = moved;
+    areg::ScopeNode moveAssigned;
+    moveAssigned = std::move(assigned);
+    EXPECT_EQ(moveAssigned.child_node_count(), 2u);
+    EXPECT_EQ(moveAssigned.make_scope_path("parent_"), "parent_branch_");
+    EXPECT_EQ(moveAssigned.group_recursive(), 2u);
+    EXPECT_TRUE(moveAssigned.is_empty());
+    EXPECT_EQ(moveAssigned.make_config_string("parent_"), "parent_branch_*");
+    EXPECT_EQ(node.child_node_count(), 2u);
+    areg::ScopeLeaf leaf{ node.leafs()[0u] };
+    areg::ScopeLeaf movedLeaf{ std::move(leaf) };
+    EXPECT_TRUE(movedLeaf.is_leaf());
+    EXPECT_EQ(movedLeaf.make_scope_path("branch."), "branch.first");
+    areg::String empty;
+    EXPECT_FALSE(node.make_child_node(empty, 0u).is_valid());
+    EXPECT_FALSE(movedLeaf.add_child_node(empty, 0u).first.is_valid());
+    EXPECT_EQ(movedLeaf.group_recursive(), 0u);
+    EXPECT_EQ(movedLeaf.remove_priority_nodes(0u), 0u);
+    EXPECT_TRUE(movedLeaf.is_empty());
+}
+
+// Copied and moved logging events retain their action and data.
+TEST(LoggingCoreTest, logging_event_data_copy_and_move_preserve_actions)
+{
+    using Data = areg::LoggingEventData;
+    Data empty;
+    EXPECT_EQ(empty.logging_action(), Data::LogAction::Undefined);
+    Data original{ Data::LogAction::UpdateScopes };
+    Data copied{ original };
+    Data moved{ std::move(copied) };
+    empty = moved;
+    EXPECT_EQ(empty.logging_action(), Data::LogAction::UpdateScopes);
+    empty.set_action(Data::LogAction::QueryScopes);
+    original = std::move(empty);
+    EXPECT_EQ(original.logging_action(), Data::LogAction::QueryScopes);
+    EXPECT_STREQ(Data::as_string(original.logging_action()), "LoggingEventData::LogAction::QueryScopes");
+}
+
+// A serialized log entry retains its metadata and message text.
+TEST(LoggingCoreTest, log_entry_stream_round_trip_preserves_metadata_and_text)
+{
+    areg::LogEntry entry;
+    entry.logMsgType = areg::LogMessageType::ScopeExit;
+    entry.logScopeId = 987u;
+    entry.logSessionId = 654u;
+    entry.logDuration = 321u;
+    entry.logTimestamp = 123456u;
+    entry.logMessagePrio = areg::LogPriority::PrioScope;
+    entry.logMessageLen = static_cast<uint32_t>(areg::copy_string(entry.logMessage, areg::LOG_MSG_SIZE, "loggingcore_roundtrip.method"));
+    areg::SharedBuffer buffer;
+    buffer << entry;
+    EXPECT_EQ(buffer.size_used(), areg::log_entry_size(entry));
+    buffer.move_to_begin();
+    areg::LogEntry decoded;
+    buffer >> decoded;
+    EXPECT_EQ(decoded.logMsgType, entry.logMsgType);
+    EXPECT_EQ(decoded.logScopeId, entry.logScopeId);
+    EXPECT_EQ(decoded.logSessionId, entry.logSessionId);
+    EXPECT_EQ(decoded.logDuration, entry.logDuration);
+    EXPECT_EQ(decoded.logTimestamp, entry.logTimestamp);
+    EXPECT_EQ(decoded.logMessagePrio, entry.logMessagePrio);
+    EXPECT_EQ(decoded.logMessageLen, entry.logMessageLen);
+    EXPECT_STREQ(decoded.logMessage, entry.logMessage);
+    areg::LogEntry copied{ decoded };
+    areg::LogEntry assigned;
+    assigned = copied;
+    EXPECT_STREQ(assigned.logMessage, entry.logMessage);
+    EXPECT_EQ(assigned.logSessionId, entry.logSessionId);
+}
+
+// Priority names must accept different letter cases.
+TEST(LoggingCoreTest, priority_names_are_case_insensitive)
+{
+    EXPECT_EQ(areg::string_to_priority(areg::String("debug")), areg::LogPriority::PrioDebug);
+    EXPECT_EQ(areg::string_to_priority(areg::String("iNfO")), areg::LogPriority::PrioInfo);
+    EXPECT_EQ(areg::string_to_priority(areg::String("Warn")), areg::LogPriority::PrioWarning);
+}
+
+// Formatting the disabled priority must not turn logging back on.
+TEST(LoggingCoreTest, notset_priority_list_keeps_logging_disabled)
+{
+    const auto list{ areg::priority_to_string_list(static_cast<uint32_t>(areg::LogPriority::PrioNotset)) };
+    ASSERT_EQ(list.size(), 1u);
+    EXPECT_EQ(list[0u], "NOTSET");
+}
+
+// A single-scope update must use the same wire format as a scope batch.
+TEST(LoggingCoreTest, single_scope_update_uses_the_batch_wire_format)
+{
+    const areg::ScopeEntry entry{ "loggingcore_wire.method", 123u, static_cast<uint32_t>(areg::LogPriority::PrioInfo) };
+    areg::ScopeNames scopes;
+    scopes.add(entry);
+    const auto batch{ areg::message_update_scopes(1001u, 1002u, scopes) };
+    const auto single{ areg::message_update_scope(1001u, 1002u, entry.scopeName, entry.scopeId, entry.scopePrio) };
+    ASSERT_TRUE(batch.is_valid());
+    ASSERT_TRUE(single.is_valid());
+    ASSERT_EQ(single.size_used(), batch.size_used());
+    EXPECT_EQ(std::memcmp(single.buffer(), batch.buffer(), batch.size_used()), 0);
+}
+
+// Converting combined priorities to text and back must retain every flag.
+TEST(LoggingCoreTest, combined_priority_names_round_trip_without_losing_flags)
+{
+    const uint32_t priority{ static_cast<uint32_t>(areg::LogPriority::PrioScope) | static_cast<uint32_t>(areg::LogPriority::PrioDebug) };
+    EXPECT_EQ(areg::make_priorities(areg::String("SCOPE|DEBUG")), priority);
+    EXPECT_EQ(areg::make_priorities(areg::make_prio_string(priority)), priority);
+}
+
+// Adding an existing scope-tree leaf again must update its priority.
+TEST(LoggingCoreTest, readding_a_leaf_updates_its_priority)
+{
+    areg::ScopeNode node;
+    node.set_node_name("branch");
+    areg::String first{ ".leaf" };
+    ASSERT_TRUE(node.add_child_node(first, static_cast<uint32_t>(areg::LogPriority::PrioInfo)).second);
+    areg::String again{ ".leaf" };
+    const auto update{ node.add_child_node(again, static_cast<uint32_t>(areg::LogPriority::PrioError)) };
+    EXPECT_FALSE(update.second);
+    EXPECT_EQ(node.child_node_count(), 1u);
+    EXPECT_EQ(update.first.priority(), static_cast<uint32_t>(areg::LogPriority::PrioError));
+}
+
+// Saving and reloading grouped dotted scopes must retain their priority.
+TEST(LoggingCoreTest, grouped_dot_scopes_keep_their_priority_after_reload)
+{
+    areg::LogScope first{ "loggingcorealpha.first", areg::LogPriority::PrioInfo };
+    areg::LogScope second{ "loggingcorealpha.second", areg::LogPriority::PrioInfo };
+    areg::LogScope other{ "loggingcorebeta.other", areg::LogPriority::PrioFatal };
+    areg::ScopeRoot root;
+    root.add_child_recursive(first);
+    root.add_child_recursive(second);
+    root.add_child_recursive(other);
+    root.group_recursive();
+    areg::ConfigManager config;
+    EXPECT_GT(root.update_config_node(config, ""), 0u);
+    areg::ScopeController controller;
+    controller.register_scope(first);
+    controller.register_scope(second);
+    controller.register_scope(other);
+    for (const auto& property : config.module_log_scopes())
+    {
+        controller.configure_scopes(property);
+    }
+    controller.set_scope_activity(true);
+    EXPECT_EQ(first.priority(), static_cast<uint32_t>(areg::LogPriority::PrioInfo));
+    EXPECT_EQ(second.priority(), static_cast<uint32_t>(areg::LogPriority::PrioInfo));
+    EXPECT_EQ(other.priority(), static_cast<uint32_t>(areg::LogPriority::PrioFatal));
+}
+
+// Priority masks format in table order, parse with spaces and any case, and skip unknown names.
+TEST(LoggingCoreTest, priority_masks_format_and_parse_lists)
+{
+    const uint32_t scopeDebug{ static_cast<uint32_t>(areg::LogPriority::PrioScope) | static_cast<uint32_t>(areg::LogPriority::PrioDebug) };
+    EXPECT_EQ(areg::make_prio_string(scopeDebug), "SCOPE|DEBUG");
+    EXPECT_EQ(areg::make_prio_string(static_cast<uint32_t>(areg::LogPriority::PrioWarning)), areg::PRIO_WARNING_STR);
+    EXPECT_EQ(areg::make_prio_string(static_cast<uint32_t>(areg::LogPriority::PrioNotset)), areg::PRIO_NOTSET_STR);
+    EXPECT_EQ(areg::make_prio_string(static_cast<uint32_t>(areg::LogPriority::PrioIgnore)), areg::PRIO_NOTSET_STR);
+    EXPECT_EQ(areg::make_priorities(areg::String(" scope | Debug | bogus ")), scopeDebug);
+    EXPECT_EQ(areg::make_priorities(areg::String("warn")), static_cast<uint32_t>(areg::LogPriority::PrioWarning));
+    EXPECT_EQ(areg::make_priorities(areg::String("bogus")), static_cast<uint32_t>(areg::LogPriority::PrioInvalid));
+    EXPECT_EQ(areg::make_priorities(areg::String()), static_cast<uint32_t>(areg::LogPriority::PrioInvalid));
+    EXPECT_EQ(areg::string_to_priority(areg::String("WARNING")), areg::LogPriority::PrioIgnoreLayout);
+    EXPECT_EQ(areg::string_to_priority(areg::String()), areg::LogPriority::PrioIgnoreLayout);
+}
+
+// A grouped node saves one wildcard for its nodes and one for its methods, and a partial group keeps every method.
+TEST(LoggingCoreTest, grouped_nodes_and_methods_keep_their_priority_after_reload)
+{
+    const uint32_t scopeDebug{ static_cast<uint32_t>(areg::LogPriority::PrioScope) | static_cast<uint32_t>(areg::LogPriority::PrioDebug) };
+    areg::LogScope nested{ "loggingcoregamma_inner.call", areg::LogPriority::PrioNotset };
+    areg::LogScope same{ "loggingcoregamma.same", areg::LogPriority::PrioNotset };
+    areg::LogScope other{ "loggingcoregamma.other", areg::LogPriority::PrioDebug };
+    areg::LogScope both{ "loggingcoredelta_inner.call", areg::LogPriority::PrioInfo };
+    areg::LogScope method{ "loggingcoredelta.method", areg::LogPriority::PrioInfo };
+    nested.set_priority(scopeDebug);
+    same.set_priority(scopeDebug);
+    areg::ScopeRoot root;
+    for (const areg::LogScope* scope : { &nested, &same, &other, &both, &method })
+    {
+        root.add_child_recursive(*scope);
+    }
+
+    root.group_recursive();
+    areg::ConfigManager config;
+    EXPECT_GT(root.update_config_node(config, ""), 0u);
+    areg::ScopeController controller;
+    for (areg::LogScope* scope : { &nested, &same, &other, &both, &method })
+    {
+        controller.register_scope(*scope);
+    }
+
+    for (const auto& property : config.module_log_scopes())
+    {
+        controller.configure_scopes(property);
+    }
+
+    controller.set_scope_activity(true);
+    EXPECT_EQ(nested.priority(), scopeDebug);
+    EXPECT_EQ(same.priority(), scopeDebug);
+    EXPECT_EQ(other.priority(), static_cast<uint32_t>(areg::LogPriority::PrioDebug));
+    EXPECT_EQ(both.priority(), static_cast<uint32_t>(areg::LogPriority::PrioInfo));
+    EXPECT_EQ(method.priority(), static_cast<uint32_t>(areg::LogPriority::PrioInfo));
+}
+
+// A method keeps its underscores: after a dot, and in a name without a dot, which is one method.
+TEST(LoggingCoreTest, snake_case_methods_are_saved_whole)
+{
+    areg::LogScope dotted{ "loggingcoreepsilon_path.this_is_a_method", areg::LogPriority::PrioInfo };
+    areg::LogScope sibling{ "loggingcoreepsilon_path.other_method", areg::LogPriority::PrioError };
+    areg::LogScope dotless{ "loggingcoreepsilon_dotless_method", areg::LogPriority::PrioWarning };
+    areg::ScopeRoot root;
+    for (const areg::LogScope* scope : { &dotted, &sibling, &dotless })
+    {
+        root.add_child_recursive(*scope);
+    }
+
+    root.group_recursive();
+    areg::ConfigManager config;
+    EXPECT_EQ(root.update_config_node(config, ""), 3u);
+    std::vector<std::string> keys;
+    for (const auto& property : config.module_log_scopes())
+    {
+        keys.emplace_back(property.key().position().as_string());
+    }
+
+    std::sort(keys.begin(), keys.end());
+    const std::vector<std::string> expected{ "loggingcoreepsilon_dotless_method", "loggingcoreepsilon_path.other_method", "loggingcoreepsilon_path.this_is_a_method" };
+    EXPECT_EQ(keys, expected);
+}
+
+// Resuming the controller restores saved scopes and applies configuration to new ones.
+TEST(LoggingCoreTest, controller_stop_resume_restores_saved_and_newly_configured_scopes)
+{
+    areg::LogScope first{ "loggingcore_resume.first", areg::LogPriority::PrioError };
+    areg::LogScope second{ "loggingcore_resume.second", areg::LogPriority::PrioInfo };
+    areg::LogScope late{ "loggingcore_resume.late", areg::LogPriority::PrioNotset };
+    areg::ScopeController controller;
+    controller.register_scope(first);
+    controller.register_scope(second);
+    const areg::Property property{ areg::String("log::*::scope::loggingcore_resume.* = WARN") };
+    ASSERT_TRUE(property.key().is_valid());
+    controller.configure_scopes(property);
+    EXPECT_FALSE(controller.is_stopped());
+    EXPECT_FALSE(controller.resume_scopes());
+    EXPECT_TRUE(controller.stop_scopes());
+    EXPECT_TRUE(controller.is_stopped());
+    EXPECT_FALSE(controller.stop_scopes());
+    EXPECT_EQ(first.priority(), static_cast<uint32_t>(areg::LogPriority::PrioNotset));
+    EXPECT_EQ(second.priority(), static_cast<uint32_t>(areg::LogPriority::PrioNotset));
+    controller.register_scope(late);
+    EXPECT_TRUE(controller.resume_scopes());
+    EXPECT_FALSE(controller.is_stopped());
+    EXPECT_EQ(first.priority(), static_cast<uint32_t>(areg::LogPriority::PrioError));
+    EXPECT_EQ(second.priority(), static_cast<uint32_t>(areg::LogPriority::PrioInfo));
+    EXPECT_EQ(late.priority(), static_cast<uint32_t>(areg::LogPriority::PrioWarning));
+    EXPECT_FALSE(controller.resume_scopes());
+    EXPECT_TRUE(controller.stop_scopes());
+    EXPECT_TRUE(controller.discard_saved_scopes());
+    EXPECT_FALSE(controller.discard_saved_scopes());
+    EXPECT_FALSE(controller.resume_scopes());
+    EXPECT_EQ(first.priority(), static_cast<uint32_t>(areg::LogPriority::PrioNotset));
 }
 
 #endif

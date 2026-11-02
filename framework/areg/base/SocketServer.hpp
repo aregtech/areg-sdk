@@ -109,7 +109,7 @@ public:
      *
      * \param   multiplexer             Persistent multiplexer with sockets already registered.
      * \param[in,out] addrAccepted      Receives the new client's address when a new
-     *                                  connection is accepted. Unchanged for existing clients.
+     *                                  connection is accepted, otherwise an invalid address.
      * \return  Valid socket handle; InvalidSocketHandle on timeout; FailedSocketHandle on error.
      **/
     virtual SOCKETHANDLE wait_connection_event(areg::SocketMultiplexer & multiplexer, areg::SocketAddress & addrAccepted);
@@ -121,7 +121,7 @@ public:
      *
      * \param   multiplexer             Persistent multiplexer with sockets already registered.
      * \param[in,out] addrAccepted      Receives the new client's address when a new connection is
-     *                                  accepted. Unchanged for existing clients.
+     *                                  accepted, otherwise an invalid address.
      * \return  Valid socket handle if a socket is ready;
      *          InvalidSocketHandle if nothing is ready (normal drain-loop exit);
      *          FailedSocketHandle on error or reset.
@@ -134,8 +134,8 @@ public:
      *          Prefer wait_connection_event(multiplexer, ...) for persistent server loops.
      *
      * \param[in,out] addrAccepted      On successful new connection acceptance, contains the
-     *                                  address of the accepted socket. Unchanged if client
-     *                                  sends data or closes.
+     *                                  address of the accepted socket, otherwise an invalid
+     *                                  address.
      * \param   masterList              Array of existing connection socket handles to monitor.
      * \param   entriesCount            The number of entries in the master list.
      * \return  Returns a valid socket handle if successful. If a new connection is accepted,

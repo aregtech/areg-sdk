@@ -192,6 +192,12 @@ uint32_t ScopeNodeBase::add_child_recursive( String & scopePath, uint32_t prioSt
 uint32_t ScopeNodeBase::add_child_recursive( const LogScope & logScope )
 {
     String scopeName( logScope.name( ) );
+    if ( !areg::is_position_valid( scopeName.find_first( areg::SYNTAX_SCOPE_LEAF_SEPARATOR ) ) )
+    {
+        // A name without '.' has no path: the whole name is one method.
+        scopeName = String( areg::SYNTAX_SCOPE_LEAF_SEPARATOR ) + scopeName;
+    }
+
     return add_child_recursive( scopeName, logScope.priority( ) );
 }
 

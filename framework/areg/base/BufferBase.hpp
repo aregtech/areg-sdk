@@ -169,7 +169,9 @@ public:
 
 
     /**
-     * \brief   Serialises a BufferBase (length prefix + data) into this buffer.
+     * \brief   Serialises a SharedBuffer (32-bit length + data) at the cursor; an invalid buf is
+     *          written as length 0. Nothing is written if the whole sequence does not fit.
+     * \return  Data bytes written, without the length.
      **/
     uint32_t write(const SharedBuffer& buf) override;
 
@@ -198,7 +200,10 @@ public:
 
 
     /**
-     * \brief   Deserialises a length-prefixed byte sequence into a BufferBase.
+     * \brief   Deserialises a length-prefixed byte sequence into a copy owned by buf.
+     *          A length of 0 invalidates buf. If the length cannot be read or exceeds the
+     *          remaining data, buf and the cursor are left unchanged.
+     * \return  Bytes copied; 0 on failure or for an empty sequence.
      **/
     uint32_t read(SharedBuffer& buf) const noexcept override;
 
@@ -219,6 +224,7 @@ public:
 
     /**
      * \brief   Ensures capacity for at least \a size bytes, optionally preserving existing content.
+     *          A block that already holds \a size bytes is kept.
      *
      * \param   size    Total bytes required (not an increment).
      * \param   copy    If true, existing written bytes are copied into the new block
@@ -767,13 +773,12 @@ inline const T* BufferBase::read_array(uint32_t count) noexcept
     if (raw == nullptr)
         return nullptr;
 
-    const uint32_t sz{ static_cast<uint32_t>(sizeof(T)) * count };
-    const uint32_t limit = raw->bufHeader.biUsed;
-    if (mPosition + sz > limit)
+    const uint64_t end{ static_cast<uint64_t>(mPosition) + static_cast<uint64_t>(sizeof(T)) * count };
+    if (end > raw->bufHeader.biUsed)
         return nullptr;
 
     const T* result = reinterpret_cast<const T*>(buffer_to_read());
-    mPosition += sz;
+    mPosition = static_cast<uint32_t>(end);
     return result;
 }
 
@@ -788,7 +793,7 @@ template <typename T>
 inline uint32_t BufferBase::write_array(const T* data, uint32_t count) noexcept
 {
     static_assert(std::is_trivially_copyable_v<T>, "write_array<T>() requires trivially-copyable T");
-    if ((data == nullptr) || (count == 0u))
+    if ((data == nullptr) || (count == 0u) || (count > areg::MAX_BUF_LENGTH / static_cast<uint32_t>(sizeof(T))))
         return 0u;
 
     return write_data(reinterpret_cast<const uint8_t*>(data), static_cast<uint32_t>(sizeof(T)) * count);

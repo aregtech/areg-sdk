@@ -229,13 +229,6 @@ public:
      **/
     inline bool disable_send();
 
-    /**
-     * \brief   Sets socket to write-only mode, disabling message receiving.
-     *
-     * \return  Returns true if operation succeeds.
-     **/
-    inline bool disable_receive();
-
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
 //////////////////////////////////////////////////////////////////////////
@@ -331,11 +324,6 @@ inline const std::atomic<SOCKETHANDLE> & ClientConnection::live_handle_word() co
 inline bool ClientConnection::disable_send()
 {
     return mClientSocket.disable_send( );
-}
-
-inline bool ClientConnection::disable_receive()
-{
-    return mClientSocket.disable_receive();
 }
 
 inline Socket & ClientConnection::socket()

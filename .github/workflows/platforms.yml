@@ -106,7 +106,7 @@ jobs:
         working-directory: ${{github.workspace}}
         shell: bash
         run: |
-          BIN_DIR="$(find ./product/build -type d -name bin 2>/dev/null | head -n 1)"
+          BIN_DIR="$(find ./product/build -type d -name bin -print -quit 2>/dev/null || true)"
           if [ -z "${BIN_DIR}" ]; then echo "no bin directory under ./product/build" >&2; exit 1; fi
           echo "BIN_DIR=${BIN_DIR}" >> "${GITHUB_ENV}"
           file "${BIN_DIR}/libareg.so"
@@ -146,7 +146,7 @@ jobs:
         shell: bash
         timeout-minutes: 10
         run: |
-          BIN64="$(find ./product/build -type d -path '*linux-64*' -name bin 2>/dev/null | head -n 1)"
+          BIN64="$(find ./product/build -type d -path '*linux-64*' -name bin -print -quit 2>/dev/null || true)"
           if [ -z "${BIN64}" ]; then echo "no 64-bit bin directory under ./product/build" >&2; exit 1; fi
           bash tests/bitness/bitness.sh --bin64 "${BIN64}" --bin32 "${{env.BIN_DIR}}"
 
@@ -228,7 +228,7 @@ jobs:
         working-directory: ${{github.workspace}}
         shell: bash
         run: |
-          BIN_DIR="$(find ./product/build -type d -name bin 2>/dev/null | head -n 1)"
+          BIN_DIR="$(find ./product/build -type d -name bin -print -quit 2>/dev/null || true)"
           if [ -z "${BIN_DIR}" ]; then echo "no bin directory under ./product/build" >&2; exit 1; fi
           file "${BIN_DIR}/libareg.so"
           file "${BIN_DIR}/libareg.so" | grep -q 'ARM' || { echo "libareg.so is not an ARM binary" >&2; exit 1; }

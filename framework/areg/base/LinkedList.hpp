@@ -728,7 +728,7 @@ public:
      * \brief   Copies elements from the linked list into the provided pre-allocated buffer. If
      *          `elemCount` is less than the number of elements in the linked list, only the first
      *          `elemCount` elements are copied. Otherwise, all elements in the linked list are
-     *          copied. No elements are copied if `elemCount` is 0.
+     *          copied. No elements are copied if `elemCount` is 0 or `list` is nullptr.
      *
      * \param[in,out] list      A pre-allocated buffer where the linked list elements will be
      *                          copied. Must be large enough to hold at least `elemCount` elements.
@@ -1362,17 +1362,8 @@ inline void LinkedList<VALUE>::merge(LinkedList<VALUE>&& source)
 template<typename VALUE>
 inline uint32_t LinkedList<VALUE>::elements(VALUE* list, uint32_t elemCount)
 {
-    uint32_t result{ std::min(static_cast<uint32_t>(mValueList.size()), elemCount) };
-    uint32_t i = 0;
-    for (const auto& entry : mValueList)
-    {
-        list[i++] = entry;
-        if (i == result)
-        {
-            break;
-        }
-    }
-
+    const uint32_t result{ list != nullptr ? std::min(static_cast<uint32_t>(mValueList.size()), elemCount) : 0u };
+    std::copy_n(mValueList.cbegin(), result, list);
     return result;
 }
 

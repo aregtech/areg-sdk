@@ -581,7 +581,8 @@ AREG_API bool server_listen(SOCKETHANDLE serverSocket, int32_t maxQueueSize = ar
  *
  * \param   multiplexer     Persistent multiplexer with the server and client sockets already registered.
  * \param   serverSocket    The listening server socket descriptor.
- * \param   socketAddr      If not nullptr, receives the new client's address when a new connection is accepted.
+ * \param   socketAddr      If not nullptr, receives the new client's address when a new connection
+ *                          is accepted; in every other case it is reset to an invalid address.
  * \return  Valid descriptor for the new connection or an existing readable client;
  *          FailedSocketHandle if \a serverSocket is invalid;
  *          InvalidSocketHandle on timeout or other failure.
@@ -599,9 +600,11 @@ AREG_API SOCKETHANDLE server_accept(SocketMultiplexer& multiplexer, SOCKETHANDLE
  * \param   serverSocket    Listening server socket descriptor.
  * \param   masterList      Array of already-accepted socket descriptors, or nullptr if none.
  * \param   entriesCount    Number of entries in \a masterList; zero if nullptr.
- * \param   socketAddr      If not nullptr, receives the new client's address.
- * \return  Valid descriptor for the new connection; FailedSocketHandle if
- *          \a serverSocket is invalid; InvalidSocketHandle on other failure.
+ * \param   socketAddr      If not nullptr, receives the new client's address when a new connection
+ *                          is accepted; in every other case it is reset to an invalid address.
+ * \return  Valid descriptor for the new connection or an existing readable client;
+ *          FailedSocketHandle if \a serverSocket or the list is invalid, or the wait failed;
+ *          InvalidSocketHandle if accepting the new connection failed.
  **/
 [[nodiscard]]
 AREG_API SOCKETHANDLE server_accept(SOCKETHANDLE serverSocket, const SOCKETHANDLE* masterList, int32_t entriesCount, SocketAddress* socketAddr = nullptr);
@@ -684,8 +687,8 @@ AREG_API int32_t try_send_data_v(SOCKETHANDLE hSocket, const IoBuffer* buffers, 
  * \param   hSocket         Valid connected socket descriptor.
  * \param   dataBuffer      Buffer to fill with received bytes.
  * \param   dataLength      Capacity of \a dataBuffer in bytes.
- * \return  Bytes received (> 0); 0 if the peer closed the connection;
- *          negative on error or empty buffer.
+ * \return  Bytes received (> 0); 0 if the peer closed the connection before any byte arrived;
+ *          negative on error, on an empty buffer, or if the peer closed it in the middle.
  **/
 AREG_API int32_t receive_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, uint32_t dataLength) noexcept;
 
@@ -784,14 +787,6 @@ AREG_API bool set_send_timeout(SOCKETHANDLE hSocket, uint32_t timeoutMs) noexcep
 AREG_API bool disable_send(SOCKETHANDLE hSocket) noexcept;
 
 /**
- * \brief   Shuts down the receive direction of \a hSocket (half-close).
- *          The socket becomes send-only.
- *
- * \return  true on success; false otherwise.
- **/
-AREG_API bool disable_receive(SOCKETHANDLE hSocket) noexcept;
-
-/**
  * \brief   Shuts down both directions of hSocket without closing the
  *          file descriptor.  Any thread currently blocked in send() or
  *          recv() on this socket will return immediately with an error.
@@ -805,8 +800,9 @@ AREG_API bool disable_receive(SOCKETHANDLE hSocket) noexcept;
 AREG_API void socket_interrupt(SOCKETHANDLE hSocket) noexcept;
 
 /**
- * \brief   Returns true if \a hSocket is still connected (not closed by
- *          the peer or the OS).
+ * \brief   Returns true if \a hSocket is still connected: it has no pending error, and the
+ *          peer has not closed the connection, unless unread data is still waiting.
+ *          Does not wait and does not consume the pending error.
  **/
 [[nodiscard]]
 AREG_API bool is_socket_alive(SOCKETHANDLE hSocket) noexcept;
