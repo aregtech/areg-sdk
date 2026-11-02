@@ -48,8 +48,15 @@ namespace {
     constexpr int   SEND_NOWAIT     { MSG_DONTWAIT };
     //!< The longest wait for space in a full socket before the send is tried again.
     constexpr int   SEND_RECHECK_MS { 50 };
+    //!< On Cygwin a receive with MSG_WAITALL spins forever once the peer has closed its side.
+    constexpr int   RECV_WAITALL    { 0 };
 #else   // defined(__CYGWIN__)
     constexpr int   SEND_NOWAIT     { 0 };
+    #if defined(MSG_WAITALL)
+    constexpr int   RECV_WAITALL    { MSG_WAITALL };
+    #else   // defined(MSG_WAITALL)
+    constexpr int   RECV_WAITALL    { 0 };
+    #endif  // defined(MSG_WAITALL)
 #endif  // defined(__CYGWIN__)
 
     //!< Returns the timeout in socket option \a timeoutName in milliseconds, or -1 if none is set.
@@ -528,16 +535,10 @@ int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uin
 // MSG_WAITALL, no speculative buffering, no cache access.
 static int32_t _recv_exact(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength)
 {
-#ifdef MSG_WAITALL
-    constexpr int recvExact = MSG_WAITALL;
-#else
-    constexpr int recvExact = 0;
-#endif
-
     int32_t total = 0;
     do
     {
-        const ssize_t received = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer + total), static_cast<size_t>(dataLength - total), recvExact);
+        const ssize_t received = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer + total), static_cast<size_t>(dataLength - total), RECV_WAITALL);
         if (received > 0)
             total += static_cast<int32_t>(received);
         else if (received == 0)
@@ -557,12 +558,6 @@ static int32_t _recv_exact(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t da
 //              (not waiting for a full cache), so no idle-period block occurs.
 static int32_t _recv_cached(SOCKETHANDLE hSocket, areg::ThreadCache& tc, uint8_t* dataBuffer, int32_t dataLength)
 {
-#ifdef MSG_WAITALL
-    constexpr int recvExact = MSG_WAITALL;
-#else
-    constexpr int recvExact = 0;
-#endif
-
     uint8_t* const cache = tc.cache();
     if ((cache == nullptr) || (tc.space == 0u))
         return _recv_exact(hSocket, dataBuffer, dataLength);
@@ -589,7 +584,7 @@ static int32_t _recv_cached(SOCKETHANDLE hSocket, areg::ThreadCache& tc, uint8_t
     {
         while (needed > 0u)
         {
-            const ssize_t received = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer + total), static_cast<size_t>(needed), recvExact);
+            const ssize_t received = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer + total), static_cast<size_t>(needed), RECV_WAITALL);
             if (received > 0)
             {
                 total  += static_cast<uint32_t>(received);
@@ -666,19 +661,13 @@ int32_t _os_recv_data_window(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t 
     ASSERT(areg::is_valid_socket(hSocket));
     ASSERT((dataBuffer != nullptr) && (dataLength > 0));
 
-#ifdef MSG_WAITALL
-    constexpr int recvExact = MSG_WAITALL;
-#else
-    constexpr int recvExact = 0;
-#endif
-
     constexpr int32_t WINDOW{ static_cast<int32_t>(areg::DEFAULT_THREAD_CACHE) };
     int32_t total{ 0 };
     do
     {
         const int32_t remaining = dataLength - total;
         const int32_t chunk = remaining < WINDOW ? remaining : WINDOW;
-        const ssize_t received = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer + total), static_cast<size_t>(chunk), recvExact);
+        const ssize_t received = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer + total), static_cast<size_t>(chunk), RECV_WAITALL);
         if (received > 0)
             total += static_cast<int32_t>(received);
         else if ((received == 0) || ((errno != EINTR) && (_wait_receive(hSocket) == false)))

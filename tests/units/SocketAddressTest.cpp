@@ -26,7 +26,10 @@
 #include "areg/base/String.hpp"
 
 #include <array>
+#include <chrono>
+#include <thread>
 #include <utility>
+#include <vector>
 
 #if defined(_POSIX)
     #include <arpa/inet.h>
@@ -679,6 +682,34 @@ TEST_F(SocketLoopbackTest, peer_close_inside_a_block_is_an_error_in_every_receiv
         ASSERT_TRUE(areg::disable_send(client.value()));
         std::array<uint8_t, 8> received{};
         EXPECT_LT(areg::receive_data(accepted.value(), received.data(), 8u), 0) << static_cast<int32_t>(mode);
+        areg::thread_rx_cache_release(accepted.value());
+    }
+}
+
+// A peer close that arrives while a large receive is blocked ends the receive with an error.
+TEST_F(SocketLoopbackTest, peer_close_during_a_blocked_large_receive_is_an_error_in_every_receive_mode)
+{
+    OwnedSocket listener;
+    areg::SocketAddress address;
+    ASSERT_TRUE(bind_loopback(listener, address));
+    std::vector<uint8_t> block(areg::thread_cache_size());
+    for (const auto mode : { areg::ReceiveMode::NoCache, areg::ReceiveMode::MonoCache, areg::ReceiveMode::MultiCache })
+    {
+        ReceiveModeGuard guard(mode);
+        const OwnedSocket client(areg::client_connect(address));
+        ASSERT_TRUE(areg::is_valid_socket(client.value()));
+        const OwnedSocket accepted(accept_pending(listener.value()));
+        ASSERT_TRUE(areg::is_valid_socket(accepted.value()));
+        const std::array<uint8_t, 3> sent{ 1u, 2u, 3u };
+        ASSERT_EQ(areg::send_data(client.value(), sent.data(), 3u), 3);
+        std::thread closer([&client]() {
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            static_cast<void>(areg::disable_send(client.value()));
+        });
+
+        EXPECT_LT(areg::receive_data(accepted.value(), block.data(), static_cast<uint32_t>(block.size())), 0) << static_cast<int32_t>(mode);
+        closer.join();
+        EXPECT_LT(areg::receive_data_window(accepted.value(), block.data(), static_cast<uint32_t>(block.size())), 0) << static_cast<int32_t>(mode);
         areg::thread_rx_cache_release(accepted.value());
     }
 }

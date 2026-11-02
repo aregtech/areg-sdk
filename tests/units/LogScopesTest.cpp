@@ -22,6 +22,7 @@
 #include "areg/persist/ConfigListener.hpp"
 #include "areg/persist/ConfigManager.hpp"
 #include "areg/base/SharedBuffer.hpp"
+#include "areg/base/StringDefs.hpp"
 #include "areg/logging/private/LoggingEvent.hpp"
 #include "areg/logging/private/ScopeController.hpp"
 #include "areg/logging/private/ScopeNodes.hpp"
@@ -965,8 +966,7 @@ TEST(LoggingCoreTest, log_entry_stream_round_trip_preserves_metadata_and_text)
     entry.logDuration = 321u;
     entry.logTimestamp = 123456u;
     entry.logMessagePrio = areg::LogPriority::PrioScope;
-    std::strcpy(entry.logMessage, "loggingcore_roundtrip.method");
-    entry.logMessageLen = static_cast<uint32_t>(std::strlen(entry.logMessage));
+    entry.logMessageLen = static_cast<uint32_t>(areg::copy_string(entry.logMessage, areg::LOG_MSG_SIZE, "loggingcore_roundtrip.method"));
     areg::SharedBuffer buffer;
     buffer << entry;
     EXPECT_EQ(buffer.size_used(), areg::log_entry_size(entry));
