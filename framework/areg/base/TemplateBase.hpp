@@ -26,12 +26,20 @@
 #include "areg/base/IOStream.hpp"
 
 #include <iterator>
+#include <type_traits>
 
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // Container helpers
 //////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Enables an index operator for any integer type and for an unscoped enumeration.
+ **/
+template <typename Index>
+using IfIndex = std::enable_if_t<std::is_integral_v<Index>
+                                 || (std::is_enum_v<Index> && std::is_convertible_v<Index, int>), int>;
+
 /**
  * \brief   Releases the memory that a container holds beyond its size.
  *          The standard shrink_to_fit() is a request that the standard library

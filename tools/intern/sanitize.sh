@@ -61,6 +61,8 @@
 #     AREG_SANITIZE_COREDUMP=1  End a sanitizer report with abort() instead of _exit(),
 #                           so the kernel writes a core. Off by default: a core of an
 #                           instrumented process is large. Needs 'ulimit -c unlimited'.
+#     AREG_SANITIZE_TEST_TIMEOUT=N  Seconds one ctest test may run before it counts as
+#                           failed (default: 600). Turns a hung test into a failure.
 #
 #   Examples
 #     tools/intern/sanitize.sh asan                         # build+run unit tests under ASan/LSan/UBSan
@@ -106,6 +108,7 @@ LIBTYPE="static"
 EXAMPLES="OFF"
 CONFIG="Debug"
 REPEAT=1
+TEST_TIMEOUT="${AREG_SANITIZE_TEST_TIMEOUT:-600}"
 LEAKS="on"
 JOBS="$(nproc 2>/dev/null || echo 4)"
 KEEP=0
@@ -170,7 +173,9 @@ _detect_leaks=1
 # print a symbolised stack for a deadly signal it does not raise itself. Without
 # them a glibc assertion (arena.c, malloc.c) reaches the log as one line of text
 # and the thread that hit it is unknown.
-DEADLY_SIGNALS="handle_abort=1:handle_sigill=1:handle_sigfpe=1:handle_sigbus=1"
+# use_sigaltstack=0 runs the report on the thread's own stack. The in-process
+# symbolizer overruns the 32 KB alternate stack on the unit-test binary.
+DEADLY_SIGNALS="handle_abort=1:handle_sigill=1:handle_sigfpe=1:handle_sigbus=1:use_sigaltstack=0"
 # A leak or an undefined behaviour report ends the process with a non-zero exit code.
 export ASAN_OPTIONS="detect_leaks=${_detect_leaks}:halt_on_error=1:abort_on_error=0:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1:print_stats=1:log_threads=1:${DEADLY_SIGNALS}"
 export UBSAN_OPTIONS="print_stacktrace=1:halt_on_error=1"
@@ -253,8 +258,8 @@ do_run() {
             [[ "${RUN}" == ctest:* ]] && only=(-R "${RUN#ctest:}")
             local rounds=()
             [[ "${REPEAT}" -gt 1 ]] && rounds=(--repeat "until-fail:${REPEAT}")
-            info "Running ctest in ${build_dir} ${only[*]-} ${rounds[*]-}"
-            ( cd "${build_dir}" && "${prefix[@]}" ctest --output-on-failure "${only[@]}" "${rounds[@]}" ) ;;
+            info "Running ctest in ${build_dir} ${only[*]-} ${rounds[*]-} (timeout ${TEST_TIMEOUT} s per test)"
+            ( cd "${build_dir}" && "${prefix[@]}" ctest --output-on-failure --timeout "${TEST_TIMEOUT}" "${only[@]}" "${rounds[@]}" ) ;;
         examples|examples:*)
             # The interesting defects live between processes, not inside one binary, so the
             # scenario driver is what has to run under the sanitizer. Every process it

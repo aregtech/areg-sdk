@@ -225,26 +225,15 @@ public:
 // InStream interface overrides
 /************************************************************************/
 
+    using FileBase::read;
+    using FileBase::write;
+
     /**
      * \brief   Reads data from the file into the buffer and returns the number of bytes read.
      *
      * \param[in,out] buffer      The buffer to receive file data.
      **/
     uint32_t read( SharedBuffer & buffer ) const override;
-
-    /**
-     * \brief   Reads text data from the file into an ASCII string and returns the number of bytes read.
-     *
-     * \param[in,out] ascii       The ASCII string to receive file data.
-     **/
-    uint32_t read( String & ascii ) const override;
-
-    /**
-     * \brief   Reads text data from the file into a wide-character string and returns the number of bytes read.
-     *
-     * \param[in,out] wide      The wide-character string to receive file data.
-     **/
-    uint32_t read( WideString & wide ) const override;
 
     /**
      * \brief   Reads up to size bytes from the file into the buffer and returns the number of bytes read.
@@ -265,21 +254,9 @@ public:
     uint32_t write( const SharedBuffer& buffer ) override;
 
     /**
-     * \brief   Writes ASCII string data to the file and returns the number of bytes written.
-     *
-     * \param   ascii       The ASCII string to write.
-     **/
-    uint32_t write( const String & ascii ) override;
-
-    /**
-     * \brief   Writes wide-character string data to the file and returns the number of bytes written.
-     *
-     * \param   wide    The wide-character string to write.
-     **/
-    uint32_t write( const WideString & wide ) override;
-
-    /**
      * \brief   Writes size bytes from the buffer to the file and returns the number of bytes written.
+     *          Writes all or nothing: if the system writes fewer bytes, the file position is
+     *          restored and the method returns 0.
      *
      * \param   buffer      The byte buffer containing data to write.
      * \param   size        The number of bytes to write.
@@ -539,7 +516,8 @@ public:
      *
      * \param   filePath    Path to search for parent directory name.
      * \param[out] nextPos  On return, if not nullptr, points to the end of the parent  name in the string.
-     * \param   lastPos     If not nullptr, search begins at this position; if nullptr, searches from the end.
+     * \param   lastPos     If not nullptr, searches before this position, such as the 'nextPos' of a previous
+     *                      call; if nullptr, searches from the end, ignoring one trailing separator.
      **/
     static bool find_parent( const char * filePath, const char ** nextPos, const char * lastPos = nullptr ) noexcept;
 

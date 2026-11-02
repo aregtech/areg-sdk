@@ -41,7 +41,8 @@ namespace
 
         std::cout << "Writing text to file [" << file.name() << "] ..." << std::endl;
         file.write("!!!Hello World!!!");
-        file << "This is some text." << "And this one is another part of text.";
+        file.write_string("This is some text.");
+        file.write_string("And this one is another part of text.");
     }
 
     //!< Write lines to the file
@@ -72,7 +73,7 @@ namespace
 
         file.move_to_begin();
         areg::String text;
-        file >> text;
+        file.read_string(text);
 
         std::cout << "BEGIN File [" << file.name() << "] content >>>" << std::endl;
         std::cout << text << std::endl;

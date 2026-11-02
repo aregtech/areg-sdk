@@ -727,19 +727,19 @@ public:
     std::vector<Identifier> remote_service_connections(const String& service) const noexcept;
 
     /**
-     * \brief   Returns the service name for the specified remote service and connection type.
+     * \brief   Returns the process name of the specified remote service, or empty if not configured.
      *
      * \param   service         The string value of the remote service.
-     * \param   connectType     The string value of the connection type.
+     * \param   connectType     Not used; a remote service has one process name for all connection types.
      **/
     [[nodiscard]]
     String remote_service_name(const String& service, const String& connectType) const noexcept;
 
     /**
-     * \brief   Returns the service name for the specified remote service and connection type.
+     * \brief   Returns the process name of the specified remote service, or empty if not configured.
      *
      * \param   serviceType     The remote service type.
-     * \param   connectType     The connection type.
+     * \param   connectType     Not used; a remote service has one process name for all connection types.
      **/
     [[nodiscard]]
     String remote_service_name(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const noexcept;

@@ -76,7 +76,8 @@ public:
     bool as_char( char & Value ) const;
 
     /**
-     * \brief   Reads and converts stream data to a wide-character value.
+     * \brief   Reads a 4-byte character code as a wide-character value. A 2-byte wchar_t receives
+     *          U+FFFD for a code above U+FFFF.
      *
      * \param[out] Value       On return, contains the converted wide-character value.
      * \return  Returns true if reading succeeded; false otherwise.

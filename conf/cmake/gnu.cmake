@@ -32,6 +32,9 @@ if (MINGW)
 
     if (AREG_BUILD_OPTIMIZED)
         list(APPEND AREG_COMPILER_OPTIONS ${AREG_OPTIMIZATION} -ffunction-sections -fdata-sections)
+        # GCC 13 to 16 emit wrong code for an IPA-CP clone reached through a this-adjusting thunk.
+        list(APPEND AREG_COMPILER_OPTIONS -fno-ipa-cp-clone)
+        list(APPEND AREG_LDFLAGS -fno-ipa-cp-clone)
         if (NOT CMAKE_CROSSCOMPILING)
             if (AREG_ARCH_NATIVE)
                 list(APPEND AREG_COMPILER_OPTIONS -march=native -mtune=native)
@@ -69,6 +72,9 @@ else()
 
     if (AREG_BUILD_OPTIMIZED)
         list(APPEND AREG_COMPILER_OPTIONS ${AREG_OPTIMIZATION} -ffunction-sections -fdata-sections)
+        # GCC 13 to 16 emit wrong code for an IPA-CP clone reached through a this-adjusting thunk.
+        list(APPEND AREG_COMPILER_OPTIONS -fno-ipa-cp-clone)
+        list(APPEND AREG_LDFLAGS -fno-ipa-cp-clone)
         if (NOT CYGWIN)
             list(APPEND AREG_COMPILER_OPTIONS -fvisibility=hidden "$<$<COMPILE_LANGUAGE:CXX>:-fvisibility-inlines-hidden>")
             # Calls between the exported functions of one shared library bind directly, not through the PLT.

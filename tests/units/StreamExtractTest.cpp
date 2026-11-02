@@ -74,20 +74,21 @@ TEST(StreamExtractTest, string_round_trip)
 }
 
 /**
- * \brief   A string with no terminator ends at the end of the data.
+ * \brief   A string whose count is larger than the data reads empty and consumes the rest of the data.
  **/
-TEST(StreamExtractTest, string_without_terminator)
+TEST(StreamExtractTest, string_with_count_beyond_data)
 {
-    constexpr uint8_t data[]{ 'a', 'b', 'c' };
+    constexpr uint8_t data[]{ 5u, 0u, 0u, 0u, 'a', 'b', 'c' };
     areg::MessageEnvelope msg;
     msg.init_envelope(areg::EventHeader{ }, 16u);
     msg.write(data, static_cast<uint32_t>(std::size(data)));
     msg.move_to_begin();
 
-    std::string value;
+    std::string value{ "old" };
     msg >> value;
 
-    EXPECT_EQ(value, "abc");
+    EXPECT_TRUE(value.empty());
+    EXPECT_TRUE(msg.is_end());
 }
 
 /**
@@ -337,29 +338,7 @@ TEST(StreamExtractTest, areg_wide_string_at_odd_address_before_page_end)
 }
 
 /**
- * \brief   A length-prefixed wide string at an odd address just before a page end is read back whole.
- **/
-TEST(StreamExtractTest, binary_wide_string_at_odd_address_before_page_end)
-{
-    areg::SharedBuffer buf;
-    const uint32_t prefix{ prefix_before_page_end(buf) };
-    write_prefix(buf, prefix);
-    buf.write_string_bin(areg::WideString(L"wide"));
-    buf << MARKER;
-    ASSERT_TRUE(is_odd_before_page_end(buf, prefix));
-
-    skip_prefix(buf, prefix);
-    areg::WideString text;
-    uint32_t last{ 0u };
-    EXPECT_NE(buf.read_string_bin(text), 0u);
-    buf >> last;
-
-    EXPECT_EQ(text.data(), std::wstring(L"wide"));
-    EXPECT_EQ(last, MARKER);
-}
-
-/**
- * \brief   Wide strings start at every byte offset and are read back whole by each of the three readers.
+ * \brief   Wide strings start at every byte offset and are read back whole by each reader.
  **/
 TEST(StreamExtractTest, wide_strings_at_every_byte_offset)
 {
@@ -370,7 +349,7 @@ TEST(StreamExtractTest, wide_strings_at_every_byte_offset)
         write_prefix(buf, offset);
         buf << longText;
         buf.write(areg::WideString(L"wide"));
-        buf.write_string_bin(areg::WideString(L"binary"));
+        buf << areg::WideString(L"binary");
         buf << std::wstring() << MARKER;
 
         skip_prefix(buf, offset);
@@ -381,7 +360,7 @@ TEST(StreamExtractTest, wide_strings_at_every_byte_offset)
         uint32_t last{ 0u };
         buf >> first;
         buf.read(second);
-        EXPECT_NE(buf.read_string_bin(third), 0u) << "offset " << offset;
+        buf >> third;
         buf >> empty >> last;
 
         EXPECT_EQ(first, longText) << "offset " << offset;

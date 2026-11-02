@@ -120,8 +120,7 @@ public:
                 , uint32_t       blockSize = areg::BLOCK_SIZE);
 
     /**
-     * \brief   Constructs and writes a null-terminated ASCII string (including
-     *          the terminating NUL character).
+     * \brief   Constructs and writes the string in the stream string format.
      *
      * \param   textString  The source string; nullptr is treated as "".
      * \param   blockSize   Allocation increment (default: areg::BLOCK_SIZE).
@@ -129,8 +128,7 @@ public:
     explicit SharedBuffer(const char* textString, uint32_t blockSize = areg::BLOCK_SIZE);
 
     /**
-     * \brief   Constructs and writes a null-terminated wide string (including
-     *          the terminating NUL character).
+     * \brief   Constructs and writes the wide string in the stream string format.
      *
      * \param   textString  The source string; nullptr is treated as L"".
      * \param   blockSize   Allocation increment (default: areg::BLOCK_SIZE).
@@ -239,18 +237,14 @@ public:
 // OutStream interface overrides
 //////////////////////////////////////////////////////////////////////////
 public:
+    using BufferBase::write;
+
 
     /** Serialises a SharedBuffer (length prefix + data) into this buffer. **/
     uint32_t write(const SharedBuffer& buf) final;
 
     /** Appends raw bytes at the end of written data. **/
     uint32_t write(const uint8_t* buf, uint32_t size) final;
-
-    /** Appends a null-terminated ASCII string (includes NUL terminator). **/
-    uint32_t write(const String& ascii) final;
-
-    /** Appends a null-terminated wide string (includes NUL terminator). **/
-    uint32_t write(const WideString& wide) final;
 
     /** No-op for in-memory buffers. **/
     void flush() noexcept final;
@@ -268,15 +262,11 @@ public:
 // InStream interface overrides
 //////////////////////////////////////////////////////////////////////////
 public:
+    using BufferBase::read;
+
 
     /** Deserialises a length-prefixed byte sequence into a SharedBuffer. **/
     uint32_t read(SharedBuffer& buf) const noexcept final;
-
-    /** Reads a null-terminated ASCII string from the current read position. **/
-    uint32_t read(String& ascii) const final;
-
-    /** Reads a null-terminated wide string from the current read position. **/
-    uint32_t read(WideString& wide) const final;
 
     /** Copies bytes from the current read position into buf. **/
     uint32_t read(uint8_t* buf, uint32_t size) const noexcept final;
@@ -510,26 +500,6 @@ public:
     template <typename T>
     inline uint32_t write_array(const T* data, uint32_t count) noexcept;
 
-public:
-
-    /** Write char string: uint32_t(byte_count) + raw bytes (no NUL on wire). **/
-    inline uint32_t write_string_bin(const char* data, uint32_t len) noexcept;
-
-    /** Write wide-char string: uint32_t(byte_count) + raw bytes (no NUL on wire). **/
-    inline uint32_t write_string_bin(const wchar_t* data, uint32_t len) noexcept;
-
-    /** Write areg::String in binary format: uint32_t(byte_count) + raw bytes (no NUL). **/
-    inline uint32_t write_string_bin(const String& str) noexcept;
-
-    /** Write areg::WideString in binary format: uint32_t(byte_count) + raw bytes (no NUL). **/
-    inline uint32_t write_string_bin(const WideString& str) noexcept;
-
-    /** Read binary-format char string. Returns total bytes consumed (header + payload), 0 on failure. **/
-    uint32_t read_string_bin(String& str) const noexcept;
-
-    /** Read binary-format wide-char string. Returns total bytes consumed (header + payload), 0 on failure. **/
-    uint32_t read_string_bin(WideString& str) const noexcept;
-
 //////////////////////////////////////////////////////////////////////////
 // IOStream protected overrides
 //////////////////////////////////////////////////////////////////////////
@@ -542,6 +512,13 @@ protected:
     /** Returns bytes available to write (capacity minus written data). **/
     [[nodiscard]]
     uint32_t size_writable() const noexcept final;
+
+    /**
+     * \brief   Returns the address of 'size' bytes at the read position and moves past them; nullptr
+     *          if fewer bytes are left.
+     **/
+    [[nodiscard]]
+    const uint8_t* read_view(uint32_t size) const noexcept final;
 
 //////////////////////////////////////////////////////////////////////////
 // SharedBuffer protected overrides
@@ -907,42 +884,8 @@ inline uint32_t SharedBuffer::write_array(const T* data, uint32_t count) noexcep
     return write_data(reinterpret_cast<const uint8_t*>(data), static_cast<uint32_t>(sizeof(T)) * count);
 }
 
-inline uint32_t SharedBuffer::write_string_bin(const char* data, uint32_t len) noexcept
-{
-    const uint32_t byte_count = len;
-    if (write_data(reinterpret_cast<const uint8_t*>(&byte_count), sizeof(uint32_t)) != sizeof(uint32_t))
-        return 0u;
-    if ((byte_count == 0u) || (data == nullptr))
-        return sizeof(uint32_t);
-    const uint32_t written = write_data(reinterpret_cast<const uint8_t*>(data), byte_count);
-    return sizeof(uint32_t) + written;
-}
-
-inline uint32_t SharedBuffer::write_string_bin(const wchar_t* data, uint32_t len) noexcept
-{
-    const uint32_t byte_count = len * static_cast<uint32_t>(sizeof(wchar_t));
-    if (write_data(reinterpret_cast<const uint8_t*>(&byte_count), sizeof(uint32_t)) != sizeof(uint32_t))
-        return 0u;
-    if ((byte_count == 0u) || (data == nullptr))
-        return sizeof(uint32_t);
-    const uint32_t written = write_data(reinterpret_cast<const uint8_t*>(data), byte_count);
-    return sizeof(uint32_t) + written;
-}
-
-inline uint32_t SharedBuffer::write_string_bin(const String& str) noexcept
-{
-    const uint32_t len = (str.length() > 0) ? static_cast<uint32_t>(str.length()) : 0u;
-    return write_string_bin(str.as_string(), len);
-}
-
-inline uint32_t SharedBuffer::write_string_bin(const WideString& str) noexcept
-{
-    const uint32_t len = (str.length() > 0) ? static_cast<uint32_t>(str.length()) : 0u;
-    return write_string_bin(str.as_string(), len);
-}
-
 template<typename T>
-inline std::enable_if_t<std::is_arithmetic_v<T>, SharedBuffer&>
+inline std::enable_if_t<std::is_arithmetic_v<T> && !std::is_same_v<T, wchar_t>, SharedBuffer&>
 operator << (SharedBuffer& stream, const T& value)
 {
     stream.write_pod(value);
@@ -950,71 +893,10 @@ operator << (SharedBuffer& stream, const T& value)
 }
 
 template<typename T>
-inline std::enable_if_t<std::is_arithmetic_v<T>, const SharedBuffer&>
+inline std::enable_if_t<std::is_arithmetic_v<T> && !std::is_same_v<T, wchar_t>, const SharedBuffer&>
 operator >> (const SharedBuffer& stream, T& value)
 {
     stream.read(reinterpret_cast<uint8_t*>(&value), sizeof(T));
-    return stream;
-}
-
-template<typename CharType>
-inline const SharedBuffer& operator >> (const SharedBuffer& stream, std::basic_string<CharType>& input)
-{
-    input.clear();
-
-    const uint32_t pos  = stream.position();
-    const uint32_t used = stream.size_used();
-    if (pos >= used)
-        return stream;
-
-    const uint32_t avail     = used - pos;
-    const uint32_t max_chars = avail / static_cast<uint32_t>(sizeof(CharType));
-    if (max_chars == 0u)
-        return stream;
-
-    const uint8_t* const src = stream.buffer() + pos;
-    constexpr uint32_t single = static_cast<uint32_t>(sizeof(CharType));
-    const bool aligned = (reinterpret_cast<uintptr_t>(src) % alignof(CharType)) == 0u;
-
-    uint32_t len = 0u;
-    if constexpr (std::is_same_v<CharType, char>)
-    {
-        const void* nul = ::memchr(src, '\0', max_chars);
-        len = (nul != nullptr)
-            ? static_cast<uint32_t>(static_cast<const uint8_t*>(nul) - src)
-            : max_chars;
-    }
-    else if (std::is_same_v<CharType, wchar_t> && aligned)
-    {
-        const wchar_t* const wide = reinterpret_cast<const wchar_t*>(src);
-        const wchar_t* nul = static_cast<const wchar_t*>(std::wmemchr(wide, L'\0', max_chars));
-        len = (nul != nullptr) ? static_cast<uint32_t>(nul - wide) : max_chars;
-    }
-    else
-    {
-        // The characters may start at any byte offset, so each one is copied out, not read in place.
-        CharType ch{ };
-        while (len < max_chars)
-        {
-            ::memcpy(&ch, src + len * single, single);
-            if (ch == static_cast<CharType>('\0'))
-                break;
-
-            ++len;
-        }
-    }
-
-    if (len > 0u)
-    {
-        input.resize(len);
-        ::memcpy(input.data(), src, static_cast<size_t>(len) * single);
-    }
-
-    // Advance past the characters read + the NUL terminator (if present).
-    const bool has_nul    = (len < max_chars);
-    const uint32_t advance = (has_nul ? (len + 1u) : len) * static_cast<uint32_t>(sizeof(CharType));
-    stream.set_position(static_cast<int32_t>(advance), Cursor::SeekOrigin::Current);
-
     return stream;
 }
 

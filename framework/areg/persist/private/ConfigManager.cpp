@@ -1034,13 +1034,13 @@ std::vector<Identifier> ConfigManager::remote_service_connections(const String& 
     return (prop != nullptr ? prop->identifier_list(areg::ConnectionIdentifiers).data() : std::vector<Identifier>());
 }
 
-String ConfigManager::remote_service_name(const String& service, const String& connectType) const noexcept
+String ConfigManager::remote_service_name(const String& service, const String& /*connectType*/) const noexcept
 {
     Lock lock(mLock);
 
     constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::ServiceName };
     constexpr const areg::ConfigKey& key{ areg::service_name() };
-    const PropertyValue* prop = property_value(service, key.property, connectType, confKey);
+    const PropertyValue* prop = property_value(service, key.property, key.position, confKey);
     return (prop != nullptr ? prop->as_string() : String());
 }
 

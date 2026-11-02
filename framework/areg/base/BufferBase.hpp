@@ -97,8 +97,7 @@ public:
               , uint32_t       blockSize = areg::BLOCK_SIZE);
 
     /**
-     * \brief   Constructs and writes a null-terminated ASCII string (including
-     *          the terminating NUL character).
+     * \brief   Constructs and writes the string in the stream string format.
      *
      * \param   textString  The source string; nullptr is treated as "".
      * \param   blockSize   Allocation increment (default: areg::BLOCK_SIZE).
@@ -106,8 +105,7 @@ public:
     explicit BufferBase(const char* textString, uint32_t blockSize = areg::BLOCK_SIZE);
 
     /**
-     * \brief   Constructs and writes a null-terminated wide string (including
-     *          the terminating NUL character).
+     * \brief   Constructs and writes the wide string in the stream string format.
      *
      * \param   textString  The source string; nullptr is treated as L"".
      * \param   blockSize   Allocation increment (default: areg::BLOCK_SIZE).
@@ -167,6 +165,8 @@ public:
 // OutStream interface overrides
 //////////////////////////////////////////////////////////////////////////
 public:
+    using OutStream::write;
+
 
     /**
      * \brief   Serialises a BufferBase (length prefix + data) into this buffer.
@@ -177,16 +177,6 @@ public:
      * \brief   Appends raw bytes at the end of written data.
      **/
     uint32_t write(const uint8_t* buf, uint32_t size) override;
-
-    /**
-     * \brief   Appends a null-terminated ASCII string (includes NUL terminator).
-     **/
-    uint32_t write(const String& ascii) override;
-
-    /**
-     * \brief   Appends a null-terminated wide string (includes NUL terminator).
-     **/
-    uint32_t write(const WideString& wide) override;
 
     /** No-op for in-memory buffers. **/
     void flush() noexcept override;
@@ -204,21 +194,13 @@ public:
 // InStream interface overrides
 //////////////////////////////////////////////////////////////////////////
 public:
+    using InStream::read;
+
 
     /**
      * \brief   Deserialises a length-prefixed byte sequence into a BufferBase.
      **/
     uint32_t read(SharedBuffer& buf) const noexcept override;
-
-    /**
-     * \brief   Reads a null-terminated ASCII string from the current read position.
-     **/
-    uint32_t read(String& ascii) const override;
-
-    /**
-     * \brief   Reads a null-terminated wide string from the current read position.
-     **/
-    uint32_t read(WideString& wide) const override;
 
     /**
      * \brief   Copies bytes from the current read position into buf.
@@ -433,38 +415,6 @@ public:
     template <typename T>
     inline uint32_t write_array(const T* data, uint32_t count) noexcept;
 
-public:
-
-    /**
-     * \brief   Write char string: uint32_t(byte_count) + raw bytes (no NUL on wire).
-     **/
-    inline uint32_t write_string_bin(const char* data, uint32_t len) noexcept;
-
-    /**
-     * \brief   Write wide-char string: uint32_t(byte_count) + raw bytes (no NUL on wire).
-     **/
-    inline uint32_t write_string_bin(const wchar_t* data, uint32_t len) noexcept;
-
-    /**
-     * \brief   Write areg::String in binary format: uint32_t(byte_count) + raw bytes (no NUL).
-     **/
-    inline uint32_t write_string_bin(const String& str) noexcept;
-
-    /**
-     * \brief   Write areg::WideString in binary format: uint32_t(byte_count) + raw bytes (no NUL).
-     **/
-    inline uint32_t write_string_bin(const WideString& str) noexcept;
-
-    /**
-     * \brief   Read binary-format char string. Returns total bytes consumed (header + payload), 0 on failure.
-     **/
-    uint32_t read_string_bin(String& str) const noexcept;
-
-    /**
-     * \brief   Read binary-format wide-char string. Returns total bytes consumed (header + payload), 0 on failure.
-     **/
-    uint32_t read_string_bin(WideString& str) const noexcept;
-
 //////////////////////////////////////////////////////////////////////////
 // IOStream protected overrides
 //////////////////////////////////////////////////////////////////////////
@@ -481,6 +431,20 @@ protected:
      **/
     [[nodiscard]]
     uint32_t size_writable() const noexcept override;
+
+    /**
+     * \brief   Returns the address of 'size' bytes at the read position and moves past them; nullptr
+     *          if fewer bytes are left.
+     **/
+    [[nodiscard]]
+    const uint8_t* read_view(uint32_t size) const noexcept override;
+
+    /**
+     * \brief   Returns the address of 'size' writable bytes at the write position, growing the buffer
+     *          if needed, and moves past them; nullptr if the buffer cannot take them.
+     **/
+    [[nodiscard]]
+    uint8_t* write_view(uint32_t size) noexcept override;
 
 //////////////////////////////////////////////////////////////////////////
 // BufferBase protected overrides
@@ -828,40 +792,6 @@ inline uint32_t BufferBase::write_array(const T* data, uint32_t count) noexcept
         return 0u;
 
     return write_data(reinterpret_cast<const uint8_t*>(data), static_cast<uint32_t>(sizeof(T)) * count);
-}
-
-inline uint32_t BufferBase::write_string_bin(const char* data, uint32_t len) noexcept
-{
-    const uint32_t byte_count = len;
-    if (write_data(reinterpret_cast<const uint8_t*>(&byte_count), sizeof(uint32_t)) != sizeof(uint32_t))
-        return 0u;
-    if ((byte_count == 0u) || (data == nullptr))
-        return sizeof(uint32_t);
-    const uint32_t written = write_data(reinterpret_cast<const uint8_t*>(data), byte_count);
-    return sizeof(uint32_t) + written;
-}
-
-inline uint32_t BufferBase::write_string_bin(const wchar_t* data, uint32_t len) noexcept
-{
-    const uint32_t byte_count = len * static_cast<uint32_t>(sizeof(wchar_t));
-    if (write_data(reinterpret_cast<const uint8_t*>(&byte_count), sizeof(uint32_t)) != sizeof(uint32_t))
-        return 0u;
-    if ((byte_count == 0u) || (data == nullptr))
-        return sizeof(uint32_t);
-    const uint32_t written = write_data(reinterpret_cast<const uint8_t*>(data), byte_count);
-    return sizeof(uint32_t) + written;
-}
-
-inline uint32_t BufferBase::write_string_bin(const String& str) noexcept
-{
-    const uint32_t len = (str.length() > 0) ? static_cast<uint32_t>(str.length()) : 0u;
-    return write_string_bin(str.as_string(), len);
-}
-
-inline uint32_t BufferBase::write_string_bin(const WideString& str) noexcept
-{
-    const uint32_t len = (str.length() > 0) ? static_cast<uint32_t>(str.length()) : 0u;
-    return write_string_bin(str.as_string(), len);
 }
 
 } // namespace areg

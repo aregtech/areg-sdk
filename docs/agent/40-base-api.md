@@ -7,8 +7,9 @@ the runtime -- the application, components, threads, timers, time, files and buf
 **Operators come for free.** `String`, `WideString`, `DateTime`, `SharedBuffer` and
 every container here carry `=`, `==`, `!=` and the stream operators `>>` / `<<`
 (`areg::InStream` / `areg::OutStream`), as does every `Structure` the generator writes.
-`String` and `WideString` add `+` and `+=`, against their own type, a `const char *`,
-a single character and the matching `std::string`, in either order.
+`String` and `WideString` add `+`, `+=` with their own type, `const char *`, a
+character, `std::string`; `+` and comparisons in either order. `s + n` with a number
+fails: write `s + String::make_string(n)`.
 
 **A list here is a floor, not a limit.** It says what you may use without looking it
 up. It does not say what is missing, so never rewrite working code to route around an
@@ -36,16 +37,16 @@ declared on that base. That is an implementation detail; you call them all on a
 
 | Call | Signature | Header |
 |---|---|---|
-| `as_string()` | `const char * as_string() const noexcept` | `StringBase.hpp:386` |
-| `is_empty()` | `bool is_empty() const noexcept` | `StringBase.hpp:351` |
-| `clear()` | `void clear() noexcept` | `StringBase.hpp:426` |
-| `length()` | `areg::CharCount length() const noexcept` | `StringBase.hpp:357` |
-| `compare(...)` | `areg::Ordering compare(const String & other, bool caseSensitive = true) const noexcept` | `StringBase.hpp:570` |
-| `find_first(...)` | `areg::CharPos find_first(const char * phrase, areg::CharPos startPos = areg::START_POS, bool caseSensitive = true, bool wholeWord = false) const noexcept` | `StringBase.hpp:494` |
-| `find_last(...)` | `areg::CharPos find_last(const char * phrase, areg::CharPos startPos = areg::END_POS, bool caseSensitive = true) const noexcept` | `StringBase.hpp:543` |
+| `as_string()` | `const char * as_string() const noexcept` | `StringBase.hpp:600` |
+| `is_empty()` | `bool is_empty() const noexcept` | `StringBase.hpp:565` |
+| `clear()` | `void clear() noexcept` | `StringBase.hpp:640` |
+| `length()` | `areg::CharCount length() const noexcept` | `StringBase.hpp:571` |
+| `compare(...)` | `areg::Ordering compare(const String & other, bool caseSensitive = true) const noexcept` | `StringBase.hpp:784` |
+| `find_first(...)` | `areg::CharPos find_first(const char * phrase, areg::CharPos startPos = areg::START_POS, bool caseSensitive = true, bool wholeWord = false) const noexcept` | `StringBase.hpp:708` |
+| `find_last(...)` | `areg::CharPos find_last(const char * phrase, areg::CharPos startPos = areg::END_POS, bool caseSensitive = true) const noexcept` | `StringBase.hpp:757` |
 
-Overloads of `compare`, `find_first` and `find_last` also take a single `char`,
-`std::string` and `std::string_view`, and so do `==` and `!=`. **This is the substring
+`find_first` and `find_last` also take a `char`; `compare`, `==` and `!=` also take
+`std::string` and `std::string_view`, and `==` / `!=` a `char`. **This is the substring
 search**; `find_phrase` and `find_first_phrase` are protected and will not compile.
 
 **A search that found nothing returns `areg::END_POS`, not `areg::INVALID_POS`**, whose
@@ -62,9 +63,9 @@ static form writes into a buffer you own. Both exist and both are correct.
 
 | Call | Signature | Header |
 |---|---|---|
-| `format(...)` | `String & format(const char * format, ...)` | `StringBase.hpp:1202` |
-| `format_list(...)` | `String & format_list(const char * format, va_list argptr)` | `StringBase.hpp:1212` |
-| `String::format_string(...)` | `static int32_t format_string(char * strDst, int32_t count, const char * format, ...)` | `StringBase.hpp:1165` |
+| `format(...)` | `String & format(const char * format, ...)` | `StringBase.hpp:1438` |
+| `format_list(...)` | `String & format_list(const char * format, va_list argptr)` | `StringBase.hpp:1448` |
+| `String::format_string(...)` | `static int32_t format_string(char * strDst, int32_t count, const char * format, ...)` | `StringBase.hpp:1401` |
 
 ```cpp
 areg::String reason;
@@ -106,7 +107,7 @@ Every `from_*` returns `String &`, so they chain.
 
 > **These containers do not expose `begin()` and `end()`.**
 > A range-`for` over one does not compile; iterate by index, or over `list.data()`
-> (`ArrayList.hpp:194`), the wrapped `std::vector`, `std::list` or `std::unordered_map`.
+> (`ArrayList.hpp:207`), the wrapped `std::vector`, `std::list` or `std::unordered_map`.
 
 ```cpp
 for (uint32_t i = 0; i < list.size(); ++ i)
@@ -117,15 +118,15 @@ for (uint32_t i = 0; i < list.size(); ++ i)
 
 | Container | Template | Size | Empty | Element access | Membership |
 |---|---|---|---|---|---|
-| `ArrayList` | `<VALUE>` | `uint32_t size() const noexcept` (`ArrayList.hpp:172`) | `bool is_empty() const noexcept` (`:166`) | `operator[](uint32_t)` (`:102`), `value_at(uint32_t)` (`:237`), `set_value_at(uint32_t, const VALUE &)` (`:221`) | `contains(const VALUE &, uint32_t startAt = 0)` (`:188`) |
+| `ArrayList` | `<VALUE>` | `uint32_t size() const noexcept` (`ArrayList.hpp:185`) | `bool is_empty() const noexcept` (`:179`) | `operator[](uint32_t)` (`:106`), `value_at(uint32_t)` (`:250`), `set_value_at(uint32_t, const VALUE &)` (`:234`) | `contains(const VALUE &, uint32_t startAt = 0)` (`:201`) |
 | `HashMap` | `<KEY, VALUE>` | `uint32_t size() const noexcept` (`HashMap.hpp:181`) | `bool is_empty() const noexcept` (`:175`) | `operator[](const KEY &)` (`:105`), `value_at(const KEY &)` (`:504`), `set_value_at(const KEY &, const VALUE &)` (`:281`) | `contains(const KEY &)` (`:226`) |
 | `LinkedList` | `<VALUE>` | `uint32_t size() const noexcept` (`LinkedList.hpp:195`) | `bool is_empty() const noexcept` (`:189`) | `operator[](uint32_t)` (`:89`), `value_at(uint32_t)` (`:405`) | `contains(const VALUE &)` (`:254`) |
 
 `HashMap` and `LinkedList` also index by position (`MAPPOS`, `LISTPOS`) for cursor
 style traversal. Index access is enough for ordinary code.
 
-Add: `add(v)` (`ArrayList.hpp:258`), `push_last(v)` (`LinkedList.hpp:518`), `map[key] = v`.
-Remove: `remove_at(index)` (`ArrayList.hpp:387`), `remove_at(key)` (`HashMap.hpp:367`).
+Add: `add(v)` (`ArrayList.hpp:271`), `push_last(v)` (`LinkedList.hpp:518`), `map[key] = v`.
+Remove: `remove_at(index)` (`ArrayList.hpp:400`), `remove_at(key)` (`HashMap.hpp:367`).
 All three: `clear()`, `release()`, `find(...)`.
 
 A container in working code, built and run by CI: `recipes/09-shared-types/`, where the

@@ -61,6 +61,13 @@ TEST(IdentifierTest, construct_from_every_name_type)
     EXPECT_TRUE(fromString.is_valid());
 }
 
+TEST(IdentifierTest, null_name_gives_the_bad_name_and_keeps_the_value)
+{
+    const areg::Identifier id(7u, static_cast<const char *>(nullptr));
+    EXPECT_EQ(id.value(), 7u);
+    EXPECT_EQ(id.name(), areg::Identifier::BAD_IDENTIFIER_NAME.data());
+}
+
 TEST(IdentifierTest, copy_and_move_keep_the_value_and_the_name)
 {
     areg::Identifier source(5u, "Five");

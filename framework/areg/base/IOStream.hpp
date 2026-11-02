@@ -25,6 +25,7 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 
+#include <cstring>
 #include <deque>
 #include <list>
 #include <map>
@@ -173,6 +174,35 @@ public:
     [[nodiscard]]
     inline uint32_t bounded_count(uint32_t count) const noexcept;
 
+    /**
+     * \brief   Reads a String written in the stream string format. Returns the number of bytes read.
+     *
+     * \param[out] ascii       String to receive the data.
+     * \return  The number of bytes read.
+     **/
+    uint32_t read( String& ascii ) const;
+
+    /**
+     * \brief   Reads a WideString written in the stream string format. Returns the number of bytes read.
+     *
+     * \param[out] wide    WideString to receive the data.
+     * \return  The number of bytes read.
+     **/
+    uint32_t read( WideString& wide ) const;
+
+    /**
+     * \brief   Reads a string in the stream string format: a uint32_t count of code units, then the
+     *          units. Narrow text is read as bytes; wide text is UTF-16LE on the stream and is
+     *          converted when the character type has 4 bytes. A count larger than the readable data
+     *          consumes the rest of the stream and gives an empty string.
+     *
+     * \tparam  CharType    Character type of 1, 2 or 4 bytes.
+     * \param[out] output   The string to receive the text.
+     * \return  The number of bytes read.
+     **/
+    template<typename CharType>
+    uint32_t read_text(std::basic_string<CharType>& output) const;
+
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
@@ -199,22 +229,6 @@ public:
     virtual uint32_t read(SharedBuffer& buffer ) const = 0;
 
     /**
-     * \brief   Reads string data from stream into a String. Returns the number of bytes read.
-     *
-     * \param[out] ascii       String to receive the data.
-     * \return  The number of bytes read.
-     **/
-    virtual uint32_t read( String& ascii ) const = 0;
-
-    /**
-     * \brief   Reads wide-string data from stream into a WideString. Returns the number of bytes read.
-     *
-     * \param[out] wide    WideString to receive the data.
-     * \return  The number of bytes read.
-     **/
-    virtual uint32_t read( WideString& wide ) const = 0;
-
-    /**
      * \brief   Resets the cursor to the beginning of the stream.
      **/
     virtual void reset() const noexcept = 0;
@@ -225,6 +239,21 @@ protected:
      **/
     [[nodiscard]]
     virtual uint32_t size_readable() const noexcept = 0;
+
+    /**
+     * \brief   Returns the address of 'size' contiguous bytes at the read position and moves the
+     *          position past them; nullptr if the stream cannot give them, then nothing moves.
+     *
+     * \param   size    The number of bytes to read.
+     **/
+    [[nodiscard]]
+    virtual const uint8_t* read_view(uint32_t size) const noexcept = 0;
+
+private:
+    /**
+     * \brief   Reads and drops up to 'size' bytes. Returns the number of bytes dropped.
+     **/
+    inline uint32_t _skip(uint32_t size) const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -287,6 +316,48 @@ public:
      **/
     inline bool write64_real( double value );
 
+    /**
+     * \brief   Writes a String in the stream string format. Returns the number of bytes written.
+     *
+     * \param   ascii       The string to write.
+     * \return  The number of bytes written.
+     **/
+    uint32_t write( const String& ascii );
+
+    /**
+     * \brief   Writes a WideString in the stream string format. Returns the number of bytes written.
+     *
+     * \param   wide    The wide string to write.
+     * \return  The number of bytes written.
+     **/
+    uint32_t write( const WideString& wide );
+
+    /**
+     * \brief   Writes a string in the stream string format: a uint32_t count of code units, then the
+     *          units, no terminator. Narrow text is written as bytes; wide text is written as
+     *          UTF-16LE, so a 4-byte character above U+FFFF becomes a surrogate pair and a value
+     *          above U+10FFFF becomes U+FFFD.
+     *
+     * \tparam  CharType    Character type of 1, 2 or 4 bytes.
+     * \param   text        The characters to write; nullptr writes an empty string.
+     * \param   count       The number of characters in 'text'.
+     * \return  The number of bytes written; 0 if nothing was written.
+     **/
+    template<typename CharType>
+    uint32_t write_text(const CharType* text, uint32_t count);
+
+    /**
+     * \brief   Writes the characters as stream units without a count: narrow text as bytes, wide
+     *          text as UTF-16LE, with the same conversion as write_text().
+     *
+     * \tparam  CharType    Character type of 1, 2 or 4 bytes.
+     * \param   text        The characters to write.
+     * \param   count       The number of characters in 'text'.
+     * \return  The number of bytes written.
+     **/
+    template<typename CharType>
+    uint32_t write_units(const CharType* text, uint32_t count);
+
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
@@ -313,22 +384,6 @@ public:
     virtual uint32_t write( const SharedBuffer& buffer ) = 0;
 
     /**
-     * \brief   Writes a String to stream. Returns the number of bytes written.
-     *
-     * \param   ascii       The ASCII string to write.
-     * \return  The number of bytes written.
-     **/
-    virtual uint32_t write( const String& ascii )  = 0;
-
-    /**
-     * \brief   Writes a WideString to stream. Returns the number of bytes written.
-     *
-     * \param   wide    The wide string to write.
-     * \return  The number of bytes written.
-     **/
-    virtual uint32_t write( const WideString& wide ) = 0;
-
-    /**
      * \brief   Flushes cached data to the output stream.
      **/
     virtual void flush() noexcept = 0;
@@ -348,6 +403,16 @@ protected:
      **/
     [[nodiscard]]
     virtual uint32_t size_writable() const noexcept = 0;
+
+    /**
+     * \brief   Returns the address of 'size' contiguous bytes at the write position, which the caller
+     *          fills, and moves the position past them; nullptr if the stream cannot give them, then
+     *          nothing moves.
+     *
+     * \param   size    The number of bytes to write.
+     **/
+    [[nodiscard]]
+    virtual uint8_t* write_view(uint32_t size) noexcept = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -481,6 +546,160 @@ private:
  * \brief   InStream convenience helpers -- inline implementations
  ************************************************************************/
 
+namespace text_units
+{
+    //!< Number of UTF-16 units converted per step.
+    constexpr uint32_t CHUNK{ 256u };
+
+    /**
+     * \brief   Returns the number of UTF-16 units of 4-byte characters and sets 'simple' to true
+     *          if no character is above U+FFFF.
+     **/
+    template<typename CharType>
+    inline uint32_t count_units(const CharType* text, uint32_t count, bool& simple) noexcept
+    {
+        uint32_t over{ 0u };
+        for (uint32_t i = 0u; i < count; ++i)
+        {
+            over |= (static_cast<uint32_t>(text[i]) & 0xFFFF0000u);
+        }
+
+        simple = (over == 0u);
+        uint32_t units{ count };
+        if (simple == false)
+        {
+            for (uint32_t i = 0u; i < count; ++i)
+            {
+                units += ((static_cast<uint32_t>(text[i]) - 0x10000u) <= 0xFFFFFu) ? 1u : 0u;
+            }
+        }
+
+        return units;
+    }
+
+    /**
+     * \brief   Writes 4-byte characters as UTF-16LE to 'dst' of any alignment and returns the bytes
+     *          written. A value above U+10FFFF is written as U+FFFD.
+     **/
+    template<typename CharType>
+    inline uint32_t encode(const CharType* text, uint32_t count, uint8_t* dst, bool simple) noexcept
+    {
+        if (simple)
+        {
+            for (size_t i = 0u; i < count; ++i)
+            {
+                const uint16_t unit{ static_cast<uint16_t>(text[i]) };
+                std::memcpy(dst + i * 2u, &unit, 2u);
+            }
+
+            return count * 2u;
+        }
+
+        uint8_t* out{ dst };
+        for (uint32_t i = 0u; i < count; ++i)
+        {
+            const uint32_t code{ static_cast<uint32_t>(text[i]) };
+            if (code < 0x10000u)
+            {
+                const uint16_t unit{ static_cast<uint16_t>(code) };
+                std::memcpy(out, &unit, 2u);
+                out += 2u;
+            }
+            else if (code <= 0x10FFFFu)
+            {
+                const uint16_t high{ static_cast<uint16_t>(0xD800u | ((code - 0x10000u) >> 10u)) };
+                const uint16_t low{ static_cast<uint16_t>(0xDC00u | ((code - 0x10000u) & 0x3FFu)) };
+                std::memcpy(out, &high, 2u);
+                std::memcpy(out + 2u, &low, 2u);
+                out += 4u;
+            }
+            else
+            {
+                const uint16_t unit{ static_cast<uint16_t>(0xFFFDu) };
+                std::memcpy(out, &unit, 2u);
+                out += 2u;
+            }
+        }
+
+        return static_cast<uint32_t>(out - dst);
+    }
+
+    /**
+     * \brief   Reads 'units' UTF-16LE units at 'src' of any alignment into 4-byte characters at 'dst'
+     *          and returns the characters written. A surrogate pair becomes one character, a lone
+     *          surrogate stays as it is; 'high' carries a high surrogate to the next call.
+     **/
+    template<typename CharType>
+    inline uint32_t decode(const uint8_t* src, uint32_t units, CharType* dst, uint32_t& high) noexcept
+    {
+        if (high == 0u)
+        {
+            uint32_t surrogates{ 0u };
+            for (size_t i = 0u; i < units; ++i)
+            {
+                uint16_t unit;
+                std::memcpy(&unit, src + i * 2u, 2u);
+                surrogates |= ((static_cast<uint32_t>(unit) - 0xD800u) < 0x800u) ? 1u : 0u;
+                dst[i] = static_cast<CharType>(unit);
+            }
+
+            if (surrogates == 0u)
+                return units;
+        }
+
+        const auto load = [src](size_t at) -> uint32_t
+        {
+            uint16_t unit;
+            std::memcpy(&unit, src + at * 2u, 2u);
+            return unit;
+        };
+
+        uint32_t result{ 0u };
+        size_t i{ 0u };
+        if (high != 0u)
+        {
+            const uint32_t low{ load(0u) };
+            if ((low & 0xFC00u) == 0xDC00u)
+            {
+                dst[result ++] = static_cast<CharType>(0x10000u + ((high - 0xD800u) << 10u) + (low - 0xDC00u));
+                i = 1u;
+            }
+            else
+            {
+                dst[result ++] = static_cast<CharType>(high);
+            }
+
+            high = 0u;
+        }
+
+        while (i < units)
+        {
+            const uint32_t unit{ load(i) };
+            if ((unit & 0xFC00u) == 0xD800u)
+            {
+                if ((i + 1u) == units)
+                {
+                    high = unit;
+                    break;
+                }
+
+                const uint32_t low{ load(i + 1u) };
+                if ((low & 0xFC00u) == 0xDC00u)
+                {
+                    dst[result ++] = static_cast<CharType>(0x10000u + ((unit - 0xD800u) << 10u) + (low - 0xDC00u));
+                    i += 2u;
+                    continue;
+                }
+            }
+
+            dst[result ++] = static_cast<CharType>(unit);
+            ++ i;
+        }
+
+        return result;
+    }
+} // namespace text_units
+
 inline uint8_t areg::InStream::read8_bits() const noexcept
 {
     uint8_t result{ 0u };
@@ -529,6 +748,112 @@ inline uint32_t areg::InStream::bounded_count(uint32_t count) const noexcept
     return (count < readable ? count : readable);
 }
 
+inline uint32_t areg::InStream::_skip(uint32_t size) const noexcept
+{
+    uint8_t scratch[256];
+    uint32_t result{ 0u };
+    while (result < size)
+    {
+        const uint32_t part{ (size - result) < sizeof(scratch) ? (size - result) : static_cast<uint32_t>(sizeof(scratch)) };
+        const uint32_t done{ read(scratch, part) };
+        result += done;
+        if (done != part)
+            break;
+    }
+
+    return result;
+}
+
+template<typename CharType>
+inline uint32_t areg::InStream::read_text(std::basic_string<CharType>& output) const
+{
+    static_assert((sizeof(CharType) == 1u) || (sizeof(CharType) == 2u) || (sizeof(CharType) == 4u), "Unsupported character type");
+    constexpr uint32_t UNIT{ sizeof(CharType) == 1u ? 1u : 2u };
+    constexpr uint32_t HEAD{ static_cast<uint32_t>(sizeof(uint32_t)) };
+
+    output.clear();
+    uint32_t count{ 0u };
+    const uint8_t* const head{ read_view(HEAD) };
+    if (head != nullptr)
+    {
+        std::memcpy(&count, head, HEAD);
+        if (count == 0u)
+            return HEAD;
+
+        const uint8_t* const data{ count <= (0xFFFFFFFFu / UNIT) ? read_view(count * UNIT) : nullptr };
+        if (data == nullptr)
+            return HEAD + _skip(size_readable());
+
+        if constexpr (sizeof(CharType) == 1u)
+        {
+            output.assign(reinterpret_cast<const CharType*>(data), static_cast<size_t>(count));
+        }
+        else if constexpr (sizeof(CharType) == 2u)
+        {
+            output.resize(count);
+            std::memcpy(output.data(), data, static_cast<size_t>(count) * UNIT);
+        }
+        else
+        {
+            output.resize(count);
+            uint32_t high{ 0u };
+            uint32_t length{ text_units::decode(data, count, output.data(), high) };
+            if (high != 0u)
+            {
+                output[length ++] = static_cast<CharType>(high);
+            }
+
+            output.resize(length);
+        }
+
+        return HEAD + count * UNIT;
+    }
+
+    const uint32_t done{ read(reinterpret_cast<uint8_t*>(&count), HEAD) };
+    if ((done != HEAD) || (count == 0u))
+        return done;
+
+    const uint32_t readable{ size_readable() };
+    if (count > (readable / UNIT))
+        return HEAD + _skip(readable);
+
+    output.resize(count);
+    if constexpr (sizeof(CharType) != 4u)
+    {
+        const uint32_t size{ count * UNIT };
+        const uint32_t got{ read(reinterpret_cast<uint8_t*>(output.data()), size) };
+        output.resize(got / UNIT);
+        return HEAD + got;
+    }
+    else
+    {
+        uint8_t bytes[text_units::CHUNK * 2u];
+        uint32_t length{ 0u };
+        uint32_t high{ 0u };
+        uint32_t result{ HEAD };
+        uint32_t left{ count };
+        while (left != 0u)
+        {
+            const uint32_t part{ left < text_units::CHUNK ? left : text_units::CHUNK };
+            const uint32_t got{ read(bytes, part * UNIT) };
+            result += got;
+            length += text_units::decode(bytes, got / UNIT, output.data() + length, high);
+            if (got != (part * UNIT))
+                break;
+
+            left -= part;
+        }
+
+        if (high != 0u)
+        {
+            output[length ++] = static_cast<CharType>(high);
+        }
+
+        output.resize(length);
+        return result;
+    }
+}
+
 /************************************************************************
  * \brief   OutStream convenience helpers -- inline implementations
  ************************************************************************/
@@ -563,6 +888,85 @@ inline bool areg::OutStream::write64_real( double value )
     return write(reinterpret_cast<const uint8_t*>(&value), sizeof(double)) == sizeof(double);
 }
 
+template<typename CharType>
+inline uint32_t areg::OutStream::write_text(const CharType* text, uint32_t count)
+{
+    static_assert((sizeof(CharType) == 1u) || (sizeof(CharType) == 2u) || (sizeof(CharType) == 4u), "Unsupported character type");
+    constexpr uint32_t UNIT{ sizeof(CharType) == 1u ? 1u : 2u };
+    constexpr uint32_t HEAD{ static_cast<uint32_t>(sizeof(uint32_t)) };
+    constexpr uint32_t MAX_UNITS{ (0xFFFFFFFFu - HEAD) / 4u };
+
+    if (text == nullptr)
+    {
+        count = 0u;
+    }
+
+    if (count > MAX_UNITS)
+        return 0u;
+
+    bool simple{ true };
+    uint32_t units{ count };
+    if constexpr (sizeof(CharType) == 4u)
+    {
+        units = text_units::count_units(text, count, simple);
+    }
+
+    const uint32_t bytes{ units * UNIT };
+    uint8_t* const dst{ write_view(HEAD + bytes) };
+    if (dst != nullptr)
+    {
+        std::memcpy(dst, &units, HEAD);
+        if constexpr (sizeof(CharType) != 4u)
+        {
+            if (bytes != 0u)
+            {
+                std::memcpy(dst + HEAD, text, bytes);
+            }
+        }
+        else
+        {
+            text_units::encode(text, count, dst + HEAD, simple);
+        }
+
+        return HEAD + bytes;
+    }
+
+    if (write(reinterpret_cast<const uint8_t*>(&units), HEAD) != HEAD)
+        return 0u;
+
+    return HEAD + write_units(text, count);
+}
+
+template<typename CharType>
+inline uint32_t areg::OutStream::write_units(const CharType* text, uint32_t count)
+{
+    static_assert((sizeof(CharType) == 1u) || (sizeof(CharType) == 2u) || (sizeof(CharType) == 4u), "Unsupported character type");
+    if ((text == nullptr) || (count == 0u))
+        return 0u;
+
+    if constexpr (sizeof(CharType) != 4u)
+    {
+        return write(reinterpret_cast<const uint8_t*>(text), count * static_cast<uint32_t>(sizeof(CharType)));
+    }
+    else
+    {
+        constexpr uint32_t PART{ text_units::CHUNK / 2u };
+        uint8_t bytes[text_units::CHUNK * 2u];
+        uint32_t result{ 0u };
+        while (count != 0u)
+        {
+            const uint32_t part{ count < PART ? count : PART };
+            bool simple{ true };
+            static_cast<void>(text_units::count_units(text, part, simple));
+            result += write(bytes, text_units::encode(text, part, bytes, simple));
+            text  += part;
+            count -= part;
+        }
+
+        return result;
+    }
+}
+
 /************************************************************************
  * \brief   Support streaming of primitives
  ************************************************************************/
@@ -572,7 +976,6 @@ inline bool areg::OutStream::write64_real( double value )
 //////////////////////////////////////////////////////////////////////////
 AREG_IMPLEMENT_STREAMABLE(bool)
 AREG_IMPLEMENT_STREAMABLE(char)
-AREG_IMPLEMENT_STREAMABLE(wchar_t)
 AREG_IMPLEMENT_STREAMABLE(uint8_t)
 AREG_IMPLEMENT_STREAMABLE(int16_t)
 AREG_IMPLEMENT_STREAMABLE(uint16_t)
@@ -583,74 +986,63 @@ AREG_IMPLEMENT_STREAMABLE(uint64_t)
 AREG_IMPLEMENT_STREAMABLE(float)
 AREG_IMPLEMENT_STREAMABLE(double)
 
-inline areg::OutStream& operator << (areg::OutStream& stream, const char * output)
+/**
+ * \brief   A single wchar_t is streamed as a uint32_t on every platform. A 2-byte wchar_t
+ *          receives U+FFFD for a value above U+FFFF.
+ **/
+inline const areg::InStream& operator >> (const areg::InStream& stream, wchar_t& input)
 {
-    if (output != nullptr)
+    uint32_t value{ 0u };
+    stream.read(reinterpret_cast<uint8_t*>(&value), static_cast<uint32_t>(sizeof(uint32_t)));
+    if constexpr (sizeof(wchar_t) == 2u)
     {
-        constexpr uint32_t single = static_cast<uint32_t>(sizeof(char));
-        uint32_t length = 0;
-        const char * src = output;
-        while (*src ++ != '\0')
-        {
-            ++ length;
-        }
-        
-        stream.write(reinterpret_cast<const uint8_t *>(output), (length + 1) * single);
+        input = static_cast<wchar_t>(value <= 0xFFFFu ? value : 0xFFFDu);
+    }
+    else
+    {
+        input = static_cast<wchar_t>(value);
     }
 
     return stream;
 }
 
+inline areg::OutStream& operator << (areg::OutStream& stream, const wchar_t& output)
+{
+    const uint32_t value{ static_cast<uint32_t>(output) };
+    stream.write(reinterpret_cast<const uint8_t*>(&value), static_cast<uint32_t>(sizeof(uint32_t)));
+    return stream;
+}
+
+inline areg::OutStream& operator << (areg::OutStream& stream, const char * output)
+{
+    stream.write_text(output, output != nullptr ? static_cast<uint32_t>(std::char_traits<char>::length(output)) : 0u);
+    return stream;
+}
+
 inline areg::OutStream& operator << (areg::OutStream& stream, const wchar_t * output)
 {
-    if (output != nullptr)
-    {
-        constexpr uint32_t single = static_cast<uint32_t>(sizeof(wchar_t));
-        uint32_t length = 0;
-        const wchar_t * src = output;
-        while (*src ++ != L'\0')
-        {
-            ++ length;
-        }
-
-        stream.write(reinterpret_cast<const uint8_t *>(output), (length + 1) * single);
-    }
-
+    stream.write_text(output, output != nullptr ? static_cast<uint32_t>(std::char_traits<wchar_t>::length(output)) : 0u);
     return stream;
 }
 
 template<typename CharType>
 inline areg::OutStream& operator << (areg::OutStream& stream, const std::basic_string<CharType>& output)
 {
-    constexpr uint32_t single = static_cast<uint32_t>(sizeof(CharType));
-    stream.write(reinterpret_cast<const uint8_t*>(output.c_str()), static_cast<uint32_t>(output.length() + 1) * single);
+    stream.write_text(output.data(), static_cast<uint32_t>(output.length()));
     return stream;
 }
 
 template<typename CharType>
 inline areg::OutStream& operator << (areg::OutStream& stream, const std::basic_string_view<CharType>& output)
 {
-    constexpr uint32_t single = static_cast<uint32_t>(sizeof(CharType));
-    // string_view does not guarantee a NUL at data()[length()], so write the payload
-    // and then a separate NUL terminator to preserve the NUL-terminated wire format.
-    stream.write(reinterpret_cast<const uint8_t*>(output.data()), static_cast<uint32_t>(output.length()) * single);
-    const CharType terminator = static_cast<CharType>('\0');
-    stream.write(reinterpret_cast<const uint8_t*>(&terminator), single);
+    stream.write_text(output.data(), static_cast<uint32_t>(output.length()));
     return stream;
 }
 
 template<typename CharType>
 inline const areg::InStream& operator >> (const areg::InStream& stream, std::basic_string<CharType>& input)
 {
-    input.clear();
-
-    constexpr uint32_t single = static_cast<uint32_t>(sizeof(CharType));
-    CharType ch{ };
-    while ((stream.read(reinterpret_cast<uint8_t *>(&ch), single) == single) && (ch != static_cast<CharType>('\0')))
-    {
-        input += ch;
-    }
-
+    stream.read_text(input);
     return stream;
 }
 

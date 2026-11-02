@@ -2410,7 +2410,7 @@ areg::Ordering areg::compare_strings( const CharLhs*   left_side
         return areg::Ordering::Bigger;
 
     // Fast path: same char type + case-sensitive, SIMD-optimized stdlib
-    if constexpr (std::is_same_v<CharLhs, CharRhs>)
+    if constexpr (std::is_same_v<CharLhs, CharRhs> && (std::is_same_v<CharLhs, char> || std::is_same_v<CharLhs, wchar_t>))
     {
         if (caseSensitive)
         {

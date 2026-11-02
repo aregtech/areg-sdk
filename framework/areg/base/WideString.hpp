@@ -80,8 +80,6 @@ public:
 
     WideString(WideString&& source) noexcept = default;
 
-    inline explicit WideString( wchar_t ch );
-
     /**
      * \brief   Initializes string by reading from a stream object.
      *
@@ -119,22 +117,22 @@ public:
     friend inline OutStream & operator << (OutStream & stream, const WideString & output);
 
 /************************************************************************/
-// WideString protected
+// WideString streaming
 /************************************************************************/
-protected:
+public:
     /**
-     * \brief   Reads string data from a stream object.
+     * \brief   Reads the string from a stream in the stream string format. Returns the number of bytes read.
      *
      * \param   stream      The input stream to read string data from.
      **/
-    void from_stream(const InStream & stream);
+    uint32_t from_stream(const InStream & stream);
 
     /**
-     * \brief   Writes string data to a stream object.
+     * \brief   Writes the string to a stream in the stream string format. Returns the number of bytes written.
      *
      * \param[in,out] stream      The output stream to write string data to.
      **/
-    void to_stream(OutStream & stream) const;
+    uint32_t to_stream(OutStream & stream) const;
 };
 #if defined(_MSC_VER)
     #pragma warning(pop)
@@ -143,11 +141,6 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 // WideString class inline function implementation
 //////////////////////////////////////////////////////////////////////////
-
-inline WideString::WideString( wchar_t ch )
-    : Base( ch )
-{
-}
 
 inline const InStream& operator >> (const InStream& stream, WideString& input)
 {
@@ -167,7 +160,7 @@ struct required_size <areg::WideString>
     [[nodiscard]]
     inline uint32_t operator ()(const areg::WideString& str) const noexcept
     {
-        return static_cast<uint32_t>(sizeof(uint32_t) + sizeof(uint32_t) + (sizeof(wchar_t) * (str.length() + 1)));
+        return static_cast<uint32_t>(sizeof(uint32_t) + (sizeof(wchar_t) * str.length()));
     }
 };
 
@@ -177,7 +170,7 @@ struct required_size <std::wstring>
     [[nodiscard]]
     inline uint32_t operator ()(const std::wstring& str) const noexcept
     {
-        return static_cast<uint32_t>(sizeof(uint32_t) + sizeof(uint32_t) + (sizeof(wchar_t) * (str.length() + 1)));
+        return static_cast<uint32_t>(sizeof(uint32_t) + (sizeof(wchar_t) * str.length()));
     }
 };
 
@@ -187,7 +180,7 @@ struct required_size <std::wstring_view>
     [[nodiscard]]
     inline uint32_t operator ()(const std::wstring_view str) const noexcept
     {
-        return static_cast<uint32_t>(sizeof(uint32_t) + sizeof(uint32_t) + (sizeof(wchar_t) * (str.length() + 1)));
+        return static_cast<uint32_t>(sizeof(uint32_t) + (sizeof(wchar_t) * str.length()));
     }
 };
 
