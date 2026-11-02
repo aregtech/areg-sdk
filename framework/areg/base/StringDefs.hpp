@@ -1236,14 +1236,14 @@ namespace areg::str {
         }
         else
         {
-            for (const CharType* p = strSource + pos; p >= strSource; --p)
+            for (areg::CharPos i = pos; i >= 0; --i)
             {
-                if (areg::str::char_eq<CaseSensitive, CharType>(*p, ch))
+                if (areg::str::char_eq<CaseSensitive, CharType>(strSource[i], ch))
                 {
                     if (next != nullptr)
-                        *next = p;
+                        *next = strSource + i;
 
-                    return static_cast<areg::CharPos>(p - strSource);
+                    return i;
                 }
             }
 
@@ -1273,30 +1273,23 @@ namespace areg::str {
         }
         else
         {
-            const CharType* end = strSource + pos - 1;
-            const CharType* phrase = strPhrase + lenPhr - 1;
-
-            for (; end >= strSource; --end)
+            for (areg::CharPos start = pos - lenPhr; start >= 0; --start)
             {
-                if (areg::str::char_eq<CaseSensitive, CharType>(*end, *phrase))
+                areg::CharPos remain = lenPhr;
+                while ((remain > 0) && areg::str::char_eq<CaseSensitive, CharType>(strSource[start + remain - 1], strPhrase[remain - 1]))
                 {
-                    const CharType* one = end - 1;
-                    const CharType* two = phrase - 1;
-                    while ((one >= strSource) && (two >= strPhrase) && areg::str::char_eq<CaseSensitive, CharType>(*one, *two))
-                    {
-                        --one; --two;
-                    }
+                    --remain;
+                }
 
-                    if (two < strPhrase)
-                    {
-                        ++one;
-                        if (next != nullptr)
-                            *next = one;
+                if (remain == 0)
+                {
+                    if (next != nullptr)
+                        *next = strSource + start;
 
-                        return static_cast<areg::CharPos>(one - strSource);
-                    }
+                    return start;
                 }
             }
+
             return areg::INVALID_POS;
         }
     }
@@ -1709,7 +1702,7 @@ constexpr areg::CharPos areg::find_last( const CharType*   strPhrase
 
     const areg::CharPos lenSrc = areg::string_length<CharType>(strSource);
     const areg::CharPos lenPhr = areg::string_length<CharType>(strPhrase);
-    const areg::CharPos pos    = (startPos == areg::END_POS) ? lenSrc : startPos;
+    const areg::CharPos pos    = (startPos == areg::END_POS || startPos > lenSrc) ? lenSrc : startPos;
 
     if (pos <= areg::START_POS || lenPhr <= areg::START_POS)
         return areg::INVALID_POS;

@@ -20,6 +20,8 @@
 #include "areg/base/RingStack.hpp"
 #include "areg/base/SharedBuffer.hpp"
 
+#include <string>
+
 /**
  * \brief   Test RingStack constructors with Ring Stack type 'stop on overlap'.
  *          "Stop on overlap" means do not insert any entry if the ring is full.
@@ -1116,7 +1118,7 @@ TEST(RingStackTest, boundary_self_copy_move_add_and_comparison_preserve_values)
 }
 
 // Shrinking a wrapped ring must retain the queued values in FIFO order.
-TEST(RingStackTest, DISABLED_boundary_shrink_wrapped_ring_preserves_fifo)
+TEST(RingStackTest, boundary_shrink_wrapped_ring_preserves_fifo)
 {
     areg::RingStack<int32_t> stack(5u, areg::OverlapPolicy::Stop);
     for (int32_t value = 1; value <= 5; ++value)
@@ -1132,7 +1134,7 @@ TEST(RingStackTest, DISABLED_boundary_shrink_wrapped_ring_preserves_fifo)
 }
 
 // Copying an empty ring with larger capacity must leave usable storage.
-TEST(RingStackTest, DISABLED_boundary_copy_empty_larger_capacity_remains_usable)
+TEST(RingStackTest, boundary_copy_empty_larger_capacity_remains_usable)
 {
     areg::RingStack<int32_t> source(4u, areg::OverlapPolicy::Stop);
     areg::RingStack<int32_t> target(1u, areg::OverlapPolicy::Stop);
@@ -1145,10 +1147,36 @@ TEST(RingStackTest, DISABLED_boundary_copy_empty_larger_capacity_remains_usable)
 }
 
 // Growing a zero-capacity ring must initialize its first pushed element.
-TEST(RingStackTest, DISABLED_boundary_zero_capacity_resize_initializes_first_element)
+TEST(RingStackTest, boundary_zero_capacity_resize_initializes_first_element)
 {
     areg::RingStack<int32_t> stack(0u, areg::OverlapPolicy::Resize);
     ASSERT_EQ(stack.push(17), 1u);
     EXPECT_EQ(stack[0], 17);
     EXPECT_EQ(stack.pop(), 17);
+}
+
+// Owning elements survive growth from zero, wrapping, shrinking and copying an empty ring.
+TEST(RingStackTest, boundary_owning_elements_survive_growth_shrink_and_empty_copy)
+{
+    const std::string first(40u, '1');
+    const std::string second(40u, '2');
+    const std::string third(40u, '3');
+    areg::ConcurrentRingStack<std::string> stack(0u, areg::OverlapPolicy::Resize);
+    EXPECT_EQ(stack.push(first), 1u);
+    EXPECT_EQ(stack.push(second), 2u);
+    EXPECT_EQ(stack.pop(), first);
+    EXPECT_EQ(stack.push(third), 2u);
+    stack.free_extra();
+    ASSERT_EQ(stack.capacity(), 2u);
+    EXPECT_EQ(stack[0], second);
+    EXPECT_EQ(stack[1], third);
+
+    areg::ConcurrentRingStack<std::string> empty(8u, areg::OverlapPolicy::Stop);
+    stack.copy(empty);
+    ASSERT_TRUE(stack.is_empty());
+    EXPECT_EQ(stack.capacity(), 8u);
+    EXPECT_EQ(stack.push(first), 1u);
+    EXPECT_EQ(stack.pop(), first);
+    stack.free_extra();
+    EXPECT_EQ(stack.capacity(), 0u);
 }

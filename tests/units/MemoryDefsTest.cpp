@@ -29,11 +29,13 @@ TEST(MemoryDefsTest, boundary_copy_is_bounded_and_invalid_operands_preserve_dest
 }
 
 // A self-copy must report no more bytes than fit in the destination.
-TEST(MemoryDefsTest, DISABLED_boundary_self_copy_reports_only_destination_capacity)
+TEST(MemoryDefsTest, boundary_self_copy_reports_only_destination_capacity)
 {
     std::array<uint8_t, 4> values{ 1, 2, 3, 4 };
     EXPECT_EQ(areg::mem_copy(values.data(), 2u, values.data(), 4u), 2u);
     EXPECT_EQ(areg::mem_copy(values.data(), 0u, values.data(), 4u), 0u);
+    EXPECT_EQ(areg::mem_copy(values.data(), 4u, values.data(), 3u), 3u);
+    EXPECT_EQ(areg::mem_copy(nullptr, 4u, nullptr, 4u), 0u);
     EXPECT_EQ(values, (std::array<uint8_t, 4>{ 1, 2, 3, 4 }));
 }
 

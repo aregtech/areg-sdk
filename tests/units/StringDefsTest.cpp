@@ -1506,8 +1506,17 @@ TEST(StringDefsTest1, boundary_wide_search_next_pointer_boundaries)
     EXPECT_EQ(next, nullptr);
 }
 
+// Constant evaluation rejects a pointer formed before the input, so these fail to compile if one is formed.
+static_assert(areg::find_last('Z', "abc", areg::END_POS, false) == areg::INVALID_POS);
+static_assert(areg::find_last('A', "abc", areg::END_POS, false) == 0);
+static_assert(areg::find_last("Z", "abc", areg::END_POS, false) == areg::INVALID_POS);
+static_assert(areg::find_last("AB", "abc", areg::END_POS, false) == 0);
+static_assert(areg::find_last("ABCD", "abc", areg::END_POS, false) == areg::INVALID_POS);
+static_assert(areg::find_last(L'Z', L"abc", areg::END_POS, false) == areg::INVALID_POS);
+static_assert(areg::find_last(L"AB", L"abc", areg::END_POS, false) == 0);
+
 // A failed reverse search must not form a pointer before the input.
-TEST(StringDefsTest1, DISABLED_boundary_reverse_search_misses_do_not_cross_begin)
+TEST(StringDefsTest1, boundary_reverse_search_misses_do_not_cross_begin)
 {
     const char source[]{ "abc" };
     const char* next{ source };
@@ -1517,6 +1526,31 @@ TEST(StringDefsTest1, DISABLED_boundary_reverse_search_misses_do_not_cross_begin
     EXPECT_EQ(next, nullptr);
     EXPECT_EQ(areg::find_last("A", source, areg::END_POS, false, &next), 0);
     EXPECT_EQ(next, source);
+    EXPECT_EQ(areg::find_last('A', source, 0, false, &next), 0);
+    EXPECT_EQ(next, source);
+    EXPECT_EQ(areg::find_last("AB", source, 2, false, &next), 0);
+    EXPECT_EQ(next, source);
+    EXPECT_EQ(areg::find_last("AB", source, 1, false, &next), areg::INVALID_POS);
+    EXPECT_EQ(next, nullptr);
+    EXPECT_EQ(areg::find_last("ABCD", source, areg::END_POS, false, &next), areg::INVALID_POS);
+    EXPECT_EQ(next, nullptr);
+}
+
+// A reverse phrase search clamps a start position past the end to the source length.
+TEST(StringDefsTest1, boundary_reverse_phrase_search_clamps_start_past_end)
+{
+    const char source[]{ "abcbc" };
+    const char* next{ nullptr };
+    EXPECT_EQ(areg::find_last("BC", source, 100, false, &next), 3);
+    EXPECT_EQ(next, source + 3);
+    EXPECT_EQ(areg::find_last("bc", source, 100, true, &next), 3);
+    EXPECT_EQ(next, source + 3);
+    EXPECT_EQ(areg::find_last("BC", source, 4, false, &next), 1);
+    EXPECT_EQ(next, source + 1);
+    const wchar_t wide[]{ L"abcbc" };
+    const wchar_t* wnext{ nullptr };
+    EXPECT_EQ(areg::find_last(L"BC", wide, 100, false, &wnext), 3);
+    EXPECT_EQ(wnext, wide + 3);
 }
 
 // Trimming handles explicit empty ranges and one-character output buffers safely.

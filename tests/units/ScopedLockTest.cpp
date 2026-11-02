@@ -413,6 +413,21 @@ TEST(ScopedLockTest, boundary_resource_lists_keep_or_remove_empty_keys)
     EXPECT_EQ(map.resource(7), nullptr);
 }
 
+// resource_at creates an empty list for a missing key and returns the stored list for an existing one.
+TEST(ScopedLockTest, boundary_resource_at_creates_or_returns_list)
+{
+    int32_t first{ 1 };
+    TrackedResourceLists map;
+    EXPECT_TRUE(map.resource_at(7).is_empty());
+    EXPECT_TRUE(map.exist(7));
+    map.resource_at(7).push_last(&first);
+    ASSERT_NE(map.find_resource(7), nullptr);
+    EXPECT_EQ(map.find_resource(7)->first_entry(), &first);
+    EXPECT_EQ(&map.resource_at(7), map.find_resource(7));
+    EXPECT_EQ(map.resource_at(7).size(), 1u);
+    EXPECT_EQ(map.size(), 1u);
+}
+
 // Removing a resource key transfers its list without changing other keys.
 TEST(ScopedLockTest, boundary_resource_removal_transfers_list_and_preserves_other_keys)
 {

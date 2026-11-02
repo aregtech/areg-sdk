@@ -530,7 +530,7 @@ TEST(SortedLinkedListTest, boundary_descending_unique_insertion_and_terminal_nex
 }
 
 // Exporting zero elements must leave the destination untouched.
-TEST(SortedLinkedListTest, DISABLED_boundary_zero_count_export_does_not_write)
+TEST(SortedLinkedListTest, boundary_zero_count_export_does_not_write)
 {
     areg::SortedLinkedList<int32_t> list;
     list.add(11);
@@ -539,4 +539,8 @@ TEST(SortedLinkedListTest, DISABLED_boundary_zero_count_export_does_not_write)
     EXPECT_EQ(list.elements(output, 0u), 0u);
     EXPECT_EQ(output[0], -1);
     EXPECT_EQ(output[1], -2);
+    EXPECT_EQ(list.elements(nullptr, 2u), 0u);
+    EXPECT_EQ(list.elements(output, 2u), 2u);
+    EXPECT_EQ(output[0], 11);
+    EXPECT_EQ(output[1], 22);
 }

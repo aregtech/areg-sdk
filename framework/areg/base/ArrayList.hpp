@@ -444,7 +444,8 @@ public:
 
     /**
      * \brief   Shifts array elements starting at given valid index position. Positive count
-     *          stretches elements to make room; negative count removes elements.
+     *          inserts `count` default-constructed elements at `startAt`; negative count
+     *          removes up to `-count` elements placed before `startAt`.
      *
      * \param   startAt     The starting index position to start shifting.
      * \param   count       Number of elements to shift. Positive value inserts space; negative
@@ -1045,31 +1046,20 @@ void ArrayList< VALUE >::shift(uint32_t startAt, int32_t  count)
     if ((mValueList.size() == 0u) || (startAt >= mValueList.size()) || (count == 0))
         return;
 
+    const uint32_t size{ static_cast<uint32_t>(mValueList.size()) };
     if (count > 0)
     {
-        if (static_cast<uint32_t>(static_cast<int32_t>(size()) + count) > areg::MAX_CONTAINER_SIZE)
+        const uint32_t room{ size < areg::MAX_CONTAINER_SIZE ? areg::MAX_CONTAINER_SIZE - size : 0u };
+        const uint32_t added{ std::min(static_cast<uint32_t>(count), room) };
+        if (added != 0u)
         {
-            count = static_cast<int32_t>(areg::MAX_CONTAINER_SIZE - size());
+            mValueList.insert(mValueList.begin() + startAt, added, VALUE{});
         }
-
-        VALUE* values = mValueList.data();
-        uint32_t size = static_cast<uint32_t>(mValueList.size());
-        mValueList.resize(static_cast<uint32_t>(static_cast<int32_t>(size) + count));
-        areg::move_elems<VALUE>(values + startAt + count, values + startAt, size - startAt);
     }
     else if (startAt != 0)
     {
-        VALUE* values = mValueList.data();
-        uint32_t size = static_cast<uint32_t>(mValueList.size());
-
-        count *= -1;
-        if (startAt < static_cast<uint32_t>(count))
-        {
-            count = static_cast<int32_t>(startAt);
-        }
-
-        areg::move_elems<VALUE>(values + startAt - count, values + startAt, size - startAt);
-        mValueList.resize(static_cast<uint32_t>(static_cast<int32_t>(size) - count));
+        const uint32_t removed{ std::min(0u - static_cast<uint32_t>(count), startAt) };
+        mValueList.erase(mValueList.begin() + (startAt - removed), mValueList.begin() + startAt);
     }
 }
 

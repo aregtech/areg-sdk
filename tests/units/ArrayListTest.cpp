@@ -23,6 +23,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <limits>
+#include <string>
 #include <type_traits>
 
 /**
@@ -800,7 +801,7 @@ TEST(ArrayListTest, boundary_shift_with_reserved_space_and_clamped_removal)
 }
 
 // Growing during a shift must preserve the elements after the insertion point.
-TEST(ArrayListTest, DISABLED_boundary_shift_reallocation_preserves_tail)
+TEST(ArrayListTest, boundary_shift_reallocation_preserves_tail)
 {
     areg::ArrayList<int32_t> list(1u, 1u);
     list[0] = 17;
@@ -811,12 +812,32 @@ TEST(ArrayListTest, DISABLED_boundary_shift_reallocation_preserves_tail)
 }
 
 // The most negative shift must remove only the available prefix.
-TEST(ArrayListTest, DISABLED_boundary_minimum_negative_shift_clamps_to_prefix)
+TEST(ArrayListTest, boundary_minimum_negative_shift_clamps_to_prefix)
 {
     const int32_t source[]{ 1, 2, 3 };
     areg::ArrayList<int32_t> list(source, 3u);
     list.shift(1u, std::numeric_limits<int32_t>::min());
     EXPECT_EQ(list.data(), (std::vector<int32_t>{ 2, 3 }));
+}
+
+// Shifting owning elements inserts default values and keeps every other element intact.
+TEST(ArrayListTest, boundary_shift_owning_elements_inserts_defaults_and_removes_prefix)
+{
+    areg::ArrayList<std::string> list;
+    list.add(std::string(40u, 'a'));
+    list.add(std::string(40u, 'b'));
+    list.shift(1u, 3);
+    ASSERT_EQ(list.size(), 5u);
+    EXPECT_EQ(list[0], std::string(40u, 'a'));
+    EXPECT_TRUE(list[1].empty());
+    EXPECT_TRUE(list[2].empty());
+    EXPECT_TRUE(list[3].empty());
+    EXPECT_EQ(list[4], std::string(40u, 'b'));
+    list.shift(4u, -2);
+    ASSERT_EQ(list.size(), 3u);
+    EXPECT_EQ(list[0], std::string(40u, 'a'));
+    EXPECT_TRUE(list[1].empty());
+    EXPECT_EQ(list[2], std::string(40u, 'b'));
 }
 
 // The reported stream size matches the bytes written for the array.

@@ -626,7 +626,7 @@ TEST(LinkedListTest, boundary_invalid_insert_after_appends_and_bounded_export)
 }
 
 // Exporting zero elements must leave the destination untouched.
-TEST(LinkedListTest, DISABLED_boundary_zero_count_export_does_not_write)
+TEST(LinkedListTest, boundary_zero_count_export_does_not_write)
 {
     areg::LinkedList<int32_t> list;
     list.push_last(11);
@@ -635,6 +635,10 @@ TEST(LinkedListTest, DISABLED_boundary_zero_count_export_does_not_write)
     EXPECT_EQ(list.elements(output, 0u), 0u);
     EXPECT_EQ(output[0], -1);
     EXPECT_EQ(output[1], -2);
+    EXPECT_EQ(list.elements(nullptr, 2u), 0u);
+    EXPECT_EQ(list.elements(output, 2u), 2u);
+    EXPECT_EQ(output[0], 11);
+    EXPECT_EQ(output[1], 22);
 }
 
 /**
