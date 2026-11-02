@@ -23,6 +23,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <new>
 
 namespace areg {
 
@@ -307,7 +308,7 @@ uint32_t SharedBuffer::reserve(uint32_t size, bool copy)
 
     total = areg::align_size(total, block_size());
     const uint32_t sizeBuffer = header_size() + total;
-    uint8_t* buffer = new uint8_t[sizeBuffer];
+    uint8_t* buffer = new (std::nothrow) uint8_t[sizeBuffer];
     const uint32_t position = init_buffer(buffer, sizeBuffer, preserveData);
     if (position != Cursor::INVALID_CURSOR_POSITION)
     {
