@@ -192,13 +192,6 @@ public:
     inline bool disable_send() const;
 
     /**
-     * \brief   Sets socket in write-only mode; no receive is possible afterwards.
-     *
-     * \return  Returns true if operation succeeds.
-     **/
-    inline bool disable_receive() const;
-
-    /**
      * \brief   Returns the socket address object.
      **/
     [[nodiscard]]
@@ -348,11 +341,6 @@ inline int32_t Socket::pending_read() const noexcept
 inline bool Socket::disable_send() const
 {
     return is_valid() && areg::disable_send(mSocket.value());
-}
-
-inline bool Socket::disable_receive() const
-{
-    return is_valid() && areg::disable_receive(mSocket.value());
 }
 
 inline uint32_t Socket::send_packet_size() const noexcept

@@ -118,16 +118,17 @@ jobs:
                 -DAREG_INSTALL:BOOL=OFF -DAREG_OUTPUT_LAYOUT:BOOL=OFF
 
       - name: Build the tests and the log benchmark
+        id: build
         shell: bash
         run: |
           cmake --build build --config ${{env.BUILD_TYPE}} --parallel 4 \
                 --target areg-unit-tests areg-router-io-test logcollector 35_logsink 35_logsource
-          BIN="$(find build -type f \( -name logcollector.exe -o -name logcollector.elf -o -name logcollector.mac \) | head -n 1)"
+          BIN="$(find build -type f \( -name logcollector.exe -o -name logcollector.elf -o -name logcollector.mac \) -print -quit)"
           if [ -z "${BIN}" ]; then echo "logcollector not found under build" >&2; exit 1; fi
           echo "BIN_DIR=$(dirname "${BIN}")" >> "${GITHUB_ENV}"
 
       - name: Repeat the SyncTimer tests
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         shell: bash
         timeout-minutes: 20
         run: |
@@ -136,7 +137,7 @@ jobs:
                  --title "SyncTimer, ${{matrix.os}}" --summary "${GITHUB_STEP_SUMMARY}"
 
       - name: Repeat the router stop while flooding
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         shell: bash
         timeout-minutes: 15
         run: |

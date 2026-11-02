@@ -346,7 +346,6 @@ TEST_F(SocketLoopbackTest, invalid_handles_and_unconfigured_objects_report_failu
         EXPECT_FALSE(areg::is_socket_alive(socket));
         EXPECT_FALSE(areg::set_send_timeout(socket, 0u));
         EXPECT_FALSE(areg::disable_send(socket));
-        EXPECT_FALSE(areg::disable_receive(socket));
         EXPECT_FALSE(areg::client_connect_fd(socket, areg::SocketAddress()));
         EXPECT_EQ(areg::pending_read(socket), 0u);
         EXPECT_LT(areg::send_data(socket, &byte, 1u), 0);
@@ -370,7 +369,6 @@ TEST_F(SocketLoopbackTest, invalid_handles_and_unconfigured_objects_report_failu
     EXPECT_LT(client.receive(&byte, 1), 0);
     EXPECT_EQ(client.pending_read(), -1);
     EXPECT_FALSE(client.disable_send());
-    EXPECT_FALSE(client.disable_receive());
     EXPECT_EQ(client.send_packet_size(), areg::PACKET_INVALID_SIZE);
     EXPECT_EQ(client.recv_packet_size(), areg::PACKET_INVALID_SIZE);
     areg::SocketServer server;
@@ -582,8 +580,6 @@ TEST_F(SocketLoopbackTest, send_half_close_preserves_the_reverse_direction)
     ASSERT_EQ(areg::send_data(accepted.value(), &byte, 1u), 1);
     ASSERT_EQ(areg::receive_data(client.value(), &received, 1u), 1);
     EXPECT_EQ(received, byte);
-    ASSERT_TRUE(areg::disable_receive(client.value()));
-    EXPECT_LT(areg::receive_data_nowait(client.value(), &received, 1u), 0);
 }
 
 // Connected-socket options and buffer sizes match the operating system's read-back values.
@@ -608,8 +604,8 @@ TEST_F(SocketLoopbackTest, connected_options_and_buffer_sizes_match_native_readb
         ASSERT_EQ(::getsockopt(socket, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&noDelay), &length), 0);
         length = sizeof(int);
         ASSERT_EQ(::getsockopt(socket, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<char*>(&keepAlive), &length), 0);
-        EXPECT_EQ(noDelay, 1);
-        EXPECT_EQ(keepAlive, 1);
+        EXPECT_NE(noDelay, 0);
+        EXPECT_NE(keepAlive, 0);
         for (const uint32_t size : { 0u, 1u, areg::PACKET_MAX_SIZE })
         {
             (void)areg::set_send_size(socket, size);

@@ -254,7 +254,6 @@
   "detach_connection_nolock",
   "detach_from_registry",
   "detach_proxies",
-  "disable_receive",
   "disable_send",
   "disconnect",
   "disconnect_message",

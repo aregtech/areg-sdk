@@ -787,14 +787,6 @@ AREG_API bool set_send_timeout(SOCKETHANDLE hSocket, uint32_t timeoutMs) noexcep
 AREG_API bool disable_send(SOCKETHANDLE hSocket) noexcept;
 
 /**
- * \brief   Shuts down the receive direction of \a hSocket (half-close).
- *          The socket becomes send-only.
- *
- * \return  true on success; false otherwise.
- **/
-AREG_API bool disable_receive(SOCKETHANDLE hSocket) noexcept;
-
-/**
  * \brief   Shuts down both directions of hSocket without closing the
  *          file descriptor.  Any thread currently blocked in send() or
  *          recv() on this socket will return immediately with an error.

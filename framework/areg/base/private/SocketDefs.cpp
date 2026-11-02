@@ -1079,17 +1079,6 @@ AREG_API_IMPL bool areg::disable_send(SOCKETHANDLE hSocket) noexcept
     return (areg::is_valid_socket(hSocket) && (areg::RETURNED_OK == ::shutdown(hSocket, flag)) );
 }
 
-AREG_API_IMPL bool areg::disable_receive(SOCKETHANDLE hSocket) noexcept
-{
-#ifdef _WIN32
-    int32_t flag{ SD_RECEIVE };
-#else
-    int32_t flag{ SHUT_RD };
-#endif // _WIN32
-
-    return (areg::is_valid_socket(hSocket) && (areg::RETURNED_OK == ::shutdown(hSocket, flag)) );
-}
-
 AREG_API_IMPL void areg::socket_interrupt(SOCKETHANDLE hSocket) noexcept
 {
     if (areg::is_valid_socket(hSocket))
