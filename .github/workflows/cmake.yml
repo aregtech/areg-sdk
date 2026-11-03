@@ -52,8 +52,7 @@ jobs:
           fi
           echo "run=${RUN}" >> "${GITHUB_OUTPUT}"
           if [ -n "${MATRIX}" ]; then
-            # TEMP-CI05: a pull request runs only the macOS and cygwin legs.
-            echo "matrix=$(jq -c --arg ev "${EVENT}" '[.[] | select($ev != "push" or .master == true) | select($ev != "pull_request" or (.name | test("^(macos-|win-cygwin-)")))]' "${MATRIX}")" >> "${GITHUB_OUTPUT}"
+            echo "matrix=$(jq -c --arg ev "${EVENT}" '[.[] | select($ev != "push" or .master == true)]' "${MATRIX}")" >> "${GITHUB_OUTPUT}"
           fi
 
   # The legs are in .github/ci/cmake-matrix.json, longest first. A pull request runs all of

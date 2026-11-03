@@ -125,16 +125,9 @@ void ClientSendThread::start_event_processing( Event & eventElem )
         }
 
         if ( sentBytes > 0 )
-        {
             accumulate_sent( static_cast<uint64_t>(sentBytes), bufCount );
-            AREG_DC_ADD(SendThread, bufCount);
-        }
         else
-        {
-            AREG_DC_ADD(SendFailed, bufCount);
-            AREG_DT_TRACE("t=%llu send.batch_failed msgs=%u closing=%d", areg::trace_now_us(), bufCount, mIsClosing.load(std::memory_order_relaxed) ? 1 : 0);
             report_failed_batch( eventElem, 0u, bufCount );
-        }
     }
     else
     {
@@ -157,12 +150,9 @@ void ClientSendThread::start_event_processing( Event & eventElem )
             if ( sentBytes > 0 )
             {
                 accumulate_sent( static_cast<uint64_t>(sentBytes), end - start );
-                AREG_DC_ADD(SendThread, end - start);
             }
             else
             {
-                AREG_DC_ADD(SendFailed, bufCount - start);
-                AREG_DT_TRACE("t=%llu send.batch_failed msgs=%u closing=%d", areg::trace_now_us(), bufCount - start, mIsClosing.load(std::memory_order_relaxed) ? 1 : 0);
                 report_failed_batch( eventElem, start, bufCount );
                 break;
             }

@@ -102,6 +102,8 @@ QUIT_SECONDS = 12.0
 #             examples are demonstrations that run until the user stops them.
 #             For those the test is: stay alive for that long, do not crash and
 #             do not let any process die early.
+#   check     Function given the captured output of every process, in the order of
+#             'procs'. It returns a failure text, or None when the output is right.
 #   known     Description of an open defect this scenario runs into. A failure
 #             is then reported as XFAIL and does not break the run, while an
 #             unexpected success is reported as XPASS and does break it, so
@@ -183,6 +185,31 @@ def _datarate_script(shape, first, step):
 EXCLUDED_EXAMPLES = {
     '20_winchat': 'MFC desktop application with a graphical user interface, Windows only',
 }
+
+_RE_SINK_LOST    = re.compile(r'received (\d+) \| lost (\d+)')
+_RE_SINK_DROPPED = re.compile(r'dropped messages (\d+)')
+_RE_SINK_SCOPES  = re.compile(r'scope rows lost (\d+)')
+
+
+def _check_log_delivery(outputs):
+    """
+    A log message or scope row may be dropped, but never without a notice: the sink's
+    'lost' plus 'scope rows lost' must equal its 'dropped messages'. The sink is the
+    second process of a log scenario.
+    """
+    sink = outputs[1]
+    got = _RE_SINK_LOST.search(sink)
+    if got is None:
+        return '35_logsink printed no received/lost line'
+    lost = int(got.group(2))
+    scopes = _RE_SINK_SCOPES.search(sink)
+    lost += int(scopes.group(1)) if scopes else 0
+    dropped = _RE_SINK_DROPPED.search(sink)
+    reported = int(dropped.group(1)) if dropped else 0
+    if lost != reported:
+        return ('35_logsink lost %d messages but %d were reported dropped' % (lost, reported))
+    return None
+
 
 SCENARIOS = [
     # -- single process, no router ------------------------------------------
@@ -278,6 +305,57 @@ SCENARIOS = [
     {'name': '27_pubsubmulti', 'tier': 'ipc',
      'procs': [proc('27_subscribermulti', expect=[r'=> \d+ \{ changed \}']),
                proc('27_publisher', stdin=[(3.0, 's'), (10.0, 'i'), (5.0, 'q')])]},
+    # A bulk stream and small ping requests on one connection. The consumer stops after
+    # '-r' seconds; the provider stays until it is told to quit.
+    {'name': '32_pubmixed', 'tier': 'ipc', 'timeout': 60,
+     'procs': [proc('32_pubservice', args=['-b=65536', '-p=2', '-g=2000'],
+                    must_exit=False, quit=['-q']),
+               proc('32_pubclient', args=['-n', '-i=5000', '-r=5'],
+                    expect=[r'TOTAL over \d+ s \| samples [1-9]'])]},
+    # The operator and the coffee machine user each walk a fixed script against the
+    # provider and end with exit code 0 only if every step behaved as specified.
+    {'name': '33_tempalarm', 'tier': 'ipc', 'timeout': 90,
+     'procs': [proc('33_monitor', must_exit=False, quit=['-q']),
+               proc('33_operator', expect=[r'operator: thresholds accepted',
+                                           r'operator: exactly one raise and one clear observed'])]},
+    {'name': '34_coffeemachine', 'tier': 'ipc', 'timeout': 90,
+     'procs': [proc('34_coffeemachine', must_exit=False, quit=['-q']),
+               proc('34_user', expect=[r'consumer: cappuccino finished'])]},
+
+    # -- short runs of the benchmarks ---------------------------------------
+    # The same applications as the benchmarks at the end, run briefly on every build to
+    # show they start, exchange their traffic and end. Nothing is measured.
+    {'name': '23_datarate_short', 'tier': 'ipc', 'timeout': 60,
+     'procs': [proc('23_pubclient'),
+               proc('23_pubservice',
+                    stdin=[(4.0, '-w=1024 -h=1024 -l=64 -t=25 -c=4'), (2.0, '-s'), (6.0, '-q')],
+                    expect=[r'Network sent rate'])]},
+    {'name': '30_owt_short', 'tier': 'ipc', 'timeout': 60,
+     'procs': [proc('30_pubprovider', args=['-n']),
+               proc('30_pubconsumer', args=['-m=bc64', '-c=1000', '-w=100', '-s=1'],
+                    expect=[r'run\s+1\s+mode'])]},
+    {'name': '30_rtt_short', 'tier': 'ipc', 'timeout': 60,
+     'procs': [proc('30_pubprovider', args=['-n']),
+               proc('30_pubconsumer', args=['-m=pp64', '-c=1000', '-w=100', '-s=1'],
+                    expect=[r'run\s+1\s+mode'])]},
+    {'name': '31_locsame_short', 'tier': 'smoke', 'timeout': 60,
+     'procs': [proc('31_loclatency', args=['-t=same', '-m=bc64,pp64', '-c=2000', '-w=200'],
+                    expect=[r'same\s+\|\s+bc64'])]},
+    {'name': '31_loccross_short', 'tier': 'smoke', 'timeout': 60,
+     'procs': [proc('31_loclatency', args=['-t=cross', '-m=bc64,pp64', '-c=2000', '-w=200'],
+                    expect=[r'cross\s+\|\s+bc64'])]},
+    # Example 35 is built only with logging compiled in. 'full' may drop messages; the
+    # run fails when a missing message was not reported as dropped.
+    {'name': '35_logfull_short', 'tier': 'ipc', 'timeout': 60, 'router': False,
+     'check': _check_log_delivery,
+     'procs': [proc('logcollector', args=['--console'], must_exit=False, quit=['-q']),
+               proc('35_logsink', args=['-c=10100'], expect=[r'35 log trip']),
+               proc('35_logsource', args=['-c=10000', '-w=100'], expect=[r'35 log call'])]},
+    {'name': '35_logdb_short', 'tier': 'ipc', 'timeout': 60, 'router': False,
+     'check': _check_log_delivery,
+     'procs': [proc('logcollector', args=['--console'], must_exit=False, quit=['-q']),
+               proc('35_logsink', args=['-c=2000', '-d=35_logdb_short.sqlog'], expect=[r'35 log trip']),
+               proc('35_logsource', args=['-c=2000', '-w=0'], expect=[r'35 log call'])]},
 
     # -- benchmarks, always last -------------------------------------------
     # Both drive the console of the application exactly as it is driven by hand. The
@@ -359,6 +437,7 @@ SCENARIOS = [
 #   db    = full speed, the sink saves into a database file: the logobserver path.
     {'name': '35_logfull', 'tier': 'perf', 'timeout': 300, 'measure': 'loglatency',
      'router': False,
+     'check': _check_log_delivery,
      'procs': [proc('logcollector', args=['--console'], must_exit=False, quit=['-q']),
                proc('35_logsink', args=['-c=101000'], expect=[r'35 log trip']),
                proc('35_logsource', args=['-c=100000', '-w=1000'],
@@ -366,6 +445,7 @@ SCENARIOS = [
 
     {'name': '35_logpaced', 'tier': 'perf', 'timeout': 300, 'measure': 'loglatency',
      'router': False,
+     'check': _check_log_delivery,
      'procs': [proc('logcollector', args=['--console'], must_exit=False, quit=['-q']),
                proc('35_logsink', args=['-c=5100'], expect=[r'35 log trip']),
                proc('35_logsource', args=['-c=5000', '-w=100', '-p=1'],
@@ -374,6 +454,7 @@ SCENARIOS = [
     # The sink also saves every message in a database file, as logobserver does.
     {'name': '35_logdb', 'tier': 'perf', 'timeout': 300, 'measure': 'loglatency',
      'router': False,
+     'check': _check_log_delivery,
      'procs': [proc('logcollector', args=['--console'], must_exit=False, quit=['-q']),
                proc('35_logsink', args=['-c=20000', '-d=35_logdb.sqlog'], expect=[r'35 log trip']),
                proc('35_logsource', args=['-c=20000', '-w=0'], expect=[r'35 log call'])]},
@@ -1328,10 +1409,12 @@ def run_scenario(scenario, bin_dir, out_dir, timeout, router_bin, keep_logs, use
                     result.fail('%s exited with code %d' % (lead.name, code))
                 lead.close()
 
-            # Give the helper processes a chance to end on their own.
+            # Give the helper processes a chance to end on their own. A helper that stays
+            # until it is told to quit is not waited for.
             grace = time.time() + GRACE_SECONDS
             while time.time() < grace:
-                if all(not r.is_running() for r in runners[:-1]):
+                if all(not r.is_running() for i, r in enumerate(runners[:-1])
+                       if scenario['procs'][i]['must_exit']):
                     break
                 time.sleep(0.2)
 
@@ -1407,6 +1490,11 @@ def run_scenario(scenario, bin_dir, out_dir, timeout, router_bin, keep_logs, use
             if (re.search(pattern, runner.output) is None
                     and re.search(pattern, runner.screen) is None):
                 result.fail('%s output does not contain %r' % (runner.name, pattern))
+
+    if (scenario.get('check') is not None) and (len(runners) == len(scenario['procs'])):
+        failure = scenario['check']([r.output for r in runners])
+        if failure is not None:
+            result.fail(failure)
 
     # A failure is read from the output of every application of the scenario, not only
     # of the one that reported it. The applications are connected: a consumer that waits

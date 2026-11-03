@@ -164,7 +164,6 @@ bool ServiceClientConnectionBase::try_send_inline( MessageEnvelope & data )
     {
         writer.release();
         mThreadSend.accumulate_sent(static_cast<uint64_t>(sent), 1u);
-        AREG_DC_ADD(SendInline, 1u);
         return true;
     }
     else if ( sent == 0 )
@@ -175,8 +174,6 @@ bool ServiceClientConnectionBase::try_send_inline( MessageEnvelope & data )
 
     // A negative result may follow a partial write: the first bytes are already on the wire,
     // so the message cannot be queued again and the connection has to go.
-    AREG_DC_ADD(SendFailed, 1u);
-    AREG_DT_TRACE("t=%llu send.inline_failed", areg::trace_now_us());
     mThreadSend.report_failed_send(data, mClientConnection.socket());
     writer.release();
     return true;
@@ -376,10 +373,8 @@ void ServiceClientConnectionBase::on_service_stop()
         Lock lock( mSendStartLock );
         mThreadSend.set_closing();
         mThreadSend.trigger_exit_drained();
-        AREG_DT_TRACE("t=%llu client.stop drain_start", areg::trace_now_us());
         if (!mThreadSend.wait_completion( areg::SEND_QUEUE_FLUSH_TIMEOUT ))
         {
-            AREG_DT_TRACE("t=%llu client.stop drain_timeout, the socket is interrupted", areg::trace_now_us());
             // The interrupt ends a send blocked on a peer that does not read.
             mClientConnection.interrupt_socket( );
             mThreadSend.trigger_exit();

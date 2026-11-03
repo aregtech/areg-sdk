@@ -20,34 +20,6 @@
 #include "areg/base/Thread.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
 #include "areg/logging/LoggingDefs.hpp"
-#include "areg/base/private/DebugDefs.hpp"
-
-#if defined(AREG_DIAGNOSE_TRACE) && (AREG_DIAGNOSE_TRACE)
-#include <cstring>
-namespace
-{
-    // Returns the text of a drop notice that a source wrote, or nullptr for any other row.
-    const char * _source_notice(const areg::MessageEnvelope & msg)
-    {
-        const areg::LogEntry * entry{ reinterpret_cast<const areg::LogEntry *>(msg.buffer()) };
-        if ((entry == nullptr) || (entry->logMsgType != areg::LogMessageType::MessageText) || (entry->logScopeId != areg::LOG_SCOPE_ID_NONE))
-            return nullptr;
-
-        return (std::strncmp(entry->logMessage, "Dropped [", 9) == 0) ? entry->logMessage : nullptr;
-    }
-
-    void _trace_held_row(const areg::MessageEnvelope & msg, ITEM_ID observer)
-    {
-        AREG_DC_ADD(ColRowsHeld, 1u);
-        const char * notice{ _source_notice(msg) };
-        if (notice != nullptr)
-        {
-            AREG_DC_ADD(ColSrcNoticeHeld, 1u);
-            AREG_DT_TRACE("t=%llu col.src_notice_held source=%u observer=%u text=%s", areg::trace_now_us(), static_cast<uint32_t>(msg.source()), static_cast<uint32_t>(observer), notice);
-        }
-    }
-}
-#endif  // defined(AREG_DIAGNOSE_TRACE) && (AREG_DIAGNOSE_TRACE)
 
 LogCollectorMessageProcessor::LogCollectorMessageProcessor(LogCollectorServerService & loggerService)
     : mLoggerService    ( loggerService )
@@ -263,12 +235,9 @@ void LogCollectorMessageProcessor::save_config_timeout()
 
 void LogCollectorMessageProcessor::client_disconnected(const ITEM_ID& cookie)
 {
-    AREG_DT_TRACE("t=%llu col.disconnected cookie=%u", areg::trace_now_us(), static_cast<uint32_t>(cookie));
-    AREG_DC_DUMP("col");
     // A source that reconnects comes back sending, so its mark goes away with the connection.
     mPausedSources.remove_at(cookie);
     mDroppedRows.remove(cookie);
-
     if ((cookie > areg::TARGET_ALL) && (mPendingSave == cookie))
     {
         process_next_save_config();
@@ -279,15 +248,6 @@ void LogCollectorMessageProcessor::log_message(const areg::MessageEnvelope & msg
 {
     ASSERT(msgReceived.message_id() == static_cast<uint32_t>(areg::FuncIdRange::ServiceLogMessage));
     ASSERT(areg::LogDataType::Remote == reinterpret_cast<const areg::LogEntry *>(msgReceived.buffer())->logDataType);
-    AREG_DC_ADD(ColRowsIn, 1u);
-#if defined(AREG_DIAGNOSE_TRACE) && (AREG_DIAGNOSE_TRACE)
-    const char * notice{ _source_notice(msgReceived) };
-    if (notice != nullptr)
-    {
-        AREG_DC_ADD(ColSrcNoticeIn, 1u);
-        AREG_DT_TRACE("t=%llu col.src_notice_in source=%u text=%s", areg::trace_now_us(), static_cast<uint32_t>(msgReceived.source()), notice);
-    }
-#endif  // defined(AREG_DIAGNOSE_TRACE) && (AREG_DIAGNOSE_TRACE)
     _forward_message_to_observers(msgReceived, true);
 }
 
@@ -431,7 +391,6 @@ inline bool LogCollectorMessageProcessor::_can_deliver_row(const ITEM_ID & obser
     {
         if (mDroppedRows.is_empty())
         {
-            AREG_DT_TRACE("t=%llu col.held_start observer=%u", areg::trace_now_us(), static_cast<uint32_t>(observer));
             mLoggerService.mDropTimer.start_timer(LogCollectorServerService::TIMEOUT_DROP_NOTICE, static_cast<areg::DispatcherThread &>(mLoggerService), 1);
         }
 
@@ -455,8 +414,6 @@ bool LogCollectorMessageProcessor::notify_dropped_rows()
 
 inline void LogCollectorMessageProcessor::_send_notice(areg::MessageEnvelope && msg) const
 {
-    AREG_DC_ADD(ColNoticeSent, 1u);
-    AREG_DT_TRACE("t=%llu col.notice observer=%u text=%s", areg::trace_now_us(), static_cast<uint32_t>(msg.target()), reinterpret_cast<const areg::LogEntry *>(msg.buffer())->logMessage);
     mLoggerService.send_message(std::move(msg));
 }
 
@@ -478,15 +435,8 @@ inline void LogCollectorMessageProcessor::_forward_message_to_observers(const ar
         {
             if ((isLogRow == false) || _can_deliver_row(target, msgReceived))
             {
-                AREG_DC_ADD(ColRowsDelivered, isLogRow ? 1u : 0u);
                 mLoggerService.send_message(msgReceived);
             }
-#if defined(AREG_DIAGNOSE_TRACE) && (AREG_DIAGNOSE_TRACE)
-            else
-            {
-                _trace_held_row(msgReceived, target);
-            }
-#endif  // defined(AREG_DIAGNOSE_TRACE) && (AREG_DIAGNOSE_TRACE)
         }
         else if (target == areg::TARGET_ALL)
         {
@@ -497,14 +447,7 @@ inline void LogCollectorMessageProcessor::_forward_message_to_observers(const ar
                 ASSERT(is_log_observer(observer.second.ciSource));
                 -- remaining;
                 if (isLogRow && (_can_deliver_row(observer.first, msgReceived) == false))
-                {
-#if defined(AREG_DIAGNOSE_TRACE) && (AREG_DIAGNOSE_TRACE)
-                    _trace_held_row(msgReceived, observer.first);
-#endif  // defined(AREG_DIAGNOSE_TRACE) && (AREG_DIAGNOSE_TRACE)
                     continue;
-                }
-
-                AREG_DC_ADD(ColRowsDelivered, isLogRow ? 1u : 0u);
 
                 areg::MessageEnvelope msg{ (remaining != 0u) ? msgReceived.clone() : msgReceived };
                 msg.set_source(static_cast<uint32_t>(source));
