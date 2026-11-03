@@ -112,6 +112,9 @@
     <ClCompile Include="units\LogConfigurationTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="units\LoggingRuntimeCoverageTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="units\LogScopesTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -164,6 +167,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="units\RemoteEventRoutingTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\IpcClientCoverageTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="units\SocketKeepAliveTest.cpp">
@@ -281,6 +287,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="units\StreamConverterTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\RemainingSmallFilesCoverageTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="units\StreamExtractTest.cpp">

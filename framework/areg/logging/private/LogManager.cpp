@@ -434,6 +434,11 @@ void LogManager::ready_for_events( bool is_ready )
 void LogManager::process_event( const LoggingEventData & data )
 {
     mEventProcessor.process_log_event( data );
+    if ( !has_more_events() )
+    {
+        mLoggerFile.flush_logs();
+        mLoggerDatabase.flush_logs();
+    }
 }
 
 void LogManager::start_logs()

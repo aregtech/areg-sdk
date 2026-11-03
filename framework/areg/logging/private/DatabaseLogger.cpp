@@ -32,6 +32,7 @@ namespace areg {
 DatabaseLogger::DatabaseLogger(LogConfiguration& logConfig)
     : LoggerBase    (logConfig)
     , mDatabase     (nullptr)
+    , mIsOpened     (false)
 {
 }
 
@@ -55,11 +56,13 @@ bool DatabaseLogger::open_logger()
     
     String fileName(mLogConfiguration.database_full_path());
     String dbFile = File::normalize_path(fileName.as_string());
-    return mDatabase->connect(dbFile, areg::DatabaseRole::Recorder);
+    mIsOpened = mDatabase->connect(dbFile, areg::DatabaseRole::Recorder);
+    return mIsOpened;
 }
 
 void DatabaseLogger::close_logger()
 {
+    mIsOpened = false;
     if (is_valid())
     {
         mDatabase->disconnect();
@@ -68,7 +71,7 @@ void DatabaseLogger::close_logger()
 
 void DatabaseLogger::log_message(const areg::LogEntry& logMessage)
 {
-    if (is_valid())
+    if (mIsOpened && is_valid())
     {
         mDatabase->log_message(logMessage);
     }
@@ -76,7 +79,7 @@ void DatabaseLogger::log_message(const areg::LogEntry& logMessage)
 
 bool DatabaseLogger::is_logger_opened() const noexcept
 {
-    return (mDatabase != nullptr) && mDatabase->is_operable();
+    return mIsOpened && (mDatabase != nullptr) && mDatabase->is_operable();
 }
 
 bool DatabaseLogger::create_layouts()
@@ -91,7 +94,7 @@ void DatabaseLogger::release_layouts()
 
 void DatabaseLogger::flush_logs()
 {
-    if (is_valid())
+    if (mIsOpened && is_valid())
     {
         mDatabase->commit(true);
     }

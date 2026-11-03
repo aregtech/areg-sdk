@@ -35,28 +35,25 @@ bool FileLogger::open_logger()
     if (mLogFile.is_opened())
         return true;
 
-    
-    String fileName(mLogConfiguration.log_file() );
-    if ( fileName.is_empty())
+    const String fileName(mLogConfiguration.log_file());
+    if (fileName.is_empty())
         return false;
-    
-    bool newFile  = static_cast<bool>(mLogConfiguration.append_data()) == false;
-    uint32_t mode = static_cast<uint32_t>(File::OpenMode::Write)      | 
-                    static_cast<uint32_t>(File::OpenMode::Read)       |
-                    static_cast<uint32_t>(File::OpenMode::ShareRead)  |
-                    static_cast<uint32_t>(File::OpenMode::ShareWrite) |
-                    static_cast<uint32_t>(File::OpenMode::Text);
 
-    if (File::has_file(fileName))
+    // Append opens or creates the file and writes at its end; otherwise the file is recreated.
+    const bool append{ static_cast<bool>(mLogConfiguration.append_data()) };
+    const uint32_t mode = static_cast<uint32_t>(File::OpenMode::Write)      |
+                          static_cast<uint32_t>(File::OpenMode::Read)       |
+                          static_cast<uint32_t>(File::OpenMode::ShareRead)  |
+                          static_cast<uint32_t>(File::OpenMode::ShareWrite) |
+                          static_cast<uint32_t>(File::OpenMode::Text)       |
+                          static_cast<uint32_t>(append ? File::OpenMode::OpenAlways : File::OpenMode::Create);
+
+    if (mLogFile.open(fileName, mode) && append && (mLogFile.move_to_end() == false))
     {
-        mode |= newFile ? static_cast<uint32_t>(File::OpenMode::Truncate) : static_cast<uint32_t>(File::OpenMode::Exist);
-    }
-    else
-    {
-        mode |= static_cast<uint32_t>(File::OpenMode::Create);
+        mLogFile.close();
     }
 
-    if ( mLogFile.open( fileName, mode) && create_layouts() )
+    if ( mLogFile.is_opened() && create_layouts() )
     {
             
         Process & curProcess = Process::instance();

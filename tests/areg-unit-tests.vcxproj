@@ -63,6 +63,7 @@
     <ClCompile Include="units\LogCollectorDroppedRowsTest.cpp" />
     <ClCompile Include="units\LayoutTest.cpp" />
     <ClCompile Include="units\LogConfigurationTest.cpp" />
+    <ClCompile Include="units\LoggingRuntimeCoverageTest.cpp" />
     <ClCompile Include="units\LogMessageLengthTest.cpp" />
     <ClCompile Include="units\LogProtocolTest.cpp" />
     <ClCompile Include="units\LogRingTest.cpp" />
@@ -104,6 +105,7 @@
     <ClInclude Include="units\EventTestSupport.hpp" />
     <ClCompile Include="units\TimerLifecycleTest.cpp" />
     <ClCompile Include="units\RemoteEventRoutingTest.cpp" />
+    <ClCompile Include="units\IpcClientCoverageTest.cpp" />
     <ClCompile Include="units\SocketKeepAliveTest.cpp" />
     <ClCompile Include="units\SocketLivenessTest.cpp" />
     <ClCompile Include="units\ArrayListTest.cpp" />
@@ -114,6 +116,7 @@
     <ClCompile Include="units\MapTest.cpp" />
     <ClCompile Include="units\KeyValuePairTest.cpp" />
     <ClCompile Include="units\FatalErrorTest.cpp" />
+    <ClCompile Include="units\RemainingSmallFilesCoverageTest.cpp" />
     <ClCompile Include="units\ReceiveCacheTest.cpp" />
     <ClCompile Include="units\ReceivedHeaderTest.cpp" />
     <ClCompile Include="units\RingStackTest.cpp" />

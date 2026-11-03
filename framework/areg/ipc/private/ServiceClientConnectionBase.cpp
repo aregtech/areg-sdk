@@ -283,9 +283,7 @@ bool ServiceClientConnectionBase::connect_service_host()
 
 bool ServiceClientConnectionBase::reconnect_service_host()
 {
-    disconnect_service_host( );
-    send_command(ServiceEventData::ServiceCommand::CMD_StartService );
-
+    send_command(ServiceEventData::ServiceCommand::CMD_RestartService);
     return true;
 }
 

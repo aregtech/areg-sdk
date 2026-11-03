@@ -111,47 +111,58 @@ uint32_t ConnectionConfiguration::socket_refusal_timeout() const noexcept
     return areg::send_refusal_ms(config.network_timeout(areg::EmptyStringA, mConnectType), keepaliveSec);
 }
 
+namespace
+{
+    /**
+     * \brief   Parses a decimal octet of 1 to 3 digits and returns the position after it,
+     *          or nullptr if the text does not start with a valid octet.
+     **/
+    const char * _parse_ip_octet(const char * text, uint8_t & octet) noexcept
+    {
+        constexpr int32_t MAX_DIGITS{ 3 };
+        uint32_t value{ 0u };
+        const char * pos{ text };
+        while (((pos - text) < MAX_DIGITS) && (*pos >= '0') && (*pos <= '9'))
+        {
+            value = (value * 10u) + static_cast<uint32_t>(*pos - '0');
+            ++ pos;
+        }
+
+        if ((pos == text) || (value > 0xFFu) || ((*pos >= '0') && (*pos <= '9')))
+            return nullptr;
+
+        octet = static_cast<uint8_t>(value);
+        return pos;
+    }
+}
+
 bool ConnectionConfiguration::connection_ip_address( uint8_t & field0
                                                    , uint8_t & field1
                                                    , uint8_t & field2
                                                    , uint8_t & field3 )
 {
-    bool result = false;
     field0 = field1 = field2 = field3 = 0u;
 
-    String addr{ connection_address() };
-    if ( addr.is_empty() == false )
+    const String addr{ connection_address() };
+    uint8_t octets[4]{ 0u, 0u, 0u, 0u };
+    const char * pos{ addr.as_string() };
+    for (uint32_t i = 0u; (i < 4u) && (pos != nullptr); ++ i)
     {
-        const char * buffer = addr.as_string( );
-        const char * next   = nullptr;
-
-        uint32_t f0 = String::make_uint32(buffer, areg::Radix::Decimal, &next);
-        if ( (buffer != next) && (f0 <= 0xFFu) && (*next == areg::IP_SEPARATOR) )
+        pos = _parse_ip_octet(pos, octets[i]);
+        if ((pos != nullptr) && (i < 3u))
         {
-            buffer = next + 1;
-            uint32_t f1 = String::make_uint32( buffer, areg::Radix::Decimal, &next );
-            if ( (buffer != next) && (f1 <= 0xFFu) && (*next == areg::IP_SEPARATOR) )
-            {
-                buffer = next + 1;
-                uint32_t f2 = String::make_uint32( buffer, areg::Radix::Decimal, &next );
-                if ( (buffer != next) && (f2 <= 0xFFu) && (*next == areg::IP_SEPARATOR) )
-                {
-                    buffer = next + 1;
-                    uint32_t f3 = String::make_uint32( buffer, areg::Radix::Decimal, &next );
-                    if ( (buffer != next) && (f3 <= 0xFFu) )
-                    {
-                        field0 = static_cast<uint8_t>(f0);
-                        field1 = static_cast<uint8_t>(f1);
-                        field2 = static_cast<uint8_t>(f2);
-                        field3 = static_cast<uint8_t>(f3);
-                        result = true;
-                    }
-                }
-            }
+            pos = (*pos == areg::IP_SEPARATOR) ? pos + 1 : nullptr;
         }
     }
 
-    return result;
+    if ((pos == nullptr) || (*pos != areg::EndOfString))
+        return false;
+
+    field0 = octets[0];
+    field1 = octets[1];
+    field2 = octets[2];
+    field3 = octets[3];
+    return true;
 }
 
 } // namespace areg

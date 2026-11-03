@@ -57,12 +57,14 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     EventEnvelopeTest.cpp
     EventQueueTest.cpp
     FatalErrorTest.cpp
+    RemainingSmallFilesCoverageTest.cpp
     FileBufferTest.cpp
     FileTest.cpp
     FixedArrayTest.cpp
     EventDefsTest.cpp
     HashMapTest.cpp
     IdentifierTest.cpp
+    IpcClientCoverageTest.cpp
     KeyValuePairTest.cpp
     LinkedListTest.cpp
     ListenerDispatchTest.cpp
@@ -70,6 +72,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     LayoutTest.cpp
     LogCollectorDroppedRowsTest.cpp
     LogConfigurationTest.cpp
+    LoggingRuntimeCoverageTest.cpp
     LogMessageLengthTest.cpp
     LogProtocolTest.cpp
     LogRingTest.cpp

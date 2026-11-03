@@ -158,6 +158,9 @@ private:
     //!< The pointer to the database engine.
     LogDatabaseEngine *   mDatabase;
 
+    //!< True while the engine is connected by open_logger().
+    bool                  mIsOpened;
+
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
@@ -182,6 +185,11 @@ inline LogDatabaseEngine * DatabaseLogger::database_engine() noexcept
 
 inline void DatabaseLogger::set_database_engine(LogDatabaseEngine * dbEngine)
 {
+    if (mDatabase != dbEngine)
+    {
+        mIsOpened = false;
+    }
+
     mDatabase = dbEngine;
 }
 
