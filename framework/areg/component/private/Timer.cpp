@@ -76,8 +76,12 @@ bool Timer::start_timer(uint32_t timeoutInMs, DispatcherThread & whichThread, ui
     if (eventCount == 0)
     {
         Lock lock(mLock);
-        mTimeoutInMs = timeoutInMs;
-        mEventsCount = 0;
+        mTimeoutInMs    = timeoutInMs;
+        mEventsCount    = 0;
+        mStarted        = false;
+        mActive         = false;
+        mDispatchThread = nullptr;
+        mCurrentQueued  = 0;
 
         return false;
     }

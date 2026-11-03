@@ -57,13 +57,11 @@ WaitablePosix::WaitablePosix( areg::os::SyncKind syncType )
     : SyncObjectPosix ( syncType )
 #if defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
     , mWaiters        { nullptr }
+    , mWaitersLock    { }
 #endif
     , mValid          { true }
     , mWaitAllCount   { 0u }
 {
-#if defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
-    mWaitersLock.clear(std::memory_order_relaxed);
-#endif
 }
 
 WaitablePosix::~WaitablePosix()
@@ -105,17 +103,17 @@ inline void _wake_one_waiter(std::atomic<uint32_t>* word) noexcept
 
 void WaitablePosix::register_waiter( WaiterNode* node ) noexcept
 {
-    while (mWaitersLock.test_and_set(std::memory_order_acquire)) {}
+    mWaitersLock.lock();
 
     node->mNext = mWaiters.load(std::memory_order_relaxed);
     mWaiters.store(node, std::memory_order_release);
 
-    mWaitersLock.clear(std::memory_order_release);
+    mWaitersLock.unlock();
 }
 
 void WaitablePosix::unregister_waiter( WaiterNode* node ) noexcept
 {
-    while (mWaitersLock.test_and_set(std::memory_order_acquire)) {}
+    mWaitersLock.lock();
 
     WaiterNode* head = mWaiters.load(std::memory_order_relaxed);
     if (head == node)
@@ -137,16 +135,26 @@ void WaitablePosix::unregister_waiter( WaiterNode* node ) noexcept
     }
 
     node->mNext = nullptr;
-    mWaitersLock.clear(std::memory_order_release);
+    mWaitersLock.unlock();
 }
 
 int32_t WaitablePosix::notify_any_waiters() noexcept
+{
+    return _notify_waiters(0u, can_signal_threads());
+}
+
+int32_t WaitablePosix::notify_pulse_waiters( bool releaseAll ) noexcept
+{
+    return _notify_waiters(SYNC_FIRE_PULSE, releaseAll);
+}
+
+int32_t WaitablePosix::_notify_waiters( uint32_t mark, bool releaseAll ) noexcept
 {
     std::atomic<uint32_t>* toWake[areg::MAXIMUM_WAITING_OBJECTS];
     int32_t wakeCount{ 0 };
     int32_t total{ 0 };
 
-    while (mWaitersLock.test_and_set(std::memory_order_acquire)) {}
+    mWaitersLock.lock();
 
     WaiterNode* node{ mWaiters.load(std::memory_order_relaxed) };
     while (node != nullptr)
@@ -155,10 +163,10 @@ int32_t WaitablePosix::notify_any_waiters() noexcept
 
         // If the CAS fails, the waiter already received a signal or timed out, skip it
         uint32_t expected{ SYNC_FIRE_INVALID };
-        if (node->mFiredWord->compare_exchange_strong(expected, node->mFiredValue, std::memory_order_acq_rel, std::memory_order_relaxed))
+        if (node->mFiredWord->compare_exchange_strong(expected, node->mFiredValue | mark, std::memory_order_acq_rel, std::memory_order_relaxed))
         {
             toWake[wakeCount++] = node->mFiredWord;
-            if (!can_signal_threads())
+            if (!releaseAll)
             {
                 break;
             }
@@ -179,7 +187,7 @@ int32_t WaitablePosix::notify_any_waiters() noexcept
         node = next;
     }
 
-    mWaitersLock.clear(std::memory_order_release);
+    mWaitersLock.unlock();
 
     for (int32_t i{ 0 }; i < wakeCount; ++i)
     {

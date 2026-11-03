@@ -97,7 +97,6 @@ bool Lockable::try_lock()
 //////////////////////////////////////////////////////////////////////////
 Mutex::Mutex( bool initLock /* = false */ )
     : Lockable( SyncObject::SyncKind::SoMutex )
-    , mOwnerThreadId( 0 )
 {
     _os_create_mutex( initLock );
 }
@@ -209,14 +208,15 @@ bool Semaphore::lock( uint32_t timeout /* = areg::WAIT_INFINITE */ )
 bool Semaphore::unlock()
 {
     ASSERT( mSyncObject != nullptr );
-    bool result = false;
+    // Counts the permit before the release and takes it back if the release fails.
+    mCurrCount.fetch_add( 1 );
     if ( _os_unlock() )
     {
-        mCurrCount.fetch_add( 1 );
-        result = true;
+        return true;
     }
 
-    return result;
+    mCurrCount.fetch_sub( 1 );
+    return false;
 }
 
 bool Semaphore::try_lock()
@@ -466,15 +466,17 @@ MultiLock::~MultiLock()
 
 bool MultiLock::unlock()
 {
+    bool result{ true };
     for (int i = 0; i < mSizeCount; ++ i)
     {
         if (mLockedStates[i] == MultiLock::LockState::Locked)
         {
-            mSyncObjArray[i]->unlock( );
+            mLockedStates[i] = MultiLock::LockState::Unlocked;
+            result = mSyncObjArray[i]->unlock( ) && result;
         }
     }
 
-    return true;
+    return result;
 }
 
 bool MultiLock::unlock( int32_t index )
@@ -484,11 +486,22 @@ bool MultiLock::unlock( int32_t index )
     {
         if (mLockedStates[index] == MultiLock::LockState::Locked)
         {
+            mLockedStates[index] = MultiLock::LockState::Unlocked;
             result = mSyncObjArray[index]->unlock( );
         }
     }
 
     return result;
+}
+
+void MultiLock::_set_locked( int32_t index ) noexcept
+{
+    mLockedStates[index] = MultiLock::LockState::Locked;
+    SyncObject * object{ mSyncObjArray[index] };
+    if (object->type() == SyncObject::SyncKind::SoSemaphore)
+    {
+        static_cast<Semaphore *>(object)->mCurrCount.fetch_sub( 1 );
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////

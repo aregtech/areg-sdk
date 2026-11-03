@@ -118,7 +118,7 @@ void request_read_file(const areg::String & path) final
 
 void on_worker_done(const areg::String & text, areg::SessionID session)
 {
-    if (prepare_response(session))      // false: that client is gone
+    if (prepare_response(session))      // false: the session was cancelled
     {
         response_read_file(text);
     }

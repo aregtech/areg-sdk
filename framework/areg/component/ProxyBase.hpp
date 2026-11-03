@@ -795,23 +795,25 @@ protected:
     inline void set_connection_status(areg::ServiceConnectionState status) noexcept;
 
     /**
-     * \brief   Sends notifications to all listeners registered for the specified message ID and
-     *          sequence number.
+     * \brief   Notifies the subscribers of the message ID and the caller waiting for the sequence
+     *          number, which is removed. A client is notified once even if it is both. A request
+     *          failure (RequestError, RequestBusy, RequestCanceled, MessageUndelivered,
+     *          ServiceUnavailable) with a sequence number reaches only that caller.
      *
      * \param   respId              The message ID to notify.
      * \param   result              The result code to include in notifications.
-     * \param   seqNrToSearch       The sequence number to match. If SEQUENCE_NUMBER_NOTIFY,
-     *                              notifies all listeners for the message ID.
+     * \param   seqNrToSearch       The sequence number of the waiting caller. If SEQUENCE_NUMBER_NOTIFY,
+     *                              notifies only the subscribers.
      **/
     void notify_listeners( uint32_t respId, areg::ResultType result, const SequenceNumber & seqNrToSearch );
 
     /**
-     * \brief   Collects all listeners matching the message ID and sequence number into the output
-     *          list.
+     * \brief   Collects the subscribers of the message ID and the caller waiting for the sequence
+     *          number, which is removed. A client is collected once even if it is both.
      *
      * \param[out] listeners    Receives the list of listeners matching the criteria.
      * \param   msgId           The message ID to filter listeners.
-     * \param   seqNrToSearch   The sequence number to filter listeners. If SEQUENCE_NUMBER_NOTIFY, matches all listeners.
+     * \param   seqNrToSearch   The sequence number of the waiting caller. If SEQUENCE_NUMBER_NOTIFY, collects only the subscribers.
      * \return  Returns the number of listeners added to the output list.
      **/
     uint32_t prepare_listeners( ProxyBase::ProxyListenerList & listeners, uint32_t msgId, const SequenceNumber & seqNrToSearch );

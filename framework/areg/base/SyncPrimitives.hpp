@@ -126,11 +126,6 @@ private:
 class AREG_API Mutex final  : public Lockable
 {
 //////////////////////////////////////////////////////////////////////////
-// Friend objects
-//////////////////////////////////////////////////////////////////////////
-friend class MultiLock;
-
-//////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
@@ -172,22 +167,6 @@ public:
     bool try_lock() final;
 
 //////////////////////////////////////////////////////////////////////////
-// Attributes
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Returns true if the mutex is currently locked by any thread.
-     **/
-    [[nodiscard]]
-    inline bool is_locked() const noexcept;
-
-    /**
-     * \brief   Returns the thread ID of the thread currently owning the mutex.
-     **/
-    [[nodiscard]]
-    inline id_type owner_thread_id() const noexcept;
-
-//////////////////////////////////////////////////////////////////////////
 // Hidden or OS specific implementations
 //////////////////////////////////////////////////////////////////////////
 private:
@@ -208,21 +187,6 @@ private:
      * \brief   OS-specific creation. If initLock is true, current thread acquires ownership.
      **/
     void _os_create_mutex( bool initLock );
-
-//////////////////////////////////////////////////////////////////////////
-// Member variables
-//////////////////////////////////////////////////////////////////////////
-private:
-#if defined(_MSC_VER)
-    #pragma warning(push)
-    #pragma warning(disable: 4251)
-#endif  // _MSC_VER
-
-    std::atomic<id_type>    mOwnerThreadId; //!< The ID of thread currently owning mutex
-
-#if defined(_MSC_VER)
-    #pragma warning(pop)
-#endif  // _MSC_VER
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / forbidden function calls
@@ -305,8 +269,9 @@ public:
     inline bool reset() noexcept;
 
     /**
-     * \brief   Pulses the event: briefly signals it and immediately resets to non-signaled,
-     *          releasing waiting threads.
+     * \brief   Pulses the event: releases the threads waiting at the call, every one for a
+     *          manual-reset event and one for an auto-reset event, and leaves the event
+     *          non-signaled. A thread that starts waiting after the call is not released.
      **/
     inline void pulse_event() noexcept;
 
@@ -911,7 +876,8 @@ public:
     /**
      * \brief   Stops the timer and signals it once, as if it expired now. An auto-reset timer
      *          releases one waiting thread, a manual-reset timer releases all of them and stays
-     *          signaled until set_timer() is called. The timer can be set again.
+     *          signaled until set_timer() is called. The timer can be set again. On Windows a
+     *          high-resolution timer is signaled by the system up to one timer tick later.
      *
      * \return  Returns true if the timer was cancelled.
      **/
@@ -1253,6 +1219,14 @@ private:
      **/
     int32_t _os_lock( uint32_t timeout, bool waitForAll, bool isAlertable );
 
+    /**
+     * \brief   Marks the object at the index as locked by this multi-lock and updates the count
+     *          of a semaphore.
+     *
+     * \param   index       The index of the object the calling thread has just acquired.
+     **/
+    void _set_locked( int32_t index ) noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -1456,19 +1430,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Inline functions
 //////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// Mutex class inline functions
-//////////////////////////////////////////////////////////////////////////
-inline bool Mutex::is_locked() const noexcept
-{
-    return (mOwnerThreadId.load() != 0);
-}
-
-inline id_type Mutex::owner_thread_id() const noexcept
-{
-    return mOwnerThreadId.load();
-}
 
 //////////////////////////////////////////////////////////////////////////
 // SyncEvent class inline functions

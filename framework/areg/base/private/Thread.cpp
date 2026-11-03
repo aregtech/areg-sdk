@@ -228,6 +228,7 @@ ThreadLocalStorage & Thread::current_thread_storage() noexcept
 bool Thread::start(uint32_t waitForStartMs /* = areg::DO_NOT_WAIT */)
 {
     bool result = false;
+    THREADHANDLE rejected{ Thread::INVALID_THREAD_HANDLE };
 
     do
     {
@@ -251,9 +252,34 @@ bool Thread::start(uint32_t waitForStartMs /* = areg::DO_NOT_WAIT */)
         result = _os_create();
         if (result == false)
         {
-            _set_not_running();
+            if (mThreadHandle == Thread::INVALID_THREAD_HANDLE)
+            {
+                _set_not_running();
+            }
+            else
+            {
+                // The registration was rejected: the routine waits for this lock and ends unregistered.
+                _unregister_thread();
+                rejected        = mThreadHandle;
+                mThreadHandle   = Thread::INVALID_THREAD_HANDLE;
+                mThreadId       = Thread::INVALID_THREAD_ID;
+                mThreadPriority = Thread::ThreadPriority::Undefined;
+            }
         }
     } while (false);
+
+    if (rejected != Thread::INVALID_THREAD_HANDLE)
+    {
+        // Setting NotRunning is the last access of the routine to this object.
+        uint32_t state{ mRunState.load(std::memory_order_acquire) };
+        while (state != static_cast<uint32_t>(Thread::RunState::NotRunning))
+        {
+            areg::os::_os_wait_word(mRunState, state);
+            state = mRunState.load(std::memory_order_acquire);
+        }
+
+        Thread::_os_close_handle(rejected, true);
+    }
 
     if ( result )
     {

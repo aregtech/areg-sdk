@@ -224,13 +224,13 @@ public:
 
     /**
      * \brief   Pushes a batch of events (by move) with a single priority-lane lock acquisition.
-     *          Events that cannot be enqueued due to capacity overflow remain in their slots and
-     *          the overflow count is returned.
+     *          Events that are not enqueued (capacity overflow, stopped or never started
+     *          dispatcher) stay valid and their count is returned.
      *
-     * \param[in,out]   listEvents  Array of Event values sorted by priority. Overflow events are
+     * \param[in,out]   listEvents  Array of Event values sorted by priority. Events not enqueued are
      *                              compacted to the front on output.
      * \param           count       Number of events in \a listEvents.
-     * \return  Number of events NOT enqueued due to capacity overflow. 0 = all enqueued.
+     * \return  Number of valid events NOT enqueued. 0 = all enqueued.
      **/
     uint32_t queue_events(Event* listEvents, uint32_t count);
 

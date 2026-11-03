@@ -40,7 +40,7 @@ class ServiceComponent final : public  areg::Component
     {
         uint32_t    clientId{ HelloUnblock::InvalidId};   //!< Client ID
         uint32_t    seqNr   { HelloUnblock::InvalidId };  //!< The sequence ID generate by client
-        uint32_t    id      { HelloUnblock::InvalidId };  //!< Request session ID used to prepare response.
+        areg::SessionID id  { HelloUnblock::InvalidId };  //!< Request session ID used to prepare response.
     };
 
     //!< The stack of session entries

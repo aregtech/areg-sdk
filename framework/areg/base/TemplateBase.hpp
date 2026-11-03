@@ -98,25 +98,26 @@ public:
     {   }
 
     /**
-     * \brief   Called when adding a resource to the list. Implement to perform custom addition
-     *          logic.
+     * \brief   Called when adding a resource to the list. Appends the resource to the list.
      *
      * \param   List        The list of resource objects.
      * \param   Resource    The resource object to add.
      **/
-    inline void impl_add_resource( ResourceList & /*List*/, RESOURCE_OBJECT & /*Resource*/ ) noexcept
-    {   }
+    inline void impl_add_resource( ResourceList & List, RESOURCE_OBJECT & Resource )
+    {
+        List.push_last(Resource);
+    }
 
     /**
-     * \brief   Called when removing a resource from the list. Implement to perform custom removal
-     *          logic.
+     * \brief   Called when removing a resource from the list. Removes the first matching entry.
      *
      * \param   List        The list of resource objects.
      * \param   Resource    The resource object to remove.
+     * \return  Returns true if the resource was in the list and is removed.
      **/
-    inline bool impl_remove_resource( ResourceList & /*List*/, RESOURCE_OBJECT & /*Resource*/ ) noexcept
+    inline bool impl_remove_resource( ResourceList & List, RESOURCE_OBJECT & Resource ) noexcept
     {
-        return false;
+        return List.remove_entry(Resource);
     }
 };
 

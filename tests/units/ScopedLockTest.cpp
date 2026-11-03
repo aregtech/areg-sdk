@@ -242,6 +242,36 @@ TEST( ScopedLockTest, ResourceListMapOperationsAreBalanced )
 }
 
 /**
+ * \brief   The default tracker stores and removes objects, and unregistering reports membership.
+ **/
+TEST( ScopedLockTest, ResourceListMapDefaultTrackerStoresAndReportsRemoval )
+{
+    areg::ResourceListMap<int, Item *> map;
+    Item first{ 1 }, second{ 2 }, absent{ 3 };
+
+    map.register_resource_object( 7, &first );
+    map.register_resource_object( 7, &second );
+    ASSERT_NE( map.find_resource( 7 ), nullptr );
+    EXPECT_EQ( map.find_resource( 7 )->size( ), 2u );
+
+    EXPECT_FALSE( map.unregister_resource_object( 7, &absent ) );
+    EXPECT_FALSE( map.unregister_resource_object( 8, &first ) );
+    EXPECT_EQ( map.find_resource( 7 )->size( ), 2u );
+
+    EXPECT_TRUE( map.unregister_resource_object( 7, &first ) );
+    EXPECT_FALSE( map.unregister_resource_object( 7, &first ) );
+    ASSERT_NE( map.find_resource( 7 ), nullptr );
+    EXPECT_EQ( map.find_resource( 7 )->size( ), 1u );
+
+    EXPECT_TRUE( map.unregister_resource_object( 7, &second, false ) );
+    ASSERT_NE( map.find_resource( 7 ), nullptr );
+    EXPECT_TRUE( map.find_resource( 7 )->is_empty( ) );
+    map.register_resource_object( 7, &second );
+    EXPECT_TRUE( map.unregister_resource_object( 7, &second ) );
+    EXPECT_FALSE( map.exist( 7 ) );
+}
+
+/**
  * \brief   Producers and consumers share a stack locked with the counting lock: every value
  *          arrives once, and no thread ever releases a lock it does not hold.
  **/
@@ -371,9 +401,6 @@ TEST( ScopedLockTest, ConcurrentResourceMapUnderContentionIsConsistent )
  **/
 TEST( ScopedLockTest, ContainerWithMutexIsFreeForOtherThreads )
 {
-    areg::Mutex mutex;
-    EXPECT_FALSE( mutex.is_locked( ) );
-
     areg::ResourceMapBase<int, Item *, areg::Mutex> map;
     bool locked{ false };
     std::thread other( [&map, &locked]( )

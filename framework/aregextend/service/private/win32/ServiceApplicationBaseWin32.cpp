@@ -150,7 +150,7 @@ bool ServiceApplicationBase::_os_create_service()
                 SERVICE_FAILURE_ACTIONS failures { };
                 SC_ACTION actions[count];
 
-                failures.dwResetPeriod  = INFINITE;
+                failures.dwResetPeriod  = 24u * 60u * 60u;  // seconds: the failure count resets after one day
                 failures.lpRebootMsg    = nullptr;
                 failures.lpCommand      = nullptr;
                 failures.cActions       = count;
@@ -160,7 +160,7 @@ bool ServiceApplicationBase::_os_create_service()
                 actions[0].Delay        = areg::WAIT_1_SECOND;
                 actions[0].Type         = SC_ACTION_RESTART;
 
-                // first second
+                // second failure
                 actions[1].Delay        = areg::WAIT_1_SECOND;
                 actions[1].Type         = SC_ACTION_RESTART;
 
@@ -172,8 +172,9 @@ bool ServiceApplicationBase::_os_create_service()
                 actions[3].Delay        = areg::WAIT_10_SECONDS;
                 actions[3].Type         = SC_ACTION_RESTART;
 
-                actions[count - 1].Delay= areg::DO_NOT_WAIT;
-                actions[count - 1].Type = SC_ACTION_NONE;
+                // fifth and every further failure
+                actions[count - 1].Delay= areg::WAIT_1_MINUTE;
+                actions[count - 1].Type = SC_ACTION_RESTART;
 
                 ::ChangeServiceConfig2(reinterpret_cast<SC_HANDLE>(mSvcHandle), SERVICE_CONFIG_FAILURE_ACTIONS, &failures);
 

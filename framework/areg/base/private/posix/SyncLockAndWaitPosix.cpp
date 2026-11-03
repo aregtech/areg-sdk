@@ -260,6 +260,29 @@ int32_t SyncLockAndWaitPosix::_wait_any_new(WaitablePosix** listWaitables, int32
 {
     const pthread_t self{ ::pthread_self() };
 
+    // Takes the first signaled waitable in index order; returns its index or INVALID_INDEX.
+    auto try_acquire = [listWaitables, count, self]() noexcept -> int32_t
+        {
+            for (int32_t i{ 0 }; i < count; ++i)
+            {
+                WaitablePosix* w{ listWaitables[i] };
+                if (w->check_signaled(self) && w->notify_request_ownership(self))
+                {
+                    w->notify_released_threads(1);
+                    return i;
+                }
+            }
+
+            return areg::INVALID_INDEX;
+        };
+
+    // A signaled waitable is taken without registering as a waiter.
+    const int32_t ready{ try_acquire() };
+    if ((ready != areg::INVALID_INDEX) || (msTimeout == areg::DO_NOT_WAIT))
+    {
+        return (ready != areg::INVALID_INDEX ? ready : static_cast<int32_t>(areg::os::SyncSignal::Timeout));
+    }
+
     alignas(64) std::atomic<uint32_t> firedWord{ SYNC_FIRE_INVALID };
     WaiterNode nodes[areg::MAXIMUM_WAITING_OBJECTS];
 
@@ -280,19 +303,7 @@ int32_t SyncLockAndWaitPosix::_wait_any_new(WaitablePosix** listWaitables, int32
 
     for ( ; ; )
     {
-        // Try to actually take ownership of any currently-signaled waitable.
-        int32_t acquired{ areg::INVALID_INDEX };
-        for (int32_t i{ 0 }; i < count; ++i)
-        {
-            WaitablePosix* w{ listWaitables[i] };
-            if (w->check_signaled(self) && w->notify_request_ownership(self))
-            {
-                w->notify_released_threads(1);
-                acquired = i;
-                break;
-            }
-        }
-
+        const int32_t acquired{ try_acquire() };
         if (acquired != areg::INVALID_INDEX)
         {
             resultCode = acquired;
@@ -321,6 +332,12 @@ int32_t SyncLockAndWaitPosix::_wait_any_new(WaitablePosix** listWaitables, int32
             break;
         }
 
+        if ((woken & SYNC_FIRE_PULSE) != 0u)
+        {
+            resultCode = static_cast<int32_t>(woken & ~SYNC_FIRE_PULSE);
+            break;
+        }
+
         // Re-arms the fire word, ordered before the waitables are checked again.
         firedWord.store(SYNC_FIRE_INVALID, std::memory_order_relaxed);
         std::atomic_thread_fence(std::memory_order_seq_cst);
@@ -328,6 +345,13 @@ int32_t SyncLockAndWaitPosix::_wait_any_new(WaitablePosix** listWaitables, int32
 
     for (int32_t i{ 0 }; i < count; ++i)
         listWaitables[i]->unregister_waiter(&nodes[i]);
+
+    // A pulse handed over after the timeout and before the unregistration is owned as well.
+    const uint32_t fired{ firedWord.load(std::memory_order_acquire) };
+    if ((resultCode == static_cast<int32_t>(areg::os::SyncSignal::Timeout)) && (fired != SYNC_FIRE_INVALID) && ((fired & SYNC_FIRE_PULSE) != 0u))
+    {
+        resultCode = static_cast<int32_t>(fired & ~SYNC_FIRE_PULSE);
+    }
 
     return resultCode;
 }
@@ -369,7 +393,11 @@ int32_t SyncLockAndWaitPosix::wait_multiple( WaitablePosix ** listWaitables, int
         if ((count == 1) || !waitAll)
         {
             AREG_OUTPUT_DBG("WaitAny (new path): waiting for [ %d ] event(s).", count);
-            return _wait_any_new(listWaitables, count, msTimeout);
+            const int32_t fired{ _wait_any_new(listWaitables, count, msTimeout) };
+            // Waiting for all of one object reports SyncSignal::All, as every wait-all does.
+            return (waitAll && (fired == static_cast<int32_t>(areg::os::SyncSignal::First)))
+                 ? static_cast<int32_t>(areg::os::SyncSignal::All)
+                 : fired;
         }
 #endif  // defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
         AREG_OUTPUT_DBG("WaitAll (old path): waiting for all [ %d ] events.", count);
@@ -412,7 +440,18 @@ int32_t SyncLockAndWaitPosix::event_signaled( WaitablePosix & syncWaitable ) noe
     result += syncWaitable.notify_any_waiters();
 #endif  // defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
 
-    // WaitAll path:
+    result += notify_wait_all_waiters(syncWaitable);
+
+    AREG_OUTPUT_DBG("Waitable [ %s ] ID [ %p ] releasing [ %d ] thread(s).", syncWaitable.name().as_string(), &syncWaitable, result);
+    syncWaitable.notify_released_threads(result);
+
+    return result;
+}
+
+int32_t SyncLockAndWaitPosix::notify_wait_all_waiters( WaitablePosix & syncWaitable ) noexcept
+{
+    int32_t result{ 0 };
+
     // Only WaitAll waiters (count>1 && waitAll=true) are registered here.
     if (syncWaitable.has_wait_all_waiters())
     {
@@ -457,9 +496,6 @@ int32_t SyncLockAndWaitPosix::event_signaled( WaitablePosix & syncWaitable ) noe
             }
         }
     }
-
-    AREG_OUTPUT_DBG("Waitable [ %s ] ID [ %p ] releasing [ %d ] thread(s).", syncWaitable.name().as_string(), &syncWaitable, result);
-    syncWaitable.notify_released_threads(result);
 
     return result;
 }

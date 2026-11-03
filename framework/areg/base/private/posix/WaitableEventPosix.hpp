@@ -80,8 +80,9 @@ public:
     bool set_signaled() noexcept;
 
     /**
-     * \brief   Pulses the event: briefly signals it and immediately resets to non-signaled,
-     *          releasing waiting threads.
+     * \brief   Pulses the event: releases the threads waiting at the call, every one for a
+     *          manual-reset event and one for an auto-reset event, and leaves the event
+     *          non-signaled. A thread that starts waiting after the call is not released.
      **/
     void pulse_event() noexcept;
 

@@ -167,7 +167,7 @@ protected:
     }
 
     //! prepare_response() restores the session before the answer is sent. It
-    //! returns false when the client has gone, and then there is nobody to answer.
+    //! returns false when the session was cancelled, and then there is nobody to answer.
     void process_event(const ScanResultData & data) final
     {
         // reset() puts the read position back to the start; read() answers with

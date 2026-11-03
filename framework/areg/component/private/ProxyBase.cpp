@@ -75,6 +75,32 @@ namespace
     //!< The number of listeners a snapshot holds without a heap allocation.
     constexpr uint32_t  SNAPSHOT_INLINE     { 8u };
 
+    //!< Returns true if the result is a failure of one request, delivered only to its caller.
+    constexpr bool _is_request_failure(areg::ResultType result) noexcept
+    {
+        return (result == areg::ResultType::RequestError)
+            || (result == areg::ResultType::RequestBusy)
+            || (result == areg::ResultType::RequestCanceled)
+            || (result == areg::ResultType::MessageUndelivered)
+            || (result == areg::ResultType::ServiceUnavailable);
+    }
+
+    //!< Returns the client of the listener waiting for the sequence number, or nullptr.
+    template <typename LIST>
+    NotificationConsumer * _requester_of(const LIST & subVec, const SequenceNumber & seqNr) noexcept
+    {
+        if (seqNr == areg::SEQUENCE_NUMBER_NOTIFY)
+            return nullptr;
+
+        for (uint32_t i = 0; i < subVec.size(); ++i)
+        {
+            if (subVec.value_at(i).mSequenceNr == seqNr)
+                return subVec.value_at(i).mListener;
+        }
+
+        return nullptr;
+    }
+
     //!< A listener copied out of the listener map; nullptr once its client is removed.
     struct SnapshotEntry
     {
@@ -899,13 +925,15 @@ uint32_t ProxyBase::prepare_listeners( ProxyBase::ProxyListenerList& out_listene
 
     ProxyListenerList & subVec = pos->second;
     out_listenerList.reserve(subVec.size());
+    NotificationConsumer * const requester{ _requester_of(subVec, seqNrToSearch) };
 
     for (uint32_t i = 0; i < subVec.size(); )
     {
         const ProxyBase::Listener & elem = subVec.value_at(i);
         if (elem.mSequenceNr == areg::SEQUENCE_NUMBER_NOTIFY)
         {
-            out_listenerList.add(elem);
+            if (elem.mListener != requester)
+                out_listenerList.add(elem);
             ++i;
         }
         else if (elem.mSequenceNr == seqNrToSearch)
@@ -935,12 +963,15 @@ void ProxyBase::notify_listeners( uint32_t respId, areg::ResultType result, cons
 
         ProxyListenerList & subVec = pos->second;
         listeners.entries = buffer.reserve(subVec.size());
+        NotificationConsumer * const requester{ _requester_of(subVec, seqNrToSearch) };
+        const bool callerOnly{ (seqNrToSearch != areg::SEQUENCE_NUMBER_NOTIFY) && _is_request_failure(result) };
         for (uint32_t i = 0; i < subVec.size(); )
         {
             const ProxyBase::Listener & elem = subVec.value_at(i);
             if (elem.mSequenceNr == areg::SEQUENCE_NUMBER_NOTIFY)
             {
-                listeners.entries[listeners.count ++] = SnapshotEntry{ elem.mSequenceNr, elem.mListener };
+                if (!callerOnly && (elem.mListener != requester))
+                    listeners.entries[listeners.count ++] = SnapshotEntry{ elem.mSequenceNr, elem.mListener };
                 ++i;
             }
             else if (elem.mSequenceNr == seqNrToSearch)
