@@ -132,8 +132,8 @@ if (AREG_TESTS)
         include(${AREG_TESTS_DIR}/fatal-create/CMakeLists.txt)
     endif()
 
-    # Makes chosen system calls fail in a child process: Linux, macOS and Windows. Cygwin
-    # resolves the calls of a DLL at link time, so nothing can replace them there.
+    # Makes chosen system calls fail in a child process: Linux, macOS and Windows. No
+    # replacement is written for Cygwin.
     if (NOT CYGWIN)
         include(${AREG_TESTS_DIR}/fault-inject/CMakeLists.txt)
     endif()
