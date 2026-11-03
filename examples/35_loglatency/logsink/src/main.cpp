@@ -14,6 +14,7 @@
 #include "areg/base/areg_global.h"
 #include "areg/base/DateTime.hpp"
 #include "areg/logging/LoggingDefs.hpp"
+#include "areg/base/private/DebugDefs.hpp"
 #include "areglogger/client/LogObserverApi.h"
 
 #include <algorithm>
@@ -100,6 +101,8 @@ namespace
                 ++_run.notices;
                 _run.dropped += count;
             }
+
+            AREG_DT_TRACE("t=%llu sink.notice received=%u text=%s", areg::trace_now_us(), _run.received.load(), entry.logMessage);
 
             return;
         }
@@ -199,11 +202,13 @@ int main(int argc, char ** argv)
         }
     }
 
+    AREG_DT_TRACE("t=%llu sink.stop received=%u notices=%u dropped=%llu", areg::trace_now_us(), _run.received.load(), _run.notices, static_cast<unsigned long long>(_run.dropped));
     const auto stopStart{ std::chrono::steady_clock::now() };
     log_observer_disconnect_logger();
     const double stopMs{ std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - stopStart).count() };
     LogQueueState queue{ };
     static_cast<void>(log_observer_queue_state(&queue));
+    AREG_DT_TRACE("t=%llu sink.queue dropped=%llu pending=%u", areg::trace_now_us(), static_cast<unsigned long long>(queue.lqDropped), queue.lqPending);
     log_observer_release();
 
     std::vector<uint32_t> & latencies{ _run.latencies };

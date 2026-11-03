@@ -49,6 +49,11 @@
     #define TYPED_TEST_SUITE TYPED_TEST_CASE
 #endif  // !defined(TYPED_TEST_SUITE)
 
+// The parameterized test suite macro of a googletest older than 1.10.
+#if !defined(INSTANTIATE_TEST_SUITE_P)
+    #define INSTANTIATE_TEST_SUITE_P INSTANTIATE_TEST_CASE_P
+#endif  // !defined(INSTANTIATE_TEST_SUITE_P)
+
 // The skip macro of a googletest older than 1.10: reports the reason and returns from the test body.
 #if !defined(GTEST_SKIP)
     namespace areg_gtest

@@ -267,7 +267,7 @@ inline TimerConsumer& Timer::consumer() const noexcept
 
 inline bool Timer::is_stopped() const noexcept
 {
-    return (mTimeoutInMs == areg::INVALID_TIMEOUT);
+    return (timeout() == areg::INVALID_TIMEOUT);
 }
 
 } // namespace areg

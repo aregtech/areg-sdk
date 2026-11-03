@@ -5,6 +5,7 @@
 #include "areg/component/Timer.hpp"
 #include "areg/component/TimerConsumer.hpp"
 
+#include <chrono>
 #include <condition_variable>
 #include <functional>
 #include <map>
@@ -247,12 +248,46 @@ TEST_F(TimerLifecycleTest, zero_count_restart_clears_active_state)
     EXPECT_FALSE(timer.is_active());
 
     ASSERT_TRUE(timer.start_timer(1u, dispatcher, areg::Timer::ONE_TIME));
-    EXPECT_TRUE(timer.is_active());
     ASSERT_TRUE(consumer.wait_count(timer, 1u));
     ASSERT_TRUE(dispatcher.barrier());
     EXPECT_EQ(consumer.count(timer), 1u);
+    EXPECT_EQ(timer.event_count(), 0u);
+    EXPECT_FALSE(timer.is_active());
     timer.stop_timer();
     EXPECT_TRUE(timer.is_stopped());
+}
+
+TEST_F(TimerLifecycleTest, state_queries_from_another_thread_race_free_with_expiry)
+{
+    constexpr uint32_t EVENTS{ 64u };
+    TimerListener consumer;
+    areg::Timer timer(consumer, "LifecycleConcurrentQuery");
+    EventTestDispatcher dispatcher("LifecycleConcurrentQueryThread");
+    TimerTestRun run(dispatcher);
+    run.watch(timer);
+    ASSERT_TRUE(dispatcher.start_ready());
+    timer.set_priority(areg::EventPriority::NormalPrio);
+    ASSERT_TRUE(timer.start_timer(1u, dispatcher, EVENTS));
+
+    uint32_t previous{ EVENTS };
+    bool ordered{ true };
+    const auto deadline{ std::chrono::steady_clock::now() + EVENT_TEST_WAIT };
+    while ((consumer.count(timer) < EVENTS) && (std::chrono::steady_clock::now() < deadline))
+    {
+        const uint32_t remaining{ timer.event_count() };
+        ordered = ordered && (remaining <= previous);
+        previous = remaining;
+        ordered = ordered && (timer.timeout() == 1u) && timer.is_valid() && (timer.is_stopped() == false);
+        ordered = ordered && (timer.priority() == areg::EventPriority::NormalPrio);
+        std::this_thread::yield();
+    }
+
+    ASSERT_TRUE(consumer.wait_count(timer, EVENTS));
+    ASSERT_TRUE(dispatcher.barrier());
+    EXPECT_TRUE(ordered);
+    EXPECT_EQ(consumer.count(timer), EVENTS);
+    EXPECT_EQ(timer.event_count(), 0u);
+    EXPECT_FALSE(timer.is_active());
 }
 
 TEST_F(TimerLifecycleTest, one_shot_fires_exactly_once_on_the_explicit_dispatcher)

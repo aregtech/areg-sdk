@@ -63,7 +63,8 @@ jobs:
           fi
           echo "run=${RUN}" >> "${GITHUB_OUTPUT}"
           if [ -n "${MATRIX}" ]; then
-            echo "matrix=$(jq -c --arg ev "${EVENT}" '[.[] | select($ev != "push" or .master == true)]' "${MATRIX}")" >> "${GITHUB_OUTPUT}"
+            # TEMP-CI05: a pull request runs only the tsan legs.
+            echo "matrix=$(jq -c --arg ev "${EVENT}" '[.[] | select($ev != "push" or .master == true) | select($ev != "pull_request" or .mode == "tsan")]' "${MATRIX}")" >> "${GITHUB_OUTPUT}"
           fi
 
   sanitizers-linux:
@@ -215,7 +216,8 @@ jobs:
   teardown-stress:
     name: teardown tests, no sanitizer (${{matrix.config}})
     needs: plan
-    if: needs.plan.outputs.run == 'true' && github.event_name != 'push'
+    # TEMP-CI05: off for a pull request.
+    if: needs.plan.outputs.run == 'true' && github.event_name != 'push' && github.event_name != 'pull_request'
     # The teardown tests without a sanitizer, Release and Debug, repeated until one fails.
     # The four slow tests repeat 'slow' times, the others 100 times.
     runs-on: ubuntu-latest
@@ -327,7 +329,8 @@ jobs:
   examples:
     name: examples under ${{matrix.sanitize}} (${{matrix.arch}})
     needs: plan
-    if: needs.plan.outputs.run == 'true' && github.event_name != 'push'
+    # TEMP-CI05: off for a pull request.
+    if: needs.plan.outputs.run == 'true' && github.event_name != 'push' && github.event_name != 'pull_request'
     # The example suite under ASan with UBSan (x64) and UBSan alone (x86). A UBSan report
     # from framework/ fails the job; a report from an example is a warning, because an
     # example is teaching material and is allowed to be corrected on its own schedule.

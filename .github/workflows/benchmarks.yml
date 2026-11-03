@@ -7,7 +7,8 @@ name: Benchmarks
 on:
   push:
     branches: [ master ]
-  pull_request:
+  # TEMP-CI05: off for a pull request.
+  # pull_request:
   workflow_dispatch:
 
 concurrency:

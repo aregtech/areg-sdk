@@ -1,0 +1,98 @@
+name: Diagnose CI-05 log delivery
+
+# TEMP-CI05: temporary diagnostic workflow, removed once CI-05 is answered.
+# Builds the log trio with AREG_DIAGNOSE_TRACE=1 and runs the full speed log delivery
+# check many times. Every failed run keeps the output of logcollector, 35_logsink and
+# 35_logsource, with the counters of each hop, in the artifact of its job.
+
+on:
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+    inputs:
+      runs:
+        description: 'Runs of the full profile per job'
+        required: false
+        default: '100'
+
+concurrency:
+  group: ${{github.workflow}}-${{github.ref}}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  BUILD_TYPE: Release
+  RUNS: ${{ inputs.runs || '100' }}
+
+jobs:
+  log-delivery:
+    name: log delivery ${{matrix.os}} ${{matrix.shard}}
+    runs-on: ${{matrix.os}}
+    timeout-minutes: 60
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: macos-latest,  shard: 1, cmake: '-DAREG_COMPILER=clang' }
+          - { os: macos-latest,  shard: 2, cmake: '-DAREG_COMPILER=clang' }
+          - { os: macos-latest,  shard: 3, cmake: '-DAREG_COMPILER=clang' }
+          - { os: ubuntu-latest, shard: 1, cmake: '-DAREG_COMPILER_FAMILY=gnu' }
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v6.1.0
+        with:
+          java-version: 17
+          java-package: jre
+          distribution: temurin
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+
+      - name: Configure with the diagnostic trace
+        shell: bash
+        run: |
+          cmake -B build ${{matrix.cmake}} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_LIB_TYPE=shared \
+                -DAREG_EXTENDED:BOOL=OFF -DAREG_LOGGING:BOOL=ON -DAREG_EXAMPLES:BOOL=ON -DAREG_TESTS:BOOL=OFF \
+                -DAREG_INSTALL:BOOL=OFF -DAREG_OUTPUT_LAYOUT:BOOL=OFF -DCMAKE_CXX_FLAGS="-DAREG_DIAGNOSE_TRACE=1"
+
+      - name: Build the log trio
+        id: build
+        shell: bash
+        run: |
+          cmake --build build --config ${{env.BUILD_TYPE}} --parallel 4 --target logcollector 35_logsink 35_logsource
+          BIN="$(find build -type f \( -name logcollector.elf -o -name logcollector.mac \) -print -quit)"
+          if [ -z "${BIN}" ]; then echo "logcollector not found under build" >&2; exit 1; fi
+          echo "BIN_DIR=$(dirname "${BIN}")" >> "${GITHUB_ENV}"
+
+      - name: Check that the trace is built in
+        shell: bash
+        run: |
+          FILES="$(find build -type f \( -name 'libareg.so' -o -name 'libareg.dylib' -o -name 'logcollector.elf' -o -name 'logcollector.mac' -o -name '35_logsink.elf' -o -name '35_logsink.mac' \))"
+          if [ "$(echo "${FILES}" | grep -c .)" -lt 3 ]; then echo "binaries not found: ${FILES}" >&2; exit 1; fi
+          for f in ${FILES}; do
+            if LC_ALL=C grep -a -q 'areg-diag-trace' "${f}"; then echo "trace in ${f}"; else echo "no trace in ${f}" >&2; exit 1; fi
+          done
+
+      - name: Check the log delivery, full speed
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        shell: bash
+        timeout-minutes: 45
+        run: |
+          python tools/intern/check-log-delivery.py "${BIN_DIR}" --profiles full --runs ${{env.RUNS}} \
+                 --save-dir product/diag --summary "${GITHUB_STEP_SUMMARY}"
+
+      - name: Upload the kept runs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ci05-${{matrix.os}}-${{matrix.shard}}
+          path: product/diag
+          if-no-files-found: warn
+          retention-days: 14

@@ -32,14 +32,14 @@ Full treatment with the ownership rules: `33-timers.md`.
 | start on this thread | `bool start_timer(uint32_t timeoutInMs, uint32_t eventCount = TimerBase::CONTINUOUSLY)` | `Timer.hpp:120` |
 | start on a given thread | `bool start_timer(uint32_t timeoutInMs, DispatcherThread & whichThread, uint32_t eventCount = TimerBase::CONTINUOUSLY)` | `Timer.hpp:132` |
 | stop | `void stop_timer()` | `Timer.hpp:137` |
-| running? | `bool is_active() const noexcept` | `TimerBase.hpp:145` |
+| running? | `bool is_active() const noexcept` | `TimerBase.hpp:147` |
 
 Repetition constants, both on `areg::TimerBase`:
 
 | Constant | Value | Header |
 |---|---|---|
-| `TimerBase::CONTINUOUSLY` | `0xFFFFFFFF`, fire forever | `TimerBase.hpp:61` |
-| `TimerBase::ONE_TIME` | `1`, fire once | `TimerBase.hpp:67` |
+| `TimerBase::CONTINUOUSLY` | `0xFFFFFFFF`, fire forever | `TimerBase.hpp:63` |
+| `TimerBase::ONE_TIME` | `1`, fire once | `TimerBase.hpp:69` |
 
 The handler you override, from `areg::TimerConsumer`:
 

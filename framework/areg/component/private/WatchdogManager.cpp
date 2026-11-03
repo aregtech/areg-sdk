@@ -88,7 +88,7 @@ bool WatchdogManager::rearm_timer(Watchdog& watchdog, uint32_t msTimeout)
 
     watchdogManager.mWatchdogResource.lock();
     WatchdogManager::_os_timer_stop(watchdog.handle());
-    watchdog.mTimeoutInMs = msTimeout;
+    watchdog.mTimeoutInMs.store(msTimeout, std::memory_order_relaxed);
     ++ watchdog.mSequence;
     watchdogManager._register_watchdog(watchdog);
     watchdogManager.mWatchdogResource.unlock();

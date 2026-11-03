@@ -618,6 +618,7 @@ void EventQueue::remove_all_events() noexcept
     if (ring == nullptr)
         return;
 
+    [[maybe_unused]] uint32_t discarded{ mPrioCount.load(std::memory_order_relaxed) };
     if (mPrioCount.load(std::memory_order_relaxed) != 0u)
     {
         Lock lock(mPrioLock);
@@ -632,6 +633,13 @@ void EventQueue::remove_all_events() noexcept
         Event evt;
         if (!_ring_try_dequeue(ring, evt))
             break;
+
+        ++ discarded;
+    }
+
+    if (discarded != 0u)
+    {
+        AREG_DT_TRACE("t=%llu queue.discarded events=%u thread=%s", areg::trace_now_us(), discarded, areg::Thread::current_thread_name().as_string());
     }
 }
 

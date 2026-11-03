@@ -173,7 +173,7 @@ void TimerManager::process_event( const TimerManagerEventData & data )
             _unregister_timer(*timer);
 
             timer->mStarted        = false;
-            timer->mActive         = false;
+            timer->mActive.store(false, std::memory_order_relaxed);
             timer->mDispatchThread = nullptr;
         }
     }
@@ -200,7 +200,7 @@ void TimerManager::_process_expired_timer(Timer * timer, TIMERHANDLE handle, uin
         }
         else
         {
-            ASSERT(timer->mActive);
+            ASSERT(timer->is_active());
         }
     }
 

@@ -47,12 +47,14 @@ TimerBase::~TimerBase()
 
 bool TimerBase::create_waitable_timer() noexcept
 {
-    if ( (mHandle == nullptr) && (mTimeoutInMs != areg::INVALID_TIMEOUT) )
+    TIMERHANDLE handle{ mHandle.load(std::memory_order_relaxed) };
+    if ( (handle == nullptr) && (mTimeoutInMs.load(std::memory_order_relaxed) != areg::INVALID_TIMEOUT) )
     {
-        mHandle = _os_create( );
+        handle = _os_create( );
+        mHandle.store(handle, std::memory_order_relaxed);
     }
 
-    return (mHandle != nullptr);
+    return (handle != nullptr);
 }
 
 
@@ -60,8 +62,7 @@ void TimerBase::destroy_waitable_timer()
 {
     Lock lock( mLock );
 
-    TIMERHANDLE handle = mHandle;
-    mHandle = nullptr;
+    TIMERHANDLE handle{ mHandle.exchange(nullptr, std::memory_order_relaxed) };
     if ( handle != nullptr )
     {
         _os_destroy( handle );

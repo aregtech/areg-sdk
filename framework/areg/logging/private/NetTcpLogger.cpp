@@ -25,6 +25,7 @@
 #include "areg/persist/ConfigManager.hpp"
 #include "areg/logging/private/LogManager.hpp"
 #include "areg/logging/private/ScopeController.hpp"
+#include "areg/base/private/DebugDefs.hpp"
 
 #if AREG_LOGGING
 
@@ -102,19 +103,27 @@ void NetTcpLogger::log_message(const areg::LogEntry& logMessage)
 {
     // A paused source drops what it produced. Nothing is queued, so nothing is replayed on resume.
     if (!is_sending())
+    {
+        AREG_DC_ADD(TcpNotSending, 1u);
         return;
+    }
 
     const ITEM_ID cookie{ connected_cookie() };
     if (cookie != areg::COOKIE_UNKNOWN)
     {
-        send_message(areg::create_log_message(logMessage, areg::LogDataType::Remote, cookie), areg::EventPriority::NormalPrio);
+        if (send_message(areg::create_log_message(logMessage, areg::LogDataType::Remote, cookie), areg::EventPriority::NormalPrio))
+            AREG_DC_ADD(TcpForwardOk, 1u);
+        else
+            AREG_DC_ADD(TcpForwardRefused, 1u);
     }
     else if (mRingStack.capacity() != 0)
     {
+        AREG_DC_ADD(TcpRingQueued, 1u);
         queue_pending(areg::create_log_message(logMessage, areg::LogDataType::Remote, cookie));
     }
     else
     {
+        AREG_DC_ADD(TcpRingDropped, 1u);
         ++mRingDropped;
     }
 }
@@ -123,18 +132,26 @@ void NetTcpLogger::forward_message(const areg::MessageEnvelope& msg)
 {
     // A paused source drops what it produced. Nothing is queued, so nothing is replayed on resume.
     if (!is_sending())
+    {
+        AREG_DC_ADD(TcpNotSending, 1u);
         return;
+    }
 
     if (connected_cookie() != areg::COOKIE_UNKNOWN)
     {
-        send_message(msg, areg::EventPriority::NormalPrio);
+        if (send_message(msg, areg::EventPriority::NormalPrio))
+            AREG_DC_ADD(TcpForwardOk, 1u);
+        else
+            AREG_DC_ADD(TcpForwardRefused, 1u);
     }
     else if (mRingStack.capacity() != 0)
     {
+        AREG_DC_ADD(TcpRingQueued, 1u);
         queue_pending(areg::MessageEnvelope(msg));
     }
     else
     {
+        AREG_DC_ADD(TcpRingDropped, 1u);
         ++mRingDropped;
     }
 }
@@ -143,18 +160,26 @@ void NetTcpLogger::forward_message(areg::MessageEnvelope&& msg)
 {
     // A paused source drops what it produced. Nothing is queued, so nothing is replayed on resume.
     if (!is_sending())
+    {
+        AREG_DC_ADD(TcpNotSending, 1u);
         return;
+    }
 
     if (connected_cookie() != areg::COOKIE_UNKNOWN)
     {
-        send_message(std::move(msg), areg::EventPriority::NormalPrio);
+        if (send_message(std::move(msg), areg::EventPriority::NormalPrio))
+            AREG_DC_ADD(TcpForwardOk, 1u);
+        else
+            AREG_DC_ADD(TcpForwardRefused, 1u);
     }
     else if (mRingStack.capacity() != 0)
     {
+        AREG_DC_ADD(TcpRingQueued, 1u);
         queue_pending(std::move(msg));
     }
     else
     {
+        AREG_DC_ADD(TcpRingDropped, 1u);
         ++mRingDropped;
     }
 }

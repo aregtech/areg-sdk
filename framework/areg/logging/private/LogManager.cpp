@@ -18,6 +18,7 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/base/File.hpp"
 #include "areg/base/Process.hpp"
+#include "areg/base/private/DebugDefs.hpp"
 
 #include <utility>
 
@@ -89,6 +90,7 @@ inline void LogManager::post_log_message(areg::MessageEnvelope&& msg)
     if (EventDispatcher::post_event(evt) == false)
     {
         mQueueDropped.fetch_add(1u, std::memory_order_relaxed);
+        AREG_DC_ADD(SrcPostRefused, 1u);
     }
 }
 
@@ -495,10 +497,13 @@ void LogManager::stop_logs()
 
     mIsStarted.store(false, std::memory_order_release);
 
+    AREG_DT_TRACE("t=%llu src.stop_logs pending_drops=%u", areg::trace_now_us(), mQueueDropped.load(std::memory_order_relaxed));
     _write_dropped_notice();
     mLoggerDebug.close_logger( );
     mLoggerFile.close_logger( );
     mLoggerTcp.close_logger( );
+    AREG_DT_TRACE("t=%llu src.remote_closed", areg::trace_now_us());
+    AREG_DC_DUMP("src");
     mLoggerDatabase.close_logger();
     trigger_exit( );
 }
@@ -524,6 +529,10 @@ void LogManager::_write_dropped_notice()
     const uint32_t dropped{ mQueueDropped.exchange(0u, std::memory_order_relaxed) };
     if (dropped == 0u)
         return;
+
+    AREG_DC_ADD(SrcNoticeWritten, 1u);
+    AREG_DC_ADD(SrcNoticeSum, dropped);
+    AREG_DT_TRACE("t=%llu src.notice n=%u", areg::trace_now_us(), dropped);
 
     char text[areg::LOG_MSG_SIZE];
     const int32_t len{ String::format_string( text

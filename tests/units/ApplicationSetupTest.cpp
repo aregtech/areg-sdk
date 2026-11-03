@@ -28,6 +28,17 @@ namespace
     constexpr uint32_t APP_WAIT_MS{ 30'000u };
     constexpr std::chrono::seconds APP_WAIT{ 30 };
 
+    // Succeeds when the current directory is the same filesystem object as the expected one.
+    testing::AssertionResult current_dir_is(const std::filesystem::path& expected)
+    {
+        const std::filesystem::path actual{ areg::File::current_dir().as_string() };
+        std::error_code error;
+        if (std::filesystem::equivalent(actual, expected, error) && !error)
+            return testing::AssertionSuccess();
+
+        return testing::AssertionFailure() << actual << " is not " << expected << " (" << error.message() << ")";
+    }
+
     class ApplicationTimerProbe final : public areg::DispatcherThread, public areg::TimerConsumer
     {
     public:
@@ -492,13 +503,32 @@ TEST_F(ApplicationSetupTest, working_directory_accepts_explicit_empty_and_null_p
 {
     const std::string directory{ mDirectory.string() };
     areg::Application::set_working_directory(directory.c_str());
-    EXPECT_EQ(std::filesystem::path(areg::File::current_dir().as_string()), mDirectory);
+    EXPECT_TRUE(current_dir_is(mDirectory));
     areg::Application::set_working_directory("");
     const std::filesystem::path executable{ areg::Process::instance().path().as_string() };
-    EXPECT_EQ(std::filesystem::path(areg::File::current_dir().as_string()), executable);
+    EXPECT_TRUE(current_dir_is(executable));
     areg::Application::set_working_directory(directory.c_str());
+    EXPECT_TRUE(current_dir_is(mDirectory));
     areg::Application::set_working_directory(nullptr);
-    EXPECT_EQ(std::filesystem::path(areg::File::current_dir().as_string()), executable);
+    EXPECT_TRUE(current_dir_is(executable));
+}
+
+TEST_F(ApplicationSetupTest, working_directory_through_a_symbolic_link_reaches_the_target)
+{
+    const std::filesystem::path link{ mDirectory.string() + "_link" };
+    std::error_code error;
+    std::filesystem::create_directory_symlink(mDirectory, link, error);
+    if (error)
+    {
+        GTEST_SKIP() << "no symbolic link: " << error.message();
+    }
+
+    const std::string linkName{ link.string() };
+    areg::Application::set_working_directory(linkName.c_str());
+    EXPECT_TRUE(current_dir_is(mDirectory));
+    areg::Application::set_working_directory(nullptr);
+    std::filesystem::remove(link, error);
+    EXPECT_FALSE(error);
 }
 
 TEST_F(ApplicationSetupTest, setup_changes_the_working_directory_to_the_executable)
@@ -506,8 +536,7 @@ TEST_F(ApplicationSetupTest, setup_changes_the_working_directory_to_the_executab
     const std::string directory{ mDirectory.string() };
     areg::Application::set_working_directory(directory.c_str());
     setup_application();
-    EXPECT_EQ(std::filesystem::path(areg::File::current_dir().as_string())
-            , std::filesystem::path(areg::Process::instance().path().as_string()));
+    EXPECT_TRUE(current_dir_is(std::filesystem::path(areg::Process::instance().path().as_string())));
 }
 
 TEST_F(ApplicationSetupTest, storage_missing_queries_do_not_insert_and_replacement_returns_the_previous_value)

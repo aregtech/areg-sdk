@@ -247,7 +247,7 @@ private:
 
 inline bool Watchdog::is_valid() const noexcept
 {
-    return (mHandle != nullptr);
+    return (handle() != nullptr);
 }
 
 inline Watchdog::GUARD_ID Watchdog::id() const noexcept
