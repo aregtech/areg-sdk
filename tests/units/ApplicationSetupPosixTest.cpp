@@ -65,7 +65,7 @@ namespace
         const bool mValid;
     };
 
-    void expect_same_disposition(const struct sigaction& actual, const struct sigaction& expected)
+    void expect_same_disposition(int owner, const struct sigaction& actual, const struct sigaction& expected)
     {
         EXPECT_EQ(actual.sa_flags & (SA_SIGINFO | SA_RESTART), expected.sa_flags & (SA_SIGINFO | SA_RESTART));
         if ((expected.sa_flags & SA_SIGINFO) != 0)
@@ -78,7 +78,12 @@ namespace
         }
         for (int signal : { SIGPIPE, SIGSEGV, SIGUSR1 })
         {
-            EXPECT_EQ(sigismember(&actual.sa_mask, signal), sigismember(&expected.sa_mask, signal));
+            // Without SA_NODEFER the signal blocks itself, and a system may store it in the mask.
+            if ((signal == owner) && ((expected.sa_flags & SA_NODEFER) == 0))
+            {
+                continue;
+            }
+            EXPECT_EQ(sigismember(&actual.sa_mask, signal), sigismember(&expected.sa_mask, signal)) << "mask bit of signal " << signal;
         }
     }
 
@@ -221,7 +226,7 @@ TEST_P(ApplicationSetupSignalsTest, setup_respects_signal_ownership_and_release_
     }
     else
     {
-        expect_same_disposition(installed, before);
+        expect_same_disposition(SIGPIPE, installed, before);
     }
     _application_signal_calls = 0;
     ASSERT_EQ(::raise(SIGPIPE), 0);
@@ -234,7 +239,7 @@ TEST_P(ApplicationSetupSignalsTest, setup_respects_signal_ownership_and_release_
                        || (segvBefore.sa_handler != SIG_DFL && segvBefore.sa_handler != SIG_IGN) };
     if (segvOwned)
     {
-        expect_same_disposition(segvInstalled, segvBefore);
+        expect_same_disposition(SIGSEGV, segvInstalled, segvBefore);
     }
 
     release_application();
@@ -242,11 +247,11 @@ TEST_P(ApplicationSetupSignalsTest, setup_respects_signal_ownership_and_release_
     struct sigaction segvRestored{};
     ASSERT_EQ(::sigaction(SIGPIPE, nullptr, &restored), 0);
     ASSERT_EQ(::sigaction(SIGSEGV, nullptr, &segvRestored), 0);
-    expect_same_disposition(restored, before);
-    expect_same_disposition(segvRestored, segvBefore);
+    expect_same_disposition(SIGPIPE, restored, before);
+    expect_same_disposition(SIGSEGV, segvRestored, segvBefore);
     release_application();
     ASSERT_EQ(::sigaction(SIGPIPE, nullptr, &restored), 0);
-    expect_same_disposition(restored, before);
+    expect_same_disposition(SIGPIPE, restored, before);
 }
 
 INSTANTIATE_TEST_SUITE_P(PipeOwnership, ApplicationSetupSignalsTest, testing::Values(0u, 1u, 2u, 3u)
@@ -266,7 +271,7 @@ TEST_F(ApplicationSetupPosixTest, repeated_setup_restores_the_original_signal_in
     setup_application(false, false, false, true, false);
     struct sigaction second{};
     ASSERT_EQ(::sigaction(SIGPIPE, nullptr, &second), 0);
-    expect_same_disposition(second, first);
+    expect_same_disposition(SIGPIPE, second, first);
     release_application();
     struct sigaction restored{};
     ASSERT_EQ(::sigaction(SIGPIPE, nullptr, &restored), 0);

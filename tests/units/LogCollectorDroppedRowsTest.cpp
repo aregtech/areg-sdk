@@ -38,7 +38,14 @@ namespace
 
     areg::MessageEnvelope make_row(ITEM_ID source, uint32_t scopeId, const char * text, areg::LogMessageType type = areg::LogMessageType::MessageText)
     {
-        const areg::LogEntry entry(type, scopeId, 0u, 0u, areg::LogPriority::PrioError, text, static_cast<uint32_t>(std::strlen(text)));
+        // The full constructor sets only the type in a build without logging.
+        areg::LogEntry entry{ type };
+        const uint32_t len{ static_cast<uint32_t>(std::strlen(text)) };
+        entry.logScopeId     = scopeId;
+        entry.logMessagePrio = areg::LogPriority::PrioError;
+        entry.logMessageLen  = len < areg::LOG_MSG_SIZE ? len : areg::LOG_MSG_SIZE - 1u;
+        std::memcpy(entry.logMessage, text, entry.logMessageLen);
+        entry.logMessage[entry.logMessageLen] = '\0';
         return areg::create_log_message(entry, areg::LogDataType::Remote, source);
     }
 
