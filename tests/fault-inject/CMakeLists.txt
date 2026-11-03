@@ -15,6 +15,8 @@ set(AREG_FAULT_INJECT_TEST "areg-fault-inject-test")
 add_library(${AREG_FAULT_INJECT_LIB} SHARED "${AREG_TESTS_DIR}/fault-inject/fault_inject.cpp")
 target_include_directories(${AREG_FAULT_INJECT_LIB} PRIVATE "${AREG_TESTS_DIR}")
 target_compile_definitions(${AREG_FAULT_INJECT_LIB} PRIVATE AREG_FAULT_EXPORTS)
+# Links with the target options of the compile, for example -m32.
+target_link_libraries(${AREG_FAULT_INJECT_LIB} PRIVATE ${AREG_LDFLAGS})
 if (WIN32)
     target_link_libraries(${AREG_FAULT_INJECT_LIB} PRIVATE ws2_32)
 else()

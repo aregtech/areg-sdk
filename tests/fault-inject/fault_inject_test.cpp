@@ -56,10 +56,15 @@ namespace
 TEST( FaultInjectTest, thread_start_fails_when_the_system_cannot_create_a_thread )
 {
     AREG_EXPECT_IN_CHILD(
+        ReturningConsumer consumer;
+        // The thread sanitizer creates its helper thread at the first thread creation of a process.
+        areg::Thread warmup( consumer, "FaultInjectWarmup" );
+        AREG_CHILD_CHECK( warmup.start( areg::WAIT_INFINITE ) );
+        static_cast<void>(warmup.shutdown( areg::WAIT_INFINITE ));
+
         areg_fault::FaultScope faults;
         AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::ThreadCreate, THREAD_ERROR ) );
 
-        ReturningConsumer consumer;
         areg::Thread thread( consumer, "FaultInjectThread" );
         AREG_CHILD_CHECK( thread.start( areg::WAIT_INFINITE ) == false );
         AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::ThreadCreate ) == 1u && NOT_REPLACED );
