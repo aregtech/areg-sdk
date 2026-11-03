@@ -139,6 +139,11 @@ namespace areg::os {
      * \brief   Sentinel value stored in a WaitAny firedWord while no waitable has fired.
      **/
     inline constexpr uint32_t SYNC_FIRE_INVALID     { static_cast<uint32_t>(areg::os::SyncSignal::Invalid) };
+
+    /**
+     * \brief   Bit set in a WaitAny firedWord by a pulse: the waiter owns the object at the index in the other bits.
+     **/
+    inline constexpr uint32_t SYNC_FIRE_PULSE       { 0x8000'0000u };
 #endif  // defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
 
 } // namespace areg::os

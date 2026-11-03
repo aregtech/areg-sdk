@@ -46,6 +46,8 @@ Measure the reference first, with no bulk traffic at all:
 | `-q` | no bulk traffic - use it for the reference round-trip | off |
 | `-n` | headless | off |
 
+The provider runs until a line `-q` or `--quit` is typed on its console.
+
 ### Consumer options
 
 | Option | Meaning | Default |

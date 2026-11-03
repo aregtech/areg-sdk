@@ -677,6 +677,93 @@ inline void trace(const char* /*format*/, ...) noexcept
 
 #endif  // defined(AREG_DIAGNOSE_TRACE) && (AREG_DIAGNOSE_TRACE)
 
+#if defined(AREG_DIAGNOSE_TRACE) && (AREG_DIAGNOSE_TRACE)
+
+/**
+ * \brief   The event counters of the diagnostic trace. Each module that includes this
+ *          header has its own table, so a module dumps only the counters it adds to.
+ **/
+enum class DcCounter : uint32_t
+{
+      SrcPostRefused        //!< Log rows the logging queue refused.
+    , SrcNoticeWritten      //!< Drop notices the logging thread wrote.
+    , SrcNoticeSum          //!< Sum of the counts of those notices.
+    , TcpForwardOk          //!< Rows the remote logger handed to the connection.
+    , TcpForwardRefused     //!< Rows the connection refused to send or queue.
+    , TcpNotSending         //!< Rows skipped because the source is paused or not enabled.
+    , TcpRingQueued         //!< Rows queued while not connected.
+    , TcpRingDropped        //!< Rows dropped while not connected.
+    , SendInline            //!< Messages written by the caller of send_message.
+    , SendThread            //!< Messages written by the send thread.
+    , SendFailed            //!< Messages of a failed write.
+    , ColRowsIn             //!< Log rows the collector received.
+    , ColRowsDelivered      //!< Log row copies the collector sent to an observer.
+    , ColRowsHeld           //!< Log row copies dropped for a held observer.
+    , ColSrcNoticeIn        //!< Drop notices of a source the collector received.
+    , ColSrcNoticeHeld      //!< Drop notice copies of a source dropped for a held observer.
+    , ColNoticeSent         //!< Drop notices the collector wrote for an observer.
+    , ColNoticeSum          //!< Sum of the counts of those notices.
+    , Count                 //!< The number of counters.
+};
+
+/**
+ * \brief   Returns the counter table of this module.
+ **/
+inline std::array<std::atomic<uint64_t>, static_cast<uint32_t>(DcCounter::Count)> & dc_table() noexcept
+{
+    static std::array<std::atomic<uint64_t>, static_cast<uint32_t>(DcCounter::Count)> _table{ };
+    return _table;
+}
+
+/**
+ * \brief   Adds a value to a counter.
+ **/
+inline void dc_add(DcCounter counter, uint64_t value) noexcept
+{
+    dc_table()[static_cast<uint32_t>(counter)].fetch_add(value, std::memory_order_relaxed);
+}
+
+/**
+ * \brief   Writes one diagnostic line with every non-zero counter of this module.
+ *
+ * \param   who     The prefix of the line.
+ **/
+inline void dc_dump(const char * who) noexcept
+{
+    static constexpr const char * _names[]
+    {
+          "src.post_refused", "src.notice_written", "src.notice_sum"
+        , "tcp.forward_ok", "tcp.forward_refused", "tcp.not_sending", "tcp.ring_queued", "tcp.ring_dropped"
+        , "send.inline", "send.thread", "send.failed"
+        , "col.rows_in", "col.rows_delivered", "col.rows_held", "col.src_notice_in", "col.src_notice_held"
+        , "col.notice_sent", "col.notice_sum"
+    };
+    static_assert((sizeof(_names) / sizeof(_names[0])) == static_cast<uint32_t>(DcCounter::Count), "one name per counter");
+
+    char line[areg::MAX_DEBUG_BUFFER_SIZE]{};
+    int32_t used{ std::snprintf(line, sizeof(line), "t=%llu %s counters", trace_now_us(), who) };
+    for (uint32_t i{ 0u }; (i < static_cast<uint32_t>(DcCounter::Count)) && (used > 0) && (used < static_cast<int32_t>(sizeof(line))); ++i)
+    {
+        const uint64_t value{ dc_table()[i].load(std::memory_order_relaxed) };
+        if (value != 0u)
+        {
+            used += std::snprintf(line + used, sizeof(line) - static_cast<size_t>(used), " %s=%llu", _names[i], static_cast<unsigned long long>(value));
+        }
+    }
+
+    trace("%s", line);
+}
+
+    #define AREG_DC_ADD(counter, value) areg::dc_add(areg::DcCounter::counter, static_cast<uint64_t>(value))
+    #define AREG_DC_DUMP(who)           areg::dc_dump(who)
+
+#else   // defined(AREG_DIAGNOSE_TRACE) && (AREG_DIAGNOSE_TRACE)
+
+    #define AREG_DC_ADD(counter, value) ((void)0)
+    #define AREG_DC_DUMP(who)           ((void)0)
+
+#endif  // defined(AREG_DIAGNOSE_TRACE) && (AREG_DIAGNOSE_TRACE)
+
 /**
  * AREG_DT_TRACE writes one diagnostic line. Unlike a direct call of areg::trace(), it
  * leaves nothing of the arguments behind when the facility is switched off, so an

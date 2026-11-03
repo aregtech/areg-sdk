@@ -32,14 +32,14 @@ Full treatment with the ownership rules: `33-timers.md`.
 | start on this thread | `bool start_timer(uint32_t timeoutInMs, uint32_t eventCount = TimerBase::CONTINUOUSLY)` | `Timer.hpp:120` |
 | start on a given thread | `bool start_timer(uint32_t timeoutInMs, DispatcherThread & whichThread, uint32_t eventCount = TimerBase::CONTINUOUSLY)` | `Timer.hpp:132` |
 | stop | `void stop_timer()` | `Timer.hpp:137` |
-| running? | `bool is_active() const noexcept` | `TimerBase.hpp:145` |
+| running? | `bool is_active() const noexcept` | `TimerBase.hpp:147` |
 
 Repetition constants, both on `areg::TimerBase`:
 
 | Constant | Value | Header |
 |---|---|---|
-| `TimerBase::CONTINUOUSLY` | `0xFFFFFFFF`, fire forever | `TimerBase.hpp:61` |
-| `TimerBase::ONE_TIME` | `1`, fire once | `TimerBase.hpp:67` |
+| `TimerBase::CONTINUOUSLY` | `0xFFFFFFFF`, fire forever | `TimerBase.hpp:63` |
+| `TimerBase::ONE_TIME` | `1`, fire once | `TimerBase.hpp:69` |
 
 The handler you override, from `areg::TimerConsumer`:
 
@@ -57,8 +57,8 @@ void process_timer(areg::Timer & timer) final;      // TimerConsumer.hpp:73
 |---|---|---|
 | `setup()` | `static void setup(bool startTracing = true, bool startServicing = true, bool startRouting = true, bool startTimer = true, bool startWatchdog = false, const char * configFile = areg::DEFAULT_CONFIG_FILE.data(), ConfigListener * configListener = nullptr)` | `Application.hpp:109` |
 | `load_model()` | `static bool load_model(const char * modelName = nullptr, bool waitComponents = false)` | `Application.hpp:136` |
-| `wait_quit()` | `static bool wait_quit(uint32_t waitTimeout = areg::WAIT_INFINITE)` | `Application.hpp:331` |
-| `signal_quit()` | `static void signal_quit()` | `Application.hpp:337` |
+| `wait_quit()` | `static bool wait_quit(uint32_t waitTimeout = areg::WAIT_INFINITE)` | `Application.hpp:343` |
+| `signal_quit()` | `static void signal_quit()` | `Application.hpp:349` |
 | `unload_model()` | `static void unload_model(const char * modelName = nullptr)` | `Application.hpp:153` |
 | `release()` | `static void release()` | `Application.hpp:120` |
 
@@ -180,15 +180,15 @@ started shares with a component: `38-workers.md`, `recipes/07-worker-events/`.
 
 | Call | Signature | Header |
 |---|---|---|
-| `areg::Mutex` | `explicit Mutex(bool initLock = false)` | `SyncPrimitives.hpp:144` |
-| `lock()` | `bool lock(uint32_t timeout = areg::WAIT_INFINITE)` | `SyncPrimitives.hpp:158` |
-| `unlock()` | `bool unlock()` | `SyncPrimitives.hpp:165` |
-| `areg::Lock` | `explicit Lock(SyncObject & syncObj, bool autoLock = true)` | `SyncPrimitives.hpp:1057` |
-| `areg::ScopedLock` | `explicit ScopedLock(LOCKABLE & syncObj)`, type deduced | `SyncPrimitives.hpp:1135` |
-| `areg::SyncEvent` | `explicit SyncEvent(bool initLock = true, bool autoReset = true)` | `SyncPrimitives.hpp:258` |
-| `set_signaled()` | `bool set_signaled() noexcept` | `SyncPrimitives.hpp:299` |
-| `reset()` | `bool reset() noexcept` | `SyncPrimitives.hpp:305` |
-| `areg::SpinLock` | `SpinLock()`, for a hold of a few instructions | `SyncPrimitives.hpp:668` |
+| `areg::Mutex` | `explicit Mutex(bool initLock = false)` | `SyncPrimitives.hpp:139` |
+| `lock()` | `bool lock(uint32_t timeout = areg::WAIT_INFINITE)` | `SyncPrimitives.hpp:153` |
+| `unlock()` | `bool unlock()` | `SyncPrimitives.hpp:160` |
+| `areg::Lock` | `explicit Lock(SyncObject & syncObj, bool autoLock = true)` | `SyncPrimitives.hpp:1023` |
+| `areg::ScopedLock` | `explicit ScopedLock(LOCKABLE & syncObj)`, type deduced | `SyncPrimitives.hpp:1101` |
+| `areg::SyncEvent` | `explicit SyncEvent(bool initLock = true, bool autoReset = true)` | `SyncPrimitives.hpp:222` |
+| `set_signaled()` | `bool set_signaled() noexcept` | `SyncPrimitives.hpp:263` |
+| `reset()` | `bool reset() noexcept` | `SyncPrimitives.hpp:269` |
+| `areg::SpinLock` | `SpinLock()`, for a hold of a few instructions | `SyncPrimitives.hpp:633` |
 | `areg::set_fatal_handler` | `FatalHandler set_fatal_handler(FatalHandler handler) noexcept`, null restores the default | `FatalError.hpp:42` |
 
 `areg::Lock` is the RAII scope lock for any of them; `areg::ScopedLock` is the same for a

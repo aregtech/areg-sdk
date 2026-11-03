@@ -24,6 +24,7 @@
 #include "areg/base/ArrayList.hpp"
 #include "areg/logging/LoggingDefs.hpp"
 #include "aregextend/service/ServiceCommunicationBase.hpp"
+#include "logcollector/service/private/LogCollectorDroppedRows.hpp"
 
 #include <chrono>
 
@@ -294,16 +295,17 @@ private:
 
     /**
      * \brief   Returns false, and counts the row, if the observer is held. Otherwise, if rows were
-     *          dropped for the observer, sends it a warning row with their number first.
+     *          dropped for the observer, sends it the warning rows first.
      *
      * \param   observer    The observer that gets the next log row.
+     * \param   msgLog      The log row.
      **/
-    inline bool _can_deliver_row(const ITEM_ID & observer) const;
+    inline bool _can_deliver_row(const ITEM_ID & observer, const areg::MessageEnvelope & msgLog) const;
 
     /**
-     * \brief   Sends the observer a warning row with the number of log rows dropped for it.
+     * \brief   Sends a warning row about dropped log rows to its observer.
      **/
-    void _notify_dropped_rows(const ITEM_ID & observer, uint32_t dropped) const;
+    inline void _send_notice(areg::MessageEnvelope && msg) const;
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -330,8 +332,8 @@ private:
     //!< A log source that is not sending, mapped to its state and the observer that asked for it.
     areg::OrderedMap<ITEM_ID, SourceState>  mPausedSources;
 
-    //!< An observer that log rows were dropped for, mapped to their number.
-    mutable areg::OrderedMap<ITEM_ID, uint32_t> mDroppedRows;
+    //!< The log rows dropped for held observers.
+    mutable LogCollectorDroppedRows mDroppedRows;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

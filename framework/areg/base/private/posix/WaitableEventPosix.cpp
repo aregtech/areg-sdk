@@ -86,13 +86,22 @@ void WaitableEventPosix::pulse_event() noexcept
     if (!is_valid())
         return;
 
-    bool expected{ false };
-    if (mIsSignaled.compare_exchange_strong(expected, true, std::memory_order_acq_rel, std::memory_order_relaxed))
+    // A pulse releases only the threads waiting now and leaves the event non-signaled.
+    mIsSignaled.store(false, std::memory_order_release);
+    const bool releaseAll{ mEventReset == areg::os::ResetMode::Manual };
+    int32_t released{ 0 };
+#if defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
+    released = notify_pulse_waiters(releaseAll);
+#endif  // defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
+
+    if ((releaseAll || (released == 0)) && has_wait_all_waiters())
     {
-        AREG_OUTPUT_DBG("Pulsing event [ %s ]", name().as_string());
-        SyncLockAndWaitPosix::event_signaled(*this);
+        mIsSignaled.store(true, std::memory_order_release);
+        released += SyncLockAndWaitPosix::notify_wait_all_waiters(*this);
         mIsSignaled.store(false, std::memory_order_release);
     }
+
+    AREG_OUTPUT_DBG("Pulsed event [ %s ], released [ %d ] thread(s)", name().as_string(), released);
 }
 
 } // namespace areg::os

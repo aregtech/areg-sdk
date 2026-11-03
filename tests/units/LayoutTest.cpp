@@ -29,12 +29,9 @@ namespace
         entry.logThreadId = 123u;
         entry.logScopeId = 456u;
         entry.logMessagePrio = areg::LogPriority::PrioWarning;
-        std::strcpy(entry.logModule, "remote_module");
-        entry.logModuleLen = 13u;
-        std::strcpy(entry.logThread, "worker");
-        entry.logThreadLen = 6u;
-        std::strcpy(entry.logMessage, "payload");
-        entry.logMessageLen = 7u;
+        entry.logModuleLen = areg::copy_string(entry.logModule, areg::LOG_NAME_SIZE, "remote_module");
+        entry.logThreadLen = areg::copy_string(entry.logThread, areg::LOG_NAME_SIZE, "worker");
+        entry.logMessageLen= areg::copy_string(entry.logMessage, areg::LOG_NAME_SIZE, "payload");
         return entry;
     }
 

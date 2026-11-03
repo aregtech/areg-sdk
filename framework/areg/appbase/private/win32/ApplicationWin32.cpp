@@ -44,9 +44,15 @@ void Application::_os_release_handlers()
 /**
  * \brief   Windows OS specific implementation of method.
  **/
-bool Application::_os_start_local_service(const wchar_t* serviceName, const wchar_t* /*serviceExecutable*/)
+bool Application::_os_start_local_service(areg::RemoteServiceKind service)
 {
-    ASSERT(!areg::is_empty<wchar_t>(serviceName));
+    const wchar_t* const serviceName{ service == areg::RemoteServiceKind::Router ? areg::ROUTER_SERVICE_NAME_WIDE
+                                    : service == areg::RemoteServiceKind::Logger ? areg::LOGGER_SERVICE_NAME_WIDE
+                                    : nullptr };
+    if (serviceName == nullptr)
+    {
+        return false;
+    }
 
     DWORD rights = SC_MANAGER_CONNECT | SC_MANAGER_ENUMERATE_SERVICE | SC_MANAGER_QUERY_LOCK_STATUS | STANDARD_RIGHTS_READ;
     SC_HANDLE SeMHandle = ::OpenSCManager(nullptr, nullptr, rights);

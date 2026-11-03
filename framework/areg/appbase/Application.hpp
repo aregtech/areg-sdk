@@ -278,16 +278,28 @@ public:
     static uint32_t user_state();
 
     /**
-     * \brief   Starts the routing service on the local machine. Requires appropriate access rights.
+     * \brief   Starts the installed routing service (mtrouter) on the local machine, unless its
+     *          process already runs. Windows: the service control manager. Linux: systemd
+     *          ('systemctl start mtrouter.service'). macOS: launchd ('launchctl kickstart').
+     *          Requires the rights to start a system service; never asks for a password.
+     *          Waits until the service manager answers.
      *
-     * \return  Returns true if the Message Routing Service started successfully.
+     * \return  Returns true if the service process runs or the service manager started it.
+     *          False if it is not installed, the rights are missing, or the system has no
+     *          supported service manager.
      **/
     static bool start_router_service();
 
     /**
-     * \brief   Starts the logging service on the local machine. Requires appropriate access rights.
+     * \brief   Starts the installed logging service (logcollector) on the local machine, unless
+     *          its process already runs. Windows: the service control manager. Linux: systemd
+     *          ('systemctl start logcollector.service'). macOS: launchd ('launchctl kickstart').
+     *          Requires the rights to start a system service; never asks for a password.
+     *          Waits until the service manager answers.
      *
-     * \return  Returns true if the logging service started successfully.
+     * \return  Returns true if the service process runs or the service manager started it.
+     *          False if it is not installed, the rights are missing, or the system has no
+     *          supported service manager.
      **/
     static bool start_logging_service();
 
@@ -511,14 +523,13 @@ private:
     static bool _start_timer_manager();
 
     /**
-     * \brief   OS-specific implementation to start a local service. Does nothing if the service is
-     *          already running. Requires appropriate access rights.
+     * \brief   OS-specific implementation to start an installed local service through the
+     *          system service manager.
      *
-     * \param   serviceName             Name of the service to start.
-     * \param   serviceExecutable       Name of the service executable to verify.
-     * \return  Returns true if the service is running; false otherwise.
+     * \param   service     The service to start: the router or the log collector.
+     * \return  Returns true if the service runs or is started; false otherwise.
      **/
-    static bool _os_start_local_service( const wchar_t * serviceName, const wchar_t * serviceExecutable );
+    static bool _os_start_local_service( areg::RemoteServiceKind service );
 
     /**
      * \brief   OS-specific initialization. On Linux, sets up signal handlers; on Windows, sets up time period.

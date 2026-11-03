@@ -784,6 +784,226 @@ TEST(EventQueueTest, no_lanes_before_acquire)
     EXPECT_FALSE(queue.pop_event().is_valid());
 }
 
+TEST(EventQueueTest, acquire_lanes_reports_whether_the_queue_holds_its_lanes)
+{
+    EventQueue queue(32u);
+    EXPECT_TRUE(queue.acquire_lanes());
+    queue.close_lanes();
+    EXPECT_TRUE(queue.acquire_lanes());
+    Event event = makeEvent(5u);
+    EXPECT_TRUE(queue.push_event(event));
+    EXPECT_EQ(queue.pop_event().event_id(), 5u);
+
+    struct NullQueue : public EventQueue
+    {
+        NullQueue() noexcept : EventQueue(areg::NullTag{}) { }
+    } nullQueue;
+    EXPECT_FALSE(nullQueue.acquire_lanes());
+}
+
+TEST(EventQueueTest, queue_without_lanes_ends_its_consumer_on_either_exit)
+{
+    for (bool exitNow : { false, true })
+    {
+        EventQueue queue(32u);
+        EXPECT_FALSE(queue.has_pending());
+        EXPECT_FALSE(queue.pop_event().is_valid());
+        EXPECT_FALSE(queue.wait_event(0u));
+
+        queue.exit_queue(exitNow);
+        EXPECT_TRUE(queue.has_pending()) << "exitNow " << exitNow;
+        EXPECT_TRUE(queue.wait_event(areg::WAIT_INFINITE)) << "exitNow " << exitNow;
+        EXPECT_TRUE(queue.pop_event().is_exit_prio()) << "exitNow " << exitNow;
+        Event output[2];
+        ASSERT_EQ(queue.pop_events(output, 2u), 1u) << "exitNow " << exitNow;
+        EXPECT_TRUE(output[0].is_exit_prio());
+    }
+}
+
+TEST(EventQueueTest, batch_without_lanes_refuses_and_compacts_every_valid_event)
+{
+    EventQueue queue(32u, true);
+    Event batch[4]
+    {
+          makeEvent(1u, EventPriority::CriticalPrio)
+        , Event{ }
+        , makeEvent(2u, EventPriority::HighPrio)
+        , makeEvent(3u)
+    };
+    EXPECT_EQ(queue.push_events(batch, 4u), 3u);
+    EXPECT_EQ(batch[0].event_id(), 1u);
+    EXPECT_EQ(batch[1].event_id(), 2u);
+    EXPECT_EQ(batch[2].event_id(), 3u);
+    EXPECT_EQ(batch[1].event_priority(), EventPriority::HighPrio);
+    EXPECT_FALSE(batch[3].is_valid());
+    EXPECT_FALSE(queue.has_pending());
+
+    Event empty[2]{ };
+    EXPECT_EQ(queue.push_events(empty, 2u), 0u);
+    EXPECT_EQ(queue.push_events(nullptr, 2u), 0u);
+    EXPECT_EQ(queue.push_events(batch, 0u), 0u);
+}
+
+TEST(EventQueueTest, batch_skips_empty_slots_and_keeps_priorities_on_the_priority_lane)
+{
+    ReadyQueue queue(32u, true);
+    Event normal = makeEvent(1u);
+    ASSERT_TRUE(queue.push_event(normal));
+    Event batch[5]
+    {
+          Event{ }
+        , makeEvent(2u, EventPriority::CriticalPrio)
+        , Event{ }
+        , makeEvent(3u, EventPriority::HighPrio)
+        , makeEvent(4u)
+    };
+    EXPECT_EQ(queue.push_events(batch, 5u), 0u);
+
+    for (uint32_t expected : { 2u, 3u, 1u, 4u })
+    {
+        EXPECT_EQ(queue.pop_event().event_id(), expected);
+    }
+
+    EXPECT_FALSE(queue.has_pending());
+}
+
+TEST(EventQueueTest, batch_exit_after_an_empty_slot_sets_the_sticky_exit)
+{
+    ReadyQueue queue(32u, true);
+    Event batch[3]
+    {
+          Event{ }
+        , makeEvent(9u, EventPriority::ExitPrio)
+        , makeEvent(1u)
+    };
+    EXPECT_EQ(queue.push_events(batch, 3u), 0u);
+    EXPECT_TRUE(queue.is_exit_triggered());
+    EXPECT_TRUE(queue.pop_event().is_exit_prio());
+    queue.reset_exit();
+    queue.acquire_lanes();
+    EXPECT_EQ(queue.pop_event().event_id(), 1u);
+    EXPECT_FALSE(queue.pop_event().is_valid());
+}
+
+TEST(EventQueueTest, try_push_without_lanes_preserves_the_refused_event)
+{
+    EventQueue queue(32u, true);
+    Event event = makeEvent(73u, EventPriority::HighPrio);
+    EXPECT_EQ(queue.try_push_event(event), EventQueue::PushResult::Refused);
+    EXPECT_TRUE(event.is_valid());
+    EXPECT_EQ(event.event_id(), 73u);
+    EXPECT_EQ(event.event_priority(), EventPriority::HighPrio);
+    EXPECT_FALSE(queue.has_pending());
+}
+
+TEST(EventQueueTest, try_push_exit_sets_sticky_exit_without_filling_a_lane)
+{
+    ReadyQueue queue(32u, true);
+    Event normal = makeEvent(1u);
+    ASSERT_TRUE(queue.push_event(normal));
+    Event exit = makeEvent(99u, EventPriority::ExitPrio);
+    EXPECT_EQ(queue.try_push_event(exit), EventQueue::PushResult::Queued);
+    EXPECT_TRUE(queue.is_exit_triggered());
+    EXPECT_TRUE(queue.pop_event().is_exit_prio());
+    EXPECT_TRUE(queue.pop_event().is_exit_prio());
+    queue.reset_exit();
+    queue.acquire_lanes();
+    EXPECT_EQ(queue.pop_event().event_id(), 1u);
+    EXPECT_FALSE(queue.pop_event().is_valid());
+}
+
+TEST(EventQueueTest, mixed_batch_compacts_only_refused_normals_and_keeps_all_priorities)
+{
+    ReadyQueue queue(32u, true);
+    for (uint32_t i = 0u; i < 31u; ++i)
+    {
+        Event event = makeEvent(100u + i);
+        ASSERT_TRUE(queue.push_event(event));
+    }
+    Event batch[5]
+    {
+          makeEvent(1u, EventPriority::CriticalPrio)
+        , makeEvent(2u, EventPriority::HighPrio)
+        , makeEvent(3u)
+        , makeEvent(4u)
+        , makeEvent(5u)
+    };
+    ASSERT_EQ(queue.push_events(batch, 5u), 2u);
+    EXPECT_EQ(batch[0].event_id(), 4u);
+    EXPECT_EQ(batch[1].event_id(), 5u);
+    EXPECT_EQ(batch[0].event_priority(), EventPriority::NormalPrio);
+    EXPECT_EQ(batch[1].event_priority(), EventPriority::NormalPrio);
+    Event output[35];
+    ASSERT_EQ(queue.pop_events(output, 35u), 34u);
+    EXPECT_EQ(output[0].event_id(), 1u);
+    EXPECT_EQ(output[1].event_id(), 2u);
+    for (uint32_t i = 0u; i < 31u; ++i)
+    {
+        EXPECT_EQ(output[2u + i].event_id(), 100u + i);
+    }
+    EXPECT_EQ(output[33].event_id(), 3u);
+    EXPECT_FALSE(queue.has_pending());
+}
+
+TEST(EventQueueTest, remove_matching_class_from_both_lanes_preserves_survivor_order)
+{
+    ReadyQueue queue(32u, true);
+    for (EventPriority priority : { EventPriority::HighPrio, EventPriority::CriticalPrio, EventPriority::NormalPrio })
+    {
+        Event removed = makeEvent(7u, priority);
+        ASSERT_TRUE(queue.push_event(removed));
+    }
+    Event first = makeEvent(1u, EventPriority::HighPrio);
+    Event second = makeEvent(2u, EventPriority::HighPrio);
+    Event third = makeEvent(3u);
+    ASSERT_TRUE(queue.push_event(first));
+    ASSERT_TRUE(queue.push_event(second));
+    ASSERT_TRUE(queue.push_event(third));
+    queue.remove_events(7u);
+    queue.remove_events(0xFFFFFFFFu);
+    Event output[5];
+    ASSERT_EQ(queue.pop_events(output, 5u), 3u);
+    EXPECT_EQ(output[0].event_id(), 1u);
+    EXPECT_EQ(output[1].event_id(), 2u);
+    EXPECT_EQ(output[2].event_id(), 3u);
+    EXPECT_FALSE(queue.has_pending());
+}
+
+TEST(EventQueueTest, zero_count_batch_operations_leave_the_input_and_queue_unchanged)
+{
+    ReadyQueue queue(32u, true);
+    Event input = makeEvent(7u);
+    EXPECT_EQ(queue.push_events(&input, 0u), 0u);
+    EXPECT_TRUE(input.is_valid());
+    EXPECT_FALSE(queue.has_pending());
+    ASSERT_TRUE(queue.push_event(input));
+    Event output = makeEvent(99u);
+    EXPECT_EQ(queue.pop_events(&output, 0u), 0u);
+    EXPECT_EQ(output.event_id(), 99u);
+    EXPECT_TRUE(queue.has_pending());
+    EXPECT_EQ(queue.pop_event().event_id(), 7u);
+}
+
+TEST(EventQueueTest, closed_queue_refuses_a_mixed_batch_without_losing_input_ownership)
+{
+    ReadyQueue queue(32u, true);
+    queue.close_lanes();
+    Event batch[3]
+    {
+          makeEvent(1u, EventPriority::CriticalPrio)
+        , makeEvent(2u, EventPriority::HighPrio)
+        , makeEvent(3u)
+    };
+    EXPECT_EQ(queue.push_events(batch, 3u), 3u);
+    for (uint32_t i = 0u; i < 3u; ++i)
+    {
+        EXPECT_TRUE(batch[i].is_valid());
+        EXPECT_EQ(batch[i].event_id(), i + 1u);
+    }
+    EXPECT_FALSE(queue.has_pending());
+    EXPECT_FALSE(queue.pop_event().is_valid());
+}
+
 TEST(EventQueueTest, release_lanes_stops_taking_events)
 {
     ReadyQueue queue(0u);

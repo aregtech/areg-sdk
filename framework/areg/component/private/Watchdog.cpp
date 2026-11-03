@@ -62,22 +62,22 @@ Watchdog::~Watchdog()
 
 void Watchdog::start_guard()
 {
-    if ((mTimeoutInMs != areg::WATCHDOG_IGNORE) && (mDisarmed.load(std::memory_order_acquire) == false))
+    if ((timeout() != areg::WATCHDOG_IGNORE) && (mDisarmed.load(std::memory_order_acquire) == false))
     {
         Lock lock(mLock);
-        ASSERT(mHandle != nullptr);
+        ASSERT(handle() != nullptr);
         ++mSequence;
-        mActive = WatchdogManager::start_timer(*this);
+        mActive.store(WatchdogManager::start_timer(*this), std::memory_order_relaxed);
     }
 }
 
 void Watchdog::stop_guard()
 {
-    if (mTimeoutInMs != areg::WATCHDOG_IGNORE)
+    if (timeout() != areg::WATCHDOG_IGNORE)
     {
         Lock lock(mLock);
-        ASSERT(mHandle != nullptr);
-        mActive = false;
+        ASSERT(handle() != nullptr);
+        mActive.store(false, std::memory_order_relaxed);
         WatchdogManager::stop_timer(*this);
     }
 }
@@ -85,11 +85,12 @@ void Watchdog::stop_guard()
 bool Watchdog::arm(uint32_t msTimeout)
 {
     Lock lock(mLock);
-    if (mHandle == nullptr)
+    if (handle() == nullptr)
         return false;
 
-    mActive = WatchdogManager::rearm_timer(*this, (msTimeout != 0u ? msTimeout : 1u));
-    return mActive;
+    const bool active{ WatchdogManager::rearm_timer(*this, (msTimeout != 0u ? msTimeout : 1u)) };
+    mActive.store(active, std::memory_order_relaxed);
+    return active;
 }
 
 void Watchdog::disarm()
@@ -97,7 +98,7 @@ void Watchdog::disarm()
     if (mDisarmed.exchange(true, std::memory_order_acq_rel))
         return;
 
-    if (mTimeoutInMs != areg::WATCHDOG_IGNORE)
+    if (timeout() != areg::WATCHDOG_IGNORE)
     {
         WatchdogManager::stop_timer(*this);
     }

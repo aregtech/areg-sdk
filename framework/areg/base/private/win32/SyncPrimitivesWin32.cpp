@@ -81,10 +81,6 @@ void Mutex::_os_create_mutex( bool initLock )
     }
 
     mSyncObject = syncObj;
-    if ( initLock )
-    {
-        mOwnerThreadId.store( Thread::current_thread_id( ) );
-    }
 }
 
 bool Mutex::_os_lock_mutex( uint32_t timeout )
@@ -100,7 +96,6 @@ bool Mutex::_os_lock_mutex( uint32_t timeout )
             AREG_OUTPUT_WARN("Mutex [ %p ] was abandoned by a thread that ended holding it, the data it guards may be inconsistent", static_cast<void *>(this));
         }
 
-        mOwnerThreadId.store( Thread::current_thread_id( ) );
         result = true;
     }
 
@@ -109,14 +104,7 @@ bool Mutex::_os_lock_mutex( uint32_t timeout )
 
 bool Mutex::_os_unlock_mutex()
 {
-    bool result = false;
-    if (ReleaseMutex(static_cast<HANDLE>(mSyncObject)))
-    {
-        mOwnerThreadId.store( 0 );
-        result = true;
-    }
-
-    return result;
+    return (ReleaseMutex(static_cast<HANDLE>(mSyncObject)) != FALSE);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -329,13 +317,13 @@ int32_t MultiLock::_os_lock( uint32_t timeout /* = areg::WAIT_INFINITE */, bool 
         {
             index = static_cast<int32_t>(result - first);
             ASSERT((index >= 0) && index < mSizeCount);
-            mLockedStates[index] = MultiLock::LockState::Locked;
+            _set_locked(index);
         }
         else
         {
             for (int i = 0; i < mSizeCount; ++ i)
             {
-                mLockedStates[i] = MultiLock::LockState::Locked;
+                _set_locked(i);
             }
 
             index = MultiLock::LOCK_INDEX_ALL;

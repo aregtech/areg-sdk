@@ -109,7 +109,8 @@ void Application::setup( bool startTracing   /*= true */
     Application::_set_app_state(areg::AppState::Initializing);
     Application::_os_setup_handlers();
     Application::set_working_directory( nullptr );
-    startTimer = startTimer == false ? startServicing : startTimer;
+    startServicing = startServicing || startRouting;
+    startTimer = startTimer || startServicing;
 
     Application::load_configuration(areg::is_empty(configFile) ? areg::DEFAULT_CONFIG_FILE.data() : configFile, configListener);
 
@@ -316,12 +317,12 @@ uint32_t Application::user_state()
 
 bool Application::start_router_service()
 {
-    return Application::_os_start_local_service(areg::ROUTER_SERVICE_NAME_WIDE, areg::ROUTER_SERVICE_EXECUTABLE_WIDE);
+    return Application::_os_start_local_service(areg::RemoteServiceKind::Router);
 }
 
 bool Application::start_logging_service()
 {
-    return Application::_os_start_local_service(areg::LOGGER_SERVICE_NAME_WIDE, areg::LOGGER_SERVICE_EXECUTABLE_WIDE);
+    return Application::_os_start_local_service(areg::RemoteServiceKind::Logger);
 }
 
 bool Application::is_element_stored( const String & elemName )

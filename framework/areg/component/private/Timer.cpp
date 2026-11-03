@@ -76,8 +76,12 @@ bool Timer::start_timer(uint32_t timeoutInMs, DispatcherThread & whichThread, ui
     if (eventCount == 0)
     {
         Lock lock(mLock);
-        mTimeoutInMs = timeoutInMs;
-        mEventsCount = 0;
+        mTimeoutInMs.store(timeoutInMs, std::memory_order_relaxed);
+        mEventsCount.store(0u, std::memory_order_relaxed);
+        mStarted        = false;
+        mActive.store(false, std::memory_order_relaxed);
+        mDispatchThread = nullptr;
+        mCurrentQueued  = 0;
 
         return false;
     }
@@ -87,12 +91,12 @@ bool Timer::start_timer(uint32_t timeoutInMs, DispatcherThread & whichThread, ui
     {
         Lock lock(mLock);
 
-        mTimeoutInMs    = timeoutInMs;
-        mEventsCount    = eventCount;
+        mTimeoutInMs.store(timeoutInMs, std::memory_order_relaxed);
+        mEventsCount.store(eventCount, std::memory_order_relaxed);
         mCurrentQueued  = 0;
         mStarted        = false;
-        mActive         = false;
         canStart        = whichThread.is_running() && TimerBase::create_waitable_timer();
+        mActive.store(canStart, std::memory_order_relaxed);
         mDispatchThread = canStart ? &whichThread : nullptr;
     }
 
@@ -102,13 +106,16 @@ bool Timer::start_timer(uint32_t timeoutInMs, DispatcherThread & whichThread, ui
     }
 
     // Register and arm the timer with the manager OUTSIDE mLock (keeps resource-lock -> mLock order).
+    // Only a failed start resets the active state.
     const bool started = TimerManager::start_timer(self(), whichThread);
 
     Lock lock(mLock);
     mStarted = started;
-    mActive  = started;
     if (started == false)
+    {
+        mActive.store(false, std::memory_order_relaxed);
         mDispatchThread = nullptr;
+    }
 
     return (mDispatchThread != nullptr);
 }
@@ -121,9 +128,10 @@ void Timer::stop_timer()
 bool Timer::timer_is_expired(uint32_t highValue, uint32_t lowValue, ptr_type /*context*/)
 {
     Lock lock(mLock);
-    if (mEventsCount == 0u)
+    uint32_t eventCount{ mEventsCount.load(std::memory_order_relaxed) };
+    if (eventCount == 0u)
     {
-        mActive = false;
+        mActive.store(false, std::memory_order_relaxed);
         return false;
     }
 
@@ -134,27 +142,31 @@ bool Timer::timer_is_expired(uint32_t highValue, uint32_t lowValue, ptr_type /*c
 
     mExpiredAt = areg::make64(highValue, lowValue);
 
-    const bool isContinuous = (mEventsCount == TimerBase::CONTINUOUSLY);
+    const bool isContinuous = (eventCount == TimerBase::CONTINUOUSLY);
     if (!isContinuous)
-        --mEventsCount;
+    {
+        --eventCount;
+        mEventsCount.store(eventCount, std::memory_order_relaxed);
+    }
 
-    bool isDelivered{ false };
-    if ((mTimeoutInMs != areg::INVALID_TIMEOUT) && (mDispatchThread != nullptr))
+    bool active{ false };
+    if ((mTimeoutInMs.load(std::memory_order_relaxed) != areg::INVALID_TIMEOUT) && (mDispatchThread != nullptr))
     {
         // the state has to be up to date before the event is queued.
-        mActive = isContinuous || (mEventsCount != 0u);
-        isDelivered = TimerEvent::send_event(*this, *mDispatchThread, mPriority);
-        if (isDelivered == false)
+        active = isContinuous || (eventCount != 0u);
+        mActive.store(active, std::memory_order_relaxed);
+        if (TimerEvent::send_event(*this, *mDispatchThread, priority()) == false)
         {
-            mActive = false;
+            active = false;
+            mActive.store(false, std::memory_order_relaxed);
         }
     }
     else
     {
-        mActive = false;
+        mActive.store(false, std::memory_order_relaxed);
     }
 
-    return mActive;
+    return active;
 }
 
 void Timer::timer_starting(uint32_t highValue, uint32_t lowValue, ptr_type /*context*/)
@@ -169,7 +181,7 @@ void Timer::_queue_timer()
     {
         Lock lock(mLock);
 
-        if ( mMaxQueued != Timer::IGNORE_TIMER_QUEUE && mEventsCount > static_cast<uint32_t>(mMaxQueued) )
+        if ( mMaxQueued != Timer::IGNORE_TIMER_QUEUE && event_count() > static_cast<uint32_t>(mMaxQueued) )
         {
             if (mDispatchThread != nullptr)
             {
@@ -192,7 +204,7 @@ void Timer::_unqueue_timer()
     {
         Lock lock(mLock);
 
-        if ( mMaxQueued != Timer::IGNORE_TIMER_QUEUE && mEventsCount > static_cast<uint32_t>(mMaxQueued) )
+        if ( mMaxQueued != Timer::IGNORE_TIMER_QUEUE && event_count() > static_cast<uint32_t>(mMaxQueued) )
         {
             if (mDispatchThread != nullptr)
             {
@@ -219,11 +231,11 @@ void Timer::_stop_timer()
     Lock lock(mLock);
 
     mStarted        = false;
-    mActive         = false;
+    mActive.store(false, std::memory_order_relaxed);
     mDispatchThread = nullptr;
     mCurrentQueued  = 0;
-    mTimeoutInMs    = areg::INVALID_TIMEOUT;
-    mEventsCount    = 0;
+    mTimeoutInMs.store(areg::INVALID_TIMEOUT, std::memory_order_relaxed);
+    mEventsCount.store(0u, std::memory_order_relaxed);
     mStartedAt      = 0;
     mExpiredAt      = 0;
 }

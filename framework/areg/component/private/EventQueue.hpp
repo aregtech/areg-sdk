@@ -211,11 +211,14 @@ public:
      *          producers. A dispatcher that stops and starts again reuses the ring it
      *          already holds, so the restart only reopens it.
      *
+     * \return  Returns true if the queue holds its lanes. False if the ring could not be
+     *          allocated or the queue has no capacity; the queue then refuses every event
+     *          and any exit request ends its consumer.
      * \note    Call from the owner dispatcher, under lock_queue(), before the
      *          dispatcher reports itself started. It does not touch the exit flag:
      *          the owner clears that with reset_exit() before it starts.
      **/
-    void acquire_lanes() noexcept;
+    bool acquire_lanes() noexcept;
 
     /**
      * \brief   Closes the queue: every further push_event() and push_events() is
@@ -371,8 +374,9 @@ public:
     /**
      * \brief   Enqueues up to \a count events with a single priority-lane lock acquisition.
      *          Each event is moved into the queue. Events that cannot be enqueued (ring full in
-     *          drop mode, or block-mode timeout/exit) remain and are compacted into the front of
-     *          \a eventElems, with that count returned.
+     *          drop mode, block-mode timeout/exit, closed queue or no lanes) remain and are
+     *          compacted into the front of \a eventElems, with that count returned. Invalid
+     *          events are skipped and not counted.
      *
      * \param[in,out]   eventElems  Array of Event values sorted by priority. Events that could
      *                              not be enqueued are moved to the front of the array.
@@ -553,7 +557,7 @@ inline bool EventQueue::has_pending() const noexcept
 {
     const Cell* const ring{ mRing.load(std::memory_order_acquire) };
     if (ring == nullptr)
-        return is_exit_triggered();
+        return (mExitState.load(std::memory_order_acquire) != EventQueue::EXIT_NONE);
 
     const size_t pos{ mDequeuePos.load(std::memory_order_relaxed) };
     if ((ring[pos & mMask].sequence.load(std::memory_order_acquire) == (pos + 1u))

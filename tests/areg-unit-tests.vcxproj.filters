@@ -40,7 +40,28 @@
     <ClCompile Include="units\ModelTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="units\ComponentLoaderContractTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\ProxyBaseContractTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\ProxyStubLifecycleTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\StubBaseContractTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="units\ProcessTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\ApplicationSetupTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClInclude Include="units\ApplicationSetupTestSupport.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClCompile Include="units\ApplicationSetupPosixTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="units\PropertyTest.cpp">
@@ -79,6 +100,12 @@
     <ClCompile Include="..\framework\areg\logging\private\LoggingEvent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\framework\logcollector\service\private\LogCollectorDroppedRows.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\LogCollectorDroppedRowsTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="units\LayoutTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -109,7 +136,34 @@
     <ClCompile Include="units\ThreadTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="units\ThreadLifecycleCoverageTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClInclude Include="units\ThreadCoverageHelpers.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClCompile Include="units\SyncPrimitiveCoverageTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\MultiLockCoverageTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\SyncTimerLifecycleTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="units\WorkerThreadTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\DispatcherLifecycleTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClInclude Include="units\EventTestSupport.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClCompile Include="units\TimerLifecycleTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\RemoteEventRoutingTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="units\SocketKeepAliveTest.cpp">

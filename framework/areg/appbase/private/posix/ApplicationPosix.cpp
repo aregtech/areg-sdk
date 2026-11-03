@@ -1,9 +1,8 @@
 /************************************************************************
-* \file        areg/appbase/private/ApplicationWin.cpp
+* \file        areg/appbase/private/posix/ApplicationPosix.cpp
 * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
 * \author      Artak Avetyan
-* \brief       Areg Platform, Windows OS specific Application methods implementation
-*              Windows apecifix API calls.
+* \brief       Areg Platform, POSIX specific Application methods implementation.
 ************************************************************************/
 
 #if	defined(_POSIX) || defined(POSIX)
@@ -18,106 +17,134 @@
 #include "areg/base/Process.hpp"
 #include "areg/logging/areg_log.h"
 
-#include <dirent.h>
-#include <stdio.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <new>
 #include <signal.h>
+#include <spawn.h>
+#include <stdio.h>
+#include <string_view>
+#include <sys/wait.h>
 #include <unistd.h>
 
 #ifdef __APPLE__
+    #include <crt_externs.h>
     #include <libproc.h>
+    #include <sys/param.h>
+#else   // __APPLE__
+    #include <dirent.h>
+    extern char** environ;
 #endif  // __APPLE__
 
 namespace {
 
-#ifdef __APPLE__    //macOS
-
-    int32_t _getProcIdByName(const char* procName)
+    //!< Returns true if the executable name is the base name, with or without an extension.
+    bool _is_service_executable(std::string_view name, std::string_view baseName) noexcept
     {
-        if (areg::is_empty<char>(procName))
-            return -1;
+        return (name.size() >= baseName.size())
+            && (name.compare(0u, baseName.size(), baseName) == 0)
+            && ((name.size() == baseName.size()) || (name[baseName.size()] == '.'));
+    }
 
-        // macOS implementation using sysctl
-        int mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_ALL, 0 };
-        size_t size  {0};
+#ifdef __APPLE__
 
-        if (sysctl(mib, 4, nullptr, &size, nullptr, 0) < 0)
-            return -1;
+    //!< Returns true if a process with the given executable base name runs.
+    bool _is_process_running(std::string_view baseName) noexcept
+    {
+        const int count{ ::proc_listallpids(nullptr, 0) };
+        if (count <= 0)
+            return false;
 
-        uint8_t* buffer = size != 0 ? new uint8_t[size] : nullptr;
-        if (buffer == nullptr)
-            return -1;
+        const int capacity{ count + 32 };
+        pid_t* const pids{ new (std::nothrow) pid_t[static_cast<size_t>(capacity)] };
+        if (pids == nullptr)
+            return false;
 
-        struct kinfo_proc* procs = reinterpret_cast<struct kinfo_proc*>(buffer);
-        if (sysctl(mib, 4, procs, &size, nullptr, 0) < 0)
+        const int found{ ::proc_listallpids(pids, capacity * static_cast<int>(sizeof(pid_t))) };
+        char name[2 * MAXCOMLEN + 1]{ };
+        bool result{ false };
+        for (int i = 0; (i < found) && (result == false); ++i)
         {
-            delete[] buffer;
-            return -1;
-        }
-
-        int count = static_cast<int>(size / sizeof(struct kinfo_proc));
-        int pid {-1};
-
-        for (int i = 0; i < count && pid < 0; ++i)
-        {
-            if (areg::compare_ignore_case<char, char>(procName, procs[i].kp_proc.p_comm) == areg::Ordering::Equal)
+            if ((pids[i] > 0) && (::proc_name(pids[i], name, sizeof(name)) > 0))
             {
-                pid = procs[i].kp_proc.p_pid;
+                result = _is_service_executable(name, baseName);
             }
         }
 
-        delete[] buffer;
-        return pid;
+        delete[] pids;
+        return result;
     }
 
-#else   // Linux
-
-    int32_t _getProcIdByName(const char* procName)
+    //!< The environment of the calling process.
+    char** _process_environment() noexcept
     {
-        if (areg::is_empty<char>(procName))
-            return -1;
+        return *::_NSGetEnviron();
+    }
 
-        // Linux implementation using /proc
-        constexpr char const fmt[]{ "/proc/%s/cmdline" };
-        constexpr char const dirProc[]{ "/proc" };
-        int pid {-1};
+#else   // __APPLE__
 
-        DIR* dir = opendir(dirProc);
-        char* buffer = dir != nullptr ? new char[areg::File::MAXIMUM_PATH + 1] : nullptr;
-        if (buffer == nullptr)
-            return pid;
+    //!< Returns true if a process with the given executable base name runs.
+    bool _is_process_running(std::string_view baseName) noexcept
+    {
+        DIR* const dir{ ::opendir("/proc") };
+        if (dir == nullptr)
+            return false;
 
-        for (struct dirent* dirEntry = readdir(dir); (pid < 0) && (dirEntry != nullptr); dirEntry = readdir(dir))
+        char path[64]{ };
+        char cmdline[1024]{ };
+        bool result{ false };
+        for (struct dirent* entry = ::readdir(dir); (entry != nullptr) && (result == false); entry = ::readdir(dir))
         {
-            if (areg::is_numeric<char>(dirEntry->d_name[0]))
-            {
-                areg::String name;
-                name.format(fmt, dirEntry->d_name);
-                FILE* file = fopen(name.as_string(), "r");
-                if (file != nullptr)
-                {
-                    if (fgets(buffer, areg::File::MAXIMUM_PATH + 1, file) != nullptr)
-                    {
-                        areg::CharPos pos = areg::find_last<char>(areg::File::PATH_SEPARATOR, buffer);
-                        if (areg::is_position_valid(pos))
-                        {
-                            char* procPath = buffer + pos + 1;
-                            if (areg::compare_ignore_case<char, char>(procName, procPath) == areg::Ordering::Equal)
-                            {
-                                pid = areg::make_integer<char>(dirEntry->d_name, nullptr);
-                            }
-                        }
-                    }
+            if ((entry->d_name[0] < '1') || (entry->d_name[0] > '9'))
+                continue;
 
-                    fclose(file);
-                }
-            }
+            const int length{ ::snprintf(path, sizeof(path), "/proc/%s/cmdline", entry->d_name) };
+            if ((length <= 0) || (length >= static_cast<int>(sizeof(path))))
+                continue;
+
+            const int fd{ ::open(path, O_RDONLY | O_CLOEXEC) };
+            if (fd < 0)
+                continue;
+
+            const ssize_t size{ ::read(fd, cmdline, sizeof(cmdline) - 1u) };
+            ::close(fd);
+            if (size <= 0)
+                continue;
+
+            cmdline[size] = '\0';
+            const std::string_view argv0{ cmdline };
+            const size_t slash{ argv0.rfind('/') };
+            result = _is_service_executable(slash == std::string_view::npos ? argv0 : argv0.substr(slash + 1u), baseName);
         }
 
-        delete[] buffer;
-        closedir(dir);
-        return pid;
+        ::closedir(dir);
+        return result;
     }
-#endif  // Linux
+
+    //!< The environment of the calling process.
+    char** _process_environment() noexcept
+    {
+        return ::environ;
+    }
+
+#endif  // __APPLE__
+
+    //!< Runs the command without a shell and returns true if it exits with status 0.
+    bool _run_command(char* const argv[]) noexcept
+    {
+        pid_t child{ -1 };
+        if (::posix_spawnp(&child, argv[0], nullptr, nullptr, argv, _process_environment()) != 0)
+            return false;
+
+        int status{ 0 };
+        pid_t waited{ -1 };
+        do
+        {
+            waited = ::waitpid(child, &status, 0);
+        } while ((waited < 0) && (errno == EINTR));
+
+        return (waited == child) && WIFEXITED(status) && (WEXITSTATUS(status) == 0);
+    }
 
     //!< The dispositions replaced by _os_setup_handlers(), put back by _os_release_handlers().
     struct sigaction    _prevPipeAction { };
@@ -212,24 +239,39 @@ void areg::Application::_os_release_handlers()
 }
 
 /**
- * \brief   Windows OS specific implementation of method.
+ * \brief   POSIX specific implementation: systemd on Linux, launchd on macOS.
  **/
-bool areg::Application::_os_start_local_service(const wchar_t* serviceName, const wchar_t* serviceExecutable)
+bool areg::Application::_os_start_local_service(areg::RemoteServiceKind service)
 {
-    ASSERT(areg::is_empty<wchar_t>(serviceName) == false);
-    ASSERT(areg::is_empty<wchar_t>(serviceExecutable) == false);
-    String serviceExe(serviceExecutable);
-    int32_t pid = _getProcIdByName(serviceExe);
-    bool result{ pid > 0 };
-    if (pid < 0)
-    {
-        constexpr std::string_view fmt { "systemctl start %s" };
-        char cmd[512];
-        String::format_string(cmd, 512, fmt.data(), serviceName);
-        result = std::system(cmd);
-    }
+    std::string_view baseName{ };
+    if (service == areg::RemoteServiceKind::Router)
+        baseName = areg::DEFAULT_ROUTER_SERVICE_NAME;
+    else if (service == areg::RemoteServiceKind::Logger)
+        baseName = areg::DEFAULT_LOGGER_SERVICE_NAME;
+    else
+        return false;
 
-    return result;
+    if (_is_process_running(baseName))
+        return true;
+
+    char target[64]{ };
+#ifdef __APPLE__
+    const int length{ ::snprintf(target, sizeof(target), "system/tech.areg.%.*s", static_cast<int>(baseName.size()), baseName.data()) };
+    char program[]{ "launchctl" };
+    char command[]{ "kickstart" };
+    char* const argv[]{ program, command, target, nullptr };
+#else   // __APPLE__
+    const int length{ ::snprintf(target, sizeof(target), "%.*s.service", static_cast<int>(baseName.size()), baseName.data()) };
+    char program[]{ "systemctl" };
+    char noPrompt[]{ "--no-ask-password" };
+    char command[]{ "start" };
+    char* const argv[]{ program, noPrompt, command, target, nullptr };
+#endif  // __APPLE__
+
+    if ((length <= 0) || (length >= static_cast<int>(sizeof(target))))
+        return false;
+
+    return _run_command(argv);
 }
 
 #endif // defined(_POSIX) || defined(POSIX)

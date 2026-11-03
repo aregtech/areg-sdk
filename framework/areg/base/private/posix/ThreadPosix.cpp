@@ -41,6 +41,7 @@
     #undef max
 #endif // max
 #include <limits>
+#include <new>
 
 #if __has_include(<sys/unistd.h>)
     #include <sys/signal.h>
@@ -208,7 +209,7 @@ bool Thread::_os_create() noexcept
 
     if ((_is_valid_no_lock() == false) && (mThreadAddress.name().is_empty() == false))
     {
-        PosixThread* handle = new  PosixThread;
+        PosixThread* handle = new (std::nothrow) PosixThread;
         if (handle != nullptr)
         {
             mWaitForRun.reset();
@@ -225,29 +226,21 @@ bool Thread::_os_create() noexcept
                 if ((RETURNED_OK == ::pthread_attr_setdetachstate(&handle->pthreadAttr, PTHREAD_CREATE_JOINABLE)) &&
                     (RETURNED_OK == ::pthread_create(&handle->pthreadId, &handle->pthreadAttr, &Thread::_posix_thread_routine, static_cast<void*>(this))))
                 {
-                    result = true;
                     mThreadHandle = static_cast<THREADHANDLE>(handle);
                     mThreadId = to_num<id_type, pthread_t>(handle->pthreadId);
                     mThreadPriority = Thread::ThreadPriority::Normal;
+                    handle = nullptr;
 
-                    if (_register_thread() == false)
-                    {
-                        result = false;
-                        // Releases the handle itself, so it must not be released again below.
-                        _clean_resources(true, true);
-                        handle = nullptr;
-                    }
+                    // On a rejected registration start() releases the handle after the routine ends.
+                    result = _register_thread();
                 }
-
-                if ((result == false) && (handle != nullptr))
+                else
                 {
-                    _os_close_handle(handle, false);
+                    ::pthread_attr_destroy(&handle->pthreadAttr);
                 }
             }
-            else
-            {
-                delete handle;
-            }
+
+            delete handle;
         }
     }
 

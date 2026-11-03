@@ -101,30 +101,15 @@ void Mutex::_os_create_mutex( bool initLock )
 
 bool Mutex::_os_lock_mutex( uint32_t timeout )
 {
-    bool result{ false };
     areg::os::WaitableMutexPosix * syncMutex{ reinterpret_cast<areg::os::WaitableMutexPosix *>(mSyncObject) };
-
-    if ( static_cast<int32_t>(areg::os::SyncSignal::First) == areg::os::SyncLockAndWaitPosix::wait_single(*syncMutex, timeout) )
-    {
-        mOwnerThreadId.store(areg::to_num<id_type, pthread_t>(syncMutex->owning_thread_id()));
-        result = true;
-    }
-
-    return result;
+    return ( static_cast<int32_t>(areg::os::SyncSignal::First) == areg::os::SyncLockAndWaitPosix::wait_single(*syncMutex, timeout) );
 }
 
 bool Mutex::_os_unlock_mutex()
 {
-    bool result{ false };
     areg::os::WaitableMutexPosix * syncMutex{ reinterpret_cast<areg::os::WaitableMutexPosix *>(mSyncObject) };
 
-    if ( syncMutex->release_mutex() )
-    {
-        mOwnerThreadId.store(0);
-        result = true;
-    }
-
-    return result;
+    return syncMutex->release_mutex();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -284,7 +269,7 @@ int32_t MultiLock::_os_lock(uint32_t timeout /* = areg::WAIT_INFINITE */, bool w
             index = MultiLock::LOCK_INDEX_ALL;
             for ( int i = 0; i < mSizeCount; ++ i)
             {
-                mLockedStates[i] = MultiLock::LockState::Locked;
+                _set_locked(i);
             }
             break;
 
@@ -296,7 +281,7 @@ int32_t MultiLock::_os_lock(uint32_t timeout /* = areg::WAIT_INFINITE */, bool w
             if ( (result >= static_cast<int32_t>(areg::os::SyncSignal::First)) && (result < mSizeCount) )
             {
                 index = result;
-                mLockedStates[result] = MultiLock::LockState::Locked;
+                _set_locked(result);
             }
             break;
         }

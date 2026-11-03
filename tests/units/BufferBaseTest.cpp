@@ -196,7 +196,7 @@ TEST(BufferBaseTest, raw_io_bounds_and_noop_arguments)
     EXPECT_EQ(buffer.write(nullptr, 1u), 0u);
     EXPECT_EQ(buffer.write(DATA, 0u), 0u);
     EXPECT_EQ(buffer.position(), 0u);
-    EXPECT_EQ(buffer.read(output.data(), output.size()), sizeof(DATA));
+    EXPECT_EQ(buffer.read(output.data(), static_cast<uint32_t>(output.size())), sizeof(DATA));
     EXPECT_EQ(output, (std::array<uint8_t, 5>{ 1u, 2u, 3u, 0xFFu, 0xFFu }));
     EXPECT_EQ(buffer.read(output.data(), 1u), 0u);
     EXPECT_EQ(buffer.position(), sizeof(DATA));

@@ -157,6 +157,11 @@ if (AREG_TESTS)
         include(${AREG_TESTS_DIR}/worker-proxy/CMakeLists.txt)
     endif()
 
+    # Reuses the generated service interface of example 24, so it needs the examples.
+    if (AREG_EXAMPLES AND TARGET 24_generated)
+        include(${AREG_TESTS_DIR}/request-error/CMakeLists.txt)
+    endif()
+
     # Reuses the generated service interface of example 25, so it needs the examples.
     if (AREG_EXAMPLES AND TARGET 25_generated)
         include(${AREG_TESTS_DIR}/consumer-delete/CMakeLists.txt)

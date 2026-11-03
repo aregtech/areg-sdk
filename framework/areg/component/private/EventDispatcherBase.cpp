@@ -217,11 +217,7 @@ bool EventDispatcherBase::unregister_event_consumer( const uint32_t whichClass, 
     bool result{ false };
     {
         std::lock_guard<PlainSpinLock> lock(mConsumerLock);
-        result = mConsumerMap.find_resource_locked(whichClass) != nullptr;
-        if (result)
-        {
-            mConsumerMap.unregister_resource_object(whichClass, &whichConsumer, true);
-        }
+        result = mConsumerMap.unregister_resource_object(whichClass, &whichConsumer, true);
     }
 
     _wait_listener_done(whichConsumer);
@@ -364,12 +360,7 @@ void EventDispatcherBase::ready_for_events( bool is_ready )
 {
     mExternalEvents.lock_queue( );
     mExternalEvents.set_consumer( is_ready ? Thread::current_thread_id( ) : Thread::INVALID_THREAD_ID );
-    if ( is_ready )
-    {
-        mExternalEvents.acquire_lanes( );
-    }
-
-    mHasStarted = is_ready;
+    mHasStarted = is_ready && mExternalEvents.acquire_lanes( );
     mExternalEvents.unlock_queue( );
 
     // Shutting the queue is what actually stops a producer

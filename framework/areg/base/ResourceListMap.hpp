@@ -166,8 +166,9 @@ public:
      * \param   Resource        The resource object pointer to unregister.
      * \param   removeEmpty     If true, removes the key entry when the resource list becomes empty;
      *                          otherwise keeps the empty list.
+     * \return  Returns true if the resource object was registered with the key and is removed.
      **/
-    inline void unregister_resource_object(const RESOURCE_KEY & Key, RESOURCE_OBJECT Resource, bool removeEmpty = true );
+    inline bool unregister_resource_object(const RESOURCE_KEY & Key, RESOURCE_OBJECT Resource, bool removeEmpty = true );
 
     /**
      * \brief   Registers or retrieves the resource list for the given key. Returns the existing
@@ -441,20 +442,23 @@ template < typename RESOURCE_KEY
          , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
          , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline void ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, ResourceList, MapContainer, Tracker>::unregister_resource_object( const RESOURCE_KEY & Key, RESOURCE_OBJECT Resource, bool removeEmpty /*= true*/ )
+inline bool ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, ResourceList, MapContainer, Tracker>::unregister_resource_object( const RESOURCE_KEY & Key, RESOURCE_OBJECT Resource, bool removeEmpty /*= true*/ )
 {
     ScopedLock lock( mSyncObj );
 
+    bool result{ false };
     typename MapContainer::MAPPOS pos = MapContainer::is_empty() ? MapContainer::invalid_position() : MapContainer::find(Key);
     if (MapContainer::is_valid_position(pos))
     {
         ResourceList & resList = MapContainer::value_at(pos);
-        remove_resource_object( resList, Resource );
+        result = remove_resource_object( resList, Resource );
         if (removeEmpty && resList.is_empty())
         {
             MapContainer::remove_at(pos);
         }
     }
+
+    return result;
 }
 
 template < typename RESOURCE_KEY

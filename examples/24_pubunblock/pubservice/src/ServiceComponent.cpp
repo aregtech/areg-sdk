@@ -58,7 +58,7 @@ void ServiceComponent::request_hello_ublock( uint32_t clientId, uint32_t seqNr )
     ASSERT( clientId != HelloUnblock::InvalidId );
 
     areg::String timestamp( areg::DateTime::now( ).format_time( ) );
-    uint32_t sessionId = unblock_current_request( );
+    areg::SessionID sessionId = unblock_current_request( );
 
     LOG_DBG( "Received request: client [ %u ], sequence Nr [ %u ], unlock session [ %u ]", clientId, seqNr, sessionId );
     if ( mSessionList.is_empty() )

@@ -87,10 +87,21 @@ protected:
     // StubBase::Listener class declaration
     //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Compact listener entry that tracks a registered proxy client for a message ID.
+     * \brief   Compact listener entry of a message ID. A subscription has the sequence number
+     *          SEQUENCE_NUMBER_NOTIFY; any other sequence number is a request waiting for its response.
      **/
     class AREG_API Listener
     {
+    public:
+        /**
+         * \brief   Flag of a request entry restored by prepare_response(); its response targets it first.
+         **/
+        AREG_API_CONST static constexpr uint32_t   FLAG_PREPARED   { 1u };
+        /**
+         * \brief   Flag of a request entry whose proxy is disconnected; its response reaches only the subscribers.
+         **/
+        AREG_API_CONST static constexpr uint32_t   FLAG_ORPHANED   { 2u };
+
     //////////////////////////////////////////////////////////////////////////
     // Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////
@@ -132,8 +143,8 @@ protected:
         StubBase::Listener & operator = ( StubBase::Listener && src ) noexcept = default;
 
         /**
-         * \brief   Returns true if listeners are equal; matching message ID and either matching
-         *          sequence number or one sequence number is ANY.
+         * \brief   Returns true if the sequence number of \a other is SEQUENCE_NUMBER_ANY, or if both
+         *          listeners have the same sequence number and the same proxy. The message IDs must match.
          **/
         [[nodiscard]]
         bool operator == ( const StubBase::Listener & other ) const noexcept;
@@ -156,6 +167,18 @@ protected:
         [[nodiscard]]
         inline bool proxy_matches(const ProxyAddress & addr) const noexcept;
 
+        /**
+         * \brief   Returns true if both listeners are registered for the same proxy.
+         **/
+        [[nodiscard]]
+        inline bool same_proxy(const StubBase::Listener & other) const noexcept;
+
+        /**
+         * \brief   Returns true if the listener is a request waiting for its response, not a subscription.
+         **/
+        [[nodiscard]]
+        inline bool is_request() const noexcept;
+
     //////////////////////////////////////////////////////////////////////////
     // Member variables.
     //////////////////////////////////////////////////////////////////////////
@@ -164,6 +187,10 @@ protected:
          * \brief   The message ID of Listener object.
          **/
         uint32_t        mMessageId  { 0 };
+        /**
+         * \brief   Bits FLAG_PREPARED and FLAG_ORPHANED of a request entry; 0 for a subscription.
+         **/
+        uint32_t        mFlags      { 0 };
         /**
          * \brief   Sequence number of Listener.
          **/
@@ -266,12 +293,16 @@ public:
     inline const String & service_name() const noexcept;
 
     /**
-     * \brief   Sends error responses to all pending requests and notification subscriptions.
+     * \brief   Calls error_request() with false for every attribute, response and request ID.
+     *          Attribute subscribers receive the invalidation; a response or request error reaches
+     *          only the callers waiting for it, and the subscriptions stay.
      **/
     void error_all_requests();
 
     /**
-     * \brief   Cancels all pending requests, sends error responses, and unblocks blocked requests.
+     * \brief   Calls error_request() with true for every request ID: every waiting caller, including
+     *          the unblocked ones, receives RequestCanceled and every session ID becomes invalid.
+     *          The subscriptions stay.
      **/
     void cancel_all_requests();
 
@@ -331,18 +362,22 @@ public:
 // StubBase overrides. 
 /************************************************************************/
     /**
-     * \brief   Unblocks the current pending request and returns a unique session ID for manual response delivery.
+     * \brief   Unblocks the request being processed and returns a session ID for answering it later.
+     *          The same request may be accepted again while the session is open.
      *
-     * \return  Returns a session ID to use with prepare_response() for sending the response.
+     * \return  Returns a session ID to use with prepare_response(), or INVALID_SESSION_ID when no
+     *          request is being processed.
      **/
     [[nodiscard]]
     virtual SessionID unblock_current_request();
 
     /**
-     * \brief   Prepares a response for the request identified by the given session ID.
+     * \brief   Makes the request of the session the target of the next call of its response. Until
+     *          that response is sent, the request is busy again.
      *
      * \param   sessionId       The session ID returned by unblock_current_request().
-     * \return  Returns true if the session exists; false if the session ID is invalid or expired.
+     * \return  Returns true if the session is restored; false if the session ID is unknown or
+     *          cancelled, or another session of the same response is already prepared.
      **/
     virtual bool prepare_response(SessionID sessionId);
 
@@ -367,11 +402,12 @@ public:
     virtual void send_notification( uint32_t msgId ) = 0;
 
     /**
-     * \brief   Sends an error response to clients for the specified message ID. Must be overridden
-     *          by derived classes.
+     * \brief   Sends an error for the specified message ID. Must be overridden by derived classes.
+     *          See send_error_notification() for who receives it.
      *
      * \param   msgId           The message ID (request, response, or attribute) to error.
-     * \param   msgCancel       If true, marks request as canceled; if false, marks as error.
+     * \param   msgCancel       If true, every waiting caller of the request is cancelled; if false,
+     *                          only the caller the next response would answer gets RequestError.
      *                          Applies only to request IDs.
      **/
     virtual void error_request( uint32_t msgId, bool msgCancel ) = 0;
@@ -504,7 +540,7 @@ protected:
     const uint32_t * attribute_ids() const noexcept;
 
     /**
-     * \brief   Returns true if the specified request is pending, not released, and marked as busy.
+     * \brief   Returns true if a request waits for the response \a reqId and is not unblocked.
      **/
     [[nodiscard]]
     bool is_busy(uint32_t reqId) const noexcept;
@@ -515,9 +551,9 @@ protected:
      *
      * \param   listener    The listener object for this request (contains source proxy and message ID).
      * \param   seqNr       The sequence number of the request call.
-     * \param   reqId       The ID of the request to prepare.
+     * \param   respId      The ID of the response of the request.
      **/
-    void prepare_request(StubBase::Listener & listener, const SequenceNumber & seqNr, uint32_t reqId);
+    void prepare_request(StubBase::Listener & listener, const SequenceNumber & seqNr, uint32_t respId);
 
     /**
      * \brief   Collects all listeners matching the specified request ID into the output list.
@@ -529,13 +565,16 @@ protected:
     uint32_t find_listeners(uint32_t reqId, StubListenerList & listeners) const;
 
     /**
-     * \brief   Finds the listeners subscribed to \a respId.
+     * \brief   Collects the targets of the response or broadcast \a respId. A broadcast reaches every
+     *          subscriber. A response answers one waiting request, the prepared one first, and reaches
+     *          that caller and the subscribers of every other proxy; the answered request is removed.
+     *          A response with no waiting request is dropped.
      *
      * \param   respId          The response / broadcast message ID.
      * \param   result          The result code to stamp into the response.
      * \param   reserve         Payload bytes to reserve after the header for serialized parameters.
-     * \param[out] listeners    Receives the listeners subscribed to respId (empty if none).
-     * \return  A typed response event; invalid (is_valid()==false) when there are no listeners.
+     * \param[out] listeners    Receives the targets, the answered caller first (empty if none).
+     * \return  A typed response event; invalid (is_valid()==false) when there are no targets.
      **/
     [[nodiscard]]
     ServiceResponseEvent prepare_response_event( uint32_t respId, areg::ResultType result, uint32_t reserve, StubBase::StubListenerList & listeners );
@@ -569,17 +608,20 @@ protected:
     void remove_notification_listener( uint32_t msgId, const ProxyAddress & notifySource ) noexcept;
 
     /**
-     * \brief   Removes all listeners for the specified proxy and returns the removed request IDs.
+     * \brief   Removes the subscriptions of the specified proxy and marks its waiting requests and
+     *          sessions orphaned. An orphaned request stays busy until it is answered, and its
+     *          response reaches only the subscribers.
      *
-     * \param   whichProxy      The address of the proxy whose listeners should be removed.
-     * \param[out] removedIDs      Receives the list of request IDs that had listeners removed.
+     * \param   whichProxy      The address of the disconnected proxy.
+     * \param[out] removedIDs   Receives the message IDs of the removed subscriptions.
      **/
     void clear_all_listeners(const ProxyAddress & whichProxy, IntegerArray& removedIDs);
 
     /**
-     * \brief   Removes all listeners for the specified proxy.
+     * \brief   Removes the subscriptions of the specified proxy and marks its waiting requests and
+     *          sessions orphaned.
      *
-     * \param   whichProxy      The address of the proxy whose listeners should be removed.
+     * \param   whichProxy      The address of the disconnected proxy.
      * \note    Overload that does not return the list of removed IDs.
      **/
     void clear_all_listeners(const ProxyAddress & whichProxy) noexcept;
@@ -595,10 +637,15 @@ protected:
     void send_response_notification( const StubBase::StubListenerList & whichListeners, ServiceResponseEvent & masterEvent );
 
     /**
-     * \brief   Sends an error response for a failed attribute request to specified listeners.
+     * \brief   Sends the error \a masterEvent of the message ID of \a whichListeners. An attribute error
+     *          reaches every subscriber. RequestCanceled reaches every waiting caller of the request,
+     *          including the unblocked ones, whose sessions become invalid. RequestError reaches only
+     *          the caller the next response would answer. A response error reaches every waiting
+     *          caller as RequestError. Subscriptions of responses never receive a request error, and
+     *          every request that receives an error is removed.
      *
-     * \param   whichListeners      The list of listeners to receive the error notification.
-     * \param   masterEvent         The template event; cloned per listener. Caller destroys it.
+     * \param   whichListeners      The listeners of the message ID, as find_listeners() returns them.
+     * \param   masterEvent         The template event; cloned per target. Caller destroys it.
      **/
     void send_error_notification( const StubBase::StubListenerList & whichListeners, const ServiceResponseEvent & masterEvent );
 
@@ -652,7 +699,7 @@ protected:
     void send_notify_once( const ProxyAddress & target, uint32_t msgId, const areg::SharedBuffer & data, areg::ResultType result ) const;
 
     /**
-     * \brief   Sends a response event to proxy clients subscribed to the specified response ID.
+     * \brief   Sends a response event to the targets prepare_response_event() would collect.
      *
      * \param   respId      The ID of the response.
      * \param   data        The serialized response data (response call arguments).
@@ -719,29 +766,42 @@ private:
     ServiceResponseEvent create_undelivered_response( const ProxyAddress & proxy, uint32_t msgId, const SequenceNumber & seqNr ) const;
 
     /**
-     * \brief   Removes one listener matching toRemove from the sub-vector for msgId using
-     *          swap-and-pop. No-op if msgId or the matching listener is not found.
-     *
-     * \param   msgId       The message ID whose sub-vector is searched.
-     * \param   toRemove    The listener to find and remove (matched via Listener::operator==).
+     * \brief   Removes the entry at \a index by moving the last entry into its place. The caller holds the lock.
      **/
-    void remove_from_map( uint32_t msgId, const StubBase::Listener & toRemove ) noexcept;
+    static void _remove_at( StubListenerList & subVec, uint32_t index ) noexcept;
 
     /**
-     * \brief   Removes one listener matching toRemove from an already resolved sub-vector using swap-and-pop. 
-     *          It performs NO map lookup and acquires NO lock, it must be called by a caller that already
-     *          holds the Lock and the target sub-vector.
-     *
-     * \param   subVec      The sub-vector to search and compact in place.
-     * \param   toRemove    The listener to find and remove (matched via Listener::operator==).
+     * \brief   Returns the index of the request a response answers: the prepared one, otherwise the
+     *          one not unblocked. Returns the size of \a subVec if no request waits.
      **/
-    static void remove_from_list( StubListenerList & subVec, const StubBase::Listener & toRemove ) noexcept;
+    [[nodiscard]]
+    static uint32_t _find_target( const StubListenerList & subVec ) noexcept;
 
     /**
-     * \brief   Collects all listeners for respId into listeners.
+     * \brief   Returns the index of the request not unblocked and not prepared, checking \a hint first.
+     *          Returns the size of \a subVec if there is none.
+     **/
+    [[nodiscard]]
+    static uint32_t _find_unprepared( const StubListenerList & subVec, uint32_t hint ) noexcept;
+
+    /**
+     * \brief   Returns the first request of the interface answered by \a respId, or INVALID_MESSAGE_ID
+     *          if \a respId is a broadcast.
+     **/
+    [[nodiscard]]
+    uint32_t _request_of( uint32_t respId ) const noexcept;
+
+    /**
+     * \brief   Removes the sessions of the response \a respId and sends RequestCanceled of \a reqId
+     *          to their callers.
+     **/
+    void _cancel_sessions( uint32_t reqId, uint32_t respId );
+
+    /**
+     * \brief   Collects the targets of the response or broadcast respId and removes the answered request.
      *
      * \param   respId          The response / broadcast message ID to collect listeners for.
-     * \param[out] listeners    Receives all listeners for respId.
+     * \param[out] listeners    Receives the targets, the answered caller first.
      **/
     void collect_and_strip_response_listeners( uint32_t respId, StubListenerList & listeners );
 
@@ -808,8 +868,9 @@ private:
     #pragma warning(pop)
 #endif  // _MSC_VER
 
+protected:
     /**
-     * \brief   Used to generate unique session ID. The uniqueness is provided within single stub object scope
+     * \brief   The last generated session ID; a new one skips INVALID_SESSION_ID and every open session.
      **/
     SessionID                       mSessionId;
 
@@ -838,6 +899,7 @@ private:
 
 inline StubBase::Listener::Listener() noexcept
     : mMessageId  ( 0 )
+    , mFlags      ( 0 )
     , mSequenceNr ( 0 )
     , mRawService ( )
     , mConsumer   ( )
@@ -846,6 +908,7 @@ inline StubBase::Listener::Listener() noexcept
 
 inline StubBase::Listener::Listener( uint32_t reqId ) noexcept
     : mMessageId  ( reqId )
+    , mFlags      ( 0 )
     , mSequenceNr ( 0 )
     , mRawService ( )
     , mConsumer   ( )
@@ -854,6 +917,7 @@ inline StubBase::Listener::Listener( uint32_t reqId ) noexcept
 
 inline StubBase::Listener::Listener( uint32_t reqId, const SequenceNumber & seqId ) noexcept
     : mMessageId  ( reqId )
+    , mFlags      ( 0 )
     , mSequenceNr ( seqId )
     , mRawService ( )
     , mConsumer   ( )
@@ -862,6 +926,7 @@ inline StubBase::Listener::Listener( uint32_t reqId, const SequenceNumber & seqI
 
 inline StubBase::Listener::Listener( uint32_t reqId, const SequenceNumber & seqId, const ProxyAddress & proxy ) noexcept
     : mMessageId  ( reqId )
+    , mFlags      ( 0 )
     , mSequenceNr ( seqId )
     , mRawService ( )
     , mConsumer   ( )
@@ -877,6 +942,16 @@ inline ProxyAddress StubBase::Listener::proxy() const noexcept
 inline bool StubBase::Listener::proxy_matches( const ProxyAddress & addr ) const noexcept
 {
     return (addr.cookie() == mConsumer.id) && (static_cast<uint32_t>(addr) == mConsumer.number);
+}
+
+inline bool StubBase::Listener::same_proxy( const StubBase::Listener & other ) const noexcept
+{
+    return (mConsumer.id == other.mConsumer.id) && (mConsumer.number == other.mConsumer.number);
+}
+
+inline bool StubBase::Listener::is_request() const noexcept
+{
+    return (mSequenceNr != areg::SEQUENCE_NUMBER_NOTIFY);
 }
 
 /************************************************************************

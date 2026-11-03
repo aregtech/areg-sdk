@@ -25,6 +25,7 @@
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/component/EventDefs.hpp"
 
+#include <atomic>
 #include <limits>
 
 namespace areg {
@@ -35,6 +36,7 @@ namespace areg {
 /**
  * \brief   Base class for timers that trigger events at specified intervals; supports one-shot and
  *          continuous modes with optional watchdog protection.
+ *          The state queries may be called from any thread and return a snapshot of the state.
  **/
 class AREG_API TimerBase
 {
@@ -215,29 +217,38 @@ protected:
      */
     const TimerType mTimerType;
     /**
-     * \brief   The timer handle.
-     */
-    TIMERHANDLE     mHandle;
-    /**
      * \brief   Timer name. If not empty, it is unique name
      **/
     const String    mName;
+
+#if defined(_MSC_VER)
+    #pragma warning(push)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+    /**
+     * \brief   The timer handle.
+     */
+    std::atomic<TIMERHANDLE>    mHandle;
     /**
      * \brief   Timeout to fire timer.
      **/
-    uint32_t        mTimeoutInMs;
+    std::atomic<uint32_t>       mTimeoutInMs;
     /**
      * \brief   The amount of events to fire
      **/
-    uint32_t        mEventsCount;
+    std::atomic<uint32_t>       mEventsCount;
     /**
      * \brief   Flag, indicating whether the timer is active or not.
      **/
-    bool            mActive;
+    std::atomic<bool>           mActive;
     /**
      * \brief   The timer priority.
      **/
-    EventPriority   mPriority;
+    std::atomic<EventPriority>  mPriority;
+#if defined(_MSC_VER)
+    #pragma warning(pop)
+#endif  // _MSC_VER
+
     /**
      * \brief   Synchronization object
      **/
@@ -252,14 +263,19 @@ private:
 // Timer class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
+static_assert((sizeof(std::atomic<TIMERHANDLE>) == sizeof(TIMERHANDLE)) && (alignof(std::atomic<TIMERHANDLE>) == alignof(TIMERHANDLE)), "TimerBase layout changed");
+static_assert((sizeof(std::atomic<uint32_t>) == sizeof(uint32_t)) && (alignof(std::atomic<uint32_t>) == alignof(uint32_t)), "TimerBase layout changed");
+static_assert((sizeof(std::atomic<bool>) == sizeof(bool)) && (alignof(std::atomic<bool>) == alignof(bool)), "TimerBase layout changed");
+static_assert((sizeof(std::atomic<EventPriority>) == sizeof(EventPriority)) && (alignof(std::atomic<EventPriority>) == alignof(EventPriority)), "TimerBase layout changed");
+
 inline bool TimerBase::is_valid() const noexcept
 {
-    return ((mTimeoutInMs != areg::INVALID_TIMEOUT) && (mHandle != nullptr));
+    return ((mTimeoutInMs.load(std::memory_order_relaxed) != areg::INVALID_TIMEOUT) && (mHandle.load(std::memory_order_relaxed) != nullptr));
 }
 
 inline void TimerBase::set_event_count(uint32_t eventCount) noexcept
 {
-    mEventsCount = eventCount;
+    mEventsCount.store(eventCount, std::memory_order_relaxed);
 }
 
 inline const String & TimerBase::name() const noexcept
@@ -269,27 +285,27 @@ inline const String & TimerBase::name() const noexcept
 
 inline uint32_t TimerBase::timeout() const noexcept
 {
-    return mTimeoutInMs;
+    return mTimeoutInMs.load(std::memory_order_relaxed);
 }
 
 inline void TimerBase::set_timeout(uint32_t timeoutMs) noexcept
 {
-    mTimeoutInMs = timeoutMs;
+    mTimeoutInMs.store(timeoutMs, std::memory_order_relaxed);
 }
 
 inline uint32_t TimerBase::event_count() const noexcept
 {
-    return mEventsCount;
+    return mEventsCount.load(std::memory_order_relaxed);
 }
 
 inline TIMERHANDLE TimerBase::handle() const noexcept
 {
-    return mHandle;
+    return mHandle.load(std::memory_order_relaxed);
 }
 
 inline bool TimerBase::is_active() const noexcept
 {
-    return mActive;
+    return mActive.load(std::memory_order_relaxed);
 }
 
 inline TimerBase::TimerType TimerBase::timer_type() const noexcept
@@ -299,12 +315,12 @@ inline TimerBase::TimerType TimerBase::timer_type() const noexcept
 
 inline areg::EventPriority TimerBase::priority() const noexcept
 {
-    return mPriority;
+    return mPriority.load(std::memory_order_relaxed);
 }
 
 inline void TimerBase::set_priority(areg::EventPriority prio) noexcept
 {
-    mPriority = prio;
+    mPriority.store(prio, std::memory_order_relaxed);
 }
 
 } // namespace areg

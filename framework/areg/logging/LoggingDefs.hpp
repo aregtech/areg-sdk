@@ -406,6 +406,7 @@ namespace areg {
         LogEntry( areg::LogMessageType msgType = areg::LogMessageType::Undefined );
         /**
          * \brief   Initializes logging message and sets specified data.
+         *          In a build without logging (AREG_LOGGING off) only the message type is set.
          *
          * \param   msgType         The logging message type.
          * \param   scopeId         The ID of message scope.

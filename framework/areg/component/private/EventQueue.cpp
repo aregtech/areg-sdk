@@ -23,6 +23,7 @@
 #include <chrono>
 #include <cstddef>
 #include <iterator>
+#include <new>
 #include <type_traits>
 
 // pop_event() is noexcept and returns the exit event by copying the cached singleton.
@@ -116,19 +117,22 @@ EventQueue::~EventQueue()
 // EventQueue - lane lifecycle
 //////////////////////////////////////////////////////////////////////////
 
-void EventQueue::acquire_lanes() noexcept
+bool EventQueue::acquire_lanes() noexcept
 {
     if (mCapacity == 0u)
-        return;
+        return false;
 
     if (mRing.load(std::memory_order_relaxed) != nullptr)
     {
         // The ring outlives a stop, so starting again only opens it for producers.
         static_cast<void>(mEnqueuePos.fetch_and(~EventQueue::RING_CLOSED, std::memory_order_release));
-        return;
+        return true;
     }
 
-    Cell* const ring{ new Cell[mCapacity] };
+    Cell* const ring{ new (std::nothrow) Cell[mCapacity] };
+    if (ring == nullptr)
+        return false;
+
     for (uint32_t i = 0u; i < mCapacity; ++i)
         ring[i].sequence.store(i, std::memory_order_relaxed);
 
@@ -142,6 +146,7 @@ void EventQueue::acquire_lanes() noexcept
     }
 
     mRing.store(ring, std::memory_order_release);
+    return true;
 }
 
 void EventQueue::close_lanes() noexcept
@@ -366,23 +371,44 @@ bool EventQueue::wait_push_event(Event& eventElem) noexcept
 
 uint32_t EventQueue::push_events(Event* eventElems, uint32_t count)
 {
-    Cell* const ring{ mRing.load(std::memory_order_acquire) };
-    if ((eventElems == nullptr) || (count == 0u) || (ring == nullptr))
+    if ((eventElems == nullptr) || (count == 0u))
         return 0u;
 
+    uint32_t removedCount{ 0u };
+    Cell* const ring{ mRing.load(std::memory_order_acquire) };
+    if (ring == nullptr)
+    {
+        // No lanes: every valid event is refused and compacted to the front.
+        for (uint32_t i = 0u; i < count; ++i)
+        {
+            if (eventElems[i].is_valid())
+            {
+                if (removedCount < i)
+                    eventElems[removedCount] = std::move(eventElems[i]);
+                ++removedCount;
+            }
+        }
+
+        return removedCount;
+    }
+
     uint32_t signalCount{ 0u };
+    uint32_t first{ 0u };
     bool     exitRequested{ false };
 
+    while ((first < count) && (eventElems[first].is_valid() == false))
+        ++first;
+
     // Phase 1: insert all priority-lane events in ONE mPrioLock acquisition.
-    if (eventElems[0].event_priority() > areg::EventPriority::NormalPrio)
+    if ((first < count) && (eventElems[first].event_priority() > areg::EventPriority::NormalPrio))
     {
         Lock lock(mPrioLock);
         const bool prioOpen{ mPrioQueue.has_value() && (!is_closed()) };
-        for (uint32_t i = 0u; (i < count) && prioOpen; ++i)
+        for ( ; (first < count) && prioOpen; ++first)
         {
-            Event& evt = eventElems[i];
+            Event& evt = eventElems[first];
             if (!evt.is_valid())
-                break;
+                continue;
 
             const areg::EventPriority prio{ evt.event_priority() };
             if (prio == areg::EventPriority::ExitPrio)
@@ -407,8 +433,7 @@ uint32_t EventQueue::push_events(Event* eventElems, uint32_t count)
     }
 
     // Phase 2: insert NormalPrio events into the ring; not-enqueued ones compact to the front.
-    uint32_t removedCount{ 0u };
-    for (uint32_t i = signalCount; i < count; ++i)
+    for (uint32_t i = first; i < count; ++i)
     {
         Event& evt = eventElems[i];
         if (!evt.is_valid())
@@ -446,7 +471,13 @@ Event EventQueue::pop_event() noexcept
 {
     Cell* const ring{ mRing.load(std::memory_order_acquire) };
     if (ring == nullptr)
+    {
+        // Without lanes nothing is queued, so any exit request ends the consumer.
+        if (mExitState.load(std::memory_order_acquire) != EventQueue::EXIT_NONE)
+            return ExitEvent::exit_event();
+
         return Event{};
+    }
 
     // Immediate exit preempts everything
     if (is_exit_triggered())
@@ -478,8 +509,18 @@ Event EventQueue::pop_event() noexcept
 uint32_t EventQueue::pop_events(Event* eventElems, uint32_t count)
 {
     Cell* const ring{ mRing.load(std::memory_order_acquire) };
-    if ((eventElems == nullptr) || (count == 0u) || (ring == nullptr))
+    if ((eventElems == nullptr) || (count == 0u))
         return 0u;
+
+    if (ring == nullptr)
+    {
+        // Without lanes nothing is queued, so any exit request ends the consumer.
+        if (mExitState.load(std::memory_order_acquire) == EventQueue::EXIT_NONE)
+            return 0u;
+
+        eventElems[0] = ExitEvent::exit_event();
+        return 1u;
+    }
 
     // Immediate exit preempts every lane
     if (is_exit_triggered())

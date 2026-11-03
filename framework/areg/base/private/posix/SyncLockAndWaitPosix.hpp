@@ -187,6 +187,14 @@ public:
     static int32_t event_signaled( WaitablePosix & syncWaitable ) noexcept;
 
     /**
+     * \brief   Gives the signaled waitable object to the WaitAll waiters that can take it now.
+     *
+     * \param   syncWaitable    The waitable object that is in signaled state.
+     * \return  Returns the number of threads notified.
+     **/
+    static int32_t notify_wait_all_waiters( WaitablePosix & syncWaitable ) noexcept;
+
+    /**
      * \brief   Called by waitable object to indicate failure (e.g., invalidation). Unlocks all
      *          waiting threads with error.
      *

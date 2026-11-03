@@ -23,6 +23,12 @@
 #include "areg/base/Thread.hpp"
 #include "areg/base/ThreadConsumer.hpp"
 
+// GetCurrentThreadStackLimits is declared for Windows 8 and newer only.
+#if !defined(_WIN32_WINNT) || (_WIN32_WINNT < 0x0602)
+    #undef  _WIN32_WINNT
+    #define _WIN32_WINNT    0x0602
+#endif  // !defined(_WIN32_WINNT) || (_WIN32_WINNT < 0x0602)
+
 #ifndef NOMINMAX
     #define NOMINMAX
 #endif // !NOMINMAX
@@ -171,13 +177,8 @@ bool Thread::_os_create() noexcept
     mThreadId       = static_cast<id_type>(threadId);
     mThreadPriority = Thread::ThreadPriority::Normal;
 
-    if (!_register_thread())
-    {
-        _clean_resources(true, true);
-        return false;
-    }
-
-    return true;
+    // On a rejected registration start() releases the handle after the routine ends.
+    return _register_thread();
 }
 
 Thread::ThreadPriority Thread::_os_set_priority( ThreadPriority newPriority ) noexcept
@@ -226,8 +227,14 @@ Thread::ThreadPriority Thread::_os_set_priority( ThreadPriority newPriority ) no
 
 size_t Thread::_os_stack_size(THREADHANDLE handle) noexcept
 {
-    ULONG size{ 0u };
-    return ((handle != nullptr) && SetThreadStackGuarantee(&size) ? static_cast<size_t>(size) : 0);
+    if (handle == nullptr)
+        return 0;
+
+    // The reserved stack region of the calling thread.
+    ULONG_PTR low{ 0u };
+    ULONG_PTR high{ 0u };
+    ::GetCurrentThreadStackLimits(&low, &high);
+    return static_cast<size_t>(high - low);
 }
 
 void Thread::_os_yield_to_thread() noexcept

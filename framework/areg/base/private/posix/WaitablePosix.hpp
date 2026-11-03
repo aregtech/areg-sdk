@@ -24,6 +24,7 @@
 #if defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/private/posix/SyncObjectPosix.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 #include <atomic>
 #include <pthread.h>
 namespace areg::os {
@@ -168,6 +169,15 @@ public:
     int32_t notify_any_waiters() noexcept;
 
     /**
+     * \brief   Hands a pulse to the WaitAny waiters parked now: each one marked returns owning
+     *          this object without checking its state.
+     *
+     * \param   releaseAll  If true, marks every waiter; otherwise marks the first one only.
+     * \return  Returns the number of waiters marked.
+     **/
+    int32_t notify_pulse_waiters( bool releaseAll ) noexcept;
+
+    /**
      * \brief   Returns true if at least one waiter is currently parked on this object's intrusive list.
      *          Lets a signaler wake a parked waiter even after the false->true edge passed.
      **/
@@ -177,8 +187,17 @@ public:
 private:
     //!< Head of the per-object intrusive WaiterNode list; nullptr when empty.
     std::atomic<WaiterNode*>    mWaiters;
-    //!< Spinlock protecting mWaiters list mutations.
-    std::atomic_flag            mWaitersLock;
+
+    /**
+     * \brief   Marks the waiters with their index and the given bits, and wakes them.
+     *
+     * \param   mark        The bits added to the index of each waiter.
+     * \param   releaseAll  If true, marks every waiter; otherwise marks the first one only.
+     * \return  Returns the number of waiters marked.
+     **/
+    int32_t _notify_waiters( uint32_t mark, bool releaseAll ) noexcept;
+    //!< Lock of the mWaiters list; a contended thread sleeps after a short spin.
+    areg::PlainSpinLock         mWaitersLock;
 
 #endif  // defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
 
