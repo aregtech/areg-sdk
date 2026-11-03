@@ -100,6 +100,12 @@
     <ClCompile Include="..\framework\areg\logging\private\LoggingEvent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\framework\logcollector\service\private\LogCollectorDroppedRows.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\LogCollectorDroppedRowsTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="units\LayoutTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

@@ -982,7 +982,7 @@ TEST(EventEnvelopeTest, truncated_payload_read_is_bounded)
     areg::MessageEnvelope envelope(DATA, sizeof(DATA));
     envelope.reset();
     std::array<uint8_t, 5> output{ 9u, 9u, 9u, 9u, 9u };
-    EXPECT_EQ(envelope.read(output.data(), output.size()), sizeof(DATA));
+    EXPECT_EQ(envelope.read(output.data(), static_cast<uint32_t>(output.size())), sizeof(DATA));
     EXPECT_EQ(output, (std::array<uint8_t, 5>{ 0x10u, 0x20u, 0x30u, 9u, 9u }));
     EXPECT_EQ(envelope.read(output.data(), 1u), 0u);
     EXPECT_EQ(envelope.position(), sizeof(DATA));

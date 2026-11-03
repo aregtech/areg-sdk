@@ -68,6 +68,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     ListenerDispatchTest.cpp
     LockWaitTest.cpp
     LayoutTest.cpp
+    LogCollectorDroppedRowsTest.cpp
     LogConfigurationTest.cpp
     LogMessageLengthTest.cpp
     LogProtocolTest.cpp
@@ -130,6 +131,11 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
 
 # The log database tests use the SQLite wrappers of aregextend, which every executable links.
 target_link_libraries("${AREG_UNIT_TEST_PROJECT}" PRIVATE ${AREG_SQLITE_LIB_REF})
+
+# The record of dropped log rows of the log collector, which is not a library.
+target_sources("${AREG_UNIT_TEST_PROJECT}" PRIVATE
+    "${CMAKE_CURRENT_LIST_DIR}/../../framework/logcollector/service/private/LogCollectorDroppedRows.cpp"
+)
 
 # Private logging helpers are not exported by the shared library.
 if (AREG_LIB_TYPE STREQUAL "shared")

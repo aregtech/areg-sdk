@@ -257,6 +257,10 @@ TEST_F(TimerLifecycleTest, zero_count_restart_clears_active_state)
     EXPECT_TRUE(timer.is_stopped());
 }
 
+/**
+ * \brief   Reproduces the defect: the state queries of a timer read fields that the timer thread
+ *          writes on expiry without synchronization, a data race reported by ThreadSanitizer.
+ **/
 TEST_F(TimerLifecycleTest, state_queries_from_another_thread_race_free_with_expiry)
 {
     constexpr uint32_t EVENTS{ 64u };

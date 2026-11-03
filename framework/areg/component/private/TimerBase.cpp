@@ -29,8 +29,8 @@ TimerBase::TimerBase( const TimerType timerType
                     , uint32_t eventCount   /*= TimerBase::CONTINUOUSLY*/
                     , EventPriority prio    /*= areg::DefaultPriority*/)
     : mTimerType    ( timerType )
-    , mHandle       ( nullptr   )
     , mName         ( timerName )
+    , mHandle       ( nullptr   )
     , mTimeoutInMs  ( timeoutMs )
     , mEventsCount  ( eventCount)
     , mActive       ( false     )

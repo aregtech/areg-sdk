@@ -720,7 +720,7 @@ TEST(SharedBufferTest, seek_clamps_and_raw_reads_leave_tail_untouched)
     std::array<uint8_t, 5> output{ 9u, 9u, 9u, 9u, 9u };
     EXPECT_EQ(buffer.read(nullptr, 1u), 0u);
     EXPECT_EQ(buffer.read(output.data(), 0u), 0u);
-    EXPECT_EQ(buffer.read(output.data(), output.size()), sizeof(DATA));
+    EXPECT_EQ(buffer.read(output.data(), static_cast<uint32_t>(output.size())), sizeof(DATA));
     EXPECT_EQ(output, (std::array<uint8_t, 5>{ 1u, 2u, 3u, 9u, 9u }));
     EXPECT_EQ(buffer.position(), sizeof(DATA));
     buffer.invalidate();
@@ -754,7 +754,7 @@ TEST(SharedBufferTest, view_assignment_retains_slice_after_owner_release)
     EXPECT_TRUE(moved.is_unique());
     EXPECT_EQ(std::as_const(moved).buffer(), slice);
     std::array<uint8_t, 5> output{};
-    EXPECT_EQ(moved.read(output.data(), output.size()), sizeof(DATA));
+    EXPECT_EQ(moved.read(output.data(), static_cast<uint32_t>(output.size())), sizeof(DATA));
     EXPECT_EQ(output, (std::array<uint8_t, 5>{ 11u, 12u, 13u, 0u, 0u }));
     EXPECT_TRUE(moved.is_end());
     moved.reset();
@@ -922,7 +922,7 @@ TEST(SharedBufferTest, growth_releases_one_owner_without_changing_other)
     areg::SharedBuffer copy(original);
     const uint8_t* const allocation{ copy.buffer() };
     const std::vector<uint8_t> extra(original.size_available() + 1u, 0xA5u);
-    ASSERT_EQ(original.write(extra.data(), extra.size()), extra.size());
+    ASSERT_EQ(original.write(extra.data(), static_cast<uint32_t>(extra.size())), extra.size());
     EXPECT_EQ(copy.buffer(), allocation);
     EXPECT_EQ(copy.size_used(), sizeof(DATA));
     EXPECT_EQ(std::memcmp(copy.buffer(), DATA, sizeof(DATA)), 0);

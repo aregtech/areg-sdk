@@ -59,6 +59,8 @@
     <ClCompile Include="..\framework\areg\logging\private\ScopeNodeBase.cpp" />
     <ClCompile Include="..\framework\areg\logging\private\ScopeNodes.cpp" />
     <ClCompile Include="..\framework\areg\logging\private\LoggingEvent.cpp" />
+    <ClCompile Include="..\framework\logcollector\service\private\LogCollectorDroppedRows.cpp" />
+    <ClCompile Include="units\LogCollectorDroppedRowsTest.cpp" />
     <ClCompile Include="units\LayoutTest.cpp" />
     <ClCompile Include="units\LogConfigurationTest.cpp" />
     <ClCompile Include="units\LogMessageLengthTest.cpp" />

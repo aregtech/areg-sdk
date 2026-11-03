@@ -217,13 +217,18 @@ protected:
      */
     const TimerType mTimerType;
     /**
-     * \brief   The timer handle.
-     */
-    std::atomic<TIMERHANDLE>    mHandle;
-    /**
      * \brief   Timer name. If not empty, it is unique name
      **/
     const String    mName;
+
+#if defined(_MSC_VER)
+    #pragma warning(push)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+    /**
+     * \brief   The timer handle.
+     */
+    std::atomic<TIMERHANDLE>    mHandle;
     /**
      * \brief   Timeout to fire timer.
      **/
@@ -240,6 +245,10 @@ protected:
      * \brief   The timer priority.
      **/
     std::atomic<EventPriority>  mPriority;
+#if defined(_MSC_VER)
+    #pragma warning(pop)
+#endif  // _MSC_VER
+
     /**
      * \brief   Synchronization object
      **/

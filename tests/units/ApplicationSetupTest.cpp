@@ -172,12 +172,12 @@ TEST_P(ApplicationSetupOptionsTest, selected_services_are_ready_and_release_join
     const bool watchdog{ (options & 16u) != 0u };
     setup_application(logging, servicing, routing, timer, watchdog);
 
-    const bool manager{ servicing || routing };
+    const bool serviceManager{ servicing || routing };
     EXPECT_EQ(areg::Application::system_state(), areg::AppState::Ready);
     EXPECT_TRUE(areg::Application::is_servicing_available());
-    EXPECT_EQ(application_thread(APP_SERVICE_THREAD) != nullptr, manager);
-    EXPECT_EQ(application_thread(APP_TIMER_THREAD) != nullptr, timer || manager);
-    EXPECT_EQ(application_thread(APP_WATCHDOG_THREAD) != nullptr, watchdog || manager);
+    EXPECT_EQ(application_thread(APP_SERVICE_THREAD) != nullptr, serviceManager);
+    EXPECT_EQ(application_thread(APP_TIMER_THREAD) != nullptr, timer || serviceManager);
+    EXPECT_EQ(application_thread(APP_WATCHDOG_THREAD) != nullptr, watchdog || serviceManager);
 #if AREG_LOGGING
     EXPECT_EQ(areg::is_started(), logging);
     EXPECT_EQ(application_thread(APP_LOG_THREAD) != nullptr, logging);
@@ -513,6 +513,10 @@ TEST_F(ApplicationSetupTest, working_directory_accepts_explicit_empty_and_null_p
     EXPECT_TRUE(current_dir_is(executable));
 }
 
+/**
+ * \brief   Reproduces the defect: the working directory was compared by spelling, so a path
+ *          through a symbolic link, as /var on macOS, failed although it is the same directory.
+ **/
 TEST_F(ApplicationSetupTest, working_directory_through_a_symbolic_link_reaches_the_target)
 {
     const std::filesystem::path link{ mDirectory.string() + "_link" };
