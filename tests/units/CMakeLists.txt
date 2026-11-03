@@ -45,6 +45,7 @@ macro(macro_add_unit_test test_project)
 endmacro(macro_add_unit_test)
 
 macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
+    ChildProcessTest.cpp
     ContainersTest.cpp
     MemoryDefsTest.cpp
     GUnitTest.cpp

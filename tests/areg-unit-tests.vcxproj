@@ -87,6 +87,7 @@
     <ClCompile Include="units\OptionParserTest.cpp" />
     <ClCompile Include="units\StringDefsTest2.cpp" />
     <ClCompile Include="units\StringDefsTest3.cpp" />
+    <ClCompile Include="units\ChildProcessTest.cpp" />
     <ClCompile Include="units\ContainersTest.cpp" />
     <ClCompile Include="units\MemoryDefsTest.cpp" />
     <ClCompile Include="units\StringCommonTest.cpp" />
@@ -143,6 +144,7 @@
     <ClCompile Include="units\VersionTest.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="units\ChildProcess.hpp" />
     <ClInclude Include="units\GUnitTest.hpp" />
     <ClInclude Include="units\UnitTestUtilities.hpp" />
   </ItemGroup>

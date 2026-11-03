@@ -19,6 +19,9 @@
     <Text Include="CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="units\ChildProcessTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="units\ContainersTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -306,6 +309,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="units\ChildProcess.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="units\GUnitTest.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

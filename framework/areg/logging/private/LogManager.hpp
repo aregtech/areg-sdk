@@ -358,6 +358,14 @@ protected:
      **/
     void ready_for_events( bool is_ready ) final;
 
+    /**
+     * \brief   Once the queue is empty, reports dropped messages and flushes the targets if a
+     *          message was written since the last flush.
+     *
+     * \param   eventElem   The event that was dispatched.
+     **/
+    void post_dispatch_event( Event & eventElem ) final;
+
 /************************************************************************/
 // LoggingEventConsumer interface overrides
 /************************************************************************/
@@ -529,6 +537,9 @@ private:
      * \brief   Log messages dropped since the last notice because the logging queue was full.
      **/
     std::atomic<uint32_t>   mQueueDropped;
+
+    //!< True if a message was written to the targets since the last flush. Used by the logging thread only.
+    bool                    mPendingFlush;
     /**
      * \brief   Logging configuration
      **/

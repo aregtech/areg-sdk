@@ -7,10 +7,13 @@
 #include "units/GUnitTest.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/base/File.hpp"
+#include "areg/base/MathDefs.hpp"
 #include "areg/base/MessageEnvelope.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/SocketDefs.hpp"
 #include "areg/base/SocketMultiplexer.hpp"
+#include "areg/component/DispatcherThread.hpp"
+#include "areg/component/Event.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
 #include "areg/ipc/SocketConnectionBase.hpp"
 #include "areg/logging/LogConfiguration.hpp"
@@ -107,10 +110,41 @@ namespace
 
         virtual bool log_message(const areg::LogEntry& entry) override
         {
-            std::lock_guard<std::mutex> guard(mMutex);
+            std::unique_lock<std::mutex> guard(mMutex);
             mRows.emplace_back(entry.logMessage, areg::log_message_size(entry));
             mChanged.notify_all();
+            if (!mHoldRow.empty() && (mRows.back() == mHoldRow))
+            {
+                mHeld = true;
+                mChanged.notify_all();
+                mChanged.wait_for(guard, std::chrono::milliseconds(WAIT_MS), [this]() { return mReleased; });
+            }
+
             return mOpened;
+        }
+
+        // Makes the logging thread wait inside log_message() for the row 'text' until released.
+        void hold_row(const std::string& text)
+        {
+            std::lock_guard<std::mutex> guard(mMutex);
+            mHoldRow = text;
+            mHeld = false;
+            mReleased = false;
+        }
+
+        bool wait_held()
+        {
+            std::unique_lock<std::mutex> guard(mMutex);
+            return mChanged.wait_for(guard, std::chrono::milliseconds(WAIT_MS), [this]() { return mHeld; });
+        }
+
+        void release_row()
+        {
+            {
+                std::lock_guard<std::mutex> guard(mMutex);
+                mReleased = true;
+            }
+            mChanged.notify_all();
         }
 
         virtual bool commit(bool) override
@@ -158,6 +192,9 @@ namespace
         std::vector<std::string> mPaths;
         std::vector<areg::DatabaseRole> mRoles;
         std::vector<std::string> mRows;
+        std::string mHoldRow{ };
+        bool mHeld{ false };
+        bool mReleased{ false };
         uint32_t mClosedSessions;
         uint32_t mCommits;
         std::size_t mFlushedRows;
@@ -1065,6 +1102,29 @@ TEST_F(LoggingRuntimeCoverageTest, database_target_closed_by_stop_receives_no_ro
     areg::stop_logging(true);
     EXPECT_EQ(mDatabase.rows(), (std::vector<std::string>{ "open-session", "reopened-session" }));
     EXPECT_EQ(mDatabase.mPaths.size(), 2u);
+}
+
+/**
+ * \brief   Reproduces the defect: a row followed by a non-log event stayed uncommitted.
+ **/
+TEST_F(LoggingRuntimeCoverageTest, row_followed_by_a_trailing_non_log_event_is_committed)
+{
+    use_database();
+    setup();
+    ASSERT_TRUE(areg::start_logging());
+    mDatabase.hold_row("held-row");
+    write_row("held-row");
+    ASSERT_TRUE(mDatabase.wait_held());
+
+    areg::DispatcherThread& logging{ areg::DispatcherThread::dispatcher_thread(areg::crc32_calculate("_AREG_LOGGING_THREAD_")) };
+    ASSERT_TRUE(logging.is_running());
+    areg::Event trailing(areg::EventType::EventCustomExternal);
+    trailing.set_target_dispatcher(&logging);
+    ASSERT_TRUE(trailing.deliver_event());
+
+    mDatabase.release_row();
+    EXPECT_TRUE(mDatabase.wait_row("held-row", true));
+    areg::stop_logging(true);
 }
 
 #endif // AREG_LOGGING
