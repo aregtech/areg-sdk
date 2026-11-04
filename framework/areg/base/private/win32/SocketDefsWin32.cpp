@@ -28,7 +28,7 @@
     #define WIN32_LEAN_AND_MEAN
 #endif  // WIN32_LEAN_AND_MEAN
 #include <WinSock2.h>
-#include <Mstcpip.h>
+#include <mstcpip.h>
 #include <WS2tcpip.h>
 
 #include <atomic>
@@ -42,7 +42,7 @@
 //////////////////////////////////////////////////////////////////////////
 namespace areg::os {
     //!< Global socket initialize / release counter.
-    std::atomic_uint _instanceCount(0u);
+    static std::atomic_uint _instanceCount(0u);
 
 
 bool _os_init_socket()
@@ -252,7 +252,7 @@ int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uin
             {
                 if (copied != 0u)
                 {
-                    const int32_t written = _os_send_data(hSocket, staging, copied);
+                    const int32_t written = _os_send_data(hSocket, staging, static_cast<int32_t>(copied));
                     if (written < 0)
                         return -1;
                     result += written;
@@ -268,7 +268,7 @@ int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uin
 
             if ((copied + bsize) > tc.space)
             {
-                const int32_t written = _os_send_data(hSocket, staging, copied);
+                const int32_t written = _os_send_data(hSocket, staging, static_cast<int32_t>(copied));
                 if (written < 0)
                     return -1;
                 result += written;
@@ -281,7 +281,7 @@ int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uin
 
         if (copied != 0)
         {
-            const int32_t written = _os_send_data(hSocket, staging, copied);
+            const int32_t written = _os_send_data(hSocket, staging, static_cast<int32_t>(copied));
             if (written < 0)
                 return -1;
 

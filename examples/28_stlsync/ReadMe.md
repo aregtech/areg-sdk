@@ -1,4 +1,4 @@
-﻿# 28_stlsync
+# 28_stlsync
 
 🧵 **Type:** Multithreading / Single Process
 

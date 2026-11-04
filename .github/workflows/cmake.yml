@@ -456,6 +456,10 @@ jobs:
       - name: Check no non-template class defines a virtual method inline
         run: python3 tools/intern/check_inline_virtuals.py
 
+      # Visual Studio saves a resource script as UTF-16, which clang cannot read.
+      - name: Check the encoding of every text file
+        run: python3 tools/intern/check-ascii.py
+
   result:
     name: CMake result
     if: always()

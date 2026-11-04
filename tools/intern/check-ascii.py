@@ -11,11 +11,19 @@ Finds unwanted bytes in the sources of the SDK.
 
 Two checks live here, and a run performs one of them.
 
-1. The ASCII-only rule (default). Every source, script, CMake and configuration file
-   must contain only bytes 0x00-0x7F. Documents ('.md', '.txt') are exempt, because
-   they may carry UTF-8. The compilers of the SDK read a file without a byte order
-   mark in the code page of the machine, so the same UTF-8 dash becomes different
-   bytes on different machines, silently, inside a string literal.
+1. The encoding rule (default). Every text file of the repository is one of these:
+     ASCII        everything that is not named below; only bytes 0x00-0x7F.
+     UTF-8        documents ('.md', '.txt') and the character data of ASCII_WAIVED,
+                  which is every '*String*.*' file. No byte order mark, except
+                  in a C or C++ source: there the mark is mandatory, because the
+                  compilers of the SDK read a file without one in the code page
+                  of the machine, so the same UTF-8 dash becomes different bytes
+                  on different machines, silently, inside a string literal.
+     ASCII + BOM  the project files Visual Studio writes (BOM_ALLOWED). It puts the
+                  mark back on every save, so the mark is accepted, not required.
+   UTF-16, UTF-32 and bytes that are not UTF-8 are never accepted. Visual Studio saves
+   a resource script as UTF-16, and clang cannot read that. '--fix-encoding' rewrites
+   a file that breaks the rule; a non ASCII byte in an ASCII file stays for a person.
 
 2. A byte hunt ('--find'). Reports every occurrence of the given byte values, whatever
    they are. Written for the control characters that reach a file through a text
@@ -24,9 +32,10 @@ Two checks live here, and a run performs one of them.
 
 Usage
 -----
-    python3 tools/intern/check-ascii.py                     # ASCII rule, whole repository
-    python3 tools/intern/check-ascii.py framework examples  # ASCII rule, only these paths
+    python3 tools/intern/check-ascii.py                     # encoding rule, whole repository
+    python3 tools/intern/check-ascii.py framework examples  # encoding rule, only these paths
     python3 tools/intern/check-ascii.py --staged            # only what git has staged
+    python3 tools/intern/check-ascii.py --fix-encoding      # rewrites the files that break it
 
     python3 tools/intern/check-ascii.py --find control      # every C0 control but TAB, LF, CR
     python3 tools/intern/check-ascii.py --find 0x08         # one value
@@ -53,16 +62,18 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fi
 CHECKED_SUFFIXES = (
     '.h', '.hpp', '.c', '.cpp', '.cc', '.cxx', '.inl',
     '.cmake', '.py', '.sh', '.bat', '.cmd', '.ps1',
-    '.json', '.yml', '.yaml', '.xml', '.siml', '.fsml', '.qss', '.init', '.in',
+    '.json', '.yml', '.yaml', '.xml', '.siml', '.fsml', '.dtml', '.xsd', '.qss', '.init', '.in',
+    '.rc', '.rc2', '.def', '.service', '.plist', '.svg', '.toml', '.csv', '.supp', '.license',
+    '.sln', '.vcxproj', '.filters', '.props', '.config',
 )
-CHECKED_NAMES = ('CMakeLists.txt',)
+CHECKED_NAMES = ('CMakeLists.txt', '.editorconfig', '.gitattributes', '.gitignore')
 
 # Documents. Exempt from the ASCII rule, searched by '--find --docs'.
 DOC_SUFFIXES = ('.md', '.txt')
 
 # Directories that are never ours to police.
 SKIPPED_DIRS = {
-    '.git', '.github_cache', 'build', 'product', 'thirdparty', 'node_modules',
+    '.git', '.claude', '.github_cache', 'build', 'product', 'thirdparty', 'node_modules',
     '__pycache__', '.vs', '.vscode', '.idea', 'out', 'bin', 'obj',
 }
 
@@ -76,14 +87,23 @@ SKIPPED_DIR_PREFIXES = ('build-', 'build_')
 # the ASCII rule only. '--find' ignores this list, because a control character is unwanted
 # in a character test as much as anywhere else.
 ASCII_WAIVED = (
-    'framework/areg/base/String*.hpp',
-    'framework/areg/base/WideString.hpp',
+    '*String*.*',
     'framework/areg/base/TableDefs.hpp',
-    'framework/areg/base/private/String*.cpp',
-    'framework/areg/base/private/WideString.cpp',
-    'tests/units/String*Test*.cpp',
-    'tests/units/WideString*Test*.cpp',
     'tests/units/*Encod*Test*.cpp',
+)
+
+# The files Visual Studio writes with a UTF-8 byte order mark.
+BOM_ALLOWED = ('*.sln', '*.vcxproj', '*.filters', '*.props', '*packages.config')
+
+# The sources a compiler reads. Non ASCII text in one of them needs the byte order mark.
+COMPILED_SUFFIXES = ('.h', '.hpp', '.c', '.cpp', '.cc', '.cxx', '.inl')
+
+UTF8_BOM = b'\xef\xbb\xbf'
+WIDE_BOMS = (
+    (b'\xff\xfe\x00\x00', 'utf-32', 'UTF-32 LE'),
+    (b'\x00\x00\xfe\xff', 'utf-32', 'UTF-32 BE'),
+    (b'\xff\xfe', 'utf-16', 'UTF-16 LE'),
+    (b'\xfe\xff', 'utf-16', 'UTF-16 BE'),
 )
 
 # Named byte sets accepted by '--find'.
@@ -173,17 +193,82 @@ def relative(path):
     return path.replace(os.sep, '/') if rel.startswith('../') else rel
 
 
+def matches(rel, patterns):
+    """Tells whether the path, or its file name, matches one of the glob patterns."""
+    name = os.path.basename(rel)
+    return any(fnmatch.fnmatch(rel, pattern) or fnmatch.fnmatch(name, pattern) for pattern in patterns)
+
+
 def is_waived(rel):
-    return any(fnmatch.fnmatch(rel, pattern) for pattern in ASCII_WAIVED)
+    return matches(rel, ASCII_WAIVED)
 
 
-def offending_bytes(path, wanted, limit=10):
-    """Returns [(line, column, byte, context)] for the first 'limit' wanted bytes."""
+def is_document(rel):
+    return rel.endswith(DOC_SUFFIXES) and os.path.basename(rel) not in CHECKED_NAMES
+
+
+def encoding_of(data):
+    """Returns the name of the encoding of the file content."""
+    for mark, _, name in WIDE_BOMS:
+        if data.startswith(mark):
+            return name
+    if b'\0' in data:
+        return 'NUL bytes'
+    bom = data.startswith(UTF8_BOM)
+    body = data[len(UTF8_BOM):] if bom else data
     try:
-        with open(path, 'rb') as src:
-            data = src.read()
-    except OSError as err:
-        return [(0, 0, None, str(err))]
+        body.decode('utf-8')
+    except UnicodeDecodeError:
+        return 'not UTF-8'
+    if all(byte < 0x80 for byte in body):
+        return 'ASCII + BOM' if bom else 'ASCII'
+    return 'UTF-8 + BOM' if bom else 'UTF-8'
+
+
+def encoding_problem(rel, encoding):
+    """Returns what is wrong with the encoding of the file, or None."""
+    if encoding in ('NUL bytes', 'not UTF-8') or encoding.startswith('UTF-16') or encoding.startswith('UTF-32'):
+        return 'is %s, it must be %s' % (encoding, 'UTF-8' if is_document(rel) or is_waived(rel) else 'ASCII')
+
+    compiled = rel.endswith(COMPILED_SUFFIXES)
+    if encoding == 'UTF-8' and compiled:
+        return 'holds non ASCII text without a byte order mark, a compiler reads it in the code page of the machine'
+    if encoding == 'UTF-8 + BOM' and compiled:
+        return None
+    if encoding.endswith('+ BOM') and not matches(rel, BOM_ALLOWED):
+        return 'has a byte order mark'
+    return None
+
+
+def fix_encoding(path, rel, data):
+    """Rewrites the file to the encoding the rule wants. Returns True if it was written."""
+    for mark, codec, _ in WIDE_BOMS:
+        if data.startswith(mark):
+            data = data.decode(codec).encode('utf-8')
+            break
+    else:
+        if encoding_of(data) in ('NUL bytes', 'not UTF-8'):
+            return False
+
+    body = data[len(UTF8_BOM):] if data.startswith(UTF8_BOM) else data
+    ascii_only = all(byte < 0x80 for byte in body)
+    if rel.endswith(COMPILED_SUFFIXES) and not ascii_only:
+        body = UTF8_BOM + body
+    elif matches(rel, BOM_ALLOWED) and data.startswith(UTF8_BOM):
+        body = UTF8_BOM + body
+    with open(path, 'wb') as out:
+        out.write(body)
+    return True
+
+
+def offending_bytes(path, wanted, limit=10, data=None):
+    """Returns [(line, column, byte, context)] for the first 'limit' wanted bytes."""
+    if data is None:
+        try:
+            with open(path, 'rb') as src:
+                data = src.read()
+        except OSError as err:
+            return [(0, 0, None, str(err))]
 
     found = []
     for number, raw in enumerate(data.split(b'\n'), 1):
@@ -226,18 +311,21 @@ def collect(paths, staged, docs):
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Finds non ASCII bytes, or the byte values given by --find, in the sources.')
+        description='Checks the encoding of the text files, or finds the byte values given by --find.')
     parser.add_argument('paths', nargs='*',
                         help='paths relative to the repository root; default is everything')
     parser.add_argument('--find', metavar='SPEC',
-                        help='hunt these byte values instead of checking the ASCII rule: '
+                        help='hunt these byte values instead of checking the encoding rule: '
                              'a value (0x08), a range (0x01-0x12), a list (0x08,0x1B), '
                              'or a name ("control", "non-ascii")')
     parser.add_argument('--docs', action='store_true',
-                        help='search the .md and .txt documents too; they are always exempt '
-                             'from the ASCII rule, but not from --find')
+                        help='let --find search the .md and .txt documents too; the encoding '
+                             'rule always covers them')
     parser.add_argument('--staged', action='store_true',
                         help='check only the files staged in git, for a pre-commit hook')
+    parser.add_argument('--fix-encoding', action='store_true',
+                        help='rewrite the files that break the encoding rule: UTF-16 and UTF-32 '
+                             'become ASCII or UTF-8, a byte order mark is removed or added')
     parser.add_argument('--quiet', action='store_true',
                         help='print only the offending files, no summary')
     parser.add_argument('--fix-report', metavar='FILE',
@@ -254,18 +342,46 @@ def main():
         wanted = NON_ASCII_BYTES
 
     checked = 0
+    fixed = 0
     bad = []
-    for path in collect(args.paths, args.staged, args.docs):
+    wrong_encoding = []
+    encodings = {}
+    for path in collect(args.paths, args.staged, args.docs or not hunting):
         rel = relative(path)
-        if not hunting:
-            if rel.endswith(DOC_SUFFIXES) or is_waived(rel):
-                continue
         checked += 1
-        found = offending_bytes(path, wanted)
-        if found:
-            bad.append((rel, found))
+        if hunting:
+            found = offending_bytes(path, wanted)
+            if found:
+                bad.append((rel, found))
+            continue
 
-    lines = []
+        try:
+            with open(path, 'rb') as src:
+                data = src.read()
+        except OSError as err:
+            bad.append((rel, [(0, 0, None, str(err))]))
+            continue
+
+        encoding = encoding_of(data)
+        problem = encoding_problem(rel, encoding)
+        if (problem is not None) and args.fix_encoding and fix_encoding(path, rel, data):
+            with open(path, 'rb') as src:
+                data = src.read()
+            encoding = encoding_of(data)
+            problem = encoding_problem(rel, encoding)
+            fixed += 1
+            print('%s: rewritten as %s' % (rel, encoding))
+        encodings[encoding] = encodings.get(encoding, 0) + 1
+        if problem is not None:
+            wrong_encoding.append('%s: %s' % (rel, problem))
+        elif (encoding in ('ASCII', 'ASCII + BOM')) or is_document(rel) or is_waived(rel):
+            continue
+        else:
+            found = offending_bytes(path, wanted, data=data[len(UTF8_BOM):] if data.startswith(UTF8_BOM) else data)
+            if found:
+                bad.append((rel, found))
+
+    lines = sorted(wrong_encoding)
     for rel, found in sorted(bad):
         for number, column, byte, context in found:
             if byte is None:
@@ -284,6 +400,13 @@ def main():
             report.write('\n'.join(lines) + ('\n' if lines else ''))
 
     if not args.quiet:
+        if (not hunting) and encodings:
+            print('Encodings: ' + ', '.join('%s %d' % item for item in sorted(encodings.items())))
+        if fixed:
+            print('%d file(s) rewritten.' % fixed)
+        if wrong_encoding:
+            print('')
+            print('%d of %d checked file(s) break the encoding rule.' % (len(wrong_encoding), checked))
         if bad and hunting:
             print('')
             print('%d of %d searched file(s) contain the requested bytes.' % (len(bad), checked))
@@ -294,10 +417,10 @@ def main():
             print('"..." not an ellipsis, "->" not an arrow, and plain quotes.')
         elif hunting:
             print('%d file(s) searched, none contains the requested bytes.' % checked)
-        else:
-            print('%d file(s) checked, all ASCII.' % checked)
+        elif not wrong_encoding:
+            print('%d file(s) checked, the encodings are right.' % checked)
 
-    return 1 if bad else 0
+    return 1 if (bad or wrong_encoding) else 0
 
 
 if __name__ == '__main__':

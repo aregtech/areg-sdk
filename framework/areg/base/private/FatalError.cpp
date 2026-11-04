@@ -19,7 +19,7 @@
 #include <cstdlib>
 
 #ifdef _WIN32
-    #include <windows.h>
+    #include <Windows.h>
 #endif  // _WIN32
 
 namespace
@@ -38,7 +38,7 @@ namespace
     }
 
     //!< Writes the reason to the standard error output and aborts.
-    void _default_fatal_handler( const char * reason ) noexcept
+    [[noreturn]] void _default_fatal_handler( const char * reason ) noexcept
     {
         std::fputs( "areg fatal error: ", stderr );
         std::fputs( reason != nullptr ? reason : "unknown", stderr );

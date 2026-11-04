@@ -23,9 +23,9 @@
 #endif  // defined(__linux__)
 
 #if defined(_WIN32)
-    #include <winsock2.h>
-    #include <windows.h>
-    #include <psapi.h>
+    #include <WinSock2.h>
+    #include <Windows.h>
+    #include <Psapi.h>
 #else   // defined(_WIN32)
     #include <dirent.h>
     #include <errno.h>

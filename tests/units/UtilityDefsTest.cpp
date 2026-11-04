@@ -41,6 +41,20 @@ namespace
     constexpr int64_t   ZONE_STEP   { 15LL * 60LL * 1'000'000LL };
 
     //!< Returns the value read at run time, so that a constexpr function using it is not folded by the compiler.
+    //!< Returns true if the seconds fit into the time type.
+    template <typename TimeType>
+    bool fits_time_t(int64_t secs)
+    {
+        if constexpr (sizeof(TimeType) < sizeof(int64_t))
+        {
+            return secs <= static_cast<int64_t>(std::numeric_limits<TimeType>::max());
+        }
+        else
+        {
+            return true;
+        }
+    }
+
     template <typename T>
     T rt(T value)
     {
@@ -51,7 +65,7 @@ namespace
     //!< Returns the content of the string as std::string.
     std::string str(const areg::String & text)
     {
-        return std::string(text.as_string(), text.length());
+        return std::string(text.as_string(), static_cast<std::size_t>(text.length()));
     }
 }
 
@@ -1066,7 +1080,7 @@ TEST(DateTimeFormatTest, calendar_components_match_the_utc_calendar_on_every_day
                     && (broken.tm_min == 34) && (broken.tm_sec == 56);
 
         const int64_t secs{ areg::to_seconds(time) };
-        if (secs <= static_cast<int64_t>(std::numeric_limits<time_t>::max()))
+        if (fits_time_t<time_t>(secs))
         {
             const time_t osSecs{ static_cast<time_t>(secs) };
             struct tm os{};

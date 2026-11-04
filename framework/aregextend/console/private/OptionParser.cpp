@@ -103,13 +103,13 @@ namespace {
             {
                 if ( begin != src )
                 {
-                    areg::String str( begin, static_cast<uint32_t>( src - begin ) );
+                    areg::String str( begin, static_cast<areg::CharCount>( src - begin ) );
                     optList.push_back( str );
                 }
                 else if (is_space<CharType>(*src) == false)
                 {
                     ++ src;
-                    areg::String str(begin, static_cast<uint32_t>(src - begin));
+                    areg::String str(begin, static_cast<areg::CharCount>(src - begin));
                     optList.push_back(str);
                 }
                 else
@@ -128,7 +128,7 @@ namespace {
             {
                 if ( begin != src )
                 {
-                    areg::String str( begin, static_cast<uint32_t>( src - begin ) );
+                    areg::String str( begin, static_cast<areg::CharCount>( src - begin ) );
                     optList.push_back( str );
                 }
 
@@ -143,13 +143,13 @@ namespace {
                 {
                     if ( begin != src ++ )
                     {
-                        areg::String str( begin, static_cast<uint32_t>( src - begin ) );
+                        areg::String str( begin, static_cast<areg::CharCount>( src - begin ) );
                         optList.push_back( str );
                     }
                 }
                 else if (begin != src)
                 {
-                    areg::String str( begin, static_cast<uint32_t>( src - begin ) );
+                    areg::String str( begin, static_cast<areg::CharCount>( src - begin ) );
                     optList.push_back( str );
                 }
 
@@ -163,7 +163,7 @@ namespace {
 
         if ( begin != src )
         {
-            areg::String str( begin, static_cast<uint32_t>( src - begin ) );
+            areg::String str( begin, static_cast<areg::CharCount>( src - begin ) );
             optList.push_back( str );
         }
     }

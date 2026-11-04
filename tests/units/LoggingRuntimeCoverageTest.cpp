@@ -41,8 +41,8 @@
 
 #if AREG_LOGGING
 #if defined(_WIN32)
-    #include <winsock2.h>
-    #include <ws2tcpip.h>
+    #include <WinSock2.h>
+    #include <WS2tcpip.h>
 #else
     #include <arpa/inet.h>
     #include <netinet/in.h>
@@ -331,16 +331,36 @@ namespace
         bool handshake()
         {
             areg::MessageEnvelope message;
-            if (!accept_source() || !read(message))
-                return false;
+            return accept_source() && read(message) && register_source(message);
+        }
 
+        /**
+         * \brief   Makes the handshake with the first source that stays connected. A source drops
+         *          a connection that completes after its connect timeout, and connects again.
+         **/
+        bool handshake_next_source()
+        {
+            const auto deadline{ std::chrono::steady_clock::now() + std::chrono::milliseconds(WAIT_MS) };
+            areg::MessageEnvelope message;
+            while (std::chrono::steady_clock::now() < deadline)
+            {
+                if (accept_source() && read(message, deadline))
+                    return register_source(message);
+
+                close_peer();
+            }
+            return false;
+        }
+
+    private:
+        bool register_source(areg::MessageEnvelope& message)
+        {
             EXPECT_EQ(message.message_id(), static_cast<uint32_t>(areg::FuncIdRange::SystemServiceConnect));
             EXPECT_EQ(message.target(), static_cast<uint32_t>(areg::COOKIE_LOGGER));
             return send(areg::create_connect_notify(areg::COOKIE_LOGGER, SOURCE_COOKIE))
                 && next(areg::FuncIdRange::ServiceLogRegisterScopes, message);
         }
 
-    private:
         bool read_exact(uint8_t* bytes, uint32_t size, std::chrono::steady_clock::time_point deadline)
         {
             uint32_t done{ 0u };
@@ -941,7 +961,7 @@ TEST_F(LoggingRuntimeCoverageTest, non_listening_collector_keeps_local_delivery_
     EXPECT_EQ(mDatabase.rows(), (std::vector<std::string>{ "collector-unavailable", "unavailable-fence" }));
     EXPECT_EQ(areg::cookie(), areg::COOKIE_UNKNOWN);
     ASSERT_TRUE(mCollector->listen());
-    ASSERT_TRUE(mCollector->handshake());
+    ASSERT_TRUE(mCollector->handshake_next_source());
     expect_remote_row("collector-unavailable");
     expect_remote_row("unavailable-fence");
     write_row("collector-available");

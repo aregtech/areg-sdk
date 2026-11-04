@@ -1,4 +1,4 @@
-﻿# 24_pubunblock
+# 24_pubunblock
 
 🚀 **Type:** IPC / Multi-Process
 

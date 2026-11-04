@@ -757,7 +757,7 @@ namespace {
             --length;
         }
 
-        return areg::String(data, length);
+        return areg::String(data, static_cast<areg::CharCount>(length));
     }
 
     constexpr char const _master[]   { "sqlite_master" };

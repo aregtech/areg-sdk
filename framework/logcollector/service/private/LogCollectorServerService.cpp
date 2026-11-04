@@ -220,6 +220,7 @@ void LogCollectorServerService::dispatch_and_forward_logger_message(const areg::
     case areg::FuncIdRange::ResponseLastId:                   // fall through
     case areg::FuncIdRange::AttributeLastId:                  // fall through
     case areg::FuncIdRange::ServiceLastId:                    // fall through
+    case areg::FuncIdRange::SystemServiceNotifyDuplicate:
     default:
         ASSERT(false);
         break;
@@ -312,6 +313,7 @@ void LogCollectorServerService::on_message_received(const areg::MessageEnvelope 
     case areg::FuncIdRange::ResponseLastId:                   // fall through
     case areg::FuncIdRange::AttributeLastId:                  // fall through
     case areg::FuncIdRange::ServiceLastId:                    // fall through
+    case areg::FuncIdRange::SystemServiceNotifyDuplicate:
     default:
         ASSERT(false);
         break;

@@ -87,9 +87,9 @@ public:
         // JUSTIFICATION: caller and queued action share completion ownership across the deadline.
         const auto done{ std::make_shared<std::promise<void>>() };
         std::future<void> completed{ done->get_future() };
-        if (!post_action([action = std::move(action), done]()
+        if (!post_action([task = std::move(action), done]()
             {
-                action();
+                task();
                 done->set_value();
             }))
         {

@@ -32,7 +32,7 @@
 
 namespace areg {
 
-areg::ConfigProperty  _defaultReadonlyProperties[]
+static areg::ConfigProperty  _defaultReadonlyProperties[]
 {
       { {"config"   , "*"   , "version" , ""        }, areg::CONFIG_VERSION    }   //!< The configuration version.
 

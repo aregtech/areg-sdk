@@ -89,10 +89,8 @@ class ResourceListMapImpl
 {
 public:
     /**
-     * \brief   Called when removing all resources. Implement to perform cleanup on the list.
-     *
-     * \param   Key     The key associated with the resource list.
-     * \param   List    The list of resource objects.
+     * \brief   Called with the key and the list of resources when removing all resources.
+     *          Implement to perform cleanup on the list.
      **/
     inline void impl_clean_list( RESOURCE_KEY & /*Key*/, ResourceList & /*List*/ ) noexcept
     {   }

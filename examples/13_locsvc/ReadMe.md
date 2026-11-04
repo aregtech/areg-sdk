@@ -1,4 +1,4 @@
-﻿# 13_locsvc
+# 13_locsvc
 
 🧵 **Type:** Multithreading / Single Process
 

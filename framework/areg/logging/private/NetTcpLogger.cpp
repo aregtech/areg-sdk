@@ -365,6 +365,7 @@ void NetTcpLogger::process_received_message(MessageEnvelope & msgReceived, Socke
     case areg::FuncIdRange::RequestLastId:                    // fall through
     case areg::FuncIdRange::RequestFirstId:                   // fall through
     case areg::FuncIdRange::EmptyFunctionId:                  // fall through
+    case areg::FuncIdRange::SystemServiceNotifyDuplicate:
     default:
         // GCOVR_EXCL_START: unreachable default arm
         ASSERT(false);

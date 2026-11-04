@@ -30,7 +30,7 @@ String Channel::to_string() const
 
     char buffer[ 128 ]{ 0 };
     int32_t len = String::format_string( buffer, 128, format, mSource, mTarget, mCookie );
-    return (len > 0 ? String( buffer, static_cast<uint32_t>(len) ) : String::empty_string());
+    return (len > 0 ? String( buffer, len ) : String::empty_string());
 }
 
 const Channel & Channel::from_string(const String & channel)

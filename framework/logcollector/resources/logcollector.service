@@ -1,4 +1,4 @@
-﻿[Unit]
+[Unit]
 Description=Areg TCP/IP Logging Service to collect application logs
 StartLimitIntervalSec=1
 

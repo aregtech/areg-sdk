@@ -1,4 +1,4 @@
-﻿# 22_pubwatchdog
+# 22_pubwatchdog
 
 🚀 **Type:** IPC / Multi-Process
 

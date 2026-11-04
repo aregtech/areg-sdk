@@ -1,4 +1,4 @@
-﻿# 21_locwatchdog
+# 21_locwatchdog
 
 🧵 **Type:** Multithreading / Single Process
 

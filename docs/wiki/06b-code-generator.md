@@ -1,4 +1,4 @@
-﻿# Areg SDK Code Generator (`codegen.jar`)
+# Areg SDK Code Generator (`codegen.jar`)
 
 The Areg SDK Code Generator is a build-time utility that automates the generation of service interface code for **Remote** (Public) and **Local** (Private) services. By transforming `.siml` service interface definitions into production-ready C++ code, `codegen.jar` eliminates repetitive boilerplate, ensures interface consistency, and allows developers to focus on business logic rather than communication infrastructure.
 

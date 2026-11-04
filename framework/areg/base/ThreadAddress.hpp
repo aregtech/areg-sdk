@@ -96,7 +96,7 @@ public:
     /**
      * \brief   Initializes with specified thread unique number.
      *
-     * \param   threadName      The null-terminated thread name string.
+     * \param   numThread       The unique number of the thread.
      **/
     explicit ThreadAddress(const UniqueNumber numThread) noexcept;
 

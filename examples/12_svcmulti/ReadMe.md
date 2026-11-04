@@ -1,4 +1,4 @@
-﻿# 12_svcmulti
+# 12_svcmulti
 
 🧵 **Type:** Multithreading / Single Process
 

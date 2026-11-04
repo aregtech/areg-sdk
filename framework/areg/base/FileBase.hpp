@@ -795,6 +795,9 @@ public:
 // IOStream overrides
 /************************************************************************/
 
+    using IOStream::read;
+    using IOStream::write;
+
     /**
      * \brief   Reads data from the file into the buffer and returns the number of bytes read.
      *
@@ -802,9 +805,6 @@ public:
      * \param   size        The size in bytes of the available buffer.
      * \return  Returns the number of bytes read.
      **/
-    using IOStream::read;
-    using IOStream::write;
-
     uint32_t read( uint8_t * buffer, uint32_t size ) const noexcept override = 0;
 
     /**

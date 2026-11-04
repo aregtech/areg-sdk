@@ -410,7 +410,7 @@ uint32_t ServicingComponent::_build_prebuilt_messages()
     const uint64_t frame_ns { mOptions.nsPerImage() };
     const uint32_t blocks   { mOptions.blocksCount() };
     uint32_t depth{ (frame_ns != 0u) && (frame_ns <= (util::TIME_IN_DEPTH / 2))
-                        ? static_cast<uint32_t>((static_cast<double>(util::TIME_IN_DEPTH) / static_cast<double>(frame_ns)) + 0.5f)
+                        ? static_cast<uint32_t>((static_cast<double>(util::TIME_IN_DEPTH) / static_cast<double>(frame_ns)) + 0.5)
                         : util::MIN_PREBUILT_DEPTH };
     depth = std::max(util::MIN_PREBUILT_DEPTH, std::min(depth, util::MAX_PREBUILT_DEPTH));
 

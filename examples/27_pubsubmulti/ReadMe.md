@@ -1,4 +1,4 @@
-﻿# 27_pubsubmulti
+# 27_pubsubmulti
 
 🧵🚀 **Type:** Multithreading + IPC
 

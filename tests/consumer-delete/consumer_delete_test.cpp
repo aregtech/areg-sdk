@@ -309,6 +309,7 @@ public:
             }
             break;
 
+        case Mode::ConnectSibling:
         default:
             break;
         }
@@ -334,6 +335,10 @@ public:
             }
             break;
 
+        case Mode::SiblingInitial:
+        case Mode::SiblingUpdate:
+        case Mode::ConnectSibling:
+        case Mode::FreeProxy:
         default:
             break;
         }

@@ -237,6 +237,7 @@ class ServicingComponent final  : public    areg::Component
     {
         DataRate() = default;
         DataRate(const DataRate&) = default;
+        DataRate& operator=(const DataRate&) = default;
 
         //!< Data Rate in bytes
         uint64_t    sentData    { 0u };
@@ -493,5 +494,5 @@ inline uint64_t ServicingComponent::_slot_at_ns(uint64_t timeNs, uint64_t blockT
 
 inline uint64_t ServicingComponent::time_passed(const std::chrono::steady_clock::time_point& time_begin) const
 {
-    return (std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - time_begin).count());
+    return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - time_begin).count());
 }

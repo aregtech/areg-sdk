@@ -1,4 +1,4 @@
-﻿# 29_syncevent
+# 29_syncevent
 
 🧵 **Type:** Multithreading / Single Process
 

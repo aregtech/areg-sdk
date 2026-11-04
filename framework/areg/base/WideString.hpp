@@ -160,7 +160,7 @@ struct required_size <areg::WideString>
     [[nodiscard]]
     inline uint32_t operator ()(const areg::WideString& str) const noexcept
     {
-        return static_cast<uint32_t>(sizeof(uint32_t) + (sizeof(wchar_t) * str.length()));
+        return static_cast<uint32_t>(sizeof(uint32_t)) + (static_cast<uint32_t>(sizeof(wchar_t)) * static_cast<uint32_t>(str.length()));
     }
 };
 
@@ -170,7 +170,7 @@ struct required_size <std::wstring>
     [[nodiscard]]
     inline uint32_t operator ()(const std::wstring& str) const noexcept
     {
-        return static_cast<uint32_t>(sizeof(uint32_t) + (sizeof(wchar_t) * str.length()));
+        return static_cast<uint32_t>(sizeof(uint32_t)) + (static_cast<uint32_t>(sizeof(wchar_t)) * static_cast<uint32_t>(str.length()));
     }
 };
 
@@ -180,7 +180,7 @@ struct required_size <std::wstring_view>
     [[nodiscard]]
     inline uint32_t operator ()(const std::wstring_view str) const noexcept
     {
-        return static_cast<uint32_t>(sizeof(uint32_t) + (sizeof(wchar_t) * str.length()));
+        return static_cast<uint32_t>(sizeof(uint32_t)) + (static_cast<uint32_t>(sizeof(wchar_t)) * static_cast<uint32_t>(str.length()));
     }
 };
 

@@ -77,7 +77,7 @@ namespace
     void _capture_connections()
     {
         _lastDb = nullptr;
-        sqlite3_auto_extension(reinterpret_cast<void (*)(void)>(&_capture_db));
+        sqlite3_auto_extension(reinterpret_cast<void (*)(void)>(reinterpret_cast<void *>(&_capture_db)));
     }
 
     //! Returns the path of a database file in a directory of this process, with no file of an earlier run left.

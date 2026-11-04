@@ -1,4 +1,4 @@
-﻿# 09_thread
+# 09_thread
 
 🧵 **Type:** Multithreading / Single Process
 

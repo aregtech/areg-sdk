@@ -800,6 +800,7 @@ void LoggerClient::process_received_message(MessageEnvelope& msgReceived, Socket
         case areg::FuncIdRange::ServiceSaveLogConfiguration:      // fall through
         case areg::FuncIdRange::ServiceLogUpdateSourceState:      // fall through
         case areg::FuncIdRange::ServiceLogRestoreConfiguration:   // fall through
+        case areg::FuncIdRange::SystemServiceNotifyDuplicate:
         default:
             ASSERT(false);
         }

@@ -1,4 +1,4 @@
-﻿# Troubleshooting WSL Updates
+# Troubleshooting WSL Updates
 
 This document outlines solutions to common issues encountered while updating the Windows Subsystem for Linux (WSL) and configuring network communication between Windows and WSL for Areg SDK applications.
 

@@ -29,9 +29,9 @@ namespace
         entry.logThreadId = 123u;
         entry.logScopeId = 456u;
         entry.logMessagePrio = areg::LogPriority::PrioWarning;
-        entry.logModuleLen = areg::copy_string(entry.logModule, areg::LOG_NAME_SIZE, "remote_module");
-        entry.logThreadLen = areg::copy_string(entry.logThread, areg::LOG_NAME_SIZE, "worker");
-        entry.logMessageLen= areg::copy_string(entry.logMessage, areg::LOG_NAME_SIZE, "payload");
+        entry.logModuleLen = static_cast<uint32_t>(areg::copy_string(entry.logModule, areg::LOG_NAME_SIZE, "remote_module"));
+        entry.logThreadLen = static_cast<uint32_t>(areg::copy_string(entry.logThread, areg::LOG_NAME_SIZE, "worker"));
+        entry.logMessageLen= static_cast<uint32_t>(areg::copy_string(entry.logMessage, areg::LOG_NAME_SIZE, "payload"));
         return entry;
     }
 

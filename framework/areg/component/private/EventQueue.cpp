@@ -97,18 +97,18 @@ EventQueue::EventQueue( areg::NullTag ) noexcept
 
 EventQueue::~EventQueue()
 {
-#if defined(__GNUC__)
+#if defined(__GNUC__) || defined(__clang__)
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Winvalid-offsetof"
-#endif  // defined(__GNUC__)
+#endif  // defined(__GNUC__) || defined(__clang__)
     // mWaiter and mConsumerId live in the padding of the first line; the cursors keep their offsets.
     static_assert(offsetof(EventQueue, mWaiter) + sizeof(mWaiter) <= AREG_MPSC_CACHE_LINE_SIZE, "mWaiter must stay in the first cache line");
     static_assert(offsetof(EventQueue, mConsumerId) + sizeof(mConsumerId) <= AREG_MPSC_CACHE_LINE_SIZE, "mConsumerId must stay in the first cache line");
     static_assert(offsetof(EventQueue, mEnqueuePos) == AREG_MPSC_CACHE_LINE_SIZE, "mEnqueuePos must start the second cache line");
     static_assert(offsetof(EventQueue, mDequeuePos) == 2u * AREG_MPSC_CACHE_LINE_SIZE, "mDequeuePos must start the third cache line");
-#if defined(__GNUC__)
+#if defined(__GNUC__) || defined(__clang__)
     #pragma GCC diagnostic pop
-#endif  // defined(__GNUC__)
+#endif  // defined(__GNUC__) || defined(__clang__)
 
     release_lanes();
 }

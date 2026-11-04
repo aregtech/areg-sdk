@@ -95,15 +95,8 @@ namespace
     //!< The number of subscribers that confirm their subscription with request_identifier.
     uint32_t subscribers()
     {
-        switch (gCase.load())
-        {
-        case Case::SubscribedCaller:
-            return 3u;
-        case Case::Busy:
-            return 3u;
-        default:
-            return 2u;
-        }
+        const Case which{ gCase.load() };
+        return (which == Case::SubscribedCaller) || (which == Case::Busy) ? 3u : 2u;
     }
 
     Received & received_of(const areg::String & role)
@@ -209,6 +202,9 @@ private:
 
         case Case::Busy:
             response_hello_unblock(mTag, 1);
+            break;
+
+        default:
             break;
         }
 

@@ -16,7 +16,7 @@ if (AREG_PLATFORM_WINDOWS)
         foreach(_areg_cfg IN ITEMS Release RelWithDebInfo MinSizeRel Debug)
             if ("${_areg_cfg}" STREQUAL "Release")
                 # ClangCL is given the MSVC level by CMake. Areg builds Release at -O3 here.
-                set(_areg_cfg_opt -O3)
+                set(_areg_cfg_opt /clang:-O3)
             elseif ("${_areg_cfg}" STREQUAL "Debug")
                 set(_areg_cfg_opt -Od)
             else()
@@ -29,8 +29,8 @@ if (AREG_PLATFORM_WINDOWS)
         unset(_areg_cfg)
         unset(_areg_cfg_opt)
         list(APPEND AREG_COMPILER_OPTIONS
-            $<$<NOT:$<CONFIG:Debug>>:-ffunction-sections>
-            $<$<NOT:$<CONFIG:Debug>>:-fdata-sections>
+            $<$<NOT:$<CONFIG:Debug>>:-Gy>
+            $<$<NOT:$<CONFIG:Debug>>:-Gw>
             $<$<CONFIG:Debug>:-RTC1>
         )
         if (NOT CMAKE_CROSSCOMPILING)
@@ -55,10 +55,10 @@ if (AREG_PLATFORM_WINDOWS)
         # ClangCL is given the MSVC level by CMake. Areg builds Release at -O3 here.
         set(_areg_cl_opt ${AREG_OPTIMIZATION})
         if ("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
-            set(_areg_cl_opt -O3)
+            set(_areg_cl_opt /clang:-O3)
         endif()
         if (AREG_BUILD_OPTIMIZED)
-            list(APPEND AREG_COMPILER_OPTIONS ${_areg_cl_opt} -ffunction-sections -fdata-sections)
+            list(APPEND AREG_COMPILER_OPTIONS ${_areg_cl_opt} -Gy -Gw)
             if (NOT CMAKE_CROSSCOMPILING)
                 if (AREG_ARCH_NATIVE)
                     list(APPEND AREG_COMPILER_OPTIONS -march=native -mtune=native)
@@ -88,8 +88,8 @@ if (AREG_PLATFORM_WINDOWS)
         add_definitions(-DWIN64 -D_WIN64)
     endif()
 
-    # Clang compile options
-    list(APPEND AREG_COMPILER_OPTIONS -Wall -c)
+    # Clang compile options. For clang-cl '-W3' is '-Wall', and '-Wall' is '-Weverything'.
+    list(APPEND AREG_COMPILER_OPTIONS -W3 -c)
     # Linker flags (-l is not necessary)
     list(APPEND AREG_LDFLAGS  advapi32   psapi   shell32   ws2_32   synchronization)
     set(AREG_LDFLAGS_STR   "-ladvapi32 -lpsapi -lshell32 -lws2_32 -lsynchronization")

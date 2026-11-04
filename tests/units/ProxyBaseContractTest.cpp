@@ -99,11 +99,6 @@ namespace
             return proxy_data().attribute_state(ATTRIBUTES[0]);
         }
 
-        void accept_response(ServiceResponseEvent& response)
-        {
-            process_response_event(response);
-        }
-
         mutable std::vector<std::tuple<uint32_t, ResultType, SequenceNumber>> mFailures;
 
     protected:

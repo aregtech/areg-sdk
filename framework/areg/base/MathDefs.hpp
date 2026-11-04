@@ -1012,7 +1012,8 @@ inline constexpr T swap_bytes(T value) noexcept
 
     if constexpr (sizeof(T) == 2)
     {
-        return static_cast<T>(((n << 8) & 0xFF00u) | ((n >> 8) & 0x00FFu));
+        const uint32_t wide{ n };
+        return static_cast<T>(((wide << 8) & 0xFF00u) | ((wide >> 8) & 0x00FFu));
     }
     else
     {
@@ -1025,7 +1026,7 @@ inline constexpr T swap_bytes(T value) noexcept
 
 inline constexpr uint16_t make16(uint8_t hi, uint8_t lo) noexcept
 {
-    return (static_cast<uint16_t>(hi) << 8) | static_cast<uint16_t>(lo);
+    return static_cast<uint16_t>((static_cast<uint32_t>(hi) << 8) | static_cast<uint32_t>(lo));
 }
 
 inline constexpr uint32_t make32(uint16_t hi, uint16_t lo) noexcept

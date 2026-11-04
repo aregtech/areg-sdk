@@ -252,10 +252,10 @@ uint32_t ObserverMessageProcessor::notify_log_message(const areg::MessageEnvelop
 
         msgLog.msgType      = static_cast<LogType>(msgRemote->logMsgType);
         msgLog.msgPriority  = static_cast<::LogPriority>(msgRemote->logMessagePrio);
-        msgLog.msgSource    = static_cast<uint64_t>(msgRemote->logSource);
-        msgLog.msgCookie    = static_cast<uint64_t>(msgRemote->logCookie);
-        msgLog.msgModuleId  = static_cast<uint64_t>(msgRemote->logModuleId);
-        msgLog.msgThreadId  = static_cast<uint64_t>(msgRemote->logThreadId);
+        msgLog.msgSource    = static_cast<ITEM_ID>(msgRemote->logSource);
+        msgLog.msgCookie    = static_cast<ITEM_ID>(msgRemote->logCookie);
+        msgLog.msgModuleId  = static_cast<ITEM_ID>(msgRemote->logModuleId);
+        msgLog.msgThreadId  = static_cast<ITEM_ID>(msgRemote->logThreadId);
         msgLog.msgTimestamp = static_cast<uint64_t>(msgRemote->logTimestamp);
         msgLog.msgReceived  = static_cast<uint64_t>(msgRemote->logReceived);
         msgLog.msgDuration  = static_cast<uint32_t>(msgRemote->logDuration);
@@ -328,10 +328,10 @@ uint32_t ObserverMessageProcessor::_save_scopes(const areg::MessageEnvelope& msg
         names.add(areg::ScopeEntry(scopeName, scopeId, scopePrio));
     }
 
-    mLoggerClient.mDbWriter.queue_task([names = std::move(names), cookie, now](areg::ext::LogSqliteDatabase& database)
+    mLoggerClient.mDbWriter.queue_task([activated = std::move(names), cookie, now](areg::ext::LogSqliteDatabase& database)
         {
             database.log_scopes_deactivate(cookie, now);
-            database.log_scopes_activate(names, cookie, now);
+            database.log_scopes_activate(activated, cookie, now);
         });
 
     return count;

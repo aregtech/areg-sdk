@@ -1,4 +1,4 @@
-﻿# 18_pubworker
+# 18_pubworker
 
 🧵🚀 **Type:** Multithreading + IPC
 

@@ -90,8 +90,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,1
- PRODUCTVERSION 1,0,0,1
+ FILEVERSION 2,0,0,0
+ PRODUCTVERSION 2,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -108,12 +108,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Aregtech (Artak Avetyan)"
             VALUE "FileDescription", "Areg SDK Log Observer console application"
-            VALUE "FileVersion", "1.0.0.0"
+            VALUE "FileVersion", "2.0.0.0"
             VALUE "InternalName", "Log Observer"
             VALUE "LegalCopyright", "Copyright (C) 2024-2026 Aregtech (Artak Avetyan)"
             VALUE "OriginalFilename", "logobserver.exe"
             VALUE "ProductName", "areg sdk"
-            VALUE "ProductVersion", "1.0.0.0"
+            VALUE "ProductVersion", "2.0.0.0"
         END
     END
     BLOCK "VarFileInfo"

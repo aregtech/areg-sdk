@@ -1,4 +1,4 @@
-﻿# Areg SDK CMake Functions and Macros Reference
+# Areg SDK CMake Functions and Macros Reference
 
 This document provides a comprehensive reference for CMake functions and macros defined in [functions.cmake](../../conf/cmake/functions.cmake) for projects built with Areg Framework.
 

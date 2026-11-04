@@ -135,7 +135,8 @@ public:
     /**
      * \brief   Clones existing information, except target consumer and service information to send same message to different Proxies.
      *
-     * \param   proxyTarget     The address of target Proxy
+     * \param   consumer        The target consumer.
+     * \param   service         The target service.
      * \param   src             The Event source to copy data.
      **/
     inline LocalResponseEvent(const areg::Endpoint& consumer, const areg::RawService& service, const LocalResponseEvent& src);
@@ -256,7 +257,8 @@ public:
     /**
      * \brief   Clones existing information, except target consumer and service information to send same message to different Proxies.
      *
-     * \param   proxyTarget     The address of target Proxy
+     * \param   consumer        The target consumer.
+     * \param   service         The target service.
      * \param   src             The Event source to copy data.
      **/
     inline RemoteResponseEvent(const areg::Endpoint& consumer, const areg::RawService& service, const RemoteResponseEvent& src);

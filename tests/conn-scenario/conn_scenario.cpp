@@ -25,6 +25,7 @@
 #include "areg/base/areg_global.h"
 #include "conn-scenario/conn_scenario.hpp"
 #include "areg/appbase/Application.hpp"
+#include "areg/base/Process.hpp"
 
 #include <cstdio>
 #include <cstdlib>
@@ -62,12 +63,12 @@ int main(int argc, char * argv[])
     else
     {
         opt.name = argv[3];
-        const char * bytes{ std::getenv("CONN_SCENARIO_BYTES") };
-        opt.bytes = bytes != nullptr ? static_cast<uint32_t>(std::strtoul(bytes, nullptr, 10)) : opt.bytes;
+        const areg::String bytes{ areg::Process::instance().safe_env_variable("CONN_SCENARIO_BYTES") };
+        opt.bytes = !bytes.is_empty() ? static_cast<uint32_t>(std::strtoul(bytes.as_string(), nullptr, 10)) : opt.bytes;
     }
 
     const char * model{ isConsumer ? CONSUMER_MODEL : PROVIDER_MODEL };
-    areg::Application::setup(std::getenv("CONN_SCENARIO_LOG") != nullptr, true, true, true, false, opt.config.c_str());
+    areg::Application::setup(!areg::Process::instance().safe_env_variable("CONN_SCENARIO_LOG").is_empty(), true, true, true, false, opt.config.c_str());
     areg::Application::load_model(model);
     if (isBoth)
     {

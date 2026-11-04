@@ -276,22 +276,22 @@ typedef void (*FuncLogMessageEx)(const unsigned char* /*logBuffer*/, uint32_t /*
 /**
  * \brief   The callback of the event triggered when a log source changed the way it produces and
  *          sends the logs.
- * \param   cookie      The cookie ID of the log source.
- * \param   state       The state the source is in:
- *                      1 (Active)  produces the logs and sends them;
- *                      2 (Paused)  produces the logs, drops them, priorities untouched;
- *                      3 (Stopped) produces no log, every scope priority is set to NotSet.
- *                      A source that leaves the stopped state sends the scope list right after
- *                      this callback, because its priorities are set back.
- * \param   byObserver  The cookie ID of the observer that asked for the change, or 0 when the
- *                      log collector made it by itself.
+ *  cookie      The cookie ID of the log source.
+ *  state       The state the source is in:
+ *              1 (Active)  produces the logs and sends them;
+ *              2 (Paused)  produces the logs, drops them, priorities untouched;
+ *              3 (Stopped) produces no log, every scope priority is set to NotSet.
+ *              A source that leaves the stopped state sends the scope list right after
+ *              this callback, because its priorities are set back.
+ *  byObserver  The cookie ID of the observer that asked for the change, or 0 when the
+ *              log collector made it by itself.
  **/
 typedef void (*FuncLogSourceState)(ITEM_ID /*cookie*/, unsigned char /*state*/, ITEM_ID /*byObserver*/);
 
 /**
  * \brief   The callback triggered when a log source applied the saved scope priorities.
  *          The updated scope list follows.
- * \param   cookie      The cookie ID of the log source.
+ *  cookie      The cookie ID of the log source.
  **/
 typedef void (*FuncLogConfigRestored)(ITEM_ID /*cookie*/);
 

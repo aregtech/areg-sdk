@@ -1,4 +1,4 @@
-﻿# 15_pubsvc
+# 15_pubsvc
 
 🚀 **Type:** IPC / Multi-Process
 

@@ -82,13 +82,14 @@ constexpr void _set_tm_fields(int64_t secs, struct tm & time) noexcept
  * \brief   Returns the seconds of the same date and time in a year that time_t holds, as the given seconds
  *          when time_t holds them. The year found has the same length and starts on the same weekday.
  **/
+template<typename TimeType>
 int64_t _time_t_seconds(int64_t utcSecs) noexcept
 {
-    if constexpr (sizeof(time_t) < sizeof(int64_t))
+    if constexpr (sizeof(TimeType) < sizeof(int64_t))
     {
         constexpr int32_t LAST_YEAR{ 2037 };
         constexpr int32_t YEAR_CYCLE{ 28 };
-        if ((utcSecs >= static_cast<int64_t>(std::numeric_limits<time_t>::min())) && (utcSecs <= static_cast<int64_t>(std::numeric_limits<time_t>::max())))
+        if ((utcSecs >= static_cast<int64_t>(std::numeric_limits<TimeType>::min())) && (utcSecs <= static_cast<int64_t>(std::numeric_limits<TimeType>::max())))
         {
             return utcSecs;
         }
@@ -122,7 +123,7 @@ int64_t _time_t_seconds(int64_t utcSecs) noexcept
  **/
 bool _local_tm(int64_t utcSecs, struct tm & localTm) noexcept
 {
-    const int64_t probe{ _time_t_seconds(utcSecs) };
+    const int64_t probe{ _time_t_seconds<time_t>(utcSecs) };
     struct tm result{};
     if (_safe_localtime(static_cast<time_t>(probe), result) == false)
     {

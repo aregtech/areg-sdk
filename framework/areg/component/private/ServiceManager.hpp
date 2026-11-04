@@ -176,7 +176,7 @@ public:
     /**
      * \brief   Queries the amount of sent data in bytes and sent messages since the last call, and resets counters.
      *
-     * \param[out] sizeSend     On output, contains the size of data in bytes sent since the last call.
+     * \param[out] sizeSent     On output, contains the size of data in bytes sent since the last call.
      * \param[out] msgSent      On output, contains the size of messages sent since the last call.
      * \note    Accumulate calls to measure total data. Call each second to measure data rate.
      **/
@@ -185,8 +185,8 @@ public:
     /**
      * \brief   Queries the amount of received data in bytes and received messages since the last call, and resets counters.
      *
-     * \param[out] sizeSend     On output, contains the size of data in bytes received since the last call.
-     * \param[out] msgSent      On output, contains the size of messages received since the last call.
+     * \param[out] sizeRecv     On output, contains the size of data in bytes received since the last call.
+     * \param[out] msgRecv      On output, contains the size of messages received since the last call.
      * \note    Accumulate calls to measure total data. Call each second to measure data rate.
      **/
     static void query_data_received(uint64_t& sizeRecv, uint32_t& msgRecv) noexcept;

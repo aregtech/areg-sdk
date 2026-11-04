@@ -91,7 +91,7 @@ namespace
         int32_t                 hookDelta[5]    { 0, 0, 0, 0, 0 };
 
         void * service_handle() const { return mSvcHandle; }
-        void set_service_handle(void * handle) { mSvcHandle = handle; }
+        [[maybe_unused]] void set_service_handle(void * handle) { mSvcHandle = handle; }
 
         std::pair<const areg::ext::OptionParser::OptionSetup *, int32_t> app_options() const override
         {

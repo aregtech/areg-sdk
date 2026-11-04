@@ -152,11 +152,6 @@ namespace
             return areg::server_listen(mSocket.value(), 8);
         }
 
-        void close()
-        {
-            mSocket = areg::Socket::SocketHandle();
-        }
-
     private:
         areg::Socket::SocketHandle mSocket;
         areg::SocketAddress mAddress;
@@ -174,7 +169,7 @@ namespace
             return false;
 
         const uint32_t size{ header.bufHeader.biUsed };
-        if (size != 0u && peer.receive(body, size) != static_cast<int32_t>(size))
+        if (size != 0u && peer.receive(body, static_cast<int32_t>(size)) != static_cast<int32_t>(size))
             return false;
 
         message.set_size_used(size);
@@ -185,7 +180,7 @@ namespace
     bool send_wire(const areg::SocketAccepted & peer, const areg::MessageEnvelope & message)
     {
         const uint32_t size{ areg::wire_size(*message.header()) };
-        return peer.send(areg::wire_data(*message.header()), size) == static_cast<int32_t>(size);
+        return peer.send(areg::wire_data(*message.header()), static_cast<int32_t>(size)) == static_cast<int32_t>(size);
     }
 
     void expect_same_message(const areg::MessageEnvelope & expected, const areg::MessageEnvelope & actual)
@@ -594,7 +589,7 @@ TEST_F(IpcSocketCoverageTest, truncated_header_and_body_report_incomplete_messag
         ASSERT_TRUE(peer.is_valid());
         const auto message{ areg::create_connect_notify(areg::COOKIE_ROUTER, 1234u) };
         const uint32_t size{ partialHeader ? areg::WIRE_HEADER_SIZE - 1u : areg::wire_size(*message.header()) - 1u };
-        ASSERT_EQ(peer.send(areg::wire_data(*message.header()), size), static_cast<int32_t>(size));
+        ASSERT_EQ(peer.send(areg::wire_data(*message.header()), static_cast<int32_t>(size)), static_cast<int32_t>(size));
         ASSERT_TRUE(peer.disable_send());
         areg::MessageEnvelope received;
         EXPECT_EQ(client.receive_message(received), 0);
@@ -896,7 +891,7 @@ TEST_F(IpcSocketCoverageTest, outage_reconnects_with_new_cookie_and_stop_interru
     expect_same_message(message, received);
     const auto partial{ areg::create_connect_notify(areg::COOKIE_ROUTER, SECOND_COOKIE) };
     const uint32_t incomplete{ areg::wire_size(*partial.header()) - 1u };
-    ASSERT_EQ(peer.send(areg::wire_data(*partial.header()), incomplete), static_cast<int32_t>(incomplete));
+    ASSERT_EQ(peer.send(areg::wire_data(*partial.header()), static_cast<int32_t>(incomplete)), static_cast<int32_t>(incomplete));
     provider.disconnect_service_host();
     ASSERT_TRUE(observer.wait_counts(2u, 2u, 1u));
     ASSERT_TRUE(dispatcher.barrier());

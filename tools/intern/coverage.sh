@@ -38,7 +38,7 @@
 #     --jobs N        Build jobs (default: 6; 'auto': the number of CPUs).
 #
 #   Environment
-#     GCOVR           gcovr executable (default: gcovr from PATH or /usr/local/bin, else ~/.local/bin/gcovr).
+#     GCOVR           gcovr executable (default: gcovr from PATH, else ~/.local/bin/gcovr).
 #     PYTHON          Python interpreter (default: python3).
 #     AREG_COV_FAMILY    Compiler family passed to cmake (default: gnu; macOS: llvm; Cygwin: cygwin).
 #     AREG_COV_EXTENDED  AREG_EXTENDED value (default: ON; macOS: OFF).
@@ -58,6 +58,10 @@
 #   Build on a Linux file system: a WSL build on /mnt/c fails under load.
 # ===========================================================================
 set -u
+
+# A Cygwin bash started from Git for Windows has the Git tools first in PATH, and they read
+# /cygdrive/... as a path below the Git directory. 'mkdir' then succeeds in the wrong place.
+[ "${OSTYPE:-}" = cygwin ] && export PATH="/usr/local/bin:/usr/bin:$PATH"
 
 # 'pwd -W' (Git for Windows) gives the drive form that native tools read; elsewhere it is 'pwd'.
 cwd() { pwd -W 2>/dev/null || pwd; }
@@ -100,7 +104,7 @@ OUT=${OUT:-$DIR/report}
 LAST=$DIR/last.json
 PYTHON=${PYTHON:-python3}
 if [ -z "${GCOVR:-}" ]; then
-  GCOVR=$(PATH="$PATH:/usr/local/bin" command -v gcovr || echo "$HOME/.local/bin/gcovr")
+  GCOVR=$(command -v gcovr || echo "$HOME/.local/bin/gcovr")
 fi
 NPROC=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
 FAMILY=${AREG_COV_FAMILY:-gnu}

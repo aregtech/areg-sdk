@@ -1,4 +1,4 @@
-﻿# Areg SDK Multitarget Router (mtrouter)
+# Areg SDK Multitarget Router (mtrouter)
 
 The Multitarget Router enables inter-process and networked communication between Service Provider and Consumer nodes in distributed Areg SDK applications.
 

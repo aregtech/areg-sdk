@@ -1,4 +1,4 @@
-﻿# 14_locmesh
+# 14_locmesh
 
 🧵 **Type:** Multithreading / Single Process
 

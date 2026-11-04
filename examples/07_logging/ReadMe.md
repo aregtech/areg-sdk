@@ -1,4 +1,4 @@
-﻿# 07_logging
+# 07_logging
 🧵 **Type:** Multithreading / Single Process
 
 ## Overview

@@ -1,4 +1,4 @@
-﻿# Areg SDK Preprocessor Definitions Reference
+# Areg SDK Preprocessor Definitions Reference
 
 This guide provides a comprehensive reference for preprocessor definitions used in Areg SDK projects, detailing each definition's purpose and usage for configuring and compiling applications.
 

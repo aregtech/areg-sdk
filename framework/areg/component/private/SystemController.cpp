@@ -161,6 +161,8 @@ void SystemController::load_model( const String & modelName, const std::shared_p
             accepted = false;
             break;
 
+        case areg::ModelState::Loading:
+        case areg::ModelState::Loaded:
         default:
             break;
         }
@@ -220,6 +222,8 @@ void SystemController::unload_model( const String & modelName, const std::shared
             }
             break;
 
+        case areg::ModelState::Unloaded:
+        case areg::ModelState::Unloading:
         default:
             break;
         }

@@ -1,4 +1,4 @@
-﻿# 01\_minimalrpc
+# 01\_minimalrpc
 
 🧵 **Type:** Multithreading / Single Process
 

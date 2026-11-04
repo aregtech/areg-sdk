@@ -37,7 +37,7 @@
     #endif  // NOMINMAX
     #include <WinSock2.h>
     #include <WS2tcpip.h>
-    #include <Mstcpip.h>
+    #include <mstcpip.h>
 #else   // WINDOWS
     #include <arpa/inet.h>
     #include <cerrno>

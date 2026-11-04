@@ -1,4 +1,4 @@
-﻿# Areg SDK Log Collector Service
+# Areg SDK Log Collector Service
 
 The Areg SDK Log Collector is a centralized service that gathers and routes log data from distributed applications to log observers for real-time monitoring and analysis.
 

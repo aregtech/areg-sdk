@@ -169,7 +169,7 @@ public:
      *          giving a warm, 1-in-flight one-way latency loop bounded by the requested count.
      * \param   id  Consumer's expected sequence number (debug/drop-detection only).
      **/
-    void request_message_next(uint32_t id);
+    void request_message_next(uint32_t id) override;
 
 //////////////////////////////////////////////////////////////////////////
 // LatencyProviderBase overrides

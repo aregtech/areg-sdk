@@ -1,4 +1,4 @@
-﻿# Building Areg SDK on Windows Subsystem for Linux (WSL)
+# Building Areg SDK on Windows Subsystem for Linux (WSL)
 
 This guide covers setting up WSL, building Areg SDK on Linux distributions within Windows, and troubleshooting common WSL issues.
 

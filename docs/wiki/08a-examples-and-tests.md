@@ -1,4 +1,4 @@
-﻿# Building and Running Areg SDK Examples and Unit Tests
+# Building and Running Areg SDK Examples and Unit Tests
 
 The Areg SDK provides a comprehensive set of examples and unit tests to demonstrate its features and ensure reliability. This guide explains how to include or exclude examples and unit tests during the build process, as well as how to execute them after building.
 

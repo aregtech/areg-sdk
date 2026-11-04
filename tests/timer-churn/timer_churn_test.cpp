@@ -126,7 +126,7 @@ public:
         : areg::Component   (entry, owner)
         , areg::TimerConsumer()
         , mTimers           ()
-        , mSeed             (entry.mRoleName.length() + 1u)
+        , mSeed             (static_cast<uint32_t>(entry.mRoleName.length()) + 1u)
     {
         gAlive.fetch_add(1);
     }
