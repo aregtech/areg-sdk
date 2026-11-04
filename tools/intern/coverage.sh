@@ -38,7 +38,7 @@
 #     --jobs N        Build jobs (default: 6; 'auto': the number of CPUs).
 #
 #   Environment
-#     GCOVR           gcovr executable (default: gcovr from PATH, else ~/.local/bin/gcovr).
+#     GCOVR           gcovr executable (default: gcovr from PATH or /usr/local/bin, else ~/.local/bin/gcovr).
 #     PYTHON          Python interpreter (default: python3).
 #     AREG_COV_FAMILY    Compiler family passed to cmake (default: gnu; macOS: llvm; Cygwin: cygwin).
 #     AREG_COV_EXTENDED  AREG_EXTENDED value (default: ON; macOS: OFF).
@@ -46,9 +46,9 @@
 #                        macOS: "xcrun llvm-cov gcov"; Windows: "llvm-cov gcov").
 #     AREG_COV_GENERATOR cmake generator (default: the cmake default; Windows: Ninja).
 #     AREG_COV_FLAGS     compile flags (default: "--coverage -fprofile-update=atomic";
-#                        clang-cl: "/clang:--coverage /clang:-fprofile-update=atomic").
+#                        clang-cl: "/EHsc /GR /clang:--coverage /clang:-fprofile-update=atomic").
 #     AREG_COV_LDFLAGS   link flags of executables and shared libraries (default: "--coverage";
-#                        clang-cl: the clang_rt.profile library and its /libpath).
+#                        clang-cl: the quoted full path of the clang_rt.profile library).
 #     GITHUB_STEP_SUMMARY  When set, the report is appended to it.
 #
 #   Example: a full run, then a quick re-run of new tests
@@ -76,7 +76,7 @@ TOP=25
 JOBS=6
 
 die() { echo "coverage.sh: $*" >&2; exit 2; }
-absolute() { case "$1" in /*) echo "$1" ;; *:*) echo "$1" ;; *) echo "$(cwd)/$1" ;; esac; }
+absolute() { case "$1" in /*) echo "$1" ;; *:*) echo "$1" ;; *) echo "$(cwd)/${1#./}" ;; esac; }
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -100,7 +100,7 @@ OUT=${OUT:-$DIR/report}
 LAST=$DIR/last.json
 PYTHON=${PYTHON:-python3}
 if [ -z "${GCOVR:-}" ]; then
-  GCOVR=$(command -v gcovr || echo "$HOME/.local/bin/gcovr")
+  GCOVR=$(PATH="$PATH:/usr/local/bin" command -v gcovr || echo "$HOME/.local/bin/gcovr")
 fi
 NPROC=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
 FAMILY=${AREG_COV_FAMILY:-gnu}
@@ -116,7 +116,7 @@ export AREG_LOCK_FAILURE_FATAL=${AREG_LOCK_FAILURE_FATAL:-1}
 # The counters of one run: unit.json or examples.json, or the *-only.json of --only.
 tracefile() { if [ -n "$ONLY" ]; then echo "$OUT/$1-only.json"; else echo "$OUT/$1.json"; fi; }
 
-reset_counters() { find "$BUILD" -name '*.gcda' -delete; }
+reset_counters() { ( cd "$BUILD" && find . -name '*.gcda' -delete ) || die "cannot reset the counters in $BUILD"; }
 
 check_gcovr() {
   [ -x "$GCOVR" ] || command -v "$GCOVR" >/dev/null || die "gcovr not found: pip install gcovr==8.8"

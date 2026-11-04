@@ -80,7 +80,7 @@ jobs:
       AREG_COV_GCOV: ${{matrix.platform.gcov}}
       AREG_COV_GENERATOR: ${{matrix.platform.generator}}
       PYTHON: ${{matrix.platform.python}}
-      # Git for Windows must not rewrite '/clang:...' and '/libpath:...' as paths.
+      # Git for Windows must not rewrite '/clang:...' as a path.
       MSYS2_ARG_CONV_EXCL: '*'
 
     strategy:
@@ -196,13 +196,15 @@ jobs:
         if: matrix.platform.name == 'windows'
         shell: bash
         # The linker is not the clang driver, so the profile runtime library is named here.
+        # Its path holds a space, so it is quoted.
+        # CMAKE_CXX_FLAGS given to cmake replace its defaults, so /EHsc and /GR are named too.
         run: |
           RES=$(clang-cl /clang:-print-resource-dir | tr -d '\r')
           RES=$(cygpath -m "${RES}")
           clang-cl --version
           ls "${RES}/lib/windows" | grep -i profile
-          echo "AREG_COV_FLAGS=/clang:--coverage /clang:-fprofile-update=atomic" >> "${GITHUB_ENV}"
-          echo "AREG_COV_LDFLAGS=clang_rt.profile-x86_64.lib /libpath:${RES}/lib/windows" >> "${GITHUB_ENV}"
+          echo "AREG_COV_FLAGS=/EHsc /GR /clang:--coverage /clang:-fprofile-update=atomic" >> "${GITHUB_ENV}"
+          echo "AREG_COV_LDFLAGS=\"${RES}/lib/windows/clang_rt.profile-x86_64.lib\"" >> "${GITHUB_ENV}"
 
       # tools/intern/coverage.sh holds the flags, filters and report commands; a local run uses it too.
       - name: Build with coverage instrumentation

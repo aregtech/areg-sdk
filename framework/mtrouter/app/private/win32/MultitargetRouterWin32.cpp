@@ -80,19 +80,12 @@ int main(int argc, char* argv[], char* envp[])
 
 VOID WINAPI _win32_service_main( DWORD argc, LPTSTR * argv )
 {
-    try
-    {
-        MultitargetRouter& router = MultitargetRouter::instance();
-        router.set_state(areg::ext::ServicePhase::Starting);
-        char** argvTemp = areg::ext::convert_arguments<TCHAR>(argv, static_cast<int32_t>(argc));
-        router.service_main(areg::ext::ServiceOption::CMD_Service, argvTemp != nullptr ? argvTemp[0] : nullptr);
-        areg::ext::delete_arguments(argvTemp, static_cast<int32_t>(argc));
-        router.set_state(areg::ext::ServicePhase::Stopped);
-    }
-    catch (const std::exception & /*ex*/)
-    {
-        ASSERT(false);
-    }
+    MultitargetRouter& router = MultitargetRouter::instance();
+    router.set_state(areg::ext::ServicePhase::Starting);
+    char** argvTemp = areg::ext::convert_arguments<TCHAR>(argv, static_cast<int32_t>(argc));
+    router.service_main(areg::ext::ServiceOption::CMD_Service, argvTemp != nullptr ? argvTemp[0] : nullptr);
+    areg::ext::delete_arguments(argvTemp, static_cast<int32_t>(argc));
+    router.set_state(areg::ext::ServicePhase::Stopped);
 }
 
 VOID WINAPI _win32_service_ctrl_handler(DWORD CtrlCode)

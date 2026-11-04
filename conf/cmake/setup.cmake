@@ -105,16 +105,20 @@ if (NOT "${AREG_C_COMPILER}" STREQUAL "")
     endif()
 endif()
 
-if (MSVC AND NOT "${CMAKE_GENERATOR}" STREQUAL "Ninja")
+# MSVC is defined only after project(), so the generator selects this branch.
+# A toolset or a platform given with -T or -A stays as given.
+if ("${CMAKE_GENERATOR}" MATCHES "^Visual Studio")
 
-    if ("${AREG_COMPILER_FAMILY}" STREQUAL "llvm")
+    if ("${AREG_COMPILER_FAMILY}" STREQUAL "llvm" AND "${CMAKE_GENERATOR_TOOLSET}" STREQUAL "")
         set(CMAKE_GENERATOR_TOOLSET ClangCL CACHE INTERNAL "Force ClangCL tool-set")
     endif()
 
-    if (AREG_BITNESS EQUAL 32)
-        set(CMAKE_GENERATOR_PLATFORM Win32 CACHE INTERNAL "Force 32-bit compilation")
-    elseif (AREG_BITNESS EQUAL 64)
-        set(CMAKE_GENERATOR_PLATFORM x64 CACHE INTERNAL "Force 64-bit compilation")
+    if ("${CMAKE_GENERATOR_PLATFORM}" STREQUAL "")
+        if ("${AREG_ARCH}" STREQUAL "${_proc_x86}")
+            set(CMAKE_GENERATOR_PLATFORM Win32 CACHE INTERNAL "Force 32-bit compilation")
+        elseif ("${AREG_ARCH}" STREQUAL "${_proc_x64}")
+            set(CMAKE_GENERATOR_PLATFORM x64 CACHE INTERNAL "Force 64-bit compilation")
+        endif()
     endif()
 
 endif()
