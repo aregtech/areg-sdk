@@ -270,7 +270,7 @@ namespace
 
         bool connect_once()
         {
-            if (link.create_socket() && link.connect_socket())
+            if (link.create_socket())
                 return true;
 
             link.close_socket();

@@ -1195,6 +1195,31 @@ TEST(ConfigManagerTest, read_file_twice_keeps_first)
 }
 
 /**
+ * \brief   Reproduces the defect: the release of the properties kept the path of the file read
+ *          before, so the next read hit the assertion and a failed read kept the old path.
+ **/
+TEST(ConfigManagerTest, release_of_properties_forgets_the_file)
+{
+    const fs::path dir{ test_dir() };
+    const fs::path first{ dir / "first.init" };
+    const fs::path second{ dir / "second.init" };
+    write_file(first, { "log::*::file::location = first" });
+    write_file(second, { "log::*::file::location = second" });
+
+    areg::ConfigManager config;
+    ASSERT_TRUE(config.read_config(areg::String(first.string())));
+    config.release_properties();
+    ASSERT_TRUE(config.config_file().is_empty());
+
+    EXPECT_FALSE(config.read_config(areg::String((dir / "absent.init").string())));
+    EXPECT_TRUE(config.config_file().is_empty());
+
+    ASSERT_TRUE(config.read_config(areg::String(second.string())));
+    EXPECT_EQ(txt(config.log_file_location()), "second");
+    EXPECT_EQ(fs::path(config.config_file().as_string()).filename(), second.filename());
+}
+
+/**
  * \brief   A save with all values writes the shared entries the process does not override and the
  *          saved process values, and never a temporary value.
  **/

@@ -97,7 +97,7 @@ namespace
 
         bool connect()
         {
-            return (link.create_socket() && link.connect_socket());
+            return link.create_socket();
         }
     };
 
