@@ -19,6 +19,9 @@
     <Text Include="CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="units\ChildProcessTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="units\ContainersTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -112,6 +115,9 @@
     <ClCompile Include="units\LogConfigurationTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="units\LoggingRuntimeCoverageTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="units\LogScopesTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -164,6 +170,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="units\RemoteEventRoutingTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\IpcClientCoverageTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="units\SocketKeepAliveTest.cpp">
@@ -283,6 +292,9 @@
     <ClCompile Include="units\StreamConverterTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="units\RemainingSmallFilesCoverageTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="units\StreamExtractTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -297,6 +309,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="units\ChildProcess.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="units\GUnitTest.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

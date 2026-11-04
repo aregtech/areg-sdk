@@ -177,7 +177,8 @@ public:
      * \param[out] field1      Second byte of IP address.
      * \param[out] field2      Third byte of IP address.
      * \param[out] field3      Fourth byte of IP address.
-     * \return  Returns true if valid IP address was extracted.
+     * \return  Returns true if the whole address is a dotted IPv4 address of four decimal
+     *          octets. Otherwise, returns false and sets all four fields to zero.
      **/
     bool connection_ip_address( uint8_t & field0
                                , uint8_t & field1

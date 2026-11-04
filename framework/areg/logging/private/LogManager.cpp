@@ -309,6 +309,7 @@ LogManager::LogManager()
     , mScopeController  ( )
 	, mIsStarted		( false )
     , mQueueDropped     ( 0u )
+    , mPendingFlush     ( false )
     , mLogConfig        ( )
 
     , mLoggerFile       ( mLogConfig )
@@ -436,6 +437,25 @@ void LogManager::process_event( const LoggingEventData & data )
     mEventProcessor.process_log_event( data );
 }
 
+void LogManager::post_dispatch_event( Event & eventElem )
+{
+    DispatcherThread::post_dispatch_event( eventElem );
+    if ( has_more_events() )
+        return;
+
+    if (mQueueDropped.load(std::memory_order_relaxed) != 0u)
+    {
+        _write_dropped_notice();
+    }
+
+    if ( !mPendingFlush )
+        return;
+
+    mPendingFlush = false;
+    mLoggerFile.flush_logs();
+    mLoggerDatabase.flush_logs();
+}
+
 void LogManager::start_logs()
 {
     if ( mLogConfig.is_logging_enabled() )
@@ -506,17 +526,6 @@ void LogManager::stop_logs()
 void LogManager::write_log_message( areg::MessageEnvelope & msg )
 {
     _dispatch_log_message(msg);
-
-    if ( !has_more_events() )
-    {
-        if (mQueueDropped.load(std::memory_order_relaxed) != 0u)
-        {
-            _write_dropped_notice();
-        }
-
-        mLoggerFile.flush_logs();
-        mLoggerDatabase.flush_logs();
-    }
 }
 
 void LogManager::_write_dropped_notice()
@@ -557,6 +566,7 @@ void LogManager::_dispatch_log_message( areg::MessageEnvelope & msg )
         areg::finalize_log_message(msg, areg::LogDataType::Local, areg::COOKIE_LOCAL);
     }
 
+    mPendingFlush = true;
     mLoggerFile.log_message(*logEntry);
     mLoggerDebug.log_message(*logEntry);
     mLoggerDatabase.log_message(*logEntry);

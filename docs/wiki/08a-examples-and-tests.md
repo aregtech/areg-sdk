@@ -266,6 +266,8 @@ Projects like `xx_generate` are created from **Service Interface** document file
 
 ## Running Areg SDK Google Unit Tests
 
+> **Test projects:** what each test project checks, the rules a test follows, tests that run in a child process, and tests of failing system calls are described in [tests/README.md](../../tests/README.md).
+
 To execute unit tests:
 
 ### Step 1: Navigate to Binary Directory

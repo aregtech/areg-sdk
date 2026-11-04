@@ -635,10 +635,10 @@ inline constexpr bool is_readable( CharType ch ) noexcept;
  * \brief   Returns true if the character is printable (all readable characters plus additional
  *          white-space characters).
  *
- * \param   ch      The character in range [-128, 127] to check.
+ * \param   ch      The character to check.
  * \return  Returns true if the character is printable.
  * \note    Printable characters include readable characters plus additional white-space such as
- *          tabs, new-line, and carriage return.
+ *          tabs, new-line, and carriage return. A wide character above U+00FF is printable.
  **/
 template<typename CharType>
 [[nodiscard]]
@@ -2092,6 +2092,12 @@ inline constexpr bool areg::is_readable( CharType ch ) noexcept
 template<typename CharType>
 inline constexpr bool areg::is_printable( CharType ch ) noexcept
 {
+    if constexpr (sizeof(CharType) > 1u)
+    {
+        if (static_cast<int32_t>(ch) > 0xFF)
+            return true;
+    }
+
     return ((areg::utf8_char_def( ch ) & static_cast<uint16_t>(areg::CharCategory::Printable)) != 0);
 }
 

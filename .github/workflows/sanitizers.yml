@@ -388,7 +388,6 @@ jobs:
         working-directory: ${{github.workspace}}
         shell: bash
         timeout-minutes: 45
-        continue-on-error: true
         env:
           UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=0:log_path=${{github.workspace}}/ubsan/report
           ASAN_OPTIONS: ${{ matrix.arch == 'x64' && format('detect_leaks=1:log_path={0}/ubsan/asan', github.workspace) || '' }}

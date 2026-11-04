@@ -238,7 +238,8 @@ uint32_t _searchText( const FileBase&   file
                     , uint32_t          length
                     , bool              sensitive )
 {
-    if (!file.can_read()
+    if (!file.is_opened()
+        || !file.can_read()
         || (startPos == Cursor::INVALID_CURSOR_POSITION)
         || areg::is_empty<CharType>(text)
         || (length == 0))
@@ -668,7 +669,8 @@ uint32_t FileBase::search_data( uint32_t        startPos
                                , const uint8_t*  buffer
                                , uint32_t        length ) const
 {
-    if (!can_read()
+    if (!is_opened()
+        || !can_read()
         || (startPos == Cursor::INVALID_CURSOR_POSITION)
         || (buffer == nullptr)
         || (length == 0))
