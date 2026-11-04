@@ -26,6 +26,16 @@
 
 namespace areg::ext {
 
+namespace
+{
+    // Draws the window under the console lock. Every refresh of the console goes through it.
+    inline void _refresh_window(Mutex& consoleLock, WINDOW* win) noexcept
+    {
+        Lock lock(consoleLock);
+        wrefresh(win);
+    }
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Console POSIX specific implementation
 //////////////////////////////////////////////////////////////////////////
@@ -49,6 +59,8 @@ bool Console::_os_setup() noexcept
 
 void Console::_os_release() noexcept
 {
+    Lock lock(mLock);
+
     if (mIsReady)
     {
         if (mContext != 0)
@@ -153,13 +165,19 @@ void Console::_os_set_cursor_cur_position(Console::Coord pos) const noexcept
     if (mContext != 0)
     {
         wmove(reinterpret_cast<WINDOW*>(mContext), pos.posY, pos.posX);
-        wrefresh(reinterpret_cast<WINDOW*>(mContext));
+        _refresh_window(mLock, reinterpret_cast<WINDOW*>(mContext));
     }
 }
 
 bool Console::_os_wait_input_string(char* buffer, uint32_t size)
 {
     ASSERT(buffer != nullptr);
+    if (stdscr != nullptr)
+    {
+        // The read starts with nothing left to draw.
+        _refresh_window(Console::instance().mLock, stdscr);
+    }
+
     const bool ok{ stdscr != nullptr ? getnstr(buffer, static_cast<int32_t>(size)) == OK
                                      : ::fgets(buffer, static_cast<int32_t>(size), stdin) != nullptr };
     if (ok == false)
@@ -171,6 +189,8 @@ bool Console::_os_wait_input_string(char* buffer, uint32_t size)
 
 void Console::_os_interrupt_input() noexcept
 {
+    Lock lock(mLock);
+
     if (mContext != 0)
     {
         ::ungetch('\n');
@@ -181,7 +201,7 @@ void Console::_os_refresh_screen() const noexcept
 {
     if (mContext != 0)
     {
-        wrefresh(reinterpret_cast<WINDOW*>(mContext));
+        _refresh_window(mLock, reinterpret_cast<WINDOW*>(mContext));
     }
 }
 
@@ -205,7 +225,7 @@ void Console::_os_clear_line_at_position(Console::Coord pos) const noexcept
         wmove(win, static_cast<int>(pos.posY), static_cast<int>(pos.posX));
         wclrtoeol(win);
         wmove(win, static_cast<int>(mSavedPos.posY), static_cast<int>(mSavedPos.posX));
-        wrefresh(win);
+        _refresh_window(mLock, win);
     }
 }
 
@@ -221,7 +241,14 @@ void Console::_os_clear_screen() const noexcept
 
 bool Console::_os_read_input_list(const char* format, va_list varList) const
 {
-    return (mContext != 0 ? vw_scanw(reinterpret_cast<WINDOW *>(mContext), const_cast<char *>(format), varList) >= 0 : false);
+    if (mContext == 0)
+    {
+        return false;
+    }
+
+    // The read starts with nothing left to draw.
+    _refresh_window(mLock, reinterpret_cast<WINDOW*>(mContext));
+    return (vw_scanw(reinterpret_cast<WINDOW *>(mContext), const_cast<char *>(format), varList) >= 0);
 }
 
 void Console::_os_save_cursor_position() const noexcept
