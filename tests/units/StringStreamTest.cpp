@@ -25,6 +25,7 @@
 #include "areg/base/String.hpp"
 #include "areg/base/WideString.hpp"
 
+#include <cwchar>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -149,24 +150,19 @@ TEST( StringStreamTest, surrogates_on_the_stream )
     EXPECT_EQ( value, 9 );
 }
 
+#if WCHAR_MAX > 0xFFFF
 /**
  * \brief   A 4-byte wchar_t above U+10FFFF is written as U+FFFD.
  **/
 TEST( StringStreamTest, invalid_code_point_is_replaced )
 {
-    if constexpr ( sizeof( wchar_t ) != 4u )
-    {
-        GTEST_SKIP( ) << "a 2-byte wchar_t cannot hold a value above U+FFFF";
-    }
-    else
-    {
-        const wchar_t source[ ]{ static_cast<wchar_t>(0x110000), L'z' };
-        areg::SharedBuffer buf;
-        buf << std::wstring( source, 2u );
-        const std::vector<uint8_t> expected{ 2, 0, 0, 0, 0xFD, 0xFF, 'z', 0 };
-        EXPECT_EQ( bytes_of( buf ), expected );
-    }
+    const wchar_t source[ ]{ static_cast<wchar_t>(0x110000), L'z' };
+    areg::SharedBuffer buf;
+    buf << std::wstring( source, 2u );
+    const std::vector<uint8_t> expected{ 2, 0, 0, 0, 0xFD, 0xFF, 'z', 0 };
+    EXPECT_EQ( bytes_of( buf ), expected );
 }
+#endif // WCHAR_MAX > 0xFFFF
 
 /**
  * \brief   A surrogate pair that crosses the internal conversion chunk and a long text are read back whole.

@@ -211,6 +211,11 @@ def _check_log_delivery(outputs):
     return None
 
 
+# Readers that parse what the console displayed, replayed from the stream; a curses
+# console redraws only the changed cells, so its stream never holds a whole line again.
+SCREEN_MEASURES = {'datarate'}
+
+
 SCENARIOS = [
     # -- single process, no router ------------------------------------------
     # Not an example: the regression test of the timer and watchdog teardown hang. It is
@@ -364,7 +369,9 @@ SCENARIOS = [
     #
     # 'measure' names the reader in tools/intern/areg_benchmarks.py that turns the captured
     # console stream into numbers.
+    # 'requires' lists the metrics a run must measure; a missing one fails the scenario.
     {'name': '23_datarate', 'tier': 'perf', 'timeout': 300, 'measure': 'datarate',
+     'requires': ['peak network data rate'],
      'procs': [proc('23_pubclient'),
                proc('23_pubservice',
                     stdin=_datarate_script('-w=1024 -h=1024 -l=1024 -t=25',
@@ -372,6 +379,7 @@ SCENARIOS = [
                     expect=[r'Network sent rate'])]},
 
     {'name': '23_msgrate', 'tier': 'perf', 'timeout': 300, 'measure': 'datarate',
+     'requires': ['peak network data rate'],
      'procs': [proc('23_pubclient'),
                proc('23_pubservice',
                     stdin=_datarate_script('-w=128 -h=128 -l=1 -t=25', 4, 1),
@@ -1496,6 +1504,27 @@ def run_scenario(scenario, bin_dir, out_dir, timeout, router_bin, keep_logs, use
         if failure is not None:
             result.fail(failure)
 
+    measure = scenario.get('measure')
+    if measure is not None:
+        logs = []
+        for runner in runners:
+            try:
+                with open(runner.log_path, 'rb') as src:
+                    data = src.read()
+            except OSError:
+                continue
+            if measure in SCREEN_MEASURES:
+                data = render_terminal(data).encode('utf-8')
+            logs.append((runner.name, data))
+        result.measures = areg_benchmarks.extract(measure, scenario['name'], logs)
+        for item in result.measures:
+            result.notes.append('%s = %s' % (item['metric'], item['display']))
+        # A benchmark that printed its lines but measured nothing is a failure.
+        found = {item['metric'] for item in result.measures}
+        for metric in scenario.get('requires', []):
+            if metric not in found:
+                result.fail('measured no %s' % metric)
+
     # A failure is read from the output of every application of the scenario, not only
     # of the one that reported it. The applications are connected: a consumer that waits
     # forever is explained by what its provider printed, and an expectation that did not
@@ -1519,19 +1548,6 @@ def run_scenario(scenario, bin_dir, out_dir, timeout, router_bin, keep_logs, use
             result.status = 'XPASS'
             result.notes.append('passed although marked as a known defect (%s),'
                                 ' remove the marker' % known)
-
-    measure = scenario.get('measure')
-    if measure is not None:
-        logs = []
-        for runner in runners:
-            try:
-                with open(runner.log_path, 'rb') as src:
-                    logs.append((runner.name, src.read()))
-            except OSError:
-                pass
-        result.measures = areg_benchmarks.extract(measure, scenario['name'], logs)
-        for item in result.measures:
-            result.notes.append('%s = %s' % (item['metric'], item['display']))
 
     # A benchmark keeps its output: the numbers are only trustworthy next to the stream
     # they were read from.

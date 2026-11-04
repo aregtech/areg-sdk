@@ -100,10 +100,12 @@ TEST_F(ComponentLoaderContractTest, registered_models_are_copied_and_named_looku
     EXPECT_TRUE(stored.is_valid());
     EXPECT_EQ(second.model_name(), stored.model_name());
     EXPECT_EQ(0, stored.find_thread(String("LoaderContractThreadB")));
-    const ComponentThreadEntry& thread = ComponentLoader::find_thread_entry(String("LoaderContractThreadB"));
+    const String threadName("LoaderContractThreadB");
+    const ComponentThreadEntry& thread = ComponentLoader::find_thread_entry(threadName);
     ASSERT_TRUE(thread.is_valid());
     EXPECT_EQ(String("LoaderContractThreadB"), thread.mThreadName);
-    const ComponentEntry& component = ComponentLoader::find_component_entry(String("LoaderContractRoleB"));
+    const String roleName("LoaderContractRoleB");
+    const ComponentEntry& component = ComponentLoader::find_component_entry(roleName);
     ASSERT_TRUE(component.is_valid());
     EXPECT_EQ(String("LoaderContractThreadB"), component.mThreadName);
     EXPECT_FALSE(component.has_data());

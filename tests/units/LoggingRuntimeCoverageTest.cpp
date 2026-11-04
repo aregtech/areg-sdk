@@ -999,7 +999,7 @@ TEST_F(LoggingRuntimeCoverageTest, append_with_appname_mask_preserves_the_existi
     const fs::path expanded{ mDirectory / areg::Process::instance().app_name().as_string() };
     const fs::path file{ expanded.string() + ".log" };
     {
-        std::ofstream output(file);
+        std::ofstream output(file, std::ios::binary);
         ASSERT_TRUE(output.is_open());
         output << "original-mask-content\n";
     }
