@@ -646,6 +646,8 @@ TEST(MathDefsTest, align_size_up_to_the_block)
     EXPECT_EQ(areg::align_size(0u, 8u), 0u);
     EXPECT_EQ(areg::align_size(1u, 8u), 8u);
     EXPECT_EQ(areg::align_size(8u, 8u), 8u);
+    EXPECT_EQ(areg::align_size(10u, 3u), 12u);
+    EXPECT_EQ(areg::align_size(9u, 3u), 9u);
     EXPECT_EQ(areg::align_size(9u, 8u), 16u);
     EXPECT_EQ(areg::align_size(13u, 1u), 13u);
     EXPECT_EQ(areg::align_size(static_cast<uint64_t>(4097u), static_cast<uint64_t>(4096u)), static_cast<uint64_t>(8192u));

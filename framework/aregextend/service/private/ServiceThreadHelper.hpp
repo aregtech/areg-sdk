@@ -43,38 +43,6 @@
 namespace areg::ext {
 
 /**
- * \brief   Phase 2 of the send batch pipeline: sort \a batch in-place by
- *          socket handle using binary insertion sort.
- *
- *          Uses move-assignment (not memmove) because PendingSend contains
- *          an MessageEnvelope whose shared_ptr makes memmove undefined behavior.
- *
- * \param   batch   Batch array to sort.
- * \param   count   Number of valid entries in \a batch.
- **/
-inline void sort_pending_sends(areg::ext::PendingSend * batch, uint32_t count) noexcept
-{
-    for ( uint32_t i{ 1u }; i < count; ++i )
-    {
-        if ( batch[i].socket >= batch[i - 1].socket )
-            continue;
-
-        areg::ext::PendingSend key{ std::move(batch[i]) };
-        uint32_t lo{ 0u }, hi{ i };
-        while ( lo < hi )
-        {
-            const uint32_t mid{ lo + ((hi - lo) >> 1) };
-            (batch[mid].socket <= key.socket) ? lo = mid + 1u : hi = mid;
-        }
-
-        for ( uint32_t j{ i }; j > lo; --j )
-            batch[j] = std::move(batch[j - 1]);
-
-        batch[lo] = std::move(key);
-    }
-}
-
-/**
  * \brief   Phase 3 of the send batch pipeline: write each same-socket group without waiting
  *          and accumulate stats. What a socket does not take stays in \a backlog, in order.
  *

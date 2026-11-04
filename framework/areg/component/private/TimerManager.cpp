@@ -64,11 +64,6 @@ bool TimerManager::is_manager_started()
     return instance().is_ready();
 }
 
-bool TimerManager::start_timer( Timer &timer )
-{
-    return TimerManager::start_timer(timer, DispatcherThread::current_dispatcher_thread());
-}
-
 bool TimerManager::start_timer(Timer &timer, const DispatcherThread & whichThread)
 {
     TimerManager & timerManager = instance();

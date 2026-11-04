@@ -2,9 +2,13 @@
 # .github/workflows/coverage.yml: one per flag, each measured on framework/ only.
 #   unit     -- the unit tests (ctest).
 #   examples -- the example applications (tools/intern/run-all-examples.py).
-# The project total and the README badge are the union of both flags.
+# Each upload also carries its platform flag: linux, macos, cygwin, windows.
+# The project total and the README badge are the union of all uploads.
 
 codecov:
+  notify:
+    # unit and examples on each of the four platforms.
+    after_n_builds: 8
   # Codecov reports as soon as the coverage job uploads, whatever the other workflows say.
   require_ci_to_pass: false
 
@@ -33,6 +37,18 @@ flag_management:
       paths:
         - framework/
     - name: examples
+      paths:
+        - framework/
+    - name: linux
+      paths:
+        - framework/
+    - name: macos
+      paths:
+        - framework/
+    - name: cygwin
+      paths:
+        - framework/
+    - name: windows
       paths:
         - framework/
 

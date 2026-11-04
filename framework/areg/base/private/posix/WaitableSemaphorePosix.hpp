@@ -67,12 +67,6 @@ public:
     bool release_semaphore() noexcept;
 
     /**
-     * \brief   Returns the maximum count of the semaphore.
-     **/
-    [[nodiscard]]
-    inline int32_t maximum_count() const noexcept;
-
-    /**
      * \brief   Returns the current count of the semaphore.
      **/
     [[nodiscard]]
@@ -143,11 +137,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // WaitableSemaphorePosix class declaration.
 //////////////////////////////////////////////////////////////////////////
-
-inline int32_t WaitableSemaphorePosix::maximum_count() const noexcept
-{
-    return mMaxCount;
-}
 
 inline int32_t WaitableSemaphorePosix::current_count() const noexcept
 {

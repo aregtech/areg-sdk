@@ -112,8 +112,10 @@ void FileLogger::log_message( const areg::LogEntry & logMessage)
 
     case areg::LogMessageType::Undefined: // fall through
     default:
+        // GCOVR_EXCL_START: unreachable default arm
         ASSERT(false);  // unexpected message to log
         break;
+        // GCOVR_EXCL_STOP
     }
 }
 

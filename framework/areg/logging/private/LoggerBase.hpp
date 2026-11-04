@@ -118,17 +118,6 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
     /**
-     * \brief   Closes and reopens the logger. Returns true if the logger was successfully reopened.
-     **/
-    inline bool reopen_logger();
-
-    /**
-     * \brief   Returns the log configuration object.
-     **/
-    [[nodiscard]]
-    inline const LogConfiguration & log_configuration() const noexcept;
-
-    /**
      * \brief   Returns the layout object to format and output messages.
      **/
     [[nodiscard]]
@@ -194,17 +183,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // LoggerBase class inline methods
 //////////////////////////////////////////////////////////////////////////
-inline bool LoggerBase::reopen_logger()
-{
-    close_logger();
-    return open_logger();
-}
-
-inline const LogConfiguration & LoggerBase::log_configuration() const noexcept
-{
-    return mLogConfiguration;
-}
-
 inline const LayoutManager & LoggerBase::layout_message() const noexcept
 {
     return mLayoutsMessage;

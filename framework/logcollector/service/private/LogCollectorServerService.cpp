@@ -54,7 +54,7 @@ bool LogCollectorServerService::start_database_logging(const areg::String & dbPa
         return false;
 
     // Register the already connected log sources, the scopes are re-registered on request.
-    for (const auto & entry : instances().data())
+    for (const auto & entry : mInstanceMap.data())
     {
         if (LogCollectorMessageProcessor::is_log_source(entry.second.ciSource))
         {
@@ -88,7 +88,7 @@ void LogCollectorServerService::add_instance(const ITEM_ID& cookie, const areg::
                             , instance.ciLocation.c_str());
         areg::log_local(logMsgHello);
 
-        mLoggerProcessor.notify_connected_instances(instances(), areg::TARGET_ALL);
+        mLoggerProcessor.notify_connected_instances(mInstanceMap, areg::TARGET_ALL);
         mDatabase.save_instance_connected(instance);
     }
     else if (LogCollectorMessageProcessor::is_log_observer(instance.ciSource))
@@ -146,7 +146,7 @@ void LogCollectorServerService::remove_all_instances()
     if (mInstanceMap.size() != 0)
     {
         areg::ArrayList<ITEM_ID> listIds;
-        for (const auto& entry : instances().data())
+        for (const auto& entry : mInstanceMap.data())
         {
             if (LogCollectorMessageProcessor::is_log_source(entry.second.ciSource))
             {

@@ -251,7 +251,7 @@ private:
     /**
      * \brief   Returns the map of connected instances.
      **/
-    inline const areg::MapInstances & connected_instances() const;
+    inline areg::MapInstances connected_instances() const;
 
     /**
      * \brief   Returns a reference to this LogCollector instance.
@@ -405,7 +405,7 @@ private:
 // LogCollector class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline const areg::MapInstances & LogCollector::connected_instances() const
+inline areg::MapInstances LogCollector::connected_instances() const
 {
     return mServiceServer.instances( );
 }

@@ -53,14 +53,4 @@ ProxyConnectEvent::ProxyConnectEvent( const ProxyAddress & target, const ProxyCo
 {
 }
 
-//////////////////////////////////////////////////////////////////////////
-// Attributes
-//////////////////////////////////////////////////////////////////////////
-
-StubAddress ProxyConnectEvent::stub_address() const
-{
-    const areg::EventHeader* hdr{ header() };
-    return (hdr != nullptr ? StubAddress(*hdr) : StubAddress::invalid_stub_address());
-}
-
 } // namespace areg

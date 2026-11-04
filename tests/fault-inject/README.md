@@ -52,7 +52,7 @@ The library does not link areg. The test executable links the library, areg and 
 ```cpp
 namespace areg_fault
 {
-    enum class FaultPoint { ThreadCreate, SocketCreate, FileOpen, DirOpen, ProcessSpawn, Count };
+    enum class FaultPoint { ThreadCreate, SocketCreate, FileOpen, DirOpen, ProcessSpawn, SocketConnect, SocketSend, SocketRecv, SocketBind, SocketListen, EpollCtl, FileRead, FileWrite, Allocation, Count };
 
     bool     arm( FaultPoint point, int error, uint32_t skip = 0u, uint32_t count = 1u );
     uint32_t failed( FaultPoint point );
@@ -75,6 +75,15 @@ namespace areg_fault
 | `FileOpen` | `open`, `open64` | `open` | `CreateFileA`, `CreateFileW` | `errno` / `GetLastError()` |
 | `DirOpen` | `opendir` | `opendir` | not replaced | `errno` |
 | `ProcessSpawn` | `posix_spawnp` | `posix_spawnp` | not replaced | return value |
+| `SocketConnect` | `connect` | not replaced | not replaced | `errno` |
+| `SocketSend` | `send`, `sendmsg` | not replaced | not replaced | `errno` |
+| `SocketRecv` | `recv` | not replaced | not replaced | `errno` |
+| `SocketBind` | `bind` | not replaced | not replaced | `errno` |
+| `SocketListen` | `listen` | not replaced | not replaced | `errno` |
+| `EpollCtl` | `epoll_ctl` | not replaced | not replaced | `errno` |
+| `FileRead` | `read` | not replaced | not replaced | `errno` |
+| `FileWrite` | `write` | not replaced | not replaced | `errno` |
+| `Allocation` | `operator new(std::nothrow)`, `operator new[](std::nothrow)` | not replaced | not replaced | ignored; the call returns null. The tests are skipped in sanitizer builds, whose runtimes define the operators |
 
 Use the error the system really reports in that situation, for example `EMFILE` or
 `ERROR_TOO_MANY_OPEN_FILES` for an exhausted descriptor table. The tests keep one constant per
@@ -254,6 +263,6 @@ point.
 | The log file of the file logger cannot be opened | `FileOpen` | all |
 | `launchctl` cannot be spawned for the router service | `ProcessSpawn` | macOS |
 | `bind()` and `listen()` fail in the router | new `SocketBind`, `SocketListen` | all |
-| `connect()` fails with `ECONNREFUSED` / `WSAECONNREFUSED` at once | new `SocketConnect` | all |
-| `send()` / `recv()` return an error mid-message | new `SocketSend`, `SocketRecv` | all |
-| Memory allocation fails in a `new (std::nothrow)` path | new point on the allocator | all |
+| `connect()` fails with `ECONNREFUSED` / `WSAECONNREFUSED` at once | `SocketConnect` | Linux done; macOS, Windows open |
+| `send()` / `recv()` return an error mid-message | `SocketSend`, `SocketRecv` | Linux done; macOS, Windows open |
+| Memory allocation fails in a `new (std::nothrow)` path | `Allocation` | Linux done (no sanitizer); macOS, Windows open |

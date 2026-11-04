@@ -177,9 +177,9 @@ public:
     inline void remove_black_list( const areg::SocketAddress & addrClient );
 
     /**
-     * \brief   Returns the list of connected instances.
+     * \brief   Returns a copy of the list of connected instances, taken under the lock.
      **/
-    inline const areg::MapInstances & instances() const;
+    inline areg::MapInstances instances() const;
 
     /**
      * \brief   Returns the number of pool thread pairs that were created.
@@ -775,8 +775,9 @@ inline void ServiceCommunicationBase::remove_black_list(const areg::SocketAddres
     mBlackList.remove_elem( addrClient.host_address(), 0);
 }
 
-inline const areg::MapInstances & ServiceCommunicationBase::instances() const
+inline areg::MapInstances ServiceCommunicationBase::instances() const
 {
+    areg::Lock lock(mLock);
     return mInstanceMap;
 }
 

@@ -1075,3 +1075,197 @@ TEST(SharedBufferTest, view_rejects_nested_write)
     EXPECT_TRUE(view.is_view());
     EXPECT_EQ(view.size_used(), sizeof(VAL_A));
 }
+
+namespace
+{
+    //! Makes the protected interface of the buffer reachable for a test.
+    class SharedProbe : public areg::SharedBuffer
+    {
+    public:
+        using areg::SharedBuffer::SharedBuffer;
+        using areg::SharedBuffer::buffer_to_read;
+        using areg::SharedBuffer::init_buffer;
+        using areg::SharedBuffer::read_view;
+        using areg::SharedBuffer::size_readable;
+        using areg::SharedBuffer::size_writable;
+        using areg::SharedBuffer::write_data;
+        using areg::SharedBuffer::write_view;
+    };
+
+    //! Fills target with a view of the bytes in source.
+    void _make_view(areg::SharedBuffer & holder, areg::SharedBuffer & target, const uint8_t * data, uint32_t size)
+    {
+        areg::SharedBuffer inner;
+        ASSERT_EQ(inner.write(data, size), size);
+        ASSERT_EQ(holder.write(inner), size);
+        holder.move_to_begin();
+        ASSERT_EQ(holder.read(target), size);
+        ASSERT_TRUE(target.is_view());
+    }
+}
+
+// Every way to write is refused on a view, and the shared block stays as it was.
+TEST(SharedBufferTest, view_refuses_every_write)
+{
+    constexpr uint8_t DATA[]{ 1u, 2u, 3u, 4u };
+    constexpr uint32_t VALUE{ 0xAABBCCDDu };
+    areg::SharedBuffer holder;
+    SharedProbe view;
+    _make_view(holder, view, DATA, sizeof(DATA));
+
+    EXPECT_EQ(view.write(DATA, sizeof(DATA)), 0u);
+    EXPECT_EQ(view.write_data(DATA, sizeof(DATA)), 0u);
+    EXPECT_EQ(view.write_view(sizeof(DATA)), nullptr);
+    EXPECT_EQ(view.write_pod(VALUE), 0u);
+    EXPECT_EQ(view.write_array(&VALUE, 1u), 0u);
+    EXPECT_EQ(view.size_writable(), 0u);
+    areg::OutStream & stream{ view };
+    stream << VALUE;
+    view.set_size_used(1u);
+
+    EXPECT_EQ(view.size_used(), sizeof(DATA));
+    EXPECT_EQ(view.buffer()[0], 1u);
+    EXPECT_EQ(view.buffer()[3], 4u);
+}
+
+// A write through the base class reference of a view is refused too.
+TEST(SharedBufferTest, view_refuses_a_write_through_the_base_class)
+{
+    constexpr uint8_t DATA[]{ 1u, 2u, 3u, 4u };
+    areg::SharedBuffer holder;
+    areg::SharedBuffer view;
+    _make_view(holder, view, DATA, sizeof(DATA));
+
+    areg::BufferBase & base{ view };
+    EXPECT_EQ(base.write(DATA, sizeof(DATA)), 0u);
+    EXPECT_EQ(view.buffer()[0], 1u);
+}
+
+// is_unique() of a buffer without a block is false, of a sole owner true, of two owners false.
+TEST(SharedBufferTest, is_unique_counts_the_owners)
+{
+    constexpr uint8_t DATA[]{ 1u };
+    areg::SharedBuffer buffer;
+    EXPECT_FALSE(buffer.is_unique());
+    ASSERT_EQ(buffer.write(DATA, sizeof(DATA)), sizeof(DATA));
+    EXPECT_TRUE(buffer.is_unique());
+    areg::SharedBuffer other(buffer);
+    EXPECT_FALSE(buffer.is_unique());
+    EXPECT_TRUE(buffer.is_shared());
+}
+
+// The position decides is_begin() of a valid buffer, and of a view.
+TEST(SharedBufferTest, is_begin_follows_the_position)
+{
+    constexpr uint8_t DATA[]{ 1u, 2u };
+    areg::SharedBuffer buffer;
+    EXPECT_TRUE(buffer.is_begin());
+    ASSERT_EQ(buffer.write(DATA, sizeof(DATA)), sizeof(DATA));
+    EXPECT_FALSE(buffer.is_begin());
+    buffer.reset();
+    EXPECT_TRUE(buffer.is_begin());
+}
+
+// A buffer without a block has no read address, no element to read and no room.
+TEST(SharedBufferTest, buffer_without_a_block_gives_no_address)
+{
+    SharedProbe buffer;
+    EXPECT_EQ(buffer.buffer_to_read(), nullptr);
+    EXPECT_EQ(buffer.read_array<uint32_t>(1u), nullptr);
+    EXPECT_EQ(buffer.size_writable(), 0u);
+    EXPECT_EQ(buffer.size_readable(), 0u);
+    EXPECT_EQ(buffer.read_view(1u), nullptr);
+}
+
+// The writable size of an owner is the rest of the block.
+TEST(SharedBufferTest, writable_size_is_the_rest_of_the_block)
+{
+    constexpr uint8_t DATA[]{ 1u, 2u, 3u };
+    SharedProbe buffer;
+    ASSERT_EQ(buffer.write(DATA, sizeof(DATA)), sizeof(DATA));
+    EXPECT_EQ(buffer.size_writable(), buffer.size_available() - sizeof(DATA));
+}
+
+// An array write refuses no data, no elements and a count past the limit.
+TEST(SharedBufferTest, write_array_refuses_a_bad_request)
+{
+    constexpr uint32_t VALUE{ 1u };
+    areg::SharedBuffer buffer;
+    EXPECT_EQ(buffer.write_array<uint32_t>(nullptr, 1u), 0u);
+    EXPECT_EQ(buffer.write_array(&VALUE, 0u), 0u);
+    EXPECT_EQ(buffer.write_array(&VALUE, areg::MAX_BUF_LENGTH), 0u);
+    EXPECT_EQ(buffer.write_array(&VALUE, 1u), sizeof(VALUE));
+}
+
+// A read view refuses no bytes and a range past the data, and returns what is in range.
+TEST(SharedBufferTest, read_view_stays_inside_the_data)
+{
+    constexpr uint8_t DATA[]{ 1u, 2u, 3u, 4u };
+    SharedProbe buffer;
+    ASSERT_EQ(buffer.write(DATA, sizeof(DATA)), sizeof(DATA));
+    buffer.reset();
+    EXPECT_EQ(buffer.read_view(0u), nullptr);
+    EXPECT_EQ(buffer.read_view(sizeof(DATA) + 1u), nullptr);
+    ASSERT_NE(buffer.read_view(3u), nullptr);
+
+    SharedProbe other(buffer);
+    other.set_size_used(1u);
+    EXPECT_EQ(buffer.read_view(1u), nullptr);
+}
+
+// A length prefix that claims more than the rest of the source reads nothing.
+TEST(SharedBufferTest, read_of_a_buffer_refuses_a_length_past_the_data)
+{
+    const uint32_t length{ 100u };
+    areg::SharedBuffer source;
+    ASSERT_EQ(source.write_pod(length), sizeof(length));
+    source.reset();
+    areg::SharedBuffer target;
+    EXPECT_EQ(source.read(target), 0u);
+    EXPECT_FALSE(target.is_valid());
+    EXPECT_EQ(source.position(), 0u);
+}
+
+// A nested sequence read from a view stays inside the view.
+TEST(SharedBufferTest, nested_read_from_a_view_stays_inside_the_view)
+{
+    constexpr uint8_t DATA[]{ 1u, 2u, 3u };
+    areg::SharedBuffer payload;
+    ASSERT_EQ(payload.write(DATA, sizeof(DATA)), sizeof(DATA));
+
+    areg::SharedBuffer middle;
+    ASSERT_EQ(middle.write(payload), sizeof(DATA));
+
+    areg::SharedBuffer outer;
+    ASSERT_EQ(outer.write(middle), sizeof(uint32_t) + sizeof(DATA));
+    outer.move_to_begin();
+
+    areg::SharedBuffer view;
+    ASSERT_EQ(outer.read(view), sizeof(uint32_t) + sizeof(DATA));
+    ASSERT_TRUE(view.is_view());
+
+    areg::SharedBuffer inner;
+    ASSERT_EQ(view.read(inner), sizeof(DATA));
+    EXPECT_EQ(inner.size_used(), sizeof(DATA));
+    EXPECT_EQ(inner.buffer()[2], 3u);
+}
+
+// Every copy size goes through the read of a shared buffer.
+TEST(SharedBufferTest, every_copy_size_writes_and_reads)
+{
+    uint8_t source[16]{ };
+    for (uint32_t i = 0u; i < sizeof(source); ++i)
+    {
+        source[i] = static_cast<uint8_t>(0xB0u + i);
+    }
+
+    for (uint32_t size : { 1u, 2u, 3u, 4u, 8u, 16u })
+    {
+        areg::SharedBuffer buffer(4096u, areg::BLOCK_SIZE);
+        ASSERT_EQ(buffer.write(source, size), size);
+        buffer.reset();
+        uint8_t target[16]{ };
+        ASSERT_EQ(buffer.read(target, size), size);
+        EXPECT_TRUE(areg::mem_equal(target, source, size)) << "size " << size;
+    }
+}

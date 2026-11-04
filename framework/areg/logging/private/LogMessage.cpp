@@ -35,12 +35,6 @@ LogMessage::LogMessage(areg::LogMessageType msgType, uint32_t sessionId, TIME64 
             ((static_cast<uint8_t>(areg::LogMessageType::ScopeExit)  & static_cast<uint8_t>(msgType)) != 0) );
 }
 
-void LogMessage::set_message(const char * message, int32_t msgLen ) noexcept
-{
-    uint32_t len = areg::mem_copy(this->logMessage, areg::LOG_MSG_SIZE - 1, message, static_cast<uint32_t>(msgLen));
-    this->logMessage[len] = String::EmptyChar;
-}
-
 #else   // AREG_LOGGING
 
 LogMessage::LogMessage(areg::LogMessageType /*msgType*/, uint32_t /*sessionId*/, TIME64 /*scopeStamp*/, const LogScope& /*logScope*/) noexcept

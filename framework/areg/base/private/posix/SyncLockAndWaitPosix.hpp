@@ -134,16 +134,6 @@ private:
     };
 
     /**
-     * \brief   SyncLockAndWaitPosix::SignalState
-     *          Describes the fired state of each event.
-     **/
-    enum class SignalState
-    {
-          None  //!< No event has been fired.
-        , One   //!< Fired one event.
-        , All   //!< All waiting events are fired.
-    };
-    /**
      * \brief   The fixed array of waitable. The maximum size of array is areg::MAXIMUM_WAITING_OBJECTS
      **/
     using WaitingList   = FixedArray<WaitablePosix *>;
@@ -193,14 +183,6 @@ public:
      * \return  Returns the number of threads notified.
      **/
     static int32_t notify_wait_all_waiters( WaitablePosix & syncWaitable ) noexcept;
-
-    /**
-     * \brief   Called by waitable object to indicate failure (e.g., invalidation). Unlocks all
-     *          waiting threads with error.
-     *
-     * \param   syncWaitable    The waitable object that failed.
-     **/
-    static void event_failed( WaitablePosix & syncWaitable ) noexcept;
 
     /**
      * \brief   Removes waitable object from the waiting list.
@@ -261,12 +243,6 @@ private:
      * \brief   Returns true if no event in the list has fired.
      **/
     inline bool _no_event_fired() const noexcept;
-
-    /**
-     * \brief   Returns true if object is valid (TLS sync objects initialized and waiting list not empty)
-     **/
-    [[nodiscard]]
-    inline bool _is_valid() const noexcept;
 
     /**
      * \brief   Locks the object and waits for event fired criteria. May block the calling thread.

@@ -68,12 +68,6 @@ public:
      **/
     bool release_mutex() noexcept;
 
-    /**
-     * \brief   Returns the POSIX thread ID that currently owns the mutex, or null if no thread owns it.
-     **/
-    [[nodiscard]]
-    inline pthread_t owning_thread_id() const noexcept;
-
 /************************************************************************/
 // WaitablePosix callback overrides.
 /************************************************************************/
@@ -137,12 +131,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // WaitableMutexPosix class inline functions
 //////////////////////////////////////////////////////////////////////////
-
-inline pthread_t WaitableMutexPosix::owning_thread_id() const noexcept
-{
-    ObjectLockPosix lock(mObjectLock);
-    return mOwnerThread;
-}
 
 } // namespace areg::os
 

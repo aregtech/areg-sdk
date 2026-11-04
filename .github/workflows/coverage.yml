@@ -1,9 +1,15 @@
 name: Coverage
 
-# Line, function and branch coverage of framework/, measured with GCC '--coverage' in a
-# Debug build on Linux and uploaded to Codecov. Each run makes one report per Codecov flag:
+# Line, function and branch coverage of framework/, measured with gcov-format counters
+# ('--coverage') in a Debug build and uploaded to Codecov. One job per platform: Linux (GCC),
+# macOS (Apple clang, read by 'xcrun llvm-cov gcov'; built without aregextend as in cmake.yml),
+# Cygwin (GCC and gcovr of Cygwin, started through C:/cygwin/bin/bash.exe; the Cygwin
+# setup is the one of cmake.yml) and Windows (clang-cl with Ninja, '--coverage' counters read
+# by 'llvm-cov gcov'; the clang_rt.profile library is linked explicitly).
+# Each job makes one report per kind, uploaded with the kind and the platform:
 #   unit     -- the unit tests run by ctest;
 #   examples -- the example applications run by tools/intern/run-all-examples.py.
+# The flags are 'unit' and 'examples', each with 'linux', 'macos', 'cygwin' or 'windows'.
 # The counters are reset between the two runs, so a flag holds only what its own run reached;
 # Codecov shows their union as the project total and in the README badge.
 # The job summary holds the coverage counted like Codecov, then lines, functions and branches,
@@ -49,7 +55,7 @@ jobs:
         shell: bash
         env:
           EVENT: ${{ github.event_name }}
-          PATTERN: '^(framework|examples|tests|thirdparty|conf)/|(^|/)CMakeLists\.txt$|\.cmake$|^tools/(codegen\.jar|schema/)|^tools/intern/(run-all-examples\.py|coverage-report\.py|coverage\.sh|coverage_rule\.py)$|^\.github/(codecov\.yml|workflows/coverage\.yml)'
+          PATTERN: '^(framework|examples|tests|thirdparty|conf)/|(^|/)CMakeLists\.txt$|\.cmake$|^tools/(codegen\.jar|schema/)|^tools/intern/(run-all-examples\.py|hang-watchdog\.sh|coverage-report\.py|coverage\.sh|coverage_rule\.py)$|^\.github/(codecov\.yml|workflows/coverage\.yml)'
         run: |
           case "${EVENT}" in
             pull_request) BASE="${{ github.event.pull_request.base.sha }}" ;;
@@ -63,11 +69,28 @@ jobs:
           echo "run=${RUN}" >> "${GITHUB_OUTPUT}"
 
   coverage:
-    name: coverage (unit tests and examples)
+    name: coverage (${{matrix.platform.name}})
     needs: plan
     if: needs.plan.outputs.run == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ${{matrix.platform.os}}
     timeout-minutes: 120
+    env:
+      AREG_COV_FAMILY: ${{matrix.platform.family}}
+      AREG_COV_EXTENDED: ${{matrix.platform.extended}}
+      AREG_COV_GCOV: ${{matrix.platform.gcov}}
+      AREG_COV_GENERATOR: ${{matrix.platform.generator}}
+      PYTHON: ${{matrix.platform.python}}
+      # Git for Windows must not rewrite '/clang:...' and '/libpath:...' as paths.
+      MSYS2_ARG_CONV_EXCL: '*'
+
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - { name: linux,   os: ubuntu-latest,  family: gnu,    extended: 'ON',  gcov: '',                    generator: '',      python: python3, bash: bash }
+          - { name: macos,   os: macos-latest,   family: llvm,   extended: 'OFF', gcov: 'xcrun llvm-cov gcov', generator: '',      python: python3, bash: bash }
+          - { name: cygwin,  os: windows-latest, family: cygwin, extended: 'ON',  gcov: '',                    generator: '',      python: python3, bash: 'C:/cygwin/bin/bash.exe' }
+          - { name: windows, os: windows-latest, family: llvm,   extended: 'ON',  gcov: 'llvm-cov gcov',       generator: Ninja,   python: python,  bash: bash }
 
     steps:
 
@@ -81,69 +104,205 @@ jobs:
           java-package: jre
           distribution: temurin
 
+      - name: Select the Xcode command line tools
+        if: runner.os == 'macOS'
+        run: sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+
+      - name: Let every git of the job trust the checkout directory
+        if: matrix.platform.name == 'cygwin'
+        shell: bash
+        run: |
+          echo "GIT_CONFIG_COUNT=1"              >> "${GITHUB_ENV}"
+          echo "GIT_CONFIG_KEY_0=safe.directory" >> "${GITHUB_ENV}"
+          echo "GIT_CONFIG_VALUE_0=*"            >> "${GITHUB_ENV}"
+
+      - name: Set Windows PATH environment variable
+        if: matrix.platform.name == 'cygwin'
+        # Only the cygwin toolchain and the Windows system directories (as in cmake.yml).
+        run: echo "PATH=C:\cygwin;C:\cygwin\bin;C:\cygwin\lib;$env:SYSTEMROOT\system32;$env:SYSTEMROOT;$env:SYSTEMROOT\System32\Wbem" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Install cygwin on Windows
+        if: matrix.platform.name == 'cygwin'
+        uses: cygwin/cygwin-install-action@v7
+        with:
+          # 'python3-pip', 'python3-devel', 'libxml2-devel' and 'libxslt-devel' are for gcovr and its lxml.
+          packages: cmake, dos2unix, flexdll, gcc-g++, gdb, git, libncurses-devel, libxml2-devel, libxslt-devel, make, python3, python3-devel, python3-pip
+          install-dir: 'C:\cygwin'
+          add-to-path: false
+          work-vol: 'C:'
+
+      - name: Pin the cygwin libuv1 to 1.52.1
+        if: matrix.platform.name == 'cygwin'
+        shell: pwsh
+        # cmake under libuv1 1.53.0 waits forever for a child process that has already ended.
+        run: |
+          $path = 'x86_64/release/libuv/libuv1/libuv1-1.52.1-1-x86_64.tar.xz'
+          $mirrors = @('https://mirrors.kernel.org/sourceware/cygwin', 'https://cygwin.mirror.constant.com', 'https://mirrors.mit.edu/cygwin')
+          $sha = 'bfeffaf2c576a58650b71f7057722f79166589bd1859b5546f8b64190a226e9417f6f1ae59529ad7db4ca3891034b17dba3fc2becdb3f4e81223890fe78298aa'
+          $done = $false
+          foreach ($try in 1..3) {
+            foreach ($mirror in $mirrors) {
+              try { Invoke-WebRequest -Uri "$mirror/$path" -OutFile C:\cygwin\tmp\libuv1.tar.xz -TimeoutSec 60; $done = $true; break }
+              catch { Write-Output "Download from $mirror failed in round $try" }
+            }
+            if ($done) { break }
+            Start-Sleep -Seconds (10 * $try)
+          }
+          if (-not $done) { throw 'libuv1 1.52.1: no mirror answered' }
+          if ((Get-FileHash -Algorithm SHA512 C:\cygwin\tmp\libuv1.tar.xz).Hash -ne $sha) { throw 'libuv1 1.52.1: checksum mismatch' }
+          C:\cygwin\bin\bash.exe -c 'tar -xJf /tmp/libuv1.tar.xz -C / && strings /usr/bin/cyguv-1.dll | grep -m1 -x "1\.[0-9]*\.[0-9]*"'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Restore the cygwin cygxml2-2.dll
+        if: matrix.platform.name == 'cygwin'
+        shell: pwsh
+        # cmake loads cygarchive-13.dll, which imports cygxml2-2.dll; libxml2 2.15 ships only cygxml2-16.dll.
+        run: |
+          $path = 'x86_64/release/libxml2/libxml2-2.13.9-2-x86_64.tar.xz'
+          $mirrors = @('https://mirrors.kernel.org/sourceware/cygwin', 'https://cygwin.mirror.constant.com', 'https://mirrors.mit.edu/cygwin')
+          $sha = 'dbea2e2facd79238c8232f44f556db27ceaf87e53150167e9e28029ef81dca45a37dd3fd98dd810b90e82926ea95204c09fb7e16907cfc3ee93cae4298dd3758'
+          if (Test-Path C:\cygwin\bin\cygxml2-2.dll) { Write-Output 'cygxml2-2.dll is installed'; exit 0 }
+          $done = $false
+          foreach ($try in 1..3) {
+            foreach ($mirror in $mirrors) {
+              try { Invoke-WebRequest -Uri "$mirror/$path" -OutFile C:\cygwin\tmp\libxml2.tar.xz -TimeoutSec 60; $done = $true; break }
+              catch { Write-Output "Download from $mirror failed in round $try" }
+            }
+            if ($done) { break }
+            Start-Sleep -Seconds (10 * $try)
+          }
+          if (-not $done) { throw 'libxml2 2.13.9: no mirror answered' }
+          if ((Get-FileHash -Algorithm SHA512 C:\cygwin\tmp\libxml2.tar.xz).Hash -ne $sha) { throw 'libxml2 2.13.9: checksum mismatch' }
+          C:\cygwin\bin\bash.exe -c 'tar -xJf /tmp/libxml2.tar.xz -C / usr/bin/cygxml2-2.dll && ls -l /usr/bin/cygxml2-*.dll && /usr/bin/cmake --version'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
       - uses: actions/setup-python@v7
+        if: matrix.platform.name != 'cygwin'
         with:
           python-version: '3.12'
 
+      # On Cygwin this is the Cygwin python, so gcovr and the example driver run inside Cygwin.
       - name: Install gcovr
-        run: python -m pip install --disable-pip-version-check "gcovr==${{env.GCOVR_VERSION}}"
+        shell: bash
+        run: ${{matrix.platform.bash}} -c '${{matrix.platform.python}} -m pip install --disable-pip-version-check gcovr==${{env.GCOVR_VERSION}}'
+
+      - name: Select the MSVC environment for clang-cl and Ninja
+        if: matrix.platform.name == 'windows'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Set the clang-cl coverage flags
+        if: matrix.platform.name == 'windows'
+        shell: bash
+        # The linker is not the clang driver, so the profile runtime library is named here.
+        run: |
+          RES=$(clang-cl /clang:-print-resource-dir | tr -d '\r')
+          RES=$(cygpath -m "${RES}")
+          clang-cl --version
+          ls "${RES}/lib/windows" | grep -i profile
+          echo "AREG_COV_FLAGS=/clang:--coverage /clang:-fprofile-update=atomic" >> "${GITHUB_ENV}"
+          echo "AREG_COV_LDFLAGS=clang_rt.profile-x86_64.lib /libpath:${RES}/lib/windows" >> "${GITHUB_ENV}"
 
       # tools/intern/coverage.sh holds the flags, filters and report commands; a local run uses it too.
       - name: Build with coverage instrumentation
         id: build
+        if: matrix.platform.name != 'cygwin'
+        shell: bash
         working-directory: ${{github.workspace}}
-        run: bash tools/intern/coverage.sh build ${{env.COVERAGE_ARGS}} --jobs $(nproc)
+        run: bash tools/intern/coverage.sh build ${{env.COVERAGE_ARGS}} --jobs auto
+
+      - name: Configure with coverage instrumentation, watched (cygwin)
+        if: matrix.platform.name == 'cygwin'
+        shell: pwsh
+        working-directory: ${{github.workspace}}
+        timeout-minutes: 15
+        # A cmake, java or cygpath process that runs longer than 300 s gets its processes and
+        # its stacks printed, and is then stopped (as the configure step of cmake.yml).
+        run: |
+          New-Item -ItemType Directory -Force product | Out-Null
+          Remove-Item -Force -ErrorAction SilentlyContinue product/configure.done
+          Start-Process -NoNewWindow -FilePath C:\cygwin\bin\bash.exe -ArgumentList 'tools/intern/hang-watchdog.sh product/configure.done 300 cmake java cygpath'
+          C:\cygwin\bin\bash.exe tools/intern/coverage.sh configure ${{env.COVERAGE_ARGS}}
+          $rc = $LASTEXITCODE
+          New-Item -ItemType File -Force product/configure.done | Out-Null
+          exit $rc
+
+      - name: Dump the CMake logs of a failed configuration
+        if: failure() && matrix.platform.name == 'cygwin'
+        working-directory: ${{github.workspace}}
+        shell: bash
+        run: |
+          for f in "${{env.BUILD_DEST}}/CMakeFiles/CMakeConfigureLog.yaml" \
+                   "${{env.BUILD_DEST}}/CMakeFiles/CMakeError.log" \
+                   "${{env.BUILD_DEST}}/CMakeFiles/CMakeOutput.log" \
+                   "product/configure.done.report"; do
+            if [ -f "${f}" ]; then
+              echo "===== ${f} =====" 
+              tail -n 300 "${f}"
+            fi
+          done
+
+      - name: Build with coverage instrumentation (cygwin)
+        id: compile
+        if: matrix.platform.name == 'cygwin'
+        shell: bash
+        working-directory: ${{github.workspace}}
+        run: ${{matrix.platform.bash}} tools/intern/coverage.sh compile ${{env.COVERAGE_ARGS}} --jobs auto
 
       # Runs ctest, collects unit.json and resets the counters.
       - name: Run the unit tests
         id: unit
         working-directory: ${{github.workspace}}
         timeout-minutes: 40
-        run: bash tools/intern/coverage.sh unit ${{env.COVERAGE_ARGS}}
+        shell: bash
+        run: ${{matrix.platform.bash}} tools/intern/coverage.sh unit ${{env.COVERAGE_ARGS}}
 
       # Runs the example scenarios, collects examples.json and resets the counters.
       - name: Run the example applications
         id: examples
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        if: ${{ !cancelled() && (steps.build.outcome == 'success' || steps.compile.outcome == 'success') }}
         working-directory: ${{github.workspace}}
         timeout-minutes: 40
-        run: bash tools/intern/coverage.sh examples ${{env.COVERAGE_ARGS}}
+        shell: bash
+        run: ${{matrix.platform.bash}} tools/intern/coverage.sh examples ${{env.COVERAGE_ARGS}}
 
       # One Cobertura file per flag, the HTML report, and the job summary.
       - name: Make the reports
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        if: ${{ !cancelled() && (steps.build.outcome == 'success' || steps.compile.outcome == 'success') }}
         working-directory: ${{github.workspace}}
-        run: bash tools/intern/coverage.sh report ${{env.COVERAGE_ARGS}}
+        shell: bash
+        run: ${{matrix.platform.bash}} tools/intern/coverage.sh report ${{env.COVERAGE_ARGS}}
 
       - name: Upload the unit test coverage to Codecov
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        if: ${{ !cancelled() && (steps.build.outcome == 'success' || steps.compile.outcome == 'success') }}
         uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ${{env.REPORT_DEST}}/unit.xml
-          flags: unit
-          name: unit
+          flags: unit,${{matrix.platform.name}}
+          name: unit-${{matrix.platform.name}}
           disable_search: true
           plugins: noop
           fail_ci_if_error: ${{ github.event_name != 'pull_request' }}
 
       - name: Upload the example coverage to Codecov
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        if: ${{ !cancelled() && (steps.build.outcome == 'success' || steps.compile.outcome == 'success') }}
         uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ${{env.REPORT_DEST}}/examples.xml
-          flags: examples
-          name: examples
+          flags: examples,${{matrix.platform.name}}
+          name: examples-${{matrix.platform.name}}
           disable_search: true
           plugins: noop
           fail_ci_if_error: ${{ github.event_name != 'pull_request' }}
 
       - name: Upload the HTML coverage report
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        if: ${{ !cancelled() && (steps.build.outcome == 'success' || steps.compile.outcome == 'success') }}
         uses: actions/upload-artifact@v7
         with:
-          name: coverage-report
+          name: coverage-report-${{matrix.platform.name}}
           path: |
             ${{env.REPORT_DEST}}/html/
             ${{env.REPORT_DEST}}/coverage.md
@@ -154,5 +313,5 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: coverage-example-results
+          name: coverage-example-results-${{matrix.platform.name}}
           path: ${{env.REPORT_DEST}}/examples/

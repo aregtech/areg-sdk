@@ -389,7 +389,7 @@ void RouterServerService::reject_duplicates()
         }
     }
 
-    const areg::MapInstances & instances{ ServiceCommunicationBase::instances() };
+    const areg::MapInstances instances{ ServiceCommunicationBase::instances() };
     for (const areg::StubAddress & held : expired)
     {
         const ServiceStub & holder{ mServiceRegistry.stub_service(held) };

@@ -534,33 +534,6 @@ void SyncLockAndWaitPosix::event_remove( WaitablePosix & syncWaitable ) noexcept
     mapResource.unregister_resource(&syncWaitable);
 }
 
-void SyncLockAndWaitPosix::event_failed( WaitablePosix & syncWaitable ) noexcept
-{
-    SyncResourceMapIX & mapResource { SyncLockAndWaitPosix::_map_sync_resources() };
-    Lock rcLock(mapResource.lockable());
-
-    ListLockAndWait * waitList = mapResource.resource( &syncWaitable );
-    if ( waitList == nullptr )
-        return;
-
-    AREG_OUTPUT_WARN("Event [ %p ] failed, notifying error to [ %d ] locked threads.", &syncWaitable, waitList->size());
-    ASSERT( waitList->is_empty( ) == false );
-
-    const ListLockAndWait::LISTPOS end { waitList->invalid_position() };
-    for ( ListLockAndWait::LISTPOS pos = waitList->first_position( ); pos != end; pos = waitList->next_position(pos))
-    {
-        SyncLockAndWaitPosix * lockAndWait = waitList->value_at(pos);
-        ASSERT(lockAndWait != nullptr);
-        if (syncWaitable.check_signaled(lockAndWait->mContext) == false)
-            break;
-
-        int32_t index = lockAndWait->_waitable_index( syncWaitable );
-        ASSERT(index != areg::INVALID_INDEX);
-        lockAndWait->mFiredEntry.store(index + static_cast<int32_t>(areg::os::SyncSignal::FirstError), std::memory_order_release);
-        lockAndWait->_notify_event();
-    }
-}
-
 //////////////////////////////////////////////////////////////////////////
 // WaitAll path: SyncLockAndWaitPosix constructor / destructor
 //////////////////////////////////////////////////////////////////////////
@@ -659,11 +632,6 @@ inline bool SyncLockAndWaitPosix::_notify_event() noexcept
     const bool result = (areg::RETURNED_OK == ::pthread_cond_signal(mCondPtr));
     ::pthread_mutex_unlock(mMutexPtr);
     return result;
-}
-
-inline bool SyncLockAndWaitPosix::_is_valid() const noexcept
-{
-    return (mSyncValid && (mWaitingList.is_empty() == false));
 }
 
 inline bool SyncLockAndWaitPosix::_lock() noexcept

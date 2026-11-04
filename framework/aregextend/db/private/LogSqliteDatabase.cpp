@@ -483,7 +483,7 @@ namespace {
     //! A script to extract the names of connected log instances
     constexpr std::string_view _sqlGetInstanceName
     {
-        "SELECT inst_name FROM instances GROUP BY inst_name;"
+        "SELECT inst_name FROM instances WHERE inst_name <> '' GROUP BY inst_name;"
     };
 
     //! A script to extract the IDs of connected log instances
@@ -527,7 +527,7 @@ namespace {
     {
         "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, "
         "time_created, time_received, time_duration, scope_id, session_id, "
-        "msg_log, msg_thread, msg_module "
+        "msg_log, msg_thread, msg_module, msg_len "
         "FROM logs "
         "ORDER BY time_created "
         "LIMIT ? OFFSET ?;"
@@ -538,7 +538,7 @@ namespace {
     {
         "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, "
         "time_created, time_received, time_duration, scope_id, session_id, "
-        "msg_log, msg_thread, msg_module "
+        "msg_log, msg_thread, msg_module, msg_len "
         "FROM logs "
         "WHERE cookie_id = ? "
         "ORDER BY time_created "
@@ -587,6 +587,12 @@ namespace {
     constexpr std::string_view _sqlCheckTable
     {
         "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?;"
+    };
+
+    //! A script to count the schema objects; it fails on a file that is no database.
+    constexpr std::string_view _sqlCountSchema
+    {
+        "SELECT COUNT(*) FROM sqlite_master;"
     };
 
     //! The same check against the temporary schema. A schema name is an SQL identifier and
@@ -1109,33 +1115,45 @@ int LogSqliteDatabase::_on_wal_commit(void* context, ::sqlite3* db, const char* 
     return SQLITE_OK;
 }
 
-inline bool LogSqliteDatabase::_open(const String& dbPath, areg::DatabaseRole role)
+inline bool LogSqliteDatabase::_open(const String& dbPath, areg::DatabaseRole role, bool& outIsEmpty)
 {
+    outIsEmpty = false;
     if (mDbLogEnabled == false)
         return false;
 
-    bool result{ true };
     _stop_checkpointer();
     mDatabase.disconnect();
     mIsInitialized = false;
-    if (dbPath.is_empty() == false)
-    {
-        mDbInitPath = dbPath;
-    }
-
-    if (mDatabase.connect(mDbInitPath, role) == false)
+    if (mDatabase.connect(dbPath, role) == false)
     {
         mDatabase.disconnect();
-        mIsInitialized = false;
-        result = false;
+        return false;
     }
-    else if (role == areg::DatabaseRole::Recorder)
+
+    int64_t objects{ -1 };
+    {
+        SqliteStatement stmt(mDatabase, _sqlCountSchema);
+        if (stmt.next() == SqliteStatement::QueryResult::HasMore)
+        {
+            objects = stmt.as_int64(0);
+        }
+    }
+
+    const bool isRecorder{ role == areg::DatabaseRole::Recorder };
+    outIsEmpty = (objects == 0);
+    if ((outIsEmpty ? isRecorder : ((objects > 0) && table_exists("logs"))) == false)
+    {
+        mDatabase.disconnect();
+        return false;
+    }
+
+    if (isRecorder)
     {
         mDatabase.execute(_sqlWriteMode);
         _start_checkpointer();
     }
 
-    return result;
+    return true;
 }
 
 inline void LogSqliteDatabase::_create_tables() noexcept
@@ -1266,11 +1284,19 @@ bool LogSqliteDatabase::connect(const String& dbPath, areg::DatabaseRole role)
     Lock lock(mLock);
     if (mDbLogEnabled && mDatabase.is_operable() == false)
     {
-        bool exists = File::has_file(dbPath);
         ASSERT(mIsInitialized == false);
-        if (_open(dbPath, role))
+        if (dbPath.is_empty() == false)
         {
-            if (exists == false)
+            mDbInitPath = dbPath;
+        }
+
+        // The path is resolved once, so the file tested is the file opened.
+        const String target{ mDbInitPath.is_empty() ? mDbInitPath : File::normalize_path(mDbInitPath) };
+        bool isEmpty{ false };
+        // Only a recorder creates a file.
+        if ((File::has_file(target) || (role == areg::DatabaseRole::Recorder)) && _open(target, role, isEmpty))
+        {
+            if (isEmpty)
             {
                 _create_tables();
                 _create_indexes();
@@ -1681,10 +1707,7 @@ void LogSqliteDatabase::log_instance_names(std::vector<String>& names)
         while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
             String instName{ stmt.as_text(0) };
-            if (instName.is_empty() == false)
-            {
-                names.push_back(instName);
-            }
+            names.push_back(instName);
         }
     }
 

@@ -46,7 +46,7 @@ void LogCollectorMessageProcessor::query_connected_instances(const areg::Message
             const areg::ConnectedInstance& instance = observers.value_at(srcPos);
             if (is_log_observer(instance.ciSource))
             {
-                notify_connected_instances(mLoggerService.instances(), source);
+                notify_connected_instances(mLoggerService.held_instances(), source);
             }
         }
     }
@@ -170,7 +170,7 @@ void LogCollectorMessageProcessor::save_log_source_configuration(const areg::Mes
     msgReceived >> target;
     if ((target == areg::TARGET_ALL) || (target == areg::COOKIE_LOGGER))
     {
-        const areg::MapInstances& instances{ mLoggerService.instances() };
+        const areg::MapInstances& instances{ mLoggerService.held_instances() };
         for (const auto& entry : instances.data())
         {
             if (is_log_source(entry.second.ciSource))
@@ -354,7 +354,7 @@ void LogCollectorMessageProcessor::resume_all_sources(bool isExplicit)
 
 inline void LogCollectorMessageProcessor::_forward_message_to_log_sources(const areg::MessageEnvelope& msgReceived) const
 {
-    const auto& instances = mLoggerService.instances();
+    const auto& instances = mLoggerService.held_instances();
     if (instances.is_empty())
         return;
 
@@ -425,7 +425,7 @@ inline void LogCollectorMessageProcessor::_forward_message_to_observers(const ar
 
     ITEM_ID source{ static_cast<ITEM_ID>(msgReceived.source()) };
     ITEM_ID target{ static_cast<ITEM_ID>(msgReceived.target()) != areg::COOKIE_LOGGER ? static_cast<ITEM_ID>(msgReceived.target()) : areg::TARGET_ALL };
-    const areg::MapInstances& instances = mLoggerService.instances();
+    const areg::MapInstances& instances = mLoggerService.held_instances();
 
     auto srcPos = instances.find(source);
     auto dstPos = instances.find(target);

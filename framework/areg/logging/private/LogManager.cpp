@@ -281,16 +281,6 @@ void LogManager::set_db_engine(LogDatabaseEngine * dbEngine)
     LogManager::instance().mLoggerDatabase.set_database_engine(dbEngine);
 }
 
-bool LogManager::is_db_initialized() noexcept
-{
-    return LogManager::instance().mLoggerDatabase.is_valid();
-}
-
-bool LogManager::is_db_enabled()
-{
-    return LogManager::instance().mLogConfig.database_enable();
-}
-
 void LogManager::force_enable_logging()
 {
     LogManager& logManager = LogManager::instance();
@@ -328,38 +318,6 @@ LogManager::LogManager()
 //////////////////////////////////////////////////////////////////////////
 // LogManager class methods
 //////////////////////////////////////////////////////////////////////////
-void LogManager::clear_config_data()
-{
-    Lock lock(mLock);
-    mScopeController.clear_config_scopes( );
-}
-
-void LogManager::reset()
-{
-    Lock lock(mLock);
-    mScopeController.reset();
-}
-
-bool LogManager::is_remote_logging_enabled() const noexcept
-{
-    return mLogConfig.is_remote_logging_enabled();
-}
-
-bool LogManager::is_db_logging_enabled() const noexcept
-{
-    return mLogConfig.is_db_logging_enabled();
-}
-
-bool LogManager::is_file_logging_enabled() const noexcept
-{
-    return mLogConfig.is_file_logging_enabled();
-}
-
-bool LogManager::is_debug_logging_enabled() const noexcept
-{
-    return mLogConfig.is_debug_logging_enabled();
-}
-
 bool LogManager::start_logging_thread()
 {
     ASSERT(!is_running() && !is_ready());
@@ -581,11 +539,6 @@ bool LogManager::post_event(Event & eventElem)
 inline void LogManager::send_log_event( const LoggingEventData & data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
 {
     LoggingEvent::send_event( data, static_cast<LoggingEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )), eventPrio );
-}
-
-void LogManager::change_scope_priority( const String & scopeName, uint32_t scopeId, uint32_t scopePrio )
-{
-    mScopeController.set_scope_activity( scopeName, scopeId, scopePrio );
 }
 
 } // namespace areg

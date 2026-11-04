@@ -162,8 +162,10 @@ inline constexpr const char * LoggingEventData::as_string( LoggingEventData::Log
     case LoggingEventData::LogAction::OpenRemote:
         return "LoggingEventData::LogAction::OpenRemote";
     default:
+        // GCOVR_EXCL_START: unreachable default arm
         ASSERT(false);
         return "ERR: Undefined LoggingEventData::LogAction value!";
+        // GCOVR_EXCL_STOP
     }
 }
 

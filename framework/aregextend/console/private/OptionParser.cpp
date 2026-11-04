@@ -16,6 +16,7 @@
   * Include files.
   ************************************************************************/
 #include "aregextend/console/OptionParser.hpp"
+#include "areg/persist/PersistenceDefs.hpp"
 
 namespace {
     template<typename CharType>
@@ -354,7 +355,7 @@ bool OptionParser::parse_options( StrList & optList )
                 InputOption & last = mInputOptions.last_entry();
                 ASSERT( last.inRefSetup != areg::INVALID_INDEX );
                 _set_input_value( input, last, static_cast<uint32_t>(last.inRefSetup) );
-                result = OptionParser::has_input_error( static_cast<uint32_t>(last.inField) ) == false;
+                result = result && (OptionParser::has_input_error( static_cast<uint32_t>(last.inField) ) == false);
             }
             else if ( mSetupOptions.is_empty() == false)
             {
@@ -383,7 +384,7 @@ bool OptionParser::parse_options( StrList & optList )
         else 
         {
             mInputOptions.add( opt );
-            result = OptionParser::has_input_error( static_cast<uint32_t>(opt.inField) ) == false;
+            result = result && (OptionParser::has_input_error( static_cast<uint32_t>(opt.inField) ) == false);
         }
     }
 
@@ -437,6 +438,10 @@ OptionParser::InputOption OptionParser::_setup_input( bool isShort, String cmdLi
 void OptionParser::_set_input_value( String & newValue, InputOption & opt, uint32_t refSetup )
 {
     const OptionSetup& setup{ mSetupOptions[refSetup] };
+
+    // The end of entry symbol is a value of a free string option only.
+    if ( (newValue == areg::SYNTAX_END_COMMAND) && (OptionParser::is_freestyle( setup.optField ) == false) )
+        return;
 
     if ( newValue.starts_with( DELIMITER_EQUAL, true ) )
     {
@@ -528,15 +533,19 @@ inline void OptionParser::_set_value( const String & newValue, InputOption & opt
     opt.inString.push_back( newValue );
     if ( OptionParser::is_freestyle(setup.optField) == false )
     {
-        const std::vector<std::string_view> & range = setup.optRangeStrings;
-        opt.inField |= static_cast<uint32_t>(OptionFlag::Error);
-        for ( std::string_view entry : range )
+        bool inRange{ false };
+        for ( std::string_view entry : setup.optRangeStrings )
         {
             if ( newValue.compare( entry, false) == areg::Ordering::Equal)
             {
-                opt.inField &= ~static_cast<uint32_t>(OptionFlag::Error);
+                inRange = true;
                 break;
             }
+        }
+
+        if ( inRange == false )
+        {
+            opt.inField |= static_cast<uint32_t>(OptionFlag::Error);
         }
     }
 }
@@ -563,7 +572,7 @@ inline bool OptionParser::_clean_quote( String & data ) const
     data.trim_all( );
     if ( data.starts_with( DELIMITER_STRING ) )
     {
-        if ( data.ends_with( DELIMITER_STRING ) )
+        if ( (data.length( ) > 1) && data.ends_with( DELIMITER_STRING ) )
         {
             data.substring( 1, data.length( ) - 2 );
             data.trim_all( );

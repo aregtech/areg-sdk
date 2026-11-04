@@ -415,16 +415,6 @@ private:
     uint32_t _norm2_ring_index(uint32_t index) const noexcept;
 
     /**
-     * \brief   Converts internal ring buffer index to normalized zero-based index.
-     *
-     * \param   ring    Internal ring buffer index to convert.
-     * \return  Returns normalized zero-based index (not exceeding element count).
-     * \note    Head position corresponds to normalized index 0.
-     **/
-    [[nodiscard]]
-    uint32_t _ring2_norm_index(uint32_t ring) const noexcept;
-
-    /**
      * \brief   Compares elements from two ring buffers and returns ordering result.
      *
      * \param   left                Left ring buffer elements.
@@ -1093,15 +1083,6 @@ template <typename VALUE>
 uint32_t RingStackBase<VALUE>::_norm2_ring_index(uint32_t index) const noexcept
 {
     return (mCapacity != 0 ? ((mHeadPos + index) % mCapacity) : 0u);
-}
-
-template <typename VALUE>
-uint32_t RingStackBase<VALUE>::_ring2_norm_index(uint32_t ring) const noexcept
-{
-    if (mCapacity == 0)
-        return 0u;
-
-    return (ring >= mHeadPos ? ring - mHeadPos : (mCapacity - mHeadPos) + ring);
 }
 
 template <typename VALUE>

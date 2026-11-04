@@ -80,11 +80,6 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Returns the target address of Stub object, reconstructed from EventHeader.provider.
-     **/
-    StubAddress stub_address() const;
-
-    /**
      * \brief   Returns the current connection status, read from EventHeader.result.
      **/
     inline areg::ServiceConnectionState connection_status() const noexcept;

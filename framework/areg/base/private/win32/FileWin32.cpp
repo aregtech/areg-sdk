@@ -40,53 +40,6 @@
 // File class implementation
 //////////////////////////////////////////////////////////////////////////
 
-#if 0
-
-
-/**
- * \brief	Search given file in directory and returns full path. 
- *          If searchInDirectory is nullptr, it will search file name
- *              - in current directory
- *              - in system directory
- *              - in windows directory
- *              - in directories that are listed in the PATH environment variable.
- *
- * \param	fileName	        The file name to search. File can contain no extension 
- *                              if it is specified in fileExtension variable
- *
- * \param   fileExtension       The extension to be added to the file name when searching for the file. 
- *                              The first character of the file name extension must be a period (.) (example, ".cfg"). 
- *                              The extension is added only if the specified file name does not end with an extension. 
- *                              If a file name extension is not required or if the file name contains an extension, 
- *                              this parameter can be nullptr.
- * 
- * \param	searchInDirectory	Set folder name to search. If nullptr, it will search file name
- *                                  - in current directory
- *                                  - in system directory
- *                                  - in windows directory
- *                                  - in directories that are listed in the PATH environment variable.
- *
- * \return	If succeeded, returns the full path to file (including file name). Otherwise returned string is empty.
- **/
-static areg::String _searchFile( const char* fileName, const char* fileExtension, const char* searchInDirectory )
-{
-    String result;
-    if (areg::is_empty<char>(fileName) == false )
-    {
-        fileExtension = fileExtension != nullptr && *fileExtension == '.' ? fileExtension : nullptr;
-        String searchPath = File::NameHasCurrentFolder(searchInDirectory) ? File::GetCurrentDir() : searchInDirectory;
-        char * buffer = new char[File::MAXIMUM_PATH + 1];
-        uint32_t length = ::SearchPathA(searchPath, fileName, fileExtension, File::MAXIMUM_PATH, buffer, &fileName);
-        result = length != 0 && length <= File::MAXIMUM_PATH ? buffer : "";
-
-        delete [] buffer;
-    }
-
-    return result;
-}
-
-#endif
-
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////

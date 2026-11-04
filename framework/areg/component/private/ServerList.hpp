@@ -59,14 +59,6 @@ public:
 public:
 
     /**
-     * \brief   Returns true if a server with the specified address is registered.
-     *
-     * \param   server      The stub address to check.
-     **/
-    [[nodiscard]]
-    bool is_server_registered( const StubAddress & server ) const;
-
-    /**
      * \brief   Registers a client by proxy address; creates or updates server info and returns the
      *          registered client info.
      *
@@ -103,34 +95,6 @@ public:
      * \return  Returns the server info being unregistered.
      **/
     ServerInfo unregister_provider( const StubAddress & whichServer, ClientList & out_clinetList );
-
-//////////////////////////////////////////////////////////////////////////
-// Attributes
-//////////////////////////////////////////////////////////////////////////
-
-    /**
-     * \brief   Returns the connection state of the specified server.
-     *
-     * \param   whichServer     The stub address of the server to query.
-     * \return  Returns Undefined if server is not registered, or Connected if server is running.
-     **/
-    areg::ServiceConnectionState server_state( const StubAddress & whichServer ) const;
-
-    /**
-     * \brief   Returns the list of clients connected to the specified server.
-     *
-     * \param   whichServer     The stub address of the server.
-     * \return  Returns the client list; empty if no clients are connected.
-     **/
-    const ClientList & client_list( const StubAddress & whichServer ) const;
-
-    /**
-     * \brief   Searches for the server info associated with the specified client.
-     *
-     * \param   whichClient     The proxy address to search for.
-     * \return  Returns a valid pointer if the server is found; null otherwise.
-     **/
-    const ServerInfo * find_client_server( const ProxyAddress & whichClient ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

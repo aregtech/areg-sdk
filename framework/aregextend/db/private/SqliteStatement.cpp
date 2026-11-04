@@ -77,6 +77,16 @@ bool SqliteStatement::execute() noexcept
     return (is_valid() && (SQLITE_DONE == sqlite3_step(_sqlite_stmt(mStatement))));
 }
 
+SqliteRow SqliteStatement::row() const noexcept
+{
+    return (is_valid() && (sqlite3_data_count(_sqlite_stmt(mStatement)) > 0)) ? SqliteRow(mStatement) : SqliteRow();
+}
+
+SqliteRow SqliteStatement::next_row() noexcept
+{
+    return (next() == QueryResult::HasMore) ? SqliteRow(mStatement) : SqliteRow();
+}
+
 SqliteStatement::QueryResult SqliteStatement::next() noexcept
 {
     int32_t result = is_valid() ? sqlite3_step(_sqlite_stmt(mStatement)) : SQLITE_ERROR;

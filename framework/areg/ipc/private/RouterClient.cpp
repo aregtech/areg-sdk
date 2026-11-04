@@ -394,8 +394,10 @@ void RouterClient::process_received_message( MessageEnvelope & msgReceived, Sock
         break;
 
         default:
+            // GCOVR_EXCL_START: unreachable default arm
             ASSERT(false);
             break;
+            // GCOVR_EXCL_STOP
         }
     }
     break;

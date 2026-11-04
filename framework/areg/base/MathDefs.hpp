@@ -953,7 +953,7 @@ inline constexpr bool is_in_range(T value, T rangeMin, T rangeMax) noexcept
 template <typename T>
 inline constexpr T align_size(T len, T block) noexcept
 {
-    return (((len) + (block - 1)) / block) * block;
+    return ((block & (block - 1)) == 0) ? ((len + (block - 1)) & ~(block - 1)) : (((len + (block - 1)) / block) * block);
 }
 
 /************************************************************************/

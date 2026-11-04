@@ -76,6 +76,7 @@
     <ClCompile Include="units\SendBacklogTest.cpp" />
     <ClCompile Include="units\SharedBufferTest.cpp" />
     <ClCompile Include="units\SocketMultiplexerTest.cpp" />
+    <ClCompile Include="units\SqliteStatementTest.cpp" />
     <ClCompile Include="units\SocketAddressTest.cpp" />
     <ClCompile Include="units\SocketInterruptTest.cpp" />
     <ClCompile Include="units\SocketWouldBlockTest.cpp" />
@@ -118,6 +119,9 @@
     <ClCompile Include="units\KeyValuePairTest.cpp" />
     <ClCompile Include="units\FatalErrorTest.cpp" />
     <ClCompile Include="units\RemainingSmallFilesCoverageTest.cpp" />
+    <ClCompile Include="units\RemainderCoverageTest.cpp" />
+    <ClCompile Include="units\StringDefsEdgeTest.cpp" />
+    <ClCompile Include="units\StreamPrimitivesTest.cpp" />
     <ClCompile Include="units\ReceiveCacheTest.cpp" />
     <ClCompile Include="units\ReceivedHeaderTest.cpp" />
     <ClCompile Include="units\RingStackTest.cpp" />
@@ -139,7 +143,13 @@
     <ClCompile Include="units\PropertyTest.cpp" />
     <ClCompile Include="units\RuntimeObjectTest.cpp" />
     <ClCompile Include="units\ServiceAddressTest.cpp" />
+    <ClCompile Include="units\ServiceCommConnectionTest.cpp" />
+    <ClCompile Include="units\ServiceCommDefsTest.cpp" />
+    <ClCompile Include="units\ServiceCommServerTest.cpp" />
     <ClCompile Include="units\ServiceDefsTest.cpp" />
+    <ClCompile Include="units\ServiceApplicationBaseTest.cpp" />
+    <ClCompile Include="units\SystemServiceBaseTest.cpp" />
+    <ClCompile Include="units\SystemServiceDefsTest.cpp" />
     <ClCompile Include="units\UtilityDefsTest.cpp" />
     <ClCompile Include="units\VersionTest.cpp" />
   </ItemGroup>

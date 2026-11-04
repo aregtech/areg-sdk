@@ -112,12 +112,6 @@ public:
     inline bool is_worker_thread( const ThreadAddress & threadAddress) const noexcept;
 
     /**
-     * \brief   Returns true if the component has at least one registered worker thread.
-     **/
-    [[nodiscard]]
-    inline bool has_worker_threads() const noexcept;
-
-    /**
      * \brief   Returns true if the specified worker thread is registered in the component.
      *
      * \param   workerThread    The worker thread object to check.
@@ -281,11 +275,6 @@ inline WorkerThread* ComponentInfo::find_thread( const String & componentPath ) 
 {
     ComponentAddress componentAddress = ComponentAddress::from_path(componentPath);
     return find_worker_thread(componentAddress.thread_address());
-}
-
-inline bool ComponentInfo::has_worker_threads() const noexcept
-{
-    return (!mWorkerThreadMap.is_empty());
 }
 
 } // namespace areg

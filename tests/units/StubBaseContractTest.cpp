@@ -84,6 +84,8 @@ namespace
         using StubBase::request_ids;
         using StubBase::response_ids;
         using StubBase::send_error_notification;
+        using StubBase::send_response_notification;
+        using StubBase::send_update_notification;
         using StubBase::mSessionId;
 
         bool begin_request(const ProxyAddress& proxy, SequenceNumber sequence, uint32_t response = RESPONSES[0])
@@ -216,6 +218,19 @@ TEST_F(StubBaseContractTest, metadata_and_registry_follow_component_ownership)
     EXPECT_TRUE(Component::exist(mComponent.role_name()));
     EXPECT_EQ(nullptr, mComponent.find_event_consumer(0x12345678));
     EXPECT_EQ(1u, mComponent.extract_service_addresses().size());
+}
+
+//!< A response that lost its block while it was written is dropped, for every listener.
+TEST_F(StubBaseContractTest, invalid_response_is_dropped)
+{
+    ContractStub::StubListenerList listeners;
+    listeners.add(ContractStub::Listener(REQUESTS[0], 1u, mFirst));
+    listeners.add(ContractStub::Listener(REQUESTS[0], 2u, mSecond));
+
+    ServiceResponseEvent invalid{ MessageEnvelope{} };
+    mStub.send_response_notification(listeners, invalid);
+    mStub.send_update_notification(listeners, invalid);
+    EXPECT_FALSE(invalid.is_valid());
 }
 
 TEST_F(StubBaseContractTest, deleting_stub_removes_only_its_registry_entry)

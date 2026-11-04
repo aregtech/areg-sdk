@@ -94,21 +94,6 @@ inline void LogEventProcessor::_logging_save_scopes()
     mLogManager.mLogConfig.save_configuration( );
 }
 
-inline void LogEventProcessor::_change_scope_priority( const SharedBuffer & stream, uint32_t scopeCount )
-{
-    String scopeName{ };
-    uint32_t scopeId{ };
-    uint32_t scopePrio{ };
-
-    for ( uint32_t i = 0; i < scopeCount; ++ i )
-    {
-        stream >> scopeName;
-        stream >> scopeId;
-        stream >> scopePrio;
-        mLogManager.change_scope_priority( scopeName, scopeId, scopePrio );
-    }
-}
-
 } // namespace areg
 
 #endif  // AREG_LOGGING

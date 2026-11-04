@@ -230,9 +230,9 @@ public:
      * \param   copy    If true, existing written bytes are copied into the new block
      *                  and mPosition is left after them (at biUsed).
      *                  If false, size and position are reset to 0
-     * \return  Available writable bytes after the operation; 0 on failure.
+     * \return  Available writable bytes; 0 on failure, which changes nothing but invalidates a MessageEnvelope.
      **/
-    uint32_t reserve(uint32_t size, bool copy);
+    uint32_t reserve(uint32_t size, bool copy) noexcept;
 
     /**
      * \brief   Releases the shared block reference and resets the read cursor.
@@ -256,7 +256,7 @@ public:
      *
      * \param   newSize     The new size in bytes. Must not exceed the buffer length.
      **/
-    inline void set_size_used(uint32_t newSize);
+    inline void set_size_used(uint32_t newSize) noexcept;
 
     /**
      * \brief   Returns a read-only pointer to the data buffer.
@@ -490,18 +490,16 @@ protected:
     virtual bool can_write() const noexcept;
 
     /**
-     * \brief   Returns the default block size from application configuration,
-     *          falling back to areg::BLOCK_SIZE.  Result is cached atomically.
-     **/
-    [[nodiscard]]
-    static uint32_t default_block_size() noexcept;
-
-    /**
      * \brief   Core write: writes exactly \a size bytes at the current cursor position.
      *
      * \return  Bytes actually written.
      **/
     uint32_t write_data(const uint8_t* buf, uint32_t size) noexcept;
+
+    /**
+     * \brief   Same as write_data() for a caller that knows the buffer is writable.
+     **/
+    uint32_t write_bytes(const uint8_t* buf, uint32_t size) noexcept;
 
     /**
      * \brief   Core read: copies up to \a size bytes starting from mPosition
@@ -584,6 +582,27 @@ protected:
      * \brief   Unified read/write cursor, absolute byte offset from the start of the data.
      **/
     mutable uint32_t    mPosition;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden methods
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Grows the block of a write and keeps the data. An envelope without a block stays without it.
+     *
+     * \param   size    The total capacity to reach.
+     **/
+    void _grow_block(uint32_t size) noexcept;
+
+    /**
+     * \brief   Writes what does not fit the block, or refuses it. The out of line part of write_bytes().
+     **/
+    AREG_NO_INLINE uint32_t _write_grow(const uint8_t* buf, uint32_t size) noexcept;
+
+    /**
+     * \brief   Reserves what does not fit the block, or refuses it. The out of line part of write_view().
+     **/
+    AREG_NO_INLINE uint8_t* _view_grow(uint32_t size) noexcept;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -666,7 +685,7 @@ inline areg::BufferType BufferBase::type() const noexcept
     return (is_valid() ? mByteBuffer->bufHeader.biBufType : areg::BufferType::Unknown);
 }
 
-inline void BufferBase::set_size_used(uint32_t newSize)
+inline void BufferBase::set_size_used(uint32_t newSize) noexcept
 {
     if (!is_valid() || (newSize > size_available()))
         return;

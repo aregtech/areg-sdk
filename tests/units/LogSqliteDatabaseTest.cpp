@@ -19,6 +19,7 @@
 #include "aregextend/db/LogDbWriter.hpp"
 #include "aregextend/db/LogSqliteDatabase.hpp"
 #include "aregextend/db/SqliteStatement.hpp"
+#include "areg/base/File.hpp"
 #include "areg/base/DateTime.hpp"
 #include "areg/base/StringDefs.hpp"
 #include "areg/base/Process.hpp"
@@ -968,6 +969,1181 @@ TEST(LogSqliteDatabaseTest, test_fileWithoutMarkersTable)
     db.disconnect();
 }
 
+//////////////////////////////////////////////////////////////////////////
+// Connection, schema, instances, scopes, readers, counters, filters and the API on a closed log.
+//////////////////////////////////////////////////////////////////////////
+
+namespace
+{
+    using Stmt  = areg::ext::SqliteStatement;
+    using Res   = areg::ext::SqliteStatement::QueryResult;
+
+    constexpr uint32_t _prioAll{ static_cast<uint32_t>(areg::LogPriority::PrioScopeLogs) };
+
+    //! Creates the file with the text in it, an empty text gives an empty file.
+    void _write_file(const std::string& path, const char* text)
+    {
+        constexpr uint32_t MODE{ static_cast<uint32_t>(areg::File::OpenMode::Write) | static_cast<uint32_t>(areg::File::OpenMode::Binary) | static_cast<uint32_t>(areg::File::OpenMode::Create) };
+        areg::File file;
+        ASSERT_TRUE(file.open(path.c_str(), MODE));
+        const uint32_t size{ static_cast<uint32_t>(areg::string_length<char>(text)) };
+        if (size != 0u)
+        {
+            ASSERT_EQ(file.write(reinterpret_cast<const uint8_t*>(text), size), size);
+        }
+
+        file.close();
+    }
+
+    //! Returns the size of the file in bytes.
+    uint32_t _file_size(const std::string& path)
+    {
+        constexpr uint32_t MODE{ static_cast<uint32_t>(areg::File::OpenMode::Read) | static_cast<uint32_t>(areg::File::OpenMode::Binary) | static_cast<uint32_t>(areg::File::OpenMode::Exist) };
+        areg::File file;
+        return file.open(path.c_str(), MODE) ? static_cast<uint32_t>(file.length()) : 0u;
+    }
+
+    std::string _txt(const areg::String& value)
+    {
+        return std::string(value.as_string());
+    }
+
+    areg::ConnectedInstance _instance(ITEM_ID cookie, const char* name, const char* location, TIME64 connected)
+    {
+        areg::ConnectedInstance inst;
+        inst.ciSource    = areg::MessageSource::SourceClient;
+        inst.ciBitness   = areg::InstanceBitness::Bitness64;
+        inst.ciCookie    = cookie;
+        inst.ciTimestamp = connected;
+        inst.ciInstance  = name;
+        inst.ciLocation  = location;
+        return inst;
+    }
+
+    areg::DateTime _at(TIME64 moment)
+    {
+        return areg::DateTime(moment);
+    }
+
+    const areg::LogEntry* _log_of(const areg::SharedBuffer& buffer)
+    {
+        return reinterpret_cast<const areg::LogEntry*>(buffer.buffer());
+    }
+
+    //! Writes 12 rows i = 0..11 created at 100 + 10 * i, of cookie 31 (even i) or 32 (odd i) and scope i % 3.
+    void _write_set(LogDb& db)
+    {
+        ASSERT_TRUE(db.begin());
+        for (uint32_t i = 0; i < 12u; ++i)
+        {
+            ASSERT_TRUE(db.log_message(_entry(static_cast<TIME64>(100u + (10u * i)), i % 3u, 31u + (i % 2u), areg::LogPriority::PrioInfo)));
+        }
+
+        ASSERT_TRUE(db.commit(true));
+    }
+
+    //! Registers the scopes 1 and 2 of the cookies 31 and 32.
+    void _write_set_scopes(LogDb& db)
+    {
+        for (const ITEM_ID cookie : { static_cast<ITEM_ID>(31u), static_cast<ITEM_ID>(32u) })
+        {
+            ASSERT_TRUE(db.log_scope_activate(areg::String("one"), 1u, _prioAll, cookie, _at(10)));
+            ASSERT_TRUE(db.log_scope_activate(areg::String("two"), 2u, _prioAll, cookie, _at(10)));
+        }
+    }
+
+    std::vector<ITEM_ID> _sorted(std::vector<ITEM_ID> ids)
+    {
+        std::sort(ids.begin(), ids.end());
+        return ids;
+    }
+}
+
+/**
+ * \brief   The text of the three static queries prepares on a log file and takes the parameters it names.
+ **/
+TEST(LogSqliteDatabaseTest, test_staticQueriesPrepareOnLogFile)
+{
+    const std::string path{ _db_path("s1queries.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+
+    Stmt scopes(db.database(), LogDb::read_scopes_query());
+    ASSERT_TRUE(scopes.is_valid());
+    EXPECT_TRUE(scopes.bind_uint32(0, 1u));
+    EXPECT_FALSE(scopes.bind_uint32(1, 1u));
+
+    Stmt instances(db.database(), LogDb::read_instances_query());
+    ASSERT_TRUE(instances.is_valid());
+    EXPECT_TRUE(instances.bind_uint32(0, 1u));
+    EXPECT_TRUE(instances.bind_uint32(1, 1u));
+    EXPECT_FALSE(instances.bind_uint32(2, 1u));
+
+    Stmt all(db.database(), LogDb::read_all_log_messages_query());
+    ASSERT_TRUE(all.is_valid());
+    EXPECT_TRUE(all.bind_int32(0, -1));
+    EXPECT_TRUE(all.bind_uint32(1, 0u));
+    EXPECT_FALSE(all.bind_uint32(2, 0u));
+    EXPECT_EQ(all.next(), Res::HasMore);
+
+    all.finalize();
+    db.disconnect();
+}
+
+/**
+ * \brief   With database logging switched off the log refuses to connect; switched on it connects, and the
+ *          paths and the objects of the log are reachable also through a constant reference.
+ **/
+TEST(LogSqliteDatabaseTest, test_loggingSwitchPathsAndAccessors)
+{
+    const std::string path{ _db_path("s2switch.sqlog") };
+    LogDb db;
+    EXPECT_TRUE(db.is_database_logging_enabled());
+    db.set_database_logging_enabled(false);
+    EXPECT_FALSE(db.is_database_logging_enabled());
+    EXPECT_FALSE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    EXPECT_FALSE(db.is_operable());
+    EXPECT_FALSE(db.tables_initialized());
+    EXPECT_FALSE(_exists(path));
+
+    db.set_database_logging_enabled(true);
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    EXPECT_TRUE(db.is_operable());
+    EXPECT_TRUE(db.tables_initialized());
+    EXPECT_TRUE(_exists(path));
+    EXPECT_EQ(_txt(db.initial_database_path()), path);
+    EXPECT_EQ(_txt(db.database_path()), _txt(db.database().path()));
+    EXPECT_FALSE(db.database_path().is_empty());
+
+    const LogDb& view{ db };
+    EXPECT_EQ(&view.database(), &db.database());
+    EXPECT_EQ(&view.statement(), &db.statement());
+    EXPECT_TRUE(view.statement().is_valid());
+    EXPECT_EQ(_txt(view.database_path()), _txt(db.database_path()));
+
+    db.disconnect();
+    EXPECT_FALSE(db.is_operable());
+    EXPECT_FALSE(db.tables_initialized());
+}
+
+/**
+ * \brief   A new file gets the schema and the header row; connecting an existing file keeps its rows; a viewer has
+ *          no insert statement and cannot add rows.
+ **/
+TEST(LogSqliteDatabaseTest, test_connectCreatesSchemaAndViewerKeepsRows)
+{
+    const std::string path{ _db_path("s3schema.sqlog") };
+    {
+        LogDb db;
+        ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+        for (const char* table : { "version", "instances", "scopes", "logs", "markers" })
+        {
+            EXPECT_TRUE(db.table_exists(table)) << table;
+        }
+
+        EXPECT_FALSE(db.table_exists("absent"));
+        EXPECT_FALSE(db.table_exists(""));
+        EXPECT_FALSE(db.table_exists(nullptr));
+        EXPECT_FALSE(db.table_exists("filter_rules", "sqlite_temp_master"));
+        EXPECT_TRUE(db.table_exists("refused_spans", "sqlite_temp_master"));
+
+        EXPECT_EQ(db.count_log_entries(), 1u);
+        EXPECT_EQ(db.max_log_id(), 1u);
+        EXPECT_EQ(db.max_marker_id(), 0u);
+        EXPECT_TRUE(db.log_message(_entry(100, 0u, 31u, areg::LogPriority::PrioInfo)));
+        EXPECT_EQ(db.last_log_id(), 2u);
+        EXPECT_EQ(db.max_log_id(), 2u);
+
+        // a second connect on a connected log changes nothing
+        EXPECT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+        EXPECT_EQ(db.count_log_entries(), 2u);
+        db.disconnect();
+    }
+
+    EXPECT_EQ(_query_text(path, "SELECT COUNT(*) FROM version;"), "1");
+    EXPECT_EQ(_query_text(path, "SELECT msg_log FROM logs WHERE id = 1;"), "Starting database logging...");
+
+    LogDb viewer;
+    ASSERT_TRUE(viewer.connect(areg::String(path.c_str()), areg::DatabaseRole::Viewer));
+    EXPECT_TRUE(viewer.tables_initialized());
+    EXPECT_FALSE(viewer.statement().is_valid());
+    EXPECT_EQ(viewer.count_log_entries(), 2u);
+    EXPECT_FALSE(viewer.log_message(_entry(200, 0u, 31u, areg::LogPriority::PrioInfo)));
+    EXPECT_EQ(viewer.count_log_entries(), 2u);
+    viewer.disconnect();
+    EXPECT_EQ(_query_text(path, "SELECT COUNT(*) FROM version;"), "1");
+}
+
+/**
+ * \brief   Reproduces the defect: connecting without a path tested the empty argument, so the existing file was treated as a new one.
+ **/
+TEST(LogSqliteDatabaseTest, test_reconnectWithoutPathKeepsExistingFile)
+{
+    const std::string path{ _db_path("s3reconnect.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    db.disconnect();
+
+    ASSERT_TRUE(db.connect(areg::String(), areg::DatabaseRole::Recorder));
+    EXPECT_EQ(db.count_log_entries(), 1u);
+    db.disconnect();
+    EXPECT_EQ(_query_text(path, "SELECT COUNT(*) FROM version;"), "1");
+}
+
+/**
+ * \brief   Reproduces the defect: a path with a mask was tested as written, so the existing file it names was treated as a new one.
+ **/
+TEST(LogSqliteDatabaseTest, test_reconnectWithMaskedPathKeepsExistingFile)
+{
+    const std::string masked{ _db_path("s3mask_%appname%.sqlog") };
+    const std::string path{ areg::File::normalize_path(masked.c_str()).as_string() };
+    ASSERT_NE(path, masked);
+    for (const char* suffix : { "", "-journal", "-wal", "-shm" })
+    {
+        static_cast<void>(areg::File::delete_file((path + suffix).c_str()));
+    }
+
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(masked.c_str()), areg::DatabaseRole::Recorder));
+    db.disconnect();
+
+    ASSERT_TRUE(db.connect(areg::String(masked.c_str()), areg::DatabaseRole::Recorder));
+    EXPECT_EQ(db.count_log_entries(), 1u);
+    EXPECT_EQ(_txt(db.initial_database_path()), masked);
+    db.disconnect();
+    EXPECT_EQ(_query_text(path, "SELECT COUNT(*) FROM version;"), "1");
+}
+
+/**
+ * \brief   Reproduces the defect: an empty file counted as an existing database, so connect succeeded and every write failed.
+ **/
+TEST(LogSqliteDatabaseTest, test_recorderInitializesAnEmptyFile)
+{
+    const std::string path{ _db_path("s3zero.sqlog") };
+    _write_file(path, "");
+
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    EXPECT_TRUE(db.log_message(_entry(1000, 0u, 41u, areg::LogPriority::PrioInfo)));
+    db.disconnect();
+    EXPECT_EQ(_query_text(path, "SELECT COUNT(*) FROM version;"), "1");
+}
+
+/**
+ * \brief   Reproduces the defect: a database left with no tables by a crash stayed unusable, connect succeeded and every write failed.
+ **/
+TEST(LogSqliteDatabaseTest, test_recorderInitializesADatabaseWithoutTables)
+{
+    const std::string path{ _db_path("s3notables.sqlog") };
+    sqlite3* raw{ nullptr };
+    ASSERT_EQ(sqlite3_open(path.c_str(), &raw), SQLITE_OK);
+    ASSERT_EQ(sqlite3_exec(raw, "PRAGMA journal_mode=WAL;", nullptr, nullptr, nullptr), SQLITE_OK);
+    ASSERT_EQ(sqlite3_close(raw), SQLITE_OK);
+
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    EXPECT_TRUE(db.log_message(_entry(1000, 0u, 41u, areg::LogPriority::PrioInfo)));
+    db.disconnect();
+}
+
+/**
+ * \brief   Reproduces the defect: a recorder connected to a database of another application, changed its journal mode and could write nothing.
+ **/
+TEST(LogSqliteDatabaseTest, test_recorderRefusesAForeignDatabase)
+{
+    const std::string path{ _db_path("s3foreign.sqlog") };
+    sqlite3* raw{ nullptr };
+    ASSERT_EQ(sqlite3_open(path.c_str(), &raw), SQLITE_OK);
+    ASSERT_EQ(sqlite3_exec(raw, "CREATE TABLE mine (a INTEGER);", nullptr, nullptr, nullptr), SQLITE_OK);
+    ASSERT_EQ(sqlite3_close(raw), SQLITE_OK);
+
+    LogDb db;
+    EXPECT_FALSE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    EXPECT_FALSE(db.is_operable());
+    EXPECT_EQ(_query_text(path, "PRAGMA journal_mode;"), "delete");
+    EXPECT_EQ(_query_text(path, "SELECT COUNT(*) FROM sqlite_master;"), "1");
+}
+
+/**
+ * \brief   Reproduces the defect: a file that is no database connected and could write nothing.
+ **/
+TEST(LogSqliteDatabaseTest, test_connectRefusesAFileThatIsNoDatabase)
+{
+    const std::string path{ _db_path("s3garbage.sqlog") };
+    constexpr char TEXT[]{ "this file holds plain text and is no database of any kind" };
+    _write_file(path, TEXT);
+
+    LogDb db;
+    EXPECT_FALSE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    EXPECT_FALSE(db.is_operable());
+    EXPECT_EQ(_file_size(path), static_cast<uint32_t>(sizeof(TEXT) - 1u));
+}
+
+/**
+ * \brief   Reproduces the defect: a viewer created a missing file and wrote the tables into it.
+ **/
+TEST(LogSqliteDatabaseTest, test_viewerWritesNoFile)
+{
+    const std::string path{ _db_path("s3viewer.sqlog") };
+    {
+        LogDb db;
+        EXPECT_FALSE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Viewer));
+    }
+    EXPECT_FALSE(areg::File::has_file(path.c_str()));
+
+    _write_file(path, "");
+    {
+        LogDb db;
+        EXPECT_FALSE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Viewer));
+    }
+    EXPECT_EQ(_file_size(path), 0u);
+}
+
+/**
+ * \brief   Dropping a table quotes its name, so a name with quotes or SQL in it drops nothing else.
+ **/
+TEST(LogSqliteDatabaseTest, test_dropTableQuotesTheName)
+{
+    const std::string path{ _db_path("s4drop.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+
+    EXPECT_FALSE(db.drop_table(nullptr));
+    EXPECT_FALSE(db.drop_table(""));
+    EXPECT_TRUE(db.drop_table("absent"));
+
+    ASSERT_TRUE(db.execute(areg::String("CREATE TABLE \"odd\"\"name\" (a INTEGER);")));
+    EXPECT_TRUE(db.table_exists("odd\"name"));
+    EXPECT_TRUE(db.drop_table("odd\"name"));
+    EXPECT_FALSE(db.table_exists("odd\"name"));
+
+    EXPECT_TRUE(db.drop_table("logs\"; DROP TABLE instances; --"));
+    EXPECT_TRUE(db.table_exists("instances"));
+    EXPECT_TRUE(db.table_exists("logs"));
+
+    EXPECT_TRUE(db.drop_table("version"));
+    EXPECT_FALSE(db.table_exists("version"));
+    db.disconnect();
+}
+
+/**
+ * \brief   Connected instances are saved with every field and read back as ids, names and infos; a disconnect sets the time once.
+ **/
+TEST(LogSqliteDatabaseTest, test_instancesRoundTrip)
+{
+    const std::string path{ _db_path("s5inst.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    EXPECT_EQ(db.count_log_instances(), 0u);
+    EXPECT_TRUE(db.log_instances().empty());
+    EXPECT_TRUE(db.log_instance_names().empty());
+    EXPECT_TRUE(db.log_instance_infos().empty());
+
+    ASSERT_TRUE(db.log_instance_connected(_instance(11u, "alpha", "/opt/alpha", 5000), _at(7000)));
+    ASSERT_TRUE(db.log_instance_connected(_instance(12u, "beta", "", 6000), _at(7001)));
+    EXPECT_EQ(db.count_log_instances(), 2u);
+
+    EXPECT_EQ(_sorted(db.log_instances()), (std::vector<ITEM_ID>{ 11u, 12u }));
+    std::vector<ITEM_ID> ids{ 99u };
+    db.log_instances(ids);
+    EXPECT_EQ(_sorted(ids), (std::vector<ITEM_ID>{ 11u, 12u }));
+
+    std::vector<std::string> names;
+    for (const areg::String& name : db.log_instance_names())
+    {
+        names.push_back(_txt(name));
+    }
+
+    std::sort(names.begin(), names.end());
+    EXPECT_EQ(names, (std::vector<std::string>{ "alpha", "beta" }));
+    std::vector<areg::String> junkNames{ areg::String("junk") };
+    db.log_instance_names(junkNames);
+    EXPECT_EQ(junkNames.size(), 2u);
+
+    const std::vector<areg::ConnectedInstance> infos{ db.log_instance_infos() };
+    ASSERT_EQ(infos.size(), 2u);
+    EXPECT_EQ(infos[0].ciCookie, 11u);
+    EXPECT_EQ(infos[0].ciSource, areg::MessageSource::SourceClient);
+    EXPECT_EQ(infos[0].ciBitness, areg::InstanceBitness::Bitness64);
+    EXPECT_EQ(infos[0].ciTimestamp, static_cast<TIME64>(5000));
+    EXPECT_EQ(infos[0].ciInstance, "alpha");
+    EXPECT_EQ(infos[0].ciLocation, "/opt/alpha");
+    EXPECT_EQ(infos[1].ciCookie, 12u);
+    EXPECT_EQ(infos[1].ciInstance, "beta");
+    EXPECT_EQ(infos[1].ciLocation, "");
+    std::vector<areg::ConnectedInstance> junkInfos(5);
+    db.log_instance_infos(junkInfos);
+    EXPECT_EQ(junkInfos.size(), 2u);
+
+    EXPECT_EQ(_query_text(path, "SELECT inst_connect FROM instances WHERE cookie_id = 11;"), "1");
+    EXPECT_TRUE(db.log_instance_disconnected(11u, _at(9000)));
+    EXPECT_EQ(_query_text(path, "SELECT inst_connect FROM instances WHERE cookie_id = 11;"), "0");
+    EXPECT_EQ(_query_text(path, "SELECT time_disconnected FROM instances WHERE cookie_id = 11;"), "9000");
+    EXPECT_TRUE(db.log_instance_disconnected(11u, _at(9500)));
+    EXPECT_EQ(_query_text(path, "SELECT time_disconnected FROM instances WHERE cookie_id = 11;"), "9000");
+    EXPECT_EQ(_query_text(path, "SELECT inst_connect FROM instances WHERE cookie_id = 12;"), "1");
+    db.disconnect();
+}
+
+/**
+ * \brief   Reproduces the defect: the check counted the row of an instance with an empty name, so a Debug build aborted.
+ **/
+TEST(LogSqliteDatabaseTest, test_emptyInstanceNameIsLeftOutOfNames)
+{
+    const std::string path{ _db_path("s5empty.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    ASSERT_TRUE(db.log_instance_connected(_instance(11u, "alpha", "", 5000), _at(7000)));
+    ASSERT_TRUE(db.log_instance_connected(_instance(13u, "", "", 6500), _at(7002)));
+    const std::vector<areg::String> names{ db.log_instance_names() };
+    ASSERT_EQ(names.size(), 1u);
+    EXPECT_EQ(_txt(names[0]), "alpha");
+    db.disconnect();
+}
+
+/**
+ * \brief   An instance name with quotes and SQL in it is saved as text and changes no table.
+ **/
+TEST(LogSqliteDatabaseTest, test_instanceNameWithSqlIsData)
+{
+    const std::string path{ _db_path("s6inject.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    ASSERT_TRUE(db.log_instance_connected(_instance(15u, "x'); DROP TABLE logs; --", "y\"); DROP TABLE scopes; --", 1), _at(2)));
+
+    EXPECT_TRUE(db.table_exists("logs"));
+    EXPECT_TRUE(db.table_exists("scopes"));
+    const std::vector<areg::ConnectedInstance> infos{ db.log_instance_infos() };
+    ASSERT_EQ(infos.size(), 1u);
+    EXPECT_EQ(infos[0].ciInstance, "x'); DROP TABLE logs; --");
+    EXPECT_EQ(infos[0].ciLocation, "y\"); DROP TABLE scopes; --");
+    db.disconnect();
+}
+
+/**
+ * \brief   Scopes are saved one by one or as a list, a duplicate in a list is not counted, and the scopes of an
+ *          instance are read back; deactivation touches the scope, the instance or all, as asked.
+ **/
+TEST(LogSqliteDatabaseTest, test_scopesRoundTripAndDeactivate)
+{
+    const std::string path{ _db_path("s7scopes.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    EXPECT_EQ(db.count_scope_entries(), 0u);
+
+    EXPECT_TRUE(db.log_scope_activate(areg::ScopeEntry("scope_a", 1u, _prioAll), 21u, _at(10)));
+    EXPECT_TRUE(db.log_scope_activate(areg::String("scope_b"), 2u, 0x100u, 21u, _at(10)));
+
+    areg::ScopeNames list;
+    list.add(areg::ScopeEntry("scope_c", 3u, _prioAll));
+    list.add(areg::ScopeEntry("scope_d", 4u, _prioAll));
+    list.add(areg::ScopeEntry("scope_c_again", 3u, _prioAll));
+    EXPECT_EQ(db.log_scopes_activate(list, 22u, _at(10)), 2u);
+
+    EXPECT_EQ(db.count_scope_entries(), 4u);
+    EXPECT_EQ(db.count_scope_entries(21u), 2u);
+    EXPECT_EQ(db.count_scope_entries(22u), 2u);
+    EXPECT_EQ(db.count_scope_entries(99u), 0u);
+
+    std::vector<areg::ScopeEntry> scopes{ db.log_inst_scopes(21u) };
+    ASSERT_EQ(scopes.size(), 2u);
+    std::sort(scopes.begin(), scopes.end(), [](const areg::ScopeEntry& l, const areg::ScopeEntry& r) { return l.scopeId < r.scopeId; });
+    EXPECT_EQ(_txt(scopes[0].scopeName), "scope_a");
+    EXPECT_EQ(scopes[0].scopeId, 1u);
+    EXPECT_EQ(scopes[0].scopePrio, _prioAll);
+    EXPECT_EQ(_txt(scopes[1].scopeName), "scope_b");
+    EXPECT_EQ(scopes[1].scopeId, 2u);
+    EXPECT_EQ(scopes[1].scopePrio, 0x100u);
+    std::vector<areg::ScopeEntry> junk(7);
+    db.log_inst_scopes(junk, 22u);
+    EXPECT_EQ(junk.size(), 2u);
+    db.log_inst_scopes(junk, 99u);
+    EXPECT_TRUE(junk.empty());
+
+    EXPECT_TRUE(db.log_scope_deactivate(21u, 1u, _at(500)));
+    EXPECT_EQ(_query_text(path, "SELECT COUNT(*) FROM scopes WHERE cookie_id = 21 AND scope_is_active = 1;"), "1");
+    EXPECT_EQ(_query_text(path, "SELECT time_inactivated FROM scopes WHERE cookie_id = 21 AND scope_id = 1;"), "500");
+
+    EXPECT_TRUE(db.log_scopes_deactivate(22u, _at(600)));
+    EXPECT_EQ(_query_text(path, "SELECT COUNT(*) FROM scopes WHERE cookie_id = 22 AND scope_is_active = 1;"), "0");
+    EXPECT_EQ(_query_text(path, "SELECT COUNT(*) FROM scopes WHERE cookie_id = 21 AND scope_is_active = 1;"), "1");
+
+    EXPECT_TRUE(db.log_instance_disconnected(21u, _at(700)));
+    EXPECT_EQ(_query_text(path, "SELECT COUNT(*) FROM scopes WHERE scope_is_active = 1;"), "0");
+    EXPECT_EQ(_query_text(path, "SELECT time_inactivated FROM scopes WHERE cookie_id = 21 AND scope_id = 2;"), "700");
+    db.disconnect();
+}
+
+/**
+ * \brief   The priority names are the seven priorities a viewer offers, in the order of their value.
+ **/
+TEST(LogSqliteDatabaseTest, test_priorityNames)
+{
+    LogDb db;
+    const std::vector<areg::String> names{ db.log_priority_names() };
+    ASSERT_EQ(names.size(), 7u);
+    EXPECT_EQ(_txt(names[0]), _txt(areg::priority_to_string(areg::LogPriority::PrioAny)));
+    EXPECT_EQ(_txt(names[3]), _txt(areg::priority_to_string(areg::LogPriority::PrioInfo)));
+    EXPECT_EQ(_txt(names[6]), _txt(areg::priority_to_string(areg::LogPriority::PrioFatal)));
+
+    std::vector<areg::String> filled{ areg::String("x") };
+    db.log_priority_names(filled);
+    EXPECT_EQ(filled.size(), 7u);
+}
+
+/**
+ * \brief   The threads of the rows are read as names and as ids, each once.
+ **/
+TEST(LogSqliteDatabaseTest, test_threadNamesAndIds)
+{
+    const std::string path{ _db_path("s8threads.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    _write_set(db);
+
+    const std::vector<areg::String> names{ db.log_thread_names() };
+    int testThread{ 0 };
+    for (const areg::String& name : names)
+    {
+        testThread += (_txt(name) == "TestThread") ? 1 : 0;
+    }
+
+    EXPECT_EQ(testThread, 1);
+    std::vector<areg::String> junk{ areg::String("x"), areg::String("y"), areg::String("z"), areg::String("w") };
+    db.log_thread_names(junk);
+    EXPECT_EQ(junk.size(), names.size());
+
+    const std::vector<ITEM_ID> threads{ db.log_threads() };
+    EXPECT_FALSE(threads.empty());
+    std::vector<ITEM_ID> again{ 12345u };
+    db.log_threads(again);
+    EXPECT_EQ(again, threads);
+    db.disconnect();
+}
+
+/**
+ * \brief   Every combination of instance and scope selects the rows it names, in time order, with the fields saved.
+ **/
+TEST(LogSqliteDatabaseTest, test_messageReadersSelectByInstanceAndScope)
+{
+    const std::string path{ _db_path("s9readers.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    _write_set(db);
+
+    EXPECT_EQ(db.log_messages().size(), 13u);
+    EXPECT_EQ(db.log_inst_messages(31u).size(), 6u);
+    EXPECT_EQ(db.log_inst_messages(32u).size(), 6u);
+    EXPECT_EQ(db.log_inst_messages().size(), 13u);
+    EXPECT_EQ(db.log_inst_messages(areg::COOKIE_ANY).size(), 13u);
+    EXPECT_EQ(db.log_inst_messages(777u).size(), 0u);
+    EXPECT_EQ(db.log_scope_messages(1u).size(), 4u);
+    EXPECT_EQ(db.log_scope_messages(0u).size(), 13u);
+    EXPECT_EQ(db.log_scope_messages().size(), 13u);
+    EXPECT_EQ(db.log_messages(31u, 1u).size(), 2u);
+    EXPECT_EQ(db.log_messages(32u, 2u).size(), 2u);
+    EXPECT_EQ(db.log_messages(areg::COOKIE_ANY, 0u).size(), 13u);
+    EXPECT_EQ(db.log_messages(areg::COOKIE_ANY, 1u).size(), 4u);
+    EXPECT_EQ(db.log_messages(31u, 0u).size(), 6u);
+    EXPECT_EQ(db.log_messages(31u, 9u).size(), 0u);
+
+    std::vector<areg::SharedBuffer> junk(3);
+    db.log_messages(junk);
+    EXPECT_EQ(junk.size(), 13u);
+    db.log_inst_messages(junk, 31u);
+    EXPECT_EQ(junk.size(), 6u);
+    db.log_inst_messages(junk);
+    EXPECT_EQ(junk.size(), 13u);
+    db.log_scope_messages(junk, 2u);
+    EXPECT_EQ(junk.size(), 4u);
+    db.log_scope_messages(junk);
+    EXPECT_EQ(junk.size(), 13u);
+    db.log_messages(junk, 32u, 1u);
+    EXPECT_EQ(junk.size(), 2u);
+    db.log_messages(junk, areg::COOKIE_ANY, 0u);
+    EXPECT_EQ(junk.size(), 13u);
+    db.log_messages(junk, areg::COOKIE_ANY, 2u);
+    EXPECT_EQ(junk.size(), 4u);
+    db.log_messages(junk, 31u, 0u);
+    EXPECT_EQ(junk.size(), 6u);
+    db.log_messages(junk, 31u, 2u);
+    EXPECT_EQ(junk.size(), 2u);
+
+    const std::vector<areg::SharedBuffer> inst31{ db.log_inst_messages(31u) };
+    ASSERT_EQ(inst31.size(), 6u);
+    TIME64 previous{ 0 };
+    for (const areg::SharedBuffer& buffer : inst31)
+    {
+        const areg::LogEntry* entry{ _log_of(buffer) };
+        ASSERT_NE(entry, nullptr);
+        EXPECT_EQ(entry->logCookie, 31u);
+        EXPECT_EQ(entry->logMessagePrio, areg::LogPriority::PrioInfo);
+        EXPECT_EQ(entry->logDataType, areg::LogDataType::Remote);
+        EXPECT_GT(entry->logTimestamp, previous);
+        EXPECT_STREQ(entry->logMessage, "log database test");
+        EXPECT_STREQ(entry->logThread, "TestThread");
+        EXPECT_STREQ(entry->logModule, "areg-unit-tests");
+        previous = entry->logTimestamp;
+    }
+
+    EXPECT_EQ(_log_of(inst31.front())->logTimestamp, static_cast<TIME64>(100));
+    EXPECT_EQ(_log_of(inst31.front())->logScopeId, 0u);
+    EXPECT_EQ(_log_of(inst31.back())->logTimestamp, static_cast<TIME64>(200));
+    EXPECT_EQ(_log_of(inst31.back())->logScopeId, 1u);
+    db.disconnect();
+}
+
+/**
+ * \brief   Reproduces the defect: the paged readers did not read the length before the cut, so a cut text looked complete.
+ **/
+TEST(LogSqliteDatabaseTest, test_cutMessageKeepsLengthBeforeTheCut)
+{
+    const std::string path{ _db_path("s10cut.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+
+    areg::LogEntry cut = _entry(1000, 0u, 41u, areg::LogPriority::PrioInfo);
+    std::memset(cut.logMessage, 'a', areg::LOG_MSG_SIZE - 1u);
+    cut.logMessage[areg::LOG_MSG_SIZE - 1u] = '\0';
+    cut.logMessageLen = 5000u;
+
+    areg::LogEntry full = _entry(1001, 0u, 42u, areg::LogPriority::PrioInfo);
+    std::memset(full.logMessage, 'b', areg::LOG_MSG_SIZE - 1u);
+    full.logMessage[areg::LOG_MSG_SIZE - 1u] = '\0';
+    full.logMessageLen = areg::LOG_MSG_SIZE - 1u;
+
+    areg::LogEntry shortText = _entry(1002, 0u, 43u, areg::LogPriority::PrioInfo);
+    shortText.logMessageLen = 3u;
+
+    ASSERT_TRUE(db.log_message(cut));
+    ASSERT_TRUE(db.log_message(full));
+    ASSERT_TRUE(db.log_message(shortText));
+
+    const std::vector<areg::SharedBuffer> cutRows{ db.log_inst_messages(41u) };
+    ASSERT_EQ(cutRows.size(), 1u);
+    EXPECT_EQ(_log_of(cutRows[0])->logMessageLen, 5000u);
+    EXPECT_EQ(std::strlen(_log_of(cutRows[0])->logMessage), static_cast<size_t>(areg::LOG_MSG_SIZE - 1u));
+
+    const std::vector<areg::SharedBuffer> fullRows{ db.log_inst_messages(42u) };
+    ASSERT_EQ(fullRows.size(), 1u);
+    EXPECT_EQ(_log_of(fullRows[0])->logMessageLen, areg::LOG_MSG_SIZE - 1u);
+
+    const std::vector<areg::SharedBuffer> shortRows{ db.log_inst_messages(43u) };
+    ASSERT_EQ(shortRows.size(), 1u);
+    EXPECT_EQ(_log_of(shortRows[0])->logMessageLen, static_cast<uint32_t>(std::strlen("log database test")));
+
+    const std::vector<areg::SharedBuffer> allRows{ db.log_messages() };
+    ASSERT_EQ(allRows.size(), 4u);
+    EXPECT_EQ(_log_of(allRows[0])->logMessageLen, 5000u);
+    EXPECT_EQ(_log_of(allRows[1])->logMessageLen, areg::LOG_MSG_SIZE - 1u);
+
+    areg::ext::SqliteStatement stmt(db.database());
+    ASSERT_EQ(db.setup_statement_read_logs(stmt, static_cast<ITEM_ID>(41u), -1, 0u), 1u);
+    std::vector<areg::SharedBuffer> stmtRows;
+    ASSERT_EQ(LogDb::log_messages(stmtRows, stmt), 1);
+    EXPECT_EQ(_log_of(stmtRows[0])->logMessageLen, 5000u);
+    db.disconnect();
+}
+
+TEST(LogSqliteDatabaseTest, test_cutMessageKeepsLengthInWindowRead)
+{
+    const std::string path{ _db_path("s10cutw.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+
+    areg::LogEntry cut = _entry(1000, 0u, 41u, areg::LogPriority::PrioInfo);
+    std::memset(cut.logMessage, 'a', areg::LOG_MSG_SIZE - 1u);
+    cut.logMessage[areg::LOG_MSG_SIZE - 1u] = '\0';
+    cut.logMessageLen = 5000u;
+
+    areg::LogEntry full = _entry(1001, 0u, 42u, areg::LogPriority::PrioInfo);
+    std::memset(full.logMessage, 'b', areg::LOG_MSG_SIZE - 1u);
+    full.logMessage[areg::LOG_MSG_SIZE - 1u] = '\0';
+    full.logMessageLen = areg::LOG_MSG_SIZE - 1u;
+
+    areg::LogEntry shortText = _entry(1002, 0u, 43u, areg::LogPriority::PrioInfo);
+    shortText.logMessageLen = 3u;
+
+    ASSERT_TRUE(db.log_message(cut));
+    ASSERT_TRUE(db.log_message(full));
+    ASSERT_TRUE(db.log_message(shortText));
+
+    areg::ext::SqliteStatement stmt(db.database());
+    ASSERT_TRUE(db.setup_statement_read_window(stmt, LogDb::LogPosition{ }, 100));
+    std::vector<areg::SharedBuffer> rows;
+    LogDb::LogPosition last{ };
+    ASSERT_EQ(LogDb::fill_log_window(rows, stmt, 100, last), 4);
+    stmt.finalize();
+    for (const areg::SharedBuffer& row : rows)
+    {
+        const areg::LogEntry* entry{ _log_of(row) };
+        if (entry->logCookie == 41u)
+        {
+            EXPECT_EQ(entry->logMessageLen, 5000u);
+            EXPECT_EQ(std::strlen(entry->logMessage), static_cast<size_t>(areg::LOG_MSG_SIZE - 1u));
+        }
+        else if (entry->logCookie == 42u)
+        {
+            EXPECT_EQ(entry->logMessageLen, areg::LOG_MSG_SIZE - 1u);
+        }
+        else if (entry->logCookie == 43u)
+        {
+            EXPECT_EQ(entry->logMessageLen, static_cast<uint32_t>(std::strlen("log database test")));
+        }
+    }
+
+    db.disconnect();
+}
+
+/**
+ * \brief   A statement set up for the scopes reads the scopes of all instances or of one, and the limit stops the read.
+ **/
+TEST(LogSqliteDatabaseTest, test_scopeStatementReadsAllOrOneInstance)
+{
+    const std::string path{ _db_path("s11scopestmt.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    _write_set_scopes(db);
+
+    Stmt stmt(db.database());
+    std::vector<areg::ScopeEntry> scopes;
+    EXPECT_EQ(db.setup_statement_read_scopes(stmt, areg::TARGET_ALL), 4u);
+    EXPECT_EQ(LogDb::log_inst_scopes(scopes, stmt), 4);
+    EXPECT_EQ(scopes.size(), 4u);
+
+    scopes.clear();
+    EXPECT_EQ(db.setup_statement_read_scopes(stmt, areg::TARGET_ALL), 4u);
+    EXPECT_EQ(LogDb::log_inst_scopes(scopes, stmt, 3), 3);
+    EXPECT_EQ(scopes.size(), 3u);
+
+    scopes.clear();
+    EXPECT_EQ(db.setup_statement_read_scopes(stmt, 32u), 2u);
+    EXPECT_EQ(LogDb::log_inst_scopes(scopes, stmt), 2);
+    ASSERT_EQ(scopes.size(), 2u);
+    const std::string joined{ _txt(scopes[0].scopeName) + _txt(scopes[1].scopeName) };
+    EXPECT_TRUE((joined == "onetwo") || (joined == "twoone")) << joined;
+    EXPECT_EQ(scopes[0].scopeId + scopes[1].scopeId, 3u);
+
+    std::vector<areg::ScopeEntry> slots(5);
+    EXPECT_EQ(db.setup_statement_read_scopes(stmt, areg::TARGET_ALL), 4u);
+    EXPECT_EQ(LogDb::fill_inst_scopes(slots, stmt, 1u, -1), 4);
+    EXPECT_EQ(_txt(slots[0].scopeName), "");
+    for (size_t i = 1u; i < slots.size(); ++i)
+    {
+        EXPECT_NE(_txt(slots[i].scopeName), "") << i;
+        EXPECT_TRUE((slots[i].scopeId == 1u) || (slots[i].scopeId == 2u)) << i;
+    }
+
+    std::vector<areg::ScopeEntry> two(2);
+    EXPECT_EQ(db.setup_statement_read_scopes(stmt, areg::TARGET_ALL), 4u);
+    EXPECT_EQ(LogDb::fill_inst_scopes(two, stmt, 0u, 2), 2);
+    EXPECT_EQ(LogDb::fill_inst_scopes(two, stmt, 2u, -1), 0);
+
+    stmt.finalize();
+    EXPECT_EQ(LogDb::log_inst_scopes(scopes, stmt), 0);
+    EXPECT_EQ(LogDb::fill_inst_scopes(slots, stmt, 0u, -1), 0);
+    db.disconnect();
+}
+
+/**
+ * \brief   A statement set up for the logs reads the window it was given, while the returned count is the whole set.
+ **/
+TEST(LogSqliteDatabaseTest, test_logStatementReadsWindowOfTheSet)
+{
+    const std::string path{ _db_path("s12logstmt.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    _write_set(db);
+    const std::vector<areg::SharedBuffer> all{ db.log_messages() };
+    ASSERT_EQ(all.size(), 13u);
+
+    Stmt stmt(db.database());
+    std::vector<areg::SharedBuffer> logs;
+    EXPECT_EQ(db.setup_statement_read_logs(stmt, areg::TARGET_ALL, 5, 2u), 13u);
+    EXPECT_EQ(LogDb::log_messages(logs, stmt), 5);
+    ASSERT_EQ(logs.size(), 5u);
+    for (size_t i = 0; i < logs.size(); ++i)
+    {
+        EXPECT_EQ(_log_of(logs[i])->logTimestamp, _log_of(all[i + 2u])->logTimestamp);
+    }
+
+    logs.clear();
+    EXPECT_EQ(db.setup_statement_read_logs(stmt, areg::TARGET_ALL, -1, 0u), 13u);
+    EXPECT_EQ(LogDb::log_messages(logs, stmt, 4), 4);
+    EXPECT_EQ(logs.size(), 4u);
+
+    logs.clear();
+    EXPECT_EQ(db.setup_statement_read_logs(stmt, 31u, 3, 1u), 6u);
+    EXPECT_EQ(LogDb::log_messages(logs, stmt), 3);
+    ASSERT_EQ(logs.size(), 3u);
+    EXPECT_EQ(_log_of(logs[0])->logTimestamp, static_cast<TIME64>(120));
+    EXPECT_EQ(_log_of(logs[2])->logTimestamp, static_cast<TIME64>(160));
+    EXPECT_EQ(_log_of(logs[1])->logCookie, 31u);
+
+    std::vector<areg::SharedBuffer> slots(4);
+    EXPECT_EQ(db.setup_statement_read_logs(stmt, 32u, -1, 0u), 6u);
+    EXPECT_EQ(LogDb::fill_log_messages(slots, stmt, 0u, 4), 4);
+    for (const areg::SharedBuffer& slot : slots)
+    {
+        EXPECT_EQ(_log_of(slot)->logCookie, 32u);
+    }
+
+    std::vector<areg::SharedBuffer> none;
+    EXPECT_EQ(db.setup_statement_read_logs(stmt, 32u, -1, 0u), 6u);
+    EXPECT_EQ(LogDb::fill_log_messages(none, stmt, 0u, -1), 0);
+
+    stmt.finalize();
+    EXPECT_EQ(LogDb::log_messages(logs, stmt), 0);
+    EXPECT_EQ(LogDb::fill_log_messages(slots, stmt, 0u, -1), 0);
+    db.disconnect();
+}
+
+/**
+ * \brief   The instances are filled into the vector the caller sized, and an empty vector or a closed statement fills nothing.
+ **/
+TEST(LogSqliteDatabaseTest, test_fillInstancesIntoSizedVector)
+{
+    const std::string path{ _db_path("s13fillinst.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    ASSERT_TRUE(db.log_instance_connected(_instance(11u, "alpha", "/a", 5000), _at(7000)));
+    ASSERT_TRUE(db.log_instance_connected(_instance(12u, "beta", "/b", 6000), _at(7001)));
+
+    Stmt stmt(db.database(), areg::String("SELECT inst_type, inst_bits, cookie_id, time_connected, inst_name, inst_location FROM instances ORDER BY time_connected;"));
+    ASSERT_TRUE(stmt.is_valid());
+    std::vector<areg::ConnectedInstance> infos(2);
+    EXPECT_EQ(LogDb::fill_log_instances(infos, stmt), 2);
+    EXPECT_EQ(infos[0].ciCookie, 11u);
+    EXPECT_EQ(infos[0].ciInstance, "alpha");
+    EXPECT_EQ(infos[1].ciCookie, 12u);
+    EXPECT_EQ(infos[1].ciLocation, "/b");
+
+    std::vector<areg::ConnectedInstance> empty;
+    stmt.reset();
+    EXPECT_EQ(LogDb::fill_log_instances(empty, stmt), 0);
+
+    stmt.finalize();
+    EXPECT_EQ(LogDb::fill_log_instances(infos, stmt), 0);
+    db.disconnect();
+}
+
+/**
+ * \brief   The filter counts and the filtered read follow the rules: all by default, a scope or an instance switched
+ *          off drops its rows, reset brings them back, and the rows read equal the rows counted.
+ **/
+TEST(LogSqliteDatabaseTest, test_filterRulesCountAndRead)
+{
+    const std::string path{ _db_path("s14filter.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    _write_set(db);
+    _write_set_scopes(db);
+
+    Stmt stmt(db.database());
+    EXPECT_EQ(db.setup_statement_read_filter_logs(stmt, areg::TARGET_ALL), 0u);
+    EXPECT_FALSE(db.reset());
+    EXPECT_FALSE(db.disable_filter_mask());
+
+    areg::ArrayList<LogDb::ScopeFilter> none;
+    EXPECT_EQ(db.setup_filter_logs(areg::TARGET_ALL, none), 13u);
+    EXPECT_EQ(db.count_filter_logs(), 13u);
+
+    std::vector<areg::SharedBuffer> logs;
+    EXPECT_EQ(db.setup_statement_read_filter_logs(stmt, areg::TARGET_ALL), 13u);
+    EXPECT_EQ(LogDb::log_messages(logs, stmt), 13);
+
+    logs.clear();
+    const uint32_t counted{ db.setup_statement_read_filter_logs(stmt, 31u) };
+    EXPECT_GT(counted, 0u);
+    EXPECT_EQ(LogDb::log_messages(logs, stmt), static_cast<int32_t>(counted));
+    for (const areg::SharedBuffer& log : logs)
+    {
+        EXPECT_EQ(_log_of(log)->logCookie, 31u);
+    }
+
+    areg::ArrayList<LogDb::ScopeFilter> scopeOne;
+    scopeOne.add(LogDb::ScopeFilter{ 1u, 0u });
+    EXPECT_EQ(db.setup_filter_logs(areg::TARGET_ALL, scopeOne), 9u);
+    EXPECT_EQ(db.count_filter_logs(), 9u);
+
+    areg::ArrayList<LogDb::ScopeFilter> scopeTwoOfOne;
+    scopeTwoOfOne.add(LogDb::ScopeFilter{ 2u, 0u });
+    static_cast<void>(db.setup_filter_logs(32u, scopeTwoOfOne));
+    EXPECT_EQ(db.count_filter_logs(), 7u);
+
+    EXPECT_TRUE(db.disable_filter_mask(areg::TARGET_ALL));
+    EXPECT_EQ(db.count_filter_logs(), 5u);
+    EXPECT_TRUE(db.reset(areg::TARGET_ALL));
+    EXPECT_EQ(db.count_filter_logs(), 13u);
+
+    EXPECT_TRUE(db.disable_filter_mask(31u));
+    EXPECT_EQ(db.count_filter_logs(), 9u);
+    EXPECT_TRUE(db.reset(31u));
+    EXPECT_EQ(db.count_filter_logs(), 13u);
+
+    stmt.finalize();
+    db.disconnect();
+}
+
+/**
+ * \brief   The readers of a window and of a filtered window refuse to prepare while no filter rule or no connection
+ *          exists, and the index of the time order is created again when it is missing.
+ **/
+TEST(LogSqliteDatabaseTest, test_windowPreconditionsAndTimeIndex)
+{
+    const std::string path{ _db_path("s15precond.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    _write_set(db);
+
+    Stmt stmt(db.database());
+    const LogDb::LogPosition start{ };
+    const LogDb::LogPosition place{ 150, 3u };
+    EXPECT_FALSE(db.setup_statement_read_filter_window(stmt, areg::TARGET_ALL, start, 10));
+    EXPECT_FALSE(db.setup_statement_read_filter_window(stmt, 31u, place, 10));
+    EXPECT_FALSE(db.setup_statement_read_filter_window_back(stmt, areg::TARGET_ALL, start, 10));
+    EXPECT_FALSE(db.setup_statement_read_filter_window_back(stmt, 31u, place, 10));
+    EXPECT_FALSE(db.setup_statement_read_filter_window_at(stmt, areg::TARGET_ALL, 0u, 10));
+    EXPECT_FALSE(db.setup_statement_read_filter_window_at(stmt, 31u, 2u, 10));
+
+    EXPECT_TRUE(db.setup_statement_read_window(stmt, start, 10));
+    EXPECT_TRUE(db.setup_statement_read_window(stmt, place, 10));
+    EXPECT_TRUE(db.setup_statement_read_window_back(stmt, start, 10));
+    EXPECT_TRUE(db.setup_statement_read_window_back(stmt, place, 10));
+    EXPECT_TRUE(db.setup_statement_read_window_at(stmt, 2u, 10));
+
+    areg::ArrayList<LogDb::ScopeFilter> none;
+    _write_set_scopes(db);
+    ASSERT_GT(db.setup_filter_logs(areg::TARGET_ALL, none), 0u);
+    EXPECT_TRUE(db.setup_statement_read_filter_window(stmt, 31u, place, 10));
+    EXPECT_TRUE(db.setup_statement_read_filter_window_back(stmt, 31u, place, 10));
+    EXPECT_TRUE(db.setup_statement_read_filter_window_at(stmt, 31u, 1u, 10));
+    stmt.finalize();
+
+    EXPECT_TRUE(db.execute(areg::String("DROP INDEX idx_logs_time;")));
+    EXPECT_EQ(_query_text(path, "SELECT COUNT(*) FROM sqlite_master WHERE name = 'idx_logs_time';"), "0");
+    EXPECT_TRUE(db.ensure_time_index());
+    EXPECT_EQ(_query_text(path, "SELECT COUNT(*) FROM sqlite_master WHERE name = 'idx_logs_time';"), "1");
+    EXPECT_TRUE(db.ensure_time_index());
+
+    EXPECT_TRUE(db.drop_table("logs"));
+    EXPECT_FALSE(db.ensure_time_index());
+    db.disconnect();
+}
+
+/**
+ * \brief   Refused spans are replaced by each call and an empty list clears them; the rows of a refused span
+ *          are not read by a window.
+ **/
+TEST(LogSqliteDatabaseTest, test_refusedSpansReplaceEachOther)
+{
+    const std::string path{ _db_path("s16refused.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    _write_set(db);
+
+    const auto window = [&](int32_t limit) -> size_t
+    {
+        Stmt stmt(db.database());
+        std::vector<areg::SharedBuffer> logs;
+        LogDb::LogPosition last{ };
+        if (db.setup_statement_read_window(stmt, LogDb::LogPosition{ }, limit) == false)
+            return 9999u;
+
+        static_cast<void>(LogDb::fill_log_window(logs, stmt, limit, last));
+        return logs.size();
+    };
+
+    EXPECT_EQ(window(100), 13u);
+
+    areg::ArrayList<LogDb::RefusedSpan> spans;
+    spans.add(LogDb::RefusedSpan{ 1u, 32u, 0, 0 });
+    ASSERT_TRUE(db.set_refused_spans(spans));
+    EXPECT_EQ(window(100), 11u);
+
+    spans.add(LogDb::RefusedSpan{ 0u, 31u, 0, 0 });
+    ASSERT_TRUE(db.set_refused_spans(spans));
+    EXPECT_EQ(window(100), 9u);
+
+    areg::ArrayList<LogDb::RefusedSpan> bounded;
+    bounded.add(LogDb::RefusedSpan{ 1u, 32u, 100, 130 });
+    ASSERT_TRUE(db.set_refused_spans(bounded));
+    EXPECT_EQ(window(100), 12u);
+
+    areg::ArrayList<LogDb::RefusedSpan> noSpans;
+    ASSERT_TRUE(db.set_refused_spans(noSpans));
+    EXPECT_EQ(window(100), 13u);
+    db.disconnect();
+}
+
+/**
+ * \brief   A log that is not connected refuses every command and every reader and returns empty results.
+ **/
+TEST(LogSqliteDatabaseTest, test_notConnectedLogRefusesEverything)
+{
+    LogDb db;
+    EXPECT_FALSE(db.is_operable());
+    EXPECT_FALSE(db.tables_initialized());
+    EXPECT_FALSE(db.execute(areg::String("SELECT 1;")));
+    EXPECT_FALSE(db.begin());
+    EXPECT_FALSE(db.commit(true));
+    EXPECT_FALSE(db.rollback());
+    EXPECT_FALSE(db.table_exists("logs"));
+    EXPECT_FALSE(db.log_message(_entry(1, 0u, 31u, areg::LogPriority::PrioInfo)));
+    EXPECT_FALSE(db.log_message(_entry(1, 0u, 31u, areg::LogPriority::PrioInfo), 7u));
+    EXPECT_FALSE(db.log_dropped_messages(3u, 8u));
+    EXPECT_EQ(db.max_log_id(), 0u);
+    EXPECT_EQ(db.max_marker_id(), 0u);
+    EXPECT_EQ(db.last_log_id(), 0u);
+    EXPECT_FALSE(db.remove_log(1u));
+    EXPECT_FALSE(db.remove_marker(1u));
+    EXPECT_EQ(db.add_marker(1u, areg::LogPriority::PrioMarker, areg::String("a"), areg::String("n")), 0u);
+    EXPECT_FALSE(db.insert_marker(5u, 1u, areg::LogPriority::PrioMarker, areg::String("a"), areg::String("n"), 1));
+    std::vector<LogDb::LogMarker> markers;
+    EXPECT_EQ(db.read_markers(markers), 0u);
+
+    EXPECT_EQ(db.count_log_entries(), 0u);
+    EXPECT_EQ(db.count_scope_entries(), 0u);
+    EXPECT_EQ(db.count_log_instances(), 0u);
+    EXPECT_EQ(db.count_filter_logs(), 0u);
+    areg::ArrayList<LogDb::ScopeFilter> none;
+    EXPECT_EQ(db.setup_filter_logs(areg::TARGET_ALL, none), 0u);
+    EXPECT_FALSE(db.ensure_time_index());
+    EXPECT_FALSE(db.reset());
+    EXPECT_FALSE(db.disable_filter_mask());
+
+    Stmt stmt(db.database());
+    const LogDb::LogPosition place{ 150, 3u };
+    EXPECT_EQ(db.setup_statement_read_filter_logs(stmt, areg::TARGET_ALL), 0u);
+    EXPECT_EQ(db.setup_statement_read_marked_logs(stmt, areg::TARGET_ALL, 0xFFFFu), 0u);
+    EXPECT_FALSE(db.setup_statement_read_window(stmt, place, 5));
+    EXPECT_FALSE(db.setup_statement_read_window_back(stmt, place, 5));
+    EXPECT_FALSE(db.setup_statement_read_window_at(stmt, 1u, 5));
+    EXPECT_FALSE(db.setup_statement_read_filter_window(stmt, areg::TARGET_ALL, place, 5));
+    EXPECT_FALSE(db.setup_statement_read_filter_window_back(stmt, areg::TARGET_ALL, place, 5));
+    EXPECT_FALSE(db.setup_statement_read_filter_window_at(stmt, areg::TARGET_ALL, 1u, 5));
+    areg::ArrayList<LogDb::RefusedSpan> spans;
+    EXPECT_FALSE(db.set_refused_spans(spans));
+
+    EXPECT_TRUE(db.log_messages().empty());
+    EXPECT_TRUE(db.log_instance_infos().empty());
+    EXPECT_TRUE(db.log_instances().empty());
+    db.disconnect();
+}
+
+/**
+ * \brief   A dropped-messages row gets the identifier it is given, an error priority and the number it reports.
+ **/
+TEST(LogSqliteDatabaseTest, test_droppedMessagesRowKeepsItsId)
+{
+    const std::string path{ _db_path("s17dropped.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    ASSERT_TRUE(db.log_dropped_messages(7u, 500u));
+    EXPECT_EQ(db.max_log_id(), 500u);
+    EXPECT_EQ(_query_text(path, "SELECT msg_prio FROM logs WHERE id = 500;"), std::to_string(static_cast<uint32_t>(areg::LogPriority::PrioError)));
+    EXPECT_EQ(_query_text(path, "SELECT msg_log FROM logs WHERE id = 500;").rfind("Dropped [ 7 ]", 0), 0u);
+    db.disconnect();
+}
+
+/**
+ * \brief   A marker with a given identifier is saved with it, a second one with the same identifier is refused, and
+ *          a marker of a missing row or of a level that is no marker level is refused.
+ **/
+TEST(LogSqliteDatabaseTest, test_insertMarkerWithGivenId)
+{
+    const std::string path{ _db_path("s18marker.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    _write_set(db);
+
+    EXPECT_FALSE(db.insert_marker(0u, 2u, areg::LogPriority::PrioMarker, areg::String("a"), areg::String("n"), 1));
+    EXPECT_TRUE(db.insert_marker(50u, 2u, areg::LogPriority::PrioMarkerError, areg::String("author"), areg::String("note"), 1234));
+    EXPECT_FALSE(db.insert_marker(50u, 3u, areg::LogPriority::PrioMarker, areg::String("a"), areg::String("n"), 1));
+    EXPECT_FALSE(db.insert_marker(51u, 9999u, areg::LogPriority::PrioMarker, areg::String("a"), areg::String("n"), 1));
+    EXPECT_FALSE(db.insert_marker(52u, 2u, areg::LogPriority::PrioInfo, areg::String("a"), areg::String("n"), 1));
+    EXPECT_EQ(db.add_marker(9999u, areg::LogPriority::PrioMarker, areg::String("a"), areg::String("n")), 0u);
+    EXPECT_EQ(db.add_marker(0u, areg::LogPriority::PrioMarker, areg::String("a"), areg::String("n")), 0u);
+
+    std::vector<LogDb::LogMarker> markers;
+    ASSERT_EQ(db.read_markers(markers), 1u);
+    EXPECT_EQ(markers[0].markerId, 50u);
+    EXPECT_EQ(markers[0].masterId, 2u);
+    EXPECT_EQ(markers[0].level, areg::LogPriority::PrioMarkerError);
+    EXPECT_EQ(markers[0].timeSet, static_cast<TIME64>(1234));
+    EXPECT_EQ(_txt(markers[0].author), "author");
+    EXPECT_EQ(_txt(markers[0].note), "note");
+    EXPECT_EQ(db.max_marker_id(), 50u);
+
+    EXPECT_FALSE(db.remove_marker(0u));
+    EXPECT_TRUE(db.remove_marker(50u));
+    EXPECT_EQ(db.read_markers(markers), 0u);
+    EXPECT_FALSE(db.remove_log(0u));
+    db.disconnect();
+}
+
+/**
+ * \brief   An author and a note longer than the limit are cut, never inside a multibyte character.
+ **/
+TEST(LogSqliteDatabaseTest, test_markerTextCutKeepsCharactersWhole)
+{
+    const std::string path{ _db_path("s19cut.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    _write_set(db);
+
+    const std::string author{ std::string(62u, 'a') + "\xC3\xA9" + "tail" };
+    const std::string note{ std::string(1022u, 'n') + "\xC3\xA9" + "tail" };
+    const std::string longAscii(2000u, 'z');
+    ASSERT_NE(db.add_marker(2u, areg::LogPriority::PrioMarker, areg::String(author), areg::String(note)), 0u);
+    ASSERT_NE(db.add_marker(3u, areg::LogPriority::PrioMarker, areg::String(longAscii), areg::String(longAscii)), 0u);
+
+    std::vector<LogDb::LogMarker> markers;
+    ASSERT_EQ(db.read_markers(markers), 2u);
+    EXPECT_EQ(_txt(markers[0].author), std::string(62u, 'a'));
+    EXPECT_EQ(_txt(markers[0].note), std::string(1022u, 'n'));
+    EXPECT_EQ(static_cast<uint32_t>(markers[1].author.length()), areg::LOG_NAME_SIZE - 1u);
+    EXPECT_EQ(static_cast<uint32_t>(markers[1].note.length()), 1023u);
+    db.disconnect();
+}
+
+/**
+ * \brief   The marked-log reader counts and reads the rows of one instance only when asked for one.
+ **/
+TEST(LogSqliteDatabaseTest, test_markedLogsOfOneInstance)
+{
+    const std::string path{ _db_path("s20marked.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    _write_set(db);
+
+    ASSERT_NE(db.add_marker(2u, areg::LogPriority::PrioMarker, areg::String("a"), areg::String("n")), 0u);
+    ASSERT_NE(db.add_marker(3u, areg::LogPriority::PrioMarkerWarning, areg::String("a"), areg::String("n")), 0u);
+    ASSERT_NE(db.add_marker(4u, areg::LogPriority::PrioMarkerError, areg::String("a"), areg::String("n")), 0u);
+
+    Stmt stmt(db.database());
+    std::vector<areg::SharedBuffer> logs;
+    const uint16_t any{ static_cast<uint16_t>(areg::LogPriority::PrioMarker) | static_cast<uint16_t>(areg::LogPriority::PrioMarkerWarning) | static_cast<uint16_t>(areg::LogPriority::PrioMarkerError) | static_cast<uint16_t>(areg::LogPriority::PrioMarkerInfo) };
+    EXPECT_EQ(db.setup_statement_read_marked_logs(stmt, areg::TARGET_ALL, any), 3u);
+    EXPECT_EQ(LogDb::log_messages(logs, stmt), 3);
+
+    logs.clear();
+    const uint32_t ofOne{ db.setup_statement_read_marked_logs(stmt, 31u, any) };
+    EXPECT_EQ(LogDb::log_messages(logs, stmt), static_cast<int32_t>(ofOne));
+    for (const areg::SharedBuffer& log : logs)
+    {
+        EXPECT_EQ(_log_of(log)->logCookie, 31u);
+    }
+
+    EXPECT_EQ(ofOne, 2u);
+    stmt.finalize();
+    db.disconnect();
+}
+
+//////////////////////////////////////////////////////////////////////////
+// The writer thread: start and stop rules, tasks and the transaction limits.
+//////////////////////////////////////////////////////////////////////////
+
 #if AREG_LOGGING
 
 //////////////////////////////////////////////////////////////////////////
@@ -1157,6 +2333,204 @@ TEST(LogSqliteDatabaseTest, test_writerCommitsALoneRow)
     EXPECT_EQ(count, "1");
     writer.stop();
     db.disconnect();
+}
+
+/**
+ * \brief   A writer on a log that is not open does not start; a started writer reports the default queue size and
+ *          starting it again changes nothing.
+ **/
+TEST(LogSqliteDatabaseTest, test_writerStartRules)
+{
+    LogDb closed;
+    LogWriter idle(closed);
+    EXPECT_FALSE(idle.start(0u));
+    EXPECT_FALSE(idle.is_running());
+    EXPECT_EQ(idle.queue_log(_envelope(1u)), 0u);
+    EXPECT_FALSE(idle.queue_task([](LogDb&) { }));
+    EXPECT_EQ(idle.queue_marker(1u, areg::LogPriority::PrioMarker, "a", "n"), 0u);
+
+    const std::string path{ _db_path("w6start.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    LogWriter writer(db);
+    ASSERT_TRUE(writer.start(0u));
+    EXPECT_TRUE(writer.is_running());
+    EXPECT_TRUE(writer.start(1u));
+    EXPECT_EQ(writer.queue_state().limitBytes, static_cast<uint64_t>(LogWriter::DEFAULT_QUEUE_MB) * 1024u * 1024u);
+    EXPECT_TRUE(writer.queue_state().running);
+
+    writer.stop();
+    EXPECT_FALSE(writer.is_running());
+    EXPECT_FALSE(writer.queue_state().running);
+    db.disconnect();
+}
+
+/**
+ * \brief   A task that is empty, or that comes while the writer does not run, is refused; a marker of no row, or
+ *          of a row the writer never gave out, is refused.
+ **/
+TEST(LogSqliteDatabaseTest, test_writerRefusesTasksAndMarkers)
+{
+    const std::string path{ _db_path("w7refuse.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    LogWriter writer(db);
+    ASSERT_TRUE(writer.start(0u));
+
+    EXPECT_FALSE(writer.queue_task(LogWriter::Task{ }));
+    EXPECT_EQ(writer.queue_marker(0u, areg::LogPriority::PrioMarker, "a", "n"), 0u);
+    EXPECT_EQ(writer.queue_marker(1u + db.max_log_id() + 100u, areg::LogPriority::PrioMarker, "a", "n"), 0u);
+
+    writer.stop();
+    EXPECT_FALSE(writer.queue_task([](LogDb&) { }));
+    EXPECT_EQ(writer.queue_marker(1u, areg::LogPriority::PrioMarker, "a", "n"), 0u);
+    EXPECT_EQ(writer.queue_log(_envelope(1u)), 0u);
+    db.disconnect();
+}
+
+/**
+ * \brief   Tasks run on the writer thread in the order they were queued, and a task reaches the database.
+ **/
+TEST(LogSqliteDatabaseTest, test_writerRunsTasksInOrder)
+{
+    const std::string path{ _db_path("w8tasks.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    LogWriter writer(db);
+    ASSERT_TRUE(writer.start(0u));
+
+    std::vector<int> order;
+    ASSERT_TRUE(writer.queue_task([&order](LogDb&) { order.push_back(1); }));
+    ASSERT_TRUE(writer.queue_task([&order](LogDb& database) { order.push_back(2); database.execute(areg::String("CREATE TABLE task_probe (a INTEGER);")); }));
+    ASSERT_TRUE(writer.queue_task([&order](LogDb&) { order.push_back(3); }));
+    writer.stop();
+
+    EXPECT_EQ(order, (std::vector<int>{ 1, 2, 3 }));
+    EXPECT_TRUE(db.table_exists("task_probe"));
+    db.disconnect();
+}
+
+/**
+ * \brief   A row written while the writer is stopped inside an open transaction is saved by the stop.
+ **/
+TEST(LogSqliteDatabaseTest, test_writerStopSavesRowOfOpenTransaction)
+{
+    const std::string path{ _db_path("w9open.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    LogWriter writer(db);
+    ASSERT_TRUE(writer.start(0u));
+
+    areg::SyncEvent written(true, false);
+    ASSERT_NE(writer.queue_log(_envelope(1u)), 0u);
+    ASSERT_TRUE(writer.queue_task([&written](LogDb&) { written.set_signaled(); }));
+    ASSERT_TRUE(written.lock(60'000u));
+
+    writer.stop();
+    db.disconnect();
+    EXPECT_EQ(_query_text(path, "SELECT COUNT(*) FROM logs WHERE cookie_id = 77;"), "1");
+}
+
+/**
+ * \brief   A transaction that is open longer than the limit is committed after its batch, without more rows coming
+ *          and without a stop, so another connection reads the row.
+ **/
+TEST(LogSqliteDatabaseTest, test_writerCommitsOldTransactionAfterBatch)
+{
+    const std::string path{ _db_path("w10old.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    LogWriter writer(db);
+    ASSERT_TRUE(writer.start(0u));
+
+    ASSERT_NE(writer.queue_log(_envelope(1u)), 0u);
+    ASSERT_TRUE(writer.queue_task([](LogDb&)
+        {
+            const uint64_t begin{ areg::DateTime::system_tick_count() };
+            while ((areg::DateTime::system_tick_count() - begin) < (LogWriter::BATCH_TIMEOUT_MS + 50u))
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(5));
+            }
+        }));
+
+    std::string count;
+    const auto until{ std::chrono::steady_clock::now() + std::chrono::seconds(60) };
+    while ((count != "1") && (std::chrono::steady_clock::now() < until))
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        count = _query_text(path, "SELECT COUNT(*) FROM logs WHERE cookie_id = 77;");
+    }
+
+    EXPECT_EQ(count, "1");
+    writer.stop();
+    db.disconnect();
+}
+
+/**
+ * \brief   A queue of more than 65 000 entries is run completely and in order, and the writer keeps working after it.
+ **/
+TEST(LogSqliteDatabaseTest, test_writerRunsEveryTaskOfALargeQueue)
+{
+    const std::string path{ _db_path("w11large.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    LogWriter writer(db);
+    ASSERT_TRUE(writer.start(0u));
+
+    areg::SyncEvent gate(true, false);
+    _hold_writer(writer, gate);
+
+    constexpr uint32_t tasks{ 70'000u };
+    uint32_t executed{ 0u };
+    uint32_t outOfOrder{ 0u };
+    for (uint32_t i = 0; i < tasks; ++i)
+    {
+        ASSERT_TRUE(writer.queue_task([&executed, &outOfOrder, i](LogDb&)
+            {
+                outOfOrder += (executed == i) ? 0u : 1u;
+                ++ executed;
+            }));
+    }
+
+    gate.set_signaled();
+    areg::SyncEvent after(true, false);
+    ASSERT_TRUE(writer.queue_task([&after](LogDb&) { after.set_signaled(); }));
+    ASSERT_TRUE(after.lock(60'000u));
+    EXPECT_EQ(executed, tasks);
+    EXPECT_EQ(outOfOrder, 0u);
+
+    ASSERT_NE(writer.queue_log(_envelope(1u)), 0u);
+    writer.stop();
+    db.disconnect();
+    EXPECT_EQ(_query_text(path, "SELECT COUNT(*) FROM logs WHERE cookie_id = 77;"), "1");
+}
+
+/**
+ * \brief   More rows than one transaction holds, queued before the writer runs, are all saved with distinct identifiers.
+ **/
+TEST(LogSqliteDatabaseTest, test_writerSavesMoreRowsThanOneTransactionHolds)
+{
+    const std::string path{ _db_path("w12batch.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    LogWriter writer(db);
+    ASSERT_TRUE(writer.start(0u));
+
+    areg::SyncEvent gate(true, false);
+    _hold_writer(writer, gate);
+    constexpr uint32_t rows{ LogWriter::BATCH_MESSAGES + 100u };
+    const areg::MessageEnvelope envelope{ _envelope(1u) };
+    for (uint32_t i = 0; i < rows; ++i)
+    {
+        ASSERT_NE(writer.queue_log(envelope), 0u);
+    }
+
+    gate.set_signaled();
+    writer.stop();
+    db.disconnect();
+
+    EXPECT_EQ(_query_text(path, "SELECT COUNT(*) FROM logs WHERE cookie_id = 77;"), std::to_string(rows));
+    EXPECT_EQ(_query_text(path, "SELECT COUNT(DISTINCT id) = COUNT(*) FROM logs;"), "1");
 }
 
 #endif  // AREG_LOGGING

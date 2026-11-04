@@ -90,6 +90,20 @@
     #endif
 #endif // AREG_PRAGMA
 
+//!< Declares a function that is inlined at every call, and one that is never inlined.
+#ifndef AREG_FORCE_INLINE
+    #if defined(_MSC_VER)
+        #define AREG_FORCE_INLINE       __forceinline
+        #define AREG_NO_INLINE          __declspec(noinline)
+    #elif defined(__GNUC__) || defined(__clang__)
+        #define AREG_FORCE_INLINE       inline __attribute__((always_inline))
+        #define AREG_NO_INLINE          __attribute__((noinline))
+    #else
+        #define AREG_FORCE_INLINE       inline
+        #define AREG_NO_INLINE
+    #endif
+#endif // !AREG_FORCE_INLINE
+
 //!< Emits a compiler message prefixed with ">>> ".
 #ifndef AREG_COMPILER_MSG
     #define AREG_COMPILER_MSG(msg)      AREG_PRAGMA(message (">>> " #msg))

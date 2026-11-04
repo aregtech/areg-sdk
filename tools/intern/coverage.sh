@@ -11,7 +11,9 @@
 #
 #   Steps
 #     sync      Copy the working tree to <dir>/src (skipped with --in-place).
-#     build     Configure and build the instrumented tree.
+#     build     Configure and build the instrumented tree (configure, then compile).
+#     configure Only the cmake configure of the build step.
+#     compile   Only the cmake build of the build step.
 #     unit      Run ctest, collect unit.json, reset the counters.
 #     examples  Run the example scenarios, collect examples.json, reset the counters.
 #     report    Write the Cobertura, HTML and Markdown reports and print them. The
@@ -33,11 +35,20 @@
 #                     a full run of that step replaces them.
 #     --files <regex> report: also list the files matching the expression.
 #     --top N         report: list the N files with most lines not hit (default: 25).
-#     --jobs N        Build jobs (default: 6).
+#     --jobs N        Build jobs (default: 6; 'auto': the number of CPUs).
 #
 #   Environment
 #     GCOVR           gcovr executable (default: gcovr from PATH, else ~/.local/bin/gcovr).
 #     PYTHON          Python interpreter (default: python3).
+#     AREG_COV_FAMILY    Compiler family passed to cmake (default: gnu; macOS: llvm; Cygwin: cygwin).
+#     AREG_COV_EXTENDED  AREG_EXTENDED value (default: ON; macOS: OFF).
+#     AREG_COV_GCOV      gcov program gcovr runs (default: gcov of the compiler;
+#                        macOS: "xcrun llvm-cov gcov"; Windows: "llvm-cov gcov").
+#     AREG_COV_GENERATOR cmake generator (default: the cmake default; Windows: Ninja).
+#     AREG_COV_FLAGS     compile flags (default: "--coverage -fprofile-update=atomic";
+#                        clang-cl: "/clang:--coverage /clang:-fprofile-update=atomic").
+#     AREG_COV_LDFLAGS   link flags of executables and shared libraries (default: "--coverage";
+#                        clang-cl: the clang_rt.profile library and its /libpath).
 #     GITHUB_STEP_SUMMARY  When set, the report is appended to it.
 #
 #   Example: a full run, then a quick re-run of new tests
@@ -48,7 +59,10 @@
 # ===========================================================================
 set -u
 
-REPO=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
+# 'pwd -W' (Git for Windows) gives the drive form that native tools read; elsewhere it is 'pwd'.
+cwd() { pwd -W 2>/dev/null || pwd; }
+
+REPO=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && cwd)
 STEP=${1:-help}
 [ $# -gt 0 ] && shift
 
@@ -62,7 +76,7 @@ TOP=25
 JOBS=6
 
 die() { echo "coverage.sh: $*" >&2; exit 2; }
-absolute() { case "$1" in /*) echo "$1" ;; *) echo "$PWD/$1" ;; esac; }
+absolute() { case "$1" in /*) echo "$1" ;; *:*) echo "$1" ;; *) echo "$(cwd)/$1" ;; esac; }
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -78,6 +92,8 @@ while [ $# -gt 0 ]; do
   esac
 done
 
+[ "$JOBS" = auto ] && JOBS=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
+
 if [ "$IN_PLACE" = 1 ]; then SRC=$REPO; else SRC=$DIR/src; fi
 BUILD=${BUILD:-$DIR/build}
 OUT=${OUT:-$DIR/report}
@@ -86,7 +102,13 @@ PYTHON=${PYTHON:-python3}
 if [ -z "${GCOVR:-}" ]; then
   GCOVR=$(command -v gcovr || echo "$HOME/.local/bin/gcovr")
 fi
-NPROC=$(nproc 2>/dev/null || echo 4)
+NPROC=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
+FAMILY=${AREG_COV_FAMILY:-gnu}
+EXTENDED=${AREG_COV_EXTENDED:-ON}
+GCOV=${AREG_COV_GCOV:-}
+GENERATOR=${AREG_COV_GENERATOR:-}
+COV_FLAGS=${AREG_COV_FLAGS:---coverage -fprofile-update=atomic}
+COV_LDFLAGS=${AREG_COV_LDFLAGS:---coverage}
 
 # A Lock or ScopedLock that could not take its object ends the test process.
 export AREG_LOCK_FAILURE_FATAL=${AREG_LOCK_FAILURE_FATAL:-1}
@@ -106,7 +128,9 @@ check_gcovr() {
 collect() {
   check_gcovr
   mkdir -p "$OUT"
-  ( cd "$SRC" && "$GCOVR" --root . --filter 'framework/' -j "$NPROC" \
+  local gcov=()
+  [ -n "$GCOV" ] && gcov=(--gcov-executable "$GCOV")
+  ( cd "$SRC" && "$GCOVR" --root . --filter 'framework/' -j "$NPROC" ${gcov[@]+"${gcov[@]}"} \
       --exclude-unreachable-branches --exclude-throw-branches \
       --json "$1" "$BUILD" ) || die "gcovr failed to collect $1"
 }
@@ -126,17 +150,25 @@ step_sync() {
   echo "sync: $REPO -> $SRC"
 }
 
-step_build() {
+step_configure() {
   # Debug is the only unoptimized configuration, so each line maps to its own counter.
   # '-fprofile-update=atomic' keeps the counters exact when several threads run one line.
-  local flags="--coverage -fprofile-update=atomic"
-  cmake -S "$SRC" -B "$BUILD" -DAREG_COMPILER_FAMILY=gnu -DCMAKE_BUILD_TYPE=Debug -DAREG_LIB_TYPE=shared \
-        -DAREG_EXTENDED:BOOL=ON -DAREG_LOGGING:BOOL=ON -DAREG_EXAMPLES:BOOL=ON -DAREG_TESTS:BOOL=ON \
+  local flags="$COV_FLAGS" gen=()
+  [ -n "$GENERATOR" ] && gen=(-G "$GENERATOR")
+  cmake -S "$SRC" -B "$BUILD" ${gen[@]+"${gen[@]}"} -DAREG_COMPILER_FAMILY="$FAMILY" -DCMAKE_BUILD_TYPE=Debug -DAREG_LIB_TYPE=shared \
+        -DAREG_EXTENDED:BOOL="$EXTENDED" -DAREG_LOGGING:BOOL=ON -DAREG_EXAMPLES:BOOL=ON -DAREG_TESTS:BOOL=ON \
         -DAREG_OUTPUT_LAYOUT:BOOL=OFF \
         -DCMAKE_C_FLAGS="$flags" -DCMAKE_CXX_FLAGS="$flags" \
-        -DCMAKE_EXE_LINKER_FLAGS="--coverage" -DCMAKE_SHARED_LINKER_FLAGS="--coverage" \
+        -DCMAKE_EXE_LINKER_FLAGS="$COV_LDFLAGS" -DCMAKE_SHARED_LINKER_FLAGS="$COV_LDFLAGS" \
     || die "configure failed"
+}
+
+step_compile() {
   cmake --build "$BUILD" -j "$JOBS" || die "build failed"
+}
+
+step_build() {
+  step_configure && step_compile
 }
 
 step_unit() {
@@ -183,6 +215,10 @@ step_report() {
   for flag in unit examples; do
     [ -f "$OUT/$flag-only.json" ] && adds+=(--json-add-tracefile "$OUT/$flag-only.json")
   done
+  # Every uploaded path is repository-relative; /cygdrive/..., C:/... and ../ would split a file in Codecov.
+  local bad
+  bad=$(grep -ho 'filename="[^"]*"' "$OUT/unit.xml" "$OUT/examples.xml" | grep -E 'filename="(/|[A-Za-z]:|\.\.|[^"]*\\)' | head -3)
+  [ -z "$bad" ] || die "Cobertura paths are not repository-relative: $bad"
   mkdir -p "$OUT/html"
   "$GCOVR" --root . "${adds[@]}" \
            --html-nested "$OUT/html/index.html" --html-title 'Areg SDK framework coverage' \
@@ -213,6 +249,8 @@ step_report() {
 case "$STEP" in
   sync)     step_sync ;;
   build)    step_build ;;
+  configure) step_configure ;;
+  compile)  step_compile ;;
   unit)     step_unit ;;
   examples) step_examples ;;
   report)   step_report ;;
@@ -224,5 +262,5 @@ case "$STEP" in
     step_report || RC=1
     exit $RC ;;
   help|-h|--help) sed -n '3,/^# =====/{/^# =====/d;p;}' "$0" | sed 's/^# \{0,1\}//' ;;
-  *) die "unknown step '$STEP' (sync, build, unit, examples, report, all)" ;;
+  *) die "unknown step '$STEP' (sync, build, configure, compile, unit, examples, report, all)" ;;
 esac
