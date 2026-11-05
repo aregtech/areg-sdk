@@ -149,8 +149,7 @@ bool ServiceClientConnectionBase::try_send_inline( MessageEnvelope & data )
         return false;
     }
 
-    hdr->internal1 = 0u;
-    hdr->internal2 = 0u;
+    areg::clear_local_fields( *hdr );
     ASSERT( hdr->custom == 0u );
 
     int32_t sent{ 0 };

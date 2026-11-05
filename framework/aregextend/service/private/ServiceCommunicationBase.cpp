@@ -48,8 +48,6 @@ namespace
         wake.set_target(static_cast<uint32_t>(areg::COOKIE_UNKNOWN));
         sendThread.send_gate().enter();
         areg::Event evt(std::move(wake));
-        evt.set_event_consumer(&sendThread);
-        evt.set_target_dispatcher(&sendThread);
         if ( sendThread.queue_message(evt) == false )
         {
             sendThread.send_gate().leave(1u);
@@ -560,8 +558,7 @@ bool ServiceCommunicationBase::try_send_inline( areg::MessageEnvelope & data, co
     if ( writer.try_acquire() == false )
         return false;
 
-    hdr->internal1 = 0u;
-    hdr->internal2 = 0u;
+    areg::clear_local_fields( *hdr );
     ASSERT( hdr->custom == 0u );
 
     int32_t result{ 0 };
@@ -641,11 +638,11 @@ void ServiceCommunicationBase::pause_if_held(ITEM_ID target) noexcept
 
 bool ServiceCommunicationBase::do_send_shared( areg::MessageEnvelope && data, areg::EventPriority prio )
 {
+    if ( areg::set_send_priority(data, prio) == false )
+        return false;
+
     mThreadSend.send_gate().enter();
     areg::Event evt(std::move(data));
-    evt.set_event_priority(prio);
-    evt.set_event_consumer(&mThreadSend);
-    evt.set_target_dispatcher(&mThreadSend);
     if (mThreadSend.queue_message(evt) == false)
     {
         mThreadSend.send_gate().leave(1u);  // a refused event is never popped by the send thread
@@ -670,11 +667,11 @@ bool ServiceCommunicationBase::do_send_pool( areg::MessageEnvelope && data, areg
 
     const uint32_t idx{ data.target() % mNumPairs };
     PoolSendThread & sendThread{ mClientPairs[idx]->send_thread() };
+    if ( areg::set_send_priority(data, prio) == false )
+        return false;
+
     sendThread.send_gate().enter();
     areg::Event evt(std::move(data));
-    evt.set_event_priority(prio);
-    evt.set_event_consumer(&sendThread);
-    evt.set_target_dispatcher(&sendThread);
     if (sendThread.queue_message(evt) == false)
     {
         sendThread.send_gate().leave(1u);   // a refused event is never popped by the send thread

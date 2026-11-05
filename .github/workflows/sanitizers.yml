@@ -135,8 +135,22 @@ jobs:
         shell: bash
         run: |
           ulimit -c unlimited
-          tools/intern/sanitize.sh ${{matrix.mode}} --config ${{matrix.config}} \
+          tools/intern/sanitize.sh ${{matrix.mode}} --config ${{matrix.config}} --examples \
               --target areg-unit-tests --run ctest
+
+      # The exit code of a scenario shows only its lead process, so the logs are searched.
+      # Not a gate yet: the known reports of the examples are still open.
+      - name: Run the examples under ${{matrix.mode}} ${{matrix.config}}
+        if: always() && matrix.mode == 'tsan' && github.event_name != 'push'
+        continue-on-error: true
+        working-directory: ${{github.workspace}}
+        shell: bash
+        timeout-minutes: 45
+        run: |
+          tools/intern/sanitize.sh ${{matrix.mode}} --config ${{matrix.config}} --examples --keep --run examples || true
+          grep -rah 'SUMMARY: ThreadSanitizer' ./build-tsan/example-results | sed -e 's/\x1b\[[0-9;]*m//g' \
+            | sed -e 's#[^ ]*/areg-sdk/##g' | sort | uniq -c | sort -rn | tee ./build-tsan/example-reports.log
+          test ! -s ./build-tsan/example-reports.log
 
       # The teardown tests fail about once in a hundred runs, and one pass of the
       # suite is one run of each. They are repeated here, in the tree the step above
@@ -487,6 +501,133 @@ jobs:
         with:
           name: examples-${{matrix.arch}}
           path: ./ubsan/
+
+  # Not part of the result yet: these platforms have not run under a sanitizer before.
+  sanitizers-macos:
+    name: ${{matrix.mode}} (macOS)
+    needs: plan
+    if: needs.plan.outputs.run == 'true'
+    runs-on: macos-latest
+    timeout-minutes: 120
+    continue-on-error: true
+
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [ asan, tsan ]
+
+    steps:
+
+      - name: Checkout Areg SDK source codes
+        uses: actions/checkout@v7
+
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v6.1.0
+        with:
+          java-version: 17
+          java-package: jre
+          distribution: temurin
+
+      - name: Select the Xcode command line tools
+        run: sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+
+      # Apple clang has no leak checker on this platform.
+      - name: Run the tests under ${{matrix.mode}}
+        shell: bash
+        run: |
+          tools/intern/sanitize.sh ${{matrix.mode}} --compiler llvm --config RelWithDebInfo --no-extended --examples \
+              --leaks off --target areg-unit-tests --run ctest
+
+      - name: Run the examples under ${{matrix.mode}}
+        if: always()
+        shell: bash
+        timeout-minutes: 45
+        run: |
+          tools/intern/sanitize.sh ${{matrix.mode}} --compiler llvm --config RelWithDebInfo --no-extended --examples \
+              --leaks off --keep --run examples
+
+      - name: Upload what the sanitizer left behind
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: sanitizer-macos-${{matrix.mode}}
+          path: |
+            ./build-${{matrix.mode}}/Testing/
+            ./build-${{matrix.mode}}/example-results/
+          if-no-files-found: ignore
+
+  sanitizers-windows:
+    name: asan (Windows)
+    needs: plan
+    if: needs.plan.outputs.run == 'true'
+    runs-on: windows-latest
+    timeout-minutes: 120
+    continue-on-error: true
+
+    steps:
+
+      - name: Checkout Areg SDK source codes
+        uses: actions/checkout@v7
+
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v6.1.0
+        with:
+          java-version: 17
+          java-package: jre
+          distribution: temurin
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Select the MSVC environment
+        shell: pwsh
+        # The variables vcvars64.bat adds or changes are passed to the next steps.
+        run: |
+          $vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          if (-not $vs) { throw 'No Visual Studio with the C++ tools' }
+          cmd /c "`"$vs\VC\Auxiliary\Build\vcvars64.bat`" >nul && set" | ForEach-Object {
+            $name, $value = $_ -split '=', 2
+            if ($value -cne [Environment]::GetEnvironmentVariable($name)) {
+              "$name=$value" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+            }
+          }
+
+      # MSVC has AddressSanitizer only: no thread sanitizer and no leak checker.
+      - name: Build with AddressSanitizer
+        shell: pwsh
+        run: |
+          cmake -S . -B product/asan -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl `
+                -DAREG_COMPILER_FAMILY=msvc -DAREG_LIB_TYPE=static -DAREG_TESTS=ON -DAREG_EXAMPLES=ON -DAREG_OUTPUT_LAYOUT=OFF `
+                "-DAREG_OUTPUT_DIR=$("$env:GITHUB_WORKSPACE/product/asan/product" -replace '\\', '/')" `
+                "-DCMAKE_C_FLAGS=/fsanitize=address /Zi" "-DCMAKE_CXX_FLAGS=/EHsc /GR /fsanitize=address /Zi"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cmake --build product/asan -j 4
+          exit $LASTEXITCODE
+
+      - name: Run the tests under asan
+        shell: pwsh
+        run: |
+          ctest --test-dir product/asan --timeout 600 --output-on-failure
+          exit $LASTEXITCODE
+
+      - name: Run the examples under asan
+        if: always()
+        shell: pwsh
+        timeout-minutes: 45
+        run: |
+          python tools/intern/run-all-examples.py --bin-dir product/asan/product/bin --tier all --keep-logs --out-dir product/asan/example-results
+          exit $LASTEXITCODE
+
+      - name: Upload what the sanitizer left behind
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: sanitizer-windows-asan
+          path: |
+            product/asan/Testing/
+            product/asan/example-results/
+          if-no-files-found: ignore
 
   result:
     name: Sanitizers result

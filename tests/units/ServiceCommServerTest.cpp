@@ -531,6 +531,34 @@ protected:
         EXPECT_EQ(run.server.instances().size(), 1u);
     }
 
+    //!< The server sends one message again and again to a client that reads only afterwards.
+    static void run_message_sent_again(uint32_t pairs)
+    {
+        constexpr uint32_t COPIES{ 400u };
+        constexpr uint32_t BYTES{ 128u * 1024u };
+
+        Running run(Policy::Accept, pairs);
+        run.server.set_close_stalled(false);
+        ASSERT_TRUE(run.start());
+        PeerPtr reader{ make_peer(run.port) };
+        ASSERT_TRUE(reader->join());
+
+        areg::MessageEnvelope message{ make_data(areg::COOKIE_ROUTER, reader->cookie, 7u, BYTES) };
+        for (uint32_t i = 0u; i != COPIES; ++i)
+        {
+            ASSERT_TRUE(run.server.send_message(message));
+        }
+
+        EXPECT_EQ(message.header()->internal1, 0u);
+        EXPECT_EQ(message.header()->internal2, 0u);
+        for (uint32_t i = 0u; i != COPIES; ++i)
+        {
+            areg::MessageEnvelope received;
+            ASSERT_TRUE(reader->receive(received)) << "copy " << i;
+            ASSERT_EQ(received.size_used(), BYTES);
+        }
+    }
+
     //!< A client that reads nothing is held by the server, the sender of its messages is not
     //!< read while it is held, and no message is lost or reordered once the client reads.
     static void run_slow_reader(uint32_t pairs, uint32_t messageBytes)
@@ -648,6 +676,18 @@ TEST_F(ServiceCommServerTest, vanished_clients_are_forgotten_in_the_shared_threa
 TEST_F(ServiceCommServerTest, vanished_clients_are_forgotten_in_the_pool_mode)
 {
     run_vanished_clients(POOL_PAIRS);
+}
+
+// Reproduces the defect: sending a message again wrote routing fields into the block the send
+// thread was using, so a queued copy could lose its consumer and pointers could reach the wire.
+TEST_F(ServiceCommServerTest, message_sent_again_arrives_every_time_in_the_shared_thread_mode)
+{
+    run_message_sent_again(0u);
+}
+
+TEST_F(ServiceCommServerTest, message_sent_again_arrives_every_time_in_the_pool_mode)
+{
+    run_message_sent_again(POOL_PAIRS);
 }
 
 TEST_F(ServiceCommServerTest, slow_reader_is_held_without_loss_in_the_shared_thread_mode)

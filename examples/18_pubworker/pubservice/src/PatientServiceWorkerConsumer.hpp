@@ -13,8 +13,7 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/component/WorkerThreadConsumer.hpp"
-
-class PatientInformationProviderBase;
+#include "common/PatientInfoEvent.hpp"
 
 /**
  * \brief   A simple worker thread consumer. It does not handle any events, but
@@ -28,11 +27,11 @@ class PatientServiceWorkerConsumer final  : public    areg::WorkerThreadConsumer
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Sets worker thread consumer name and the service provider object to update data.
+     * \brief   Sets worker thread consumer name and the consumer of the patient information.
      * \param   consumerName    The name worker thread consumer.
-     * \param   infoPatient     The instance of the servicing object provider.
+     * \param   infoPatient     The consumer of the patient information, on the component thread.
      **/
-    PatientServiceWorkerConsumer( const char * consumerName, PatientInformationProviderBase  & infoPatient);
+    PatientServiceWorkerConsumer( const char * consumerName, IEPatientInfoEventConsumer & infoPatient);
 
     /**
      * \brief   Destructor.
@@ -57,7 +56,7 @@ protected:
 // Private members.
 //////////////////////////////////////////////////////////////////////////
 private:
-    PatientInformationProviderBase & mPatienInfo;   //!< Instance of serivicing provider object.
+    IEPatientInfoEventConsumer & mPatienInfo;       //!< The consumer of the patient information.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

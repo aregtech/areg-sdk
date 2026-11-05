@@ -148,15 +148,15 @@ inline void PubSubController::print_message(const areg::String & message, Option
     areg::ext::Console & console = areg::ext::Console::instance();
     if (cmd == OptionFlag::CMD_Error)
     {
-        console.output_str(pubsub::CoordInfoMsg, message);
+        console.output_str(pubsub::info_coord(), message);
     }
     else if (cmd == OptionFlag::CMD_Help)
     {
-        console.output_str(pubsub::CoordInfoMsg, _help);
+        console.output_str(pubsub::info_coord(), _help);
     }
     else if (cmd != OptionFlag::CMD_Undefined)
     {
-        console.output_msg(pubsub::CoordInfoMsg, message);
+        console.output_msg(pubsub::info_coord(), message);
     }
 
     console.output_str(pubsub::CoordSeparate, pubsub::Separator);

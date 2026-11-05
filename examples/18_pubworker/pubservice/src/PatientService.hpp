@@ -13,6 +13,7 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
+#include "common/PatientInfoEvent.hpp"
 #include "examples/18_pubworker/services/PatientInformationProviderBase.hpp"
 #include "pubservice/src/PatientServiceWorkerConsumer.hpp"
 
@@ -23,6 +24,7 @@
  **/
 class PatientService final  : public    areg::Component
                             , private   PatientInformationProviderBase
+                            , private   IEPatientInfoEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Statics and constants.
@@ -54,6 +56,13 @@ protected:
      * \return  Return valid pointer if worker thread has assigned consumer.
      **/
     areg::WorkerThreadConsumer * worker_thread_consumer( const areg::String & consumerName, const areg::String & workerThreadName ) final;
+
+    /**
+     * \brief   Runs on the component thread: updates the patient attribute with the data of the
+     *          worker thread, or invalidates it if the event carries no data.
+     * \param   data    The patient information from the worker thread.
+     **/
+    void process_event( const PatientInfoEventData & data ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members.

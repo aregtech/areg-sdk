@@ -13,10 +13,12 @@
 #include "areg/component/ResponseEvents.hpp"
 #include "areg/component/StubBase.hpp"
 
+#include <atomic>
 #include <chrono>
 #include <functional>
 #include <future>
 #include <memory>
+#include <thread>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -514,6 +516,40 @@ TEST(ProxyBaseContractTest, connection_changes_ignore_incompatible_and_repeated_
         EXPECT_EQ(ServiceConnectionState::Disconnected, listener.mConnections[1]);
         proxy->service_connection_updated(server, channel, ServiceConnectionState::Disconnected);
         EXPECT_EQ(2u, listener.mConnections.size());
+    });
+}
+
+// Reproduces the defect: the channel of a proxy was written without the lock routing reads it under.
+TEST(ProxyBaseContractTest, channel_update_is_ordered_with_the_read_of_the_router_client)
+{
+    on_proxy_thread([](DispatcherThread& owner)
+    {
+        ContractListener listener;
+        ProxyLease proxy(listener, owner);
+        ASSERT_NE(nullptr, proxy.pointer());
+        const StubAddress server(INTERFACE, String("ProxyContractProvider"), owner.name());
+        const Channel channel(static_cast<uint32_t>(owner.address()), server.source(), COOKIE_LOCAL);
+        const ProxyBase * const reader{ proxy.pointer().get() };
+        std::atomic<bool> stop{ false };
+        std::thread router([reader, &stop]
+        {
+            while (stop.load(std::memory_order_relaxed) == false)
+            {
+                ProxyBase::lock_resource();
+                const Channel seen(reader->proxy_address().channel());
+                ProxyBase::unlock_resource();
+                static_cast<void>(seen);
+            }
+        });
+
+        for (uint32_t i = 0u; i < 200u; ++i)
+        {
+            proxy->service_connection_updated(server, channel, (i % 2u) == 0u ? ServiceConnectionState::Connected : ServiceConnectionState::Disconnected);
+        }
+
+        stop.store(true, std::memory_order_relaxed);
+        router.join();
+        EXPECT_FALSE(proxy->is_connected());
     });
 }
 

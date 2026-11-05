@@ -11,8 +11,8 @@
 #include "pubservice/src/PatientServiceWorkerConsumer.hpp"
 
 #include "areg/base/UtilityDefs.hpp"
+#include "areg/component/ComponentThread.hpp"
 #include "common/WorkerDefs.hpp"
-#include "examples/18_pubworker/services/PatientInformationProviderBase.hpp"
 #include "areg/appbase/Application.hpp"
 
 #ifdef _WINDOWS
@@ -24,14 +24,14 @@
 #endif  // _WINDOWS
 
 
-PatientServiceWorkerConsumer::PatientServiceWorkerConsumer(const char * consumerName, PatientInformationProviderBase & infoPatient)
+PatientServiceWorkerConsumer::PatientServiceWorkerConsumer(const char * consumerName, IEPatientInfoEventConsumer & infoPatient)
     : areg::WorkerThreadConsumer( areg::create_component_item_name( worker::ServiceNamePatientInfo, consumerName) )
 
     , mPatienInfo       ( infoPatient )
 {
 }
 
-void PatientServiceWorkerConsumer::register_event_consumers(areg::WorkerThread & /* workThread */, areg::ComponentThread & /* masterThread */ )
+void PatientServiceWorkerConsumer::register_event_consumers(areg::WorkerThread & /* workThread */, areg::ComponentThread & masterThread )
 {
     bool quitApp = false;
 
@@ -86,7 +86,7 @@ void PatientServiceWorkerConsumer::register_event_consumers(areg::WorkerThread &
         infoPatient.weight      = weight;
         infoPatient.age         = age;
 
-        mPatienInfo.set_patient(infoPatient);
+        PatientInfoEvent::send_event(PatientInfoEventData(infoPatient), mPatienInfo, masterThread);
 
         /******************************************
          * Do you want to continue or exit application?
@@ -103,6 +103,6 @@ void PatientServiceWorkerConsumer::register_event_consumers(areg::WorkerThread &
 
     } while (!quitApp);
 
-    mPatienInfo.invalidate_patient();
+    PatientInfoEvent::send_event(PatientInfoEventData(), mPatienInfo, masterThread);
     areg::Application::signal_quit();
 }

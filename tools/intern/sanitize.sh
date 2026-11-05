@@ -48,6 +48,7 @@
 #                             none       -> build only
 #     --lib     shared|static  Library type (default: static - robust for ASan).
 #     --examples            Also build examples (default: off, tests only).
+#     --no-extended         Build without the extended library (macOS has no ncurses here).
 #     --config  <type>      CMake build type (default: Debug). Use RelWithDebInfo when
 #                           chasing a race: -O0 changes the timing enough to hide it.
 #     --repeat  N           Rounds for '--run examples' and '--run ctest:<regex>' (default: 1).
@@ -106,6 +107,7 @@ TARGET="areg-unit-tests"
 RUN="auto"
 LIBTYPE="static"
 EXAMPLES="OFF"
+EXTENDED=()
 CONFIG="Debug"
 REPEAT=1
 TEST_TIMEOUT="${AREG_SANITIZE_TEST_TIMEOUT:-600}"
@@ -126,6 +128,7 @@ while [[ $# -gt 0 ]]; do
         --run)      RUN="$2";      shift 2;;
         --lib)      LIBTYPE="$2";  shift 2;;
         --examples) EXAMPLES="ON"; shift;;
+        --no-extended) EXTENDED=(-DAREG_EXTENDED:BOOL=OFF); shift;;
         --config)   CONFIG="$2";   shift 2;;
         --repeat)   REPEAT="$2";   shift 2;;
         --leaks)    LEAKS="$2";    shift 2;;
@@ -214,6 +217,7 @@ configure_build() {
             -DAREG_LIB_TYPE="${LIBTYPE}" \
             -DAREG_TESTS=ON \
             -DAREG_EXAMPLES="${EXAMPLES}" \
+            ${EXTENDED[@]+"${EXTENDED[@]}"} \
             -DAREG_OUTPUT_DIR="${build_dir}/product" \
             -DCMAKE_C_FLAGS="${flags}" \
             -DCMAKE_CXX_FLAGS="${flags}" \

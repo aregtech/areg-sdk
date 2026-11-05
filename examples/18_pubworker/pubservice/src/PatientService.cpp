@@ -16,8 +16,25 @@ PatientService::PatientService( const areg::ComponentEntry & entry, areg::Compon
     : areg::Component             ( entry, owner )
     , PatientInformationProviderBase( static_cast<areg::Component &>(*this) )
 
-    , mWorkerConsumer       ( PatientService::PatienServiceConsumerName.data(), static_cast<PatientInformationProviderBase &>(self()) )
+    , mWorkerConsumer       ( PatientService::PatienServiceConsumerName.data(), static_cast<IEPatientInfoEventConsumer &>(*this) )
 {
+}
+
+void PatientService::process_event(const PatientInfoEventData & data)
+{
+    const areg::SharedBuffer & buf = data.data();
+    PatientInfoEventData::UpdateCommands cmd = PatientInfoEventData::UpdateCommands::CMD_Undefined;
+    buf >> cmd;
+    if (cmd == PatientInfoEventData::UpdateCommands::CMD_PatientInfo)
+    {
+        PatientInformation::PatientInfo infoPatient;
+        buf >> infoPatient;
+        set_patient(infoPatient);
+    }
+    else
+    {
+        invalidate_patient();
+    }
 }
 
 inline PatientService & PatientService::self()

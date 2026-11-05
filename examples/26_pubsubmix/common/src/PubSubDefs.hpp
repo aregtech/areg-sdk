@@ -72,8 +72,11 @@ namespace pubsub
     //!< The coordinate in console to display a separator
     constexpr areg::ext::Console::Coord    CoordSeparator { 0, 8 };
 
-    //!< The coordinate in console to display an information.
-    extern areg::ext::Console::Coord       CoordInfoMsg;
+    //!< Moves the information line to the next console row. Any thread can call it.
+    void next_info_row();
+
+    //!< Returns the coordinate in console to display an information.
+    areg::ext::Console::Coord info_coord();
 }
 
 #endif // PUBSUBMIX_COMMON_SRC_PUBSUBDEFS_HPP
