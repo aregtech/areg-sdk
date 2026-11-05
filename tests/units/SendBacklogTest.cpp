@@ -675,6 +675,159 @@ TEST(SendBacklogTest, reading_peer_is_kept_past_twice_its_cap)
 }
 
 //////////////////////////////////////////////////////////////////////////
+// Sends larger than the send buffer of the socket
+//////////////////////////////////////////////////////////////////////////
+
+namespace
+{
+    //!< The bytes of a stream, many times the send buffer of the pair.
+    constexpr uint32_t  STREAM_BYTES    { 8u * 1024u * 1024u };
+
+    //!< The bytes of one read of the peer, small enough to keep the send buffer full.
+    constexpr uint32_t  STREAM_BLOCK    { 4u * 1024u };
+
+    //!< The number of messages written in one batch.
+    constexpr uint32_t  STREAM_MESSAGES { 128u };
+
+    //!< Returns a stream of \a bytes where every 4 bytes hold their own number.
+    std::vector<uint8_t> numbered_stream(uint32_t bytes)
+    {
+        std::vector<uint8_t> result(bytes);
+        for (uint32_t word = 0u; word < bytes / 4u; ++word)
+        {
+            std::memcpy(result.data() + word * 4u, &word, sizeof(word));
+        }
+
+        return result;
+    }
+
+    //!< Reads \a expected in small blocks until it ends or differs, then closes the client end.
+    //!< Returns the bytes that arrived intact.
+    uint64_t read_stream(Pair & pair, const std::vector<uint8_t> & expected)
+    {
+        std::vector<uint8_t> block(STREAM_BLOCK);
+        uint64_t intact{ 0u };
+        while (intact < expected.size())
+        {
+            const uint32_t length{ static_cast<uint32_t>(std::min<uint64_t>(expected.size() - intact, STREAM_BLOCK)) };
+            if ((areg::receive_data_window(pair.client, block.data(), length) != static_cast<int32_t>(length))
+             || (std::memcmp(block.data(), expected.data() + intact, length) != 0))
+            {
+                break;
+            }
+
+            intact += length;
+        }
+
+        areg::socket_close(pair.client);
+        pair.client = areg::InvalidSocketHandle;
+        return intact;
+    }
+
+    //!< Closes the server end, so that a reader of a shorter stream ends, and expects \a stream whole.
+    void expect_stream(Pair & pair, std::future<uint64_t> & reader, const std::vector<uint8_t> & stream)
+    {
+        areg::socket_close(pair.server);
+        pair.server = areg::InvalidSocketHandle;
+        EXPECT_EQ(reader.get(), stream.size());
+        pair.close();
+    }
+
+    //!< Sends a numbered stream with \a send while the peer reads it, and expects every byte in order.
+    template<typename SendFn>
+    void expect_whole_stream(SendFn send)
+    {
+        Pair pair{ };
+        ASSERT_TRUE(pair.open());
+        const std::vector<uint8_t> stream{ numbered_stream(STREAM_BYTES) };
+        std::future<uint64_t> reader{ std::async(std::launch::async, [&]() { return read_stream(pair, stream); }) };
+        const SOCKETHANDLE server{ pair.server };
+        EXPECT_EQ(send(server, stream), static_cast<int32_t>(stream.size()));
+        expect_stream(pair, reader, stream);
+    }
+}
+
+// Reproduces the defect: a call larger than the send buffer lost a part of the stream on Cygwin,
+// which skips a refused part of the call and still reports the other parts as sent.
+TEST(SendBacklogTest, send_data_larger_than_the_send_buffer_keeps_the_stream_whole)
+{
+    expect_whole_stream([](SOCKETHANDLE server, const std::vector<uint8_t> & stream)
+        {
+            return areg::send_data(server, stream.data(), static_cast<uint32_t>(stream.size()));
+        });
+}
+
+TEST(SendBacklogTest, send_data_v_larger_than_the_send_buffer_keeps_the_stream_whole)
+{
+    expect_whole_stream([](SOCKETHANDLE server, const std::vector<uint8_t> & stream)
+        {
+            const std::size_t half{ stream.size() / 2u };
+            const areg::IoBuffer buffers[]{ { stream.data(), half }, { stream.data() + half, stream.size() - half } };
+            return areg::send_data_v(server, buffers, 2u);
+        });
+}
+
+TEST(SendBacklogTest, try_send_data_v_larger_than_the_send_buffer_keeps_the_stream_whole)
+{
+    expect_whole_stream([](SOCKETHANDLE server, const std::vector<uint8_t> & stream)
+        {
+            const std::size_t half{ stream.size() / 2u };
+            const areg::IoBuffer buffers[]{ { stream.data(), half }, { stream.data() + half, stream.size() - half } };
+            int32_t sent{ 0 };
+            const Clock::time_point begin{ Clock::now() };
+            while ((sent == 0) && (elapsed_ms(begin) < DEADLINE_MS))
+            {
+                sent = areg::try_send_data_v(server, buffers, 2u);
+            }
+
+            return sent;
+        });
+}
+
+TEST(SendBacklogTest, write_larger_than_the_send_buffer_keeps_the_stream_whole)
+{
+    constexpr uint32_t BYTES{ 32u * 1024u };
+    Pair pair{ };
+    ASSERT_TRUE(pair.open());
+    areg::SendQueueGate gate{ };
+    SendBacklog backlog{ gate };
+    Owner owner{ };
+    owner.socket = pair.server;
+    backlog.set_limits(STREAM_BYTES, SendBacklog::UNLIMITED, 60'000u);
+    static_cast<void>(backlog.attach(pair.server));
+
+    std::vector<areg::MessageEnvelope> messages(STREAM_MESSAGES);
+    std::vector<uint8_t> stream;
+    uint32_t word{ 0u };
+    for (areg::MessageEnvelope & message : messages)
+    {
+        uint8_t * data{ message.init_envelope(areg::notify_client_connection(), BYTES) };
+        ASSERT_NE(data, nullptr);
+        for (uint32_t at = 0u; at < BYTES; at += sizeof(word), ++word)
+        {
+            std::memcpy(data + at, &word, sizeof(word));
+        }
+
+        message.header()->bufHeader.biUsed = BYTES;
+        const uint8_t * wire{ areg::wire_data(*message.header()) };
+        stream.insert(stream.end(), wire, wire + areg::wire_size(*message.header()));
+    }
+
+    std::future<uint64_t> reader{ std::async(std::launch::async, [&]() { return read_stream(pair, stream); }) };
+    EXPECT_TRUE(write_range(backlog, pair, messages, 0u, STREAM_MESSAGES));
+    const Clock::time_point started{ Clock::now() };
+    while ((backlog.is_empty() == false) && (owner.closed.load() == false) && (elapsed_ms(started) < DEADLINE_MS))
+    {
+        static_cast<void>(backlog.pump(owner));
+        std::this_thread::yield();
+    }
+
+    std::deque<ITEM_ID> cut;
+    backlog.release_all(cut);
+    expect_stream(pair, reader, stream);
+}
+
+//////////////////////////////////////////////////////////////////////////
 // Inline writes, failures of the peer, limits and the release of a backlog
 //////////////////////////////////////////////////////////////////////////
 
