@@ -15,13 +15,16 @@
  *
  *              Usage: areg-router-io-test <case> <pairs> <bin-dir>
  *              Cases: stale-cache, wrong-client, partial-header, partial-body, invalid-type, oversize,
- *              slow-reader, stop-while-flooding.
+ *              slow-reader, stop-while-flooding, and registration cases listed in CMakeLists.txt.
  ************************************************************************/
 
 #include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/base/MessageEnvelope.hpp"
 #include "areg/base/SocketDefs.hpp"
+#include "areg/base/Version.hpp"
+#include "areg/component/ProxyAddress.hpp"
+#include "areg/component/StubAddress.hpp"
 #include "areg/component/EventDefs.hpp"
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
@@ -52,6 +55,7 @@
 #include <sstream>
 #include <string>
 #include <thread>
+#include <utility>
 #include <vector>
 
 namespace
@@ -116,6 +120,10 @@ namespace
                 line = "router::*::port::tcpip = " + std::to_string(_port);
             else if (line.rfind("net::*::tcpip::pairs", 0) == 0)
                 line = "net::*::tcpip::pairs = " + std::to_string(pairs);
+            else if ((name == "duplicate-role") && (line.rfind("net::*::tcpip::keepalive", 0) == 0))
+                line = "net::*::tcpip::keepalive = 6";
+            else if ((name.rfind("held-provider-", 0) == 0) && (line.rfind("net::*::tcpip::keepalive", 0) == 0))
+                line = "net::*::tcpip::keepalive = 3600";
             else if ((name == "slow-reader") && (line.rfind("net::*::tcpip::sndbuf", 0) == 0))
                 line = "net::*::tcpip::sndbuf = " + std::to_string(SLOW_SNDBUF_KB);
 
@@ -436,6 +444,450 @@ namespace
         } while (std::chrono::steady_clock::now() < until);
 
         return false;
+    }
+
+    areg::StubAddress provider_address(ITEM_ID source, uint32_t role = 0x1234u)
+    {
+        areg::StubAddress address(0x4321u, areg::Version(1u, 2u, 3u), areg::ServiceType::Public,
+                                 role, 0x1111u, 0x2222u);
+        address.set_cookie(source);
+        address.set_source(source);
+        return address;
+    }
+
+    areg::ProxyAddress consumer_address(ITEM_ID source, uint32_t thread = 0x3333u, uint32_t role = 0x1234u)
+    {
+        areg::ProxyAddress address(0x4321u, areg::Version(1u, 2u, 3u), areg::ServiceType::Public,
+                                  role, thread, 0x4444u);
+        address.set_cookie(source);
+        address.set_source(source);
+        return address;
+    }
+
+    bool send_envelope(Client & client, areg::MessageEnvelope message)
+    {
+        return check(message.is_valid() && client.send(wire_of(message)), "valid control message sent");
+    }
+
+    bool register_provider(Client & client, const areg::StubAddress & address)
+    {
+        return send_envelope(client, areg::router_register_service(address, client.cookie, areg::COOKIE_ROUTER));
+    }
+
+    bool register_consumer(Client & client, const areg::ProxyAddress & address)
+    {
+        return send_envelope(client, areg::router_register_consumer(address, client.cookie, areg::COOKIE_ROUTER));
+    }
+
+    bool unregister_provider(Client & client, const areg::StubAddress & address)
+    {
+        return send_envelope(client, areg::router_unregister_service(address, areg::DisconnectReason::ProviderDisconnected,
+                                                                   client.cookie, areg::COOKIE_ROUTER));
+    }
+
+    bool unregister_consumer(Client & client, const areg::ProxyAddress & address)
+    {
+        return send_envelope(client, areg::router_unregister_consumer(address, areg::DisconnectReason::ConsumerDisconnected,
+                                                                    client.cookie, areg::COOKIE_ROUTER));
+    }
+
+    // This connection notification takes the dispatcher path, behind earlier control messages.
+    bool registration_barrier(Client & client)
+    {
+        areg::EventHeader marker{ };
+        marker.source = static_cast<uint32_t>(client.cookie);
+        marker.target = static_cast<uint32_t>(client.cookie);
+        marker.messageId = static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection);
+        marker.eventType = static_cast<uint16_t>(areg::EventType::EventRemoteProviderConnect);
+        marker.sequenceNr = 0xA55Au;
+        areg::MessageEnvelope envelope;
+        envelope.init_envelope(marker);
+        if (!send_envelope(client, std::move(envelope)))
+            return false;
+
+        areg::EventHeader received{ };
+        return check(client.read_message(received, ANSWER_MS)
+                     && received.messageId == marker.messageId && received.sequenceNr == marker.sequenceNr
+                     && received.source == marker.source && received.target == marker.target
+                     && received.bufHeader.biUsed == 0u, "dispatcher barrier arrived with no extra notification");
+    }
+
+    bool expect_registration(Client & client, areg::RegistrationAction action, const areg::StubAddress & provider,
+                             const areg::ProxyAddress & consumer,
+                             areg::DisconnectReason reason = areg::DisconnectReason::UndefinedReason)
+    {
+        areg::EventHeader received{ };
+        if (!check(client.read_message(received, ANSWER_MS), "registration notification received"))
+            return false;
+
+        bool result{ check(received.messageId == static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyRegister)
+                           && received.callType == static_cast<uint8_t>(action)
+                           && received.result == static_cast<uint32_t>(reason)
+                           && received.target == static_cast<uint32_t>(client.cookie)
+                           && received.source == static_cast<uint32_t>(areg::COOKIE_ROUTER)
+                           && received.bufHeader.biUsed == 0u, "notification action, reason, route and payload match") };
+        const bool isProvider{ action == areg::RegistrationAction::RegisterProvider
+                            || action == areg::RegistrationAction::UnregisterProvider };
+        if (isProvider)
+        {
+            const areg::StubAddress actual(received);
+            result = check(static_cast<const areg::ServiceAddress &>(actual) == static_cast<const areg::ServiceAddress &>(provider)
+                           && actual.cookie() == provider.cookie() && actual.thread() == provider.thread()
+                           && received.provider.number == 0x2222u, "provider identity and endpoint are preserved") && result;
+        }
+        else
+        {
+            const areg::ProxyAddress actual(received);
+            result = check(static_cast<const areg::ServiceAddress &>(actual) == static_cast<const areg::ServiceAddress &>(consumer)
+                           && actual.cookie() == consumer.cookie() && actual.thread() == consumer.thread()
+                           && received.consumer.number == 0x4444u, "consumer identity and endpoint are preserved") && result;
+        }
+
+        return result;
+    }
+
+    bool join_client(Client & client)
+    {
+        return check(connect_when_listening(client) && client.handshake(), "client connected and assigned a remote cookie");
+    }
+
+    bool case_registration_order(bool providerFirst, bool providerLeavesFirst)
+    {
+        Client server;
+        Client client;
+        if (!join_client(server) || !join_client(client))
+            return false;
+
+        const areg::StubAddress provider{ provider_address(server.cookie) };
+        const areg::ProxyAddress consumer{ consumer_address(client.cookie) };
+        if (providerFirst)
+        {
+            if (!register_provider(server, provider) || !registration_barrier(server) || !register_consumer(client, consumer))
+                return false;
+        }
+        else
+        {
+            if (!register_consumer(client, consumer) || !registration_barrier(client) || !register_provider(server, provider))
+                return false;
+        }
+
+        if (!expect_registration(server, areg::RegistrationAction::RegisterConsumer, provider, consumer)
+            || !expect_registration(client, areg::RegistrationAction::RegisterProvider, provider, consumer))
+            return false;
+
+        if (!register_provider(server, provider) || !registration_barrier(server)
+            || !register_consumer(client, consumer) || !registration_barrier(client))
+            return false;
+
+        if (providerLeavesFirst)
+        {
+            if (!unregister_provider(server, provider)
+                || !expect_registration(client, areg::RegistrationAction::UnregisterProvider, provider, consumer,
+                                        areg::DisconnectReason::ProviderDisconnected)
+                || !unregister_consumer(client, consumer) || !registration_barrier(client))
+                return false;
+        }
+        else
+        {
+            if (!unregister_consumer(client, consumer)
+                || !expect_registration(server, areg::RegistrationAction::UnregisterConsumer, provider, consumer,
+                                        areg::DisconnectReason::ConsumerDisconnected)
+                || !unregister_provider(server, provider) || !registration_barrier(server))
+                return false;
+        }
+
+        return unregister_provider(server, provider) && registration_barrier(server)
+            && unregister_consumer(client, consumer) && registration_barrier(client)
+            && register_consumer(client, consumer) && registration_barrier(client) && register_provider(server, provider)
+            && expect_registration(server, areg::RegistrationAction::RegisterConsumer, provider, consumer)
+            && expect_registration(client, areg::RegistrationAction::RegisterProvider, provider, consumer)
+            && registration_barrier(server) && registration_barrier(client);
+    }
+
+    bool case_two_proxies(bool sameSource)
+    {
+        Client server;
+        Client first;
+        Client second;
+        if (!join_client(server) || !join_client(first) || (!sameSource && !join_client(second)))
+            return false;
+
+        Client & other{ sameSource ? first : second };
+        const areg::StubAddress provider{ provider_address(server.cookie) };
+        const areg::ProxyAddress consumer1{ consumer_address(first.cookie) };
+        const areg::ProxyAddress consumer2{ consumer_address(other.cookie, 0x5555u) };
+        if (!register_consumer(first, consumer1) || !registration_barrier(first)
+            || !register_consumer(other, consumer2) || !registration_barrier(other)
+            || !register_provider(server, provider)
+            || !expect_registration(server, areg::RegistrationAction::RegisterConsumer, provider, consumer1)
+            || !expect_registration(server, areg::RegistrationAction::RegisterConsumer, provider, consumer2)
+            || !expect_registration(first, areg::RegistrationAction::RegisterProvider, provider, consumer1)
+            || (!sameSource && !expect_registration(second, areg::RegistrationAction::RegisterProvider, provider, consumer2))
+            || !registration_barrier(first) || !registration_barrier(other))
+            return false;
+
+        if (!unregister_consumer(first, consumer1)
+            || !expect_registration(server, areg::RegistrationAction::UnregisterConsumer, provider, consumer1,
+                                    areg::DisconnectReason::ConsumerDisconnected)
+            || !unregister_provider(server, provider)
+            || !expect_registration(other, areg::RegistrationAction::UnregisterProvider, provider, consumer2,
+                                    areg::DisconnectReason::ProviderDisconnected)
+            || !registration_barrier(first) || !registration_barrier(other))
+            return false;
+
+        return unregister_consumer(other, consumer2) && registration_barrier(other);
+    }
+
+    bool case_registration_truncated(bool providerTruncated)
+    {
+        Client survivor;
+        Client truncated;
+        Client replacement;
+        if (!join_client(survivor) || !join_client(truncated))
+            return false;
+
+        const areg::StubAddress initialProvider{ provider_address(providerTruncated ? truncated.cookie : survivor.cookie) };
+        const areg::ProxyAddress initialConsumer{ consumer_address(providerTruncated ? survivor.cookie : truncated.cookie) };
+        if (!(providerTruncated ? register_consumer(survivor, initialConsumer) : register_provider(survivor, initialProvider))
+            || !registration_barrier(survivor))
+            return false;
+
+        areg::MessageEnvelope message{ providerTruncated
+            ? areg::router_register_service(initialProvider, truncated.cookie, areg::COOKIE_ROUTER)
+            : areg::router_register_consumer(initialConsumer, truncated.cookie, areg::COOKIE_ROUTER) };
+        const std::vector<uint8_t> bytes{ wire_of(message) };
+        if (!check(write_all(truncated.socket, bytes.data(), areg::WIRE_HEADER_SIZE - 1u), "incomplete registration header sent"))
+            return false;
+
+        truncated.close();
+        if (!join_client(replacement))
+            return false;
+
+        const areg::StubAddress provider{ provider_address(providerTruncated ? replacement.cookie : survivor.cookie) };
+        const areg::ProxyAddress consumer{ consumer_address(providerTruncated ? survivor.cookie : replacement.cookie) };
+        Client & server{ providerTruncated ? replacement : survivor };
+        Client & client{ providerTruncated ? survivor : replacement };
+        return (providerTruncated ? register_provider(server, provider) : register_consumer(client, consumer))
+            && expect_registration(server, areg::RegistrationAction::RegisterConsumer, provider, consumer)
+            && expect_registration(client, areg::RegistrationAction::RegisterProvider, provider, consumer)
+            && registration_barrier(server) && registration_barrier(client);
+    }
+
+    bool case_registered_disconnect(bool providerLeaves)
+    {
+        Client server;
+        Client client;
+        if (!join_client(server) || !join_client(client))
+            return false;
+
+        const areg::StubAddress provider{ provider_address(server.cookie) };
+        const areg::ProxyAddress consumer{ consumer_address(client.cookie) };
+        if (!register_consumer(client, consumer) || !registration_barrier(client) || !register_provider(server, provider)
+            || !expect_registration(server, areg::RegistrationAction::RegisterConsumer, provider, consumer)
+            || !expect_registration(client, areg::RegistrationAction::RegisterProvider, provider, consumer))
+            return false;
+
+        if (providerLeaves)
+            server.close();
+        else
+            client.close();
+
+        Client & survivor{ providerLeaves ? client : server };
+        if (!expect_registration(survivor, providerLeaves ? areg::RegistrationAction::UnregisterProvider
+                                                         : areg::RegistrationAction::UnregisterConsumer,
+                                 provider, consumer, providerLeaves ? areg::DisconnectReason::ProviderDisconnected
+                                                                  : areg::DisconnectReason::ConsumerDisconnected))
+            return false;
+
+        Client replacement;
+        if (!join_client(replacement))
+            return false;
+
+        const areg::StubAddress nextProvider{ provider_address(providerLeaves ? replacement.cookie : server.cookie) };
+        const areg::ProxyAddress nextConsumer{ consumer_address(providerLeaves ? client.cookie : replacement.cookie) };
+        Client & nextServer{ providerLeaves ? replacement : server };
+        Client & nextClient{ providerLeaves ? client : replacement };
+        return (providerLeaves ? register_provider(nextServer, nextProvider) : register_consumer(nextClient, nextConsumer))
+            && expect_registration(nextServer, areg::RegistrationAction::RegisterConsumer, nextProvider, nextConsumer)
+            && expect_registration(nextClient, areg::RegistrationAction::RegisterProvider, nextProvider, nextConsumer)
+            && registration_barrier(nextServer) && registration_barrier(nextClient);
+    }
+
+    bool expect_duplicate(Client & client, const areg::StubAddress & provider)
+    {
+        areg::EventHeader received{ };
+        std::vector<uint8_t> payload;
+        if (!check(client.read_message(received, payload, ANSWER_MS), "duplicate-role notification received"))
+            return false;
+
+        const areg::StubAddress actual(received);
+        return check(received.messageId == static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyDuplicate)
+                     && received.source == static_cast<uint32_t>(areg::COOKIE_ROUTER)
+                     && received.target == static_cast<uint32_t>(client.cookie)
+                     && static_cast<const areg::ServiceAddress &>(actual) == static_cast<const areg::ServiceAddress &>(provider)
+                     && actual.cookie() == provider.cookie() && actual.thread() == provider.thread()
+                     && !payload.empty(), "duplicate notification names the rejected role and its destination");
+    }
+
+    bool case_duplicate_role()
+    {
+        Client owner;
+        Client rejected;
+        Client client;
+        if (!join_client(owner) || !join_client(rejected) || !join_client(client))
+            return false;
+
+        const areg::StubAddress provider{ provider_address(owner.cookie) };
+        const areg::StubAddress duplicate{ provider_address(rejected.cookie) };
+        const areg::ProxyAddress consumer{ consumer_address(client.cookie) };
+        if (!register_provider(owner, provider) || !registration_barrier(owner)
+            || !register_consumer(client, consumer)
+            || !expect_registration(owner, areg::RegistrationAction::RegisterConsumer, provider, consumer)
+            || !expect_registration(client, areg::RegistrationAction::RegisterProvider, provider, consumer)
+            || !register_provider(rejected, duplicate)
+            || !expect_duplicate(rejected, duplicate) || !expect_duplicate(owner, duplicate)
+            || !expect_registration(rejected, areg::RegistrationAction::UnregisterProvider, duplicate, consumer,
+                                    areg::DisconnectReason::ProviderRejected)
+            || !registration_barrier(rejected) || !registration_barrier(owner))
+            return false;
+
+        return unregister_consumer(client, consumer)
+            && expect_registration(owner, areg::RegistrationAction::UnregisterConsumer, provider, consumer,
+                                   areg::DisconnectReason::ConsumerDisconnected)
+            && registration_barrier(rejected);
+    }
+
+    bool case_held_provider(const std::string & mode)
+    {
+        Client owner;
+        Client held;
+        Client client;
+        if (!join_client(owner) || !join_client(held) || !join_client(client))
+            return false;
+
+        const areg::StubAddress provider{ provider_address(owner.cookie) };
+        const areg::StubAddress successor{ provider_address(held.cookie) };
+        const areg::ProxyAddress consumer{ consumer_address(client.cookie) };
+        if (!register_provider(owner, provider) || !registration_barrier(owner)
+            || !register_provider(held, successor) || !registration_barrier(held)
+            || !register_provider(held, successor) || !registration_barrier(held))
+            return false;
+
+        if (mode == "held-provider-takeover")
+        {
+            if (!register_consumer(client, consumer)
+                || !expect_registration(owner, areg::RegistrationAction::RegisterConsumer, provider, consumer)
+                || !expect_registration(client, areg::RegistrationAction::RegisterProvider, provider, consumer)
+                || !unregister_provider(owner, provider)
+                || !expect_registration(client, areg::RegistrationAction::UnregisterProvider, provider, consumer,
+                                        areg::DisconnectReason::ProviderDisconnected))
+                return false;
+
+            return expect_registration(held, areg::RegistrationAction::RegisterConsumer, successor, consumer)
+                && expect_registration(client, areg::RegistrationAction::RegisterProvider, successor, consumer)
+                && registration_barrier(owner) && registration_barrier(held) && registration_barrier(client);
+        }
+
+        if (mode == "held-provider-cancel")
+        {
+            if (!unregister_provider(held, successor) || !registration_barrier(held))
+                return false;
+        }
+        else
+        {
+            const areg::ProxyAddress witness{ consumer_address(held.cookie, 0x7777u) };
+            if (!register_consumer(held, witness)
+                || !expect_registration(owner, areg::RegistrationAction::RegisterConsumer, provider, witness)
+                || !expect_registration(held, areg::RegistrationAction::RegisterProvider, provider, witness))
+                return false;
+
+            areg::MessageEnvelope bye{ areg::create_disconnect_request(held.cookie, areg::COOKIE_ROUTER) };
+            if (!send_envelope(held, std::move(bye)) || !check(sees_end(held.socket, ANSWER_MS), "held source disconnected")
+                || !expect_registration(owner, areg::RegistrationAction::UnregisterConsumer, provider, witness,
+                                        areg::DisconnectReason::ConsumerDisconnected)
+                || !registration_barrier(owner))
+                return false;
+
+            held.close();
+        }
+
+        return register_consumer(client, consumer)
+            && expect_registration(owner, areg::RegistrationAction::RegisterConsumer, provider, consumer)
+            && expect_registration(client, areg::RegistrationAction::RegisterProvider, provider, consumer)
+            && unregister_provider(owner, provider)
+            && expect_registration(client, areg::RegistrationAction::UnregisterProvider, provider, consumer,
+                                   areg::DisconnectReason::ProviderDisconnected)
+            && registration_barrier(client) && registration_barrier(owner);
+    }
+
+    bool case_router_stop_registered(RouterServerService & router)
+    {
+        Client server;
+        Client client;
+        Client waiting;
+        if (!join_client(server) || !join_client(client) || !join_client(waiting))
+            return false;
+
+        const areg::StubAddress provider{ provider_address(server.cookie) };
+        const areg::ProxyAddress consumer{ consumer_address(client.cookie) };
+        const areg::ProxyAddress pending{ consumer_address(waiting.cookie, 0x5555u, 0x6789u) };
+        if (!register_consumer(client, consumer) || !registration_barrier(client)
+            || !register_provider(server, provider)
+            || !expect_registration(server, areg::RegistrationAction::RegisterConsumer, provider, consumer)
+            || !expect_registration(client, areg::RegistrationAction::RegisterProvider, provider, consumer)
+            || !register_consumer(waiting, pending) || !registration_barrier(waiting))
+            return false;
+
+        router.disconnect_service_host();
+        router.wait_to_complete();
+        if (!check(!router.is_host_pending() && !router.is_host_connected(), "router stopped and joined with registered clients")
+            || !check(sees_end(server.socket, ANSWER_MS) && sees_end(client.socket, ANSWER_MS)
+                      && sees_end(waiting.socket, ANSWER_MS), "all connected and pending client sockets closed")
+            || !check(router.connect_service_host(), "the stopped router restarts"))
+            return false;
+
+        Client nextServer;
+        Client nextClient;
+        if (!join_client(nextServer) || !join_client(nextClient))
+            return false;
+
+        const areg::StubAddress nextProvider{ provider_address(nextServer.cookie) };
+        const areg::ProxyAddress nextConsumer{ consumer_address(nextClient.cookie) };
+        return register_consumer(nextClient, nextConsumer) && registration_barrier(nextClient)
+            && register_provider(nextServer, nextProvider)
+            && expect_registration(nextServer, areg::RegistrationAction::RegisterConsumer, nextProvider, nextConsumer)
+            && expect_registration(nextClient, areg::RegistrationAction::RegisterProvider, nextProvider, nextConsumer)
+            && registration_barrier(nextServer) && registration_barrier(nextClient);
+    }
+
+    bool case_registration_same_source()
+    {
+        Client local;
+        if (!join_client(local))
+            return false;
+
+        const areg::StubAddress provider{ provider_address(local.cookie) };
+        const areg::ProxyAddress consumer{ consumer_address(local.cookie) };
+        if (!register_consumer(local, consumer) || !registration_barrier(local)
+            || !register_provider(local, provider) || !registration_barrier(local)
+            || !unregister_provider(local, provider) || !registration_barrier(local)
+            || !unregister_consumer(local, consumer) || !registration_barrier(local)
+            || !register_provider(local, provider) || !registration_barrier(local)
+            || !register_consumer(local, consumer) || !registration_barrier(local)
+            || !unregister_consumer(local, consumer) || !registration_barrier(local)
+            || !unregister_provider(local, provider) || !registration_barrier(local))
+            return false;
+
+        Client remote;
+        if (!join_client(remote))
+            return false;
+
+        const areg::ProxyAddress remoteConsumer{ consumer_address(remote.cookie) };
+        return register_consumer(remote, remoteConsumer) && registration_barrier(remote)
+            && register_provider(local, provider)
+            && expect_registration(local, areg::RegistrationAction::RegisterConsumer, provider, remoteConsumer)
+            && expect_registration(remote, areg::RegistrationAction::RegisterProvider, provider, remoteConsumer)
+            && registration_barrier(local) && registration_barrier(remote);
     }
 
     //!< A connection closed by the router leaves no received bytes for the next client.
@@ -884,7 +1336,7 @@ int main(int argc, char * argv[])
 {
     if (argc < 4)
     {
-        std::printf("usage: areg-router-io-test <stale-cache|wrong-client|partial-header|partial-body|invalid-type|oversize|slow-reader|stop-while-flooding> <pairs> <bin-dir>\n");
+        std::printf("usage: areg-router-io-test <case from router-io/CMakeLists.txt> <pairs> <bin-dir>\n");
         return 2;
     }
 
@@ -921,6 +1373,34 @@ int main(int argc, char * argv[])
                 result = case_slow_reader(router, pairs);
             else if (name == "stop-while-flooding")
                 result = case_stop_while_flooding(router, pairs);
+            else if (name == "registration-provider-first-provider-out")
+                result = case_registration_order(true, true);
+            else if (name == "registration-provider-first-consumer-out")
+                result = case_registration_order(true, false);
+            else if (name == "registration-consumer-first-provider-out")
+                result = case_registration_order(false, true);
+            else if (name == "registration-consumer-first-consumer-out")
+                result = case_registration_order(false, false);
+            else if (name == "registration-two-proxies")
+                result = case_two_proxies(false);
+            else if (name == "registration-two-proxies-one-source")
+                result = case_two_proxies(true);
+            else if (name == "registration-truncated-provider")
+                result = case_registration_truncated(true);
+            else if (name == "registration-truncated-consumer")
+                result = case_registration_truncated(false);
+            else if (name == "registration-provider-disconnect")
+                result = case_registered_disconnect(true);
+            else if (name == "registration-consumer-disconnect")
+                result = case_registered_disconnect(false);
+            else if (name == "duplicate-role")
+                result = case_duplicate_role();
+            else if ((name == "held-provider-takeover") || (name == "held-provider-cancel") || (name == "held-provider-disconnect"))
+                result = case_held_provider(name);
+            else if (name == "router-stop-registered")
+                result = case_router_stop_registered(router);
+            else if (name == "registration-same-source")
+                result = case_registration_same_source();
             else
                 std::printf("FAIL: unknown case [ %s ]\n", name.c_str());
 

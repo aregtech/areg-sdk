@@ -97,6 +97,8 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     ReceiveCacheTest.cpp
     ReceivedHeaderTest.cpp
     RingStackTest.cpp
+    RouterApplicationTest.cpp
+    RouterServiceRegistryTest.cpp
     RuntimeObjectTest.cpp
     ScopedLockTest.cpp
     SendBacklogTest.cpp
@@ -149,6 +151,21 @@ target_link_libraries("${AREG_UNIT_TEST_PROJECT}" PRIVATE ${AREG_SQLITE_LIB_REF}
 # The record of dropped log rows of the log collector, which is not a library.
 target_sources("${AREG_UNIT_TEST_PROJECT}" PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/../../framework/logcollector/service/private/LogCollectorDroppedRows.cpp"
+)
+
+# The router application is not part of a library.
+target_sources("${AREG_UNIT_TEST_PROJECT}" PRIVATE
+    "${AREG_FRAMEWORK}/mtrouter/app/private/MultitargetRouter.cpp"
+    "${AREG_FRAMEWORK}/mtrouter/app/private/MTRouterNames.cpp"
+    "${AREG_FRAMEWORK}/mtrouter/service/private/RouterServerService.cpp"
+)
+
+# The router registry and its value objects are not part of a library.
+target_sources("${AREG_UNIT_TEST_PROJECT}" PRIVATE
+    "${AREG_FRAMEWORK}/mtrouter/service/private/ListServiceProxies.cpp"
+    "${AREG_FRAMEWORK}/mtrouter/service/private/ServiceProxy.cpp"
+    "${AREG_FRAMEWORK}/mtrouter/service/private/ServiceRegistry.cpp"
+    "${AREG_FRAMEWORK}/mtrouter/service/private/ServiceStub.cpp"
 )
 
 # Private logging helpers are not exported by the shared library.

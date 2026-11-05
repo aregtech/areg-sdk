@@ -16,7 +16,8 @@
 #      python tools/intern/run-all-examples.py [options]
 #
 #  Common options:
-#      --tier smoke|ipc|all|perf   Which set of scenarios to run (default: all)
+#      --tier smoke|ipc|all|perf|coverage
+#                                  Which set of scenarios to run (default: all)
 #      --bin-dir DIR               Directory with the built binaries
 #      --timeout SEC               Per-scenario deadline (default: 120)
 #      --repeat N                  Run the selection N times, report every failure
@@ -38,6 +39,7 @@
 # ===========================================================================
 
 import argparse
+import contextlib
 import os
 import platform
 import re
@@ -45,6 +47,7 @@ import shutil
 import socket
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 
@@ -90,7 +93,7 @@ QUIT_SECONDS = 12.0
 # Scenario description.
 #
 #   name      Scenario identifier, also used by '--only'.
-#   tier      'smoke' (single process, no router), 'ipc' or 'perf'.
+#   tier      'smoke' (single process, no router), 'ipc', 'perf' or opt-in 'coverage'.
 #   procs     Processes of the scenario, started in the listed order. The last
 #             one is the leading process: the scenario ends when it ends.
 #   timeout   Per-scenario deadline in seconds, overrides '--timeout'.
@@ -217,6 +220,18 @@ SCREEN_MEASURES = {'datarate'}
 
 
 SCENARIOS = [
+    {'name': 'DISABLED_mtrouter_help', 'tier': 'coverage', 'router': False, 'disabled': True,
+     'router_case': 'help', 'procs': [proc('mtrouter', args=['--help'])]},
+    {'name': 'DISABLED_mtrouter_invalid_option', 'tier': 'coverage', 'router': False, 'disabled': True,
+     'router_case': 'invalid', 'procs': [proc('mtrouter', args=['--not-a-router-option'])]},
+    {'name': 'DISABLED_mtrouter_save_unsupported', 'tier': 'coverage', 'router': False, 'disabled': True,
+     'router_case': 'save', 'procs': [proc('mtrouter')]},
+    {'name': 'mtrouter_console_commands', 'tier': 'coverage', 'router': False,
+     'router_case': 'console', 'procs': [proc('mtrouter', args=['--console'])]},
+    {'name': 'DISABLED_mtrouter_extended_silent_rows_stay_clear', 'tier': 'coverage',
+     'router': False, 'disabled': True, 'router_case': 'silent',
+     'procs': [proc('mtrouter', args=['--console'])]},
+
     # -- single process, no router ------------------------------------------
     # Not an example: the regression test of the timer and watchdog teardown hang. It is
     # driven from here rather than from ctest so that a hang is photographed like any other,
@@ -630,7 +645,8 @@ class Runner:
     at most the current partial line is lost.
     """
 
-    def __init__(self, path, args, stdin_script, log_path, quit_script=None, use_pty=True):
+    def __init__(self, path, args, stdin_script, log_path, quit_script=None, use_pty=True,
+                 live=False, cwd=None):
         self.path = path
         self.name = os.path.basename(path)
         self.log_path = log_path
@@ -645,9 +661,13 @@ class Runner:
         self._log_lock = threading.Lock()
         self._pty_master = None
         self._drainer = None
+        self._live = live
+        self._output_changed = threading.Condition()
+        self._live_output = bytearray()
+        self._output_ended = False
         kwargs = {
             'stdin': subprocess.PIPE,
-            'cwd': os.path.dirname(path),
+            'cwd': cwd or os.path.dirname(path),
         }
         if IS_WINDOWS:
             kwargs['creationflags'] = subprocess.CREATE_NEW_PROCESS_GROUP
@@ -669,6 +689,14 @@ class Runner:
             environment['LINES'] = str(PTY_ROWS)
             environment['COLUMNS'] = str(PTY_COLS)
             kwargs['env'] = environment
+        elif live:
+            kwargs['stdout'] = subprocess.PIPE
+            kwargs['stderr'] = subprocess.STDOUT
+            environment = os.environ.copy()
+            environment.setdefault('TERM', 'xterm-256color')
+            environment['LINES'] = str(PTY_ROWS)
+            environment['COLUMNS'] = str(PTY_COLS)
+            kwargs['env'] = environment
         else:
             kwargs['stdout'] = self._log
             kwargs['stderr'] = subprocess.STDOUT
@@ -681,6 +709,9 @@ class Runner:
 
         if self._pty_master is not None:
             self._drainer = threading.Thread(target=self._drain, daemon=True)
+            self._drainer.start()
+        elif live:
+            self._drainer = threading.Thread(target=self._drain_pipe, daemon=True)
             self._drainer.start()
 
         self._feeder = threading.Thread(target=self._feed, daemon=True)
@@ -712,12 +743,63 @@ class Runner:
         finally:
             if pending:
                 self._write_log(pending)
+            with self._output_changed:
+                self._output_ended = True
+                self._output_changed.notify_all()
+
+    def _drain_pipe(self):
+        try:
+            while True:
+                chunk = self.proc.stdout.read1(65536)
+                if not chunk:
+                    break
+                self._write_log(chunk)
+        finally:
+            self.proc.stdout.close()
+            with self._output_changed:
+                self._output_ended = True
+                self._output_changed.notify_all()
 
     def _write_log(self, data):
         with self._log_lock:
             if not self._log.closed:
                 self._log.write(data)
                 self._log.flush()
+        if self._live:
+            with self._output_changed:
+                self._live_output.extend(data)
+                self._output_changed.notify_all()
+
+    def wait_output(self, pattern, deadline):
+        """Waits for an asserted output on the current screen or in the stream."""
+        with self._output_changed:
+            while True:
+                text = self._live_output.decode('utf-8', 'replace')
+                if re.search(pattern, text) or re.search(pattern, render_terminal(text)):
+                    return
+                remaining = deadline - time.monotonic()
+                if self._output_ended or remaining <= 0:
+                    raise AssertionError('%s did not output %r' % (self.name, pattern))
+                self._output_changed.wait(remaining)
+
+    def assert_screen_absent(self, pattern, deadline):
+        """Observes a negative invariant over a bounded settle window."""
+        with self._output_changed:
+            offset = len(self._live_output)
+            while True:
+                text = self._live_output.decode('utf-8', 'replace')
+                if '\x1b[' in text:
+                    screen = Screen().feed(text).snapshot()
+                else:
+                    screen = self._live_output[offset:].decode('utf-8', 'replace')
+                if re.search(pattern, screen):
+                    raise AssertionError('%s unexpectedly displayed %r' % (self.name, pattern))
+                if self._output_ended:
+                    raise AssertionError('%s exited while checking its screen' % self.name)
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    return
+                self._output_changed.wait(remaining)
 
     def _feed(self):
         """Writes the scripted input lines, then leaves the pipe open.
@@ -973,6 +1055,10 @@ class Screen:
         for row in range(self.rows):
             self._publish(row)
         return '\n'.join(self._lines)
+
+    def snapshot(self):
+        """The currently displayed rows, without the earlier transcript."""
+        return '\n'.join(self._text_of(row) for row in range(self.rows))
 
     # -- primitives ---------------------------------------------------------
 
@@ -1317,10 +1403,127 @@ class Result:
             self.notes.append(note)
 
 
+def run_router_coverage(scenario, path, scenario_dir, timeout, use_pty):
+    """Checks router CLI and interactive output using a private configuration."""
+    result = Result(scenario['name'])
+    started = time.monotonic()
+    deadline = started + max(60 if scenario['router_case'] == 'silent' else 30, timeout)
+    runner = None
+    log = os.path.join(scenario_dir, '0_mtrouter.log')
+    try:
+        with contextlib.ExitStack() as cleanup:
+            work = cleanup.enter_context(tempfile.TemporaryDirectory(prefix='areg-router-console-'))
+            config = os.path.join(work, 'private.init')
+            saved = os.path.join(work, 'saved.init')
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as reservation:
+                reservation.bind((ROUTER_HOST, 0))
+                port = reservation.getsockname()[1]
+                contents = (
+                    'log::*::enable = false\n'
+                    'log::*::enable::remote = false\n'
+                    'log::*::enable::file = false\n'
+                    'log::*::enable::debug = false\n'
+                    'log::*::enable::db = false\n'
+                    'router::*::connect = tcpip\n'
+                    'router::*::enable::tcpip = true\n'
+                    'router::*::address::tcpip = %s\n'
+                    'router::*::port::tcpip = %d\n'
+                    'net::*::tcpip::pairs = 0\n' % (ROUTER_HOST, port))
+                with open(config, 'w', encoding='ascii', newline='\n') as dst:
+                    dst.write(contents)
+
+            case = scenario['router_case']
+            args = list(scenario['procs'][0]['args'])
+            if case == 'save':
+                args = ['--save=' + saved]
+            elif case in ('console', 'silent'):
+                args.append('--load=' + config)
+            runner = Runner(path, args, [], log, ['-q'], use_pty, live=True, cwd=work)
+            cleanup.callback(runner.stop)
+
+            def expect(pattern):
+                runner.wait_output(pattern, deadline)
+
+            def command(line, pattern):
+                if not runner.is_running() or not runner._write_line(line):
+                    raise AssertionError('router exited before command %r' % line)
+                expect(pattern)
+
+            if case in ('help', 'invalid', 'save'):
+                code = runner.proc.wait(timeout=max(0.01, deadline - time.monotonic()))
+                runner.close()
+                # Both platform entry points report failed initialization after help.
+                if code != 1:
+                    raise AssertionError('expected CLI exit 1, got %d' % code)
+                for pattern in (r'Usage of Areg Multi-target Message Router',
+                                r'--console', r'--load', r'--threads', r'--quit'):
+                    expect(pattern)
+                if case == 'save':
+                    if os.path.exists(saved):
+                        raise AssertionError('unsupported --save created a file')
+                    result.notes.append('--save is not supported; help and no file asserted')
+            else:
+                expect(r"Type '-q' or '--quit' to quit the application")
+                for pattern in (r'Send data rate \.+:\s+0\.00\s+Bytes / sec\.',
+                                r'Recv data rate \.+:\s+0\.00\s+Bytes / sec\.',
+                                r'Send messages \.+:\s+0 msgs/sec',
+                                r'Recv messages \.+:\s+0 msgs/sec'):
+                    expect(pattern)
+                command('--instances', r'There are no connected instances')
+                command('--threads', r'Active per-client thread pairs: 0\b')
+                command('--help', r'Usage of Areg Multi-target Message Router')
+                command('--not-a-router-option',
+                        r'ERROR, unexpected command \[ --not-a-router-option \]')
+                command('--console --install --uninstall --service --load="' + config + '"',
+                        r'This command should be used in command line')
+                command('--silent',
+                        r'Switching to silent mode, no data rate output|'
+                        r'Data rate display is always active in this mode')
+                if case == 'silent':
+                    with runner._output_changed:
+                        text = runner._live_output.decode('utf-8', 'replace')
+                    if 'Data rate display is always active in this mode' in text:
+                        result.skip('requires the extended console, ANSI is intentionally always-on')
+                    else:
+                        runner.assert_screen_absent(
+                            r'(?:Send|Recv) (?:data rate|messages) \.+:',
+                            time.monotonic() + 30)
+                else:
+                    command('--verbose',
+                            r'Switching to verbose mode to output data rate|'
+                            r'Data rate display is always active in this mode')
+                    command('--pause', r'Message router is paused')
+                    command('--restart', r'Message router is restarted')
+                command('-q', r'Quit the application')
+                code = runner.proc.wait(timeout=max(0.01, deadline - time.monotonic()))
+                runner.close()
+                if code != 0:
+                    raise AssertionError('console quit exited with code %d' % code)
+            with open(config, encoding='ascii') as src:
+                if src.read() != contents:
+                    raise AssertionError('router changed its private input configuration')
+    except (AssertionError, OSError, subprocess.TimeoutExpired) as error:
+        result.fail(str(error))
+    finally:
+        if runner is not None:
+            runner.stop()
+            if runner.killed:
+                result.fail('router required termination instead of normal exit')
+            if result.status == 'FAIL':
+                result.captures.append(describe_capture(runner))
+                if runner.stacks:
+                    result.stacks.append((runner.name, runner.stacks))
+    result.seconds = time.monotonic() - started
+    return result
+
+
 def run_scenario(scenario, bin_dir, out_dir, timeout, router_bin, keep_logs, use_pty=True,
                  round_index=0, rounds=1):
     result = Result(scenario['name'])
     started = time.time()
+    if scenario.get('disabled'):
+        result.skip('disabled reproduction; select its exact name with --only to enable')
+        return result
 
     paths = []
     for entry in scenario['procs']:
@@ -1337,6 +1540,8 @@ def run_scenario(scenario, bin_dir, out_dir, timeout, router_bin, keep_logs, use
     if rounds > 1:
         scenario_dir = os.path.join(scenario_dir, 'round-%03d' % (round_index + 1))
     os.makedirs(scenario_dir, exist_ok=True)
+    if 'router_case' in scenario:
+        return run_router_coverage(scenario, paths[0], scenario_dir, timeout, use_pty)
 
     router = None
     router_was_running = False
@@ -1720,7 +1925,7 @@ def main():
 
     parser = argparse.ArgumentParser(
         description='Run the Areg SDK example applications as a test suite.')
-    parser.add_argument('--tier', default='all', choices=['smoke', 'ipc', 'all', 'perf'],
+    parser.add_argument('--tier', default='all', choices=['smoke', 'ipc', 'all', 'perf', 'coverage'],
                         help='which set of scenarios to run (default: all)')
     parser.add_argument('--bin-dir', default=os.environ.get('AREG_BIN_DIR'),
                         help='directory with the built binaries')
@@ -1762,13 +1967,13 @@ def main():
     if args.tier != 'all':
         selection = [s for s in selection if s['tier'] == args.tier]
     else:
-        selection = [s for s in selection if s['tier'] != 'perf']
+        selection = [s for s in selection if s['tier'] not in ('perf', 'coverage')]
     if args.perf and (args.tier != 'perf'):
         # Always appended, never interleaved: a benchmark shares the machine with nothing.
         selection = selection + [s for s in SCENARIOS if s['tier'] == 'perf']
     if args.only:
         wanted = {n.strip() for n in args.only.split(',') if n.strip()}
-        selection = [s for s in SCENARIOS if s['name'] in wanted]
+        selection = [dict(s, disabled=False) for s in SCENARIOS if s['name'] in wanted]
         missing = wanted - {s['name'] for s in selection}
         if missing:
             print('unknown scenario: %s' % ', '.join(sorted(missing)), file=sys.stderr)
@@ -1810,7 +2015,8 @@ def main():
         print('note     : another build is present, not used: %s' % other)
     if others:
         print('note     : pass --bin-dir to choose, the most recently built one was taken')
-    if is_router_listening():
+    if (any(s.get('router', s['tier'] in ('ipc', 'perf')) for s in selection)
+            and is_router_listening()):
         print('note     : a message router is already listening on port %d, it will be used'
               ' and left alone' % ROUTER_PORT)
     print('')

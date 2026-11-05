@@ -53,6 +53,15 @@
     <ClCompile Include="units\FileBufferTest.cpp" />
     <ClCompile Include="units\FileTest.cpp" />
     <ClCompile Include="units\ListenerDispatchTest.cpp" />
+    <ClCompile Include="units\RouterServiceRegistryTest.cpp" />
+    <ClCompile Include="units\RouterApplicationTest.cpp" />
+    <ClCompile Include="..\framework\mtrouter\app\private\MultitargetRouter.cpp" />
+    <ClCompile Include="..\framework\mtrouter\app\private\MTRouterNames.cpp" />
+    <ClCompile Include="..\framework\mtrouter\service\private\RouterServerService.cpp" />
+    <ClCompile Include="..\framework\mtrouter\service\private\ListServiceProxies.cpp" />
+    <ClCompile Include="..\framework\mtrouter\service\private\ServiceProxy.cpp" />
+    <ClCompile Include="..\framework\mtrouter\service\private\ServiceRegistry.cpp" />
+    <ClCompile Include="..\framework\mtrouter\service\private\ServiceStub.cpp" />
     <ClCompile Include="..\framework\areg\logging\private\Layouts.cpp" />
     <ClCompile Include="..\framework\areg\logging\private\LayoutManager.cpp" />
     <ClCompile Include="..\framework\areg\logging\private\ScopeController.cpp" />
