@@ -175,7 +175,7 @@ bool LatencyConsumer::service_connected(areg::ServiceConnectionState status, are
         if (mHeadless && (mStartupCmdSent.load(std::memory_order_relaxed) == false))
         {
             mStartupCmdSent.store(true, std::memory_order_relaxed);
-            EventCommand::send_event(mStartupCmd, static_cast<IECmdConsumer &>(mCmdConsumer), master_thread());
+            EventCommand::send_event(mStartupCmd, static_cast<CmdConsumerBase &>(mCmdConsumer), master_thread());
         }
     }
     else
@@ -713,7 +713,7 @@ void LatencyConsumer::_run_input_thread()
         CmdData data;
         if (_parse_command(line, data))
         {
-            EventCommand::send_event(data, static_cast<IECmdConsumer &>(mCmdConsumer), master_thread());
+            EventCommand::send_event(data, static_cast<CmdConsumerBase &>(mCmdConsumer), master_thread());
         }
     }
 }

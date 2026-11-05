@@ -14,11 +14,22 @@
 #include "areg/base/ThreadConsumer.hpp"
 #include "areg/component/TimerConsumer.hpp"
 #include "areg/component/Component.hpp"
+#include "areg/component/EventTemplate.hpp"
 #include "examples/25_pubsub/services/PubSubProviderBase.hpp"
 
 #include "areg/base/Thread.hpp"
 #include "areg/component/Timer.hpp"
 #include "aregextend/console/OptionParser.hpp"
+
+/**
+ * \brief   The command entered on the console, passed from the console thread to the component thread.
+ **/
+struct PublisherCommand
+{
+    int32_t command{ 0 };   //!< The value of the entered option.
+};
+
+AREG_DECLARE_EVENT(PublisherCommand, PublisherCommandEvent, PublisherCommandConsumer);
 
 /**
  * \brief   This service provider contains attributes (data) that send notifications on update.
@@ -42,6 +53,7 @@ class Publisher final : public    areg::Component
                       , protected PubSubProviderBase
                       , private   areg::TimerConsumer
                       , private   areg::ThreadConsumer
+                      , private   PublisherCommandConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // The list of internal types and constants
@@ -119,6 +131,16 @@ protected:
     void on_run() final;
 
 /************************************************************************/
+// PublisherCommandConsumer interface overrides
+/************************************************************************/
+
+    /**
+     * \brief   Triggered in the component thread to run the command entered on the console.
+     * \param   data    The command to run.
+     **/
+    void process_event( const PublisherCommand & data ) final;
+
+/************************************************************************/
 // ProviderBase overrides.
 /************************************************************************/
 
@@ -147,6 +169,9 @@ private:
     //!< Quits the service provider application.
     void quit();
 
+    //! Passes the command to the component thread.
+    inline void send_command(OptionFlag cmd);
+
     //! Outputs message on console
     inline void print_message(const areg::String & message, OptionFlag cmd);
 
@@ -165,7 +190,6 @@ private:
     uint32_t    mSeqInteger;        //!< The sequence number of the integer.
     uint16_t    mCountInteger;      //!< The count number of the integer to change.
     areg::Thread mConsoleThread;     //!< The thread to run console to interact with users.
-    areg::Mutex  mLock;              //!< Synchronization object for multithreading environment.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

@@ -24,7 +24,7 @@
  **/
 class PatientService final  : public    areg::Component
                             , private   PatientInformationProviderBase
-                            , private   IEPatientInfoEventConsumer
+                            , private   PatientInfoEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Statics and constants.

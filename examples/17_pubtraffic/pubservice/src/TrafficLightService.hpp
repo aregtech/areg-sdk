@@ -43,7 +43,7 @@ private:
 };
 
 // declaration of custom event.
-AREG_DECLARE_EVENT(TrafficSwitchData, TrafficSwitchEvent, IETrafficSwitchConsumer);
+AREG_DECLARE_EVENT(TrafficSwitchData, TrafficSwitchEvent, TrafficSwitchConsumerBase);
 
 //! \brief  Traffic light public service to demonstrate subscription on data update.
 class TrafficLightService final : public    areg::Component
@@ -60,11 +60,11 @@ private:
     // TrafficLightService::TrafficSwitchConsumer class declaration
     //////////////////////////////////////////////////////////////////////////
     //!< TrafficSwitchEvent consumer object declared as a private internal class
-    class TrafficSwitchConsumer final : public IETrafficSwitchConsumer
+    class TrafficSwitchConsumer final : public TrafficSwitchConsumerBase
     {
     public:
         inline TrafficSwitchConsumer    ( TrafficLightService & service )
-            : IETrafficSwitchConsumer   ( )
+            : TrafficSwitchConsumerBase   ( )
             , mService                  ( service )
             {
             }

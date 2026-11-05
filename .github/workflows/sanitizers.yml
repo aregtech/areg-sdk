@@ -147,10 +147,12 @@ jobs:
         shell: bash
         timeout-minutes: 45
         run: |
-          tools/intern/sanitize.sh ${{matrix.mode}} --config ${{matrix.config}} --examples --keep --run examples || true
-          grep -rah 'SUMMARY: ThreadSanitizer' ./build-tsan/example-results | sed -e 's/\x1b\[[0-9;]*m//g' \
+          status=0
+          tools/intern/sanitize.sh ${{matrix.mode}} --config ${{matrix.config}} --examples --keep --run examples || status=$?
+          { grep -rah 'SUMMARY: ThreadSanitizer' ./build-tsan/example-results || true; } | sed -e 's/\x1b\[[0-9;]*m//g' \
             | sed -e 's#[^ ]*/areg-sdk/##g' | sort | uniq -c | sort -rn | tee ./build-tsan/example-reports.log
           test ! -s ./build-tsan/example-reports.log
+          exit "${status}"
 
       # The teardown tests fail about once in a hundred runs, and one pass of the
       # suite is one run of each. They are repeated here, in the tree the step above
@@ -538,13 +540,19 @@ jobs:
           tools/intern/sanitize.sh ${{matrix.mode}} --compiler llvm --config RelWithDebInfo --no-extended --examples \
               --leaks off --target areg-unit-tests --run ctest
 
+      # The exit code of a scenario shows only its lead process, so the logs are searched.
       - name: Run the examples under ${{matrix.mode}}
         if: always()
         shell: bash
         timeout-minutes: 45
         run: |
+          status=0
           tools/intern/sanitize.sh ${{matrix.mode}} --compiler llvm --config RelWithDebInfo --no-extended --examples \
-              --leaks off --keep --run examples
+              --leaks off --keep --run examples || status=$?
+          { grep -rah 'SUMMARY: [A-Za-z]*Sanitizer' ./build-${{matrix.mode}}/example-results || true; } \
+            | sort | uniq -c | sort -rn | tee ./build-${{matrix.mode}}/example-reports.log
+          test ! -s ./build-${{matrix.mode}}/example-reports.log
+          exit "${status}"
 
       - name: Upload what the sanitizer left behind
         if: always()

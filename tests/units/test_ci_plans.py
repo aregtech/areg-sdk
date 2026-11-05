@@ -141,5 +141,63 @@ class PathFilterTest(unittest.TestCase):
                     self.plans[name][0], '.github/actions/compiler-cache/action.yml'))
 
 
+class SanitizeScriptTest(unittest.TestCase):
+    SCRIPT = ROOT / 'tools' / 'intern' / 'sanitize.sh'
+
+    def run_script(self, *words):
+        """Runs a copy of the script in a tree of its own, with the build tools stubbed."""
+        with tempfile.TemporaryDirectory(prefix='areg sanitize ') as temporary:
+            root = Path(temporary)
+            tools = root / 'tools' / 'intern'
+            stubs = root / 'stubs'
+            binary = root / 'build-ubsan' / 'product' / 'bin' / 'areg-unit-tests'
+            for directory in (tools, stubs, binary.parent):
+                directory.mkdir(parents=True)
+            copy = tools / 'sanitize.sh'
+            copy.write_bytes(self.SCRIPT.read_bytes())
+            record = '#!/usr/bin/env bash\nprintf \'[%s]\' "$#" "$@" >> "$RECORD"\n'
+            for stub in (stubs / 'ctest', binary):
+                stub.write_text(record, encoding='ascii', newline='\n')
+                stub.chmod(0o755)
+            for name in ('cmake', 'g++'):
+                (stubs / name).write_text('#!/usr/bin/env bash\n', encoding='ascii', newline='\n')
+                (stubs / name).chmod(0o755)
+            recorded = root / 'recorded'
+            recorded.touch()
+            command = ('directory="$1"; if command -v cygpath >/dev/null; then '
+                       'directory="$(cygpath -u "$directory")"; fi; '
+                       'export PATH="$directory:$PATH"; shift; exec bash "$@"')
+            result = subprocess.run(
+                [find_bash(), '--noprofile', '--norc', '-c', command, '--',
+                 stubs.as_posix(), copy.as_posix(), 'ubsan', '--keep', *words],
+                env=dict(os.environ, RECORD=recorded.as_posix()),
+                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+            self.assertEqual(result.returncode, 0, result.stdout)
+            return recorded.read_text(encoding='ascii')
+
+    def test_arrays_that_may_be_empty_are_expanded_for_bash_3_2(self):
+        text = self.SCRIPT.read_text(encoding='utf-8')
+        names = set(re.findall(r'\b(\w+)=\((?:\)|"\$\{@:)', text))
+        self.assertIn('prefix', names)
+        for name in names:
+            with self.subTest(array=name):
+                guarded = '${%s[@]+"${%s[@]}"}' % (name, name)
+                self.assertNotIn('"${%s[@]' % name, text.replace(guarded, ''))
+
+    def test_run_without_arguments_passes_none_to_the_binary(self):
+        self.assertEqual(self.run_script('--run', 'auto'), '[0]')
+
+    def test_arguments_reach_the_binary_unsplit(self):
+        self.assertEqual(self.run_script('--run', 'auto', '--', 'one two', 'three'),
+                         '[2][one two][three]')
+
+    def test_ctest_gets_only_the_options_asked_for(self):
+        self.assertEqual(self.run_script('--run', 'ctest'),
+                         '[3][--output-on-failure][--timeout][600]')
+        self.assertEqual(self.run_script('--repeat', '3', '--run', 'ctest:one'),
+                         '[7][--output-on-failure][--timeout][600][-R][one]'
+                         '[--repeat][until-fail:3]')
+
+
 if __name__ == '__main__':
     unittest.main()

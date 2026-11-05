@@ -24,7 +24,7 @@
 #endif  // _WINDOWS
 
 
-PatientServiceWorkerConsumer::PatientServiceWorkerConsumer(const char * consumerName, IEPatientInfoEventConsumer & infoPatient)
+PatientServiceWorkerConsumer::PatientServiceWorkerConsumer(const char * consumerName, PatientInfoEventConsumer & infoPatient)
     : areg::WorkerThreadConsumer( areg::create_component_item_name( worker::ServiceNamePatientInfo, consumerName) )
 
     , mPatienInfo       ( infoPatient )

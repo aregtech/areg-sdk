@@ -31,7 +31,7 @@ public:
      * \param   consumerName    The name worker thread consumer.
      * \param   infoPatient     The consumer of the patient information, on the component thread.
      **/
-    PatientServiceWorkerConsumer( const char * consumerName, IEPatientInfoEventConsumer & infoPatient);
+    PatientServiceWorkerConsumer( const char * consumerName, PatientInfoEventConsumer & infoPatient);
 
     /**
      * \brief   Destructor.
@@ -56,7 +56,7 @@ protected:
 // Private members.
 //////////////////////////////////////////////////////////////////////////
 private:
-    IEPatientInfoEventConsumer & mPatienInfo;       //!< The consumer of the patient information.
+    PatientInfoEventConsumer & mPatienInfo;       //!< The consumer of the patient information.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

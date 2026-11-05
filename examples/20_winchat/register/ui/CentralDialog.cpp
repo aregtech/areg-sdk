@@ -25,7 +25,7 @@
 #define new DEBUG_NEW
 #endif
 
-#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<uint32_t>(NECentralApp::WindowCommand::CmdFirst))
+#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<uint32_t>(CentralAppDefs::WindowCommand::CmdFirst))
 #define MAKE_MESSAGE(elem)  (static_cast<uint32_t>(elem) + FIRST_MESSAGE)
 
 
@@ -101,7 +101,7 @@ bool CentralDialog::StartConnection( const areg::String & ipAddress, uint16_t po
             {
                 message     = _T("Successfully started servicing ...");
                 result = true;
-                ::PostMessage(dlg->GetSafeHwnd(), MAKE_MESSAGE(NECentralApp::WindowCommand::CmdServiceConnection), static_cast<WPARAM>(true), 0 );
+                ::PostMessage(dlg->GetSafeHwnd(), MAKE_MESSAGE(CentralAppDefs::WindowCommand::CmdServiceConnection), static_cast<WPARAM>(true), 0 );
             }
             else
             {
@@ -127,7 +127,7 @@ BEGIN_MESSAGE_MAP(CentralDialog, CPropertySheet)
     ON_WM_QUERYDRAGICON()
     ON_COMMAND(IDOK, &CentralDialog::OnRedirectOK)
 
-    ON_MESSAGE( MAKE_MESSAGE(NECentralApp::WindowCommand::CmdServiceConnection   ), &CentralDialog::OnCmdServiceConnection )
+    ON_MESSAGE( MAKE_MESSAGE(CentralAppDefs::WindowCommand::CmdServiceConnection   ), &CentralDialog::OnCmdServiceConnection )
 END_MESSAGE_MAP()
 
 

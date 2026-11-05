@@ -81,6 +81,7 @@ Publisher::Publisher( const areg::ComponentEntry & entry, areg::ComponentThread 
     , PubSubProviderBase        ( static_cast<areg::Component &>(*this) )
     , areg::TimerConsumer   ( )
     , areg::ThreadConsumer  ( )
+    , PublisherCommandConsumer( )
 
     , mTimerOnChange    (static_cast<areg::TimerConsumer &>(self()), entry.mRoleName + "_OnUpdateTimer")
     , mTimerAlways      (static_cast<areg::TimerConsumer &>(self()), entry.mRoleName + "_AlwaysTimer")
@@ -93,7 +94,6 @@ Publisher::Publisher( const areg::ComponentEntry & entry, areg::ComponentThread 
     , mCountInteger     (0)
 
     , mConsoleThread    (static_cast<areg::ThreadConsumer &>(self()), entry.mRoleName + "_Thread")
-    , mLock             (false)
 {
 }
 
@@ -130,7 +130,6 @@ void Publisher::start()
 {
     LOG_SCOPE( examples_25_publisher_Publisher, start );
 
-    areg::Lock lock(mLock);
     LOG_DBG("Requested to re-start the service run. Reset values and re-start timers, there are [ %d ] connected clients",  mClientCount);
 
     mTimerAlways.stop_timer();
@@ -158,7 +157,6 @@ void Publisher::stop()
 {
     LOG_SCOPE( examples_25_publisher_Publisher, stop );
 
-    areg::Lock lock(mLock);
     LOG_DBG("Stopped servicing, resets data, wait for further instructions. There are [ %d ] connected clients", mClientCount);
 
     mTimerAlways.stop_timer();
@@ -171,7 +169,6 @@ void Publisher::invalidate()
 {
     LOG_SCOPE( examples_25_publisher_Publisher, invalidate );
 
-    areg::Lock lock(mLock);
     LOG_DBG("Invalidating all data. There are [ %d ] connected clients", mClientCount);
 
     mCountString = 0;
@@ -189,7 +186,6 @@ void Publisher::quit()
 {
     LOG_SCOPE( examples_25_publisher_Publisher, quit );
 
-    areg::Lock lock(mLock);
     LOG_DBG("Requested to quit.There are[% d] connected clients", mClientCount);
 
     mTimerAlways.stop_timer();
@@ -205,7 +201,6 @@ void Publisher::process_timer(areg::Timer & timer)
 
     if (&timer == &mTimerAlways)
     {
-        areg::Lock lock(mLock);
         if (++ mCountInteger > PubSub::CycleAlways)
         {
             ++ mSeqInteger;
@@ -217,7 +212,6 @@ void Publisher::process_timer(areg::Timer & timer)
     }
     else if (&timer == &mTimerOnChange)
     {
-        areg::Lock lock(mLock);
         if (++ mCountString > PubSub::CycleAlways)
         {
             ++ mSeqString;
@@ -231,6 +225,31 @@ void Publisher::process_timer(areg::Timer & timer)
     else
     {
         ASSERT(false);
+    }
+}
+
+void Publisher::process_event(const PublisherCommand & data)
+{
+    switch (static_cast<OptionFlag>(data.command))
+    {
+    case OptionFlag::CMD_Invalidate:
+        invalidate();
+        break;
+
+    case OptionFlag::CMD_Pause:
+        stop();
+        break;
+
+    case OptionFlag::CMD_Start:
+        start();
+        break;
+
+    case OptionFlag::CMD_Quit:
+        quit();
+        break;
+
+    default:
+        break;
     }
 }
 
@@ -256,22 +275,22 @@ void Publisher::on_run()
             switch (cmd)
             {
             case Publisher::OptionFlag::CMD_Invalidate:
-                invalidate();
+                send_command(cmd);
                 message = "Requested to invalidate data...";
                 break;
 
             case Publisher::OptionFlag::CMD_Pause:
-                stop();
+                send_command(cmd);
                 message = "Requested to pause service...";
                 break;
 
             case Publisher::OptionFlag::CMD_Start:
-                start();
+                send_command(cmd);
                 message = "Requested to start service...";
                 break;
 
             case Publisher::OptionFlag::CMD_Quit:
-                quit();
+                send_command(cmd);
                 message = "Request to quit application...";
                 break;
 
@@ -319,6 +338,11 @@ inline void Publisher::print_message(const areg::String & message, OptionFlag cm
 
    console.output_str(_coordSeparate , _separator);
    console.output_str(_coordUserInput, _userInput);
+}
+
+inline void Publisher::send_command(OptionFlag cmd)
+{
+    PublisherCommandEvent::send_event(PublisherCommand{ static_cast<int32_t>(cmd) }, static_cast<PublisherCommandConsumer &>(self()), master_thread());
 }
 
 inline Publisher & Publisher::self()

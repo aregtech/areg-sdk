@@ -178,7 +178,7 @@ void ServicingComponent::startup_service_interface( areg::Component & holder )
         (util::g_startup_options.hasError() == false))
     {
         EventOption::send_event( util::g_startup_options
-                               , static_cast<IEOptionConsumer&>(mOptionConsumer)
+                               , static_cast<OptionConsumerBase&>(mOptionConsumer)
                                , component_thread() );
     }
 
@@ -380,7 +380,7 @@ void ServicingComponent::_run_input_thread()
         OptionData newData;
         newData.parseCommand(cmd);
         cmdQuit = newData.hasQuit();
-        EventOption::send_event(newData, static_cast<IEOptionConsumer&>(mOptionConsumer), component_thread());
+        EventOption::send_event(newData, static_cast<OptionConsumerBase&>(mOptionConsumer), component_thread());
 
         LOG_DBG("Received option command [ %s ]", cmd.as_string());
     }

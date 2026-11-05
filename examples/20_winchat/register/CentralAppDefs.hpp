@@ -8,7 +8,7 @@
 #include "areg/base/areg_global.h"
 #include "areg/logging/areg_log.h"
 
-namespace NECentralApp
+namespace CentralAppDefs
 {
     const char * const  THREAD_CENTRAL      = "ThreadCentral";
 

@@ -31,12 +31,12 @@ bool ConnectionList::service_connected( areg::ServiceConnectionState status, are
     if ( is_connected( ) )
     {
         LOG_DBG("The service is connected, posting DistributedApp::WindowCommand::CmdServiceConnection message");
-        DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdServiceConnection, 1, reinterpret_cast<LPARAM>(dispatcher_thread( )) );
+        DistributedDialog::PostServiceMessage( DistributedAppDefs::WindowCommand::CmdServiceConnection, 1, reinterpret_cast<LPARAM>(dispatcher_thread( )) );
     }
     else
     {
         LOG_DBG("The service is disconnected, posting DistributedApp::WindowCommand::CmdServiceConnection message");
-        DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdServiceConnection, 0, 0 );
+        DistributedDialog::PostServiceMessage( DistributedAppDefs::WindowCommand::CmdServiceConnection, 0, 0 );
     }
 
     return result;
@@ -47,7 +47,7 @@ void ConnectionList::broadcast_client_disconnected( const ConnectionManager::Con
     if (mConnectionHandler.RemoveConnection(clientData))
     {
         ConnectionManager::ConnectionRecord * data = new ConnectionManager::ConnectionRecord( clientData );
-        DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdRemoveConnection, 1, reinterpret_cast<LPARAM>(data) );
+        DistributedDialog::PostServiceMessage( DistributedAppDefs::WindowCommand::CmdRemoveConnection, 1, reinterpret_cast<LPARAM>(data) );
     }
 }
 
@@ -56,7 +56,7 @@ void ConnectionList::broadcast_client_connected( const ConnectionManager::Connec
     if (mConnectionHandler.AddConnection(newClient))
     {
         ConnectionManager::ConnectionRecord * data = new ConnectionManager::ConnectionRecord(newClient);
-        DistributedDialog::PostServiceMessage(NEDistributedApp::WindowCommand::CmdAddConnection, 1, reinterpret_cast<LPARAM>(data));
+        DistributedDialog::PostServiceMessage(DistributedAppDefs::WindowCommand::CmdAddConnection, 1, reinterpret_cast<LPARAM>(data));
     }
 }
 
@@ -74,7 +74,7 @@ void ConnectionList::response_register_connection( const ConnectionManager::Conn
         mConnectionHandler.AddConnections(connectionList);
         mConnectionHandler.SetRegistered( true );
         areg::DispatcherThread* dispThread = dispatcher_thread();
-        DistributedDialog::PostServiceMessage(NEDistributedApp::WindowCommand::CmdClientRegistration, 1, reinterpret_cast<LPARAM>(dispThread));
+        DistributedDialog::PostServiceMessage(DistributedAppDefs::WindowCommand::CmdClientRegistration, 1, reinterpret_cast<LPARAM>(dispThread));
     }
     else
     {
@@ -83,6 +83,6 @@ void ConnectionList::response_register_connection( const ConnectionManager::Conn
         mConnectionHandler.SetTimeConnect( areg::DateTime( ) );
         mConnectionHandler.SetTimeConnected( areg::DateTime( ) );
         mConnectionHandler.RemoveConnections();
-        DistributedDialog::PostServiceMessage(NEDistributedApp::WindowCommand::CmdClientRegistration, 0, 0);
+        DistributedDialog::PostServiceMessage(DistributedAppDefs::WindowCommand::CmdClientRegistration, 0, 0);
     }
 }

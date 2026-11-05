@@ -77,6 +77,7 @@
 #                            --leaks off --repeat 20 --run examples:18_pubworker
 # ===========================================================================
 
+# macOS ships bash 3.2, where an empty array is unset: expand it as ${a[@]+"${a[@]}"}.
 set -euo pipefail
 
 # --------------------------------------------------------------------------
@@ -263,7 +264,7 @@ do_run() {
             local rounds=()
             [[ "${REPEAT}" -gt 1 ]] && rounds=(--repeat "until-fail:${REPEAT}")
             info "Running ctest in ${build_dir} ${only[*]-} ${rounds[*]-} (timeout ${TEST_TIMEOUT} s per test)"
-            ( cd "${build_dir}" && "${prefix[@]}" ctest --output-on-failure --timeout "${TEST_TIMEOUT}" "${only[@]}" "${rounds[@]}" ) ;;
+            ( cd "${build_dir}" && ${prefix[@]+"${prefix[@]}"} ctest --output-on-failure --timeout "${TEST_TIMEOUT}" ${only[@]+"${only[@]}"} ${rounds[@]+"${rounds[@]}"} ) ;;
         examples|examples:*)
             # The interesting defects live between processes, not inside one binary, so the
             # scenario driver is what has to run under the sanitizer. Every process it
@@ -277,18 +278,18 @@ do_run() {
             [[ "${RUN}" == examples:* ]] && only=(--only "${RUN#examples:}")
             info "Running the example scenarios from ${bin_dir}"
             info "Reports and captured output: ${out_dir}"
-            "${prefix[@]}" python3 "${ROOT_DIR}/tools/intern/run-all-examples.py" \
+            ${prefix[@]+"${prefix[@]}"} python3 "${ROOT_DIR}/tools/intern/run-all-examples.py" \
                 --bin-dir "${bin_dir}" --tier all --keep-logs \
-                --repeat "${REPEAT}" --out-dir "${out_dir}" "${only[@]}" ;;
+                --repeat "${REPEAT}" --out-dir "${out_dir}" ${only[@]+"${only[@]}"} ;;
         auto)
             local bin; bin="$(locate_binary "${build_dir}")"
             [[ -n "${bin}" ]] || die "Could not locate the '${TARGET}' binary; pass --run <path>."
             info "Running ${bin} ${RUN_ARGS[*]:-}"
-            "${prefix[@]}" "${bin}" "${RUN_ARGS[@]:-}";;
+            ${prefix[@]+"${prefix[@]}"} "${bin}" ${RUN_ARGS[@]+"${RUN_ARGS[@]}"};;
         *)
             [[ -x "${RUN}" ]] || die "--run '${RUN}' is not an executable path."
             info "Running ${RUN} ${RUN_ARGS[*]:-}"
-            "${prefix[@]}" "${RUN}" "${RUN_ARGS[@]:-}";;
+            ${prefix[@]+"${prefix[@]}"} "${RUN}" ${RUN_ARGS[@]+"${RUN_ARGS[@]}"};;
     esac
 }
 
@@ -355,7 +356,7 @@ case "${MODE}" in
         cmake --build "${BUILD_DIR}" -j"${JOBS}" --target "${TARGET}"
         BIN="$(locate_binary "${BUILD_DIR}")"; [[ -n "${BIN}" ]] || die "binary not found"
         info "perf stat ${BIN}"
-        perf stat -d -d -- "${BIN}" "${RUN_ARGS[@]:-}"
+        perf stat -d -d -- "${BIN}" ${RUN_ARGS[@]+"${RUN_ARGS[@]}"}
         ;;
     heaptrack)
         require_tool heaptrack heaptrack
@@ -367,7 +368,7 @@ case "${MODE}" in
         cmake --build "${BUILD_DIR}" -j"${JOBS}" --target "${TARGET}"
         BIN="$(locate_binary "${BUILD_DIR}")"; [[ -n "${BIN}" ]] || die "binary not found"
         info "heaptrack ${BIN}  (analyse with: heaptrack_gui / heaptrack_print)"
-        heaptrack "${BIN}" "${RUN_ARGS[@]:-}"
+        heaptrack "${BIN}" ${RUN_ARGS[@]+"${RUN_ARGS[@]}"}
         ;;
     callgrind)
         require_tool valgrind valgrind
@@ -379,7 +380,7 @@ case "${MODE}" in
         cmake --build "${BUILD_DIR}" -j"${JOBS}" --target "${TARGET}"
         BIN="$(locate_binary "${BUILD_DIR}")"; [[ -n "${BIN}" ]] || die "binary not found"
         info "valgrind --tool=callgrind ${BIN}"
-        valgrind --tool=callgrind --callgrind-out-file="${BUILD_DIR}/callgrind.out" -- "${BIN}" "${RUN_ARGS[@]:-}"
+        valgrind --tool=callgrind --callgrind-out-file="${BUILD_DIR}/callgrind.out" -- "${BIN}" ${RUN_ARGS[@]+"${RUN_ARGS[@]}"}
         ;;
     *)
         die "Unknown mode '${MODE}' (run 'tools/intern/sanitize.sh help')"

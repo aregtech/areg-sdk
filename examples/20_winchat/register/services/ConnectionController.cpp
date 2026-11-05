@@ -12,7 +12,7 @@
 #include "areg/component/Model.hpp"
 #include "areg/component/ComponentLoader.hpp"
 
-#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<uint32_t>(NECentralApp::WindowCommand::CmdFirst))
+#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<uint32_t>(CentralAppDefs::WindowCommand::CmdFirst))
 #define MAKE_MESSAGE(elem)  (static_cast<uint32_t>(elem) + FIRST_MESSAGE)
 
 #define MAKE_HWND(wnd)      reinterpret_cast<HWND>(wnd)
@@ -26,12 +26,12 @@ DEF_LOG_SCOPE(centralapp_ConnectionController, request_key_typing);
 
 BEGIN_MODEL(chat::MODEL_NAME_CENTRAL_SERVER)
 
-    BEGIN_REGISTER_THREAD( NECentralApp::THREAD_CENTRAL )
+    BEGIN_REGISTER_THREAD( CentralAppDefs::THREAD_CENTRAL )
         BEGIN_REGISTER_COMPONENT( chat::COMP_NAME_CENTRAL_SERVER, ConnectionController )
             REGISTER_IMPLEMENT_SERVICE( ConnectionManager::ServiceName, ConnectionManager::InterfaceVersion )
             REGISTER_IMPLEMENT_SERVICE( CentralMessager::ServiceName, CentralMessager::InterfaceVersion )
         END_REGISTER_COMPONENT( chat::COMP_NAME_CENTRAL_SERVER )
-    END_REGISTER_THREAD( NECentralApp::THREAD_CENTRAL )
+    END_REGISTER_THREAD( CentralAppDefs::THREAD_CENTRAL )
 
 END_MODEL(chat::MODEL_NAME_CENTRAL_SERVER)
 
@@ -165,7 +165,7 @@ void ConnectionController::request_register_connection( const areg::String & nic
                         data->timeReceived  = connection.connectedTime;
                         data->message[0]    = static_cast<TCHAR>(areg::EndOfString);
 
-                        ::PostMessage( hWnd, MAKE_MESSAGE(NECentralApp::WindowCommand::CmdRegistered), 0, reinterpret_cast<LPARAM>(data) );
+                        ::PostMessage( hWnd, MAKE_MESSAGE(CentralAppDefs::WindowCommand::CmdRegistered), 0, reinterpret_cast<LPARAM>(data) );
                     }
                 }
                 else
@@ -220,7 +220,7 @@ void ConnectionController::request_disconnect( const areg::String & nickName, ui
                 data->timeReceived  = connection.connectedTime;
                 data->message[0]    = static_cast<TCHAR>(areg::EndOfString);
 
-                ::PostMessage( hWnd, MAKE_MESSAGE(NECentralApp::WindowCommand::CmdUnregistered), 0, reinterpret_cast<LPARAM>(data) );
+                ::PostMessage( hWnd, MAKE_MESSAGE(CentralAppDefs::WindowCommand::CmdUnregistered), 0, reinterpret_cast<LPARAM>(data) );
             }
         }
         else
@@ -264,7 +264,7 @@ void ConnectionController::request_send_message( const areg::String & nickName, 
             data->message[0]    = static_cast<TCHAR>(areg::EndOfString);
             areg::copy_string<TCHAR, char>( data->message, CentralMessager::MessageMaxLen, newMessage.as_string() );
 
-            ::PostMessage( hWnd, MAKE_MESSAGE(NECentralApp::WindowCommand::CmdSendMessage), 0, reinterpret_cast<LPARAM>(data) );
+            ::PostMessage( hWnd, MAKE_MESSAGE(CentralAppDefs::WindowCommand::CmdSendMessage), 0, reinterpret_cast<LPARAM>(data) );
         }
     }
     else
@@ -296,7 +296,7 @@ void ConnectionController::request_key_typing( const areg::String & nickName, ui
             data->message[0]    = static_cast<TCHAR>(areg::EndOfString);
             areg::copy_string<TCHAR, char>( data->message, CentralMessager::MessageMaxLen, newMessage.as_string() );
 
-            ::PostMessage( hWnd, MAKE_MESSAGE(NECentralApp::WindowCommand::CmdTypeMessage), 0, reinterpret_cast<LPARAM>(data) );
+            ::PostMessage( hWnd, MAKE_MESSAGE(CentralAppDefs::WindowCommand::CmdTypeMessage), 0, reinterpret_cast<LPARAM>(data) );
         }
     }
     else
