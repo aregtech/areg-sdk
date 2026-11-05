@@ -360,8 +360,9 @@ public:
 
     /**
      * \brief   Destroys all events whose runtime class ID matches
-     *          \a eventClassId (except ExitPrio) in both lanes.
-     *          Must not be called concurrently with push_event().
+     *          \a eventClassId (except ExitPrio) in both lanes. The other events
+     *          keep their order. Call it on the consumer thread; producers may push
+     *          meanwhile, and an event published during the call may stay.
      **/
     void remove_events(const uint32_t eventClassId) noexcept;
 

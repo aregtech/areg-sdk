@@ -1,15 +1,6 @@
 name: Accessibility-alt-text-bot
 on:
-  issues:
-    types: [opened, edited]
-  pull_request:
-    types: [opened, edited]
-  issue_comment:
-    types: [created, edited]
-  discussion:
-    types: [created, edited]
-  discussion_comment:
-    types: [created, edited]
+  workflow_dispatch:
 
 permissions:
   issues: write

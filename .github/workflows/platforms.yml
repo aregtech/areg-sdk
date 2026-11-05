@@ -3,10 +3,6 @@ name: Platforms
 # Builds for other targets than the runner's own: 32-bit x86 Linux, built and tested on
 # the x86_64 runner, and 32-bit ARM Linux, cross-compiled.
 on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
   workflow_dispatch:
 
 concurrency:

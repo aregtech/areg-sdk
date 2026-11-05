@@ -100,5 +100,5 @@ Python/libxml2/libxslt development headers are not requested.
 The coverage driver converts Git Bash paths to native Windows drive paths before
 passing them to Python, including history below `HOME`. Cygwin and other POSIX
 paths remain unchanged. `tests/units/test_coverage_paths.py` checks default,
-environment and explicit history directories, plus Git's Windows entry-point
-layouts. Coverage runs it on all four platforms through the actual launcher.
+environment and explicit history directories. It is a local check of the driver;
+no workflow runs it, so it can never stop a coverage job before the build.

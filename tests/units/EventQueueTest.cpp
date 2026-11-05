@@ -969,6 +969,84 @@ TEST(EventQueueTest, remove_matching_class_from_both_lanes_preserves_survivor_or
     EXPECT_FALSE(queue.has_pending());
 }
 
+TEST(EventQueueTest, remove_on_a_full_ring_keeps_the_survivors_ahead_of_a_blocked_producer)
+{
+    constexpr uint32_t REMOVED{ 0xFFFF'FFFEu };
+    constexpr uint32_t LATE{ 1000u };
+    ReadyQueue queue(areg::QUEUE_MIN_RING_CAPACITY, false, FULL_WAIT_MS);
+    queue.set_consumer(areg::Thread::current_thread_id());
+    for (uint32_t i = 0u; i < areg::QUEUE_MIN_RING_CAPACITY; ++i)
+    {
+        Event evt = makeEvent((i % 2u) == 0u ? REMOVED : i);
+        ASSERT_TRUE(queue.push_event(evt));
+    }
+
+    std::atomic<bool> result{ false };
+    std::thread producer([&]
+    {
+        Event evt = makeEvent(LATE);
+        result.store(queue.push_event(evt), std::memory_order_release);
+    });
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    queue.remove_events(REMOVED);
+    producer.join();
+    EXPECT_TRUE(result.load(std::memory_order_acquire));
+    for (uint32_t i = 1u; i < areg::QUEUE_MIN_RING_CAPACITY; i += 2u)
+    {
+        EXPECT_EQ(queue.pop_event().event_id(), i);
+    }
+
+    EXPECT_EQ(queue.pop_event().event_id(), LATE);
+    EXPECT_FALSE(queue.has_pending());
+}
+
+TEST(EventQueueTest, remove_under_steady_producers_keeps_each_producer_in_order)
+{
+    constexpr uint32_t REMOVED{ 0xFFFF'FFFEu };
+    constexpr uint32_t PRODUCERS{ 4u };
+    constexpr uint32_t PER_PRODUCER{ 5'000u };
+    ReadyQueue queue(areg::QUEUE_MIN_RING_CAPACITY, false, FULL_WAIT_MS);
+    queue.set_consumer(areg::Thread::current_thread_id());
+    std::vector<std::thread> producers;
+    for (uint32_t id = 0u; id < PRODUCERS; ++id)
+    {
+        producers.emplace_back([&queue, id]
+        {
+            for (uint32_t i = 0u; i < PER_PRODUCER; ++i)
+            {
+                Event removed = makeEvent(REMOVED);
+                Event kept = makeEvent((id << 24u) | i);
+                static_cast<void>(queue.push_event(removed));
+                static_cast<void>(queue.push_event(kept));
+            }
+        });
+    }
+
+    uint32_t next[PRODUCERS]{ };
+    uint32_t received{ 0u };
+    bool ordered{ true };
+    while (received < (PRODUCERS * PER_PRODUCER))
+    {
+        queue.remove_events(REMOVED);
+        const Event evt{ queue.pop_event() };
+        if (evt.is_valid() && (evt.event_id() != REMOVED))
+        {
+            const uint32_t id{ (evt.event_id() >> 24u) % PRODUCERS };
+            ordered = ordered && ((evt.event_id() & 0x00FF'FFFFu) == next[id]);
+            ++next[id];
+            ++received;
+        }
+    }
+
+    for (std::thread & producer : producers)
+    {
+        producer.join();
+    }
+
+    EXPECT_TRUE(ordered);
+}
+
 TEST(EventQueueTest, zero_count_batch_operations_leave_the_input_and_queue_unchanged)
 {
     ReadyQueue queue(32u, true);

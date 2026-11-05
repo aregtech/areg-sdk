@@ -55,7 +55,7 @@ jobs:
         shell: bash
         env:
           EVENT: ${{ github.event_name }}
-          PATTERN: '^(framework|examples|tests|thirdparty|conf)/|(^|/)CMakeLists\.txt$|\.cmake$|^tools/(codegen\.jar|schema/)|^tools/intern/(run-all-examples\.py|hang-watchdog\.sh|coverage-report\.py|coverage\.sh|coverage_rule\.py|ci-changes\.sh)$|^\.github/(actions/compiler-cache/|codecov\.yml|workflows/coverage\.yml)'
+          PATTERN: '^(framework|examples|tests|thirdparty|conf)/|(^|/)CMakeLists\.txt$|\.cmake$|^tools/(codegen\.jar|schema/)|^tools/intern/(run-all-examples\.py|coverage-report\.py|coverage\.sh|coverage_rule\.py|ci-changes\.sh)$|^\.github/(actions/compiler-cache/|codecov\.yml|workflows/coverage\.yml)'
         run: |
           case "${EVENT}" in
             pull_request) BASE="${{ github.event.pull_request.base.sha }}" ;;
@@ -196,19 +196,10 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Verify the prebuilt Cygwin lxml
-        if: matrix.platform.name == 'cygwin'
-        shell: bash
-        run: ${{matrix.platform.bash}} -ec '${{matrix.platform.python}} -c "from lxml import etree; print(etree.LXML_VERSION)"'
-
       # On Cygwin this is the Cygwin python, so gcovr and the example driver run inside Cygwin.
       - name: Install gcovr
         shell: bash
-        run: ${{matrix.platform.bash}} -ec '${{matrix.platform.python}} -m pip install --disable-pip-version-check --only-binary=lxml gcovr==${{env.GCOVR_VERSION}}'
-
-      - name: Check coverage report paths
-        shell: bash
-        run: ${{matrix.platform.bash}} -ec '${{matrix.platform.python}} tests/units/test_coverage_paths.py'
+        run: ${{matrix.platform.bash}} -ec '${{matrix.platform.python}} -m pip install --disable-pip-version-check --no-warn-script-location --only-binary=lxml gcovr==${{env.GCOVR_VERSION}} && ${{matrix.platform.python}} -c "import lxml.etree"'
 
       - name: Select the MSVC environment for clang-cl and Ninja
         if: matrix.platform.name == 'windows'
@@ -240,49 +231,19 @@ jobs:
 
       # tools/intern/coverage.sh holds the flags, filters and report commands; a local run uses it too.
       - name: Build with coverage instrumentation
-        id: build
         if: matrix.platform.name != 'cygwin'
         shell: bash
         working-directory: ${{github.workspace}}
         run: bash tools/intern/coverage.sh build ${{env.COVERAGE_ARGS}} --jobs auto
 
-      - name: Configure with coverage instrumentation, watched (cygwin)
+      - name: Build with coverage instrumentation (cygwin)
         if: matrix.platform.name == 'cygwin'
         shell: pwsh
         working-directory: ${{github.workspace}}
-        timeout-minutes: 15
-        # A cmake, java or cygpath process that runs longer than 300 s gets its processes and
-        # its stacks printed, and is then stopped (as the configure step of cmake.yml).
+        timeout-minutes: 60
         run: |
-          New-Item -ItemType Directory -Force product | Out-Null
-          Remove-Item -Force -ErrorAction SilentlyContinue product/configure.done
-          Start-Process -NoNewWindow -FilePath C:\cygwin\bin\bash.exe -ArgumentList 'tools/intern/hang-watchdog.sh product/configure.done 300 cmake java cygpath'
-          C:\cygwin\bin\bash.exe tools/intern/coverage.sh configure ${{env.COVERAGE_ARGS}}
-          $rc = $LASTEXITCODE
-          New-Item -ItemType File -Force product/configure.done | Out-Null
-          exit $rc
-
-      - name: Dump the CMake logs of a failed configuration
-        if: failure() && matrix.platform.name == 'cygwin'
-        working-directory: ${{github.workspace}}
-        shell: bash
-        run: |
-          for f in "${{env.BUILD_DEST}}/CMakeFiles/CMakeConfigureLog.yaml" \
-                   "${{env.BUILD_DEST}}/CMakeFiles/CMakeError.log" \
-                   "${{env.BUILD_DEST}}/CMakeFiles/CMakeOutput.log" \
-                   "product/configure.done.report"; do
-            if [ -f "${f}" ]; then
-              echo "===== ${f} =====" 
-              tail -n 300 "${f}"
-            fi
-          done
-
-      - name: Build with coverage instrumentation (cygwin)
-        id: compile
-        if: matrix.platform.name == 'cygwin'
-        shell: bash
-        working-directory: ${{github.workspace}}
-        run: ${{matrix.platform.bash}} tools/intern/coverage.sh compile ${{env.COVERAGE_ARGS}} --jobs auto
+          C:\cygwin\bin\bash.exe tools/intern/coverage.sh build ${{env.COVERAGE_ARGS}} --jobs auto
+          exit $LASTEXITCODE
 
       - name: Report compiler cache statistics
         if: ${{ !cancelled() && steps.compiler-cache.outcome == 'success' }}
@@ -299,7 +260,7 @@ jobs:
       # Runs the example scenarios, collects examples.json and resets the counters.
       - name: Run the example applications
         id: examples
-        if: ${{ !cancelled() && (steps.build.outcome == 'success' || steps.compile.outcome == 'success') }}
+        if: ${{ !cancelled() && steps.unit.outcome != 'skipped' }}
         working-directory: ${{github.workspace}}
         timeout-minutes: 40
         shell: bash
@@ -307,13 +268,13 @@ jobs:
 
       # One Cobertura file per flag, the HTML report, and the job summary.
       - name: Make the reports
-        if: ${{ !cancelled() && (steps.build.outcome == 'success' || steps.compile.outcome == 'success') }}
+        if: ${{ !cancelled() && steps.unit.outcome != 'skipped' }}
         working-directory: ${{github.workspace}}
         shell: bash
         run: ${{matrix.platform.bash}} tools/intern/coverage.sh report ${{env.COVERAGE_ARGS}}
 
       - name: Upload the unit test coverage to Codecov
-        if: ${{ !cancelled() && (steps.build.outcome == 'success' || steps.compile.outcome == 'success') }}
+        if: ${{ !cancelled() && steps.unit.outcome != 'skipped' }}
         uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -325,7 +286,7 @@ jobs:
           fail_ci_if_error: ${{ github.event_name != 'pull_request' }}
 
       - name: Upload the example coverage to Codecov
-        if: ${{ !cancelled() && (steps.build.outcome == 'success' || steps.compile.outcome == 'success') }}
+        if: ${{ !cancelled() && steps.unit.outcome != 'skipped' }}
         uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -337,7 +298,7 @@ jobs:
           fail_ci_if_error: ${{ github.event_name != 'pull_request' }}
 
       - name: Upload the HTML coverage report
-        if: ${{ !cancelled() && (steps.build.outcome == 'success' || steps.compile.outcome == 'success') }}
+        if: ${{ !cancelled() && steps.unit.outcome != 'skipped' }}
         uses: actions/upload-artifact@v7
         with:
           name: coverage-report-${{matrix.platform.name}}

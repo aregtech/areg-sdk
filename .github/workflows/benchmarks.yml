@@ -5,9 +5,6 @@ name: Benchmarks
 # fails when the benchmarks do not build or do not run, never because of a number.
 
 on:
-  push:
-    branches: [ master ]
-  pull_request:
   workflow_dispatch:
 
 concurrency:

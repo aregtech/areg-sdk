@@ -903,6 +903,9 @@ int main(int argc, char * argv[])
     bool result{ false };
     {
         RouterServerService router;
+
+        // The slow reader case checks the hold, so that reader stays connected however slow it is.
+        router.set_close_stalled(name != "slow-reader");
         if (router.setup_connection_data(areg::RemoteServiceKind::Router, static_cast<uint32_t>(areg::ConnectionType::Tcpip)) && router.connect_service_host())
         {
             if (name == "stale-cache")

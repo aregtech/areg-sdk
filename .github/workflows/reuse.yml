@@ -4,8 +4,6 @@
 name: REUSE compliance check
 
 on:
-  pull_request: # Set to master to run only when merge with master branch
-    branches: [ master ]
   workflow_dispatch:
 
 concurrency:

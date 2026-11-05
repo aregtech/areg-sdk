@@ -11,9 +11,7 @@
 #
 #   Steps
 #     sync      Copy the working tree to <dir>/src (skipped with --in-place).
-#     build     Configure and build the instrumented tree (configure, then compile).
-#     configure Only the cmake configure of the build step.
-#     compile   Only the cmake build of the build step.
+#     build     Configure and build the instrumented tree.
 #     unit      Run ctest, collect unit.json, reset the counters.
 #     examples  Run the example scenarios, collect examples.json, reset the counters.
 #     report    Write the Cobertura, HTML and Markdown reports and print them. The
@@ -161,7 +159,7 @@ step_sync() {
   echo "sync: $REPO -> $SRC"
 }
 
-step_configure() {
+step_build() {
   # Debug is the only unoptimized configuration, so each line maps to its own counter.
   # '-fprofile-update=atomic' keeps the counters exact when several threads run one line.
   local flags="$COV_FLAGS" gen=()
@@ -172,14 +170,7 @@ step_configure() {
         -DCMAKE_C_FLAGS="$flags" -DCMAKE_CXX_FLAGS="$flags" \
         -DCMAKE_EXE_LINKER_FLAGS="$COV_LDFLAGS" -DCMAKE_SHARED_LINKER_FLAGS="$COV_LDFLAGS" \
     || die "configure failed"
-}
-
-step_compile() {
   cmake --build "$BUILD" -j "$JOBS" || die "build failed"
-}
-
-step_build() {
-  step_configure && step_compile
 }
 
 step_unit() {
@@ -260,8 +251,6 @@ step_report() {
 case "$STEP" in
   sync)     step_sync ;;
   build)    step_build ;;
-  configure) step_configure ;;
-  compile)  step_compile ;;
   unit)     step_unit ;;
   examples) step_examples ;;
   report)   step_report ;;
@@ -273,5 +262,5 @@ case "$STEP" in
     step_report || RC=1
     exit $RC ;;
   help|-h|--help) sed -n '3,/^# =====/{/^# =====/d;p;}' "$0" | sed 's/^# \{0,1\}//' ;;
-  *) die "unknown step '$STEP' (sync, build, configure, compile, unit, examples, report, all)" ;;
+  *) die "unknown step '$STEP' (sync, build, unit, examples, report, all)" ;;
 esac

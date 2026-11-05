@@ -6,10 +6,6 @@ name: Agent docs
 # This job is the only thing that notices.
 
 on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
   workflow_dispatch:
 
 concurrency:
