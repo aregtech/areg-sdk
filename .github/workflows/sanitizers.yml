@@ -554,6 +554,60 @@ jobs:
           test ! -s ./build-${{matrix.mode}}/example-reports.log
           exit "${status}"
 
+      # A process can die without a sanitizer report: lldb and the system crash reports keep the stack.
+      - name: Collect the stacks of the crashes
+        if: always()
+        continue-on-error: true
+        shell: bash
+        timeout-minutes: 15
+        run: |
+          stacks=./build-${{matrix.mode}}/crash-stacks
+          mkdir -p "${stacks}"
+          stack() {
+            tools/intern/sanitize.sh ${{matrix.mode}} --compiler llvm --config RelWithDebInfo --no-extended --examples \
+                --leaks off --keep --run /usr/bin/lldb -- --batch -o run -k 'thread backtrace all' -k quit \
+                -- "./build-${{matrix.mode}}/product/bin/$1" "${@:2}" > "${stacks}/$1.txt" 2>&1 || true
+          }
+          if [ "${{matrix.mode}}" = asan ]; then
+            stack 08_timer.mac
+            stack 09_threads.mac
+            bin=./build-asan/product/bin
+            "${bin}/logcollector.mac" --console < <(sleep 120) > "${stacks}/logcollector.txt" 2>&1 &
+            collector=$!
+            sleep 3
+            ( sleep 5; "${bin}/35_logsource.mac" -c=10000 -w=100 > "${stacks}/35_logsource.txt" 2>&1 ) &
+            stack 35_logsink.mac -c=10100
+            kill "${collector}" 2> /dev/null || true
+          else
+            stack areg-fault-inject-test.mac --gtest_list_tests
+          fi
+          cp -R ~/Library/Logs/DiagnosticReports "${stacks}/" 2>/dev/null || true
+
+      # The same programs, built with the current event queue and with the one before remove_events() changed.
+      - name: Compare the event queues
+        if: always() && matrix.mode == 'asan'
+        continue-on-error: true
+        shell: bash
+        timeout-minutes: 30
+        run: |
+          stacks=./build-asan/crash-stacks
+          mkdir -p "${stacks}"
+          rounds() {
+            for program in 08_timer 09_threads; do
+              for round in 1 2 3 4 5; do
+                status=0
+                tools/intern/sanitize.sh asan --compiler llvm --config RelWithDebInfo --no-extended --examples --leaks off \
+                    --keep --target "${program}" --run "${PWD}/build-asan/product/bin/${program}.mac" \
+                    > "${stacks}/$1-${program}-${round}.txt" 2>&1 || status=$?
+                echo "$1 ${program} round ${round} exit ${status}" | tee -a "${stacks}/event-queue-compare.txt"
+              done
+            done
+          }
+          rounds current
+          git fetch --depth=1 origin ebf8e6964078c9309c4430e861ff8e7ae0ea92e0
+          git show ebf8e6964078c9309c4430e861ff8e7ae0ea92e0:framework/areg/component/private/EventQueue.cpp > framework/areg/component/private/EventQueue.cpp
+          rounds previous
+
       - name: Upload what the sanitizer left behind
         if: always()
         uses: actions/upload-artifact@v7
@@ -562,6 +616,7 @@ jobs:
           path: |
             ./build-${{matrix.mode}}/Testing/
             ./build-${{matrix.mode}}/example-results/
+            ./build-${{matrix.mode}}/crash-stacks/
           if-no-files-found: ignore
 
   sanitizers-windows:
