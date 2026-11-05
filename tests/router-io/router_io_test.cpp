@@ -128,6 +128,22 @@ namespace
         return (source.is_open() && target.good()) ? path : std::string();
     }
 
+    //!< The error of the last failed socket call of this thread.
+    int32_t last_socket_error()
+    {
+#if defined(_WIN32)
+        return static_cast<int32_t>(::WSAGetLastError());
+#else
+        return static_cast<int32_t>(errno);
+#endif
+    }
+
+    //!< Why the last failed read_exact() of this thread ended.
+    thread_local const char *   _readEnd        { "" };
+
+    //!< The socket error of the last failed read_exact() of this thread.
+    thread_local int32_t        _readError      { 0 };
+
     //!< Waits until the socket is readable. Returns false on timeout or error.
     bool wait_readable(SOCKETHANDLE hSocket, int32_t timeoutMs)
     {
@@ -145,11 +161,19 @@ namespace
         while (done < length)
         {
             if (wait_readable(hSocket, timeoutMs) == false)
+            {
+                _readEnd    = "timeout";
+                _readError  = last_socket_error();
                 return false;
+            }
 
             const int received{ static_cast<int>(::recv(hSocket, reinterpret_cast<char *>(buffer + done), static_cast<int>(length - done), 0)) };
             if (received <= 0)
+            {
+                _readEnd    = (received == 0) ? "closed by the router" : "socket error";
+                _readError  = (received == 0) ? 0 : last_socket_error();
                 return false;
+            }
 
             done += static_cast<uint32_t>(received);
         }
@@ -269,8 +293,9 @@ namespace
         }
 
         //!< Reads data messages and checks that their numbers run from 0 to count - 1. Counts the
-        //!< bytes read in total. While slow is true, it reads one batch, then sleeps.
-        bool read_numbered(uint32_t count, std::atomic<uint64_t> & bytesRead, const std::atomic<bool> & slow)
+        //!< bytes read in total. While slow is true, it reads one batch, then sleeps. Names
+        //!< the reader as who when it fails.
+        bool read_numbered(const char * who, uint32_t count, std::atomic<uint64_t> & bytesRead, const std::atomic<bool> & slow)
         {
             constexpr uint32_t SLOW_BATCH   { 16u };
             constexpr int32_t  SLOW_PAUSE_MS{ 100 };
@@ -278,14 +303,21 @@ namespace
             std::vector<uint8_t> payload;
             for (uint32_t next = 0u; next < count; ++next)
             {
-                if ((read_message(hdr, payload, 10 * ANSWER_MS) == false) || (payload.size() < sizeof(uint32_t)))
+                if (read_message(hdr, payload, 10 * ANSWER_MS) == false)
+                {
+                    std::printf("      %s: reading message [ %u ] of [ %u ] failed: %s, error [ %d ]\n", who, next, count, _readEnd, _readError);
                     return false;
+                }
 
                 uint32_t sequence{ 0u };
-                std::memcpy(&sequence, payload.data(), sizeof(sequence));
-                if ((hdr.messageId != DATA_MESSAGE) || (sequence != next))
+                if (payload.size() >= sizeof(sequence))
                 {
-                    std::printf("      expected message [ %u ], got [ %u ] of id [ %u ]\n", next, sequence, hdr.messageId);
+                    std::memcpy(&sequence, payload.data(), sizeof(sequence));
+                }
+
+                if ((hdr.messageId != DATA_MESSAGE) || (payload.size() < sizeof(sequence)) || (sequence != next))
+                {
+                    std::printf("      %s: expected message [ %u ], got [ %u ] of id [ %u ] and [ %u ] bytes\n", who, next, sequence, hdr.messageId, static_cast<uint32_t>(payload.size()));
                     return false;
                 }
 
@@ -299,13 +331,15 @@ namespace
             return true;
         }
 
-        //!< Sends data messages numbered 0 to count - 1 to the target.
-        bool send_numbered(ITEM_ID target, uint32_t count, uint32_t size)
+        //!< Sends data messages numbered 0 to count - 1 to the target. Names the sender as who
+        //!< when it fails.
+        bool send_numbered(const char * who, ITEM_ID target, uint32_t count, uint32_t size)
         {
             constexpr uint32_t PER_WRITE{ 64u };
             std::vector<uint8_t> bytes;
             for (uint32_t i = 0u; i < count; )
             {
+                const uint32_t first{ i };
                 bytes.clear();
                 for (const uint32_t end{ (std::min)(count, i + PER_WRITE) }; i < end; ++i)
                 {
@@ -314,7 +348,10 @@ namespace
                 }
 
                 if (send(bytes) == false)
+                {
+                    std::printf("      %s: sending messages [ %u ] to [ %u ] failed, error [ %d ]\n", who, first, i - 1u, last_socket_error());
                     return false;
+                }
             }
 
             return true;
@@ -553,8 +590,8 @@ namespace
         std::atomic<uint64_t> fastRead{ 0u };
         bool slowOk{ false };
         bool slowSent{ false };
-        std::thread slowReader([&]() { slowOk = slow.read_numbered(SLOW_COUNT, slowRead, slowMode); });
-        std::thread slowWriter([&]() { slowSent = slowSender.send_numbered(slow.cookie, SLOW_COUNT, SIZE); });
+        std::thread slowReader([&]() { slowOk = slow.read_numbered("slow reader", SLOW_COUNT, slowRead, slowMode); });
+        std::thread slowWriter([&]() { slowSent = slowSender.send_numbered("sender of the slow reader", slow.cookie, SLOW_COUNT, SIZE); });
 
         // The slow reader is held once its sender wrote past the cap of the router.
         std::this_thread::sleep_for(std::chrono::milliseconds(300));
@@ -563,8 +600,8 @@ namespace
         bool fastOk{ false };
         bool fastSent{ false };
         const auto started{ std::chrono::steady_clock::now() };
-        std::thread fastReader([&]() { fastOk = fast.read_numbered(FAST_COUNT, fastRead, neverSlow); });
-        std::thread fastWriter([&]() { fastSent = fastSender.send_numbered(fast.cookie, FAST_COUNT, SIZE); });
+        std::thread fastReader([&]() { fastOk = fast.read_numbered("fast reader", FAST_COUNT, fastRead, neverSlow); });
+        std::thread fastWriter([&]() { fastSent = fastSender.send_numbered("sender of the fast reader", fast.cookie, FAST_COUNT, SIZE); });
         fastReader.join();
         const uint64_t slowDuring{ slowRead.load() - slowBefore };
         const uint64_t fastDuring{ fastRead.load() };
@@ -584,16 +621,6 @@ namespace
         result = check(slowDuring < fastDuring, "the fast reader did not wait for the slow one: it read more in the same time") && result;
         result = check(slowSent && slowOk, "the slow reader got all its messages, in order, none lost") && result;
         return result;
-    }
-
-    //!< The error of the last failed socket call of this thread.
-    int32_t last_socket_error()
-    {
-#if defined(_WIN32)
-        return static_cast<int32_t>(::WSAGetLastError());
-#else
-        return static_cast<int32_t>(errno);
-#endif
     }
 
     //!< The local port of a socket, or 0.

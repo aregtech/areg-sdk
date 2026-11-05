@@ -37,7 +37,7 @@ jobs:
         shell: bash
         env:
           EVENT: ${{ github.event_name }}
-          PATTERN: '^(framework|examples|tests|thirdparty|conf)/|(^|/)CMakeLists\.txt$|\.cmake$|^tools/(codegen\.jar|schema/)|^tools/intern/(run-all-examples\.py|hang-watchdog\.sh|report-ctest\.py|check_invariants\.py|check_inline_virtuals\.py)$|^\.github/(ci/|workflows/platforms\.yml)|^tests/bitness/'
+          PATTERN: '^(framework|examples|tests|thirdparty|conf)/|(^|/)CMakeLists\.txt$|\.cmake$|^tools/(codegen\.jar|schema/)|^tools/intern/(run-all-examples\.py|hang-watchdog\.sh|report-ctest\.py|check_invariants\.py|check_inline_virtuals\.py|ci-changes\.sh)$|^\.github/(actions/compiler-cache/|ci/|workflows/platforms\.yml)|^tests/bitness/'
           MATRIX: ''
         run: |
           case "${EVENT}" in
@@ -47,7 +47,7 @@ jobs:
           esac
           RUN=true
           if [ -n "${BASE}" ] && git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
-            git diff --name-only "${BASE}" "${GITHUB_SHA}" | grep -qE "${PATTERN}" || RUN=false
+            RUN="$(bash tools/intern/ci-changes.sh "${BASE}" "${GITHUB_SHA}" "${PATTERN}")"
           fi
           echo "run=${RUN}" >> "${GITHUB_OUTPUT}"
           if [ -n "${MATRIX}" ]; then
@@ -70,6 +70,12 @@ jobs:
 
       - name: Checkout Areg SDK source codes
         uses: actions/checkout@v7
+
+      - name: Cache compiler outputs
+        id: compiler-cache
+        uses: ./.github/actions/compiler-cache
+        with:
+          key: platforms-x86
 
       - name: Setup Java JDK to run code generator
         uses: actions/setup-java@v6.1.0
@@ -99,8 +105,13 @@ jobs:
           done
 
       - name: Build with CMake
+        id: build
         working-directory: ${{github.workspace}}
         run: cmake --build ${{env.CACHE_DEST}} -j16
+
+      - name: Report compiler cache statistics
+        if: ${{ !cancelled() && steps.compiler-cache.outcome == 'success' }}
+        run: ccache --show-stats
 
       - name: Check the binaries are 32-bit
         working-directory: ${{github.workspace}}
@@ -131,17 +142,21 @@ jobs:
                   --out-dir ./example-results/linux-gnu-x86
 
       - name: Run Unit Tests
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         working-directory: ${{github.workspace}}
         timeout-minutes: 30
         run: ctest --test-dir ${{env.CACHE_DEST}} -C ${{env.BUILD_TYPE}} --timeout 180 --output-on-failure --output-junit test_results.xml
 
       - name: Build the 64-bit side of the bitness test
+        id: build64
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         working-directory: ${{github.workspace}}
         run: |
           cmake -B ./product/cache/x64 -DAREG_COMPILER_FAMILY=gnu -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_LIB_TYPE=shared -DAREG_EXTENDED:BOOL=OFF -DAREG_LOGGING:BOOL=ON -DAREG_EXAMPLES:BOOL=OFF -DAREG_TESTS:BOOL=ON -DAREG_SYSTEM_PACKAGES:BOOL=OFF -DAREG_SYSTEM_SQLITE:BOOL=OFF -DAREG_INSTALL:BOOL=OFF
           cmake --build ./product/cache/x64 --target areg-bitness-test mtrouter -j16
 
       - name: Run the 32-bit and 64-bit processes together
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && steps.build64.outcome == 'success' }}
         working-directory: ${{github.workspace}}
         shell: bash
         timeout-minutes: 10

@@ -49,7 +49,7 @@ jobs:
         shell: bash
         env:
           EVENT: ${{ github.event_name }}
-          PATTERN: '^(framework|examples|tests|thirdparty|conf)/|(^|/)CMakeLists\.txt$|\.cmake$|^tools/(codegen\.jar|schema/)|^tools/intern/(run-all-examples\.py|hang-watchdog\.sh|report-ctest\.py|check_invariants\.py|check_inline_virtuals\.py)$|^\.github/(ci/|workflows/sanitizers\.yml)|^tools/intern/(sanitize\.sh|sanitizer/)'
+          PATTERN: '^(framework|examples|tests|thirdparty|conf)/|(^|/)CMakeLists\.txt$|\.cmake$|^tools/(codegen\.jar|schema/)|^tools/intern/(run-all-examples\.py|hang-watchdog\.sh|report-ctest\.py|check_invariants\.py|check_inline_virtuals\.py|ci-changes\.sh)$|^\.github/(actions/compiler-cache/|ci/|workflows/sanitizers\.yml)|^tools/intern/(sanitize\.sh|sanitizer/)'
           MATRIX: '.github/ci/sanitizers-matrix.json'
         run: |
           case "${EVENT}" in
@@ -59,7 +59,7 @@ jobs:
           esac
           RUN=true
           if [ -n "${BASE}" ] && git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
-            git diff --name-only "${BASE}" "${GITHUB_SHA}" | grep -qE "${PATTERN}" || RUN=false
+            RUN="$(bash tools/intern/ci-changes.sh "${BASE}" "${GITHUB_SHA}" "${PATTERN}")"
           fi
           echo "run=${RUN}" >> "${GITHUB_OUTPUT}"
           if [ -n "${MATRIX}" ]; then
@@ -96,6 +96,12 @@ jobs:
 
       - name: Checkout Areg SDK source codes
         uses: actions/checkout@v7
+
+      - name: Cache compiler outputs
+        id: compiler-cache
+        uses: ./.github/actions/compiler-cache
+        with:
+          key: sanitizer-${{ matrix.mode }}-${{ matrix.config }}
 
       - name: Setup Java JDK to run code generator
         uses: actions/setup-java@v6.1.0
@@ -154,6 +160,10 @@ jobs:
           ulimit -c unlimited
           tools/intern/sanitize.sh ${{matrix.mode}} --config ${{matrix.config}} --keep --repeat 30 \
               --run 'ctest:areg-router-io-test\.stop-while-flooding\.'
+
+      - name: Report compiler cache statistics
+        if: ${{ !cancelled() && steps.compiler-cache.outcome == 'success' }}
+        run: ccache --show-stats
 
       # Everything needed to open the crash on another machine: the cores, the binaries
       # they came from, and what the runner was, so a local build can be matched to it.
@@ -233,6 +243,12 @@ jobs:
       - name: Checkout Areg SDK source codes
         uses: actions/checkout@v7
 
+      - name: Cache compiler outputs
+        id: compiler-cache
+        uses: ./.github/actions/compiler-cache
+        with:
+          key: teardown-${{ matrix.config }}
+
       - name: Setup Java JDK to run code generator
         uses: actions/setup-java@v6.1.0
         with:
@@ -273,6 +289,10 @@ jobs:
                 -R 'areg-(timer-churn-test|stub-teardown-test\.(local-many|local-churn|worker-unload))$'
           ctest --output-on-failure --repeat until-fail:100 \
                 -R 'areg-(release-unload-test|internal-events-test|stub-teardown-test\.(stub-request|stub-address|proxy-unload|proxy-free|local-unload|watchdog-restart))$'
+
+      - name: Report compiler cache statistics
+        if: ${{ !cancelled() && steps.compiler-cache.outcome == 'success' }}
+        run: ccache --show-stats
 
       - name: Collect the post-mortem
         if: failure()
@@ -351,6 +371,12 @@ jobs:
       - name: Checkout Areg SDK source codes
         uses: actions/checkout@v7
 
+      - name: Cache compiler outputs
+        id: compiler-cache
+        uses: ./.github/actions/compiler-cache
+        with:
+          key: sanitizer-examples-${{ matrix.arch }}
+
       - name: Setup Java JDK to run code generator
         uses: actions/setup-java@v6.1.0
         with:
@@ -383,6 +409,10 @@ jobs:
       - name: Build with CMake
         working-directory: ${{github.workspace}}
         run: cmake --build ${{env.EXAMPLES_CACHE}} -j16
+
+      - name: Report compiler cache statistics
+        if: ${{ !cancelled() && steps.compiler-cache.outcome == 'success' }}
+        run: ccache --show-stats
 
       - name: Run the examples under the sanitizer
         working-directory: ${{github.workspace}}

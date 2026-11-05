@@ -73,15 +73,19 @@ ctest -R 'FaultInject|ChildProcess'             # by name
 `ctest` runs each case in its own process. `areg-unit-tests` also runs as a whole in one
 process, which is what the Test Explorer of Visual Studio does.
 
-The coverage driver's path regression cases use Python's standard `unittest` and
-Bash, independently of the C++ build and gcovr:
+The CI regressions use Python's standard `unittest` and Bash, independently of the
+C++ build. The coverage dependency case on Cygwin also requires its prebuilt lxml:
 
 ```text
 python tests/units/test_coverage_paths.py
+python tests/units/test_ci_plans.py
 ```
 
 They run the report phase with fixture gcovr outputs and the real report writer.
-The Coverage workflow runs them on every platform before building.
+Coverage runs the path/dependency cases on every platform before building,
+including Git Bash launching native Windows Python. The planner cases execute
+the actual workflow filters with large diffs and explicit error conditions;
+CMake's invariant job runs them.
 
 Windows, Visual Studio: build `areg-sdk.sln`; the executables are in the `bin` folder of the
 build output (for example `product\build\msvc-v143\windows_nt-x64-release\bin`). From a

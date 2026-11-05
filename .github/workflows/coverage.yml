@@ -55,7 +55,7 @@ jobs:
         shell: bash
         env:
           EVENT: ${{ github.event_name }}
-          PATTERN: '^(framework|examples|tests|thirdparty|conf)/|(^|/)CMakeLists\.txt$|\.cmake$|^tools/(codegen\.jar|schema/)|^tools/intern/(run-all-examples\.py|hang-watchdog\.sh|coverage-report\.py|coverage\.sh|coverage_rule\.py)$|^\.github/(codecov\.yml|workflows/coverage\.yml)'
+          PATTERN: '^(framework|examples|tests|thirdparty|conf)/|(^|/)CMakeLists\.txt$|\.cmake$|^tools/(codegen\.jar|schema/)|^tools/intern/(run-all-examples\.py|hang-watchdog\.sh|coverage-report\.py|coverage\.sh|coverage_rule\.py|ci-changes\.sh)$|^\.github/(actions/compiler-cache/|codecov\.yml|workflows/coverage\.yml)'
         run: |
           case "${EVENT}" in
             pull_request) BASE="${{ github.event.pull_request.base.sha }}" ;;
@@ -64,7 +64,7 @@ jobs:
           esac
           RUN=true
           if [ -n "${BASE}" ] && git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
-            git diff --name-only "${BASE}" "${GITHUB_SHA}" | grep -qE "${PATTERN}" || RUN=false
+            RUN="$(bash tools/intern/ci-changes.sh "${BASE}" "${GITHUB_SHA}" "${PATTERN}")"
           fi
           echo "run=${RUN}" >> "${GITHUB_OUTPUT}"
 
@@ -89,13 +89,20 @@ jobs:
         platform:
           - { name: linux,   os: ubuntu-latest,  family: gnu,    extended: 'ON',  gcov: '',                    generator: '',      python: python3, bash: bash }
           - { name: macos,   os: macos-latest,   family: llvm,   extended: 'OFF', gcov: 'xcrun llvm-cov gcov', generator: '',      python: python3, bash: bash }
-          - { name: cygwin,  os: windows-latest, family: cygwin, extended: 'ON',  gcov: '',                    generator: '',      python: python3, bash: 'C:/cygwin/bin/bash.exe' }
+          - { name: cygwin,  os: windows-latest, family: cygwin, extended: 'ON',  gcov: '',                    generator: '',      python: python3.12, bash: 'C:/cygwin/bin/bash.exe' }
           - { name: windows, os: windows-latest, family: llvm,   extended: 'ON',  gcov: 'llvm-cov gcov',       generator: Ninja,   python: python,  bash: bash }
 
     steps:
 
       - name: Checkout Areg SDK source codes
         uses: actions/checkout@v7
+
+      - name: Cache compiler outputs
+        id: compiler-cache
+        if: runner.os != 'Windows'
+        uses: ./.github/actions/compiler-cache
+        with:
+          key: coverage-${{ matrix.platform.name }}
 
       - name: Setup Java JDK to run code generator
         uses: actions/setup-java@v6.1.0
@@ -121,12 +128,20 @@ jobs:
         # Only the cygwin toolchain and the Windows system directories (as in cmake.yml).
         run: echo "PATH=C:\cygwin;C:\cygwin\bin;C:\cygwin\lib;$env:SYSTEMROOT\system32;$env:SYSTEMROOT;$env:SYSTEMROOT\System32\Wbem" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
+      - name: Cache Cygwin package downloads
+        if: matrix.platform.name == 'cygwin'
+        uses: actions/cache@v5
+        with:
+          path: C:\cygwin-packages
+          key: cygwin-packages-v1-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: cygwin-packages-v1-
+
       - name: Install cygwin on Windows
         if: matrix.platform.name == 'cygwin'
         uses: cygwin/cygwin-install-action@v7
         with:
-          # gcovr uses the prebuilt lxml of the Cygwin Python interpreter.
-          packages: cmake, dos2unix, flexdll, gcc-g++, gdb, git, libncurses-devel, make, python3, python3-lxml, python3-pip
+          # This lxml build imports cygxml2-2.dll, supplied by the stable libxml2 packages.
+          packages: cmake, dos2unix, flexdll, gcc-g++, gdb, git, libncurses-devel, make, python312, python312-lxml=6.1.3-1, python312-pip
           install-dir: 'C:\cygwin'
           add-to-path: false
           work-vol: 'C:'
@@ -268,6 +283,10 @@ jobs:
         shell: bash
         working-directory: ${{github.workspace}}
         run: ${{matrix.platform.bash}} tools/intern/coverage.sh compile ${{env.COVERAGE_ARGS}} --jobs auto
+
+      - name: Report compiler cache statistics
+        if: ${{ !cancelled() && steps.compiler-cache.outcome == 'success' }}
+        run: ccache --show-stats
 
       # Runs ctest, collects unit.json and resets the counters.
       - name: Run the unit tests

@@ -35,7 +35,7 @@ jobs:
         shell: bash
         env:
           EVENT: ${{ github.event_name }}
-          PATTERN: '^(framework|tools|docs/agent|conf/cmake)/|^AGENTS\.md$|^CODEBASE\.md$|^\.github/workflows/agent-docs\.yml$'
+          PATTERN: '^(framework|tools|thirdparty|docs/agent|conf)/|^tests/units/test_ci_plans\.py$|(^|/)CMakeLists\.txt$|\.cmake$|^AGENTS\.md$|^CODEBASE\.md$|^\.github/(actions/compiler-cache/|workflows/agent-docs\.yml$)'
           MATRIX: ''
         run: |
           case "${EVENT}" in
@@ -45,7 +45,7 @@ jobs:
           esac
           RUN=true
           if [ -n "${BASE}" ] && git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
-            git diff --name-only "${BASE}" "${GITHUB_SHA}" | grep -qE "${PATTERN}" || RUN=false
+            RUN="$(bash tools/intern/ci-changes.sh "${BASE}" "${GITHUB_SHA}" "${PATTERN}")"
           fi
           echo "run=${RUN}" >> "${GITHUB_OUTPUT}"
           if [ -n "${MATRIX}" ]; then
@@ -166,6 +166,11 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - name: Cache compiler outputs
+        uses: ./.github/actions/compiler-cache
+        with:
+          key: agent-recipes
+
       - uses: actions/setup-python@v7
         with:
           python-version: '3.11'
@@ -266,6 +271,11 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - name: Cache compiler outputs
+        uses: ./.github/actions/compiler-cache
+        with:
+          key: agent-evals
+
       - uses: actions/setup-python@v7
         with:
           python-version: '3.11'
@@ -292,6 +302,11 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
+
+      - name: Cache compiler outputs
+        uses: ./.github/actions/compiler-cache
+        with:
+          key: agent-chain
 
       - uses: actions/setup-python@v7
         with:

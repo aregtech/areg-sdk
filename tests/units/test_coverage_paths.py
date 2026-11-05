@@ -10,6 +10,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -40,18 +41,49 @@ done
 """
 
 
+@unittest.skipUnless(os.name == 'nt', 'Git for Windows layouts')
+class BashDiscoveryTest(unittest.TestCase):
+    # Reproduces the defect: Git Bash puts mingw64/bin/git.exe on PATH, not cmd/git.exe.
+    def test_discovers_bash_from_each_git_entry_point(self):
+        git = shutil.which('git')
+        root = Path(subprocess.check_output([git, '--exec-path'], text=True).strip()).parents[2]
+        for directory in ('cmd', 'bin', 'mingw64/bin'):
+            entry = root / directory / 'git.exe'
+            with self.subTest(entry=entry), patch('shutil.which', return_value=str(entry)):
+                self.assertTrue(Path(find_bash()).samefile(root / 'bin' / 'bash.exe'))
+
+
+def find_bash():
+    if os.name == 'nt':
+        git = shutil.which('git')
+        bash = (Path(subprocess.check_output([git, '--exec-path'], text=True).strip())
+                .parents[2] / 'bin' / 'bash.exe') if git else None
+    elif sys.platform == 'cygwin':
+        bash = Path('/usr/bin/bash')
+    else:
+        bash = shutil.which('bash')
+    if not bash or not Path(bash).is_file():
+        raise RuntimeError('The CI script tests require Bash (Git Bash on Windows)')
+    return str(bash)
+
+
+@unittest.skipUnless(sys.platform == 'cygwin', 'Cygwin prebuilt coverage dependency')
+class CygwinLxmlTest(unittest.TestCase):
+    # Reproduces the defect: the prebuilt extension imported an unavailable libxml2 DLL.
+    def test_prebuilt_lxml_loads_and_transforms_xml(self):
+        from lxml import etree
+        document = etree.fromstring(b'<root>coverage</root>')
+        stylesheet = etree.XML(
+            b'<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">'
+            b'<xsl:template match="/"><result><xsl:value-of select="root"/>'
+            b'</result></xsl:template></xsl:stylesheet>')
+        self.assertEqual(etree.XSLT(stylesheet)(document).getroot().text, 'coverage')
+
+
 class CoveragePathTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        if os.name == 'nt':
-            git = shutil.which('git')
-            cls.bash = Path(git).parent.parent / 'bin' / 'bash.exe' if git else None
-        elif sys.platform == 'cygwin':
-            cls.bash = Path('/usr/bin/bash')
-        else:
-            cls.bash = shutil.which('bash')
-        if not cls.bash or not Path(cls.bash).is_file():
-            raise RuntimeError('The coverage path tests require Bash (Git Bash on Windows)')
+        cls.bash = find_bash()
 
     def shell_path(self, path):
         if os.name != 'nt':
