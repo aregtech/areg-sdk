@@ -25,6 +25,10 @@ else()
     target_compile_options(${AREG_FAULT_INJECT_LIB} PRIVATE -U_FORTIFY_SOURCE -fPIC)
     target_link_libraries(${AREG_FAULT_INJECT_LIB} PRIVATE ${CMAKE_DL_LIBS})
 endif()
+if (APPLE)
+    # The thread sanitizer runtime calls the replaced open() while it initializes, so nothing here is instrumented.
+    target_compile_options(${AREG_FAULT_INJECT_LIB} PRIVATE -fno-sanitize=thread)
+endif()
 
 addExecutableEx(${AREG_FAULT_INJECT_TEST} ""
     "${AREG_TESTS_DIR}/fault-inject/fault_inject_test.cpp"

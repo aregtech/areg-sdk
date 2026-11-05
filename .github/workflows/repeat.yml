@@ -21,6 +21,10 @@ on:
         description: 'Runs per log delivery profile'
         required: false
         default: '20'
+  # Once per pull request: when it is opened, reopened or marked ready, never on a push to it.
+  pull_request:
+    branches: [ master ]
+    types: [ opened, reopened, ready_for_review ]
 
 concurrency:
   group: ${{github.workflow}}-${{github.ref}}-${{inputs.ref}}

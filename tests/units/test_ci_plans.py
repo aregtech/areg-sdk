@@ -199,5 +199,13 @@ class SanitizeScriptTest(unittest.TestCase):
                          '[--repeat][until-fail:3]')
 
 
+class ThreadStackTest(unittest.TestCase):
+    def test_no_dispatcher_thread_takes_a_block_size_as_its_stack_size(self):
+        found = subprocess.run(['git', 'grep', '-n', 'DispatcherThread.*DEFAULT_BLOCK_SIZE',
+                                '--', '*.cpp', '*.hpp'],
+                               cwd=ROOT, stdout=subprocess.PIPE, text=True)
+        self.assertEqual(found.stdout, '')
+
+
 if __name__ == '__main__':
     unittest.main()

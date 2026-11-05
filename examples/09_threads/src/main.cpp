@@ -79,7 +79,7 @@ class HelloDispatcher final : public areg::DispatcherThread
 {
 public:
     HelloDispatcher() 
-        : areg::DispatcherThread("HelloDispatcher", areg::DEFAULT_BLOCK_SIZE, areg::IGNORE_VALUE )
+        : areg::DispatcherThread("HelloDispatcher", areg::DEFAULT_STACK_SIZE, areg::IGNORE_VALUE )
         , areg::TimerConsumer()
         , mTimer(*this, "aTimer")
     {

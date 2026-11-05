@@ -48,7 +48,7 @@ class TimerDispatcher final : public areg::DispatcherThread
 
 public:
     explicit TimerDispatcher(const areg::String & disp_name)
-        : areg::DispatcherThread(disp_name, areg::DEFAULT_BLOCK_SIZE, areg::IGNORE_VALUE )
+        : areg::DispatcherThread(disp_name, areg::DEFAULT_STACK_SIZE, areg::IGNORE_VALUE )
         , areg::TimerConsumer()
         , mOneTime(*this, disp_name + "_one_time")
         , mPeriodic(*this, disp_name + "_periodic")
