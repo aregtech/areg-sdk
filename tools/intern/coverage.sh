@@ -70,7 +70,6 @@ REPO=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && cwd)
 STEP=${1:-help}
 [ $# -gt 0 ] && shift
 
-DIR=${AREG_COV_DIR:-$HOME/areg-gcov}
 IN_PLACE=0
 BUILD=""
 OUT=""
@@ -80,14 +79,22 @@ TOP=25
 JOBS=6
 
 die() { echo "coverage.sh: $*" >&2; exit 2; }
-absolute() { case "$1" in /*) echo "$1" ;; *:*) echo "$1" ;; *) echo "$(cwd)/${1#./}" ;; esac; }
+absolute() {
+  if pwd -W >/dev/null 2>&1; then
+    cygpath -am "$1"
+  else
+    case "$1" in /*) echo "$1" ;; *:*) echo "$1" ;; *) echo "$(cwd)/${1#./}" ;; esac
+  fi
+}
+
+DIR=$(absolute "${AREG_COV_DIR:-$HOME/areg-gcov}") || die "cannot resolve the work directory"
 
 while [ $# -gt 0 ]; do
   case "$1" in
-    --dir)      DIR=$(absolute "${2:?}"); shift 2 ;;
+    --dir)      DIR=$(absolute "${2:?}") || die "cannot resolve the work directory"; shift 2 ;;
     --in-place) IN_PLACE=1; shift ;;
-    --build)    BUILD=$(absolute "${2:?}"); shift 2 ;;
-    --out)      OUT=$(absolute "${2:?}"); shift 2 ;;
+    --build)    BUILD=$(absolute "${2:?}") || die "cannot resolve the build directory"; shift 2 ;;
+    --out)      OUT=$(absolute "${2:?}") || die "cannot resolve the report directory"; shift 2 ;;
     --only)     ONLY=${2:?}; shift 2 ;;
     --files)    FILES=${2:?}; shift 2 ;;
     --top)      TOP=${2:?}; shift 2 ;;

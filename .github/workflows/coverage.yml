@@ -125,8 +125,8 @@ jobs:
         if: matrix.platform.name == 'cygwin'
         uses: cygwin/cygwin-install-action@v7
         with:
-          # 'python3-pip', 'python3-devel', 'libxml2-devel' and 'libxslt-devel' are for gcovr and its lxml.
-          packages: cmake, dos2unix, flexdll, gcc-g++, gdb, git, libncurses-devel, libxml2-devel, libxslt-devel, make, python3, python3-devel, python3-pip
+          # gcovr uses the prebuilt lxml of the Cygwin Python interpreter.
+          packages: cmake, dos2unix, flexdll, gcc-g++, gdb, git, libncurses-devel, make, python3, python3-lxml, python3-pip
           install-dir: 'C:\cygwin'
           add-to-path: false
           work-vol: 'C:'
@@ -181,10 +181,19 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Verify the prebuilt Cygwin lxml
+        if: matrix.platform.name == 'cygwin'
+        shell: bash
+        run: ${{matrix.platform.bash}} -ec '${{matrix.platform.python}} -c "from lxml import etree; print(etree.LXML_VERSION)"'
+
       # On Cygwin this is the Cygwin python, so gcovr and the example driver run inside Cygwin.
       - name: Install gcovr
         shell: bash
-        run: ${{matrix.platform.bash}} -c '${{matrix.platform.python}} -m pip install --disable-pip-version-check gcovr==${{env.GCOVR_VERSION}}'
+        run: ${{matrix.platform.bash}} -ec '${{matrix.platform.python}} -m pip install --disable-pip-version-check --only-binary=lxml gcovr==${{env.GCOVR_VERSION}}'
+
+      - name: Check coverage report paths
+        shell: bash
+        run: ${{matrix.platform.bash}} -ec '${{matrix.platform.python}} tests/units/test_coverage_paths.py'
 
       - name: Select the MSVC environment for clang-cl and Ninja
         if: matrix.platform.name == 'windows'

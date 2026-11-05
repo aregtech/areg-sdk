@@ -23,13 +23,14 @@ env:
 jobs:
   plan:
     name: plan
-    # Sets 'run' when the change touches a file this workflow builds, and 'matrix' to the
-    # legs of .github/ci/cmake-matrix.json this event runs.
+    # Selects the event's legs and separates test runs from build-only configurations.
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
       run: ${{ steps.plan.outputs.run }}
-      matrix: ${{ steps.plan.outputs.matrix }}
+      priority_matrix: ${{ steps.plan.outputs.priority_matrix }}
+      linux_matrix: ${{ steps.plan.outputs.linux_matrix }}
+      windows_matrix: ${{ steps.plan.outputs.windows_matrix }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -38,7 +39,7 @@ jobs:
         shell: bash
         env:
           EVENT: ${{ github.event_name }}
-          PATTERN: '^(framework|examples|tests|thirdparty|conf)/|(^|/)CMakeLists\.txt$|\.cmake$|^tools/(codegen\.jar|schema/)|^tools/intern/(run-all-examples\.py|hang-watchdog\.sh|report-ctest\.py|check_invariants\.py|check_inline_virtuals\.py)$|^\.github/(ci/|workflows/cmake\.yml)'
+          PATTERN: '^(framework|examples|tests|thirdparty|conf)/|(^|/)CMakeLists\.txt$|\.cmake$|^tools/(codegen\.jar|schema/)|^tools/intern/(run-all-examples\.py|hang-watchdog\.sh|report-ctest\.py|check_invariants\.py|check_inline_virtuals\.py|ci-admission(\.test)?\.js)$|^\.github/(ci/|workflows/cmake\.yml)'
           MATRIX: '.github/ci/cmake-matrix.json'
         run: |
           case "${EVENT}" in
@@ -51,12 +52,19 @@ jobs:
             git diff --name-only "${BASE}" "${GITHUB_SHA}" | grep -qE "${PATTERN}" || RUN=false
           fi
           echo "run=${RUN}" >> "${GITHUB_OUTPUT}"
-          if [ -n "${MATRIX}" ]; then
-            echo "matrix=$(jq -c --arg ev "${EVENT}" '[.[] | select($ev != "push" or .master == true)]' "${MATRIX}")" >> "${GITHUB_OUTPUT}"
+          SELECTED="$(jq -c --arg ev "${EVENT}" '[.[] | select($ev != "push" or .master == true)]' "${MATRIX}")"
+          PRIORITY="$(jq -c '[.[] | select(.test == "ON" and .norun != "ON")]' <<< "${SELECTED}")"
+          BACKGROUND="$(jq -c '[.[] | select(.test != "ON" or .norun == "ON")]' <<< "${SELECTED}")"
+          if ! jq -e 'all(.[]; .os == "ubuntu-latest" or .os == "windows-latest")' <<< "${BACKGROUND}" > /dev/null; then
+            echo "::error::A build-only runner needs its own admission job in cmake.yml"
+            exit 1
           fi
+          echo "priority_matrix=${PRIORITY}" >> "${GITHUB_OUTPUT}"
+          echo "linux_matrix=$(jq -c '[.[] | select(.os == "ubuntu-latest")]' <<< "${BACKGROUND}")" >> "${GITHUB_OUTPUT}"
+          echo "windows_matrix=$(jq -c '[.[] | select(.os == "windows-latest")]' <<< "${BACKGROUND}")" >> "${GITHUB_OUTPUT}"
 
-  # The legs are in .github/ci/cmake-matrix.json, longest first. A pull request runs all of
-  # them, a push to master the legs marked 'master: true'.
+  # A pull request runs all legs in .github/ci/cmake-matrix.json; a push to master
+  # runs those marked 'master: true'. Test and benchmark legs are admitted first.
   # '*-all-test' builds and runs the examples and the unit tests; 'norun: ON' builds them only.
   # 'bench: ON' also runs the benchmarks on a pull request; one shared library build per OS.
   # '*-nolog' and '*-noext' build and install only, with AREG_LOGGING=OFF or AREG_EXTENDED=OFF.
@@ -72,9 +80,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        config: ${{ fromJSON(needs.plan.outputs.matrix) }}
+        config: ${{ fromJSON(needs.plan.outputs.priority_matrix) }}
 
-    steps:
+    steps: &cmake-build-steps
 
       - name: Checkout Areg SDK source codes
         uses: actions/checkout@v7
@@ -430,6 +438,72 @@ jobs:
           name: ${{matrix.config.name}}
           path: ./${{matrix.config.name}}/
 
+  admit-linux:
+    name: admit Linux build-only jobs
+    needs: plan
+    if: needs.plan.outputs.run == 'true' && needs.plan.outputs.linux_matrix != '[]' && github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    permissions:
+      actions: read
+      contents: read
+    env:
+      PRIORITY_MATRIX: ${{ needs.plan.outputs.priority_matrix }}
+      RUNNER_LABEL: ubuntu-latest
+    steps: &admission-steps
+      - uses: actions/checkout@v7
+      - name: Check the admission policy
+        run: node --test tools/intern/ci-admission.test.js
+      - name: Wait for test jobs to start on this runner pool
+        uses: actions/github-script@v9
+        with:
+          retries: 3
+          script: |
+            const admit = require('./tools/intern/ci-admission.js');
+            await admit({
+              github, context, core,
+              priority: JSON.parse(process.env.PRIORITY_MATRIX),
+              runner: process.env.RUNNER_LABEL
+            });
+
+  admit-windows:
+    name: admit Windows build-only jobs
+    needs: plan
+    if: needs.plan.outputs.run == 'true' && needs.plan.outputs.windows_matrix != '[]' && github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    permissions:
+      actions: read
+      contents: read
+    env:
+      PRIORITY_MATRIX: ${{ needs.plan.outputs.priority_matrix }}
+      RUNNER_LABEL: windows-latest
+    steps: *admission-steps
+
+  build-linux:
+    name: ${{matrix.config.name}}
+    needs: [plan, admit-linux]
+    if: ${{ !cancelled() && needs.plan.outputs.run == 'true' && needs.plan.outputs.linux_matrix != '[]' }}
+    runs-on: ${{matrix.config.os}}
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        config: ${{ fromJSON(needs.plan.outputs.linux_matrix) }}
+    steps: *cmake-build-steps
+
+  build-windows:
+    name: ${{matrix.config.name}}
+    needs: [plan, admit-windows]
+    if: ${{ !cancelled() && needs.plan.outputs.run == 'true' && needs.plan.outputs.windows_matrix != '[]' }}
+    runs-on: ${{matrix.config.os}}
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        config: ${{ fromJSON(needs.plan.outputs.windows_matrix) }}
+    steps: *cmake-build-steps
+
   invariants:
     name: the framework invariants still have anchors
     # tools/intern/check_invariants.py seeds a defect per documented invariant, rebuilds and
@@ -463,7 +537,7 @@ jobs:
   result:
     name: CMake result
     if: always()
-    needs: [plan, build-tests, invariants]
+    needs: [plan, build-tests, admit-linux, admit-windows, build-linux, build-windows, invariants]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
