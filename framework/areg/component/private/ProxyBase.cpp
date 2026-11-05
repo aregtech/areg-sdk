@@ -700,7 +700,9 @@ void ProxyBase::service_connection_updated( const StubAddress & server, const Ch
     }
 
     ASSERT(channel.target() == server.source() || !server.is_local_address() || status != areg::ServiceConnectionState::Connected);
+    ProxyBase::lock_resource();
     mProxyAddress.set_channel(channel);
+    ProxyBase::unlock_resource();
     set_connection_status( status );
     if (nowConnected)
     {

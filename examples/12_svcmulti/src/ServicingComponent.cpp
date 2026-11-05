@@ -47,7 +47,7 @@ void ServicingComponent::shutdown_service_interface(areg::Component & holder) no
     mTimer.stop_timer();
     areg::StubBase::shutdown_service_interface(holder);
 
-    std::cout << "Local servicing stopped..." << std::endl;
+    printf("Local servicing stopped...\n");
 }
 
 void ServicingComponent::process_timer([[maybe_unused]] areg::Timer & timer)
@@ -73,7 +73,7 @@ void ServicingComponent::process_timer([[maybe_unused]] areg::Timer & timer)
     }
     else
     {
-        std::cout << "Goodbye Service!" << std::endl;
+        printf("Goodbye Service!\n");
         ASSERT(mCount == TIMER_EVENTS);
 
         LOG_INFO("The timer is not active anymore, signaling quit event");

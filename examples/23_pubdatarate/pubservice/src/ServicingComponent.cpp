@@ -178,7 +178,7 @@ void ServicingComponent::startup_service_interface( areg::Component & holder )
         (util::g_startup_options.hasError() == false))
     {
         EventOption::send_event( util::g_startup_options
-                               , static_cast<IEOptionConsumer&>(mOptionConsumer)
+                               , static_cast<OptionConsumerBase&>(mOptionConsumer)
                                , component_thread() );
     }
 
@@ -380,7 +380,7 @@ void ServicingComponent::_run_input_thread()
         OptionData newData;
         newData.parseCommand(cmd);
         cmdQuit = newData.hasQuit();
-        EventOption::send_event(newData, static_cast<IEOptionConsumer&>(mOptionConsumer), component_thread());
+        EventOption::send_event(newData, static_cast<OptionConsumerBase&>(mOptionConsumer), component_thread());
 
         LOG_DBG("Received option command [ %s ]", cmd.as_string());
     }
@@ -409,10 +409,13 @@ uint32_t ServicingComponent::_build_prebuilt_messages()
     const uint32_t channels { mOptions.mChannels };
     const uint64_t frame_ns { mOptions.nsPerImage() };
     const uint32_t blocks   { mOptions.blocksCount() };
-    uint32_t depth{ (frame_ns != 0u) && (frame_ns <= (util::TIME_IN_DEPTH / 2))
-                        ? static_cast<uint32_t>((static_cast<double>(util::TIME_IN_DEPTH) / static_cast<double>(frame_ns)) + 0.5)
-                        : util::MIN_PREBUILT_DEPTH };
-    depth = std::max(util::MIN_PREBUILT_DEPTH, std::min(depth, util::MAX_PREBUILT_DEPTH));
+    const uint64_t slots    { std::max<uint64_t>(static_cast<uint64_t>(blocks) * channels, 1u) };
+
+    // The pool covers the time window and everything the send queue can hold, in whole frames.
+    const uint64_t window   { frame_ns != 0u ? (util::POOL_WINDOW_NS + frame_ns - 1u) / frame_ns : 0u };
+    const uint64_t safe     { (util::SAFE_POOL_MESSAGES + slots - 1u) / slots };
+    uint32_t depth{ static_cast<uint32_t>(std::min<uint64_t>(std::max(window, safe), util::MAX_PREBUILT_DEPTH)) };
+    depth = std::max(depth, util::MIN_PREBUILT_DEPTH);
 
     const uint64_t bytesPerGeneration{ static_cast<uint64_t>(blocks) * channels * mOptions.bytesPerBlock() };
     while ((depth > util::MIN_PREBUILT_DEPTH) && ((depth * bytesPerGeneration) > util::MAX_PREBUILT_BYTES))
@@ -566,6 +569,13 @@ void ServicingComponent::_run_image_thread()
                 {
                     Remote& remote = pool.messages[index];
                     areg::MessageEnvelope& message = remote.message;
+
+                    // A block still in flight stays with its send; this send gets its own copy.
+                    if (message.is_shared())
+                    {
+                        message = message.clone();
+                    }
+
                     uint8_t* buffer = message.buffer();
                     ASSERT(buffer != nullptr);
                     RawImageBlock* block = reinterpret_cast<RawImageBlock*>(buffer + remote.offset);
@@ -739,7 +749,7 @@ void ServicingComponent::_print_help() const
     console.output_txt ({ 1, row++ }, "-w=<value> or --width=<value> ....: Image width. Range [32 .. 32768]" );
     console.output_txt ({ 1, row++ }, "-h=<value> or --height=<value> ...: Image height. Range [32 .. 32768]" );
     console.output_txt ({ 1, row++ }, "-l=<value> or --lines=<value> ....: Lines per block, not larger than height." );
-    console.output_txt ({ 1, row++ }, "-t=<value> or --time=<value> .....: Pixel dwell time in nanoseconds. Range [0 .. 100000], 0 = full speed." );
+    console.output_txt ({ 1, row++ }, "-t=<value> or --time=<value> .....: Pixel dwell time in nanoseconds. Range [10 .. 100000], 0 = full speed." );
     console.output_txt ({ 1, row++ }, "-c=<value> or --channels=<value> .: Data source channels. Range [1 .. 64]." );
     console.output_txt ({ 1, row++ }, "-i         or --info .............: Print current option values." );
     console.output_txt ({ 1, row++ }, "-h         or --help .............: Print this help." );

@@ -55,6 +55,12 @@ void ServerSendThread::ready_for_events( bool is_ready )
     }
 }
 
+bool ServerSendThread::dispatch_event( areg::Event & eventElem )
+{
+    start_event_processing( eventElem );
+    return true;
+}
+
 void ServerSendThread::start_event_processing( areg::Event & eventElem )
 {
     AREG_LT_SCOPE(areg::LtStage::SendNode);     // drain + resolve + sort + writev

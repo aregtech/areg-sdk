@@ -25,21 +25,21 @@ static inline void _createRoleName( const areg::String & nickName, uint32_t cook
         output.format( "%s%s_%u%llu", prefix, nickName.as_string( ), cookie, session );
 }
 
-areg::String NEDistributedApp::getConnectionServiceRole( const areg::String & nickName, uint32_t cookie )
+areg::String DistributedAppDefs::getConnectionServiceRole( const areg::String & nickName, uint32_t cookie )
 {
     areg::String result;
     _createRoleName(nickName, cookie, DirectConnection::ServicePrefixProvider, result);
     return result;
 }
 
-areg::String NEDistributedApp::getDirectMessagingRole(const areg::String & nickName, uint32_t cookie, uint64_t session, bool isInitiator)
+areg::String DistributedAppDefs::getDirectMessagingRole(const areg::String & nickName, uint32_t cookie, uint64_t session, bool isInitiator)
 {
     areg::String result;
     _createRoleName(nickName, cookie, session, isInitiator ? PREFIX_INITIATOR : PREFIX_PARTICIPANT, result);
     return result;
 }
 
-areg::String NEDistributedApp::getDirectConnectionName( const areg::String & nickName, uint32_t cookie, uint64_t session )
+areg::String DistributedAppDefs::getDirectConnectionName( const areg::String & nickName, uint32_t cookie, uint64_t session )
 {
     areg::String result;
     if ( (nickName.is_empty( ) == false) && (cookie != DirectConnection::InvalidCookie) )

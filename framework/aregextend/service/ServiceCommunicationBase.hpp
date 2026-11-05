@@ -251,7 +251,6 @@ public:
     [[nodiscard]]
     inline bool is_target_held(const ITEM_ID & target) noexcept;
 
-protected:
     /**
      * \brief   Sets whether a client that keeps more than its send buffer limit and takes no data
      *          for a second is closed. True by default; a service that drops what goes to a held
@@ -259,7 +258,6 @@ protected:
      **/
     inline void set_close_stalled(bool closeStalled) noexcept;
 
-public:
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides

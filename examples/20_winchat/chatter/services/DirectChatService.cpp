@@ -24,9 +24,9 @@ areg::Model DirectChatService::GetModel( const DirectMessager::Participant & ini
                                              , const DirectMessager::ListParticipants & listParticipants
                                              , std::any data)
 {
-    areg::String    roleName    = NEDistributedApp::getDirectMessagingRole( initiator.nickName, initiator.cookie, initiator.sessionId, true );
-    areg::String    threadName  = NEDistributedApp::PREFIX_TRHEAD + roleName;
-    areg::String    modelName   = NEDistributedApp::PREFIX_MODEL  + roleName;
+    areg::String    roleName    = DistributedAppDefs::getDirectMessagingRole( initiator.nickName, initiator.cookie, initiator.sessionId, true );
+    areg::String    threadName  = DistributedAppDefs::PREFIX_TRHEAD + roleName;
+    areg::String    modelName   = DistributedAppDefs::PREFIX_MODEL  + roleName;
 
     uint32_t count = listParticipants.size();
     areg::DependencyEntry depedency(roleName);
@@ -35,7 +35,7 @@ areg::Model DirectChatService::GetModel( const DirectMessager::Participant & ini
     for ( uint32_t i = 0; i < count; ++i )
     {
         const DirectConnection::Participant & participant = listParticipants[i];
-        areg::DependencyEntry entry( NEDistributedApp::getConnectionServiceRole( participant.nickName, participant.cookie ) );
+        areg::DependencyEntry entry( DistributedAppDefs::getConnectionServiceRole( participant.nickName, participant.cookie ) );
         listDependencies.mListDependencies.add( entry );
     }
 

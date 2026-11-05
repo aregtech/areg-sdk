@@ -57,6 +57,12 @@ void ClientSendThread::ready_for_events( bool is_ready )
     }
 }
 
+bool ClientSendThread::dispatch_event( Event & eventElem )
+{
+    start_event_processing( eventElem );
+    return true;
+}
+
 void ClientSendThread::start_event_processing( Event & eventElem )
 {
     AREG_LT_SCOPE(areg::LtStage::SendNode);     // serialize routing fields + batch + writev
@@ -71,8 +77,7 @@ void ClientSendThread::start_event_processing( Event & eventElem )
     // Zero local-only routing fields before wire transmission.
     areg::EventHeader * hdr0{ eventElem.header() };
     ASSERT( hdr0 != nullptr );
-    hdr0->internal1 = 0u;
-    hdr0->internal2 = 0u;
+    areg::clear_local_fields( *hdr0 );
     ASSERT( hdr0->custom == 0u );
 
     uint32_t bufCount  { 0u };
@@ -102,8 +107,7 @@ void ClientSendThread::start_event_processing( Event & eventElem )
 
         areg::EventHeader * hdr{ evt.header() };
         ASSERT( hdr != nullptr );
-        hdr->internal1 = 0u;
-        hdr->internal2 = 0u;
+        areg::clear_local_fields( *hdr );
         ASSERT( hdr->custom == 0u );
 
         const uint32_t wireSize{ areg::wire_size(*hdr) };

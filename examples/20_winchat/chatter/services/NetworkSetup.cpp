@@ -42,7 +42,7 @@ void NetworkSetup::response_connect( const areg::String & nickName, uint32_t coo
     mConnectionHandler.SetRegistered( false );
     bool isConnected = result == ConnectionManager::ConnectionResult::Accepted;
     areg::DispatcherThread * dispThread = dispatcher_thread();
-    DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdClientConnection, isConnected ? 1 : 0, reinterpret_cast<LPARAM>(dispThread) );
+    DistributedDialog::PostServiceMessage( DistributedAppDefs::WindowCommand::CmdClientConnection, isConnected ? 1 : 0, reinterpret_cast<LPARAM>(dispThread) );
 }
 
 bool NetworkSetup::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
@@ -52,13 +52,13 @@ bool NetworkSetup::service_connected( areg::ServiceConnectionState status, areg:
     bool result = ConnectionManagerConsumerBase::service_connected( status, proxy );
     if ( is_connected( ) )
     {
-        LOG_DBG("The service is connected, network setup can start. posting NEDistributedApp::WindowCommand::CmdServiceNetwork message");
-        DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdServiceNetwork, 1, reinterpret_cast<LPARAM>(dispatcher_thread( )) );
+        LOG_DBG("The service is connected, network setup can start. posting DistributedAppDefs::WindowCommand::CmdServiceNetwork message");
+        DistributedDialog::PostServiceMessage( DistributedAppDefs::WindowCommand::CmdServiceNetwork, 1, reinterpret_cast<LPARAM>(dispatcher_thread( )) );
     }
     else
     {
-        LOG_DBG("The service is disconnected, network setup stops. posting NEDistributedApp::WindowCommand::CmdServiceNetwork message");
-        DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdServiceNetwork, 0, 0 );
+        LOG_DBG("The service is disconnected, network setup stops. posting DistributedAppDefs::WindowCommand::CmdServiceNetwork message");
+        DistributedDialog::PostServiceMessage( DistributedAppDefs::WindowCommand::CmdServiceNetwork, 0, 0 );
     }
 
     return result;

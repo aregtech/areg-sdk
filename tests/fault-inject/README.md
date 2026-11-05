@@ -215,7 +215,8 @@ The CMake build on Windows defines the same targets; it has not been run yet.
 |---|---|
 | Linux, GCC, Debug | Built and run: 4 of 4 pass, through ctest and directly, repeated |
 | Windows, MSVC 2022, Release x64 | Built through `areg-sdk.sln` and run: 3 of 3 pass (the router case is POSIX only). The CMake build on Windows is not yet run |
-| macOS | Written, not yet built or run. If dyld does not apply the interposing pairs of a library that is linked rather than inserted, the tests fail with "did not replace"; the fix is to set `DYLD_INSERT_LIBRARIES` to the library for the test |
+| macOS, AddressSanitizer | Built and run: 4 of 4 pass, the interposing pairs of the linked library apply |
+| macOS, ThreadSanitizer | The library is built without instrumentation. The runtime opens its suppressions file through the replaced `open` while it initializes, before its thread state exists, and an instrumented replacement crashes there |
 | Linux, GCC, Release, 32-bit x86 | Built and run: 4 of 4 pass |
 | Linux, GCC, ThreadSanitizer, Debug | Built and run: 4 of 4 pass. The replacement sits behind the sanitizer interceptor (found through `RTLD_NEXT`). The sanitizer creates its own helper thread through `pthread_create` at the first thread creation of a process, so a test that arms `ThreadCreate` starts and stops one thread first |
 | Cygwin | Not built: Cygwin is neither ELF nor a native Win32 build, and no replacement is written for it. Patching the import tables of the Cygwin DLLs, as on Windows, is the way to add it |

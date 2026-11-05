@@ -17,7 +17,7 @@
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
 
-#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<uint32_t>(NEDistributedApp::WindowCommand::CmdFirst))
+#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<uint32_t>(DistributedAppDefs::WindowCommand::CmdFirst))
 #define MAKE_MESSAGE(elem)  (static_cast<uint32_t>(elem) + FIRST_MESSAGE)
 
 // PageNetworkSetup dialog
@@ -209,7 +209,7 @@ void PageNetworkSetup::OnClickedBrokerDisconnect()
     if ( mNetworkSetup )
     {
         CWnd * wnd = GetParentSheet();
-        ::SendMessage( wnd->GetSafeHwnd(), MAKE_MESSAGE(NEDistributedApp::WindowCommand::CmdDisconnectTriggered), 0, 0);
+        ::SendMessage( wnd->GetSafeHwnd(), MAKE_MESSAGE(DistributedAppDefs::WindowCommand::CmdDisconnectTriggered), 0, 0);
         mConnectionHandler.ResetConnectionList();
 
         areg::Application::unload_model(chat::MODEL_NAME_DISTRIBUTED_CLIENT);

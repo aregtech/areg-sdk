@@ -9,7 +9,7 @@
 
 
  DirectConnectionClient::DirectConnectionClient( areg::Component & owner, ChatPrticipantHandler * participantsHandler, const DirectConnection::Participant & target )
-    : DirectConnectionConsumerBase  ( NEDistributedApp::getConnectionServiceRole(target.nickName, target.cookie).as_string(), owner )
+    : DirectConnectionConsumerBase  ( DistributedAppDefs::getConnectionServiceRole(target.nickName, target.cookie).as_string(), owner )
 
     , mParticipantsHandler          ( participantsHandler )
 {

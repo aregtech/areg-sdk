@@ -262,17 +262,17 @@ namespace areg {
     constexpr uint32_t   DEFAULT_STACK_SIZE         { 0u };
 
     /**
-     * \brief   The minimum stack size for a system thread.
+     * \brief   The minimum stack size in KiB for a system thread.
      **/
     constexpr uint32_t   SYSTEM_THREAD_STACK_MIN    { 32u };
 
     /**
-     * \brief   The normal stack size for a system thread.
+     * \brief   The normal stack size in KiB for a system thread.
      **/
     constexpr uint32_t   SYSTEM_THREAD_STACK_NORMAL { SYSTEM_THREAD_STACK_MIN * 2u };
 
     /**
-     * \brief   The big stack size for a system thread.
+     * \brief   The big stack size in KiB for a system thread.
      **/
     constexpr uint32_t   SYSTEM_THREAD_STACK_BIG    { SYSTEM_THREAD_STACK_NORMAL * 4u };
 

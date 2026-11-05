@@ -22,7 +22,7 @@
  *          of the same binding component (master).
  **/
 class HardwareWorkerConsumer final  : public    areg::WorkerThreadConsumer
-                                    , public    IEPatientInfoEventConsumer
+                                    , public    PatientInfoEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor.

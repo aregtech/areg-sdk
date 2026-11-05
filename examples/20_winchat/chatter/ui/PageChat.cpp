@@ -10,7 +10,7 @@
 #include "areg/base/DateTime.hpp"
 #include "chatter/services/DirectMessagingClient.hpp"
 
-#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<uint32_t>(NEDistributedApp::WindowCommand::CmdFirst))
+#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<uint32_t>(DistributedAppDefs::WindowCommand::CmdFirst))
 #define MAKE_MESSAGE(elem)  (static_cast<uint32_t>(elem) + FIRST_MESSAGE)
 
 LPCTSTR PageChat::HEADER_TITILES[] =
@@ -83,9 +83,9 @@ BEGIN_MESSAGE_MAP(PageChat, CPropertyPage)
     ON_UPDATE_COMMAND_UI( IDC_BUTTON_CHAT_SEND, &PageChat::OnButtonUpdateChatSend )
     ON_UPDATE_COMMAND_UI( IDC_EDIT_CHAT, &PageChat::OnEditUpdateChat )
     ON_NOTIFY(UDN_DELTAPOS, IDC_CHAT_TIMER_SPIN, &PageChat::OnDeltaposChatTimerSpin)
-    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::WindowCommand::CmdChatJoined  ), &PageChat::OnCmdChatJoined)
-    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::WindowCommand::CmdChatMessage ), &PageChat::OnCmdChatMessage)
-    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::WindowCommand::CmdChatTyping  ), &PageChat::OnCmdChatTyping)
+    ON_MESSAGE( MAKE_MESSAGE(DistributedAppDefs::WindowCommand::CmdChatJoined  ), &PageChat::OnCmdChatJoined)
+    ON_MESSAGE( MAKE_MESSAGE(DistributedAppDefs::WindowCommand::CmdChatMessage ), &PageChat::OnCmdChatMessage)
+    ON_MESSAGE( MAKE_MESSAGE(DistributedAppDefs::WindowCommand::CmdChatTyping  ), &PageChat::OnCmdChatTyping)
 END_MESSAGE_MAP()
 
 
@@ -234,12 +234,12 @@ void PageChat::OnClickedButtonCloseChat( )
         SetChatClient(nullptr);
     }
 
-    areg::String modelName = NEDistributedApp::PREFIX_MODEL + GetServiceName();
+    areg::String modelName = DistributedAppDefs::PREFIX_MODEL + GetServiceName();
     areg::ComponentLoader::unload_component_model(true, modelName );
 
     ChatPrticipantHandler::Invalidate();
 
-    ::PostMessage( DistributedDialog::GetDialog()->GetSafeHwnd(), MAKE_MESSAGE(NEDistributedApp::WindowCommand::CmdChatClosed), 0, reinterpret_cast<LPARAM>(this));
+    ::PostMessage( DistributedDialog::GetDialog()->GetSafeHwnd(), MAKE_MESSAGE(DistributedAppDefs::WindowCommand::CmdChatClosed), 0, reinterpret_cast<LPARAM>(this));
 }
 
 void PageChat::OnKickIdle()

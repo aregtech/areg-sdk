@@ -89,7 +89,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Declare the Power Controller Event and the event consumer objects.
 //////////////////////////////////////////////////////////////////////////
-AREG_DECLARE_EVENT(PowerControllerEventData, PowerControllerEvent, IEPowerControllerEventConsumer);
+AREG_DECLARE_EVENT(PowerControllerEventData, PowerControllerEvent, PowerControllerEventConsumer);
 
 /**
  * \brief   The actual power controller service client.
@@ -102,7 +102,7 @@ AREG_DECLARE_EVENT(PowerControllerEventData, PowerControllerEvent, IEPowerContro
  **/
 class PowerControllerClient final : public    PowerManagerConsumerBase
                                   , protected areg::ThreadConsumer
-                                  , protected IEPowerControllerEventConsumer
+                                  , protected PowerControllerEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Statics and constants
@@ -178,7 +178,7 @@ protected:
     void on_run() final;
 
 /************************************************************************/
-// IEPowerControllerEventConsumer overrides
+// PowerControllerEventConsumer overrides
 /************************************************************************/
 
     /**

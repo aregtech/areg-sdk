@@ -218,8 +218,7 @@ inline void run_send_batch( ThreadT & thread
     // Zero local-only routing fields before wire transmission.
     areg::EventHeader * hdr0{ eventElem.header() };
     ASSERT( hdr0 != nullptr );
-    hdr0->internal1 = 0u;
-    hdr0->internal2 = 0u;
+    areg::clear_local_fields( *hdr0 );
     ASSERT( hdr0->custom == 0u );
 
     uint32_t batchCount{ 0u };
@@ -247,8 +246,7 @@ inline void run_send_batch( ThreadT & thread
 
         areg::EventHeader * hdr{ evt.header() };
         ASSERT( hdr != nullptr );
-        hdr->internal1 = 0u;
-        hdr->internal2 = 0u;
+        areg::clear_local_fields( *hdr );
         ASSERT( hdr->custom == 0u );
 
         context.targets[batchCount]      = static_cast<ITEM_ID>(hdr->target);

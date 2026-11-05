@@ -57,6 +57,7 @@ PubSubController::PubSubController( const areg::ComponentEntry & entry, areg::Co
     : areg::Component         ( entry, owner )
     , Publisher         ( static_cast<areg::Component &>(*this) )
     , areg::ThreadConsumer  ( )
+    , PublisherCommandConsumer( )
 
     , mSubscriber       ( entry.mDependencyServices[0], static_cast<areg::Component &>(self()), 0 )
 
@@ -74,6 +75,31 @@ void PubSubController::shutdown_component(areg::ComponentThread & comThread)
 {
     mConsoleThread.shutdown(areg::WAIT_INFINITE);
     areg::Component::shutdown_component(comThread);
+}
+
+void PubSubController::process_event(const PublisherCommand & data)
+{
+    switch (static_cast<OptionFlag>(data.command))
+    {
+    case OptionFlag::CMD_Invalidate:
+        invalidate();
+        break;
+
+    case OptionFlag::CMD_Pause:
+        stop();
+        break;
+
+    case OptionFlag::CMD_Start:
+        start();
+        break;
+
+    case OptionFlag::CMD_Quit:
+        quit();
+        break;
+
+    default:
+        break;
+    }
 }
 
 void PubSubController::on_run()
@@ -100,22 +126,22 @@ void PubSubController::on_run()
             switch (cmd)
             {
             case PubSubController::OptionFlag::CMD_Invalidate:
-                invalidate();
+                send_command(cmd);
                 message = "Requested to invalidate data...";
                 break;
 
             case PubSubController::OptionFlag::CMD_Pause:
-                stop();
+                send_command(cmd);
                 message = "Requested to pause service...";
                 break;
 
             case PubSubController::OptionFlag::CMD_Start:
-                start();
+                send_command(cmd);
                 message = "Requested to start service...";
                 break;
 
             case PubSubController::OptionFlag::CMD_Quit:
-                quit();
+                send_command(cmd);
                 message = "Request to quit application...";
                 break;
 
@@ -148,20 +174,25 @@ inline void PubSubController::print_message(const areg::String & message, Option
     areg::ext::Console & console = areg::ext::Console::instance();
     if (cmd == OptionFlag::CMD_Error)
     {
-        console.output_str(pubsub::CoordInfoMsg, message);
+        console.output_str(pubsub::info_coord(), message);
     }
     else if (cmd == OptionFlag::CMD_Help)
     {
-        console.output_str(pubsub::CoordInfoMsg, _help);
+        console.output_str(pubsub::info_coord(), _help);
     }
     else if (cmd != OptionFlag::CMD_Undefined)
     {
-        console.output_msg(pubsub::CoordInfoMsg, message);
+        console.output_msg(pubsub::info_coord(), message);
     }
 
     console.output_str(pubsub::CoordSeparate, pubsub::Separator);
     console.output_str(pubsub::CoordUserInput, pubsub::UserInput);
     console.refresh_screen();
+}
+
+inline void PubSubController::send_command(OptionFlag cmd)
+{
+    PublisherCommandEvent::send_event(PublisherCommand{ static_cast<int32_t>(cmd) }, static_cast<PublisherCommandConsumer &>(self()), master_thread());
 }
 
 inline PubSubController & PubSubController::self()

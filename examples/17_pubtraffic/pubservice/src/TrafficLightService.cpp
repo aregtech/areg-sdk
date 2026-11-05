@@ -126,11 +126,11 @@ void TrafficLightService::on_timer_expired()
 void TrafficLightService::startup_service_interface(areg::Component & holder)
 {
     SimpleTrafficLightProviderBase::startup_service_interface(holder);
-    TrafficSwitchEvent::add_listener( static_cast<IETrafficSwitchConsumer &>(mEventConsumer), holder.master_thread() );
+    TrafficSwitchEvent::add_listener( static_cast<TrafficSwitchConsumerBase &>(mEventConsumer), holder.master_thread() );
 }
 
 void TrafficLightService::shutdown_service_interface(areg::Component & holder) noexcept
 {
     SimpleTrafficLightProviderBase::shutdown_service_interface(holder);
-    TrafficSwitchEvent::remove_listener( static_cast<IETrafficSwitchConsumer &>(mEventConsumer), holder.master_thread() );
+    TrafficSwitchEvent::remove_listener( static_cast<TrafficSwitchConsumerBase &>(mEventConsumer), holder.master_thread() );
 }

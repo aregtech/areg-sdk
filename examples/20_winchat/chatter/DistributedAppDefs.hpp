@@ -8,7 +8,7 @@
 #include "areg/base/areg_global.h"
 #include "areg/logging/areg_log.h"
 
-namespace NEDistributedApp
+namespace DistributedAppDefs
 {
     const char * const  THREAD_DISTRIBUTED      = "ThreadMessager";
 

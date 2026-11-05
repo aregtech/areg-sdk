@@ -20,7 +20,10 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/base/CommonDefs.hpp"
+#include "areg/base/MemoryDefs.hpp"
+#include "areg/base/MessageEnvelope.hpp"
 #include "areg/base/SocketDefs.hpp"
+#include "areg/component/EventDefs.hpp"
 
 #include <atomic>
 #include <string_view>
@@ -183,5 +186,52 @@ inline bool areg::SendQueueGate::is_clear() const noexcept
 {
     return (mPending.load(std::memory_order_seq_cst) == 0u);
 }
+
+//////////////////////////////////////////////////////////////////////////
+// Helpers of the send path
+//////////////////////////////////////////////////////////////////////////
+
+namespace areg
+{
+
+/**
+ * \brief   Clears the local-only fields of a header about to be sent. A field that is already 0
+ *          is not written, so a block shared with its sender stays unchanged.
+ *
+ * \param   header  The header of the message to send.
+ **/
+inline void clear_local_fields(areg::EventHeader & header) noexcept
+{
+    if ((header.internal1 | header.internal2) != 0u)
+    {
+        header.internal1 = 0u;
+        header.internal2 = 0u;
+    }
+}
+
+/**
+ * \brief   Sets the priority of a message about to be queued. A block shared with another owner
+ *          is not written: the message gets its own copy of the block first.
+ *
+ * \param   data    The message to send.
+ * \param   prio    The priority to set.
+ * \return  Returns false if the copy of the block could not be allocated.
+ **/
+inline bool set_send_priority(areg::MessageEnvelope & data, areg::EventPriority prio)
+{
+    const uint8_t value{ static_cast<uint8_t>(prio) };
+    if (data.priority() == value)
+        return true;
+
+    if (data.is_shared())
+    {
+        data = data.clone();
+    }
+
+    data.set_priority(value);
+    return data.is_valid();
+}
+
+} // namespace areg
 
 #endif  // AREG_IPC_PRIVATE_CONNECTIONDEFS_HPP

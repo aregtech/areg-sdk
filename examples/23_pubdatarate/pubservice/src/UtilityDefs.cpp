@@ -12,6 +12,8 @@
 #include "areg/base/String.hpp"
 #include "areg/logging/areg_log.h"
 
+#include <algorithm>
+
 DEF_LOG_SCOPE(examples_23_pubservice_NEUtilities_sOptionData, parse_command);
 DEF_LOG_SCOPE(examples_23_pubservice_NEUtilities_sOptionData, set_value);
 
@@ -100,7 +102,7 @@ bool util::OptionValues::set_value(const OptionSpec& whichOpt, uint32_t whichVal
 
     case OptionFlag::CmdPixelTime:
         mFlags |= static_cast<uint32_t>(whichOpt.cmdValue);
-        mPixelTime = whichValue;
+        mPixelTime = (whichValue != 0u) ? std::max(whichValue, MIN_DWELL_TIME) : 0u;
         break;
 
     case OptionFlag::CmdChannels:

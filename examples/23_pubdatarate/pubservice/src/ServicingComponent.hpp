@@ -37,7 +37,7 @@
 //!< Declare as a class to use in namespace.
 using OptionData = util::OptionValues;
 
-AREG_DECLARE_EVENT(OptionData, EventOption, IEOptionConsumer);
+AREG_DECLARE_EVENT(OptionData, EventOption, OptionConsumerBase);
 
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent class declaration
@@ -61,11 +61,11 @@ class ServicingComponent final  : public    areg::Component
 // ServicingComponent::OptionConsumer class declaration
 //////////////////////////////////////////////////////////////////////////
     //!< OptionConsumer class to receive options changed events
-    class OptionConsumer    : public    IEOptionConsumer
+    class OptionConsumer    : public    OptionConsumerBase
     {
     public:
         OptionConsumer( ServicingComponent & service )
-            : IEOptionConsumer  ( )
+            : OptionConsumerBase  ( )
             , mService          ( service )
             {
             }
@@ -74,7 +74,7 @@ class ServicingComponent final  : public    areg::Component
 
     private:
     /************************************************************************/
-    // IEOptionConsumer interface overrides
+    // OptionConsumerBase interface overrides
     /************************************************************************/
 
         /**

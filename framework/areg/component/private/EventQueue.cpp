@@ -594,22 +594,43 @@ void EventQueue::remove_events(const uint32_t eventClassId) noexcept
         }
     }
 
-    // Drain the ring, keep non-matching events
-    std::vector<Event> kept;
-    for (;;)
+    // Compact the published events toward the tail, so that the kept ones never leave the ring.
+    const size_t head{ mDequeuePos.load(std::memory_order_relaxed) };
+    size_t end{ head };
+    while (ring[end & mMask].sequence.load(std::memory_order_acquire) == (end + 1u))
     {
-        Event evt;
-        if (!_ring_try_dequeue(ring, evt))
-            break;
-
-        if (evt.event_id() != eventClassId)
-            kept.push_back(std::move(evt));
+        ++end;
     }
 
-    for (Event& e : kept)
+    size_t keep{ end };
+    for (size_t pos = end; pos != head; )
     {
-        VERIFY(_ring_try_enqueue(ring, e));
+        Cell& cell{ ring[--pos & mMask] };
+        if (cell.event.event_id() == eventClassId)
+        {
+            cell.event = Event();
+        }
+        else if (--keep != pos)
+        {
+            Cell& target{ ring[keep & mMask] };
+            target.event = std::move(cell.event);
+#if defined(AREG_LATENCY_TRACE) && (AREG_LATENCY_TRACE)
+            target.lt_ns = cell.lt_ns;
+#endif
+        }
     }
+
+    if (keep == head)
+        return;
+
+    for (size_t pos = head; pos != keep; ++pos)
+    {
+        ring[pos & mMask].sequence.store(pos + mMask + 1u, std::memory_order_release);
+    }
+
+    mDequeuePos.store(keep, std::memory_order_relaxed);
+    if (mProducersWaiting.load(std::memory_order_relaxed) != 0u)
+        mSlotEvent.set_signaled();
 }
 
 void EventQueue::remove_all_events() noexcept

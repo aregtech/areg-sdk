@@ -152,6 +152,15 @@ protected:
      **/
     void ready_for_events( bool is_ready ) final;
 
+    /**
+     * \brief   Sends the event. Every event of this thread is a message of this thread, so the
+     *          header of the message carries no consumer.
+     *
+     * \param   eventElem       The event to send.
+     * \return  Returns true.
+     **/
+    bool dispatch_event( areg::Event & eventElem ) final;
+
 /************************************************************************/
 // EventRouter overrides
 /************************************************************************/

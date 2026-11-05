@@ -10,10 +10,10 @@
 
 areg::Model ChatParticipantService::GetModel( const DirectMessager::Participant & initiator, const DirectMessager::ListParticipants & /* listParticipants */, std::any data )
 {
-    areg::String    serviceName = NEDistributedApp::getDirectMessagingRole( initiator.nickName, initiator.cookie, initiator.sessionId, true );
-    areg::String    roleName    = NEDistributedApp::getDirectMessagingRole( initiator.nickName, initiator.cookie, initiator.sessionId, false );
-    areg::String    threadName  = NEDistributedApp::PREFIX_TRHEAD   + roleName;
-    areg::String    modelName   = NEDistributedApp::PREFIX_MODEL    + roleName;
+    areg::String    serviceName = DistributedAppDefs::getDirectMessagingRole( initiator.nickName, initiator.cookie, initiator.sessionId, true );
+    areg::String    roleName    = DistributedAppDefs::getDirectMessagingRole( initiator.nickName, initiator.cookie, initiator.sessionId, false );
+    areg::String    threadName  = DistributedAppDefs::PREFIX_TRHEAD   + roleName;
+    areg::String    modelName   = DistributedAppDefs::PREFIX_MODEL    + roleName;
 
     areg::DependencyEntry       dependency(serviceName);
     areg::DependencyList        listDependencies( dependency);

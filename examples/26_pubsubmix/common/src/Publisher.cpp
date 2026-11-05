@@ -56,7 +56,6 @@ Publisher::Publisher( areg::Component & owner )
     , mSeqInteger       (0)
     , mCountInteger     (0)
 
-    , mLock             (false)
 {
 }
 
@@ -81,7 +80,6 @@ void Publisher::start()
 {
     LOG_SCOPE( examples_26_pubsubmix_common_Publisher, start );
 
-    areg::Lock lock(mLock);
     LOG_DBG("Requested to re-start the service run. Reset values and re-start timers, there are [ %d ] connected clients",  mClientCount);
 
     mTimerAlways.stop_timer();
@@ -110,7 +108,6 @@ void Publisher::stop()
 {
     LOG_SCOPE( examples_26_pubsubmix_common_Publisher, stop );
 
-    areg::Lock lock(mLock);
     LOG_DBG("Stopped servicing, resets data, wait for further instructions. There are [ %d ] connected clients", mClientCount);
 
     mTimerAlways.stop_timer();
@@ -123,7 +120,6 @@ void Publisher::invalidate()
 {
     LOG_SCOPE( examples_26_pubsubmix_common_Publisher, invalidate );
 
-    areg::Lock lock(mLock);
     LOG_DBG("Invalidating all data. There are [ %d ] connected clients", mClientCount);
 
     mCountString = 0;
@@ -141,7 +137,6 @@ void Publisher::quit()
 {
     LOG_SCOPE( examples_26_pubsubmix_common_Publisher, quit );
 
-    areg::Lock lock(mLock);
     LOG_DBG("Requested to quit.There are[% d] connected clients", mClientCount);
 
     mTimerAlways.stop_timer();
@@ -159,7 +154,6 @@ void Publisher::process_timer(areg::Timer & timer)
 
     if (&timer == &mTimerAlways)
     {
-        areg::Lock lock(mLock);
         if (++ mCountInteger > PubSubMix::CycleAlways)
         {
             ++ mSeqInteger;
@@ -171,7 +165,6 @@ void Publisher::process_timer(areg::Timer & timer)
     }
     else if (&timer == &mTimerOnChange)
     {
-        areg::Lock lock(mLock);
         if (++ mCountString > PubSubMix::CycleAlways)
         {
             ++ mSeqString;

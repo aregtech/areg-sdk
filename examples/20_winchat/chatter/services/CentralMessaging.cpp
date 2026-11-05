@@ -64,7 +64,7 @@ void CentralMessaging::broadcast_send_message( const areg::String & nickName, ui
             data->timeReceived  = areg::DateTime::now();
             data->timeSend      = dateTime;
 
-            DistributedDialog::PostServiceMessage(NEDistributedApp::WindowCommand::CmdSendMessage, mConnectionHandler.GetCookie(), reinterpret_cast<LPARAM>(data));
+            DistributedDialog::PostServiceMessage(DistributedAppDefs::WindowCommand::CmdSendMessage, mConnectionHandler.GetCookie(), reinterpret_cast<LPARAM>(data));
         }
     }
 }
@@ -85,7 +85,7 @@ void CentralMessaging::broadcast_key_typing( const areg::String & nickName, uint
             data->timeReceived  = 0;
             data->timeSend      = 0;
 
-            DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdTypeMessage, mConnectionHandler.GetCookie( ), reinterpret_cast<LPARAM>(data) );
+            DistributedDialog::PostServiceMessage( DistributedAppDefs::WindowCommand::CmdTypeMessage, mConnectionHandler.GetCookie( ), reinterpret_cast<LPARAM>(data) );
         }
     }
 }
@@ -103,7 +103,7 @@ void CentralMessaging::broadcast_broadcast_message( const areg::String & serverM
         data->timeReceived  = areg::DateTime::now();
         data->timeSend      = dateTime;
 
-        DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdSendMessage, mConnectionHandler.GetCookie( ), reinterpret_cast<LPARAM>(data) );
+        DistributedDialog::PostServiceMessage( DistributedAppDefs::WindowCommand::CmdSendMessage, mConnectionHandler.GetCookie( ), reinterpret_cast<LPARAM>(data) );
     }
 }
 

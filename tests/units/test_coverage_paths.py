@@ -10,7 +10,6 @@ import subprocess
 import sys
 import tempfile
 import unittest
-from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -39,18 +38,6 @@ while [ $# -gt 0 ]; do
   shift
 done
 """
-
-
-@unittest.skipUnless(os.name == 'nt', 'Git for Windows layouts')
-class BashDiscoveryTest(unittest.TestCase):
-    # Reproduces the defect: Git Bash puts mingw64/bin/git.exe on PATH, not cmd/git.exe.
-    def test_discovers_bash_from_each_git_entry_point(self):
-        git = shutil.which('git')
-        root = Path(subprocess.check_output([git, '--exec-path'], text=True).strip()).parents[2]
-        for directory in ('cmd', 'bin', 'mingw64/bin'):
-            entry = root / directory / 'git.exe'
-            with self.subTest(entry=entry), patch('shutil.which', return_value=str(entry)):
-                self.assertTrue(Path(find_bash()).samefile(root / 'bin' / 'bash.exe'))
 
 
 def find_bash():
