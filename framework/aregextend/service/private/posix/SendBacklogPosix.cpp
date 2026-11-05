@@ -19,6 +19,7 @@
  * Include files.
  ************************************************************************/
 #include "aregextend/service/private/SendBacklog.hpp"
+#include "areg/base/private/posix/SocketSendPosix.hpp"
 
 #if defined(_POSIX) || defined(POSIX)
 
@@ -96,7 +97,7 @@ int64_t backlog_os_start( SendBacklogOsPtr & /*os*/
     ssize_t written{ 0 };
     do
     {
-        written = ::sendmsg(static_cast<int>(hSocket), &msg, sendFlags);
+        written = areg::os::_os_socket_send_v(static_cast<int>(hSocket), msg, sendFlags);
     } while ((written < 0) && (errno == EINTR));
 
     if (written < 0)

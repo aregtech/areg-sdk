@@ -225,6 +225,7 @@
     <ClInclude Include="areg\base\private\posix\WaitableTimerPosix.hpp" />
     <ClInclude Include="areg\base\private\posix\SyncObjectPosix.hpp" />
     <ClInclude Include="areg\base\private\posix\WaitablePosix.hpp" />
+    <ClInclude Include="areg\base\private\posix\SocketSendPosix.hpp" />
     <ClInclude Include="areg\base\private\posix\SyncDefsPosix.hpp" />
     <ClInclude Include="areg\base\ResourceListMap.hpp" />
     <ClInclude Include="areg\base\RingStack.hpp" />
