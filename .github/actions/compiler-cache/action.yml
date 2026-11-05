@@ -16,7 +16,7 @@ runs:
               sudo apt-get update -qq
               sudo apt-get install -y -qq ccache
               ;;
-            macOS) brew install ccache ;;
+            macOS) HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALL_CLEANUP=1 brew install ccache ;;
             *) echo "::error::Compiler caching is supported only on Linux and macOS"; exit 1 ;;
           esac
         fi

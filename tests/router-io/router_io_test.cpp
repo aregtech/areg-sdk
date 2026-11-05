@@ -555,7 +555,7 @@ namespace
 
     //!< A client that reads slower than its sender writes holds back that sender only. Another
     //!< client of the same send thread gets its messages at once, and nothing is lost.
-    bool case_slow_reader(uint32_t pairs)
+    bool case_slow_reader(RouterServerService & router, uint32_t pairs)
     {
         constexpr uint32_t SIZE         { 1'024u };
         constexpr uint32_t SLOW_COUNT   { 8'192u };
@@ -594,8 +594,15 @@ namespace
         std::thread slowWriter([&]() { slowSent = slowSender.send_numbered("sender of the slow reader", slow.cookie, SLOW_COUNT, SIZE); });
 
         // The slow reader is held once its sender wrote past the cap of the router.
-        std::this_thread::sleep_for(std::chrono::milliseconds(300));
+        const auto heldBy{ std::chrono::steady_clock::now() + std::chrono::milliseconds(ANSWER_MS) };
+        bool held{ router.is_target_held(slow.cookie) };
+        while ((held == false) && (std::chrono::steady_clock::now() < heldBy))
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            held = router.is_target_held(slow.cookie);
+        }
 
+        result = check(held, "the router holds the slow reader") && result;
         const uint64_t slowBefore{ slowRead.load() };
         bool fastOk{ false };
         bool fastSent{ false };
@@ -911,7 +918,7 @@ int main(int argc, char * argv[])
             else if (name == "oversize")
                 result = case_oversize();
             else if (name == "slow-reader")
-                result = case_slow_reader(pairs);
+                result = case_slow_reader(router, pairs);
             else if (name == "stop-while-flooding")
                 result = case_stop_while_flooding(router, pairs);
             else

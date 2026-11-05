@@ -10,8 +10,8 @@ The planner partitions them exactly once:
 | Group | Selection | Maximum simultaneous jobs |
 |---|---|---:|
 | Test-running | `test: ON`, without `norun: ON` | 8 |
-| Linux build-only | Remaining `ubuntu-latest` configurations | 1 |
-| Windows build-only | Remaining `windows-latest` configurations | 1 |
+| Linux build-only | Remaining `ubuntu-latest` configurations | 2 |
+| Windows build-only | Remaining `windows-latest` configurations | 2 |
 
 These are resource caps, not a global priority guarantee. They limit CMake's
 interference with Coverage, Sanitizers, CodeQL and agent integration builds,
@@ -51,7 +51,11 @@ test results or `.gcda` execution counters. Coverage still starts in a fresh
 tree and resets counters between unit tests and examples. Compilation cache
 statistics are logged in CMake, Coverage, Sanitizers and Platforms jobs.
 GitHub's repository-wide cache quota and eviction still apply; a miss performs
-the normal complete build. Cold installation/transfer overhead and warm-hit
+the normal complete build. A full Debug build with tests and examples compiles
+610 objects, 913 MB raw and about 236 MB compressed, so the snapshots of one run
+take roughly 5-6.5 GB of the 10 GB quota. Eviction is least recently used: the
+latest snapshot of each configuration survives until the next run, while older
+snapshots and CodeQL's TRAP caches are evicted first. Cold installation/transfer overhead and warm-hit
 benefits must be measured on hosted runners, not assumed.
 
 Cygwin Coverage caches downloaded package archives, not an installed Cygwin root.

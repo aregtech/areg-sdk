@@ -459,7 +459,7 @@ jobs:
     timeout-minutes: 120
     strategy:
       fail-fast: false
-      max-parallel: 1
+      max-parallel: 2
       matrix:
         config: ${{ fromJSON(needs.plan.outputs.linux_matrix) }}
     steps: *cmake-build-steps
@@ -472,7 +472,7 @@ jobs:
     timeout-minutes: 120
     strategy:
       fail-fast: false
-      max-parallel: 1
+      max-parallel: 2
       matrix:
         config: ${{ fromJSON(needs.plan.outputs.windows_matrix) }}
     steps: *cmake-build-steps
