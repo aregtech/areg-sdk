@@ -37,10 +37,11 @@
 namespace
 {
     //!< Returns a port of the loopback address that nobody listens on, or 0.
+    //!< The range is outside the ephemeral ports of all platforms.
     uint16_t free_port()
     {
         std::random_device random;
-        const uint16_t first{ static_cast<uint16_t>(46'000u + (random() % 3'000u)) };
+        const uint16_t first{ static_cast<uint16_t>(26'000u + (random() % 3'000u)) };
         for (uint16_t i = 0u; i < 500u; ++i)
         {
             const uint16_t port{ static_cast<uint16_t>(first + i) };

@@ -29,23 +29,6 @@ namespace areg {
 //////////////////////////////////////////////////////////////////////////
 
 /**
- * \brief   Waits until the I/O thread enters its dispatcher loop or exits prematurely.
- *
- * \param   ioThread    The message receive or send thread to wait for.
- * \return  Returns true if the thread dispatcher is started and ready for events.
- **/
-static bool _wait_io_thread_ready( DispatcherThread & ioThread )
-{
-    while ( !ioThread.wait_start( areg::WAIT_10_MILLISECONDS ) )
-    {
-        if ( !ioThread.is_running() )
-            return false;
-    }
-
-    return true;
-}
-
-/**
  * \brief   Stops the send thread, waits for it and closes the socket, under the lock that also
  *          guards the start of the send thread. The receive thread must be stopped before.
  *
@@ -115,7 +98,7 @@ void ServiceClientConnectionBase::ensure_send_thread()
 
     // The readiness poll stays inside the lock, so a second producer finds the thread ready.
     // On failure nothing is torn down: the receive side restarts the connection.
-    static_cast<void>(mThreadSend.start( areg::WAIT_INFINITE ) && _wait_io_thread_ready( mThreadSend ));
+    static_cast<void>(mThreadSend.start( areg::WAIT_INFINITE ) && areg::wait_io_thread_ready( mThreadSend ));
 }
 
 bool ServiceClientConnectionBase::try_send_inline( MessageEnvelope & data )
@@ -535,7 +518,7 @@ bool ServiceClientConnectionBase::start_connection()
     // The send thread is not started here: it is a fallback, and the first message that has to
     // be queued starts it, see ensure_send_thread().
     bool result{ mThreadReceive.start(areg::WAIT_INFINITE) &&
-                 _wait_io_thread_ready(mThreadReceive) };
+                 areg::wait_io_thread_ready(mThreadReceive) };
 
     if (!result)
     {

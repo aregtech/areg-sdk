@@ -440,6 +440,10 @@ bool LogCollector::_check_command(const String& cmd)
         {
             console.output_msg( areg::ext::COORD_ERROR_MSG, areg::ext::FORMAT_MSG_ERROR.data( ), cmd.as_string( ) );
         }
+        else
+        {
+            console.clear_line( areg::ext::COORD_ERROR_MSG );
+        }
 
         console.clear_line( areg::ext::COORD_USER_INPUT );
         console.output_txt( areg::ext::COORD_USER_INPUT, areg::ext::FORMAT_WAIT_QUIT );

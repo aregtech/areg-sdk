@@ -410,19 +410,7 @@ bool ServiceCommunicationBase::start_connection()
         }
         else
         {
-            // Stop any pool pairs that were already started.
-            ClientPairList pairs;
-            {
-                Lock lock(mLock);
-                pairs.swap(mClientPairs);
-            }
-
-            for ( auto & p : pairs )
-            {
-                if ( p ) p->stop();
-            }
-
-            mServerConnection.close_socket( );
+            stop_connection( );
         }
     }
 
@@ -698,13 +686,13 @@ void ServiceCommunicationBase::enable_data_rate(bool enable) noexcept
 bool ServiceCommunicationBase::start_send_thread()
 {
     return mThreadSend.start( areg::WAIT_INFINITE ) &&
-           mThreadSend.wait_start( areg::WAIT_INFINITE );
+           areg::wait_io_thread_ready( mThreadSend );
 }
 
 bool ServiceCommunicationBase::start_receive_thread()
 {
     return mThreadReceive.start( areg::WAIT_INFINITE ) &&
-           mThreadReceive.wait_start( areg::WAIT_INFINITE );
+           areg::wait_io_thread_ready( mThreadReceive );
 }
 
 bool ServiceCommunicationBase::send_message( const areg::MessageEnvelope & data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )

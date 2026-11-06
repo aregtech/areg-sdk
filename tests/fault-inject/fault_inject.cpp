@@ -67,6 +67,7 @@ namespace
         std::atomic<uint32_t>   skip        { 0u };     //!< Calls that still pass before the first failure.
         std::atomic<uint32_t>   remaining   { 0u };     //!< Calls that still fail, or FAIL_ALWAYS.
         std::atomic<uint32_t>   failed      { 0u };     //!< Calls failed since the point was armed.
+        std::atomic<uint32_t>   delay       { 0u };     //!< Milliseconds a passing call waits before it runs.
     };
 
     FaultSlot   gSlots[POINT_COUNT];
@@ -131,12 +132,24 @@ extern "C"
         {
             slot.armed.store( false, std::memory_order_release );
             slot.failed.store( 0u, std::memory_order_relaxed );
+            slot.delay.store( 0u, std::memory_order_relaxed );
         }
     }
 
     AREG_FAULT_API uint32_t areg_fault_failed( uint32_t point )
     {
         return ( point < POINT_COUNT ) ? gSlots[point].failed.load( std::memory_order_relaxed ) : 0u;
+    }
+
+    AREG_FAULT_API bool areg_fault_delay( uint32_t point, uint32_t milliseconds )
+    {
+        if ( (static_cast<areg_fault::FaultPoint>(point) != areg_fault::FaultPoint::SocketListen)
+            || (_is_supported( areg_fault::FaultPoint::SocketListen ) == false) )
+            return false;
+
+        _install( );
+        gSlots[point].delay.store( milliseconds, std::memory_order_relaxed );
+        return true;
     }
 }
 
@@ -319,6 +332,12 @@ extern "C"
         {
             errno = error;
             return -1;
+        }
+
+        const uint32_t delay{ gSlots[static_cast<uint32_t>(areg_fault::FaultPoint::SocketListen)].delay.load( std::memory_order_relaxed ) };
+        if ( delay != 0u )
+        {
+            ::usleep( delay * 1000u );
         }
 
         using Func = int (*)( int, int );

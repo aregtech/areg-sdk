@@ -74,6 +74,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     ListenerDispatchTest.cpp
     LockWaitTest.cpp
     LayoutTest.cpp
+    LogCollectorApplicationTest.cpp
     LogCollectorDroppedRowsTest.cpp
     LogConfigurationTest.cpp
     LoggingRuntimeCoverageTest.cpp
@@ -98,6 +99,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     ReceivedHeaderTest.cpp
     RingStackTest.cpp
     RouterApplicationTest.cpp
+    ServiceConsoleHarness.cpp
     RouterServiceRegistryTest.cpp
     RuntimeObjectTest.cpp
     ScopedLockTest.cpp
@@ -148,9 +150,14 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
 # The log database tests use the SQLite wrappers of aregextend, which every executable links.
 target_link_libraries("${AREG_UNIT_TEST_PROJECT}" PRIVATE ${AREG_SQLITE_LIB_REF})
 
-# The record of dropped log rows of the log collector, which is not a library.
+# The log collector application is not part of a library.
 target_sources("${AREG_UNIT_TEST_PROJECT}" PRIVATE
-    "${CMAKE_CURRENT_LIST_DIR}/../../framework/logcollector/service/private/LogCollectorDroppedRows.cpp"
+    "${AREG_FRAMEWORK}/logcollector/app/private/LogCollector.cpp"
+    "${AREG_FRAMEWORK}/logcollector/app/private/LogCollectorNames.cpp"
+    "${AREG_FRAMEWORK}/logcollector/service/private/LogCollectorDatabase.cpp"
+    "${AREG_FRAMEWORK}/logcollector/service/private/LogCollectorDroppedRows.cpp"
+    "${AREG_FRAMEWORK}/logcollector/service/private/LogCollectorMessageProcessor.cpp"
+    "${AREG_FRAMEWORK}/logcollector/service/private/LogCollectorServerService.cpp"
 )
 
 # The router application is not part of a library.

@@ -55,6 +55,13 @@
     <ClCompile Include="units\ListenerDispatchTest.cpp" />
     <ClCompile Include="units\RouterServiceRegistryTest.cpp" />
     <ClCompile Include="units\RouterApplicationTest.cpp" />
+    <ClCompile Include="units\ServiceConsoleHarness.cpp" />
+    <ClCompile Include="units\LogCollectorApplicationTest.cpp" />
+    <ClCompile Include="..\framework\logcollector\app\private\LogCollector.cpp" />
+    <ClCompile Include="..\framework\logcollector\app\private\LogCollectorNames.cpp" />
+    <ClCompile Include="..\framework\logcollector\service\private\LogCollectorDatabase.cpp" />
+    <ClCompile Include="..\framework\logcollector\service\private\LogCollectorMessageProcessor.cpp" />
+    <ClCompile Include="..\framework\logcollector\service\private\LogCollectorServerService.cpp" />
     <ClCompile Include="..\framework\mtrouter\app\private\MultitargetRouter.cpp" />
     <ClCompile Include="..\framework\mtrouter\app\private\MTRouterNames.cpp" />
     <ClCompile Include="..\framework\mtrouter\service\private\RouterServerService.cpp" />

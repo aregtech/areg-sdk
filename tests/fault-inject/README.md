@@ -89,6 +89,10 @@ Use the error the system really reports in that situation, for example `EMFILE` 
 `ERROR_TOO_MANY_OPEN_FILES` for an exhausted descriptor table. The tests keep one constant per
 platform at the top of `fault_inject_test.cpp`.
 
+`delay( FaultPoint::SocketListen, milliseconds )` makes `listen` wait instead of fail, until
+disarmed, so a test can hold a thread at that call and check what is true meanwhile. It returns
+false where the point is not replaced.
+
 ---
 
 ## How a call is replaced

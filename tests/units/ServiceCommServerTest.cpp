@@ -23,10 +23,12 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/base/SocketDefs.hpp"
 #include "areg/base/String.hpp"
+#include "areg/base/private/SocketLiveness.hpp"
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/ipc/ClientConnection.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
 #include "aregextend/service/ServiceCommunicationBase.hpp"
+#include "units/ServiceTestServer.hpp"
 
 #include <algorithm>
 #include <atomic>
@@ -43,7 +45,8 @@
 namespace
 {
     using Clock = std::chrono::steady_clock;
-    using Policy = areg::ext::ServiceCommunicationBase::ConnectionPolicy;
+    using service_test::Policy;
+    using service_test::TestServer;
 
     //!< Milliseconds the test waits for an outcome before it fails.
     constexpr int64_t   DEADLINE_MS     { 60'000 };
@@ -56,10 +59,11 @@ namespace
     }
 
     //!< Returns a port of the loopback address that nobody listens on, or 0.
+    //!< The range is outside the ephemeral ports of all platforms.
     uint16_t free_port()
     {
         std::random_device random;
-        const uint16_t first{ static_cast<uint16_t>(42'000u + (random() % 3'000u)) };
+        const uint16_t first{ static_cast<uint16_t>(21'000u + (random() % 3'000u)) };
         for (uint16_t i = 0u; i < 500u; ++i)
         {
             const uint16_t port{ static_cast<uint16_t>(first + i) };
@@ -94,115 +98,6 @@ namespace
 
         return message;
     }
-
-    //!< The server under test: it records the instances added and removed, so that a test waits
-    //!< for them instead of sleeping.
-    class TestServer final : public areg::ext::ServiceCommunicationBase
-    {
-    public:
-        TestServer(Policy policy, uint32_t pairs)
-            : ServiceCommunicationBase  ( areg::COOKIE_ROUTER
-                                        , areg::RemoteServiceKind::Router
-                                        , static_cast<uint32_t>(areg::ConnectionType::Tcpip)
-                                        , areg::SYSTEM_THREAD_STACK_BIG
-                                        , areg::String("TestCommServer")
-                                        , policy
-                                        , pairs )
-            , mMutex    ( )
-            , mChanged  ( )
-            , mAdded    ( 0u )
-            , mRemoved  ( 0u )
-            , mDisconnects  ( )
-        {
-        }
-
-        using areg::ext::ServiceCommunicationBase::set_close_stalled;
-
-        void add_instance(const ITEM_ID & cookie, const areg::ConnectedInstance & instance) override
-        {
-            areg::ext::ServiceCommunicationBase::add_instance(cookie, instance);
-            std::lock_guard<std::mutex> guard(mMutex);
-            ++mAdded;
-            mChanged.notify_all();
-        }
-
-        void remove_instance(const ITEM_ID & cookie) override
-        {
-            areg::ext::ServiceCommunicationBase::remove_instance(cookie);
-            std::lock_guard<std::mutex> guard(mMutex);
-            ++mRemoved;
-            mChanged.notify_all();
-        }
-
-        void failed_process_message(const areg::MessageEnvelope & /*msgFailed*/) override
-        {
-        }
-
-        void on_connection_started() override
-        {
-        }
-
-        void on_connection_stopped() override
-        {
-        }
-
-        void on_connection_lost() override
-        {
-        }
-
-        void on_message_received(const areg::MessageEnvelope & msgReceived) override
-        {
-            if (msgReceived.message_id() == static_cast<uint32_t>(areg::FuncIdRange::SystemServiceDisconnect))
-            {
-                std::lock_guard<std::mutex> guard(mMutex);
-                mDisconnects.push_back(msgReceived.source());
-                mChanged.notify_all();
-            }
-        }
-
-        void on_service_channel_connected(const areg::Channel & /*channel*/) override
-        {
-        }
-
-        void on_service_channel_disconnected(const areg::Channel & /*channel*/) override
-        {
-        }
-
-        void on_service_channel_lost(const areg::Channel & /*channel*/) override
-        {
-        }
-
-        //!< Waits until at least \a count instances were added.
-        bool wait_added(uint32_t count)
-        {
-            std::unique_lock<std::mutex> guard(mMutex);
-            return mChanged.wait_for(guard, std::chrono::milliseconds(DEADLINE_MS), [&]() { return (mAdded >= count); });
-        }
-
-        //!< Waits until at least \a count instances were removed.
-        bool wait_removed(uint32_t count)
-        {
-            std::unique_lock<std::mutex> guard(mMutex);
-            return mChanged.wait_for(guard, std::chrono::milliseconds(DEADLINE_MS), [&]() { return (mRemoved >= count); });
-        }
-
-        //!< Waits until the disconnect message of the client with \a cookie was delivered.
-        bool wait_disconnect(ITEM_ID cookie)
-        {
-            std::unique_lock<std::mutex> guard(mMutex);
-            return mChanged.wait_for(guard, std::chrono::milliseconds(DEADLINE_MS), [&]()
-                {
-                    return (std::find(mDisconnects.begin(), mDisconnects.end(), static_cast<uint32_t>(cookie)) != mDisconnects.end());
-                });
-        }
-
-    private:
-        std::mutex              mMutex;
-        std::condition_variable mChanged;
-        uint32_t                mAdded;
-        uint32_t                mRemoved;
-        std::vector<uint32_t>   mDisconnects;
-    };
 
     //!< A server on a free port of the loopback address; it is stopped when the object goes away.
     struct Running
@@ -522,9 +417,8 @@ protected:
         // Reproduces the defect: the list was a reference to a map the receive thread changes, so a reader raced with a client leaving.
         const areg::MapInstances before{ run.server.instances() };
         last->link.close_socket();
-        EXPECT_TRUE(run.server.wait_removed(2u));
+        EXPECT_TRUE(run.server.wait_instances(1u));
         EXPECT_EQ(before.size(), 2u);
-        EXPECT_EQ(run.server.instances().size(), 1u);
     }
 
     //!< The server sends one message again and again to a client that reads only afterwards.
@@ -571,6 +465,7 @@ protected:
         reader->link.set_socket_buffers(0u, 64u * 1024u);
         ASSERT_TRUE(sender->join());
         ASSERT_TRUE(reader->join());
+        areg::set_receive_recheck(reader->link.socket().handle(), static_cast<uint32_t>(DEADLINE_MS));
 
         // The producer sends until the test saw the reader held, then a last message that ends the stream.
         std::atomic<bool> stop{ false };

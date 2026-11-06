@@ -28,6 +28,27 @@
     <ClCompile Include="units\RouterApplicationTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="units\ServiceConsoleHarness.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\LogCollectorApplicationTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\framework\logcollector\app\private\LogCollector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\framework\logcollector\app\private\LogCollectorNames.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\framework\logcollector\service\private\LogCollectorDatabase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\framework\logcollector\service\private\LogCollectorMessageProcessor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\framework\logcollector\service\private\LogCollectorServerService.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\framework\mtrouter\app\private\MultitargetRouter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

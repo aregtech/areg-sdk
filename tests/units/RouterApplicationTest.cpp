@@ -4,58 +4,26 @@
  * Distributed under the licenses in LICENSE.txt.
  ************************************************************************/
 
-// Declares the pseudo terminal functions: g++ on Cygwin does not predefine it, unlike on Linux.
-#if defined(__CYGWIN__) && !defined(_GNU_SOURCE)
-    #define _GNU_SOURCE
-#endif
-
-#include "units/GUnitTest.hpp"
-#include "units/ChildProcess.hpp"
+#include "units/ServiceConsoleHarness.hpp"
 #include "mtrouter/app/MultitargetRouter.hpp"
-#include "areg/appbase/AppDefs.hpp"
-#include "areg/appbase/Application.hpp"
-#include "areg/base/Process.hpp"
-#include "areg/base/SocketClient.hpp"
-#include "areg/component/Event.hpp"
-#include "areg/component/EventConsumer.hpp"
-#include "areg/ipc/RemoteServiceDefs.hpp"
 #include "areg/ipc/DataRateStats.hpp"
 #include "areg/persist/ConfigManager.hpp"
-#include "aregextend/console/Console.hpp"
-
-#include <chrono>
-#include <algorithm>
-#include <cerrno>
-#include <condition_variable>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <fstream>
-#include <filesystem>
-#include <future>
-#include <iterator>
-#include <mutex>
-#include <string>
-#include <thread>
-#include <vector>
-
-#if defined(_WIN32)
-    #include <io.h>
-    #include <fcntl.h>
-    #include <WinSock2.h>
-#else
-    #include <arpa/inet.h>
-    #include <fcntl.h>
-    #include <sys/ioctl.h>
-    #include <sys/socket.h>
-    #include <unistd.h>
-#endif
 
 namespace
 {
-    using areg::ext::ServiceOption;
-    using areg::ext::ServicePhase;
-    constexpr auto DEADLINE = std::chrono::seconds(60);
+    using service_harness::ConsoleSession;
+    using service_harness::DEADLINE;
+    using service_harness::ServiceOption;
+    using service_harness::ServicePhase;
+    using service_harness::ServiceUnderTest;
+    using service_harness::TerminalCapture;
+    using service_harness::descriptor;
+    using service_harness::instance_line;
+    using service_harness::rate_line;
+    using service_harness::redirect;
+    using service_harness::service_dispatcher;
+    using service_harness::set_terminal;
+
     constexpr const char* SHORT_OPTIONS[]{"-c", "-h", "-i", "-l", "-n", "-p", "-q", "-r", "-s", "-t", "-u", "-v", "-w"};
     constexpr const char* LONG_OPTIONS[]{"--console", "--help", "--install", "--load", "--instances", "--pause", "--quit",
         "--restart", "--service", "--silent", "--uninstall", "--verbose", "--threads"};
@@ -67,447 +35,42 @@ namespace
 
     areg::DispatcherThread& router_dispatcher()
     {
-        return areg::DispatcherThread::dispatcher_thread(areg::ThreadAddress("SERVER_DISPATCH_MESSAGE_THREAD"));
+        return service_dispatcher();
     }
+
+    constexpr ServiceUnderTest ROUTER{ &application, "router", areg::COOKIE_ROUTER, "mtrouter_app_MultitargetRouter",
+                                       "Found option [ MultitargetRouter::RouterOption::CMD_Router" };
 
     void check_console_verbose(bool expected)
     {
-        auto& console = areg::ext::Console::instance();
-        console.lock_console();
-        const bool actual{ application().data_rate_helper().is_verbose() };
-        console.unlock_console();
-        AREG_CHILD_CHECK(actual == expected);
+        service_harness::check_console_verbose(ROUTER, expected);
     }
-
-    void set_terminal()
-    {
-#if defined(_WIN32)
-        AREG_CHILD_CHECK(::_putenv_s("TERM", "xterm") == 0);
-#else
-        AREG_CHILD_CHECK(::setenv("TERM", "xterm", 1) == 0);
-        AREG_CHILD_CHECK(::setenv("LINES", "40", 1) == 0);
-        AREG_CHILD_CHECK(::setenv("COLUMNS", "120", 1) == 0);
-#endif
-    }
-
-    int descriptor(FILE* stream)
-    {
-#if defined(_WIN32)
-        return ::_fileno(stream);
-#else
-        return ::fileno(stream);
-#endif
-    }
-
-    int duplicate(int fd)
-    {
-#if defined(_WIN32)
-        return ::_dup(fd);
-#else
-        return ::dup(fd);
-#endif
-    }
-
-    void redirect(int source, int target)
-    {
-#if defined(_WIN32)
-        AREG_CHILD_CHECK(::_dup2(source, target) == 0);
-        if (target == descriptor(stdout) || target == descriptor(stdin))
-            AREG_CHILD_CHECK(::SetStdHandle(target == descriptor(stdout) ? STD_OUTPUT_HANDLE : STD_INPUT_HANDLE,
-                reinterpret_cast<HANDLE>(::_get_osfhandle(target))) != FALSE);
-#else
-        AREG_CHILD_CHECK(::dup2(source, target) == target);
-#endif
-    }
-
-    void close_descriptor(int fd)
-    {
-#if defined(_WIN32)
-        AREG_CHILD_CHECK(::_close(fd) == 0);
-#else
-        AREG_CHILD_CHECK(::close(fd) == 0);
-#endif
-    }
-
-    void make_pipe(int (&fds)[2])
-    {
-#if defined(_WIN32)
-        AREG_CHILD_CHECK(::_pipe(fds, 65536, _O_BINARY) == 0);
-#else
-        AREG_CHILD_CHECK(::pipe(fds) == 0);
-#endif
-    }
-
-    int read_descriptor(int fd, char* buffer, uint32_t size)
-    {
-#if defined(_WIN32)
-        return ::_read(fd, buffer, size);
-#else
-        return static_cast<int>(::read(fd, buffer, size));
-#endif
-    }
-
-    void write_descriptor(int fd, const std::string& text)
-    {
-        size_t done{ 0u };
-        while (done != text.size())
-        {
-#if defined(_WIN32)
-            const int count{ ::_write(fd, text.data() + done, static_cast<uint32_t>(text.size() - done)) };
-#else
-            const int count{ static_cast<int>(::write(fd, text.data() + done, text.size() - done)) };
-#endif
-            AREG_CHILD_CHECK(count > 0);
-            done += static_cast<size_t>(count);
-        }
-    }
-
-    void make_terminal(int (&fds)[2])
-    {
-#if defined(_WIN32)
-        make_pipe(fds);
-#else
-        fds[0] = ::posix_openpt(O_RDWR | O_NOCTTY);
-        AREG_CHILD_CHECK(fds[0] >= 0);
-        AREG_CHILD_CHECK(::grantpt(fds[0]) == 0 && ::unlockpt(fds[0]) == 0);
-        const char* name{ ::ptsname(fds[0]) };
-        AREG_CHILD_CHECK(name != nullptr);
-        fds[1] = ::open(name, O_RDWR | O_NOCTTY);
-        AREG_CHILD_CHECK(fds[1] >= 0);
-        winsize size{};
-        size.ws_row = 40;
-        size.ws_col = 120;
-        AREG_CHILD_CHECK(::ioctl(fds[1], TIOCSWINSZ, &size) == 0);
-#endif
-    }
-
-    // Reconstruct ncurses' cursor-addressed differences rather than searching escape bytes.
-    class TerminalCapture
-    {
-    public:
-        std::string transcript;
-
-        void feed(const char* data, size_t size)
-        {
-            for (size_t i = 0u; i < size; ++i)
-            {
-                const unsigned char ch{ static_cast<unsigned char>(data[i]) };
-                if (!mEscape.empty())
-                {
-                    mEscape += static_cast<char>(ch);
-                    if (mEscape.size() == 2u && ch == '[')
-                        continue;
-                    if (mEscape.size() == 2u && (ch == '(' || ch == ')'))
-                        continue;
-                    if (mEscape[1] == '[' && (ch < 0x40 || ch > 0x7e))
-                        continue;
-                    publish();
-                    if (mEscape[1] == '[')
-                        control(static_cast<char>(ch));
-                    else if (ch == 'M')
-                        mRow = (std::max)(0, mRow - 1);
-                    else if (ch == 'D' || ch == 'E')
-                        newline();
-                    mEscape.clear();
-                }
-                else if (ch == 0x1b)
-                    mEscape = "\x1b";
-                else if (ch == '\r')
-                {
-                    publish();
-                    mColumn = 0;
-                }
-                else if (ch == '\n')
-                    newline();
-                else if (ch == '\b')
-                    mColumn = (std::max)(0, mColumn - 1);
-                else if (ch == '\t')
-                    mColumn = (std::min)(119, (mColumn / 8 + 1) * 8);
-                else if (ch >= ' ')
-                    put(static_cast<char>(ch));
-            }
-            publish();
-        }
-
-    private:
-        void publish()
-        {
-            for (size_t row = 0u; row < mRows.size(); ++row)
-            {
-                if (mRows[row] != mPublished[row])
-                {
-                    transcript += mRows[row] + '\n';
-                    mPublished[row] = mRows[row];
-                }
-            }
-        }
-
-        void put(char ch)
-        {
-            mRows[mRow][(std::min)(mColumn, 119)] = ch;
-            mColumn = (std::min)(120, mColumn + 1);
-            mLast = ch;
-        }
-
-        void newline()
-        {
-            publish();
-            if (++mRow == 40)
-            {
-                mRows.erase(mRows.begin());
-                mRows.emplace_back(120u, ' ');
-                mPublished.erase(mPublished.begin());
-                mPublished.emplace_back();
-                mRow = 39;
-            }
-            mColumn = 0;
-        }
-
-        void control(char final)
-        {
-            if (mEscape[2] == '?')
-                return; // Mode, cursor-visibility and alternate-screen changes carry no text.
-            std::vector<int> values(1u, 0);
-            for (size_t i = 2u; i + 1u < mEscape.size(); ++i)
-            {
-                if (mEscape[i] == ';')
-                    values.push_back(0);
-                else if (mEscape[i] >= '0' && mEscape[i] <= '9')
-                    values.back() = values.back() * 10 + mEscape[i] - '0';
-            }
-            const int first{ values[0] };
-            const int count{ (std::max)(1, first) };
-            switch (final)
-            {
-            case 'H': case 'f':
-                mRow = std::clamp(count - 1, 0, 39);
-                mColumn = std::clamp(values.size() > 1u ? (std::max)(1, values[1]) - 1 : 0, 0, 119);
-                break;
-            case 'A': mRow = (std::max)(0, mRow - count); break;
-            case 'B': mRow = (std::min)(39, mRow + count); break;
-            case 'C': mColumn = (std::min)(119, mColumn + count); break;
-            case 'D': mColumn = (std::max)(0, mColumn - count); break;
-            case 'd': mRow = std::clamp(count - 1, 0, 39); break;
-            case 'G': case '`': mColumn = std::clamp(count - 1, 0, 119); break;
-            case 'K':
-                mRows[mRow].replace(first == 0 ? (std::min)(mColumn, 120) : 0,
-                    first == 0 ? 120 - (std::min)(mColumn, 120) : first == 1 ? (std::min)(mColumn + 1, 120) : 120,
-                    first == 0 ? 120 - (std::min)(mColumn, 120) : first == 1 ? (std::min)(mColumn + 1, 120) : 120, ' ');
-                break;
-            case 'J':
-                for (int row = 0; row < 40; ++row)
-                {
-                    if (first >= 2 || (first == 0 && row > mRow) || (first == 1 && row < mRow))
-                        mRows[row].assign(120u, ' ');
-                    else if (row == mRow)
-                    {
-                        const size_t start{ first == 1 ? 0u : static_cast<size_t>((std::min)(mColumn, 120)) };
-                        const size_t size{ first == 1 ? static_cast<size_t>((std::min)(mColumn + 1, 120)) : 120u - start };
-                        mRows[row].replace(start, size, size, ' ');
-                    }
-                }
-                break;
-            case 'b': for (int i = 0; i < count; ++i) put(mLast); break;
-            case 'P':
-                mRows[mRow].erase(static_cast<size_t>((std::min)(mColumn, 120)), static_cast<size_t>(count));
-                mRows[mRow].resize(120u, ' ');
-                break;
-            case '@':
-                mRows[mRow].insert(static_cast<size_t>((std::min)(mColumn, 120)), static_cast<size_t>(count), ' ');
-                mRows[mRow].resize(120u);
-                break;
-            case 'X':
-                mRows[mRow].replace(static_cast<size_t>((std::min)(mColumn, 120)),
-                    static_cast<size_t>((std::min)(count, 120 - mColumn)),
-                    static_cast<size_t>((std::min)(count, 120 - mColumn)), ' ');
-                break;
-            default: break; // Colours, attributes and scroll-region setup do not change these rows.
-            }
-        }
-
-        std::vector<std::string> mRows{ 40u, std::string(120u, ' ') };
-        std::vector<std::string> mPublished{ 40u, "" };
-        std::string mEscape;
-        int mRow{ 0 };
-        int mColumn{ 0 };
-        char mLast{ ' ' };
-    };
-
-    struct PrivateConfig
-    {
-        std::string directory;
-        std::string path;
-        std::string log;
-        std::string contents;
-        uint16_t port;
-        bool logging;
-
-        explicit PrivateConfig(bool enableLogging = false, uint32_t pairs = 0u)
-            : directory(testing::TempDir() + "router-app-" + std::to_string(areg::Process::instance().id())
-                + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))
-            , path((std::filesystem::path(directory) / "private.init").string())
-            , log((std::filesystem::path(directory) / "router.log").string())
-            , contents()
-            , port(0u)
-            , logging(enableLogging)
-        {
-            AREG_CHILD_CHECK(std::filesystem::create_directory(directory));
-            AREG_CHILD_CHECK(areg::socket_initialize());
-            const SOCKETHANDLE socket{ areg::socket_create() };
-            AREG_CHILD_CHECK(areg::is_valid_socket(socket));
-            sockaddr_in address{};
-            address.sin_family = AF_INET;
-            address.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-            AREG_CHILD_CHECK(::bind(socket, reinterpret_cast<sockaddr*>(&address), sizeof(address)) == 0);
-#if defined(_WIN32)
-            int size{ sizeof(address) };
-#else
-            socklen_t size{ sizeof(address) };
-#endif
-            AREG_CHILD_CHECK(::getsockname(socket, reinterpret_cast<sockaddr*>(&address), &size) == 0);
-            port = ntohs(address.sin_port);
-            AREG_CHILD_CHECK(port != 0u);
-            areg::socket_close(socket);
-            contents = std::string("log::*::enable = ") + (logging ? "true\n" : "false\n")
-                + "log::*::target = file\nlog::*::enable::remote = false\n"
-                + "log::*::enable::file = " + (logging ? "true\n" : "false\n")
-                + "log::*::enable::debug = false\nlog::*::enable::db = false\n"
-                + "log::*::file::append = false\nlog::*::file::location = " + log
-                + "\nlog::*::scope::* = NOTSET\nlog::*::scope::mtrouter_app_MultitargetRouter.* = DEBUG\n"
-                "log::*::layout::message = %m%n\n"
-                "router::*::connect = tcpip\nrouter::*::enable::tcpip = true\n"
-                "router::*::address::tcpip = 127.0.0.1\nrouter::*::port::tcpip = "
-                + std::to_string(port) + "\nnet::*::tcpip::pairs = " + std::to_string(pairs) + "\n";
-            std::ofstream output(path);
-            output << contents;
-            AREG_CHILD_CHECK(output.good());
-        }
-
-        ~PrivateConfig()
-        {
-            AREG_CHILD_CHECK(std::remove(path.c_str()) == 0);
-            if (std::filesystem::exists(log))
-                AREG_CHILD_CHECK(std::remove(log.c_str()) == 0);
-            AREG_CHILD_CHECK(std::filesystem::remove(directory));
-            areg::socket_release();
-        }
-
-        void check_unchanged() const
-        {
-            std::ifstream input(path);
-            const std::string actual{ std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>() };
-            AREG_CHILD_CHECK(actual == contents);
-        }
-
-        void check_options_logged(const std::vector<std::string>& names) const
-        {
-#if AREG_LOGGING
-            AREG_CHILD_CHECK(logging);
-            std::ifstream input(log);
-            AREG_CHILD_CHECK(input.good());
-            const std::string actual{ std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>() };
-            for (const auto& name : names)
-                AREG_CHILD_CHECK(actual.find("Found option [ MultitargetRouter::RouterOption::CMD_Router" + name
-                    + " ], going to process...") != std::string::npos);
-#else
-            (void)names;
-#endif
-        }
-    };
-
-    bool parse(const std::vector<std::string>& options)
-    {
-        std::vector<std::string> storage{ "router-app-test" };
-        storage.insert(storage.end(), options.begin(), options.end());
-        std::vector<char*> argv;
-        for (std::string& value : storage)
-            argv.push_back(value.data());
-        return application().parse_options(static_cast<int32_t>(argv.size()), argv.data());
-    }
-
-    void set_io_deadline(SOCKETHANDLE socket)
-    {
-#if defined(_WIN32)
-        const DWORD timeout{ 60'000u };
-#else
-        const timeval timeout{ 60, 0 };
-#endif
-        AREG_CHILD_CHECK(areg::set_send_timeout(socket, 60'000u));
-        AREG_CHILD_CHECK(::setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO,
-            reinterpret_cast<const char*>(&timeout), sizeof(timeout)) == 0);
-    }
-
-    struct ConnectedPeer
-    {
-        areg::SocketClient socket;
-        areg::EventHeader reply{};
-        uint32_t sentBytes{ 0u };
-
-        explicit ConnectedPeer(uint16_t port)
-            : socket("127.0.0.1", port)
-        {
-            AREG_CHILD_CHECK(socket.create());
-            set_io_deadline(socket.handle());
-            const auto hello{ areg::create_connect_request(areg::COOKIE_UNKNOWN, areg::COOKIE_ROUTER,
-                areg::MessageSource::SourceClient) };
-            sentBytes = areg::wire_size(*hello.header());
-            AREG_CHILD_CHECK(socket.send(areg::wire_data(*hello.header()), static_cast<int32_t>(sentBytes))
-                == static_cast<int32_t>(sentBytes));
-            AREG_CHILD_CHECK(socket.receive(areg::wire_header(reply), areg::WIRE_HEADER_SIZE) == areg::WIRE_HEADER_SIZE);
-            AREG_CHILD_CHECK(reply.messageId == static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyConnection));
-            AREG_CHILD_CHECK(reply.target >= areg::COOKIE_REMOTE_SERVICE && reply.source == areg::COOKIE_ROUTER);
-            AREG_CHILD_CHECK(reply.bufHeader.biUsed <= 1024u);
-            std::vector<uint8_t> payload(reply.bufHeader.biUsed);
-            AREG_CHILD_CHECK(!payload.empty());
-            AREG_CHILD_CHECK(socket.receive(payload.data(), static_cast<int32_t>(payload.size())) == static_cast<int32_t>(payload.size()));
-        }
-
-        uint32_t received_bytes() const
-        {
-            return areg::wire_size(reply);
-        }
-    };
-
-    std::string rate_line(std::string_view format, uint64_t bytes)
-    {
-        const auto rate{ areg::ext::DataRateHelper::convert_data_rate_literals(bytes) };
-        char output[160];
-        const int length{ std::snprintf(output, sizeof(output), format.data(), static_cast<double>(rate.first), rate.second.c_str()) };
-        AREG_CHILD_CHECK(length > 0 && static_cast<size_t>(length) < sizeof(output));
-        return output;
-    }
-
-    std::string instance_line(uint32_t number, ITEM_ID cookie, const areg::ConnectedInstance& instance)
-    {
-        char output[512];
-        const int length{ std::snprintf(output, sizeof(output), " %4u. |  %11u  |    %u     |  %s ",
-            number, static_cast<uint32_t>(cookie), static_cast<uint32_t>(instance.ciBitness), instance.ciInstance.c_str()) };
-        AREG_CHILD_CHECK(length > 0 && static_cast<size_t>(length) < sizeof(output));
-        return output;
-    }
-
-    class DispatcherFence final : public areg::EventConsumer
-    {
-    public:
-        std::promise<bool> reached;
-
-        void start_event_processing(areg::Event&) override
-        {
-            reached.set_value(application().communication_controller().is_host_connected());
-        }
-    };
 
     void check_listening()
     {
-        DispatcherFence fence;
-        auto ready = fence.reached.get_future();
-        areg::Event event(areg::EventType::EventCustomExternal);
-        event.set_event_consumer(&fence);
-        auto& dispatcher = router_dispatcher();
-        AREG_CHILD_CHECK(static_cast<areg::EventDispatcher&>(dispatcher).post_event(event));
-        AREG_CHILD_CHECK(ready.wait_for(DEADLINE) == std::future_status::ready);
-        AREG_CHILD_CHECK(ready.get());
+        service_harness::check_listening(ROUTER);
     }
+
+    bool parse(const std::vector<std::string>& options)
+    {
+        return service_harness::parse(ROUTER, options);
+    }
+
+    struct PrivateConfig : service_harness::PrivateConfig
+    {
+        explicit PrivateConfig(bool enableLogging = false, uint32_t pairs = 0u)
+            : service_harness::PrivateConfig(ROUTER, enableLogging, pairs)
+        {
+        }
+    };
+
+    struct ConnectedPeer : service_harness::ConnectedPeer
+    {
+        explicit ConnectedPeer(uint16_t port)
+            : service_harness::ConnectedPeer(ROUTER, port)
+        {
+        }
+    };
 
     void send_to_router(ConnectedPeer& peer, areg::MessageEnvelope&& message)
     {
@@ -526,166 +89,6 @@ namespace
         AREG_CHILD_CHECK(received.result == static_cast<uint32_t>(reason));
         AREG_CHILD_CHECK(received.bufHeader.biUsed == 0u);
     }
-
-    void check_read_end(int count)
-    {
-#if defined(_WIN32)
-        AREG_CHILD_CHECK(count == 0);
-#else
-        AREG_CHILD_CHECK(count == 0 || errno == EIO);
-#endif
-    }
-
-    class ConsoleSession
-    {
-    public:
-        std::string output;
-
-        explicit ConsoleSession(const PrivateConfig& config)
-            : output()
-            , mInput{-1, -1}
-            , mOutput{-1, -1}
-            , mSavedInput(duplicate(descriptor(stdin)))
-            , mSavedOutput(duplicate(descriptor(stdout)))
-            , mMutex()
-            , mChanged()
-            , mEnded(false)
-            , mReader()
-            , mService()
-            , mResult()
-        {
-            AREG_CHILD_CHECK(mSavedInput >= 0 && mSavedOutput >= 0);
-            set_terminal();
-            make_pipe(mInput);
-            make_terminal(mOutput);
-            std::fflush(stdout);
-            redirect(mInput[0], descriptor(stdin));
-            redirect(mOutput[1], descriptor(stdout));
-            close_descriptor(mInput[0]);
-            close_descriptor(mOutput[1]);
-            mReader = std::thread([this]()
-            {
-                TerminalCapture terminal;
-                char buffer[4096];
-                int count;
-                while ((count = read_descriptor(mOutput[0], buffer, sizeof(buffer))) > 0)
-                {
-                    std::lock_guard<std::mutex> lock(mMutex);
-                    terminal.feed(buffer, static_cast<size_t>(count));
-                    output = terminal.transcript;
-                    mChanged.notify_all();
-                }
-                check_read_end(count);
-                std::lock_guard<std::mutex> lock(mMutex);
-                mEnded = true;
-                mChanged.notify_all();
-            });
-            AREG_CHILD_CHECK(parse({"--console", "--load=" + config.path}));
-            auto done = mResult.get_future();
-            mDone = std::move(done);
-            mService = std::thread([this]()
-            {
-                mResult.set_value(application().service_main(ServiceOption::CMD_Console, nullptr));
-            });
-            expect("to quit the application");
-            check_listening();
-        }
-
-        ~ConsoleSession()
-        {
-            AREG_CHILD_CHECK(!mService.joinable() && !mReader.joinable());
-        }
-
-        void silent_command()
-        {
-#if AREG_EXTENDED
-            command("--silent", "Switching to silent mode, no data rate output");
-#else
-            command("--silent", "Data rate display is always active in this mode.");
-#endif
-        }
-
-        void verbose_command()
-        {
-#if AREG_EXTENDED
-            check_console_verbose(false);
-            command("--verbose", "Switching to verbose mode to output data rate");
-#else
-            command("--verbose", "Data rate display is always active in this mode.");
-#endif
-        }
-
-        void expect(const std::string& token, size_t offset = 0u)
-        {
-            expect_any({token}, offset);
-        }
-
-        void expect_any(const std::vector<std::string>& tokens, size_t offset)
-        {
-            std::unique_lock<std::mutex> lock(mMutex);
-            const auto matched = [&]()
-            {
-                return std::any_of(tokens.begin(), tokens.end(), [&](const std::string& token)
-                    { return output.find(token, offset) != std::string::npos; });
-            };
-            AREG_CHILD_CHECK(mChanged.wait_for(lock, DEADLINE, [&]()
-            {
-                return matched() || mEnded;
-            }));
-            AREG_CHILD_CHECK(matched());
-        }
-
-        size_t mark()
-        {
-            std::lock_guard<std::mutex> lock(mMutex);
-            return output.size();
-        }
-
-        bool shown_since(const std::string& token, size_t offset)
-        {
-            std::lock_guard<std::mutex> lock(mMutex);
-            return output.find(token, offset) != std::string::npos;
-        }
-
-        size_t command(const std::string& line, const std::string& token)
-        {
-            const size_t offset{ mark() };
-            write_descriptor(mInput[1], line + "\n");
-            expect(token, offset);
-            return offset;
-        }
-
-        void quit()
-        {
-            command("-q", "Quit the application");
-            AREG_CHILD_CHECK(mDone.wait_for(DEADLINE) == std::future_status::ready);
-            AREG_CHILD_CHECK(mDone.get() == 0);
-            mService.join();
-            std::fflush(stdout);
-            redirect(mSavedOutput, descriptor(stdout));
-            redirect(mSavedInput, descriptor(stdin));
-            close_descriptor(mSavedOutput);
-            close_descriptor(mSavedInput);
-            close_descriptor(mInput[1]);
-            mReader.join();
-            close_descriptor(mOutput[0]);
-            AREG_CHILD_CHECK(application().state() == ServicePhase::Stopped);
-            AREG_CHILD_CHECK(!router_dispatcher().is_running());
-        }
-
-    private:
-        int mInput[2];
-        int mOutput[2];
-        int mSavedInput;
-        int mSavedOutput;
-        std::mutex mMutex;
-        std::condition_variable mChanged;
-        bool mEnded;
-        std::thread mReader;
-        std::thread mService;
-        std::promise<int32_t> mResult;
-        std::future<int32_t> mDone;
-    };
 }
 
 TEST(RouterApplicationTest, metadata_is_available_through_public_base_interface)
@@ -820,6 +223,18 @@ TEST(RouterApplicationTest, scrolled_terminal_publishes_no_old_rows)
 
     EXPECT_NE(std::string::npos, terminal.transcript.find("third-new-row", offset));
     EXPECT_EQ(std::string::npos, terminal.transcript.find("earlier-command-output", offset));
+}
+
+// Reproduces the defect: a row written again with the same text was not published, so a test waited for it until the deadline.
+TEST(RouterApplicationTest, terminal_publishes_a_row_written_again_with_the_same_text)
+{
+    TerminalCapture terminal;
+    const std::string row{ "\x1b[5;1Hsame-row-text" };
+    terminal.feed(row.data(), row.size());
+    const size_t offset{ terminal.transcript.size() };
+    terminal.feed(row.data(), row.size());
+
+    EXPECT_NE(std::string::npos, terminal.transcript.find("same-row-text", offset));
 }
 
 // Reproduces the defect: ncurses discarded the usage text at exit, so a failed command line printed nothing.

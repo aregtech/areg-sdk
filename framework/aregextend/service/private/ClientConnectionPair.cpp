@@ -14,6 +14,8 @@
  ************************************************************************/
 #include "aregextend/service/private/ClientConnectionPair.hpp"
 
+#include "areg/ipc/private/ConnectionDefs.hpp"
+
 namespace areg::ext {
 
 ClientConnectionPair::ClientConnectionPair( areg::RemoteMessageHandler & remoteService
@@ -31,18 +33,14 @@ ClientConnectionPair::ClientConnectionPair( areg::RemoteMessageHandler & remoteS
 
 bool ClientConnectionPair::start()
 {
-    if ( !mSendThread.start(areg::WAIT_INFINITE) || !mSendThread.wait_start(areg::WAIT_INFINITE) )
-        return false;
-
-    if ( !mReceiveThread.start(areg::WAIT_INFINITE) || !mReceiveThread.wait_start(areg::WAIT_INFINITE) )
+    if ( mSendThread.start(areg::WAIT_INFINITE) && areg::wait_io_thread_ready(mSendThread) &&
+         mReceiveThread.start(areg::WAIT_INFINITE) && areg::wait_io_thread_ready(mReceiveThread) )
     {
-        // Roll back: stop send thread before returning failure.
-        mSendThread.trigger_exit();
-        mSendThread.shutdown(areg::WAIT_INFINITE);
-        return false;
+        return true;
     }
 
-    return true;
+    stop();
+    return false;
 }
 
 void ClientConnectionPair::release_socket(ITEM_ID cookie, areg::SocketAccepted && socket)
