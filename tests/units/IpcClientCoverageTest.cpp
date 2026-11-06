@@ -234,7 +234,6 @@ namespace
         void on_connection_lost() override { mCommands.push_back(5u); }
         void on_service_exit() override { mCommands.push_back(6u); }
         void on_message_received(const areg::MessageEnvelope & message) override { mMessage = message; }
-        void on_message_send(const areg::MessageEnvelope &) override { ADD_FAILURE(); }
         void on_channel_connected(const ITEM_ID &) override { ADD_FAILURE(); }
     };
 }

@@ -251,7 +251,8 @@ namespace
             {
                 mRows.erase(mRows.begin());
                 mRows.emplace_back(120u, ' ');
-                mPublished.assign(40u, "");
+                mPublished.erase(mPublished.begin());
+                mPublished.emplace_back();
                 mRow = 39;
             }
             mColumn = 0;
@@ -503,6 +504,24 @@ namespace
         AREG_CHILD_CHECK(ready.get());
     }
 
+    void send_to_router(ConnectedPeer& peer, areg::MessageEnvelope&& message)
+    {
+        AREG_CHILD_CHECK(message.is_valid());
+        const areg::EventHeader* header{ message.header() };
+        const int32_t size{ static_cast<int32_t>(areg::wire_size(*header)) };
+        AREG_CHILD_CHECK(peer.socket.send(areg::wire_data(*header), size) == size);
+    }
+
+    void expect_registration(ConnectedPeer& peer, areg::RegistrationAction action, areg::DisconnectReason reason)
+    {
+        areg::EventHeader received{};
+        AREG_CHILD_CHECK(peer.socket.receive(areg::wire_header(received), areg::WIRE_HEADER_SIZE) == areg::WIRE_HEADER_SIZE);
+        AREG_CHILD_CHECK(received.messageId == static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyRegister));
+        AREG_CHILD_CHECK(received.callType == static_cast<uint8_t>(action));
+        AREG_CHILD_CHECK(received.result == static_cast<uint32_t>(reason));
+        AREG_CHILD_CHECK(received.bufHeader.biUsed == 0u);
+    }
+
     void check_read_end(int count)
     {
 #if defined(_WIN32)
@@ -615,6 +634,12 @@ namespace
         {
             std::lock_guard<std::mutex> lock(mMutex);
             return output.size();
+        }
+
+        bool shown_since(const std::string& token, size_t offset)
+        {
+            std::lock_guard<std::mutex> lock(mMutex);
+            return output.find(token, offset) != std::string::npos;
         }
 
         size_t command(const std::string& line, const std::string& token)
@@ -776,11 +801,76 @@ TEST(RouterApplicationTest, malformed_commands_report_errors_and_help_remains_us
     );
 }
 
-#if defined(_WIN32)
-TEST(RouterApplicationTest, DISABLED_connected_instance_is_rendered_and_pause_restart_close_and_reopen_host)
-#else
+// Reproduces the defect: a scrolled screen published its old rows again, so a test matched the text of an earlier command.
+TEST(RouterApplicationTest, scrolled_terminal_publishes_no_old_rows)
+{
+    TerminalCapture terminal;
+    const std::string filler(38u, '\n');
+    terminal.feed(filler.data(), filler.size());
+    const std::string marker{ "earlier-command-output\n" };
+    terminal.feed(marker.data(), marker.size());
+    const size_t offset{ terminal.transcript.size() };
+    const std::string scroll{ "first-new-row\nsecond-new-row\nthird-new-row\n" };
+    terminal.feed(scroll.data(), scroll.size());
+
+    EXPECT_NE(std::string::npos, terminal.transcript.find("third-new-row", offset));
+    EXPECT_EQ(std::string::npos, terminal.transcript.find("earlier-command-output", offset));
+}
+
+// Reproduces the defect: ncurses discarded the usage text at exit, so a failed command line printed nothing.
+TEST(RouterApplicationTest, command_line_help_is_plain_text)
+{
+    AREG_EXPECT_IN_CHILD(
+        set_terminal();
+        for (const char* option : {"--help", "--not-a-router-option"})
+        {
+            testing::internal::CaptureStdout();
+            const bool parsed{ parse({option}) };
+            const std::string usage{ testing::internal::GetCapturedStdout() };
+            AREG_CHILD_CHECK(!parsed);
+            AREG_CHILD_CHECK(usage.find("Usage of Areg Multi-target Message Router") != std::string::npos);
+            AREG_CHILD_CHECK(usage.find("--threads") != std::string::npos);
+            AREG_CHILD_CHECK(usage.find('\x1b') == std::string::npos);
+        }
+    );
+}
+
+// Reproduces the defect: the router took the cookie to disconnect from the payload, so any client could drop another one.
+TEST(RouterApplicationTest, disconnect_request_releases_only_its_sender)
+{
+    AREG_EXPECT_IN_CHILD(
+        PrivateConfig config;
+        ConsoleSession console(config);
+        ConnectedPeer owner(config.port);
+        ConnectedPeer other(config.port);
+        const ITEM_ID ownerCookie{ owner.reply.target };
+        const ITEM_ID otherCookie{ other.reply.target };
+
+        areg::StubAddress provider(0x4321u, areg::Version(1u, 2u, 3u), areg::ServiceType::Public, 0x1234u, 0x1111u, 0x2222u);
+        provider.set_cookie(ownerCookie);
+        provider.set_source(ownerCookie);
+        areg::ProxyAddress consumer(0x4321u, areg::Version(1u, 2u, 3u), areg::ServiceType::Public, 0x1234u, 0x3333u, 0x4444u);
+        consumer.set_cookie(otherCookie);
+        consumer.set_source(otherCookie);
+        send_to_router(owner, areg::router_register_service(provider, ownerCookie, areg::COOKIE_ROUTER));
+        send_to_router(other, areg::router_register_consumer(consumer, otherCookie, areg::COOKIE_ROUTER));
+        expect_registration(owner, areg::RegistrationAction::RegisterConsumer, areg::DisconnectReason::UndefinedReason);
+        expect_registration(other, areg::RegistrationAction::RegisterProvider, areg::DisconnectReason::UndefinedReason);
+
+        areg::MessageEnvelope bye{ areg::create_disconnect_request(otherCookie, areg::COOKIE_ROUTER) };
+        AREG_CHILD_CHECK(bye.header() != nullptr);
+        bye.header()->source = static_cast<uint32_t>(ownerCookie);
+        send_to_router(owner, std::move(bye));
+
+        expect_registration(other, areg::RegistrationAction::UnregisterProvider, areg::DisconnectReason::ProviderDisconnected);
+        const auto instances = application().communication_controller().instances();
+        areg::ConnectedInstance survivor;
+        AREG_CHILD_CHECK(instances.size() == 1u && instances.find(otherCookie, survivor));
+        console.quit();
+    );
+}
+
 TEST(RouterApplicationTest, connected_instance_is_rendered_and_pause_restart_close_and_reopen_host)
-#endif
 {
     AREG_EXPECT_IN_CHILD(
         PrivateConfig config(true);
@@ -846,7 +936,8 @@ TEST(RouterApplicationTest, connected_instance_is_rendered_and_pause_restart_clo
     );
 }
 
-TEST(RouterApplicationTest, DISABLED_thread_pair_display_matches_pool_configuration_and_pause_restart)
+// Reproduces the defect: the console read the pool list while the service thread filled it. It needs TSan to fail.
+TEST(RouterApplicationTest, thread_pair_display_matches_pool_configuration_and_pause_restart)
 {
     AREG_EXPECT_IN_CHILD(
         PrivateConfig config(false, 2u);
@@ -910,7 +1001,28 @@ TEST(RouterApplicationRateTest, service_helper_queries_exact_wire_totals_and_mut
     );
 }
 
-TEST(RouterApplicationRateTest, DISABLED_live_enabled_changes_are_thread_safe)
+// Reproduces the defect: the rate thread redrew the four rows that silent mode had cleared.
+TEST(RouterApplicationRateTest, silent_mode_outputs_no_rate_rows)
+{
+    AREG_EXPECT_IN_CHILD(
+        PrivateConfig config;
+        ConsoleSession console(config);
+        auto& helper = application().data_rate_helper();
+        AREG_CHILD_CHECK(helper.output_data_rate());
+        console.silent_command();
+        const size_t silent{ console.mark() };
+        AREG_CHILD_CHECK(helper.output_data_rate() == (AREG_EXTENDED == 0));
+        console.command("--threads", "Active per-client thread pairs: 0");
+        AREG_CHILD_CHECK((AREG_EXTENDED == 0) || !console.shown_since("Send data rate", silent));
+        console.verbose_command();
+        AREG_CHILD_CHECK(helper.output_data_rate());
+        console.quit();
+        config.check_unchanged();
+    );
+}
+
+// Reproduces the defect: the enabled flag was a plain bool that one thread wrote while another read it. It needs TSan to fail.
+TEST(RouterApplicationRateTest, live_enabled_changes_are_thread_safe)
 {
     AREG_EXPECT_IN_CHILD(
         areg::DataRateStats stats;

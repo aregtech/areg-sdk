@@ -19,6 +19,8 @@
  ************************************************************************/
 #include "aregextend/service/DataRateHelper.hpp"
 #include "aregextend/service/ServiceCommunicationBase.hpp"
+#include "aregextend/service/SystemServiceDefs.hpp"
+#include "aregextend/console/Console.hpp"
 
 namespace areg::ext {
 
@@ -50,6 +52,33 @@ void DataRateHelper::query_data_sent(uint64_t& sizeSent, uint32_t& msgSent) noex
 void DataRateHelper::query_data_received(uint64_t& sizeRecv, uint32_t& msgRecv) noexcept
 {
     mServer.query_data_received(sizeRecv, msgRecv);
+}
+
+bool DataRateHelper::output_data_rate()
+{
+    Console & console{ Console::instance() };
+    console.lock_console();
+
+    const bool verbose{ is_verbose() };
+    if (verbose)
+    {
+        uint64_t sizeSent{ 0u }, sizeRecv{ 0u };
+        uint32_t msgSent{ 0u }, msgRecv{ 0u };
+        query_data_sent(sizeSent, msgSent);
+        query_data_received(sizeRecv, msgRecv);
+
+        const DataRate sent{ DataRateHelper::convert_data_rate_literals(sizeSent) };
+        const DataRate recv{ DataRateHelper::convert_data_rate_literals(sizeRecv) };
+
+        console.output_msg(COORD_SEND_RATE, FORMAT_SEND_DATA.data(), static_cast<double>(sent.first), sent.second.c_str());
+        console.output_msg(COORD_RECV_RATE, FORMAT_RECV_DATA.data(), static_cast<double>(recv.first), recv.second.c_str());
+        console.output_msg(COORD_SEND_MSGS, FORMAT_SEND_MSGS.data(), msgSent);
+        console.output_msg(COORD_RECV_MSGS, FORMAT_RECV_MSGS.data(), msgRecv);
+        console.refresh_screen();
+    }
+
+    console.unlock_console();
+    return verbose;
 }
 
 DataRateHelper::DataRate DataRateHelper::convert_data_rate_literals(uint64_t sizeBytes)

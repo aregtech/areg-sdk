@@ -99,6 +99,15 @@ public:
     void query_data_received(uint64_t& sizeRecv, uint32_t& msgRecv) noexcept;
 
     /**
+     * \brief   Outputs on the console the four rows of the data rate of the last interval.
+     *          In silent mode it outputs nothing. The check and the output hold the console
+     *          lock, the same lock a change of the mode holds to clear the rows.
+     *
+     * \return  Returns true if the rows were output.
+     **/
+    bool output_data_rate();
+
+    /**
      * \brief   Converts byte size to a formatted DataRate with appropriate units.
      *
      * \param   sizeBytes       The size in bytes to convert.

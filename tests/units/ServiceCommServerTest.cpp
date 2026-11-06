@@ -150,10 +150,6 @@ namespace
         {
         }
 
-        void on_message_send(const areg::MessageEnvelope & /*msgSend*/) override
-        {
-        }
-
         void on_message_received(const areg::MessageEnvelope & msgReceived) override
         {
             if (msgReceived.message_id() == static_cast<uint32_t>(areg::FuncIdRange::SystemServiceDisconnect))

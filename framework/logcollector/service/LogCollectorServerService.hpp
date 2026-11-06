@@ -208,13 +208,6 @@ protected:
      **/
     void on_message_received(const areg::MessageEnvelope & msgReceived) final;
 
-    /**
-     * \brief   Triggered when a communication message needs to be sent.
-     *
-     * \param   msgSend     The communication message to send.
-     **/
-    void on_message_send(const areg::MessageEnvelope & msgSend) final;
-
 /************************************************************************/
 // TimerConsumer interface overrides.
 /************************************************************************/

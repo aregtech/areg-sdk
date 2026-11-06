@@ -70,7 +70,6 @@ namespace
         void on_connection_stopped() override { }
         void on_connection_lost() override { }
         void on_message_received(const areg::MessageEnvelope &) override { }
-        void on_message_send(const areg::MessageEnvelope &) override { }
     };
 
     //!< The service application that counts its console runs and configuration hooks.

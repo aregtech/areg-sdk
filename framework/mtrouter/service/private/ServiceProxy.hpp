@@ -195,25 +195,6 @@ public:
     bool stub_unavailable();
 
 //////////////////////////////////////////////////////////////////////////
-// Hidden methods
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   Sets the new service connection status. The call is ignored if proxy target is
-     *          unknown.
-     *
-     * \param   newStatus       New status of proxy to set.
-     **/
-    void _set_service_status( areg::ServiceConnectionState newStatus );
-    /**
-     * \brief   Sets servicing proxy address and the connection status.
-     *
-     * \param   addrProxy           The remote servicing proxy address to set.
-     * \param   connectStatus       The connection status to update.
-     **/
-    void _set_service( const areg::ProxyAddress & addrProxy, areg::ServiceConnectionState connectStatus = areg::ServiceConnectionState::Pending );
-
-//////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:

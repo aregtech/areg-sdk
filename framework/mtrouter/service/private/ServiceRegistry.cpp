@@ -277,7 +277,7 @@ void ServiceRegistry::service_sources(const ITEM_ID & cookie, areg::ArrayList<ar
         const areg::StubAddress & addrStub = svcStub.service_address();
         const ListServiceProxies & listProxies = value_at(posMap);
 
-        if (svcStub.is_valid() && (cookie == addrStub.source()))
+        if (svcStub.is_valid() && ((cookie == areg::COOKIE_ANY) || (cookie == addrStub.source())))
         {
             LOG_INFO("Found stub [ %s ] of source [ %u ]", addrStub.to_string().as_string(), static_cast<uint32_t>(cookie));
             stubSource.add(addrStub);
@@ -294,7 +294,7 @@ void ServiceRegistry::service_sources(const ITEM_ID & cookie, areg::ArrayList<ar
             const ServiceProxy & svcProxy   = listProxies.value_at(posList);
             const areg::ProxyAddress & addrProxy  = svcProxy.service_address();
 
-            if (svcProxy.is_valid() && (cookie == addrProxy.source()))
+            if (svcProxy.is_valid() && ((cookie == areg::COOKIE_ANY) || (cookie == addrProxy.source())))
             {
                 LOG_INFO("Found proxy [ %s ] of source [ %u ]", addrProxy.to_string().as_string(), static_cast<uint32_t>(cookie));
                 proxySources.add(addrProxy);

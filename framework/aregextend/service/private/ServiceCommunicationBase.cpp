@@ -356,7 +356,8 @@ bool ServiceCommunicationBase::start_connection()
         if ( mNumPairs > 0 )
         {
             ASSERT(mClientPairs.empty());
-            mClientPairs.reserve(mNumPairs);
+            ClientPairList pairs;
+            pairs.reserve(mNumPairs);
             bool poolOk = true;
 
             for ( uint32_t i = 0; i < mNumPairs; ++i )
@@ -382,23 +383,25 @@ bool ServiceCommunicationBase::start_connection()
                     break;
                 }
 
-                mClientPairs.push_back( std::move(pair) );
+                pairs.push_back( std::move(pair) );
             }
 
             if ( !poolOk )
             {
-                // Stop any pairs that started successfully, clear the list, and bail
-                for ( auto & p : mClientPairs )
+                // Stop any pairs that started successfully and bail
+                for ( auto & p : pairs )
                 {
                     if ( p ) p->stop();
                 }
 
-                mClientPairs.clear();
                 mServerConnection.close_socket();
 
                 mTimerConnect.start_timer(areg::DEFAULT_RETRY_CONNECT_TIMEOUT, static_cast<DispatcherThread &>(self()), 1);
                 return false;
             }
+
+            Lock lock(mLock);
+            mClientPairs.swap(pairs);
         }
 
         if ( start_send_thread( ) && start_receive_thread( ) )
@@ -408,12 +411,17 @@ bool ServiceCommunicationBase::start_connection()
         else
         {
             // Stop any pool pairs that were already started.
-            for ( auto & p : mClientPairs )
+            ClientPairList pairs;
+            {
+                Lock lock(mLock);
+                pairs.swap(mClientPairs);
+            }
+
+            for ( auto & p : pairs )
             {
                 if ( p ) p->stop();
             }
 
-            mClientPairs.clear();
             mServerConnection.close_socket( );
         }
     }

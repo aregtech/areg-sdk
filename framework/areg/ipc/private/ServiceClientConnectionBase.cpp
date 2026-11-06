@@ -483,10 +483,6 @@ void ServiceClientConnectionBase::on_message_received( const MessageEnvelope & /
 {
 }
 
-void ServiceClientConnectionBase::on_message_send( const MessageEnvelope & /* msgSend */ )
-{
-}
-
 void ServiceClientConnectionBase::on_channel_connected(const ITEM_ID& cookie)
 {
     Lock lock(mLock);

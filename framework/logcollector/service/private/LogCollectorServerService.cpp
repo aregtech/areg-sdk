@@ -357,23 +357,6 @@ void LogCollectorServerService::process_received_message(areg::MessageEnvelope &
     }
 }
 
-void LogCollectorServerService::on_message_send(const areg::MessageEnvelope &msgSend)
-{
-    areg::FuncIdRange msgId = static_cast<areg::FuncIdRange>( msgSend.message_id() );
-
-    if ( areg::is_executable_id( static_cast<uint32_t>(msgId)) )
-    {
-        if ( msgSend.target( ) != static_cast<uint32_t>(areg::TARGET_UNKNOWN) )
-        {
-            send_message( msgSend );
-        }
-    }
-    else
-    {
-        ASSERT(false);
-    }
-}
-
 void LogCollectorServerService::on_service_channel_connected(const areg::Channel & /* channel */)
 {
 

@@ -781,6 +781,7 @@ inline areg::MapInstances ServiceCommunicationBase::instances() const
 
 inline uint32_t ServiceCommunicationBase::active_client_pair_count() const noexcept
 {
+    areg::Lock lock(mLock);
     return static_cast<uint32_t>(mClientPairs.size());
 }
 

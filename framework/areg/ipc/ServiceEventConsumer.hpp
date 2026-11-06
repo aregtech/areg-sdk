@@ -102,13 +102,6 @@ public:
     virtual void on_message_received(const MessageEnvelope& msgReceived) = 0;
 
     /**
-     * \brief   Triggered to send a communication message.
-     *
-     * \param   msgSend     The communication message to send.
-     **/
-    virtual void on_message_send(const MessageEnvelope& msgSend) = 0;
-
-    /**
      * \brief   Triggered to inform of channel connection.
      *
      * \param   cookie      Channel connection cookie.

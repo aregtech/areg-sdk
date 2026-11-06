@@ -493,7 +493,8 @@ TEST(RouterServiceRegistryTest, consumer_first_lifecycle)
     ASSERT_NO_FATAL_FAILURE(registry_lifecycle(false));
 }
 
-TEST(RouterServiceRegistryTest, DISABLED_source_wildcard_returns_all_endpoints)
+// Reproduces the defect: the wildcard was compared with every source, so it matched none of them.
+TEST(RouterServiceRegistryTest, source_wildcard_returns_all_endpoints)
 {
     ServiceRegistry registry;
     areg::StubAddress provider{ provider_address() };
@@ -513,4 +514,10 @@ TEST(RouterServiceRegistryTest, DISABLED_source_wildcard_returns_all_endpoints)
     ASSERT_EQ(1u, consumers.size());
     EXPECT_EQ(0x200u, providers[0].source());
     EXPECT_EQ(0x201u, consumers[0].source());
+
+    areg::ArrayList<areg::StubAddress> exactProviders;
+    areg::ArrayList<areg::ProxyAddress> exactConsumers;
+    registry.service_sources(0x200u, exactProviders, exactConsumers);
+    EXPECT_EQ(1u, exactProviders.size());
+    EXPECT_EQ(0u, exactConsumers.size());
 }

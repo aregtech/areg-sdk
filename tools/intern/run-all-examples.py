@@ -220,16 +220,16 @@ SCREEN_MEASURES = {'datarate'}
 
 
 SCENARIOS = [
-    {'name': 'DISABLED_mtrouter_help', 'tier': 'coverage', 'router': False, 'disabled': True,
+    {'name': 'mtrouter_help', 'tier': 'coverage', 'router': False,
      'router_case': 'help', 'procs': [proc('mtrouter', args=['--help'])]},
-    {'name': 'DISABLED_mtrouter_invalid_option', 'tier': 'coverage', 'router': False, 'disabled': True,
+    {'name': 'mtrouter_invalid_option', 'tier': 'coverage', 'router': False,
      'router_case': 'invalid', 'procs': [proc('mtrouter', args=['--not-a-router-option'])]},
-    {'name': 'DISABLED_mtrouter_save_unsupported', 'tier': 'coverage', 'router': False, 'disabled': True,
+    {'name': 'mtrouter_save_unsupported', 'tier': 'coverage', 'router': False,
      'router_case': 'save', 'procs': [proc('mtrouter')]},
     {'name': 'mtrouter_console_commands', 'tier': 'coverage', 'router': False,
      'router_case': 'console', 'procs': [proc('mtrouter', args=['--console'])]},
-    {'name': 'DISABLED_mtrouter_extended_silent_rows_stay_clear', 'tier': 'coverage',
-     'router': False, 'disabled': True, 'router_case': 'silent',
+    {'name': 'mtrouter_extended_silent_rows_stay_clear', 'tier': 'coverage',
+     'router': False, 'router_case': 'silent',
      'procs': [proc('mtrouter', args=['--console'])]},
 
     # -- single process, no router ------------------------------------------
@@ -1521,10 +1521,6 @@ def run_scenario(scenario, bin_dir, out_dir, timeout, router_bin, keep_logs, use
                  round_index=0, rounds=1):
     result = Result(scenario['name'])
     started = time.time()
-    if scenario.get('disabled'):
-        result.skip('disabled reproduction; select its exact name with --only to enable')
-        return result
-
     paths = []
     for entry in scenario['procs']:
         path = find_binary(bin_dir, entry['bin'])
@@ -1973,7 +1969,7 @@ def main():
         selection = selection + [s for s in SCENARIOS if s['tier'] == 'perf']
     if args.only:
         wanted = {n.strip() for n in args.only.split(',') if n.strip()}
-        selection = [dict(s, disabled=False) for s in SCENARIOS if s['name'] in wanted]
+        selection = [s for s in SCENARIOS if s['name'] in wanted]
         missing = wanted - {s['name'] for s in selection}
         if missing:
             print('unknown scenario: %s' % ', '.join(sorted(missing)), file=sys.stderr)

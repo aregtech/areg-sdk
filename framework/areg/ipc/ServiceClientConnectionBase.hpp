@@ -335,13 +335,6 @@ protected:
     void on_message_received(const MessageEnvelope& msgReceived) override;
 
     /**
-     * \brief   Called when communication message needs to be sent.
-     *
-     * \param   msgSend     The communication message to send.
-     **/
-    void on_message_send(const MessageEnvelope& msgSend) override;
-
-    /**
      * \brief   Called to notify that a channel connection is established.
      *
      * \param   cookie      The channel connection cookie.

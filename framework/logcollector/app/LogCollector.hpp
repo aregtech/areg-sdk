@@ -254,11 +254,6 @@ private:
     inline areg::MapInstances connected_instances() const;
 
     /**
-     * \brief   Returns a reference to this LogCollector instance.
-     **/
-    inline LogCollector& self();
-
-    /**
      * \brief   Temporarily switches off the own logs of the log collector: the master logging switch
      *          and the remote target. The collected logs are not affected.
      *
@@ -408,11 +403,6 @@ private:
 inline areg::MapInstances LogCollector::connected_instances() const
 {
     return mServiceServer.instances( );
-}
-
-inline LogCollector & LogCollector::self()
-{
-    return (*this);
 }
 
 #endif  // AREG_LOGCOLLECTOR_APP_LOGCOLLECTOR_HPP

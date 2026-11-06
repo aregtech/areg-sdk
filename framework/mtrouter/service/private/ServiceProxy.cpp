@@ -102,25 +102,6 @@ bool ServiceProxy::operator == ( const areg::StubAddress & addrStub ) const
     return static_cast<const areg::ServiceAddress &>(mProxyAddress) == static_cast<const areg::ServiceAddress &>(addrStub);
 }
 
-void ServiceProxy::_set_service_status( areg::ServiceConnectionState newStatus )
-{
-    mConnectStatus = areg::ServiceConnectionState::Unknown;
-    if ( mProxyAddress.is_valid() )
-    {
-        mConnectStatus = newStatus;
-        if ( newStatus == areg::ServiceConnectionState::Connected )
-        {
-            mConnectStatus = mProxyAddress.target( ) != areg::TARGET_UNKNOWN ? areg::ServiceConnectionState::Connected : areg::ServiceConnectionState::Pending;
-        }
-    }
-}
-
-void ServiceProxy::_set_service( const areg::ProxyAddress & addrProxy, areg::ServiceConnectionState connectStatus /*= areg::ServiceConnectionState::Pending*/ )
-{
-    mProxyAddress   = addrProxy;
-    _set_service_status(connectStatus);
-}
-
 bool ServiceProxy::stub_available( const areg::StubAddress & addrStub )
 {
     mConnectStatus = areg::ServiceConnectionState::Unknown;

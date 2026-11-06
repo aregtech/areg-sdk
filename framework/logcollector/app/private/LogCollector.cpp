@@ -194,6 +194,7 @@ void LogCollector::run_console_io()
     console.set_cursor_cur_position({ areg::ext::COORD_USER_INPUT.posX + static_cast<int32_t>(areg::ext::FORMAT_WAIT_QUIT.size()),
                                       areg::ext::COORD_USER_INPUT.posY });
     console.refresh_screen();
+    data_rate_helper().set_verbose(true);
 
     // refresh all four stat rows every second.
     std::mutex rate_mtx;
@@ -202,10 +203,6 @@ void LogCollector::run_console_io()
     std::thread rate_thread([&]()
     {
         DataRateHelper& helper = data_rate_helper();
-        helper.set_verbose(true);
-        uint64_t sizeSent{ 0u }, sizeRecv{ 0u };
-        uint32_t msgSent{ 0u }, msgRecv{ 0u };
-
         std::unique_lock<std::mutex> lock(rate_mtx);
         while (rate_running)
         {
@@ -214,17 +211,7 @@ void LogCollector::run_console_io()
                 break;
 
             lock.unlock();
-            helper.query_data_sent(sizeSent, msgSent);
-            helper.query_data_received(sizeRecv, msgRecv);
-
-            areg::ext::DataRateHelper::DataRate sent = areg::ext::DataRateHelper::convert_data_rate_literals(sizeSent);
-            areg::ext::DataRateHelper::DataRate recv = areg::ext::DataRateHelper::convert_data_rate_literals(sizeRecv);
-
-            console.output_msg(areg::ext::COORD_SEND_RATE, areg::ext::FORMAT_SEND_DATA.data(), static_cast<double>(sent.first), sent.second.c_str());
-            console.output_msg(areg::ext::COORD_RECV_RATE, areg::ext::FORMAT_RECV_DATA.data(), static_cast<double>(recv.first), recv.second.c_str());
-            console.output_msg(areg::ext::COORD_SEND_MSGS, areg::ext::FORMAT_SEND_MSGS.data(), msgSent);
-            console.output_msg(areg::ext::COORD_RECV_MSGS, areg::ext::FORMAT_RECV_MSGS.data(), msgRecv);
-            console.refresh_screen();
+            helper.output_data_rate();
             lock.lock();
         }
     });
@@ -666,10 +653,6 @@ void LogCollector::_set_verbose_mode( bool makeVerbose )
     }
 
     console.unlock_console( );
-
-
-    static constexpr std::string_view _unsupported{"This option is available only with extended features"};
-    printf( "%s\n", _unsupported.data( ) );
 }
 
 #else   // !AREG_EXTENDED
