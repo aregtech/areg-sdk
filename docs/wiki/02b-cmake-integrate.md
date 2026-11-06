@@ -1,4 +1,4 @@
-﻿# Integrating Areg Framework with CMake
+# Integrating Areg Framework with CMake
 
 This guide covers integrating Areg Framework into your project using CMake on Windows and Linux systems.
 

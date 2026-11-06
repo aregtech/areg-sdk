@@ -1,4 +1,4 @@
-﻿# 19_pubfsm
+# 19_pubfsm
 
 🧵🚀 **Type:** Multithreading + IPC
 

@@ -228,7 +228,7 @@ public:
      * \param   role        The recorder writes the logs: it sets the write mode of the file,
      *                      prepares the insert statement and copies the write-ahead log in the
      *                      background. A viewer does none of that and may still write markers.
-     * \return  Returns true if succeeded to connect. Otherwise, returns false.
+     * \return  Returns true if the file is a log database, or empty or missing for a recorder.
      **/
     bool connect(const String& dbPath, areg::DatabaseRole role) final;
 
@@ -968,9 +968,10 @@ private:
      *
      * \param   dbPath      The relative or absolute path the database file.
      * \param   role        What the connection does with the database.
-     * \return  Returns true if succeeded to open or create the database file.
+     * \param[out] outIsEmpty  On output true if the database has no schema objects.
+     * \return  Returns true if the file is a log database, or an empty one opened by a recorder.
      **/
-    inline bool _open(const areg::String& dbPath, areg::DatabaseRole role);
+    inline bool _open(const areg::String& dbPath, areg::DatabaseRole role, bool& outIsEmpty);
 
     /**
      * \brief   Inserts a marker on an existing log row. Called with mLock taken.

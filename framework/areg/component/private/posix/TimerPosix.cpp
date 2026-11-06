@@ -146,21 +146,6 @@ TimerPosix::~TimerPosix()
     _destroy_timer();
 }
 
-bool TimerPosix::create_timer(FuncPosixTimerRoutine funcTimer) noexcept
-{
-    areg::Lock lock(mLock);
-#ifdef __APPLE__
-    return ((mTimerQueue != nullptr) && (mTimerCallback != nullptr)) ||
-           ((funcTimer != nullptr) && _create_timer(funcTimer));
-#elif defined(__linux__)
-    // funcTimer is unused on Linux -- timerfd is polled via epoll, no callback needed.
-    return (mTimerFd >= 0) || _create_timer(funcTimer);
-#else   // Generic POSIX
-    // funcTimer is unused: the manager loop owns the deadlines and fires them itself.
-    return _create_timer(funcTimer);
-#endif  // __APPLE__ / __linux__ / POSIX
-}
-
 bool TimerPosix::start_timer(TimerBase& context, id_type contextId, [[maybe_unused]] FuncPosixTimerRoutine funcTimer) noexcept
 {
     areg::Lock lock(mLock);
@@ -184,31 +169,6 @@ bool TimerPosix::start_timer(TimerBase& context, id_type contextId, [[maybe_unus
     return (mTimerFd >= 0) && _start_timer();
 #else   // Generic POSIX
     return _start_timer();
-#endif  // __APPLE__ / __linux__ / POSIX
-}
-
-bool TimerPosix::restart_timer() noexcept
-{
-    areg::Lock lock(mLock);
-    return _start_timer();
-}
-
-bool TimerPosix::pause_timer() noexcept
-{
-    areg::Lock lock(mLock);
-
-    if (_is_started())
-    {
-        _stop_timer();
-    }
-
-#ifdef __APPLE__
-    return (mTimerQueue != nullptr);
-#elif defined(__linux__)
-    return (mTimerFd >= 0);
-#else   // Generic POSIX
-    // No OS timer object: the timer stays usable and can be armed again.
-    return true;
 #endif  // __APPLE__ / __linux__ / POSIX
 }
 

@@ -13,6 +13,7 @@ set(AREG_FAULT_INJECT_LIB  "areg-fault-inject")
 set(AREG_FAULT_INJECT_TEST "areg-fault-inject-test")
 
 add_library(${AREG_FAULT_INJECT_LIB} SHARED "${AREG_TESTS_DIR}/fault-inject/fault_inject.cpp")
+target_compile_options(${AREG_FAULT_INJECT_LIB} PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}")
 target_include_directories(${AREG_FAULT_INJECT_LIB} PRIVATE "${AREG_TESTS_DIR}")
 target_compile_definitions(${AREG_FAULT_INJECT_LIB} PRIVATE AREG_FAULT_EXPORTS)
 # Links with the target options of the compile, for example -m32.
@@ -23,6 +24,10 @@ else()
     # The replaced open() must not meet the inline wrapper of the fortified C headers.
     target_compile_options(${AREG_FAULT_INJECT_LIB} PRIVATE -U_FORTIFY_SOURCE -fPIC)
     target_link_libraries(${AREG_FAULT_INJECT_LIB} PRIVATE ${CMAKE_DL_LIBS})
+endif()
+if (APPLE)
+    # The thread sanitizer runtime calls the replaced open() while it initializes, so nothing here is instrumented.
+    target_compile_options(${AREG_FAULT_INJECT_LIB} PRIVATE -fno-sanitize=thread)
 endif()
 
 addExecutableEx(${AREG_FAULT_INJECT_TEST} ""

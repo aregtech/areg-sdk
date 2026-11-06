@@ -97,18 +97,18 @@ EventQueue::EventQueue( areg::NullTag ) noexcept
 
 EventQueue::~EventQueue()
 {
-#if defined(__GNUC__)
+#if defined(__GNUC__) || defined(__clang__)
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Winvalid-offsetof"
-#endif  // defined(__GNUC__)
+#endif  // defined(__GNUC__) || defined(__clang__)
     // mWaiter and mConsumerId live in the padding of the first line; the cursors keep their offsets.
     static_assert(offsetof(EventQueue, mWaiter) + sizeof(mWaiter) <= AREG_MPSC_CACHE_LINE_SIZE, "mWaiter must stay in the first cache line");
     static_assert(offsetof(EventQueue, mConsumerId) + sizeof(mConsumerId) <= AREG_MPSC_CACHE_LINE_SIZE, "mConsumerId must stay in the first cache line");
     static_assert(offsetof(EventQueue, mEnqueuePos) == AREG_MPSC_CACHE_LINE_SIZE, "mEnqueuePos must start the second cache line");
     static_assert(offsetof(EventQueue, mDequeuePos) == 2u * AREG_MPSC_CACHE_LINE_SIZE, "mDequeuePos must start the third cache line");
-#if defined(__GNUC__)
+#if defined(__GNUC__) || defined(__clang__)
     #pragma GCC diagnostic pop
-#endif  // defined(__GNUC__)
+#endif  // defined(__GNUC__) || defined(__clang__)
 
     release_lanes();
 }
@@ -594,22 +594,43 @@ void EventQueue::remove_events(const uint32_t eventClassId) noexcept
         }
     }
 
-    // Drain the ring, keep non-matching events
-    std::vector<Event> kept;
-    for (;;)
+    // Compact the published events toward the tail, so that the kept ones never leave the ring.
+    const size_t head{ mDequeuePos.load(std::memory_order_relaxed) };
+    size_t end{ head };
+    while (ring[end & mMask].sequence.load(std::memory_order_acquire) == (end + 1u))
     {
-        Event evt;
-        if (!_ring_try_dequeue(ring, evt))
-            break;
-
-        if (evt.event_id() != eventClassId)
-            kept.push_back(std::move(evt));
+        ++end;
     }
 
-    for (Event& e : kept)
+    size_t keep{ end };
+    for (size_t pos = end; pos != head; )
     {
-        VERIFY(_ring_try_enqueue(ring, e));
+        Cell& cell{ ring[--pos & mMask] };
+        if (cell.event.event_id() == eventClassId)
+        {
+            cell.event = Event();
+        }
+        else if (--keep != pos)
+        {
+            Cell& target{ ring[keep & mMask] };
+            target.event = std::move(cell.event);
+#if defined(AREG_LATENCY_TRACE) && (AREG_LATENCY_TRACE)
+            target.lt_ns = cell.lt_ns;
+#endif
+        }
     }
+
+    if (keep == head)
+        return;
+
+    for (size_t pos = head; pos != keep; ++pos)
+    {
+        ring[pos & mMask].sequence.store(pos + mMask + 1u, std::memory_order_release);
+    }
+
+    mDequeuePos.store(keep, std::memory_order_relaxed);
+    if (mProducersWaiting.load(std::memory_order_relaxed) != 0u)
+        mSlotEvent.set_signaled();
 }
 
 void EventQueue::remove_all_events() noexcept

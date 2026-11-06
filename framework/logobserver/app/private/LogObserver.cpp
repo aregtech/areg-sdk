@@ -391,6 +391,8 @@ void LogObserver::log_main( int32_t argc, char ** argv )
         , &LogObserver::callback_log_update_scopes
         , nullptr       // set nullptr to receive messages via `callback_log_message_ex` callback
         , &LogObserver::callback_log_message_ex
+        , nullptr
+        , nullptr
     };
 
     areg::Application::set_working_directory(nullptr);

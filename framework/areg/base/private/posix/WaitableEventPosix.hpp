@@ -59,11 +59,6 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Returns the reset mode of the event, either manual-reset or auto-reset.
-     **/
-    inline areg::os::ResetMode  reset_info() const noexcept;
-
-    /**
      * \brief   Resets the event to non-signaled state, of a manual-reset or an auto-reset event.
      *
      * \return  Returns true if operation succeeded; false if the event is not valid.
@@ -144,11 +139,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // WaitableEventPosix class inline implementation
 //////////////////////////////////////////////////////////////////////////
-
-inline areg::os::ResetMode WaitableEventPosix::reset_info() const noexcept
-{
-    return mEventReset;
-}
 
 inline bool WaitableEventPosix::reset() noexcept
 {

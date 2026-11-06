@@ -22,11 +22,23 @@
 
 #include "areg/appbase/Application.hpp"
 #include "areg/base/File.hpp"
+#include "areg/base/MessageEnvelope.hpp"
+#include "areg/base/SharedBuffer.hpp"
+#include "areg/base/SocketClient.hpp"
+#include "areg/base/SocketMultiplexer.hpp"
+#include "areg/base/SocketServer.hpp"
 #include "areg/base/SocketDefs.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/base/ThreadConsumer.hpp"
 
 #include <errno.h>
+
+#if defined(__linux__)
+    #include <arpa/inet.h>
+    #include <netinet/in.h>
+    #include <sys/socket.h>
+    #include <unistd.h>
+#endif  // defined(__linux__)
 
 namespace
 {
@@ -128,3 +140,581 @@ TEST( FaultInjectTest, router_service_start_fails_when_the_process_list_and_the_
 }
 
 #endif  // !defined(_WIN32)
+
+#if defined(__linux__)
+
+namespace
+{
+    //!< A listening TCP socket on the loopback address with a port chosen by the system.
+    struct Listener
+    {
+        int         handle  { -1 };
+        uint16_t    port    { 0u };
+
+        bool open( )
+        {
+            handle = ::socket( AF_INET, SOCK_STREAM, 0 );
+            if ( handle < 0 )
+                return false;
+
+            sockaddr_in addr{ };
+            addr.sin_family      = AF_INET;
+            addr.sin_addr.s_addr = htonl( INADDR_LOOPBACK );
+            addr.sin_port        = 0;
+            socklen_t len{ sizeof( addr ) };
+            if ( ( ::bind( handle, reinterpret_cast<sockaddr *>(&addr), sizeof( addr ) ) != 0 )
+              || ( ::listen( handle, 4 ) != 0 )
+              || ( ::getsockname( handle, reinterpret_cast<sockaddr *>(&addr), &len ) != 0 ) )
+            {
+                return false;
+            }
+
+            port = ntohs( addr.sin_port );
+            return true;
+        }
+
+        ~Listener( )
+        {
+            if ( handle >= 0 )
+                ::close( handle );
+        }
+    };
+
+    //!< Connects a client to the listener and accepts it. The sockets are plain descriptors.
+    bool connect_pair( Listener & listener, SOCKETHANDLE & client, SOCKETHANDLE & server )
+    {
+        client = areg::socket_create( );
+        if ( areg::is_valid_socket( client ) == false )
+            return false;
+
+        sockaddr_in addr{ };
+        addr.sin_family      = AF_INET;
+        addr.sin_addr.s_addr = htonl( INADDR_LOOPBACK );
+        addr.sin_port        = htons( listener.port );
+        if ( ::connect( static_cast<int>(client), reinterpret_cast<sockaddr *>(&addr), sizeof( addr ) ) != 0 )
+            return false;
+
+        const int accepted{ ::accept( listener.handle, nullptr, nullptr ) };
+        server = static_cast<SOCKETHANDLE>(accepted);
+        return accepted >= 0;
+    }
+}
+
+TEST( FaultInjectTest, client_connect_fails_and_a_new_client_connects_when_the_system_refuses )
+{
+    AREG_EXPECT_IN_CHILD(
+        Listener listener;
+        AREG_CHILD_CHECK( listener.open( ) );
+        AREG_CHILD_CHECK( areg::socket_initialize( ) );
+
+        areg_fault::FaultScope faults;
+        areg::SocketClient refused;
+        AREG_CHILD_CHECK( refused.create( "127.0.0.1", listener.port ) );
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::SocketConnect, ECONNREFUSED ) );
+        AREG_CHILD_CHECK( refused.connect_to( ) == false );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::SocketConnect ) == 1u && NOT_REPLACED );
+        refused.close( );
+
+        areg::SocketClient client;
+        AREG_CHILD_CHECK( client.create( "127.0.0.1", listener.port ) );
+        AREG_CHILD_CHECK( client.connect_to( ) );
+        client.close( );
+        areg::socket_release( );
+    );
+}
+
+TEST( FaultInjectTest, send_data_reports_an_error_and_a_later_send_succeeds_when_the_system_refuses )
+{
+    AREG_EXPECT_IN_CHILD(
+        Listener listener;
+        AREG_CHILD_CHECK( listener.open( ) );
+        AREG_CHILD_CHECK( areg::socket_initialize( ) );
+        SOCKETHANDLE client{ areg::InvalidSocketHandle };
+        SOCKETHANDLE server{ areg::InvalidSocketHandle };
+        AREG_CHILD_CHECK( connect_pair( listener, client, server ) );
+
+        areg_fault::FaultScope faults;
+        uint8_t data[4]{ };
+        data[0] = 1u;
+        data[3] = 4u;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::SocketSend, ECONNRESET ) );
+        AREG_CHILD_CHECK( areg::send_data( client, data, sizeof( data ) ) < 0 );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::SocketSend ) == 1u && NOT_REPLACED );
+
+        AREG_CHILD_CHECK( areg::send_data( client, data, sizeof( data ) ) == static_cast<int32_t>(sizeof( data )) );
+        uint8_t received[4]{ };
+        AREG_CHILD_CHECK( areg::receive_data( server, received, sizeof( received ) ) == static_cast<int32_t>(sizeof( received )) );
+        AREG_CHILD_CHECK( received[0] == 1u && received[3] == 4u );
+
+        areg::socket_close( client );
+        areg::socket_close( server );
+        areg::socket_release( );
+    );
+}
+
+TEST( FaultInjectTest, receive_data_reports_an_error_and_the_next_receive_gets_the_data_when_the_system_refuses )
+{
+    AREG_EXPECT_IN_CHILD(
+        Listener listener;
+        AREG_CHILD_CHECK( listener.open( ) );
+        AREG_CHILD_CHECK( areg::socket_initialize( ) );
+        SOCKETHANDLE client{ areg::InvalidSocketHandle };
+        SOCKETHANDLE server{ areg::InvalidSocketHandle };
+        AREG_CHILD_CHECK( connect_pair( listener, client, server ) );
+
+        uint8_t data[4]{ };
+        data[0] = 5u;
+        data[3] = 8u;
+        AREG_CHILD_CHECK( areg::send_data( client, data, sizeof( data ) ) == static_cast<int32_t>(sizeof( data )) );
+
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::SocketRecv, ECONNRESET ) );
+        uint8_t received[4]{ };
+        AREG_CHILD_CHECK( areg::receive_data( server, received, sizeof( received ) ) < 0 );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::SocketRecv ) == 1u && NOT_REPLACED );
+
+        AREG_CHILD_CHECK( areg::receive_data( server, received, sizeof( received ) ) == static_cast<int32_t>(sizeof( received )) );
+        AREG_CHILD_CHECK( received[0] == 5u && received[3] == 8u );
+
+        areg::socket_close( client );
+        areg::socket_close( server );
+        areg::socket_release( );
+    );
+}
+
+TEST( FaultInjectTest, server_create_fails_and_a_new_server_binds_when_bind_is_refused )
+{
+    AREG_EXPECT_IN_CHILD(
+        uint16_t port{ 0u };
+        {
+            Listener probe;
+            AREG_CHILD_CHECK( probe.open( ) );
+            port = probe.port;
+        }
+
+        AREG_CHILD_CHECK( areg::socket_initialize( ) );
+        areg_fault::FaultScope faults;
+        areg::SocketServer refused;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::SocketBind, EADDRINUSE ) );
+        AREG_CHILD_CHECK( refused.create( "127.0.0.1", port ) == false );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::SocketBind ) == 1u && NOT_REPLACED );
+        AREG_CHILD_CHECK( refused.is_valid( ) == false );
+
+        areg::SocketServer server;
+        AREG_CHILD_CHECK( server.create( "127.0.0.1", port ) );
+        server.close( );
+        areg::socket_release( );
+    );
+}
+
+TEST( FaultInjectTest, server_listen_fails_and_a_second_listen_succeeds_when_listen_is_refused )
+{
+    AREG_EXPECT_IN_CHILD(
+        uint16_t port{ 0u };
+        {
+            Listener probe;
+            AREG_CHILD_CHECK( probe.open( ) );
+            port = probe.port;
+        }
+
+        AREG_CHILD_CHECK( areg::socket_initialize( ) );
+        areg_fault::FaultScope faults;
+        areg::SocketServer server;
+        AREG_CHILD_CHECK( server.create( "127.0.0.1", port ) );
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::SocketListen, EADDRINUSE ) );
+        AREG_CHILD_CHECK( server.listen( 4 ) == false );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::SocketListen ) == 1u && NOT_REPLACED );
+        AREG_CHILD_CHECK( server.listen( 4 ) );
+        server.close( );
+        areg::socket_release( );
+    );
+}
+
+TEST( FaultInjectTest, multiplexer_register_fails_and_leaves_the_socket_unregistered_when_epoll_ctl_is_refused )
+{
+    AREG_EXPECT_IN_CHILD(
+        AREG_CHILD_CHECK( areg::socket_initialize( ) );
+        areg::SocketMultiplexer multiplexer;
+        const SOCKETHANDLE handle{ areg::socket_create( ) };
+        AREG_CHILD_CHECK( areg::is_valid_socket( handle ) );
+
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::EpollCtl, ENOMEM ) );
+        AREG_CHILD_CHECK( multiplexer.register_socket( handle, false ) == false );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::EpollCtl ) == 1u && NOT_REPLACED );
+        AREG_CHILD_CHECK( multiplexer.is_registered( handle ) == false );
+
+        AREG_CHILD_CHECK( multiplexer.register_socket( handle, false ) );
+        AREG_CHILD_CHECK( multiplexer.is_registered( handle ) );
+        multiplexer.unregister_socket( handle );
+        areg::socket_close( handle );
+        areg::socket_release( );
+    );
+}
+
+TEST( FaultInjectTest, file_write_reports_no_bytes_and_a_later_write_succeeds_when_write_fails )
+{
+    AREG_EXPECT_IN_CHILD(
+        constexpr uint32_t mode{ static_cast<uint32_t>(areg::File::OpenMode::Write) | static_cast<uint32_t>(areg::File::OpenMode::Create) };
+        areg::File file;
+        AREG_CHILD_CHECK( file.open( "fault_inject_write.txt", mode ) );
+        uint8_t data[4]{ };
+        data[0] = 1u;
+
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::FileWrite, ENOSPC ) );
+        AREG_CHILD_CHECK( file.write( data, sizeof( data ) ) == 0 );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::FileWrite ) == 1u && NOT_REPLACED );
+        AREG_CHILD_CHECK( file.write( data, sizeof( data ) ) == static_cast<int32_t>(sizeof( data )) );
+        file.close( );
+        static_cast<void>(areg::File::delete_file( "fault_inject_write.txt" ));
+    );
+}
+
+TEST( FaultInjectTest, file_read_reports_no_bytes_and_a_later_read_returns_the_data_when_read_fails )
+{
+    AREG_EXPECT_IN_CHILD(
+        constexpr uint32_t wmode{ static_cast<uint32_t>(areg::File::OpenMode::Write) | static_cast<uint32_t>(areg::File::OpenMode::Create) };
+        constexpr uint32_t rmode{ static_cast<uint32_t>(areg::File::OpenMode::Read) };
+        uint8_t data[4]{ };
+        data[0] = 3u;
+        data[3] = 6u;
+        {
+            areg::File out;
+            AREG_CHILD_CHECK( out.open( "fault_inject_read.txt", wmode ) );
+            AREG_CHILD_CHECK( out.write( data, sizeof( data ) ) == static_cast<int32_t>(sizeof( data )) );
+            out.close( );
+        }
+
+        areg::File file;
+        AREG_CHILD_CHECK( file.open( "fault_inject_read.txt", rmode ) );
+        uint8_t in[4]{ };
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::FileRead, EIO ) );
+        AREG_CHILD_CHECK( file.read( in, sizeof( in ) ) == 0 );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::FileRead ) == 1u && NOT_REPLACED );
+        AREG_CHILD_CHECK( file.read( in, sizeof( in ) ) == static_cast<int32_t>(sizeof( in )) );
+        AREG_CHILD_CHECK( in[0] == 3u && in[3] == 6u );
+        file.close( );
+        static_cast<void>(areg::File::delete_file( "fault_inject_read.txt" ));
+    );
+}
+
+#endif  // defined(__linux__)
+
+// The sanitizer runtimes define the global allocation functions themselves.
+#if defined(__linux__) && !defined(__SANITIZE_ADDRESS__) && !defined(__SANITIZE_THREAD__)
+    #if defined(__has_feature)
+        #if !__has_feature(address_sanitizer) && !__has_feature(thread_sanitizer) && !__has_feature(memory_sanitizer)
+            #define AREG_FAULT_ALLOC_TESTS  1
+        #endif  // !__has_feature(...)
+    #else   // defined(__has_feature)
+        #define AREG_FAULT_ALLOC_TESTS      1
+    #endif  // defined(__has_feature)
+#endif  // defined(__linux__) && !sanitizer
+
+#if defined(AREG_FAULT_ALLOC_TESTS)
+
+TEST( FaultInjectTest, shared_buffer_reserve_returns_zero_and_a_later_reserve_succeeds_when_allocation_fails )
+{
+    AREG_EXPECT_IN_CHILD(
+        areg::SharedBuffer buffer;
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0 ) );
+        AREG_CHILD_CHECK( buffer.reserve( 4096u, false ) == 0u );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 1u && NOT_REPLACED );
+        AREG_CHILD_CHECK( buffer.is_valid( ) == false );
+        AREG_CHILD_CHECK( buffer.size_used( ) == 0u );
+
+        AREG_CHILD_CHECK( buffer.reserve( 4096u, false ) >= 4096u );
+        AREG_CHILD_CHECK( buffer.is_valid( ) );
+    );
+}
+
+TEST( FaultInjectTest, write_invert_writes_nothing_and_a_later_write_succeeds_when_allocation_fails )
+{
+    AREG_EXPECT_IN_CHILD(
+        constexpr uint32_t mode{ static_cast<uint32_t>(areg::File::OpenMode::Write) | static_cast<uint32_t>(areg::File::OpenMode::Create) };
+        areg::File file;
+        AREG_CHILD_CHECK( file.open( "fault_inject_invert.txt", mode ) );
+
+        uint8_t data[4]{ };
+        data[0] = 1u;
+        data[3] = 4u;
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0 ) );
+        AREG_CHILD_CHECK( file.write_invert( data, sizeof( data ) ) == 0 );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 1u && NOT_REPLACED );
+
+        AREG_CHILD_CHECK( file.write_invert( data, sizeof( data ) ) == static_cast<int32_t>(sizeof( data )) );
+        file.close( );
+        static_cast<void>(areg::File::delete_file( "fault_inject_invert.txt" ));
+    );
+}
+
+/**
+ * \brief   Reproduces the defect: a failed growth released the block, so the bytes already written were lost.
+ **/
+TEST( FaultInjectTest, shared_buffer_reserve_keeps_the_written_data_when_allocation_fails )
+{
+    AREG_EXPECT_IN_CHILD(
+        areg::SharedBuffer buffer;
+        uint8_t data[8]{ };
+        data[0] = 9u;
+        data[7] = 7u;
+        AREG_CHILD_CHECK( buffer.write( data, sizeof( data ) ) == sizeof( data ) );
+
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0 ) );
+        AREG_CHILD_CHECK( buffer.reserve( 1024u * 1024u, true ) == 0u );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 1u && NOT_REPLACED );
+        AREG_CHILD_CHECK( buffer.is_valid( ) );
+        AREG_CHILD_CHECK( buffer.size_used( ) == sizeof( data ) );
+        AREG_CHILD_CHECK( buffer.position( ) == sizeof( data ) );
+        AREG_CHILD_CHECK( (buffer.buffer( )[0] == 9u) && (buffer.buffer( )[7] == 7u) );
+    );
+}
+
+/**
+ * \brief   Reproduces the defect: a write that could not grow the block lost the bytes written before it.
+ **/
+TEST( FaultInjectTest, shared_buffer_write_keeps_the_written_data_when_growth_fails )
+{
+    AREG_EXPECT_IN_CHILD(
+        static uint8_t large[1024u * 1024u]{ };
+        areg::SharedBuffer buffer;
+        uint8_t data[8]{ };
+        data[0] = 9u;
+        data[7] = 7u;
+        AREG_CHILD_CHECK( buffer.write( data, sizeof( data ) ) == sizeof( data ) );
+
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0 ) );
+        AREG_CHILD_CHECK( buffer.write( large, sizeof( large ) ) == 0u );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 1u && NOT_REPLACED );
+        AREG_CHILD_CHECK( buffer.size_used( ) == sizeof( data ) );
+        AREG_CHILD_CHECK( buffer.position( ) == sizeof( data ) );
+
+        AREG_CHILD_CHECK( buffer.write( large, sizeof( large ) ) == sizeof( large ) );
+        AREG_CHILD_CHECK( buffer.size_used( ) == sizeof( data ) + sizeof( large ) );
+        AREG_CHILD_CHECK( (buffer.buffer( )[0] == 9u) && (buffer.buffer( )[7] == 7u) );
+    );
+}
+
+/**
+ * \brief   Reproduces the defect: a failed reserve without a copy dropped the data, although nothing replaced it.
+ **/
+TEST( FaultInjectTest, shared_buffer_reserve_without_copy_changes_nothing_when_allocation_fails )
+{
+    AREG_EXPECT_IN_CHILD(
+        areg::SharedBuffer buffer;
+        uint8_t data[8]{ };
+        data[0] = 9u;
+        AREG_CHILD_CHECK( buffer.write( data, sizeof( data ) ) == sizeof( data ) );
+
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0 ) );
+        AREG_CHILD_CHECK( buffer.reserve( 1024u * 1024u, false ) == 0u );
+        AREG_CHILD_CHECK( buffer.size_used( ) == sizeof( data ) );
+        AREG_CHILD_CHECK( buffer.buffer( )[0] == 9u );
+    );
+}
+
+/**
+ * \brief   Reproduces the defect: a message that could not grow stayed valid and went on with the next field, so it was sent half written.
+ **/
+TEST( FaultInjectTest, message_that_cannot_grow_is_invalid_and_rejects_later_writes )
+{
+    AREG_EXPECT_IN_CHILD(
+        static uint8_t large[1024u * 1024u]{ };
+        areg::MessageEnvelope msg( true, areg::BLOCK_SIZE );
+        uint8_t data[8]{ };
+        AREG_CHILD_CHECK( msg.write( data, sizeof( data ) ) == sizeof( data ) );
+
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0 ) );
+        AREG_CHILD_CHECK( msg.write( large, sizeof( large ) ) == 0u );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 1u && NOT_REPLACED );
+        AREG_CHILD_CHECK( msg.is_valid( ) == false );
+
+        AREG_CHILD_CHECK( msg.write( data, sizeof( data ) ) == 0u );
+        AREG_CHILD_CHECK( msg.is_valid( ) == false );
+    );
+}
+
+//!< A buffer that cannot grow reports it and keeps the data, whichever way it grows.
+TEST( FaultInjectTest, shared_buffer_growth_failures_keep_the_data )
+{
+    AREG_EXPECT_IN_CHILD(
+        static uint8_t large[1024u * 1024u]{ };
+        areg::SharedBuffer buffer;
+        uint8_t data[8]{ };
+        data[0] = 9u;
+        AREG_CHILD_CHECK( buffer.write( data, sizeof( data ) ) == sizeof( data ) );
+
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 0u ) );
+        AREG_CHILD_CHECK( buffer.ensure_size( sizeof( large ) ) == false );
+        AREG_CHILD_CHECK( buffer.insert_at( large, sizeof( large ), 1u ) == 0u );
+        AREG_CHILD_CHECK( buffer.insert_at( large, sizeof( large ), sizeof( data ) ) == 0u );
+        AREG_CHILD_CHECK( buffer.size_used( ) == sizeof( data ) );
+        AREG_CHILD_CHECK( buffer.buffer( )[0] == 9u );
+    );
+}
+
+//!< A buffer without a block stays without one when it cannot get the first block.
+TEST( FaultInjectTest, empty_buffer_stays_empty_when_allocation_fails )
+{
+    AREG_EXPECT_IN_CHILD(
+        uint8_t data[8]{ };
+        areg::SharedBuffer buffer;
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 0u ) );
+        AREG_CHILD_CHECK( buffer.write( data, sizeof( data ) ) == 0u );
+        AREG_CHILD_CHECK( buffer.ensure_size( 8u ) == false );
+        AREG_CHILD_CHECK( buffer.insert_at( data, sizeof( data ), 0u ) == 0u );
+        AREG_CHILD_CHECK( buffer.is_valid( ) == false );
+    );
+}
+
+//!< The largest buffer is asked for at the limit, and a failure is reported.
+TEST( FaultInjectTest, growth_to_the_limit_fails_cleanly )
+{
+    AREG_EXPECT_IN_CHILD(
+        areg::SharedBuffer buffer;
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 0u ) );
+        AREG_CHILD_CHECK( buffer.ensure_size( areg::MAX_BUF_LENGTH ) == false );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) >= 1u && NOT_REPLACED );
+    );
+}
+
+//!< A clone that cannot get a block is an empty buffer, the source stays.
+TEST( FaultInjectTest, clone_is_empty_when_allocation_fails )
+{
+    AREG_EXPECT_IN_CHILD(
+        uint8_t data[8]{ };
+        areg::SharedBuffer shared;
+        AREG_CHILD_CHECK( shared.write( data, sizeof( data ) ) == sizeof( data ) );
+        areg::BufferBase base;
+        AREG_CHILD_CHECK( base.write( data, sizeof( data ) ) == sizeof( data ) );
+
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 0u ) );
+        AREG_CHILD_CHECK( shared.clone( ).is_valid( ) == false );
+        AREG_CHILD_CHECK( base.clone( ).is_valid( ) == false );
+        AREG_CHILD_CHECK( shared.size_used( ) == sizeof( data ) );
+    );
+}
+
+//!< A copying read that cannot get a block changes neither the source position nor the target.
+TEST( FaultInjectTest, buffer_read_keeps_the_position_when_allocation_fails )
+{
+    AREG_EXPECT_IN_CHILD(
+        uint8_t data[8]{ };
+        areg::SharedBuffer inner;
+        AREG_CHILD_CHECK( inner.write( data, sizeof( data ) ) == sizeof( data ) );
+        areg::BufferBase source;
+        AREG_CHILD_CHECK( source.write( inner ) == sizeof( data ) );
+        source.reset( );
+
+        areg::SharedBuffer target;
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 0u ) );
+        AREG_CHILD_CHECK( source.read( target ) == 0u );
+        AREG_CHILD_CHECK( source.position( ) == 0u );
+        AREG_CHILD_CHECK( target.is_valid( ) == false );
+    );
+}
+
+namespace
+{
+    //! Makes the protected write view of a buffer reachable for a test.
+    class ViewProbe : public areg::SharedBuffer
+    {
+    public:
+        using areg::SharedBuffer::write_view;
+    };
+
+    //! Makes the block setup of a plain buffer reachable for a test.
+    class PlainProbe : public areg::BufferBase
+    {
+    public:
+        using areg::BufferBase::write_view;
+    };
+}
+
+//!< A write view that cannot grow gives no address and keeps the data.
+TEST( FaultInjectTest, write_view_is_null_when_allocation_fails )
+{
+    AREG_EXPECT_IN_CHILD(
+        uint8_t data[8]{ };
+        ViewProbe shared;
+        AREG_CHILD_CHECK( shared.write( data, sizeof( data ) ) == sizeof( data ) );
+        PlainProbe plain;
+
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 0u ) );
+        AREG_CHILD_CHECK( shared.write_view( 1024u * 1024u ) == nullptr );
+        AREG_CHILD_CHECK( plain.write_view( 16u ) == nullptr );
+        AREG_CHILD_CHECK( shared.size_used( ) == sizeof( data ) );
+    );
+}
+
+//!< An envelope that cannot get a block for its header is not valid, and a clone of a valid one neither.
+TEST( FaultInjectTest, envelope_without_memory_is_invalid )
+{
+    AREG_EXPECT_IN_CHILD(
+        areg::MessageEnvelope source( true, 1024u * 1024u );
+        AREG_CHILD_CHECK( source.is_valid( ) );
+
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 0u ) );
+        AREG_CHILD_CHECK( source.clone( ).is_valid( ) == false );
+
+        areg::EventHeader header{ };
+        areg::MessageEnvelope built( header, 1024u * 1024u, 1024u * 1024u );
+        AREG_CHILD_CHECK( built.is_valid( ) == false );
+    );
+}
+
+//!< A block goes back to the heap when the cache cannot get a magazine for it.
+TEST( FaultInjectTest, envelope_block_is_freed_when_the_cache_has_no_magazine )
+{
+    AREG_EXPECT_IN_CHILD(
+        areg::MessageEnvelope env( true, 256u );
+        AREG_CHILD_CHECK( env.is_valid( ) );
+
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 0u ) );
+        env.invalidate( );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) >= 1u && NOT_REPLACED );
+    );
+}
+
+/**
+ * \brief   Reproduces the defect: a failed reserve on a view released the block the view reads.
+ **/
+TEST( FaultInjectTest, shared_buffer_view_stays_readable_when_allocation_fails )
+{
+    AREG_EXPECT_IN_CHILD(
+        areg::SharedBuffer inner;
+        uint8_t data[4]{ };
+        data[0] = 5u;
+        AREG_CHILD_CHECK( inner.write( data, sizeof( data ) ) == sizeof( data ) );
+
+        areg::SharedBuffer outer;
+        AREG_CHILD_CHECK( outer.write( inner ) == sizeof( data ) );
+        outer.move_to_begin( );
+        areg::SharedBuffer view;
+        AREG_CHILD_CHECK( outer.read( view ) == sizeof( data ) );
+
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0 ) );
+        AREG_CHILD_CHECK( view.reserve( 1024u * 1024u, true ) == 0u );
+        AREG_CHILD_CHECK( view.size_used( ) == sizeof( data ) );
+        AREG_CHILD_CHECK( view.buffer( )[0] == 5u );
+    );
+}
+
+#endif  // defined(AREG_FAULT_ALLOC_TESTS)

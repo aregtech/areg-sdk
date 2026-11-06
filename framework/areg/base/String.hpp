@@ -160,7 +160,7 @@ struct required_size <areg::String>
     [[nodiscard]]
     inline uint32_t operator ()(const areg::String& str) const noexcept
     {
-        return static_cast<uint32_t>(sizeof(uint32_t) + (sizeof(char) * str.length()));
+        return static_cast<uint32_t>(sizeof(uint32_t)) + (static_cast<uint32_t>(sizeof(char)) * static_cast<uint32_t>(str.length()));
     }
 };
 
@@ -170,7 +170,7 @@ struct required_size <std::string>
     [[nodiscard]]
     inline uint32_t operator ()(const std::string& str) const noexcept
     {
-        return static_cast<uint32_t>(sizeof(uint32_t) + (sizeof(char) * str.length()));
+        return static_cast<uint32_t>(sizeof(uint32_t)) + (static_cast<uint32_t>(sizeof(char)) * static_cast<uint32_t>(str.length()));
     }
 };
 
@@ -180,7 +180,7 @@ struct required_size <std::string_view>
     [[nodiscard]]
     inline uint32_t operator ()(const std::string_view str) const noexcept
     {
-        return static_cast<uint32_t>(sizeof(uint32_t) + (sizeof(char) * str.length()));
+        return static_cast<uint32_t>(sizeof(uint32_t)) + (static_cast<uint32_t>(sizeof(char)) * static_cast<uint32_t>(str.length()));
     }
 };
 

@@ -27,8 +27,11 @@
 #include "aregextend/service/private/SendBacklog.hpp"
 #include "aregextend/service/private/ServiceThreadHelper.hpp"
 
+#include <algorithm>
 #include <atomic>
 #include <chrono>
+#include <cstring>
+#include <deque>
 #include <future>
 #include <thread>
 #include <vector>
@@ -669,4 +672,427 @@ TEST(SendBacklogTest, reading_peer_is_kept_past_twice_its_cap)
     std::deque<ITEM_ID> cut;
     backlog.release_all(cut);
     pair.close();
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Sends larger than the send buffer of the socket
+//////////////////////////////////////////////////////////////////////////
+
+namespace
+{
+    //!< The bytes of a stream, many times the send buffer of the pair.
+    constexpr uint32_t  STREAM_BYTES    { 8u * 1024u * 1024u };
+
+    //!< The bytes of one read of the peer, small enough to keep the send buffer full.
+    constexpr uint32_t  STREAM_BLOCK    { 4u * 1024u };
+
+    //!< The number of messages written in one batch.
+    constexpr uint32_t  STREAM_MESSAGES { 128u };
+
+    //!< Returns a stream of \a bytes where every 4 bytes hold their own number.
+    std::vector<uint8_t> numbered_stream(uint32_t bytes)
+    {
+        std::vector<uint8_t> result(bytes);
+        for (uint32_t word = 0u; word < bytes / 4u; ++word)
+        {
+            std::memcpy(result.data() + word * 4u, &word, sizeof(word));
+        }
+
+        return result;
+    }
+
+    //!< Reads \a expected in small blocks until it ends or differs, then closes the client end.
+    //!< Returns the bytes that arrived intact.
+    uint64_t read_stream(Pair & pair, const std::vector<uint8_t> & expected)
+    {
+        std::vector<uint8_t> block(STREAM_BLOCK);
+        uint64_t intact{ 0u };
+        while (intact < expected.size())
+        {
+            const uint32_t length{ static_cast<uint32_t>(std::min<uint64_t>(expected.size() - intact, STREAM_BLOCK)) };
+            if ((areg::receive_data_window(pair.client, block.data(), length) != static_cast<int32_t>(length))
+             || (std::memcmp(block.data(), expected.data() + intact, length) != 0))
+            {
+                break;
+            }
+
+            intact += length;
+        }
+
+        areg::socket_close(pair.client);
+        pair.client = areg::InvalidSocketHandle;
+        return intact;
+    }
+
+    //!< Closes the server end, so that a reader of a shorter stream ends, and expects \a stream whole.
+    void expect_stream(Pair & pair, std::future<uint64_t> & reader, const std::vector<uint8_t> & stream)
+    {
+        areg::socket_close(pair.server);
+        pair.server = areg::InvalidSocketHandle;
+        EXPECT_EQ(reader.get(), stream.size());
+        pair.close();
+    }
+
+    //!< Sends a numbered stream with \a send while the peer reads it, and expects every byte in order.
+    template<typename SendFn>
+    void expect_whole_stream(SendFn send)
+    {
+        Pair pair{ };
+        ASSERT_TRUE(pair.open());
+        const std::vector<uint8_t> stream{ numbered_stream(STREAM_BYTES) };
+        std::future<uint64_t> reader{ std::async(std::launch::async, [&]() { return read_stream(pair, stream); }) };
+        const SOCKETHANDLE server{ pair.server };
+        EXPECT_EQ(send(server, stream), static_cast<int32_t>(stream.size()));
+        expect_stream(pair, reader, stream);
+    }
+}
+
+// Reproduces the defect: a call larger than the send buffer lost a part of the stream on Cygwin,
+// which skips a refused part of the call and still reports the other parts as sent.
+TEST(SendBacklogTest, send_data_larger_than_the_send_buffer_keeps_the_stream_whole)
+{
+    expect_whole_stream([](SOCKETHANDLE server, const std::vector<uint8_t> & stream)
+        {
+            return areg::send_data(server, stream.data(), static_cast<uint32_t>(stream.size()));
+        });
+}
+
+TEST(SendBacklogTest, send_data_v_larger_than_the_send_buffer_keeps_the_stream_whole)
+{
+    expect_whole_stream([](SOCKETHANDLE server, const std::vector<uint8_t> & stream)
+        {
+            const std::size_t half{ stream.size() / 2u };
+            const areg::IoBuffer buffers[]{ { stream.data(), half }, { stream.data() + half, stream.size() - half } };
+            return areg::send_data_v(server, buffers, 2u);
+        });
+}
+
+TEST(SendBacklogTest, try_send_data_v_larger_than_the_send_buffer_keeps_the_stream_whole)
+{
+    expect_whole_stream([](SOCKETHANDLE server, const std::vector<uint8_t> & stream)
+        {
+            const std::size_t half{ stream.size() / 2u };
+            const areg::IoBuffer buffers[]{ { stream.data(), half }, { stream.data() + half, stream.size() - half } };
+            int32_t sent{ 0 };
+            const Clock::time_point begin{ Clock::now() };
+            while ((sent == 0) && (elapsed_ms(begin) < DEADLINE_MS))
+            {
+                sent = areg::try_send_data_v(server, buffers, 2u);
+            }
+
+            return sent;
+        });
+}
+
+TEST(SendBacklogTest, write_larger_than_the_send_buffer_keeps_the_stream_whole)
+{
+    constexpr uint32_t BYTES{ 32u * 1024u };
+    Pair pair{ };
+    ASSERT_TRUE(pair.open());
+    areg::SendQueueGate gate{ };
+    SendBacklog backlog{ gate };
+    Owner owner{ };
+    owner.socket = pair.server;
+    backlog.set_limits(STREAM_BYTES, SendBacklog::UNLIMITED, 60'000u);
+    static_cast<void>(backlog.attach(pair.server));
+
+    std::vector<areg::MessageEnvelope> messages(STREAM_MESSAGES);
+    std::vector<uint8_t> stream;
+    uint32_t word{ 0u };
+    for (areg::MessageEnvelope & message : messages)
+    {
+        uint8_t * data{ message.init_envelope(areg::notify_client_connection(), BYTES) };
+        ASSERT_NE(data, nullptr);
+        for (uint32_t at = 0u; at < BYTES; at += sizeof(word), ++word)
+        {
+            std::memcpy(data + at, &word, sizeof(word));
+        }
+
+        message.header()->bufHeader.biUsed = BYTES;
+        const uint8_t * wire{ areg::wire_data(*message.header()) };
+        stream.insert(stream.end(), wire, wire + areg::wire_size(*message.header()));
+    }
+
+    std::future<uint64_t> reader{ std::async(std::launch::async, [&]() { return read_stream(pair, stream); }) };
+    EXPECT_TRUE(write_range(backlog, pair, messages, 0u, STREAM_MESSAGES));
+    const Clock::time_point started{ Clock::now() };
+    while ((backlog.is_empty() == false) && (owner.closed.load() == false) && (elapsed_ms(started) < DEADLINE_MS))
+    {
+        static_cast<void>(backlog.pump(owner));
+        std::this_thread::yield();
+    }
+
+    std::deque<ITEM_ID> cut;
+    backlog.release_all(cut);
+    expect_stream(pair, reader, stream);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Inline writes, failures of the peer, limits and the release of a backlog
+//////////////////////////////////////////////////////////////////////////
+
+namespace
+{
+    //!< Builds one message with a payload of \a bytes bytes.
+    areg::MessageEnvelope make_message(uint32_t bytes)
+    {
+        areg::MessageEnvelope message;
+        if (message.init_envelope(areg::notify_client_connection(), bytes) != nullptr)
+        {
+            message.header()->bufHeader.biUsed = bytes;
+        }
+
+        return message;
+    }
+
+    //!< Closes the client end of the pair; the server end stays open.
+    void close_client(Pair & pair)
+    {
+        if (areg::is_valid_socket(pair.client))
+        {
+            areg::socket_close(pair.client);
+        }
+
+        pair.client = areg::InvalidSocketHandle;
+    }
+}
+
+// A small message to a free socket leaves whole at once, nothing is kept, and the peer reads it
+// byte for byte.
+TEST(SendBacklogTest, write_inline_writes_a_small_message_whole)
+{
+    Pair pair{ };
+    ASSERT_TRUE(pair.open());
+    areg::SendQueueGate gate{ };
+    SendBacklog backlog{ gate };
+    areg::MessageEnvelope message{ make_message(100u) };
+    ASSERT_NE(message.header(), nullptr);
+
+    int32_t result{ -2 };
+    {
+        areg::SocketWriteGuard guard{ pair.server };
+        result = backlog.write_inline(COOKIE, pair.server, message);
+    }
+
+    const uint32_t size{ areg::wire_size(*message.header()) };
+    std::vector<uint8_t> received(size);
+    const int32_t read{ areg::receive_data_window(pair.client, received.data(), size) };
+    EXPECT_EQ(result, 1);
+    EXPECT_TRUE(backlog.is_empty());
+    EXPECT_TRUE(gate.is_clear());
+    ASSERT_EQ(read, static_cast<int32_t>(size));
+    EXPECT_EQ(std::memcmp(received.data(), areg::wire_data(*message.header()), size), 0);
+    pair.close();
+}
+
+// A message the socket takes in part is kept behind the part written: nothing more is written
+// for its connection until the backlog is empty, the send queue gate is entered, and the peer
+// receives everything in order once it reads.
+TEST(SendBacklogTest, write_inline_keeps_the_rest_of_a_large_message)
+{
+    Pair pair{ };
+    ASSERT_TRUE(pair.open());
+    areg::SendQueueGate gate{ };
+    SendBacklog backlog{ gate };
+    Owner owner{ };
+    owner.socket = pair.server;
+    backlog.set_limits(1024u * 1024u * 1024u, SendBacklog::UNLIMITED, 60'000u);
+    static_cast<void>(backlog.attach(pair.server));
+    areg::MessageEnvelope message{ make_message(MESSAGE_BYTES) };
+    ASSERT_NE(message.header(), nullptr);
+    const uint64_t size{ areg::wire_size(*message.header()) };
+
+    int32_t first{ -2 };
+    int32_t sameConnection{ -2 };
+    {
+        areg::SocketWriteGuard guard{ pair.server };
+        first = backlog.write_inline(COOKIE, pair.server, message);
+        sameConnection = backlog.write_inline(COOKIE, pair.server, message);
+    }
+
+    EXPECT_EQ(first, 2);
+    EXPECT_EQ(sameConnection, 0);
+    EXPECT_FALSE(backlog.is_empty());
+    EXPECT_FALSE(gate.is_clear());
+
+    std::thread reader([&]
+    {
+        EXPECT_TRUE(read_all(pair, size));
+    });
+
+    const Clock::time_point started{ Clock::now() };
+    while ((backlog.is_empty() == false) && (owner.closed.load() == false) && (elapsed_ms(started) < DEADLINE_MS))
+    {
+        static_cast<void>(backlog.pump(owner));
+        std::this_thread::yield();
+    }
+
+    if (backlog.is_empty() == false)
+    {
+        pair.close();
+    }
+
+    reader.join();
+    EXPECT_TRUE(backlog.is_empty());
+    EXPECT_TRUE(gate.is_clear());
+    EXPECT_FALSE(owner.closed.load());
+    pair.close();
+}
+
+// A peer that closed its end makes the inline write report a failed socket and keep nothing.
+TEST(SendBacklogTest, write_inline_reports_the_socket_of_a_closed_peer_as_failed)
+{
+    Pair pair{ };
+    ASSERT_TRUE(pair.open());
+    areg::SendQueueGate gate{ };
+    SendBacklog backlog{ gate };
+    areg::MessageEnvelope message{ make_message(64u) };
+    close_client(pair);
+
+    int32_t result{ 1 };
+    const Clock::time_point started{ Clock::now() };
+    while ((result == 1) && (elapsed_ms(started) < DEADLINE_MS))
+    {
+        areg::SocketWriteGuard guard{ pair.server };
+        result = backlog.write_inline(COOKIE, pair.server, message);
+    }
+
+    EXPECT_EQ(result, -1);
+    EXPECT_TRUE(backlog.is_empty());
+    pair.close();
+}
+
+// A peer that closed its end fails the write of a connection that has a backlog.
+TEST(SendBacklogTest, write_to_a_backlog_of_a_closed_peer_fails)
+{
+    Fixture test;
+    ASSERT_TRUE(test.start());
+    close_client(test.pair);
+
+    bool failed{ false };
+    const Clock::time_point started{ Clock::now() };
+    while ((failed == false) && (elapsed_ms(started) < DEADLINE_MS))
+    {
+        failed = (write_range(test.backlog, test.pair, test.messages, 0u, 1u) == false);
+    }
+
+    EXPECT_TRUE(failed);
+}
+
+// The owner is told to close a connection whose peer closed its end, with the socket error as the
+// reason, and the backlog of the connection is released.
+TEST(SendBacklogTest, pump_closes_the_connection_of_a_closed_peer_with_a_socket_error)
+{
+    Fixture test;
+    ASSERT_TRUE(test.start());
+    close_client(test.pair);
+
+    const Clock::time_point started{ Clock::now() };
+    while ((test.owner.closed.load() == false) && (elapsed_ms(started) < DEADLINE_MS))
+    {
+        static_cast<void>(test.backlog.pump(test.owner));
+        std::this_thread::yield();
+    }
+
+    EXPECT_TRUE(test.owner.closed.load());
+    EXPECT_EQ(test.owner.reason, SendBacklog::Reason::SocketError);
+    EXPECT_GT(test.owner.kept, 0u);
+    EXPECT_TRUE(test.backlog.is_empty());
+}
+
+// A peer that takes nothing for the refusal limit is closed with the refused reason, though its
+// backlog stays below the cap.
+TEST(SendBacklogTest, pump_closes_a_peer_that_refuses_data_for_the_refusal_limit)
+{
+    Fixture test;
+    ASSERT_TRUE(test.start());
+    test.backlog.set_limits(1024u * 1024u * 1024u, 1u, 60'000u);
+
+    const Clock::time_point started{ Clock::now() };
+    while ((test.owner.closed.load() == false) && (elapsed_ms(started) < DEADLINE_MS))
+    {
+        static_cast<void>(test.backlog.pump(test.owner));
+        std::this_thread::yield();
+    }
+
+    EXPECT_TRUE(test.owner.closed.load());
+    EXPECT_EQ(test.owner.reason, SendBacklog::Reason::Refused);
+    EXPECT_TRUE(test.backlog.is_empty());
+    EXPECT_TRUE(test.gate.is_clear());
+}
+
+// Without backlogs the wait is bounded by a fifth of the keepalive time and by the tick; a zero
+// limit selects the default.
+TEST(SendBacklogTest, prepare_wait_of_an_empty_backlog_follows_the_keepalive_time)
+{
+    areg::SendQueueGate gate{ };
+    SendBacklog backlog{ gate };
+    constexpr uint64_t CAP{ 1024u * 1024u };
+
+    backlog.set_limits(CAP, SendBacklog::UNLIMITED, 60'000u);
+    EXPECT_EQ(backlog.prepare_wait(), SendBacklog::TICK_MS);
+
+    backlog.set_limits(CAP, SendBacklog::UNLIMITED, 2'000u);
+    EXPECT_EQ(backlog.prepare_wait(), 400u);
+
+    backlog.set_limits(CAP, SendBacklog::UNLIMITED, 1u);
+    EXPECT_EQ(backlog.prepare_wait(), 1u);
+
+    backlog.set_limits(0u, 0u, 0u);
+    const uint32_t expected{ std::max(1u, std::min(SendBacklog::TICK_MS, areg::SOCKET_KEEPALIVE_SEC * 1'000u / 5u)) };
+    EXPECT_EQ(backlog.prepare_wait(), expected);
+}
+
+// With a backlog the wait ends at the nearest limit: the refusal limit, or the stall limit of a
+// backlog above its cap.
+TEST(SendBacklogTest, prepare_wait_of_a_backlog_ends_at_the_nearest_limit)
+{
+    Fixture test;
+    ASSERT_TRUE(test.start());
+
+    test.backlog.set_limits(1024u * 1024u * 1024u, 5'000u, 60'000u);
+    const uint32_t refusal{ test.backlog.prepare_wait() };
+    EXPECT_GE(refusal, 1u);
+    EXPECT_LE(refusal, 5'000u);
+
+    test.backlog.set_limits(1u, SendBacklog::UNLIMITED, 60'000u, true);
+    const uint32_t stall{ test.backlog.prepare_wait() };
+    EXPECT_GE(stall, 1u);
+    EXPECT_LE(stall, SendBacklog::CAP_STALL_MS);
+
+    test.backlog.set_limits(1u, SendBacklog::UNLIMITED, 60'000u, false);
+    EXPECT_LE(test.backlog.prepare_wait(), SendBacklog::TICK_MS);
+}
+
+// A connection whose message was cut is named by release_all(): the peer must be disconnected,
+// because it saw the start of a message that never completes.
+TEST(SendBacklogTest, release_all_names_the_connection_cut_in_a_message)
+{
+    Fixture test;
+    ASSERT_TRUE(test.start());
+    ASSERT_FALSE(test.gate.is_clear());
+
+    std::deque<ITEM_ID> cut;
+    test.backlog.release_all(cut);
+    ASSERT_EQ(cut.size(), 1u);
+    EXPECT_EQ(cut.front(), COOKIE);
+    EXPECT_TRUE(test.backlog.is_empty());
+    EXPECT_TRUE(test.gate.is_clear());
+}
+
+// A waiter is not registered for a connection that is not held, and cancelling a waiter that
+// was never registered changes nothing.
+TEST(SendBacklogTest, hold_wait_refuses_a_connection_that_is_not_held)
+{
+    Fixture test;
+    ASSERT_TRUE(test.start());
+    Waiter waiter{ };
+
+    EXPECT_FALSE(test.backlog.is_held(COOKIE));
+    EXPECT_FALSE(test.backlog.hold_wait(COOKIE, waiter));
+    test.backlog.hold_cancel(waiter);
+
+    std::deque<ITEM_ID> cut;
+    test.backlog.release_all(cut);
+    EXPECT_EQ(waiter.calls.load(), 0u);
 }

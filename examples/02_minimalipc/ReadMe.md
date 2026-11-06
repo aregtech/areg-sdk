@@ -1,4 +1,4 @@
-﻿# 02_minimalipc
+# 02_minimalipc
 
 🚀 **Type:** IPC / Multi-Process
 

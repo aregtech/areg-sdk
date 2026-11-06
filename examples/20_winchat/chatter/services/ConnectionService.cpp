@@ -17,11 +17,11 @@
 
 BEGIN_MODEL(chat::MODEL_NAME_DISTRIBUTED_CLIENT)
 
-    BEGIN_REGISTER_THREAD( NEDistributedApp::THREAD_DISTRIBUTED )
+    BEGIN_REGISTER_THREAD( DistributedAppDefs::THREAD_DISTRIBUTED )
         BEGIN_REGISTER_COMPONENT( chat::COMP_NAME_DISTRIBUTED_CLIENT, ConnectionService )
             REGISTER_DEPENDENCY( chat::COMP_NAME_CENTRAL_SERVER )
         END_REGISTER_COMPONENT( chat::COMP_NAME_DISTRIBUTED_CLIENT )
-    END_REGISTER_THREAD( NEDistributedApp::THREAD_DISTRIBUTED )
+    END_REGISTER_THREAD( DistributedAppDefs::THREAD_DISTRIBUTED )
 
 END_MODEL(chat::MODEL_NAME_DISTRIBUTED_CLIENT)
 
@@ -60,12 +60,12 @@ void ConnectionService::startup_component( areg::ComponentThread & comThread )
 {
     areg::Component::startup_component(comThread);
     ServiceTaskEvent::add_listener( static_cast<ServiceTaskConsumer &>(self()), comThread );
-    DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdServiceStartup, 1, reinterpret_cast<LPARAM>(this) );
+    DistributedDialog::PostServiceMessage( DistributedAppDefs::WindowCommand::CmdServiceStartup, 1, reinterpret_cast<LPARAM>(this) );
 }
 
 void ConnectionService::shutdown_component( areg::ComponentThread & comThread ) noexcept
 {
     ServiceTaskEvent::remove_listener( static_cast<ServiceTaskConsumer &>(self()), comThread );
-    DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdServiceStartup, 0, 0 );
+    DistributedDialog::PostServiceMessage( DistributedAppDefs::WindowCommand::CmdServiceStartup, 0, 0 );
     areg::Component::shutdown_component(comThread);
 }

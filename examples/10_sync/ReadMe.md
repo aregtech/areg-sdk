@@ -1,4 +1,4 @@
-﻿# 10_sync
+# 10_sync
 
 🧵 **Type:** Multithreading / Single Process
 

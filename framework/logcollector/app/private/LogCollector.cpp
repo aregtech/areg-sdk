@@ -185,8 +185,8 @@ void LogCollector::run_console_io()
 
     // Show all four stat rows at zero before the rate thread starts.
     console.enable_console_input(true);
-    console.output_msg(areg::ext::COORD_SEND_RATE, areg::ext::FORMAT_SEND_DATA.data(), 0.0f, DataRateHelper::MSG_BYTES.data());
-    console.output_msg(areg::ext::COORD_RECV_RATE, areg::ext::FORMAT_RECV_DATA.data(), 0.0f, DataRateHelper::MSG_BYTES.data());
+    console.output_msg(areg::ext::COORD_SEND_RATE, areg::ext::FORMAT_SEND_DATA.data(), 0.0, DataRateHelper::MSG_BYTES.data());
+    console.output_msg(areg::ext::COORD_RECV_RATE, areg::ext::FORMAT_RECV_DATA.data(), 0.0, DataRateHelper::MSG_BYTES.data());
     console.output_msg(areg::ext::COORD_SEND_MSGS, areg::ext::FORMAT_SEND_MSGS.data(), 0u);
     console.output_msg(areg::ext::COORD_RECV_MSGS, areg::ext::FORMAT_RECV_MSGS.data(), 0u);
     console.output_txt(areg::ext::COORD_USER_INPUT, areg::ext::FORMAT_WAIT_QUIT);

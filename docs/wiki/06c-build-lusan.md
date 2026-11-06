@@ -1,4 +1,4 @@
-﻿# Building Lusan with CMake or Qt Creator
+# Building Lusan with CMake or Qt Creator
 
 This guide explains how to build **Lusan**, the graphical development and diagnostics tool for the Areg SDK ecosystem. Lusan provides visual service interface design, centralized log collection, and advanced log analysis capabilities for distributed C++ applications.
 

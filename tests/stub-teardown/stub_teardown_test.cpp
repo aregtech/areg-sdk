@@ -440,8 +440,8 @@ public:
 AREG_DECLARE_EVENT(RecreateData, RecreateEvent, RecreateConsumer);
 
 class ProxyFreeHost;
-std::atomic<ProxyFreeHost *>        gHost       { nullptr };
-std::atomic<areg::ComponentThread *> gHostThread { nullptr };
+static std::atomic<ProxyFreeHost *>        gHost       { nullptr };
+static std::atomic<areg::ComponentThread *> gHostThread { nullptr };
 
 //!< Deletes and creates its consumer on every recreate event, on its own thread.
 class ProxyFreeHost final : public    areg::Component

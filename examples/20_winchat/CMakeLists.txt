@@ -1,6 +1,11 @@
 # Set project to compile with MFC dynamic linked library
 set(CMAKE_MFC_FLAG PRIVATE 2)
 
+# The MFC resources are UTF-16: rc.exe reads them, the clang-cl include scan of Ninja does not.
+if (MSVC AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    set(CMAKE_NINJA_CMCLDEPS_RC OFF)
+endif()
+
 # ####################################
 # add service interfaces
 addServiceInterface(20_generated examples/20_winchat/services/CentralMessager.siml)

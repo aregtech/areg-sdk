@@ -1,4 +1,4 @@
-﻿# 11_service
+# 11_service
 
 🧵 **Type:** Multithreading / Single Process
 

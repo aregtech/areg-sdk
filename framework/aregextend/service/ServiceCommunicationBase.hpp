@@ -177,9 +177,9 @@ public:
     inline void remove_black_list( const areg::SocketAddress & addrClient );
 
     /**
-     * \brief   Returns the list of connected instances.
+     * \brief   Returns a copy of the list of connected instances, taken under the lock.
      **/
-    inline const areg::MapInstances & instances() const;
+    inline areg::MapInstances instances() const;
 
     /**
      * \brief   Returns the number of pool thread pairs that were created.
@@ -251,7 +251,6 @@ public:
     [[nodiscard]]
     inline bool is_target_held(const ITEM_ID & target) noexcept;
 
-protected:
     /**
      * \brief   Sets whether a client that keeps more than its send buffer limit and takes no data
      *          for a second is closed. True by default; a service that drops what goes to a held
@@ -259,7 +258,6 @@ protected:
      **/
     inline void set_close_stalled(bool closeStalled) noexcept;
 
-public:
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -775,8 +773,9 @@ inline void ServiceCommunicationBase::remove_black_list(const areg::SocketAddres
     mBlackList.remove_elem( addrClient.host_address(), 0);
 }
 
-inline const areg::MapInstances & ServiceCommunicationBase::instances() const
+inline areg::MapInstances ServiceCommunicationBase::instances() const
 {
+    areg::Lock lock(mLock);
     return mInstanceMap;
 }
 

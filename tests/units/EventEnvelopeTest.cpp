@@ -43,6 +43,18 @@ TEST(EventEnvelopeTest, default_construction)
 }
 
 /**
+ * \brief   Reproduces the defect: an envelope without a block took data, so a lost message came back with an empty header.
+ **/
+TEST(EventEnvelopeTest, envelope_without_a_block_rejects_writes)
+{
+    areg::MessageEnvelope env;
+    const uint8_t data[4]{ };
+    EXPECT_EQ(env.write(data, sizeof(data)), 0u);
+    EXPECT_EQ(env.insert_at(data, sizeof(data), 0u), 0u);
+    EXPECT_FALSE(env.is_valid());
+}
+
+/**
  * \brief   MessageEnvelope constructed with init=true has an allocated header.
  **/
 TEST(EventEnvelopeTest, init_construction)
@@ -1079,4 +1091,80 @@ TEST(EventEnvelopeTest, empty_payload_extraction_keeps_destination)
     EXPECT_EQ(destination.size_used(), sizeof(DATA));
     EXPECT_EQ(destination.position(), sizeof(DATA));
     EXPECT_EQ(std::memcmp(destination.buffer(), DATA, sizeof(DATA)), 0);
+}
+
+namespace
+{
+    //! Makes the protected interface of the envelope reachable for a test.
+    class EnvelopeProbe : public areg::MessageEnvelope
+    {
+    public:
+        using areg::MessageEnvelope::MessageEnvelope;
+        using areg::MessageEnvelope::data_offset;
+        using areg::MessageEnvelope::init_buffer;
+    };
+}
+
+// A block size of 0 still gives an envelope a block.
+TEST(EventEnvelopeTest, init_with_no_block_size_allocates)
+{
+    areg::MessageEnvelope env(true, 0u);
+    EXPECT_TRUE(env.is_valid());
+}
+
+// The payload of an envelope starts after its header.
+TEST(EventEnvelopeTest, payload_starts_after_the_header)
+{
+    EnvelopeProbe env;
+    EXPECT_EQ(env.data_offset(), static_cast<uint32_t>(offsetof(areg::RawEnvelope, envData)));
+}
+
+// init_buffer() refuses no block and a block smaller than the buffer header.
+TEST(EventEnvelopeTest, init_buffer_refuses_no_block_and_a_too_small_block)
+{
+    EnvelopeProbe env;
+    uint8_t block[4]{ };
+    EXPECT_EQ(env.init_buffer(nullptr, 1024u, false), areg::Cursor::INVALID_CURSOR_POSITION);
+    EXPECT_EQ(env.init_buffer(block, sizeof(block), false), areg::Cursor::INVALID_CURSOR_POSITION);
+}
+
+// A reserve that keeps the data of an envelope without a block has nothing to copy.
+TEST(EventEnvelopeTest, reserve_with_copy_of_an_envelope_without_a_block)
+{
+    areg::MessageEnvelope env;
+    EXPECT_GT(env.reserve(64u, true), 0u);
+    EXPECT_TRUE(env.is_valid());
+    EXPECT_EQ(env.size_used(), 0u);
+}
+
+// A reserve with a copy keeps the payload and the header of an envelope that grows.
+TEST(EventEnvelopeTest, reserve_with_copy_keeps_payload_and_header)
+{
+    constexpr uint8_t DATA[]{ 1u, 2u, 3u };
+    areg::MessageEnvelope env(true, areg::BLOCK_SIZE);
+    env.set_target(77u);
+    ASSERT_EQ(env.write(DATA, sizeof(DATA)), sizeof(DATA));
+    EXPECT_GT(env.reserve(100000u, true), 0u);
+    EXPECT_EQ(env.size_used(), sizeof(DATA));
+    EXPECT_EQ(env.buffer()[2], 3u);
+    EXPECT_EQ(env.target(), 77u);
+}
+
+// A cleanup of an envelope with a custom hook runs once, one without a hook runs nothing.
+TEST(EventEnvelopeTest, destroy_of_an_envelope_without_a_hook)
+{
+    areg::MessageEnvelope env(true, areg::BLOCK_SIZE);
+    env.destroy_event();
+    EXPECT_FALSE(env.is_valid());
+    env.destroy_event();
+    EXPECT_FALSE(env.is_valid());
+}
+
+// A reservation of 0 still gives an envelope built from a header a block.
+TEST(EventEnvelopeTest, header_constructor_with_no_reservation)
+{
+    const areg::EventHeader header{ };
+    areg::MessageEnvelope env(header, 0u);
+    EXPECT_TRUE(env.is_valid());
+    EXPECT_EQ(env.size_used(), 0u);
 }

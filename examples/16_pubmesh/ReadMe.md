@@ -1,4 +1,4 @@
-﻿# 16_pubmesh
+# 16_pubmesh
 
 🧵🚀 **Type:** Multithreading + IPC
 

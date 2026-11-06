@@ -49,7 +49,7 @@ jobs:
         shell: bash
         env:
           EVENT: ${{ github.event_name }}
-          PATTERN: '^(framework|examples|tests|thirdparty|conf)/|(^|/)CMakeLists\.txt$|\.cmake$|^tools/(codegen\.jar|schema/)|^tools/intern/(run-all-examples\.py|hang-watchdog\.sh|report-ctest\.py|check_invariants\.py|check_inline_virtuals\.py)$|^\.github/(ci/|workflows/sanitizers\.yml)|^tools/intern/(sanitize\.sh|sanitizer/)'
+          PATTERN: '^(framework|examples|tests|thirdparty|conf)/|(^|/)CMakeLists\.txt$|\.cmake$|^tools/(codegen\.jar|schema/)|^tools/intern/(run-all-examples\.py|hang-watchdog\.sh|report-ctest\.py|check_invariants\.py|check_inline_virtuals\.py|ci-changes\.sh)$|^\.github/(actions/compiler-cache/|ci/|workflows/sanitizers\.yml)|^tools/intern/(sanitize\.sh|sanitizer/)'
           MATRIX: '.github/ci/sanitizers-matrix.json'
         run: |
           case "${EVENT}" in
@@ -59,7 +59,7 @@ jobs:
           esac
           RUN=true
           if [ -n "${BASE}" ] && git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
-            git diff --name-only "${BASE}" "${GITHUB_SHA}" | grep -qE "${PATTERN}" || RUN=false
+            RUN="$(bash tools/intern/ci-changes.sh "${BASE}" "${GITHUB_SHA}" "${PATTERN}")"
           fi
           echo "run=${RUN}" >> "${GITHUB_OUTPUT}"
           if [ -n "${MATRIX}" ]; then
@@ -97,6 +97,12 @@ jobs:
       - name: Checkout Areg SDK source codes
         uses: actions/checkout@v7
 
+      - name: Cache compiler outputs
+        id: compiler-cache
+        uses: ./.github/actions/compiler-cache
+        with:
+          key: sanitizer-${{ matrix.mode }}-${{ matrix.config }}
+
       - name: Setup Java JDK to run code generator
         uses: actions/setup-java@v6.1.0
         with:
@@ -129,8 +135,24 @@ jobs:
         shell: bash
         run: |
           ulimit -c unlimited
-          tools/intern/sanitize.sh ${{matrix.mode}} --config ${{matrix.config}} \
+          tools/intern/sanitize.sh ${{matrix.mode}} --config ${{matrix.config}} --examples \
               --target areg-unit-tests --run ctest
+
+      # The exit code of a scenario shows only its lead process, so the logs are searched.
+      # Not a gate yet: the known reports of the examples are still open.
+      - name: Run the examples under ${{matrix.mode}} ${{matrix.config}}
+        if: always() && matrix.mode == 'tsan' && github.event_name != 'push'
+        continue-on-error: true
+        working-directory: ${{github.workspace}}
+        shell: bash
+        timeout-minutes: 45
+        run: |
+          status=0
+          tools/intern/sanitize.sh ${{matrix.mode}} --config ${{matrix.config}} --examples --keep --run examples || status=$?
+          { grep -rah 'SUMMARY: ThreadSanitizer' ./build-tsan/example-results || true; } | sed -e 's/\x1b\[[0-9;]*m//g' \
+            | sed -e 's#[^ ]*/areg-sdk/##g' | sort | uniq -c | sort -rn | tee ./build-tsan/example-reports.log
+          test ! -s ./build-tsan/example-reports.log
+          exit "${status}"
 
       # The teardown tests fail about once in a hundred runs, and one pass of the
       # suite is one run of each. They are repeated here, in the tree the step above
@@ -154,6 +176,10 @@ jobs:
           ulimit -c unlimited
           tools/intern/sanitize.sh ${{matrix.mode}} --config ${{matrix.config}} --keep --repeat 30 \
               --run 'ctest:areg-router-io-test\.stop-while-flooding\.'
+
+      - name: Report compiler cache statistics
+        if: ${{ !cancelled() && steps.compiler-cache.outcome == 'success' }}
+        run: ccache --show-stats
 
       # Everything needed to open the crash on another machine: the cores, the binaries
       # they came from, and what the runner was, so a local build can be matched to it.
@@ -233,6 +259,12 @@ jobs:
       - name: Checkout Areg SDK source codes
         uses: actions/checkout@v7
 
+      - name: Cache compiler outputs
+        id: compiler-cache
+        uses: ./.github/actions/compiler-cache
+        with:
+          key: teardown-${{ matrix.config }}
+
       - name: Setup Java JDK to run code generator
         uses: actions/setup-java@v6.1.0
         with:
@@ -273,6 +305,10 @@ jobs:
                 -R 'areg-(timer-churn-test|stub-teardown-test\.(local-many|local-churn|worker-unload))$'
           ctest --output-on-failure --repeat until-fail:100 \
                 -R 'areg-(release-unload-test|internal-events-test|stub-teardown-test\.(stub-request|stub-address|proxy-unload|proxy-free|local-unload|watchdog-restart))$'
+
+      - name: Report compiler cache statistics
+        if: ${{ !cancelled() && steps.compiler-cache.outcome == 'success' }}
+        run: ccache --show-stats
 
       - name: Collect the post-mortem
         if: failure()
@@ -351,6 +387,12 @@ jobs:
       - name: Checkout Areg SDK source codes
         uses: actions/checkout@v7
 
+      - name: Cache compiler outputs
+        id: compiler-cache
+        uses: ./.github/actions/compiler-cache
+        with:
+          key: sanitizer-examples-${{ matrix.arch }}
+
       - name: Setup Java JDK to run code generator
         uses: actions/setup-java@v6.1.0
         with:
@@ -383,6 +425,10 @@ jobs:
       - name: Build with CMake
         working-directory: ${{github.workspace}}
         run: cmake --build ${{env.EXAMPLES_CACHE}} -j16
+
+      - name: Report compiler cache statistics
+        if: ${{ !cancelled() && steps.compiler-cache.outcome == 'success' }}
+        run: ccache --show-stats
 
       - name: Run the examples under the sanitizer
         working-directory: ${{github.workspace}}
@@ -457,6 +503,159 @@ jobs:
         with:
           name: examples-${{matrix.arch}}
           path: ./ubsan/
+
+  # Not part of the result yet: these platforms have not run under a sanitizer before.
+  sanitizers-macos:
+    name: ${{matrix.mode}} (macOS)
+    needs: plan
+    if: needs.plan.outputs.run == 'true'
+    runs-on: macos-latest
+    timeout-minutes: 120
+    continue-on-error: true
+
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [ asan, tsan ]
+
+    steps:
+
+      - name: Checkout Areg SDK source codes
+        uses: actions/checkout@v7
+
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v6.1.0
+        with:
+          java-version: 17
+          java-package: jre
+          distribution: temurin
+
+      - name: Select the Xcode command line tools
+        run: sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+
+      # Apple clang has no leak checker on this platform.
+      - name: Run the tests under ${{matrix.mode}}
+        shell: bash
+        run: |
+          tools/intern/sanitize.sh ${{matrix.mode}} --compiler llvm --config RelWithDebInfo --no-extended --examples \
+              --leaks off --target areg-unit-tests --run ctest
+
+      # The exit code of a scenario shows only its lead process, so the logs are searched.
+      - name: Run the examples under ${{matrix.mode}}
+        if: always()
+        shell: bash
+        timeout-minutes: 45
+        run: |
+          status=0
+          tools/intern/sanitize.sh ${{matrix.mode}} --compiler llvm --config RelWithDebInfo --no-extended --examples \
+              --leaks off --keep --run examples || status=$?
+          { grep -rah 'SUMMARY: [A-Za-z]*Sanitizer' ./build-${{matrix.mode}}/example-results || true; } \
+            | sort | uniq -c | sort -rn | tee ./build-${{matrix.mode}}/example-reports.log
+          test ! -s ./build-${{matrix.mode}}/example-reports.log
+          exit "${status}"
+
+      # A process can die without a sanitizer report: lldb and the system crash reports keep the stack.
+      - name: Collect the stacks of the crashes
+        if: always()
+        continue-on-error: true
+        shell: bash
+        timeout-minutes: 15
+        run: |
+          stacks=./build-${{matrix.mode}}/crash-stacks
+          mkdir -p "${stacks}"
+          stack() {
+            tools/intern/sanitize.sh ${{matrix.mode}} --compiler llvm --config RelWithDebInfo --no-extended --examples \
+                --leaks off --keep --run /usr/bin/lldb -- --batch -o run -k 'thread backtrace all' -k quit \
+                -- "./build-${{matrix.mode}}/product/bin/$1" "${@:2}" > "${stacks}/$1.txt" 2>&1 || true
+          }
+          if [ "${{matrix.mode}}" = tsan ]; then
+            stack areg-fault-inject-test.mac --gtest_list_tests
+          fi
+          cp -R ~/Library/Logs/DiagnosticReports "${stacks}/" 2>/dev/null || true
+
+      - name: Upload what the sanitizer left behind
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: sanitizer-macos-${{matrix.mode}}
+          path: |
+            ./build-${{matrix.mode}}/Testing/
+            ./build-${{matrix.mode}}/example-results/
+            ./build-${{matrix.mode}}/crash-stacks/
+          if-no-files-found: ignore
+
+  sanitizers-windows:
+    name: asan (Windows)
+    needs: plan
+    if: needs.plan.outputs.run == 'true'
+    runs-on: windows-latest
+    timeout-minutes: 120
+    continue-on-error: true
+
+    steps:
+
+      - name: Checkout Areg SDK source codes
+        uses: actions/checkout@v7
+
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v6.1.0
+        with:
+          java-version: 17
+          java-package: jre
+          distribution: temurin
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Select the MSVC environment
+        shell: pwsh
+        # The variables vcvars64.bat adds or changes are passed to the next steps.
+        run: |
+          $vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          if (-not $vs) { throw 'No Visual Studio with the C++ tools' }
+          cmd /c "`"$vs\VC\Auxiliary\Build\vcvars64.bat`" >nul && set" | ForEach-Object {
+            $name, $value = $_ -split '=', 2
+            if ($value -cne [Environment]::GetEnvironmentVariable($name)) {
+              "$name=$value" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+            }
+          }
+
+      # MSVC has AddressSanitizer only: no thread sanitizer and no leak checker.
+      - name: Build with AddressSanitizer
+        shell: pwsh
+        run: |
+          cmake -S . -B product/asan -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl `
+                -DAREG_COMPILER_FAMILY=msvc -DAREG_LIB_TYPE=static -DAREG_TESTS=ON -DAREG_EXAMPLES=ON -DAREG_OUTPUT_LAYOUT=OFF `
+                "-DAREG_OUTPUT_DIR=$("$env:GITHUB_WORKSPACE/product/asan/product" -replace '\\', '/')" `
+                "-DCMAKE_C_FLAGS=/fsanitize=address /Zi" "-DCMAKE_CXX_FLAGS=/EHsc /GR /fsanitize=address /Zi"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cmake --build product/asan -j 4
+          exit $LASTEXITCODE
+
+      - name: Run the tests under asan
+        shell: pwsh
+        run: |
+          ctest --test-dir product/asan --timeout 600 --output-on-failure
+          exit $LASTEXITCODE
+
+      - name: Run the examples under asan
+        if: always()
+        shell: pwsh
+        timeout-minutes: 45
+        run: |
+          python tools/intern/run-all-examples.py --bin-dir product/asan/product/bin --tier all --keep-logs --out-dir product/asan/example-results
+          exit $LASTEXITCODE
+
+      - name: Upload what the sanitizer left behind
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: sanitizer-windows-asan
+          path: |
+            product/asan/Testing/
+            product/asan/example-results/
+          if-no-files-found: ignore
 
   result:
     name: Sanitizers result

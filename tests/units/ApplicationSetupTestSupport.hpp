@@ -97,7 +97,7 @@ namespace
     class ApplicationSetupTest : public testing::Test
     {
     protected:
-        ApplicationSetupTest()
+        [[maybe_unused]] ApplicationSetupTest()
             : mDirectory()
             , mOriginalDirectory()
             , mConfigFile()
@@ -166,7 +166,7 @@ namespace
             }
         }
 
-        void setup_application(bool logging = false, bool servicing = false, bool routing = false
+        [[maybe_unused]] void setup_application(bool logging = false, bool servicing = false, bool routing = false
                              , bool timer = false, bool watchdog = false)
         {
             mNeedsRelease = true;
@@ -193,7 +193,7 @@ namespace
             ASSERT_FALSE(out.fail()) << path;
         }
 
-        std::string read_file(const std::filesystem::path& path)
+        [[maybe_unused]] std::string read_file(const std::filesystem::path& path)
         {
             std::ifstream input(path, std::ios::binary);
             EXPECT_TRUE(input.is_open()) << path;

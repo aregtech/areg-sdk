@@ -1,4 +1,4 @@
-﻿# 03_helloservice
+# 03_helloservice
 
 🧵🚀 **Type:** Multithreading + IPC
 

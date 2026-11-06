@@ -200,7 +200,7 @@ bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket, bool search)
     if (    (hSocket == areg::InvalidSocketHandle)
          || (hSocket == mWakeupReadFd)
          || (hSocket == mWakeupWriteFd)
-         || (static_cast<int32_t>(mSockets.size()) >= mMaxCount) )
+         || (static_cast<uint32_t>(mSockets.size()) >= mMaxCount) )
     {
         return false;
     }
@@ -304,7 +304,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
 
     WSAPOLLFD     stackFds[areg::DEFAULT_CONNECTIONS];
     std::vector<WSAPOLLFD> heapFds;
-    WSAPOLLFD* const fds = (total <= areg::DEFAULT_CONNECTIONS) ? stackFds : (heapFds.resize(static_cast<std::size_t>(total)), heapFds.data());
+    WSAPOLLFD* const fds = (static_cast<uint32_t>(total) <= areg::DEFAULT_CONNECTIONS) ? stackFds : (heapFds.resize(static_cast<std::size_t>(total)), heapFds.data());
 
     const auto socketCount = static_cast<INT>(mSockets.size());
     for (INT i = 0; i < socketCount; ++i)
@@ -378,7 +378,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait( SOCKETHANDLE            serverSocket
 
     WSAPOLLFD     stackFds[areg::DEFAULT_CONNECTIONS];
     std::vector<WSAPOLLFD> heapFds;
-    WSAPOLLFD* const fds = (total <= areg::DEFAULT_CONNECTIONS) ? stackFds : (heapFds.resize(static_cast<std::size_t>(total)), heapFds.data());
+    WSAPOLLFD* const fds = (static_cast<uint32_t>(total) <= areg::DEFAULT_CONNECTIONS) ? stackFds : (heapFds.resize(static_cast<std::size_t>(total)), heapFds.data());
 
     fds[0].fd      = serverSocket;
     fds[0].events  = POLLRDNORM;

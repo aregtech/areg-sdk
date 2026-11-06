@@ -124,3 +124,136 @@ TEST(MemoryDefsTest, boundary_buffer_data_uses_header_offset_and_accepts_null)
     EXPECT_EQ(areg::buffer_data_write(nullptr), nullptr);
     EXPECT_EQ(areg::buffer_data_read(nullptr), nullptr);
 }
+
+namespace
+{
+    //! The one place the tests call the inlined copy, so that a size is a run time value.
+    void _exact_copy(void * target, const void * source, uint32_t size)
+    {
+        areg::mem_copy_exact(target, source, size);
+    }
+}
+
+// Every size is copied whole, and the bytes after it stay.
+TEST(MemoryDefsTest, exact_copy_of_every_small_size)
+{
+    uint8_t source[32]{ };
+    for (uint32_t i = 0u; i < sizeof(source); ++i)
+    {
+        source[i] = static_cast<uint8_t>(i + 1u);
+    }
+
+    for (uint32_t size = 0u; size <= 24u; ++size)
+    {
+        uint8_t target[32]{ };
+        _exact_copy(target, source, size);
+        for (uint32_t i = 0u; i < sizeof(target); ++i)
+        {
+            EXPECT_EQ(target[i], (i < size) ? source[i] : 0u) << "size " << size << " index " << i;
+        }
+    }
+}
+
+// A copy reads and writes at any alignment.
+TEST(MemoryDefsTest, exact_copy_at_any_alignment)
+{
+    uint8_t source[16]{ 1u, 2u, 3u, 4u, 5u, 6u, 7u, 8u, 9u, 10u, 11u, 12u, 13u, 14u, 15u, 16u };
+    for (uint32_t size : { 2u, 4u, 8u })
+    {
+        for (uint32_t offset = 0u; offset < 8u; ++offset)
+        {
+            uint8_t target[16]{ };
+            _exact_copy(target + offset, source + 8u - offset, size);
+            for (uint32_t i = 0u; i < size; ++i)
+            {
+                EXPECT_EQ(target[offset + i], source[8u - offset + i]);
+            }
+        }
+    }
+}
+
+// Overlapping ranges are copied as if through a temporary, for a primitive size and a larger one.
+TEST(MemoryDefsTest, exact_copy_of_overlapping_ranges)
+{
+    uint8_t small[9]{ 1u, 2u, 3u, 4u, 5u, 6u, 7u, 8u, 9u };
+    _exact_copy(small + 1u, small, 8u);
+    EXPECT_EQ(small[1], 1u);
+    EXPECT_EQ(small[8], 8u);
+
+    uint8_t large[20]{ 1u, 2u, 3u, 4u, 5u, 6u, 7u, 8u, 9u, 10u, 11u, 12u, 13u, 14u, 15u, 16u };
+    _exact_copy(large + 2u, large, 16u);
+    EXPECT_EQ(large[2], 1u);
+    EXPECT_EQ(large[17], 16u);
+}
+
+namespace
+{
+    //! Returns a block with an empty buffer header for an owner to adopt.
+    areg::RawBuffer * _new_block()
+    {
+        uint8_t * const block{ new uint8_t[sizeof(areg::RawBuffer)] };
+        areg::RawBuffer * const raw{ reinterpret_cast<areg::RawBuffer *>(block) };
+        raw->bufHeader = areg::BufferHeader(0u, static_cast<uint32_t>(sizeof(areg::BufferHeader)), areg::BufferType::Internal);
+        return raw;
+    }
+}
+
+// An owner adopting nothing is empty and counts no owner.
+TEST(MemoryDefsTest, owner_of_nothing_is_empty)
+{
+    areg::RawBufferPtr owner(nullptr);
+    EXPECT_EQ(owner.get(), nullptr);
+    EXPECT_FALSE(static_cast<bool>(owner));
+    EXPECT_EQ(owner.use_count(), 0u);
+}
+
+// Copies count as owners, and the last one frees the block.
+TEST(MemoryDefsTest, owners_count_up_and_down)
+{
+    areg::RawBufferPtr first(_new_block());
+    EXPECT_EQ(first.use_count(), 1u);
+    {
+        areg::RawBufferPtr second(first);
+        EXPECT_EQ(first.use_count(), 2u);
+        areg::RawBufferPtr third;
+        third = second;
+        EXPECT_EQ(first.use_count(), 3u);
+    }
+
+    EXPECT_EQ(first.use_count(), 1u);
+}
+
+// A copy of an empty owner is empty.
+TEST(MemoryDefsTest, copy_of_an_empty_owner_is_empty)
+{
+    const areg::RawBufferPtr empty;
+    const areg::RawBufferPtr copy(empty);
+    EXPECT_EQ(copy.get(), nullptr);
+}
+
+// Assigning nothing releases the block, assigning itself keeps it.
+TEST(MemoryDefsTest, owner_assignment_of_nothing_and_of_itself)
+{
+    areg::RawBufferPtr owner(_new_block());
+    const areg::RawBufferPtr & same{ owner };
+    owner = same;
+    EXPECT_EQ(owner.use_count(), 1u);
+
+    const areg::RawBufferPtr empty;
+    owner = empty;
+    EXPECT_EQ(owner.get(), nullptr);
+}
+
+// A move leaves the source empty and keeps the count, a move into itself keeps the block.
+TEST(MemoryDefsTest, owner_move_and_move_into_itself)
+{
+    areg::RawBufferPtr source(_new_block());
+    areg::RawBufferPtr target;
+    target = std::move(source);
+    EXPECT_EQ(source.get(), nullptr);
+    EXPECT_EQ(target.use_count(), 1u);
+
+    areg::RawBufferPtr & alias{ target };
+    target = std::move(alias);
+    EXPECT_EQ(target.use_count(), 1u);
+}

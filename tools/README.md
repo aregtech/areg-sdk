@@ -102,7 +102,7 @@ about this repository: whether the framework, the agent corpus and the CI still 
 | `run-all-examples.bat` | Python | Wrapper around the driver for Windows | [9](#9-running-the-examples-as-a-test-suite) |
 | `areg_benchmarks.py` | Python | Turns the console output of the benchmarks into numbers | [10](#10-measuring-throughput-and-latency) |
 | `report-ctest.py` | Python | Republishes failed ctest cases as build server annotations | [9](#9-running-the-examples-as-a-test-suite) |
-| `check-ascii.py` | Python | Finds non ASCII bytes and unwanted control characters | [11](#11-source-hygiene-check-asciipy) |
+| `check-ascii.py` | Python | Checks the encoding of the text files, finds unwanted control characters | [11](#11-source-hygiene-check-asciipy) |
 | `footprint.py` | Python | Reports the flash size of the artefacts and the RAM of the running processes | [12](#12-flash-and-ram-footprint) |
 | `check_invariants.py` | Python | Seeds a defect per framework invariant, rebuilds, and asks whether the test suite notices. `--dry-run` is one second; `--restore` undoes a seed a killed run left | -- |
 | `check_inline_virtuals.py` | Python | Fails when a header defines a virtual method of a non-template class inline; such a method can leave a client of the shared library unable to link (bug 418) | -- |
@@ -624,34 +624,43 @@ it; there is nothing to run by hand.
 Two different checks live in this one tool. Both exit 0 when nothing was found and 1 when
 something was, so either can be used as a gate.
 
-### The ASCII rule
+### The encoding rule
 
-Every source, script, CMake and configuration file of the SDK must contain only bytes `0x00-0x7F`.
-Documents (`.md`, `.txt`) are exempt.
+Every text file of the SDK is one of these:
+
+| Encoding | Files |
+|---|---|
+| ASCII | everything not named below |
+| UTF-8 | documents (`.md`, `.txt`) and the character data of `ASCII_WAIVED`, no byte order mark |
+| UTF-8 with a byte order mark | a C or C++ source that holds non ASCII text: the mark is mandatory |
+| ASCII with a byte order mark | the project files Visual Studio writes (`BOM_ALLOWED`): the mark is accepted |
+
+UTF-16, UTF-32 and bytes that are not UTF-8 are never accepted.
 
 ```bash
 python3 tools/intern/check-ascii.py                     # the whole repository
 python3 tools/intern/check-ascii.py framework examples  # only these paths
 python3 tools/intern/check-ascii.py --staged            # only what git has staged
+python3 tools/intern/check-ascii.py --fix-encoding      # rewrites the files that break it
 ```
+
+The summary lists how many files have each encoding. `--fix-encoding` converts UTF-16 and UTF-32,
+and removes or adds the byte order mark. A non ASCII byte in an ASCII file stays for a person.
 
 The reason is the compilers, not taste. A source file without a byte order mark is read in the
 **code page of the machine that compiles it**. The same UTF-8 dash is therefore one thing on your
 machine and something else on a build server or on a user's machine in another locale -- silently,
 with no diagnostic, and inside a string literal that difference reaches the output of the program.
+Visual Studio saves a resource script as UTF-16, and clang cannot read that: the rule catches it
+before a clang-cl build fails.
 
-Files whose content is character data are waived, because there the non ASCII bytes are the
-subject and not a defect: the string classes, the character tables and the string tests. The list
-is `ASCII_WAIVED` at the top of the script:
+Files whose content is character data are waived from ASCII, because there the non ASCII bytes are
+the subject and not a defect: the string classes, the character tables and the string tests. The
+list is `ASCII_WAIVED` at the top of the script, matched against the path and the file name:
 
 ```
-framework/areg/base/String*.hpp
-framework/areg/base/WideString.hpp
+*String*.*
 framework/areg/base/TableDefs.hpp
-framework/areg/base/private/String*.cpp
-framework/areg/base/private/WideString.cpp
-tests/units/String*Test*.cpp
-tests/units/WideString*Test*.cpp
 tests/units/*Encod*Test*.cpp
 ```
 

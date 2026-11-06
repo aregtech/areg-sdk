@@ -77,6 +77,16 @@ bool SqliteStatement::execute() noexcept
     return (is_valid() && (SQLITE_DONE == sqlite3_step(_sqlite_stmt(mStatement))));
 }
 
+SqliteRow SqliteStatement::row() const noexcept
+{
+    return (is_valid() && (sqlite3_data_count(_sqlite_stmt(mStatement)) > 0)) ? SqliteRow(mStatement) : SqliteRow();
+}
+
+SqliteRow SqliteStatement::next_row() noexcept
+{
+    return (next() == QueryResult::HasMore) ? SqliteRow(mStatement) : SqliteRow();
+}
+
 SqliteStatement::QueryResult SqliteStatement::next() noexcept
 {
     int32_t result = is_valid() ? sqlite3_step(_sqlite_stmt(mStatement)) : SQLITE_ERROR;
@@ -149,7 +159,7 @@ bool SqliteStatement::bind_text(int32_t index, const String& value) noexcept
 
 bool SqliteStatement::bind_text_static(int32_t index, const char* value) noexcept
 {
-    return (value != nullptr ? (index >= 0) && is_valid() && (sqlite3_bind_text(_sqlite_stmt(mStatement), index + 1, value, -1, SQLITE_STATIC) == SQLITE_OK) : bind_null(index));
+    return (value != nullptr ? (index >= 0) && is_valid() && (sqlite3_bind_text(_sqlite_stmt(mStatement), index + 1, value, -1, static_cast<sqlite3_destructor_type>(nullptr)) == SQLITE_OK) : bind_null(index));
 }
 
 bool SqliteStatement::bind_null(int32_t index) noexcept

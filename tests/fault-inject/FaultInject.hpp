@@ -57,6 +57,15 @@ namespace areg_fault
         , FileOpen          //!< POSIX open(), open64(), Windows CreateFileA(), CreateFileW(). Error: errno value / Win32 error.
         , DirOpen           //!< POSIX opendir(). Not replaced on Windows.
         , ProcessSpawn      //!< POSIX posix_spawnp(). Not replaced on Windows.
+        , SocketConnect     //!< Linux connect(). Not replaced on macOS and Windows. Error: errno value.
+        , SocketSend        //!< Linux send() and sendmsg(). Not replaced on macOS and Windows. Error: errno value.
+        , SocketRecv        //!< Linux recv(). Not replaced on macOS and Windows. Error: errno value.
+        , SocketBind        //!< Linux bind(). Not replaced on macOS and Windows. Error: errno value.
+        , SocketListen      //!< Linux listen(). Not replaced on macOS and Windows. Error: errno value.
+        , EpollCtl          //!< Linux epoll_ctl(). Not replaced elsewhere. Error: errno value.
+        , FileRead          //!< Linux read(). Not replaced elsewhere. Error: errno value.
+        , FileWrite         //!< Linux write(). Not replaced elsewhere. Error: errno value.
+        , Allocation        //!< Linux operator new(std::nothrow) and operator new[](std::nothrow): returns nullptr. Not replaced elsewhere; the error is ignored.
         , Count             //!< The number of points.
     };
 }

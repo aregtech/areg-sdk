@@ -29,7 +29,7 @@ DEF_LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient, on_run);
 PowerControllerClient::PowerControllerClient(const char* roleName, areg::Component & owner)
     : PowerManagerConsumerBase        (roleName, owner)
     , areg::ThreadConsumer              ( )
-    , IEPowerControllerEventConsumer( )
+    , PowerControllerEventConsumer( )
 
     , mConsole                      ( static_cast<areg::ThreadConsumer &>(self()), PowerControllerClient::ConsoleThreadName.data() )
 {
@@ -151,14 +151,14 @@ bool PowerControllerClient::service_connected( areg::ServiceConnectionState stat
     if ( is_connected( ) )
     {
         LOG_DBG( "Adding PowerControllerEvent custom event listener to receive messages" );
-        PowerControllerEvent::add_listener( static_cast<IEPowerControllerEventConsumer &>(self( )), proxy.proxy_dispatcher_thread( ) );
+        PowerControllerEvent::add_listener( static_cast<PowerControllerEventConsumer &>(self( )), proxy.proxy_dispatcher_thread( ) );
         mConsole.start( areg::WAIT_INFINITE );
     }
     else
     {
         LOG_DBG( "Remove listener and stop worker thread" );
         mConsole.shutdown( areg::WAIT_INFINITE );
-        PowerControllerEvent::remove_listener( static_cast<IEPowerControllerEventConsumer &>(self( )) );
+        PowerControllerEvent::remove_listener( static_cast<PowerControllerEventConsumer &>(self( )) );
     }
 
     return result;

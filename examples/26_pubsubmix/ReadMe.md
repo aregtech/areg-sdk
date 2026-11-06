@@ -1,4 +1,4 @@
-﻿# 26_pubsubmix
+# 26_pubsubmix
 
 🧵🚀 **Type:** Multithreading + IPC
 

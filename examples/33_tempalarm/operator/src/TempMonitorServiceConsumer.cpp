@@ -236,6 +236,8 @@ const char * TempMonitorServiceConsumer::step_slot()
     case Step::AcceptThresholds:  return "step_AcceptThresholds";
     case Step::WatchReadings:  return "step_WatchReadings";
     case Step::RequestStats:  return "step_RequestStats";
+    case Step::Start:
+    case Step::Done:
     default:  return "no step";
     }
 }
@@ -249,6 +251,8 @@ const char * TempMonitorServiceConsumer::step_detail()
     case Step::AcceptThresholds:  return "sent request_set_thresholds(300, 30) and awaits response set_thresholds";
     case Step::WatchReadings:  return "awaits update Reading";
     case Step::RequestStats:  return "sent request_get_statistics() and awaits response get_statistics";
+    case Step::Start:
+    case Step::Done:
     default:  return "waits for nothing";
     }
 }
@@ -339,6 +343,7 @@ void TempMonitorServiceConsumer::begin(Step step)
         mPace.stop_timer();
         quit_with(0);
         break;
+    case Step::Start:
     default:
         break;
     }

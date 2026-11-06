@@ -267,6 +267,7 @@ int main(int argc, char * argv[])
         case TestCase::RequestsTwoThreads:      ok = run_requests_two_threads(*client); break;
         case TestCase::ProviderSetBroadcast:    ok = run_provider_set_broadcast();      break;
         case TestCase::ProviderResponse:        ok = run_provider_response(*client);    break;
+        case TestCase::None:
         default:                                                                        break;
         }
     }

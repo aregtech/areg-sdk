@@ -30,8 +30,8 @@
 #include "areg/persist/ConfigManager.hpp"
 
 #if defined(_WIN32)
-    #include <winsock2.h>
-    #include <ws2tcpip.h>
+    #include <WinSock2.h>
+    #include <WS2tcpip.h>
 #else   // !defined(_WIN32)
     #include <arpa/inet.h>
     #include <netinet/in.h>

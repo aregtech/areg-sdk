@@ -385,8 +385,9 @@ public:
 
     /**
      * \brief   Returns a SqliteRow object representing the current row.
+     *          The row reads the statement, so it follows every step of the statement.
      *
-     * \return  The current SqliteRow.
+     * \return  The current SqliteRow; it is not valid if the statement has no current row.
      **/
     [[nodiscard]]
     SqliteRow row() const noexcept;
@@ -394,17 +395,10 @@ public:
     /**
      * \brief   Advances to the next row and returns a SqliteRow object for it.
      *
-     * \return  The next SqliteRow.
+     * \return  The next SqliteRow; it is not valid if there is no next row or the step failed.
      **/
     [[nodiscard]]
-    SqliteRow next_row() const noexcept;
-
-    /**
-     * \brief   Advances to the next row in the result set (const overload).
-     *
-     * \return  True if a new row is available; false otherwise.
-     **/
-    bool next() const noexcept;
+    SqliteRow next_row() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

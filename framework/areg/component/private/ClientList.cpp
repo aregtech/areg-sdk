@@ -26,17 +26,6 @@ namespace areg {
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
-bool ClientList::exist( const ProxyAddress & client ) const noexcept
-{
-    return contains(ClientInfo(client));
-}
-
-const ClientInfo & ClientList::consumer( const ProxyAddress & whichClient ) const noexcept
-{
-    LISTPOS pos = find(ClientInfo(whichClient));
-    return (is_valid_position(pos) ? *pos : ClientInfo::invalid_client_info());
-}
-
 const ClientInfo & ClientList::register_consumer( const ProxyAddress & whichClient, const ServerInfo & server )
 {
     ClientInfo clInfo(whichClient);

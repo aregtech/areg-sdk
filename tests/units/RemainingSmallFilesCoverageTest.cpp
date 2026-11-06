@@ -66,7 +66,7 @@ namespace
 #endif
     }
 
-    void exiting_fatal_handler(const char* reason) noexcept
+    [[noreturn]] void exiting_fatal_handler(const char* reason) noexcept
     {
         std::fprintf(stderr, "fatal callback received: %s\n", reason != nullptr ? reason : "null");
         std::exit(73);

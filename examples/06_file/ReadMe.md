@@ -1,4 +1,4 @@
-﻿# 06_file
+# 06_file
 
 🧵 **Type:** Multithreading / Single Process
 

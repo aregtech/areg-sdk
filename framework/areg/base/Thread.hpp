@@ -756,16 +756,6 @@ private:
      **/
     static void _bump_registry_generation() noexcept;
 
-    /**
-     * \brief   Searches for thread by ID and returns its handle. Returns nullptr if not found or
-     *          thread is invalid.
-     *
-     * \param   threadId    The ID of thread to search.
-     * \return  Thread handle if found; nullptr if thread is invalid.
-     **/
-    [[nodiscard]]
-    inline static THREADHANDLE _find_handle( id_type threadId) noexcept;
-
 //////////////////////////////////////////////////////////////////////////
 // OS specific hidden calls
 //////////////////////////////////////////////////////////////////////////
@@ -894,12 +884,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Thread class inline function implementation
 //////////////////////////////////////////////////////////////////////////
-
-inline THREADHANDLE Thread::_find_handle( id_type threadId) noexcept
-{
-    Thread * result = Thread::_map_thread_id().find_resource_object(threadId);
-    return (result != nullptr ? result->mThreadHandle : nullptr);
-}
 
 inline bool Thread::_is_valid_no_lock() const noexcept
 {

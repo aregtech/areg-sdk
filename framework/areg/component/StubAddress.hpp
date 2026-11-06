@@ -123,10 +123,9 @@ public:
     StubAddress( const ServiceItem & service, const String & roleName, const String & threadName = String::empty_string() );
 
     /**
-     * \brief   Creates a stub address from a service item and component role number.
+     * \brief   Creates a stub address from a service address and a thread number.
      *
-     * \param   service         Service item containing basic service address.
-     * \param   roleNum         The role number of the holder component.
+     * \param   service         Service address.
      * \param   threadNum       The thread number of the stub. If zero, uses the current thread.
      * \param   stubNum         The unique number of the stub.
      **/

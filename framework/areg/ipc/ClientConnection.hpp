@@ -178,8 +178,9 @@ public:
     /**
      * \brief   Sends a batch of messages via scatter-gather (writev / WSASend) in a single syscall.
      *
-     * \param   messages    Array of pointers to messages to send. Entries may be nullptr (skipped).
+     * \param   ioBuffer    Array of the buffers to send.
      * \param   count       Number of entries in the array.
+     * \param   totalSize   Total bytes of all buffers; 0 if not known.
      * \return  Returns total bytes sent on success, or 0 / negative on failure.
      *
      * \note    Threading: call only from the send thread that owns this connection.

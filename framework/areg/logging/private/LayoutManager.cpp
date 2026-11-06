@@ -38,7 +38,7 @@ bool LayoutManager::create_layouts( const char * layoutFormat )
 
 bool LayoutManager::create_layouts(const String& layoutFormat)
 {
-    return _parse_layouts(layoutFormat.as_string(), layoutFormat.length());
+    return _parse_layouts(layoutFormat.as_string(), static_cast<uint32_t>(layoutFormat.length()));
 }
 
 bool LayoutManager::_parse_layouts(const char* layoutFormat, uint32_t len)

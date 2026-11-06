@@ -1810,11 +1810,11 @@ constexpr void areg::trim_all( CharDst*           strDst
                             , const CharSrc*    strSrc
                             , areg::CharCount   lenSrc /*= areg::COUNT_ALL*/ ) noexcept
 {
-    if (strDst == nullptr)
+    if ((strDst == nullptr) || (lenDst <= 0))
         return;
 
     *strDst = static_cast<CharDst>(areg::EndOfString);
-    if (lenDst <= 0 || is_empty<CharSrc>(strSrc))
+    if (is_empty<CharSrc>(strSrc))
         return;
 
     const areg::CharCount len = (lenSrc == areg::COUNT_ALL) ? areg::string_length<CharSrc>(strSrc) : lenSrc;
@@ -1905,12 +1905,12 @@ constexpr void areg::trim_right( CharDst*          strDst
                                , const CharSrc*   strSrc
                                , areg::CharCount  lenSrc /*= areg::COUNT_ALL*/ ) noexcept
 {
-    if (strDst == nullptr)
+    if ((strDst == nullptr) || (lenDst <= 0))
         return;
 
     *strDst = static_cast<CharDst>(areg::EndOfString);
 
-    if (lenDst <= 0 || is_empty<CharSrc>(strSrc))
+    if (is_empty<CharSrc>(strSrc))
         return;
 
     const areg::CharCount len = (lenSrc == areg::COUNT_ALL) ? areg::string_length<CharSrc>(strSrc) : lenSrc;
@@ -1969,11 +1969,11 @@ constexpr void areg::trim_left( CharDst*          strDst
                               , const CharSrc*   strSrc
                               , areg::CharCount  lenSrc /*= areg::COUNT_ALL*/ ) noexcept
 {
-    if (strDst == nullptr)
+    if ((strDst == nullptr) || (lenDst <= 0))
         return;
 
     *strDst = static_cast<CharDst>(areg::EndOfString);
-    if (lenDst <= 0 || is_empty<CharSrc>(strSrc))
+    if (is_empty<CharSrc>(strSrc))
         return;
 
     const areg::CharCount len = (lenSrc == areg::COUNT_ALL) ? areg::string_length<CharSrc>(strSrc) : lenSrc;

@@ -1,4 +1,4 @@
-﻿# 08\_timer
+# 08\_timer
 
 🧵 **Type:** Multithreading / Single Process
 

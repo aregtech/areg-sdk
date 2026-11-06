@@ -1,4 +1,4 @@
-﻿# Areg SDK Logging Configuration
+# Areg SDK Logging Configuration
 
 The Areg SDK provides a highly configurable logging system via the `areg.init` configuration file, enabling customization of log destinations, formats, scopes, and priorities for enhanced debugging and runtime analysis.
 

@@ -75,6 +75,7 @@ namespace areg::ext {
  * 
  *          If parsing an option fails, for example, if the value is out of range or the closing quote ("\"") of the string is missed,
  *          the `inField` field of the InputOption contains error flag, which can be checked by static method `has_input_error(uint32_t flags)`.
+ *          In an option line the symbol ';' ends an entry. It stays a value of a free string option, any other option ignores it.
  *
  *          Example:   These are examples of setting options:
  *              1. Command line simple options: '-a', '-b', '-c'

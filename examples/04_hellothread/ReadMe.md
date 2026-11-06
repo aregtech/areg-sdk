@@ -1,4 +1,4 @@
-﻿# 04_hellothread
+# 04_hellothread
 
 🧵 **Type:** Multithreading / Single Process
 

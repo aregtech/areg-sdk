@@ -10,6 +10,10 @@ on:
     - cron: '32 22 * * 1'
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   plan:
     name: plan
@@ -26,7 +30,7 @@ jobs:
         shell: bash
         env:
           EVENT: ${{ github.event_name }}
-          PATTERN: '^(framework|examples|tests|thirdparty|conf)/|(^|/)CMakeLists\.txt$|\.cmake$|^tools/(codegen\.jar|schema/)|^tools/intern/(run-all-examples\.py|hang-watchdog\.sh|report-ctest\.py|check_invariants\.py|check_inline_virtuals\.py)$|^\.github/(ci/|workflows/codeql-analysis\.yml)'
+          PATTERN: '^(framework|examples|tests|thirdparty|conf)/|(^|/)CMakeLists\.txt$|\.cmake$|^tools/(codegen\.jar|schema/)|^tools/intern/(run-all-examples\.py|hang-watchdog\.sh|report-ctest\.py|check_invariants\.py|check_inline_virtuals\.py|ci-changes\.sh)$|^\.github/(ci/|workflows/codeql-analysis\.yml)'
           MATRIX: ''
         run: |
           case "${EVENT}" in
@@ -36,7 +40,7 @@ jobs:
           esac
           RUN=true
           if [ -n "${BASE}" ] && git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
-            git diff --name-only "${BASE}" "${GITHUB_SHA}" | grep -qE "${PATTERN}" || RUN=false
+            RUN="$(bash tools/intern/ci-changes.sh "${BASE}" "${GITHUB_SHA}" "${PATTERN}")"
           fi
           echo "run=${RUN}" >> "${GITHUB_OUTPUT}"
           if [ -n "${MATRIX}" ]; then
@@ -48,6 +52,7 @@ jobs:
     needs: plan
     if: needs.plan.outputs.run == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     permissions:
       actions: read
       contents: read

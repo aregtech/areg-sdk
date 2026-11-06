@@ -1,4 +1,4 @@
-﻿# Setup and Using Lusan
+# Setup and Using Lusan
 
 This guide explains how to build, configure, and use **Lusan**, the graphical development and diagnostics tool for the Areg SDK ecosystem. Lusan combines visual service interface design, centralized log collection, live monitoring, and offline analysis in a unified workspace environment.
 

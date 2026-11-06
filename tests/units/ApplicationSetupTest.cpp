@@ -196,7 +196,7 @@ TEST_P(ApplicationSetupOptionsTest, selected_services_are_ready_and_release_join
 }
 
 INSTANTIATE_TEST_SUITE_P(ServiceFlags, ApplicationSetupOptionsTest, testing::ValuesIn(valid_setup_options())
-    , [](const testing::TestParamInfo<uint32_t>& info) { return "Flags" + std::to_string(info.param); });
+    , [](const testing::TestParamInfo<uint32_t>& flags) { return "Flags" + std::to_string(flags.param); });
 
 TEST_P(ApplicationSetupRoutingDependencyTest, routing_only_setup_starts_its_service_and_timer_dependencies)
 {
@@ -210,7 +210,7 @@ TEST_P(ApplicationSetupRoutingDependencyTest, routing_only_setup_starts_its_serv
 
 INSTANTIATE_TEST_SUITE_P(RoutingDependency, ApplicationSetupRoutingDependencyTest
     , testing::Values(4u, 5u, 12u, 13u, 20u, 21u, 28u, 29u)
-    , [](const testing::TestParamInfo<uint32_t>& info) { return "Flags" + std::to_string(info.param); });
+    , [](const testing::TestParamInfo<uint32_t>& flags) { return "Flags" + std::to_string(flags.param); });
 
 TEST_F(ApplicationSetupTest, configuration_only_setup_transitions_from_stopped_to_ready)
 {
@@ -458,10 +458,10 @@ TEST_F(ApplicationSetupTest, one_quit_signal_releases_all_waiters_without_consum
         ready[index] = entered[index].get_future();
         std::promise<bool> result;
         returned[index] = result.get_future();
-        waiters[index] = std::thread([&, index, result = std::move(result)]() mutable
+        waiters[index] = std::thread([&, index, waited = std::move(result)]() mutable
         {
             entered[index].set_value();
-            result.set_value(areg::Application::wait_quit(APP_WAIT_MS));
+            waited.set_value(areg::Application::wait_quit(APP_WAIT_MS));
         });
     }
     for (auto& future : ready)

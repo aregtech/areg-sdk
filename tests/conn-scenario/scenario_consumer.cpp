@@ -17,6 +17,7 @@
 #include "areg/base/areg_global.h"
 #include "conn-scenario/conn_scenario.hpp"
 
+#include "areg/base/Process.hpp"
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentLoader.hpp"
@@ -77,7 +78,7 @@ protected:
             mTimer.stop_timer();
             mExpected = 0u;
             mDown = true;
-            if (std::getenv("CONN_SCENARIO_UNSUBSCRIBE") != nullptr)
+            if (!areg::Process::instance().safe_env_variable("CONN_SCENARIO_UNSUBSCRIBE").is_empty())
             {
                 notify_on_broadcast_bulk_block(false);
             }
@@ -192,7 +193,7 @@ protected:
         else
         {
             mTimer.stop_timer();
-            if (std::getenv("CONN_SCENARIO_UNSUBSCRIBE") != nullptr)
+            if (!areg::Process::instance().safe_env_variable("CONN_SCENARIO_UNSUBSCRIBE").is_empty())
             {
                 notify_on_integer_always_update(false);
             }

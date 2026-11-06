@@ -405,6 +405,7 @@ int main(int argc, char * argv[])
         ok = run_late();
         break;
 
+    case TestCase::None:
     default:
         break;
     }

@@ -59,6 +59,9 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     EventQueueTest.cpp
     FatalErrorTest.cpp
     RemainingSmallFilesCoverageTest.cpp
+    RemainderCoverageTest.cpp
+    StringDefsEdgeTest.cpp
+    StreamPrimitivesTest.cpp
     FileBufferTest.cpp
     FileTest.cpp
     FixedArrayTest.cpp
@@ -98,6 +101,10 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     ScopedLockTest.cpp
     SendBacklogTest.cpp
     ServiceAddressTest.cpp
+    ServiceApplicationBaseTest.cpp
+    ServiceCommConnectionTest.cpp
+    ServiceCommDefsTest.cpp
+    ServiceCommServerTest.cpp
     ServiceDefsTest.cpp
     SharedBufferTest.cpp
     SocketAddressTest.cpp
@@ -106,6 +113,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     SocketLivenessTest.cpp
     SocketMultiplexerTest.cpp
     SocketWouldBlockTest.cpp
+    SqliteStatementTest.cpp
     SortedLinkedListTest.cpp
     StreamConverterTest.cpp
     StreamExtractTest.cpp
@@ -120,6 +128,8 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     StringTest.cpp
     StringUtilsTest.cpp
     SyncTimerTest.cpp
+    SystemServiceBaseTest.cpp
+    SystemServiceDefsTest.cpp
     UtilityDefsTest.cpp
     VersionTest.cpp
     ThreadTest.cpp

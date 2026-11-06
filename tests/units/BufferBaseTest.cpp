@@ -558,3 +558,215 @@ TEST(BufferBaseTest, truncated_nested_length_keeps_cursor)
     EXPECT_EQ(stream.position(), 0u);
     EXPECT_FALSE(destination.is_valid());
 }
+
+namespace
+{
+    //! Makes the protected interface of the buffer reachable for a test.
+    class BufferProbe : public areg::BufferBase
+    {
+    public:
+        using areg::BufferBase::BufferBase;
+        using areg::BufferBase::buffer_to_read;
+        using areg::BufferBase::init_buffer;
+        using areg::BufferBase::read_view;
+        using areg::BufferBase::size_writable;
+        using areg::BufferBase::write_data;
+        using areg::BufferBase::write_view;
+    };
+}
+
+// The position decides is_begin() of a valid buffer.
+TEST(BufferBaseTest, is_begin_follows_the_position)
+{
+    constexpr uint8_t DATA[]{ 1u, 2u };
+    areg::BufferBase buffer;
+    ASSERT_EQ(buffer.write(DATA, sizeof(DATA)), sizeof(DATA));
+    EXPECT_FALSE(buffer.is_begin());
+    buffer.reset();
+    EXPECT_TRUE(buffer.is_begin());
+}
+
+// A read of no element gives nothing, a read of one element gives its address.
+TEST(BufferBaseTest, read_array_of_no_element_and_of_one_element)
+{
+    constexpr uint32_t VALUE{ 7u };
+    areg::BufferBase buffer;
+    ASSERT_EQ(buffer.write_pod(VALUE), sizeof(VALUE));
+    buffer.reset();
+    EXPECT_EQ(buffer.read_array<uint32_t>(0u), nullptr);
+    const uint32_t * const read{ buffer.read_array<uint32_t>(1u) };
+    ASSERT_NE(read, nullptr);
+    EXPECT_EQ(*read, VALUE);
+}
+
+// The read address of a buffer without a block is null, the writable size is 0.
+TEST(BufferBaseTest, buffer_without_a_block_gives_no_address_and_no_room)
+{
+    BufferProbe buffer;
+    EXPECT_EQ(buffer.buffer_to_read(), nullptr);
+    EXPECT_EQ(buffer.size_writable(), 0u);
+}
+
+// The writable size is what the block has after the used bytes.
+TEST(BufferBaseTest, writable_size_is_the_rest_of_the_block)
+{
+    constexpr uint8_t DATA[]{ 1u, 2u, 3u };
+    BufferProbe buffer;
+    ASSERT_EQ(buffer.write(DATA, sizeof(DATA)), sizeof(DATA));
+    EXPECT_EQ(buffer.size_writable(), buffer.size_available() - sizeof(DATA));
+}
+
+// Without a new block init_buffer() reports an invalid position.
+TEST(BufferBaseTest, init_buffer_without_a_block_is_invalid)
+{
+    BufferProbe buffer;
+    EXPECT_EQ(buffer.init_buffer(nullptr, 64u, false), areg::Cursor::INVALID_CURSOR_POSITION);
+}
+
+// A view of no bytes and a view past the end of the data are refused.
+TEST(BufferBaseTest, read_view_refuses_no_bytes_and_a_range_past_the_data)
+{
+    constexpr uint8_t DATA[]{ 1u, 2u, 3u, 4u };
+    BufferProbe buffer;
+    EXPECT_EQ(buffer.read_view(1u), nullptr);
+    ASSERT_EQ(buffer.write(DATA, sizeof(DATA)), sizeof(DATA));
+    buffer.reset();
+    EXPECT_EQ(buffer.read_view(0u), nullptr);
+    EXPECT_EQ(buffer.read_view(sizeof(DATA) + 1u), nullptr);
+    ASSERT_NE(buffer.read_view(3u), nullptr);
+
+    // Another owner of the block cuts the data before the position of this one.
+    BufferProbe other(buffer);
+    other.set_size_used(1u);
+    EXPECT_EQ(buffer.read_view(1u), nullptr);
+}
+
+// A write view of no bytes and one that wraps the position are refused.
+TEST(BufferBaseTest, write_view_refuses_no_bytes_and_a_wrapping_size)
+{
+    constexpr uint8_t DATA[]{ 1u, 2u, 3u, 4u };
+    BufferProbe buffer;
+    EXPECT_EQ(buffer.write_view(0u), nullptr);
+    ASSERT_EQ(buffer.write(DATA, sizeof(DATA)), sizeof(DATA));
+    EXPECT_EQ(buffer.write_view(0xFFFFFFFFu), nullptr);
+    EXPECT_EQ(buffer.size_used(), sizeof(DATA));
+}
+
+// A write view before the end of the data keeps the used size.
+TEST(BufferBaseTest, write_view_inside_the_data_keeps_the_used_size)
+{
+    constexpr uint8_t DATA[]{ 1u, 2u, 3u, 4u };
+    BufferProbe buffer;
+    ASSERT_EQ(buffer.write(DATA, sizeof(DATA)), sizeof(DATA));
+    buffer.reset();
+    uint8_t * const view{ buffer.write_view(2u) };
+    ASSERT_NE(view, nullptr);
+    view[0] = 9u;
+    EXPECT_EQ(buffer.size_used(), sizeof(DATA));
+    EXPECT_EQ(buffer.buffer()[0], 9u);
+}
+
+// A write view grows the block and the used size.
+TEST(BufferBaseTest, write_view_grows_the_block)
+{
+    BufferProbe buffer;
+    uint8_t * const view{ buffer.write_view(10000u) };
+    ASSERT_NE(view, nullptr);
+    EXPECT_EQ(buffer.size_used(), 10000u);
+}
+
+// A write that wraps the position, and one past the limit of a buffer, write nothing.
+TEST(BufferBaseTest, write_refuses_a_wrapping_size_and_a_size_past_the_limit)
+{
+    constexpr uint8_t DATA[]{ 1u, 2u, 3u, 4u };
+    areg::BufferBase buffer;
+    ASSERT_EQ(buffer.write(DATA, sizeof(DATA)), sizeof(DATA));
+    EXPECT_EQ(buffer.write(DATA, 0xFFFFFFFFu), 0u);
+    EXPECT_EQ(buffer.write(DATA, areg::MAX_BUF_LENGTH + 1u), 0u);
+    EXPECT_EQ(buffer.size_used(), sizeof(DATA));
+}
+
+// A write of nothing and a write from no source are refused on the fast path too.
+TEST(BufferBaseTest, write_refuses_no_bytes_and_no_source)
+{
+    constexpr uint8_t DATA[]{ 1u };
+    BufferProbe buffer;
+    ASSERT_EQ(buffer.write_data(DATA, sizeof(DATA)), sizeof(DATA));
+    EXPECT_EQ(buffer.write(DATA, 0u), 0u);
+    EXPECT_EQ(buffer.write(nullptr, 1u), 0u);
+    EXPECT_EQ(buffer.size_used(), sizeof(DATA));
+}
+
+// Reproduces the defect: ensure_size(0) reported no room on a buffer without a block, so an empty value was never sent.
+TEST(BufferBaseTest, ensure_size_of_nothing_is_always_true)
+{
+    areg::BufferBase buffer;
+    EXPECT_TRUE(buffer.ensure_size(0u));
+    EXPECT_FALSE(buffer.is_valid());
+}
+
+// ensure_size() keeps a block that has the room and grows one that has not.
+TEST(BufferBaseTest, ensure_size_keeps_or_grows_the_block)
+{
+    constexpr uint8_t DATA[]{ 5u, 6u };
+    areg::BufferBase buffer;
+    ASSERT_EQ(buffer.write(DATA, sizeof(DATA)), sizeof(DATA));
+    const uint32_t capacity{ buffer.size_available() };
+    EXPECT_TRUE(buffer.ensure_size(1u));
+    EXPECT_EQ(buffer.size_available(), capacity);
+    EXPECT_TRUE(buffer.ensure_size(capacity * 2u));
+    EXPECT_GT(buffer.size_available(), capacity);
+    EXPECT_EQ(buffer.position(), sizeof(DATA));
+    EXPECT_EQ(buffer.buffer()[1], 6u);
+}
+
+// A length prefix that claims more than the rest of the source reads nothing.
+TEST(BufferBaseTest, read_of_a_buffer_refuses_a_length_past_the_data)
+{
+    const uint32_t length{ 100u };
+    areg::BufferBase source;
+    ASSERT_EQ(source.write_pod(length), sizeof(length));
+    source.reset();
+    areg::SharedBuffer target;
+    EXPECT_EQ(source.read(target), 0u);
+    EXPECT_FALSE(target.is_valid());
+    EXPECT_EQ(source.position(), 0u);
+}
+
+// A write view of no bytes on a valid buffer is refused and changes nothing.
+TEST(BufferBaseTest, write_view_of_no_bytes_on_a_valid_buffer)
+{
+    constexpr uint8_t DATA[]{ 1u };
+    BufferProbe buffer;
+    ASSERT_EQ(buffer.write(DATA, sizeof(DATA)), sizeof(DATA));
+    EXPECT_EQ(buffer.write_view(0u), nullptr);
+    EXPECT_EQ(buffer.position(), sizeof(DATA));
+}
+
+// Every copy size goes through the fast write, the growing write and the read of a buffer.
+TEST(BufferBaseTest, every_copy_size_writes_and_reads)
+{
+    uint8_t source[16]{ };
+    for (uint32_t i = 0u; i < sizeof(source); ++i)
+    {
+        source[i] = static_cast<uint8_t>(0xA0u + i);
+    }
+
+    for (uint32_t size : { 1u, 2u, 3u, 4u, 8u, 16u })
+    {
+        areg::BufferBase grown;
+        ASSERT_EQ(grown.write(source, size), size);
+
+        areg::BufferBase fast(4096u, areg::BLOCK_SIZE);
+        ASSERT_EQ(fast.write(source, size), size);
+
+        uint8_t target[16]{ };
+        grown.reset();
+        ASSERT_EQ(grown.read(target, size), size);
+        EXPECT_TRUE(areg::mem_equal(target, source, size)) << "size " << size;
+
+        fast.reset();
+        ASSERT_EQ(fast.read(target, size), size);
+        EXPECT_TRUE(areg::mem_equal(target, source, size)) << "size " << size;
+    }
+}

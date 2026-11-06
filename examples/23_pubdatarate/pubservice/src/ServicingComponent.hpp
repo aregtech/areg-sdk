@@ -37,7 +37,7 @@
 //!< Declare as a class to use in namespace.
 using OptionData = util::OptionValues;
 
-AREG_DECLARE_EVENT(OptionData, EventOption, IEOptionConsumer);
+AREG_DECLARE_EVENT(OptionData, EventOption, OptionConsumerBase);
 
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent class declaration
@@ -61,11 +61,11 @@ class ServicingComponent final  : public    areg::Component
 // ServicingComponent::OptionConsumer class declaration
 //////////////////////////////////////////////////////////////////////////
     //!< OptionConsumer class to receive options changed events
-    class OptionConsumer    : public    IEOptionConsumer
+    class OptionConsumer    : public    OptionConsumerBase
     {
     public:
         OptionConsumer( ServicingComponent & service )
-            : IEOptionConsumer  ( )
+            : OptionConsumerBase  ( )
             , mService          ( service )
             {
             }
@@ -74,7 +74,7 @@ class ServicingComponent final  : public    areg::Component
 
     private:
     /************************************************************************/
-    // IEOptionConsumer interface overrides
+    // OptionConsumerBase interface overrides
     /************************************************************************/
 
         /**
@@ -237,6 +237,7 @@ class ServicingComponent final  : public    areg::Component
     {
         DataRate() = default;
         DataRate(const DataRate&) = default;
+        DataRate& operator=(const DataRate&) = default;
 
         //!< Data Rate in bytes
         uint64_t    sentData    { 0u };
@@ -493,5 +494,5 @@ inline uint64_t ServicingComponent::_slot_at_ns(uint64_t timeNs, uint64_t blockT
 
 inline uint64_t ServicingComponent::time_passed(const std::chrono::steady_clock::time_point& time_begin) const
 {
-    return (std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - time_begin).count());
+    return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - time_begin).count());
 }

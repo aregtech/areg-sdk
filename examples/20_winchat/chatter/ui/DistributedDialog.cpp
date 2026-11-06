@@ -27,7 +27,7 @@
 #define new DEBUG_NEW
 #endif
 
-#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<uint32_t>(NEDistributedApp::WindowCommand::CmdFirst))
+#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<uint32_t>(DistributedAppDefs::WindowCommand::CmdFirst))
 #define MAKE_MESSAGE(elem)  (static_cast<uint32_t>(elem) + FIRST_MESSAGE)
 
 
@@ -64,7 +64,7 @@ END_MESSAGE_MAP()
 
 // DistributedDialog dialog
 
-bool DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand cmd, WPARAM wParam, LPARAM lParam )
+bool DistributedDialog::PostServiceMessage( DistributedAppDefs::WindowCommand cmd, WPARAM wParam, LPARAM lParam )
 {
     bool result = false;
     DistributedDialog * dlg = DistributedDialog::GetDialog();
@@ -110,19 +110,19 @@ BEGIN_MESSAGE_MAP(DistributedDialog, CPropertySheet)
     ON_WM_QUERYDRAGICON()
     ON_COMMAND(IDOK, &DistributedDialog::OnRedirectOK)
 
-    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::WindowCommand::CmdServiceStartup      ), &DistributedDialog::OnCmdServiceStartup )
-    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::WindowCommand::CmdServiceNetwork      ), &DistributedDialog::OnCmdServiceNetwork )
-    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::WindowCommand::CmdServiceConnection   ), &DistributedDialog::OnCmdServiceConnection )
-    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::WindowCommand::CmdClientConnection    ), &DistributedDialog::OnCmdClientConnection )
-    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::WindowCommand::CmdClientRegistration  ), &DistributedDialog::OnCmdClientRegistration )
-    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::WindowCommand::CmdAddConnection       ), &DistributedDialog::OnCmdAddConnection )
-    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::WindowCommand::CmdRemoveConnection    ), &DistributedDialog::OnCmdRemoveConnection )
-    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::WindowCommand::CmdUpdateConnection    ), &DistributedDialog::OnCmdUpdateConnection )
-    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::WindowCommand::CmdDisconnectTriggered ), &DistributedDialog::OnCmdDisconnectTriggered)
-    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::WindowCommand::CmdSendMessage         ), &DistributedDialog::OnCmdSendMessage )
-    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::WindowCommand::CmdTypeMessage         ), &DistributedDialog::OnCmdTypeMessage )
-    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::WindowCommand::CmdSetDirectConnection ), &DistributedDialog::OnCmdSetDirectConnection )
-    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::WindowCommand::CmdChatClosed          ), &DistributedDialog::OnCmdChatClosed )
+    ON_MESSAGE( MAKE_MESSAGE(DistributedAppDefs::WindowCommand::CmdServiceStartup      ), &DistributedDialog::OnCmdServiceStartup )
+    ON_MESSAGE( MAKE_MESSAGE(DistributedAppDefs::WindowCommand::CmdServiceNetwork      ), &DistributedDialog::OnCmdServiceNetwork )
+    ON_MESSAGE( MAKE_MESSAGE(DistributedAppDefs::WindowCommand::CmdServiceConnection   ), &DistributedDialog::OnCmdServiceConnection )
+    ON_MESSAGE( MAKE_MESSAGE(DistributedAppDefs::WindowCommand::CmdClientConnection    ), &DistributedDialog::OnCmdClientConnection )
+    ON_MESSAGE( MAKE_MESSAGE(DistributedAppDefs::WindowCommand::CmdClientRegistration  ), &DistributedDialog::OnCmdClientRegistration )
+    ON_MESSAGE( MAKE_MESSAGE(DistributedAppDefs::WindowCommand::CmdAddConnection       ), &DistributedDialog::OnCmdAddConnection )
+    ON_MESSAGE( MAKE_MESSAGE(DistributedAppDefs::WindowCommand::CmdRemoveConnection    ), &DistributedDialog::OnCmdRemoveConnection )
+    ON_MESSAGE( MAKE_MESSAGE(DistributedAppDefs::WindowCommand::CmdUpdateConnection    ), &DistributedDialog::OnCmdUpdateConnection )
+    ON_MESSAGE( MAKE_MESSAGE(DistributedAppDefs::WindowCommand::CmdDisconnectTriggered ), &DistributedDialog::OnCmdDisconnectTriggered)
+    ON_MESSAGE( MAKE_MESSAGE(DistributedAppDefs::WindowCommand::CmdSendMessage         ), &DistributedDialog::OnCmdSendMessage )
+    ON_MESSAGE( MAKE_MESSAGE(DistributedAppDefs::WindowCommand::CmdTypeMessage         ), &DistributedDialog::OnCmdTypeMessage )
+    ON_MESSAGE( MAKE_MESSAGE(DistributedAppDefs::WindowCommand::CmdSetDirectConnection ), &DistributedDialog::OnCmdSetDirectConnection )
+    ON_MESSAGE( MAKE_MESSAGE(DistributedAppDefs::WindowCommand::CmdChatClosed          ), &DistributedDialog::OnCmdChatClosed )
 
 END_MESSAGE_MAP( )
 
@@ -495,7 +495,7 @@ LRESULT DistributedDialog::OnCmdTypeMessage( WPARAM wParam, LPARAM lParam )
     return 0;
 }
 
-bool DistributedDialog::OutputMessage( NEDistributedApp::WindowCommand cmd, void * sender, chat:: MessageData * data )
+bool DistributedDialog::OutputMessage( DistributedAppDefs::WindowCommand cmd, void * sender, chat:: MessageData * data )
 {
     bool result = false;
     if ( data != nullptr )
@@ -530,7 +530,7 @@ PageChat * DistributedDialog::AddChatPage( const DirectConnection::sInitiator & 
         owner.sessionId = initiator.sessionId;
     }
 
-    areg::String serviceName    = NEDistributedApp::getDirectMessagingRole( owner.nickName, owner.cookie, owner.sessionId, isInitiator );
+    areg::String serviceName    = DistributedAppDefs::getDirectMessagingRole( owner.nickName, owner.cookie, owner.sessionId, isInitiator );
     PageChat * chatPage   = new PageChat( serviceName, initiator, listParties, owner, isInitiator );
     if ( chatPage != nullptr )
     {

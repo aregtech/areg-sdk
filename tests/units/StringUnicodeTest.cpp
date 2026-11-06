@@ -13,7 +13,7 @@
  * \brief       Areg Platform, unit tests of strings with non-ASCII text: UTF-8 in String,
  *              Cyrillic, CJK and emoji in WideString, in memory, on a stream and in a file.
  *              The file is UTF-8 with a byte order mark, so that every compiler reads the
- *              literals the same way; narrow literals are written as u8"".
+ *              literals the same way; narrow literals are written as UTF-8 byte escapes.
  ************************************************************************/
 
 /************************************************************************
@@ -60,16 +60,16 @@ namespace
  **/
 TEST( StringUnicodeTest, utf8_string_keeps_its_bytes )
 {
-    const areg::String text( u8"Привет, 世界 😀" );
+    const areg::String text( "\xD0\x9F\xD1\x80\xD0\xB8\xD0\xB2\xD0\xB5\xD1\x82, \xE4\xB8\x96\xE7\x95\x8C \xF0\x9F\x98\x80" );    // Привет, 世界 😀
     ASSERT_EQ( text.length( ), static_cast<areg::CharCount>(sizeof( UTF8_TEXT )) );
     EXPECT_EQ( std::memcmp( text.as_string( ), UTF8_TEXT, sizeof( UTF8_TEXT ) ), 0 );
 
-    const areg::String check( u8"✓" );
+    const areg::String check( "\xE2\x9C\x93" );    // ✓
     areg::String copy( text );
-    copy += u8" ✓";
+    copy += " \xE2\x9C\x93";    //  ✓
     EXPECT_TRUE( copy.starts_with( text ) );
     EXPECT_TRUE( copy.ends_with( check ) );
-    EXPECT_EQ( copy.length( ), text.length( ) + 4u );
+    EXPECT_EQ( copy.length( ), text.length( ) + 4 );
 }
 
 /**
@@ -77,13 +77,13 @@ TEST( StringUnicodeTest, utf8_string_keeps_its_bytes )
  **/
 TEST( StringUnicodeTest, utf8_search_and_compare )
 {
-    const areg::String text( u8"Привет, 世界 😀" );
-    const char * const world{ u8"世界" };
-    const char * const smile{ u8"😀" };
-    const char * const peace{ u8"мир" };
-    const char * const same{ u8"Привет, 世界 😀" };
-    const char * const shorter{ u8"Привет, 世界" };
-    const areg::String hello( u8"Привет" );
+    const areg::String text( "\xD0\x9F\xD1\x80\xD0\xB8\xD0\xB2\xD0\xB5\xD1\x82, \xE4\xB8\x96\xE7\x95\x8C \xF0\x9F\x98\x80" );    // Привет, 世界 😀
+    const char * const world{ "\xE4\xB8\x96\xE7\x95\x8C" };    // 世界
+    const char * const smile{ "\xF0\x9F\x98\x80" };    // 😀
+    const char * const peace{ "\xD0\xBC\xD0\xB8\xD1\x80" };    // мир
+    const char * const same{ "\xD0\x9F\xD1\x80\xD0\xB8\xD0\xB2\xD0\xB5\xD1\x82, \xE4\xB8\x96\xE7\x95\x8C \xF0\x9F\x98\x80" };    // Привет, 世界 😀
+    const char * const shorter{ "\xD0\x9F\xD1\x80\xD0\xB8\xD0\xB2\xD0\xB5\xD1\x82, \xE4\xB8\x96\xE7\x95\x8C" };    // Привет, 世界
+    const areg::String hello( "\xD0\x9F\xD1\x80\xD0\xB8\xD0\xB2\xD0\xB5\xD1\x82" );    // Привет
     EXPECT_EQ( text.find_first( world ), 14 );
     EXPECT_EQ( text.find_first( smile ), 21 );
     EXPECT_EQ( text.find_first( peace ), areg::END_POS );
@@ -100,9 +100,9 @@ TEST( StringUnicodeTest, utf8_search_and_compare )
  **/
 TEST( StringUnicodeTest, utf8_format )
 {
-    const areg::String expected( u8"Ж — 5 €" );
+    const areg::String expected( "\xD0\x96 \xE2\x80\x94 5 \xE2\x82\xAC" );    // Ж — 5 €
     areg::String text;
-    text.format( u8"%s — %d €", u8"Ж", 5 );
+    text.format( "%s \xE2\x80\x94 %d \xE2\x82\xAC", "\xD0\x96", 5 );    // %s — %d €, Ж
     EXPECT_EQ( text, expected );
 }
 
@@ -111,7 +111,7 @@ TEST( StringUnicodeTest, utf8_format )
  **/
 TEST( StringUnicodeTest, utf8_string_on_the_stream )
 {
-    const areg::String text( u8"Привет, 世界 😀" );
+    const areg::String text( "\xD0\x9F\xD1\x80\xD0\xB8\xD0\xB2\xD0\xB5\xD1\x82, \xE4\xB8\x96\xE7\x95\x8C \xF0\x9F\x98\x80" );    // Привет, 世界 😀
     areg::SharedBuffer buf;
     buf << text << int32_t{ 3 };
     std::vector<uint8_t> expected{ counted( static_cast<uint32_t>(sizeof( UTF8_TEXT )), UTF8_TEXT, sizeof( UTF8_TEXT ) ) };
@@ -193,7 +193,7 @@ TEST( StringUnicodeTest, wide_latin1_case )
  **/
 TEST( StringUnicodeTest, file_keeps_non_ascii_text )
 {
-    const areg::String narrowText( u8"Grüße 世界" );
+    const areg::String narrowText( "Gr\xC3\xBC\xC3\x9F" "e \xE4\xB8\x96\xE7\x95\x8C" );    // Grüße 世界
     const areg::WideString wideText( L"Привет" );
     areg::FileBuffer file;
     ASSERT_TRUE( file.open( ) );

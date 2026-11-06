@@ -103,16 +103,6 @@ private:
      **/
     void _logging_save_scopes();
 
-    /**
-     * \brief   Changes the priority of the scopes. The streaming object contains the list of scopes
-     *          with priority to change. Each scope entry can be either a single scope or scope
-     *          group. In case of scope group, the scope ID is ignored (should be 0).
-     *
-     * \param   stream          The buffer with scope name, scope ID and scope priority.
-     * \param   scopeCount      The number of scopes in the binary buffer.
-     **/
-    void _change_scope_priority( const SharedBuffer & stream, uint32_t scopeCount );
-
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////

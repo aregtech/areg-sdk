@@ -33,11 +33,20 @@
 #                     a full run of that step replaces them.
 #     --files <regex> report: also list the files matching the expression.
 #     --top N         report: list the N files with most lines not hit (default: 25).
-#     --jobs N        Build jobs (default: 6).
+#     --jobs N        Build jobs (default: 6; 'auto': the number of CPUs).
 #
 #   Environment
 #     GCOVR           gcovr executable (default: gcovr from PATH, else ~/.local/bin/gcovr).
 #     PYTHON          Python interpreter (default: python3).
+#     AREG_COV_FAMILY    Compiler family passed to cmake (default: gnu; macOS: llvm; Cygwin: cygwin).
+#     AREG_COV_EXTENDED  AREG_EXTENDED value (default: ON; macOS: OFF).
+#     AREG_COV_GCOV      gcov program gcovr runs (default: gcov of the compiler;
+#                        macOS: "xcrun llvm-cov gcov"; Windows: "llvm-cov gcov").
+#     AREG_COV_GENERATOR cmake generator (default: the cmake default; Windows: Ninja).
+#     AREG_COV_FLAGS     compile flags (default: "--coverage -fprofile-update=atomic";
+#                        clang-cl: "/EHsc /GR /clang:--coverage /clang:-fprofile-update=atomic").
+#     AREG_COV_LDFLAGS   link flags of executables and shared libraries (default: "--coverage";
+#                        clang-cl: the quoted full path of the clang_rt.profile library).
 #     GITHUB_STEP_SUMMARY  When set, the report is appended to it.
 #
 #   Example: a full run, then a quick re-run of new tests
@@ -48,11 +57,17 @@
 # ===========================================================================
 set -u
 
-REPO=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
+# A Cygwin bash started from Git for Windows has the Git tools first in PATH, and they read
+# /cygdrive/... as a path below the Git directory. 'mkdir' then succeeds in the wrong place.
+[ "${OSTYPE:-}" = cygwin ] && export PATH="/usr/local/bin:/usr/bin:$PATH"
+
+# 'pwd -W' (Git for Windows) gives the drive form that native tools read; elsewhere it is 'pwd'.
+cwd() { pwd -W 2>/dev/null || pwd; }
+
+REPO=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && cwd)
 STEP=${1:-help}
 [ $# -gt 0 ] && shift
 
-DIR=${AREG_COV_DIR:-$HOME/areg-gcov}
 IN_PLACE=0
 BUILD=""
 OUT=""
@@ -62,14 +77,22 @@ TOP=25
 JOBS=6
 
 die() { echo "coverage.sh: $*" >&2; exit 2; }
-absolute() { case "$1" in /*) echo "$1" ;; *) echo "$PWD/$1" ;; esac; }
+absolute() {
+  if pwd -W >/dev/null 2>&1; then
+    cygpath -am "$1"
+  else
+    case "$1" in /*) echo "$1" ;; *:*) echo "$1" ;; *) echo "$(cwd)/${1#./}" ;; esac
+  fi
+}
+
+DIR=$(absolute "${AREG_COV_DIR:-$HOME/areg-gcov}") || die "cannot resolve the work directory"
 
 while [ $# -gt 0 ]; do
   case "$1" in
-    --dir)      DIR=$(absolute "${2:?}"); shift 2 ;;
+    --dir)      DIR=$(absolute "${2:?}") || die "cannot resolve the work directory"; shift 2 ;;
     --in-place) IN_PLACE=1; shift ;;
-    --build)    BUILD=$(absolute "${2:?}"); shift 2 ;;
-    --out)      OUT=$(absolute "${2:?}"); shift 2 ;;
+    --build)    BUILD=$(absolute "${2:?}") || die "cannot resolve the build directory"; shift 2 ;;
+    --out)      OUT=$(absolute "${2:?}") || die "cannot resolve the report directory"; shift 2 ;;
     --only)     ONLY=${2:?}; shift 2 ;;
     --files)    FILES=${2:?}; shift 2 ;;
     --top)      TOP=${2:?}; shift 2 ;;
@@ -77,6 +100,8 @@ while [ $# -gt 0 ]; do
     *) die "unknown option '$1'" ;;
   esac
 done
+
+[ "$JOBS" = auto ] && JOBS=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
 
 if [ "$IN_PLACE" = 1 ]; then SRC=$REPO; else SRC=$DIR/src; fi
 BUILD=${BUILD:-$DIR/build}
@@ -86,7 +111,13 @@ PYTHON=${PYTHON:-python3}
 if [ -z "${GCOVR:-}" ]; then
   GCOVR=$(command -v gcovr || echo "$HOME/.local/bin/gcovr")
 fi
-NPROC=$(nproc 2>/dev/null || echo 4)
+NPROC=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
+FAMILY=${AREG_COV_FAMILY:-gnu}
+EXTENDED=${AREG_COV_EXTENDED:-ON}
+GCOV=${AREG_COV_GCOV:-}
+GENERATOR=${AREG_COV_GENERATOR:-}
+COV_FLAGS=${AREG_COV_FLAGS:---coverage -fprofile-update=atomic}
+COV_LDFLAGS=${AREG_COV_LDFLAGS:---coverage}
 
 # A Lock or ScopedLock that could not take its object ends the test process.
 export AREG_LOCK_FAILURE_FATAL=${AREG_LOCK_FAILURE_FATAL:-1}
@@ -94,7 +125,7 @@ export AREG_LOCK_FAILURE_FATAL=${AREG_LOCK_FAILURE_FATAL:-1}
 # The counters of one run: unit.json or examples.json, or the *-only.json of --only.
 tracefile() { if [ -n "$ONLY" ]; then echo "$OUT/$1-only.json"; else echo "$OUT/$1.json"; fi; }
 
-reset_counters() { find "$BUILD" -name '*.gcda' -delete; }
+reset_counters() { ( cd "$BUILD" && find . -name '*.gcda' -delete ) || die "cannot reset the counters in $BUILD"; }
 
 check_gcovr() {
   [ -x "$GCOVR" ] || command -v "$GCOVR" >/dev/null || die "gcovr not found: pip install gcovr==8.8"
@@ -106,7 +137,9 @@ check_gcovr() {
 collect() {
   check_gcovr
   mkdir -p "$OUT"
-  ( cd "$SRC" && "$GCOVR" --root . --filter 'framework/' -j "$NPROC" \
+  local gcov=()
+  [ -n "$GCOV" ] && gcov=(--gcov-executable "$GCOV")
+  ( cd "$SRC" && "$GCOVR" --root . --filter 'framework/' -j "$NPROC" ${gcov[@]+"${gcov[@]}"} \
       --exclude-unreachable-branches --exclude-throw-branches \
       --json "$1" "$BUILD" ) || die "gcovr failed to collect $1"
 }
@@ -129,12 +162,13 @@ step_sync() {
 step_build() {
   # Debug is the only unoptimized configuration, so each line maps to its own counter.
   # '-fprofile-update=atomic' keeps the counters exact when several threads run one line.
-  local flags="--coverage -fprofile-update=atomic"
-  cmake -S "$SRC" -B "$BUILD" -DAREG_COMPILER_FAMILY=gnu -DCMAKE_BUILD_TYPE=Debug -DAREG_LIB_TYPE=shared \
-        -DAREG_EXTENDED:BOOL=ON -DAREG_LOGGING:BOOL=ON -DAREG_EXAMPLES:BOOL=ON -DAREG_TESTS:BOOL=ON \
+  local flags="$COV_FLAGS" gen=()
+  [ -n "$GENERATOR" ] && gen=(-G "$GENERATOR")
+  cmake -S "$SRC" -B "$BUILD" ${gen[@]+"${gen[@]}"} -DAREG_COMPILER_FAMILY="$FAMILY" -DCMAKE_BUILD_TYPE=Debug -DAREG_LIB_TYPE=shared \
+        -DAREG_EXTENDED:BOOL="$EXTENDED" -DAREG_LOGGING:BOOL=ON -DAREG_EXAMPLES:BOOL=ON -DAREG_TESTS:BOOL=ON \
         -DAREG_OUTPUT_LAYOUT:BOOL=OFF \
         -DCMAKE_C_FLAGS="$flags" -DCMAKE_CXX_FLAGS="$flags" \
-        -DCMAKE_EXE_LINKER_FLAGS="--coverage" -DCMAKE_SHARED_LINKER_FLAGS="--coverage" \
+        -DCMAKE_EXE_LINKER_FLAGS="$COV_LDFLAGS" -DCMAKE_SHARED_LINKER_FLAGS="$COV_LDFLAGS" \
     || die "configure failed"
   cmake --build "$BUILD" -j "$JOBS" || die "build failed"
 }
@@ -183,6 +217,10 @@ step_report() {
   for flag in unit examples; do
     [ -f "$OUT/$flag-only.json" ] && adds+=(--json-add-tracefile "$OUT/$flag-only.json")
   done
+  # Every uploaded path is repository-relative; /cygdrive/..., C:/... and ../ would split a file in Codecov.
+  local bad
+  bad=$(grep -ho 'filename="[^"]*"' "$OUT/unit.xml" "$OUT/examples.xml" | grep -E 'filename="(/|[A-Za-z]:|\.\.|[^"]*\\)' | head -3)
+  [ -z "$bad" ] || die "Cobertura paths are not repository-relative: $bad"
   mkdir -p "$OUT/html"
   "$GCOVR" --root . "${adds[@]}" \
            --html-nested "$OUT/html/index.html" --html-title 'Areg SDK framework coverage' \

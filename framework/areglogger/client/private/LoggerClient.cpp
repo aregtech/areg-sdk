@@ -44,7 +44,7 @@ LoggerClient::LoggerClient()
                                  , static_cast<DispatcherThread &>(*this)
                                  , LoggerClient::THREAD_PREFIX)
     , ConfigListener    ( )
-    , DispatcherThread           ( LoggerClient::THREAD_NAME, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_DEFAULT_RING_CAPACITY )
+    , DispatcherThread           ( LoggerClient::THREAD_NAME, areg::SYSTEM_THREAD_STACK_BIG, areg::QUEUE_DEFAULT_RING_CAPACITY )
     , ConnectionConsumer( )
     , RemoteMessageHandler     ( )
 
@@ -800,6 +800,7 @@ void LoggerClient::process_received_message(MessageEnvelope& msgReceived, Socket
         case areg::FuncIdRange::ServiceSaveLogConfiguration:      // fall through
         case areg::FuncIdRange::ServiceLogUpdateSourceState:      // fall through
         case areg::FuncIdRange::ServiceLogRestoreConfiguration:   // fall through
+        case areg::FuncIdRange::SystemServiceNotifyDuplicate:
         default:
             ASSERT(false);
         }

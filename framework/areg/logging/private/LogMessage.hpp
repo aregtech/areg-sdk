@@ -112,12 +112,6 @@ public:
 public:
 
     /**
-     * \brief   Returns the underlying log entry structure.
-     **/
-    [[nodiscard]]
-    inline const areg::LogEntry & log_data() const noexcept;
-
-    /**
      * \brief   Returns the log message type.
      **/
     [[nodiscard]]
@@ -154,17 +148,6 @@ public:
    inline uint32_t duration() const noexcept;
 
     /**
-     * \brief   Returns the module ID (typically the process ID or network identifier).
-     **/
-    [[nodiscard]]
-    inline const ITEM_ID & module_id() const noexcept;
-
-    /**
-     * \brief   Sets the module ID for differentiating scopes across processes or machines.
-     **/
-    inline void set_module_id( const ITEM_ID & moduleId ) noexcept;
-
-    /**
      * \brief   Returns the log cookie status controlling remote logging behavior.
      **/
     [[nodiscard]]
@@ -176,26 +159,10 @@ public:
     inline void set_cookie(const ITEM_ID& newCookie) noexcept;
 
     /**
-     * \brief   Returns the message priority level.
-     **/
-    [[nodiscard]]
-    inline areg::LogPriority message_prio() const noexcept;
-
-    /**
-     * \brief   Sets the message priority level.
-     **/
-    inline void set_message_prio( areg::LogPriority msgPrio ) noexcept;
-
-    /**
      * \brief   Returns the message text, if any.
      **/
     [[nodiscard]]
     inline const char * message() const noexcept;
-
-    /**
-     * \brief   Sets the message text.
-     **/
-    void set_message( const char * message, int32_t msgLen ) noexcept;
 #endif  // AREG_LOGGING
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -245,11 +212,6 @@ inline LogMessage::LogMessage( const InStream & stream )
     stream >> static_cast<areg::LogEntry &>(*this);
 }
 
-inline const areg::LogEntry & LogMessage::log_data() const noexcept
-{
-    return static_cast<const areg::LogEntry &>(*this);
-}
-
 inline areg::LogMessageType LogMessage::message_type() const noexcept
 {
     return this->logMsgType;
@@ -278,26 +240,6 @@ inline const DateTime LogMessage::time_received() const noexcept
 inline uint32_t LogMessage::duration() const noexcept
 {
     return static_cast<uint32_t>(this->logDuration);
-}
-
-inline const ITEM_ID & LogMessage::module_id() const noexcept
-{
-    return this->logModuleId;
-}
-
-inline void LogMessage::set_module_id(const ITEM_ID & moduleId) noexcept
-{
-    this->logModuleId = moduleId;
-}
-
-inline areg::LogPriority LogMessage::message_prio() const noexcept
-{
-    return this->logMessagePrio;
-}
-
-inline void LogMessage::set_message_prio(const areg::LogPriority msgPrio) noexcept
-{
-    this->logMessagePrio = msgPrio;
 }
 
 inline const char * LogMessage::message() const noexcept

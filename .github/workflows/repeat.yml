@@ -55,7 +55,7 @@ jobs:
         env:
           EVENT: ${{ github.event_name }}
           DRAFT: ${{ github.event.pull_request.draft || false }}
-          PATTERN: '^(framework|tests|conf)/|^examples/35_loglatency/|(^|/)CMakeLists\.txt$|\.cmake$|^tools/(codegen\.jar|schema/)|^tools/intern/(repeat-ctest\.py|check-log-delivery\.py)$|^\.github/workflows/repeat\.yml$'
+          PATTERN: '^(framework|tests|conf)/|^examples/35_loglatency/|(^|/)CMakeLists\.txt$|\.cmake$|^tools/(codegen\.jar|schema/)|^tools/intern/(repeat-ctest\.py|check-log-delivery\.py|ci-changes\.sh)$|^\.github/workflows/repeat\.yml$'
         run: |
           RUN=true
           if [ "${EVENT}" = "pull_request" ]; then
@@ -63,7 +63,7 @@ jobs:
             if [ "${DRAFT}" = "true" ]; then
               RUN=false
             elif git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
-              git diff --name-only "${BASE}" "${GITHUB_SHA}" | grep -qE "${PATTERN}" || RUN=false
+              RUN="$(bash tools/intern/ci-changes.sh "${BASE}" "${GITHUB_SHA}" "${PATTERN}")"
             fi
           fi
           echo "run=${RUN}" >> "${GITHUB_OUTPUT}"
@@ -152,4 +152,3 @@ jobs:
         run: |
           python harness/tools/intern/check-log-delivery.py "${BIN_DIR}" --runs ${{env.LOG_RUNS}} \
                  --summary "${GITHUB_STEP_SUMMARY}"
-

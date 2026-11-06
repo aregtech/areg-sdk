@@ -101,7 +101,11 @@ void PublicHelloWorldClient::response_register( const PublicHelloWorld::sClientR
 void PublicHelloWorldClient::response_hello_world(uint32_t clientID)
 {
     LOG_SCOPE( examples_16_pubmesh_common_PublicHelloWorldClient, response_hello_world );
-    if ( (clientID != 0) && (mClient.crID == clientID) )
+    if ( mClient.crID == 0 )
+    {
+        LOG_DBG("Client [ %s ] is not registered anymore, ignoring the response", mClient.crName.as_string());
+    }
+    else if ( mClient.crID == clientID )
     {
         LOG_DBG("Client [ %s ] SUCCEEDED to make output on remote service [ %s ]", mClient.crName.as_string(), PublicHelloWorldConsumerBase::service_name().as_string());
         printf( "..... public greetings succeeded .....\n" );

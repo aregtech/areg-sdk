@@ -13,11 +13,22 @@
 #include "areg/base/areg_global.h"
 #include "areg/base/ThreadConsumer.hpp"
 #include "areg/component/Component.hpp"
+#include "areg/component/EventTemplate.hpp"
 
 #include "areg/base/Thread.hpp"
 #include "aregextend/console/OptionParser.hpp"
 #include "common/src/Publisher.hpp"
 #include "common/src/Subscriber.hpp"
+
+/**
+ * \brief   The command entered on the console, passed from the console thread to the component thread.
+ **/
+struct PublisherCommand
+{
+    int32_t command{ 0 };   //!< The value of the entered option.
+};
+
+AREG_DECLARE_EVENT(PublisherCommand, PublisherCommandEvent, PublisherCommandConsumer);
 
 /**
  * \brief   This service provider is a the main Publisher that in addition outputs
@@ -28,6 +39,7 @@
 class PubSubController final : public    areg::Component
                              , private   Publisher
                              , private   areg::ThreadConsumer
+                             , private   PublisherCommandConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // The list of internal types and constants
@@ -92,10 +104,23 @@ protected:
      **/
     void on_run() final;
 
+/************************************************************************/
+// PublisherCommandConsumer interface overrides
+/************************************************************************/
+
+    /**
+     * \brief   Triggered in the component thread to run the command entered on the console.
+     * \param   data    The command to run.
+     **/
+    void process_event( const PublisherCommand & data ) final;
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
+
+    //! Passes the command to the component thread.
+    inline void send_command(OptionFlag cmd);
 
     //! Outputs message on console
     inline void print_message(const areg::String & message, OptionFlag cmd);

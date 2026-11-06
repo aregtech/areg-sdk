@@ -58,13 +58,13 @@ DataRateHelper::DataRate DataRateHelper::convert_data_rate_literals(uint64_t siz
 
     if (sizeBytes >= ONE_MEGABYTE)
     {
-        double rate = static_cast<double>(sizeBytes / static_cast<double>(ONE_MEGABYTE));
+        double rate = static_cast<double>(sizeBytes) / static_cast<double>(ONE_MEGABYTE);
         dataRate.first = static_cast<float>(rate);
         dataRate.second = DataRateHelper::MSG_MEGABYTES;
     }
     else if (sizeBytes >= ONE_KILOBYTE)
     {
-        double rate = static_cast<double>(sizeBytes / static_cast<double>(ONE_KILOBYTE));
+        double rate = static_cast<double>(sizeBytes) / static_cast<double>(ONE_KILOBYTE);
         dataRate.first = static_cast<float>(rate);
         dataRate.second = DataRateHelper::MSG_KILOBYTES;
     }

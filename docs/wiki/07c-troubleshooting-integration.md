@@ -1,4 +1,4 @@
-﻿# Integration Troubleshooting
+# Integration Troubleshooting
 
 This guide provides solutions for common issues encountered when integrating the Areg SDK into projects, ensuring a smooth and successful build process.
 

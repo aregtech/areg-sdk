@@ -1,4 +1,4 @@
-﻿# Integrating Areg Framework with Microsoft Visual Studio
+# Integrating Areg Framework with Microsoft Visual Studio
 
 This guide covers integrating Areg Framework into Microsoft Visual Studio projects on Windows.
 

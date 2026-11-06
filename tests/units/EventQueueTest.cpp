@@ -969,6 +969,183 @@ TEST(EventQueueTest, remove_matching_class_from_both_lanes_preserves_survivor_or
     EXPECT_FALSE(queue.has_pending());
 }
 
+TEST(EventQueueTest, remove_on_a_full_ring_keeps_the_survivors_ahead_of_a_blocked_producer)
+{
+    constexpr uint32_t REMOVED{ 0xFFFF'FFFEu };
+    constexpr uint32_t LATE{ 1000u };
+    ReadyQueue queue(areg::QUEUE_MIN_RING_CAPACITY, false, FULL_WAIT_MS);
+    queue.set_consumer(areg::Thread::current_thread_id());
+    for (uint32_t i = 0u; i < areg::QUEUE_MIN_RING_CAPACITY; ++i)
+    {
+        Event evt = makeEvent((i % 2u) == 0u ? REMOVED : i);
+        ASSERT_TRUE(queue.push_event(evt));
+    }
+
+    std::atomic<bool> result{ false };
+    std::thread producer([&]
+    {
+        Event evt = makeEvent(LATE);
+        result.store(queue.push_event(evt), std::memory_order_release);
+    });
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    queue.remove_events(REMOVED);
+    producer.join();
+    EXPECT_TRUE(result.load(std::memory_order_acquire));
+    for (uint32_t i = 1u; i < areg::QUEUE_MIN_RING_CAPACITY; i += 2u)
+    {
+        EXPECT_EQ(queue.pop_event().event_id(), i);
+    }
+
+    EXPECT_EQ(queue.pop_event().event_id(), LATE);
+    EXPECT_FALSE(queue.has_pending());
+}
+
+// Reproduces the defect: removing events took the kept ones out of the ring and pushed them back,
+// so a producer could take the freed slots and a kept event had no place to return to.
+TEST(EventQueueTest, remove_under_steady_producers_keeps_each_producer_in_order)
+{
+    constexpr uint32_t REMOVED{ 0xFFFF'FFFEu };
+    constexpr uint32_t PRODUCERS{ 4u };
+    constexpr uint32_t PER_PRODUCER{ 5'000u };
+    ReadyQueue queue(areg::QUEUE_MIN_RING_CAPACITY, false, FULL_WAIT_MS);
+    queue.set_consumer(areg::Thread::current_thread_id());
+    std::vector<std::thread> producers;
+    for (uint32_t id = 0u; id < PRODUCERS; ++id)
+    {
+        producers.emplace_back([&queue, id]
+        {
+            for (uint32_t i = 0u; i < PER_PRODUCER; ++i)
+            {
+                Event removed = makeEvent(REMOVED);
+                Event kept = makeEvent((id << 24u) | i);
+                static_cast<void>(queue.push_event(removed));
+                static_cast<void>(queue.push_event(kept));
+            }
+        });
+    }
+
+    uint32_t next[PRODUCERS]{ };
+    uint32_t received{ 0u };
+    bool ordered{ true };
+    while (received < (PRODUCERS * PER_PRODUCER))
+    {
+        queue.remove_events(REMOVED);
+        const Event evt{ queue.pop_event() };
+        if (evt.is_valid() && (evt.event_id() != REMOVED))
+        {
+            const uint32_t id{ (evt.event_id() >> 24u) % PRODUCERS };
+            ordered = ordered && ((evt.event_id() & 0x00FF'FFFFu) == next[id]);
+            ++next[id];
+            ++received;
+        }
+    }
+
+    for (std::thread & producer : producers)
+    {
+        producer.join();
+    }
+
+    EXPECT_TRUE(ordered);
+}
+
+TEST(EventQueueTest, remove_keeps_the_order_across_the_end_of_the_ring)
+{
+    constexpr uint32_t CAPACITY{ 32u };
+    constexpr uint32_t REMOVED{ 0xFFFF'FFFEu };
+    ReadyQueue queue(CAPACITY, true);
+    for (uint32_t i = 0u; i < 20u; ++i)
+    {
+        Event evt = makeEvent(i);
+        ASSERT_TRUE(queue.push_event(evt));
+        EXPECT_TRUE(queue.pop_event().is_valid());
+    }
+
+    for (uint32_t i = 0u; i < CAPACITY; ++i)
+    {
+        Event evt = makeEvent((i % 3u) == 0u ? REMOVED : i);
+        ASSERT_TRUE(queue.push_event(evt));
+    }
+
+    queue.remove_events(REMOVED);
+    for (uint32_t i = 0u; i < CAPACITY; ++i)
+    {
+        if ((i % 3u) != 0u)
+        {
+            EXPECT_EQ(queue.pop_event().event_id(), i);
+        }
+    }
+
+    EXPECT_FALSE(queue.has_pending());
+}
+
+TEST(EventQueueTest, remove_of_every_event_frees_the_whole_ring)
+{
+    constexpr uint32_t CAPACITY{ 32u };
+    constexpr uint32_t REMOVED{ 0xFFFF'FFFEu };
+    ReadyQueue queue(CAPACITY, true);
+    for (uint32_t i = 0u; i < CAPACITY; ++i)
+    {
+        Event evt = makeEvent(REMOVED);
+        ASSERT_TRUE(queue.push_event(evt));
+    }
+
+    queue.remove_events(REMOVED);
+    EXPECT_FALSE(queue.has_pending());
+    for (uint32_t i = 0u; i < CAPACITY; ++i)
+    {
+        Event evt = makeEvent(i);
+        ASSERT_TRUE(queue.push_event(evt));
+    }
+
+    Event refused = makeEvent(CAPACITY);
+    EXPECT_FALSE(queue.push_event(refused));
+    for (uint32_t i = 0u; i < CAPACITY; ++i)
+    {
+        EXPECT_EQ(queue.pop_event().event_id(), i);
+    }
+}
+
+TEST(EventQueueTest, remove_without_a_match_leaves_a_full_ring_full_and_in_order)
+{
+    constexpr uint32_t CAPACITY{ 32u };
+    ReadyQueue queue(CAPACITY, true);
+    for (uint32_t i = 0u; i < CAPACITY; ++i)
+    {
+        Event evt = makeEvent(i);
+        ASSERT_TRUE(queue.push_event(evt));
+    }
+
+    queue.remove_events(0xFFFF'FFFEu);
+    Event refused = makeEvent(CAPACITY);
+    EXPECT_FALSE(queue.push_event(refused));
+    for (uint32_t i = 0u; i < CAPACITY; ++i)
+    {
+        EXPECT_EQ(queue.pop_event().event_id(), i);
+    }
+}
+
+TEST(EventQueueTest, remove_on_a_closed_ring_changes_nothing)
+{
+    constexpr uint32_t REMOVED{ 0xFFFF'FFFEu };
+    ReadyQueue queue(32u, true);
+    Event first = makeEvent(REMOVED);
+    Event second = makeEvent(1u);
+    ASSERT_TRUE(queue.push_event(first));
+    ASSERT_TRUE(queue.push_event(second));
+    queue.close_lanes();
+    queue.remove_events(REMOVED);
+    EXPECT_EQ(queue.pop_event().event_id(), REMOVED);
+    EXPECT_EQ(queue.pop_event().event_id(), 1u);
+}
+
+TEST(EventQueueTest, remove_without_lanes_does_nothing)
+{
+    EventQueue queue(32u, true);
+    queue.remove_events(7u);
+    EXPECT_FALSE(queue.has_pending());
+}
+
 TEST(EventQueueTest, zero_count_batch_operations_leave_the_input_and_queue_unchanged)
 {
     ReadyQueue queue(32u, true);

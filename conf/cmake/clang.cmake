@@ -7,13 +7,16 @@ message(STATUS "Areg: >>> Preparing settings for CLang compiler under \'${AREG_O
 
 if (AREG_PLATFORM_WINDOWS)
 
+    # AREG_ARCH holds the name of the system, like AMD64.
+    macro_get_processor("${AREG_ARCH}" _areg_cpu _areg_cpu_bitness _areg_cpu_found)
+
     get_property(_areg_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
     if (_areg_multi_config)
         # Multi-config generator (Visual Studio + ClangCL): scope flags per-configuration.
         foreach(_areg_cfg IN ITEMS Release RelWithDebInfo MinSizeRel Debug)
             if ("${_areg_cfg}" STREQUAL "Release")
                 # ClangCL is given the MSVC level by CMake. Areg builds Release at -O3 here.
-                set(_areg_cfg_opt -O3)
+                set(_areg_cfg_opt /clang:-O3)
             elseif ("${_areg_cfg}" STREQUAL "Debug")
                 set(_areg_cfg_opt -Od)
             else()
@@ -26,8 +29,8 @@ if (AREG_PLATFORM_WINDOWS)
         unset(_areg_cfg)
         unset(_areg_cfg_opt)
         list(APPEND AREG_COMPILER_OPTIONS
-            $<$<NOT:$<CONFIG:Debug>>:-ffunction-sections>
-            $<$<NOT:$<CONFIG:Debug>>:-fdata-sections>
+            $<$<NOT:$<CONFIG:Debug>>:-Gy>
+            $<$<NOT:$<CONFIG:Debug>>:-Gw>
             $<$<CONFIG:Debug>:-RTC1>
         )
         if (NOT CMAKE_CROSSCOMPILING)
@@ -36,7 +39,7 @@ if (AREG_PLATFORM_WINDOWS)
                     $<$<NOT:$<CONFIG:Debug>>:-march=native>
                     $<$<NOT:$<CONFIG:Debug>>:-mtune=native>
                 )
-            elseif ("${AREG_ARCH}" STREQUAL "${_proc_x86}" OR "${AREG_ARCH}" STREQUAL "${_proc_x64}")
+            elseif ("${_areg_cpu}" STREQUAL "${_proc_x86}" OR "${_areg_cpu}" STREQUAL "${_proc_x64}")
                 # Portable SSE4.2 baseline, keeps hardware CRC32C (MathDefs.hpp).
                 macro_check_sse42(AREG_SSE42_HW)
                 if (AREG_SSE42_HW)
@@ -52,14 +55,14 @@ if (AREG_PLATFORM_WINDOWS)
         # ClangCL is given the MSVC level by CMake. Areg builds Release at -O3 here.
         set(_areg_cl_opt ${AREG_OPTIMIZATION})
         if ("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
-            set(_areg_cl_opt -O3)
+            set(_areg_cl_opt /clang:-O3)
         endif()
         if (AREG_BUILD_OPTIMIZED)
-            list(APPEND AREG_COMPILER_OPTIONS ${_areg_cl_opt} -ffunction-sections -fdata-sections)
+            list(APPEND AREG_COMPILER_OPTIONS ${_areg_cl_opt} -Gy -Gw)
             if (NOT CMAKE_CROSSCOMPILING)
                 if (AREG_ARCH_NATIVE)
                     list(APPEND AREG_COMPILER_OPTIONS -march=native -mtune=native)
-                elseif ("${AREG_ARCH}" STREQUAL "${_proc_x86}" OR "${AREG_ARCH}" STREQUAL "${_proc_x64}")
+                elseif ("${_areg_cpu}" STREQUAL "${_proc_x86}" OR "${_areg_cpu}" STREQUAL "${_proc_x64}")
                     # Portable SSE4.2 baseline, keeps hardware CRC32C (MathDefs.hpp).
                     macro_check_sse42(AREG_SSE42_HW)
                     if (AREG_SSE42_HW)
@@ -74,6 +77,10 @@ if (AREG_PLATFORM_WINDOWS)
         unset(_areg_cl_opt)
     endif()
 
+    unset(_areg_cpu)
+    unset(_areg_cpu_bitness)
+    unset(_areg_cpu_found)
+
     # Win32 API
     set(AREG_DEVELOP_ENV "Win32")
     add_definitions(-DWINDOWS -D_WINDOWS -DWIN32 -D_WIN32)
@@ -81,8 +88,8 @@ if (AREG_PLATFORM_WINDOWS)
         add_definitions(-DWIN64 -D_WIN64)
     endif()
 
-    # Clang compile options
-    list(APPEND AREG_COMPILER_OPTIONS -Wall -c)
+    # Clang compile options. For clang-cl '-W3' is '-Wall', and '-Wall' is '-Weverything'.
+    list(APPEND AREG_COMPILER_OPTIONS -W3 -c)
     # Linker flags (-l is not necessary)
     list(APPEND AREG_LDFLAGS  advapi32   psapi   shell32   ws2_32   synchronization)
     set(AREG_LDFLAGS_STR   "-ladvapi32 -lpsapi -lshell32 -lws2_32 -lsynchronization")

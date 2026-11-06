@@ -826,6 +826,16 @@ inline void mem_move(void * memDst, const void * memSrc, uint32_t count) noexcep
 inline uint32_t mem_copy( void * memDst, uint32_t dstSpace, const void * memSrc, uint32_t count) noexcept;
 
 /**
+ * \brief   Copies exactly count bytes between valid buffers that may overlap. The sizes of the
+ *          primitive types are copied without a library call.
+ *
+ * \param[out] memDst   Destination buffer of at least count bytes.
+ * \param   memSrc      Source buffer of at least count bytes.
+ * \param   count       Number of bytes to copy.
+ **/
+AREG_FORCE_INLINE void mem_copy_exact(void * memDst, const void * memSrc, uint32_t count) noexcept;
+
+/**
  * \brief   Compares two memory blocks byte-by-byte, returning areg::Ordering result.
  *
  * \param   memLeft     Left-hand memory buffer to compare.
@@ -992,6 +1002,44 @@ inline uint32_t mem_copy( void * memDst, uint32_t dstSpace, const void * memSrc,
     }
 
     return result;
+}
+
+AREG_FORCE_INLINE void mem_copy_exact(void * memDst, const void * memSrc, uint32_t count) noexcept
+{
+    switch (count)
+    {
+    case 1u:
+        *static_cast<uint8_t *>(memDst) = *static_cast<const uint8_t *>(memSrc);
+        break;
+
+    case 2u:
+        {
+            uint16_t value;
+            ::memcpy(&value, memSrc, sizeof(value));
+            ::memcpy(memDst, &value, sizeof(value));
+        }
+        break;
+
+    case 4u:
+        {
+            uint32_t value;
+            ::memcpy(&value, memSrc, sizeof(value));
+            ::memcpy(memDst, &value, sizeof(value));
+        }
+        break;
+
+    case 8u:
+        {
+            uint64_t value;
+            ::memcpy(&value, memSrc, sizeof(value));
+            ::memcpy(memDst, &value, sizeof(value));
+        }
+        break;
+
+    default:
+        ::memmove(memDst, memSrc, count);
+        break;
+    }
 }
 
 inline areg::Ordering mem_compare( const void * memLeft, const void * memRight, uint32_t count ) noexcept

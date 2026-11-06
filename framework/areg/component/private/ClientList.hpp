@@ -67,22 +67,6 @@ public:
 public:
 
     /**
-     * \brief   Returns true if a client with the specified proxy address exists in the list.
-     *
-     * \param   client      The proxy address to search for.
-     **/
-    [[nodiscard]]
-    bool exist( const ProxyAddress & client ) const noexcept;
-
-    /**
-     * \brief   Returns the client info for the given proxy address.
-     *
-     * \param   whichClient     The proxy address to search for.
-     **/
-    [[nodiscard]]
-    const ClientInfo & consumer( const ProxyAddress & whichClient ) const noexcept;
-
-    /**
      * \brief   Registers a consumer in the list; returns existing client info if already registered,
      *          or creates and returns new entry.
      *

@@ -1,4 +1,4 @@
-﻿# 25_pubsub
+# 25_pubsub
 
 🚀 **Type:** IPC / Multi-Process
 

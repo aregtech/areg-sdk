@@ -64,6 +64,7 @@ constexpr const char* Latency::mode_as_str(Latency::LatencyMode m) noexcept
     case Latency::LatencyMode::Request4096:     return "pp4096";
     case Latency::LatencyMode::Request65536:    return "pp65536";
     case Latency::LatencyMode::QuitApp:         return "quit";
+    case Latency::LatencyMode::Undefined:
     default:                                    return "?";
     }
 }

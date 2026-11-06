@@ -182,38 +182,39 @@ void RouterServerService::on_message_received(const areg::MessageEnvelope &msgRe
         }
         break;
 
-    case areg::FuncIdRange::ServiceLastId:                    // fall through
-    case areg::FuncIdRange::SystemServiceQueryInstances:      // fall through
-    case areg::FuncIdRange::SystemServiceConnect:             // fall through
-    case areg::FuncIdRange::RequestServiceProviderConnection: // fall through
-    case areg::FuncIdRange::ResponseServiceProviderVersion:   // fall through
-    case areg::FuncIdRange::RequestServiceProviderVersion:    // fall through
-    case areg::FuncIdRange::RequestRegisterService:           // fall through
-    case areg::FuncIdRange::ComponentCleanup:                 // fall through
-    case areg::FuncIdRange::SystemServiceNotifyRegister:      // fall through
-    case areg::FuncIdRange::SystemServiceNotifyConnection:    // fall through
-    case areg::FuncIdRange::SystemServiceNotifyInstances:     // fall through
-    case areg::FuncIdRange::ServiceLogRegisterScopes:         // fall through
-    case areg::FuncIdRange::ServiceLogUpdateScopes:           // fall through
-    case areg::FuncIdRange::ServiceLogQueryScopes:            // fall through
-    case areg::FuncIdRange::ServiceLogScopesUpdated:          // fall through
-    case areg::FuncIdRange::ServiceSaveLogConfiguration:      // fall through
-    case areg::FuncIdRange::ServiceLogConfigurationSaved:     // fall through
-case areg::FuncIdRange::ServiceLogMessage:                // fall through
+    case areg::FuncIdRange::ServiceLastId:                      // fall through
+    case areg::FuncIdRange::SystemServiceQueryInstances:        // fall through
+    case areg::FuncIdRange::SystemServiceConnect:               // fall through
+    case areg::FuncIdRange::RequestServiceProviderConnection:   // fall through
+    case areg::FuncIdRange::ResponseServiceProviderVersion:     // fall through
+    case areg::FuncIdRange::RequestServiceProviderVersion:      // fall through
+    case areg::FuncIdRange::RequestRegisterService:             // fall through
+    case areg::FuncIdRange::ComponentCleanup:                   // fall through
+    case areg::FuncIdRange::SystemServiceNotifyRegister:        // fall through
+    case areg::FuncIdRange::SystemServiceNotifyConnection:      // fall through
+    case areg::FuncIdRange::SystemServiceNotifyInstances:       // fall through
+    case areg::FuncIdRange::ServiceLogRegisterScopes:           // fall through
+    case areg::FuncIdRange::ServiceLogUpdateScopes:             // fall through
+    case areg::FuncIdRange::ServiceLogQueryScopes:              // fall through
+    case areg::FuncIdRange::ServiceLogScopesUpdated:            // fall through
+    case areg::FuncIdRange::ServiceSaveLogConfiguration:        // fall through
+    case areg::FuncIdRange::ServiceLogConfigurationSaved:       // fall through
+    case areg::FuncIdRange::ServiceLogMessage:                  // fall through
     case areg::FuncIdRange::ServiceLogUpdateSourceState:        // fall through
     case areg::FuncIdRange::ServiceLogSourceStateUpdated:       // fall through
     case areg::FuncIdRange::ServiceLogRestoreConfiguration:     // fall through
     case areg::FuncIdRange::ServiceLogConfigurationRestored:    // fall through
         break;
 
-    case areg::FuncIdRange::ResponseServiceProviderConnection:// fall through
-    case areg::FuncIdRange::AttributeLastId:                  // fall through
-    case areg::FuncIdRange::AttributeFirstId:                 // fall through
-    case areg::FuncIdRange::ResponseLastId:                   // fall through
-    case areg::FuncIdRange::ResponseFirstId:                  // fall through
-    case areg::FuncIdRange::RequestLastId:                    // fall through
-    case areg::FuncIdRange::RequestFirstId:                   // fall through
-    case areg::FuncIdRange::EmptyFunctionId:                  // fall through
+    case areg::FuncIdRange::ResponseServiceProviderConnection:  // fall through
+    case areg::FuncIdRange::AttributeLastId:                    // fall through
+    case areg::FuncIdRange::AttributeFirstId:                   // fall through
+    case areg::FuncIdRange::ResponseLastId:                     // fall through
+    case areg::FuncIdRange::ResponseFirstId:                    // fall through
+    case areg::FuncIdRange::RequestLastId:                      // fall through
+    case areg::FuncIdRange::RequestFirstId:                     // fall through
+    case areg::FuncIdRange::EmptyFunctionId:                    // fall through
+    case areg::FuncIdRange::SystemServiceNotifyDuplicate:       // fall through
     default:
         if ( areg::is_executable_id(static_cast<uint32_t>(msgId)) || areg::is_connect_id( static_cast<uint32_t>(msgId)) )
         {
@@ -389,7 +390,7 @@ void RouterServerService::reject_duplicates()
         }
     }
 
-    const areg::MapInstances & instances{ ServiceCommunicationBase::instances() };
+    const areg::MapInstances instances{ ServiceCommunicationBase::instances() };
     for (const areg::StubAddress & held : expired)
     {
         const ServiceStub & holder{ mServiceRegistry.stub_service(held) };

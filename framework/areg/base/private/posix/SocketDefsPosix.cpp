@@ -23,6 +23,7 @@
 #include "areg/base/areg_macros.h"
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/base/private/SocketLiveness.hpp"
+#include "areg/base/private/posix/SocketSendPosix.hpp"
 #include "areg/logging/areg_log.h"
 #include "areg/ipc/private/ConnectionDefs.hpp"
 
@@ -295,7 +296,7 @@ int32_t _os_send_data_window(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, in
     {
         const int32_t remaining = dataLength - total;
         const int32_t chunk = remaining < WINDOW ? remaining : WINDOW;
-        const ssize_t written = ::send(hSocket, reinterpret_cast<const char*>(dataBuffer + total), static_cast<size_t>(chunk), sendFlags);
+        const ssize_t written = _os_socket_send(static_cast<int>(hSocket), reinterpret_cast<const char*>(dataBuffer + total), static_cast<size_t>(chunk), sendFlags);
         if (written > 0)
         {
             total += static_cast<int32_t>(written);
@@ -325,7 +326,7 @@ int32_t _os_send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t d
     int32_t waitedMs{ 0 };
     do
     {
-        const ssize_t written = ::send(hSocket, reinterpret_cast<const char*>(dataBuffer + total), static_cast<size_t>(dataLength - total), sendFlags);
+        const ssize_t written = _os_socket_send(static_cast<int>(hSocket), reinterpret_cast<const char*>(dataBuffer + total), static_cast<size_t>(dataLength - total), sendFlags);
         if (written > 0)
         {
             total += static_cast<int32_t>(written);
@@ -376,7 +377,7 @@ int32_t _os_try_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers,
     ssize_t written{ 0 };
     do
     {
-        written = ::sendmsg(static_cast<int>(hSocket), &msg, sendFlags);
+        written = _os_socket_send_v(static_cast<int>(hSocket), msg, sendFlags);
     } while ((written < 0) && (errno == EINTR));
 
     if (written < 0)
@@ -453,7 +454,7 @@ int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uin
             struct msghdr msg { };
             msg.msg_iov     = &iov[idx];
             msg.msg_iovlen  = count - idx;
-            const ssize_t written = ::sendmsg(static_cast<int>(hSocket), &msg, sendFlags);
+            const ssize_t written = _os_socket_send_v(static_cast<int>(hSocket), msg, sendFlags);
             if (written < 0)
             {
                 if ((errno == EINTR) || _wait_send(hSocket, waitedMs))

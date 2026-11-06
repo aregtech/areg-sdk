@@ -55,7 +55,7 @@ public:
      *          making it ready for transmission. The event payload already carries the serialized
      *          data and the message/sequence fields. Rewrites the process-routing cookies.
      *
-     * \param[in,ou]    srcWire     In-out remote event; its header is rewritten to wire form.
+     * \param[in,out]   srcWire     In-out remote event; its header is rewritten to wire form.
      * \param           comChannel  Communication channel providing the sender's process cookie.
      * \return  true if stamped; false for unrecognised event type or empty buffer.
      **/

@@ -161,14 +161,6 @@ public:
     inline bool is_valid() const noexcept;
 
     /**
-     * \brief   Creates the timer without starting it.
-     *
-     * \param   funcTimer       The callback function to execute on timer expiration.
-     * \return  Returns true if timer creation succeeded; false otherwise.
-     **/
-    bool create_timer( FuncPosixTimerRoutine funcTimer ) noexcept;
-
-    /**
      * \brief   Creates and starts the timer with the timeout and period from the given context.
      *
      * \param   context         The timer object containing timeout and period values.
@@ -179,21 +171,9 @@ public:
     bool start_timer( TimerBase & context, id_type contextId, FuncPosixTimerRoutine funcTimer ) noexcept;
 
     /**
-     * \brief   Restarts the timer if timeout and period are not zero.
-     *
-     * \return  Returns true if timer restart succeeded; false otherwise.
-     **/
-    bool restart_timer() noexcept;
-
-    /**
      * \brief   Stops the timer and resets timeout and period values.
      **/
     bool stop_timer() noexcept;
-
-    /**
-     * \brief   Pauses the timer while preserving timeout and remaining period.
-     **/
-    bool pause_timer() noexcept;
 
     /**
      * \brief   Destroys and invalidates the timer.

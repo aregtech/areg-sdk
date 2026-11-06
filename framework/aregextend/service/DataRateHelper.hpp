@@ -65,12 +65,11 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initializes the object, sets threads that the rate can be queried. If passed
+     * \brief   Initializes the object, sets the service that the rate can be queried. If passed
      *          'verbose' parameter is 'false' on each query it returns zero. Otherwise, returns the
      *          actual value.
      *
-     * \param   sendThread          The thread that can be queried the data size sent.
-     * \param   receiveThread       The threat that can be queried the data size received.
+     * \param   server              The service that can be queried the data size sent and received.
      * \param   verbose             The flag, indicating whether the actual size should be computed
      *                              or should return zero.
      **/

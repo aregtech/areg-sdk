@@ -114,7 +114,6 @@ private:
     uint16_t    mCountString;       //!< The count number of the string to change.
     uint32_t    mSeqInteger;        //!< The sequence number of the integer.
     uint16_t    mCountInteger;      //!< The count number of the integer to change.
-    areg::Mutex mLock;              //!< Synchronization object for multithreading environment.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

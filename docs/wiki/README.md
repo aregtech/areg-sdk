@@ -199,6 +199,7 @@ Areg SDK is built on a performance mandate: **latency, throughput, stability, an
 - **[areg-sdk vs ZMQ / NanoMsg / NNG](./08c-areg-vs-hitachi-benchmark.md)** – Direct TCP comparison against the Hitachi Energy Research benchmark (arXiv:2508.07934v1), using raw CSV data.
 - **[areg-sdk Framework Rankings](./08d-areg-framework-rankings.md)** – Competitive position across latency, message rate, and data rate versus all known frameworks with cited sources.
 - **[Embedded Ready](./08e-embedded-ready.md)** – What "embedded ready" means for areg-sdk: measured flash and RAM footprint, the supported Embedded Linux target classes, and where the line is.
+- **[Coverage exclusions](./08f-coverage-exclusions.md)** – The few framework lines left out of the coverage count, and why.
 
 > 📁 *Prefix note:* These files use the `08` prefix alongside examples, since benchmarks run via examples 23 and 30. If additional benchmark documents are added, a dedicated `10` prefix is recommended (`09` is agentic coding).
 

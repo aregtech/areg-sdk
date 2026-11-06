@@ -247,7 +247,7 @@ String File::file_directory(const String& filePath)
     areg::CharPos pos = filePath.is_empty() ? areg::INVALID_POS : filePath.find_last( separator, areg::END_POS, true);
     if (filePath.is_valid_position( pos ) )
     {
-        return String( filePath, filePath.data().at(static_cast<size_t>(pos)) == separator ? static_cast<uint32_t>(pos) : static_cast<uint32_t>(pos + 1));
+        return String( filePath, filePath.data().at(static_cast<size_t>(pos)) == separator ? static_cast<areg::CharCount>(pos) : static_cast<areg::CharCount>(pos + 1));
     }
     else
     {
@@ -342,7 +342,7 @@ int32_t File::split_path(const String& filePath, StringList & in_out_List)
     {
         if ((*end == File::UNIX_SEPARATOR) || (*end == File::DOS_SEPARATOR))
         {
-            String node(start, static_cast<uint32_t>(end - start));
+            String node(start, static_cast<areg::CharCount>(end - start));
             if (node.is_empty() == false)
                 in_out_List.push_last( node );
 
@@ -356,7 +356,7 @@ int32_t File::split_path(const String& filePath, StringList & in_out_List)
 
     if (start != end)
     {
-        String node(start, static_cast<uint32_t>(end - start));
+        String node(start, static_cast<areg::CharCount>(end - start));
         if (node.is_empty() == false)
             in_out_List.push_last( node );
     }
@@ -588,7 +588,7 @@ String File::special_dir(File::SpecialFolder specialFolder)
     char buffer[File::MAXIMUM_PATH];
     uint32_t space = _os_special_dir(buffer, File::MAXIMUM_PATH, specialFolder);
 
-    return String(buffer, space);
+    return String(buffer, static_cast<areg::CharCount>(space));
 }
 
 } // namespace areg

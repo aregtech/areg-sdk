@@ -104,13 +104,13 @@ uint32_t MessageEnvelope::init_buffer(uint8_t* newBuffer, uint32_t bufLength, bo
     return hdrDst.bufHeader.biUsed;
 }
 
-uint8_t* MessageEnvelope::init_envelope(const areg::EventHeader& evtHeader, uint32_t reserve /*= 0*/)
+uint8_t* MessageEnvelope::init_envelope(const areg::EventHeader& evtHeader, uint32_t reserve /*= 0*/) noexcept
 {
     uint32_t sizeUsed{ std::max(evtHeader.bufHeader.biUsed, reserve != 0u ? reserve : 1u) };
     sizeUsed = areg::align_size(sizeUsed, block_size());
 
     areg::RawEnvelope* env{ reinterpret_cast<areg::RawEnvelope*>(mByteBuffer.get()) };
-    if ((mByteBuffer.use_count() == 1) && (env != nullptr))
+    if (mByteBuffer.use_count() == 1)
     {
         if (env->envHeader.bufHeader.biLength >= sizeUsed)
         {
@@ -184,7 +184,7 @@ void MessageEnvelope::destroy_event() noexcept
     if (is_unique())
     {
         areg::RawEnvelope* env{ reinterpret_cast<areg::RawEnvelope*>(mByteBuffer.get()) };
-        if ((env != nullptr) && (env->envHeader.custom != 0u))
+        if (env->envHeader.custom != 0u)
         {
             using CleanupFn = void(*)(void*) noexcept;
             CleanupFn fn{ nullptr };

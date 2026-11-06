@@ -48,6 +48,7 @@
 #                             none       -> build only
 #     --lib     shared|static  Library type (default: static - robust for ASan).
 #     --examples            Also build examples (default: off, tests only).
+#     --no-extended         Build without the extended library (macOS has no ncurses here).
 #     --config  <type>      CMake build type (default: Debug). Use RelWithDebInfo when
 #                           chasing a race: -O0 changes the timing enough to hide it.
 #     --repeat  N           Rounds for '--run examples' and '--run ctest:<regex>' (default: 1).
@@ -76,6 +77,7 @@
 #                            --leaks off --repeat 20 --run examples:18_pubworker
 # ===========================================================================
 
+# macOS ships bash 3.2, where an empty array is unset: expand it as ${a[@]+"${a[@]}"}.
 set -euo pipefail
 
 # --------------------------------------------------------------------------
@@ -106,6 +108,7 @@ TARGET="areg-unit-tests"
 RUN="auto"
 LIBTYPE="static"
 EXAMPLES="OFF"
+EXTENDED=()
 CONFIG="Debug"
 REPEAT=1
 TEST_TIMEOUT="${AREG_SANITIZE_TEST_TIMEOUT:-600}"
@@ -126,6 +129,7 @@ while [[ $# -gt 0 ]]; do
         --run)      RUN="$2";      shift 2;;
         --lib)      LIBTYPE="$2";  shift 2;;
         --examples) EXAMPLES="ON"; shift;;
+        --no-extended) EXTENDED=(-DAREG_EXTENDED:BOOL=OFF); shift;;
         --config)   CONFIG="$2";   shift 2;;
         --repeat)   REPEAT="$2";   shift 2;;
         --leaks)    LEAKS="$2";    shift 2;;
@@ -214,6 +218,7 @@ configure_build() {
             -DAREG_LIB_TYPE="${LIBTYPE}" \
             -DAREG_TESTS=ON \
             -DAREG_EXAMPLES="${EXAMPLES}" \
+            ${EXTENDED[@]+"${EXTENDED[@]}"} \
             -DAREG_OUTPUT_DIR="${build_dir}/product" \
             -DCMAKE_C_FLAGS="${flags}" \
             -DCMAKE_CXX_FLAGS="${flags}" \
@@ -259,7 +264,7 @@ do_run() {
             local rounds=()
             [[ "${REPEAT}" -gt 1 ]] && rounds=(--repeat "until-fail:${REPEAT}")
             info "Running ctest in ${build_dir} ${only[*]-} ${rounds[*]-} (timeout ${TEST_TIMEOUT} s per test)"
-            ( cd "${build_dir}" && "${prefix[@]}" ctest --output-on-failure --timeout "${TEST_TIMEOUT}" "${only[@]}" "${rounds[@]}" ) ;;
+            ( cd "${build_dir}" && ${prefix[@]+"${prefix[@]}"} ctest --output-on-failure --timeout "${TEST_TIMEOUT}" ${only[@]+"${only[@]}"} ${rounds[@]+"${rounds[@]}"} ) ;;
         examples|examples:*)
             # The interesting defects live between processes, not inside one binary, so the
             # scenario driver is what has to run under the sanitizer. Every process it
@@ -273,18 +278,18 @@ do_run() {
             [[ "${RUN}" == examples:* ]] && only=(--only "${RUN#examples:}")
             info "Running the example scenarios from ${bin_dir}"
             info "Reports and captured output: ${out_dir}"
-            "${prefix[@]}" python3 "${ROOT_DIR}/tools/intern/run-all-examples.py" \
+            ${prefix[@]+"${prefix[@]}"} python3 "${ROOT_DIR}/tools/intern/run-all-examples.py" \
                 --bin-dir "${bin_dir}" --tier all --keep-logs \
-                --repeat "${REPEAT}" --out-dir "${out_dir}" "${only[@]}" ;;
+                --repeat "${REPEAT}" --out-dir "${out_dir}" ${only[@]+"${only[@]}"} ;;
         auto)
             local bin; bin="$(locate_binary "${build_dir}")"
             [[ -n "${bin}" ]] || die "Could not locate the '${TARGET}' binary; pass --run <path>."
             info "Running ${bin} ${RUN_ARGS[*]:-}"
-            "${prefix[@]}" "${bin}" "${RUN_ARGS[@]:-}";;
+            ${prefix[@]+"${prefix[@]}"} "${bin}" ${RUN_ARGS[@]+"${RUN_ARGS[@]}"};;
         *)
             [[ -x "${RUN}" ]] || die "--run '${RUN}' is not an executable path."
             info "Running ${RUN} ${RUN_ARGS[*]:-}"
-            "${prefix[@]}" "${RUN}" "${RUN_ARGS[@]:-}";;
+            ${prefix[@]+"${prefix[@]}"} "${RUN}" ${RUN_ARGS[@]+"${RUN_ARGS[@]}"};;
     esac
 }
 
@@ -351,7 +356,7 @@ case "${MODE}" in
         cmake --build "${BUILD_DIR}" -j"${JOBS}" --target "${TARGET}"
         BIN="$(locate_binary "${BUILD_DIR}")"; [[ -n "${BIN}" ]] || die "binary not found"
         info "perf stat ${BIN}"
-        perf stat -d -d -- "${BIN}" "${RUN_ARGS[@]:-}"
+        perf stat -d -d -- "${BIN}" ${RUN_ARGS[@]+"${RUN_ARGS[@]}"}
         ;;
     heaptrack)
         require_tool heaptrack heaptrack
@@ -363,7 +368,7 @@ case "${MODE}" in
         cmake --build "${BUILD_DIR}" -j"${JOBS}" --target "${TARGET}"
         BIN="$(locate_binary "${BUILD_DIR}")"; [[ -n "${BIN}" ]] || die "binary not found"
         info "heaptrack ${BIN}  (analyse with: heaptrack_gui / heaptrack_print)"
-        heaptrack "${BIN}" "${RUN_ARGS[@]:-}"
+        heaptrack "${BIN}" ${RUN_ARGS[@]+"${RUN_ARGS[@]}"}
         ;;
     callgrind)
         require_tool valgrind valgrind
@@ -375,7 +380,7 @@ case "${MODE}" in
         cmake --build "${BUILD_DIR}" -j"${JOBS}" --target "${TARGET}"
         BIN="$(locate_binary "${BUILD_DIR}")"; [[ -n "${BIN}" ]] || die "binary not found"
         info "valgrind --tool=callgrind ${BIN}"
-        valgrind --tool=callgrind --callgrind-out-file="${BUILD_DIR}/callgrind.out" -- "${BIN}" "${RUN_ARGS[@]:-}"
+        valgrind --tool=callgrind --callgrind-out-file="${BUILD_DIR}/callgrind.out" -- "${BIN}" ${RUN_ARGS[@]+"${RUN_ARGS[@]}"}
         ;;
     *)
         die "Unknown mode '${MODE}' (run 'tools/intern/sanitize.sh help')"

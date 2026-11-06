@@ -232,7 +232,7 @@ All commands are entered interactively in the `23_pubservice` console while runn
 | `-w=<N>`   | `--width=<N>`    | 32 – 32768  | Frame width in pixels                                                               |
 | `-h=<N>`   | `--height=<N>`   | 32 – 32768  | Frame height in pixels                                                              |
 | `-l=<N>`   | `--lines=<N>`    | 1 – height  | Lines per transmitted block; set equal to height to send one full frame per message |
-| `-t=<N>`   | `--time=<N>`     | 0 – 100000  | Time in nanoseconds to generate one pixel; `0` = full speed                         |
+| `-t=<N>`   | `--time=<N>`     | 0, 10 – 100000 | Time in nanoseconds to generate one pixel; `0` = full speed, 1 to 9 become 10                         |
 | `-c=<N>`   | `--channels=<N>` | 1 – 96      | Parallel channels – primary multiplier for throughput and message rate              |
 | `-i`       | `--info`         | –           | Display current configuration                                                       |
 | `-h`       | `--help`         | –           | Display help message                                                                |

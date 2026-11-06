@@ -388,6 +388,7 @@ namespace areg {
             return "Paused";
         case areg::LogSourceState::Stopped:
             return "Stopped";
+        case areg::LogSourceState::Undefined:
         default:
             return "Undefined";
         }

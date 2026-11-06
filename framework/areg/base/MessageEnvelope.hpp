@@ -575,7 +575,7 @@ public:
      * \param   reserve     Extra bytes to reserve for the payload (payload bytes are NOT written).
      * \return  Writable pointer to the start of the payload area, or nullptr on allocation failure.
      **/
-    uint8_t* init_envelope(const areg::EventHeader& evtHeader, uint32_t reserve = 0);
+    uint8_t* init_envelope(const areg::EventHeader& evtHeader, uint32_t reserve = 0) noexcept;
 
     /**
      * \brief   Creates an independent copy of the envelope. Optionally overrides consumer
@@ -646,12 +646,6 @@ private:
 
     [[nodiscard]]
     inline areg::EventHeader& _header();
-
-    [[nodiscard]]
-    inline const areg::RawEnvelope& _raw_envelope() const noexcept;
-
-    [[nodiscard]]
-    inline areg::RawEnvelope& _raw_envelope() noexcept;
 };
 
 inline MessageEnvelope::MessageEnvelope(uint16_t eventType, uint8_t prio, uint32_t reserveSize /*= 0*/, uint32_t blockSize /*= areg::BLOCK_SIZE*/)
@@ -705,18 +699,6 @@ inline areg::EventHeader& MessageEnvelope::_header()
 {
     ASSERT(mByteBuffer.get() != nullptr);
     return reinterpret_cast<areg::EventHeader&>(*(mByteBuffer.get()));
-}
-
-inline const areg::RawEnvelope& MessageEnvelope::_raw_envelope() const noexcept
-{
-    ASSERT(mByteBuffer.get() != nullptr);
-    return reinterpret_cast<const areg::RawEnvelope&>(*mByteBuffer.get());
-}
-
-inline areg::RawEnvelope& MessageEnvelope::_raw_envelope() noexcept
-{
-    ASSERT(mByteBuffer.get() != nullptr);
-    return reinterpret_cast<areg::RawEnvelope&>(*mByteBuffer.get());
 }
 
 //////////////////////////////////////////////////////////////////////////

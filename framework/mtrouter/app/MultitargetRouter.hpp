@@ -196,7 +196,7 @@ private:
     /**
      * \brief   Returns the list of connected instances.
      **/
-    inline const areg::MapInstances & conneted_instances() const;
+    inline areg::MapInstances conneted_instances() const;
 
     /**
      * \brief   Returns instance of message router service.
@@ -258,7 +258,7 @@ private:
 // MultitargetRouter class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline const areg::MapInstances & MultitargetRouter::conneted_instances() const
+inline areg::MapInstances MultitargetRouter::conneted_instances() const
 {
     return mServiceServer.instances( );
 }

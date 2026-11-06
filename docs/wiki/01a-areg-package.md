@@ -1,4 +1,4 @@
-﻿# Installing Areg SDK as a Package
+# Installing Areg SDK as a Package
 
 This guide installs Areg SDK once on a machine, so that other CMake projects find it with
 `find_package(areg)`.

@@ -165,8 +165,8 @@ Serialize with `<<` and `>>`; the members below are the rest.
 | `clone()` | `SharedBuffer clone() const` | `SharedBuffer.hpp:426` |
 
 `reset()` rewinds the read position; call it before reading back what you just wrote.
-**`size_used()` is the bytes in the buffer; `block_size()` is the bytes allocated** and
-always the larger. Working project: `recipes/07-worker-events/`.
+**`size_used()` is the bytes in the buffer; `block_size()` is the growth step.**
+Working project: `recipes/07-worker-events/`.
 
 ---
 

@@ -67,6 +67,11 @@ public:
     inline const areg::MapInstances & observers() const;
 
     /**
+     * \brief   Returns the connected instances without a copy, for a caller that holds the lock of the service.
+     **/
+    inline const areg::MapInstances & held_instances() const;
+
+    /**
      * \brief   Returns true if the collected logs are saved in the logging database.
      **/
     [[nodiscard]]
@@ -252,6 +257,11 @@ private:
 //////////////////////////////////////////////////////////////////////////////
 // LogCollectorServerService class inline functions implementation
 //////////////////////////////////////////////////////////////////////////////
+
+inline const areg::MapInstances & LogCollectorServerService::held_instances() const
+{
+    return mInstanceMap;
+}
 
 inline const areg::MapInstances & LogCollectorServerService::observers() const
 {

@@ -1,4 +1,4 @@
-﻿# Lusan Live Log Viewer: Real-Time Monitoring for Areg Applications
+# Lusan Live Log Viewer: Real-Time Monitoring for Areg Applications
 
 This guide explains how to use **Lusan** as a **live log viewer** for Areg-based applications. Live log viewing enables developers to observe, filter, and analyze logs from **distributed systems** in real time while applications are running.
 

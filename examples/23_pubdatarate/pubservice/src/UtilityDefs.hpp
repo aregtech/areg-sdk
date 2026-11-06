@@ -12,7 +12,9 @@
  ************************************************************************/
 
 #include "areg/base/areg_global.h"
+#include "areg/base/SocketDefs.hpp"
 #include "areg/base/String.hpp"
+#include "areg/component/EventDefs.hpp"
 #include "common/LargeDataDefs.hpp"
 
 #include <string_view>
@@ -115,18 +117,24 @@ namespace util {
     static constexpr uint32_t LINES_PER_BLOCK   { 1024 };
     //!< Default pixel dwell time in nanoseconds.
     static constexpr uint32_t DWELL_TIME        { 25 };
+    //!< The shortest pixel dwell time in nanoseconds; 0 means full speed.
+    static constexpr uint32_t MIN_DWELL_TIME    { 10 };
     //!< Default image source channels in count.
     static constexpr uint32_t CHANNELS_SOURCE   { 12 };
-    static constexpr uint64_t TIME_IN_DEPTH     {200'000'000u};
+    //!< The time a prepared message stays out of use, in nanoseconds.
+    static constexpr uint64_t POOL_WINDOW_NS    { 20'000'000u };
+
+    //!< Prepared messages that outlast everything the send queue and one send batch can hold.
+    static constexpr uint32_t SAFE_POOL_MESSAGES{ areg::QUEUE_DEFAULT_RING_CAPACITY + areg::DEFAULT_DRAIN_LIMIT + 2u };
 
     //!< Lower bound of the prebuilt rotation, in generations.
     static constexpr uint32_t MIN_PREBUILT_DEPTH{ 2u };
 
     //!< Upper bound of the prebuilt rotation, in generations.
-    static constexpr uint32_t MAX_PREBUILT_DEPTH{ 32u };
+    static constexpr uint32_t MAX_PREBUILT_DEPTH{ 2048u };
 
     //!< Upper bound of the prebuilt rotation, in bytes.
-    static constexpr uint64_t MAX_PREBUILT_BYTES{ 192ull * 1024ull * 1024ull };
+    static constexpr uint64_t MAX_PREBUILT_BYTES{ 256ull * 1024ull * 1024ull };
 
     //! The option data class
     struct OptionValues

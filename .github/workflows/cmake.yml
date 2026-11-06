@@ -23,13 +23,14 @@ env:
 jobs:
   plan:
     name: plan
-    # Sets 'run' when the change touches a file this workflow builds, and 'matrix' to the
-    # legs of .github/ci/cmake-matrix.json this event runs.
+    # Selects the event's legs and separates test runs from build-only configurations.
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
       run: ${{ steps.plan.outputs.run }}
-      matrix: ${{ steps.plan.outputs.matrix }}
+      priority_matrix: ${{ steps.plan.outputs.priority_matrix }}
+      linux_matrix: ${{ steps.plan.outputs.linux_matrix }}
+      windows_matrix: ${{ steps.plan.outputs.windows_matrix }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -38,7 +39,7 @@ jobs:
         shell: bash
         env:
           EVENT: ${{ github.event_name }}
-          PATTERN: '^(framework|examples|tests|thirdparty|conf)/|(^|/)CMakeLists\.txt$|\.cmake$|^tools/(codegen\.jar|schema/)|^tools/intern/(run-all-examples\.py|hang-watchdog\.sh|report-ctest\.py|check_invariants\.py|check_inline_virtuals\.py)$|^\.github/(ci/|workflows/cmake\.yml)'
+          PATTERN: '^(framework|examples|tests|thirdparty|conf)/|(^|/)CMakeLists\.txt$|\.cmake$|^tools/(codegen\.jar|schema/)|^tools/intern/(run-all-examples\.py|hang-watchdog\.sh|report-ctest\.py|check_invariants\.py|check_inline_virtuals\.py|ci-changes\.sh)$|^\.github/(actions/compiler-cache/|ci/|workflows/cmake\.yml)'
           MATRIX: '.github/ci/cmake-matrix.json'
         run: |
           case "${EVENT}" in
@@ -48,15 +49,22 @@ jobs:
           esac
           RUN=true
           if [ -n "${BASE}" ] && git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
-            git diff --name-only "${BASE}" "${GITHUB_SHA}" | grep -qE "${PATTERN}" || RUN=false
+            RUN="$(bash tools/intern/ci-changes.sh "${BASE}" "${GITHUB_SHA}" "${PATTERN}")"
           fi
           echo "run=${RUN}" >> "${GITHUB_OUTPUT}"
-          if [ -n "${MATRIX}" ]; then
-            echo "matrix=$(jq -c --arg ev "${EVENT}" '[.[] | select($ev != "push" or .master == true)]' "${MATRIX}")" >> "${GITHUB_OUTPUT}"
+          SELECTED="$(jq -c --arg ev "${EVENT}" '[.[] | select($ev != "push" or .master == true)]' "${MATRIX}")"
+          PRIORITY="$(jq -c '[.[] | select(.test == "ON" and .norun != "ON")]' <<< "${SELECTED}")"
+          BACKGROUND="$(jq -c '[.[] | select(.test != "ON" or .norun == "ON")]' <<< "${SELECTED}")"
+          if ! jq -e 'all(.[]; .os == "ubuntu-latest" or .os == "windows-latest")' <<< "${BACKGROUND}" > /dev/null; then
+            echo "::error::A build-only runner needs its own matrix job in cmake.yml"
+            exit 1
           fi
+          echo "priority_matrix=${PRIORITY}" >> "${GITHUB_OUTPUT}"
+          echo "linux_matrix=$(jq -c '[.[] | select(.os == "ubuntu-latest")]' <<< "${BACKGROUND}")" >> "${GITHUB_OUTPUT}"
+          echo "windows_matrix=$(jq -c '[.[] | select(.os == "windows-latest")]' <<< "${BACKGROUND}")" >> "${GITHUB_OUTPUT}"
 
-  # The legs are in .github/ci/cmake-matrix.json, longest first. A pull request runs all of
-  # them, a push to master the legs marked 'master: true'.
+  # A pull request runs all legs in .github/ci/cmake-matrix.json; a push to master
+  # runs those marked 'master: true'. Build-only concurrency is bounded separately.
   # '*-all-test' builds and runs the examples and the unit tests; 'norun: ON' builds them only.
   # 'bench: ON' also runs the benchmarks on a pull request; one shared library build per OS.
   # '*-nolog' and '*-noext' build and install only, with AREG_LOGGING=OFF or AREG_EXTENDED=OFF.
@@ -71,13 +79,21 @@ jobs:
 
     strategy:
       fail-fast: false
+      max-parallel: 8
       matrix:
-        config: ${{ fromJSON(needs.plan.outputs.matrix) }}
+        config: ${{ fromJSON(needs.plan.outputs.priority_matrix) }}
 
-    steps:
+    steps: &cmake-build-steps
 
       - name: Checkout Areg SDK source codes
         uses: actions/checkout@v7
+
+      - name: Cache compiler outputs
+        id: compiler-cache
+        if: runner.os != 'Windows' && matrix.config.test == 'ON' && matrix.config.norun != 'ON'
+        uses: ./.github/actions/compiler-cache
+        with:
+          key: cmake-${{ matrix.config.name }}
 
       - name: Setup Java JDK to run code generator
         uses: actions/setup-java@v6.1.0
@@ -230,6 +246,11 @@ jobs:
         run: |
           cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER=${{matrix.config.cc}} -DCMAKE_BUILD_TYPE=${{matrix.config.btype || env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_NO_EXCEPTIONS:BOOL=${{matrix.config.noexc || 'OFF'}} -DAREG_INSTALL:BOOL=ON -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
 
+      - name: Check that a clang-cl leg is compiled by clang-cl
+        if: matrix.config.cxx == 'clang-cl'
+        shell: bash
+        run: grep -H 'CMAKE_CXX_COMPILER_ID "Clang"' ${{env.CACHE_DEST}}/CMakeFiles/*/CMakeCXXCompiler.cmake
+
       - name: Dump the CMake logs of a failed configuration
         if: failure()
         working-directory: ${{github.workspace}}
@@ -247,8 +268,13 @@ jobs:
           done
 
       - name: Build with CMake
+        id: build
         working-directory: ${{github.workspace}}
         run: cmake --build ${{env.CACHE_DEST}} --config ${{matrix.config.btype || env.BUILD_TYPE}} -j16
+
+      - name: Report compiler cache statistics
+        if: ${{ !cancelled() && steps.compiler-cache.outcome == 'success' }}
+        run: ccache --show-stats
 
       - name: Locate the build output directory
         working-directory: ${{github.workspace}}
@@ -323,7 +349,7 @@ jobs:
                   --out-dir "./example-results/${{matrix.config.name}}"
 
       - name: Run Unit Tests. Ignore if unit tests are not compiled
-        if: matrix.config.test == 'ON' && matrix.config.norun != 'ON' && runner.os != 'macOS'
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && matrix.config.test == 'ON' && matrix.config.norun != 'ON' && runner.os != 'macOS' }}
         working-directory: ${{github.workspace}}
         timeout-minutes: 30
         # '-C' is required on Windows: no generator is named. The Windows runners get
@@ -332,7 +358,7 @@ jobs:
         run: ctest --test-dir ${{env.CACHE_DEST}} -C ${{matrix.config.btype || env.BUILD_TYPE}} --timeout 180 --output-on-failure --output-junit test_results.xml
 
       - name: Run Unit Tests, watched (macOS)
-        if: matrix.config.test == 'ON' && matrix.config.norun != 'ON' && runner.os == 'macOS'
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && matrix.config.test == 'ON' && matrix.config.norun != 'ON' && runner.os == 'macOS' }}
         working-directory: ${{github.workspace}}
         shell: bash
         timeout-minutes: 30
@@ -354,7 +380,7 @@ jobs:
         # The step does fail when an application of a scenario crashes, hangs or does not
         # print what it must, because that is a defect and not a measurement.
         # Runs once per OS on a pull request, in the shared library build marked 'bench'.
-        if: matrix.config.test == 'ON' && matrix.config.norun != 'ON' && matrix.config.bench == 'ON' && github.event_name != 'push'
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && matrix.config.test == 'ON' && matrix.config.norun != 'ON' && matrix.config.bench == 'ON' && github.event_name != 'push' }}
         working-directory: ${{github.workspace}}
         shell: bash
         timeout-minutes: 40
@@ -425,6 +451,32 @@ jobs:
           name: ${{matrix.config.name}}
           path: ./${{matrix.config.name}}/
 
+  build-linux:
+    name: ${{matrix.config.name}}
+    needs: plan
+    if: ${{ !cancelled() && needs.plan.outputs.run == 'true' && needs.plan.outputs.linux_matrix != '[]' }}
+    runs-on: ${{matrix.config.os}}
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        config: ${{ fromJSON(needs.plan.outputs.linux_matrix) }}
+    steps: *cmake-build-steps
+
+  build-windows:
+    name: ${{matrix.config.name}}
+    needs: plan
+    if: ${{ !cancelled() && needs.plan.outputs.run == 'true' && needs.plan.outputs.windows_matrix != '[]' }}
+    runs-on: ${{matrix.config.os}}
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        config: ${{ fromJSON(needs.plan.outputs.windows_matrix) }}
+    steps: *cmake-build-steps
+
   invariants:
     name: the framework invariants still have anchors
     # tools/intern/check_invariants.py seeds a defect per documented invariant, rebuilds and
@@ -447,14 +499,21 @@ jobs:
       - name: Check every seeded defect still applies to exactly one place
         run: python3 tools/intern/check_invariants.py --dry-run
 
+      - name: Check workflow path decisions
+        run: python3 tests/units/test_ci_plans.py
+
       # areg is a shared library: an inline virtual method can leave a client unable to link (bug 418).
       - name: Check no non-template class defines a virtual method inline
         run: python3 tools/intern/check_inline_virtuals.py
 
+      # Visual Studio saves a resource script as UTF-16, which clang cannot read.
+      - name: Check the encoding of every text file
+        run: python3 tools/intern/check-ascii.py
+
   result:
     name: CMake result
     if: always()
-    needs: [plan, build-tests, invariants]
+    needs: [plan, build-tests, build-linux, build-windows, invariants]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

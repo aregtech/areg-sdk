@@ -1,4 +1,4 @@
-#ifndef AREG_BASE_TABLEDEFS_HPP
+﻿#ifndef AREG_BASE_TABLEDEFS_HPP
 #define AREG_BASE_TABLEDEFS_HPP
 /************************************************************************
  * This file is part of the Areg SDK core engine.

@@ -668,6 +668,9 @@
     <ClInclude Include="areg\base\private\posix\WaitablePosix.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="areg\base\private\posix\SocketSendPosix.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="areg\base\private\posix\SyncDefsPosix.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

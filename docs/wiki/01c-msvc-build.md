@@ -1,4 +1,4 @@
-﻿# Building Areg SDK with Microsoft Visual Studio and MSBuild
+# Building Areg SDK with Microsoft Visual Studio and MSBuild
 
 This guide covers building Areg SDK using Microsoft Visual Studio and MSBuild, including quick build steps and configuration options.
 

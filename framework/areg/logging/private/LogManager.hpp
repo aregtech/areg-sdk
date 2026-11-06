@@ -295,18 +295,6 @@ public:
     static void set_db_engine(LogDatabaseEngine * dbEngine);
 
     /**
-     * \brief   Returns true if the logging database and tables are initialized and ready.
-     **/
-    [[nodiscard]]
-    static bool is_db_initialized() noexcept;
-
-    /**
-     * \brief   Returns true if logging to the database is enabled in the configuration.
-     **/
-    [[nodiscard]]
-    static bool is_db_enabled();
-
-    /**
      * \brief   Returns the connection cookie of the log collector service.
      **/
     inline static ITEM_ID connection_cookie() noexcept;
@@ -415,41 +403,6 @@ private:
     inline void _wait_logs_written();
 
     /**
-     * \brief   Returns true if remote logging is enabled in the configuration.
-     **/
-    [[nodiscard]]
-    bool is_remote_logging_enabled() const noexcept;
-
-    /**
-     * \brief   Returns true if database logging is enabled in the configuration.
-     **/
-    [[nodiscard]]
-    bool is_db_logging_enabled() const noexcept;
-
-    /**
-     * \brief   Returns true if file logging is enabled in the configuration.
-     **/
-    [[nodiscard]]
-    bool is_file_logging_enabled() const noexcept;
-
-    /**
-     * \brief   Returns true if debug output window logging is enabled. Only relevant for Visual
-     *          Studio.
-     **/
-    [[nodiscard]]
-    bool is_debug_logging_enabled() const noexcept;
-
-    /**
-     * \brief   Clears all logging configuration data.
-     **/
-    void clear_config_data();
-
-    /**
-     * \brief   Resets and deactivates all scopes.
-     **/
-    void reset();
-
-    /**
      * \brief   Activates scopes and sets their priorities from the configuration.
      **/
     void start_logs();
@@ -496,15 +449,6 @@ private:
      * \param   eventPrio       The priority of the event. Defaults to NormalPrio.
      **/
     void send_log_event( const LoggingEventData & data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio);
-
-    /**
-     * \brief   Changes the logging priority of a scope or scope group.
-     *
-     * \param   scopeName       The name of a single scope or scope group ending with '*'.
-     * \param   scopeId         The ID of the scope; ignored for scope groups.
-     * \param   scopePrio       The new logging priority to set.
-     **/
-    void change_scope_priority( const String & scopeName, uint32_t scopeId, uint32_t scopePrio );
 
     /**
      * \brief   Returns a read-only list of registered scopes.

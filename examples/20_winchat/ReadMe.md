@@ -1,4 +1,4 @@
-﻿# 20_winchat
+# 20_winchat
 
 🧵🚀 **Type:** Multithreading + IPC
 

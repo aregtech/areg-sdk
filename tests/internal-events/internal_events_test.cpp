@@ -155,6 +155,9 @@ protected:
         case Kind::Foreign:
             gForeign.fetch_add(1u);
             break;
+
+        default:
+            break;
         }
     }
 

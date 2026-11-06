@@ -424,7 +424,7 @@ void StubBase::collect_and_strip_response_listeners( uint32_t respId, StubListen
 void StubBase::send_response_notification( const StubListenerList & whichListeners, ServiceResponseEvent & masterEvent )
 {
     const uint32_t count = whichListeners.size();
-    if (count == 0)
+    if ((count == 0) || (masterEvent.is_valid() == false))
         return;
 
     // Clone for listeners [1..count-1] first while masterEvent is still alive.
@@ -519,7 +519,7 @@ void StubBase::send_error_notification( const StubListenerList & whichListeners,
 void StubBase::send_update_notification( const StubListenerList & whichListeners, ServiceResponseEvent & masterEvent ) const
 {
     const uint32_t count = whichListeners.size();
-    if (count == 0)
+    if ((count == 0) || (masterEvent.is_valid() == false))
         return;
 
     for (uint32_t i = 1; i < count; ++i)

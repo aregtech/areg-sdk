@@ -108,7 +108,7 @@ struct CmdData
     CmdData & operator=(const CmdData &) = default;
 };
 
-AREG_DECLARE_EVENT(CmdData, EventCommand, IECmdConsumer);
+AREG_DECLARE_EVENT(CmdData, EventCommand, CmdConsumerBase);
 
 //////////////////////////////////////////////////////////////////////////
 // LatencyConsumer class declaration
@@ -131,11 +131,11 @@ class LatencyConsumer final : public    areg::Component
 //////////////////////////////////////////////////////////////////////////
 // Nested command consumer -- forwards events to the component thread
 //////////////////////////////////////////////////////////////////////////
-    class CmdConsumer : public IECmdConsumer
+    class CmdConsumer : public CmdConsumerBase
     {
     public:
         explicit CmdConsumer(LatencyConsumer & owner)
-            : IECmdConsumer ( )
+            : CmdConsumerBase ( )
             , mOwner        ( owner )
         { }
 

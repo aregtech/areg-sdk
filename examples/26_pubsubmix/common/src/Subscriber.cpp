@@ -33,7 +33,7 @@ Subscriber::Subscriber(const areg::DependencyEntry & entry, areg::Component & ow
     , mCoordStr     ( { pubsub::CoordString.posX     , pubsub::CoordString.posY   + position * 3 })
     , mCoordSep     ( { pubsub::CoordSeparator.posX  , pubsub::CoordSeparator.posY+ position * 3 })
 {
-    pubsub::CoordInfoMsg.posY = std::max(pubsub::CoordInfoMsg.posY + 1, pubsub::CoordSeparator.posY);
+    pubsub::next_info_row();
 }
 
 bool Subscriber::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )

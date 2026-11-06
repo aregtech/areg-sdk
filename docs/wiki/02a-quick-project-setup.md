@@ -1,4 +1,4 @@
-﻿# Quick Project Setup with Areg SDK
+# Quick Project Setup with Areg SDK
 
 Create a ready-to-build Areg SDK project with one command, then build and run it.
 

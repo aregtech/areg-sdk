@@ -1,4 +1,4 @@
-﻿[Unit]
+[Unit]
 Description=Areg TCP/IP Multitarget Router Service to automate messaging
 StartLimitIntervalSec=1
 

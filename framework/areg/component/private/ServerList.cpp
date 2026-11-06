@@ -177,28 +177,4 @@ ServerInfo ServerList::unregister_provider( const StubAddress & whichServer, Cli
     return result;
 }
 
-areg::ServiceConnectionState ServerList::server_state(const StubAddress & whichServer) const
-{
-    ServerListBase::MAPPOS pos = find_provider(whichServer);
-    return (ServerListBase::is_valid_position(pos) ? pos->first.connection_status() : areg::ServiceConnectionState::Unknown);
-}
-
-const ClientList & ServerList::client_list(const StubAddress & whichServer) const
-{
-    ServerListBase::MAPPOS pos = find_provider(whichServer);
-    ASSERT(ServerListBase::is_valid_position(pos));
-    return pos->second;
-}
-
-bool ServerList::is_server_registered(const StubAddress & server) const
-{
-    return (ServerListBase::is_valid_position(find(ServerInfo(server))));
-}
-
-const ServerInfo * ServerList::find_client_server(const ProxyAddress & whichClient) const
-{
-    ServerListBase::MAPPOS pos = find_provider( whichClient );
-    return ( ServerListBase::is_valid_position(pos) ? &(pos->first) : nullptr);
-}
-
 } // namespace areg

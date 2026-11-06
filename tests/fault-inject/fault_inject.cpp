@@ -23,24 +23,30 @@
 #endif  // defined(__linux__)
 
 #if defined(_WIN32)
-    #include <winsock2.h>
-    #include <windows.h>
-    #include <psapi.h>
+    #include <WinSock2.h>
+    #include <Windows.h>
+    #include <Psapi.h>
 #else   // defined(_WIN32)
     #include <dirent.h>
     #include <errno.h>
     #include <fcntl.h>
+#if defined(__linux__)
+    #include <sys/epoll.h>
+#endif  // defined(__linux__)
     #include <pthread.h>
     #include <spawn.h>
     #include <stdarg.h>
     #include <sys/socket.h>
     #include <sys/types.h>
+    #include <unistd.h>
 #endif  // defined(_WIN32)
 
 #include "fault-inject/FaultInject.hpp"
 
 #include <atomic>
 #include <cstdint>
+#include <cstdlib>
+#include <new>
 
 //////////////////////////////////////////////////////////////////////////
 // The fault points shared by every platform.
@@ -236,6 +242,132 @@ extern "C"
         return ( next != nullptr ) ? next( path, flags, mode ) : ( errno = ENOSYS, -1 );
     }
 
+    AREG_FAULT_API int connect( int fd, const struct sockaddr * addr, socklen_t len )
+    {
+        int error{ 0 };
+        if ( _should_fail( areg_fault::FaultPoint::SocketConnect, error ) )
+        {
+            errno = error;
+            return -1;
+        }
+
+        using Func = int (*)( int, const struct sockaddr *, socklen_t );
+        static const Func next{ _next<Func>( "connect" ) };
+        return ( next != nullptr ) ? next( fd, addr, len ) : ( errno = ENOSYS, -1 );
+    }
+
+    AREG_FAULT_API ssize_t send( int fd, const void * buf, size_t len, int flags )
+    {
+        int error{ 0 };
+        if ( _should_fail( areg_fault::FaultPoint::SocketSend, error ) )
+        {
+            errno = error;
+            return -1;
+        }
+
+        using Func = ssize_t (*)( int, const void *, size_t, int );
+        static const Func next{ _next<Func>( "send" ) };
+        return ( next != nullptr ) ? next( fd, buf, len, flags ) : ( errno = ENOSYS, -1 );
+    }
+
+    AREG_FAULT_API ssize_t sendmsg( int fd, const struct msghdr * msg, int flags )
+    {
+        int error{ 0 };
+        if ( _should_fail( areg_fault::FaultPoint::SocketSend, error ) )
+        {
+            errno = error;
+            return -1;
+        }
+
+        using Func = ssize_t (*)( int, const struct msghdr *, int );
+        static const Func next{ _next<Func>( "sendmsg" ) };
+        return ( next != nullptr ) ? next( fd, msg, flags ) : ( errno = ENOSYS, -1 );
+    }
+
+    AREG_FAULT_API ssize_t recv( int fd, void * buf, size_t len, int flags )
+    {
+        int error{ 0 };
+        if ( _should_fail( areg_fault::FaultPoint::SocketRecv, error ) )
+        {
+            errno = error;
+            return -1;
+        }
+
+        using Func = ssize_t (*)( int, void *, size_t, int );
+        static const Func next{ _next<Func>( "recv" ) };
+        return ( next != nullptr ) ? next( fd, buf, len, flags ) : ( errno = ENOSYS, -1 );
+    }
+
+    AREG_FAULT_API int bind( int fd, const struct sockaddr * addr, socklen_t len )
+    {
+        int error{ 0 };
+        if ( _should_fail( areg_fault::FaultPoint::SocketBind, error ) )
+        {
+            errno = error;
+            return -1;
+        }
+
+        using Func = int (*)( int, const struct sockaddr *, socklen_t );
+        static const Func next{ _next<Func>( "bind" ) };
+        return ( next != nullptr ) ? next( fd, addr, len ) : ( errno = ENOSYS, -1 );
+    }
+
+    AREG_FAULT_API int listen( int fd, int backlog )
+    {
+        int error{ 0 };
+        if ( _should_fail( areg_fault::FaultPoint::SocketListen, error ) )
+        {
+            errno = error;
+            return -1;
+        }
+
+        using Func = int (*)( int, int );
+        static const Func next{ _next<Func>( "listen" ) };
+        return ( next != nullptr ) ? next( fd, backlog ) : ( errno = ENOSYS, -1 );
+    }
+
+    AREG_FAULT_API int epoll_ctl( int epfd, int op, int fd, struct epoll_event * ev )
+    {
+        int error{ 0 };
+        if ( _should_fail( areg_fault::FaultPoint::EpollCtl, error ) )
+        {
+            errno = error;
+            return -1;
+        }
+
+        using Func = int (*)( int, int, int, struct epoll_event * );
+        static const Func next{ _next<Func>( "epoll_ctl" ) };
+        return ( next != nullptr ) ? next( epfd, op, fd, ev ) : ( errno = ENOSYS, -1 );
+    }
+
+    AREG_FAULT_API ssize_t read( int fd, void * buf, size_t len )
+    {
+        int error{ 0 };
+        if ( _should_fail( areg_fault::FaultPoint::FileRead, error ) )
+        {
+            errno = error;
+            return -1;
+        }
+
+        using Func = ssize_t (*)( int, void *, size_t );
+        static const Func next{ _next<Func>( "read" ) };
+        return ( next != nullptr ) ? next( fd, buf, len ) : ( errno = ENOSYS, -1 );
+    }
+
+    AREG_FAULT_API ssize_t write( int fd, const void * buf, size_t len )
+    {
+        int error{ 0 };
+        if ( _should_fail( areg_fault::FaultPoint::FileWrite, error ) )
+        {
+            errno = error;
+            return -1;
+        }
+
+        using Func = ssize_t (*)( int, const void *, size_t );
+        static const Func next{ _next<Func>( "write" ) };
+        return ( next != nullptr ) ? next( fd, buf, len ) : ( errno = ENOSYS, -1 );
+    }
+
     AREG_FAULT_API DIR * opendir( const char * name )
     {
         int error{ 0 };
@@ -263,6 +395,40 @@ extern "C"
     }
 }
 
+namespace
+{
+    //!< Returns the next definition of the named allocation function, or null.
+    using AllocFunc = void * (*)( std::size_t, const std::nothrow_t & );
+
+    AllocFunc _next_alloc( bool isArray ) noexcept
+    {
+        static const char * const names32[]{ "_ZnwjRKSt9nothrow_t", "_ZnajRKSt9nothrow_t" };
+        static const char * const names64[]{ "_ZnwmRKSt9nothrow_t", "_ZnamRKSt9nothrow_t" };
+        const char * const name{ (sizeof( std::size_t ) == 4u ? names32 : names64)[isArray ? 1 : 0] };
+        return reinterpret_cast<AllocFunc>(::dlsym( RTLD_NEXT, name ));
+    }
+}
+
+void * operator new( std::size_t size, const std::nothrow_t & tag ) noexcept
+{
+    int error{ 0 };
+    if ( _should_fail( areg_fault::FaultPoint::Allocation, error ) )
+        return nullptr;
+
+    static const AllocFunc next{ _next_alloc( false ) };
+    return ( next != nullptr ) ? next( size, tag ) : std::malloc( size != 0u ? size : 1u );
+}
+
+void * operator new[]( std::size_t size, const std::nothrow_t & tag ) noexcept
+{
+    int error{ 0 };
+    if ( _should_fail( areg_fault::FaultPoint::Allocation, error ) )
+        return nullptr;
+
+    static const AllocFunc next{ _next_alloc( true ) };
+    return ( next != nullptr ) ? next( size, tag ) : std::malloc( size != 0u ? size : 1u );
+}
+
 //////////////////////////////////////////////////////////////////////////
 // macOS: replacements registered in the __DATA,__interpose section.
 //////////////////////////////////////////////////////////////////////////
@@ -270,9 +436,17 @@ extern "C"
 
 namespace
 {
-    bool _is_supported( areg_fault::FaultPoint /*point*/ ) noexcept
+    bool _is_supported( areg_fault::FaultPoint point ) noexcept
     {
-        return true;
+        return ( point != areg_fault::FaultPoint::SocketConnect )
+            && ( point != areg_fault::FaultPoint::SocketSend )
+            && ( point != areg_fault::FaultPoint::SocketRecv )
+            && ( point != areg_fault::FaultPoint::Allocation )
+            && ( point != areg_fault::FaultPoint::SocketBind )
+            && ( point != areg_fault::FaultPoint::SocketListen )
+            && ( point != areg_fault::FaultPoint::EpollCtl )
+            && ( point != areg_fault::FaultPoint::FileRead )
+            && ( point != areg_fault::FaultPoint::FileWrite );
     }
 
     void _install( ) noexcept

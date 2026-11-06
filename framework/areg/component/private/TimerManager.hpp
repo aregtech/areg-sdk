@@ -110,14 +110,6 @@ public:
     static bool is_manager_started();
 
     /**
-     * \brief   Starts a timer. The timer event will be dispatched in the calling thread.
-     *
-     * \param   timer       The timer object to start.
-     * \return  Returns true if the timer was successfully created.
-     **/
-    static bool start_timer(Timer &timer);
-
-    /**
      * \brief   Starts a timer and specifies the target thread for the timer event.
      *
      * \param   timer           The timer object to start.

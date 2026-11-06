@@ -13,16 +13,19 @@
 #include "areg/ipc/RemoteMessageHandler.hpp"
 #include "areg/ipc/ServerConnectionBase.hpp"
 #include "areg/ipc/ServiceClientConnectionBase.hpp"
+#include "areg/ipc/private/ConnectionDefs.hpp"
 #include "areg/persist/ConfigManager.hpp"
 #include "areg/persist/Property.hpp"
 
 #include <array>
+#include <atomic>
 #include <condition_variable>
 #include <ctime>
 #include <cstring>
 #include <functional>
 #include <initializer_list>
 #include <mutex>
+#include <thread>
 #include <utility>
 #include <vector>
 
@@ -152,11 +155,6 @@ namespace
             return areg::server_listen(mSocket.value(), 8);
         }
 
-        void close()
-        {
-            mSocket = areg::Socket::SocketHandle();
-        }
-
     private:
         areg::Socket::SocketHandle mSocket;
         areg::SocketAddress mAddress;
@@ -174,7 +172,7 @@ namespace
             return false;
 
         const uint32_t size{ header.bufHeader.biUsed };
-        if (size != 0u && peer.receive(body, size) != static_cast<int32_t>(size))
+        if (size != 0u && peer.receive(body, static_cast<int32_t>(size)) != static_cast<int32_t>(size))
             return false;
 
         message.set_size_used(size);
@@ -185,7 +183,7 @@ namespace
     bool send_wire(const areg::SocketAccepted & peer, const areg::MessageEnvelope & message)
     {
         const uint32_t size{ areg::wire_size(*message.header()) };
-        return peer.send(areg::wire_data(*message.header()), size) == static_cast<int32_t>(size);
+        return peer.send(areg::wire_data(*message.header()), static_cast<int32_t>(size)) == static_cast<int32_t>(size);
     }
 
     void expect_same_message(const areg::MessageEnvelope & expected, const areg::MessageEnvelope & actual)
@@ -423,6 +421,55 @@ TEST(IpcStatisticsCoverageTest, enable_transitions_reset_but_repeated_enable_pre
     EXPECT_EQ(stats.extract_msgs(), 0u);
 }
 
+// Reproduces the defect: the flag was a plain bool that one thread wrote while network threads read it.
+TEST(IpcStatisticsCoverageTest, enable_toggled_while_another_thread_accumulates)
+{
+    areg::DataRateStats stats;
+    std::atomic<bool> stop{ false };
+    std::thread worker([&stats, &stop]
+    {
+        while (stop.load(std::memory_order_relaxed) == false)
+        {
+            stats.accumulate(1u, 1u);
+        }
+    });
+
+    for (uint32_t i = 0u; i < 1'000u; ++i)
+    {
+        stats.set_enabled((i % 2u) == 0u);
+    }
+
+    stop.store(true, std::memory_order_relaxed);
+    worker.join();
+    EXPECT_FALSE(stats.is_enabled());
+}
+
+// Reproduces the defect: a new priority was written into a block the send thread could be using.
+TEST(IpcStatisticsCoverageTest, send_priority_leaves_a_shared_block_unchanged)
+{
+    constexpr uint8_t NORMAL{ static_cast<uint8_t>(areg::EventPriority::NormalPrio) };
+    constexpr uint8_t HIGH{ static_cast<uint8_t>(areg::EventPriority::HighPrio) };
+    const uint8_t data[]{ 1u, 2u, 3u, 4u };
+    areg::MessageEnvelope original(areg::message_bye_server(), static_cast<uint32_t>(sizeof(data)));
+    ASSERT_EQ(original.write(data, static_cast<uint32_t>(sizeof(data))), sizeof(data));
+
+    areg::MessageEnvelope same{ original };
+    ASSERT_TRUE(areg::set_send_priority(same, areg::EventPriority::NormalPrio));
+    EXPECT_EQ(same.buffer(), original.buffer());
+
+    areg::MessageEnvelope copy{ original };
+    ASSERT_TRUE(areg::set_send_priority(copy, areg::EventPriority::HighPrio));
+    EXPECT_EQ(original.priority(), NORMAL);
+    EXPECT_EQ(copy.priority(), HIGH);
+    EXPECT_NE(copy.buffer(), original.buffer());
+    ASSERT_EQ(copy.size_used(), original.size_used());
+    EXPECT_EQ(std::memcmp(copy.buffer(), original.buffer(), original.size_used()), 0);
+
+    uint8_t * const block{ copy.buffer() };
+    ASSERT_TRUE(areg::set_send_priority(copy, areg::EventPriority::CriticalPrio));
+    EXPECT_EQ(copy.buffer(), block);
+}
+
 TEST(IpcServiceEventCoverageTest, every_client_and_server_command_dispatches_exactly_once)
 {
     CommandRecorder recorder;
@@ -594,7 +641,7 @@ TEST_F(IpcSocketCoverageTest, truncated_header_and_body_report_incomplete_messag
         ASSERT_TRUE(peer.is_valid());
         const auto message{ areg::create_connect_notify(areg::COOKIE_ROUTER, 1234u) };
         const uint32_t size{ partialHeader ? areg::WIRE_HEADER_SIZE - 1u : areg::wire_size(*message.header()) - 1u };
-        ASSERT_EQ(peer.send(areg::wire_data(*message.header()), size), static_cast<int32_t>(size));
+        ASSERT_EQ(peer.send(areg::wire_data(*message.header()), static_cast<int32_t>(size)), static_cast<int32_t>(size));
         ASSERT_TRUE(peer.disable_send());
         areg::MessageEnvelope received;
         EXPECT_EQ(client.receive_message(received), 0);
@@ -896,7 +943,7 @@ TEST_F(IpcSocketCoverageTest, outage_reconnects_with_new_cookie_and_stop_interru
     expect_same_message(message, received);
     const auto partial{ areg::create_connect_notify(areg::COOKIE_ROUTER, SECOND_COOKIE) };
     const uint32_t incomplete{ areg::wire_size(*partial.header()) - 1u };
-    ASSERT_EQ(peer.send(areg::wire_data(*partial.header()), incomplete), static_cast<int32_t>(incomplete));
+    ASSERT_EQ(peer.send(areg::wire_data(*partial.header()), static_cast<int32_t>(incomplete)), static_cast<int32_t>(incomplete));
     provider.disconnect_service_host();
     ASSERT_TRUE(observer.wait_counts(2u, 2u, 1u));
     ASSERT_TRUE(dispatcher.barrier());
@@ -904,6 +951,59 @@ TEST_F(IpcSocketCoverageTest, outage_reconnects_with_new_cookie_and_stop_interru
     EXPECT_EQ(service.connection_cookie(), areg::COOKIE_UNKNOWN);
     EXPECT_TRUE(service.is_disconnect_state());
     observer.expect_channels({ FIRST_COOKIE, SECOND_COOKIE }, { areg::COOKIE_LOCAL, FIRST_COOKIE });
+}
+
+// Reproduces the defect: sending a message again wrote routing fields into the block the send
+// thread was using, so a queued copy could lose its consumer and pointers could reach the wire.
+TEST_F(IpcSocketCoverageTest, message_sent_again_keeps_its_header_and_every_copy_arrives)
+{
+    constexpr uint32_t COPIES{ 400u };
+    constexpr uint32_t PAYLOAD_SIZE{ 128u * 1024u };
+    ConfigurationScope saved;
+    LoopbackListener listener;
+    ASSERT_TRUE(listener.open());
+    areg::ConnectionConfiguration config(areg::RemoteServiceKind::Router, areg::ConnectionType::Tcpip);
+    config.set_connection_enable(true);
+    ChannelRecorder observer;
+    EventTestDispatcher dispatcher("IpcSentAgain");
+    LoopbackService service(observer, dispatcher);
+    ServiceRun run(service, dispatcher);
+    ASSERT_TRUE(dispatcher.start_ready());
+    service.register_consumer_commands();
+    auto & provider{ static_cast<areg::ConnectionProvider &>(service) };
+    provider.apply_connection_data(listener.address().host_address(), listener.address().host_port());
+    ASSERT_TRUE(provider.connect_service_host());
+    auto peer{ listener.accept() };
+    ASSERT_TRUE(peer.is_valid());
+    areg::MessageEnvelope handshake;
+    ASSERT_TRUE(receive_wire(peer, handshake));
+    constexpr ITEM_ID COOKIE{ areg::COOKIE_REMOTE_SERVICE + 37u };
+    ASSERT_TRUE(send_wire(peer, areg::create_connect_notify(areg::COOKIE_ROUTER, COOKIE)));
+    ASSERT_TRUE(observer.wait_counts(1u, 0u));
+
+    std::vector<uint8_t> payload(PAYLOAD_SIZE);
+    for (uint32_t i = 0u; i != PAYLOAD_SIZE; ++i)
+    {
+        payload[i] = static_cast<uint8_t>(i * 41u);
+    }
+
+    areg::MessageEnvelope message(areg::message_bye_server(), PAYLOAD_SIZE);
+    ASSERT_EQ(message.write(payload.data(), PAYLOAD_SIZE), PAYLOAD_SIZE);
+
+    // The peer reads nothing yet, so the socket fills up and the send thread stops with copies queued.
+    for (uint32_t i = 0u; i != COPIES; ++i)
+    {
+        ASSERT_TRUE(service.queue_payload(message));
+    }
+
+    EXPECT_EQ(message.header()->internal1, 0u);
+    EXPECT_EQ(message.header()->internal2, 0u);
+    for (uint32_t i = 0u; i != COPIES; ++i)
+    {
+        areg::MessageEnvelope received;
+        ASSERT_TRUE(receive_wire(peer, received)) << "copy " << i;
+        expect_same_message(message, received);
+    }
 }
 
 // Reproduces the defect: explicit reconnect stops the service but cannot start the next connection.

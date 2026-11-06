@@ -220,6 +220,8 @@ private:
             mClients[1] = new AttachClient(1, thread);
             break;
 
+        case TestCase::None:
+        case TestCase::BeforeConnect:
         default:
             break;
         }
@@ -419,6 +421,7 @@ int main(int argc, char * argv[])
     case TestCase::DeletedBeforeNotify: ok = run_deleted_before_notify();   break;
     case TestCase::Reconnect:           ok = run_reconnect();               break;
     case TestCase::BeforeConnect:       ok = run_before_connect();          break;
+    case TestCase::None:
     default:                                                                break;
     }
 

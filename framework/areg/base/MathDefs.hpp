@@ -28,7 +28,14 @@
 #include <type_traits>
 #include <cmath>
 
-#if defined(__SSE4_2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_IX86)))
+// clang-cl defines _MSC_VER, but its CRC32 intrinsics need the SSE4.2 target like any clang.
+#if defined(__SSE4_2__) || (defined(_MSC_VER) && !defined(__clang__) && (defined(_M_X64) || defined(_M_IX86)))
+    #define AREG_CRC32_INTRINSICS   1
+#else
+    #define AREG_CRC32_INTRINSICS   0
+#endif
+
+#if AREG_CRC32_INTRINSICS
     // Must stay outside 'namespace areg': on GCC/Clang this header typedefs __m128i/__m128/etc at global scope.
     #include <nmmintrin.h>
 #endif
@@ -746,7 +753,7 @@ inline constexpr uint32_t crc32_calculate( std::string_view str ) noexcept
     return crc32_finish(crc);
 }
 
-#if defined(__SSE4_2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_IX86)))
+#if AREG_CRC32_INTRINSICS
     // HW intrinsics cannot be evaluated at compile time, not `constexpr` method.
     // Computes CRC32C (Castagnoli) - same polynomial as CRC32_TABLE, so SW and HW results are identical.
     inline uint32_t _crc32_hardware(const uint8_t* data, int32_t size) noexcept
@@ -773,7 +780,7 @@ inline constexpr uint32_t crc32_calculate( std::string_view str ) noexcept
 // __builtin_is_constant_evaluated() is a C++17 extension supported by all three toolchains this SDK targets.
 inline constexpr uint32_t crc32_hardware(const uint8_t* data, int32_t size) noexcept
 {
-#if defined(__SSE4_2__) || (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_IX86)))
+#if AREG_CRC32_INTRINSICS
     if (__builtin_is_constant_evaluated())
         return crc32_calculate(data, size);  // compile-time: software path
     return _crc32_hardware(data, size);      // runtime: SIMD hardware path
@@ -953,7 +960,7 @@ inline constexpr bool is_in_range(T value, T rangeMin, T rangeMax) noexcept
 template <typename T>
 inline constexpr T align_size(T len, T block) noexcept
 {
-    return (((len) + (block - 1)) / block) * block;
+    return ((block & (block - 1)) == 0) ? ((len + (block - 1)) & ~(block - 1)) : (((len + (block - 1)) / block) * block);
 }
 
 /************************************************************************/
@@ -1005,7 +1012,8 @@ inline constexpr T swap_bytes(T value) noexcept
 
     if constexpr (sizeof(T) == 2)
     {
-        return static_cast<T>(((n << 8) & 0xFF00u) | ((n >> 8) & 0x00FFu));
+        const uint32_t wide{ n };
+        return static_cast<T>(((wide << 8) & 0xFF00u) | ((wide >> 8) & 0x00FFu));
     }
     else
     {
@@ -1018,7 +1026,7 @@ inline constexpr T swap_bytes(T value) noexcept
 
 inline constexpr uint16_t make16(uint8_t hi, uint8_t lo) noexcept
 {
-    return (static_cast<uint16_t>(hi) << 8) | static_cast<uint16_t>(lo);
+    return static_cast<uint16_t>((static_cast<uint32_t>(hi) << 8) | static_cast<uint32_t>(lo));
 }
 
 inline constexpr uint32_t make32(uint16_t hi, uint16_t lo) noexcept

@@ -1,4 +1,4 @@
-﻿# Lusan Offline Log Viewer: Post-Mortem Analysis for Areg Applications
+# Lusan Offline Log Viewer: Post-Mortem Analysis for Areg Applications
 
 This guide explains how to use **Lusan** for **offline log analysis**. Offline mode allows developers to load and analyze previously recorded log files without running applications or log collectors. It is ideal for post-mortem debugging, issue investigation, and log sharing across teams.
 

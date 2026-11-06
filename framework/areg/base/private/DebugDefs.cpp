@@ -45,7 +45,7 @@ AREG_API_IMPL void areg::lt_ensure_atexit() noexcept
 #include <mutex>
 
 #ifdef _WIN32
-    #include <windows.h>
+    #include <Windows.h>
 #else
     #include <time.h>
 #endif  // _WIN32

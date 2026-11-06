@@ -78,8 +78,10 @@ void ServiceClientConsumer::process_event(const ServiceEventData& data)
         break;
 
     default:
+        // GCOVR_EXCL_START: unreachable default arm
         ASSERT(false);
         break;
+        // GCOVR_EXCL_STOP
     }
 }
 
@@ -126,8 +128,10 @@ void ServiceServerConsumer::process_event(const ServiceEventData& data)
         break;
 
     default:
+        // GCOVR_EXCL_START: unreachable default arm
         ASSERT(false);
         break;
+        // GCOVR_EXCL_STOP
     }
 }
 

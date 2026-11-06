@@ -94,10 +94,10 @@ private:
 #endif  // _MSC_VER
     mutable std::atomic_uint64_t    mBytes;     //!< Running byte total.
     mutable std::atomic_uint32_t    mMsgs;      //!< Running message total.
+    std::atomic_bool                mEnabled;   //!< Whether accumulation is active.
 #if defined(_MSC_VER)
     #pragma warning(pop)
 #endif  // _MSC_VER
-    bool                            mEnabled;   //!< Whether accumulation is active.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -119,7 +119,7 @@ inline DataRateStats::DataRateStats() noexcept
 
 inline void DataRateStats::accumulate(uint64_t bytes, uint32_t msgs) noexcept
 {
-    if (mEnabled)
+    if (mEnabled.load(std::memory_order_relaxed))
     {
         mBytes.fetch_add(bytes, std::memory_order_relaxed);
         mMsgs.fetch_add(msgs, std::memory_order_relaxed);
@@ -138,17 +138,17 @@ inline uint32_t DataRateStats::extract_msgs() const noexcept
 
 inline void DataRateStats::set_enabled(bool enable) noexcept
 {
-    if (mEnabled != enable)
+    if (mEnabled.load(std::memory_order_relaxed) != enable)
     {
         mBytes.store(0u, std::memory_order_relaxed);
         mMsgs.store(0u, std::memory_order_relaxed);
-        mEnabled = enable;
+        mEnabled.store(enable, std::memory_order_relaxed);
     }
 }
 
 inline bool DataRateStats::is_enabled() const noexcept
 {
-    return mEnabled;
+    return mEnabled.load(std::memory_order_relaxed);
 }
 
 } // namespace areg

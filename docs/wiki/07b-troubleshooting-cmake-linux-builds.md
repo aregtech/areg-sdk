@@ -1,4 +1,4 @@
-﻿# Troubleshooting CMake Builds on Linux
+# Troubleshooting CMake Builds on Linux
 
 This guide provides solutions for common issues encountered when compiling projects with CMake on Linux, helping to ensure a smooth and successful build process for Areg SDK applications.
 

@@ -1,4 +1,4 @@
-﻿# 05_buffer
+# 05_buffer
 
 🧵 **Type:** Multithreading / Single Process
 

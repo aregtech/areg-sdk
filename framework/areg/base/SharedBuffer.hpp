@@ -288,9 +288,9 @@ public:
      *                  and mPosition is left after them (at biUsed).
      *                  If false, mPosition and biUsed are both reset to 0 -- any
      *                  in-progress write position is silently discarded.
-     * \return  Available writable bytes after the operation; 0 on failure.
+     * \return  Available writable bytes after the operation; 0 on failure, which changes nothing.
      **/
-    uint32_t reserve(uint32_t size, bool copy);
+    uint32_t reserve(uint32_t size, bool copy) noexcept;
 
     /**
      * \brief   Releases the shared block reference and resets the read cursor.
@@ -314,7 +314,7 @@ public:
      *
      * \param   newSize     The new size in bytes. Must not exceed the buffer length.
      **/
-    inline void set_size_used(uint32_t newSize);
+    inline void set_size_used(uint32_t newSize) noexcept;
 
     /**
      * \brief   Returns a read-only pointer to the data buffer.
@@ -559,6 +559,11 @@ protected:
     uint32_t read_data(uint8_t* buf, uint32_t size) const noexcept;
 
     /**
+     * \brief   Returns the address of 'size' bytes to write at the cursor; nullptr for a view.
+     **/
+    uint8_t* write_view(uint32_t size) noexcept final;
+
+    /**
      * \brief   Returns a pointer to the readable data at mPosition, or nullptr
      *          when the cursor is at or past the end or the buffer is invalid.
      **/
@@ -712,16 +717,10 @@ inline areg::BufferType SharedBuffer::type() const noexcept
     return (is_valid() ? mByteBuffer->bufHeader.biBufType : areg::BufferType::Unknown);
 }
 
-inline void SharedBuffer::set_size_used(uint32_t newSize)
+inline void SharedBuffer::set_size_used(uint32_t newSize) noexcept
 {
-    if (!is_valid() || (newSize > size_available()))
+    if (!is_valid() || is_view() || (newSize > size_available()))
         return;
-
-    if (mViewEnd != 0u)
-    {
-        ASSERT(false);
-        return;
-    }
 
     mByteBuffer->bufHeader.biUsed = newSize;
     if (mPosition > newSize)
@@ -871,7 +870,7 @@ template <typename T>
 inline uint32_t SharedBuffer::write_pod(const T& value) noexcept
 {
     static_assert(std::is_trivially_copyable_v<T>, "write_pod<T>() requires trivially-copyable T");
-    return write_data(reinterpret_cast<const uint8_t*>(&value), static_cast<uint32_t>(sizeof(T)));
+    return is_view() ? 0u : write_bytes(reinterpret_cast<const uint8_t*>(&value), static_cast<uint32_t>(sizeof(T)));
 }
 
 template <typename T>
@@ -881,7 +880,7 @@ inline uint32_t SharedBuffer::write_array(const T* data, uint32_t count) noexcep
     if ((data == nullptr) || (count == 0u) || (count > areg::MAX_BUF_LENGTH / static_cast<uint32_t>(sizeof(T))))
         return 0u;
 
-    return write_data(reinterpret_cast<const uint8_t*>(data), static_cast<uint32_t>(sizeof(T)) * count);
+    return is_view() ? 0u : write_bytes(reinterpret_cast<const uint8_t*>(data), static_cast<uint32_t>(sizeof(T)) * count);
 }
 
 template<typename T>

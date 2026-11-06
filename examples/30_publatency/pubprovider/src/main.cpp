@@ -28,7 +28,7 @@
 #endif // _MSC_VER
 
 #if defined(_WIN32)
-    #include <windows.h>
+    #include <Windows.h>
     #include <timeapi.h>
 #endif // _WIN32
 

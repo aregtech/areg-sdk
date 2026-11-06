@@ -1,4 +1,4 @@
-﻿# Developing with Areg Logging System
+# Developing with Areg Logging System
 
 This guide provides instructions for activating, configuring, and utilizing Areg's comprehensive logging tools to monitor and debug multiprocess applications.
 

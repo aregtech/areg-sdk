@@ -1,4 +1,4 @@
-﻿# Areg SDK Examples
+# Areg SDK Examples
 
 ```
 This document is part of the Areg SDK and describes its example projects.

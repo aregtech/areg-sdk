@@ -1,4 +1,4 @@
-﻿# Setting Up the Build Environment
+# Setting Up the Build Environment
 
 Areg needs **no third-party libraries**: SQLite ships in the repository, and the unit tests
 fetch GoogleTest themselves. What a machine needs are the **build tools** below. This page

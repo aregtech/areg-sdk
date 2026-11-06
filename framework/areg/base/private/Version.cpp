@@ -92,7 +92,7 @@ String Version::to_string() const
 
     char buffer[ 128 ]{ 0 };
     int32_t len = String::format_string( buffer, 128, format, mMajor, areg::OBJECT_SEPARATOR, mMinor, areg::OBJECT_SEPARATOR, mPatch );
-    return (len > 0 ? String( buffer, static_cast<uint32_t>(len) ) : String::empty_string());
+    return (len > 0 ? String( buffer, len ) : String::empty_string());
 }
 
 } // namespace areg

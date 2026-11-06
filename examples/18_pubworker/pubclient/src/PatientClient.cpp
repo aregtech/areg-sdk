@@ -44,7 +44,7 @@ void PatientClient::notify_thread_started(areg::WorkerThreadConsumer & consumer,
     if (&consumer == &mHwWorker)
     {
         mHwThread = &workerThread;
-        PatientInfoEvent::add_listener( static_cast<IEPatientInfoEventConsumer &>(mHwWorker), static_cast<areg::DispatcherThread &>(workerThread) );
+        PatientInfoEvent::add_listener( static_cast<PatientInfoEventConsumer &>(mHwWorker), static_cast<areg::DispatcherThread &>(workerThread) );
     }
 }
 
@@ -52,7 +52,7 @@ void PatientClient::shutdown_component(areg::ComponentThread & comThread)
 {
     if (mHwThread != nullptr)
     {
-        PatientInfoEvent::remove_listener( static_cast<IEPatientInfoEventConsumer &>(mHwWorker), static_cast<areg::DispatcherThread &>(*mHwThread) );
+        PatientInfoEvent::remove_listener( static_cast<PatientInfoEventConsumer &>(mHwWorker), static_cast<areg::DispatcherThread &>(*mHwThread) );
         mHwThread = nullptr;
     }
 

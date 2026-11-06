@@ -22,6 +22,7 @@
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/base/private/EnvelopeCache.hpp"
 
+#include <atomic>
 #include <condition_variable>
 #include <cstring>
 #include <deque>
@@ -408,4 +409,43 @@ TEST(EnvelopeCacheTest, uncached_large_blocks_leave_no_cached_entries)
     EXPECT_EQ(areg::envelope_cache_held(8192u), 0u);
     EXPECT_EQ(areg::envelope_cache_held(4096u), 0u);
     areg::envelope_cache_trim();
+}
+
+// A payload of 0 falls in the smallest class.
+TEST(EnvelopeCacheTest, empty_payload_is_in_the_smallest_class)
+{
+    areg::envelope_cache_trim();
+    EXPECT_EQ(areg::envelope_cache_held(0u), areg::envelope_cache_held(1u));
+}
+
+namespace
+{
+    //! Allocates and frees an envelope when the thread ends, after the cache of the thread closed.
+    struct LateEnvelope
+    {
+        ~LateEnvelope()
+        {
+            areg::MessageEnvelope env(true, 256u);
+            valid = env.is_valid();
+        }
+
+        void touch() noexcept { }
+
+        static inline std::atomic_bool valid{ false };
+    };
+}
+
+// An envelope made while the thread ends gets its block from the heap and returns it there.
+TEST(EnvelopeCacheTest, envelope_at_thread_exit_bypasses_the_cache)
+{
+    std::thread worker([]
+    {
+        static thread_local LateEnvelope late;
+        late.touch();
+        areg::MessageEnvelope env(true, 256u);
+        EXPECT_TRUE(env.is_valid());
+    });
+
+    worker.join();
+    EXPECT_TRUE(LateEnvelope::valid.load());
 }

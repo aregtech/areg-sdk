@@ -110,9 +110,9 @@ protected:
 private:
     inline DirectMessagingClient & self();
 
-    inline void updateChatOutput(NEDistributedApp::WindowCommand cmdSend, const DirectMessager::Participant & participant, const areg::String & msgText, const areg::DateTime & dateStart, const areg::DateTime & dateEnd );
+    inline void updateChatOutput(DistributedAppDefs::WindowCommand cmdSend, const DirectMessager::Participant & participant, const areg::String & msgText, const areg::DateTime & dateStart, const areg::DateTime & dateEnd );
 
-    inline void postMessage(NEDistributedApp::WindowCommand cmdSend, ptr_type wParam, ptr_type lParam);
+    inline void postMessage(DistributedAppDefs::WindowCommand cmdSend, ptr_type wParam, ptr_type lParam);
 
 private:
     ChatPrticipantHandler * mParticipantsHandler;

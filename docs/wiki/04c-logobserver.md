@@ -1,4 +1,4 @@
-﻿# Areg SDK Log Observer Application
+# Areg SDK Log Observer Application
 
 The Areg SDK Log Observer is a console application for real-time log monitoring, management, and dynamic scope control of logs received from distributed applications.
 

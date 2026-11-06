@@ -452,7 +452,7 @@ public:
     inline void release_module_properties();
 
     /**
-     * \brief   Clears all configuration entries.
+     * \brief   Clears all configuration entries and forgets the configuration file read before.
      **/
     inline void release_properties();
 
@@ -1207,6 +1207,7 @@ inline void ConfigManager::release_properties()
 {
     Lock lock(mLock);
     mIsConfigured = false;
+    mFilePath.clear();
     mWritableProperties.clear();
     mReadonlyProperties.clear();
 }

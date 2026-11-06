@@ -122,7 +122,7 @@ public:
     /**
      * \brief   Queries the amount of sent data in bytes and sent messages since the last call, and resets counters.
      *
-     * \param[out] sizeSend     On output, contains the size of data in bytes sent since the last call.
+     * \param[out] sizeSent     On output, contains the size of data in bytes sent since the last call.
      * \param[out] msgSent      On output, contains the size of messages sent since the last call.
      * \note    Accumulate calls to measure total data. Call each second to measure data rate.
      **/
@@ -131,8 +131,8 @@ public:
     /**
      * \brief   Queries the amount of received data in bytes and received messages since the last call, and resets counters.
      *
-     * \param[out] sizeSend     On output, contains the size of data in bytes received since the last call.
-     * \param[out] msgSent      On output, contains the size of messages received since the last call.
+     * \param[out] sizeRecv     On output, contains the size of data in bytes received since the last call.
+     * \param[out] msgRecv      On output, contains the size of messages received since the last call.
      * \note    Accumulate calls to measure total data. Call each second to measure data rate.
      **/
     inline void query_data_received(uint64_t& sizeRecv, uint32_t& msgRecv) noexcept;
@@ -410,7 +410,9 @@ protected:
     void ensure_send_thread();
 
     /**
-     * \brief   Queues a message for sending with optional priority (copy).
+     * \brief   Queues a message for sending with optional priority (copy). The copy shares the
+     *          block of data, so the same message can be sent again while a send of it is in
+     *          flight. Another priority gives the copy its own block.
      *
      * \param   data            The data of the message.
      * \param   eventPrio       The priority of the message to set.
@@ -729,12 +731,11 @@ inline bool ServiceClientConnectionBase::send_message(MessageEnvelope && data, a
     if ( mThreadSend.is_running() == false )
         ensure_send_thread();
 
+    if ( areg::set_send_priority(data, eventPrio) == false )
+        return false;
+
     mThreadSend.send_gate().enter();
     areg::Event evt(std::move(data));
-    evt.set_event_priority(eventPrio);
-    evt.set_event_consumer(static_cast<areg::EventConsumer *>(&mThreadSend));
-    evt.set_target_dispatcher(static_cast<areg::DispatcherThread *>(&mThreadSend));
-
     const bool queued{ mThreadSend.queue_message(evt) };
     if ( queued == false )
     {

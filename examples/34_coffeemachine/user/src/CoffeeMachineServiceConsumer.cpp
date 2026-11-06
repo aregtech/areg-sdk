@@ -523,6 +523,8 @@ const char * CoffeeMachineServiceConsumer::step_slot()
     case Step::OrderThenCancel:  return "step_OrderThenCancel";
     case Step::WaitBeforeCancel:  return "step_WaitBeforeCancel";
     case Step::CancelDrink:  return "step_CancelDrink";
+    case Step::Start:
+    case Step::Done:
     default:  return "no step";
     }
 }
@@ -554,6 +556,8 @@ const char * CoffeeMachineServiceConsumer::step_detail()
     case Step::OrderThenCancel:  return "sent request_order_drink(CoffeeMachineService::DrinkType::Espresso) and awaits response order_drink";
     case Step::WaitBeforeCancel:  return "waits 150 ms";
     case Step::CancelDrink:  return "sent request_cancel_drink() and awaits update Stage";
+    case Step::Start:
+    case Step::Done:
     default:  return "waits for nothing";
     }
 }
@@ -718,6 +722,7 @@ void CoffeeMachineServiceConsumer::begin(Step step)
         mPace.stop_timer();
         quit_with(0);
         break;
+    case Step::Start:
     default:
         break;
     }

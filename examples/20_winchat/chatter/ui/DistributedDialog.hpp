@@ -29,7 +29,7 @@ class DistributedDialog : public CPropertySheet
                         , public ConnectionHandler
 {
 public:
-    static bool OutputMessage( NEDistributedApp::WindowCommand cmd, void * sender, chat:: MessageData * data );
+    static bool OutputMessage( DistributedAppDefs::WindowCommand cmd, void * sender, chat:: MessageData * data );
 
     static DistributedDialog * GetDialog();
 
@@ -37,7 +37,7 @@ public:
 
     static void ChangeCaption( LPCTSTR newCaption );
 
-    static bool PostServiceMessage( NEDistributedApp::WindowCommand cmd, WPARAM wParam, LPARAM lParam );
+    static bool PostServiceMessage( DistributedAppDefs::WindowCommand cmd, WPARAM wParam, LPARAM lParam );
 
     // Construction
 public:

@@ -32,7 +32,7 @@
 
 namespace areg {
 
-areg::ConfigProperty  _defaultReadonlyProperties[]
+static areg::ConfigProperty  _defaultReadonlyProperties[]
 {
       { {"config"   , "*"   , "version" , ""        }, areg::CONFIG_VERSION    }   //!< The configuration version.
 
@@ -508,8 +508,10 @@ bool Application::_set_app_state(areg::AppState newState)
         break; // ignore
 
     default:
+        // GCOVR_EXCL_START: unreachable default arm
         ASSERT(false);
         break;
+        // GCOVR_EXCL_STOP
     }
 
     return result;

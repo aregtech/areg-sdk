@@ -1,4 +1,4 @@
-﻿# Building Areg SDK with CMake
+# Building Areg SDK with CMake
 
 This guide covers building Areg SDK on Linux, macOS, Windows, and Cygwin using CMake, including cross-compilation for different architectures and IDE setup for Visual Studio and VS Code.
 

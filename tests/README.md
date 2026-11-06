@@ -25,9 +25,10 @@ add a test so that it gives the expected result on Linux, macOS and Windows.
 | Failure-path test | `fault-inject/` | The branch taken when a system call fails: thread, socket, file, directory, process spawn |
 | Harness, not in ctest | `bitness/`, `conn-scenario/`, `keepalive-probe/`, `benchmarks/` | Needs a router, root rights, a packet filter, two builds or minutes of run time; started by a script or a person |
 
-`Application::setup()` and `Application::release()` act on the whole process. A second
-setup in the same process aborts in the configuration manager. A test that sets up the
-application therefore runs either in a child process or in an executable of its own.
+`Application::setup()` and `Application::release()` act on the whole process, and the
+configuration is read once per process. A test that needs its own configuration calls
+`ConfigManager::release_properties()` around the setup, or runs in a child process or in
+an executable of its own.
 
 ---
 
@@ -69,8 +70,22 @@ ctest -R 'FaultInject|ChildProcess'             # by name
 ./bin/areg-unit-tests.elf --gtest_filter='FileTest.*'
 ```
 
-Run application-level unit tests one per process (`ctest` already does this). Running the
-whole `areg-unit-tests` executable in one process aborts at the second application setup.
+`ctest` runs each case in its own process. `areg-unit-tests` also runs as a whole in one
+process, which is what the Test Explorer of Visual Studio does.
+
+The CI regressions use Python's standard `unittest` and Bash, independently of the
+C++ build. The coverage dependency case on Cygwin also requires its prebuilt lxml:
+
+```text
+python tests/units/test_coverage_paths.py
+python tests/units/test_ci_plans.py
+```
+
+They run the report phase with fixture gcovr outputs and the real report writer.
+Coverage runs the path/dependency cases on every platform before building,
+including Git Bash launching native Windows Python. The planner cases execute
+the actual workflow filters with large diffs and explicit error conditions;
+CMake's invariant job runs them.
 
 Windows, Visual Studio: build `areg-sdk.sln`; the executables are in the `bin` folder of the
 build output (for example `product\build\msvc-v143\windows_nt-x64-release\bin`). From a

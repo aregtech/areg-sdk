@@ -1,0 +1,46 @@
+name: Compiler cache
+description: Cache GCC and Clang compiler outputs for CMake Makefile and Ninja builds
+inputs:
+  key:
+    description: Workflow and build configuration identity
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Install ccache
+      shell: bash
+      run: |
+        if ! command -v ccache > /dev/null; then
+          case "${RUNNER_OS}" in
+            Linux)
+              sudo apt-get update -qq
+              sudo apt-get install -y -qq ccache
+              ;;
+            macOS) HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALL_CLEANUP=1 brew install ccache ;;
+            *) echo "::error::Compiler caching is supported only on Linux and macOS"; exit 1 ;;
+          esac
+        fi
+        ccache --version
+
+    - uses: actions/cache@v5
+      with:
+        path: ${{ runner.temp }}/areg-ccache
+        key: ccache-v1-${{ runner.os }}-${{ runner.arch }}-${{ inputs.key }}-${{ github.run_id }}-${{ github.run_attempt }}
+        restore-keys: |
+          ccache-v1-${{ runner.os }}-${{ runner.arch }}-${{ inputs.key }}-
+
+    - name: Configure the compiler launchers
+      shell: bash
+      env:
+        CCACHE_DIR: ${{ runner.temp }}/areg-ccache
+      run: |
+        {
+          echo "CCACHE_DIR=${CCACHE_DIR}"
+          echo "CCACHE_COMPILERCHECK=content"
+          echo "CCACHE_COMPRESS=true"
+          echo "CCACHE_HASHDIR=true"
+          echo "CMAKE_C_COMPILER_LAUNCHER=ccache"
+          echo "CMAKE_CXX_COMPILER_LAUNCHER=ccache"
+        } >> "${GITHUB_ENV}"
+        ccache --max-size=512M
+        ccache --zero-stats
