@@ -31,16 +31,24 @@
 #if defined(_WIN32)
     #include <WinSock2.h>
     #include <WS2tcpip.h>
+    #include <Windows.h>
+    #include <fcntl.h>
+    #include <io.h>
 #else   // !defined(_WIN32)
     #include <arpa/inet.h>
+    #include <fcntl.h>
     #include <netinet/in.h>
     #include <signal.h>
+    #include <spawn.h>
     #include <sys/socket.h>
     #include <sys/wait.h>
     #include <unistd.h>
+
+    extern char ** environ;
 #endif  // defined(_WIN32)
 
 #include <algorithm>
+#include <cerrno>
 #include <chrono>
 #include <condition_variable>
 #include <cstdio>
@@ -94,12 +102,17 @@ namespace
     // Child processes
     //////////////////////////////////////////////////////////////////////////
 
-    //!< A child process whose standard input the test writes.
+    //!< A child process whose standard input the test writes. It starts without a shell.
     class Child
     {
     public:
         explicit Child(const char * quitLine = "")
             : mPipe     ( nullptr )
+#if defined(_WIN32)
+            , mProcess  ( nullptr )
+#else   // !defined(_WIN32)
+            , mProcess  ( 0 )
+#endif  // defined(_WIN32)
             , mQuitLine ( quitLine )
         {
         }
@@ -109,12 +122,74 @@ namespace
             static_cast<void>(finish());
         }
 
-        bool start(const std::string & command)
+        //!< Starts the program of the first argument and passes every argument unchanged.
+        bool start(const std::vector<std::string> & args)
         {
 #if defined(_WIN32)
-            mPipe = ::_popen(("\"" + command + "\"").c_str(), "w");
+            std::string command;
+            for (const std::string & arg : args)
+            {
+                // A quote or a closing backslash would change the bounds of the argument.
+                if ((arg.find('"') != std::string::npos) || (arg.empty() == false && arg.back() == '\\'))
+                    return false;
+
+                command += (command.empty() ? "\"" : " \"") + arg + "\"";
+            }
+
+            SECURITY_ATTRIBUTES inherit{ sizeof(SECURITY_ATTRIBUTES), nullptr, TRUE };
+            HANDLE input{ nullptr };
+            HANDLE output{ nullptr };
+            if (::CreatePipe(&input, &output, &inherit, 0) == FALSE)
+                return false;
+
+            ::SetHandleInformation(output, HANDLE_FLAG_INHERIT, 0);
+            STARTUPINFOA startup{ };
+            startup.cb          = sizeof(startup);
+            startup.dwFlags     = STARTF_USESTDHANDLES;
+            startup.hStdInput   = input;
+            startup.hStdOutput  = ::GetStdHandle(STD_OUTPUT_HANDLE);
+            startup.hStdError   = ::GetStdHandle(STD_ERROR_HANDLE);
+            PROCESS_INFORMATION process{ };
+            const BOOL started{ ::CreateProcessA(args[0].c_str(), command.data(), nullptr, nullptr, TRUE, 0, nullptr, nullptr, &startup, &process) };
+            ::CloseHandle(input);
+            if (started == FALSE)
+            {
+                ::CloseHandle(output);
+                return false;
+            }
+
+            ::CloseHandle(process.hThread);
+            mProcess = process.hProcess;
+            const int descriptor{ ::_open_osfhandle(reinterpret_cast<intptr_t>(output), _O_WRONLY) };
+            mPipe = (descriptor != -1 ? ::_fdopen(descriptor, "w") : nullptr);
 #else   // !defined(_WIN32)
-            mPipe = ::popen(command.c_str(), "w");
+            int ends[2]{ -1, -1 };
+            if (::pipe(ends) != 0)
+                return false;
+
+            ::fcntl(ends[0], F_SETFD, FD_CLOEXEC);
+            ::fcntl(ends[1], F_SETFD, FD_CLOEXEC);
+            std::vector<char *> argv;
+            for (const std::string & arg : args)
+            {
+                argv.push_back(const_cast<char *>(arg.c_str()));
+            }
+
+            argv.push_back(nullptr);
+            posix_spawn_file_actions_t actions;
+            ::posix_spawn_file_actions_init(&actions);
+            ::posix_spawn_file_actions_adddup2(&actions, ends[0], STDIN_FILENO);
+            const int error{ ::posix_spawn(&mProcess, args[0].c_str(), &actions, nullptr, argv.data(), environ) };
+            ::posix_spawn_file_actions_destroy(&actions);
+            ::close(ends[0]);
+            if (error != 0)
+            {
+                ::close(ends[1]);
+                mProcess = 0;
+                return false;
+            }
+
+            mPipe = ::fdopen(ends[1], "w");
 #endif  // defined(_WIN32)
             return (mPipe != nullptr);
         }
@@ -144,25 +219,37 @@ namespace
                 static_cast<void>(send(mQuitLine));
             }
 
-            FILE * pipe{ mPipe };
+            std::fclose(mPipe);
             mPipe = nullptr;
 #if defined(_WIN32)
-            return (::_pclose(pipe) == 0);
+            DWORD code{ 1u };
+            ::WaitForSingleObject(mProcess, INFINITE);
+            ::GetExitCodeProcess(mProcess, &code);
+            ::CloseHandle(mProcess);
+            mProcess = nullptr;
+            return (code == 0u);
 #else   // !defined(_WIN32)
-            const int status{ ::pclose(pipe) };
-            return WIFEXITED(status) && (WEXITSTATUS(status) == 0);
+            int status{ 0 };
+            pid_t done{ -1 };
+            do
+            {
+                done = ::waitpid(mProcess, &status, 0);
+            } while ((done == -1) && (errno == EINTR));
+
+            mProcess = 0;
+            return (done != -1) && WIFEXITED(status) && (WEXITSTATUS(status) == 0);
 #endif  // defined(_WIN32)
         }
 
     private:
-        FILE *      mPipe;          //!< The pipe to the standard input of the child.
+        FILE *      mPipe;          //!< The stream to the standard input of the child.
+#if defined(_WIN32)
+        HANDLE      mProcess;       //!< The handle of the child process.
+#else   // !defined(_WIN32)
+        pid_t       mProcess;       //!< The process ID of the child.
+#endif  // defined(_WIN32)
         std::string mQuitLine;      //!< The line that makes the child leave, empty if EOF is enough.
     };
-
-    std::string quote_arg(const std::string & text)
-    {
-        return ("\"" + text + "\"");
-    }
 
     //////////////////////////////////////////////////////////////////////////
     // Environment of a case
@@ -336,12 +423,12 @@ namespace
 
     bool start_collector(Child & collector)
     {
-        return collector.start(quote_arg(_env.collector) + " --console --load=" + quote_arg(_env.collectorCfg)) && wait_listening();
+        return collector.start({ _env.collector, "--console", "--load=" + _env.collectorCfg }) && wait_listening();
     }
 
     bool start_source(Child & source)
     {
-        return source.start(quote_arg(areg::Process::instance().full_path().as_string()) + " source " + quote_arg(_env.sourceCfg));
+        return source.start({ areg::Process::instance().full_path().as_string(), "source", _env.sourceCfg });
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -972,6 +1059,21 @@ namespace
         return true;
     }
 
+    //!< Reproduces the defect: a child started through a shell gets a path with shell syntax changed.
+    bool case_child_path_with_shell_syntax()
+    {
+        const std::string config{ _env.dir + "/$(echo changed) source.init" };
+        std::error_code error;
+        std::filesystem::rename(_env.sourceCfg, config, error);
+        REQUIRE(error.value() == 0);
+        _env.sourceCfg = config;
+
+        Session session;
+        REQUIRE(session.open(true));
+        REQUIRE(session.close());
+        return true;
+    }
+
     bool case_scope_priority()
     {
         Session session;
@@ -1596,6 +1698,8 @@ int main(int argc, char * argv[])
         result = case_session_messages();
     else if (name == "source-leaves")
         result = case_source_leaves();
+    else if (name == "child-path-with-shell-syntax")
+        result = case_child_path_with_shell_syntax();
     else if (name == "scope-priority")
         result = case_scope_priority();
     else if (name == "source-state")

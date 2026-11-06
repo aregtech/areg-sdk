@@ -32,6 +32,7 @@ foreach(_observer_case
         connect-without-collector
         session-messages
         source-leaves
+        child-path-with-shell-syntax
         scope-priority
         source-state
         source-paused-drops-produced-logs
