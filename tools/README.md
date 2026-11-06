@@ -556,7 +556,7 @@ holding binaries the current platform can start, and takes the most recently bui
 
 | Option | Default | Meaning |
 |--------|---------|---------|
-| `--tier smoke\|ipc\|all\|perf` | `all` | `smoke` is single process only, `ipc` needs the router |
+| `--tier smoke\|ipc\|all\|perf\|coverage` | `all` | `smoke` is single process only, `ipc` needs the router; `coverage` is opt-in router CLI/console coverage |
 | `--bin-dir DIR` | `$AREG_BIN_DIR` | The build to test. Always pass it on a build server |
 | `--only NAME[,NAME...]` | all | Run only the named scenarios |
 | `--repeat N` | `1` | Run the selection N times and report every failure |
@@ -580,6 +580,60 @@ tools/intern/run-all-examples.sh --bin-dir product/build/gnu-g++/linux-64-x86_64
 > The `ipc` and `all` tiers start and stop the message router themselves. Do not leave your own
 > `mtrouter` running while the suite runs: the examples would connect to yours instead, and the
 > run would measure and prove nothing.
+
+### Router CLI and console coverage
+
+The opt-in `coverage` tier does not use a router already running on the machine.
+Each console scenario loads a private temporary configuration with logging disabled,
+loopback networking, an OS-selected port and zero pool pairs. Input is driven by observed
+output, not sleeps; passing console scenarios send `-q` and require exit code 0.
+Temporary configurations are removed after the process stops. The ordinary `all` tier
+does not include these scenarios.
+
+```powershell
+python tools\intern\run-all-examples.py --tier coverage --bin-dir build\bin
+python tools\intern\run-all-examples.py --only mtrouter_console_commands --bin-dir build\bin --repeat 20
+```
+
+| Scenario | Assertions |
+|---|---|
+| `mtrouter_help` | Usage text and advertised console/load/threads/quit options; exit code 1, as implemented by both platform entry points |
+| `mtrouter_invalid_option` | An unknown option displays usage and exits with code 1 |
+| `mtrouter_save_unsupported` | `--save` is not a router option: usage, exit code 1, no destination file created |
+| `mtrouter_console_commands` | Zero initial byte/message rates, no connected instances, zero per-client pairs, help, malformed-command diagnostics, command-line-only guidance, silent/verbose acknowledgments, pause/restart acknowledgments and normal quit |
+
+The private input configuration must remain unchanged in every scenario. ANSI mode
+intentionally acknowledges silent/verbose commands as always-on display.
+The normal console scenario checks those acknowledgments, not suppression of later redraws.
+
+Command-line help is plain text on stdout: it is printed before any console screen exists,
+so it stays in the terminal after the process exits. The interactive help is drawn on the
+console screen.
+
+`mtrouter_extended_silent_rows_stay_clear` checks, after the extended-console silent
+acknowledgment, that the four statistic rows remain absent over a 30-second observation
+window, then quits normally. On ANSI-only builds it is skipped.
+
+The app-linked unit suites are `RouterApplicationTest.*` and
+`RouterApplicationRateTest.*` in `tests/units/RouterApplicationTest.cpp`. They use
+the final application's public base interfaces, not private-access overrides.
+Their isolated children cover metadata and option aliases, private configuration
+invariants, public status output, malformed commands and interactive help, all
+reachable option formatter strings through private file logging, real client
+instance rows, exact wire-byte/message totals and displayed rates, silent/verbose
+state, and shared/pool pause/restart/quit cleanup. POSIX console output uses a
+sized PTY and reconstructs cursor-addressed ncurses differences; Windows uses
+the console backend's redirected-stream path. Synchronization uses output,
+dispatcher events, futures and thread joins, not sleeps.
+`RouterApplicationRateTest.live_enabled_changes_are_thread_safe` changes the mute
+state while another thread accumulates, and
+`RouterApplicationTest.thread_pair_display_matches_pool_configuration_and_pause_restart`
+reads the pool size while the service thread starts it. A normal run cannot show a race
+in either: they prove thread safety under TSan.
+
+```powershell
+areg-unit-tests.exe --gtest_filter="RouterApplicationTest.*:RouterApplicationRateTest.*"
+```
 
 ### `report-ctest.py`
 

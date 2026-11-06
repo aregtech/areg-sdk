@@ -26,11 +26,6 @@
 
 #include <chrono>
 
-DEF_LOG_SCOPE(mtrouter_service_RouterServerService, register_service_provider);
-DEF_LOG_SCOPE(mtrouter_service_RouterServerService, unregister_service_provider);
-DEF_LOG_SCOPE(mtrouter_service_RouterServerService, register_service_consumer);
-DEF_LOG_SCOPE(mtrouter_service_RouterServerService, unregister_service_consumer);
-
 DEF_LOG_SCOPE(mtrouter_service_RouterServerService, disconnect_source);
 DEF_LOG_SCOPE(mtrouter_service_RouterServerService, reject_duplicates);
 DEF_LOG_SCOPE(mtrouter_service_RouterServerService, activate_held_stub);
@@ -40,7 +35,6 @@ DEF_LOG_SCOPE(mtrouter_service_RouterServerService, on_provider_unregistered);
 DEF_LOG_SCOPE(mtrouter_service_RouterServerService, on_consumer_unregistered);
 
 DEF_LOG_SCOPE(mtrouter_service_RouterServerService, on_message_received);
-DEF_LOG_SCOPE(mtrouter_service_RouterServerService, on_message_send);
 
 //////////////////////////////////////////////////////////////////////////
 // RouterServerService class implementation
@@ -72,39 +66,12 @@ RouterServerService::RouterServerService()
                                             , ServiceCommunicationBase::ConnectionPolicy::Accept
                                             , areg::ext::DEFAULT_COMMUNICATION_PAIR_COUNT )
     , areg::RegistrationConsumer ( )
-    , areg::RegistrationProvider ( )
     , areg::TimerConsumer       ( )
 
     , mServiceRegistry          ( )
     , mHeldStubs                ( )
     , mTimerHeld                ( static_cast<areg::TimerConsumer &>(*this), "RouterHeldStubs" )
 {
-}
-
-bool RouterServerService::register_service_provider(const areg::StubAddress & /* stubService */)
-{
-    LOG_SCOPE( mtrouter_service_RouterServerService, register_service_provider );
-    LOG_ERR("Method is not implemented, this should not be called");
-    return false;
-}
-
-void RouterServerService::unregister_service_provider(const areg::StubAddress & /* stubService */, const areg::DisconnectReason /*reason*/ )
-{
-    LOG_SCOPE( mtrouter_service_RouterServerService, unregister_service_provider );
-    LOG_ERR("Method is not implemented, this should not be called");
-}
-
-bool RouterServerService::register_service_consumer(const areg::ProxyAddress & /* proxyService */)
-{
-    LOG_SCOPE( mtrouter_service_RouterServerService, register_service_consumer );
-    LOG_ERR("Method is not implemented, this should not be called");
-    return false;
-}
-
-void RouterServerService::unregister_service_consumer(const areg::ProxyAddress & /* proxyService */, const areg::DisconnectReason /*reason*/ )
-{
-    LOG_SCOPE( mtrouter_service_RouterServerService, unregister_service_consumer );
-    LOG_ERR("Method is not implemented, this should not be called");
 }
 
 void RouterServerService::on_message_received(const areg::MessageEnvelope &msgReceived)
@@ -175,11 +142,7 @@ void RouterServerService::on_message_received(const areg::MessageEnvelope &msgRe
         break;
 
     case areg::FuncIdRange::SystemServiceDisconnect:
-        {
-            ITEM_ID cookie = areg::COOKIE_UNKNOWN;
-            msgReceived >> cookie;
-            disconnect_source(cookie);
-        }
+        disconnect_source(static_cast<ITEM_ID>(source));
         break;
 
     case areg::FuncIdRange::ServiceLastId:                      // fall through
@@ -237,31 +200,6 @@ void RouterServerService::on_message_received(const areg::MessageEnvelope &msgRe
             ASSERT(false);
         }
         break;
-    }
-}
-
-void RouterServerService::on_message_send(const areg::MessageEnvelope &msgSend)
-{
-    LOG_SCOPE( mtrouter_service_RouterServerService, on_message_send );
-
-    areg::FuncIdRange msgId = static_cast<areg::FuncIdRange>( msgSend.message_id() );
-    LOG_DBG("Sending message [ %s ] of id [ 0x%X ] is going to send to target [ %u ] from source [ %u ]"
-                    , areg::as_string(msgId)
-                    , static_cast<uint32_t>(msgId)
-                    , msgSend.target()
-                    , msgSend.source());
-
-    if ( areg::is_executable_id( static_cast<uint32_t>(msgId)) )
-    {
-        if ( msgSend.target( ) != static_cast<uint32_t>(areg::TARGET_UNKNOWN) )
-        {
-            send_message( msgSend );
-        }
-    }
-    else
-    {
-        LOG_ERR("The message [ %u ] is neither executable, nor router notification. Ignoring sending message", static_cast<uint32_t>(msgId));
-        ASSERT(false);
     }
 }
 

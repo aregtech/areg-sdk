@@ -199,11 +199,6 @@ private:
     inline areg::MapInstances conneted_instances() const;
 
     /**
-     * \brief   Returns instance of message router service.
-     **/
-    inline MultitargetRouter & self();
-
-    /**
      * \brief   Checks the command typed on console. Relevant only if it runs as a console application.
      * \param   cmd     The command typed on the console.
      * \return  Returns true if command is recognized. Otherwise, returns false.
@@ -261,11 +256,6 @@ private:
 inline areg::MapInstances MultitargetRouter::conneted_instances() const
 {
     return mServiceServer.instances( );
-}
-
-inline MultitargetRouter & MultitargetRouter::self()
-{
-    return (*this);
 }
 
 inline constexpr const char* MultitargetRouter::as_string(MultitargetRouter::RouterOption value)

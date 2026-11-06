@@ -34,10 +34,18 @@
 #include <errno.h>
 
 #if defined(__linux__)
+    #include "areg/component/DispatcherThread.hpp"
+    #include "areg/component/Event.hpp"
+    #include "areg/component/EventConsumer.hpp"
+    #include "units/ServiceTestServer.hpp"
+
     #include <arpa/inet.h>
     #include <netinet/in.h>
     #include <sys/socket.h>
     #include <unistd.h>
+
+    #include <chrono>
+    #include <future>
 #endif  // defined(__linux__)
 
 namespace
@@ -327,6 +335,209 @@ TEST( FaultInjectTest, server_listen_fails_and_a_second_listen_succeeds_when_lis
         AREG_CHILD_CHECK( server.listen( 4 ) );
         server.close( );
         areg::socket_release( );
+    );
+}
+
+namespace
+{
+    constexpr auto START_DEADLINE{ std::chrono::seconds( 30 ) };
+    constexpr uint32_t CHILD_DEADLINE_SEC{ 120u };
+
+    //!< Runs on the dispatcher of the server, so it runs after every start posted before it.
+    class StartFence final : public areg::EventConsumer
+    {
+    public:
+        std::promise<void> reached;
+
+        void start_event_processing( areg::Event & ) override
+        {
+            reached.set_value( );
+        }
+    };
+
+    //!< Returns true when the dispatcher of the server finished what was posted to it.
+    bool wait_start_finished( )
+    {
+        StartFence fence;
+        auto ready = fence.reached.get_future( );
+        areg::Event event( areg::EventType::EventCustomExternal );
+        event.set_event_consumer( &fence );
+        auto & dispatcher = areg::DispatcherThread::dispatcher_thread( areg::ThreadAddress( "TestCommServer" ) );
+        if ( static_cast<areg::EventDispatcher &>(dispatcher).post_event( event ) == false )
+            return false;
+
+        return ( ready.wait_for( START_DEADLINE ) == std::future_status::ready );
+    }
+
+    bool connect_client( uint16_t port )
+    {
+        areg::SocketClient client( "127.0.0.1", port );
+        const bool result{ client.create( ) };
+        client.close( );
+        return result;
+    }
+
+    //!< A server of the loopback address on a free port, in a process that can run timers.
+    struct ServerFixture
+    {
+        uint16_t                port;
+        service_test::TestServer server;
+
+        explicit ServerFixture( uint32_t pairs = 0u )
+            : port( 0u )
+            , server( service_test::Policy::Accept, pairs )
+        {
+            // A child that hangs is killed, so the test fails.
+            alarm( CHILD_DEADLINE_SEC );
+            Listener probe;
+            AREG_CHILD_CHECK( probe.open( ) );
+            port = probe.port;
+            server.apply_connection_data( areg::String( "127.0.0.1" ), port );
+        }
+
+        void stop( )
+        {
+            server.disconnect_service_host( );
+            server.wait_to_complete( );
+        }
+
+        //!< Returns true when a retry of the server opened the port.
+        bool wait_listening( )
+        {
+            const auto deadline{ std::chrono::steady_clock::now( ) + START_DEADLINE };
+            while ( ( server.is_host_connected( ) == false ) && ( std::chrono::steady_clock::now( ) < deadline ) )
+            {
+                areg::Thread::sleep( areg::WAIT_10_MILLISECONDS );
+            }
+
+            return ( wait_start_finished( ) && connect_client( port ) );
+        }
+    };
+}
+
+// Reproduces the defect: the service reported started before it listened, so the first client was refused.
+TEST( FaultInjectTest, service_accepts_a_client_as_soon_as_its_start_finished )
+{
+    AREG_EXPECT_IN_CHILD(
+        areg::Application::setup( false, false, false, true, false );
+        areg_fault::FaultScope faults;
+        ServerFixture fixture;
+        AREG_CHILD_CHECK( areg_fault::delay( areg_fault::FaultPoint::SocketListen, 300u ) );
+        AREG_CHILD_CHECK( fixture.server.connect_service_host( ) );
+        AREG_CHILD_CHECK( wait_start_finished( ) );
+        AREG_CHILD_CHECK( connect_client( fixture.port ) );
+        fixture.stop( );
+        areg::Application::release( );
+    );
+}
+
+TEST( FaultInjectTest, service_listens_again_after_each_restart )
+{
+    AREG_EXPECT_IN_CHILD(
+        areg::Application::setup( false, false, false, true, false );
+        areg_fault::FaultScope faults;
+        ServerFixture fixture;
+        AREG_CHILD_CHECK( areg_fault::delay( areg_fault::FaultPoint::SocketListen, 100u ) );
+        for ( uint32_t round = 0u; round < 3u; ++ round )
+        {
+            AREG_CHILD_CHECK( fixture.server.connect_service_host( ) );
+            AREG_CHILD_CHECK( wait_start_finished( ) );
+            AREG_CHILD_CHECK( connect_client( fixture.port ) );
+            fixture.stop( );
+            AREG_CHILD_CHECK( connect_client( fixture.port ) == false );
+        }
+
+        areg::Application::release( );
+    );
+}
+
+// Reproduces the defect: a refused listen ended the receive thread, the start could wait for ever and nothing retried.
+TEST( FaultInjectTest, service_start_finishes_and_retries_when_listen_is_refused )
+{
+    AREG_EXPECT_IN_CHILD(
+        areg::Application::setup( false, false, false, true, false );
+        areg_fault::FaultScope faults;
+        ServerFixture fixture;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::SocketListen, EADDRINUSE ) );
+        AREG_CHILD_CHECK( fixture.server.connect_service_host( ) );
+        AREG_CHILD_CHECK( wait_start_finished( ) );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::SocketListen ) == 1u && NOT_REPLACED );
+        AREG_CHILD_CHECK( fixture.server.is_host_pending( ) );
+        AREG_CHILD_CHECK( fixture.wait_listening( ) );
+        fixture.stop( );
+        areg::Application::release( );
+    );
+}
+
+TEST( FaultInjectTest, service_with_a_pool_retries_when_listen_is_refused )
+{
+    AREG_EXPECT_IN_CHILD(
+        areg::Application::setup( false, false, false, true, false );
+        areg_fault::FaultScope faults;
+        ServerFixture fixture( 2u );
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::SocketListen, EADDRINUSE ) );
+        AREG_CHILD_CHECK( fixture.server.connect_service_host( ) );
+        AREG_CHILD_CHECK( wait_start_finished( ) );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::SocketListen ) == 1u && NOT_REPLACED );
+        AREG_CHILD_CHECK( fixture.server.is_host_pending( ) );
+        AREG_CHILD_CHECK( fixture.wait_listening( ) );
+        fixture.stop( );
+        areg::Application::release( );
+    );
+}
+
+// Reproduces the defect: a failed start left the send thread running, so every retry failed.
+TEST( FaultInjectTest, service_retries_when_its_receive_thread_cannot_start )
+{
+    AREG_EXPECT_IN_CHILD(
+        areg::Application::setup( false, false, false, true, false );
+        areg_fault::FaultScope faults;
+        ServerFixture fixture;
+        // The dispatcher and the send thread start, the receive thread does not.
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::ThreadCreate, EAGAIN, 2u ) );
+        AREG_CHILD_CHECK( fixture.server.connect_service_host( ) );
+        AREG_CHILD_CHECK( wait_start_finished( ) );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::ThreadCreate ) == 1u );
+        AREG_CHILD_CHECK( fixture.server.is_host_pending( ) );
+        AREG_CHILD_CHECK( fixture.wait_listening( ) );
+        fixture.stop( );
+        areg::Application::release( );
+    );
+}
+
+TEST( FaultInjectTest, service_retries_when_a_pool_receive_thread_cannot_start )
+{
+    AREG_EXPECT_IN_CHILD(
+        areg::Application::setup( false, false, false, true, false );
+        areg_fault::FaultScope faults;
+        ServerFixture fixture( 1u );
+        // The dispatcher and the send thread of the pair start, its receive thread does not.
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::ThreadCreate, EAGAIN, 2u ) );
+        AREG_CHILD_CHECK( fixture.server.connect_service_host( ) );
+        AREG_CHILD_CHECK( wait_start_finished( ) );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::ThreadCreate ) == 1u );
+        AREG_CHILD_CHECK( fixture.server.is_host_pending( ) );
+        AREG_CHILD_CHECK( areg::Thread::find_by_address( areg::ThreadAddress( "AregPoolSend_0" ) ) == nullptr );
+        AREG_CHILD_CHECK( fixture.wait_listening( ) );
+        fixture.stop( );
+        areg::Application::release( );
+    );
+}
+
+TEST( FaultInjectTest, service_stops_cleanly_while_listen_keeps_being_refused )
+{
+    AREG_EXPECT_IN_CHILD(
+        areg::Application::setup( false, false, false, true, false );
+        areg_fault::FaultScope faults;
+        ServerFixture fixture;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::SocketListen, EADDRINUSE, 0u, 0u ) );
+        AREG_CHILD_CHECK( fixture.server.connect_service_host( ) );
+        AREG_CHILD_CHECK( wait_start_finished( ) );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::SocketListen ) >= 1u && NOT_REPLACED );
+        AREG_CHILD_CHECK( fixture.server.is_host_connected( ) == false );
+        fixture.stop( );
+        AREG_CHILD_CHECK( connect_client( fixture.port ) == false );
+        areg::Application::release( );
     );
 }
 

@@ -226,10 +226,10 @@ bool ServerReceiveThread::run_dispatcher()
     mServed.clear();
     mPaused.clear();
 
-    ready_for_events(true);
     bool isExit{ false };   // stays false if server_listen() fails (failure return); set on a clean ExitEvent
     if ( mConnection.server_listen( areg::MAXIMUM_LISTEN_QUEUE_SIZE) )
     {
+        ready_for_events(true);
         areg::MessageEnvelope msgReceived;
         areg::SocketAddress addrAccepted;
         areg::SocketAddress addrDrain;

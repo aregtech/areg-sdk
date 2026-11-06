@@ -70,7 +70,7 @@ jobs:
 
   # One job per OS, longest first; the three checks share one build of the targets they need.
   repeat:
-    name: repeat ${{matrix.os}}
+    name: repeat ${{matrix.os}}${{matrix.extended == 'ON' && ' ncurses' || ''}}
     needs: plan
     if: needs.plan.outputs.run == 'true'
     runs-on: ${{matrix.os}}
@@ -82,6 +82,7 @@ jobs:
         include:
           - { os: windows-latest, cmake: '-DAREG_COMPILER_FAMILY=msvc' }
           - { os: macos-latest,   cmake: '-DAREG_COMPILER=clang' }
+          - { os: macos-latest,   cmake: '-DAREG_COMPILER=clang', extended: 'ON' }
           - { os: ubuntu-latest,  cmake: '-DAREG_COMPILER_FAMILY=gnu' }
 
     steps:
@@ -114,7 +115,7 @@ jobs:
         run: |
           echo "commit under test: $(git -C src rev-parse HEAD)"
           cmake -S src -B build ${{matrix.cmake}} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_LIB_TYPE=shared \
-                -DAREG_EXTENDED:BOOL=OFF -DAREG_LOGGING:BOOL=ON -DAREG_EXAMPLES:BOOL=ON -DAREG_TESTS:BOOL=ON \
+                -DAREG_EXTENDED:BOOL=${{matrix.extended || 'OFF'}} -DAREG_LOGGING:BOOL=ON -DAREG_EXAMPLES:BOOL=ON -DAREG_TESTS:BOOL=ON \
                 -DAREG_INSTALL:BOOL=OFF -DAREG_OUTPUT_LAYOUT:BOOL=OFF
 
       - name: Build the tests and the log benchmark
@@ -128,7 +129,7 @@ jobs:
           echo "BIN_DIR=$(dirname "${BIN}")" >> "${GITHUB_ENV}"
 
       - name: Repeat the SyncTimer tests
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && matrix.extended != 'ON' }}
         shell: bash
         timeout-minutes: 20
         run: |
@@ -137,7 +138,7 @@ jobs:
                  --title "SyncTimer, ${{matrix.os}}" --summary "${GITHUB_STEP_SUMMARY}"
 
       - name: Repeat the router stop while flooding
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && matrix.extended != 'ON' }}
         shell: bash
         timeout-minutes: 15
         run: |
@@ -145,8 +146,17 @@ jobs:
                  --regex '^areg-router-io-test\.stop-while-flooding\.' --repeat ${{env.ROUNDS}} --timeout 120 \
                  --title "Router stop while flooding, ${{matrix.os}}" --summary "${GITHUB_STEP_SUMMARY}"
 
+      - name: Repeat the service console tests
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        shell: bash
+        timeout-minutes: 30
+        run: |
+          python harness/tools/intern/repeat-ctest.py build --config ${{env.BUILD_TYPE}} \
+                 --regex '^(RouterApplicationTest|LogCollectorApplicationTest)\.' --repeat ${{env.ROUNDS}} --timeout 120 \
+                 --title "Service console, ${{matrix.os}}" --summary "${GITHUB_STEP_SUMMARY}"
+
       - name: Check the log delivery
-        if: ${{ !cancelled() && env.BIN_DIR != '' }}
+        if: ${{ !cancelled() && env.BIN_DIR != '' && matrix.extended != 'ON' }}
         shell: bash
         timeout-minutes: 20
         run: |

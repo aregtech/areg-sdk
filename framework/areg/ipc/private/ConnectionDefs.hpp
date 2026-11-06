@@ -23,6 +23,7 @@
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/base/MessageEnvelope.hpp"
 #include "areg/base/SocketDefs.hpp"
+#include "areg/component/DispatcherThread.hpp"
 #include "areg/component/EventDefs.hpp"
 
 #include <atomic>
@@ -230,6 +231,23 @@ inline bool set_send_priority(areg::MessageEnvelope & data, areg::EventPriority 
 
     data.set_priority(value);
     return data.is_valid();
+}
+
+/**
+ * \brief   Waits until an I/O thread enters its dispatcher loop or exits prematurely.
+ *
+ * \param   ioThread    The message receive or send thread to wait for.
+ * \return  Returns true if the thread dispatcher is started and ready for events.
+ **/
+inline bool wait_io_thread_ready(areg::DispatcherThread & ioThread)
+{
+    while ( !ioThread.wait_start( areg::WAIT_10_MILLISECONDS ) )
+    {
+        if ( !ioThread.is_running() )
+            return false;
+    }
+
+    return true;
 }
 
 } // namespace areg

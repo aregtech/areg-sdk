@@ -55,7 +55,6 @@ namespace
         void on_connection_stopped() override { }
         void on_connection_lost() override { }
         void on_message_received(const areg::MessageEnvelope &) override { }
-        void on_message_send(const areg::MessageEnvelope &) override { }
     };
 
     //!< The service that records every call of the base.

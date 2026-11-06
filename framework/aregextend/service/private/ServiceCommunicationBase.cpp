@@ -356,7 +356,8 @@ bool ServiceCommunicationBase::start_connection()
         if ( mNumPairs > 0 )
         {
             ASSERT(mClientPairs.empty());
-            mClientPairs.reserve(mNumPairs);
+            ClientPairList pairs;
+            pairs.reserve(mNumPairs);
             bool poolOk = true;
 
             for ( uint32_t i = 0; i < mNumPairs; ++i )
@@ -382,23 +383,25 @@ bool ServiceCommunicationBase::start_connection()
                     break;
                 }
 
-                mClientPairs.push_back( std::move(pair) );
+                pairs.push_back( std::move(pair) );
             }
 
             if ( !poolOk )
             {
-                // Stop any pairs that started successfully, clear the list, and bail
-                for ( auto & p : mClientPairs )
+                // Stop any pairs that started successfully and bail
+                for ( auto & p : pairs )
                 {
                     if ( p ) p->stop();
                 }
 
-                mClientPairs.clear();
                 mServerConnection.close_socket();
 
                 mTimerConnect.start_timer(areg::DEFAULT_RETRY_CONNECT_TIMEOUT, static_cast<DispatcherThread &>(self()), 1);
                 return false;
             }
+
+            Lock lock(mLock);
+            mClientPairs.swap(pairs);
         }
 
         if ( start_send_thread( ) && start_receive_thread( ) )
@@ -407,14 +410,7 @@ bool ServiceCommunicationBase::start_connection()
         }
         else
         {
-            // Stop any pool pairs that were already started.
-            for ( auto & p : mClientPairs )
-            {
-                if ( p ) p->stop();
-            }
-
-            mClientPairs.clear();
-            mServerConnection.close_socket( );
+            stop_connection( );
         }
     }
 
@@ -690,13 +686,13 @@ void ServiceCommunicationBase::enable_data_rate(bool enable) noexcept
 bool ServiceCommunicationBase::start_send_thread()
 {
     return mThreadSend.start( areg::WAIT_INFINITE ) &&
-           mThreadSend.wait_start( areg::WAIT_INFINITE );
+           areg::wait_io_thread_ready( mThreadSend );
 }
 
 bool ServiceCommunicationBase::start_receive_thread()
 {
     return mThreadReceive.start( areg::WAIT_INFINITE ) &&
-           mThreadReceive.wait_start( areg::WAIT_INFINITE );
+           areg::wait_io_thread_ready( mThreadReceive );
 }
 
 bool ServiceCommunicationBase::send_message( const areg::MessageEnvelope & data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )

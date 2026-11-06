@@ -478,6 +478,7 @@ void LogManager::stop_logs()
     mLoggerFile.close_logger( );
     mLoggerTcp.close_logger( );
     mLoggerDatabase.close_logger();
+    mPendingFlush = false;
     trigger_exit( );
 }
 

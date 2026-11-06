@@ -92,6 +92,14 @@ extern "C"
      * \param   point   The FaultPoint value.
      **/
     AREG_FAULT_API uint32_t areg_fault_failed( uint32_t point );
+
+    /**
+     * \brief   Makes every passing call of the point wait, until disarmed. Only SocketListen can wait.
+     * \param   point           The FaultPoint value.
+     * \param   milliseconds    The time a call waits before it runs.
+     * \return  True if the wait is set; false if the point cannot wait on this platform.
+     **/
+    AREG_FAULT_API bool areg_fault_delay( uint32_t point, uint32_t milliseconds );
 }
 
 namespace areg_fault
@@ -110,6 +118,14 @@ namespace areg_fault
     inline uint32_t failed( FaultPoint point )
     {
         return ::areg_fault_failed( static_cast<uint32_t>(point) );
+    }
+
+    /**
+     * \brief   Makes the calls of the point wait. See areg_fault_delay().
+     **/
+    inline bool delay( FaultPoint point, uint32_t milliseconds )
+    {
+        return ::areg_fault_delay( static_cast<uint32_t>(point), milliseconds );
     }
 
     /**

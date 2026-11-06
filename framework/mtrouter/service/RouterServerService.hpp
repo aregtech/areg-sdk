@@ -21,7 +21,6 @@
 #include "areg/base/areg_global.h"
 
 #include "areg/ipc/RegistrationConsumer.hpp"
-#include "areg/ipc/RegistrationProvider.hpp"
 #include "aregextend/service/ServiceCommunicationBase.hpp"
 #include "areg/component/Timer.hpp"
 #include "areg/component/TimerConsumer.hpp"
@@ -40,7 +39,6 @@
  **/
 class RouterServerService final : public    areg::ext::ServiceCommunicationBase
                                 , private   areg::RegistrationConsumer
-                                , private   areg::RegistrationProvider
                                 , private   areg::TimerConsumer
 {
     //!< A provider registration held while another source holds its role name.
@@ -61,44 +59,6 @@ public:
 // Overrides
 //////////////////////////////////////////////////////////////////////////
 protected:
-
-/************************************************************************/
-// RegistrationProvider interface overrides
-/************************************************************************/
-
-    /**
-     * \brief   Registers a remote service provider and notifies all waiting consumers. Returns true
-     *          on success.
-     *
-     * \param   stubService     The address of the service provider to register.
-     * \return  Returns true if registration succeeded.
-     **/
-    bool register_service_provider( const areg::StubAddress & stubService ) final;
-
-    /**
-     * \brief   Unregisters a remote service provider and notifies all connected consumers.
-     *
-     * \param   stubService     The address of the service provider to unregister.
-     * \param   reason          The disconnection reason.
-     **/
-    void unregister_service_provider( const areg::StubAddress & stubService, const areg::DisconnectReason reason ) final;
-
-    /**
-     * \brief   Registers a remote service consumer and connects to the provider if available.
-     *          Returns true on success.
-     *
-     * \param   proxyService    The address of the service consumer to register.
-     * \return  Returns true if registration started successfully.
-     **/
-    bool register_service_consumer( const areg::ProxyAddress & proxyService ) final;
-
-    /**
-     * \brief   Unregisters a remote service consumer and notifies the provider.
-     *
-     * \param   proxyService    The address of the service consumer to unregister.
-     * \param   reason          The disconnection reason.
-     **/
-    void unregister_service_consumer( const areg::ProxyAddress & proxyService, const areg::DisconnectReason reason ) final;
 
 /************************************************************************/
 // RegistrationConsumer interface overrides
@@ -210,13 +170,6 @@ protected:
      * \param   msgReceived     The received communication message.
      **/
     void on_message_received(const areg::MessageEnvelope & msgReceived) final;
-
-    /**
-     * \brief   Triggered when a message needs to be sent.
-     *
-     * \param   msgSend     The message to send.
-     **/
-    void on_message_send(const areg::MessageEnvelope & msgSend) final;
 
 /************************************************************************/
 // ConnectionHandler overrides

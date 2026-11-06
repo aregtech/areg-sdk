@@ -20,3 +20,27 @@ foreach(_io_case stale-cache wrong-client partial-header partial-body invalid-ty
         set_tests_properties(${AREG_ROUTER_IO_PROJECT}.${_io_case}.${_io_pairs} PROPERTIES TIMEOUT 300)
     endforeach()
 endforeach()
+
+foreach(_registration_case
+        registration-provider-first-provider-out
+        registration-provider-first-consumer-out
+        registration-consumer-first-provider-out
+        registration-consumer-first-consumer-out
+        registration-two-proxies
+        registration-two-proxies-one-source
+        registration-truncated-provider
+        registration-truncated-consumer
+        registration-provider-disconnect
+        registration-consumer-disconnect
+        registration-same-source
+        duplicate-role
+        held-provider-takeover
+        held-provider-cancel
+        held-provider-disconnect
+        router-stop-registered)
+    foreach(_io_pairs 0 4)
+        add_test(NAME ${AREG_ROUTER_IO_PROJECT}.${_registration_case}.${_io_pairs}
+            COMMAND ${AREG_ROUTER_IO_PROJECT} ${_registration_case} ${_io_pairs} $<TARGET_FILE_DIR:${AREG_ROUTER_IO_PROJECT}>)
+        set_tests_properties(${AREG_ROUTER_IO_PROJECT}.${_registration_case}.${_io_pairs} PROPERTIES TIMEOUT 300)
+    endforeach()
+endforeach()
