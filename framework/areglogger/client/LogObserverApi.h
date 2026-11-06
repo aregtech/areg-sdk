@@ -617,8 +617,8 @@ LOGGER_API bool log_observer_queue_state(struct LogQueueState* state);
  * \brief   Call to get active database full path.
  * \param   dbPath  The buffer to write the full path of the active database.
  * \param   space   The length of the buffer to write the database path, inclusive the null-terminated character at the end.
- * \return  Returns number of characters copied in the `dbPath`. It `dbPath` is null or `space` is smaller than the length of database path,
- *          the returned value is the space required to allocate to get the path.
+ * \return  Returns number of characters copied in the `dbPath`. If `dbPath` is null or `space` cannot hold the text with its null-terminated character,
+ *          nothing is copied and the returned value is the space required to allocate to get the path.
  **/
 LOGGER_API int log_observer_active_database_path(char* dbPath, int space);
 
@@ -626,8 +626,8 @@ LOGGER_API int log_observer_active_database_path(char* dbPath, int space);
  * \brief   Call to get initial database full path.
  * \param   dbPath  The buffer to write the full path of the initial database.
  * \param   space   The length of the buffer to write the database path, inclusive the null-terminated character at the end.
- * \return  Returns number of characters copied in the `dbPath`. It `dbPath` is null or `space` is smaller than the length of database path,
- *          the returned value is the space required to allocate to get the path.
+ * \return  Returns number of characters copied in the `dbPath`. If `dbPath` is null or `space` cannot hold the text with its null-terminated character,
+ *          nothing is copied and the returned value is the space required to allocate to get the path.
  **/
 LOGGER_API int log_observer_initial_database_path(char* dbPath, int space);
 
@@ -635,8 +635,8 @@ LOGGER_API int log_observer_initial_database_path(char* dbPath, int space);
  * \brief   Call to get the database path specified in the configuration file.
  * \param   dbPath  The buffer to write the full path of the database specified in the configuration file.
  * \param   space   The length of the buffer to write the database path, inclusive the null-terminated character at the end.
- * \return  Returns number of characters copied in the `dbPath`. It `dbPath` is null or `space` is smaller than the length of database path,
- *          the returned value is the space required to allocate to get the path.
+ * \return  Returns number of characters copied in the `dbPath`. If `dbPath` is null or `space` cannot hold the text with its null-terminated character,
+ *          nothing is copied and the returned value is the space required to allocate to get the path.
  **/
 LOGGER_API int log_observer_config_database_path(char* dbPath, int space);
 
@@ -644,8 +644,8 @@ LOGGER_API int log_observer_config_database_path(char* dbPath, int space);
  * \brief   Call to get the database location specified in the configuration file.
  * \param   dbLocation  The buffer to write the log database location specified in the configuration file. The path may contain mask like `log_%time`
  * \param   space       The length of the buffer to write the database path, inclusive the null-terminated character at the end.
- * \return  Returns number of characters copied in the `dbLocation`. It `dbLocation` is null or `space` is smaller than the length of database path,
- *          the returned value is the space required to allocate to get the path.
+ * \return  Returns number of characters copied in the `dbLocation`. If `dbLocation` is null or `space` cannot hold the text with its null-terminated character,
+ *          nothing is copied and the returned value is the space required to allocate to get the path.
  **/
 LOGGER_API int log_observer_config_database_location(char* dbLocation, int space);
 
@@ -661,8 +661,8 @@ LOGGER_API bool log_observer_set_config_database_location(const char* dbLocation
  * \brief   Call to get the database name specified in the configuration file.
  * \param   dbName  The buffer to write the database name specified in the configuration file. The name may contain mask like `log_%time%.sqlog`.
  * \param   space   The length of the buffer to write the database name, inclusive the null-terminated character at the end.
- * \return  Returns number of characters copied in the `dbName`. It `dbName` is null or `space` is smaller than the length of database name,
- *          the returned value is the space required to allocate to get the name.
+ * \return  Returns number of characters copied in the `dbName`. If `dbName` is null or `space` cannot hold the text with its null-terminated character,
+ *          nothing is copied and the returned value is the space required to allocate to get the name.
  **/
 LOGGER_API int log_observer_config_database_name(char* dbName, int space);
 

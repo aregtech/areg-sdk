@@ -25,7 +25,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
     <ClCompile>
-      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;_CONSOLE;GTEST_HAS_PTHREAD=0;_HAS_EXCEPTIONS=1;STRICT;IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;_CONSOLE;GTEST_HAS_PTHREAD=0;_HAS_EXCEPTIONS=1;STRICT;IMPORT_SHARED_SYMBOLS;IMP_LOGGER_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -35,7 +35,7 @@
     <ClCompile>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;_CONSOLE;GTEST_HAS_PTHREAD=0;_HAS_EXCEPTIONS=1;STRICT;IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;_CONSOLE;GTEST_HAS_PTHREAD=0;_HAS_EXCEPTIONS=1;STRICT;IMPORT_SHARED_SYMBOLS;IMP_LOGGER_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -57,6 +57,7 @@
     <ClCompile Include="units\RouterApplicationTest.cpp" />
     <ClCompile Include="units\ServiceConsoleHarness.cpp" />
     <ClCompile Include="units\LogCollectorApplicationTest.cpp" />
+    <ClCompile Include="units\LogCollectorServiceTest.cpp" />
     <ClCompile Include="..\framework\logcollector\app\private\LogCollector.cpp" />
     <ClCompile Include="..\framework\logcollector\app\private\LogCollectorNames.cpp" />
     <ClCompile Include="..\framework\logcollector\service\private\LogCollectorDatabase.cpp" />
@@ -83,6 +84,11 @@
     <ClCompile Include="units\LogMessageLengthTest.cpp" />
     <ClCompile Include="units\LogProtocolTest.cpp" />
     <ClCompile Include="units\LogRingTest.cpp" />
+    <ClCompile Include="units\LogObserverApiTest.cpp" />
+    <ClCompile Include="..\framework\areglogger\client\private\LogObserverApi.cpp" />
+    <ClCompile Include="..\framework\areglogger\client\private\LogObserverBase.cpp" />
+    <ClCompile Include="..\framework\areglogger\client\private\LoggerClient.cpp" />
+    <ClCompile Include="..\framework\areglogger\client\private\ObserverMessageProcessor.cpp" />
     <ClCompile Include="units\LogScopesTest.cpp" />
     <ClCompile Include="units\BufferBaseTest.cpp" />
     <ClCompile Include="units\EnvelopeCacheTest.cpp" />

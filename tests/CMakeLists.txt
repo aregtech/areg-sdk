@@ -121,6 +121,10 @@ if (AREG_TESTS)
     include(${AREG_TESTS_DIR}/internal-events/CMakeLists.txt)
     include(${AREG_TESTS_DIR}/stub-teardown/CMakeLists.txt)
     include(${AREG_TESTS_DIR}/router-io/CMakeLists.txt)
+    # Needs the log collector and the log observer library.
+    if (AREG_LOGGING AND TARGET areglogger AND TARGET logcollector)
+        include(${AREG_TESTS_DIR}/log-observer/CMakeLists.txt)
+    endif()
     include(${AREG_TESTS_DIR}/client-stop/CMakeLists.txt)
     # Built only with a shared areg library.
     if (NOT "${AREG_LIB_TYPE}" STREQUAL "static")

@@ -193,7 +193,7 @@ step_unit() {
 step_examples() {
   local rc
   reset_counters
-  local args=(--bin-dir "$BUILD/bin" --tier all --out-dir "$OUT/examples" --summary '')
+  local args=(--bin-dir "$BUILD/bin" --tier coverage --out-dir "$OUT/examples" --summary '')
   [ -n "$ONLY" ] && args+=(--only "$ONLY")
   "$PYTHON" "$SRC/tools/intern/run-all-examples.py" "${args[@]}"
   rc=$?

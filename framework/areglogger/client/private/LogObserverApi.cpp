@@ -107,6 +107,24 @@ namespace {
     {
         return (state == ObserverState::ObserverConnected);
     }
+
+    /**
+     * \brief   Copies the text if the buffer holds it with its null-terminated character.
+     * \param   text    The text to copy.
+     * \param   buffer  The buffer to write, can be null.
+     * \param   space   The length of the buffer, inclusive the null-terminated character.
+     * \return  The number of characters copied. If the text is not copied, the space to allocate.
+     **/
+    inline int32_t _copy_text(const areg::String& text, char* buffer, int32_t space)
+    {
+        const int32_t length{ static_cast<int32_t>(text.length()) };
+        if ((buffer != nullptr) && (space > length))
+        {
+            return static_cast<int32_t>(areg::copy_string<char, char>(buffer, static_cast<areg::CharCount>(space), text.as_string(), text.length()));
+        }
+
+        return (length != 0 ? length + 1 : 0);
+    }
 } // namespace
 
 LOGGER_API_IMPL bool log_observer_initialize(const ObserverEvents * callbacks, const char* configFilePath /* = nullptr */)
@@ -316,9 +334,9 @@ LOGGER_API_IMPL bool log_observer_config_logger_address(char* addrBuffer, uint32
     {
         areg::logger::LoggerClient& client = areg::logger::LoggerClient::instance();
         areg::String addr{ client.config_logger_address() };
-        if ((addrBuffer != nullptr) && (addr.length() > static_cast<areg::CharCount>(space)))
+        if ((addrBuffer != nullptr) && (static_cast<uint32_t>(addr.length()) < space))
         {
-            result = areg::copy_string<char, char>(addrBuffer, static_cast<areg::CharCount>(space), addr.as_string(), addr.length()) > 0;
+            result = areg::copy_string<char, char>(addrBuffer, addr.length() + 1, addr.as_string(), addr.length()) > 0;
         }
     }
 
@@ -503,54 +521,22 @@ LOGGER_API_IMPL bool log_observer_queue_state(LogQueueState* state)
 
 LOGGER_API_IMPL int32_t log_observer_active_database_path(char* dbPath, int32_t space)
 {
-    areg::String path{ areg::logger::LoggerClient::instance().active_database_path() };
-    if ((dbPath != nullptr) && (path.length() > static_cast<areg::CharCount>(space)))
-    {
-        return static_cast<int32_t>(areg::copy_string<char, char>(dbPath, static_cast<areg::CharCount>(space), path.as_string(), path.length()));
-    }
-    else
-    {
-        return (path.is_empty() ? 0 : static_cast<int32_t>(path.length() + 1));
-    }
+    return _copy_text(areg::logger::LoggerClient::instance().active_database_path(), dbPath, space);
 }
 
 LOGGER_API_IMPL int32_t log_observer_initial_database_path(char* dbPath, int32_t space)
 {
-    areg::String path{ areg::logger::LoggerClient::instance().initial_database_path() };
-    if ((dbPath != nullptr) && (path.length() > static_cast<areg::CharCount>(space)))
-    {
-        return static_cast<int32_t>(areg::copy_string<char, char>(dbPath, static_cast<areg::CharCount>(space), path.as_string(), path.length()));
-    }
-    else
-    {
-        return (path.is_empty() ? 0 : static_cast<int32_t>(path.length() + 1));
-    }
+    return _copy_text(areg::logger::LoggerClient::instance().initial_database_path(), dbPath, space);
 }
 
 LOGGER_API_IMPL int32_t log_observer_config_database_path(char* dbPath, int32_t space)
 {
-    areg::String path{ areg::logger::LoggerClient::instance().config_database_path() };
-    if ((dbPath != nullptr) && (path.length() > static_cast<areg::CharCount>(space)))
-    {
-        return static_cast<int32_t>(areg::copy_string<char, char>(dbPath, static_cast<areg::CharCount>(space), path.as_string(), path.length()));
-    }
-    else
-    {
-        return (path.is_empty() ? 0 : static_cast<int32_t>(path.length() + 1));
-    }
+    return _copy_text(areg::logger::LoggerClient::instance().config_database_path(), dbPath, space);
 }
 
 LOGGER_API_IMPL int32_t log_observer_config_database_location(char* dbLocation, int32_t space)
 {
-    areg::String location{ areg::logger::LoggerClient::instance().config_database_location() };
-    if ((dbLocation != nullptr) && (location.length() > static_cast<areg::CharCount>(space)))
-    {
-        return static_cast<int32_t>(areg::copy_string<char, char>(dbLocation, static_cast<areg::CharCount>(space), location.as_string(), location.length()));
-    }
-    else
-    {
-        return (location.is_empty() ? 0 : static_cast<int32_t>(location.length() + 1));
-    }
+    return _copy_text(areg::logger::LoggerClient::instance().config_database_location(), dbLocation, space);
 }
 
 LOGGER_API_IMPL bool log_observer_set_config_database_location(const char* dbLocation)
@@ -560,15 +546,7 @@ LOGGER_API_IMPL bool log_observer_set_config_database_location(const char* dbLoc
 
 LOGGER_API_IMPL int32_t log_observer_config_database_name(char* dbName, int32_t space)
 {
-    areg::String name{ areg::logger::LoggerClient::instance().config_database_name() };
-    if ((dbName != nullptr) && (name.length() > static_cast<areg::CharCount>(space)))
-    {
-        return static_cast<int32_t>(areg::copy_string<char, char>(dbName, static_cast<areg::CharCount>(space), name.as_string(), name.length()));
-    }
-    else
-    {
-        return (name.is_empty() ? 0 : static_cast<int32_t>(name.length() + 1));
-    }
+    return _copy_text(areg::logger::LoggerClient::instance().config_database_name(), dbName, space);
 }
 
 LOGGER_API_IMPL bool log_observer_set_config_database_name(const char* dbName)

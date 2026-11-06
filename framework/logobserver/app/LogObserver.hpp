@@ -300,14 +300,6 @@ private:
      **/
     void _run_console_input_extended();
 
-    /**
-     * \brief   Enables or disables local log messages by setting the priority to NOTSET.
-     *
-     * \param   config      The configuration manager instance used to enable or disable log
-     *                      messages.
-     * \param   enable      True to enable logs; false to disable them.
-     **/
-    inline void enable_local_logs(areg::ConfigManager& config, bool enable);
 
     /**
      * \brief   Returns true if the command is recognized; false otherwise.
@@ -344,12 +336,6 @@ private:
      **/
     static void _output_title();
 
-    /**
-     * \brief   Prints information to the console.
-     *
-     * \param   info    The information string to print.
-     **/
-    static void _output_info( const areg::String & info );
 
     /**
      * \brief   Clears all console message outputs such as help text and prompts.

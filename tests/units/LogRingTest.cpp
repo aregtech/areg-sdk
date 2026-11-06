@@ -461,4 +461,39 @@ TEST(LogRingTest, logs_before_the_start_are_all_sent_if_the_queue_holds_them)
     areg::socket_release();
 }
 
+// Reproduces the defect: a scope update that promises more entries than it holds kept the receive
+// thread of the log source in the loop for minutes, reading past the end of the message.
+TEST(LogRingTest, scope_update_with_a_forged_count_ends_with_the_message)
+{
+    ASSERT_TRUE(areg::socket_initialize());
+    Listener listener;
+    ASSERT_NE(_port, 0u);
+
+    RowsHandled database;
+    RingConfigListener config(QUEUE_SIZE);
+    ASSERT_TRUE(start_source(listener, database, config));
+
+    areg::MessageEnvelope answer{ areg::create_connect_notify(areg::COOKIE_LOGGER, COOKIE) };
+    areg::ScopeNames scopes;
+    scopes.add(areg::ScopeEntry(areg::String("log_ring_test_scope"), 1u, static_cast<uint32_t>(areg::LogPriority::PrioDebug)));
+    areg::MessageEnvelope update{ areg::message_update_scopes(areg::COOKIE_LOGGER, COOKIE, scopes) };
+    update.move_to_begin();
+    update << 0xFFFF'FFFFu;
+    update.move_to_end();
+    ASSERT_TRUE(write_message(listener.client, answer));
+    ASSERT_TRUE(write_message(listener.client, update));
+
+    bool updated{ false };
+    areg::EventHeader hdr{ };
+    std::vector<uint8_t> payload;
+    while ((updated == false) && read_message(listener.client, hdr, payload))
+    {
+        updated = (hdr.messageId == static_cast<uint32_t>(areg::FuncIdRange::ServiceLogScopesUpdated));
+    }
+
+    EXPECT_TRUE(updated);
+    stop_source(database);
+    areg::socket_release();
+}
+
 #endif  // AREG_LOGGING
