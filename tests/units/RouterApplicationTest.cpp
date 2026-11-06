@@ -4,6 +4,11 @@
  * Distributed under the licenses in LICENSE.txt.
  ************************************************************************/
 
+// Declares the pseudo terminal functions: g++ on Cygwin does not predefine it, unlike on Linux.
+#if defined(__CYGWIN__) && !defined(_GNU_SOURCE)
+    #define _GNU_SOURCE
+#endif
+
 #include "units/GUnitTest.hpp"
 #include "units/ChildProcess.hpp"
 #include "mtrouter/app/MultitargetRouter.hpp"
