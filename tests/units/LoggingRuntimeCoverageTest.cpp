@@ -156,6 +156,12 @@ namespace
             return mOpened;
         }
 
+        bool wait_commit(uint32_t waitMs)
+        {
+            std::unique_lock<std::mutex> guard(mMutex);
+            return mChanged.wait_for(guard, std::chrono::milliseconds(waitMs), [this]() { return mCommits != 0u; });
+        }
+
         bool wait_row(const std::string& text, bool flushed = false)
         {
             std::unique_lock<std::mutex> guard(mMutex);
@@ -1144,6 +1150,28 @@ TEST_F(LoggingRuntimeCoverageTest, row_followed_by_a_trailing_non_log_event_is_c
 
     mDatabase.release_row();
     EXPECT_TRUE(mDatabase.wait_row("held-row", true));
+    areg::stop_logging(true);
+}
+
+/**
+ * \brief   Reproduces the defect: a row written right before a stop left its flush pending, so the
+ *          next session flushed before its first row, and a slow flush cost that session its rows.
+ **/
+TEST_F(LoggingRuntimeCoverageTest, restart_has_no_flush_left_from_the_previous_session)
+{
+    use_database();
+    setup();
+    ASSERT_TRUE(areg::start_logging());
+    mDatabase.hold_row("held-row");
+    write_row("held-row");
+    ASSERT_TRUE(mDatabase.wait_held());
+    areg::stop_logging(false);
+    mDatabase.release_row();
+    areg::wait_logging_end();
+    ASSERT_EQ(mDatabase.mCommits, 0u);
+
+    ASSERT_TRUE(areg::start_logging());
+    EXPECT_FALSE(mDatabase.wait_commit(200u));
     areg::stop_logging(true);
 }
 
