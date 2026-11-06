@@ -218,12 +218,32 @@ TEST(RouterApplicationTest, scrolled_terminal_publishes_no_old_rows)
     const std::string marker{ "earlier-command-output\n" };
     terminal.feed(marker.data(), marker.size());
     const size_t offset{ terminal.transcript.size() };
-    const std::string scroll{ "first-new-row\nsecond-new-row\nthird-new-row\n" };
+    const std::string scroll{ "first-new-row\r\nsecond-new-row\r\nthird-new-row\r\n" };
     terminal.feed(scroll.data(), scroll.size());
 
     EXPECT_NE(std::string::npos, terminal.transcript.find("third-new-row", offset));
     EXPECT_EQ(std::string::npos, terminal.transcript.find("earlier-command-output", offset));
 }
+
+#if !defined(_WIN32)
+// Reproduces the defect: ncurses on macOS moves down with a line feed, which keeps the column, and the rate rows were drawn at the wrong place.
+TEST(RouterApplicationTest, terminal_keeps_the_column_on_a_line_feed)
+{
+    TerminalCapture terminal;
+    const std::string rows{ "\x1b[4;2H Send data rate ...:      0.00  Bytes / sec."
+                            "\x1b[5;2H Recv data rate ...:      0.00  Bytes / sec."
+                            "\x1b[6;2H Send messages ....:         0 msgs/sec"
+                            "\x1b[7;2H Recv messages ....:         0 msgs/sec" };
+    terminal.feed(rows.data(), rows.size());
+    const std::string update{ "\x1b[4;26H124\n\b\b\b257\n  1\n\b1" };
+    terminal.feed(update.data(), update.size());
+
+    EXPECT_TRUE(terminal.shows("Send data rate ...:    124.00  Bytes / sec."));
+    EXPECT_TRUE(terminal.shows("Recv data rate ...:    257.00  Bytes / sec."));
+    EXPECT_TRUE(terminal.shows("Send messages ....:         1 msgs/sec"));
+    EXPECT_TRUE(terminal.shows("Recv messages ....:         1 msgs/sec"));
+}
+#endif
 
 // Reproduces the defect: a row written again with the same text was not published, so a test waited for it until the deadline.
 TEST(RouterApplicationTest, terminal_publishes_a_row_written_again_with_the_same_text)

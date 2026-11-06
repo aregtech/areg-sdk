@@ -197,8 +197,13 @@ namespace service_harness
                         control(static_cast<char>(ch));
                     else if (ch == 'M')
                         mRow = (std::max)(0, mRow - 1);
-                    else if (ch == 'D' || ch == 'E')
+                    else if (ch == 'D')
                         newline();
+                    else if (ch == 'E')
+                    {
+                        newline();
+                        mColumn = 0;
+                    }
                     mEscape.clear();
                 }
                 else if (ch == 0x1b)
@@ -209,7 +214,12 @@ namespace service_harness
                     mColumn = 0;
                 }
                 else if (ch == '\n')
+                {
                     newline();
+#if defined(_WIN32)
+                    mColumn = 0; // A pipe has no terminal driver to add the carriage return.
+#endif
+                }
                 else if (ch == '\b')
                     mColumn = (std::max)(0, mColumn - 1);
                 else if (ch == '\t')
@@ -261,7 +271,6 @@ namespace service_harness
                 mWritten.push_back(false);
                 mRow = 39;
             }
-            mColumn = 0;
         }
 
         void control(char final)
