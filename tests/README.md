@@ -157,7 +157,8 @@ What a test author must know:
    child does not reach the parent's result. When a check fails, the parent prints the child's
    output, which holds the failed condition.
 3. **A passing child exits through `std::exit(0)`**, so the coverage data of the child is
-   written. A failing check exits through `std::_Exit`, because the process may be broken.
+   written. The local objects of the statements are destroyed first. A failing check exits
+   through `std::_Exit`, because the process may be broken.
 4. **Every child is a fresh process.** It may set up and release the application, arm a fault,
    exhaust a resource or crash, and the next test is not affected.
 5. **The cost is a process start per child**, a few milliseconds on Linux and tens of
