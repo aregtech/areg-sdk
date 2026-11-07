@@ -275,6 +275,12 @@ private:
     static void _output_title();
 
     /**
+     * \brief   Clears the console and draws the title and the prompt again. Called when the
+     *          size of the terminal changed; the data rate rows return with the next update.
+     **/
+    static void _redraw_console();
+
+    /**
      * \brief   Prints information on the console.
      *
      * \param   info    The information message to print.

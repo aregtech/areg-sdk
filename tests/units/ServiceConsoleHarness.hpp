@@ -97,15 +97,13 @@ namespace service_harness
         AREG_CHILD_CHECK(actual == expected);
     }
 
-    inline void set_terminal(TerminalSize size = TerminalSize{})
+    //!< Sets a terminal type that draws at coordinates; the size comes from make_terminal().
+    inline void set_terminal()
     {
 #if defined(_WIN32)
-        (void)size;
         AREG_CHILD_CHECK(::_putenv_s("TERM", "xterm") == 0);
 #else
         AREG_CHILD_CHECK(::setenv("TERM", "xterm", 1) == 0);
-        AREG_CHILD_CHECK(::setenv("LINES", std::to_string(size.rows).c_str(), 1) == 0);
-        AREG_CHILD_CHECK(::setenv("COLUMNS", std::to_string(size.columns).c_str(), 1) == 0);
 #endif
     }
 
@@ -181,7 +179,7 @@ namespace service_harness
         }
     }
 
-    // Reconstruct ncurses' cursor-addressed differences rather than searching escape bytes.
+    // Reconstructs the cursor-addressed rows rather than searching escape bytes.
     class TerminalCapture
     {
     public:
@@ -568,7 +566,7 @@ namespace service_harness
             , mResult()
         {
             AREG_CHILD_CHECK(mSavedInput >= 0 && mSavedOutput >= 0);
-            set_terminal(size);
+            set_terminal();
             make_pipe(mInput);
             make_terminal(mOutput, size);
             std::fflush(stdout);

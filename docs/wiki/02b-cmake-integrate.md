@@ -334,9 +334,6 @@ option(AREG_TESTS "Build unit tests" OFF)
 # Disable Areg-specific output directories
 option(AREG_OUTPUT_LAYOUT "Use Areg output structure" OFF)
 
-# Build extended library
-option(AREG_EXTENDED "Build aregextend library" ON)
-
 # Disable logging (smaller binaries)
 option(AREG_LOGGING "Enable logging" OFF)
 
@@ -353,7 +350,6 @@ project(myapp)
 # Configure Areg SDK
 option(AREG_EXAMPLES "Build examples" OFF)
 option(AREG_TESTS "Build tests" OFF)
-option(AREG_EXTENDED "Build extended" ON)
 
 # Fetch Areg SDK
 include(FetchContent)

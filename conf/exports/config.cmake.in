@@ -47,8 +47,6 @@ set(AREG_PLATFORM_MACOS     @AREG_PLATFORM_MACOS@)
 set(AREG_PLATFORM_WINDOWS   @AREG_PLATFORM_WINDOWS@)
 set(AREG_PLATFORM_POSIX     @AREG_PLATFORM_POSIX@)
 
-# Specify whether 'aregextend' is compiled with enabled extended objects flag
-option(AREG_EXTENDED        "Areg Extended object flag"         @AREG_EXTENDED@)
 # Specify whether the libraries where compiled with enabled logging.
 option(AREG_LOGGING            "Areg logging enable flag"          @AREG_LOGGING@)
 # Specify whether to use installed or compiled SQLite3 package
@@ -103,13 +101,6 @@ if (AREG_LOGGER_LIB_TYPE MATCHES "shared")
     add_definitions(-DIMP_LOGGER_DLL)
 else()
     add_definitions(-DIMP_LOGGER_LIB)
-endif()
-
-# Indicate the areg extended objects availability.
-if (AREG_EXTENDED)
-    add_definitions(-DAREG_EXTENDED=1)
-else()
-    add_definitions(-DAREG_EXTENDED=0)
 endif()
 
 # Indicate the areg logging availability.

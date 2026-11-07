@@ -71,6 +71,10 @@ namespace util {
          **/
         , CmdQuit           = 512
         /**
+         * \brief   The command to draw the console again after the terminal size changed
+         **/
+        , CmdRedraw         = 1024
+        /**
          * \brief   The command to display help
          **/
         , Error             = static_cast<uint32_t>(0x80000000)
@@ -94,7 +98,7 @@ namespace util {
     constexpr OptionSpec  OptionSpecs[]
     {
           {"-w=", "--width=",   OptionFlag::CmdWidth,         32,                  32'768} //! Width in pixels
-        , {"-h=", "--height",   OptionFlag::CmdHeight,        32,                  32'768} //! Height in pixels
+        , {"-h=", "--height=",  OptionFlag::CmdHeight,        32,                  32'768} //! Height in pixels
         , {"-l=", "--lines=",   OptionFlag::CmdLinesPerBlock,  1,                       0} //! Lines per block, maximum is equal to height
         , {"-t=", "--time=" ,   OptionFlag::CmdPixelTime,      0,                 100'000} //! Pixel time in nanoseconds, 0 = full speed
         , {"-c=", "--channels=",OptionFlag::CmdChannels,       1, LargeData::MAX_CHANNELS} //! Number of channels
@@ -188,6 +192,11 @@ namespace util {
          * \brief   Returns true if the option has command to print the info.
          */
         inline bool hasPrintInfo() const;
+
+        /**
+         * \brief   Returns true if the option has command to draw the console again.
+         */
+        inline bool hasRedraw() const;
 
         /**
          * \brief   Returns true if the option has command to print help of the application.
@@ -296,6 +305,11 @@ namespace util {
 inline bool util::OptionValues::hasPrintInfo() const
 {
     return ((mFlags & static_cast<uint32_t>(OptionFlag::CmdInformation)) != 0);
+}
+
+inline bool util::OptionValues::hasRedraw() const
+{
+    return ((mFlags & static_cast<uint32_t>(OptionFlag::CmdRedraw)) != 0);
 }
 
 inline bool util::OptionValues::hasPrintHelp() const
@@ -478,6 +492,8 @@ inline constexpr const char * util::as_string(util::OptionFlag flag) noexcept
         return "util::OptionFlag::CmdStop";
     case util::OptionFlag::CmdQuit:
         return "util::OptionFlag::CmdQuit";
+    case util::OptionFlag::CmdRedraw:
+        return "util::OptionFlag::CmdRedraw";
     case util::OptionFlag::Error:
         return "util::OptionFlag::Error";
     

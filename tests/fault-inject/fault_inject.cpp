@@ -31,7 +31,9 @@
     #include <errno.h>
     #include <fcntl.h>
 #if defined(__linux__)
+    #include <poll.h>
     #include <sys/epoll.h>
+    #include <termios.h>
 #endif  // defined(__linux__)
     #include <pthread.h>
     #include <spawn.h>
@@ -387,6 +389,62 @@ extern "C"
         return ( next != nullptr ) ? next( fd, buf, len ) : ( errno = ENOSYS, -1 );
     }
 
+    AREG_FAULT_API int pipe( int fds[2] ) noexcept
+    {
+        int error{ 0 };
+        if ( _should_fail( areg_fault::FaultPoint::PipeCreate, error ) )
+        {
+            errno = error;
+            return -1;
+        }
+
+        using Func = int (*)( int * );
+        static const Func next{ _next<Func>( "pipe" ) };
+        return ( next != nullptr ) ? next( fds ) : ( errno = ENOSYS, -1 );
+    }
+
+    AREG_FAULT_API int poll( struct pollfd * fds, nfds_t count, int timeout )
+    {
+        int error{ 0 };
+        if ( _should_fail( areg_fault::FaultPoint::Poll, error ) )
+        {
+            errno = error;
+            return -1;
+        }
+
+        using Func = int (*)( struct pollfd *, nfds_t, int );
+        static const Func next{ _next<Func>( "poll" ) };
+        return ( next != nullptr ) ? next( fds, count, timeout ) : ( errno = ENOSYS, -1 );
+    }
+
+    AREG_FAULT_API int tcgetattr( int fd, struct termios * modes ) noexcept
+    {
+        int error{ 0 };
+        if ( _should_fail( areg_fault::FaultPoint::TermGet, error ) )
+        {
+            errno = error;
+            return -1;
+        }
+
+        using Func = int (*)( int, struct termios * );
+        static const Func next{ _next<Func>( "tcgetattr" ) };
+        return ( next != nullptr ) ? next( fd, modes ) : ( errno = ENOSYS, -1 );
+    }
+
+    AREG_FAULT_API int tcsetattr( int fd, int actions, const struct termios * modes ) noexcept
+    {
+        int error{ 0 };
+        if ( _should_fail( areg_fault::FaultPoint::TermSet, error ) )
+        {
+            errno = error;
+            return -1;
+        }
+
+        using Func = int (*)( int, int, const struct termios * );
+        static const Func next{ _next<Func>( "tcsetattr" ) };
+        return ( next != nullptr ) ? next( fd, actions, modes ) : ( errno = ENOSYS, -1 );
+    }
+
     AREG_FAULT_API DIR * opendir( const char * name )
     {
         int error{ 0 };
@@ -465,7 +523,11 @@ namespace
             && ( point != areg_fault::FaultPoint::SocketListen )
             && ( point != areg_fault::FaultPoint::EpollCtl )
             && ( point != areg_fault::FaultPoint::FileRead )
-            && ( point != areg_fault::FaultPoint::FileWrite );
+            && ( point != areg_fault::FaultPoint::FileWrite )
+            && ( point != areg_fault::FaultPoint::PipeCreate )
+            && ( point != areg_fault::FaultPoint::Poll )
+            && ( point != areg_fault::FaultPoint::TermGet )
+            && ( point != areg_fault::FaultPoint::TermSet );
     }
 
     void _install( ) noexcept

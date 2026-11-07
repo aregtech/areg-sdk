@@ -125,9 +125,6 @@ set(AREG_DEVELOP_ENV)
 # The linker flags
 set(AREG_LDFLAGS)
 set(AREG_LDFLAGS_STR "")
-# set areg extended static library dependencies
-set(AREG_EXTENDED_LIBS)
-set(AREG_EXTENDED_LIBS_STR "")
 # The compiler options
 set(AREG_COMPILER_OPTIONS)
 # set areg compiler version
@@ -198,12 +195,6 @@ if (AREG_NO_EXCEPTIONS)
     else()
         list(APPEND AREG_COMPILER_OPTIONS -fno-exceptions -fno-rtti)
     endif()
-endif()
-
-if (AREG_EXTENDED)
-    add_definitions(-DAREG_EXTENDED=1)
-else()
-    add_definitions(-DAREG_EXTENDED=0)
 endif()
 
 if (AREG_LOGGING)

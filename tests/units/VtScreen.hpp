@@ -133,6 +133,13 @@ private:
         case 'E': mY = std::min(mRows - 1, mY + count); _column(0); break;
         case 'F': mY = std::max(0, mY - count); _column(0); break;
         case 'G': _column(count - 1); break;
+        case 'd': mY = std::clamp(count - 1, 0, mRows - 1); mPending = false; break;
+        case 'X':
+        {
+            const int width{ std::min(count, mColumns - mX) };
+            mScreen[static_cast<size_t>(mY)].replace(static_cast<size_t>(mX), static_cast<size_t>(width), static_cast<size_t>(width), ' ');
+            break;
+        }
         case 'K':
         {
             const int from{ values[0] == 0 ? mX : 0 };

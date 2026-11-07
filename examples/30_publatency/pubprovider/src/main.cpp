@@ -65,7 +65,8 @@ DEF_LOG_SCOPE(examples_30_pubprovider_main, main);
  **/
 int main(int argc, char* argv[])
 {
-    printf("Testing latency service provider component, run as a ultra-small service provider...\n");
+    areg::ext::Console& console = areg::ext::Console::instance();
+    console.output_below("Testing latency service provider component, run as a ultra-small service provider...");
 
 #if defined(_WIN32)
     timeBeginPeriod(1u);    // raise Windows timer resolution to 1 ms for the benchmark duration
@@ -82,7 +83,7 @@ int main(int argc, char* argv[])
         }
         else
         {
-            printf("Usage: 30_pubprovider [-n]\n"
+            console.print_txt("Usage: 30_pubprovider [-n]\n"
                    "  -n, --headless   Run without the console: draw nothing, read no key, and\n"
                    "                   simply serve until the consumer asks everybody to quit.\n"
                    "                   Use it together with a headless 30_pubconsumer.\n"
@@ -118,12 +119,8 @@ int main(int argc, char* argv[])
 
     } while (false);
 
-    // Release the console before writing directly to stdout so the final message
-    // appears at the right position (just below the last output row), not mid-screen.
-    if (Latency::is_headless() == false)
-        areg::ext::Console::instance().uninitialize();
-
-    printf("Completed testing latency service provider component. Check the logs...\n");
+    console.output_below("Completed testing latency service provider component. Check the logs...");
+    console.uninitialize();
 
 #if defined(_WIN32)
     timeEndPeriod(1u);

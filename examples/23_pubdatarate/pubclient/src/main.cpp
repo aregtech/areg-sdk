@@ -63,7 +63,8 @@ DEF_LOG_SCOPE(examples_23_clientdatarate_main, main);
  **/
 int main()
 {
-    printf("Testing remote servicing ultra-small client...\n");
+    areg::ext::Console& console = areg::ext::Console::instance();
+    console.output_below("Testing remote servicing ultra-small client...");
     // force to start logging with default settings
     LOGGING_CONFIGURE_AND_START( nullptr, false );
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
@@ -91,10 +92,8 @@ int main()
 
     } while (false);
 
-    // Release the console before writing directly to stdout so the final message
-    // appears at the right position (just below the last output row), not mid-screen.
-    areg::ext::Console::instance().uninitialize();
-    printf("Completed testing remote servicing client, check the logs...\n");
+    console.output_below("Completed testing remote servicing client, check the logs...");
+    console.uninitialize();
 
 	return 0;
 }

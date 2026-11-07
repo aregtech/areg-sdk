@@ -21,7 +21,7 @@ areg-sdk/                Root directory of Areg SDK
 ├── examples/            Working examples demonstrating framework features
 ├── framework/           Source code
 │   ├── areg/            Core communication engine library
-│   ├── aregextend/      Extended features library (optional dependencies)
+│   ├── aregextend/      Optional objects: console, SQLite database, services
 │   ├── areglogger/      Log observer library for receiving logs
 │   ├── logcollector/    Log collection service (console or system service)
 │   ├── logobserver/     Real-time log monitoring console application

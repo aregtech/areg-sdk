@@ -115,7 +115,6 @@ MSBuild supports various configuration options to customize your build.
 |----------|--------|---------|-------------|
 | **Configuration** | `Debug`, `Release` | `Debug` | Build type (optimizations, debugging) |
 | **Platform** | `Win32`, `x64` | `Win32` | Target architecture (32-bit or 64-bit) |
-| **AregExtended** | `0`, `1` | `1` | Enable extended features in `aregextend` library |
 | **AregLogs** | `0`, `1` | `1` | Enable logging infrastructure |
 
 > [!TIP]
@@ -123,29 +122,27 @@ MSBuild supports various configuration options to customize your build.
 
 ### Build Examples
 
-**Example 1: 64-bit Debug build with extended features, no logging**
+**Example 1: 64-bit Debug build, no logging**
 
 ```powershell
-MSBuild /m /property:Configuration=Debug /property:Platform=x64 /property:AregExtended=1 /property:AregLogs=0 ./areg-sdk.sln
+MSBuild /m /property:Configuration=Debug /property:Platform=x64 /property:AregLogs=0 ./areg-sdk.sln
 ```
 
 **Breakdown:**
 - `/m` - Build using multiple processors (parallel build)
 - `Configuration=Debug` - Build with debug symbols
 - `Platform=x64` - Target 64-bit architecture
-- `AregExtended=1` - Include extended library
 - `AregLogs=0` - Disable logging system
 
-**Example 2: 32-bit Release build with logging, no extended features**
+**Example 2: 32-bit Release build with logging**
 
 ```powershell
-MSBuild /m /property:Configuration=Release /property:Platform=Win32 /property:AregExtended=0 /property:AregLogs=1 ./areg-sdk.sln
+MSBuild /m /property:Configuration=Release /property:Platform=Win32 /property:AregLogs=1 ./areg-sdk.sln
 ```
 
 **Breakdown:**
 - `Configuration=Release` - Optimized build
 - `Platform=Win32` - Target 32-bit architecture
-- `AregExtended=0` - Exclude extended library
 - `AregLogs=1` - Enable logging system
 
 **Example 3: Clean and rebuild**
@@ -344,7 +341,7 @@ MSBuild /m /t:"examples:Build" /property:Configuration=Debug /property:Platform=
 For CI/CD pipelines, use:
 
 ```powershell
-MSBuild /m /t:Rebuild /v:minimal /property:Configuration=Release /property:Platform=x64 /property:AregExtended=1 /property:AregLogs=0 ./areg-sdk.sln
+MSBuild /m /t:Rebuild /v:minimal /property:Configuration=Release /property:Platform=x64 /property:AregLogs=0 ./areg-sdk.sln
 ```
 
 **Explanation:**

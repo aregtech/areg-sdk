@@ -226,7 +226,7 @@ TEST(RouterApplicationTest, scrolled_terminal_publishes_no_old_rows)
 }
 
 #if !defined(_WIN32)
-// Reproduces the defect: ncurses on macOS moves down with a line feed, which keeps the column, and the rate rows were drawn at the wrong place.
+// Reproduces the defect: a line feed on a terminal keeps the column, and the capture drew the rate rows at the wrong place.
 TEST(RouterApplicationTest, terminal_keeps_the_column_on_a_line_feed)
 {
     TerminalCapture terminal;
@@ -257,7 +257,7 @@ TEST(RouterApplicationTest, terminal_publishes_a_row_written_again_with_the_same
     EXPECT_NE(std::string::npos, terminal.transcript.find("same-row-text", offset));
 }
 
-// Reproduces the defect: ncurses discarded the usage text at exit, so a failed command line printed nothing.
+// Reproduces the defect: the usage text was discarded at exit, so a failed command line printed nothing.
 TEST(RouterApplicationTest, command_line_help_is_plain_text)
 {
     AREG_EXPECT_IN_CHILD(

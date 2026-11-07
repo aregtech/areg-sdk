@@ -1,5 +1,5 @@
-#ifndef AREG_AREGEXTEND_CONSOLE_PRIVATE_ANSI_ANSIWRITER_HPP
-#define AREG_AREGEXTEND_CONSOLE_PRIVATE_ANSI_ANSIWRITER_HPP
+#ifndef AREG_AREGEXTEND_CONSOLE_PRIVATE_ANSIWRITER_HPP
+#define AREG_AREGEXTEND_CONSOLE_PRIVATE_ANSIWRITER_HPP
 /************************************************************************
  * This file is part of the Areg SDK core engine.
  * Areg SDK is dual-licensed under Free open source (Apache version 2.0 License)
@@ -9,7 +9,7 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech (Artak Avetyan)
- * \file        aregextend/console/private/ansi/AnsiWriter.hpp
+ * \file        aregextend/console/private/AnsiWriter.hpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, the output buffer of the ANSI console.
@@ -217,4 +217,4 @@ inline void AnsiWriter::_put(char ch) noexcept
 
 } // namespace areg::ext
 
-#endif  // AREG_AREGEXTEND_CONSOLE_PRIVATE_ANSI_ANSIWRITER_HPP
+#endif  // AREG_AREGEXTEND_CONSOLE_PRIVATE_ANSIWRITER_HPP

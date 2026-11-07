@@ -7,7 +7,7 @@ This guide provides solutions for common issues encountered when compiling proje
 ## Table of Contents
 
 1. [Issue 1: Missing `<asm/errno.h>` File](#issue-1-missing-asmerrnoh-file)
-2. [Issue 2: Failure to Cross-Compile with Extended Objects Enabled](#issue-2-failure-to-cross-compile-with-extended-objects-enabled)
+2. [Issue 2: Failure to Cross-Compile with the System SQLite3](#issue-2-failure-to-cross-compile-with-the-system-sqlite3)
 3. [Summary](#summary)
 
 ---
@@ -101,35 +101,44 @@ set(CMAKE_CXX_COMPILER arm-linux-gnueabihf-g++)
 
 ---
 
-## Issue 2: Failure to Cross-Compile with Extended Objects Enabled
+## Issue 2: Failure to Cross-Compile with the System SQLite3
 
 ### Problem Description
 
-The build process fails during cross-compilation when Areg SDK extended objects are enabled (option `-DAREG_EXTENDED=ON`).
+The build process fails during cross-compilation when it links the `sqlite3` library installed on the host.
 
-**Common error messages:**
+**Common error message:**
 ```
-cannot find -lncurses: No such file or directory
 cannot find -lsqlite3: No such file or directory
 ```
 
-These errors appear even when the libraries are installed on the host system.
+This error appears even when the library is installed on the host system.
 
 ### Root Cause
 
-This issue occurs when the system lacks **target-compatible libraries**. For example:
+This issue occurs when the system lacks a **target-compatible library**. For example:
 - Host system runs on `x86_64` platform
 - Cross-compiling for 32-bit ARM or ARM64
-- Only x86_64 versions of `ncurses` and `sqlite3` are installed
-- ARM-compatible versions are missing
+- Only the x86_64 version of `sqlite3` is installed
 
-The linker cannot use x86_64 libraries when building for ARM targets.
+The linker cannot use an x86_64 library when building for ARM targets.
 
-### Solution 1: Use Target-Compatible Libraries
+### Solution 1: Use the Bundled SQLite3 Sources
 
-Ensure that the necessary libraries are available for your target platform. You can install them using a package manager like `vcpkg` to compile dependencies for your target architecture.
+Areg SDK carries the SQLite3 sources in the `thirdparty` subdirectory. Build them for the target instead of
+linking the host library:
 
-**Using vcpkg:**
+```bash
+cmake -B build \
+  -DCMAKE_TOOLCHAIN_FILE=toolchain-arm.cmake \
+  -DAREG_SYSTEM_SQLITE=OFF
+```
+
+This configuration compiles successfully without additional target libraries.
+
+### Solution 2: Use a Target-Compatible Library
+
+Install `sqlite3` for the target platform, for example with `vcpkg`:
 
 1. **Install vcpkg** (if not already installed):
    ```bash
@@ -138,115 +147,21 @@ Ensure that the necessary libraries are available for your target platform. You 
    ./bootstrap-vcpkg.sh
    ```
 
-2. **Install libraries for target platform**:
+2. **Install the library for the target platform**:
    ```bash
    # For ARM Linux target
    ./vcpkg install sqlite3:arm-linux
-   ./vcpkg install ncurses:arm-linux
-   
+
    # For ARM64 Linux target
    ./vcpkg install sqlite3:arm64-linux
-   ./vcpkg install ncurses:arm64-linux
    ```
 
 3. **Configure CMake with vcpkg toolchain**:
    ```bash
    cmake -B build \
      -DCMAKE_TOOLCHAIN_FILE=/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake \
-     -DVCPKG_TARGET_TRIPLET=arm-linux \
-     -DAREG_EXTENDED=ON
+     -DVCPKG_TARGET_TRIPLET=arm-linux
    ```
-
-### Solution 2: Pre-Build Required Libraries
-
-Manually build and install the required libraries (`ncurses`, `sqlite3`, etc.) for the target platform using your cross-compilation toolchain.
-
-**Building ncurses for ARM:**
-
-1. **Download ncurses source**:
-   ```bash
-   wget https://ftp.gnu.org/gnu/ncurses/ncurses-6.4.tar.gz
-   tar -xzf ncurses-6.4.tar.gz
-   cd ncurses-6.4
-   ```
-
-2. **Configure for cross-compilation**:
-   ```bash
-   ./configure \
-     --host=arm-linux-gnueabihf \
-     --prefix=/usr/arm-linux-gnueabihf \
-     --enable-static \
-     --disable-shared
-   ```
-
-3. **Build and install**:
-   ```bash
-   make
-   sudo make install
-   ```
-
-**Building SQLite3 for ARM:**
-
-1. **Download SQLite3 source**:
-   ```bash
-   wget https://www.sqlite.org/2024/sqlite-autoconf-3450000.tar.gz
-   tar -xzf sqlite-autoconf-3450000.tar.gz
-   cd sqlite-autoconf-3450000
-   ```
-
-2. **Configure for cross-compilation**:
-   ```bash
-   ./configure \
-     --host=arm-linux-gnueabihf \
-     --prefix=/usr/arm-linux-gnueabihf \
-     --enable-static \
-     --disable-shared
-   ```
-
-3. **Build and install**:
-   ```bash
-   make
-   sudo make install
-   ```
-
-**Update CMake configuration:**
-
-Ensure the paths to these libraries are correctly set in your build environment:
-
-```bash
-cmake -B build \
-  -DCMAKE_TOOLCHAIN_FILE=toolchain-arm.cmake \
-  -DCMAKE_PREFIX_PATH=/usr/arm-linux-gnueabihf \
-  -DAREG_EXTENDED=ON
-```
-
-> [!TIP]
-> For simplicity and portability, consider building **statically linked** versions of `ncurses` and `sqlite3` for your target platform. This approach avoids runtime dependency issues on the target system.
-
-### Solution 3: Disable Extended Objects
-
-If the extended features of the Areg SDK are not required for your application, you can disable them by setting `-DAREG_EXTENDED=OFF`.
-
-**Benefits:**
-- Removes dependency on `ncurses` library
-- Uses Areg SDK built-in SQLite3 sources available in the `thirdparty` subdirectory
-- Simplifies cross-compilation process
-
-**Configuration:**
-
-```bash
-cmake -B build \
-  -DCMAKE_TOOLCHAIN_FILE=toolchain-arm.cmake \
-  -DAREG_EXTENDED=OFF
-```
-
-This configuration:
-- Removes `ncurses` dependency entirely
-- Uses bundled SQLite3 implementation from `thirdparty/` directory
-- Compiles successfully without additional target libraries
-
-> [!NOTE]
-> Disabling extended objects removes advanced logging and debugging features that depend on `ncurses`. Evaluate whether your application requires these features before disabling.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -258,7 +173,7 @@ This guide covered two main categories of CMake build issues on Linux:
 
 1. **Missing Header Files**: System header file location or installation issues resolved by creating symbolic links or installing kernel/libc development packages
 
-2. **Cross-Compilation Library Issues**: Target-incompatible library dependencies resolved by using target-compatible libraries, pre-building dependencies, or disabling extended features
+2. **Cross-Compilation Library Issues**: A target-incompatible `sqlite3` resolved by building the bundled sources or using a target-compatible library
 
 ### Key Takeaways
 
@@ -266,7 +181,7 @@ This guide covered two main categories of CMake build issues on Linux:
 - ✅ Ensure cross-compilation toolchains include target-specific headers
 - ✅ Use target-compatible libraries when cross-compiling
 - ✅ Consider static linking to avoid runtime dependency issues
-- ✅ Disable extended features if not needed to simplify builds
+- ✅ Build the bundled SQLite3 sources when the target has no `sqlite3`
 
 ### Troubleshooting Checklist
 
@@ -278,7 +193,7 @@ This guide covered two main categories of CMake build issues on Linux:
 
 **For Cross-Compilation Library Issues:**
 1. Identify target architecture: `arm-linux-gnueabihf`, `aarch64-linux-gnu`, etc.
-2. Verify library availability for target: `find /usr -name libncurses.a`
+2. Verify library availability for target: `find /usr -name libsqlite3.a`
 3. Install or build target-compatible libraries
 4. Update CMake `CMAKE_PREFIX_PATH` to include library locations
 5. Consider using `vcpkg` for dependency management

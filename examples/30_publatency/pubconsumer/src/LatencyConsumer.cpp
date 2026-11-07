@@ -122,8 +122,15 @@ void LatencyConsumer::startup_component(areg::ComponentThread & /* comThread */)
 
     if (mHeadless == false)
     {
-        areg::ext::Console::instance().enable_console_input(true);
+        areg::ext::Console & console = areg::ext::Console::instance();
+        console.enable_console_input(true);
         _redraw_layout();
+        console.set_resize_callback([this](areg::ext::Console::Coord)
+        {
+            CmdData redraw;
+            redraw.help = true;
+            EventCommand::send_event(redraw, static_cast<CmdConsumerBase &>(mCmdConsumer), master_thread());
+        });
         mDisplayThread.start(areg::WAIT_INFINITE);
         mInputThread.start(areg::WAIT_INFINITE);
         return;
@@ -145,7 +152,10 @@ void LatencyConsumer::shutdown_component(areg::ComponentThread & /* comThread */
     mQuit.store(true, std::memory_order_relaxed);
 
     if (mHeadless == false)
+    {
+        areg::ext::Console::instance().set_resize_callback(nullptr);
         areg::ext::Console::instance().enable_console_input(false);
+    }
 
     mInputThread.shutdown(areg::WAIT_INFINITE);
 
@@ -650,10 +660,9 @@ void LatencyConsumer::_run_headless_watchdog()
 
     if (mStartupCmdSent.load(std::memory_order_relaxed) == false)
     {
-        printf("ERROR: the service provider did not become reachable within %u seconds.\n"
-               "       Is the message router running, and is 30_pubprovider started?\n"
-             , CONNECT_TIMEOUT_MS / 1000u);
-        fflush(stdout);
+        areg::ext::Console::instance().print_msg("ERROR: the service provider did not become reachable within %u seconds.\n"
+                                                 "       Is the message router running, and is 30_pubprovider started?\n"
+                                               , CONNECT_TIMEOUT_MS / 1000u);
         _theFailed.store(true, std::memory_order_relaxed);
         areg::Application::signal_quit();
         return;
@@ -680,9 +689,8 @@ void LatencyConsumer::_run_headless_watchdog()
         if (mQuit.load(std::memory_order_relaxed))
             break;
 
-        printf("ERROR: no message arrived for %u seconds -- the benchmark is stuck.\n"
-             , STALL_TIMEOUT_MS / 1000u);
-        fflush(stdout);
+        areg::ext::Console::instance().print_msg("ERROR: no message arrived for %u seconds -- the benchmark is stuck.\n"
+                                               , STALL_TIMEOUT_MS / 1000u);
         _theFailed.store(true, std::memory_order_relaxed);
         areg::Application::signal_quit();
         break;
@@ -724,7 +732,7 @@ void LatencyConsumer::_on_cmd_event(const CmdData & data)
     {
         if (mHeadless)
         {
-            printf("ERROR: unknown command or bad value in '%s'.\n\n", Latency::startup_command().as_string());
+            areg::ext::Console::instance().print_msg("ERROR: unknown command or bad value in '%s'.\n\n", Latency::startup_command().as_string());
             _print_usage();
             _theFailed.store(true, std::memory_order_relaxed);
             _quit_all();
@@ -816,7 +824,7 @@ void LatencyConsumer::_on_cmd_event(const CmdData & data)
             mBatchRunsLeft = 0u;
             if (mHeadless)
             {
-                printf("ERROR: the measurement could not be started.\n");
+                areg::ext::Console::instance().print_txt("ERROR: the measurement could not be started.\n");
                 _theFailed.store(true, std::memory_order_relaxed);
                 _quit_all();
             }
@@ -918,8 +926,7 @@ void LatencyConsumer::_status(const areg::String & text) const
 {
     if (mHeadless)
     {
-        printf("%s\n", text.as_string());
-        fflush(stdout);
+        areg::ext::Console::instance().output_below(text.as_string());
         return;
     }
 
@@ -932,7 +939,7 @@ void LatencyConsumer::_status(const areg::String & text) const
 
 void LatencyConsumer::_print_usage() const
 {
-    printf("Usage: 30_pubconsumer [command]\n"
+    areg::ext::Console::instance().print_txt("Usage: 30_pubconsumer [command]\n"
            "\n"
            "Without a command the application draws its console and waits for the user.\n"
            "With a command it runs headless: it draws nothing, runs the command as soon as\n"
@@ -961,11 +968,10 @@ void LatencyConsumer::_print_result(const ResultEntry & r) const
     if (r.valid == false)
         return;
 
-    printf("run %-3u mode %-7s samples %-7u min %9.3f p50 %9.3f p95 %9.3f p99 %9.3f"
-           " max %10.3f mean %9.3f dur %8.0f ms rate %9.0f msg/s\n"
-         , r.run_no, r.mode.as_string(), r.count
-         , r.min_us, r.p50_us, r.p95_us, r.p99_us, r.max_us, r.mean_us, r.dur_ms, r.mps);
-    fflush(stdout);
+    areg::ext::Console::instance().print_msg("run %-3u mode %-7s samples %-7u min %9.3f p50 %9.3f p95 %9.3f p99 %9.3f"
+                                             " max %10.3f mean %9.3f dur %8.0f ms rate %9.0f msg/s\n"
+                                           , r.run_no, r.mode.as_string(), r.count
+                                           , r.min_us, r.p50_us, r.p95_us, r.p99_us, r.max_us, r.mean_us, r.dur_ms, r.mps);
 }
 
 void LatencyConsumer::_cancel_batch()

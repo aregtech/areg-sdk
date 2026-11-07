@@ -171,6 +171,12 @@ void ServicingComponent::startup_service_interface( areg::Component & holder )
     mImageThread.start(areg::WAIT_INFINITE);
 
     console.enable_console_input(true);
+    console.set_resize_callback([this](areg::ext::Console::Coord)
+    {
+        OptionData redraw;
+        redraw.mFlags = static_cast<uint32_t>(util::OptionFlag::CmdRedraw);
+        EventOption::send_event(redraw, static_cast<OptionConsumerBase&>(mOptionConsumer), component_thread());
+    });
 
     // If command-line args were parsed (e.g. `-s -t=0 -l=1 -c=10`), fire the initial
     // event now so the benchmark starts without waiting for user input.
@@ -189,6 +195,7 @@ void ServicingComponent::shutdown_service_interface(areg::Component& holder) noe
 {
     LOG_SCOPE( examples_23_pubservice_ServicingComponent, shutdown_service_intrface );
 
+    areg::ext::Console::instance().set_resize_callback(nullptr);
     mQuitThread.store(true, std::memory_order_relaxed);
     mOptionChanged.store(true, std::memory_order_relaxed);
     mTimer.stop_timer();
@@ -247,7 +254,18 @@ void ServicingComponent::on_option_event(const OptionData& data)
 {
     LOG_SCOPE( examples_23_pubservice_ServicingComponent, on_option_event );
 
-    if (data.hasError())
+    if (data.hasRedraw())
+    {
+        areg::ext::Console& console = areg::ext::Console::instance();
+        console.lock_console();
+        console.clear_screen();
+        print_rates(console);
+        _print_info();
+        console.output_txt(COORD_OPTIONS, MSG_INPUT_OPTION);
+        console.set_cursor_cur_position({ COORD_OPTIONS.posX + static_cast<int32_t>(MSG_INPUT_OPTION.size()), COORD_OPTIONS.posY });
+        console.unlock_console();
+    }
+    else if (data.hasError())
     {
         LOG_WARN("Error input of command");
         areg::ext::Console& console = areg::ext::Console::instance();

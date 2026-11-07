@@ -330,29 +330,6 @@ macro(macro_check_module_architect path_module target_name target_proc var_compa
 endmacro(macro_check_module_architect)
 
 # ---------------------------------------------------------------------------
-# Macro .......: macro_find_ncurses_package
-# Purpose .....: Locates the 'ncurses' library and its associated header files on the system.
-#                Sets output variables with the include directory and library path if found.
-# Parameters ...: ${var_include}  [out] -- Variable to store the path to the directory containing the 'ncurses.h' header file.
-#                 ${var_library}  [out] -- Variable to store the full path to the 'ncurses' library file.
-#                 ${var_found}    [out] -- Variable to indicate whether the 'ncurses' library and headers were successfully located (TRUE/FALSE).
-# Usage ........: macro_find_ncurses_package(<ncurses-include-var> <ncurses-library-var> <found-flag-var>)
-# Example ......: 
-#   macro_find_ncurses_package(NCURSES_INCLUDE NCURSES_LIB NCURSES_FOUND)
-# ---------------------------------------------------------------------------
-macro(macro_find_ncurses_package var_include var_library var_found)
-    set(${var_found} FALSE)
-    set(${var_include})
-    set(${var_library})
-
-    find_path(${var_include}    NAMES ncurses.h)
-    find_library(${var_library} NAMES ncurses)
-    if (${var_include} AND ${var_library})
-        macro_check_module_architect("${${var_library}}" ${AREG_TARGET} ${AREG_ARCH} ${var_found})
-    endif()
-endmacro(macro_find_ncurses_package)
-
-# ---------------------------------------------------------------------------
 # Macro .......: macro_find_gtest_package
 # Purpose .....: Locates the Google Test (GTest) package, including its header files and libraries.
 #                Sets output variables with the include directory and library paths if found.
@@ -962,7 +939,7 @@ function(setAppOptions target_name library_list)
     # Apply common compiler options, such as disabling certain warnings
     target_compile_options(${target_name} PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}")
 
-    # Link areg library, additional specified libraries, and any extended or extra libraries.
+    # Link areg library, the extended library and additional specified libraries.
     # Wrapping the archive group in --start-group/--end-group forces the linker to make
     # multiple passes until all inter-archive symbol references are resolved.
     if (NOT MSVC AND NOT APPLE AND "${AREG_LIB_TYPE}" STREQUAL "static")
@@ -971,7 +948,6 @@ function(setAppOptions target_name library_list)
             ${AREG_PACKAGE_NAME}::aregextend
             ${library_list}
             ${AREG_PACKAGE_NAME}::areg
-            ${AREG_EXTENDED_LIBS}
             -Wl,--end-group
             ${AREG_LDFLAGS}
             )
@@ -980,7 +956,6 @@ function(setAppOptions target_name library_list)
             ${AREG_PACKAGE_NAME}::aregextend   # Areg extended library
             ${library_list}                    # Custom libraries to link
             ${AREG_PACKAGE_NAME}::areg         # Core Areg library
-            ${AREG_EXTENDED_LIBS}              # Extended libraries, if any
             ${AREG_LDFLAGS}                    # Linker flags (stdc++, pthread, etc.)
             )
     endif()
@@ -1197,7 +1172,6 @@ function(setSharedLibOptions target_name library_list)
                           ${AREG_PACKAGE_NAME}::aregextend
                           ${library_list}
                           ${AREG_PACKAGE_NAME}::areg
-                          ${AREG_EXTENDED_LIBS}
                           ${AREG_LDFLAGS}
     )
 
@@ -1986,7 +1960,7 @@ function(printAregConfigStatus var_make_print var_prefix var_header var_footer)
     message(STATUS "${var_prefix}: >>> Java Version .......: '${Java_VERSION_STRING}', Java executable = '${Java_JAVA_EXECUTABLE}', minimum version required = 17")
     message(STATUS "${var_prefix}: >>> Java Launch Options : fast start of the code generator = '${_java_fast_state}'")
     message(STATUS "${var_prefix}: >>> Packages Use .......: SQLite3 package use = '${AREG_SYSTEM_SQLITE}', GTest package use = '${AREG_SYSTEM_GTEST}'")
-    message(STATUS "${var_prefix}: >>> Feature Options ....: Logs = '${AREG_LOGGING}', Extended = '${AREG_EXTENDED}', No exceptions = '${AREG_NO_EXCEPTIONS}'")
+    message(STATUS "${var_prefix}: >>> Feature Options ....: Logs = '${AREG_LOGGING}', No exceptions = '${AREG_NO_EXCEPTIONS}'")
     message(STATUS "${var_prefix}: >>> Other Options ......: Examples = '${AREG_EXAMPLES}', Unit Tests = '${AREG_TESTS}', Benchmarks = '${AREG_BENCHMARKS}'")
     message(STATUS "${var_prefix}: >>> Installation .......: Enabled = '${AREG_INSTALL}', location = '${CMAKE_INSTALL_PREFIX}'")
 

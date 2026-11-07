@@ -27,7 +27,6 @@ This guide covers building Areg SDK on Linux, macOS, Windows, and Cygwin using C
 ### Platform-Specific Requirements
 
 **Linux:**
-- `ncurses` library (optionally required by `aregextend`)
 - GCC or Clang toolchain
 
 **macOS:**
@@ -80,7 +79,7 @@ cmake --build ./build -j20
 
 ```bash
 sudo apt-get update && sudo apt-get upgrade -y
-sudo apt-get install -y git cmake build-essential clang libncurses-dev openjdk-17-jre
+sudo apt-get install -y git cmake build-essential clang openjdk-17-jre
 ```
 
 **What gets installed:**
@@ -88,7 +87,6 @@ sudo apt-get install -y git cmake build-essential clang libncurses-dev openjdk-1
 - `cmake` - Build system
 - `build-essential` - GCC compiler and tools
 - `clang` - Alternative C++ compiler
-- `libncurses-dev` - Terminal UI library (required by `aregextend`)
 - `openjdk-17-jre` - Java runtime for code generator
 
 > [!NOTE]
@@ -138,14 +136,13 @@ java -version
 Install packages via [Cygwin installer](https://cygwin.com/install.html) or command line:
 
 ```powershell
-c:\cygwin\setup.exe -qgnO -s http://mirrors.kernel.org/sourceware/cygwin/ -l C:\cygwin\ -P cmake,dos2unix,flexdll,gcc-g++,make,git,ncurses,libncurses-devel
+c:\cygwin\setup.exe -qgnO -s http://mirrors.kernel.org/sourceware/cygwin/ -l C:\cygwin\ -P cmake,dos2unix,flexdll,gcc-g++,make,git
 ```
 
 **Packages installed:**
 - `cmake`, `make` - Build tools
 - `gcc-g++` - C++ compiler
 - `git` - Version control
-- `ncurses`, `libncurses-devel` - Terminal library
 
 ### Step 2: Clone Repository
 
@@ -185,7 +182,6 @@ cmake -B ./build \
 |--------|--------|-------------|
 | `AREG_EXAMPLES` | `ON`, `OFF` | Build example projects |
 | `AREG_TESTS` | `ON`, `OFF` | Build unit tests |
-| `AREG_EXTENDED` | `ON`, `OFF` | Build extended library (requires ncurses) |
 | `AREG_LOGGER` | `ON`, `OFF` | Enable logging infrastructure |
 
 > [!TIP]
@@ -310,16 +306,12 @@ Cross-compilation enables building Areg SDK for architectures different from you
 
 **Dependencies:**
 
-The core Areg Framework has no external dependencies, but the extended library (`aregextend`) optionally requires:
-- `ncurses` (Linux/Cygwin)
-- `sqlite3` (or use bundled version)
-
-When cross-compiling, if `ncurses` is not available, advanced console features are disabled. 
-If `sqlite3` is not available, it is built from the sources located in the `./thirdparty` subdirectory.  
-You can also explicitly disable all `ncurses` extended features:
+The core Areg Framework has no external dependencies. The extended library (`aregextend`) uses
+`sqlite3`; if it is not available for the target, it is built from the sources located in the
+`./thirdparty` subdirectory:
 
 ```bash
-cmake -B ./build -DAREG_EXTENDED=OFF -DAREG_ARCH=arm
+cmake -B ./build -DAREG_ARCH=arm
 ```
 
 **Binary Compatibility:**
@@ -509,23 +501,6 @@ mtrouter: ELF 64-bit LSB executable, ARM aarch64, version 1 (GNU/Linux), ...
 ```bash
 cmake -B ./build -DCMAKE_CXX_COMPILER=/usr/bin/g++-11
 ```
-
-### Missing Dependencies
-
-**Problem:** `ncurses` not found during configuration.
-
-**Solution:** Install ncurses development package:
-
-**Linux:**
-```bash
-sudo apt-get install libncurses-dev
-```
-
-**Or disable extended library:**
-```bash
-cmake -B ./build -DAREG_EXTENDED=OFF
-```
-
 
 ### Java Not Found
 

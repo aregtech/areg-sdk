@@ -42,7 +42,7 @@ Windows Subsystem for Linux (WSL) enables running Linux distributions natively o
 wsl --install -d ubuntu
 
 # Inside WSL terminal
-sudo apt-get update && sudo apt-get install -y git cmake build-essential clang libncurses-dev openjdk-17-jre
+sudo apt-get update && sudo apt-get install -y git cmake build-essential clang openjdk-17-jre
 git clone https://github.com/aregtech/areg-sdk.git
 cd areg-sdk
 cmake -B ./build && cmake --build ./build -j20
@@ -141,7 +141,7 @@ Reading package lists... Done
 **Install essential development tools:**
 
 ```bash
-sudo apt-get install -y git cmake build-essential clang libncurses-dev openjdk-17-jre
+sudo apt-get install -y git cmake build-essential clang openjdk-17-jre
 ```
 
 **What gets installed:**
@@ -149,7 +149,6 @@ sudo apt-get install -y git cmake build-essential clang libncurses-dev openjdk-1
 - `cmake` - Build system (3.20+)
 - `build-essential` - GCC compiler and tools
 - `clang` - Alternative C++ compiler
-- `libncurses-dev` - Terminal UI library (for `aregextend`)
 - `openjdk-17-jre` - Java runtime for code generator
 
 **Verify installation:**
@@ -518,7 +517,7 @@ Reinstall build tools:
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y git cmake build-essential clang libncurses-dev openjdk-17-jre
+sudo apt-get install -y git cmake build-essential clang openjdk-17-jre
 ```
 
 Verify installation:
@@ -533,24 +532,6 @@ which cmake gcc clang java
 /usr/bin/gcc
 /usr/bin/clang
 /usr/bin/java
-```
-
-### ncurses Not Found
-
-**Problem:** CMake configuration fails with "ncurses not found".
-
-**Solution:**
-
-Install ncurses development package:
-
-```bash
-sudo apt-get install -y libncurses-dev
-```
-
-**Or disable extended library:**
-
-```bash
-cmake -B ./build -DAREG_EXTENDED=OFF
 ```
 
 ### Cross-Compilation Toolchain Missing

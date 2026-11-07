@@ -194,6 +194,7 @@ void LogCollector::run_console_io()
     console.set_cursor_cur_position({ areg::ext::COORD_USER_INPUT.posX + static_cast<int32_t>(areg::ext::FORMAT_WAIT_QUIT.size()),
                                       areg::ext::COORD_USER_INPUT.posY });
     console.refresh_screen();
+    console.set_resize_callback([](Console::Coord) { LogCollector::_redraw_console(); });
     data_rate_helper().set_verbose(true);
 
     // refresh all four stat rows every second.
@@ -226,6 +227,7 @@ void LogCollector::run_console_io()
     rate_cv.notify_one();
     rate_thread.join();
 
+    console.set_resize_callback(nullptr);
     console.uninitialize();
 }
 
@@ -447,6 +449,18 @@ void LogCollector::_output_title()
     console.lock_console();
     console.output_txt( areg::ext::COORD_TITLE, logcollector::APP_TITLE.data( ) );
     console.output_txt( areg::ext::COORD_SUBTITLE, areg::ext::MSG_SEPARATOR.data( ) );
+    console.unlock_console();
+}
+
+void LogCollector::_redraw_console()
+{
+    Console& console = Console::instance();
+    console.lock_console();
+    console.clear_screen();
+    LogCollector::_output_title();
+    console.output_txt(areg::ext::COORD_USER_INPUT, areg::ext::FORMAT_WAIT_QUIT);
+    console.set_cursor_cur_position({ areg::ext::COORD_USER_INPUT.posX + static_cast<int32_t>(areg::ext::FORMAT_WAIT_QUIT.size()),
+                                      areg::ext::COORD_USER_INPUT.posY });
     console.unlock_console();
 }
 

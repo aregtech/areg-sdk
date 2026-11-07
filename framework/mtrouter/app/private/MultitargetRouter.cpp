@@ -121,6 +121,7 @@ void MultitargetRouter::run_console_io()
     console.set_cursor_cur_position({ areg::ext::COORD_USER_INPUT.posX + static_cast<int32_t>(areg::ext::FORMAT_WAIT_QUIT.size()),
                                       areg::ext::COORD_USER_INPUT.posY });
     console.refresh_screen();
+    console.set_resize_callback([](areg::ext::Console::Coord) { MultitargetRouter::_redraw_console(); });
     data_rate_helper().set_verbose(true);
 
     // update all four stat rows every second
@@ -152,6 +153,7 @@ void MultitargetRouter::run_console_io()
     rate_cv.notify_one();
     rate_thread.join();
 
+    console.set_resize_callback(nullptr);
     console.uninitialize();
     LOG_DBG("Exit console with simple (ANSI) features...");
 }
@@ -346,6 +348,18 @@ void MultitargetRouter::_output_title()
     console.lock_console();
     console.output_txt( areg::ext::COORD_TITLE, NEMultitargetRouterSettings::APP_TITLE.data( ) );
     console.output_txt( areg::ext::COORD_SUBTITLE, areg::ext::MSG_SEPARATOR.data( ) );
+    console.unlock_console();
+}
+
+void MultitargetRouter::_redraw_console()
+{
+    areg::ext::Console& console = areg::ext::Console::instance();
+    console.lock_console();
+    console.clear_screen();
+    MultitargetRouter::_output_title();
+    console.output_txt(areg::ext::COORD_USER_INPUT, areg::ext::FORMAT_WAIT_QUIT);
+    console.set_cursor_cur_position({ areg::ext::COORD_USER_INPUT.posX + static_cast<int32_t>(areg::ext::FORMAT_WAIT_QUIT.size()),
+                                      areg::ext::COORD_USER_INPUT.posY });
     console.unlock_console();
 }
 

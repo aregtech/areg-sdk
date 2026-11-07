@@ -2,7 +2,7 @@ name: Coverage
 
 # Line, function and branch coverage of framework/, measured with gcov-format counters
 # ('--coverage') in a Debug build and uploaded to Codecov. One job per platform: Linux (GCC),
-# macOS (Apple clang, read by 'xcrun llvm-cov gcov'; built without aregextend as in cmake.yml),
+# macOS (Apple clang, read by 'xcrun llvm-cov gcov'),
 # Cygwin (GCC and gcovr of Cygwin, started through C:/cygwin/bin/bash.exe; the Cygwin
 # setup is the one of cmake.yml) and Windows (clang-cl with Ninja, '--coverage' counters read
 # by 'llvm-cov gcov'; the clang_rt.profile library is linked explicitly).
@@ -76,7 +76,6 @@ jobs:
     timeout-minutes: 120
     env:
       AREG_COV_FAMILY: ${{matrix.platform.family}}
-      AREG_COV_EXTENDED: ${{matrix.platform.extended}}
       AREG_COV_GCOV: ${{matrix.platform.gcov}}
       AREG_COV_GENERATOR: ${{matrix.platform.generator}}
       PYTHON: ${{matrix.platform.python}}
@@ -87,10 +86,10 @@ jobs:
       fail-fast: false
       matrix:
         platform:
-          - { name: linux,   os: ubuntu-latest,  family: gnu,    extended: 'ON',  gcov: '',                    generator: '',      python: python3, bash: bash }
-          - { name: macos,   os: macos-latest,   family: llvm,   extended: 'OFF', gcov: 'xcrun llvm-cov gcov', generator: '',      python: python3, bash: bash }
-          - { name: cygwin,  os: windows-latest, family: cygwin, extended: 'ON',  gcov: '',                    generator: '',      python: python3.12, bash: 'C:/cygwin/bin/bash.exe' }
-          - { name: windows, os: windows-latest, family: llvm,   extended: 'ON',  gcov: 'llvm-cov gcov',       generator: Ninja,   python: python,  bash: bash }
+          - { name: linux,   os: ubuntu-latest,  family: gnu,    gcov: '',                    generator: '',      python: python3, bash: bash }
+          - { name: macos,   os: macos-latest,   family: llvm,   gcov: 'xcrun llvm-cov gcov', generator: '',      python: python3, bash: bash }
+          - { name: cygwin,  os: windows-latest, family: cygwin, gcov: '',                    generator: '',      python: python3.12, bash: 'C:/cygwin/bin/bash.exe' }
+          - { name: windows, os: windows-latest, family: llvm,   gcov: 'llvm-cov gcov',       generator: Ninja,   python: python,  bash: bash }
 
     steps:
 
@@ -141,7 +140,7 @@ jobs:
         uses: cygwin/cygwin-install-action@v7
         with:
           # This lxml build imports cygxml2-2.dll, supplied by the stable libxml2 packages.
-          packages: cmake, dos2unix, flexdll, gcc-g++, gdb, git, libncurses-devel, make, python312, python312-lxml=6.1.3-1, python312-pip
+          packages: cmake, dos2unix, flexdll, gcc-g++, gdb, git, make, python312, python312-lxml=6.1.3-1, python312-pip
           install-dir: 'C:\cygwin'
           add-to-path: false
           work-vol: 'C:'

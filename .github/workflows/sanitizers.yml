@@ -405,7 +405,7 @@ jobs:
         run: |
           sudo dpkg --add-architecture i386
           sudo apt-get update -qq
-          sudo apt-get install -y -qq gcc-multilib g++-multilib libncurses-dev:i386
+          sudo apt-get install -y -qq gcc-multilib g++-multilib
 
       - name: Make room for the sanitizer shadow mapping
         if: matrix.arch == 'x64'
@@ -415,7 +415,7 @@ jobs:
         working-directory: ${{github.workspace}}
         run: |
           cmake -B ${{env.EXAMPLES_CACHE}} ${{ matrix.arch == 'x86' && '-DAREG_ARCH=x86' || '' }} -DAREG_COMPILER_FAMILY=gnu -DCMAKE_BUILD_TYPE=Debug \
-                -DAREG_LIB_TYPE=shared -DAREG_EXTENDED:BOOL=ON -DAREG_LOGGING:BOOL=ON \
+                -DAREG_LIB_TYPE=shared -DAREG_LOGGING:BOOL=ON \
                 -DAREG_EXAMPLES:BOOL=ON -DAREG_TESTS:BOOL=OFF \
                 -DCMAKE_CXX_FLAGS="-fsanitize=${{matrix.sanitize}} -O1 -fno-omit-frame-pointer -g" \
                 -DCMAKE_C_FLAGS="-fsanitize=${{matrix.sanitize}} -O1 -fno-omit-frame-pointer -g" \
@@ -537,7 +537,7 @@ jobs:
       - name: Run the tests under ${{matrix.mode}}
         shell: bash
         run: |
-          tools/intern/sanitize.sh ${{matrix.mode}} --compiler llvm --config RelWithDebInfo --no-extended --examples \
+          tools/intern/sanitize.sh ${{matrix.mode}} --compiler llvm --config RelWithDebInfo --examples \
               --leaks off --target areg-unit-tests --run ctest
 
       # The exit code of a scenario shows only its lead process, so the logs are searched.
@@ -547,7 +547,7 @@ jobs:
         timeout-minutes: 45
         run: |
           status=0
-          tools/intern/sanitize.sh ${{matrix.mode}} --compiler llvm --config RelWithDebInfo --no-extended --examples \
+          tools/intern/sanitize.sh ${{matrix.mode}} --compiler llvm --config RelWithDebInfo --examples \
               --leaks off --keep --run examples || status=$?
           { grep -rah 'SUMMARY: [A-Za-z]*Sanitizer' ./build-${{matrix.mode}}/example-results || true; } \
             | sort | uniq -c | sort -rn | tee ./build-${{matrix.mode}}/example-reports.log
@@ -564,7 +564,7 @@ jobs:
           stacks=./build-${{matrix.mode}}/crash-stacks
           mkdir -p "${stacks}"
           stack() {
-            tools/intern/sanitize.sh ${{matrix.mode}} --compiler llvm --config RelWithDebInfo --no-extended --examples \
+            tools/intern/sanitize.sh ${{matrix.mode}} --compiler llvm --config RelWithDebInfo --examples \
                 --leaks off --keep --run /usr/bin/lldb -- --batch -o run -k 'thread backtrace all' -k quit \
                 -- "./build-${{matrix.mode}}/product/bin/$1" "${@:2}" > "${stacks}/$1.txt" 2>&1 || true
           }

@@ -7,7 +7,7 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech (Artak Avetyan)
- * \file        aregextend/console/private/ansi/AnsiWriter.cpp
+ * \file        aregextend/console/private/AnsiWriter.cpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, the output buffer of the ANSI console.
@@ -16,7 +16,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "aregextend/console/private/ansi/AnsiWriter.hpp"
+#include "aregextend/console/private/AnsiWriter.hpp"
 
 #include <algorithm>
 #include <limits>

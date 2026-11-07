@@ -22,21 +22,15 @@ Areg SDK uses POSIX.1c for multithreading and synchronization:
 | Library | Purpose |
 |---------|---------|
 | `pthread` | Threading and synchronization |
-| `ncurses` | Extended console features (optional) |
 
 ### Build Example
 
 ```bash
-# Standard build
 cmake -B ./build
-cmake --build ./build
-
-# Build with extended features (ncurses)
-cmake -B ./build -DAREG_EXTENDED:BOOL=ON
 cmake --build ./build
 ```
 
-When `AREG_EXTENDED` is enabled, the build links against `ncurses` for enhanced console functionality.
+The console of `aregextend` draws with ANSI escape sequences and needs no extra library.
 
 ---
 
@@ -129,12 +123,11 @@ wcstoull
 execl       getpid      getpwuid    signal
 ```
 
-### ncurses (Extended Features)
+### Console
 
 ```
-cbreak      clear       delwin      endwin      getyx
-mvwaddstr   refresh     vw_scanw    waddstr     wclrtoeol
-wgetnstr    wmove       wrefresh
+isatty      ioctl       poll        sigaction   tcgetattr
+tcgetpgrp   tcsetattr
 ```
 
 ### File Descriptors

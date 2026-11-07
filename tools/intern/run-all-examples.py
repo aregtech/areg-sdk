@@ -243,8 +243,8 @@ def _check_logobserver_db(outputs):
     return 'logobserver saved no non-empty .sqlog database'
 
 
-# Readers that parse what the console displayed, replayed from the stream; a curses
-# console redraws only the changed cells, so its stream never holds a whole line again.
+# Readers that parse what the console displayed, replayed from the stream; a console
+# that draws at coordinates rewrites rows in place, so its stream is not a list of lines.
 SCREEN_MEASURES = {'datarate'}
 
 
@@ -257,7 +257,7 @@ SCENARIOS = [
      'router_case': 'save', 'procs': [proc('mtrouter')]},
     {'name': 'mtrouter_console_commands', 'tier': 'coverage', 'router': False,
      'router_case': 'console', 'procs': [proc('mtrouter', args=['--console'])]},
-    {'name': 'mtrouter_extended_silent_rows_stay_clear', 'tier': 'coverage',
+    {'name': 'mtrouter_silent_rows_stay_clear', 'tier': 'coverage',
      'router': False, 'router_case': 'silent',
      'procs': [proc('mtrouter', args=['--console'])]},
 
@@ -765,22 +765,16 @@ class Runner:
             _set_pty_size(self._pty_master, slave, PTY_ROWS, PTY_COLS)
             kwargs['stdout'] = slave
             kwargs['stderr'] = slave
-            # A terminal without TERM makes the curses based applications give up. The
-            # value is only a default: an environment that already sets it is left alone.
+            # TERM=dumb makes the console write plain lines. The value is only a default:
+            # an environment that already sets it is left alone.
             environment = os.environ.copy()
             environment.setdefault('TERM', 'xterm-256color')
-            # ncurses trusts LINES and COLUMNS over the window size of the terminal, so
-            # these say what the geometry is even where the ioctl above did not take.
-            environment['LINES'] = str(PTY_ROWS)
-            environment['COLUMNS'] = str(PTY_COLS)
             kwargs['env'] = environment
         elif live:
             kwargs['stdout'] = subprocess.PIPE
             kwargs['stderr'] = subprocess.STDOUT
             environment = os.environ.copy()
             environment.setdefault('TERM', 'xterm-256color')
-            environment['LINES'] = str(PTY_ROWS)
-            environment['COLUMNS'] = str(PTY_COLS)
             kwargs['env'] = environment
         else:
             kwargs['stdout'] = self._log
@@ -1054,17 +1048,10 @@ def _set_pty_size(master, slave, rows, cols):
 # ---------------------------------------------------------------------------
 #  Terminal rendering
 # ---------------------------------------------------------------------------
-#  What a curses application sends down a terminal is not what it printed. ncurses
-#  compares the screen it wants with the screen it believes is already there and sends
-#  the difference, so a line whose tail changed arrives as a cursor address plus the tail
-#  alone. A message the application composed as one string is therefore never present as
-#  one string in the stream, and where it is cut apart depends on what was on the screen
-#  before -- that is, on timing.
-#
-#  Searching the raw stream for an expected message is that unreliable. A run on cygwin
-#  made it visible: '25_subscriber' printed 'INVALID => 0 { changed }' and the stream
-#  carried '\x1b[6;39H0 { changed }', because the first 38 columns had not changed. The
-#  same expectation matched on Linux in the same run, by luck.
+#  What a console application sends down a terminal is not what it printed. It addresses
+#  the cursor, clears rows and clips text to the screen, so a message composed as one
+#  string can reach the stream in pieces, between escape sequences, or partly cut off.
+#  Searching the raw stream for an expected message is therefore unreliable.
 #
 #  So the stream is replayed into a screen and the expectations are matched against what
 #  a person would have seen. The raw capture is kept as well: a corrupted stream is
@@ -1118,7 +1105,7 @@ class Screen:
     def _commit(self):
         """Writes out the row that was being written, because the cursor was addressed.
 
-        A curses library sends a cursor address and then the text that belongs at that
+        The console sends a cursor address and then the text that belongs at that
         spot, so an address is where one displayed state ends and the next begins. Without
         this, a line that is rewritten in place while no other line is touched would reach
         the report in its last state only, and every value it showed before would be lost.
@@ -1433,7 +1420,7 @@ def describe_capture(runner):
 
     lines = ['captured %u bytes from %s (%s)' % (len(data), runner.name, runner.log_path)]
 
-    # The stream of a curses application is unreadable as bytes, and it is the screen it
+    # The stream of a console that draws at coordinates is unreadable as bytes, and it is the screen it
     # draws that says whether the application did its work. Both are reported: the screen
     # to be read, the bytes to tell a message that was never printed apart from one that
     # was printed and damaged.
@@ -1561,22 +1548,13 @@ def run_router_coverage(scenario, path, scenario_dir, timeout, use_pty):
                         r'ERROR, unexpected command \[ --not-a-router-option \]')
                 command('--console --install --uninstall --service --load="' + config + '"',
                         r'This command should be used in command line')
-                command('--silent',
-                        r'Switching to silent mode, no data rate output|'
-                        r'Data rate display is always active in this mode')
+                command('--silent', r'Switching to silent mode, no data rate output')
                 if case == 'silent':
-                    with runner._output_changed:
-                        text = runner._live_output.decode('utf-8', 'replace')
-                    if 'Data rate display is always active in this mode' in text:
-                        result.skip('requires the extended console, ANSI is intentionally always-on')
-                    else:
-                        runner.assert_screen_absent(
-                            r'(?:Send|Recv) (?:data rate|messages) \.+:',
-                            time.monotonic() + 30)
+                    runner.assert_screen_absent(
+                        r'(?:Send|Recv) (?:data rate|messages) \.+:',
+                        time.monotonic() + 30)
                 else:
-                    command('--verbose',
-                            r'Switching to verbose mode to output data rate|'
-                            r'Data rate display is always active in this mode')
+                    command('--verbose', r'Switching to verbose mode to output data rate')
                     command('--pause', r'Message router is paused')
                     command('--restart', r'Message router is restarted')
                 command('-q', r'Quit the application')
@@ -1777,7 +1755,7 @@ def run_scenario(scenario, bin_dir, out_dir, timeout, router_bin, keep_logs, use
             break
         for pattern in entry['expect']:
             # Both the stream as it arrived and the screen it draws are searched. A
-            # message that a curses application composed as one string reaches the stream
+            # message that a console application composed as one string reaches the stream
             # in pieces, so only the screen has it whole; a message printed by an
             # application that draws nothing is in the stream and needs no screen.
             runner = runners[index]

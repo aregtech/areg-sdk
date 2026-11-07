@@ -18,7 +18,7 @@
  ************************************************************************/
 #include "units/GUnitTest.hpp"
 #include "units/VtScreen.hpp"
-#include "aregextend/console/private/ansi/AnsiWriter.hpp"
+#include "aregextend/console/private/AnsiWriter.hpp"
 
 #include <string>
 #include <memory>
@@ -240,4 +240,82 @@ TEST(AnsiWriterTest, escape_length_of_each_kind)
     EXPECT_EQ(AnsiWriter::escape_length("\x1B[12", 0u), 0u);
     EXPECT_EQ(AnsiWriter::escape_length("\x1B[1\n", 0u), 0u);
     EXPECT_EQ(AnsiWriter::escape_length("\x1B", 0u), 0u);
+}
+
+TEST(AnsiWriterTest, field_outside_the_screen_draws_nothing)
+{
+    Output out(20, 5);
+    const areg::Coord caret{ out.writer->field({ 3, 5 }, "abc", 2u) };
+    EXPECT_EQ(caret.posX, 3);
+    EXPECT_EQ(caret.posY, 5);
+    EXPECT_EQ(out.writer->pending(), 0u);
+}
+
+TEST(AnsiWriterTest, incomplete_escape_ends_the_text)
+{
+    Output plain(20, 5);
+    plain.writer->plain("ab\x1B[12");
+    plain.writer->flush();
+    EXPECT_EQ(plain.bytes, "ab");
+
+    Output row(20, 5);
+    row.writer->text_at({ 0, 1 }, "cd\x1B[3");
+    EXPECT_EQ(row.render(20, 5).row(1), "cd");
+}
+
+TEST(AnsiWriterTest, escape_with_a_bad_intermediate_byte_has_no_length)
+{
+    EXPECT_EQ(AnsiWriter::escape_length("\x1B(\x01", 0u), 0u);
+    EXPECT_EQ(AnsiWriter::escape_length("\x1B( B", 0u), 4u);
+}
+
+TEST(AnsiWriterTest, escape_length_rejects_every_malformed_sequence)
+{
+    EXPECT_EQ(AnsiWriter::escape_length("\x1B[", 0u), 0u);
+    EXPECT_EQ(AnsiWriter::escape_length("\x1B[1\x7F", 0u), 0u);
+    EXPECT_EQ(AnsiWriter::escape_length("\x1B]0;t", 0u), 0u);
+    EXPECT_EQ(AnsiWriter::escape_length("\x1B]0;t\x1B", 0u), 0u);
+    EXPECT_EQ(AnsiWriter::escape_length("\x1B]0;t\x1Bx\x07", 0u), 8u);
+    EXPECT_EQ(AnsiWriter::escape_length("\x1B(", 0u), 0u);
+    EXPECT_EQ(AnsiWriter::escape_length("\x1B( ", 0u), 0u);
+    EXPECT_EQ(AnsiWriter::escape_length("\x1B(\x7F", 0u), 0u);
+    EXPECT_EQ(AnsiWriter::escape_length("\x1B\x01", 0u), 0u);
+    EXPECT_EQ(AnsiWriter::escape_length("\x1B\x7F", 0u), 0u);
+}
+
+TEST(AnsiWriterTest, plain_text_keeps_tabs_and_new_lines_only)
+{
+    Output out(0, 0);
+    out.writer->plain("a\tb\x7F\r\n");
+    out.writer->plain_line("\r\nX\r\n");
+    out.writer->flush();
+    EXPECT_EQ(out.bytes, "a\tb\nX\n");
+}
+
+TEST(AnsiWriterTest, flush_without_a_sink_drops_the_output)
+{
+    AnsiWriter writer(nullptr, nullptr);
+    writer.raw("lost");
+    EXPECT_EQ(writer.pending(), 4u);
+    writer.flush();
+    EXPECT_EQ(writer.pending(), 0u);
+}
+
+TEST(AnsiWriterTest, tab_at_the_right_edge_is_cut_and_ends_the_row)
+{
+    Output out(10, 3);
+    out.writer->text_at({ 4, 0 }, "ab\tX\tY\tZ");
+    EXPECT_EQ(out.render(10, 3).row(0), "    ab  X");
+}
+
+TEST(AnsiWriterTest, unknown_rows_clip_only_the_columns)
+{
+    Output out(10, 0);
+    out.writer->text_at({ 0, -1 }, "hidden");
+    out.writer->flush();
+    EXPECT_TRUE(out.bytes.empty());
+    out.writer->text_at({ 2, 40 }, "abcdefghijkl");
+    out.writer->flush();
+    EXPECT_NE(out.bytes.find("abcdefgh"), std::string::npos);
+    EXPECT_EQ(out.bytes.find("abcdefghi"), std::string::npos);
 }

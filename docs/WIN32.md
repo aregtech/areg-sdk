@@ -29,16 +29,13 @@ Areg SDK uses Windows Sockets and Win32 API for:
 - Multithreading
 - Synchronization
 
-When `AREG_EXTENDED` is enabled, extended console features require Windows 2000 or later.
+The console of `aregextend` draws with virtual terminal (ANSI) sequences. A console without
+them, before Windows 10, gets plain lines instead of positioned output.
 
 ### Build Example
 
 ```batch
-:: Standard build
 msbuild /m /property:Configuration=Release /property:Platform=x64 ./areg-sdk.sln
-
-:: Build with extended features
-msbuild /m /property:Configuration=Debug /property:Platform=x64 /property:AregExtended=1 ./areg-sdk.sln
 ```
 
 ---
@@ -48,7 +45,7 @@ msbuild /m /property:Configuration=Debug /property:Platform=x64 /property:AregEx
 | Feature | Minimum Windows Version |
 |---------|------------------------|
 | **Standard build** | **Windows 8** |
-| Extended features | Windows 2000 |
+| Positioned console output | Windows 10 |
 | Service support | Windows XP |
 
 **Windows 8 is the minimum supported version.** The internal event queue parks a waiting
@@ -130,13 +127,12 @@ HeapAlloc               HeapFree                HeapReAlloc
 VirtualAlloc            VirtualFree             GetProcessHeap
 ```
 
-### Console (Extended Features)
+### Console
 
 ```
-GetStdHandle            SetConsoleCursorPosition
-GetConsoleScreenBufferInfo                      SetConsoleTextAttribute
-WriteConsole            ReadConsole             SetConsoleMode
-GetConsoleMode
+GetStdHandle            GetConsoleMode          SetConsoleMode
+GetConsoleScreenBufferInfo                      ReadConsoleA
+WriteConsoleInputA
 ```
 
 ### Service Control
@@ -161,4 +157,4 @@ lstrlen                 wsprintf                wvsprintf
 
 - Winsock2 must be initialized with `WSAStartup` before socket operations
 - Service functions are used only when running as a Windows service
-- Console functions are used only with `AREG_EXTENDED` enabled
+- Console functions are used only by the console of `aregextend`

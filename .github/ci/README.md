@@ -4,7 +4,7 @@ GitHub Actions has no job-priority setting. Matrix order controls job creation,
 not guaranteed execution order when workflows share runner limits.
 
 `cmake-matrix.json` remains the configuration source: pull requests and manual
-runs select all 26 configurations; master selects the seven marked `master: true`.
+runs select all 22 configurations; master selects the seven marked `master: true`.
 The planner partitions them exactly once:
 
 | Group | Selection | Maximum simultaneous jobs |

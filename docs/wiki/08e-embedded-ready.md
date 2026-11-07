@@ -56,8 +56,8 @@ the size of the image, by a lot -- section 3.3.
 
 ## 3. Flash: What a Device Stores
 
-Measured with `tools/intern/footprint.py --flash-only`, GNU 15.2.0 for every target, `Release`,
-`AREG_EXTENDED=OFF`. The `text` column is executable code and read-only data; `data` is
+Measured with `tools/intern/footprint.py --flash-only`, GNU 15.2.0 for every target, `Release`.
+The `text` column is executable code and read-only data; `data` is
 initialized writable data. Both live in flash. `bss` is zero-filled at start and costs RAM,
 not flash.
 
@@ -93,7 +93,7 @@ logging subsystem.
 ```bash
 cmake -B ./build -DCMAKE_BUILD_TYPE=Release \
       -DAREG_LIB_TYPE=static -DAREG_LOGGER_LIB_TYPE=static \
-      -DAREG_LOGGING=OFF -DAREG_EXTENDED=OFF
+      -DAREG_LOGGING=OFF
 ```
 
 | Artefact | x86_64 | ARM64 | ARMv7 |
@@ -151,7 +151,7 @@ That is the smallest configuration, and it is reached with documented switches o
 cmake -B ./build -DCMAKE_TOOLCHAIN_FILE=./conf/toolchains/gnu-linux-arm32.cmake \
       -DCMAKE_BUILD_TYPE=MinSizeRel \
       -DAREG_LIB_TYPE=static -DAREG_LOGGER_LIB_TYPE=static \
-      -DAREG_LOGGING=OFF -DAREG_EXTENDED=OFF -DAREG_NO_EXCEPTIONS=ON
+      -DAREG_LOGGING=OFF -DAREG_NO_EXCEPTIONS=ON
 ```
 
 `MinSizeRel` builds at `-Os` and keeps the section, visibility and link time settings of
@@ -245,7 +245,7 @@ python3 tools/intern/footprint.py --json footprint.json
 
 Every run prints what produced it first: commit, whether the tree was modified, build type,
 compiler and version, the **target** architecture, the **host** that read it, and the
-`AREG_LOGGING`, `AREG_EXTENDED` and `AREG_NO_EXCEPTIONS` switches. A number without that header
+`AREG_LOGGING` and `AREG_NO_EXCEPTIONS` switches. A number without that header
 is a number without a source.
 
 The target comes from the ELF headers of the binaries being measured, never from the machine
@@ -302,7 +302,7 @@ compiler, target architecture and switches ahead of any number it reports.
 - [Performance benchmarks](./08b-areg-sdk-performance-benchmarks.md) – latency, message
   rate and data rate, with methodology
 - [CMake configuration](./02d-cmake-config.md) – every build switch, including
-  `AREG_LIB_TYPE`, `AREG_LOGGING` and `AREG_EXTENDED`
+  `AREG_LIB_TYPE`, `AREG_LOGGING` and `AREG_NO_EXCEPTIONS`
 - [Cross-compilation](./01b-cmake-build.md#cross-compilation) – building for ARM targets
 - [`areg.init` reference](./05b-areg-configuration-file.md) – the runtime keys, including
   `net::*::tcpip::pairs`

@@ -16,7 +16,7 @@ This guide provides technical information for developing service-enabled applica
 | Directory | Description |
 |-----------|-------------|
 | [framework/areg](../framework/areg/) | Core communication engine library |
-| [framework/aregextend](../framework/aregextend/) | Extended features (may require additional dependencies) |
+| [framework/aregextend](../framework/aregextend/) | Optional objects that extend `areg`: console, SQLite database, OS-managed services |
 | [framework/areglogger](../framework/areglogger/) | Log observer library for receiving logs |
 | [framework/logcollector](../framework/logcollector/) | Log collection service (console or system service) |
 | [framework/logobserver](../framework/logobserver/) | Real-time log monitoring console application |

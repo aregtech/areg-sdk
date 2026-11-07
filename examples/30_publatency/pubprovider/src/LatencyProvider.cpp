@@ -83,8 +83,7 @@ void LatencyProvider::startup_service_interface(areg::Component & holder)
     }
     else
     {
-        std::printf("Latency service provider is running headless. Waiting for the consumer.\n");
-        std::fflush(stdout);
+        areg::ext::Console::instance().output_below("Latency service provider is running headless. Waiting for the consumer.");
     }
 
     LatencyProviderBase::startup_service_interface(holder);
@@ -544,6 +543,9 @@ void LatencyProvider::_finalize_request_stats()
 
 void LatencyProvider::_clear_latency_row()
 {
+    if (mHeadless)
+        return;
+
     areg::ext::Console & console = areg::ext::Console::instance();
     console.save_cursor_position();
     console.output_txt(COORD_LATENCY, MSG_LATENCY_NONE);
