@@ -706,19 +706,6 @@ void LogObserver::_output_title()
     console.unlock_console();
 }
 
-void LogObserver::_output_info( const areg::String & info )
-{
-    areg::ext::Console & console = areg::ext::Console::instance( );
-    areg::ext::Console::Coord coord{areg::ext::COORD_INFO_MSG};
-    console.lock_console( );
-
-    console.output_txt( coord, areg::ext::MSG_SEPARATOR );
-    ++ coord.posY;
-    console.output_str( coord, info );
-
-    console.unlock_console( );
-}
-
 void LogObserver::_clean_help()
 {
     if (_cmdLineMode)
@@ -988,15 +975,4 @@ bool LogObserver::_send_scope_update_message(const areg::String& scope)
     }
 
     return result;
-}
-
-inline void LogObserver::enable_local_logs(areg::ConfigManager& config, bool /* enable */)
-{
-    constexpr areg::ConfigEntry prioConfKey{ areg::ConfigEntry::LogScope };
-    const areg::ConfigKey& keyPrio{ areg::log_scope() };
-    uint32_t prios = static_cast<uint32_t>(areg::LogPriority::PrioNotset);
-    const areg::String prio{ areg::make_prio_string(prios) };
-
-    config.set_module_property(keyPrio.section, keyPrio.property, areg::String(areg::SYNTAX_ANY_VALUE), prio, prioConfKey, true);
-    config.set_log_enabled(areg::LogTarget::Remote, false, true);
 }

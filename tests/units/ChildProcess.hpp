@@ -17,7 +17,8 @@
  *              test executable, on Linux, macOS and Windows.
  *
  *              AREG_EXPECT_IN_CHILD( statements ) runs the statements in a child process and
- *              passes if they return. Inside the child, AREG_CHILD_CHECK( condition ) reports a
+ *              passes if they return. The local objects of the statements are destroyed before
+ *              the child exits. Inside the child, AREG_CHILD_CHECK( condition ) reports a
  *              failed condition on the standard error output and ends the child with
  *              CHILD_CHECK_FAILED; the parent then prints that output. Assertions of googletest
  *              do not report from a child, use AREG_CHILD_CHECK there.
@@ -82,7 +83,7 @@ namespace areg_child
         do                                                                          \
         {                                                                           \
             ::testing::GTEST_FLAG( death_test_style ) = "threadsafe";               \
-            EXPECT_EXIT( { __VA_ARGS__; ::areg_child::pass( ); }                    \
+            EXPECT_EXIT( { { __VA_ARGS__; } ::areg_child::pass( ); }                \
                        , ::testing::ExitedWithCode( 0 ), "" );                      \
         } while ( false )
 

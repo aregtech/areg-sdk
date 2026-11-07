@@ -46,7 +46,8 @@
 #                             <path>     -> an explicit binary path
 #                             auto       -> locate the built target binary (default)
 #                             none       -> build only
-#     --lib     shared|static  Library type (default: static - robust for ASan).
+#     --lib     shared|static  Library type of areg and areglogger (default: static -
+#                           robust for ASan).
 #     --examples            Also build examples (default: off, tests only).
 #     --no-extended         Build without the extended library (macOS has no ncurses here).
 #     --config  <type>      CMake build type (default: Debug). Use RelWithDebInfo when

@@ -11,6 +11,8 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
+#include <initializer_list>
 #include <new>
 
 // Memory copies respect destination capacity and leave it unchanged for invalid operands.
@@ -131,6 +133,36 @@ namespace
     void _exact_copy(void * target, const void * source, uint32_t size)
     {
         areg::mem_copy_exact(target, source, size);
+    }
+
+    //! The same call with the size of the destination.
+    void _exact_copy_known(void * target, uint32_t space, const void * source, uint32_t size)
+    {
+        areg::mem_copy_exact(target, space, source, size);
+    }
+}
+
+// A destination of a known size gets every count whole, and the bytes after it stay.
+TEST(MemoryDefsTest, exact_copy_into_a_known_size)
+{
+    uint8_t source[32]{ };
+    for (uint32_t i = 0u; i < sizeof(source); ++i)
+    {
+        source[i] = static_cast<uint8_t>(i + 1u);
+    }
+
+    for (uint32_t size = 0u; size <= 24u; ++size)
+    {
+        for (const uint32_t space : { size, static_cast<uint32_t>(sizeof(source)) })
+        {
+            uint8_t target[32]{ };
+            _exact_copy_known(target, space, source, size);
+            EXPECT_EQ(std::memcmp(target, source, size), 0) << "size " << size << ", space " << space;
+            for (uint32_t i = size; i < sizeof(target); ++i)
+            {
+                EXPECT_EQ(target[i], 0u) << "size " << size << ", space " << space;
+            }
+        }
     }
 }
 

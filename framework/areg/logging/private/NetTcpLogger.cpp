@@ -270,12 +270,16 @@ void NetTcpLogger::process_received_message(MessageEnvelope & msgReceived, Socke
     case areg::FuncIdRange::ServiceLogUpdateScopes:
         {
             uint32_t scopeCount{ 0 };
-            areg::ScopeEntry scopeInfo{};
             const areg::LogSourceState before{ LogManager::source_state() };
             msgReceived >> scopeCount;
             for ( uint32_t i = 0; i < scopeCount; ++ i)
             {
+                // A read past the end of the message gives an empty name.
+                areg::ScopeEntry scopeInfo{};
                 msgReceived >> scopeInfo;
+                if (scopeInfo.scopeName.is_empty())
+                    break;
+
                 LogManager::update_scopes(scopeInfo.scopeName, scopeInfo.scopeId, scopeInfo.scopePrio);
             }
 

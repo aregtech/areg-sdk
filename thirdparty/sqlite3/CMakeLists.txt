@@ -14,7 +14,7 @@ endif()
 
 if (AREG_SQLITE_FOUND)
 
-    message(STATUS "AREG: >>> Found SQLile library '${AREG_SQLITE_LIBRARY}', include '${AREG_SQLITE_INCLUDES}'")
+    message(STATUS "AREG: >>> Found SQLite library '${AREG_SQLITE_LIBRARY}', include '${AREG_SQLITE_INCLUDES}'")
     # If SQLite3 package found set appropriate preprocessor option to include right header.
     set(AREG_SQLITE_LIB_REF SQLite::SQLite3)
     set(AREG_SQLITE_LIB     sqlite3)
@@ -27,7 +27,7 @@ if (AREG_SQLITE_FOUND)
 
 else(AREG_SQLITE_FOUND)
 
-    message(STATUS "AREG: >>> Could not find SQLile library  Builds 'aregsqlite3' library from sources.")
+    message(STATUS "AREG: >>> Could not find SQLite library. Builds 'aregsqlite3' library from sources.")
     # The SQLite3 package did not find, compile from available sources.
     set(AREG_SQLITE_PACKAGE OFF CACHE INTERNAL "Use SQLite3 installed package")
     set(sqlite_BASE "${AREG_THIRDPARTY}/sqlite3")

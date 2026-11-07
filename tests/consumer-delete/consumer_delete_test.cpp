@@ -96,7 +96,7 @@ class Consumer;
 class Client final : public PubSubConsumerBase
 {
 public:
-    Client(Consumer & owner, const areg::String & role, areg::DispatcherThread & thread)
+    Client(Consumer & owner, const areg::String & role, areg::DispatcherThread & thread) noexcept
         : PubSubConsumerBase(role, thread)
         , mOwner    (owner)
     {

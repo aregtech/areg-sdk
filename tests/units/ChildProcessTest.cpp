@@ -27,6 +27,24 @@ namespace
 {
     //!< Changed only by a child.
     int gChildTouched{ 0 };
+
+    //!< Set by the destructor of a local object of a child.
+    bool gLocalDestroyed{ false };
+
+    //!< A local object of a child that reports its destruction.
+    struct LocalObject
+    {
+        ~LocalObject( )
+        {
+            gLocalDestroyed = true;
+        }
+    };
+
+    //!< The exit handler of a child: fails the child if its local object is still alive.
+    void check_local_destroyed( )
+    {
+        AREG_CHILD_CHECK( gLocalDestroyed );
+    }
 }
 
 TEST( ChildProcessTest, statements_run_in_another_process )
@@ -37,6 +55,18 @@ TEST( ChildProcessTest, statements_run_in_another_process )
     );
 
     EXPECT_EQ( gChildTouched, 0 );
+}
+
+/**
+ * Reproduces the defect: a passing child exited inside the block of the statements.
+ * The destructors of their local objects never ran, so a thread they own outlived the exit handlers.
+ **/
+TEST( ChildProcessTest, local_objects_are_destroyed_before_the_exit_handlers )
+{
+    AREG_EXPECT_IN_CHILD(
+        AREG_CHILD_CHECK( std::atexit( &check_local_destroyed ) == 0 );
+        LocalObject local;
+    );
 }
 
 TEST( ChildProcessTest, failed_check_is_reported_with_its_condition )

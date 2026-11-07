@@ -26,7 +26,7 @@
 #  16. AREG_LIB_DIR         -- Directory for output static libraries.
 #  17. AREG_DEPS_DIR        -- Location for fetching third-party packages such as GTest.
 #  18. AREG_OUTPUT_LAYOUT   -- If disabled, output directories will match the CMake binary directory.
-#  19. AREG_LOGGER_LIB_TYPE -- Specifies the type of the Log Observer API library ('shared' or 'static'). Defaults to 'shared'.
+#  19. AREG_LOGGER_LIB_TYPE -- Specifies the type of the Log Observer API library ('shared' or 'static'). Defaults to AREG_LIB_TYPE.
 #  20. AREG_ARCH            -- The processor architect. Ignore if need to use system default.
 #  21. AREG_TARGET          -- Specifies the compiler and library architecture target. Defaults to the system-defined compiler and architecture.
 #  22. AREG_ARCH_NATIVE     -- Optimizes GNU/Clang Release builds for the build machine CPU ('-march=native'). Defaults to 'disabled'.
@@ -51,7 +51,7 @@
 #  16. AREG_LIB_DIR         = '<areg-sdk>/product/build/<default-compiler family-name>/<os>-<bitness>-<cpu>-release-<areg-lib>/lib'
 #  17. AREG_DEPS_DIR        = '${CMAKE_BINARY_DIR}/packages'
 #  18. AREG_OUTPUT_LAYOUT   = ON        (possible values: ON, OFF)
-#  19. AREG_LOGGER_LIB_TYPE = shared    (possible values: shared, static)
+#  19. AREG_LOGGER_LIB_TYPE = AREG_LIB_TYPE (possible values: shared, static)
 #  20. AREG_ARCH            = System    (possible values: x86 (i386, i486), x64 (x86_64, x86-64, amd64, ia64), arm (arm32, armv7), aarch64 (arm64))
 #  21. AREG_TARGET          = <default> (possible values: 'i386-linux-gnu', 'x86_64-linux-gnu', 'arm-linux-gnueabihf', 'aarch64-linux-gnu')
 #  22. AREG_ARCH_NATIVE     = OFF       (possible values: ON, OFF)
@@ -242,13 +242,9 @@ elseif (NOT "${AREG_LIB_TYPE}" STREQUAL "static")
     set(AREG_LIB_TYPE "shared")
 endif()
 
-# Set the areg log observer API library type.
-if (NOT DEFINED AREG_LOGGER_LIB_TYPE)
-    if (DEFINED VCPKG_LIBRARY_LINKAGE AND "${VCPKG_LIBRARY_LINKAGE}" STREQUAL "static")
-        set(AREG_LOGGER_LIB_TYPE "static")
-    else()
-        set(AREG_LOGGER_LIB_TYPE "shared")
-    endif()
+# Set the areg log observer API library type. Follows AREG_LIB_TYPE if not specified.
+if ("${AREG_LOGGER_LIB_TYPE}" STREQUAL "")
+    set(AREG_LOGGER_LIB_TYPE "${AREG_LIB_TYPE}")
 elseif (NOT "${AREG_LOGGER_LIB_TYPE}" STREQUAL "static")
     set(AREG_LOGGER_LIB_TYPE "shared")
 endif()

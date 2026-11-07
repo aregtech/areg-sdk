@@ -76,6 +76,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     LayoutTest.cpp
     LogCollectorApplicationTest.cpp
     LogCollectorDroppedRowsTest.cpp
+    LogCollectorServiceTest.cpp
     LogConfigurationTest.cpp
     LoggingRuntimeCoverageTest.cpp
     LogMessageLengthTest.cpp
@@ -159,6 +160,18 @@ target_sources("${AREG_UNIT_TEST_PROJECT}" PRIVATE
     "${AREG_FRAMEWORK}/logcollector/service/private/LogCollectorMessageProcessor.cpp"
     "${AREG_FRAMEWORK}/logcollector/service/private/LogCollectorServerService.cpp"
 )
+
+# The tests reach private classes of the log observer library, so its sources are built into the executable.
+if (AREG_LOGGING)
+    target_compile_definitions("${AREG_UNIT_TEST_PROJECT}" PRIVATE IMP_LOGGER_LIB)
+    target_sources("${AREG_UNIT_TEST_PROJECT}" PRIVATE
+        "${AREG_UNIT_TEST_BASE}/LogObserverApiTest.cpp"
+        "${AREG_FRAMEWORK}/areglogger/client/private/LogObserverApi.cpp"
+        "${AREG_FRAMEWORK}/areglogger/client/private/LogObserverBase.cpp"
+        "${AREG_FRAMEWORK}/areglogger/client/private/LoggerClient.cpp"
+        "${AREG_FRAMEWORK}/areglogger/client/private/ObserverMessageProcessor.cpp"
+    )
+endif()
 
 # The router application is not part of a library.
 target_sources("${AREG_UNIT_TEST_PROJECT}" PRIVATE

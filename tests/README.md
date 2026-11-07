@@ -38,13 +38,14 @@ Built with `-DAREG_TESTS=ON` (the default). "ctest" says whether `ctest` runs it
 
 | Project | Checks | Built when | ctest |
 |---|---|---|---|
-| `units/` -> `areg-unit-tests` | Classes and functions of `areg`, the logging runtime, the log database wrappers, the child-process template | always | yes, one test per case |
+| `units/` -> `areg-unit-tests` | Classes and functions of `areg`, the logging runtime, the log database wrappers, the log observer library, the child-process template | always | yes, one test per case |
 | `fault-inject/` -> `areg-fault-inject-test` | How areg reports a failed system call (see [its README](fault-inject/README.md)) | not on Cygwin | yes |
 | `release-unload/` | `Application::release()` without `unload_model()` joins the component threads and deletes the components | always | yes |
 | `timer-churn/` | Timers and the watchdog armed, restarted and destroyed from several threads while firing, then teardown | always | yes |
 | `internal-events/` | Internal events sent outside a dispatch and from foreign threads | always | yes |
 | `stub-teardown/` | Service events routed from a foreign thread while the target is loaded, unloaded, deleted, created | always | yes |
 | `router-io/` | The router service in the test process, driven by raw TCP clients, per case and pool size | always | yes |
+| `log-observer/` | The log observer C API and `LogObserverBase` against a real `logcollector` and log sources started as child processes; an application linking only `areglogger` | logging on | yes |
 | `client-stop/` | A router client stopped in every way an application can, against a fake router | always | yes |
 | `client-link/` | A client built without LTO links and finds every devirtualized target | shared `areg` only | yes |
 | `fatal-create/` | A lock the system cannot create ends the process through `areg::fatal_error()` | Linux only | yes |
@@ -156,7 +157,8 @@ What a test author must know:
    child does not reach the parent's result. When a check fails, the parent prints the child's
    output, which holds the failed condition.
 3. **A passing child exits through `std::exit(0)`**, so the coverage data of the child is
-   written. A failing check exits through `std::_Exit`, because the process may be broken.
+   written. The local objects of the statements are destroyed first. A failing check exits
+   through `std::_Exit`, because the process may be broken.
 4. **Every child is a fresh process.** It may set up and release the application, arm a fault,
    exhaust a resource or crash, and the next test is not affected.
 5. **The cost is a process start per child**, a few milliseconds on Linux and tens of

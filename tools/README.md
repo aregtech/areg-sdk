@@ -487,7 +487,7 @@ tools/intern/sanitize.sh <mode> [options] [-- <args forwarded to the binary>]
 | `--compiler`      | `gnu`              | `gnu` (g++) or `llvm` (clang++).                 |
 | `--target`        | `areg-unit-tests`  | CMake target to build. `--run ctest` builds every target instead. |
 | `--run`           | `auto`             | `ctest`, an explicit binary path, `auto`, or `none`. |
-| `--lib`           | `static`           | `static` (most robust for ASan) or `shared`.     |
+| `--lib`           | `static`           | `static` (most robust for ASan) or `shared`, for `areg` and `areglogger`. |
 | `--examples`      | off                | Also build the `examples/` tree.                 |
 | `--jobs N`        | `nproc`            | Parallel build jobs.                             |
 | `--keep`          | off                | Reuse the existing build dir (skip reconfigure). |
@@ -556,7 +556,7 @@ holding binaries the current platform can start, and takes the most recently bui
 
 | Option | Default | Meaning |
 |--------|---------|---------|
-| `--tier smoke\|ipc\|all\|perf\|coverage` | `all` | `smoke` is single process only, `ipc` needs the router; `coverage` is opt-in router CLI/console coverage |
+| `--tier smoke\|ipc\|all\|perf\|coverage` | `all` | `smoke` is single process only, `ipc` needs the router; `coverage` is `all` plus the router CLI/console and small-count log scenarios (the coverage run) |
 | `--bin-dir DIR` | `$AREG_BIN_DIR` | The build to test. Always pass it on a build server |
 | `--only NAME[,NAME...]` | all | Run only the named scenarios |
 | `--repeat N` | `1` | Run the selection N times and report every failure |
@@ -583,7 +583,7 @@ tools/intern/run-all-examples.sh --bin-dir product/build/gnu-g++/linux-64-x86_64
 
 ### Router CLI and console coverage
 
-The opt-in `coverage` tier does not use a router already running on the machine.
+The `coverage` tier runs `all` plus these scenarios and the `35_log*_cov` log scenarios. Its router scenarios do not use a router already running on the machine.
 Each console scenario loads a private temporary configuration with logging disabled,
 loopback networking, an OS-selected port and zero pool pairs. Input is driven by observed
 output, not sleeps; passing console scenarios send `-q` and require exit code 0.

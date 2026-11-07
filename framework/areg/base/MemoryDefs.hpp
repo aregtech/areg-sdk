@@ -836,6 +836,17 @@ inline uint32_t mem_copy( void * memDst, uint32_t dstSpace, const void * memSrc,
 AREG_FORCE_INLINE void mem_copy_exact(void * memDst, const void * memSrc, uint32_t count) noexcept;
 
 /**
+ * \brief   Copies exactly count bytes between valid buffers that may overlap, into a destination
+ *          of a known size. A destination smaller than 8 bytes never takes the 8-byte store.
+ *
+ * \param[out] memDst   Destination buffer of at least count bytes.
+ * \param   dstSpace    Size of the destination buffer in bytes, not less than count.
+ * \param   memSrc      Source buffer of at least count bytes.
+ * \param   count       Number of bytes to copy.
+ **/
+AREG_FORCE_INLINE void mem_copy_exact(void * memDst, uint32_t dstSpace, const void * memSrc, uint32_t count) noexcept;
+
+/**
  * \brief   Compares two memory blocks byte-by-byte, returning areg::Ordering result.
  *
  * \param   memLeft     Left-hand memory buffer to compare.
@@ -1004,7 +1015,7 @@ inline uint32_t mem_copy( void * memDst, uint32_t dstSpace, const void * memSrc,
     return result;
 }
 
-AREG_FORCE_INLINE void mem_copy_exact(void * memDst, const void * memSrc, uint32_t count) noexcept
+AREG_FORCE_INLINE void mem_copy_exact(void * memDst, uint32_t dstSpace, const void * memSrc, uint32_t count) noexcept
 {
     switch (count)
     {
@@ -1029,17 +1040,24 @@ AREG_FORCE_INLINE void mem_copy_exact(void * memDst, const void * memSrc, uint32
         break;
 
     case 8u:
+        if (dstSpace >= sizeof(uint64_t))
         {
             uint64_t value;
             ::memcpy(&value, memSrc, sizeof(value));
             ::memcpy(memDst, &value, sizeof(value));
+            break;
         }
-        break;
+        [[fallthrough]];
 
     default:
         ::memmove(memDst, memSrc, count);
         break;
     }
+}
+
+AREG_FORCE_INLINE void mem_copy_exact(void * memDst, const void * memSrc, uint32_t count) noexcept
+{
+    mem_copy_exact(memDst, count, memSrc, count);
 }
 
 inline areg::Ordering mem_compare( const void * memLeft, const void * memRight, uint32_t count ) noexcept

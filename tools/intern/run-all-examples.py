@@ -17,7 +17,8 @@
 #
 #  Common options:
 #      --tier smoke|ipc|all|perf|coverage
-#                                  Which set of scenarios to run (default: all)
+#                                  Which set of scenarios to run (default: all).
+#                                  'coverage' is 'all' plus the scenarios of that tier.
 #      --bin-dir DIR               Directory with the built binaries
 #      --timeout SEC               Per-scenario deadline (default: 120)
 #      --repeat N                  Run the selection N times, report every failure
@@ -40,6 +41,7 @@
 
 import argparse
 import contextlib
+import glob
 import os
 import platform
 import re
@@ -93,7 +95,8 @@ QUIT_SECONDS = 12.0
 # Scenario description.
 #
 #   name      Scenario identifier, also used by '--only'.
-#   tier      'smoke' (single process, no router), 'ipc', 'perf' or opt-in 'coverage'.
+#   tier      'smoke' (single process, no router), 'ipc', 'perf' or 'coverage'
+#             (run only by '--tier coverage', together with 'smoke' and 'ipc').
 #   procs     Processes of the scenario, started in the listed order. The last
 #             one is the leading process: the scenario ends when it ends.
 #   timeout   Per-scenario deadline in seconds, overrides '--timeout'.
@@ -212,6 +215,32 @@ def _check_log_delivery(outputs):
     if lost != reported:
         return ('35_logsink lost %d messages but %d were reported dropped' % (lost, reported))
     return None
+
+
+def _check_logobserver_db(outputs):
+    """
+    The log observer saves what it observes into a database file below 'logs' of the
+    directory of its binary. The file has to exist and not be empty.
+    """
+    dirs = []
+    hint = os.environ.get('AREG_BIN_DIR')
+    if 'AREG_BIN_DIR' not in os.environ:
+        for index, arg in enumerate(sys.argv):
+            if arg == '--bin-dir' and index + 1 < len(sys.argv):
+                hint = sys.argv[index + 1]
+            elif arg.startswith('--bin-dir='):
+                hint = arg.split('=', 1)[1]
+    if hint:
+        dirs.append(hint)
+    else:
+        dirs.extend(find_bin_dirs(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
+    now = time.time()
+    for directory in dirs:
+        for found in glob.glob(os.path.join(os.path.abspath(directory), '**', '*.sqlog'), recursive=True):
+            if (now - os.path.getmtime(found) < 600) and (os.path.getsize(found) > 0):
+                return None
+    return 'logobserver saved no non-empty .sqlog database'
 
 
 # Readers that parse what the console displayed, replayed from the stream; a curses
@@ -376,6 +405,62 @@ SCENARIOS = [
      'procs': [proc('logcollector', args=['--console'], must_exit=False, quit=['-q']),
                proc('35_logsink', args=['-c=2000', '-d=35_logdb_short.sqlog'], expect=[r'35 log trip']),
                proc('35_logsource', args=['-c=2000', '-w=0'], expect=[r'35 log call'])]},
+
+    # -- log scenarios of the coverage run: small counts, a killed process writes no counters
+    {'name': '35_logfull_cov', 'tier': 'coverage', 'timeout': 60, 'router': False,
+     'check': _check_log_delivery,
+     'procs': [proc('logcollector', args=['--console'], must_exit=False, quit=['-q']),
+               proc('35_logsink', args=['-c=2100'], expect=[r'35 log trip']),
+               proc('35_logsource', args=['-c=2000', '-w=100'], expect=[r'35 log call'])]},
+    {'name': '35_logpaced_cov', 'tier': 'coverage', 'timeout': 60, 'router': False,
+     'check': _check_log_delivery,
+     'procs': [proc('logcollector', args=['--console'], must_exit=False, quit=['-q']),
+               proc('35_logsink', args=['-c=600'], expect=[r'35 log trip']),
+               proc('35_logsource', args=['-c=500', '-w=100', '-p=1'], expect=[r'35 log call'])]},
+    {'name': '35_logdb_cov', 'tier': 'coverage', 'timeout': 60, 'router': False,
+     'check': _check_log_delivery,
+     'procs': [proc('logcollector', args=['--console'], must_exit=False, quit=['-q']),
+               proc('35_logsink', args=['-c=2000', '-d=35_logdb_cov.sqlog'], expect=[r'35 log trip']),
+               proc('35_logsource', args=['-c=2000', '-w=0'], expect=[r'35 log call'])]},
+
+    # -- log observer scenarios of the coverage run
+    {'name': '36_logobserver_help', 'tier': 'coverage', 'timeout': 30, 'router': False,
+     'procs': [proc('logobserver', args=['--help'],
+                    expect=[r'Usage of Areg Log Observer console application'])]},
+    {'name': '36_logobserver_invalid_option', 'tier': 'coverage', 'timeout': 30, 'router': False,
+     'procs': [proc('logobserver', args=['--not-an-observer-option'],
+                    expect=[r'Usage of Areg Log Observer console application'])]},
+    {'name': '36_logobserver_cmdline', 'tier': 'coverage', 'timeout': 90, 'router': False,
+     'procs': [proc('logcollector', args=['--console'], must_exit=False, quit=['-q']),
+               proc('35_logsource', args=['-c=250', '-w=0', '-p=20'], expect=[r'35 log call']),
+               proc('logobserver',
+                    args=['--load=areg.init', '-n', '-e', '*', '-o', '*::examples_35_logsource_PacedThread=NOTSET',
+                          '-f', '-p', '-r', '-x', '-r', '-n', '-q'],
+                    expect=[r'Log observer queries scopes\.',
+                            r'Log observer requested to update scopes\.',
+                            r'Log observer requested to save configuration\.',
+                            r'Log observer is paused',
+                            r'Log observer triggered connection\.',
+                            r'Log observer stops',
+                            r'(Inst\. ID|no connected instances)'])]},
+    {'name': '36_logobserver', 'tier': 'coverage', 'timeout': 90, 'router': False,
+     'check': _check_logobserver_db,
+     'procs': [proc('logcollector', args=['--console'], must_exit=False, quit=['-q']),
+               proc('35_logsource', args=['-c=600', '-w=0', '-p=20'], expect=[r'35 log call']),
+               proc('logobserver', args=['--console'],
+                    stdin=[(1.5, '-r'), (2.0, '-n'), (1.5, '-e *'),
+                           (1.5, '-o *::examples_35_logsource_PacedThread=NOTSET'),
+                           (1.0, '-f'), (0.5, '-p'), (0.5, '-r'), (0.5, '-x'), (0.5, '-r'),
+                           (1.0, '-n'), (0.5, '-l areg.init'), (0.5, '-h'),
+                           (0.5, 'not-a-command'), (1.0, '-q')],
+                    expect=[r'Log observer triggered connection\.',
+                            r'List of connected instances',
+                            r'Log observer queries scopes\.',
+                            r'Log observer requested to update scopes\.',
+                            r'Log observer requested to save configuration\.',
+                            r'Log observer is paused',
+                            r'Log observer stops',
+                            r'Usage of Areg Log Observer console application'])]},
 
     # -- benchmarks, always last -------------------------------------------
     # Both drive the console of the application exactly as it is driven by hand. The
@@ -1960,7 +2045,10 @@ def main():
     CAPTURE_STACKS = not args.no_stacks
 
     selection = SCENARIOS
-    if args.tier != 'all':
+    if args.tier == 'coverage':
+        # Everything but the benchmarks: the smoke and ipc scenarios plus the coverage ones.
+        selection = [s for s in selection if s['tier'] != 'perf']
+    elif args.tier != 'all':
         selection = [s for s in selection if s['tier'] == args.tier]
     else:
         selection = [s for s in selection if s['tier'] not in ('perf', 'coverage')]

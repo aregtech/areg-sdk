@@ -443,7 +443,7 @@ uint32_t SharedBuffer::read_data(uint8_t* buf, uint32_t size) const noexcept
 
     const uint32_t avail  = limit - mPosition;
     const uint32_t result = std::min(avail, size);
-    areg::mem_copy_exact(buf, areg::buffer_data_read(raw) + mPosition, result);
+    areg::mem_copy_exact(buf, size, areg::buffer_data_read(raw) + mPosition, result);
     mPosition += result;
     return result;
 }
