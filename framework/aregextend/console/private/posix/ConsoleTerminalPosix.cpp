@@ -85,7 +85,7 @@ namespace {
 
             struct sigaction action{};
             action.sa_handler = &_on_signal;
-            ::sigemptyset(&action.sa_mask);
+            sigemptyset(&action.sa_mask);
             action.sa_flags = (_SIGNALS[i] == SIGCONT) ? SA_RESTART : (SA_RESTART | SA_RESETHAND);
             _installed[i] = (::sigaction(_SIGNALS[i], &action, &_oldActions[i]) == 0);
         }

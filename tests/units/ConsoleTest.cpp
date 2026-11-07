@@ -1379,7 +1379,7 @@ TEST(ConsoleKeyboardTest, signal_handler_restores_the_terminal_and_raises_the_si
         AREG_CHILD_CHECK(::sigaction(SIGCONT, nullptr, &cont) == 0);
         struct sigaction wrapper{};
         wrapper.sa_handler = &_wrapper;
-        ::sigemptyset(&wrapper.sa_mask);
+        sigemptyset(&wrapper.sa_mask);
         AREG_CHILD_CHECK(::sigaction(SIGTERM, &wrapper, nullptr) == 0);
 
         AREG_CHILD_CHECK(::raise(SIGTERM) == 0);
@@ -1409,7 +1409,7 @@ TEST(ConsoleKeyboardTest, actions_set_by_the_application_stay)
         struct sigaction info{};
         info.sa_sigaction = [](int, siginfo_t*, void*) {};
         info.sa_flags = SA_SIGINFO;
-        ::sigemptyset(&info.sa_mask);
+        sigemptyset(&info.sa_mask);
         AREG_CHILD_CHECK(::sigaction(SIGQUIT, &info, nullptr) == 0);
         Terminal terminal(60, 10, true);
         Console& console = Console::instance();
