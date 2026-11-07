@@ -18,6 +18,11 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
+// Declares the pseudo terminal functions: g++ on Cygwin does not predefine it, unlike on Linux.
+#if defined(__CYGWIN__) && !defined(_GNU_SOURCE)
+    #define _GNU_SOURCE
+#endif
+
 #include "units/GUnitTest.hpp"
 #include "units/ChildProcess.hpp"
 #include "units/VtScreen.hpp"
@@ -149,7 +154,13 @@ namespace
         Terminal(int columns, int rows, bool controlling = false)
             : screen(columns, rows)
         {
-            if (controlling)
+#if defined(__CYGWIN__)
+            // A new session stops Cygwin from making a duplicated slave the controlling terminal, whose master reads end of file.
+            const bool session{ true };
+#else
+            const bool session{ controlling };
+#endif
+            if (session)
             {
                 AREG_CHILD_CHECK((::getsid(0) == ::getpid()) || (::setsid() != -1));
             }
