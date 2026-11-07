@@ -39,6 +39,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="aregextend\console\private\ansi\AnsiWriter.cpp" />
     <ClCompile Include="aregextend\console\private\ansi\ConsoleAnsi.cpp" />
     <ClCompile Include="aregextend\console\private\Console.cpp" />
     <ClCompile Include="aregextend\console\private\ncurses\ConsoleNcurses.cpp" />
@@ -77,6 +78,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="aregextend\console\Console.hpp" />
+    <ClInclude Include="aregextend\console\private\ansi\AnsiWriter.hpp" />
     <ClInclude Include="aregextend\console\OptionParser.hpp" />
     <ClInclude Include="aregextend\db\SqliteDatabase.hpp" />
     <ClInclude Include="aregextend\db\LogDbWriter.hpp" />

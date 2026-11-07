@@ -691,45 +691,45 @@ void ServicingComponent::_print_info() const
     // All label colons are aligned at column 26 (0-indexed: 25).  Format:
     //   8-space indent + label + fill-to-col-25 + ":" + " " + value
     int16_t row = static_cast<int16_t>(COORD_OPT_INFO.posY);
-    console.output_txt ({ 1, row++ }, " ---------------------------------------" );
-    console.output_txt ({ 1, row++ }, " Printing image current options:" );
-    console.output_msg ({ 1, row++ }, " The large data state is : %s"             , mOptions.state().as_string());
-    console.output_msg ({ 1, row++ }, "        Width ...........: %7u pix."       , mOptions.mWidth);
-    console.output_msg ({ 1, row++ }, "        Height ..........: %7u pix."       , mOptions.mHeight);
-    console.output_msg ({ 1, row++ }, "        Lines per Block .: %7u lns."       , mOptions.mLines);
+    console.output_txt ({ 0, row++ }, " ---------------------------------------" );
+    console.output_txt ({ 0, row++ }, " Printing image current options:" );
+    console.output_msg ({ 0, row++ }, " The large data state is : %s"             , mOptions.state().as_string());
+    console.output_msg ({ 0, row++ }, "        Width ...........: %7u pix."       , mOptions.mWidth);
+    console.output_msg ({ 0, row++ }, "        Height ..........: %7u pix."       , mOptions.mHeight);
+    console.output_msg ({ 0, row++ }, "        Lines per Block .: %7u lns."       , mOptions.mLines);
     if (mOptions.mPixelTime == 0)
     {
-        console.output_txt ({ 1, row++ }, "        Pixel Time ......:       0 ns (full speed).");
+        console.output_txt ({ 0, row++ }, "        Pixel Time ......:       0 ns (full speed).");
     }
     else
     {
-        console.output_msg ({ 1, row++ }, "        Pixel Time ......: %7u ns."    , mOptions.mPixelTime);
+        console.output_msg ({ 0, row++ }, "        Pixel Time ......: %7u ns."    , mOptions.mPixelTime);
     }
 
-    console.output_msg ({ 1, row++ }, "        Channels ........: %7u ch."        , mOptions.mChannels);
+    console.output_msg ({ 0, row++ }, "        Channels ........: %7u ch."        , mOptions.mChannels);
     if (ns_per_block == 0)
     {
-        console.output_txt ({ 1, row++ }, "        Time per Block ..:    Full Speed (IPC-limited).");
-        console.output_msg ({ 1, row++ }, "        Block Size ......: %7.2f %s."  , static_cast<double>(block_size.first), block_size.second.data());
-        console.output_txt ({ 1, row++ }, "        Block Rate ......:    IPC-limited (see client stats).");
-        console.output_txt ({ 1, row++ }, "        Theoretical rate.:    N/A (pixel time = 0, rate is IPC-bound).");
-        console.output_txt ({ 1, row++ }, "        Total Block Rate :    N/A");
-        console.output_txt ({ 1, row++ }, "        Total rate ......:    N/A (IPC-limited).");
+        console.output_txt ({ 0, row++ }, "        Time per Block ..:    Full Speed (IPC-limited).");
+        console.output_msg ({ 0, row++ }, "        Block Size ......: %7.2f %s."  , static_cast<double>(block_size.first), block_size.second.data());
+        console.output_txt ({ 0, row++ }, "        Block Rate ......:    IPC-limited (see client stats).");
+        console.output_txt ({ 0, row++ }, "        Theoretical rate.:    N/A (pixel time = 0, rate is IPC-bound).");
+        console.output_txt ({ 0, row++ }, "        Total Block Rate :    N/A");
+        console.output_txt ({ 0, row++ }, "        Total rate ......:    N/A (IPC-limited).");
     }
     else
     {
-        console.output_msg ({ 1, row++ }, "        Time per Block ..: %7.2f %s."  , static_cast<double>(time_rate.first),    time_rate.second.data());
-        console.output_msg ({ 1, row++ }, "        Block Size ......: %7.2f %s."  , static_cast<double>(block_size.first),   block_size.second.data());
-        console.output_msg ({ 1, row++ }, "        Block Rate ......: %7u blocks/sec/ch.", static_cast<uint32_t>(block_rate));
-        console.output_msg ({ 1, row++ }, "        Theoretical rate.: %7.2f %s / sec (per channel)"
+        console.output_msg ({ 0, row++ }, "        Time per Block ..: %7.2f %s."  , static_cast<double>(time_rate.first),    time_rate.second.data());
+        console.output_msg ({ 0, row++ }, "        Block Size ......: %7.2f %s."  , static_cast<double>(block_size.first),   block_size.second.data());
+        console.output_msg ({ 0, row++ }, "        Block Rate ......: %7u blocks/sec/ch.", static_cast<uint32_t>(block_rate));
+        console.output_msg ({ 0, row++ }, "        Theoretical rate.: %7.2f %s / sec (per channel)"
                         , static_cast<double>(per_ch_rate.first), per_ch_rate.second.data());
-        console.output_msg ({ 1, row++ }, "        Total Block Rate : %7u blocks/sec" , total_blocks_sec);
-        console.output_msg ({ 1, row++ }, "        Total rate ......: %7.2f %s / sec (all channels)"
+        console.output_msg ({ 0, row++ }, "        Total Block Rate : %7u blocks/sec" , total_blocks_sec);
+        console.output_msg ({ 0, row++ }, "        Total rate ......: %7.2f %s / sec (all channels)"
                         , static_cast<double>(total_rate.first), total_rate.second.data());
     }
 
-    console.output_msg ({ 1, row++ }, "        Connected client : %7d clients."   , mClients);
-    console.output_txt ({ 1, row   }, " ---------------------------------------" );
+    console.output_msg ({ 0, row++ }, "        Connected client : %7d clients."   , mClients);
+    console.output_txt ({ 0, row   }, " ---------------------------------------" );
 
     console.restore_cursor_position();
     console.refresh_screen();
@@ -744,19 +744,19 @@ void ServicingComponent::_print_help() const
     _clear_opt_info();
 
     int16_t row = static_cast<int16_t>(COORD_OPT_INFO.posY);
-    console.output_txt ({ 1, row++ }, "---------------------------------------" );
-    console.output_txt ({ 1, row++ }, "Commands (use short or long form, combine with spaces):" );
-    console.output_txt ({ 1, row++ }, "-w=<value> or --width=<value> ....: Image width. Range [32 .. 32768]" );
-    console.output_txt ({ 1, row++ }, "-h=<value> or --height=<value> ...: Image height. Range [32 .. 32768]" );
-    console.output_txt ({ 1, row++ }, "-l=<value> or --lines=<value> ....: Lines per block, not larger than height." );
-    console.output_txt ({ 1, row++ }, "-t=<value> or --time=<value> .....: Pixel dwell time in nanoseconds. Range [10 .. 100000], 0 = full speed." );
-    console.output_txt ({ 1, row++ }, "-c=<value> or --channels=<value> .: Data source channels. Range [1 .. 64]." );
-    console.output_txt ({ 1, row++ }, "-i         or --info .............: Print current option values." );
-    console.output_txt ({ 1, row++ }, "-h         or --help .............: Print this help." );
-    console.output_txt ({ 1, row++ }, "-s         or --start ............: Start generating and sending data." );
-    console.output_txt ({ 1, row++ }, "-p         or --stop .............: Stop generating data." );
-    console.output_txt ({ 1, row++ }, "-q         or --quit .............: Stop service and quit application." );
-    console.output_txt ({ 1, row   }, "---------------------------------------" );
+    console.output_txt ({ 0, row++ }, "---------------------------------------" );
+    console.output_txt ({ 0, row++ }, "Commands (use short or long form, combine with spaces):" );
+    console.output_txt ({ 0, row++ }, "-w=<value> or --width=<value> ....: Image width. Range [32 .. 32768]" );
+    console.output_txt ({ 0, row++ }, "-h=<value> or --height=<value> ...: Image height. Range [32 .. 32768]" );
+    console.output_txt ({ 0, row++ }, "-l=<value> or --lines=<value> ....: Lines per block, not larger than height." );
+    console.output_txt ({ 0, row++ }, "-t=<value> or --time=<value> .....: Pixel dwell time in nanoseconds. Range [10 .. 100000], 0 = full speed." );
+    console.output_txt ({ 0, row++ }, "-c=<value> or --channels=<value> .: Data source channels. Range [1 .. 64]." );
+    console.output_txt ({ 0, row++ }, "-i         or --info .............: Print current option values." );
+    console.output_txt ({ 0, row++ }, "-h         or --help .............: Print this help." );
+    console.output_txt ({ 0, row++ }, "-s         or --start ............: Start generating and sending data." );
+    console.output_txt ({ 0, row++ }, "-p         or --stop .............: Stop generating data." );
+    console.output_txt ({ 0, row++ }, "-q         or --quit .............: Stop service and quit application." );
+    console.output_txt ({ 0, row   }, "---------------------------------------" );
 
     console.restore_cursor_position();
     console.refresh_screen();
@@ -767,6 +767,6 @@ void ServicingComponent::_clear_opt_info() const
     areg::ext::Console& console = areg::ext::Console::instance();
     for (int16_t i = 0; i < OPT_INFO_LINES; ++i)
     {
-        console.clear_line({ 1, static_cast<int16_t>(COORD_OPT_INFO.posY + i) });
+        console.clear_line({ COORD_OPT_INFO.posX, COORD_OPT_INFO.posY + i });
     }
 }

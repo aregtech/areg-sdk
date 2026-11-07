@@ -354,7 +354,7 @@ void LatencyProvider::_run_input_thread()
     while (!mQuitInput.load(std::memory_order_relaxed))
     {
         console.output_msg(COORD_INPUT, " > %-100s", "");
-        console.set_cursor_cur_position({ 4, COORD_INPUT.posY });
+        console.set_cursor_cur_position({ COORD_INPUT.posX + 3, COORD_INPUT.posY });
         console.refresh_screen();
 
         const areg::String line = console.wait_for_input(nullptr);

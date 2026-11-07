@@ -77,8 +77,8 @@ String Console::wait_for_input(Console::CallBack callback) const
         {
             result.clear();
             _os_restore_cursor_position();
-            char buffer[512]{ 0 };
-            if (Console::_os_wait_input_string(buffer, 512))
+            char buffer[INPUT_BUFFER_SIZE]{ 0 };
+            if (Console::_os_wait_input_string(buffer, INPUT_BUFFER_SIZE))
             {
                 failures = 0u;
                 result = buffer;
@@ -87,7 +87,7 @@ String Console::wait_for_input(Console::CallBack callback) const
                     break;
                 }
             }
-            else if (mInterrupted.load(std::memory_order_relaxed) || (::feof(stdin) != 0))
+            else if (mInterrupted.load(std::memory_order_relaxed) || mInputClosed.load(std::memory_order_relaxed) || (::feof(stdin) != 0))
             {
                 // No more input to read. Redirected or closed input would otherwise spin here.
                 break;
@@ -156,6 +156,33 @@ void Console::print_msg(const char* format, ...) const
 bool Console::read_console_data(char* buffer, uint32_t bufSize)
 {
     return Console::_os_wait_input_string(buffer, bufSize);
+}
+
+Console::Coord Console::screen_size() const noexcept
+{
+    return _os_screen_size();
+}
+
+bool Console::_lock() const noexcept
+{
+    const bool result{ mLock.lock(areg::WAIT_INFINITE) };
+    if (result)
+    {
+        ++mLockDepth;
+    }
+
+    return result;
+}
+
+void Console::_unlock() const noexcept
+{
+    ASSERT(mLockDepth != 0u);
+    if ((mLockDepth != 0u) && (--mLockDepth == 0u))
+    {
+        _os_flush();
+    }
+
+    mLock.unlock();
 }
 
 } // namespace areg::ext

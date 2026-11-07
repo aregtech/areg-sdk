@@ -305,8 +305,6 @@ void LogCollector::print_help( bool isCmdLine )
         return;
     }
 
-#if     AREG_EXTENDED
-
     Console::Coord line{ areg::ext::COORD_INFO_MSG };
     Console& console = Console::instance();
     console.lock_console();
@@ -317,24 +315,7 @@ void LogCollector::print_help( bool isCmdLine )
     }
 
     console.unlock_console();
-
-#else   // AREG_EXTENDED
-
-    {
-        Console::Coord line{ areg::ext::COORD_INFO_MSG };
-        Console& console = Console::instance();
-        for (const auto& text : _msgHelp)
-        {
-            console.output_txt(line, text);
-            ++line.posY;
-        }
-
-        console.refresh_screen();
-    }
-
-#endif  // AREG_EXTENDED
 }
-
 
 bool LogCollector::_check_command(const String& cmd)
 {
@@ -430,7 +411,6 @@ bool LogCollector::_check_command(const String& cmd)
         hasError = true;
     }
 
-#if AREG_EXTENDED
     
     Console & console = Console::instance( );
     console.lock_console();
@@ -458,65 +438,20 @@ bool LogCollector::_check_command(const String& cmd)
     console.refresh_screen( );
     console.unlock_console( );
 
-#else   // !AREG_EXTENDED
-
-    {
-        Console& console = Console::instance();
-        if (quit == false)
-        {
-            if (hasError)
-            {
-                console.output_msg(areg::ext::COORD_ERROR_MSG, areg::ext::FORMAT_MSG_ERROR.data(), cmd.as_string());
-            }
-            else
-            {
-                console.clear_line(areg::ext::COORD_ERROR_MSG);
-            }
-
-            console.clear_line(areg::ext::COORD_USER_INPUT);
-            console.output_txt(areg::ext::COORD_USER_INPUT, areg::ext::FORMAT_WAIT_QUIT);
-            console.set_cursor_cur_position({ areg::ext::COORD_USER_INPUT.posX + static_cast<int32_t>(areg::ext::FORMAT_WAIT_QUIT.size()),
-                                              areg::ext::COORD_USER_INPUT.posY });
-        }
-        else
-        {
-            console.output_txt(areg::ext::COORD_INFO_MSG, areg::ext::FORMAT_QUIT_APP);
-        }
-
-        console.refresh_screen();
-    }
-
-#endif  // AREG_EXTENDED
-
     return quit;
 }
 
 void LogCollector::_output_title()
 {
-#if AREG_EXTENDED
-
     Console & console = Console::instance( );
     console.lock_console();
     console.output_txt( areg::ext::COORD_TITLE, logcollector::APP_TITLE.data( ) );
     console.output_txt( areg::ext::COORD_SUBTITLE, areg::ext::MSG_SEPARATOR.data( ) );
     console.unlock_console();
-
-#else   // !AREG_EXTENDED
-
-    {
-        Console& console = Console::instance();
-        console.output_txt(areg::ext::COORD_TITLE,    logcollector::APP_TITLE.data());
-        console.output_txt(areg::ext::COORD_SUBTITLE, areg::ext::MSG_SEPARATOR.data());
-        console.refresh_screen();
-    }
-
-#endif  // AREG_EXTENDED
 }
 
 void LogCollector::_output_info( const String & info )
 {
-#if AREG_EXTENDED
-
     Console & console = Console::instance( );
     Console::Coord coord{areg::ext::COORD_INFO_MSG};
     console.lock_console( );
@@ -527,27 +462,12 @@ void LogCollector::_output_info( const String & info )
     console.refresh_screen( );
 
     console.unlock_console( );
-
-#else   // !AREG_EXTENDED
-
-    {
-        Console& console = Console::instance();
-        Console::Coord coord{ areg::ext::COORD_INFO_MSG };
-        console.output_txt(coord, areg::ext::MSG_SEPARATOR.data());
-        ++coord.posY;
-        console.output_str(coord, info);
-        console.refresh_screen();
-    }
-
-#endif  // AREG_EXTENDED
 }
 
 void LogCollector::_output_instances( const areg::MapInstances & instances )
 {
     static constexpr std::string_view _table{ "   Nr. |  Instance ID  |  Bitness  |  name " };
     static constexpr std::string_view _empty{ "There are no connected instances ..." };
-
-#if AREG_EXTENDED
 
     Console & console = Console::instance( );
     Console::Coord coord{areg::ext::COORD_INFO_MSG};
@@ -583,50 +503,10 @@ void LogCollector::_output_instances( const areg::MapInstances & instances )
 
     console.output_txt( coord, areg::ext::MSG_SEPARATOR.data( ) );
     console.unlock_console( );
-
-#else   // !AREG_EXTENDED
-
-    {
-        Console& console = Console::instance();
-        Console::Coord coord{ areg::ext::COORD_INFO_MSG };
-        if (instances.is_empty())
-        {
-            console.output_txt(coord, areg::ext::MSG_SEPARATOR.data());
-            ++coord.posY;
-            console.output_txt(coord, _empty);
-        }
-        else
-        {
-            console.output_txt(coord, areg::ext::MSG_SEPARATOR.data());
-            ++coord.posY;
-            console.output_txt(coord, _table);
-            ++coord.posY;
-            console.output_txt(coord, areg::ext::MSG_SEPARATOR.data());
-            ++coord.posY;
-            int32_t i{ 1 };
-            for (auto pos = instances.first_position(); instances.is_valid_position(pos); pos = instances.next_position(pos))
-            {
-                ITEM_ID cookie{ 0 };
-                areg::ConnectedInstance instance;
-                instances.at_position(pos, cookie, instance);
-                uint32_t id{ static_cast<uint32_t>(cookie) };
-                console.output_msg(coord, " %4d. |  %11u  |    %u     |  %s ",
-                                   i++, id, static_cast<uint32_t>(instance.ciBitness), instance.ciInstance.c_str());
-                ++coord.posY;
-            }
-        }
-
-        console.output_txt(coord, areg::ext::MSG_SEPARATOR.data());
-        console.refresh_screen();
-    }
-
-#endif  // AREG_EXTENDED
 }
 
-#if AREG_EXTENDED
 void LogCollector::_set_verbose_mode( bool makeVerbose )
 {
-
     static constexpr std::string_view _verbose{ "Switching to verbose mode to output data rate ..." };
     static constexpr std::string_view _silence{ "Switching to silent mode, no data rate output ..." };
     LogCollector & logger = LogCollector::instance( );
@@ -659,23 +539,8 @@ void LogCollector::_set_verbose_mode( bool makeVerbose )
     console.unlock_console( );
 }
 
-#else   // !AREG_EXTENDED
-
-void LogCollector::_set_verbose_mode( bool /* makeVerbose */ )
-{
-    // In simple (ANSI) mode the rate thread always runs verbose; this command is a no-op.
-    static constexpr std::string_view _always_on{ "Data rate display is always active in this mode." };
-    Console& console = Console::instance();
-    console.output_txt(areg::ext::COORD_INFO_MSG, _always_on);
-    console.refresh_screen();
-}
-
-#endif  // AREG_EXTENDED
-
 void LogCollector::_clean_help()
 {
-#if     AREG_EXTENDED
-
     Console::Coord line{ areg::ext::COORD_INFO_MSG };
     Console& console = Console::instance();
     console.lock_console();
@@ -689,8 +554,6 @@ void LogCollector::_clean_help()
     }
 
     console.unlock_console();
-
-#endif  // AREG_EXTENDED
 }
 
 void LogCollector::_process_update_scopes(const OptionParser::InputOption& optScope)

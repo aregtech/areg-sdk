@@ -253,6 +253,12 @@
     <ClCompile Include="units\OptionParserTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="units\AnsiWriterTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\ConsoleTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="units\ArrayListTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

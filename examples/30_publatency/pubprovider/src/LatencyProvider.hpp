@@ -113,17 +113,17 @@ class LatencyProvider final : public    areg::Component
 // Console layout coordinates
 //////////////////////////////////////////////////////////////////////////
 private:
-    static constexpr areg::ext::Console::Coord COORD_TITLE   { 1, 2 };
-    static constexpr areg::ext::Console::Coord COORD_SEP1    { 1, 3 };
+    static constexpr areg::ext::Console::Coord COORD_TITLE   { 0, 1 };
+    static constexpr areg::ext::Console::Coord COORD_SEP1    { 0, 2 };
     //!< Live stats row: mode, clients, messages served, rate
-    static constexpr areg::ext::Console::Coord COORD_LIVE    { 1, 4 };
+    static constexpr areg::ext::Console::Coord COORD_LIVE    { 0, 3 };
     //!< One-way request latency stats row (request mode only, updated every second)
-    static constexpr areg::ext::Console::Coord COORD_LATENCY { 1, 5 };
-    static constexpr areg::ext::Console::Coord COORD_SEP2    { 1, 6 };
-    static constexpr areg::ext::Console::Coord COORD_PROMPT  { 1, 7 };
+    static constexpr areg::ext::Console::Coord COORD_LATENCY { 0, 4 };
+    static constexpr areg::ext::Console::Coord COORD_SEP2    { 0, 5 };
+    static constexpr areg::ext::Console::Coord COORD_PROMPT  { 0, 6 };
     //!< Input row -- " > " drawn here; cursor rests here
-    static constexpr areg::ext::Console::Coord COORD_INPUT   { 1, 8 };
-    static constexpr areg::ext::Console::Coord COORD_SEP3    { 1, 9 };
+    static constexpr areg::ext::Console::Coord COORD_INPUT   { 0, 7 };
+    static constexpr areg::ext::Console::Coord COORD_SEP3    { 0, 8 };
 
 //////////////////////////////////////////////////////////////////////////
 // Console message strings

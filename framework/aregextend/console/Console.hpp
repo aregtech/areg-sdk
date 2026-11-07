@@ -44,6 +44,15 @@ namespace areg::ext {
  *          The console is thread safe, so that if can run in multithreading
  *          environment where one thread is waiting for the user input and
  *          the other thread outputs messages on the desired position.
+ *
+ *          A positioned output is clipped to the screen: it never wraps and never scrolls,
+ *          and a row below the bottom of the screen is not drawn. A new line in the text
+ *          continues on the next row at the same column. Positioned output does not move
+ *          the cursor: it stays where set_cursor_cur_position() placed it.
+ *          The outputs made between lock_console() and unlock_console() reach the terminal
+ *          together when the console is unlocked.
+ *          When the standard output is not a terminal, every positioned output is written
+ *          as one plain line without escape sequences, and cursor operations do nothing.
  **/
 class Console
 {
@@ -90,13 +99,15 @@ public:
      * \brief   Before calling the method the console input must be enabled. Otherwise, the user
      *          cannot make input on console. When called, the calling thread is blocked until user
      *          completes the input procedure. By completion, it triggers the callback and passes
-     *          the input string of length maximum 255 characters to validate. Returns input string
-     *          if it is validated by callback call or the callback is empty. Repeats the procedure
-     *          if callback is not empty and the input was not validated.
+     *          the input string of maximum INPUT_BUFFER_SIZE - 1 characters to validate. Returns
+     *          input string if it is validated by callback call or the callback is empty. Repeats
+     *          the procedure if callback is not empty and the input was not validated.
+     *          On a terminal the input line supports Backspace, Delete, Left, Right, Home, End,
+     *          Ctrl+A, Ctrl+E and Ctrl+U. Characters past the buffer size are dropped.
      *
      * \param   callback    The callback to validate user input string.
-     * \return  Returns input string maximum 255 characters after validation by callback, or if the
-     *          callback is empty.
+     * \return  Returns input string after validation by callback, or if the callback is empty.
+     *          Returns an empty string if the input is disabled or closed.
      **/
     String wait_for_input( Console::CallBack callback ) const;
 
@@ -146,6 +157,20 @@ public:
      **/
     [[nodiscard]]
     inline bool is_ready() const noexcept;
+
+    /**
+     * \brief   Returns true if the output goes to a terminal that draws at coordinates.
+     *          Returns false if the output is redirected to a pipe or a file.
+     **/
+    [[nodiscard]]
+    inline bool is_terminal() const noexcept;
+
+    /**
+     * \brief   Returns the visible size of the terminal: posX is the number of columns and
+     *          posY the number of rows. Returns { 0, 0 } if the size is unknown.
+     **/
+    [[nodiscard]]
+    Console::Coord screen_size() const noexcept;
 
     /**
      * \brief   Enables or disables the console input. It has no effect if the Console already is
@@ -273,13 +298,15 @@ public:
 
     /**
      * \brief   Locks the console to prevent other threads to output or change cursor position.
+     *          The lock is recursive. Outputs made while it is held are sent to the terminal
+     *          in one write when the last lock is released.
      *
      * \return  Returns true if succeeded to lock. Otherwise, returns false.
      **/
     inline bool lock_console() noexcept;
 
     /**
-     * \brief   Unlocks previously locked console.
+     * \brief   Unlocks previously locked console and sends the collected outputs to the terminal.
      **/
     inline void unlock_console() noexcept;
 
@@ -294,9 +321,38 @@ public:
     static bool read_console_data(char* buffer, uint32_t bufSize);
 
 //////////////////////////////////////////////////////////////////////////
+// Hidden methods.
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Holds the console lock for a scope. The collected outputs are flushed when
+     *          the outermost lock is released. Defined by the backend that uses it.
+     **/
+    class ScopedLock;
+
+    /**
+     * \brief   Takes the console lock and counts the depth.
+     **/
+    bool _lock() const noexcept;
+
+    /**
+     * \brief   Flushes the collected outputs if the outermost lock is released, then unlocks.
+     **/
+    void _unlock() const noexcept;
+
+//////////////////////////////////////////////////////////////////////////
 // Hidden, OS specific methods.
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief   Sends the collected outputs to the terminal. Called with the lock held.
+     **/
+    void _os_flush() const noexcept;
+
+    /**
+     * \brief   Returns the visible size of the terminal in columns and rows, { 0, 0 } if unknown.
+     **/
+    Console::Coord _os_screen_size() const noexcept;
     /**
      * \brief   Setup the console to start to input / output the messages. OS specific implementation.
      **/
@@ -358,12 +414,8 @@ private:
     void _os_clear_line() const noexcept;
 
     /**
-     * \brief   Clears the specified row from column pos.posX to the right edge WITHOUT
-     *          physically moving the OS cursor.  Implementations must NOT call
-     *          SetConsoleCursorPosition() (Win32) or emit a CUP sequence (ANSI) that
-     *          moves the visible cursor, because the input thread may be running
-     *          gets_s() / fgets() concurrently and Windows echoes typed characters at
-     *          the current OS cursor position.
+     * \brief   Clears the specified row from column pos.posX to the right edge. The cursor
+     *          is left where it was, the input thread may be echoing typed characters there.
      *
      * \param   pos     The console coordinate (column, row) of the line to clear.
      **/
@@ -427,6 +479,10 @@ private:
      **/
     bool                mIsReady;
     /**
+     * \brief   True if the output goes to a terminal that draws at coordinates.
+     **/
+    bool                mIsTerminal { false };
+    /**
      * \brief   The last input command as a string on the console.
      **/
     String              mUsrInput;
@@ -448,6 +504,14 @@ private:
      *          to exit its retry loop after an interrupted OS read.
      **/
     mutable std::atomic<bool>   mInterrupted    { false };
+    /**
+     * \brief   Set when the input reached its end, so that no more input can be read.
+     **/
+    mutable std::atomic<bool>   mInputClosed    { false };
+    /**
+     * \brief   The depth of the recursive console lock. Accessed only with the lock held.
+     **/
+    mutable uint32_t            mLockDepth      { 0u };
     /**
      * \brief   POSIX self-pipe used to unblock _os_wait_input_string().
      *          [0] = read end (polled alongside STDIN), [1] = write end (written by _os_interrupt_input).
@@ -483,7 +547,13 @@ inline bool Console::is_ready() const noexcept
     return mIsReady;
 }
 
-inline void Console::output_str( Console::Coord pos, const String & text ) const noexcept{
+inline bool Console::is_terminal() const noexcept
+{
+    return mIsTerminal;
+}
+
+inline void Console::output_str( Console::Coord pos, const String & text ) const noexcept
+{
     _os_output_text( pos, text );
 }
 
@@ -549,12 +619,12 @@ inline void Console::refresh_screen() const noexcept
 
 inline bool Console::lock_console() noexcept
 {
-    return mLock.lock(areg::WAIT_INFINITE);
+    return _lock();
 }
 
 inline void Console::unlock_console() noexcept
 {
-    mLock.unlock( );
+    _unlock();
 }
 
 inline void Console::clear_current_line() const noexcept

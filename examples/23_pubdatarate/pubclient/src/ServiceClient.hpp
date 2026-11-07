@@ -40,22 +40,22 @@ class ServiceClient final : public    areg::Component
 private:
 
     //!< The coordinates to output client application title / headline.
-    static constexpr areg::ext::Console::Coord     COORD_TITLE      { 1, 2 };
+    static constexpr areg::ext::Console::Coord     COORD_TITLE      { 0, 1 };
 
     //!< Coordinates to output a long separator line below the title
-    static constexpr areg::ext::Console::Coord     COORD_SEP1       { 1, 3 };
+    static constexpr areg::ext::Console::Coord     COORD_SEP1       { 0, 2 };
     //!< Coordinates to output data rate information of large data client.
-    static constexpr areg::ext::Console::Coord     COORD_DATA_RATE  { 1, 5 };
+    static constexpr areg::ext::Console::Coord     COORD_DATA_RATE  { 0, 4 };
     //!< Coordinates to output the application-level count of received image blocks (always shown).
-    static constexpr areg::ext::Console::Coord     COORD_RECV_COUNT { 1, 6 };
+    static constexpr areg::ext::Console::Coord     COORD_RECV_COUNT { 0, 5 };
     //!< Coordinates to output data rate information of large data client.
-    static constexpr areg::ext::Console::Coord     COORD_DATA_STAT  { 1, 7 };
+    static constexpr areg::ext::Console::Coord     COORD_DATA_STAT  { 0, 6 };
     //!< Coordinates to output per-second miss-type breakdown.
-    static constexpr areg::ext::Console::Coord     COORD_MISS_DETAIL{ 1, 8 };
-    static constexpr areg::ext::Console::Coord     COORD_SEP2       { 1, 9 };
+    static constexpr areg::ext::Console::Coord     COORD_MISS_DETAIL{ 0, 7 };
+    static constexpr areg::ext::Console::Coord     COORD_SEP2       { 0, 8 };
 
     //!< Cursor resting position: one row below the last output line (no user input needed).
-    static constexpr areg::ext::Console::Coord     COORD_CURSOR     { 1, 10 };
+    static constexpr areg::ext::Console::Coord     COORD_CURSOR     { 0, 9 };
 
     //!< Timer name.
     static constexpr std::string_view   TIMER_NAME      { "DataRateTimer" };

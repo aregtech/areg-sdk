@@ -17,9 +17,10 @@
 
 namespace service_harness
 {
-    void make_terminal(int (&fds)[2])
+    void make_terminal(int (&fds)[2], TerminalSize terminalSize)
     {
 #if defined(_WIN32)
+        (void)terminalSize;
         make_pipe(fds);
 #else
     #if defined(__CYGWIN__)
@@ -34,8 +35,8 @@ namespace service_harness
         fds[1] = ::open(name, O_RDWR | O_NOCTTY);
         AREG_CHILD_CHECK(fds[1] >= 0);
         winsize size{};
-        size.ws_row = 40;
-        size.ws_col = 120;
+        size.ws_row = static_cast<unsigned short>(terminalSize.rows);
+        size.ws_col = static_cast<unsigned short>(terminalSize.columns);
         AREG_CHILD_CHECK(::ioctl(fds[1], TIOCSWINSZ, &size) == 0);
 #endif
     }

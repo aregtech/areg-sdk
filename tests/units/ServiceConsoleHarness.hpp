@@ -15,6 +15,7 @@
 
 #include "units/GUnitTest.hpp"
 #include "units/ChildProcess.hpp"
+#include "units/VtScreen.hpp"
 #include "areg/appbase/AppDefs.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/base/Process.hpp"
@@ -74,8 +75,15 @@ namespace service_harness
         return areg::DispatcherThread::dispatcher_thread(areg::ThreadAddress("SERVER_DISPATCH_MESSAGE_THREAD"));
     }
 
-    //!< Opens a terminal of 40 rows and 120 columns: fds[0] reads what fds[1] draws. A pipe on Windows.
-    void make_terminal(int (&fds)[2]);
+    //!< The size of the terminal a console session draws on.
+    struct TerminalSize
+    {
+        int columns{ 120 };
+        int rows{ 40 };
+    };
+
+    //!< Opens a terminal of the given size: fds[0] reads what fds[1] draws. A pipe on Windows.
+    void make_terminal(int (&fds)[2], TerminalSize size = TerminalSize{});
 
     //!< Prints the stack of every thread of this process on macOS. Does nothing elsewhere.
     void report_threads();
@@ -89,14 +97,15 @@ namespace service_harness
         AREG_CHILD_CHECK(actual == expected);
     }
 
-    inline void set_terminal()
+    inline void set_terminal(TerminalSize size = TerminalSize{})
     {
 #if defined(_WIN32)
+        (void)size;
         AREG_CHILD_CHECK(::_putenv_s("TERM", "xterm") == 0);
 #else
         AREG_CHILD_CHECK(::setenv("TERM", "xterm", 1) == 0);
-        AREG_CHILD_CHECK(::setenv("LINES", "40", 1) == 0);
-        AREG_CHILD_CHECK(::setenv("COLUMNS", "120", 1) == 0);
+        AREG_CHILD_CHECK(::setenv("LINES", std::to_string(size.rows).c_str(), 1) == 0);
+        AREG_CHILD_CHECK(::setenv("COLUMNS", std::to_string(size.columns).c_str(), 1) == 0);
 #endif
     }
 
@@ -542,7 +551,7 @@ namespace service_harness
     public:
         std::string output;
 
-        explicit ConsoleSession(const PrivateConfig& config)
+        explicit ConsoleSession(const PrivateConfig& config, TerminalSize size = TerminalSize{})
             : output()
             , mService(config.service)
             , mInput{-1, -1}
@@ -550,6 +559,7 @@ namespace service_harness
             , mSavedInput(duplicate(descriptor(stdin)))
             , mSavedOutput(duplicate(descriptor(stdout)))
             , mTerminal()
+            , mScreen(size.columns, size.rows)
             , mMutex()
             , mChanged()
             , mEnded(false)
@@ -558,9 +568,9 @@ namespace service_harness
             , mResult()
         {
             AREG_CHILD_CHECK(mSavedInput >= 0 && mSavedOutput >= 0);
-            set_terminal();
+            set_terminal(size);
             make_pipe(mInput);
-            make_terminal(mOutput);
+            make_terminal(mOutput, size);
             std::fflush(stdout);
             redirect(mInput[0], descriptor(stdin));
             redirect(mOutput[1], descriptor(stdout));
@@ -574,6 +584,7 @@ namespace service_harness
                 {
                     std::lock_guard<std::mutex> lock(mMutex);
                     mTerminal.feed(buffer, static_cast<size_t>(count));
+                    mScreen.feed(std::string_view(buffer, static_cast<size_t>(count)));
                     output = mTerminal.transcript;
                     mChanged.notify_all();
                 }
@@ -600,21 +611,13 @@ namespace service_harness
 
         void silent_command()
         {
-#if AREG_EXTENDED
             command("--silent", "Switching to silent mode, no data rate output");
-#else
-            command("--silent", "Data rate display is always active in this mode.");
-#endif
         }
 
         void verbose_command()
         {
-#if AREG_EXTENDED
             check_console_verbose(mService, false);
             command("--verbose", "Switching to verbose mode to output data rate");
-#else
-            command("--verbose", "Data rate display is always active in this mode.");
-#endif
         }
 
         void expect(const std::string& token, size_t offset = 0u)
@@ -643,6 +646,15 @@ namespace service_harness
             std::unique_lock<std::mutex> lock(mMutex);
             AREG_CHILD_CHECK(mChanged.wait_for(lock, DEADLINE, [&]() { return !mTerminal.shows(token) || mEnded; }));
             AREG_CHILD_CHECK(!mTerminal.shows(token));
+        }
+
+        //!< Waits until the predicate holds for the screen the terminal of the session shows.
+        template<typename Predicate>
+        bool wait_screen(Predicate predicate)
+        {
+            std::unique_lock<std::mutex> lock(mMutex);
+            return mChanged.wait_for(lock, DEADLINE, [&]() { return predicate(static_cast<const VtScreen&>(mScreen)) || mEnded; })
+                && predicate(static_cast<const VtScreen&>(mScreen));
         }
 
         size_t mark()
@@ -701,6 +713,7 @@ namespace service_harness
         int mSavedInput;
         int mSavedOutput;
         TerminalCapture mTerminal;
+        VtScreen mScreen;
         std::mutex mMutex;
         std::condition_variable mChanged;
         bool mEnded;

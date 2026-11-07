@@ -18,6 +18,9 @@
     <ClCompile Include="aregextend\console\private\Console.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="aregextend\console\private\ansi\AnsiWriter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="aregextend\console\private\ansi\ConsoleAnsi.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -118,6 +121,9 @@
     </Text>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="aregextend\console\private\ansi\AnsiWriter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="aregextend\console\Console.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

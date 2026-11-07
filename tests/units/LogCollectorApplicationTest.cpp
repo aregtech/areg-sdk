@@ -197,10 +197,33 @@ TEST(LogCollectorApplicationTest, valid_command_clears_the_error_of_the_previous
         ConsoleSession console(config);
         console.command("--not-a-collector-option", "unexpected command");
         console.command("--instances", "There are no connected instances");
-        if (AREG_EXTENDED != 0)
-            console.expect_gone("unexpected command");
+        console.expect_gone("unexpected command");
         console.quit();
     );
+}
+
+// Reproduces the defect: on a small terminal the help text wrapped and scrolled the screen, the title was lost.
+TEST(LogCollectorApplicationTest, help_keeps_the_screen_in_place_on_small_terminals)
+{
+#if defined(_WIN32)
+    GTEST_SKIP() << "the console of a Windows test is a pipe";
+#else
+    for (const TerminalSize size : { TerminalSize{ 80, 24 }, TerminalSize{ 120, 30 } })
+    {
+        AREG_EXPECT_IN_CHILD(
+            PrivateConfig config(COLLECTOR);
+            ConsoleSession console(config, size);
+            console.command("-h", "Usage of Areg Log collector");
+            console.command("--instances", "There are no connected instances");
+            const int promptX{ areg::ext::COORD_USER_INPUT.posX + static_cast<int>(areg::ext::FORMAT_WAIT_QUIT.size()) };
+            AREG_CHILD_CHECK(console.wait_screen([&](const VtScreen& screen)
+                { return (screen.cursor_x() == promptX) && (screen.cursor_y() == areg::ext::COORD_USER_INPUT.posY); }));
+            AREG_CHILD_CHECK(console.wait_screen([](const VtScreen& screen)
+                { return (screen.scrolled() == 0) && (screen.wrapped() == 0) && (screen.row(0).rfind("Areg Log Collector console application", 0) == 0); }));
+            console.quit();
+        );
+    }
+#endif
 }
 
 TEST(LogCollectorApplicationTest, connected_instance_is_rendered_and_pause_restart_close_and_reopen_host)
@@ -255,7 +278,7 @@ TEST(LogCollectorApplicationTest, silent_and_verbose_switch_the_rate_display)
         auto& helper = application().data_rate_helper();
         AREG_CHILD_CHECK(helper.output_data_rate());
         console.silent_command();
-        AREG_CHILD_CHECK(helper.output_data_rate() == (AREG_EXTENDED == 0));
+        AREG_CHILD_CHECK(!helper.output_data_rate());
         console.verbose_command();
         AREG_CHILD_CHECK(helper.output_data_rate());
         console.quit();

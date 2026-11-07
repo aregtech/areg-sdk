@@ -106,6 +106,7 @@ bool Console::_os_setup() noexcept
         DWORD mode = 0;
         _isConsole = (hStdOut != nullptr) && (hStdOut != INVALID_HANDLE_VALUE) &&
                      (GetConsoleMode(hStdOut, &mode) == TRUE);
+        mIsTerminal = _isConsole;
         if (_isConsole == false)
         {
             // The output is redirected
@@ -283,33 +284,36 @@ void Console::_os_set_cursor_cur_position(Console::Coord pos) const noexcept
 
 bool Console::_os_wait_input_string(char* buffer, uint32_t size)
 {
-    if (_isConsole == false)
+    // Reads one line; the rest of a line longer than the buffer is dropped below.
+    if ((size == 0u) || (::fgets(buffer, static_cast<int>(size), stdin) == nullptr))
     {
-        // Redirected input: 'gets_s' aborts the process when the line does not fit, so
-        // 'fgets' is used and the line separator it keeps is removed below.
-        if (::fgets(buffer, static_cast<int>(size), stdin) == nullptr)
+        if (::feof(stdin) != 0)
         {
-            return false;
+            Console::instance().mInputClosed.store(true, std::memory_order_relaxed);
         }
 
-        size_t len = ::strlen(buffer);
-        while ((len > 0u) && ((buffer[len - 1u] == '\n') || (buffer[len - 1u] == '\r')))
-        {
-            buffer[--len] = '\0';
-        }
-
-        return true;
+        return false;
     }
 
-#if !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)
-    #if defined(_WIN32) && !defined(_MINGW)
-        return (::gets_s(buffer, size) != nullptr);
-    #else   // defined(_WIN32)
-        return (::fgets(buffer, size, stdin) != nullptr);
-    #endif  // defined(_WIN32)
-#else   // !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)
-    return (::gets_s(buffer, size) != nullptr);
-#endif  // !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)
+    size_t len = ::strlen(buffer);
+    if ((len != 0u) && (buffer[len - 1u] == '\n'))
+    {
+        buffer[--len] = '\0';
+    }
+    else
+    {
+        // The rest of a line that does not fit is dropped.
+        int ch{ 0 };
+        while (((ch = ::fgetc(stdin)) != EOF) && (ch != '\n'))
+            ;
+    }
+
+    while ((len > 0u) && (buffer[len - 1u] == '\r'))
+    {
+        buffer[--len] = '\0';
+    }
+
+    return true;
 }
 
 void Console::_os_interrupt_input() noexcept
@@ -341,6 +345,22 @@ void Console::_os_interrupt_input() noexcept
 void Console::_os_refresh_screen() const noexcept
 {
     // no-op
+}
+
+void Console::_os_flush() const noexcept
+{
+    // no-op
+}
+
+Console::Coord Console::_os_screen_size() const noexcept
+{
+    CONSOLE_SCREEN_BUFFER_INFO info{};
+    if ((_isConsole == false) || (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &info) == FALSE))
+    {
+        return Console::Coord{ 0, 0 };
+    }
+
+    return Console::Coord{ info.srWindow.Right - info.srWindow.Left + 1, info.srWindow.Bottom - info.srWindow.Top + 1 };
 }
 
 void Console::_os_clear_line() const noexcept

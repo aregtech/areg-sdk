@@ -20,7 +20,7 @@
   ************************************************************************/
 #include "aregextend/console/Console.hpp"
 
-#if (defined(_POSIX) || defined(POSIX)) && (AREG_EXTENDED)
+#if (defined(_POSIX) || defined(POSIX)) && defined(AREG_CONSOLE_NCURSES)
 
 #include <ncurses.h>
 
@@ -300,4 +300,4 @@ void Console::_os_move_cursor_one_line_down() const noexcept
 
 } // namespace areg::ext
 
-#endif  // (defined(_POSIX) || defined(POSIX)) && (AREG_EXTENDED)
+#endif  // (defined(_POSIX) || defined(POSIX)) && defined(AREG_CONSOLE_NCURSES)

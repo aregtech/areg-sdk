@@ -232,32 +232,32 @@ private:
 // Console layout coordinates  (col=1, rows 2-32)
 //////////////////////////////////////////////////////////////////////////
 private:
-    static constexpr areg::ext::Console::Coord COORD_TITLE    { 1,  2 };
-    static constexpr areg::ext::Console::Coord COORD_SEP1     { 1,  3 };
-    static constexpr areg::ext::Console::Coord COORD_LIVE_1   { 1,  4 };
-    static constexpr areg::ext::Console::Coord COORD_LIVE_2   { 1,  5 };
-    static constexpr areg::ext::Console::Coord COORD_SEP2     { 1,  6 };
-    static constexpr areg::ext::Console::Coord COORD_PROMPT   { 1,  7 };
-    static constexpr areg::ext::Console::Coord COORD_INPUT    { 1,  8 };
-    static constexpr areg::ext::Console::Coord COORD_SEP3     { 1,  9 };
-    static constexpr areg::ext::Console::Coord COORD_EX_HDR   { 1, 10 };
-    static constexpr areg::ext::Console::Coord COORD_EX1      { 1, 11 };
-    static constexpr areg::ext::Console::Coord COORD_EX2      { 1, 12 };
-    static constexpr areg::ext::Console::Coord COORD_EX3      { 1, 13 };
-    static constexpr areg::ext::Console::Coord COORD_EX4      { 1, 14 };
-    static constexpr areg::ext::Console::Coord COORD_EX5      { 1, 15 };
-    static constexpr areg::ext::Console::Coord COORD_EX6      { 1, 16 };
-    static constexpr areg::ext::Console::Coord COORD_EX7      { 1, 17 };
-    static constexpr areg::ext::Console::Coord COORD_EX8      { 1, 18 };
-    static constexpr areg::ext::Console::Coord COORD_SEP4     { 1, 19 };
-    static constexpr areg::ext::Console::Coord COORD_SETTINGS { 1, 20 };
-    static constexpr areg::ext::Console::Coord COORD_SEP5     { 1, 21 };
-    static constexpr areg::ext::Console::Coord COORD_RES_HDR  { 1, 22 };
-    static constexpr areg::ext::Console::Coord COORD_TBL_TOP  { 1, 23 };
-    static constexpr areg::ext::Console::Coord COORD_TBL_HDR  { 1, 24 };
-    static constexpr areg::ext::Console::Coord COORD_TBL_SEP  { 1, 25 };
-    static constexpr areg::ext::Console::Coord COORD_TBL_ROW0 { 1, 26 };  //!< First data row
-    static constexpr areg::ext::Console::Coord COORD_TBL_BOT  { 1, COORD_TBL_ROW0.posY + MAX_RESULT_ROWS };  //!< 26 + MAX_RESULT_ROWS
+    static constexpr areg::ext::Console::Coord COORD_TITLE    { 0,  1 };
+    static constexpr areg::ext::Console::Coord COORD_SEP1     { 0,  2 };
+    static constexpr areg::ext::Console::Coord COORD_LIVE_1   { 0,  3 };
+    static constexpr areg::ext::Console::Coord COORD_LIVE_2   { 0,  4 };
+    static constexpr areg::ext::Console::Coord COORD_SEP2     { 0,  5 };
+    static constexpr areg::ext::Console::Coord COORD_PROMPT   { 0,  6 };
+    static constexpr areg::ext::Console::Coord COORD_INPUT    { 0,  7 };
+    static constexpr areg::ext::Console::Coord COORD_SEP3     { 0,  8 };
+    static constexpr areg::ext::Console::Coord COORD_EX_HDR   { 0, 9 };
+    static constexpr areg::ext::Console::Coord COORD_EX1      { 0, 10 };
+    static constexpr areg::ext::Console::Coord COORD_EX2      { 0, 11 };
+    static constexpr areg::ext::Console::Coord COORD_EX3      { 0, 12 };
+    static constexpr areg::ext::Console::Coord COORD_EX4      { 0, 13 };
+    static constexpr areg::ext::Console::Coord COORD_EX5      { 0, 14 };
+    static constexpr areg::ext::Console::Coord COORD_EX6      { 0, 15 };
+    static constexpr areg::ext::Console::Coord COORD_EX7      { 0, 16 };
+    static constexpr areg::ext::Console::Coord COORD_EX8      { 0, 17 };
+    static constexpr areg::ext::Console::Coord COORD_SEP4     { 0, 18 };
+    static constexpr areg::ext::Console::Coord COORD_SETTINGS { 0, 19 };
+    static constexpr areg::ext::Console::Coord COORD_SEP5     { 0, 20 };
+    static constexpr areg::ext::Console::Coord COORD_RES_HDR  { 0, 21 };
+    static constexpr areg::ext::Console::Coord COORD_TBL_TOP  { 0, 22 };
+    static constexpr areg::ext::Console::Coord COORD_TBL_HDR  { 0, 23 };
+    static constexpr areg::ext::Console::Coord COORD_TBL_SEP  { 0, 24 };
+    static constexpr areg::ext::Console::Coord COORD_TBL_ROW0 { 0, 25 };  //!< First data row
+    static constexpr areg::ext::Console::Coord COORD_TBL_BOT  { 0, COORD_TBL_ROW0.posY + MAX_RESULT_ROWS };  //!< 25 + MAX_RESULT_ROWS
 
 //////////////////////////////////////////////////////////////////////////
 // Console message strings
