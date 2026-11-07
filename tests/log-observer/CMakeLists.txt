@@ -25,8 +25,22 @@ endif()
 target_compile_options(${AREG_LOG_OBSERVER_PROJECT} PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")
 add_dependencies(${AREG_LOG_OBSERVER_PROJECT} logcollector)
 
+# Links areglogger and nothing else, so a dependency the library does not carry fails the link.
+set(AREG_LOGGER_LINK_PROJECT "areg-logger-link-test")
+add_executable(${AREG_LOGGER_LINK_PROJECT} "${AREG_TESTS_DIR}/log-observer/logger_link_test.cpp")
+if (AREG_LOGGER_LIB_TYPE MATCHES "shared")
+    target_compile_definitions(${AREG_LOGGER_LINK_PROJECT} PRIVATE ${COMMON_COMPILE_DEF} IMP_LOGGER_DLL)
+else()
+    target_compile_definitions(${AREG_LOGGER_LINK_PROJECT} PRIVATE ${COMMON_COMPILE_DEF} IMP_LOGGER_LIB)
+endif()
+target_compile_options(${AREG_LOGGER_LINK_PROJECT} PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")
+target_link_libraries(${AREG_LOGGER_LINK_PROJECT} PRIVATE ${AREG_PACKAGE_NAME}::areglogger)
+add_test(NAME ${AREG_LOGGER_LINK_PROJECT} COMMAND ${AREG_LOGGER_LINK_PROJECT})
+set_tests_properties(${AREG_LOGGER_LINK_PROJECT} PROPERTIES TIMEOUT 60)
+
 foreach(_observer_case
         calls-before-initialize
+        one-framework
         calls-after-release
         offline-lifecycle
         connect-without-collector

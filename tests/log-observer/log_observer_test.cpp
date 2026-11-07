@@ -888,6 +888,20 @@ namespace
         return true;
     }
 
+    bool case_one_framework()
+    {
+        ObserverEvents events{ make_events(false) };
+        CHECK(areg::Application::is_configured() == false);
+        REQUIRE(log_observer_initialize(&events, _env.observerCfg.c_str()));
+
+        // Reproduces the defect: a static areg with a shared areglogger gave the process two frameworks.
+        // The observer configured its own copy, and this executable saw a framework never configured.
+        CHECK(areg::Application::is_configured());
+
+        log_observer_release();
+        return true;
+    }
+
     bool case_calls_after_release()
     {
         ObserverEvents events{ make_events(false) };
@@ -1688,6 +1702,8 @@ int main(int argc, char * argv[])
     bool result{ false };
     if (name == "calls-before-initialize")
         result = case_calls_before_initialize();
+    else if (name == "one-framework")
+        result = case_one_framework();
     else if (name == "calls-after-release")
         result = case_calls_after_release();
     else if (name == "offline-lifecycle")

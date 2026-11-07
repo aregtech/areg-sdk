@@ -24,15 +24,10 @@ if (AREG_LOGGER_LIB_TYPE MATCHES "shared")
     # log observer API shared library
     target_compile_definitions(areglogger PRIVATE EXP_LOGGER_DLL)
 
-    # add MSVC linker option
-    if (MSVC)
-        target_link_options(areglogger PRIVATE "/DEF:\"${AREG_FRAMEWORK}/areglogger/resources/logobserver.def\"")
-    endif()
-
 else()
 
     # build log observer API static library
-    addStaticLibEx(areglogger ${AREG_PACKAGE_NAME} "${areglogger_SRC}" "")
+    addStaticLibEx(areglogger ${AREG_PACKAGE_NAME} "${areglogger_SRC}" "${AREG_PACKAGE_NAME}::aregextend;${AREG_PACKAGE_NAME}::areg")
     target_compile_options(areglogger PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")
     # log observer API static library
     target_compile_definitions(areglogger PRIVATE EXP_LOGGER_LIB)

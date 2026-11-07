@@ -487,7 +487,7 @@ tools/intern/sanitize.sh <mode> [options] [-- <args forwarded to the binary>]
 | `--compiler`      | `gnu`              | `gnu` (g++) or `llvm` (clang++).                 |
 | `--target`        | `areg-unit-tests`  | CMake target to build. `--run ctest` builds every target instead. |
 | `--run`           | `auto`             | `ctest`, an explicit binary path, `auto`, or `none`. |
-| `--lib`           | `static`           | `static` (most robust for ASan) or `shared`.     |
+| `--lib`           | `static`           | `static` (most robust for ASan) or `shared`, for `areg` and `areglogger`. |
 | `--examples`      | off                | Also build the `examples/` tree.                 |
 | `--jobs N`        | `nproc`            | Parallel build jobs.                             |
 | `--keep`          | off                | Reuse the existing build dir (skip reconfigure). |

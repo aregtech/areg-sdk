@@ -87,7 +87,7 @@ All 22 CMake configuration options for Areg SDK:
 | 16 | [AREG_LIB_DIR](#16-areg_lib_dir) | Directory path | `{AREG_OUTPUT_DIR}/lib` | Library output directory |
 | 17 | [AREG_DEPS_DIR](#17-areg_deps_dir) | Directory path | `{CMAKE_BINARY_DIR}/packages` | Third-party packages directory |
 | 18 | [AREG_OUTPUT_LAYOUT](#18-areg_output_layout) | `ON`, `OFF` | `ON` | Use Areg output paths |
-| 19 | [AREG_LOGGER_LIB_TYPE](#19-areg_logger_lib_type) | `shared`, `static` | `shared` | Logger library type |
+| 19 | [AREG_LOGGER_LIB_TYPE](#19-areg_logger_lib_type) | `shared`, `static` | Value of `AREG_LIB_TYPE` | Logger library type |
 | 20 | [AREG_TARGET](#20-areg_target) | Architecture string | System default | Compiler architecture target |
 | 21 | [AREG_ARCH](#21-areg_arch) | `x86`, `x64`, `arm`, `aarch64` | System default | Target CPU architecture |
 | 22 | [AREG_ARCH_NATIVE](#22-areg_arch_native) | `ON`, `OFF` | `OFF` | Optimize Release builds for the build machine CPU (GNU/Clang) |
@@ -481,11 +481,14 @@ cmake -B ./build -DAREG_OUTPUT_LAYOUT=OFF
 - `shared` - Dynamic library
 - `static` - Static library
 
-**Default:** `shared`
+**Default:** the value of `AREG_LIB_TYPE`
 **Example:**
 ```bash
 cmake -B ./build -DAREG_LOGGER_LIB_TYPE=static
 ```
+
+> [!NOTE]
+> A shared `areglogger` built with a static `areg` embeds its own copy of the framework. An application that also uses `areg` then holds two independent copies. Set different types only for a process that uses `areglogger` alone.
 
 <div align="right"><kbd><a href="#complete-options-reference">↑ Back to options ↑</a></kbd></div>
 
