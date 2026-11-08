@@ -62,6 +62,16 @@ public:
     static bool route_outgoing_message( Event & srcWire, const Channel & comChannel );
 
     /**
+     * \brief   Stamps the wire routing fields (source/target) on a local remote event in place,
+     *          making it ready for transmission.
+     *
+     * \param[in,out]   srcWire     In-out remote event; its header is rewritten to wire form.
+     * \param           cookie      The process cookie of the sender.
+     * \return  true if stamped; false for unrecognised event type or empty buffer.
+     **/
+    static bool route_outgoing_message( Event & srcWire, ITEM_ID cookie );
+
+    /**
      * \brief   Translates an inbound wire envelope and delivers it to the target stub or proxy thread.
      *          Must be called directly on the receive thread.
      *

@@ -198,6 +198,7 @@ TEST( FileOsCoverageTest, empty_home_makes_the_user_mask_the_current_directory )
     );
 }
 
+#if !defined(__CYGWIN__)
 /**
  * \brief   Without a working directory the path helpers return the path they were given.
  **/
@@ -256,5 +257,6 @@ TEST( FileOsCoverageTest, write_beyond_the_file_size_limit_changes_nothing )
         AREG_CHILD_CHECK( areg::File::delete_file( path ) );
     );
 }
+#endif  // !defined(__CYGWIN__)
 
 #endif  // defined(_POSIX)

@@ -177,7 +177,10 @@ TEST_F( SocketOsLoopTest, unconnected_socket_cannot_stop_sending_and_a_listener_
 {
     const SOCKETHANDLE handle{ areg::socket_create( ) };
     ASSERT_TRUE( areg::is_valid_socket( handle ) );
+#if !defined(__CYGWIN__)
+    // The Cygwin shutdown() accepts a socket that is not connected.
     EXPECT_FALSE( areg::disable_send( handle ) );
+#endif  // !defined(__CYGWIN__)
     areg::socket_close( handle );
 
     areg::SocketAddress address;
@@ -461,6 +464,8 @@ TEST_F( SocketOsLoopTest, unregistered_socket_leaves_the_pending_batch )
     {
         ASSERT_TRUE( pair.open( ) );
         ASSERT_EQ( areg::send_data( pair.server, data, 1u ), 1 );
+        // Waits until the byte can be read.
+        ASSERT_EQ( areg::SocketMultiplexer{ }.wait( pair.client, nullptr, 0, 10'000 ), pair.client );
         ASSERT_TRUE( mux.register_socket( pair.client, true ) );
     }
 

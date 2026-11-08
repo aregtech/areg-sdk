@@ -68,13 +68,13 @@ bool LoggerClient::start_logger_client(const String & address /*= String::EmptyS
     if ((address.is_empty() == false) && (portNr != areg::InvalidPort))
     {
         Lock lock(mLock);
-        mIsPaused = false;
+        mIsPaused.store(false, std::memory_order_relaxed);
         apply_connection_data(address, portNr);
     }
     else
     {
         Lock lock(mLock);
-        mIsPaused = false;
+        mIsPaused.store(false, std::memory_order_relaxed);
         ConnectionConfiguration config(LoggerClient::SERVICE_TYPE, LoggerClient::CONNECT_TYPE);
         if (config.is_configured())
         {
@@ -90,7 +90,7 @@ void LoggerClient::stop_logger_client()
     do
     {
         Lock lock(mLock);
-        mIsPaused = false;
+        mIsPaused.store(false, std::memory_order_relaxed);
     } while (false);
 
     disconnect_service_host();
@@ -111,9 +111,9 @@ void LoggerClient::set_paused(bool doPause)
     do
     {
         Lock lock(mLock);
-        mIsPaused = doPause;
+        mIsPaused.store(doPause, std::memory_order_relaxed);
         callback = (mCallbacks != nullptr) && is_connection_started() ? mCallbacks->evtLoggingStarted : nullptr;
-        is_started = mIsPaused ? false : is_connection_started();
+        is_started = mIsPaused.load(std::memory_order_relaxed) ? false : is_connection_started();
     } while (false);
 
     if (LogObserverBase::_theLogObserver != nullptr)
@@ -586,7 +586,7 @@ void LoggerClient::on_service_channel_connected(const Channel& channel)
         const areg::SocketAddress& addr{ mClientConnection.address() };
         address = addr.host_address();
         port = addr.host_port();
-        is_started = mIsPaused ? false : is_connection_started();
+        is_started = mIsPaused.load(std::memory_order_relaxed) ? false : is_connection_started();
 
         if (mCallbacks != nullptr)
         {
@@ -756,7 +756,7 @@ void LoggerClient::process_received_message(MessageEnvelope& msgReceived, Socket
             break;
 
         case areg::FuncIdRange::ServiceLogMessage:
-            if (mIsPaused == false)
+            if (mIsPaused.load(std::memory_order_relaxed) == false)
             {
                 mMessageProcessor.notify_log_message(msgReceived);
             }

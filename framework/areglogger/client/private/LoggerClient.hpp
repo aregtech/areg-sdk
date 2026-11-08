@@ -33,6 +33,8 @@
 
 #include "areglogger/client/private/ObserverMessageProcessor.hpp"
 
+#include <atomic>
+
 /************************************************************************
  * Dependencies
  ************************************************************************/
@@ -654,7 +656,7 @@ private:
     /**
      * \brief   The flag, indicating whether the observer was paused or not.
      **/
-    bool                            mIsPaused;
+    std::atomic_bool                mIsPaused;
 
     /**
      * \brief   The list of connected instances.

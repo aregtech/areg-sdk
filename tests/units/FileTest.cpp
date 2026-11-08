@@ -1182,6 +1182,76 @@ TEST( FileTest, find_parent_walks_up_from_last_position )
 }
 
 /**
+ * \brief   is_path_separator() accepts the separators of the platform and nothing else.
+ **/
+TEST( FileTest, is_path_separator_knows_the_platform_separators )
+{
+    static_assert( areg::File::is_path_separator( areg::File::PATH_SEPARATOR ), "the preferred separator" );
+    EXPECT_TRUE( areg::File::is_path_separator( '/' ) );
+#ifdef _WIN32
+    EXPECT_TRUE( areg::File::is_path_separator( '\\' ) );
+#else   // _WIN32
+    EXPECT_FALSE( areg::File::is_path_separator( '\\' ) );
+#endif  // _WIN32
+    EXPECT_FALSE( areg::File::is_path_separator( '.' ) );
+    EXPECT_FALSE( areg::File::is_path_separator( ':' ) );
+    EXPECT_FALSE( areg::File::is_path_separator( 'a' ) );
+    EXPECT_FALSE( areg::File::is_path_separator( '\0' ) );
+}
+
+/**
+ * \brief   last_path_separator() finds the last separator within the length, or returns -1.
+ **/
+TEST( FileTest, last_path_separator_searches_within_the_length )
+{
+    static_assert( areg::File::last_path_separator( "a/b/c", 5 ) == 3, "the last separator" );
+    static_assert( areg::File::last_path_separator( "abc", 3 ) == -1, "no separator" );
+
+    const char path[]{ "/one/two/three" };
+    EXPECT_EQ( areg::File::last_path_separator( path, 14 ), 8 );
+    EXPECT_EQ( areg::File::last_path_separator( path, 8 ), 4 );
+    EXPECT_EQ( areg::File::last_path_separator( path, 9 ), 8 );
+    EXPECT_EQ( areg::File::last_path_separator( path, 4 ), 0 );
+    EXPECT_EQ( areg::File::last_path_separator( path, 1 ), 0 );
+    EXPECT_EQ( areg::File::last_path_separator( path, 0 ), -1 );
+    EXPECT_EQ( areg::File::last_path_separator( nullptr, 0 ), -1 );
+    EXPECT_EQ( areg::File::last_path_separator( nullptr, -5 ), -1 );
+
+#ifdef _WIN32
+    const char mixed[]{ "C:\\one/two\\three" };
+    EXPECT_EQ( areg::File::last_path_separator( mixed, 16 ), 10 );
+    EXPECT_EQ( areg::File::last_path_separator( mixed, 10 ), 6 );
+    EXPECT_EQ( areg::File::last_path_separator( mixed, 6 ), 2 );
+#else   // _WIN32
+    const char mixed[]{ "/one\\two" };
+    EXPECT_EQ( areg::File::last_path_separator( mixed, 8 ), 0 );
+#endif  // _WIN32
+}
+
+/**
+ * \brief   The path helpers accept a path written with '/' on every platform.
+ **/
+TEST( FileTest, path_helpers_accept_the_unix_separator )
+{
+    const areg::String path( "dir/sub/name.ext" );
+    EXPECT_EQ( areg::File::name_with_extension( path ), areg::String( "name.ext" ) );
+    EXPECT_EQ( areg::File::file_name( path ), areg::String( "name" ) );
+    EXPECT_EQ( areg::File::file_extension( path ), areg::String( ".ext" ) );
+    EXPECT_EQ( areg::File::file_directory( path ), areg::String( "dir/sub" ) );
+    EXPECT_EQ( areg::File::parent_dir( path ), areg::String( "dir/sub" ) );
+    EXPECT_TRUE( areg::File::name_with_extension( areg::String( "dir/sub/" ) ).is_empty( ) );
+    EXPECT_EQ( areg::File::parent_dir( areg::String( "dir/sub/" ) ), areg::String( "dir" ) );
+
+#ifdef _WIN32
+    const areg::String mixed( "C:\\dir/sub\\name.ext" );
+    EXPECT_EQ( areg::File::name_with_extension( mixed ), areg::String( "name.ext" ) );
+    EXPECT_EQ( areg::File::file_directory( mixed ), areg::String( "C:\\dir/sub" ) );
+    EXPECT_EQ( areg::File::parent_dir( mixed ), areg::String( "C:\\dir/sub" ) );
+    EXPECT_TRUE( areg::File::name_with_extension( areg::String( "C:\\dir/" ) ).is_empty( ) );
+#endif  // _WIN32
+}
+
+/**
  * \brief   split_path() appends the components for both separators, skips empty components,
  *          and keeps the entries that are already in the list.
  **/

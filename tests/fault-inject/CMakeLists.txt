@@ -24,9 +24,8 @@ else()
     # The replaced open() must not meet the inline wrapper of the fortified C headers.
     target_compile_options(${AREG_FAULT_INJECT_LIB} PRIVATE -U_FORTIFY_SOURCE -fPIC)
     target_link_libraries(${AREG_FAULT_INJECT_LIB} PRIVATE ${CMAKE_DL_LIBS})
-endif()
-if (APPLE)
-    # The thread sanitizer runtime calls the replaced open() while it initializes, so nothing here is instrumented.
+    # The thread sanitizer runtime calls the replaced functions while it initializes and from
+    # its blocking interceptors, where the instrumentation is not sound. Nothing here is instrumented.
     target_compile_options(${AREG_FAULT_INJECT_LIB} PRIVATE -fno-sanitize=thread)
 endif()
 

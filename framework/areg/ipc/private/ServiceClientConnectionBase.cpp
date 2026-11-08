@@ -396,11 +396,11 @@ void ServiceClientConnectionBase::on_connection_started()
             return;
         }
 
-        mChannel.set_cookie( mClientConnection.cookie() );
-        mChannel.set_source( mMessageDispatcher.number() );
-        mChannel.set_target( mTarget );
+        // Builds a copy: on_channel_connected() has filled mChannel.
+        channel.set_cookie( mClientConnection.cookie() );
+        channel.set_source( mMessageDispatcher.number() );
+        channel.set_target( mTarget );
         set_connection_state(ConnectionPhase::ConnectionStarted);
-        channel = mChannel;
     } while (false);
 
     mConnectionConsumer.on_service_channel_connected(channel);

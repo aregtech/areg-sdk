@@ -90,11 +90,23 @@ namespace
 
     //!< Registers the logging starter when the environment asks for it.
     const bool _loggingStarter{ [] {
-        const char * config{ std::getenv( "AREG_TEST_LOG_CONFIG" ) };
+        constexpr char variable[]{ "AREG_TEST_LOG_CONFIG" };
+#if defined(_WIN32)
+        char * config{ nullptr };
+        std::size_t length{ 0 };
+        if ( (::_dupenv_s( &config, &length, variable ) == 0) && (config != nullptr) && (*config != '\0') )
+        {
+            testing::UnitTest::GetInstance( )->listeners( ).Append( new TestLoggingStarter( config ) );
+        }
+
+        std::free( config );
+#else   // defined(_WIN32)
+        const char * config{ std::getenv( variable ) };
         if ( (config != nullptr) && (*config != '\0') )
         {
             testing::UnitTest::GetInstance( )->listeners( ).Append( new TestLoggingStarter( config ) );
         }
+#endif  // defined(_WIN32)
 
         return true;
     }() };

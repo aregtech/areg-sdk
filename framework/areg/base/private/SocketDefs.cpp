@@ -806,6 +806,13 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept(SOCKETHANDLE serverSocket, const 
         return areg::FailedSocketHandle;
     }
 
+    // A socket that does not listen is refused before the wait.
+    unsigned long listening{ 0u };
+    if (!areg::os::_os_get_option(serverSocket, SOL_SOCKET, SO_ACCEPTCONN, listening) || (listening == 0u))
+    {
+        return areg::FailedSocketHandle;
+    }
+
     const SOCKETHANDLE readable = areg::SocketMultiplexer{}.wait(serverSocket, masterList, entriesCount);
     if (readable == serverSocket)
     {

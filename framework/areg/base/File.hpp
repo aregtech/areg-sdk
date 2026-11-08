@@ -374,6 +374,8 @@ public:
 
     /**
      * \brief   Moves a file or directory from oldPath to newPath; returns true if successful.
+     *          An existing file at newPath is replaced. On Windows, a move refused because
+     *          another process holds the target open is retried for up to about 100 ms.
      *
      * \param   oldPath     Original absolute or relative path.
      * \param   newPath     New absolute or relative path.
@@ -520,6 +522,41 @@ public:
      *                      call; if nullptr, searches from the end, ignoring one trailing separator.
      **/
     static bool find_parent( const char * filePath, const char ** nextPos, const char * lastPos = nullptr ) noexcept;
+
+    /**
+     * \brief   Returns true if the character separates the components of a path.
+     *          On Windows both '/' and '\\' are separators, elsewhere only '/'.
+     *
+     * \param   ch      The character to check.
+     **/
+    [[nodiscard]]
+    static constexpr bool is_path_separator( char ch ) noexcept
+    {
+#ifdef _WIN32
+        return (ch == File::UNIX_SEPARATOR) || (ch == File::DOS_SEPARATOR);
+#else   // _WIN32
+        return (ch == File::PATH_SEPARATOR);
+#endif  // _WIN32
+    }
+
+    /**
+     * \brief   Returns the position of the last path separator within the first 'length'
+     *          characters of the path; returns -1 if there is none.
+     *
+     * \param   path    The path to search; may be nullptr only if 'length' is 0 or negative.
+     * \param   length  The number of characters to search from the beginning of the path.
+     **/
+    [[nodiscard]]
+    static constexpr int32_t last_path_separator( const char * path, int32_t length ) noexcept
+    {
+        while (--length >= 0)
+        {
+            if (File::is_path_separator(path[length]))
+                return length;
+        }
+
+        return -1;
+    }
 
     /**
      * \brief   Splits the file path into components and appends them to the list; returns the

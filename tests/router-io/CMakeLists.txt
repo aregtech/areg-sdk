@@ -45,7 +45,9 @@ foreach(_registration_case
     endforeach()
 
     # The same case with the router scopes logged to a file, which the case then reads.
-    add_test(NAME ${AREG_ROUTER_IO_PROJECT}.${_registration_case}.log
-        COMMAND ${AREG_ROUTER_IO_PROJECT} ${_registration_case} 0 $<TARGET_FILE_DIR:${AREG_ROUTER_IO_PROJECT}> log)
-    set_tests_properties(${AREG_ROUTER_IO_PROJECT}.${_registration_case}.log PROPERTIES TIMEOUT 300)
+    if (AREG_LOGGING)
+        add_test(NAME ${AREG_ROUTER_IO_PROJECT}.${_registration_case}.log
+            COMMAND ${AREG_ROUTER_IO_PROJECT} ${_registration_case} 0 $<TARGET_FILE_DIR:${AREG_ROUTER_IO_PROJECT}> log)
+        set_tests_properties(${AREG_ROUTER_IO_PROJECT}.${_registration_case}.log PROPERTIES TIMEOUT 300)
+    endif()
 endforeach()

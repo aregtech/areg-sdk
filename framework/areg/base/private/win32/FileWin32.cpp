@@ -151,8 +151,7 @@ uint32_t File::_os_set_position(int32_t offset, Cursor::SeekOrigin startAt) cons
 {
     ASSERT(mFileHandle != nullptr);
 
-    unsigned long moveMethod = FILE_BEGIN;
-    unsigned long moveOffset = static_cast<unsigned long>(offset);
+    DWORD moveMethod{ FILE_BEGIN };
     switch (startAt)
     {
     case    Cursor::SeekOrigin::Begin:
@@ -169,11 +168,10 @@ uint32_t File::_os_set_position(int32_t offset, Cursor::SeekOrigin startAt) cons
 
     default:
         AREG_OUTPUT_ERR("Unexpected FileBase::SeekOrigin type.");
-        moveMethod = FILE_CURRENT;
-        moveOffset = 0;
+        return Cursor::INVALID_CURSOR_POSITION;
     }
 
-    DWORD pos = ::SetFilePointer(static_cast<HANDLE>(mFileHandle), static_cast<LONG>(moveOffset), nullptr, static_cast<DWORD>(moveMethod));
+    DWORD pos = ::SetFilePointer(static_cast<HANDLE>(mFileHandle), static_cast<LONG>(offset), nullptr, moveMethod);
     return static_cast<uint32_t>(pos != INVALID_SET_FILE_POINTER ? pos : Cursor::INVALID_CURSOR_POSITION);
 }
 

@@ -74,10 +74,11 @@ bool ClientConnection::create_socket(const String & hostName, uint16_t portNr)
     set_cookie( mClientSocket.create(hostName, portNr) ? areg::COOKIE_LOCAL : areg::COOKIE_UNKNOWN );
     if (mClientSocket.is_valid())
     {
-        areg::set_send_size(mClientSocket.handle(), mSockSendBuf);
-        areg::set_recv_size(mClientSocket.handle(), mSockRecvBuf);
-        areg::set_send_timeout(mClientSocket.handle(), mSockSendTimeoutMs);
-        areg::set_send_refusal(mClientSocket.handle(), _unacked_limit_ms(mSockSendTimeoutMs));
+        const uint32_t timeoutMs{ mSockSendTimeoutMs.load(std::memory_order_relaxed) };
+        areg::set_send_size(mClientSocket.handle(), mSockSendBuf.load(std::memory_order_relaxed));
+        areg::set_recv_size(mClientSocket.handle(), mSockRecvBuf.load(std::memory_order_relaxed));
+        areg::set_send_timeout(mClientSocket.handle(), timeoutMs);
+        areg::set_send_refusal(mClientSocket.handle(), _unacked_limit_ms(timeoutMs));
         areg::set_receive_recheck(mClientSocket.handle(), areg::RECEIVE_RECHECK_MS);
         areg::socket_set_no_delay(mClientSocket.handle());
     }
@@ -91,10 +92,11 @@ bool ClientConnection::create_socket()
     set_cookie( mClientSocket.create() ? areg::COOKIE_LOCAL : areg::COOKIE_UNKNOWN );
     if (mClientSocket.is_valid())
     {
-        areg::set_send_size(mClientSocket.handle(), mSockSendBuf);
-        areg::set_recv_size(mClientSocket.handle(), mSockRecvBuf);
-        areg::set_send_timeout(mClientSocket.handle(), mSockSendTimeoutMs);
-        areg::set_send_refusal(mClientSocket.handle(), _unacked_limit_ms(mSockSendTimeoutMs));
+        const uint32_t timeoutMs{ mSockSendTimeoutMs.load(std::memory_order_relaxed) };
+        areg::set_send_size(mClientSocket.handle(), mSockSendBuf.load(std::memory_order_relaxed));
+        areg::set_recv_size(mClientSocket.handle(), mSockRecvBuf.load(std::memory_order_relaxed));
+        areg::set_send_timeout(mClientSocket.handle(), timeoutMs);
+        areg::set_send_refusal(mClientSocket.handle(), _unacked_limit_ms(timeoutMs));
         areg::set_receive_recheck(mClientSocket.handle(), areg::RECEIVE_RECHECK_MS);
         areg::socket_set_no_delay(mClientSocket.handle());
     }
@@ -108,10 +110,11 @@ bool ClientConnection::create_socket_fd()
     set_cookie( mClientSocket.create_fd() ? areg::COOKIE_LOCAL : areg::COOKIE_UNKNOWN );
     if (mClientSocket.is_valid())
     {
-        areg::set_send_size(mClientSocket.handle(), mSockSendBuf);
-        areg::set_recv_size(mClientSocket.handle(), mSockRecvBuf);
-        areg::set_send_timeout(mClientSocket.handle(), mSockSendTimeoutMs);
-        areg::set_send_refusal(mClientSocket.handle(), _unacked_limit_ms(mSockSendTimeoutMs));
+        const uint32_t timeoutMs{ mSockSendTimeoutMs.load(std::memory_order_relaxed) };
+        areg::set_send_size(mClientSocket.handle(), mSockSendBuf.load(std::memory_order_relaxed));
+        areg::set_recv_size(mClientSocket.handle(), mSockRecvBuf.load(std::memory_order_relaxed));
+        areg::set_send_timeout(mClientSocket.handle(), timeoutMs);
+        areg::set_send_refusal(mClientSocket.handle(), _unacked_limit_ms(timeoutMs));
         areg::set_receive_recheck(mClientSocket.handle(), areg::RECEIVE_RECHECK_MS);
     }
 

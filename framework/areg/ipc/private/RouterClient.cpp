@@ -276,7 +276,7 @@ void RouterClient::failed_process_message( const MessageEnvelope & msgUnprocesse
 
             msgUnprocessed.move_to_begin();
             ServiceResponseEvent evtError{ RemoteEventFactory::create_request_failed_event(msgUnprocessed, mChannel) };
-            if ( evtError.is_valid() && RemoteEventFactory::route_outgoing_message( evtError, mChannel) )
+            if ( evtError.is_valid() && RemoteEventFactory::route_outgoing_message( evtError, connection_cookie()) )
             {
                 send_message(evtError.envelope());
             }
@@ -477,7 +477,7 @@ void RouterClient::process_request_event(ServiceRequestEvent& reqEvent)
     }
     else if ( reqEvent.is_remote() )
     {
-        if ( RemoteEventFactory::route_outgoing_message( reqEvent, mChannel) )
+        if ( RemoteEventFactory::route_outgoing_message( reqEvent, connection_cookie()) )
         {
             LOG_DBG("Sending [ %u ] event: remote message [ %u ] from source [ %u ] to target [ %u ]"
                       , reqEvent.event_id()
@@ -509,7 +509,7 @@ void RouterClient::process_notify_request(ServiceRequestEvent& reqNotifyEvent )
     }
     else if ( reqNotifyEvent.is_remote() )
     {
-        if ( RemoteEventFactory::route_outgoing_message( reqNotifyEvent, mChannel) )
+        if ( RemoteEventFactory::route_outgoing_message( reqNotifyEvent, connection_cookie()) )
         {
             LOG_DBG("Send [ %u ] event: remote message [ %u ] from source [ %u ] to target [ %u ]"
                       , reqNotifyEvent.event_id()
@@ -541,7 +541,7 @@ void RouterClient::process_response_event(ServiceResponseEvent& respEvent)
     }
     else if ( respEvent.is_remote() )
     {
-        if ( RemoteEventFactory::route_outgoing_message( respEvent, mChannel) )
+        if ( RemoteEventFactory::route_outgoing_message( respEvent, connection_cookie()) )
         {
             LOG_DBG("Forwarding [ %u ] message [ %u ] from source [ %u ] to target [ %u ]"
                       , respEvent.event_id()
@@ -568,7 +568,7 @@ bool RouterClient::post_event(Event & eventElem)
     {
         if ( is_connection_started() )
         {
-            return RemoteEventFactory::route_outgoing_message(eventElem, mChannel) && send_message(eventElem.envelope());
+            return RemoteEventFactory::route_outgoing_message(eventElem, connection_cookie()) && send_message(eventElem.envelope());
         }
 
         eventElem.set_event_consumer( static_cast<RemoteEventConsumer *>(this) );

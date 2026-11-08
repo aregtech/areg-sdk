@@ -85,7 +85,7 @@ namespace areg_fault
 | `FileWrite` | `write` | not replaced | not replaced | `errno` |
 | `Allocation` | `operator new(std::nothrow)`, `operator new[](std::nothrow)` | not replaced | not replaced | ignored; the call returns null. The tests are skipped in sanitizer builds, whose runtimes define the operators |
 | `PipeCreate` | `pipe` | not replaced | not replaced | `errno` |
-| `Poll` | `poll` | not replaced | not replaced | `errno`. The AddressSanitizer interceptor does not reach the replacement, so its tests are skipped in that build |
+| `Poll` | `poll` | not replaced | not replaced | `errno`. The AddressSanitizer interceptor does not reach the replacement, so its tests are skipped in that build. `HostName` (`gethostname`) behaves the same |
 | `TermGet` | `tcgetattr` | not replaced | not replaced | `errno` |
 | `TermSet` | `tcsetattr` | not replaced | not replaced | `errno` |
 
@@ -224,9 +224,9 @@ The CMake build on Windows defines the same targets; it has not been run yet.
 | Linux, GCC, Debug | Built and run: 4 of 4 pass, through ctest and directly, repeated. The console cases (`PipeCreate`, `Poll`, `TermGet`, `TermSet`, `FileRead`) pass in Release, in a coverage build, and with ThreadSanitizer; with AddressSanitizer the `Poll` case is skipped |
 | Windows, MSVC 2022, Release x64 | Built through `areg-sdk.sln` and run: 3 of 3 pass (the router case is POSIX only). The CMake build on Windows is not yet run |
 | macOS, AddressSanitizer | Built and run: 4 of 4 pass, the interposing pairs of the linked library apply |
-| macOS, ThreadSanitizer | The library is built without instrumentation. The runtime opens its suppressions file through the replaced `open` while it initializes, before its thread state exists, and an instrumented replacement crashes there |
+| macOS, ThreadSanitizer | The library is built without instrumentation, as on every POSIX platform. The runtime opens its suppressions file through the replaced `open` while it initializes, before its thread state exists, and an instrumented replacement crashes there |
 | Linux, GCC, Release, 32-bit x86 | Built and run: 4 of 4 pass |
-| Linux, GCC, ThreadSanitizer, Debug | Built and run: 4 of 4 pass. The replacement sits behind the sanitizer interceptor (found through `RTLD_NEXT`). The sanitizer creates its own helper thread through `pthread_create` at the first thread creation of a process, so a test that arms `ThreadCreate` starts and stops one thread first |
+| Linux, GCC, ThreadSanitizer, Debug | Built and run: 4 of 4 pass. The replacement sits behind the sanitizer interceptor (found through `RTLD_NEXT`) and is not instrumented: a blocking interceptor switches off the guard interceptors, so the first-use statics of the replacements read as races. The sanitizer creates its own helper thread through `pthread_create` at the first thread creation of a process, so a test that arms `ThreadCreate` starts and stops one thread first |
 | Cygwin | Not built: Cygwin is neither ELF nor a native Win32 build, and no replacement is written for it. Patching the import tables of the Cygwin DLLs, as on Windows, is the way to add it |
 | Coverage | A passing child exits through `std::exit(0)`, which writes its coverage data; not yet confirmed in a coverage build |
 

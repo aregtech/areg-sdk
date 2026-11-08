@@ -1234,6 +1234,33 @@ TEST_F(IpcSocketCoverageTest, router_reject_notice_disconnects_the_channel_and_t
  * \brief   Reproduces the defect: a second start command queued while the first one is pending
  *          started a second connection over the live one. Now the client makes one connection.
  **/
+/**
+ * \brief   Reproduces the defect: the socket options were plain fields, which a second connect
+ *          request wrote while the dispatcher applied them to the new socket.
+ **/
+TEST(IpcClientConnectionTest, socket_options_change_while_the_socket_is_created)
+{
+    constexpr uint32_t ROUNDS{ 200u };
+    areg::ClientConnection client;
+    ASSERT_TRUE(client.set_address(areg::String("127.0.0.1"), 8383u));
+    std::thread writer([&client]()
+    {
+        for (uint32_t i = 1u; i <= ROUNDS; ++i)
+        {
+            client.set_socket_buffers(64u * 1024u + i, 64u * 1024u + i);
+            client.set_send_timeout(1000u + i);
+        }
+    });
+
+    for (uint32_t i = 0u; i < ROUNDS; ++i)
+    {
+        EXPECT_TRUE(client.create_socket_fd());
+        client.close_socket();
+    }
+
+    writer.join();
+}
+
 TEST_F(IpcSocketCoverageTest, start_requested_twice_makes_one_connection)
 {
     constexpr ITEM_ID COOKIE{ areg::COOKIE_REMOTE_SERVICE + 66u };

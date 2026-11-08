@@ -26,6 +26,14 @@
 #include <thread>
 #include <vector>
 
+#if defined(__SANITIZE_THREAD__)
+    #define AREG_TEST_TSAN
+#elif defined(__has_feature)
+    #if __has_feature(thread_sanitizer)
+        #define AREG_TEST_TSAN
+    #endif  // __has_feature(thread_sanitizer)
+#endif  // defined(__SANITIZE_THREAD__)
+
 #if defined(_POSIX) && !defined(__CYGWIN__)
     #include <sys/wait.h>
     #include <unistd.h>
@@ -548,6 +556,10 @@ TEST(SyncTimerTest, static_timer_after_main)
  **/
 TEST(SyncTimerTest, forked_child_runs_its_own_timer_and_the_parent_keeps_its_timers)
 {
+#if defined(AREG_TEST_TSAN)
+    GTEST_SKIP() << "the thread sanitizer refuses a new thread after a fork of a multithreaded process";
+#endif  // defined(AREG_TEST_TSAN)
+
     constexpr uint32_t SHORT_MS{ 5u };
     constexpr uint32_t DEADLINE_MS{ 10'000u };
     areg::SyncTimer armed(60'000u, false);

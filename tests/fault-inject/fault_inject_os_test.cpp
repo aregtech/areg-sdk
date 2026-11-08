@@ -41,6 +41,18 @@
 #include <thread>
 #include <vector>
 
+#if defined(__SANITIZE_ADDRESS__)
+    #define AREG_SKIP_UNDER_ASAN( )     GTEST_SKIP( ) << "the AddressSanitizer interceptor does not reach the replaced function"
+#elif defined(__has_feature)
+    #if __has_feature(address_sanitizer)
+        #define AREG_SKIP_UNDER_ASAN( ) GTEST_SKIP( ) << "the AddressSanitizer interceptor does not reach the replaced function"
+    #endif  // __has_feature(address_sanitizer)
+#endif  // defined(__SANITIZE_ADDRESS__)
+
+#ifndef AREG_SKIP_UNDER_ASAN
+    #define AREG_SKIP_UNDER_ASAN( )
+#endif  // AREG_SKIP_UNDER_ASAN
+
 namespace
 {
     //!< The message of a fault point that did not fail any call.
@@ -275,6 +287,7 @@ namespace
 
 TEST( FaultInjectOsTest, send_data_on_a_non_blocking_socket_waits_through_an_interrupted_poll )
 {
+    AREG_SKIP_UNDER_ASAN( );
     AREG_EXPECT_IN_CHILD( send_data_on_a_non_blocking_socket_waits_through_an_interrupted_poll( ) );
 }
 
@@ -297,6 +310,7 @@ namespace
 
 TEST( FaultInjectOsTest, send_data_on_a_non_blocking_socket_fails_when_the_wait_fails )
 {
+    AREG_SKIP_UNDER_ASAN( );
     AREG_EXPECT_IN_CHILD( send_data_on_a_non_blocking_socket_fails_when_the_wait_fails( ) );
 }
 
@@ -736,6 +750,7 @@ namespace
 
 TEST( FaultInjectOsTest, client_connect_waits_through_an_interrupted_poll_and_fails_when_the_result_cannot_be_read )
 {
+    AREG_SKIP_UNDER_ASAN( );
     AREG_EXPECT_IN_CHILD( client_connect_waits_through_an_interrupted_poll_and_fails_when_the_result_cannot_be_read( ) );
 }
 
@@ -785,6 +800,7 @@ namespace
 
 TEST( FaultInjectOsTest, socket_alive_repeats_interrupted_calls_and_is_false_when_the_poll_fails )
 {
+    AREG_SKIP_UNDER_ASAN( );
     AREG_EXPECT_IN_CHILD( socket_alive_repeats_interrupted_calls_and_is_false_when_the_poll_fails( ) );
 }
 
@@ -1121,6 +1137,32 @@ namespace
         AREG_CHILD_CHECK( areg::receive_data( pair.client, received, sizeof( received ) ) == 4 );
     }
 
+    void stateless_accept_fails_at_once_on_a_socket_that_does_not_listen( )
+    {
+        const SOCKETHANDLE idle{ areg::socket_create( ) };
+        AREG_CHILD_CHECK( areg::is_valid_socket( idle ) );
+
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Poll, EINTR, 1000u ) );
+        AREG_CHILD_CHECK( areg::server_accept( idle, nullptr, 0 ) == areg::FailedSocketHandle );
+        AREG_CHILD_CHECK( areg_fault::calls( areg_fault::FaultPoint::Poll ) == 0u );
+
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::SocketGetOption, EBADF ) );
+        AREG_CHILD_CHECK( areg::server_accept( idle, nullptr, 0 ) == areg::FailedSocketHandle );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::SocketGetOption ) == 1u && NOT_REPLACED );
+        AREG_CHILD_CHECK( areg_fault::calls( areg_fault::FaultPoint::Poll ) == 0u );
+        areg::socket_close( idle );
+
+        LoopListener listener;
+        AREG_CHILD_CHECK( listener.open( ) );
+        const SOCKETHANDLE client{ areg::client_connect( listener.address ) };
+        AREG_CHILD_CHECK( areg::is_valid_socket( client ) );
+        const SOCKETHANDLE accepted{ areg::server_accept( listener.handle, nullptr, 0 ) };
+        AREG_CHILD_CHECK( areg::is_valid_socket( accepted ) );
+        areg::socket_close( accepted );
+        areg::socket_close( client );
+    }
+
     void server_accept_reports_no_socket_when_the_accept_fails( )
     {
         LoopListener listener;
@@ -1156,17 +1198,29 @@ namespace
 
 TEST( FaultInjectOsTest, client_connect_fails_when_the_wait_for_the_connection_fails )
 {
+    AREG_SKIP_UNDER_ASAN( );
     AREG_EXPECT_IN_CHILD( client_connect_fails_when_the_wait_for_the_connection_fails( ) );
 }
 
 TEST( FaultInjectOsTest, socket_alive_with_unread_data_depends_on_the_peek )
 {
+    AREG_SKIP_UNDER_ASAN( );
     AREG_EXPECT_IN_CHILD( socket_alive_with_unread_data_depends_on_the_peek( ) );
 }
 
 TEST( FaultInjectOsTest, cached_small_receive_waits_on_a_non_blocking_socket_and_fails_on_an_error )
 {
     AREG_EXPECT_IN_CHILD( cached_small_receive_waits_on_a_non_blocking_socket_and_fails_on_an_error( ) );
+}
+
+/**
+ * \brief   Reproduces the defect: the wait of the stateless accept on a socket that does not
+ *          listen never ended on macOS and Cygwin, where poll() reports nothing for it.
+ **/
+TEST( FaultInjectOsTest, stateless_accept_fails_at_once_on_a_socket_that_does_not_listen )
+{
+    AREG_SKIP_UNDER_ASAN( );
+    AREG_EXPECT_IN_CHILD( stateless_accept_fails_at_once_on_a_socket_that_does_not_listen( ) );
 }
 
 TEST( FaultInjectOsTest, server_accept_reports_no_socket_when_the_accept_fails )
@@ -1176,6 +1230,7 @@ TEST( FaultInjectOsTest, server_accept_reports_no_socket_when_the_accept_fails )
 
 TEST( FaultInjectOsTest, host_name_is_empty_while_the_system_cannot_report_it )
 {
+    AREG_SKIP_UNDER_ASAN( );
     AREG_EXPECT_IN_CHILD( host_name_is_empty_while_the_system_cannot_report_it( ) );
 }
 

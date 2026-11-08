@@ -353,6 +353,12 @@ struct CompareStringParams
     int              resCountIgnore{};  //!< Test result when compare count number of characters in the strings, ignore case sensitive
 };
 
+//!< Prints the tested string of the parameter.
+inline void PrintTo(const CompareStringParams& param, std::ostream* os)
+{
+    *os << ::testing::PrintToString(std::string(param.left));
+}
+
 //!< List of parameters
 static CompareStringParams _listStringTestCompare[]
 {
@@ -428,6 +434,12 @@ struct TrimStringsParams
     std::string_view    trim_all;    //!< The result to trim all sides.
     int                 count{};    //!< The number of characters in the string to trim. areg::COUNT_ALL means to take the complete string. Otherwise, only a part of string is taken.
 };
+
+//!< Prints the tested string of the parameter.
+inline void PrintTo(const TrimStringsParams& param, std::ostream* os)
+{
+    *os << ::testing::PrintToString(std::string(param.noTrim));
+}
 
 //!< The list of parameters: the string to test and the expected results to compare
 static constexpr TrimStringsParams _listTrimString[]
@@ -580,6 +592,12 @@ struct RemoveCharParams
     std::string_view    resOne;     //!< The result when remove only one (first match) character.
 };
 
+//!< Prints the tested string of the parameter.
+inline void PrintTo(const RemoveCharParams& param, std::ostream* os)
+{
+    *os << ::testing::PrintToString(std::string(param.source));
+}
+
 //!< List of parameters to test and the results to compare
 static constexpr RemoveCharParams _listRemoveCharParams[]
 {
@@ -658,6 +676,12 @@ struct FindCharParams
     int                 pos{};      //!< The position to start searching
     PhraseList          results;    //!< The list of results to compare with.
 };
+
+//!< Prints the tested string of the parameter.
+inline void PrintTo(const FindCharParams& param, std::ostream* os)
+{
+    *os << ::testing::PrintToString(std::string(param.source));
+}
 
 //!< List of parameters to test and the results to compare
 static FindCharParams _listFindFirstCharParams[]
@@ -817,6 +841,12 @@ struct FindPhraseParams
     bool                isSensitive{};  //!< Indicates whether the searching is case sensitive or not.
     PhraseList          results;        //!< The list of results to compare with.
 };
+
+//!< Prints the tested string of the parameter.
+inline void PrintTo(const FindPhraseParams& param, std::ostream* os)
+{
+    *os << ::testing::PrintToString(std::string(param.source));
+}
 
 //!< List of parameters to test and the results to compare
 static FindPhraseParams _listFindFirstPhraseParams[]
@@ -1016,6 +1046,12 @@ struct CompareSubstring
     bool                result{ false };        //!< The expected result when check the substring
 };
 
+//!< Prints the tested string of the parameter.
+inline void PrintTo(const CompareSubstring& param, std::ostream* os)
+{
+    *os << ::testing::PrintToString(std::string(param.source));
+}
+
 //!< The list of testing parameters
 static constexpr CompareSubstring _listCompareSubstring[]
 {
@@ -1116,6 +1152,12 @@ struct StringLines
     PhraseList          lines;
 };
 
+//!< Prints the tested string of the parameter.
+inline void PrintTo(const StringLines& param, std::ostream* os)
+{
+    *os << ::testing::PrintToString(std::string(param.source));
+}
+
 static const StringLines _listStringLines[]
 {
       { { "one\ntwo\nthree\nfour"                       }, { {"one"     }, {"two"   }, {"three" }, {"four"  }                                               } } // 0
@@ -1178,6 +1220,12 @@ struct StringInteger
     std::vector<int>    digits;
     PhraseList          remains;
 };
+
+//!< Prints the tested string of the parameter.
+inline void PrintTo(const StringInteger& param, std::ostream* os)
+{
+    *os << ::testing::PrintToString(std::string(param.source));
+}
 
 static const StringInteger _listStringDigits[]
 {
@@ -1318,6 +1366,12 @@ struct RemoveCharCaseParams
     std::string_view    resInsensitive; //!< Result: remove all, case-insensitive
     std::string_view    resOneInsens;   //!< Result: remove first only, case-insensitive
 };
+
+//!< Prints the tested string of the parameter.
+inline void PrintTo(const RemoveCharCaseParams& param, std::ostream* os)
+{
+    *os << ::testing::PrintToString(std::string(param.source));
+}
 
 //!< Parameters: mixed-case strings exercising both code paths
 static constexpr RemoveCharCaseParams _listRemoveCharCaseParams[]

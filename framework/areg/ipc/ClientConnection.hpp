@@ -252,24 +252,24 @@ private:
      * \brief   The socket descriptor while the socket is usable, read by every thread that sends.
      **/
     std::atomic<SOCKETHANDLE> mLiveHandle;
-#if defined(_MSC_VER)
-    #pragma warning(pop)
-#endif  // _MSC_VER
 
     /**
      * \brief   SO_SNDBUF size applied after create_socket() succeeds.
      **/
-    uint32_t        mSockSendBuf;
+    std::atomic<uint32_t> mSockSendBuf;
 
     /**
      * \brief   Requested SO_RCVBUF size for create_socket().
      **/
-    uint32_t        mSockRecvBuf;
+    std::atomic<uint32_t> mSockRecvBuf;
 
     /**
      * \brief   SO_SNDTIMEO value in ms applied after create_socket() succeeds.
      **/
-    uint32_t        mSockSendTimeoutMs;
+    std::atomic<uint32_t> mSockSendTimeoutMs;
+#if defined(_MSC_VER)
+    #pragma warning(pop)
+#endif  // _MSC_VER
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -366,13 +366,23 @@ inline int32_t ClientConnection::send_message(const MessageEnvelope & env) const
 
 inline void ClientConnection::set_socket_buffers(uint32_t sendBuf, uint32_t recvBuf) noexcept
 {
-    mSockSendBuf = (sendBuf > 0) ? sendBuf : mSockSendBuf;
-    mSockRecvBuf = (recvBuf > 0) ? recvBuf : mSockRecvBuf;
+    if (sendBuf > 0u)
+    {
+        mSockSendBuf.store(sendBuf, std::memory_order_relaxed);
+    }
+
+    if (recvBuf > 0u)
+    {
+        mSockRecvBuf.store(recvBuf, std::memory_order_relaxed);
+    }
 }
 
 inline void ClientConnection::set_send_timeout(uint32_t timeoutMs) noexcept
 {
-    mSockSendTimeoutMs = (timeoutMs > 0) ? timeoutMs : mSockSendTimeoutMs;
+    if (timeoutMs > 0u)
+    {
+        mSockSendTimeoutMs.store(timeoutMs, std::memory_order_relaxed);
+    }
 }
 
 } // namespace areg

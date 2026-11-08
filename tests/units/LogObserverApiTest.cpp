@@ -14,6 +14,8 @@
 #include "areg/base/MessageEnvelope.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/String.hpp"
+#include "areg/base/SocketClient.hpp"
+#include "areg/ipc/RemoteMessageHandler.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
 #include "areglogger/client/LogObserverApi.h"
 #include "areglogger/client/private/LoggerClient.hpp"
@@ -24,6 +26,7 @@
 #include <fstream>
 #include <string>
 #include <system_error>
+#include <thread>
 #include <vector>
 
 #if AREG_LOGGING
@@ -534,6 +537,48 @@ TEST(LogObserverApiTest, connected_instance_names_are_always_terminated)
         AREG_CHILD_CHECK(instance.liLocation[LENGTH_LOCATION - 1] == '\0');
         AREG_CHILD_CHECK(name.compare(0u, LENGTH_NAME - 1u, instance.liName) == 0);
         AREG_CHILD_CHECK(location.compare(0u, LENGTH_LOCATION - 1u, instance.liLocation) == 0);
+    );
+}
+
+/**
+ * Reproduces the defect: the receive thread read the pause flag without synchronization while
+ * another thread changed it. A paused observer drops the log and a resumed one delivers it.
+ **/
+TEST(LogObserverApiTest, pause_changes_while_log_messages_arrive)
+{
+    AREG_EXPECT_IN_CHILD(
+        constexpr uint32_t ROUNDS{ 500u };
+        ObserverEvents events{ make_all_events() };
+        areg::logger::LoggerClient & client{ areg::logger::LoggerClient::instance() };
+        client.set_callbacks(&events);
+        areg::SocketClient socket(areg::String(ADDRESS), 8383u);
+        AREG_CHILD_CHECK(socket.create_fd());
+        // Converts to the inaccessible base class that the receive thread calls.
+        areg::RemoteMessageHandler & handler{ (areg::RemoteMessageHandler &)client };
+        areg::MessageEnvelope entry{ log_message(FIRST, "text") };
+
+        std::thread toggle([&client]() {
+            for (uint32_t i = 0u; i < ROUNDS; ++i)
+            {
+                client.set_paused((i % 2u) == 0u);
+            }
+        });
+
+        for (uint32_t i = 0u; i < ROUNDS; ++i)
+        {
+            handler.process_received_message(entry, socket);
+        }
+
+        toggle.join();
+        client.set_paused(true);
+        const std::size_t delivered{ _seen.texts.size() };
+        handler.process_received_message(entry, socket);
+        AREG_CHILD_CHECK(_seen.texts.size() == delivered);
+
+        client.set_paused(false);
+        handler.process_received_message(entry, socket);
+        AREG_CHILD_CHECK(_seen.texts.size() == delivered + 1u);
+        client.set_callbacks(nullptr);
     );
 }
 

@@ -24,6 +24,7 @@
 #include "areg/base/UtilityDefs.hpp"
 #include "areg/base/StringDefs.hpp"
 #include "areg/base/Containers.hpp"
+#include "areg/base/Thread.hpp"
 
 #include <filesystem>
 
@@ -209,11 +210,12 @@ String File::name_with_extension( const String& filePath )
     if (filePath.is_empty())
         return String::empty_string();
 
-    if (filePath[static_cast<int32_t>(filePath.length()) - 1] == File::PATH_SEPARATOR)
+    const int32_t length{ static_cast<int32_t>(filePath.length()) };
+    if (File::is_path_separator(filePath[length - 1]))
         return String::empty_string();
 
-    const areg::CharPos pos = filePath.find_last(File::PATH_SEPARATOR, areg::END_POS, true);
-    return (areg::is_position_valid(pos) ? String(filePath.buffer(pos + 1)) : filePath);
+    const int32_t pos{ File::last_path_separator(filePath.as_string(), length) };
+    return (pos >= 0 ? String(filePath.buffer(pos + 1)) : filePath);
 }
 
 String File::file_name( const String& filePath )
@@ -243,16 +245,8 @@ String File::file_extension( const String& filePath )
 
 String File::file_directory(const String& filePath)
 {
-    constexpr char separator{ File::PATH_SEPARATOR };
-    areg::CharPos pos = filePath.is_empty() ? areg::INVALID_POS : filePath.find_last( separator, areg::END_POS, true);
-    if (filePath.is_valid_position( pos ) )
-    {
-        return String( filePath, filePath.data().at(static_cast<size_t>(pos)) == separator ? static_cast<areg::CharCount>(pos) : static_cast<areg::CharCount>(pos + 1));
-    }
-    else
-    {
-        return String::EmptyString;
-    }
+    const int32_t pos{ File::last_path_separator(filePath.as_string(), static_cast<int32_t>(filePath.length())) };
+    return (pos >= 0 ? String(filePath, static_cast<areg::CharCount>(pos)) : String::empty_string());
 }
 
 bool File::create_dir_cascaded( const String& dirPath )
@@ -304,14 +298,14 @@ bool File::find_parent(const char * filePath, const char ** nextPos, const char 
     else
     {
         length = areg::string_length<char>(filePath);
-        if (filePath[length - 1] == File::PATH_SEPARATOR)
+        if (File::is_path_separator(filePath[length - 1]))
             --length;
     }
 
     if (length <= 1)
         return false;
 
-    const areg::CharPos pos{ areg::find_last<char>(File::PATH_SEPARATOR, filePath, length - 1, true, nullptr) };
+    const int32_t pos{ File::last_path_separator(filePath, length) };
     if (pos <= 0)
         return false;
 
@@ -526,6 +520,18 @@ bool File::move_file(const String& oldPath, const String& newPath)
 
     std::error_code err;
     std::filesystem::rename(oldPath.data(), newPath.data(), err);
+#ifdef _WIN32
+    // Another process may hold the target open for a moment, for example a virus scanner.
+    constexpr uint32_t RETRY_COUNT  { 10u };
+    constexpr uint32_t RETRY_WAIT_MS{ 10u };
+    for (uint32_t i = 0u; (i < RETRY_COUNT) && (err == std::errc::permission_denied); ++i)
+    {
+        Thread::sleep(RETRY_WAIT_MS);
+        err.clear();
+        std::filesystem::rename(oldPath.data(), newPath.data(), err);
+    }
+#endif  // _WIN32
+
     return !err;
 }
 
