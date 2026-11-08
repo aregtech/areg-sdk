@@ -26,6 +26,7 @@
 #include "areg/base/private/SocketLiveness.hpp"
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/ipc/ClientConnection.hpp"
+#include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
 #include "aregextend/service/ServiceCommunicationBase.hpp"
 #include "units/ServiceTestServer.hpp"
@@ -809,6 +810,81 @@ TEST_F(ServiceCommServerTest, server_state_follows_its_address_and_its_start)
 
     run.stop();
     EXPECT_FALSE(run.server.is_host_connected());
+}
+
+// The server takes its address only from an enabled TCP/IP entry of its own service in the configuration.
+TEST_F(ServiceCommServerTest, server_setup_follows_the_configuration)
+{
+    constexpr uint32_t TCPIP{ static_cast<uint32_t>(areg::ConnectionType::Tcpip) };
+    constexpr uint32_t UDP{ static_cast<uint32_t>(areg::ConnectionType::Udp) };
+    areg::ConfigManager & manager{ areg::Application::config_manager() };
+    const bool configured{ manager.is_configured() };
+    const areg::ListProperties readonly{ manager.readonly_properties() };
+    const areg::ListProperties writable{ manager.module_properties() };
+    manager.set_configuration(areg::ListProperties(), areg::ListProperties());
+
+    TestServer server(Policy::Accept, 0u);
+    EXPECT_FALSE(server.setup_connection_data(areg::RemoteServiceKind::Logger, TCPIP));
+    EXPECT_FALSE(server.setup_connection_data(areg::RemoteServiceKind::Router, 0u));
+    TestServer udp(Policy::Accept, 0u, UDP);
+    EXPECT_FALSE(udp.setup_connection_data(areg::RemoteServiceKind::Router, UDP));
+
+    areg::ConnectionConfiguration config(areg::RemoteServiceKind::Router, areg::ConnectionType::Tcpip);
+    config.set_connection_enable(false);
+    EXPECT_FALSE(server.setup_connection_data(areg::RemoteServiceKind::Router, TCPIP));
+    EXPECT_FALSE(server.is_host_setup());
+
+    config.set_connection_enable(true);
+    config.set_connection_data(areg::String("127.0.0.1"), 23456u);
+    EXPECT_TRUE(server.setup_connection_data(areg::RemoteServiceKind::Router, TCPIP));
+    EXPECT_TRUE(server.is_host_setup());
+    EXPECT_FALSE(server.is_host_connected());
+
+    manager.set_configuration(readonly, writable);
+    if (configured == false)
+    {
+        manager.release_properties();
+    }
+}
+
+// A reconnect of a server that does not run starts it, and clients join it.
+TEST_F(ServiceCommServerTest, reconnect_starts_a_server_that_does_not_run)
+{
+    for (const uint32_t pairs : { 0u, POOL_PAIRS })
+    {
+        Running run(Policy::Accept, pairs);
+        ASSERT_TRUE(run.configure());
+        ASSERT_TRUE(run.server.reconnect_service_host());
+        run.started = true;
+        Peer peer(run.port);
+        ASSERT_TRUE(peer.join());
+        EXPECT_TRUE(run.server.is_host_connected());
+        EXPECT_EQ(run.server.active_client_pair_count(), pairs);
+    }
+}
+
+// A connection failure restarts a connected server and changes nothing on a server that does not run.
+TEST_F(ServiceCommServerTest, connection_failure_restarts_only_a_connected_server)
+{
+    for (const uint32_t pairs : { 0u, POOL_PAIRS })
+    {
+        Running run(Policy::Accept, pairs);
+        ASSERT_TRUE(run.configure());
+        run.server.connection_failure();
+        EXPECT_FALSE(run.server.is_host_pending());
+        EXPECT_FALSE(run.server.is_host_connected());
+
+        run.started = run.server.connect_service_host();
+        ASSERT_TRUE(run.started);
+        Peer before(run.port);
+        ASSERT_TRUE(before.join());
+        run.server.connection_failure();
+        static_cast<void>(before.drain());
+
+        Peer after(run.port);
+        ASSERT_TRUE(after.join());
+        EXPECT_TRUE(run.server.is_host_connected());
+    }
 }
 
 // A restart drops the connected clients and the server accepts new clients again.

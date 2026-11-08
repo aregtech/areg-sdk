@@ -14,10 +14,11 @@
 #     build     Configure and build the instrumented tree.
 #     unit      Run ctest, collect unit.json, reset the counters.
 #     examples  Run the example scenarios, collect examples.json, reset the counters.
-#     report    Write the Cobertura, HTML and Markdown reports and print them. The
-#               first tables count like Codecov: a line once, and a hit line with
-#               an untaken branch is partial, which is not covered. The gcovr
-#               lines, functions and branches follow.
+#     report    Write the Cobertura and HTML reports and print the Markdown report
+#               (to <out>/coverage.md too with --text). The first tables count like
+#               Codecov: a line once, and a hit line with an untaken branch is
+#               partial, which is not covered. The gcovr lines, functions and
+#               branches follow.
 #     all       sync, build, unit, examples, report. With --only: sync, build,
 #               unit, report.
 #
@@ -33,6 +34,7 @@
 #                     a full run of that step replaces them.
 #     --files <regex> report: also list the files matching the expression.
 #     --top N         report: list the N files with most lines not hit (default: 25).
+#     --text          report: also write the Markdown report to <out>/coverage.md.
 #     --jobs N        Build jobs (default: 6; 'auto': the number of CPUs).
 #
 #   Environment
@@ -43,7 +45,8 @@
 #                        macOS: "xcrun llvm-cov gcov"; Windows: "llvm-cov gcov").
 #     AREG_COV_GENERATOR cmake generator (default: the cmake default; Windows: Ninja).
 #     AREG_COV_FLAGS     compile flags (default: "--coverage -fprofile-update=atomic";
-#                        clang-cl: "/EHsc /GR /clang:--coverage /clang:-fprofile-update=atomic").
+#                        macOS: the default and "-fno-exceptions"; clang-cl:
+#                        "/EHs-c- /D_HAS_EXCEPTIONS=0 /GR /clang:--coverage /clang:-fprofile-update=atomic").
 #     AREG_COV_LDFLAGS   link flags of executables and shared libraries (default: "--coverage";
 #                        clang-cl: the quoted full path of the clang_rt.profile library).
 #     GITHUB_STEP_SUMMARY  When set, the report is appended to it.
@@ -74,6 +77,7 @@ ONLY=""
 FILES=""
 TOP=25
 JOBS=6
+TEXT=0
 
 die() { echo "coverage.sh: $*" >&2; exit 2; }
 absolute() {
@@ -96,6 +100,7 @@ while [ $# -gt 0 ]; do
     --files)    FILES=${2:?}; shift 2 ;;
     --top)      TOP=${2:?}; shift 2 ;;
     --jobs)     JOBS=${2:?}; shift 2 ;;
+    --text)     TEXT=1; shift ;;
     *) die "unknown option '$1'" ;;
   esac
 done
@@ -236,16 +241,17 @@ step_report() {
   done
   "$GCOVR" --root . --merge-lines "${adds[@]}" --cobertura "$OUT/total.xml" \
     || die "gcovr failed on total.xml"
-  local rule=(--last "$LAST" --top "$TOP")
+  local rule=(--last "$LAST" --top "$TOP" --build "$BUILD")
   [ -z "$ONLY" ] && ! ls "$OUT"/*-only.json >/dev/null 2>&1 && rule+=(--save)
   [ -n "$FILES" ] && rule+=(--files "$FILES")
+  [ "$TEXT" = 1 ] && rule+=(--text "$OUT/coverage.md")
+  rm -f "$OUT/coverage.md"
   mkdir -p "$DIR"
   "$PYTHON" "$SRC/tools/intern/coverage-report.py" --unit "$OUT/unit-summary.json" \
            --examples "$OUT/examples-summary.json" --total "$OUT/total-summary.json" \
            --cobertura "$OUT/total.xml" --unit-cobertura "$OUT/unit-rule.xml" \
            --examples-cobertura "$OUT/examples-rule.xml" --root . \
-           "${rule[@]}" ${summary[@]+"${summary[@]}"} > "$OUT/coverage.md" || die "coverage-report.py failed"
-  cat "$OUT/coverage.md"
+           "${rule[@]}" ${summary[@]+"${summary[@]}"} || die "coverage-report.py failed"
 }
 
 case "$STEP" in

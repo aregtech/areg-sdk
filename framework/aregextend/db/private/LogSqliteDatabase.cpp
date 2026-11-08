@@ -2253,12 +2253,9 @@ uint32_t LogSqliteDatabase::count_log_entries(ITEM_ID instId)
     if (mDatabase.is_operable() == false)
         return 0u;
 
+    const bool all{ instId == areg::TARGET_ALL };
     SqliteStatement stmt(mDatabase);
-    if (instId == areg::TARGET_ALL)
-    {
-        VERIFY(stmt.prepare(_sqlCountAllLogs));
-    }
-    else if (stmt.prepare(_sqlCountInstanceLogs))
+    if (stmt.prepare(all ? _sqlCountAllLogs : _sqlCountInstanceLogs) && (all == false))
     {
         stmt.bind_uint32(0, static_cast<uint32_t>(instId));
     }
@@ -2272,12 +2269,9 @@ uint32_t LogSqliteDatabase::count_scope_entries(ITEM_ID instId)
     if (mDatabase.is_operable() == false)
         return 0;
 
+    const bool all{ instId == areg::TARGET_ALL };
     SqliteStatement stmt(mDatabase);
-    if (instId == areg::TARGET_ALL)
-    {
-        VERIFY(stmt.prepare(_sqlCountAllScopes));
-    }
-    else if (stmt.prepare(_sqlCountInstanceScopes))
+    if (stmt.prepare(all ? _sqlCountAllScopes : _sqlCountInstanceScopes) && (all == false))
     {
         stmt.bind_uint32(0, static_cast<uint32_t>(instId));
     }
@@ -2301,12 +2295,9 @@ uint32_t LogSqliteDatabase::count_filter_logs(ITEM_ID instId)
     if (mDatabase.is_operable() == false)
         return 0;
 
+    const bool all{ instId == areg::TARGET_ALL };
     SqliteStatement stmt(mDatabase);
-    if (instId == areg::TARGET_ALL)
-    {
-        VERIFY(stmt.prepare(_sqlFilterScopeLogsCountAll));
-    }
-    else if (stmt.prepare(_sqlFilterScopeLogsCount))
+    if (stmt.prepare(all ? _sqlFilterScopeLogsCountAll : _sqlFilterScopeLogsCount) && (all == false))
     {
         stmt.bind_uint32(0, static_cast<uint32_t>(instId));
     }

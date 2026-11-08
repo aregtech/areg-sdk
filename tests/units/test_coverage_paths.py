@@ -79,7 +79,7 @@ class CoveragePathTest(unittest.TestCase):
             [str(self.bash), '--noprofile', '--norc', '-c', 'cygpath -u "$1"', '--', str(path)],
             text=True).strip()
 
-    def run_report(self, location):
+    def run_report(self, location, text=True):
         with tempfile.TemporaryDirectory(prefix='areg coverage ') as temporary:
             root = Path(temporary)
             home = root / 'home'
@@ -98,6 +98,8 @@ class CoveragePathTest(unittest.TestCase):
             arguments = [str(self.bash), '--noprofile', '--norc', DRIVER.as_posix(),
                          'report', '--in-place', '--build', (root / 'build').as_posix(),
                          '--out', report.as_posix()]
+            if text:
+                arguments.append('--text')
             history = home / 'areg-gcov'
             if location != 'home':
                 history = root / 'history dir'
@@ -109,7 +111,10 @@ class CoveragePathTest(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             saved = json.loads((history / 'last.json').read_text(encoding='utf-8'))
             self.assertEqual(saved['files'], {'framework/fixture.cpp': [1, 1, 0, 0]})
-            self.assertIn('Code coverage', (report / 'coverage.md').read_text(encoding='utf-8'))
+            self.assertIn('Code coverage', result.stdout)
+            self.assertEqual((report / 'coverage.md').is_file(), text)
+            if text:
+                self.assertIn('Code coverage', (report / 'coverage.md').read_text(encoding='utf-8'))
 
     # Reproduces the defect: native Python could not save the report history at a Bash home path
     # when MSYS argument conversion was disabled.
@@ -121,6 +126,9 @@ class CoveragePathTest(unittest.TestCase):
 
     def test_saves_history_at_an_explicit_bash_path(self):
         self.run_report('argument')
+
+    def test_writes_the_markdown_file_only_on_request(self):
+        self.run_report('home', text=False)
 
 
 if __name__ == '__main__':

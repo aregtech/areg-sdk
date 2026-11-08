@@ -10,6 +10,7 @@
     coverage-report.py --unit U.json --examples E.json --total T.json --cobertura T.xml
                        [--unit-cobertura U.xml] [--examples-cobertura E.xml] [--root DIR]
                        [--last LAST.json] [--save] [--files REGEX] [--top N] [--summary FILE]
+                       [--build DIR] [--text FILE]
 
 The report has two parts.
 
@@ -23,12 +24,15 @@ The report has two parts.
    and per directory. Each input is a gcovr '--json-summary' file: the unit tests, the
    example applications, and the union of both.
 
-The report is appended to '--summary' (the job summary of a build server) and printed.
+The report is printed, appended to '--summary' (the job summary of a build server) and
+written to '--text'. '--build' names the CMake build tree the compiler and system are read from.
 """
 
 import argparse
+import glob
 import json
 import os
+import re
 import sys
 import xml.etree.ElementTree as ElementTree
 
@@ -47,6 +51,32 @@ def load(path):
     except (OSError, ValueError) as error:
         print('cannot read %s: %s' % (path, error), file=sys.stderr)
         return None
+
+
+def cmake_value(path, name):
+    """Returns the value of 'set(<name> "<value>")' in a CMake file, or an empty string."""
+    try:
+        with open(path, 'r', encoding='utf-8', errors='replace') as file:
+            match = re.search(r'set\(%s\s+"([^"]*)"' % re.escape(name), file.read())
+    except OSError:
+        return ''
+    return match.group(1) if match else ''
+
+
+def build_label(build):
+    """Returns the compiler and the system of a CMake build tree, like 'GNU 13.3.0, Linux'."""
+    if not build:
+        return ''
+    compilers = sorted(glob.glob(os.path.join(build, 'CMakeFiles', '*', 'CMakeCXXCompiler.cmake')))
+    systems = sorted(glob.glob(os.path.join(build, 'CMakeFiles', '*', 'CMakeSystem.cmake')))
+    if not compilers:
+        return ''
+    compiler = ' '.join(part for part in (cmake_value(compilers[-1], 'CMAKE_CXX_COMPILER_ID'),
+                                          cmake_value(compilers[-1], 'CMAKE_CXX_COMPILER_VERSION')) if part)
+    if cmake_value(compilers[-1], 'CMAKE_CXX_COMPILER_FRONTEND_VARIANT') == 'MSVC':
+        compiler += ' (clang-cl)' if 'Clang' in compiler else ''
+    system = cmake_value(systems[-1], 'CMAKE_SYSTEM_NAME') if systems else ''
+    return ', '.join(part for part in (compiler, system) if part)
 
 
 def percent(covered, total):
@@ -146,6 +176,8 @@ def main():
     parser.add_argument('--files', default=None, help='regular expression of files to list')
     parser.add_argument('--top', type=int, default=0, help='number of files listed by non-hit lines')
     parser.add_argument('--summary', default=None, help='file the report is appended to')
+    parser.add_argument('--build', default=None, help='CMake build tree of the measured run')
+    parser.add_argument('--text', default=None, help='file the report is written to')
     args = parser.parse_args()
 
     unit = load(args.unit)
@@ -157,8 +189,9 @@ def main():
     if rule is None:
         return 1
 
+    label = build_label(args.build) or 'compiler unknown'
     report = ['## Code coverage of `framework/`', '',
-              'GCC `--coverage`, Debug build, Linux. Code built only on other platforms is not counted.', '']
+              '%s, `--coverage`, Debug build. Code built only on other platforms is not counted.' % label, '']
     report += ['The first part counts like the Codecov badge: a line counts once whatever the number of '
                'template instances or constructor variants, a line holding only `}` is not counted, '
                'and a hit line with an untaken branch is partial, which is not covered.', '']
@@ -175,12 +208,16 @@ def main():
     text = '\n'.join(report)
 
     print(text)
-    if args.summary:
+    for path, mode in ((args.summary, 'a'), (args.text, 'w')):
+        if not path:
+            continue
         try:
-            with open(args.summary, 'a', encoding='utf-8') as file:
+            with open(path, mode, encoding='utf-8') as file:
                 file.write(text + '\n')
         except OSError as error:
-            print('cannot write %s: %s' % (args.summary, error), file=sys.stderr)
+            print('cannot write %s: %s' % (path, error), file=sys.stderr)
+            if mode == 'w':
+                return 1
     if args.save and args.last and not coverage_rule.save_last(args.last, args.cobertura, counts):
         return 1
     return 0

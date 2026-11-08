@@ -37,6 +37,7 @@
 #include <cstdio>
 #include <cstring>
 #include <filesystem>
+#include <memory>
 #include <string>
 #include <thread>
 #include <vector>
@@ -2138,6 +2139,217 @@ TEST(LogSqliteDatabaseTest, test_markedLogsOfOneInstance)
     EXPECT_EQ(ofOne, 2u);
     stmt.finalize();
     db.disconnect();
+}
+
+/**
+ * \brief   Reproduces the defect: a counter asserted that its statement prepared, so a file without the table
+ *          ended a Debug process. A missing table gives an empty result and the log stays usable.
+ **/
+TEST(LogSqliteDatabaseTest, test_missingTablesGiveEmptyResults)
+{
+    const std::string path{ _db_path("s21missing.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    _write_set(db);
+    _write_set_scopes(db);
+    areg::ArrayList<LogDb::ScopeFilter> none;
+    ASSERT_EQ(db.setup_filter_logs(areg::TARGET_ALL, none), 13u);
+
+    Stmt stmt(db.database());
+    ASSERT_TRUE(db.drop_table("scopes"));
+    EXPECT_EQ(db.count_scope_entries(), 0u);
+    EXPECT_EQ(db.count_scope_entries(31u), 0u);
+    EXPECT_EQ(db.setup_filter_logs(areg::TARGET_ALL, none), 0u);
+    EXPECT_EQ(db.setup_statement_read_filter_logs(stmt, areg::TARGET_ALL), 0u);
+
+    ASSERT_NE(db.add_marker(2u, areg::LogPriority::PrioMarker, areg::String("a"), areg::String("n")), 0u);
+    ASSERT_TRUE(db.drop_table("logs"));
+    EXPECT_EQ(db.count_log_entries(), 0u);
+    EXPECT_EQ(db.count_log_entries(31u), 0u);
+    EXPECT_EQ(db.count_filter_logs(), 0u);
+    EXPECT_EQ(db.count_filter_logs(31u), 0u);
+    EXPECT_EQ(db.setup_statement_read_marked_logs(stmt, areg::TARGET_ALL, 0xFFFFu), 0u);
+    EXPECT_FALSE(stmt.is_valid());
+
+    const LogDb::LogPosition start{ };
+    const LogDb::LogPosition place{ 150, 3u };
+    EXPECT_FALSE(db.setup_statement_read_filter_window(stmt, areg::TARGET_ALL, start, 10));
+    EXPECT_FALSE(db.setup_statement_read_filter_window_back(stmt, 31u, place, 10));
+    EXPECT_FALSE(db.setup_statement_read_filter_window_at(stmt, areg::TARGET_ALL, 0u, 10));
+    EXPECT_FALSE(db.setup_statement_read_filter_window_at(stmt, 31u, 1u, 10));
+
+    ASSERT_TRUE(db.drop_table("instances"));
+    EXPECT_EQ(db.count_log_instances(), 0u);
+
+    EXPECT_TRUE(db.execute(areg::String("CREATE TABLE probe (x INTEGER);")));
+    EXPECT_TRUE(db.table_exists("probe"));
+    stmt.finalize();
+    db.disconnect();
+}
+
+/**
+ * \brief   A filter whose temporary table, its rows or its index cannot be made is set up for nothing and
+ *          leaves no rule behind.
+ **/
+TEST(LogSqliteDatabaseTest, test_filterSetupFailsAtEachStep)
+{
+    areg::ArrayList<LogDb::ScopeFilter> none;
+    const auto open = [](LogDb& db, const char* name)
+    {
+        ASSERT_TRUE(db.connect(areg::String(_db_path(name).c_str()), areg::DatabaseRole::Recorder));
+        _write_set(db);
+        _write_set_scopes(db);
+    };
+
+    {
+        LogDb db;
+        open(db, "s22table.sqlog");
+        ASSERT_TRUE(db.execute(areg::String("CREATE TEMP VIEW filter_rules AS SELECT 1 AS x;")));
+        EXPECT_EQ(db.setup_filter_logs(areg::TARGET_ALL, none), 0u);
+        EXPECT_FALSE(db.table_exists("filter_rules", "sqlite_temp_master"));
+        db.disconnect();
+    }
+
+    {
+        LogDb db;
+        open(db, "s22rows.sqlog");
+        ASSERT_TRUE(db.drop_table("scopes"));
+        ASSERT_TRUE(db.execute(areg::String("CREATE TABLE scopes (scope_id INTEGER);")));
+        EXPECT_EQ(db.setup_filter_logs(areg::TARGET_ALL, none), 0u);
+        EXPECT_FALSE(db.table_exists("filter_rules", "sqlite_temp_master"));
+        db.disconnect();
+    }
+
+    {
+        LogDb db;
+        open(db, "s22index.sqlog");
+        ASSERT_TRUE(db.execute(areg::String("CREATE TEMP TABLE idx_filter_rules (x INTEGER);")));
+        EXPECT_EQ(db.setup_filter_logs(areg::TARGET_ALL, none), 0u);
+        EXPECT_FALSE(db.table_exists("filter_rules", "sqlite_temp_master"));
+        db.disconnect();
+    }
+}
+
+/**
+ * \brief   A filter rule that cannot be written makes the setup count nothing, with and without scopes given.
+ **/
+TEST(LogSqliteDatabaseTest, test_filterUpdateRefusedCountsNothing)
+{
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(_db_path("s23update.sqlog").c_str()), areg::DatabaseRole::Recorder));
+    _write_set(db);
+    _write_set_scopes(db);
+    areg::ArrayList<LogDb::ScopeFilter> none;
+    ASSERT_EQ(db.setup_filter_logs(areg::TARGET_ALL, none), 13u);
+    ASSERT_TRUE(db.execute(areg::String("CREATE TEMP TRIGGER no_update BEFORE UPDATE ON filter_rules BEGIN SELECT RAISE(ABORT, 'refused'); END;")));
+
+    areg::ArrayList<LogDb::ScopeFilter> scopeOne;
+    scopeOne.add(LogDb::ScopeFilter{ 1u, 0u });
+    EXPECT_EQ(db.setup_filter_logs(areg::TARGET_ALL, scopeOne), 0u);
+    EXPECT_EQ(db.setup_filter_logs(31u, scopeOne), 0u);
+    EXPECT_EQ(db.setup_filter_logs(areg::TARGET_ALL, none), 0u);
+    EXPECT_EQ(db.count_filter_logs(), 13u);
+
+    ASSERT_TRUE(db.execute(areg::String("DROP TRIGGER no_update;")));
+    EXPECT_EQ(db.setup_filter_logs(areg::TARGET_ALL, scopeOne), 9u);
+    db.disconnect();
+}
+
+/**
+ * \brief   A row whose deletion is refused stays with its markers; a marker table that cannot be indexed takes
+ *          no marker.
+ **/
+TEST(LogSqliteDatabaseTest, test_refusedRemovalKeepsRowAndMarkers)
+{
+    const std::string path{ _db_path("s24remove.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    _write_set(db);
+    ASSERT_NE(db.add_marker(2u, areg::LogPriority::PrioMarker, areg::String("a"), areg::String("n")), 0u);
+
+    ASSERT_TRUE(db.execute(areg::String("CREATE TEMP TRIGGER no_delete_log BEFORE DELETE ON logs BEGIN SELECT RAISE(ABORT, 'refused'); END;")));
+    EXPECT_FALSE(db.remove_log(2u));
+    EXPECT_EQ(_query_text(path, "SELECT COUNT(*) FROM markers WHERE master_id = 2;"), "1");
+    EXPECT_EQ(db.count_log_entries(), 13u);
+    ASSERT_TRUE(db.execute(areg::String("DROP TRIGGER no_delete_log;")));
+
+    ASSERT_TRUE(db.execute(areg::String("CREATE TEMP TRIGGER no_delete_marker BEFORE DELETE ON markers BEGIN SELECT RAISE(ABORT, 'refused'); END;")));
+    EXPECT_FALSE(db.remove_log(2u));
+    EXPECT_EQ(db.count_log_entries(), 13u);
+    ASSERT_TRUE(db.execute(areg::String("DROP TRIGGER no_delete_marker;")));
+    EXPECT_TRUE(db.remove_log(2u));
+    EXPECT_EQ(db.count_log_entries(), 12u);
+
+    ASSERT_TRUE(db.drop_table("markers"));
+    ASSERT_TRUE(db.execute(areg::String("CREATE VIEW markers AS SELECT 1 AS x;")));
+    EXPECT_EQ(db.add_marker(3u, areg::LogPriority::PrioMarker, areg::String("a"), areg::String("n")), 0u);
+    db.disconnect();
+}
+
+/**
+ * \brief   A marker text made only of UTF-8 continuation bytes is cut to nothing, never inside a sequence.
+ **/
+TEST(LogSqliteDatabaseTest, test_markerTextOfContinuationBytesIsCutToNothing)
+{
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(_db_path("s25tail.sqlog").c_str()), areg::DatabaseRole::Recorder));
+    _write_set(db);
+
+    const std::string tail(2000u, '\x80');
+    ASSERT_NE(db.add_marker(2u, areg::LogPriority::PrioMarker, areg::String(tail), areg::String(tail)), 0u);
+    std::vector<LogDb::LogMarker> markers;
+    ASSERT_EQ(db.read_markers(markers), 1u);
+    EXPECT_TRUE(markers[0].author.is_empty());
+    EXPECT_TRUE(markers[0].note.is_empty());
+    db.disconnect();
+}
+
+/**
+ * \brief   Refused spans that cannot be cleared, written or given a table are refused, and a later call with
+ *          the table repaired succeeds.
+ **/
+TEST(LogSqliteDatabaseTest, test_refusedSpansWriteFailures)
+{
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(_db_path("s26spans.sqlog").c_str()), areg::DatabaseRole::Recorder));
+    _write_set(db);
+    areg::ArrayList<LogDb::RefusedSpan> spans;
+    spans.add(LogDb::RefusedSpan{ 1u, 32u, 0, 0 });
+
+    ASSERT_TRUE(db.execute(areg::String("CREATE TEMP TRIGGER no_insert BEFORE INSERT ON refused_spans BEGIN SELECT RAISE(ABORT, 'refused'); END;")));
+    EXPECT_FALSE(db.set_refused_spans(spans));
+    ASSERT_TRUE(db.execute(areg::String("DROP TRIGGER no_insert;")));
+    ASSERT_TRUE(db.set_refused_spans(spans));
+
+    ASSERT_TRUE(db.execute(areg::String("CREATE TEMP TRIGGER no_clear BEFORE DELETE ON refused_spans BEGIN SELECT RAISE(ABORT, 'refused'); END;")));
+    EXPECT_FALSE(db.set_refused_spans(spans));
+    ASSERT_TRUE(db.execute(areg::String("DROP TRIGGER no_clear;")));
+
+    ASSERT_TRUE(db.execute(areg::String("DROP TABLE temp.refused_spans;")));
+    ASSERT_TRUE(db.execute(areg::String("CREATE TEMP VIEW refused_spans AS SELECT 1 AS x;")));
+    EXPECT_FALSE(db.set_refused_spans(spans));
+    EXPECT_FALSE(db.setup_statement_read_window(*std::make_unique<Stmt>(db.database()), LogDb::LogPosition{ }, 10));
+
+    ASSERT_TRUE(db.execute(areg::String("DROP VIEW temp.refused_spans;")));
+    EXPECT_TRUE(db.set_refused_spans(spans));
+    db.disconnect();
+}
+
+/**
+ * \brief   A recorder refuses a path that is a directory and leaves the directory as it is.
+ **/
+TEST(LogSqliteDatabaseTest, test_recorderRefusesADirectory)
+{
+    const std::string path{ _db_path("s27dir.sqlog") };
+    std::error_code err;
+    ASSERT_TRUE(fs::create_directories(path, err));
+    LogDb db;
+    EXPECT_FALSE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    EXPECT_FALSE(db.is_operable());
+    EXPECT_FALSE(db.tables_initialized());
+    EXPECT_TRUE(fs::is_directory(path, err));
+    db.disconnect();
+    fs::remove(path, err);
 }
 
 //////////////////////////////////////////////////////////////////////////

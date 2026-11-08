@@ -1,7 +1,9 @@
 #include "units/GUnitTest.hpp"
 
 #include "areg/base/MessageEnvelope.hpp"
+#include "areg/base/RuntimeClassID.hpp"
 #include "areg/base/SharedBuffer.hpp"
+#include "areg/component/Event.hpp"
 #include "areg/component/Channel.hpp"
 #include "areg/component/ProxyAddress.hpp"
 #include "areg/component/ProxyEvent.hpp"
@@ -394,4 +396,173 @@ TEST(ProxyEventRoutingTest, custom_generic_and_unknown_consumer_events_have_dist
     EXPECT_EQ(receiver.mProxy, 1u);
     EXPECT_EQ(receiver.mConnections, 0u);
     EXPECT_TRUE(receiver.mTypes.empty());
+}
+
+TEST(EventApiTest, type_queries_agree_with_the_event_type_and_an_empty_event_answers_no)
+{
+    constexpr areg::EventType TYPES[]
+    {
+          areg::EventType::EventNotifyClient, areg::EventType::EventLocalRequest, areg::EventType::EventRemoteRequest
+        , areg::EventType::EventLocalNotifyRequest, areg::EventType::EventRemoteNotifyRequest
+        , areg::EventType::EventLocalNotifyResponse, areg::EventType::EventRemoteNotifyResponse
+        , areg::EventType::EventLocalNotifyBroadcast, areg::EventType::EventRemoteNotifyBroadcast
+        , areg::EventType::EventLocalNotifyAttribute, areg::EventType::EventRemoteNotifyAttribute
+        , areg::EventType::EventLocalResponse, areg::EventType::EventRemoteResponse
+        , areg::EventType::EventLocalBroadcast, areg::EventType::EventRemoteBroadcast
+        , areg::EventType::EventLocalAttribute, areg::EventType::EventRemoteAttribute
+        , areg::EventType::EventLocalProviderConnect, areg::EventType::EventRemoteConsumerConnect
+        , areg::EventType::EventLocalConnection, areg::EventType::EventRemoteConnection
+        , areg::EventType::EventCustomInternal, areg::EventType::EventCustomExternal
+        , areg::EventType::EventLocalRequestFailed, areg::EventType::EventRemoteRequestFailed
+    };
+
+    areg::Event event(areg::EventType::EventUnknown);
+    for (const areg::EventType type : TYPES)
+    {
+        event.set_event_type(type);
+        EXPECT_EQ(event.event_type(), type);
+        EXPECT_EQ(event.is_internal(), areg::is_internal(type));
+        EXPECT_EQ(event.is_external(), areg::is_external(type));
+        EXPECT_EQ(event.is_local(), areg::is_local(type));
+        EXPECT_EQ(event.is_remote(), areg::is_remote(type));
+        EXPECT_EQ(event.is_custom(), areg::is_custom(type));
+        EXPECT_EQ(event.is_request_call(), areg::is_request_call(type));
+        EXPECT_EQ(event.is_response_call(), areg::is_response_call(type));
+        EXPECT_EQ(event.is_broadcast_call(), areg::is_broadcast_call(type));
+        EXPECT_EQ(event.is_attribute_call(), areg::is_attribute_call(type));
+        EXPECT_EQ(event.is_request_failed_call(), areg::is_request_failure(type));
+        EXPECT_EQ(event.is_notify_call(), areg::is_notify(type));
+        EXPECT_EQ(event.is_notify_response(), areg::is_notify_response(type));
+        EXPECT_EQ(event.is_notify_broadcast(), areg::is_notify_broadcast(type));
+        EXPECT_EQ(event.is_notify_attribute(), areg::is_notify_attribute(type));
+        EXPECT_EQ(event.is_connect_call(), areg::is_connect(type));
+    }
+
+    event.set_event_type(areg::EventType::EventLocalResponse);
+    EXPECT_TRUE(event.is_response_call());
+    EXPECT_FALSE(event.is_request_call());
+
+    const areg::Event empty;
+    EXPECT_FALSE(empty.is_request_call());
+    EXPECT_FALSE(empty.is_response_call());
+    EXPECT_FALSE(empty.is_broadcast_call());
+    EXPECT_FALSE(empty.is_attribute_call());
+    EXPECT_FALSE(empty.is_request_failed_call());
+    EXPECT_FALSE(empty.is_notify_call());
+    EXPECT_FALSE(empty.is_notify_response());
+    EXPECT_FALSE(empty.is_notify_broadcast());
+    EXPECT_FALSE(empty.is_notify_attribute());
+    EXPECT_FALSE(empty.is_connect_call());
+    EXPECT_FALSE(empty.is_critical_prio());
+    EXPECT_FALSE(empty.is_high_prio());
+    EXPECT_FALSE(empty.is_normal_prio());
+    EXPECT_FALSE(empty.is_event_id(1u));
+    EXPECT_EQ(empty.message_id(), areg::INVALID_MESSAGE_ID);
+    EXPECT_EQ(empty.event_consumer(), nullptr);
+    EXPECT_EQ(empty.target_dispatcher(), nullptr);
+}
+
+TEST(EventApiTest, priority_identity_and_equality_follow_the_shared_envelope)
+{
+    areg::Event critical(areg::EventType::EventCustomInternal, areg::EventPriority::CriticalPrio);
+    EXPECT_TRUE(critical.is_critical_prio());
+    EXPECT_FALSE(critical.is_high_prio());
+    EXPECT_FALSE(critical.is_normal_prio());
+    critical.set_event_priority(areg::EventPriority::HighPrio);
+    EXPECT_TRUE(critical.is_high_prio());
+    critical.set_event_priority(areg::EventPriority::NormalPrio);
+    EXPECT_TRUE(critical.is_normal_prio());
+
+    const areg::Event copy{ critical };
+    const areg::Event other(areg::EventType::EventCustomInternal, areg::EventPriority::NormalPrio);
+    EXPECT_TRUE(copy == critical);
+    EXPECT_FALSE(copy != critical);
+    EXPECT_FALSE(other == critical);
+    EXPECT_TRUE(other != critical);
+
+    areg::Event moved{ areg::Event(critical) };
+    EXPECT_TRUE(moved == critical);
+    constexpr areg::RuntimeClassID classId{ "EventApiTest" };
+    areg::MessageEnvelope envelope{ critical.envelope() };
+    envelope.set_event_id(classId.magic());
+    const areg::Event identified(envelope);
+    EXPECT_TRUE(identified.is_event_id(classId));
+    EXPECT_FALSE(other.is_event_id(classId));
+}
+
+TEST(ServiceEventValueTest, request_copies_and_moves_keep_request_and_payload)
+{
+    const areg::ProxyAddress proxy{ proxy_address() };
+    const areg::StubAddress stub{ stub_address() };
+
+    areg::RemoteRequestEvent request(payload(), proxy, stub, REQUEST_ID);
+    areg::RemoteRequestEvent copied{ request };
+    areg::RemoteRequestEvent moved{ std::move(copied) };
+    EXPECT_EQ(moved.request_id(), REQUEST_ID);
+    EXPECT_EQ(moved.event_type(), areg::EventType::EventRemoteRequest);
+    expect_payload(moved.envelope());
+
+    areg::RemoteNotifyRequestEvent notify(proxy, stub, ATTRIBUTE_ID, areg::RequestType::StartNotify);
+    areg::RemoteNotifyRequestEvent notifyCopied{ notify };
+    areg::RemoteNotifyRequestEvent notifyMoved{ std::move(notifyCopied) };
+    EXPECT_EQ(notifyMoved.request_type(), areg::RequestType::StartNotify);
+    EXPECT_EQ(notifyMoved.event_type(), areg::EventType::EventRemoteNotifyRequest);
+
+    areg::LocalRequestEvent local(proxy, stub, REQUEST_ID, 16u);
+    areg::LocalRequestEvent localCopied{ local };
+    areg::LocalRequestEvent localMoved{ std::move(localCopied) };
+    EXPECT_EQ(localMoved.request_id(), REQUEST_ID);
+    areg::LocalNotifyRequestEvent localNotify(proxy, stub, ATTRIBUTE_ID, areg::RequestType::StopNotify);
+    areg::LocalNotifyRequestEvent localNotifyCopied{ localNotify };
+    areg::LocalNotifyRequestEvent localNotifyMoved{ std::move(localNotifyCopied) };
+    EXPECT_EQ(localNotifyMoved.request_type(), areg::RequestType::StopNotify);
+}
+
+TEST(ServiceEventValueTest, responses_built_from_an_endpoint_or_a_copy_keep_result_and_payload)
+{
+    const areg::ProxyAddress first{ proxy_address() };
+    const areg::ProxyAddress second{ proxy_address(0x613A1003u) };
+    areg::Endpoint consumer{ };
+    consumer.id     = 0x613A4001u;
+    consumer.number = 0x613A1004u;
+    consumer.thread = 0x613A3001u;
+    const areg::RawService service{ 0x613A2001u, 0x613A2002u };
+
+    areg::LocalResponseEvent localEmpty(consumer, service, areg::ResultType::DataOK, RESPONSE_ID, SEQUENCE, 32u);
+    EXPECT_EQ(localEmpty.response_id(), RESPONSE_ID);
+    EXPECT_EQ(localEmpty.event_type(), areg::EventType::EventLocalResponse);
+    areg::LocalResponseEvent local(payload(), consumer, service, areg::ResultType::DataOK, RESPONSE_ID, SEQUENCE);
+    expect_payload(local.envelope());
+    areg::LocalResponseEvent localForOther(second, local);
+    EXPECT_EQ(localForOther.target_proxy(), static_cast<uint32_t>(second));
+    expect_payload(localForOther.envelope());
+    areg::LocalResponseEvent localForEndpoint(consumer, service, local);
+    EXPECT_EQ(localForEndpoint.sequence_number(), SEQUENCE);
+    expect_payload(localForEndpoint.envelope());
+    areg::LocalResponseEvent localRestored(local.envelope());
+    EXPECT_EQ(localRestored.response_id(), RESPONSE_ID);
+    areg::LocalResponseEvent localCopied{ local };
+    areg::LocalResponseEvent localMoved{ std::move(localCopied) };
+    EXPECT_EQ(localMoved.response_id(), RESPONSE_ID);
+    areg::LocalResponseEvent localNoData(areg::SharedBuffer(), first, areg::ResultType::DataOK, RESPONSE_ID, SEQUENCE);
+    EXPECT_EQ(localNoData.envelope().size_used(), 0u);
+
+    areg::RemoteResponseEvent remoteEmpty(consumer, service, areg::ResultType::DataInvalid, RESPONSE_ID, SEQUENCE, 0u);
+    EXPECT_EQ(remoteEmpty.envelope().result(), static_cast<uint32_t>(areg::ResultType::DataInvalid));
+    EXPECT_EQ(remoteEmpty.event_type(), areg::EventType::EventRemoteResponse);
+    areg::RemoteResponseEvent remote(payload(), consumer, service, areg::ResultType::DataOK, RESPONSE_ID, SEQUENCE);
+    expect_payload(remote.envelope());
+    areg::RemoteResponseEvent remoteData(payload(), first, areg::ResultType::DataOK, RESPONSE_ID, SEQUENCE);
+    expect_payload(remoteData.envelope());
+    areg::RemoteResponseEvent remoteForOther(second, remoteData);
+    EXPECT_EQ(remoteForOther.target_proxy(), static_cast<uint32_t>(second));
+    areg::RemoteResponseEvent remoteForEndpoint(consumer, service, remoteData);
+    expect_payload(remoteForEndpoint.envelope());
+    areg::RemoteResponseEvent remoteNoData(areg::SharedBuffer(), consumer, service, areg::ResultType::DataOK, RESPONSE_ID, SEQUENCE);
+    EXPECT_EQ(remoteNoData.envelope().size_used(), 0u);
+
+    areg::RemoteResponseEvent remoteCopied{ remote };
+    areg::RemoteResponseEvent remoteMoved{ std::move(remoteCopied) };
+    EXPECT_EQ(remoteMoved.response_id(), RESPONSE_ID);
+    expect_payload(remoteMoved.envelope());
 }
