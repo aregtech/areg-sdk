@@ -25,8 +25,9 @@ else()
     target_compile_options(${AREG_FAULT_INJECT_LIB} PRIVATE -U_FORTIFY_SOURCE -fPIC)
     target_link_libraries(${AREG_FAULT_INJECT_LIB} PRIVATE ${CMAKE_DL_LIBS})
     # The thread sanitizer runtime calls the replaced functions while it initializes and from
-    # its blocking interceptors, where the instrumentation is not sound. Nothing here is instrumented.
-    target_compile_options(${AREG_FAULT_INJECT_LIB} PRIVATE -fno-sanitize=thread)
+    # its blocking interceptors, where the instrumentation is not sound. Nothing here is instrumented,
+    # and no link-time optimization, which applies the sanitizer of the link line to this code.
+    target_compile_options(${AREG_FAULT_INJECT_LIB} PRIVATE -fno-sanitize=thread -fno-lto)
 endif()
 
 addExecutableEx(${AREG_FAULT_INJECT_TEST} ""
