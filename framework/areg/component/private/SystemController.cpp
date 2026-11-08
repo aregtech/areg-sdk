@@ -31,6 +31,7 @@
 #include <algorithm>
 #include <atomic>
 #include <cstdlib>
+#include <new>
 #include <string_view>
 
 namespace
@@ -91,19 +92,36 @@ SystemController::Request::Request( bool waitComponents /*= false*/ )
     : mDone             ( true, false )
     , mResult           ( false )
     , mWaitComponents   ( waitComponents )
+    , mShares           ( 2u )
 {
+}
+
+SystemController::Request * SystemController::Request::create( bool waitComponents /*= false*/ )
+{
+    return new (std::nothrow) Request( waitComponents );
 }
 
 bool SystemController::Request::wait()
 {
     mDone.lock(areg::WAIT_INFINITE);
-    return mResult;
+    const bool result{ mResult };
+    release();
+    return result;
 }
 
 void SystemController::Request::complete( bool result )
 {
     mResult = result;
     mDone.set_signaled();
+    release();
+}
+
+void SystemController::Request::release()
+{
+    if (mShares.fetch_sub(1u, std::memory_order_acq_rel) == 1u)
+    {
+        delete this;
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -130,7 +148,7 @@ SystemController::~SystemController()
     static_cast<void>(mGuard.release());
 }
 
-void SystemController::load_model( const String & modelName, const std::shared_ptr<Request> & request )
+void SystemController::load_model( const String & modelName, Request * request )
 {
     LOG_SCOPE( areg_component_private_SystemController, load_model );
 
@@ -193,7 +211,7 @@ void SystemController::load_model( const String & modelName, const std::shared_p
     _check_models();
 }
 
-void SystemController::unload_model( const String & modelName, const std::shared_ptr<Request> & request )
+void SystemController::unload_model( const String & modelName, Request * request )
 {
     LOG_SCOPE( areg_component_private_SystemController, unload_model );
 
@@ -565,11 +583,20 @@ bool SystemController::_start_thread( const areg::ComponentThreadEntry & entry, 
 {
     LOG_SCOPE( areg_component_private_SystemController, _start_thread );
 
-    ComponentThread * thread{ new ComponentThread(entry.mThreadName, entry.mWatchdogTimeout, entry.mStackSizeKB, entry.mMaxQueue, entry.mDropOnFull, entry.mQueueTimeout) };
+    ComponentThread * thread{ new (std::nothrow) ComponentThread(entry.mThreadName, entry.mWatchdogTimeout, entry.mStackSizeKB, entry.mMaxQueue, entry.mDropOnFull, entry.mQueueTimeout) };
     if (thread == nullptr)
         return false;
 
     thread->share_with_lookups();
+    if ((ServiceManager::build_thread_report(true, *thread, thread->mRunningReport) == false) ||
+        (ServiceManager::build_thread_report(false, *thread, thread->mStoppedReport) == false))
+    {
+        LOG_ERR("The reports of the component thread [ %s ] cannot be built, the thread is not started", entry.mThreadName.as_string());
+        static_cast<void>(thread->shutdown(areg::DO_NOT_WAIT));
+        DispatcherThread::release_shared(thread);
+        return false;
+    }
+
     const uint32_t timeout{ entry.mLifecycleTimeout != 0u ? entry.mLifecycleTimeout : areg::LIFECYCLE_TIMEOUT_DEFAULT };
     do
     {
@@ -871,7 +898,7 @@ void SystemController::_complete_pending()
 
         if (done)
         {
-            const std::shared_ptr<Request> request{ pending.mRequest };
+            Request * const request{ pending.mRequest };
             mPending.erase(mPending.begin() + i);
             request->complete(result);
         }
@@ -950,7 +977,7 @@ void SystemController::_arm_deadline()
     {
         if (mGuard == nullptr)
         {
-            mGuard.reset(new Watchdog(String(DEADLINE_GUARD_NAME)));
+            mGuard.reset(new (std::nothrow) Watchdog(String(DEADLINE_GUARD_NAME)));
         }
 
         if ((mGuard != nullptr) && (mGuard->arm(_ms_until(earliest)) == false))

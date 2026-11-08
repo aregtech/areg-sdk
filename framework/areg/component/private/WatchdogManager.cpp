@@ -244,13 +244,27 @@ void WatchdogManager::_process_expired_timer(Watchdog* watchdog, Watchdog::WATCH
 
     mWatchdogResource.unlock();
 
+    bool reported{ true };
     if (deadline)
     {
-        ServiceManager::report_deadline_expired();
+        reported = ServiceManager::report_deadline_expired();
     }
     else if (expired)
     {
-        ServiceManager::report_watchdog_expired(threadName, instance, guardedName);
+        reported = ServiceManager::report_watchdog_expired(threadName, instance, guardedName);
+    }
+
+    if (reported == false)
+    {
+        // The report is retried after the timeout of the watchdog, unless it was stopped or re-armed.
+        LOG_WARN("The expiry of a watchdog cannot be reported, it is retried");
+        mWatchdogResource.lock();
+        if (_is_registered(watchdog) && (watchdog->sequence() == sequence) && (WatchdogManager::_os_timer_start(*watchdog) == false))
+        {
+            _unregister_watchdog(*watchdog);
+        }
+
+        mWatchdogResource.unlock();
     }
 }
 

@@ -31,6 +31,9 @@
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
 #include "areg/ipc/SocketConnectionBase.hpp"
+#include "areg/logging/LoggingDefs.hpp"
+#include "areg/persist/ConfigListener.hpp"
+#include "areg/persist/ConfigManager.hpp"
 
 #include <arpa/inet.h>
 #include <errno.h>
@@ -40,6 +43,7 @@
 #include <unistd.h>
 
 #include <chrono>
+#include <cstring>
 #include <thread>
 
 namespace
@@ -87,8 +91,8 @@ namespace
             peer = -1;
         }
 
-        //!< Accepts the next client, reads its handshake and confirms it with the cookie.
-        bool answer( ITEM_ID cookie )
+        //!< Accepts the next client, reads its handshake and confirms it with the cookie, sent from the source.
+        bool answer( ITEM_ID cookie, ITEM_ID source = areg::COOKIE_ROUTER )
         {
             close_peer( );
             peer = ::accept( handle, nullptr, nullptr );
@@ -100,7 +104,7 @@ namespace
             return ( ::setsockopt( peer, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof( timeout ) ) == 0 )
                 && receive( handshake )
                 && ( handshake.message_id( ) == areg::message_hello_server( ).messageId )
-                && send( areg::create_connect_notify( areg::COOKIE_ROUTER, cookie ) );
+                && send( areg::create_connect_notify( source, cookie ) );
         }
 
         bool read_all( uint8_t * buffer, uint32_t size )
@@ -214,9 +218,116 @@ TEST( FaultInjectTest, router_client_reconnects_when_the_system_refuses_to_send_
     );
 }
 
+namespace
+{
+    //!< Points the remote logger of the process at the test peer; no router, no log file.
+    class RemoteLogConfig final : public areg::ConfigListener
+    {
+    public:
+        explicit RemoteLogConfig( uint16_t port )
+            : mPort( port )
+        { }
+
+        void apply( areg::ConfigManager & config ) const
+        {
+            config.set_service_enable( areg::RemoteServiceKind::Router, areg::ConnectionType::Tcpip, false, true );
+            config.set_service_enable( areg::RemoteServiceKind::Logger, areg::ConnectionType::Tcpip, true, true );
+            config.set_service_address( areg::RemoteServiceKind::Logger, areg::ConnectionType::Tcpip, areg::String( "127.0.0.1" ), true );
+            config.set_service_port( areg::RemoteServiceKind::Logger, areg::ConnectionType::Tcpip, mPort, true );
+            config.set_log_enabled( areg::LogTarget::Remote, true, true );
+            config.set_log_enabled( areg::LogTarget::File, false, true );
+        }
+
+    protected:
+        void prepare_save_configuration( areg::ConfigManager & /*config*/ ) final
+        { }
+
+        void post_save_configuration( areg::ConfigManager & /*config*/ ) final
+        { }
+
+        void prepare_read_configuration( areg::ConfigManager & /*config*/ ) final
+        { }
+
+        void on_setup_configuration( const areg::ListProperties & /*listReadonly*/, const areg::ListProperties & /*listWritable*/, areg::ConfigManager & /*config*/ ) final
+        { }
+
+        void post_read_configuration( areg::ConfigManager & config ) final
+        {
+            apply( config );
+        }
+
+    private:
+        const uint16_t mPort;   //!< The port of the test peer.
+    };
+
+    //!< Waits until the logger of the process has the cookie. Returns false on timeout.
+    bool wait_log_cookie( ITEM_ID cookie )
+    {
+        const auto deadline{ std::chrono::steady_clock::now( ) + std::chrono::seconds( IO_WAIT_S ) };
+        while ( areg::cookie( ) != cookie )
+        {
+            if ( std::chrono::steady_clock::now( ) > deadline )
+                return false;
+
+            std::this_thread::sleep_for( std::chrono::milliseconds( 5 ) );
+        }
+
+        return true;
+    }
+
+    //!< Writes one log row of the text through the logger of the process.
+    void log_row( const char * text )
+    {
+        const areg::LogEntry row( areg::LogMessageType::MessageText, areg::LOG_SCOPE_ID_NONE, 0u, 0u, areg::LogPriority::PrioDebug, text, static_cast<uint32_t>( std::strlen( text ) ) );
+        areg::log_any_message( row );
+    }
+}
+
+/**
+ * \brief   The system refuses to send a log row of the remote logger on its live connection:
+ *          the logger closes that connection and connects again, and its next row reaches the
+ *          log collector on the new connection with the new cookie.
+ **/
+TEST( FaultInjectTest, remote_logger_reconnects_when_the_system_refuses_to_send_a_row )
+{
+    AREG_EXPECT_IN_CHILD(
+        constexpr ITEM_ID COOKIE{ areg::COOKIE_REMOTE_SERVICE + 111u };
+        TestRouter collector;
+        AREG_CHILD_CHECK( collector.open( ) );
+        RemoteLogConfig config( collector.port );
+        areg::Application::setup( true, true, false, true, false, nullptr, &config );
+        AREG_CHILD_CHECK( collector.answer( COOKIE, areg::COOKIE_LOGGER ) && wait_log_cookie( COOKIE ) );
+
+        {
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::SocketSend, ECONNRESET ) );
+            log_row( "refused row" );
+            AREG_CHILD_CHECK( collector.answer( COOKIE + 1u, areg::COOKIE_LOGGER ) && wait_log_cookie( COOKIE + 1u ) );
+            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::SocketSend ) == 1u );
+        }
+
+        log_row( "row after the reconnect" );
+        bool received{ false };
+        areg::MessageEnvelope message;
+        while ( ( received == false ) && collector.receive( message ) )
+        {
+            received = ( message.message_id( ) == static_cast<uint32_t>( areg::FuncIdRange::ServiceLogMessage ) )
+                    && ( message.source( ) == COOKIE + 1u );
+        }
+
+        AREG_CHILD_CHECK( received );
+        areg::Application::release( );
+    );
+}
+
 #else   // defined(__linux__)
 
 TEST( FaultInjectTest, router_client_reconnects_when_the_system_refuses_to_send_a_request )
+{
+    GTEST_SKIP( ) << "the send fault is replaced on Linux only";
+}
+
+TEST( FaultInjectTest, remote_logger_reconnects_when_the_system_refuses_to_send_a_row )
 {
     GTEST_SKIP( ) << "the send fault is replaced on Linux only";
 }

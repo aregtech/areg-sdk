@@ -378,6 +378,16 @@ private:
      **/
     mutable SpinLock    mListLock;
 
+    /**
+     * \brief   The report that the thread runs, built before the thread starts.
+     **/
+    Event               mRunningReport;
+
+    /**
+     * \brief   The report that the thread stopped, built before the thread starts.
+     **/
+    Event               mStoppedReport;
+
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////

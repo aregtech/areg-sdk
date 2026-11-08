@@ -86,6 +86,36 @@ void* RuntimeObject::operator new[](size_t size, int32_t /*block*/, const char* 
 }
 #endif  // DEBUG
 
+void* RuntimeObject::operator new(size_t size, const std::nothrow_t & tag) noexcept
+{
+    return ::operator new(size, tag);
+}
+
+void* RuntimeObject::operator new[](size_t size, const std::nothrow_t & tag) noexcept
+{
+    return ::operator new[](size, tag);
+}
+
+void* RuntimeObject::operator new(size_t size, std::align_val_t align, const std::nothrow_t & tag) noexcept
+{
+    return ::operator new(size, align, tag);
+}
+
+void RuntimeObject::operator delete(void* ptr, const std::nothrow_t & tag) noexcept
+{
+    ::operator delete(ptr, tag);
+}
+
+void RuntimeObject::operator delete[](void* ptr, const std::nothrow_t & tag) noexcept
+{
+    ::operator delete[](ptr, tag);
+}
+
+void RuntimeObject::operator delete(void* ptr, std::align_val_t align, const std::nothrow_t & tag) noexcept
+{
+    ::operator delete(ptr, align, tag);
+}
+
 void RuntimeObject::operator delete(void* ptr)
 {
     ::operator delete(ptr);

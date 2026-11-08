@@ -76,6 +76,8 @@ ComponentThread::ComponentThread( const String & threadName
     , mIsRestarting     ( false )
     , mLifecycleState   ( areg::ThreadState::Starting )
     , mListComponent    ( )
+    , mRunningReport    ( )
+    , mStoppedReport    ( )
 {
 }
 
@@ -115,7 +117,7 @@ bool ComponentThread::run_dispatcher()
     }
 
     set_startup_phase(false);
-    ServiceManager::report_thread_running(self());
+    static_cast<void>(ServiceManager::post_thread_report(mRunningReport));
     return DispatcherThread::run_dispatcher();
 }
 
@@ -274,7 +276,7 @@ int32_t ComponentThread::on_exit()
     }
 
     const int32_t result{ DispatcherThread::on_exit( ) };
-    ServiceManager::report_thread_stopped(self());
+    static_cast<void>(ServiceManager::post_thread_report(mStoppedReport));
     return result;
 }
 

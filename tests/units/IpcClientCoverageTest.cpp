@@ -8,6 +8,7 @@
 #include "areg/base/SocketMultiplexer.hpp"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/RequestEvents.hpp"
+#include "areg/component/ResponseEvents.hpp"
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/base/ThreadAddress.hpp"
@@ -1261,6 +1262,64 @@ TEST_F(IpcSocketCoverageTest, start_requested_twice_makes_one_connection)
 }
 
 /**
+ * \brief   Reproduces the defect: a message queued while another thread was still starting the
+ *          send thread of a new connection was refused. Now every producer of the first
+ *          messages of a connection is accepted, and the router reads every message.
+ **/
+TEST_F(IpcSocketCoverageTest, first_messages_of_many_producers_are_all_accepted_while_the_send_thread_starts)
+{
+    constexpr uint32_t ROUNDS{ 20u };
+    constexpr uint32_t PRODUCERS{ 6u };
+    constexpr uint32_t MESSAGES{ 40u };
+    constexpr uint32_t LARGE{ 80u * 1024u };
+    constexpr uint32_t SMALL{ 64u };
+    std::vector<uint8_t> payload(LARGE, 0x5Au);
+    for (uint32_t round = 0u; round < ROUNDS; ++ round)
+    {
+        RouterSession session;
+        ASSERT_TRUE(session.connect(areg::COOKIE_REMOTE_SERVICE + 121u + round));
+        std::atomic<uint32_t> ready{ 0u };
+        std::atomic<uint32_t> refused{ 0u };
+        std::vector<std::thread> producers;
+        for (uint32_t i = 0u; i < PRODUCERS; ++ i)
+        {
+            producers.emplace_back([&, i]()
+                {
+                    ready.fetch_add(1u);
+                    while (ready.load() < PRODUCERS)
+                    {
+                        std::this_thread::yield();
+                    }
+
+                    // The first message of the first producer is too large to be written inline.
+                    for (uint32_t n = 0u; n < MESSAGES; ++ n)
+                    {
+                        const uint32_t size{ ((i == 0u) && (n == 0u)) ? LARGE : SMALL };
+                        areg::MessageEnvelope message(areg::message_bye_server(), size);
+                        static_cast<void>(message.write(payload.data(), size));
+                        if (session.service.queue_payload(message) == false)
+                        {
+                            refused.fetch_add(1u);
+                        }
+                    }
+                });
+        }
+
+        for (std::thread & producer : producers)
+        {
+            producer.join();
+        }
+
+        EXPECT_EQ(refused.load(), 0u) << "round " << round;
+        for (uint32_t i = refused.load(); i < PRODUCERS * MESSAGES; ++ i)
+        {
+            areg::MessageEnvelope received;
+            ASSERT_TRUE(receive_wire(session.peer, received)) << "round " << round << ", message " << i;
+        }
+    }
+}
+
+/**
  * \brief   A connect notice with a failed result is a lost connection: the client keeps no
  *          cookie, connects again and takes the cookie of the next successful notice.
  **/
@@ -1414,13 +1473,33 @@ namespace
         event.set_target_dispatcher(dispatcher);
         return event.deliver_event();
     }
+
+    //! Posts a remote attribute subscription and a remote response to the dispatcher thread of the router client.
+    bool post_remote_notify_and_response(ITEM_ID stubCookie, uint32_t attributeId, uint32_t responseId)
+    {
+        areg::Thread * thread{ areg::Thread::find_by_address(areg::ThreadAddress(areg::String("router_CLIENT_DISPATCH_MESSAGE_THREAD"))) };
+        areg::DispatcherThread * dispatcher{ AREG_RUNTIME_CAST(thread, areg::DispatcherThread) };
+        if (dispatcher == nullptr)
+            return false;
+
+        areg::ProxyAddress proxy(0x613B2001u, areg::Version(1u, 0u, 0u), areg::ServiceType::Public, 0x613B3001u, 0x613B4001u, 0x613B1001u);
+        areg::StubAddress stub(0x613B2001u, areg::Version(1u, 0u, 0u), areg::ServiceType::Public, 0x613B3002u, 0x613B4002u, 0x613B1002u);
+        stub.set_cookie(stubCookie);
+        proxy.set_cookie(stubCookie);
+        areg::RemoteNotifyRequestEvent notify(proxy, stub, attributeId, areg::RequestType::StartNotify);
+        notify.set_target_dispatcher(dispatcher);
+        areg::RemoteResponseEvent response(proxy, areg::ResultType::RequestOK, responseId);
+        response.set_target_dispatcher(dispatcher);
+        return notify.deliver_event() && response.deliver_event();
+    }
 }
 
 /**
  * \brief   Reproduces the defect: a remote request posted to the router client before the
  *          router confirmed the connection went out with no cookie and the router dropped it.
- *          Now it fails at once and is not sent; one posted after the confirmation goes out
- *          with the cookie of the connection as its source.
+ *          Now nothing goes out without the cookie: a request, a subscription or a response
+ *          handled before the confirmation fails or is dropped, and one handled after it goes
+ *          out with the cookie of the connection as its source.
  **/
 TEST_F(IpcSocketCoverageTest, remote_request_before_the_connection_is_confirmed_fails_and_is_not_sent)
 {
@@ -1441,12 +1520,18 @@ TEST_F(IpcSocketCoverageTest, remote_request_before_the_connection_is_confirmed_
     ASSERT_TRUE(receive_wire(router.peer, handshake));
 
     ASSERT_TRUE(post_remote_request(STUB_COOKIE, REQUEST));
+    ASSERT_TRUE(post_remote_notify_and_response(STUB_COOKIE, areg::ATTRIBUTE_ID_FIRST + 2u, areg::RESPONSE_ID_FIRST + 2u));
     ASSERT_TRUE(send_wire(router.peer, areg::create_connect_notify(areg::COOKIE_ROUTER, COOKIE)));
     ASSERT_TRUE(wait_router_connected());
     ASSERT_TRUE(post_remote_request(STUB_COOKIE, REQUEST + 1u));
+
+    // A message handled after the confirmation may go out; none goes out without the cookie.
     areg::MessageEnvelope later;
-    ASSERT_TRUE(receive_wire(router.peer, later));
-    EXPECT_EQ(later.message_id(), REQUEST + 1u);
+    do
+    {
+        ASSERT_TRUE(receive_wire(router.peer, later));
+        EXPECT_EQ(later.source(), COOKIE);
+    } while (later.message_id() != REQUEST + 1u);
+
     EXPECT_EQ(later.target(), STUB_COOKIE);
-    EXPECT_EQ(later.source(), COOKIE);
 }

@@ -410,7 +410,8 @@ int main(int argc, char * argv[])
 #endif // DEBUG
     }
 
-    areg::Application::setup();
+    // No router connection: provider and consumer are in this process.
+    areg::Application::setup(true, true, false, true, true);
 
     bool ok{ false };
     switch (gCase)

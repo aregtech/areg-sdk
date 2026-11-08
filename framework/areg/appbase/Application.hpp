@@ -149,8 +149,10 @@ public:
      *          Thread::sleep(1000);
      *          Application::unload_model();
      *          Application::release();
+     *
+     * \return  False if the system does not run or the request cannot be made.
      **/
-    static void unload_model( const char * modelName = nullptr );
+    static bool unload_model( const char * modelName = nullptr );
 
     /**
      * \brief   Returns true if the specified model is loaded and running.
@@ -268,8 +270,9 @@ public:
      *          on its own thread; it changes nothing else. The call does not wait.
      *
      * \param   userState   The new user state. The initial value is 0.
+     * \return  False if the system runs and the request cannot be made.
      **/
-    static void set_user_state( uint32_t userState );
+    static bool set_user_state( uint32_t userState );
 
     /**
      * \brief   Returns the user state; 0 until set_user_state() sets one.

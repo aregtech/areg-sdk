@@ -17,6 +17,7 @@
 #include <spawn.h>
 #include <stdio.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
 namespace
 {
@@ -332,12 +333,29 @@ TEST_P(ApplicationSetupLocalServiceTest, running_service_process_is_not_started_
 
     const auto executable{ mDirectory / (service_base() + ".elf") };
     std::error_code error;
+#if defined(__linux__)
+    // A shell runs under any name and waits for a line of its standard input.
+    ASSERT_TRUE(std::filesystem::copy_file("/bin/sh", executable, error)) << error.message();
+    const std::string program{ executable.string() };
+    char flag[]{ "-c" };
+    char command[]{ "read line" };
+    char* const argv[]{ const_cast<char*>(program.c_str()), flag, command, nullptr };
+#else   // defined(__linux__)
     ASSERT_TRUE(std::filesystem::copy_file("/bin/sleep", executable, error)) << error.message();
     const std::string program{ executable.string() };
     char duration[]{ "60" };
     char* const argv[]{ const_cast<char*>(program.c_str()), duration, nullptr };
+#endif  // defined(__linux__)
+
+    int input[2]{ -1, -1 };
+    ASSERT_EQ(::pipe(input), 0);
+    posix_spawn_file_actions_t actions;
+    ASSERT_EQ(::posix_spawn_file_actions_init(&actions), 0);
+    ASSERT_EQ(::posix_spawn_file_actions_adddup2(&actions, input[0], STDIN_FILENO), 0);
     pid_t child{ -1 };
-    ASSERT_EQ(::posix_spawn(&child, program.c_str(), nullptr, nullptr, argv, nullptr), 0);
+    const int spawned{ ::posix_spawn(&child, program.c_str(), &actions, nullptr, argv, nullptr) };
+    ::posix_spawn_file_actions_destroy(&actions);
+    ASSERT_EQ(spawned, 0);
 
     bool result{ false };
     std::string arguments;
@@ -345,6 +363,8 @@ TEST_P(ApplicationSetupLocalServiceTest, running_service_process_is_not_started_
     EXPECT_EQ(::kill(child, SIGKILL), 0);
     int status{ 0 };
     EXPECT_EQ(::waitpid(child, &status, 0), child);
+    ::close(input[0]);
+    ::close(input[1]);
     ASSERT_FALSE(HasFatalFailure());
     EXPECT_TRUE(result);
     EXPECT_TRUE(arguments.empty());

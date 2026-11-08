@@ -24,6 +24,7 @@
 #include "areg/component/Model.hpp"
 #include "areg/component/ServiceDefs.hpp"
 
+#include <atomic>
 #include <chrono>
 #include <memory>
 #include <vector>
@@ -63,14 +64,17 @@ public:
     class Request
     {
     public:
-        explicit Request( bool waitComponents = false );
-        ~Request() = default;
+        //!< Creates a request owned by the caller and by the controller; nullptr if it cannot be allocated.
+        static Request * create( bool waitComponents = false );
 
-        //!< Waits for the completion and returns the result.
+        //!< Waits for the completion, releases the share of the caller and returns the result.
         bool wait();
 
-        //!< Completes the request with the result.
+        //!< Completes the request with the result and releases the share of the controller.
         void complete( bool result );
+
+        //!< Releases one share; the last one deletes the request.
+        void release();
 
         //!< Returns true if a load completes after the components started, false after the threads started.
         inline bool wait_components() const noexcept;
@@ -79,8 +83,11 @@ public:
         SyncEvent   mDone;          //!< Signaled when the request is completed.
         bool        mResult;        //!< The result of the request.
         const bool  mWaitComponents;//!< True if a load waits for the components, false for the threads.
+        std::atomic<uint32_t>   mShares;    //!< The number of owners.
 
     private:
+        explicit Request( bool waitComponents );
+        ~Request() = default;
         AREG_NOCOPY_NOMOVE( Request );
     };
 
@@ -110,7 +117,7 @@ private:
     //!< A request of a caller that waits until its models reach the requested state.
     struct Pending
     {
-        std::shared_ptr<Request> mRequest;  //!< The request to complete.
+        Request *   mRequest;       //!< The request to complete.
         bool                mLoad;          //!< True if waits for a load, false for an unload.
         std::vector<String> mModels;        //!< The models the request waits for.
     };
@@ -133,14 +140,14 @@ public:
      * \param   request     The request to complete, or nullptr if the caller does not wait. It completes
      *                      once the threads started, or once the components started if it waits for them.
      **/
-    void load_model( const String & modelName, const std::shared_ptr<Request> & request );
+    void load_model( const String & modelName, Request * request );
 
     /**
      * \brief   Unloads the model, or all models if the name is empty.
      * \param   modelName   The name of the model.
      * \param   request     The request to complete, or nullptr if the caller does not wait.
      **/
-    void unload_model( const String & modelName, const std::shared_ptr<Request> & request );
+    void unload_model( const String & modelName, Request * request );
 
     /**
      * \brief   A component thread reports that its components started.

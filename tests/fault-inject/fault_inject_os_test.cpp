@@ -410,6 +410,12 @@ namespace
         const SOCKETHANDLE server{ pair.server };
         std::thread reader( [server, &stop]( )
             {
+                // Reads from the second send call on: the first one stays partial.
+                while ( ( stop.load( ) == false ) && ( areg_fault::calls( areg_fault::FaultPoint::SocketSend ) < 2u ) )
+                {
+                    std::this_thread::yield( );
+                }
+
                 std::vector<uint8_t> sink( 64u * 1024u );
                 while ( ( stop.load( ) == false ) && ( ::recv( static_cast<int>(server), sink.data( ), sink.size( ), 0 ) > 0 ) )
                 {

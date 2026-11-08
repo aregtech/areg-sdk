@@ -765,3 +765,46 @@ TEST(ProxyBaseContractTest, subscription_event_leaves_the_waiting_caller_pending
         EXPECT_EQ(61u, std::get<2>(caller.mNotifications[0]));
     });
 }
+
+/**
+ * \brief   Notification data copies keep the proxy, the type, the ID and the sequence; a move
+ *          keeps them too and leaves the source without a proxy. Self assignment changes nothing.
+ **/
+TEST(ProxyBaseContractTest, notification_data_copy_keeps_the_proxy_and_move_clears_the_source)
+{
+    on_proxy_thread([](DispatcherThread& owner)
+    {
+        ContractListener listener;
+        ProxyLease lease(listener, owner);
+        ASSERT_NE(nullptr, lease.pointer());
+        const ProxyBase& proxy{ *lease.pointer() };
+        const auto same = [&proxy](const NotificationEventData& data, ResultType type, uint32_t id, SequenceNumber seq)
+            {
+                return (data.service_proxy() == &proxy) && (data.notify_type() == type) && (data.notify_id() == id) && (data.sequence() == seq);
+            };
+
+        NotificationEventData source(proxy, ResultType::RequestOK, 11u, 21u);
+        NotificationEventData copy(source);
+        EXPECT_TRUE(same(copy, ResultType::RequestOK, 11u, 21u));
+        EXPECT_TRUE(same(source, ResultType::RequestOK, 11u, 21u));
+
+        NotificationEventData moved(std::move(copy));
+        EXPECT_TRUE(same(moved, ResultType::RequestOK, 11u, 21u));
+        EXPECT_EQ(nullptr, copy.service_proxy());
+
+        NotificationEventData target(proxy, ResultType::RequestError, 12u, 22u);
+        target = source;
+        EXPECT_TRUE(same(target, ResultType::RequestOK, 11u, 21u));
+        const NotificationEventData& alias{ target };
+        target = alias;
+        EXPECT_TRUE(same(target, ResultType::RequestOK, 11u, 21u));
+
+        NotificationEventData other(proxy, ResultType::RequestBusy, 13u, 23u);
+        target = std::move(other);
+        EXPECT_TRUE(same(target, ResultType::RequestBusy, 13u, 23u));
+        EXPECT_EQ(nullptr, other.service_proxy());
+        NotificationEventData& self{ target };
+        target = std::move(self);
+        EXPECT_TRUE(same(target, ResultType::RequestBusy, 13u, 23u));
+    });
+}

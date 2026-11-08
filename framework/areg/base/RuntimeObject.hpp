@@ -261,6 +261,15 @@ public:
     void * operator new []( size_t /*size*/, void * ptr );
 
     /**
+     * \brief   Allocation that returns nullptr instead of failing.
+     **/
+    void * operator new( size_t size, const std::nothrow_t & tag ) noexcept;
+
+    void * operator new []( size_t size, const std::nothrow_t & tag ) noexcept;
+
+    void * operator new( size_t size, std::align_val_t align, const std::nothrow_t & tag ) noexcept;
+
+    /**
      * \brief   Debug placement new: records file and line for MSVC leak detection.
      *          In non-debug builds, falls through to the standard operator new.
      **/
@@ -294,6 +303,15 @@ public:
      * \brief   Placement delete matching the placement new; releases nothing.
      **/
     void operator delete( void * /*ptr*/, void * /*place*/ );
+
+    /**
+     * \brief   Deallocation matching the nothrow operator new, called if a constructor fails.
+     **/
+    void operator delete( void * ptr, const std::nothrow_t & tag ) noexcept;
+
+    void operator delete []( void * ptr, const std::nothrow_t & tag ) noexcept;
+
+    void operator delete( void * ptr, std::align_val_t align, const std::nothrow_t & tag ) noexcept;
 
     void operator delete []( void * ptr );
 

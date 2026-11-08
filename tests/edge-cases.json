@@ -58,6 +58,7 @@
         { "case": "a start asked twice makes one connection", "tests": ["IpcSocketCoverageTest\\.start_requested_twice_makes_one_connection"] },
         { "case": "a request before the router confirmed the connection fails and is not sent", "tests": ["IpcSocketCoverageTest\\.remote_request_before_the_connection_is_confirmed_fails_and_is_not_sent"] },
         { "case": "a refused send reconnects and the next request carries the new cookie", "tests": ["FaultInjectTest\\.router_client_reconnects_when_the_system_refuses_to_send_a_request"] },
+        { "case": "the first messages of many producers are all accepted while the send thread starts", "tests": ["IpcSocketCoverageTest\\.first_messages_of_many_producers_are_all_accepted_while_the_send_thread_starts"] },
         { "case": "a connect notice with a failed result loses the connection", "tests": ["IpcSocketCoverageTest\\.connect_notice_with_a_failed_result_loses_the_connection_and_the_client_connects_again"] }
       ]
     },

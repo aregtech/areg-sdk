@@ -41,8 +41,10 @@ Disabled tests remain excluded unless explicitly enabled.
 
 The original I/O cases remain selectable with `-R '^areg-router-io-test\.'`.
 Each executable invocation takes `<case> <pairs> <bin-dir>`; `<bin-dir>` contains
-the configured `config/areg.init`. The network cases remove their generated
-configuration on exit.
+the configured `config/areg.init`. A case reads that file, sets its own port, pool
+size and logging, and loads the result from memory: it writes no configuration file,
+so cases run in parallel without sharing one. The `log` cases write the router log to
+`config/router-io-<case>-0.log` and remove it on exit.
 
 ## Registration cases
 

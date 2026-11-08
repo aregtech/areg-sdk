@@ -19,6 +19,28 @@
 #include "areg/component/ProxyAddress.hpp"
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/component/private/ServiceManager.hpp"
+
+namespace
+{
+    //!< Returns true if the last write added bytes to the stream, and keeps its new size.
+    bool _written( const areg::SharedBuffer & stream, uint32_t & size ) noexcept
+    {
+        const uint32_t used{ stream.size_used() };
+        const bool grew{ used > size };
+        size = used;
+        return grew;
+    }
+
+    //!< Invalidates the stream if one of its writes failed.
+    void _seal( areg::SharedBuffer & stream, bool written ) noexcept
+    {
+        if ( written == false )
+        {
+            stream.invalidate();
+        }
+    }
+}
+
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -128,8 +150,12 @@ ServiceManagerEventData ServiceManagerEventData::model_request(bool load, const 
 {
     ServiceManagerEventData data( load ? ServiceManagerEventData::ServiceManagerCommand::CMD_LoadModel : ServiceManagerEventData::ServiceManagerCommand::CMD_UnloadModel );
     OutStream & stream = data.write_stream();
+    uint32_t size{ 0u };
     stream << modelName;
+    bool written{ _written(data.mStream, size) };
     stream << request;
+    written = _written(data.mStream, size) && written;
+    _seal(data.mStream, written);
     return data;
 }
 
@@ -137,8 +163,12 @@ ServiceManagerEventData ServiceManagerEventData::thread_report(bool running, con
 {
     ServiceManagerEventData data( running ? ServiceManagerEventData::ServiceManagerCommand::CMD_ThreadRunning : ServiceManagerEventData::ServiceManagerCommand::CMD_ThreadStopped );
     OutStream & stream = data.write_stream();
+    uint32_t size{ 0u };
     stream << threadName;
+    bool written{ _written(data.mStream, size) };
     stream << instance;
+    written = _written(data.mStream, size) && written;
+    _seal(data.mStream, written);
     return data;
 }
 
@@ -146,9 +176,14 @@ ServiceManagerEventData ServiceManagerEventData::watchdog_expired(const String &
 {
     ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_WatchdogExpired );
     OutStream & stream = data.write_stream();
+    uint32_t size{ 0u };
     stream << threadName;
+    bool written{ _written(data.mStream, size) };
     stream << instance;
+    written = _written(data.mStream, size) && written;
     stream << guardedName;
+    written = _written(data.mStream, size) && written;
+    _seal(data.mStream, written);
     return data;
 }
 
@@ -166,7 +201,9 @@ ServiceManagerEventData ServiceManagerEventData::user_state(uint32_t userState)
 {
     ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_UserState );
     OutStream & stream = data.write_stream();
+    uint32_t size{ 0u };
     stream << userState;
+    _seal(data.mStream, _written(data.mStream, size));
     return data;
 }
 

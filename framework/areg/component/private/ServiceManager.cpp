@@ -186,63 +186,61 @@ bool ServiceManager::request_load_model( const String & modelName, bool waitComp
     if ( (Thread::current_thread( ) == static_cast<Thread *>(&serviceManager)) || SystemController::is_caller_in_model( modelName ) )
     {
         // A caller that belongs to the model does not wait.
-        return ServiceManager::_post_lifecycle_event( ServiceManagerEventData::model_request( true, modelName, 0u ) );
+        const ServiceManagerEventData data{ ServiceManagerEventData::model_request( true, modelName, 0u ) };
+        return data.is_valid( ) && ServiceManager::_post_lifecycle_event( data );
     }
 
-    std::shared_ptr<SystemController::Request> request{ std::make_shared<SystemController::Request>( waitComponents ) };
-    std::shared_ptr<SystemController::Request> * holder{ new std::shared_ptr<SystemController::Request>( request ) };
-    if ( ServiceManager::_post_lifecycle_event( ServiceManagerEventData::model_request( true, modelName, static_cast<uint64_t>(reinterpret_cast<uintptr_t>(holder)) ) ) == false )
-    {
-        delete holder;
-        return false;
-    }
-
-    return request->wait( );
+    return ServiceManager::_post_request( true, modelName, waitComponents );
 }
 
-void ServiceManager::request_unload_model( const String & modelName, bool waitComplete )
+bool ServiceManager::request_unload_model( const String & modelName, bool waitComplete )
 {
     LOG_SCOPE( areg_component_private_ServiceManager, request_unload_model );
 
     ServiceManager & serviceManager = ServiceManager::instance();
     if ( serviceManager.is_ready( ) == false )
-        return;
+        return false;
 
     if ( (waitComplete == false) || (Thread::current_thread( ) == static_cast<Thread *>(&serviceManager)) || SystemController::is_caller_in_model( modelName ) )
     {
-        static_cast<void>(ServiceManager::_post_lifecycle_event( ServiceManagerEventData::model_request( false, modelName, 0u ) ));
-        return;
+        const ServiceManagerEventData data{ ServiceManagerEventData::model_request( false, modelName, 0u ) };
+        return data.is_valid( ) && ServiceManager::_post_lifecycle_event( data );
     }
 
-    std::shared_ptr<SystemController::Request> request{ std::make_shared<SystemController::Request>( ) };
-    std::shared_ptr<SystemController::Request> * holder{ new std::shared_ptr<SystemController::Request>( request ) };
-    if ( ServiceManager::_post_lifecycle_event( ServiceManagerEventData::model_request( false, modelName, static_cast<uint64_t>(reinterpret_cast<uintptr_t>(holder)) ) ) == false )
-    {
-        delete holder;
-        return;
-    }
-
-    static_cast<void>(request->wait( ));
+    return ServiceManager::_post_request( false, modelName, false );
 }
 
-void ServiceManager::report_thread_running( const ComponentThread & whichThread )
+bool ServiceManager::build_thread_report( bool running, const ComponentThread & whichThread, Event & report )
 {
-    static_cast<void>(ServiceManager::_post_lifecycle_event( ServiceManagerEventData::thread_report( true, whichThread.name( ), static_cast<uint64_t>(reinterpret_cast<uintptr_t>(&whichThread)) ) ));
+    const ServiceManagerEventData data{ ServiceManagerEventData::thread_report( running, whichThread.name( ), static_cast<uint64_t>(reinterpret_cast<uintptr_t>(&whichThread)) ) };
+    if ( data.is_valid( ) == false )
+        return false;
+
+    ServiceManager & serviceManager = ServiceManager::instance();
+    ServiceManagerEvent event( data, static_cast<ServiceManagerEventConsumer &>(serviceManager) );
+    if ( event.is_valid( ) == false )
+        return false;
+
+    report = std::move( event );
+    return true;
 }
 
-void ServiceManager::report_thread_stopped( const ComponentThread & whichThread )
+bool ServiceManager::post_thread_report( Event & report )
 {
-    static_cast<void>(ServiceManager::_post_lifecycle_event( ServiceManagerEventData::thread_report( false, whichThread.name( ), static_cast<uint64_t>(reinterpret_cast<uintptr_t>(&whichThread)) ) ));
+    Event event{ std::move( report ) };
+    ServiceManager & serviceManager = ServiceManager::instance();
+    return event.is_valid( ) && event.register_for_thread( static_cast<DispatcherThread *>(&serviceManager) ) && event.deliver_event( );
 }
 
-void ServiceManager::report_watchdog_expired( const String & threadName, uint64_t instance, const String & guardedName )
+bool ServiceManager::report_watchdog_expired( const String & threadName, uint64_t instance, const String & guardedName )
 {
-    static_cast<void>(ServiceManager::_post_lifecycle_event( ServiceManagerEventData::watchdog_expired( threadName, instance, guardedName ) ));
+    const ServiceManagerEventData data{ ServiceManagerEventData::watchdog_expired( threadName, instance, guardedName ) };
+    return data.is_valid( ) && ServiceManager::_post_lifecycle_event( data );
 }
 
-void ServiceManager::report_deadline_expired()
+bool ServiceManager::report_deadline_expired()
 {
-    static_cast<void>(ServiceManager::_post_lifecycle_event( ServiceManagerEventData::deadline_expired( ) ));
+    return ServiceManager::_post_lifecycle_event( ServiceManagerEventData::deadline_expired( ) );
 }
 
 areg::ThreadState ServiceManager::thread_state( const String & threadName )
@@ -250,12 +248,33 @@ areg::ThreadState ServiceManager::thread_state( const String & threadName )
     return ServiceManager::instance( ).mController.thread_state( threadName );
 }
 
-void ServiceManager::request_user_state( uint32_t userState )
+bool ServiceManager::request_user_state( uint32_t userState )
 {
-    if ( (ServiceManager::instance( ).is_ready( ) == false) || (ServiceManager::_post_lifecycle_event( ServiceManagerEventData::user_state( userState ) ) == false) )
+    if ( ServiceManager::instance( ).is_ready( ) == false )
     {
         SystemController::store_user_state( userState );
+        return true;
     }
+
+    const ServiceManagerEventData data{ ServiceManagerEventData::user_state( userState ) };
+    return data.is_valid( ) && ServiceManager::_post_lifecycle_event( data );
+}
+
+bool ServiceManager::_post_request( bool load, const String & modelName, bool waitComponents )
+{
+    SystemController::Request * request{ SystemController::Request::create( waitComponents ) };
+    if ( request == nullptr )
+        return false;
+
+    const ServiceManagerEventData data{ ServiceManagerEventData::model_request( load, modelName, static_cast<uint64_t>(reinterpret_cast<uintptr_t>(request)) ) };
+    if ( (data.is_valid( ) == false) || (ServiceManager::_post_lifecycle_event( data ) == false) )
+    {
+        request->release( );
+        request->release( );
+        return false;
+    }
+
+    return request->wait( );
 }
 
 bool ServiceManager::_post_lifecycle_event( const ServiceManagerEventData & data )
@@ -310,6 +329,7 @@ ServiceManager::ServiceManager()
     , mRouterStopping   ( false )
     , mDeferredStart    ( )
     , mExitAfterRouter  ( false )
+    , mShutdownEvent    ( )
     , mLock             (  )
 {
 }
@@ -338,13 +358,7 @@ void ServiceManager::process_event( const ServiceManagerEventData & data )
             stream >> modelName;
             stream >> holder;
 
-            std::shared_ptr<SystemController::Request> request;
-            if ( holder != 0u )
-            {
-                std::shared_ptr<SystemController::Request> * owned{ reinterpret_cast<std::shared_ptr<SystemController::Request> *>(static_cast<uintptr_t>(holder)) };
-                request = *owned;
-                delete owned;
-            }
+            SystemController::Request * const request{ reinterpret_cast<SystemController::Request *>(static_cast<uintptr_t>(holder)) };
 
             if ( cmdService == ServiceManagerEventData::ServiceManagerCommand::CMD_LoadModel )
             {
@@ -427,14 +441,24 @@ void ServiceManager::ready_for_events( bool is_ready )
 
 bool ServiceManager::_start_manager_thread()
 {
-    return (is_ready() || (start(areg::DO_NOT_WAIT) && wait_start(areg::WAIT_INFINITE)));
+    if (is_ready())
+        return true;
+
+    ServiceManagerEvent shutdown( ServiceManagerEventData::shutdown_service_manager( ), static_cast<ServiceManagerEventConsumer &>(self( )) );
+    if (shutdown.is_valid() == false)
+        return false;
+
+    mShutdownEvent = std::move(shutdown);
+    return (start(areg::DO_NOT_WAIT) && wait_start(areg::WAIT_INFINITE));
 }
 
 void ServiceManager::_stop_manager_thread(bool waitComplete)
 {
-    ServiceManagerEvent::send_event( ServiceManagerEventData::shutdown_service_manager()
-                                   , static_cast<ServiceManagerEventConsumer &>(self())
-                                   , static_cast<DispatcherThread &>(self()));
+    Event shutdown{ std::move(mShutdownEvent) };
+    if (shutdown.is_valid() && shutdown.register_for_thread(static_cast<DispatcherThread *>(this)))
+    {
+        static_cast<void>(shutdown.deliver_event());
+    }
 
     if (waitComplete)
     {

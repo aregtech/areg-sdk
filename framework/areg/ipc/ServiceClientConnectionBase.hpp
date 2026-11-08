@@ -720,8 +720,8 @@ inline bool ServiceClientConnectionBase::send_message(MessageEnvelope && data, a
     if ( try_send_inline(data) )
         return true;
 
-    // The fallback is the first user of the send thread, so this is where it starts.
-    if ( mThreadSend.is_running() == false )
+    // The fallback is the first user of the send thread, so this is where it starts and gets ready.
+    if ( mThreadSend.is_ready() == false )
         ensure_send_thread();
 
     if ( areg::set_send_priority(data, eventPrio) == false )

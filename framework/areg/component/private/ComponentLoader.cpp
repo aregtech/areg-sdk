@@ -60,14 +60,14 @@ bool ComponentLoader::load_component_model( const String & modelName, bool waitC
     return ServiceManager::request_load_model( modelName, waitComponents );
 }
 
-void ComponentLoader::unload_component_model(bool waitComplete, const String & modelName )
+bool ComponentLoader::unload_component_model(bool waitComplete, const String & modelName )
 {
-    ServiceManager::request_unload_model( modelName, waitComplete );
+    return ServiceManager::request_unload_model( modelName, waitComplete );
 }
 
-void ComponentLoader::wait_model_unload(const String & modelName)
+bool ComponentLoader::wait_model_unload(const String & modelName)
 {
-    ServiceManager::request_unload_model( modelName, true );
+    return ServiceManager::request_unload_model( modelName, true );
 }
 
 areg::ModelState ComponentLoader::model_state( const String & modelName )
