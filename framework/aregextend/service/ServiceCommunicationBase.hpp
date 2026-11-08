@@ -504,10 +504,11 @@ public:
      *          In pool mode (numPairs > 0): routes the socket to the appropriate pool pair
      *          via cookie % numPairs, unregisters from the global multiplexer, and returns true.
      *          In legacy mode (numPairs == 0): returns false -- shared send/receive path active.
+     *          While the connection stops, the client is closed and the method returns true.
      *
      * \param   clientSocket    The newly accepted client socket (cookie already assigned).
-     * \return  Returns true if the socket was handed off to a pool pair (pool mode).
-     *          Returns false for the legacy shared-thread path.
+     * \return  Returns true if the socket was handed off to a pool pair (pool mode), or was
+     *          closed because the connection stops. Returns false for the legacy shared-thread path.
      **/
     bool on_client_accepted( areg::SocketAccepted & clientSocket ) override;
 

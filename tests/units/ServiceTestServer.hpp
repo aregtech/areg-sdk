@@ -56,6 +56,12 @@ namespace service_test
             return mThreadSend.backlog();
         }
 
+        //!< Marks the connection as stopping, as stop_connection() does, without stopping it.
+        void set_stopping(bool stopping) noexcept
+        {
+            mShuttingDown.store(stopping, std::memory_order_release);
+        }
+
         //!< Returns the backlog of the send thread of pool pair \a index; the server must run.
         areg::ext::SendBacklog & pool_backlog(uint32_t index) noexcept
         {
