@@ -107,6 +107,22 @@ namespace
                 && send( areg::create_connect_notify( source, cookie ) );
         }
 
+        //!< Accepts the next client and returns true if it closes the connection without a handshake.
+        bool handshake_refused( )
+        {
+            close_peer( );
+            peer = ::accept( handle, nullptr, nullptr );
+            if ( peer < 0 )
+                return false;
+
+            const timeval timeout{ IO_WAIT_S, 0 };
+            areg::MessageEnvelope handshake;
+            errno = 0;
+            return ( ::setsockopt( peer, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof( timeout ) ) == 0 )
+                && ( receive( handshake ) == false )
+                && ( errno != EAGAIN );
+        }
+
         bool read_all( uint8_t * buffer, uint32_t size )
         {
             uint32_t done{ 0u };
@@ -187,6 +203,24 @@ namespace
     }
 }
 
+namespace
+{
+    //!< Waits until the system refused one send of the process. Returns false on timeout.
+    bool wait_send_refused( )
+    {
+        const auto deadline{ std::chrono::steady_clock::now( ) + std::chrono::seconds( IO_WAIT_S ) };
+        while ( areg_fault::failed( areg_fault::FaultPoint::SocketSend ) == 0u )
+        {
+            if ( std::chrono::steady_clock::now( ) > deadline )
+                return false;
+
+            std::this_thread::sleep_for( std::chrono::milliseconds( 5 ) );
+        }
+
+        return true;
+    }
+}
+
 /**
  * \brief   The system refuses to send a request of the router client on its live connection:
  *          the client closes that connection and connects again, and its next request reaches
@@ -205,6 +239,7 @@ TEST( FaultInjectTest, router_client_reconnects_when_the_system_refuses_to_send_
         areg_fault::FaultScope faults;
         AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::SocketSend, ECONNRESET ) );
         AREG_CHILD_CHECK( post_remote_request( STUB, REQUEST ) );
+        AREG_CHILD_CHECK( wait_send_refused( ) );
         AREG_CHILD_CHECK( router.answer( COOKIE + 1u ) && wait_connected( ) );
         AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::SocketSend ) == 1u );
 
@@ -302,6 +337,7 @@ TEST( FaultInjectTest, remote_logger_reconnects_when_the_system_refuses_to_send_
             areg_fault::FaultScope faults;
             AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::SocketSend, ECONNRESET ) );
             log_row( "refused row" );
+            AREG_CHILD_CHECK( wait_send_refused( ) );
             AREG_CHILD_CHECK( collector.answer( COOKIE + 1u, areg::COOKIE_LOGGER ) && wait_log_cookie( COOKIE + 1u ) );
             AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::SocketSend ) == 1u );
         }
@@ -316,6 +352,27 @@ TEST( FaultInjectTest, remote_logger_reconnects_when_the_system_refuses_to_send_
         }
 
         AREG_CHILD_CHECK( received );
+        areg::Application::release( );
+    );
+}
+
+/**
+ * \brief   Reproduces the defect: the system refuses to send the handshake of a new connection.
+ *          The client closes that connection and connects again.
+ **/
+TEST( FaultInjectTest, client_connects_again_when_the_system_refuses_its_handshake )
+{
+    AREG_EXPECT_IN_CHILD(
+        constexpr ITEM_ID COOKIE{ areg::COOKIE_REMOTE_SERVICE + 121u };
+        TestRouter collector;
+        AREG_CHILD_CHECK( collector.open( ) );
+        RemoteLogConfig config( collector.port );
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::SocketSend, ECONNRESET ) );
+        areg::Application::setup( true, true, false, true, false, nullptr, &config );
+        AREG_CHILD_CHECK( collector.handshake_refused( ) );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::SocketSend ) == 1u );
+        AREG_CHILD_CHECK( collector.answer( COOKIE, areg::COOKIE_LOGGER ) && wait_log_cookie( COOKIE ) );
         areg::Application::release( );
     );
 }

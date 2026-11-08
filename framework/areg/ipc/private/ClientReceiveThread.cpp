@@ -42,20 +42,21 @@ bool ClientReceiveThread::run_dispatcher()
 
     ready_for_events( true );
 
-    if ( !mConnection.connect_socket() )
+    // Send connect handshake
+    bool connected{ mConnection.connect_socket() };
+    if ( connected && mHandshakeMsg.is_valid() )
+    {
+        connected = (mConnection.send_message( mHandshakeMsg ) > 0);
+        mHandshakeMsg.invalidate();
+    }
+
+    if ( !connected )
     {
         areg::set_receive_live_handle(nullptr);
         mRemoteService.failed_receive_message( mConnection.socket() );
         ready_for_events( false );
         remove_all_events();
         return false;
-    }
-
-    // Send connect handshake
-    if ( mHandshakeMsg.is_valid() )
-    {
-        mConnection.send_message( mHandshakeMsg );
-        mHandshakeMsg.invalidate();
     }
 
     areg::ThreadCache & rxCache{ areg::thread_rx_cache(mConnection.socket().handle()) };

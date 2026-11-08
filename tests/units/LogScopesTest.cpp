@@ -1181,8 +1181,6 @@ TEST(LoggingCoreTest, controller_stop_resume_restores_saved_and_newly_configured
     EXPECT_EQ(first.priority(), static_cast<uint32_t>(areg::LogPriority::PrioNotset));
 }
 
-#endif
-
 // A node whose leaves share its priority, with a deeper child node of the same priority, is grouped whole.
 TEST(LoggingCoreTest, grouping_removes_deeper_nodes_of_the_grouped_priority)
 {
@@ -1203,3 +1201,5 @@ TEST(LoggingCoreTest, grouping_removes_deeper_nodes_of_the_grouped_priority)
     EXPECT_TRUE(group.nodes().is_empty());
     EXPECT_EQ(group.priority(), DEBUG_PRIO);
 }
+
+#endif // AREG_LOGGING
