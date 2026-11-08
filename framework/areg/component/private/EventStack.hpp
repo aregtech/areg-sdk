@@ -74,24 +74,6 @@ public:
     void remove_all_events() noexcept;
 
     /**
-     * \brief   Destroys all events whose runtime class ID matches \a eventClassId,
-     *          except Exit events.
-     *
-     * \param   eventClassId    Runtime class ID to match and remove.
-     * \return  Number of remaining events after the operation.
-     **/
-    uint32_t delete_matching(uint32_t eventClassId) noexcept;
-
-    /**
-     * \brief   Destroys all events whose runtime class ID does NOT match \a eventClassId,
-     *          except Exit events.
-     *
-     * \param   eventClassId    Runtime class ID of events to keep.
-     * \return  Number of remaining events after the operation.
-     **/
-    uint32_t delete_except(uint32_t eventClassId) noexcept;
-
-    /**
      * \brief   Pushes an event onto the queue by moving it in (O(1) shared_ptr transfer; no payload copy).
      *          The caller's event is left in a moved-from (empty/invalid) state after the push.
      *

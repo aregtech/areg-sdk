@@ -54,17 +54,6 @@ WorkerThread* ComponentInfo::next_worker_thread(ThreadAddress& threadAddress) no
     return result;
 }
 
-WorkerThread* ComponentInfo::remove_worker_thread(ThreadAddress& threadAddress) noexcept
-{
-    std::pair<uint32_t, WorkerThread*> elem{ areg::CHECKSUM_IGNORE, nullptr };
-    if (!mWorkerThreadMap.is_empty() && mWorkerThreadMap.remove_first_element(elem))
-    {
-        threadAddress = elem.second->address();
-    }
-
-    return elem.second;
-}
-
 DispatcherThread * ComponentInfo::find_event_consumer( uint32_t whichClass ) const noexcept
 {
     DispatcherThread * result = nullptr;
@@ -102,16 +91,6 @@ void ComponentInfo::register_worker_thread( WorkerThread& workerThread )
 bool ComponentInfo::unregister_worker_thread( WorkerThread& workerThread )
 {
     return (mWorkerThreadMap.unregister_resource_object(static_cast<uint32_t>(workerThread.address())) == &workerThread);
-}
-
-bool ComponentInfo::is_worker_registered( WorkerThread& workerThread ) const noexcept
-{
-    return is_worker_thread(workerThread.address());
-}
-
-bool ComponentInfo::is_master_thread( const ThreadAddress& threadAddress ) const noexcept
-{
-    return (threadAddress == mMasterThread.address());
 }
 
 } // namespace areg

@@ -418,19 +418,6 @@ bool LoggerClient::set_config_database_name(const String& dbName)
     return result;
 }
 
-bool LoggerClient::set_config_logger_connect_enabled(bool is_enabled)
-{
-    bool result{ false };
-    LogConfiguration config;
-    if (config.database_engine() == areg::LOGDB_ENGINE_NAME)
-    {
-        config.set_database_enable(is_enabled, false);
-        result = true;
-    }
-
-    return result;
-}
-
 void LoggerClient::save_configuration()
 {
     LogConfiguration config;

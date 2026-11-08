@@ -324,11 +324,6 @@ protected:
     virtual bool run_dispatcher();
 
     /**
-     * \brief   Notifies exit event to shutdown dispatcher.
-     **/
-    virtual void shutdown_dispatcher() noexcept;
-
-    /**
      * \brief   Enables or disables event dispatching.
      **/
     virtual void ready_for_events( bool is_ready );
