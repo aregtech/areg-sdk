@@ -17,6 +17,7 @@
 #include "areg/logging/LoggingDefs.hpp"
 
 #include <algorithm>
+#include <atomic>
 #include <cstring>
 #include <deque>
 #include <filesystem>
@@ -25,6 +26,34 @@
 #include <system_error>
 #include <utility>
 #include <vector>
+
+#if defined(__linux__)
+#include <sys/syscall.h>
+#include <sys/timerfd.h>
+#include <unistd.h>
+
+namespace
+{
+    //!< While set, a one-second one-shot timer is armed shorter, as a system timer may expire early.
+    std::atomic<bool>       gTimerExpiresEarly{ false };
+    //!< The count of timers that were armed shorter.
+    std::atomic<uint32_t>   gTimersShortened{ 0u };
+}
+
+//!< Replaces the system call of the framework timer, and arms the timer shorter while requested.
+extern "C" __attribute__((visibility("default"))) int timerfd_settime(int fd, int flags, const struct itimerspec* value, struct itimerspec* previous) noexcept
+{
+    struct itimerspec armed{ *value };
+    if (gTimerExpiresEarly.load() && (armed.it_value.tv_sec == 1) && (armed.it_value.tv_nsec == 0) && (armed.it_interval.tv_sec == 0) && (armed.it_interval.tv_nsec == 0))
+    {
+        armed.it_value.tv_sec  = 0;
+        armed.it_value.tv_nsec = 900'000'000;
+        gTimersShortened.fetch_add(1u);
+    }
+
+    return static_cast<int>(::syscall(SYS_timerfd_settime, fd, flags, &armed, previous));
+}
+#endif  // defined(__linux__)
 
 namespace
 {
@@ -585,6 +614,27 @@ namespace
         console.quit();
     }
 
+#if defined(__linux__)
+    // Reproduces the defect: an expiry the clock measured as early was dropped and the save queue stopped for good.
+    void scenario_save_configuration_early_expiry()
+    {
+        PrivateConfig config(SERVICE);
+        ConsoleSession console(config);
+        LogPeer first(config, areg::MessageSource::SourceClient);
+        LogPeer second(config, areg::MessageSource::SourceClient);
+        LogPeer observer(config, areg::MessageSource::SourceObserver);
+
+        gTimerExpiresEarly.store(true);
+        observer.send(areg::message_save_configuration(observer.cookie, first.cookie));
+        check_request(first.next(), areg::FuncIdRange::ServiceSaveLogConfiguration, areg::COOKIE_LOGGER, first.cookie);
+        observer.send(areg::message_save_configuration(observer.cookie, second.cookie));
+        check_request(second.next(), areg::FuncIdRange::ServiceSaveLogConfiguration, areg::COOKIE_LOGGER, second.cookie);
+        gTimerExpiresEarly.store(false);
+        AREG_CHILD_CHECK(gTimersShortened.load() != 0u);
+        console.quit();
+    }
+#endif  // defined(__linux__)
+
     void scenario_save_configuration_source_leaves()
     {
         PrivateConfig config(SERVICE);
@@ -1115,6 +1165,8 @@ namespace
         observer.send(areg::message_update_scope(observer.cookie, other.cookie, "to_observer", 1u, priority_of("DEBUG")));
         observer.send(areg::message_update_scope(observer.cookie, 9999u, "to_nobody", 2u, priority_of("DEBUG")));
         observer.send(areg::message_save_configuration(observer.cookie, 9998u));
+        // Reproduces the defect: a save request for an observer or an unknown cookie was queued, and the observer got it.
+        observer.send(areg::message_save_configuration(observer.cookie, other.cookie));
         observer.send(areg::message_update_scope(observer.cookie, source.cookie, "addressed", 3u, priority_of("DEBUG")));
         const Received addressed = source.next();
         check_request(addressed, areg::FuncIdRange::ServiceLogUpdateScopes, observer.cookie, source.cookie);
@@ -1241,6 +1293,13 @@ TEST(LogCollectorServiceTest, save_configuration_moves_on_after_the_answer_timeo
 {
     AREG_EXPECT_IN_CHILD(scenario_save_configuration_timeout());
 }
+
+#if defined(__linux__)
+TEST(LogCollectorServiceTest, save_configuration_moves_on_when_the_timer_expires_early)
+{
+    AREG_EXPECT_IN_CHILD(scenario_save_configuration_early_expiry());
+}
+#endif  // defined(__linux__)
 
 TEST(LogCollectorServiceTest, save_configuration_moves_on_when_the_asked_source_leaves)
 {

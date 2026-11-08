@@ -5,6 +5,11 @@
 
 cmake_minimum_required(VERSION 3.20.0)
 
+# Removes the libraries repeated on a link line when the linker needs them only once.
+if (POLICY CMP0156)
+    cmake_policy(SET CMP0156 NEW)
+endif()
+
 # Areg root directory
 set(AREG_SDK_ROOT           "${CMAKE_CURRENT_LIST_DIR}")
 set(AREG_CMAKE_CONFIG_DIR   "${AREG_SDK_ROOT}/conf/cmake")

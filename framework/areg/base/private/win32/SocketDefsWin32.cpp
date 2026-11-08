@@ -505,6 +505,14 @@ bool _os_get_option(SOCKETHANDLE hSocket, int32_t level, int32_t name, unsigned 
     return (RETURNED_OK == ::getsockopt(static_cast<SOCKET>(hSocket), level, name, reinterpret_cast<char*>(&value), &len));
 }
 
+bool _os_is_listening(SOCKETHANDLE hSocket) noexcept
+{
+    ASSERT(areg::is_valid_socket(hSocket));
+    BOOL listening{ FALSE };
+    int32_t len{ sizeof(listening) };
+    return (RETURNED_OK == ::getsockopt(static_cast<SOCKET>(hSocket), SOL_SOCKET, SO_ACCEPTCONN, reinterpret_cast<char*>(&listening), &len)) && (listening != FALSE);
+}
+
 bool _os_socket_alive(SOCKETHANDLE hSocket) noexcept
 {
     ASSERT(areg::is_valid_socket(hSocket));

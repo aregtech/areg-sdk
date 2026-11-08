@@ -135,6 +135,14 @@ namespace areg::os {
     bool _os_get_option(SOCKETHANDLE hSocket, int32_t level, int32_t name, unsigned long & value);
 
     /**
+     * \brief   OS specific check that the socket listens for connections.
+     * \param   hSocket     A valid socket handle.
+     * \return  Returns true if the socket listens. Returns false if it does not or if the
+     *          state of the socket cannot be read.
+     **/
+    bool _os_is_listening(SOCKETHANDLE hSocket) noexcept;
+
+    /**
      * \brief   Checks without waiting that the socket has no pending error and that the peer has
      *          not ended the stream, unless unread data is still waiting. Consumes nothing.
      * \param   hSocket     A valid socket handle.
@@ -807,8 +815,7 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept(SOCKETHANDLE serverSocket, const 
     }
 
     // A socket that does not listen is refused before the wait.
-    unsigned long listening{ 0u };
-    if (!areg::os::_os_get_option(serverSocket, SOL_SOCKET, SO_ACCEPTCONN, listening) || (listening == 0u))
+    if (!areg::os::_os_is_listening(serverSocket))
     {
         return areg::FailedSocketHandle;
     }

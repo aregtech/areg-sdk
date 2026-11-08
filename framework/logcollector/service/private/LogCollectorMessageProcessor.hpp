@@ -26,7 +26,6 @@
 #include "aregextend/service/ServiceCommunicationBase.hpp"
 #include "logcollector/service/private/LogCollectorDroppedRows.hpp"
 
-#include <chrono>
 
 /************************************************************************
  * Dependencies
@@ -228,8 +227,8 @@ public:
     void process_next_save_config();
 
     /**
-     * \brief   Called when the save timer expires: asks the next log source if the pending one
-     *          did not answer within LogCollectorServerService::TIMEOUT_SAVE_CONFIG.
+     * \brief   Called when the save timer expires: asks the next log source if the timer of the
+     *          pending one has ended and that source did not answer.
      **/
     void save_config_timeout();
 
@@ -325,9 +324,6 @@ private:
 
     //!< The ID of an application pending to save the configuration.
     ITEM_ID                     mPendingSave;
-
-    //!< When the save request of the pending application was sent.
-    std::chrono::steady_clock::time_point   mPendingSince;
 
     //!< A log source that is not sending, mapped to its state and the observer that asked for it.
     areg::OrderedMap<ITEM_ID, SourceState>  mPausedSources;
