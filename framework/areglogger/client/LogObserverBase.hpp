@@ -474,8 +474,9 @@ public:
 
     /**
      * \brief   Requests to change the way a log source produces and sends its logs. The target
-     *          stays connected and keeps answering the scope list queries in every state. The logs
-     *          produced while the target is not sending are gone, nothing is replayed.
+     *          stays connected and keeps answering the scope list queries in every state. The state
+     *          applies to the logs the target handles after it gets the request; the logs it handles
+     *          while not sending are gone, nothing is replayed.
      *
      * \param   target      The valid cookie ID of the target log source to change the state.
      * \param   state       The new state to set for the log source. A stopped source produces no

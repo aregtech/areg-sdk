@@ -100,7 +100,7 @@ void NetTcpLogger::close_logger()
 
 void NetTcpLogger::log_message(const areg::LogEntry& logMessage)
 {
-    // A paused source drops what it produced. Nothing is queued, so nothing is replayed on resume.
+    // A paused source drops the logs handled while it is paused. Nothing is queued, so nothing is replayed on resume.
     if (!is_sending())
         return;
 
@@ -121,7 +121,7 @@ void NetTcpLogger::log_message(const areg::LogEntry& logMessage)
 
 void NetTcpLogger::forward_message(const areg::MessageEnvelope& msg)
 {
-    // A paused source drops what it produced. Nothing is queued, so nothing is replayed on resume.
+    // A paused source drops the logs handled while it is paused. Nothing is queued, so nothing is replayed on resume.
     if (!is_sending())
         return;
 
@@ -141,7 +141,7 @@ void NetTcpLogger::forward_message(const areg::MessageEnvelope& msg)
 
 void NetTcpLogger::forward_message(areg::MessageEnvelope&& msg)
 {
-    // A paused source drops what it produced. Nothing is queued, so nothing is replayed on resume.
+    // A paused source drops the logs handled while it is paused. Nothing is queued, so nothing is replayed on resume.
     if (!is_sending())
         return;
 

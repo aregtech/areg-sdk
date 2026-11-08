@@ -537,6 +537,41 @@ protected:
 
         EXPECT_FALSE(run.server.is_target_held(reader->cookie));
     }
+
+    //!< Checks that every send thread of the running server uses \a closeStalled and the refusal time of the server.
+    static void expect_send_policy(Running & run, uint32_t pairs, bool closeStalled)
+    {
+        const uint32_t refusal{ areg::send_refusal_ms(0u, areg::SOCKET_KEEPALIVE_SEC) };
+        EXPECT_EQ(run.server.shared_backlog().closes_stalled(), closeStalled);
+        EXPECT_EQ(run.server.shared_backlog().refusal_ms(), refusal);
+        ASSERT_EQ(run.server.active_client_pair_count(), pairs);
+        for (uint32_t i = 0u; i != pairs; ++i)
+        {
+            EXPECT_EQ(run.server.pool_backlog(i).closes_stalled(), closeStalled) << "pair " << i;
+            EXPECT_EQ(run.server.pool_backlog(i).refusal_ms(), refusal) << "pair " << i;
+        }
+    }
+
+    //!< A server started with an address only applies its send policy at the start and at a restart.
+    static void run_send_policy(uint32_t pairs)
+    {
+        for (const bool closeStalled : { false, true })
+        {
+            Running run(Policy::Accept, pairs);
+            run.server.set_close_stalled(closeStalled);
+            ASSERT_TRUE(run.start());
+            Peer before(run.port);
+            ASSERT_TRUE(before.join());
+            expect_send_policy(run, pairs, closeStalled);
+
+            run.server.set_close_stalled(!closeStalled);
+            ASSERT_TRUE(run.server.reconnect_service_host());
+            static_cast<void>(before.drain());
+            Peer after(run.port);
+            ASSERT_TRUE(after.join());
+            expect_send_policy(run, pairs, !closeStalled);
+        }
+    }
 };
 
 TEST_F(ServiceCommServerTest, clients_are_told_their_cookies_in_the_shared_thread_mode)
@@ -594,6 +629,18 @@ TEST_F(ServiceCommServerTest, slow_reader_is_held_without_loss_in_the_pool_mode)
 TEST_F(ServiceCommServerTest, slow_reader_gets_big_messages_through_the_send_thread)
 {
     run_slow_reader(POOL_PAIRS, 256u * 1024u);
+}
+
+// Reproduces the defect: a server started with an address only kept the default send policy in
+// its shared send thread, so set_close_stalled(false) was ignored there.
+TEST_F(ServiceCommServerTest, send_policy_reaches_every_send_thread_in_the_shared_thread_mode)
+{
+    run_send_policy(0u);
+}
+
+TEST_F(ServiceCommServerTest, send_policy_reaches_every_send_thread_in_the_pool_mode)
+{
+    run_send_policy(POOL_PAIRS);
 }
 
 // A client of a host that is not allowed is told that it is rejected, and the server closes the

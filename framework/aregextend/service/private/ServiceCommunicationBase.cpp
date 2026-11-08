@@ -166,7 +166,6 @@ bool ServiceCommunicationBase::setup_connection_data(areg::RemoteServiceKind ser
     mSendCapBytes  = config.socket_send_buffer() != 0u ? config.socket_send_buffer() : areg::SOCKET_SEND_BUFFER_SIZE;
     mSendRefusalMs = config.socket_refusal_timeout();
     mKeepaliveMs   = keepaliveSec * 1'000u;
-    mThreadSend.backlog().set_limits(mSendCapBytes, mSendRefusalMs, mKeepaliveMs, mCloseStalled);
 
     const uint32_t configPairs{ config.pool_pairs() };
     if (configPairs != mNumPairs)
@@ -404,6 +403,7 @@ bool ServiceCommunicationBase::start_connection()
             mClientPairs.swap(pairs);
         }
 
+        mThreadSend.backlog().set_limits(mSendCapBytes, mSendRefusalMs, mKeepaliveMs, mCloseStalled);
         if ( start_send_thread( ) && start_receive_thread( ) )
         {
             result = true;
