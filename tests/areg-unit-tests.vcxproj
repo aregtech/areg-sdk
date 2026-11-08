@@ -108,6 +108,8 @@
     <ClCompile Include="units\StringUnicodeTest.cpp" />
     <ClCompile Include="units\StringDefsTest.cpp" />
     <ClCompile Include="units\OptionParserTest.cpp" />
+    <ClCompile Include="units\AnsiWriterTest.cpp" />
+    <ClCompile Include="units\ConsoleTest.cpp" />
     <ClCompile Include="units\StringDefsTest2.cpp" />
     <ClCompile Include="units\StringDefsTest3.cpp" />
     <ClCompile Include="units\ChildProcessTest.cpp" />

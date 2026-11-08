@@ -3,7 +3,7 @@
 #  setup-environment.sh
 #
 #  Installs the tools that build Areg on Linux and macOS: a C++ compiler,
-#  CMake, Java, Git, and optionally Python, ncurses and cross compilers.
+#  CMake, Java, Git, and optionally Python and cross compilers.
 #  Plain POSIX sh. Shows a menu, prints the exact commands, asks before it runs
 #  them, then runs tools/check-env.sh.
 #
@@ -17,7 +17,7 @@ set -eu
 HERE=$(cd "$(dirname "$0")" && pwd)
 
 # Menu items: id and label. The defaults are the required tools.
-ITEMS="gcc clang cmake java git python ncurses x86 arm32 arm64"
+ITEMS="gcc clang cmake java git python x86 arm32 arm64"
 SELECTED="gcc cmake java git"
 DRY_RUN=0
 ASSUME_YES=0
@@ -35,7 +35,7 @@ Install the tools that build Areg.
 
   --all          select every item of the menu
   --with LIST    select these items, comma separated:
-                 gcc, clang, cmake, java, git, python, ncurses, x86, arm32, arm64
+                 gcc, clang, cmake, java, git, python, x86, arm32, arm64
   --yes          run the commands without asking
   --dry-run      print the commands, run nothing
   -h, --help     show this help
@@ -53,7 +53,6 @@ label() {
         java)    echo "Java 17+ (runs the code generator)" ;;
         git)     echo "Git" ;;
         python)  echo "Python 3.10+ (agentic coding only)" ;;
-        ncurses) echo "ncurses (only for AREG_EXTENDED=ON)" ;;
         x86)     echo "Cross: Linux x86, 32-bit" ;;
         arm32)   echo "Cross: Linux ARMv7, 32-bit" ;;
         arm64)   echo "Cross: Linux ARM64" ;;
@@ -143,7 +142,6 @@ packages() {
         apt:java)      apt_java ;;
         apt:git)       echo "git" ;;
         apt:python)    echo "python3" ;;
-        apt:ncurses)   echo "libncurses-dev" ;;
         apt:x86)       apt_multilib ;;
         apt:arm32)     echo "g++-arm-linux-gnueabihf" ;;
         apt:arm64)     echo "g++-aarch64-linux-gnu" ;;
@@ -153,14 +151,12 @@ packages() {
         dnf:java)      dnf_java ;;
         dnf:git)       echo "git" ;;
         dnf:python)    echo "python3" ;;
-        dnf:ncurses)   echo "ncurses-devel" ;;
         pacman:gcc)    echo "base-devel" ;;
         pacman:clang)  echo "clang" ;;
         pacman:cmake)  echo "cmake" ;;
         pacman:java)   echo "jre-openjdk-headless" ;;
         pacman:git)    echo "git" ;;
         pacman:python) echo "python" ;;
-        pacman:ncurses) echo "ncurses" ;;
         brew:cmake)    echo "cmake" ;;
         brew:java)     echo "openjdk" ;;
         brew:git)      echo "git" ;;
@@ -207,8 +203,6 @@ for id in $SELECTED; do
     p=$(packages "$id")
     if [ -n "$p" ]; then
         PKGS="$PKGS $p"
-    elif [ "$PM" = "brew" ] && [ "$id" = "ncurses" ]; then
-        :
     else
         NOTES="$NOTES
   - $(label "$id"): not offered for $PM here; see docs/wiki/01e-build-environment.md"
@@ -222,12 +216,6 @@ $1"
 }
 
 [ "$XCODE" -eq 1 ] && ! xcode-select -p >/dev/null 2>&1 && add_cmd "xcode-select --install"
-# 32-bit ncurses for an x86 build with AREG_EXTENDED=ON comes from the i386 architecture.
-if [ "$PM" = "apt" ] && is_selected x86 && is_selected ncurses; then
-    dpkg --print-foreign-architectures 2>/dev/null | grep -q '^i386$' \
-        || add_cmd "${SUDO}dpkg --add-architecture i386"
-    PKGS="$PKGS libncurses-dev:i386"
-fi
 if [ -n "$PKGS" ]; then
     case "$PM" in
         apt)    add_cmd "${SUDO}apt-get update"

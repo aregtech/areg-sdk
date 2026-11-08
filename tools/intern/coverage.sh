@@ -39,7 +39,6 @@
 #     GCOVR           gcovr executable (default: gcovr from PATH, else ~/.local/bin/gcovr).
 #     PYTHON          Python interpreter (default: python3).
 #     AREG_COV_FAMILY    Compiler family passed to cmake (default: gnu; macOS: llvm; Cygwin: cygwin).
-#     AREG_COV_EXTENDED  AREG_EXTENDED value (default: ON; macOS: OFF).
 #     AREG_COV_GCOV      gcov program gcovr runs (default: gcov of the compiler;
 #                        macOS: "xcrun llvm-cov gcov"; Windows: "llvm-cov gcov").
 #     AREG_COV_GENERATOR cmake generator (default: the cmake default; Windows: Ninja).
@@ -113,7 +112,6 @@ if [ -z "${GCOVR:-}" ]; then
 fi
 NPROC=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
 FAMILY=${AREG_COV_FAMILY:-gnu}
-EXTENDED=${AREG_COV_EXTENDED:-ON}
 GCOV=${AREG_COV_GCOV:-}
 GENERATOR=${AREG_COV_GENERATOR:-}
 COV_FLAGS=${AREG_COV_FLAGS:---coverage -fprofile-update=atomic}
@@ -167,7 +165,7 @@ step_build() {
   local flags="$COV_FLAGS" gen=()
   [ -n "$GENERATOR" ] && gen=(-G "$GENERATOR")
   cmake -S "$SRC" -B "$BUILD" ${gen[@]+"${gen[@]}"} -DAREG_COMPILER_FAMILY="$FAMILY" -DCMAKE_BUILD_TYPE=Debug -DAREG_LIB_TYPE=shared \
-        -DAREG_EXTENDED:BOOL="$EXTENDED" -DAREG_LOGGING:BOOL=ON -DAREG_EXAMPLES:BOOL=ON -DAREG_TESTS:BOOL=ON \
+        -DAREG_LOGGING:BOOL=ON -DAREG_EXAMPLES:BOOL=ON -DAREG_TESTS:BOOL=ON \
         -DAREG_OUTPUT_LAYOUT:BOOL=OFF \
         -DCMAKE_C_FLAGS="$flags" -DCMAKE_CXX_FLAGS="$flags" \
         -DCMAKE_EXE_LINKER_FLAGS="$COV_LDFLAGS" -DCMAKE_SHARED_LINKER_FLAGS="$COV_LDFLAGS" \

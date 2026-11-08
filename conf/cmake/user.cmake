@@ -12,50 +12,48 @@
 #   2. AREG_COMPILER        -- Sets a specific compiler for both C++ and C projects.
 #   3. AREG_COMPILER_FAMILY -- A quick way to set the C++ and C compilers (CMAKE_CXX_COMPILER and CMAKE_C_COMPILER).
 #   4. AREG_EXAMPLES        -- Enables or disables building examples for the Areg Framework.
-#   5. AREG_EXTENDED        -- Enables or disables extended Areg Framework features. May require additional dependencies.
-#   6. AREG_LOGGING         -- Enables or disables logging during compilation. Defaults to 'enabled'.
-#   7. AREG_TESTS           -- Enables or disables building unit tests for the Areg Framework.
-#   8. AREG_INSTALL         -- Enables or disables installation of Areg SDK binaries, headers and dependencies like 'sqlite3' and 'ncurses'.
-#   9. AREG_INSTALL_DIR     -- Location where Areg SDK binaries, headers, and tools are installed. Defaults to the user's home directory
-#  10. AREG_SYSTEM_PACKAGES -- Enables or disables using installed packages. Controls other package options like SQLite and GTest.
-#  11. AREG_SYSTEM_GTEST    -- Determines if the system's GTest package should be used or compiled from source.
-#  12. AREG_SYSTEM_SQLITE   -- Determines if the system's SQLite3 package should be used or compiled from source.
-#  13. AREG_BUILD_DIR       -- Specifies the root directory for build files. Defaults to './product' within the Areg SDK root.
-#  14. AREG_OUTPUT_DIR      -- Directory where build outputs are placed.
-#  15. AREG_BIN_DIR         -- Directory for output binaries (executable and shared libraries).
-#  16. AREG_LIB_DIR         -- Directory for output static libraries.
-#  17. AREG_DEPS_DIR        -- Location for fetching third-party packages such as GTest.
-#  18. AREG_OUTPUT_LAYOUT   -- If disabled, output directories will match the CMake binary directory.
-#  19. AREG_LOGGER_LIB_TYPE -- Specifies the type of the Log Observer API library ('shared' or 'static'). Defaults to AREG_LIB_TYPE.
-#  20. AREG_ARCH            -- The processor architect. Ignore if need to use system default.
-#  21. AREG_TARGET          -- Specifies the compiler and library architecture target. Defaults to the system-defined compiler and architecture.
-#  22. AREG_ARCH_NATIVE     -- Optimizes GNU/Clang Release builds for the build machine CPU ('-march=native'). Defaults to 'disabled'.
-#  23. AREG_BENCHMARKS      -- Enables or disables building the performance benchmarks of the Areg Framework.
+#   5. AREG_LOGGING         -- Enables or disables logging during compilation. Defaults to 'enabled'.
+#   6. AREG_TESTS           -- Enables or disables building unit tests for the Areg Framework.
+#   7. AREG_INSTALL         -- Enables or disables installation of Areg SDK binaries, headers and dependencies like 'sqlite3'.
+#   8. AREG_INSTALL_DIR     -- Location where Areg SDK binaries, headers, and tools are installed. Defaults to the user's home directory
+#   9. AREG_SYSTEM_PACKAGES -- Enables or disables using installed packages. Controls other package options like SQLite and GTest.
+#  10. AREG_SYSTEM_GTEST    -- Determines if the system's GTest package should be used or compiled from source.
+#  11. AREG_SYSTEM_SQLITE   -- Determines if the system's SQLite3 package should be used or compiled from source.
+#  12. AREG_BUILD_DIR       -- Specifies the root directory for build files. Defaults to './product' within the Areg SDK root.
+#  13. AREG_OUTPUT_DIR      -- Directory where build outputs are placed.
+#  14. AREG_BIN_DIR         -- Directory for output binaries (executable and shared libraries).
+#  15. AREG_LIB_DIR         -- Directory for output static libraries.
+#  16. AREG_DEPS_DIR        -- Location for fetching third-party packages such as GTest.
+#  17. AREG_OUTPUT_LAYOUT   -- If disabled, output directories will match the CMake binary directory.
+#  18. AREG_LOGGER_LIB_TYPE -- Specifies the type of the Log Observer API library ('shared' or 'static'). Defaults to AREG_LIB_TYPE.
+#  19. AREG_ARCH            -- The processor architect. Ignore if need to use system default.
+#  20. AREG_TARGET          -- Specifies the compiler and library architecture target. Defaults to the system-defined compiler and architecture.
+#  21. AREG_ARCH_NATIVE     -- Optimizes GNU/Clang Release builds for the build machine CPU ('-march=native'). Defaults to 'disabled'.
+#  22. AREG_BENCHMARKS      -- Enables or disables building the performance benchmarks of the Areg Framework.
 #
 # Default Values:
 #   1. AREG_LIB_TYPE        = shared    (possible values: shared, static)
 #   2. AREG_COMPILER        = <default> (possible values: g++, gcc, c++, cc, clang++, clang, clang-cl, cl)
 #   3. AREG_COMPILER_FAMILY = <default> (possible values: gnu, cygwin, mingw, llvm, msvc)
 #   4. AREG_EXAMPLES        = ON        (possible values: ON, OFF)
-#   5. AREG_EXTENDED        = OFF       (possible values: ON, OFF)
-#   6. AREG_LOGGING         = ON        (possible values: ON, OFF)
-#   7. AREG_TESTS           = ON        (possible values: ON, OFF)
-#   8. AREG_INSTALL         = ON        (possible values: ON, OFF)
-#   9. AREG_INSTALL_DIR     = '${HOME}/areg-sdk' (or '${USERPROFILE}' on Windows, defaults to current directory if unset
-#  10. AREG_SYSTEM_PACKAGES = ON        (possible values: ON, OFF)
-#  11. AREG_SYSTEM_GTEST    = ON        (possible values: ON, OFF)
-#  12. AREG_SYSTEM_SQLITE   = ON        (possible values: ON, OFF)
-#  13. AREG_BUILD_DIR       = '<areg-sdk>/product'    (path for output and generated files)
-#  14. AREG_OUTPUT_DIR      = '<areg-sdk>/product/build/<default-compiler family-name>/<os>-<bitness>-<cpu>-release-<areg-lib>'
-#  15. AREG_BIN_DIR         = '<areg-sdk>/product/build/<default-compiler family-name>/<os>-<bitness>-<cpu>-release-<areg-lib>/bin'
-#  16. AREG_LIB_DIR         = '<areg-sdk>/product/build/<default-compiler family-name>/<os>-<bitness>-<cpu>-release-<areg-lib>/lib'
-#  17. AREG_DEPS_DIR        = '${CMAKE_BINARY_DIR}/packages'
-#  18. AREG_OUTPUT_LAYOUT   = ON        (possible values: ON, OFF)
-#  19. AREG_LOGGER_LIB_TYPE = AREG_LIB_TYPE (possible values: shared, static)
-#  20. AREG_ARCH            = System    (possible values: x86 (i386, i486), x64 (x86_64, x86-64, amd64, ia64), arm (arm32, armv7), aarch64 (arm64))
-#  21. AREG_TARGET          = <default> (possible values: 'i386-linux-gnu', 'x86_64-linux-gnu', 'arm-linux-gnueabihf', 'aarch64-linux-gnu')
-#  22. AREG_ARCH_NATIVE     = OFF       (possible values: ON, OFF)
-#  23. AREG_BENCHMARKS      = OFF       (possible values: ON, OFF)
+#   5. AREG_LOGGING         = ON        (possible values: ON, OFF)
+#   6. AREG_TESTS           = ON        (possible values: ON, OFF)
+#   7. AREG_INSTALL         = ON        (possible values: ON, OFF)
+#   8. AREG_INSTALL_DIR     = '${HOME}/areg-sdk' (or '${USERPROFILE}' on Windows, defaults to current directory if unset
+#   9. AREG_SYSTEM_PACKAGES = ON        (possible values: ON, OFF)
+#  10. AREG_SYSTEM_GTEST    = ON        (possible values: ON, OFF)
+#  11. AREG_SYSTEM_SQLITE   = ON        (possible values: ON, OFF)
+#  12. AREG_BUILD_DIR       = '<areg-sdk>/product'    (path for output and generated files)
+#  13. AREG_OUTPUT_DIR      = '<areg-sdk>/product/build/<default-compiler family-name>/<os>-<bitness>-<cpu>-release-<areg-lib>'
+#  14. AREG_BIN_DIR         = '<areg-sdk>/product/build/<default-compiler family-name>/<os>-<bitness>-<cpu>-release-<areg-lib>/bin'
+#  15. AREG_LIB_DIR         = '<areg-sdk>/product/build/<default-compiler family-name>/<os>-<bitness>-<cpu>-release-<areg-lib>/lib'
+#  16. AREG_DEPS_DIR        = '${CMAKE_BINARY_DIR}/packages'
+#  17. AREG_OUTPUT_LAYOUT   = ON        (possible values: ON, OFF)
+#  18. AREG_LOGGER_LIB_TYPE = AREG_LIB_TYPE (possible values: shared, static)
+#  19. AREG_ARCH            = System    (possible values: x86 (i386, i486), x64 (x86_64, x86-64, amd64, ia64), arm (arm32, armv7), aarch64 (arm64))
+#  20. AREG_TARGET          = <default> (possible values: 'i386-linux-gnu', 'x86_64-linux-gnu', 'arm-linux-gnueabihf', 'aarch64-linux-gnu')
+#  21. AREG_ARCH_NATIVE     = OFF       (possible values: ON, OFF)
+#  22. AREG_BENCHMARKS      = OFF       (possible values: ON, OFF)
 #
 # Hints:
 #   - AREG_COMPILER_FAMILY is an easy way to set compilers:
@@ -260,9 +258,6 @@ macro_create_option(AREG_BENCHMARKS OFF "Build benchmarks")
 
 # Generate only service files. By default it is disabled. To enable, set ON
 macro_create_option(AREG_GENERATE_ONLY OFF "Generate only service files")
-
-# Set Areg extended features enable or disable flag to compiler additional optional features. By default, it is disabled.
-macro_create_option(AREG_EXTENDED OFF "Enable extended feature")
 
 # Modify 'AREG_LOGGING' to enable or disable compilation with logs. By default, compile with logs
 macro_create_option(AREG_LOGGING ON "Compile with logs")

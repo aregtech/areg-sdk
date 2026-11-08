@@ -29,10 +29,6 @@
         <!-- ****************************************************************************************************************************** -->
         <AregSdkRoot Condition="'$(AregSdkRoot)'==''">$(SolutionDir)</AregSdkRoot>
         <!-- ****************************************************************************************************************************** -->
-        <!-- Check AregExtended settings. If missed, set 0 (disable extended features)                                                      -->
-        <!-- ****************************************************************************************************************************** -->
-        <AregExtended Condition="'$(AregExtended)'==''">0</AregExtended>
-        <!-- ****************************************************************************************************************************** -->
         <!-- Check AregLogs settings. If missed, set 1 (enable compilation with logs)                                                       -->
         <!-- ****************************************************************************************************************************** -->
         <AregLogs Condition="'$(AregLogs)'==''">1</AregLogs>
@@ -54,8 +50,7 @@
         <!-- Add preprocessor defines here to set for all projects.                                                                         -->
         <!-- ****************************************************************************************************************************** -->
         <!-- AREG_LOGGING 	    : enable compilation with logging; remove if no logging required.                                           -->
-        <!-- AREG_EXTENDED      : enable or disable extensions in Areg extended static library, which contain additional features.          -->
-        <AregCommonDefines>AREG_LOGGING=$(AregLogs);AREG_EXTENDED=$(AregExtended);$(AregCommonDefines)</AregCommonDefines>
+        <AregCommonDefines>AREG_LOGGING=$(AregLogs);$(AregCommonDefines)</AregCommonDefines>
 
         <!-- ****************************************************************************************************************************** -->
         <!-- Advanced settings do not change or modify.                                                                                     -->

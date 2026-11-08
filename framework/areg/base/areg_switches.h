@@ -95,11 +95,6 @@
     #define AREG_API_CONST
 #endif  // defined(EXP_AREG_DLL) && defined(__CYGWIN__)
 
-// By default, no Areg extended features.
-#if !defined(AREG_EXTENDED)
-    #define AREG_EXTENDED   0
-#endif  // AREG_EXTENDED
-
 // By default, compile with logs
 #ifndef AREG_LOGGING
     #define AREG_LOGGING       1

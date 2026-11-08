@@ -16,7 +16,7 @@ sh tools/setup-environment.sh        # Linux (apt, dnf, pacman) and macOS (Homeb
 tools\setup-environment.bat          # Windows (winget)
 ```
 
-The menu preselects the required tools; the optional ones (Clang, Python, ncurses, cross
+The menu preselects the required tools; the optional ones (Clang, Python, cross
 compilers) are a number away. The script prints the exact commands, asks before it runs
 them, and checks the result with `tools/check-env.sh` (`.bat`). `--dry-run` prints the
 commands only; `--with` and `--all` select items without the menu, and `--yes` runs them
@@ -49,9 +49,6 @@ The script is part of the SDK. Without Git yet, download the SDK as a ZIP from
 | **Java runtime** | 17 | the code generator, at build time only; nothing Java reaches your binaries |
 | **Git** | any recent | cloning Areg, and CMake fetching it into your project |
 | **Python** | 3.10 | agentic coding only; never needed to generate, build or run |
-
-**Optional:** `ncurses` development files, only when you build with `AREG_EXTENDED=ON`
-(Linux, macOS, Cygwin). It is off by default.
 
 A Java **runtime** (JRE) is enough; a full JDK works too. CMake finds Java on the `PATH`
 or through `JAVA_HOME`.
@@ -154,7 +151,7 @@ A standalone CMake is optional: `winget install Kitware.CMake`.
 Install with the [Cygwin installer](https://cygwin.com/install.html), or from the command line:
 
 ```powershell
-c:\cygwin\setup.exe -qgnO -s http://mirrors.kernel.org/sourceware/cygwin/ -l C:\cygwin\ -P cmake,make,gcc-g++,git,python3,libncurses-devel
+c:\cygwin\setup.exe -qgnO -s http://mirrors.kernel.org/sourceware/cygwin/ -l C:\cygwin\ -P cmake,make,gcc-g++,git,python3
 ```
 
 Java comes from Windows, as above.
@@ -197,8 +194,7 @@ cmake --build ./build -j
 > [!NOTE]
 > The `gcc-multilib` and `g++-multilib` packages conflict with the ARM cross compilers; the
 > versioned `g++-15-multilib` does not. It leaves `<asm/...>` unlinked, so link it once:
-> `sudo ln -s /usr/include/x86_64-linux-gnu/asm /usr/include/asm`. For `AREG_EXTENDED=ON`,
-> also install `libncurses-dev:i386` after `sudo dpkg --add-architecture i386`.
+> `sudo ln -s /usr/include/x86_64-linux-gnu/asm /usr/include/asm`.
 
 On Windows, build the `Win32` platform of `areg-sdk.sln` in Visual Studio. Toolchain files
 for every target are also in `conf/toolchains/`.

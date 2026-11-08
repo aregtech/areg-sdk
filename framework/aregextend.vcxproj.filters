@@ -18,13 +18,7 @@
     <ClCompile Include="aregextend\console\private\Console.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="aregextend\console\private\ansi\ConsoleAnsi.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="aregextend\console\private\ncurses\ConsoleNcurses.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="aregextend\console\private\win32\ConsoleWin32.cpp">
+    <ClCompile Include="aregextend\console\private\AnsiWriter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="aregextend\service\private\DataRateHelper.cpp">
@@ -34,6 +28,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="aregextend\console\private\OptionParser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="aregextend\console\private\posix\ConsoleTerminalPosix.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="aregextend\console\private\win32\ConsoleTerminalWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="aregextend\service\private\ServerConnection.cpp">
@@ -118,6 +118,12 @@
     </Text>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="aregextend\console\private\ConsoleTerminal.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="aregextend\console\private\AnsiWriter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="aregextend\console\Console.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

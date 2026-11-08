@@ -74,8 +74,9 @@ int main(int argc, char* argv[])
     // as soon as the provider is reachable, prints the result and quits. See common/headless.hpp.
     Latency::startup_command() = Latency::join_arguments(argc, argv);
 
+    areg::ext::Console& console = areg::ext::Console::instance();
     if (Latency::is_headless() == false)
-        printf("Testing remote latency ultra-small consumer...\n");
+        console.output_below("Testing remote latency ultra-small consumer...");
 
 #if defined(_WIN32)
     timeBeginPeriod(1u);    // raise Windows timer resolution to 1 ms for the benchmark duration
@@ -108,13 +109,10 @@ int main(int argc, char* argv[])
 
     } while (false);
 
-    // Release the console before writing directly to stdout so the final message
-    // appears at the right position (just below the last output row), not mid-screen.
     if (Latency::is_headless() == false)
-    {
-        areg::ext::Console::instance().uninitialize();
-        printf("Completed testing remote latency consumer, check the logs...\n");
-    }
+        console.output_below("Completed testing remote latency consumer, check the logs...");
+
+    console.uninitialize();
 
 #if defined(_WIN32)
     timeEndPeriod(1u);

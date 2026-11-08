@@ -57,7 +57,7 @@ jobs:
   linux-x86:
     # 32-bit x86 Linux, selected with AREG_ARCH=x86. Builds, runs every example and the
     # unit tests on the x86_64 runner.
-    name: linux-gnu-x86-shared-all-test
+    name: linux-x86-gcc-shared-test
     needs: plan
     if: needs.plan.outputs.run == 'true'
     runs-on: ubuntu-latest
@@ -88,12 +88,12 @@ jobs:
         run: |
           sudo dpkg --add-architecture i386
           sudo apt-get update -qq
-          sudo apt-get install -y -qq gcc-multilib g++-multilib libncurses-dev:i386 gdb
+          sudo apt-get install -y -qq gcc-multilib g++-multilib gdb
 
       - name: Configure CMake for 32-bit x86
         working-directory: ${{github.workspace}}
         run: |
-          cmake -B ${{env.CACHE_DEST}} -DAREG_ARCH=x86 -DAREG_COMPILER_FAMILY=gnu -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_LIB_TYPE=shared -DAREG_EXTENDED:BOOL=ON -DAREG_LOGGING:BOOL=ON -DAREG_EXAMPLES:BOOL=ON -DAREG_TESTS:BOOL=ON -DAREG_SYSTEM_PACKAGES:BOOL=OFF -DAREG_SYSTEM_SQLITE:BOOL=OFF -DAREG_INSTALL:BOOL=OFF
+          cmake -B ${{env.CACHE_DEST}} -DAREG_ARCH=x86 -DAREG_COMPILER_FAMILY=gnu -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_LIB_TYPE=shared -DAREG_LOGGING:BOOL=ON -DAREG_EXAMPLES:BOOL=ON -DAREG_TESTS:BOOL=ON -DAREG_SYSTEM_PACKAGES:BOOL=OFF -DAREG_SYSTEM_SQLITE:BOOL=OFF -DAREG_INSTALL:BOOL=OFF
 
       - name: Dump the CMake logs of a failed configuration
         if: failure()
@@ -152,7 +152,7 @@ jobs:
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         working-directory: ${{github.workspace}}
         run: |
-          cmake -B ./product/cache/x64 -DAREG_COMPILER_FAMILY=gnu -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_LIB_TYPE=shared -DAREG_EXTENDED:BOOL=OFF -DAREG_LOGGING:BOOL=ON -DAREG_EXAMPLES:BOOL=OFF -DAREG_TESTS:BOOL=ON -DAREG_SYSTEM_PACKAGES:BOOL=OFF -DAREG_SYSTEM_SQLITE:BOOL=OFF -DAREG_INSTALL:BOOL=OFF
+          cmake -B ./product/cache/x64 -DAREG_COMPILER_FAMILY=gnu -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_LIB_TYPE=shared -DAREG_LOGGING:BOOL=ON -DAREG_EXAMPLES:BOOL=OFF -DAREG_TESTS:BOOL=ON -DAREG_SYSTEM_PACKAGES:BOOL=OFF -DAREG_SYSTEM_SQLITE:BOOL=OFF -DAREG_INSTALL:BOOL=OFF
           cmake --build ./product/cache/x64 --target areg-bitness-test mtrouter -j16
 
       - name: Run the 32-bit and 64-bit processes together
@@ -193,7 +193,7 @@ jobs:
   cross-arm32:
     # 32-bit ARM Linux (armhf), cross-compiled with the toolchain file the SDK ships.
     # Builds the libraries and the service binaries, then prints their sizes.
-    name: linux-gnu-arm32-cross-${{matrix.config.logs == 'ON' && 'log' || 'nolog'}}
+    name: linux-arm32-gcc-shared-${{matrix.config.logs == 'ON' && 'build' || 'nolog'}}
     needs: plan
     if: needs.plan.outputs.run == 'true'
     runs-on: ubuntu-latest
@@ -224,7 +224,7 @@ jobs:
       - name: Configure CMake with the arm32 toolchain
         working-directory: ${{github.workspace}}
         run: |
-          cmake -B ./product/cache/arm32 -DCMAKE_TOOLCHAIN_FILE=./conf/toolchains/gnu-linux-arm32.cmake -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_LIB_TYPE=shared -DAREG_EXTENDED:BOOL=OFF -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=OFF -DAREG_TESTS:BOOL=OFF -DAREG_SYSTEM_PACKAGES:BOOL=OFF -DAREG_SYSTEM_SQLITE:BOOL=OFF -DAREG_INSTALL:BOOL=OFF
+          cmake -B ./product/cache/arm32 -DCMAKE_TOOLCHAIN_FILE=./conf/toolchains/gnu-linux-arm32.cmake -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_LIB_TYPE=shared -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=OFF -DAREG_TESTS:BOOL=OFF -DAREG_SYSTEM_PACKAGES:BOOL=OFF -DAREG_SYSTEM_SQLITE:BOOL=OFF -DAREG_INSTALL:BOOL=OFF
 
       - name: Dump the CMake logs of a failed configuration
         if: failure()

@@ -11,7 +11,7 @@
  * \copyright   (c) 2017-2026 Aregtech (Artak Avetyan)
  * \file        aregextend/console/Console.hpp
  * \author      Artak Avetyan
- * \ingroup     Areg platform, Console with or without extended features
+ * \ingroup     Areg platform, Console based on ANSI escape sequences
  ************************************************************************/
 
  /************************************************************************
@@ -33,7 +33,7 @@ namespace areg::ext {
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   The singleton helper class to output message on the console.
- *          It has an OS specific implementation how to output messages
+ *          It draws with ANSI escape sequences on every platform and outputs messages
  *          using coordinates, where Y-coordinate defined the line index
  *          on the console and the X-coordinate defines the column, so that
  *          the very first position on screen starts with coordinate { 0, 0 }
@@ -44,6 +44,17 @@ namespace areg::ext {
  *          The console is thread safe, so that if can run in multithreading
  *          environment where one thread is waiting for the user input and
  *          the other thread outputs messages on the desired position.
+ *
+ *          The screen is cleared by the first output at coordinates; until then the outputs
+ *          at the cursor are a stream of lines, as with printf.
+ *          A positioned output is clipped to the screen: it never wraps and never scrolls,
+ *          and a row below the bottom of the screen is not drawn. A new line in the text
+ *          continues on the next row at the same column. Positioned output does not move
+ *          the cursor: it stays where set_cursor_cur_position() placed it.
+ *          The outputs made between lock_console() and unlock_console() reach the terminal
+ *          together when the console is unlocked.
+ *          When the standard output is not a terminal, every positioned output is written
+ *          as one plain line without escape sequences, and cursor operations do nothing.
  **/
 class Console
 {
@@ -66,8 +77,20 @@ public:
      **/
     using Coord     = areg::Coord;
 
+    /**
+     * \brief   The callback called when the size of the terminal changed.
+     *          The parameter is the new size, posX is the number of columns and posY the number of rows.
+     **/
+    using ResizeCallback = std::function<void(Console::Coord)>;
+
     //!< The default buffer size to input on console.
     static constexpr uint32_t INPUT_BUFFER_SIZE { 512 };
+
+    //!< The default number of entered lines kept to recall with the Up and Down keys.
+    static constexpr uint32_t HISTORY_DEFAULT_SIZE  { 16 };
+
+    //!< The largest number of entered lines kept to recall with the Up and Down keys.
+    static constexpr uint32_t HISTORY_MAX_SIZE      { 64 };
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructor / destructor.
@@ -90,20 +113,23 @@ public:
      * \brief   Before calling the method the console input must be enabled. Otherwise, the user
      *          cannot make input on console. When called, the calling thread is blocked until user
      *          completes the input procedure. By completion, it triggers the callback and passes
-     *          the input string of length maximum 255 characters to validate. Returns input string
-     *          if it is validated by callback call or the callback is empty. Repeats the procedure
-     *          if callback is not empty and the input was not validated.
+     *          the input string of maximum INPUT_BUFFER_SIZE - 1 characters to validate. Returns
+     *          input string if it is validated by callback call or the callback is empty. Repeats
+     *          the procedure if callback is not empty and the input was not validated.
+     *          On a terminal the input line supports Backspace, Delete, Left, Right, Home, End,
+     *          Ctrl+A, Ctrl+E and Ctrl+U. Characters past the buffer size are dropped. Up and Down
+     *          recall the entered lines, see set_history_size().
      *
      * \param   callback    The callback to validate user input string.
-     * \return  Returns input string maximum 255 characters after validation by callback, or if the
-     *          callback is empty.
+     * \return  Returns input string after validation by callback, or if the callback is empty.
+     *          Returns an empty string if the input is disabled or closed.
      **/
     String wait_for_input( Console::CallBack callback ) const;
 
     /**
      * \brief   Before calling the method the console input must be enabled. Otherwise, the user
-     *          cannot make input on console. Reads and converts formatted inputs from console
-     *          similar to 'gets_s' or 'fgets' methods and writes the data into the given arguments.
+     *          cannot make input on console. Reads one line as wait_for_input() does and converts
+     *          it like 'sscanf', writing the data into the given arguments.
      *          Each argument must be a pointer to a variable of a type that corresponds to a type
      *          specifier in format. The maximum length of the strings must be specified in the format.
      *
@@ -114,11 +140,11 @@ public:
 
     /**
      * \brief   Before calling the method the console input must be enabled. Otherwise, the user
-     *          cannot make input on console. Reads and converts formatted inputs from console
-     *          similar to 'vscanf' method and writes the data into the given variable argument
-     *          list. Each argument in the list must be a pointer to a variable of a type that
-     *          corresponds to a type specifier in format. The maximum expected length of the
-     *          strings must be specified in the format.
+     *          cannot make input on console. Reads one line as wait_for_input() does and converts
+     *          it like 'vsscanf', writing the data into the given variable argument list. Each
+     *          argument in the list must be a pointer to a variable of a type that corresponds to
+     *          a type specifier in format. The maximum expected length of the strings must be
+     *          specified in the format.
      *
      * \param   format      The format of input.
      * \param   varList     The variable argument list of pointers to the variables.
@@ -128,10 +154,10 @@ public:
 
     /**
      * \brief   Before calling the method the console input must be enabled. Otherwise, the user
-     *          cannot make input on console. Reads from console a string with maximum length 512
-     *          characters and returns it.
+     *          cannot make input on console. Reads one line and returns its first word, at most
+     *          510 characters.
      *
-     * \return  Returns the string input on console.
+     * \return  Returns the first word of the line, or an empty string if nothing was read.
      **/
     String read_string() const;
 
@@ -148,6 +174,49 @@ public:
     inline bool is_ready() const noexcept;
 
     /**
+     * \brief   Returns true if the output goes to a terminal that draws at coordinates.
+     *          Returns false if the output is redirected to a pipe or a file.
+     **/
+    [[nodiscard]]
+    inline bool is_terminal() const noexcept;
+
+    /**
+     * \brief   Returns the visible size of the terminal: posX is the number of columns and
+     *          posY the number of rows. Returns { 0, 0 } if the size is unknown.
+     **/
+    [[nodiscard]]
+    Console::Coord screen_size() const noexcept;
+
+    /**
+     * \brief   Sets the callback called when the size of the terminal changed, or removes it if empty.
+     *          The size is checked on each output and by screen_size(). The callback is called on the
+     *          thread that made the output, after the console is unlocked, and it is never nested.
+     *          It may output, clear the screen and set the cursor to draw the layout again.
+     *          If the previous callback runs on another thread, the call waits until it returns,
+     *          so it must not be made while this thread holds lock_console().
+     *
+     * \param   callback    The callback to call with the new size of the terminal.
+     **/
+    void set_resize_callback(Console::ResizeCallback callback);
+
+    /**
+     * \brief   Sets the number of entered lines kept to recall with the Up and Down keys on a terminal.
+     *          Empty lines and a line equal to the previous one are not kept. Up recalls an older line,
+     *          Down a newer one and, past the newest, the line typed before. 0 removes the kept lines
+     *          and disables the recall, a number above HISTORY_MAX_SIZE keeps HISTORY_MAX_SIZE lines.
+     *          The default is HISTORY_DEFAULT_SIZE.
+     *
+     * \param   count   The number of lines to keep. The oldest lines above it are removed.
+     **/
+    void set_history_size(uint32_t count) noexcept;
+
+    /**
+     * \brief   Returns the number of entered lines kept to recall with the Up and Down keys.
+     **/
+    [[nodiscard]]
+    uint32_t history_size() const noexcept;
+
+    /**
      * \brief   Enables or disables the console input. It has no effect if the Console already is
      *          blocked by waiting for the user input. This is used to synchronize input and output
      *          procedures in the multithreading environment.
@@ -160,14 +229,14 @@ public:
      * \param   pos     The X- and Y-coordinate to start to output the message text.
      * \param   text    The message text to output.
      **/
-    inline void output_str(Console::Coord pos, const String& text) const noexcept;
+    void output_str(Console::Coord pos, const String& text) const noexcept;
     /**
      * \brief   Outputs the text message at the given coordinate.
      *
      * \param   pos     The X- and Y-coordinate to start to output the message text.
      * \param   text    The message text to output.
      **/
-    inline void output_txt(Console::Coord pos, std::string_view text) const noexcept;
+    void output_txt(Console::Coord pos, std::string_view text) const noexcept;
 
     /**
      * \brief   Outputs the formatted text message with arguments at the given coordinate.
@@ -178,18 +247,27 @@ public:
     void output_msg(Console::Coord pos, const char* format, ...) const;
 
     /**
-     * \brief   Outputs the text message at the current cursor position.
+     * \brief   Outputs the text on a new row below every row drawn so far, on the bottom row if
+     *          there is no room. Before anything is drawn at coordinates, or after a print at
+     *          the cursor, the text is printed as a line at the cursor. Used for a last message.
      *
-     * \param   text    The text to output.
+     * \param   text    The text of the row.
      **/
-    inline void print_str(const String& text) const noexcept;
+    void output_below(std::string_view text) const noexcept;
 
     /**
      * \brief   Outputs the text message at the current cursor position.
      *
      * \param   text    The text to output.
      **/
-    inline void print_txt(std::string_view text) const noexcept;
+    void print_str(const String& text) const noexcept;
+
+    /**
+     * \brief   Outputs the text message at the current cursor position.
+     *
+     * \param   text    The text to output.
+     **/
+    void print_txt(std::string_view text) const noexcept;
 
     /**
      * \brief   Outputs the formatted text message with arguments at the current cursor position.
@@ -204,14 +282,14 @@ public:
      *          thread waits for the user input.
      **/
     [[nodiscard]]
-    inline Console::Coord cursor_cur_position() const noexcept;
+    Console::Coord cursor_cur_position() const noexcept;
 
     /**
      * \brief   Sets the cursor position at the specified position on console.
      *
      * \param   pos     The X- and Y-coordinate of console to move the cursor.
      **/
-    inline void set_cursor_cur_position(Console::Coord pos) const noexcept;
+    void set_cursor_cur_position(Console::Coord pos) const noexcept;
 
     /**
      * \brief   Moves and place the cursor at the begin of specified line. The first line starts
@@ -224,27 +302,27 @@ public:
     /**
      * \brief   Saves the cursor current position in memory.
      **/
-    inline void save_cursor_position() const noexcept;
+    void save_cursor_position() const noexcept;
 
     /**
      * \brief   Restores previously saved in memory cursor position.
      **/
-    inline void restore_cursor_position() const noexcept;
+    void restore_cursor_position() const noexcept;
 
     /**
      * \brief   Moves cursor one line up from current position.
      **/
-    inline void move_cursor_one_line_up() const noexcept;
+    void move_cursor_one_line_up() const noexcept;
 
     /**
      * \brief   Moves cursor one line down from current position.
      **/
-    inline void move_cursor_one_line_down() const noexcept;
+    void move_cursor_one_line_down() const noexcept;
 
     /**
      * \brief   Clears the line starting from the cursor current position until the end of the line.
      **/
-    inline void clear_current_line() const noexcept;
+    void clear_current_line() const noexcept;
 
     /**
      * \brief   Clear the specified line starting from specified posX position until the end of the
@@ -253,12 +331,12 @@ public:
      * \param   pos     The position to start clearing line. The 'posY' parameter specifies the line
      *                  index and the 'posX' parameter specifies the starting position to clear.
      **/
-    inline void clear_line(Console::Coord pos) const noexcept;
+    void clear_line(Console::Coord pos) const noexcept;
 
     /**
      * \brief   Clears the screen.
      **/
-    inline void clear_screen() const noexcept;
+    void clear_screen() const noexcept;
 
     /**
      * \brief   Return the user input command.
@@ -269,17 +347,19 @@ public:
      * \brief   Call to refresh the console screen and show updates. Without this call the console
      *          behavior is unpredicted (depends on OS).
      **/
-    inline void refresh_screen() const noexcept;
+    void refresh_screen() const noexcept;
 
     /**
      * \brief   Locks the console to prevent other threads to output or change cursor position.
+     *          The lock is recursive. Outputs made while it is held are sent to the terminal
+     *          in one write when the last lock is released.
      *
      * \return  Returns true if succeeded to lock. Otherwise, returns false.
      **/
     inline bool lock_console() noexcept;
 
     /**
-     * \brief   Unlocks previously locked console.
+     * \brief   Unlocks previously locked console and sends the collected outputs to the terminal.
      **/
     inline void unlock_console() noexcept;
 
@@ -294,129 +374,69 @@ public:
     static bool read_console_data(char* buffer, uint32_t bufSize);
 
 //////////////////////////////////////////////////////////////////////////
-// Hidden, OS specific methods.
+// Hidden methods.
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Setup the console to start to input / output the messages. OS specific implementation.
+     * \brief   Holds the console lock for a scope. The collected outputs are flushed when
+     *          the outermost lock is released.
      **/
-    bool _os_setup() noexcept;
-    /**
-     * \brief   Release the console, so that there will be no more inputs / outputs. OS specific implementation.
-     **/
-    void _os_release() noexcept;
+    class ScopedLock;
 
     /**
-     * \brief   Outputs the specified message text at specified coordinate. OS specific implementation.
-     *
-     * \param   pos     The position on console to output message.
-     * \param   text    The text message to output.
+     * \brief   Takes the console lock and counts the depth.
      **/
-    void _os_output_text(Console::Coord pos, const String& text) const noexcept;
-    /**
-     * \brief   Outputs the specified message text at specified coordinate. OS specific implementation.
-     *
-     * \param   pos     The position on console to output message.
-     * \param   text    The text message to output.
-     **/
-    void _os_output_text(Console::Coord pos, std::string_view text) const noexcept;
-    /**
-     * \brief   Outputs the specified message text at specified coordinate. OS specific implementation.
-     *
-     * \param   text    The text message to output.
-     **/
-    void _os_output_text(const String& text) const noexcept;
-    /**
-     * \brief   Outputs the specified message text at specified coordinate. OS specific implementation.
-     *
-     * \param   text    The text message to output.
-     **/
-    void _os_output_text(std::string_view text) const noexcept;
+    bool _lock() const noexcept;
 
     /**
-     * \brief   Returns the tracked position of the cursor on the console. OS specific implementation.
-     *          Implementations must not read the terminal, because the thread that waits for the
-     *          user input owns the standard input and consumes any answer of the terminal.
+     * \brief   Flushes the collected outputs if the outermost lock is released, then unlocks.
      **/
-    Console::Coord _os_get_cursor_position() const noexcept;
+    void _unlock() const noexcept;
 
     /**
-     * \brief   Moves the cursor at specified position on the console. OS specific implementation.
-     *
-     * \param   pos     The X- and Y-coordinate of console to move the cursor.
+     * \brief   Calls the resize callback with the new size of the terminal. Called without the lock.
      **/
-    void _os_set_cursor_cur_position(Console::Coord pos) const noexcept;
+    void _notify_resize() const noexcept;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden drawing and input methods.
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Prepares the standard streams to input and output on the console.
+     **/
+    bool _setup() noexcept;
 
     /**
-     * \brief   Refreshes the screen to display output messages. OS specific implementation.
+     * \brief   Places the cursor below the drawn rows and restores the standard streams.
      **/
-    void _os_refresh_screen() const noexcept;
+    void _release() noexcept;
 
     /**
-     * \brief   Clears the line starting from the cursor position until the end of line.
+     * \brief   Sends the collected outputs to the terminal. Called with the lock held.
      **/
-    void _os_clear_line() const noexcept;
+    void _flush() const noexcept;
 
     /**
-     * \brief   Clears the specified row from column pos.posX to the right edge WITHOUT
-     *          physically moving the OS cursor.  Implementations must NOT call
-     *          SetConsoleCursorPosition() (Win32) or emit a CUP sequence (ANSI) that
-     *          moves the visible cursor, because the input thread may be running
-     *          gets_s() / fgets() concurrently and Windows echoes typed characters at
-     *          the current OS cursor position.
-     *
-     * \param   pos     The console coordinate (column, row) of the line to clear.
+     * \brief   Reads the size of the terminal, marks a change of the size and returns it.
+     *          Called with the lock held.
      **/
-    void _os_clear_line_at_position(Console::Coord pos) const noexcept;
+    Console::Coord _read_screen_size() const noexcept;
 
     /**
-     * \brief   Clears console screen.
+     * \brief   Prepares a frame: reads the size once, clears the screen before the first
+     *          drawing and hides the cursor. Called with the lock held.
      **/
-    void _os_clear_screen() const noexcept;
+    void _begin_drawing() const noexcept;
 
     /**
-     * \brief   Reads and converts formatted inputs from console similar to 'vscanf' method and
-     *          writes the data into the given variable argument list.
-     *
-     * \param   format      The format of input.
-     * \param   varList     The variable argument list of pointers to the variables.
-     * \return  Upon successful completion, these functions return true. Otherwise, returns false.
-     **/
-    bool _os_read_input_list(const char* format, va_list varList) const;
-
-    /**
-     * \brief   OS specific implementation to save the cursor current position in memory.
-     **/
-    void _os_save_cursor_position() const noexcept;
-
-    /**
-     * \brief   OS specific implementation to restore previously saved in memory cursor position.
-     **/
-    void _os_restore_cursor_position() const noexcept;
-
-    /**
-     * \brief   OS specific implementation to move cursor one line up from current position.
-     **/
-    void _os_move_cursor_one_line_up() const noexcept;
-
-    /**
-     * \brief   OS specific implementation to move cursor one line down from current position.
-     **/
-    void _os_move_cursor_one_line_down() const noexcept;
-
-    /**
-     * \brief   A blocking call to wait for user input of string on the console. OS specific implementation.
+     * \brief   A blocking call that reads one line of the user input.
      *
      * \param   buffer      The buffer to fill in input, should be big enough.
      * \param   size        The size of buffer.
+     * \return  Returns true if a line that is not empty was read.
      **/
-    static bool _os_wait_input_string(char * buffer, uint32_t size);
-
-    /**
-     * \brief   Injects a synthetic newline into the OS console input buffer to unblock
-     *          a blocking _os_wait_input_string() call in progress. OS specific implementation.
-     **/
-    void _os_interrupt_input() noexcept;
+    static bool _wait_input_string(char * buffer, uint32_t size);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -425,21 +445,29 @@ private:
     /**
      * \brief   The flag, indicating whether the Console is ready to operate.
      **/
-    bool                mIsReady;
+    std::atomic<bool>   mIsReady        { false };
+    /**
+     * \brief   True if the output goes to a terminal that draws at coordinates.
+     **/
+    bool                mIsTerminal { false };
     /**
      * \brief   The last input command as a string on the console.
      **/
     String              mUsrInput;
     /**
-     * \brief   The context. It is OS specific.
+     * \brief   The callback called when the size of the terminal changed. Accessed with the lock held.
      **/
-    ptr_type            mContext;
+    ResizeCallback      mOnResize;
+    /**
+     * \brief   The size of the terminal read last. Accessed with the lock held.
+     **/
+    mutable Coord       mScreenSize;
     /**
      * \brief   Saved cursor position, used by save_cursor_position / restore_cursor_position.
      **/
     mutable Coord       mSavedPos;
     /**
-     * \brief   The highest posY (row) used in any positioned write. Used by _os_release()
+     * \brief   The highest posY (row) used in any positioned write. Used by _release()
      *          to position the terminal cursor below the last output row on exit.
      **/
     mutable int32_t     mMaxUsedRow { 0 };
@@ -449,15 +477,39 @@ private:
      **/
     mutable std::atomic<bool>   mInterrupted    { false };
     /**
-     * \brief   POSIX self-pipe used to unblock _os_wait_input_string().
-     *          [0] = read end (polled alongside STDIN), [1] = write end (written by _os_interrupt_input).
-     *          Both are -1 on Windows or before _os_setup() is called.
+     * \brief   Set when the input reached its end, so that no more input can be read.
+     **/
+    mutable std::atomic<bool>   mInputClosed    { false };
+    /**
+     * \brief   Set when the size of the terminal changed and the callback was not called yet.
+     **/
+    mutable std::atomic<bool>   mResizePending  { false };
+    /**
+     * \brief   Set while the resize callback runs, so that it is never nested.
+     **/
+    mutable std::atomic<bool>   mResizeRunning  { false };
+    /**
+     * \brief   The thread that runs the resize callback, 0 if none.
+     **/
+    mutable std::atomic<id_type> mResizeThread  { 0u };
+    /**
+     * \brief   The depth of the recursive console lock. Accessed only with the lock held.
+     **/
+    mutable uint32_t            mLockDepth      { 0u };
+    /**
+     * \brief   POSIX self-pipe used to unblock _wait_input_string().
+     *          [0] = read end (polled alongside STDIN), [1] = write end (written by enable_console_input).
+     *          Both are -1 on Windows, before _setup() and after _release().
      **/
     int                         mInterruptPipe[2]   { -1, -1 };
     /**
      * \brief   An object used to block the user input procedure to use in multithreading environment.
      **/
     mutable SyncEvent   mEnable;
+    /**
+     * \brief   Signaled while no resize callback runs.
+     **/
+    mutable SyncEvent   mResizeIdle;
     /**
      * \brief   The synchronization object used in multithreading environment.
      **/
@@ -475,41 +527,17 @@ private:
 //////////////////////////////////////////////////////////////////////////
 inline void Console::uninitialize() noexcept
 {
-    _os_release( );
+    _release();
 }
 
 inline bool Console::is_ready() const noexcept
 {
-    return mIsReady;
+    return mIsReady.load(std::memory_order_acquire);
 }
 
-inline void Console::output_str( Console::Coord pos, const String & text ) const noexcept{
-    _os_output_text( pos, text );
-}
-
-inline void Console::output_txt( Console::Coord pos, std::string_view text ) const noexcept
+inline bool Console::is_terminal() const noexcept
 {
-    _os_output_text( pos, text );
-}
-
-inline void Console::print_str(const String& text) const noexcept
-{
-    _os_output_text(text);
-}
-
-inline void Console::print_txt(std::string_view text) const noexcept
-{
-    _os_output_text(text);
-}
-
-inline Console::Coord Console::cursor_cur_position() const noexcept
-{
-    return _os_get_cursor_position( );
-}
-
-inline void Console::set_cursor_cur_position( Console::Coord pos ) const noexcept
-{
-    _os_set_cursor_cur_position( pos );
+    return mIsTerminal;
 }
 
 inline void Console::move_to_line(int16_t line) const noexcept
@@ -517,59 +545,19 @@ inline void Console::move_to_line(int16_t line) const noexcept
     set_cursor_cur_position(Coord{ 0, line });
 }
 
-inline void Console::save_cursor_position() const noexcept
-{
-    _os_save_cursor_position();
-}
-
-inline void Console::restore_cursor_position() const noexcept
-{
-    _os_restore_cursor_position();
-}
-
-inline void Console::move_cursor_one_line_up() const noexcept
-{
-    _os_move_cursor_one_line_up();
-}
-
-inline void Console::move_cursor_one_line_down() const noexcept
-{
-    _os_move_cursor_one_line_down();
-}
-
 inline const String & Console::user_input() const noexcept
 {
     return mUsrInput;
 }
 
-inline void Console::refresh_screen() const noexcept
-{
-    _os_refresh_screen( );
-}
-
 inline bool Console::lock_console() noexcept
 {
-    return mLock.lock(areg::WAIT_INFINITE);
+    return _lock();
 }
 
 inline void Console::unlock_console() noexcept
 {
-    mLock.unlock( );
-}
-
-inline void Console::clear_current_line() const noexcept
-{
-    _os_clear_line( );
-}
-
-inline void Console::clear_line(Console::Coord pos) const noexcept
-{
-    _os_clear_line_at_position(pos);
-}
-
-inline void Console::clear_screen() const noexcept
-{
-    _os_clear_screen();
+    _unlock();
 }
 
 } // namespace areg::ext

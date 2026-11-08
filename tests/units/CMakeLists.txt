@@ -50,6 +50,8 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     MemoryDefsTest.cpp
     GUnitTest.cpp
     ArrayListTest.cpp
+    AnsiWriterTest.cpp
+    ConsoleTest.cpp
     ConfigManagerTest.cpp
     DateTimeTest.cpp
     DebugDefsTest.cpp

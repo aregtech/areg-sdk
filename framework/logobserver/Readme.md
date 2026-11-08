@@ -13,17 +13,12 @@ This directory contains the source code for the Areg Log Observer (`logobserver`
 ### Platform Support and Build Configurations
 
 - **Linux**:
-  The `logobserver` runs as a console or OS-managed service application, and can be built with or without the `ncurses` library:
-  - To enable `ncurses` features, compile the Areg extended static library by defining setting option `-DAREG_EXTENDED:BOOL=ON`.
-  - To disable `ncurses`, omit `AREG_EXTENDED` option or set it to `OFF`, using only the ANSI C API.
+  The `logobserver` runs as a console or OS-managed service application.
 
 - **Windows**:
-  The `logobserver` operates as a console application or OS-managed service, and can be built with or without the `Win32 API` for extended feature:
-  - To enable `Win32 API` extended features, define `AREG_EXTENDED=1`.
-  - To use only the ANSI C API, omit `AREG_EXTENDED` or set it to `0`.
+  The `logobserver` operates as a console application or OS-managed service.
 
-> [!NOTE]
-> It does not make sense to enable extended features if application runs as an OS-managed service, because extended features manage cursor position on console, which is not accessible when application runs as a service. To save resources and linking time, disable extended features in the build by setting option `-DAREG_EXTENDED:BOOL=OFF`
+On every platform the console draws with ANSI escape sequences; a service has no console and draws nothing.
 
 ---
 

@@ -68,10 +68,10 @@ jobs:
       fail-fast: false
       matrix:
         config: # Create matrix with combinations
-          # Compile for 32-bit platform, enabled Areg extensions and logs
-          - {name: MSBuild-Win32-ext-log,     platform: Win32,  extend: 1,  logs: 1}
-          # Compile for 64-bit platform, disabled Areg extensions and no logs
-          - {name: MSBuild-x64-noext-nolog,   platform: x64,    extend: 0,  logs: 0}
+          # Compile for 32-bit platform with logs
+          - {name: windows-x86-msbuild-shared-build,  platform: Win32,  logs: 1}
+          # Compile for 64-bit platform without logs
+          - {name: windows-x64-msbuild-shared-nolog,  platform: x64,    logs: 0}
 
     steps:
     - name: Checkout Areg engine (Areg SDK) source codes
@@ -95,7 +95,7 @@ jobs:
       working-directory: ${{github.workspace}}
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
-      run: msbuild /m /property:Configuration=${{env.BUILD_CONFIGURATION}} /property:Platform=${{matrix.config.platform}} /property:AregExtended=${{matrix.config.extend}} /property:AregLogs=${{matrix.config.logs}} ${{env.SOLUTION_FILE_PATH}} -t:restore,build -p:RestorePackagesConfig=true
+      run: msbuild /m /property:Configuration=${{env.BUILD_CONFIGURATION}} /property:Platform=${{matrix.config.platform}} /property:AregLogs=${{matrix.config.logs}} ${{env.SOLUTION_FILE_PATH}} -t:restore,build -p:RestorePackagesConfig=true
 
   result:
     name: MSBuild result

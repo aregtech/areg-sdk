@@ -34,7 +34,6 @@ This guide provides a comprehensive reference for preprocessor definitions used 
 | [EXP_LOGGER_LIB](#exp_logger_lib) | Export     | Export areglogger static library      | ✅ Yes            |
 | [IMP_LOGGER_DLL](#imp_logger_dll) | Import     | Import from areglogger shared library | ❌ Manual         |
 | [IMP_LOGGER_LIB](#imp_logger_lib) | Import     | Import from areglogger static library | ❌ Manual         |
-| [AREG_EXTENDED](#areg_extended)   | Feature    | Enable extended library features      | ⚙️ Configurable   |
 | [AREG_LOGGING](#areg_logging)     | Feature    | Enable logging infrastructure         | ⚙️ Configurable   |
 | [BIT32](#bit32)                   | Bitness    | Enable 32-bit compilation             | ✅ Yes            |
 | [BIT64](#bit64)                   | Bitness    | Enable 64-bit compilation             | ✅ Yes            |
@@ -402,38 +401,6 @@ target_link_libraries(myapp PRIVATE areglogger::areglogger)
 
 ## Feature Defines
 
-### AREG_EXTENDED
-
-**Purpose:** Enables additional features in `aregextend` library.  
-**Auto-set:** No (configurable, default is OFF)  
-**When to use:**
-- Need extended utility features
-- Using database functionality
-- Using advanced terminal features
-
-**Dependencies:**
-- **Linux/Cygwin:** Requires `ncurses` library
-
-**CMake example:**
-```bash
-cmake -B ./build -DAREG_EXTENDED=ON
-```
-
-**Visual Studio:**
-Edit `msvc_setup.props`:
-```xml
-<AregExtended>1</AregExtended>
-```
-
-**Impact:**
-- Adds extended library features
-- May require additional dependencies
-- Slightly larger binary
-
-<div align="right"><kbd><a href="#feature-defines">↑ Back to features ↑</a></kbd></div>
-
----
-
 ### AREG_LOGGING
 
 **Purpose:** Enables logging infrastructure in Areg Framework.  
@@ -586,30 +553,7 @@ cmake -B ./build \
 
 ---
 
-### Use Case 4: Application Using Extended Features
-
-**Scenario:** Application using aregextend library features.
-
-**Required defines:**
-- Platform define (auto-set)
-- Import define for areg
-- `AREG_EXTENDED` enabled
-
-**CMake:**
-```bash
-cmake -B ./build -DAREG_EXTENDED=ON
-```
-
-**Dependencies:**
-- Linux/Cygwin: Install `ncurses` library
-
-**Impact:**
-- Extended features available
-- Additional library dependencies
-
----
-
-### Use Case 5: Cross-Platform Application
+### Use Case 4: Cross-Platform Application
 
 **Scenario:** Application building on both Windows and Linux.
 
@@ -641,7 +585,7 @@ target_link_libraries(myapp PRIVATE areg::areg ${PLATFORM_LIBS})
 
 ---
 
-### Use Case 6: Building areg Library Itself
+### Use Case 5: Building areg Library Itself
 
 **Scenario:** Building areg framework from source.  
 **Export defines (auto-set):**

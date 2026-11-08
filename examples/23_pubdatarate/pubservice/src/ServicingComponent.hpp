@@ -134,37 +134,37 @@ class ServicingComponent final  : public    areg::Component
 //////////////////////////////////////////////////////////////////////////
 
     //!< Coordinates to output application title / headline
-    static constexpr areg::ext::Console::Coord     COORD_TITLE     { 1,  2 };
+    static constexpr areg::ext::Console::Coord     COORD_TITLE     { 0,  1 };
 
     //!< Coordinates to output a long separator line below the title
-    static constexpr areg::ext::Console::Coord     COORD_SEP1{ 1,  3 };
+    static constexpr areg::ext::Console::Coord     COORD_SEP1{ 0,  2 };
 
     //!< Coordinates to output network communication rate (row 5, blank row 4 between separator and data)
-    static constexpr areg::ext::Console::Coord     COORD_COMM_RATE { 1,  5 };
+    static constexpr areg::ext::Console::Coord     COORD_COMM_RATE { 0,  4 };
 
     //!< Coordinates to output data rate
-    static constexpr areg::ext::Console::Coord     COORD_DATA_RATE { 1,  6 };
+    static constexpr areg::ext::Console::Coord     COORD_DATA_RATE { 0,  5 };
 
     //!< Coordinates to output how much the send pipeline held the generator back
-    static constexpr areg::ext::Console::Coord     COORD_ITEM_RATE { 1,  7 };
+    static constexpr areg::ext::Console::Coord     COORD_ITEM_RATE { 0,  6 };
 
     //!< Coordinates to output on-time / late statistics (blank row 8 before this)
-    static constexpr areg::ext::Console::Coord     COORD_STATS     { 1,  9 };
+    static constexpr areg::ext::Console::Coord     COORD_STATS     { 0,  8 };
 
     //!< Coordinates to output the theoretical (ideal) data rate
-    static constexpr areg::ext::Console::Coord     COORD_IDEAL_RATE{ 1, 10 };
+    static constexpr areg::ext::Console::Coord     COORD_IDEAL_RATE{ 0, 9 };
 
     //!< Coordinates to output short separator below rate block
-    static constexpr areg::ext::Console::Coord     COORD_SEP2      { 1, 11 };
+    static constexpr areg::ext::Console::Coord     COORD_SEP2      { 0, 10 };
 
     //!< Coordinates to input the option commands (blank row 12 before this)
-    static constexpr areg::ext::Console::Coord     COORD_OPTIONS   { 1, 13 };
+    static constexpr areg::ext::Console::Coord     COORD_OPTIONS   { 0, 12 };
 
     //!< Coordinates to output the error information.
-    static constexpr areg::ext::Console::Coord     COORD_ERROR_INFO{ 1, 15 };
+    static constexpr areg::ext::Console::Coord     COORD_ERROR_INFO{ 0, 14 };
 
     //!< Coordinates to output the options information or application help
-    static constexpr areg::ext::Console::Coord     COORD_OPT_INFO  { 1, 17 };
+    static constexpr areg::ext::Console::Coord     COORD_OPT_INFO  { 0, 16 };
 
     //!< Number of rows reserved for the info / help output block.
     static constexpr int16_t  OPT_INFO_LINES   { 18 };

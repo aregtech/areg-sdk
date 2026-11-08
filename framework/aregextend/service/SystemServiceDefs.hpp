@@ -217,44 +217,44 @@ namespace areg::ext {
     /**
      * \brief   Coordinate to display the application title.
      **/
-    constexpr Console::Coord    COORD_TITLE         { 1, 1 };
+    constexpr Console::Coord    COORD_TITLE         { 0, 0 };
     /**
      * \brief   Coordinate to display the underscore.
      **/
-    constexpr Console::Coord    COORD_SUBTITLE      { 1, 2 };
+    constexpr Console::Coord    COORD_SUBTITLE      { 0, 1 };
 
     /**
      * \brief   Coordinate to start to display send data rate message.
      **/
-    constexpr Console::Coord    COORD_SEND_RATE     { 1, 3 };
+    constexpr Console::Coord    COORD_SEND_RATE     { 0, 2 };
     /**
      * \brief   Coordinate to start to display receive data rate message.
      **/
-    constexpr Console::Coord    COORD_RECV_RATE     { 1, 4 };
+    constexpr Console::Coord    COORD_RECV_RATE     { 0, 3 };
     /**
      * \brief   Coordinate to start to display send message rate.
      **/
-    constexpr Console::Coord    COORD_SEND_MSGS     { 1, 5 };
+    constexpr Console::Coord    COORD_SEND_MSGS     { 0, 4 };
     /**
      * \brief   Coordinate to start to display receive message rate.
      **/
-    constexpr Console::Coord    COORD_RECV_MSGS     { 1, 6 };
+    constexpr Console::Coord    COORD_RECV_MSGS     { 0, 5 };
     /**
      * \brief   Coordinate to display the status message.
      **/
-    constexpr Console::Coord    COORD_STATUS_MSG    { 1, 7 };
+    constexpr Console::Coord    COORD_STATUS_MSG    { 0, 6 };
     /**
      * \brief   Coordinate to start to display user input message.
      **/
-    constexpr Console::Coord    COORD_USER_INPUT    { 1, 8 };
+    constexpr Console::Coord    COORD_USER_INPUT    { 0, 7 };
     /**
      * \brief   Coordinate to start to display error message.
      **/
-    constexpr Console::Coord    COORD_ERROR_MSG     { 1, 9 };
+    constexpr Console::Coord    COORD_ERROR_MSG     { 0, 8 };
     /**
      * \brief   Coordinate to start to display information message.
      **/
-    constexpr Console::Coord    COORD_INFO_MSG      { 1, 10 };
+    constexpr Console::Coord    COORD_INFO_MSG      { 0, 9 };
 
     /**
      * \brief   Converts the argument list from 'char' or 'wchar_t' type to the 'char'. The memory

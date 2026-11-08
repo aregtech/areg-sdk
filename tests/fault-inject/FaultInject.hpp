@@ -66,6 +66,10 @@ namespace areg_fault
         , FileRead          //!< Linux read(). Not replaced elsewhere. Error: errno value.
         , FileWrite         //!< Linux write(). Not replaced elsewhere. Error: errno value.
         , Allocation        //!< Linux operator new(std::nothrow) and operator new[](std::nothrow): returns nullptr. Not replaced elsewhere; the error is ignored.
+        , PipeCreate        //!< Linux pipe(). Not replaced elsewhere. Error: errno value.
+        , Poll              //!< Linux poll(). Not replaced elsewhere. Error: errno value.
+        , TermGet           //!< Linux tcgetattr(). Not replaced elsewhere. Error: errno value.
+        , TermSet           //!< Linux tcsetattr(). Not replaced elsewhere. Error: errno value.
         , Count             //!< The number of points.
     };
 }

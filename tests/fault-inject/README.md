@@ -52,7 +52,7 @@ The library does not link areg. The test executable links the library, areg and 
 ```cpp
 namespace areg_fault
 {
-    enum class FaultPoint { ThreadCreate, SocketCreate, FileOpen, DirOpen, ProcessSpawn, SocketConnect, SocketSend, SocketRecv, SocketBind, SocketListen, EpollCtl, FileRead, FileWrite, Allocation, Count };
+    enum class FaultPoint { ThreadCreate, SocketCreate, FileOpen, DirOpen, ProcessSpawn, SocketConnect, SocketSend, SocketRecv, SocketBind, SocketListen, EpollCtl, FileRead, FileWrite, Allocation, PipeCreate, Poll, TermGet, TermSet, Count };
 
     bool     arm( FaultPoint point, int error, uint32_t skip = 0u, uint32_t count = 1u );
     uint32_t failed( FaultPoint point );
@@ -84,6 +84,10 @@ namespace areg_fault
 | `FileRead` | `read` | not replaced | not replaced | `errno` |
 | `FileWrite` | `write` | not replaced | not replaced | `errno` |
 | `Allocation` | `operator new(std::nothrow)`, `operator new[](std::nothrow)` | not replaced | not replaced | ignored; the call returns null. The tests are skipped in sanitizer builds, whose runtimes define the operators |
+| `PipeCreate` | `pipe` | not replaced | not replaced | `errno` |
+| `Poll` | `poll` | not replaced | not replaced | `errno`. The AddressSanitizer interceptor does not reach the replacement, so its tests are skipped in that build |
+| `TermGet` | `tcgetattr` | not replaced | not replaced | `errno` |
+| `TermSet` | `tcsetattr` | not replaced | not replaced | `errno` |
 
 Use the error the system really reports in that situation, for example `EMFILE` or
 `ERROR_TOO_MANY_OPEN_FILES` for an exhausted descriptor table. The tests keep one constant per
@@ -217,7 +221,7 @@ The CMake build on Windows defines the same targets; it has not been run yet.
 
 | Platform | State |
 |---|---|
-| Linux, GCC, Debug | Built and run: 4 of 4 pass, through ctest and directly, repeated |
+| Linux, GCC, Debug | Built and run: 4 of 4 pass, through ctest and directly, repeated. The console cases (`PipeCreate`, `Poll`, `TermGet`, `TermSet`, `FileRead`) pass in Release, in a coverage build, and with ThreadSanitizer; with AddressSanitizer the `Poll` case is skipped |
 | Windows, MSVC 2022, Release x64 | Built through `areg-sdk.sln` and run: 3 of 3 pass (the router case is POSIX only). The CMake build on Windows is not yet run |
 | macOS, AddressSanitizer | Built and run: 4 of 4 pass, the interposing pairs of the linked library apply |
 | macOS, ThreadSanitizer | The library is built without instrumentation. The runtime opens its suppressions file through the replaced `open` while it initializes, before its thread state exists, and an instrumented replacement crashes there |
@@ -271,3 +275,4 @@ point.
 | `connect()` fails with `ECONNREFUSED` / `WSAECONNREFUSED` at once | `SocketConnect` | Linux done; macOS, Windows open |
 | `send()` / `recv()` return an error mid-message | `SocketSend`, `SocketRecv` | Linux done; macOS, Windows open |
 | Memory allocation fails in a `new (std::nothrow)` path | `Allocation` | Linux done (no sanitizer); macOS, Windows open |
+| The console of `aregextend` cannot create its interrupt pipe, read or set the terminal modes, or wait for or read a key | `PipeCreate`, `TermGet`, `TermSet`, `Poll`, `FileRead` | Linux done; macOS open |

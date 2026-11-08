@@ -70,11 +70,6 @@
         <AregOutputObj></AregOutputObj>
 
         <!-- ********************************************************************************************************************************** -->
-        <!-- Property to compile the extended features of Areg SDK. By default, it is compiled with extended features.                      -->
-        <!-- Set 1 to compile with extended features. Set 0 or ignore setting to compile without extended features.                             -->
-        <!-- ********************************************************************************************************************************** -->
-        <AregExtended>1</AregExtended>
-        <!-- ********************************************************************************************************************************** -->
         <!-- Property to compile the source codes with logging. By default, the sources are compiled with logs.                                 -->
         <!-- Set 0 to compile sources codes without logs. Set 1 or ignore setting to compile with logs.                                         -->
         <!-- ********************************************************************************************************************************** -->
@@ -125,9 +120,6 @@
         </BuildMacro>
         <BuildMacro Include="AregOutputObj">
             <Value>$(AregOutputObj)</Value>
-        </BuildMacro>
-        <BuildMacro Include="AregExtended">
-            <Value>$(AregExtended)</Value>
         </BuildMacro>
         <BuildMacro Include="AregLogs">
             <Value>$(AregLogs)</Value>

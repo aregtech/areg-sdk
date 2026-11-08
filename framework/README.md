@@ -6,4 +6,4 @@ This directory contains the source codes for Areg Framework, which consists of f
 - **[Log Collector (*logcollector*)](./logcollector/):** Collects logs from applications and forwards them to log observers.
 - **[Log observer Library (*areglogger*)](./areglogger/):** Library for receiving logs from the log collector service.
 - **[Log observer (*logobserver*)](./logobserver/):** In real-time mode monitors, saves and dynamically controls logs.
-- **[Areg Extended Library (*aregextend*)](./aregextend/):** Offers additional objects with extended features.
+- **[Areg Extended Library (*aregextend*)](./aregextend/):** Offers optional objects that extend `areg`: a console, SQLite database helpers and OS-managed services.

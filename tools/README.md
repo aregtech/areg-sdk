@@ -602,17 +602,15 @@ python tools\intern\run-all-examples.py --only mtrouter_console_commands --bin-d
 | `mtrouter_save_unsupported` | `--save` is not a router option: usage, exit code 1, no destination file created |
 | `mtrouter_console_commands` | Zero initial byte/message rates, no connected instances, zero per-client pairs, help, malformed-command diagnostics, command-line-only guidance, silent/verbose acknowledgments, pause/restart acknowledgments and normal quit |
 
-The private input configuration must remain unchanged in every scenario. ANSI mode
-intentionally acknowledges silent/verbose commands as always-on display.
-The normal console scenario checks those acknowledgments, not suppression of later redraws.
+The private input configuration must remain unchanged in every scenario.
+The normal console scenario checks the silent/verbose acknowledgments, not suppression of later redraws.
 
 Command-line help is plain text on stdout: it is printed before any console screen exists,
 so it stays in the terminal after the process exits. The interactive help is drawn on the
 console screen.
 
-`mtrouter_extended_silent_rows_stay_clear` checks, after the extended-console silent
-acknowledgment, that the four statistic rows remain absent over a 30-second observation
-window, then quits normally. On ANSI-only builds it is skipped.
+`mtrouter_silent_rows_stay_clear` checks, after the silent acknowledgment, that the four
+statistic rows remain absent over a 30-second observation window, then quits normally.
 
 The app-linked unit suites are `RouterApplicationTest.*` and
 `RouterApplicationRateTest.*` in `tests/units/RouterApplicationTest.cpp`. They use
@@ -622,8 +620,8 @@ invariants, public status output, malformed commands and interactive help, all
 reachable option formatter strings through private file logging, real client
 instance rows, exact wire-byte/message totals and displayed rates, silent/verbose
 state, and shared/pool pause/restart/quit cleanup. POSIX console output uses a
-sized PTY and reconstructs cursor-addressed ncurses differences; Windows uses
-the console backend's redirected-stream path. Synchronization uses output,
+sized PTY and reconstructs the cursor-addressed rows; Windows uses
+the console's redirected-stream path. Synchronization uses output,
 dispatcher events, futures and thread joins, not sleeps.
 `RouterApplicationRateTest.live_enabled_changes_are_thread_safe` changes the mute
 state while another thread accumulates, and
@@ -827,7 +825,7 @@ client count.
 
 Every run prints its provenance first -- commit, whether the tree is modified, build type,
 compiler and version, the **target** architecture and the **host** that read it, and the
-`AREG_LOGGING`, `AREG_EXTENDED` and `AREG_NO_EXCEPTIONS` switches -- so a number copied out of the
+`AREG_LOGGING` and `AREG_NO_EXCEPTIONS` switches -- so a number copied out of the
 output says what produced it. `target` comes from the binaries, never from the host, so a cross
 build cannot be published under the host's architecture.
 

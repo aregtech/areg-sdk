@@ -65,11 +65,13 @@ jobs:
 
   # A pull request runs all legs in .github/ci/cmake-matrix.json; a push to master
   # runs those marked 'master: true'. Build-only concurrency is bounded separately.
-  # '*-all-test' builds and runs the examples and the unit tests; 'norun: ON' builds them only.
+  # Names are '<os>[-<arch>]-<compiler>-<lib>[-<variant>]-<test|build>', or '...-nolog' alone.
+  # '*-test' builds and runs the examples and the unit tests; '*-build' ('norun: ON') builds them only.
   # 'bench: ON' also runs the benchmarks on a pull request; one shared library build per OS.
-  # '*-nolog' and '*-noext' build and install only, with AREG_LOGGING=OFF or AREG_EXTENDED=OFF.
-  # 'noexc: ON' compiles the framework without exceptions and RTTI.
+  # '*-nolog' builds and installs with AREG_LOGGING=OFF; '*-nolog-test' also runs the tests.
+  # 'noexc: ON' ('*-noexcept-*') compiles the framework without exceptions and RTTI.
   # 'btype' replaces BUILD_TYPE: MinSizeRel and RelWithDebInfo.
+  # 'select: compiler' configures with AREG_COMPILER instead of AREG_COMPILER_FAMILY.
   build-tests:
     name: ${{matrix.config.name}}
     needs: plan
@@ -132,7 +134,7 @@ jobs:
         uses: cygwin/cygwin-install-action@v7
         with:
           # 'gdb' is what the example driver uses to photograph a hung process on cygwin.
-          packages: cmake, dos2unix, flexdll, gcc-g++, gdb, git, libncurses-devel, make, python3
+          packages: cmake, dos2unix, flexdll, gcc-g++, gdb, git, make, python3
           install-dir: 'C:\cygwin'
           add-to-path: false
           work-vol: 'C:'
@@ -217,14 +219,14 @@ jobs:
           echo "example driver interpreter: ${PY} ($("${PY}" --version 2>&1))"
 
       - name: Configure CMake by selecting compiler family
-        if: matrix.config.extend == 'ON' && matrix.config.family != 'cygwin'
+        if: matrix.config.select != 'compiler' && matrix.config.family != 'cygwin'
         working-directory: ${{github.workspace}}
         timeout-minutes: 15
         run: |
-          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DCMAKE_BUILD_TYPE=${{matrix.config.btype || env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_NO_EXCEPTIONS:BOOL=${{matrix.config.noexc || 'OFF'}} -DAREG_INSTALL:BOOL=ON -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
+          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DCMAKE_BUILD_TYPE=${{matrix.config.btype || env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_NO_EXCEPTIONS:BOOL=${{matrix.config.noexc || 'OFF'}} -DAREG_INSTALL:BOOL=ON -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
 
       - name: Configure CMake by selecting compiler family, watched (cygwin)
-        if: matrix.config.extend == 'ON' && matrix.config.family == 'cygwin'
+        if: matrix.config.select != 'compiler' && matrix.config.family == 'cygwin'
         working-directory: ${{github.workspace}}
         shell: pwsh
         timeout-minutes: 15
@@ -234,17 +236,17 @@ jobs:
           New-Item -ItemType Directory -Force product | Out-Null
           Remove-Item -Force -ErrorAction SilentlyContinue product/configure.done
           Start-Process -NoNewWindow -FilePath C:\cygwin\bin\bash.exe -ArgumentList 'tools/intern/hang-watchdog.sh product/configure.done 300 cmake java cygpath'
-          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DCMAKE_BUILD_TYPE=${{matrix.config.btype || env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_NO_EXCEPTIONS:BOOL=${{matrix.config.noexc || 'OFF'}} -DAREG_INSTALL:BOOL=ON -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
+          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DCMAKE_BUILD_TYPE=${{matrix.config.btype || env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_NO_EXCEPTIONS:BOOL=${{matrix.config.noexc || 'OFF'}} -DAREG_INSTALL:BOOL=ON -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
           $rc = $LASTEXITCODE
           New-Item -ItemType File -Force product/configure.done | Out-Null
           exit $rc
 
       - name: Configure CMake by selecting compiler name
-        if: matrix.config.extend == 'OFF'
+        if: matrix.config.select == 'compiler'
         working-directory: ${{github.workspace}}
         timeout-minutes: 15
         run: |
-          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER=${{matrix.config.cc}} -DCMAKE_BUILD_TYPE=${{matrix.config.btype || env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_NO_EXCEPTIONS:BOOL=${{matrix.config.noexc || 'OFF'}} -DAREG_INSTALL:BOOL=ON -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
+          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER=${{matrix.config.cc}} -DCMAKE_BUILD_TYPE=${{matrix.config.btype || env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_NO_EXCEPTIONS:BOOL=${{matrix.config.noexc || 'OFF'}} -DAREG_INSTALL:BOOL=ON -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
 
       - name: Check that a clang-cl leg is compiled by clang-cl
         if: matrix.config.cxx == 'clang-cl'

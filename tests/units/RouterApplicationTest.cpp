@@ -226,7 +226,7 @@ TEST(RouterApplicationTest, scrolled_terminal_publishes_no_old_rows)
 }
 
 #if !defined(_WIN32)
-// Reproduces the defect: ncurses on macOS moves down with a line feed, which keeps the column, and the rate rows were drawn at the wrong place.
+// Reproduces the defect: a line feed on a terminal keeps the column, and the capture drew the rate rows at the wrong place.
 TEST(RouterApplicationTest, terminal_keeps_the_column_on_a_line_feed)
 {
     TerminalCapture terminal;
@@ -257,7 +257,7 @@ TEST(RouterApplicationTest, terminal_publishes_a_row_written_again_with_the_same
     EXPECT_NE(std::string::npos, terminal.transcript.find("same-row-text", offset));
 }
 
-// Reproduces the defect: ncurses discarded the usage text at exit, so a failed command line printed nothing.
+// Reproduces the defect: the usage text was discarded at exit, so a failed command line printed nothing.
 TEST(RouterApplicationTest, command_line_help_is_plain_text)
 {
     AREG_EXPECT_IN_CHILD(
@@ -273,6 +273,30 @@ TEST(RouterApplicationTest, command_line_help_is_plain_text)
             AREG_CHILD_CHECK(usage.find('\x1b') == std::string::npos);
         }
     );
+}
+
+// Reproduces the defect: on a small terminal the help text wrapped and scrolled the screen, the title was lost.
+TEST(RouterApplicationTest, help_keeps_the_screen_in_place_on_small_terminals)
+{
+#if defined(_WIN32)
+    GTEST_SKIP() << "the console of a Windows test is a pipe";
+#else
+    for (const service_harness::TerminalSize size : { service_harness::TerminalSize{ 80, 24 }, service_harness::TerminalSize{ 120, 30 } })
+    {
+        AREG_EXPECT_IN_CHILD(
+            PrivateConfig config;
+            ConsoleSession console(config, size);
+            console.command("-h", "Usage of Areg Multi-target Message Router");
+            console.command("--instances", "There are no connected instances");
+            const int promptX{ areg::ext::COORD_USER_INPUT.posX + static_cast<int>(areg::ext::FORMAT_WAIT_QUIT.size()) };
+            AREG_CHILD_CHECK(console.wait_screen([&](const VtScreen& screen)
+                { return (screen.cursor_x() == promptX) && (screen.cursor_y() == areg::ext::COORD_USER_INPUT.posY); }));
+            AREG_CHILD_CHECK(console.wait_screen([](const VtScreen& screen)
+                { return (screen.scrolled() == 0) && (screen.wrapped() == 0) && (screen.row(0).rfind("Areg Multi-target Message Router console application", 0) == 0); }));
+            console.quit();
+        );
+    }
+#endif
 }
 
 // Reproduces the defect: the router took the cookie to disconnect from the payload, so any client could drop another one.
@@ -335,7 +359,7 @@ TEST(RouterApplicationTest, connected_instance_is_rendered_and_pause_restart_clo
         AREG_CHILD_CHECK(app.communication_controller().instances().is_empty());
         client.socket.close();
         console.silent_command();
-        check_console_verbose(AREG_EXTENDED == 0);
+        check_console_verbose(false);
         console.command("--help", "Usage of Areg Multi-target Message Router");
         console.command("--silent --threads", "Active per-client thread pairs: 0");
         console.verbose_command();
@@ -451,9 +475,9 @@ TEST(RouterApplicationRateTest, silent_mode_outputs_no_rate_rows)
         AREG_CHILD_CHECK(helper.output_data_rate());
         console.silent_command();
         const size_t silent{ console.mark() };
-        AREG_CHILD_CHECK(helper.output_data_rate() == (AREG_EXTENDED == 0));
+        AREG_CHILD_CHECK(!helper.output_data_rate());
         console.command("--threads", "Active per-client thread pairs: 0");
-        AREG_CHILD_CHECK((AREG_EXTENDED == 0) || !console.shown_since("Send data rate", silent));
+        AREG_CHILD_CHECK(!console.shown_since("Send data rate", silent));
         console.verbose_command();
         AREG_CHILD_CHECK(helper.output_data_rate());
         console.quit();

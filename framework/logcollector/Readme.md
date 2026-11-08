@@ -144,8 +144,8 @@ When running as a console application, the following commands are available to m
 - **`--pause`** or **`-p`**: Pause logging connections.
 - **`--quit`** or **`-q`**: Stop the `logcollector` and exit.
 - **`--restart`** or **`-r`**: Restart logging connections.
-- **`--silent`** or **`-t`**: Stop displaying data rates (only if build with enabled extended features).
-- **`--verbose`** or **`-v`**: Display data rates (only if build with enabled extended features).
+- **`--silent`** or **`-t`**: Stop displaying data rates.
+- **`--verbose`** or **`-v`**: Display data rates.
 
 ---
 

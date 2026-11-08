@@ -50,7 +50,6 @@ This document provides a comprehensive reference for CMake functions and macros 
 | [macro_normalize_path](#macro_normalize_path) | Convert Windows paths to Cygwin format |
 | [macro_get_processor](#macro_get_processor) | Detect processor architecture |
 | [macro_check_module_architect](#macro_check_module_architect) | Validate binary architecture compatibility |
-| [macro_find_ncurses_package](#macro_find_ncurses_package) | Locate ncurses library |
 | [macro_find_gtest_package](#macro_find_gtest_package) | Locate Google Test package |
 | [macro_find_sqlite_package](#macro_find_sqlite_package) | Locate SQLite3 package |
 | [macro_create_option](#macro_create_option) | Create CMake boolean option |
@@ -173,38 +172,15 @@ endif()
 
 **Usage:**
 ```cmake
-find_library(_library NAMES ncurses)
+find_library(_library NAMES sqlite3)
 if(_library)
     macro_check_module_architect("${_library}" 
                                 ${AREG_TARGET} 
                                 ${AREG_ARCH} 
                                 _is_compatible)
     if(_is_compatible)
-        message(STATUS "ncurses library is compatible")
+        message(STATUS "sqlite3 library is compatible")
     endif()
-endif()
-```
-
-<div align="right"><kbd><a href="#cmake-macros">↑ Back to macros ↑</a></kbd></div>
-
----
-
-### macro_find_ncurses_package
-
-**Syntax:** `macro_find_ncurses_package(var_include var_library var_found)`
-
-**Purpose:** Locates ncurses library and header files.
-
-**Parameters:**
-- `var_include` [out] - Path to directory containing ncurses.h
-- `var_library` [out] - Full path to ncurses library
-- `var_found` [out] - TRUE if found, FALSE otherwise
-
-**Usage:**
-```cmake
-macro_find_ncurses_package(NCURSES_INCLUDE NCURSES_LIB NCURSES_FOUND)
-if(NCURSES_FOUND)
-    message(STATUS "ncurses found: ${NCURSES_LIB}")
 endif()
 ```
 

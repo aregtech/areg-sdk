@@ -166,7 +166,6 @@ def collect_provenance(build_dir, bin_dir, size_tool, lib_dir=None):
         'cxx_flags': _cmake_cache_value(build_dir, 'CMAKE_CXX_FLAGS') or '',
         'compiler': version or (compiler or 'unknown'),
         'logging': _cmake_cache_value(build_dir, 'AREG_LOGGING') or 'unknown',
-        'extended': _cmake_cache_value(build_dir, 'AREG_EXTENDED') or 'unknown',
         'no_exceptions': _cmake_cache_value(build_dir, 'AREG_NO_EXCEPTIONS') or 'unknown',
         'target': _measured_target(bin_dir, lib_dir or bin_dir) or 'unknown',
         'host': '%s %s' % (platform.system(), platform.machine()),
@@ -545,7 +544,7 @@ def print_ram(sections):
 def print_provenance(provenance):
     print('Measured on')
     for key in ('commit', 'tree', 'build_type', 'compiler', 'target', 'host',
-                'logging', 'extended', 'no_exceptions', 'cxx_flags', 'size_tool'):
+                'logging', 'no_exceptions', 'cxx_flags', 'size_tool'):
         value = provenance.get(key)
         if value:
             print('  %-14s %s' % (key, value))

@@ -87,5 +87,5 @@ regeneration keeps it:
 ## 4. A richer console: aregextend
 
 `areg::ext::Console` (`aregextend/console/Console.hpp`, linked into every application)
-prints at a position and reads input with a prompt (`wait_for_input`), thread safe.
-Check what it does at end of input before a test runs it without a terminal.
+prints at a 0-based position and reads input with a prompt (`wait_for_input`), thread
+safe. Without a terminal a print is a plain line; end of input returns an empty string.

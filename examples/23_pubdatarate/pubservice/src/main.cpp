@@ -57,7 +57,8 @@ DEF_LOG_SCOPE(examples_23_pubservice_main, main);
  **/
 int main(int argc, char* argv[])
 {
-    printf("Testing large data servicing, run as a ultra-small Server...\n");
+    areg::ext::Console& console = areg::ext::Console::instance();
+    console.output_below("Testing large data servicing, run as a ultra-small Server...");
 
     // Parse command-line arguments so the benchmark can start unattended.
     // Example: 23_pubservice -t=0 -l=1 -c=10 -s
@@ -105,10 +106,8 @@ int main(int argc, char* argv[])
 
     } while (false);
 
-    // Release the console before writing directly to stdout so the final message
-    // appears at the right position (just below the last output row), not mid-screen.
-    areg::ext::Console::instance().uninitialize();
-    printf("Completed testing large data servicing component. Check the logs...\n");
+    console.output_below("Completed testing large data servicing component. Check the logs...");
+    console.uninitialize();
 
 	return 0;
 }

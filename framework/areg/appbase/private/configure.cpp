@@ -61,25 +61,6 @@
         #endif
     #endif // AREG_LOGGING
 
-    #if !defined(AREG_EXTENDED)
-        #ifdef MS_VISUAL_CPP
-            #pragma message(">>> The AREG_EXTENDED is not defined, setting default value 0")
-        #else
-            #pragma message ">>> The AREG_EXTENDED is not defined, setting default value 0"
-        #endif
-    #elif AREG_EXTENDED
-        #ifdef MS_VISUAL_CPP
-            #pragma message(">>> Compiling the sources WITH extended features")
-        #else
-            #pragma message ">>> Compiling the sources WITH extended features"
-        #endif
-    #else   // !AREG_EXTENDED
-        #ifdef MS_VISUAL_CPP
-            #pragma message (">>> Compiling the sources WITHOUT extended features")
-        #else
-            #pragma message ">>> Compiling the sources WITHOUT extended features"
-        #endif
-    #endif // AREG_EXTENDED
 
 #endif // DEBUG
 

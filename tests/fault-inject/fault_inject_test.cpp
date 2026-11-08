@@ -34,12 +34,18 @@
 #include <errno.h>
 
 #if defined(__linux__)
+    #include "aregextend/console/Console.hpp"
     #include "areg/component/DispatcherThread.hpp"
     #include "areg/component/Event.hpp"
     #include "areg/component/EventConsumer.hpp"
     #include "units/ServiceTestServer.hpp"
 
     #include <arpa/inet.h>
+    #include <fcntl.h>
+    #include <signal.h>
+    #include <stdlib.h>
+    #include <sys/ioctl.h>
+    #include <termios.h>
     #include <netinet/in.h>
     #include <sys/socket.h>
     #include <unistd.h>
@@ -608,6 +614,145 @@ TEST( FaultInjectTest, file_read_reports_no_bytes_and_a_later_read_returns_the_d
         AREG_CHILD_CHECK( in[0] == 3u && in[3] == 6u );
         file.close( );
         static_cast<void>(areg::File::delete_file( "fault_inject_read.txt" ));
+    );
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// The console of aregextend.
+//////////////////////////////////////////////////////////////////////////
+
+namespace
+{
+    //!< Makes a new pseudo terminal the controlling terminal, the standard input and the standard output.
+    void _take_terminal( )
+    {
+        AREG_CHILD_CHECK( (::getsid( 0 ) == ::getpid( )) || (::setsid( ) != -1) );
+        const int master{ ::posix_openpt( O_RDWR | O_NOCTTY ) };
+        AREG_CHILD_CHECK( (master >= 0) && (::grantpt( master ) == 0) && (::unlockpt( master ) == 0) );
+        const char * name{ ::ptsname( master ) };
+        AREG_CHILD_CHECK( name != nullptr );
+        const int slave{ ::open( name, O_RDWR ) };
+        AREG_CHILD_CHECK( slave >= 0 );
+        ::ioctl( slave, TIOCSCTTY, 0 );
+        AREG_CHILD_CHECK( (::dup2( slave, 0 ) == 0) && (::dup2( slave, 1 ) == 1) );
+    }
+
+    //!< Makes a pipe holding the text the standard input.
+    void _input_from( const char * text )
+    {
+        int fds[2]{ -1, -1 };
+        AREG_CHILD_CHECK( ::pipe( fds ) == 0 );
+        const ssize_t size{ static_cast<ssize_t>(::strlen( text )) };
+        AREG_CHILD_CHECK( ::write( fds[1], text, static_cast<size_t>(size) ) == size );
+        ::close( fds[1] );
+        AREG_CHILD_CHECK( ::dup2( fds[0], 0 ) == 0 );
+        ::close( fds[0] );
+    }
+
+    //!< Returns true if the terminal input echoes and reads lines.
+    bool _is_line_mode( )
+    {
+        termios modes{ };
+        return (::tcgetattr( 0, &modes ) == 0) && ((modes.c_lflag & (ICANON | ECHO)) == (ICANON | ECHO));
+    }
+
+    //!< Returns true if the action of the signal is the default one.
+    bool _is_default( int sig )
+    {
+        struct sigaction action{ };
+        return (::sigaction( sig, nullptr, &action ) == 0) && ((action.sa_flags & SA_SIGINFO) == 0) && (action.sa_handler == SIG_DFL);
+    }
+}
+
+TEST( FaultInjectTest, console_keeps_the_terminal_modes_when_reading_them_fails )
+{
+    AREG_EXPECT_IN_CHILD(
+        _take_terminal( );
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::TermGet, EIO ) );
+        areg::ext::Console & console{ areg::ext::Console::instance( ) };
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::TermGet ) == 1u && NOT_REPLACED );
+        AREG_CHILD_CHECK( console.is_terminal( ) );
+        AREG_CHILD_CHECK( _is_line_mode( ) );
+        AREG_CHILD_CHECK( _is_default( SIGINT ) && _is_default( SIGTERM ) );
+        console.uninitialize( );
+        AREG_CHILD_CHECK( _is_line_mode( ) );
+    );
+}
+
+TEST( FaultInjectTest, console_leaves_the_signals_when_setting_key_mode_fails )
+{
+    AREG_EXPECT_IN_CHILD(
+        _take_terminal( );
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::TermSet, EIO ) );
+        areg::ext::Console & console{ areg::ext::Console::instance( ) };
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::TermSet ) == 1u && NOT_REPLACED );
+        AREG_CHILD_CHECK( console.is_terminal( ) );
+        AREG_CHILD_CHECK( _is_line_mode( ) );
+        AREG_CHILD_CHECK( _is_default( SIGINT ) && _is_default( SIGCONT ) );
+        console.uninitialize( );
+        AREG_CHILD_CHECK( _is_line_mode( ) );
+    );
+}
+
+TEST( FaultInjectTest, console_reads_lines_without_an_interrupt_pipe )
+{
+    AREG_EXPECT_IN_CHILD(
+        _input_from( "first\nsecond\n" );
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::PipeCreate, EMFILE ) );
+        areg::ext::Console & console{ areg::ext::Console::instance( ) };
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::PipeCreate ) == 1u && NOT_REPLACED );
+        AREG_CHILD_CHECK( console.enable_console_input( true ) );
+        AREG_CHILD_CHECK( console.wait_for_input( nullptr ) == "first" );
+        char buffer[16]{ };
+        AREG_CHILD_CHECK( areg::ext::Console::read_console_data( buffer, sizeof( buffer ) ) && (::strcmp( buffer, "second" ) == 0) );
+        AREG_CHILD_CHECK( console.enable_console_input( false ) );
+        console.uninitialize( );
+    );
+}
+
+TEST( FaultInjectTest, console_read_retries_an_interrupted_wait_and_ends_on_a_failed_wait )
+{
+#if defined(__SANITIZE_ADDRESS__)
+    GTEST_SKIP( ) << "the AddressSanitizer interceptor of poll() does not reach the replaced poll()";
+#endif  // defined(__SANITIZE_ADDRESS__)
+
+    AREG_EXPECT_IN_CHILD(
+        _input_from( "ab\ncd\n" );
+        areg::ext::Console & console{ areg::ext::Console::instance( ) };
+        areg_fault::FaultScope faults;
+        char buffer[16]{ };
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Poll, EINTR ) );
+        AREG_CHILD_CHECK( areg::ext::Console::read_console_data( buffer, sizeof( buffer ) ) && (::strcmp( buffer, "ab" ) == 0) );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Poll ) == 1u && NOT_REPLACED );
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Poll, EBADF ) );
+        AREG_CHILD_CHECK( areg::ext::Console::read_console_data( buffer, sizeof( buffer ) ) == false );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Poll ) == 1u && NOT_REPLACED );
+        AREG_CHILD_CHECK( areg::ext::Console::read_console_data( buffer, sizeof( buffer ) ) && (::strcmp( buffer, "cd" ) == 0) );
+        console.uninitialize( );
+    );
+}
+
+TEST( FaultInjectTest, console_read_retries_an_interrupted_read_and_ends_on_a_failed_read )
+{
+    AREG_EXPECT_IN_CHILD(
+        _input_from( "cd\nef\ngh\n" );
+        areg::ext::Console & console{ areg::ext::Console::instance( ) };
+        areg_fault::FaultScope faults;
+        char buffer[16]{ };
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::FileRead, EINTR ) );
+        AREG_CHILD_CHECK( areg::ext::Console::read_console_data( buffer, sizeof( buffer ) ) && (::strcmp( buffer, "cd" ) == 0) );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::FileRead ) == 1u && NOT_REPLACED );
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::FileRead, EAGAIN ) );
+        AREG_CHILD_CHECK( areg::ext::Console::read_console_data( buffer, sizeof( buffer ) ) && (::strcmp( buffer, "ef" ) == 0) );
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::FileRead, EIO ) );
+        AREG_CHILD_CHECK( areg::ext::Console::read_console_data( buffer, sizeof( buffer ) ) == false );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::FileRead ) == 1u && NOT_REPLACED );
+        AREG_CHILD_CHECK( areg::ext::Console::read_console_data( buffer, sizeof( buffer ) ) && (::strcmp( buffer, "gh" ) == 0) );
+        console.uninitialize( );
     );
 }
 

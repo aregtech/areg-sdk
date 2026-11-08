@@ -283,7 +283,6 @@ Build Areg SDK with specific options from command line.
 |--------|--------|---------|-------------|
 | **Configuration** | `Debug`, `Release` | `Debug` | Build configuration |
 | **Platform** | `Win32`, `x64` | `Win32` | Target architecture |
-| **AregExtended** | `0`, `1` | `1` | Build extended library |
 | **AregLogs** | `0`, `1` | `1` | Enable logging |
 
 **Example - Release build without logging:**
@@ -292,16 +291,10 @@ Build Areg SDK with specific options from command line.
 msbuild /m /p:Configuration=Release /p:Platform=x64 /p:AregLogs=0 MyAregApp.sln
 ```
 
-**Example - Debug build without extended library:**
-
-```powershell
-msbuild /m /p:Configuration=Debug /p:Platform=x64 /p:AregExtended=0 MyAregApp.sln
-```
-
 **Example - Full build with package restore:**
 
 ```powershell
-msbuild /m /p:Configuration=Release /p:Platform=x64 /p:AregExtended=1 /p:AregLogs=1 MyAregApp.sln -t:restore,build -p:RestorePackagesConfig=true
+msbuild /m /p:Configuration=Release /p:Platform=x64 /p:AregLogs=1 MyAregApp.sln -t:restore,build -p:RestorePackagesConfig=true
 ```
 
 For detailed MSBuild options, see [Building with MSBuild](./01c-msvc-build.md).
