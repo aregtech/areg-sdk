@@ -487,6 +487,13 @@ void ServiceCommunicationBase::stop_connection()
 
 bool ServiceCommunicationBase::on_client_accepted( SocketAccepted & clientSocket )
 {
+    // A client that arrives while the connection stops is closed before it is told a cookie.
+    if ( mShuttingDown.load(std::memory_order_acquire) )
+    {
+        mServerConnection.close_connection(clientSocket);
+        return true;
+    }
+
     areg::set_send_refusal(clientSocket.handle(), mSendRefusalMs);
 
     // The thread that writes the socket is the one do_send_pool() and do_send_shared() pick.
