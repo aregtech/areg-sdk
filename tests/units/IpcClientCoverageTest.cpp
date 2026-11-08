@@ -1,4 +1,5 @@
 #include "units/GUnitTest.hpp"
+#include "units/ChildProcess.hpp"
 #include "units/EventTestSupport.hpp"
 
 #include "areg/appbase/Application.hpp"
@@ -1567,43 +1568,45 @@ TEST_F(IpcSocketCoverageTest, remote_request_before_the_connection_is_confirmed_
 // while the receive thread wrote that channel on a connection notification.
 TEST_F(IpcSocketCoverageTest, outgoing_messages_keep_the_cookie_while_the_router_confirms_the_connection)
 {
-    constexpr ITEM_ID COOKIE{ areg::COOKIE_REMOTE_SERVICE + 93u };
-    constexpr ITEM_ID STUB_COOKIE{ areg::COOKIE_REMOTE_SERVICE + 94u };
-    constexpr uint32_t LAST_REQUEST{ areg::REQUEST_ID_FIRST + 9u };
-    constexpr int ROUNDS{ 200 };
-    FakeRouter router;
-    ASSERT_TRUE(router.listener.open());
-    areg::Application::setup(false, true, false, true, false);
-    router.started = true;
-    areg::ConnectionConfiguration config(areg::RemoteServiceKind::Router, areg::ConnectionType::Tcpip);
-    config.set_connection_enable(true);
-    config.set_connection_data(router.listener.address().host_address(), router.listener.address().host_port());
-    ASSERT_TRUE(areg::Application::connect_router());
-    router.peer = router.listener.accept();
-    ASSERT_TRUE(router.peer.is_valid());
-    areg::MessageEnvelope handshake;
-    ASSERT_TRUE(receive_wire(router.peer, handshake));
-    ASSERT_TRUE(send_wire(router.peer, areg::create_connect_notify(areg::COOKIE_ROUTER, COOKIE)));
-    ASSERT_TRUE(wait_router_connected());
+    AREG_EXPECT_IN_CHILD(
+        constexpr ITEM_ID COOKIE{ areg::COOKIE_REMOTE_SERVICE + 93u };
+        constexpr ITEM_ID STUB_COOKIE{ areg::COOKIE_REMOTE_SERVICE + 94u };
+        constexpr uint32_t LAST_REQUEST{ areg::REQUEST_ID_FIRST + 9u };
+        constexpr int ROUNDS{ 200 };
+        FakeRouter router;
+        AREG_CHILD_CHECK(router.listener.open());
+        areg::Application::setup(false, true, false, true, false);
+        router.started = true;
+        areg::ConnectionConfiguration config(areg::RemoteServiceKind::Router, areg::ConnectionType::Tcpip);
+        config.set_connection_enable(true);
+        config.set_connection_data(router.listener.address().host_address(), router.listener.address().host_port());
+        AREG_CHILD_CHECK(areg::Application::connect_router());
+        router.peer = router.listener.accept();
+        AREG_CHILD_CHECK(router.peer.is_valid());
+        areg::MessageEnvelope handshake;
+        AREG_CHILD_CHECK(receive_wire(router.peer, handshake));
+        AREG_CHILD_CHECK(send_wire(router.peer, areg::create_connect_notify(areg::COOKIE_ROUTER, COOKIE)));
+        AREG_CHILD_CHECK(wait_router_connected());
 
-    for (int round{ 0 }; round < ROUNDS; ++round)
-    {
-        ASSERT_TRUE(send_wire(router.peer, areg::create_connect_notify(areg::COOKIE_ROUTER, COOKIE)));
-        ASSERT_TRUE(post_remote_notify_and_response(STUB_COOKIE, areg::ATTRIBUTE_ID_FIRST + 3u, areg::RESPONSE_ID_FIRST + 3u));
-    }
-
-    ASSERT_TRUE(post_remote_request(STUB_COOKIE, LAST_REQUEST));
-    areg::MessageEnvelope outgoing;
-    int count{ 0 };
-    do
-    {
-        ASSERT_TRUE(receive_wire(router.peer, outgoing));
-        if (areg::is_executable_id(static_cast<uint32_t>(outgoing.message_id())))
+        for (int round{ 0 }; round < ROUNDS; ++round)
         {
-            EXPECT_EQ(outgoing.source(), COOKIE);
-            ++count;
+            AREG_CHILD_CHECK(send_wire(router.peer, areg::create_connect_notify(areg::COOKIE_ROUTER, COOKIE)));
+            AREG_CHILD_CHECK(post_remote_notify_and_response(STUB_COOKIE, areg::ATTRIBUTE_ID_FIRST + 3u, areg::RESPONSE_ID_FIRST + 3u));
         }
-    } while (outgoing.message_id() != LAST_REQUEST);
 
-    EXPECT_EQ(count, 2 * ROUNDS + 1);
+        AREG_CHILD_CHECK(post_remote_request(STUB_COOKIE, LAST_REQUEST));
+        areg::MessageEnvelope outgoing;
+        int count{ 0 };
+        do
+        {
+            AREG_CHILD_CHECK(receive_wire(router.peer, outgoing));
+            if (areg::is_executable_id(static_cast<uint32_t>(outgoing.message_id())))
+            {
+                AREG_CHILD_CHECK(outgoing.source() == COOKIE);
+                ++count;
+            }
+        } while (outgoing.message_id() != LAST_REQUEST);
+
+        AREG_CHILD_CHECK(count == 2 * ROUNDS + 1);
+    );
 }
