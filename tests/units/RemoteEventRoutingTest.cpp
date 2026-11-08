@@ -416,7 +416,7 @@ TEST(EventApiTest, type_queries_agree_with_the_event_type_and_an_empty_event_ans
         , areg::EventType::EventLocalRequestFailed, areg::EventType::EventRemoteRequestFailed
     };
 
-    areg::Event event(areg::EventType::EventUnknown);
+    areg::Event event(areg::EventType::EventCustomInternal);
     for (const areg::EventType type : TYPES)
     {
         event.set_event_type(type);

@@ -180,6 +180,7 @@ step_build() {
 
 step_unit() {
   local rc
+  check_gcovr
   reset_counters
   if [ -n "$ONLY" ]; then
     ctest --test-dir "$BUILD" --timeout 300 --output-on-failure -R "$ONLY"
@@ -195,6 +196,7 @@ step_unit() {
 
 step_examples() {
   local rc
+  check_gcovr
   reset_counters
   local args=(--bin-dir "$BUILD/bin" --tier coverage --out-dir "$OUT/examples" --summary '')
   [ -n "$ONLY" ] && args+=(--only "$ONLY")
