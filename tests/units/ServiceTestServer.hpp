@@ -50,6 +50,24 @@ namespace service_test
 
         using areg::ext::ServiceCommunicationBase::set_close_stalled;
 
+        //!< Returns the backlog of the shared send thread.
+        areg::ext::SendBacklog & shared_backlog() noexcept
+        {
+            return mThreadSend.backlog();
+        }
+
+        //!< Marks the connection as stopping, as stop_connection() does, without stopping it.
+        void set_stopping(bool stopping) noexcept
+        {
+            mShuttingDown.store(stopping, std::memory_order_release);
+        }
+
+        //!< Returns the backlog of the send thread of pool pair \a index; the server must run.
+        areg::ext::SendBacklog & pool_backlog(uint32_t index) noexcept
+        {
+            return mClientPairs[index]->send_thread().backlog();
+        }
+
         void add_instance(const ITEM_ID & cookie, const areg::ConnectedInstance & instance) override
         {
             areg::ext::ServiceCommunicationBase::add_instance(cookie, instance);

@@ -716,12 +716,13 @@ protected:
 
     /**
      * \brief   Determines if a request can be executed. Returns false and sends busy response if a
-     *          previous response is still pending.
+     *          previous response is still pending. Returns false and drops the request if the
+     *          sequence number is SEQUENCE_NUMBER_NOTIFY or SEQUENCE_NUMBER_ANY.
      *
      * \param   whichListener       The listener containing the message ID and proxy address.
      * \param   whichResponse       The associated response message ID.
      * \param   seqNr               The sequence number of the request call.
-     * \return  Returns true if the request can proceed; false if it is blocked due to pending response.
+     * \return  Returns true if the request can proceed; false if it is busy or dropped.
      **/
     [[nodiscard]]
     bool can_execute_request( StubBase::Listener & whichListener, uint32_t whichResponse, const SequenceNumber & seqNr);

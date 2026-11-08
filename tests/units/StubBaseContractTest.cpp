@@ -336,6 +336,21 @@ TEST_F(StubBaseContractTest, busy_request_is_refused_without_replacing_the_pendi
     EXPECT_EQ(41u, listeners[0].mSequenceNr);
 }
 
+// Reproduces the defect: a request with sequence SEQUENCE_NUMBER_NOTIFY or SEQUENCE_NUMBER_ANY was
+// stored as a subscription or a wildcard, and the stub did not become busy.
+TEST_F(StubBaseContractTest, request_with_notify_or_any_sequence_is_dropped)
+{
+    EXPECT_FALSE(mStub.begin_request(mFirst, SEQUENCE_NUMBER_NOTIFY));
+    EXPECT_FALSE(mStub.begin_request(mSecond, SEQUENCE_NUMBER_ANY));
+    EXPECT_TRUE(mStub.mResponseAttempts.empty());
+    ContractStub::StubListenerList listeners;
+    EXPECT_EQ(0u, mStub.find_listeners(RESPONSES[0], listeners));
+    EXPECT_FALSE(mStub.is_busy(RESPONSES[0]));
+
+    ASSERT_TRUE(mStub.begin_request(mFirst, 41));
+    EXPECT_TRUE(mStub.is_busy(RESPONSES[0]));
+}
+
 TEST_F(StubBaseContractTest, unblock_sessions_are_unique_consumed_once_and_restorable_out_of_order)
 {
     EXPECT_EQ(std::numeric_limits<SessionID>::max(), mStub.unblock_current_request());

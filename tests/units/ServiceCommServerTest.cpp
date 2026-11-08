@@ -42,6 +42,13 @@
 #include <thread>
 #include <vector>
 
+#if defined(_POSIX)
+    #include <sys/socket.h>
+    #include <sys/time.h>
+#elif defined(WINDOWS)
+    #include <WinSock2.h>
+#endif
+
 namespace
 {
     using Clock = std::chrono::steady_clock;
@@ -52,6 +59,8 @@ namespace
     constexpr int64_t   DEADLINE_MS     { 60'000 };
     //!< The pool size of the pool mode.
     constexpr uint32_t  POOL_PAIRS      { 2u };
+    //!< Milliseconds a client waits for a reply that must not come.
+    constexpr uint32_t  LATE_WAIT_MS    { 5'000u };
 
     int64_t elapsed_ms(Clock::time_point since)
     {
@@ -176,6 +185,17 @@ namespace
         bool receive(areg::MessageEnvelope & message)
         {
             return (link.receive_message(message) > 0);
+        }
+
+        //!< Makes a read of the connected socket fail after \a waitMs milliseconds without data.
+        bool limit_receive(uint32_t waitMs)
+        {
+#if defined(WINDOWS)
+            const DWORD timeout{ waitMs };
+#else
+            const timeval timeout{ static_cast<time_t>(waitMs / 1'000u), static_cast<suseconds_t>((waitMs % 1'000u) * 1'000u) };
+#endif
+            return (::setsockopt(link.live_handle(), SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char *>(&timeout), sizeof(timeout)) == 0);
         }
 
         //!< Connects and says hello. Where the server is not listening yet, or drops the client
@@ -537,6 +557,69 @@ protected:
 
         EXPECT_FALSE(run.server.is_target_held(reader->cookie));
     }
+
+    //!< Checks that every send thread of the running server uses \a closeStalled and the refusal time of the server.
+    static void expect_send_policy(Running & run, uint32_t pairs, bool closeStalled)
+    {
+        const uint32_t refusal{ areg::send_refusal_ms(0u, areg::SOCKET_KEEPALIVE_SEC) };
+        EXPECT_EQ(run.server.shared_backlog().closes_stalled(), closeStalled);
+        EXPECT_EQ(run.server.shared_backlog().refusal_ms(), refusal);
+        ASSERT_EQ(run.server.active_client_pair_count(), pairs);
+        for (uint32_t i = 0u; i != pairs; ++i)
+        {
+            EXPECT_EQ(run.server.pool_backlog(i).closes_stalled(), closeStalled) << "pair " << i;
+            EXPECT_EQ(run.server.pool_backlog(i).refusal_ms(), refusal) << "pair " << i;
+        }
+    }
+
+    //!< A server started with an address only applies its send policy at the start and at a restart.
+    static void run_send_policy(uint32_t pairs)
+    {
+        for (const bool closeStalled : { false, true })
+        {
+            Running run(Policy::Accept, pairs);
+            run.server.set_close_stalled(closeStalled);
+            ASSERT_TRUE(run.start());
+            Peer before(run.port);
+            ASSERT_TRUE(before.join());
+            expect_send_policy(run, pairs, closeStalled);
+
+            run.server.set_close_stalled(!closeStalled);
+            ASSERT_TRUE(run.server.reconnect_service_host());
+            static_cast<void>(before.drain());
+            Peer after(run.port);
+            ASSERT_TRUE(after.join());
+            expect_send_policy(run, pairs, !closeStalled);
+        }
+    }
+
+    //!< A client that connects while the connection stops is closed and is not told a cookie.
+    static void run_client_while_stopping(uint32_t pairs)
+    {
+        Running run(Policy::Accept, pairs);
+        ASSERT_TRUE(run.start());
+        Peer first(run.port);
+        ASSERT_TRUE(first.join());
+        ASSERT_TRUE(run.server.wait_added(1u));
+
+        run.server.set_stopping(true);
+        Peer late(run.port);
+        ASSERT_TRUE(late.connect_once());
+        ASSERT_TRUE(late.limit_receive(LATE_WAIT_MS));
+        areg::MessageEnvelope request{ areg::create_connect_request(areg::COOKIE_REMOTE_SERVICE, areg::COOKIE_ROUTER, areg::MessageSource::SourceTest) };
+        static_cast<void>(late.send(request));
+        areg::MessageEnvelope reply;
+        EXPECT_FALSE(late.receive(reply));
+        run.server.set_stopping(false);
+
+        EXPECT_EQ(run.server.instances().size(), 1u);
+        EXPECT_EQ(run.server.active_client_pair_count(), pairs);
+
+        Peer after(run.port);
+        ASSERT_TRUE(after.join());
+        EXPECT_NE(after.cookie, first.cookie);
+        EXPECT_TRUE(run.server.wait_instances(2u));
+    }
 };
 
 TEST_F(ServiceCommServerTest, clients_are_told_their_cookies_in_the_shared_thread_mode)
@@ -594,6 +677,30 @@ TEST_F(ServiceCommServerTest, slow_reader_is_held_without_loss_in_the_pool_mode)
 TEST_F(ServiceCommServerTest, slow_reader_gets_big_messages_through_the_send_thread)
 {
     run_slow_reader(POOL_PAIRS, 256u * 1024u);
+}
+
+// Reproduces the defect: a server started with an address only kept the default send policy in
+// its shared send thread, so set_close_stalled(false) was ignored there.
+TEST_F(ServiceCommServerTest, send_policy_reaches_every_send_thread_in_the_shared_thread_mode)
+{
+    run_send_policy(0u);
+}
+
+TEST_F(ServiceCommServerTest, send_policy_reaches_every_send_thread_in_the_pool_mode)
+{
+    run_send_policy(POOL_PAIRS);
+}
+
+// Reproduces the defect: while the server restarted, a client that connected after the old
+// clients were dropped was still told a cookie by the stopping server, and dropped right after.
+TEST_F(ServiceCommServerTest, client_connecting_while_the_server_stops_is_closed_in_the_shared_thread_mode)
+{
+    run_client_while_stopping(0u);
+}
+
+TEST_F(ServiceCommServerTest, client_connecting_while_the_server_stops_is_closed_in_the_pool_mode)
+{
+    run_client_while_stopping(POOL_PAIRS);
 }
 
 // A client of a host that is not allowed is told that it is rejected, and the server closes the

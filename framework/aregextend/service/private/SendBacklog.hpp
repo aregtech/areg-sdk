@@ -199,6 +199,18 @@ public:
     inline bool is_empty() const noexcept;
 
     /**
+     * \brief   Returns true if a stalled connection above its cap is closed, see set_limits().
+     **/
+    [[nodiscard]]
+    inline bool closes_stalled() const noexcept;
+
+    /**
+     * \brief   Returns the milliseconds a peer may take nothing before it is closed, or UNLIMITED.
+     **/
+    [[nodiscard]]
+    inline uint32_t refusal_ms() const noexcept;
+
+    /**
      * \brief   Returns true if the connection is held: it keeps more than its cap, and stays held
      *          until it is down to half of it. Lock free while no connection is held. Thread safe.
      *
@@ -490,6 +502,16 @@ bool backlog_os_wait(SendBacklogWaitOs * wait, const SOCKETHANDLE * sockets, uin
 inline bool SendBacklog::is_empty() const noexcept
 {
     return (mCount.load(std::memory_order_acquire) == 0u);
+}
+
+inline bool SendBacklog::closes_stalled() const noexcept
+{
+    return mCloseStalled.load(std::memory_order_relaxed);
+}
+
+inline uint32_t SendBacklog::refusal_ms() const noexcept
+{
+    return mRefuseMs.load(std::memory_order_relaxed);
 }
 
 inline void SendBacklog::reset_wake() noexcept

@@ -39,6 +39,7 @@ DEF_LOG_SCOPE(areg_component_StubBase, send_busy_response);
 DEF_LOG_SCOPE(areg_component_StubBase, consumer_connected);
 DEF_LOG_SCOPE(areg_component_StubBase, add_notification_listener);
 DEF_LOG_SCOPE(areg_component_StubBase, collect_and_strip_response_listeners);
+DEF_LOG_SCOPE(areg_component_StubBase, can_execute_request);
 
 //////////////////////////////////////////////////////////////////////////
 // StubBase::Listener implementation
@@ -686,6 +687,14 @@ void StubBase::send_busy_response( const Listener & whichListener )
 
 bool StubBase::can_execute_request( Listener & whichListener, uint32_t whichResponse, const SequenceNumber & seqNr )
 {
+    if ((seqNr == areg::SEQUENCE_NUMBER_NOTIFY) || (seqNr == areg::SEQUENCE_NUMBER_ANY))
+    {
+        LOG_SCOPE(areg_component_StubBase, can_execute_request);
+        LOG_WARN("Request of response [ %u ] of service [ %s ] has the invalid sequence number [ %llu ], it is dropped"
+                    , whichResponse, mAddress.service_name().as_string(), static_cast<unsigned long long>(seqNr));
+        return false;
+    }
+
     bool result = false;
     if (is_busy(whichResponse))
     {

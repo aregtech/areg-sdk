@@ -166,7 +166,6 @@ bool ServiceCommunicationBase::setup_connection_data(areg::RemoteServiceKind ser
     mSendCapBytes  = config.socket_send_buffer() != 0u ? config.socket_send_buffer() : areg::SOCKET_SEND_BUFFER_SIZE;
     mSendRefusalMs = config.socket_refusal_timeout();
     mKeepaliveMs   = keepaliveSec * 1'000u;
-    mThreadSend.backlog().set_limits(mSendCapBytes, mSendRefusalMs, mKeepaliveMs, mCloseStalled);
 
     const uint32_t configPairs{ config.pool_pairs() };
     if (configPairs != mNumPairs)
@@ -404,6 +403,7 @@ bool ServiceCommunicationBase::start_connection()
             mClientPairs.swap(pairs);
         }
 
+        mThreadSend.backlog().set_limits(mSendCapBytes, mSendRefusalMs, mKeepaliveMs, mCloseStalled);
         if ( start_send_thread( ) && start_receive_thread( ) )
         {
             result = true;
@@ -487,6 +487,13 @@ void ServiceCommunicationBase::stop_connection()
 
 bool ServiceCommunicationBase::on_client_accepted( SocketAccepted & clientSocket )
 {
+    // A client that arrives while the connection stops is closed before it is told a cookie.
+    if ( mShuttingDown.load(std::memory_order_acquire) )
+    {
+        mServerConnection.close_connection(clientSocket);
+        return true;
+    }
+
     areg::set_send_refusal(clientSocket.handle(), mSendRefusalMs);
 
     // The thread that writes the socket is the one do_send_pool() and do_send_shared() pick.

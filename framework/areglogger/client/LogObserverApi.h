@@ -523,8 +523,9 @@ LOGGER_API bool log_observer_request_restore_config(ITEM_ID target);
 
 /**
  * \brief   Call to change the way the specified target produces and sends the logs. The target
- *          stays connected and keeps answering the scope list queries in every state. The logs
- *          produced while the target is not sending are gone, nothing is replayed.
+ *          stays connected and keeps answering the scope list queries in every state. The state
+ *          applies to the logs the target handles after it gets the request; the logs it handles
+ *          while not sending are gone, nothing is replayed.
  * \param   target  The cookie ID of the target instance.
  *                  If the target is ID_IGNORE (or 0), the request is sent to all connected instances.
  * \param   state   The state the target should take:
