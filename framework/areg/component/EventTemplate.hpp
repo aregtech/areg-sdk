@@ -253,14 +253,14 @@ void AregImpl_##ConsumerClass<DATA_CLASS>::start_event_processing(areg::Event& e
 template <class DATA_CLASS>                                                                                             \
 AregImpl_##EventClass<DATA_CLASS>::AregImpl_##EventClass(areg::EventPriority prio)                                      \
     : areg::Event(EventKind, static_cast<uint32_t>(sizeof(DATA_CLASS)), prio)                                           \
-{ new (payload_ptr()) DATA_CLASS(); _init_hook(); set_event_id(AregImpl_##EventClass::CLASS_ID); }                      \
+{ if (payload_ptr() != nullptr) new (payload_ptr()) DATA_CLASS(); _init_hook(); set_event_id(AregImpl_##EventClass::CLASS_ID); }                      \
 template <class DATA_CLASS>                                                                                             \
 AregImpl_##EventClass<DATA_CLASS>::AregImpl_##EventClass(const DATA_CLASS& data,                                        \
                                                           AregImpl_##ConsumerClass<DATA_CLASS>& listener,               \
                                                           areg::EventPriority prio)                                     \
     : areg::Event(EventKind, static_cast<uint32_t>(sizeof(DATA_CLASS)), prio)                                           \
 {                                                                                                                       \
-    new (payload_ptr()) DATA_CLASS(data);                                                                               \
+    if (payload_ptr() != nullptr) new (payload_ptr()) DATA_CLASS(data);                                                                               \
     set_event_consumer(static_cast<areg::EventConsumer*>(&listener));                                                   \
     set_event_id(AregImpl_##EventClass::CLASS_ID);                                                                      \
     _init_hook();                                                                                                       \
@@ -271,7 +271,7 @@ AregImpl_##EventClass<DATA_CLASS>::AregImpl_##EventClass(DATA_CLASS&& data,     
                                                           areg::EventPriority prio) noexcept                            \
     : areg::Event(EventKind, static_cast<uint32_t>(sizeof(DATA_CLASS)), prio)                                           \
 {                                                                                                                       \
-    new (payload_ptr()) DATA_CLASS(std::move(data));                                                                    \
+    if (payload_ptr() != nullptr) new (payload_ptr()) DATA_CLASS(std::move(data));                                                                    \
     set_event_consumer(static_cast<areg::EventConsumer*>(&listener));                                                   \
     set_event_id(AregImpl_##EventClass::CLASS_ID);                                                                      \
     _init_hook();                                                                                                       \
@@ -281,13 +281,13 @@ AregImpl_##EventClass<DATA_CLASS>::AregImpl_##EventClass(areg::EventType eventTy
                                                           const DATA_CLASS& data,                                       \
                                                           areg::EventPriority prio)                                     \
     : areg::Event(eventType, static_cast<uint32_t>(sizeof(DATA_CLASS)), prio)                                           \
-{ new (payload_ptr()) DATA_CLASS(data); set_event_id(AregImpl_##EventClass::CLASS_ID); _init_hook(); }                  \
+{ if (payload_ptr() != nullptr) new (payload_ptr()) DATA_CLASS(data); set_event_id(AregImpl_##EventClass::CLASS_ID); _init_hook(); }                  \
 template <class DATA_CLASS>                                                                                             \
 AregImpl_##EventClass<DATA_CLASS>::AregImpl_##EventClass(areg::EventType eventType,                                     \
                                                           DATA_CLASS&& data,                                            \
                                                           areg::EventPriority prio) noexcept                            \
     : areg::Event(eventType, static_cast<uint32_t>(sizeof(DATA_CLASS)), prio)                                           \
-{ new (payload_ptr()) DATA_CLASS(std::move(data)); set_event_id(AregImpl_##EventClass::CLASS_ID); _init_hook(); }       \
+{ if (payload_ptr() != nullptr) new (payload_ptr()) DATA_CLASS(std::move(data)); set_event_id(AregImpl_##EventClass::CLASS_ID); _init_hook(); }       \
 template <class DATA_CLASS>                                                                                             \
 AregImpl_##EventClass<DATA_CLASS>::AregImpl_##EventClass(areg::EventType eventType,                                     \
                                                           const DATA_CLASS& data,                                       \
@@ -295,7 +295,7 @@ AregImpl_##EventClass<DATA_CLASS>::AregImpl_##EventClass(areg::EventType eventTy
                                                           areg::EventPriority prio)                                     \
     : areg::Event(eventType, static_cast<uint32_t>(sizeof(DATA_CLASS)), prio)                                           \
 {                                                                                                                       \
-    new (payload_ptr()) DATA_CLASS(data);                                                                               \
+    if (payload_ptr() != nullptr) new (payload_ptr()) DATA_CLASS(data);                                                                               \
     set_event_consumer(static_cast<areg::EventConsumer*>(&listener));                                                   \
     set_event_id(AregImpl_##EventClass::CLASS_ID);                                                                      \
     _init_hook();                                                                                                       \
@@ -307,7 +307,7 @@ AregImpl_##EventClass<DATA_CLASS>::AregImpl_##EventClass(areg::EventType eventTy
                                                           areg::EventPriority prio) noexcept                            \
     : areg::Event(eventType, static_cast<uint32_t>(sizeof(DATA_CLASS)), prio)                                           \
 {                                                                                                                       \
-    new (payload_ptr()) DATA_CLASS(std::move(data));                                                                    \
+    if (payload_ptr() != nullptr) new (payload_ptr()) DATA_CLASS(std::move(data));                                                                    \
     set_event_id(AregImpl_##EventClass::CLASS_ID);                                                                      \
     set_event_consumer(static_cast<areg::EventConsumer*>(&listener));                                                   \
     _init_hook();                                                                                                       \
@@ -316,12 +316,12 @@ template <class DATA_CLASS>                                                     
 AregImpl_##EventClass<DATA_CLASS>::AregImpl_##EventClass(const DATA_CLASS& data,                                        \
                                                           areg::EventPriority prio)                                     \
     : areg::Event(EventKind, static_cast<uint32_t>(sizeof(DATA_CLASS)), prio)                                           \
-{ new (payload_ptr()) DATA_CLASS(data); set_event_id(AregImpl_##EventClass::CLASS_ID); _init_hook(); }                  \
+{ if (payload_ptr() != nullptr) new (payload_ptr()) DATA_CLASS(data); set_event_id(AregImpl_##EventClass::CLASS_ID); _init_hook(); }                  \
 template <class DATA_CLASS>                                                                                             \
 AregImpl_##EventClass<DATA_CLASS>::AregImpl_##EventClass(DATA_CLASS&& data,                                             \
                                                           areg::EventPriority prio) noexcept                            \
     : areg::Event(EventKind, static_cast<uint32_t>(sizeof(DATA_CLASS)), prio)                                           \
-{ new (payload_ptr()) DATA_CLASS(std::move(data)); set_event_id(AregImpl_##EventClass::CLASS_ID); _init_hook(); }       \
+{ if (payload_ptr() != nullptr) new (payload_ptr()) DATA_CLASS(std::move(data)); set_event_id(AregImpl_##EventClass::CLASS_ID); _init_hook(); }       \
 template <class DATA_CLASS>                                                                                             \
 AregImpl_##EventClass<DATA_CLASS>::~AregImpl_##EventClass()                                                             \
 {                                                                                                                       \

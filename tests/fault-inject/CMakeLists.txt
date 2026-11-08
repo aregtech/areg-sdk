@@ -31,7 +31,7 @@ if (APPLE)
 endif()
 
 addExecutableEx(${AREG_FAULT_INJECT_TEST} ""
-    "${AREG_TESTS_DIR}/fault-inject/fault_inject_test.cpp"
+    "${AREG_TESTS_DIR}/fault-inject/fault_inject_test.cpp;${AREG_TESTS_DIR}/fault-inject/fault_inject_router_client_test.cpp;${AREG_TESTS_DIR}/fault-inject/fault_inject_os_test.cpp;${AREG_TESTS_DIR}/fault-inject/fault_inject_alloc_sweep_test.cpp"
     "${AREG_FAULT_INJECT_LIB};GTest::gtest_main;GTest::gtest")
 
 if (CYGWIN AND CMAKE_BUILD_TYPE MATCHES "Release")

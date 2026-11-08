@@ -51,6 +51,7 @@
 #include <cstdio>
 #include <cstring>
 #include <fstream>
+#include <iterator>
 #include <mutex>
 #include <sstream>
 #include <string>
@@ -107,7 +108,7 @@ namespace
     }
 
     //!< Writes the configuration of the router of this run beside the installed one.
-    std::string write_config(const std::string & binDir, const std::string & name, uint32_t pairs)
+    std::string write_config(const std::string & binDir, const std::string & name, uint32_t pairs, const std::string & logFile)
     {
         std::ifstream source(binDir + "/config/areg.init");
         std::ostringstream out;
@@ -126,8 +127,19 @@ namespace
                 line = "net::*::tcpip::keepalive = 3600";
             else if ((name == "slow-reader") && (line.rfind("net::*::tcpip::sndbuf", 0) == 0))
                 line = "net::*::tcpip::sndbuf = " + std::to_string(SLOW_SNDBUF_KB);
+            else if ((logFile.empty() == false) && (line.rfind("log::*::enable::file", 0) == 0))
+                line = "log::*::enable::file = true";
+            else if ((logFile.empty() == false) && (line.rfind("log::*::enable::remote", 0) == 0))
+                line = "log::*::enable::remote = false";
+            else if ((logFile.empty() == false) && (line.rfind("log::*::file::location", 0) == 0))
+                line = "log::*::file::location = " + logFile;
 
             out << line << "\n";
+        }
+
+        if (logFile.empty() == false)
+        {
+            out << "log::*::scope::mtrouter_* = DEBUG\n";
         }
 
         const std::string path{ binDir + "/config/router-io-" + name + "-" + std::to_string(pairs) + ".init" };
@@ -1332,6 +1344,33 @@ namespace
     }
 }
 
+namespace
+{
+    //!< Checks that the router logged the messages it processed and the role name conflicts of the case.
+    bool check_router_log(const std::string & logFile, const std::string & name)
+    {
+        std::ifstream input(logFile);
+        const std::string text{ std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>() };
+        std::vector<std::string> expected{ "Processing received valid message" };
+        if (name == "duplicate-role")
+            expected.push_back("Duplicate role name");
+        else if (name.rfind("held-provider-", 0) == 0)
+            expected.push_back("is held, its role name is provided by source");
+
+        bool result{ input.is_open() };
+        for (const std::string & entry : expected)
+        {
+            if (text.find(entry) == std::string::npos)
+            {
+                std::printf("FAIL: the router log [ %s ] has no line with [ %s ]\n", logFile.c_str(), entry.c_str());
+                result = false;
+            }
+        }
+
+        return result;
+    }
+}
+
 int main(int argc, char * argv[])
 {
     if (argc < 4)
@@ -1342,16 +1381,18 @@ int main(int argc, char * argv[])
 
     const std::string name{ argv[1] };
     const uint32_t pairs{ static_cast<uint32_t>(std::atoi(argv[2])) };
+    const bool logged{ (argc > 4) && (std::strcmp(argv[4], "log") == 0) };
+    const std::string logFile{ logged ? std::string(argv[3]) + "/config/router-io-" + name + "-" + std::to_string(pairs) + ".log" : std::string() };
     static_cast<void>(areg::socket_initialize());
     _port = free_port();
-    const std::string config{ write_config(argv[3], name, pairs) };
+    const std::string config{ write_config(argv[3], name, pairs, logFile) };
     if ((_port == 0u) || config.empty())
     {
         std::printf("FAIL: no free port or no configuration\n");
         return 1;
     }
 
-    areg::Application::setup(false, true, false, true, false, config.c_str());
+    areg::Application::setup(logged, true, false, true, false, config.c_str());
     bool result{ false };
     {
         RouterServerService router;
@@ -1419,6 +1460,12 @@ int main(int argc, char * argv[])
     areg::Application::release();
     areg::socket_release();
     std::remove(config.c_str());
+    if (logged)
+    {
+        result = check_router_log(logFile, name) && result;
+        std::remove(logFile.c_str());
+    }
+
     std::printf("%s %s pairs=%u\n", result ? "PASSED" : "FAILED", name.c_str(), pairs);
     return (result ? 0 : 1);
 }

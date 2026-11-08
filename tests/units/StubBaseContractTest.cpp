@@ -7,6 +7,7 @@
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentThread.hpp"
+#include "areg/component/RequestEvents.hpp"
 #include "areg/component/ResponseEvents.hpp"
 #include "areg/component/StubBase.hpp"
 
@@ -141,6 +142,7 @@ namespace
         }
 
         std::vector<std::pair<uint32_t, bool>> mErrors;
+        uint32_t mProcessedRequests{ 0u };
         mutable std::vector<std::pair<uint32_t, ResultType>> mResponseAttempts;
 
     protected:
@@ -159,6 +161,7 @@ namespace
 
         void process_request_event(ServiceRequestEvent&) override
         {
+            ++mProcessedRequests;
         }
 
         void process_attribute_event(ServiceRequestEvent&) override
@@ -425,6 +428,16 @@ TEST_F(StubBaseContractTest, response_event_reaches_only_a_waiting_caller_and_fr
     mStub.send_response_event(RESPONSES[1], SharedBuffer{});
     EXPECT_EQ(1u, mStub.attempts(RESPONSES[1], ResultType::RequestOK));
     EXPECT_FALSE(mStub.is_busy(RESPONSES[1]));
+}
+
+TEST_F(StubBaseContractTest, request_to_a_stub_not_started_is_answered_undelivered_and_not_processed)
+{
+    LocalRequestEvent request(mFirst, mStub.address(), REQUESTS[0]);
+    request.set_sequence_number(81);
+    static_cast<EventConsumer&>(mStub).start_event_processing(request);
+    EXPECT_EQ(0u, mStub.mProcessedRequests);
+    EXPECT_EQ(1u, mStub.attempts(REQUESTS[0], ResultType::MessageUndelivered));
+    EXPECT_FALSE(mStub.is_busy(RESPONSES[0]));
 }
 
 TEST_F(StubBaseContractTest, error_all_visits_attributes_responses_then_requests_exactly_once)

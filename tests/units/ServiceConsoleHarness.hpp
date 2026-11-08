@@ -85,6 +85,9 @@ namespace service_harness
     //!< Opens a terminal of the given size: fds[0] reads what fds[1] draws. A pipe on Windows.
     void make_terminal(int (&fds)[2], TerminalSize size = TerminalSize{});
 
+    //!< Changes the size of the terminal the standard output draws on. Does nothing on Windows, where it is a pipe.
+    void resize_terminal(TerminalSize size);
+
     //!< Prints the stack of every thread of this process on macOS. Does nothing elsewhere.
     void report_threads();
 

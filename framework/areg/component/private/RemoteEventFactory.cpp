@@ -244,7 +244,6 @@ ServiceResponseEvent RemoteEventFactory::create_request_failed_event( const Mess
 
     default:
         DEBUG_LOG_ERR("Unexpected event value [ %d ]", static_cast<int32_t>(eventType));
-        ASSERT(false);
         break;
     }
 

@@ -542,24 +542,6 @@ protected:
     [[nodiscard]]
     const areg::Model * find_model_named( const String & modelName ) const noexcept;
 
-    /**
-     * \brief   Searches for a thread entry by name and returns a pointer if found.
-     *
-     * \param   threadName      The name of the thread to search.
-     * \return  Returns a valid pointer if found; nullptr otherwise.
-     **/
-    [[nodiscard]]
-    const areg::ComponentThreadEntry * find_thread_named( const String & threadName ) const noexcept;
-
-    /**
-     * \brief   Searches for a component entry by role name and returns a pointer if found.
-     *
-     * \param   roleName    The role name of the component to search.
-     * \return  Returns a valid pointer if found; nullptr otherwise.
-     **/
-    [[nodiscard]]
-    const areg::ComponentEntry * find_component_named( const String & roleName ) const noexcept;
-
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////

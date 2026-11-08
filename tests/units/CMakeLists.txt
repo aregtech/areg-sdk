@@ -66,6 +66,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     StreamPrimitivesTest.cpp
     FileBufferTest.cpp
     FileTest.cpp
+    FileOsCoverageTest.cpp
     FixedArrayTest.cpp
     EventDefsTest.cpp
     HashMapTest.cpp
@@ -89,6 +90,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     MapTest.cpp
     ModelTest.cpp
     ComponentLoaderContractTest.cpp
+    ComponentLifecycleFailureTest.cpp
     ProxyBaseContractTest.cpp
     ProxyStubLifecycleTest.cpp
     StubBaseContractTest.cpp
@@ -119,6 +121,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     SocketKeepAliveTest.cpp
     SocketLivenessTest.cpp
     SocketMultiplexerTest.cpp
+    SocketOsCoverageTest.cpp
     SocketWouldBlockTest.cpp
     SqliteStatementTest.cpp
     SortedLinkedListTest.cpp

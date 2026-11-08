@@ -808,17 +808,6 @@ protected:
     void notify_listeners( uint32_t respId, areg::ResultType result, const SequenceNumber & seqNrToSearch );
 
     /**
-     * \brief   Collects the subscribers of the message ID and the caller waiting for the sequence
-     *          number, which is removed. A client is collected once even if it is both.
-     *
-     * \param[out] listeners    Receives the list of listeners matching the criteria.
-     * \param   msgId           The message ID to filter listeners.
-     * \param   seqNrToSearch   The sequence number of the waiting caller. If SEQUENCE_NUMBER_NOTIFY, collects only the subscribers.
-     * \return  Returns the number of listeners added to the output list.
-     **/
-    uint32_t prepare_listeners( ProxyBase::ProxyListenerList & listeners, uint32_t msgId, const SequenceNumber & seqNrToSearch );
-
-    /**
      * \brief   Sends a request event to the stub with serialized arguments and an optional response listener.
      *
      * \param   reqId       The ID of the request.

@@ -55,6 +55,9 @@ foreach(_observer_case
         local-logs-and-database
         reconnect-and-stop
         collector-restart
+        paused-observer-reconnects-paused
+        release-while-connected
+        pause-before-the-connection
         raw-message-callback
         invalid-requests
         path-getters-fill-buffer

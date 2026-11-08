@@ -52,6 +52,7 @@
     <ClCompile Include="units\GUnitTest.cpp" />
     <ClCompile Include="units\FileBufferTest.cpp" />
     <ClCompile Include="units\FileTest.cpp" />
+    <ClCompile Include="units\FileOsCoverageTest.cpp" />
     <ClCompile Include="units\ListenerDispatchTest.cpp" />
     <ClCompile Include="units\RouterServiceRegistryTest.cpp" />
     <ClCompile Include="units\RouterApplicationTest.cpp" />
@@ -98,6 +99,7 @@
     <ClCompile Include="units\SendBacklogTest.cpp" />
     <ClCompile Include="units\SharedBufferTest.cpp" />
     <ClCompile Include="units\SocketMultiplexerTest.cpp" />
+    <ClCompile Include="units\SocketOsCoverageTest.cpp" />
     <ClCompile Include="units\SqliteStatementTest.cpp" />
     <ClCompile Include="units\SocketAddressTest.cpp" />
     <ClCompile Include="units\SocketInterruptTest.cpp" />
@@ -157,6 +159,7 @@
     <ClCompile Include="units\IdentifierTest.cpp" />
     <ClCompile Include="units\ModelTest.cpp" />
     <ClCompile Include="units\ComponentLoaderContractTest.cpp" />
+    <ClCompile Include="units\ComponentLifecycleFailureTest.cpp" />
     <ClCompile Include="units\ProxyBaseContractTest.cpp" />
     <ClCompile Include="units\ProxyStubLifecycleTest.cpp" />
     <ClCompile Include="units\StubBaseContractTest.cpp" />

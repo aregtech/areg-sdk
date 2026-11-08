@@ -519,8 +519,9 @@ void SystemController::_start_load( const String & modelName )
 
         if ((_find_live(entry.mThreadName) >= 0) || (Thread::find_by_address(ThreadAddress(entry.mThreadName)) != nullptr))
         {
-            LOG_WARN("A thread named [ %s ] already runs, it is not started again", entry.mThreadName.as_string());
-            continue;
+            LOG_ERR("A thread named [ %s ] already runs, the component thread cannot start", entry.mThreadName.as_string());
+            started = false;
+            break;
         }
 
         if (_start_thread(entry, modelName) == false)

@@ -299,6 +299,25 @@ TEST(RouterApplicationTest, help_keeps_the_screen_in_place_on_small_terminals)
 #endif
 }
 
+TEST(RouterApplicationTest, resized_terminal_is_redrawn_with_the_title_and_prompt)
+{
+#if defined(_WIN32)
+    GTEST_SKIP() << "the console of a Windows test is a pipe";
+#else
+    AREG_EXPECT_IN_CHILD(
+        PrivateConfig config;
+        ConsoleSession console(config);
+        console.command("-h", "Usage of Areg Multi-target Message Router");
+        service_harness::resize_terminal(service_harness::TerminalSize{ 100, 30 });
+        console.expect_gone("Usage of Areg Multi-target Message Router");
+        AREG_CHILD_CHECK(console.wait_screen([](const VtScreen& screen)
+            { return screen.row(0).rfind("Areg Multi-target Message Router console application", 0) == 0; }));
+        console.command("--instances", "There are no connected instances");
+        console.quit();
+    );
+#endif
+}
+
 // Reproduces the defect: the router took the cookie to disconnect from the payload, so any client could drop another one.
 TEST(RouterApplicationTest, disconnect_request_releases_only_its_sender)
 {

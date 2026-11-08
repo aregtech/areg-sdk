@@ -158,10 +158,10 @@ public:
     bool open() override;
 
     /**
-     * \brief   Opens a file or directory with the specified path and mode. Returns false if already
-     *          open or path is invalid.
+     * \brief   Opens a file with the specified path and mode. Returns false if already open, the
+     *          path is invalid or names a directory.
      *
-     * \param   fileName    File path (name only, relative, or absolute) or directory path.
+     * \param   fileName    File path (name only, relative, or absolute).
      * \param   mode        Bitwise OR combination of OpenMode and OpenFlag values; conflicting bits
      *                      are resolved.
      **/

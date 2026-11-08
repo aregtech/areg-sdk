@@ -48,7 +48,6 @@ DEF_LOG_SCOPE(areg_component_ProxyBase, acquire_proxy);
 DEF_LOG_SCOPE(areg_component_ProxyBase, request_failure_event);
 DEF_LOG_SCOPE(areg_component_ProxyBase, service_connection_updated);
 DEF_LOG_SCOPE(areg_component_ProxyBase, unregister_listener);
-DEF_LOG_SCOPE(areg_component_ProxyBase, prepare_listeners);
 DEF_LOG_SCOPE(areg_component_ProxyBase, process_available_event);
 DEF_LOG_SCOPE(areg_component_ProxyBase, stop_proxy);
 DEF_LOG_SCOPE(areg_component_ProxyBase, send_request_event);
@@ -911,46 +910,6 @@ void ProxyBase::unregister_listener( NotificationConsumer *consumer )
         stop_notification(stopIds.value_at(i));
         mProxyData.set_data_state(stopIds.value_at(i), areg::DataState::DataIsUnavailable);
     }
-}
-
-uint32_t ProxyBase::prepare_listeners( ProxyBase::ProxyListenerList& out_listenerList, uint32_t msgId, const SequenceNumber & seqNrToSearch )
-{
-    LOG_SCOPE( areg_component_ProxyBase, prepare_listeners );
-
-    Lock lock(mListenerLock);
-    ProxyListenerMap::MAPPOS pos = mListenerMap.find(msgId);
-    if (!mListenerMap.is_valid_position(pos))
-    {
-        LOG_DBG("Prepared [ 0 ] proxy clients for message [ %u ] and sequence number [ %llu ]", msgId, seqNrToSearch);
-        return 0;
-    }
-
-    ProxyListenerList & subVec = pos->second;
-    out_listenerList.reserve(subVec.size());
-    NotificationConsumer * const requester{ _requester_of(subVec, seqNrToSearch) };
-
-    for (uint32_t i = 0; i < subVec.size(); )
-    {
-        const ProxyBase::Listener & elem = subVec.value_at(i);
-        if (elem.mSequenceNr == areg::SEQUENCE_NUMBER_NOTIFY)
-        {
-            if (elem.mListener != requester)
-                out_listenerList.add(elem);
-            ++i;
-        }
-        else if (elem.mSequenceNr == seqNrToSearch)
-        {
-            out_listenerList.add(elem);
-            subVec.remove_at(i);
-        }
-        else
-        {
-            ++i;
-        }
-    }
-
-    LOG_DBG("Prepared [ %d ] proxy clients for message [ %u ] and sequence number [ %llu ]", out_listenerList.size(), msgId, seqNrToSearch);
-    return out_listenerList.size();
 }
 
 void ProxyBase::notify_listeners( uint32_t respId, areg::ResultType result, const SequenceNumber & seqNrToSearch )

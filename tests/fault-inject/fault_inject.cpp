@@ -33,6 +33,7 @@
 #if defined(__linux__)
     #include <poll.h>
     #include <sys/epoll.h>
+    #include <sys/eventfd.h>
     #include <termios.h>
 #endif  // defined(__linux__)
     #include <pthread.h>
@@ -69,6 +70,7 @@ namespace
         std::atomic<uint32_t>   skip        { 0u };     //!< Calls that still pass before the first failure.
         std::atomic<uint32_t>   remaining   { 0u };     //!< Calls that still fail, or FAIL_ALWAYS.
         std::atomic<uint32_t>   failed      { 0u };     //!< Calls failed since the point was armed.
+        std::atomic<uint32_t>   calls       { 0u };     //!< Calls made since the point was armed.
         std::atomic<uint32_t>   delay       { 0u };     //!< Milliseconds a passing call waits before it runs.
     };
 
@@ -81,6 +83,7 @@ namespace
         if ( slot.armed.load( std::memory_order_acquire ) == false )
             return false;
 
+        slot.calls.fetch_add( 1u, std::memory_order_relaxed );
         uint32_t skip{ slot.skip.load( std::memory_order_relaxed ) };
         while ( skip != 0u )
         {
@@ -124,6 +127,7 @@ extern "C"
         slot.skip.store( skip, std::memory_order_relaxed );
         slot.remaining.store( count == 0u ? FAIL_ALWAYS : count, std::memory_order_relaxed );
         slot.failed.store( 0u, std::memory_order_relaxed );
+        slot.calls.store( 0u, std::memory_order_relaxed );
         slot.armed.store( true, std::memory_order_release );
         return true;
     }
@@ -134,6 +138,7 @@ extern "C"
         {
             slot.armed.store( false, std::memory_order_release );
             slot.failed.store( 0u, std::memory_order_relaxed );
+            slot.calls.store( 0u, std::memory_order_relaxed );
             slot.delay.store( 0u, std::memory_order_relaxed );
         }
     }
@@ -141,6 +146,11 @@ extern "C"
     AREG_FAULT_API uint32_t areg_fault_failed( uint32_t point )
     {
         return ( point < POINT_COUNT ) ? gSlots[point].failed.load( std::memory_order_relaxed ) : 0u;
+    }
+
+    AREG_FAULT_API uint32_t areg_fault_calls( uint32_t point )
+    {
+        return ( point < POINT_COUNT ) ? gSlots[point].calls.load( std::memory_order_relaxed ) : 0u;
     }
 
     AREG_FAULT_API bool areg_fault_delay( uint32_t point, uint32_t milliseconds )
@@ -474,6 +484,229 @@ extern "C"
 
 namespace
 {
+    using FcntlFunc = int (*)( int, int, ... );
+
+    //!< Fails the call of fcntl() or fcntl64() if the point is armed, otherwise forwards it.
+    int _fcntl( FcntlFunc next, int fd, int cmd, void * arg ) noexcept
+    {
+        int error{ 0 };
+        if ( _should_fail( areg_fault::FaultPoint::Fcntl, error ) )
+        {
+            errno = error;
+            return -1;
+        }
+
+        return ( next != nullptr ) ? next( fd, cmd, arg ) : ( errno = ENOSYS, -1 );
+    }
+
+    //!< Returns the error of a failing pthread call of the point, or 0 if the call passes.
+    int _pthread_error( areg_fault::FaultPoint point ) noexcept
+    {
+        int error{ 0 };
+        return _should_fail( point, error ) ? error : 0;
+    }
+}
+
+extern "C"
+{
+    AREG_FAULT_API int fcntl( int fd, int cmd, ... )
+    {
+        va_list args;
+        va_start( args, cmd );
+        void * const arg{ va_arg( args, void * ) };
+        va_end( args );
+        static const FcntlFunc next{ _next<FcntlFunc>( "fcntl" ) };
+        return _fcntl( next, fd, cmd, arg );
+    }
+
+    AREG_FAULT_API int fcntl64( int fd, int cmd, ... )
+    {
+        va_list args;
+        va_start( args, cmd );
+        void * const arg{ va_arg( args, void * ) };
+        va_end( args );
+        static const FcntlFunc next{ _next<FcntlFunc>( "fcntl64" ) };
+        return _fcntl( next, fd, cmd, arg );
+    }
+
+    AREG_FAULT_API int getsockopt( int fd, int level, int name, void * value, socklen_t * length ) noexcept
+    {
+        int error{ 0 };
+        if ( _should_fail( areg_fault::FaultPoint::SocketGetOption, error ) )
+        {
+            errno = error;
+            return -1;
+        }
+
+        using Func = int (*)( int, int, int, void *, socklen_t * );
+        static const Func next{ _next<Func>( "getsockopt" ) };
+        return ( next != nullptr ) ? next( fd, level, name, value, length ) : ( errno = ENOSYS, -1 );
+    }
+
+    AREG_FAULT_API int setsockopt( int fd, int level, int name, const void * value, socklen_t length ) noexcept
+    {
+        int error{ 0 };
+        if ( _should_fail( areg_fault::FaultPoint::SocketSetOption, error ) )
+        {
+            errno = error;
+            return -1;
+        }
+
+        using Func = int (*)( int, int, int, const void *, socklen_t );
+        static const Func next{ _next<Func>( "setsockopt" ) };
+        return ( next != nullptr ) ? next( fd, level, name, value, length ) : ( errno = ENOSYS, -1 );
+    }
+
+    AREG_FAULT_API int accept4( int fd, struct sockaddr * addr, socklen_t * length, int flags )
+    {
+        int error{ 0 };
+        if ( _should_fail( areg_fault::FaultPoint::SocketAccept, error ) )
+        {
+            errno = error;
+            return -1;
+        }
+
+        using Func = int (*)( int, struct sockaddr *, socklen_t *, int );
+        static const Func next{ _next<Func>( "accept4" ) };
+        return ( next != nullptr ) ? next( fd, addr, length, flags ) : ( errno = ENOSYS, -1 );
+    }
+
+    AREG_FAULT_API int gethostname( char * name, size_t length ) noexcept
+    {
+        int error{ 0 };
+        if ( _should_fail( areg_fault::FaultPoint::HostName, error ) )
+        {
+            errno = error;
+            return -1;
+        }
+
+        using Func = int (*)( char *, size_t );
+        static const Func next{ _next<Func>( "gethostname" ) };
+        return ( next != nullptr ) ? next( name, length ) : ( errno = ENOSYS, -1 );
+    }
+
+    AREG_FAULT_API int epoll_create1( int flags ) noexcept
+    {
+        int error{ 0 };
+        if ( _should_fail( areg_fault::FaultPoint::EpollCreate, error ) )
+        {
+            errno = error;
+            return -1;
+        }
+
+        using Func = int (*)( int );
+        static const Func next{ _next<Func>( "epoll_create1" ) };
+        return ( next != nullptr ) ? next( flags ) : ( errno = ENOSYS, -1 );
+    }
+
+    AREG_FAULT_API int epoll_wait( int epfd, struct epoll_event * events, int count, int timeout )
+    {
+        int error{ 0 };
+        if ( _should_fail( areg_fault::FaultPoint::EpollWait, error ) )
+        {
+            errno = error;
+            return -1;
+        }
+
+        using Func = int (*)( int, struct epoll_event *, int, int );
+        static const Func next{ _next<Func>( "epoll_wait" ) };
+        return ( next != nullptr ) ? next( epfd, events, count, timeout ) : ( errno = ENOSYS, -1 );
+    }
+
+    AREG_FAULT_API int eventfd( unsigned int count, int flags ) noexcept
+    {
+        int error{ 0 };
+        if ( _should_fail( areg_fault::FaultPoint::EventCreate, error ) )
+        {
+            errno = error;
+            return -1;
+        }
+
+        using Func = int (*)( unsigned int, int );
+        static const Func next{ _next<Func>( "eventfd" ) };
+        return ( next != nullptr ) ? next( count, flags ) : ( errno = ENOSYS, -1 );
+    }
+
+    AREG_FAULT_API int pthread_mutex_init( pthread_mutex_t * mutex, const pthread_mutexattr_t * attr ) noexcept
+    {
+        const int error{ _pthread_error( areg_fault::FaultPoint::MutexInit ) };
+        if ( error != 0 )
+            return error;
+
+        using Func = int (*)( pthread_mutex_t *, const pthread_mutexattr_t * );
+        static const Func next{ _next<Func>( "pthread_mutex_init" ) };
+        return ( next != nullptr ) ? next( mutex, attr ) : ENOSYS;
+    }
+
+    AREG_FAULT_API int pthread_mutexattr_init( pthread_mutexattr_t * attr ) noexcept
+    {
+        const int error{ _pthread_error( areg_fault::FaultPoint::MutexAttrInit ) };
+        if ( error != 0 )
+            return error;
+
+        using Func = int (*)( pthread_mutexattr_t * );
+        static const Func next{ _next<Func>( "pthread_mutexattr_init" ) };
+        return ( next != nullptr ) ? next( attr ) : ENOSYS;
+    }
+
+    AREG_FAULT_API int pthread_mutexattr_settype( pthread_mutexattr_t * attr, int kind ) noexcept
+    {
+        const int error{ _pthread_error( areg_fault::FaultPoint::MutexAttrSetType ) };
+        if ( error != 0 )
+            return error;
+
+        using Func = int (*)( pthread_mutexattr_t *, int );
+        static const Func next{ _next<Func>( "pthread_mutexattr_settype" ) };
+        return ( next != nullptr ) ? next( attr, kind ) : ENOSYS;
+    }
+
+    AREG_FAULT_API int pthread_cond_init( pthread_cond_t * cond, const pthread_condattr_t * attr ) noexcept
+    {
+        const int error{ _pthread_error( areg_fault::FaultPoint::CondInit ) };
+        if ( error != 0 )
+            return error;
+
+        using Func = int (*)( pthread_cond_t *, const pthread_condattr_t * );
+        static const Func next{ _next<Func>( "pthread_cond_init" ) };
+        return ( next != nullptr ) ? next( cond, attr ) : ENOSYS;
+    }
+
+    AREG_FAULT_API int pthread_condattr_init( pthread_condattr_t * attr ) noexcept
+    {
+        const int error{ _pthread_error( areg_fault::FaultPoint::CondAttrInit ) };
+        if ( error != 0 )
+            return error;
+
+        using Func = int (*)( pthread_condattr_t * );
+        static const Func next{ _next<Func>( "pthread_condattr_init" ) };
+        return ( next != nullptr ) ? next( attr ) : ENOSYS;
+    }
+
+    AREG_FAULT_API int pthread_condattr_setclock( pthread_condattr_t * attr, clockid_t clock ) noexcept
+    {
+        const int error{ _pthread_error( areg_fault::FaultPoint::CondAttrSetClock ) };
+        if ( error != 0 )
+            return error;
+
+        using Func = int (*)( pthread_condattr_t *, clockid_t );
+        static const Func next{ _next<Func>( "pthread_condattr_setclock" ) };
+        return ( next != nullptr ) ? next( attr, clock ) : ENOSYS;
+    }
+
+    AREG_FAULT_API int pthread_attr_init( pthread_attr_t * attr ) noexcept
+    {
+        const int error{ _pthread_error( areg_fault::FaultPoint::ThreadAttrInit ) };
+        if ( error != 0 )
+            return error;
+
+        using Func = int (*)( pthread_attr_t * );
+        static const Func next{ _next<Func>( "pthread_attr_init" ) };
+        return ( next != nullptr ) ? next( attr ) : ENOSYS;
+    }
+}
+
+namespace
+{
     //!< Returns the next definition of the named allocation function, or null.
     using AllocFunc = void * (*)( std::size_t, const std::nothrow_t & );
 
@@ -515,19 +748,11 @@ namespace
 {
     bool _is_supported( areg_fault::FaultPoint point ) noexcept
     {
-        return ( point != areg_fault::FaultPoint::SocketConnect )
-            && ( point != areg_fault::FaultPoint::SocketSend )
-            && ( point != areg_fault::FaultPoint::SocketRecv )
-            && ( point != areg_fault::FaultPoint::Allocation )
-            && ( point != areg_fault::FaultPoint::SocketBind )
-            && ( point != areg_fault::FaultPoint::SocketListen )
-            && ( point != areg_fault::FaultPoint::EpollCtl )
-            && ( point != areg_fault::FaultPoint::FileRead )
-            && ( point != areg_fault::FaultPoint::FileWrite )
-            && ( point != areg_fault::FaultPoint::PipeCreate )
-            && ( point != areg_fault::FaultPoint::Poll )
-            && ( point != areg_fault::FaultPoint::TermGet )
-            && ( point != areg_fault::FaultPoint::TermSet );
+        return ( point == areg_fault::FaultPoint::ThreadCreate )
+            || ( point == areg_fault::FaultPoint::SocketCreate )
+            || ( point == areg_fault::FaultPoint::FileOpen )
+            || ( point == areg_fault::FaultPoint::DirOpen )
+            || ( point == areg_fault::FaultPoint::ProcessSpawn );
     }
 
     void _install( ) noexcept

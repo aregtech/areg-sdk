@@ -41,6 +41,7 @@ import coverage_rule  # noqa: E402
 
 
 METRICS = (('line', 'Lines'), ('function', 'Functions'), ('branch', 'Branches'))
+CRITICAL = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'coverage-critical.json')
 
 
 def load(path):
@@ -141,6 +142,42 @@ def groups_table(title, depth, total, unit, examples):
     return lines
 
 
+def load_components(path):
+    """Returns [(name, [compiled regex])] of the critical components file, or [] when it is missing."""
+    data = load(path) if path and os.path.isfile(path) else None
+    return [(entry['name'], [re.compile(pattern) for pattern in entry['files']])
+            for entry in (data or {}).get('components', [])]
+
+
+def critical_table(components, counts, total):
+    """Returns the table of the critical components: Codecov-rule lines, gcovr functions and branches."""
+    lines = ['| Component | Files | Lines (Codecov rule) | Functions | Branches | Untaken branches |',
+             '|---|---:|---:|---:|---:|---:|']
+    files = (total or {}).get('files', [])
+    for name, patterns in components:
+        def matches(filename):
+            path = filename.replace('\\', '/')
+            return any(pattern.search(path) for pattern in patterns)
+        rule = [0, 0]
+        for filename, (count, hits, _partials, _misses) in (counts or {}).items():
+            if matches(filename):
+                rule[0] += hits
+                rule[1] += count
+        sums = {}
+        matched = 0
+        for entry in files:
+            if matches(entry['filename']):
+                matched += 1
+                for metric in ('function', 'branch'):
+                    for key in (metric + '_total', metric + '_covered'):
+                        sums[key] = sums.get(key, 0) + entry.get(key, 0)
+        untaken = sums.get('branch_total', 0) - sums.get('branch_covered', 0)
+        lines.append('| %s | %d | %s | %s | %s | %d |' % (name, matched, cell(rule[0], rule[1]),
+                     cell(sums.get('function_covered', 0), sums.get('function_total', 0)),
+                     cell(sums.get('branch_covered', 0), sums.get('branch_total', 0)), untaken))
+    return lines
+
+
 def rule_part(args):
     """Returns the Markdown of the Codecov-rule tables, or None when the Cobertura report is unusable."""
     try:
@@ -178,6 +215,7 @@ def main():
     parser.add_argument('--summary', default=None, help='file the report is appended to')
     parser.add_argument('--build', default=None, help='CMake build tree of the measured run')
     parser.add_argument('--text', default=None, help='file the report is written to')
+    parser.add_argument('--critical', default=CRITICAL, help='JSON file of the critical components')
     args = parser.parse_args()
 
     unit = load(args.unit)
@@ -196,6 +234,12 @@ def main():
                'template instances or constructor variants, a line holding only `}` is not counted, '
                'and a hit line with an untaken branch is partial, which is not covered.', '']
     report += rule
+    components = load_components(args.critical)
+    if components:
+        report += ['', '### Critical components', '',
+                   'Lines count like the badge; functions and branches as gcovr counts them. '
+                   'The components are listed in `tools/intern/coverage-critical.json`.', '']
+        report += critical_table(components, counts, total)
     report += ['', '### Lines, functions and branches (gcovr)', '',
                'Each template instance and constructor variant counts on its own, and a line is covered '
                'when it is executed once, so these numbers are higher than the badge.', '']

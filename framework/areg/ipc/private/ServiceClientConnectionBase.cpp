@@ -204,9 +204,10 @@ void ServiceClientConnectionBase::service_connection_event(const MessageEnvelope
     case areg::ServiceConnectionState::Shutdown:            // fall through
     default:
     {
-        cancel_connection();
+        // The stop is queued before the interrupt, so a receive failure it causes comes after it.
         on_channel_connected(areg::COOKIE_UNKNOWN);
         send_command(ServiceEventData::ServiceCommand::CMD_ServiceStopped);
+        cancel_connection();
     }
     break;
     }
@@ -310,7 +311,8 @@ void ServiceClientConnectionBase::on_reconnect_timer()
 
 void ServiceClientConnectionBase::on_service_start()
 {
-    if (connection_state() == ConnectionPhase::ConnectionStopping)
+    // A start while stopping, or while a connection is starting or started, does nothing.
+    if ((connection_state() == ConnectionPhase::ConnectionStopping) || is_connect_state())
     {
         return;
     }
@@ -435,7 +437,13 @@ void ServiceClientConnectionBase::on_connection_lost()
         return;
     }
 
+    // A loss reported after the connection was already stopped is stale.
     const ConnectionPhase prevState{ connection_state() };
+    if (prevState == ConnectionPhase::ConnectionStopped)
+    {
+        return;
+    }
+
     set_connection_state(ConnectionPhase::ConnectionStopped);
     const Channel channel{ _channel_snapshot( ) };
 

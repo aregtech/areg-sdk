@@ -6,7 +6,11 @@
 #include "areg/base/SocketAccepted.hpp"
 #include "areg/base/SocketClient.hpp"
 #include "areg/base/SocketMultiplexer.hpp"
+#include "areg/component/DispatcherThread.hpp"
+#include "areg/component/RequestEvents.hpp"
 #include "areg/component/ServiceDefs.hpp"
+#include "areg/base/Thread.hpp"
+#include "areg/base/ThreadAddress.hpp"
 #include "areg/ipc/ClientConnection.hpp"
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/ipc/ConnectionConsumer.hpp"
@@ -21,6 +25,7 @@
 
 #include <array>
 #include <atomic>
+#include <chrono>
 #include <condition_variable>
 #include <ctime>
 #include <cstring>
@@ -1142,4 +1147,306 @@ TEST_F(IpcSocketCoverageTest, explicit_reconnect_establishes_a_second_channel)
     ASSERT_TRUE(observer.wait_counts(2u, 0u, 1u));
     EXPECT_TRUE(provider.is_host_connected());
     EXPECT_EQ(service.connection_cookie(), COOKIE + 1u);
+}
+
+namespace
+{
+    //! A loopback service connected to a test router with the cookie, and the router side of it.
+    struct RouterSession
+    {
+        ConfigurationScope      saved;
+        LoopbackListener        listener;
+        ChannelRecorder         observer;
+        EventTestDispatcher     dispatcher{ "IpcRouterNotice" };
+        LoopbackService         service{ observer, dispatcher };
+        ServiceRun              run{ service, dispatcher };
+        areg::SocketAccepted    peer;
+
+        //! Connects the service and answers its handshake with the cookie.
+        bool connect(ITEM_ID cookie)
+        {
+            if (!listener.open())
+                return false;
+
+            areg::ConnectionConfiguration config(areg::RemoteServiceKind::Router, areg::ConnectionType::Tcpip);
+            config.set_connection_enable(true);
+            if (!dispatcher.start_ready())
+                return false;
+
+            service.register_consumer_commands();
+            auto & provider{ static_cast<areg::ConnectionProvider &>(service) };
+            provider.apply_connection_data(listener.address().host_address(), listener.address().host_port());
+            return provider.connect_service_host() && answer(cookie) && observer.wait_counts(1u, 0u);
+        }
+
+        //! Accepts the next connection of the service and answers its handshake with the cookie.
+        bool answer(ITEM_ID cookie)
+        {
+            peer = listener.accept();
+            areg::MessageEnvelope handshake;
+            return peer.is_valid() && receive_wire(peer, handshake)
+                && (handshake.message_id() == areg::message_hello_server().messageId)
+                && send_wire(peer, areg::create_connect_notify(areg::COOKIE_ROUTER, cookie));
+        }
+    };
+}
+
+/**
+ * \brief   The router telling the client that its connection is gone: the channel is reported
+ *          lost, the client connects again and gets the new cookie.
+ **/
+TEST_F(IpcSocketCoverageTest, router_disconnect_notice_loses_the_channel_and_the_client_connects_again)
+{
+    constexpr ITEM_ID COOKIE{ areg::COOKIE_REMOTE_SERVICE + 51u };
+    RouterSession session;
+    ASSERT_TRUE(session.connect(COOKIE));
+    ASSERT_TRUE(send_wire(session.peer, areg::create_disconnect_notify(areg::COOKIE_ROUTER, COOKIE)));
+    ASSERT_TRUE(session.observer.wait_counts(1u, 1u));
+    EXPECT_NE(session.service.connection_cookie(), COOKIE);
+
+    ASSERT_TRUE(session.answer(COOKIE + 1u));
+    ASSERT_TRUE(session.observer.wait_counts(2u, 1u));
+    EXPECT_EQ(session.service.connection_cookie(), COOKIE + 1u);
+}
+
+/**
+ * \brief   The router rejecting the client: the channel is reported disconnected, not lost, and the
+ *          client connects again after the retry time, and gets the new cookie.
+ **/
+TEST_F(IpcSocketCoverageTest, router_reject_notice_disconnects_the_channel_and_the_client_retries)
+{
+    constexpr ITEM_ID COOKIE{ areg::COOKIE_REMOTE_SERVICE + 61u };
+    RouterSession session;
+    ASSERT_TRUE(session.connect(COOKIE));
+    ASSERT_TRUE(send_wire(session.peer, areg::create_reject_notify(areg::COOKIE_ROUTER, COOKIE)));
+    ASSERT_TRUE(session.observer.wait_counts(1u, 0u, 1u));
+    ASSERT_TRUE(session.dispatcher.barrier());
+    EXPECT_FALSE(static_cast<areg::ConnectionProvider &>(session.service).is_host_connected());
+
+    ASSERT_TRUE(session.answer(COOKIE + 1u));
+    ASSERT_TRUE(session.observer.wait_counts(2u, 0u, 1u));
+    EXPECT_EQ(session.service.connection_cookie(), COOKIE + 1u);
+    session.observer.expect_channels({ COOKIE, COOKIE + 1u }, { });
+}
+
+/**
+ * \brief   Reproduces the defect: a second start command queued while the first one is pending
+ *          started a second connection over the live one. Now the client makes one connection.
+ **/
+TEST_F(IpcSocketCoverageTest, start_requested_twice_makes_one_connection)
+{
+    constexpr ITEM_ID COOKIE{ areg::COOKIE_REMOTE_SERVICE + 66u };
+    RouterSession session;
+    ASSERT_TRUE(session.listener.open());
+    areg::ConnectionConfiguration config(areg::RemoteServiceKind::Router, areg::ConnectionType::Tcpip);
+    config.set_connection_enable(true);
+    ASSERT_TRUE(session.dispatcher.start_ready());
+    session.service.register_consumer_commands();
+    auto & provider{ static_cast<areg::ConnectionProvider &>(session.service) };
+    provider.apply_connection_data(session.listener.address().host_address(), session.listener.address().host_port());
+
+    std::promise<void> release;
+    std::shared_future<void> released{ release.get_future().share() };
+    ASSERT_TRUE(session.dispatcher.post_action([released]() { released.wait(); }));
+    ASSERT_TRUE(provider.connect_service_host());
+    ASSERT_TRUE(provider.connect_service_host());
+    release.set_value();
+
+    ASSERT_TRUE(session.answer(COOKIE));
+    ASSERT_TRUE(session.observer.wait_counts(1u, 0u));
+    ASSERT_TRUE(session.dispatcher.barrier());
+    EXPECT_TRUE(provider.is_host_connected());
+    EXPECT_EQ(session.service.connection_cookie(), COOKIE);
+    session.observer.expect_channels({ COOKIE }, { });
+}
+
+/**
+ * \brief   A connect notice with a failed result is a lost connection: the client keeps no
+ *          cookie, connects again and takes the cookie of the next successful notice.
+ **/
+TEST_F(IpcSocketCoverageTest, connect_notice_with_a_failed_result_loses_the_connection_and_the_client_connects_again)
+{
+    constexpr ITEM_ID COOKIE{ areg::COOKIE_REMOTE_SERVICE + 71u };
+    RouterSession session;
+    ASSERT_TRUE(session.connect(COOKIE));
+    areg::MessageEnvelope failed{ areg::create_connect_notify(areg::COOKIE_ROUTER, COOKIE + 1u) };
+    failed.set_result(areg::MESSAGE_SUCCESS + 1u);
+    ASSERT_TRUE(send_wire(session.peer, failed));
+    ASSERT_TRUE(session.observer.wait_counts(1u, 1u));
+
+    ASSERT_TRUE(session.answer(COOKIE + 2u));
+    ASSERT_TRUE(session.observer.wait_counts(2u, 1u));
+    EXPECT_EQ(session.service.connection_cookie(), COOKIE + 2u);
+}
+
+namespace
+{
+    //! The router side of the router client of a running application.
+    struct FakeRouter
+    {
+        ConfigurationScope      saved;
+        LoopbackListener        listener;
+        areg::SocketAccepted    peer;
+        bool                    started{ false };
+
+        ~FakeRouter()
+        {
+            if (started)
+            {
+                areg::Application::release();
+            }
+        }
+
+        //! Starts the application and connects its router client with the cookie.
+        bool connect(ITEM_ID cookie)
+        {
+            if (!listener.open())
+                return false;
+
+            areg::Application::setup(false, true, false, true, false);
+            started = true;
+            areg::ConnectionConfiguration config(areg::RemoteServiceKind::Router, areg::ConnectionType::Tcpip);
+            config.set_connection_enable(true);
+            config.set_connection_data(listener.address().host_address(), listener.address().host_port());
+            return areg::Application::connect_router() && answer(cookie);
+        }
+
+        //! Accepts the next connection and answers its handshake with the cookie.
+        bool answer(ITEM_ID cookie)
+        {
+            peer = listener.accept();
+            areg::MessageEnvelope handshake;
+            return peer.is_valid() && receive_wire(peer, handshake)
+                && (handshake.message_id() == areg::message_hello_server().messageId)
+                && send_wire(peer, areg::create_connect_notify(areg::COOKIE_ROUTER, cookie));
+        }
+    };
+
+    //! A message of the router with the header and no data.
+    areg::MessageEnvelope router_message(const areg::EventHeader & header, ITEM_ID target)
+    {
+        areg::EventHeader hdr{ header };
+        hdr.target = static_cast<uint32_t>(target);
+        areg::MessageEnvelope message;
+        EXPECT_NE(message.init_envelope(hdr, 0u), nullptr);
+        return message;
+    }
+}
+
+// Reproduces the defect: an executable message of a connection event type that no provider takes
+// reached an assertion in the failure reply, and the receiving process aborted.
+/**
+ * \brief   The router client of an application takes, in order, a duplicate role notice, a
+ *          message the client does not handle, an unknown message that is not executable, an
+ *          executable message of a connection event type and a request for a provider that does
+ *          not exist, and stays connected: the disconnect notice after them makes it connect again.
+ **/
+TEST_F(IpcSocketCoverageTest, router_client_ignores_notices_it_cannot_serve_and_reconnects_after_a_disconnect_notice)
+{
+    constexpr ITEM_ID COOKIE{ areg::COOKIE_REMOTE_SERVICE + 81u };
+    FakeRouter router;
+    ASSERT_TRUE(router.connect(COOKIE));
+
+    areg::MessageEnvelope duplicate{ router_message(areg::message_duplicate_notify(), COOKIE) };
+    areg::ConnectedInstance other{};
+    other.ciCookie = COOKIE + 5u;
+    other.ciInstance = "other";
+    other.ciLocation = "elsewhere";
+    duplicate << other;
+    ASSERT_TRUE(send_wire(router.peer, duplicate));
+
+    areg::EventHeader ignored{ areg::message_duplicate_notify() };
+    ignored.messageId = static_cast<uint32_t>(areg::FuncIdRange::ServiceLastId);
+    ASSERT_TRUE(send_wire(router.peer, router_message(ignored, COOKIE)));
+
+    areg::EventHeader unknown{ areg::message_duplicate_notify() };
+    unknown.messageId = static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyDuplicate) + 1u;
+    ASSERT_FALSE(areg::is_executable_id(unknown.messageId));
+    ASSERT_TRUE(send_wire(router.peer, router_message(unknown, COOKIE)));
+
+    areg::EventHeader foreign{ areg::message_duplicate_notify() };
+    foreign.messageId = static_cast<uint32_t>(areg::FuncIdRange::EmptyFunctionId);
+    ASSERT_TRUE(areg::is_executable_id(foreign.messageId));
+    ASSERT_TRUE(send_wire(router.peer, router_message(foreign, COOKIE)));
+
+    areg::EventHeader request{};
+    request.source = static_cast<uint32_t>(COOKIE + 5u);
+    request.messageId = static_cast<uint32_t>(areg::FuncIdRange::RequestFirstId);
+    request.eventType = static_cast<uint16_t>(areg::EventType::EventRemoteRequest);
+    request.provider.number = 0x613AFFFFu;
+    request.consumer.number = 0x613AFFFEu;
+    ASSERT_TRUE(send_wire(router.peer, router_message(request, COOKIE)));
+
+    ASSERT_TRUE(send_wire(router.peer, areg::create_disconnect_notify(areg::COOKIE_ROUTER, COOKIE)));
+    ASSERT_TRUE(router.answer(COOKIE + 1u));
+}
+
+namespace
+{
+    //! Waits until the router client reports the connection confirmed. Returns false on timeout.
+    bool wait_router_connected()
+    {
+        const auto deadline{ std::chrono::steady_clock::now() + std::chrono::milliseconds(IO_WAIT_MS) };
+        while (areg::Application::router_state() != areg::RouterState::Connected)
+        {
+            if (std::chrono::steady_clock::now() > deadline)
+                return false;
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        }
+
+        return true;
+    }
+
+    //! Posts a remote request for the stub of the cookie to the dispatcher thread of the router client.
+    bool post_remote_request(ITEM_ID stubCookie, uint32_t requestId)
+    {
+        areg::Thread * thread{ areg::Thread::find_by_address(areg::ThreadAddress(areg::String("router_CLIENT_DISPATCH_MESSAGE_THREAD"))) };
+        areg::DispatcherThread * dispatcher{ AREG_RUNTIME_CAST(thread, areg::DispatcherThread) };
+        if (dispatcher == nullptr)
+            return false;
+
+        areg::ProxyAddress proxy(0x613B2001u, areg::Version(1u, 0u, 0u), areg::ServiceType::Public, 0x613B3001u, 0x613B4001u, 0x613B1001u);
+        areg::StubAddress stub(0x613B2001u, areg::Version(1u, 0u, 0u), areg::ServiceType::Public, 0x613B3002u, 0x613B4002u, 0x613B1002u);
+        stub.set_cookie(stubCookie);
+        const uint8_t data[]{ 1u, 2u, 3u, 4u };
+        areg::RemoteRequestEvent event(areg::SharedBuffer(data, static_cast<uint32_t>(sizeof(data))), proxy, stub, requestId);
+        event.set_target_dispatcher(dispatcher);
+        return event.deliver_event();
+    }
+}
+
+/**
+ * \brief   Reproduces the defect: a remote request posted to the router client before the
+ *          router confirmed the connection went out with no cookie and the router dropped it.
+ *          Now it fails at once and is not sent; one posted after the confirmation goes out
+ *          with the cookie of the connection as its source.
+ **/
+TEST_F(IpcSocketCoverageTest, remote_request_before_the_connection_is_confirmed_fails_and_is_not_sent)
+{
+    constexpr ITEM_ID COOKIE{ areg::COOKIE_REMOTE_SERVICE + 91u };
+    constexpr ITEM_ID STUB_COOKIE{ areg::COOKIE_REMOTE_SERVICE + 92u };
+    constexpr uint32_t REQUEST{ areg::REQUEST_ID_FIRST + 5u };
+    FakeRouter router;
+    ASSERT_TRUE(router.listener.open());
+    areg::Application::setup(false, true, false, true, false);
+    router.started = true;
+    areg::ConnectionConfiguration config(areg::RemoteServiceKind::Router, areg::ConnectionType::Tcpip);
+    config.set_connection_enable(true);
+    config.set_connection_data(router.listener.address().host_address(), router.listener.address().host_port());
+    ASSERT_TRUE(areg::Application::connect_router());
+    router.peer = router.listener.accept();
+    ASSERT_TRUE(router.peer.is_valid());
+    areg::MessageEnvelope handshake;
+    ASSERT_TRUE(receive_wire(router.peer, handshake));
+
+    ASSERT_TRUE(post_remote_request(STUB_COOKIE, REQUEST));
+    ASSERT_TRUE(send_wire(router.peer, areg::create_connect_notify(areg::COOKIE_ROUTER, COOKIE)));
+    ASSERT_TRUE(wait_router_connected());
+    ASSERT_TRUE(post_remote_request(STUB_COOKIE, REQUEST + 1u));
+    areg::MessageEnvelope later;
+    ASSERT_TRUE(receive_wire(router.peer, later));
+    EXPECT_EQ(later.message_id(), REQUEST + 1u);
+    EXPECT_EQ(later.target(), STUB_COOKIE);
+    EXPECT_EQ(later.source(), COOKIE);
 }

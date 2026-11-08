@@ -1036,6 +1036,175 @@ namespace
         database.stop();
         fs::remove(directory, error);
     }
+
+    //!< Returns the names of the scopes of a scope update the source receives from the console.
+    std::string console_update_of(LogPeer& source)
+    {
+        const Received message = source.next();
+        check_request(message, areg::FuncIdRange::ServiceLogUpdateScopes, areg::COOKIE_LOGGER, source.cookie);
+        const std::vector<areg::ScopeEntry> scopes{ parse_scopes(message) };
+        AREG_CHILD_CHECK(scopes.size() == 1u);
+        return scopes[0].scopeName.as_string();
+    }
+
+    //!< Sends a marker scope from the console, so the next message of every source tells what reached it before.
+    void console_marker(ConsoleSession& console, const std::vector<LogPeer*>& sources, const char* marker)
+    {
+        console.command(std::string("--scope *::") + marker + "=NOTSET", PROMPT);
+        for (LogPeer* source : sources)
+        {
+            AREG_CHILD_CHECK(console_update_of(*source) == marker);
+        }
+    }
+
+    void scenario_console_scope_lists()
+    {
+        PrivateConfig config(SERVICE);
+        ConsoleSession console(config);
+        LogPeer first(config, areg::MessageSource::SourceClient);
+        LogPeer second(config, areg::MessageSource::SourceClient);
+        const std::vector<LogPeer*> sources{ &first, &second };
+
+        console.command("--scope *::list_a=NOTSET;*::list_b=DEBUG", PROMPT);
+        for (LogPeer* source : sources)
+        {
+            AREG_CHILD_CHECK(console_update_of(*source) == "list_a");
+            AREG_CHILD_CHECK(console_update_of(*source) == "list_b");
+        }
+
+        console.command("--scope scope::prefixed_scope=DEBUG", PROMPT);
+        console.command("--scope bare_scope=DEBUG", PROMPT);
+        for (LogPeer* source : sources)
+        {
+            AREG_CHILD_CHECK(console_update_of(*source) == "prefixed_scope");
+            AREG_CHILD_CHECK(console_update_of(*source) == "bare_scope");
+        }
+
+        // A list with an entry that is not a scope sends nothing, and neither does a target below the first cookie.
+        console.command("--scope *::no_value;*::after_broken=DEBUG", PROMPT);
+        console.command("--scope *::before_broken=DEBUG;*::no_value", PROMPT);
+        console.command("--scope 5::low_target=DEBUG", PROMPT);
+        console_marker(console, sources, "after_refused");
+
+        console.command("--query " + std::to_string(first.cookie) + " *", PROMPT);
+        check_request(first.next(), areg::FuncIdRange::ServiceLogQueryScopes, areg::COOKIE_LOGGER, first.cookie);
+        check_request(second.next(), areg::FuncIdRange::ServiceLogQueryScopes, areg::COOKIE_LOGGER, second.cookie);
+        console.quit();
+    }
+
+    void scenario_console_scope_without_sources()
+    {
+        PrivateConfig config(SERVICE);
+        ConsoleSession console(config);
+        console.command("--scope *::nobody_scope=DEBUG", PROMPT);
+        console.command("--query *", PROMPT);
+        LogPeer source(config, areg::MessageSource::SourceClient);
+        console_marker(console, { &source }, "first_update");
+        console.quit();
+    }
+
+    void scenario_observer_requests_to_no_source()
+    {
+        PrivateConfig config(SERVICE);
+        ConsoleSession console(config);
+        LogPeer source(config, areg::MessageSource::SourceClient);
+        LogPeer observer(config, areg::MessageSource::SourceObserver);
+        LogPeer other(config, areg::MessageSource::SourceObserver);
+
+        // A request to an observer or to a cookie nobody has reaches no source and no observer.
+        observer.send(areg::message_update_scope(observer.cookie, other.cookie, "to_observer", 1u, priority_of("DEBUG")));
+        observer.send(areg::message_update_scope(observer.cookie, 9999u, "to_nobody", 2u, priority_of("DEBUG")));
+        observer.send(areg::message_save_configuration(observer.cookie, 9998u));
+        observer.send(areg::message_update_scope(observer.cookie, source.cookie, "addressed", 3u, priority_of("DEBUG")));
+        const Received addressed = source.next();
+        check_request(addressed, areg::FuncIdRange::ServiceLogUpdateScopes, observer.cookie, source.cookie);
+        AREG_CHILD_CHECK(parse_scopes(addressed)[0].scopeName == "addressed");
+
+        // The save request of the unknown cookie left nothing pending, so the next one is sent at once.
+        observer.send(areg::message_save_configuration(observer.cookie, source.cookie));
+        check_request(source.next(), areg::FuncIdRange::ServiceSaveLogConfiguration, areg::COOKIE_LOGGER, source.cookie);
+
+        // A scope registration addressed to another source reaches no observer.
+        LogPeer target(config, areg::MessageSource::SourceClient);
+        source.send(scopes_message(areg::FuncIdRange::ServiceLogRegisterScopes, source, target.cookie, { {"misrouted_scope", 1u} }));
+        source.send(scopes_message(areg::FuncIdRange::ServiceLogRegisterScopes, source, observer.cookie, { {"direct_scope", 1u} }));
+        const Received direct = observer.wait_for(areg::FuncIdRange::ServiceLogRegisterScopes);
+        check_request(direct, areg::FuncIdRange::ServiceLogRegisterScopes, source.cookie, observer.cookie);
+        AREG_CHILD_CHECK(parse_scopes(direct)[0].scopeName == "direct_scope");
+
+        // The update addressed to the observer did not reach the other observer either.
+        other.send(areg::message_query_instances(other.cookie, areg::COOKIE_LOGGER));
+        AREG_CHILD_CHECK(other.next().id() == id_of(areg::FuncIdRange::SystemServiceNotifyInstances));
+        console.quit();
+    }
+
+    void scenario_service_peer_is_neither_source_nor_observer()
+    {
+        PrivateConfig config(SERVICE);
+        ConsoleSession console(config);
+        LogPeer observer(config, areg::MessageSource::SourceObserver);
+        LogPeer service(config, areg::MessageSource::SourceService);
+        LogPeer source(config, areg::MessageSource::SourceClient);
+
+        // The observer is told about the source only: the service peer is not a log source.
+        const InstanceNotice notice = parse_notice(observer.wait_for(areg::FuncIdRange::SystemServiceNotifyInstances));
+        AREG_CHILD_CHECK(notice.connected.size() == 1u && notice.connected[0].ciCookie == source.cookie);
+
+        // A service peer that leaves is not announced, the source that leaves is.
+        service.close();
+        source.close();
+        const InstanceNotice left = parse_notice(observer.wait_for(areg::FuncIdRange::SystemServiceNotifyInstances));
+        AREG_CHILD_CHECK(left.state == areg::RemoteConnectionState::Disconnected);
+        AREG_CHILD_CHECK(left.disconnected.size() == 1u && left.disconnected[0] == source.cookie);
+        console.quit();
+    }
+
+    void scenario_state_of_unknown_source_is_not_remembered()
+    {
+        PrivateConfig config(SERVICE);
+        ConsoleSession console(config);
+        LogPeer source(config, areg::MessageSource::SourceClient);
+        LogPeer observer(config, areg::MessageSource::SourceObserver);
+
+        areg::MessageEnvelope state{ state_updated_message(source, areg::LogSourceState::Paused, observer.cookie) };
+        state.set_position(0, areg::Cursor::SeekOrigin::Begin);
+        state << areg::COOKIE_UNKNOWN;
+        state.move_to_end();
+        source.send(state);
+        const Received forwarded = observer.wait_for(areg::FuncIdRange::ServiceLogSourceStateUpdated);
+        check_request(forwarded, areg::FuncIdRange::ServiceLogSourceStateUpdated, source.cookie, observer.cookie);
+
+        // A late observer is told no silent source: its first message is the answer to its query.
+        LogPeer late(config, areg::MessageSource::SourceObserver);
+        late.send(areg::message_query_instances(late.cookie, areg::COOKIE_LOGGER));
+        AREG_CHILD_CHECK(late.next().id() == id_of(areg::FuncIdRange::SystemServiceNotifyInstances));
+        console.quit();
+    }
+}
+
+TEST(LogCollectorServiceTest, console_scope_lists_send_each_valid_scope_and_refuse_broken_lists)
+{
+    AREG_EXPECT_IN_CHILD(scenario_console_scope_lists());
+}
+
+TEST(LogCollectorServiceTest, console_scope_commands_without_sources_send_nothing)
+{
+    AREG_EXPECT_IN_CHILD(scenario_console_scope_without_sources());
+}
+
+TEST(LogCollectorServiceTest, observer_requests_to_no_source_reach_nobody)
+{
+    AREG_EXPECT_IN_CHILD(scenario_observer_requests_to_no_source());
+}
+
+TEST(LogCollectorServiceTest, service_peer_is_neither_announced_nor_removed_as_a_source)
+{
+    AREG_EXPECT_IN_CHILD(scenario_service_peer_is_neither_source_nor_observer());
+}
+
+TEST(LogCollectorServiceTest, state_of_an_unknown_source_is_forwarded_and_not_remembered)
+{
+    AREG_EXPECT_IN_CHILD(scenario_state_of_unknown_source_is_not_remembered());
 }
 
 TEST(LogCollectorServiceTest, observer_is_told_when_sources_connect_and_leave)

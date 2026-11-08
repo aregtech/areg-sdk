@@ -18,6 +18,10 @@
   ************************************************************************/
 #include "units/GUnitTest.hpp"
 #include "areg/base/String.hpp"
+#include "areg/logging/LoggingDefs.hpp"
+
+#include <cstdlib>
+#include <string>
 
 #ifdef _MSC_VER
     #pragma comment(lib, "areg")
@@ -57,4 +61,41 @@ TEST(GUnitTestDummy, basic_string )
     areg::String hello( _hello );
     hello = hello.make_upper( );
     EXPECT_EQ( hello.compare( _hello, false ), areg::Ordering::Equal );
+}
+
+namespace
+{
+    /**
+     * \brief   With the environment variable AREG_TEST_LOG_CONFIG naming a configuration file,
+     *          starts logging with that file before every test while logging does not run.
+     **/
+    class TestLoggingStarter : public testing::EmptyTestEventListener
+    {
+    public:
+        explicit TestLoggingStarter( const char * config )
+            : mConfig( config )
+        { }
+
+        void OnTestStart( const testing::TestInfo & /*info*/ ) override
+        {
+            if ( areg::is_started( ) == false )
+            {
+                static_cast<void>( areg::start_logging( mConfig.c_str( ) ) );
+            }
+        }
+
+    private:
+        std::string mConfig; //!< The path of the logging configuration file.
+    };
+
+    //!< Registers the logging starter when the environment asks for it.
+    const bool _loggingStarter{ [] {
+        const char * config{ std::getenv( "AREG_TEST_LOG_CONFIG" ) };
+        if ( (config != nullptr) && (*config != '\0') )
+        {
+            testing::UnitTest::GetInstance( )->listeners( ).Append( new TestLoggingStarter( config ) );
+        }
+
+        return true;
+    }() };
 }

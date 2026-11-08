@@ -70,6 +70,21 @@ namespace areg_fault
         , Poll              //!< Linux poll(). Not replaced elsewhere. Error: errno value.
         , TermGet           //!< Linux tcgetattr(). Not replaced elsewhere. Error: errno value.
         , TermSet           //!< Linux tcsetattr(). Not replaced elsewhere. Error: errno value.
+        , Fcntl             //!< Linux fcntl() and fcntl64(). Not replaced elsewhere. Error: errno value.
+        , SocketGetOption   //!< Linux getsockopt(). Not replaced elsewhere. Error: errno value.
+        , SocketSetOption   //!< Linux setsockopt(). Not replaced elsewhere. Error: errno value.
+        , SocketAccept      //!< Linux accept4(). Not replaced elsewhere. Error: errno value.
+        , HostName          //!< Linux gethostname(). Not replaced elsewhere. Error: errno value.
+        , EpollCreate       //!< Linux epoll_create1(). Not replaced elsewhere. Error: errno value.
+        , EpollWait         //!< Linux epoll_wait(). Not replaced elsewhere. Error: errno value.
+        , EventCreate       //!< Linux eventfd(). Not replaced elsewhere. Error: errno value.
+        , MutexInit         //!< Linux pthread_mutex_init(). Not replaced elsewhere. Error: return value.
+        , MutexAttrInit     //!< Linux pthread_mutexattr_init(). Not replaced elsewhere. Error: return value.
+        , MutexAttrSetType  //!< Linux pthread_mutexattr_settype(). Not replaced elsewhere. Error: return value.
+        , CondInit          //!< Linux pthread_cond_init(). Not replaced elsewhere. Error: return value.
+        , CondAttrInit      //!< Linux pthread_condattr_init(). Not replaced elsewhere. Error: return value.
+        , CondAttrSetClock  //!< Linux pthread_condattr_setclock(). Not replaced elsewhere. Error: return value.
+        , ThreadAttrInit    //!< Linux pthread_attr_init(). Not replaced elsewhere. Error: return value.
         , Count             //!< The number of points.
     };
 }
@@ -98,6 +113,12 @@ extern "C"
     AREG_FAULT_API uint32_t areg_fault_failed( uint32_t point );
 
     /**
+     * \brief   Returns the number of calls of the point since it was armed, passed or failed.
+     * \param   point   The FaultPoint value.
+     **/
+    AREG_FAULT_API uint32_t areg_fault_calls( uint32_t point );
+
+    /**
      * \brief   Makes every passing call of the point wait, until disarmed. Only SocketListen can wait.
      * \param   point           The FaultPoint value.
      * \param   milliseconds    The time a call waits before it runs.
@@ -122,6 +143,14 @@ namespace areg_fault
     inline uint32_t failed( FaultPoint point )
     {
         return ::areg_fault_failed( static_cast<uint32_t>(point) );
+    }
+
+    /**
+     * \brief   Returns the number of calls of the point since it was armed, passed or failed.
+     **/
+    inline uint32_t calls( FaultPoint point )
+    {
+        return ::areg_fault_calls( static_cast<uint32_t>(point) );
     }
 
     /**

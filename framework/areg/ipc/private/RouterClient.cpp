@@ -453,11 +453,29 @@ void RouterClient::process_received_message( MessageEnvelope & msgReceived, Sock
     }
 }
 
+namespace
+{
+    // Answers a request that cannot be sent with MessageUndelivered to its caller.
+    void _reply_undelivered(const ServiceRequestEvent & reqEvent, const Channel & channel)
+    {
+        ServiceResponseEvent evtError{ RemoteEventFactory::create_request_failed_event(reqEvent.envelope(), channel) };
+        if ( evtError.is_valid() )
+        {
+            evtError.deliver_event();
+        }
+    }
+}
+
 void RouterClient::process_request_event(ServiceRequestEvent& reqEvent)
 {
     LOG_SCOPE( areg_ipc_private_RouterClient, process_request_event );
 
-    if ( reqEvent.is_remote() )
+    if ( reqEvent.is_remote() && (is_connection_started() == false) )
+    {
+        LOG_WARN("The router did not confirm the connection, request [ %u ] fails", reqEvent.request_id());
+        _reply_undelivered(reqEvent, mChannel);
+    }
+    else if ( reqEvent.is_remote() )
     {
         if ( RemoteEventFactory::route_outgoing_message( reqEvent, mChannel) )
         {
@@ -484,7 +502,12 @@ void RouterClient::process_notify_request(ServiceRequestEvent& reqNotifyEvent )
 {
     LOG_SCOPE( areg_ipc_private_RouterClient, process_notify_request );
 
-    if ( reqNotifyEvent.is_remote() )
+    if ( reqNotifyEvent.is_remote() && (is_connection_started() == false) )
+    {
+        LOG_WARN("The router did not confirm the connection, notify request [ %u ] fails", reqNotifyEvent.request_id());
+        _reply_undelivered(reqNotifyEvent, mChannel);
+    }
+    else if ( reqNotifyEvent.is_remote() )
     {
         if ( RemoteEventFactory::route_outgoing_message( reqNotifyEvent, mChannel) )
         {
@@ -512,7 +535,11 @@ void RouterClient::process_response_event(ServiceResponseEvent& respEvent)
 {
     LOG_SCOPE( areg_ipc_private_RouterClient, process_response_event );
 
-    if ( respEvent.is_remote() )
+    if ( respEvent.is_remote() && (is_connection_started() == false) )
+    {
+        LOG_WARN("The router did not confirm the connection, response [ %u ] is dropped", respEvent.response_id());
+    }
+    else if ( respEvent.is_remote() )
     {
         if ( RemoteEventFactory::route_outgoing_message( respEvent, mChannel) )
         {

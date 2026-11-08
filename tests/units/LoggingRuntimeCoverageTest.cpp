@@ -710,6 +710,23 @@ TEST_F(LoggingRuntimeCoverageTest, disabled_targets_and_missing_database_engine_
     }
 }
 
+TEST_F(LoggingRuntimeCoverageTest, debug_target_writes_rows_to_the_console_output_only_when_it_is_built)
+{
+    mConfig.set_log_enabled(areg::LogTarget::Debug, true);
+    setup();
+    testing::internal::CaptureStdout();
+    ASSERT_TRUE(areg::start_logging());
+    write_row("debug-target-row");
+    areg::stop_logging(true);
+    const std::string output{ testing::internal::GetCapturedStdout() };
+#if defined(OUTPUT_DEBUG) && defined(DEBUG) && !defined(_WIN32)
+    EXPECT_NE(output.find("row:debug-target-row"), std::string::npos);
+#else
+    EXPECT_EQ(output.find("debug-target-row"), std::string::npos);
+#endif
+    EXPECT_TRUE(fs::is_empty(mDirectory));
+}
+
 TEST_F(LoggingRuntimeCoverageTest, global_disable_keeps_targets_closed_until_an_explicit_restart)
 {
     mConfig.set_log_enabled(areg::LogTarget::File, true);
