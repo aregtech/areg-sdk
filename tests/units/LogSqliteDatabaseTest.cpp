@@ -2256,6 +2256,25 @@ TEST(LogSqliteDatabaseTest, test_filterUpdateRefusedCountsNothing)
 }
 
 /**
+ * \brief   A filter table of another shape makes reset and disable fail, for all instances and for one.
+ **/
+TEST(LogSqliteDatabaseTest, test_foreignFilterTableRefusesResetAndDisable)
+{
+    // Reproduces the defect: the failed prepare aborted a Debug build.
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(_db_path("s29foreignfilter.sqlog").c_str()), areg::DatabaseRole::Recorder));
+    _write_set(db);
+    ASSERT_TRUE(db.execute(areg::String("CREATE TEMP TABLE filter_rules (x INTEGER);")));
+
+    EXPECT_FALSE(db.reset(areg::TARGET_ALL));
+    EXPECT_FALSE(db.reset(31u));
+    EXPECT_FALSE(db.disable_filter_mask(areg::TARGET_ALL));
+    EXPECT_FALSE(db.disable_filter_mask(31u));
+    EXPECT_EQ(db.count_log_entries(), 13u);
+    db.disconnect();
+}
+
+/**
  * \brief   A row whose deletion is refused stays with its markers; a marker table that cannot be indexed takes
  *          no marker.
  **/
@@ -2349,6 +2368,37 @@ TEST(LogSqliteDatabaseTest, test_recorderRefusesADirectory)
     EXPECT_FALSE(db.tables_initialized());
     EXPECT_TRUE(fs::is_directory(path, err));
     db.disconnect();
+    fs::remove(path, err);
+}
+
+/**
+ * \brief   A recorder refuses an empty file it cannot write, because the tables cannot be created.
+ **/
+TEST(LogSqliteDatabaseTest, test_recorderRefusesAnEmptyReadOnlyFile)
+{
+    // Reproduces the defect: the failed CREATE TABLE aborted a Debug build and connected a Release build.
+    const std::string path{ _db_path("s28readonly.sqlog") };
+    _write_file(path, "");
+    std::error_code err;
+    fs::permissions(path, fs::perms::owner_read | fs::perms::group_read | fs::perms::others_read, fs::perm_options::replace, err);
+    constexpr uint32_t MODE{ static_cast<uint32_t>(areg::File::OpenMode::Write) | static_cast<uint32_t>(areg::File::OpenMode::Exist) };
+    areg::File probe;
+    if (probe.open(path.c_str(), MODE))
+    {
+        probe.close();
+        fs::permissions(path, fs::perms::owner_write, fs::perm_options::add, err);
+        fs::remove(path, err);
+        GTEST_SKIP() << "the account writes read-only files";
+    }
+
+    LogDb db;
+    EXPECT_FALSE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    EXPECT_FALSE(db.is_operable());
+    EXPECT_FALSE(db.tables_initialized());
+    db.disconnect();
+    EXPECT_EQ(_file_size(path), 0u);
+
+    fs::permissions(path, fs::perms::owner_write, fs::perm_options::add, err);
     fs::remove(path, err);
 }
 

@@ -110,6 +110,9 @@ QUIT_SECONDS = 12.0
 #             do not let any process die early.
 #   check     Function given the captured output of every process, in the order of
 #             'procs'. It returns a failure text, or None when the output is right.
+#   scopes    True to run with every log scope of every module at 'DEBUG | SCOPE',
+#             written to a log file only. The 'config/areg.init' of the binaries is
+#             rewritten for the scenario and restored after it.
 #   known     Description of an open defect this scenario runs into. A failure
 #             is then reported as XFAIL and does not break the run, while an
 #             unexpected success is reported as XPASS and does break it, so
@@ -567,6 +570,52 @@ SCENARIOS = [
                proc('35_logsink', args=['-c=20000', '-d=35_logdb.sqlog'], expect=[r'35 log trip']),
                proc('35_logsource', args=['-c=20000', '-w=0'], expect=[r'35 log call'])]},
 ]
+
+# Scenarios the coverage tier runs once more with every log scope on.
+_SCOPES_SCENARIOS = ('13_locservice', '15_pubsvc', '25_pubsub', '34_coffeemachine')
+
+
+def _with_all_scopes(scenario):
+    copy = dict(scenario)
+    copy['name'] = scenario['name'] + '_scopes'
+    copy['tier'] = 'coverage'
+    copy['router'] = scenario.get('router', scenario['tier'] in ('ipc', 'perf'))
+    copy['scopes'] = True
+    copy['procs'] = [dict(entry) for entry in scenario['procs']]
+    return copy
+
+
+SCENARIOS += [_with_all_scopes(s) for s in SCENARIOS if s['name'] in _SCOPES_SCENARIOS]
+
+# Settings of 'areg.init' replaced by the 'scopes' key of a scenario.
+_RE_SCOPES_REPLACED = re.compile(r'\s*log::[^:\s]+::(scope::|target\b|enable::(remote|file)\b)')
+_SCOPES_SETTINGS = ('log::*::target = file ;\n'
+                    'log::*::enable::remote = false ;\n'
+                    'log::*::enable::file = true ;\n'
+                    'log::*::scope::* = DEBUG | SCOPE ;\n')
+
+
+@contextlib.contextmanager
+def all_scopes(bin_dir, enabled):
+    """
+    Runs the body with every log scope on in the 'config/areg.init' of the binaries, when
+    'enabled'; the file is restored after the body, also on an error.
+    """
+    path = os.path.join(bin_dir, 'config', 'areg.init')
+    if not enabled:
+        yield
+        return
+    with open(path, newline='') as file:
+        original = file.read()
+    kept = [line for line in original.splitlines(True) if not _RE_SCOPES_REPLACED.match(line)]
+    with open(path, 'w', newline='') as file:
+        file.write(''.join(kept) + '\n' + _SCOPES_SETTINGS)
+    try:
+        yield
+    finally:
+        with open(path, 'w', newline='') as file:
+            file.write(original)
+
 
 # Exit codes that mean the process was terminated abnormally.
 WIN_CRASH_CODES = {
@@ -2096,9 +2145,10 @@ def main():
             sys.stdout.write('%-16s ' % scenario['name'])
             sys.stdout.flush()
             timeout = scenario.get('timeout', args.timeout)
-            result = run_scenario(scenario, bin_dir, out_dir, timeout, router_bin,
-                                  args.keep_logs, not args.no_pty,
-                                  round_index, args.repeat)
+            with all_scopes(bin_dir, scenario.get('scopes', False)):
+                result = run_scenario(scenario, bin_dir, out_dir, timeout, router_bin,
+                                      args.keep_logs, not args.no_pty,
+                                      round_index, args.repeat)
             print('%-5s %6.1fs %s'
                   % (result.status, result.seconds,
                      '; '.join(one_line(n) for n in result.notes)))

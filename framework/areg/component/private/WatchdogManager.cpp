@@ -150,6 +150,30 @@ inline Watchdog * WatchdogManager::_find_registered(const TimerBase * timer) con
     return nullptr;
 }
 
+Watchdog * WatchdogManager::_find_by_handle(TIMERHANDLE handle) const
+{
+    Watchdog::GUARD_ID key{ 0u };
+    for (Watchdog * entry = mWatchdogResource.resource_first_key(key); entry != nullptr; entry = mWatchdogResource.resource_next_key(key))
+    {
+        if (entry->handle() == handle)
+            return entry;
+    }
+
+    return nullptr;
+}
+
+inline bool WatchdogManager::_is_registered(const Watchdog * watchdog) const
+{
+    Watchdog::GUARD_ID key{ 0u };
+    for (const Watchdog * entry = mWatchdogResource.resource_first_key(key); entry != nullptr; entry = mWatchdogResource.resource_next_key(key))
+    {
+        if (entry == watchdog)
+            return true;
+    }
+
+    return false;
+}
+
 inline void WatchdogManager::_unregister_watchdog(Watchdog& watchdog)
 {
     mWatchdogResource.unregister_resource_object(watchdog.id());
@@ -204,7 +228,7 @@ void WatchdogManager::_process_expired_timer(Watchdog* watchdog, Watchdog::WATCH
     mWatchdogResource.lock();
 
     const Watchdog::SEQUENCE_ID sequence = Watchdog::make_sequence_id(watchdog_id);
-    if ((watchdog != nullptr) && mWatchdogResource.exist(watchdog->id()) && (watchdog->sequence() == sequence))
+    if ((watchdog != nullptr) && _is_registered(watchdog) && (watchdog->sequence() == sequence))
     {
         expired = true;
         deadline = watchdog->is_deadline_guard();

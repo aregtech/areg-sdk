@@ -4,6 +4,7 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/base/SocketAccepted.hpp"
+#include "areg/base/SocketClient.hpp"
 #include "areg/base/SocketMultiplexer.hpp"
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/ipc/ClientConnection.hpp"
@@ -14,6 +15,7 @@
 #include "areg/ipc/ServerConnectionBase.hpp"
 #include "areg/ipc/ServiceClientConnectionBase.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
+#include "areg/base/private/SocketLiveness.hpp"
 #include "areg/persist/ConfigManager.hpp"
 #include "areg/persist/Property.hpp"
 
@@ -23,6 +25,7 @@
 #include <ctime>
 #include <cstring>
 #include <functional>
+#include <future>
 #include <initializer_list>
 #include <mutex>
 #include <thread>
@@ -584,6 +587,107 @@ TEST_F(IpcSocketCoverageTest, failed_split_connect_invalidates_live_handle_and_c
     client.close_socket();
     EXPECT_FALSE(client.connect_socket());
 }
+
+namespace
+{
+    //! Gives a test the buffer size setters of a socket.
+    class SizedSocket : public areg::SocketClient
+    {
+    public:
+        using areg::SocketClient::SocketClient;
+        using areg::Socket::set_send_size;
+        using areg::Socket::set_recv_size;
+    };
+}
+
+TEST_F(IpcSocketCoverageTest, socket_buffer_sizes_change_when_larger_or_forced_and_need_an_open_socket)
+{
+    LoopbackListener listener;
+    ASSERT_TRUE(listener.open());
+    SizedSocket socket(listener.address().host_address(), listener.address().host_port());
+    EXPECT_EQ(socket.set_send_size(64u * 1024u), areg::PACKET_INVALID_SIZE);
+    EXPECT_EQ(socket.set_recv_size(64u * 1024u), areg::PACKET_INVALID_SIZE);
+    ASSERT_TRUE(socket.create());
+    auto peer{ listener.accept() };
+    ASSERT_TRUE(peer.is_valid());
+
+    const uint32_t send{ socket.set_send_size(1u) };
+    EXPECT_NE(send, areg::PACKET_INVALID_SIZE);
+    EXPECT_EQ(socket.set_send_size(1u), send);
+    const uint32_t sendForced{ socket.set_send_size(32u * 1024u, true) };
+    EXPECT_NE(sendForced, areg::PACKET_INVALID_SIZE);
+    EXPECT_EQ(socket.set_send_size(1u), sendForced);
+
+    const uint32_t recv{ socket.set_recv_size(1u) };
+    EXPECT_NE(recv, areg::PACKET_INVALID_SIZE);
+    EXPECT_EQ(socket.set_recv_size(1u), recv);
+    const uint32_t recvForced{ socket.set_recv_size(32u * 1024u, true) };
+    EXPECT_NE(recvForced, areg::PACKET_INVALID_SIZE);
+    EXPECT_EQ(socket.set_recv_size(1u), recvForced);
+
+    socket.close();
+    EXPECT_EQ(socket.set_send_size(64u * 1024u), areg::PACKET_INVALID_SIZE);
+}
+
+// Reproduces the defect: a failure path closed the client socket while another thread still used its descriptor.
+TEST_F(IpcSocketCoverageTest, interrupting_a_client_socket_ends_a_blocked_receive_and_keeps_the_descriptor_until_close)
+{
+    LoopbackListener listener;
+    ASSERT_TRUE(listener.open());
+    areg::ClientConnection client(listener.address());
+    ASSERT_TRUE(client.create_socket());
+    ASSERT_TRUE(set_io_deadline(client.live_handle()));
+    auto peer{ listener.accept() };
+    ASSERT_TRUE(peer.is_valid());
+    client.set_cookie(areg::COOKIE_REMOTE_SERVICE);
+    const SOCKETHANDLE handle{ client.socket().handle() };
+
+    std::promise<int32_t> received;
+    std::future<int32_t> done{ received.get_future() };
+    std::thread reader([handle, &received]()
+    {
+        uint8_t byte{ 0u };
+        received.set_value(areg::receive_data(handle, &byte, 1u));
+    });
+
+    client.interrupt_socket();
+    ASSERT_EQ(done.wait_for(std::chrono::seconds(30)), std::future_status::ready);
+    reader.join();
+    EXPECT_LE(done.get(), 0);
+    EXPECT_EQ(client.live_handle(), areg::InvalidSocketHandle);
+    EXPECT_EQ(client.cookie(), areg::COOKIE_UNKNOWN);
+    EXPECT_FALSE(client.is_valid());
+    EXPECT_TRUE(client.socket().is_valid());
+    EXPECT_EQ(client.socket().handle(), handle);
+
+    client.close_socket();
+    EXPECT_FALSE(client.socket().is_valid());
+}
+
+#if defined(__linux__) && defined(TCP_USER_TIMEOUT)
+// Reproduces the defect: with an unlimited send timeout a client never bounded unacknowledged data, so it missed a dead router.
+TEST_F(IpcSocketCoverageTest, unlimited_send_timeout_bounds_unacknowledged_data_by_the_keepalive_time)
+{
+    ConfigurationScope saved;
+    saved.set({ "net::*::tcpip::keepalive = 15" });
+    LoopbackListener listener;
+    ASSERT_TRUE(listener.open());
+    for (const auto & check : { std::make_pair(areg::SEND_REFUSAL_UNLIMITED, 15'000u), std::make_pair(2'500u, 2'500u) })
+    {
+        SCOPED_TRACE(check.first);
+        areg::ClientConnection client(listener.address());
+        client.set_send_timeout(check.first);
+        ASSERT_TRUE(client.create_socket());
+        auto peer{ listener.accept() };
+        ASSERT_TRUE(peer.is_valid());
+        unsigned int userTimeout{ 0u };
+        socklen_t length{ static_cast<socklen_t>(sizeof(userTimeout)) };
+        ASSERT_EQ(::getsockopt(client.socket().handle(), IPPROTO_TCP, TCP_USER_TIMEOUT, &userTimeout, &length), 0);
+        EXPECT_EQ(userTimeout, check.second);
+        client.close_socket();
+    }
+}
+#endif
 
 TEST_F(IpcSocketCoverageTest, split_connect_batch_preserves_frame_order_and_send_half_close)
 {

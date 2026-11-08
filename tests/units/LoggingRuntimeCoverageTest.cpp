@@ -750,6 +750,43 @@ TEST_F(LoggingRuntimeCoverageTest, forced_start_enables_file_and_activates_regis
     EXPECT_NE(text.find("enter:a15_runtime.forced\nrow:forced-row\nexit:a15_runtime.forced\n"), std::string::npos);
 }
 
+TEST_F(LoggingRuntimeCoverageTest, each_level_writes_only_at_or_above_the_scope_priority)
+{
+    areg::LogScope scope("a15_runtime.levels");
+    mConfig.set_status(false);
+    setup();
+    ASSERT_TRUE(areg::force_start_logging());
+    areg::activate_scope(scope);
+    scope.set_priority(static_cast<uint32_t>(areg::LogPriority::PrioWarning));
+    {
+        areg::ScopeMessage message(scope);
+        message.log_debug("hidden-debug");
+        message.log_info("hidden-info");
+        message.log_warning("warning-%d", 1);
+        message.log_error("error-%d", 2);
+        message.log_fatal("fatal-%d", 3);
+    }
+
+    scope.set_priority(static_cast<uint32_t>(areg::LogPriority::PrioFatal));
+    {
+        areg::ScopeMessage message(scope);
+        message.log_error("hidden-error");
+        message.log_fatal("fatal-%d", 4);
+    }
+
+    scope.set_priority(static_cast<uint32_t>(areg::LogPriority::PrioInfo));
+    {
+        areg::ScopeMessage message(scope);
+        message.log_debug("hidden-debug");
+        message.log_info("info-%d", 5);
+    }
+
+    areg::stop_logging(true);
+    const auto text{ contents(mDirectory / "runtime.log") };
+    EXPECT_NE(text.find("row:warning-1\nrow:error-2\nrow:fatal-3\nrow:fatal-4\nrow:info-5\n"), std::string::npos);
+    EXPECT_EQ(text.find("hidden-"), std::string::npos);
+}
+
 TEST_F(LoggingRuntimeCoverageTest, missing_configuration_reports_failure_and_restore_applies_defaults)
 {
     mManager.release_properties();
@@ -872,6 +909,25 @@ TEST_F(LoggingRuntimeCoverageTest, remote_pause_drops_remote_rows_but_preserves_
     EXPECT_EQ(mDatabase.rows(), (std::vector<std::string>{ "paused-row", "pause-fence", "resumed-row" }));
     const auto text{ contents(mDirectory / "runtime.log") };
     EXPECT_NE(text.find("row:paused-row\nrow:pause-fence\nrow:resumed-row\n"), std::string::npos);
+}
+
+// With the remote and the database target on, each row reaches both targets complete and in order.
+TEST_F(LoggingRuntimeCoverageTest, remote_and_database_targets_both_receive_every_row_intact)
+{
+    use_database();
+    ASSERT_TRUE(start_remote());
+    std::vector<std::string> expected;
+    for (uint32_t i = 0u; i < 32u; ++i)
+    {
+        expected.push_back("both-targets-" + std::to_string(i));
+        write_row(expected.back().c_str());
+    }
+
+    for (const std::string& row : expected)
+        expect_remote_row(row.c_str());
+
+    areg::stop_logging(true);
+    EXPECT_EQ(mDatabase.rows(), expected);
 }
 
 TEST_F(LoggingRuntimeCoverageTest, remote_stop_resume_and_invalid_state_are_ordered_by_replies)

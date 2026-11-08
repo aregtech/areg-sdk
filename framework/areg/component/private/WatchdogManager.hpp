@@ -196,6 +196,18 @@ private:
      **/
     inline Watchdog * _find_registered( const TimerBase * timer ) const;
 
+    /**
+     * \brief   Returns the registered watchdog that owns the given timer handle, or nullptr if
+     *          none does. Call it with the lock taken; neither the handle nor a watchdog is read.
+     **/
+    Watchdog * _find_by_handle( TIMERHANDLE handle ) const;
+
+    /**
+     * \brief   Returns true if the given watchdog is registered. Call it with the lock taken; the
+     *          pointer is compared, the object is not read.
+     **/
+    inline bool _is_registered( const Watchdog * watchdog ) const;
+
 //////////////////////////////////////////////////////////////////////////
 //  OS specific hidden methods
 //////////////////////////////////////////////////////////////////////////

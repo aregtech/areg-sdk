@@ -103,9 +103,15 @@ msbuild areg-sdk.sln /m /t:tests\areg-fault-inject-test;tests\units\areg-unit-te
 - **Independent of machine speed.** No sleep to wait for something, no latency limit in an
   assertion. Wait on the event that proves the state (a sync event, a condition, a counter),
   with a generous deadline only as a hang guard. A slow or loaded CI runner must not fail it.
-- **A bug fix comes with a test that reproduces it.** Red on the code before the fix, green
-  after it. Its comment starts with `Reproduces the defect:`. If the defect is unreachable from
-  a test, extract a seam in the framework instead of skipping the test.
+- **A bug fix comes with a test that reproduces it.** Every fix, also a small one made on the
+  way: at least one new unit test, or an existing test extended so that it covers the defect.
+  Red on the code before the fix, green after it. Its comment starts with `Reproduces the
+  defect:`. If the defect is unreachable from a test, extract a seam in the framework instead of
+  skipping the test; when no test is possible at all, the fix says why and what was checked
+  instead.
+- **A failure branch is tested for its behaviour.** A test that reaches an error path asserts
+  what the system does there: the result it returns, the state it leaves, who is told, and how
+  it recovers. Reaching the line is not the purpose.
 - **No exclusion markers.** A line that coverage reports as never run is reached by a test or
   stays red. Failure branches of system calls are reached with
   [fault injection](#tests-of-failing-system-calls).

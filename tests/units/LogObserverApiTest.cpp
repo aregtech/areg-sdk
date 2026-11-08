@@ -10,6 +10,7 @@
 
 #include "units/GUnitTest.hpp"
 #include "units/ChildProcess.hpp"
+#include "areg/appbase/Application.hpp"
 #include "areg/base/MessageEnvelope.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/String.hpp"
@@ -49,6 +50,11 @@ namespace
         std::vector<ITEM_ID>        disconnected;   //!< Every disconnected cookie.
         std::vector<ScopeInfo>      scopes;         //!< Every registered scope.
         uint32_t                    scopeCalls{ 0u };   //!< Calls of the scope callback.
+        uint32_t                    configured{ 0u };   //!< Calls of the observer configuration callback.
+        std::string                 address;            //!< The address of the last configuration.
+        uint16_t                    port{ 0u };         //!< The port of the last configuration.
+        uint32_t                    dbConfigured{ 0u }; //!< Calls of the database configuration callback.
+        std::string                 dbName;             //!< The database name of the last configuration.
     };
 
     Seen    _seen;
@@ -75,12 +81,27 @@ namespace
         }
     }
 
+    void on_configured(bool /*isEnabled*/, const char * address, uint16_t port)
+    {
+        ++_seen.configured;
+        _seen.address = address != nullptr ? address : "";
+        _seen.port = port;
+    }
+
+    void on_db_configured(bool /*isEnabled*/, const char * dbName, const char * /*dbLocation*/, const char * /*dbUser*/)
+    {
+        ++_seen.dbConfigured;
+        _seen.dbName = dbName != nullptr ? dbName : "";
+    }
+
     ObserverEvents make_events()
     {
         ObserverEvents events{ };
         events.evtInstConnected     = &on_connected;
         events.evtInstDisconnected  = &on_disconnected;
         events.evtLogRegisterScopes = &on_scopes;
+        events.evtObserverConfigured = &on_configured;
+        events.evtLogDbConfigured   = &on_db_configured;
         return events;
     }
 
@@ -88,8 +109,10 @@ namespace
     class ConfiguredObserver
     {
     public:
-        ConfiguredObserver()
+        //!< With 'setupFirst', the application runs its own setup() with the same file before the observer.
+        explicit ConfiguredObserver(bool setupFirst = false)
             : mDir(fs::temp_directory_path() / ("areg-log-observer-api-" + std::to_string(areg::Process::instance().id())))
+            , mSetup(setupFirst)
         {
             std::error_code error;
             fs::create_directories(mDir, error);
@@ -109,6 +132,12 @@ namespace
             file.close();
             AREG_CHILD_CHECK(file.good());
 
+            if (mSetup)
+            {
+                areg::Application::setup(false, true, false, true, false, config.generic_string().c_str());
+                AREG_CHILD_CHECK(areg::Application::is_configured());
+            }
+
             ObserverEvents events{ make_events() };
             AREG_CHILD_CHECK(log_observer_initialize(&events, config.generic_string().c_str()));
         }
@@ -116,6 +145,8 @@ namespace
         ~ConfiguredObserver()
         {
             log_observer_release();
+            if (mSetup)
+                areg::Application::release();
             std::error_code error;
             fs::remove_all(mDir, error);
         }
@@ -128,6 +159,7 @@ namespace
 
     private:
         const fs::path  mDir;   //!< The private directory.
+        const bool      mSetup; //!< True if the application ran its own setup() first.
     };
 
     //!< Checks every way to call a getter of the text.
@@ -233,6 +265,27 @@ namespace
  * Reproduces the defect: the five path and name getters read the size of the buffer the wrong way round.
  * A buffer that holds the text stayed empty, and a smaller one received a part of it.
  **/
+TEST(LogObserverApiTest, initialize_reports_the_configuration_once)
+{
+    AREG_EXPECT_IN_CHILD(
+        ConfiguredObserver observer;
+        AREG_CHILD_CHECK(_seen.configured == 1u);
+        AREG_CHILD_CHECK((_seen.address == ADDRESS) && (_seen.port == 8282u));
+        AREG_CHILD_CHECK((_seen.dbConfigured == 1u) && (_seen.dbName == DB_NAME));
+    );
+}
+
+// Reproduces the defect: an observer initialized after the application's own setup() never reported the configuration.
+TEST(LogObserverApiTest, initialize_after_application_setup_still_reports_the_configuration_once)
+{
+    AREG_EXPECT_IN_CHILD(
+        ConfiguredObserver observer(true);
+        AREG_CHILD_CHECK(_seen.configured == 1u);
+        AREG_CHILD_CHECK((_seen.address == ADDRESS) && (_seen.port == 8282u));
+        AREG_CHILD_CHECK((_seen.dbConfigured == 1u) && (_seen.dbName == DB_NAME));
+    );
+}
+
 TEST(LogObserverApiTest, path_getters_fill_only_a_buffer_that_holds_the_text)
 {
     AREG_EXPECT_IN_CHILD(

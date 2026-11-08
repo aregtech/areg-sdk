@@ -172,7 +172,7 @@ int32_t SystemServiceBase::service_main(areg::ext::ServiceOption optStartup, con
     if (service_initialize(optStartup, argument, nullptr))
     {
         LOG_SCOPE( areg_aregextend_service_SystemServiceBase, service_main );
-        LOG_DBG( "Starting log collector service, the current option [ %s ]", areg::ext::as_string(optStartup) );
+        LOG_DBG( "Starting the system service, the current option [ %s ]", areg::ext::as_string(optStartup) );
         set_state(areg::ext::ServicePhase::Starting);
 
         if (register_service())

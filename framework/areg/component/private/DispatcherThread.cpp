@@ -149,6 +149,7 @@ int32_t NullDispatcherThread::remove_consumer( EventConsumer & /* whichConsumer*
 bool NullDispatcherThread::has_registered_consumer( const uint32_t /* whichClass */ ) const
 {   return false;   }
 
+// GCOVR_EXCL_START: the null dispatcher never runs as a thread and receives no event
 bool NullDispatcherThread::post_event( Event& /*eventElem*/ )
 {
     ASSERT(false);
@@ -174,6 +175,7 @@ int32_t NullDispatcherThread::on_exit()
     ASSERT(false);
     return static_cast<int32_t>(ThreadConsumer::ExitCode::Error);
 }
+// GCOVR_EXCL_STOP
 
 //////////////////////////////////////////////////////////////////////////
 // class NullDispatcherThread END

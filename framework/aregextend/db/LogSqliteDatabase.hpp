@@ -988,19 +988,17 @@ private:
     inline uint32_t _max_id(std::string_view sql);
 
     /**
-     * \brief   In the opened database file, creates the tables required to save logs.
+     * \brief   In the opened empty database file, creates the tables and indexes and writes the
+     *          initial information.
+     * \return  Returns true if every statement succeeded.
      **/
-    inline void _create_tables() noexcept;
-
-    /**
-     * \brief   In the opened database file, creates the indexes required by optimize operations.
-     **/
-    inline void _create_indexes() noexcept;
+    inline bool _create_schema() noexcept;
 
     /**
      * \brief   Logs the initial information in the database like logging version and application name.
+     * \return  Returns true if both rows are written.
      **/
-    inline void _initialize() noexcept;
+    inline bool _initialize() noexcept;
 
     /**
      * \brief   Extracts the log message from the SqliteStatement and copies it to the SharedBuffer.

@@ -85,6 +85,7 @@ namespace
         using StubBase::response_ids;
         using StubBase::send_error_notification;
         using StubBase::send_response_notification;
+        using StubBase::send_response_event;
         using StubBase::send_update_notification;
         using StubBase::mSessionId;
 
@@ -413,6 +414,17 @@ TEST_F(StubBaseContractTest, preparing_response_strips_one_shot_listeners_but_ke
     EXPECT_FALSE(mStub.is_busy(RESPONSES[1]));
     listeners.clear();
     EXPECT_FALSE(mStub.prepare_response_event(RESPONSES[1], ResultType::RequestOK, 0, listeners).is_valid());
+}
+
+TEST_F(StubBaseContractTest, response_event_reaches_only_a_waiting_caller_and_frees_the_request)
+{
+    mStub.send_response_event(RESPONSES[1], SharedBuffer{});
+    EXPECT_EQ(0u, mStub.attempts(RESPONSES[1], ResultType::RequestOK));
+    ASSERT_TRUE(mStub.begin_request(mSecond, 71, RESPONSES[1]));
+    EXPECT_TRUE(mStub.is_busy(RESPONSES[1]));
+    mStub.send_response_event(RESPONSES[1], SharedBuffer{});
+    EXPECT_EQ(1u, mStub.attempts(RESPONSES[1], ResultType::RequestOK));
+    EXPECT_FALSE(mStub.is_busy(RESPONSES[1]));
 }
 
 TEST_F(StubBaseContractTest, error_all_visits_attributes_responses_then_requests_exactly_once)

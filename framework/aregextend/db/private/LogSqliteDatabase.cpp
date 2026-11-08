@@ -1156,25 +1156,24 @@ inline bool LogSqliteDatabase::_open(const String& dbPath, areg::DatabaseRole ro
     return true;
 }
 
-inline void LogSqliteDatabase::_create_tables() noexcept
+inline bool LogSqliteDatabase::_create_schema() noexcept
 {
-    VERIFY(mDatabase.execute(_sqlCreateTbVersion));
-    VERIFY(mDatabase.execute(_sqlCreateTbInstances));
-    VERIFY(mDatabase.execute(_sqlCreateTbScopes));
-    VERIFY(mDatabase.execute(_sqlCreateTbLogs));
-    VERIFY(mDatabase.execute(_sqlCreateTbMarkers));
+    constexpr std::string_view schema[]
+    {
+          _sqlCreateTbVersion, _sqlCreateTbInstances, _sqlCreateTbScopes, _sqlCreateTbLogs, _sqlCreateTbMarkers
+        , _sqlCraeteIdxCookie, _sqlCreateIdxScopes, _sqlCreateIdxLogsCookie, _sqlCreateIdxLogsTime, _sqlCreateIdxMarkers
+    };
+
+    for (const std::string_view sql : schema)
+    {
+        if (mDatabase.execute(sql) == false)
+            return false;
+    }
+
+    return _initialize();
 }
 
-inline void LogSqliteDatabase::_create_indexes() noexcept
-{
-    VERIFY(mDatabase.execute(_sqlCraeteIdxCookie));
-    VERIFY(mDatabase.execute(_sqlCreateIdxScopes));
-    VERIFY(mDatabase.execute(_sqlCreateIdxLogsCookie));
-    VERIFY(mDatabase.execute(_sqlCreateIdxLogsTime));
-    VERIFY(mDatabase.execute(_sqlCreateIdxMarkers));
-}
-
-inline void LogSqliteDatabase::_initialize() noexcept
+inline bool LogSqliteDatabase::_initialize() noexcept
 {
     Process& proc{ Process::instance() };
     DateTime now{ DateTime::now() };
@@ -1190,7 +1189,8 @@ inline void LogSqliteDatabase::_initialize() noexcept
         stmt.bind_text(  3, String("Created by Areg log observer API module."));
         stmt.bind_text(  4, mDatabase.path());
         stmt.bind_uint64(5, static_cast<uint64_t>(now.time()));
-        VERIFY(stmt.execute());
+        if (stmt.execute() == false)
+            return false;
     }
 
     {
@@ -1212,7 +1212,7 @@ inline void LogSqliteDatabase::_initialize() noexcept
         stmt.bind_uint64(11, static_cast<uint64_t>(now.time()));
         stmt.bind_uint64(12, static_cast<uint64_t>(now.time()));
         stmt.bind_uint32(13, static_cast<uint32_t>(0u));
-        VERIFY(stmt.execute());
+        return stmt.execute();
     }
 }
 
@@ -1296,11 +1296,15 @@ bool LogSqliteDatabase::connect(const String& dbPath, areg::DatabaseRole role)
         // Only a recorder creates a file.
         if ((File::has_file(target) || (role == areg::DatabaseRole::Recorder)) && _open(target, role, isEmpty))
         {
+            if (isEmpty && (_create_schema() == false))
+            {
+                _stop_checkpointer();
+                mDatabase.disconnect();
+                return false;
+            }
+
             if (isEmpty)
             {
-                _create_tables();
-                _create_indexes();
-                _initialize();
                 commit(true);
             }
 
@@ -1523,15 +1527,17 @@ inline uint32_t LogSqliteDatabase::_insert_marker(uint32_t markerId, uint32_t ma
     }
 
     SqliteStatement stmt(mDatabase, _sqlInsertMarker);
-    const bool result = stmt.bind_uint32(0, masterId)
-                     && stmt.bind_uint32(1, static_cast<uint32_t>(level))
-                     && stmt.bind_text(  2, _cut_text(author, areg::LOG_NAME_SIZE - 1u))
-                     && stmt.bind_text(  3, _cut_text(note, MARKER_NOTE_LENGTH))
-                     && stmt.bind_uint64(4, static_cast<uint64_t>(timeSet))
-                     && ((markerId == 0u) || stmt.bind_uint32(5, markerId))
-                     && stmt.execute();
+    bool bound{ stmt.bind_uint32(0, masterId) };
+    bound &= stmt.bind_uint32(1, static_cast<uint32_t>(level));
+    bound &= stmt.bind_text(  2, _cut_text(author, areg::LOG_NAME_SIZE - 1u));
+    bound &= stmt.bind_text(  3, _cut_text(note, MARKER_NOTE_LENGTH));
+    bound &= stmt.bind_uint64(4, static_cast<uint64_t>(timeSet));
+    if (markerId != 0u)
+    {
+        bound &= stmt.bind_uint32(5, markerId);
+    }
 
-    return (result ? mDatabase.last_inserted_id() : 0u);
+    return ((bound && stmt.execute()) ? mDatabase.last_inserted_id() : 0u);
 }
 
 bool LogSqliteDatabase::remove_marker(uint32_t markerId)
@@ -2117,7 +2123,9 @@ uint32_t LogSqliteDatabase::setup_statement_read_scopes(SqliteStatement& stmt, I
     }
     else
     {
-        return (stmt.prepare(_sqlGetLogScopes) && stmt.bind_uint32(0, static_cast<uint32_t>(instId)) ? count_scope_entries(instId) : 0u);
+        bool ready{ stmt.prepare(_sqlGetLogScopes) };
+        ready &= stmt.bind_uint32(0, static_cast<uint32_t>(instId));
+        return (ready ? count_scope_entries(instId) : 0u);
     }
 }
 
@@ -2131,19 +2139,17 @@ uint32_t LogSqliteDatabase::setup_statement_read_logs(
 
     if (instId == areg::TARGET_ALL)
     {
-        return (
-            stmt.prepare(_sqlGetAllLogMessagesPaged) &&
-            stmt.bind_int32(0, limit) &&
-            stmt.bind_uint32(1, offset)
-        ) ? count_log_entries(instId) : 0u;
+        bool ready{ stmt.prepare(_sqlGetAllLogMessagesPaged) };
+        ready &= stmt.bind_int32(0, limit);
+        ready &= stmt.bind_uint32(1, offset);
+        return (ready ? count_log_entries(instId) : 0u);
     }
 
-    return (
-        stmt.prepare(_sqlGetInstLogMessagesPaged) &&
-        stmt.bind_uint32(0, static_cast<uint32_t>(instId)) &&
-        stmt.bind_int32(1, limit) &&
-        stmt.bind_uint32(2, offset)
-    ) ? count_log_entries(instId) : 0u;
+    bool ready{ stmt.prepare(_sqlGetInstLogMessagesPaged) };
+    ready &= stmt.bind_uint32(0, static_cast<uint32_t>(instId));
+    ready &= stmt.bind_int32(1, limit);
+    ready &= stmt.bind_uint32(2, offset);
+    return (ready ? count_log_entries(instId) : 0u);
 }
 
 uint32_t LogSqliteDatabase::setup_filter_logs(ITEM_ID instId, const ArrayList<ScopeFilter>& filter)
@@ -2198,11 +2204,8 @@ uint32_t LogSqliteDatabase::setup_statement_read_filter_logs(SqliteStatement& st
     uint32_t result = count_filter_logs(instId);
     if (result > 0)
     {
-        if (instId == areg::TARGET_ALL)
-        {
-            VERIFY(stmt.prepare(_sqlFilterScopeLogsAll));
-        }
-        else if (stmt.prepare(_sqlFilterScopeLogsInst))
+        const bool all{ instId == areg::TARGET_ALL };
+        if (stmt.prepare(all ? _sqlFilterScopeLogsAll : _sqlFilterScopeLogsInst) && (all == false))
         {
             stmt.bind_uint32(0, static_cast<uint32_t>(instId));
         }
@@ -2310,14 +2313,10 @@ bool LogSqliteDatabase::reset(ITEM_ID instId /*= areg::TARGET_ALL*/)
     if (table_exists("filter_rules", _temp) == false)
         return false;
 
+    const bool all{ instId == areg::TARGET_ALL };
     SqliteStatement stmt(mDatabase);
-    if (instId == areg::TARGET_ALL)
+    if (stmt.prepare(all ? _sqlResetFilterScopesAll : _sqlResetFilterScopes) && (all == false))
     {
-        VERIFY(stmt.prepare(_sqlResetFilterScopesAll));
-    }
-    else
-    {
-        VERIFY(stmt.prepare(_sqlResetFilterScopes));
         stmt.bind_uint32(0, instId);
     }
 
@@ -2342,13 +2341,16 @@ bool LogSqliteDatabase::setup_statement_read_window(SqliteStatement& stmt, const
 
     if (after.timeCreated == 0)
     {
-        return stmt.prepare(_sqlWindowFirst) && stmt.bind_int32(0, limit);
+        bool ready{ stmt.prepare(_sqlWindowFirst) };
+        ready &= stmt.bind_int32(0, limit);
+        return ready;
     }
 
-    return stmt.prepare(_sqlWindowAfter)
-        && stmt.bind_uint64(0, static_cast<uint64_t>(after.timeCreated))
-        && stmt.bind_uint64(1, after.rowId)
-        && stmt.bind_int32 (2, limit);
+    bool ready{ stmt.prepare(_sqlWindowAfter) };
+    ready &= stmt.bind_uint64(0, static_cast<uint64_t>(after.timeCreated));
+    ready &= stmt.bind_uint64(1, after.rowId);
+    ready &= stmt.bind_int32 (2, limit);
+    return ready;
 }
 
 bool LogSqliteDatabase::setup_statement_read_window_back(SqliteStatement& stmt, const LogPosition& before, int32_t limit)
@@ -2360,13 +2362,16 @@ bool LogSqliteDatabase::setup_statement_read_window_back(SqliteStatement& stmt, 
 
     if (before.timeCreated == 0)
     {
-        return stmt.prepare(_sqlWindowLast) && stmt.bind_int32(0, limit);
+        bool ready{ stmt.prepare(_sqlWindowLast) };
+        ready &= stmt.bind_int32(0, limit);
+        return ready;
     }
 
-    return stmt.prepare(_sqlWindowBefore)
-        && stmt.bind_uint64(0, static_cast<uint64_t>(before.timeCreated))
-        && stmt.bind_uint64(1, before.rowId)
-        && stmt.bind_int32 (2, limit);
+    bool ready{ stmt.prepare(_sqlWindowBefore) };
+    ready &= stmt.bind_uint64(0, static_cast<uint64_t>(before.timeCreated));
+    ready &= stmt.bind_uint64(1, before.rowId);
+    ready &= stmt.bind_int32 (2, limit);
+    return ready;
 }
 
 bool LogSqliteDatabase::setup_statement_read_filter_window(SqliteStatement& stmt, ITEM_ID instId, const LogPosition& after, int32_t limit)
@@ -2397,9 +2402,10 @@ bool LogSqliteDatabase::setup_statement_read_window_at(SqliteStatement& stmt, ui
         }
     }
 
-    return stmt.prepare(refused ? _sqlWindowAt : _sqlWindowAtAll)
-        && stmt.bind_int32 (0, limit)
-        && stmt.bind_uint32(1, offset);
+    bool ready{ stmt.prepare(refused ? _sqlWindowAt : _sqlWindowAtAll) };
+    ready &= stmt.bind_int32 (0, limit);
+    ready &= stmt.bind_uint32(1, offset);
+    return ready;
 }
 
 bool LogSqliteDatabase::setup_statement_read_filter_window_at(SqliteStatement& stmt, ITEM_ID instId, uint32_t offset, int32_t limit)
@@ -2421,9 +2427,9 @@ bool LogSqliteDatabase::setup_statement_read_filter_window_at(SqliteStatement& s
         result = stmt.bind_uint32(index++, static_cast<uint32_t>(instId));
     }
 
-    return result
-        && stmt.bind_int32 (index, limit)
-        && stmt.bind_uint32(index + 1, offset);
+    result &= stmt.bind_int32 (index, limit);
+    result &= stmt.bind_uint32(index + 1, offset);
+    return result;
 }
 
 inline bool LogSqliteDatabase::_setup_filter_window(SqliteStatement& stmt, ITEM_ID instId, const LogPosition& place, int32_t limit, std::string_view sqlFormat)
@@ -2446,12 +2452,12 @@ inline bool LogSqliteDatabase::_setup_filter_window(SqliteStatement& stmt, ITEM_
 
     if (place.timeCreated != 0)
     {
-        result = result
-              && stmt.bind_uint64(index++, static_cast<uint64_t>(place.timeCreated))
-              && stmt.bind_uint64(index++, place.rowId);
+        result &= stmt.bind_uint64(index++, static_cast<uint64_t>(place.timeCreated));
+        result &= stmt.bind_uint64(index++, place.rowId);
     }
 
-    return result && stmt.bind_int32(index, limit);
+    result &= stmt.bind_int32(index, limit);
+    return result;
 }
 
 bool LogSqliteDatabase::set_refused_spans(const ArrayList<RefusedSpan>& spans)
@@ -2473,11 +2479,11 @@ bool LogSqliteDatabase::set_refused_spans(const ArrayList<RefusedSpan>& spans)
     for (uint32_t i = 0; result && (i < spans.size()); ++i)
     {
         const RefusedSpan& span{ spans[i] };
-        result = stmt.bind_uint32(0, span.scopeId)
-              && stmt.bind_uint64(1, static_cast<uint64_t>(span.targetId))
-              && stmt.bind_uint64(2, static_cast<uint64_t>(span.fromTime))
-              && stmt.bind_uint64(3, static_cast<uint64_t>(span.toTime))
-              && stmt.execute();
+        bool bound{ stmt.bind_uint32(0, span.scopeId) };
+        bound &= stmt.bind_uint64(1, static_cast<uint64_t>(span.targetId));
+        bound &= stmt.bind_uint64(2, static_cast<uint64_t>(span.fromTime));
+        bound &= stmt.bind_uint64(3, static_cast<uint64_t>(span.toTime));
+        result = bound && stmt.execute();
         stmt.reset();
     }
 
@@ -2537,14 +2543,10 @@ bool LogSqliteDatabase::disable_filter_mask(ITEM_ID instId)
     if (table_exists("filter_rules", _temp) == false)
         return false;
 
+    const bool all{ instId == areg::TARGET_ALL };
     SqliteStatement stmt(mDatabase);
-    if (instId == areg::TARGET_ALL)
+    if (stmt.prepare(all ? _sqlDisableFilterScopesAll : _sqlDisableFilterScopes) && (all == false))
     {
-        VERIFY(stmt.prepare(_sqlDisableFilterScopesAll));
-    }
-    else
-    {
-        VERIFY(stmt.prepare(_sqlDisableFilterScopes));
         stmt.bind_uint32(0, instId);
     }
 

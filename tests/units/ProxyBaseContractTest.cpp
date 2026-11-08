@@ -102,6 +102,9 @@ namespace
         }
 
         mutable std::vector<std::tuple<uint32_t, ResultType, SequenceNumber>> mFailures;
+        //!< Each notification request: message, type, and the connection callbacks the watched listener had then.
+        std::vector<std::tuple<uint32_t, RequestType, size_t>> mSubscriptions;
+        const ContractListener* mWatched{ nullptr };
 
     protected:
         void process_response_event(ServiceResponseEvent& response) override
@@ -133,8 +136,9 @@ namespace
             return LocalRequestEvent(proxy_address(), stub_address(), request, reserve);
         }
 
-        ServiceRequestEvent create_notification_request(uint32_t, RequestType) override
+        ServiceRequestEvent create_notification_request(uint32_t message, RequestType type) override
         {
+            mSubscriptions.emplace_back(message, type, mWatched != nullptr ? mWatched->mConnections.size() : 0u);
             return ServiceRequestEvent(MessageEnvelope{});
         }
 
@@ -607,6 +611,39 @@ TEST(ProxyBaseContractTest, adding_a_consumer_during_notification_affects_only_t
         EXPECT_EQ(2u, first.mNotifications.size());
         EXPECT_EQ(1u, later.mNotifications.size());
         proxy->clear_all_notifications(later);
+    });
+}
+
+// Reproduces the defect: a consumer that reconnected kept its listeners but never subscribed again, so it got no update.
+TEST(ProxyBaseContractTest, reconnect_resubscribes_every_listener_still_in_the_list_and_not_a_removed_one)
+{
+    on_proxy_thread([](DispatcherThread& owner)
+    {
+        ContractListener listener;
+        ProxyLease proxy(listener, owner);
+        ASSERT_NE(nullptr, proxy.pointer());
+        proxy->mWatched = &listener;
+        const StubAddress server(INTERFACE, String("ProxyContractProvider"), owner.name());
+        const Channel channel(static_cast<uint32_t>(owner.address()), server.source(), COOKIE_LOCAL);
+        proxy->service_connection_updated(server, channel, ServiceConnectionState::Connected);
+        ASSERT_TRUE(proxy->is_connected());
+        proxy->set_notification(ATTRIBUTES[0], &listener, true);
+        proxy->set_notification(RESPONSES[0], &listener, true);
+        ASSERT_EQ(2u, proxy->mSubscriptions.size());
+
+        proxy->service_connection_updated(server, channel, ServiceConnectionState::Disconnected);
+        ASSERT_FALSE(proxy->is_connected());
+        proxy->remove_listener(RESPONSES[0], SEQUENCE_NUMBER_NOTIFY, &listener);
+        proxy->mSubscriptions.clear();
+
+        proxy->service_connection_updated(server, channel, ServiceConnectionState::Connected);
+        ASSERT_TRUE(proxy->is_connected());
+        ASSERT_EQ(1u, proxy->mSubscriptions.size());
+        EXPECT_EQ(ATTRIBUTES[0], std::get<0>(proxy->mSubscriptions[0]));
+        EXPECT_EQ(RequestType::StartNotify, std::get<1>(proxy->mSubscriptions[0]));
+        EXPECT_EQ(2u, std::get<2>(proxy->mSubscriptions[0]));
+        EXPECT_EQ(3u, listener.mConnections.size());
+        proxy->mWatched = nullptr;
     });
 }
 

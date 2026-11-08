@@ -462,6 +462,23 @@ TEST(EventApiTest, type_queries_agree_with_the_event_type_and_an_empty_event_ans
     EXPECT_EQ(empty.target_dispatcher(), nullptr);
 }
 
+TEST(EventApiTest, unknown_type_allocates_no_header_and_ignores_a_later_type)
+{
+    areg::Event unknown(areg::EventType::EventUnknown);
+    EXPECT_FALSE(unknown.is_valid());
+    EXPECT_EQ(unknown.header(), nullptr);
+
+    unknown.set_event_type(areg::EventType::EventLocalRequest);
+    unknown.set_event_priority(areg::EventPriority::CriticalPrio);
+    EXPECT_FALSE(unknown.is_valid());
+    EXPECT_EQ(unknown.event_type(), areg::EventType::EventUnknown);
+    EXPECT_EQ(unknown.is_local(), areg::is_local(areg::EventType::EventUnknown));
+    EXPECT_EQ(unknown.is_internal(), areg::is_internal(areg::EventType::EventUnknown));
+    EXPECT_FALSE(unknown.is_request_call());
+    EXPECT_FALSE(unknown.is_critical_prio());
+    EXPECT_EQ(unknown.message_id(), areg::INVALID_MESSAGE_ID);
+}
+
 TEST(EventApiTest, priority_identity_and_equality_follow_the_shared_envelope)
 {
     areg::Event critical(areg::EventType::EventCustomInternal, areg::EventPriority::CriticalPrio);

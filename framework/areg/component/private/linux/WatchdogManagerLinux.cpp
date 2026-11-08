@@ -26,21 +26,25 @@ namespace areg {
 
 void WatchdogManager::_on_timerfd_expired(TIMERHANDLE handle)
 {
-    areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(handle);
-    ASSERT(posixTimer != nullptr);
-
-    uint64_t expirations{ 0u };
-    if (::read(posixTimer->timer_fd(), &expirations, sizeof(expirations)) != static_cast<ssize_t>(sizeof(expirations)))
-        return;
-
-    Watchdog::WATCHDOG_ID watchdog_id = static_cast<Watchdog::WATCHDOG_ID>(posixTimer->context_id());
-    Watchdog::GUARD_ID    guardId     = Watchdog::make_guard_id(watchdog_id);
-    Watchdog *            watchdog    = mWatchdogResource.find_resource_object(guardId);
-
-    if (watchdog != nullptr)
+    Watchdog * watchdog{ nullptr };
+    Watchdog::WATCHDOG_ID watchdog_id{ 0u };
+    uint32_t highValue{ 0u };
+    uint32_t lowValue{ 0u };
     {
-        const uint32_t highValue = static_cast<uint32_t>(posixTimer->mDueTime.tv_sec);
-        const uint32_t lowValue  = static_cast<uint32_t>(posixTimer->mDueTime.tv_nsec);
+        // An epoll batch may hold the timer of a watchdog destroyed after the wait returned.
+        Lock resourceLock(mWatchdogResource.lockable());
+        watchdog = _find_by_handle(handle);
+        if (watchdog == nullptr)
+            return;
+
+        areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(handle);
+        uint64_t expirations{ 0u };
+        if (::read(posixTimer->timer_fd(), &expirations, sizeof(expirations)) != static_cast<ssize_t>(sizeof(expirations)))
+            return;
+
+        watchdog_id = static_cast<Watchdog::WATCHDOG_ID>(posixTimer->context_id());
+        highValue   = static_cast<uint32_t>(posixTimer->mDueTime.tv_sec);
+        lowValue    = static_cast<uint32_t>(posixTimer->mDueTime.tv_nsec);
 
         // Watchdog timer is one-shot, remove from epoll before stopping
         const int epollFd = WatchdogManager::instance().mEpollFd;
@@ -51,8 +55,9 @@ void WatchdogManager::_on_timerfd_expired(TIMERHANDLE handle)
         }
 
         posixTimer->stop_timer();
-        _process_expired_timer(watchdog, watchdog_id, highValue, lowValue);
     }
+
+    _process_expired_timer(watchdog, watchdog_id, highValue, lowValue);
 }
 
 void WatchdogManager::_os_timer_stop(TIMERHANDLE timerHandle)

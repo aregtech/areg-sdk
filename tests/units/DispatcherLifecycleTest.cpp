@@ -603,3 +603,16 @@ TEST(DispatcherLifecycleTest, release_shared_accepts_null_and_deletes_an_unshare
     areg::DispatcherThread::release_shared(dispatcher.release());
     EXPECT_EQ(destroyed, 1u);
 }
+
+TEST(DispatcherLifecycleTest, the_null_dispatcher_of_a_plain_thread_refuses_every_operation)
+{
+    areg::DispatcherThread & none{ areg::DispatcherThread::current_dispatcher_thread() };
+    EXPECT_FALSE(none.is_valid());
+    EXPECT_FALSE(none.start());
+    RawListener listener;
+    EXPECT_FALSE(none.register_event_consumer(1u, listener));
+    EXPECT_FALSE(none.has_registered_consumer(1u));
+    EXPECT_FALSE(none.unregister_event_consumer(1u, listener));
+    EXPECT_EQ(none.remove_consumer(listener), 0);
+    EXPECT_EQ(&areg::DispatcherThread::dispatcher_thread(areg::ThreadAddress::invalid_thread_address()), &none);
+}
