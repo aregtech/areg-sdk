@@ -146,12 +146,12 @@ ServiceManagerEventData ServiceManagerEventData::lost_connection(const Channel &
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::model_request(bool load, const String & modelName, uint64_t request)
+ServiceManagerEventData ServiceManagerEventData::model_request(bool load, uint32_t modelId, uint64_t request)
 {
     ServiceManagerEventData data( load ? ServiceManagerEventData::ServiceManagerCommand::CMD_LoadModel : ServiceManagerEventData::ServiceManagerCommand::CMD_UnloadModel );
     OutStream & stream = data.write_stream();
     uint32_t size{ 0u };
-    stream << modelName;
+    stream << modelId;
     bool written{ _written(data.mStream, size) };
     stream << request;
     written = _written(data.mStream, size) && written;
@@ -159,29 +159,24 @@ ServiceManagerEventData ServiceManagerEventData::model_request(bool load, const 
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::thread_report(bool running, const String & threadName, uint64_t instance)
+ServiceManagerEventData ServiceManagerEventData::thread_report(bool running, uint64_t instance)
 {
     ServiceManagerEventData data( running ? ServiceManagerEventData::ServiceManagerCommand::CMD_ThreadRunning : ServiceManagerEventData::ServiceManagerCommand::CMD_ThreadStopped );
     OutStream & stream = data.write_stream();
     uint32_t size{ 0u };
-    stream << threadName;
-    bool written{ _written(data.mStream, size) };
     stream << instance;
-    written = _written(data.mStream, size) && written;
-    _seal(data.mStream, written);
+    _seal(data.mStream, _written(data.mStream, size));
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::watchdog_expired(const String & threadName, uint64_t instance, const String & guardedName)
+ServiceManagerEventData ServiceManagerEventData::watchdog_expired(uint64_t instance, bool isWorker)
 {
     ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_WatchdogExpired );
     OutStream & stream = data.write_stream();
     uint32_t size{ 0u };
-    stream << threadName;
-    bool written{ _written(data.mStream, size) };
     stream << instance;
-    written = _written(data.mStream, size) && written;
-    stream << guardedName;
+    bool written{ _written(data.mStream, size) };
+    stream << static_cast<uint32_t>(isWorker ? 1u : 0u);
     written = _written(data.mStream, size) && written;
     _seal(data.mStream, written);
     return data;

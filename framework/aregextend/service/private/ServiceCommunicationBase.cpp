@@ -32,8 +32,12 @@
 #include "aregextend/service/SystemServiceDefs.hpp"
 
 #include "areg/base/private/DebugDefs.hpp"
+#include "areg/logging/areg_log.h"
 
 namespace areg::ext {
+
+DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicationBase, report_start);
+
 namespace
 {
     //!< Queues a message for no connection, so that the send thread wakes up and moves its backlog on.
@@ -87,6 +91,8 @@ ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
     , mKeepaliveMs      ( areg::SOCKET_KEEPALIVE_SEC * 1'000u )
     , mHeldTargets      ( 0u )
     , mCloseStalled     ( true )
+    , mStartError       ( 0 )
+    , mStartFailures    ( 0u )
     , mShuttingDown     ( false )
     , mDataRateHelper   ( self() , areg::ext::DEFAULT_VERBOSE)
     , mWhiteList        ( )
@@ -321,6 +327,7 @@ void ServiceCommunicationBase::on_service_start()
 void ServiceCommunicationBase::on_service_stop()
 {
     stop_connection();
+    mStartFailures.store(0u, std::memory_order_relaxed);
     mEventSendStop.set_signaled();
 }
 
@@ -347,6 +354,7 @@ bool ServiceCommunicationBase::start_connection()
     ASSERT(mThreadSend.is_running() == false);
 
     bool result = false;
+    int32_t osError = 0;
     mTimerConnect.stop_timer();
 
     if ( mServerConnection.create_socket() )
@@ -395,6 +403,7 @@ bool ServiceCommunicationBase::start_connection()
 
                 mServerConnection.close_socket();
 
+                report_start(false, 0);
                 mTimerConnect.start_timer(areg::DEFAULT_RETRY_CONNECT_TIMEOUT, static_cast<DispatcherThread &>(self()), 1);
                 return false;
             }
@@ -413,13 +422,45 @@ bool ServiceCommunicationBase::start_connection()
             stop_connection( );
         }
     }
+    else
+    {
+        osError = areg::socket_last_error();
+    }
 
+    report_start(result, osError);
     if ( !result )
     {
         mTimerConnect.start_timer( areg::DEFAULT_RETRY_CONNECT_TIMEOUT, static_cast<DispatcherThread &>(self()), 1);
     }
 
     return result;
+}
+
+void ServiceCommunicationBase::report_start(bool started, int32_t osError)
+{
+    LOG_SCOPE(areg_aregextend_service_ServiceCommunicationBase, report_start);
+
+    [[maybe_unused]] const areg::SocketAddress & address{ mServerConnection.address() };
+    const uint32_t failures{ mStartFailures.load(std::memory_order_relaxed) };
+    if ( started )
+    {
+        if ( failures != 0u )
+        {
+            LOG_INFO("The server [ %s:%u ] started after [ %u ] failed attempts", address.host_address().as_string(), address.host_port(), failures);
+            mStartFailures.store(0u, std::memory_order_relaxed);
+        }
+
+        return;
+    }
+
+    if ( (failures == 0u) || (osError != mStartError) )
+    {
+        LOG_ERR( "Failed to start the server [ %s:%u ], OS error [ %d ] (0: a thread or the listening failed), retrying every [ %u ] ms"
+               , address.host_address().as_string(), address.host_port(), osError, areg::DEFAULT_RETRY_CONNECT_TIMEOUT);
+        mStartError = osError;
+    }
+
+    mStartFailures.store(failures + 1u, std::memory_order_relaxed);
 }
 
 bool ServiceCommunicationBase::restart_connection()

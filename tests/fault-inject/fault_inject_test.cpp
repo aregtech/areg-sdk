@@ -39,6 +39,7 @@
     #include "areg/component/Event.hpp"
     #include "areg/component/EventConsumer.hpp"
     #include "units/ServiceTestServer.hpp"
+    #include "units/LogCapture.hpp"
 
     #include <arpa/inet.h>
     #include <fcntl.h>
@@ -474,6 +475,64 @@ TEST( FaultInjectTest, service_start_finishes_and_retries_when_listen_is_refused
         areg::Application::release( );
     );
 }
+
+#if AREG_LOGGING
+// A new error is reported, a repeated one is not, and the start is reported when a retry succeeds.
+TEST( FaultInjectTest, service_reports_each_new_start_error_once )
+{
+    AREG_EXPECT_IN_CHILD(
+        log_capture::LogCapture capture;
+        AREG_CHILD_CHECK( capture.start( "areg_aregextend_service_ServiceCommunicationBase.report_start", static_cast<uint32_t>(areg::LogPriority::PrioInfo) ) );
+        areg_fault::FaultScope faults;
+        {
+            ServerFixture fixture;
+            const SOCKETHANDLE holder{ areg::server_connect( areg::String( "127.0.0.1" ), fixture.port ) };
+            AREG_CHILD_CHECK( areg::is_valid_socket( holder ) && areg::server_listen( holder ) );
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::SocketBind, EACCES ) );
+            AREG_CHILD_CHECK( fixture.server.connect_service_host( ) );
+            const auto deadline{ std::chrono::steady_clock::now( ) + START_DEADLINE };
+            while ( ( fixture.server.start_failures( ) < 3u ) && ( std::chrono::steady_clock::now( ) < deadline ) )
+            {
+                areg::Thread::sleep( areg::WAIT_10_MILLISECONDS );
+            }
+
+            AREG_CHILD_CHECK( fixture.server.start_failures( ) >= 3u );
+            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::SocketBind ) == 1u );
+            areg::socket_close( holder );
+            AREG_CHILD_CHECK( fixture.wait_listening( ) );
+            fixture.stop( );
+        }
+
+        const std::string text{ capture.stop( ) };
+        AREG_CHILD_CHECK( log_capture::LogCapture::count( text, "row:Failed to start the server" ) == 2u );
+        AREG_CHILD_CHECK( log_capture::LogCapture::count( text, ( "OS error [ " + std::to_string( EACCES ) + " ]" ).c_str( ) ) == 1u );
+        AREG_CHILD_CHECK( log_capture::LogCapture::count( text, ( "OS error [ " + std::to_string( EADDRINUSE ) + " ]" ).c_str( ) ) == 1u );
+        AREG_CHILD_CHECK( log_capture::LogCapture::count( text, "row:The server" ) == 1u );
+    );
+}
+
+// A refused listen has no OS error at the start: it is still reported, as error 0.
+TEST( FaultInjectTest, service_reports_a_refused_listen )
+{
+    AREG_EXPECT_IN_CHILD(
+        log_capture::LogCapture capture;
+        AREG_CHILD_CHECK( capture.start( "areg_aregextend_service_ServiceCommunicationBase.report_start", static_cast<uint32_t>(areg::LogPriority::PrioInfo) ) );
+        areg_fault::FaultScope faults;
+        {
+            ServerFixture fixture;
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::SocketListen, EADDRINUSE ) );
+            AREG_CHILD_CHECK( fixture.server.connect_service_host( ) );
+            AREG_CHILD_CHECK( wait_start_finished( ) );
+            AREG_CHILD_CHECK( fixture.wait_listening( ) );
+            fixture.stop( );
+        }
+
+        const std::string text{ capture.stop( ) };
+        AREG_CHILD_CHECK( log_capture::LogCapture::count( text, "row:Failed to start the server" ) == 1u );
+        AREG_CHILD_CHECK( log_capture::LogCapture::count( text, "OS error [ 0 ]" ) == 1u );
+    );
+}
+#endif  // AREG_LOGGING
 
 TEST( FaultInjectTest, service_with_a_pool_retries_when_listen_is_refused )
 {

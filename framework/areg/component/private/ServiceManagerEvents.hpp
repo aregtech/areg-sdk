@@ -178,7 +178,7 @@ public:
      * \param   modelName   The name of the model; empty for all models.
      * \param   request     The address of the request the caller waits for, or 0 if it does not wait.
      **/
-    static ServiceManagerEventData model_request( bool load, const String & modelName, uint64_t request );
+    static ServiceManagerEventData model_request( bool load, uint32_t modelId, uint64_t request );
 
     /**
      * \brief   Creates event data of a component thread that reports its state.
@@ -187,7 +187,7 @@ public:
      * \param   threadName  The name of the component thread.
      * \param   instance    The address of the component thread object.
      **/
-    static ServiceManagerEventData thread_report( bool running, const String & threadName, uint64_t instance );
+    static ServiceManagerEventData thread_report( bool running, uint64_t instance );
 
     /**
      * \brief   Creates event data of an expired watchdog.
@@ -196,7 +196,7 @@ public:
      * \param   instance    The address of the component thread object.
      * \param   guardedName The name of the thread whose event took too long: the component thread or its worker.
      **/
-    static ServiceManagerEventData watchdog_expired( const String & threadName, uint64_t instance, const String & guardedName );
+    static ServiceManagerEventData watchdog_expired( uint64_t instance, bool isWorker );
 
     /**
      * \brief   Creates event data of the expired lifecycle deadline guard.

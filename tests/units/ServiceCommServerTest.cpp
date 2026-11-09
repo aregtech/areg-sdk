@@ -29,6 +29,7 @@
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
 #include "aregextend/service/ServiceCommunicationBase.hpp"
+#include "units/LogCapture.hpp"
 #include "units/ServiceTestServer.hpp"
 
 #include <algorithm>
@@ -36,6 +37,7 @@
 #include <chrono>
 #include <condition_variable>
 #include <cstring>
+#include <functional>
 #include <memory>
 #include <mutex>
 #include <random>
@@ -622,6 +624,64 @@ protected:
         EXPECT_TRUE(run.server.wait_instances(2u));
     }
 };
+
+#if AREG_LOGGING
+// Reproduces the defect: a server that could not bind retried for ever without a word, so a
+// refused port looked like a server that hangs. A stop forgets the reported error.
+TEST(ServiceCommStartReportTest, busy_port_is_reported_once_per_start_and_binds_when_freed)
+{
+    constexpr const char * FAILED{ "row:Failed to start the server" };
+    constexpr uint32_t ATTEMPTS{ 3u };
+    log_capture::LogCapture capture{ };
+    ASSERT_TRUE(capture.start( "areg_aregextend_service_ServiceCommunicationBase.report_start"
+                             , static_cast<uint32_t>(areg::LogPriority::PrioInfo)));
+
+    const uint16_t port{ free_port() };
+    ASSERT_NE(port, 0u);
+    const SOCKETHANDLE holder{ areg::server_connect(areg::String("127.0.0.1"), port) };
+    ASSERT_TRUE(areg::is_valid_socket(holder));
+    ASSERT_TRUE(areg::server_listen(holder));
+
+    const auto wait_for = [](const std::function<bool()> & done) -> bool
+    {
+        const Clock::time_point since{ Clock::now() };
+        while ((done() == false) && (elapsed_ms(since) < DEADLINE_MS))
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+
+        return done();
+    };
+
+    TestServer server(Policy::Accept, 0u);
+    server.apply_connection_data(areg::String("127.0.0.1"), port);
+    ASSERT_TRUE(server.connect_service_host());
+    EXPECT_TRUE(wait_for([&]() { return (server.start_failures() >= ATTEMPTS); }));
+
+    // A stop ends the failed attempts: the next start reports the same error again.
+    server.disconnect_service_host();
+    server.wait_to_complete();
+    EXPECT_EQ(server.start_failures(), 0u);
+    ASSERT_TRUE(server.connect_service_host());
+    EXPECT_TRUE(wait_for([&]() { return (server.start_failures() >= 1u); }));
+
+    areg::socket_close(holder);
+    EXPECT_TRUE(wait_for([&]() { return (server.start_failures() == 0u); }));
+    EXPECT_TRUE(wait_for([&]() { return server.is_host_connected(); }));
+    server.disconnect_service_host();
+    server.wait_to_complete();
+
+    const std::string text{ capture.stop() };
+    EXPECT_EQ(log_capture::LogCapture::count(text, FAILED), 2u) << text;
+#if defined(_WIN32)
+    const std::string error{ std::to_string(WSAEADDRINUSE) };
+#else
+    const std::string error{ std::to_string(EADDRINUSE) };
+#endif
+    EXPECT_EQ(log_capture::LogCapture::count(text, ("OS error [ " + error + " ]").c_str()), 2u) << text;
+    EXPECT_EQ(log_capture::LogCapture::count(text, "row:The server"), 1u) << text;
+}
+#endif  // AREG_LOGGING
 
 TEST_F(ServiceCommServerTest, clients_are_told_their_cookies_in_the_shared_thread_mode)
 {

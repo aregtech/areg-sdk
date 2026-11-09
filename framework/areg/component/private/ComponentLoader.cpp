@@ -20,6 +20,12 @@
 #include "areg/component/private/ServiceManager.hpp"
 #include "areg/base/CommonDefs.hpp"
 
+namespace
+{
+    //!< The number given to the last registered model. Guarded by the lock of the loader.
+    uint32_t    _lastModelId{ 0u };
+}
+
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -363,6 +369,7 @@ bool ComponentLoader::add_model( const areg::Model & newModel )
     if ( succeed )
     {
         mModelList.add(newModel);
+        mModelList[mModelList.size() - 1u].mModelId = ++ _lastModelId;
         if ( mDefaultModel.is_empty() )
         {
             mDefaultModel = newModel.model_name();

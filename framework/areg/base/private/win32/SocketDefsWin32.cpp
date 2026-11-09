@@ -133,6 +133,16 @@ void _os_release_socket()
     }
 }
 
+int32_t _os_socket_last_error() noexcept
+{
+    return static_cast<int32_t>(::WSAGetLastError());
+}
+
+void _os_set_socket_last_error(int32_t error) noexcept
+{
+    ::WSASetLastError(static_cast<int>(error));
+}
+
 void _os_close_socket(SOCKETHANDLE hSocket)
 {
     ASSERT(areg::is_valid_socket(hSocket));

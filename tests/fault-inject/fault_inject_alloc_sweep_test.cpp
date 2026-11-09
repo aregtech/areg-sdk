@@ -28,6 +28,11 @@
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/component/ComponentThread.hpp"
+#include "areg/component/WorkerThread.hpp"
+#include "areg/component/WorkerThreadConsumer.hpp"
+#include "areg/component/private/Watchdog.hpp"
+#include "areg/base/Thread.hpp"
+#include "areg/base/ThreadAddress.hpp"
 
 #include <atomic>
 #include <cerrno>
@@ -35,6 +40,7 @@
 
 #if defined(__linux__)
     #include <sys/wait.h>
+    #include <unistd.h>
 #endif  // defined(__linux__)
 
 // The sanitizer runtimes define the global allocation functions themselves.
@@ -65,6 +71,29 @@ namespace
     constexpr uint32_t      HOLD_WATCH_MS   { 100u };
     constexpr char const    _holdModel[]    { "FaultHoldModel" };
     constexpr char const    _holdThread[]   { "FaultHoldThread" };
+    constexpr char const    _hangModel[]    { "FaultHangModel" };
+    constexpr char const    _hangThread[]   { "FaultHangThread" };
+    constexpr char const    _longModel[]    { "FaultLongNameModelThatDoesNotFitTheSmallStringBuffer" };
+    constexpr char const    _longThread[]   { "FaultLongNameThreadThatDoesNotFitTheSmallStringBuffer" };
+    constexpr char const    _largeModel[]   { "FaultLargeModel" };
+    constexpr char const    _hostModel[]    { "FaultHostModel" };
+    constexpr char const    _hostThread[]   { "FaultHostThread" };
+    constexpr char const    _hostWorker[]   { "FaultHostWorker" };
+    constexpr char const    _hungModel[]    { "FaultHungModel" };
+    constexpr char const    _hungThread[]   { "FaultHungThread" };
+    constexpr char const    _hungWorker[]   { "FaultHungWorker" };
+    constexpr char const    _managerThread[]{ "_AREG_SERVICE_MANAGER_THREAD_" };
+
+    //!< The lifecycle deadline of the thread that hangs in its start, in milliseconds.
+    constexpr uint32_t      HANG_DEADLINE_MS{ 50u };
+    //!< The seconds after which a child that hangs is killed.
+    constexpr uint32_t      CHILD_ALARM_S   { 20u };
+    //!< One thread more than the first block of the records holds.
+    constexpr uint32_t      LARGE_THREADS   { 9u };
+    //!< The most allocations of one model load that are failed in turn.
+    constexpr uint32_t      ATTEMPT_COUNT   { 400u };
+    //!< The watchdog timeout of the worker thread, in milliseconds.
+    constexpr uint32_t      WORKER_WATCH_MS { 10'000u };
 
     //!< Set by the handler that holds its thread.
     std::atomic_bool        gHolding        { false };
@@ -74,6 +103,12 @@ namespace
     areg::SyncEvent         gReplaced       { true, false };
     //!< Signaled when a component of the held thread was deleted.
     areg::SyncEvent         gDeleted        { true, false };
+    //!< Signaled when the component that creates a worker thread is done.
+    areg::SyncEvent         gHostDone       { true, false };
+    //!< True if the new instance of the hung thread could create the worker of the same name.
+    std::atomic_bool        gWorkerReplaced { false };
+    //!< The worker threads that could not be created because an allocation failed.
+    std::atomic<uint32_t>   gRefusedWorkers { 0u };
 
     //!< True if the child returned normally.
     bool _controlled_exit( int status )
@@ -108,6 +143,113 @@ namespace
             }
         }
     };
+
+    //!< A component that hangs in its start until it is released.
+    class HangComponent : public areg::Component
+    {
+    public:
+        HangComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
+            : areg::Component( entry, owner )
+        { }
+
+    protected:
+        void startup_component( areg::ComponentThread & comThread ) override
+        {
+            areg::Component::startup_component( comThread );
+            static_cast<void>( gRelease.lock( WAIT_MS ) );
+        }
+    };
+
+    //!< A worker consumer that does nothing.
+    class HostConsumer final : public areg::WorkerThreadConsumer
+    {
+    public:
+        HostConsumer( )
+            : areg::WorkerThreadConsumer( areg::String( _hostWorker ) )
+        { }
+    };
+
+    //!< A component that creates a guarded worker with each allocation failing in turn.
+    class HostComponent : public areg::Component
+    {
+    public:
+        HostComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
+            : areg::Component( entry, owner )
+        { }
+
+    protected:
+        void startup_component( areg::ComponentThread & comThread ) override
+        {
+            areg::Component::startup_component( comThread );
+            const areg::String name( _hostWorker );
+            for ( uint32_t skip = 0u; skip < REQUEST_COUNT; ++ skip )
+            {
+                AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, skip, 1u ) );
+                areg::WorkerThread * worker{ create_worker_thread( name, mConsumer, comThread, WORKER_WATCH_MS ) };
+                const uint32_t failed{ areg_fault::failed( areg_fault::FaultPoint::Allocation ) };
+                ::areg_fault_disarm_all( );
+                if ( worker == nullptr )
+                {
+                    AREG_CHILD_CHECK( failed == 1u );
+                    gRefusedWorkers.fetch_add( 1u );
+                    continue;
+                }
+
+                delete_worker_thread( name );
+                if ( failed == 0u )
+                    break;
+            }
+
+            gHostDone.set_signaled( );
+        }
+
+    private:
+        HostConsumer mConsumer;
+    };
+
+    //!< A component with a worker, whose first user state holds its thread.
+    class HungHostComponent : public areg::Component
+    {
+    public:
+        HungHostComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
+            : areg::Component( entry, owner )
+        { }
+
+    protected:
+        void startup_component( areg::ComponentThread & comThread ) override
+        {
+            areg::Component::startup_component( comThread );
+            areg::WorkerThread * const worker{ create_worker_thread( areg::String( _hungWorker ), mConsumer, comThread ) };
+            if ( gHolding.load( ) )
+            {
+                gWorkerReplaced.store( worker != nullptr );
+                gReplaced.set_signaled( );
+            }
+        }
+
+        void shutdown_component( areg::ComponentThread & comThread ) override
+        {
+            delete_worker_thread( areg::String( _hungWorker ) );
+            areg::Component::shutdown_component( comThread );
+        }
+
+        void on_user_state( uint32_t /*previous*/, uint32_t /*current*/ ) override
+        {
+            if ( gHolding.exchange( true ) == false )
+            {
+                static_cast<void>( gRelease.lock( WAIT_MS ) );
+            }
+        }
+
+    private:
+        HostConsumer mConsumer;
+    };
+
+    template<class ComponentType>
+    areg::Component * _create_component( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
+    {
+        return new ComponentType( entry, owner );
+    }
 
     areg::Component * _create_hold( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
     {
@@ -189,6 +331,208 @@ namespace
             return areg::ComponentLoader::add_model_unique( model );
         }() };
         return _registered;
+    }
+
+    //!< Registers a model of one component thread once, with a component of the given type.
+    bool _add_single_model( const char * modelName, const char * threadName, const char * roleName, FuncCreateComponent create, uint32_t deadline, areg::FailurePolicy policy )
+    {
+        const areg::String thread( threadName );
+        areg::ComponentThreadEntry entry{ thread };
+        entry.mLifecycleTimeout = deadline;
+        entry.mFailurePolicy = policy;
+        entry.add_component( areg::ComponentEntry( thread, areg::String( roleName ), create, &_delete_sweep ) );
+        areg::Model model{ areg::String( modelName ) };
+        model.add_thread( entry );
+        return areg::ComponentLoader::add_model_unique( model );
+    }
+
+    bool _register_hang_model( )
+    {
+        static const bool _registered{ _add_single_model( _hangModel, _hangThread, "FaultHangRole", &_create_component<HangComponent>, HANG_DEADLINE_MS, areg::FailurePolicy::Restart ) };
+        return _registered;
+    }
+
+    bool _register_long_model( )
+    {
+        static const bool _registered{ _add_single_model( _longModel, _longThread, "FaultLongRole", &_create_sweep, 0u, areg::FailurePolicy::Exit ) };
+        return _registered;
+    }
+
+    bool _register_host_model( )
+    {
+        static const bool _registered{ _add_single_model( _hostModel, _hostThread, "FaultHostRole", &_create_component<HostComponent>, 0u, areg::FailurePolicy::Exit ) };
+        return _registered;
+    }
+
+    //!< Registers once the model whose thread has a worker, with the watchdog and the Restart policy.
+    bool _register_hung_model( )
+    {
+        static const bool _registered{ [] {
+            const areg::String thread( _hungThread );
+            areg::ComponentThreadEntry entry{ thread };
+            entry.mWatchdogTimeout = HOLD_WATCH_MS;
+            entry.mFailurePolicy = areg::FailurePolicy::Restart;
+            entry.add_component( areg::ComponentEntry( thread, areg::String( "FaultHungRole" ), &_create_component<HungHostComponent>, &_delete_hold ) );
+            areg::Model model( _hungModel );
+            model.add_thread( entry );
+            return areg::ComponentLoader::add_model_unique( model );
+        }() };
+        return _registered;
+    }
+
+    //!< Registers once the model with more threads than the first block of the records holds.
+    bool _register_large_model( )
+    {
+        static const bool _registered{ [] {
+            areg::Model model{ areg::String( _largeModel ) };
+            for ( uint32_t i = 0u; i < LARGE_THREADS; ++ i )
+            {
+                const std::string suffix{ std::to_string( i ) };
+                const areg::String thread( ( std::string( "FaultLargeT" ) + suffix ).c_str( ) );
+                areg::ComponentThreadEntry entry{ thread };
+                entry.add_component( areg::ComponentEntry( thread, areg::String( ( std::string( "FaultLargeR" ) + suffix ).c_str( ) ), &_create_sweep, &_delete_sweep ) );
+                model.add_thread( entry );
+            }
+
+            return areg::ComponentLoader::add_model_unique( model );
+        }() };
+        return _registered;
+    }
+
+    //!< Sets up the system and loads the model with a thread that hangs, with one allocation failing.
+    void _hang_lifecycle( uint32_t index )
+    {
+        ::alarm( CHILD_ALARM_S );
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, index, 1u ) );
+        areg::Application::setup( false, true, false, true, true );
+        const bool loaded{ areg::Application::load_model( _hangModel, true ) };
+        ::areg_fault_disarm_all( );
+        gRelease.set_signaled( );
+        AREG_CHILD_CHECK( loaded == false );
+        static_cast<void>( areg::Application::unload_model( _hangModel ) );
+        areg::Application::release( );
+    }
+
+    //!< Loads the model with long names and counts the throwing allocations of its unload.
+    void _unload_allocates_nothing( )
+    {
+        areg::Application::setup( false, true, false, true, false );
+        AREG_CHILD_CHECK( areg::Application::load_model( _longModel, true ) );
+        areg::Thread * const manager{ areg::Thread::find_by_address( areg::ThreadAddress( _managerThread ) ) };
+        AREG_CHILD_CHECK( manager != nullptr );
+
+        ::areg_fault_count_throwing_new( static_cast<uint64_t>( manager->id( ) ) );
+        AREG_CHILD_CHECK( areg::Application::unload_model( _longModel ) );
+        const uint32_t counted{ ::areg_fault_throwing_new_count( ) };
+        ::areg_fault_count_throwing_new( 0u );
+
+        AREG_CHILD_CHECK( counted == 0u );
+        areg::Application::release( );
+    }
+
+    //!< Fails each allocation of the load of the large model in turn: the model is loaded or left unloaded.
+    void _large_load_survives( )
+    {
+        areg::Application::setup( false, true, false, true, false );
+        areg_fault::FaultScope faults;
+        uint32_t refused{ 0u };
+        bool finished{ false };
+        for ( uint32_t skip = 0u; ( skip < ATTEMPT_COUNT ) && ( finished == false ); ++ skip )
+        {
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, skip, 1u ) );
+            const bool loaded{ areg::Application::load_model( _largeModel, true ) };
+            const uint32_t failed{ areg_fault::failed( areg_fault::FaultPoint::Allocation ) };
+            ::areg_fault_disarm_all( );
+            finished = ( failed == 0u );
+            if ( loaded )
+            {
+                AREG_CHILD_CHECK( areg::Application::model_state( _largeModel ) == areg::ModelState::Loaded );
+                AREG_CHILD_CHECK( areg::Application::unload_model( _largeModel ) );
+            }
+            else
+            {
+                AREG_CHILD_CHECK( finished == false );
+                AREG_CHILD_CHECK( areg::Application::model_state( _largeModel ) == areg::ModelState::Unloaded );
+                ++ refused;
+            }
+        }
+
+        AREG_CHILD_CHECK( finished );
+        AREG_CHILD_CHECK( refused != 0u );
+        areg::Application::release( );
+    }
+
+    //!< A guard armed when the watchdog manager stops leaves its list and can be destroyed.
+    void _guard_outlives_the_manager( )
+    {
+        areg::Application::setup( false, true, false, true, true );
+        {
+            areg::Watchdog guard{ areg::String( "FaultGuard" ) };
+            AREG_CHILD_CHECK( guard.arm( WAIT_MS ) );
+            areg::Application::stop_watchdog_manager( );
+            AREG_CHILD_CHECK( guard.arm( WAIT_MS ) == false );
+        }
+
+        areg::Application::release( );
+    }
+
+    //!< Holds a thread with a worker until it is abandoned: the name of the worker is free for its new instance.
+    void _abandoned_thread_releases_its_worker( )
+    {
+        areg::Application::setup( false, true, false, true, true );
+        AREG_CHILD_CHECK( areg::Application::load_model( _hungModel, true ) );
+        AREG_CHILD_CHECK( areg::Application::set_user_state( 1u ) );
+        AREG_CHILD_CHECK( gReplaced.lock( WAIT_MS ) );
+        AREG_CHILD_CHECK( gWorkerReplaced.load( ) );
+        gRelease.set_signaled( );
+        AREG_CHILD_CHECK( gDeleted.lock( WAIT_MS ) );
+        AREG_CHILD_CHECK( areg::Application::unload_model( _hungModel ) );
+        areg::Application::release( );
+    }
+
+    //!< Arms a guard repeatedly while every allocation fails.
+    void _arming_allocates_nothing( )
+    {
+        areg::Application::setup( false, true, false, true, true );
+        {
+            areg::Watchdog guard{ areg::String( "FaultGuard" ) };
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 0u ) );
+            for ( uint32_t i = 0u; i < 5u; ++ i )
+            {
+                AREG_CHILD_CHECK( guard.arm( WAIT_MS ) );
+            }
+
+            AREG_CHILD_CHECK( areg_fault::calls( areg_fault::FaultPoint::Allocation ) == 0u );
+            guard.stop_guard( );
+        }
+
+        areg::Application::release( );
+    }
+
+    //!< Fails each allocation of a watchdog in turn: a watchdog without its parts reports it cannot be armed.
+    void _watchdog_without_parts_cannot_arm( )
+    {
+        areg_fault::FaultScope faults;
+        uint32_t refused{ 0u };
+        for ( uint32_t skip = 0u; skip < REQUEST_COUNT; ++ skip )
+        {
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, skip, 1u ) );
+            areg::Watchdog guard{ areg::String( "FaultGuard" ) };
+            const uint32_t failed{ areg_fault::failed( areg_fault::FaultPoint::Allocation ) };
+            ::areg_fault_disarm_all( );
+            if ( failed == 0u )
+            {
+                AREG_CHILD_CHECK( guard.can_arm( ) );
+                break;
+            }
+
+            AREG_CHILD_CHECK( guard.can_arm( ) == false );
+            ++ refused;
+        }
+
+        AREG_CHILD_CHECK( refused != 0u );
     }
 
     //!< Fails each allocation of the requests in turn: a refused request returns false and changes nothing.
@@ -308,6 +652,121 @@ TEST( FaultInjectSweepTest, every_failed_allocation_of_a_model_lifecycle_is_surv
             ::areg_child::pass( );
         }, _controlled_exit, "" );
     }
+}
+
+/**
+ * \brief   Reproduces the defect: an allocation that fails while the deadline guard is created or
+ *          armed left a hung thread without a deadline, and the load never returned. Each
+ *          allocation of the setup and the load fails in turn, and the load always ends.
+ **/
+TEST( FaultInjectSweepTest, failed_allocation_never_leaves_a_hung_thread_without_a_deadline )
+{
+    ASSERT_TRUE( _register_hang_model( ) );
+    for ( uint32_t index = 0u; index < SWEEP_COUNT; ++ index )
+    {
+        SCOPED_TRACE( "failed allocation " + std::to_string( index ) );
+        ::testing::GTEST_FLAG( death_test_style ) = "threadsafe";
+        EXPECT_EXIT( {
+            _hang_lifecycle( index );
+            ::areg_child::pass( );
+        }, _controlled_exit, "" );
+    }
+}
+
+/**
+ * \brief   Reproduces the defect: arming a guard allocated an event each time, so a guard could
+ *          not be armed while the memory was short.
+ **/
+TEST( FaultInjectSweepTest, arming_a_guard_allocates_nothing )
+{
+    AREG_EXPECT_IN_CHILD( _arming_allocates_nothing( ) );
+}
+
+/**
+ * \brief   A watchdog whose timer or arm event cannot be allocated reports that it cannot be
+ *          armed, and the one built with every allocation available can.
+ **/
+TEST( FaultInjectSweepTest, watchdog_without_its_parts_cannot_be_armed )
+{
+    AREG_EXPECT_IN_CHILD( _watchdog_without_parts_cannot_arm( ) );
+}
+
+/**
+ * \brief   Reproduces the defect: the controller copied the names of the models and threads with
+ *          an allocation that aborts when it fails. Its unload path makes no such allocation.
+ **/
+TEST( FaultInjectSweepTest, unload_of_a_model_with_long_names_makes_no_throwing_allocation )
+{
+    ASSERT_TRUE( _register_long_model( ) );
+    AREG_EXPECT_IN_CHILD( _unload_allocates_nothing( ) );
+}
+
+/**
+ * \brief   A guard armed when the watchdog manager stops is taken out of its list, cannot be
+ *          armed afterwards, and is destroyed without touching the stopped manager.
+ **/
+TEST( FaultInjectSweepTest, guard_armed_when_the_manager_stops_is_released )
+{
+    AREG_EXPECT_IN_CHILD( _guard_outlives_the_manager( ) );
+}
+
+/**
+ * \brief   A hung thread that is abandoned takes its worker out of the thread registry, so the
+ *          new instance of the thread can create the worker of the same name.
+ **/
+TEST( FaultInjectSweepTest, abandoned_thread_leaves_the_name_of_its_worker_free )
+{
+    ASSERT_TRUE( _register_hung_model( ) );
+    AREG_EXPECT_IN_CHILD( _abandoned_thread_releases_its_worker( ) );
+}
+
+/**
+ * \brief   A component thread object that cannot be allocated fails the load of its model; the
+ *          next load of the same model starts the thread.
+ **/
+TEST( FaultInjectSweepTest, component_thread_that_cannot_be_allocated_fails_the_load )
+{
+    ASSERT_TRUE( _register_model( ) );
+    AREG_EXPECT_IN_CHILD(
+        areg::Application::setup( false, true, false, true, false );
+        {
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::AlignedAllocation, 0, 0u, 1u ) );
+            AREG_CHILD_CHECK( areg::Application::load_model( _sweepModel, true ) == false );
+            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::AlignedAllocation ) == 1u );
+        }
+        AREG_CHILD_CHECK( areg::Application::model_state( _sweepModel ) == areg::ModelState::Unloaded );
+        AREG_CHILD_CHECK( areg::Application::load_model( _sweepModel, true ) );
+        areg::Application::unload_model( _sweepModel );
+        areg::Application::release( );
+    );
+}
+
+/**
+ * \brief   Each allocation of the load of a model that outgrows the first block of the records
+ *          fails in turn: the model is loaded or left unloaded, and the load ends each time.
+ **/
+TEST( FaultInjectSweepTest, every_failed_allocation_of_a_large_model_is_survived )
+{
+    ASSERT_TRUE( _register_large_model( ) );
+    AREG_EXPECT_IN_CHILD( _large_load_survives( ) );
+}
+
+/**
+ * \brief   Each allocation of a guarded worker fails in turn: a worker that cannot be built
+ *          completely is not created, and its creation reports it.
+ **/
+TEST( FaultInjectSweepTest, guarded_worker_that_cannot_be_built_is_not_created )
+{
+    ASSERT_TRUE( _register_host_model( ) );
+    AREG_EXPECT_IN_CHILD(
+        areg::Application::setup( false, true, false, true, true );
+        AREG_CHILD_CHECK( areg::Application::load_model( _hostModel, true ) );
+        AREG_CHILD_CHECK( gHostDone.lock( WAIT_MS ) );
+        AREG_CHILD_CHECK( gRefusedWorkers.load( ) != 0u );
+        AREG_CHILD_CHECK( areg::Application::unload_model( _hostModel ) );
+        areg::Application::release( );
+    );
 }
 
 /**

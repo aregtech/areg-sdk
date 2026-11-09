@@ -83,7 +83,7 @@ public:
      * \param   reason              The disconnect reason sent to the peers.
      * \param   registerProvider    The provider to send notification.
      **/
-    void unregister_thread_services( const ArrayList<String> & threads, areg::DisconnectReason reason, RegistrationProvider & registerProvider );
+    void unregister_thread_services( const ThreadAddress & thread, areg::DisconnectReason reason, RegistrationProvider & registerProvider );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls

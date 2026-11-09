@@ -19,6 +19,7 @@
   * Include files.
   ************************************************************************/
 #include "areg/component/TimerBase.hpp"
+#include "areg/component/Event.hpp"
 #include "areg/base/MathDefs.hpp"
 
 #include <atomic>
@@ -129,6 +130,13 @@ public:
     bool arm(uint32_t msTimeout);
 
     /**
+     * \brief   Returns true if arming allocates nothing and cannot fail on memory: the watchdog is
+     *          disabled, or its timer and its arm event exist.
+     **/
+    [[nodiscard]]
+    inline bool can_arm() const noexcept;
+
+    /**
      * \brief   Returns true if this is the deadline guard of the system controller.
      **/
     [[nodiscard]]
@@ -232,6 +240,19 @@ private:
      *          nullptr for the deadline guard.
      **/
     ComponentThread *   mComponentThread;
+    /**
+     * \brief   The event that asks the watchdog manager to start the timer. Built once, a copy is posted.
+     **/
+    Event               mArmEvent;
+    /**
+     * \brief   The next and the previous registered watchdog. Changed under the lock of the manager.
+     **/
+    Watchdog *          mNextRegistered;
+    Watchdog *          mPrevRegistered;
+    /**
+     * \brief   True while the watchdog is in the list of the manager. Changed under its lock.
+     **/
+    bool                mRegistered;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -264,6 +285,11 @@ inline const ComponentThread& Watchdog::component_thread() const noexcept
 {
     ASSERT(mComponentThread != nullptr);
     return *mComponentThread;
+}
+
+inline bool Watchdog::can_arm() const noexcept
+{
+    return (timeout() == areg::WATCHDOG_IGNORE) || ((handle() != nullptr) && mArmEvent.is_valid());
 }
 
 inline bool Watchdog::is_deadline_guard() const noexcept

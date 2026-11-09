@@ -973,7 +973,7 @@ private:
      *          The objects are not touched; their consumers release them.
      * \param   threads     The names of the threads.
      **/
-    static void _detach_thread_proxies( const ArrayList<String> & threads );
+    static void _detach_thread_proxies( const ThreadAddress & thread );
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

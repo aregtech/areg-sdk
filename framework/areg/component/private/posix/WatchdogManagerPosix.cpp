@@ -28,8 +28,6 @@
 #include "areg/component/private/posix/TimerPosix.hpp"
 #include "areg/component/private/Watchdog.hpp"
 
-#include <vector>
-
 namespace areg {
 
 void WatchdogManager::_fire_expired(TIMERHANDLE handle)
@@ -40,7 +38,7 @@ void WatchdogManager::_fire_expired(TIMERHANDLE handle)
     uint32_t lowValue{ 0u };
     {
         // The watchdog may be destroyed after its timer was collected as expired.
-        Lock resourceLock(mWatchdogResource.lockable());
+        Lock resourceLock(mWatchdogLock);
         watchdog = _find_by_handle(handle);
         if (watchdog == nullptr)
             return;
@@ -60,33 +58,35 @@ void WatchdogManager::_fire_expired(TIMERHANDLE handle)
 
 bool WatchdogManager::_check_deadlines(const timespec & now, timespec & out_nextDue)
 {
-    std::vector<TIMERHANDLE> expired;
-
-    mWatchdogResource.lock();
-    Watchdog::GUARD_ID guardId{ 0 };
-    for (const Watchdog * watchdog = mWatchdogResource.resource_first_key(guardId); watchdog != nullptr; watchdog = mWatchdogResource.resource_next_key(guardId))
+    // Takes one expired watchdog at a time; a fired timer is no longer armed.
+    for (;;)
     {
-        TIMERHANDLE handle{ watchdog->handle() };
-        areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(handle);
-
-        timespec due{};
-        if ((posixTimer != nullptr) && posixTimer->armed_due_time(due) && areg::os::deadline_reached(due, now))
+        TIMERHANDLE expired{ nullptr };
+        do
         {
-            expired.push_back(handle);
-        }
-    }
-    mWatchdogResource.unlock();
+            Lock lock(mWatchdogLock);
+            for (const Watchdog * watchdog = mWatchdogs; (watchdog != nullptr) && (expired == nullptr); watchdog = watchdog->mNextRegistered)
+            {
+                areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(watchdog->handle());
 
-    for (TIMERHANDLE expiredHandle : expired)
-    {
-        _fire_expired(expiredHandle);
+                timespec due{};
+                if ((posixTimer != nullptr) && posixTimer->armed_due_time(due) && areg::os::deadline_reached(due, now))
+                {
+                    expired = watchdog->handle();
+                }
+            }
+        } while (false);
+
+        if (expired == nullptr)
+            break;
+
+        _fire_expired(expired);
     }
 
     bool hasNext{ false };
 
-    mWatchdogResource.lock();
-    guardId = 0;
-    for (const Watchdog * watchdog = mWatchdogResource.resource_first_key(guardId); watchdog != nullptr; watchdog = mWatchdogResource.resource_next_key(guardId))
+    Lock lock(mWatchdogLock);
+    for (const Watchdog * watchdog = mWatchdogs; watchdog != nullptr; watchdog = watchdog->mNextRegistered)
     {
         areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(watchdog->handle());
 
@@ -100,7 +100,6 @@ bool WatchdogManager::_check_deadlines(const timespec & now, timespec & out_next
             hasNext     = true;
         }
     }
-    mWatchdogResource.unlock();
 
     return hasNext;
 }

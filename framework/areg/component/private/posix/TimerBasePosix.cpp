@@ -23,6 +23,8 @@
 #include "areg/component/TimerBase.hpp"
 #include "areg/component/private/posix/TimerPosix.hpp"
 
+#include <new>
+
 namespace areg {
 
  //////////////////////////////////////////////////////////////////////////
@@ -31,7 +33,7 @@ namespace areg {
 
 TIMERHANDLE TimerBase::_os_create() noexcept
 {
-    return static_cast<TIMERHANDLE>(new areg::os::TimerPosix( ));
+    return static_cast<TIMERHANDLE>(new (std::nothrow) areg::os::TimerPosix( ));
 }
 
 void TimerBase::_os_destroy( TIMERHANDLE handle ) noexcept

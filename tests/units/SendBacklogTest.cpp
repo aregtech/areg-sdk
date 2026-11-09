@@ -28,13 +28,16 @@
 #include "aregextend/service/private/PausedSources.hpp"
 #include "aregextend/service/private/SendBacklog.hpp"
 #include "aregextend/service/private/ServiceThreadHelper.hpp"
+#include "units/LogCapture.hpp"
 
 #include <algorithm>
 #include <atomic>
 #include <chrono>
+#include <cstdlib>
 #include <cstring>
 #include <deque>
 #include <future>
+#include <string>
 #include <thread>
 #include <vector>
 
@@ -158,6 +161,29 @@ namespace
             closed.store(true, std::memory_order_relaxed);
         }
     };
+
+    //!< Pumps until the stall limit, counted from the last bytes that left, has passed.
+    void pump_past_stall_limit(SendBacklog & backlog, Owner & owner)
+    {
+        Clock::time_point progressed{ Clock::now() };
+        uint64_t sent{ owner.sent.load() };
+        while ((owner.closed.load() == false) && (elapsed_ms(progressed) <= static_cast<int64_t>(SendBacklog::CAP_STALL_MS)))
+        {
+            static_cast<void>(backlog.pump(owner));
+            if (owner.sent.load() != sent)
+            {
+                sent = owner.sent.load();
+                progressed = Clock::now();
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        }
+
+        if (owner.closed.load() == false)
+        {
+            static_cast<void>(backlog.pump(owner));
+        }
+    }
 
     //!< Counts the releases it is told of.
     struct Waiter final : public areg::ext::HoldWaiter
@@ -591,26 +617,7 @@ TEST(SendBacklogTest, stalled_peer_above_cap_is_closed_only_if_stalled_peers_are
         ASSERT_TRUE(write_range(backlog, pair, messages, 0u, 8u));
         ASSERT_TRUE(backlog.is_held(COOKIE));
 
-        // The last pump comes after the stall limit counted from the last bytes that left.
-        Clock::time_point progressed{ Clock::now() };
-        uint64_t sent{ owner.sent.load() };
-        while ((owner.closed.load() == false) && (elapsed_ms(progressed) <= static_cast<int64_t>(SendBacklog::CAP_STALL_MS)))
-        {
-            static_cast<void>(backlog.pump(owner));
-            if (owner.sent.load() != sent)
-            {
-                sent = owner.sent.load();
-                progressed = Clock::now();
-            }
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(20));
-        }
-
-        if (owner.closed.load() == false)
-        {
-            static_cast<void>(backlog.pump(owner));
-        }
-
+        pump_past_stall_limit(backlog, owner);
         if (closeStalled)
         {
             EXPECT_TRUE(owner.closed.load());
@@ -630,6 +637,63 @@ TEST(SendBacklogTest, stalled_peer_above_cap_is_closed_only_if_stalled_peers_are
         pair.close();
     }
 }
+
+TEST(SendBacklogTest, every_close_reason_has_a_name)
+{
+    EXPECT_STREQ(SendBacklog::reason_name(SendBacklog::Reason::SocketError), "SocketError");
+    EXPECT_STREQ(SendBacklog::reason_name(SendBacklog::Reason::Refused), "Refused");
+    EXPECT_STREQ(SendBacklog::reason_name(SendBacklog::Reason::OverCap), "OverCap");
+    EXPECT_STREQ(SendBacklog::reason_name(SendBacklog::Reason::Unreachable), "Unreachable");
+    EXPECT_STREQ(SendBacklog::reason_name(static_cast<SendBacklog::Reason>(0xFFu)), "Unknown");
+}
+
+#if AREG_LOGGING
+// Reproduces the defect: the close of a stalled connection left no trace, so a run could not
+// tell the reason of a close, the bytes left or how long the peer took nothing.
+TEST(SendBacklogTest, close_of_a_stalled_peer_is_logged_with_its_reason_bytes_and_stall)
+{
+    log_capture::LogCapture capture{ };
+    ASSERT_TRUE(capture.start("areg_aregextend_service_SendBacklog.report_close", static_cast<uint32_t>(areg::LogPriority::PrioWarning)));
+
+    constexpr uint64_t CAP{ 2u * MESSAGE_BYTES };
+    Pair pair{ };
+    ASSERT_TRUE(pair.open());
+    areg::SendQueueGate gate{ };
+    SendBacklog backlog{ gate };
+    Owner owner{ };
+    owner.socket = pair.server;
+    backlog.set_limits(CAP, SendBacklog::UNLIMITED, 60'000u, true);
+    static_cast<void>(backlog.attach(pair.server));
+    std::vector<areg::MessageEnvelope> messages{ make_messages() };
+    ASSERT_TRUE(write_range(backlog, pair, messages, 0u, 8u));
+    pump_past_stall_limit(backlog, owner);
+    ASSERT_TRUE(owner.closed.load());
+    pair.close();
+
+    const std::string text{ capture.stop() };
+    EXPECT_EQ(log_capture::LogCapture::count(text, "row:Closing connection"), 1u) << text;
+    const std::size_t row{ text.find("row:Closing connection") };
+    ASSERT_NE(row, std::string::npos) << text;
+
+    // Returns the text between the brackets number index of the row.
+    const auto field = [&text, row](uint32_t index) -> std::string
+    {
+        std::size_t begin{ row };
+        for (uint32_t i = 0u; (i <= index) && (begin != std::string::npos); ++i)
+        {
+            begin = text.find("[ ", begin + 1u);
+        }
+
+        const std::size_t end{ begin == std::string::npos ? begin : text.find(" ]", begin) };
+        return (end == std::string::npos ? std::string() : text.substr(begin + 2u, end - begin - 2u));
+    };
+
+    EXPECT_EQ(field(0u), std::to_string(COOKIE)) << text;
+    EXPECT_EQ(field(1u), "OverCap") << text;
+    EXPECT_EQ(field(2u), std::to_string(owner.kept)) << text;
+    EXPECT_GE(std::strtoull(field(3u).c_str(), nullptr, 10), static_cast<unsigned long long>(SendBacklog::CAP_STALL_MS)) << text;
+}
+#endif  // AREG_LOGGING
 
 // A reading peer is seen to take data by pump() alone and is not closed, however far one batch
 // is past the cap.

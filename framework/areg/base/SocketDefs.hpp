@@ -491,6 +491,13 @@ AREG_API SOCKETHANDLE socket_create() noexcept;
 AREG_API void socket_close(SOCKETHANDLE hSocket) noexcept;
 
 /**
+ * \brief   Returns the last socket error of the calling thread: errno on POSIX,
+ *          WSAGetLastError() on Windows. Valid right after a socket call failed.
+ **/
+[[nodiscard]]
+AREG_API int32_t socket_last_error() noexcept;
+
+/**
  * \brief   Applies the default socket-buffer policy to \a hSocket immediately
  *          after creation or acceptance.
  *

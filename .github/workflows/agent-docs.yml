@@ -147,15 +147,32 @@ jobs:
           TOOLS: ${{ github.workspace }}\tools\agent
         run: python $env:TOOLS\build_project.py --spec design.json
 
+      # mtrouter logs nothing by default. This build is thrown away, so the step
+      # below can turn the logs on: a router that does not come up says why there.
+      - name: Turn on the logs of the router
+        working-directory: ${{ runner.temp }}\gatecheck
+        run: |
+          $init = 'build\bin\config\areg.init'
+          (Get-Content $init) -replace '^log::mtrouter::enable::file\s*=\s*false', 'log::mtrouter::enable::file = true' -replace '^log::mtrouter::scope::\*\s*=\s*NOTSET', 'log::mtrouter::scope::* = DEBUG | SCOPE' | Set-Content $init
+
       # Starts a real binary: the consumer alone, ended by its generated connect
       # deadline with exit 1.
       - name: Run the consumer alone to its connect deadline
+        id: consumer_alone
         working-directory: ${{ runner.temp }}\gatecheck
         env:
           TOOLS: ${{ github.workspace }}\tools\agent
         run: |
           python -c "import json;p='scenarios.json';d=json.load(open(p));d['scenarios'].append(dict(name='alone',router=True,timeout=60,procs=[dict(binary='gatecheck_consumer',lead=True,exit=1,expect=['no provider connected within the connect deadline'])]));json.dump(d,open(p,'w'),indent=2)"
           python $env:TOOLS\run_scenarios.py --build build\bin --only alone
+
+      - name: Show the ports and the log of the router
+        if: failure() && steps.consumer_alone.outcome == 'failure'
+        working-directory: ${{ runner.temp }}\gatecheck
+        run: |
+          netsh int ipv4 show excludedportrange tcp
+          netstat -ano
+          Get-ChildItem -Path build\bin\logs -Filter 'mtrouter*.log' -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "--- $($_.FullName)"; Get-Content $_.FullName -Tail 200 }
 
   recipes:
     name: recipes build and run

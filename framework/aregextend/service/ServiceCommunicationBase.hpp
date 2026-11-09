@@ -258,6 +258,12 @@ public:
      **/
     inline void set_close_stalled(bool closeStalled) noexcept;
 
+    /**
+     * \brief   Returns the failed attempts to start the connection since the last successful
+     *          start or the last stop of the service.
+     **/
+    inline uint32_t start_failures() const noexcept;
+
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -524,6 +530,15 @@ public:
     bool start_connection();
 
     /**
+     * \brief   Reports the result of an attempt to start the connection: one error row per
+     *          change of the error, one row when a start succeeds after failed attempts.
+     *
+     * \param   started     True if the connection started.
+     * \param   osError     The OS error of the attempt, or 0 if a thread or the listening failed.
+     **/
+    void report_start(bool started, int32_t osError);
+
+    /**
      * \brief   Call to restart the connection. Returns true if succeeded to reconnect.
      **/
     bool restart_connection();
@@ -700,6 +715,8 @@ protected:
     uint32_t                        mKeepaliveMs;       //!< Milliseconds a silent client is given.
     std::atomic<uint32_t>           mHeldTargets;       //!< The number of held client connections of all send threads.
     bool                            mCloseStalled;      //!< True if a held client that takes no data is closed.
+    int32_t                         mStartError;        //!< The OS error of the last reported failed start.
+    std::atomic<uint32_t>           mStartFailures;     //!< The failed starts since the last successful start or stop.
     std::atomic_bool                mShuttingDown;      //!< True during stop_connection() -- suppresses spurious disconnect callbacks.
     DataRateHelper                  mDataRateHelper;    //!< The helper object to query information of sent and receive bytes.
     StringArray                     mWhiteList;         //!< The list of enabled fixed client hosts.
@@ -740,6 +757,11 @@ inline bool ServiceCommunicationBase::is_target_held(const ITEM_ID & target) noe
 inline void ServiceCommunicationBase::set_close_stalled(bool closeStalled) noexcept
 {
     mCloseStalled = closeStalled;
+}
+
+inline uint32_t ServiceCommunicationBase::start_failures() const noexcept
+{
+    return mStartFailures.load(std::memory_order_relaxed);
 }
 
 inline bool ServiceCommunicationBase::is_address_in_white_list(const areg::SocketAddress & addrClient) const

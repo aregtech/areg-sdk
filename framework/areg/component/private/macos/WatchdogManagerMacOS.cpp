@@ -33,7 +33,7 @@ void WatchdogManager::_posix_watchdog_expired(areg::os::TimerPosix* posixTimer) 
     uint32_t lowValue{ 0u };
     {
         // The watchdog may be destroyed while its expiry is delivered.
-        Lock resourceLock(watchdogManager.mWatchdogResource.lockable());
+        Lock resourceLock(watchdogManager.mWatchdogLock);
         watchdog = watchdogManager._find_by_handle(reinterpret_cast<TIMERHANDLE>(posixTimer));
         if (watchdog == nullptr)
             return;

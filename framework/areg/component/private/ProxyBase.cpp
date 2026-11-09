@@ -656,20 +656,17 @@ void ProxyBase::detach_from_registry()
     }
 }
 
-void ProxyBase::_detach_thread_proxies( const ArrayList<String> & threads )
+void ProxyBase::_detach_thread_proxies( const ThreadAddress & thread )
 {
     MapProxyResource & proxies{ map_proxies() };
-    for (uint32_t i = 0; i < threads.size(); ++ i)
+    const ThreadProxyList list{ thread_proxies().unregister_resource( static_cast<uint32_t>(thread) ) };
+    for (uint32_t j = 0; j < list.size(); ++ j)
     {
-        const ThreadProxyList list{ thread_proxies().unregister_resource( static_cast<uint32_t>(ThreadAddress(threads[i])) ) };
-        for (uint32_t j = 0; j < list.size(); ++ j)
+        const std::shared_ptr<ProxyBase> & proxy{ list[j] };
+        Lock lock(proxies.lockable());
+        if (proxies.find_resource_object(static_cast<uint32_t>(proxy->mProxyAddress)) == proxy)
         {
-            const std::shared_ptr<ProxyBase> & proxy{ list[j] };
-            Lock lock(proxies.lockable());
-            if (proxies.find_resource_object(static_cast<uint32_t>(proxy->mProxyAddress)) == proxy)
-            {
-                proxies.unregister_resource_object(static_cast<uint32_t>(proxy->mProxyAddress));
-            }
+            proxies.unregister_resource_object(static_cast<uint32_t>(proxy->mProxyAddress));
         }
     }
 }

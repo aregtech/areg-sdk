@@ -31,13 +31,18 @@
 #include <algorithm>
 #include <atomic>
 #include <cstdlib>
+#include <cstring>
 #include <new>
 #include <string_view>
+#include <type_traits>
 
 namespace
 {
     //!< The name of the deadline guard on the watchdog manager.
-    constexpr std::string_view  DEADLINE_GUARD_NAME { "_AREG_LIFECYCLE_DEADLINE_" };
+    constexpr std::string_view  DEADLINE_GUARD_NAME { "_AREG_DEADLINE_" };
+
+    //!< The number of thread records of the first block.
+    constexpr uint32_t          FIRST_RECORD_COUNT  { 8u };
 
     //!< The time a thread whose watchdog expired with the policy Restart has to stop by itself.
     constexpr uint32_t          RESTART_GRACE_MS    { areg::TIMEOUT_500_MS };
@@ -81,8 +86,34 @@ DEF_LOG_SCOPE(areg_component_private_SystemController, _start_thread);
 DEF_LOG_SCOPE(areg_component_private_SystemController, _start_load);
 DEF_LOG_SCOPE(areg_component_private_SystemController, _start_instance);
 DEF_LOG_SCOPE(areg_component_private_SystemController, _start_replacement);
-DEF_LOG_SCOPE(areg_component_private_SystemController, _start_deferred);
+DEF_LOG_SCOPE(areg_component_private_SystemController, _is_startable);
 DEF_LOG_SCOPE(areg_component_private_SystemController, deadline_expired);
+
+//////////////////////////////////////////////////////////////////////////
+// SystemController class local helpers
+//////////////////////////////////////////////////////////////////////////
+
+Thread * SystemController::_hold_next_worker( const ComponentThread & owner )
+{
+    Thread::MapThreadNameResource & threads{ Thread::_map_thread_name() };
+    Lock lock(threads.lockable());
+    UniqueNumber key{ 0u };
+    for (Thread * entry = threads.resource_first_key(key); entry != nullptr; entry = threads.resource_next_key(key))
+    {
+        WorkerThread * worker{ AREG_RUNTIME_CAST(entry, WorkerThread) };
+        if ((worker != nullptr) && (&worker->binding_component_thread() == &owner))
+        {
+            const auto state{ worker->mLifeState.load(std::memory_order_relaxed) };
+            if (((state & Thread::LIFE_SHARES) != 0u) && ((state & Thread::LIFE_REGISTERED) != 0u))
+            {
+                worker->mLifeState.fetch_add(Thread::LIFE_SHARE, std::memory_order_relaxed);
+                return worker;
+            }
+        }
+    }
+
+    return nullptr;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // SystemController::Request class implementation
@@ -92,7 +123,11 @@ SystemController::Request::Request( bool waitComponents /*= false*/ )
     : mDone             ( true, false )
     , mResult           ( false )
     , mWaitComponents   ( waitComponents )
+    , mLoad             ( false )
     , mShares           ( 2u )
+    , mModels           ( SystemController::MODEL_NONE )
+    , mLastModel        ( SystemController::MODEL_NONE )
+    , mNext             ( nullptr )
 {
 }
 
@@ -129,45 +164,48 @@ void SystemController::Request::release()
 //////////////////////////////////////////////////////////////////////////
 
 SystemController::SystemController()
-    : mThreads          ( )
-    , mAbandoned        ( )
-    , mPending          ( )
-    , mFailedLoads      ( )
-    , mUnloadAfterLoad  ( )
-    , mDeferred         ( )
+    : mRecords          ( nullptr )
+    , mRecordCount      ( 0u )
+    , mRecordCapacity   ( 0u )
+    , mPending          ( nullptr )
     , mGuard            ( )
     , mExiting          ( false )
     , mExitDeadline     ( )
     , mLock             ( )
 {
+    static_assert(std::is_trivially_copyable<ThreadRecord>::value, "The records are copied as bytes");
 }
 
 SystemController::~SystemController()
 {
     // Leaves behind a guard that stop() did not release.
     static_cast<void>(mGuard.release());
+    delete[] mRecords;
 }
 
-void SystemController::load_model( const String & modelName, Request * request )
+bool SystemController::start()
+{
+    if (mGuard == nullptr)
+    {
+        mGuard.reset(new (std::nothrow) Watchdog(String(DEADLINE_GUARD_NAME)));
+    }
+
+    if ((mGuard == nullptr) || (mGuard->can_arm() == false))
+    {
+        mGuard.reset();
+        return false;
+    }
+
+    return true;
+}
+
+void SystemController::load_model( uint32_t modelId, Request * request )
 {
     LOG_SCOPE( areg_component_private_SystemController, load_model );
 
-    std::vector<String> models;
-    if (modelName.is_empty())
+    bool accepted{ (mExiting == false) && ((modelId == MODEL_ALL) || _model_exists(modelId)) };
+    for (uint32_t model = _next_model(modelId, 0u); accepted && (model != MODEL_NONE); model = _next_model(modelId, model))
     {
-        _model_names(models);
-    }
-    else if (_model_exists(modelName))
-    {
-        models.push_back(modelName);
-    }
-
-    bool accepted{ (mExiting == false) && ((models.empty() == false) || modelName.is_empty()) };
-    for (const String & model : models)
-    {
-        if (accepted == false)
-            break;
-
         switch (_model_state(model))
         {
         case areg::ModelState::Unloaded:
@@ -175,7 +213,7 @@ void SystemController::load_model( const String & modelName, Request * request )
             break;
 
         case areg::ModelState::Unloading:
-            LOG_WARN("The model [ %s ] is unloading, the load is refused", model.as_string());
+            LOG_WARN("A model is unloading, the load is refused");
             accepted = false;
             break;
 
@@ -188,7 +226,7 @@ void SystemController::load_model( const String & modelName, Request * request )
 
     if ((request != nullptr) && accepted && (request->wait_components() == false))
     {
-        for (const String & model : models)
+        for (uint32_t model = _next_model(modelId, 0u); model != MODEL_NONE; model = _next_model(modelId, model))
         {
             const areg::ModelState state{ _model_state(model) };
             accepted = accepted && ((state == areg::ModelState::Loading) || (state == areg::ModelState::Loaded));
@@ -200,7 +238,7 @@ void SystemController::load_model( const String & modelName, Request * request )
     {
         if (accepted)
         {
-            mPending.push_back(Pending{ request, true, models });
+            _add_pending(*request, true, modelId);
         }
         else
         {
@@ -211,21 +249,11 @@ void SystemController::load_model( const String & modelName, Request * request )
     _check_models();
 }
 
-void SystemController::unload_model( const String & modelName, Request * request )
+void SystemController::unload_model( uint32_t modelId, Request * request )
 {
     LOG_SCOPE( areg_component_private_SystemController, unload_model );
 
-    std::vector<String> models;
-    if (modelName.is_empty())
-    {
-        _model_names(models);
-    }
-    else if (_model_exists(modelName))
-    {
-        models.push_back(modelName);
-    }
-
-    for (const String & model : models)
+    for (uint32_t model = _next_model(modelId, 0u); model != MODEL_NONE; model = _next_model(modelId, model))
     {
         switch (_model_state(model))
         {
@@ -234,10 +262,7 @@ void SystemController::unload_model( const String & modelName, Request * request
             break;
 
         case areg::ModelState::Loading:
-            if (std::find(mUnloadAfterLoad.begin(), mUnloadAfterLoad.end(), model) == mUnloadAfterLoad.end())
-            {
-                mUnloadAfterLoad.push_back(model);
-            }
+            _set_unload_after_load(model, true);
             break;
 
         case areg::ModelState::Unloaded:
@@ -249,19 +274,19 @@ void SystemController::unload_model( const String & modelName, Request * request
 
     if (request != nullptr)
     {
-        mPending.push_back(Pending{ request, false, models });
+        _add_pending(*request, false, modelId);
     }
 
     _check_models();
 }
 
-void SystemController::thread_running( const String & threadName, uint64_t instance )
+void SystemController::thread_running( uint64_t instance )
 {
-    const int32_t index{ _find_live(threadName, instance) };
-    if ((index < 0) || (mThreads[static_cast<uint32_t>(index)].mState != areg::ThreadState::Starting))
+    const int32_t index{ _find_record(instance) };
+    if ((index < 0) || (mRecords[static_cast<uint32_t>(index)].mState != areg::ThreadState::Starting))
         return;
 
-    ThreadRecord & record{ mThreads[static_cast<uint32_t>(index)] };
+    ThreadRecord & record{ mRecords[static_cast<uint32_t>(index)] };
     do
     {
         Lock lock(mLock);
@@ -274,83 +299,77 @@ void SystemController::thread_running( const String & threadName, uint64_t insta
     _arm_deadline();
 }
 
-void SystemController::thread_stopped( const String & threadName, uint64_t instance )
+void SystemController::thread_stopped( uint64_t instance )
 {
     LOG_SCOPE( areg_component_private_SystemController, thread_stopped );
 
-    const int32_t index{ _find_live(threadName, instance) };
-    if (index >= 0)
+    const int32_t index{ _find_record(instance) };
+    if (index < 0)
+        return;
+
+    const ThreadRecord record{ mRecords[static_cast<uint32_t>(index)] };
+    if (record.mState == areg::ThreadState::Abandoned)
     {
-        const ThreadRecord record{ mThreads[static_cast<uint32_t>(index)] };
-        do
-        {
-            Lock lock(mLock);
-            mThreads.erase(mThreads.begin() + index);
-        } while (false);
-
+        const bool deferred{ _take_deferred(record.mModel, record.mPosition) };
+        LOG_WARN("The abandoned component thread [ %s ] returned and is released", record.mThread->name().as_string());
+        _remove_record(static_cast<uint32_t>(index));
         _free_thread(record.mThread, record.mTimeout);
-
-        const areg::ModelState modelState{ _model_state(record.mModel) };
+        if (deferred)
+        {
+            LOG_WARN("An instance of a component thread returned, starting the deferred new instance");
+            _start_instance(record.mModel, record.mPosition);
+        }
+    }
+    else
+    {
         if (record.mState == areg::ThreadState::Starting)
         {
-            LOG_ERR("The component thread [ %s ] ended before its components started", record.mName.as_string());
-            if (modelState == areg::ModelState::Loading)
+            LOG_ERR("The component thread [ %s ] ended before its components started", record.mThread->name().as_string());
+        }
+        else if (record.mRestart)
+        {
+            LOG_WARN("The component thread [ %s ] stopped, starting its new instance", record.mThread->name().as_string());
+        }
+        else if (record.mState == areg::ThreadState::Running)
+        {
+            LOG_WARN("The component thread [ %s ] ended without being asked to", record.mThread->name().as_string());
+        }
+
+        _remove_record(static_cast<uint32_t>(index));
+        _free_thread(record.mThread, record.mTimeout);
+
+        if (record.mState == areg::ThreadState::Starting)
+        {
+            if (_model_state(record.mModel) == areg::ModelState::Loading)
             {
-                mFailedLoads.push_back(record.mModel);
                 _start_unload(record.mModel);
             }
         }
         else if (record.mRestart)
         {
-            LOG_WARN("The component thread [ %s ] stopped, starting its new instance", record.mName.as_string());
-            _start_instance(record.mName, record.mModel);
-        }
-        else if (record.mState == areg::ThreadState::Running)
-        {
-            LOG_WARN("The component thread [ %s ] ended without being asked to", record.mName.as_string());
-        }
-
-        _check_models();
-        _arm_deadline();
-        return;
-    }
-
-    for (uint32_t i = 0; i < mAbandoned.size(); ++ i)
-    {
-        if ((mAbandoned[i].mName == threadName) && (static_cast<uint64_t>(reinterpret_cast<uintptr_t>(mAbandoned[i].mThread)) == instance))
-        {
-            ComponentThread * thread{ mAbandoned[i].mThread };
-            const uint32_t timeout{ mAbandoned[i].mTimeout };
-            do
-            {
-                Lock lock(mLock);
-                mAbandoned.erase(mAbandoned.begin() + i);
-            } while (false);
-
-            LOG_WARN("The abandoned component thread [ %s ] returned and is released", threadName.as_string());
-            _free_thread(thread, timeout);
-            _start_deferred(threadName);
-            _check_models();
-            _arm_deadline();
-            break;
+            _start_instance(record.mModel, record.mPosition);
         }
     }
+
+    _check_models();
+    _arm_deadline();
 }
 
-void SystemController::watchdog_expired( const String & threadName, uint64_t instance, const String & guardedName )
+void SystemController::watchdog_expired( uint64_t instance, bool isWorker )
 {
     LOG_SCOPE( areg_component_private_SystemController, watchdog_expired );
 
-    const int32_t index{ _find_live(threadName, instance) };
-    if ((index < 0) || (mThreads[static_cast<uint32_t>(index)].mState != areg::ThreadState::Running))
+    const int32_t index{ _find_record(instance) };
+    if ((index < 0) || (mRecords[static_cast<uint32_t>(index)].mState != areg::ThreadState::Running))
         return;
 
-    ThreadRecord & record{ mThreads[static_cast<uint32_t>(index)] };
-    const bool isWorker{ guardedName != threadName };
-    LOG_WARN("The watchdog of the thread [ %s ] of component thread [ %s ] expired, policy [ %s ]"
-                , guardedName.as_string(), threadName.as_string(), areg::as_string(record.mPolicy));
+    const areg::FailurePolicy policy{ mRecords[static_cast<uint32_t>(index)].mPolicy };
+    LOG_WARN("The watchdog of a %s of component thread [ %s ] expired, policy [ %s ]"
+                , isWorker ? "worker" : "component thread"
+                , mRecords[static_cast<uint32_t>(index)].mThread->name().as_string()
+                , areg::as_string(policy));
 
-    switch (record.mPolicy)
+    switch (policy)
     {
     case areg::FailurePolicy::Restart:
         _restart_thread(static_cast<uint32_t>(index));
@@ -383,9 +402,10 @@ void SystemController::deadline_expired()
         _finish_exit();
     }
 
-    for (uint32_t i = 0; i < mThreads.size(); )
+    // An abandoned record stays at its index and has no deadline.
+    for (uint32_t i = 0; i < mRecordCount; )
     {
-        ThreadRecord & record{ mThreads[i] };
+        ThreadRecord & record{ mRecords[i] };
         if ((record.mHasDeadline == false) || (record.mDeadline > now))
         {
             ++ i;
@@ -401,10 +421,8 @@ void SystemController::deadline_expired()
         }
         else if ((record.mState == areg::ThreadState::Stopping) && record.mRestart)
         {
-            const String name{ record.mName };
-            const String model{ record.mModel };
             _abandon_thread(i, areg::DisconnectReason::ProviderRestarting);
-            _start_replacement(name, model);
+            _start_replacement(i);
         }
         else
         {
@@ -418,12 +436,13 @@ void SystemController::deadline_expired()
 
 void SystemController::stop()
 {
-    for (const Pending & pending : mPending)
+    while (mPending != nullptr)
     {
-        pending.mRequest->complete(false);
+        Request * const request{ mPending };
+        mPending = request->mNext;
+        request->complete(false);
     }
 
-    mPending.clear();
     mGuard.reset();
 }
 
@@ -433,9 +452,12 @@ void SystemController::set_user_state( uint32_t userState )
     if (previous == userState)
         return;
 
-    for (const ThreadRecord & record : mThreads)
+    for (uint32_t i = 0; i < mRecordCount; ++ i)
     {
-        UserStateNotifier::announce(*record.mThread, previous, userState);
+        if (mRecords[i].mState != areg::ThreadState::Abandoned)
+        {
+            UserStateNotifier::announce(*mRecords[i].mThread, previous, userState);
+        }
     }
 }
 
@@ -451,20 +473,31 @@ void SystemController::store_user_state( uint32_t userState ) noexcept
 
 areg::ThreadState SystemController::thread_state( const String & threadName ) const
 {
+    areg::ThreadState result{ areg::ThreadState::Unknown };
     Lock lock(mLock);
-    for (const ThreadRecord & record : mThreads)
+    for (uint32_t i = 0; i < mRecordCount; ++ i)
     {
-        if (record.mName == threadName)
-            return record.mState;
+        if (mRecords[i].mThread->name() == threadName)
+        {
+            if (mRecords[i].mState != areg::ThreadState::Abandoned)
+                return mRecords[i].mState;
+
+            result = areg::ThreadState::Abandoned;
+        }
     }
 
-    for (const ThreadRecord & record : mAbandoned)
-    {
-        if (record.mName == threadName)
-            return areg::ThreadState::Abandoned;
-    }
+    return result;
+}
 
-    return areg::ThreadState::Unknown;
+uint32_t SystemController::find_model_id( const String & modelName )
+{
+    if (modelName.is_empty())
+        return MODEL_ALL;
+
+    ComponentLoader & loader{ ComponentLoader::instance() };
+    Lock lock(loader.mLock);
+    const areg::Model * model{ loader.find_model_named(modelName) };
+    return (model != nullptr ? model->mModelId : MODEL_NONE);
 }
 
 bool SystemController::is_caller_abandoned() noexcept
@@ -504,73 +537,43 @@ bool SystemController::is_caller_in_model( const String & modelName )
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 
-void SystemController::_start_load( const String & modelName )
+void SystemController::_start_load( uint32_t modelId )
 {
     LOG_SCOPE( areg_component_private_SystemController, _start_load );
 
-    std::vector<areg::ComponentThreadEntry> entries;
-    do
-    {
-        ComponentLoader & loader{ ComponentLoader::instance() };
-        Lock lock(loader.mLock);
-        const areg::Model * model{ loader.find_model_named(modelName) };
-        if (model == nullptr)
-            return;
-
-        const areg::ComponentThreadList & threads{ model->thread_list() };
-        for (uint32_t i = 0; i < threads.mListThreads.size(); ++ i)
-        {
-            entries.push_back(threads.mListThreads[i]);
-        }
-    } while (false);
-
-    _set_model_state(modelName, areg::ModelState::Loading);
+    _set_model_state(modelId, areg::ModelState::Loading);
 
     bool started{ true };
-    for (const areg::ComponentThreadEntry & entry : entries)
+    const uint32_t count{ _thread_count(modelId) };
+    for (uint32_t position = 0u; started && (position < count); ++ position)
     {
-        if (entry.is_valid() == false)
-        {
-            started = false;
-            break;
-        }
-
-        if ((_find_live(entry.mThreadName) >= 0) || (Thread::find_by_address(ThreadAddress(entry.mThreadName)) != nullptr))
-        {
-            LOG_ERR("A thread named [ %s ] already runs, the component thread cannot start", entry.mThreadName.as_string());
-            started = false;
-            break;
-        }
-
-        if (_start_thread(entry, modelName) == false)
-        {
-            started = false;
-            break;
-        }
+        started = _is_startable(modelId, position) && _start_thread(modelId, position);
     }
 
     if (started == false)
     {
-        LOG_ERR("Failed to load the model [ %s ]", modelName.as_string());
-        mFailedLoads.push_back(modelName);
-        _start_unload(modelName);
+        LOG_ERR("Failed to load a model");
+        _start_unload(modelId);
     }
 
     _arm_deadline();
 }
 
-void SystemController::_start_unload( const String & modelName )
+void SystemController::_start_unload( uint32_t modelId )
 {
-    _set_model_state(modelName, areg::ModelState::Unloading);
-    mUnloadAfterLoad.erase(std::remove(mUnloadAfterLoad.begin(), mUnloadAfterLoad.end(), modelName), mUnloadAfterLoad.end());
-    for (auto pos = mDeferred.begin(); pos != mDeferred.end(); )
+    _set_model_state(modelId, areg::ModelState::Unloading);
+    _set_unload_after_load(modelId, false);
+    for (uint32_t i = 0; i < mRecordCount; ++ i)
     {
-        pos = (pos->mModel == modelName) ? mDeferred.erase(pos) : pos + 1;
-    }
+        ThreadRecord & record{ mRecords[i] };
+        if (record.mModel != modelId)
+            continue;
 
-    for (ThreadRecord & record : mThreads)
-    {
-        if (record.mModel == modelName)
+        if (record.mState == areg::ThreadState::Abandoned)
+        {
+            record.mDeferred = false;
+        }
+        else
         {
             _stop_thread(record);
         }
@@ -579,38 +582,84 @@ void SystemController::_start_unload( const String & modelName )
     _arm_deadline();
 }
 
-bool SystemController::_start_thread( const areg::ComponentThreadEntry & entry, const String & modelName )
+bool SystemController::_is_startable( uint32_t modelId, uint32_t position ) const
+{
+    LOG_SCOPE( areg_component_private_SystemController, _is_startable );
+
+    ComponentLoader & loader{ ComponentLoader::instance() };
+    Lock lock(loader.mLock);
+    const areg::Model * model{ _find_model(modelId) };
+    if ((model == nullptr) || (position >= model->thread_list().mListThreads.size()))
+        return false;
+
+    const areg::ComponentThreadEntry & entry{ model->thread_list().mListThreads[position] };
+    if (entry.is_valid() == false)
+        return false;
+
+    if ((_find_live(entry.mThreadName) >= 0) || (Thread::find_by_address(ThreadAddress(entry.mThreadName)) != nullptr))
+    {
+        LOG_ERR("A thread named [ %s ] already runs, the component thread cannot start", entry.mThreadName.as_string());
+        return false;
+    }
+
+    return true;
+}
+
+bool SystemController::_start_thread( uint32_t modelId, uint32_t position )
 {
     LOG_SCOPE( areg_component_private_SystemController, _start_thread );
 
-    ComponentThread * thread{ new (std::nothrow) ComponentThread(entry.mThreadName, entry.mWatchdogTimeout, entry.mStackSizeKB, entry.mMaxQueue, entry.mDropOnFull, entry.mQueueTimeout) };
+    if (_secure_room() == false)
+    {
+        LOG_ERR("The record of a component thread cannot be allocated, the thread is not started");
+        return false;
+    }
+
+    ComponentThread * thread{ nullptr };
+    uint32_t timeout{ areg::LIFECYCLE_TIMEOUT_DEFAULT };
+    areg::FailurePolicy policy{ areg::FailurePolicy::Exit };
+    do
+    {
+        ComponentLoader & loader{ ComponentLoader::instance() };
+        Lock lock(loader.mLock);
+        const areg::Model * model{ _find_model(modelId) };
+        if ((model == nullptr) || (position >= model->thread_list().mListThreads.size()))
+            return false;
+
+        const areg::ComponentThreadEntry & entry{ model->thread_list().mListThreads[position] };
+        thread  = new (std::nothrow) ComponentThread(entry.mThreadName, entry.mWatchdogTimeout, entry.mStackSizeKB, entry.mMaxQueue, entry.mDropOnFull, entry.mQueueTimeout);
+        timeout = entry.mLifecycleTimeout != 0u ? entry.mLifecycleTimeout : areg::LIFECYCLE_TIMEOUT_DEFAULT;
+        policy  = entry.mFailurePolicy;
+    } while (false);
+
     if (thread == nullptr)
         return false;
 
     thread->share_with_lookups();
-    if ((ServiceManager::build_thread_report(true, *thread, thread->mRunningReport) == false) ||
+    if ((thread->mWatchdog.can_arm() == false) ||
+        (ServiceManager::build_thread_report(true, *thread, thread->mRunningReport) == false) ||
         (ServiceManager::build_thread_report(false, *thread, thread->mStoppedReport) == false))
     {
-        LOG_ERR("The reports of the component thread [ %s ] cannot be built, the thread is not started", entry.mThreadName.as_string());
+        LOG_ERR("The watchdog or the reports of the component thread [ %s ] cannot be built, the thread is not started", thread->name().as_string());
         static_cast<void>(thread->shutdown(areg::DO_NOT_WAIT));
         DispatcherThread::release_shared(thread);
         return false;
     }
 
-    const uint32_t timeout{ entry.mLifecycleTimeout != 0u ? entry.mLifecycleTimeout : areg::LIFECYCLE_TIMEOUT_DEFAULT };
     do
     {
         Lock lock(mLock);
-        mThreads.push_back(ThreadRecord{ entry.mThreadName, modelName, thread, areg::ThreadState::Starting, _after(timeout), true, false, false, timeout, entry.mFailurePolicy });
+        mRecords[mRecordCount] = ThreadRecord{ thread, _after(timeout), timeout, modelId, position, areg::ThreadState::Starting, policy, true, false, false, false };
+        ++ mRecordCount;
     } while (false);
 
     if (thread->start(areg::DO_NOT_WAIT) == false)
     {
-        LOG_ERR("Failed to start the component thread [ %s ]", entry.mThreadName.as_string());
+        LOG_ERR("Failed to start the component thread [ %s ]", thread->name().as_string());
         do
         {
             Lock lock(mLock);
-            mThreads.pop_back();
+            -- mRecordCount;
         } while (false);
 
         static_cast<void>(thread->shutdown(areg::DO_NOT_WAIT));
@@ -621,50 +670,50 @@ bool SystemController::_start_thread( const areg::ComponentThreadEntry & entry, 
     return true;
 }
 
-void SystemController::_start_instance( const String & threadName, const String & modelName )
+void SystemController::_start_instance( uint32_t modelId, uint32_t position )
 {
     LOG_SCOPE( areg_component_private_SystemController, _start_instance );
 
-    if ((_model_state(modelName) != areg::ModelState::Loaded) || mExiting || (_find_live(threadName) >= 0))
+    if ((_model_state(modelId) != areg::ModelState::Loaded) || mExiting || (_find_live(modelId, position) >= 0))
         return;
 
-    const areg::ComponentThreadEntry entry{ ComponentLoader::find_thread_entry(threadName) };
-    if ((entry.is_valid() == false) || (_start_thread(entry, modelName) == false))
+    if (_start_thread(modelId, position) == false)
     {
-        LOG_ERR("Failed to start the new instance of the component thread [ %s ]", threadName.as_string());
+        LOG_ERR("Failed to start the new instance of a component thread");
     }
 }
 
-void SystemController::_start_replacement( const String & threadName, const String & modelName )
+void SystemController::_start_replacement( uint32_t index )
 {
     LOG_SCOPE( areg_component_private_SystemController, _start_replacement );
 
-    if (_count_abandoned(threadName) >= MAX_HUNG_INSTANCES)
+    const uint32_t modelId{ mRecords[index].mModel };
+    const uint32_t position{ mRecords[index].mPosition };
+    if (_count_abandoned(modelId, position) >= MAX_HUNG_INSTANCES)
     {
-        LOG_ERR("Two instances of the component thread [ %s ] hang, the new instance starts when one returns", threadName.as_string());
-        mDeferred.push_back(Deferred{ threadName, modelName });
+        LOG_ERR("Two instances of the component thread [ %s ] hang, the new instance starts when one returns", mRecords[index].mThread->name().as_string());
+        mRecords[index].mDeferred = true;
     }
     else
     {
-        _start_instance(threadName, modelName);
+        _start_instance(modelId, position);
     }
 }
 
-void SystemController::_start_deferred( const String & threadName )
+bool SystemController::_take_deferred( uint32_t modelId, uint32_t position )
 {
-    LOG_SCOPE( areg_component_private_SystemController, _start_deferred );
-
-    for (auto pos = mDeferred.begin(); pos != mDeferred.end(); ++ pos)
+    bool result{ false };
+    for (uint32_t i = 0; i < mRecordCount; ++ i)
     {
-        if (pos->mThread == threadName)
+        ThreadRecord & record{ mRecords[i] };
+        if ((record.mState == areg::ThreadState::Abandoned) && (record.mModel == modelId) && (record.mPosition == position))
         {
-            const String model{ pos->mModel };
-            mDeferred.erase(pos);
-            LOG_WARN("An instance of the component thread [ %s ] returned, starting the deferred new instance", threadName.as_string());
-            _start_instance(threadName, model);
-            break;
+            result = result || record.mDeferred;
+            record.mDeferred = false;
         }
     }
+
+    return result;
 }
 
 void SystemController::_stop_thread( ThreadRecord & record )
@@ -692,7 +741,7 @@ void SystemController::_stop_thread( ThreadRecord & record )
 
 void SystemController::_restart_thread( uint32_t index )
 {
-    ThreadRecord & record{ mThreads[index] };
+    ThreadRecord & record{ mRecords[index] };
     do
     {
         Lock lock(mLock);
@@ -713,58 +762,39 @@ void SystemController::_abandon_thread( uint32_t index, areg::DisconnectReason r
 {
     LOG_SCOPE( areg_component_private_SystemController, _abandon_thread );
 
-    ThreadRecord record{ mThreads[index] };
+    ThreadRecord & record{ mRecords[index] };
     ComponentThread * thread{ record.mThread };
-    LOG_ERR("The component thread [ %s ] missed its deadline and is abandoned: it is unregistered, and released if it returns", record.mName.as_string());
+    LOG_ERR("The component thread [ %s ] missed its deadline and is abandoned: it is unregistered, and released if it returns", thread->name().as_string());
 
     // From here on nothing the thread registers reaches the service registry.
     thread->mLifecycleState.store(areg::ThreadState::Abandoned, std::memory_order_release);
-    record.mState       = areg::ThreadState::Abandoned;
-    record.mHasDeadline = false;
     do
     {
         Lock lock(mLock);
-        mThreads.erase(mThreads.begin() + index);
-        mAbandoned.push_back(record);
+        record.mState       = areg::ThreadState::Abandoned;
+        record.mHasDeadline = false;
     } while (false);
 
     thread->trigger_exit();
     thread->request_exit();
 
-    // The worker threads of its components leave the thread registry with it.
-    ArrayList<String> names;
-    names.add(thread->name());
-    std::vector<Thread *> workers;
-    do
-    {
-        Thread::MapThreadNameResource & threads{ Thread::_map_thread_name() };
-        Lock lock(threads.lockable());
-        UniqueNumber key{ 0u };
-        for (Thread * entry = threads.resource_first_key(key); entry != nullptr; entry = threads.resource_next_key(key))
-        {
-            WorkerThread * worker{ AREG_RUNTIME_CAST(entry, WorkerThread) };
-            if ((worker != nullptr) && (&worker->binding_component_thread() == thread) && ((worker->mLifeState.load(std::memory_order_relaxed) & Thread::LIFE_SHARES) != 0u))
-            {
-                worker->mLifeState.fetch_add(Thread::LIFE_SHARE, std::memory_order_relaxed);
-                workers.push_back(worker);
-            }
-        }
-    } while (false);
+    ServiceManager & manager{ ServiceManager::instance() };
 
-    for (Thread * worker : workers)
+    // The worker threads of its components leave the thread registry with it.
+    for (Thread * worker = _hold_next_worker(*thread); worker != nullptr; worker = _hold_next_worker(*thread))
     {
-        names.add(worker->name());
         worker->detach_from_registry();
+        StubBase::_detach_thread_providers(worker->address());
+        ProxyBase::_detach_thread_proxies(worker->address());
+        manager.mEventProcessor.unregister_thread_services(worker->address(), reason, manager.service_register_provider());
         Thread::_drop_hold(worker);
     }
 
     thread->detach_from_registry();
-    StubBase::_detach_thread_providers(names);
+    StubBase::_detach_thread_providers(thread->address());
     Component::_detach_thread_components(*thread);
-    ProxyBase::_detach_thread_proxies(names);
-
-    ServiceManager & manager{ ServiceManager::instance() };
-    manager.mEventProcessor.unregister_thread_services(names, reason, manager.service_register_provider());
+    ProxyBase::_detach_thread_proxies(thread->address());
+    manager.mEventProcessor.unregister_thread_services(thread->address(), reason, manager.service_register_provider());
     thread->mWatchdog.disarm();
 }
 
@@ -785,9 +815,9 @@ void SystemController::_apply_policy( uint32_t index, const char * what )
 {
     LOG_SCOPE( areg_component_private_SystemController, _apply_policy );
 
-    const ThreadRecord & record{ mThreads[index] };
+    const ThreadRecord record{ mRecords[index] };
     LOG_ERR("The component thread [ %s ] missed its %s deadline of [ %u ] ms, policy [ %s ]"
-                , record.mName.as_string(), what, record.mTimeout, areg::as_string(record.mPolicy));
+                , record.mThread->name().as_string(), what, record.mTimeout, areg::as_string(record.mPolicy));
 
     if (record.mPolicy == areg::FailurePolicy::Exit)
     {
@@ -796,19 +826,15 @@ void SystemController::_apply_policy( uint32_t index, const char * what )
     else if ((record.mPolicy == areg::FailurePolicy::Restart) && (record.mState == areg::ThreadState::Starting) && (_model_state(record.mModel) == areg::ModelState::Loaded))
     {
         // A new instance of a loaded model that hangs in its start is replaced too.
-        const String name{ record.mName };
-        const String model{ record.mModel };
         _abandon_thread(index, areg::DisconnectReason::ProviderRestarting);
-        _start_replacement(name, model);
+        _start_replacement(index);
     }
     else if ((record.mPolicy == areg::FailurePolicy::Restart) && (record.mState == areg::ThreadState::Starting) && (_model_state(record.mModel) == areg::ModelState::Loading))
     {
         // A thread that hangs in its first start fails the load of its model.
-        const String model{ record.mModel };
         _abandon_thread(index, areg::DisconnectReason::ProviderDisconnected);
-        LOG_ERR("Failed to load the model [ %s ]", model.as_string());
-        mFailedLoads.push_back(model);
-        _start_unload(model);
+        LOG_ERR("Failed to load a model");
+        _start_unload(record.mModel);
     }
     else
     {
@@ -818,18 +844,16 @@ void SystemController::_apply_policy( uint32_t index, const char * what )
 
 void SystemController::_check_models()
 {
-    std::vector<String> models;
-    _model_names(models);
     bool allUnloaded{ true };
-    for (const String & model : models)
+    for (uint32_t model = _next_model(MODEL_ALL, 0u); model != MODEL_NONE; model = _next_model(MODEL_ALL, model))
     {
         const areg::ModelState state{ _model_state(model) };
         if (state == areg::ModelState::Loading)
         {
             bool starting{ false };
-            for (const ThreadRecord & record : mThreads)
+            for (uint32_t i = 0; i < mRecordCount; ++ i)
             {
-                starting = starting || ((record.mModel == model) && (record.mState == areg::ThreadState::Starting));
+                starting = starting || ((mRecords[i].mModel == model) && (mRecords[i].mState == areg::ThreadState::Starting));
             }
 
             if (starting == false)
@@ -844,7 +868,6 @@ void SystemController::_check_models()
             if (_count_live(model) == 0u)
             {
                 _set_model_state(model, areg::ModelState::Unloaded);
-                mFailedLoads.erase(std::remove(mFailedLoads.begin(), mFailedLoads.end(), model), mFailedLoads.end());
             }
             else
             {
@@ -864,9 +887,9 @@ void SystemController::_check_models()
         _finish_exit();
     }
 
-    for (const String & model : models)
+    for (uint32_t model = _next_model(MODEL_ALL, 0u); model != MODEL_NONE; model = _next_model(MODEL_ALL, model))
     {
-        if ((std::find(mUnloadAfterLoad.begin(), mUnloadAfterLoad.end(), model) != mUnloadAfterLoad.end()) && (_model_state(model) == areg::ModelState::Loaded))
+        if (_is_unload_due(model))
         {
             _start_unload(model);
             _check_models();
@@ -875,17 +898,34 @@ void SystemController::_check_models()
     }
 }
 
+void SystemController::_add_pending( Request & request, bool load, uint32_t modelId )
+{
+    request.mLoad       = load;
+    request.mModels     = modelId;
+    request.mLastModel  = (modelId == MODEL_ALL) ? _last_model() : MODEL_ALL;
+    request.mNext       = nullptr;
+
+    Request ** tail{ &mPending };
+    while (*tail != nullptr)
+    {
+        tail = &(*tail)->mNext;
+    }
+
+    *tail = &request;
+}
+
 void SystemController::_complete_pending()
 {
-    for (uint32_t i = 0; i < mPending.size(); )
+    Request ** link{ &mPending };
+    while (*link != nullptr)
     {
-        const Pending & pending{ mPending[i] };
+        Request * const request{ *link };
         bool done{ true };
         bool result{ true };
-        for (const String & model : pending.mModels)
+        for (uint32_t model = _next_model(request->mModels, 0u); (model != MODEL_NONE) && (model <= request->mLastModel); model = _next_model(request->mModels, model))
         {
             const areg::ModelState state{ _model_state(model) };
-            if (pending.mLoad)
+            if (request->mLoad)
             {
                 done    = done && ((state == areg::ModelState::Loaded) || (state == areg::ModelState::Unloaded));
                 result  = result && (state == areg::ModelState::Loaded);
@@ -898,13 +938,12 @@ void SystemController::_complete_pending()
 
         if (done)
         {
-            Request * const request{ pending.mRequest };
-            mPending.erase(mPending.begin() + i);
+            *link = request->mNext;
             request->complete(result);
         }
         else
         {
-            ++ i;
+            link = &request->mNext;
         }
     }
 }
@@ -927,16 +966,17 @@ void SystemController::_exit_process( int32_t culprit, [[maybe_unused]] const ch
 
     mExiting = true;
     uint32_t longest{ 0u };
-    for (const ThreadRecord & record : mThreads)
+    for (uint32_t i = 0; i < mRecordCount; ++ i)
     {
-        longest = std::max(longest, record.mTimeout);
+        if (mRecords[i].mState != areg::ThreadState::Abandoned)
+        {
+            longest = std::max(longest, mRecords[i].mTimeout);
+        }
     }
 
     mExitDeadline = _after(areg::SHUTDOWN_DRAIN_TIMEOUT + longest);
 
-    std::vector<String> models;
-    _model_names(models);
-    for (const String & model : models)
+    for (uint32_t model = _next_model(MODEL_ALL, 0u); model != MODEL_NONE; model = _next_model(MODEL_ALL, model))
     {
         const areg::ModelState state{ _model_state(model) };
         if ((state == areg::ModelState::Loaded) || (state == areg::ModelState::Loading))
@@ -964,8 +1004,9 @@ void SystemController::_arm_deadline()
 
     bool armed{ mExiting };
     Clock::time_point earliest{ mExitDeadline };
-    for (const ThreadRecord & record : mThreads)
+    for (uint32_t i = 0; i < mRecordCount; ++ i)
     {
+        const ThreadRecord & record{ mRecords[i] };
         if (record.mHasDeadline && ((armed == false) || (record.mDeadline < earliest)))
         {
             earliest = record.mDeadline;
@@ -973,29 +1014,62 @@ void SystemController::_arm_deadline()
         }
     }
 
+    ASSERT(mGuard != nullptr);
     if (armed)
     {
-        if (mGuard == nullptr)
-        {
-            mGuard.reset(new (std::nothrow) Watchdog(String(DEADLINE_GUARD_NAME)));
-        }
-
-        if ((mGuard != nullptr) && (mGuard->arm(_ms_until(earliest)) == false))
+        if (mGuard->arm(_ms_until(earliest)) == false)
         {
             LOG_WARN("The watchdog manager does not run: the lifecycle deadlines are not enforced");
         }
     }
-    else if (mGuard != nullptr)
+    else
     {
         mGuard->stop_guard();
     }
 }
 
-int32_t SystemController::_find_live( const String & threadName, uint64_t instance ) const
+bool SystemController::_secure_room()
 {
-    for (uint32_t i = 0; i < mThreads.size(); ++ i)
+    if (mRecordCount < mRecordCapacity)
+        return true;
+
+    const uint32_t capacity{ mRecordCapacity != 0u ? (mRecordCapacity * 2u) : FIRST_RECORD_COUNT };
+    ThreadRecord * const records{ new (std::nothrow) ThreadRecord[capacity] };
+    if (records == nullptr)
+        return false;
+
+    ThreadRecord * const previous{ mRecords };
+    do
     {
-        if ((mThreads[i].mName == threadName) && (static_cast<uint64_t>(reinterpret_cast<uintptr_t>(mThreads[i].mThread)) == instance))
+        Lock lock(mLock);
+        if (previous != nullptr)
+        {
+            std::memcpy(records, previous, sizeof(ThreadRecord) * mRecordCount);
+        }
+
+        mRecords        = records;
+        mRecordCapacity = capacity;
+    } while (false);
+
+    delete[] previous;
+    return true;
+}
+
+void SystemController::_remove_record( uint32_t index )
+{
+    Lock lock(mLock);
+    -- mRecordCount;
+    if (index != mRecordCount)
+    {
+        std::memmove(mRecords + index, mRecords + index + 1u, sizeof(ThreadRecord) * (mRecordCount - index));
+    }
+}
+
+int32_t SystemController::_find_record( uint64_t instance ) const
+{
+    for (uint32_t i = 0; i < mRecordCount; ++ i)
+    {
+        if (static_cast<uint64_t>(reinterpret_cast<uintptr_t>(mRecords[i].mThread)) == instance)
             return static_cast<int32_t>(i);
     }
 
@@ -1004,75 +1078,144 @@ int32_t SystemController::_find_live( const String & threadName, uint64_t instan
 
 int32_t SystemController::_find_live( const String & threadName ) const
 {
-    for (uint32_t i = 0; i < mThreads.size(); ++ i)
+    for (uint32_t i = 0; i < mRecordCount; ++ i)
     {
-        if (mThreads[i].mName == threadName)
+        if ((mRecords[i].mState != areg::ThreadState::Abandoned) && (mRecords[i].mThread->name() == threadName))
             return static_cast<int32_t>(i);
     }
 
     return -1;
 }
 
-uint32_t SystemController::_count_abandoned( const String & threadName ) const
+int32_t SystemController::_find_live( uint32_t modelId, uint32_t position ) const
+{
+    for (uint32_t i = 0; i < mRecordCount; ++ i)
+    {
+        if ((mRecords[i].mState != areg::ThreadState::Abandoned) && (mRecords[i].mModel == modelId) && (mRecords[i].mPosition == position))
+            return static_cast<int32_t>(i);
+    }
+
+    return -1;
+}
+
+uint32_t SystemController::_count_abandoned( uint32_t modelId, uint32_t position ) const
 {
     uint32_t result{ 0u };
-    for (const ThreadRecord & record : mAbandoned)
+    for (uint32_t i = 0; i < mRecordCount; ++ i)
     {
-        result += (record.mName == threadName) ? 1u : 0u;
+        result += ((mRecords[i].mState == areg::ThreadState::Abandoned) && (mRecords[i].mModel == modelId) && (mRecords[i].mPosition == position)) ? 1u : 0u;
     }
 
     return result;
 }
 
-uint32_t SystemController::_count_live( const String & modelName ) const
+uint32_t SystemController::_count_live( uint32_t modelId ) const
 {
     uint32_t result{ 0u };
-    for (const ThreadRecord & record : mThreads)
+    for (uint32_t i = 0; i < mRecordCount; ++ i)
     {
-        result += (record.mModel == modelName) ? 1u : 0u;
+        result += ((mRecords[i].mState != areg::ThreadState::Abandoned) && (mRecords[i].mModel == modelId)) ? 1u : 0u;
     }
 
     return result;
 }
 
-areg::ModelState SystemController::_model_state( const String & modelName )
+areg::Model * SystemController::_find_model( uint32_t modelId )
+{
+    ComponentLoader & loader{ ComponentLoader::instance() };
+    for (uint32_t i = 0; i < loader.mModelList.size(); ++ i)
+    {
+        if (loader.mModelList[i].mModelId == modelId)
+            return &loader.mModelList[i];
+    }
+
+    return nullptr;
+}
+
+uint32_t SystemController::_next_model( uint32_t selection, uint32_t previous )
+{
+    if (selection != MODEL_ALL)
+        return (previous == MODEL_NONE ? selection : MODEL_NONE);
+
+    uint32_t result{ MODEL_NONE };
+    ComponentLoader & loader{ ComponentLoader::instance() };
+    Lock lock(loader.mLock);
+    for (uint32_t i = 0; i < loader.mModelList.size(); ++ i)
+    {
+        const uint32_t id{ loader.mModelList[i].mModelId };
+        if ((id > previous) && ((result == MODEL_NONE) || (id < result)))
+        {
+            result = id;
+        }
+    }
+
+    return result;
+}
+
+uint32_t SystemController::_last_model()
+{
+    uint32_t result{ MODEL_NONE };
+    ComponentLoader & loader{ ComponentLoader::instance() };
+    Lock lock(loader.mLock);
+    for (uint32_t i = 0; i < loader.mModelList.size(); ++ i)
+    {
+        result = std::max(result, loader.mModelList[i].mModelId);
+    }
+
+    return result;
+}
+
+areg::ModelState SystemController::_model_state( uint32_t modelId )
 {
     ComponentLoader & loader{ ComponentLoader::instance() };
     Lock lock(loader.mLock);
-    const areg::Model * model{ loader.find_model_named(modelName) };
+    const areg::Model * model{ _find_model(modelId) };
     return (model != nullptr ? model->model_state() : areg::ModelState::Unloaded);
 }
 
-void SystemController::_set_model_state( const String & modelName, areg::ModelState newState )
+void SystemController::_set_model_state( uint32_t modelId, areg::ModelState newState )
 {
     ComponentLoader & loader{ ComponentLoader::instance() };
     Lock lock(loader.mLock);
-    for (uint32_t i = 0; i < loader.mModelList.size(); ++ i)
+    areg::Model * model{ _find_model(modelId) };
+    if (model != nullptr)
     {
-        areg::Model & model{ loader.mModelList[i] };
-        if (model.model_name() == modelName)
-        {
-            model.set_model_state(newState);
-            break;
-        }
+        model->set_model_state(newState);
     }
 }
 
-bool SystemController::_model_exists( const String & modelName )
+bool SystemController::_model_exists( uint32_t modelId )
 {
     ComponentLoader & loader{ ComponentLoader::instance() };
     Lock lock(loader.mLock);
-    return (loader.find_model_named(modelName) != nullptr);
+    return (_find_model(modelId) != nullptr);
 }
 
-void SystemController::_model_names( std::vector<String> & names )
+void SystemController::_set_unload_after_load( uint32_t modelId, bool unload )
 {
     ComponentLoader & loader{ ComponentLoader::instance() };
     Lock lock(loader.mLock);
-    for (uint32_t i = 0; i < loader.mModelList.size(); ++ i)
+    areg::Model * model{ _find_model(modelId) };
+    if (model != nullptr)
     {
-        names.push_back(loader.mModelList[i].model_name());
+        model->mUnloadAfterLoad = unload;
     }
+}
+
+bool SystemController::_is_unload_due( uint32_t modelId )
+{
+    ComponentLoader & loader{ ComponentLoader::instance() };
+    Lock lock(loader.mLock);
+    const areg::Model * model{ _find_model(modelId) };
+    return ((model != nullptr) && model->mUnloadAfterLoad && (model->model_state() == areg::ModelState::Loaded));
+}
+
+uint32_t SystemController::_thread_count( uint32_t modelId )
+{
+    ComponentLoader & loader{ ComponentLoader::instance() };
+    Lock lock(loader.mLock);
+    const areg::Model * model{ _find_model(modelId) };
+    return (model != nullptr ? model->thread_list().mListThreads.size() : 0u);
 }
 
 } // namespace areg

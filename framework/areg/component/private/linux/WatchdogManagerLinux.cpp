@@ -32,7 +32,7 @@ void WatchdogManager::_on_timerfd_expired(TIMERHANDLE handle)
     uint32_t lowValue{ 0u };
     {
         // An epoll batch may hold the timer of a watchdog destroyed after the wait returned.
-        Lock resourceLock(mWatchdogResource.lockable());
+        Lock resourceLock(mWatchdogLock);
         watchdog = _find_by_handle(handle);
         if (watchdog == nullptr)
             return;

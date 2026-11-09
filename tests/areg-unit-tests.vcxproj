@@ -144,6 +144,7 @@
     <ClCompile Include="units\MapTest.cpp" />
     <ClCompile Include="units\KeyValuePairTest.cpp" />
     <ClCompile Include="units\FatalErrorTest.cpp" />
+    <ClCompile Include="units\WatchdogTest.cpp" />
     <ClCompile Include="units\RemainingSmallFilesCoverageTest.cpp" />
     <ClCompile Include="units\RemainderCoverageTest.cpp" />
     <ClCompile Include="units\StringDefsEdgeTest.cpp" />
