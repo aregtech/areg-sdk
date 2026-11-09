@@ -155,6 +155,15 @@ areg::LogSourceState LogManager::source_state()
     return logManager.mLoggerTcp.is_paused() ? areg::LogSourceState::Paused : areg::LogSourceState::Active;
 }
 
+void LogManager::clear_configured_state()
+{
+    LogManager& logManager = LogManager::instance();
+    Lock lock(logManager.mLock);
+    logManager.mScopeController.reset();
+    logManager.mLoggerTcp.set_paused(false);
+    logManager.mQueueDropped.store(0u, std::memory_order_relaxed);
+}
+
 void LogManager::open_remote_logger()
 {
     if (LogManager::is_logging_started())

@@ -18,10 +18,12 @@
 
 #include "areg/base/private/NeverDestroyed.hpp"
 
+#include <atomic>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
 #include <new>
+#include <thread>
 #include <type_traits>
 
 namespace
@@ -139,6 +141,78 @@ TEST( NeverDestroyedTest, object_keeps_the_alignment_of_its_type )
     static areg::NeverDestroyed<OverAligned> _aligned;
 
     EXPECT_EQ( reinterpret_cast<std::uintptr_t>(&_aligned.object()) % alignof(OverAligned), 0u );
+}
+
+/**
+ * \brief   Threads that race on the first call build the object once and see the same object.
+ **/
+TEST( NeverDestroyedTest, racing_first_calls_build_the_object_once )
+{
+    AREG_EXPECT_IN_CHILD(
+        static std::atomic<uint32_t> _builds{ 0u };
+        struct Racy
+        {
+            Racy( ) { _builds.fetch_add( 1u ); }
+        };
+
+        static std::atomic<bool> _go{ false };
+        static std::atomic<const Racy *> _seen[8]{ };
+        std::thread threads[8];
+        for ( uint32_t index = 0u; index < 8u; ++index )
+        {
+            threads[index] = std::thread( [index]( )
+                {
+                    while ( _go.load( ) == false )
+                    {
+                        std::this_thread::yield( );
+                    }
+
+                    static areg::NeverDestroyed<Racy> _holder;
+                    _seen[index].store( &_holder.object( ) );
+                } );
+        }
+
+        _go.store( true );
+        for ( auto & thread : threads )
+        {
+            thread.join( );
+        }
+
+        AREG_CHILD_CHECK( _builds.load( ) == 1u );
+        for ( const auto & seen : _seen )
+        {
+            AREG_CHILD_CHECK( seen.load( ) == _seen[0].load( ) );
+        }
+    );
+}
+
+/**
+ * \brief   A holder with automatic storage leaves the object alive when it goes out of scope.
+ **/
+TEST( NeverDestroyedTest, holder_on_the_stack_does_not_run_the_destructor )
+{
+    AREG_EXPECT_IN_CHILD(
+        {
+            areg::NeverDestroyed<DestructorTrap> holder;
+            static_cast<void>(holder.object( ));
+        }
+    );
+}
+
+/**
+ * \brief   Two holders of one type keep their objects apart.
+ **/
+TEST( NeverDestroyedTest, holders_of_one_type_hold_separate_objects )
+{
+    static areg::NeverDestroyed<PlainData> _first;
+    static areg::NeverDestroyed<PlainData> _second;
+
+    _first.object( ).mFirst = 1u;
+    _second.object( ).mFirst = 2u;
+
+    EXPECT_NE( &_first.object( ), &_second.object( ) );
+    EXPECT_EQ( _first.object( ).mFirst, 1u );
+    EXPECT_EQ( _second.object( ).mFirst, 2u );
 }
 
 /**

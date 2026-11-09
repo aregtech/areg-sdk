@@ -293,6 +293,12 @@ private:
     [[nodiscard]]
     static bool _is_routing_pending() noexcept;
 
+    /**
+     * \brief   Returns true while a stop of the router connection is requested and not finished.
+     **/
+    [[nodiscard]]
+    static bool _is_routing_stopping() noexcept;
+
 
     /**
      * \brief   Posts a lifecycle event to the service manager thread.
@@ -491,6 +497,10 @@ private:
      * \brief   True from the stop request of the router client until its stop report.
      **/
     std::atomic_bool                mRouterStopping;
+    /**
+     * \brief   The number of router stop requests posted and not yet handled.
+     **/
+    std::atomic_uint32_t            mStopRequests;
     /**
      * \brief   A start of the router client requested while it stops.
      **/

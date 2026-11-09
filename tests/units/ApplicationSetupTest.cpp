@@ -248,7 +248,7 @@ TEST_F(ApplicationSetupTest, repeated_release_is_safe_and_does_not_restart_any_m
     setup_application(true, true, false, true, true);
     release_application();
     release_application();
-    EXPECT_TRUE(areg::Application::is_configured());
+    EXPECT_FALSE(areg::Application::is_configured());
 }
 
 TEST_F(ApplicationSetupTest, release_before_setup_leaves_the_system_stopped)

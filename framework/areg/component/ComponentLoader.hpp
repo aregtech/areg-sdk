@@ -528,7 +528,7 @@ public:
 private:
     ComponentLoader();
 
-    ~ComponentLoader();
+    ~ComponentLoader() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations.

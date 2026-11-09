@@ -166,6 +166,8 @@
     <ClCompile Include="units\ProxyStubLifecycleTest.cpp" />
     <ClCompile Include="units\StubBaseContractTest.cpp" />
     <ClCompile Include="units\ProcessTest.cpp" />
+    <ClCompile Include="units\ApplicationRestartTest.cpp" />
+    <ClInclude Include="units\ApplicationRestartTestSupport.hpp" />
     <ClCompile Include="units\ApplicationSetupTest.cpp" />
     <ClInclude Include="units\ApplicationSetupTestSupport.hpp" />
     <ClCompile Include="units\ApplicationSetupPosixTest.cpp" />

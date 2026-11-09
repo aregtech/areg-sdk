@@ -25,10 +25,11 @@ add a test so that it gives the expected result on Linux, macOS and Windows.
 | Failure-path test | `fault-inject/` | The branch taken when a system call fails: thread, socket, file, directory, process spawn |
 | Harness, not in ctest | `bitness/`, `conn-scenario/`, `keepalive-probe/`, `benchmarks/` | Needs a router, root rights, a packet filter, two builds or minutes of run time; started by a script or a person |
 
-`Application::setup()` and `Application::release()` act on the whole process, and the
-configuration is read once per process. A test that needs its own configuration calls
-`ConfigManager::release_properties()` around the setup, or runs in a child process or in
-an executable of its own.
+`Application::setup()` and `Application::release()` act on the whole process. One pair is one
+session: `release()` drops the configuration, and the next `setup()` reads a file again.
+A test that needs its own configuration without a setup calls `ConfigManager::release_properties()`,
+or runs in a child process or in an executable of its own. Tests of several sessions are in
+`units/ApplicationRestartTest.cpp`.
 
 ---
 

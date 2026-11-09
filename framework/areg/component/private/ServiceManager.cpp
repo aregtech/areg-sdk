@@ -300,9 +300,20 @@ bool ServiceManager::_routing_service_start( uint32_t connectTypes )
 void ServiceManager::_routing_service_stop()
 {
     ServiceManager & serviceManager = ServiceManager::instance();
-    ServiceManagerEvent::send_event( ServiceManagerEventData::stop_connection()
-                                  , static_cast<ServiceManagerEventConsumer &>(serviceManager)
-                                  , static_cast<DispatcherThread &>(serviceManager));
+    serviceManager.mStopRequests.fetch_add(1u, std::memory_order_acq_rel);
+    const bool posted{ ServiceManagerEvent::send_event( ServiceManagerEventData::stop_connection()
+                                                       , static_cast<ServiceManagerEventConsumer &>(serviceManager)
+                                                       , static_cast<DispatcherThread &>(serviceManager)) };
+    if (posted == false)
+    {
+        serviceManager.mStopRequests.fetch_sub(1u, std::memory_order_acq_rel);
+    }
+}
+
+bool ServiceManager::_is_routing_stopping() noexcept
+{
+    const ServiceManager & serviceManager{ ServiceManager::instance() };
+    return (serviceManager.mStopRequests.load(std::memory_order_acquire) != 0u) || serviceManager.mRouterStopping.load(std::memory_order_acquire);
 }
 
 bool ServiceManager::_is_routing_started() noexcept
@@ -330,6 +341,7 @@ ServiceManager::ServiceManager()
     , mController       ( )
     , mServiceClient    ( static_cast<ConnectionConsumer&>(self()), static_cast<RegistrationConsumer&>(self()), static_cast<RouterClientOwner&>(self()) )
     , mRouterStopping   ( false )
+    , mStopRequests     ( 0u )
     , mDeferredStart    ( )
     , mExitAfterRouter  ( false )
     , mShutdownEvent    ( )
@@ -447,6 +459,10 @@ bool ServiceManager::_start_manager_thread()
     if ((shutdown.is_valid() == false) || (mController.start() == false))
         return false;
 
+    mExitAfterRouter = false;
+    mDeferredStart.reset();
+    mRouterStopping.store(false, std::memory_order_release);
+    mStopRequests.store(0u, std::memory_order_release);
     mShutdownEvent = std::move(shutdown);
     return (start(areg::DO_NOT_WAIT) && wait_start(areg::WAIT_INFINITE));
 }
@@ -502,6 +518,7 @@ bool ServiceManager::_process_router_command( const ServiceManagerEventData & da
 
     case ServiceManagerEventData::ServiceManagerCommand::CMD_StopConnection:
         mDeferredStart.reset( );
+        mStopRequests.fetch_sub( 1u, std::memory_order_acq_rel );
         if ( mRouterStopping.load( std::memory_order_acquire ) || (mServiceClient.is_client_running( ) == false) )
             return true;
 

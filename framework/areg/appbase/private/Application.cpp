@@ -162,7 +162,7 @@ void Application::setup( bool startTracing   /*= true */
 
 void Application::release()
 {
-    Application::_set_app_state(areg::AppState::Releasing);
+    const bool endsSession{ Application::_set_app_state(areg::AppState::Releasing) };
 
     // Unloads the models while the timer and watchdog managers still run.
     ComponentLoader::unload_component_model(true, String::EmptyString);
@@ -177,6 +177,12 @@ void Application::release()
     // Stop the last to collect logs.
     areg::stop_logging(false); 
     areg::wait_logging_end();
+
+    if (endsSession)
+    {
+        Application::_clear_configuration();
+        SystemController::store_user_state(0u);
+    }
 
     Application::_set_app_state(areg::AppState::Stopped);
     Application::_os_release_handlers();
@@ -278,9 +284,10 @@ bool Application::connect_router()
     if ((ServiceManager::is_manager_started() == false) || (Application::router_state() == areg::RouterState::NotConfigured))
         return false;
 
-    return ( ServiceManager::_is_routing_started()
-          || ServiceManager::_is_routing_pending()
-          || ServiceManager::_routing_service_start(static_cast<uint32_t>(areg::ConnectionType::Tcpip)) );
+    // A stop in progress is followed by a new start, the service manager applies them in order.
+    const bool active{ (ServiceManager::_is_routing_stopping() == false)
+                    && (ServiceManager::_is_routing_started() || ServiceManager::_is_routing_pending()) };
+    return active || ServiceManager::_routing_service_start(static_cast<uint32_t>(areg::ConnectionType::Tcpip));
 }
 
 void Application::disconnect_router()
@@ -461,6 +468,29 @@ bool Application::is_configured()
     return Application::instance().mConfigManager.is_configured();
 }
 
+bool Application::reset_configuration()
+{
+    Application & theApp = Application::instance();
+#if AREG_LOGGING
+    if (LogManager::is_logging_started())
+        return false;
+#endif  // AREG_LOGGING
+
+    if (theApp.mAppState.load() != areg::AppState::Stopped)
+        return false;
+
+    Application::_clear_configuration();
+    return true;
+}
+
+void Application::_clear_configuration()
+{
+    Application::instance().mConfigManager.release_properties();
+#if AREG_LOGGING
+    LogManager::clear_configured_state();
+#endif  // AREG_LOGGING
+}
+
 bool Application::_set_app_state(areg::AppState newState)
 {
     bool result = false;
@@ -505,6 +535,12 @@ bool Application::_set_app_state(areg::AppState newState)
         break;
 
     case areg::AppState::Failure:
+        // A failed session stops as any other, the next setup starts from scratch.
+        if (newState == areg::AppState::Releasing)
+        {
+            theApp.mAppState = areg::AppState::Releasing;
+        }
+
         result = true;
         break; // ignore
 

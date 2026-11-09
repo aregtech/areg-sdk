@@ -99,6 +99,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     NeverDestroyedTest.cpp
     OptionParserTest.cpp
     ProcessTest.cpp
+    ApplicationRestartTest.cpp
     ApplicationSetupTest.cpp
     ApplicationSetupPosixTest.cpp
     PropertyTest.cpp
