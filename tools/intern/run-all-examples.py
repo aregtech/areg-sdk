@@ -793,11 +793,56 @@ def capture_stacks(pid, name, dest):
 
 
 # ---------------------------------------------------------------------------
+# Coverage counters of processes that run at the same time. A slot is a folder
+# given to a process through GCOV_PREFIX; it is free again once that process has
+# ended. The caller lists the object folders of the build in <slots>/dirs.txt,
+# exports GCOV_PREFIX_STRIP, and merges the slots after the run.
+# ---------------------------------------------------------------------------
+
+GCOV_SPLIT  = None              #!< '--gcov-split': the folder of the slots, None to not split
+_gcov_dirs  = None              #!< object folders below the build, from dirs.txt
+_gcov_slots = []                #!< [folder, process] of every slot made so far
+_gcov_lock  = threading.Lock()
+
+
+class _Reserved:
+    """Owner of a slot whose process is being started."""
+    @staticmethod
+    def poll():
+        return None
+
+
+def acquire_gcov_slot():
+    """Returns a slot no running process writes to, or None when the counters are not split."""
+    global _gcov_dirs
+    if GCOV_SPLIT is None:
+        return None
+    with _gcov_lock:
+        for slot in _gcov_slots:
+            if (slot[1] is None) or (slot[1].poll() is not None):
+                slot[1] = _Reserved
+                return slot
+        if _gcov_dirs is None:
+            with open(os.path.join(GCOV_SPLIT, 'dirs.txt')) as listing:
+                _gcov_dirs = [line.strip() for line in listing if line.strip()]
+        folder = os.path.join(GCOV_SPLIT, 'slot-%d' % len(_gcov_slots))
+        # The Cygwin counter library does not create missing folders.
+        for sub in _gcov_dirs:
+            os.makedirs(os.path.join(folder, sub), exist_ok=True)
+        slot = [folder, _Reserved]
+        _gcov_slots.append(slot)
+        return slot
+
+
+# ---------------------------------------------------------------------------
 # Process handling.
 # ---------------------------------------------------------------------------
 
 class Runner:
     """Starts one process, feeds its standard input and captures its output.
+
+    With '--gcov-split' the process writes its coverage counters into a slot folder that
+    no other running process writes to.
 
     On POSIX the output is captured through a pseudo terminal rather than by writing
     straight into the log file. The reason is that the C library buffers a redirected
@@ -858,9 +903,19 @@ class Runner:
             kwargs['stdout'] = self._log
             kwargs['stderr'] = subprocess.STDOUT
 
+        slot = acquire_gcov_slot()
+        if slot is not None:
+            environment = kwargs.get('env') or os.environ.copy()
+            environment['GCOV_PREFIX'] = slot[0]
+            kwargs['env'] = environment
+
+        proc = None
         try:
-            self.proc = subprocess.Popen([path] + args, **kwargs)
+            proc = subprocess.Popen([path] + args, **kwargs)
+            self.proc = proc
         finally:
+            if slot is not None:
+                slot[1] = proc
             if slave is not None:
                 os.close(slave)
 
@@ -2095,10 +2150,17 @@ def main():
                              ' in the output directory)')
     parser.add_argument('--summary', default=os.environ.get('GITHUB_STEP_SUMMARY'),
                         help='append a Markdown report to this file')
+    parser.add_argument('--gcov-split', default=None,
+                        help='write the coverage counters of processes that run at the same'
+                             ' time into separate folders below this one (GCOV_PREFIX).'
+                             ' The folder holds dirs.txt, the object folders of the build;'
+                             ' GCOV_PREFIX_STRIP is taken from the environment.')
     args = parser.parse_args()
 
-    global CAPTURE_STACKS
+    global CAPTURE_STACKS, GCOV_SPLIT
     CAPTURE_STACKS = not args.no_stacks
+    if args.gcov_split:
+        GCOV_SPLIT = os.path.abspath(args.gcov_split)
 
     selection = SCENARIOS
     if args.tier == 'coverage':

@@ -15,6 +15,8 @@
 #     unit      Run ctest, collect unit.json, reset the counters. The results go to
 #               <out>/unit-junit.xml.
 #     examples  Run the example scenarios, collect examples.json, reset the counters.
+#               On Cygwin the processes write their counters into separate folders,
+#               merged with gcov-tool before the collection.
 #     report    Write the Cobertura and HTML reports and print the Markdown report
 #               (to <out>/coverage.md too with --text). The first tables count like
 #               Codecov: a line once, and a hit line with an untaken branch is
@@ -168,6 +170,46 @@ PY
 
 reset_counters() { ( cd "$BUILD" && find . -name '*.gcda' -delete ) || die "cannot reset the counters in $BUILD"; }
 
+# On Cygwin every running example process writes its counters below its own slot folder,
+# and gcov-tool merges the slots into the build after the run.
+GCOV_TOOL=gcov-tool
+split_counters() { [ "${OSTYPE:-}" = cygwin ]; }
+
+# Creates the slot folder $1 with dirs.txt, the object folders of the build.
+split_prepare() {
+  rm -rf "$1" && mkdir -p "$1" || die "cannot create $1"
+  ( cd "$BUILD" && find . -name '*.gcno' -printf '%h\n' | LC_ALL=C sort -u ) > "$1/dirs.txt" \
+    || die "cannot list the object folders of $BUILD"
+  command -v "$GCOV_TOOL" >/dev/null || die "$GCOV_TOOL not found"
+}
+
+# Runs gcov-tool merge, which applies GCOV_PREFIX and GCOV_PREFIX_STRIP to the files it writes.
+# A folder it cannot write is reported as 'Skip' with exit code 0.
+split_merge_two() {
+  local log
+  log=$(env -u GCOV_PREFIX -u GCOV_PREFIX_STRIP "$GCOV_TOOL" merge -o "$1" "$2" "$3" 2>&1) \
+    && ! printf '%s' "$log" | grep -q 'Skip' \
+    || die "$GCOV_TOOL merge -o $1 $2 $3 failed: $log"
+}
+
+# Merges the slots below $1 into the build and removes them.
+split_merge() {
+  local split=$1 acc="" slot next n=0
+  for slot in "$split"/slot-*; do
+    [ -d "$slot" ] || continue
+    if [ -z "$acc" ]; then acc=$slot; continue; fi
+    next="$split/merged-$n"; n=$((n + 1))
+    mkdir -p "$next" && ( cd "$next" && xargs -r mkdir -p < "$split/dirs.txt" ) || die "cannot create $next"
+    split_merge_two "$next" "$slot" "$acc"
+    rm -rf "$slot" "$acc"
+    acc=$next
+  done
+  [ -n "$acc" ] || return 0
+  find "$acc" -name '*.gcda' | grep -q . || die "no process wrote counters below $split"
+  split_merge_two "$BUILD" "$acc" "$BUILD"
+  rm -rf "$split"
+}
+
 check_gcovr() {
   [ -x "$GCOVR" ] || command -v "$GCOVR" >/dev/null || die "gcovr not found: pip install gcovr==8.8"
   local version
@@ -248,8 +290,17 @@ step_examples() {
   reset_counters
   local args=(--bin-dir "$BUILD/bin" --tier coverage --out-dir "$OUT/examples" --summary '')
   [ -n "$ONLY" ] && args+=(--only "$ONLY")
-  ( preload_flush; "$PYTHON" "$SRC/tools/intern/run-all-examples.py" "${args[@]}" )
+  local split="$OUT/gcda-split" strip=""
+  if split_counters; then
+    split_prepare "$split"
+    args+=(--gcov-split "$split")
+    strip=$(printf '%s' "${BUILD%/}" | tr -cd / | wc -c)
+  fi
+  ( preload_flush
+    [ -n "$strip" ] && export GCOV_PREFIX_STRIP=$strip
+    "$PYTHON" "$SRC/tools/intern/run-all-examples.py" "${args[@]}" )
   rc=$?
+  split_counters && split_merge "$split"
   collect "$(tracefile examples)"
   [ -z "$ONLY" ] && rm -f "$OUT/examples-only.json"
   reset_counters
