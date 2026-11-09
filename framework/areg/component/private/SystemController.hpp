@@ -27,7 +27,6 @@
 #include <atomic>
 #include <chrono>
 #include <memory>
-#include <vector>
 
 /************************************************************************
  * Dependencies
@@ -35,6 +34,7 @@
 namespace areg {
     class ComponentThread;
     class ServiceManager;
+    class Thread;
     class Watchdog;
 } // namespace areg
 
@@ -56,6 +56,11 @@ class SystemController
 //////////////////////////////////////////////////////////////////////////
 public:
     using Clock     = std::chrono::steady_clock;
+
+    //!< The selection of no model: the name of the request is not registered.
+    static constexpr uint32_t   MODEL_NONE  { 0u };
+    //!< The selection of all registered models.
+    static constexpr uint32_t   MODEL_ALL   { 0xFFFF'FFFFu };
 
     /**
      * \brief   A load or unload request whose caller waits for its completion. The controller
@@ -80,10 +85,16 @@ public:
         inline bool wait_components() const noexcept;
 
     private:
+        friend class SystemController;
+
         SyncEvent   mDone;          //!< Signaled when the request is completed.
         bool        mResult;        //!< The result of the request.
         const bool  mWaitComponents;//!< True if a load waits for the components, false for the threads.
+        bool        mLoad;          //!< True if the controller waits for a load, false for an unload.
         std::atomic<uint32_t>   mShares;    //!< The number of owners.
+        uint32_t    mModels;        //!< The selection of the models the controller waits for.
+        uint32_t    mLastModel;     //!< The last model the request of all models waits for; MODEL_ALL for one model.
+        Request *   mNext;          //!< The next request whose caller waits.
 
     private:
         explicit Request( bool waitComponents );
@@ -92,34 +103,20 @@ public:
     };
 
 private:
-    //!< A component thread owned by the controller.
+    //!< A component thread owned by the controller. The name is read from the thread object.
     struct ThreadRecord
     {
-        String              mName;          //!< The name of the thread.
-        String              mModel;         //!< The name of the model of the thread.
         ComponentThread *   mThread;        //!< The thread object; the controller holds the owner share.
-        areg::ThreadState   mState;         //!< The lifecycle state.
         Clock::time_point   mDeadline;      //!< The deadline of the current transition, if armed.
+        uint32_t            mTimeout;       //!< The lifecycle timeout of the thread.
+        uint32_t            mModel;         //!< The number of the model of the thread.
+        uint32_t            mPosition;      //!< The position of the thread in its model.
+        areg::ThreadState   mState;         //!< The lifecycle state; Abandoned until the thread returns.
+        areg::FailurePolicy mPolicy;        //!< The failure policy of the thread.
         bool                mHasDeadline;   //!< True if a deadline is armed.
         bool                mDrain;         //!< True while a stopping thread may still drain its queue.
         bool                mRestart;       //!< True while the thread stops to be replaced.
-        uint32_t            mTimeout;       //!< The lifecycle timeout of the thread.
-        areg::FailurePolicy mPolicy;        //!< The failure policy of the thread.
-    };
-
-    //!< A new instance of a thread that starts when one of its hung instances returns.
-    struct Deferred
-    {
-        String              mThread;        //!< The name of the thread.
-        String              mModel;         //!< The name of the model of the thread.
-    };
-
-    //!< A request of a caller that waits until its models reach the requested state.
-    struct Pending
-    {
-        Request *   mRequest;       //!< The request to complete.
-        bool                mLoad;          //!< True if waits for a load, false for an unload.
-        std::vector<String> mModels;        //!< The models the request waits for.
+        bool                mDeferred;      //!< True if a new instance waits for a hung instance to return.
     };
 
 //////////////////////////////////////////////////////////////////////////
@@ -135,46 +132,50 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Loads the model, or all models if the name is empty.
-     * \param   modelName   The name of the model.
+     * \brief   Loads the selected models.
+     * \param   modelId     The selection from find_model_id().
      * \param   request     The request to complete, or nullptr if the caller does not wait. It completes
      *                      once the threads started, or once the components started if it waits for them.
      **/
-    void load_model( const String & modelName, Request * request );
+    void load_model( uint32_t modelId, Request * request );
 
     /**
-     * \brief   Unloads the model, or all models if the name is empty.
-     * \param   modelName   The name of the model.
+     * \brief   Unloads the selected models.
+     * \param   modelId     The selection from find_model_id().
      * \param   request     The request to complete, or nullptr if the caller does not wait.
      **/
-    void unload_model( const String & modelName, Request * request );
+    void unload_model( uint32_t modelId, Request * request );
 
     /**
      * \brief   A component thread reports that its components started.
-     * \param   threadName  The name of the thread.
      * \param   instance    The address of the thread object.
      **/
-    void thread_running( const String & threadName, uint64_t instance );
+    void thread_running( uint64_t instance );
 
     /**
      * \brief   A component thread reports that it exited.
-     * \param   threadName  The name of the thread.
      * \param   instance    The address of the thread object.
      **/
-    void thread_stopped( const String & threadName, uint64_t instance );
+    void thread_stopped( uint64_t instance );
 
     /**
      * \brief   The watchdog of a component thread or of one of its workers expired.
-     * \param   threadName  The name of the component thread.
      * \param   instance    The address of the component thread object.
-     * \param   guardedName The name of the thread whose event took too long.
+     * \param   isWorker    True if a worker of the thread took too long, false if the thread did.
      **/
-    void watchdog_expired( const String & threadName, uint64_t instance, const String & guardedName );
+    void watchdog_expired( uint64_t instance, bool isWorker );
 
     /**
      * \brief   The deadline guard expired: applies every deadline that is due.
      **/
     void deadline_expired();
+
+    /**
+     * \brief   Creates the deadline guard. Called before the service manager thread starts.
+     * \return  True if the guard can be armed.
+     **/
+    [[nodiscard]]
+    bool start();
 
     /**
      * \brief   The service manager stops: every pending request fails.
@@ -196,6 +197,13 @@ public:
      **/
     [[nodiscard]]
     areg::ThreadState thread_state( const String & threadName ) const;
+
+    /**
+     * \brief   Returns the number of the model of the name, MODEL_ALL if the name is empty,
+     *          MODEL_NONE if no model has the name.
+     **/
+    [[nodiscard]]
+    static uint32_t find_model_id( const String & modelName );
 
     /**
      * \brief   Returns true if the calling thread is an abandoned component thread or a worker
@@ -227,17 +235,19 @@ public:
 //////////////////////////////////////////////////////////////////////////
 private:
     //!< Starts the threads of the model; the model is loading until they all run.
-    void _start_load( const String & modelName );
+    void _start_load( uint32_t modelId );
     //!< Asks the threads of the model to stop; the model is unloading until they all stopped.
-    void _start_unload( const String & modelName );
-    //!< Creates and starts a component thread of the model. Returns false if it did not start.
-    bool _start_thread( const areg::ComponentThreadEntry & entry, const String & modelName );
+    void _start_unload( uint32_t modelId );
+    //!< Returns true if the entry at the position is valid and no thread of its name runs.
+    bool _is_startable( uint32_t modelId, uint32_t position ) const;
+    //!< Creates and starts the component thread at the position of the model. Returns false if it did not start.
+    bool _start_thread( uint32_t modelId, uint32_t position );
     //!< Starts a new instance of the thread if its model is loaded and no instance of it is live.
-    void _start_instance( const String & threadName, const String & modelName );
-    //!< Starts a new instance of the abandoned thread, or defers it while two instances hang.
-    void _start_replacement( const String & threadName, const String & modelName );
-    //!< Starts the deferred new instance of the thread, if there is one.
-    void _start_deferred( const String & threadName );
+    void _start_instance( uint32_t modelId, uint32_t position );
+    //!< Starts a new instance of the abandoned thread at the index, or defers it while two instances hang.
+    void _start_replacement( uint32_t index );
+    //!< Clears the mark of the deferred new instance of the thread. Returns true if there was one.
+    bool _take_deferred( uint32_t modelId, uint32_t position );
     //!< Asks the thread to stop after its queue is drained, and arms the drain deadline.
     void _stop_thread( ThreadRecord & record );
     //!< Asks the thread at the index to stop at once, to be replaced by a new instance.
@@ -250,6 +260,8 @@ private:
     void _apply_policy( uint32_t index, const char * what );
     //!< Moves the models whose threads all run or all stopped to their next state.
     void _check_models();
+    //!< Queues the request until the selected models reach the requested state.
+    void _add_pending( Request & request, bool load, uint32_t modelId );
     //!< Completes the requests whose models reached the requested state.
     void _complete_pending();
     //!< Starts the orderly stop that ends the process; abandons the culprit index if not negative.
@@ -258,35 +270,51 @@ private:
     [[noreturn]] void _finish_exit();
     //!< Arms the deadline guard at the earliest deadline, or stops it if there is none.
     void _arm_deadline();
+    //!< Makes room for one more record. Returns false if the room cannot be allocated.
+    bool _secure_room();
+    //!< Removes the record at the index.
+    void _remove_record( uint32_t index );
 
-    //!< Returns the index of the live thread with the name and object address, or -1.
-    int32_t _find_live( const String & threadName, uint64_t instance ) const;
+    //!< Returns the index of the record of the thread object, live or abandoned, or -1.
+    int32_t _find_record( uint64_t instance ) const;
     //!< Returns the index of the live thread with the name, or -1.
     int32_t _find_live( const String & threadName ) const;
+    //!< Returns the index of the live thread at the position of the model, or -1.
+    int32_t _find_live( uint32_t modelId, uint32_t position ) const;
     //!< Returns the number of abandoned instances of the thread that still run.
-    uint32_t _count_abandoned( const String & threadName ) const;
+    uint32_t _count_abandoned( uint32_t modelId, uint32_t position ) const;
     //!< Returns the number of live threads of the model.
-    uint32_t _count_live( const String & modelName ) const;
+    uint32_t _count_live( uint32_t modelId ) const;
 
+    //!< Returns a registered worker of the thread with one more share, or nullptr if none is left.
+    static Thread * _hold_next_worker( const ComponentThread & owner );
+    //!< Returns the model with the number, or nullptr. Call it with the loader lock taken.
+    static areg::Model * _find_model( uint32_t modelId );
+    //!< Returns the selected model after the previous one, or MODEL_NONE; 0 starts the walk.
+    static uint32_t _next_model( uint32_t selection, uint32_t previous );
+    //!< Returns the number of the last registered model.
+    static uint32_t _last_model();
     //!< Returns the state of the model.
-    static areg::ModelState _model_state( const String & modelName );
+    static areg::ModelState _model_state( uint32_t modelId );
     //!< Sets the state of the model.
-    static void _set_model_state( const String & modelName, areg::ModelState newState );
-    //!< Returns true if a model of the name is registered.
-    static bool _model_exists( const String & modelName );
-    //!< Fills the names of all registered models.
-    static void _model_names( std::vector<String> & names );
+    static void _set_model_state( uint32_t modelId, areg::ModelState newState );
+    //!< Returns true if a model with the number is registered.
+    static bool _model_exists( uint32_t modelId );
+    //!< Marks the model to unload as soon as its load ends.
+    static void _set_unload_after_load( uint32_t modelId, bool unload );
+    //!< Returns true if the model is loaded and marked to unload.
+    static bool _is_unload_due( uint32_t modelId );
+    //!< Returns the number of threads of the model.
+    static uint32_t _thread_count( uint32_t modelId );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    std::vector<ThreadRecord>   mThreads;       //!< The live threads.
-    std::vector<ThreadRecord>   mAbandoned;     //!< The abandoned instances, kept until they return.
-    std::vector<Pending>        mPending;       //!< The requests whose callers wait.
-    std::vector<String>         mFailedLoads;   //!< The models whose load failed and are being undone.
-    std::vector<String>         mUnloadAfterLoad;//!< The models to unload as soon as their load ends.
-    std::vector<Deferred>       mDeferred;      //!< The new instances that wait for a hung instance to return.
+    ThreadRecord *              mRecords;       //!< The live threads and the abandoned instances, kept until they return.
+    uint32_t                    mRecordCount;   //!< The number of records.
+    uint32_t                    mRecordCapacity;//!< The number of records that fit the allocated block.
+    Request *                   mPending;       //!< The first request whose caller waits.
     std::unique_ptr<Watchdog>   mGuard;         //!< The deadline guard on the watchdog manager.
     bool                        mExiting;       //!< True once the failure policy Exit started.
     Clock::time_point           mExitDeadline;  //!< The deadline of the orderly stop before the exit.

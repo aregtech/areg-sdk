@@ -149,11 +149,10 @@ public:
 
     /**
      * \brief   Reports that the watchdog of a component thread or of one of its workers expired.
-     * \param   threadName  The name of the component thread.
      * \param   instance    The address of the component thread object.
-     * \param   guardedName The name of the thread whose event took too long.
+     * \param   isWorker    True if a worker of the thread took too long, false if the thread did.
      **/
-    static bool report_watchdog_expired( const String & threadName, uint64_t instance, const String & guardedName );
+    static bool report_watchdog_expired( uint64_t instance, bool isWorker );
 
     /**
      * \brief   Reports that the lifecycle deadline guard expired. Returns false if the report is not posted.
@@ -301,7 +300,7 @@ private:
     static bool _post_lifecycle_event( const ServiceManagerEventData & data );
 
     //!< Posts a load or unload request of the model and waits for its completion; false if it is not posted.
-    static bool _post_request( bool load, const String & modelName, bool waitComponents );
+    static bool _post_request( bool load, uint32_t modelId, bool waitComponents );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides

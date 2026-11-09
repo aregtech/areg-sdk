@@ -969,6 +969,8 @@ areg::Model::Model()
     , mModelThreads ( )
     , mLoadState    ( areg::ModelState::Unloaded )
     , mWasLoaded    ( false )
+    , mUnloadAfterLoad( false )
+    , mModelId      ( 0u )
     , mAliveDuration( )
 {
 }
@@ -978,6 +980,8 @@ areg::Model::Model( const String & modelName )
     , mModelThreads ( )
     , mLoadState    ( areg::ModelState::Unloaded )
     , mWasLoaded    ( false )
+    , mUnloadAfterLoad( false )
+    , mModelId      ( 0u )
     , mAliveDuration( )
 {
 }
@@ -987,6 +991,8 @@ areg::Model::Model( const String & modelName, const ComponentThreadList & thread
     , mModelThreads (threadList)
     , mLoadState    ( areg::ModelState::Unloaded )
     , mWasLoaded    ( false )
+    , mUnloadAfterLoad( false )
+    , mModelId      ( 0u )
     , mAliveDuration( )
 {
 }

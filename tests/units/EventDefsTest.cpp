@@ -554,53 +554,49 @@ TEST(ServiceManagerEventsTest, channel_commands)
 
 TEST(ServiceManagerEventsTest, model_request_selects_load_or_unload)
 {
-    ServiceManagerEventData load = ServiceManagerEventData::model_request(true, areg::String("model-a"), 0x1122334455667788ull);
+    ServiceManagerEventData load = ServiceManagerEventData::model_request(true, 7u, 0x1122334455667788ull);
     EXPECT_EQ(load.command(), Command::CMD_LoadModel);
     {
-        areg::String name;
+        uint32_t modelId{ 0u };
         uint64_t request{ 0u };
-        readable(load).read_stream() >> name >> request;
-        EXPECT_EQ(name, areg::String("model-a"));
+        readable(load).read_stream() >> modelId >> request;
+        EXPECT_EQ(modelId, 7u);
         EXPECT_EQ(request, 0x1122334455667788ull);
     }
 
-    ServiceManagerEventData unload = ServiceManagerEventData::model_request(false, areg::String(), 5u);
+    ServiceManagerEventData unload = ServiceManagerEventData::model_request(false, 0xFFFF'FFFFu, 5u);
     EXPECT_EQ(unload.command(), Command::CMD_UnloadModel);
     {
-        areg::String name("not empty");
+        uint32_t modelId{ 0u };
         uint64_t request{ 0u };
-        readable(unload).read_stream() >> name >> request;
-        EXPECT_TRUE(name.is_empty());
+        readable(unload).read_stream() >> modelId >> request;
+        EXPECT_EQ(modelId, 0xFFFF'FFFFu);
         EXPECT_EQ(request, 5u);
     }
 }
 
 TEST(ServiceManagerEventsTest, thread_report_selects_running_or_stopped)
 {
-    ServiceManagerEventData running = ServiceManagerEventData::thread_report(true, areg::String("worker"), 42u);
+    ServiceManagerEventData running = ServiceManagerEventData::thread_report(true, 42u);
     EXPECT_EQ(running.command(), Command::CMD_ThreadRunning);
-    ServiceManagerEventData stopped = ServiceManagerEventData::thread_report(false, areg::String("worker"), 43u);
+    ServiceManagerEventData stopped = ServiceManagerEventData::thread_report(false, 43u);
     EXPECT_EQ(stopped.command(), Command::CMD_ThreadStopped);
 
-    areg::String name;
     uint64_t instance{ 0u };
-    readable(stopped).read_stream() >> name >> instance;
-    EXPECT_EQ(name, areg::String("worker"));
+    readable(stopped).read_stream() >> instance;
     EXPECT_EQ(instance, 43u);
 }
 
 TEST(ServiceManagerEventsTest, watchdog_expired)
 {
-    ServiceManagerEventData data = ServiceManagerEventData::watchdog_expired(areg::String("thread"), 99u, areg::String("guard"));
+    ServiceManagerEventData data = ServiceManagerEventData::watchdog_expired(99u, true);
 
     EXPECT_EQ(data.command(), Command::CMD_WatchdogExpired);
-    areg::String thread;
-    areg::String guard;
+    uint32_t isWorker{ 0u };
     uint64_t instance{ 0u };
-    readable(data).read_stream() >> thread >> instance >> guard;
-    EXPECT_EQ(thread, areg::String("thread"));
+    readable(data).read_stream() >> instance >> isWorker;
     EXPECT_EQ(instance, 99u);
-    EXPECT_EQ(guard, areg::String("guard"));
+    EXPECT_EQ(isWorker, 1u);
 }
 
 TEST(ServiceManagerEventsTest, user_state)

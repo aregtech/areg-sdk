@@ -748,7 +748,7 @@ private:
      *          objects are not touched; a provider removes only its own entry when it is deleted.
      * \param   threads     The names of the threads.
      **/
-    static void _detach_thread_providers( const ArrayList<String> & threads );
+    static void _detach_thread_providers( const ThreadAddress & thread );
 
     /**
      * \brief   Removes this provider from the registry, if the entry is this provider.

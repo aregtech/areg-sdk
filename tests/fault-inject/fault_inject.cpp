@@ -739,6 +739,94 @@ void * operator new[]( std::size_t size, const std::nothrow_t & tag ) noexcept
     return ( next != nullptr ) ? next( size, tag ) : std::malloc( size != 0u ? size : 1u );
 }
 
+namespace
+{
+    using AlignedAllocFunc = void * (*)( std::size_t, std::align_val_t, const std::nothrow_t & );
+
+    AlignedAllocFunc _next_aligned_alloc( bool isArray ) noexcept
+    {
+        static const char * const names32[]{ "_ZnwjSt11align_val_tRKSt9nothrow_t", "_ZnajSt11align_val_tRKSt9nothrow_t" };
+        static const char * const names64[]{ "_ZnwmSt11align_val_tRKSt9nothrow_t", "_ZnamSt11align_val_tRKSt9nothrow_t" };
+        const char * const name{ (sizeof( std::size_t ) == 4u ? names32 : names64)[isArray ? 1 : 0] };
+        return reinterpret_cast<AlignedAllocFunc>(::dlsym( RTLD_NEXT, name ));
+    }
+}
+
+void * operator new( std::size_t size, std::align_val_t align, const std::nothrow_t & tag ) noexcept
+{
+    int error{ 0 };
+    if ( _should_fail( areg_fault::FaultPoint::AlignedAllocation, error ) )
+        return nullptr;
+
+    static const AlignedAllocFunc next{ _next_aligned_alloc( false ) };
+    return ( next != nullptr ) ? next( size, align, tag ) : nullptr;
+}
+
+void * operator new[]( std::size_t size, std::align_val_t align, const std::nothrow_t & tag ) noexcept
+{
+    int error{ 0 };
+    if ( _should_fail( areg_fault::FaultPoint::AlignedAllocation, error ) )
+        return nullptr;
+
+    static const AlignedAllocFunc next{ _next_aligned_alloc( true ) };
+    return ( next != nullptr ) ? next( size, align, tag ) : nullptr;
+}
+
+namespace
+{
+    //!< The thread whose throwing allocations are counted; 0 counts none.
+    std::atomic<uint64_t>   gCountedThread  { 0u };
+    //!< The throwing allocations of the counted thread.
+    std::atomic<uint32_t>   gThrowingNew    { 0u };
+
+    using ThrowingAllocFunc = void * (*)( std::size_t );
+
+    ThrowingAllocFunc _next_throwing_alloc( bool isArray ) noexcept
+    {
+        static const char * const names32[]{ "_Znwj", "_Znaj" };
+        static const char * const names64[]{ "_Znwm", "_Znam" };
+        const char * const name{ (sizeof( std::size_t ) == 4u ? names32 : names64)[isArray ? 1 : 0] };
+        return reinterpret_cast<ThrowingAllocFunc>(::dlsym( RTLD_NEXT, name ));
+    }
+
+    inline void _count_throwing_new( ) noexcept
+    {
+        const uint64_t counted{ gCountedThread.load( std::memory_order_relaxed ) };
+        if ( (counted != 0u) && (counted == static_cast<uint64_t>(::pthread_self( ))) )
+        {
+            gThrowingNew.fetch_add( 1u, std::memory_order_relaxed );
+        }
+    }
+}
+
+extern "C"
+{
+    AREG_FAULT_API void areg_fault_count_throwing_new( uint64_t threadId )
+    {
+        gThrowingNew.store( 0u, std::memory_order_relaxed );
+        gCountedThread.store( threadId, std::memory_order_relaxed );
+    }
+
+    AREG_FAULT_API uint32_t areg_fault_throwing_new_count( )
+    {
+        return gThrowingNew.load( std::memory_order_relaxed );
+    }
+}
+
+void * operator new( std::size_t size )
+{
+    _count_throwing_new( );
+    static const ThrowingAllocFunc next{ _next_throwing_alloc( false ) };
+    return next( size );
+}
+
+void * operator new[]( std::size_t size )
+{
+    _count_throwing_new( );
+    static const ThrowingAllocFunc next{ _next_throwing_alloc( true ) };
+    return next( size );
+}
+
 //////////////////////////////////////////////////////////////////////////
 // macOS: replacements registered in the __DATA,__interpose section.
 //////////////////////////////////////////////////////////////////////////

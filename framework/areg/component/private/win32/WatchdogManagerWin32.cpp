@@ -98,7 +98,15 @@ void WatchdogManager::_windows_watchdog_expired( void * argPtr,
     const areg::os::Win32TimerHandle * h = static_cast<const areg::os::Win32TimerHandle *>(argPtr);
     const Watchdog::WATCHDOG_ID watchdog_id = static_cast<Watchdog::WATCHDOG_ID>(h->contextId);
     const Watchdog::GUARD_ID    guardId     = Watchdog::make_guard_id(watchdog_id);
-    Watchdog * watchdog = watchdogManager.mWatchdogResource.find_resource_object(guardId);
+    Watchdog * watchdog{ nullptr };
+    do
+    {
+        Lock lock(watchdogManager.mWatchdogLock);
+        for (watchdog = watchdogManager.mWatchdogs; (watchdog != nullptr) && (watchdog->id() != guardId); watchdog = watchdog->mNextRegistered)
+        {
+        }
+    } while (false);
+
     if (watchdog != nullptr)
     {
         watchdogManager._process_expired_timer(watchdog, watchdog_id, highValue, lowValue);

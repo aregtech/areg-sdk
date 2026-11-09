@@ -66,6 +66,7 @@ namespace areg_fault
         , FileRead          //!< Linux read(). Not replaced elsewhere. Error: errno value.
         , FileWrite         //!< Linux write(). Not replaced elsewhere. Error: errno value.
         , Allocation        //!< Linux operator new(std::nothrow) and operator new[](std::nothrow): returns nullptr. Not replaced elsewhere; the error is ignored.
+        , AlignedAllocation //!< Linux operator new(std::align_val_t, std::nothrow) and new[]: returns nullptr. Not replaced elsewhere; the error is ignored.
         , PipeCreate        //!< Linux pipe(). Not replaced elsewhere. Error: errno value.
         , Poll              //!< Linux poll(). Not replaced elsewhere. Error: errno value.
         , TermGet           //!< Linux tcgetattr(). Not replaced elsewhere. Error: errno value.
@@ -125,6 +126,18 @@ extern "C"
      * \return  True if the wait is set; false if the point cannot wait on this platform.
      **/
     AREG_FAULT_API bool areg_fault_delay( uint32_t point, uint32_t milliseconds );
+
+    /**
+     * \brief   Linux only. Counts the calls of the throwing operator new and new[] made by the
+     *          thread from now on; 0 stops the counting. The calls still allocate.
+     * \param   threadId    The value of pthread_self() of the thread.
+     **/
+    AREG_FAULT_API void areg_fault_count_throwing_new( uint64_t threadId );
+
+    /**
+     * \brief   Linux only. Returns the calls counted since areg_fault_count_throwing_new().
+     **/
+    AREG_FAULT_API uint32_t areg_fault_throwing_new_count( );
 }
 
 namespace areg_fault

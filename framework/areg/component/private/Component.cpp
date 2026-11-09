@@ -20,6 +20,8 @@
 #include "areg/component/StubBase.hpp"
 #include "areg/component/private/ServiceManager.hpp"
 #include "areg/component/ComponentLoader.hpp"
+
+#include <new>
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -156,12 +158,12 @@ WorkerThread* Component::create_worker_thread(  const String & threadName
     if (workThread != nullptr)
         return workThread;
 
-    workThread = new WorkerThread(threadName, self(), consumer, watchdogTimeout, stackSizeKb, maxQeueue, dropOnFull, waitMs);
+    workThread = new (std::nothrow) WorkerThread(threadName, self(), consumer, watchdogTimeout, stackSizeKb, maxQeueue, dropOnFull, waitMs);
     if (workThread == nullptr)
         return nullptr;
 
     workThread->share_with_lookups();
-    if (!workThread->start(areg::WAIT_INFINITE))
+    if (!workThread->mWatchdog.can_arm() || !workThread->start(areg::WAIT_INFINITE))
     {
         DispatcherThread::release_shared(workThread);
         return nullptr;
@@ -232,18 +234,24 @@ void Component::_detach_thread_components( const ComponentThread & owner )
 {
     MapComponentResource & components{ Component::resource_map() };
     Lock lock(components.lockable());
-    ArrayList<uint32_t> keys;
-    for (const auto & entry : components.data())
+    for (bool found{ true }; found; )
     {
-        if (&entry.second->master_thread() == &owner)
+        found = false;
+        uint32_t key{ 0u };
+        for (const auto & entry : components.data())
         {
-            keys.add(entry.first);
+            if (&entry.second->master_thread() == &owner)
+            {
+                key = entry.first;
+                found = true;
+                break;
+            }
         }
-    }
 
-    for (uint32_t i = 0; i < keys.size(); ++ i)
-    {
-        components.unregister_resource_object(keys[i]);
+        if (found)
+        {
+            components.unregister_resource_object(key);
+        }
     }
 }
 

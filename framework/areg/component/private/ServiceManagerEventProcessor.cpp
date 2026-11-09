@@ -435,17 +435,11 @@ void ServiceManagerEventProcessor::_send_provider_disconnected( const ProxyAddre
     }
 }
 
-void ServiceManagerEventProcessor::unregister_thread_services( const ArrayList<String> & threads, areg::DisconnectReason reason, RegistrationProvider & registerProvider )
+void ServiceManagerEventProcessor::unregister_thread_services( const ThreadAddress & thread, areg::DisconnectReason reason, RegistrationProvider & registerProvider )
 {
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor, unregister_thread_services );
 
     // The addresses in the registry carry the thread by its number.
-    ArrayList<ThreadAddress> addresses;
-    for ( uint32_t i = 0; i < threads.size( ); ++ i )
-    {
-        addresses.add( ThreadAddress( threads[ i ] ) );
-    }
-
     // Snapshot to copies; removing from live lists would invalidate iterators.
     ArrayList<StubAddress> stubList;
     ArrayList<ProxyAddress> proxyList;
@@ -453,7 +447,7 @@ void ServiceManagerEventProcessor::unregister_thread_services( const ArrayList<S
     {
         const StubAddress & server = mServerList.key_at( posMap ).address( );
         const ClientList & clientList = mServerList.value_at( posMap );
-        if ( server.is_valid( ) && server.is_local_address( ) && addresses.contains( server.thread( ) ) )
+        if ( server.is_valid( ) && server.is_local_address( ) && (server.thread( ) == thread) )
         {
             stubList.add( server );
         }
@@ -461,14 +455,14 @@ void ServiceManagerEventProcessor::unregister_thread_services( const ArrayList<S
         for ( ClientList::LISTPOS pos = clientList.first_position( ); clientList.is_valid_position( pos ); pos = clientList.next_position( pos ) )
         {
             const ProxyAddress & proxy = clientList.value_at( pos ).address( );
-            if ( proxy.is_valid( ) && proxy.is_local_address( ) && addresses.contains( proxy.thread( ) ) )
+            if ( proxy.is_valid( ) && proxy.is_local_address( ) && (proxy.thread( ) == thread) )
             {
                 proxyList.add( proxy );
             }
         }
     }
 
-    LOG_WARN( "Unregistering [ %u ] providers and [ %u ] consumers of [ %u ] abandoned threads", stubList.size( ), proxyList.size( ), threads.size( ) );
+    LOG_WARN( "Unregistering [ %u ] providers and [ %u ] consumers of the abandoned thread [ %s ]", stubList.size( ), proxyList.size( ), thread.name( ).as_string( ) );
 
     for ( uint32_t i = 0; i < stubList.size( ); ++ i )
     {

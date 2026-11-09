@@ -34,7 +34,13 @@ Watchdog::Watchdog(ComponentThread& thread, uint32_t msTimeout /*= areg::WATCHDO
     , mDisarmed         (false)
     , mSequence         (0u)
     , mComponentThread  (&thread)
+
+    , mArmEvent         ( )
+    , mNextRegistered   ( nullptr )
+    , mPrevRegistered   ( nullptr )
+    , mRegistered       ( false )
 {
+    WatchdogManager::prepare_arm_event(*this);
 }
 
 Watchdog::Watchdog(WorkerThread& thread, uint32_t msTimeout /*= areg::WATCHDOG_IGNORE*/)
@@ -43,7 +49,13 @@ Watchdog::Watchdog(WorkerThread& thread, uint32_t msTimeout /*= areg::WATCHDOG_I
     , mDisarmed         (false)
     , mSequence         (0u)
     , mComponentThread  (&thread.binding_component_thread())
+
+    , mArmEvent         ( )
+    , mNextRegistered   ( nullptr )
+    , mPrevRegistered   ( nullptr )
+    , mRegistered       ( false )
 {
+    WatchdogManager::prepare_arm_event(*this);
 }
 
 Watchdog::Watchdog(const String & name)
@@ -52,7 +64,13 @@ Watchdog::Watchdog(const String & name)
     , mDisarmed         (false)
     , mSequence         (0u)
     , mComponentThread  (nullptr)
+
+    , mArmEvent         ( )
+    , mNextRegistered   ( nullptr )
+    , mPrevRegistered   ( nullptr )
+    , mRegistered       ( false )
 {
+    WatchdogManager::prepare_arm_event(*this);
 }
 
 Watchdog::~Watchdog()

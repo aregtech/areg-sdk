@@ -50,9 +50,6 @@ private:
      **/
     static constexpr std::string_view WATCHDOG_THREAD_NAME { "_AREG_WATCHDOG_THREAD_NAME_" };
 
-    using MapWatchdogResource   = OrderedMap<Watchdog::GUARD_ID, Watchdog *>;
-    using WatchdogResource      = ConcurrentResourceMap<Watchdog::GUARD_ID, Watchdog *, MapWatchdogResource>;
-
 //////////////////////////////////////////////////////////////////////////
 // Static members
 //////////////////////////////////////////////////////////////////////////
@@ -113,6 +110,13 @@ public:
      * \param   watchdog    The watchdog object to stop.
      **/
     static void stop_timer(Watchdog& watchdog);
+
+    /**
+     * \brief   Builds the arm event of an enabled watchdog; the event stays invalid if it cannot be allocated.
+     *
+     * \param   watchdog    The watchdog that owns the event.
+     **/
+    static void prepare_arm_event(Watchdog& watchdog);
 
     /**
      * \brief   Arms the watchdog once with a new timeout and a new sequence, set under the lock
@@ -176,18 +180,26 @@ private:
     void _remove_all_watchdogs();
 
     /**
-     * \brief   Creates system timer for watchdog and registers in resource map.
+     * \brief   Registers the watchdog. Allocates nothing.
      *
      * \param   watchdog    The watchdog to register.
      **/
     inline void _register_watchdog( Watchdog & watchdog);
 
     /**
-     * \brief   Stops watchdog timer and unregisters from resource map.
+     * \brief   Stops watchdog timer and unregisters the watchdog.
      *
      * \param   watchdog    The watchdog to unregister.
      **/
     inline void _unregister_watchdog( Watchdog & watchdog );
+
+    /**
+     * \brief   Posts a copy of the arm event of the watchdog. Allocates nothing.
+     *
+     * \param   watchdog    The watchdog to arm.
+     * \return  Returns true if the watchdog manager queue took the event.
+     **/
+    static bool _post_arm_event( Watchdog & watchdog );
 
     /**
      * \brief   Returns the registered watchdog at the given timer address, or nullptr if none is
@@ -201,6 +213,11 @@ private:
      *          none does. Call it with the lock taken; neither the handle nor a watchdog is read.
      **/
     Watchdog * _find_by_handle( TIMERHANDLE handle ) const;
+
+    /**
+     * \brief   Removes the watchdog from the list. Call it with the lock taken.
+     **/
+    inline void _unlink_watchdog( Watchdog & watchdog );
 
     /**
      * \brief   Returns true if the given watchdog is registered. Call it with the lock taken; the
@@ -287,9 +304,14 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   The Watchdog table object.
+     * \brief   The first registered watchdog; the list runs through the watchdogs.
      **/
-    WatchdogResource    mWatchdogResource;
+    Watchdog *          mWatchdogs;
+
+    /**
+     * \brief   Guards the list of the registered watchdogs.
+     **/
+    mutable SpinLock    mWatchdogLock;
 
 //////////////////////////////////////////////////////////////////////////
 //  Forbidden calls

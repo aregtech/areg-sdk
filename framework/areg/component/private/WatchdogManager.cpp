@@ -21,7 +21,6 @@
 
 #include "areg/logging/areg_log.h"
 
-#include <vector>
 namespace areg {
 
 DEF_LOG_SCOPE(areg_component_private_WatchdogManager, _process_expired_timer);
@@ -68,9 +67,7 @@ bool WatchdogManager::start_timer(Watchdog& watchdog)
     if (watchdogManager.is_ready())
     {
         watchdogManager._register_watchdog(watchdog);
-        result = TimerManagerEvent::send_event( TimerManagerEventData(&watchdog)
-                                             , static_cast<TimerManagerEventConsumer&>(watchdogManager)
-                                             , static_cast<DispatcherThread&>(watchdogManager));
+        result = WatchdogManager::_post_arm_event(watchdog);
         if (!result)
         {
             watchdogManager._unregister_watchdog(watchdog);
@@ -86,16 +83,14 @@ bool WatchdogManager::rearm_timer(Watchdog& watchdog, uint32_t msTimeout)
     if (watchdogManager.is_ready() == false)
         return false;
 
-    watchdogManager.mWatchdogResource.lock();
+    watchdogManager.mWatchdogLock.lock();
     WatchdogManager::_os_timer_stop(watchdog.handle());
     watchdog.mTimeoutInMs.store(msTimeout, std::memory_order_relaxed);
     ++ watchdog.mSequence;
     watchdogManager._register_watchdog(watchdog);
-    watchdogManager.mWatchdogResource.unlock();
+    watchdogManager.mWatchdogLock.unlock();
 
-    const bool result{ TimerManagerEvent::send_event( TimerManagerEventData(&watchdog)
-                                                    , static_cast<TimerManagerEventConsumer&>(watchdogManager)
-                                                    , static_cast<DispatcherThread&>(watchdogManager)) };
+    const bool result{ WatchdogManager::_post_arm_event(watchdog) };
     if (!result)
     {
         watchdogManager._unregister_watchdog(watchdog);
@@ -104,12 +99,39 @@ bool WatchdogManager::rearm_timer(Watchdog& watchdog, uint32_t msTimeout)
     return result;
 }
 
+void WatchdogManager::prepare_arm_event(Watchdog& watchdog)
+{
+    if (watchdog.timeout() == areg::WATCHDOG_IGNORE)
+        return;
+
+    WatchdogManager& watchdogManager = instance();
+    TimerManagerEvent event(TimerManagerEventData(&watchdog), static_cast<TimerManagerEventConsumer&>(watchdogManager));
+    if (event.is_valid())
+    {
+        // The target is written once: the copies posted later share this header.
+        event.set_target_dispatcher(static_cast<DispatcherThread*>(&watchdogManager));
+        watchdog.mArmEvent = std::move(event);
+    }
+}
+
+bool WatchdogManager::_post_arm_event(Watchdog& watchdog)
+{
+    Event event{ watchdog.mArmEvent };
+    return event.is_valid() && event.deliver_event();
+}
+
 void WatchdogManager::stop_timer(Watchdog& watchdog)
 {
     WatchdogManager& watchdogManager = instance();
     if (watchdogManager.is_ready())
     {
         watchdogManager._unregister_watchdog(watchdog);
+    }
+    else
+    {
+        // A destroyed watchdog never stays in the list.
+        Lock lock(watchdogManager.mWatchdogLock);
+        watchdogManager._unlink_watchdog(watchdog);
     }
 }
 
@@ -120,7 +142,8 @@ void WatchdogManager::stop_timer(Watchdog& watchdog)
 WatchdogManager::WatchdogManager()
     : TimerManagerBase(WatchdogManager::WATCHDOG_THREAD_NAME, areg::SYSTEM_THREAD_STACK_NORMAL, areg::QUEUE_DEFAULT_RING_CAPACITY)
 
-    , mWatchdogResource()
+    , mWatchdogs    ( nullptr )
+    , mWatchdogLock ( )
 {
 }
 
@@ -135,13 +158,24 @@ WatchdogManager::~WatchdogManager()
 
 inline void WatchdogManager::_register_watchdog(Watchdog & watchdog)
 {
-    mWatchdogResource.register_resource_object(watchdog.id(), &watchdog);
+    Lock lock(mWatchdogLock);
+    if (watchdog.mRegistered == false)
+    {
+        watchdog.mRegistered     = true;
+        watchdog.mPrevRegistered = nullptr;
+        watchdog.mNextRegistered = mWatchdogs;
+        if (mWatchdogs != nullptr)
+        {
+            mWatchdogs->mPrevRegistered = &watchdog;
+        }
+
+        mWatchdogs = &watchdog;
+    }
 }
 
 inline Watchdog * WatchdogManager::_find_registered(const TimerBase * timer) const
 {
-    Watchdog::GUARD_ID key{ 0u };
-    for (Watchdog * entry = mWatchdogResource.resource_first_key(key); entry != nullptr; entry = mWatchdogResource.resource_next_key(key))
+    for (Watchdog * entry = mWatchdogs; entry != nullptr; entry = entry->mNextRegistered)
     {
         if (static_cast<const TimerBase *>(entry) == timer)
             return entry;
@@ -152,8 +186,7 @@ inline Watchdog * WatchdogManager::_find_registered(const TimerBase * timer) con
 
 Watchdog * WatchdogManager::_find_by_handle(TIMERHANDLE handle) const
 {
-    Watchdog::GUARD_ID key{ 0u };
-    for (Watchdog * entry = mWatchdogResource.resource_first_key(key); entry != nullptr; entry = mWatchdogResource.resource_next_key(key))
+    for (Watchdog * entry = mWatchdogs; entry != nullptr; entry = entry->mNextRegistered)
     {
         if (entry->handle() == handle)
             return entry;
@@ -164,8 +197,7 @@ Watchdog * WatchdogManager::_find_by_handle(TIMERHANDLE handle) const
 
 inline bool WatchdogManager::_is_registered(const Watchdog * watchdog) const
 {
-    Watchdog::GUARD_ID key{ 0u };
-    for (const Watchdog * entry = mWatchdogResource.resource_first_key(key); entry != nullptr; entry = mWatchdogResource.resource_next_key(key))
+    for (const Watchdog * entry = mWatchdogs; entry != nullptr; entry = entry->mNextRegistered)
     {
         if (entry == watchdog)
             return true;
@@ -174,29 +206,60 @@ inline bool WatchdogManager::_is_registered(const Watchdog * watchdog) const
     return false;
 }
 
+inline void WatchdogManager::_unlink_watchdog(Watchdog & watchdog)
+{
+    if (watchdog.mRegistered)
+    {
+        if (watchdog.mPrevRegistered != nullptr)
+        {
+            watchdog.mPrevRegistered->mNextRegistered = watchdog.mNextRegistered;
+        }
+        else
+        {
+            mWatchdogs = watchdog.mNextRegistered;
+        }
+
+        if (watchdog.mNextRegistered != nullptr)
+        {
+            watchdog.mNextRegistered->mPrevRegistered = watchdog.mPrevRegistered;
+        }
+
+        watchdog.mRegistered     = false;
+        watchdog.mNextRegistered = nullptr;
+        watchdog.mPrevRegistered = nullptr;
+    }
+}
+
 inline void WatchdogManager::_unregister_watchdog(Watchdog& watchdog)
 {
-    mWatchdogResource.unregister_resource_object(watchdog.id());
+    do
+    {
+        Lock lock(mWatchdogLock);
+        _unlink_watchdog(watchdog);
+    } while (false);
+
     WatchdogManager::_os_timer_stop(watchdog.handle());
 }
 
 void WatchdogManager::_remove_all_watchdogs()
 {
-    // Drain the map under the lock, then stop OS timers outside it.
-    std::vector<TIMERHANDLE> handles;
-
-    mWatchdogResource.lock();
-    std::pair<Watchdog::GUARD_ID, Watchdog*> elem;
-    while (mWatchdogResource.is_empty() == false)
+    // Takes one watchdog at a time under the lock and stops its OS timer outside it.
+    for (;;)
     {
-        mWatchdogResource.remove_first_element(elem);
-        ASSERT(elem.second != nullptr);
-        handles.push_back(elem.second->handle());
-    }
-    mWatchdogResource.unlock();
+        TIMERHANDLE handle{ nullptr };
+        do
+        {
+            Lock lock(mWatchdogLock);
+            if (mWatchdogs != nullptr)
+            {
+                handle = mWatchdogs->handle();
+                _unlink_watchdog(*mWatchdogs);
+            }
+        } while (false);
 
-    for (TIMERHANDLE handle : handles)
-    {
+        if (handle == nullptr)
+            break;
+
         WatchdogManager::_os_timer_stop(handle);
     }
 }
@@ -205,14 +268,14 @@ void WatchdogManager::process_event(const TimerManagerEventData & data)
 {
     ASSERT(data.timer() != nullptr);
     // A watchdog unregisters under this lock before it is destroyed.
-    mWatchdogResource.lock();
+    mWatchdogLock.lock();
     Watchdog * watchdog = _find_registered(data.timer());
     if ((watchdog != nullptr) && (WatchdogManager::_os_timer_start(*watchdog) == false))
     {
         _unregister_watchdog(*watchdog);
     }
 
-    mWatchdogResource.unlock();
+    mWatchdogLock.unlock();
 }
 
 void WatchdogManager::_process_expired_timer(Watchdog* watchdog, Watchdog::WATCHDOG_ID watchdog_id, uint32_t /* hiBytes */, uint32_t /* loBytes */)
@@ -221,11 +284,10 @@ void WatchdogManager::_process_expired_timer(Watchdog* watchdog, Watchdog::WATCH
 
     bool expired{ false };
     bool deadline{ false };
-    String threadName;
-    String guardedName;
+    bool isWorker{ false };
     uint64_t instance{ 0u };
 
-    mWatchdogResource.lock();
+    mWatchdogLock.lock();
 
     const Watchdog::SEQUENCE_ID sequence = Watchdog::make_sequence_id(watchdog_id);
     if ((watchdog != nullptr) && _is_registered(watchdog) && (watchdog->sequence() == sequence))
@@ -235,14 +297,13 @@ void WatchdogManager::_process_expired_timer(Watchdog* watchdog, Watchdog::WATCH
         if (deadline == false)
         {
             const ComponentThread & componentThread{ watchdog->component_thread() };
-            threadName  = componentThread.name();
-            guardedName = watchdog->name();
+            isWorker    = (watchdog->name() != componentThread.name());
             instance    = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(&componentThread));
-            LOG_WARN("The watchdog [ %s ] of component thread [ %s ] has expired", guardedName.as_string(), threadName.as_string());
+            LOG_WARN("The watchdog [ %s ] of component thread [ %s ] has expired", watchdog->name().as_string(), componentThread.name().as_string());
         }
     }
 
-    mWatchdogResource.unlock();
+    mWatchdogLock.unlock();
 
     bool reported{ true };
     if (deadline)
@@ -251,20 +312,20 @@ void WatchdogManager::_process_expired_timer(Watchdog* watchdog, Watchdog::WATCH
     }
     else if (expired)
     {
-        reported = ServiceManager::report_watchdog_expired(threadName, instance, guardedName);
+        reported = ServiceManager::report_watchdog_expired(instance, isWorker);
     }
 
     if (reported == false)
     {
         // The report is retried after the timeout of the watchdog, unless it was stopped or re-armed.
         LOG_WARN("The expiry of a watchdog cannot be reported, it is retried");
-        mWatchdogResource.lock();
+        mWatchdogLock.lock();
         if (_is_registered(watchdog) && (watchdog->sequence() == sequence) && (WatchdogManager::_os_timer_start(*watchdog) == false))
         {
             _unregister_watchdog(*watchdog);
         }
 
-        mWatchdogResource.unlock();
+        mWatchdogLock.unlock();
     }
 }
 

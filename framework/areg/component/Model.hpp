@@ -1793,6 +1793,16 @@ private:
     bool                    mWasLoaded;
 
     /**
+     * \brief   True if the model is unloaded as soon as its load ends.
+     **/
+    bool                    mUnloadAfterLoad;
+
+    /**
+     * \brief   The unique number given when the loader registers the model; 0 if not registered.
+     **/
+    uint32_t                mModelId;
+
+    /**
      * \brief   The duration of time where model was loaded and alive.
      **/
     areg::Duration   mAliveDuration;

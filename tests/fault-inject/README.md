@@ -52,7 +52,7 @@ The library does not link areg. The test executable links the library, areg and 
 ```cpp
 namespace areg_fault
 {
-    enum class FaultPoint { ThreadCreate, SocketCreate, FileOpen, DirOpen, ProcessSpawn, SocketConnect, SocketSend, SocketRecv, SocketBind, SocketListen, EpollCtl, FileRead, FileWrite, Allocation, PipeCreate, Poll, TermGet, TermSet, Count };
+    enum class FaultPoint { ThreadCreate, SocketCreate, FileOpen, DirOpen, ProcessSpawn, SocketConnect, SocketSend, SocketRecv, SocketBind, SocketListen, EpollCtl, FileRead, FileWrite, Allocation, AlignedAllocation, PipeCreate, Poll, TermGet, TermSet, Count };
 
     bool     arm( FaultPoint point, int error, uint32_t skip = 0u, uint32_t count = 1u );
     uint32_t failed( FaultPoint point );
@@ -84,6 +84,7 @@ namespace areg_fault
 | `FileRead` | `read` | not replaced | not replaced | `errno` |
 | `FileWrite` | `write` | not replaced | not replaced | `errno` |
 | `Allocation` | `operator new(std::nothrow)`, `operator new[](std::nothrow)` | not replaced | not replaced | ignored; the call returns null. The tests are skipped in sanitizer builds, whose runtimes define the operators |
+| `AlignedAllocation` | aligned `operator new(std::nothrow)`, `operator new[](std::nothrow)` | not replaced | not replaced | ignored; the call returns null. Skipped in sanitizer builds, as `Allocation` |
 | `PipeCreate` | `pipe` | not replaced | not replaced | `errno` |
 | `Poll` | `poll` | not replaced | not replaced | `errno`. The AddressSanitizer interceptor does not reach the replacement, so its tests are skipped in that build. `HostName` (`gethostname`) behaves the same |
 | `TermGet` | `tcgetattr` | not replaced | not replaced | `errno` |
@@ -92,6 +93,10 @@ namespace areg_fault
 Use the error the system really reports in that situation, for example `EMFILE` or
 `ERROR_TOO_MANY_OPEN_FILES` for an exhausted descriptor table. The tests keep one constant per
 platform at the top of `fault_inject_test.cpp`.
+
+`areg_fault_count_throwing_new( threadId )` (Linux) counts the calls of the throwing `operator new` and `new[]`
+made by one thread, and `areg_fault_throwing_new_count()` returns the count. Such an allocation ends the process
+when it fails, and no fault point can make it fail, so a test counts it and asserts 0.
 
 `delay( FaultPoint::SocketListen, milliseconds )` makes `listen` wait instead of fail, until
 disarmed, so a test can hold a thread at that call and check what is true meanwhile. It returns

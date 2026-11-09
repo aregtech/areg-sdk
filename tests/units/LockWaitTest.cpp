@@ -78,6 +78,16 @@ namespace
 #endif  // defined(_WIN32)
     }
 
+    //!< Sleeps until at least 'ms' milliseconds have passed on Clock, even if a sleep returns early.
+    void sleep_on_clock(uint32_t ms)
+    {
+        const Clock::time_point deadline{ Clock::now() + std::chrono::milliseconds(ms) };
+        for (Clock::time_point now{ Clock::now() }; now < deadline; now = Clock::now())
+        {
+            std::this_thread::sleep_for(deadline - now);
+        }
+    }
+
     //!< What a waiter measured while it waited.
     struct WaitCost
     {
@@ -110,7 +120,7 @@ namespace
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 }
 
-                std::this_thread::sleep_for(std::chrono::milliseconds(HOLD_MS));
+                sleep_on_clock(HOLD_MS);
                 unlockFn();
             });
 
@@ -189,7 +199,7 @@ namespace
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(HOLD_MS));
+            sleep_on_clock(HOLD_MS);
             return areg::ThreadConsumer::on_exit();
         }
 

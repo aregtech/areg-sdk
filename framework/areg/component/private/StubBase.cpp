@@ -107,28 +107,28 @@ StubAddress StubBase::registered_address( const StubAddress & address )
     return (stub != nullptr ? stub->mAddress : address);
 }
 
-void StubBase::_detach_thread_providers( const ArrayList<String> & threads )
+void StubBase::_detach_thread_providers( const ThreadAddress & thread )
 {
-    ArrayList<ThreadAddress> addresses;
-    for (uint32_t i = 0; i < threads.size(); ++ i)
-    {
-        addresses.add(ThreadAddress(threads[i]));
-    }
-
     MapProviderResource & providers{ map_providers() };
     Lock lock(providers.lockable());
-    ArrayList<uint32_t> keys;
-    for (const auto & entry : providers.data())
+    for (bool found{ true }; found; )
     {
-        if (addresses.contains(entry.second->mAddress.thread()))
+        found = false;
+        uint32_t key{ 0u };
+        for (const auto & entry : providers.data())
         {
-            keys.add(entry.first);
+            if (entry.second->mAddress.thread() == thread)
+            {
+                key = entry.first;
+                found = true;
+                break;
+            }
         }
-    }
 
-    for (uint32_t i = 0; i < keys.size(); ++ i)
-    {
-        providers.unregister_resource_object(keys[i]);
+        if (found)
+        {
+            providers.unregister_resource_object(key);
+        }
     }
 }
 
