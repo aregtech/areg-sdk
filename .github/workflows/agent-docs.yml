@@ -142,6 +142,7 @@ jobs:
           python tools\agent\gen_docs.py --example | Set-Content -Encoding ascii "${{ runner.temp }}\gatecheck\design.json"
 
       - name: Run the chain
+        id: chain
         working-directory: ${{ runner.temp }}\gatecheck
         env:
           TOOLS: ${{ github.workspace }}\tools\agent
@@ -156,23 +157,56 @@ jobs:
           (Get-Content $init) -replace '^log::mtrouter::enable::file\s*=\s*false', 'log::mtrouter::enable::file = true' -replace '^log::mtrouter::scope::\*\s*=\s*NOTSET', 'log::mtrouter::scope::* = DEBUG | SCOPE' | Set-Content $init
 
       # Starts a real binary: the consumer alone, ended by its generated connect
-      # deadline with exit 1.
+      # deadline with exit 1. This is the first start of the freshly built router.
+      # A watcher beside it records a router that does not listen within 5 s: a
+      # memory dump and the stacks of every thread, taken before the runner stops it.
       - name: Run the consumer alone to its connect deadline
         id: consumer_alone
         working-directory: ${{ runner.temp }}\gatecheck
         env:
           TOOLS: ${{ github.workspace }}\tools\agent
+          EVIDENCE: ${{ runner.temp }}\router-evidence
+          WATCH_DONE: ${{ runner.temp }}\router-watch.done
         run: |
-          python -c "import json;p='scenarios.json';d=json.load(open(p));d['scenarios'].append(dict(name='alone',router=True,timeout=60,procs=[dict(binary='gatecheck_consumer',lead=True,exit=1,expect=['no provider connected within the connect deadline'])]));json.dump(d,open(p,'w'),indent=2)"
-          python $env:TOOLS\run_scenarios.py --build build\bin --only alone
+          $checker = "${{ github.workspace }}\tools\intern\service_start_check.py"
+          $watch = Start-Process -PassThru -NoNewWindow -FilePath python -ArgumentList "`"$checker`" watch --name mtrouter --port 8181 --within 5 --done `"$env:WATCH_DONE`" --symbols `"$PWD\build\bin`" --out `"$env:EVIDENCE`""
+          try {
+            python -c "import json;p='scenarios.json';d=json.load(open(p));d['scenarios'].append(dict(name='alone',router=True,timeout=60,procs=[dict(binary='gatecheck_consumer',lead=True,exit=1,expect=['no provider connected within the connect deadline'])]));json.dump(d,open(p,'w'),indent=2)"
+            python $env:TOOLS\run_scenarios.py --build build\bin --only alone
+            $code = $LASTEXITCODE
+          } finally {
+            New-Item -ItemType File -Force -Path $env:WATCH_DONE | Out-Null
+            $watch.WaitForExit(600000) | Out-Null
+          }
+          exit $code
+
+      # Every start of the router must listen, not most of them. A start that does
+      # not is recorded as above and fails the job.
+      - name: Start the router a hundred times
+        id: router_starts
+        if: ${{ !cancelled() && steps.chain.outcome == 'success' }}
+        working-directory: ${{ runner.temp }}\gatecheck
+        run: python "${{ github.workspace }}\tools\intern\service_start_check.py" repeat --binary build\bin\mtrouter.exe --port 8181 --count 100 --out "${{ runner.temp }}\router-evidence"
 
       - name: Show the ports and the log of the router
-        if: failure() && steps.consumer_alone.outcome == 'failure'
+        if: failure() && (steps.consumer_alone.outcome == 'failure' || steps.router_starts.outcome == 'failure')
         working-directory: ${{ runner.temp }}\gatecheck
         run: |
           netsh int ipv4 show excludedportrange tcp
           netstat -ano
-          Get-ChildItem -Path build\bin\logs -Filter 'mtrouter*.log' -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "--- $($_.FullName)"; Get-Content $_.FullName -Tail 200 }
+          Get-ChildItem -Path build\bin\logs -Filter 'mtrouter*.log' -ErrorAction SilentlyContinue | Sort-Object LastWriteTime | Select-Object -Last 3 | ForEach-Object { Write-Host "--- $($_.FullName)"; Get-Content $_.FullName -Tail 200 }
+
+      - name: Keep the dump and the symbols of a router that did not listen
+        if: failure() && (steps.consumer_alone.outcome == 'failure' || steps.router_starts.outcome == 'failure')
+        uses: actions/upload-artifact@v7
+        with:
+          name: router-evidence-windows
+          path: |
+            ${{ runner.temp }}\router-evidence
+            ${{ runner.temp }}\gatecheck\build\bin\mtrouter.*
+            ${{ runner.temp }}\gatecheck\build\bin\areg.*
+          if-no-files-found: ignore
+          retention-days: 14
 
   recipes:
     name: recipes build and run

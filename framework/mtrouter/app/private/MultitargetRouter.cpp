@@ -22,6 +22,7 @@
 #include "areg/logging/areg_log.h"
 
 #include "aregextend/console/Console.hpp"
+#include "areg/base/private/NeverDestroyed.hpp"
 
 #include <atomic>
 #include <chrono>
@@ -79,8 +80,8 @@ const areg::ext::OptionParser::OptionSetup MultitargetRouter::ValidOptions[ ]
 
 MultitargetRouter & MultitargetRouter::instance()
 {
-    static MultitargetRouter _messageRouter;
-    return _messageRouter;
+    static areg::NeverDestroyed<MultitargetRouter> _messageRouter{ [](void * where) { ::new (where) MultitargetRouter(); } };
+    return _messageRouter.object();
 }
 
 void MultitargetRouter::print_status(const areg::String& status)

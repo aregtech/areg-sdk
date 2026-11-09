@@ -416,6 +416,7 @@ TEST_F( SocketOsLoopTest, reset_peer_is_not_alive )
     ASSERT_EQ( ::setsockopt( pair.server, SOL_SOCKET, SO_LINGER, &reset, sizeof( reset ) ), 0 );
     ::close( pair.server );
     pair.server = areg::InvalidSocketHandle;
+    ASSERT_EQ( areg::SocketMultiplexer{ }.wait( pair.client, nullptr, 0, 10'000 ), pair.client );
     EXPECT_FALSE( areg::is_socket_alive( pair.client ) );
 }
 

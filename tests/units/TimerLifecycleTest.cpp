@@ -1,5 +1,6 @@
 #include "units/GUnitTest.hpp"
 #include "units/EventTestSupport.hpp"
+#include "units/ChildProcess.hpp"
 
 #include "areg/appbase/Application.hpp"
 #include "areg/component/Timer.hpp"
@@ -7,10 +8,12 @@
 
 #include <chrono>
 #include <condition_variable>
+#include <cstdlib>
 #include <functional>
 #include <map>
 #include <memory>
 #include <mutex>
+#include <new>
 #include <thread>
 #include <vector>
 
@@ -484,6 +487,51 @@ TEST_F(TimerLifecycleTest, timer_can_move_to_a_restarted_dispatcher_without_a_st
     ASSERT_TRUE(dispatcher.barrier());
     EXPECT_EQ(consumer.count(timer), 2u);
     EXPECT_FALSE(timer.is_active());
+}
+
+namespace
+{
+    //!< The consumer of the timer deleted at process exit.
+    TimerListener * gLateConsumer{ nullptr };
+
+    //!< The timer created after the exit handler that deletes it was registered.
+    areg::Timer * gLateTimer{ nullptr };
+
+    //!< Deletes the late timer and its consumer at process exit.
+    void delete_late_timer()
+    {
+        delete gLateTimer;
+        gLateTimer = nullptr;
+        delete gLateConsumer;
+        gLateConsumer = nullptr;
+    }
+
+    //!< Makes a failed lock end the process.
+    void set_lock_failure_fatal()
+    {
+#if defined(_WIN32)
+        static_cast<void>(::_putenv_s("AREG_LOCK_FAILURE_FATAL", "1"));
+#else   // defined(_WIN32)
+        static_cast<void>(::setenv("AREG_LOCK_FAILURE_FATAL", "1", 1));
+#endif  // defined(_WIN32)
+    }
+}
+
+/**
+ * \brief   A timer deleted by an exit handler that runs after the timer manager's exit handling
+ *          unregisters from a usable manager. The first stop builds the manager after the handler.
+ **/
+TEST(TimerManagerUnavailableTest, timer_deleted_at_exit_after_the_manager)
+{
+    AREG_EXPECT_IN_CHILD(
+        set_lock_failure_fatal();
+        AREG_CHILD_CHECK(std::atexit(&delete_late_timer) == 0);
+        gLateConsumer = new (std::nothrow) TimerListener();
+        AREG_CHILD_CHECK(gLateConsumer != nullptr);
+        gLateTimer = new (std::nothrow) areg::Timer(*gLateConsumer, "LifecycleLateTimer");
+        AREG_CHILD_CHECK(gLateTimer != nullptr);
+        gLateTimer->stop_timer();
+    );
 }
 
 TEST(TimerManagerUnavailableTest, start_reports_failure_without_a_running_timer_manager)

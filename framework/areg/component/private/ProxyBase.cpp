@@ -32,6 +32,7 @@
 #include "areg/component/private/ServiceManager.hpp"
 
 #include "areg/logging/areg_log.h"
+#include "areg/base/private/NeverDestroyed.hpp"
 
 #include <cstring>
 #include <functional>
@@ -376,14 +377,14 @@ ProxyBase::ServiceAvailableEvent::ServiceAvailableEvent( NotificationConsumer & 
 
 ProxyBase::MapProxyResource& ProxyBase::map_proxies() noexcept
 {
-    static MapProxyResource _mapProxies;
-    return _mapProxies;
+    static NeverDestroyed<MapProxyResource> _mapProxies;
+    return _mapProxies.object();
 }
 
 ProxyBase::MapThreadProxyList& ProxyBase::thread_proxies() noexcept
 {
-    static MapThreadProxyList   _threadProxies;
-    return _threadProxies;
+    static NeverDestroyed<MapThreadProxyList> _threadProxies;
+    return _threadProxies.object();
 }
 
 std::shared_ptr<ProxyBase> ProxyBase::acquire_proxy( const String & roleName

@@ -135,6 +135,13 @@ public:
     static bool restore_log_config();
 
     /**
+     * \brief   Forgets what the logging derived from the configuration of the last session: the
+     *          configured scope priorities, the saved ones and the source state. The registered
+     *          scopes stay registered, their priority is NOTSET.
+     **/
+    static void clear_configured_state();
+
+    /**
      * \brief   Sets the state of the log source, which decides whether the scopes produce log
      *          messages and whether the produced messages reach the log collector.
      *          - areg::LogSourceState::Active  produces the messages and sends them.

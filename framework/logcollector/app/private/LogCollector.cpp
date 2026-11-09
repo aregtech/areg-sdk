@@ -22,6 +22,7 @@
 #include "areg/logging/areg_log.h"
 
 #include "aregextend/console/Console.hpp"
+#include "areg/base/private/NeverDestroyed.hpp"
 
 #include <atomic>
 #include <chrono>
@@ -95,8 +96,8 @@ const OptionParser::OptionSetup LogCollector::ValidOptions[ ]
 
 LogCollector & LogCollector::instance()
 {
-    static LogCollector _logger;
-    return _logger;
+    static areg::NeverDestroyed<LogCollector> _logger{ [](void * where) { ::new (where) LogCollector(); } };
+    return _logger.object();
 }
 
 void LogCollector::print_status(const String& status)

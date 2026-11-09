@@ -20,6 +20,7 @@
 #include "areg/component/StubBase.hpp"
 #include "areg/component/private/ServiceManager.hpp"
 #include "areg/component/ComponentLoader.hpp"
+#include "areg/base/private/NeverDestroyed.hpp"
 
 #include <new>
 namespace areg {
@@ -39,8 +40,8 @@ AREG_IMPLEMENT_RUNTIME(Component, RuntimeObject)
 
 Component::MapComponentResource& Component::resource_map() noexcept
 {
-    static Component::MapComponentResource _mapResource;
-    return _mapResource;
+    static NeverDestroyed<Component::MapComponentResource> _mapResource;
+    return _mapResource.object();
 }
 
 Component* Component::load_component(const areg::ComponentEntry &entry, ComponentThread & componentThread )

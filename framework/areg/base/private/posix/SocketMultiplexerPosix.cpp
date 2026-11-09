@@ -80,11 +80,6 @@ areg::SocketMultiplexer::SocketMultiplexer(uint32_t maxConnections /*= areg::DEF
     : mSockets      { }
     , mMaxCount     { (maxConnections < areg::MIN_CONNECTIONS) ? areg::MIN_CONNECTIONS : (maxConnections > areg::MAX_CONNECTIONS) ? areg::MAX_CONNECTIONS : maxConnections }
     , mIsReset      { false }
-#if defined(__linux__)
-    , mEpollFd      { areg::InvalidSocketHandle }
-#elif defined(__APPLE__)
-    , mKqueueFd     { areg::InvalidSocketHandle }
-#endif
     , mWakeupReadFd { areg::InvalidSocketHandle }
     , mWakeupWriteFd{ areg::InvalidSocketHandle }
     , mBatchCount   { 0 }

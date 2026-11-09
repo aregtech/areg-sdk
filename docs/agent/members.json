@@ -1065,6 +1065,7 @@
   "reserve",
   "reserve_capacity",
   "reset",
+  "reset_configuration",
   "resize",
   "resize_and_fill",
   "resolve_address",

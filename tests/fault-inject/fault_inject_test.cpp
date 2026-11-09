@@ -102,6 +102,36 @@ TEST( FaultInjectTest, thread_start_fails_when_the_system_cannot_create_a_thread
     );
 }
 
+/**
+ * \brief   Reproduces the defect: a failed start left the application in the failure state for
+ *          ever, so the release did not stop it and the next setup could not start.
+ **/
+TEST( FaultInjectTest, failed_setup_is_released_and_the_next_setup_starts )
+{
+    AREG_EXPECT_IN_CHILD(
+        ReturningConsumer consumer;
+        areg::Thread warmup( consumer, "FaultInjectWarmupSetup" );
+        AREG_CHILD_CHECK( warmup.start( areg::WAIT_INFINITE ) );
+        static_cast<void>(warmup.shutdown( areg::WAIT_INFINITE ));
+
+        {
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::ThreadCreate, THREAD_ERROR, 1u ) );
+            areg::Application::setup( false, true, false, true, false );
+            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::ThreadCreate ) == 1u && NOT_REPLACED );
+            AREG_CHILD_CHECK( areg::Application::system_state( ) == areg::AppState::Failure );
+            areg::Application::release( );
+        }
+
+        AREG_CHILD_CHECK( areg::Application::system_state( ) == areg::AppState::Stopped );
+        areg::Application::setup( false, true, false, true, false );
+        AREG_CHILD_CHECK( areg::Application::system_state( ) == areg::AppState::Ready );
+        AREG_CHILD_CHECK( areg::Application::is_servicing_ready( ) );
+        areg::Application::release( );
+        AREG_CHILD_CHECK( areg::Application::system_state( ) == areg::AppState::Stopped );
+    );
+}
+
 TEST( FaultInjectTest, socket_create_returns_an_invalid_socket_when_the_system_refuses )
 {
     AREG_EXPECT_IN_CHILD(

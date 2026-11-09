@@ -115,7 +115,7 @@ public:
                      , ConfigListener * configListener = nullptr);
 
     /**
-     * \brief   Stops all components, unloads models, stops services, and releases resources.
+     * \brief   Stops all components, unloads models, stops services, releases resources and drops the configuration.
      **/
     static void release();
 
@@ -454,6 +454,16 @@ public:
     [[nodiscard]]
     static bool is_configured();
 
+    /**
+     * \brief   Drops every configuration property and everything that derives from it, as
+     *          Application::release() does at the end of a session. The next load_configuration()
+     *          or setup() reads a file again. Scopes stay registered and priorities go to NOTSET.
+     *
+     * \return  Returns true if the configuration is dropped. Returns false and does nothing while
+     *          the system runs or the logging is started.
+     **/
+    static bool reset_configuration();
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
 //////////////////////////////////////////////////////////////////////////
@@ -512,6 +522,11 @@ private:
      * \return  Returns true if the application state was changed successfully.
      **/
     static bool _set_app_state(areg::AppState newState);
+
+    /**
+     * \brief   Drops the configuration properties and the state derived from them.
+     **/
+    static void _clear_configuration();
 
     /**
      * \brief   Starts the service manager, and with it the timer and watchdog managers.

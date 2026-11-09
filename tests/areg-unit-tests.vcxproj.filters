@@ -112,6 +112,12 @@
     <ClCompile Include="units\ProcessTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="units\ApplicationRestartTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClInclude Include="units\ApplicationRestartTestSupport.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClCompile Include="units\ApplicationSetupTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -254,6 +260,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="units\SocketLivenessTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\NeverDestroyedTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="units\OptionParserTest.cpp">

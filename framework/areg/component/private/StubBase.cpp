@@ -25,6 +25,7 @@
 #include "areg/component/private/ServiceManager.hpp"
 
 #include "areg/logging/areg_log.h"
+#include "areg/base/private/NeverDestroyed.hpp"
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -61,8 +62,8 @@ bool StubBase::Listener::operator == ( const StubBase::Listener & other ) const 
 
 StubBase::MapProviderResource& StubBase::map_providers() noexcept
 {
-    static StubBase::MapProviderResource   _mapProviders;
-    return _mapProviders;
+    static NeverDestroyed<StubBase::MapProviderResource> _mapProviders;
+    return _mapProviders.object();
 }
 
 StubBase::StubBase( Component & masterComp, const areg::InterfaceData & siData )

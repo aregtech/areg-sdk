@@ -18,6 +18,7 @@
 #include "areg/base/ThreadConsumer.hpp"
 #include "areg/base/ThreadLocalStorage.hpp"
 #include "areg/base/private/WaitWord.hpp"
+#include "areg/base/private/NeverDestroyed.hpp"
 
 #include <algorithm>
 
@@ -64,14 +65,14 @@ AREG_IMPLEMENT_RUNTIME(Thread, RuntimeObject)
 /************************************************************************/
 Thread::MapThreadNameResource& Thread::_map_thread_name() noexcept
 {
-    static Thread::MapThreadNameResource _mapThreadName;
-    return _mapThreadName;
+    static NeverDestroyed<Thread::MapThreadNameResource> _mapThreadName;
+    return _mapThreadName.object();
 }
 
 Thread::MapThreadIDResource& Thread::_map_thread_id() noexcept
 {
-    static Thread::MapThreadIDResource _mapThreadId;
-    return _mapThreadId;
+    static NeverDestroyed<Thread::MapThreadIDResource> _mapThreadId;
+    return _mapThreadId.object();
 }
 
 std::atomic<uint32_t> Thread::mRegistryGeneration{ 1u };
