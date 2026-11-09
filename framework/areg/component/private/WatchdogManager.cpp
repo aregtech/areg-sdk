@@ -21,6 +21,8 @@
 
 #include "areg/logging/areg_log.h"
 
+#include <new>
+
 namespace areg {
 
 DEF_LOG_SCOPE(areg_component_private_WatchdogManager, _process_expired_timer);
@@ -35,8 +37,10 @@ DEF_LOG_SCOPE(areg_component_private_WatchdogManager, _process_expired_timer);
 
 WatchdogManager& WatchdogManager::instance()
 {
-    static WatchdogManager	_theWatchdogManager;
-    return _theWatchdogManager;
+    // Never destroyed: threads that end during process exit may still release their watchdogs.
+    alignas(WatchdogManager) static unsigned char _theStorage[sizeof(WatchdogManager)];
+    static WatchdogManager * const _theWatchdogManager{ new (_theStorage) WatchdogManager() };
+    return *_theWatchdogManager;
 }
 
 bool WatchdogManager::start_watchdog_manager()

@@ -60,6 +60,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     EventEnvelopeTest.cpp
     EventQueueTest.cpp
     FatalErrorTest.cpp
+    WatchdogTest.cpp
     RemainingSmallFilesCoverageTest.cpp
     RemainderCoverageTest.cpp
     StringDefsEdgeTest.cpp
