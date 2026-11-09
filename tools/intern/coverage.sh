@@ -67,9 +67,12 @@
 # ===========================================================================
 set -u
 
+# The bash of Git for Windows sets OSTYPE to cygwin as well, so Cygwin is told by uname.
+case "$(uname -s)" in CYGWIN*) CYGWIN=1 ;; *) CYGWIN=0 ;; esac
+
 # A Cygwin bash started from Git for Windows has the Git tools first in PATH, and they read
 # /cygdrive/... as a path below the Git directory. 'mkdir' then succeeds in the wrong place.
-[ "${OSTYPE:-}" = cygwin ] && export PATH="/usr/local/bin:/usr/bin:$PATH"
+[ "$CYGWIN" = 1 ] && export PATH="/usr/local/bin:/usr/bin:$PATH"
 
 # 'pwd -W' (Git for Windows) gives the drive form that native tools read; elsewhere it is 'pwd'.
 cwd() { pwd -W 2>/dev/null || pwd; }
@@ -173,7 +176,7 @@ reset_counters() { ( cd "$BUILD" && find . -name '*.gcda' -delete ) || die "cann
 # On Cygwin every running example process writes its counters below its own slot folder,
 # and gcov-tool merges the slots into the build after the run.
 GCOV_TOOL=gcov-tool
-split_counters() { [ "${OSTYPE:-}" = cygwin ]; }
+split_counters() { [ "$CYGWIN" = 1 ]; }
 
 # Creates the slot folder $1 with dirs.txt, the object folders of the build.
 split_prepare() {
