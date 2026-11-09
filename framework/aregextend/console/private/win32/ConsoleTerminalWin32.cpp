@@ -29,7 +29,6 @@
 #endif // !NOMINMAX
 #include <Windows.h>
 
-#include <iterator>
 
 #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
     #define ENABLE_VIRTUAL_TERMINAL_PROCESSING  0x0004
@@ -50,8 +49,16 @@ namespace {
     bool        _keysMode       { false };
     //!< True if the control handler is installed.
     bool        _handlerSet     { false };
-    //!< The typed bytes read from the console and not handled yet.
-    char        _keys[64]       { };
+    //!< The auto reset event that wakes the thread waiting for a key.
+    HANDLE      _wakeEvent      { nullptr };
+    //!< The number of input records read from the console at once.
+    constexpr DWORD MAX_RECORDS { 16u };
+    //!< The input records read from the console and not handled yet.
+    INPUT_RECORD _records[MAX_RECORDS] { };
+    uint32_t    _recordsUsed    { 0u };
+    uint32_t    _recordsRead    { 0u };
+    //!< The bytes of one key press not handled yet.
+    char        _keys[4]        { };
     uint32_t    _keysUsed       { 0u };
     uint32_t    _keysRead       { 0u };
 
@@ -78,6 +85,57 @@ namespace {
             ::SetConsoleMode(hOut, _outMode);
             _outModeSet = false;
         }
+    }
+
+    //!< Sets the bytes of one press of a key. Arrows, Home, End and Delete become escape sequences.
+    void _set_key(const KEY_EVENT_RECORD& key) noexcept
+    {
+        const WCHAR wch{ key.uChar.UnicodeChar };
+        if (wch != 0)
+        {
+            if (wch < 0x80)
+                _keys[_keysUsed++] = static_cast<char>(wch);
+
+            return;
+        }
+
+        char final{ 0 };
+        switch (key.wVirtualKeyCode)
+        {
+        case VK_UP:     final = 'A'; break;
+        case VK_DOWN:   final = 'B'; break;
+        case VK_RIGHT:  final = 'C'; break;
+        case VK_LEFT:   final = 'D'; break;
+        case VK_HOME:   final = 'H'; break;
+        case VK_END:    final = 'F'; break;
+        case VK_DELETE: final = '~'; break;
+        default:        return;
+        }
+
+        _keys[_keysUsed++] = '\x1B';
+        _keys[_keysUsed++] = '[';
+        if (final == '~')
+            _keys[_keysUsed++] = '3';
+        _keys[_keysUsed++] = final;
+    }
+
+    //!< Takes one press of the next read key. A key repeated several times stays for the next press.
+    void _take_key() noexcept
+    {
+        _keysUsed = 0u;
+        _keysRead = 0u;
+        INPUT_RECORD& record{ _records[_recordsRead] };
+        if ((record.EventType == KEY_EVENT) && (record.Event.KeyEvent.bKeyDown != FALSE))
+        {
+            _set_key(record.Event.KeyEvent);
+            if (record.Event.KeyEvent.wRepeatCount > 1u)
+            {
+                --record.Event.KeyEvent.wRepeatCount;
+                return;
+            }
+        }
+
+        ++_recordsRead;
     }
 
     //!< Restores the console before Ctrl+C, Ctrl+Break or closing ends the process.
@@ -116,6 +174,15 @@ bool open(int (&pipe)[2]) noexcept
         _handlerSet = (::SetConsoleCtrlHandler(&_on_control, TRUE) != FALSE);
     }
 
+    if (_keysMode)
+    {
+        _wakeEvent = ::CreateEventW(nullptr, FALSE, FALSE, nullptr);
+    }
+
+    _recordsUsed = 0u;
+    _recordsRead = 0u;
+    _keysUsed = 0u;
+    _keysRead = 0u;
     return _outModeSet;
 }
 
@@ -128,6 +195,16 @@ void close(int (&pipe)[2]) noexcept
     }
 
     _restore_modes();
+    if (_wakeEvent != nullptr)
+    {
+        ::CloseHandle(_wakeEvent);
+        _wakeEvent = nullptr;
+    }
+
+    _recordsUsed = 0u;
+    _recordsRead = 0u;
+    _keysUsed = 0u;
+    _keysRead = 0u;
     pipe[0] = -1;
     pipe[1] = -1;
 }
@@ -162,21 +239,38 @@ KeyRead read_byte(int /*pipeFd*/, int timeoutMs, char& ch) noexcept
         return KeyRead::Byte;
     }
 
-    if (_keysRead == _keysUsed)
+    while (_keysRead == _keysUsed)
     {
-        if (timeoutMs >= 0)
+        if (_recordsRead != _recordsUsed)
+        {
+            _take_key();
+            continue;
+        }
+
+        HANDLE handles[2]{ _wakeEvent, hIn };
+        const DWORD count{ _wakeEvent != nullptr ? 2u : 1u };
+        const DWORD waited{ ::WaitForMultipleObjects(count, handles + (2u - count), FALSE, timeoutMs >= 0 ? static_cast<DWORD>(timeoutMs) : INFINITE) };
+        if (waited == WAIT_TIMEOUT)
         {
             return KeyRead::Timeout;
         }
-
-        DWORD count{ 0u };
-        if ((::ReadConsoleA(hIn, _keys, static_cast<DWORD>(std::size(_keys)), &count, nullptr) == FALSE) || (count == 0u))
+        else if ((count == 2u) && (waited == WAIT_OBJECT_0))
+        {
+            return KeyRead::Interrupted;
+        }
+        else if (waited != (WAIT_OBJECT_0 + count - 1u))
         {
             return KeyRead::Closed;
         }
 
-        _keysUsed = static_cast<uint32_t>(count);
-        _keysRead = 0u;
+        DWORD read{ 0u };
+        if ((::ReadConsoleInputW(hIn, _records, MAX_RECORDS, &read) == FALSE) || (read == 0u))
+        {
+            return KeyRead::Closed;
+        }
+
+        _recordsUsed = static_cast<uint32_t>(read);
+        _recordsRead = 0u;
     }
 
     ch = _keys[_keysRead++];
@@ -185,25 +279,10 @@ KeyRead read_byte(int /*pipeFd*/, int timeoutMs, char& ch) noexcept
 
 void interrupt(const int (& /*pipe*/)[2]) noexcept
 {
-    HANDLE hIn{ ::GetStdHandle(STD_INPUT_HANDLE) };
-    if (_is_valid(hIn) == false)
+    if (_wakeEvent != nullptr)
     {
-        return;
+        ::SetEvent(_wakeEvent);
     }
-
-    INPUT_RECORD ir[2]{};
-    ir[0].EventType                        = KEY_EVENT;
-    ir[0].Event.KeyEvent.bKeyDown          = TRUE;
-    ir[0].Event.KeyEvent.wRepeatCount      = 1;
-    ir[0].Event.KeyEvent.wVirtualKeyCode   = VK_RETURN;
-    ir[0].Event.KeyEvent.wVirtualScanCode  = 0x1Cu;
-    ir[0].Event.KeyEvent.uChar.AsciiChar   = '\r';
-    ir[0].Event.KeyEvent.dwControlKeyState = 0;
-    ir[1]                                  = ir[0];
-    ir[1].Event.KeyEvent.bKeyDown          = FALSE;
-
-    DWORD written{ 0u };
-    ::WriteConsoleInputA(hIn, ir, 2, &written);
 }
 
 } // namespace areg::ext::terminal

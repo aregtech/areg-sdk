@@ -1035,6 +1035,25 @@ TEST(ConsoleKeyboardTest, disabled_input_interrupts_the_waiting_read)
     );
 }
 
+TEST(ConsoleKeyboardTest, disabled_input_leaves_no_key_in_the_terminal)
+{
+    AREG_EXPECT_IN_CHILD(
+        Terminal terminal(60, 10, true);
+        Console& console = Console::instance();
+        AREG_CHILD_CHECK(console.enable_console_input(true));
+        console.set_cursor_cur_position({ 5, 3 });
+        terminal.sync();
+        terminal.type("-q\r");
+        AREG_CHILD_CHECK(console.wait_for_input(nullptr) == "-q");
+        AREG_CHILD_CHECK(console.enable_console_input(false));
+        int pending{ -1 };
+        AREG_CHILD_CHECK((::ioctl(STDIN_FILENO, FIONREAD, &pending) == 0) && (pending == 0));
+        AREG_CHILD_CHECK(console.enable_console_input(true));
+        terminal.type("next\r");
+        AREG_CHILD_CHECK(console.wait_for_input(nullptr) == "next");
+    );
+}
+
 TEST(ConsoleKeyboardTest, editing_keys_move_and_clear_the_line)
 {
     AREG_EXPECT_IN_CHILD(
@@ -1554,6 +1573,116 @@ TEST(ConsolePseudoConsoleTest, disabled_input_interrupts_the_waiting_read)
         console.enable_console_input(false);
         reader.join();
         AREG_CHILD_CHECK(result.is_empty());
+    );
+}
+
+namespace
+{
+    //!< A pressed key with the character 'ch', or the virtual key 'vk' if 'ch' is 0.
+    INPUT_RECORD _key(WCHAR ch, WORD vk = 0u, WORD repeat = 1u, bool down = true)
+    {
+        INPUT_RECORD record{};
+        record.EventType                    = KEY_EVENT;
+        record.Event.KeyEvent.bKeyDown      = down ? TRUE : FALSE;
+        record.Event.KeyEvent.wRepeatCount  = repeat;
+        record.Event.KeyEvent.wVirtualKeyCode = vk;
+        record.Event.KeyEvent.uChar.UnicodeChar = ch;
+        return record;
+    }
+
+    //!< Puts the records into the input of the console.
+    void _put_keys(const std::vector<INPUT_RECORD>& records)
+    {
+        DWORD written{ 0u };
+        AREG_CHILD_CHECK(::WriteConsoleInputW(::GetStdHandle(STD_INPUT_HANDLE), records.data(), static_cast<DWORD>(records.size()), &written) != FALSE);
+        AREG_CHILD_CHECK(written == records.size());
+    }
+
+    //!< Returns the number of pressed keys waiting in the input of the console.
+    uint32_t _pressed_keys()
+    {
+        INPUT_RECORD records[64]{};
+        DWORD count{ 0u };
+        AREG_CHILD_CHECK(::PeekConsoleInputW(::GetStdHandle(STD_INPUT_HANDLE), records, 64u, &count) != FALSE);
+        uint32_t result{ 0u };
+        for (DWORD i = 0u; i < count; ++i)
+        {
+            if ((records[i].EventType == KEY_EVENT) && (records[i].Event.KeyEvent.bKeyDown != FALSE))
+                ++result;
+        }
+
+        return result;
+    }
+}
+
+// Reproduces the defect: disabling the input put an Enter key into the console, which the shell read after the exit.
+TEST(ConsolePseudoConsoleTest, disabled_input_leaves_no_key_in_the_console)
+{
+    if (!Terminal::supported())
+        GTEST_SKIP() << "the system has no pseudo console";
+
+    AREG_EXPECT_IN_CHILD(
+        Terminal terminal(60, 10);
+        Console& console = Console::instance();
+        AREG_CHILD_CHECK(console.enable_console_input(true));
+        console.set_cursor_cur_position({ 5, 3 });
+        terminal.type("-q\r");
+        AREG_CHILD_CHECK(console.wait_for_input(nullptr) == "-q");
+        AREG_CHILD_CHECK(console.enable_console_input(false));
+        AREG_CHILD_CHECK(_pressed_keys() == 0u);
+        AREG_CHILD_CHECK(console.enable_console_input(true));
+        terminal.type("next\r");
+        AREG_CHILD_CHECK(console.wait_for_input(nullptr) == "next");
+        AREG_CHILD_CHECK(_pressed_keys() == 0u);
+    );
+}
+
+TEST(ConsolePseudoConsoleTest, key_records_edit_the_line_and_other_events_are_ignored)
+{
+    if (!Terminal::supported())
+        GTEST_SKIP() << "the system has no pseudo console";
+
+    AREG_EXPECT_IN_CHILD(
+        Terminal terminal(60, 10);
+        Console& console = Console::instance();
+        AREG_CHILD_CHECK(console.enable_console_input(true));
+        console.set_cursor_cur_position({ 5, 3 });
+        INPUT_RECORD focus{};
+        focus.EventType = FOCUS_EVENT;
+        focus.Event.FocusEvent.bSetFocus = TRUE;
+        _put_keys({ _key(L'x'), _key(L'a'), _key(L'b'), _key(L'c'), _key(0, VK_LEFT), _key(0, VK_LEFT), _key(L'\b'), _key(L'X')
+                  , _key(0, VK_HOME), _key(0, VK_DELETE), _key(0, VK_RIGHT), _key(L'Y'), _key(0, VK_END), _key(0, VK_SHIFT)
+                  , _key(static_cast<WCHAR>(0x00E9)), _key(L'z', 0u, 1u, false), focus, _key(L'!'), _key(L'!'), _key(L'!'), _key(L'\r') });
+        AREG_CHILD_CHECK(console.wait_for_input(nullptr) == "XYbc!!!");
+        _put_keys({ _key(L'n'), _key(L'e'), _key(L'w'), _key(0, VK_UP), _key(0, VK_DOWN), _key(L'!'), _key(L'\r') });
+        AREG_CHILD_CHECK(console.wait_for_input(nullptr) == "new!");
+        _put_keys({ _key(0, VK_UP), _key(0, VK_UP), _key(L'\r') });
+        AREG_CHILD_CHECK(console.wait_for_input(nullptr) == "XYbc!!!");
+    );
+}
+
+TEST(ConsolePseudoConsoleTest, escape_without_the_rest_of_a_sequence_is_dropped)
+{
+    if (!Terminal::supported())
+        GTEST_SKIP() << "the system has no pseudo console";
+
+    AREG_EXPECT_IN_CHILD(
+        Terminal terminal(60, 10);
+        Console& console = Console::instance();
+        AREG_CHILD_CHECK(console.enable_console_input(true));
+        console.set_cursor_cur_position({ 0, 5 });
+        for (const std::vector<INPUT_RECORD>& escape : { std::vector<INPUT_RECORD>{ _key(0x1B) }, std::vector<INPUT_RECORD>{ _key(0x1B), _key(L'[') } })
+        {
+            areg::String result;
+            std::thread reader([&]() { result = console.wait_for_input(nullptr); });
+            _put_keys({ _key(L'a') });
+            terminal.wait_for([&]() { return terminal.screen.row(5) == "a"; });
+            _put_keys(escape);
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+            _put_keys({ _key(L'A'), _key(0x15), _key(L'x'), _key(L'\r') });
+            reader.join();
+            AREG_CHILD_CHECK(result == "x");
+        }
     );
 }
 
