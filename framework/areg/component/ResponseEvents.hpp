@@ -274,23 +274,6 @@ public:
 
     ~RemoteResponseEvent() override = default;
 
-//////////////////////////////////////////////////////////////////////////////
-// Protected operations
-//////////////////////////////////////////////////////////////////////////////
-protected:
-
-    /**
-     * \brief   Sets the target communication channel object.
-     *
-     * \param   channel     The communication channel to set in remote event.
-     **/
-    inline void set_target_channel( const Channel & channel ) noexcept;
-
-    /**
-     * \brief   Returns the event communication channel object.
-     **/
-    inline Channel target_channel() const noexcept;
-
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
@@ -416,27 +399,6 @@ inline RemoteResponseEvent::RemoteResponseEvent(const areg::Endpoint& consumer, 
 inline RemoteResponseEvent::RemoteResponseEvent( const MessageEnvelope & envelope ) noexcept
     : ServiceResponseEvent( envelope )
 {
-}
-
-//////////////////////////////////////////////////////////////////////////
-// RemoteResponseEvent class inline function implementation
-//////////////////////////////////////////////////////////////////////////
-
-inline void RemoteResponseEvent::set_target_channel(const Channel & channel) noexcept
-{
-    areg::EventHeader* hdr{ header() };
-    ASSERT(hdr != nullptr);
-    hdr->target         = channel.cookie();
-    hdr->channel        = channel.target();
-    hdr->consumer.id    = channel.cookie();
-    hdr->consumer.thread= channel.source();
-}
-
-inline Channel RemoteResponseEvent::target_channel() const noexcept
-{
-    const areg::EventHeader* hdr{ header() };
-    ASSERT(hdr != nullptr);
-    return Channel(hdr->consumer.thread, hdr->channel, hdr->consumer.id);
 }
 
 } // namespace areg

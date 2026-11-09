@@ -1,0 +1,124 @@
+{
+  "comment": "Edge cases of the critical algorithms of framework/. Each case names the ctest tests that prove it, as regular expressions matched against the whole ctest name. A case with no test is a known gap. Checked by tools/intern/check-edge-cases.py against the last ctest run.",
+  "algorithms": [
+    {
+      "name": "Event queue",
+      "cases": [
+        { "case": "events of one lane leave in posting order", "tests": ["EventQueueTest\\.fifo_order_normal_lane", "EventQueueTest\\.priority_lane_keeps_posting_order_per_priority"] },
+        { "case": "a higher priority lane is drained first", "tests": ["EventQueueTest\\.priority_lane_drained_first"] },
+        { "case": "exit pre-empts every queued event", "tests": ["EventQueueTest\\.exit_preempts_is_sticky_and_resets", "EventQueueTest\\.pop_events_preempts_with_exit"] },
+        { "case": "a drained exit delivers what is queued and refuses new events", "tests": ["EventQueueTest\\.drained_exit_delivers_queued_and_refuses_new"] },
+        { "case": "the consumer posting to its own full ring fails at once", "tests": ["EventQueueTest\\.consumer_push_to_full_ring_fails_at_once"] },
+        { "case": "another thread posting to a full ring waits for the consumer", "tests": ["EventQueueTest\\.other_thread_push_to_full_ring_waits_for_the_consumer"] },
+        { "case": "an exit releases a producer blocked on a full ring", "tests": ["EventQueueTest\\.drained_exit_releases_a_producer_blocked_on_full_ring"] },
+        { "case": "no wakeup is lost between the check and the wait", "tests": ["EventQueueTest\\.armed_waiter_no_lost_wakeup", "EventQueueTest\\.blocking_consumer_no_lost_wakeup"] },
+        { "case": "many producers lose no event", "tests": ["EventQueueTest\\.mpsc_stress_no_event_loss"] }
+      ]
+    },
+    {
+      "name": "Message framing on the wire",
+      "cases": [
+        { "case": "a header cut in the middle is completed by the next read", "tests": ["areg-router-io-test\\.partial-header\\..*"] },
+        { "case": "a body cut in the middle is completed by the next read", "tests": ["areg-router-io-test\\.partial-body\\..*"] },
+        { "case": "a message longer than the limit closes the connection", "tests": ["areg-router-io-test\\.oversize\\..*"] },
+        { "case": "an unknown message type is refused", "tests": ["areg-router-io-test\\.invalid-type\\..*"] },
+        { "case": "bytes cached for a closed socket never reach the next client on the same descriptor", "tests": ["areg-router-io-test\\.stale-cache\\..*"] },
+        { "case": "a client that reads slowly is held, not dropped", "tests": ["areg-router-io-test\\.slow-reader\\..*"] },
+        { "case": "a stop while the router is flooded ends cleanly", "tests": ["areg-router-io-test\\.stop-while-flooding\\..*"] }
+      ]
+    },
+    {
+      "name": "Buffers and serialization",
+      "cases": [
+        { "case": "a size that wraps around is refused", "tests": ["BufferBaseTest\\.write_with_wrapping_size_is_rejected", "BufferBaseTest\\.nested_length_overflow_is_rejected"] },
+        { "case": "a truncated nested buffer keeps the destination and the cursor", "tests": ["BufferBaseTest\\.truncated_nested_buffer_keeps_destination", "BufferBaseTest\\.truncated_nested_length_keeps_cursor"] },
+        { "case": "a view refuses every write", "tests": ["BufferBaseTest\\.write_view_refuses_no_bytes_and_a_wrapping_size"] },
+        { "case": "a failed allocation leaves the buffer as it was", "tests": ["FaultInjectTest\\.shared_buffer_reserve_returns_zero_and_a_later_reserve_succeeds_when_allocation_fails"] },
+        { "case": "an envelope without a block takes no data", "tests": ["EventEnvelopeTest\\.envelope_without_a_block_rejects_writes"] }
+      ]
+    },
+    {
+      "name": "Requests, responses and sessions",
+      "cases": [
+        { "case": "a busy request is refused without replacing the waiting caller", "tests": ["StubBaseContractTest\\.busy_request_is_refused_without_replacing_the_pending_caller", "areg-request-error-test\\.busy"] },
+        { "case": "a session is consumed once and restorable out of order", "tests": ["StubBaseContractTest\\.unblock_sessions_are_unique_consumed_once_and_restorable_out_of_order"] },
+        { "case": "session IDs skip the invalid ID and open sessions after a wrap", "tests": ["StubBaseContractTest\\.session_ids_skip_the_invalid_id_and_open_sessions_after_a_wrap"] },
+        { "case": "a response with no waiting request is dropped", "tests": ["StubBaseContractTest\\.response_without_a_waiting_request_is_dropped_and_answers_once"] },
+        { "case": "a request through a proxy not connected yet fails at once", "tests": ["areg-request-failure-test\\.before-connect"] },
+        { "case": "a request to a provider that is gone fails", "tests": ["areg-request-failure-test\\.provider-gone"] },
+        { "case": "a request to a stub not started is answered undelivered", "tests": ["StubBaseContractTest\\.request_to_a_stub_not_started_is_answered_undelivered_and_not_processed"] },
+        { "case": "a disconnected caller keeps the request busy until it is answered", "tests": ["StubBaseContractTest\\.disconnected_caller_keeps_the_request_busy_and_only_subscribers_get_the_response"] }
+      ]
+    },
+    {
+      "name": "Router client connection",
+      "cases": [
+        { "case": "the router rejecting the client disconnects the channel and the client retries", "tests": ["IpcSocketCoverageTest\\.router_reject_notice_disconnects_the_channel_and_the_client_retries"] },
+        { "case": "the router disconnect notice loses the channel and the client connects again", "tests": ["IpcSocketCoverageTest\\.router_disconnect_notice_loses_the_channel_and_the_client_connects_again"] },
+        { "case": "a start asked twice makes one connection", "tests": ["IpcSocketCoverageTest\\.start_requested_twice_makes_one_connection"] },
+        { "case": "a request before the router confirmed the connection fails and is not sent", "tests": ["IpcSocketCoverageTest\\.remote_request_before_the_connection_is_confirmed_fails_and_is_not_sent"] },
+        { "case": "a refused send reconnects and the next request carries the new cookie", "tests": ["FaultInjectTest\\.router_client_reconnects_when_the_system_refuses_to_send_a_request"] },
+        { "case": "the first messages of many producers are all accepted while the send thread starts", "tests": ["IpcSocketCoverageTest\\.first_messages_of_many_producers_are_all_accepted_while_the_send_thread_starts"] },
+        { "case": "a connect notice with a failed result loses the connection", "tests": ["IpcSocketCoverageTest\\.connect_notice_with_a_failed_result_loses_the_connection_and_the_client_connects_again"] }
+      ]
+    },
+    {
+      "name": "Router registration",
+      "cases": [
+        { "case": "a duplicate public role name is refused", "tests": ["areg-router-io-test\\.duplicate-role\\..*"] },
+        { "case": "a held provider is taken over, cancelled or disconnected", "tests": ["areg-router-io-test\\.held-provider-takeover\\..*", "areg-router-io-test\\.held-provider-cancel\\..*", "areg-router-io-test\\.held-provider-disconnect\\..*"] },
+        { "case": "a truncated registration is refused", "tests": ["areg-router-io-test\\.registration-truncated-consumer\\..*", "areg-router-io-test\\.registration-truncated-provider\\..*"] },
+        { "case": "registrations from one source are kept apart", "tests": ["areg-router-io-test\\.registration-same-source\\..*", "areg-router-io-test\\.registration-two-proxies-one-source\\..*"] },
+        { "case": "a stop of the router with registered clients ends cleanly", "tests": ["areg-router-io-test\\.router-stop-registered\\..*"] }
+      ]
+    },
+    {
+      "name": "Component lifecycle",
+      "cases": [
+        { "case": "a hung thread with policy Exit ends the process", "tests": ["areg-system-lifecycle-test\\.exit-watchdog"] },
+        { "case": "a hung thread with policy Restart is replaced", "tests": ["areg-system-lifecycle-test\\.restart-watchdog"] },
+        { "case": "a hung thread with policy Ignore is abandoned", "tests": ["areg-system-lifecycle-test\\.ignore-watchdog"] },
+        { "case": "at most two hung instances of a thread", "tests": ["areg-system-lifecycle-test\\.restart-bound"] },
+        { "case": "a component hung in its startup or shutdown", "tests": ["areg-system-lifecycle-test\\.start-hang-.*", "areg-system-lifecycle-test\\.stop-hang-.*"] },
+        { "case": "two threads unload the same model at the same time", "tests": ["areg-system-lifecycle-test\\.double-unload"] },
+        { "case": "a component unloads its own model", "tests": ["areg-system-lifecycle-test\\.own-unload"] },
+        { "case": "a component that cannot be created fails the load", "tests": ["ComponentLifecycleFailureTest\\.model_whose_component_is_not_created_fails_to_load_and_loads_once_it_is"] },
+        { "case": "a thread name taken by a running thread fails the load", "tests": ["ComponentLifecycleFailureTest\\.model_whose_thread_name_is_taken_fails_to_load"] },
+        { "case": "the start of a component thread fails", "tests": ["FaultInjectSweepTest\\.model_whose_thread_cannot_be_created_fails_to_load_and_loads_later"] }
+      ]
+    },
+    {
+      "name": "Timers",
+      "cases": [
+        { "case": "a periodic timer fires every period", "tests": ["SyncTimerTest\\.periodic_timer_wakes_its_waiter_every_period"] },
+        { "case": "release cancels an armed timer before its dispatcher is destroyed", "tests": ["ApplicationSetupTest\\.release_cancels_an_armed_timer_before_its_dispatcher_is_destroyed"] },
+        { "case": "a timer forked into a child process", "tests": [] }
+      ]
+    },
+    {
+      "name": "Synchronization",
+      "cases": [
+        { "case": "a failed lock is reported, and is fatal when asked", "tests": ["FatalErrorTest\\.FailedLockIsReported", "FatalErrorTest\\.FailedLockIsFatalWhenRequested"] },
+        { "case": "a timer does not end other waits of its thread", "tests": ["SyncTimerTest\\.timer_does_not_end_other_waits_of_its_thread"] },
+        { "case": "an object initialised by two threads at once", "tests": [] }
+      ]
+    },
+    {
+      "name": "Log transport",
+      "cases": [
+        { "case": "a paused source keeps its count of dropped rows", "tests": ["LogCollectorDroppedRowsTest\\.held_source_notice_keeps_its_count"] },
+        { "case": "logs written before the start are counted and reported when the queue cannot hold them", "tests": ["LogRingTest\\.logs_before_the_start_are_counted_and_reported"] },
+        { "case": "a full database writer drops rows and reports them", "tests": ["LogSqliteDatabaseTest\\.test_writerDropsAndReportsWhenFull"] },
+        { "case": "a scope update without a known priority is refused", "tests": ["LogCollectorServiceTest\\.console_scope_lists_send_each_valid_scope_and_refuse_broken_lists"] },
+        { "case": "a truncated log message is dropped by the observer", "tests": ["LogObserverApiTest\\.truncated_log_message_is_dropped"] }
+      ]
+    },
+    {
+      "name": "Allocation failure",
+      "cases": [
+        { "case": "every nothrow allocation of a model load and unload may fail without a crash", "tests": ["FaultInjectSweepTest\\.every_failed_allocation_of_a_model_lifecycle_is_survived"] },
+        { "case": "every nothrow allocation of the IPC client may fail without a crash", "tests": [] }
+      ]
+    }
+  ]
+}

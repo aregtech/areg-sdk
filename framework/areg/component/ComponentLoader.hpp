@@ -418,13 +418,15 @@ public:
      * \param   waitComplete    If true, waits until the model is unloaded. Called from a thread of
      *                          the model, the request is never waited for.
      * \param   modelName       The name of the model to unload; if empty, unloads all loaded models.
+     * \return  False if the system does not run or the request cannot be made.
      **/
-    static void unload_component_model( bool waitComplete, const String & modelName );
+    static bool unload_component_model( bool waitComplete, const String & modelName );
 
     /**
      * \brief   Asks areg to unload the model, if it is not unloaded yet, and waits until it is.
+     * \return  False if the system does not run or the request cannot be made.
      **/
-    static void wait_model_unload(const String & modelName);
+    static bool wait_model_unload(const String & modelName);
 
     /**
      * \brief   Returns the state of the model; areg::ModelState::Unloaded if there is no model of the name.
@@ -541,24 +543,6 @@ protected:
      **/
     [[nodiscard]]
     const areg::Model * find_model_named( const String & modelName ) const noexcept;
-
-    /**
-     * \brief   Searches for a thread entry by name and returns a pointer if found.
-     *
-     * \param   threadName      The name of the thread to search.
-     * \return  Returns a valid pointer if found; nullptr otherwise.
-     **/
-    [[nodiscard]]
-    const areg::ComponentThreadEntry * find_thread_named( const String & threadName ) const noexcept;
-
-    /**
-     * \brief   Searches for a component entry by role name and returns a pointer if found.
-     *
-     * \param   roleName    The role name of the component to search.
-     * \return  Returns a valid pointer if found; nullptr otherwise.
-     **/
-    [[nodiscard]]
-    const areg::ComponentEntry * find_component_named( const String & roleName ) const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

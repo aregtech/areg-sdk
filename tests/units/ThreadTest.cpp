@@ -439,3 +439,20 @@ TEST(ThreadTest, TwoShutdownsAndStartNeverHang)
     EXPECT_TRUE(thread.is_running());
     EXPECT_EQ(thread.shutdown(areg::WAIT_INFINITE), Thread::ThreadCompletion::Completed);
 }
+
+#ifdef DEBUG
+/**
+ * \brief   The debug walk over the thread registry leaves every registered thread registered.
+ **/
+TEST(ThreadTest, DumpThreadsKeepsTheRegisteredThreads)
+{
+    PollingConsumer consumer;
+    areg::Thread thread(consumer, "ThreadTestDumped");
+    ASSERT_TRUE(thread.start(areg::WAIT_INFINITE));
+    areg::Thread::dump_threads();
+    EXPECT_EQ(areg::Thread::find_by_address(areg::ThreadAddress(areg::String("ThreadTestDumped"))), &thread);
+    EXPECT_EQ(areg::Thread::ThreadCompletion::Completed, thread.shutdown(areg::WAIT_INFINITE));
+    areg::Thread::dump_threads();
+    EXPECT_EQ(areg::Thread::find_by_address(areg::ThreadAddress(areg::String("ThreadTestDumped"))), nullptr);
+}
+#endif  // DEBUG

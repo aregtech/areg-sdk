@@ -24,6 +24,8 @@
 #include "areg/base/String.hpp"
 #include "areg/component/private/EventQueue.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
+#include "areg/base/SocketMultiplexer.hpp"
+#include "aregextend/service/private/PausedSources.hpp"
 #include "aregextend/service/private/SendBacklog.hpp"
 #include "aregextend/service/private/ServiceThreadHelper.hpp"
 
@@ -1095,4 +1097,55 @@ TEST(SendBacklogTest, hold_wait_refuses_a_connection_that_is_not_held)
     std::deque<ITEM_ID> cut;
     test.backlog.release_all(cut);
     EXPECT_EQ(waiter.calls.load(), 0u);
+}
+
+// A source pauses only on a held connection, a dropped source is forgotten, and the others resume
+// once their connection is no longer held.
+TEST(SendBacklogTest, paused_sources_resume_when_their_connection_is_released)
+{
+    using areg::ext::PausedSources;
+    using areg::ext::ReceivePause;
+    constexpr SOCKETHANDLE DROPPED{ static_cast<SOCKETHANDLE>(901) };
+    constexpr SOCKETHANDLE KEPT{ static_cast<SOCKETHANDLE>(902) };
+
+    Fixture test;
+    ASSERT_TRUE(test.pair.open());
+    test.backlog.set_limits(2u * MESSAGE_BYTES, SendBacklog::UNLIMITED, 60'000u);
+    test.owner.socket = test.pair.server;
+    static_cast<void>(test.backlog.attach(test.pair.server));
+    ASSERT_TRUE(write_range(test.backlog, test.pair, test.messages, 0u, 8u));
+    ASSERT_TRUE(test.backlog.is_held(COOKIE));
+
+    areg::SocketMultiplexer mux;
+    PausedSources paused(mux);
+    areg::ext::receive_pause() = ReceivePause{ };
+    EXPECT_FALSE(paused.pause(DROPPED));
+    areg::ext::receive_pause() = ReceivePause{ &test.backlog, COOKIE + 1u };
+    EXPECT_FALSE(paused.pause(DROPPED));
+    EXPECT_FALSE(areg::ext::is_receive_paused());
+
+    areg::ext::receive_pause() = ReceivePause{ &test.backlog, COOKIE };
+    ASSERT_TRUE(paused.pause(DROPPED));
+    EXPECT_FALSE(areg::ext::is_receive_paused());
+    areg::ext::receive_pause() = ReceivePause{ &test.backlog, COOKIE };
+    ASSERT_TRUE(paused.pause(KEPT));
+    paused.drop(static_cast<SOCKETHANDLE>(903));
+    paused.drop(DROPPED);
+
+    std::vector<SOCKETHANDLE> resumed;
+    paused.resume([&resumed](SOCKETHANDLE hSocket) { resumed.push_back(hSocket); });
+    EXPECT_TRUE(resumed.empty());
+    EXPECT_FALSE(paused.has_released());
+
+    test.owner.socket = areg::InvalidSocketHandle;
+    static_cast<void>(test.backlog.pump(test.owner));
+    EXPECT_TRUE(paused.has_released());
+    paused.hold_released();
+    EXPECT_TRUE(paused.has_released());
+
+    paused.resume([&resumed](SOCKETHANDLE hSocket) { resumed.push_back(hSocket); });
+    ASSERT_EQ(resumed.size(), 1u);
+    EXPECT_EQ(resumed[0], KEPT);
+    EXPECT_FALSE(paused.has_released());
+    paused.clear();
 }

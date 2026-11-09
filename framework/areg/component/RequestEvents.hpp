@@ -158,34 +158,6 @@ public:
 
     ~RemoteRequestEvent() override = default;
 
-//////////////////////////////////////////////////////////////////////////////
-// Protected operations
-//////////////////////////////////////////////////////////////////////////////
-protected:
-    /**
-     * \brief   Sets the target communication Channel object.
-     *
-     * \param   channel     The communication channel object to set.
-     **/
-    inline void set_target_channel( const Channel & channel ) noexcept;
-
-    /**
-     * \brief   Returns target communication channel object.
-     **/
-    inline Channel target_channel() const noexcept;
-
-    /**
-     * \brief   Sets the source communication Channel object.
-     *
-     * \param   channel     The communication channel object to set.
-     **/
-    inline void set_source_channel( const Channel & channel ) noexcept;
-
-    /**
-     * \brief   Returns source communication channel object.
-     **/
-    inline Channel source_channel() const noexcept;
-
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
@@ -279,35 +251,6 @@ public:
 
     ~RemoteNotifyRequestEvent() = default;
 
-//////////////////////////////////////////////////////////////////////////////
-// Protected operations
-//////////////////////////////////////////////////////////////////////////////
-protected:
-
-    /**
-     * \brief   Sets the target communication channel.
-     *
-     * \param   channel     The communication channel to set.
-     **/
-    inline void set_target_channel( const Channel & channel ) noexcept;
-
-    /**
-     * \brief   Returns the target communication channel.
-     **/
-    inline Channel target_channel() const noexcept;
-
-    /**
-     * \brief   Sets the source communication channel.
-     *
-     * \param   channel     The communication channel to set.
-     **/
-    inline void set_source_channel( const Channel & channel ) noexcept;
-
-    /**
-     * \brief   Returns the source communication channel.
-     **/
-    inline Channel source_channel() const noexcept;
-
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
@@ -362,43 +305,6 @@ inline RemoteRequestEvent::RemoteRequestEvent( const MessageEnvelope & envelope 
 }
 
 //////////////////////////////////////////////////////////////////////////
-// RemoteRequestEvent class inline function implementation
-//////////////////////////////////////////////////////////////////////////
-
-inline void RemoteRequestEvent::set_target_channel(const Channel & channel) noexcept
-{
-    areg::EventHeader* hdr{ header() };
-    ASSERT(hdr != nullptr);
-    hdr->target          = channel.cookie();
-    hdr->channel         = channel.target();
-    hdr->provider.id     = channel.cookie();
-    hdr->provider.thread = channel.source();
-}
-
-inline Channel RemoteRequestEvent::target_channel() const noexcept
-{
-    const areg::EventHeader* hdr{ header() };
-    ASSERT(hdr != nullptr);
-    return Channel(hdr->provider.thread, hdr->channel, hdr->provider.id);
-}
-
-inline void RemoteRequestEvent::set_source_channel( const Channel & channel ) noexcept
-{
-    areg::EventHeader* hdr{ header() };
-    ASSERT(hdr != nullptr);
-    hdr->source          = channel.target();
-    hdr->consumer.id     = channel.cookie();
-    hdr->consumer.thread = channel.source();
-}
-
-inline Channel RemoteRequestEvent::source_channel() const noexcept
-{
-    const areg::EventHeader* hdr{ header() };
-    ASSERT(hdr != nullptr);
-    return Channel(hdr->consumer.thread, hdr->source, hdr->consumer.id);
-}
-
-//////////////////////////////////////////////////////////////////////////
 // LocalNotifyRequestEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 inline LocalNotifyRequestEvent::LocalNotifyRequestEvent( const ProxyAddress& fromProxy
@@ -428,43 +334,6 @@ inline RemoteNotifyRequestEvent::RemoteNotifyRequestEvent( const ProxyAddress& f
 inline RemoteNotifyRequestEvent::RemoteNotifyRequestEvent(const MessageEnvelope& envelope) noexcept
     : ServiceRequestEvent(envelope)
 {
-}
-
-//////////////////////////////////////////////////////////////////////////
-// RemoteNotifyRequestEvent class inline function implementation
-//////////////////////////////////////////////////////////////////////////
-
-inline void RemoteNotifyRequestEvent::set_target_channel(const Channel & channel) noexcept
-{
-    areg::EventHeader* hdr{ header() };
-    ASSERT(hdr != nullptr);
-    hdr->target          = channel.cookie();
-    hdr->channel         = channel.target();
-    hdr->provider.id     = channel.cookie();
-    hdr->provider.thread = channel.source();
-}
-
-inline Channel RemoteNotifyRequestEvent::target_channel() const noexcept
-{
-    const areg::EventHeader* hdr{ header() };
-    ASSERT(hdr != nullptr);
-    return Channel(hdr->provider.thread, hdr->channel, hdr->provider.id);
-}
-
-inline void RemoteNotifyRequestEvent::set_source_channel( const Channel & channel ) noexcept
-{
-    areg::EventHeader* hdr{ header() };
-    ASSERT(hdr != nullptr);
-    hdr->source          = channel.target();
-    hdr->consumer.id     = channel.cookie();
-    hdr->consumer.thread = channel.source();
-}
-
-inline Channel RemoteNotifyRequestEvent::source_channel() const noexcept
-{
-    const areg::EventHeader* hdr{ header() };
-    ASSERT(hdr != nullptr);
-    return Channel(hdr->consumer.thread, hdr->source, hdr->consumer.id);
 }
 
 } // namespace areg

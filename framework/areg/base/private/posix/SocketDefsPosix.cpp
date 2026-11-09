@@ -34,6 +34,9 @@
 #include <sys/uio.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
+#if defined(__APPLE__)
+#include <netinet/tcp_fsm.h>
+#endif  // defined(__APPLE__)
 #include <netdb.h>
 #include <errno.h>
 #include <arpa/inet.h>
@@ -725,6 +728,21 @@ bool _os_get_option(SOCKETHANDLE hSocket, int32_t level, int32_t name, unsigned 
     ASSERT(areg::is_valid_socket(hSocket));
     socklen_t len{ sizeof(unsigned long) };
     return (RETURNED_OK == ::getsockopt(static_cast<int>(hSocket), level, name, reinterpret_cast<char*>(&value), &len));
+}
+
+bool _os_is_listening(SOCKETHANDLE hSocket) noexcept
+{
+    ASSERT(areg::is_valid_socket(hSocket));
+#if defined(__APPLE__)
+    // Darwin reports a listening socket through its TCP state.
+    struct tcp_connection_info info { };
+    socklen_t len{ sizeof(info) };
+    return (RETURNED_OK == ::getsockopt(static_cast<int>(hSocket), IPPROTO_TCP, TCP_CONNECTION_INFO, &info, &len)) && (info.tcpi_state == TCPS_LISTEN);
+#else   // defined(__APPLE__)
+    int listening{ 0 };
+    socklen_t len{ sizeof(listening) };
+    return (RETURNED_OK == ::getsockopt(static_cast<int>(hSocket), SOL_SOCKET, SO_ACCEPTCONN, &listening, &len)) && (listening != 0);
+#endif  // defined(__APPLE__)
 }
 
 bool _os_socket_alive(SOCKETHANDLE hSocket) noexcept

@@ -186,9 +186,9 @@ bool Application::load_model(const char * modelName /*= nullptr */, bool waitCom
     return ComponentLoader::load_component_model( modelName, waitComponents );
 }
 
-void Application::unload_model(const char * modelName /*= nullptr */)
+bool Application::unload_model(const char * modelName /*= nullptr */)
 {
-    ComponentLoader::unload_component_model(true, modelName);
+    return ComponentLoader::unload_component_model(true, modelName);
 }
 
 bool Application::is_model_loaded(const char * modelName)
@@ -305,9 +305,9 @@ areg::AppState Application::system_state()
     return Application::instance().mAppState.load();
 }
 
-void Application::set_user_state( uint32_t userState )
+bool Application::set_user_state( uint32_t userState )
 {
-    ServiceManager::request_user_state(userState);
+    return ServiceManager::request_user_state(userState);
 }
 
 uint32_t Application::user_state()

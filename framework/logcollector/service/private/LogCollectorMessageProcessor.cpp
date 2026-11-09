@@ -25,7 +25,6 @@ LogCollectorMessageProcessor::LogCollectorMessageProcessor(LogCollectorServerSer
     : mLoggerService    ( loggerService )
     , mListSaveConfig   ( )
     , mPendingSave      ( areg::COOKIE_UNKNOWN )
-    , mPendingSince     ( )
     , mPausedSources    ( )
     , mDroppedRows      ( )
 {
@@ -181,7 +180,12 @@ void LogCollectorMessageProcessor::save_log_source_configuration(const areg::Mes
     }
     else if (target != areg::COOKIE_UNKNOWN)
     {
-        mListSaveConfig.add_if_unique(target);
+        const areg::MapInstances& instances{ mLoggerService.held_instances() };
+        const auto pos{ instances.find(target) };
+        if (instances.is_valid_position(pos) && is_log_source(instances.value_at(pos).ciSource))
+        {
+            mListSaveConfig.add_if_unique(target);
+        }
     }
 
     if ((mPendingSave == areg::COOKIE_UNKNOWN) && (mListSaveConfig.is_empty() == false))
@@ -216,7 +220,6 @@ void LogCollectorMessageProcessor::process_next_save_config()
     if (mListSaveConfig.is_empty() == false)
     {
         mPendingSave = mListSaveConfig[0u];
-        mPendingSince = std::chrono::steady_clock::now();
         mListSaveConfig.remove_at(0u, 1u);
         mLoggerService.send_message(areg::message_save_configuration(areg::COOKIE_LOGGER, mPendingSave));
         mLoggerService.mSaveTimer.start_timer(LogCollectorServerService::TIMEOUT_SAVE_CONFIG, static_cast<areg::DispatcherThread &>(mLoggerService), 1);
@@ -225,9 +228,8 @@ void LogCollectorMessageProcessor::process_next_save_config()
 
 void LogCollectorMessageProcessor::save_config_timeout()
 {
-    // An expiry queued before the pending request was sent belongs to an earlier one.
-    const auto waited{ std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - mPendingSince).count() };
-    if ((mPendingSave != areg::COOKIE_UNKNOWN) && (waited >= static_cast<int64_t>(LogCollectorServerService::TIMEOUT_SAVE_CONFIG)))
+    // A timer armed again after this expiry was queued is still running for the pending request.
+    if ((mPendingSave != areg::COOKIE_UNKNOWN) && (mLoggerService.mSaveTimer.is_active() == false))
     {
         process_next_save_config();
     }

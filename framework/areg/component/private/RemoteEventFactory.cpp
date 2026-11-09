@@ -59,6 +59,11 @@ DEBUG_DEF_LOG_SCOPE(areg_component_RemoteEventFactory, create_request_failed_eve
 
 bool RemoteEventFactory::route_outgoing_message( Event & srcWire, const Channel & comChannel )
 {
+    return route_outgoing_message( srcWire, static_cast<ITEM_ID>(comChannel.cookie()) );
+}
+
+bool RemoteEventFactory::route_outgoing_message( Event & srcWire, ITEM_ID cookie )
+{
     areg::EventHeader * hdr = srcWire.header();
     if ( hdr == nullptr )
         return false;
@@ -69,13 +74,13 @@ bool RemoteEventFactory::route_outgoing_message( Event & srcWire, const Channel 
     {
     case areg::EventType::EventRemoteRequest:           // fall through
     case areg::EventType::EventRemoteNotifyRequest:
-        hdr->source = comChannel.cookie();
+        hdr->source = cookie;
         hdr->target = hdr->provider.id;     // stub's process cookie
         result = true;
         break;
 
     case areg::EventType::EventRemoteResponse:
-        hdr->source = comChannel.cookie();
+        hdr->source = cookie;
         hdr->target = hdr->consumer.id;     // ServiceResponseEvent::target_cookie(); result preserved
         result = true;
         break;
@@ -244,7 +249,6 @@ ServiceResponseEvent RemoteEventFactory::create_request_failed_event( const Mess
 
     default:
         DEBUG_LOG_ERR("Unexpected event value [ %d ]", static_cast<int32_t>(eventType));
-        ASSERT(false);
         break;
     }
 

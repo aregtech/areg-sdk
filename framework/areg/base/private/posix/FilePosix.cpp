@@ -204,29 +204,9 @@ bool File::_os_open_file() noexcept
         flag |= O_SYNC;                             // flush writes to storage on each write() call
     }
 
-    String dirName(File::file_directory(mFileName));
-    if ( (flag & O_CREAT) != 0 )
+    if (((flag & O_CREAT) != 0) && (std::filesystem::exists(mFileName.data(), err) == false))
     {
-        if (std::filesystem::exists(mFileName.data(), err))
-        {
-            if (dirName == mFileName)
-            {
-                flag &= ~O_CREAT;   // remove create flag for directories
-                flag &= ~O_TRUNC;   // remove truncate, since it is not applicable for directories
-                flag |= O_DIRECTORY;// set directory option
-            }
-            
-        }
-        else
-        {
-            File::create_dir_cascaded(dirName);
-            if (dirName == mFileName)
-            {
-                flag |= O_DIRECTORY; // set directory option
-                flag &= ~O_TRUNC;    // remove truncate, since it is not applicable for directories
-                flag &=~ O_CREAT;    // we don't need this, because it is automatically created cascaded
-            }
-        }
+        File::create_dir_cascaded(File::file_directory(mFileName));
     }
 
     if (mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitTemp))

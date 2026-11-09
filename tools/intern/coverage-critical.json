@@ -1,0 +1,31 @@
+{
+  "comment": "Critical components of framework/ for the coverage report: each matches files by regular expressions on the path below the source root.",
+  "components": [
+    { "name": "Event queue and dispatch",
+      "files": ["framework/areg/component/private/(EventQueue|EventDispatcher|EventDispatcherBase|DispatcherThread|Event|EventStack)\\.cpp$"] },
+    { "name": "Component lifecycle",
+      "files": ["framework/areg/component/private/(SystemController|ServiceManager|ServiceManagerEventProcessor|ComponentThread|ComponentLoader|WorkerThread|Component)\\.cpp$"] },
+    { "name": "Proxy and stub",
+      "files": ["framework/areg/component/private/(ProxyBase|StubBase|StubEvent|ProxyEvent|RemoteEventFactory|ResponseEvents|RequestEvents)\\.cpp$"] },
+    { "name": "Timers and watchdog",
+      "files": ["framework/areg/component/private/(Timer|TimerManager|TimerBase|Watchdog|WatchdogManager)\\.cpp$",
+                "framework/areg/component/private/(posix|linux)/(Timer|Watchdog)\\w*\\.cpp$",
+                "framework/areg/base/private/posix/WaitableTimerPosix\\.cpp$"] },
+    { "name": "IPC client",
+      "files": ["framework/areg/ipc/private/\\w+\\.cpp$"] },
+    { "name": "Sockets and multiplexing",
+      "files": ["framework/areg/base/private/(Socket\\w*|SocketDefs)\\.cpp$",
+                "framework/areg/base/private/(posix|linux)/Socket\\w*\\.cpp$"] },
+    { "name": "Buffers and messages",
+      "files": ["framework/areg/base/private/(SharedBuffer|BufferBase|MessageEnvelope|ThreadCache|EnvelopeCache)\\w*\\.cpp$"] },
+    { "name": "Synchronization",
+      "files": ["framework/areg/base/private/SyncPrimitives\\.cpp$",
+                "framework/areg/base/private/posix/(SyncLockAndWaitPosix|SyncPrimitivesPosix|MutexPosix)\\.cpp$"] },
+    { "name": "Router",
+      "files": ["framework/mtrouter/service/private/\\w+\\.cpp$"] },
+    { "name": "Service communication",
+      "files": ["framework/aregextend/service/private/(ServiceCommunicationBase|SendBacklog|ServerReceiveThread|ServerSendThread|PoolReceiveThread|PoolSendThread|ServerConnection)\\w*\\.cpp$"] },
+    { "name": "Logging core",
+      "files": ["framework/areg/logging/private/(LogManager|ScopeController|NetTcpLogger|LogEntry|LoggingEvent)\\w*\\.cpp$"] }
+  ]
+}

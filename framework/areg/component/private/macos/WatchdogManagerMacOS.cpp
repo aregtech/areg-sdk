@@ -27,17 +27,24 @@ void WatchdogManager::_posix_watchdog_expired(areg::os::TimerPosix* posixTimer) 
 {
     WatchdogManager& watchdogManager = WatchdogManager::instance();
     ASSERT(posixTimer != nullptr);
-    Watchdog::WATCHDOG_ID watchdog_id = static_cast<Watchdog::WATCHDOG_ID>(posixTimer->context_id());
-    Watchdog::GUARD_ID    guardId     = Watchdog::make_guard_id(watchdog_id);
-    Watchdog*             watchdog    = watchdogManager.mWatchdogResource.find_resource_object(guardId);
-
-    if (watchdog != nullptr)
+    Watchdog * watchdog{ nullptr };
+    Watchdog::WATCHDOG_ID watchdog_id{ 0u };
+    uint32_t highValue{ 0u };
+    uint32_t lowValue{ 0u };
     {
-        uint32_t highValue = static_cast<uint32_t>(posixTimer->mDueTime.tv_sec);
-        uint32_t lowValue  = static_cast<uint32_t>(posixTimer->mDueTime.tv_nsec);
+        // The watchdog may be destroyed while its expiry is delivered.
+        Lock resourceLock(watchdogManager.mWatchdogResource.lockable());
+        watchdog = watchdogManager._find_by_handle(reinterpret_cast<TIMERHANDLE>(posixTimer));
+        if (watchdog == nullptr)
+            return;
+
+        watchdog_id = static_cast<Watchdog::WATCHDOG_ID>(posixTimer->context_id());
+        highValue   = static_cast<uint32_t>(posixTimer->mDueTime.tv_sec);
+        lowValue    = static_cast<uint32_t>(posixTimer->mDueTime.tv_nsec);
         posixTimer->stop_timer();
-        watchdogManager._process_expired_timer(watchdog, watchdog_id, highValue, lowValue);
     }
+
+    watchdogManager._process_expired_timer(watchdog, watchdog_id, highValue, lowValue);
 }
 
 void WatchdogManager::_os_timer_stop(TIMERHANDLE handle)

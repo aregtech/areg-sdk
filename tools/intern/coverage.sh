@@ -12,12 +12,17 @@
 #   Steps
 #     sync      Copy the working tree to <dir>/src (skipped with --in-place).
 #     build     Configure and build the instrumented tree.
-#     unit      Run ctest, collect unit.json, reset the counters.
+#     unit      Run ctest, collect unit.json, reset the counters. The results go to
+#               <out>/unit-junit.xml.
 #     examples  Run the example scenarios, collect examples.json, reset the counters.
-#     report    Write the Cobertura, HTML and Markdown reports and print them. The
-#               first tables count like Codecov: a line once, and a hit line with
-#               an untaken branch is partial, which is not covered. The gcovr
-#               lines, functions and branches follow.
+#               On Cygwin the processes write their counters into separate folders,
+#               merged with gcov-tool before the collection.
+#     report    Write the Cobertura and HTML reports and print the Markdown report
+#               (to <out>/coverage.md too with --text). The first tables count like
+#               Codecov: a line once, and a hit line with an untaken branch is
+#               partial, which is not covered. The critical components
+#               (coverage-critical.json), the gcovr lines, functions and branches,
+#               and the edge cases of tests/edge-cases.json against unit-junit.xml follow.
 #     all       sync, build, unit, examples, report. With --only: sync, build,
 #               unit, report.
 #
@@ -33,6 +38,7 @@
 #                     a full run of that step replaces them.
 #     --files <regex> report: also list the files matching the expression.
 #     --top N         report: list the N files with most lines not hit (default: 25).
+#     --text          report: also write the Markdown report to <out>/coverage.md.
 #     --jobs N        Build jobs (default: 6; 'auto': the number of CPUs).
 #
 #   Environment
@@ -42,8 +48,13 @@
 #     AREG_COV_GCOV      gcov program gcovr runs (default: gcov of the compiler;
 #                        macOS: "xcrun llvm-cov gcov"; Windows: "llvm-cov gcov").
 #     AREG_COV_GENERATOR cmake generator (default: the cmake default; Windows: Ninja).
-#     AREG_COV_FLAGS     compile flags (default: "--coverage -fprofile-update=atomic";
-#                        clang-cl: "/EHsc /GR /clang:--coverage /clang:-fprofile-update=atomic").
+#     AREG_COV_FLAGS     compile flags (default: "--coverage -fprofile-update=atomic -fno-exceptions";
+#                        macOS: the same; clang-cl:
+#                        "/EHs-c- /D_HAS_EXCEPTIONS=0 /GR /clang:--coverage /clang:-fprofile-update=atomic").
+#     AREG_COV_LOG_TESTS ctest regular expression of the tests the unit step runs a second
+#                        time with logging started and every scope at DEBUG | SCOPE, so the
+#                        log lines of the paths only those tests reach count (default: the
+#                        component, IPC and router tests; empty: no second run).
 #     AREG_COV_LDFLAGS   link flags of executables and shared libraries (default: "--coverage";
 #                        clang-cl: the quoted full path of the clang_rt.profile library).
 #     GITHUB_STEP_SUMMARY  When set, the report is appended to it.
@@ -56,9 +67,13 @@
 # ===========================================================================
 set -u
 
+# The bash of Git for Windows sets OSTYPE to cygwin as well, so Cygwin is told by uname.
+# It is called by its full path, because the Git tools may come first in PATH.
+case "$( { /usr/bin/uname -s || uname -s; } 2>/dev/null )" in CYGWIN*) CYGWIN=1 ;; *) CYGWIN=0 ;; esac
+
 # A Cygwin bash started from Git for Windows has the Git tools first in PATH, and they read
 # /cygdrive/... as a path below the Git directory. 'mkdir' then succeeds in the wrong place.
-[ "${OSTYPE:-}" = cygwin ] && export PATH="/usr/local/bin:/usr/bin:$PATH"
+[ "$CYGWIN" = 1 ] && export PATH="/usr/local/bin:/usr/bin:$PATH"
 
 # 'pwd -W' (Git for Windows) gives the drive form that native tools read; elsewhere it is 'pwd'.
 cwd() { pwd -W 2>/dev/null || pwd; }
@@ -74,6 +89,7 @@ ONLY=""
 FILES=""
 TOP=25
 JOBS=6
+TEXT=0
 
 die() { echo "coverage.sh: $*" >&2; exit 2; }
 absolute() {
@@ -96,6 +112,7 @@ while [ $# -gt 0 ]; do
     --files)    FILES=${2:?}; shift 2 ;;
     --top)      TOP=${2:?}; shift 2 ;;
     --jobs)     JOBS=${2:?}; shift 2 ;;
+    --text)     TEXT=1; shift ;;
     *) die "unknown option '$1'" ;;
   esac
 done
@@ -114,8 +131,9 @@ NPROC=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
 FAMILY=${AREG_COV_FAMILY:-gnu}
 GCOV=${AREG_COV_GCOV:-}
 GENERATOR=${AREG_COV_GENERATOR:-}
-COV_FLAGS=${AREG_COV_FLAGS:---coverage -fprofile-update=atomic}
+COV_FLAGS=${AREG_COV_FLAGS:---coverage -fprofile-update=atomic -fno-exceptions}
 COV_LDFLAGS=${AREG_COV_LDFLAGS:---coverage}
+LOG_TESTS=${AREG_COV_LOG_TESTS-^(ComponentLifecycleFailureTest|DispatcherLifecycleTest|ProxyBaseContractTest|StubBaseContractTest|IpcSocketCoverageTest|IpcClientCoverageTest|RouterApplicationTest|ServiceCommServerTest|ServiceCommConnectionTest|areg-system-lifecycle-test|areg-request-failure-test|areg-request-error-test|areg-stub-teardown-test)[.]}
 
 # A Lock or ScopedLock that could not take its object ends the test process.
 export AREG_LOCK_FAILURE_FATAL=${AREG_LOCK_FAILURE_FATAL:-1}
@@ -123,7 +141,78 @@ export AREG_LOCK_FAILURE_FATAL=${AREG_LOCK_FAILURE_FATAL:-1}
 # The counters of one run: unit.json or examples.json, or the *-only.json of --only.
 tracefile() { if [ -n "$ONLY" ]; then echo "$OUT/$1-only.json"; else echo "$OUT/$1.json"; fi; }
 
+# GCC on Linux: _Exit and abort write the counters too (gcov-exit-flush.c), preloaded in the runs.
+FLUSH=$BUILD/gcov-exit-flush.so
+build_flush() {
+  [ "$FAMILY" = gnu ] && [ "$(uname -s)" = Linux ] || return 0
+  "${CC:-cc}" -shared -fPIC -O1 -o "$FLUSH" "$SRC/tools/intern/gcov-exit-flush.c" -lgcov \
+    || die "cannot build $FLUSH"
+}
+preload_flush() { [ -f "$FLUSH" ] && export LD_PRELOAD="$FLUSH${LD_PRELOAD:+:$LD_PRELOAD}"; return 0; }
+
+# Writes the configuration of the logging run: the areg.init of the build, every scope at
+# DEBUG | SCOPE, the file target only, the log files in the given directory.
+write_log_config() {
+  mkdir -p "$2" || return 1
+  "$PYTHON" - "$BUILD/bin/config/areg.init" "$1" "$2" <<'PY'
+import re, sys
+source, target, folder = sys.argv[1:4]
+replaced = re.compile(r'\s*log::[^:\s]+::(scope::|target\b|enable::(remote|file|db|debug)\b|file::location\b)')
+with open(source, newline='') as file:
+    kept = [line for line in file.read().splitlines(True) if not replaced.match(line)]
+settings = ('log::*::target = file ;\n'
+            'log::*::enable::remote = false ;\n'
+            'log::*::enable::db = false ;\n'
+            'log::*::enable::debug = false ;\n'
+            'log::*::enable::file = true ;\n'
+            'log::*::file::location = %s/%%appname%%_%%time%%.log ;\n'
+            'log::*::scope::* = DEBUG | SCOPE ;\n' % folder.replace('\\', '/'))
+with open(target, 'w', newline='') as file:
+    file.write(''.join(kept) + '\n' + settings)
+PY
+}
+
 reset_counters() { ( cd "$BUILD" && find . -name '*.gcda' -delete ) || die "cannot reset the counters in $BUILD"; }
+
+# On Cygwin every running example process writes its counters below its own slot folder,
+# and gcov-tool merges the slots into the build after the run.
+GCOV_TOOL=gcov-tool
+split_counters() { [ "$CYGWIN" = 1 ]; }
+
+# Creates the slot folder $1 with dirs.txt, the object folders of the build.
+split_prepare() {
+  rm -rf "$1" && mkdir -p "$1" || die "cannot create $1"
+  ( cd "$BUILD" && find . -name '*.gcno' -printf '%h\n' | LC_ALL=C sort -u ) > "$1/dirs.txt" \
+    || die "cannot list the object folders of $BUILD"
+  command -v "$GCOV_TOOL" >/dev/null || die "$GCOV_TOOL not found"
+}
+
+# Runs gcov-tool merge, which applies GCOV_PREFIX and GCOV_PREFIX_STRIP to the files it writes.
+# A folder it cannot write is reported as 'Skip' with exit code 0.
+split_merge_two() {
+  local log
+  log=$(env -u GCOV_PREFIX -u GCOV_PREFIX_STRIP "$GCOV_TOOL" merge -o "$1" "$2" "$3" 2>&1) \
+    && ! printf '%s' "$log" | grep -q 'Skip' \
+    || die "$GCOV_TOOL merge -o $1 $2 $3 failed: $log"
+}
+
+# Merges the slots below $1 into the build and removes them.
+split_merge() {
+  local split=$1 acc="" slot next n=0
+  for slot in "$split"/slot-*; do
+    [ -d "$slot" ] || continue
+    if [ -z "$acc" ]; then acc=$slot; continue; fi
+    next="$split/merged-$n"; n=$((n + 1))
+    mkdir -p "$next" && ( cd "$next" && xargs -r mkdir -p < "$split/dirs.txt" ) || die "cannot create $next"
+    split_merge_two "$next" "$slot" "$acc"
+    rm -rf "$slot" "$acc"
+    acc=$next
+  done
+  [ -n "$acc" ] || return 0
+  find "$acc" -name '*.gcda' | grep -q . || die "no process wrote counters below $split"
+  split_merge_two "$BUILD" "$acc" "$BUILD"
+  rm -rf "$split"
+}
 
 check_gcovr() {
   [ -x "$GCOVR" ] || command -v "$GCOVR" >/dev/null || die "gcovr not found: pip install gcovr==8.8"
@@ -162,7 +251,8 @@ step_sync() {
 step_build() {
   # Debug is the only unoptimized configuration, so each line maps to its own counter.
   # '-fprofile-update=atomic' keeps the counters exact when several threads run one line.
-  local flags="$COV_FLAGS" gen=()
+  # OUTPUT_DEBUG builds the debug log target.
+  local flags="$COV_FLAGS -DOUTPUT_DEBUG=1" gen=()
   [ -n "$GENERATOR" ] && gen=(-G "$GENERATOR")
   cmake -S "$SRC" -B "$BUILD" ${gen[@]+"${gen[@]}"} -DAREG_COMPILER_FAMILY="$FAMILY" -DCMAKE_BUILD_TYPE=Debug -DAREG_LIB_TYPE=shared \
         -DAREG_LOGGING:BOOL=ON -DAREG_EXAMPLES:BOOL=ON -DAREG_TESTS:BOOL=ON \
@@ -171,17 +261,27 @@ step_build() {
         -DCMAKE_EXE_LINKER_FLAGS="$COV_LDFLAGS" -DCMAKE_SHARED_LINKER_FLAGS="$COV_LDFLAGS" \
     || die "configure failed"
   cmake --build "$BUILD" -j "$JOBS" || die "build failed"
+  build_flush
 }
 
 step_unit() {
   local rc
+  check_gcovr
   reset_counters
+  ( preload_flush
   if [ -n "$ONLY" ]; then
-    ctest --test-dir "$BUILD" --timeout 300 --output-on-failure -R "$ONLY"
+    ctest --test-dir "$BUILD" --timeout 300 --output-on-failure --output-junit "$OUT/unit-junit.xml" -R "$ONLY"
   else
-    ctest --test-dir "$BUILD" --timeout 300 --output-on-failure
-  fi
+    ctest --test-dir "$BUILD" --timeout 300 --output-on-failure --output-junit "$OUT/unit-junit.xml"
+  fi )
   rc=$?
+  if [ -z "$ONLY" ] && [ -n "$LOG_TESTS" ]; then
+    write_log_config "$OUT/unit-logs.init" "$OUT/unit-logs" || die "cannot write the logging configuration"
+    ( preload_flush
+      AREG_TEST_LOG_CONFIG="$OUT/unit-logs.init" ctest --test-dir "$BUILD" --timeout 300 --output-on-failure \
+          --output-junit "$OUT/unit-logs-junit.xml" -R "$LOG_TESTS" ) || rc=1
+    rm -rf "$OUT/unit-logs"
+  fi
   collect "$(tracefile unit)"
   [ -z "$ONLY" ] && rm -f "$OUT/unit-only.json"
   reset_counters
@@ -190,11 +290,21 @@ step_unit() {
 
 step_examples() {
   local rc
+  check_gcovr
   reset_counters
   local args=(--bin-dir "$BUILD/bin" --tier coverage --out-dir "$OUT/examples" --summary '')
   [ -n "$ONLY" ] && args+=(--only "$ONLY")
-  "$PYTHON" "$SRC/tools/intern/run-all-examples.py" "${args[@]}"
+  local split="$OUT/gcda-split" strip=""
+  if split_counters; then
+    split_prepare "$split"
+    args+=(--gcov-split "$split")
+    strip=$(printf '%s' "${BUILD%/}" | tr -cd / | wc -c)
+  fi
+  ( preload_flush
+    [ -n "$strip" ] && export GCOV_PREFIX_STRIP=$strip
+    "$PYTHON" "$SRC/tools/intern/run-all-examples.py" "${args[@]}" )
   rc=$?
+  split_counters && split_merge "$split"
   collect "$(tracefile examples)"
   [ -z "$ONLY" ] && rm -f "$OUT/examples-only.json"
   reset_counters
@@ -236,16 +346,23 @@ step_report() {
   done
   "$GCOVR" --root . --merge-lines "${adds[@]}" --cobertura "$OUT/total.xml" \
     || die "gcovr failed on total.xml"
-  local rule=(--last "$LAST" --top "$TOP")
+  local rule=(--last "$LAST" --top "$TOP" --build "$BUILD")
   [ -z "$ONLY" ] && ! ls "$OUT"/*-only.json >/dev/null 2>&1 && rule+=(--save)
   [ -n "$FILES" ] && rule+=(--files "$FILES")
+  [ "$TEXT" = 1 ] && rule+=(--text "$OUT/coverage.md")
+  rm -f "$OUT/coverage.md"
   mkdir -p "$DIR"
   "$PYTHON" "$SRC/tools/intern/coverage-report.py" --unit "$OUT/unit-summary.json" \
            --examples "$OUT/examples-summary.json" --total "$OUT/total-summary.json" \
            --cobertura "$OUT/total.xml" --unit-cobertura "$OUT/unit-rule.xml" \
            --examples-cobertura "$OUT/examples-rule.xml" --root . \
-           "${rule[@]}" ${summary[@]+"${summary[@]}"} > "$OUT/coverage.md" || die "coverage-report.py failed"
-  cat "$OUT/coverage.md"
+           "${rule[@]}" ${summary[@]+"${summary[@]}"} || die "coverage-report.py failed"
+  # The edge cases of the critical algorithms, against the results of the unit step.
+  if [ -f "$OUT/unit-junit.xml" ]; then
+    local edges=(--junit "$OUT/unit-junit.xml")
+    [ "$TEXT" = 1 ] && edges+=(--text "$OUT/edge-cases.md")
+    "$PYTHON" "$SRC/tools/intern/check-edge-cases.py" "${edges[@]}" | tee -a "${GITHUB_STEP_SUMMARY:-/dev/null}"
+  fi
 }
 
 case "$STEP" in

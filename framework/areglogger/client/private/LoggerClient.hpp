@@ -33,6 +33,8 @@
 
 #include "areglogger/client/private/ObserverMessageProcessor.hpp"
 
+#include <atomic>
+
 /************************************************************************
  * Dependencies
  ************************************************************************/
@@ -369,14 +371,6 @@ public:
     bool set_config_database_name(const String& dbName);
 
     /**
-     * \brief   Sets the logging connection flag in the configuration file.
-     *
-     * \param   is_enabled      true to enable logging connection; false to disable.
-     * \return  Returns true if operation succeeded; false otherwise.
-     **/
-    bool set_config_logger_connect_enabled(bool is_enabled);
-
-    /**
      * \brief   Saves the current log observer configuration to the configuration file.
      **/
     void save_configuration();
@@ -662,7 +656,7 @@ private:
     /**
      * \brief   The flag, indicating whether the observer was paused or not.
      **/
-    bool                            mIsPaused;
+    std::atomic_bool                mIsPaused;
 
     /**
      * \brief   The list of connected instances.

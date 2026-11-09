@@ -34,23 +34,28 @@ namespace areg {
 
 void WatchdogManager::_fire_expired(TIMERHANDLE handle)
 {
-    areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(handle);
-    ASSERT(posixTimer != nullptr);
-
-    Watchdog::WATCHDOG_ID watchdog_id = static_cast<Watchdog::WATCHDOG_ID>(posixTimer->context_id());
-    Watchdog::GUARD_ID    guardId     = Watchdog::make_guard_id(watchdog_id);
-    Watchdog *            watchdog    = mWatchdogResource.find_resource_object(guardId);
-
-    if (watchdog != nullptr)
+    Watchdog * watchdog{ nullptr };
+    Watchdog::WATCHDOG_ID watchdog_id{ 0u };
+    uint32_t highValue{ 0u };
+    uint32_t lowValue{ 0u };
     {
+        // The watchdog may be destroyed after its timer was collected as expired.
+        Lock resourceLock(mWatchdogResource.lockable());
+        watchdog = _find_by_handle(handle);
+        if (watchdog == nullptr)
+            return;
+
+        areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(handle);
+        watchdog_id = static_cast<Watchdog::WATCHDOG_ID>(posixTimer->context_id());
         const timespec due{ posixTimer->due_time() };
-        const uint32_t highValue = static_cast<uint32_t>(due.tv_sec);
-        const uint32_t lowValue  = static_cast<uint32_t>(due.tv_nsec);
+        highValue = static_cast<uint32_t>(due.tv_sec);
+        lowValue  = static_cast<uint32_t>(due.tv_nsec);
 
         // A watchdog guard is one-shot. Disarm it before it is processed
         posixTimer->stop_timer();
-        _process_expired_timer(watchdog, watchdog_id, highValue, lowValue);
     }
+
+    _process_expired_timer(watchdog, watchdog_id, highValue, lowValue);
 }
 
 bool WatchdogManager::_check_deadlines(const timespec & now, timespec & out_nextDue)

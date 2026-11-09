@@ -163,11 +163,6 @@ void EventDispatcherBase::exit_dispatcher() noexcept
     signal_exit_event();
 }
 
-void EventDispatcherBase::shutdown_dispatcher() noexcept
-{
-    stop_dispatcher();
-}
-
 bool EventDispatcherBase::queue_event( Event& eventElem )
 {
     areg::EventType eventType = eventElem.event_type();

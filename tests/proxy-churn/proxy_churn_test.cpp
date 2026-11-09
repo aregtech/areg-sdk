@@ -183,7 +183,8 @@ END_MODEL("ConsumerModel")
 
 int main()
 {
-    areg::Application::setup();
+    // No router connection: provider and consumer are in this process.
+    areg::Application::setup(true, true, false, true, true);
     areg::Application::load_model("ConsumerModel");
     areg::Application::load_model("ProviderModel");
 

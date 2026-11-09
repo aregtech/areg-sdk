@@ -129,18 +129,23 @@ public:
      * \param   modelName       The name of the model.
      * \param   waitComplete    If true, waits until the model is unloaded. Called from a thread
      *                          of the model or from the service manager thread, it never waits.
+     * \return  True if the request was taken and, when waited for, completed.
      **/
-    static void request_unload_model( const String & modelName, bool waitComplete );
+    static bool request_unload_model( const String & modelName, bool waitComplete );
 
     /**
-     * \brief   Reports that the components of the component thread started.
+     * \brief   Builds the running or the stopped report of the component thread.
+     * \param   running     True for the running report, false for the stopped report.
+     * \param   whichThread The component thread.
+     * \param   report      Receives the report.
+     * \return  True if the report is built.
      **/
-    static void report_thread_running( const ComponentThread & whichThread );
+    static bool build_thread_report( bool running, const ComponentThread & whichThread, Event & report );
 
     /**
-     * \brief   Reports that the component thread exited. Called as its last act.
+     * \brief   Posts a report built by build_thread_report() and empties it.
      **/
-    static void report_thread_stopped( const ComponentThread & whichThread );
+    static bool post_thread_report( Event & report );
 
     /**
      * \brief   Reports that the watchdog of a component thread or of one of its workers expired.
@@ -148,12 +153,12 @@ public:
      * \param   instance    The address of the component thread object.
      * \param   guardedName The name of the thread whose event took too long.
      **/
-    static void report_watchdog_expired( const String & threadName, uint64_t instance, const String & guardedName );
+    static bool report_watchdog_expired( const String & threadName, uint64_t instance, const String & guardedName );
 
     /**
-     * \brief   Reports that the lifecycle deadline guard expired.
+     * \brief   Reports that the lifecycle deadline guard expired. Returns false if the report is not posted.
      **/
-    static void report_deadline_expired();
+    static bool report_deadline_expired();
 
     /**
      * \brief   Returns the state of the component thread of the name.
@@ -164,8 +169,9 @@ public:
     /**
      * \brief   Asks the system controller to set the user state and to announce it to every
      *          component thread. Without a running service manager the value is only stored.
+     * \return  True if the value is stored or the request is posted.
      **/
-    static void request_user_state( uint32_t userState );
+    static bool request_user_state( uint32_t userState );
 
     /**
      * \brief   Returns true if Service Manager is running and ready to process events.
@@ -293,6 +299,9 @@ private:
      * \brief   Posts a lifecycle event to the service manager thread.
      **/
     static bool _post_lifecycle_event( const ServiceManagerEventData & data );
+
+    //!< Posts a load or unload request of the model and waits for its completion; false if it is not posted.
+    static bool _post_request( bool load, const String & modelName, bool waitComponents );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -494,6 +503,10 @@ private:
      * \brief   True if the service manager exits once the router client reported its stop.
      **/
     bool                            mExitAfterRouter;
+    /**
+     * \brief   The shutdown request of the service manager, built when it starts.
+     **/
+    Event                           mShutdownEvent;
     /**
      * \brief   Synchronization object, for multi-threading access.
      **/

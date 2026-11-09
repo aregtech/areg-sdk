@@ -40,6 +40,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="fault_inject_test.cpp" />
+    <ClCompile Include="fault_inject_router_client_test.cpp" />
+    <ClCompile Include="fault_inject_os_test.cpp" />
+    <ClCompile Include="fault_inject_alloc_sweep_test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\units\ChildProcess.hpp" />

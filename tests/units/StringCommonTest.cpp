@@ -22,6 +22,8 @@
 #include "areg/base/WideString.hpp"
 
 #include <algorithm>
+#include <cerrno>
+#include <clocale>
 #include <cstdarg>
 #include <cstdio>
 #include <iterator>
@@ -2216,4 +2218,445 @@ TYPED_TEST(StringCommonValidate, boundary_bounded_affix_mismatches_and_oversized
     EXPECT_FALSE(text.ends_with(Std(TXT("zAbC"))));
     EXPECT_FALSE(text.starts_with(View(TXT("AbCd"))));
     EXPECT_FALSE(text.ends_with(View(TXT("zAbC"))));
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Branch coverage of the construction, access and search paths
+//////////////////////////////////////////////////////////////////////////
+
+namespace
+{
+    //!< Returns the content of the string as a standard string.
+    template<typename S>
+    std::basic_string<CharOf<S>> raw(const S& str)
+    {
+        return std::basic_string<CharOf<S>>(str.as_string(), static_cast<size_t>(str.length()));
+    }
+}
+
+// A counted construction takes the prefix, a null source gives an empty string, and COUNT_ALL takes everything.
+TYPED_TEST(StringCommonConstruct, counted_construction_takes_prefix_and_null_source_gives_empty_string)
+{
+    using S = TypeParam;
+    using C = CharOf<S>;
+    using OC = CharOf<OtherOf<S>>;
+    EXPECT_TRUE(S(static_cast<const C*>(nullptr), 3).is_empty());
+    EXPECT_EQ(raw(S(TXT("abcdef"), 3)), expected<C>("abc"));
+    EXPECT_EQ(raw(S(TXT("abc"), areg::COUNT_ALL)), expected<C>("abc"));
+    EXPECT_TRUE(S(static_cast<const OC*>(nullptr), areg::COUNT_ALL).is_empty());
+    EXPECT_EQ(raw(S(OTXT("abcdef"), 3)), expected<C>("abc"));
+    EXPECT_EQ(raw(S(OTXT("abc"), areg::COUNT_ALL)), expected<C>("abc"));
+}
+
+// The buffer at the end position or behind the end points to the terminator.
+TYPED_TEST(StringCommonConstruct, buffer_at_end_position_or_behind_the_end_points_to_terminator)
+{
+    using S = TypeParam;
+    const S str(TXT("abc"));
+    EXPECT_EQ(str.buffer(areg::END_POS), str.as_string() + 3);
+    EXPECT_EQ(str.buffer(100), str.as_string() + 3);
+    EXPECT_EQ(str.buffer(1), str.as_string() + 1);
+    EXPECT_STREQ(str.buffer(1), TXT("bc"));
+}
+
+// The word search reports no word for an invalid position, an empty string or a position at the end.
+TYPED_TEST(StringCommonSearch, find_word_reports_no_word_for_invalid_position_or_empty_string)
+{
+    using S = TypeParam;
+    const S text(TXT("hello world"));
+    areg::CharPos start{ areg::INVALID_POS };
+    areg::CharPos end{ 0 };
+    text.find_word(start, end);
+    EXPECT_EQ(start, areg::END_POS);
+    EXPECT_EQ(end, areg::INVALID_POS);
+
+    const S empty;
+    start = 0;
+    end = 0;
+    empty.find_word(start, end);
+    EXPECT_EQ(start, areg::END_POS);
+    EXPECT_EQ(end, areg::INVALID_POS);
+
+    start = text.length();
+    text.find_word(start, end);
+    EXPECT_EQ(start, areg::END_POS);
+    EXPECT_EQ(end, areg::INVALID_POS);
+
+    start = 0;
+    text.find_word(start, end);
+    EXPECT_EQ(start, 0);
+    EXPECT_EQ(end, 5);
+}
+
+// The case-insensitive character search finds either case and reports no match for an absent character.
+TYPED_TEST(StringCommonSearch, case_insensitive_character_search_finds_either_case_or_reports_no_match)
+{
+    using S = TypeParam;
+    const S text(TXT("aBcb"));
+    EXPECT_EQ(text.find_first(CH('b'), 0, false), 1);
+    EXPECT_EQ(text.find_first(CH('C'), 0, false), 2);
+    EXPECT_EQ(text.find_first(CH('z'), 0, false), areg::END_POS);
+    EXPECT_EQ(text.find_last(CH('B'), areg::END_POS, false), 3);
+    EXPECT_EQ(text.find_last(CH('A'), 2, false), 0);
+    EXPECT_EQ(text.find_last(CH('Z'), areg::END_POS, false), areg::END_POS);
+}
+
+// The string phrase search rejects an empty phrase and an invalid start position.
+TYPED_TEST(StringCommonSearch, string_phrase_search_rejects_empty_phrase_and_invalid_start)
+{
+    using S = TypeParam;
+    const S text(TXT("abc"));
+    EXPECT_EQ(text.find_first(S(TXT("")), 0), areg::INVALID_POS);
+    EXPECT_EQ(text.find_first(S(TXT("a")), areg::INVALID_POS), areg::INVALID_POS);
+    EXPECT_EQ(text.find_first(S(TXT("a")), 10), areg::INVALID_POS);
+    EXPECT_EQ(text.find_first(S(TXT("bc")), 0), 1);
+}
+
+// The protected phrase search rejects null and empty phrases and a start position at the end.
+TYPED_TEST(StringCommonSearch, protected_phrase_search_rejects_null_empty_phrase_and_start_at_end)
+{
+    using S = TypeParam;
+    using C = CharOf<S>;
+    StringProbe<S> text;
+    text.assign(TXT("xABc"));
+    EXPECT_EQ(text.find_first_phrase(TXT(""), areg::COUNT_ALL, 0), areg::INVALID_POS);
+    EXPECT_EQ(text.find_first_phrase(static_cast<const C*>(nullptr), areg::COUNT_ALL, 0), areg::INVALID_POS);
+    EXPECT_EQ(text.find_first_phrase(TXT("a"), areg::COUNT_ALL, 4), areg::INVALID_POS);
+    EXPECT_EQ(text.find_first_phrase(TXT("ABc"), areg::COUNT_ALL, 0), 1);
+    EXPECT_EQ(text.find_first_phrase(TXT("ABcd"), 3, 0), 1);
+    EXPECT_EQ(text.find_first_phrase(TXT("zz"), areg::COUNT_ALL, 0), areg::END_POS);
+
+    EXPECT_EQ(text.find_phrase(static_cast<const C*>(nullptr), 0), areg::INVALID_POS);
+    EXPECT_EQ(text.find_phrase(TXT("a"), areg::INVALID_POS), areg::INVALID_POS);
+    EXPECT_EQ(text.find_phrase(TXT(""), 0), areg::INVALID_POS);
+    EXPECT_EQ(text.find_phrase(TXT("xabcd"), 0), areg::END_POS);
+    EXPECT_EQ(text.find_phrase(TXT("abc"), 0), 1);
+    EXPECT_EQ(text.find_phrase(TXT("abd"), 0), areg::END_POS);
+
+    StringProbe<S> empty;
+    EXPECT_EQ(empty.find_phrase(TXT("a"), 0), areg::INVALID_POS);
+}
+
+// The whole-word search stops when the rest is shorter than the word, and rejects a word inside a longer name.
+TYPED_TEST(StringCommonSearch, whole_word_search_stops_when_rest_is_shorter_than_word)
+{
+    using S = TypeParam;
+    using C = CharOf<S>;
+    using Std = std::basic_string<C>;
+    StringProbe<S> text;
+    text.assign(TXT("xab"));
+    EXPECT_EQ(text.find_first_word(Std(TXT("ab")), true, 0), areg::END_POS);
+    text.assign(TXT("foo ab"));
+    EXPECT_EQ(text.find_first_word(Std(TXT("ab")), true, 0), 4);
+    EXPECT_EQ(text.find_first_word(static_cast<const C*>(nullptr), true, 0), areg::INVALID_POS);
+}
+
+// The name character check accepts letters, digits and the underscore only.
+TYPED_TEST(StringCommonSearch, name_character_check_accepts_letters_digits_and_underscore_only)
+{
+    using S = TypeParam;
+    std::locale loc;
+    EXPECT_TRUE(StringProbe<S>::is_name_char(CH('_'), loc));
+    EXPECT_TRUE(StringProbe<S>::is_name_char(CH('7'), loc));
+    EXPECT_FALSE(StringProbe<S>::is_name_char(CH('-'), loc));
+}
+
+// The exact comparison at a position honors an explicit count and the end of the string.
+TYPED_TEST(StringCommonCompare, exact_comparison_at_position_honors_explicit_count)
+{
+    using S = TypeParam;
+    StringProbe<S> text;
+    text.assign(TXT("abc"));
+    EXPECT_EQ(text.compare_exact(0, TXT("abc"), areg::COUNT_ALL), areg::Ordering::Equal);
+    EXPECT_EQ(text.compare_exact(1, TXT("bc"), areg::COUNT_ALL), areg::Ordering::Equal);
+    EXPECT_EQ(text.compare_exact(0, TXT("abd"), 2), areg::Ordering::Equal);
+    EXPECT_EQ(text.compare_exact(0, TXT("abc"), 4), areg::Ordering::Smaller);
+}
+
+// A comparison with a null string and an explicit count of the whole text is ordered, not equal.
+TYPED_TEST(StringCommonCompare, comparison_with_null_string_is_ordered_not_equal)
+{
+    using S = TypeParam;
+    using C = CharOf<S>;
+    const S text(TXT("abc"));
+    EXPECT_EQ(text.compare(static_cast<const C*>(nullptr), 0, 3), areg::Ordering::Smaller);
+    EXPECT_EQ(text.compare(static_cast<const C*>(nullptr), 0, 2), areg::Ordering::Bigger);
+}
+
+// A comparison with a string view takes the view length for COUNT_ALL and a count beyond the view.
+TYPED_TEST(StringCommonCompare, comparison_with_string_view_limits_count_to_view_length)
+{
+    using S = TypeParam;
+    using View = std::basic_string_view<CharOf<S>>;
+    const S text(TXT("abc"));
+    EXPECT_EQ(text.compare(View(TXT("abc")), 0, 2), areg::Ordering::Bigger);
+    EXPECT_EQ(text.compare(View(TXT("abc")), 0, areg::COUNT_ALL), areg::Ordering::Equal);
+    EXPECT_EQ(text.compare(View(TXT("abc")), 0, 10), areg::Ordering::Equal);
+}
+
+// The substring keeps the requested count, or the rest when the count is larger or absent.
+TYPED_TEST(StringCommonSubstring, substring_keeps_requested_count_or_the_rest)
+{
+    using S = TypeParam;
+    using C = CharOf<S>;
+    S text(TXT("abc"));
+    EXPECT_EQ(raw(text.substring(1, 1)), expected<C>("b"));
+    text = TXT("abc");
+    EXPECT_EQ(raw(text.substring(1, 10)), expected<C>("bc"));
+    text = TXT("abc");
+    EXPECT_EQ(raw(text.substring(1, 2)), expected<C>("bc"));
+    text = TXT("abc");
+    EXPECT_EQ(raw(text.substring(1)), expected<C>("bc"));
+    text = TXT("abc");
+    EXPECT_TRUE(text.substring(10).is_empty());
+}
+
+// The replace with a character count limits the replacement text, and a null replacement removes the match.
+TYPED_TEST(StringCommonModify, replace_with_character_count_limits_the_replacement_text)
+{
+    using S = TypeParam;
+    using C = CharOf<S>;
+    S text(TXT("abc"));
+    EXPECT_EQ(raw(text.replace(TXT("b"), TXT("XYZ"), 0, 2)), expected<C>("aXYc"));
+    text = TXT("abc");
+    EXPECT_EQ(raw(text.replace(TXT("b"), TXT("XYZ"), 0, 10)), expected<C>("aXYZc"));
+    text = TXT("abc");
+    EXPECT_EQ(raw(text.replace(TXT("b"), TXT("XYZ"), 0, areg::COUNT_ALL)), expected<C>("aXYZc"));
+    text = TXT("abc");
+    EXPECT_EQ(raw(text.replace(TXT("b"), static_cast<const C*>(nullptr), 0)), expected<C>("ac"));
+}
+
+// The string view replace stops after the first match if asked, and after the match at the end.
+TYPED_TEST(StringCommonModify, view_replace_stops_after_first_match_or_after_match_at_the_end)
+{
+    using S = TypeParam;
+    using C = CharOf<S>;
+    using View = std::basic_string_view<C>;
+    S text(TXT("abcb"));
+    EXPECT_EQ(raw(text.replace(View(TXT("b")), View(TXT("X")), 0, false)), expected<C>("aXcb"));
+    text = TXT("abc");
+    EXPECT_EQ(raw(text.replace(View(TXT("c")), View(TXT("X")), 0, true)), expected<C>("abX"));
+    text = TXT("abcb");
+    EXPECT_EQ(raw(text.replace(View(TXT("b")), View(TXT("X")), 0, true)), expected<C>("aXcX"));
+}
+
+// The replace at a position ignores an invalid position.
+TYPED_TEST(StringCommonModify, replace_at_position_ignores_invalid_position)
+{
+    using S = TypeParam;
+    using C = CharOf<S>;
+    using Std = std::basic_string<C>;
+    S text(TXT("abc"));
+    EXPECT_EQ(raw(text.replace(10, 1, Std(TXT("x")))), expected<C>("abc"));
+    EXPECT_EQ(raw(text.replace(1, 1, Std(TXT("XY")))), expected<C>("aXYc"));
+}
+
+// The remove by position ignores a count that exceeds the rest, and the remove of a phrase ignores an empty phrase.
+TYPED_TEST(StringCommonModify, remove_ignores_count_beyond_the_rest_and_empty_phrase)
+{
+    using S = TypeParam;
+    using C = CharOf<S>;
+    using Std = std::basic_string<C>;
+    S text(TXT("abcde"));
+    EXPECT_EQ(raw(text.remove(1, 10)), expected<C>("abcde"));
+    EXPECT_EQ(raw(text.remove(10, 1)), expected<C>("abcde"));
+    EXPECT_EQ(raw(text.remove(1, 2)), expected<C>("ade"));
+    EXPECT_EQ(raw(text.remove(1)), expected<C>("a"));
+
+    text = TXT("abc");
+    EXPECT_EQ(raw(text.remove(Std(TXT("")), 0)), expected<C>("abc"));
+    EXPECT_EQ(raw(text.remove(Std(TXT("a")), 10)), expected<C>("abc"));
+    EXPECT_EQ(raw(text.remove(Std(TXT("b")), 0)), expected<C>("ac"));
+}
+
+// The replace of a range reports the next position, and an invalid start gives no position.
+TYPED_TEST(StringCommonModify, replace_of_range_reports_next_position_and_rejects_invalid_start)
+{
+    using S = TypeParam;
+    using C = CharOf<S>;
+    S text(TXT("abcdef"));
+    EXPECT_EQ(text.replace_with(areg::INVALID_POS, 1, TXT("x"), 1), areg::INVALID_POS);
+    EXPECT_EQ(text.replace_with(areg::END_POS, 1, TXT("x"), 1), areg::INVALID_POS);
+    EXPECT_EQ(raw(text), expected<C>("abcdef"));
+    EXPECT_EQ(text.replace_with(1, 2, TXT("XYZ"), 3), 4);
+    EXPECT_EQ(raw(text), expected<C>("aXYZdef"));
+}
+
+// The trim of a white-space only string into a standard string leaves it empty.
+TYPED_TEST(StringCommonTrim, trim_of_white_space_only_string_into_standard_string_is_empty)
+{
+    using S = TypeParam;
+    using C = CharOf<S>;
+    const S text(TXT("   "));
+    std::basic_string<C> output(TXT("stale"));
+    text.trim_left(output);
+    EXPECT_TRUE(output.empty());
+    output = TXT("stale");
+    text.trim_right(output);
+    EXPECT_TRUE(output.empty());
+}
+
+// The suffix check with a standard string rejects a longer phrase and accepts a matching tail.
+TYPED_TEST(StringCommonValidate, suffix_check_with_standard_string_rejects_longer_phrase)
+{
+    using S = TypeParam;
+    using Std = std::basic_string<CharOf<S>>;
+    const S text(TXT("AbC"));
+    EXPECT_TRUE(text.ends_with(Std(TXT("bC"))));
+    EXPECT_TRUE(text.ends_with(Std(TXT("BC")), false));
+    EXPECT_FALSE(text.ends_with(Std(TXT("zAbC"))));
+}
+
+// The number parsers return zero and the begin of the input for a null or empty text.
+TYPED_TEST(StringCommonNumbers, parsers_give_zero_and_input_begin_for_null_or_empty_text)
+{
+    using S = TypeParam;
+    using C = CharOf<S>;
+    const C* none{ static_cast<const C*>(nullptr) };
+    const C* empty{ TXT("") };
+    const C* end{ TXT("marker") };
+
+    EXPECT_EQ(S::make_int32(none, areg::Radix::Decimal, &end), 0);
+    EXPECT_EQ(end, none);
+    end = TXT("marker");
+    EXPECT_EQ(S::make_int32(empty, areg::Radix::Decimal, &end), 0);
+    EXPECT_EQ(end, empty);
+    EXPECT_EQ(S::make_uint32(none, areg::Radix::Decimal, &end), 0u);
+    EXPECT_EQ(end, none);
+    EXPECT_EQ(S::make_uint32(empty, areg::Radix::Decimal, &end), 0u);
+    EXPECT_EQ(end, empty);
+    EXPECT_EQ(S::make_int64(none, areg::Radix::Decimal, &end), 0);
+    EXPECT_EQ(end, none);
+    EXPECT_EQ(S::make_int64(empty, areg::Radix::Decimal, &end), 0);
+    EXPECT_EQ(end, empty);
+    EXPECT_EQ(S::make_uint64(none, areg::Radix::Decimal, &end), 0u);
+    EXPECT_EQ(end, none);
+    EXPECT_EQ(S::make_uint64(empty, areg::Radix::Decimal, &end), 0u);
+    EXPECT_EQ(end, empty);
+    EXPECT_EQ(S::make_float(none, &end), 0.0f);
+    EXPECT_EQ(end, none);
+    EXPECT_EQ(S::make_float(empty, &end), 0.0f);
+    EXPECT_EQ(end, empty);
+    EXPECT_EQ(S::make_double(none, &end), 0.0);
+    EXPECT_EQ(end, none);
+    EXPECT_EQ(S::make_double(empty, &end), 0.0);
+    EXPECT_EQ(end, empty);
+}
+
+// The number parsers report the end of the parsed number.
+TYPED_TEST(StringCommonNumbers, parsers_report_end_of_the_parsed_number)
+{
+    using S = TypeParam;
+    using C = CharOf<S>;
+    const C* text{ TXT("12ab") };
+    const C* end{ nullptr };
+    EXPECT_EQ(S::make_int32(text, areg::Radix::Decimal, &end), 12);
+    EXPECT_EQ(end, text + 2);
+    EXPECT_EQ(S::make_uint32(text, areg::Radix::Decimal, &end), 12u);
+    EXPECT_EQ(end, text + 2);
+    EXPECT_EQ(S::make_int64(text, areg::Radix::Decimal, &end), 12);
+    EXPECT_EQ(end, text + 2);
+    EXPECT_EQ(S::make_uint64(text, areg::Radix::Decimal, &end), 12u);
+    EXPECT_EQ(end, text + 2);
+    EXPECT_EQ(S::make_uint64(TXT("ff"), areg::Radix::Hexadecimal, &end), 255u);
+
+    const C* real{ TXT("1.5x") };
+    EXPECT_EQ(S::make_float(real, &end), 1.5f);
+    EXPECT_EQ(end, real + 3);
+    EXPECT_EQ(S::make_double(real, &end), 1.5);
+    EXPECT_EQ(end, real + 3);
+}
+
+// The formatting into a buffer reports no text for a null destination.
+TYPED_TEST(StringCommonFormat, formatting_into_null_destination_reports_failure)
+{
+    using S = TypeParam;
+    using C = CharOf<S>;
+    int32_t required{ 5 };
+    EXPECT_EQ(format_string_with_list<S>(nullptr, 8, TXT("x")), -1);
+    EXPECT_EQ((format_string_with_required<S>(nullptr, 8, required, TXT("x"))), -1);
+    EXPECT_EQ(required, 0);
+    EXPECT_EQ(S::format_string(static_cast<C*>(nullptr), 8, TXT("x")), -1);
+}
+
+// The formatting into a buffer without room or without a format writes nothing, and a short buffer cuts the text.
+TYPED_TEST(StringCommonFormat, formatting_without_room_or_format_writes_nothing_and_short_buffer_cuts_text)
+{
+    using S = TypeParam;
+    using C = CharOf<S>;
+    C buffer[8]{ CH('x'), CH('x'), CH('x'), CH('x'), CH('x'), CH('x'), CH('x'), CH('x') };
+    EXPECT_EQ(S::format_string(buffer, 0, TXT("abc")), 0);
+    EXPECT_EQ(buffer[0], CH('x'));
+
+    const C* noFormat{ static_cast<const C*>(nullptr) };
+    EXPECT_EQ(S::format_string(buffer, 8, noFormat), 0);
+    EXPECT_EQ(buffer[0], CH('\0'));
+
+    EXPECT_EQ(S::format_string(buffer, 4, TXT("%d"), 123456), 3);
+    EXPECT_EQ(std::basic_string<C>(buffer), expected<C>("123"));
+}
+
+#if defined(__linux__)
+// The formatting of a text that cannot be converted reports an empty result.
+TYPED_TEST(StringCommonFormat, formatting_of_text_that_cannot_be_converted_gives_empty_result)
+{
+    using S = TypeParam;
+    using C = CharOf<S>;
+    const std::string saved{ std::setlocale(LC_CTYPE, nullptr) };
+    if (std::setlocale(LC_CTYPE, "C.UTF-8") == nullptr)
+    {
+        GTEST_SKIP() << "The UTF-8 locale is not installed.";
+    }
+
+    C buffer[8]{ CH('x'), CH('x'), CH('x'), CH('x'), CH('x'), CH('x'), CH('x'), CH('x') };
+    int32_t result{ -2 };
+    if constexpr (std::is_same_v<C, char>)
+    {
+        const wchar_t invalid[]{ static_cast<wchar_t>(0xd800), L'\0' };
+        result = S::format_string(buffer, 8, "%ls", invalid);
+    }
+    else
+    {
+        result = S::format_string(buffer, 8, L"%s", "\xff\xfe");
+    }
+
+    std::setlocale(LC_CTYPE, saved.c_str());
+    EXPECT_EQ(result, 0);
+    EXPECT_EQ(buffer[0], CH('\0'));
+}
+#endif
+
+// The assignment of a part of a standard string clamps the position and the count.
+TYPED_TEST(StringCommonAssign, assignment_of_part_clamps_position_and_count)
+{
+    using S = TypeParam;
+    using C = CharOf<S>;
+    const std::basic_string<C> source(TXT("abcdef"));
+    S text;
+    EXPECT_TRUE(text.assign(source, -1).is_empty());
+    EXPECT_TRUE(text.assign(source, 7).is_empty());
+    EXPECT_TRUE(text.assign(source, 6).is_empty());
+    EXPECT_EQ(raw(text.assign(source, 1, 2)), expected<C>("bc"));
+    EXPECT_EQ(raw(text.assign(source, 1, 100)), expected<C>("bcdef"));
+    EXPECT_EQ(raw(text.assign(source, 1, -5)), expected<C>("bcdef"));
+    EXPECT_EQ(raw(text.assign(source, 1, areg::COUNT_ALL)), expected<C>("bcdef"));
+}
+
+// The case-insensitive last-character search matches the upper-case form of the character in the text.
+TYPED_TEST(StringCommonSearch, case_insensitive_last_character_search_matches_upper_case_in_text)
+{
+    using S = TypeParam;
+    const S text(TXT("aBc"));
+    EXPECT_EQ(text.find_last(CH('b'), areg::END_POS, false), 1);
+    EXPECT_EQ(text.find_last(CH('a'), areg::END_POS, false), 0);
+    EXPECT_EQ(text.find_last(CH('C'), areg::END_POS, false), 2);
+}
+
+// The case-insensitive phrase search reports no match when the phrase is absent.
+TYPED_TEST(StringCommonSearch, case_insensitive_phrase_search_reports_no_match_for_absent_phrase)
+{
+    using S = TypeParam;
+    const S text(TXT("xabd"));
+    EXPECT_EQ(text.find_first(S(TXT("abc")), 0, false), areg::END_POS);
+    EXPECT_EQ(text.find_first(S(TXT("ABD")), 0, false), 1);
 }

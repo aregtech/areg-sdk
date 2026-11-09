@@ -45,6 +45,8 @@
 #if defined(_WIN32)
     #include <io.h>
     #include <fcntl.h>
+    #include <share.h>
+    #include <sys/stat.h>
     #include <WinSock2.h>
 #else
     #include <arpa/inet.h>
@@ -84,6 +86,9 @@ namespace service_harness
 
     //!< Opens a terminal of the given size: fds[0] reads what fds[1] draws. A pipe on Windows.
     void make_terminal(int (&fds)[2], TerminalSize size = TerminalSize{});
+
+    //!< Changes the size of the terminal the standard output draws on. Does nothing on Windows, where it is a pipe.
+    void resize_terminal(TerminalSize size);
 
     //!< Prints the stack of every thread of this process on macOS. Does nothing elsewhere.
     void report_threads();
@@ -125,12 +130,16 @@ namespace service_harness
 #endif
     }
 
+    //!< The standard descriptors the console reads and draws on.
+    constexpr int INPUT_FD{ 0 };
+    constexpr int OUTPUT_FD{ 1 };
+
     inline void redirect(int source, int target)
     {
 #if defined(_WIN32)
         AREG_CHILD_CHECK(::_dup2(source, target) == 0);
-        if (target == descriptor(stdout) || target == descriptor(stdin))
-            AREG_CHILD_CHECK(::SetStdHandle(target == descriptor(stdout) ? STD_OUTPUT_HANDLE : STD_INPUT_HANDLE,
+        if (target == OUTPUT_FD || target == INPUT_FD)
+            AREG_CHILD_CHECK(::SetStdHandle(target == OUTPUT_FD ? STD_OUTPUT_HANDLE : STD_INPUT_HANDLE,
                 reinterpret_cast<HANDLE>(::_get_osfhandle(target))) != FALSE);
 #else
         AREG_CHILD_CHECK(::dup2(source, target) == target);
@@ -143,6 +152,54 @@ namespace service_harness
         AREG_CHILD_CHECK(::_close(fd) == 0);
 #else
         AREG_CHILD_CHECK(::close(fd) == 0);
+#endif
+    }
+
+    //!< Returns a copy of the standard descriptor of the stream, or -1 if the process has none. Then the descriptor is opened on the null device.
+    inline int save_descriptor(FILE* stream, int fd)
+    {
+        if (descriptor(stream) == fd)
+        {
+            const int saved{ duplicate(fd) };
+            if (saved >= 0)
+                return saved;
+        }
+
+#if defined(_WIN32)
+        int null{ -1 };
+        AREG_CHILD_CHECK(::_sopen_s(&null, "NUL", _O_RDWR | _O_BINARY, _SH_DENYNO, _S_IREAD | _S_IWRITE) == 0);
+#else
+        const int null{ ::open("/dev/null", O_RDWR) };
+#endif
+        AREG_CHILD_CHECK(null >= 0);
+        if (null != fd)
+        {
+            redirect(null, fd);
+            close_descriptor(null);
+        }
+#if defined(_WIN32)
+        else
+        {
+            AREG_CHILD_CHECK(::SetStdHandle(fd == OUTPUT_FD ? STD_OUTPUT_HANDLE : STD_INPUT_HANDLE,
+                reinterpret_cast<HANDLE>(::_get_osfhandle(fd))) != FALSE);
+        }
+#endif
+        return -1;
+    }
+
+    //!< Puts back the descriptor save_descriptor() returned. With -1 the standard descriptor is closed again.
+    inline void restore_descriptor(int saved, int fd)
+    {
+        if (saved >= 0)
+        {
+            redirect(saved, fd);
+            close_descriptor(saved);
+            return;
+        }
+
+        close_descriptor(fd);
+#if defined(_WIN32)
+        ::SetStdHandle(fd == OUTPUT_FD ? STD_OUTPUT_HANDLE : STD_INPUT_HANDLE, nullptr);
 #endif
     }
 
@@ -554,8 +611,8 @@ namespace service_harness
             , mService(config.service)
             , mInput{-1, -1}
             , mOutput{-1, -1}
-            , mSavedInput(duplicate(descriptor(stdin)))
-            , mSavedOutput(duplicate(descriptor(stdout)))
+            , mSavedInput(save_descriptor(stdin, INPUT_FD))
+            , mSavedOutput(save_descriptor(stdout, OUTPUT_FD))
             , mTerminal()
             , mScreen(size.columns, size.rows)
             , mMutex()
@@ -565,13 +622,12 @@ namespace service_harness
             , mServiceThread()
             , mResult()
         {
-            AREG_CHILD_CHECK(mSavedInput >= 0 && mSavedOutput >= 0);
             set_terminal();
             make_pipe(mInput);
             make_terminal(mOutput, size);
             std::fflush(stdout);
-            redirect(mInput[0], descriptor(stdin));
-            redirect(mOutput[1], descriptor(stdout));
+            redirect(mInput[0], INPUT_FD);
+            redirect(mOutput[1], OUTPUT_FD);
             close_descriptor(mInput[0]);
             close_descriptor(mOutput[1]);
             mReader = std::thread([this]()
@@ -682,10 +738,8 @@ namespace service_harness
             AREG_CHILD_CHECK(mDone.get() == 0);
             mServiceThread.join();
             std::fflush(stdout);
-            redirect(mSavedOutput, descriptor(stdout));
-            redirect(mSavedInput, descriptor(stdin));
-            close_descriptor(mSavedOutput);
-            close_descriptor(mSavedInput);
+            restore_descriptor(mSavedOutput, OUTPUT_FD);
+            restore_descriptor(mSavedInput, INPUT_FD);
             close_descriptor(mInput[1]);
             mReader.join();
             close_descriptor(mOutput[0]);

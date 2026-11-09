@@ -276,7 +276,7 @@ void RouterClient::failed_process_message( const MessageEnvelope & msgUnprocesse
 
             msgUnprocessed.move_to_begin();
             ServiceResponseEvent evtError{ RemoteEventFactory::create_request_failed_event(msgUnprocessed, mChannel) };
-            if ( evtError.is_valid() && RemoteEventFactory::route_outgoing_message( evtError, mChannel) )
+            if ( evtError.is_valid() && RemoteEventFactory::route_outgoing_message( evtError, connection_cookie()) )
             {
                 send_message(evtError.envelope());
             }
@@ -453,13 +453,31 @@ void RouterClient::process_received_message( MessageEnvelope & msgReceived, Sock
     }
 }
 
+namespace
+{
+    // Answers a request that cannot be sent with MessageUndelivered to its caller.
+    void _reply_undelivered(const ServiceRequestEvent & reqEvent, const Channel & channel)
+    {
+        ServiceResponseEvent evtError{ RemoteEventFactory::create_request_failed_event(reqEvent.envelope(), channel) };
+        if ( evtError.is_valid() )
+        {
+            evtError.deliver_event();
+        }
+    }
+}
+
 void RouterClient::process_request_event(ServiceRequestEvent& reqEvent)
 {
     LOG_SCOPE( areg_ipc_private_RouterClient, process_request_event );
 
-    if ( reqEvent.is_remote() )
+    if ( reqEvent.is_remote() && (is_connection_started() == false) )
     {
-        if ( RemoteEventFactory::route_outgoing_message( reqEvent, mChannel) )
+        LOG_WARN("The router did not confirm the connection, request [ %u ] fails", reqEvent.request_id());
+        _reply_undelivered(reqEvent, mChannel);
+    }
+    else if ( reqEvent.is_remote() )
+    {
+        if ( RemoteEventFactory::route_outgoing_message( reqEvent, connection_cookie()) )
         {
             LOG_DBG("Sending [ %u ] event: remote message [ %u ] from source [ %u ] to target [ %u ]"
                       , reqEvent.event_id()
@@ -484,9 +502,14 @@ void RouterClient::process_notify_request(ServiceRequestEvent& reqNotifyEvent )
 {
     LOG_SCOPE( areg_ipc_private_RouterClient, process_notify_request );
 
-    if ( reqNotifyEvent.is_remote() )
+    if ( reqNotifyEvent.is_remote() && (is_connection_started() == false) )
     {
-        if ( RemoteEventFactory::route_outgoing_message( reqNotifyEvent, mChannel) )
+        LOG_WARN("The router did not confirm the connection, notify request [ %u ] fails", reqNotifyEvent.request_id());
+        _reply_undelivered(reqNotifyEvent, mChannel);
+    }
+    else if ( reqNotifyEvent.is_remote() )
+    {
+        if ( RemoteEventFactory::route_outgoing_message( reqNotifyEvent, connection_cookie()) )
         {
             LOG_DBG("Send [ %u ] event: remote message [ %u ] from source [ %u ] to target [ %u ]"
                       , reqNotifyEvent.event_id()
@@ -512,9 +535,13 @@ void RouterClient::process_response_event(ServiceResponseEvent& respEvent)
 {
     LOG_SCOPE( areg_ipc_private_RouterClient, process_response_event );
 
-    if ( respEvent.is_remote() )
+    if ( respEvent.is_remote() && (is_connection_started() == false) )
     {
-        if ( RemoteEventFactory::route_outgoing_message( respEvent, mChannel) )
+        LOG_WARN("The router did not confirm the connection, response [ %u ] is dropped", respEvent.response_id());
+    }
+    else if ( respEvent.is_remote() )
+    {
+        if ( RemoteEventFactory::route_outgoing_message( respEvent, connection_cookie()) )
         {
             LOG_DBG("Forwarding [ %u ] message [ %u ] from source [ %u ] to target [ %u ]"
                       , respEvent.event_id()
@@ -541,7 +568,7 @@ bool RouterClient::post_event(Event & eventElem)
     {
         if ( is_connection_started() )
         {
-            return RemoteEventFactory::route_outgoing_message(eventElem, mChannel) && send_message(eventElem.envelope());
+            return RemoteEventFactory::route_outgoing_message(eventElem, connection_cookie()) && send_message(eventElem.envelope());
         }
 
         eventElem.set_event_consumer( static_cast<RemoteEventConsumer *>(this) );

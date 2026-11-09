@@ -26,6 +26,19 @@
 #include <thread>
 #include <vector>
 
+#if defined(__SANITIZE_THREAD__)
+    #define AREG_TEST_TSAN
+#elif defined(__has_feature)
+    #if __has_feature(thread_sanitizer)
+        #define AREG_TEST_TSAN
+    #endif  // __has_feature(thread_sanitizer)
+#endif  // defined(__SANITIZE_THREAD__)
+
+#if defined(_POSIX) && !defined(__CYGWIN__)
+    #include <sys/wait.h>
+    #include <unistd.h>
+#endif  // defined(_POSIX) && !defined(__CYGWIN__)
+
 #if defined(__linux__)
     #include <dirent.h>
     #include <fstream>
@@ -535,3 +548,40 @@ TEST(SyncTimerTest, static_timer_after_main)
 }
 
 #endif  // GTEST_HAS_DEATH_TEST
+
+#if defined(_POSIX) && !defined(__CYGWIN__)
+/**
+ * \brief   A child forked while a timer of the parent is armed starts with no armed timer: its
+ *          own timer fires. The timers of the parent still fire after the fork.
+ **/
+TEST(SyncTimerTest, forked_child_runs_its_own_timer_and_the_parent_keeps_its_timers)
+{
+#if defined(AREG_TEST_TSAN)
+    GTEST_SKIP() << "the thread sanitizer refuses a new thread after a fork of a multithreaded process";
+#endif  // defined(AREG_TEST_TSAN)
+
+    constexpr uint32_t SHORT_MS{ 5u };
+    constexpr uint32_t DEADLINE_MS{ 10'000u };
+    areg::SyncTimer armed(60'000u, false);
+    ASSERT_TRUE(armed.set_timer());
+
+    const pid_t child{ ::fork() };
+    ASSERT_NE(child, -1);
+    if (child == 0)
+    {
+        ::alarm(20u);
+        areg::SyncTimer own(SHORT_MS, false);
+        const bool fired{ own.set_timer() && own.lock(DEADLINE_MS) };
+        std::_Exit(fired ? 0 : 1);
+    }
+
+    int status{ 0 };
+    ASSERT_EQ(::waitpid(child, &status, 0), child);
+    EXPECT_TRUE(WIFEXITED(status) && (WEXITSTATUS(status) == 0));
+
+    EXPECT_TRUE(armed.cancel_timer());
+    areg::SyncTimer after(SHORT_MS, false);
+    ASSERT_TRUE(after.set_timer());
+    EXPECT_TRUE(after.lock(DEADLINE_MS));
+}
+#endif  // defined(_POSIX) && !defined(__CYGWIN__)

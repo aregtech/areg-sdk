@@ -60,14 +60,14 @@ bool ComponentLoader::load_component_model( const String & modelName, bool waitC
     return ServiceManager::request_load_model( modelName, waitComponents );
 }
 
-void ComponentLoader::unload_component_model(bool waitComplete, const String & modelName )
+bool ComponentLoader::unload_component_model(bool waitComplete, const String & modelName )
 {
-    ServiceManager::request_unload_model( modelName, waitComplete );
+    return ServiceManager::request_unload_model( modelName, waitComplete );
 }
 
-void ComponentLoader::wait_model_unload(const String & modelName)
+bool ComponentLoader::wait_model_unload(const String & modelName)
 {
-    ServiceManager::request_unload_model( modelName, true );
+    return ServiceManager::request_unload_model( modelName, true );
 }
 
 areg::ModelState ComponentLoader::model_state( const String & modelName )
@@ -383,49 +383,6 @@ const areg::Model * ComponentLoader::find_model_named( const String & modelName 
         if (model.model_name() == modelName)
         {
             return &model;
-        }
-    }
-
-    return nullptr;
-}
-
-const areg::ComponentThreadEntry * ComponentLoader::find_thread_named( const String & threadName ) const noexcept
-{
-    if (threadName.is_empty())
-        return nullptr;
-    
-    for ( uint32_t i = 0; i < mModelList.size(); ++i )
-    {
-        const areg::Model & model = mModelList[i];
-        int32_t index = model.find_thread(threadName);
-        if ( index != areg::INVALID_INDEX )
-        {
-            const areg::ComponentThreadEntry & entry = model.thread_list().mListThreads.value_at(static_cast<uint32_t>(index));
-            return &entry;
-        }
-    }
-    
-    return nullptr;
-}
-
-const areg::ComponentEntry * ComponentLoader::find_component_named( const String & roleName ) const noexcept
-{
-    if ( roleName.is_empty() )
-        return nullptr;
-    
-    for ( uint32_t i = 0; i < mModelList.size(); ++i )
-    {
-        const areg::Model & model = mModelList[i];
-        const areg::ComponentThreadList & threadList= model.thread_list();
-        for ( uint32_t j = 0; j < threadList.mListThreads.size(); ++j )
-        {
-            const areg::ComponentThreadEntry & thread   = threadList.mListThreads.value_at(j);
-            int32_t index = thread.find_component_entry(roleName);
-            if ( index != areg::INVALID_INDEX )
-            {
-                const areg::ComponentEntry & entry = thread.mComponents.mListComponents.value_at(static_cast<uint32_t>(index));
-                return &entry;
-            }
         }
     }
 

@@ -10,6 +10,7 @@
     coverage-report.py --unit U.json --examples E.json --total T.json --cobertura T.xml
                        [--unit-cobertura U.xml] [--examples-cobertura E.xml] [--root DIR]
                        [--last LAST.json] [--save] [--files REGEX] [--top N] [--summary FILE]
+                       [--build DIR] [--text FILE]
 
 The report has two parts.
 
@@ -23,12 +24,15 @@ The report has two parts.
    and per directory. Each input is a gcovr '--json-summary' file: the unit tests, the
    example applications, and the union of both.
 
-The report is appended to '--summary' (the job summary of a build server) and printed.
+The report is printed, appended to '--summary' (the job summary of a build server) and
+written to '--text'. '--build' names the CMake build tree the compiler and system are read from.
 """
 
 import argparse
+import glob
 import json
 import os
+import re
 import sys
 import xml.etree.ElementTree as ElementTree
 
@@ -37,6 +41,7 @@ import coverage_rule  # noqa: E402
 
 
 METRICS = (('line', 'Lines'), ('function', 'Functions'), ('branch', 'Branches'))
+CRITICAL = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'coverage-critical.json')
 
 
 def load(path):
@@ -47,6 +52,32 @@ def load(path):
     except (OSError, ValueError) as error:
         print('cannot read %s: %s' % (path, error), file=sys.stderr)
         return None
+
+
+def cmake_value(path, name):
+    """Returns the value of 'set(<name> "<value>")' in a CMake file, or an empty string."""
+    try:
+        with open(path, 'r', encoding='utf-8', errors='replace') as file:
+            match = re.search(r'set\(%s\s+"([^"]*)"' % re.escape(name), file.read())
+    except OSError:
+        return ''
+    return match.group(1) if match else ''
+
+
+def build_label(build):
+    """Returns the compiler and the system of a CMake build tree, like 'GNU 13.3.0, Linux'."""
+    if not build:
+        return ''
+    compilers = sorted(glob.glob(os.path.join(build, 'CMakeFiles', '*', 'CMakeCXXCompiler.cmake')))
+    systems = sorted(glob.glob(os.path.join(build, 'CMakeFiles', '*', 'CMakeSystem.cmake')))
+    if not compilers:
+        return ''
+    compiler = ' '.join(part for part in (cmake_value(compilers[-1], 'CMAKE_CXX_COMPILER_ID'),
+                                          cmake_value(compilers[-1], 'CMAKE_CXX_COMPILER_VERSION')) if part)
+    if cmake_value(compilers[-1], 'CMAKE_CXX_COMPILER_FRONTEND_VARIANT') == 'MSVC':
+        compiler += ' (clang-cl)' if 'Clang' in compiler else ''
+    system = cmake_value(systems[-1], 'CMAKE_SYSTEM_NAME') if systems else ''
+    return ', '.join(part for part in (compiler, system) if part)
 
 
 def percent(covered, total):
@@ -111,6 +142,42 @@ def groups_table(title, depth, total, unit, examples):
     return lines
 
 
+def load_components(path):
+    """Returns [(name, [compiled regex])] of the critical components file, or [] when it is missing."""
+    data = load(path) if path and os.path.isfile(path) else None
+    return [(entry['name'], [re.compile(pattern) for pattern in entry['files']])
+            for entry in (data or {}).get('components', [])]
+
+
+def critical_table(components, counts, total):
+    """Returns the table of the critical components: Codecov-rule lines, gcovr functions and branches."""
+    lines = ['| Component | Files | Lines (Codecov rule) | Functions | Branches | Untaken branches |',
+             '|---|---:|---:|---:|---:|---:|']
+    files = (total or {}).get('files', [])
+    for name, patterns in components:
+        def matches(filename):
+            path = filename.replace('\\', '/')
+            return any(pattern.search(path) for pattern in patterns)
+        rule = [0, 0]
+        for filename, (count, hits, _partials, _misses) in (counts or {}).items():
+            if matches(filename):
+                rule[0] += hits
+                rule[1] += count
+        sums = {}
+        matched = 0
+        for entry in files:
+            if matches(entry['filename']):
+                matched += 1
+                for metric in ('function', 'branch'):
+                    for key in (metric + '_total', metric + '_covered'):
+                        sums[key] = sums.get(key, 0) + entry.get(key, 0)
+        untaken = sums.get('branch_total', 0) - sums.get('branch_covered', 0)
+        lines.append('| %s | %d | %s | %s | %s | %d |' % (name, matched, cell(rule[0], rule[1]),
+                     cell(sums.get('function_covered', 0), sums.get('function_total', 0)),
+                     cell(sums.get('branch_covered', 0), sums.get('branch_total', 0)), untaken))
+    return lines
+
+
 def rule_part(args):
     """Returns the Markdown of the Codecov-rule tables, or None when the Cobertura report is unusable."""
     try:
@@ -146,6 +213,9 @@ def main():
     parser.add_argument('--files', default=None, help='regular expression of files to list')
     parser.add_argument('--top', type=int, default=0, help='number of files listed by non-hit lines')
     parser.add_argument('--summary', default=None, help='file the report is appended to')
+    parser.add_argument('--build', default=None, help='CMake build tree of the measured run')
+    parser.add_argument('--text', default=None, help='file the report is written to')
+    parser.add_argument('--critical', default=CRITICAL, help='JSON file of the critical components')
     args = parser.parse_args()
 
     unit = load(args.unit)
@@ -157,12 +227,19 @@ def main():
     if rule is None:
         return 1
 
+    label = build_label(args.build) or 'compiler unknown'
     report = ['## Code coverage of `framework/`', '',
-              'GCC `--coverage`, Debug build, Linux. Code built only on other platforms is not counted.', '']
+              '%s, `--coverage`, Debug build. Code built only on other platforms is not counted.' % label, '']
     report += ['The first part counts like the Codecov badge: a line counts once whatever the number of '
                'template instances or constructor variants, a line holding only `}` is not counted, '
                'and a hit line with an untaken branch is partial, which is not covered.', '']
     report += rule
+    components = load_components(args.critical)
+    if components:
+        report += ['', '### Critical components', '',
+                   'Lines count like the badge; functions and branches as gcovr counts them. '
+                   'The components are listed in `tools/intern/coverage-critical.json`.', '']
+        report += critical_table(components, counts, total)
     report += ['', '### Lines, functions and branches (gcovr)', '',
                'Each template instance and constructor variant counts on its own, and a line is covered '
                'when it is executed once, so these numbers are higher than the badge.', '']
@@ -175,12 +252,16 @@ def main():
     text = '\n'.join(report)
 
     print(text)
-    if args.summary:
+    for path, mode in ((args.summary, 'a'), (args.text, 'w')):
+        if not path:
+            continue
         try:
-            with open(args.summary, 'a', encoding='utf-8') as file:
+            with open(path, mode, encoding='utf-8') as file:
                 file.write(text + '\n')
         except OSError as error:
-            print('cannot write %s: %s' % (args.summary, error), file=sys.stderr)
+            print('cannot write %s: %s' % (path, error), file=sys.stderr)
+            if mode == 'w':
+                return 1
     if args.save and args.last and not coverage_rule.save_last(args.last, args.cobertura, counts):
         return 1
     return 0

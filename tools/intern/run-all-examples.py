@@ -110,6 +110,9 @@ QUIT_SECONDS = 12.0
 #             do not let any process die early.
 #   check     Function given the captured output of every process, in the order of
 #             'procs'. It returns a failure text, or None when the output is right.
+#   scopes    True to run with every log scope of every module at 'DEBUG | SCOPE',
+#             written to a log file only. The 'config/areg.init' of the binaries is
+#             rewritten for the scenario and restored after it.
 #   known     Description of an open defect this scenario runs into. A failure
 #             is then reported as XFAIL and does not break the run, while an
 #             unexpected success is reported as XPASS and does break it, so
@@ -461,6 +464,35 @@ SCENARIOS = [
                             r'Log observer is paused',
                             r'Log observer stops',
                             r'Usage of Areg Log Observer console application'])]},
+    {'name': '36_logobserver_console_options', 'tier': 'coverage', 'timeout': 90, 'router': False,
+     'procs': [proc('logcollector', args=['--console'], must_exit=False, quit=['-q']),
+               proc('35_logsource', args=['-c=600', '-w=0', '-p=20'], expect=[r'35 log call']),
+               proc('logobserver', args=['--console'],
+                    stdin=[(1.5, '-r'), (1.5, '-r'), (0.5, '-c'),
+                           (1.0, '-e 7 not_a_cookie *'), (1.0, '-f 7 not_a_cookie *'),
+                           (1.0, '-o *::examples_35_logsource_PacedThread=NOTSET;*::examples_35_logsource_Main=NOTSET'),
+                           (1.0, '-o scope::examples_35_logsource_PacedThread=NOTSET'),
+                           (1.0, '-o examples_35_logsource_PacedThread=NOTSET'),
+                           (1.0, '-o *::not_a_scope'), (1.0, '-o 5::examples_35_logsource_PacedThread=NOTSET'),
+                           (1.0, '-p'), (0.5, '-r'), (1.0, '-q -n')],
+                    expect=[r'Log observer triggered connection\.',
+                            r'Log observer queries scopes\.',
+                            r'Log observer requested to save configuration\.',
+                            r'Log observer requested to update scopes\.',
+                            r'Log observer failed to request update scopes\.',
+                            r'Log observer is paused'])]},
+    {'name': '36_logobserver_cmdline_no_collector', 'tier': 'coverage', 'timeout': 60, 'router': False,
+     'procs': [proc('logobserver', args=['--load=config/areg.init', '-n', '-q', '-n'],
+                    expect=[r'reported no data within 15 seconds',
+                            r'no connected instances'])]},
+    {'name': '36_logobserver_cmdline_console', 'tier': 'coverage', 'timeout': 90, 'router': False,
+     'procs': [proc('logcollector', args=['--console'], must_exit=False, quit=['-q']),
+               proc('35_logsource', args=['-c=250', '-w=0', '-p=20'], expect=[r'35 log call']),
+               proc('logobserver', args=['--load=missing.init', '-c', '-n'],
+                    stdin=[(8.0, '-n'), (1.0, '-q')],
+                    expect=[r'Inst\. ID',
+                            r'Areg Log Observer console application',
+                            r'List of connected instances'])]},
 
     # -- benchmarks, always last -------------------------------------------
     # Both drive the console of the application exactly as it is driven by hand. The
@@ -567,6 +599,52 @@ SCENARIOS = [
                proc('35_logsink', args=['-c=20000', '-d=35_logdb.sqlog'], expect=[r'35 log trip']),
                proc('35_logsource', args=['-c=20000', '-w=0'], expect=[r'35 log call'])]},
 ]
+
+# Scenarios the coverage tier runs once more with every log scope on.
+_SCOPES_SCENARIOS = ('13_locservice', '15_pubsvc', '25_pubsub', '34_coffeemachine')
+
+
+def _with_all_scopes(scenario):
+    copy = dict(scenario)
+    copy['name'] = scenario['name'] + '_scopes'
+    copy['tier'] = 'coverage'
+    copy['router'] = scenario.get('router', scenario['tier'] in ('ipc', 'perf'))
+    copy['scopes'] = True
+    copy['procs'] = [dict(entry) for entry in scenario['procs']]
+    return copy
+
+
+SCENARIOS += [_with_all_scopes(s) for s in SCENARIOS if s['name'] in _SCOPES_SCENARIOS]
+
+# Settings of 'areg.init' replaced by the 'scopes' key of a scenario.
+_RE_SCOPES_REPLACED = re.compile(r'\s*log::[^:\s]+::(scope::|target\b|enable::(remote|file)\b)')
+_SCOPES_SETTINGS = ('log::*::target = file ;\n'
+                    'log::*::enable::remote = false ;\n'
+                    'log::*::enable::file = true ;\n'
+                    'log::*::scope::* = DEBUG | SCOPE ;\n')
+
+
+@contextlib.contextmanager
+def all_scopes(bin_dir, enabled):
+    """
+    Runs the body with every log scope on in the 'config/areg.init' of the binaries, when
+    'enabled'; the file is restored after the body, also on an error.
+    """
+    path = os.path.join(bin_dir, 'config', 'areg.init')
+    if not enabled:
+        yield
+        return
+    with open(path, newline='') as file:
+        original = file.read()
+    kept = [line for line in original.splitlines(True) if not _RE_SCOPES_REPLACED.match(line)]
+    with open(path, 'w', newline='') as file:
+        file.write(''.join(kept) + '\n' + _SCOPES_SETTINGS)
+    try:
+        yield
+    finally:
+        with open(path, 'w', newline='') as file:
+            file.write(original)
+
 
 # Exit codes that mean the process was terminated abnormally.
 WIN_CRASH_CODES = {
@@ -715,11 +793,56 @@ def capture_stacks(pid, name, dest):
 
 
 # ---------------------------------------------------------------------------
+# Coverage counters of processes that run at the same time. A slot is a folder
+# given to a process through GCOV_PREFIX; it is free again once that process has
+# ended. The caller lists the object folders of the build in <slots>/dirs.txt,
+# exports GCOV_PREFIX_STRIP, and merges the slots after the run.
+# ---------------------------------------------------------------------------
+
+GCOV_SPLIT  = None              #!< '--gcov-split': the folder of the slots, None to not split
+_gcov_dirs  = None              #!< object folders below the build, from dirs.txt
+_gcov_slots = []                #!< [folder, process] of every slot made so far
+_gcov_lock  = threading.Lock()
+
+
+class _Reserved:
+    """Owner of a slot whose process is being started."""
+    @staticmethod
+    def poll():
+        return None
+
+
+def acquire_gcov_slot():
+    """Returns a slot no running process writes to, or None when the counters are not split."""
+    global _gcov_dirs
+    if GCOV_SPLIT is None:
+        return None
+    with _gcov_lock:
+        for slot in _gcov_slots:
+            if (slot[1] is None) or (slot[1].poll() is not None):
+                slot[1] = _Reserved
+                return slot
+        if _gcov_dirs is None:
+            with open(os.path.join(GCOV_SPLIT, 'dirs.txt')) as listing:
+                _gcov_dirs = [line.strip() for line in listing if line.strip()]
+        folder = os.path.join(GCOV_SPLIT, 'slot-%d' % len(_gcov_slots))
+        # The Cygwin counter library does not create missing folders.
+        for sub in _gcov_dirs:
+            os.makedirs(os.path.join(folder, sub), exist_ok=True)
+        slot = [folder, _Reserved]
+        _gcov_slots.append(slot)
+        return slot
+
+
+# ---------------------------------------------------------------------------
 # Process handling.
 # ---------------------------------------------------------------------------
 
 class Runner:
     """Starts one process, feeds its standard input and captures its output.
+
+    With '--gcov-split' the process writes its coverage counters into a slot folder that
+    no other running process writes to.
 
     On POSIX the output is captured through a pseudo terminal rather than by writing
     straight into the log file. The reason is that the C library buffers a redirected
@@ -780,9 +903,19 @@ class Runner:
             kwargs['stdout'] = self._log
             kwargs['stderr'] = subprocess.STDOUT
 
+        slot = acquire_gcov_slot()
+        if slot is not None:
+            environment = kwargs.get('env') or os.environ.copy()
+            environment['GCOV_PREFIX'] = slot[0]
+            kwargs['env'] = environment
+
+        proc = None
         try:
-            self.proc = subprocess.Popen([path] + args, **kwargs)
+            proc = subprocess.Popen([path] + args, **kwargs)
+            self.proc = proc
         finally:
+            if slot is not None:
+                slot[1] = proc
             if slave is not None:
                 os.close(slave)
 
@@ -2017,10 +2150,17 @@ def main():
                              ' in the output directory)')
     parser.add_argument('--summary', default=os.environ.get('GITHUB_STEP_SUMMARY'),
                         help='append a Markdown report to this file')
+    parser.add_argument('--gcov-split', default=None,
+                        help='write the coverage counters of processes that run at the same'
+                             ' time into separate folders below this one (GCOV_PREFIX).'
+                             ' The folder holds dirs.txt, the object folders of the build;'
+                             ' GCOV_PREFIX_STRIP is taken from the environment.')
     args = parser.parse_args()
 
-    global CAPTURE_STACKS
+    global CAPTURE_STACKS, GCOV_SPLIT
     CAPTURE_STACKS = not args.no_stacks
+    if args.gcov_split:
+        GCOV_SPLIT = os.path.abspath(args.gcov_split)
 
     selection = SCENARIOS
     if args.tier == 'coverage':
@@ -2096,9 +2236,10 @@ def main():
             sys.stdout.write('%-16s ' % scenario['name'])
             sys.stdout.flush()
             timeout = scenario.get('timeout', args.timeout)
-            result = run_scenario(scenario, bin_dir, out_dir, timeout, router_bin,
-                                  args.keep_logs, not args.no_pty,
-                                  round_index, args.repeat)
+            with all_scopes(bin_dir, scenario.get('scopes', False)):
+                result = run_scenario(scenario, bin_dir, out_dir, timeout, router_bin,
+                                      args.keep_logs, not args.no_pty,
+                                      round_index, args.repeat)
             print('%-5s %6.1fs %s'
                   % (result.status, result.seconds,
                      '; '.join(one_line(n) for n in result.notes)))

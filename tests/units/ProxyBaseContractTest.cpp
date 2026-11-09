@@ -102,6 +102,9 @@ namespace
         }
 
         mutable std::vector<std::tuple<uint32_t, ResultType, SequenceNumber>> mFailures;
+        //!< Each notification request: message, type, and the connection callbacks the watched listener had then.
+        std::vector<std::tuple<uint32_t, RequestType, size_t>> mSubscriptions;
+        const ContractListener* mWatched{ nullptr };
 
     protected:
         void process_response_event(ServiceResponseEvent& response) override
@@ -133,8 +136,9 @@ namespace
             return LocalRequestEvent(proxy_address(), stub_address(), request, reserve);
         }
 
-        ServiceRequestEvent create_notification_request(uint32_t, RequestType) override
+        ServiceRequestEvent create_notification_request(uint32_t message, RequestType type) override
         {
+            mSubscriptions.emplace_back(message, type, mWatched != nullptr ? mWatched->mConnections.size() : 0u);
             return ServiceRequestEvent(MessageEnvelope{});
         }
 
@@ -610,6 +614,39 @@ TEST(ProxyBaseContractTest, adding_a_consumer_during_notification_affects_only_t
     });
 }
 
+// Reproduces the defect: a consumer that reconnected kept its listeners but never subscribed again, so it got no update.
+TEST(ProxyBaseContractTest, reconnect_resubscribes_every_listener_still_in_the_list_and_not_a_removed_one)
+{
+    on_proxy_thread([](DispatcherThread& owner)
+    {
+        ContractListener listener;
+        ProxyLease proxy(listener, owner);
+        ASSERT_NE(nullptr, proxy.pointer());
+        proxy->mWatched = &listener;
+        const StubAddress server(INTERFACE, String("ProxyContractProvider"), owner.name());
+        const Channel channel(static_cast<uint32_t>(owner.address()), server.source(), COOKIE_LOCAL);
+        proxy->service_connection_updated(server, channel, ServiceConnectionState::Connected);
+        ASSERT_TRUE(proxy->is_connected());
+        proxy->set_notification(ATTRIBUTES[0], &listener, true);
+        proxy->set_notification(RESPONSES[0], &listener, true);
+        ASSERT_EQ(2u, proxy->mSubscriptions.size());
+
+        proxy->service_connection_updated(server, channel, ServiceConnectionState::Disconnected);
+        ASSERT_FALSE(proxy->is_connected());
+        proxy->remove_listener(RESPONSES[0], SEQUENCE_NUMBER_NOTIFY, &listener);
+        proxy->mSubscriptions.clear();
+
+        proxy->service_connection_updated(server, channel, ServiceConnectionState::Connected);
+        ASSERT_TRUE(proxy->is_connected());
+        ASSERT_EQ(1u, proxy->mSubscriptions.size());
+        EXPECT_EQ(ATTRIBUTES[0], std::get<0>(proxy->mSubscriptions[0]));
+        EXPECT_EQ(RequestType::StartNotify, std::get<1>(proxy->mSubscriptions[0]));
+        EXPECT_EQ(2u, std::get<2>(proxy->mSubscriptions[0]));
+        EXPECT_EQ(3u, listener.mConnections.size());
+        proxy->mWatched = nullptr;
+    });
+}
+
 TEST(ProxyBaseContractTest, disconnected_subscriptions_do_not_install_listeners)
 {
     on_proxy_thread([](DispatcherThread& owner)
@@ -726,5 +763,48 @@ TEST(ProxyBaseContractTest, subscription_event_leaves_the_waiting_caller_pending
         EXPECT_EQ(2u, subscriber.mNotifications.size());
         ASSERT_EQ(1u, caller.mNotifications.size());
         EXPECT_EQ(61u, std::get<2>(caller.mNotifications[0]));
+    });
+}
+
+/**
+ * \brief   Notification data copies keep the proxy, the type, the ID and the sequence; a move
+ *          keeps them too and leaves the source without a proxy. Self assignment changes nothing.
+ **/
+TEST(ProxyBaseContractTest, notification_data_copy_keeps_the_proxy_and_move_clears_the_source)
+{
+    on_proxy_thread([](DispatcherThread& owner)
+    {
+        ContractListener listener;
+        ProxyLease lease(listener, owner);
+        ASSERT_NE(nullptr, lease.pointer());
+        const ProxyBase& proxy{ *lease.pointer() };
+        const auto same = [&proxy](const NotificationEventData& data, ResultType type, uint32_t id, SequenceNumber seq)
+            {
+                return (data.service_proxy() == &proxy) && (data.notify_type() == type) && (data.notify_id() == id) && (data.sequence() == seq);
+            };
+
+        NotificationEventData source(proxy, ResultType::RequestOK, 11u, 21u);
+        NotificationEventData copy(source);
+        EXPECT_TRUE(same(copy, ResultType::RequestOK, 11u, 21u));
+        EXPECT_TRUE(same(source, ResultType::RequestOK, 11u, 21u));
+
+        NotificationEventData moved(std::move(copy));
+        EXPECT_TRUE(same(moved, ResultType::RequestOK, 11u, 21u));
+        EXPECT_EQ(nullptr, copy.service_proxy());
+
+        NotificationEventData target(proxy, ResultType::RequestError, 12u, 22u);
+        target = source;
+        EXPECT_TRUE(same(target, ResultType::RequestOK, 11u, 21u));
+        const NotificationEventData& alias{ target };
+        target = alias;
+        EXPECT_TRUE(same(target, ResultType::RequestOK, 11u, 21u));
+
+        NotificationEventData other(proxy, ResultType::RequestBusy, 13u, 23u);
+        target = std::move(other);
+        EXPECT_TRUE(same(target, ResultType::RequestBusy, 13u, 23u));
+        EXPECT_EQ(nullptr, other.service_proxy());
+        NotificationEventData& self{ target };
+        target = std::move(self);
+        EXPECT_TRUE(same(target, ResultType::RequestBusy, 13u, 23u));
     });
 }

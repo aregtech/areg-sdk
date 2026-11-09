@@ -21,6 +21,7 @@
 #include "units/GUnitTest.hpp"
 #include "areg/base/SocketAccepted.hpp"
 #include "areg/base/SocketDefs.hpp"
+#include "areg/base/SocketMultiplexer.hpp"
 #include "areg/base/String.hpp"
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/ipc/ClientConnection.hpp"
@@ -31,6 +32,7 @@
 
 #include <algorithm>
 #include <mutex>
+#include <thread>
 #include <random>
 #include <vector>
 
@@ -204,6 +206,42 @@ TEST(ServiceCommConnectionTest, accepted_client_is_found_by_cookie_and_handed_ba
     EXPECT_EQ(listening.released.cookies().front(), cookie);
     EXPECT_FALSE(listening.server.cookie_exist(cookie));
     EXPECT_FALSE(listening.server.handle_exist(accepted.handle()));
+}
+
+// Reproduces the defect: closing a connection from a thread that does not own the multiplexer unregistered the socket there.
+TEST(ServiceCommConnectionTest, connection_closed_by_another_thread_stays_registered_until_its_owner_releases_it)
+{
+    Listening listening;
+    ASSERT_TRUE(listening.open());
+    for (const bool byCookie : { true, false })
+    {
+        SCOPED_TRACE(byCookie);
+        Client client(listening.port);
+        ASSERT_TRUE(client.connect());
+        areg::SocketAccepted accepted{ listening.take() };
+        ASSERT_TRUE(accepted.is_valid());
+        ASSERT_TRUE(listening.server.accept_connection(accepted, listening.released));
+        const ITEM_ID cookie{ listening.server.cookie(accepted) };
+        const SOCKETHANDLE handle{ accepted.handle() };
+        areg::SocketMultiplexer & mux{ listening.server.multiplexer() };
+        ASSERT_TRUE(mux.is_registered(handle));
+
+        std::thread closer([&listening, &accepted, cookie, byCookie]()
+        {
+            if (byCookie)
+                listening.server.close_connection(cookie);
+            else
+                listening.server.close_connection(accepted);
+        });
+        closer.join();
+
+        EXPECT_FALSE(listening.server.cookie_exist(cookie));
+        ASSERT_FALSE(listening.released.cookies().empty());
+        EXPECT_EQ(listening.released.cookies().back(), cookie);
+        EXPECT_TRUE(mux.is_registered(handle));
+        EXPECT_TRUE(mux.unregister_socket(handle));
+        EXPECT_FALSE(mux.is_registered(handle));
+    }
 }
 
 // An accepted client can be moved to another owner, which gets the socket when it is closed.

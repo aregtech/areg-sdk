@@ -117,6 +117,38 @@ TEST(LogCollectorApplicationTest, log_target_option_accepts_only_known_targets)
     );
 }
 
+TEST(LogCollectorApplicationTest, log_target_option_without_a_target_is_refused)
+{
+    AREG_EXPECT_IN_CHILD(
+        set_terminal();
+        testing::internal::CaptureStdout();
+        const bool parsed{ parse(COLLECTOR, {"--log"}) };
+        const std::string message{ testing::internal::GetCapturedStdout() };
+        AREG_CHILD_CHECK(!parsed);
+        AREG_CHILD_CHECK(message.find("requires a target") != std::string::npos);
+        AREG_CHILD_CHECK(parse(COLLECTOR, {"--log=nodb"}));
+    );
+}
+
+TEST(LogCollectorApplicationTest, resized_terminal_is_redrawn_with_the_title_and_prompt)
+{
+#if defined(_WIN32)
+    GTEST_SKIP() << "the console of a Windows test is a pipe";
+#else
+    AREG_EXPECT_IN_CHILD(
+        PrivateConfig config(COLLECTOR);
+        ConsoleSession console(config);
+        console.command("-h", "Usage of Areg Log collector");
+        resize_terminal(TerminalSize{ 100, 30 });
+        console.expect_gone("Usage of Areg Log collector");
+        AREG_CHILD_CHECK(console.wait_screen([](const VtScreen& screen)
+            { return screen.row(0).rfind("Areg Log Collector console application", 0) == 0; }));
+        console.command("--instances", "There are no connected instances");
+        console.quit();
+    );
+#endif
+}
+
 TEST(LogCollectorApplicationTest, command_line_help_is_plain_text)
 {
     AREG_EXPECT_IN_CHILD(

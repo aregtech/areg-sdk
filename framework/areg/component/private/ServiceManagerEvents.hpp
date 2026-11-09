@@ -260,6 +260,11 @@ public:
     inline OutStream & write_stream();
 
     /**
+     * \brief   Returns true if the data was completely written.
+     **/
+    inline bool is_valid() const noexcept;
+
+    /**
      * \brief   Returns the service manager command.
      **/
     inline ServiceManagerEventData::ServiceManagerCommand command() const;
@@ -319,6 +324,11 @@ inline ServiceManagerEventData & ServiceManagerEventData::operator = ( ServiceMa
     mStream = std::move(source.mStream);
 
     return (*this);
+}
+
+inline bool ServiceManagerEventData::is_valid() const noexcept
+{
+    return mStream.is_valid();
 }
 
 inline const InStream & ServiceManagerEventData::read_stream() const

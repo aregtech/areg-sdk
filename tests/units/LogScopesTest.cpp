@@ -1181,4 +1181,25 @@ TEST(LoggingCoreTest, controller_stop_resume_restores_saved_and_newly_configured
     EXPECT_EQ(first.priority(), static_cast<uint32_t>(areg::LogPriority::PrioNotset));
 }
 
-#endif
+// A node whose leaves share its priority, with a deeper child node of the same priority, is grouped whole.
+TEST(LoggingCoreTest, grouping_removes_deeper_nodes_of_the_grouped_priority)
+{
+    constexpr uint32_t DEBUG_PRIO{ static_cast<uint32_t>(areg::LogPriority::PrioDebug) };
+    areg::ScopeRoot root;
+    for (const char* name : { "grp.first", "grp.second", "grp.inner.leaf", "grp.inner.deep.last" })
+    {
+        areg::String scope{ name };
+        EXPECT_GT(root.add_child_recursive(scope, DEBUG_PRIO), 0u);
+    }
+
+    ASSERT_EQ(root.nodes().size(), 1u);
+    EXPECT_GT(root.group_recursive(), 0u);
+    ASSERT_EQ(root.nodes().size(), 1u);
+    const auto& group{ root.nodes()[0u] };
+    EXPECT_EQ(group.node_name(), "grp");
+    EXPECT_TRUE(group.leafs().is_empty());
+    EXPECT_TRUE(group.nodes().is_empty());
+    EXPECT_EQ(group.priority(), DEBUG_PRIO);
+}
+
+#endif // AREG_LOGGING

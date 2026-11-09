@@ -709,10 +709,10 @@ areg::MessageEnvelope LogCollector::_create_scope_update_message(const String& s
         {
             const PropertyKey& key{ prop.key() };
             ITEM_ID target{ key.is_all_modules() ? areg::COOKIE_ANY : key.module().to_uint32() };
-            if (target >= areg::COOKIE_ANY)
+            const uint32_t scopePrio{ prop.value().identifier(areg::LogScopePriorityIndentifiers) };
+            if ((target >= areg::COOKIE_ANY) && (scopePrio != areg::Identifier::BAD_IDENTIFIER_VALUE))
             {
                 String scopeName{ key.position() };
-                uint32_t scopePrio{ prop.value().identifier(areg::LogScopePriorityIndentifiers) };
                 result = areg::message_update_scope(areg::COOKIE_LOGGER, target, scopeName, areg::LOG_SCOPE_ID_NONE, scopePrio);
                 result.set_target(static_cast<uint32_t>(target));
             }

@@ -36,3 +36,9 @@ const ExitEvent & ExitEvent::exit_event() noexcept
 }
 
 } // namespace areg
+
+namespace
+{
+    //!< Builds the exit event when the library loads, before any thread can need it.
+    [[maybe_unused]] const bool _exitEventBuilt{ areg::ExitEvent::exit_event().is_valid() };
+}

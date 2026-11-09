@@ -10,9 +10,12 @@
 
 #include "units/GUnitTest.hpp"
 #include "units/ChildProcess.hpp"
+#include "areg/appbase/Application.hpp"
 #include "areg/base/MessageEnvelope.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/String.hpp"
+#include "areg/base/SocketClient.hpp"
+#include "areg/ipc/RemoteMessageHandler.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
 #include "areglogger/client/LogObserverApi.h"
 #include "areglogger/client/private/LoggerClient.hpp"
@@ -23,6 +26,7 @@
 #include <fstream>
 #include <string>
 #include <system_error>
+#include <thread>
 #include <vector>
 
 #if AREG_LOGGING
@@ -49,6 +53,17 @@ namespace
         std::vector<ITEM_ID>        disconnected;   //!< Every disconnected cookie.
         std::vector<ScopeInfo>      scopes;         //!< Every registered scope.
         uint32_t                    scopeCalls{ 0u };   //!< Calls of the scope callback.
+        uint32_t                    configured{ 0u };   //!< Calls of the observer configuration callback.
+        std::string                 address;            //!< The address of the last configuration.
+        uint16_t                    port{ 0u };         //!< The port of the last configuration.
+        uint32_t                    dbConfigured{ 0u }; //!< Calls of the database configuration callback.
+        std::string                 dbName;             //!< The database name of the last configuration.
+        std::vector<std::string>    texts;              //!< The text of every log message.
+        uint32_t                    rawLogs{ 0u };      //!< Calls of the raw log message callback.
+        std::vector<ITEM_ID>        states;             //!< The cookie and the state of every source state change.
+        std::vector<ITEM_ID>        restored;           //!< Every cookie of a restored configuration.
+        uint32_t                    updateCalls{ 0u };  //!< Calls of the scope update callback.
+        std::vector<std::string>    updated;            //!< Every updated scope.
     };
 
     Seen    _seen;
@@ -75,12 +90,68 @@ namespace
         }
     }
 
+    void on_configured(bool /*isEnabled*/, const char * address, uint16_t port)
+    {
+        ++_seen.configured;
+        _seen.address = address != nullptr ? address : "";
+        _seen.port = port;
+    }
+
+    void on_db_configured(bool /*isEnabled*/, const char * dbName, const char * /*dbLocation*/, const char * /*dbUser*/)
+    {
+        ++_seen.dbConfigured;
+        _seen.dbName = dbName != nullptr ? dbName : "";
+    }
+
+    void on_log(const LogRecord * record)
+    {
+        _seen.texts.push_back(record->msgLogText);
+    }
+
+    void on_raw_log(const unsigned char * buffer, uint32_t size)
+    {
+        AREG_CHILD_CHECK((buffer != nullptr) && (size >= areg::log_entry_head()));
+        ++_seen.rawLogs;
+    }
+
+    void on_source_state(ITEM_ID cookie, unsigned char state, ITEM_ID byObserver)
+    {
+        _seen.states.insert(_seen.states.end(), { cookie, static_cast<ITEM_ID>(state), byObserver });
+    }
+
+    void on_restored(ITEM_ID cookie)
+    {
+        _seen.restored.push_back(cookie);
+    }
+
+    void on_updated(ITEM_ID /*cookie*/, const ScopeInfo * scopes, uint32_t count)
+    {
+        ++_seen.updateCalls;
+        for (uint32_t i = 0u; i < count; ++i)
+        {
+            _seen.updated.push_back(scopes[i].lsName);
+        }
+    }
+
     ObserverEvents make_events()
     {
         ObserverEvents events{ };
         events.evtInstConnected     = &on_connected;
         events.evtInstDisconnected  = &on_disconnected;
         events.evtLogRegisterScopes = &on_scopes;
+        events.evtObserverConfigured = &on_configured;
+        events.evtLogDbConfigured   = &on_db_configured;
+        return events;
+    }
+
+    //!< Returns the events with every callback the message processor reaches.
+    ObserverEvents make_all_events()
+    {
+        ObserverEvents events{ make_events() };
+        events.evtLogMessage        = &on_log;
+        events.evtLogSourceState    = &on_source_state;
+        events.evtLogConfigRestored = &on_restored;
+        events.evtLogUpdatedScopes  = &on_updated;
         return events;
     }
 
@@ -88,8 +159,11 @@ namespace
     class ConfiguredObserver
     {
     public:
-        ConfiguredObserver()
+        //!< Writes the configuration with the database engine and the log collector connection enabled or not.
+        //!< With 'setupFirst', the application runs its own setup() with the same file before the observer.
+        explicit ConfiguredObserver(const char * engine = "sqlite3", bool collectorEnabled = true, uint16_t port = 8282u, bool setupFirst = false)
             : mDir(fs::temp_directory_path() / ("areg-log-observer-api-" + std::to_string(areg::Process::instance().id())))
+            , mSetup(setupFirst)
         {
             std::error_code error;
             fs::create_directories(mDir, error);
@@ -98,16 +172,22 @@ namespace
             file << "log::*::target = db\n"
                  << "log::*::enable = true\n"
                  << "log::*::enable::db = true\n"
-                 << "log::*::db::engine = sqlite3\n"
+                 << "log::*::db::engine = " << engine << "\n"
                  << "log::*::db::name = " << DB_NAME << "\n"
                  << "log::*::db::location = " << mDir.generic_string() << "\n"
                  << "logger::*::service = logcollector\n"
                  << "logger::*::connect = tcpip\n"
-                 << "logger::*::enable::tcpip = true\n"
+                 << "logger::*::enable::tcpip = " << (collectorEnabled ? "true" : "false") << "\n"
                  << "logger::*::address::tcpip = " << ADDRESS << "\n"
-                 << "logger::*::port::tcpip = 8282\n";
+                 << "logger::*::port::tcpip = " << port << "\n";
             file.close();
             AREG_CHILD_CHECK(file.good());
+
+            if (mSetup)
+            {
+                areg::Application::setup(false, true, false, true, false, config.generic_string().c_str());
+                AREG_CHILD_CHECK(areg::Application::is_configured());
+            }
 
             ObserverEvents events{ make_events() };
             AREG_CHILD_CHECK(log_observer_initialize(&events, config.generic_string().c_str()));
@@ -116,6 +196,8 @@ namespace
         ~ConfiguredObserver()
         {
             log_observer_release();
+            if (mSetup)
+                areg::Application::release();
             std::error_code error;
             fs::remove_all(mDir, error);
         }
@@ -128,6 +210,7 @@ namespace
 
     private:
         const fs::path  mDir;   //!< The private directory.
+        const bool      mSetup; //!< True if the application ran its own setup() first.
     };
 
     //!< Checks every way to call a getter of the text.
@@ -227,12 +310,102 @@ namespace
         processor.notify_connected_clients(connected_message({ make_instance(FIRST), make_instance(SECOND), make_instance(THIRD) }));
         AREG_CHILD_CHECK(_seen.connected.size() == 3u);
     }
+
+    //!< Returns the notification of the collector about the state of the connection of the observer.
+    areg::MessageEnvelope connection_message(ITEM_ID cookie, areg::ServiceConnectionState state)
+    {
+        static constexpr areg::EventHeader header{ areg::message_notify_instances() };
+        areg::MessageEnvelope message;
+        AREG_CHILD_CHECK(message.init_envelope(header, 64u) != nullptr);
+        message << cookie;
+        message << state;
+        message.move_to_begin();
+        return message;
+    }
+
+    //!< Returns the notification that the source changed its state on request of the observer.
+    areg::MessageEnvelope source_state_message(ITEM_ID source, uint8_t state, ITEM_ID byObserver)
+    {
+        static constexpr areg::EventHeader header{ areg::message_notify_instances() };
+        areg::MessageEnvelope message;
+        AREG_CHILD_CHECK(message.init_envelope(header, 64u) != nullptr);
+        message << source;
+        message << state;
+        message << byObserver;
+        message.move_to_begin();
+        return message;
+    }
+
+    //!< Returns the message with no data, sent by the source.
+    areg::MessageEnvelope empty_message(ITEM_ID source)
+    {
+        static constexpr areg::EventHeader header{ areg::message_notify_instances() };
+        areg::MessageEnvelope message;
+        AREG_CHILD_CHECK(message.init_envelope(header, 64u) != nullptr);
+        message.set_source(static_cast<uint32_t>(source));
+        message.move_to_begin();
+        return message;
+    }
+
+    using StateText = std::pair<areg::ServiceConnectionState, std::string>;
+
+    //!< Returns every state of the connection with the text the observer logs for it.
+    const std::vector<StateText> & connection_texts()
+    {
+        static const std::vector<StateText> _texts
+        {
+              { areg::ServiceConnectionState::Connected     , "Log observer connected to log collector service." }
+            , { areg::ServiceConnectionState::Pending       , "The connection to the log collector service is pending." }
+            , { areg::ServiceConnectionState::ConnectionLost, "The connection to the log collector service is lost." }
+            , { areg::ServiceConnectionState::Disconnected  , "Log observer disconnected from log collector service." }
+            , { areg::ServiceConnectionState::Failed        , "Failed to connect to the log collector service." }
+            , { areg::ServiceConnectionState::Rejected      , "The connection to the log collector service is rejected." }
+            , { areg::ServiceConnectionState::Shutdown      , "The log collector service is shutting down." }
+            , { areg::ServiceConnectionState::Unknown       , "Undefined log collector service connection event..." }
+        };
+
+        return _texts;
+    }
+
+    //!< Returns the remote log message of the source with the text.
+    areg::MessageEnvelope log_message(ITEM_ID source, const char * text)
+    {
+        areg::LogEntry entry{ };
+        entry.logMsgType     = areg::LogMessageType::MessageText;
+        entry.logMessagePrio = areg::LogPriority::PrioDebug;
+        entry.logSource      = source;
+        entry.logCookie      = source;
+        entry.logMessageLen  = static_cast<uint32_t>(std::strlen(text));
+        areg::String::format_string(entry.logMessage, static_cast<int32_t>(areg::LOG_MSG_SIZE), "%s", text);
+        return areg::create_log_message(entry, areg::LogDataType::Remote, source);
+    }
 }
 
 /**
  * Reproduces the defect: the five path and name getters read the size of the buffer the wrong way round.
  * A buffer that holds the text stayed empty, and a smaller one received a part of it.
  **/
+TEST(LogObserverApiTest, initialize_reports_the_configuration_once)
+{
+    AREG_EXPECT_IN_CHILD(
+        ConfiguredObserver observer;
+        AREG_CHILD_CHECK(_seen.configured == 1u);
+        AREG_CHILD_CHECK((_seen.address == ADDRESS) && (_seen.port == 8282u));
+        AREG_CHILD_CHECK((_seen.dbConfigured == 1u) && (_seen.dbName == DB_NAME));
+    );
+}
+
+// Reproduces the defect: an observer initialized after the application's own setup() never reported the configuration.
+TEST(LogObserverApiTest, initialize_after_application_setup_still_reports_the_configuration_once)
+{
+    AREG_EXPECT_IN_CHILD(
+        ConfiguredObserver observer("sqlite3", true, 8282u, true);
+        AREG_CHILD_CHECK(_seen.configured == 1u);
+        AREG_CHILD_CHECK((_seen.address == ADDRESS) && (_seen.port == 8282u));
+        AREG_CHILD_CHECK((_seen.dbConfigured == 1u) && (_seen.dbName == DB_NAME));
+    );
+}
+
 TEST(LogObserverApiTest, path_getters_fill_only_a_buffer_that_holds_the_text)
 {
     AREG_EXPECT_IN_CHILD(
@@ -368,6 +541,48 @@ TEST(LogObserverApiTest, connected_instance_names_are_always_terminated)
 }
 
 /**
+ * Reproduces the defect: the receive thread read the pause flag without synchronization while
+ * another thread changed it. A paused observer drops the log and a resumed one delivers it.
+ **/
+TEST(LogObserverApiTest, pause_changes_while_log_messages_arrive)
+{
+    AREG_EXPECT_IN_CHILD(
+        constexpr uint32_t ROUNDS{ 500u };
+        ObserverEvents events{ make_all_events() };
+        areg::logger::LoggerClient & client{ areg::logger::LoggerClient::instance() };
+        client.set_callbacks(&events);
+        areg::SocketClient socket(areg::String(ADDRESS), 8383u);
+        AREG_CHILD_CHECK(socket.create_fd());
+        // Converts to the inaccessible base class that the receive thread calls.
+        areg::RemoteMessageHandler & handler{ (areg::RemoteMessageHandler &)client };
+        areg::MessageEnvelope entry{ log_message(FIRST, "text") };
+
+        std::thread toggle([&client]() {
+            for (uint32_t i = 0u; i < ROUNDS; ++i)
+            {
+                client.set_paused((i % 2u) == 0u);
+            }
+        });
+
+        for (uint32_t i = 0u; i < ROUNDS; ++i)
+        {
+            handler.process_received_message(entry, socket);
+        }
+
+        toggle.join();
+        client.set_paused(true);
+        const std::size_t delivered{ _seen.texts.size() };
+        handler.process_received_message(entry, socket);
+        AREG_CHILD_CHECK(_seen.texts.size() == delivered);
+
+        client.set_paused(false);
+        handler.process_received_message(entry, socket);
+        AREG_CHILD_CHECK(_seen.texts.size() == delivered + 1u);
+        client.set_callbacks(nullptr);
+    );
+}
+
+/**
  * Reproduces the defect: a scope too long for the field of ScopeInfo was copied without its
  * null-terminated character, so the caller read past the field.
  **/
@@ -426,6 +641,252 @@ TEST(LogObserverApiTest, scope_registration_keeps_an_honest_list)
         processor.notify_log_register_scopes(scopes_message(3u, { "a", "b", "c" }));
         AREG_CHILD_CHECK(_seen.scopeCalls == 2u);
         AREG_CHILD_CHECK(_seen.scopes.size() == 3u);
+    );
+}
+
+/**
+ * Every state of the connection that the collector reports reaches the observer as a log message with its own text.
+ **/
+TEST(LogObserverApiTest, connection_states_reach_the_observer_as_log_texts)
+{
+    AREG_EXPECT_IN_CHILD(
+        ObserverEvents events{ make_all_events() };
+        areg::logger::LoggerClient::instance().set_callbacks(&events);
+        areg::logger::ObserverMessageProcessor processor(areg::logger::LoggerClient::instance());
+
+        const std::vector<StateText> & expected{ connection_texts() };
+
+        for (const auto & entry : expected)
+        {
+            processor.notify_service_connection(connection_message(FIRST, entry.first));
+        }
+
+        AREG_CHILD_CHECK(_seen.texts.size() == expected.size());
+        for (uint32_t i = 0u; i < static_cast<uint32_t>(expected.size()); ++i)
+        {
+            AREG_CHILD_CHECK(_seen.texts[i] == expected[i].second);
+        }
+    );
+}
+
+/**
+ * Without callbacks the observer still tracks the sources: a source connected then is reported when it disconnects later.
+ **/
+TEST(LogObserverApiTest, without_callbacks_the_sources_are_still_tracked)
+{
+    AREG_EXPECT_IN_CHILD(
+        areg::logger::LoggerClient & client{ areg::logger::LoggerClient::instance() };
+        client.set_callbacks(nullptr);
+        areg::logger::ObserverMessageProcessor processor(client);
+
+        processor.notify_connected_clients(connected_message({ make_instance(FIRST), make_instance(SECOND) }));
+        processor.notify_log_register_scopes(scopes_message(1u, { "scope_one" }));
+        processor.notify_log_update_scopes(scopes_message(1u, { "scope_one" }));
+        processor.notify_log_source_state(source_state_message(FIRST, static_cast<uint8_t>(areg::LogSourceState::Paused), SECOND));
+        processor.notify_log_configuration_restored(empty_message(FIRST));
+        processor.notify_log_message(log_message(FIRST, "unseen"));
+        processor.notify_connected_clients(disconnected_message({ SECOND }));
+
+        ObserverEvents events{ make_all_events() };
+        client.set_callbacks(&events);
+        AREG_CHILD_CHECK(_seen.connected.empty() && _seen.scopes.empty() && _seen.texts.empty());
+        AREG_CHILD_CHECK(_seen.states.empty() && _seen.restored.empty() && (_seen.updateCalls == 0u));
+
+        processor.notify_connected_clients(disconnected_message({ FIRST, SECOND }));
+        AREG_CHILD_CHECK(_seen.disconnected == std::vector<ITEM_ID>({ FIRST }));
+    );
+}
+
+/**
+ * A source state reaches the observer only for a known source cookie and a state a source can take.
+ **/
+TEST(LogObserverApiTest, source_state_is_reported_only_when_valid)
+{
+    AREG_EXPECT_IN_CHILD(
+        ObserverEvents events{ make_all_events() };
+        areg::logger::LoggerClient::instance().set_callbacks(&events);
+        areg::logger::ObserverMessageProcessor processor(areg::logger::LoggerClient::instance());
+
+        processor.notify_log_source_state(source_state_message(areg::COOKIE_UNKNOWN, static_cast<uint8_t>(areg::LogSourceState::Active), SECOND));
+        processor.notify_log_source_state(source_state_message(FIRST, 200u, SECOND));
+        processor.notify_log_source_state(source_state_message(FIRST, static_cast<uint8_t>(areg::LogSourceState::Undefined), SECOND));
+        AREG_CHILD_CHECK(_seen.states.empty());
+
+        processor.notify_log_source_state(source_state_message(FIRST, static_cast<uint8_t>(areg::LogSourceState::Stopped), SECOND));
+        AREG_CHILD_CHECK(_seen.states == std::vector<ITEM_ID>({ FIRST, static_cast<ITEM_ID>(areg::LogSourceState::Stopped), SECOND }));
+
+        events.evtLogSourceState = nullptr;
+        processor.notify_log_source_state(source_state_message(FIRST, static_cast<uint8_t>(areg::LogSourceState::Active), SECOND));
+        AREG_CHILD_CHECK(_seen.states.size() == 3u);
+    );
+}
+
+/**
+ * A restored configuration is reported with the cookie of the source, and never for an unknown cookie.
+ **/
+TEST(LogObserverApiTest, restored_configuration_is_reported_with_the_source_cookie)
+{
+    AREG_EXPECT_IN_CHILD(
+        ObserverEvents events{ make_all_events() };
+        areg::logger::LoggerClient::instance().set_callbacks(&events);
+        areg::logger::ObserverMessageProcessor processor(areg::logger::LoggerClient::instance());
+
+        processor.notify_log_configuration_restored(empty_message(areg::COOKIE_UNKNOWN));
+        AREG_CHILD_CHECK(_seen.restored.empty());
+
+        processor.notify_log_configuration_restored(empty_message(THIRD));
+        AREG_CHILD_CHECK(_seen.restored == std::vector<ITEM_ID>({ THIRD }));
+
+        events.evtLogConfigRestored = nullptr;
+        processor.notify_log_configuration_restored(empty_message(FIRST));
+        AREG_CHILD_CHECK(_seen.restored == std::vector<ITEM_ID>({ THIRD }));
+    );
+}
+
+/**
+ * Updated scope priorities reach their own callback, not the callback of the registration.
+ **/
+TEST(LogObserverApiTest, updated_scopes_reach_the_update_callback)
+{
+    AREG_EXPECT_IN_CHILD(
+        ObserverEvents events{ make_all_events() };
+        areg::logger::LoggerClient::instance().set_callbacks(&events);
+        areg::logger::ObserverMessageProcessor processor(areg::logger::LoggerClient::instance());
+
+        processor.notify_log_update_scopes(scopes_message(2u, { "scope_a", "scope_b" }));
+        AREG_CHILD_CHECK(_seen.updateCalls == 1u);
+        AREG_CHILD_CHECK(_seen.updated == std::vector<std::string>({ "scope_a", "scope_b" }));
+        AREG_CHILD_CHECK(_seen.scopeCalls == 0u);
+
+        processor.notify_log_update_scopes(scopes_message(0u, { }));
+        AREG_CHILD_CHECK(_seen.updateCalls == 2u);
+        AREG_CHILD_CHECK(_seen.updated.size() == 2u);
+    );
+}
+
+/**
+ * A log message shorter than its header is dropped: no callback, and no log ID.
+ **/
+TEST(LogObserverApiTest, truncated_log_message_is_dropped)
+{
+    AREG_EXPECT_IN_CHILD(
+        ObserverEvents events{ make_all_events() };
+        areg::logger::LoggerClient::instance().set_callbacks(&events);
+        areg::logger::ObserverMessageProcessor processor(areg::logger::LoggerClient::instance());
+
+        AREG_CHILD_CHECK(processor.notify_log_message(empty_message(FIRST)) == 0u);
+        AREG_CHILD_CHECK(_seen.texts.empty());
+
+        processor.notify_log_message(log_message(FIRST, "delivered"));
+        AREG_CHILD_CHECK(_seen.texts == std::vector<std::string>({ "delivered" }));
+    );
+}
+
+/**
+ * Without the record callback a log message reaches the raw callback, which receives the whole entry.
+ **/
+TEST(LogObserverApiTest, raw_callback_receives_the_log_without_the_record_callback)
+{
+    AREG_EXPECT_IN_CHILD(
+        ObserverEvents events{ make_all_events() };
+        events.evtLogMessage   = nullptr;
+        events.evtLogMessageEx = &on_raw_log;
+        areg::logger::LoggerClient::instance().set_callbacks(&events);
+        areg::logger::ObserverMessageProcessor processor(areg::logger::LoggerClient::instance());
+
+        processor.notify_log_message(log_message(FIRST, "raw"));
+        AREG_CHILD_CHECK(_seen.rawLogs == 1u);
+        AREG_CHILD_CHECK(_seen.texts.empty());
+    );
+}
+
+/**
+ * A configuration update before the observer is initialized is refused and changes nothing.
+ **/
+TEST(LogObserverApiTest, configuration_update_before_initialize_is_refused)
+{
+    AREG_EXPECT_IN_CHILD(
+        const std::string dbPath{ (fs::temp_directory_path() / "areg-log-observer-refused.sqlog").generic_string() };
+        AREG_CHILD_CHECK(log_observer_config_update(ADDRESS, 8383u, dbPath.c_str(), false) == false);
+
+        ConfiguredObserver observer;
+        AREG_CHILD_CHECK(log_observer_config_logger_port() == 8282u);
+        AREG_CHILD_CHECK(areg::logger::LoggerClient::instance().config_database_name() == DB_NAME);
+    );
+}
+
+/**
+ * A disabled connection to the collector is reported, and an update still sets the collector.
+ **/
+TEST(LogObserverApiTest, disabled_collector_connection_is_reported_and_can_be_updated)
+{
+    AREG_EXPECT_IN_CHILD(
+        ConfiguredObserver observer("sqlite3", false);
+        AREG_CHILD_CHECK(log_observer_config_logger_enabled() == false);
+        AREG_CHILD_CHECK(log_observer_config_update(ADDRESS, 8383u, observer.path_of("other.sqlog").c_str(), false));
+        AREG_CHILD_CHECK(log_observer_config_logger_port() == 8383u);
+        AREG_CHILD_CHECK(areg::logger::LoggerClient::instance().config_database_name() == "other.sqlog");
+    );
+}
+
+/**
+ * With an unknown database engine the database settings are empty and cannot be changed.
+ **/
+TEST(LogObserverApiTest, unknown_database_engine_disables_the_database_settings)
+{
+    AREG_EXPECT_IN_CHILD(
+        ConfiguredObserver observer("unknown-engine");
+        areg::logger::LoggerClient & client{ areg::logger::LoggerClient::instance() };
+        AREG_CHILD_CHECK(client.is_sqlite_engine() == false);
+        AREG_CHILD_CHECK(client.config_database_name().is_empty());
+        AREG_CHILD_CHECK(client.config_database_path().is_empty());
+        AREG_CHILD_CHECK(client.config_database_location().is_empty());
+        AREG_CHILD_CHECK(client.set_config_database_name("renamed.sqlog") == false);
+        AREG_CHILD_CHECK(client.set_config_database_location(observer.path_of("elsewhere").c_str()) == false);
+        AREG_CHILD_CHECK(client.set_config_database_path(observer.path_of("other.sqlog").c_str(), true) == false);
+        AREG_CHILD_CHECK(log_observer_config_update(ADDRESS, 8383u, observer.path_of("other.sqlog").c_str(), false) == false);
+        AREG_CHILD_CHECK(client.config_database_name().is_empty());
+    );
+}
+
+/**
+ * A configuration update that asks to save it needs a connection to the collector; the new settings stay.
+ **/
+TEST(LogObserverApiTest, configuration_update_with_save_fails_without_a_connection)
+{
+    AREG_EXPECT_IN_CHILD(
+        ConfiguredObserver observer;
+        areg::logger::LoggerClient & client{ areg::logger::LoggerClient::instance() };
+        const std::string dbPath{ observer.path_of("updated.sqlog") };
+        AREG_CHILD_CHECK(log_observer_config_update(ADDRESS, 8383u, dbPath.c_str(), true) == false);
+        AREG_CHILD_CHECK(client.config_logger_port() == 8383u);
+        AREG_CHILD_CHECK(client.config_database_name() == "updated.sqlog");
+
+        AREG_CHILD_CHECK(log_observer_config_update(nullptr, areg::InvalidPort, dbPath.c_str(), false));
+        AREG_CHILD_CHECK(client.config_logger_port() == 8383u);
+        AREG_CHILD_CHECK(client.config_logger_address() == ADDRESS);
+    );
+}
+
+/**
+ * A missing configuration file starts the observer with the default configuration: the default
+ * collector port and no database.
+ **/
+TEST(LogObserverApiTest, missing_configuration_file_uses_the_defaults)
+{
+    AREG_EXPECT_IN_CHILD(
+        const fs::path missing{ fs::temp_directory_path() / ("areg-log-observer-missing-" + std::to_string(areg::Process::instance().id()) + ".init") };
+        ObserverEvents events{ make_events() };
+        AREG_CHILD_CHECK(log_observer_initialize(&events, missing.generic_string().c_str()));
+        AREG_CHILD_CHECK(log_observer_is_initialized());
+
+        areg::logger::LoggerClient & client{ areg::logger::LoggerClient::instance() };
+        AREG_CHILD_CHECK(client.config_logger_port() == areg::DEFAULT_LOGGER_PORT);
+        AREG_CHILD_CHECK(client.config_logger_address().is_empty() == false);
+        AREG_CHILD_CHECK(client.is_sqlite_engine() == false);
+        AREG_CHILD_CHECK(fs::exists(missing) == false);
+        log_observer_release();
+        AREG_CHILD_CHECK(log_observer_is_initialized() == false);
     );
 }
 

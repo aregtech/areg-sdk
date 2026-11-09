@@ -49,32 +49,4 @@ void EventStack::remove_all_events() noexcept
     mValueList.clear();
 }
 
-uint32_t EventStack::delete_matching(uint32_t eventClassId) noexcept
-{
-    auto it = mValueList.begin();
-    while (it != mValueList.end())
-    {
-        if ((it->event_priority() != areg::EventPriority::ExitPrio) && (eventClassId == it->event_id()))
-            it = mValueList.erase(it);
-        else
-            ++it;
-    }
-
-    return static_cast<uint32_t>(mValueList.size());
-}
-
-uint32_t EventStack::delete_except(uint32_t eventClassId) noexcept
-{
-    auto it = mValueList.begin();
-    while (it != mValueList.end())
-    {
-        if ((it->event_priority() != areg::EventPriority::ExitPrio) && (eventClassId != it->event_id()))
-            it = mValueList.erase(it);
-        else
-            ++it;
-    }
-
-    return static_cast<uint32_t>(mValueList.size());
-}
-
 } // namespace areg

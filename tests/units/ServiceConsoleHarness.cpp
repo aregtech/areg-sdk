@@ -41,6 +41,18 @@ namespace service_harness
 #endif
     }
 
+    void resize_terminal(TerminalSize terminalSize)
+    {
+#if defined(_WIN32)
+        (void)terminalSize;
+#else
+        winsize size{};
+        size.ws_row = static_cast<unsigned short>(terminalSize.rows);
+        size.ws_col = static_cast<unsigned short>(terminalSize.columns);
+        AREG_CHILD_CHECK(::ioctl(descriptor(stdout), TIOCSWINSZ, &size) == 0);
+#endif
+    }
+
     void report_threads()
     {
 #if defined(__APPLE__)

@@ -104,31 +104,6 @@ public:
     [[nodiscard]]
     inline const String & role_name() const noexcept;
 
-    /**
-     * \brief   Returns true if the specified thread address is a registered worker thread.
-     * \param   threadAddress       The thread address to check.
-     **/
-    [[nodiscard]]
-    inline bool is_worker_thread( const ThreadAddress & threadAddress) const noexcept;
-
-    /**
-     * \brief   Returns true if the specified worker thread is registered in the component.
-     *
-     * \param   workerThread    The worker thread object to check.
-     * \return  Returns true if the worker thread is registered; false otherwise.
-     **/
-    [[nodiscard]]
-    bool is_worker_registered( WorkerThread & workerThread ) const noexcept;
-
-    /**
-     * \brief   Returns true if the specified thread address is the component's master thread.
-     *
-     * \param   threadAddress       The thread address to check.
-     * \return  Returns true if the thread address is the master thread; false otherwise.
-     **/
-    [[nodiscard]]
-    bool is_master_thread( const ThreadAddress & threadAddress ) const noexcept;
-
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
@@ -196,13 +171,6 @@ public:
     [[nodiscard]]
     WorkerThread * next_worker_thread( ThreadAddress & threadAddress ) noexcept;
 
-    /**
-     * \brief   Removes and returns the first worker thread from the list.
-     * \param[out] threadAddress       On output, contains the address of the removed worker thread.
-     **/
-    [[nodiscard]]
-    WorkerThread * remove_worker_thread( ThreadAddress & threadAddress ) noexcept;
-
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -254,11 +222,6 @@ inline const ComponentAddress& ComponentInfo::address() const noexcept
 inline const String& ComponentInfo::role_name() const noexcept
 {
     return mComponentAddress.role_name();
-}
-
-inline bool ComponentInfo::is_worker_thread( const ThreadAddress& threadAddress ) const noexcept
-{
-    return mWorkerThreadMap.exist(static_cast<uint32_t>(threadAddress));
 }
 
 inline WorkerThread* ComponentInfo::find_worker_thread( const ThreadAddress& threadAddress ) const noexcept

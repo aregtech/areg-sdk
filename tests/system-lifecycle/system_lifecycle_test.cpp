@@ -32,6 +32,7 @@
 #include "areg/component/EventTemplate.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/Thread.hpp"
+#include "areg/logging/LoggingDefs.hpp"
 #include "areg/logging/ScopeMessage.hpp"
 #include "examples/02_minimalipc/services/HelloServiceConsumerBase.hpp"
 #include "examples/02_minimalipc/services/HelloServiceProviderBase.hpp"
@@ -1159,6 +1160,13 @@ int main(int argc, char * argv[])
 
     const char * name{ argc > 1 ? argv[1] : "" };
     bool ok{ false };
+
+    // With AREG_TEST_LOG_CONFIG naming a configuration file, the case runs with logging started.
+    const char * logConfig{ std::getenv("AREG_TEST_LOG_CONFIG") };
+    if ((logConfig != nullptr) && (*logConfig != '\0'))
+    {
+        static_cast<void>(areg::start_logging(logConfig));
+    }
 
     // The children, ended by their failure policy.
     if (std::strcmp(name, "exit-watchdog-child") == 0)

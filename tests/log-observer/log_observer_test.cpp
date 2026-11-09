@@ -1326,6 +1326,116 @@ namespace
         return true;
     }
 
+    bool case_paused_observer_reconnects_paused()
+    {
+        Session session;
+        REQUIRE(session.open(false));
+        REQUIRE(log_observer_pause_logging(true));
+        REQUIRE(wait_for([]() -> bool { return _seen.startedFalse != 0u; }));
+
+        uint32_t connected{ 0u };
+        uint32_t startedTrue{ 0u };
+        uint32_t startedFalse{ 0u };
+        {
+            std::lock_guard<std::mutex> guard(_seen.lock);
+            connected   = _seen.connectedTrue;
+            startedTrue = _seen.startedTrue;
+            startedFalse= _seen.startedFalse;
+        }
+
+        REQUIRE(session.collector.finish());
+        REQUIRE(wait_for([startedFalse]() -> bool { return _seen.startedFalse > startedFalse; }));
+        {
+            std::lock_guard<std::mutex> guard(_seen.lock);
+            startedFalse = _seen.startedFalse;
+        }
+
+        // The observer connects again by itself and stays paused: the connection reports not started.
+        REQUIRE(start_collector(session.collector));
+        REQUIRE(wait_for([connected, startedFalse]() -> bool { return (_seen.connectedTrue > connected) && (_seen.startedFalse > startedFalse); }));
+        {
+            std::lock_guard<std::mutex> guard(_seen.lock);
+            CHECK(_seen.startedTrue == startedTrue);
+        }
+
+        CHECK(log_observer_current_state() == ObserverPaused);
+        CHECK(log_observer_is_started() == false);
+        REQUIRE(log_observer_pause_logging(false));
+        CHECK(wait_for([startedTrue]() -> bool { return _seen.startedTrue > startedTrue; }));
+        CHECK(log_observer_is_started());
+
+        stop_observer();
+        REQUIRE(session.collector.finish());
+        return true;
+    }
+
+    bool case_release_while_connected()
+    {
+        Session session;
+        REQUIRE(session.open(true));
+
+        uint32_t connectedFalse{ 0u };
+        std::size_t disconnected{ 0u };
+        {
+            std::lock_guard<std::mutex> guard(_seen.lock);
+            connectedFalse  = _seen.connectedFalse;
+            disconnected    = _seen.disconnected.size();
+        }
+
+        // The release drops the callbacks first: nothing is reported while the connection closes.
+        log_observer_release();
+        CHECK(log_observer_is_initialized() == false);
+        CHECK(log_observer_current_state() == ObserverUninitialized);
+        {
+            std::lock_guard<std::mutex> guard(_seen.lock);
+            CHECK(_seen.connectedFalse == connectedFalse);
+            CHECK(_seen.disconnected.size() == disconnected);
+        }
+
+        // The observer starts again and sees the source that stayed.
+        const std::size_t known{ [] { std::lock_guard<std::mutex> guard(_seen.lock); return _seen.instances.size(); }() };
+        REQUIRE(start_observer(false, _env.dbPath.c_str()));
+        CHECK(wait_for([known, &session]() -> bool
+            {
+                for (std::size_t i = known; i < _seen.instances.size(); ++i)
+                {
+                    if (_seen.instances[i].liCookie == session.cookie)
+                        return true;
+                }
+
+                return false;
+            }));
+
+        REQUIRE(session.close());
+        return true;
+    }
+
+    bool case_pause_before_the_connection()
+    {
+        ObserverEvents events{ make_events(false) };
+        REQUIRE(log_observer_initialize(&events, _env.observerCfg.c_str()));
+        const bool started{ log_observer_connect_logger(_env.dbPath.c_str(), "127.0.0.1", _env.port) };
+        if (started)
+        {
+            // Nothing is connected, so neither the pause nor the resume reports a started observer.
+            REQUIRE(log_observer_pause_logging(true));
+            CHECK(log_observer_current_state() == ObserverPaused);
+            CHECK(log_observer_is_started() == false);
+            REQUIRE(log_observer_pause_logging(false));
+            CHECK(log_observer_current_state() == ObserverConnected);
+            {
+                std::lock_guard<std::mutex> guard(_seen.lock);
+                CHECK(_seen.startedTrue == 0u);
+                CHECK(_seen.connectedTrue == 0u);
+            }
+        }
+
+        log_observer_disconnect_logger();
+        CHECK(log_observer_current_state() == ObserverDisconnected);
+        log_observer_release();
+        return true;
+    }
+
     bool case_raw_message_callback()
     {
         Session session;
@@ -1732,6 +1842,12 @@ int main(int argc, char * argv[])
         result = case_reconnect_and_stop();
     else if (name == "collector-restart")
         result = case_collector_restart();
+    else if (name == "paused-observer-reconnects-paused")
+        result = case_paused_observer_reconnects_paused();
+    else if (name == "release-while-connected")
+        result = case_release_while_connected();
+    else if (name == "pause-before-the-connection")
+        result = case_pause_before_the_connection();
     else if (name == "raw-message-callback")
         result = case_raw_message_callback();
     else if (name == "invalid-requests")

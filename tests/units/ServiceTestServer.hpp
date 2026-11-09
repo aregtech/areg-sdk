@@ -32,10 +32,10 @@ namespace service_test
     class TestServer final : public areg::ext::ServiceCommunicationBase
     {
     public:
-        TestServer(Policy policy, uint32_t pairs)
+        TestServer(Policy policy, uint32_t pairs, uint32_t connectTypes = static_cast<uint32_t>(areg::ConnectionType::Tcpip))
             : ServiceCommunicationBase  ( areg::COOKIE_ROUTER
                                         , areg::RemoteServiceKind::Router
-                                        , static_cast<uint32_t>(areg::ConnectionType::Tcpip)
+                                        , connectTypes
                                         , areg::SYSTEM_THREAD_STACK_BIG
                                         , areg::String("TestCommServer")
                                         , policy
