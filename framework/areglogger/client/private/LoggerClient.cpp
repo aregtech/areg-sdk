@@ -25,13 +25,14 @@
 #include "areg/logging/LogConfiguration.hpp"
 #include "areglogger/client/LogObserverApi.h"
 #include "areglogger/client/LogObserverBase.hpp"
+#include "areg/base/private/NeverDestroyed.hpp"
 
 namespace areg::logger {
 
 LoggerClient& LoggerClient::instance()
 {
-    static LoggerClient _instance;
-    return _instance;
+    static areg::NeverDestroyed<LoggerClient> _instance{ [](void * where) { ::new (where) LoggerClient(); } };
+    return _instance.object();
 }
 
 LoggerClient::LoggerClient()

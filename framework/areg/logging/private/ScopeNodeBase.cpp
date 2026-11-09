@@ -22,6 +22,7 @@
 #include "areg/persist/PersistenceDefs.hpp"
 #include "areg/logging/LogScope.hpp"
 #include "areg/logging/private/LogOptions.hpp"
+#include "areg/base/private/NeverDestroyed.hpp"
 
 #if AREG_LOGGING
 
@@ -29,8 +30,8 @@ namespace areg {
 
 ScopeNodeBase & ScopeNodeBase::invalid_node() noexcept
 {
-    static ScopeNodeBase _invalid;
-    return _invalid;
+    static NeverDestroyed<ScopeNodeBase> _invalid{ [](void * where) { ::new (where) ScopeNodeBase(); } };
+    return _invalid.object();
 }
 
 ScopeNodeBase::ScopeNodeBase()

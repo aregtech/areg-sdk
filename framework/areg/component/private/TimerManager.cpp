@@ -19,16 +19,9 @@
 
 #include "areg/component/Timer.hpp"
 #include "areg/base/UtilityDefs.hpp"
-
-#include <atomic>
+#include "areg/base/private/NeverDestroyed.hpp"
 
 namespace areg {
-
-namespace
-{
-    //!< True while the timer manager singleton exists.
-    std::atomic_bool _theManagerAlive{ false };
-}
 
 //////////////////////////////////////////////////////////////////////////
 // TimerManager class implementation
@@ -40,8 +33,8 @@ namespace
 
 TimerManager & TimerManager::instance()
 {
-    static TimerManager	_theTimerManager;
-    return _theTimerManager;
+    static NeverDestroyed<TimerManager> _theTimerManager{ [](void * where) { ::new (where) TimerManager(); } };
+    return _theTimerManager.object();
 }
 
 bool TimerManager::start_timer_manager()
@@ -87,11 +80,7 @@ bool TimerManager::start_timer(Timer &timer, const DispatcherThread & whichThrea
 
 void TimerManager::stop_timer( Timer &timer )
 {
-    // Does nothing when the timer manager singleton is already destroyed.
-    if (_theManagerAlive.load(std::memory_order_acquire))
-    {
-        instance()._unregister_timer(timer);
-    }
+    instance()._unregister_timer(timer);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -103,13 +92,11 @@ TimerManager::TimerManager()
 
     , mTimerResource( )
 {
-    _theManagerAlive.store(true, std::memory_order_release);
 }
 
 TimerManager::~TimerManager()
 {
     _remove_all_timers( );
-    _theManagerAlive.store(false, std::memory_order_release);
 }
 
 //////////////////////////////////////////////////////////////////////////

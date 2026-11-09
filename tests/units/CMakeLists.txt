@@ -96,6 +96,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     ProxyStubLifecycleTest.cpp
     StubBaseContractTest.cpp
     MultiLockTest.cpp
+    NeverDestroyedTest.cpp
     OptionParserTest.cpp
     ProcessTest.cpp
     ApplicationSetupTest.cpp

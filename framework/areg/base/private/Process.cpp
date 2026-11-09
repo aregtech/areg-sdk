@@ -17,6 +17,7 @@
 
 #include "areg/base/File.hpp"
 #include "areg/component/ServiceDefs.hpp"
+#include "areg/base/private/NeverDestroyed.hpp"
 #include <filesystem>
 #include <iostream>
 namespace areg {
@@ -27,8 +28,8 @@ namespace areg {
 
 Process & Process::instance()
 {
-    static Process _theProcess;
-    return _theProcess;
+    static NeverDestroyed<Process> _theProcess{ [](void * where) { ::new (where) Process(); } };
+    return _theProcess.object();
 }
 
 

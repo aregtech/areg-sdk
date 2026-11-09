@@ -17,6 +17,7 @@
  ************************************************************************/
 #include "areg/component/ExitEvent.hpp"
 #include "areg/base/RuntimeClassID.hpp"
+#include "areg/base/private/NeverDestroyed.hpp"
 
 namespace areg {
 
@@ -31,8 +32,8 @@ ExitEvent::ExitEvent()
 
 const ExitEvent & ExitEvent::exit_event() noexcept
 {
-    static ExitEvent  _exitEvent;
-    return _exitEvent;
+    static NeverDestroyed<ExitEvent> _exitEvent{ [](void * where) { ::new (where) ExitEvent(); } };
+    return _exitEvent.object();
 }
 
 } // namespace areg

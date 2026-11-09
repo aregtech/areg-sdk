@@ -26,6 +26,7 @@
 #include "areg/persist/ConfigManager.hpp"
 #include "aregextend/service/SystemServiceDefs.hpp"
 #include "areglogger/client/LogObserverApi.h"
+#include "areg/base/private/NeverDestroyed.hpp"
 
 #include <stdio.h>
 
@@ -147,8 +148,8 @@ const areg::ext::OptionParser::OptionSetup LogObserver::ValidOptions[ ]
 
 LogObserver & LogObserver::instance()
 {
-    static LogObserver _instance;
-    return _instance;
+    static areg::NeverDestroyed<LogObserver> _instance{ [](void * where) { ::new (where) LogObserver(); } };
+    return _instance.object();
 }
 
 areg::ext::Console::CallBack LogObserver::option_check_callback() const

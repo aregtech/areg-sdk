@@ -25,6 +25,7 @@
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/FatalError.hpp"
 #include "areg/base/Thread.hpp"
+#include "areg/base/private/NeverDestroyed.hpp"
 #include <algorithm>
 #include <new>
 #include <chrono>
@@ -364,10 +365,8 @@ int32_t SyncLockAndWaitPosix::_wait_any_new(WaitablePosix** listWaitables, int32
 
 SyncLockAndWaitPosix::SyncResourceMapIX & SyncLockAndWaitPosix::_map_sync_resources() noexcept
 {
-    // Never destroyed: waitable objects owned by other statics remove themselves from it at exit.
-    alignas(SyncResourceMapIX) static unsigned char _theStorage[sizeof(SyncResourceMapIX)];
-    static SyncResourceMapIX * const _theSyncResourceMapIX{ new (_theStorage) SyncResourceMapIX() };
-    return *_theSyncResourceMapIX;
+    static NeverDestroyed<SyncResourceMapIX> _theSyncResourceMapIX;
+    return _theSyncResourceMapIX.object();
 }
 
 int32_t SyncLockAndWaitPosix::wait_single( WaitablePosix & syncWait, uint32_t msTimeout /* = areg::WAIT_INFINITE */ )

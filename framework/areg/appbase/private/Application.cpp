@@ -26,6 +26,7 @@
 #include "areg/component/private/WatchdogManager.hpp"
 
 #include "areg/logging/private/LogManager.hpp"
+#include "areg/base/private/NeverDestroyed.hpp"
 
 #include <vector>
 #include <utility>
@@ -84,8 +85,8 @@ constexpr areg::ConfigProperty _defaultLogScopesConfig[]
 
 Application & Application::instance()
 {
-    static Application _theApplication;
-    return _theApplication;
+    static NeverDestroyed<Application> _theApplication{ [](void * where) { ::new (where) Application(); } };
+    return _theApplication.object();
 }
 
 Application::Application()

@@ -22,6 +22,7 @@
 #include "areg/base/Process.hpp"
 #include "areg/persist/ConfigManager.hpp"
 #include "areg/persist/PersistenceDefs.hpp"
+#include "areg/base/private/NeverDestroyed.hpp"
 
 #if AREG_LOGGING
 
@@ -139,27 +140,27 @@ const ScopeNodeBase & ScopeNode::make_child_node( String & scopePath, uint32_t p
     if ( scopePath.as_string()[0] == areg::SYNTAX_SCOPE_LEAF_SEPARATOR )
     {
         scopePath.substring( 1 );   // remove leading '.'
-        static ScopeLeaf _dotLeaf;
-        _dotLeaf.set_node_name( scopePath );
-        _dotLeaf.set_priority( prioStates );
+        static NeverDestroyed<ScopeLeaf> _dotLeaf;
+        _dotLeaf.object().set_node_name( scopePath );
+        _dotLeaf.object().set_priority( prioStates );
         scopePath = String::EmptyString;
-        return _dotLeaf;
+        return _dotLeaf.object();
     }
 
     String nodeName = ScopeNodeBase::extract_node_name( scopePath );
     if ( scopePath.is_empty( ) )
     {
-        static ScopeLeaf _leaf;
-        _leaf.set_node_name( nodeName );
-        _leaf.set_priority( prioStates );
-        return _leaf;
+        static NeverDestroyed<ScopeLeaf> _leaf;
+        _leaf.object().set_node_name( nodeName );
+        _leaf.object().set_priority( prioStates );
+        return _leaf.object();
     }
     else
     {
-        static ScopeNode _node;
-        _node.set_node_name( nodeName );
-        _node.set_priority( prioStates );
-        return _node;
+        static NeverDestroyed<ScopeNode> _node;
+        _node.object().set_node_name( nodeName );
+        _node.object().set_priority( prioStates );
+        return _node.object();
     }
 }
 

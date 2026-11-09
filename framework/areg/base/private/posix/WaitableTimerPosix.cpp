@@ -24,6 +24,7 @@
 #include "areg/base/private/posix/WaitableTimerPosix.hpp"
 #include "areg/base/private/posix/SyncDefsPosix.hpp"
 #include "areg/base/private/posix/SyncLockAndWaitPosix.hpp"
+#include "areg/base/private/NeverDestroyed.hpp"
 
 #include <algorithm>
 #include <limits.h>
@@ -189,9 +190,8 @@ private:
 
 TimerServicePosix & TimerServicePosix::instance() noexcept
 {
-    alignas(TimerServicePosix) static unsigned char _storage[sizeof(TimerServicePosix)];
-    static TimerServicePosix * const _service{ new (_storage) TimerServicePosix() };
-    return *_service;
+    static NeverDestroyed<TimerServicePosix> _service{ [](void * where) { ::new (where) TimerServicePosix(); } };
+    return _service.object();
 }
 
 TimerServicePosix::TimerServicePosix() noexcept

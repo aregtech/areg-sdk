@@ -19,6 +19,7 @@
 #include "areg/base/SyncPrimitives.hpp"
 
 #include "areglogger/client/private/LoggerClient.hpp"
+#include "areg/base/private/NeverDestroyed.hpp"
 
 #include <atomic>
 
@@ -46,8 +47,8 @@ namespace {
     
     LogObserverStruct& log_observer_data()
     {
-        static LogObserverStruct _theObserver;
-        return _theObserver;
+        static areg::NeverDestroyed<LogObserverStruct> _theObserver;
+        return _theObserver.object();
     }
 
     void _set_callbacks(ObserverEvents & dstCallbacks, const ObserverEvents* srcCallbacks)

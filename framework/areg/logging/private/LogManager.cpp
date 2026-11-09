@@ -24,6 +24,7 @@
 #include "areg/logging/LogDatabaseEngine.hpp"
 #include "areg/logging/LogScope.hpp"
 #include "areg/logging/private/LogMessage.hpp"
+#include "areg/base/private/NeverDestroyed.hpp"
 
 #if AREG_LOGGING
 namespace areg {
@@ -38,8 +39,8 @@ namespace areg {
 
 LogManager & LogManager::instance()
 {
-    static LogManager _log_manager;
-    return _log_manager;
+    static NeverDestroyed<LogManager> _log_manager{ [](void * where) { ::new (where) LogManager(); } };
+    return _log_manager.object();
 }
 
 void LogManager::log_message(const areg::LogEntry& logData)

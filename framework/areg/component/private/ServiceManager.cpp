@@ -21,6 +21,7 @@
 #include "areg/component/private/ServerList.hpp"
 
 #include "areg/logging/areg_log.h"
+#include "areg/base/private/NeverDestroyed.hpp"
 
 #include <cstdlib>
 #include <string_view>
@@ -58,8 +59,8 @@ AREG_IMPLEMENT_RUNTIME(ServiceManager, DispatcherThread)
 
 ServiceManager & ServiceManager::instance() noexcept
 {
-    static ServiceManager   _service_manager;
-    return _service_manager;
+    static NeverDestroyed<ServiceManager> _service_manager{ [](void * where) { ::new (where) ServiceManager(); } };
+    return _service_manager.object();
 }
 
 bool ServiceManager::_start_service_manager()

@@ -18,6 +18,7 @@
 #include "areg/component/Event.hpp"
 #include "areg/component/ExitEvent.hpp"
 #include "areg/component/ProxyBase.hpp"
+#include "areg/base/private/NeverDestroyed.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // class NullDispatcherThread declarations
@@ -64,14 +65,6 @@ class AREG_API NullDispatcherThread final   : public DispatcherThread
     friend class DispatcherThread;
 
 //////////////////////////////////////////////////////////////////////////
-// Static members
-//////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   singleton Null Dispatcher Thread. It is not valid and runnable thread.
-     **/
-    static NullDispatcherThread     sSelfNullDispatcher;
-
-//////////////////////////////////////////////////////////////////////////
 // Declare Runtime
 //////////////////////////////////////////////////////////////////////////
     /**
@@ -110,14 +103,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // NullDispatcherThread class implementation
 //////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// NullDispatcherThread class statics
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   singleton invalid Null Dispatcher Thread.
- **/
-NullDispatcherThread   NullDispatcherThread::sSelfNullDispatcher;
 
 //////////////////////////////////////////////////////////////////////////
 // Runtime information to identify NullDispatcher object
@@ -200,7 +185,8 @@ AREG_IMPLEMENT_RUNTIME(DispatcherThread, Thread)
 
 DispatcherThread & DispatcherThread::_null_dispather_thread() noexcept
 {
-    return static_cast<DispatcherThread &>(NullDispatcherThread::sSelfNullDispatcher);
+    static NeverDestroyed<NullDispatcherThread> _nullDispatcher{ [](void * where) { ::new (where) NullDispatcherThread(); } };
+    return static_cast<DispatcherThread &>(_nullDispatcher.object());
 }
 
 DispatcherThread * DispatcherThread::_find_dispatcher_thread( const UniqueNumber threadNumber ) noexcept

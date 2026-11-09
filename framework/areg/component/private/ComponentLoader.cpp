@@ -19,6 +19,7 @@
 #include "areg/component/ComponentThread.hpp"
 #include "areg/component/private/ServiceManager.hpp"
 #include "areg/base/CommonDefs.hpp"
+#include "areg/base/private/NeverDestroyed.hpp"
 
 namespace
 {
@@ -57,8 +58,8 @@ ModelDataCreator::ModelDataCreator( const areg::Model & newModel )
 //////////////////////////////////////////////////////////////////////////
 ComponentLoader & ComponentLoader::instance() noexcept
 {
-    static ComponentLoader _componentLoader;
-    return _componentLoader;
+    static NeverDestroyed<ComponentLoader> _componentLoader{ [](void * where) { ::new (where) ComponentLoader(); } };
+    return _componentLoader.object();
 }
 
 bool ComponentLoader::load_component_model( const String & modelName, bool waitComponents /*= false*/ )

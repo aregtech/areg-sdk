@@ -20,8 +20,8 @@
 #include "areg/component/ComponentThread.hpp"
 
 #include "areg/logging/areg_log.h"
+#include "areg/base/private/NeverDestroyed.hpp"
 
-#include <new>
 
 namespace areg {
 
@@ -37,10 +37,8 @@ DEF_LOG_SCOPE(areg_component_private_WatchdogManager, _process_expired_timer);
 
 WatchdogManager& WatchdogManager::instance()
 {
-    // Never destroyed: threads that end during process exit may still release their watchdogs.
-    alignas(WatchdogManager) static unsigned char _theStorage[sizeof(WatchdogManager)];
-    static WatchdogManager * const _theWatchdogManager{ new (_theStorage) WatchdogManager() };
-    return *_theWatchdogManager;
+    static NeverDestroyed<WatchdogManager> _theWatchdogManager{ [](void * where) { ::new (where) WatchdogManager(); } };
+    return _theWatchdogManager.object();
 }
 
 bool WatchdogManager::start_watchdog_manager()
