@@ -33,6 +33,7 @@
 
 #if defined(_POSIX)
     #include <arpa/inet.h>
+    #include <errno.h>
     #include <fcntl.h>
     #include <netinet/in.h>
     #include <netinet/tcp.h>
@@ -433,6 +434,24 @@ TEST_F(SocketLoopbackTest, refused_connection_can_be_retried_after_listening)
     EXPECT_TRUE(areg::is_valid_socket(accepted.value()));
     EXPECT_TRUE(client.is_valid());
     EXPECT_TRUE(client.is_alive());
+}
+
+// Reproduces the defect: the close of the socket that failed to bind replaced the error of the
+// bind, so a caller could not tell why the port was refused.
+TEST_F(SocketLoopbackTest, failed_bind_keeps_its_os_error)
+{
+    OwnedSocket listener;
+    areg::SocketAddress address;
+    ASSERT_TRUE(bind_loopback(listener, address));
+    ASSERT_EQ(areg::server_connect(address), areg::InvalidSocketHandle);
+#if defined(_WIN32)
+    EXPECT_EQ(areg::socket_last_error(), WSAEADDRINUSE);
+#elif defined(__linux__) || defined(__APPLE__)
+    EXPECT_EQ(areg::socket_last_error(), EADDRINUSE);
+#else
+    EXPECT_NE(areg::socket_last_error(), ENOTCONN);
+    EXPECT_NE(areg::socket_last_error(), 0);
+#endif
 }
 
 // A second listener cannot bind a port that is already in use.

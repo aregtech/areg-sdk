@@ -195,6 +195,16 @@ namespace areg::os {
      **/
     SOCKETHANDLE _os_accept_socket(SOCKETHANDLE serverSocket, struct sockaddr_in& acceptAddr) noexcept;
 
+    /**
+     * \brief   Returns the last socket error of the calling thread.
+     **/
+    int32_t _os_socket_last_error() noexcept;
+
+    /**
+     * \brief   Sets the last socket error of the calling thread.
+     **/
+    void _os_set_socket_last_error(int32_t error) noexcept;
+
 } // namespace areg::os
 
 namespace
@@ -748,7 +758,10 @@ AREG_API_IMPL SOCKETHANDLE areg::server_connect(const areg::SocketAddress & peer
 #endif  // _WIN32
             if (areg::RETURNED_OK != bind(result, reinterpret_cast<sockaddr *>(&serverAddr), sizeof(sockaddr_in)) )
             {
+                // Keeps the error of the bind across the close.
+                const int32_t error{ areg::os::_os_socket_last_error() };
                 areg::socket_close( result );
+                areg::os::_os_set_socket_last_error( error );
                 result = areg::InvalidSocketHandle;
             }
         }
@@ -856,6 +869,11 @@ AREG_API_IMPL void areg::socket_close(SOCKETHANDLE hSocket) noexcept
     {
         areg::os::_os_close_socket(hSocket);
     }
+}
+
+AREG_API_IMPL int32_t areg::socket_last_error() noexcept
+{
+    return areg::os::_os_socket_last_error();
 }
 
 AREG_API_IMPL bool areg::set_send_timeout(SOCKETHANDLE hSocket, uint32_t timeoutMs) noexcept

@@ -142,6 +142,12 @@ public:
         , Unreachable   //!< The peer's stack stopped answering.
     };
 
+    /**
+     * \brief   Returns the name of \a reason.
+     **/
+    [[nodiscard]]
+    static const char * reason_name(Reason reason) noexcept;
+
     //!< The backlog of one connection.
     struct Entry
     {

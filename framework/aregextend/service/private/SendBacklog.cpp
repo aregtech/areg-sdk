@@ -20,6 +20,7 @@
 #include "aregextend/service/private/SendBacklog.hpp"
 
 #include "areg/base/private/SocketLiveness.hpp"
+#include "areg/logging/areg_log.h"
 
 #include <algorithm>
 #include <chrono>
@@ -27,6 +28,8 @@
 #include <new>
 
 namespace areg::ext {
+
+DEF_LOG_SCOPE(areg_aregextend_service_SendBacklog, report_close);
 
 namespace
 {
@@ -47,11 +50,39 @@ namespace
     {
         return areg::wire_data(*message.header());
     }
+
+    //!< Logs which connection a backlog closes, why, and what was left to send.
+    void report_close([[maybe_unused]] const SendBacklog::Entry & entry, [[maybe_unused]] SendBacklog::Reason reason, [[maybe_unused]] uint64_t nowMs)
+    {
+        LOG_SCOPE(areg_aregextend_service_SendBacklog, report_close);
+        LOG_WARN( "Closing connection [ %llu ], reason [ %s ], [ %llu ] bytes not sent, no progress for [ %llu ] ms"
+                , static_cast<unsigned long long>(entry.cookie)
+                , SendBacklog::reason_name(reason)
+                , static_cast<unsigned long long>(entry.bytes)
+                , static_cast<unsigned long long>(nowMs - entry.progressMs));
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
 // SendBacklog class implementation
 //////////////////////////////////////////////////////////////////////////
+
+const char * SendBacklog::reason_name(SendBacklog::Reason reason) noexcept
+{
+    switch (reason)
+    {
+    case Reason::SocketError:
+        return "SocketError";
+    case Reason::Refused:
+        return "Refused";
+    case Reason::OverCap:
+        return "OverCap";
+    case Reason::Unreachable:
+        return "Unreachable";
+    default:
+        return "Unknown";
+    }
+}
 
 SendBacklog::SendBacklog(areg::SendQueueGate & gate)
     : mGate         ( gate )
@@ -266,6 +297,7 @@ bool SendBacklog::pump(SendBacklog::Owner & owner)
 
         if (failed)
         {
+            report_close(*entry, reason, now_ms());
             owner.backlog_close(*entry, reason);
             remove(entry->cookie);
         }
