@@ -1403,8 +1403,10 @@ RESTART_TEST( ApplicationRestartStressTest, session_with_logging_and_routing_rep
         areg::Application::release( );
         restart_test::check_system_is_stopped( );
 
+#if AREG_LOGGING
         const std::string logged{ restart_test::read_text( text.logFile ) };
         AREG_CHILD_CHECK( restart_test::contains( logged, ("restart-row-" + std::to_string( cycle )).c_str( ) ) );
+#endif  // AREG_LOGGING
     }
 }
 
@@ -1460,6 +1462,7 @@ namespace
 {
     std::mutex              _exitLock;
     std::condition_variable _exitChanged;
+    bool                    _exitThreadReady{ false };
     bool                    _exitAsked{ false };
     bool                    _exitThreadDone{ false };
 
@@ -1498,7 +1501,12 @@ namespace
         std::unique_lock<std::mutex> guard( _exitLock );
         _exitAsked = true;
         _exitChanged.notify_all( );
-        _exitChanged.wait( guard, []( ) { return _exitThreadDone; } );
+        if ( _exitChanged.wait_for( guard, std::chrono::milliseconds( restart_test::WAIT_MS ), []( ) { return _exitThreadDone; } ) == false )
+        {
+            std::fputs( "the thread-local destructor did not run during the exit\n", stderr );
+            std::_Exit( areg_child::CHILD_CHECK_FAILED );
+        }
+
         guard.unlock( );
         touch_singletons( );
     }
@@ -1510,17 +1518,26 @@ namespace
  **/
 RESTART_TEST( ApplicationRestartExitTest, singletons_stay_usable_while_the_process_exits )
 {
-    std::atexit( &on_process_exit );
-    const restart_test::Sandbox sandbox;
-    const std::string config{ sandbox.write( "areg.init", restart_test::ConfigText{ }.text( ) ) };
-
+    // The thread-local object is created before the exit handler is registered, so the
+    // C++ runtime still runs its destructor while the handler waits.
     std::thread( []( )
         {
             thread_local ExitingThreadGuard exitGuard;
             static_cast<void>(&exitGuard);
             std::unique_lock<std::mutex> guard( _exitLock );
+            _exitThreadReady = true;
+            _exitChanged.notify_all( );
             _exitChanged.wait( guard, []( ) { return _exitAsked; } );
         } ).detach( );
+
+    {
+        std::unique_lock<std::mutex> guard( _exitLock );
+        AREG_CHILD_CHECK( _exitChanged.wait_for( guard, std::chrono::milliseconds( restart_test::WAIT_MS ), []( ) { return _exitThreadReady; } ) );
+    }
+
+    std::atexit( &on_process_exit );
+    const restart_test::Sandbox sandbox;
+    const std::string config{ sandbox.write( "areg.init", restart_test::ConfigText{ }.text( ) ) };
 
     SessionLog log;
     SessionData data{ { 1u }, &log };

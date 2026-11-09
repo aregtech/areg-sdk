@@ -122,6 +122,7 @@ about this repository: whether the framework, the agent corpus and the CI still 
 | `check_observability.py` | Runs two processes through `mtrouter` and `logcollector`, then queries the `.sqlog` database |
 | `check_doc_config.py` | Runs the configuration block `docs/agent/00-cheatsheet.md` gives, and asserts it logs what the page promises |
 | `service_ports.py` | Shared helper: the router and collector ports, and waiting on them |
+| `service_start_check.py` | Starts a service many times, every start must listen (`repeat`), or watches the starts of another tool (`watch`); a start that does not listen leaves a memory dump and the stacks of every thread |
 | `setup_agent_redirect.py` | Writes the local, untracked redirect a coding agent looks for |
 | `setup_agent_memory.py` | Writes the local memory files an agent keeps between sessions |
 
