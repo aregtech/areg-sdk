@@ -68,7 +68,8 @@
 set -u
 
 # The bash of Git for Windows sets OSTYPE to cygwin as well, so Cygwin is told by uname.
-case "$(uname -s)" in CYGWIN*) CYGWIN=1 ;; *) CYGWIN=0 ;; esac
+# It is called by its full path, because the Git tools may come first in PATH.
+case "$( { /usr/bin/uname -s || uname -s; } 2>/dev/null )" in CYGWIN*) CYGWIN=1 ;; *) CYGWIN=0 ;; esac
 
 # A Cygwin bash started from Git for Windows has the Git tools first in PATH, and they read
 # /cygdrive/... as a path below the Git directory. 'mkdir' then succeeds in the wrong place.
