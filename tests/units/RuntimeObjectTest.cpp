@@ -434,21 +434,37 @@ TEST(RuntimeObjectTest, raw_aligned_allocation_functions_honor_the_alignment)
 
 TEST(RuntimeObjectTest, non_throwing_allocation_functions_return_usable_memory)
 {
-    void * single{ RtAlpha::operator new(32u, std::nothrow) };
-    ASSERT_NE(single, nullptr);
-    std::memset(single, 0xA5, 32u);
-    RtAlpha::operator delete(single, std::nothrow);
+    const int32_t alive{ gAlive };
 
-    void * array{ RtAlpha::operator new[](32u, std::nothrow) };
+    RtAlpha * single{ new (std::nothrow) RtAlpha() };
+    ASSERT_NE(single, nullptr);
+    EXPECT_EQ(gAlive, alive + 1);
+    delete single;
+
+    RtAlpha * array{ new (std::nothrow) RtAlpha[2] };
     ASSERT_NE(array, nullptr);
-    std::memset(array, 0x5A, 32u);
-    RtAlpha::operator delete[](array, std::nothrow);
+    EXPECT_EQ(gAlive, alive + 2);
+    delete[] array;
+    EXPECT_EQ(gAlive, alive);
 
     constexpr std::align_val_t align{ 128u };
     void * aligned{ RtAlpha::operator new(256u, align, std::nothrow) };
     ASSERT_NE(aligned, nullptr);
     EXPECT_EQ(reinterpret_cast<std::uintptr_t>(aligned) % 128u, 0u);
     RtAlpha::operator delete(aligned, align, std::nothrow);
+}
+
+TEST(RuntimeObjectTest, non_throwing_deallocation_functions_free_memory)
+{
+    void * single{ RtAlpha::operator new(32u) };
+    ASSERT_NE(single, nullptr);
+    std::memset(single, 0xA5, 32u);
+    RtAlpha::operator delete(single, std::nothrow);
+
+    void * array{ RtAlpha::operator new[](32u) };
+    ASSERT_NE(array, nullptr);
+    std::memset(array, 0x5A, 32u);
+    RtAlpha::operator delete[](array, std::nothrow);
 }
 
 TEST(RuntimeObjectTest, placement_delete_functions_do_nothing)
