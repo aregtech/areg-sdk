@@ -304,7 +304,7 @@ protected:
      * \return  Number of bytes available to write.
      **/
     [[nodiscard]]
-    uint32_t size_writable() const noexcept override;
+    uint32_t size_writable() const noexcept;
 
     /**
      * \brief   Returns the address of 'size' bytes at the read position of the opened buffer and moves

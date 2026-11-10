@@ -123,21 +123,6 @@ public:
     void close_logger() final;
 
     /**
-     * \brief   Called when message should be logged. Every logger should implement method to
-     *          process logger specific logging.
-     *
-     * \param   logMessage     The logging message to process.
-     **/
-    void log_message( const areg::LogEntry & logMessage) final;
-
-    /**
-     * \brief   Forwards a pre-built event envelope to the log collector without re-constructing it.
-     *
-     * \param   msg     Pre-built event envelope; must have is_valid() == true.
-     **/
-    void forward_message( const areg::MessageEnvelope & msg );
-
-    /**
      * \brief   Forwards a pre-built event envelope to the log collector without re-constructing it.
      *
      * \param   msg     Pre-built event envelope; must have is_valid() == true.

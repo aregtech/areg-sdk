@@ -357,24 +357,6 @@ void LogCollectorServerService::process_received_message(areg::MessageEnvelope &
     }
 }
 
-void LogCollectorServerService::on_service_channel_connected(const areg::Channel & /* channel */)
-{
-
-}
-
-void LogCollectorServerService::on_service_channel_disconnected(const areg::Channel & /* channel */)
-{
-
-}
-
-void LogCollectorServerService::on_service_channel_lost(const areg::Channel & /* channel */)
-{
-}
-
-void LogCollectorServerService::failed_process_message(const areg::MessageEnvelope & /* msgUnprocessed */)
-{
-}
-
 void LogCollectorServerService::on_connection_started()
 {
 }

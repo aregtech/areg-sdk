@@ -42,7 +42,6 @@ DEF_LOG_SCOPE(areg_component_private_ServiceManager, request_register_consumer);
 DEF_LOG_SCOPE(areg_component_private_ServiceManager, request_unregister_consumer);
 DEF_LOG_SCOPE(areg_component_private_ServiceManager, request_load_model);
 DEF_LOG_SCOPE(areg_component_private_ServiceManager, request_unload_model);
-DEF_LOG_SCOPE(areg_component_private_ServiceManager, extract_service_addresses);
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceManager class Implementation
@@ -526,7 +525,6 @@ bool ServiceManager::_process_router_command( const ServiceManagerEventData & da
         return false;
 
     case ServiceManagerEventData::ServiceManagerCommand::CMD_StartConnection:
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_StartNetConnection:
         if ( mRouterStopping.load( std::memory_order_acquire ) == false )
             return false;
 
@@ -560,41 +558,6 @@ bool ServiceManager::_process_router_command( const ServiceManagerEventData & da
     default:
         return false;
     }
-}
-
-void ServiceManager::extract_service_addresses(const ITEM_ID & cookie, ArrayList<StubAddress> & listProviders, ArrayList<ProxyAddress> & listConsumers ) const
-{
-    LOG_SCOPE( areg_component_private_ServiceManager, extract_service_addresses );
-    Lock lock( mLock );
-
-    listProviders.clear();
-    listConsumers.clear();
-
-    const ServerList & serverList{ mEventProcessor.registered_service_list( ) };
-
-    for (ServerList::MAPPOS posMap = serverList.first_position(); serverList.is_valid_position(posMap); posMap = serverList.next_position(posMap) )
-    {
-        const StubAddress & server      = serverList.key_at(posMap).address();
-        const ClientList & clientList   = serverList.value_at(posMap);
-
-        if ( server.is_valid() && ((cookie == areg::COOKIE_ANY) || (server.cookie() == cookie)) )
-        {
-            LOG_DBG("Found stub [ %s ] of cookie [ %u ]", StubAddress::to_path(server).as_string(), static_cast<uint32_t>(cookie));
-            listProviders.add(server);
-        }
-
-        for (ClientList::LISTPOS pos = clientList.first_position(); clientList.is_valid_position(pos); pos = clientList.next_position(pos))
-        {
-            const ProxyAddress & proxy = clientList.value_at(pos).address();
-            if ( proxy.is_valid() && ((cookie == areg::COOKIE_ANY) || (proxy.cookie() == cookie)) )
-            {
-                LOG_DBG("Found proxy [ %s ] of cookie [ %u ]", ProxyAddress::to_path(proxy).as_string(), cookie);
-                listConsumers.add(proxy);
-            }
-        }
-    }
-
-    LOG_DBG("Found [ %d ] servers and [ %d ] proxies of cookie [ %u ]", listProviders.size(), listConsumers.size(), cookie);
 }
 
 void ServiceManager::on_provider_registered( const StubAddress & stub )

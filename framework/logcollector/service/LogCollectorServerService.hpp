@@ -136,41 +136,9 @@ public:
 //////////////////////////////////////////////////////////////////////////
 protected:
 
-    /**
-     * \brief   Triggered when remote service connection and communication channel is established.
-     *
-     * \param   channel     The connection and communication channel of remote service.
-     **/
-    void on_service_channel_connected( const areg::Channel & channel ) final;
-
-    /**
-     * \brief   Triggered when remote service connection and communication channel is disconnected.
-     *
-     * \param   channel     The connection and communication channel of remote service.
-     **/
-    void on_service_channel_disconnected( const areg::Channel & channel ) final;
-
-    /**
-     * \brief   Triggered when remote service connection and communication channel is lost. The
-     *          connection is considered lost if it not possible to read or receive data, and it was
-     *          not stopped by API call.
-     *
-     * \param   channel     The connection and communication channel of remote service.
-     **/
-    void on_service_channel_lost( const areg::Channel & channel ) final;
-
 /************************************************************************/
 // RemoteMessageHandler interface overrides
 /************************************************************************/
-
-    /**
-     * \brief   Triggered when failed to process message, i.e. the target for message processing was
-     *          not found. In case of request message processing, the source should receive error
-     *          notification.
-     *
-     * \param   msgUnprocessed      Unprocessed message data.
-     **/
-    void failed_process_message( const areg::MessageEnvelope & msgUnprocessed ) final;
 
     /**
      * \brief   Processes a service message of a connected source or observer at once, on the

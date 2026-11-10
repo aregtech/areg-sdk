@@ -72,11 +72,6 @@ public:
                             , RegistrationProvider & registerProvider );
 
     /**
-     * \brief   Returns the list of registered service providers.
-     **/
-    inline const ServerList& registered_service_list() const;
-
-    /**
      * \brief   Unregisters every local provider and consumer whose address names one of the
      *          threads, and notifies their peers that they are disconnected.
      * \param   threads             The names of the threads.
@@ -165,15 +160,6 @@ private:
 private:
     AREG_NOCOPY_NOMOVE( ServiceManagerEventProcessor );
 };
-
-//////////////////////////////////////////////////////////////////////////
-// ServiceManagerEventProcessor inline methods
-//////////////////////////////////////////////////////////////////////////
-
-inline const ServerList & ServiceManagerEventProcessor::registered_service_list() const
-{
-    return mServerList;
-}
 
 } // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_SERVICEMANAGEREVENTPROCESSOR_HPP

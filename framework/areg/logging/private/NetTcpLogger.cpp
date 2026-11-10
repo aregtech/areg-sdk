@@ -98,47 +98,6 @@ void NetTcpLogger::close_logger()
     unregister_consumer_commands();
 }
 
-void NetTcpLogger::log_message(const areg::LogEntry& logMessage)
-{
-    // A paused source drops the logs handled while it is paused. Nothing is queued, so nothing is replayed on resume.
-    if (!is_sending())
-        return;
-
-    const ITEM_ID cookie{ connected_cookie() };
-    if (cookie != areg::COOKIE_UNKNOWN)
-    {
-        send_message(areg::create_log_message(logMessage, areg::LogDataType::Remote, cookie), areg::EventPriority::NormalPrio);
-    }
-    else if (mRingStack.capacity() != 0)
-    {
-        queue_pending(areg::create_log_message(logMessage, areg::LogDataType::Remote, cookie));
-    }
-    else
-    {
-        ++mRingDropped;
-    }
-}
-
-void NetTcpLogger::forward_message(const areg::MessageEnvelope& msg)
-{
-    // A paused source drops the logs handled while it is paused. Nothing is queued, so nothing is replayed on resume.
-    if (!is_sending())
-        return;
-
-    if (connected_cookie() != areg::COOKIE_UNKNOWN)
-    {
-        send_message(msg, areg::EventPriority::NormalPrio);
-    }
-    else if (mRingStack.capacity() != 0)
-    {
-        queue_pending(areg::MessageEnvelope(msg));
-    }
-    else
-    {
-        ++mRingDropped;
-    }
-}
-
 void NetTcpLogger::forward_message(areg::MessageEnvelope&& msg)
 {
     // A paused source drops the logs handled while it is paused. Nothing is queued, so nothing is replayed on resume.

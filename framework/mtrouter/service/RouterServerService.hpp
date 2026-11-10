@@ -61,7 +61,7 @@ public:
 protected:
 
 /************************************************************************/
-// RegistrationConsumer interface overrides
+// Router operations
 /************************************************************************/
 
     /**
@@ -75,7 +75,7 @@ protected:
      * \param[out] listConsumers       On output, contains the list of remote service consumer
      *                                 addresses.
      **/
-    void extract_service_addresses(const ITEM_ID & cookie, areg::ArrayList<areg::StubAddress> & listProviders, areg::ArrayList<areg::ProxyAddress> & listConsumers ) const final;
+    void extract_service_addresses(const ITEM_ID & cookie, areg::ArrayList<areg::StubAddress> & listProviders, areg::ArrayList<areg::ProxyAddress> & listConsumers ) const;
 
     /**
      * \brief   Triggered when a remote service provider is registered.
@@ -110,40 +110,6 @@ protected:
      *                      areg::COOKIE_ANY.
      **/
     void on_consumer_unregistered( const areg::ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) final;
-
-    /**
-     * \brief   Triggered when a remote service communication channel is established.
-     *
-     * \param   channel     The established communication channel.
-     **/
-    void on_service_channel_connected( const areg::Channel & channel ) final;
-
-    /**
-     * \brief   Triggered when a remote service communication channel is disconnected.
-     *
-     * \param   channel     The disconnected communication channel.
-     **/
-    void on_service_channel_disconnected( const areg::Channel & channel ) final;
-
-    /**
-     * \brief   Triggered when a remote service communication channel is lost due to inability to
-     *          read or receive data.
-     *
-     * \param   channel     The lost communication channel.
-     **/
-    void on_service_channel_lost( const areg::Channel & channel ) final;
-
-/************************************************************************/
-// RemoteMessageHandler interface overrides
-/************************************************************************/
-
-    /**
-     * \brief   Triggered when message processing fails because the target was not found. Request
-     *          sources receive error notification.
-     *
-     * \param   msgUnprocessed      The unprocessed message.
-     **/
-    void failed_process_message( const areg::MessageEnvelope & msgUnprocessed ) final;
 
 /************************************************************************/
 // ServiceEventConsumer overrides

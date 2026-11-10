@@ -80,12 +80,11 @@ public:
     void close_logger() final;
 
     /**
-     * \brief   Called when message should be logged. Every logger should implement method to
-     *          process logger specific logging.
+     * \brief   Logs the message in the logger specific way.
      *
      * \param   logMessage     The logging message to process.
      **/
-    void log_message( const areg::LogEntry & logMessage) final;
+    void log_message( const areg::LogEntry & logMessage);
 
     /**
      * \brief   Returns true if logger is initialized (opened).
@@ -134,14 +133,6 @@ protected:
     bool ensure_size(uint32_t addSize) final;
 
 protected:
-    /**
-     * \brief   Returns size in bytes of available space that can be written, i.e. remaining
-     *          writable size. No necessarily that this size is equal to size of streamable buffer.
-     *          For example, if the size of buffer is 'n' and 'x' bytes of data was already written
-     *          to stream, the available writable size is 'n - x'.
-     **/
-    uint32_t size_writable() const noexcept final;
-
     /**
      * \brief   Returns nullptr: the logger collects text through write().
      **/

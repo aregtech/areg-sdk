@@ -106,17 +106,6 @@ void ServiceManagerEventProcessor::process_service_event( ServiceManagerEventDat
         }
         break;
 
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_ConfigureConnection:
-        {
-            areg::RemoteServiceKind service{ areg::RemoteServiceKind::Unknown };
-            uint32_t connectTypes{ static_cast<uint32_t>(areg::ConnectionType::Undefined) };
-            stream >> service;
-            stream >> connectTypes;
-
-            connectProvider.setup_connection_data(service, connectTypes);
-        }
-        break;
-
     case ServiceManagerEventData::ServiceManagerCommand::CMD_StartConnection:
         {
             areg::RemoteServiceKind service{ areg::RemoteServiceKind::Unknown };
@@ -127,21 +116,6 @@ void ServiceManagerEventProcessor::process_service_event( ServiceManagerEventDat
             if (connectProvider.setup_connection_data(service, connectTypes))
             {
                 connectProvider.connect_service_host();
-            }
-        }
-        break;
-
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_StartNetConnection:
-        {
-            String   ipAddress;
-            uint16_t portNr = 0;
-            stream >> ipAddress;
-            stream >> portNr;
-
-            connectProvider.apply_connection_data( ipAddress, portNr );
-            if (connectProvider.is_host_setup( ) )
-            {
-                connectProvider.connect_service_host( );
             }
         }
         break;

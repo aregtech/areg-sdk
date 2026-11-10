@@ -69,16 +69,6 @@ RouterClient::RouterClient(ConnectionConsumer& connectionConsumer, RegistrationC
 {
 }
 
-void RouterClient::on_message_received(const MessageEnvelope& msgReceived)
-{
-    ASSERT(areg::is_executable_id(static_cast<uint32_t>(msgReceived.message_id())));
-    MessageEnvelope routable{ msgReceived };
-    if (!RemoteEventFactory::route_incoming_message(routable, mChannel))
-    {
-        failed_process_message(msgReceived);
-    }
-}
-
 bool RouterClient::connect_service_host()
 {
     bool result{ true };

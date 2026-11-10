@@ -619,24 +619,6 @@ void RouterServerService::on_consumer_unregistered(const areg::ProxyAddress & pr
     }
 }
 
-void RouterServerService::on_service_channel_connected(const areg::Channel & /* channel */)
-{
-
-}
-
-void RouterServerService::on_service_channel_disconnected(const areg::Channel & /* channel */)
-{
-
-}
-
-void RouterServerService::on_service_channel_lost(const areg::Channel & /* channel */)
-{
-}
-
-void RouterServerService::failed_process_message(const areg::MessageEnvelope & /* msgUnprocessed */)
-{
-}
-
 void RouterServerService::on_connection_started()
 {
 }

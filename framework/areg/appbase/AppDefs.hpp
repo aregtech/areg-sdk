@@ -48,18 +48,6 @@ namespace areg {
     extern AREG_API wchar_t     ROUTER_SERVICE_NAME_WIDE[];
 
     /**
-     * \brief   areg::ROUTER_SERVICE_EXECUTABLE_ASCII
-     *          ASCII version of router service executable.
-     **/
-    extern AREG_API char        ROUTER_SERVICE_EXECUTABLE_ASCII[];
-
-    /**
-     * \brief   areg::ROUTER_SERVICE_EXECUTABLE_WIDE
-     *          Unicode version of router service executable.
-     **/
-    extern AREG_API wchar_t     ROUTER_SERVICE_EXECUTABLE_WIDE[];
-
-    /**
      * \brief   areg::LOGGER_SERVICE_NAME_ASCII
      *          ASCII version of log collector service name.
      **/
@@ -70,18 +58,6 @@ namespace areg {
      *          Unicode version of log collector service name.
      **/
     extern AREG_API wchar_t     LOGGER_SERVICE_NAME_WIDE[];
-
-    /**
-     * \brief   areg::LOGGER_SERVICE_EXECUTABLE_ASCII
-     *          ASCII version of log collector service executable.
-     **/
-    extern AREG_API char        LOGGER_SERVICE_EXECUTABLE_ASCII[];
-
-    /**
-     * \brief   areg::LOGGER_SERVICE_EXECUTABLE_WIDE
-     *          Unicode version of log collector service executable.
-     **/
-    extern AREG_API wchar_t     LOGGER_SERVICE_EXECUTABLE_WIDE[];
 
     /**
      * \brief   areg::DEFAULT_ROUTER_SERVICE_NAME

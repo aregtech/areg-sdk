@@ -826,18 +826,6 @@ void AREG_API output_console(areg::DebugPriority priority, const char* msg, ...)
  **/
 void AREG_API output_console(const char* msg, ...);
 
-#ifdef  _WIN32
-/**
- * \brief   Extracts and dumps exception call stack information into the output list. Available
- *          in debug builds only.
- *
- * \param   ep              Pointer to the exception structure containing the CONTEXT object.
- * \param[out] callStack       List that receives the call stack messages.
- **/
-
-void AREG_API dump_call_stack( struct _EXCEPTION_POINTERS *ep, std::list<std::string> & callStack);
-#endif  // _WIN32
-
 /**
  * \brief   Outputs a message via the operating system (VS Output Window on Windows, console on
  *          other platforms). Valid only for DEBUG builds.

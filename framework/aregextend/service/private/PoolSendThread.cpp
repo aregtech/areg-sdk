@@ -134,9 +134,4 @@ void PoolSendThread::release_backlog()
     }
 }
 
-bool PoolSendThread::post_event( Event & eventElem )
-{
-    return EventDispatcher::post_event( eventElem );
-}
-
 } // namespace areg::ext

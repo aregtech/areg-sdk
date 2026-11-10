@@ -71,7 +71,6 @@ ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
                                                 , ServiceCommunicationBase::ConnectionPolicy behavior /*= ServiceCommunicationBase::ConnectionPolicy::Accept*/
                                                 , uint32_t numPairs /*= 0u*/ )
     : RemoteMessageHandler  ( )
-    , ConnectionConsumer    ( )
     , ConnectionProvider    ( )
     , DispatcherThread      ( dispatcher, stackSizeKb, areg::QUEUE_DEFAULT_RING_CAPACITY )
     , ServiceEventConsumer  ( )
@@ -304,6 +303,7 @@ void ServiceCommunicationBase::connection_failure()
 {
     if (is_host_connected())
     {
+        on_connection_lost();
         reconnect_service_host();
     }
 }
@@ -327,6 +327,7 @@ void ServiceCommunicationBase::on_service_start()
 void ServiceCommunicationBase::on_service_stop()
 {
     stop_connection();
+    on_connection_stopped();
     mStartFailures.store(0u, std::memory_order_relaxed);
     mEventSendStop.set_signaled();
 }
@@ -428,7 +429,11 @@ bool ServiceCommunicationBase::start_connection()
     }
 
     report_start(result, osError);
-    if ( !result )
+    if ( result )
+    {
+        on_connection_started();
+    }
+    else
     {
         mTimerConnect.start_timer( areg::DEFAULT_RETRY_CONNECT_TIMEOUT, static_cast<DispatcherThread &>(self()), 1);
     }
@@ -780,6 +785,10 @@ void ServiceCommunicationBase::failed_receive_message(Socket & whichSource)
     {
         connection_lost(client);
     }
+}
+
+void ServiceCommunicationBase::failed_process_message(const areg::MessageEnvelope & /*msgUnprocessed*/)
+{
 }
 
 void ServiceCommunicationBase::process_received_message(areg::MessageEnvelope & msgReceived, Socket & whichSource)

@@ -75,7 +75,6 @@ ServiceClientConnectionBase::ServiceClientConnectionBase( const ITEM_ID & target
     , mChannel              ( )
     , mConnectionState      ( ConnectionPhase::ConnectionStopped )
     , mEventConsumer        ( static_cast<ServiceEventConsumer &>(self()) )
-    , mMessageConsumer      ( static_cast<ServiceEventConsumer &>(self()) )
     , mLock                 ( )
 
     , mTimerConnect         ( static_cast<TimerConsumer &>(self()), prefixName + areg::CLIENT_CONNECT_TIMER_NAME, areg::INVALID_TIMEOUT, Timer::IGNORE_TIMER_QUEUE, areg::EventPriority::HighPrio )

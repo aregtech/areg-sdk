@@ -47,9 +47,6 @@ namespace
         {
         }
 
-        void on_service_channel_connected(const areg::Channel &) override  { }
-        void on_service_channel_disconnected(const areg::Channel &) override { }
-        void on_service_channel_lost(const areg::Channel &) override { }
         void failed_process_message(const areg::MessageEnvelope &) override { }
         void on_connection_started() override { }
         void on_connection_stopped() override { }

@@ -58,15 +58,6 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Extracts lists of registered remote service providers and consumers matching the cookie filter.
-     *
-     * \param   cookie              Cookie filter; pass areg::COOKIE_ANY to retrieve all services.
-     * \param[out] listProviders    On output contains addresses of remote service providers matching filter.
-     * \param[out] listConsumers    On output contains addresses of remote service consumers matching filter.
-     **/
-    virtual void extract_service_addresses(const ITEM_ID & cookie, ArrayList<StubAddress> & listProviders, ArrayList<ProxyAddress> & listConsumers ) const = 0;
-
-    /**
      * \brief   Triggered when a remote service provider is registered.
      *
      * \param   stub    Address of the newly registered service provider.

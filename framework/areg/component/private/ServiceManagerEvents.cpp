@@ -90,30 +90,12 @@ ServiceManagerEventData ServiceManagerEventData::unregister_stub( const StubAddr
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::configure_connection(areg::RemoteServiceKind service, uint32_t connectTypes)
-{
-    ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_ConfigureConnection );
-    OutStream & stream = data.write_stream();
-    stream << service;
-    stream << connectTypes;
-    return data;
-}
-
 ServiceManagerEventData ServiceManagerEventData::start_connection(areg::RemoteServiceKind service, uint32_t connectTypes)
 {
     ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_StartConnection );
     OutStream & stream = data.write_stream();
     stream << service;
     stream << connectTypes;
-    return data;
-}
-
-ServiceManagerEventData ServiceManagerEventData::start_net_connection( const String & ipAddress, uint16_t portNr )
-{
-    ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_StartNetConnection );
-    OutStream & stream = data.write_stream( );
-    stream << ipAddress;
-    stream << portNr;
     return data;
 }
 

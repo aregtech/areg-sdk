@@ -894,11 +894,6 @@ namespace
 
         void process_received_message(areg::MessageEnvelope & message, areg::Socket &) override
         {
-            EXPECT_TRUE(send_received_message(std::move(message)));
-        }
-
-        void on_message_received(const areg::MessageEnvelope & message) override
-        {
             service_connection_event(message);
         }
     };

@@ -399,9 +399,7 @@ TEST(ServiceManagerEventsTest, command_names)
         , { Command::CMD_UnregisterProxy,      "ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProxy" }
         , { Command::CMD_RegisterProvider,     "ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterProvider" }
         , { Command::CMD_UnregisterProvider,   "ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProvider" }
-        , { Command::CMD_ConfigureConnection,  "ServiceManagerEventData::ServiceManagerCommand::CMD_ConfigureConnection" }
         , { Command::CMD_StartConnection,      "ServiceManagerEventData::ServiceManagerCommand::CMD_StartConnection" }
-        , { Command::CMD_StartNetConnection,   "ServiceManagerEventData::ServiceManagerCommand::CMD_StartNetConnection" }
         , { Command::CMD_StopConnection,       "ServiceManagerEventData::ServiceManagerCommand::CMD_StopConnection" }
         , { Command::CMD_RegisterConnection,   "ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterConnection" }
         , { Command::CMD_UnregisterConnection, "ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterConnection" }
@@ -492,18 +490,8 @@ TEST(ServiceManagerEventsTest, register_and_unregister_stub)
     }
 }
 
-TEST(ServiceManagerEventsTest, configure_and_start_connection)
+TEST(ServiceManagerEventsTest, start_connection)
 {
-    ServiceManagerEventData configure = ServiceManagerEventData::configure_connection(areg::RemoteServiceKind::Logger, 0x05u);
-    EXPECT_EQ(configure.command(), Command::CMD_ConfigureConnection);
-    {
-        areg::RemoteServiceKind kind{ areg::RemoteServiceKind::Unknown };
-        uint32_t types{ 0u };
-        readable(configure).read_stream() >> kind >> types;
-        EXPECT_EQ(kind, areg::RemoteServiceKind::Logger);
-        EXPECT_EQ(types, 0x05u);
-    }
-
     ServiceManagerEventData start = ServiceManagerEventData::start_connection(areg::RemoteServiceKind::Router, 0x03u);
     EXPECT_EQ(start.command(), Command::CMD_StartConnection);
     {
@@ -513,18 +501,6 @@ TEST(ServiceManagerEventsTest, configure_and_start_connection)
         EXPECT_EQ(kind, areg::RemoteServiceKind::Router);
         EXPECT_EQ(types, 0x03u);
     }
-}
-
-TEST(ServiceManagerEventsTest, start_net_connection)
-{
-    ServiceManagerEventData data = ServiceManagerEventData::start_net_connection(areg::String("192.168.1.7"), 8181u);
-
-    EXPECT_EQ(data.command(), Command::CMD_StartNetConnection);
-    areg::String address;
-    uint16_t port{ 0u };
-    readable(data).read_stream() >> address >> port;
-    EXPECT_EQ(address, areg::String("192.168.1.7"));
-    EXPECT_EQ(port, 8181u);
 }
 
 TEST(ServiceManagerEventsTest, channel_commands)

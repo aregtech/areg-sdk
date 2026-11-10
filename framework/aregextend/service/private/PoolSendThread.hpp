@@ -161,18 +161,6 @@ protected:
      **/
     bool dispatch_event( areg::Event & eventElem ) final;
 
-/************************************************************************/
-// EventRouter overrides
-/************************************************************************/
-
-    /**
-     * \brief   Posts the event to this thread's queue.
-     *
-     * \param   eventElem   Event to post.
-     * \return  Returns true if the event was accepted and queued.
-     **/
-    bool post_event( Event & eventElem ) final;
-
 private:
 /************************************************************************/
 // EventConsumer interface override.

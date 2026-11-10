@@ -19,7 +19,6 @@
 #include "aregextend/service/ServiceApplicationBase.hpp"
 
 #include "aregextend/service/ServiceCommunicationBase.hpp"
-#include "aregextend/console/Console.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/appbase/AppDefs.hpp"
 #include "areg/logging/areg_log.h"
@@ -257,11 +256,6 @@ void ServiceApplicationBase::on_setup_configuration( const areg::ListProperties&
                                                  , const areg::ListProperties& /* listWritable */
                                                  , ConfigManager& /* config */)
 {
-}
-
-bool ServiceApplicationBase::input_console_data(char* buffer, uint32_t bufSize)
-{
-    return Console::read_console_data(buffer, bufSize);
 }
 
 bool ServiceApplicationBase::parse_options(int32_t argc, char** argv)
