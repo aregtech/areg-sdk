@@ -23,7 +23,6 @@
 #include "areg/component/Event.hpp"
 #include "areg/component/EventConsumer.hpp"
 #include "areg/ipc/RemoteMessageHandler.hpp"
-#include "areg/ipc/ConnectionConsumer.hpp"
 #include "areg/ipc/ConnectionProvider.hpp"
 #include "areg/ipc/ServiceEventConsumer.hpp"
 #include "aregextend/service/DataRateHelper.hpp"
@@ -65,7 +64,6 @@ namespace areg::ext {
  *          low data volumes and gains nothing from the pool overhead.
  **/
 class ServiceCommunicationBase  : public    RemoteMessageHandler
-                                , public    ConnectionConsumer
                                 , public    ConnectionProvider
                                 , protected DispatcherThread
                                 , protected ServiceEventConsumer
@@ -312,39 +310,19 @@ public:
     void failed_receive_message( Socket & whichSource ) override;
 
     /**
+     * \brief   Triggered, when the target of the message is not found. The server drops the message.
+     *
+     * \param   msgUnprocessed      The unprocessed message.
+     **/
+    void failed_process_message( const areg::MessageEnvelope & msgUnprocessed ) override;
+
+    /**
      * \brief   Triggered, when need to process received message.
      *
      * \param   msgReceived     Received message to process.
      * \param   whichSource     The source socket, which received message.
      **/
     void process_received_message( areg::MessageEnvelope & msgReceived, Socket & whichSource ) override;
-
-/************************************************************************/
-// ConnectionConsumer
-/************************************************************************/
-
-    /**
-     * \brief   Triggered when remote service connection and communication channel is established.
-     *
-     * \param   channel     The connection and communication channel of remote service.
-     **/
-    virtual void on_service_channel_connected(const Channel& channel) override = 0;
-
-    /**
-     * \brief   Triggered when disconnected remote service connection and communication channel.
-     *
-     * \param   channel     The connection and communication channel of remote service.
-     **/
-    virtual void on_service_channel_disconnected(const Channel& channel) override = 0;
-
-    /**
-     * \brief   Triggered when remote service connection and communication channel is lost. The
-     *          connection is considered lost if it not possible to read or receive data, and it was
-     *          not stopped by API call.
-     *
-     * \param   channel     The connection and communication channel of remote service.
-     **/
-    virtual void on_service_channel_lost(const Channel& channel) override = 0;
 
 /************************************************************************/
 // ConnectionProvider interface overrides

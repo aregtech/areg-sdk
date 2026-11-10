@@ -245,21 +245,6 @@ public:
 
 protected:
 /************************************************************************/
-// EventRouter interface overrides
-/************************************************************************/
-
-    /**
-     * \brief   Posts the event and delivers it to its target. Every dispatcher thread decides
-     *          whether it accepts posted events: it either filters them or forwards them to
-     *          EventDispatcher::post_event(). There is no default, so a thread that accepts no
-     *          posted events says so instead of inheriting a silent one.
-     *
-     * \param   eventElem       Event object to post
-     * \return  Returns true if the event was queued.
-     **/
-    bool post_event( Event & eventElem ) override = 0;
-
-/************************************************************************/
 // DispatcherThread overrides
 /************************************************************************/
 

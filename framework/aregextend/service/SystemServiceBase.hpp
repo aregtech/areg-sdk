@@ -183,14 +183,6 @@ public:
     virtual int32_t service_main(areg::ext::ServiceOption optStartup, const char* argument);
 
     /**
-     * \brief   Sends remote message to the target specified in the message structure.
-     *
-     * \param   message     The message to send to the target. The message contains information of
-     *                      the source and target.
-     **/
-    virtual void send_message_to_target(const areg::MessageEnvelope& message);
-
-    /**
      * \brief   Triggered to initialize the service application.
      *
      * \param   option          The option that was set to run. Can be ServiceOption::CMD_Undefined

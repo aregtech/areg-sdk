@@ -104,23 +104,6 @@ uint32_t File::size_readable() const noexcept
     return (lenUsed - lenRead);
 }
 
-uint32_t File::size_writable() const noexcept
-{
-    uint32_t lenWritten     = 0;
-    uint32_t lenAvailable   = 0;
-    if (is_opened())
-    {
-        std::error_code err;
-        std::uintmax_t sz = std::filesystem::file_size(mFileName.data(), err);
-
-        lenWritten  = _os_file_position();
-        lenAvailable = !err ? static_cast<uint32_t>(sz) : 0;
-    }
-
-    ASSERT(lenWritten <= lenAvailable);
-    return (lenAvailable - lenWritten);
-}
-
 bool File::remove()
 {
     bool result = false;

@@ -33,20 +33,6 @@ DEF_LOG_SCOPE(areg_component_private_ServerList, unregister_provider);
 //////////////////////////////////////////////////////////////////////////
 // Methods.
 //////////////////////////////////////////////////////////////////////////
-ServerList::MAPPOS ServerList::find_provider(const ServerInfo& server) const
-{
-    return find(server);
-}
-
-ServerList::MAPPOS ServerList::find_provider(const StubAddress& whichServer) const
-{
-    LOG_SCOPE( areg_component_private_ServerList, find_provider);
-    LOG_DBG("Search server based on server address [ %s ]", StubAddress::to_path(whichServer).as_string());
-
-    ServerInfo server(whichServer);
-    return ServerList::find(server);
-}
-
 ServerList::MAPPOS ServerList::find_provider(const ProxyAddress& whichClient) const
 {
     LOG_SCOPE( areg_component_private_ServerList, find_provider);

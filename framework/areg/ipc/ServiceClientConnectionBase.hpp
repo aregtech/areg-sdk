@@ -361,17 +361,6 @@ protected:
     inline void send_command(ServiceEventData::ServiceCommand cmd, areg::EventPriority eventPrio = areg::EventPriority::HighPrio );
 
     /**
-     * \brief   Posts a received data envelope directly to the dispatcher, bypassing the
-     *          ServiceEventData wrapper. Hot-path optimization: eliminates one allocation and
-     *          one switch-dispatch per received message.
-     *
-     * \param   msg         The received message envelope.
-     * \param   eventPrio   Event priority (default: HighPrio for received messages).
-     **/
-    inline bool send_received_message(const areg::MessageEnvelope& msg, areg::EventPriority eventPrio = areg::EventPriority::HighPrio);
-    inline bool send_received_message(areg::MessageEnvelope&& msg, areg::EventPriority eventPrio = areg::EventPriority::HighPrio);
-
-    /**
      * \brief   Writes the message into the connection socket on the calling thread, instead of
      *          handing it to the send thread, which saves one thread wake-up.
      *
@@ -539,11 +528,6 @@ protected:
     areg::ServiceClientConsumer     mEventConsumer;
 
     /**
-     * \brief   Direct data-message consumer for RemoteMessageEvent
-     **/
-    areg::RemoteMessageConsumer     mMessageConsumer;
-
-    /**
      * \brief   Data access synchronization object
      **/
     mutable areg::ResourceLock      mLock;
@@ -690,23 +674,6 @@ inline void ServiceClientConnectionBase::send_command( ServiceEventData::Service
                                  , static_cast<ServiceClientEventConsumer &>(mEventConsumer)
                                  , mMessageDispatcher
                                  , eventPrio );
-}
-
-inline bool ServiceClientConnectionBase::send_received_message( const areg::MessageEnvelope & msg
-                                                              , areg::EventPriority eventPrio /*= areg::EventPriority::HighPrio*/ )
-{
-    areg::MessageEnvelope copy{ msg };
-    return send_received_message(std::move(copy), eventPrio);
-}
-
-inline bool ServiceClientConnectionBase::send_received_message( areg::MessageEnvelope && msg
-                                                              , areg::EventPriority eventPrio /*= areg::EventPriority::HighPrio*/ )
-{
-    areg::Event evt(std::move(msg));
-    evt.set_event_priority(eventPrio);
-    evt.set_event_consumer(static_cast<areg::EventConsumer *>(&mMessageConsumer));
-    evt.set_target_dispatcher(static_cast<areg::DispatcherThread *>(&mMessageDispatcher));
-    return evt.deliver_event();
 }
 
 inline bool ServiceClientConnectionBase::send_message(const MessageEnvelope & data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )

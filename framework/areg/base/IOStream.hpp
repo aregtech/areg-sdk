@@ -399,12 +399,6 @@ public:
 
 protected:
     /**
-     * \brief   Returns the available space in bytes remaining to write.
-     **/
-    [[nodiscard]]
-    virtual uint32_t size_writable() const noexcept = 0;
-
-    /**
      * \brief   Returns the address of 'size' contiguous bytes at the write position, which the caller
      *          fills, and moves the position past them; nullptr if the stream cannot give them, then
      *          nothing moves.

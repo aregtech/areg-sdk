@@ -166,11 +166,6 @@ bool DebugOutputLogger::ensure_size(uint32_t /*addSize*/)
     return true;
 }
 
-uint32_t DebugOutputLogger::size_writable() const noexcept
-{
-    return static_cast<uint32_t>(0xFFFF);
-}
-
 uint8_t* DebugOutputLogger::write_view(uint32_t /*size*/) noexcept
 {
     return nullptr;

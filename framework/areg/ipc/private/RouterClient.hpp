@@ -283,16 +283,6 @@ protected:
      **/
     void on_post_exit() final;
 
-/************************************************************************/
-// ServiceEventConsumer interface overrides
-/************************************************************************/
-    /**
-     * \brief   Called to process and dispatch a received communication message.
-     *
-     * \param   msgReceived     The received communication message.
-     **/
-    void on_message_received(const MessageEnvelope& msgReceived) final;
-
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations and attributes
 //////////////////////////////////////////////////////////////////////////

@@ -313,12 +313,6 @@ protected:
 /************************************************************************/
 // OutStream interface overrides
 /************************************************************************/
-    /**
-     * \brief   Returns the number of bytes that can be written from the current position.
-     **/
-    [[nodiscard]]
-    uint32_t size_writable() const noexcept override;
-
 //////////////////////////////////////////////////////////////////////////
 // Static operations
 //////////////////////////////////////////////////////////////////////////

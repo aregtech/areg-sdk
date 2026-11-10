@@ -64,15 +64,6 @@ protected:
 public:
 
     /**
-     * \brief   Reads data from the console and sets in the buffer.
-     *
-     * \param[in,out] buffer      The buffer to input data from console. Should not be nullptr.
-     * \param   bufSize     The size of the buffer. Should not be zero.
-     * \return  Returns true if succeeded to read data from the console.
-     **/
-    bool input_console_data(char* buffer, uint32_t bufSize);
-
-    /**
      * \brief   Parses the command line options of the application using the option setup returned
      *          by `app_options()`.
      *

@@ -201,9 +201,4 @@ void ClientSendThread::report_failed_send(const areg::MessageEnvelope & msgFaile
     }
 }
 
-bool ClientSendThread::post_event( Event & eventElem )
-{
-    return EventDispatcher::post_event( eventElem );
-}
-
 } // namespace areg

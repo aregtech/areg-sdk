@@ -511,7 +511,7 @@ protected:
 
     /** Returns bytes available to write (capacity minus written data). **/
     [[nodiscard]]
-    uint32_t size_writable() const noexcept final;
+    uint32_t size_writable() const noexcept;
 
     /**
      * \brief   Returns the address of 'size' bytes at the read position and moves past them; nullptr

@@ -174,18 +174,6 @@ protected:
      **/
     bool dispatch_event( Event & eventElem ) final;
 
-/************************************************************************/
-// EventRouter interface overrides
-/************************************************************************/
-
-    /**
-     * \brief   Posts and delivers event to target. Override in derived classes to process events.
-     *
-     * \param   eventElem       Event object to post.
-     * \return  Returns true.
-     **/
-    bool post_event( Event & eventElem ) final;
-
 private:
 /************************************************************************/
 // EventConsumer interface override.

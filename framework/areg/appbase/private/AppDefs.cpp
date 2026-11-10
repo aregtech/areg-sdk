@@ -121,20 +121,9 @@ AREG_API_IMPL char areg::ROUTER_SERVICE_NAME_ASCII[]           { 'm', 'c', 'r', 
 //! Areg TCP/IP Multitarget Router Service name
 AREG_API_IMPL wchar_t areg::ROUTER_SERVICE_NAME_WIDE[]         { 'm', 'c', 'r', 'o', 'u', 't', 'e', 'r', '.', 's', 'e', 'r', 'v', 'i', 'c', 'e', '\0' };
 
-//! Router Service executable
-AREG_API_IMPL char areg::ROUTER_SERVICE_EXECUTABLE_ASCII[]     { 'm', 'c', 'r', 'o', 'u', 't', 'e', 'r', '.', 'e', 'x', 'e', '\0' };
-
-//! Router Service executable
-AREG_API_IMPL wchar_t areg::ROUTER_SERVICE_EXECUTABLE_WIDE[]   { 'm', 'c', 'r', 'o', 'u', 't', 'e', 'r', '.', 'e', 'x', 'e', '\0' };
-
 //! Areg TCP/IP Log Collector Service name
 AREG_API_IMPL char areg::LOGGER_SERVICE_NAME_ASCII[]           { 'l', 'o', 'g', 'g', 'e', 'r', '.', 's', 'e', 'r', 'v', 'i', 'c', 'e', '\0' };
 
 //! Areg TCP/IP Log Collector Service name
 AREG_API_IMPL wchar_t areg::LOGGER_SERVICE_NAME_WIDE[]         { 'l', 'o', 'g', 'g', 'e', 'r', '.', 's', 'e', 'r', 'v', 'i', 'c', 'e', '\0' };
 
-//! Log Collector Service executable
-AREG_API_IMPL char areg::LOGGER_SERVICE_EXECUTABLE_ASCII[]     { 'l', 'o', 'g', 'g', 'e', 'r', '.', 'e', 'x', 'e', '\0' };
-
-//! Log Collector Service executable
-AREG_API_IMPL wchar_t areg::LOGGER_SERVICE_EXECUTABLE_WIDE[]   { 'l', 'o', 'g', 'g', 'e', 'r', '.', 'e', 'x', 'e', '\0' };

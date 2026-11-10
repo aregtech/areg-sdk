@@ -14,6 +14,7 @@
 #include "aregextend/service/ServiceCommunicationBase.hpp"
 
 #include <algorithm>
+#include <atomic>
 #include <chrono>
 #include <condition_variable>
 #include <cstdint>
@@ -90,14 +91,21 @@ namespace service_test
 
         void on_connection_started() override
         {
+            std::lock_guard<std::mutex> guard(mMutex);
+            ++mStartedCalls;
+            mChanged.notify_all();
         }
 
         void on_connection_stopped() override
         {
+            std::lock_guard<std::mutex> guard(mMutex);
+            ++mStoppedCalls;
+            mChanged.notify_all();
         }
 
         void on_connection_lost() override
         {
+            ++mLostCalls;
         }
 
         void on_message_received(const areg::MessageEnvelope & msgReceived) override
@@ -110,16 +118,18 @@ namespace service_test
             }
         }
 
-        void on_service_channel_connected(const areg::Channel & /*channel*/) override
+        //!< Waits until the start hook was called \a count times.
+        bool wait_started(uint32_t count)
         {
+            std::unique_lock<std::mutex> guard(mMutex);
+            return mChanged.wait_for(guard, std::chrono::milliseconds(SERVER_DEADLINE_MS), [&]() { return (mStartedCalls.load() >= count); });
         }
 
-        void on_service_channel_disconnected(const areg::Channel & /*channel*/) override
+        //!< Waits until the stop hook was called \a count times.
+        bool wait_stopped(uint32_t count)
         {
-        }
-
-        void on_service_channel_lost(const areg::Channel & /*channel*/) override
-        {
+            std::unique_lock<std::mutex> guard(mMutex);
+            return mChanged.wait_for(guard, std::chrono::milliseconds(SERVER_DEADLINE_MS), [&]() { return (mStoppedCalls.load() >= count); });
         }
 
         //!< Waits until at least \a count instances were added.
@@ -159,6 +169,11 @@ namespace service_test
         uint32_t                mAdded;
         uint32_t                mRemoved;
         std::vector<uint32_t>   mDisconnects;
+
+    public:
+        std::atomic<uint32_t>   mStartedCalls{ 0u };
+        std::atomic<uint32_t>   mStoppedCalls{ 0u };
+        std::atomic<uint32_t>   mLostCalls{ 0u };
     };
 }
 

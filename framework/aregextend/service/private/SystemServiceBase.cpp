@@ -215,11 +215,6 @@ int32_t SystemServiceBase::service_main(areg::ext::ServiceOption optStartup, con
     return result;
 }
 
-void SystemServiceBase::send_message_to_target(const areg::MessageEnvelope& message)
-{
-    mCommunication.send_message(message);
-}
-
 void SystemServiceBase::control_service(SystemServiceBase::ServiceControl control)
 {
     switch (control)

@@ -52,12 +52,6 @@ public:
     explicit ServerInfo( const StubAddress & server );
 
     /**
-     * \brief   Initializes with stub address (move); sets state to Registered if valid.
-     * \param   server      The stub server address.
-     **/
-    explicit ServerInfo( StubAddress && server );
-
-    /**
      * \brief   Initializes with stub address extracted from proxy address.
      * \param   proxy       The proxy address to extract stub address from.
      **/
@@ -88,58 +82,11 @@ public:
     ServerInfo & operator = ( ServerInfo && src ) noexcept;
 
     /**
-     * \brief   Sets stub address and state to Connected if valid, otherwise Undefined.
-     *
-     * \param   server      The stub address to set.
-     **/
-    ServerInfo & operator = ( const StubAddress & server );
-
-    /**
-     * \brief   Sets stub address (move) and state to Connected if valid, otherwise Undefined.
-     *
-     * \param   server      The stub address to set.
-     **/
-    ServerInfo & operator = ( StubAddress && server ) noexcept;
-
-    /**
      * \brief   Sets stub address and state to Pending if valid, otherwise Undefined.
      *
      * \param   addService      The service address to convert.
      **/
     ServerInfo & operator = ( const ServiceAddress & addService );
-
-    /**
-     * \brief   Sets stub address (move) and state to Pending if valid, otherwise Undefined.
-     *
-     * \param   addService      The service address to convert.
-     **/
-    ServerInfo & operator = ( ServiceAddress && addService ) noexcept;
-
-    /**
-     * \brief   Returns true if server info objects are equal.
-     *
-     * \param   other       The server info to compare.
-     **/
-    bool operator == ( const ServerInfo & other ) const;
-
-    /**
-     * \brief   Returns true if stub addresses are equal.
-     *
-     * \param   server      The stub address to compare.
-     **/
-    bool operator == ( const StubAddress & server ) const;
-
-    /**
-     * \brief   Returns true if the stub address of this and the proxy are equal.
-     *
-     * \param   proxy       The proxy address to compare.
-     **/
-    bool operator == ( const ProxyAddress & proxy ) const;
-
-    /**
-     * \brief   Converts server info to 32-bit unsigned integer.
-     **/
-    explicit operator uint32_t () const;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes

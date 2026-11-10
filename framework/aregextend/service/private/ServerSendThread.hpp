@@ -182,20 +182,6 @@ protected:
      **/
     bool dispatch_event( areg::Event & eventElem ) final;
 
-/************************************************************************/
-// EventRouter class overrides
-/************************************************************************/
-
-    /**
-     * \brief   Posts event and delivers to its target. Since the Dispatcher Thread is a Base object
-     *          for Worker and Component threads, it does nothing and only destroys event object
-     *          without processing. Override this method or use Worker / Component thread.
-     *
-     * \param   eventElem       Event object to post
-     * \return  In this class it always returns true.
-     **/
-    bool post_event( Event & eventElem ) final;
-
 private:
 /************************************************************************/
 // EventConsumer interface override.

@@ -57,9 +57,7 @@ public:
         , CMD_UnregisterProxy           //!< Requested to unregister Proxy
         , CMD_RegisterProvider          //!< Requested to register Provider
         , CMD_UnregisterProvider        //!< Requested to unregister Provider
-        , CMD_ConfigureConnection       //!< Requested to configure connection
         , CMD_StartConnection           //!< Requested to start connection, the data is configuration file
-        , CMD_StartNetConnection        //!< Requested to start network connection, the data is IP-address and port number
         , CMD_StopConnection            //!< Requested to stop connection
         , CMD_RegisterConnection        //!< Requested to register connection
         , CMD_UnregisterConnection      //!< Requested to unregister connection
@@ -120,15 +118,6 @@ public:
     static ServiceManagerEventData unregister_stub( const StubAddress & addrStub, areg::DisconnectReason reason );
 
     /**
-     * \brief   Creates event data with the command to configure a remote service connection.
-     *
-     * \param   service         The remote service to configure.
-     * \param   connectTypes    The bitwise set of connection types to configure.
-     * \return  Returns event data to send to the target.
-     **/
-    static ServiceManagerEventData configure_connection(areg::RemoteServiceKind service, uint32_t connectTypes );
-
-    /**
      * \brief   Creates event data with the command to start a router client connection.
      *
      * \param   service         The remote service for which to start the connection.
@@ -136,14 +125,6 @@ public:
      * \return  Returns event data to send to the target.
      **/
     static ServiceManagerEventData start_connection(areg::RemoteServiceKind service, uint32_t connectTypes);
-
-    /**
-     * \brief   Creates event data with the command to start a router client connection to a remote service.
-     *
-     * \param   ipAddress       The IP address of the remote routing service.
-     * \param   portNr          The port number to connect to.
-     **/
-    static ServiceManagerEventData start_net_connection( const String & ipAddress, uint16_t portNr );
 
     /**
      * \brief   Creates event data with the command to stop the connection.
@@ -358,12 +339,8 @@ inline constexpr const char * ServiceManagerEventData::as_string( ServiceManager
         return "ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterProvider";
     case ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProvider:
         return "ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProvider";
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_ConfigureConnection:
-        return "ServiceManagerEventData::ServiceManagerCommand::CMD_ConfigureConnection";
     case ServiceManagerEventData::ServiceManagerCommand::CMD_StartConnection:
         return "ServiceManagerEventData::ServiceManagerCommand::CMD_StartConnection";
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_StartNetConnection:
-        return "ServiceManagerEventData::ServiceManagerCommand::CMD_StartNetConnection";
     case ServiceManagerEventData::ServiceManagerCommand::CMD_StopConnection:
         return "ServiceManagerEventData::ServiceManagerCommand::CMD_StopConnection";
     case ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterConnection:

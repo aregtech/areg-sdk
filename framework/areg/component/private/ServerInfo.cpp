@@ -37,13 +37,6 @@ ServerInfo::ServerInfo( const StubAddress & server )
     set_connection_status( areg::ServiceConnectionState::Connected );
 }
 
-ServerInfo::ServerInfo( StubAddress && server )
-    : mServerAddress( server )
-    , mServerState  ( )
-{
-    set_connection_status( areg::ServiceConnectionState::Connected );
-}
-
 ServerInfo::ServerInfo( const ProxyAddress & proxy )
     : mServerAddress( proxy )
     , mServerState  ( areg::ServiceConnectionState::Pending )
@@ -82,56 +75,12 @@ ServerInfo & ServerInfo::operator = ( ServerInfo && src ) noexcept
     return (*this);
 }
 
-ServerInfo & ServerInfo::operator = ( const StubAddress & server )
-{
-    mServerAddress  = server;
-    set_connection_status( areg::ServiceConnectionState::Connected );
-    
-    return (*this);
-}
-
-ServerInfo & ServerInfo::operator = ( StubAddress && server ) noexcept
-{
-    mServerAddress  = std::move(server);
-    set_connection_status( areg::ServiceConnectionState::Connected );
-    
-    return (*this);
-}
-
 ServerInfo & ServerInfo::operator = (const ServiceAddress & addService)
 {
     mServerAddress = addService;
     set_connection_status( areg::ServiceConnectionState::Pending );
 
     return (*this);
-}
-
-ServerInfo & ServerInfo::operator = ( ServiceAddress && addService ) noexcept
-{
-    mServerAddress = std::move( addService );
-    set_connection_status( areg::ServiceConnectionState::Pending );
-
-    return (*this);
-}
-
-bool ServerInfo::operator == ( const ServerInfo & other ) const
-{
-    return (static_cast<const ServiceAddress&>(other.mServerAddress) == static_cast<const ServiceAddress&>(mServerAddress));
-}
-
-bool ServerInfo::operator == ( const StubAddress & server ) const
-{
-    return static_cast<const ServiceAddress &>(server) == static_cast<const ServiceAddress&>(mServerAddress) && server.is_service_compatible(mServerAddress.service());
-}
-
-bool ServerInfo::operator == ( const ProxyAddress & proxy ) const
-{
-    return mServerAddress == proxy;
-}
-
-ServerInfo::operator uint32_t () const
-{
-    return static_cast<uint32_t>(mServerAddress);
 }
 
 void ServerInfo::set_connection_status(areg::ServiceConnectionState newConnection)

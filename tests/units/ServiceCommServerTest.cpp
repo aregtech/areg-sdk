@@ -947,6 +947,31 @@ TEST_F(ServiceCommServerTest, connection_failure_restarts_only_a_connected_serve
     }
 }
 
+// The server reports a start, a connection failure and a stop to its connection hooks.
+TEST_F(ServiceCommServerTest, server_fires_the_connection_hooks)
+{
+    for (const uint32_t pairs : { 0u, POOL_PAIRS })
+    {
+        Running run(Policy::Accept, pairs);
+        ASSERT_TRUE(run.configure());
+        run.server.connection_failure();
+        EXPECT_EQ(run.server.mStartedCalls.load(), 0u);
+        EXPECT_EQ(run.server.mLostCalls.load(), 0u);
+
+        run.started = run.server.connect_service_host();
+        ASSERT_TRUE(run.started);
+        ASSERT_TRUE(run.server.wait_started(1u));
+        EXPECT_EQ(run.server.mStartedCalls.load(), 1u);
+
+        run.server.connection_failure();
+        EXPECT_EQ(run.server.mLostCalls.load(), 1u);
+
+        run.stop();
+        EXPECT_TRUE(run.server.wait_stopped(1u));
+        EXPECT_EQ(run.server.mStoppedCalls.load(), 1u);
+    }
+}
+
 // A restart drops the connected clients and the server accepts new clients again.
 TEST_F(ServiceCommServerTest, restart_drops_the_clients_and_accepts_new_ones)
 {

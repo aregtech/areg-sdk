@@ -100,14 +100,6 @@ public:
     virtual void close_logger() = 0;
 
     /**
-     * \brief   Called when message should be logged. Every logger should implement method to
-     *          process logger specific logging.
-     *
-     * \param   logMessage     The logging message to process.
-     **/
-    virtual void log_message( const areg::LogEntry & logMessage) = 0;
-
-    /**
      * \brief   Returns true if logger is initialized (opened).
      **/
     [[nodiscard]]

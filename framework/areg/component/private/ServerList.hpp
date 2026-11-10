@@ -108,20 +108,6 @@ private:
      **/
     MAPPOS find_provider(const ProxyAddress& whichClient) const;
 
-    /**
-     * \brief   Finds the server entry position for the given stub address.
-     *
-     * \param   whichServer     The stub address to search for.
-     **/
-    MAPPOS find_provider(const StubAddress& whichServer) const;
-
-    /**
-     * \brief   Finds the server entry position for the given server info.
-     *
-     * \param   server      The server info to search for.
-     **/
-    MAPPOS find_provider(const ServerInfo& server) const;
-
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
