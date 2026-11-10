@@ -339,3 +339,144 @@ TEST(StackTest, test_descending)
     EXPECT_EQ(arr1.size(), _len);
     EXPECT_EQ(arr1, res1);
 }
+
+/**
+ * \brief   Test StackBase copy and move construction and assignment.
+ **/
+TEST(StackTest, test_lock_and_nolock_stack_copy_and_move)
+{
+    constexpr int count{ 6 };
+    const int source[count]{ 1, 2, 3, 4, 5, 6 };
+
+    areg::Stack<int> nolock(source, count);
+    areg::ConcurrentStack<int> lock(source, count);
+    ASSERT_EQ(nolock.size(), static_cast<uint32_t>(count));
+    ASSERT_EQ(lock.size(), static_cast<uint32_t>(count));
+
+    areg::Stack<int> nolockCopy(nolock);
+    areg::ConcurrentStack<int> lockCopy(lock);
+    EXPECT_EQ(nolockCopy.data(), nolock.data());
+    EXPECT_EQ(lockCopy.data(), lock.data());
+
+    areg::Stack<int> nolockMoved(std::move(nolockCopy));
+    areg::ConcurrentStack<int> lockMoved(std::move(lockCopy));
+    EXPECT_EQ(nolockMoved.data(), nolock.data());
+    EXPECT_EQ(lockMoved.data(), lock.data());
+
+    areg::Stack<int> nolockAssigned;
+    areg::ConcurrentStack<int> lockAssigned;
+    nolockAssigned = nolockMoved;
+    lockAssigned = lockMoved;
+    EXPECT_EQ(nolockAssigned.data(), nolock.data());
+    EXPECT_EQ(lockAssigned.data(), lock.data());
+
+    areg::Stack<int> nolockTarget;
+    areg::ConcurrentStack<int> lockTarget;
+    nolockTarget = std::move(nolockAssigned);
+    lockTarget = std::move(lockAssigned);
+    EXPECT_EQ(nolockTarget.data(), nolock.data());
+    EXPECT_EQ(lockTarget.data(), lock.data());
+    EXPECT_TRUE(nolockAssigned.is_empty());
+    EXPECT_TRUE(lockAssigned.is_empty());
+}
+
+/**
+ * \brief   Test StackBase access by position, push_first and element export.
+ **/
+TEST(StackTest, test_lock_and_nolock_stack_access_by_position)
+{
+    areg::Stack<int> nolock;
+    areg::ConcurrentStack<int> lock;
+
+    EXPECT_EQ(nolock.push_last(2), 1u);
+    EXPECT_EQ(lock.push_last(2), 1u);
+    EXPECT_EQ(nolock.push_first(1), 2u);
+    EXPECT_EQ(lock.push_first(1), 2u);
+    EXPECT_EQ(nolock.push_first(0), 3u);
+    EXPECT_EQ(lock.push_first(0), 3u);
+
+    const areg::Stack<int>& constNolock{ nolock };
+    const areg::ConcurrentStack<int>& constLock{ lock };
+    for (int i = 0; i < 3; ++i)
+    {
+        auto posNolock = nolock.find(i);
+        auto posLock = lock.find(i);
+        ASSERT_TRUE(nolock.is_valid_position(posNolock));
+        ASSERT_TRUE(lock.is_valid_position(posLock));
+        EXPECT_EQ(constNolock.value_at(posNolock), i);
+        EXPECT_EQ(constLock.value_at(posLock), i);
+        EXPECT_EQ(constNolock[posNolock], i);
+        EXPECT_EQ(constLock[posLock], i);
+    }
+
+    EXPECT_FALSE(nolock.is_valid_position(nolock.invalid_position()));
+    EXPECT_FALSE(lock.is_valid_position(lock.invalid_position()));
+
+    int exported[5]{ -1, -1, -1, -1, -1 };
+    EXPECT_EQ(nolock.elements(exported, 5u), 3u);
+    EXPECT_EQ(exported[0], 0);
+    EXPECT_EQ(exported[2], 2);
+    EXPECT_EQ(exported[3], -1);
+
+    int limited[2]{ -1, -1 };
+    EXPECT_EQ(lock.elements(limited, 2u), 2u);
+    EXPECT_EQ(limited[0], 0);
+    EXPECT_EQ(limited[1], 1);
+}
+
+/**
+ * \brief   Test StackBase search after a position.
+ **/
+TEST(StackTest, test_lock_and_nolock_stack_search_after_position)
+{
+    constexpr int values[]{ 7, 1, 7, 2, 7 };
+    areg::Stack<int> nolock(values, 5u);
+    areg::ConcurrentStack<int> lock(values, 5u);
+
+    auto first = nolock.find(7);
+    ASSERT_TRUE(nolock.is_first_position(first));
+    auto second = nolock.find(7, first);
+    ASSERT_TRUE(nolock.is_valid_position(second));
+    EXPECT_NE(first, second);
+    auto third = nolock.find(7, second);
+    ASSERT_TRUE(nolock.is_valid_position(third));
+    EXPECT_TRUE(nolock.is_last_position(third));
+    EXPECT_FALSE(nolock.is_valid_position(nolock.find(7, third)));
+    EXPECT_FALSE(nolock.is_valid_position(nolock.find(7, nolock.invalid_position())));
+
+    auto lockFirst = lock.find(7);
+    auto lockSecond = lock.find(7, lockFirst);
+    EXPECT_TRUE(lock.is_valid_position(lockSecond));
+    EXPECT_FALSE(lock.is_valid_position(lock.find(1, lock.find(2))));
+}
+
+/**
+ * \brief   Test StackBase move, free_extra and release.
+ **/
+TEST(StackTest, test_lock_and_nolock_stack_move_and_release)
+{
+    constexpr int values[]{ 1, 2, 3 };
+    areg::Stack<int> nolock(values, 3u);
+    areg::ConcurrentStack<int> lock(values, 3u);
+
+    areg::Stack<int> nolockTarget;
+    areg::ConcurrentStack<int> lockTarget;
+    EXPECT_EQ(nolockTarget.move(std::move(nolock)), 3u);
+    EXPECT_EQ(lockTarget.move(std::move(lock)), 3u);
+    EXPECT_EQ(nolockTarget.size(), 3u);
+    EXPECT_EQ(lockTarget.size(), 3u);
+
+    nolockTarget.clear();
+    lockTarget.clear();
+    nolockTarget.free_extra();
+    lockTarget.free_extra();
+    EXPECT_TRUE(nolockTarget.is_empty());
+    EXPECT_TRUE(lockTarget.is_empty());
+
+    nolockTarget.push_last(1);
+    lockTarget.push_last(1);
+    nolockTarget.release();
+    lockTarget.release();
+    EXPECT_TRUE(nolockTarget.is_empty());
+    EXPECT_TRUE(lockTarget.is_empty());
+}

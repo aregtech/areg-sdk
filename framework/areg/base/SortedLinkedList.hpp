@@ -1125,10 +1125,6 @@ inline void SortedLinkedList<VALUE>::merge(SortedLinkedList<VALUE>&& source)
     source.mValueList.sort();
     mValueList.merge(std::move(source.mValueList));
     resort();
-    if (source.is_empty() == false)
-    {
-        source.mSorting = mSorting;
-    }
 }
 
 template<typename VALUE>

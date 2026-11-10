@@ -1162,11 +1162,22 @@ int main(int argc, char * argv[])
     bool ok{ false };
 
     // With AREG_TEST_LOG_CONFIG naming a configuration file, the case runs with logging started.
+#ifdef _WIN32
+    char * logConfig{ nullptr };
+    std::size_t logConfigLen{ 0 };
+    if ((::_dupenv_s(&logConfig, &logConfigLen, "AREG_TEST_LOG_CONFIG") == 0) && (logConfig != nullptr) && (*logConfig != '\0'))
+    {
+        static_cast<void>(areg::start_logging(logConfig));
+    }
+
+    std::free(logConfig);
+#else   // _WIN32
     const char * logConfig{ std::getenv("AREG_TEST_LOG_CONFIG") };
     if ((logConfig != nullptr) && (*logConfig != '\0'))
     {
         static_cast<void>(areg::start_logging(logConfig));
     }
+#endif  // _WIN32
 
     // The children, ended by their failure policy.
     if (std::strcmp(name, "exit-watchdog-child") == 0)

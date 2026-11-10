@@ -317,3 +317,50 @@ TEST(FixedArrayTest, boundary_equal_size_copy_replaces_values)
     ASSERT_EQ(values.size(), 1u);
     EXPECT_EQ(values[0], 3);
 }
+
+/**
+ * \brief   Test FixedArray const access, rvalue setter and export of the elements.
+ **/
+TEST(FixedArrayTest, test_const_access_rvalue_set_and_elements)
+{
+    using FixedArray = areg::FixedArray<int>;
+    constexpr int values[]{ 10, 20, 30, 40 };
+
+    FixedArray array(values, 4u);
+    ASSERT_EQ(array.size(), 4u);
+
+    array.set_value_at(1u, 21);
+    array.set_value_at(2u, int{ 31 });
+    const FixedArray& constArray{ array };
+    EXPECT_EQ(constArray.value_at(0u), 10);
+    EXPECT_EQ(constArray.value_at(1u), 21);
+    EXPECT_EQ(constArray.value_at(2u), 31);
+    EXPECT_EQ(constArray.first_entry(), 10);
+    EXPECT_EQ(constArray.last_entry(), 40);
+
+    int all[6]{ -1, -1, -1, -1, -1, -1 };
+    EXPECT_EQ(array.elements(all, 6u), 4u);
+    EXPECT_EQ(all[0], 10);
+    EXPECT_EQ(all[3], 40);
+    EXPECT_EQ(all[4], -1);
+
+    int some[2]{ -1, -1 };
+    EXPECT_EQ(array.elements(some, 2u), 2u);
+    EXPECT_EQ(some[1], 21);
+}
+
+/**
+ * \brief   Test FixedArray construction from an empty list and sort of an empty array.
+ **/
+TEST(FixedArrayTest, test_empty_list_and_empty_sort)
+{
+    using FixedArray = areg::FixedArray<int>;
+    constexpr int values[]{ 1 };
+
+    FixedArray empty(values, 0u);
+    EXPECT_TRUE(empty.is_empty());
+    EXPECT_EQ(empty.size(), 0u);
+
+    empty.sort([](int a, int b) { return a < b; });
+    EXPECT_TRUE(empty.is_empty());
+}

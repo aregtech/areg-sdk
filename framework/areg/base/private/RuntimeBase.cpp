@@ -45,7 +45,7 @@ uint32_t RuntimeBase::class_number() const noexcept
 
 bool RuntimeBase::is_runtime( const char * className ) const noexcept
 {
-    return (RuntimeBase::CLASS_ID.name() == className);
+    return (RuntimeBase::CLASS_ID == className);
 }
 
 bool RuntimeBase::is_runtime( std::string_view className ) const noexcept

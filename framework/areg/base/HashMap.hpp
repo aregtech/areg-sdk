@@ -797,7 +797,7 @@ inline std::pair<typename HashMap<KEY, VALUE>::MAPPOS, bool> HashMap<KEY, VALUE>
 template < typename KEY, typename VALUE >
 inline std::pair<typename HashMap<KEY, VALUE>::MAPPOS, bool> HashMap<KEY, VALUE>::add_if_unique( KEY && newKey, VALUE && newValue, bool updateExisting /*= false*/ )
 {
-    auto result = mValueList.emplace( std::move(newKey), std::move(newValue) );
+    auto result = mValueList.try_emplace( std::move(newKey), std::move(newValue) );
     if ( updateExisting && !result.second )
     {
         ASSERT( result.first != mValueList.end( ) );

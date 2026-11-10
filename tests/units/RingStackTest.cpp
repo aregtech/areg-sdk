@@ -1180,3 +1180,48 @@ TEST(RingStackTest, boundary_owning_elements_survive_growth_shrink_and_empty_cop
     stack.free_extra();
     EXPECT_EQ(stack.capacity(), 0u);
 }
+
+// A full ring with an invalid overlap policy rejects the push and keeps its values.
+TEST(RingStackTest, invalid_overlap_policy_rejects_push_when_full)
+{
+    areg::RingStack<int32_t> stack(2u, static_cast<areg::OverlapPolicy>(99));
+    EXPECT_EQ(stack.push(1), 1u);
+    EXPECT_EQ(stack.push(2), 2u);
+#if defined(DEBUG) && GTEST_HAS_DEATH_TEST
+    ::testing::GTEST_FLAG(death_test_style) = "threadsafe";
+    EXPECT_DEATH(stack.push(3), "");
+#else   // defined(DEBUG) && GTEST_HAS_DEATH_TEST
+    EXPECT_EQ(stack.push(3), 2u);
+    EXPECT_EQ(stack.size(), 2u);
+    EXPECT_EQ(stack.pop(), 1);
+    EXPECT_EQ(stack.pop(), 2);
+#endif  // defined(DEBUG) && GTEST_HAS_DEATH_TEST
+}
+
+// Popping an empty ring returns a default value and leaves the ring empty.
+TEST(RingStackTest, pop_of_empty_ring_returns_default_value)
+{
+    areg::RingStack<int32_t> stack(2u, areg::OverlapPolicy::Stop);
+#if defined(DEBUG) && GTEST_HAS_DEATH_TEST
+    ::testing::GTEST_FLAG(death_test_style) = "threadsafe";
+    EXPECT_DEATH(static_cast<void>(stack.pop()), "");
+#else   // defined(DEBUG) && GTEST_HAS_DEATH_TEST
+    EXPECT_EQ(stack.pop(), 0);
+    EXPECT_TRUE(stack.is_empty());
+    EXPECT_EQ(stack.push(4), 1u);
+    EXPECT_EQ(stack.pop(), 4);
+#endif  // defined(DEBUG) && GTEST_HAS_DEATH_TEST
+}
+
+// An emptied ring without storage pops a default value and stays empty.
+TEST(RingStackTest, pop_of_ring_without_storage_returns_default_value)
+{
+    areg::RingStack<std::string> stack(0u, areg::OverlapPolicy::Stop);
+#if defined(DEBUG) && GTEST_HAS_DEATH_TEST
+    ::testing::GTEST_FLAG(death_test_style) = "threadsafe";
+    EXPECT_DEATH(static_cast<void>(stack.pop()), "");
+#else   // defined(DEBUG) && GTEST_HAS_DEATH_TEST
+    EXPECT_TRUE(stack.pop().empty());
+    EXPECT_TRUE(stack.is_empty());
+#endif  // defined(DEBUG) && GTEST_HAS_DEATH_TEST
+}

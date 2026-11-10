@@ -82,11 +82,10 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Returns a reference to the shared invalid RuntimeClassID singleton.
-     *          Used as a default value in hash-map blocks.
+     * \brief   Returns a read-only reference to the shared invalid RuntimeClassID.
      **/
     [[nodiscard]]
-    static RuntimeClassID & empty_id() noexcept;
+    static const RuntimeClassID & empty_id() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -141,6 +140,9 @@ public:
 
     friend inline constexpr bool operator != ( uint32_t lhs, const RuntimeClassID & rhs ) noexcept;
 
+    /**
+     * \brief   Compares the magic numbers, then the names if the numbers are equal.
+     **/
     [[nodiscard]]
     inline constexpr bool operator == ( const RuntimeClassID & other ) const noexcept;
 
@@ -153,6 +155,9 @@ public:
     [[nodiscard]]
     inline bool operator == ( const String & other ) const noexcept;
 
+    /**
+     * \brief   Compares the magic numbers, then the names if the numbers are equal.
+     **/
     [[nodiscard]]
     inline constexpr bool operator != ( const RuntimeClassID & other ) const noexcept;
 
@@ -254,9 +259,9 @@ inline constexpr RuntimeClassID::RuntimeClassID(RuntimeClassID&& src) noexcept
 // RuntimeClassID singleton
 //////////////////////////////////////////////////////////////////////////
 
-inline RuntimeClassID & RuntimeClassID::empty_id() noexcept
+inline const RuntimeClassID & RuntimeClassID::empty_id() noexcept
 {
-    static RuntimeClassID _runtime;
+    static constexpr RuntimeClassID _runtime;
     return _runtime;
 }
 
@@ -289,12 +294,12 @@ inline constexpr RuntimeClassID& RuntimeClassID::operator = (RuntimeClassID&& sr
 
 inline constexpr bool RuntimeClassID::operator == ( const RuntimeClassID & other ) const noexcept
 {
-    return (mMagicNum == other.mMagicNum);
+    return ((mMagicNum == other.mMagicNum) && (mClassName == other.mClassName));
 }
 
 inline constexpr bool RuntimeClassID::operator == ( const char * other ) const noexcept
 {
-    return (mClassName == other);
+    return ((other != nullptr) && (mClassName == other));
 }
 
 inline constexpr bool RuntimeClassID::operator == ( std::string_view other ) const noexcept
@@ -309,12 +314,12 @@ inline bool RuntimeClassID::operator == ( const String & other ) const noexcept
 
 inline constexpr bool RuntimeClassID::operator != ( const RuntimeClassID & other ) const noexcept
 {
-    return (mMagicNum != other.mMagicNum);
+    return ((mMagicNum != other.mMagicNum) || (mClassName != other.mClassName));
 }
 
 inline constexpr bool RuntimeClassID::operator != ( const char * other ) const noexcept
 {
-    return (mClassName != other);
+    return ((other == nullptr) || (mClassName != other));
 }
 
 inline constexpr bool RuntimeClassID::operator != ( std::string_view other ) const noexcept
@@ -354,7 +359,7 @@ inline constexpr uint32_t RuntimeClassID::magic() const noexcept
 [[nodiscard]]
 inline constexpr bool operator == ( const char * lhs, const RuntimeClassID & rhs ) noexcept
 {
-    return (rhs.mClassName == lhs);
+    return (rhs == lhs);
 }
 
 [[nodiscard]]
@@ -372,7 +377,7 @@ inline bool operator == ( const String & lhs, const RuntimeClassID & rhs ) noexc
 [[nodiscard]]
 inline constexpr bool operator != ( const char * lhs, const RuntimeClassID & rhs ) noexcept
 {
-    return (rhs.mClassName != lhs);
+    return (rhs != lhs);
 }
 
 [[nodiscard]]

@@ -129,9 +129,6 @@ private:
         [[nodiscard]]
         inline constexpr bool operator == ( const ProxyBase::Listener & other ) const noexcept;
 
-        [[nodiscard]]
-        inline constexpr bool operator != ( const ProxyBase::Listener & other ) const noexcept;
-
     //////////////////////////////////////////////////////////////////////////
     // Member variables
     //////////////////////////////////////////////////////////////////////////
@@ -1016,11 +1013,6 @@ inline constexpr bool ProxyBase::Listener::operator == (const ProxyBase::Listene
         return true;
     else
         return false;
-}
-
-inline constexpr bool ProxyBase::Listener::operator != (const ProxyBase::Listener& other) const noexcept
-{
-    return !(*this == other);
 }
 
 //////////////////////////////////////////////////////////////////////////

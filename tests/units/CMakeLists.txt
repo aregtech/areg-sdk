@@ -65,6 +65,8 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     RemainderCoverageTest.cpp
     StringDefsEdgeTest.cpp
     StreamPrimitivesTest.cpp
+    StreamTextUnitsTest.cpp
+    RuntimeClassIDTest.cpp
     FileBufferTest.cpp
     FileTest.cpp
     FileOsCoverageTest.cpp

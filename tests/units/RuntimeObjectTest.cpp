@@ -14,6 +14,7 @@
  ************************************************************************/
 
 #include "units/GUnitTest.hpp"
+#include "units/ChildProcess.hpp"
 #include "areg/base/RuntimeObject.hpp"
 #include "areg/base/private/RuntimeBase.hpp"
 #include "areg/base/RuntimeClassID.hpp"
@@ -218,6 +219,21 @@ TEST(RuntimeBaseTest, is_runtime_matches_only_the_base_class)
     EXPECT_FALSE(raw.is_runtime(areg::RuntimeObject::CLASS_ID));
     EXPECT_FALSE(raw.is_runtime(areg::RuntimeObject::CLASS_ID.magic()));
     EXPECT_FALSE(raw.is_runtime(""));
+}
+
+/**
+ * \brief   Reproduces the defect: is_runtime() with a null C string built a string view from the null
+ *          pointer and crashed.
+ **/
+TEST(RuntimeBaseTest, is_runtime_with_null_c_string_is_false)
+{
+    AREG_EXPECT_IN_CHILD(
+        const char* const nothing{ std::string_view().empty() ? nullptr : "x" };
+        RtRaw raw;
+        RtAlpha alpha;
+        AREG_CHILD_CHECK(raw.is_runtime(nothing) == false);
+        AREG_CHILD_CHECK(alpha.is_runtime(nothing) == false);
+    );
 }
 
 //////////////////////////////////////////////////////////////////////////

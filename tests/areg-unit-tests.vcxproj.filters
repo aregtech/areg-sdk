@@ -418,6 +418,12 @@
     <ClCompile Include="units\StreamPrimitivesTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="units\StreamTextUnitsTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\RuntimeClassIDTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="units\StreamExtractTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

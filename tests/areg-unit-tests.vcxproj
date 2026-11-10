@@ -150,6 +150,8 @@
     <ClCompile Include="units\RemainderCoverageTest.cpp" />
     <ClCompile Include="units\StringDefsEdgeTest.cpp" />
     <ClCompile Include="units\StreamPrimitivesTest.cpp" />
+    <ClCompile Include="units\StreamTextUnitsTest.cpp" />
+    <ClCompile Include="units\RuntimeClassIDTest.cpp" />
     <ClCompile Include="units\ReceiveCacheTest.cpp" />
     <ClCompile Include="units\ReceivedHeaderTest.cpp" />
     <ClCompile Include="units\RingStackTest.cpp" />
