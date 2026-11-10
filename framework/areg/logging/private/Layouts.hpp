@@ -139,8 +139,6 @@ public:
 
     TickCountLayout( TickCountLayout && src ) noexcept;
 
-    ~TickCountLayout() noexcept override = default;
-
 public:
 /************************************************************************/
 // LogLayout interface overrides
@@ -169,8 +167,6 @@ public:
     DayTimeLayout( const DayTimeLayout & src ) noexcept;
 
     DayTimeLayout( DayTimeLayout && src ) noexcept;
-
-    ~DayTimeLayout() noexcept override = default;
 
 public:
 
@@ -202,8 +198,6 @@ public:
 
     ModuleIdLayout( ModuleIdLayout && src ) noexcept;
 
-    ~ModuleIdLayout() noexcept override = default;
-
 public:
 
 /************************************************************************/
@@ -227,8 +221,6 @@ public:
     MessageLayout( const MessageLayout & src ) noexcept;
 
     MessageLayout( MessageLayout && src ) noexcept;
-
-    ~MessageLayout() noexcept override = default;
 
 public:
 
@@ -260,8 +252,6 @@ public:
 
     EndOfLineLayout( EndOfLineLayout && src ) noexcept;
 
-    ~EndOfLineLayout() noexcept override = default;
-
 public:
 
 /************************************************************************/
@@ -291,8 +281,6 @@ public:
     PriorityLayout( const PriorityLayout & src ) noexcept;
 
     PriorityLayout( PriorityLayout && src ) noexcept;
-
-    ~PriorityLayout() noexcept override = default;
 
 public:
 
@@ -324,8 +312,6 @@ public:
 
     ScopeIdLayout( ScopeIdLayout && src ) noexcept;
 
-    ~ScopeIdLayout() noexcept override = default;
-
 public:
 
 /************************************************************************/
@@ -355,8 +341,6 @@ public:
     ThreadIdLayout( const ThreadIdLayout & src ) noexcept;
 
     ThreadIdLayout( ThreadIdLayout && src ) noexcept;
-
-    ~ThreadIdLayout() noexcept override = default;
 
 public:
 
@@ -388,8 +372,6 @@ public:
 
     ModuleNameLayout( ModuleNameLayout && src ) noexcept;
 
-    ~ModuleNameLayout() noexcept override = default;
-
 public:
 
 /************************************************************************/
@@ -420,8 +402,6 @@ public:
 
     ThreadNameLayout( ThreadNameLayout && src ) noexcept;
 
-    ~ThreadNameLayout() noexcept override = default;
-
 public:
 
 /************************************************************************/
@@ -451,8 +431,6 @@ public:
     ScopeNameLayout( const ScopeNameLayout & src ) noexcept;
 
     ScopeNameLayout( ScopeNameLayout && src ) noexcept;
-
-    ~ScopeNameLayout() noexcept override = default;
 
 public:
 
@@ -488,7 +466,7 @@ public:
 
     AnyTextLayout( AnyTextLayout && src ) noexcept;
 
-    ~AnyTextLayout() override = default;
+    ~AnyTextLayout() final = default;
 
 public:
 
@@ -525,8 +503,6 @@ public:
     CookieIdLayout( const CookieIdLayout& src ) noexcept;
 
     CookieIdLayout(CookieIdLayout&& src ) noexcept;
-
-    ~CookieIdLayout() noexcept override = default;
 
 public:
 

@@ -117,12 +117,14 @@ TEST(RuntimeClassIDTest, copy_and_move)
     EXPECT_EQ(moved, source);
     EXPECT_EQ(copy.name(), name);
 
-    areg::RuntimeClassID other(std::string("Other").c_str());
+    const std::string otherName{ "Other" };
+    areg::RuntimeClassID other(otherName.c_str());
     other = source;
     EXPECT_EQ(other.name(), name);
     EXPECT_EQ(other.magic(), source.magic());
 
-    areg::RuntimeClassID target(std::string("Target").c_str());
+    const std::string targetName{ "Target" };
+    areg::RuntimeClassID target(targetName.c_str());
     target = areg::RuntimeClassID(name.c_str());
     EXPECT_EQ(target.name(), name);
 
@@ -139,9 +141,11 @@ TEST(RuntimeClassIDTest, copy_and_move)
  **/
 TEST(RuntimeClassIDTest, compare_identifiers)
 {
-    const areg::RuntimeClassID first(std::string("First").c_str());
-    const areg::RuntimeClassID same(std::string("First").c_str());
-    const areg::RuntimeClassID second(std::string("Second").c_str());
+    const std::string firstName{ "First" };
+    const std::string secondName{ "Second" };
+    const areg::RuntimeClassID first(firstName.c_str());
+    const areg::RuntimeClassID same(firstName.c_str());
+    const areg::RuntimeClassID second(secondName.c_str());
     EXPECT_TRUE(first == same);
     EXPECT_FALSE(first != same);
     EXPECT_FALSE(first == second);
@@ -196,7 +200,8 @@ TEST(RuntimeClassIDTest, compare_with_names)
  **/
 TEST(RuntimeClassIDTest, compare_with_magic_number)
 {
-    const areg::RuntimeClassID id(std::string("MagicClass").c_str());
+    const std::string name{ "MagicClass" };
+    const areg::RuntimeClassID id(name.c_str());
     const uint32_t magic{ id.magic() };
     EXPECT_TRUE(magic == id);
     EXPECT_FALSE(magic != id);
@@ -211,8 +216,10 @@ TEST(RuntimeClassIDTest, compare_with_magic_number)
 TEST(RuntimeClassIDTest, identifier_as_map_key)
 {
     std::unordered_map<uint32_t, int> map;
-    const areg::RuntimeClassID first(std::string("KeyOne").c_str());
-    const areg::RuntimeClassID second(std::string("KeyTwo").c_str());
+    const std::string firstName{ "KeyOne" };
+    const std::string secondName{ "KeyTwo" };
+    const areg::RuntimeClassID first(firstName.c_str());
+    const areg::RuntimeClassID second(secondName.c_str());
     map[static_cast<uint32_t>(first)] = 1;
     map[static_cast<uint32_t>(second)] = 2;
     EXPECT_EQ(map[first.magic()], 1);
@@ -247,7 +254,8 @@ TEST(RuntimeClassIDTest, identifiers_with_same_magic_and_different_names_are_dif
 TEST(RuntimeClassIDTest, compare_with_null_c_string)
 {
     AREG_EXPECT_IN_CHILD(
-        const areg::RuntimeClassID id(std::string("NullCompare").c_str());
+        const std::string name{ "NullCompare" };
+        const areg::RuntimeClassID id(name.c_str());
         const char* const nothing{ std::string().empty() ? nullptr : "x" };
         AREG_CHILD_CHECK((id == nothing) == false);
         AREG_CHILD_CHECK(id != nothing);
