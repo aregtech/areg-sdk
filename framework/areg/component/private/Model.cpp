@@ -227,6 +227,7 @@ areg::WorkerThreadEntry::WorkerThreadEntry( const String & masterThreadName
     , mDropOnFull       (queueDropEvent)
     , mQueueTimeout     (queueTimeout)
 {
+    areg::cut_item_name(mThreadName);
 }
 
 bool areg::WorkerThreadEntry::operator == ( const areg::WorkerThreadEntry & other ) const noexcept
@@ -295,6 +296,7 @@ bool areg::WorkerThreadList::is_valid() const noexcept
 areg::DependencyEntry::DependencyEntry( const String & roleName )
     : mRoleName(roleName)
 {
+    areg::cut_item_name(mRoleName);
 }
 
 bool areg::DependencyEntry::operator == ( const areg::DependencyEntry & other ) const noexcept
@@ -315,6 +317,7 @@ bool areg::DependencyEntry::is_valid() const noexcept
 void areg::DependencyEntry::set_dependent_service( const String & roleName )
 {
     mRoleName   = roleName;
+    areg::cut_item_name(mRoleName);
 }
 
 const areg::String & areg::DependencyEntry::depdendent_service() const noexcept
@@ -395,6 +398,8 @@ areg::ComponentEntry::ComponentEntry( const String & masterThreadName, const Str
     , mFuncDelete           (funcDelete)
     , mComponentData        ( )
 {
+    areg::cut_item_name(mRoleName);
+    areg::cut_item_name(mThreadName);
 }
 
 areg::ComponentEntry::ComponentEntry( const String & masterThreadName
@@ -415,6 +420,8 @@ areg::ComponentEntry::ComponentEntry( const String & masterThreadName
     , mFuncDelete           (funcDelete)
     , mComponentData        ( )
 {
+    areg::cut_item_name(mRoleName);
+    areg::cut_item_name(mThreadName);
 }
 
 areg::ComponentEntry::ComponentEntry( const String & masterThreadName
@@ -435,6 +442,8 @@ areg::ComponentEntry::ComponentEntry( const String & masterThreadName
     , mFuncDelete           (funcDelete)
     , mComponentData        ( )
 {
+    areg::cut_item_name(mRoleName);
+    areg::cut_item_name(mThreadName);
 }
 
 areg::ComponentEntry::ComponentEntry( const areg::ComponentEntry & src )
@@ -813,6 +822,7 @@ areg::ComponentThreadEntry::ComponentThreadEntry( const String & threadName
     , mLifecycleTimeout (areg::LIFECYCLE_TIMEOUT_DEFAULT)
     , mFailurePolicy    (areg::FailurePolicy::Exit)
 {
+    areg::cut_item_name(mThreadName);
 }
 
 areg::ComponentThreadEntry::ComponentThreadEntry( const String & threadName
@@ -832,6 +842,7 @@ areg::ComponentThreadEntry::ComponentThreadEntry( const String & threadName
     , mLifecycleTimeout (areg::LIFECYCLE_TIMEOUT_DEFAULT)
     , mFailurePolicy    (areg::FailurePolicy::Exit)
 {
+    areg::cut_item_name(mThreadName);
 }
 
 bool areg::ComponentThreadEntry::operator == ( const areg::ComponentThreadEntry & other ) const noexcept

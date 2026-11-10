@@ -34,6 +34,9 @@ foreach(_registration_case
         registration-consumer-disconnect
         registration-same-source
         duplicate-role
+        name-collision-provider
+        name-collision-consumer-provider-first
+        name-collision-consumer-consumer-first
         held-provider-takeover
         held-provider-cancel
         held-provider-disconnect

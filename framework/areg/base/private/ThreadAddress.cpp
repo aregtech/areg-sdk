@@ -61,7 +61,7 @@ ThreadAddress::ThreadAddress( const char * threadName )
     : mThreadName   ( threadName != nullptr ? threadName : INVALID_THREAD_NAME )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
-    mThreadName.truncate( areg::ITEM_NAMES_MAX_LENGTH );
+    areg::cut_item_name( mThreadName );
     mMagicNum    = ThreadAddress::_magic_number(*this);
 }
 
@@ -69,6 +69,7 @@ ThreadAddress::ThreadAddress( const String & threadName )
     : mThreadName   ( threadName )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
+    areg::cut_item_name( mThreadName );
     mMagicNum    = ThreadAddress::_magic_number(*this);
 }
 
@@ -124,6 +125,7 @@ void ThreadAddress::from_string(const char * threadPath, const char** nextPart /
     }
 
     mThreadName  = String::substr(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource);
+    mThreadName.truncate(areg::ITEM_NAMES_MAX_LENGTH);
     if (areg::parse_address_number(mThreadName.data(), mMagicNum))
         mThreadName.clear();
     else

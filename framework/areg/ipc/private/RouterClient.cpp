@@ -289,16 +289,28 @@ namespace
     {
         LOG_SCOPE( areg_ipc_private_RouterClient, report_duplicate_role );
 
-        const StubAddress stub(*msgReceived.header());
+        StubAddress stub(*msgReceived.header());
+        stub.set_name_check(msgReceived.header()->reserved);
         areg::ConnectedInstance other{ };
         msgReceived >> other;
 #if AREG_LOGGING
         const StubAddress named{ StubBase::registered_address(stub) };
-        LOG_ERR("Duplicate role name [ %s ] of service [ %s ]: process [ %s ] (%s) registers the same public role name. A role name is unique in the network; only the first registration is served"
-                    , named.role_name().as_string()
-                    , named.service_name().as_string()
-                    , other.ciInstance.c_str()
-                    , other.ciLocation.c_str());
+        if (named.has_name_conflict(stub))
+        {
+            LOG_ERR("Role name [ %s ] of service [ %s ] has the number of another role name of process [ %s ] (%s). Rename one of them; only the first registration is served"
+                        , named.role_name().as_string()
+                        , named.service_name().as_string()
+                        , other.ciInstance.c_str()
+                        , other.ciLocation.c_str());
+        }
+        else
+        {
+            LOG_ERR("Duplicate role name [ %s ] of service [ %s ]: process [ %s ] (%s) registers the same public role name. A role name is unique in the network; only the first registration is served"
+                        , named.role_name().as_string()
+                        , named.service_name().as_string()
+                        , other.ciInstance.c_str()
+                        , other.ciLocation.c_str());
+        }
 #endif  // AREG_LOGGING
     }
 }
@@ -349,6 +361,7 @@ void RouterClient::process_received_message( MessageEnvelope & msgReceived, Sock
         {
             ProxyAddress proxy(*msgReceived.header());
             proxy.set_source( source );
+            proxy.set_name_check( msgReceived.header()->reserved );
             mRegisterConsumer.on_consumer_registered(proxy);
         }
         break;
@@ -357,6 +370,7 @@ void RouterClient::process_received_message( MessageEnvelope & msgReceived, Sock
         {
             StubAddress stub(*msgReceived.header());
             stub.set_source( source );
+            stub.set_name_check( msgReceived.header()->reserved );
             mRegisterConsumer.on_provider_registered( stub );
         }
         break;

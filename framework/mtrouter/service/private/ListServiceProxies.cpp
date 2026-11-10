@@ -89,8 +89,16 @@ int32_t ListServiceProxies::stub_service_available( const areg::StubAddress & ad
     int32_t result = 0;
     for ( LISTPOS pos = first_position(); is_valid_position(pos); pos = next_position(pos) )
     {
+        // A consumer of another version or another role name with the same number waits.
         ServiceProxy & proxyService = value_at(pos);
-        result += proxyService.stub_available(addrStub) ? 1 : 0;
+        if (addrStub == proxyService.service_address())
+        {
+            result += proxyService.stub_available(addrStub) ? 1 : 0;
+        }
+        else
+        {
+            static_cast<void>(proxyService.stub_unavailable());
+        }
     }
 
     return result;

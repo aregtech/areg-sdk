@@ -46,7 +46,7 @@ ServiceItem::ServiceItem(const String & serviceName)
     , mServiceType      ( areg::ServiceType::Local )
     , mMagicNum         ( areg::CHECKSUM_IGNORE )
 {
-    mServiceName.truncate(areg::ITEM_NAMES_MAX_LENGTH);
+    areg::cut_item_name(mServiceName);
     mMagicNum = ServiceItem::_magic_number(*this);
 }
 
@@ -64,7 +64,7 @@ ServiceItem::ServiceItem( const String & serviceName, const Version & serviceVer
     , mServiceType      ( serviceType )
     , mMagicNum         ( areg::CHECKSUM_IGNORE )
 {
-    mServiceName.truncate(areg::ITEM_NAMES_MAX_LENGTH);
+    areg::cut_item_name(mServiceName);
     mMagicNum = ServiceItem::_magic_number(*this);
 }
 
@@ -113,6 +113,7 @@ void ServiceItem::from_string(  const char* pathService, const char** nextPart /
 {
     const char* strSource   = pathService;
     mServiceName        = String::substr(strSource, areg::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
+    mServiceName.truncate(areg::ITEM_NAMES_MAX_LENGTH);
     mServiceVersion     = String::substr(strSource, areg::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
     String serviceType  = String::substr(strSource, areg::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
     mServiceType        = static_cast<areg::ServiceType>(serviceType.to_int32());

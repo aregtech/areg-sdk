@@ -101,6 +101,7 @@ void RouterServerService::on_message_received(const areg::MessageEnvelope &msgRe
                     areg::StubAddress stubService(*msgReceived.header());
                     stubService.set_cookie(static_cast<ITEM_ID>(source));
                     stubService.set_source(static_cast<ITEM_ID>(source));
+                    stubService.set_name_check(msgReceived.header()->reserved);
                     on_provider_registered(stubService);
                 }
                 break;
@@ -110,6 +111,7 @@ void RouterServerService::on_message_received(const areg::MessageEnvelope &msgRe
                     areg::ProxyAddress proxyService(*msgReceived.header());
                     proxyService.set_cookie(static_cast<ITEM_ID>(source));
                     proxyService.set_source(static_cast<ITEM_ID>(source));
+                    proxyService.set_name_check(msgReceived.header()->reserved);
                     on_consumer_registered(proxyService);
                 }
                 break;
@@ -344,15 +346,19 @@ void RouterServerService::reject_duplicates()
         static_cast<void>(instances.find(holderSource, holderInstance));
         static_cast<void>(instances.find(held.source(), heldInstance));
 
-        LOG_ERR("Duplicate role name: [ %s ] is provided by [ %s ] (source [ %u ]), the registration from [ %s ] (source [ %u ]) is rejected"
+        LOG_ERR("%s: [ %s ] is provided by [ %s ] (source [ %u ]), the registration from [ %s ] (source [ %u ]) is rejected"
+                    , holder.service_address().has_name_conflict(held) ? "Two role names with one number" : "Duplicate role name"
                     , areg::StubAddress::to_path(held).as_string()
                     , holderInstance.ciInstance.c_str()
                     , static_cast<uint32_t>(holderSource)
                     , heldInstance.ciInstance.c_str()
                     , static_cast<uint32_t>(held.source()));
 
+        // Each process receives the name check of the other provider.
+        areg::StubAddress heldNamedAsHolder{ held };
+        heldNamedAsHolder.set_name_check(holder.service_address().name_check());
         send_message(areg::service_duplicate_event(held, heldInstance, mServerConnection.channel_id(), holderSource));
-        send_message(areg::service_duplicate_event(held, holderInstance, mServerConnection.channel_id(), held.source()));
+        send_message(areg::service_duplicate_event(heldNamedAsHolder, holderInstance, mServerConnection.channel_id(), held.source()));
         send_message(areg::service_unregistered_event(held, areg::DisconnectReason::ProviderRejected, mServerConnection.channel_id(), held.source()));
     }
 
@@ -438,6 +444,14 @@ void RouterServerService::on_provider_registered(const areg::StubAddress & stub)
                         LOG_DBG("Ignoring sending provider registration message to target [ %u ], target already notified", static_cast<uint32_t>(addrProxy.source()));
                     }
                 }
+                else if ( stub.has_name_conflict(addrProxy) )
+                {
+                    LOG_ERR("Two role names with one number: the consumer [ %s ] (source [ %u ]) does not connect to the provider [ %s ] (source [ %u ])"
+                                , areg::ProxyAddress::to_path(addrProxy).as_string()
+                                , static_cast<uint32_t>(addrProxy.source())
+                                , areg::StubAddress::to_path(stub).as_string()
+                                , static_cast<uint32_t>(stub.source()));
+                }
                 else
                 {
                      // ignore, it already has registered provider locally or proxy is not connected
@@ -470,6 +484,14 @@ void RouterServerService::on_consumer_registered(const areg::ProxyAddress & prox
         ServiceProxy proxyService;
         const ServiceStub & stubService   = mServiceRegistry.register_service_proxy(proxy, proxyService);
         const areg::StubAddress & addrStub= stubService.service_address();
+        if ( stubService.is_connected() && addrStub.has_name_conflict(proxy) )
+        {
+            LOG_ERR("Two role names with one number: the consumer [ %s ] (source [ %u ]) does not connect to the provider [ %s ] (source [ %u ])"
+                        , areg::ProxyAddress::to_path(proxy).as_string()
+                        , static_cast<uint32_t>(proxy.source())
+                        , areg::StubAddress::to_path(addrStub).as_string()
+                        , static_cast<uint32_t>(addrStub.source()));
+        }
 
         LOG_DBG("Registered proxy [ %s ], for connection with stub [ %s ], connection status is [ %s ]"
                     , areg::ProxyAddress::to_path(proxy).as_string()

@@ -38,6 +38,7 @@ namespace {
         addr.to_endpoint(hdr.rawService, hdr.provider);
         hdr.callType   = static_cast<uint8_t>(reqType);
         hdr.result     = static_cast<uint32_t>(reason);
+        hdr.reserved   = addr.name_check();
         out.init_envelope(hdr);
     }
 
@@ -51,6 +52,7 @@ namespace {
         addr.to_endpoint(hdr.rawService, hdr.consumer);
         hdr.callType   = static_cast<uint8_t>(reqType);
         hdr.result     = static_cast<uint32_t>(reason);
+        hdr.reserved   = addr.name_check();
         out.init_envelope(hdr);
     }
 
@@ -64,6 +66,7 @@ namespace {
         addr.to_endpoint(hdr.rawService, hdr.provider);
         hdr.callType   = static_cast<uint8_t>(reqType);
         hdr.result     = static_cast<uint32_t>(reason);
+        hdr.reserved   = addr.name_check();
         out.init_envelope(hdr);
     }
 
@@ -77,6 +80,7 @@ namespace {
         addr.to_endpoint(hdr.rawService, hdr.consumer);
         hdr.callType   = static_cast<uint8_t>(reqType);
         hdr.result     = static_cast<uint32_t>(reason);
+        hdr.reserved   = addr.name_check();
         out.init_envelope(hdr);
     }
 
@@ -230,6 +234,7 @@ AREG_API_IMPL areg::MessageEnvelope areg::service_duplicate_event(const StubAddr
         static constexpr areg::EventHeader HDR{ areg::message_duplicate_notify() };
         areg::EventHeader hdr{ HDR };
         stub.to_endpoint(hdr.rawService, hdr.provider);
+        hdr.reserved = stub.name_check();
         hdr.source = static_cast<uint32_t>(source);
         hdr.target = static_cast<uint32_t>(target);
         if (msgResult.init_envelope(hdr, sizeof(areg::ConnectedInstance)) != nullptr)

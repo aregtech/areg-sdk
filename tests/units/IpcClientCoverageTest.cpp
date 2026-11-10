@@ -1420,8 +1420,9 @@ namespace
 /**
  * \brief   The router client of an application takes, in order, a duplicate role notice, a
  *          message the client does not handle, an unknown message that is not executable, an
- *          executable message of a connection event type and a request for a provider that does
- *          not exist, and stays connected: the disconnect notice after them makes it connect again.
+ *          executable message of a connection event type, a request for a provider that does
+ *          not exist and register notices of a remote consumer and provider, and stays connected:
+ *          the disconnect notice after them makes it connect again.
  **/
 TEST_F(IpcSocketCoverageTest, router_client_ignores_notices_it_cannot_serve_and_reconnects_after_a_disconnect_notice)
 {
@@ -1458,6 +1459,16 @@ TEST_F(IpcSocketCoverageTest, router_client_ignores_notices_it_cannot_serve_and_
     request.provider.number = 0x613AFFFFu;
     request.consumer.number = 0x613AFFFEu;
     ASSERT_TRUE(send_wire(router.peer, router_message(request, COOKIE)));
+
+    // Register notices of a remote consumer and provider no local service waits for, with name checks.
+    areg::ProxyAddress consumer(0x613Au, areg::Version(1u, 0u, 0u), areg::ServiceType::Public, 0x613Bu, 0x613Cu, 0x613Du);
+    consumer.set_cookie(COOKIE + 5u);
+    consumer.set_name_check(0x0A0B0C0Du);
+    ASSERT_TRUE(send_wire(router.peer, areg::client_registered_event(consumer, areg::COOKIE_ROUTER, COOKIE)));
+    areg::StubAddress provider(0x613Au, areg::Version(1u, 0u, 0u), areg::ServiceType::Public, 0x613Bu, 0x613Cu, 0x613Eu);
+    provider.set_cookie(COOKIE + 5u);
+    provider.set_name_check(0x0E0F1011u);
+    ASSERT_TRUE(send_wire(router.peer, areg::service_registered_event(provider, areg::COOKIE_ROUTER, COOKIE)));
 
     ASSERT_TRUE(send_wire(router.peer, areg::create_disconnect_notify(areg::COOKIE_ROUTER, COOKIE)));
     ASSERT_TRUE(router.answer(COOKIE + 1u));

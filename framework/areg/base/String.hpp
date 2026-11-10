@@ -20,7 +20,9 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/base/StringBase.hpp"
+#include "areg/base/UtilityDefs.hpp"
 
+#include <algorithm>
 #include <functional>
 #include <stdarg.h>
 #include <stdio.h>
@@ -183,6 +185,44 @@ struct required_size <std::string_view>
         return static_cast<uint32_t>(sizeof(uint32_t)) + (static_cast<uint32_t>(sizeof(char)) * static_cast<uint32_t>(str.length()));
     }
 };
+
+/**
+ * \brief   Returns the name of an item (thread, component, role or service) cut to
+ *          ITEM_NAMES_MAX_LENGTH characters. Asserts in Debug if the name is longer.
+ *
+ * \param   name    The name of the item.
+ **/
+[[nodiscard]]
+inline std::string_view item_name_view( const String & name ) noexcept
+{
+    const uint32_t length{ static_cast<uint32_t>(name.length()) };
+    ASSERT(length <= areg::ITEM_NAMES_MAX_LENGTH);
+    return std::string_view{ name.as_string(), std::min<uint32_t>(length, areg::ITEM_NAMES_MAX_LENGTH) };
+}
+
+/**
+ * \brief   Cuts the name of an item (thread, component, role or service) to
+ *          ITEM_NAMES_MAX_LENGTH characters. Asserts in Debug if the name is longer.
+ *
+ * \param   name    The name of the item.
+ **/
+inline void cut_item_name( String & name )
+{
+    ASSERT(static_cast<uint32_t>(name.length()) <= areg::ITEM_NAMES_MAX_LENGTH);
+    name.truncate(areg::ITEM_NAMES_MAX_LENGTH);
+}
+
+/**
+ * \brief   Returns the CRC32C number of the name of an item, cut to ITEM_NAMES_MAX_LENGTH
+ *          characters. Asserts in Debug if the name is longer.
+ *
+ * \param   name    The name of the item.
+ **/
+[[nodiscard]]
+inline uint32_t item_name_number( const String & name ) noexcept
+{
+    return areg::crc32_calculate(areg::item_name_view(name));
+}
 
 } // namespace areg
 

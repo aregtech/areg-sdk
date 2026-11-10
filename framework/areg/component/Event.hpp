@@ -74,6 +74,22 @@ public:                                                                         
 #define AREG_DECLARE_RUNTIME_EVENT(EventClass)                                                                              \
 public:                                                                                                                     \
     static constexpr uint32_t CLASS_ID { AREG_RUNTIME_CLASS_ID(EventClass) };                                               \
+    static_assert(areg::crc32_valid(CLASS_ID), "The event class ID is a reserved value, rename the event class");           \
+public:                                                                                                                     \
+    AREG_DECLARE_EVENT_REGISTRATION(EventClass)
+
+/**
+ * \brief   MACRO, declares an Event class like AREG_DECLARE_RUNTIME_EVENT, with CLASS_ID computed
+ *          from the full type name of EventClass, namespaces and template arguments included,
+ *          and from the source file if the type is in an anonymous namespace.
+ *          Use it inside the body of a class template; the number depends on the compiler.
+ *
+ * \param   EventClass  Event class name, the injected class name of a class template.
+ **/
+#define AREG_DECLARE_RUNTIME_EVENT_TYPE(EventClass)                                                                         \
+public:                                                                                                                     \
+    static constexpr uint32_t CLASS_ID { areg::type_class_id<EventClass>(__FILE__) };                                       \
+    static_assert(areg::crc32_valid(CLASS_ID), "The event class ID is a reserved value, rename the event or its data type");\
 public:                                                                                                                     \
     AREG_DECLARE_EVENT_REGISTRATION(EventClass)
 

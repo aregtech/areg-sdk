@@ -68,7 +68,8 @@ public:
 
     /**
      * \brief   Registers a consumer in the list; returns existing client info if already registered,
-     *          or creates and returns new entry.
+     *          or creates and returns new entry. A client whose names conflict with the server's
+     *          stays pending.
      *
      * \param   whichClient     The proxy address of the client to register.
      * \param   server          The server info containing stub address and state.
@@ -88,11 +89,13 @@ public:
 
     /**
      * \brief   Notifies all waiting clients that the server is available; updates their states.
+     *          A client whose names conflict with the server's stays pending and is not listed.
      *
      * \param       whichServer     The server info indicating availability.
-     * \param[out]  clientInfoList  On output, contains the list of connected clients.
+     * \param[out]  clientInfoList  On output, contains the list of updated clients.
+     * \return  Returns the number of clients that stay pending because of a name conflict.
      **/
-    void provider_available( const ServerInfo & whichServer, ClientList & clientInfoList );
+    uint32_t provider_available( const ServerInfo & whichServer, ClientList & clientInfoList );
 
     /**
      * \brief   Notifies all connected clients that the server is unavailable; updates their states.

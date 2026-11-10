@@ -33,6 +33,7 @@ namespace areg {
 //////////////////////////////////////////////////////////////////////////
 
 DEF_LOG_SCOPE(areg_component_StubBase, startup_service_interface);
+DEF_LOG_SCOPE(areg_component_StubBase, _enter_registry);
 DEF_LOG_SCOPE(areg_component_StubBase, shutdown_service_intrface);
 DEF_LOG_SCOPE(areg_component_StubBase, error_all_requests);
 DEF_LOG_SCOPE(areg_component_StubBase, send_update_event);
@@ -80,7 +81,7 @@ StubBase::StubBase( Component & masterComp, const areg::InterfaceData & siData )
     , mMapSessions          ( )
     , mSessionId            (0)
 {
-    map_providers().register_resource_object(static_cast<uint32_t>(mAddress), this);
+    _enter_registry();
     masterComp.register_service_provider(self());
 }
 
@@ -97,6 +98,34 @@ void StubBase::_leave_registry()
     if (providers.find_resource_object(static_cast<uint32_t>(mAddress)) == this)
     {
         providers.unregister_resource_object(static_cast<uint32_t>(mAddress));
+    }
+}
+
+void StubBase::_enter_registry()
+{
+    bool refused{ false };
+    StubAddress holder{ StubAddress::invalid_stub_address() };
+    {
+        MapProviderResource & providers{ map_providers() };
+        Lock lock(providers.lockable());
+        const StubBase * stub{ providers.find_resource_object(static_cast<uint32_t>(mAddress)) };
+        if ((stub != nullptr) && (stub->mAddress.has_name_conflict(mAddress) || (stub->mAddress.thread().name() != mAddress.thread().name())))
+        {
+            refused = true;
+            holder  = stub->mAddress;
+        }
+        else
+        {
+            providers.register_resource_object(static_cast<uint32_t>(mAddress), this);
+        }
+    }
+
+    if (refused)
+    {
+        LOG_SCOPE(areg_component_StubBase, _enter_registry);
+        LOG_ERR("The provider [ %s ] is refused: its number is used by the provider [ %s ], rename one of them"
+                    , StubAddress::to_path(mAddress).as_string()
+                    , StubAddress::to_path(holder).as_string());
     }
 }
 
@@ -831,13 +860,19 @@ void StubBase::process_registered_event(const StubAddress & stubTarget, areg::Se
     if ( areg::is_service_connected( status) )
     {
         ASSERT( stubTarget.is_valid() );
-        map_providers().lock();
-        map_providers().unregister_resource_object(static_cast<uint32_t>(mAddress));
+        MapProviderResource & providers{ map_providers() };
+        Lock lock(providers.lockable());
+        const bool registered{ providers.find_resource_object(static_cast<uint32_t>(mAddress)) == this };
+        if (registered)
+        {
+            static_cast<void>(providers.unregister_resource_object(static_cast<uint32_t>(mAddress)));
+        }
 
         mAddress = stubTarget;
-        
-        map_providers().register_resource_object(static_cast<uint32_t>(mAddress), this);
-        map_providers().unlock();
+        if (registered)
+        {
+            providers.register_resource_object(static_cast<uint32_t>(mAddress), this);
+        }
     }
 
     mConnectionStatus = status;

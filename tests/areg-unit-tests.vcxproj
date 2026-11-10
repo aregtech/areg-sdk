@@ -162,6 +162,8 @@
     <ClCompile Include="units\EventDefsTest.cpp" />
     <ClCompile Include="units\IdentifierTest.cpp" />
     <ClCompile Include="units\ModelTest.cpp" />
+    <ClCompile Include="units\NameNumberCollisionPeer.cpp" />
+    <ClCompile Include="units\NameNumberCollisionTest.cpp" />
     <ClCompile Include="units\ComponentLoaderContractTest.cpp" />
     <ClCompile Include="units\ComponentLifecycleFailureTest.cpp" />
     <ClCompile Include="units\ProxyBaseContractTest.cpp" />

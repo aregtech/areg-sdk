@@ -141,7 +141,7 @@ template <class DATA_CLASS>                                                     
 class AregImpl_##EventClass final : public areg::Event                                                                  \
 {                                                                                                                       \
     friend class AregImpl_##ConsumerClass##Extended<DATA_CLASS>;                                                        \
-    AREG_DECLARE_RUNTIME_EVENT(EventClass)                                                                              \
+    AREG_DECLARE_RUNTIME_EVENT_TYPE(AregImpl_##EventClass)                                                              \
 public:                                                                                                                 \
     /** \brief  Constructs a default event (DATA_CLASS value-initialized).                     **/                      \
     explicit AregImpl_##EventClass(areg::EventPriority prio = areg::DefaultPriority);                                   \

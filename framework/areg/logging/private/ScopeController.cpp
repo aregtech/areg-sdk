@@ -50,7 +50,11 @@ void ScopeController::register_scope( LogScope & scope )
 
 void ScopeController::unregister_scope( LogScope & scope )
 {
-    mMapLogScope.remove_at( static_cast<uint32_t>(scope) );
+    // Another scope of the same number may hold the entry.
+    if ( _find( static_cast<uint32_t>(scope) ) == &scope )
+    {
+        mMapLogScope.remove_at( static_cast<uint32_t>(scope) );
+    }
 }
 
 void ScopeController::set_scope_priority( uint32_t scopeId, uint32_t newPrio ) noexcept

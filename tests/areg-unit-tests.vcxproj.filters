@@ -94,6 +94,12 @@
     <ClCompile Include="units\ModelTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="units\NameNumberCollisionPeer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\NameNumberCollisionTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="units\ComponentLoaderContractTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

@@ -128,6 +128,11 @@ constexpr uint32_t  CHECKSUM_IGNORE     { 0u };
  **/
 constexpr uint32_t  CHECKSUM_INVALID    { ~0u };
 
+/**
+ * \brief   The byte hashed between two names of one checksum.
+ **/
+constexpr uint8_t   NAME_SEPARATOR      { 0u };
+
 /************************************************************************/
 // areg namespace structures
 /************************************************************************/

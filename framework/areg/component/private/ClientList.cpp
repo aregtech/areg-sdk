@@ -37,8 +37,16 @@ const ClientInfo & ClientList::register_consumer( const ProxyAddress & whichClie
     }
 
     ClientInfo & client = value_at(pos);
-    client.set_target( server.address() );
-    client.set_connection_status( server.connection_status() );
+    if (server.address().has_name_conflict(whichClient))
+    {
+        client.set_target( StubAddress::invalid_stub_address() );
+        client.set_connection_status( areg::ServiceConnectionState::Pending );
+    }
+    else
+    {
+        client.set_target( server.address() );
+        client.set_connection_status( server.connection_status() );
+    }
 
     return client;
 }
@@ -57,18 +65,30 @@ bool ClientList::unregister_consumer( const ProxyAddress & whichClient, ClientIn
     return result;
 }
 
-void ClientList::provider_available( const ServerInfo & whichServer, ClientList & clientInfoList )
+uint32_t ClientList::provider_available( const ServerInfo & whichServer, ClientList & clientInfoList )
 {
+    uint32_t refused{ 0u };
     areg::ServiceConnectionState state = whichServer.connection_status();
     const StubAddress & addrStub = whichServer.address();
 
     for ( LISTPOS pos = first_position(); is_valid_position(pos); ++ pos)
     {
         ClientInfo & client = *pos;
-        client.set_target(addrStub);
-        client.set_connection_status( state );
-        clientInfoList.push_first(client);
+        if (addrStub.has_name_conflict(client.address()))
+        {
+            client.set_target( StubAddress::invalid_stub_address() );
+            client.set_connection_status( areg::ServiceConnectionState::Pending );
+            ++ refused;
+        }
+        else
+        {
+            client.set_target(addrStub);
+            client.set_connection_status( state );
+            clientInfoList.push_first(client);
+        }
     }
+
+    return refused;
 }
 
 void ClientList::provider_unavailable( ClientList & clientInfoList )

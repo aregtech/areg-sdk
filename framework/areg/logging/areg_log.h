@@ -130,13 +130,16 @@
     /**
      * \brief   Defines a log scope variable. The scope string stored at runtime is "path.method".
      *          path uses '_' as node separator; method is a snake_case function name and may
-     *          contain '_' without being split into further tree nodes.
+     *          contain '_' without being split into further tree nodes. Fails to compile if the
+     *          scope name gives a reserved number.
      *
      * \param   path    Underscore-separated node path identifying the module and class,
      *                  e.g. areg_component_ServiceManager.
      * \param   method  The snake_case method name, e.g. start_service.
      **/
-    #define DEF_LOG_SCOPE(path, method)                     static areg::LogScope _##path##_##method( #path "." #method )
+    #define DEF_LOG_SCOPE(path, method)                                                                                     \
+        static_assert(areg::crc32_valid(areg::make_id(#path "." #method)), "The log scope name gives a reserved number");    \
+        static areg::LogScope _##path##_##method( #path "." #method )
 
     /**
      * \brief   Creates a ScopeMessage for the named scope. Must appear inside the same method

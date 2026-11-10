@@ -57,6 +57,7 @@
 public:                                                                                                     \
     /** \brief Full compile-time runtime class identifier. Single source of truth.           **/            \
     static constexpr areg::RuntimeClassID CLASS_ID { #ClassName };                                          \
+    static_assert(areg::crc32_valid(CLASS_ID.magic()), "The class ID is a reserved value, rename the class");    \
     /** \brief Returns the Runtime Class Identifier object. **/                                             \
     [[nodiscard]]                                                                                           \
     const areg::RuntimeClassID & class_id() const noexcept override;                                        \
