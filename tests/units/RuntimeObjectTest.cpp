@@ -431,3 +431,31 @@ TEST(RuntimeObjectTest, raw_aligned_allocation_functions_honor_the_alignment)
     ASSERT_NE(sizedArray, nullptr);
     RtAlpha::operator delete[](sizedArray, static_cast<size_t>(256u), align);
 }
+
+TEST(RuntimeObjectTest, non_throwing_allocation_functions_return_usable_memory)
+{
+    void * single{ RtAlpha::operator new(32u, std::nothrow) };
+    ASSERT_NE(single, nullptr);
+    std::memset(single, 0xA5, 32u);
+    RtAlpha::operator delete(single, std::nothrow);
+
+    void * array{ RtAlpha::operator new[](32u, std::nothrow) };
+    ASSERT_NE(array, nullptr);
+    std::memset(array, 0x5A, 32u);
+    RtAlpha::operator delete[](array, std::nothrow);
+
+    constexpr std::align_val_t align{ 128u };
+    void * aligned{ RtAlpha::operator new(256u, align, std::nothrow) };
+    ASSERT_NE(aligned, nullptr);
+    EXPECT_EQ(reinterpret_cast<std::uintptr_t>(aligned) % 128u, 0u);
+    RtAlpha::operator delete(aligned, align, std::nothrow);
+}
+
+TEST(RuntimeObjectTest, placement_delete_functions_do_nothing)
+{
+    alignas(RtAlpha) unsigned char storage[sizeof(RtAlpha)];
+    void * place{ static_cast<void *>(storage) };
+    RtAlpha::operator delete(place, place);
+    RtAlpha::operator delete[](place, place);
+    EXPECT_EQ(place, static_cast<void *>(storage));
+}

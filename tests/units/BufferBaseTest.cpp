@@ -567,6 +567,9 @@ namespace
     public:
         using areg::BufferBase::BufferBase;
         using areg::BufferBase::buffer_to_read;
+        using areg::BufferBase::buffer_to_write;
+        using areg::BufferBase::end_of_buffer;
+        using areg::BufferBase::header;
         using areg::BufferBase::init_buffer;
         using areg::BufferBase::read_view;
         using areg::BufferBase::size_writable;
@@ -769,4 +772,32 @@ TEST(BufferBaseTest, every_copy_size_writes_and_reads)
         ASSERT_EQ(fast.read(target, size), size);
         EXPECT_TRUE(areg::mem_equal(target, source, size)) << "size " << size;
     }
+}
+
+// A buffer without a block is empty and has no header, no end and no writable address.
+TEST(BufferBaseTest, buffer_without_a_block_is_empty_and_has_no_header)
+{
+    BufferProbe buffer;
+    EXPECT_TRUE(buffer.is_empty());
+    EXPECT_EQ(buffer.header(), nullptr);
+    EXPECT_EQ(std::as_const(buffer).header(), nullptr);
+    EXPECT_EQ(buffer.end_of_buffer(), nullptr);
+    EXPECT_EQ(std::as_const(buffer).end_of_buffer(), nullptr);
+}
+
+// A buffer with data is not empty, its header holds the used size and the end follows the data.
+TEST(BufferBaseTest, buffer_with_data_gives_header_end_and_writable_address)
+{
+    constexpr uint8_t DATA[]{ 1u, 2u, 3u, 4u, 5u };
+    BufferProbe buffer(1u, DATA, sizeof(DATA), areg::BLOCK_SIZE);
+    EXPECT_FALSE(buffer.is_empty());
+    ASSERT_NE(buffer.header(), nullptr);
+    EXPECT_EQ(buffer.header()->biUsed, sizeof(DATA));
+    EXPECT_EQ(std::as_const(buffer).header(), buffer.header());
+
+    const uint8_t * const begin{ std::as_const(buffer).buffer() };
+    ASSERT_NE(begin, nullptr);
+    EXPECT_EQ(buffer.end_of_buffer(), begin + sizeof(DATA));
+    EXPECT_EQ(std::as_const(buffer).end_of_buffer(), begin + sizeof(DATA));
+    EXPECT_EQ(buffer.buffer_to_write(), begin + buffer.position());
 }

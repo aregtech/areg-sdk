@@ -504,6 +504,18 @@ TEST(IpcServiceEventCoverageTest, every_client_and_server_command_dispatches_exa
     EXPECT_EQ(recorder.mCommands, (std::vector<uint32_t>{ 0u, 1u, 2u, 3u, 4u, 5u, 6u }));
 }
 
+TEST(IpcServiceEventCoverageTest, every_service_command_has_its_name)
+{
+    using Command = areg::ServiceEventData::ServiceCommand;
+    EXPECT_STREQ(areg::ServiceEventData::as_string(Command::CMD_StartService), "ServiceEventData::CMD_StartService");
+    EXPECT_STREQ(areg::ServiceEventData::as_string(Command::CMD_StopService), "ServiceEventData::CMD_StopService");
+    EXPECT_STREQ(areg::ServiceEventData::as_string(Command::CMD_RestartService), "ServiceEventData::CMD_RestartService");
+    EXPECT_STREQ(areg::ServiceEventData::as_string(Command::CMD_ServiceStarted), "ServiceEventData::CMD_ServiceStarted");
+    EXPECT_STREQ(areg::ServiceEventData::as_string(Command::CMD_ServiceStopped), "ServiceEventData::CMD_ServiceStopped");
+    EXPECT_STREQ(areg::ServiceEventData::as_string(Command::CMD_ServiceLost), "ServiceEventData::CMD_ServiceLost");
+    EXPECT_STREQ(areg::ServiceEventData::as_string(Command::CMD_ServiceExit), "ServiceEventData::CMD_ServiceExit");
+}
+
 TEST(IpcServiceEventCoverageTest, remote_consumer_preserves_envelope_and_payload)
 {
     CommandRecorder recorder;
@@ -778,6 +790,28 @@ TEST_F(IpcSocketCoverageTest, server_constructors_preserve_addresses_and_reject_
     areg::ServerConnectionBase invalid;
     EXPECT_FALSE(invalid.create_socket());
     EXPECT_FALSE(invalid.create_socket(areg::String("127.0.0.1"), areg::InvalidPort));
+}
+
+TEST_F(IpcSocketCoverageTest, server_without_a_socket_has_no_accepted_connection)
+{
+    LoopbackListener listener;
+    ASSERT_TRUE(listener.open());
+    areg::ServerConnectionBase server;
+    server.set_address(listener.address());
+    EXPECT_EQ(server.address().host_address(), listener.address().host_address());
+    EXPECT_EQ(server.address().host_port(), listener.address().host_port());
+
+    EXPECT_FALSE(areg::is_valid_socket(server.socket_handle()));
+    EXPECT_FALSE(server.is_connection_accepted(areg::InvalidSocketHandle));
+    areg::SocketAccepted accepted;
+    EXPECT_FALSE(server.is_connection_accepted(areg::InvalidSocketHandle, accepted));
+
+    const areg::MessageEnvelope message;
+    EXPECT_FALSE(server.source_client(message).is_valid());
+    EXPECT_FALSE(server.disable_send(accepted));
+
+    server.lock_resource();
+    server.unlock_resource();
 }
 
 namespace

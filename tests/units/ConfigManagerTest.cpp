@@ -934,6 +934,44 @@ TEST(ConfigManagerTest, property_lookup_order)
 }
 
 /**
+ * \brief   The constant manager gives the module property values, and the manager gives its lock.
+ **/
+TEST(ConfigManagerTest, constant_manager_gives_module_property_values_and_the_lock)
+{
+    areg::ConfigManager config;
+    config.set_configuration(parse_list({ "log::*::file::location = all" })
+                           , parse_list({ own("log", "file::location = process") }));
+    const areg::ConfigManager& readonly{ config };
+
+    const areg::String log("log"), file("file"), location("location"), append("append");
+    const areg::PropertyValue* byName{ readonly.module_property_value(log, file, location) };
+    ASSERT_NE(byName, nullptr);
+    EXPECT_EQ(txt(byName->value()), "process");
+    EXPECT_EQ(readonly.module_property_value(log, file, append), nullptr);
+
+    const areg::PropertyKey key(areg::String("log::*::file::location"));
+    EXPECT_EQ(readonly.module_property_value(key), byName);
+
+    EXPECT_EQ(&config.lockable(), &readonly.lockable());
+}
+
+/**
+ * \brief   The state of a log target given as identifier is the one of the target given as name.
+ **/
+TEST(ConfigManagerTest, log_target_by_identifier_is_the_target_by_name)
+{
+    areg::FileBuffer text(BUFFER_MODE, "identifier");
+    fill(text, { "log::*::enable = true", "log::*::enable::file = true", "log::*::enable::debug = false" });
+
+    areg::ConfigManager config;
+    ASSERT_TRUE(config.read_config(text));
+    const areg::Identifier fileTarget(static_cast<uint32_t>(areg::LogTarget::File), "file");
+    const areg::Identifier debugTarget(static_cast<uint32_t>(areg::LogTarget::Debug), "debug");
+    EXPECT_TRUE(config.log_enabled(fileTarget));
+    EXPECT_FALSE(config.log_enabled(debugTarget));
+}
+
+/**
  * \brief   The list of a section holds the process values, then the shared values of the module
  *          that the process does not override.
  **/
