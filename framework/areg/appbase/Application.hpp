@@ -505,7 +505,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     Application();
-    ~Application() = default;
 
     /**
      * \brief   Returns a reference to the singleton Application instance.

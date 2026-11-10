@@ -77,10 +77,6 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
 
-    ServiceEventData & operator = ( const ServiceEventData & source ) = default;
-
-    ServiceEventData & operator = ( ServiceEventData && source ) noexcept = default;
-
     /**
      * \brief   Returns the command saved in event data.
      **/

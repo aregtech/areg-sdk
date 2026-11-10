@@ -51,7 +51,6 @@ public:
      * \brief   Initializes an empty processor.
      **/
     ServiceManagerEventProcessor();
-    ~ServiceManagerEventProcessor() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
