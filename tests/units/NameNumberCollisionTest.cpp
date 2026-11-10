@@ -1108,6 +1108,8 @@ TEST(NameNumberLengthTest, provider_and_consumer_of_a_long_role_connect)
     EXPECT_NE(nullptr, Component::find_by_name(String(LONG_NAME_CUT)));
 }
 
+#if AREG_LOGGING
+
 TEST(NameNumberScopeTest, leaving_scope_keeps_the_entry_of_another_scope_of_its_number)
 {
     // Reproduces the defect: a scope that left removed the entry of the other scope of its number.
@@ -1122,5 +1124,7 @@ TEST(NameNumberScopeTest, leaving_scope_keeps_the_entry_of_another_scope_of_its_
     controller.unregister_scope(second);
     EXPECT_FALSE(controller.is_scope_registered(static_cast<uint32_t>(second)));
 }
+
+#endif  // AREG_LOGGING
 
 #endif  // !defined(DEBUG)

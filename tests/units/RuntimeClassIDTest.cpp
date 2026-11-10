@@ -112,7 +112,7 @@ TEST(RuntimeClassIDTest, copy_and_move)
     const std::string name{ "CopyName" };
     areg::RuntimeClassID source(name.c_str());
     areg::RuntimeClassID copy(source);
-    areg::RuntimeClassID moved(std::move(areg::RuntimeClassID(name.c_str())));
+    areg::RuntimeClassID moved(areg::RuntimeClassID(name.c_str()));
     EXPECT_EQ(copy, source);
     EXPECT_EQ(moved, source);
     EXPECT_EQ(copy.name(), name);
@@ -129,7 +129,8 @@ TEST(RuntimeClassIDTest, copy_and_move)
     const areg::RuntimeClassID& self{ target };
     target = self;
     EXPECT_EQ(target.name(), name);
-    target = std::move(target);
+    areg::RuntimeClassID& alias{ target };
+    target = std::move(alias);
     EXPECT_EQ(target.name(), name);
 }
 

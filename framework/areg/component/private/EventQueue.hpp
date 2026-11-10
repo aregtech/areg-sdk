@@ -216,7 +216,8 @@ public:
      *          and any exit request ends its consumer.
      * \note    Call from the owner dispatcher, under lock_queue(), before the
      *          dispatcher reports itself started. It does not touch the exit flag:
-     *          the owner clears that with reset_exit() before it starts.
+     *          the owner clears that with reset_exit() before it starts. While an
+     *          exit is pending the queue stays closed, also when this is called again.
      **/
     bool acquire_lanes() noexcept;
 
@@ -583,6 +584,8 @@ inline void EventQueue::exit_queue(bool exitNow /*= false*/) noexcept
     static_cast<void>(mEnqueuePos.fetch_or(EventQueue::RING_CLOSED, std::memory_order_acq_rel));
     static_cast<void>(mExitState.fetch_or(exitNow ? EventQueue::EXIT_NOW : EventQueue::EXIT_DRAINED, std::memory_order_release));
     std::atomic_thread_fence(std::memory_order_seq_cst);
+    // Closes again after the fence, also when a concurrent acquire_lanes() reopened it.
+    static_cast<void>(mEnqueuePos.fetch_or(EventQueue::RING_CLOSED, std::memory_order_acq_rel));
     QueueWaiter * const waiter{ mWaiter.load(std::memory_order_relaxed) };
     if (waiter != nullptr)
     {

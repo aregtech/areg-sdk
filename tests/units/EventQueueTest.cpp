@@ -1235,6 +1235,85 @@ TEST(EventQueueTest, lanes_survive_a_restart_without_release)
     EXPECT_EQ(out.event_id(), 12u);
 }
 
+TEST(EventQueueTest, start_after_a_drained_exit_keeps_the_queue_closed)
+{
+    // Reproduces the defect: a stop asked between the two starts of a component thread was
+    // undone by the second start, so a steady producer kept the drained exit from ending.
+    ReadyQueue queue(0u);
+    Event first = makeEvent(1u);
+    EXPECT_TRUE(queue.push_event(first));
+
+    queue.exit_queue(false);
+    EXPECT_TRUE(queue.acquire_lanes());
+    EXPECT_TRUE(queue.is_closed());
+
+    Event late = makeEvent(2u);
+    EXPECT_FALSE(queue.push_event(late));
+    EXPECT_TRUE(late.is_valid());
+    EXPECT_EQ(queue.try_push_event(late), EventQueue::PushResult::Refused);
+
+    Event out = queue.pop_event();
+    ASSERT_TRUE(out.is_valid());
+    EXPECT_EQ(out.event_id(), 1u);
+    EXPECT_TRUE(queue.pop_event().is_exit_prio());
+}
+
+TEST(EventQueueTest, start_after_an_exit_now_keeps_the_queue_closed)
+{
+    // Reproduces the defect: a start after an immediate exit opened the queue again, so it
+    // accepted events that the exit then dropped.
+    ReadyQueue queue(0u);
+    queue.exit_queue(true);
+    EXPECT_TRUE(queue.acquire_lanes());
+    EXPECT_TRUE(queue.is_closed());
+
+    Event late = makeEvent(3u);
+    EXPECT_FALSE(queue.push_event(late));
+    EXPECT_TRUE(queue.pop_event().is_exit_prio());
+}
+
+TEST(EventQueueTest, exit_before_the_first_start_keeps_new_lanes_closed)
+{
+    // Reproduces the defect: lanes allocated after an exit request were open, so the queue
+    // took events after its dispatcher was asked to stop.
+    EventQueue queue(0u);
+    queue.exit_queue(false);
+    EXPECT_TRUE(queue.acquire_lanes());
+    EXPECT_TRUE(queue.is_closed());
+
+    Event late = makeEvent(4u);
+    EXPECT_FALSE(queue.push_event(late));
+    EXPECT_TRUE(queue.pop_event().is_exit_prio());
+
+    queue.reset_exit();
+    EXPECT_TRUE(queue.acquire_lanes());
+    EXPECT_FALSE(queue.is_closed());
+    EXPECT_TRUE(queue.push_event(late));
+    EXPECT_EQ(queue.pop_event().event_id(), 4u);
+}
+
+TEST(EventQueueTest, start_racing_an_exit_always_ends_closed)
+{
+    // An exit and a start of the same queue run at the same time; the exit always wins.
+    constexpr uint32_t ROUNDS{ 500u };
+    for (uint32_t round = 0u; round < ROUNDS; ++round)
+    {
+        ReadyQueue queue(0u);
+        queue.close_lanes();
+        std::thread starter([&queue]()
+        {
+            static_cast<void>(queue.acquire_lanes());
+        });
+
+        queue.exit_queue((round & 1u) != 0u);
+        starter.join();
+
+        ASSERT_TRUE(queue.is_closed()) << "round " << round;
+        Event late = makeEvent(round);
+        ASSERT_FALSE(queue.push_event(late)) << "round " << round;
+    }
+}
+
 TEST(EventQueueTest, close_lanes_shuts_out_live_producers)
 {
     // The guarantee the owner dispatcher needs: once close_lanes() returns, no producer
