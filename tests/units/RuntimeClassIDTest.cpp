@@ -269,3 +269,44 @@ TEST(RuntimeClassIDTest, compare_with_null_c_string)
         AREG_CHILD_CHECK(nothing != invalid);
     );
 }
+
+namespace
+{
+    struct AnonymousType { };
+}
+
+namespace runtime_class_named
+{
+    struct NamedType { };
+}
+
+/**
+ * \brief   The three spellings of an anonymous namespace are found in a signature read at run
+ *          time; a named type is not anonymous.
+ **/
+TEST(RuntimeClassIDTest, anonymous_namespace_spellings_are_found_at_run_time)
+{
+    const std::string spellings[]{ "f() [T = {anonymous}::A]", "f() [T = (anonymous namespace)::A]", "f<struct `anonymous-namespace'::A>(void)" };
+    for (const std::string& spelling : spellings)
+    {
+        EXPECT_TRUE(areg::is_anonymous_type(std::string_view(spelling))) << spelling;
+    }
+
+    const std::string named{ "f() [T = runtime_class_named::NamedType]" };
+    EXPECT_FALSE(areg::is_anonymous_type(std::string_view(named)));
+    EXPECT_FALSE(areg::is_anonymous_type(areg::type_signature<runtime_class_named::NamedType>()));
+    EXPECT_TRUE(areg::is_anonymous_type(areg::type_signature<AnonymousType>()));
+}
+
+/**
+ * \brief   The number of a type of an anonymous namespace depends on the file given at run time;
+ *          the number of a named type does not.
+ **/
+TEST(RuntimeClassIDTest, anonymous_type_number_depends_on_the_file)
+{
+    const std::string first{ "first.cpp" };
+    const std::string second{ "second.cpp" };
+    EXPECT_NE(areg::type_class_id<AnonymousType>(first), areg::type_class_id<AnonymousType>(second));
+    EXPECT_EQ(areg::type_class_id<AnonymousType>(first), areg::type_class_id<AnonymousType>(std::string(first)));
+    EXPECT_EQ(areg::type_class_id<runtime_class_named::NamedType>(first), areg::type_class_id<runtime_class_named::NamedType>(second));
+}

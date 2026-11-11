@@ -55,6 +55,8 @@ namespace
     std::atomic_uint32_t        gCreateCalls    { 0 };
     //!< The components the delete function of the refused role destroyed.
     std::atomic_uint32_t        gDeleted        { 0 };
+    //!< Signaled when the delete function of the refused role destroyed a component.
+    areg::SyncEvent             gDeletedEvent   { true, false };
     //!< The user states the recording component got, previous and current.
     std::atomic_uint32_t        gPrevious       { 0 };
     std::atomic_uint32_t        gCurrent        { 0 };
@@ -122,6 +124,7 @@ namespace
     {
         delete &comp;
         gDeleted.fetch_add(1u);
+        gDeletedEvent.set_signaled();
     }
 
     //! A component that records the user state it gets.
@@ -367,4 +370,33 @@ TEST(ComponentLifecycleFailureTest, model_whose_thread_name_is_taken_fails_to_lo
     EXPECT_FALSE(areg::Application::is_model_loaded(_takenModel));
     EXPECT_TRUE(other.is_running());
     EXPECT_TRUE(other.barrier());
+}
+
+/**
+ * \brief   A component thread that ends without being asked destroys its components; its model
+ *          can still be unloaded, and loads again with a new thread.
+ **/
+TEST(ComponentLifecycleFailureTest, thread_that_ends_unasked_leaves_its_model_unloadable_and_loadable)
+{
+    ClSystem system;
+    gRefuse.store(false);
+    gDeleted.store(0u);
+    gDeletedEvent.reset();
+    ASSERT_TRUE(areg::Application::load_model(_refusedModel, true));
+
+    areg::DispatcherThread & thread{ areg::DispatcherThread::dispatcher_thread(areg::ThreadAddress(areg::String("ClRefusedThread"))) };
+    ASSERT_TRUE(thread.is_valid());
+    thread.trigger_exit();
+    ASSERT_TRUE(gDeletedEvent.lock(WAIT_MS));
+    EXPECT_EQ(gDeleted.load(), 1u);
+
+    areg::Application::unload_model(_refusedModel);
+    EXPECT_EQ(areg::Application::model_state(_refusedModel), areg::ModelState::Unloaded);
+    EXPECT_EQ(gDeleted.load(), 1u);
+
+    ASSERT_TRUE(areg::Application::load_model(_refusedModel, true));
+    EXPECT_TRUE(areg::Application::is_model_loaded(_refusedModel));
+    EXPECT_NE(areg::Thread::find_by_address(areg::ThreadAddress(areg::String("ClRefusedThread"))), nullptr);
+    areg::Application::unload_model(_refusedModel);
+    EXPECT_EQ(gDeleted.load(), 2u);
 }

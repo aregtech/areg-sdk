@@ -26,6 +26,7 @@
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/ipc/ClientConnection.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
+#include "aregextend/service/ConnectionHandler.hpp"
 #include "aregextend/service/ServerConnection.hpp"
 #include "aregextend/service/SystemServiceDefs.hpp"
 #include "aregextend/service/private/SocketHandover.hpp"
@@ -350,4 +351,30 @@ TEST(ServiceCommConnectionTest, message_reaches_its_client_and_a_message_without
     ASSERT_GT(client.link.receive_message(received), 0);
     EXPECT_EQ(received.target(), static_cast<uint32_t>(cookie));
     EXPECT_EQ(received.message_id(), message.message_id());
+}
+
+namespace
+{
+    //!< A connection handler that keeps every default of the base.
+    class DefaultHandler final : public areg::ext::ConnectionHandler
+    {
+    public:
+        DefaultHandler() = default;
+
+        bool can_accept_connection(const areg::SocketAccepted & /*clientSocket*/) override { return true; }
+        void connection_lost(areg::SocketAccepted & /*clientSocket*/) override { }
+        void connection_failure() override { }
+        void disconnect_services() override { }
+    };
+}
+
+/**
+ * \brief   A handler that does not take over the accepted clients refuses every one of them.
+ **/
+TEST(ServiceCommConnectionTest, base_handler_takes_over_no_accepted_client)
+{
+    DefaultHandler handler;
+    areg::SocketAccepted client;
+    EXPECT_FALSE(static_cast<areg::ext::ConnectionHandler &>(handler).on_client_accepted(client));
+    EXPECT_FALSE(client.is_valid());
 }

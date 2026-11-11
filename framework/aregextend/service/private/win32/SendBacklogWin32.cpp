@@ -122,7 +122,11 @@ int64_t backlog_os_start( SendBacklogOsPtr & os
 
         if (op == nullptr)
         {
-            op = std::make_unique<SendOp>();
+            op.reset(new (std::nothrow) SendOp());
+            if (op == nullptr)
+            {
+                return -1;
+            }
         }
 
         op->overlapped  = WSAOVERLAPPED{ };

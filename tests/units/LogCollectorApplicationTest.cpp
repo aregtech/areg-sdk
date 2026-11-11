@@ -7,6 +7,10 @@
 #include "units/ServiceConsoleHarness.hpp"
 #include "logcollector/app/LogCollector.hpp"
 #include "areg/persist/ConfigManager.hpp"
+#include "logcollector/service/private/LogCollectorDatabase.hpp"
+
+#include <filesystem>
+#include <fstream>
 
 namespace
 {
@@ -345,5 +349,65 @@ TEST(LogCollectorApplicationTest, service_helper_counts_a_client_and_survives_pa
         app.service_release();
         AREG_CHILD_CHECK(app.set_state(ServicePhase::Stopped));
         config.check_unchanged();
+    );
+}
+
+/**
+ * \brief   Reproduces the defect: switching the collector's own logging off also switched off the
+ *          database of the collected logs. The database follows its own flag.
+ **/
+TEST(LogCollectorApplicationTest, collected_log_database_is_configured_when_the_collectors_own_logging_is_off)
+{
+    AREG_EXPECT_IN_CHILD(
+        areg::ListProperties readonly;
+        readonly.add(areg::Property("log::*::enable", "false"));
+        readonly.add(areg::Property("log::*::target", "db"));
+        readonly.add(areg::Property("log::*::enable::db", "true"));
+        readonly.add(areg::Property("log::*::db::engine", "sqlite3"));
+        areg::ConfigManager & manager{ areg::Application::config_manager() };
+        manager.set_configuration(readonly, areg::ListProperties());
+        AREG_CHILD_CHECK(manager.log_enabled(areg::LogTarget::Database) == false);
+        AREG_CHILD_CHECK(LogCollectorDatabase::is_configured());
+
+        areg::ListProperties disabled;
+        disabled.add(areg::Property("log::*::enable", "true"));
+        disabled.add(areg::Property("log::*::enable::db", "false"));
+        manager.set_configuration(disabled, areg::ListProperties());
+        AREG_CHILD_CHECK(LogCollectorDatabase::is_configured() == false);
+    );
+}
+
+/**
+ * \brief   A database of collected logs that cannot be created is reported, and the collector
+ *          keeps running.
+ **/
+TEST(LogCollectorApplicationTest, database_that_cannot_be_opened_is_reported_and_the_collector_runs)
+{
+    AREG_EXPECT_IN_CHILD(
+        PrivateConfig config(COLLECTOR);
+        const std::filesystem::path blocker{ std::filesystem::path(config.directory) / "blocker" };
+        {
+            std::ofstream file(blocker);
+            file << "not a directory";
+        }
+
+        const std::string disabled{ "log::*::enable::db = false\n" };
+        const size_t pos{ config.contents.find(disabled) };
+        AREG_CHILD_CHECK(pos != std::string::npos);
+        config.contents.replace(pos, disabled.size(), "log::*::enable::db = true\nlog::*::db::engine = sqlite3\nlog::*::db::name = collected.sqlog\nlog::*::db::location = "
+                                + (blocker / "sub").generic_string() + "\n");
+        {
+            std::ofstream output(config.path, std::ios::trunc);
+            output << config.contents;
+            AREG_CHILD_CHECK(output.good());
+        }
+
+        ConsoleSession console(config);
+        console.expect("Failed to open the logging database, the collected logs are not saved");
+        console.command("--instances", "There are no connected instances");
+        console.quit();
+        config.check_unchanged();
+        std::error_code error;
+        std::filesystem::remove(blocker, error);
     );
 }

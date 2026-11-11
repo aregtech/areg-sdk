@@ -231,7 +231,7 @@ TEST(SocketAddressCoverageTest, rejects_malformed_ipv4_text)
 
     for (const char* invalid : { "", "1.2.3", ".1.2.3.4", "1..2.3.4", "1.2.3.4.5"
                               , "256.0.0.1", "127.0.0.999", "127.0.0.1.", "127.0.a.1"
-                              , "1234.1234.1234.1234" })
+                              , "1234.1234.1234.1234", "1.2.3.256", "10.0.0.", "1.2.3.4a", "300.1.1.1" })
         EXPECT_FALSE(areg::is_ip_address(areg::String(invalid))) << invalid;
 
     EXPECT_TRUE(areg::is_local_address(areg::String("localhost")));

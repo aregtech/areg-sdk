@@ -86,10 +86,12 @@
     <ClCompile Include="units\LogProtocolTest.cpp" />
     <ClCompile Include="units\LogRingTest.cpp" />
     <ClCompile Include="units\LogObserverApiTest.cpp" />
+    <ClCompile Include="units\LogObserverAppTest.cpp" />
     <ClCompile Include="..\framework\areglogger\client\private\LogObserverApi.cpp" />
     <ClCompile Include="..\framework\areglogger\client\private\LogObserverBase.cpp" />
     <ClCompile Include="..\framework\areglogger\client\private\LoggerClient.cpp" />
     <ClCompile Include="..\framework\areglogger\client\private\ObserverMessageProcessor.cpp" />
+    <ClCompile Include="..\framework\logobserver\app\private\LogObserver.cpp" />
     <ClCompile Include="units\LogScopesTest.cpp" />
     <ClCompile Include="units\BufferBaseTest.cpp" />
     <ClCompile Include="units\EnvelopeCacheTest.cpp" />

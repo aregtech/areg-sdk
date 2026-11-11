@@ -890,4 +890,22 @@ TEST(LogObserverApiTest, missing_configuration_file_uses_the_defaults)
     );
 }
 
+/**
+ * \brief   Without a configuration the collector settings are reported as not set.
+ **/
+TEST(LogObserverApiTest, collector_settings_without_a_configuration_are_not_set)
+{
+    AREG_EXPECT_IN_CHILD(
+        areg::logger::LoggerClient & client{ areg::logger::LoggerClient::instance() };
+        AREG_CHILD_CHECK(areg::Application::is_configured() == false);
+        AREG_CHILD_CHECK(client.config_logger_address().is_empty());
+        AREG_CHILD_CHECK(client.config_logger_port() == areg::InvalidPort);
+        AREG_CHILD_CHECK(client.is_config_logger_connect_enabled() == false);
+        AREG_CHILD_CHECK(client.request_save_configuration(areg::TARGET_ALL) == false);
+        AREG_CHILD_CHECK(client.request_restore_configuration(areg::TARGET_ALL) == false);
+        AREG_CHILD_CHECK(client.request_source_state(areg::TARGET_ALL, areg::LogSourceState::Paused) == false);
+        AREG_CHILD_CHECK(client.request_change_scope_prio(areg::ScopeNames(), areg::TARGET_ALL) == false);
+    );
+}
+
 #endif  // AREG_LOGGING

@@ -148,3 +148,54 @@ TEST(LogProtocolTest, priority_names_convert_both_ways)
     EXPECT_EQ(areg::make_priorities(name), static_cast<uint32_t>(areg::LogPriority::PrioWarning));
     EXPECT_EQ(areg::make_priorities(areg::PRIO_DEBUG_STR), static_cast<uint32_t>(areg::LogPriority::PrioDebug));
 }
+
+#if AREG_LOGGING
+// A request with an unknown source or target is not built.
+TEST(LogProtocolTest, requests_with_an_unknown_end_are_not_built)
+{
+    const areg::ScopeNames names;
+    const ITEM_ID ends[][2]{ { areg::COOKIE_UNKNOWN, TARGET }, { SOURCE, areg::COOKIE_UNKNOWN } };
+    for (const auto & end : ends)
+    {
+        const ITEM_ID source{ end[0] };
+        const ITEM_ID target{ end[1] };
+        EXPECT_FALSE(areg::message_update_scopes(source, target, names).is_valid());
+        EXPECT_FALSE(areg::message_update_scope(source, target, areg::String("scope"), 1u, 0u).is_valid());
+        EXPECT_FALSE(areg::message_query_instances(source, target).is_valid());
+        EXPECT_FALSE(areg::message_query_scopes(source, target).is_valid());
+        EXPECT_FALSE(areg::message_save_configuration(source, target).is_valid());
+        EXPECT_FALSE(areg::message_restore_configuration(source, target).is_valid());
+        EXPECT_FALSE(areg::message_update_source_state(source, target, areg::LogSourceState::Paused).is_valid());
+        EXPECT_FALSE(areg::message_source_state_updated(source, target, areg::LogSourceState::Paused, OBSERVER).is_valid());
+    }
+}
+
+// A scope registration with unknown ends goes from this process to the log collector.
+TEST(LogProtocolTest, scope_registration_defaults_its_ends)
+{
+    const areg::ScopeList scopes;
+    const areg::MessageEnvelope byDefault{ areg::message_register_scopes(areg::COOKIE_UNKNOWN, areg::COOKIE_UNKNOWN, scopes) };
+    ASSERT_TRUE(byDefault.is_valid());
+    EXPECT_EQ(byDefault.target(), static_cast<uint32_t>(areg::COOKIE_LOGGER));
+    EXPECT_EQ(byDefault.source(), static_cast<uint32_t>(areg::cookie()));
+
+    const areg::MessageEnvelope named{ areg::message_register_scopes(SOURCE, TARGET, scopes) };
+    EXPECT_TRUE(is_message(named, areg::FuncIdRange::ServiceLogRegisterScopes, SOURCE, TARGET));
+}
+
+// Finalizing an invalid message changes nothing; a log entry assigned to itself keeps its text.
+TEST(LogProtocolTest, finalize_of_an_invalid_message_and_self_assignment_keep_state)
+{
+    areg::MessageEnvelope invalid;
+    areg::finalize_log_message(invalid, areg::LogDataType::Remote, SOURCE);
+    EXPECT_FALSE(invalid.is_valid());
+
+    areg::LogEntry entry{ areg::LogMessageType::MessageText };
+    entry.logMessageLen = 4u;
+    std::memcpy(entry.logMessage, "text", 5u);
+    areg::LogEntry & same{ entry };
+    entry = same;
+    EXPECT_STREQ(entry.logMessage, "text");
+    EXPECT_EQ(entry.logMessageLen, 4u);
+}
+#endif  // AREG_LOGGING

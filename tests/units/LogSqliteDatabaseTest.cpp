@@ -2796,3 +2796,57 @@ TEST(LogSqliteDatabaseTest, test_writerSavesMoreRowsThanOneTransactionHolds)
 }
 
 #endif  // AREG_LOGGING
+
+/**
+ * \brief   Every query on a file whose tables were dropped returns nothing; a missing marker is
+ *          removed without an error, and no marker is removed from a file without the markers table.
+ **/
+TEST(LogSqliteDatabaseTest, test_queriesOfDroppedTablesReturnNothing)
+{
+    const std::string path{ _db_path("s22dropped.sqlog") };
+    LogDb db;
+    ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
+    _write_set(db);
+    _write_set_scopes(db);
+    EXPECT_TRUE(db.remove_marker(1u));
+    EXPECT_FALSE(db.remove_marker(0u));
+
+    ASSERT_TRUE(db.drop_table("logs"));
+    ASSERT_TRUE(db.drop_table("scopes"));
+    ASSERT_TRUE(db.drop_table("instances"));
+    if (db.table_exists("markers"))
+    {
+        ASSERT_TRUE(db.drop_table("markers"));
+    }
+
+    EXPECT_FALSE(db.remove_marker(1u));
+
+    std::vector<areg::String> names{ areg::String("stale") };
+    db.log_instance_names(names);
+    EXPECT_TRUE(names.empty());
+    names.push_back(areg::String("stale"));
+    db.log_thread_names(names);
+    EXPECT_TRUE(names.empty());
+
+    std::vector<ITEM_ID> ids{ 1u };
+    db.log_threads(ids);
+    EXPECT_TRUE(ids.empty());
+
+    std::vector<areg::ScopeEntry> scopes;
+    db.log_inst_scopes(scopes, 31u);
+    EXPECT_TRUE(scopes.empty());
+
+    std::vector<areg::SharedBuffer> messages;
+    db.log_messages(messages);
+    EXPECT_TRUE(messages.empty());
+    db.log_inst_messages(messages, 31u);
+    EXPECT_TRUE(messages.empty());
+    db.log_scope_messages(messages, 1u);
+    EXPECT_TRUE(messages.empty());
+    db.log_messages(messages, 31u, 1u);
+    EXPECT_TRUE(messages.empty());
+    EXPECT_EQ(db.max_log_id(), 0u);
+
+    db.disconnect();
+    EXPECT_FALSE(db.remove_marker(1u));
+}

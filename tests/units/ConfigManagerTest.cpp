@@ -22,6 +22,7 @@
 #include "areg/base/FileBuffer.hpp"
 #include "areg/base/Identifier.hpp"
 #include "areg/base/Process.hpp"
+#include "areg/base/Thread.hpp"
 #include "areg/base/Version.hpp"
 #include "areg/persist/Property.hpp"
 #include "areg/persist/PropertyKey.hpp"
@@ -83,6 +84,17 @@ namespace
         return dir / (std::string(areg::Process::instance().app_name().as_string()) + ".init");
     }
 
+    //!< Returns the file location that a saved file holds for the running process.
+    std::string file_location_of(const fs::path& saved)
+    {
+        areg::ConfigManager config;
+        areg::File file(areg::String(saved.string()), static_cast<uint32_t>(areg::File::OpenMode::Read) | static_cast<uint32_t>(areg::File::OpenMode::Text) | static_cast<uint32_t>(areg::File::OpenMode::Exist));
+        if (file.open() == false)
+            return std::string();
+        config.read_config(file);
+        return config.log_file_location().as_string();
+    }
+
     //!< Returns the file location of a configuration read from the shared file.
     std::string file_location(const fs::path& shared)
     {
@@ -127,6 +139,54 @@ TEST(ConfigManagerTest, save_never_writes_shared_file)
 
     EXPECT_EQ(before, read_file(shared));
     EXPECT_EQ(file_location(shared), std::string("./logs/process.log"));
+}
+
+/**
+ * \brief   A save fails and leaves no temporary file when the lock file, the temporary file or the
+ *          destination cannot be written; a save into a missing directory creates it.
+ **/
+TEST(ConfigManagerTest, save_fails_when_a_file_of_the_save_is_a_directory)
+{
+    const fs::path dir{ test_dir() };
+    areg::ConfigManager config;
+    config.set_file_location("./logs/process.log");
+
+    const auto temp_files = [](const fs::path& where)
+    {
+        uint32_t count{ 0u };
+        std::error_code err;
+        for (const auto& entry : fs::directory_iterator(where, err))
+        {
+            if (entry.path().extension() == ".tmp")
+                ++ count;
+        }
+
+        return count;
+    };
+
+    const fs::path locked{ dir / "locked.init" };
+    fs::create_directory(fs::path(locked.string() + ".lock"));
+    EXPECT_FALSE(config.save_config(areg::String(locked.string())));
+    EXPECT_FALSE(fs::exists(locked));
+
+    const fs::path blocked{ dir / "blocked.init" };
+    const std::string tempName{ blocked.string() + "." + std::to_string(areg::Process::instance().id())
+                              + "." + std::to_string(areg::Thread::current_thread_id()) + ".tmp" };
+    fs::create_directory(fs::path(tempName));
+    EXPECT_FALSE(config.save_config(areg::String(blocked.string())));
+    EXPECT_FALSE(fs::exists(blocked));
+    fs::remove(fs::path(tempName));
+
+    const fs::path target{ dir / "target.init" };
+    fs::create_directory(target);
+    EXPECT_FALSE(config.save_config(areg::String(target.string())));
+    EXPECT_TRUE(fs::is_directory(target));
+    EXPECT_EQ(temp_files(dir), 0u);
+
+    const fs::path nested{ dir / "missing" / "nested.init" };
+    EXPECT_TRUE(config.save_config(areg::String(nested.string())));
+    EXPECT_TRUE(fs::is_regular_file(nested));
+    EXPECT_EQ(file_location_of(nested), std::string("./logs/process.log"));
 }
 
 /**
@@ -702,6 +762,50 @@ TEST(ConfigManagerTest, module_value_wins_over_shared_value)
     config.set_configuration(parse_list(lines), areg::ListProperties());
     EXPECT_EQ(config.network_sndbuf(areg::String("foreign"), tcpip), 99u * 1024u);
     EXPECT_EQ(config.network_keepalive(areg::String("foreign"), tcpip), 99u);
+}
+
+/**
+ * \brief   Every network value is read for the module that is asked, and the default arguments
+ *          read the values of the process for every transport.
+ **/
+TEST(ConfigManagerTest, network_values_of_a_named_module)
+{
+    areg::ConfigManager config;
+    std::vector<std::string> lines;
+    for (const char* name : { "sndbuf", "rcvbuf", "drain", "pairs", "timeout", "cache", "keepalive" })
+    {
+        lines.push_back(std::string("net::modx::tcpip::") + name + " = 11");
+        lines.push_back(std::string("net::*::*::") + name + " = 5");
+    }
+
+    config.set_configuration(parse_list(lines), areg::ListProperties());
+    const areg::String modx("modx");
+    const areg::String tcpip("tcpip");
+    EXPECT_EQ(config.network_sndbuf(modx, tcpip), 11u * 1024u);
+    EXPECT_EQ(config.network_rcvbuf(modx, tcpip), 11u * 1024u);
+    EXPECT_EQ(config.network_drain_limit(modx, tcpip), 11u);
+    EXPECT_EQ(config.network_pool_pairs(modx, tcpip), 11u);
+    EXPECT_EQ(config.network_timeout(modx, tcpip), 11u);
+    EXPECT_EQ(config.network_cache(modx, tcpip), 11u * areg::ONE_KILOBYTE);
+    EXPECT_EQ(config.network_keepalive(modx, tcpip), 11u);
+
+    EXPECT_EQ(config.network_drain_limit(), 5u);
+    EXPECT_EQ(config.network_keepalive(), 5u);
+    EXPECT_EQ(config.network_pool_pairs(modx), 5u);
+    EXPECT_EQ(config.network_cache(modx), 5u * areg::ONE_KILOBYTE);
+}
+
+/**
+ * \brief   A value of zero for all modules is skipped by the getters that need a positive value.
+ **/
+TEST(ConfigManagerTest, zero_shared_value_falls_back_to_the_default)
+{
+    areg::ConfigManager config;
+    config.set_configuration(parse_list({ "net::*::tcpip::timeout = 0", "net::*::tcpip::cache = 0", "net::*::tcpip::keepalive = 0" }), areg::ListProperties());
+    const areg::String tcpip("tcpip");
+    EXPECT_EQ(config.network_timeout(areg::String(), tcpip), 0u);
+    EXPECT_EQ(config.network_cache(areg::String(), tcpip), areg::DEFAULT_THREAD_CACHE);
+    EXPECT_EQ(config.network_keepalive(areg::String(), tcpip), areg::SOCKET_KEEPALIVE_SEC);
 }
 
 /**

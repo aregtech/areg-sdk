@@ -364,6 +364,9 @@
     <ClCompile Include="units\LogObserverApiTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="units\LogObserverAppTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\framework\areglogger\client\private\LogObserverApi.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -374,6 +377,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\framework\areglogger\client\private\ObserverMessageProcessor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\framework\logobserver\app\private\LogObserver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="units\SqliteStatementTest.cpp">

@@ -178,10 +178,12 @@ if (AREG_LOGGING)
     target_compile_definitions("${AREG_UNIT_TEST_PROJECT}" PRIVATE IMP_LOGGER_LIB)
     target_sources("${AREG_UNIT_TEST_PROJECT}" PRIVATE
         "${AREG_UNIT_TEST_BASE}/LogObserverApiTest.cpp"
+        "${AREG_UNIT_TEST_BASE}/LogObserverAppTest.cpp"
         "${AREG_FRAMEWORK}/areglogger/client/private/LogObserverApi.cpp"
         "${AREG_FRAMEWORK}/areglogger/client/private/LogObserverBase.cpp"
         "${AREG_FRAMEWORK}/areglogger/client/private/LoggerClient.cpp"
         "${AREG_FRAMEWORK}/areglogger/client/private/ObserverMessageProcessor.cpp"
+        "${AREG_FRAMEWORK}/logobserver/app/private/LogObserver.cpp"
     )
 endif()
 

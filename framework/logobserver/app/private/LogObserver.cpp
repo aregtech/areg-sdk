@@ -358,10 +358,6 @@ void LogObserver::callback_log_update_scopes(ITEM_ID /* cookie */, const ScopeIn
 {
 }
 
-void LogObserver::callback_log_message(const LogEntry* /* logMessage */)
-{
-}
-
 #ifdef  DEBUG
 void LogObserver::callback_log_message_ex(const uint8_t* logBuffer, uint32_t size)
 #else   // DEBUG

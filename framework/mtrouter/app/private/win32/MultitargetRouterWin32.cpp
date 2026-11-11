@@ -52,7 +52,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
     int32_t result{ areg::ext::ServiceApplicationBase::RESULT_FAILED_RUN };
     char** argvTemp = areg::ext::convert_arguments<TCHAR>(argv, argc);
     MultitargetRouter& router = MultitargetRouter::instance();
-    if (router.parse_options(static_cast<int32_t>(argc), argvTemp))
+    if (((argvTemp != nullptr) || (argc <= 0)) && router.parse_options(static_cast<int32_t>(argc), argvTemp))
     {
         result = router.service_main(router.current_option(), nullptr);
     }
