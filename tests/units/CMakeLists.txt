@@ -204,7 +204,7 @@ target_sources("${AREG_UNIT_TEST_PROJECT}" PRIVATE
 )
 
 # The tests of private POSIX classes are built where the areg library exposes them.
-if (NOT WIN32 AND (CYGWIN OR NOT AREG_BUILD_OPTIMIZED OR AREG_LIB_TYPE STREQUAL "static"))
+if (NOT WIN32 AND (AREG_LIB_TYPE STREQUAL "static" OR (NOT CYGWIN AND NOT AREG_BUILD_OPTIMIZED)))
     target_compile_definitions("${AREG_UNIT_TEST_PROJECT}" PRIVATE AREG_TEST_PRIVATE_POSIX)
 endif()
 

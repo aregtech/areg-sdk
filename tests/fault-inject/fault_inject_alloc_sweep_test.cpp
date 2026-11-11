@@ -840,6 +840,13 @@ TEST( FaultInjectSweepTest, argument_conversion_that_cannot_allocate_returns_nul
 namespace
 {
 #if defined(AREG_FAULT_SWEEP_TESTS)
+    //!< Publishes the address of an object so the compiler cannot elide its allocation.
+    template<typename OBJECT>
+    inline void _keep_allocation( const OBJECT & obj )
+    {
+        asm volatile( "" : : "r"( &obj ) : "memory" );
+    }
+
     //!< Fails every nothrow allocation while a fixed array is resized and copied.
     void _fixed_array_survives_failed_allocation( )
     {
@@ -861,8 +868,12 @@ namespace
 
         const areg::FixedArray<int32_t> failedCopy( other );
         const areg::FixedArray<int32_t> failedList( longer, 5u );
-        AREG_CHILD_CHECK( failedCopy.size( ) == 0u && failedList.size( ) == 0u );
-        AREG_CHILD_CHECK( areg::FixedArray<int32_t>( 4u ).size( ) == 0u );
+        const areg::FixedArray<int32_t> failedCount( 4u );
+        _keep_allocation( failedCopy );
+        _keep_allocation( failedList );
+        _keep_allocation( failedCount );
+        AREG_CHILD_CHECK( failedCopy.size( ) == 0u && failedList.size( ) == 0u && failedCount.size( ) == 0u );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 5u );
 
         ::areg_fault_disarm_all( );
         AREG_CHILD_CHECK( values.resize( 4u ) && values.size( ) == 4u && values[ 1 ] == 2 );
