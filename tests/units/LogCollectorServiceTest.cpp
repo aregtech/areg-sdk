@@ -12,6 +12,7 @@
 #include "units/ServiceConsoleHarness.hpp"
 #include "logcollector/app/LogCollector.hpp"
 #include "logcollector/service/private/LogCollectorDatabase.hpp"
+#include "areg/base/File.hpp"
 #include "aregextend/db/LogSqliteDatabase.hpp"
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/logging/LoggingDefs.hpp"
@@ -1070,6 +1071,31 @@ namespace
         remove_temp_directory(path);
     }
 
+    void scenario_database_invalid_scopes()
+    {
+        const std::string path{ temp_database("invalid.sqlog") };
+        do
+        {
+            LogCollectorDatabase database;
+            AREG_CHILD_CHECK(database.start(areg::String(path.c_str())));
+            database.save_scopes(71u, areg::MessageEnvelope());
+
+            areg::ScopeNames names;
+            names.add(areg::ScopeEntry("after_invalid_message", 1u, priority_of("DEBUG")));
+            database.save_scopes(72u, areg::message_update_scopes(72u, areg::COOKIE_LOGGER, names));
+            database.stop();
+        } while (false);
+
+        LogDb db;
+        AREG_CHILD_CHECK(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Viewer));
+        AREG_CHILD_CHECK(db.log_inst_scopes(71u).empty());
+        const std::vector<areg::ScopeEntry> scopes{ db.log_inst_scopes(72u) };
+        AREG_CHILD_CHECK(scopes.size() == 1u && scopes[0].scopeName == "after_invalid_message");
+        db.disconnect();
+        remove_database(path);
+        remove_temp_directory(path);
+    }
+
 #endif  // AREG_LOGGING
 
     void scenario_database_unusable_path()
@@ -1376,6 +1402,23 @@ TEST(LogCollectorDatabaseTest, instances_scopes_and_rows_are_written_by_the_writ
 TEST(LogCollectorDatabaseTest, truncated_and_empty_scope_entries_do_not_stop_the_writer)
 {
     AREG_EXPECT_IN_CHILD(scenario_database_truncated_scopes());
+}
+
+TEST(LogCollectorDatabaseTest, invalid_scope_message_stores_nothing_and_the_writer_goes_on)
+{
+    AREG_EXPECT_IN_CHILD(scenario_database_invalid_scopes());
+}
+
+TEST(LogCollectorDatabaseTest, configured_path_uses_the_default_location_and_name_when_none_is_set)
+{
+    AREG_EXPECT_IN_CHILD(
+        areg::Application::setup(false, true, false, true, false);
+        const areg::String expected{ areg::File::make_full_path(areg::String(std::string(LogCollectorDatabase::DEFAULT_DB_LOCATION).c_str())
+                                                              , areg::String(std::string(LogCollectorDatabase::DEFAULT_DB_NAME).c_str())) };
+        AREG_CHILD_CHECK(expected.is_empty() == false);
+        AREG_CHILD_CHECK(LogCollectorDatabase::configured_path() == expected);
+        areg::Application::release();
+    );
 }
 
 #endif  // AREG_LOGGING

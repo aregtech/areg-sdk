@@ -790,7 +790,7 @@ void LoggerClient::process_received_message(MessageEnvelope& msgReceived, Socket
         case areg::FuncIdRange::ServiceLogRestoreConfiguration:   // fall through
         case areg::FuncIdRange::SystemServiceNotifyDuplicate:
         default:
-            ASSERT(false);
+            break;
         }
     }
 }

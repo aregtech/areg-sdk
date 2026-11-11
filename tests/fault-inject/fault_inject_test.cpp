@@ -23,6 +23,7 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/base/File.hpp"
 #include "areg/base/MessageEnvelope.hpp"
+#include "areg/base/Process.hpp"
 #include "areg/base/RingStack.hpp"
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/base/SocketClient.hpp"
@@ -31,6 +32,16 @@
 #include "areg/base/SocketDefs.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/base/ThreadConsumer.hpp"
+
+#if AREG_LOGGING
+    #include "areglogger/client/LogObserverApi.h"
+    #include "areglogger/client/private/LoggerClient.hpp"
+    #include "logcollector/service/private/LogCollectorDatabase.hpp"
+
+    #include <filesystem>
+    #include <string>
+    #include <system_error>
+#endif  // AREG_LOGGING
 
 #include <errno.h>
 
@@ -1279,3 +1290,104 @@ TEST( FaultInjectTest, ring_stack_copy_constructor_gives_an_empty_ring_when_allo
 }
 
 #endif  // defined(AREG_FAULT_ALLOC_TESTS)
+
+#if AREG_LOGGING
+
+namespace
+{
+    uint32_t    gDbCreated  { 0u };     //!< Calls of the database created notification.
+
+    void on_db_created( const char * /*dbLocation*/ )
+    {
+        ++ gDbCreated;
+    }
+
+    //!< Starts and stops a thread, so that a sanitizer creates its helper thread before a fault is armed.
+    void warm_up_threads( )
+    {
+        ReturningConsumer consumer;
+        areg::Thread warmup( consumer, "FaultInjectWarmupLogging" );
+        AREG_CHILD_CHECK( warmup.start( areg::WAIT_INFINITE ) );
+        static_cast<void>(warmup.shutdown( areg::WAIT_INFINITE ));
+    }
+
+    //!< Returns a database file in a private directory of the process.
+    std::filesystem::path private_database( const char * name )
+    {
+        std::filesystem::path dir{ std::filesystem::temp_directory_path( ) / ("areg-fault-logging-" + std::to_string( areg::Process::instance( ).id( ) )) };
+        std::error_code error;
+        std::filesystem::create_directories( dir, error );
+        return (dir / name);
+    }
+
+    //!< Removes the private directory of the process.
+    void remove_private_directory( const std::filesystem::path & file )
+    {
+        std::error_code error;
+        std::filesystem::remove_all( file.parent_path( ), error );
+    }
+}
+
+/**
+ * \brief   The writer thread of the log collector database cannot be created (the thread of the
+ *          checkpointer, created before it, passes). The start is refused, the
+ *          database stays inactive and has no path, and the next start works.
+ **/
+TEST( FaultInjectTest, log_collector_database_stays_stopped_when_its_writer_thread_cannot_start )
+{
+    AREG_EXPECT_IN_CHILD(
+        warm_up_threads( );
+        const std::filesystem::path file{ private_database( "writer.sqlog" ) };
+        {
+            LogCollectorDatabase database;
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::ThreadCreate, THREAD_ERROR, 1u ) );
+            AREG_CHILD_CHECK( database.start( areg::String( file.string( ).c_str( ) ) ) == false );
+            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::ThreadCreate ) == 1u && NOT_REPLACED );
+            AREG_CHILD_CHECK( database.is_active( ) == false );
+            AREG_CHILD_CHECK( database.database_path( ).is_empty( ) );
+            database.save_instance_disconnected( 1u );
+            database.stop( );
+
+            AREG_CHILD_CHECK( database.start( areg::String( file.string( ).c_str( ) ) ) );
+            AREG_CHILD_CHECK( database.is_active( ) );
+            AREG_CHILD_CHECK( database.database_path( ).is_empty( ) == false );
+            database.stop( );
+            AREG_CHILD_CHECK( database.is_active( ) == false );
+        }
+
+        remove_private_directory( file );
+    );
+}
+
+/**
+ * \brief   The writer thread of the database of the log observer cannot be created. The database is
+ *          refused and closed, no creation is reported, and opening it again works.
+ **/
+TEST( FaultInjectTest, log_observer_database_is_closed_when_its_writer_thread_cannot_start )
+{
+    AREG_EXPECT_IN_CHILD(
+        warm_up_threads( );
+        areg::Application::setup( false, true, false, true, false );
+        const std::filesystem::path file{ private_database( "observer.sqlog" ) };
+        areg::logger::LoggerClient & client{ areg::logger::LoggerClient::instance( ) };
+        ObserverEvents events{ };
+        events.evtLogDbCreated = &on_db_created;
+        client.set_callbacks( &events );
+        {
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::ThreadCreate, THREAD_ERROR, 1u ) );
+            AREG_CHILD_CHECK( client.open_logging_database( file.string( ).c_str( ) ) == false );
+            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::ThreadCreate ) == 1u && NOT_REPLACED );
+            AREG_CHILD_CHECK( gDbCreated == 0u );
+        }
+
+        AREG_CHILD_CHECK( client.open_logging_database( file.string( ).c_str( ) ) );
+        AREG_CHILD_CHECK( gDbCreated == 1u );
+        client.close_logging_database( );
+        areg::Application::release( );
+        remove_private_directory( file );
+    );
+}
+
+#endif  // AREG_LOGGING

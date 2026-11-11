@@ -1001,7 +1001,6 @@ inline constexpr const char* areg::as_string(areg::LogPriority prio) noexcept
     case areg::LogPriority::PrioUndefined:
         return "areg::PrioUndefined";
     default:
-        ASSERT(false);
         return "ERR: Unexpected areg::LogPriority value";
     }
 }

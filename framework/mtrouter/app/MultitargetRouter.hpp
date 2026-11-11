@@ -297,11 +297,8 @@ inline constexpr const char* MultitargetRouter::as_string(MultitargetRouter::Rou
     case MultitargetRouter::RouterOption::CMD_RouterQuit:
         return "MultitargetRouter::RouterOption::CMD_RouterQuit";
     default:
-        ASSERT(false);
         return "ERR: Undefined MultitargetRouter::RouterOption value!";
     }
-
-
 }
 
 #endif  // AREG_mtrouter_APP_MULTITARGETROUTER_HPP

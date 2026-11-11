@@ -330,9 +330,7 @@ void NetTcpLogger::process_received_message(MessageEnvelope & msgReceived, Socke
     case areg::FuncIdRange::EmptyFunctionId:                  // fall through
     case areg::FuncIdRange::SystemServiceNotifyDuplicate:
     default:
-        // GCOVR_EXCL_START: unreachable default arm
-        ASSERT(false);
-        // GCOVR_EXCL_STOP
+        break;
     }
 }
 

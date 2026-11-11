@@ -111,8 +111,8 @@ void DebugOutputLogger::log_message(const areg::LogEntry & logMessage)
             layout_exit_scope().log_message(logMessage, static_cast<OutStream &>(*this) );
             break;
 
+        case areg::LogMessageType::Undefined: // fall through
         default:
-            ASSERT(false);  // unexpected message to log
             break;
         }
 

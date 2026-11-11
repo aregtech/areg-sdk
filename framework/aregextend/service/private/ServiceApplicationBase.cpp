@@ -73,11 +73,8 @@ int32_t ServiceApplicationBase::service_main(areg::ext::ServiceOption optStartup
 
     case areg::ext::ServiceOption::CMD_Help:
     case areg::ext::ServiceOption::CMD_Verbose:
-    break;
-
     case areg::ext::ServiceOption::CMD_Undefined:
     default:
-        ASSERT(false);  // unexpected
         break;
     }
 

@@ -87,9 +87,7 @@ TEST(ServiceDefsTest, result_type_names)
     };
 
     check_names(table);
-#ifndef DEBUG
     EXPECT_TRUE(starts_with(areg::as_string(static_cast<areg::ResultType>(0x7777u)), "ERR:"));
-#endif
 }
 
 TEST(ServiceDefsTest, data_state_names)
@@ -104,9 +102,7 @@ TEST(ServiceDefsTest, data_state_names)
     };
 
     check_names(table);
-#ifndef DEBUG
     EXPECT_TRUE(starts_with(areg::as_string(static_cast<areg::DataState>(0x7777u)), "ERR:"));
-#endif
 }
 
 TEST(ServiceDefsTest, request_type_names)
@@ -124,9 +120,7 @@ TEST(ServiceDefsTest, request_type_names)
     };
 
     check_names(table);
-#ifndef DEBUG
     EXPECT_TRUE(starts_with(areg::as_string(static_cast<areg::RequestType>(0x7777u)), "ERR:"));
-#endif
 }
 
 TEST(ServiceDefsTest, message_data_type_names)
@@ -141,9 +135,7 @@ TEST(ServiceDefsTest, message_data_type_names)
     };
 
     check_names(table);
-#ifndef DEBUG
     EXPECT_TRUE(starts_with(areg::as_string(static_cast<areg::MessageDataType>(0x7777u)), "ERR:"));
-#endif
 }
 
 TEST(ServiceDefsTest, service_connection_state_names)
@@ -161,9 +153,7 @@ TEST(ServiceDefsTest, service_connection_state_names)
     };
 
     check_names(table);
-#ifndef DEBUG
     EXPECT_TRUE(starts_with(areg::as_string(static_cast<areg::ServiceConnectionState>(0x7777u)), "ERR:"));
-#endif
 }
 
 TEST(ServiceDefsTest, disconnect_reason_names)
@@ -187,9 +177,7 @@ TEST(ServiceDefsTest, disconnect_reason_names)
     };
 
     check_names(table);
-#ifndef DEBUG
     EXPECT_TRUE(starts_with(areg::as_string(static_cast<areg::DisconnectReason>(0x7777u)), "ERR:"));
-#endif
 }
 
 TEST(ServiceDefsTest, registration_action_names)

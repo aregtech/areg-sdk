@@ -229,10 +229,8 @@ TEST(SystemServiceDefsTest, convert_arguments_returns_null_for_no_arguments)
     areg::ext::delete_arguments(nullptr, 3);
 }
 
-#ifndef DEBUG
 TEST(SystemServiceDefsTest, out_of_range_values_have_error_names)
 {
     EXPECT_EQ(std::strncmp(areg::ext::as_string(static_cast<ServiceOption>(0x7FFF)), "ERR:", 4), 0);
     EXPECT_EQ(std::strncmp(areg::ext::as_string(static_cast<ServicePhase>(0x7FFF)), "ERR:", 4), 0);
 }
-#endif  // DEBUG

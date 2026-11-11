@@ -564,8 +564,14 @@ SyncLockAndWaitPosix::SyncLockAndWaitPosix(   WaitablePosix ** listWaitables
         SyncResourceMapIX & mapResources { SyncLockAndWaitPosix::_map_sync_resources() };
         mapResources.lock();
         count = std::min(areg::MAXIMUM_WAITING_OBJECTS, count);
+        const bool listOk{ mWaitingList.size() >= static_cast<uint32_t>(count) };
+        if ( !listOk )
+        {
+            mFiredEntry.store(static_cast<int32_t>(areg::os::SyncSignal::FirstError), std::memory_order_relaxed);
+            count = 0;
+        }
 
-        bool eventFired{ true };
+        bool eventFired{ listOk };
         for ( uint32_t i = 0; i < static_cast<uint32_t>(count); ++i, ++listWaitables )
         {
             WaitablePosix * syncWaitable = *listWaitables;

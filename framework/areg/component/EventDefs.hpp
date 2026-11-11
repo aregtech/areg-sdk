@@ -632,7 +632,6 @@ inline constexpr const char* areg::as_string(areg::EventType eventType) noexcept
     case areg::EventType::EventRemoteRequestFailed:
         return "areg::EventType::EventRemoteRequestFailed";
     default:
-        ASSERT(false);
         return "ERR: Undefined areg::EventType value!";
     }
 }
@@ -650,7 +649,6 @@ inline constexpr const char* areg::as_string(areg::EventPriority eventPrio) noex
     case areg::EventPriority::ExitPrio:
         return "areg::EventPriority::ExitPrio";
     default:
-        ASSERT(false);
         return "ERR: Undefined areg::EventPriority value!";
     }
 }
@@ -674,7 +672,6 @@ inline constexpr const char* areg::as_string(areg::EventCallType callType) noexc
     case areg::EventCallType::CallServiceRemote:
         return "areg::EventCallType::CallServiceRemote";
     default:
-        ASSERT(false);
         return "ERR: Undefined areg::EventCallType value!";
     }
 }

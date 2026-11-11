@@ -869,6 +869,34 @@ TEST(LogObserverApiTest, configuration_update_with_save_fails_without_a_connecti
 }
 
 /**
+ * A database that cannot be created in the path keeps the observer paused and refuses the restart;
+ * a restart in a usable path resumes it.
+ **/
+TEST(LogObserverApiTest, restart_of_logging_in_an_unusable_path_is_refused_and_keeps_the_pause)
+{
+    AREG_EXPECT_IN_CHILD(
+        ConfiguredObserver observer;
+        AREG_CHILD_CHECK(log_observer_stop_logging(false, nullptr) == false);
+        AREG_CHILD_CHECK(log_observer_connect_logger(observer.path_of("first.sqlog").c_str(), nullptr, 0u));
+        AREG_CHILD_CHECK(log_observer_current_state() == ObserverState::ObserverConnected);
+
+        AREG_CHILD_CHECK(log_observer_stop_logging(true, nullptr));
+        AREG_CHILD_CHECK(log_observer_current_state() == ObserverState::ObserverPaused);
+
+        std::error_code error;
+        fs::create_directories(observer.path_of("directory"), error);
+        AREG_CHILD_CHECK(log_observer_stop_logging(false, observer.path_of("directory").c_str()) == false);
+        AREG_CHILD_CHECK(log_observer_current_state() == ObserverState::ObserverPaused);
+
+        AREG_CHILD_CHECK(log_observer_stop_logging(false, observer.path_of("second.sqlog").c_str()));
+        AREG_CHILD_CHECK(log_observer_current_state() == ObserverState::ObserverConnected);
+        AREG_CHILD_CHECK(fs::exists(observer.path_of("second.sqlog")));
+        log_observer_disconnect_logger();
+        AREG_CHILD_CHECK(log_observer_current_state() == ObserverState::ObserverDisconnected);
+    );
+}
+
+/**
  * A missing configuration file starts the observer with the default configuration: the default
  * collector port and no database.
  **/

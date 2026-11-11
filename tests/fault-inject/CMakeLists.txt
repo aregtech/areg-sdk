@@ -34,6 +34,19 @@ addExecutableEx(${AREG_FAULT_INJECT_TEST} ""
     "${AREG_TESTS_DIR}/fault-inject/fault_inject_test.cpp;${AREG_TESTS_DIR}/fault-inject/fault_inject_router_client_test.cpp;${AREG_TESTS_DIR}/fault-inject/fault_inject_os_test.cpp;${AREG_TESTS_DIR}/fault-inject/fault_inject_alloc_sweep_test.cpp"
     "${AREG_FAULT_INJECT_LIB};GTest::gtest_main;GTest::gtest")
 
+# The log collector database and the log observer client are not part of a library.
+if (AREG_LOGGING)
+    target_link_libraries(${AREG_FAULT_INJECT_TEST} PRIVATE ${AREG_SQLITE_LIB_REF})
+    target_compile_definitions(${AREG_FAULT_INJECT_TEST} PRIVATE IMP_LOGGER_LIB)
+    target_sources(${AREG_FAULT_INJECT_TEST} PRIVATE
+        "${AREG_FRAMEWORK}/logcollector/service/private/LogCollectorDatabase.cpp"
+        "${AREG_FRAMEWORK}/areglogger/client/private/LogObserverApi.cpp"
+        "${AREG_FRAMEWORK}/areglogger/client/private/LogObserverBase.cpp"
+        "${AREG_FRAMEWORK}/areglogger/client/private/LoggerClient.cpp"
+        "${AREG_FRAMEWORK}/areglogger/client/private/ObserverMessageProcessor.cpp"
+    )
+endif()
+
 if (CYGWIN AND CMAKE_BUILD_TYPE MATCHES "Release")
     target_compile_options(${AREG_FAULT_INJECT_TEST} PRIVATE -O1)
 endif()

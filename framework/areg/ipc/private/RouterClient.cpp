@@ -398,10 +398,8 @@ void RouterClient::process_received_message( MessageEnvelope & msgReceived, Sock
         break;
 
         default:
-            // GCOVR_EXCL_START: unreachable default arm
-            ASSERT(false);
+            LOG_WARN("Ignoring registration notification of unknown type [ %u ] from source [ %u ]", static_cast<uint32_t>(reqType), static_cast<uint32_t>(source));
             break;
-            // GCOVR_EXCL_STOP
         }
     }
     break;

@@ -233,7 +233,6 @@ void SystemServiceBase::control_service(SystemServiceBase::ServiceControl contro
         break;
 
     default:
-        ASSERT(false);
         break;
     }
 }

@@ -90,7 +90,7 @@ bool ServiceApplicationBase::_os_set_state(areg::ext::ServicePhase newState)
             break;
 
         default:
-            ASSERT(false);
+            break;
         }
 
         mSystemServiceState = newState;
