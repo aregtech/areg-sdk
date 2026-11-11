@@ -222,6 +222,16 @@ public:
     bool acquire_lanes() noexcept;
 
     /**
+     * \brief   Allocates the lanes if the queue has none and leaves them closed for producers.
+     *          Lanes the queue already holds are not changed.
+     *
+     * \return  Returns true if the queue holds its lanes. False if the ring could not be
+     *          allocated or the queue has no capacity.
+     * \note    Call before the consumer thread of the queue runs.
+     **/
+    [[nodiscard]] bool reserve_lanes() noexcept;
+
+    /**
      * \brief   Closes the queue: every further push_event() and push_events() is
      *          refused, and the call returns once every producer that had already
      *          taken a ring slot has left it, or after CLOSE_WAIT_MS. The lanes stay
@@ -470,6 +480,14 @@ private:
      **/
     [[nodiscard]]
     static uint32_t _calc_capacity(uint32_t requested) noexcept;
+
+    /**
+     * \brief   Allocates the ring and the priority lane of a queue that has none.
+     *
+     * \param   enqueuePos  The first enqueue position: 0 for an open ring, RING_CLOSED for a closed one.
+     * \return  Returns true if the ring is allocated.
+     **/
+    bool _allocate_lanes(size_t enqueuePos) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

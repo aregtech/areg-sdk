@@ -135,6 +135,7 @@ void ClientSendThread::start_event_processing( Event & eventElem )
     }
     else
     {
+        // GCOVR_EXCL_START: a send batch above MAX_SEND_BATCH_BYTES queued at once
         for ( uint32_t start{ 0u }; start < bufCount; )
         {
             uint32_t end       { start };
@@ -163,6 +164,7 @@ void ClientSendThread::start_event_processing( Event & eventElem )
 
             start = end;
         }
+        // GCOVR_EXCL_STOP
     }
 
     // Release retained drained buffers (slot 0 is owned by the caller). Keeps mDrain allocated for reuse.

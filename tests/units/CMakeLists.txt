@@ -59,6 +59,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     EnvelopeCacheTest.cpp
     EventEnvelopeTest.cpp
     EventQueueTest.cpp
+    RouterClientMoreTest.cpp
     FatalErrorTest.cpp
     WatchdogTest.cpp
     RemainingSmallFilesCoverageTest.cpp

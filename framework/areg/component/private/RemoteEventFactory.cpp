@@ -89,6 +89,7 @@ bool RemoteEventFactory::route_outgoing_message( Event & srcWire, ITEM_ID cookie
     case areg::EventType::EventRemoteConsumerConnect:
         break;
 
+    // GCOVR_EXCL_START: local and custom events are never serialized
     case areg::EventType::EventLocalProviderConnect:    // fall through
     case areg::EventType::EventLocalConsumerConnect:    // fall through
     case areg::EventType::EventLocalRequest:            // fall through
@@ -111,6 +112,7 @@ bool RemoteEventFactory::route_outgoing_message( Event & srcWire, ITEM_ID cookie
             ASSERT( false );
         }
         break;
+    // GCOVR_EXCL_STOP
     }
 
     return result;

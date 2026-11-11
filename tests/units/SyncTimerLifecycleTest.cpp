@@ -2,6 +2,10 @@
 #include "units/ThreadCoverageHelpers.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 
+#if !defined(_WIN32)
+    #include "areg/base/private/posix/WaitableTimerPosix.hpp"
+#endif  // !defined(_WIN32)
+
 #include <atomic>
 #include <memory>
 #include <thread>
@@ -168,3 +172,15 @@ TEST(SyncTimerLifecycleTest, last_armed_timer_destruction_allows_fresh_timer_lif
         EXPECT_FALSE(fresh.lock(areg::DO_NOT_WAIT));
     }
 }
+
+#if !defined(_WIN32)
+
+TEST(SyncTimerLifecycleTest, waitable_timer_is_valid_until_its_resources_are_freed)
+{
+    areg::os::WaitableTimerPosix timer;
+    EXPECT_TRUE(timer.is_valid());
+    timer.free_resources();
+    EXPECT_FALSE(timer.is_valid());
+}
+
+#endif  // !defined(_WIN32)

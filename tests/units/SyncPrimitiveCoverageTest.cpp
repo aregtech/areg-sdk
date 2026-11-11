@@ -3,6 +3,10 @@
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/Thread.hpp"
 
+#if !defined(_WIN32)
+    #include "areg/base/private/posix/MutexPosix.hpp"
+#endif  // !defined(_WIN32)
+
 #include <array>
 #include <atomic>
 #include <chrono>
@@ -364,6 +368,72 @@ TEST(MutexCoverageTest, initially_owned_mutex_excludes_another_thread)
     EXPECT_TRUE(mutex.unlock());
     EXPECT_TRUE(acquire_from_other_thread(mutex));
 }
+
+#if !defined(_WIN32)
+
+namespace
+{
+    bool lock_from_other_thread(const areg::os::MutexPosix& mutex, uint32_t timeout)
+    {
+        bool acquired{ false };
+        std::thread other([&]()
+            {
+                acquired = mutex.lock(timeout);
+                if (acquired)
+                {
+                    mutex.unlock();
+                }
+            });
+        other.join();
+        return acquired;
+    }
+}
+
+TEST(MutexPosixCoverageTest, initially_locked_mutex_is_owned_by_the_creator_and_recursive)
+{
+    CoverageDeadline deadline;
+    areg::os::MutexPosix mutex(true);
+    ASSERT_TRUE(mutex.is_valid());
+    EXPECT_FALSE(lock_from_other_thread(mutex, areg::DO_NOT_WAIT));
+    EXPECT_TRUE(mutex.try_lock());
+    mutex.unlock();
+    EXPECT_FALSE(lock_from_other_thread(mutex, areg::DO_NOT_WAIT));
+    mutex.unlock();
+    EXPECT_TRUE(lock_from_other_thread(mutex, areg::DO_NOT_WAIT));
+}
+
+TEST(MutexPosixCoverageTest, free_mutex_is_locked_by_an_infinite_and_by_a_timed_lock)
+{
+    CoverageDeadline deadline;
+    areg::os::MutexPosix mutex(areg::os::SyncKind::SoMutex, true);
+    ASSERT_TRUE(mutex.is_valid());
+    EXPECT_TRUE(mutex.lock(areg::WAIT_INFINITE));
+    mutex.unlock();
+    EXPECT_TRUE(mutex.lock(areg::DO_NOT_WAIT));
+    mutex.unlock();
+    EXPECT_TRUE(lock_from_other_thread(mutex, COVERAGE_WAIT_MS));
+}
+
+TEST(MutexPosixCoverageTest, timed_lock_fails_while_another_thread_owns_the_mutex)
+{
+    CoverageDeadline deadline;
+    areg::os::MutexPosix mutex(areg::os::SyncKind::SoMutex, false);
+    ASSERT_TRUE(mutex.lock(areg::DO_NOT_WAIT));
+    EXPECT_FALSE(lock_from_other_thread(mutex, areg::DO_NOT_WAIT));
+    mutex.unlock();
+    EXPECT_TRUE(lock_from_other_thread(mutex, areg::DO_NOT_WAIT));
+}
+
+TEST(MutexPosixCoverageTest, freeing_resources_releases_a_locked_mutex)
+{
+    CoverageDeadline deadline;
+    areg::os::MutexPosix mutex(true);
+    EXPECT_FALSE(lock_from_other_thread(mutex, areg::DO_NOT_WAIT));
+    mutex.free_resources();
+    EXPECT_TRUE(lock_from_other_thread(mutex, areg::DO_NOT_WAIT));
+}
+
+#endif  // !defined(_WIN32)
 
 TEST(CriticalSectionCoverageTest, recursion_and_try_lock_release_exactly_one_level)
 {

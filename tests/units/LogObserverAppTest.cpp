@@ -45,7 +45,12 @@ namespace
         const int saved{ ::dup(::fileno(stdout)) };
 #endif  // defined(_WIN32)
         AREG_CHILD_CHECK(saved >= 0);
+#if defined(_WIN32)
+        FILE * stream{ nullptr };
+        AREG_CHILD_CHECK(::freopen_s(&stream, out.string().c_str(), "w", stdout) == 0);
+#else   // defined(_WIN32)
         AREG_CHILD_CHECK(std::freopen(out.string().c_str(), "w", stdout) != nullptr);
+#endif  // defined(_WIN32)
 
         std::vector<std::string> storage{ "logobserver" };
         storage.insert(storage.end(), options.begin(), options.end());

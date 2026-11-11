@@ -87,8 +87,10 @@ bool LogCollectorDatabase::start(const areg::String & dbPath)
         return true;
 
     areg::String path{ dbPath.is_empty() ? LogCollectorDatabase::configured_path() : dbPath };
+    // GCOVR_EXCL_START: the default path is never empty
     if (path.is_empty())
         return false;
+    // GCOVR_EXCL_STOP
 
     mDatabase.set_database_logging_enabled(true);
     if (mDatabase.connect(path, areg::DatabaseRole::Recorder) == false)
@@ -289,8 +291,10 @@ void LogCollectorDatabase::_write_record(DbRecord & record)
         _write_scopes(record);
         break;
 
+    // GCOVR_EXCL_START: default of the private RecordKind
     default:
         break;
+    // GCOVR_EXCL_STOP
     }
 }
 

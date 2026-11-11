@@ -57,7 +57,7 @@ MutexPosix::MutexPosix( areg::os::SyncKind syncType, bool isRecursive )
     _init_posix_mutex( isRecursive );
 }
 
-MutexPosix::~MutexPosix()
+MutexPosix::~MutexPosix()   // GCOVR_EXCL_LINE: deleting destructor variant, never used
 {
     if (mMutexValid)
     {
@@ -71,7 +71,7 @@ MutexPosix::~MutexPosix()
 
     mMutexValid     = false;
     mMutexAttrValid = false;
-}
+}   // GCOVR_EXCL_LINE: deleting destructor variant, never used
 
 bool MutexPosix::is_valid() const noexcept
 {

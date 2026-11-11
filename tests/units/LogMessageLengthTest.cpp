@@ -21,6 +21,8 @@
 #include "areg/base/ThreadConsumer.hpp"
 #include "areg/logging/LoggingDefs.hpp"
 
+#include <cstring>
+
 #include <cstdarg>
 #include <future>
 #include <string>
@@ -236,6 +238,28 @@ TEST(LogMessageLengthTest, test_messageCarriesThreadName)
     ASSERT_TRUE(areg::is_log_entry_valid(msg));
     EXPECT_STREQ(_entry(msg).logThread, "NamedLogThread");
     EXPECT_EQ(_entry(msg).logThreadLen, 14u);
+}
+
+
+/**
+ * \brief   A message built by make_log_message is a valid log entry, also when its block was used before.
+ *          Reproduces the defect: the module name of a made message was left unset.
+ **/
+TEST(LogMessageLengthTest, bug_912_a_made_message_is_valid_on_a_block_that_held_other_data)
+{
+    const std::string text{ "reused block" };
+    for (int round = 0; round < 8; ++round)
+    {
+        {
+            areg::MessageEnvelope used{ areg::make_log_message(areg::LogMessageType::MessageText, 1u, 0u, 0u, areg::LogPriority::PrioDebug, text.c_str(), static_cast<uint32_t>(text.length())) };
+            ASSERT_TRUE(used.is_valid());
+            std::memset(used.buffer(), 0xA5, used.size_used());
+        }
+
+        areg::MessageEnvelope msg{ areg::make_log_message(areg::LogMessageType::MessageText, 1u, 0u, 0u, areg::LogPriority::PrioDebug, text.c_str(), static_cast<uint32_t>(text.length())) };
+        ASSERT_TRUE(msg.is_valid());
+        EXPECT_TRUE(areg::is_log_entry_valid(msg));
+    }
 }
 
 #endif  // AREG_LOGGING

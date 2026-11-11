@@ -1230,12 +1230,11 @@ TEST( FaultInjectSweepTest, every_failed_aligned_allocation_of_a_guarded_thread_
 }
 
 /**
- * \brief   Bug 902. A dispatcher whose ring cannot be allocated must not run without a queue: after any
+ * \brief   A dispatcher whose ring cannot be allocated must not run without a queue: after any
  *          one failed aligned allocation the system must stop and the child must exit with 0.
- *          Disabled until the bug is fixed; run with --gtest_also_run_disabled_tests. On the unfixed code
- *          the children of some indices hang until the alarm kills them, or exit with 70.
+ *          Reproduces the defect: such a thread reported started, and its stop never arrived.
  **/
-TEST( FaultInjectSweepTest, DISABLED_bug_902_setup_with_a_failed_ring_allocation_must_stop )
+TEST( FaultInjectSweepTest, bug_902_setup_with_a_failed_ring_allocation_must_stop )
 {
     ASSERT_TRUE( _register_model( ) );
     for ( uint32_t index = 0u; index < REQUEST_COUNT; ++ index )

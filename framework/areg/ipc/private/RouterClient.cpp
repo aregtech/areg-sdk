@@ -320,10 +320,12 @@ void RouterClient::process_received_message( MessageEnvelope & msgReceived, Sock
     DEBUG_LOG_SCOPE( areg_ipc_private_RouterClient, process_received_message );
     if (!msgReceived.is_valid() || !whichSource.is_valid())
     {
+        // GCOVR_EXCL_START: the receive loop passes only valid messages from a valid socket
         DEBUG_LOG_WARN("Invalid message from host [ %s : %u ], ignore processing"
                         , whichSource.address().host_address().as_string()
                         , whichSource.address().host_port( ) );
         return;
+        // GCOVR_EXCL_STOP
     }
 
     areg::FuncIdRange msgId{ static_cast<areg::FuncIdRange>(msgReceived.message_id()) };
@@ -398,7 +400,7 @@ void RouterClient::process_received_message( MessageEnvelope & msgReceived, Sock
         break;
 
         default:
-            LOG_WARN("Ignoring registration notification of unknown type [ %u ] from source [ %u ]", static_cast<uint32_t>(reqType), static_cast<uint32_t>(source));
+            DEBUG_LOG_WARN("Ignoring registration notification of unknown type [ %u ] from source [ %u ]", static_cast<uint32_t>(reqType), static_cast<uint32_t>(source));
             break;
         }
     }

@@ -349,6 +349,9 @@
     <ClCompile Include="units\EventQueueTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="units\RouterClientMoreTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="units\MultiLockTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

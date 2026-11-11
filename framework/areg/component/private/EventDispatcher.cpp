@@ -54,7 +54,8 @@ bool EventDispatcher::on_thread_registered( Thread * threadObj )
 
     EventDispatcherBase::remove_all_events( );
     EventDispatcherBase::mExternalEvents.reset_exit();
-    return true;
+    // A thread that cannot have its queue is not started.
+    return EventDispatcherBase::mExternalEvents.reserve_lanes();
 }
 
 void EventDispatcher::on_thread_unregistering()

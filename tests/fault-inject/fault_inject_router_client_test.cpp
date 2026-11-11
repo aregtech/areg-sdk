@@ -35,9 +35,11 @@
 #include "areg/logging/LoggingDefs.hpp"
 #include "areg/persist/ConfigListener.hpp"
 #include "areg/persist/ConfigManager.hpp"
-#include "areglogger/client/LogObserverApi.h"
-#include "areglogger/client/LogObserverBase.hpp"
-#include "areglogger/client/private/LoggerClient.hpp"
+#if AREG_LOGGING
+    #include "areglogger/client/LogObserverApi.h"
+    #include "areglogger/client/LogObserverBase.hpp"
+    #include "areglogger/client/private/LoggerClient.hpp"
+#endif  // AREG_LOGGING
 
 #include <arpa/inet.h>
 #include <errno.h>
