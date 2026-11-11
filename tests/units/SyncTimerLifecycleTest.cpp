@@ -2,9 +2,9 @@
 #include "units/ThreadCoverageHelpers.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 
-#if !defined(_WIN32)
+#if defined(AREG_TEST_PRIVATE_POSIX)
     #include "areg/base/private/posix/WaitableTimerPosix.hpp"
-#endif  // !defined(_WIN32)
+#endif  // defined(AREG_TEST_PRIVATE_POSIX)
 
 #include <atomic>
 #include <memory>
@@ -173,7 +173,7 @@ TEST(SyncTimerLifecycleTest, last_armed_timer_destruction_allows_fresh_timer_lif
     }
 }
 
-#if !defined(_WIN32)
+#if defined(AREG_TEST_PRIVATE_POSIX)
 
 TEST(SyncTimerLifecycleTest, waitable_timer_is_valid_until_its_resources_are_freed)
 {
@@ -183,4 +183,4 @@ TEST(SyncTimerLifecycleTest, waitable_timer_is_valid_until_its_resources_are_fre
     EXPECT_FALSE(timer.is_valid());
 }
 
-#endif  // !defined(_WIN32)
+#endif  // defined(AREG_TEST_PRIVATE_POSIX)

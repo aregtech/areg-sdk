@@ -3,9 +3,9 @@
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/Thread.hpp"
 
-#if !defined(_WIN32)
+#if defined(AREG_TEST_PRIVATE_POSIX)
     #include "areg/base/private/posix/MutexPosix.hpp"
-#endif  // !defined(_WIN32)
+#endif  // defined(AREG_TEST_PRIVATE_POSIX)
 
 #include <array>
 #include <atomic>
@@ -369,7 +369,7 @@ TEST(MutexCoverageTest, initially_owned_mutex_excludes_another_thread)
     EXPECT_TRUE(acquire_from_other_thread(mutex));
 }
 
-#if !defined(_WIN32)
+#if defined(AREG_TEST_PRIVATE_POSIX)
 
 namespace
 {
@@ -433,7 +433,7 @@ TEST(MutexPosixCoverageTest, freeing_resources_releases_a_locked_mutex)
     EXPECT_TRUE(lock_from_other_thread(mutex, areg::DO_NOT_WAIT));
 }
 
-#endif  // !defined(_WIN32)
+#endif  // defined(AREG_TEST_PRIVATE_POSIX)
 
 TEST(CriticalSectionCoverageTest, recursion_and_try_lock_release_exactly_one_level)
 {

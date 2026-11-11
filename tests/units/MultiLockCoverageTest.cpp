@@ -2,9 +2,9 @@
 #include "units/ThreadCoverageHelpers.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/Thread.hpp"
-#if !defined(_WIN32)
+#if defined(AREG_TEST_PRIVATE_POSIX)
     #include "areg/base/private/posix/SyncLockAndWaitPosix.hpp"
-#endif
+#endif  // defined(AREG_TEST_PRIVATE_POSIX)
 
 #include <array>
 #include <atomic>
@@ -377,6 +377,10 @@ TEST(MultiLockCoverageTest, wait_all_with_a_leading_object_without_handle_does_n
     EXPECT_FALSE(pending.lock(areg::DO_NOT_WAIT));
 }
 
+#endif  // !defined(_WIN32)
+
+#if defined(AREG_TEST_PRIVATE_POSIX)
+
 TEST(MultiLockCoverageTest, wait_all_released_by_a_destroyed_object_reports_an_invalid_index)
 {
     CoverageDeadline deadline;
@@ -405,4 +409,4 @@ TEST(MultiLockCoverageTest, wait_all_released_by_a_destroyed_object_reports_an_i
     EXPECT_FALSE(other.lock(areg::DO_NOT_WAIT));
 }
 
-#endif  // !defined(_WIN32)
+#endif  // defined(AREG_TEST_PRIVATE_POSIX)
