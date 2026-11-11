@@ -857,8 +857,12 @@ namespace
         const areg::FixedArray<int32_t> other( longer, 5u );
 
         AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 0u ) );
-        AREG_CHILD_CHECK( values.resize( 8u ) == false );
-        AREG_CHILD_CHECK( values.copy( other ) == false );
+        const bool resized{ values.resize( 8u ) };
+        _keep_allocation( values );
+        AREG_CHILD_CHECK( resized == false );
+        const bool copied{ values.copy( other ) };
+        _keep_allocation( values );
+        AREG_CHILD_CHECK( copied == false );
         AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 2u );
         AREG_CHILD_CHECK( values.size( ) == 3u && values[ 0 ] == 1 && values[ 1 ] == 2 && values[ 2 ] == 3 );
 

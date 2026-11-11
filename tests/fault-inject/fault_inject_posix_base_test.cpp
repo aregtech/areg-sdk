@@ -23,6 +23,8 @@
 #if !defined(_WIN32)
 
 #include "areg/base/SyncPrimitives.hpp"
+#include "areg/base/Thread.hpp"
+#include "areg/base/ThreadConsumer.hpp"
 
 #include <errno.h>
 #include <sys/types.h>
@@ -30,6 +32,18 @@
 #include <unistd.h>
 
 #include <cstdlib>
+
+#if defined(__SANITIZE_THREAD__)
+    #define AREG_SKIP_UNDER_TSAN( )     GTEST_SKIP( ) << "the ThreadSanitizer does not start a thread in a child forked from a multithreaded process"
+#elif defined(__has_feature)
+    #if __has_feature(thread_sanitizer)
+        #define AREG_SKIP_UNDER_TSAN( ) GTEST_SKIP( ) << "the ThreadSanitizer does not start a thread in a child forked from a multithreaded process"
+    #endif  // __has_feature(thread_sanitizer)
+#endif  // defined(__SANITIZE_THREAD__)
+
+#ifndef AREG_SKIP_UNDER_TSAN
+    #define AREG_SKIP_UNDER_TSAN( )
+#endif  // AREG_SKIP_UNDER_TSAN
 
 namespace
 {
@@ -52,8 +66,27 @@ namespace
         return forkCall( );
     }
 
+    //!< A thread routine that returns at once.
+    class ReturningConsumer final : public areg::ThreadConsumer
+    {
+    public:
+        void on_run( ) override
+        {
+        }
+    };
+
+    //!< Starts and stops one thread, so a sanitizer runtime creates its helper thread before a fault is armed.
+    void start_first_thread( )
+    {
+        ReturningConsumer consumer;
+        areg::Thread warmup( consumer, "FaultInjectWarmup" );
+        AREG_CHILD_CHECK( warmup.start( areg::WAIT_INFINITE ) );
+        static_cast<void>( warmup.shutdown( areg::WAIT_INFINITE ) );
+    }
+
     void timer_is_not_armed_while_the_timer_thread_cannot_start_and_works_after( )
     {
+        start_first_thread( );
         areg::SyncTimer timer( 1u, false, true );
         areg_fault::FaultScope faults;
         AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::ThreadCreate, EAGAIN ) );
@@ -99,6 +132,7 @@ TEST( FaultInjectPosixBaseTest, timer_is_not_armed_while_the_timer_thread_cannot
 
 TEST( FaultInjectPosixBaseTest, timers_work_in_the_parent_and_in_a_forked_child )
 {
+    AREG_SKIP_UNDER_TSAN( );
     AREG_EXPECT_IN_CHILD( timers_work_in_the_parent_and_in_a_forked_child( ) );
 }
 
