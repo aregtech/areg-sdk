@@ -1013,3 +1013,60 @@ TEST(PersistenceDefsTest, parsed_key_gets_the_type_of_its_row)
     EXPECT_EQ(areg::PropertyKey(str("net::*::tcpip::keepalive")).key_type(), areg::ConfigEntry::NetKeepAlive);
     EXPECT_EQ(areg::PropertyKey(str("unknown::*::thing::here")).key_type(), areg::ConfigEntry::AnyKey);
 }
+
+/**
+ * \brief   The setters that take a named key or value copy it, and the text assignments parse it.
+ **/
+TEST(PropertyTest, setters_copy_a_named_key_and_value)
+{
+    areg::PropertyKey key;
+    key = str("log::app::file::location");
+    EXPECT_EQ(key.key_type(), areg::ConfigEntry::LogFileLocation);
+    EXPECT_TRUE(key.is_exact_property(str("log"), str("app"), str("file"), str("location")));
+    EXPECT_FALSE(key.is_exact_property(str("log"), str("app"), str("file"), str("append")));
+    EXPECT_FALSE(key.is_exact_property(str("log"), str("other"), str("file"), str("location")));
+    EXPECT_FALSE(areg::PropertyKey().is_exact_property(str(""), str(""), str(""), str("")));
+
+    areg::PropertyValue value;
+    value.set_value(str("./named.log;"));
+    EXPECT_EQ(txt(value.as_string()), "./named.log");
+
+    areg::Property prop;
+    prop.set_key(key);
+    prop.set_value(value);
+    EXPECT_TRUE(prop.is_valid());
+    EXPECT_EQ(prop.type(), areg::ConfigEntry::LogFileLocation);
+    EXPECT_EQ(txt(prop.value_string()), "./named.log");
+    EXPECT_EQ(key.key_type(), areg::ConfigEntry::LogFileLocation);
+}
+
+/**
+ * \brief   An empty line is not a property.
+ **/
+TEST(PropertyTest, empty_line_is_not_a_property)
+{
+    areg::Property prop;
+    EXPECT_FALSE(prop.parse(areg::String()));
+    EXPECT_FALSE(prop.is_valid());
+}
+
+/**
+ * \brief   Keys without a section match by property when one property is a prefix ending in the
+ *          wildcard; a plain prefix or a different text does not match.
+ **/
+TEST(PropertyKeyTest, keys_without_section_match_by_wildcard_property)
+{
+    areg::PropertyKey file;
+    file.set_values(str(""), str("file"), str("*"), str(""));
+    areg::PropertyKey wildcard;
+    wildcard.set_values(str(""), str("fi*"), str("*"), str(""));
+    areg::PropertyKey prefix;
+    prefix.set_values(str(""), str("fil"), str("*"), str(""));
+    areg::PropertyKey other;
+    other.set_values(str(""), str("flag"), str("*"), str(""));
+
+    EXPECT_TRUE(file == wildcard);
+    EXPECT_TRUE(wildcard == file);
+    EXPECT_FALSE(file == prefix);
+    EXPECT_FALSE(file == other);
+}

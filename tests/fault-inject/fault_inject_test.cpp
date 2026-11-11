@@ -23,6 +23,7 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/base/File.hpp"
 #include "areg/base/MessageEnvelope.hpp"
+#include "areg/base/RingStack.hpp"
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/base/SocketClient.hpp"
 #include "areg/base/SocketMultiplexer.hpp"
@@ -1159,6 +1160,121 @@ TEST( FaultInjectTest, shared_buffer_view_stays_readable_when_allocation_fails )
         AREG_CHILD_CHECK( view.reserve( 1024u * 1024u, true ) == 0u );
         AREG_CHILD_CHECK( view.size_used( ) == sizeof( data ) );
         AREG_CHILD_CHECK( view.buffer( )[0] == 5u );
+    );
+}
+
+//!< A ring whose storage cannot be allocated has no capacity and rejects pushes.
+TEST( FaultInjectTest, ring_stack_has_no_capacity_when_the_storage_cannot_be_allocated )
+{
+    AREG_EXPECT_IN_CHILD(
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0 ) );
+        areg::RingStack<int32_t> stack( 4u, areg::OverlapPolicy::Stop );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 1u && NOT_REPLACED );
+        AREG_CHILD_CHECK( stack.capacity( ) == 0u );
+        AREG_CHILD_CHECK( stack.push( 1 ) == 0u );
+        AREG_CHILD_CHECK( stack.is_empty( ) );
+
+        AREG_CHILD_CHECK( stack.reserve( 4u ) == 4u );
+        AREG_CHILD_CHECK( stack.push( 1 ) == 1u );
+        AREG_CHILD_CHECK( stack.pop( ) == 1 );
+    );
+}
+
+//!< A ring that cannot grow on a push keeps its values, and a later push grows it.
+TEST( FaultInjectTest, ring_stack_keeps_values_when_growth_on_push_fails )
+{
+    AREG_EXPECT_IN_CHILD(
+        areg::RingStack<int32_t> stack( 2u, areg::OverlapPolicy::Resize );
+        AREG_CHILD_CHECK( stack.push( 1 ) == 1u );
+        AREG_CHILD_CHECK( stack.push( 2 ) == 2u );
+
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0 ) );
+        AREG_CHILD_CHECK( stack.push( 3 ) == 2u );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 1u && NOT_REPLACED );
+        AREG_CHILD_CHECK( stack.capacity( ) == 2u );
+        AREG_CHILD_CHECK( stack.size( ) == 2u );
+        AREG_CHILD_CHECK( stack[0] == 1 && stack[1] == 2 );
+
+        AREG_CHILD_CHECK( stack.push( 3 ) == 3u );
+        AREG_CHILD_CHECK( stack.pop( ) == 1 && stack.pop( ) == 2 && stack.pop( ) == 3 );
+    );
+}
+
+//!< A reserve that cannot allocate returns the old capacity and keeps the values.
+TEST( FaultInjectTest, ring_stack_reserve_keeps_values_when_allocation_fails )
+{
+    AREG_EXPECT_IN_CHILD(
+        areg::RingStack<int32_t> stack( 2u, areg::OverlapPolicy::Stop );
+        AREG_CHILD_CHECK( stack.push( 1 ) == 1u );
+
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0 ) );
+        AREG_CHILD_CHECK( stack.reserve( 16u ) == 2u );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 1u && NOT_REPLACED );
+        AREG_CHILD_CHECK( stack.size( ) == 1u && stack[0] == 1 );
+
+        AREG_CHILD_CHECK( stack.reserve( 16u ) == 16u );
+        AREG_CHILD_CHECK( stack.pop( ) == 1 );
+    );
+}
+
+//!< A free_extra that cannot allocate keeps the capacity and the values.
+TEST( FaultInjectTest, ring_stack_free_extra_keeps_values_when_allocation_fails )
+{
+    AREG_EXPECT_IN_CHILD(
+        areg::RingStack<int32_t> stack( 8u, areg::OverlapPolicy::Stop );
+        AREG_CHILD_CHECK( stack.push( 1 ) == 1u );
+        AREG_CHILD_CHECK( stack.push( 2 ) == 2u );
+
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0 ) );
+        stack.free_extra( );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 1u && NOT_REPLACED );
+        AREG_CHILD_CHECK( stack.capacity( ) == 8u );
+        AREG_CHILD_CHECK( stack.size( ) == 2u && stack[0] == 1 && stack[1] == 2 );
+
+        stack.free_extra( );
+        AREG_CHILD_CHECK( stack.capacity( ) == 2u );
+        AREG_CHILD_CHECK( stack.pop( ) == 1 && stack.pop( ) == 2 );
+    );
+}
+
+//!< Reproduces the defect: a copy emptied the target before it allocated, so a failed allocation lost the values.
+TEST( FaultInjectTest, ring_stack_copy_keeps_target_values_when_allocation_fails )
+{
+    AREG_EXPECT_IN_CHILD(
+        areg::RingStack<int32_t> source( 8u, areg::OverlapPolicy::Stop );
+        AREG_CHILD_CHECK( source.push( 7 ) == 1u );
+        areg::RingStack<int32_t> target( 2u, areg::OverlapPolicy::Stop );
+        AREG_CHILD_CHECK( target.push( 1 ) == 1u );
+        AREG_CHILD_CHECK( target.push( 2 ) == 2u );
+
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0 ) );
+        target.copy( source );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 1u && NOT_REPLACED );
+        AREG_CHILD_CHECK( target.size( ) == 2u );
+        AREG_CHILD_CHECK( target[0] == 1 && target[1] == 2 );
+    );
+}
+
+//!< A copy constructor that cannot allocate gives a valid empty ring.
+TEST( FaultInjectTest, ring_stack_copy_constructor_gives_an_empty_ring_when_allocation_fails )
+{
+    AREG_EXPECT_IN_CHILD(
+        areg::RingStack<int32_t> source( 4u, areg::OverlapPolicy::Stop );
+        AREG_CHILD_CHECK( source.push( 7 ) == 1u );
+
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0 ) );
+        areg::RingStack<int32_t> copy( source );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 1u && NOT_REPLACED );
+        AREG_CHILD_CHECK( copy.is_empty( ) );
+        AREG_CHILD_CHECK( source.size( ) == 1u && source[0] == 7 );
+        AREG_CHILD_CHECK( copy.reserve( 4u ) == 4u );
+        AREG_CHILD_CHECK( copy.push( 3 ) == 1u );
     );
 }
 

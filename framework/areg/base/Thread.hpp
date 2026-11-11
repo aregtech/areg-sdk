@@ -669,7 +669,8 @@ private:
     void _wait_exit_completed() const noexcept;
 
     /**
-     * \brief   Registers the thread in resource maps.
+     * \brief   Registers the thread in resource maps. Fails if the name gives an invalid number,
+     *          or if a thread of another name holds the number.
      *
      * \return  Returns true if registration succeeds.
      **/

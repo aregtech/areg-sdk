@@ -83,7 +83,7 @@ namespace
     //!< A type aligned above the default alignment.
     struct alignas(64) OverAligned
     {
-        char mByte;
+        char mBytes[64];
     };
 
     //!< Returns the holder of a destructor trap in static storage.

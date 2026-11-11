@@ -659,3 +659,69 @@ TEST(LinkedListTest, test_descending)
     EXPECT_EQ(list1.size(), _len);
     EXPECT_EQ(areg::mem_compare(_dat1, _res1, _len), areg::Ordering::Equal);
 }
+
+namespace
+{
+    //! Element compared by key only, the payload shows which copy is stored.
+    struct KeyedItem
+    {
+        int key{ 0 };
+        int payload{ 0 };
+        bool operator == (const KeyedItem& other) const { return key == other.key; }
+    };
+}
+
+/**
+ * \brief   Test LinkedList unique push of an existing element, by copy and by move.
+ **/
+TEST(LinkedListTest, test_push_unique_of_existing_element)
+{
+    areg::LinkedList<KeyedItem> list;
+    const KeyedItem first{ 1, 10 };
+    const KeyedItem second{ 1, 20 };
+    const KeyedItem third{ 1, 30 };
+
+    EXPECT_TRUE(list.push_last_unique(first));
+    EXPECT_FALSE(list.push_last_unique(second));
+    EXPECT_EQ(list.first_entry().payload, 10);
+
+    EXPECT_FALSE(list.push_last_unique(second, true));
+    EXPECT_EQ(list.first_entry().payload, 20);
+    EXPECT_EQ(list.size(), 1u);
+
+    KeyedItem moved{ 1, 30 };
+    EXPECT_FALSE(list.push_last_unique(std::move(moved), false));
+    EXPECT_EQ(list.first_entry().payload, 20);
+
+    moved = third;
+    EXPECT_FALSE(list.push_last_unique(std::move(moved), true));
+    EXPECT_EQ(list.first_entry().payload, 30);
+    EXPECT_EQ(list.size(), 1u);
+}
+
+/**
+ * \brief   Test LinkedList insertion of a moved element after a position and after the end.
+ **/
+TEST(LinkedListTest, test_insert_after_by_move)
+{
+    areg::LinkedList<int> list;
+    list.push_last(1);
+    list.push_last(3);
+
+    auto middle = list.insert_after(list.first_position(), 2);
+    ASSERT_TRUE(list.is_valid_position(middle));
+    EXPECT_EQ(list.value_at(middle), 2);
+    EXPECT_EQ(list.size(), 3u);
+
+    auto last = list.insert_after(list.invalid_position(), 4);
+    EXPECT_TRUE(list.is_last_position(last));
+    EXPECT_EQ(list.value_at(last), 4);
+
+    int expected{ 1 };
+    for (auto pos = list.first_position(); list.is_valid_position(pos); pos = list.next_position(pos))
+    {
+        EXPECT_EQ(list.value_at(pos), expected++);
+    }
+
+    EXPECT_EQ(expected, 5);
+}

@@ -504,6 +504,18 @@ TEST(IpcServiceEventCoverageTest, every_client_and_server_command_dispatches_exa
     EXPECT_EQ(recorder.mCommands, (std::vector<uint32_t>{ 0u, 1u, 2u, 3u, 4u, 5u, 6u }));
 }
 
+TEST(IpcServiceEventCoverageTest, every_service_command_has_its_name)
+{
+    using Command = areg::ServiceEventData::ServiceCommand;
+    EXPECT_STREQ(areg::ServiceEventData::as_string(Command::CMD_StartService), "ServiceEventData::CMD_StartService");
+    EXPECT_STREQ(areg::ServiceEventData::as_string(Command::CMD_StopService), "ServiceEventData::CMD_StopService");
+    EXPECT_STREQ(areg::ServiceEventData::as_string(Command::CMD_RestartService), "ServiceEventData::CMD_RestartService");
+    EXPECT_STREQ(areg::ServiceEventData::as_string(Command::CMD_ServiceStarted), "ServiceEventData::CMD_ServiceStarted");
+    EXPECT_STREQ(areg::ServiceEventData::as_string(Command::CMD_ServiceStopped), "ServiceEventData::CMD_ServiceStopped");
+    EXPECT_STREQ(areg::ServiceEventData::as_string(Command::CMD_ServiceLost), "ServiceEventData::CMD_ServiceLost");
+    EXPECT_STREQ(areg::ServiceEventData::as_string(Command::CMD_ServiceExit), "ServiceEventData::CMD_ServiceExit");
+}
+
 TEST(IpcServiceEventCoverageTest, remote_consumer_preserves_envelope_and_payload)
 {
     CommandRecorder recorder;
@@ -778,6 +790,28 @@ TEST_F(IpcSocketCoverageTest, server_constructors_preserve_addresses_and_reject_
     areg::ServerConnectionBase invalid;
     EXPECT_FALSE(invalid.create_socket());
     EXPECT_FALSE(invalid.create_socket(areg::String("127.0.0.1"), areg::InvalidPort));
+}
+
+TEST_F(IpcSocketCoverageTest, server_without_a_socket_has_no_accepted_connection)
+{
+    LoopbackListener listener;
+    ASSERT_TRUE(listener.open());
+    areg::ServerConnectionBase server;
+    server.set_address(listener.address());
+    EXPECT_EQ(server.address().host_address(), listener.address().host_address());
+    EXPECT_EQ(server.address().host_port(), listener.address().host_port());
+
+    EXPECT_FALSE(areg::is_valid_socket(server.socket_handle()));
+    EXPECT_FALSE(server.is_connection_accepted(areg::InvalidSocketHandle));
+    areg::SocketAccepted accepted;
+    EXPECT_FALSE(server.is_connection_accepted(areg::InvalidSocketHandle, accepted));
+
+    const areg::MessageEnvelope message;
+    EXPECT_FALSE(server.source_client(message).is_valid());
+    EXPECT_FALSE(server.disable_send(accepted));
+
+    server.lock_resource();
+    server.unlock_resource();
 }
 
 namespace
@@ -1420,8 +1454,9 @@ namespace
 /**
  * \brief   The router client of an application takes, in order, a duplicate role notice, a
  *          message the client does not handle, an unknown message that is not executable, an
- *          executable message of a connection event type and a request for a provider that does
- *          not exist, and stays connected: the disconnect notice after them makes it connect again.
+ *          executable message of a connection event type, a request for a provider that does
+ *          not exist and register notices of a remote consumer and provider, and stays connected:
+ *          the disconnect notice after them makes it connect again.
  **/
 TEST_F(IpcSocketCoverageTest, router_client_ignores_notices_it_cannot_serve_and_reconnects_after_a_disconnect_notice)
 {
@@ -1458,6 +1493,16 @@ TEST_F(IpcSocketCoverageTest, router_client_ignores_notices_it_cannot_serve_and_
     request.provider.number = 0x613AFFFFu;
     request.consumer.number = 0x613AFFFEu;
     ASSERT_TRUE(send_wire(router.peer, router_message(request, COOKIE)));
+
+    // Register notices of a remote consumer and provider no local service waits for, with name checks.
+    areg::ProxyAddress consumer(0x613Au, areg::Version(1u, 0u, 0u), areg::ServiceType::Public, 0x613Bu, 0x613Cu, 0x613Du);
+    consumer.set_cookie(COOKIE + 5u);
+    consumer.set_name_check(0x0A0B0C0Du);
+    ASSERT_TRUE(send_wire(router.peer, areg::client_registered_event(consumer, areg::COOKIE_ROUTER, COOKIE)));
+    areg::StubAddress provider(0x613Au, areg::Version(1u, 0u, 0u), areg::ServiceType::Public, 0x613Bu, 0x613Cu, 0x613Eu);
+    provider.set_cookie(COOKIE + 5u);
+    provider.set_name_check(0x0E0F1011u);
+    ASSERT_TRUE(send_wire(router.peer, areg::service_registered_event(provider, areg::COOKIE_ROUTER, COOKIE)));
 
     ASSERT_TRUE(send_wire(router.peer, areg::create_disconnect_notify(areg::COOKIE_ROUTER, COOKIE)));
     ASSERT_TRUE(router.answer(COOKIE + 1u));

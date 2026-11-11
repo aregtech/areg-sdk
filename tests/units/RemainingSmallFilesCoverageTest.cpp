@@ -541,12 +541,17 @@ TEST(RemainingSmallFilesTest, role_only_address_normalizes_empty_and_truncates_l
     EXPECT_EQ(empty.role_name(), areg::ComponentAddress::invalid_component_address().role_name());
     EXPECT_FALSE(empty.is_valid());
     const std::string source(areg::ITEM_NAMES_MAX_LENGTH + 1u, 'x');
+#if defined(DEBUG) && GTEST_HAS_DEATH_TEST
+    ::testing::GTEST_FLAG(death_test_style) = "threadsafe";
+    EXPECT_DEATH(static_cast<void>(areg::ComponentAddress{ areg::String(source.c_str()) }), "");
+#elif !defined(DEBUG)
     const areg::ComponentAddress longRole{ areg::String(source.c_str()) };
     EXPECT_EQ(longRole.role_name().length(), areg::ITEM_NAMES_MAX_LENGTH);
     EXPECT_EQ(longRole.role_name(), areg::String(std::string(areg::ITEM_NAMES_MAX_LENGTH, 'x').c_str()));
     const areg::String truncated(std::string(areg::ITEM_NAMES_MAX_LENGTH, 'x').c_str());
     EXPECT_TRUE(longRole.is_valid());
     EXPECT_EQ(longRole, areg::ComponentAddress(areg::DispatcherThread::current_dispatcher_thread().address(), truncated));
+#endif
 }
 
 #if GTEST_HAS_DEATH_TEST

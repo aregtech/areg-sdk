@@ -125,27 +125,36 @@ bool EventQueue::acquire_lanes() noexcept
     if (mRing.load(std::memory_order_relaxed) != nullptr)
     {
         // The ring outlives a stop, so starting again only opens it for producers.
-        static_cast<void>(mEnqueuePos.fetch_and(~EventQueue::RING_CLOSED, std::memory_order_release));
-        return true;
+        static_cast<void>(mEnqueuePos.fetch_and(~EventQueue::RING_CLOSED, std::memory_order_acq_rel));
     }
-
-    Cell* const ring{ new (std::nothrow) Cell[mCapacity] };
-    if (ring == nullptr)
-        return false;
-
-    for (uint32_t i = 0u; i < mCapacity; ++i)
-        ring[i].sequence.store(i, std::memory_order_relaxed);
-
-    mEnqueuePos.store(0u, std::memory_order_relaxed);
-    mDequeuePos.store(0u, std::memory_order_relaxed);
-
+    else
     {
-        Lock lock(mPrioLock);
-        mPrioQueue.emplace();
-        mPrioCount.store(0u, std::memory_order_relaxed);
+        Cell* const ring{ new (std::nothrow) Cell[mCapacity] };
+        if (ring == nullptr)
+            return false;
+
+        for (uint32_t i = 0u; i < mCapacity; ++i)
+            ring[i].sequence.store(i, std::memory_order_relaxed);
+
+        mEnqueuePos.store(0u, std::memory_order_relaxed);
+        mDequeuePos.store(0u, std::memory_order_relaxed);
+
+        {
+            Lock lock(mPrioLock);
+            mPrioQueue.emplace();
+            mPrioCount.store(0u, std::memory_order_relaxed);
+        }
+
+        mRing.store(ring, std::memory_order_release);
     }
 
-    mRing.store(ring, std::memory_order_release);
+    // A pending exit keeps the queue closed.
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    if (mExitState.load(std::memory_order_relaxed) != EventQueue::EXIT_NONE)
+    {
+        static_cast<void>(mEnqueuePos.fetch_or(EventQueue::RING_CLOSED, std::memory_order_acq_rel));
+    }
+
     return true;
 }
 

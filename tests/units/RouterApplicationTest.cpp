@@ -353,6 +353,52 @@ TEST(RouterApplicationTest, disconnect_request_releases_only_its_sender)
     );
 }
 
+/**
+ * \brief   System messages the router only accepts are not forwarded, and neither is a connection
+ *          response without a target; a connection response with a target reaches the target.
+ **/
+TEST(RouterApplicationTest, only_executable_messages_with_a_target_are_forwarded)
+{
+    AREG_EXPECT_IN_CHILD(
+        PrivateConfig config;
+        ConsoleSession console(config);
+        ConnectedPeer sender(config.port);
+        ConnectedPeer target(config.port);
+        const ITEM_ID senderCookie{ sender.reply.target };
+        const ITEM_ID targetCookie{ target.reply.target };
+
+        const auto make = [&](areg::FuncIdRange id, ITEM_ID to)
+        {
+            areg::MessageEnvelope message{ areg::create_disconnect_request(senderCookie, areg::COOKIE_ROUTER) };
+            AREG_CHILD_CHECK(message.header() != nullptr);
+            message.header()->messageId = static_cast<uint32_t>(id);
+            message.header()->source    = static_cast<uint32_t>(senderCookie);
+            message.header()->target    = static_cast<uint32_t>(to);
+            return message;
+        };
+
+        send_to_router(sender, make(areg::FuncIdRange::ServiceLastId, targetCookie));
+        send_to_router(sender, make(areg::FuncIdRange::SystemServiceQueryInstances, targetCookie));
+        send_to_router(sender, make(areg::FuncIdRange::ResponseServiceProviderConnection, areg::TARGET_UNKNOWN));
+        send_to_router(sender, make(areg::FuncIdRange::ResponseServiceProviderConnection, targetCookie));
+
+        const auto expect_forwarded = [&](areg::FuncIdRange id)
+        {
+            areg::EventHeader received{};
+            AREG_CHILD_CHECK(target.socket.receive(areg::wire_header(received), areg::WIRE_HEADER_SIZE) == areg::WIRE_HEADER_SIZE);
+            AREG_CHILD_CHECK(received.messageId == static_cast<uint32_t>(id));
+            AREG_CHILD_CHECK(received.source == static_cast<uint32_t>(senderCookie));
+            AREG_CHILD_CHECK(received.target == static_cast<uint32_t>(targetCookie));
+            std::vector<uint8_t> payload(received.bufHeader.biUsed);
+            if (payload.empty() == false)
+                AREG_CHILD_CHECK(target.socket.receive(payload.data(), static_cast<int32_t>(payload.size())) == static_cast<int32_t>(payload.size()));
+        };
+
+        expect_forwarded(areg::FuncIdRange::ResponseServiceProviderConnection);
+        console.quit();
+    );
+}
+
 TEST(RouterApplicationTest, connected_instance_is_rendered_and_pause_restart_close_and_reopen_host)
 {
     AREG_EXPECT_IN_CHILD(

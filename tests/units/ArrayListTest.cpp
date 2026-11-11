@@ -848,3 +848,32 @@ TEST(ArrayListTest, boundary_required_size_matches_serialized_values)
     EXPECT_EQ(areg::required_size<areg::ArrayList<int32_t>>{}(list), 4u + 3u * sizeof(int32_t));
     EXPECT_EQ(areg::required_size<std::vector<int32_t>>{}({}), 4u);
 }
+
+namespace
+{
+    //! Element compared by key only, the payload shows which copy is stored.
+    struct ArrayKeyedItem
+    {
+        int key{ 0 };
+        int payload{ 0 };
+        bool operator == (const ArrayKeyedItem& other) const { return key == other.key; }
+    };
+}
+
+/**
+ * \brief   Test ArrayList unique add by copy, update of an existing element.
+ **/
+TEST(ArrayListTest, test_add_if_unique_updates_existing_by_copy)
+{
+    areg::ArrayList<ArrayKeyedItem> list;
+    const ArrayKeyedItem first{ 1, 10 };
+    const ArrayKeyedItem second{ 1, 20 };
+
+    EXPECT_TRUE(list.add_if_unique(first));
+    EXPECT_FALSE(list.add_if_unique(second));
+    EXPECT_EQ(list.first_entry().payload, 10);
+
+    EXPECT_FALSE(list.add_if_unique(second, true));
+    EXPECT_EQ(list.first_entry().payload, 20);
+    EXPECT_EQ(list.size(), 1u);
+}

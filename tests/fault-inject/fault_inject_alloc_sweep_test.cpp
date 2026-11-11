@@ -33,9 +33,11 @@
 #include "areg/component/private/Watchdog.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/base/ThreadAddress.hpp"
+#include "aregextend/service/SystemServiceDefs.hpp"
 
 #include <atomic>
 #include <cerrno>
+#include <cstring>
 #include <string>
 
 #if defined(__linux__)
@@ -787,6 +789,37 @@ TEST( FaultInjectSweepTest, watchdog_report_that_cannot_be_built_once_still_runs
 {
     ASSERT_TRUE( _register_hold_model( ) );
     AREG_EXPECT_IN_CHILD( _refused_watchdog_report_is_retried( ) );
+}
+
+namespace
+{
+    //!< Fails each allocation of the argument conversion in turn, then converts with none failing.
+    void _refused_argument_conversion_returns_null( )
+    {
+        char first[]    { "app" };
+        char second[]   { "--console" };
+        char* argv[]    { first, second };
+        for ( uint32_t skip = 0u; skip < 3u; ++ skip )
+        {
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, skip, 1u ) );
+            AREG_CHILD_CHECK( areg::ext::convert_arguments<char>( argv, 2 ) == nullptr );
+            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 1u );
+        }
+
+        char** result = areg::ext::convert_arguments<char>( argv, 2 );
+        AREG_CHILD_CHECK( ( result != nullptr ) && ( std::strcmp( result[1], "--console" ) == 0 ) );
+        areg::ext::delete_arguments( result, 2 );
+    }
+}
+
+/**
+ * \brief   Reproduces the defect: the conversion of the command line used a throwing allocation,
+ *          so a failed one ended the process. Each failed allocation now returns null.
+ **/
+TEST( FaultInjectSweepTest, argument_conversion_that_cannot_allocate_returns_null )
+{
+    AREG_EXPECT_IN_CHILD( _refused_argument_conversion_returns_null( ) );
 }
 
 #endif  // defined(AREG_FAULT_SWEEP_TESTS)

@@ -610,6 +610,20 @@ TEST_F(SqliteWrapperTest, test_bindNullTextPointerBindsNull)
 }
 
 /**
+ * \brief   An empty string is bound as an empty text, not as a null value.
+ **/
+TEST_F(SqliteWrapperTest, test_bindEmptyStringBindsEmptyText)
+{
+    ASSERT_TRUE(mDb.execute(areg::String("CREATE TABLE t (a TEXT);")));
+    Stmt insert(mDb, areg::String("INSERT INTO t VALUES (?);"));
+    ASSERT_TRUE(insert.bind_text(0, areg::String()));
+    ASSERT_TRUE(insert.execute());
+
+    EXPECT_EQ(_scalar(mDb, "SELECT COUNT(*) FROM t WHERE a IS NULL;"), 0);
+    EXPECT_EQ(_scalar(mDb, "SELECT COUNT(*) FROM t WHERE a = '';"), 1);
+}
+
+/**
  * \brief   A text with quotes and SQL commands is stored as data and does not change the statement.
  **/
 TEST_F(SqliteWrapperTest, test_boundTextIsNeverExecuted)

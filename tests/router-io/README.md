@@ -26,7 +26,7 @@ msbuild areg-sdk.sln /m /t:tests\areg-unit-tests;tests\areg-router-io-test /p:Co
 Select the integration cases:
 
 ```sh
-ctest --test-dir build --output-on-failure -R '^areg-router-io-test\.(registration-|duplicate-role\.|held-provider-|router-stop-registered\.)'
+ctest --test-dir build --output-on-failure -R '^areg-router-io-test\.(registration-|duplicate-role\.|name-collision-|held-provider-|router-stop-registered\.)'
 ```
 
 Select the pure unit suites separately:
@@ -64,6 +64,9 @@ All names below have CTest prefix `areg-router-io-test.` and suffix `.0` / `.4`.
 | `registration-consumer-disconnect` | Socket loss unregisters a consumer without removing its provider |
 | `registration-same-source` | Local provider/consumer registrations in both orders produce no remote notifications; later remote registration works |
 | `duplicate-role` | A living owner retains its role; both sources receive duplicate notices and the challenger is rejected |
+| `name-collision-provider` | Two role names with one number: the challenger is rejected and each source receives the name check of the other provider |
+| `name-collision-consumer-provider-first` | A consumer of another role name with the provider's number does not connect; a consumer of the right role does |
+| `name-collision-consumer-consumer-first` | The same, with the consumer registered before the provider |
 | `held-provider-takeover` | Repeated held registration does not duplicate entries; a waiting successor takes over after owner unregistration |
 | `held-provider-cancel` | Cancelling a held provider leaves the owner intact and prevents takeover |
 | `held-provider-disconnect` | Disconnect removes held registrations without affecting the live owner |

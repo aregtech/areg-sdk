@@ -55,6 +55,12 @@ const ServerInfo & ServerList::register_consumer( const ProxyAddress & whichClie
     ASSERT(ServerListBase::is_valid_position(pos));
 
     out_client = pos->second.register_consumer(whichClient, pos->first);
+    if ((pos->first.connection_status() == areg::ServiceConnectionState::Connected) && pos->first.address().has_name_conflict(whichClient))
+    {
+        LOG_ERR("Two role names with one number: the consumer [ %s ] does not connect to the provider [ %s ]"
+                    , ProxyAddress::to_path(whichClient).as_string()
+                    , StubAddress::to_path(pos->first.address()).as_string());
+    }
     LOG_DBG("There are [ %d ] registered clients for service [ %s ]"
                 , pos->second.size()
                 , StubAddress::to_path(pos->first.address()).as_string());
@@ -115,10 +121,21 @@ const ServerInfo & ServerList::register_provider( const StubAddress & addrStub, 
 
     ServerInfo& key = ServerListBase::key_at(pos);
     ClientList& value = ServerListBase::value_at(pos);
+    if ((key.connection_status() == areg::ServiceConnectionState::Connected) && key.address().has_name_conflict(addrStub))
+    {
+        LOG_ERR("Two role names with one number: the provider [ %s ] is refused, the number is used by the provider [ %s ]"
+                    , StubAddress::to_path(addrStub).as_string()
+                    , StubAddress::to_path(key.address()).as_string());
+        return key;
+    }
 
     key = server;
     key.set_connection_status( addrStub.source() != areg::SOURCE_UNKNOWN ? areg::ServiceConnectionState::Connected : areg::ServiceConnectionState::Pending );
-    value.provider_available(key, out_clinetList);
+    if (value.provider_available(key, out_clinetList) != 0u)
+    {
+        LOG_ERR("Two role names with one number: consumers of another role name do not connect to the provider [ %s ]"
+                    , StubAddress::to_path(addrStub).as_string());
+    }
 
     LOG_DBG("The [ %s ] service [ %s ] is with status [ %s ]. [ %d ] clients are going to be notified."
                     , addrStub.is_remote_address() ? "REMOTE" : "LOCAL"
@@ -136,7 +153,11 @@ ServerInfo ServerList::unregister_provider( const StubAddress & whichServer, Cli
     ServerInfo result(whichServer);
     ServerListBase::MAPPOS pos = find(result);
 
-    if (ServerListBase::is_valid_position(pos))
+    if (ServerListBase::is_valid_position(pos) && ServerListBase::key_at(pos).address().has_name_conflict(whichServer))
+    {
+        LOG_WARN("Ignoring the unregistration of the provider [ %s ], the number is used by another role name", StubAddress::to_path(whichServer).as_string());
+    }
+    else if (ServerListBase::is_valid_position(pos))
     {
         ServerInfo& key = ServerListBase::key_at(pos);
         ClientList& value = ServerListBase::value_at(pos);

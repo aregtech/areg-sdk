@@ -1162,9 +1162,6 @@ AREG_API_IMPL bool areg::is_ip_address(const areg::String& ipaddress) noexcept
             if ((++dots > 3) || (i == 0) || (ip[static_cast<size_t>(i - 1)] == '.'))
                 return false;
 
-            if (num < 0 || num > 255)
-                return false;
-
             num = 0;
             continue;
         }
@@ -1177,7 +1174,7 @@ AREG_API_IMPL bool areg::is_ip_address(const areg::String& ipaddress) noexcept
             return false;
     }
 
-    return (dots == 3) && (num >= 0) && (num <= 255) && (ip.back() != '.');
+    return (dots == 3) && (ip.back() != '.');
 }
 
 AREG_API_IMPL areg::String areg::host_to_ip(const areg::String& hostName)

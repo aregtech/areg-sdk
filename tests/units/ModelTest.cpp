@@ -1078,3 +1078,19 @@ TEST(ModelTest, invalid_objects_are_invalid_and_stable)
     EXPECT_EQ(&invalid_model(), &invalid_model());
     EXPECT_EQ(&invalid_thread_entry(), &invalid_thread_entry());
 }
+
+/**
+ * \brief   A thread entry and a model are equal to themselves.
+ **/
+TEST(ModelTest, entry_and_model_are_equal_to_themselves)
+{
+    const ComponentThreadEntry thread = makeThread("thread", "A");
+    const ComponentThreadEntry & sameThread = thread;
+    EXPECT_TRUE(thread == sameThread);
+
+    const Model model(String("model"), ComponentThreadList(makeThread("T1", "A")));
+    const Model & sameModel = model;
+    EXPECT_TRUE(model == sameModel);
+    EXPECT_FALSE(model != sameModel);
+}
+

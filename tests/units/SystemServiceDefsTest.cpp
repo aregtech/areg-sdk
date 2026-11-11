@@ -186,3 +186,53 @@ TEST(SystemServiceDefsTest, find_hold_ignores_entries_beyond_the_count)
     EXPECT_EQ(areg::ext::find_hold(socket, holds, 0u), nullptr);
     EXPECT_EQ(areg::ext::find_hold(socket, holds, 1u), &holds[0].hold);
 }
+
+TEST(SystemServiceDefsTest, convert_arguments_copies_narrow_arguments)
+{
+    char first[]  { "app" };
+    char second[] { "--console" };
+    char empty[]  { "" };
+    char* argv[] { first, second, empty };
+    constexpr int32_t argc{ static_cast<int32_t>(std::size(argv)) };
+
+    char** result = areg::ext::convert_arguments<char>(argv, argc);
+    ASSERT_NE(result, nullptr);
+    EXPECT_STREQ(result[0], "app");
+    EXPECT_STREQ(result[1], "--console");
+    EXPECT_STREQ(result[2], "");
+    EXPECT_NE(result[1], second);
+    areg::ext::delete_arguments(result, argc);
+}
+
+TEST(SystemServiceDefsTest, convert_arguments_narrows_wide_arguments)
+{
+    wchar_t first[]  { L"router" };
+    wchar_t second[] { L"-s" };
+    wchar_t* argv[] { first, second };
+    constexpr int32_t argc{ static_cast<int32_t>(std::size(argv)) };
+
+    char** result = areg::ext::convert_arguments<wchar_t>(argv, argc);
+    ASSERT_NE(result, nullptr);
+    EXPECT_STREQ(result[0], "router");
+    EXPECT_STREQ(result[1], "-s");
+    areg::ext::delete_arguments(result, argc);
+}
+
+TEST(SystemServiceDefsTest, convert_arguments_returns_null_for_no_arguments)
+{
+    char first[] { "app" };
+    char* argv[] { first };
+
+    EXPECT_EQ(areg::ext::convert_arguments<char>(argv, 0), nullptr);
+    EXPECT_EQ(areg::ext::convert_arguments<char>(argv, -1), nullptr);
+    EXPECT_EQ(areg::ext::convert_arguments<char>(static_cast<char**>(nullptr), 1), nullptr);
+    areg::ext::delete_arguments(nullptr, 3);
+}
+
+#ifndef DEBUG
+TEST(SystemServiceDefsTest, out_of_range_values_have_error_names)
+{
+    EXPECT_EQ(std::strncmp(areg::ext::as_string(static_cast<ServiceOption>(0x7FFF)), "ERR:", 4), 0);
+    EXPECT_EQ(std::strncmp(areg::ext::as_string(static_cast<ServicePhase>(0x7FFF)), "ERR:", 4), 0);
+}
+#endif  // DEBUG

@@ -1306,3 +1306,37 @@ TEST( OptionParserTest, empty_quoted_string_is_no_error )
     ASSERT_EQ( parser.options( ).size( ), 1u );
     EXPECT_FALSE( Parser::has_input_error( parser.options( )[ 0u ].inField ) );
 }
+
+//!< A writable argument list with only the program name gives no option.
+TEST( OptionParserTest, command_line_writable_list_with_only_the_name_gives_no_option )
+{
+    char arg0[ ] = "app";
+    char arg1[ ] = "-h";
+    char * narrow[ ] { arg0, arg1 };
+    wchar_t warg0[ ] = L"app";
+    wchar_t * wide[ ] { warg0 };
+
+    Parser parser( typed_setup( ) );
+    EXPECT_TRUE( parser.parse_command_line( narrow, 1u ) );
+    EXPECT_EQ( parser.options( ).size( ), 0u );
+    EXPECT_TRUE( parser.parse_command_line( wide, 1u ) );
+    EXPECT_EQ( parser.options( ).size( ), 0u );
+}
+
+//!< A word before any option is refused when the first setup has a long name only.
+TEST( OptionParserTest, word_before_options_needs_a_nameless_first_setup )
+{
+    const areg::ext::OptionParser::OptionSetup setup[ ]
+    {
+          { "", "--long", 1, areg::ext::OptionParser::STRING_NO_RANGE, {}, {}, {} }
+        , { "-s", "", 2, areg::ext::OptionParser::NO_DATA, {}, {}, {} }
+    };
+
+    Parser parser( setup, static_cast<uint32_t>(std::size( setup )) );
+    EXPECT_FALSE( parser.parse_option_line( "word --long=value" ) );
+
+    ASSERT_TRUE( parser.parse_option_line( "--long=value -s" ) );
+    ASSERT_EQ( parser.options( ).size( ), 2u );
+    EXPECT_EQ( parser.options( )[ 0u ].inCommand, 1 );
+    EXPECT_EQ( parser.options( )[ 1u ].inCommand, 2 );
+}

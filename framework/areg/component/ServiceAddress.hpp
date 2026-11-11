@@ -112,6 +112,11 @@ class AREG_API ServiceAddress : public    ServiceItem
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
+     * \brief   The name check of an address that holds no names.
+     **/
+    AREG_API_CONST static constexpr uint32_t   NAME_CHECK_UNKNOWN  { 0u };
+
+    /**
      * \brief   Converts a service address to its string path representation.
      *
      * \param   addService      The service address to convert.
@@ -257,6 +262,30 @@ public:
     inline const String & role_name() const noexcept;
 
     /**
+     * \brief   Returns the name check: a second number of the service name, type and role name,
+     *          computed independently of the address number. Returns NAME_CHECK_UNKNOWN if the
+     *          address holds no names.
+     **/
+    [[nodiscard]]
+    inline uint32_t name_check() const noexcept;
+
+    /**
+     * \brief   Sets the name check of an address built from numbers, as received with them.
+     *
+     * \param   nameCheck   The name check. NAME_CHECK_UNKNOWN if it is unknown.
+     **/
+    inline void set_name_check( uint32_t nameCheck ) noexcept;
+
+    /**
+     * \brief   Returns true if the name checks of both addresses are known and differ: the
+     *          addresses are of services with different names. An unknown check is no conflict.
+     *
+     * \param   other   The address to check.
+     **/
+    [[nodiscard]]
+    inline bool has_name_conflict( const ServiceAddress & other ) const noexcept;
+
+    /**
      * \brief   Sets the role name of the component owning the service.
      *
      * \param   roleName    The role name to set, or '#<number>' to set the identity number with no name.
@@ -328,6 +357,13 @@ private:
     [[nodiscard]]
     static uint32_t _magic_number( const ServiceAddress addrService ) noexcept;
 
+    /**
+     * \brief   Returns the FNV-1a hash of the service name, type and role name, never
+     *          NAME_CHECK_UNKNOWN. Returns NAME_CHECK_UNKNOWN if a part is missing.
+     **/
+    [[nodiscard]]
+    static uint32_t _name_check( const ServiceAddress & addrService ) noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Protected members
 //////////////////////////////////////////////////////////////////////////
@@ -345,6 +381,11 @@ private:
      * \brief   The calculated number of service address
      **/
     uint32_t    mMagicNum;
+
+    /**
+     * \brief   The name check, NAME_CHECK_UNKNOWN if the names are unknown.
+     **/
+    uint32_t    mNameCheck;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -402,7 +443,8 @@ inline const String& ServiceRole::role_name() const noexcept
 inline void ServiceRole::set_role_name(const String& roleName)
 {
     mRoleName = roleName;
-    mMagicNum = roleName.is_numeric() ? roleName.to_uint32() : areg::crc32_calculate(roleName.as_string());
+    areg::cut_item_name(mRoleName);
+    mMagicNum = mRoleName.is_numeric() ? mRoleName.to_uint32() : areg::crc32_calculate(mRoleName.as_string());
 }
 
 inline const char* ServiceRole::as_string() const noexcept
@@ -454,6 +496,7 @@ inline ServiceAddress & ServiceAddress::operator = ( const ServiceAddress & sour
         static_cast<ServiceItem &>(*this) = static_cast<const ServiceItem &>(source);
         mRoleName   = source.mRoleName;
         mMagicNum   = source.mMagicNum;
+        mNameCheck  = source.mNameCheck;
     }
 
     return (*this);
@@ -466,7 +509,9 @@ inline ServiceAddress & ServiceAddress::operator = ( ServiceAddress && source ) 
         static_cast<ServiceItem &>(*this) = static_cast<ServiceItem &&>(source);
         mRoleName   = std::move(source.mRoleName);
         mMagicNum   = source.mMagicNum;
-        source.mMagicNum = areg::CHECKSUM_IGNORE;
+        mNameCheck  = source.mNameCheck;
+        source.mMagicNum  = areg::CHECKSUM_IGNORE;
+        source.mNameCheck = ServiceAddress::NAME_CHECK_UNKNOWN;
     }
 
     return (*this);
@@ -500,10 +545,28 @@ inline const String & ServiceAddress::role_name() const noexcept
 inline void ServiceAddress::set_role_name(const String & roleName)
 {
     mRoleName = roleName;
+    areg::cut_item_name(mRoleName);
     if (areg::parse_address_number(mRoleName.data(), mMagicNum))
         mRoleName.clear();
     else
         mMagicNum = ServiceAddress::_magic_number(*this);
+
+    mNameCheck = ServiceAddress::_name_check(*this);
+}
+
+inline uint32_t ServiceAddress::name_check() const noexcept
+{
+    return mNameCheck;
+}
+
+inline void ServiceAddress::set_name_check(uint32_t nameCheck) noexcept
+{
+    mNameCheck = nameCheck;
+}
+
+inline bool ServiceAddress::has_name_conflict(const ServiceAddress & other) const noexcept
+{
+    return (mNameCheck != other.mNameCheck) && (mNameCheck != NAME_CHECK_UNKNOWN) && (other.mNameCheck != NAME_CHECK_UNKNOWN);
 }
 
 inline const ServiceItem & ServiceAddress::service() const noexcept
@@ -521,7 +584,8 @@ inline void ServiceAddress::from_endpoint(const areg::RawService& rawService, co
 {
     ServiceItem::from_endpoint(rawService, endPoint);
     mRoleName.clear();
-    mMagicNum = rawService.role;
+    mMagicNum  = rawService.role;
+    mNameCheck = ServiceAddress::NAME_CHECK_UNKNOWN;
 }
 
 inline const InStream& ServiceAddress::from_stream(const InStream& stream)
@@ -529,6 +593,7 @@ inline const InStream& ServiceAddress::from_stream(const InStream& stream)
     ServiceItem::from_stream(stream);
     mRoleName.clear();
     stream >> mMagicNum;
+    stream >> mNameCheck;
     return stream;
 }
 
@@ -536,6 +601,7 @@ inline OutStream& ServiceAddress::to_stream(OutStream& stream) const
 {
     ServiceItem::to_stream(stream);
     stream << mMagicNum;
+    stream << mNameCheck;
     return stream;
 }
 

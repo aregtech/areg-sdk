@@ -531,7 +531,7 @@ struct RawService
  *  eventType        92     2  EventType flags
  *  callType         94     1  EventCallType (0..5)
  *  priority         95     1  EventPriority
- *  reserved         96     4  not used, 0
+ *  reserved         96     4  name check of a registration message, otherwise 0
  *  classId         100     4  class ID assigned by the final event class
  *  internal1       104     8  LOCAL-ONLY: DispatcherThread*  -- zeroed on IPC send and receive
  *  internal2       112     8  LOCAL-ONLY: EventConsumer*     -- zeroed on IPC send and receive
@@ -558,7 +558,7 @@ struct EventHeader
     uint16_t            eventType   { 0 };  //!< [92..93]   EventType flags
     uint8_t             callType    { 0 };  //!< [94]       Event actions, depends on EventType (0..5)
     uint8_t             priority    { 0 };  //!< [95]       EventPriority
-    uint32_t            reserved    { 0 };  //!< [96..99]   not used, 0
+    uint32_t            reserved    { 0 };  //!< [96..99]   name check of a registration message, otherwise 0
     uint32_t            eventId     { 0 };  //!< [100..103] class ID of the final event class
     uint64_t            internal1   { 0 };  //!< [104..111] LOCAL-ONLY: DispatcherThread* -- zeroed on IPC wire
     uint64_t            internal2   { 0 };  //!< [112..119] LOCAL-ONLY: EventConsumer*    -- zeroed on IPC wire

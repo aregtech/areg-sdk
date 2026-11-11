@@ -57,6 +57,7 @@
 public:                                                                                                     \
     /** \brief Full compile-time runtime class identifier. Single source of truth.           **/            \
     static constexpr areg::RuntimeClassID CLASS_ID { #ClassName };                                          \
+    static_assert(areg::crc32_valid(CLASS_ID.magic()), "The class ID is a reserved value, rename the class");    \
     /** \brief Returns the Runtime Class Identifier object. **/                                             \
     [[nodiscard]]                                                                                           \
     const areg::RuntimeClassID & class_id() const noexcept override;                                        \
@@ -113,7 +114,7 @@ const char* ClassName::class_string() const noexcept                            
 bool ClassName::is_runtime( const areg::RuntimeClassID & classId ) const noexcept                           \
 {   return ((ClassName::CLASS_ID.magic() == classId.magic()) || BaseClassName::is_runtime(classId)); }      \
 bool ClassName::is_runtime( const char * className ) const noexcept                                         \
-{   return ((ClassName::CLASS_ID.name() == className) || BaseClassName::is_runtime(className));  }          \
+{   return ((ClassName::CLASS_ID == className) || BaseClassName::is_runtime(className));  }                 \
 bool ClassName::is_runtime( std::string_view className ) const noexcept                                     \
 {   return ((ClassName::CLASS_ID.name() == className) || BaseClassName::is_runtime(className));  }          \
 bool ClassName::is_runtime( const areg::String & className ) const noexcept                                 \
@@ -149,7 +150,7 @@ Template const char* ClassName::class_string() const noexcept                   
 Template bool ClassName::is_runtime( const areg::RuntimeClassID & classId ) const noexcept                  \
 {   return ((ClassName::CLASS_ID.magic() == classId.magic()) || BaseClassName::is_runtime(classId)); }      \
 Template bool ClassName::is_runtime( const char * className ) const noexcept                                \
-{   return ((ClassName::CLASS_ID.name() == className) || BaseClassName::is_runtime(className));      }      \
+{   return ((ClassName::CLASS_ID == className) || BaseClassName::is_runtime(className));      }             \
 Template bool ClassName::is_runtime( std::string_view className ) const noexcept                            \
 {   return ((ClassName::CLASS_ID.name() == className) || BaseClassName::is_runtime(className));      }      \
 Template bool ClassName::is_runtime( const areg::String & className ) const noexcept                        \

@@ -21,6 +21,9 @@
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/base/MathDefs.hpp"
 
+#include <memory>
+#include <string>
+
 /**
  * \brief   Test HashMap constructors.
  **/
@@ -603,4 +606,180 @@ TEST(HashMapTest, boundary_unique_lvalue_and_rvalue_updates_keep_one_entry)
     EXPECT_EQ(values[0], 30);
     EXPECT_EQ(keys[1], -2);
     EXPECT_EQ(values[1], -4);
+}
+
+/**
+ * \brief   Test HashMap const access and required size for streaming.
+ **/
+TEST(HashMapTest, test_const_value_at_and_required_size)
+{
+    using HashMap = areg::HashMap<int, int>;
+
+    HashMap hashMap;
+    hashMap.set_value_at(1, 10);
+    hashMap.set_value_at(2, 20);
+
+    const HashMap& constMap{ hashMap };
+    EXPECT_EQ(constMap.value_at(1), 10);
+    EXPECT_EQ(constMap.value_at(2), 20);
+
+    const uint32_t expected{ 4u + 2u * 2u * static_cast<uint32_t>(sizeof(int)) };
+    using StdMap = std::unordered_map<int, int>;
+    EXPECT_EQ(areg::required_size<HashMap>{}(hashMap), expected);
+    EXPECT_EQ(areg::required_size<StdMap>{}(hashMap.data()), expected);
+    EXPECT_EQ(areg::required_size<HashMap>{}(HashMap()), 4u);
+}
+
+/**
+ * \brief   Test HashMap add_if_unique with update of an existing key, by copy and by move.
+ **/
+TEST(HashMapTest, test_add_if_unique_updates_existing_by_copy_and_move)
+{
+    using HashMap = areg::HashMap<int, areg::String>;
+
+    HashMap hashMap;
+    const areg::String first{ "first" };
+    const areg::String second{ "second" };
+    const areg::String third{ "third" };
+
+    EXPECT_TRUE(hashMap.add_if_unique(1, first).second);
+    EXPECT_FALSE(hashMap.add_if_unique(1, second).second);
+    EXPECT_EQ(hashMap.value_at(1), first);
+
+    EXPECT_FALSE(hashMap.add_if_unique(1, second, true).second);
+    EXPECT_EQ(hashMap.value_at(1), second);
+
+    int key{ 1 };
+    areg::String value{ third };
+    EXPECT_FALSE(hashMap.add_if_unique(std::move(key), std::move(value), false).second);
+    EXPECT_EQ(hashMap.value_at(1), second);
+
+    key = 1;
+    value = third;
+    EXPECT_FALSE(hashMap.add_if_unique(std::move(key), std::move(value), true).second);
+    EXPECT_EQ(hashMap.value_at(1), third);
+
+    key = 2;
+    value = first;
+    EXPECT_TRUE(hashMap.add_if_unique(std::move(key), std::move(value), true).second);
+    EXPECT_EQ(hashMap.value_at(2), first);
+}
+
+namespace
+{
+    //! Values longer than the small string buffer.
+    using LongString = std::string;
+
+    const LongString LongOld{ "old value which does not fit into the small string buffer" };
+    const LongString LongNew{ "new value which does not fit into the small string buffer" };
+    const LongString LongOther{ "other value which does not fit into the small string buffer" };
+}
+
+/**
+ * \brief   Test HashMap add_if_unique by move with an existing key and update flag keeps the full new value.
+ **/
+TEST(HashMapTest, test_add_if_unique_move_update_keeps_full_value)
+{
+    areg::HashMap<int, LongString> hashMap;
+    hashMap.set_value_at(1, LongOld);
+
+    int key{ 1 };
+    LongString value{ LongNew };
+    auto result = hashMap.add_if_unique(std::move(key), std::move(value), true);
+    EXPECT_FALSE(result.second);
+    ASSERT_EQ(hashMap.size(), 1u);
+    EXPECT_EQ(hashMap.value_at(1), LongNew);
+    EXPECT_EQ(result.first->second, LongNew);
+    EXPECT_EQ(result.first->first, 1);
+}
+
+/**
+ * \brief   Test HashMap add_if_unique by move with an existing key and without update keeps the old value.
+ **/
+TEST(HashMapTest, test_add_if_unique_move_without_update_keeps_old_value)
+{
+    areg::HashMap<int, LongString> hashMap;
+    hashMap.set_value_at(1, LongOld);
+
+    int key{ 1 };
+    LongString value{ LongNew };
+    auto result = hashMap.add_if_unique(std::move(key), std::move(value), false);
+    EXPECT_FALSE(result.second);
+    ASSERT_EQ(hashMap.size(), 1u);
+    EXPECT_EQ(hashMap.value_at(1), LongOld);
+    EXPECT_EQ(result.first->second, LongOld);
+}
+
+/**
+ * \brief   Test HashMap add_if_unique by move with a new key adds the full value, with and without update flag.
+ **/
+TEST(HashMapTest, test_add_if_unique_move_new_key_adds_full_value)
+{
+    areg::HashMap<int, LongString> hashMap;
+    for (bool update : { false, true })
+    {
+        const int id{ update ? 2 : 1 };
+        int key{ id };
+        LongString value{ LongNew };
+        auto result = hashMap.add_if_unique(std::move(key), std::move(value), update);
+        EXPECT_TRUE(result.second);
+        EXPECT_EQ(hashMap.value_at(id), LongNew);
+    }
+
+    EXPECT_EQ(hashMap.size(), 2u);
+}
+
+/**
+ * \brief   Test HashMap add_if_unique by move with a move-only value: update replaces the value, no update keeps it.
+ **/
+TEST(HashMapTest, test_add_if_unique_move_only_value)
+{
+    areg::HashMap<int, std::unique_ptr<int>> hashMap;
+    EXPECT_TRUE(hashMap.add_if_unique(1, std::make_unique<int>(10), false).second);
+
+    EXPECT_FALSE(hashMap.add_if_unique(1, std::make_unique<int>(20), false).second);
+    ASSERT_NE(hashMap.value_at(1), nullptr);
+    EXPECT_EQ(*hashMap.value_at(1), 10);
+
+    auto updated = hashMap.add_if_unique(1, std::make_unique<int>(30), true);
+    EXPECT_FALSE(updated.second);
+    ASSERT_NE(hashMap.value_at(1), nullptr);
+    EXPECT_EQ(*hashMap.value_at(1), 30);
+}
+
+/**
+ * \brief   Test HashMap add_if_unique by copy with the same cases, the source arguments stay unchanged.
+ **/
+TEST(HashMapTest, test_add_if_unique_copy_keeps_arguments_and_values)
+{
+    areg::HashMap<int, LongString> hashMap;
+    const int key{ 1 };
+    EXPECT_TRUE(hashMap.add_if_unique(key, LongOld, false).second);
+
+    EXPECT_FALSE(hashMap.add_if_unique(key, LongNew, false).second);
+    EXPECT_EQ(hashMap.value_at(1), LongOld);
+    EXPECT_EQ(LongNew, "new value which does not fit into the small string buffer");
+
+    EXPECT_FALSE(hashMap.add_if_unique(key, LongOther, true).second);
+    EXPECT_EQ(hashMap.value_at(1), LongOther);
+    EXPECT_EQ(LongOther, "other value which does not fit into the small string buffer");
+}
+
+/**
+ * \brief   Test HashMap add_if_unique by move on an existing key whose value is the same object type many times.
+ **/
+TEST(HashMapTest, test_add_if_unique_move_update_repeated)
+{
+    areg::HashMap<int, LongString> hashMap;
+    for (int i = 0; i < 20; ++i)
+    {
+        int key{ i % 3 };
+        LongString value{ LongNew + std::to_string(i) };
+        hashMap.add_if_unique(std::move(key), std::move(value), true);
+    }
+
+    ASSERT_EQ(hashMap.size(), 3u);
+    EXPECT_EQ(hashMap.value_at(0), LongNew + "18");
+    EXPECT_EQ(hashMap.value_at(1), LongNew + "19");
+    EXPECT_EQ(hashMap.value_at(2), LongNew + "17");
 }

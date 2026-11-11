@@ -45,7 +45,6 @@
  * Dependencies.
  ************************************************************************/
 struct LogInstance;
-struct LogEntry;
 struct ScopeInfo;
 
 //////////////////////////////////////////////////////////////////////////
@@ -274,13 +273,6 @@ private:
      * \param   count       The number of scope entries in the array.
      **/
     static void callback_log_update_scopes(ITEM_ID cookie, const ScopeInfo* scopes, uint32_t count);
-
-    /**
-     * \brief   Called when a log message is received.
-     *
-     * \param   log_message     Pointer to the log message to log.
-     **/
-    static void callback_log_message(const LogEntry* log_message);
 
     /**
      * \brief   Called when a remote message is received for logging.

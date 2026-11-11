@@ -939,6 +939,93 @@ TEST(LoggingCoreTest, tree_copy_move_grouping_and_empty_paths_preserve_state)
     EXPECT_TRUE(movedLeaf.is_empty());
 }
 
+// Removing the nodes of a priority drops the leaves of that priority and keeps the others.
+TEST(LoggingCoreTest, tree_removes_the_leaves_of_a_priority)
+{
+    const uint32_t info{ static_cast<uint32_t>(areg::LogPriority::PrioInfo) };
+    const uint32_t debug{ static_cast<uint32_t>(areg::LogPriority::PrioDebug) };
+    areg::ScopeNode node;
+    node.set_node_name("branch");
+    areg::String first{ ".first" };
+    areg::String second{ ".second" };
+    areg::String third{ ".third" };
+    ASSERT_TRUE(node.add_child_node(first, info).second);
+    ASSERT_TRUE(node.add_child_node(second, debug).second);
+    ASSERT_TRUE(node.add_child_node(third, info).second);
+    ASSERT_EQ(node.leafs().size(), 3u);
+
+    EXPECT_EQ(node.remove_priority_nodes(info), 2u);
+    ASSERT_EQ(node.leafs().size(), 1u);
+    EXPECT_EQ(node.leafs()[0u].node_name(), "second");
+    EXPECT_FALSE(node.is_empty());
+
+    EXPECT_EQ(node.remove_priority_nodes(debug), 1u);
+    EXPECT_TRUE(node.is_empty());
+}
+
+// A path without a separator is one leaf of the node.
+TEST(LoggingCoreTest, path_without_a_separator_is_a_leaf_of_the_node)
+{
+    areg::ScopeNode node;
+    node.set_node_name("branch");
+    areg::String path{ "method" };
+    ASSERT_TRUE(node.add_child_node(path, static_cast<uint32_t>(areg::LogPriority::PrioInfo)).second);
+    EXPECT_TRUE(path.is_empty());
+    ASSERT_EQ(node.leafs().size(), 1u);
+    EXPECT_EQ(node.leafs()[0u].node_name(), "method");
+    EXPECT_TRUE(node.nodes().is_empty());
+}
+
+// Removing a priority goes down into a child node of another priority and drops the leaves it finds.
+TEST(LoggingCoreTest, tree_removes_the_leaves_of_a_priority_inside_a_child_node)
+{
+    const uint32_t info{ static_cast<uint32_t>(areg::LogPriority::PrioInfo) };
+    const uint32_t debug{ static_cast<uint32_t>(areg::LogPriority::PrioDebug) };
+    areg::ScopeRoot root;
+    areg::String first{ "alpha.first" };
+    areg::String second{ "alpha.second" };
+    ASSERT_EQ(root.add_child_recursive(first, info), 2u);
+    ASSERT_EQ(root.add_child_recursive(second, debug), 2u);
+    ASSERT_EQ(root.nodes().size(), 1u);
+    ASSERT_EQ(root.nodes()[0u].leafs().size(), 2u);
+
+    root.remove_priority_nodes(debug);
+    ASSERT_EQ(root.nodes().size(), 1u);
+    ASSERT_EQ(root.nodes()[0u].leafs().size(), 1u);
+    EXPECT_EQ(root.nodes()[0u].leafs()[0u].node_name(), "first");
+}
+
+// Removing a priority drops a child node of that priority when nothing is left in it.
+TEST(LoggingCoreTest, tree_removes_a_child_node_that_has_only_the_priority)
+{
+    const uint32_t info{ static_cast<uint32_t>(areg::LogPriority::PrioInfo) };
+    areg::ScopeRoot root;
+    areg::String path{ "alpha.first" };
+    ASSERT_EQ(root.add_child_recursive(path, info), 2u);
+    ASSERT_EQ(root.nodes().size(), 1u);
+
+    EXPECT_EQ(root.remove_priority_nodes(info), 2u);
+    EXPECT_TRUE(root.nodes().is_empty());
+    EXPECT_TRUE(root.is_empty());
+}
+
+// A leaf made from a node keeps its name and priority.
+TEST(LoggingCoreTest, leaf_is_made_from_a_node_with_its_name_and_priority)
+{
+    const uint32_t info{ static_cast<uint32_t>(areg::LogPriority::PrioInfo) };
+    areg::ScopeNode node;
+    node.set_node_name("branch");
+    areg::String name{ ".first" };
+    ASSERT_TRUE(node.add_child_node(name, info).second);
+    ASSERT_EQ(node.leafs().size(), 1u);
+
+    const areg::ScopeNodeBase& source{ node.leafs()[0u] };
+    const areg::ScopeLeaf leaf{ source };
+    EXPECT_TRUE(leaf.is_leaf());
+    EXPECT_EQ(leaf.node_name(), source.node_name());
+    EXPECT_EQ(leaf.priority(), info);
+}
+
 // Copied and moved logging events retain their action and data.
 TEST(LoggingCoreTest, logging_event_data_copy_and_move_preserve_actions)
 {
@@ -1200,6 +1287,34 @@ TEST(LoggingCoreTest, grouping_removes_deeper_nodes_of_the_grouped_priority)
     EXPECT_TRUE(group.leafs().is_empty());
     EXPECT_TRUE(group.nodes().is_empty());
     EXPECT_EQ(group.priority(), DEBUG_PRIO);
+}
+
+// The priority of a scope changes by the names of priorities, given as C string and as string.
+TEST(LoggingCoreTest, scope_priority_is_added_and_removed_by_name)
+{
+    areg::LogScope scope{ "loggingcore_priority_names.method", areg::LogPriority::PrioInfo };
+    const uint32_t info{ static_cast<uint32_t>(areg::LogPriority::PrioInfo) };
+    const uint32_t warning{ static_cast<uint32_t>(areg::LogPriority::PrioWarning) };
+
+    scope.set_priority(0u);
+    EXPECT_EQ(scope.priority(), 0u);
+
+    scope.add_priority("INFO");
+    EXPECT_EQ(scope.priority(), info);
+    scope.add_priority(areg::String("WARN"));
+    EXPECT_EQ(scope.priority(), info | warning);
+
+    scope.remove_priority("INFO");
+    EXPECT_EQ(scope.priority(), warning);
+    scope.remove_priority(areg::String("WARN"));
+    EXPECT_EQ(scope.priority(), 0u);
+}
+
+// The session of a scope that has not logged yet is zero.
+TEST(LoggingCoreTest, scope_session_starts_at_zero)
+{
+    areg::LogScope scope{ "loggingcore_session.method", areg::LogPriority::PrioInfo };
+    EXPECT_EQ(scope.session(), 0u);
 }
 
 #endif // AREG_LOGGING

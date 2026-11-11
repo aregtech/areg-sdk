@@ -127,7 +127,7 @@ namespace
                 line = "router::*::port::tcpip = " + std::to_string(_port);
             else if (line.rfind("net::*::tcpip::pairs", 0) == 0)
                 line = "net::*::tcpip::pairs = " + std::to_string(pairs);
-            else if ((name == "duplicate-role") && (line.rfind("net::*::tcpip::keepalive", 0) == 0))
+            else if (((name == "duplicate-role") || (name == "name-collision-provider")) && (line.rfind("net::*::tcpip::keepalive", 0) == 0))
                 line = "net::*::tcpip::keepalive = 6";
             else if ((name.rfind("held-provider-", 0) == 0) && (line.rfind("net::*::tcpip::keepalive", 0) == 0))
                 line = "net::*::tcpip::keepalive = 3600";
@@ -729,7 +729,7 @@ namespace
             && registration_barrier(nextServer) && registration_barrier(nextClient);
     }
 
-    bool expect_duplicate(Client & client, const areg::StubAddress & provider)
+    bool expect_duplicate(Client & client, const areg::StubAddress & provider, uint32_t nameCheck = areg::ServiceAddress::NAME_CHECK_UNKNOWN)
     {
         areg::EventHeader received{ };
         std::vector<uint8_t> payload;
@@ -742,7 +742,76 @@ namespace
                      && received.target == static_cast<uint32_t>(client.cookie)
                      && static_cast<const areg::ServiceAddress &>(actual) == static_cast<const areg::ServiceAddress &>(provider)
                      && actual.cookie() == provider.cookie() && actual.thread() == provider.thread()
-                     && !payload.empty(), "duplicate notification names the rejected role and its destination");
+                     && received.reserved == nameCheck
+                     && !payload.empty(), "duplicate notification names the rejected role, its destination and the other name check");
+    }
+
+    //!< The name checks of two role names with one number.
+    constexpr uint32_t NAME_CHECK_FIRST{ 0x0A0B0C0Du };
+    constexpr uint32_t NAME_CHECK_OTHER{ 0x0E0F1011u };
+
+    //!< Reads a registration notification and checks its action and the name check it carries.
+    bool expect_name_check(Client & client, areg::RegistrationAction action, uint32_t nameCheck)
+    {
+        areg::EventHeader received{ };
+        return check(client.read_message(received, ANSWER_MS)
+                     && received.messageId == static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyRegister)
+                     && received.callType == static_cast<uint8_t>(action)
+                     && received.reserved == nameCheck, "registration notification carries the name check of the other side");
+    }
+
+    // Reproduces the defect: a consumer of another role name with the same number connected to the provider.
+    bool case_name_collision_consumer(bool providerFirst)
+    {
+        Client server;
+        Client client;
+        if (!join_client(server) || !join_client(client))
+            return false;
+
+        areg::StubAddress provider{ provider_address(server.cookie) };
+        areg::ProxyAddress other{ consumer_address(client.cookie) };
+        areg::ProxyAddress consumer{ consumer_address(client.cookie, 0x3334u) };
+        provider.set_name_check(NAME_CHECK_FIRST);
+        other.set_name_check(NAME_CHECK_OTHER);
+        consumer.set_name_check(NAME_CHECK_FIRST);
+        if (providerFirst)
+        {
+            if (!register_provider(server, provider) || !registration_barrier(server)
+                || !register_consumer(client, other) || !registration_barrier(client) || !registration_barrier(server))
+                return false;
+        }
+        else
+        {
+            if (!register_consumer(client, other) || !registration_barrier(client)
+                || !register_provider(server, provider) || !registration_barrier(server) || !registration_barrier(client))
+                return false;
+        }
+
+        return register_consumer(client, consumer)
+            && expect_name_check(server, areg::RegistrationAction::RegisterConsumer, NAME_CHECK_FIRST)
+            && expect_name_check(client, areg::RegistrationAction::RegisterProvider, NAME_CHECK_FIRST)
+            && registration_barrier(server) && registration_barrier(client);
+    }
+
+    //!< Two providers of different role names with one number: each process receives the name check of the other.
+    bool case_name_collision_provider()
+    {
+        Client owner;
+        Client rejected;
+        if (!join_client(owner) || !join_client(rejected))
+            return false;
+
+        areg::StubAddress provider{ provider_address(owner.cookie) };
+        areg::StubAddress other{ provider_address(rejected.cookie) };
+        provider.set_name_check(NAME_CHECK_FIRST);
+        other.set_name_check(NAME_CHECK_OTHER);
+        const areg::ProxyAddress consumer{ consumer_address(rejected.cookie) };
+        return register_provider(owner, provider) && registration_barrier(owner)
+            && register_provider(rejected, other)
+            && expect_duplicate(rejected, other, NAME_CHECK_FIRST) && expect_duplicate(owner, other, NAME_CHECK_OTHER)
+            && expect_registration(rejected, areg::RegistrationAction::UnregisterProvider, other, consumer,
+                                   areg::DisconnectReason::ProviderRejected)
+            && registration_barrier(rejected) && registration_barrier(owner);
     }
 
     bool case_duplicate_role()
@@ -1358,6 +1427,8 @@ namespace
         std::vector<std::string> expected{ "Processing received valid message" };
         if (name == "duplicate-role")
             expected.push_back("Duplicate role name");
+        else if (name.rfind("name-collision-", 0) == 0)
+            expected.push_back("Two role names with one number");
         else if (name.rfind("held-provider-", 0) == 0)
             expected.push_back("is held, its role name is provided by source");
 
@@ -1443,6 +1514,12 @@ int main(int argc, char * argv[])
                 result = case_registered_disconnect(false);
             else if (name == "duplicate-role")
                 result = case_duplicate_role();
+            else if (name == "name-collision-provider")
+                result = case_name_collision_provider();
+            else if (name == "name-collision-consumer-provider-first")
+                result = case_name_collision_consumer(true);
+            else if (name == "name-collision-consumer-consumer-first")
+                result = case_name_collision_consumer(false);
             else if ((name == "held-provider-takeover") || (name == "held-provider-cancel") || (name == "held-provider-disconnect"))
                 result = case_held_provider(name);
             else if (name == "router-stop-registered")

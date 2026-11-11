@@ -20,10 +20,28 @@
 #include "areg/base/private/WaitWord.hpp"
 #include "areg/base/private/NeverDestroyed.hpp"
 
+#include "areg/logging/areg_log.h"
+
 #include <algorithm>
+
+DEF_LOG_SCOPE(areg_base_Thread, _report_refused_name);
 
 namespace
 {
+    //!< Logs that the thread name gives an invalid number, or the number of the thread holderName.
+    void _report_refused_name(const areg::String & name, const areg::String & holderName)
+    {
+        LOG_SCOPE(areg_base_Thread, _report_refused_name);
+        if (holderName.is_empty())
+        {
+            LOG_ERR("The thread [ %s ] is refused: its name gives an invalid number, rename it", name.as_string());
+        }
+        else
+        {
+            LOG_ERR("The thread [ %s ] is refused: its number is used by the thread [ %s ], rename one of them", name.as_string(), holderName.as_string());
+        }
+    }
+
 /**
  * \brief   Internal thread naming prefix. Used to generate unique thread name.
  **/
@@ -508,7 +526,33 @@ void Thread::_set_not_running() noexcept
 
 bool Thread::_register_thread()
 {
-    Thread::_map_thread_name().register_resource_object(static_cast<uint32_t>(mThreadAddress), this);
+    if (mThreadAddress.is_valid() == false)
+    {
+        _report_refused_name(mThreadAddress.name(), String::empty_string());
+        return false;
+    }
+
+    String holderName;
+    MapThreadNameResource & names{ Thread::_map_thread_name() };
+    {
+        Lock lock(names.lockable());
+        const Thread * holder{ names.find_resource_object(static_cast<uint32_t>(mThreadAddress)) };
+        if ((holder != nullptr) && (holder->mThreadAddress.name() != mThreadAddress.name()))
+        {
+            holderName = holder->mThreadAddress.name();
+        }
+        else
+        {
+            names.register_resource_object(static_cast<uint32_t>(mThreadAddress), this);
+        }
+    }
+
+    if (holderName.is_empty() == false)
+    {
+        _report_refused_name(mThreadAddress.name(), holderName);
+        return false;
+    }
+
     Thread::_map_thread_id().register_resource_object(mThreadId, this);
     mLifeState.fetch_or(LIFE_REGISTERED, std::memory_order_release);
     Thread::_bump_registry_generation();
@@ -529,7 +573,16 @@ void Thread::_unregister_thread()
 
     // Advanced first, so that no cached pointer to this object survives its removal.
     Thread::_bump_registry_generation();
-    Thread::_map_thread_name().unregister_resource_object(static_cast<uint32_t>(mThreadAddress));
+    MapThreadNameResource & names{ Thread::_map_thread_name() };
+    {
+        // Another thread of the same name may hold the entry.
+        Lock lock(names.lockable());
+        if (names.find_resource_object(static_cast<uint32_t>(mThreadAddress)) == this)
+        {
+            static_cast<void>(names.unregister_resource_object(static_cast<uint32_t>(mThreadAddress)));
+        }
+    }
+
     Thread::_map_thread_id().unregister_resource_object(mThreadId);
 }
 

@@ -45,7 +45,6 @@ class AREG_API RemoteEventConsumer   : public EventConsumer
 {
 protected:
     RemoteEventConsumer() = default;
-    virtual ~RemoteEventConsumer() = default;
 
 public:
 /************************************************************************/

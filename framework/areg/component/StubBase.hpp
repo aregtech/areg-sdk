@@ -756,6 +756,11 @@ private:
     void _leave_registry();
 
     /**
+     * \brief   Registers this provider, unless a provider of other names holds its number.
+     **/
+    void _enter_registry();
+
+    /**
      * \brief   Creates the response that tells a consumer its request was not delivered.
      *
      * \param   proxy   The address of the consumer proxy that sent the request.

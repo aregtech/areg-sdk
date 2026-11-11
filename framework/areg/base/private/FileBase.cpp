@@ -23,6 +23,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <memory>
 #include <new>
 #include <string>
 
@@ -242,7 +243,8 @@ uint32_t _searchText( const FileBase&   file
         || !file.can_read()
         || (startPos == Cursor::INVALID_CURSOR_POSITION)
         || areg::is_empty<CharType>(text)
-        || (length == 0))
+        || (length == 0)
+        || (length > (UINT32_MAX / 2u)))
     {
         return Cursor::INVALID_CURSOR_POSITION;
     }
@@ -252,7 +254,12 @@ uint32_t _searchText( const FileBase&   file
     const uint32_t winSize  = 2u * length;
     const uint32_t charSize = static_cast<uint32_t>(sizeof(CharType));
 
-    auto buffer = std::make_unique<CharType[]>(winSize);
+    std::unique_ptr<CharType[]> buffer{ new (std::nothrow) CharType[winSize] };
+    if (buffer == nullptr)
+    {
+        return Cursor::INVALID_CURSOR_POSITION;
+    }
+
     CharType* const fileData = buffer.get();
 
     // comparator, do not recreate lambda per iteration
@@ -673,7 +680,8 @@ uint32_t FileBase::search_data( uint32_t        startPos
         || !can_read()
         || (startPos == Cursor::INVALID_CURSOR_POSITION)
         || (buffer == nullptr)
-        || (length == 0))
+        || (length == 0)
+        || (length > (UINT32_MAX / 2u)))
     {
         return Cursor::INVALID_CURSOR_POSITION;
     }
@@ -683,7 +691,10 @@ uint32_t FileBase::search_data( uint32_t        startPos
         return Cursor::INVALID_CURSOR_POSITION;
 
     const uint32_t winSize = 2u * length;
-    auto   storage = std::make_unique<uint8_t[]>(winSize);
+    std::unique_ptr<uint8_t[]> storage{ new (std::nothrow) uint8_t[winSize] };
+    if (storage == nullptr)
+        return Cursor::INVALID_CURSOR_POSITION;
+
     uint8_t* const fileData = storage.get();
 
     // comparator, avoid recreating lambda per iteration

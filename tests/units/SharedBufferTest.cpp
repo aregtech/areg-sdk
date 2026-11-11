@@ -1084,8 +1084,13 @@ namespace
     public:
         using areg::SharedBuffer::SharedBuffer;
         using areg::SharedBuffer::buffer_to_read;
+        using areg::SharedBuffer::buffer_to_write;
+        using areg::SharedBuffer::byte_buffer;
+        using areg::SharedBuffer::end_of_buffer;
+        using areg::SharedBuffer::header;
         using areg::SharedBuffer::init_buffer;
         using areg::SharedBuffer::read_view;
+        using areg::SharedBuffer::share_as_view;
         using areg::SharedBuffer::size_readable;
         using areg::SharedBuffer::size_writable;
         using areg::SharedBuffer::write_data;
@@ -1268,4 +1273,51 @@ TEST(SharedBufferTest, every_copy_size_writes_and_reads)
         ASSERT_EQ(buffer.read(target, size), size);
         EXPECT_TRUE(areg::mem_equal(target, source, size)) << "size " << size;
     }
+}
+
+// A buffer without a block has no type, no raw block, no header and no end.
+TEST(SharedBufferTest, buffer_without_a_block_has_no_type_header_and_end)
+{
+    SharedProbe buffer;
+    EXPECT_EQ(buffer.type(), areg::BufferType::Unknown);
+    EXPECT_EQ(buffer.byte_buffer(), nullptr);
+    EXPECT_EQ(std::as_const(buffer).byte_buffer(), nullptr);
+    EXPECT_EQ(buffer.header(), nullptr);
+    EXPECT_EQ(std::as_const(buffer).header(), nullptr);
+    EXPECT_EQ(buffer.end_of_buffer(), nullptr);
+    EXPECT_EQ(std::as_const(buffer).end_of_buffer(), nullptr);
+}
+
+// A buffer with data gives its block, its header, the end of the data and the address to write at.
+TEST(SharedBufferTest, buffer_with_data_gives_block_header_end_and_writable_address)
+{
+    constexpr uint8_t DATA[]{ 1u, 2u, 3u };
+    SharedProbe buffer;
+    ASSERT_EQ(buffer.write(DATA, sizeof(DATA)), sizeof(DATA));
+
+    ASSERT_NE(buffer.byte_buffer(), nullptr);
+    EXPECT_EQ(std::as_const(buffer).byte_buffer(), buffer.byte_buffer());
+    ASSERT_NE(buffer.header(), nullptr);
+    EXPECT_EQ(std::as_const(buffer).header(), buffer.header());
+    EXPECT_EQ(buffer.header()->biUsed, sizeof(DATA));
+    EXPECT_EQ(buffer.type(), buffer.header()->biBufType);
+
+    const uint8_t * const begin{ std::as_const(buffer).buffer() };
+    ASSERT_NE(begin, nullptr);
+    EXPECT_EQ(buffer.end_of_buffer(), begin + sizeof(DATA));
+    EXPECT_EQ(std::as_const(buffer).end_of_buffer(), begin + sizeof(DATA));
+    EXPECT_EQ(buffer.buffer_to_write(), begin + buffer.position());
+}
+
+// A view made from a buffer shares the block of that buffer.
+TEST(SharedBufferTest, view_made_from_a_buffer_shares_its_block)
+{
+    constexpr uint8_t DATA[]{ 1u, 2u, 3u, 4u };
+    SharedProbe source;
+    ASSERT_EQ(source.write(DATA, sizeof(DATA)), sizeof(DATA));
+
+    areg::SharedBuffer view;
+    source.share_as_view(view, 1u, 3u);
+    EXPECT_TRUE(view.is_view());
+    EXPECT_EQ(std::as_const(view).byte_buffer(), std::as_const(source).byte_buffer());
 }

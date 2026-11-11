@@ -467,7 +467,7 @@ namespace
         std::vector<uint8_t> received( total );
         std::atomic<bool> got{ false };
         const SOCKETHANDLE server{ pair.server };
-        std::thread reader( [server, &received, &got, total]( )
+        std::thread reader( [server, &received, &got]( )
             {
                 got.store( read_exact( server, received.data( ), total ) );
             } );

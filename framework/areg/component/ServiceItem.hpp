@@ -322,7 +322,7 @@ inline const String & ServiceItem::service_name() const noexcept
 inline void ServiceItem::set_service_name( const String & serviceName )
 {
     mServiceName = serviceName;
-    mServiceName.truncate(areg::ITEM_NAMES_MAX_LENGTH);
+    areg::cut_item_name(mServiceName);
     mMagicNum    = ServiceItem::_magic_number(*this);
 }
 

@@ -59,7 +59,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
     int32_t result{ areg::ext::ServiceApplicationBase::RESULT_FAILED_RUN };
     char ** argvTemp = areg::ext::convert_arguments<TCHAR>(argv, argc);
     LogCollector& logger = LogCollector::instance();
-    if (logger.parse_options(static_cast<int32_t>(argc), argvTemp))
+    if (((argvTemp != nullptr) || (argc <= 0)) && logger.parse_options(static_cast<int32_t>(argc), argvTemp))
     {
         result = logger.service_main(logger.current_option(), nullptr);
     }

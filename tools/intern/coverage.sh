@@ -226,7 +226,9 @@ collect() {
   mkdir -p "$OUT"
   local gcov=()
   [ -n "$GCOV" ] && gcov=(--gcov-executable "$GCOV")
+  # A line may run more than 2^32 times over the whole suite; a count above 2^48 is rejected as corrupt.
   ( cd "$SRC" && "$GCOVR" --root . --filter 'framework/' -j "$NPROC" ${gcov[@]+"${gcov[@]}"} \
+      --gcov-suspicious-hits-threshold 281474976710656 \
       --exclude-unreachable-branches --exclude-throw-branches \
       --exclude-branches-by-pattern '^\s*ASSERT(_MSG)?\s*\(' \
       --exclude-lines-by-pattern '^\s*ASSERT(_MSG)?\s*\(\s*false\b.*' \

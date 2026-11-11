@@ -94,6 +94,12 @@
     <ClCompile Include="units\ModelTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="units\NameNumberCollisionPeer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\NameNumberCollisionTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="units\ComponentLoaderContractTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -358,6 +364,9 @@
     <ClCompile Include="units\LogObserverApiTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="units\LogObserverAppTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\framework\areglogger\client\private\LogObserverApi.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -368,6 +377,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\framework\areglogger\client\private\ObserverMessageProcessor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\framework\logobserver\app\private\LogObserver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="units\SqliteStatementTest.cpp">
@@ -416,6 +428,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="units\StreamPrimitivesTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\StreamTextUnitsTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\RuntimeClassIDTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="units\StreamExtractTest.cpp">

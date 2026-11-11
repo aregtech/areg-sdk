@@ -143,6 +143,31 @@ TEST(LogCollectorDroppedRowsTest, read_dropped_notice_rejects_other_rows)
 }
 
 /**
+ * \brief   A notice cut short by its size, or with more digits than a 64-bit count has, is not read.
+ **/
+TEST(LogCollectorDroppedRowsTest, read_dropped_notice_rejects_truncated_and_overlong_notices)
+{
+    const uint32_t head{ areg::log_entry_head() };
+    const char * const text{ "Dropped [ 12 ] log messages." };
+    const uint32_t keeps[]{ 0u, 4u, static_cast<uint32_t>(std::strlen("Dropped [ 12")) };
+
+    uint64_t count{ 99u };
+    for (uint32_t keep : keeps)
+    {
+        areg::MessageEnvelope row{ make_row(SOURCE_1, areg::LOG_SCOPE_ID_NONE, text) };
+        ASSERT_GT(row.size_used(), head + keep);
+        row.set_size_used(head + keep);
+        EXPECT_FALSE(LogCollectorDroppedRows::read_dropped_notice(row, count)) << "kept " << keep;
+    }
+
+    EXPECT_FALSE(LogCollectorDroppedRows::read_dropped_notice(make_row(SOURCE_1, areg::LOG_SCOPE_ID_NONE, "Dropped [ 000000000000000000001 ] log messages."), count));
+    EXPECT_EQ(count, 99u);
+
+    EXPECT_TRUE(LogCollectorDroppedRows::read_dropped_notice(make_row(SOURCE_1, areg::LOG_SCOPE_ID_NONE, "Dropped [ 00000000000000000001 ] log messages."), count));
+    EXPECT_EQ(count, 1u);
+}
+
+/**
  * \brief   Reproduces the defect: a source's 'Dropped [ N ]' notice dropped for a held observer
  *          was counted as one row, so its N rows went missing without a notice. The observer
  *          gets the N of the source in a row of that source, and the rows of the log collector.

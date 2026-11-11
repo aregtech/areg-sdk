@@ -66,6 +66,7 @@
       "name": "Router registration",
       "cases": [
         { "case": "a duplicate public role name is refused", "tests": ["areg-router-io-test\\.duplicate-role\\..*"] },
+        { "case": "two public role names with one number are told apart", "tests": ["areg-router-io-test\\.name-collision-provider\\..*", "areg-router-io-test\\.name-collision-consumer-provider-first\\..*", "areg-router-io-test\\.name-collision-consumer-consumer-first\\..*"] },
         { "case": "a held provider is taken over, cancelled or disconnected", "tests": ["areg-router-io-test\\.held-provider-takeover\\..*", "areg-router-io-test\\.held-provider-cancel\\..*", "areg-router-io-test\\.held-provider-disconnect\\..*"] },
         { "case": "a truncated registration is refused", "tests": ["areg-router-io-test\\.registration-truncated-consumer\\..*", "areg-router-io-test\\.registration-truncated-provider\\..*"] },
         { "case": "registrations from one source are kept apart", "tests": ["areg-router-io-test\\.registration-same-source\\..*", "areg-router-io-test\\.registration-two-proxies-one-source\\..*"] },

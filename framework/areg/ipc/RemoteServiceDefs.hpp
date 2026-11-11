@@ -267,9 +267,11 @@ AREG_API MessageEnvelope service_unregistered_event( const StubAddress & stub, a
 
 /**
  * \brief   Creates the notification that a public role name is registered twice. It is sent to
- *          both processes and names the other one.
+ *          both processes and names the other one. The name check of the stub is sent with it:
+ *          a check that differs from the receiver's own means two names share one number.
  *
- * \param   stub        The address of the Stub whose role name is registered twice.
+ * \param   stub        The address of the Stub whose role name is registered twice, with the
+ *                      name check of the other process.
  * \param   other       The process that holds or requested the same role name.
  * \param   source      The ID of the source that sends the notification.
  * \param   target      The ID of the target to send the notification.

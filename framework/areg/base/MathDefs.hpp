@@ -128,6 +128,11 @@ constexpr uint32_t  CHECKSUM_IGNORE     { 0u };
  **/
 constexpr uint32_t  CHECKSUM_INVALID    { ~0u };
 
+/**
+ * \brief   The byte hashed between two names of one checksum.
+ **/
+constexpr uint8_t   NAME_SEPARATOR      { 0u };
+
 /************************************************************************/
 // areg namespace structures
 /************************************************************************/
@@ -320,7 +325,7 @@ inline constexpr uint32_t low_bits(const LargeInteger & num) noexcept;
 /************************************************************************/
 
 /**
- * \brief   Calculates 32-bit CRC of a binary buffer using IEEE 802.3 standard.
+ * \brief   Calculates 32-bit CRC of a binary buffer using the CRC32C (Castagnoli) polynomial.
  *          Usable at compile time when both data and size are constexpr.
  *
  * \param   data    Pointer to binary data buffer.
@@ -331,7 +336,7 @@ inline constexpr uint32_t low_bits(const LargeInteger & num) noexcept;
 inline constexpr uint32_t crc32_calculate( const uint8_t * data, int32_t size ) noexcept;
 
 /**
- * \brief   Calculates 32-bit CRC of a null-terminated string using IEEE 802.3 standard.
+ * \brief   Calculates 32-bit CRC of a null-terminated string using the CRC32C (Castagnoli) polynomial.
  *          Usable at compile time when strData is a string literal or constexpr pointer.
  *
  * \param   strData     Null-terminated string. nullptr returns CRC of empty input.
@@ -341,7 +346,7 @@ inline constexpr uint32_t crc32_calculate( const uint8_t * data, int32_t size ) 
 inline constexpr uint32_t crc32_calculate( const char * strData ) noexcept;
 
 /**
- * \brief   Calculates 32-bit CRC of a null-terminated wide string using IEEE 802.3 standard.
+ * \brief   Calculates 32-bit CRC of a null-terminated wide string using the CRC32C (Castagnoli) polynomial.
  *          Characters in the Basic Multilingual Plane (U+0000-U+00FF) are processed as a
  *          single byte each; characters in U+0100-U+FFFF are processed as two bytes (low then
  *          high). Characters above U+FFFF are represented with their lower 16 bits only.
@@ -403,7 +408,7 @@ inline constexpr uint32_t crc32_start(uint32_t crcInit, std::string_view data) n
 inline constexpr uint32_t crc32_start( uint32_t crcInit, uint8_t uch ) noexcept;
 
 /**
- * \brief   Calculates 32-bit CRC of a std::string_view using IEEE 802.3 standard.
+ * \brief   Calculates 32-bit CRC of a std::string_view using the CRC32C (Castagnoli) polynomial.
  *          Does not rely on null termination; uses the view's length directly.
  *          Usable at compile time when str is a constexpr string_view.
  *

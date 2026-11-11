@@ -141,18 +141,11 @@ namespace {
 
                 if ( _is_quote<CharType>(*src) )
                 {
-                    if ( begin != src ++ )
-                    {
-                        areg::String str( begin, static_cast<areg::CharCount>( src - begin ) );
-                        optList.push_back( str );
-                    }
-                }
-                else if (begin != src)
-                {
-                    areg::String str( begin, static_cast<areg::CharCount>( src - begin ) );
-                    optList.push_back( str );
+                    ++ src;
                 }
 
+                areg::String str( begin, static_cast<areg::CharCount>( src - begin ) );
+                optList.push_back( str );
                 begin = src;
             }
             else

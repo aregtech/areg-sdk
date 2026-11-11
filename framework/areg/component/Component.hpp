@@ -364,6 +364,21 @@ private:
     static Component::MapComponentResource& resource_map() noexcept;
 
     /**
+     * \brief   Returns the role name of the component that holds the number of the role name,
+     *          if it is another role name; otherwise returns an empty string.
+     *
+     * \param   roleName    The role name to check.
+     * \param   magicNum    The number of the role name.
+     **/
+    [[nodiscard]]
+    static String _other_role_of_number( const String & roleName, uint32_t magicNum );
+
+    /**
+     * \brief   Registers the component, unless a component of another role name holds its number.
+     **/
+    void _register_component();
+
+    /**
      * \brief   Takes the components of the thread out of the registry, under its lock. The
      *          objects are not touched; a component removes only its own entry when it is deleted.
      * \param   owner   The component thread of the components.
@@ -417,7 +432,8 @@ private:
 
 inline Component* Component::find_by_name(const String& roleName) noexcept
 {
-    return (roleName.is_empty() ? nullptr : Component::find_by_number(areg::crc32_calculate(roleName.as_string())));
+    Component* result{ roleName.is_empty() ? nullptr : Component::find_by_number(areg::item_name_number(roleName)) };
+    return ((result != nullptr) && (result->role_name() == areg::item_name_view(roleName)) ? result : nullptr);
 }
 
 inline Component* Component::find_by_number(uint32_t magicNum) noexcept
@@ -435,7 +451,7 @@ inline Component* Component::find_by_address(const ComponentAddress& comAddress)
 inline bool Component::exist(const String& roleName) noexcept
 {
     ASSERT(roleName.is_empty() == false);
-    return Component::resource_map().exist(areg::crc32_calculate(roleName.as_string()));
+    return (Component::find_by_name(roleName) != nullptr);
 }
 
 inline void Component::register_service_provider(StubBase& server)

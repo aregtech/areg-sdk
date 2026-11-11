@@ -215,7 +215,7 @@ void ProxyAddress::set_thread( const ThreadAddress & thread )
 void ProxyAddress::set_thread( const String & threadName )
 {
     DispatcherThread& dispatcher = DispatcherThread::dispatcher_thread(
-        static_cast<UniqueNumber>(areg::crc32_calculate(threadName.as_string())));
+        static_cast<UniqueNumber>(areg::item_name_number(threadName)));
     if (dispatcher.is_valid())
     {
         mChannel.set_source(static_cast<uint32_t>(dispatcher.address()));
@@ -265,6 +265,7 @@ uint32_t ProxyAddress::_magic_number(const ProxyAddress & proxy) noexcept
         result = areg::crc32_start( result, proxy.mServiceName.as_string() );
         result = areg::crc32_start( result, static_cast<uint8_t>(proxy.mServiceType) );
         result = areg::crc32_start( result, proxy.mRoleName.as_string() );
+        result = areg::crc32_start( result, areg::NAME_SEPARATOR );
         result = areg::crc32_start( result, proxy.mThread.name().as_string() );
         result = areg::crc32_finish(result);
     }

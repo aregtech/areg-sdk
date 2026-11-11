@@ -257,14 +257,19 @@ TEST(ServiceItemTest, invalid_parts_make_invalid_item)
 }
 
 /**
- * \brief   A name longer than the allowed length is truncated.
+ * \brief   A name longer than the allowed length is truncated; Debug asserts.
  **/
 TEST(ServiceItemTest, long_name_is_truncated)
 {
     const std::string longName(areg::ITEM_NAMES_MAX_LENGTH + 40u, 'x');
+#if defined(DEBUG) && GTEST_HAS_DEATH_TEST
+    ::testing::GTEST_FLAG(death_test_style) = "threadsafe";
+    EXPECT_DEATH(static_cast<void>(areg::ServiceItem(areg::String(longName.c_str()), svc_version(), SVC_TYPE)), "");
+#elif !defined(DEBUG)
     const areg::ServiceItem item(areg::String(longName.c_str()), svc_version(), SVC_TYPE);
     EXPECT_LE(item.service_name().length(), static_cast<areg::CharCount>(areg::ITEM_NAMES_MAX_LENGTH));
     EXPECT_TRUE(item.is_valid());
+#endif
 }
 
 /**
@@ -1001,14 +1006,19 @@ TEST(ComponentAddressTest, construct_from_role_and_unknown_thread_name)
 }
 
 /**
- * \brief   A long role name is truncated to the allowed length.
+ * \brief   A long role name is truncated to the allowed length; Debug asserts.
  **/
 TEST(ComponentAddressTest, long_role_is_truncated)
 {
     const std::string longName(areg::ITEM_NAMES_MAX_LENGTH + 30u, 'r');
+#if defined(DEBUG) && GTEST_HAS_DEATH_TEST
+    ::testing::GTEST_FLAG(death_test_style) = "threadsafe";
+    EXPECT_DEATH(static_cast<void>(areg::ComponentAddress(areg::ThreadAddress(areg::String("Thr")), areg::String(longName.c_str()))), "");
+#elif !defined(DEBUG)
     const areg::ComponentAddress addr(areg::ThreadAddress(areg::String("Thr")), areg::String(longName.c_str()));
     EXPECT_LE(addr.role_name().length(), static_cast<areg::CharCount>(areg::ITEM_NAMES_MAX_LENGTH));
     EXPECT_TRUE(addr.is_valid());
+#endif
 }
 
 /**

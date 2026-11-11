@@ -32,6 +32,57 @@ namespace areg {
 
 #define AREG_RUNTIME_CLASS_ID(ClassName)    areg::crc32_calculate(#ClassName)
 
+/**
+ * \brief   Returns the signature of this function as the compiler writes it. The text names
+ *          the type T with its namespaces and template arguments.
+ **/
+template <typename T>
+[[nodiscard]]
+constexpr std::string_view type_signature() noexcept
+{
+#if defined(_MSC_VER) && !defined(__clang__)
+    return std::string_view{ __FUNCSIG__ };
+#else   // defined(_MSC_VER) && !defined(__clang__)
+    return std::string_view{ __PRETTY_FUNCTION__ };
+#endif  // defined(_MSC_VER) && !defined(__clang__)
+}
+
+/**
+ * \brief   Returns true if the type signature names a type of an anonymous namespace,
+ *          as GCC, Clang and MSVC write it.
+ *
+ * \param   signature   The signature returned by type_signature().
+ **/
+[[nodiscard]]
+constexpr bool is_anonymous_type( std::string_view signature ) noexcept
+{
+    return (signature.find("{anonymous}") != std::string_view::npos)
+        || (signature.find("(anonymous namespace)") != std::string_view::npos)
+        || (signature.find("`anonymous-namespace'") != std::string_view::npos);
+}
+
+/**
+ * \brief   Returns the CRC32C checksum of type_signature<T>(). Types of one name in different
+ *          namespaces get different numbers. A type of an anonymous namespace also hashes the
+ *          source file, so such types of two files differ. The number depends on the compiler.
+ *
+ * \param   sourceFile  The file that declares the type, used only for a type of an anonymous namespace.
+ **/
+template <typename T>
+[[nodiscard]]
+constexpr uint32_t type_class_id( std::string_view sourceFile = std::string_view{} ) noexcept
+{
+    constexpr std::string_view signature{ areg::type_signature<T>() };
+    uint32_t result{ areg::crc32_start(areg::crc32_init(), signature) };
+    if (areg::is_anonymous_type(signature))
+    {
+        result = areg::crc32_start(result, areg::NAME_SEPARATOR);
+        result = areg::crc32_start(result, sourceFile);
+    }
+
+    return areg::crc32_finish(result);
+}
+
 //////////////////////////////////////////////////////////////////////////
 // RuntimeClassID class declaration
 //////////////////////////////////////////////////////////////////////////
@@ -82,11 +133,10 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Returns a reference to the shared invalid RuntimeClassID singleton.
-     *          Used as a default value in hash-map blocks.
+     * \brief   Returns a read-only reference to the shared invalid RuntimeClassID.
      **/
     [[nodiscard]]
-    static RuntimeClassID & empty_id() noexcept;
+    static const RuntimeClassID & empty_id() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -141,6 +191,9 @@ public:
 
     friend inline constexpr bool operator != ( uint32_t lhs, const RuntimeClassID & rhs ) noexcept;
 
+    /**
+     * \brief   Compares the magic numbers, then the names if the numbers are equal.
+     **/
     [[nodiscard]]
     inline constexpr bool operator == ( const RuntimeClassID & other ) const noexcept;
 
@@ -153,6 +206,9 @@ public:
     [[nodiscard]]
     inline bool operator == ( const String & other ) const noexcept;
 
+    /**
+     * \brief   Compares the magic numbers, then the names if the numbers are equal.
+     **/
     [[nodiscard]]
     inline constexpr bool operator != ( const RuntimeClassID & other ) const noexcept;
 
@@ -254,9 +310,9 @@ inline constexpr RuntimeClassID::RuntimeClassID(RuntimeClassID&& src) noexcept
 // RuntimeClassID singleton
 //////////////////////////////////////////////////////////////////////////
 
-inline RuntimeClassID & RuntimeClassID::empty_id() noexcept
+inline const RuntimeClassID & RuntimeClassID::empty_id() noexcept
 {
-    static RuntimeClassID _runtime;
+    static constexpr RuntimeClassID _runtime;
     return _runtime;
 }
 
@@ -289,12 +345,12 @@ inline constexpr RuntimeClassID& RuntimeClassID::operator = (RuntimeClassID&& sr
 
 inline constexpr bool RuntimeClassID::operator == ( const RuntimeClassID & other ) const noexcept
 {
-    return (mMagicNum == other.mMagicNum);
+    return ((mMagicNum == other.mMagicNum) && (mClassName == other.mClassName));
 }
 
 inline constexpr bool RuntimeClassID::operator == ( const char * other ) const noexcept
 {
-    return (mClassName == other);
+    return ((other != nullptr) && (mClassName == other));
 }
 
 inline constexpr bool RuntimeClassID::operator == ( std::string_view other ) const noexcept
@@ -309,12 +365,12 @@ inline bool RuntimeClassID::operator == ( const String & other ) const noexcept
 
 inline constexpr bool RuntimeClassID::operator != ( const RuntimeClassID & other ) const noexcept
 {
-    return (mMagicNum != other.mMagicNum);
+    return ((mMagicNum != other.mMagicNum) || (mClassName != other.mClassName));
 }
 
 inline constexpr bool RuntimeClassID::operator != ( const char * other ) const noexcept
 {
-    return (mClassName != other);
+    return ((other == nullptr) || (mClassName != other));
 }
 
 inline constexpr bool RuntimeClassID::operator != ( std::string_view other ) const noexcept
@@ -354,7 +410,7 @@ inline constexpr uint32_t RuntimeClassID::magic() const noexcept
 [[nodiscard]]
 inline constexpr bool operator == ( const char * lhs, const RuntimeClassID & rhs ) noexcept
 {
-    return (rhs.mClassName == lhs);
+    return (rhs == lhs);
 }
 
 [[nodiscard]]
@@ -372,7 +428,7 @@ inline bool operator == ( const String & lhs, const RuntimeClassID & rhs ) noexc
 [[nodiscard]]
 inline constexpr bool operator != ( const char * lhs, const RuntimeClassID & rhs ) noexcept
 {
-    return (rhs.mClassName != lhs);
+    return (rhs != lhs);
 }
 
 [[nodiscard]]

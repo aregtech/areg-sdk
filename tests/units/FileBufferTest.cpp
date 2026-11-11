@@ -1272,3 +1272,84 @@ TEST( FileBufferTest, typed_wide_char_is_four_bytes )
     EXPECT_TRUE( file.read_char( ch ) );
     EXPECT_EQ( ch, L'Z' );
 }
+
+/**
+ * \brief   A read-only buffer refuses every kind of write and keeps its data.
+ **/
+TEST( FileBufferTest, read_only_buffer_refuses_every_write )
+{
+    areg::SharedBuffer origin;
+    ASSERT_EQ( origin.write( reinterpret_cast<const uint8_t *>("abcdef"), 6 ), 6u );
+    areg::SharedBuffer copy( origin );
+    areg::FileBuffer file( copy );
+    ASSERT_TRUE( file.open( ) );
+    ASSERT_FALSE( file.can_write( ) );
+
+    const uint8_t extra[ 2 ]{ 'x', 'y' };
+    areg::SharedBuffer block;
+    ASSERT_EQ( block.write( extra, 2 ), 2u );
+    EXPECT_EQ( file.append( extra, 2 ), 0u );
+    EXPECT_EQ( file.write_invert( extra, 2 ), 0u );
+    EXPECT_EQ( file.write( block ), 0u );
+    EXPECT_FALSE( file.write_string( "text" ) );
+    EXPECT_FALSE( file.write_line( "line" ) );
+    EXPECT_FALSE( file.write_string( L"text" ) );
+    EXPECT_FALSE( file.write_line( L"line" ) );
+    EXPECT_EQ( file.length( ), 6u );
+    EXPECT_EQ( origin.size_used( ), 6u );
+}
+
+/**
+ * \brief   A stored shared buffer of size zero is read as an empty buffer; a size field that is cut
+ *          is not read and keeps the position.
+ **/
+TEST( FileBufferTest, shared_buffer_of_size_zero_and_cut_size_field )
+{
+    areg::FileBuffer file( MODE_BINARY );
+    ASSERT_TRUE( file.open( ) );
+    ASSERT_TRUE( file.write_int( 0 ) );
+    const uint8_t cut[ 2 ]{ 1, 2 };
+    ASSERT_EQ( file.write( cut, 2 ), 2u );
+    ASSERT_TRUE( file.move_to_begin( ) );
+
+    areg::SharedBuffer result;
+    EXPECT_EQ( file.read( result ), sizeof(int32_t) );
+    EXPECT_EQ( result.size_used( ), 0u );
+
+    const uint32_t before{ file.position( ) };
+    EXPECT_EQ( file.read( result ), 0u );
+    EXPECT_EQ( file.position( ), before );
+}
+
+/**
+ * \brief   A search that starts beyond the end, or finds nothing, gives the invalid position.
+ **/
+TEST( FileBufferTest, search_beyond_the_end_finds_nothing )
+{
+    areg::FileBuffer file( MODE_BINARY );
+    ASSERT_TRUE( file.open( ) );
+    fill_text( file, "abcdefabc" );
+
+    const uint8_t phrase[ 3 ]{ 'a', 'b', 'c' };
+    const uint8_t missing[ 2 ]{ 'x', 'y' };
+    EXPECT_EQ( file.search_data( 0u, phrase, 3u ), 0u );
+    EXPECT_EQ( file.search_data( 1u, phrase, 3u ), 6u );
+    EXPECT_EQ( file.search_data( 0u, missing, 2u ), areg::Cursor::INVALID_CURSOR_POSITION );
+    EXPECT_EQ( file.search_data( 100u, phrase, 3u ), areg::Cursor::INVALID_CURSOR_POSITION );
+    EXPECT_EQ( file.search_text( 0u, "def", true ), 3u );
+    EXPECT_EQ( file.search_text( 100u, "def", true ), areg::Cursor::INVALID_CURSOR_POSITION );
+}
+
+/**
+ * \brief   A search for a phrase longer than half the 32-bit range finds nothing.
+ **/
+TEST( FileBufferTest, search_for_an_overlong_phrase_finds_nothing )
+{
+    areg::FileBuffer file( MODE_BINARY );
+    ASSERT_TRUE( file.open( ) );
+    fill_text( file, "abcdefabc" );
+
+    const uint8_t phrase[ 3 ]{ 'a', 'b', 'c' };
+    EXPECT_EQ( file.search_data( 0u, phrase, 0x8000'0000u ), areg::Cursor::INVALID_CURSOR_POSITION );
+    EXPECT_EQ( file.search_data( 0u, phrase, 3u ), 0u );
+}

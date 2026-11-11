@@ -153,8 +153,7 @@ bool SqliteStatement::bind_float(int32_t index, float value) noexcept
 
 bool SqliteStatement::bind_text(int32_t index, const String& value) noexcept
 {
-    const char* txt = value.as_string();
-    return (txt != nullptr ? (index >= 0) && is_valid() && (sqlite3_bind_text(_sqlite_stmt(mStatement), index + 1, txt, value.length(), SQLITE_TRANSIENT) == SQLITE_OK) : bind_null(index));
+    return ((index >= 0) && is_valid() && (sqlite3_bind_text(_sqlite_stmt(mStatement), index + 1, value.as_string(), value.length(), SQLITE_TRANSIENT) == SQLITE_OK));
 }
 
 bool SqliteStatement::bind_text_static(int32_t index, const char* value) noexcept

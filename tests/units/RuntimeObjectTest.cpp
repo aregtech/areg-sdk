@@ -14,6 +14,7 @@
  ************************************************************************/
 
 #include "units/GUnitTest.hpp"
+#include "units/ChildProcess.hpp"
 #include "areg/base/RuntimeObject.hpp"
 #include "areg/base/private/RuntimeBase.hpp"
 #include "areg/base/RuntimeClassID.hpp"
@@ -220,6 +221,21 @@ TEST(RuntimeBaseTest, is_runtime_matches_only_the_base_class)
     EXPECT_FALSE(raw.is_runtime(""));
 }
 
+/**
+ * \brief   Reproduces the defect: is_runtime() with a null C string built a string view from the null
+ *          pointer and crashed.
+ **/
+TEST(RuntimeBaseTest, is_runtime_with_null_c_string_is_false)
+{
+    AREG_EXPECT_IN_CHILD(
+        const char* const nothing{ std::string_view().empty() ? nullptr : "x" };
+        RtRaw raw;
+        RtAlpha alpha;
+        AREG_CHILD_CHECK(raw.is_runtime(nothing) == false);
+        AREG_CHILD_CHECK(alpha.is_runtime(nothing) == false);
+    );
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Casts
 //////////////////////////////////////////////////////////////////////////
@@ -414,4 +430,48 @@ TEST(RuntimeObjectTest, raw_aligned_allocation_functions_honor_the_alignment)
     void * sizedArray{ RtAlpha::operator new[](256u, align) };
     ASSERT_NE(sizedArray, nullptr);
     RtAlpha::operator delete[](sizedArray, static_cast<size_t>(256u), align);
+}
+
+TEST(RuntimeObjectTest, non_throwing_allocation_functions_return_usable_memory)
+{
+    const int32_t alive{ gAlive };
+
+    RtAlpha * single{ new (std::nothrow) RtAlpha() };
+    ASSERT_NE(single, nullptr);
+    EXPECT_EQ(gAlive, alive + 1);
+    delete single;
+
+    RtAlpha * array{ new (std::nothrow) RtAlpha[2] };
+    ASSERT_NE(array, nullptr);
+    EXPECT_EQ(gAlive, alive + 2);
+    delete[] array;
+    EXPECT_EQ(gAlive, alive);
+
+    constexpr std::align_val_t align{ 128u };
+    void * aligned{ RtAlpha::operator new(256u, align, std::nothrow) };
+    ASSERT_NE(aligned, nullptr);
+    EXPECT_EQ(reinterpret_cast<std::uintptr_t>(aligned) % 128u, 0u);
+    RtAlpha::operator delete(aligned, align, std::nothrow);
+}
+
+TEST(RuntimeObjectTest, non_throwing_deallocation_functions_free_memory)
+{
+    void * single{ RtAlpha::operator new(32u) };
+    ASSERT_NE(single, nullptr);
+    std::memset(single, 0xA5, 32u);
+    RtAlpha::operator delete(single, std::nothrow);
+
+    void * array{ RtAlpha::operator new[](32u) };
+    ASSERT_NE(array, nullptr);
+    std::memset(array, 0x5A, 32u);
+    RtAlpha::operator delete[](array, std::nothrow);
+}
+
+TEST(RuntimeObjectTest, placement_delete_functions_do_nothing)
+{
+    alignas(RtAlpha) unsigned char storage[sizeof(RtAlpha)];
+    void * place{ static_cast<void *>(storage) };
+    RtAlpha::operator delete(place, place);
+    RtAlpha::operator delete[](place, place);
+    EXPECT_EQ(place, static_cast<void *>(storage));
 }

@@ -521,3 +521,101 @@ TEST(RouterServiceRegistryTest, source_wildcard_returns_all_endpoints)
     EXPECT_EQ(1u, exactProviders.size());
     EXPECT_EQ(0u, exactConsumers.size());
 }
+
+/**
+ * \brief   The service list filters the providers and the consumers by the cookie: any cookie
+ *          returns both, the cookie of one side returns only that side, an unknown cookie none.
+ **/
+TEST(RouterServiceRegistryTest, service_list_filters_by_cookie)
+{
+    ServiceRegistry registry;
+    const areg::StubAddress provider{ provider_address(0x200u) };
+    const areg::ProxyAddress consumer{ consumer_address(0x201u) };
+    ListServiceProxies proxies;
+    ServiceProxy proxy;
+    registry.register_service_provider(provider, proxies);
+    registry.register_service_proxy(consumer, proxy);
+
+    const auto count = [&registry](ITEM_ID cookie) -> std::pair<uint32_t, uint32_t>
+    {
+        areg::ArrayList<areg::StubAddress> providers;
+        areg::ArrayList<areg::ProxyAddress> consumers;
+        registry.service_list(cookie, providers, consumers);
+        return { providers.size(), consumers.size() };
+    };
+
+    EXPECT_EQ(count(areg::COOKIE_ANY), std::make_pair(1u, 1u));
+    EXPECT_EQ(count(0x200u), std::make_pair(1u, 0u));
+    EXPECT_EQ(count(0x201u), std::make_pair(0u, 1u));
+    EXPECT_EQ(count(0x777u), std::make_pair(0u, 0u));
+
+    areg::ArrayList<areg::StubAddress> stubs;
+    areg::ArrayList<areg::ProxyAddress> sources;
+    registry.service_sources(0x201u, stubs, sources);
+    EXPECT_EQ(stubs.size(), 0u);
+    ASSERT_EQ(sources.size(), 1u);
+    EXPECT_EQ(sources[0].source(), 0x201u);
+}
+
+/**
+ * \brief   Unregistering a provider that is not registered returns the invalid provider and
+ *          leaves the registered one in place.
+ **/
+TEST(RouterServiceRegistryTest, unregister_of_an_unknown_provider_changes_nothing)
+{
+    ServiceRegistry registry;
+    ListServiceProxies proxies;
+    registry.register_service_provider(provider_address(0x200u), proxies);
+
+    ListServiceProxies removed;
+    const ServiceStub & result{ registry.unregister_service_provider(provider_address(0x200u, 0x9999u), removed) };
+    EXPECT_FALSE(result.is_valid());
+    EXPECT_TRUE(removed.is_empty());
+    areg::ArrayList<areg::StubAddress> providers;
+    areg::ArrayList<areg::ProxyAddress> consumers;
+    registry.service_list(areg::COOKIE_ANY, providers, consumers);
+    ASSERT_EQ(providers.size(), 1u);
+    EXPECT_EQ(providers[0], provider_address(0x200u));
+}
+
+/**
+ * \brief   Disconnecting a consumer of an unknown service, or an unknown consumer of a known
+ *          service, changes nothing; a known consumer loses its provider.
+ **/
+TEST(RouterServiceRegistryTest, disconnect_proxy_acts_only_on_a_registered_consumer)
+{
+    ServiceRegistry registry;
+    const areg::StubAddress provider{ provider_address(0x200u) };
+    const areg::ProxyAddress consumer{ consumer_address(0x201u) };
+    ListServiceProxies proxies;
+    ServiceProxy proxy;
+    registry.register_service_provider(provider, proxies);
+    registry.register_service_proxy(consumer, proxy);
+    ASSERT_EQ(proxy.service_status(), areg::ServiceConnectionState::Connected);
+
+    EXPECT_FALSE(registry.disconnect_proxy(consumer_address(0x201u, 0x3333u, 0x9999u)).is_valid());
+
+    const ServiceStub & known{ registry.disconnect_proxy(consumer_address(0x202u, 0x7777u)) };
+    EXPECT_TRUE(known.is_valid());
+    const ListServiceProxies & list{ registry.proxy_service_list(provider) };
+    ASSERT_EQ(list.size(), 1u);
+    EXPECT_EQ(list.value_at(list.first_position()).service_status(), areg::ServiceConnectionState::Connected);
+
+    EXPECT_TRUE(registry.disconnect_proxy(consumer).is_valid());
+    EXPECT_NE(list.value_at(list.first_position()).service_status(), areg::ServiceConnectionState::Connected);
+}
+
+/**
+ * \brief   A consumer registered with a provider that is not connected waits for it.
+ **/
+TEST(RouterServiceRegistryTest, consumer_of_a_provider_that_is_not_connected_waits)
+{
+    const areg::StubAddress provider{ provider_address(0x200u) };
+    const ServiceStub pending(provider);
+    ASSERT_TRUE(pending.is_waiting());
+
+    ListServiceProxies proxies;
+    const ServiceProxy & proxy{ proxies.register_service(consumer_address(0x201u), pending) };
+    EXPECT_NE(proxy.service_status(), areg::ServiceConnectionState::Connected);
+    EXPECT_EQ(proxies.size(), 1u);
+}

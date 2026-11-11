@@ -432,6 +432,15 @@ std::shared_ptr<ProxyBase> ProxyBase::acquire_proxy( const String & roleName
     MapProxyResource& mapProxies{ map_proxies() };
     ProxyAddress Key(serviceIfData, roleName, ownerThread.name() );
     proxy = mapProxies.find_resource_object(static_cast<uint32_t>(Key));
+    if ((proxy.get() != nullptr) && (proxy->mProxyAddress.has_name_conflict(Key) || (proxy->mProxyAddress.thread().name() != Key.thread().name())))
+    {
+        LOG_ERR("The proxy [ %s ] is refused: its number is used by the proxy [ %s ], rename one of them"
+                    , ProxyAddress::to_path(Key).as_string()
+                    , ProxyAddress::to_path(proxy->mProxyAddress).as_string());
+        proxy.reset();
+        return proxy;
+    }
+
     if (proxy.get() == nullptr)
     {
         LOG_DBG("No proxy [ %s ] found, creating one in thread [ %u ]", ProxyAddress::to_path(Key).as_string(), ownerThread.id());

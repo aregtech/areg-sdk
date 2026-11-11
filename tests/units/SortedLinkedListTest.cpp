@@ -544,3 +544,157 @@ TEST(SortedLinkedListTest, boundary_zero_count_export_does_not_write)
     EXPECT_EQ(output[0], 11);
     EXPECT_EQ(output[1], 22);
 }
+
+namespace
+{
+    //! Element ordered and compared by key only, the payload shows which copy is stored.
+    struct SortedItem
+    {
+        int key{ 0 };
+        int payload{ 0 };
+        bool operator == (const SortedItem& other) const { return key == other.key; }
+        bool operator != (const SortedItem& other) const { return key != other.key; }
+        bool operator < (const SortedItem& other) const { return key < other.key; }
+        bool operator > (const SortedItem& other) const { return key > other.key; }
+    };
+}
+
+/**
+ * \brief   Test SortedLinkedList add by move keeps the order, ascending and descending.
+ **/
+TEST(SortedLinkedListTest, test_add_by_move_keeps_order)
+{
+    areg::SortedLinkedList<int> ascending(true);
+    areg::SortedLinkedList<int> descending(false);
+    for (int value : { 3, 1, 4, 2, 5 })
+    {
+        int copy{ value };
+        ascending.add(std::move(copy));
+        copy = value;
+        descending.add(std::move(copy));
+    }
+
+    ASSERT_EQ(ascending.size(), 5u);
+    ASSERT_EQ(descending.size(), 5u);
+    int expected{ 1 };
+    for (auto pos = ascending.first_position(); ascending.is_valid_position(pos); pos = ascending.next_position(pos))
+    {
+        EXPECT_EQ(ascending.value_at(pos), expected++);
+    }
+
+    expected = 5;
+    for (auto pos = descending.first_position(); descending.is_valid_position(pos); pos = descending.next_position(pos))
+    {
+        EXPECT_EQ(descending.value_at(pos), expected--);
+    }
+}
+
+/**
+ * \brief   Test SortedLinkedList unique add by move, with and without update of the existing element.
+ **/
+TEST(SortedLinkedListTest, test_add_if_unique_by_move)
+{
+    for (bool ascending : { true, false })
+    {
+        areg::SortedLinkedList<SortedItem> list(ascending);
+        EXPECT_TRUE(list.add_if_unique(SortedItem{ 2, 20 }).second);
+        EXPECT_TRUE(list.add_if_unique(SortedItem{ 1, 10 }).second);
+        EXPECT_TRUE(list.add_if_unique(SortedItem{ 3, 30 }).second);
+        ASSERT_EQ(list.size(), 3u);
+
+        auto same = list.add_if_unique(SortedItem{ 2, 21 }, false);
+        EXPECT_FALSE(same.second);
+        EXPECT_EQ(list.value_at(same.first).payload, 20);
+
+        auto updated = list.add_if_unique(SortedItem{ 2, 22 }, true);
+        EXPECT_FALSE(updated.second);
+        EXPECT_EQ(list.value_at(updated.first).payload, 22);
+        EXPECT_EQ(list.size(), 3u);
+
+        const int firstKey{ ascending ? 1 : 3 };
+        EXPECT_EQ(list.first_entry().key, firstKey);
+    }
+}
+
+/**
+ * \brief   Test SortedLinkedList merge by move for every sort order combination, the merged list stays ordered.
+ **/
+TEST(SortedLinkedListTest, test_merge_by_move_keeps_target_order)
+{
+    for (bool targetAscending : { true, false })
+    {
+        for (bool sourceAscending : { true, false })
+        {
+            areg::SortedLinkedList<int> target(targetAscending);
+            areg::SortedLinkedList<int> source(sourceAscending);
+            for (int value : { 5, 1, 9, 3 })
+                target.add(value);
+            for (int value : { 4, 2, 8, 6 })
+                source.add(value);
+
+            target.merge(std::move(source));
+            ASSERT_EQ(target.size(), 8u);
+            EXPECT_EQ(target.is_ascending(), targetAscending);
+
+            int previous = target.first_entry();
+            for (auto pos = target.next_position(target.first_position()); target.is_valid_position(pos); pos = target.next_position(pos))
+            {
+                const int current = target.value_at(pos);
+                EXPECT_TRUE(targetAscending ? (previous <= current) : (previous >= current));
+                previous = current;
+            }
+        }
+    }
+}
+
+/**
+ * \brief   Test SortedLinkedList merge by move always empties the source and keeps its sort order.
+ **/
+TEST(SortedLinkedListTest, test_merge_by_move_always_empties_source)
+{
+    for (bool targetAscending : { true, false })
+    {
+        for (bool sourceAscending : { true, false })
+        {
+            for (int sourceCount : { 0, 1, 5 })
+            {
+                areg::SortedLinkedList<int> target(targetAscending);
+                areg::SortedLinkedList<int> source(sourceAscending);
+                target.add(7);
+                for (int i = 0; i < sourceCount; ++i)
+                    source.add(i);
+
+                target.merge(std::move(source));
+                EXPECT_TRUE(source.is_empty());
+                EXPECT_EQ(source.is_ascending(), sourceAscending);
+                EXPECT_EQ(target.size(), static_cast<uint32_t>(1 + sourceCount));
+
+                source.add(100);
+                EXPECT_EQ(source.size(), 1u);
+            }
+        }
+    }
+}
+
+/**
+ * \brief   Test SortedLinkedList merge by reference empties the source, also for an empty target and an empty source.
+ **/
+TEST(SortedLinkedListTest, test_merge_by_reference_with_empty_lists)
+{
+    areg::SortedLinkedList<int> target(false);
+    areg::SortedLinkedList<int> source(true);
+    target.merge(source);
+    EXPECT_TRUE(target.is_empty());
+    EXPECT_TRUE(source.is_empty());
+
+    source.add(2);
+    source.add(1);
+    target.merge(source);
+    EXPECT_TRUE(source.is_empty());
+    ASSERT_EQ(target.size(), 2u);
+    EXPECT_EQ(target.first_entry(), 2);
+    EXPECT_EQ(target.last_entry(), 1);
+
+    target.merge(source);
+    EXPECT_EQ(target.size(), 2u);
+}

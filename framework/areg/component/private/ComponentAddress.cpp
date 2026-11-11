@@ -72,7 +72,7 @@ ComponentAddress::ComponentAddress( const ThreadAddress & threadAddress, const S
     , mThreadAddress( threadAddress )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
-    mRoleName.truncate(areg::ITEM_NAMES_MAX_LENGTH);
+    areg::cut_item_name(mRoleName);
     mMagicNum   = ComponentAddress::_magic_number(*this);
 }
 
@@ -81,7 +81,7 @@ ComponentAddress::ComponentAddress( const String & roleName )
     , mThreadAddress( DispatcherThread::current_dispatcher_thread().address() )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
-    mRoleName.truncate(areg::ITEM_NAMES_MAX_LENGTH);
+    areg::cut_item_name(mRoleName);
     Component* comp = Component::find_by_name(roleName);
     if (comp != nullptr)
     {
@@ -93,10 +93,10 @@ ComponentAddress::ComponentAddress( const String & roleName )
 
 ComponentAddress::ComponentAddress( const String & roleName, const String & nameThread )
     : mRoleName     ( roleName.is_empty() ? INVALID_COMPONENT_NAME : roleName)
-    , mThreadAddress( nameThread.is_empty() ? ThreadAddress::invalid_thread_address() : DispatcherThread::dispatcher_thread(areg::crc32_calculate(nameThread.as_string())).address())
+    , mThreadAddress( nameThread.is_empty() ? ThreadAddress::invalid_thread_address() : DispatcherThread::dispatcher_thread(areg::item_name_number(nameThread)).address())
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
-    mRoleName.truncate(areg::ITEM_NAMES_MAX_LENGTH);
+    areg::cut_item_name(mRoleName);
     mMagicNum   = ComponentAddress::_magic_number(*this);
 }
 
@@ -137,6 +137,7 @@ uint32_t ComponentAddress::_magic_number(const ComponentAddress & addrComp) noex
     {
         result = areg::crc32_init();
         result = areg::crc32_start(result, addrComp.mThreadAddress.name().as_string());
+        result = areg::crc32_start(result, areg::NAME_SEPARATOR);
         result = areg::crc32_start(result, addrComp.mRoleName.as_string());
         result = areg::crc32_finish(result);
     }

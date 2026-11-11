@@ -476,3 +476,66 @@ TEST(WaitCoverageTest, microsecond_and_millisecond_waits_report_their_resolution
     EXPECT_EQ(wait.wait_for(areg::Wait::MIN_WAIT), areg::Wait::WaitResolution::Millisecond);
     EXPECT_EQ(wait.wait(5u), areg::Wait::WaitResolution::Millisecond);
 }
+
+/**
+ * \brief   Test every synchronization object is destroyed through the base class pointer, and a locked mutex
+ *          is released by its destructor so that another object of the same kind can be owned.
+ **/
+TEST(SyncPrimitiveCoverageTest, objects_are_destroyed_through_base_pointer)
+{
+    areg::SyncObject* objects[]
+    {
+          new areg::Mutex(true)
+        , new areg::SyncEvent(true, true)
+        , new areg::Semaphore(2, 1)
+        , new areg::CriticalSection()
+        , new areg::SyncTimer(10u)
+    };
+
+    for (areg::SyncObject* object : objects)
+    {
+        ASSERT_NE(object, nullptr);
+        delete object;
+    }
+
+    areg::Lockable* lockables[]{ new areg::Mutex(true), new areg::Semaphore(1, 0), new areg::CriticalSection() };
+    for (areg::Lockable* lockable : lockables)
+        delete lockable;
+}
+
+/**
+ * \brief   Test the destructors run at the end of a scope, for every synchronization object.
+ **/
+TEST(SyncPrimitiveCoverageTest, objects_are_destroyed_at_end_of_scope)
+{
+    do { areg::Mutex mutex(true); } while (false);
+    do { areg::SyncEvent event(false, false); } while (false);
+    do { areg::Semaphore semaphore(3, 3); } while (false);
+    do { areg::CriticalSection section; } while (false);
+    do { areg::SyncTimer timer(5u, true, false, false); } while (false);
+    SUCCEED();
+}
+
+/**
+ * \brief   Test the Wait clock conversion helpers: a converted time point refers to the same moment,
+ *          the distance helpers have the right sign.
+ **/
+TEST(SyncPrimitiveCoverageTest, wait_clock_conversion_and_distance)
+{
+    constexpr auto tolerance{ std::chrono::seconds(1) };
+    const auto steadyNow{ std::chrono::steady_clock::now() };
+    const auto systemNow{ std::chrono::system_clock::now() };
+
+    const auto system{ areg::Wait::convert_to_system_clock(steadyNow + std::chrono::seconds(60)) };
+    EXPECT_LT(system - (systemNow + std::chrono::seconds(60)), tolerance);
+    EXPECT_GT(system - (systemNow + std::chrono::seconds(60)), -tolerance);
+
+    const auto steady{ areg::Wait::convert_to_steady_clock(systemNow + std::chrono::seconds(60)) };
+    EXPECT_LT(steady - (steadyNow + std::chrono::seconds(60)), tolerance);
+    EXPECT_GT(steady - (steadyNow + std::chrono::seconds(60)), -tolerance);
+
+    EXPECT_GT(areg::Wait::from_now(std::chrono::steady_clock::now() + std::chrono::seconds(60)), std::chrono::seconds(50));
+    EXPECT_LT(areg::Wait::from_now(std::chrono::steady_clock::now() - std::chrono::seconds(60)), std::chrono::seconds(-50));
+    EXPECT_GT(areg::Wait::until_now(std::chrono::steady_clock::now() - std::chrono::seconds(60)), std::chrono::seconds(50));
+    EXPECT_LT(areg::Wait::until_now(std::chrono::steady_clock::now() + std::chrono::seconds(60)), std::chrono::seconds(-50));
+}

@@ -30,6 +30,8 @@
 #include <Psapi.h>
 #include <tchar.h>
 
+#include <new>
+
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -63,10 +65,13 @@ String Process::_os_env_variable( const char* var ) const
     uint32_t size = length + 1u;
     if (size > 1)
     {
-        char *buffer = new char[size];
-        ::GetEnvironmentVariableA(var, buffer, length);
-        result = buffer;
-        delete [] buffer;
+        char *buffer = new (std::nothrow) char[size];
+        if (buffer != nullptr)
+        {
+            ::GetEnvironmentVariableA(var, buffer, length);
+            result = buffer;
+            delete [] buffer;
+        }
     }
 
     return result;

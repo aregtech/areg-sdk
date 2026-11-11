@@ -26,6 +26,8 @@
 #include "aregextend/console/Console.hpp"
 #include "aregextend/console/OptionParser.hpp"
 
+#include <new>
+
 /************************************************************************
  * Dependencies.
  ************************************************************************/
@@ -262,7 +264,8 @@ namespace areg::ext {
      *
      * \param   argv    The list of arguments received in 'main' function.
      * \param   argc    The number of arguments in the argument list.
-     * \return  Returns argument list of type 'char'
+     * \return  Returns argument list of type 'char', or null if there is no argument or an
+     *          allocation fails.
      **/
     template<typename CharType>
     inline char** convert_arguments(CharType** argv, int32_t argc);
@@ -334,18 +337,31 @@ inline constexpr const char * as_string( areg::ext::ServicePhase serviceState ) 
 template<typename CharType>
 inline char** convert_arguments(CharType** argv, int32_t argc)
 {
-    char** result = argc != 0 ? new char* [static_cast<uint32_t>(argc)] : nullptr;
-    if (result != nullptr)
+    if ((argv == nullptr) || (argc <= 0))
     {
-        for (uint32_t i = 0; i < static_cast<uint32_t>(argc); ++i)
+        return nullptr;
+    }
+
+    const uint32_t count{ static_cast<uint32_t>(argc) };
+    char** result = new (std::nothrow) char* [count];
+    if (result == nullptr)
+    {
+        return nullptr;
+    }
+
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        const CharType* entry = argv[i];
+        const uint32_t size{ static_cast<uint32_t>(areg::string_length<CharType>(entry)) + 1u };
+        char* arg = new (std::nothrow) char[size];
+        if (arg == nullptr)
         {
-            CharType* entry = argv[i];
-            uint32_t length = static_cast<uint32_t>(areg::string_length<CharType>(entry));
-            uint32_t size = length + 1u;
-            char* arg = new char[size];
-            areg::copy_string<char, CharType>(arg, static_cast<areg::CharCount>(size), entry);
-            result[i] = arg;
+            delete_arguments(result, static_cast<int32_t>(i));
+            return nullptr;
         }
+
+        areg::copy_string<char, CharType>(arg, static_cast<areg::CharCount>(size), entry);
+        result[i] = arg;
     }
 
     return result;

@@ -178,7 +178,8 @@ bool StubAddress::is_proxy_compatible(const ProxyAddress & proxyAddress) const n
 {
     return (is_valid() && proxyAddress.is_valid() &&
            (static_cast<const ServiceAddress &>(*this) == static_cast<const ServiceAddress&>(proxyAddress)) &&
-           is_service_compatible(static_cast<const ServiceItem&>(proxyAddress))) ;
+           is_service_compatible(static_cast<const ServiceItem&>(proxyAddress)) &&
+           !has_name_conflict(static_cast<const ServiceAddress&>(proxyAddress)));
 }
 
 void StubAddress::set_thread(const ThreadAddress& thread)
@@ -199,7 +200,7 @@ void StubAddress::set_thread(const ThreadAddress& thread)
 
 void StubAddress::set_thread(const String& thread)
 {
-    DispatcherThread& dispatcher = DispatcherThread::dispatcher_thread(static_cast<UniqueNumber>(areg::crc32_calculate(thread.as_string())));
+    DispatcherThread& dispatcher = DispatcherThread::dispatcher_thread(static_cast<UniqueNumber>(areg::item_name_number(thread)));
     if (dispatcher.is_valid())
     {
         mChannel.set_source(static_cast<uint32_t>(dispatcher.address()));
@@ -269,6 +270,7 @@ uint32_t StubAddress::_magic_number(const StubAddress & addrStub) noexcept
         result = areg::crc32_start( result, addrStub.mServiceName.as_string() );
         result = areg::crc32_start( result, static_cast<uint8_t>(addrStub.mServiceType) );
         result = areg::crc32_start( result, addrStub.mRoleName.as_string() );
+        result = areg::crc32_start( result, areg::NAME_SEPARATOR );
         result = areg::crc32_start( result, addrStub.mThread.name().as_string());
         result = areg::crc32_finish(result);
     }

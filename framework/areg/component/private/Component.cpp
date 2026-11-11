@@ -22,7 +22,21 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/base/private/NeverDestroyed.hpp"
 
+#include "areg/logging/areg_log.h"
+
 #include <new>
+DEF_LOG_SCOPE(areg_component_Component, _report_refused_role);
+
+namespace
+{
+    //!< Logs that the component of the role name is refused, its number is used by holderName.
+    void _report_refused_role(const areg::String & roleName, const areg::String & holderName)
+    {
+        LOG_SCOPE(areg_component_Component, _report_refused_role);
+        LOG_ERR("The component [ %s ] is refused: its number is used by the component [ %s ], rename one of them", roleName.as_string(), holderName.as_string());
+    }
+}
+
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -47,6 +61,13 @@ Component::MapComponentResource& Component::resource_map() noexcept
 Component* Component::load_component(const areg::ComponentEntry &entry, ComponentThread & componentThread )
 {
     ASSERT(entry.mFuncCreate != nullptr);
+
+    const String holderName{ Component::_other_role_of_number(entry.mRoleName, areg::item_name_number(entry.mRoleName)) };
+    if (holderName.is_empty() == false)
+    {
+        _report_refused_role(entry.mRoleName, holderName);
+        return nullptr;
+    }
 
     Component* component = entry.mFuncCreate(entry, componentThread);
     if (component == nullptr)
@@ -108,7 +129,7 @@ Component::Component( const String & roleName, ComponentThread & ownerThread )
     , mMagicNum     ( Component::_magic_number(self()) )
     , mServerList   ( )
 {
-    Component::resource_map().register_resource_object(mMagicNum, this);
+    _register_component();
 }
 
 Component::Component( const areg::ComponentEntry & regEntry, ComponentThread & ownerThread )
@@ -118,7 +139,7 @@ Component::Component( const areg::ComponentEntry & regEntry, ComponentThread & o
     , mMagicNum     ( Component::_magic_number(self()) )
     , mServerList   ( )
 {
-    Component::resource_map().register_resource_object(mMagicNum, this);
+    _register_component();
 }
 
 Component::Component( const String & roleName )
@@ -128,9 +149,40 @@ Component::Component( const String & roleName )
     , mMagicNum         ( Component::_magic_number(self()) )
     , mServerList       ( )
 {
-    Component::resource_map().register_resource_object(mMagicNum, this);
+    _register_component();
 }
 
+
+String Component::_other_role_of_number(const String & roleName, uint32_t magicNum)
+{
+    MapComponentResource & components{ Component::resource_map() };
+    Lock lock(components.lockable());
+    const Component * holder{ components.find_resource_object(magicNum) };
+    return (((holder != nullptr) && (holder->role_name() != roleName)) ? holder->role_name() : String::empty_string());
+}
+
+void Component::_register_component()
+{
+    String holderName;
+    {
+        MapComponentResource & components{ Component::resource_map() };
+        Lock lock(components.lockable());
+        const Component * holder{ components.find_resource_object(mMagicNum) };
+        if ((holder != nullptr) && (holder->role_name() != role_name()))
+        {
+            holderName = holder->role_name();
+        }
+        else
+        {
+            components.register_resource_object(mMagicNum, this);
+        }
+    }
+
+    if (holderName.is_empty() == false)
+    {
+        _report_refused_role(role_name(), holderName);
+    }
+}
 
 Component::~Component()
 {

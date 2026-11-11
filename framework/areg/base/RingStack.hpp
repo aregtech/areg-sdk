@@ -1111,13 +1111,17 @@ areg::Ordering RingStackBase<VALUE>::_compare_rings( const VALUE* left, uint32_t
 template <typename VALUE>
 void RingStackBase<VALUE>::_copy_stack(const RingStackBase<VALUE>& source)
 {
-    _empty_stack();
+    VALUE* newList{ nullptr };
     if (mCapacity < source.mCapacity)
     {
-        VALUE* newList{ reinterpret_cast<VALUE*>(new (std::nothrow) uint8_t[source.mCapacity * sizeof(VALUE)]) };
+        newList = reinterpret_cast<VALUE*>(new (std::nothrow) uint8_t[source.mCapacity * sizeof(VALUE)]);
         if (newList == nullptr)
             return;
+    }
 
+    _empty_stack();
+    if (newList != nullptr)
+    {
         delete[] reinterpret_cast<uint8_t*>(mStackList);
         mStackList  = newList;
         mCapacity   = source.mCapacity;

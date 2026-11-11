@@ -621,7 +621,8 @@ namespace text_units
     /**
      * \brief   Reads 'units' UTF-16LE units at 'src' of any alignment into 4-byte characters at 'dst'
      *          and returns the characters written. A surrogate pair becomes one character, a lone
-     *          surrogate stays as it is; 'high' carries a high surrogate to the next call.
+     *          surrogate stays as it is; 'high' carries a high surrogate to the next call and
+     *          stays set when 'units' is 0.
      **/
     template<typename CharType>
     inline uint32_t decode(const uint8_t* src, uint32_t units, CharType* dst, uint32_t& high) noexcept
@@ -652,6 +653,9 @@ namespace text_units
         size_t i{ 0u };
         if (high != 0u)
         {
+            if (units == 0u)
+                return 0u;
+
             const uint32_t low{ load(0u) };
             if ((low & 0xFC00u) == 0xDC00u)
             {
@@ -762,21 +766,21 @@ template<typename CharType>
 inline uint32_t areg::InStream::read_text(std::basic_string<CharType>& output) const
 {
     static_assert((sizeof(CharType) == 1u) || (sizeof(CharType) == 2u) || (sizeof(CharType) == 4u), "Unsupported character type");
-    constexpr uint32_t UNIT{ sizeof(CharType) == 1u ? 1u : 2u };
-    constexpr uint32_t HEAD{ static_cast<uint32_t>(sizeof(uint32_t)) };
+    constexpr uint32_t unitSize{ sizeof(CharType) == 1u ? 1u : 2u };
+    constexpr uint32_t headSize{ static_cast<uint32_t>(sizeof(uint32_t)) };
 
     output.clear();
     uint32_t count{ 0u };
-    const uint8_t* const head{ read_view(HEAD) };
+    const uint8_t* const head{ read_view(headSize) };
     if (head != nullptr)
     {
-        std::memcpy(&count, head, HEAD);
+        std::memcpy(&count, head, headSize);
         if (count == 0u)
-            return HEAD;
+            return headSize;
 
-        const uint8_t* const data{ count <= (0xFFFFFFFFu / UNIT) ? read_view(count * UNIT) : nullptr };
+        const uint8_t* const data{ count <= (0xFFFFFFFFu / unitSize) ? read_view(count * unitSize) : nullptr };
         if (data == nullptr)
-            return HEAD + _skip(size_readable());
+            return headSize + _skip(size_readable());
 
         if constexpr (sizeof(CharType) == 1u)
         {
@@ -785,7 +789,7 @@ inline uint32_t areg::InStream::read_text(std::basic_string<CharType>& output) c
         else if constexpr (sizeof(CharType) == 2u)
         {
             output.resize(count);
-            std::memcpy(output.data(), data, static_cast<size_t>(count) * UNIT);
+            std::memcpy(output.data(), data, static_cast<size_t>(count) * unitSize);
         }
         else
         {
@@ -800,39 +804,39 @@ inline uint32_t areg::InStream::read_text(std::basic_string<CharType>& output) c
             output.resize(length);
         }
 
-        return HEAD + count * UNIT;
+        return headSize + count * unitSize;
     }
 
-    const uint32_t done{ read(reinterpret_cast<uint8_t*>(&count), HEAD) };
-    if ((done != HEAD) || (count == 0u))
+    const uint32_t done{ read(reinterpret_cast<uint8_t*>(&count), headSize) };
+    if ((done != headSize) || (count == 0u))
         return done;
 
     const uint32_t readable{ size_readable() };
-    if (count > (readable / UNIT))
-        return HEAD + _skip(readable);
+    if (count > (readable / unitSize))
+        return headSize + _skip(readable);
 
     output.resize(count);
     if constexpr (sizeof(CharType) != 4u)
     {
-        const uint32_t size{ count * UNIT };
+        const uint32_t size{ count * unitSize };
         const uint32_t got{ read(reinterpret_cast<uint8_t*>(output.data()), size) };
-        output.resize(got / UNIT);
-        return HEAD + got;
+        output.resize(got / unitSize);
+        return headSize + got;
     }
     else
     {
         uint8_t bytes[text_units::CHUNK * 2u];
         uint32_t length{ 0u };
         uint32_t high{ 0u };
-        uint32_t result{ HEAD };
+        uint32_t result{ headSize };
         uint32_t left{ count };
         while (left != 0u)
         {
             const uint32_t part{ left < text_units::CHUNK ? left : text_units::CHUNK };
-            const uint32_t got{ read(bytes, part * UNIT) };
+            const uint32_t got{ read(bytes, part * unitSize) };
             result += got;
-            length += text_units::decode(bytes, got / UNIT, output.data() + length, high);
-            if (got != (part * UNIT))
+            length += text_units::decode(bytes, got / unitSize, output.data() + length, high);
+            if (got != (part * unitSize))
                 break;
 
             left -= part;
@@ -886,9 +890,9 @@ template<typename CharType>
 inline uint32_t areg::OutStream::write_text(const CharType* text, uint32_t count)
 {
     static_assert((sizeof(CharType) == 1u) || (sizeof(CharType) == 2u) || (sizeof(CharType) == 4u), "Unsupported character type");
-    constexpr uint32_t UNIT{ sizeof(CharType) == 1u ? 1u : 2u };
-    constexpr uint32_t HEAD{ static_cast<uint32_t>(sizeof(uint32_t)) };
-    constexpr uint32_t MAX_UNITS{ (0xFFFFFFFFu - HEAD) / 4u };
+    constexpr uint32_t unitSize{ sizeof(CharType) == 1u ? 1u : 2u };
+    constexpr uint32_t headSize{ static_cast<uint32_t>(sizeof(uint32_t)) };
+    constexpr uint32_t MAX_UNITS{ (0xFFFFFFFFu - headSize) / 4u };
 
     if (text == nullptr)
     {
@@ -905,30 +909,30 @@ inline uint32_t areg::OutStream::write_text(const CharType* text, uint32_t count
         units = text_units::count_units(text, count, simple);
     }
 
-    const uint32_t bytes{ units * UNIT };
-    uint8_t* const dst{ write_view(HEAD + bytes) };
+    const uint32_t bytes{ units * unitSize };
+    uint8_t* const dst{ write_view(headSize + bytes) };
     if (dst != nullptr)
     {
-        std::memcpy(dst, &units, HEAD);
+        std::memcpy(dst, &units, headSize);
         if constexpr (sizeof(CharType) != 4u)
         {
             if (bytes != 0u)
             {
-                std::memcpy(dst + HEAD, text, bytes);
+                std::memcpy(dst + headSize, text, bytes);
             }
         }
         else
         {
-            text_units::encode(text, count, dst + HEAD, simple);
+            text_units::encode(text, count, dst + headSize, simple);
         }
 
-        return HEAD + bytes;
+        return headSize + bytes;
     }
 
-    if (write(reinterpret_cast<const uint8_t*>(&units), HEAD) != HEAD)
+    if (write(reinterpret_cast<const uint8_t*>(&units), headSize) != headSize)
         return 0u;
 
-    return HEAD + write_units(text, count);
+    return headSize + write_units(text, count);
 }
 
 template<typename CharType>

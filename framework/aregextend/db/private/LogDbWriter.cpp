@@ -20,6 +20,8 @@
 #include "aregextend/db/LogSqliteDatabase.hpp"
 #include "areg/base/DateTime.hpp"
 
+#include <new>
+
 namespace {
     //! The number given to the next writer thread, so that each thread has its own name.
     std::atomic<uint32_t>   _writerThreadSeq    { 0u };
@@ -198,10 +200,15 @@ uint32_t LogDbWriter::queue_marker(uint32_t masterId, areg::LogPriority level, c
 
         markerId = mNextMarkerId ++;
         Record record;
-        record.recTask = std::make_unique<Task>([markerId, masterId, level, author, note, timeSet](LogSqliteDatabase & database)
+        record.recTask.reset(new (std::nothrow) Task([markerId, masterId, level, author, note, timeSet](LogSqliteDatabase & database)
             {
                 database.insert_marker(markerId, masterId, level, author, note, timeSet);
-            });
+            }));
+        if (record.recTask == nullptr)
+        {
+            -- mNextMarkerId;
+            return 0u;
+        }
 
         wake = _push(std::move(record));
     } while (false);
@@ -228,7 +235,10 @@ bool LogDbWriter::queue_task(Task && task)
             return false;
 
         Record record;
-        record.recTask = std::make_unique<Task>(std::move(task));
+        record.recTask.reset(new (std::nothrow) Task(std::move(task)));
+        if (record.recTask == nullptr)
+            return false;
+
         wake = _push(std::move(record));
     } while (false);
 
