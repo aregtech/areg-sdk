@@ -30,7 +30,7 @@ DEF_LOG_SCOPE(areg_component_Component, _report_refused_role);
 namespace
 {
     //!< Logs that the component of the role name is refused, its number is used by holderName.
-    void _report_refused_role(const areg::String & roleName, const areg::String & holderName)
+    void _report_refused_role([[maybe_unused]] const areg::String & roleName, [[maybe_unused]] const areg::String & holderName)
     {
         LOG_SCOPE(areg_component_Component, _report_refused_role);
         LOG_ERR("The component [ %s ] is refused: its number is used by the component [ %s ], rename one of them", roleName.as_string(), holderName.as_string());

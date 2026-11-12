@@ -470,8 +470,13 @@ TEST(RuntimeObjectTest, non_throwing_deallocation_functions_free_memory)
 TEST(RuntimeObjectTest, placement_delete_functions_do_nothing)
 {
     alignas(RtAlpha) unsigned char storage[sizeof(RtAlpha)];
-    void * place{ static_cast<void *>(storage) };
+    std::memset(storage, 0xA5, sizeof(storage));
+    // A volatile pointer keeps GCC from reporting a free of a stack buffer.
+    void * volatile place{ static_cast<void *>(storage) };
     RtAlpha::operator delete(place, place);
     RtAlpha::operator delete[](place, place);
-    EXPECT_EQ(place, static_cast<void *>(storage));
+
+    unsigned char expected[sizeof(RtAlpha)];
+    std::memset(expected, 0xA5, sizeof(expected));
+    EXPECT_EQ(std::memcmp(storage, expected, sizeof(storage)), 0);
 }
