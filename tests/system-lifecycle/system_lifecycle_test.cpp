@@ -13,6 +13,8 @@
  *   double-unload      two threads unload the same model at the same time
  *   start-hang-exit    a component that hangs in its startup ends the process
  *   start-hang-ignore  a component that hangs in its startup is abandoned and the waiting load returns
+ *   start-hang-register a provider that hangs in its startup before it registers is abandoned;
+ *                      its registration reaches no consumer, a new instance does
  *   stop-hang-exit     a component that hangs in its shutdown ends the process
  *   stop-hang-ignore   a component that hangs in its shutdown is abandoned and the unload returns
  *   own-unload         a component unloads its own model without waiting for itself
@@ -117,6 +119,7 @@ namespace
         bool        blockOnExit     { true };   //!< The blocker returns when asked to exit, else it is held.
         uint32_t    blockInstance   { 0 };      //!< The only instance that blocks, 0 for every one.
         bool        holdStartup     { false };  //!< The component is held in its startup.
+        bool        holdBeforeBase  { false };  //!< The startup hold comes before the base startup registers the services.
         uint32_t    startupInstance { 0 };      //!< The only instance held in its startup, 0 for every one.
         bool        holdShutdown    { false };  //!< The component is held in its shutdown.
         const char* selfUnload      { nullptr };//!< The model a component unloads from its own thread.
@@ -132,6 +135,8 @@ namespace
     std::atomic_uint32_t    gCustomDeletes  { 0 };
     std::atomic_uint32_t    gSelfUnloadMs   { 0 };
     std::atomic_uint32_t    gSelfPostMs     { 0 };
+    //!< The providers deleted while their thread still listed their probe listener.
+    std::atomic_uint32_t    gStaleListeners { 0 };
 
     Gate                    gStarted;
     Gate                    gDeletedGate;
@@ -189,6 +194,39 @@ public:
 
 AREG_DECLARE_EVENT(BlockData, BlockEvent, BlockConsumer);
 
+class ProbeData
+{
+public:
+    ProbeData() = default;
+    ProbeData(const ProbeData & /*src*/) = default;
+    ProbeData & operator = (const ProbeData & /*src*/) = default;
+};
+
+AREG_DECLARE_EVENT(ProbeData, ProbeEvent, ProbeConsumer);
+
+//!< A listener that knows whether a dispatcher lists it.
+class SlProbe final : public ProbeConsumer
+{
+public:
+    bool is_listed() const
+    {
+        return mListed;
+    }
+
+protected:
+    void process_event(const ProbeData & /*data*/) override
+    {
+    }
+
+    void consumer_registered(bool isRegistered) override
+    {
+        mListed = isRegistered;
+    }
+
+private:
+    bool    mListed{ false };   //!< True while a dispatcher lists the listener.
+};
+
 //////////////////////////////////////////////////////////////////////////
 // Components
 //////////////////////////////////////////////////////////////////////////
@@ -211,8 +249,14 @@ public:
 
     void startup_component(areg::ComponentThread & comThread) override
     {
+        const bool held{ gBehaviour.holdStartup && ((gBehaviour.startupInstance == 0) || (gBehaviour.startupInstance == mInstance)) };
+        if (held && gBehaviour.holdBeforeBase)
+        {
+            _hold();
+        }
+
         areg::Component::startup_component(comThread);
-        if (gBehaviour.holdStartup && ((gBehaviour.startupInstance == 0) || (gBehaviour.startupInstance == mInstance)))
+        if (held && (gBehaviour.holdBeforeBase == false))
         {
             _hold();
         }
@@ -242,7 +286,28 @@ public:
     SlProvider(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
         : SlCounted                 ( entry, owner )
         , HelloServiceProviderBase  ( static_cast<areg::Component &>(*this) )
+        , mProbe                    ( )
     {
+    }
+
+    ~SlProvider() override
+    {
+        if (mProbe.is_listed())
+        {
+            gStaleListeners.fetch_add(1);
+        }
+    }
+
+    void startup_component(areg::ComponentThread & comThread) override
+    {
+        SlCounted::startup_component(comThread);
+        static_cast<void>(ProbeEvent::add_listener(mProbe, comThread));
+    }
+
+    void shutdown_component(areg::ComponentThread & comThread) override
+    {
+        static_cast<void>(ProbeEvent::remove_listener(mProbe, comThread));
+        SlCounted::shutdown_component(comThread);
     }
 
 protected:
@@ -255,6 +320,9 @@ protected:
 
         response_hello_service();
     }
+
+private:
+    SlProbe mProbe; //!< Listed by the provider thread from the startup to the shutdown.
 };
 
 //!< The consumer of the hello service; it sends a request on every connection.
@@ -532,6 +600,30 @@ BEGIN_MODEL("SlStartIgnoreModel")
         END_REGISTER_COMPONENT("SlStartIgnorePlain")
     END_REGISTER_THREAD("SlStartIgnoreThread")
 END_MODEL("SlStartIgnoreModel")
+}
+
+namespace model_18
+{
+BEGIN_MODEL("SlLateProviderModel")
+    BEGIN_REGISTER_THREAD("SlLateProviderThread")
+        SL_LIFECYCLE(LIFECYCLE_MS)
+        SL_POLICY(areg::FailurePolicy::Ignore)
+        BEGIN_REGISTER_COMPONENT("SlLateProvider", SlProvider)
+            REGISTER_IMPLEMENT_SERVICE(HelloService::ServiceName, HelloService::InterfaceVersion)
+        END_REGISTER_COMPONENT("SlLateProvider")
+    END_REGISTER_THREAD("SlLateProviderThread")
+END_MODEL("SlLateProviderModel")
+}
+
+namespace model_19
+{
+BEGIN_MODEL("SlLateClientModel")
+    BEGIN_REGISTER_THREAD("SlLateClientThread")
+        BEGIN_REGISTER_COMPONENT("SlLateClient", SlClient)
+            REGISTER_DEPENDENCY("SlLateProvider")
+        END_REGISTER_COMPONENT("SlLateClient")
+    END_REGISTER_THREAD("SlLateClientThread")
+END_MODEL("SlLateClientModel")
 }
 
 namespace model_8
@@ -870,6 +962,39 @@ static bool start_hang_ignore()
     _print_counts();
     printf("loaded %d after %u ms, abandoned %d, freed before unload %d\n", loaded ? 1 : 0, loadMs, abandoned ? 1 : 0, freed ? 1 : 0);
     return loaded && (loadMs >= LIFECYCLE_MS) && (loadMs < HANG_MS) && abandoned && freed && (gDeleted.load() == 1);
+}
+
+//!< The provider hangs in its startup before it registers; policy Ignore: the abandoned thread registers in vain.
+static bool start_hang_register()
+{
+#ifdef THREAD_FAILURE_POLICY
+    gBehaviour.holdStartup = true;
+    gBehaviour.holdBeforeBase = true;
+    gBehaviour.startupInstance = 1;
+    areg::Application::setup(false, true, false, true, true, nullptr);
+    bool ok{ areg::Application::load_model("SlLateClientModel", true) };
+    const bool loaded{ areg::Application::load_model("SlLateProviderModel", true) };
+    const bool abandoned{ _is_abandoned("SlLateProviderThread") };
+    // The released startup registers the provider, then the thread is freed.
+    _release();
+    const bool freed{ gDeletedGate.wait_for(1) };
+    // The unload delivers the rest of the consumer queue: a connection the registry made is counted.
+    areg::Application::unload_model("SlLateClientModel");
+    const uint32_t abandonedConnects{ gConnects.load() };
+    areg::Application::unload_model("SlLateProviderModel");
+    // The second instance does not hang and connects the consumer.
+    ok = ok && areg::Application::load_model("SlLateClientModel", true) && areg::Application::load_model("SlLateProviderModel", true);
+    const bool connected{ ok && gConnectedGate.wait_for(1) };
+    areg::Application::release();
+    _print_counts();
+    printf("loaded %d, abandoned %d, freed %d, connects of the abandoned provider %u, new instance connected %d, stale listeners %u\n"
+            , loaded ? 1 : 0, abandoned ? 1 : 0, freed ? 1 : 0, abandonedConnects, connected ? 1 : 0, gStaleListeners.load());
+    return ok && loaded && abandoned && freed && (abandonedConnects == 0) && connected && (gStaleListeners.load() == 0)
+        && (gConnects.load() == 1) && (gCreated.load() == 2) && (gDeleted.load() == 2);
+#else   // THREAD_FAILURE_POLICY
+    printf("thread_state() does not exist on this tree\n");
+    return false;
+#endif  // THREAD_FAILURE_POLICY
 }
 
 //!< The instance a restart created hangs in its startup; policy Restart: it is replaced as well.
@@ -1236,6 +1361,10 @@ int main(int argc, char * argv[])
     else if (std::strcmp(name, "start-hang-ignore") == 0)
     {
         ok = start_hang_ignore();
+    }
+    else if (std::strcmp(name, "start-hang-register") == 0)
+    {
+        ok = start_hang_register();
     }
     else if (std::strcmp(name, "start-hang-restart") == 0)
     {

@@ -43,8 +43,8 @@ bool ClientReceiveThread::run_dispatcher()
     ready_for_events( true );
 
     // Send connect handshake
-    bool connected{ mConnection.connect_socket() };
-    if ( connected && mHandshakeMsg.is_valid() )
+    bool connected{ mConnection.connect_socket() && mHandshakeMsg.is_valid() };
+    if ( connected )
     {
         connected = (mConnection.send_message( mHandshakeMsg ) > 0);
         mHandshakeMsg.invalidate();

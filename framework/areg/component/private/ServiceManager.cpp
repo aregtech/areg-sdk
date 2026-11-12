@@ -24,6 +24,7 @@
 #include "areg/base/private/NeverDestroyed.hpp"
 
 #include <cstdlib>
+#include <mutex>
 #include <string_view>
 
 namespace
@@ -42,6 +43,7 @@ DEF_LOG_SCOPE(areg_component_private_ServiceManager, request_register_consumer);
 DEF_LOG_SCOPE(areg_component_private_ServiceManager, request_unregister_consumer);
 DEF_LOG_SCOPE(areg_component_private_ServiceManager, request_load_model);
 DEF_LOG_SCOPE(areg_component_private_ServiceManager, request_unload_model);
+DEF_LOG_SCOPE(areg_component_private_ServiceManager, _process_reconcile);
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceManager class Implementation
@@ -107,10 +109,10 @@ const Channel& ServiceManager::connection_channel() noexcept
     return ServiceManager::instance().mServiceClient.connection_channel();
 }
 
-void ServiceManager::request_register_provider( const StubAddress & whichServer )
+bool ServiceManager::request_register_provider( const StubAddress & whichServer )
 {
     if ( SystemController::is_caller_abandoned( ) )
-        return;
+        return false;
 
     LOG_SCOPE( areg_component_private_ServiceManager, request_register_provider);
     LOG_DBG("Request to register server [ %s ] of interface [ %s ]", whichServer.role_name().as_string(), whichServer.service_name().as_string());
@@ -118,15 +120,22 @@ void ServiceManager::request_register_provider( const StubAddress & whichServer 
     ASSERT(whichServer.is_valid());
 
     ServiceManager & serviceManager = ServiceManager::instance();
-    ServiceManagerEvent::send_event( ServiceManagerEventData::register_stub(whichServer)
-                                  , static_cast<ServiceManagerEventConsumer &>(serviceManager)
-                                  , static_cast<DispatcherThread &>(serviceManager));
+    const ServiceManagerEventData data{ ServiceManagerEventData::register_stub(whichServer) };
+    const bool posted{ data.is_valid() && ServiceManagerEvent::send_event( data
+                                                                         , static_cast<ServiceManagerEventConsumer &>(serviceManager)
+                                                                         , static_cast<DispatcherThread &>(serviceManager)) };
+    if ( posted == false )
+    {
+        LOG_ERR("The request to register the provider [ %s ] is not posted", whichServer.role_name().as_string());
+    }
+
+    return posted;
 }
 
-void ServiceManager::request_unregister_provider( const StubAddress & whichServer, const areg::DisconnectReason reason )
+bool ServiceManager::request_unregister_provider( const StubAddress & whichServer, const areg::DisconnectReason reason )
 {
     if ( SystemController::is_caller_abandoned( ) )
-        return;
+        return false;
 
     LOG_SCOPE( areg_component_private_ServiceManager, request_unregister_provider);
     LOG_DBG( "Request to unregister server [ %s ] of interface [ %s ]", whichServer.role_name( ).as_string( ), whichServer.service_name( ).as_string( ) );
@@ -134,15 +143,27 @@ void ServiceManager::request_unregister_provider( const StubAddress & whichServe
     ASSERT(whichServer.is_valid());
     
     ServiceManager & serviceManager = ServiceManager::instance();
-    ServiceManagerEvent::send_event( ServiceManagerEventData::unregister_stub(whichServer, reason)
-                                  , static_cast<ServiceManagerEventConsumer &>(serviceManager)
-                                  , static_cast<DispatcherThread &>(serviceManager));
+    const ServiceManagerEventData data{ ServiceManagerEventData::unregister_stub(whichServer, reason) };
+    const bool posted{ data.is_valid() && ServiceManagerEvent::send_event( data
+                                                                         , static_cast<ServiceManagerEventConsumer &>(serviceManager)
+                                                                         , static_cast<DispatcherThread &>(serviceManager)) };
+    if ( posted == false )
+    {
+        LOG_ERR("The request to unregister the provider [ %s ] is not posted", whichServer.role_name().as_string());
+        if ( serviceManager.is_ready( ) )
+        {
+            serviceManager._defer_unregister( static_cast<uint32_t>(whichServer), whichServer.cookie( ), reason, true );
+            return true;
+        }
+    }
+
+    return posted;
 }
 
-void ServiceManager::request_register_consumer( const ProxyAddress & whichClient )
+bool ServiceManager::request_register_consumer( const ProxyAddress & whichClient )
 {
     if ( SystemController::is_caller_abandoned( ) )
-        return;
+        return false;
 
     LOG_SCOPE( areg_component_private_ServiceManager, request_register_consumer);
 
@@ -151,15 +172,22 @@ void ServiceManager::request_register_consumer( const ProxyAddress & whichClient
     ASSERT(whichClient.is_valid());
     
     ServiceManager & serviceManager = ServiceManager::instance();
-    ServiceManagerEvent::send_event( ServiceManagerEventData::register_proxy(whichClient)
-                                  , static_cast<ServiceManagerEventConsumer &>(serviceManager)
-                                  , static_cast<DispatcherThread &>(serviceManager));
+    const ServiceManagerEventData data{ ServiceManagerEventData::register_proxy(whichClient) };
+    const bool posted{ data.is_valid() && ServiceManagerEvent::send_event( data
+                                                                         , static_cast<ServiceManagerEventConsumer &>(serviceManager)
+                                                                         , static_cast<DispatcherThread &>(serviceManager)) };
+    if ( posted == false )
+    {
+        LOG_ERR("The request to register the consumer [ %s ] is not posted", whichClient.role_name().as_string());
+    }
+
+    return posted;
 }
 
-void ServiceManager::request_unregister_consumer( const ProxyAddress & whichClient, const areg::DisconnectReason reason )
+bool ServiceManager::request_unregister_consumer( const ProxyAddress & whichClient, const areg::DisconnectReason reason )
 {
     if ( SystemController::is_caller_abandoned( ) )
-        return;
+        return false;
 
     LOG_SCOPE( areg_component_private_ServiceManager, request_unregister_consumer);
     LOG_DBG( "Request to unregister proxy [ %s ] of interface [ %s ]", whichClient.role_name( ).as_string( ), whichClient.service_name( ).as_string( ) );
@@ -167,9 +195,39 @@ void ServiceManager::request_unregister_consumer( const ProxyAddress & whichClie
     ASSERT(whichClient.is_valid());
     
     ServiceManager & serviceManager = ServiceManager::instance();
-    ServiceManagerEvent::send_event( ServiceManagerEventData::unregister_proxy(whichClient, reason)
-                                  , static_cast<ServiceManagerEventConsumer &>(serviceManager)
-                                  , static_cast<DispatcherThread &>(serviceManager));
+    const ServiceManagerEventData data{ ServiceManagerEventData::unregister_proxy(whichClient, reason) };
+    const bool posted{ data.is_valid() && ServiceManagerEvent::send_event( data
+                                                                         , static_cast<ServiceManagerEventConsumer &>(serviceManager)
+                                                                         , static_cast<DispatcherThread &>(serviceManager)) };
+    if ( posted == false )
+    {
+        LOG_ERR("The request to unregister the consumer [ %s ] is not posted", whichClient.role_name().as_string());
+        if ( serviceManager.is_ready( ) )
+        {
+            serviceManager._defer_unregister( static_cast<uint32_t>(whichClient), whichClient.cookie( ), reason, false );
+            return true;
+        }
+    }
+
+    return posted;
+}
+
+namespace
+{
+    //!< True if the start of this component thread was marked as failed.
+    thread_local bool _startupFailed{ false };
+}
+
+void ServiceManager::report_startup_failure() noexcept
+{
+    _startupFailed = true;
+}
+
+bool ServiceManager::take_startup_failure() noexcept
+{
+    const bool result{ _startupFailed };
+    _startupFailed = false;
+    return result;
 }
 
 bool ServiceManager::request_load_model( const String & modelName, bool waitComponents )
@@ -291,7 +349,7 @@ bool ServiceManager::_routing_service_start( uint32_t connectTypes )
 {
     ServiceManager & serviceManager = ServiceManager::instance();
     ServiceManagerEventData data(ServiceManagerEventData::start_connection(areg::RemoteServiceKind::Router, connectTypes));
-    return ServiceManagerEvent::send_event( data
+    return data.is_valid() && ServiceManagerEvent::send_event( data
                                          , static_cast<ServiceManagerEventConsumer &>(serviceManager)
                                          , static_cast<DispatcherThread &>(serviceManager));
 }
@@ -300,9 +358,8 @@ void ServiceManager::_routing_service_stop()
 {
     ServiceManager & serviceManager = ServiceManager::instance();
     serviceManager.mStopRequests.fetch_add(1u, std::memory_order_acq_rel);
-    const bool posted{ ServiceManagerEvent::send_event( ServiceManagerEventData::stop_connection()
-                                                       , static_cast<ServiceManagerEventConsumer &>(serviceManager)
-                                                       , static_cast<DispatcherThread &>(serviceManager)) };
+    Event stop{ serviceManager.mStopConnectionEvent };
+    const bool posted{ serviceManager.is_ready() && stop.is_valid() && stop.deliver_event() };
     if (posted == false)
     {
         serviceManager.mStopRequests.fetch_sub(1u, std::memory_order_acq_rel);
@@ -342,8 +399,16 @@ ServiceManager::ServiceManager()
     , mRouterStopping   ( false )
     , mStopRequests     ( 0u )
     , mDeferredStart    ( )
+    , mReconcilePosted  ( false )
     , mExitAfterRouter  ( false )
     , mShutdownEvent    ( )
+    , mClientStoppedEvent ( )
+    , mStopConnectionEvent( )
+    , mReconcileEvent   ( )
+    , mPending          { }
+    , mPendingCount     ( 0u )
+    , mPendingOverflow  ( false )
+    , mPendingLock      ( )
     , mLock             (  )
 {
 }
@@ -360,6 +425,12 @@ void ServiceManager::process_event( const ServiceManagerEventData & data )
 
     if ( _process_router_command( data ) )
         return;
+
+    if ( cmdService == ServiceManagerEventData::ServiceManagerCommand::CMD_Reconcile )
+    {
+        _process_reconcile( );
+        return;
+    }
 
     const InStream & stream{ data.read_stream( ) };
     switch ( cmdService )
@@ -455,14 +526,32 @@ bool ServiceManager::_start_manager_thread()
         return true;
 
     ServiceManagerEvent shutdown( ServiceManagerEventData::shutdown_service_manager( ), static_cast<ServiceManagerEventConsumer &>(self( )) );
-    if ((shutdown.is_valid() == false) || (mController.start() == false))
+    ServiceManagerEvent stopped( ServiceManagerEventData::router_client_stopped( ), static_cast<ServiceManagerEventConsumer &>(self( )), areg::EventPriority::HighPrio );
+    ServiceManagerEvent stopConnection( ServiceManagerEventData::stop_connection( ), static_cast<ServiceManagerEventConsumer &>(self( )) );
+    ServiceManagerEvent reconcile( ServiceManagerEventData::reconcile( ), static_cast<ServiceManagerEventConsumer &>(self( )) );
+    if ((shutdown.is_valid() == false) || (stopped.is_valid() == false) || (stopConnection.is_valid() == false) || (reconcile.is_valid() == false) || (mController.start() == false))
         return false;
+
+    // The target is written once: the copies posted later share this header.
+    stopped.set_target_dispatcher(static_cast<DispatcherThread *>(this));
+    stopConnection.set_target_dispatcher(static_cast<DispatcherThread *>(this));
+    reconcile.set_target_dispatcher(static_cast<DispatcherThread *>(this));
 
     mExitAfterRouter = false;
     mDeferredStart.reset();
     mRouterStopping.store(false, std::memory_order_release);
     mStopRequests.store(0u, std::memory_order_release);
+    do
+    {
+        std::lock_guard<PlainSpinLock> lock(mPendingLock);
+        mPendingCount = 0u;
+        mPendingOverflow = false;
+    } while (false);
+    mReconcilePosted.store(false, std::memory_order_release);
     mShutdownEvent = std::move(shutdown);
+    mClientStoppedEvent = std::move(stopped);
+    mStopConnectionEvent = std::move(stopConnection);
+    mReconcileEvent = std::move(reconcile);
     return (start(areg::DO_NOT_WAIT) && wait_start(areg::WAIT_INFINITE));
 }
 
@@ -564,24 +653,87 @@ bool ServiceManager::_process_router_command( const ServiceManagerEventData & da
     }
 }
 
+void ServiceManager::_defer_unregister( uint32_t number, const ITEM_ID & cookie, areg::DisconnectReason reason, bool provider ) noexcept
+{
+    do
+    {
+        std::lock_guard<PlainSpinLock> lock( mPendingLock );
+        if ( mPendingCount < PENDING_CAPACITY )
+        {
+            mPending[ mPendingCount ++ ] = PendingUnregister{ number, cookie, reason, provider };
+        }
+        else
+        {
+            mPendingOverflow = true;
+        }
+    } while ( false );
+
+    if ( mReconcilePosted.exchange( true, std::memory_order_acq_rel ) == false )
+    {
+        Event reconcile{ mReconcileEvent };
+        if ( (reconcile.is_valid( ) == false) || (reconcile.deliver_event( ) == false) )
+        {
+            mReconcilePosted.store( false, std::memory_order_release );
+        }
+    }
+}
+
+void ServiceManager::_process_reconcile()
+{
+    LOG_SCOPE( areg_component_private_ServiceManager, _process_reconcile );
+
+    // Cleared first: an unregister deferred during the work posts a new request.
+    mReconcilePosted.store( false, std::memory_order_release );
+
+    PendingUnregister records[ PENDING_CAPACITY ];
+    uint32_t count{ 0u };
+    bool overflow{ false };
+    do
+    {
+        std::lock_guard<PlainSpinLock> lock( mPendingLock );
+        count = mPendingCount;
+        overflow = mPendingOverflow;
+        for ( uint32_t i = 0u; i < count; ++ i )
+        {
+            records[ i ] = mPending[ i ];
+        }
+
+        mPendingCount = 0u;
+        mPendingOverflow = false;
+    } while ( false );
+
+    LOG_WARN( "Applying [ %u ] unregisters whose events could not be built", count );
+    for ( uint32_t i = 0u; i < count; ++ i )
+    {
+        const PendingUnregister & record{ records[ i ] };
+        mEventProcessor.unregister_by_number( record.mNumber, record.mCookie, record.mReason, record.mProvider, service_register_provider( ) );
+    }
+
+    if ( overflow )
+    {
+        LOG_ERR( "More than [ %u ] unregisters could not be built, the remote ones are lost", PENDING_CAPACITY );
+        mEventProcessor.unregister_missing_local( service_register_provider( ) );
+    }
+}
+
 void ServiceManager::on_provider_registered( const StubAddress & stub )
 {
-    ServiceManager::request_register_provider(stub);
+    static_cast<void>(ServiceManager::request_register_provider(stub));
 }
 
 void ServiceManager::on_consumer_registered(const ProxyAddress & proxy)
 {
-    ServiceManager::request_register_consumer(proxy);
+    static_cast<void>(ServiceManager::request_register_consumer(proxy));
 }
 
 void ServiceManager::on_provider_unregistered(const StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & /*cookie*/ /*= areg::COOKIE_ANY*/ )
 {
-    ServiceManager::request_unregister_provider(stub, reason);
+    static_cast<void>(ServiceManager::request_unregister_provider(stub, reason));
 }
 
 void ServiceManager::on_consumer_unregistered(const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & /* cookie */ /*= areg::COOKIE_ANY*/ )
 {
-    ServiceManager::request_unregister_consumer(proxy, reason);
+    static_cast<void>(ServiceManager::request_unregister_consumer(proxy, reason));
 }
 
 void ServiceManager::on_service_channel_connected(const Channel & channel)
@@ -610,10 +762,8 @@ void ServiceManager::on_service_channel_lost(const Channel & channel)
 
 void ServiceManager::on_router_client_stopped() noexcept
 {
-    ServiceManagerEvent::send_event( ServiceManagerEventData::router_client_stopped()
-                                  , static_cast<ServiceManagerEventConsumer &>(self())
-                                  , static_cast<DispatcherThread &>(self())
-                                  , areg::EventPriority::HighPrio );
+    Event stopped{ mClientStoppedEvent };
+    static_cast<void>(stopped.is_valid() && stopped.deliver_event());
 }
 
 } // namespace areg

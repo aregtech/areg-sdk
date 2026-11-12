@@ -42,6 +42,7 @@ DEF_LOG_SCOPE(areg_component_private_ServiceManagerEventProcessor, _send_connect
 DEF_LOG_SCOPE(areg_component_private_ServiceManagerEventProcessor, _send_disconnected);
 DEF_LOG_SCOPE(areg_component_private_ServiceManagerEventProcessor, _send_provider_disconnected);
 DEF_LOG_SCOPE(areg_component_private_ServiceManagerEventProcessor, unregister_thread_services);
+DEF_LOG_SCOPE(areg_component_private_ServiceManagerEventProcessor, unregister_missing_local);
 
 namespace areg {
 
@@ -70,7 +71,10 @@ void ServiceManagerEventProcessor::process_service_event( ServiceManagerEventDat
             Channel       channel;
             addrProxy.from_stream(stream) >> channel;
             addrProxy.set_channel( channel );
-            _register_consumer( addrProxy, registerProvider);
+            if ( addrProxy.is_valid( ) )
+            {
+                _register_consumer( addrProxy, registerProvider);
+            }
         }
         break;
 
@@ -81,7 +85,10 @@ void ServiceManagerEventProcessor::process_service_event( ServiceManagerEventDat
             areg::DisconnectReason reason{areg::DisconnectReason::UndefinedReason};
             addrProxy.from_stream(stream) >> channel >> reason;
             addrProxy.set_channel( channel );
-            _unregister_consumer( addrProxy, reason, registerProvider);
+            if ( addrProxy.is_valid( ) )
+            {
+                _unregister_consumer( addrProxy, reason, registerProvider);
+            }
         }
         break;
 
@@ -91,7 +98,10 @@ void ServiceManagerEventProcessor::process_service_event( ServiceManagerEventDat
             Channel       channel;
             addrstub.from_stream(stream) >> channel;
             addrstub.set_channel( channel );
-            _register_provider( addrstub, registerProvider);
+            if ( addrstub.is_valid( ) )
+            {
+                _register_provider( addrstub, registerProvider);
+            }
         }
         break;
 
@@ -102,7 +112,10 @@ void ServiceManagerEventProcessor::process_service_event( ServiceManagerEventDat
             areg::DisconnectReason reason{areg::DisconnectReason::UndefinedReason};
             addrstub.from_stream(stream) >> channel >> reason;
             addrstub.set_channel( channel );
-            _unregister_provider( addrstub, reason, registerProvider);
+            if ( addrstub.is_valid( ) )
+            {
+                _unregister_provider( addrstub, reason, registerProvider);
+            }
         }
         break;
 
@@ -448,6 +461,76 @@ void ServiceManagerEventProcessor::unregister_thread_services( const ThreadAddre
     for ( uint32_t i = 0; i < proxyList.size( ); ++ i )
     {
         _unregister_consumer( proxyList[ i ], reason, registerProvider );
+    }
+}
+
+void ServiceManagerEventProcessor::unregister_by_number( uint32_t number, const ITEM_ID & cookie, areg::DisconnectReason reason, bool provider, RegistrationProvider & registerProvider )
+{
+    for ( ServerList::MAPPOS posMap = mServerList.first_position( ); mServerList.is_valid_position( posMap ); posMap = mServerList.next_position( posMap ) )
+    {
+        const ServerInfo & server = mServerList.key_at( posMap );
+        if ( provider )
+        {
+            if ( server.is_connected( ) && (static_cast<uint32_t>(server.address( )) == number) && (server.address( ).cookie( ) == cookie) )
+            {
+                const StubAddress found{ server.address( ) };
+                _unregister_provider( found, reason, registerProvider );
+                return;
+            }
+
+            continue;
+        }
+
+        const ClientList & clientList = mServerList.value_at( posMap );
+        for ( ClientList::LISTPOS pos = clientList.first_position( ); clientList.is_valid_position( pos ); pos = clientList.next_position( pos ) )
+        {
+            const ProxyAddress & proxy = clientList.value_at( pos ).address( );
+            if ( (static_cast<uint32_t>(proxy) == number) && (proxy.cookie( ) == cookie) )
+            {
+                const ProxyAddress found{ proxy };
+                _unregister_consumer( found, reason, registerProvider );
+                return;
+            }
+        }
+    }
+}
+
+void ServiceManagerEventProcessor::unregister_missing_local( RegistrationProvider & registerProvider )
+{
+    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor, unregister_missing_local );
+
+    // Snapshot to copies; removing from live lists would invalidate iterators.
+    ArrayList<StubAddress> stubList;
+    ArrayList<ProxyAddress> proxyList;
+    for ( ServerList::MAPPOS posMap = mServerList.first_position( ); mServerList.is_valid_position( posMap ); posMap = mServerList.next_position( posMap ) )
+    {
+        const ServerInfo & server = mServerList.key_at( posMap );
+        const ClientList & clientList = mServerList.value_at( posMap );
+        if ( server.is_connected( ) && server.address( ).is_local_address( ) && (StubBase::find_stub( server.address( ) ) == nullptr) )
+        {
+            stubList.add( server.address( ) );
+        }
+
+        for ( ClientList::LISTPOS pos = clientList.first_position( ); clientList.is_valid_position( pos ); pos = clientList.next_position( pos ) )
+        {
+            const ProxyAddress & proxy = clientList.value_at( pos ).address( );
+            if ( proxy.is_local_address( ) && (ProxyBase::find_proxy( proxy ) == nullptr) )
+            {
+                proxyList.add( proxy );
+            }
+        }
+    }
+
+    LOG_WARN( "Unregistering [ %u ] local providers and [ %u ] local consumers that have no object", stubList.size( ), proxyList.size( ) );
+
+    for ( uint32_t i = 0; i < stubList.size( ); ++ i )
+    {
+        _unregister_provider( stubList[ i ], areg::DisconnectReason::ProviderDisconnected, registerProvider );
+    }
+
+    for ( uint32_t i = 0; i < proxyList.size( ); ++ i )
+    {
+        _unregister_consumer( proxyList[ i ], areg::DisconnectReason::ConsumerDisconnected, registerProvider );
     }
 }
 

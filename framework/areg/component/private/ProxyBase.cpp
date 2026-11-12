@@ -55,6 +55,13 @@ DEF_LOG_SCOPE(areg_component_ProxyBase, send_request_event);
 
 namespace
 {
+    //!< Returns true if the state tables of the proxy data match the service interface.
+    bool _has_state_tables( const areg::ProxyData & data, const areg::InterfaceData & ifData ) noexcept
+    {
+        return (data.mAttrState.size() == ifData.idAttributeCount)
+            && ((ifData.idResponseCount == 0u) || (ifData.idResponseParamCountMap == nullptr) || data.mParamState.is_valid_index(ifData.idResponseCount - 1u));
+    }
+
     //!< Returns true if the client is in the list of clients notified of the connection.
     inline bool _is_notified(const ArrayList<ProxyListener *> & listConnect, const NotificationConsumer * consumer) noexcept
     {
@@ -445,6 +452,17 @@ std::shared_ptr<ProxyBase> ProxyBase::acquire_proxy( const String & roleName
     {
         LOG_DBG("No proxy [ %s ] found, creating one in thread [ %u ]", ProxyAddress::to_path(Key).as_string(), ownerThread.id());
         std::shared_ptr<ProxyBase> newProxy{ funcCreate( roleName, &ownerThread ) };
+        if ( (newProxy.get() != nullptr) && (_has_state_tables(newProxy->mProxyData, serviceIfData) == false) )
+        {
+            // A proxy without its state tables is never registered.
+            LOG_ERR("No memory for the state tables of the proxy [ %s ], it is not created", ProxyAddress::to_path(Key).as_string());
+            newProxy.reset();
+            if (ownerThread.startup_phase())
+            {
+                ServiceManager::report_startup_failure();
+            }
+        }
+
         if ( newProxy.get() != nullptr )
         {
             proxy.swap( newProxy );
@@ -475,7 +493,7 @@ std::shared_ptr<ProxyBase> ProxyBase::acquire_proxy( const String & roleName
         // Deferred during startup: run_dispatcher() registers all proxies after start_components() completes.
         if (!ownerThread.startup_phase())
         {
-            ServiceManager::request_register_consumer( proxy->proxy_address( ) );
+            static_cast<void>(ServiceManager::request_register_consumer( proxy->proxy_address( ) ));
         }
     }
     else if ( proxy->is_connected() )
@@ -636,7 +654,7 @@ void ProxyBase::free_proxy( ProxyListener & connect )
                 _pending_notifications().remove_proxy(this);
             }
 
-            ServiceManager::request_unregister_consumer( proxy_address( ), areg::DisconnectReason::ConsumerDisconnected );
+            static_cast<void>(ServiceManager::request_unregister_consumer( proxy_address( ), areg::DisconnectReason::ConsumerDisconnected ));
             mDispatcherThread.remove_consumer( *this );
         }
 
@@ -1186,7 +1204,7 @@ void ProxyBase::stop_proxy()
         _pending_notifications().remove_proxy(this);
     }
 
-    ServiceManager::request_unregister_consumer( proxy_address( ), areg::DisconnectReason::ConsumerDisconnected );
+    static_cast<void>(ServiceManager::request_unregister_consumer( proxy_address( ), areg::DisconnectReason::ConsumerDisconnected ));
     mDispatcherThread.remove_consumer( *this );
 
     mStubAddress = StubAddress::invalid_stub_address();

@@ -96,7 +96,8 @@ bool ComponentThread::run_dispatcher()
     ready_for_events(true);
     UserStateNotifier userState(self());
 
-    if (create_components() == 0)
+    static_cast<void>(ServiceManager::take_startup_failure());
+    if ((create_components() == 0) || ServiceManager::take_startup_failure())
     {
         set_startup_phase(false);
         ready_for_events(false);
@@ -112,8 +113,19 @@ bool ComponentThread::run_dispatcher()
         ProxyBase::find_thread_proxies(self(), proxyList);
         for (uint32_t i = 0; i < proxyList.size(); ++i)
         {
-            ServiceManager::request_register_consumer(proxyList[i]->proxy_address());
+            if (ServiceManager::request_register_consumer(proxyList[i]->proxy_address()) == false)
+            {
+                ServiceManager::report_startup_failure();
+            }
         }
+    }
+
+    if (ServiceManager::take_startup_failure())
+    {
+        // The exit of the thread shuts down and destroys what was started.
+        set_startup_phase(false);
+        ready_for_events(false);
+        return false;
     }
 
     set_startup_phase(false);

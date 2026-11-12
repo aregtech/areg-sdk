@@ -128,6 +128,9 @@
     <ClCompile Include="units\SyncTimerTest.cpp" />
     <ClCompile Include="units\ThreadTest.cpp" />
     <ClCompile Include="units\ThreadLifecycleCoverageTest.cpp" />
+    <ClInclude Include="units\LogCapture.hpp" />
+    <ClInclude Include="units\ServiceConsoleHarness.hpp" />
+    <ClInclude Include="units\ServiceTestServer.hpp" />
     <ClInclude Include="units\ThreadCoverageHelpers.hpp" />
     <ClCompile Include="units\SyncPrimitiveCoverageTest.cpp" />
     <ClCompile Include="units\MultiLockCoverageTest.cpp" />
@@ -169,6 +172,7 @@
     <ClCompile Include="units\NameNumberCollisionTest.cpp" />
     <ClCompile Include="units\ComponentLoaderContractTest.cpp" />
     <ClCompile Include="units\ComponentLifecycleFailureTest.cpp" />
+    <ClCompile Include="units\ComponentSelfLifecycleTest.cpp" />
     <ClCompile Include="units\ProxyBaseContractTest.cpp" />
     <ClCompile Include="units\ProxyStubLifecycleTest.cpp" />
     <ClCompile Include="units\StubBaseContractTest.cpp" />
@@ -190,6 +194,7 @@
     <ClCompile Include="units\SystemServiceDefsTest.cpp" />
     <ClCompile Include="units\UtilityDefsTest.cpp" />
     <ClCompile Include="units\VersionTest.cpp" />
+    <ClInclude Include="units\VtScreen.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="units\ChildProcess.hpp" />
@@ -211,6 +216,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="units\test_ci_plans.py" />
+    <None Include="units\test_coverage_paths.py" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

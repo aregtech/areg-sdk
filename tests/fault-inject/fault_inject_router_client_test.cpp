@@ -44,6 +44,7 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <netinet/in.h>
+#include <poll.h>
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <unistd.h>
@@ -132,6 +133,69 @@ namespace
                 && ( errno != EAGAIN );
         }
 
+        //!< Accepts the next client, answers its handshake with the notice and returns true if the client then closes the connection.
+        bool refuse( const areg::MessageEnvelope & notice )
+        {
+            close_peer( );
+            peer = ::accept( handle, nullptr, nullptr );
+            if ( peer < 0 )
+                return false;
+
+            const timeval timeout{ IO_WAIT_S, 0 };
+            areg::MessageEnvelope handshake;
+            if ( ( ::setsockopt( peer, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof( timeout ) ) != 0 )
+              || ( receive( handshake ) == false )
+              || ( handshake.message_id( ) != areg::message_hello_server( ).messageId )
+              || ( send( notice ) == false ) )
+            {
+                return false;
+            }
+
+            return closed_by_client( );
+        }
+
+        //!< Reads until the client closes the connection. Returns false on timeout.
+        bool closed_by_client( )
+        {
+            areg::MessageEnvelope message;
+            errno = 0;
+            while ( receive( message ) )
+            {
+            }
+
+            return ( errno != EAGAIN ) && ( errno != EWOULDBLOCK );
+        }
+
+        //!< Reads the next message without an areg allocation; returns its header.
+        bool receive_raw( areg::EventHeader & header, std::vector<uint8_t> & body )
+        {
+            if ( read_all( areg::wire_header( header ), areg::WIRE_HEADER_SIZE ) == false )
+                return false;
+
+            body.resize( header.bufHeader.biUsed );
+            return body.empty( ) || read_all( body.data( ), static_cast<uint32_t>( body.size( ) ) );
+        }
+
+        //!< Accepts clients until one sends its handshake, and answers it with the notice built in advance; no areg allocation.
+        bool answer_raw( const areg::MessageEnvelope & notice, uint32_t attempts )
+        {
+            const timeval timeout{ IO_WAIT_S, 0 };
+            std::vector<uint8_t> body;
+            for ( uint32_t i = 0u; i < attempts; ++ i )
+            {
+                close_peer( );
+                peer = ::accept( handle, nullptr, nullptr );
+                if ( ( peer < 0 ) || ( ::setsockopt( peer, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof( timeout ) ) != 0 ) )
+                    return false;
+
+                areg::EventHeader header{ };
+                if ( receive_raw( header, body ) && ( header.messageId == areg::message_hello_server( ).messageId ) )
+                    return send( notice );
+            }
+
+            return false;
+        }
+
         bool read_all( uint8_t * buffer, uint32_t size )
         {
             uint32_t done{ 0u };
@@ -201,15 +265,77 @@ namespace
         return true;
     }
 
-    //!< Starts the application and connects its router client to the test router.
-    bool start_application( TestRouter & router, ITEM_ID cookie )
+    //!< Starts the application and requests the connection of its router client to the test router.
+    bool request_connection( TestRouter & router )
     {
         areg::Application::setup( false, true, false, true, false );
         areg::ConnectionConfiguration config( areg::RemoteServiceKind::Router, areg::ConnectionType::Tcpip );
         config.set_connection_enable( true );
         config.set_connection_data( areg::String( "127.0.0.1" ), router.port );
-        return areg::Application::connect_router( ) && router.answer( cookie ) && wait_connected( );
+        return areg::Application::connect_router( );
     }
+
+    //!< Starts the application and connects its router client to the test router.
+    bool start_application( TestRouter & router, ITEM_ID cookie )
+    {
+        return request_connection( router ) && router.answer( cookie ) && wait_connected( );
+    }
+
+    //!< A connection notice of the router to the client of the cookie with the state, which may be out of the enumeration.
+    areg::MessageEnvelope connection_notice( ITEM_ID cookie, uint16_t state )
+    {
+        areg::EventHeader hdr{ areg::notify_client_connection( ) };
+        hdr.source = static_cast<uint32_t>( areg::COOKIE_ROUTER );
+        hdr.target = static_cast<uint32_t>( cookie );
+        areg::MessageEnvelope notice;
+        if ( notice.init_envelope( hdr, sizeof( ITEM_ID ) + sizeof( areg::ServiceConnectionState ) ) != nullptr )
+        {
+            notice << cookie;
+            notice << static_cast<areg::ServiceConnectionState>( state );
+        }
+
+        return notice;
+    }
+
+    //!< A connection state that the enumeration does not name.
+    constexpr uint16_t UNKNOWN_STATE{ 0x7777u };
+
+    //!< The router answers the handshake with the notice state: the client closes the connection, is not connected, and connects again.
+    void handshake_refused_then_connected( uint16_t state, ITEM_ID cookie )
+    {
+        TestRouter router;
+        AREG_CHILD_CHECK( router.open( ) );
+        AREG_CHILD_CHECK( request_connection( router ) );
+        AREG_CHILD_CHECK( router.refuse( connection_notice( cookie, state ) ) );
+        AREG_CHILD_CHECK( areg::Application::router_state( ) != areg::RouterState::Connected );
+        AREG_CHILD_CHECK( router.answer( cookie + 1u ) && wait_connected( ) );
+        areg::Application::release( );
+    }
+}
+
+/**
+ * \brief   The router rejects the handshake: the client closes the connection, the router state is
+ *          not connected, and the client connects again and is confirmed with the new cookie.
+ **/
+TEST( FaultInjectTest, router_client_connects_again_after_the_router_rejects_its_handshake )
+{
+    AREG_EXPECT_IN_CHILD( handshake_refused_then_connected( static_cast<uint16_t>( areg::ServiceConnectionState::Rejected ), areg::COOKIE_REMOTE_SERVICE + 151u ); );
+}
+
+/**
+ * \brief   The same when the router answers the handshake with its shutdown.
+ **/
+TEST( FaultInjectTest, router_client_connects_again_after_the_router_answers_its_handshake_with_shutdown )
+{
+    AREG_EXPECT_IN_CHILD( handshake_refused_then_connected( static_cast<uint16_t>( areg::ServiceConnectionState::Shutdown ), areg::COOKIE_REMOTE_SERVICE + 161u ); );
+}
+
+/**
+ * \brief   The same when the router answers the handshake with a state the client does not know.
+ **/
+TEST( FaultInjectTest, router_client_connects_again_after_the_router_answers_its_handshake_with_an_unknown_state )
+{
+    AREG_EXPECT_IN_CHILD( handshake_refused_then_connected( UNKNOWN_STATE, areg::COOKIE_REMOTE_SERVICE + 171u ); );
 }
 
 namespace
@@ -566,6 +692,781 @@ TEST( FaultInjectTest, logger_client_connects_on_a_later_request_after_a_thread_
 }
 
 #endif  // AREG_LOGGING
+
+#if defined(AREG_FAULT_HELLO)
+
+#include "areg/component/Component.hpp"
+#include "areg/component/ComponentLoader.hpp"
+#include "areg/component/ComponentThread.hpp"
+#include "areg/component/ServiceAddress.hpp"
+#include "areg/component/StubAddress.hpp"
+#include "examples/02_minimalipc/services/HelloServiceConsumerBase.hpp"
+
+namespace
+{
+    constexpr char const    _helloModel[]   { "FiHelloModel" };
+    constexpr char const    _helloRole[]    { "FiRemoteHello" };
+
+    //!< The consumer of a remote hello service; it sends a request when the service connects.
+    class FiHelloClient final : public    areg::Component
+                              , protected HelloServiceConsumerBase
+    {
+    public:
+        static std::atomic_uint32_t     sConnects;
+        static std::atomic_uint32_t     sDisconnects;
+        static std::atomic_uint32_t     sFailures;
+        static std::atomic<areg::ResultType> sFirstReason;
+        static std::atomic_bool         sOwnThread;
+
+        FiHelloClient( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
+            : areg::Component           ( entry, owner )
+            , HelloServiceConsumerBase  ( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(*this) )
+        {
+        }
+
+    protected:
+        bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override
+        {
+            const bool result{ HelloServiceConsumerBase::service_connected( status, proxy ) };
+            if ( areg::is_service_connected( status ) )
+            {
+                sConnects.fetch_add( 1u );
+                request_hello_service( );
+            }
+            else
+            {
+                sDisconnects.fetch_add( 1u );
+            }
+
+            return result;
+        }
+
+        void request_hello_service_failed( areg::ResultType reason ) override
+        {
+            if ( sFailures.fetch_add( 1u ) == 0u )
+            {
+                sFirstReason.store( reason );
+                sOwnThread.store( areg::Thread::current_thread( ) == static_cast<areg::Thread *>(&master_thread( )) );
+            }
+        }
+    };
+
+    std::atomic_uint32_t        FiHelloClient::sConnects    { 0u };
+    std::atomic_uint32_t        FiHelloClient::sDisconnects { 0u };
+    std::atomic_uint32_t        FiHelloClient::sFailures    { 0u };
+    std::atomic<areg::ResultType> FiHelloClient::sFirstReason{ areg::ResultType::Undefined };
+    std::atomic_bool            FiHelloClient::sOwnThread   { false };
+
+    BEGIN_MODEL( _helloModel )
+        BEGIN_REGISTER_THREAD( "FiHelloThread" )
+            BEGIN_REGISTER_COMPONENT( "FiHelloClient", FiHelloClient )
+                REGISTER_DEPENDENCY( _helloRole )
+            END_REGISTER_COMPONENT( "FiHelloClient" )
+        END_REGISTER_THREAD( "FiHelloThread" )
+    END_MODEL( _helloModel )
+
+    constexpr char const    _witnessModel[] { "FiWitnessModel" };
+
+    //!< A second consumer of the remote hello service, in a thread of its own.
+    namespace witness
+    {
+        BEGIN_MODEL( _witnessModel )
+            BEGIN_REGISTER_THREAD( "FiWitnessThread" )
+                BEGIN_REGISTER_COMPONENT( "FiWitnessClient", FiHelloClient )
+                    REGISTER_DEPENDENCY( _helloRole )
+                END_REGISTER_COMPONENT( "FiWitnessClient" )
+            END_REGISTER_THREAD( "FiWitnessThread" )
+        END_MODEL( _witnessModel )
+    }
+
+    //!< The address of a remote provider of the hello service in the process of the cookie.
+    areg::StubAddress remote_provider( ITEM_ID cookie )
+    {
+        const areg::ServiceAddress service( areg::String( HelloService::ServiceName ), HelloService::InterfaceVersion, areg::ServiceType::Public, areg::String( _helloRole ) );
+        areg::StubAddress stub( service, areg::item_name_number( areg::String( "FiRemoteHelloThread" ) ), 0x613F0001u );
+        stub.set_cookie( cookie );
+        return stub;
+    }
+
+    //!< Starts the application with the hello consumer and reads its registration at the test router.
+    bool start_consumer( TestRouter & router, ITEM_ID cookie )
+    {
+        areg::MessageEnvelope consumer;
+        return start_application( router, cookie )
+            && areg::Application::load_model( _helloModel, true )
+            && router.receive( consumer )
+            && areg::is_register_message( consumer );
+    }
+
+    //!< Waits until the counter reaches the value. Returns false on timeout.
+    bool wait_count( const std::atomic_uint32_t & counter, uint32_t value )
+    {
+        const auto deadline{ std::chrono::steady_clock::now( ) + std::chrono::seconds( IO_WAIT_S ) };
+        while ( counter.load( ) < value )
+        {
+            if ( std::chrono::steady_clock::now( ) > deadline )
+                return false;
+
+            std::this_thread::sleep_for( std::chrono::milliseconds( 5 ) );
+        }
+
+        return true;
+    }
+}
+
+/**
+ * \brief   Reproduces the defect: a registration notice of the router with a provider or
+ *          consumer address that is not valid reached an assertion of the service manager, and a
+ *          Debug process aborted on its receive thread. Now the notices are ignored, the
+ *          connection stays, and a valid notice after them connects the consumer.
+ **/
+TEST( FaultInjectTest, router_notices_with_invalid_addresses_are_ignored_and_a_valid_one_connects_the_consumer )
+{
+    AREG_EXPECT_IN_CHILD(
+        constexpr ITEM_ID COOKIE{ areg::COOKIE_REMOTE_SERVICE + 311u };
+        constexpr ITEM_ID PROVIDER{ areg::COOKIE_REMOTE_SERVICE + 312u };
+        TestRouter router;
+        AREG_CHILD_CHECK( router.open( ) );
+        AREG_CHILD_CHECK( start_consumer( router, COOKIE ) );
+
+        areg::StubAddress invalid( areg::String( HelloService::ServiceName ), HelloService::InterfaceVersion, areg::ServiceType::Public
+                                 , areg::String( _helloRole ), areg::String( "FiRemoteHelloThread" ) );
+        invalid.set_cookie( PROVIDER );
+        AREG_CHILD_CHECK( invalid.is_valid( ) == false );
+        AREG_CHILD_CHECK( router.send( areg::service_registered_event( invalid, areg::COOKIE_ROUTER, COOKIE ) ) );
+        AREG_CHILD_CHECK( router.send( areg::service_unregistered_event( invalid, areg::DisconnectReason::ProviderDisconnected, areg::COOKIE_ROUTER, COOKIE ) ) );
+        // A consumer notice whose consumer number is damaged on the wire.
+        areg::ProxyAddress consumer( 0x613Au, areg::Version( 1u, 0u, 0u ), areg::ServiceType::Public, 0x613Bu, 0x613Cu, 0x613Du );
+        consumer.set_cookie( PROVIDER );
+        areg::MessageEnvelope registered{ areg::client_registered_event( consumer, areg::COOKIE_ROUTER, COOKIE ) };
+        areg::MessageEnvelope unregistered{ areg::client_unregistered_event( consumer, areg::DisconnectReason::ConsumerDisconnected, areg::COOKIE_ROUTER, COOKIE ) };
+        AREG_CHILD_CHECK( ( registered.header( ) != nullptr ) && ( unregistered.header( ) != nullptr ) );
+        registered.header( )->consumer.number = areg::CHECKSUM_INVALID;
+        unregistered.header( )->consumer.number = areg::CHECKSUM_INVALID;
+        AREG_CHILD_CHECK( areg::ProxyAddress( *registered.header( ) ).is_valid( ) == false );
+        AREG_CHILD_CHECK( router.send( registered ) && router.send( unregistered ) );
+        AREG_CHILD_CHECK( router.send( areg::service_registered_event( remote_provider( PROVIDER ), areg::COOKIE_ROUTER, COOKIE ) ) );
+
+        AREG_CHILD_CHECK( wait_count( FiHelloClient::sConnects, 1u ) );
+        AREG_CHILD_CHECK( areg::Application::router_state( ) == areg::RouterState::Connected );
+        areg::MessageEnvelope request;
+        AREG_CHILD_CHECK( router.receive( request ) );
+        AREG_CHILD_CHECK( request.message_id( ) == static_cast<uint32_t>( HelloService::MessageIDs::MsgId_request_hello_service ) );
+        AREG_CHILD_CHECK( request.target( ) == PROVIDER );
+        AREG_CHILD_CHECK( FiHelloClient::sFailures.load( ) == 0u );
+
+        areg::Application::unload_model( _helloModel );
+        areg::Application::release( );
+    );
+}
+
+/**
+ * \brief   The system refuses to send the request of a consumer to its remote provider: the
+ *          consumer gets the request failure MessageUndelivered on its own thread, and the router
+ *          client connects again.
+ **/
+TEST( FaultInjectTest, request_to_a_remote_provider_whose_send_fails_reaches_the_consumer_as_undelivered )
+{
+    AREG_EXPECT_IN_CHILD(
+        constexpr ITEM_ID COOKIE{ areg::COOKIE_REMOTE_SERVICE + 301u };
+        constexpr ITEM_ID PROVIDER{ areg::COOKIE_REMOTE_SERVICE + 302u };
+        TestRouter router;
+        AREG_CHILD_CHECK( router.open( ) );
+        AREG_CHILD_CHECK( start_consumer( router, COOKIE ) );
+
+        // The first send is the notice of the test router, the next one is the request of the client.
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::SocketSend, ECONNRESET, 1u ) );
+        AREG_CHILD_CHECK( router.send( areg::service_registered_event( remote_provider( PROVIDER ), areg::COOKIE_ROUTER, COOKIE ) ) );
+
+        AREG_CHILD_CHECK( wait_count( FiHelloClient::sFailures, 1u ) );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::SocketSend ) == 1u );
+        AREG_CHILD_CHECK( FiHelloClient::sConnects.load( ) == 1u );
+        AREG_CHILD_CHECK( FiHelloClient::sFirstReason.load( ) == areg::ResultType::MessageUndelivered );
+        AREG_CHILD_CHECK( FiHelloClient::sOwnThread.load( ) );
+        AREG_CHILD_CHECK( router.answer( COOKIE + 1u ) && wait_connected( ) );
+
+        areg::Application::unload_model( _helloModel );
+        areg::Application::release( );
+    );
+}
+
+namespace
+{
+    //!< The router ends the live connection with the notice state while a request of the consumer waits for its response.
+    void pending_request_fails_when_the_router_ends_the_connection( uint16_t state, ITEM_ID cookie )
+    {
+        const ITEM_ID PROVIDER{ cookie + 1u };
+        TestRouter router;
+        AREG_CHILD_CHECK( router.open( ) );
+        AREG_CHILD_CHECK( start_consumer( router, cookie ) );
+        AREG_CHILD_CHECK( router.send( areg::service_registered_event( remote_provider( PROVIDER ), areg::COOKIE_ROUTER, cookie ) ) );
+        areg::MessageEnvelope request;
+        AREG_CHILD_CHECK( router.receive( request ) );
+        AREG_CHILD_CHECK( request.message_id( ) == static_cast<uint32_t>( HelloService::MessageIDs::MsgId_request_hello_service ) );
+
+        AREG_CHILD_CHECK( router.send( connection_notice( cookie, state ) ) );
+        AREG_CHILD_CHECK( router.closed_by_client( ) );
+        AREG_CHILD_CHECK( wait_count( FiHelloClient::sFailures, 1u ) );
+        AREG_CHILD_CHECK( FiHelloClient::sFirstReason.load( ) == areg::ResultType::ServiceUnavailable );
+        AREG_CHILD_CHECK( FiHelloClient::sOwnThread.load( ) );
+        AREG_CHILD_CHECK( areg::Application::router_state( ) != areg::RouterState::Connected );
+
+        // The client connects again and registers its consumer on the new connection.
+        AREG_CHILD_CHECK( router.answer( cookie + 2u ) && wait_connected( ) );
+        areg::MessageEnvelope consumer;
+        AREG_CHILD_CHECK( router.receive( consumer ) && areg::is_register_message( consumer ) );
+        AREG_CHILD_CHECK( consumer.source( ) == cookie + 2u );
+        AREG_CHILD_CHECK( FiHelloClient::sFailures.load( ) == 1u );
+
+        areg::Application::unload_model( _helloModel );
+        areg::Application::release( );
+    }
+}
+
+/**
+ * \brief   The router rejects the live connection while a request waits for its response: the
+ *          request fails to the consumer with ServiceUnavailable on its own thread, and the client
+ *          connects again and registers the consumer.
+ **/
+TEST( FaultInjectTest, pending_request_fails_and_the_client_connects_again_when_the_router_rejects_the_connection )
+{
+    AREG_EXPECT_IN_CHILD( pending_request_fails_when_the_router_ends_the_connection( static_cast<uint16_t>( areg::ServiceConnectionState::Rejected ), areg::COOKIE_REMOTE_SERVICE + 321u ); );
+}
+
+/**
+ * \brief   The same when the router reports its shutdown on the live connection.
+ **/
+TEST( FaultInjectTest, pending_request_fails_and_the_client_connects_again_when_the_router_shuts_down )
+{
+    AREG_EXPECT_IN_CHILD( pending_request_fails_when_the_router_ends_the_connection( static_cast<uint16_t>( areg::ServiceConnectionState::Shutdown ), areg::COOKIE_REMOTE_SERVICE + 331u ); );
+}
+
+/**
+ * \brief   The same when the router sends a connection state the client does not know.
+ **/
+TEST( FaultInjectTest, pending_request_fails_and_the_client_connects_again_on_an_unknown_connection_state )
+{
+    AREG_EXPECT_IN_CHILD( pending_request_fails_when_the_router_ends_the_connection( UNKNOWN_STATE, areg::COOKIE_REMOTE_SERVICE + 341u ); );
+}
+
+#include "examples/02_minimalipc/services/HelloServiceProviderBase.hpp"
+
+namespace
+{
+    constexpr char const    _localModel[]   { "FiLocalModel" };
+    constexpr char const    _localRole[]    { "FiLocalHello" };
+
+    //!< A local provider of the hello service; it answers every request.
+    class FiHelloService final : public    areg::Component
+                               , protected HelloServiceProviderBase
+    {
+    public:
+        static std::atomic_uint32_t     sRequests;
+
+        FiHelloService( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
+            : areg::Component           ( entry, owner )
+            , HelloServiceProviderBase  ( static_cast<areg::Component &>(*this) )
+        {
+        }
+
+    protected:
+        void request_hello_service( ) override
+        {
+            sRequests.fetch_add( 1u );
+            response_hello_service( );
+        }
+    };
+
+    //!< A consumer of the local provider; it sends a request when connected and on each call of ask().
+    class FiLocalClient final : public    areg::Component
+                              , protected HelloServiceConsumerBase
+    {
+    public:
+        static FiLocalClient *          sInstance;
+        static std::atomic_uint32_t     sConnects;
+        static std::atomic_uint32_t     sDisconnects;
+        static std::atomic_uint32_t     sResponses;
+        static std::atomic_uint32_t     sFailures;
+
+        FiLocalClient( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
+            : areg::Component           ( entry, owner )
+            , HelloServiceConsumerBase  ( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(*this) )
+        {
+            sInstance = this;
+        }
+
+        ~FiLocalClient( ) override
+        {
+            sInstance = nullptr;
+        }
+
+        //!< Sends a request; called on the thread of the component.
+        void ask( )
+        {
+            request_hello_service( );
+        }
+
+    protected:
+        bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override
+        {
+            const bool result{ HelloServiceConsumerBase::service_connected( status, proxy ) };
+            if ( areg::is_service_connected( status ) )
+            {
+                sConnects.fetch_add( 1u );
+                request_hello_service( );
+            }
+            else
+            {
+                sDisconnects.fetch_add( 1u );
+            }
+
+            return result;
+        }
+
+        void response_hello_service( ) override
+        {
+            sResponses.fetch_add( 1u );
+        }
+
+        void request_hello_service_failed( areg::ResultType /*reason*/ ) override
+        {
+            sFailures.fetch_add( 1u );
+        }
+    };
+
+    //!< A consumer of the remote role; its connection asks the local consumer of the same thread for one more request.
+    class FiBarrierClient final : public    areg::Component
+                                , protected HelloServiceConsumerBase
+    {
+    public:
+        static std::atomic_uint32_t     sConnects;
+
+        FiBarrierClient( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
+            : areg::Component           ( entry, owner )
+            , HelloServiceConsumerBase  ( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(*this) )
+        {
+        }
+
+    protected:
+        bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override
+        {
+            const bool result{ HelloServiceConsumerBase::service_connected( status, proxy ) };
+            if ( areg::is_service_connected( status ) )
+            {
+                if ( FiLocalClient::sInstance != nullptr )
+                    FiLocalClient::sInstance->ask( );
+                sConnects.fetch_add( 1u );
+            }
+
+            return result;
+        }
+    };
+
+    std::atomic_uint32_t    FiHelloService::sRequests       { 0u };
+    FiLocalClient *         FiLocalClient::sInstance        { nullptr };
+    std::atomic_uint32_t    FiLocalClient::sConnects        { 0u };
+    std::atomic_uint32_t    FiLocalClient::sDisconnects     { 0u };
+    std::atomic_uint32_t    FiLocalClient::sResponses       { 0u };
+    std::atomic_uint32_t    FiLocalClient::sFailures        { 0u };
+    std::atomic_uint32_t    FiBarrierClient::sConnects      { 0u };
+
+    //!< Reads the messages of the client until the registration of its provider; returns its address.
+    bool receive_provider_registration( TestRouter & router, areg::StubAddress & provider )
+    {
+        areg::MessageEnvelope message;
+        while ( router.receive( message ) )
+        {
+            if ( areg::is_register_message( message ) && ( static_cast<areg::RegistrationAction>( message.call_type( ) ) == areg::RegistrationAction::RegisterProvider ) )
+            {
+                provider = areg::StubAddress( *message.header( ) );
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
+
+/**
+ * \brief   The router rejects a public provider of this process, with the cookie of this process:
+ *          the provider keeps serving its local consumer, which stays connected and gets the
+ *          response of a request sent after the rejection, and the router connection stays.
+ **/
+TEST( FaultInjectTest, provider_rejected_by_the_router_keeps_serving_the_consumers_of_its_process )
+{
+    AREG_EXPECT_IN_CHILD(
+        constexpr ITEM_ID COOKIE{ areg::COOKIE_REMOTE_SERVICE + 351u };
+        constexpr ITEM_ID PROVIDER{ areg::COOKIE_REMOTE_SERVICE + 352u };
+        BEGIN_MODEL_LOCAL( _localModel )
+            BEGIN_REGISTER_THREAD( "FiLocalThread" )
+                BEGIN_REGISTER_COMPONENT( _localRole, FiHelloService )
+                    REGISTER_IMPLEMENT_SERVICE( HelloService::ServiceName, HelloService::InterfaceVersion )
+                END_REGISTER_COMPONENT( _localRole )
+                BEGIN_REGISTER_COMPONENT( "FiLocalClient", FiLocalClient )
+                    REGISTER_DEPENDENCY( _localRole )
+                END_REGISTER_COMPONENT( "FiLocalClient" )
+                BEGIN_REGISTER_COMPONENT( "FiBarrierClient", FiBarrierClient )
+                    REGISTER_DEPENDENCY( _helloRole )
+                END_REGISTER_COMPONENT( "FiBarrierClient" )
+            END_REGISTER_THREAD( "FiLocalThread" )
+        END_MODEL_LOCAL( _localModel )
+        TestRouter router;
+        AREG_CHILD_CHECK( router.open( ) );
+        AREG_CHILD_CHECK( start_application( router, COOKIE ) );
+        AREG_CHILD_CHECK( areg::Application::load_model( _localModel, true ) );
+
+        areg::StubAddress local;
+        AREG_CHILD_CHECK( receive_provider_registration( router, local ) );
+        AREG_CHILD_CHECK( wait_count( FiLocalClient::sResponses, 1u ) );
+        local.set_cookie( COOKIE );
+        AREG_CHILD_CHECK( router.send( areg::service_unregistered_event( local, areg::DisconnectReason::ProviderRejected, areg::COOKIE_ROUTER, COOKIE ) ) );
+
+        // The notice after the rejection takes the same path; its consumer asks the local one for a request.
+        AREG_CHILD_CHECK( router.send( areg::service_registered_event( remote_provider( PROVIDER ), areg::COOKIE_ROUTER, COOKIE ) ) );
+        AREG_CHILD_CHECK( wait_count( FiBarrierClient::sConnects, 1u ) );
+        AREG_CHILD_CHECK( wait_count( FiLocalClient::sResponses, 2u ) );
+        AREG_CHILD_CHECK( FiHelloService::sRequests.load( ) == 2u );
+        AREG_CHILD_CHECK( FiLocalClient::sConnects.load( ) == 1u );
+        AREG_CHILD_CHECK( FiLocalClient::sDisconnects.load( ) == 0u );
+        AREG_CHILD_CHECK( FiLocalClient::sFailures.load( ) == 0u );
+        AREG_CHILD_CHECK( areg::Application::router_state( ) == areg::RouterState::Connected );
+
+        areg::Application::unload_model( _localModel );
+        areg::Application::release( );
+    );
+}
+
+// The sanitizer runtimes define the global allocation functions themselves.
+#if !defined(__SANITIZE_ADDRESS__) && !defined(__SANITIZE_THREAD__)
+    #if defined(__has_feature)
+        #if !__has_feature(address_sanitizer) && !__has_feature(thread_sanitizer) && !__has_feature(memory_sanitizer)
+            #define AREG_FAULT_ALLOC_TESTS  1
+        #endif  // !__has_feature(...)
+    #else   // defined(__has_feature)
+        #define AREG_FAULT_ALLOC_TESTS      1
+    #endif  // defined(__has_feature)
+#endif  // !sanitizer
+
+#if defined(AREG_FAULT_ALLOC_TESTS)
+
+namespace
+{
+    //!< Reads the messages of the client until a registration of a consumer, without an areg allocation.
+    bool receive_consumer_registration( TestRouter & router, ITEM_ID cookie )
+    {
+        areg::EventHeader header{ };
+        std::vector<uint8_t> body;
+        while ( router.receive_raw( header, body ) )
+        {
+            if ( ( header.messageId == static_cast<uint32_t>( areg::FuncIdRange::SystemServiceRequestRegister ) )
+              && ( static_cast<areg::RegistrationAction>( header.callType ) == areg::RegistrationAction::RegisterConsumer ) )
+            {
+                return header.source == static_cast<uint32_t>( cookie );
+            }
+        }
+
+        return false;
+    }
+
+    //!< Receives messages of the client until one is a hello request to the provider of the cookie. Returns false on a timeout.
+    bool receive_request_to( TestRouter & router, ITEM_ID provider )
+    {
+        for ( uint32_t i = 0u; i < 64u; ++ i )
+        {
+            areg::MessageEnvelope message;
+            if ( router.receive( message ) == false )
+                return false;
+            if ( ( message.message_id( ) == static_cast<uint32_t>( HelloService::MessageIDs::MsgId_request_hello_service ) ) && ( message.target( ) == provider ) )
+                return true;
+        }
+
+        return false;
+    }
+
+    //!< Waits until an allocation failed or the counter passed the value. Returns false on timeout.
+    bool wait_failed_or_count( const std::atomic_uint32_t & counter, uint32_t value )
+    {
+        const auto deadline{ std::chrono::steady_clock::now( ) + std::chrono::seconds( IO_WAIT_S ) };
+        while ( ( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 0u ) && ( counter.load( ) <= value ) )
+        {
+            if ( std::chrono::steady_clock::now( ) > deadline )
+                return false;
+
+            std::this_thread::sleep_for( std::chrono::milliseconds( 5 ) );
+        }
+
+        return true;
+    }
+}
+
+/**
+ * \brief   Reproduces the defect: the unregister of a remote provider whose event could not be
+ *          built was lost, and a consumer created later was connected to the provider that was gone.
+ *          Expected: after any one failed allocation, a new consumer is connected only to the
+ *          provider registered next.
+ **/
+TEST( FaultInjectTest, bug_918_a_failed_allocation_of_a_remote_provider_unregister_leaves_no_stale_entry_in_the_registry )
+{
+    AREG_EXPECT_IN_CHILD(
+        constexpr ITEM_ID COOKIE{ areg::COOKIE_REMOTE_SERVICE + 321u };
+        constexpr ITEM_ID PROVIDER{ areg::COOKIE_REMOTE_SERVICE + 1000u };
+        TestRouter router;
+        AREG_CHILD_CHECK( router.open( ) );
+        AREG_CHILD_CHECK( start_application( router, COOKIE ) );
+
+        areg_fault::FaultScope faults;
+        uint32_t failures{ 0u };
+        bool finished{ false };
+        for ( uint32_t skip = 0u; ( skip < 200u ) && ( finished == false ); ++ skip )
+        {
+            const ITEM_ID provider{ PROVIDER + 2u * skip };
+            AREG_CHILD_CHECK( areg::Application::load_model( _helloModel, true ) );
+            AREG_CHILD_CHECK( receive_consumer_registration( router, COOKIE ) );
+            AREG_CHILD_CHECK( router.send( areg::service_registered_event( remote_provider( provider ), areg::COOKIE_ROUTER, COOKIE ) ) );
+            AREG_CHILD_CHECK( receive_request_to( router, provider ) );
+
+            areg::MessageEnvelope unregistered{ areg::service_unregistered_event( remote_provider( provider ), areg::DisconnectReason::ProviderDisconnected, areg::COOKIE_ROUTER, COOKIE ) };
+            const uint32_t disconnects{ FiHelloClient::sDisconnects.load( ) };
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, skip, 1u ) );
+            AREG_CHILD_CHECK( router.send( unregistered ) );
+            const bool reached{ wait_failed_or_count( FiHelloClient::sDisconnects, disconnects ) };
+            const uint32_t failed{ areg_fault::failed( areg_fault::FaultPoint::Allocation ) };
+            ::areg_fault_disarm_all( );
+            failures += failed;
+            finished = ( failed == 0u );
+            AREG_CHILD_CHECK( reached );
+
+            // The first consumer keeps the entry of the provider; a new consumer must not be connected to it.
+            const ITEM_ID next{ provider + 1u };
+            AREG_CHILD_CHECK( areg::Application::load_model( _witnessModel, true ) );
+            AREG_CHILD_CHECK( receive_consumer_registration( router, COOKIE ) );
+            AREG_CHILD_CHECK( router.send( areg::service_registered_event( remote_provider( next ), areg::COOKIE_ROUTER, COOKIE ) ) );
+            AREG_CHILD_CHECK( receive_request_to( router, next ) );
+            AREG_CHILD_CHECK( areg::Application::unload_model( _witnessModel ) );
+            AREG_CHILD_CHECK( areg::Application::unload_model( _helloModel ) );
+        }
+
+        AREG_CHILD_CHECK( finished );
+        AREG_CHILD_CHECK( failures != 0u );
+        AREG_CHILD_CHECK( areg::Application::router_state( ) == areg::RouterState::Connected );
+        areg::Application::release( );
+    );
+}
+
+namespace
+{
+    //!< The most allocations of one connect and registration that are failed in turn.
+    constexpr uint32_t      CONNECT_ATTEMPTS    { 2'000u };
+    //!< The connections a test router accepts until one sends its handshake.
+    constexpr uint32_t      ACCEPT_ATTEMPTS     { 16u };
+
+    //!< Waits until the router client reports the state. Returns false on timeout.
+    bool wait_router_state( areg::RouterState state )
+    {
+        const auto deadline{ std::chrono::steady_clock::now( ) + std::chrono::seconds( IO_WAIT_S ) };
+        while ( areg::Application::router_state( ) != state )
+        {
+            if ( std::chrono::steady_clock::now( ) > deadline )
+                return false;
+
+            std::this_thread::sleep_for( std::chrono::milliseconds( 5 ) );
+        }
+
+        return true;
+    }
+
+    //!< Answers the next client with the notice; while none connects, requests the connection again. Returns false on timeout.
+    bool accept_requesting_again( TestRouter & router, const areg::MessageEnvelope & notice )
+    {
+        constexpr int POLL_MS{ 50 };
+        const auto deadline{ std::chrono::steady_clock::now( ) + std::chrono::seconds( IO_WAIT_S ) };
+        while ( std::chrono::steady_clock::now( ) < deadline )
+        {
+            pollfd listener{ router.handle, POLLIN, 0 };
+            if ( ::poll( &listener, 1, POLL_MS ) > 0 )
+                return router.answer_raw( notice, ACCEPT_ATTEMPTS );
+
+            // A start that failed after the request leaves the client disconnected; a started one is kept.
+            static_cast<void>( areg::Application::connect_router( ) );
+        }
+
+        return false;
+    }
+
+    //!< Fails each allocation of the point in a connect of the router client and the registration of a consumer in turn.
+    void connect_and_register_survive( areg_fault::FaultPoint point )
+    {
+        TestRouter router;
+        AREG_CHILD_CHECK( router.open( ) );
+        const timeval timeout{ IO_WAIT_S, 0 };
+        AREG_CHILD_CHECK( ::setsockopt( router.handle, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof( timeout ) ) == 0 );
+        AREG_CHILD_CHECK( request_connection( router ) );
+        areg::Application::disconnect_router( );
+        AREG_CHILD_CHECK( wait_router_state( areg::RouterState::Disconnected ) );
+
+        areg_fault::FaultScope faults;
+        uint32_t refused{ 0u };
+        bool finished{ false };
+        for ( uint32_t skip = 0u; ( skip < CONNECT_ATTEMPTS ) && ( finished == false ); ++ skip )
+        {
+            const ITEM_ID cookie{ areg::COOKIE_REMOTE_SERVICE + 1000u + skip };
+            const areg::MessageEnvelope notice{ areg::create_connect_notify( areg::COOKIE_ROUTER, cookie ) };
+            AREG_CHILD_CHECK( notice.is_valid( ) );
+
+            AREG_CHILD_CHECK( areg_fault::arm( point, 0, skip, 1u ) );
+            bool requested{ areg::Application::connect_router( ) };
+            if ( requested == false )
+            {
+                // A start request that cannot be built changes nothing; the next one connects.
+                ++ refused;
+                AREG_CHILD_CHECK( areg::Application::router_state( ) != areg::RouterState::Connected );
+                ::areg_fault_disarm_all( );
+                requested = areg::Application::connect_router( );
+            }
+
+            AREG_CHILD_CHECK( requested );
+            AREG_CHILD_CHECK( accept_requesting_again( router, notice ) && wait_connected( ) );
+            const bool loaded{ areg::Application::load_model( _helloModel, true ) };
+            if ( loaded )
+            {
+                AREG_CHILD_CHECK( receive_consumer_registration( router, cookie ) );
+            }
+            else
+            {
+                ++ refused;
+                AREG_CHILD_CHECK( areg::Application::model_state( _helloModel ) == areg::ModelState::Unloaded );
+            }
+
+            const uint32_t failed{ areg_fault::failed( point ) };
+            ::areg_fault_disarm_all( );
+            finished = ( failed == 0u );
+
+            if ( areg::Application::model_state( _helloModel ) != areg::ModelState::Unloaded )
+            {
+                AREG_CHILD_CHECK( areg::Application::unload_model( _helloModel ) );
+            }
+
+            areg::Application::disconnect_router( );
+            AREG_CHILD_CHECK( router.closed_by_client( ) );
+            AREG_CHILD_CHECK( wait_router_state( areg::RouterState::Disconnected ) );
+        }
+
+        AREG_CHILD_CHECK( finished );
+        AREG_CHILD_CHECK( refused != 0u );
+        areg::Application::release( );
+    }
+}
+
+namespace
+{
+    //!< Reads the messages of the client until it closes, without an areg allocation. Returns false on timeout.
+    bool closed_by_client_raw( TestRouter & router )
+    {
+        areg::EventHeader header{ };
+        std::vector<uint8_t> body;
+        errno = 0;
+        while ( router.receive_raw( header, body ) )
+        {
+        }
+
+        return ( errno != EAGAIN ) && ( errno != EWOULDBLOCK );
+    }
+
+    //!< Answers each client that connects with the notice and requests the connection, until one is connected. Returns false on timeout.
+    bool connect_answering( TestRouter & router, const areg::MessageEnvelope & notice )
+    {
+        constexpr int POLL_MS{ 50 };
+        const auto deadline{ std::chrono::steady_clock::now( ) + std::chrono::seconds( IO_WAIT_S ) };
+        while ( areg::Application::router_state( ) != areg::RouterState::Connected )
+        {
+            if ( std::chrono::steady_clock::now( ) > deadline )
+                return false;
+
+            pollfd listener{ router.handle, POLLIN, 0 };
+            if ( ::poll( &listener, 1, POLL_MS ) > 0 )
+            {
+                // A client that dropped its connection connects again by itself.
+                static_cast<void>( router.answer_raw( notice, 1u ) );
+            }
+            else
+            {
+                static_cast<void>( areg::Application::connect_router( ) );
+            }
+        }
+
+        return true;
+    }
+
+    //!< Fails each allocation of the point in a disconnect of the router client and the connect after it in turn.
+    void disconnect_and_connect_survive( areg_fault::FaultPoint point )
+    {
+        TestRouter router;
+        AREG_CHILD_CHECK( router.open( ) );
+        const timeval timeout{ IO_WAIT_S, 0 };
+        AREG_CHILD_CHECK( ::setsockopt( router.handle, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof( timeout ) ) == 0 );
+        AREG_CHILD_CHECK( request_connection( router ) );
+        const areg::MessageEnvelope first{ areg::create_connect_notify( areg::COOKIE_ROUTER, areg::COOKIE_REMOTE_SERVICE + 999u ) };
+        AREG_CHILD_CHECK( first.is_valid( ) );
+        AREG_CHILD_CHECK( accept_requesting_again( router, first ) && wait_connected( ) );
+
+        areg_fault::FaultScope faults;
+        bool finished{ false };
+        for ( uint32_t skip = 0u; ( skip < CONNECT_ATTEMPTS ) && ( finished == false ); ++ skip )
+        {
+            const ITEM_ID cookie{ areg::COOKIE_REMOTE_SERVICE + 1000u + skip };
+            const areg::MessageEnvelope notice{ areg::create_connect_notify( areg::COOKIE_ROUTER, cookie ) };
+            AREG_CHILD_CHECK( notice.is_valid( ) );
+
+            // The fault stays armed over the stop of the client, which ends after the router saw the close.
+            AREG_CHILD_CHECK( areg_fault::arm( point, 0, skip, 1u ) );
+            areg::Application::disconnect_router( );
+            AREG_CHILD_CHECK( closed_by_client_raw( router ) );
+            static_cast<void>( areg::Application::connect_router( ) );
+            AREG_CHILD_CHECK( connect_answering( router, notice ) );
+
+            finished = ( areg_fault::failed( point ) == 0u );
+            ::areg_fault_disarm_all( );
+        }
+
+        AREG_CHILD_CHECK( finished );
+        areg::Application::disconnect_router( );
+        AREG_CHILD_CHECK( closed_by_client_raw( router ) );
+        areg::Application::release( );
+    }
+}
+
+/**
+ * \brief   Reproduces the defect: a start request of the router client whose data was half written
+ *          was reported as requested and then dropped. Each nothrow allocation of a connect of the
+ *          router client and of the registration of a consumer fails in turn: a refused request
+ *          changes nothing and the next one connects, a refused load leaves the model unloaded,
+ *          and a loaded consumer is registered at the router.
+ **/
+TEST( FaultInjectTest, bug_919_every_failed_allocation_of_a_router_connect_and_registration_is_survived )
+{
+    AREG_EXPECT_IN_CHILD( connect_and_register_survive( areg_fault::FaultPoint::Allocation ); );
+}
+
+/**
+ * \brief   Reproduces the defect: the stop report of the router client was lost when its event
+ *          could not be allocated, and no later request connected the client. Each nothrow
+ *          allocation of a disconnect and of the connect after it fails in turn: the router sees
+ *          the close, and the client connects again.
+ **/
+TEST( FaultInjectTest, bug_919_every_failed_allocation_of_a_router_disconnect_is_followed_by_a_connection )
+{
+    AREG_EXPECT_IN_CHILD( disconnect_and_connect_survive( areg_fault::FaultPoint::Allocation ); );
+}
+
+TEST( FaultInjectTest, every_failed_aligned_allocation_of_a_router_connect_and_registration_is_survived )
+{
+    AREG_EXPECT_IN_CHILD( connect_and_register_survive( areg_fault::FaultPoint::AlignedAllocation ); );
+}
+
+#endif  // defined(AREG_FAULT_ALLOC_TESTS)
+
+#endif  // defined(AREG_FAULT_HELLO)
 
 #else   // defined(__linux__)
 

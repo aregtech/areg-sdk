@@ -97,6 +97,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     NameNumberCollisionTest.cpp
     ComponentLoaderContractTest.cpp
     ComponentLifecycleFailureTest.cpp
+    ComponentSelfLifecycleTest.cpp
     ProxyBaseContractTest.cpp
     ProxyStubLifecycleTest.cpp
     StubBaseContractTest.cpp

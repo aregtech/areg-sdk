@@ -255,7 +255,10 @@ void Component::startup_component( ComponentThread& /* comThread */ )
         StubBase * stub = mServerList.value_at(pos);
         ASSERT( stub != nullptr );
         stub->startup_service_interface(self());
-        ServiceManager::request_register_provider(stub->address());
+        if ( ServiceManager::request_register_provider(stub->address()) == false )
+        {
+            ServiceManager::report_startup_failure();
+        }
     }
 }
 
@@ -368,7 +371,7 @@ inline void Component::_shutdown_services()
         stub->shutdown_service_interface(self());
         // Takes the provider out of the registry before its component is destroyed.
         stub->_leave_registry();
-        ServiceManager::request_unregister_provider(stub->address(), reason);
+        static_cast<void>(ServiceManager::request_unregister_provider(stub->address(), reason));
     }
 }
 

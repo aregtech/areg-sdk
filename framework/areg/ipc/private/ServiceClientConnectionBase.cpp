@@ -345,7 +345,11 @@ void ServiceClientConnectionBase::on_service_stop()
 
     if ((channel.target() > areg::COOKIE_LOCAL) && (channel.target() < areg::COOKIE_REMOTE_SERVICE))
     {
-        send_message(disconnect_message(channel.cookie(), mTarget));
+        MessageEnvelope bye{ disconnect_message(channel.cookie(), mTarget) };
+        if (bye.is_valid())
+        {
+            send_message(std::move(bye));
+        }
     }
 
     do

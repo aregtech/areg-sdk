@@ -4,6 +4,7 @@
  * Areg SDK is dual-licensed under Apache 2.0 and commercial licenses.
  ************************************************************************/
 #include "units/GUnitTest.hpp"
+#include "units/EventTestSupport.hpp"
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/NotificationEvent.hpp"
@@ -807,4 +808,58 @@ TEST(ProxyBaseContractTest, notification_data_copy_keeps_the_proxy_and_move_clea
         target = std::move(self);
         EXPECT_TRUE(same(target, ResultType::RequestBusy, 13u, 23u));
     });
+}
+
+/**
+ * \brief   A notification sent to a listener of a proxy is dispatched on the thread of the
+ *          proxy and carries the data that was set; one sent without a listener reaches no
+ *          listener, and the thread goes on dispatching.
+ **/
+TEST(ProxyBaseContractTest, notification_sent_to_a_listener_reaches_it_on_the_proxy_thread_with_the_data_set)
+{
+    EventTestDispatcher owner(String("ProxyContractNotifyThread"));
+    ASSERT_TRUE(owner.start_ready());
+    EventTestRun run(owner);
+    ContractListener listener;
+    std::shared_ptr<ProxyBase> proxy;
+    ASSERT_TRUE(owner.invoke([&listener, &proxy, &owner]()
+        {
+            proxy = ProxyBase::acquire_proxy(String("ProxyContractNotifier"), INTERFACE, listener, ContractProxy::create, owner);
+        }));
+    ASSERT_NE(nullptr, proxy);
+
+    std::atomic<const Thread*> seenOn{ nullptr };
+    listener.mDuringNotification = [&seenOn]() { seenOn.store(Thread::current_thread()); };
+
+    NotificationEventData data(*proxy, ResultType::RequestOK, RESPONSES[0], 1u);
+    data.set_notify_type(ResultType::RequestError);
+    data.set_notify_id(ATTRIBUTES[0]);
+    data.set_sequence(77u);
+    data.set_service_proxy(*proxy);
+
+    const NotificationEvent original(data);
+    const NotificationEvent copy(original);
+    EXPECT_EQ(proxy.get(), copy.data().service_proxy());
+    EXPECT_EQ(ResultType::RequestError, copy.data().notify_type());
+    EXPECT_EQ(ATTRIBUTES[0], copy.data().notify_id());
+    EXPECT_EQ(77u, copy.data().sequence());
+    EXPECT_EQ(&owner, copy.target_dispatcher());
+
+    NotificationEvent::send_event(data, &listener);
+    ASSERT_TRUE(owner.barrier());
+    ASSERT_EQ(1u, listener.mNotifications.size());
+    EXPECT_EQ(ATTRIBUTES[0], std::get<0>(listener.mNotifications[0]));
+    EXPECT_EQ(ResultType::RequestError, std::get<1>(listener.mNotifications[0]));
+    EXPECT_EQ(77u, std::get<2>(listener.mNotifications[0]));
+    EXPECT_EQ(static_cast<const Thread*>(&owner), seenOn.load());
+
+    NotificationEvent::send_event(data, nullptr);
+    ASSERT_TRUE(owner.barrier());
+    EXPECT_EQ(1u, listener.mNotifications.size());
+
+    ASSERT_TRUE(owner.invoke([&listener, &proxy]()
+        {
+            proxy->free_proxy(listener);
+            proxy.reset();
+        }));
 }

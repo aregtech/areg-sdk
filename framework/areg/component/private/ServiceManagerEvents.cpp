@@ -22,23 +22,69 @@
 
 namespace
 {
-    //!< Returns true if the last write added bytes to the stream, and keeps its new size.
-    bool _written( const areg::SharedBuffer & stream, uint32_t & size ) noexcept
+    //!< Writes to a buffer and keeps whether every write was complete.
+    class CheckedStream final : public areg::OutStream
     {
-        const uint32_t used{ stream.size_used() };
-        const bool grew{ used > size };
-        size = used;
-        return grew;
-    }
-
-    //!< Invalidates the stream if one of its writes failed.
-    void _seal( areg::SharedBuffer & stream, bool written ) noexcept
-    {
-        if ( written == false )
+    public:
+        explicit CheckedStream( areg::SharedBuffer & target ) noexcept
+            : areg::OutStream   ( )
+            , mTarget           ( target )
+            , mComplete         ( true )
         {
-            stream.invalidate();
         }
-    }
+
+        ~CheckedStream( ) noexcept override = default;
+
+        //!< Invalidates the buffer if one of the writes was not complete.
+        void seal( ) noexcept
+        {
+            if ( mComplete == false )
+            {
+                mTarget.invalidate( );
+            }
+        }
+
+        using areg::OutStream::write;
+
+        uint32_t write( const uint8_t * buffer, uint32_t size ) override
+        {
+            const uint32_t result{ mTarget.write( buffer, size ) };
+            mComplete = mComplete && ( result == size );
+            return result;
+        }
+
+        uint32_t write( const areg::SharedBuffer & buffer ) override
+        {
+            const uint32_t used{ mTarget.size_used( ) };
+            const uint32_t result{ mTarget.write( buffer ) };
+            mComplete = mComplete && ( mTarget.size_used( ) - used == static_cast<uint32_t>(sizeof( uint32_t )) + buffer.size_used( ) );
+            return result;
+        }
+
+        void flush( ) noexcept override
+        {
+            mTarget.flush( );
+        }
+
+        bool ensure_size( uint32_t addSize ) override
+        {
+            return mTarget.ensure_size( addSize );
+        }
+
+    protected:
+        //!< Returns no view; every write goes through write().
+        uint8_t * write_view( uint32_t /*size*/ ) noexcept override
+        {
+            return nullptr;
+        }
+
+    private:
+        areg::SharedBuffer &    mTarget;    //!< The buffer that is written.
+        bool                    mComplete;  //!< True while every write was complete.
+
+        CheckedStream( ) = delete;
+        AREG_NOCOPY_NOMOVE( CheckedStream );
+    };
 }
 
 namespace areg {
@@ -55,47 +101,45 @@ ServiceManagerEventData ServiceManagerEventData::shutdown_service_manager()
 ServiceManagerEventData ServiceManagerEventData::register_proxy(const ProxyAddress & addrProxy)
 {
     ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterProxy );
-    OutStream & stream = data.write_stream();
-    stream << addrProxy;
-    stream << addrProxy.channel();
+    CheckedStream stream( data.mStream );
+    stream << addrProxy << addrProxy.channel();
+    stream.seal( );
     return data;
 }
 
 ServiceManagerEventData ServiceManagerEventData::unregister_proxy( const ProxyAddress & addrProxy, areg::DisconnectReason reason )
 {
     ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProxy );
-    OutStream & stream = data.write_stream();
-    stream << addrProxy;
-    stream << addrProxy.channel();
-    stream << reason;
+    CheckedStream stream( data.mStream );
+    stream << addrProxy << addrProxy.channel() << reason;
+    stream.seal( );
     return data;
 }
 
 ServiceManagerEventData ServiceManagerEventData::register_stub(const StubAddress & addrStub)
 {
-    ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterProvider);
-    OutStream & stream = data.write_stream();
-    stream << addrStub;
-    stream << addrStub.channel();
+    ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterProvider );
+    CheckedStream stream( data.mStream );
+    stream << addrStub << addrStub.channel();
+    stream.seal( );
     return data;
 }
 
 ServiceManagerEventData ServiceManagerEventData::unregister_stub( const StubAddress & addrStub, areg::DisconnectReason reason )
 {
-    ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProvider);
-    OutStream & stream = data.write_stream();
-    stream << addrStub;
-    stream << addrStub.channel();
-    stream << reason;
+    ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProvider );
+    CheckedStream stream( data.mStream );
+    stream << addrStub << addrStub.channel() << reason;
+    stream.seal( );
     return data;
 }
 
 ServiceManagerEventData ServiceManagerEventData::start_connection(areg::RemoteServiceKind service, uint32_t connectTypes)
 {
     ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_StartConnection );
-    OutStream & stream = data.write_stream();
-    stream << service;
-    stream << connectTypes;
+    CheckedStream stream( data.mStream );
+    stream << service << connectTypes;
+    stream.seal( );
     return data;
 }
 
@@ -107,60 +151,54 @@ ServiceManagerEventData ServiceManagerEventData::stop_connection()
 ServiceManagerEventData ServiceManagerEventData::register_connection(const Channel & channel)
 {
     ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterConnection );
-    OutStream & stream = data.write_stream();
+    CheckedStream stream( data.mStream );
     stream << channel;
+    stream.seal( );
     return data;
 }
 
 ServiceManagerEventData ServiceManagerEventData::unregister_connection(const Channel & channel)
 {
     ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterConnection );
-    OutStream & stream = data.write_stream();
+    CheckedStream stream( data.mStream );
     stream << channel;
+    stream.seal( );
     return data;
 }
 
 ServiceManagerEventData ServiceManagerEventData::lost_connection(const Channel & channel)
 {
     ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_LostConnection );
-    OutStream & stream = data.write_stream();
+    CheckedStream stream( data.mStream );
     stream << channel;
+    stream.seal( );
     return data;
 }
 
 ServiceManagerEventData ServiceManagerEventData::model_request(bool load, uint32_t modelId, uint64_t request)
 {
     ServiceManagerEventData data( load ? ServiceManagerEventData::ServiceManagerCommand::CMD_LoadModel : ServiceManagerEventData::ServiceManagerCommand::CMD_UnloadModel );
-    OutStream & stream = data.write_stream();
-    uint32_t size{ 0u };
-    stream << modelId;
-    bool written{ _written(data.mStream, size) };
-    stream << request;
-    written = _written(data.mStream, size) && written;
-    _seal(data.mStream, written);
+    CheckedStream stream( data.mStream );
+    stream << modelId << request;
+    stream.seal( );
     return data;
 }
 
 ServiceManagerEventData ServiceManagerEventData::thread_report(bool running, uint64_t instance)
 {
     ServiceManagerEventData data( running ? ServiceManagerEventData::ServiceManagerCommand::CMD_ThreadRunning : ServiceManagerEventData::ServiceManagerCommand::CMD_ThreadStopped );
-    OutStream & stream = data.write_stream();
-    uint32_t size{ 0u };
+    CheckedStream stream( data.mStream );
     stream << instance;
-    _seal(data.mStream, _written(data.mStream, size));
+    stream.seal( );
     return data;
 }
 
 ServiceManagerEventData ServiceManagerEventData::watchdog_expired(uint64_t instance, bool isWorker)
 {
     ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_WatchdogExpired );
-    OutStream & stream = data.write_stream();
-    uint32_t size{ 0u };
-    stream << instance;
-    bool written{ _written(data.mStream, size) };
-    stream << static_cast<uint32_t>(isWorker ? 1u : 0u);
-    written = _written(data.mStream, size) && written;
-    _seal(data.mStream, written);
+    CheckedStream stream( data.mStream );
+    stream << instance << static_cast<uint32_t>(isWorker ? 1u : 0u);
+    stream.seal( );
     return data;
 }
 
@@ -174,13 +212,17 @@ ServiceManagerEventData ServiceManagerEventData::router_client_stopped()
     return ServiceManagerEventData( ServiceManagerEventData::ServiceManagerCommand::CMD_RouterClientStopped );
 }
 
+ServiceManagerEventData ServiceManagerEventData::reconcile()
+{
+    return ServiceManagerEventData( ServiceManagerEventData::ServiceManagerCommand::CMD_Reconcile );
+}
+
 ServiceManagerEventData ServiceManagerEventData::user_state(uint32_t userState)
 {
     ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_UserState );
-    OutStream & stream = data.write_stream();
-    uint32_t size{ 0u };
+    CheckedStream stream( data.mStream );
     stream << userState;
-    _seal(data.mStream, _written(data.mStream, size));
+    stream.seal( );
     return data;
 }
 

@@ -79,6 +79,23 @@ public:
      **/
     void unregister_thread_services( const ThreadAddress & thread, areg::DisconnectReason reason, RegistrationProvider & registerProvider );
 
+    /**
+     * \brief   Unregisters the registered provider or consumer of the address number and cookie.
+     *          Does nothing if no such address is registered.
+     * \param   number              The number of the address.
+     * \param   cookie              The cookie of the address.
+     * \param   reason              The disconnect reason.
+     * \param   provider            True to unregister a provider, false to unregister a consumer.
+     * \param   registerProvider    The provider to send notification.
+     **/
+    void unregister_by_number( uint32_t number, const ITEM_ID & cookie, areg::DisconnectReason reason, bool provider, RegistrationProvider & registerProvider );
+
+    /**
+     * \brief   Unregisters every connected local provider and every local consumer that has no object.
+     * \param   registerProvider    The provider to send notification.
+     **/
+    void unregister_missing_local( RegistrationProvider & registerProvider );
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls
 //////////////////////////////////////////////////////////////////////////

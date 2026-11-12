@@ -83,8 +83,9 @@ public:
      *          of service availability.
      *
      * \param   whichServer     The address of Stub Server object requesting registration.
+     * \return  Returns true if the request is posted.
      **/
-    static void request_register_provider( const StubAddress & whichServer );
+    static bool request_register_provider( const StubAddress & whichServer );
 
     /**
      * \brief   Unregisters a Stub server from Service Manager and notifies all proxy clients
@@ -92,23 +93,36 @@ public:
      *
      * \param   whichServer     The address of Stub Server object requesting unregistration.
      * \param   reason          The reason for service unregistration.
+     * \return  Returns true if the request is posted.
      **/
-    static void request_unregister_provider( const StubAddress & whichServer, const areg::DisconnectReason reason );
+    static bool request_unregister_provider( const StubAddress & whichServer, const areg::DisconnectReason reason );
 
     /**
      * \brief   Registers a Proxy client at Service Manager and notifies it of available Stub services.
      *
      * \param   whichClient     The address of Proxy client object requesting registration.
+     * \return  Returns true if the request is posted.
      **/
-    static void request_register_consumer( const ProxyAddress & whichClient );
+    static bool request_register_consumer( const ProxyAddress & whichClient );
+
+    /**
+     * \brief   Marks the start of the calling component thread as failed.
+     **/
+    static void report_startup_failure() noexcept;
+
+    /**
+     * \brief   Returns true if the start of the calling thread was marked as failed, and clears the mark.
+     **/
+    static bool take_startup_failure() noexcept;
 
     /**
      * \brief   Unregisters a Proxy client from Service Manager and notifies the Stub server.
      *
      * \param   whichClient     The address of Proxy client object requesting unregistration.
      * \param   reason          The reason for client unregistration.
+     * \return  Returns true if the request is posted.
      **/
-    static void request_unregister_consumer( const ProxyAddress & whichClient, const areg::DisconnectReason reason );
+    static bool request_unregister_consumer( const ProxyAddress & whichClient, const areg::DisconnectReason reason );
 
 /************************************************************************/
 // Lifecycle of the models and of the component threads
@@ -466,6 +480,38 @@ private:
      **/
     bool _process_router_command( const ServiceManagerEventData & data );
 
+    /**
+     * \brief   Keeps an unregister whose event could not be built and asks the service manager to apply it.
+     * \param   number      The number of the address.
+     * \param   cookie      The cookie of the address.
+     * \param   reason      The reason of the unregister.
+     * \param   provider    True for a provider, false for a consumer.
+     **/
+    void _defer_unregister( uint32_t number, const ITEM_ID & cookie, areg::DisconnectReason reason, bool provider ) noexcept;
+
+    /**
+     * \brief   Applies the unregisters kept by _defer_unregister(). Runs in the service manager thread.
+     **/
+    void _process_reconcile();
+
+//////////////////////////////////////////////////////////////////////////
+// Internal types and constants
+//////////////////////////////////////////////////////////////////////////
+
+    /**
+     * \brief   An unregister whose event could not be built.
+     **/
+    struct PendingUnregister
+    {
+        uint32_t                mNumber;    //!< The number of the address.
+        ITEM_ID                 mCookie;    //!< The cookie of the address.
+        areg::DisconnectReason  mReason;    //!< The reason of the unregister.
+        bool                    mProvider;  //!< True for a provider, false for a consumer.
+    };
+
+    //!< The number of unregisters the pending table holds.
+    static constexpr uint32_t   PENDING_CAPACITY{ 64u };
+
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -496,6 +542,10 @@ private:
      * \brief   A start of the router client requested while it stops.
      **/
     std::optional<ServiceManagerEventData>  mDeferredStart;
+    /**
+     * \brief   True while a reconcile event is queued.
+     **/
+    std::atomic_bool                mReconcilePosted;
 #if defined(_MSC_VER)
     #pragma warning(pop)
 #endif  // _MSC_VER
@@ -507,6 +557,34 @@ private:
      * \brief   The shutdown request of the service manager, built when it starts.
      **/
     Event                           mShutdownEvent;
+    /**
+     * \brief   The stop report of the router client, built when the service manager starts.
+     **/
+    Event                           mClientStoppedEvent;
+    /**
+     * \brief   The stop request of the router connection, built when the service manager starts.
+     **/
+    Event                           mStopConnectionEvent;
+    /**
+     * \brief   The reconcile request, built when the service manager starts.
+     **/
+    Event                           mReconcileEvent;
+    /**
+     * \brief   The unregisters whose events could not be built.
+     **/
+    PendingUnregister               mPending[PENDING_CAPACITY];
+    /**
+     * \brief   The number of records in mPending.
+     **/
+    uint32_t                        mPendingCount;
+    /**
+     * \brief   True if an unregister did not fit in mPending.
+     **/
+    bool                            mPendingOverflow;
+    /**
+     * \brief   Guards mPending, mPendingCount and mPendingOverflow.
+     **/
+    PlainSpinLock                   mPendingLock;
     /**
      * \brief   Synchronization object, for multi-threading access.
      **/

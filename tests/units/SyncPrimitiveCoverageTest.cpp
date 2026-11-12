@@ -10,6 +10,7 @@
 #include <array>
 #include <atomic>
 #include <chrono>
+#include <new>
 #include <thread>
 #include <vector>
 
@@ -608,4 +609,24 @@ TEST(SyncPrimitiveCoverageTest, wait_clock_conversion_and_distance)
     EXPECT_LT(areg::Wait::from_now(std::chrono::steady_clock::now() - std::chrono::seconds(60)), std::chrono::seconds(-50));
     EXPECT_GT(areg::Wait::until_now(std::chrono::steady_clock::now() - std::chrono::seconds(60)), std::chrono::seconds(50));
     EXPECT_LT(areg::Wait::until_now(std::chrono::steady_clock::now() + std::chrono::seconds(60)), std::chrono::seconds(-50));
+}
+
+/**
+ * \brief   Reproduces the defect: on POSIX the signaling thread still reads the event after the
+ *          waiter it released has returned, so a waiter that destroys the event at once frees it
+ *          under the signaler. Red under AddressSanitizer or ThreadSanitizer.
+ **/
+TEST(SyncEventCoverageTest, DISABLED_bug_922_an_event_is_destroyed_as_soon_as_its_wait_returned)
+{
+    constexpr uint32_t ROUNDS{ 2'000u };
+    for (uint32_t i = 0u; i < ROUNDS; ++i)
+    {
+        areg::SyncEvent * event{ new (std::nothrow) areg::SyncEvent(true, false) };
+        ASSERT_NE(event, nullptr);
+        std::thread signaler([event]() { static_cast<void>(event->set_signaled()); });
+        const bool released{ event->lock(COVERAGE_WAIT_MS) };
+        delete event;
+        signaler.join();
+        ASSERT_TRUE(released);
+    }
 }

@@ -34,6 +34,11 @@
 #include "areg/component/Event.hpp"
 #include "areg/component/EventDefs.hpp"
 #include "areg/component/private/EventQueue.hpp"
+#include "areg/component/private/ServiceManagerEvents.hpp"
+#include "areg/component/Channel.hpp"
+#include "areg/component/ProxyAddress.hpp"
+#include "areg/component/ServiceItem.hpp"
+#include "areg/component/StubAddress.hpp"
 #include "areg/component/private/Watchdog.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/base/ThreadAddress.hpp"
@@ -52,6 +57,7 @@
 #include <cstdio>
 #include <cstring>
 #include <string>
+#include <vector>
 
 #if defined(__linux__)
     #include <sys/wait.h>
@@ -1262,5 +1268,281 @@ TEST( FaultInjectSweepTest, bug_902_setup_with_a_failed_ring_allocation_must_sto
         }, _controlled_exit, "" );
     }
 }
+
+namespace
+{
+    //!< The service, role and thread names of the addresses; longer than one block of the stream.
+    constexpr char const    _dataService[]  { "FaultDataServiceNameThatIsLongerThanTheFirstBlockOfTheStream" };
+    constexpr char const    _dataRole[]     { "FaultDataRoleNameThatIsLongerThanTheFirstBlockOfTheStream" };
+    constexpr char const    _dataThread[]   { "FaultDataThreadNameThatIsLongerThanTheFirstBlockOfTheStream" };
+
+    //!< Returns the bytes of the event data; empty if the data is not valid.
+    std::vector<uint8_t> _data_bytes( const areg::ServiceManagerEventData & data )
+    {
+        std::vector<uint8_t> bytes;
+        if ( data.is_valid( ) )
+        {
+            const areg::InStream & stream{ data.read_stream( ) };
+            stream.reset( );
+            uint8_t part[ 64 ];
+            for ( uint32_t got = stream.read( part, sizeof( part ) ); got != 0u; got = stream.read( part, sizeof( part ) ) )
+            {
+                bytes.insert( bytes.end( ), part, part + got );
+            }
+
+            stream.reset( );
+        }
+
+        return bytes;
+    }
+
+    //!< Fails each allocation of the factory in turn: its data is either not valid or holds every field.
+    template<typename Factory>
+    void _event_data_complete_or_invalid( Factory factory )
+    {
+        const std::vector<uint8_t> expected{ _data_bytes( factory( ) ) };
+        AREG_CHILD_CHECK( expected.empty( ) == false );
+        areg_fault::FaultScope faults;
+        uint32_t refused{ 0u };
+        bool finished{ false };
+        for ( uint32_t skip = 0u; ( skip < REQUEST_COUNT ) && ( finished == false ); ++ skip )
+        {
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, skip, 1u ) );
+            const areg::ServiceManagerEventData data{ factory( ) };
+            const uint32_t failed{ areg_fault::failed( areg_fault::FaultPoint::Allocation ) };
+            ::areg_fault_disarm_all( );
+            finished = ( failed == 0u );
+            if ( data.is_valid( ) == false )
+                ++ refused;
+            else
+                AREG_CHILD_CHECK( _data_bytes( data ) == expected );
+        }
+
+        AREG_CHILD_CHECK( finished );
+        AREG_CHILD_CHECK( refused != 0u );
+    }
+
+    //!< Sweeps the factories of the service manager data that write more than one field.
+    void _service_manager_data_complete_or_invalid( )
+    {
+        const areg::ServiceItem service( areg::String( _dataService ), areg::Version( 1u, 2u, 3u ), areg::ServiceType::Public );
+        areg::StubAddress stub( service, areg::String( _dataRole ), areg::String( _dataThread ) );
+        stub.set_cookie( areg::COOKIE_REMOTE_SERVICE + 920u );
+        areg::ProxyAddress proxy( service, areg::String( _dataRole ), areg::String( _dataThread ) );
+        proxy.set_cookie( areg::COOKIE_REMOTE_SERVICE + 921u );
+        const areg::Channel channel( 0x9201u, 0x9202u, 0x9203u );
+        constexpr areg::DisconnectReason reason{ areg::DisconnectReason::ProviderDisconnected };
+
+        _event_data_complete_or_invalid( [&stub]( ) { return areg::ServiceManagerEventData::register_stub( stub ); } );
+        _event_data_complete_or_invalid( [&stub]( ) { return areg::ServiceManagerEventData::unregister_stub( stub, reason ); } );
+        _event_data_complete_or_invalid( [&proxy]( ) { return areg::ServiceManagerEventData::register_proxy( proxy ); } );
+        _event_data_complete_or_invalid( [&proxy]( ) { return areg::ServiceManagerEventData::unregister_proxy( proxy, reason ); } );
+        _event_data_complete_or_invalid( [&channel]( ) { return areg::ServiceManagerEventData::register_connection( channel ); } );
+        _event_data_complete_or_invalid( [&channel]( ) { return areg::ServiceManagerEventData::unregister_connection( channel ); } );
+        _event_data_complete_or_invalid( [&channel]( ) { return areg::ServiceManagerEventData::lost_connection( channel ); } );
+        _event_data_complete_or_invalid( []( ) { return areg::ServiceManagerEventData::start_connection( areg::RemoteServiceKind::Router, 1u ); } );
+        _event_data_complete_or_invalid( []( ) { return areg::ServiceManagerEventData::model_request( true, 7u, 9u ); } );
+        _event_data_complete_or_invalid( []( ) { return areg::ServiceManagerEventData::watchdog_expired( 11u, true ); } );
+    }
+}
+
+/**
+ * \brief   Reproduces the defect: a nothrow allocation that failed after the first fields of an
+ *          address were written was not noticed, and the half written data was posted as valid.
+ *          Expected: the data of each factory is either not valid or holds every field.
+ **/
+TEST( FaultInjectSweepTest, bug_920_service_manager_data_whose_allocation_fails_is_complete_or_not_valid )
+{
+    AREG_EXPECT_IN_CHILD( _service_manager_data_complete_or_invalid( ) );
+}
+
+#if defined(AREG_FAULT_HELLO)
+
+#include "examples/02_minimalipc/services/HelloServiceConsumerBase.hpp"
+#include "examples/02_minimalipc/services/HelloServiceProviderBase.hpp"
+
+namespace
+{
+    constexpr char const    _serviceModel[]     { "FaultServiceModel" };
+    constexpr char const    _serviceThread[]    { "FaultServiceThread" };
+    constexpr char const    _serviceRole[]      { "FaultHelloRole" };
+    //!< The most allocations of one lifecycle with services that are failed in turn.
+    constexpr uint32_t      SERVICE_ATTEMPTS    { 2'000u };
+
+    //!< Signaled when the consumer got a response.
+    areg::SyncEvent         gResponse           { true, false };
+
+    //!< A local provider of the hello service; it answers every request.
+    class SweepProvider final : public    areg::Component
+                              , protected HelloServiceProviderBase
+    {
+    public:
+        SweepProvider( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
+            : areg::Component           ( entry, owner )
+            , HelloServiceProviderBase  ( static_cast<areg::Component &>(*this) )
+        { }
+
+    protected:
+        void request_hello_service( ) override
+        {
+            response_hello_service( );
+        }
+    };
+
+    //!< A consumer of the local provider; it sends a request when connected and signals the response.
+    class SweepConsumer final : public    areg::Component
+                              , protected HelloServiceConsumerBase
+    {
+    public:
+        SweepConsumer( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
+            : areg::Component           ( entry, owner )
+            , HelloServiceConsumerBase  ( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(*this) )
+        { }
+
+    protected:
+        bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override
+        {
+            const bool result{ HelloServiceConsumerBase::service_connected( status, proxy ) };
+            if ( areg::is_service_connected( status ) )
+                request_hello_service( );
+
+            return result;
+        }
+
+        void response_hello_service( ) override
+        {
+            gResponse.set_signaled( );
+        }
+    };
+
+    //!< Registers once the model of one thread with a provider and its consumer.
+    bool _register_service_model( )
+    {
+        static const bool _registered{ [] {
+            const areg::String thread( _serviceThread );
+            areg::ComponentThreadEntry entry{ thread };
+            areg::ComponentEntry provider( thread, areg::String( _serviceRole ), &_create_component<SweepProvider>, &_delete_sweep );
+            provider.add_supported_service( areg::ServiceEntry( areg::String( HelloService::ServiceName ), HelloService::InterfaceVersion ) );
+            areg::ComponentEntry consumer( thread, areg::String( "FaultHelloConsumer" ), &_create_component<SweepConsumer>, &_delete_sweep );
+            consumer.add_dependency_service( areg::DependencyEntry( areg::String( _serviceRole ) ) );
+            entry.add_component( provider );
+            entry.add_component( consumer );
+            areg::Model model( _serviceModel );
+            model.add_thread( entry );
+            return areg::ComponentLoader::add_model_unique( model );
+        }() };
+        return _registered;
+    }
+
+    //!< Loads the model, waits until the consumer got a response from the provider, and unloads it.
+    bool _service_round( )
+    {
+        gResponse.reset( );
+        const bool loaded{ areg::Application::load_model( _serviceModel, true ) };
+        const bool served{ loaded && gResponse.lock( WAIT_MS ) };
+        return areg::Application::unload_model( _serviceModel ) && served
+            && ( areg::Application::model_state( _serviceModel ) == areg::ModelState::Unloaded );
+    }
+
+    //!< Fails each allocation of the point in a load and unload of the model in turn: a failed load leaves no thread, and the next round is served.
+    void _service_lifecycle_survives( areg_fault::FaultPoint point )
+    {
+        areg::Application::setup( false, true, false, true, false );
+        areg_fault::FaultScope faults;
+        const areg::ThreadAddress address( _serviceThread );
+        uint32_t refused{ 0u };
+        bool finished{ false };
+        for ( uint32_t skip = 0u; ( skip < SERVICE_ATTEMPTS ) && ( finished == false ); ++ skip )
+        {
+            AREG_CHILD_CHECK( areg_fault::arm( point, 0, skip, 1u ) );
+            const bool loaded{ areg::Application::load_model( _serviceModel, true ) };
+            if ( loaded == false )
+                ++ refused;
+            const bool unloaded{ areg::Application::unload_model( _serviceModel ) };
+            const uint32_t failed{ areg_fault::failed( point ) };
+            ::areg_fault_disarm_all( );
+            finished = ( failed == 0u );
+            if ( unloaded == false )
+            {
+                // An unload request that cannot be built changes nothing.
+                AREG_CHILD_CHECK( areg::Application::model_state( _serviceModel ) == areg::ModelState::Loaded );
+                AREG_CHILD_CHECK( areg::Application::unload_model( _serviceModel ) );
+            }
+
+            AREG_CHILD_CHECK( areg::Application::model_state( _serviceModel ) == areg::ModelState::Unloaded );
+            AREG_CHILD_CHECK( areg::Thread::find_by_address( address ) == nullptr );
+            AREG_CHILD_CHECK( _service_round( ) );
+        }
+
+        AREG_CHILD_CHECK( finished );
+        AREG_CHILD_CHECK( refused != 0u );
+        areg::Application::release( );
+    }
+}
+
+/**
+ * \brief   Reproduces the defects: each nothrow allocation of the load and unload of a model with
+ *          a local provider and its consumer fails in turn (component thread, components, stub,
+ *          proxy, the records and the events of the service manager). A proxy without its state
+ *          tables was used, and a service manager request without its data registered an empty
+ *          address. Expected: a failed load leaves no thread, and the next load is served.
+ **/
+TEST( FaultInjectSweepTest, bug_917_every_failed_allocation_of_a_service_model_lifecycle_leaves_the_next_round_served )
+{
+    ASSERT_TRUE( _register_service_model( ) );
+    AREG_EXPECT_IN_CHILD( _service_lifecycle_survives( areg_fault::FaultPoint::Allocation ) );
+}
+
+namespace
+{
+    //!< Fails each allocation of the point in the unload of a served model in turn: the registry holds no stale entry, and the next round is served.
+    void _service_unload_survives( areg_fault::FaultPoint point )
+    {
+        areg::Application::setup( false, true, false, true, false );
+        areg_fault::FaultScope faults;
+        const areg::ThreadAddress address( _serviceThread );
+        bool finished{ false };
+        for ( uint32_t skip = 0u; ( skip < SERVICE_ATTEMPTS ) && ( finished == false ); ++ skip )
+        {
+            gResponse.reset( );
+            AREG_CHILD_CHECK( areg::Application::load_model( _serviceModel, true ) );
+            AREG_CHILD_CHECK( gResponse.lock( WAIT_MS ) );
+
+            AREG_CHILD_CHECK( areg_fault::arm( point, 0, skip, 1u ) );
+            const bool unloaded{ areg::Application::unload_model( _serviceModel ) };
+            const uint32_t failed{ areg_fault::failed( point ) };
+            ::areg_fault_disarm_all( );
+            finished = ( failed == 0u );
+            if ( unloaded == false )
+                AREG_CHILD_CHECK( areg::Application::unload_model( _serviceModel ) );
+
+            AREG_CHILD_CHECK( areg::Application::model_state( _serviceModel ) == areg::ModelState::Unloaded );
+            AREG_CHILD_CHECK( areg::Thread::find_by_address( address ) == nullptr );
+            AREG_CHILD_CHECK( _service_round( ) );
+        }
+
+        AREG_CHILD_CHECK( finished );
+        areg::Application::release( );
+    }
+}
+
+/**
+ * \brief   Each nothrow allocation of the unload of a served model with a local provider and its
+ *          consumer fails in turn: the model is unloaded, and the next load connects and serves
+ *          the consumer.
+ **/
+TEST( FaultInjectSweepTest, every_failed_allocation_of_a_served_model_unload_leaves_the_next_round_served )
+{
+    ASSERT_TRUE( _register_service_model( ) );
+    AREG_EXPECT_IN_CHILD( _service_unload_survives( areg_fault::FaultPoint::Allocation ) );
+}
+
+TEST( FaultInjectSweepTest, every_failed_aligned_allocation_of_a_service_model_lifecycle_leaves_the_next_round_served )
+{
+    ASSERT_TRUE( _register_service_model( ) );
+    AREG_EXPECT_IN_CHILD( _service_lifecycle_survives( areg_fault::FaultPoint::AlignedAllocation ) );
+}
+
+#endif  // defined(AREG_FAULT_HELLO)
 
 #endif  // defined(AREG_FAULT_SWEEP_TESTS)
