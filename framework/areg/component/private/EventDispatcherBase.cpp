@@ -142,7 +142,10 @@ EventDispatcherBase::~EventDispatcherBase()
 bool EventDispatcherBase::start_dispatcher()
 {
     // The exit request is cleared by on_thread_registered() before start() returns.
-    return run_dispatcher( );
+    const bool result{ run_dispatcher( ) };
+    // An override that returns before the dispatching loop leaves no consumer registered.
+    _clean( );
+    return result;
 }
 
 void EventDispatcherBase::stop_dispatcher() noexcept

@@ -32,6 +32,7 @@
 
 #include <atomic>
 #include <functional>
+#include <memory>
 
 namespace
 {
@@ -100,6 +101,7 @@ namespace
             gHost.store(nullptr);
             LifecycleActionEvent::remove_listener(static_cast<LifecycleActionConsumer &>(*this), comThread);
             areg::Component::shutdown_component(comThread);
+            delete_worker_thread(areg::String(_selfWorker));
         }
 
         void process_event(const LifecycleActionData & data) override
@@ -179,11 +181,12 @@ namespace
         if (host == nullptr)
             return false;
 
-        areg::SyncEvent done{ true, false };
-        const bool sent{ LifecycleActionEvent::send_event(LifecycleActionData{ [&action, &done]() { action(); done.set_signaled(); } }
+        // The caller and the host thread share the event.
+        std::shared_ptr<areg::SyncEvent> done{ std::make_shared<areg::SyncEvent>(true, false) };
+        const bool sent{ LifecycleActionEvent::send_event(LifecycleActionData{ [&action, done]() { action(); done->set_signaled(); } }
                                                          , static_cast<LifecycleActionConsumer &>(*host)
                                                          , host->master_thread()) };
-        return sent && done.lock(WAIT_MS);
+        return sent && done->lock(WAIT_MS);
     }
 }
 
